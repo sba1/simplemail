@@ -1,4 +1,11 @@
 CVS
+.deps
+Makefile
+*~
+config.status
+config.h
+config.cache
+config.log
 *po
 *.o
 *.a
@@ -19,3 +26,5 @@ gen_makefile
 sm
 sas_objects
 date.h
+xpm
+.folders

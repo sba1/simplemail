@@ -31,7 +31,11 @@
 #include <sys/errno.h>
 #include <netinet/tcp.h>
 
+#ifdef AMIGA /* ugly '/
 #include <proto/amissl.h> /* not portable */
+#else
+#include <openssl/ssl.h>
+#endif
 
 #include "support.h"
 #include "tcpip.h"
@@ -77,7 +81,9 @@ struct connection *tcp_connect(char *server, unsigned int port)
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
 	{
+#ifdef AMIGA /* ugly */
 		sockaddr.sin_len = sizeof(struct sockaddr_in);
+#endif
 		sockaddr.sin_family = AF_INET;
 		sockaddr.sin_port = htons(port);
 		sockaddr.sin_addr = *(struct in_addr *) hostent->h_addr;
@@ -132,7 +138,7 @@ struct connection *tcp_connect(char *server, unsigned int port)
 
 				tell_from_subtask(err);
 			}
-			CloseSocket(sd);
+			myclosesocket(sd);
 		}
 		else
 		{
@@ -189,7 +195,7 @@ struct connection *tcp_connect(char *server, unsigned int port)
 void tcp_disconnect(struct connection *conn)
 {
 	tcp_flush(conn); /* flush the write buffer */
-	CloseSocket(conn->socket); /* not portable */
+	myclosesocket(conn->socket); /* not portable */
 
 	if (conn->use_ssl)
 	{
@@ -331,3 +337,8 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
+
+
+
+
+

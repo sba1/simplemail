@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <errno.h>
 #include <netdb.h>
@@ -35,6 +36,7 @@
 #include "simplemail.h"
 #include "smtp.h"
 #include "support.h"
+#include "support_indep.h"
 
 #include "subthreads.h"
 #include "tcpip.h"
@@ -221,7 +223,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 						rc = 0;
 						break;
 					}
-					if(!stricmp(buf,"Content-Transfer-Encoding: 8bit\n"))
+					if(!mystricmp(buf,"Content-Transfer-Encoding: 8bit\n"))
 					{
 						if(!(server->esmtp.flags & ESMTP_8BITMIME))
 						{
@@ -277,7 +279,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 						char qp[4];
 						int pos = 0, linepos, len = strlen(buf)-1;
 
-						if(!strnicmp(buf,"From ",5))
+						if(!mystrnicmp(buf,"From ",5))
 						{
 							sprintf(qp,"=%02X",buf[0]);
 							if(3 != tcp_write(conn, qp, 3))
@@ -491,6 +493,8 @@ static int esmtp_auth_cram(struct connection *conn, struct smtp_server *server)
 	return 0;
 }
 
+#if 0
+
 static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *server)
 {
 	static char digest_str[] = "AUTH DIGEST-MD5\r\n";
@@ -540,6 +544,7 @@ static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *se
 	return 0;
 }
 
+#endif
 
 int esmtp_auth(struct connection *conn, struct smtp_server *server)
 {
@@ -765,9 +770,9 @@ int smtp_send(struct smtp_server *server, char *folder_path)
 	if (chdir(folder_path) == -1)
 		return 0;
 
-  rc = thread_start(smtp_entry,server);
-  chdir(path);
-  return rc;
+	rc = thread_start(smtp_entry,server);
+ 	chdir(path);
+	return rc;
 }
 
 /**************************************************************************
@@ -779,7 +784,7 @@ static char **duplicate_string_array(char **rcp)
 	int rcps=0;
 	while (rcp[rcps]) rcps++;
 
-	if (newrcp = (char**)malloc((rcps+1)*sizeof(char*)))
+	if ((newrcp = (char**)malloc((rcps+1)*sizeof(char*))))
 	{
 		int i;
 		for (i=0;i<rcps;i++)
@@ -867,3 +872,12 @@ void free_outmail_array(struct outmail **om_array)
 	}
 	free(om_array);
 }
+
+
+
+
+
+
+
+
+

@@ -20,16 +20,19 @@
 ** folder.c
 */
 
+#include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h> /* toupper() */
 #include <sys/dir.h> /* unix dir stuff */
 #include <sys/stat.h> /* state() */
+#include <unistd.h>
 
 #include "lists.h"
 #include "folder.h"
 #include "support.h"
+#include "support_indep.h"
 
 static struct list folder_list;
 
@@ -54,7 +57,7 @@ static FILE *folder_open_indexfile(struct folder *f, char *mode)
 	char cpath[256];
 
 	if (!f || !f->path) return 0;
-	if (!(path = strdup(f->path))) return 0;
+	if (!(path = mystrdup(f->path))) return 0;
 
 	*sm_path_part(path) = 0;
 	filename_ptr = sm_file_part(f->path);
@@ -95,7 +98,7 @@ void folder_delete_indexfile(struct folder *f)
 	char cpath[256];
 
 	if (!f || !f->path) return;
-	if (!(path = strdup(f->path))) return;
+	if (!(path = mystrdup(f->path))) return;
 
 	*sm_path_part(path) = 0;
 	filename_ptr = sm_file_part(f->path);
@@ -499,17 +502,25 @@ int folder_read_mail_infos(struct folder *folder)
 		getcwd(path, sizeof(path));
 		if(chdir(folder->path) == -1) return 0;
 
-		dfd = opendir("");
-		while ((dptr = readdir(dfd)) != NULL)
+#ifdef AMIGA
+		if ((dfd = opendir("")))
+#else
+		if ((dfd = opendir("./")))
+#endif
 		{
-			struct mail *m = mail_create_from_file(dptr->d_name);
-			if (m)
+			while ((dptr = readdir(dfd)) != NULL)
 			{
-				folder_add_mail(folder,m);
-			}
-		}
+				struct mail *m;
 
-		closedir(dfd);
+				if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+
+				if ((m = mail_create_from_file(dptr->d_name)))
+				{
+					folder_add_mail(folder,m);
+				}
+			}
+			closedir(dfd);
+		} else printf("%s\n",strerror(errno));
 
 		chdir(path);
 	}
@@ -547,7 +558,7 @@ static struct folder *folder_add(char *path)
 		/* create the directory if it doesn't exists */
 		if (sm_makedir(path))
 		{
-			if ((node->folder.path = strdup(path)))
+			if ((node->folder.path = mystrdup(path)))
 			{
 				FILE *fh;
 				char buf[256];
@@ -563,14 +574,14 @@ static struct folder *folder_add(char *path)
 				} else
 				{
 					char *folder_name = sm_file_part(path);
-					if ((node->folder.name = strdup(folder_name)))
+					if ((node->folder.name = mystrdup(folder_name)))
 					{
 						node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
 					}
-					if (!stricmp(folder_name,"Income") || !stricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
-					if (!stricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
-					if (!stricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
-					if (!stricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
+					if (!mystricmp(folder_name,"Income") || !mystricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
+					if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
+					if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
+					if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
 				}
 
 				/* for test reasons, later this will only be done if the folder gets activated
@@ -616,7 +627,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 	int rescan = 0;
 	if (newname && strcmp(f->name,newname))
 	{
-		if ((newname = strdup(newname)))
+		if ((newname = mystrdup(newname)))
 		{
 			free(f->name);
 			f->name = newname;
@@ -625,7 +636,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 
 	if (newpath && strcmp(f->path,newpath))
 	{
-		if ((newpath = strdup(newpath)))
+		if ((newpath = mystrdup(newpath)))
 		{
 			refresh = !!mystricmp(newpath,f->path);
 
@@ -1190,7 +1201,13 @@ int init_folders(void)
 	}
 */
 
+#ifdef AMIGA
+	#define FOLDER_PATH "PROGDIR:.folders"
 	char *folder_path = "PROGDIR:.folders";
+#else
+	#define FOLDER_PATH ".folders"
+	char *folder_path = ".folders";
+#endif
 	DIR *dfd;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
@@ -1205,6 +1222,7 @@ int init_folders(void)
 		while ((dptr = readdir(dfd)) != NULL)
 		{
 			char buf[256];
+			if (!strcmp(dptr->d_name,".") || !strcmp(dptr->d_name,"..")) continue;
 			strcpy(buf,folder_path);
 			sm_add_part(buf,dptr->d_name,sizeof(buf));
 			if (!stat(buf,st))
@@ -1220,16 +1238,16 @@ int init_folders(void)
 	}
 
 	if (!folder_incoming())
-		folder_add("PROGDIR:.folders/incoming");
+		folder_add(FOLDER_PATH "/incoming");
 
 	if (!folder_outgoing())
-		folder_add("PROGDIR:.folders/outgoing");
+		folder_add(FOLDER_PATH "/outgoing");
 
 	if (!folder_sent())
-		folder_add("PROGDIR:.folders/sent");
+		folder_add(FOLDER_PATH "/sent");
 
 	if (!folder_deleted())
-		folder_add("PROGDIR:.folders/deleted");
+		folder_add(FOLDER_PATH "/deleted");
 
 	if (!folder_incoming() || !folder_outgoing() || !folder_deleted() || !folder_sent())
 		return 0;
@@ -1252,3 +1270,9 @@ void del_folders(void)
 		f = folder_next(f);
 	}
 }
+
+
+
+
+
+

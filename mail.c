@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "addressbook.h"
 #include "codecs.h"
@@ -33,8 +34,9 @@
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h" /* for the callbacks() */
-#include "simplemail_rev.h"
+#include "SimpleMail_rev.h"
 #include "support.h"
+#include "support_indep.h"
 #include "textinterpreter.h"
 
 /* porototypes */
@@ -175,6 +177,7 @@ int mail_add_header(struct mail *mail, char *name, int name_len, char *contents,
 		if (contents) free(contents);
 		free(header);
 	}
+	return 0;
 }
 
 /**************************************************************************
@@ -494,7 +497,7 @@ char *mail_get_new_name(void)
 	{
 		FILE *fp;
 		
-		sprintf(buf,"%02ld%02ld%04ld%s.%03lx",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
+		sprintf(buf,"%02d%02d%04d%s.%03x",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
 
 		fp = fopen(buf, "r");
 		if(fp != NULL)
@@ -541,7 +544,7 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 			}
 		}
 
-		if (status_new < 0 | status_new >= 32)
+		if (status_new < 0 || status_new >= 32)
 		{
 			*suffix = 0;
 			return filename;
@@ -734,7 +737,7 @@ struct mail *mail_create_reply(struct mail *mail)
 				dest += 4;
 
 				/* Copy the subject into a new buffer and filter all []'s and Re's */
-				while (c = *src)
+				while ((c = *src))
 				{
 					if (c == '[')
 					{
@@ -911,17 +914,17 @@ int mail_process_headers(struct mail *mail)
 		day = atoi(date);
 		while (isdigit(*date)) date++;
 		while (isspace(*date)) date++;
-		if (!strnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
-		else if (!strnicmp(date,"feb",3)) month = 2;
-		else if (!strnicmp(date,"mar",3)) month = 3;
-		else if (!strnicmp(date,"apr",3)) month = 4;
-		else if (!strnicmp(date,"may",3)) month = 5;
-		else if (!strnicmp(date,"jun",3)) month = 6;
-		else if (!strnicmp(date,"jul",3)) month = 7;
-		else if (!strnicmp(date,"aug",3)) month = 8;
-		else if (!strnicmp(date,"sep",3)) month = 9;
-		else if (!strnicmp(date,"oct",3)) month = 10;
-		else if (!strnicmp(date,"nov",3)) month = 11;
+		if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
+		else if (!mystrnicmp(date,"feb",3)) month = 2;
+		else if (!mystrnicmp(date,"mar",3)) month = 3;
+		else if (!mystrnicmp(date,"apr",3)) month = 4;
+		else if (!mystrnicmp(date,"may",3)) month = 5;
+		else if (!mystrnicmp(date,"jun",3)) month = 6;
+		else if (!mystrnicmp(date,"jul",3)) month = 7;
+		else if (!mystrnicmp(date,"aug",3)) month = 8;
+		else if (!mystrnicmp(date,"sep",3)) month = 9;
+		else if (!mystrnicmp(date,"oct",3)) month = 10;
+		else if (!mystrnicmp(date,"nov",3)) month = 11;
 		else month = 12;
 		date += 3;
 		while (isspace(*date)) date++;
@@ -1152,7 +1155,7 @@ static char *mail_find_content_parameter_value(struct mail *mail, char *attribut
 
 	while (param)
 	{
-		if (!stricmp(attribute,param->attribute)) return param->value;
+		if (!mystricmp(attribute,param->attribute)) return param->value;
 		param = (struct content_parameter *)node_next(&param->node);
 	}
 
@@ -1164,7 +1167,7 @@ static char *mail_find_content_parameter_value(struct mail *mail, char *attribut
 **************************************************************************/
 static int mail_read_structure(struct mail *mail)
 {
-	if (!stricmp(mail->content_type,"multipart"))
+	if (!mystricmp(mail->content_type,"multipart"))
 	{
 		/* message is a multipart message */
 		char *boundary = mail_find_content_parameter_value(mail,"boundary");
@@ -1276,10 +1279,10 @@ void mail_decode(struct mail *mail)
 	/* If no text is available return */
 	if (!mail->text) return;
 
-	if (!stricmp(mail->content_transfer_encoding,"base64"))
+	if (!mystricmp(mail->content_transfer_encoding,"base64"))
 	{
 		mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
-	} else if (!stricmp(mail->content_transfer_encoding,"quoted-printable"))
+	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
 		mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0);
 	}
@@ -1343,7 +1346,7 @@ static struct header *mail_find_header(struct mail *mail, char *name)
 
 	while (header)
 	{
-		if (!stricmp(header->name, name)) return header;
+		if (!mystricmp(header->name, name)) return header;
 		header = (struct header*)node_next(&header->node);
 	}
 	return NULL;
@@ -1504,13 +1507,13 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			};
 
 			fprintf(fp,"%s", subject);
-			fprintf(fp,"X-Mailer: SimpleMail %ld.%ld (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
+			fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
 			fprintf(fp,"MIME-Version: 1.0\n");
 
 			time(&t);
 			d = localtime(&t);
 
-			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld %+03ld%02ld\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
+			fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
 		}
 
 		if (new_mail->reply_message_id)
@@ -1525,7 +1528,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		char *boundary = (char*)malloc(128);
 		if (boundary)
 		{
-			sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
+			sprintf(boundary, "--==bound%x%lx----",(int)boundary,ftell(fp));
 			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
 			fprintf(fp, "\n");
 			if (new_mail->to) fprintf(fp, mime_preample);
@@ -1664,3 +1667,15 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 
 	return rc;
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -27,6 +27,8 @@
 #include "lists.h"
 #endif
 
+struct pop3_server;
+
 struct config
 {
 	char *realname;
@@ -67,4 +69,5 @@ void insert_config_pop(struct pop3_server *pop);
 extern struct user user; /* the current user */
 
 #endif
+
 

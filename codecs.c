@@ -29,7 +29,7 @@
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
-#include "support.h"
+#include "support_indep.h"
 
 /* encoding table for the base64 coding */
 static const char encoding_table[] =
@@ -39,6 +39,8 @@ static const char encoding_table[] =
 	'0','1','2','3','4','5','6','7','8','9','+','/'
 };
 
+
+#if 0
 
 /**************************************************************************
  Gets the hexa digit if any (if not it returns 0). Otherwise
@@ -56,6 +58,8 @@ static int get_hexadigit(char c, int *pval)
 	*pval = ((*pval) & 0xfffffff0) | val;
 	return 1;
 }
+
+#endif
 
 /**************************************************************************
  Decoding a given buffer using the base64 algorithm
@@ -173,7 +177,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
             unsigned char *ep;
 
             /* Look for end of line */
-            if (ep = strchr(lp, '\n'))
+            if ((ep = strchr(lp, '\n')))
             {
                text = ep + 1;
                ep--;
@@ -201,7 +205,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 
                case '=':  /* Encoded character */
                   /* End of line reached? (-> soft line break!) */
-                  if (c = *lp)
+                  if ((c = *lp))
                   {
                      unsigned char d = *(lp + 1);
 
@@ -414,7 +418,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 
 					if (c > 127 || c == '_' || c == '?' || c == '=')
 					{
-						sprintf(&buf[buf_len],"=%02lX",c);
+						sprintf(&buf[buf_len],"=%02X",c);
 						buf_len += 3;
 					} else
 					{
@@ -498,9 +502,9 @@ char *encode_header_field(char *field_name, char *field_contents)
 		}
 		fputc('\n',fh);
 
-		if (header_len = ftell(fh))
+		if ((header_len = ftell(fh)))
 		{
-	    fseek(fh,0,SEEK_SET);
+			fseek(fh,0,SEEK_SET);
 			if ((header = (char*)malloc(header_len+1)))
 			{
 				fread(header,1,header_len,fh);
@@ -610,7 +614,7 @@ static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
 
 		if ((c < 33 || c == 61 || c > 126) && c != 10)
 		{
-			sprintf(digit_buf,"=%02lX",c);
+			sprintf(digit_buf,"=%02X",c);
 			next_str = digit_buf;
 			next_len = 3;
 		}
@@ -867,7 +871,7 @@ char *identify_file(char *fname)
 	char *ctype = "application/octet-stream";
 	FILE *fh;
 
-	if (fh = fopen(fname, "r"))
+	if ((fh = fopen(fname, "r")))
 	{
 		int len;
 		static char buffer[1024], *ext;
@@ -876,7 +880,7 @@ char *identify_file(char *fname)
 		buffer[len] = 0;
 		fclose(fh);
 
-		if (ext = strrchr(fname, '.')) ++ext;
+		if ((ext = strrchr(fname, '.'))) ++ext;
 		else ext = "--"; /* for rx */
 
 		if (!mystricmp(ext, "htm") || !mystricmp(ext, "html"))
@@ -924,4 +928,8 @@ char *identify_file(char *fname)
 	}
 	return ctype;
 }
+
+
+
+
 

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "addressbookwnd.h"
 #include "composewnd.h"
@@ -440,7 +441,7 @@ void callback_change_folder_attrs(void)
 	main_refresh_folder(f);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	load_config();
 	init_addressbook();
@@ -448,7 +449,7 @@ int main(void)
 	{
 		if (init_threads())
 		{
-			gui_main();
+			gui_main(argc,argv);
 			folder_delete_deleted();
 			cleanup_threads();
 		}
@@ -457,3 +458,4 @@ int main(void)
 	cleanup_addressbook();
 	return 0;
 }
+

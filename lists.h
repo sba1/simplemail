@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** lists.h
 */
 
 #ifndef SM__LISTS_H
@@ -36,6 +36,13 @@ struct list
 	struct node *last;
 };
 
+struct string_node
+{
+	struct node node; /* embedded node struct */
+	char *string;
+};
+	
+
 /* Prototypes */
 void list_init(struct list *list);
 void list_insert(struct list *list, struct node *newnode, struct node *prednode);
@@ -45,6 +52,10 @@ struct node *list_find(struct list *list, int num);
 int list_length(struct list *list);
 int node_index(struct node *node);
 void node_remove(struct node *node);
+
+/* String lists */
+struct string_node *string_list_insert_tail(struct list *list, char *string);
+void string_list_clear(struct list *list);
 
 #ifdef INLINEING
 #define list_first(x) ((x)->first)
@@ -61,3 +72,6 @@ struct list *node_list(struct node *node);
 #endif
 
 #endif
+
+
+

@@ -1,11 +1,14 @@
 #ifndef MD5_H
 #define MD5_H
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #ifdef AMIGA
  #define HIGHFIRST
 #else
- #include <machine/endian.h>
-  #if BYTE_ORDER == BIG_ENDIAN
+ #ifdef WORDS_BIGENDIAN /* by configure */
   #define HIGHFIRST
  #endif
 #endif

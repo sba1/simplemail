@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** lists.c
 */
 
 /********************************************************************** 
@@ -30,6 +30,7 @@
 #include <stdlib.h>
 
 #include "lists.h"
+#include "support_indep.h"
 
 /******************************************************************
  Initalizes a list
@@ -221,6 +222,37 @@ void node_remove(struct node *node)
 
   node->next->prev = node->prev;
   node->prev->next = node->next;
+}
+
+
+/******************************************************************
+ Inserts a string into the end of a string list. The string will
+ be duplicated. Returns 
+*******************************************************************/
+struct string_node *string_list_insert_tail(struct list *list, char *string)
+{
+	struct string_node *node = (struct string_node*)malloc(sizeof(struct string_node));
+	if (node)
+	{
+		if ((node->string = mystrdup(string)))
+		{
+			list_insert_tail(list,&node->node);
+		}
+	}
+	return node;
+}
+
+/******************************************************************
+ Clears the complete list by freeing all memory (including strings).
+*******************************************************************/
+void string_list_clear(struct list *list)
+{
+	struct string_node *node;
+	while ((node = (struct string_node*)list_remove_tail(list)))
+	{
+		if (node->string) free(node->string);
+		free(node);
+	}
 }
 
 

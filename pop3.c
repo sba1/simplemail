@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include <errno.h>
 #include <netdb.h>
@@ -35,6 +36,7 @@
 #include "tcp.h"
 #include "simplemail.h"
 #include "support.h"
+#include "support_indep.h"
 
 #include "dlwnd.h"
 #include "mainwnd.h"
@@ -530,3 +532,6 @@ void pop_free(struct pop3_server *pop)
 	if (pop->passwd) free(pop->passwd);
 	free(pop);
 }
+
+
+

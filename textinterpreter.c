@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** textinterpreter.c
 */
 
 #include <string.h>
@@ -58,6 +58,7 @@ struct interpreted_contents *interpret_contents_create_plain(char *buf, int len)
 			
 		}
 	}*/
+	return 0;
 }
 
 void interpret_contents_free(struct interpreted_contents *cont)
@@ -70,3 +71,4 @@ void interpret_contents_free(struct interpreted_contents *cont)
 	free(cont->parts_array);
 	free(cont);*/
 }
+

@@ -32,6 +32,7 @@
 #include "simplemail.h"
 #include "smtp.h"
 #include "support.h"
+#include "support_indep.h"
 #include "tcp.h"
 #include "upwnd.h"
 
@@ -167,5 +168,10 @@ int mails_upload(void)
 	}
 
 	free_outmail_array(out_array);
+	return 1;
 }
+
+
+
+
 

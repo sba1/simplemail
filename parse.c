@@ -26,6 +26,7 @@
 
 #include "codecs.h"
 #include "parse.h"
+#include "support_indep.h"
 
 static char *parse_encoded_word(char *encoded_word, char **pbuf);
 
@@ -161,7 +162,7 @@ static char *skip_spaces(const char *buf)
 		else if (!isspace(c) && !brackets) break;
 		buf++;
 	}
-	return buf;
+	return (char*)buf;
 }
 
 /**************************************************************************
@@ -768,13 +769,13 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 		return NULL;
 	}
 
-	if (!stricmp(encoding,"b"))
+	if (!mystricmp(encoding,"b"))
 	{
 		unsigned int len;
 		*pbuf = decode_base64(encoding_start, ret - encoding_start, &len);
 	} else
 	{
-		if (!stricmp(encoding,"q"))
+		if (!mystricmp(encoding,"q"))
 		{
 			unsigned int len;
 			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len,1);
@@ -793,3 +794,6 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 
 	return ret + 2;
 }
+
+
+

@@ -28,6 +28,7 @@
 #include "configuration.h"
 #include "pop3.h"
 #include "support.h"
+#include "support_indep.h"
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
 
@@ -183,25 +184,25 @@ void save_config(void)
 			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
 
 			/* Write out receive stuff */
-			fprintf(fh,"Receive.Preselection=%ld\n",user.config.receive_preselection);
-			fprintf(fh,"Receive.Size=%ld\n",user.config.receive_size);
+			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);
+			fprintf(fh,"Receive.Size=%d\n",user.config.receive_size);
 
 			/* Write the pop3 servers */
 			i = 0;
 			pop = (struct pop3_server*)list_first(&user.config.receive_list);
 			while (pop)
 			{
-				fprintf(fh,"POP%ld.Login=%s\n",i,MAKESTR(pop->login));
-				fprintf(fh,"POP%ld.Server=%s\n",i,MAKESTR(pop->name));
-				fprintf(fh,"POP%ld.Port=%ld\n",i,pop->port);
-				fprintf(fh,"POP%ld.Password=%s\n",i,MAKESTR(pop->passwd));
-				fprintf(fh,"POP%ld.Delete=%s\n",i,pop->del?"Y":"N");
+				fprintf(fh,"POP%d.Login=%s\n",i,MAKESTR(pop->login));
+				fprintf(fh,"POP%d.Server=%s\n",i,MAKESTR(pop->name));
+				fprintf(fh,"POP%d.Port=%d\n",i,pop->port);
+				fprintf(fh,"POP%d.Password=%s\n",i,MAKESTR(pop->passwd));
+				fprintf(fh,"POP%d.Delete=%s\n",i,pop->del?"Y":"N");
 				pop = (struct pop3_server*)node_next(&pop->node);
 				i++;
 			}
 
 			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
-			fprintf(fh,"SMTP00.Port=%ld\n",user.config.smtp_port);
+			fprintf(fh,"SMTP00.Port=%d\n",user.config.smtp_port);
 			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
 			fprintf(fh,"SMTP00.IPAsDomain=%s\n",user.config.smtp_ip_as_domain?"Y":"N");
 			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
@@ -230,3 +231,7 @@ void insert_config_pop(struct pop3_server *pop)
 	if (new_pop)
 		list_insert_tail(&user.config.receive_list,&new_pop->node);
 }
+
+
+
+

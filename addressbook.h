@@ -27,6 +27,8 @@
 #include "lists.h"
 #endif
 
+struct mail;
+
 #define ADDRESSBOOK_ENTRY_GROUP 0
 #define ADDRESSBOOK_ENTRY_PERSON 1
 #define ADDRESSBOOK_ENTRY_LIST 2
@@ -104,3 +106,4 @@ struct addressbook_entry *addressbook_first(struct addressbook_entry *group);
 struct addressbook_entry *addressbook_next(struct addressbook_entry *entry);
 
 #endif
+

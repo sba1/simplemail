@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** readlistclass.c
 */
 
 #include <dos.h>
@@ -183,6 +183,63 @@ STATIC ULONG ReadList_InsertSingle(struct IClass *cl, Object *obj, struct MUIP_N
 	} else return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+STATIC ULONG ReadList_InsertSingleWrap(struct IClass *cl, Object *obj, struct MUIP_NList_InsertSingleWrap *msg)
+{
+	struct ReadList_Data *data = (struct ReadList_Data*)INST_DATA(cl,obj);
+
+	char *text = (char*)msg->entry;
+	char *buf;
+
+	char *text_end = strchr(text,'\n');
+	int len;
+
+	if (text_end) len = text_end - text;
+	else len = strlen(text);
+
+	if (!len) return DoSuperMethodA(cl,obj,(Msg)msg);
+
+	if ((buf = malloc(len+16)))
+	{
+		ULONG retval;
+		char *src = text;
+		int i = 0,mode = 0;
+
+		while (i<len)
+		{
+			int c = *src++;
+
+			if (c == '>')
+			{
+				if (mode == 2) mode = 3;
+				else mode = 2;
+			} else
+			{
+				if ((mode == 2 || mode == 3) && c != ' ') break;
+				if (c==' ' && mode == 0) break;
+			}
+			i++;
+		}
+
+		if (mode == 2 || mode == 3)
+		{
+			int buf_len;
+			sprintf(buf,"\033mode[%ld]",mode-2);
+			buf_len = strlen(buf);
+			strncpy(buf+buf_len,text,len);
+			buf[len+buf_len]=0;
+		} else
+		{
+			strncpy(buf,text,len);
+			buf[len]=0;
+		}
+
+		retval = DoSuperMethod(cl,obj, MUIM_NList_InsertSingleWrap, buf, msg->pos,msg->wrapcol,msg->align);
+
+		free(buf);
+		return retval;
+	} else return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
 STATIC ASM ULONG ReadList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -192,6 +249,7 @@ STATIC ASM ULONG ReadList_Dispatcher(register __a0 struct IClass *cl, register _
 		case	MUIM_Setup: return ReadList_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return ReadList_Cleanup(cl,obj,msg);
 		case	MUIM_NList_InsertSingle: return ReadList_InsertSingle(cl,obj,(struct MUIP_NList_InsertSingle*)msg);
+		case	MUIM_NList_InsertSingleWrap: return ReadList_InsertSingleWrap(cl,obj,(struct MUIP_NList_InsertSingleWrap*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

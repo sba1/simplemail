@@ -271,9 +271,12 @@ void tcp_disconnect(struct connection *conn)
 
 /******************************************************************
  Read a given amount of bytes from the connection.
+ NOTE: This function actually can read less than nbytes
 *******************************************************************/
 long tcp_read(struct connection *conn, void *buf, long nbytes)
 {
+	int didget;
+
 	tcp_flush(conn); /* flush the write buffer */
 	if (conn->read_pos < conn->read_size)
 	{
@@ -284,9 +287,17 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 		return len;
 	}
 #ifndef NO_SSL
-	if (conn->ssl) return SSL_read(conn->ssl,buf,nbytes);
+	if (conn->ssl) didget = SSL_read(conn->ssl,buf,nbytes);
+	else didget = recv(conn->socket,buf,nbytes,0);
+#else
+	didget = recv(conn->socket,buf,nbytes,0);
 #endif
-	return recv(conn->socket,buf,nbytes,0);
+	if (didget < 0)
+	{
+		if (tcp_errno() == EINTR) error_code = TCP_INTERRUPTED;
+		else error_code = TCP_ERRNO;
+	}
+	return didget;
 }
 
 /******************************************************************
@@ -310,6 +321,9 @@ static int tcp_read_char(struct connection *conn)
 
 		if (didget <= 0)
 		{
+			if (tcp_errno() == EINTR) error_code = TCP_INTERRUPTED;
+			else error_code = TCP_ERRNO;
+
 			conn->read_size = 0;
 			return -1;
 		}

@@ -84,6 +84,7 @@ char *tcp_readln(struct connection *conn);
 #define TCP_REFUSED						-11
 #define TCP_UNREACHABLE				-12
 #define TCP_FAILED_CONNECT			-13
+#define TCP_INTERRUPTED				-14 /* by tcp_read(), tcp_readln() */
 
 #define SMTP_NO_SOCKET        -1
 #define SMTP_STATUS_REPLY     211

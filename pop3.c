@@ -63,11 +63,13 @@ static char *pop3_receive_answer(struct connection *conn)
 	char *answer;
 	if (!(answer = tcp_readln(conn)))
 	{
-		tell_from_subtask(N_("Error receiving data from host!"));
+		/* Don't put any message when only interrupted */
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			tell_from_subtask(N_("Error receiving data from host!"));
 		return NULL;
 	}
 	if (!strncmp(answer,"+OK",3)) return answer+3;
-	tell_from_subtask(answer);
+	if (!strncmp(answer,"-ERR",4)) tell_from_subtask(answer);
 	return NULL;
 }
 
@@ -105,7 +107,8 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn))
 	{
-		tell_from_subtask(N_("Error while identifing the user"));
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			tell_from_subtask(N_("Error while identifing the user"));
 		return 0;
 	}
 
@@ -114,12 +117,12 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn))
 	{
-		tell_from_subtask(N_("Error while identifing the user"));
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			tell_from_subtask(N_("Error while identifing the user"));
 		return 0;
 	}
 
 	thread_call_parent_function_async(dl_set_status,1,N_("Login successful!"));
-	
 	return 1;
 }
 
@@ -347,6 +350,11 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 					}
 				}
 			}
+			if (!answer)
+			{
+				if (tcp_error_code() == TCP_INTERRUPTED)
+					return 0;
+			}
 			return 1;
 		}
 	}
@@ -373,7 +381,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
 	if (!(answer = pop3_receive_answer(conn)))
 	{
-		tell_from_subtask(N_("Could not get server statistics"));
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			tell_from_subtask(N_("Could not get server statistics"));
 		return 0;
 	}
 
@@ -410,10 +419,19 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	thread_call_parent_function_async(dl_set_status,1,N_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
-	if (tcp_write(conn,"LIST\r\n",6) != 6) return mail_array;
+	if (tcp_write(conn,"LIST\r\n",6) != 6)
+	{
+		return mail_array;
+	}
 
   /* Was the command succesful? */
-	if (!(answer = pop3_receive_answer(conn))) return mail_array;
+	if (!(answer = pop3_receive_answer(conn)))
+	{
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			return mail_array;
+		free(mail_array);
+		return NULL;
+	}
 
 	/* Freeze the list which displays the e-Mails */
 	thread_call_parent_function_async(dl_freeze_list,0);
@@ -442,6 +460,12 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
 	}
 
+	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
+	{
+		free(mail_array);
+		return NULL;
+	}
+
 	/* Thaw the list which displays the e-Mails */
 	thread_call_parent_function_async(dl_thaw_list,0);
 
@@ -467,7 +491,14 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
 				if (!(answer = pop3_receive_answer(conn)))
 				{
-					/* -ERR has been returned, what means that TOP is not supported */
+					if (tcp_error_code() == TCP_INTERRUPTED)
+					{
+						mail_free(m);
+						free(mail_array);
+						return NULL;
+					}
+
+					/* -ERR has been returned and nobody breaked the connection, what means that TOP is not supported */
 					thread_call_parent_function_async(dl_set_status,1,N_("Couldn't receive more statistics"));
 					break;
 				}
@@ -484,11 +515,18 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 				mail_scan_buffer_end(&ms);
 
+				if (!answer && tcp_error_code() == TCP_INTERRUPTED)
+				{
+					mail_free(m);
+					free(mail_array);
+					return NULL;
+				}
+
 				/* Tell the gui about the mail info (not asynchron!)*/
 				thread_call_parent_function_sync(dl_insert_mail_info, 4,
 					i, mail_find_header_contents(m,"from"), mail_find_header_contents(m,"subject"),mail_find_header_contents(m,"date"));
 
-				/* Check if we should receive more statitics (also not asynchron)*/
+				/* Check if we should receive more statitics (also not asynchron) */
 				if (!(int)thread_call_parent_function_sync(dl_more_statistics,0)) break;
 
 				mail_free(m);
@@ -559,8 +597,10 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 	if (!(answer = pop3_receive_answer(conn)))
 	{
-		tell_from_subtask(N_("Couldn't receive the mail"));
+		if (tcp_error_code() != TCP_INTERRUPTED)
+			tell_from_subtask(N_("Couldn't receive the mail"));
 		fclose(fp);
+		remove(fn);
 		free(fn);
 		return 0;
 	}
@@ -573,7 +613,8 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	{
 		if (!(answer = tcp_readln(conn)))
 		{
-			tell_from_subtask(N_("Error while receiving the mail"));
+			if (tcp_error_code() != TCP_INTERRUPTED)
+				tell_from_subtask(N_("Error while receiving the mail"));
 			delete_mail = 1;
 			break;
 		}
@@ -633,9 +674,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	{
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
 		int nummails = 0; /* number of downloaded e-mails */
-		int aborted = 0;
 
-		for( ;server && !aborted; server = (struct pop3_server*)node_next(&server->node))
+		for( ;server; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
 
@@ -704,8 +744,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 
 										if (!pop3_get_mail(conn,server, i, mail_array[i].size))
 										{
-											if (!thread_aborted()) tell_from_subtask(N_("Couldn't download the mail!\n"));
-											else aborted = 1;
+											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
 											break;
 										}
 
@@ -722,12 +761,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										thread_call_parent_function_async(dl_set_status,1,N_("Marking mail as deleted..."));
 										if (!pop3_del_mail(conn,server, i))
 										{
-											if (!thread_aborted()) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
-											else
-											{
-												aborted = 1;
-												break;
-											}
+											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
+											else break;
 										}
 									}
 								}
@@ -740,10 +775,10 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 				}
 				tcp_disconnect(conn);
 
-				if (thread_aborted()) aborted = 1;
+				if (thread_aborted()) break;
 			} else
 			{
-				if (thread_aborted()) aborted = 1;
+				if (thread_aborted()) break;
 				else tell_from_subtask(tcp_strerror(tcp_error_code()));
 			}
 

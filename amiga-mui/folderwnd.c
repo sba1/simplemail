@@ -50,6 +50,7 @@
 #include "compiler.h"
 #include "folderwnd.h"
 #include "muistuff.h"
+#include "utf8stringclass.h"
 
 static Object *folder_wnd;
 static Object *folder_properties_group;
@@ -214,7 +215,7 @@ int folder_get_changed_type(void)
 
 char *folder_get_changed_defto(void)
 {
-	return (char *)xget(defto_string,MUIA_String_Contents);
+	return (char *)xget(defto_string,MUIA_UTF8String_Contents);
 }
 
 char *folder_get_changed_deffrom(void)
@@ -226,7 +227,7 @@ char *folder_get_changed_deffrom(void)
 
 char *folder_get_changed_defreplyto(void)
 {
-	return (char*)xget(replyto_string,MUIA_String_Contents);
+	return (char*)xget(replyto_string,MUIA_UTF8String_Contents);
 }
 
 int folder_get_changed_primary_sort(void)
@@ -499,9 +500,9 @@ void folder_edit(struct folder *f)
 	set(name_string, MUIA_String_Contents, f->name);
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
-	set(defto_string, MUIA_String_Contents, f->def_to);
+	set(defto_string, MUIA_UTF8String_Contents, f->def_to);
 	set(from_accountpop, MUIA_AccountPop_Account, account_find_by_from(f->def_from));
-	set(replyto_string, MUIA_String_Contents, f->def_replyto);
+	set(replyto_string, MUIA_UTF8String_Contents, f->def_replyto);
 
 	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);

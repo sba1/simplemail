@@ -148,6 +148,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 								ac = data->selected_account = account_duplicate((struct account*)tidata);
 								if (ac)
 								{
+									char iso_buf[256];
 									char buf[256];
 									char smtp_buf[128];
 									if (ac->name)
@@ -163,7 +164,9 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 									} else mystrlcpy(smtp_buf,ac->smtp->name,sizeof(smtp_buf));
 
 									sm_snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf)," <%s> (%s)",ac->email, smtp_buf);
-									set(data->string,MUIA_Text_Contents,buf);
+
+									utf8tostr(buf, iso_buf, sizeof(iso_buf), user.config.default_codeset);
+									set(data->string,MUIA_Text_Contents,iso_buf);
 								}
 							}
 						}

@@ -53,6 +53,8 @@ char *sm_get_time_str(unsigned int seconds);
 void tell_str(char *str);
 void tell_from_subtask(char *str);
 
+int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr);
+
 #endif
 
 

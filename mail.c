@@ -1909,6 +1909,13 @@ int mail_process_headers(struct mail *mail)
 		else if (!mystricmp(mail->content_subtype,"signed")) mail->flags |= MAIL_FLAGS_SIGNED;
 	}
 
+	if (!mystricmp(mail->content_type,"application") &&
+		 (!mystricmp(mail->content_subtype, "x-pkcs7-mime") || !mystricmp(mail->content_subtype, "pkcs7-mime")))
+	{
+		mail->flags |= MAIL_FLAGS_CRYPT;
+	}
+
+
 	/* if no filename is given set one */
 	if (!mail->content_name)
 	{
@@ -2083,6 +2090,55 @@ static void mail_decrypt(struct mail *mail)
 }
 
 /**************************************************************************
+ Resolves smime stuff
+**************************************************************************/
+static void mail_resolve_smime(struct mail *mail)
+{
+	if (!mystricmp(mail->content_type,"application") &&
+		 (!mystricmp(mail->content_subtype, "x-pkcs7-mime") || !mystricmp(mail->content_subtype, "pkcs7-mime")))
+	{
+		void *data;
+		int data_len;
+
+		char *decoded_data;
+		int decoded_data_len;
+
+		struct mail *new_mail;
+		struct mail_scan ms;
+
+		if (!(mail->multipart_array = (struct mail**)malloc(sizeof(struct mail*)*1))) return;
+		if (!(new_mail = mail->multipart_array[0] = mail_create())) return;
+		mail->multipart_allocated = mail->num_multiparts = 1;
+
+		mail_decode(mail);
+		mail_decoded_data(mail,&data,&data_len);
+
+		if (pkcs7_decode((char*)data, data_len, &decoded_data, &decoded_data_len))
+		{
+			new_mail->size = decoded_data_len;
+			new_mail->text = decoded_data;
+			new_mail->extra_text = decoded_data;
+
+			mail_scan_buffer_start(&ms,new_mail,0);
+			mail_scan_buffer(&ms, (char*)decoded_data,decoded_data_len);
+			mail_scan_buffer_end(&ms);
+			mail_process_headers(new_mail);
+
+			mail_read_structure(new_mail);
+
+			/* so new_mail->text will not be freed */
+			new_mail->parent_mail = mail;
+		} else
+		{
+			free(mail->multipart_array);
+			mail->multipart_array = NULL;
+			mail->multipart_allocated = mail->num_multiparts = 0;
+			mail_free(new_mail);
+		}
+	}
+}
+
+/**************************************************************************
  Reads the structrutre of a mail (uses ugly recursion)
 **************************************************************************/
 static int mail_read_structure(struct mail *mail)
@@ -2201,7 +2257,7 @@ static int mail_read_structure(struct mail *mail)
 
 		/* so new_mail->text will not be freed */
 		new_mail->parent_mail = mail;
-	}
+	} else mail_resolve_smime(mail);
 	return 1;
 }
 

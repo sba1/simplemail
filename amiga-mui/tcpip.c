@@ -112,6 +112,9 @@ int open_ssl_lib(void)
 				{
 					/* Everything is ok */
 					ssl_in_use++;
+
+					
+
 					return 1;
 				}
 				CleanupAmiSSL(TAG_DONE);

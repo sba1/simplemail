@@ -61,6 +61,7 @@ int statuswnd_open(int active)
 
 		status_wnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (status_wnd), _("SimpleMail - Status"));
+		gtk_window_set_position(GTK_WINDOW(status_wnd),GTK_WIN_POS_CENTER);
 
 		vbox2 = gtk_vbox_new (FALSE, 0);
 		gtk_container_add (GTK_CONTAINER (status_wnd), vbox2);

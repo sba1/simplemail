@@ -28,6 +28,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <time.h>
+#include <glib.h>
 
 #include "errorwnd.h"
 #include "subthreads.h"
@@ -105,8 +106,8 @@ unsigned int sm_get_seconds(int day, int month, int year)
 	tm.tm_min = 0;
 	tm.tm_hour = 0;
 	tm.tm_mday = day;
-	tm.tm_mon = month;
-	tm.tm_year = year;
+	tm.tm_mon = month - 1;
+	tm.tm_year = year - 1900;
 	tm.tm_isdst = -1;
 
 	t = mktime(&tm);
@@ -116,9 +117,8 @@ unsigned int sm_get_seconds(int day, int month, int year)
 	tm.tm_hour = 0;
 	tm.tm_mday = 1;
 	tm.tm_mon = 0;
-	tm.tm_year = 1978;
+	tm.tm_year = 78;
 	tm.tm_isdst = 0;
-	
 	t -= mktime(&tm);
 	return (unsigned int)t;
 }
@@ -166,6 +166,7 @@ unsigned int sm_get_current_micros(void)
 char *sm_get_date_long_str(unsigned int seconds)
 {
 	static char buf[128];
+
 	return buf;
 }
 
@@ -185,6 +186,24 @@ char *sm_get_date_long_str_utf8(unsigned int seconds)
 char *sm_get_date_str(unsigned int seconds)
 {
 	static char buf[128];
+	GDate *date;
+	struct tm tm;
+	time_t t = seconds;
+
+	tm.tm_sec = 0;
+	tm.tm_min = 0;
+	tm.tm_hour = 0;
+	tm.tm_mday = 1;
+	tm.tm_mon = 0;
+	tm.tm_year = 78;
+	tm.tm_isdst = 0;
+	t += mktime(&tm);
+
+	date = g_date_new();
+	g_date_set_time(date,t);
+	g_date_strftime(buf,sizeof(buf),"%x",date);
+	g_date_free(date);
+
 	return buf;
 }
 

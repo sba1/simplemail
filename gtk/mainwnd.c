@@ -82,6 +82,13 @@ static void mail_row_activated(void)//GtkTreeView *treeview, GtkTypeTreePath *ar
 	callback_read_mail();
 }
 
+static void main_date_cell_data_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell, GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
+{
+	unsigned int seconds;
+	gtk_tree_model_get(model,iter,MAIL_DATE_COLUMN,&seconds,-1);
+	g_object_set(cell,"text",sm_get_date_str(seconds), NULL);
+}
+
 /******************************************************************
  Initialize the main window
 *******************************************************************/
@@ -102,7 +109,7 @@ int main_window_init(void)
         gtk_container_add(GTK_CONTAINER(main_wnd), vbox);
 
         /* Create the toolbar */
-        toolbar = gtk_toolbar_new();//GTK_ORIENTATION_HORIZONTAL,GTK_TOOLBAR_BOTH);
+        toolbar = gtk_toolbar_new();
         gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
 	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Read", "Reads the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailRead.xpm"), callback_read_mail /* CALLBACK */, NULL /* UDATA */);
@@ -162,7 +169,7 @@ int main_window_init(void)
 
 		mail_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(mail_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-		mail_treestore = gtk_tree_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+		mail_treestore = gtk_tree_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING, G_TYPE_STRING);
 
 		mail_treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mail_treestore));
 
@@ -189,6 +196,7 @@ int main_window_init(void)
 						"text", MAIL_DATE_COLUMN, NULL);
 		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
 		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+		gtk_tree_view_column_set_cell_data_func(column,renderer,main_date_cell_data_func,NULL,NULL);
 
 		renderer = gtk_cell_renderer_text_new();
 		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Filename", renderer,
@@ -363,6 +371,7 @@ void main_insert_mail(struct mail *mail)
 			MAIL_SUBJECT_COLUMN, mail->subject,
 			MAIL_FROM_COLUMN, mail->from_phrase?mail->from_phrase:mail->from_addr,
 			MAIL_FILENAME_COLUMN, mail->filename,
+			MAIL_DATE_COLUMN, mail->seconds,
 			MAIL_PTR_COLUMN, buf,
 			-1);
 }

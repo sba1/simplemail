@@ -6,14 +6,19 @@ Version 0.14 (fourtheenth alpha) - released on ?
     · GETURL
     · FOLDERINFO
     · MAILINFO
+    · MAILREAD
+    · NEWMAILFILE
     · REQUEST
+    · REQUESTFOLDER
     · REQUESTSTRING
+    · SCREENTOBACK
+    · SCREENTOFRONT
     · SETFOLDER
     · SETMAILFILE
   - Signatures can be stripped before quoting now.
   - The number of mails of folders is rendered boldly when containing
     new mails.
-  - Wordwrap improved.
+  - Quotation wordwrap improved.
   - Option to not cite empty lines.
   - Own address is filtered out when repling a multiple recipient email.
   - Modified STARTTLS according to suggestions by Jörg Strohmayer. 

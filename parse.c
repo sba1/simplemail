@@ -534,19 +534,23 @@ static char *parse_phrase(char *phrase, utf8 **pbuf)
  mailbox = addr-spec | phrase route-addr
  route_addr = "<" [route] addr-spec ">" 
 **************************************************************************/
-char *parse_mailbox(char *mailbox, struct mailbox *mb)
+char *parse_mailbox(char *mailbox, struct mailbox *mbox)
 {
 	char *ret;
-
-	memset(mb,0,sizeof(struct mailbox));
+	struct mailbox mb;
 
 	if (!mailbox) return NULL;
 
-	if ((ret = parse_addr_spec(mailbox,&mb->addr_spec)))
+	memset(&mb,0,sizeof(struct mailbox));
+
+	if ((ret = parse_addr_spec(mailbox, &mb.addr_spec)))
 	{
 		/* the phrase can now be placed in the brackets */
-		char *buf = ret;
+		unsigned char *buf = ret;
+
+		/* don't use skip_spaces() because it skips comments */
 		while (isspace(*buf)) buf++;
+
 		if (*buf == '(')
 		{
 			char *comment_start = ++buf;
@@ -560,7 +564,7 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 					{
 						strncpy(temp_str,comment_start,buf - comment_start - 1);
 						temp_str[buf - comment_start - 1] = 0;
-						parse_phrase(temp_str,&mb->phrase);
+						parse_phrase(temp_str,&mb.phrase);
 						free(temp_str);
 					}
 					ret = buf;
@@ -568,32 +572,25 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 				}
 			}
 		}
-		return ret;
+	} else
+	{
+		ret = parse_phrase(mailbox,&mb.phrase);
+		if (!ret) ret = mailbox; /* for empty phrases */
+
+		ret = skip_spaces(ret);
+
+		if (*(ret++) != '<') goto bailout;
+		if (!(ret = parse_addr_spec(ret, &mb.addr_spec))) goto bailout;
+		if (*(ret++) != '>') goto bailout;
 	}
 
-	ret = parse_phrase(mailbox,&mb->phrase);
-	if (!ret) ret = mailbox; /* for empty phrases */
-
-	ret = skip_spaces(ret);
-
-	if (*(ret++) != '<')
-	{
-		if (mb->phrase) free(mb->phrase);
-		return NULL;
-	}
-	ret = parse_addr_spec(ret, &mb->addr_spec);
-	if (!ret)
-	{
-		if (mb->phrase) free(mb->phrase);
-		return NULL;
-	}
-	if (*(ret++) != '>')
-	{
-		if (mb->phrase) free(mb->phrase);
-		free(mb->addr_spec);
-		return NULL;
-	}
+	*mbox = mb;
 	return ret;
+
+bailout:
+	free(mb.phrase);
+	free(mb.addr_spec);
+	return NULL;
 }
 
 /**************************************************************************

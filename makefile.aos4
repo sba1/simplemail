@@ -2,27 +2,49 @@
 # Makefile for SimpleMail
 #
 
-# Uncomment the next line if you are cross compiling
+# If Kickstart is defined, we don't run on AmigaOS
+ifndef Kickstart
+
 CROSS_COMPILE = ppc-amigaos-
+RM     = rm -R
+MKDIR  = mkdir -p
+DATE   = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+
+else
+
+RM = delete all
+MKDIR = makedir
+DATE =
+endif
+
+# Uncomment the next line if you are cross compiling
 
 CC     = $(CROSS_COMPILE)gcc
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as
 LD     = $(CROSS_COMPILE)ld
 RANLIB = $(CROSS_COMPILE)ranlib
-# RM     = delete
-RM     = rm -R
-# MKDIR = makedir
-MKDIR  = mkdir -p
+STRIP  = $(CROSS_COMPILE)strip
 
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = #-ggdb # -g -DDEBUG
+
+
+ifndef Kickstart
 INC = -I"$(AMISSL_INCLUDE)" -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -DHAVE_OPENURL -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
+else
+INC = -I$(AMISSL_INCLUDE) -I$(SDK_INCLUDE) -I$(NET_INCLUDE) -I$(EXPAT_INCLUDE) -I. -I./indep-include -I./amiga-mui
+endif
+
+CFLAGS = $(DATE) -DHAVE_OPENURL -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
-LINK =  -nostartfiles -L"$(EXPAT_LIB)"
+ifndef Kickstart
+LINK = -nostartfiles -L"$(EXPAT_LIB)"
+else
+LINK = -nostartfiles -L$(EXPAT_LIB)
+endif
 
 # Name of the "thing" to build
 TARGET = SimpleMail
@@ -141,7 +163,7 @@ dirs:
 # Rules for building
 $(TARGET): $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
-	ppc-amigaos-strip --strip-all -o $@ $@.debug
+	$(STRIP) --strip-all -o $@ $@.debug
 	cp SimpleMail.debug "/cygdrive/c/Dokumente und Einstellungen/sba/Eigene Dateien/AmigaOne/SimpleMail/SimpleMail"
 
 ppc-amigaos-objs/%.o: %.S
@@ -157,4 +179,3 @@ clean:
 .PHONY: revision
 revision:
 	bumprev $(VERSION) $(TARGET)
-

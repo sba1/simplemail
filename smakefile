@@ -75,8 +75,11 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   delete t:objectlist
   echo "*nimages:" >>$@ noline
   list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
+  echo "  sm/Images/images.list" >>$@
   echo "*n" >>$@
   list amiga-mui/binaries/\#?img lformat="sm/Images/%m: %p%n*n  copy %p%n sm/Images/%m*n" >>$@
+  echo "sm/Images/images.list: amiga-mui/binaries/images.list*n  copy amiga-mui/binaries/images.list sm/Images" >>$@
+
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover link $(MAKEGENERATOR)

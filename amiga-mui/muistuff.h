@@ -92,6 +92,8 @@ struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; 
 
 /* end undocumented */
 
+#define MUIV_NList_UseImage_All         (-1)
+
 #define MAKECOLOR32(x) (((x)<<24)|((x)<<16)|((x)<<8)|(x))
 
 #ifndef BOOPSI_DISPATHCER

@@ -14,6 +14,7 @@ amiga-mui/mailtreelistclass.c
 amiga-mui/mainwnd.c
 amiga-mui/pgplistclass.c
 amiga-mui/searchwnd.c
+amiga-mui/shutdownwnd.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
 Charsets/cp1252.txt

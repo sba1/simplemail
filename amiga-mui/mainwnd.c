@@ -448,7 +448,8 @@ void main_refresh_folders(void)
 
 	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
 
-	DoMethod(folder_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
+	DoMethod(folder_tree, MUIM_NListtree_Clear, NULL, 0);
+/*	DoMethod(folder_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
 
 	while (f)
 	{
@@ -559,7 +560,8 @@ static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, 
 *******************************************************************/
 void main_clear_folder_mails(void)
 {
-	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
+	DoMethod(mail_tree, MUIM_NListtree_Clear, NULL, 0);
+/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
 }
 
 /******************************************************************
@@ -574,8 +576,8 @@ void main_set_folder_mails(struct folder *folder)
 
 	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
-	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
-/*	DoMethod(mail_tree, MUIM_NList_Clear);*/
+	main_clear_folder_mails();
+/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
 
 	set(mail_tree, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 

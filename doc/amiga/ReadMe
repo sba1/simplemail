@@ -46,7 +46,7 @@ Version 0.12 (twelfth alpha) - released on 2001/11/10
   - Messages can be also encrypted with PGP 2.6.x.
   - Switching away of columns in the message list is possible now.
     (save it via "Save Prefs")
-  - Completation of email-addresses improved.
+  - Completion of email-addresses improved.
   - A small menu added to the readwindow that makes it possible to
     see the raw mail.
   - Mousewheelsupport of the readwindow is more tolerant now.

@@ -14,7 +14,7 @@
         <item> Messages can be also encrypted with PGP 2.6.x.</item>
         <item> Switching away of columns in the message list is possible now.
           (save it via "Save Prefs") </item>
-        <item> Completation of email-addresses improved. </item>
+        <item> Completion of email-addresses improved. </item>
         <item> A small menu added to the readwindow that makes it possible to
           see the raw mail. </item>
         <item> Mousewheelsupport of the readwindow is more tolerant now.</item>

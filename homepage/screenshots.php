@@ -1,126 +1,84 @@
 <?php
   $file='xml/screenshots.xml';
 
-  function startElement($parser, $name, $attrs)
-  {
-    switch($name)
-    {
-      case 'SCREENSHOTS':
-        include('screenshotsheader.html');
-        break;
+  class Screenshot {
+    var $filename;     // The filename of the screenshot
+    var $description;  // The screenshot's describtion
+    var $version;      // The version number of SimpleMail from where the screenshot is
 
-      case 'SHOT':
-        echo('<tr bgcolor="#CACACA">');
-        break;
-
-      case 'DESCRIPTION':
-        echo('<td>');
-        break;
-
-      case 'VERSION':
-        echo('<td>');
-        break;
-
-      case 'SIZE':
-        echo('<td>');
-        break;
-
-      case 'FILENAME':
-        echo('<td><a href="screenshots/');
-        break;
-
-      case 'A':
-        echo("<a href=$attrs[HREF]>");
-        break;
-
-      case 'LIST':
-        echo("<ul>");
-        break;
-
-      case 'ITEM':
-        echo('<li>');
-        break;
+    function Screenshot ($aa) {
+        foreach ($aa as $k=>$v)
+            $this->$k = trim($aa[$k]);
+        $this->filename = "screenshots/".$this->filename;
     }
   }
 
-  function endElement($parser, $name)
-  {
-    switch($name)
-    {
-      case 'SCREENSHOTS':
-        echo('</table>');
-        break;
+  function readDatabase($filename) {
+    // read the xml database of screenshots
+    $data = implode("",file($filename));
+    $parser = xml_parser_create();
+    xml_parser_set_option($parser,XML_OPTION_CASE_FOLDING,0);
+    xml_parser_set_option($parser,XML_OPTION_SKIP_WHITE,1);
+    xml_parse_into_struct($parser,$data,$values,$tags);
+    xml_parser_free($parser);
 
-      case 'SHOT':
-        echo('</tr>');
-        break;
-
-      case 'DESCRIPTION':
-        echo('</td>');
-        break;
-
-      case 'VERSION':
-        echo('</td>');
-        break;
-
-      case 'SIZE':
-        echo('bytes </td>');
-        break;
-
-      case 'FILENAME':
-        echo('">View</a>');
-
-      case 'A':
-        echo('</a>');
-        break;
-
-      case 'LIST':
-        echo('</ul>');
-        break;
-
-      case 'ITEM':
-        echo('</li>');
+    // loop through the structures
+    foreach ($tags as $key=>$val) {
+        if ($key == "shot") {
+            $shotranges = $val;
+            // each contiguous pair of array entries are the 
+            // lower and upper range for each shot definition
+            for ($i=0; $i < count($shotranges); $i+=2) {
+                    $offset = $shotranges[$i] + 1;
+                $len = $shotranges[$i + 1] - $offset;
+                $tdb[] = parseShot(array_slice($values, $offset, $len));
+            }
+        } else {
+            continue;
+        }
     }
+    return $tdb;
   }
 
-  function characterData($parser, $data)
-  {
-    global $ammount;
-    global $maxnews;
+  function parseShot($svalues) {
+    for ($i=0; $i < count($svalues); $i++)
+        $shot[$svalues[$i]["tag"]] = $svalues[$i]["value"];
+    return new Screenshot($shot);
+  }
 
-    if($ammount > $maxnews)
+  $db = readDatabase($file);
+  echo("<table summary=\"SimpleMail Screenshots\">");
+
+  $ver = "init";
+  $col = 0;
+
+  foreach ($db as $k=>$v) {
+    if ($ver != $v->version || $col >= 2)
     {
-      return;
+      if ($ver != "init") {
+        echo("</tr>");
+      }
+      if ($ver != $v->version)
+      {
+        echo("<tr><th colspan=2>Version " . $v->version."</th></tr>");
+      } else
+      {
+        echo("<tr>");
+      }
+      $col = 0;
     }
 
-    echo($data);
+    echo("<td valign=\"top\" align=\"center\">");
+    $ver = $v->version;
+    $preview_name = str_replace(".png","_preview.png", $v->filename);
+    $preview_size = GetImageSize ($preview_name);
+    $filesize = filesize($v->filename);
+    printf("<A HREF=\"%s\"><IMG SRC=\"%s\" %s ALT=\"(%ld bytes)\"></A>",$v->filename,$preview_name,$preview_size[3],$filesize);
+    echo("<br><font size=\"-1\">". $v->description."</font></td>");
+    $col++;
   }
 
-
-  $xml_parser = xml_parser_create();
-  xml_set_character_data_handler($xml_parser, 'characterData');
-  xml_set_element_handler($xml_parser, startElement, 'endElement');
-
-  if(!($fp = fopen($file, 'r')))
-  {
-    die('could not open XML input');
-  }
-
-  echo("<center>");
-
-  while ($data = fread($fp, 4096))
-  {
-    if(!xml_parse($xml_parser, $data, feof($fp)))
-    {
-      die(sprintf('XML error: %s at line %d',
-        xml_error_string(xml_get_error_code($xml_parser)),
-        xml_get_current_line_number($xml_parser)));
-    }
-  }
-
-  echo("</center>");
-
-  xml_parser_free($xml_parser);
-
+  echo("</tr></table>");
 ?>
+
 

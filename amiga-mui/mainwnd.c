@@ -589,12 +589,16 @@ struct mail *main_get_mail_next_selected(void *handle)
 *******************************************************************/
 void main_remove_mails_selected(void)
 {
+/*
 	DoMethod(tree_mail, MUIM_NListtree_Remove,
 			MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_Selected, 0);
-/*
+*/
+
 	struct MUI_NListtree_TreeNode *treenode;
 	int j = 0, i = 0;
 	struct MUI_NListtree_TreeNode **array;
+
+	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
 
 	treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_Start;
 
@@ -620,9 +624,26 @@ void main_remove_mails_selected(void)
 
 		for (i=0;i<j;i++)
 		{
+			if (array[i]->tn_Flags & TNF_LIST)
+			{
+				struct MUI_NListtree_TreeNode *node = (struct MUI_NListtree_TreeNode *)
+					DoMethod(tree_mail, MUIM_NListtree_GetEntry, array[i], MUIV_NListtree_GetEntry_Position_Head, 0);
+
+				while (node)
+				{
+					struct MUI_NListtree_TreeNode *nextnode = (struct MUI_NListtree_TreeNode *)
+						DoMethod(tree_mail, MUIM_NListtree_GetEntry, node, MUIV_NListtree_GetEntry_Position_Next, 0);
+
+					DoMethod(tree_mail, MUIM_NListtree_Move, array[i], node, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Tail);
+					node = nextnode;
+				}
+			}
+
 			DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
 		}		
 
 		FreeVec(array);
-	}*/
+	}
+
+	set(tree_mail, MUIA_NListtree_Quiet, FALSE);
 }

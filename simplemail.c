@@ -149,11 +149,11 @@ void callback_write_mail_to(struct addressbook_entry *address)
 
 int main(void)
 {
+	init_addressbook();
 	if (init_folders())
 	{
-		init_addressbook();
 		gui_main();
-		cleanup_addressbook();
 	}
+	cleanup_addressbook();
 	return 0;
 }

@@ -611,11 +611,35 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	if (open_socket_lib())
 	{
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
-		while (server)
+
+		for( ;server; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
 
 			thread_call_parent_function_async_string(dl_connect_to_server,1,server->name);
+
+			if (server->ask)
+			{
+				char *password = malloc(512);
+				char *login = malloc(512);
+
+				if (password && login)
+				{
+					int rc;
+
+					if (server->login) mystrlcpy(login,server->login,512);
+					password[0] = 0;
+
+					if ((rc = thread_call_parent_function_sync(sm_request_login,4,server->name,password,login,512)))
+					{
+						server->login = mystrdup(login);
+						server->passwd = mystrdup(password);
+					}
+				}
+
+				free(password);
+				free(login);
+			}
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
@@ -689,8 +713,6 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 
 			/* Clear the preselection entries */
 			thread_call_parent_function_sync(dl_clear,0);
-
-			server = (struct pop3_server*)node_next(&server->node);
 		}
 		close_socket_lib();
 	}
@@ -830,6 +852,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->ssl = pop->ssl;
 		new_pop->active = pop->active;
 		new_pop->nodupl = pop->nodupl;
+		new_pop->ask = pop->ask;
 	}
 	return new_pop;
 }

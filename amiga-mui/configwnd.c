@@ -96,6 +96,7 @@ static Object *account_recv_server_string;
 static Object *account_recv_port_string;
 static Object *account_recv_login_string;
 static Object *account_recv_password_string;
+static Object *account_recv_ask_checkbox;
 static Object *account_recv_active_check;
 static Object *account_recv_delete_check;
 static Object *account_recv_ssl_check;
@@ -197,7 +198,8 @@ static void get_account(void)
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
-		account_last_selected->pop->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
+		account_last_selected->pop->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
+		account_last_selected->pop->passwd = account_last_selected->pop->ask?NULL:mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->pop->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
 		account_last_selected->pop->ssl = xget(account_recv_ssl_check, MUIA_Selected);
@@ -458,7 +460,11 @@ static void config_tree_active(void)
 					setstring(account_recv_server_string,account->pop->name);
 					set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
 					setstring(account_recv_login_string,account->pop->login);
-					setstring(account_recv_password_string,account->pop->passwd);
+					SetAttrs(account_recv_password_string,
+							MUIA_String_Contents,account->pop->passwd,
+							MUIA_Disabled,account->pop->ask,
+							TAG_DONE);
+					nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
 					setcheckmark(account_recv_active_check,account->pop->active);
 					setcheckmark(account_recv_delete_check,account->pop->del);
 					nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
@@ -731,6 +737,8 @@ static int init_account_group(void)
 					MUIA_String_Secret, TRUE,
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
+				Child, MakeLabel(_("Ask")),
+				Child, account_recv_ask_checkbox = MakeCheck(_("Ask"),FALSE),
 				End,
 			End,
 		Child, HGroup,
@@ -748,21 +756,6 @@ static int init_account_group(void)
 		Child, HorizLineTextObject(_("Send")),
 		Child, VGroup,
 			Child, ColGroup(2),
-
-/*
-				Child, MakeLabel("Domain"),
-				Child, HGroup,
-					Child, BetterStringObject,
-						StringFrame,
-						MUIA_Disabled, user.config.smtp_ip_as_domain,
-						MUIA_CycleChain, 1,
-						MUIA_String_Contents, user.config.smtp_domain,
-						MUIA_String_AdvanceOnCR, TRUE,
-						End,
-					Child, MakeLabel("Use IP as domain"),
-					Child, MakeCheck("Use IP as domain",user.config.smtp_ip_as_domain),
-					End,
-*/
 				Child, MakeLabel(_("SMTP Server")),
 				Child, HGroup,
 					Child, account_send_server_string = BetterStringObject,
@@ -829,10 +822,10 @@ static int init_account_group(void)
 
 	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, TRUE, account_recv_port_string, 3, MUIM_Set, MUIA_String_Integer, 995);
 	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, FALSE, account_recv_port_string, 3, MUIM_Set, MUIA_String_Integer, 110);
+	DoMethod(account_recv_ask_checkbox, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_recv_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_remove);
-
 
 	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
 	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));

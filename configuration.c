@@ -264,6 +264,8 @@ int load_config(void)
 										account->pop->active = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.AvoidDupl")))
 										account->pop->nodupl = CONFIG_BOOL_VAL(result);
+									if ((result = get_config_item(account_buf,"POP3.Ask")))
+										account->pop->ask = CONFIG_BOOL_VAL(result);
 								}
 							}
 						}
@@ -484,11 +486,12 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));
 				fprintf(fh,"ACCOUNT%d.POP3.Port=%d\n",i,account->pop->port);
 				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
-				fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
+				if (!account->pop->ask) fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.SSL=%s\n",i,account->pop->ssl?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Active=%s\n",i,account->pop->active?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.AvoidDupl=%s\n",i,account->pop->nodupl?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.POP3.Ask=%s\n",i,account->pop->ask?"Y":"N");
 				account = (struct account*)node_next(&account->node);
 				i++;
 			}

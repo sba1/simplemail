@@ -35,6 +35,7 @@ struct pop3_server
 	int del; /* 1 if downloaded mails should be deleted */
 	int nodupl; /* 1 if duplicates should be avoided */
 	int active; /* is this pop server actove */
+	int ask; /* ask for login/password */
 };
 
 int pop3_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int called_by_auto);

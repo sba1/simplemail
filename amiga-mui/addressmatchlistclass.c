@@ -210,10 +210,10 @@ STATIC ASM SAVEDS LONG matchentry_compare(REG(a0, struct Hook *h), REG(a2, Objec
 	struct address_match_entry *entry1 = (struct address_match_entry *)msg->entry1;
 	struct address_match_entry *entry2 = (struct address_match_entry *)msg->entry2;
 
-	if (entry1->o.group) str1 = entry1->o.group->name;
+	if (entry1->is_group) str1 = entry1->o.group->name;
 	else str1 = entry1->o.entry->realname;
 
-	if (entry2->o.group) str2 = entry2->o.group->name;
+	if (entry2->is_group) str2 = entry2->o.group->name;
 	else str2 = entry2->o.entry->realname;
 
 	return utf8stricmp(str1,str2);

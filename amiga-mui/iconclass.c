@@ -163,19 +163,19 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 			Write(fh,data->buffer,data->buffer_len);
 			Close(fh);
 
+/* TODO: Enable this if we support icon caching */
+#if 0
+			if (SendRexxCommand("DEFICONS",command,result,sizeof(result)))
+			{
+				def = result;
+			}
+#endif
+
 			data->obj = GetIconTags(command + 9,
 				ICONGETA_FailIfUnavailable,FALSE,
 				ICONGETA_Screen, _screen(obj),
 				TAG_DONE);
 
-
-#if 0
-/* Doesn't work */
-			if (SendRexxCommand("deficons",command,result,sizeof(result)))
-			{
-				def = result;
-			}
-#endif
 			DeleteFile(command+9);
 		}
 	}

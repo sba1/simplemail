@@ -1,6 +1,31 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2004/02/05">
+   <text lang="en">
+	  Version 0.23 of SimpleMail released!
+
+	  The changes are:
+
+    <item>AppIcon support (bgol)</item>
+    <item>mbox files can be imported to selected folders directly (bgol)</item>
+    <item>APOP support</item>
+    <item>Ported to MorphOS (henes)</item>
+    <item>Bug fixes</item>
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.23 veröffentlicht!
+
+	  Die Änderungen sind:
+
+    <item>AppIcon Unterstützung (bgol)</item>
+    <item>mbox Dateien können in direkt in einen selektierten Ordner importiert werden (bgol)</item>
+    <item>APOP Unterstützung</item>
+    <item>Nach MorphOS portiert(henes)</item>
+    <item>Bug Fixes</item>
+   </text>
+  </entry>
+
   <entry date="2004/01/01">
    <text lang="en">
 

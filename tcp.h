@@ -25,6 +25,10 @@
 
 long tcp_connect(char *server, unsigned int port);
 void tcp_disconnect(long);
+long tcp_read(long, void *, long);
+long tcp_write(long, void *, long);
+char *tcp_readln(long);
+
 
 #define SMTP_NO_SOCKET        -1
 #define SMTP_STATUS_REPLY     211

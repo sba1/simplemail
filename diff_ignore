@@ -1,0 +1,16 @@
+*po
+*.o
+*.a
+*.so
+*.out
+*.rej
+*.orig
+*.bak
+*.info
+smakefile.compile
+SCOPTIONS
+*.gst
+gen_makefile
+*.lnk
+sm
+sas_objects

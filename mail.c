@@ -2140,6 +2140,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 			/* Mail should be send now! */
 			mails_upload_signle(mail);
 		}
+		free(new_name);
 	}
 
 	chdir(path);

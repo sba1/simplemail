@@ -26,6 +26,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <proto/exec.h>
+#include <proto/dos.h>
 
 #include "amiproc.h"
 
@@ -364,4 +365,10 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 	return 0;
 #endif
+}
+
+/* Check if thread is aborted and return 1 if so */
+int thread_aborted(void)
+{
+	return !!CheckSignal(SIGBREAKF_CTRL_C);
 }

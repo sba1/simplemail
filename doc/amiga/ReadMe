@@ -41,31 +41,33 @@ problem.
 Changes
 ~~~~~~~
 Version 0.3 (third alpha) - released on 2001/02/05
-  - added a forward button
-  - main window has two different views, which are changeable within
-    the main window
-  - improved the compose window (got some images)
-  - to button in the addressbook works now correctly
-  - group mails (mails with multiple recipients), mails with
-    attachments, important mails can now easily identified
-  - added a small context menu for the mailtreelist, mails can now
-    be marked and hold
-  - added the possibility to use your IP-addresss as you domain in
-    the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore)
-  - added smtp-auth according to rfc2554
-  - other smaller improvements and bug fixes.
+  - Added a forward button.
+  - Main window has two different views, which are changeable within
+    the main window.
+  - Improved the compose window (got some images).
+  - "To" button in the addressbook works now correctly.
+  - Group mails (mails with multiple recipients), mails with
+    attachments, important mails can now easily identified.
+  - Added a small context menu for the mailtreelist, mails can now
+    be marked and hold.
+  - Added the possibility to use your IP-addresss as you domain in
+    the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore).
+  - Added smtp-auth according to rfc2554.
+  - It is now possible to specify which port you would like to use on
+    the servers instead of 25 and 110.
+  - Other smaller improvements and bug fixes.
 
 Version 0.2 (second alpha) - released on 2001/01/14
-  - buttons have now images
-  - now can display HTML mails (uses SimpleHTML engine)
-  - indexfiles for folders
-  - mails can have differnt statuses (new,read,waitsend,sent)
-  - support of mailthreads
-  - addressbook is now more complete
-  - bugfixes and smaller enhancements
+  - Buttons have now images.
+  - Now can display HTML mails (uses SimpleHTML engine).
+  - Indexfiles for folders.
+  - Mails can have differnt statuses (new,read,waitsend,sent).
+  - Support of mailthreads.
+  - Addressbook is now more complete.
+  - Bugfixes and smaller enhancements.
 
 Version 0.1 (first alpha) - released on 2000/12/24
-  - initial alpha
+  - Initial alpha.
 
 Contact
 ~~~~~~~

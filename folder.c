@@ -2159,6 +2159,27 @@ struct folder *folder_find_by_path(char *name)
 }
 
 /******************************************************************
+ Finds the folder to a given file
+*******************************************************************/
+struct folder *folder_find_by_file(char *filename)
+{
+	char buf[256];
+	struct folder *f = folder_first();
+
+	getcwd(buf, sizeof(buf));
+
+	while (f)
+	{
+		chdir(f->path);
+		if (sm_file_is_in_drawer(filename, f->path)) break;
+		f = folder_next(f);
+	}
+
+	chdir(buf);
+	return f;
+}
+
+/******************************************************************
  Finds the folder of a mail.
 *******************************************************************/
 struct folder *folder_find_by_mail(struct mail *mail)

@@ -152,6 +152,7 @@ struct folder *folder_find(int pos);
 int folder_position(struct folder *f);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
+struct folder *folder_find_by_file(char *filename);
 struct folder *folder_find_by_mail(struct mail *mail);
 struct folder *folder_find_by_imap(char *server, char *path);
 struct mail *folder_find_mail(struct folder *f,int position);

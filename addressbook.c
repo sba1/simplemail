@@ -30,6 +30,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "http.h"
 #include "lists.h"
 #include "mail.h"
@@ -419,7 +420,7 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 			struct addressbook_entry_new *entry;
 
 			xml_context.newcontact_tag = 0;
-
+printf("name=%s\n\n",xml_context.current_entry.realname);
 			if ((entry = (struct addressbook_entry_new*)malloc(sizeof(struct addressbook_entry_new))))
 			{
 				/* Add the group to the entry, if it is a classical address book */
@@ -736,8 +737,20 @@ static void addressbook_load_entries(FILE *fh)
 		len = fread(buf, 1, 512, fh);
 		if (len <= 0) break;
 
-    if (!XML_Parse(p, buf, len, 0)) break;
-  }
+		if (!XML_Parse(p, buf, len, 0))
+		{
+			int column = XML_GetErrorColumnNumber(p);
+			int line = XML_GetErrorLineNumber(p);
+			enum XML_Error err = XML_GetErrorCode(p);
+
+			SM_DEBUGF(5,("Parsing the xml file failed because %s (code %d) at %d/%d\n",
+						XML_ErrorString(err),err,line,column));
+
+			sm_request(NULL,_("Parsing the XML file failed because of\n%s (code %d)\nat line %d column %d"),
+							_("Ok"),XML_ErrorString(err),err,line,column);
+			break;
+		}
+ 	}
 
   XML_Parse(p,buf,0,1); /* is_final have to be done */
 

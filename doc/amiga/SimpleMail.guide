@@ -1218,6 +1218,9 @@ tagline to every email you write. Simply insert a %t in the signature
 and it will be replaced by a random tagline found in .taglines when
 composing a mail.
 
+The supplied taglines are courtesy of Andreas Neumann 
+(http://www.andreasneumann.de/).
+
 
 Add new signature
 

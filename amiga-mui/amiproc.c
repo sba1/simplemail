@@ -124,22 +124,15 @@ static void _FreeData(void)
    FreeMem((void *)getreg(REG_A4), (ULONG)&RESLEN);
 }
 
-struct FAKE_SegList {
-   long space;
-   long length;
-   BPTR nextseg;
-	short jmp;
-	void (*func)(void);
+struct AmiProcMsg								/* startup message sent to child */
+{
+	struct Message msg;
+	int (*fp)(void *);              /* function we're going to call */
+	void *global_data;              /* global data reg (A4)         */
+	long return_code;               /* return code from process     */
+	void *UserData;                 /* User-supplied data pointer   */
+	struct Process *child;					/* The child process itselv     */
 };
-
-struct AmiProcMsg {                     /* startup message sent to child */
-        struct Message msg;
-        int (*fp)(void *);              /* function we're going to call */
-        void *global_data;              /* global data reg (A4)         */
-        long return_code;               /* return code from process     */
-        void *UserData;                 /* User-supplied data pointer   */
-        };
-
 
 static void process_starter(void)
 {
@@ -201,55 +194,60 @@ static void process_starter(void)
 // pointer as the entry point.
 struct AmiProcMsg *AmiProc_Start(int (*fp)(void *), void *UserData)
 {
-   struct Process *process;
-   struct MsgPort *child_port;
-   struct AmiProcMsg *start_msg;
-   BPTR in, out;
-   int stack = (__stack > 4000 ? __stack : 4000);
-   char *procname = (__procname ? __procname : "New Process");
-   
-   start_msg = (struct AmiProcMsg *)AllocMem(sizeof(struct AmiProcMsg), 
-                                          MEMF_PUBLIC|MEMF_CLEAR);
-   if (start_msg == NULL)
-      return NULL;
+	struct Process *process;
+	struct MsgPort *child_port;
+	struct AmiProcMsg *start_msg;
+	BPTR in, out;
+	int stack = (__stack > 4000 ? __stack : 4000);
+	char *procname = (__procname ? __procname : "New Process");
+	
+	if (!(start_msg = (struct AmiProcMsg *)AllocMem(sizeof(struct AmiProcMsg), MEMF_PUBLIC|MEMF_CLEAR)))
+	{
+		return NULL;
+	}
+	
+	if (!(start_msg->msg.mn_ReplyPort = CreateMsgPort()))
+	{
+		FreeMem((void *)start_msg, sizeof(*start_msg));
+		return NULL;
+	}
 
-   if(!(in  = Open("*", MODE_OLDFILE))) in  = Open("NIL:", MODE_NEWFILE);
-   if(!(out = Open("*", MODE_OLDFILE))) out = Open("NIL:", MODE_NEWFILE);
+	if(!(in  = Open("CONSOLE:", MODE_OLDFILE))) in  = Open("NIL:", MODE_NEWFILE);
+	if(!(out = Open("CONSOLE:", MODE_OLDFILE))) out = Open("NIL:", MODE_NEWFILE);
 
-   /* Flush the data cache in case we're on a 68040 */
-   CacheClearU();
+	/* Flush the data cache in case we're on a 68040 */
+	CacheClearU();
 
-   process =   CreateNewProcTags(NP_Entry,     process_starter,
-                                 NP_StackSize,  stack,
-                                 NP_Name,       procname,
-                                 NP_Priority,   __priority,
-                                 NP_Input,      in,
-                                 NP_Output,     out,
-                                 TAG_END);
-   child_port = process ? &process->pr_MsgPort : NULL;
+	process = CreateNewProcTags(NP_Entry,     process_starter,
+															NP_StackSize,  stack,
+															NP_Name,       procname,
+															NP_Priority,   __priority,
+															NP_Input,      in,
+															NP_Output,     out,
+															TAG_END);
 
-   if(child_port == NULL)
-   {
-      /* error, cleanup and abort */
-      FreeMem(start_msg, sizeof(*start_msg));
-      return NULL;
-   }
-   
-   /* Create the startup message */
-   start_msg->msg.mn_Length = sizeof(struct AmiProcMsg) - sizeof(struct Message);
-   start_msg->msg.mn_ReplyPort = CreatePort(0,0);
-   start_msg->msg.mn_Node.ln_Type = NT_MESSAGE;
-   
-   /* replace this with the proper #asm for Aztec */
-   start_msg->global_data = (void *)getreg(REG_A4);  /* save global data reg (A4) */
+	if (!process)
+	{
+		DeleteMsgPort(start_msg->msg.mn_ReplyPort);
+		FreeMem((void *)start_msg, sizeof(*start_msg));
+		return NULL;
+	}
 
-   start_msg->fp = fp;                               /* Fill in function pointer */
-   start_msg->UserData = UserData;   
+	child_port = process ? &process->pr_MsgPort : NULL;
+
+	/* Fill in the rest of the startup message */
+	start_msg->msg.mn_Length = sizeof(struct AmiProcMsg);
+	start_msg->msg.mn_Node.ln_Type = NT_MESSAGE;
+	start_msg->child = process;
    
-   /* send startup message to child */
-   PutMsg(child_port, (struct Message *)start_msg);
+	/* replace this with the proper #asm for Aztec */
+	start_msg->global_data = (void *)getreg(REG_A4);  /* save global data reg (A4) */
+	start_msg->fp = fp;                               /* Fill in function pointer */
+	start_msg->UserData = UserData;   
    
-   return start_msg;
+	/* send startup message to child */
+	PutMsg(child_port, (struct Message *)start_msg);
+	return start_msg;
 }
 
 int AmiProc_Wait(struct AmiProcMsg *start_msg)
@@ -266,7 +264,7 @@ int AmiProc_Wait(struct AmiProcMsg *start_msg)
     ret = msg->return_code;
 
     /* Free up remaining resources */
-    DeletePort(start_msg->msg.mn_ReplyPort);
+    DeleteMsgPort(start_msg->msg.mn_ReplyPort);
     FreeMem((void *)start_msg, sizeof(*start_msg));
     return(ret);
 }
@@ -285,7 +283,7 @@ int AmiProc_Check(struct AmiProcMsg *start_msg)
 	/* Free up remaining resources */
 	if (finished)
 	{
-		DeletePort(start_msg->msg.mn_ReplyPort);
+		DeleteMsgPort(start_msg->msg.mn_ReplyPort);
 		FreeMem((void *)start_msg, sizeof(*start_msg));
 	}
 	return finished;

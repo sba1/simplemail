@@ -48,6 +48,7 @@ static struct Hook header_display_hook;
 static struct Hook mime_construct_hook;
 static struct Hook mime_destruct_hook;
 static struct Hook mime_display_hook;
+static struct Hook mime_findname_hook;
 
 #define MAX_READ_OPEN 10
 static int read_open[MAX_READ_OPEN];
@@ -119,6 +120,13 @@ STATIC ASM VOID mime_display(register __a0 struct Hook *h, register __a1 struct 
 	}
 }
 
+STATIC ASM int mime_findname(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_FindNameMessage *msg)
+{
+	struct mime_entry *entry = (struct mime_entry *)msg->UserData;
+	if (entry->mail == (struct mail*)msg->Name) return 0;
+	return -1;
+}
+
 /******************************************************************
  inserts the headers of the mail into the given nlist object
 *******************************************************************/
@@ -149,7 +157,6 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 	{
 		if (stricmp(mail->content_type,"text"))
 		{
-			char buf[256];
 			SetAttrs(data->datatype_datatypes,
 						MUIA_DataTypes_Buffer, mail->decoded_data,
 						MUIA_DataTypes_BufferLen, mail->decoded_len,
@@ -249,6 +256,20 @@ static void save_contents(struct Read_Data *data, struct MUI_NListtree_TreeNode 
 }
 
 /******************************************************************
+ Shows a given mail (part)
+*******************************************************************/
+static void show_mail(struct Read_Data *data, struct mail *m)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)
+		DoMethod(data->mime_tree, MUIM_NListtree_FindName, MUIV_NListtree_FindName_ListNode_Root,
+						m,0);
+	if (treenode)
+	{
+		set(data->mime_tree, MUIA_NListtree_Active, treenode);
+	}
+}
+
+/******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
  this function)!
@@ -330,6 +351,7 @@ void read_window_open(char *folder, char *filename)
 	init_hook(&mime_construct_hook,(HOOKFUNC)mime_construct);
 	init_hook(&mime_destruct_hook,(HOOKFUNC)mime_destruct);
 	init_hook(&mime_display_hook,(HOOKFUNC)mime_display);
+	init_hook(&mime_findname_hook,(HOOKFUNC)mime_findname);
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
@@ -353,6 +375,7 @@ void read_window_open(char *folder, char *filename)
 						MUIA_NListtree_ConstructHook, &mime_construct_hook,
 						MUIA_NListtree_DestructHook, &mime_destruct_hook,
 						MUIA_NListtree_DisplayHook, &mime_display_hook,
+						MUIA_NListtree_FindNameHook, &mime_findname_hook,
 						MUIA_NListtree_DragDropSort, FALSE,
 						MUIA_NListtree_Format,",,",
 						End,
@@ -389,6 +412,8 @@ void read_window_open(char *folder, char *filename)
 				
 				if ((data->mail = mail_create_from_file(filename)))
 				{
+					struct mail *text_mail;
+
 					mail_read_contents(folder,data->mail);
 
 					data->text_list = text_list;
@@ -401,12 +426,16 @@ void read_window_open(char *folder, char *filename)
 
 					insert_headers(header_list,data->mail);
 					insert_mime(mime_tree,data->mail,MUIV_NListtree_Insert_ListNode_Root);
+
+					text_mail = mail_find_content_type(data->mail, "text", "plain");
+
 					DoMethod(mime_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_active, data);
 					DoMethod(mime_tree, MUIM_Notify, MUIA_NList_ButtonClick, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_button, data);
 					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);
-					set(mime_tree,MUIA_NListtree_Active,MUIV_NListtree_Active_First);
+
+					show_mail(data,text_mail?text_mail:data->mail);
 					set(wnd,MUIA_Window_DefaultObject, data->text_list);
 					set(wnd,MUIA_Window_Open,TRUE);
 					CurrentDir(old_dir);

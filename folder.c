@@ -3402,6 +3402,13 @@ int init_folders(void)
 		}
 
 		closedir(dfd);
+	} else
+	{
+#ifdef _AMIGA
+#undef printf
+#endif
+		printf("Unable to open directory %s\n",user.folder_directory);
+
 	}
 
 	if (!folder_incoming())

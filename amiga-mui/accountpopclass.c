@@ -64,19 +64,19 @@ struct AccountPop_Data
 	struct account *selected_account; /* is always an copy */
 };
 
-STATIC ASM SAVEDS struct account *account_construct(REG(a2,Object *obj),REG(a1,struct NList_ConstructMessage *msg))
+STATIC ASM SAVEDS struct account *account_construct(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_ConstructMessage *msg))
 {
 	if ((LONG)msg->entry == -1) return (struct account*)-1;
 	return account_duplicate((struct account*)msg->entry);
 }
 
-STATIC ASM SAVEDS VOID account_destruct(REG(a2,Object *obj),REG(a1,struct NList_DestructMessage *msg))
+STATIC ASM SAVEDS VOID account_destruct(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DestructMessage *msg))
 {
 	if ((LONG)msg->entry == -1) return;
 	if (msg->entry) account_free((struct account*)msg->entry);
 }
 
-STATIC ASM SAVEDS VOID account_display(REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
+STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
 	if (msg->entry)
 	{
@@ -271,7 +271,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, AccountPop_Dispatcher, cl, obj, msg)
 		case	OM_NEW: return AccountPop_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return AccountPop_Get(cl,obj,(struct opGet*)msg);
 		case	OM_SET: return AccountPop_Set(cl,obj,(struct opSet*)msg,0);
-		case  MUIM_AccountPop_Refresh: return AccountPop_Refresh(cl,obj,msg);
+		case	MUIM_AccountPop_Refresh: return AccountPop_Refresh(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
@@ -280,7 +280,7 @@ struct MUI_CustomClass *CL_AccountPop;
 
 int create_accountpop_class(void)
 {
-	if ((CL_AccountPop = MUI_CreateCustomClass(NULL,MUIC_Popobject,NULL,sizeof(struct AccountPop_Data), AccountPop_Dispatcher)))
+	if ((CL_AccountPop = CreateMCC(MUIC_Popobject, NULL, sizeof(struct AccountPop_Data), AccountPop_Dispatcher)))
 		return 1;
 	return 0;
 }

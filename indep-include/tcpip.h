@@ -21,7 +21,6 @@
 */
 
 #ifdef __AMIGAOS4__
-#define __USE_INLINE__
 #include <proto/bsdsocket.h>
 #else
 #ifdef _AMIGA
@@ -50,3 +49,13 @@ long tcp_errno(void);
 
 void myclosesocket(int fd);
 
+#if defined(_AMIGA) || defined(__AMIGAOS4__)
+
+#include <proto/exec.h>
+#include "subthreads_amiga.h"
+
+#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
+#ifdef __AMIGAOS4__
+#define ISocket ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->isocket
+#endif
+#endif

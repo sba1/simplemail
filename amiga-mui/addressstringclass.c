@@ -512,9 +512,9 @@ struct MUI_CustomClass *CL_AddressString;
 
 int create_addressstring_class(void)
 {
-	if ((CL_MatchWindow = MUI_CreateCustomClass(NULL,MUIC_Window,NULL,sizeof(struct MatchWindow_Data),MatchWindow_Dispatcher)))
+	if ((CL_MatchWindow = CreateMCC(MUIC_Window,NULL,sizeof(struct MatchWindow_Data),MatchWindow_Dispatcher)))
 	{
-		if ((CL_AddressString = MUI_CreateCustomClass(NULL,NULL,CL_UTF8String,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
+		if ((CL_AddressString = CreateMCC(NULL,CL_UTF8String,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
 			return 1;
 	}
 	return 0;

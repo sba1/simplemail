@@ -52,7 +52,7 @@ struct AttachmentList_Data
 	int quick;
 };
 
-STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a1,struct MUIP_NListtree_ConstructMessage *msg))
+STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a0,struct Hook *h),REG(a2,Object *o),REG(a1,struct MUIP_NListtree_ConstructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	struct attachment *new_attach = (struct attachment *)malloc(sizeof(struct attachment));
@@ -68,7 +68,7 @@ STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a1,struct MUIP_NLi
 	return new_attach;
 }
 
-STATIC ASM SAVEDS VOID attachment_destruct(REG(a1,struct MUIP_NListtree_DestructMessage *msg))
+STATIC ASM SAVEDS VOID attachment_destruct(REG(a0,struct Hook *h),REG(a2,Object *o),REG(a1,struct MUIP_NListtree_DestructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	if (attach)
@@ -86,7 +86,7 @@ STATIC ASM SAVEDS VOID attachment_destruct(REG(a1,struct MUIP_NListtree_Destruct
 	}
 }
 
-STATIC ASM SAVEDS VOID attachment_display(REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
+STATIC ASM SAVEDS VOID attachment_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	struct AttachmentList_Data *data = (struct AttachmentList_Data*)INST_DATA(CL_AttachmentList->mcc_Class,obj);
 
@@ -214,7 +214,7 @@ struct MUI_CustomClass *CL_AttachmentList;
 
 int create_attachmentlist_class(void)
 {
-	if ((CL_AttachmentList = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct AttachmentList_Data),AttachmentList_Dispatcher)))
+	if ((CL_AttachmentList = CreateMCC(MUIC_NListtree,NULL,sizeof(struct AttachmentList_Data),AttachmentList_Dispatcher)))
 		return 1;
 	return 0;
 }

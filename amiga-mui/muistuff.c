@@ -26,6 +26,7 @@
 
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
+#include <proto/exec.h>
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -41,6 +42,47 @@ ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
 {
   return (DoSuperMethod(cl, obj, OM_NEW, &tag1, NULL));
 }
+
+
+#ifdef __AMIGAOS4__
+#undef NewObject
+#include <stdarg.h>
+APTR NewObject( struct IClass *cl, CONST_STRPTR id, ULONG tag1, ... )
+{
+	Object *o;
+	va_list args;
+	va_startlinear(args,id);
+
+	o = NewObjectA(cl,id,va_getlinearva(args,void*));
+	va_end(args);
+	return o;
+}
+
+void SetRexxVar(void)
+{
+}
+
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
+{
+	extern ULONG muiDispatcherEntry();
+	extern ULONG hookEntry();
+
+	struct MUI_CustomClass *cl;
+
+	if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, muiDispatcherEntry)))
+	{
+		cl->mcc_Class->cl_UserData = dispatcher;
+	}
+	return cl;
+}
+#else
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
+{
+	return MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
+}
+
+#endif
+
 
 Object *MakeLabel(STRPTR str)
 {

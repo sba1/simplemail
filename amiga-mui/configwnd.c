@@ -2048,7 +2048,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 
 static int create_sizes_class(void)
 {
-	if ((CL_Sizes = MUI_CreateCustomClass(NULL,MUIC_Slider,NULL,4,Sizes_Dispatcher)))
+	if ((CL_Sizes = CreateMCC(MUIC_Slider,NULL,4,Sizes_Dispatcher)))
 		return 1;
 	return 0;
 }

@@ -195,7 +195,7 @@ struct MUI_CustomClass *CL_ComposeEditor;
 
 int create_composeeditor_class(void)
 {
-	if ((CL_ComposeEditor = MUI_CreateCustomClass(NULL,MUIC_TextEditor,NULL,sizeof(struct ComposeEditor_Data),ComposeEditor_Dispatcher)))
+	if ((CL_ComposeEditor = CreateMCC(MUIC_TextEditor,NULL,sizeof(struct ComposeEditor_Data),ComposeEditor_Dispatcher)))
 		return 1;
 	return 0;
 }

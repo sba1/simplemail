@@ -357,7 +357,7 @@ static void person_download_portrait(struct Person_Data **pdata)
 /******************************************************************
  Hook function
 *******************************************************************/
-STATIC ASM SAVEDS ULONG person_pgp_strobj(REG(a2,Object *list),REG(a1,Object *str))
+STATIC ASM SAVEDS ULONG person_pgp_strobj(REG(a0,struct Hook *h),REG(a2,Object *list),REG(a1,Object *str))
 {
 	DoMethod(list, MUIM_PGPList_Refresh);
 	return 1;
@@ -366,7 +366,7 @@ STATIC ASM SAVEDS ULONG person_pgp_strobj(REG(a2,Object *list),REG(a1,Object *st
 /******************************************************************
  Hook function
 ******************************************************************/
-STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a2,Object *list),REG(a1,Object *str))
+STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a0,struct Hook *h),REG(a2,Object *list),REG(a1,Object *str))
 {
 	struct pgp_key *key;
 	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &key);

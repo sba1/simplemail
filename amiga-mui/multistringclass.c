@@ -405,9 +405,9 @@ struct MUI_CustomClass *CL_MultiString;
 
 int create_multistring_class(void)
 {
-	if ((CL_SingleString = MUI_CreateCustomClass(NULL, NULL, CL_UTF8String, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
+	if ((CL_SingleString = CreateMCC(NULL, CL_UTF8String, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
 	{
-		if ((CL_MultiString = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct MultiString_Data), MultiString_Dispatcher)))
+		if ((CL_MultiString = CreateMCC(MUIC_Group, NULL, sizeof(struct MultiString_Data), MultiString_Dispatcher)))
 		{
 			return TRUE;
 		}

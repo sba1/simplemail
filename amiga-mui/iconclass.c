@@ -375,7 +375,7 @@ struct Selection_Msg
 	int finish;
 };
 
-STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a1,struct IconSelectMsg *ism))
+STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1,struct IconSelectMsg *ism))
 {
 	struct Selection_Msg *msg = (struct Selection_Msg *)h->h_Data;
 	struct Window *wnd = ism->ism_ParentWindow;
@@ -507,7 +507,7 @@ struct MUI_CustomClass *CL_Icon;
 
 int create_icon_class(void)
 {
-	if ((CL_Icon = MUI_CreateCustomClass(NULL,MUIC_Area,NULL,sizeof(struct Icon_Data),Icon_Dispatcher)))
+	if ((CL_Icon = CreateMCC(MUIC_Area,NULL,sizeof(struct Icon_Data),Icon_Dispatcher)))
 		return 1;
 	return 0;
 }

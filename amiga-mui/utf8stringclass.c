@@ -187,7 +187,7 @@ struct MUI_CustomClass *CL_UTF8String;
 
 int create_utf8string_class(void)
 {
-	if ((CL_UTF8String = MUI_CreateCustomClass(NULL,MUIC_BetterString,NULL,sizeof(struct UTF8String_Data),UTF8String_Dispatcher)))
+	if ((CL_UTF8String = CreateMCC(MUIC_BetterString,NULL,sizeof(struct UTF8String_Data),UTF8String_Dispatcher)))
 		return 1;
 	return 0;
 }

@@ -68,7 +68,7 @@ void init_config(void)
 
 	memset(&user,0,sizeof(struct user));
 
-#ifdef _AMIGA
+#if defined(_AMIGA) || defined(__AMIGAOS4__)
 	user.directory = mystrdup("PROGDIR:");
 	user.folder_directory = mystrdup("PROGDIR:.folders");
 #else

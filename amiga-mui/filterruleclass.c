@@ -271,7 +271,7 @@ struct MUI_CustomClass *CL_FilterRule;
 
 int create_filterrule_class(void)
 {
-	if ((CL_FilterRule = MUI_CreateCustomClass(NULL,MUIC_Group,NULL,sizeof(struct FilterRule_Data),FilterRule_Dispatcher)))
+	if ((CL_FilterRule = CreateMCC(MUIC_Group,NULL,sizeof(struct FilterRule_Data),FilterRule_Dispatcher)))
 	{
 		int i;
 

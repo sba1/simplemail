@@ -75,13 +75,33 @@
 #include "transwndclass.h"
 #include "utf8stringclass.h"
 
-#ifndef __AMIGAOS4__
-__near long __stack = 30000;
-#endif
-
 struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
 struct Library *SimpleHTMLBase;
+
+#ifdef __AMIGAOS4__
+struct MUIMasterIFace *IMUIMaster;
+struct Interface *IRexxSys;
+struct SimpleHTMLIFace *ISimpleHTML;
+
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+#else
+void *IMUIMaster;
+void *IRexxSys;
+void *ISimpleHTML;
+
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
+{
+	return OpenLibrary(name,version);
+}
+
+void CloseLibraryInterface(struct Library *lib, void *interface)
+{
+	CloseLibrary(lib);
+}
+#endif
+
 struct Locale *DefaultLocale;
 Object *App;
 
@@ -247,7 +267,7 @@ void app_del(void)
 	{
 		MUI_DisposeObject(App);
 		App = NULL;
-	}	
+	}
 }
 
 /****************************************************************
@@ -286,12 +306,12 @@ void all_del(void)
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
 
-			CloseLibrary(SimpleHTMLBase); /* accepts NULL */
-			CloseLibrary(RexxSysBase);
+			CloseLibraryInterface(SimpleHTMLBase,ISimpleHTML); /* accepts NULL */
+			CloseLibraryInterface(RexxSysBase,IRexxSys);
 			RexxSysBase = NULL;
 		}
 
-		CloseLibrary(MUIMasterBase);
+		CloseLibraryInterface(MUIMasterBase,IMUIMaster);
 		MUIMasterBase = NULL;
 	}
 
@@ -305,13 +325,13 @@ void all_del(void)
 *****************************************************************/
 int all_init(void)
 {
-	if ((MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN)))
+	if ((MUIMasterBase = OpenLibraryInterface(MUIMASTER_NAME, MUIMASTER_VMIN,&IMUIMaster)))
 	{
-		if ((RexxSysBase = OpenLibrary("rexxsyslib.library",0)))
+		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",0,&IRexxSys)))
 		{
-			SimpleHTMLBase = OpenLibrary("PROGDIR:Libs/simplehtml.library",1);
-			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("PROGDIR:simplehtml.library",1);
-			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("simplehtml.library",1);
+			SimpleHTMLBase = OpenLibraryInterface("PROGDIR:Libs/simplehtml.library",0,&ISimpleHTML);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibraryInterface("PROGDIR:simplehtml.library",0,&ISimpleHTML);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibraryInterface("simplehtml.library",0,&ISimpleHTML);
 
 			if (SimpleHTMLBase)
 			{
@@ -326,7 +346,7 @@ int all_init(void)
 								create_addressstring_class() && create_attachmentlist_class() &&
 								create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
 								create_picturebutton_class() &&
-								create_popupmenu_class() && create_icon_class() && 
+								create_popupmenu_class() && create_icon_class() &&
 								create_filterlist_class() && create_filterrule_class() &&
 								create_multistring_class() && create_addresstreelist_class() &&
 								create_pgplist_class() && create_audioselectgroup_class() && create_accountpop_class())
@@ -342,7 +362,7 @@ int all_init(void)
 						} else puts(_("Could not create mui custom classes\n"));
 					} else puts(_("Couldn't create arexx port\n"));
 				} else puts(_("Couldn't initialize timer\n"));
-			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",1);
+			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 

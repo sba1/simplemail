@@ -36,11 +36,20 @@
 
 #else /* _AROS */
 
+#ifdef __AMIGAOS4__
+#define bug (IExec->DebugPrintF)
+#else
 #define bug kprintf
+#endif
 
 #ifdef MYDEBUG
+#ifdef __AMIGAOS4__
+#define D(x) {(IExec->DebugPrintF)("%s/%ld (%s): ", __FILE__, __LINE__, IExec->FindTask(NULL)->tc_Node.ln_Name);(x);};
+#else
 void kprintf(char *string, ...);
 #define D(x) {kprintf("%s/%ld %ld bytes (%s): ", __FILE__, __LINE__, (ULONG)getreg(REG_A7) - (ULONG)FindTask(NULL)->tc_SPLower/*Upper + 4096*/, FindTask(NULL)->tc_Node.ln_Name);(x);};
+#endif
+
 #else
 #define D(x) ;
 

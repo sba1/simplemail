@@ -1043,7 +1043,7 @@ void callback_export(void)
 	{
 		if (!(mbox_export_folder(f,filename)))
 		{
-			sm_request(NULL,_("Couldn't start process for exporting.\n"),_("Ok"));			
+			sm_request(NULL,_("Couldn't start process for exporting.\n"),_("Ok"));
 		}
 	}
 	free(filename); /* accepts NULL pointer */
@@ -1256,7 +1256,7 @@ void callback_selected_mails_are_spam(void)
 			main_refresh_mail(mail);
 		}
 		mail = main_get_mail_next_selected(&handle);
-	}	
+	}
 }
 
 /* Selected mails are ham */
@@ -1565,11 +1565,9 @@ int simplemail_main(void)
   bindtextdomain(PACKAGE, LOCALEDIR);
   textdomain(PACKAGE);
 #endif
-
 	if (!gui_parseargs(0,NULL)) return 0;
 
 	startupwnd_open();
-
 	if (!init_threads()) return 0;
 
 	if (codesets_init())
@@ -1594,4 +1592,3 @@ int simplemail_main(void)
 	startupwnd_close();
 	return 0;
 }
-

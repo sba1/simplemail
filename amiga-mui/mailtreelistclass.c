@@ -178,7 +178,7 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 
 
 #ifdef MAILLIST_IS_TREE
-STATIC ASM SAVEDS VOID mails_display(REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
+STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	char **array = msg->Array;
 	char **preparse = msg->Preparse;
@@ -189,7 +189,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a2,Object *obj), REG(a1,struct MUIP_NLi
 		mail = (struct mail*)msg->TreeNode->tn_User;
 	} else mail = NULL;
 #else
-STATIC ASM SAVEDS VOID mails_display(REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
+STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
@@ -694,7 +694,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 	DoMethodA(data->show_reply_item, (Msg)msg);
 	DoMethodA(data->show_date_item, (Msg)msg);
 	DoMethodA(data->show_size_item, (Msg)msg);
-	DoMethodA(data->show_filename_item, (Msg)msg);	
+	DoMethodA(data->show_filename_item, (Msg)msg);
 	DoMethodA(data->show_pop3_item, (Msg)msg);
 	DoMethodA(data->show_recv_item, (Msg)msg);
 
@@ -1285,7 +1285,7 @@ struct MUI_CustomClass *CL_MailTreelist;
 
 int create_mailtreelist_class(void)
 {
-	if ((CL_MailTreelist = MUI_CreateCustomClass(NULL, MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
+	if ((CL_MailTreelist = CreateMCC(MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
 		return 1;
 	return 0;
 }

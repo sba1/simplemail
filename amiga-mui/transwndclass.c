@@ -491,7 +491,7 @@ struct MUI_CustomClass *CL_transwnd;
 
 int create_transwnd_class(VOID)
 {
-	if ((CL_transwnd = MUI_CreateCustomClass(NULL, MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher)))
+	if ((CL_transwnd = CreateMCC(MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher)))
 		return 1;
 	return 0;
 }

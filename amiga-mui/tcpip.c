@@ -44,6 +44,8 @@
 
 /* calling FindTask(NULL) below makes problems when compiling */
 #define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
+#define ISocket ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->isocket
+
 
 int open_socket_lib(void)
 {
@@ -54,8 +56,16 @@ int open_socket_lib(void)
 	{
 		if ((thread->socketlib = OpenLibrary("bsdsocket.library", 4)))
 		{
-			thread->socketlib_opencnt = 1;
-			return 1;
+#ifdef __AMIGAOS4__
+			if ((thread->isocket = GetInterface(thread->socketlib,"main",1,NULL)))
+			{
+#endif
+				thread->socketlib_opencnt = 1;
+				return 1;
+#ifdef __AMIGAOS4__
+			}
+			CloseLibrary(thread->socketlib);
+#endif
 		}
 	} else
 	{
@@ -72,6 +82,9 @@ void close_socket_lib(void)
 
 	if (!(--thread->socketlib_opencnt))
 	{
+#ifdef __AMIGAOS4__
+		if (thread->isocket) DropInterface(thread->isocket);
+#endif
 		if (thread->socketlib)
 		{
 			CloseLibrary(thread->socketlib);

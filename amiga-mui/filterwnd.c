@@ -69,12 +69,12 @@ static Object *filter_sound_string;
 
 static Object *filter_folder_list;
 
-STATIC ASM SAVEDS APTR filter_construct(REG(a2,APTR pool), REG(a1,struct filter *ent))
+STATIC ASM SAVEDS APTR filter_construct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1,struct filter *ent))
 {
 	return filter_duplicate(ent);
 }
 
-STATIC ASM SAVEDS VOID filter_destruct(REG(a2,APTR pool), REG(a1,struct filter *ent))
+STATIC ASM SAVEDS VOID filter_destruct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1,struct filter *ent))
 {
 	if (ent) filter_dispose(ent);
 }
@@ -90,14 +90,14 @@ STATIC ASM SAVEDS VOID filter_display(REG(a0,struct Hook *h), REG(a2,char **arra
 	}
 }
 
-STATIC ASM SAVEDS VOID move_objstr(REG(a2, Object *list), REG(a1,Object *str))
+STATIC ASM SAVEDS VOID move_objstr(REG(a0,struct Hook *h),REG(a2, Object *list), REG(a1,Object *str))
 {
 	char *x;
 	DoMethod(list,MUIM_NList_GetEntry,MUIV_List_GetEntry_Active,&x);
 	set(str,MUIA_Text_Contents,x);
 }
 
-STATIC ASM LONG move_strobj(REG(a2,Object *list), REG(a1,Object *str))
+STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,Object *str))
 {
 	char *x,*s;
 	int i = 0;

@@ -77,7 +77,7 @@ struct MUI_CustomClass *CL_FilterList;
 
 int create_filterlist_class(void)
 {
-	if ((CL_FilterList = MUI_CreateCustomClass(NULL,MUIC_NList,NULL,sizeof(struct FilterList_Data),FilterList_Dispatcher)))
+	if ((CL_FilterList = CreateMCC(MUIC_NList,NULL,sizeof(struct FilterList_Data),FilterList_Dispatcher)))
 		return 1;
 	return 0;
 }

@@ -223,6 +223,7 @@ void taglines_init(char *filename)
 	if ((fh = fopen(indexname,"rb")))
 	{
 		char buf[4];
+
 		fread(buf,1,4,fh);
 		if (!strncmp("SMTI",buf,4))
 		{

@@ -502,7 +502,7 @@ struct MUI_CustomClass *CL_DataTypes;
 
 int create_datatypes_class(void)
 {
-	if ((CL_DataTypes = MUI_CreateCustomClass(NULL,MUIC_Area,NULL,sizeof(struct DataTypes_Data),DataTypes_Dispatcher)))
+	if ((CL_DataTypes = CreateMCC(MUIC_Area,NULL,sizeof(struct DataTypes_Data),DataTypes_Dispatcher)))
 		return 1;
 	return 0;
 }

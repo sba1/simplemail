@@ -6,17 +6,38 @@
 #ifndef MUI_SIMPLEHTML_MCC_H
 #define MUI_SIMPLEHTML_MCC_H
 
-#ifndef __AMIGSOS4__
+#ifndef __AMIGAOS4__
 extern struct Library *SimpleHTMLBase;
 struct MUI_CustomClass *ObtainSimpleHTMLMCC(void);
 #ifdef __SASC
 #pragma libcall SimpleHTMLBase ObtainSimpleHTMLMCC 1e 00
 #endif
-
 #else
+
+#ifndef EXEC_INTERFACES_H
+#include <exec/interfaces.h>
 #endif
 
+struct SimpleHTMLIFace
+{
+        struct InterfaceData Data;
+
+        ULONG APICALL (*Obtain)(struct SimpleHTMLIFace *Self);
+        ULONG APICALL (*Release)(struct SimpleHTMLIFace *Self);
+        void APICALL (*Expunge)(struct SimpleHTMLIFace *Self);
+        struct Interface * APICALL (*Clone)(struct SimpleHTMLIFace *Self);
+        struct MUI_CustomClass * APICALL (*ObtainSimpleHTMLMCC)(struct SimpleHTMLIFace *Self);
+};
+
+extern struct SimpleHTMLIFace *ISimpleHTML;
+
+#endif
+
+#ifndef __AMIGAOS4__
 #define SimpleHTMLObject (Object*)(NewObject)(ObtainSimpleHTMLMCC()->mcc_Class, NULL
+#else
+#define SimpleHTMLObject (Object*)(IIntuition->NewObject)(ISimpleHTML->ObtainSimpleHTMLMCC()->mcc_Class, NULL
+#endif
 
 #define MUIA_SimpleHTML_Buffer					(TAG_USER+0x31200000) /* NS. */
 #define MUIA_SimpleHTML_BufferLen			(TAG_USER+0x31200001) /* NS. */

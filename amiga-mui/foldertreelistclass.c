@@ -79,14 +79,14 @@ struct FolderTreelist_Data
 	char name_buf[300];
 };
 
-STATIC ASM SAVEDS VOID folder_close(REG(a1,struct MUIP_NListtree_CloseMessage *msg))
+STATIC ASM SAVEDS VOID folder_close(REG(a0,struct Hook*h), REG(a2, Object *obj), REG(a1,struct MUIP_NListtree_CloseMessage *msg))
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
 		folder->closed = 1;
 }
 
-STATIC ASM SAVEDS VOID folder_display(REG(a1,struct MUIP_NListtree_DisplayMessage *msg), REG(a2, Object *obj))
+STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(CL_FolderTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
@@ -163,7 +163,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a1,struct MUIP_NListtree_DisplayMessag
 	}
 }
 
-STATIC ASM SAVEDS VOID folder_open(REG(a1,struct MUIP_NListtree_OpenMessage *msg))
+STATIC ASM SAVEDS VOID folder_open(REG(a0,struct Hook *h), REG(a2, Object *o), REG(a1,struct MUIP_NListtree_OpenMessage *msg))
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
@@ -553,7 +553,7 @@ struct MUI_CustomClass *CL_FolderTreelist;
 
 int create_foldertreelist_class(void)
 {
-	if ((CL_FolderTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct FolderTreelist_Data),FolderTreelist_Dispatcher)))
+	if ((CL_FolderTreelist = CreateMCC(MUIC_NListtree,NULL,sizeof(struct FolderTreelist_Data),FolderTreelist_Dispatcher)))
 		return 1;
 	return 0;
 }

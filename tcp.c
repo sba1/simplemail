@@ -38,16 +38,14 @@
 #include <netinet/tcp.h>
 #endif
 
-#ifdef _AMIGA /* ugly */
-#include <proto/amissl.h> /* not portable */
-#include <proto/exec.h>
-#include "subthreads_amiga.h"
-/* calling FindTask(NULL) below makes problems when compiling */
-#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
-#else
 #ifndef NO_SSL
+
+#if defined(_AMIGA ) || defined(__AMIGAOS4__)/* ugly */
+#include <proto/amissl.h> /* not portable */
+#else
 #include <openssl/ssl.h>
 #endif
+
 #endif
 
 #include "tcpip.h"

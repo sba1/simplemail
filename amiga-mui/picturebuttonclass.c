@@ -331,7 +331,7 @@ struct MUI_CustomClass *CL_PictureButton;
 
 int create_picturebutton_class(void)
 {
-	if ((CL_PictureButton = MUI_CreateCustomClass(NULL, MUIC_Area, NULL, sizeof(struct PictureButton_Data), PictureButton_Dispatcher)))
+	if ((CL_PictureButton = CreateMCC(MUIC_Area, NULL, sizeof(struct PictureButton_Data), PictureButton_Dispatcher)))
 		return TRUE;
 	return FALSE;
 }

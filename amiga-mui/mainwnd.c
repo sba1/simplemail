@@ -665,7 +665,7 @@ int main_window_init(void)
 				End,
 			End,
 		End;
-	
+
 	if (win_main)
 	{
 		if (xget(folder_tree, MUIA_Version) < 18 || (xget(folder_tree, MUIA_Version) == 18 && xget(folder_tree, MUIA_Revision)<12))
@@ -791,7 +791,7 @@ int main_window_init(void)
 
 		rc = TRUE;
 	}
-	
+
 	return(rc);
 }
 

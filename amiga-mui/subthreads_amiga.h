@@ -23,6 +23,10 @@
 #include <exec/lists.h>
 #endif
 
+#ifdef __AMIGAOS4__
+struct SocketIFace;
+#endif
+
 struct thread_s
 {
 	struct Process *process;
@@ -32,6 +36,9 @@ struct thread_s
 	struct MsgPort *thread_port;
 
 	struct Library *socketlib;
+#ifdef __AMIGAOS4__
+	struct SocketIFace *isocket;
+#endif
 	int socketlib_opencnt;
 
 	struct List push_list;

@@ -36,6 +36,10 @@
 #include "compiler.h"
 #include "support_indep.h"
 
+#ifdef __AMIGAOS4__
+extern ULONG hookEntry();
+#endif
+
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
 {
 	char *data = (char*)j->h_Data;
@@ -57,7 +61,12 @@ void SecondsToString( char *buf, unsigned int seconds)
 		struct Hook date_hook;
 
 		date_hook.h_Data = buf;
+#ifdef __AMIGAOS4__
+		date_hook.h_Entry = (HOOKFUNC)hookEntry;
+		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
+#else
 		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+#endif
 
 		FormatDate(DefaultLocale, DefaultLocale->loc_ShortDateFormat, &ds, &date_hook);
 
@@ -87,7 +96,12 @@ void SecondsToStringLong( char *buf, unsigned int seconds)
 		struct Hook date_hook;
 
 		date_hook.h_Data = buf;
+#ifdef __AMIGAOS4__
+		date_hook.h_Entry = (HOOKFUNC)hookEntry;
+		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
+#else
 		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+#endif
 
 		FormatDate(DefaultLocale, DefaultLocale->loc_DateFormat, &ds, &date_hook);
 
@@ -116,8 +130,13 @@ void SecondsToDateString( char *buf, unsigned int seconds)
 	{
 		struct Hook date_hook;
 
-		date_hook.h_Data = buf;
+#ifndef __AMIGAOS4__
+		date_hook.h_Entry = (HOOKFUNC)hookEntry;
+		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
+#else
 		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+#endif
+		date_hook.h_Data = buf;
 		FormatDate(DefaultLocale, DefaultLocale->loc_ShortDateFormat, &ds, &date_hook);
 	} else
 	{
@@ -138,9 +157,13 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 	if (LocaleBase && DefaultLocale)
 	{
 		struct Hook date_hook;
-
-		date_hook.h_Data = buf;
+#ifndef __AMIGAOS4__
+		date_hook.h_Entry = (HOOKFUNC)hookEntry;
+		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
+#else
 		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+#endif
+		date_hook.h_Data = buf;
 		FormatDate(DefaultLocale, DefaultLocale->loc_TimeFormat, &ds, &date_hook);
 	} else
 	{
@@ -263,7 +286,12 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		rect.MaxY = yDest + ySize - 1;
 		
 		/* Initialize the hook */
+#ifdef __AMIGAOS4__
+		hook.hook.h_Entry = (HOOKFUNC)hookEntry;
+		hook.hook.h_SubEntry = (HOOKFUNC)HookFunc_BltMask;
+#else
 		hook.hook.h_Entry = (HOOKFUNC)HookFunc_BltMask;
+#endif
 		hook.srcBitMap = srcBitMap;
 		hook.srcx = xSrc;
 		hook.srcy = ySrc;

@@ -52,19 +52,19 @@ struct PGPList_Data
 	char buf[100];
 };
 
-STATIC ASM SAVEDS struct pgp_key *pgp_construct(REG(a1,struct NList_ConstructMessage *msg))
+STATIC ASM SAVEDS struct pgp_key *pgp_construct(REG(a0,struct Hook *h), REG(a2,Object *obj), REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	return pgp_duplicate(key);
 }
 
-STATIC ASM SAVEDS VOID pgp_destruct(REG(a1,struct NList_DestructMessage *msg))
+STATIC ASM SAVEDS VOID pgp_destruct(REG(a0,struct Hook *h), REG(a2,Object *obj), REG(a1,struct NList_DestructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	if (key) pgp_dispose(key);
 }
 
-STATIC ASM SAVEDS VOID pgp_display(REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
+STATIC ASM SAVEDS VOID pgp_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
 	struct PGPList_Data *data = (struct PGPList_Data*)INST_DATA(CL_PGPList->mcc_Class,obj);
 	if (msg->entry)
@@ -137,7 +137,7 @@ struct MUI_CustomClass *CL_PGPList;
 
 int create_pgplist_class(void)
 {
-	if ((CL_PGPList = MUI_CreateCustomClass(NULL,MUIC_NList,NULL,sizeof(struct PGPList_Data),PGPList_Dispatcher)))
+	if ((CL_PGPList = CreateMCC(MUIC_NList,NULL,sizeof(struct PGPList_Data),PGPList_Dispatcher)))
 		return 1;
 	return 0;
 }

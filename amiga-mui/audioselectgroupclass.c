@@ -131,7 +131,7 @@ void delete_audioselectgroup_class(void);
 
 int create_audioselectgroup_class(void)
 {
-	if ((CL_AudioSelectGroup = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct AudioSelectGroup_Data), AudioSelectGroup_Dispatcher)))
+	if ((CL_AudioSelectGroup = CreateMCC( MUIC_Group, NULL, sizeof(struct AudioSelectGroup_Data), AudioSelectGroup_Dispatcher)))
 		return TRUE;
 	return FALSE;
 }

@@ -380,7 +380,7 @@ struct MUI_CustomClass *CL_Popupmenu;
 
 int create_popupmenu_class(void)
 {
-	if ((CL_Popupmenu = MUI_CreateCustomClass(NULL,MUIC_Image,NULL,sizeof(struct Popupmenu_Data),Popupmenu_Dispatcher)))
+	if ((CL_Popupmenu = CreateMCC(MUIC_Image,NULL,sizeof(struct Popupmenu_Data),Popupmenu_Dispatcher)))
 		return 1;
 	return 0;
 }

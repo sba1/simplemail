@@ -34,6 +34,9 @@ VOID DisposeAllChilds(Object *o);
 VOID DisposeAllFamilyChilds(Object *o);
 VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help);
 
+/* Custom class creation helper */
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *super_mcc, int instDataSize, APTR dispatcher);
+
 /* global application object, defined in gui_main.c */
 extern Object *App;
 

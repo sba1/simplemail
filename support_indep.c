@@ -34,6 +34,7 @@
 #endif
 #include <sys/stat.h>
 
+#include "codesets.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -402,6 +403,14 @@ int array_contains(char **strings, char *str)
 }
 
 /**************************************************************************
+ Returns 1 if a given array contains a given utf8 string (case insensitive)
+**************************************************************************/
+int array_contains_utf8(char **strings, char *str)
+{
+	return array_index_utf8(strings,str)!=-1;
+}
+
+/**************************************************************************
  Returns the index of the string within the array or -1 on failure.
 **************************************************************************/
 int array_index(char **strings, char *str)
@@ -414,6 +423,21 @@ int array_index(char **strings, char *str)
 	}
 	return -1;
 }
+
+/**************************************************************************
+ Returns the index of the string within the array or -1 on failure.
+**************************************************************************/
+int array_index_utf8(char **strings, char *str)
+{
+	int i;
+	if (!strings) return -1;
+	for (i=0;strings[i];i++)
+	{
+		if (!utf8stricmp(strings[i],str)) return i;
+	}
+	return -1;
+}
+
 
 /**************************************************************************
  Returns the index of the string within the array or -1 on failure.

@@ -42,11 +42,12 @@ problem.
 Changes
 ~~~~~~~
 Version 0.10 (tenth alpha) - released on 2001/09/10
-  - configurable headers inside the read window
+  - configurable headers for the read window
   - can read message/rfc822 content type properly
   - can decrypt encryptet pgp message using pgp 2.6.x
   - minor other improvements
   - filter has been improved
+  - wordwrapping for composed messages
 
 Version 0.9 (ninth alpha) - released on 2001/09/03
   - improved addressbook

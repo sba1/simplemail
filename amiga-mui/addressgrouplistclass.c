@@ -85,10 +85,14 @@ STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object
 	if (grp)
 	{
 		utf8tostr(grp->name, data->name_buf, sizeof(data->name_buf), user.config.default_codeset);
-		*array = data->name_buf;
+		utf8tostr(grp->description, data->description_buf, sizeof(data->description_buf), user.config.default_codeset);
+
+		*array++ = data->name_buf;
+		*array++ = data->description_buf;
 	} else
 	{
-	 *array = _("Name");
+	 *array++ = _("Name");
+	 *array++ = _("Description");
 	}
 }
 
@@ -129,6 +133,7 @@ STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *ms
 						MUIA_NList_DestructHook2, &data->destruct_hook,
 						MUIA_NList_DisplayHook2, &data->display_hook,
 						MUIA_NList_Title, TRUE,
+						MUIA_NList_Format, ",",
 						TAG_DONE);
 
 	return (ULONG)obj;

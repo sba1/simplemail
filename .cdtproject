@@ -7,12 +7,12 @@
         
     <item id="org.eclipse.cdt.core.pathentry">
 <pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+<pathentry kind="src" path=""/>
+<pathentry kind="out" path=""/>
 <pathentry kind="mac" path="" name="__AMIGAOS4__" value=""/>
 <pathentry kind="mac" path="" name="__amigaos4__" value=""/>
 <pathentry kind="mac" path="" name="APICALL" value=""/>
 <pathentry kind="mac" path="" name="va_list" value="void *"/>
-<pathentry kind="src" path=""/>
-<pathentry kind="out" path=""/>
 </item>
 <item id="cdt_indexer">
 <indexEnabled indexValue="true"/>

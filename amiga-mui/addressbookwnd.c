@@ -44,6 +44,7 @@
 #include "addressbookwnd.h"
 #include "addresstreelistclass.h"
 #include "compiler.h"
+#include "composeeditorclass.h"
 #include "mainwnd.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
@@ -451,7 +452,7 @@ void person_window_open(struct addressbook_entry *entry)
 						End,
 					Child, VGroup,
 						Child, HorizLineTextObject("E-Mail addresses"),
-						Child, email_texteditor = TextEditorObject,
+						Child, email_texteditor = ComposeEditorObject,
 							InputListFrame,
 							MUIA_CycleChain,1,
 							End,
@@ -677,10 +678,14 @@ void person_window_open(struct addressbook_entry *entry)
 			if (entry && entry->type == ADDRESSBOOK_ENTRY_PERSON)
 			{
 				int i;
-				for (i=0;i<entry->u.person.num_emails;i++)
+				char **array = (char**)malloc(sizeof(char*)*(entry->u.person.num_emails+1));
+				if (array)
 				{
-					DoMethod(email_texteditor,MUIM_TextEditor_InsertText,entry->u.person.emails[i],MUIV_TextEditor_InsertText_Bottom);
-					DoMethod(email_texteditor,MUIM_TextEditor_InsertText,"\n",MUIV_TextEditor_InsertText_Bottom);
+					for (i=0;i<entry->u.person.num_emails;i++)
+						array[i] = entry->u.person.emails[i];
+					array[i] = NULL;
+					set(email_texteditor,MUIA_ComposeEditor_Array, array);
+					free(array);
 				}
 
 				setstring(realname_string, entry->u.person.realname);

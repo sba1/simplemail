@@ -26,17 +26,17 @@ int dl_window_init(void)
 	return(rc);
 }
 
-void set_dl_title(char *str)
+void dl_set_title(char *str)
 {
 	set(win_dl, MUIA_Window_Title, str);
 }
 
-void set_dl_status(char *str)
+void dl_set_status(char *str)
 {
 	set(win_dl, MUIA_transwnd_Status, str);
 }
 
-void init_dl_gauge_mail(int amm)
+void dl_init_gauge_mail(int amm)
 {
 	static char str[256];
 	
@@ -47,12 +47,12 @@ void init_dl_gauge_mail(int amm)
 	set(win_dl, MUIA_transwnd_Gauge1_Val, 0);
 }
 
-void set_dl_gauge_mail(int current)
+void dl_set_gauge_mail(int current)
 {
 	set(win_dl, MUIA_transwnd_Gauge1_Val, current);
 }
 
-void init_dl_gauge_byte(int size)
+void dl_init_gauge_byte(int size)
 {
 	static char str[256];
 	
@@ -63,7 +63,7 @@ void init_dl_gauge_byte(int size)
 	set(win_dl, MUIA_transwnd_Gauge2_Val, 0);
 }
 
-void set_dl_gauge_byte(int current)
+void dl_set_gauge_byte(int current)
 {
 	set(win_dl, MUIA_transwnd_Gauge2_Val, current);
 }

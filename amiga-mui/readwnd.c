@@ -477,7 +477,7 @@ static void show_raw(int **pdata)
 	UnLock(lock);
 	if (!dirname) return;
 
-	len = strlen(dirname)+strlen(data->mail->filename) + 6;
+	len = strlen(dirname)+strlen(data->ref_mail->filename) + 6;
 	if (!(buf = malloc(len+40)))
 	{
 		FreeVec(dirname);
@@ -486,7 +486,7 @@ static void show_raw(int **pdata)
 
 	strcpy(buf,"SYS:Utilities/Multiview \"");
 	strcat(buf,dirname);
-	AddPart(buf+27,data->mail->filename,len);
+	AddPart(buf+27,data->ref_mail->filename,len);
 	strcat(buf+27,"\"");
 	sm_system(buf,NULL);
 	free(buf);

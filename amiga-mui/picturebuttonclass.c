@@ -92,8 +92,6 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct PictureButton_Data *data;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
-					ButtonFrame,
-					MUIA_InputMode, MUIV_InputMode_RelVerify,
 					MUIA_Font, MUIV_Font_Tiny,
 					TAG_MORE, msg->ops_AttrList)))
 	        return 0;
@@ -317,8 +315,10 @@ Object *MakePictureButton(char *label, char *filename)
 	else control_char = 0;
 
 	return PictureButtonObject,
+		ButtonFrame,
 		MUIA_CycleChain, 1,
 		control_char?MUIA_ControlChar:TAG_IGNORE, control_char,
+		MUIA_InputMode, MUIV_InputMode_RelVerify,
 		MUIA_PictureButton_Label,label,
 		MUIA_PictureButton_Filename,filename,
 		End;

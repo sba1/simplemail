@@ -40,6 +40,7 @@
 #include "compiler.h"
 #include "foldertreelistclass.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 
 struct FolderTreelist_Data
 {
@@ -178,12 +179,12 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_incoming", End, 0);
-	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_outgoing", End, 0);
-	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_sent", End, 0);
-	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_deleted", End, 0);
-	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_other", End, 0);
-	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_group", End, 0);
+	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End, 0);
+	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End, 0);
+	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End, 0);
+	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End, 0);
+	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End, 0);
+	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End, 0);
 
 	return 1;
 }

@@ -42,6 +42,7 @@
 #include "compiler.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 #include "support_indep.h"
 
 struct MailTreelist_Data
@@ -216,19 +217,19 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_unread", End, 0);
-	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_old", End, 0);
-	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_waitsend", End, 0);
-	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_sent", End, 0);
-	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_mark", End, 0);
-	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_hold", End, 0);
-	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_reply", End, 0);
-	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_forward", End, 0);
+	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End, 0);
+	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End, 0);
+	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End, 0);
+	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End, 0);
+	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_mark", End, 0);
+	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End, 0);
+	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End, 0);
+	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End, 0);
 
-	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_urgent", End, 0);
-	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_attach", End, 0);
-	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_group", End, 0);
-	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_new", End, 0);
+	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End, 0);
+	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End, 0);
+	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End, 0);
+	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End, 0);
 	
 	return 1;
 }

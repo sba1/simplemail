@@ -2145,42 +2145,20 @@ void composed_mail_init(struct composed_mail *mail)
 }
 
 /**************************************************************************
- Writes out the from header field (it shouldn't be inlined because
- it uses some stack space
+ Writes out the a selected address header field correctly encoded
 **************************************************************************/
-static int mail_compose_write_from(FILE *fp, char *from)
+static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *header_contents)
 {
 	int rc = 0;
-	struct list *list = create_address_list(from);
+	struct list *list = create_address_list(header_contents);
 
 	if (list)
 	{
-		char *from = encode_address_field("From", list);
-		if (from)
+		char *hc = encode_address_field(header_name, list);
+		if (hc)
 		{
-			if (fprintf(fp,"%s\n",from)>=0) rc = 1;
-			free(from);
-		}
-		free_address_list(list);
-	}
-	return rc;
-}
-
-/**************************************************************************
- Writes out the reply header field
-**************************************************************************/
-static int mail_compose_write_reply(FILE *fp, char *reply)
-{
-	int rc = 0;
-	struct list *list = create_address_list(reply);
-
-	if (list)
-	{
-		char *from = encode_address_field("Reply-To", list);
-		if (from)
-		{
-			if (fprintf(fp,"%s\n",from)>=0) rc = 1;
-			free(from);
+			if (fprintf(fp,"%s\n",hc)>=0) rc = 1;
+			free(hc);
 		}
 		free_address_list(list);
 	}
@@ -2193,25 +2171,20 @@ static int mail_compose_write_reply(FILE *fp, char *reply)
 static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 {
 	char *subject;
-	struct list *alist;
 
-	if (!mail_compose_write_from(fp,new_mail->from))
+	if (!mail_compose_write_addr_header(fp,"From",new_mail->from))
+		return 0;
+
+	if (!mail_compose_write_addr_header(fp,"To",new_mail->to))
 		return 0;
 
 	if (new_mail->replyto && *new_mail->replyto)
-		if (!mail_compose_write_reply(fp,new_mail->replyto))
+		if (!mail_compose_write_addr_header(fp,"Reply-To",new_mail->replyto))
 			return 0;
 
-	if ((alist = create_address_list(new_mail->to)))
-	{
-		char *to = encode_address_field("To", alist);
-		if (to)
-		{
-			fprintf(fp,"%s\n",to);
-			free(to);
-		}
-		free_address_list(alist);
-	}
+	if (new_mail->cc && *new_mail->cc)
+		if (!mail_compose_write_addr_header(fp,"CC",new_mail->cc))
+			return 0;
 
 	if ((subject = encode_header_field("Subject",new_mail->subject)))
 	{
@@ -2396,7 +2369,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				fprintf(ofh,"Content-Type: message/rfc822\n\n");
 
 				/* Only one header is required */
-				rc = mail_compose_write_from(ofh,new_mail->from);
+				rc = mail_compose_write_addr_header(ofh,"From",new_mail->from);
 			}
 
 			fprintf(ofh,"MIME-Version: 1.0\n");

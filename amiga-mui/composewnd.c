@@ -71,6 +71,7 @@ struct Compose_Data /* should be a customclass */
 	Object *wnd;
 	Object *from_text;
 	Object *to_string;
+	Object *cc_string;
 	Object *subject_string;
 	Object *reply_string;
 	Object *copy_button;
@@ -190,6 +191,30 @@ static int compose_expand_to(struct Compose_Data **pdata)
 	DisplayBeep(NULL);
 	set(data->wnd, MUIA_Window_ActiveObject,data->to_string);
 	return 0;
+}
+
+/******************************************************************
+ Expand the to string. Returns 1 for a success else 0
+*******************************************************************/
+static int compose_expand_cc(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	char *cc_contents = (char*)xget(data->cc_string, MUIA_String_Contents);
+	char *str;
+
+	if (cc_contents && *cc_contents)
+	{
+		if ((str = addressbook_get_expand_str(cc_contents)))
+		{
+			set(data->cc_string, MUIA_String_Contents, str);
+			free(str);
+			return 1;
+		}
+		DisplayBeep(NULL);
+		set(data->wnd, MUIA_Window_ActiveObject,data->cc_string);
+		return 1;
+	}
+	return 1;
 }
 
 /******************************************************************
@@ -343,8 +368,6 @@ static void compose_remove_file(struct Compose_Data **pdata)
 
 	if (treenode && rem)
 	{
-		struct MUI_NListtree_TreeNode *newtreelist = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
-
 		DoMethod(data->attach_tree, MUIM_NListtree_Move, treenode, MUIV_NListtree_Move_OldTreeNode_Head, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Head, 0); 
 		DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode, 0); 
 		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First); 
@@ -470,7 +493,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 *******************************************************************/
 static void compose_mail(struct Compose_Data *data, int hold)
 {
-	if (compose_expand_to(&data))
+	if (compose_expand_to(&data) && compose_expand_cc(&data))
 	{
 		char *from = (char*)xget(data->from_text, MUIA_Text_Contents);
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
@@ -755,11 +778,11 @@ static void compose_new_active(void **msg)
 int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
-	Object *from_text, *from_list, *reply_string, *to_string, *subject_string;
+	Object *from_text, *from_list, *reply_string, *to_string, *cc_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
-	Object *expand_to_button;
+	Object *expand_to_button, *expand_cc_button;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
 	Object *main_group, *attach_group, *vertical_balance;
@@ -847,6 +870,17 @@ int compose_window_open(struct compose_args *args)
 						MUIA_String_AdvanceOnCR, TRUE,
 						End,
 					Child, expand_to_button = PopButton(MUII_ArrowLeft),
+					End,
+				Child, MakeLabel(_("Copies To")),
+				Child, HGroup,
+					MUIA_Group_Spacing,0,
+					Child, cc_string = AddressStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_ControlChar, GetControlChar(_("Copies To")),
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, expand_cc_button = PopButton(MUII_ArrowLeft),
 					End,
 				Child, MakeLabel(_("S_ubject")),
 				Child, subject_string = BetterStringObject,
@@ -971,6 +1005,7 @@ int compose_window_open(struct compose_args *args)
 			data->num = num;
 			data->from_text = from_text;
 			data->to_string = to_string;
+			data->cc_string = cc_string;
 			data->reply_string = reply_string;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
@@ -1039,7 +1074,9 @@ int compose_window_open(struct compose_args *args)
 
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 			DoMethod(expand_to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
+			DoMethod(expand_cc_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
 			DoMethod(to_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
+			DoMethod(cc_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
@@ -1068,8 +1105,7 @@ int compose_window_open(struct compose_args *args)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *from, *to;
-				char *decoded_to = NULL;
+				char *from, *to, *cc;
 
 				/* Find and set the correct account */
 				if ((from = mail_find_header_contents(args->to_change, "from")))
@@ -1109,9 +1145,19 @@ int compose_window_open(struct compose_args *args)
 				if ((to = mail_find_header_contents(args->to_change,"to")))
 				{
 					/* set the To string */
+					char *decoded_to;
 					parse_text_string(to,&decoded_to);
 					set(to_string,MUIA_String_Contents,decoded_to);
-					if (decoded_to) free(decoded_to);
+					free(decoded_to);
+				}
+
+				if ((cc = mail_find_header_contents(args->to_change,"cc")))
+				{
+					/* set the To string */
+					char *decoded_cc;
+					parse_text_string(cc,&decoded_cc);
+					set(cc_string,MUIA_String_Contents,decoded_cc);
+					free(decoded_cc);
 				}
 
 				set(subject_string,MUIA_String_Contents,args->to_change->subject);
@@ -1168,7 +1214,7 @@ void compose_window_close(int num, int action)
 	{
 		switch (action)
 		{
-			case COMPOSE_CLOSE_CANCEL: compose_window_dispose(compose_open[num]); break;
+			case COMPOSE_CLOSE_CANCEL: compose_window_dispose(&compose_open[num]); break;
 			case COMPOSE_CLOSE_SEND:  compose_mail(compose_open[num],2);
 			case COMPOSE_CLOSE_LATER: compose_mail(compose_open[num],0);
 			case COMPOSE_CLOSE_HOLD: compose_mail(compose_open[num],1);

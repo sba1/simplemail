@@ -1807,7 +1807,7 @@ static int imap_thread_append_mail(struct mail *mail, char *source_dir, struct i
 	while (fgets(line_buf,sizeof(line_buf)-2,fh))
 	{
 		int len = strlen(line_buf);
-		if (len > 2 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
+		if (len > 1 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
 		{
 			line_buf[len-1] = '\r';
 			line_buf[len] = '\n';

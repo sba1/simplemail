@@ -155,6 +155,7 @@ int folder_delete_mail(struct folder *from_folder, struct mail *mail);
 void folder_delete_deleted(void);
 int folder_save_index(struct folder *f);
 void folder_delete_all_indexfiles(void);
+int folder_rescan(struct folder *folder);
 struct folder *folder_add_with_name(char *path, char *name);
 struct folder *folder_add_group(char *name);
 struct folder *folder_add_imap(struct folder *parent, char *imap_path);

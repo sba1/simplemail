@@ -1382,6 +1382,21 @@ void callback_delete_all_indexfiles(void)
 	folder_delete_all_indexfiles();
 }
 
+/* rescan the current selected folder */
+void callback_rescan_folder(void)
+{
+	struct folder *f = main_get_folder();
+	if (f)
+	{
+		/* Because this means deleting free all mails we safely remove all found mails as it
+     * could reference a old mail */
+		search_clear_results();
+		folder_rescan(f);
+		main_set_folder_mails(f);
+		main_refresh_folder(f);
+	}
+}
+
 int simplemail_main(void)
 {
 #ifdef ENABLE_NLS

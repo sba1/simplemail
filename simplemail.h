@@ -95,6 +95,7 @@ void callback_timer(void);
 void callback_select_mail(int num);
 
 void callback_delete_all_indexfiles(void);
+void callback_rescan_folder(void);
 
 int callback_import_addressbook(void);
 

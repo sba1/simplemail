@@ -361,6 +361,7 @@ void folder_delete_all_indexfiles(void)
 	while (f)
 	{
 		folder_delete_indexfile(f);
+		f->index_uptodate = 0;
 		f = folder_next(f);
 	}
 }
@@ -941,9 +942,60 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int ui
 }
 
 /******************************************************************
+ Rescan the given folder
+*******************************************************************/
+int folder_rescan(struct folder *folder)
+{
+	DIR *dfd; /* directory descriptor */
+	struct dirent *dptr; /* dir entry */
+	char path[380];
+
+	folder_lock(folder);
+
+	getcwd(path, sizeof(path));
+	if(chdir(folder->path) == -1)
+	{
+		folder_unlock(folder);
+		return 0;
+	}
+
+#ifdef _AMIGA
+	if ((dfd = opendir("")))
+#else
+	if ((dfd = opendir("./")))
+#endif
+	{
+		free(folder->mail_array);
+		free(folder->sorted_mail_array);
+		folder->mail_array = folder->sorted_mail_array = NULL;
+		folder->mail_array_allocated = 0;
+		folder->num_mails = 0;
+
+		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+		folder->num_index_mails = 0;
+
+		while ((dptr = readdir(dfd)) != NULL)
+		{
+			struct mail *m;
+
+			if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+
+			if ((m = mail_create_from_file(dptr->d_name)))
+			{
+				folder_add_mail(folder,m,0);
+			}
+		}
+		closedir(dfd);
+	}
+
+	folder_unlock(folder);
+	chdir(path);
+	return 1;
+}
+
+/******************************************************************
  Reads the all mail infos in the given folder.
- TODO: Speed up this by using indexfiles (also get rid of readdir
- ans friends)
+ TODO: Get rid of readdir ans friends
  returns 0 if an error has happended otherwise 0
 *******************************************************************/
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
@@ -1074,38 +1126,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 	if (!mail_infos_read)
 	{
-		DIR *dfd; /* directory descriptor */
-		struct dirent *dptr; /* dir entry */
-
-		char path[256];
-
-		getcwd(path, sizeof(path));
-		if(chdir(folder->path) == -1) return 0;
-
-#ifdef _AMIGA
-		if ((dfd = opendir("")))
-#else
-		if ((dfd = opendir("./")))
-#endif
-		{
-			folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
-			folder->num_index_mails = 0;
-
-			while ((dptr = readdir(dfd)) != NULL)
-			{
-				struct mail *m;
-
-				if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
-
-				if ((m = mail_create_from_file(dptr->d_name)))
-				{
-					folder_add_mail(folder,m,0);
-				}
-			}
-			closedir(dfd);
-		}
-
-		chdir(path);
+		folder_rescan(folder);
 	}
 	return 1;
 }

@@ -468,6 +468,7 @@ int main_window_init(void)
 		MENU_FOLDER,
 		MENU_FOLDER_NEWGROUP,
 		MENU_FOLDER_NEWFOLDER,
+		MENU_FOLDER_RESCAN,
 		MENU_FOLDER_DELETE,
 		MENU_FOLDER_OPTIONS,
 		MENU_FOLDER_ORDER,
@@ -510,6 +511,7 @@ int main_window_init(void)
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Delete all indexfiles..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
@@ -714,6 +716,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, App, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, App, 3, MUIM_CallHook, &hook_standard, callback_rescan_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);

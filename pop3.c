@@ -867,7 +867,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 									}
 								}
 
-																	rc = success;
+								rc = success;
 								chdir(path);
 							}
 						}

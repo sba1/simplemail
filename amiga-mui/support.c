@@ -178,13 +178,12 @@ int mystrnicmp(const char *str1, const char *str2, int n)
 **************************************************************************/
 char *mystristr(const char *str1, const char *str2)
 {
-	const char *buf = str1;
 	char c;
 	int str2_len = strlen(str2);
 
 	while (*str1)
 	{
-		if (!Strnicmp(buf,str1,str2_len))
+		if (!Strnicmp(str1,str2,str2_len))
 			return str1;
 		str1++;
 	}

@@ -254,7 +254,7 @@ void *realloc(void *om, size_t size)
 static struct SignalSemaphore files_sem;
 static BPTR files[MAX_FILES];
 static char filesbuf[4096];
-static unsigned long tmpno;
+static unsigned long tmpno = 0;
 
 static int init_io(void)
 {
@@ -465,7 +465,7 @@ char *tmpnam(char *name)
 	static char default_buf[L_tmpnam];
 	ObtainSemaphore(&files_sem);
 	if (!name) name = default_buf;
-	vsnprintf(name,sizeof(default_buf),"T:sm%05lx",(void*)&tmpno);
+	snprintf(name,sizeof(default_buf),"T:sm%05lx",tmpno);
 	tmpno++;
 	ReleaseSemaphore(&files_sem);
 	return name;

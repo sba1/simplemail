@@ -761,8 +761,7 @@ static int __grow_type_table (int nextarg, unsigned char **typetable, int *table
   return 0;
 }
 
-/*
-int snprintf(char *buf, int n, const char *fmt, ...)
+int snprintf(char *buf, size_t n, const char *fmt, ...)
 {
   int r;
   va_list ap;
@@ -772,4 +771,4 @@ int snprintf(char *buf, int n, const char *fmt, ...)
   va_end(ap);
   return r;
 }
-*/
+

@@ -1057,7 +1057,8 @@ static void group_window_ok(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
 	struct addressbook_group *group, *new_group;
-	int i, group_entries;
+	struct addressbook_entry_new *address_entry;
+	int i, group_entries, address_entries, needs_entry_refresh = 0;
 
 	/* Check if choosen group name already exists */
 	group_entries = xget(group_list, MUIA_NList_Entries);
@@ -1087,7 +1088,27 @@ static void group_window_ok(struct Group_Data **pdata)
 			LONG pos = MUIV_NList_GetPos_Start;
 			DoMethod(group_list, MUIM_NList_GetPos, data->group, &pos);
 
-			if (pos != MUIV_NList_GetPos_End) DoMethod(group_list, MUIM_NList_Remove, pos);
+			if (pos != MUIV_NList_GetPos_End)
+			{
+				/* now rename groups within the address entries */	
+				address_entries = xget(address_list, MUIA_NList_Entries);
+				for (i=0;i<address_entries;i++)
+				{
+					DoMethod(address_list, MUIM_NList_GetEntry, i, &address_entry);
+					if (address_entry)
+					{
+						int idx = array_index(address_entry->group_array, data->group->name);
+						if (idx != -1)
+						{
+							array_replace_idx(address_entry->group_array, idx, new_group->name);
+							needs_entry_refresh = 1;
+						}
+					}
+				}
+				
+				/* Remove old group */
+				DoMethod(group_list, MUIM_NList_Remove, pos);
+			}
 		}
 
 		DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
@@ -1104,6 +1125,9 @@ static void group_window_ok(struct Group_Data **pdata)
 	cleanup_addressbook();
 	addressbookwnd_store();
 	main_build_addressbook();
+
+	if (needs_entry_refresh)
+		DoMethod(address_list,MUIM_NList_Redraw,MUIV_NList_Redraw_All);
 }
 
 /******************************************************************

@@ -17,12 +17,26 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** composewnd.h
 */
 
 #ifndef COMPOSEWND_H
 #define COMPOSEWND_H
 
-void compose_window_open(char *to_str, struct mail *tochange);
+struct compose_args
+{
+	char *to_str; /* the initial to string */
+	struct mail *to_change; /* this mail is changed (can be freed) */
+
+	int action;
+	struct mail *ref_mail; /* the status of this mail is changed after successful editing */
+};
+
+#define COMPOSE_ACTION_NEW     0
+#define COMPOSE_ACTION_EDIT    1
+#define COMPOSE_ACTION_REPLY   2
+#define COMPOSE_ACTION_FORWARD 3
+
+void compose_window_open(struct compose_args *args);
 
 #endif

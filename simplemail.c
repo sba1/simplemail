@@ -20,6 +20,7 @@
 ** simplemail.c
 */
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -92,7 +93,9 @@ void callback_get_address(void)
 /* a new mail should be composed */
 void callback_new_mail(void)
 {
-	compose_window_open(NULL,NULL);
+	struct compose_args ca;
+	memset(&ca,0,sizeof(ca));
+	compose_window_open(&ca);
 }
 
 /* a mail should be replied */
@@ -114,7 +117,13 @@ void callback_reply_mail(void)
 			mail_read_contents("",mail);
 			if ((reply = mail_create_reply(mail)))
 			{
-				compose_window_open(NULL,reply);
+				struct compose_args ca;
+				memset(&ca,0,sizeof(ca));
+				ca.to_change = reply;
+				ca.action = COMPOSE_ACTION_REPLY;
+				ca.ref_mail = main_get_active_mail();
+				compose_window_open(&ca);
+
 				mail_free(reply);
 			}
 			mail_free(mail);
@@ -142,7 +151,12 @@ void callback_forward_mail(void)
 			mail_read_contents("",mail);
 			if (mail_forward(mail))
 			{
-				compose_window_open(NULL,mail);
+				struct compose_args ca;
+				memset(&ca,0,sizeof(ca));
+				ca.to_change = mail;
+				ca.action = COMPOSE_ACTION_FORWARD;
+				ca.ref_mail = main_get_active_mail();
+				compose_window_open(&ca);
 			}
 			mail_free(mail);
 		}
@@ -166,8 +180,12 @@ void callback_change_mail(void)
 
 		if ((mail = mail_create_from_file(filename)))
 		{
+			struct compose_args ca;
 			mail_read_contents("",mail);
-			compose_window_open(NULL,mail);
+			memset(&ca,0,sizeof(ca));
+			ca.to_change = mail;
+			ca.action = COMPOSE_ACTION_EDIT;
+			compose_window_open(&ca);
 			mail_free(mail);
 		}
 
@@ -378,9 +396,12 @@ void callback_mails_set_status(int status)
 /* a new mail should be written to the given address */
 void callback_write_mail_to(struct addressbook_entry *address)
 {
-	char *to = addressbook_get_address_str(address);
-	compose_window_open(to,NULL);
-	if (to) free(to);
+	struct compose_args ca;
+	memset(&ca,0,sizeof(ca));
+	ca.to_str = addressbook_get_address_str(address);
+	ca.action = COMPOSE_ACTION_NEW;
+	compose_window_open(&ca);
+	if (ca.to_str) free(ca.to_str);
 }
 
 /* edit folder settings */

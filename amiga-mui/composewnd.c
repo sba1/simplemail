@@ -39,6 +39,7 @@
 
 #include "addressbook.h"
 #include "codecs.h"
+#include "folder.h"
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
@@ -51,6 +52,7 @@
 #include "compiler.h"
 #include "composewnd.h"
 #include "datatypesclass.h"
+#include "mainwnd.h" /* main_refresh_mail() */
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
@@ -83,6 +85,8 @@ struct Compose_Data /* should be a customclass */
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
 	char *reply_id; /* the emails reply-id if changed */
+	int compose_action;
+	struct mail *ref_mail; /* the mail which status should be changed after editing */
 
 	struct FileRequester *file_req;
 
@@ -399,10 +403,32 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.mail_folder = data->folder;
 		new_mail.reply_message_id = data->reply_id;
 
+		/* Move this out */
 		if ((mail_compose_new(&new_mail,hold)))
 		{
+			/* Change the status of a mail if it was replied or forwarded */
+			if (data->ref_mail)
+			{
+				if (data->compose_action == COMPOSE_ACTION_REPLY)
+				{
+					struct folder *f = folder_find_by_mail(data->ref_mail);
+					if (f)
+					{
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						main_refresh_mail(data->ref_mail);
+					}
+				} else
+				{
+					if (data->compose_action == COMPOSE_ACTION_FORWARD)
+					{
+						struct folder *f = folder_find_by_mail(data->ref_mail);
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						main_refresh_mail(data->ref_mail);
+					}
+				}
+			}
 			/* Close (and dispose) the compose window (data) */
-			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);	
+			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 		}
 	}
 }
@@ -521,7 +547,8 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 /******************************************************************
  Opens a compose window
 *******************************************************************/
-void compose_window_open(char *to_str, struct mail *tochange)
+void compose_window_open(struct compose_args *args)
+/*void compose_window_open(char *to_str, struct mail *tochange)*/
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button;
 	Object *to_string, *subject_string;
@@ -699,12 +726,12 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
-			if (!tochange)
+			if (!args->to_change)
 				compose_add_text(&data);
 
-			if (to_str)
+			if (args->to_str)
 			{
-				set(to_string,MUIA_String_Contents,to_str);
+				set(to_string,MUIA_String_Contents,args->to_str);
 				/* activate the "Subject" field */
 				set(wnd,MUIA_Window_ActiveObject,data->subject_string);
 			} else
@@ -713,14 +740,14 @@ void compose_window_open(char *to_str, struct mail *tochange)
 				set(wnd,MUIA_Window_ActiveObject,data->to_string);
 			}
 
-			if (tochange)
+			if (args->to_change)
 			{
 				/* A mail should be changed */
 				int entries;
 				char *to;
 				char *decoded_to = NULL;
 
-				compose_add_mail(data,tochange,NULL);
+				compose_add_mail(data,args->to_change,NULL);
 
 				entries = xget(attach_tree,MUIA_NList_Entries);
 
@@ -737,22 +764,25 @@ void compose_window_open(char *to_str, struct mail *tochange)
 					}
 				}
 
-				if ((to = mail_find_header_contents(tochange,"To")))
+				if ((to = mail_find_header_contents(args->to_change,"To")))
 				{
 					/* set the To string */
 					parse_text_string(to,&decoded_to);
 				}
 
-				set(subject_string,MUIA_String_Contents,tochange->subject);
+				set(subject_string,MUIA_String_Contents,args->to_change->subject);
 				set(to_string,MUIA_String_Contents,decoded_to);
 
 				set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
 				if (decoded_to) free(decoded_to);
 
-				if (tochange->filename) data->filename = strdup(tochange->filename);
+				if (args->to_change->filename) data->filename = strdup(args->to_change->filename);
 				data->folder = strdup("Outgoing");
-				data->reply_id = mystrdup(tochange->message_reply_id);
+				data->reply_id = mystrdup(args->to_change->message_reply_id);
 			}
+
+			data->compose_action = args->action;
+			data->ref_mail = args->ref_mail;
 
 			set(wnd,MUIA_Window_Open,TRUE);
 

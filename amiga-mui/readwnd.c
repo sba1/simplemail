@@ -264,7 +264,13 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 
 				if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
 				{
-					Write(fh,mail->decoded_data,mail->decoded_len);
+					if (!mail->decoded_data)
+					{
+						Write(fh,mail->text + mail->text_begin,mail->text_len);
+					} else
+					{
+						Write(fh,mail->decoded_data,mail->decoded_len);
+					}
 					Close(fh);
 				}
 

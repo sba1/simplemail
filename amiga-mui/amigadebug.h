@@ -45,7 +45,7 @@
 #ifdef __AMIGAOS4__
 #define D(x) {(IExec->DebugPrintF)("%s/%ld (%s): ", __FILE__, __LINE__, IExec->FindTask(NULL)->tc_Node.ln_Name);(x);};
 #else
-#ifdef _SASC
+#ifdef __SASC
 #include <dos.h>
 #endif
 void kprintf(char *string, ...);

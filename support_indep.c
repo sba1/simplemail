@@ -74,6 +74,7 @@ int mystricmp(const char *str1, const char *str2)
 *******************************************************************/
 int mystrnicmp(const char *str1, const char *str2, int n)
 {
+	if (!n) return 0;
 	if (!str1)
 	{
 		if (str2) return -1;

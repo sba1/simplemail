@@ -1,6 +1,48 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2003/12/24">
+   <text lang="en">
+
+	  Version 0.21 of SimpleMail released!
+
+	  The changes are:
+
+    <list>
+     <item>Can import mbox files</item>
+     <item>Fixed memory leaks (bgol) </item>
+     <item>Layout of important list elememts are now stored via "Settings/Save Settings" too (bgol)</item>
+     <item>Basic Remote Filter: Mails which matches a filter are ignored</item>
+     <item>SimpleHTML support code is now inside a shared library</item>
+     <item>Ported to OS4</item>
+     <item>Describes now how spam itentfication can be used within the guide</item>
+     <item>Bug fixes and minor other improvements (see trackers at sf)</item>
+    </list>
+
+
+    The SimpleMail Team whishes you all a merry christmas and a happy new year!
+
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.21 veröffentlicht!
+
+	  Die Änderungen sind:
+    <list>
+     <item>Importieren vom mbox Dateien ist nun möglich</item>
+     <item>Verschiedene Speichlecks behoben (bgol) </item>
+     <item>Das Layout wichtiger Listelmente kann nun mittels "Einstellungen/Einstellungen speichern" gesichert werden (bgol)</item>
+     <item>Einfacher Remote Filter: Bestimmte Nachrichten können auf dem Server gelassen werden</item>
+     <item>SimpleHTML Unterstützung ist nun in einer Shared Library</item>
+     <item>Nach OS4 portiert</item>
+     <item>Anleitung beschreibt wie die Spam Identifikation funktioniert</item>
+     <item>Bug Fixes und andere kleinere Verbesserungen (siehe Tracker auf sf)</item>
+    </list>
+
+
+    Das SimpleMail Team wünscht allen ein frohen und besinnliches Weihnachtsfest und einen guten Rutsch ins neue Jahr!
+   </text>
+  </entry>
+
   <entry date="2003/09/07">
    <text lang="en">
 	  Version 0.20 of SimpleMail released!

@@ -644,7 +644,7 @@ msgstr "Új aláírás hozzá_adása"
 
 #: amiga-mui/configwnd.c:1226
 msgid "Insert random tagline"
-msgstr ""
+msgstr "Véletlen idézet beillesztése"
 
 #: amiga-mui/configwnd.c:1227
 #, fuzzy
@@ -893,7 +893,7 @@ msgstr "_Típus"
 
 #: amiga-mui/folderwnd.c:123 amiga-mui/folderwnd.c:127
 msgid "Def. To"
-msgstr ""
+msgstr "Alap címzett"
 
 #: amiga-mui/folderwnd.c:160
 msgid "SimpleMail - Edit folder group"
@@ -1227,7 +1227,7 @@ msgstr "Nincs POP3 szerver megadva"
 
 #: amiga-mui/mainwnd.c:1212
 msgid "Execute script..."
-msgstr ""
+msgstr "Szkript végrehajtása..."
 
 #: amiga-mui/pgplistclass.c:79
 msgid "PGP Key ID"
@@ -1357,7 +1357,8 @@ msgstr "_Feladó|*Válasz|Mindkettõ|Mégse"
 #: mail.c:1063
 msgid ""
 "This e-mail has multiple recipients. Should it be answered to all recipients?"
-msgstr "Ennek a levélnek több címzettje van. Válaszoljak az összes címzettnek?"
+msgstr ""
+"Ennek a levélnek több címzettje van. Válaszoljak az összes címzettnek?"
 
 #: mail.c:1064
 msgid "*_Yes|_No"

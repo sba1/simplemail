@@ -1133,6 +1133,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		{
 			time_t t;
 			struct tm *d;
+			int offset = sm_get_gmt_offset();
 
 			const char *mon_str[] = 
 			{
@@ -1147,7 +1148,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			time(&t);
 			d = localtime(&t);
 
-			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld +0100\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec);
+			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld %+03ld%02ld\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
 		}
 	}
 

@@ -222,3 +222,8 @@ int gui_main(void)
 
 #endif
 
+int main(void)
+{
+		simplemail_main();
+		return 0;
+}

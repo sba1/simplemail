@@ -795,5 +795,65 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 	return ret + 2;
 }
 
+/**************************************************************************
+ Parses the date
+**************************************************************************/
+char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec)
+{
+	int day, month, year, hour, min, sec;
+	unsigned char *date;
+	if (!buf) return NULL;
+	date = strstr(buf,",");
+	if (!date) date = buf;
+	else date++;
 
+	while (isspace(*date)) date++;
+	day = atoi(date);
+	while (isdigit(*date)) date++;
+	while (isspace(*date)) date++;
+	if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
+	else if (!mystrnicmp(date,"feb",3)) month = 2;
+	else if (!mystrnicmp(date,"mar",3)) month = 3;
+	else if (!mystrnicmp(date,"apr",3)) month = 4;
+	else if (!mystrnicmp(date,"may",3)) month = 5;
+	else if (!mystrnicmp(date,"jun",3)) month = 6;
+	else if (!mystrnicmp(date,"jul",3)) month = 7;
+	else if (!mystrnicmp(date,"aug",3)) month = 8;
+	else if (!mystrnicmp(date,"sep",3)) month = 9;
+	else if (!mystrnicmp(date,"oct",3)) month = 10;
+	else if (!mystrnicmp(date,"nov",3)) month = 11;
+	else month = 12;
+	date += 3;
+	while (isspace(*date)) date++;
+	year = atoi(date);
+	if (year < 78) year += 2000;
+	else if (year < 200) year += 1900;
 
+	while (isdigit(*date)) date++;
+	while (isspace(*date)) date++;
+	hour = atoi(date);
+	if (hour < 100)
+	{
+		while (isdigit(*date)) date++;
+		while (!isdigit(*date)) date++;
+		min = atoi(date);
+		while (isdigit(*date)) date++;
+		while (!isdigit(*date)) date++;
+		sec = atoi(date);
+	} else /* like examples in rfc 822 */
+	{
+		min = hour % 100;
+		hour = hour / 100;
+		sec = 0;
+	}
+	while (isdigit(*date)) date++;
+
+	if (pday) *pday = day;
+	if (pmonth) *pmonth = month;
+	if (pyear) *pyear = year;
+	if (phour) *phour = hour;
+	if (pmin) *pmin = min;
+	if (psec) *psec = sec;
+
+	return date;
+}

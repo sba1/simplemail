@@ -1252,15 +1252,15 @@ char *addressbook_complete_address(char *address)
 	struct addressbook_entry *entry;
 
 	entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_ALIAS);
-	if (entry && hits == 1)
+	if (entry)/* && hits == 1) */
 		return entry->u.person.alias + al; /* alias should be removed out of the union */
 
 	if (!entry) entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_REALNAME);
-	if (entry && hits == 1)
+	if (entry)/* && hits == 1) */
 		return entry->u.person.realname + al; /* alias should be removed out of the union */
 
 	if (!entry) entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_EMAIL);
-	if (entry && hits == 1)
+	if (entry)/* && hits == 1) */
 	{
 		int i;
 		for (i=0; i<entry->u.person.num_emails;i++)

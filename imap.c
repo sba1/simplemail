@@ -580,7 +580,9 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 										while (todownload)
 										{
 											char buf[204];
-											int dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
+											int dl;
+											dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
+
 											if (dl == -1 || !dl) break;
 											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
 											thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
@@ -588,7 +590,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 											todownload -= dl;
 										}
 										fclose(fh);
-										callback_new_imap_mail_arrived(filename_buf, server->name, imap_path);
+										thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename_buf, server->name, imap_path);
 									}
 								}
 							}

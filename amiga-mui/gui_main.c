@@ -79,6 +79,7 @@
 #include "startupwnd.h"
 #include "shutdownwnd.h"
 #include "subthreads.h"
+#include "subthreads_amiga.h"
 #include "transwndclass.h"
 #include "utf8stringclass.h"
 
@@ -134,17 +135,17 @@ static STRPTR UsedClasses[] =
 *****************************************************************/
 static struct timerequest *timer_send(ULONG secs, ULONG mics)
 {
-  struct timerequest *treq = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_CLEAR | MEMF_PUBLIC);
-  if (treq)
-  {
-    *treq = *timer_req;
-    treq->tr_node.io_Command = TR_ADDREQUEST;
-    treq->tr_time.tv_secs = secs;
-    treq->tr_time.tv_micro = mics;
-    SendIO((struct IORequest *) treq);
-    timer_outstanding++;
-  }
-  return treq;
+	struct timerequest *treq = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_CLEAR | MEMF_PUBLIC);
+	if (treq)
+	{
+		*treq = *timer_req;
+		treq->tr_node.io_Command = TR_ADDREQUEST;
+		treq->tr_time.tv_secs = secs;
+		treq->tr_time.tv_micro = mics;
+		SendIO((struct IORequest *) treq);
+		timer_outstanding++;
+	}
+	return treq;
 }
 
 /****************************************************************
@@ -152,24 +153,24 @@ static struct timerequest *timer_send(ULONG secs, ULONG mics)
 *****************************************************************/
 static void timer_free(void)
 {
-  if (timer_req)
-  {
-    if (timer_req->tr_node.io_Device)
-    {
-      while (timer_outstanding)
-      {
+	if (timer_req)
+	{
+		if (timer_req->tr_node.io_Device)
+		{
+			while (timer_outstanding)
+			{
 				if (Wait(1L << timer_port->mp_SigBit | 4096) & 4096)
 					break;
 				timer_outstanding--;
-      }
+			}
 
-      CloseDevice((struct IORequest *) timer_req);
-    }
-    DeleteIORequest(timer_req);
-  }
+			CloseDevice((struct IORequest *) timer_req);
+		}
+		DeleteIORequest(timer_req);
+	}
 
-  if (timer_port)
-    DeleteMsgPort(timer_port);
+	if (timer_port)
+		DeleteMsgPort(timer_port);
 }
 
 /****************************************************************

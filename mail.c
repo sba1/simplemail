@@ -549,10 +549,10 @@ struct mail *mail_find_initial(struct mail *m)
 
 	while(m)
 	{
-		if (!mystricmp(m->content_type, "multipart") && m->multipart_array)
+		if (m->multipart_array)
 		{
-			if (!mystricmp(m->content_subtype, "alternative"))
-				alter = 1;
+			if (!mystricmp(m->content_type, "multipart") &&
+				  !mystricmp(m->content_subtype, "alternative")) alter = 1;
 			i = 0;
 			m = m->multipart_array[0];
 		} else
@@ -1605,6 +1605,25 @@ static int mail_read_structure(struct mail *mail)
 
 			mail_decrypt(mail);
 		}
+	} else if (!mystricmp(mail->content_type,"message") && !mystricmp(mail->content_subtype,"rfc822"))
+	{
+		struct mail *new_mail;
+		struct mail_scan ms;
+
+		if (!(mail->multipart_array = malloc(sizeof(struct mail*)))) return 0;
+		if (!(new_mail = mail->multipart_array[0] = mail_create())) return 0;
+		mail->multipart_allocated = mail->num_multiparts = 1;
+		new_mail->size = mail->text_len;
+
+		mail_scan_buffer_start(&ms,new_mail,0);
+		mail_scan_buffer(&ms, mail->text+mail->text_begin, mail->text_len);
+		mail_scan_buffer_end(&ms);
+		mail_process_headers(new_mail);
+
+		new_mail->text = mail->text;
+		new_mail->text_begin += mail->text_begin; /* skip headers */
+		mail_read_structure(new_mail);
+		new_mail->parent_mail = mail;
 	}
 	return 1;
 }

@@ -849,17 +849,18 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 	int rescan = 0;
 	int changed = 0;
 
-	if (newname && strcmp(f->name,newname))
+	if (newname && mystrcmp(f->name,newname))
 	{
 		if ((newname = mystrdup(newname)))
 		{
-			free(f->name);
+			if (f->name) free(f->name);
 			f->name = newname;
 		}
 		changed = 1;
 	}
 
-	if (newpath && strcmp(f->path,newpath))
+	if (newpath && f->special != FOLDER_SPECIAL_GROUP &&
+		  mystrcmp(f->path,newpath))
 	{
 		if ((newpath = mystrdup(newpath)))
 		{
@@ -871,7 +872,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 				f->index_uptodate = 0;
 			}
 
-			free(f->path);
+			if (f->path) free(f->path);
 			f->path = newpath;
 			rescan = refresh;
 		}

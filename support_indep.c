@@ -28,6 +28,22 @@
 #include <string.h>
 
 /******************************************************************
+ Compares a string case sensitive. Accepts NULL pointers
+*******************************************************************/
+int mystrcmp(const char *str1, const char *str2)
+{
+	if (!str1)
+	{
+		if (str2) return -1;
+		return 0;
+	}
+
+	if (!str2) return 1;
+
+	return strcmp(str1,str2);
+}
+
+/******************************************************************
  Compares a string case insensitive. Accepts NULL pointers
 *******************************************************************/
 int mystricmp(const char *str1, const char *str2)

@@ -23,6 +23,7 @@
 #ifndef SM__SUPPORT_INDEP_H
 #define SM__SUPPORT_INDEP_H
 
+int mystrcmp(const char *str1, const char *str2);
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
 char *mystristr(const char *str1, const char *str2);

@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-09-15 10:10+0000\n"
+"POT-Creation-Date: 2003-01-20 23:54+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,7 +44,7 @@ msgstr "Valódi név"
 
 #: amiga-mui/addressbookwnd.c:431 amiga-mui/addressbookwnd.c:909
 #: amiga-mui/addresstreelistclass.c:151 amiga-mui/attachmentlistclass.c:118
-#: amiga-mui/composewnd.c:1110 amiga-mui/composewnd.c:1113
+#: amiga-mui/composewnd.c:1111 amiga-mui/composewnd.c:1114
 msgid "Description"
 msgstr "Ismertetõ"
 
@@ -121,14 +121,14 @@ msgid "Organization"
 msgstr "Szervezet"
 
 #: amiga-mui/addressbookwnd.c:713 amiga-mui/addressbookwnd.c:920
-#: amiga-mui/folderwnd.c:133
+#: amiga-mui/folderwnd.c:314
 msgid "_Ok"
 msgstr "_Oké"
 
 #: amiga-mui/addressbookwnd.c:714 amiga-mui/addressbookwnd.c:921
-#: amiga-mui/composewnd.c:1128 amiga-mui/configwnd.c:1562
-#: amiga-mui/filterwnd.c:532 amiga-mui/folderwnd.c:134
-#: amiga-mui/folderwnd.c:240
+#: amiga-mui/composewnd.c:1129 amiga-mui/configwnd.c:1571
+#: amiga-mui/filterwnd.c:536 amiga-mui/folderwnd.c:315
+#: amiga-mui/folderwnd.c:534
 msgid "_Cancel"
 msgstr "Mégse"
 
@@ -157,8 +157,7 @@ msgid "_Import"
 msgstr "_Importálás"
 
 #. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
-#: amiga-mui/addressbookwnd.c:1106 amiga-mui/filterwnd.c:530
-#: amiga-mui/readwnd.c:1020
+#: amiga-mui/addressbookwnd.c:1106 amiga-mui/readwnd.c:1025
 msgid "_Save"
 msgstr "Menté_s"
 
@@ -172,15 +171,15 @@ msgstr "Személy"
 msgid "_Group"
 msgstr "Csoport"
 
-#: amiga-mui/addressbookwnd.c:1111 amiga-mui/mainwnd.c:541
+#: amiga-mui/addressbookwnd.c:1111 amiga-mui/mainwnd.c:545
 msgid "_Edit"
 msgstr "Sz_erkesztés"
 
-#: amiga-mui/addressbookwnd.c:1112 amiga-mui/readwnd.c:1026
+#: amiga-mui/addressbookwnd.c:1112 amiga-mui/readwnd.c:1031
 msgid "_Delete"
 msgstr "Törlés"
 
-#: amiga-mui/addresstreelistclass.c:149 amiga-mui/configwnd.c:809
+#: amiga-mui/addresstreelistclass.c:149 amiga-mui/configwnd.c:778
 msgid "?people:Name"
 msgstr "Név"
 
@@ -188,39 +187,39 @@ msgstr "Név"
 msgid "Address"
 msgstr "Cím"
 
-#: amiga-mui/addresstreelistclass.c:216
+#: amiga-mui/addresstreelistclass.c:214
 msgid "Addresslist Settings"
 msgstr "Címlista beállítások"
 
-#: amiga-mui/addresstreelistclass.c:217
+#: amiga-mui/addresstreelistclass.c:215
 msgid "Show Realname?"
 msgstr "Mutassam a valódi nevet?"
 
-#: amiga-mui/addresstreelistclass.c:218
+#: amiga-mui/addresstreelistclass.c:216
 msgid "Show Nickname?"
 msgstr "Mutassam a becenevet?"
 
-#: amiga-mui/addresstreelistclass.c:219
+#: amiga-mui/addresstreelistclass.c:217
 msgid "Show Description?"
 msgstr "Mutassam a megjegyzést?"
 
-#: amiga-mui/addresstreelistclass.c:220
+#: amiga-mui/addresstreelistclass.c:218
 msgid "Show E-Mail Address?"
 msgstr "Mutassam az e-mail címet?"
 
-#: amiga-mui/addresstreelistclass.c:222 amiga-mui/mailtreelistclass.c:415
+#: amiga-mui/addresstreelistclass.c:220 amiga-mui/mailtreelistclass.c:462
 msgid "Default Width: this"
 msgstr "Alapszélesség: ez"
 
-#: amiga-mui/addresstreelistclass.c:223 amiga-mui/mailtreelistclass.c:416
+#: amiga-mui/addresstreelistclass.c:221 amiga-mui/mailtreelistclass.c:463
 msgid "Default Width: all"
 msgstr "Alaszélesség: mind"
 
-#: amiga-mui/addresstreelistclass.c:224 amiga-mui/mailtreelistclass.c:417
+#: amiga-mui/addresstreelistclass.c:222 amiga-mui/mailtreelistclass.c:464
 msgid "Default Order: this"
 msgstr "Alapsorrend: ez"
 
-#: amiga-mui/addresstreelistclass.c:225 amiga-mui/mailtreelistclass.c:418
+#: amiga-mui/addresstreelistclass.c:223 amiga-mui/mailtreelistclass.c:465
 msgid "Default Order: all"
 msgstr "Alapsorrend: mind"
 
@@ -232,7 +231,8 @@ msgstr "Szerkeszthetõ levélszöveg"
 msgid "File Name"
 msgstr "Fájlnév"
 
-#: amiga-mui/attachmentlistclass.c:116 amiga-mui/mailtreelistclass.c:392
+#: amiga-mui/attachmentlistclass.c:116 amiga-mui/folderwnd.c:236
+#: amiga-mui/folderwnd.c:246 amiga-mui/mailtreelistclass.c:433
 #: amiga-mui/transwndclass.c:123
 msgid "Size"
 msgstr "Méret"
@@ -241,105 +241,105 @@ msgstr "Méret"
 msgid "Contents"
 msgstr "Tartalom"
 
-#: amiga-mui/composewnd.c:926 amiga-mui/mailtreelistclass.c:575
-#: amiga-mui/readwnd.c:970
+#: amiga-mui/composewnd.c:927 amiga-mui/mailtreelistclass.c:686
+#: amiga-mui/readwnd.c:975
 msgid "Mail"
 msgstr "Levél"
 
-#: amiga-mui/composewnd.c:927
+#: amiga-mui/composewnd.c:928
 msgid "Attachments"
 msgstr "Csatolt fájlok"
 
-#: amiga-mui/composewnd.c:951
+#: amiga-mui/composewnd.c:952
 msgid "No Signature"
 msgstr "Aláírás"
 
-#: amiga-mui/composewnd.c:957 amiga-mui/composewnd.c:958
+#: amiga-mui/composewnd.c:958 amiga-mui/composewnd.c:959
 msgid "Use signature"
 msgstr "Aláírás használata"
 
-#: amiga-mui/composewnd.c:971
+#: amiga-mui/composewnd.c:972
 msgid "SimpleMail - Compose Message"
 msgstr "SimpleMail - Üzenet szerkesztése"
 
-#: amiga-mui/composewnd.c:980 amiga-mui/searchwnd.c:183
+#: amiga-mui/composewnd.c:981 amiga-mui/searchwnd.c:175
 msgid "_From"
 msgstr "_Feladó"
 
-#: amiga-mui/composewnd.c:991 amiga-mui/composewnd.c:997
-#: amiga-mui/searchwnd.c:191
+#: amiga-mui/composewnd.c:992 amiga-mui/composewnd.c:998
+#: amiga-mui/searchwnd.c:183
 msgid "_To"
 msgstr "Címze_tt"
 
-#: amiga-mui/composewnd.c:1002 amiga-mui/composewnd.c:1008
+#: amiga-mui/composewnd.c:1003 amiga-mui/composewnd.c:1009
 msgid "Copies To"
 msgstr "Másolat"
 
-#: amiga-mui/composewnd.c:1013 amiga-mui/composewnd.c:1017
+#: amiga-mui/composewnd.c:1014 amiga-mui/composewnd.c:1018
 msgid "S_ubject"
 msgstr "Tárgy"
 
-#: amiga-mui/composewnd.c:1036
+#: amiga-mui/composewnd.c:1037
 msgid "Copy"
 msgstr "Másolás"
 
-#: amiga-mui/composewnd.c:1037
+#: amiga-mui/composewnd.c:1038
 msgid "Cut"
 msgstr "Kivágás"
 
-#: amiga-mui/composewnd.c:1038
+#: amiga-mui/composewnd.c:1039
 msgid "Paste"
 msgstr "Beillesztés"
 
-#: amiga-mui/composewnd.c:1043
+#: amiga-mui/composewnd.c:1044
 msgid "Undo"
 msgstr "Vissza"
 
-#: amiga-mui/composewnd.c:1044
+#: amiga-mui/composewnd.c:1045
 msgid "Redo"
 msgstr "Újra"
 
-#: amiga-mui/composewnd.c:1049
+#: amiga-mui/composewnd.c:1050
 msgid "_Attach"
 msgstr "Cs_atolás"
 
-#: amiga-mui/composewnd.c:1054
+#: amiga-mui/composewnd.c:1055
 msgid "_Encrypt"
 msgstr "B_ekódolás"
 
-#: amiga-mui/composewnd.c:1055
+#: amiga-mui/composewnd.c:1056
 msgid "Si_gn"
 msgstr "Aláírás"
 
-#: amiga-mui/composewnd.c:1117
+#: amiga-mui/composewnd.c:1118
 msgid "Add text"
 msgstr "Szöveg hozzáadása"
 
-#: amiga-mui/composewnd.c:1118
+#: amiga-mui/composewnd.c:1119
 msgid "Add multipart"
 msgstr "Rész hozzáadása"
 
-#: amiga-mui/composewnd.c:1119
+#: amiga-mui/composewnd.c:1120
 msgid "Add file(s)"
 msgstr "Fájl(ok) hozzáadása"
 
-#: amiga-mui/composewnd.c:1120 amiga-mui/filterwnd.c:251
+#: amiga-mui/composewnd.c:1121 amiga-mui/filterwnd.c:255
 msgid "Remove"
 msgstr "Eltávolítás"
 
-#: amiga-mui/composewnd.c:1125
+#: amiga-mui/composewnd.c:1126
 msgid "_Send now"
 msgstr "Küldd most"
 
-#: amiga-mui/composewnd.c:1126
+#: amiga-mui/composewnd.c:1127
 msgid "Send _later"
 msgstr "Kü_ldd késõbb"
 
-#: amiga-mui/composewnd.c:1127
+#: amiga-mui/composewnd.c:1128
 msgid "_Hold"
 msgstr "Rakd félre"
 
-#: amiga-mui/configwnd.c:348
+#: amiga-mui/configwnd.c:422
 msgid ""
 "You have changed the folder direcory! You must quit and restart SimpleMail "
 "now."
@@ -347,169 +347,179 @@ msgstr ""
 "Megváltoztattad a mappa könyvtárát! Ki kell lépned és újra kell indítanod a "
 "SimpleMailt."
 
-#: amiga-mui/configwnd.c:348 amiga-mui/mainwnd.c:635 mail.c:1915 mail.c:2793
-#: simplemail.c:106 simplemail.c:156
+#: amiga-mui/configwnd.c:422 amiga-mui/mainwnd.c:639 mail.c:2059 mail.c:2971
+#: simplemail.c:108 simplemail.c:171 simplemail.c:767
 msgid "Ok"
 msgstr "Oké"
 
-#: amiga-mui/configwnd.c:605 amiga-mui/configwnd.c:606
+#: amiga-mui/configwnd.c:550 amiga-mui/configwnd.c:551
 msgid "Add adjustment for daylight saving time"
 msgstr "Módosítás a nyári idõszámítás miatt"
 
-#: amiga-mui/configwnd.c:610
+#: amiga-mui/configwnd.c:555
 msgid "Folder directory"
 msgstr "Mappa könyvtár"
 
-#: amiga-mui/configwnd.c:621
+#: amiga-mui/configwnd.c:566
 msgid "Charset used to display text"
 msgstr "Kijelzéshez használt karakterkészlet"
 
-#: amiga-mui/configwnd.c:646
+#: amiga-mui/configwnd.c:591
 msgid "Disabled"
 msgstr "Kikapcsolva"
 
-#: amiga-mui/configwnd.c:647
+#: amiga-mui/configwnd.c:592
 msgid "Only Sizes"
 msgstr "Csak a következõ méretek:"
 
-#: amiga-mui/configwnd.c:648
+#: amiga-mui/configwnd.c:593
 msgid "Enabled"
 msgstr "Bekapcsolva"
 
-#: amiga-mui/configwnd.c:654
+#: amiga-mui/configwnd.c:599
 msgid "Preselection"
 msgstr "Elõválasztás"
 
-#: amiga-mui/configwnd.c:673
+#: amiga-mui/configwnd.c:618
 msgid "Automatic operation"
 msgstr "Automatikus mûvelet"
 
-#: amiga-mui/configwnd.c:675
+#: amiga-mui/configwnd.c:620
 msgid "Check for new mail every"
 msgstr "Új levél ellenõrzése minden"
 
-#: amiga-mui/configwnd.c:682
+#: amiga-mui/configwnd.c:627
 msgid "minutes"
 msgstr "percben"
 
-#: amiga-mui/configwnd.c:683 amiga-mui/configwnd.c:684
+#: amiga-mui/configwnd.c:628 amiga-mui/configwnd.c:629
 msgid "On startup"
 msgstr "Indulásnál"
 
-#: amiga-mui/configwnd.c:685 amiga-mui/configwnd.c:686
+#: amiga-mui/configwnd.c:630 amiga-mui/configwnd.c:631
 msgid "If online"
 msgstr "Ha online"
 
-#: amiga-mui/configwnd.c:688
+#: amiga-mui/configwnd.c:633
 msgid "New mails"
 msgstr "Új levelek"
 
-#: amiga-mui/configwnd.c:690 amiga-mui/configwnd.c:691
+#: amiga-mui/configwnd.c:635 amiga-mui/configwnd.c:636
 msgid "ARexx"
 msgstr "ARexx"
 
-#: amiga-mui/configwnd.c:703 amiga-mui/configwnd.c:704
+#: amiga-mui/configwnd.c:648 amiga-mui/configwnd.c:649
 msgid "Sound"
 msgstr "Hang"
 
-#: amiga-mui/configwnd.c:728 amiga-mui/configwnd.c:1602
-msgid "Account"
-msgstr "Fiók"
+#: amiga-mui/configwnd.c:737 amiga-mui/configwnd.c:1250
+#: amiga-mui/configwnd.c:1298 amiga-mui/foldertreelistclass.c:135
+#: amiga-mui/folderwnd.c:513
+msgid "Name"
+msgstr "Név"
 
-#: amiga-mui/configwnd.c:767 amiga-mui/configwnd.c:940
-msgid "Add new account"
-msgstr "Új fiók hozzáadása"
+#: amiga-mui/configwnd.c:738
+msgid "EMail"
+msgstr "Email"
 
-#: amiga-mui/configwnd.c:807 amiga-mui/configwnd.c:1589
-msgid "User"
-msgstr "Felhasználó"
-
-#: amiga-mui/configwnd.c:816
-msgid "E-Mail Address"
-msgstr "E-mail cím"
-
-#: amiga-mui/configwnd.c:823
-msgid "Reply Address"
-msgstr "Válaszcím"
-
-#: amiga-mui/configwnd.c:831
+#: amiga-mui/configwnd.c:739 amiga-mui/configwnd.c:800
 msgid "Receive"
 msgstr "Fogadás"
 
-#: amiga-mui/configwnd.c:833 amiga-mui/mailtreelistclass.c:394
-msgid "POP3 Server"
-msgstr "POP3 szerver"
-
-#: amiga-mui/configwnd.c:840 amiga-mui/configwnd.c:894
-msgid "Port"
-msgstr "Port"
-
-#: amiga-mui/configwnd.c:849 amiga-mui/configwnd.c:903
-msgid "Login"
-msgstr "Név"
-
-#: amiga-mui/configwnd.c:856 amiga-mui/configwnd.c:911
-msgid "Password"
-msgstr "Jelszó"
-
-#: amiga-mui/configwnd.c:863 amiga-mui/configwnd.c:864
-msgid "Ask"
-msgstr "Kérdez"
-
-#: amiga-mui/configwnd.c:868 amiga-mui/configwnd.c:869
-msgid "Active"
-msgstr "Aktív"
-
-#: amiga-mui/configwnd.c:870 amiga-mui/configwnd.c:871
-msgid "_Delete mails"
-msgstr "Levelek törlése"
-
-#: amiga-mui/configwnd.c:872 amiga-mui/configwnd.c:873
-msgid "Avoid duplicates"
-msgstr "Másolatok elkerülése"
-
-#: amiga-mui/configwnd.c:874 amiga-mui/configwnd.c:876
-#: amiga-mui/configwnd.c:925 amiga-mui/configwnd.c:926
-msgid "Secure"
-msgstr "Biztonság"
-
-#: amiga-mui/configwnd.c:878 amiga-mui/configwnd.c:879
-msgid "with STLS"
-msgstr "STLS-sel"
-
-#: amiga-mui/configwnd.c:884
+#: amiga-mui/configwnd.c:740 amiga-mui/configwnd.c:861
 msgid "Send"
 msgstr "Küldés"
 
-#: amiga-mui/configwnd.c:887
+#: amiga-mui/configwnd.c:770
+msgid "_Add Account"
+msgstr "Új fiók hozzá_adása"
+
+#: amiga-mui/configwnd.c:772
+msgid "_Remove Account"
+msgstr "Fiók eltávolítása"
+
+#: amiga-mui/configwnd.c:776
+msgid "User"
+msgstr "Felhasználó"
+
+#: amiga-mui/configwnd.c:785
+msgid "E-Mail Address"
+msgstr "E-mail cím"
+
+#: amiga-mui/configwnd.c:792
+msgid "Reply Address"
+msgstr "Válaszcím"
+
+#: amiga-mui/configwnd.c:802
+msgid "Type"
+msgstr "Típus"
+
+#: amiga-mui/configwnd.c:810
+msgid "Server"
+msgstr "POP3 szerver"
+
+#: amiga-mui/configwnd.c:817 amiga-mui/configwnd.c:871
+msgid "Port"
+msgstr "Port"
+
+#: amiga-mui/configwnd.c:826 amiga-mui/configwnd.c:880
+msgid "Login"
+msgstr "Név"
+
+#: amiga-mui/configwnd.c:833 amiga-mui/configwnd.c:888
+msgid "Password"
+msgstr "Jelszó"
+
+#: amiga-mui/configwnd.c:840 amiga-mui/configwnd.c:841
+msgid "Ask"
+msgstr "Kérdez"
+
+#: amiga-mui/configwnd.c:845 amiga-mui/configwnd.c:846
+msgid "Active"
+msgstr "Aktív"
+
+#: amiga-mui/configwnd.c:847 amiga-mui/configwnd.c:848
+msgid "_Delete mails"
+msgstr "Levelek törlése"
+
+#: amiga-mui/configwnd.c:849 amiga-mui/configwnd.c:850
+msgid "Avoid duplicates"
+msgstr "Másolatok elkerülése"
+
+#: amiga-mui/configwnd.c:851 amiga-mui/configwnd.c:853
+#: amiga-mui/configwnd.c:901 amiga-mui/configwnd.c:902
+msgid "Secure"
+msgstr "Biztonság"
+
+#: amiga-mui/configwnd.c:855 amiga-mui/configwnd.c:856
+msgid "with STLS"
+msgstr "STLS-sel"
+
+#: amiga-mui/configwnd.c:864
 msgid "SMTP Server"
 msgstr "SMTP szerver"
 
-#: amiga-mui/configwnd.c:922 amiga-mui/configwnd.c:923
+#: amiga-mui/configwnd.c:896 amiga-mui/configwnd.c:897
 msgid "Use SMTP AUTH"
 msgstr "SMTP AUTH használata"
 
-#: amiga-mui/configwnd.c:928 amiga-mui/configwnd.c:929
+#: amiga-mui/configwnd.c:904 amiga-mui/configwnd.c:905
 msgid "Log into POP3 server first"
 msgstr "Elõször belépes a POP3 szerverre"
 
-#: amiga-mui/configwnd.c:931 amiga-mui/configwnd.c:932
+#: amiga-mui/configwnd.c:907 amiga-mui/configwnd.c:908
 msgid "Use IP as domain"
 msgstr "IP mint tartomány használata"
 
-#: amiga-mui/configwnd.c:941
-msgid "Remove account"
-msgstr "Fiók eltávolítása"
-
-#: amiga-mui/configwnd.c:958
+#: amiga-mui/configwnd.c:933
 msgid "Your full name (required)"
 msgstr "A teljes neved (szükséges)"
 
-#: amiga-mui/configwnd.c:959
+#: amiga-mui/configwnd.c:934
 msgid "Your E-Mail address for this account (required)"
 msgstr "Az e-mail címed ehhez a fiókhoz (szükséges)"
 
-#: amiga-mui/configwnd.c:960
+#: amiga-mui/configwnd.c:935
 msgid ""
 "Address where the replies of the mails should\n"
 "be sent (required only if different from the e-mail address)."
@@ -517,7 +527,7 @@ msgstr ""
 "Címek, ahová a válaszokat küldjék (csak akkor\n"
 "szükséges, ha más, mint az e-mail címed)."
 
-#: amiga-mui/configwnd.c:961
+#: amiga-mui/configwnd.c:936
 msgid ""
 "The name of the so called POP3 server from\n"
 "which you download your e-Mails (required; ask your\n"
@@ -527,15 +537,15 @@ msgstr ""
 "letöltöd a leveleidet (szükséges: kérdezd a\n"
 "szolgáltatód, ha nem tudod_."
 
-#: amiga-mui/configwnd.c:962
+#: amiga-mui/configwnd.c:937
 msgid "The port number. Usually 110"
 msgstr "A port száma. Általában 110."
 
-#: amiga-mui/configwnd.c:963
+#: amiga-mui/configwnd.c:938
 msgid "The login/UserID which you got from your ISP."
 msgstr "Az a név/azonosító, amit az ISP-tõl kaptál."
 
-#: amiga-mui/configwnd.c:964
+#: amiga-mui/configwnd.c:939
 msgid ""
 "Your very own password to access the mails\n"
 "located on the POP3 server."
@@ -543,7 +553,7 @@ msgstr ""
 "A saját jelszavad, amivel hozzáférhetsz\n"
 "a POP3 szerveren lévõ leveleidhez."
 
-#: amiga-mui/configwnd.c:965
+#: amiga-mui/configwnd.c:940
 msgid ""
 "Deactivate this if you don't want SimpleMail to\n"
 "download the e-Mails when pressing on 'Fetch'."
@@ -551,7 +561,7 @@ msgstr ""
 "Kapcsold ki ezt, ha nem akarod, hogy a SimpleMail\n"
 "letöltse a leveleidet, amikor megnyomod a 'Letöltést'."
 
-#: amiga-mui/configwnd.c:966
+#: amiga-mui/configwnd.c:941
 msgid ""
 "After successul downloading the mails should be deleted\n"
 "on the POP3 server."
@@ -559,7 +569,7 @@ msgstr ""
 "A sikeres letöltés után a levelek letörlõdnek\n"
 "a POP3 szerverrõl."
 
-#: amiga-mui/configwnd.c:967
+#: amiga-mui/configwnd.c:942
 msgid ""
 "When not deleteding e-Mails on the server SimpleMail\n"
 "tries to avoid downloading a message twice the next time."
@@ -567,7 +577,7 @@ msgstr ""
 "Ha nem törlöd a leveleidet a szerverrõl, a SimpleMail\n"
 "megpróbálja nem letölteni a már meglévõ üzeneteidet."
 
-#: amiga-mui/configwnd.c:968
+#: amiga-mui/configwnd.c:943
 msgid ""
 "If activated SimpleMail tries to make the connection secure.\n"
 "This is not supported on all servers, so decativate if it doesn't work."
@@ -576,7 +586,7 @@ msgstr ""
 "kapcsolatot létrehozni. Ezt nem támogatja minden szerver, tehát ha\n"
 "nem mûködik, akkor kapcsold ki."
 
-#: amiga-mui/configwnd.c:969
+#: amiga-mui/configwnd.c:944
 msgid ""
 "The name of the so called SMTP server which is responlible\n"
 "to send your e-Mails."
@@ -584,11 +594,11 @@ msgstr ""
 "Az úgynevezett SMTP szerver neve, ami felelõs a leveleid\n"
 "elküldéséért."
 
-#: amiga-mui/configwnd.c:970
+#: amiga-mui/configwnd.c:945
 msgid "The port number. Usually 25"
 msgstr "A port száma. Általában 25."
 
-#: amiga-mui/configwnd.c:971
+#: amiga-mui/configwnd.c:946
 msgid ""
 "Your login/UserID for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
@@ -596,7 +606,7 @@ msgstr ""
 "A neved/azonosítód az SMTP szerverhez.\n"
 "Csak akkor kell, ha az SMTP szerver azonosítást kér."
 
-#: amiga-mui/configwnd.c:972
+#: amiga-mui/configwnd.c:947
 msgid ""
 "Your password for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
@@ -604,11 +614,11 @@ msgstr ""
 "A jelszavad az SMTP szerverhez.Csak akkor kell, ha az SMTP szerver "
 "azonosítást kér."
 
-#: amiga-mui/configwnd.c:973
+#: amiga-mui/configwnd.c:948
 msgid "Activate this if the SMTP server requires authentication."
 msgstr "Kapcsold be ezt, ha az SMTP szerver azonosítást kér."
 
-#: amiga-mui/configwnd.c:974
+#: amiga-mui/configwnd.c:949
 msgid ""
 "Activate this if you want a secure connection\n"
 "to the SMTP server. Deactivate this if your SMTP server\n"
@@ -618,7 +628,7 @@ msgstr ""
 "kapcsolatot akarsz. Kapcsold ki, ha az SMTP szervered nem\n"
 "támogatja."
 
-#: amiga-mui/configwnd.c:975
+#: amiga-mui/configwnd.c:950
 msgid ""
 "Activate this if you provider needs that\n"
 "you first log into its POP3 sever."
@@ -626,7 +636,7 @@ msgstr ""
 "Kapcsold be ezt, ha a szolgáltatódnak szükséges,\n"
 "hogy elõször belépj a POP3 szerverre."
 
-#: amiga-mui/configwnd.c:976
+#: amiga-mui/configwnd.c:951
 msgid ""
 "Send your current IP address together with the intial greetings.\n"
 "This avoids some error headers on some providers."
@@ -634,292 +644,265 @@ msgstr ""
 "Elküldi a jelenlegi IP címet a bevezetõ üdvözléssel együtt.\n"
 "Ezzel kikerülhetsz néhány fejléc hibát néhány szolgáltatónál."
 
-#: amiga-mui/configwnd.c:977
+#: amiga-mui/configwnd.c:952
 msgid "Add a new account."
 msgstr "Hozzáad egy új fiókot."
 
-#: amiga-mui/configwnd.c:978
+#: amiga-mui/configwnd.c:953
 msgid "Remove the current account."
 msgstr "Eltávolítja a jelenlegi fiókot."
 
-#: amiga-mui/configwnd.c:993
+#: amiga-mui/configwnd.c:968
 msgid "off"
 msgstr "ki"
 
-#: amiga-mui/configwnd.c:994
+#: amiga-mui/configwnd.c:969
 msgid "as you type"
 msgstr "ahogy gépelsz"
 
-#: amiga-mui/configwnd.c:995
+#: amiga-mui/configwnd.c:970
 msgid "before storing"
 msgstr "tárolás elõtt"
 
-#: amiga-mui/configwnd.c:1001
+#: amiga-mui/configwnd.c:976
 msgid "Editor"
 msgstr "Szerkesztõ"
 
-#: amiga-mui/configwnd.c:1003
+#: amiga-mui/configwnd.c:978
 msgid "Word wrap"
 msgstr "Soremelés"
 
-#: amiga-mui/configwnd.c:1007
+#: amiga-mui/configwnd.c:982
 msgid "Replying"
 msgstr "Válasz"
 
-#: amiga-mui/configwnd.c:1009 amiga-mui/configwnd.c:1010
+#: amiga-mui/configwnd.c:984 amiga-mui/configwnd.c:985
 msgid "Wrap before quoting"
 msgstr "Soremelés idézés elõtt"
 
-#: amiga-mui/configwnd.c:1014 amiga-mui/configwnd.c:1015
+#: amiga-mui/configwnd.c:989 amiga-mui/configwnd.c:990
 msgid "Strip signature before quoting"
 msgstr "Aláírás eltávolítása idézés elõtt"
 
-#: amiga-mui/configwnd.c:1019 amiga-mui/configwnd.c:1020
+#: amiga-mui/configwnd.c:994 amiga-mui/configwnd.c:995
 msgid "Quote empty lines"
 msgstr "Üres sorok idézése"
 
-#: amiga-mui/configwnd.c:1041
+#: amiga-mui/configwnd.c:1016
 msgid "Header Configuration"
 msgstr "Fejléc beállítás"
 
-#: amiga-mui/configwnd.c:1044 amiga-mui/configwnd.c:1045
+#: amiga-mui/configwnd.c:1019 amiga-mui/configwnd.c:1020
 msgid "Show all headers"
 msgstr "Összes fejléc megjelenítése"
 
-#: amiga-mui/configwnd.c:1075
+#: amiga-mui/configwnd.c:1050
 msgid "Additional headers"
 msgstr "Egyéb fejlécek"
 
-#: amiga-mui/configwnd.c:1109
+#: amiga-mui/configwnd.c:1084
 msgid "Background"
 msgstr "Háttér"
 
-#: amiga-mui/configwnd.c:1110
+#: amiga-mui/configwnd.c:1085
 msgid "Text"
 msgstr "Következõ"
 
-#: amiga-mui/configwnd.c:1111
+#: amiga-mui/configwnd.c:1086
 msgid "Quoted Text"
 msgstr "Idézett szöveg"
 
-#: amiga-mui/configwnd.c:1112
+#: amiga-mui/configwnd.c:1087
 msgid "Old Quoted Text"
 msgstr "Régi idézett szöveg"
 
-#: amiga-mui/configwnd.c:1113
+#: amiga-mui/configwnd.c:1088
 msgid "Link Text"
 msgstr "Szöveg kapcsolása"
 
-#: amiga-mui/configwnd.c:1155
+#: amiga-mui/configwnd.c:1089
+msgid "Header Background"
+msgstr "Fejléc háttér"
+
+#: amiga-mui/configwnd.c:1137
 msgid "Fonts"
 msgstr "Betûtípusok"
 
-#: amiga-mui/configwnd.c:1157
+#: amiga-mui/configwnd.c:1139
 msgid "Proportional Font"
 msgstr "Proporcionális betûtípus"
 
-#: amiga-mui/configwnd.c:1164
+#: amiga-mui/configwnd.c:1146
 msgid "Fixed Font"
 msgstr "Fix betûtípus"
 
-#: amiga-mui/configwnd.c:1173
+#: amiga-mui/configwnd.c:1155
 msgid "Colors"
 msgstr "Színek"
 
-#: amiga-mui/configwnd.c:1183 amiga-mui/configwnd.c:1184
+#: amiga-mui/configwnd.c:1165 amiga-mui/configwnd.c:1166
 msgid "Wordwrap plain text"
 msgstr "Sima szöveg soremelése"
 
-#: amiga-mui/configwnd.c:1185 amiga-mui/configwnd.c:1186
+#: amiga-mui/configwnd.c:1167 amiga-mui/configwnd.c:1168
 msgid "Underline links"
 msgstr "Linkek aláhúzása"
 
-#: amiga-mui/configwnd.c:1187 amiga-mui/configwnd.c:1188
+#: amiga-mui/configwnd.c:1169 amiga-mui/configwnd.c:1170
 msgid "Use graphical smilies"
 msgstr "Grafikus smiley használata"
 
-#: amiga-mui/configwnd.c:1208
+#: amiga-mui/configwnd.c:1190
 msgid "Allow to download images from the internet from"
 msgstr "Képek letöltésének engedélyezése az internetrõl:"
 
-#: amiga-mui/configwnd.c:1232 amiga-mui/configwnd.c:1653
-msgid "Signature"
-msgstr "Aláírás"
-
-#: amiga-mui/configwnd.c:1273 amiga-mui/configwnd.c:1274
+#: amiga-mui/configwnd.c:1274 amiga-mui/configwnd.c:1275
 msgid "Us_e signatures"
 msgstr "Aláírás használata"
 
-#: amiga-mui/configwnd.c:1278
-msgid "_Add new signature"
-msgstr "Új aláírás hozzá_adása"
+#: amiga-mui/configwnd.c:1289 amiga-mui/configwnd.c:1444
+msgid "_Add"
+msgstr "Hozzá_adás"
 
-#: amiga-mui/configwnd.c:1305 amiga-mui/foldertreelistclass.c:127
-#: amiga-mui/folderwnd.c:219
-msgid "Name"
-msgstr "Név"
+#: amiga-mui/configwnd.c:1291 amiga-mui/configwnd.c:1448
+#: amiga-mui/filterwnd.c:467
+msgid "_Remove"
+msgstr "Eltávolítás"
 
-#: amiga-mui/configwnd.c:1320
+#: amiga-mui/configwnd.c:1313
 msgid "Insert random tagline"
 msgstr "Véletlen idézet beillesztése"
 
-#: amiga-mui/configwnd.c:1321
+#: amiga-mui/configwnd.c:1314
 msgid "Insert ENV:Signature"
 msgstr "ENV:Signature beillesztése"
 
-#: amiga-mui/configwnd.c:1325
-msgid "Add new signature"
-msgstr "Új aláírás hozzáadása"
+#: amiga-mui/configwnd.c:1387
+msgid "All"
+msgstr ""
 
-#: amiga-mui/configwnd.c:1326
-msgid "Remove signature"
-msgstr "Aláírás eltávolítása"
+#: amiga-mui/configwnd.c:1390
+msgid "On addresses"
+msgstr "Címeknél"
 
-#: amiga-mui/configwnd.c:1349 amiga-mui/configwnd.c:1636
-msgid "Phrase"
-msgstr "Formulák"
+#: amiga-mui/configwnd.c:1446
+msgid "_Duplicate"
+msgstr "Másolat"
 
-#: amiga-mui/configwnd.c:1389
-msgid "_Add new phrase"
-msgstr "Új formula hozzá_adása"
-
-#: amiga-mui/configwnd.c:1436
+#: amiga-mui/configwnd.c:1453
 msgid "Use on addresses which contain"
 msgstr "Használd olyan címeken, amelyek tartalmazzák:"
 
-#: amiga-mui/configwnd.c:1443 amiga-mui/configwnd.c:1609
+#: amiga-mui/configwnd.c:1460 amiga-mui/configwnd.c:1595
 msgid "Write"
 msgstr "Írás"
 
-#: amiga-mui/configwnd.c:1445 amiga-mui/configwnd.c:1464
+#: amiga-mui/configwnd.c:1462 amiga-mui/configwnd.c:1481
 msgid "Welcome"
 msgstr "Köszöntés"
 
-#: amiga-mui/configwnd.c:1451
+#: amiga-mui/configwnd.c:1468
 msgid "Welcome with address"
 msgstr "Köszöntés címmel"
 
-#: amiga-mui/configwnd.c:1455 amiga-mui/configwnd.c:1474
+#: amiga-mui/configwnd.c:1472 amiga-mui/configwnd.c:1491
 msgid "Close"
 msgstr "Befejezés"
 
-#: amiga-mui/configwnd.c:1462 amiga-mui/mailtreelistclass.c:390
+#: amiga-mui/configwnd.c:1479 amiga-mui/folderwnd.c:234
+#: amiga-mui/folderwnd.c:244 amiga-mui/mailtreelistclass.c:431
 msgid "Reply"
 msgstr "Válasz"
 
-#: amiga-mui/configwnd.c:1469
+#: amiga-mui/configwnd.c:1486
 msgid "Intro"
 msgstr "Bevezetõ"
 
-#: amiga-mui/configwnd.c:1479
+#: amiga-mui/configwnd.c:1496
 msgid "Forward"
-msgstr "Továbbít"
+msgstr "Továbbítás"
 
-#: amiga-mui/configwnd.c:1481
+#: amiga-mui/configwnd.c:1498
 msgid "Initial"
-msgstr "Kezdõ"
+msgstr "Kezdés"
 
-#: amiga-mui/configwnd.c:1486
+#: amiga-mui/configwnd.c:1503
 msgid "Finish"
 msgstr "Befejezés"
 
-#: amiga-mui/configwnd.c:1492
-msgid "Add new phrase"
-msgstr "Új formula hozzáadása"
-
-#: amiga-mui/configwnd.c:1493
-msgid "Remove phrase"
-msgstr "Formula eltávolítása"
-
-#: amiga-mui/configwnd.c:1529
+#: amiga-mui/configwnd.c:1541
 msgid "SimpleMail - Configuration"
 msgstr "SimpleMail - Beállítás"
 
-#: amiga-mui/configwnd.c:1560
+#: amiga-mui/configwnd.c:1569
 msgid "?config:_Save"
 msgstr "Ment_sd"
 
-#: amiga-mui/configwnd.c:1561 amiga-mui/filterwnd.c:531
+#: amiga-mui/configwnd.c:1570 amiga-mui/filterwnd.c:535
 msgid "_Use"
 msgstr "Használd"
 
-#: amiga-mui/configwnd.c:1578
-msgid "Save the configuration permanently."
-msgstr "Beállítás permanens elmentése."
+#: amiga-mui/configwnd.c:1592
+msgid "General"
+msgstr "Általános"
 
-#: amiga-mui/configwnd.c:1579
-msgid "Use the configuration, but don't save it."
-msgstr "Használd a beállítást, de ne mentsd el."
-
-#: amiga-mui/configwnd.c:1580
-msgid "Discards all the changes you have made."
-msgstr "Minden változtatást visszavon."
-
-#: amiga-mui/configwnd.c:1591
+#: amiga-mui/configwnd.c:1593
 msgid "Accounts"
 msgstr "Fiókok"
 
-#: amiga-mui/configwnd.c:1608
+#: amiga-mui/configwnd.c:1594
 msgid "Receive mail"
 msgstr "Levél fogadása"
 
-#: amiga-mui/configwnd.c:1610
+#: amiga-mui/configwnd.c:1596
 msgid "Reading"
 msgstr "Olvasás"
 
-#: amiga-mui/configwnd.c:1611
+#: amiga-mui/configwnd.c:1597
 msgid "Reading plain"
 msgstr "Sima olvasás"
 
-#: amiga-mui/configwnd.c:1612
+#: amiga-mui/configwnd.c:1598
 msgid "Reading HTML"
 msgstr "HTML olvasás"
 
-#: amiga-mui/configwnd.c:1614
-#, fuzzy
+#: amiga-mui/configwnd.c:1599
 msgid "Phrases"
 msgstr "Formulák"
 
-#: amiga-mui/configwnd.c:1642
+#: amiga-mui/configwnd.c:1600
 msgid "Signatures"
 msgstr "Aláírások"
 
-#: amiga-mui/configwnd.c:1706
+#: amiga-mui/configwnd.c:1606
+msgid "Save the configuration permanently."
+msgstr "Beállítás permanens elmentése."
+
+#: amiga-mui/configwnd.c:1607
+msgid "Use the configuration, but don't save it."
+msgstr "Használd a beállítást, de ne mentsd el."
+
+#: amiga-mui/configwnd.c:1608
+msgid "Discards all the changes you have made."
+msgstr "Minden változtatást visszavon."
+
+#: amiga-mui/configwnd.c:1724
 msgid "All messages"
 msgstr "Összes üzenet"
 
-#: amiga-mui/configwnd.c:1708
-#, c-format
+#: amiga-mui/configwnd.c:1726
 msgid "> %ld KB"
 msgstr "> %ld KB"
-
-#: amiga-mui/dlwnd.c:53 amiga-mui/upwnd.c:52
-#, c-format
-msgid "Connecting to server %s..."
-msgstr "Kapcsolódás a szerverhez: %s..."
-
-#: amiga-mui/dlwnd.c:68
-#, c-format
-msgid "-/- Bytes (-/%d Mails)"
-msgstr "-/- byte (-/%d levél)"
-
-#: amiga-mui/dlwnd.c:87 amiga-mui/dlwnd.c:99
-msgid "%%ld/%d Bytes (%d/%d Mails)"
-msgstr "%%ld/%d byte (%d/%d levél)"
-
-#: amiga-mui/dlwnd.c:110
-msgid "%%ld/%d bytes"
-msgstr "%%ld/%d byte"
 
 #: amiga-mui/filterruleclass.c:69
 msgid "New"
 msgstr "Új"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:581
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:692
 msgid "Read"
 msgstr "Olvasott"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:582
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:693
 msgid "Unread"
 msgstr "Olvasatlan"
 
@@ -931,7 +914,7 @@ msgstr "Válaszolt"
 msgid "Forwarded"
 msgstr "Továbbított"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:580
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:691
 msgid "Pending"
 msgstr "Várakozó"
 
@@ -943,152 +926,216 @@ msgstr "Elküldött"
 msgid "Sender"
 msgstr "Küldõ"
 
-#: amiga-mui/filterruleclass.c:88 amiga-mui/mailtreelistclass.c:389
-#: amiga-mui/transwndclass.c:125 mail.c:2972 print.c:119
+#: amiga-mui/filterruleclass.c:88
+msgid "Receiver"
+msgstr "Címzett"
+
+#: amiga-mui/filterruleclass.c:89 amiga-mui/folderwnd.c:233
+#: amiga-mui/folderwnd.c:243 amiga-mui/mailtreelistclass.c:430
+#: amiga-mui/transwndclass.c:125 mail.c:3162 print.c:119
 msgid "Subject"
 msgstr "Tárgy"
 
-#: amiga-mui/filterruleclass.c:89
+#: amiga-mui/filterruleclass.c:90
 msgid "Header"
 msgstr "Fejléc"
 
-#: amiga-mui/filterruleclass.c:90
+#: amiga-mui/filterruleclass.c:91
 msgid "Has attachments"
 msgstr "Vannak csatolmányai"
 
-#: amiga-mui/filterruleclass.c:91
+#: amiga-mui/filterruleclass.c:92
 msgid "Status is"
 msgstr "Állapota"
 
-#: amiga-mui/filterruleclass.c:112 amiga-mui/filterruleclass.c:116
-#: amiga-mui/filterruleclass.c:121
+#: amiga-mui/filterruleclass.c:113 amiga-mui/filterruleclass.c:117
+#: amiga-mui/filterruleclass.c:121 amiga-mui/filterruleclass.c:126
 msgid "contains"
 msgstr "tartalmaz"
 
-#: amiga-mui/filterwnd.c:440
+#: amiga-mui/filterwnd.c:444
 msgid "SimpleMail - Edit Filter"
 msgstr "SimpleMail - Szûrõ szerkesztése"
 
-#: amiga-mui/filterwnd.c:462 amiga-mui/mainwnd.c:548
+#: amiga-mui/filterwnd.c:466 amiga-mui/mainwnd.c:552
 msgid "_New"
 msgstr "Új"
 
-#: amiga-mui/filterwnd.c:463
-msgid "_Remove"
-msgstr "Eltávolítás"
-
-#: amiga-mui/filterwnd.c:469
+#: amiga-mui/filterwnd.c:473
 msgid "Apply on request"
 msgstr "Alkalmazás kérésre"
 
-#: amiga-mui/filterwnd.c:471
+#: amiga-mui/filterwnd.c:475
 msgid "Apply to new mails"
 msgstr "Alkalmazás új levelekre"
 
-#: amiga-mui/filterwnd.c:473
+#: amiga-mui/filterwnd.c:477
 msgid "Apply to sent mails"
 msgstr "Alkalmazás elküldött levelekre"
 
-#: amiga-mui/filterwnd.c:485
+#: amiga-mui/filterwnd.c:489
 msgid "Add new rule"
 msgstr "Új szabály hozzáadása"
 
-#: amiga-mui/filterwnd.c:486
+#: amiga-mui/filterwnd.c:490
 msgid "Apply now"
 msgstr "Alkalmazás most"
 
-#: amiga-mui/filterwnd.c:491 amiga-mui/filterwnd.c:492
+#: amiga-mui/filterwnd.c:495 amiga-mui/filterwnd.c:496
 msgid "Move to Folder"
 msgstr "Mozgatás mappába"
 
-#: amiga-mui/filterwnd.c:507 amiga-mui/filterwnd.c:508
+#: amiga-mui/filterwnd.c:511 amiga-mui/filterwnd.c:512
 msgid "Execute ARexx Script"
 msgstr "ARexx szkript végrehajtása"
 
-#: amiga-mui/filterwnd.c:519 amiga-mui/filterwnd.c:520
+#: amiga-mui/filterwnd.c:523 amiga-mui/filterwnd.c:524
 msgid "Play Sound"
 msgstr "Hang lejátszása"
 
-#: amiga-mui/folderwnd.c:97
+#: amiga-mui/filterwnd.c:534
+msgid "?filter:_Save"
+msgstr "Ment_sd"
+
+#: amiga-mui/folderwnd.c:226
 msgid "received"
 msgstr "fogadott"
 
-#: amiga-mui/folderwnd.c:98
+#: amiga-mui/folderwnd.c:227
 msgid "sent"
 msgstr "elküldött"
 
-#: amiga-mui/folderwnd.c:99
+#: amiga-mui/folderwnd.c:228
 msgid "received and sent"
 msgstr "küldött és fogadott"
 
-#: amiga-mui/folderwnd.c:100
+#: amiga-mui/folderwnd.c:229
 msgid "mailinglist"
 msgstr "levelezõlista"
 
-#: amiga-mui/folderwnd.c:114 amiga-mui/folderwnd.c:226
+#: amiga-mui/folderwnd.c:231 amiga-mui/folderwnd.c:241
+#: amiga-mui/mailtreelistclass.c:427
+msgid "Status"
+msgstr "Állapot"
+
+#: amiga-mui/folderwnd.c:232 amiga-mui/folderwnd.c:242
+msgid "From/TO"
+msgstr "Feladó/TO"
+
+#: amiga-mui/folderwnd.c:235 amiga-mui/folderwnd.c:245
+#: amiga-mui/mailtreelistclass.c:432 mail.c:3174 print.c:124
+msgid "Date"
+msgstr "Dátum"
+
+#: amiga-mui/folderwnd.c:237 amiga-mui/folderwnd.c:247
+#: amiga-mui/mailtreelistclass.c:434
+msgid "Filename"
+msgstr "Fájlnév"
+
+#: amiga-mui/folderwnd.c:238 amiga-mui/folderwnd.c:248
+msgid "POP3"
+msgstr "POP3"
+
+#: amiga-mui/folderwnd.c:239 amiga-mui/folderwnd.c:249
+#: amiga-mui/mailtreelistclass.c:436
+msgid "Received"
+msgstr "Fogadott"
+
+#: amiga-mui/folderwnd.c:267
+msgid "IMAP Server"
+msgstr "IMAP szerver"
+
+#: amiga-mui/folderwnd.c:273 amiga-mui/folderwnd.c:520
 msgid "Path"
 msgstr "Útvonal"
 
-#: amiga-mui/folderwnd.c:120 amiga-mui/folderwnd.c:121
+#: amiga-mui/folderwnd.c:279 amiga-mui/folderwnd.c:280
 msgid "_Type"
 msgstr "_Típus"
 
-#: amiga-mui/folderwnd.c:123 amiga-mui/folderwnd.c:127
+#: amiga-mui/folderwnd.c:282 amiga-mui/folderwnd.c:283
+msgid "_Primary sort"
+msgstr "Elsõdleges rendezés"
+
+#: amiga-mui/folderwnd.c:285 amiga-mui/folderwnd.c:286
+msgid "_Secondary sort"
+msgstr "Má_sodlagos rendezés"
+
+#: amiga-mui/folderwnd.c:288 amiga-mui/folderwnd.c:292
 msgid "Def. To"
 msgstr "Alap címzett"
 
-#: amiga-mui/folderwnd.c:160
+#: amiga-mui/folderwnd.c:305
+msgid "Subscribe"
+msgstr "Feliratkozás"
+
+#: amiga-mui/folderwnd.c:306
+msgid "Unsubscribe"
+msgstr "Leíratkozás"
+
+#: amiga-mui/folderwnd.c:307
+msgid "Reload from server"
+msgstr "Újratöltés a szerverrõl"
+
+#: amiga-mui/folderwnd.c:308
+msgid "Submit to server"
+msgstr "Továbbítás a szerverre"
+
+#: amiga-mui/folderwnd.c:349
+msgid "SimpleMail - Edit IMAP Server"
+msgstr "SimpleMail - IMAP szerver szerkesztése"
+
+#: amiga-mui/folderwnd.c:353
 msgid "SimpleMail - Edit folder group"
 msgstr "SimpleMail - Mappacsoport szerkesztése"
 
-#: amiga-mui/folderwnd.c:173
+#: amiga-mui/folderwnd.c:381
 msgid "SimpleMail - Edit folder"
 msgstr "SimpleMail - Mappa szerkesztése"
 
-#: amiga-mui/folderwnd.c:239
+#: amiga-mui/folderwnd.c:533
 msgid "_OK"
 msgstr "_Oké"
 
-#: amiga-mui/foldertreelistclass.c:128
+#: amiga-mui/foldertreelistclass.c:136
 msgid "Mails"
 msgstr "Levelek"
 
-#: amiga-mui/foldertreelistclass.c:165
+#: amiga-mui/foldertreelistclass.c:173
 msgid "Folders"
 msgstr "Mappák"
 
-#: amiga-mui/foldertreelistclass.c:166 amiga-mui/mainwnd.c:465
+#: amiga-mui/foldertreelistclass.c:174 amiga-mui/mainwnd.c:467
 msgid "New Folder..."
 msgstr "Új mappa..."
 
-#: amiga-mui/foldertreelistclass.c:167 amiga-mui/mainwnd.c:464
+#: amiga-mui/foldertreelistclass.c:175 amiga-mui/mainwnd.c:466
 msgid "New Group..."
 msgstr "Új csoport..."
 
-#: amiga-mui/foldertreelistclass.c:168
+#: amiga-mui/foldertreelistclass.c:176
 msgid "Remove..."
 msgstr "Eltávolítás..."
 
-#: amiga-mui/foldertreelistclass.c:170 amiga-mui/mainwnd.c:467
+#: amiga-mui/foldertreelistclass.c:178 amiga-mui/mainwnd.c:469
 msgid "Settings..."
 msgstr "Beállítás"
 
-#: amiga-mui/foldertreelistclass.c:172 amiga-mui/mainwnd.c:468
+#: amiga-mui/foldertreelistclass.c:180 amiga-mui/mainwnd.c:470
 msgid "Order"
 msgstr "Sorrend"
 
-#: amiga-mui/foldertreelistclass.c:173 amiga-mui/mainwnd.c:469
+#: amiga-mui/foldertreelistclass.c:181 amiga-mui/mainwnd.c:471
 msgid "Save"
 msgstr "Mentés"
 
-#: amiga-mui/foldertreelistclass.c:174 amiga-mui/mainwnd.c:470
+#: amiga-mui/foldertreelistclass.c:182 amiga-mui/mainwnd.c:472
 msgid "Reset"
 msgstr "Alaphelyzet"
 
-#: amiga-mui/foldertreelistclass.c:373 amiga-mui/searchwnd.c:79
-#, fuzzy
+#: amiga-mui/foldertreelistclass.c:395 amiga-mui/searchwnd.c:79
 msgid "All folders"
-msgstr "Mappák"
+msgstr "Minden mappa"
 
 #: amiga-mui/gui_main.c:327
 msgid "Failed to create the application\n"
@@ -1107,93 +1154,80 @@ msgid "Couldn't initialize timer\n"
 msgstr "Nem tudtam inicializálni az órát\n"
 
 #: amiga-mui/gui_main.c:331 amiga-mui/gui_main.c:332
-#, c-format
 msgid "Couldn't open %s version %d\n"
 msgstr "Nem tudtam megnyitni: %s %d verzió\n"
 
-#: amiga-mui/mailtreelistclass.c:118
+#: amiga-mui/mailtreelistclass.c:127
 msgid "<No Recipient>"
 msgstr "<Nincs címzett>"
 
 #. Help bubble text
-#: amiga-mui/mailtreelistclass.c:297
+#: amiga-mui/mailtreelistclass.c:330
 msgid "Current Message"
 msgstr "Jelenlegi üzenet"
 
-#: amiga-mui/mailtreelistclass.c:386
-msgid "Status"
-msgstr "Állapot"
-
-#: amiga-mui/mailtreelistclass.c:387 amiga-mui/transwndclass.c:124 mail.c:2902
+#: amiga-mui/mailtreelistclass.c:428 amiga-mui/transwndclass.c:124 mail.c:3080
 #: print.c:53
 msgid "From"
 msgstr "Feladó"
 
-#: amiga-mui/mailtreelistclass.c:388 mail.c:2919 print.c:71
+#: amiga-mui/mailtreelistclass.c:429 mail.c:3108 print.c:71
 msgid "To"
 msgstr "Címzett"
 
-#: amiga-mui/mailtreelistclass.c:391 mail.c:2978 print.c:124
-msgid "Date"
-msgstr "Dátum"
+#: amiga-mui/mailtreelistclass.c:435
+msgid "POP3 Server"
+msgstr "POP3 szerver"
 
-#: amiga-mui/mailtreelistclass.c:393
-msgid "Filename"
-msgstr "Fájlnév"
-
-#: amiga-mui/mailtreelistclass.c:395
-msgid "Received"
-msgstr "Fogadott"
-
-#: amiga-mui/mailtreelistclass.c:405
+#: amiga-mui/mailtreelistclass.c:452
 msgid "Mail Settings"
 msgstr "Levél beállítások"
 
-#: amiga-mui/mailtreelistclass.c:406
+#: amiga-mui/mailtreelistclass.c:453
 msgid "Show From/To?"
 msgstr "Mutassam a Feladót/Címzettet?"
 
-#: amiga-mui/mailtreelistclass.c:407
+#: amiga-mui/mailtreelistclass.c:454
 msgid "Show Subject?"
 msgstr "Mutassam a Tárgyat?"
 
-#: amiga-mui/mailtreelistclass.c:408
+#: amiga-mui/mailtreelistclass.c:455
 msgid "Show Reply-To?"
 msgstr "Mutassam a Választ?"
 
-#: amiga-mui/mailtreelistclass.c:409
+#: amiga-mui/mailtreelistclass.c:456
 msgid "Show Date?"
 msgstr "Mutassam a dátumot?"
 
-#: amiga-mui/mailtreelistclass.c:410
+#: amiga-mui/mailtreelistclass.c:457
 msgid "Show Size?"
 msgstr "Mutassam a méretet?"
 
-#: amiga-mui/mailtreelistclass.c:411
+#: amiga-mui/mailtreelistclass.c:458
 msgid "Show Filename?"
 msgstr "Mutassam a fájlnevet?"
 
-#: amiga-mui/mailtreelistclass.c:412
+#: amiga-mui/mailtreelistclass.c:459
 msgid "Show POP3 Server?"
 msgstr "Mutassam a POP3 szervert?"
 
-#: amiga-mui/mailtreelistclass.c:413
+#: amiga-mui/mailtreelistclass.c:460
 msgid "Show Received?"
 msgstr "Mutassam a fogadottat?"
 
-#: amiga-mui/mailtreelistclass.c:576
+#: amiga-mui/mailtreelistclass.c:687
 msgid "Set status"
 msgstr "Állapot beállítása"
 
-#: amiga-mui/mailtreelistclass.c:577
+#: amiga-mui/mailtreelistclass.c:688
 msgid "Mark"
 msgstr "Jelölés"
 
-#: amiga-mui/mailtreelistclass.c:578
+#: amiga-mui/mailtreelistclass.c:689
 msgid "Unmark"
 msgstr "Jel törlése"
 
-#: amiga-mui/mailtreelistclass.c:579
+#: amiga-mui/mailtreelistclass.c:690
 msgid "Hold"
 msgstr "Visszatartva"
 
@@ -1217,67 +1251,71 @@ msgstr "és"
 msgid "Released under the terms of the GNU Public License"
 msgstr "Kiadva a GNU Public License alatt"
 
-#: amiga-mui/mainwnd.c:458 amiga-mui/readwnd.c:965
+#: amiga-mui/mainwnd.c:460 amiga-mui/readwnd.c:970
 msgid "Project"
 msgstr "Projekt"
 
-#: amiga-mui/mainwnd.c:459 amiga-mui/readwnd.c:966
+#: amiga-mui/mainwnd.c:461 amiga-mui/readwnd.c:971
 msgid "?:About..."
 msgstr "?:Névjegy..."
 
-#: amiga-mui/mainwnd.c:460 amiga-mui/readwnd.c:967
+#: amiga-mui/mainwnd.c:462 amiga-mui/readwnd.c:972
 msgid "About MUI..."
 msgstr "MUI névjegy..."
 
-#: amiga-mui/mainwnd.c:462 amiga-mui/readwnd.c:969
+#: amiga-mui/mainwnd.c:464 amiga-mui/readwnd.c:974
 msgid "Q:Quit"
 msgstr "Q:Kilépés"
 
-#: amiga-mui/mainwnd.c:463
+#: amiga-mui/mainwnd.c:465
 msgid "Folder"
 msgstr "Mappa"
 
-#: amiga-mui/mainwnd.c:466 amiga-mui/transwndclass.c:163
+#: amiga-mui/mainwnd.c:468 amiga-mui/transwndclass.c:165
 msgid "Delete"
 msgstr "Törlés"
 
-#: amiga-mui/mainwnd.c:472
+#: amiga-mui/mainwnd.c:474
 msgid "Delete all indexfiles..."
 msgstr "Összes indexfájl törlése..."
 
-#: amiga-mui/mainwnd.c:474
+#: amiga-mui/mainwnd.c:476
+msgid "Export..."
+msgstr "Exportálás..."
+
+#: amiga-mui/mainwnd.c:478
 msgid "S:Send queued mails..."
 msgstr "S:Levelek küldése..."
 
-#: amiga-mui/mainwnd.c:475
+#: amiga-mui/mainwnd.c:479
 msgid "F:Fetch mails..."
 msgstr "F:Levelek fogadása..."
 
-#: amiga-mui/mainwnd.c:476
+#: amiga-mui/mainwnd.c:480
 msgid "Check single account"
 msgstr "Egy fiók ellenõrzése"
 
-#: amiga-mui/mainwnd.c:478
+#: amiga-mui/mainwnd.c:482
 msgid "Message"
 msgstr "Üzenet"
 
-#: amiga-mui/mainwnd.c:479
+#: amiga-mui/mainwnd.c:483
 msgid "D:Read"
 msgstr "D:Olvasás"
 
-#: amiga-mui/mainwnd.c:480
+#: amiga-mui/mainwnd.c:484
 msgid "E:Edit"
 msgstr "E:Szerkesztés"
 
-#: amiga-mui/mainwnd.c:481
+#: amiga-mui/mainwnd.c:485
 msgid "M:Move..."
 msgstr "M:Mozgatás..."
 
-#: amiga-mui/mainwnd.c:482
+#: amiga-mui/mainwnd.c:486
 msgid "Copy..."
 msgstr "Másolás..."
 
-#: amiga-mui/mainwnd.c:483
+#: amiga-mui/mainwnd.c:487
 msgid "Delete..."
 msgstr "Törlés..."
 
@@ -1289,93 +1327,92 @@ msgstr "Törlés..."
 #. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 #. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 #.
-#: amiga-mui/mainwnd.c:492
+#: amiga-mui/mainwnd.c:496
 msgid "Settings"
 msgstr "Beállítások"
 
-#: amiga-mui/mainwnd.c:493
+#: amiga-mui/mainwnd.c:497
 msgid "Show folders?"
 msgstr "Mutassam a mappákat?"
 
-#: amiga-mui/mainwnd.c:494
+#: amiga-mui/mainwnd.c:498
 msgid "Show addressbook?"
 msgstr "Mutassam a címjegyzéket?"
 
-#: amiga-mui/mainwnd.c:496
+#: amiga-mui/mainwnd.c:500
 msgid "Configuration..."
 msgstr "Beállítás..."
 
-#: amiga-mui/mainwnd.c:497
+#: amiga-mui/mainwnd.c:501
 msgid "Filters..."
 msgstr "Szûrõk..."
 
-#: amiga-mui/mainwnd.c:498
+#: amiga-mui/mainwnd.c:502
 msgid "MUI..."
 msgstr "MUI..."
 
-#: amiga-mui/mainwnd.c:500
+#: amiga-mui/mainwnd.c:504
 msgid "Save Settings"
 msgstr "Beállítások mentése"
 
-#: amiga-mui/mainwnd.c:501
+#: amiga-mui/mainwnd.c:505
 msgid "Scripts"
 msgstr "Szkriptek"
 
-#: amiga-mui/mainwnd.c:502
+#: amiga-mui/mainwnd.c:506
 msgid ".:Execute ARexx Script..."
 msgstr ".:ARexx szkript végrehajtása..."
 
-#: amiga-mui/mainwnd.c:540
+#: amiga-mui/mainwnd.c:544
 msgid "Rea_d"
 msgstr "Olvasás"
 
-#: amiga-mui/mainwnd.c:542
+#: amiga-mui/mainwnd.c:546
 msgid "De_lete"
 msgstr "Törlés"
 
-#: amiga-mui/mainwnd.c:543
+#: amiga-mui/mainwnd.c:547
 msgid "Ge_tAdd"
 msgstr "Cím"
 
 #. Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),
-#: amiga-mui/mainwnd.c:549 amiga-mui/readwnd.c:1028
+#: amiga-mui/mainwnd.c:553 amiga-mui/readwnd.c:1033
 msgid "_Reply"
 msgstr "Válasz"
 
-#: amiga-mui/mainwnd.c:550
+#: amiga-mui/mainwnd.c:554
 msgid "For_ward"
 msgstr "Továbbítás"
 
-#: amiga-mui/mainwnd.c:554
+#: amiga-mui/mainwnd.c:558
 msgid "Fetc_h"
 msgstr "Letöltés"
 
-#: amiga-mui/mainwnd.c:555
+#: amiga-mui/mainwnd.c:559
 msgid "_Send"
 msgstr "Küldé_s"
 
-#: amiga-mui/mainwnd.c:559
+#: amiga-mui/mainwnd.c:563
 msgid "S_earch"
 msgstr "K_eresés"
 
-#: amiga-mui/mainwnd.c:560
+#: amiga-mui/mainwnd.c:564
 msgid "F_ilter"
 msgstr "Szûrõ"
 
-#: amiga-mui/mainwnd.c:561
+#: amiga-mui/mainwnd.c:565
 msgid "_Filters"
 msgstr "Szûrõk"
 
-#: amiga-mui/mainwnd.c:565
+#: amiga-mui/mainwnd.c:569
 msgid "_Abook"
 msgstr "Címj."
 
-#: amiga-mui/mainwnd.c:566
+#: amiga-mui/mainwnd.c:570
 msgid "_Config"
 msgstr "Beállítás"
 
-#: amiga-mui/mainwnd.c:634
-#, c-format
+#: amiga-mui/mainwnd.c:638
 msgid ""
 "SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI "
 "subclass!\n"
@@ -1384,33 +1421,31 @@ msgstr ""
 "A SimpleMailnek legalább %ld.%ld verziószámú NListtree MUI alosztály kell!\n"
 "Elérhetõ: %s"
 
-#: amiga-mui/mainwnd.c:762
+#: amiga-mui/mainwnd.c:767
 msgid "Folder:"
 msgstr "Mappa"
 
-#: amiga-mui/mainwnd.c:762
+#: amiga-mui/mainwnd.c:767
 msgid "Total:"
 msgstr "Összesen:"
 
-#: amiga-mui/mainwnd.c:762
+#: amiga-mui/mainwnd.c:767
 msgid "New:"
 msgstr "Új:"
 
-#: amiga-mui/mainwnd.c:762
+#: amiga-mui/mainwnd.c:767
 msgid "Unread:"
 msgstr "Olvasatlan:"
 
-#: amiga-mui/mainwnd.c:771
-#, c-format
+#: amiga-mui/mainwnd.c:776
 msgid "Total:%d New:%d Unread:%d"
 msgstr "Összes:%d Új:%d Olvasatlan:%d"
 
-#: amiga-mui/mainwnd.c:793
-#, c-format
+#: amiga-mui/mainwnd.c:798
 msgid "%s (T:%ld N:%ld U:%ld)"
 msgstr "%s (Ö:%ld Ú:%ld O:%ld)"
 
-#: amiga-mui/mainwnd.c:1267
+#: amiga-mui/mainwnd.c:1019
 msgid "No POP3 Server specified"
 msgstr "Nincs POP3 szerver megadva"
 
@@ -1422,25 +1457,23 @@ msgstr "PGP Key ID"
 msgid "User ID"
 msgstr "Felhasználó ID"
 
-#: amiga-mui/searchwnd.c:166
-#, fuzzy
+#: amiga-mui/searchwnd.c:158
 msgid "SimpleMail - Search"
-msgstr "SimpleMail - Névjegy"
+msgstr "SimpleMail - Keresés"
 
-#: amiga-mui/searchwnd.c:169
+#: amiga-mui/searchwnd.c:161
 msgid "Search _into"
 msgstr "Keresés"
 
-#: amiga-mui/searchwnd.c:199
-#, fuzzy
+#: amiga-mui/searchwnd.c:191
 msgid "_Subject"
 msgstr "Tárgy"
 
-#: amiga-mui/searchwnd.c:218
+#: amiga-mui/searchwnd.c:210
 msgid "S_tart search"
 msgstr "Keresés indí_tása"
 
-#: amiga-mui/searchwnd.c:219
+#: amiga-mui/searchwnd.c:211
 msgid "Sto_p search"
 msgstr "Keresés leállítása"
 
@@ -1452,8 +1485,7 @@ msgstr "Biztosan el akarod indítani ezt a programot?"
 msgid "*_Yes|_Cancel"
 msgstr "*Igen|Mégse"
 
-#: amiga-mui/readwnd.c:474
-#, c-format
+#: amiga-mui/readwnd.c:479
 msgid ""
 "File %s already exists in %s.\n"
 "Do you really want to replace it?"
@@ -1461,12 +1493,11 @@ msgstr ""
 "A(z) %s fájl már létezik: %s.\n"
 "Tényleg felülírjam?"
 
-#: amiga-mui/readwnd.c:514
-#, c-format
+#: amiga-mui/readwnd.c:519
 msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
 msgstr "Eredeti (%s)|Konvertált (%s)|_UTF8|Mégse"
 
-#: amiga-mui/readwnd.c:515
+#: amiga-mui/readwnd.c:520
 msgid ""
 "The orginal charset of the attached file differs from yours.\n"
 "In which charset do you want the file being saved?"
@@ -1474,55 +1505,55 @@ msgstr ""
 "A csatolt fájl eredeti karakterkészlete külöbözik a tiédtõl.\n"
 "Melyik karakterkészlettel mentsem le a fájlt?"
 
-#: amiga-mui/readwnd.c:971
+#: amiga-mui/readwnd.c:976
 msgid "Show raw format..."
 msgstr "Nyers formátum megjelenítése..."
 
-#: amiga-mui/readwnd.c:973
+#: amiga-mui/readwnd.c:978
 msgid "Print visible mailpart"
 msgstr "Látható levélrész nyomtatása"
 
-#: amiga-mui/readwnd.c:1003
+#: amiga-mui/readwnd.c:1008
 msgid "SimpleMail - Read Message"
 msgstr "SimpleMail - Üzenet olvasása"
 
-#: amiga-mui/readwnd.c:1013
+#: amiga-mui/readwnd.c:1018
 msgid "_Prev"
 msgstr "Elõzõ"
 
-#: amiga-mui/readwnd.c:1014
+#: amiga-mui/readwnd.c:1019
 msgid "_Next"
 msgstr "Következõ"
 
-#: amiga-mui/readwnd.c:1021
+#: amiga-mui/readwnd.c:1026
 msgid "Pr_int"
 msgstr "Nyomtatás"
 
-#: amiga-mui/readwnd.c:1029
+#: amiga-mui/readwnd.c:1034
 msgid "_Forward"
 msgstr "Elõre"
 
-#: amiga-mui/readwnd.c:1078 amiga-mui/readwnd.c:1095
+#: amiga-mui/readwnd.c:1083 amiga-mui/readwnd.c:1100
 msgid "Attachment"
 msgstr "Csatolmány"
 
-#: amiga-mui/readwnd.c:1080
+#: amiga-mui/readwnd.c:1085
 msgid "Open"
 msgstr "Megnyitás"
 
-#: amiga-mui/readwnd.c:1084
+#: amiga-mui/readwnd.c:1089
 msgid "Save As..."
 msgstr "Mentés mint..."
 
-#: amiga-mui/readwnd.c:1088
+#: amiga-mui/readwnd.c:1093
 msgid "Print as text"
 msgstr "Nyomtatás szövegként"
 
-#: amiga-mui/readwnd.c:1097
+#: amiga-mui/readwnd.c:1102
 msgid "Save as..."
 msgstr "Mentés mint..."
 
-#: amiga-mui/readwnd.c:1101
+#: amiga-mui/readwnd.c:1106
 msgid "Save whole document as..."
 msgstr "Teljes dokumentum mentése mint..."
 
@@ -1530,41 +1561,40 @@ msgstr "Teljes dokumentum mentése mint..."
 msgid "Mail No"
 msgstr "Levélszám"
 
-#: amiga-mui/transwndclass.c:161
+#: amiga-mui/transwndclass.c:163
 msgid "Ignore"
 msgstr "Mellõzés"
 
-#: amiga-mui/transwndclass.c:162
+#: amiga-mui/transwndclass.c:164
 msgid "Download"
 msgstr "Letöltés"
 
-#: amiga-mui/transwndclass.c:164
+#: amiga-mui/transwndclass.c:166
 msgid "Download & Delete"
 msgstr "Letöltés & törlés"
 
-#: amiga-mui/transwndclass.c:165
+#: amiga-mui/transwndclass.c:167
 msgid "_Start"
 msgstr "Indítá_s"
 
-#: amiga-mui/transwndclass.c:168
+#: amiga-mui/transwndclass.c:170
 msgid "Select All"
 msgstr "Összes kiválasztása"
 
-#: amiga-mui/transwndclass.c:169
+#: amiga-mui/transwndclass.c:171
 msgid "Select None"
 msgstr "Kiválasztás törlése"
 
-#: amiga-mui/transwndclass.c:170 amiga-mui/transwndclass.c:171
+#: amiga-mui/transwndclass.c:172 amiga-mui/transwndclass.c:173
 msgid "Ignore not listed mails"
 msgstr "Nem listázott levelk mellõzése"
 
-#: amiga-mui/transwndclass.c:177 amiga-mui/transwndclass.c:182
-#: amiga-mui/transwndclass.c:313 amiga-mui/transwndclass.c:314
-#: amiga-mui/transwndclass.c:317
+#: amiga-mui/transwndclass.c:179 amiga-mui/transwndclass.c:320
+#: amiga-mui/transwndclass.c:321 amiga-mui/transwndclass.c:324
 msgid "Waiting..."
 msgstr "Várok..."
 
-#: amiga-mui/transwndclass.c:187
+#: amiga-mui/transwndclass.c:189
 msgid "_Abort"
 msgstr "Megsz_akítás"
 
@@ -1580,40 +1610,107 @@ msgstr "Északi"
 msgid "West European (with EURO)"
 msgstr "Nyugat-európai (Euróval)"
 
-#: codesets.c:838
+#: codesets.c:839
 msgid "West European"
 msgstr "Nyugat-európai"
 
-#: codesets.c:858
+#: codesets.c:860
 msgid "Central/East European"
 msgstr "Közép/Kelet-európai"
 
-#: codesets.c:879
+#: codesets.c:882
 msgid "South European"
 msgstr "Dél-európai"
 
-#: codesets.c:900
+#: codesets.c:904
 msgid "North European"
 msgstr "Észak-európai"
 
-#: codesets.c:921
+#: codesets.c:926
 msgid "Russian"
 msgstr "Orosz"
 
-#: codesets.c:942
+#: codesets.c:948
 msgid "Slavic languages"
 msgstr "Szláv nyelvek"
 
-#: codesets.c:963
+#: codesets.c:970
 msgid "Turkish"
 msgstr "Török"
 
-#: codesets.c:984
+#: codesets.c:992
 msgid "West European II"
 msgstr "Nyugat-európai II"
 
-#: mail.c:1123
-#, c-format
+#: imap.c:189
+msgid "Examining folder %s"
+msgstr "%s mappa megvizsgálása"
+
+#: imap.c:224
+msgid "Identified %d mails in %s"
+msgstr "%d levél azonosítva: %s"
+
+#: imap.c:286
+msgid "Failed examining the folder"
+msgstr "Nem tudtam megvizsgálni a mappát."
+
+#: imap.c:544
+msgid "Fetching mail %d from server"
+msgstr "%d levél letöltése a szerverrõl."
+
+#: imap.c:641
+msgid "Synchronizing mails with %s"
+msgstr "Levelek szinkronizálása: %s"
+
+#: imap.c:672 imap.c:808 imap.c:883 pop3.c:734
+msgid "Waiting for login..."
+msgstr "Várakozás a belépésre..."
+
+#: imap.c:675 imap.c:811 imap.c:886
+msgid "Login..."
+msgstr "Név..."
+
+#: imap.c:679
+msgid "Login successful"
+msgstr "A belépés sikeres"
+
+#: imap.c:680
+msgid "Checking for folders"
+msgstr "Mappák ellenõrzése..."
+
+#: imap.c:706
+msgid "Login failed!"
+msgstr "Belépés sikertelen"
+
+#: imap.c:726 pop3.c:855
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Nem tudom megnyitni: bsdsocket.library"
+
+#: imap.c:801
+msgid "Reading folders of %s"
+msgstr "%s mappáinak olvasása"
+
+#: imap.c:815 imap.c:890
+msgid "Reading folders..."
+msgstr "Mappák olvasása..."
+
+#: imap.c:876
+msgid "Submitting subscribed folders to %s"
+msgstr "Feliratkozott mappák küldése: %s"
+
+#: imap.c:894
+msgid "Reading subscribed folders..."
+msgstr "Feliratkozott mappák olvasása..."
+
+#: imap.c:929
+msgid "Subscribing folders failed!"
+msgstr "Mappák feliratkozása sikertelen!"
+
+#: imap.c:966
+msgid "Unsubscribing folders failed!"
+msgstr "Mappák leiratkozása sikertelen!"
+
+#: mail.c:1165
 msgid ""
 "Sender address (From) is <%s>, but\n"
 "return address (Reply-To) is <%s>.\n"
@@ -1623,24 +1720,24 @@ msgstr ""
 "a válaszcím (Válasz) <%s>.\n"
 "Melyik címet akarod használni?"
 
-#: mail.c:1126
+#: mail.c:1168
 msgid "_From|*_Reply-To|_Both|_Cancel"
 msgstr "_Feladó|*Válasz|Mindkettõ|Mégse"
 
-#: mail.c:1169
+#: mail.c:1211
 msgid ""
 "This e-mail has multiple recipients. Should it be answered to all recipients?"
 msgstr "Ennek a levélnek több címzettje van. Válaszoljak az összes címzettnek?"
 
-#: mail.c:1170
+#: mail.c:1212
 msgid "*_Yes|_No"
 msgstr "*Igen|Nem"
 
-#: mail.c:1829
+#: mail.c:1973
 msgid "This mail is encrypted. Please enter your passphrase now"
 msgstr "Ez a levél kódolva van. Kérlek add meg most a jelszavad"
 
-#: mail.c:1913
+#: mail.c:2057
 msgid ""
 "Decrypting failed! Eighter because the passphrase was incorrect\n"
 "or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x "
@@ -1650,16 +1747,15 @@ msgstr ""
 "vagy azért, mert a SimpleMail nem támogatja a kódolást (csak a PGP 2.6.x "
 "támogatott)!"
 
-#: mail.c:1927
+#: mail.c:2071
 msgid "Unsupported encryption"
 msgstr "Nemtámogatott kódolás"
 
-#: mail.c:2518
-#, c-format
+#: mail.c:2674
 msgid "Please select a key for %s <%s>"
 msgstr "Kérlek válassz ehhez egy kulcsot: %s <%s>"
 
-#: mail.c:2670
+#: mail.c:2826
 msgid ""
 "Converting this e-mail will cause the loss of some characters.\n"
 "SimpleMail can store the mail as Unicode so this doesn't happen."
@@ -1667,11 +1763,11 @@ msgstr ""
 "Ha átkonvertálod ezt a levelet, elveszhet pár karakter.\n"
 "Ha Unicode formátumban mented le, ez nem történik meg."
 
-#: mail.c:2672
+#: mail.c:2828
 msgid "Use Unicode|No Unicode"
 msgstr "Használj Unicode-ot|Nincs Unicode"
 
-#: mail.c:2792
+#: mail.c:2970
 msgid ""
 "No valid from field specified. You must configure some Accounts\n"
 "before creating new mails"
@@ -1679,110 +1775,106 @@ msgstr ""
 "Nincs érvényes mezõ megadva. Be kell állítanod néhány fiókot,\n"
 "mielõtt új leveleket írnál."
 
-#: mail.c:2945
+#: mail.c:3136
 msgid "Copies to"
 msgstr "Másolatok"
 
-#: mail.c:2987 print.c:131
+#: mail.c:3190 print.c:131
 msgid "Replies To"
 msgstr "Válaszok"
 
-#: pop3.c:68
+#: pop3.c:70
 msgid "Error receiving data from host!"
 msgstr "Hiba az adatok fogadásakor"
 
-#: pop3.c:104
+#: pop3.c:106
 msgid "Sending username..."
 msgstr "Név küldése..."
 
-#: pop3.c:111 pop3.c:121
+#: pop3.c:113 pop3.c:123
 msgid "Error while identifing the user"
 msgstr "Hiba a felhasználó azonosításakor"
 
-#: pop3.c:115
+#: pop3.c:117
 msgid "Sending password..."
 msgstr "Jelszó küldése..."
 
-#: pop3.c:125
+#: pop3.c:127
 msgid "Login successful!"
 msgstr "A belépés sikeres"
 
-#: pop3.c:321
+#: pop3.c:323
 msgid "Checking for mail duplicates..."
 msgstr "Másolatok ellenõrzése..."
 
-#: pop3.c:380
+#: pop3.c:366
+msgid "Found %d mail duplicates"
+msgstr "%d másolatot találtam..."
+
+#: pop3.c:390
 msgid "Getting statistics..."
 msgstr "Statisztika lekérése..."
 
-#: pop3.c:385
+#: pop3.c:396
 msgid "Could not get server statistics"
 msgstr "Nem tudtam a szerver statisztikáit lekérni"
 
-#: pop3.c:419
+#: pop3.c:430
 msgid "Getting mail sizes..."
 msgstr "Levélméretek lekérése..."
 
 #. -ERR has been returned and nobody breaked the connection, what means that TOP is not supported
-#: pop3.c:502
+#: pop3.c:513
 msgid "Couldn't receive more statistics"
 msgstr "Nem kaptam több statisztikát"
 
-#: pop3.c:542
+#: pop3.c:553
 msgid "Waiting for user interaction"
 msgstr "Várok a felhasználóra"
 
-#: pop3.c:562
+#: pop3.c:573
 msgid "Logging out..."
 msgstr "Kilépés..."
 
-#: pop3.c:585
+#: pop3.c:596
 msgid "Can't get new filename!"
 msgstr "Nem tudok új fájlnevet kérni!"
 
-#: pop3.c:594
+#: pop3.c:605
 msgid "Can't open mail file!"
 msgstr "Nem tudom megnyitni a levélfájlt!"
 
-#: pop3.c:602
+#: pop3.c:613
 msgid "Couldn't receive the mail"
 msgstr "Nem tudtam fogadni a levelet"
 
-#: pop3.c:619
+#: pop3.c:628
 msgid "Error while receiving the mail"
 msgstr "Hiba a levél fogadásakor"
 
-#: pop3.c:636
+#: pop3.c:645
 msgid "Error while writing the mail onto disk"
 msgstr "Hiba a levél lemezre írásakor"
 
-#: pop3.c:723
-msgid "Waiting for login..."
-msgstr "Várakozás a belépésre..."
+#: pop3.c:703
+msgid "Fetching mails from %s"
+msgstr "Levelek letöltése: %s"
 
-#: pop3.c:743
+#: pop3.c:754
 msgid "Can't access income-folder!"
 msgstr "Nem tudok hozzáférni a bejövõ mappához!"
 
-#: pop3.c:768
-msgid "Receiving mail..."
-msgstr "Levél fogadása..."
-
-#: pop3.c:772
+#: pop3.c:799
 msgid "Couldn't download the mail!\n"
 msgstr "Nem tudtam letölteni a levelet!\n"
 
-#: pop3.c:788
+#: pop3.c:815
 msgid "Marking mail as deleted..."
 msgstr "Levél megjelölése töröltként..."
 
-#: pop3.c:791
+#: pop3.c:818
 msgid "Can't mark mail as deleted!"
 msgstr "Nem tudom a levelet töröltként megjelölni!"
-
-#: pop3.c:821
-msgid "Cannot open the bsdsocket.library!"
-msgstr "Nem tudom megnyitni: bsdsocket.library"
 
 #: print.c:93
 msgid "Carbon Copy"
@@ -1808,52 +1900,67 @@ msgstr "Belsõ hiba."
 msgid "Can't create temporary file."
 msgstr "Nem tudok átmeneti fájlt létrehozni."
 
-#: simplemail.c:106 simplemail.c:156
+#: simplemail.c:108 simplemail.c:171
 msgid "Cannot delete mails, because folder is in use.\n"
 msgstr "Nem tudom letörölni a levelket, mert a mappa használatban van.\n"
 
-#: simplemail.c:123
+#: simplemail.c:125
 msgid "Do you really want to delete the selected mail permanently?"
 msgstr "Tényleg véglegesen le akarod törölni a kiválasztott levelet?"
 
-#: simplemail.c:124
-#, c-format
+#: simplemail.c:126
 msgid "Do you really want to delete %d mails permanently?"
 msgstr "Tényleg véglegesen le akarsz törölni %d levelet?"
 
-#: simplemail.c:125
+#: simplemail.c:127
 msgid "_Yes|_No"
 msgstr "Igen|Nem"
 
-#: simplemail.c:780
+#: simplemail.c:679
+msgid "Exporting folder %s to %s"
+msgstr "%s mappa exportálása: %s"
+
+#: simplemail.c:681
+msgid "SimpleMail - Exporting folder"
+msgstr "SimpleMail - Mappa exportálása"
+
+#: simplemail.c:757
+msgid "Choose export filename"
+msgstr "Válassz exportálási fájlnevet"
+
+#: simplemail.c:767
+msgid "Couldn't start process for exporting.\n"
+msgstr "Nem tudtam elindítani az exportálási folyamatot.\n"
+
+#: simplemail.c:1000
 msgid "Select an addressbook-file."
 msgstr "Válassz címjegyzék-fájtl"
 
-#: simplemail.c:813
+#: simplemail.c:1033
 msgid "New Group"
 msgstr "Új csoport"
 
-#: smtp.c:125
+#: smtp.c:123
 msgid "Service not ready."
 msgstr "A szolgáltatás nem áll készen."
 
-#: smtp.c:428
+#: smtp.c:427
 msgid "DATA-Cmd failed."
 msgstr "DATA-parancs sikertelen."
 
-#: smtp.c:667
+#: smtp.c:666
 msgid "Sending EHLO..."
 msgstr "EHLO küldése..."
 
-#: smtp.c:672
+#: smtp.c:671
 msgid "Sending HELO..."
 msgstr "HELO küldése..."
 
-#: smtp.c:675 smtp.c:709
+#: smtp.c:674 smtp.c:708
 msgid "HELO failed"
 msgstr "HELO sikertelen"
 
-#: smtp.c:684
+#: smtp.c:683
 msgid ""
 "Connection could not be made secure because the SMTP server doesn't seem to "
 "support it!"
@@ -1861,31 +1968,31 @@ msgstr ""
 "A kapcsolat nem tehetõ biztonságossá, mert úgy néz ki, hogy az SMTP szerver "
 "nem támogatja!"
 
-#: smtp.c:688
+#: smtp.c:687
 msgid "Sending STARTTLS..."
 msgstr "STARTTLS küldése..."
 
-#: smtp.c:691
+#: smtp.c:690
 msgid "STARTTLS failed. Connection could not be made secure."
 msgstr "STARTTLS sikertelen. A kapcsolat nem lett biztonságos."
 
-#: smtp.c:697
+#: smtp.c:696
 msgid "Connection could not be made secure."
 msgstr "A kapcsolat nem lett biztonságos."
 
-#: smtp.c:701
+#: smtp.c:700
 msgid "Sending secured EHLO..."
 msgstr "Biztonságos EHLO küldése..."
 
-#: smtp.c:706
+#: smtp.c:705
 msgid "Sending secured HELO..."
 msgstr "Biztonságos HELO küldése..."
 
-#: smtp.c:717
+#: smtp.c:716
 msgid "Sending AUTH..."
 msgstr "AUTH küldése..."
 
-#: smtp.c:720
+#: smtp.c:719
 msgid ""
 "AUTH failed. User couldn't be authenticated. Please recheck your settings."
 msgstr ""
@@ -1893,60 +2000,131 @@ msgstr ""
 "a beállításaidat."
 
 #. starts from 1
-#: smtp.c:763
+#: smtp.c:781
 msgid "Sending FROM..."
 msgstr "FROM küldése..."
 
-#: smtp.c:766
+#: smtp.c:784
 msgid "FROM failed."
 msgstr "FROM sikertelen."
 
-#: smtp.c:770
+#: smtp.c:788
 msgid "Sending RCPT..."
 msgstr "RCPT küldése..."
 
-#: smtp.c:773
+#: smtp.c:791
 msgid "RCPT failed."
 msgstr "RCPT sikertelen."
 
-#: smtp.c:777
+#: smtp.c:795
 msgid "Sending DATA..."
 msgstr "DATA küldése..."
 
-#: smtp.c:780
+#: smtp.c:799
 msgid "DATA failed."
 msgstr "DATA sikertelen."
 
 #. Connect to the pop3 server first
-#: smtp.c:821
+#: smtp.c:845
+msgid "Sending mails to %s, connecting to %s first"
+msgstr "Levelek küldése: %s, kapcsolódás: %s"
+
+#: smtp.c:848
 msgid "Log into POP3 Server...."
 msgstr "Belépés a POP3 szerverre..."
 
-#: smtp.c:825
+#: smtp.c:852
+msgid "Sending mails to %s"
+msgstr "Levelek küldése: %s"
+
+#: smtp.c:856
 msgid "Connecting..."
 msgstr "Kapcsolódok..."
 
-#: smtp.c:835
+#: smtp.c:866
 msgid "Aborted - Sending QUIT..."
 msgstr "Megszakítva - QUIT küldése..."
 
-#: smtp.c:837 smtp.c:848
+#: smtp.c:868 smtp.c:879
 msgid "Aborted - Disconnecting..."
 msgstr "Megszakítva - Szétkapcsolok..."
 
-#: smtp.c:842
+#: smtp.c:873
 msgid "Sending QUIT..."
 msgstr "QUIT küldése..."
 
-#: smtp.c:853
+#: smtp.c:884
 msgid "Disconnecting..."
 msgstr "Szétkapcsolok..."
 
-#: smtp.c:866
+#: smtp.c:897
 msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
 msgstr ""
 "Nem tudom megnyitni a bsdsocket.library-t. Kérlek índítsd el a TCP/IP\n"
 "stacket."
+
+#: status.c:53 status.c:66
+msgid "%d s"
+msgstr "%d mp"
+
+#: status.c:54 status.c:67
+msgid "%d min %d s"
+msgstr "%d perc %d mp"
+
+#: status.c:56
+msgid "Time remaining:"
+msgstr "Hátralévõ idõ:"
+
+#: status.c:118
+msgid "Connecting to server %s..."
+msgstr "Kapcsolódás a szerverhez: %s..."
+
+#: status.c:148
+msgid "%d KB / %d KB (time left: %s)"
+msgstr "%d KB / %d KB (hátralévõ idõ: %s)"
+
+#: status.c:153
+msgid "Processing mail %d (%d KB) of %d"
+msgstr "%d levél feldolgozása (%d Kb) - %d"
+
+#~ msgid "Account"
+#~ msgstr "Fiók"
+
+#~ msgid "Signature"
+#~ msgstr "Aláírás"
+
+#~ msgid "_Add new signature"
+#~ msgstr "Új aláírás hozzá_adása"
+
+#~ msgid "Add new signature"
+#~ msgstr "Új aláírás hozzáadása"
+
+#~ msgid "Remove signature"
+#~ msgstr "Aláírás eltávolítása"
+
+#~ msgid "Phrase"
+#~ msgstr "Formulák"
+
+#~ msgid "_Add new phrase"
+#~ msgstr "Új formula hozzá_adása"
+
+#~ msgid "Add new phrase"
+#~ msgstr "Új formula hozzáadása"
+
+#~ msgid "Remove phrase"
+#~ msgstr "Formula eltávolítása"
+
+#~ msgid "-/- Bytes (-/%d Mails)"
+#~ msgstr "-/- byte (-/%d levél)"
+
+#~ msgid "%%ld/%d Bytes (%d/%d Mails)"
+#~ msgstr "%%ld/%d byte (%d/%d levél)"
+
+#~ msgid "%%ld/%d bytes"
+#~ msgstr "%%ld/%d byte"
+
+#~ msgid "Receiving mail..."
+#~ msgstr "Levél fogadása..."
 
 #~ msgid "Formulák"
 #~ msgstr "Kifejezések"

@@ -34,15 +34,18 @@
 #include <proto/muimaster.h>
 #include <proto/dos.h>
 #include <proto/utility.h>
+#include <proto/exec.h>
 
 #include "account.h"
 #include "folder.h"
 #include "imap.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "addressstringclass.h"
 #include "amigasupport.h"
+#include "compiler.h"
 #include "folderwnd.h"
 #include "muistuff.h"
 
@@ -66,6 +69,49 @@ static Object *imap_folders_list;
 static Object *imap_folders_listview;
 static int group_mode;
 static int imap_mode;
+
+static struct Hook imap_folders_construct_hook;
+static struct Hook imap_folders_destruct_hook;
+static struct Hook imap_folders_display_hook;
+
+struct imap_folder_entry
+{
+	char *name;
+	int subscribed;
+};
+
+STATIC ASM APTR imap_folders_construct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
+{
+	struct imap_folder_entry *new_entry = AllocVec(sizeof(*entry),0);
+	if (new_entry)
+	{
+		new_entry->name = mystrdup(entry->name);
+		new_entry->subscribed = entry->subscribed;
+	}
+	return new_entry;
+}
+
+STATIC ASM VOID imap_folders_destruct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
+{
+	if (entry->name) FreeVec(entry->name);
+	if (entry) FreeVec(entry);
+}
+
+STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 struct imap_folder_entry *entry)
+{
+	if (entry)
+	{
+		if (entry->subscribed)
+		{
+			*array = entry->name;
+		} else
+		{
+			static char buf[300];
+			sprintf(buf,"(%s)",entry->name);
+			*array = buf;
+		}
+	}
+}
 
 struct folder *changed_folder;
 
@@ -143,6 +189,10 @@ static void init_folder(void)
 	second_sort_array[FOLDER_SORT_POP3] = _("POP3");
 	second_sort_array[FOLDER_SORT_RECV] = _("Received");
 
+	init_hook(&imap_folders_construct_hook, (HOOKFUNC)imap_folders_construct);
+	init_hook(&imap_folders_destruct_hook, (HOOKFUNC)imap_folders_destruct);
+	init_hook(&imap_folders_display_hook, (HOOKFUNC)imap_folders_display);
+
 	folder_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
 		WindowContents, VGroup,
@@ -186,8 +236,9 @@ static void init_folder(void)
 
 			Child, imap_folders_listview = NListviewObject,
 				MUIA_NListview_NList, imap_folders_list = NListObject,
-					MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-					MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+					MUIA_NList_ConstructHook, &imap_folders_construct_hook,
+					MUIA_NList_DestructHook, &imap_folders_destruct_hook,
+					MUIA_NList_DisplayHook, &imap_folders_display_hook,
 					End,
 				End,
 
@@ -337,7 +388,11 @@ void folder_edit_with_folder_list(struct folder *f, struct list *list, struct li
 		struct string_node *node = (struct string_node*)list_first(list);
 		while (node)
 		{
-			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, node->string, MUIV_NList_Insert_Bottom);
+			struct imap_folder_entry entry;
+			entry.name = node->string;
+			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
+
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, &entry, MUIV_NList_Insert_Bottom);
 			node = (struct string_node*)node_next(&node->node);
 		}
 	}

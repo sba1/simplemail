@@ -575,11 +575,11 @@ static int compose_mail(struct Compose_Data *data, int hold)
 #endif
 	{
 
-		char *from = gtk_entry_get_text( ((GtkCombo*)(data->from_combo))->entry);
-		char *to = gtk_entry_get_text(data->to_entry);
-		char *cc = gtk_entry_get_text(data->cc_entry);
-		char *subject = gtk_entry_get_text(data->subject_entry);
-		char *reply = NULL;
+		const char *from = gtk_entry_get_text(GTK_ENTRY(((GtkCombo*)(data->from_combo))->entry));
+		const char *to = gtk_entry_get_text(GTK_ENTRY(data->to_entry));
+		const char *cc = gtk_entry_get_text(GTK_ENTRY(data->cc_entry));
+		const char *subject = gtk_entry_get_text(GTK_ENTRY(data->subject_entry));
+		const char *reply = NULL;
 		struct composed_mail new_mail;
 
 		GtkTextIter start, end;
@@ -594,18 +594,18 @@ static int compose_mail(struct Compose_Data *data, int hold)
 		/* Attach the mails recursivly */
 		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
 #endif
-		gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(data->text_view),&start);
-		gtk_text_buffer_get_end_iter(gtk_text_view_get_buffer(data->text_view),&end);
+		gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view)),&start);
+		gtk_text_buffer_get_end_iter(gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view)),&end);
 
 		new_mail.content_type = "text/plain";
-		new_mail.text = gtk_text_buffer_get_text(gtk_text_view_get_buffer(data->text_view),&start,&end,FALSE);
+		new_mail.text = gtk_text_buffer_get_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view)),&start,&end,FALSE);
 
 		/* TODO: free this stuff!! */
-		new_mail.from = from;
-		new_mail.replyto = reply;
-		new_mail.to = to;
-		new_mail.cc = cc;
-		new_mail.subject = subject;
+		new_mail.from = (char*)from;
+		new_mail.replyto = (char*)reply;
+		new_mail.to = (char*)to;
+		new_mail.cc = (char*)cc;
+		new_mail.subject = (char*)subject;
 		new_mail.mail_filename = NULL;//data->filename;
 		new_mail.mail_folder = NULL;//data->folder;
 		new_mail.reply_message_id = NULL;//data->reply_id;
@@ -860,7 +860,7 @@ int compose_window_open(struct compose_args *args)
 			if ((to = mail_find_header_contents(args->to_change,"to")))
 			{
 				/* set the To string */
-				char *decoded_to;
+				unsigned char *decoded_to;
 				parse_text_string(to,&decoded_to);
 
 				if (decoded_to)
@@ -873,7 +873,7 @@ int compose_window_open(struct compose_args *args)
 			if ((cc = mail_find_header_contents(args->to_change,"cc")))
 			{
 				/* set the CC string */
-				char *decoded_cc;
+				unsigned char *decoded_cc;
 				parse_text_string(cc,&decoded_cc);
 
 				if (decoded_cc)

@@ -1,0 +1,49 @@
+/*
+This is an ARexx-Script for SimpleMail
+You can only start this script from SimpleMail and not from shell.
+
+$VER: ImportMails.smrx 1.0 (22.12.01)
+$Author: Sebastian Bauer
+$Label: Import Mails
+$Desc: Import multiple single mail files into SimpleMail
+*/
+
+/* Store the SimpleMail Port */
+smport = ADDRESS()
+
+if smport ~== "SIMPLEMAIL.1" then
+do
+  smport = "SIMPLEMAIL.1"
+  address "SIMPLEMAIL.1"
+end
+
+tmpname = "t:ImportMails."||time('s')||"."||sfport
+address command 'requestfile title "Please select the e-Mails you which to import" multiselect pattern "" >'tmpname
+
+open(tmpfile,tmpname,'r')
+str = readln(tmpfile)
+close(tmpfile)
+
+address command delete tmpname quiet
+
+i = 0;
+
+maillistfreeze
+
+do until str == ""
+  str = strip(str)
+
+  /* remove the first quotation mark */
+  str = delstr(str,1,1)
+
+  /* find the next quotation mark */
+  mark = pos('"',str)
+
+	/* add the mail to simplemail */
+	mailadd delstr(str,mark)
+
+  /* delete the string */
+  str = delstr(str,1,mark);
+end
+
+maillistthaw

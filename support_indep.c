@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stat.h>
 
 #include "support.h"
 #include "support_indep.h"
@@ -201,6 +202,36 @@ char *mystrcat(char *str1, char *str2)
 	free(str1);
 
 	return rc;
+}
+
+/******************************************************************
+ Compares the dates of the two files. Returns > 0 if the first arg
+ is newer, 0 equal, < 0 older. Not existing files means very old.
+*******************************************************************/
+int myfiledatecmp(char *file1, char *file2)
+{
+	struct stat *s1, *s2;
+	int rc1,rc2;
+			
+	if ((s1 = (struct stat*)malloc(sizeof(struct stat))))
+	{
+		if ((s2 = (struct stat*)malloc(sizeof(struct stat))))
+		{
+			rc1 = stat(file1,s1);
+			rc2 = stat(file2,s2);
+			if (rc1 == -1 && rc2 == -1) return 0;
+			if (rc1 == -1) return -1;
+			if (rc2 == -1) return 1;
+
+			free(s2);
+			free(s1);
+
+			if (s1->st_mtime == s2->st_mtime) return 0;
+			if (s1->st_mtime > s2->st_mtime) return 1;
+			return -1;
+		}
+		free(s1);
+	}
 }
 
 /**************************************************************************

@@ -36,6 +36,7 @@ size_t mystrlcpy(char *dest, const char *src, size_t n);
 char *mystrcat(char *str1, char *str2);
 
 unsigned int myfsize(FILE *file);
+int myfiledatecmp(char *file1, char *file2);
 
 void wrap_text(char *text, int border);
 

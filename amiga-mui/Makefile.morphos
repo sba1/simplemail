@@ -81,6 +81,7 @@ OBJS    =	utf8stringclass.o \
             audioselectgroupclass.o \
             attachmentlistclass.o \
             arexx.o \
+            appicon.o \
             amigasupport.o \
             addresstreelistclass.o \
             addressstringclass.o \

@@ -24,10 +24,12 @@
 #include <stdlib.h>
 
 #include <libraries/mui.h>
-
 #include <mui/texteditor_mcc.h>
 #include <mui/nlistview_mcc.h>
+
+#include <clib/alib_protos.h>
 #include <proto/exec.h>
+#include <proto/intuition.h>
 #include <proto/muimaster.h>
 
 #include "parse.h"

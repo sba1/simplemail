@@ -7,5 +7,12 @@
 #include <exec/types.h>
 #include <expat/expat.h>
 #include <proto/expat.h>
+#ifdef __MORPHOS__
+#include <emul/emulregs.h>
+#define XML_HANDLER_REF(x) (void *)&x##_trap
+extern struct EmulLibEntry xml_start_tag_trap;
+extern struct EmulLibEntry xml_end_tag_trap;
+extern struct EmulLibEntry xml_char_data_trap;
+#endif
 #endif
 

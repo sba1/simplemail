@@ -23,6 +23,7 @@
 #include <string.h>
 #include <intuition/intuition.h>
 #include <dos/dos.h>
+#include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/locale.h>
@@ -41,6 +42,7 @@ extern ULONG hookEntry();
 #else
 #ifdef __MORPHOS__
 #define hookEntry HookEntry
+#endif
 #endif
 
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))

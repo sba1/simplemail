@@ -29,11 +29,13 @@
 
 void set_debug_level(int);
 
-#ifdef NDEBUG
+#ifdef NODEBUG
 #define SM_DEBUGF(level,x)
 #else
 extern int __debuglevel;
 #define SM_DEBUGF(level,x) do { if (level <= __debuglevel) ARCH_DEBUG(x); } while (0)
+#define SM_ENTER SM_DEBUGF(20,("Entered function\n"))
+#define SM_LEAVE SM_DEBUGF(20,("Leave function\n"))
 #endif
 
 #endif

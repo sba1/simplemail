@@ -22,7 +22,11 @@
 
 #include "debug.h"
 
-int __debuglevel;
+#ifndef DEFAULT_DEBUG_LEVEL
+#define DEFAULT_DEBUG_LEVEL 0
+#endif
+
+int __debuglevel = DEFAULT_DEBUG_LEVEL;
 
 
 /*******************************************************

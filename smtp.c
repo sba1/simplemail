@@ -485,7 +485,7 @@ static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account
 	char *line;
 	int rc;
 	char *challenge;
-	unsigned int challenge_len;
+	unsigned int challenge_len = (unsigned int)-1; /* for decode_base64 */
 	unsigned long digest[4]; /* 16 chars */
 	char buf[512];
 	char *encoded_str;
@@ -531,7 +531,7 @@ static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *se
 	char *line;
 	int rc;
 	char *challenge;
-	unsigned int challenge_len;
+	unsigned int challenge_len = (unsigned int)-1;
 	unsigned long digest[4]; /* 16 chars */
 	char buf[512];
 	char *encoded_str;

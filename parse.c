@@ -771,13 +771,13 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 
 	if (!mystricmp(encoding,"b"))
 	{
-		unsigned int len;
+		unsigned int len = (unsigned int)-1;
 		*pbuf = decode_base64(encoding_start, ret - encoding_start, &len);
 	} else
 	{
 		if (!mystricmp(encoding,"q"))
 		{
-			unsigned int len;
+			unsigned int len = (unsigned int)-1;
 			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len,1);
 		} else
 		{

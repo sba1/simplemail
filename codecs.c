@@ -62,7 +62,8 @@ static int get_hexadigit(char c, int *pval)
 #endif
 
 /**************************************************************************
- Decoding a given buffer using the base64 algorithm
+ Decoding a given buffer using the base64 algorithm. *ret_len can be used
+ to cut the decoding, but the result might differ
 **************************************************************************/
 char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 {
@@ -78,6 +79,8 @@ char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
    };
 
    unsigned char *srcmax=src+len,*dest,*deststart;
+   unsigned int limit = *ret_len;
+   unsigned int real_len = 0;
 
    *ret_len=0;
 
@@ -106,6 +109,10 @@ char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 
          if (src[3] == '=') break;
          *dest++ = (c3 << 6) | c4;
+
+         real_len += 3;
+         if (real_len >= limit) break;
+
          src += 4;
       }
    }
@@ -127,6 +134,7 @@ char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int *ret_len, int header)
 {
    unsigned char *dest,*deststart;
+   unsigned int limit = *ret_len;
 
    *ret_len=0;
    if(!len) return NULL;
@@ -135,6 +143,8 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 
    if(header)
    {
+      unsigned int real_len = 0;
+
       while(len--)
       {
          unsigned char c=*buf++;
@@ -154,6 +164,8 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
             } else c = '='; /* should never happen */
          } else if('_' == c) c=' ';
          *dest++ = c;
+
+         if (++real_len >= limit) break;
       }
       *dest = 0;
 
@@ -230,6 +242,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
                   *dest++ = c;
                   break;
             }
+					  if ((dest-deststart)>= limit) break;
          } while (c);
       }
       /* Add string terminator */

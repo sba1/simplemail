@@ -139,6 +139,7 @@ int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
 int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
+void *mail_decode_bytes(struct mail *mail, unsigned int *len_ptr);
 int mail_create_html_header(struct mail *mail);
 
 int mail_add_header(struct mail *mail, char *name, int name_len,

@@ -1694,11 +1694,34 @@ void mail_decode(struct mail *mail)
 
 	if (!mystricmp(mail->content_transfer_encoding,"base64"))
 	{
-		mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
+		unsigned int decoded_len = (unsigned int)-1;
+		if ((mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&decoded_len)))
+			mail->decoded_len = decoded_len;
 	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
-		mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0);
+		unsigned int decoded_len = (unsigned int)-1;
+		if ((mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0)))
+			mail->decoded_len = decoded_len;
 	}
+}
+
+/**************************************************************************
+ Decodes a limitted number of bytes (useful for filetype identification)
+ len_ptr points to an int variable which limits the decode buffer, a big number
+ for everything. the variable will be changed as needed. Returns the buffer
+ or NULL. Must be free()'d
+**************************************************************************/
+void *mail_decode_bytes(struct mail *mail, unsigned int *len_ptr)
+{
+	void *decoded = NULL;
+	if (!mystricmp(mail->content_transfer_encoding,"base64"))
+	{
+		decoded = decode_base64(mail->text + mail->text_begin, mail->text_len,len_ptr);
+	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
+	{
+		decoded = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,len_ptr,0);
+	}
+	return decoded;
 }
 
 /**************************************************************************
@@ -1708,7 +1731,7 @@ void mail_decode(struct mail *mail)
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size)
 {
 	if (mail->filename) free(mail->filename);
-	if ((mail->filename = strdup(filename)))
+	if ((mail->filename = mystrdup(filename)))
 	{
 		mail->size = size;
 		return 1;

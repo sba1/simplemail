@@ -224,6 +224,10 @@ STATIC ASM VOID mails_display(register __a1 struct NList_DisplayMessage *msg, re
 				static char recv_buf[64];
 				static char status_buf[128];
 
+				if (mail->flags & MAIL_FLAGS_AUTOSPAM)
+				{
+					sprintf(status_buf,"\33O[%08lx]",data->status_new_spam);
+				} else
 				if (mail->flags & MAIL_FLAGS_NEW)
 				{
 					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",data->status_new_spam);

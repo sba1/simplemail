@@ -30,6 +30,8 @@
 #include "support_indep.h"
 #include "text2html.h"
 
+#include "support.h"
+
 #define SIZE_URI 256
 
 static const char legalchars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_?+-,.~/%&=:*#";
@@ -69,7 +71,7 @@ const static struct smily smily[] =
 };
 
 
-static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
+static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *str)
 {
 	char uri[SIZE_URI];
 	char *buffer = *buffer_ptr;
@@ -88,7 +90,9 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 
 	if (i)
 	{
-		fprintf(fh,"<A HREF=\"%s\"%s>%s</A>",uri, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"" , uri);
+		char buf[512];
+		sm_snprintf(buf,sizeof(buf),"<A HREF=\"%s\"%s>%s</A>",uri, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"" , uri);
+		string_append(str,buf);
 	}
 
 	*buffer_ptr = buffer;
@@ -99,19 +103,23 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 
 char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 {
-	char *html_buf = NULL;
-	FILE *fh;
+	unsigned char *saved_buffer = buffer;
+	string str;
 
-	if ((fh = tmpfile()))
+	if (string_initialize(&str,1024))
 	{
-		int len;
+		char buf[512];
 		int last_color = 0; /* the color of the current line */
 		int eval_color = 2; /* recheck the color */
 		int initial_color = 1;
 		int line = 0; /* the type of the line */
 
-		if (flags & TEXT2HTML_BODY_TAG) fprintf(fh,"<BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
-		if (fonttag) fputs(fonttag,fh);
+		if (flags & TEXT2HTML_BODY_TAG)
+		{
+			sm_snprintf(buf,sizeof(buf),"<BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
+			string_append(&str,buf);
+		}
+		string_append(&str,fonttag); /* accepts NULL pointer */
 
 		while (buffer_len)
 		{
@@ -139,9 +147,17 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 				if (last_color != new_color)
 				{
-					if (!initial_color) fputs("</FONT>",fh);
-					if (new_color == 1) fprintf(fh,"<FONT COLOR=\"#%x\">",user.config.read_quoted);
-					else if (new_color == 2) fprintf(fh,"<FONT COLOR=\"#%x\">",user.config.read_old_quoted);
+					if (!initial_color) string_append(&str,"</FONT>");
+					if (new_color == 1)
+					{
+						sm_snprintf(buf,sizeof(buf),"<FONT COLOR=\"#%x\">",user.config.read_quoted);
+						string_append(&str,buf);
+					}
+					else if (new_color == 2)
+					{
+						sm_snprintf(buf,sizeof(buf),"<FONT COLOR=\"#%x\">",user.config.read_old_quoted);
+						string_append(&str,buf);
+					}
 					last_color = new_color;
 					if (new_color) initial_color = 0;
 					else initial_color = 1;
@@ -151,10 +167,10 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 			}
 
 
-			if (!mystrnicmp("http:",buffer,5)) write_uri(&buffer, &buffer_len, fh);
-			else if (!mystrnicmp("mailto:",buffer,7)) write_uri(&buffer, &buffer_len, fh);
-			else if (!mystrnicmp("ftp:",buffer,4)) write_uri(&buffer, &buffer_len, fh);
-			else if (!mystrnicmp("https:",buffer,6)) write_uri(&buffer, &buffer_len, fh);
+			if (!mystrnicmp("http:",buffer,5)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("mailto:",buffer,7)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("ftp:",buffer,4)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("https:",buffer,6)) write_uri(&buffer, &buffer_len, &str);
 			else
 			{
 				unsigned char c;
@@ -163,17 +179,19 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 				if (c == '@')
 				{
-					/* For email addresses without mailto: */
+					/* A @ has been encountered, check if this belongs to an email adresse by traversing back
+           * within the string */
+
 					unsigned char *buffer2 = buffer - 1;
 					unsigned char *buffer3;
 					unsigned char c2;
 					int buffer2_len = buffer_len + 1;
 					char *address;
 
-					while ((c2 = *buffer2))
+					while ((c2 = *buffer2) && buffer2 > saved_buffer)
 					{
 						static const char noaliaschars[] = {
-							" ()<>@,;:\\\"[]"};
+							" ()<>@,;:\\\"[]\n\r"};
 
 						if (strchr(noaliaschars,c2)) break;
 						buffer2_len++;
@@ -183,15 +201,21 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					if ((buffer3 = parse_addr_spec(buffer2, &address)))
 					{
 						int email_len;
-						fseek(fh,buffer2 - buffer + 1,SEEK_CUR); /* @ sign has not been written yet */
+
+						/* crop the string to the beginning of the email address */
+						string_crop(&str,0,str.len - (buffer - buffer2));
+
 						buffer_len += buffer - buffer2;
 						buffer -= buffer - buffer2;
 						email_len = buffer3 - buffer;
 						buffer_len -= email_len;
+
 						buffer = buffer3;
-						fprintf(fh,"<A HREF=\"mailto:%s\"%s>",address, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"");
-						fputs(address,fh);
-						fputs("</A>",fh);
+
+						sm_snprintf(buf,sizeof(buf),"<A HREF=\"mailto:%s\"%s>",address, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"");
+						string_append(&str,buf);
+						string_append(&str,address);
+						string_append(&str,"</A>");
 						free(address);
 						continue;
 					}
@@ -208,7 +232,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		  			{
 		  				buffer += strlen(smily[i].ascii);
 		  				buffer_len -= strlen(smily[i].ascii);
-		  				fprintf(fh,"<IMG SRC=\"PROGDIR:Images/%s\" VALIGN=\"middle\" ALT=\"%s\">",smily[i].gfx,smily[i].ascii);
+		  				sm_snprintf(buf,sizeof(buf),"<IMG SRC=\"PROGDIR:Images/%s\" VALIGN=\"middle\" ALT=\"%s\">",smily[i].gfx,smily[i].ascii);
+		  				string_append(&str,buf);
 		  				smily_used = 1;
 		  			}
 		  		}
@@ -221,7 +246,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					buffer += 5;
 					buffer_len -= 5;
 
-					fputs("<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>",fh);
+					string_append(&str,"<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>");
 					continue;
 				}
 
@@ -231,7 +256,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					buffer += 6;
 					buffer_len -= 6;
 
-					fputs("<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>",fh);
+					string_append(&str,"<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>");
 					continue;
 				}
 
@@ -239,26 +264,29 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				{
 					buffer++;
 					buffer_len--;
-					if (c== '<') fputs("&lt;",fh);
-					else if (c== '>') fputs("&gt;",fh);
+					if (c== '<') string_append(&str,"&lt;");
+					else if (c== '>') string_append(&str,"&gt;");
 					else if (c == 10)
 					{
 						eval_color = 1;
-						fputs("<BR>\n",fh);
+						string_append(&str,"<BR>\n");
 						if (line)
 						{
-							fputs("</TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>",fh);
+							string_append(&str,"</TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>");
 							line = 0;
 						}
 					} else
 					{
 						if (c == 32) {
-							if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) fputs("&nbsp;",fh);
-							else fputc(32,fh);
+							if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) string_append(&str,"&nbsp;");
+							else string_append(&str," ");
 						} else {
 						  if (c)
 						  {
-						  	fputc(c,fh);
+						  	char t[2];
+						  	t[0] = c;
+						  	t[1] = 0;
+						  	string_append(&str,t);
 						  }
 						}
 					}
@@ -269,31 +297,19 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					buffer_len -= len,
 					buffer += len;
 					if (unicode == 0) unicode = '_';
-					fprintf(fh,"&#%ld;",unicode);
+					sm_snprintf(buf,sizeof(buf),"&#%d;",unicode);
+					string_append(&str,buf);
 				}
 			}
 		}
 
-		if (fonttag) fputs("</FONT>",fh);
+		if (fonttag) string_append(&str,"</FONT>");
 
-		if (flags & TEXT2HTML_ENDBODY_TAG) fputs("</BODY>",fh);
-		if ((len = ftell(fh)))
-		{
-			fseek(fh,0,SEEK_SET);
-			if ((html_buf = (char*)malloc(len+1)))
-			{
-				fread(html_buf,1,len,fh);
-				html_buf[len]=0;
-			}
-		}
-		fclose(fh);
-/*
-		fh = fopen("ram:test.html","wb");
-		fputs(html_buf,fh);
-		fclose(fh);
-*/
+		if (flags & TEXT2HTML_ENDBODY_TAG) string_append(&str,"</BODY>");
+
+		return str.str;
 	}
-	return html_buf;
+	return NULL;
 }
 
 

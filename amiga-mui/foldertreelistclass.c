@@ -28,6 +28,8 @@
 #include <mui/NListview_MCC.h>
 #include <mui/NListtree_Mcc.h>
 
+#include <libraries/iffparse.h> /* MAKE_ID */
+
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
 #include <proto/exec.h>
@@ -58,6 +60,11 @@ struct FolderTreelist_Data
 	struct folder *folder_maildrop;
 
 	Object *context_menu;
+	Object *title_menu;
+
+	Object *show_mails_item;
+	Object *show_unread_item;
+	Object *show_new_item;
 
 	int mails_drag;
 	int show_root;
@@ -88,16 +95,20 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		if ((ULONG)msg->TreeNode->tn_User == MUIV_FolderTreelist_UserData_Root)
 		{
 			*msg->Array++ = NULL;
+			*msg->Array++ = "";
+			*msg->Array++ = "";
 			*msg->Array = "";
 		} else
 		{
 			struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 			static char mails_buf[32];
+			static char unread_buf[32];
+			static char new_buf[32];
 			int num = folder_number_of_mails(folder);
 			int unread = folder_number_of_unread_mails(folder);
 			int newm = folder_number_of_new_mails(folder);
 			APTR image;
-	
+
 			switch (folder->special)
 			{
 				case	FOLDER_SPECIAL_INCOMING: image = data->image_incoming; break;
@@ -108,7 +119,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 				case	FOLDER_SPECIAL_SPAM: image = data->image_spam; break;
 				default: image = data->image_other; break;
 			}
-	
+
 			if (num != -1)
 			{
 				if(unread > 0)
@@ -119,9 +130,16 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 				{
 					sprintf(mails_buf,"%ld",num);
 				}
-			}	
-			else mails_buf[0] = 0;
-	
+				sprintf(unread_buf,"%ld",unread);
+				sprintf(new_buf,"%ld",newm);
+			}
+			else
+			{
+				mails_buf[0] = 0;
+				unread_buf[0] = 0;
+				new_buf[0] = 0;
+			}
+
 			sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
 			if (folder->name)
 			{
@@ -131,14 +149,18 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 					utf8tostr(folder->name, data->name_buf + strlen(data->name_buf), sizeof(data->name_buf) - strlen(data->name_buf), user.config.default_codeset);
 				} else strcat(data->name_buf,folder->name);
 			}
-	
+
 			*msg->Array++ = data->name_buf;
-			*msg->Array = mails_buf;
+			*msg->Array++ = mails_buf;
+			*msg->Array++ = unread_buf;
+			*msg->Array = new_buf;
 		}
 	} else
 	{
 		*msg->Array++ = _("Name");
-		*msg->Array = _("Mails");
+		*msg->Array++ = _("Mails");
+		*msg->Array++ = _("Unread");
+		*msg->Array = _("New");
 	}
 }
 
@@ -149,12 +171,33 @@ STATIC ASM void folder_open(register __a1 struct MUIP_NListtree_OpenMessage *msg
 		folder->closed = 0;
 }
 
+/* Contextmenu UserData */
 #define MENU_FOLDER_NEW			1
 #define MENU_FOLDER_REM			2
 #define MENU_FOLDER_SETTINGS	3
 #define MENU_FOLDER_GROUP		4
 #define MENU_FOLDER_SAVE			5
 #define MENU_FOLDER_RESET		6
+
+/* Titlemenu UserData */
+#define MENU_SHOW_MAILS			7
+#define MENU_SHOW_UNREAD		8
+#define MENU_SHOW_NEW			9
+
+
+STATIC VOID FolderTreelist_UpdateFormat(struct IClass *cl,Object *obj)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	char buf[256];
+
+	strcpy(buf,"COL=0");
+
+	if (xget(data->show_mails_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=1");
+	if (xget(data->show_unread_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=2");
+	if (xget(data->show_new_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=3");
+
+	set(obj, MUIA_NListtree_Format, buf);
+}
 
 STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
@@ -184,7 +227,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 				Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Order"),
 					Child, MenuitemObject, MUIA_Menuitem_Title, _("Save"), MUIA_UserData, MENU_FOLDER_SAVE, End,
-					Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset"), MUIA_UserData, MENU_FOLDER_RESET, End,		
+					Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset"), MUIA_UserData, MENU_FOLDER_RESET, End,
 					End,
 				End,
 			End;
@@ -194,13 +237,27 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 						MUIA_NListtree_CloseHook, &data->close_hook,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_OpenHook, &data->open_hook,
-						MUIA_NListtree_Format, "BAR,",
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
 						MUIA_NListtree_MultiSelect, MUIV_NListtree_MultiSelect_None,
 						MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Off,
 						read_only?TAG_IGNORE:MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 						TAG_DONE);
+
+	data->title_menu = MenustripObject,
+		Child, MenuObjectT(_("Folder Settings")),
+			Child, data->show_mails_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','M','A'),MUIA_Menuitem_Title, _("Show Mail?"), MUIA_UserData, MENU_SHOW_MAILS, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_unread_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','U','R'),MUIA_Menuitem_Title, _("Show Unread?"), MUIA_UserData, MENU_SHOW_UNREAD, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_new_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','N','W'),MUIA_Menuitem_Title, _("Show New?"), MUIA_UserData, MENU_SHOW_NEW, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: this"), MUIA_UserData, MUIV_NList_Menu_DefOrder_This, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: all"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
+			End,
+		End;
+
+	FolderTreelist_UpdateFormat(cl,obj);
 
 	return (ULONG)obj;
 }
@@ -213,6 +270,7 @@ STATIC ULONG FolderTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 		set(obj,MUIA_ContextMenu, NULL);
 		MUI_DisposeObject(data->context_menu);
 	}
+	if (data->title_menu) MUI_DisposeObject(data->title_menu);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -244,7 +302,6 @@ STATIC ULONG FolderTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->image_incoming) DoMethod(obj, MUIM_NList_DeleteImage, data->image_incoming);
 	return DoSuperMethodA(cl,obj,msg);
 }
-
 
 STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
@@ -303,7 +360,7 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
 		if (src_node && dest_node)
 		{
 			struct folder *src_folder, *dest_folder, *prev_dest_folder;
-			
+
 			src_folder = (struct folder*)src_node->tn_User;
 			dest_folder = (struct folder*)dest_node->tn_User;
 
@@ -343,7 +400,7 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
   			set(obj,MUIA_FolderTreelist_MailDrop,folder);
   		}
   	}
-		
+
 		return 0;
   }
 
@@ -375,6 +432,29 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_
 	return 0;
 }
 
+STATIC ULONG FolderTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+
+	DoMethodA(data->show_mails_item, (Msg)msg);
+	DoMethodA(data->show_unread_item, (Msg)msg);
+	DoMethodA(data->show_new_item, (Msg)msg);
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG FolderTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Import *msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+
+	DoMethodA(data->show_mails_item, (Msg)msg);
+	DoMethodA(data->show_unread_item, (Msg)msg);
+	DoMethodA(data->show_new_item, (Msg)msg);
+
+	FolderTreelist_UpdateFormat(cl,obj);
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
 STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,struct MUIP_ContextMenuChoice *msg)
 {
 	switch(xget(msg->item,MUIA_UserData))
@@ -385,6 +465,11 @@ STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,str
 		case	MENU_FOLDER_SETTINGS: callback_edit_folder(); break;
 		case	MENU_FOLDER_SAVE: folder_save_order(); break;
 		case	MENU_FOLDER_RESET: callback_reload_folder_order(); break;
+		case	MENU_SHOW_MAILS:
+		case	MENU_SHOW_UNREAD:
+		case	MENU_SHOW_NEW:
+				  FolderTreelist_UpdateFormat(cl,obj);
+				  break;
 
 		default: return DoSuperMethodA(cl,obj,(Msg)msg);
 	}
@@ -394,11 +479,11 @@ STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,str
 STATIC ULONG FolderTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
-	if (msg->ontop) return NULL; /* The default NList Menu should be returned */
+	if (msg->ontop) return (ULONG)data->title_menu;
 
 /*	set(obj,MUIA_NList_Active,msg->pos);*/
 
-  return (ULONG) data->context_menu;
+	return (ULONG) data->context_menu;
 }
 
 STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_FolderTreelist_Refresh *msg)
@@ -454,11 +539,13 @@ STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 		case	OM_GET:				return FolderTreelist_Get(cl,obj,(struct opGet*)msg);
 		case	MUIM_Setup:		return FolderTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return FolderTreelist_Cleanup(cl,obj,msg);
-    case  MUIM_DragQuery: return FolderTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
-    case  MUIM_DragDrop:  return FolderTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
+		case	MUIM_DragQuery: return FolderTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
+		case	MUIM_DragDrop:  return FolderTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_NListtree_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);
-    case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
-		case  MUIM_NList_ContextMenuBuild: return FolderTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
+		case	MUIM_Export:		return FolderTreelist_Export(cl,obj,(struct MUIP_Export *)msg);
+		case	MUIM_Import:		return FolderTreelist_Import(cl,obj,(struct MUIP_Import *)msg);
+		case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
+		case	MUIM_NList_ContextMenuBuild: return FolderTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 		case	MUIM_FolderTreelist_Refresh: return FolderTreelist_Refresh(cl,obj,(struct MUIP_FolderTreelist_Refresh*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

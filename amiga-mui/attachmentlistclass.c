@@ -114,11 +114,40 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_NList_DropType *msg)
+{
+	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
+	ULONG active = xget(obj, MUIA_NList_Active);
+	struct MUI_NListtree_TreeNode *treenode;
+
+	DoMethod(obj, MUIM_NList_GetEntry, *msg->pos, &treenode);
+
+	if (treenode)
+	{
+		if (!(treenode->tn_Flags & TNF_LIST) && *msg->type == MUIV_NListtree_DropType_Onto)
+		{
+			struct attachment *attach = (struct attachment*)treenode->tn_User;
+			if (*msg->pos > active)
+			{
+				*msg->type = MUIV_NListtree_DropType_Above;
+			} else
+			{
+				*msg->type = MUIV_NListtree_DropType_Below;
+			}
+		}
+	}
+
+	/* no dropping above the first list */
+	if (*msg->pos == 0) *msg->type = MUIV_NListtree_DropType_None;
+	return rv;
+}
+
 STATIC SAVEDS ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return AttachmentList_New(cl,obj,(struct opSet*)msg);
+    case	MUIM_NList_DropType: return AttachmentList_DropType(cl,obj,(struct MUIP_NList_DropType*)msg); 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

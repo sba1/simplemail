@@ -29,12 +29,14 @@
 #include <expat.h>
 
 #include "addressbook.h"
+#include "addressbookwnd.h"
 #include "http.h"
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
 #include "support.h"
 #include "support_indep.h"
+#include "smintl.h"
 
 static struct addressbook_entry root_entry;
 
@@ -418,21 +420,193 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh)
 	free(buf);
 }
 
-/**************************************************************************
- Load the addressbook. Returns 0 for an error
-**************************************************************************/
-int addressbook_load(void)
+int addressbook_import_sm(char *filename)
 {
 	int retval = 0;
 	FILE *fh;
 
-	if ((fh = fopen("PROGDIR:.addressbook.xml","r")))
+	if ((fh = fopen(filename,"r")))
 	{
 		addressbook_load_entries(&root_entry,fh);
 		fclose(fh);
 		retval = 1;
 	}
 	return retval;
+}
+
+static char *getln(FILE *fp)
+{
+	char *rc;
+	
+	rc = malloc(1024);
+	if(rc) fgets(rc, 1024, fp);
+	rc[strlen(rc)-1]=0;
+
+	return rc;
+}
+
+static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
+{
+	int rc = 1;
+	char *line;
+	
+	line = getln(fp);
+	while ((!feof(fp)) && (strncmp(line, "@ENDGROUP",9) != 0))
+	{
+		if(strncmp(line, "@USER", 5) == 0)
+		{
+			struct addressbook_entry *newperson;
+			char *alias, *name, *email;
+			
+			alias = mystrdup(line + 6);
+			free(line);
+			email = getln(fp);
+			name = getln(fp);
+			
+			newperson = addressbook_new_person(group, name, email);
+			newperson->alias = alias;
+			
+			newperson->description = getln(fp);
+			newperson->u.person.priv.phone1 = getln(fp);
+			newperson->u.person.priv.street = getln(fp);
+			newperson->u.person.priv.zip    = getln(fp);
+			newperson->u.person.priv.country= getln(fp);
+			newperson->u.person.pgpid       = getln(fp);
+			
+			line = getln(fp);
+			newperson->u.person.dob_day   = 10*(line[0]-'0') + (line[1]-'0');
+			newperson->u.person.dob_month = 10*(line[2]-'0') + (line[3]-'0');
+			newperson->u.person.dob_year  = 1000*(line[4]-'0') + 100*(line[5]-'0') + 10*(line[6]-'0') + (line[7]-'0');
+			free(line);
+			
+			newperson->u.person.portrait    = getln(fp);
+			newperson->u.person.homepage    = getln(fp);
+			
+			line = getln(fp); free(line);  /* Whether sign etc. */
+			
+			line = getln(fp); free(line);
+			if(strncmp(line, "@ENDUSER", 8) != 0)
+			{
+				rc = 0;
+				break;
+			}
+			
+		} else if(strncmp(line, "@GROUP", 6) == 0)
+		{
+			struct addressbook_entry *newgroup = addressbook_new_group(group);
+			
+			newgroup->alias = mystrdup(line + 7);
+			free(line);
+			newgroup->description = getln(fp);
+			
+			rc = yam_import_entries(newgroup, fp);
+		} else
+		{
+			sm_request(NULL, _("Corrupt YAM-Addressbook!"), _("_Okay"));
+			
+			rc = 0;
+		}
+		line = getln(fp);
+	}
+
+	return rc;
+}
+
+int addressbook_import_yam(char *filename)
+{
+	int rc = 0;
+	FILE *fp;
+	char *line;
+	
+	fp = fopen(filename, "r");
+	if(fp != NULL)
+	{
+		line = getln(fp);
+		free(line);
+		rc = yam_import_entries(&root_entry, fp);
+
+		fclose(fp);
+	}
+	
+	return rc;
+}
+
+/**************************************************************************
+ Load the addressbook. Returns 0 for an error
+**************************************************************************/
+int addressbook_load(void)
+{
+	return addressbook_import_sm("PROGDIR:.addressbook.xml");
+}
+
+#define BOOK_UNKNOWN 0
+#define BOOK_YAM 1
+#define BOOK_SM  2
+
+int addressbook_get_type(char *filename)
+{
+	int rc = BOOK_UNKNOWN;
+	FILE *fp;
+	char *buf;
+	
+	fp = fopen(filename, "r");
+	if(fp != NULL)
+	{
+		buf = malloc(23);
+		if(buf != NULL)
+		{
+			if(fread(buf, 23, 1, fp) == 1)
+			{
+				if(strncmp(buf, "YAB4 - YAM Addressbook",22) == 0)
+				{
+					rc = BOOK_YAM;
+				} else if(strncmp(buf, "<addressbook>",13) == 0)
+				{
+					rc = BOOK_SM;
+				}
+			}
+			free(buf);
+		}	
+	
+		fclose(fp);
+	}
+	
+	return rc;
+}
+
+/**************************************************************************
+ Add entries from a specified file.
+**************************************************************************/
+int addressbook_import(void)
+{
+	int rc = 0;
+	char *filename;
+	
+	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
+	if(filename && *filename)
+	{
+		switch (addressbook_get_type(filename))
+		{
+			case BOOK_YAM:
+				rc = addressbook_import_yam(filename);
+				break;
+				
+			case BOOK_SM:
+				rc = addressbook_import_sm(filename);
+				break;
+			
+			case BOOK_UNKNOWN:
+			default:
+				sm_request(NULL, _("Unsupported type of addressbook."), _("Okay"));
+				break;
+		}
+		
+		addressbookwnd_refresh();
+		
+		free(filename);
+	}
+	
+	return rc;
 }
 
 /**************************************************************************

@@ -48,7 +48,7 @@ struct address_snail_phone
 	char *fax;
 };
 
-/* the addressbook structure (read only outside from addressbook.c! */
+/* the addressbook structure (read-only outside from addressbook.c)! */
 struct addressbook_entry
 {
 	struct node node; /* embedded node structure */

@@ -65,7 +65,37 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "support.h"
+#include "smtoolbarclass.h"
 #include "utf8stringclass.h"
+
+enum
+{
+	SM_COMPOSEWND_BUTTON_COPY = 0,
+	SM_COMPOSEWND_BUTTON_CUT,
+	SM_COMPOSEWND_BUTTON_PASTE,
+	SM_COMPOSEWND_BUTTON_UNDO,
+	SM_COMPOSEWND_BUTTON_REDO,
+	SM_COMPOSEWND_BUTTON_ATTACH,
+	SM_COMPOSEWND_BUTTON_ENCRYPT,
+	SM_COMPOSEWND_BUTTON_SIGN
+};
+
+static const struct MUIS_SMToolbar_Button sm_composewnd_buttons[] =
+{
+	{PIC(0,4), SM_COMPOSEWND_BUTTON_COPY,  0, N_("Copy"),  NULL, "Copy"},
+	{PIC(0,5), SM_COMPOSEWND_BUTTON_CUT,   0, N_("Cut"),   NULL, "Cut"},
+	{PIC(2,8), SM_COMPOSEWND_BUTTON_PASTE, 0, N_("Paste"), NULL, "Paste"},
+	{MUIV_SMToolbar_Space},
+	{PIC(3,3), SM_COMPOSEWND_BUTTON_UNDO, 0, N_("Undo"), NULL, "Undo"},
+	{PIC(3,0), SM_COMPOSEWND_BUTTON_REDO, 0, N_("Redo"), NULL, "Redo"},
+	{MUIV_SMToolbar_Space},
+	{PIC(0,0), SM_COMPOSEWND_BUTTON_ATTACH, 0, N_("_Attach"), NULL, "AddAttachment"},
+	{MUIV_SMToolbar_Space},
+	{PIC(0,8), SM_COMPOSEWND_BUTTON_ENCRYPT, MUIV_SMToolbar_ButtonFlag_Toggle, N_("Encrypt"), NULL, "Encrypt"},
+	/* signbutton temporary not created because not implemented */
+	/* {PIC(3,2), SM_COMPOSEWND_BUTTON_SIGN,    MUIV_SMToolbar_ButtonFlag_Toggle, N_("Si_gn"),   NULL, "Sign"}, */
+	{MUIV_SMToolbar_End},
+};
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
@@ -90,11 +120,7 @@ struct Compose_Data /* should be a customclass */
 	Object *cc_string;
 	Object *subject_label;
 	Object *subject_string;
-	Object *copy_button;
-	Object *cut_button;
-	Object *paste_button;
-	Object *undo_button;
-	Object *redo_button;
+	Object *toolbar;
 	Object *x_text;
 	Object *y_text;
 	Object *text_texteditor;
@@ -103,8 +129,6 @@ struct Compose_Data /* should be a customclass */
 	Object *attach_desc_string;
 	Object *contents_page;
 	Object *datatype_datatypes;
-	Object *encrypt_button;
-	Object *sign_button;
 	Object *signatures_group;
 	Object *signatures_cycle;
 
@@ -623,8 +647,8 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.mail_filename = data->filename;
 		new_mail.mail_folder = data->folder;
 		new_mail.reply_message_id = data->reply_id;
-		new_mail.encrypt = xget(data->encrypt_button,MUIA_Selected);
-		new_mail.sign = xget(data->sign_button,MUIA_Selected);
+		DoMethod(data->toolbar, MUIM_SMToolbar_GetAttr, SM_COMPOSEWND_BUTTON_ENCRYPT, MUIA_SMToolbar_Attr_Selected, &new_mail.encrypt);
+		DoMethod(data->toolbar, MUIM_SMToolbar_GetAttr, SM_COMPOSEWND_BUTTON_SIGN, MUIA_SMToolbar_Attr_Selected, &new_mail.sign);
 
 		/* Move this out */
 		if ((mail_compose_new(&new_mail,hold)))
@@ -996,7 +1020,7 @@ static void compose_new_active(void **msg)
 	Object *obj = (Object*)msg[1];
 
 	if ((ULONG)obj == (ULONG)MUIV_Window_ActiveObject_Next &&
-		  (ULONG)xget(data->wnd, MUIA_Window_ActiveObject) == (ULONG)data->copy_button)
+		  (ULONG)xget(data->wnd, MUIA_Window_ActiveObject) == (ULONG)data->toolbar)
 	{
 		set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
 	}
@@ -1009,7 +1033,6 @@ int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button, *headers_group;
 	Object *from_label, *from_group, *from_accountpop, *reply_button, *reply_label, *reply_string, *to_label, *to_group, *to_string, *cc_label, *cc_group, *cc_string, *subject_label, *subject_string;
-	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
 	Object *expand_to_button, *expand_cc_button;
@@ -1018,11 +1041,9 @@ int compose_window_open(struct compose_args *args)
 	Object *contents_page;
 	Object *signatures_group;
 	Object *signatures_cycle;
-	Object *add_attach_button;
-	Object *encrypt_button;
-	Object *sign_button;
+	Object *toolbar;
 
-	int num;
+	int i, num;
 
 	static char *register_titles[3];
 	static int register_titles_are_translated;
@@ -1155,37 +1176,18 @@ int compose_window_open(struct compose_args *args)
 						Child, VGroup,
 							Child, HGroup,
 								MUIA_VertWeight,0,
-								Child, HGroup,
-									MUIA_Group_Spacing,0,
-									Child, copy_button = MakePictureButton(_("Copy"),"PROGDIR:Images/Copy"),
-									Child, cut_button = MakePictureButton(_("Cut"),"PROGDIR:Images/Cut"),
-									Child, paste_button = MakePictureButton(_("Paste"),"PROGDIR:Images/Paste"),
-									End,
-								Child, HGroup,
-									MUIA_Weight, 66,
-									MUIA_Group_Spacing,0,
-									Child, undo_button = MakePictureButton(_("Undo"),"PROGDIR:Images/Undo"),
-									Child, redo_button = MakePictureButton(_("Redo"),"PROGDIR:Images/Redo"),
-									End,
-								Child, HGroup,
-									MUIA_Weight, 33,
-									MUIA_Group_Spacing,0,
-									Child, add_attach_button = MakePictureButton(_("_Attach"),"PROGDIR:Images/AddAttachment"),
-									End,
-								Child, HGroup,
-									MUIA_Weight, 33,
-									MUIA_Group_Spacing,0,
-									Child, encrypt_button = MakePictureButton(_("_Encrypt"),"PROGDIR:Images/Encrypt"),
-									Child, sign_button = MakePictureButton(_("Si_gn"),"PROGDIR:Images/Sign"),
+								Child, toolbar = SMToolbarObject,
+									MUIA_Group_Horiz, TRUE,
+									MUIA_SMToolbar_Buttons, sm_composewnd_buttons,
 									End,
 								Child, RectangleObject,
 									MUIA_FixHeight,1,
-									MUIA_HorizWeight,signatures_group?33:100,
+									MUIA_HorizWeight,signatures_group?15:100,
 									End,
 								signatures_group?Child:TAG_IGNORE,signatures_group,
 								signatures_group?Child:TAG_IGNORE,RectangleObject,
 									MUIA_FixHeight,1,
-									MUIA_HorizWeight,signatures_group?33:100,
+									MUIA_HorizWeight,signatures_group?15:100,
 									End,
 								Child, VGroup,
 									TextFrame,
@@ -1259,8 +1261,6 @@ int compose_window_open(struct compose_args *args)
 		struct Compose_Data *data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data));
 		if (data)
 		{
-			set(sign_button,MUIA_ShowMe, FALSE); /* temporary not shown because not implemented */
-
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
@@ -1280,6 +1280,7 @@ int compose_window_open(struct compose_args *args)
 			data->subject_label = subject_label;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
+			data->toolbar = toolbar;
 			data->x_text = xcursor_text;
 			data->y_text = ycursor_text;
 			data->attach_tree = attach_tree;
@@ -1287,18 +1288,8 @@ int compose_window_open(struct compose_args *args)
 			data->quick_attach_tree = quick_attach_tree;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
-			data->encrypt_button = encrypt_button;
-			data->sign_button = sign_button;
-			data->copy_button = copy_button;
-			data->cut_button = cut_button;
-			data->paste_button = paste_button;
-			data->undo_button = undo_button;
-			data->redo_button = redo_button;
 			data->signatures_group = signatures_group;
 			data->signatures_cycle = signatures_cycle;
-
-			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
-			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
@@ -1313,12 +1304,11 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(reply_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_reply_button, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
-			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_UndoAvailable, MUIV_EveryTime, undo_button, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_RedoAvailable, MUIV_EveryTime, redo_button, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_UndoAvailable, MUIV_EveryTime, toolbar, 4, MUIM_SMToolbar_SetAttr, SM_COMPOSEWND_BUTTON_UNDO, MUIA_SMToolbar_Attr_Disabled, MUIV_NotTriggerValue);
+			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_RedoAvailable, MUIV_EveryTime, toolbar, 4, MUIM_SMToolbar_SetAttr, SM_COMPOSEWND_BUTTON_REDO, MUIA_SMToolbar_Attr_Disabled, MUIV_NotTriggerValue);
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
 			DoMethod(add_multipart_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_multipart, data);
 			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
-			DoMethod(add_attach_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_remove_file, data);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
 			DoMethod(attach_desc_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_attach_desc, data);
@@ -1327,14 +1317,44 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(send_now_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_now, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
-			DoMethod(copy_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Copy");
-			DoMethod(cut_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Cut");
-			DoMethod(paste_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Paste");
-			DoMethod(undo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Undo");
-			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
 			DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_replyto, data);
+
+			/* create notifies for toolbar buttons */
+			i=0;
+			while (sm_composewnd_buttons[i].pos != MUIV_SMToolbar_End)
+			{
+				if (sm_composewnd_buttons[i].pos != MUIV_SMToolbar_Space)
+				{
+					Object *but = (Object*)DoMethod(data->toolbar, MUIM_SMToolbar_GetObject, sm_composewnd_buttons[i].id);
+					if (but)
+					{
+						switch (sm_composewnd_buttons[i].id)
+						{
+							case SM_COMPOSEWND_BUTTON_COPY:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Copy");
+							    	break;
+							case SM_COMPOSEWND_BUTTON_CUT:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Cut");
+							    	break;
+							case SM_COMPOSEWND_BUTTON_PASTE:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Paste");
+							    	break;
+							case SM_COMPOSEWND_BUTTON_UNDO:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Undo");
+							    	break;
+							case SM_COMPOSEWND_BUTTON_REDO:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Redo");
+							    	break;
+							case SM_COMPOSEWND_BUTTON_ATTACH:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
+							    	break;
+						}
+					}
+				}
+				i++;
+			}
 
 			data->reply_stuff_attached = 1;
 			set(data->reply_button,MUIA_Selected,FALSE);

@@ -58,10 +58,39 @@
 #include "mainwnd.h" /* remove this */
 #include "messageviewclass.h"
 #include "muistuff.h"
+#include "smtoolbarclass.h"
 #include "picturebuttonclass.h"
 #include "readwnd.h"
 #include "support.h"
 #include "print.h"
+
+enum {
+	SM_READWND_BUTTON_PREV = 0,
+	SM_READWND_BUTTON_NEXT,
+	SM_READWND_BUTTON_SAVE,
+	SM_READWND_BUTTON_PRINT,
+	SM_READWND_BUTTON_MOVE,
+	SM_READWND_BUTTON_DELETE,
+	SM_READWND_BUTTON_REPLY,
+	SM_READWND_BUTTON_FORWARD
+};
+
+static const struct MUIS_SMToolbar_Button sm_readwnd_buttons[] =
+{
+	{PIC(2,1), SM_READWND_BUTTON_PREV,    0, N_("_Prev"), NULL, "MailPrev"},
+	{PIC(2,0), SM_READWND_BUTTON_NEXT,    0, N_("_Next"), NULL, "MailNext"},
+	{MUIV_SMToolbar_Space},
+	{PIC(2,4), SM_READWND_BUTTON_SAVE,    0, N_("_Save"), NULL, "MailSave"},
+	{PIC(2,9), SM_READWND_BUTTON_PRINT,   0, N_("Pr_int"), NULL, "Print"},
+	{MUIV_SMToolbar_Space},
+	{PIC(1,8), SM_READWND_BUTTON_MOVE,    0, N_("_Move"), NULL, "MailMove"},
+	{PIC(1,4), SM_READWND_BUTTON_DELETE,  0, N_("_Delete"), NULL, "MailDelete"},
+	{PIC(1,5), SM_READWND_BUTTON_REPLY,   0, N_("_Reply"), NULL, "MailReply"},
+	{PIC(2,3), SM_READWND_BUTTON_FORWARD, 0, N_("_Forward"), NULL, "MailForward"},
+	{MUIV_SMToolbar_End},
+};
+
+/*****************************************************/
 
 struct Read_Data;
 
@@ -79,10 +108,7 @@ static struct Read_Data *read_open[MAX_READ_OPEN];
 struct Read_Data /* should be a customclass */
 {
 	Object *wnd;
-	Object *prev_button;
-	Object *next_button;
-	Object *print_button;
-	Object *move_button;
+	Object *toolbar;
 
 	Object *contents_page;
 
@@ -238,7 +264,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 						TAG_DONE);
 
 			set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
-			set(data->print_button, MUIA_Disabled, !xget(data->datatype_datatypes,MUIA_DataTypes_SupportsPrint));
+			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT, MUIA_SMToolbar_Attr_Disabled, !xget(data->datatype_datatypes,MUIA_DataTypes_SupportsPrint));
 			return;
 		}
 		buf = mail->decoded_data;
@@ -257,7 +283,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 				TAG_DONE);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
-		set(data->print_button, MUIA_Disabled,TRUE);
+		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT, MUIA_SMToolbar_Attr_Disabled, TRUE);
 	} else
 	{
 		char *html_mail;
@@ -306,7 +332,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
-		set(data->print_button, MUIA_Disabled, FALSE);
+		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT, MUIA_SMToolbar_Attr_Disabled, FALSE);
 	}
 }
 
@@ -709,14 +735,14 @@ void read_refresh_prevnext_button(struct folder *f)
 			if (!mystrcmp(f->path, data->folder_path))
 			{
 				if (folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
-					set(data->next_button, MUIA_Disabled, FALSE);
+					DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, FALSE);
 				else
-					set(data->next_button, MUIA_Disabled, TRUE);
+					DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
 
 				if (folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
-					set(data->prev_button, MUIA_Disabled, FALSE);
+					DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, FALSE);
 				else
-					set(data->prev_button, MUIA_Disabled, TRUE);
+					DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
 			}
 		}
 	}
@@ -826,9 +852,9 @@ static void move_button_pressed(struct Read_Data **pdata)
 
 	if (callback_move_mail_request(data->folder_path, data->ref_mail))
 	{
-		set(data->move_button,MUIA_Disabled,TRUE);
-		set(data->next_button,MUIA_Disabled,TRUE);
-		set(data->prev_button,MUIA_Disabled,TRUE);
+		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, TRUE);
+		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
+		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
 	}
 }
 
@@ -934,7 +960,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 	data->ref_mail = mail;
 	mail_reference(mail);
 
-	set(data->move_button, MUIA_Disabled, FALSE);
+	DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, FALSE);
 
 	SM_DEBUGF(15,("Locking folder %s\n",data->folder_path));
 
@@ -987,14 +1013,14 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 
 			/* set the prev/next button to disabled if last mail is reached */
 			if (data->ref_mail && folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
-				set(data->next_button, MUIA_Disabled, FALSE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, FALSE);
 			else
-				set(data->next_button, MUIA_Disabled, TRUE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
 
 			if (data->ref_mail && folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
-				set(data->prev_button, MUIA_Disabled, FALSE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, FALSE);
 			else
-				set(data->prev_button, MUIA_Disabled, TRUE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
 
 			set(App, MUIA_Application_Sleep, FALSE);
 
@@ -1033,10 +1059,10 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
 	Object *attachments_group;
 	Object *datatype_datatypes;
-	Object *prev_button, *next_button, *print_button, *save_button, *move_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
 	Object *read_menu;
-	int num;
+	Object *toolbar;
+	int i, num;
 
 	enum {
 		MENU_PROJECT,
@@ -1065,7 +1091,6 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	};
 
 	struct NewMenu *nm;
-	int i;
 
 	SM_DEBUGF(20, ("Entered function (folder = %s, mail = %p, window = %d)\n",folder,mail,window));
 
@@ -1119,33 +1144,13 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		MUIA_Window_Menustrip, read_menu,
 
 		WindowContents, VGroup,
-			Child, HGroupV,
-				Child, HGroup,
-					MUIA_VertWeight, 0,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 100,
-						Child, prev_button = MakePictureButton(_("_Prev"),"PROGDIR:Images/MailPrev"),
-						Child, next_button = MakePictureButton(_("_Next"),"PROGDIR:Images/MailNext"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 100,
-/*						Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),*/
-						Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/MailSave"),
-						Child, print_button = MakePictureButton(_("Pr_int"),"PROGDIR:Images/Print"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 150,
-						Child, move_button = MakePictureButton(_("_Move"),"PROGDIR:Images/MailMove"),
-						Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/MailDelete"),
-						Child, reply_button = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
-						Child, forward_button = MakePictureButton(_("_Forward"),"PROGDIR:Images/MailForward"),
-						End,
-					Child, HVSpace,
-					End,
+			Child, toolbar = SMToolbarObject,
+				MUIA_Group_Horiz, TRUE,
+				MUIA_SMToolbar_InVGroup, TRUE,
+				MUIA_SMToolbar_AddHVSpace, TRUE,
+				MUIA_SMToolbar_Buttons, sm_readwnd_buttons,
 				End,
+
 			Child, contents_page = PageGroup,
 				MUIA_Group_ActivePage, PAGE_HTML,
 
@@ -1223,10 +1228,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 
 			data->wnd = wnd;
 			data->folder_path = mystrdup(folder);
-			data->prev_button = prev_button;
-			data->next_button = next_button;
-			data->print_button = print_button;
-			data->move_button = move_button;
+			data->toolbar = toolbar;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
 			data->html_simplehtml = html_simplehtml;
@@ -1250,14 +1252,46 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 
 			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, uri_clicked, data, MUIV_TriggerValue);
 
-			DoMethod(prev_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
-			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
-			DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
-			DoMethod(print_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
-			DoMethod(move_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
-			DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
-			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
-			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
+			/* create notifies for toolbar buttons */
+			i=0;
+			while (sm_readwnd_buttons[i].pos != MUIV_SMToolbar_End)
+			{
+				if (sm_readwnd_buttons[i].pos != MUIV_SMToolbar_Space)
+				{
+					Object *but = (Object*)DoMethod(data->toolbar, MUIM_SMToolbar_GetObject, sm_readwnd_buttons[i].id);
+					if (but)
+					{
+						switch (sm_readwnd_buttons[i].id)
+						{
+							case SM_READWND_BUTTON_PREV:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_NEXT:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_SAVE:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_PRINT:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
+							    	break;
+							case SM_READWND_BUTTON_MOVE:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_DELETE:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_REPLY:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
+							    	break;
+							case SM_READWND_BUTTON_FORWARD:
+							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
+							    	break;
+						}
+					}
+				}
+				i++;
+			}
 
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
 

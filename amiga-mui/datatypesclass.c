@@ -206,6 +206,7 @@ STATIC ULONG DataTypes_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
+	DoSuperMethodA(cl,obj,msg);
 	return 0;
 }
 

@@ -1144,6 +1144,12 @@ int folder_rescan(struct folder *folder)
 			}
 		}
 		closedir(dfd);
+
+		if (folder->index_uptodate)
+		{
+			folder_delete_indexfile(folder);
+			folder->index_uptodate = 0;
+		}
 	}
 
 	folder_unlock(folder);
@@ -1205,17 +1211,18 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							SM_DEBUGF(10,("%ld mails within indexfile. %ld are pending\n",num_mails,folder->num_pending_mails));
 						}
 
-						while (num_mails--)
+						while (num_mails-- && !feof(fh))
 						{
-							struct mail *m = mail_create();
-							if (m)
+							struct mail *m;
+							int num_to = 0;
+							int num_cc = 0;
+
+							if (fread(&num_to,1,4,fh) != 4) break;
+							if (fread(&num_cc,1,4,fh) != 4) break;
+
+							if ((m = mail_create()))
 							{
 								int first = 1;
-								int num_to = 0;
-								int num_cc = 0;
-
-								fread(&num_to,1,4,fh);
-								fread(&num_cc,1,4,fh);
 
 								m->subject = fread_str(fh);
 								m->filename = fread_str(fh);
@@ -2478,16 +2485,27 @@ static void folder_delete_mails(struct folder *folder)
 		mail_free(folder->mail_array[i]);
 	}
 
+	for (i=0;i<folder->num_pending_mails;i++)
+	{
+		remove(folder->pending_mail_array[i]->filename);
+		mail_free(folder->pending_mail_array[i]);
+	}
+
 	folder->num_mails = 0;
+	folder->num_index_mails = 0;
 	folder->unread_mails = 0;
 	folder->new_mails = 0;
 	folder->mail_array_allocated = 0;
+	folder->num_pending_mails = 0;
+	folder->pending_mail_array_allocated = 0;
 
-	if (folder->mail_array)
-	{
-		free(folder->mail_array);
-		folder->mail_array = NULL;
-	}
+	free(folder->mail_array);
+	folder->mail_array = NULL;
+
+	free(folder->pending_mail_array);
+	folder->pending_mail_array = NULL;
+
+	folder->index_uptodate = 0;
 
 	chdir(path);
 }
@@ -2701,6 +2719,7 @@ int folder_save_index(struct folder *f)
 			folder_save_index_header(f,fh);
 		}
 		fclose(fh);
+		f->index_uptodate = 1;
 	} else
 	{
 		SM_DEBUGF(5,("Couldn't open %s for writing\n",f->path));

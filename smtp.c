@@ -252,7 +252,8 @@ int smtp_data(long hsocket, char *mailfile)
 		{
 			
 			fseek(fp, 0L, SEEK_END);
-			size = ftell(fp);
+			size = ftell(fp); /* what's that?? */
+			fseek(fp, 0L, SEEK_SET);
 			
 			ret = smtp_send_cmd(hsocket, "DATA", NULL);
 			if((ret == SMTP_OK) || (ret == SMTP_SEND_MAIL))

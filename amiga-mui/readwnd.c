@@ -148,6 +148,60 @@ static int read_cleanup(struct Read_Data *data)
 }
 
 /******************************************************************
+ Open the contents of an icon (requires version 44 of the os)
+*******************************************************************/
+static void open_contents(struct Read_Data *data, struct mail *mail)
+{
+	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
+	{
+		BPTR fh;
+		BPTR newdir;
+		BPTR olddir;
+		char filename[100];
+	
+		/* Write out the file, create an icon, start it via wb.library */
+		if (mail->filename)
+		{
+			strcpy(filename,"T:");
+			strcat(filename,mail_get_root(mail)->filename);
+			if ((newdir = CreateDir(filename))) UnLock(newdir);
+	
+			if ((newdir = Lock(filename, ACCESS_READ)))
+			{
+				olddir = CurrentDir(newdir);
+	
+				if ((fh = Open(mail->filename,MODE_NEWFILE)))
+				{
+					struct DiskObject *dobj;
+					mail_decode(mail);
+					if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
+					else Write(fh,mail->decoded_data,mail->decoded_len);
+					Close(fh);
+	
+					if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+					{
+						int ok_to_open = 1;
+						if (dobj->do_Type == WBTOOL)
+						{
+							ok_to_open = sm_request(NULL,_("Are you sure that you want to start this executable?"),_("*_Yes|_Cancel"));
+						}
+
+						if (ok_to_open) PutIconTagList(mail->filename,dobj,NULL);
+						FreeDiskObject(dobj);
+
+						if (ok_to_open)
+							OpenWorkbenchObjectA(mail->filename,NULL);
+					}
+				}
+	
+				CurrentDir(olddir);
+				UnLock(newdir);
+			}
+		}
+	}
+}
+
+/******************************************************************
  inserts the text of the mail into the given nlist object
 *******************************************************************/
 static void insert_text(struct Read_Data *data, struct mail *mail)
@@ -256,6 +310,17 @@ static void icon_selected(int **pdata)
 }
 
 /******************************************************************
+ Open the icon
+*******************************************************************/
+static void icon_open(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	struct mail *mail = (struct mail *)(pdata[1]);
+
+	open_contents(data,mail);
+}
+
+/******************************************************************
  A context menu item has been selected
 *******************************************************************/
 static void context_menu_trigger(int **pdata)
@@ -276,47 +341,7 @@ static void context_menu_trigger(int **pdata)
 						break;
 
 			case	3: /* Open via workbench.library */
-						{
-							if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
-							{
-								BPTR fh;
-								BPTR newdir;
-								BPTR olddir;
-								char filename[100];
-
-								/* Write out the file, create an icon, start it via wb.library */
-								if (mail->filename)
-								{
-									strcpy(filename,"T:");
-									strcat(filename,mail_get_root(mail)->filename);
-									if ((newdir = CreateDir(filename))) UnLock(newdir);
-
-									if ((newdir = Lock(filename, ACCESS_READ)))
-									{
-										olddir = CurrentDir(newdir);
-
-										if ((fh = Open(mail->filename,MODE_NEWFILE)))
-										{
-											struct DiskObject *dobj;
-											mail_decode(mail);
-											if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
-											else Write(fh,mail->decoded_data,mail->decoded_len);
-											Close(fh);
-
-											if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
-											{
-												PutIconTagList(mail->filename,dobj,NULL);
-												FreeDiskObject(dobj);
-												OpenWorkbenchObjectA(mail->filename,NULL);
-											}
-										}
-
-										CurrentDir(olddir);
-										UnLock(newdir);
-									}
-								}
-							}
-						}
+						open_contents(data,mail);
 						break;
 		}
 	}
@@ -359,10 +384,9 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		{
 			DoMethod(data->attachments_group, OM_ADDMEMBER, group);
 			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, mail, MUIV_TriggerValue);
+			DoMethod(icon, MUIM_Notify, MUIA_Icon_DoubleClick, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_open, data, mail);
+			DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
 		}
-
-
-		DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
 	}
 
 	for (i=0;i<mail->num_multiparts;i++)

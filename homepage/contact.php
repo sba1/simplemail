@@ -24,4 +24,4 @@ Additional programming and advices:
 	</TR>
 </TABLE>
 
-
+The taglines are from <A href="http://www.andreasneumann.de/" target="_blank">Andreas Neumann</A>.

@@ -76,7 +76,7 @@ struct mail
 	char *content_type;
 	char *content_subtype; /* the types of the whole mail */
 	char *content_charset; /* the contents charset (usually for text parts only) */
-	char *content_disposition; /* content */
+	int content_inline; /* inline the content */
 	utf8 *content_description; /* the description field (might be NULL) */
 	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;

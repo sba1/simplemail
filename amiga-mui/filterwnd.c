@@ -80,7 +80,13 @@ STATIC ASM VOID filter_destruct( register __a2 APTR pool, register __a1 struct f
 
 STATIC ASM VOID filter_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter *ent)
 {
-	if (ent) *array = ent->name;
+	if (ent)
+	{
+		static char buf[300];
+		utf8tostr(ent->name, buf, sizeof(buf), user.config.default_codeset);
+
+		*array = buf;
+	}
 }
 
 STATIC ASM VOID move_objstr(register __a2 Object *list, register __a1 Object *str)
@@ -333,7 +339,9 @@ static void filter_new(void)
 	{
 		DoMethod(filter_list, MUIM_NList_InsertSingle, f, MUIV_NList_Insert_Bottom);
 		filter_dispose(f);
-		set(filter_list, MUIA_NList_Active, xget(filter_list, MUIA_NList_Entries)-1);
+		set(filter_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
+
+		if (filter_last_selected) set(filter_name_string, MUIA_BetterString_SelectSize, -utf8len(filter_last_selected->name));
 		set(filter_wnd, MUIA_Window_ActiveObject, filter_name_string);
 	}
 }

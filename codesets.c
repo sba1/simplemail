@@ -752,6 +752,48 @@ struct codeset *codesets_find(char *name)
 }
 
 /**************************************************************************
+ Returns the best codeset for the given text
+**************************************************************************/
+struct codeset *codesets_find_best(char *text, int text_len)
+{
+	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
+	struct codeset *best_codeset = NULL;
+	int best_errors = text_len;
+
+	while (codeset)
+	{
+		struct single_convert conv;
+		char *text_ptr = text;
+		int i;
+		int errors = 0;
+
+		for (i=0;i < text_len;i++)
+		{
+			unsigned char c = *text_ptr++;
+			if (c)
+			{
+				int len = trailingBytesForUTF8[c];
+				conv.utf8[1] = c;
+				strncpy(&conv.utf8[2],text_ptr,len);
+				conv.utf8[2+len] = 0;
+				text_ptr += len;
+
+				if (!bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode))
+					errors++;
+			} else break;
+		}
+
+		if (errors < best_errors) best_codeset = codeset;
+		if (!best_errors) break;
+		codeset = (struct codeset*)node_next(&codeset->node);
+	}
+
+	if (!best_codeset) best_codeset = (struct codeset*)list_first(&codesets_list);
+
+	return best_codeset;
+}
+
+/**************************************************************************
  Returns the number of characters a uft8 string has. This is not
  identically with the size of memory is required to hold the string.
  Please use uftsize() for this.
@@ -863,3 +905,34 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 	*dest_iter = 0;
 	return i;
 }
+
+/**************************************************************************
+ Converts a single UTF8 char to a given charset. Returns the number of
+ bytes to the next utf8 char. *chr might be 0 if it was not in the codeset
+**************************************************************************/
+int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
+{
+	int i;
+	struct single_convert conv;
+	struct single_convert *f;
+	unsigned char c;
+	int len = 0;
+
+	if (!codeset) codeset = (struct codeset*)list_first(&codesets_list);
+	if (!codeset) return 0;
+
+	if ((c = *str++))
+	{
+		len = trailingBytesForUTF8[c];
+		conv.utf8[1] = c;
+		strncpy(&conv.utf8[2],str,len);
+		conv.utf8[2+len] = 0;
+
+		if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
+		{
+			*chr = f->code;
+		} else *chr = 0;
+	} else *chr = 0;
+	return len+1;
+}
+

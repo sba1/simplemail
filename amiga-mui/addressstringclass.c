@@ -43,6 +43,7 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "muistuff.h"
+#include "utf8stringclass.h"
 
 /******************************************************************
  Returns a malloced() sting for the address start (this what should
@@ -532,7 +533,7 @@ int create_addressstring_class(void)
 	if ((CL_MatchWindow = MUI_CreateCustomClass(NULL,MUIC_Window,NULL,sizeof(struct MatchWindow_Data),MatchWindow_Dispatcher)))
 	{
 		CL_MatchWindow->mcc_Class->cl_UserData = getreg(REG_A4);
-		if ((CL_AddressString = MUI_CreateCustomClass(NULL,MUIC_BetterString,NULL,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
+		if ((CL_AddressString = MUI_CreateCustomClass(NULL,NULL,CL_UTF8String,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
 		{
 			CL_AddressString->mcc_Class->cl_UserData = getreg(REG_A4);
 			return 1;

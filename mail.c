@@ -1166,7 +1166,7 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 					}
 				}
 
-				to_header = encode_address_field("To",alist);
+				to_header = encode_address_field_utf8("To",alist);
 				free_address_list(alist);
 
 				if (to_header)

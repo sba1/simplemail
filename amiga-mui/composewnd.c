@@ -1169,7 +1169,7 @@ int compose_window_open(struct compose_args *args)
 					/* set the To string */
 					char *decoded_to;
 					parse_text_string(to,&decoded_to);
-					set(to_string,MUIA_String_Contents,decoded_to);
+					set(to_string,MUIA_UTF8String_Contents,decoded_to);
 					free(decoded_to);
 				}
 
@@ -1178,7 +1178,7 @@ int compose_window_open(struct compose_args *args)
 					/* set the To string */
 					char *decoded_cc;
 					parse_text_string(cc,&decoded_cc);
-					set(cc_string,MUIA_String_Contents,decoded_cc);
+					set(cc_string,MUIA_UTF8String_Contents,decoded_cc);
 					free(decoded_cc);
 				}
 

@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include "codecs.h"
+#include "codesets.h"
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
@@ -346,7 +347,7 @@ static int get_encode_str(unsigned char *buf)
 
 /**************************************************************************
  Encodes a given header string (changed after 1.7)
- If structured is one the resulting string also may contains quotation
+ If structured is on the resulting string also may contains quotation
  marks
 **************************************************************************/
 static char *encode_header_str(char *toencode, int *line_len_ptr, int structured)
@@ -492,6 +493,145 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 	return encoded;
 }
 
+/**************************************************************************
+ Encodes a given header string (changed after 1.7)
+ If structured is on the resulting string also may contains quotation
+ marks.
+**************************************************************************/
+static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int structured)
+{
+	int line_len = *line_len_ptr;
+	int encoded_len = 0;
+	int toencode_len = mystrlen(toencode);
+	char *encoded = NULL;
+	int max_line_len = 72; /* RFC 2047 says it can be 76 */
+	FILE *fh;
+
+	if (!toencode) return NULL;
+
+	if ((fh = tmpfile()))
+	{
+		while (toencode_len>0)
+		{
+			int l;
+			if ((l = get_noencode_str(toencode)))
+			{
+				int quotes = structured && needs_quotation_len(toencode,l);
+				int space_add;
+				if ((line_len + l + (quotes?2:0)) > max_line_len && line_len > 1)
+				{
+					fputs("\n ",fh);
+					encoded_len += 2;
+					line_len = 1;
+				}
+
+				if (toencode[l-1] == ' ' && quotes)
+				{
+					/* the last space should split the quoted string from the encoded word */
+					l--;
+					space_add = 1;
+				} else space_add = 0;
+
+				if (quotes) fputc('"',fh);
+				fwrite(toencode,1,l,fh);
+				toencode += l;
+				toencode_len -= l;
+				if (quotes) fputc('"',fh);
+				if (space_add)
+				{
+					fputc(' ',fh);
+					l++;
+					toencode++;
+					toencode_len--;
+				}
+
+				line_len += l + (quotes?2:0);
+				encoded_len += l + (quotes?2:0);
+			}
+			if ((l = get_encode_str(toencode)))
+			{
+				char buf[32];
+				struct codeset *best_codeset;
+				int buf_len;
+				int line_start = 1;
+				int have_written = 0;
+
+				/* Find the best encoding for the given text part */
+				best_codeset = codesets_find_best(toencode,l);
+
+				while (l>0)
+				{
+					unsigned int nc;
+					int toencode_add;
+
+					if (line_start)
+					{
+						sprintf(buf,"=?%s?q?",best_codeset->name);
+						buf_len = strlen(buf);
+						line_start = 0;
+					} else buf_len = 0;
+
+					toencode_add = utf8tochar(toencode, &nc, best_codeset);
+
+					if (nc > 127 || nc == '_' || nc == '?' || nc == '=')
+					{
+						sprintf(&buf[buf_len],"=%02X",nc);
+						buf_len += 3;
+					} else
+					{
+						if (nc==' ') nc = '_';
+						buf[buf_len++] = nc;
+					}
+
+					if (buf_len + line_len > 70)
+					{
+						line_start = 1;
+						line_len = 1;
+						if (have_written)
+						{
+							fputs("?=\n ",fh);
+							encoded_len += 4;
+						} else
+						{
+							fputs("\n ",fh);
+							encoded_len += 2;
+						}
+						continue;
+					}
+
+					have_written = 1;
+					fwrite(buf,1,buf_len,fh);
+					encoded_len += buf_len;
+					line_len += buf_len;
+
+					l -= toencode_add;
+					toencode_len -= toencode_add;
+					toencode += toencode_add;
+				}
+				if (have_written)
+				{
+					fputs("?=",fh);
+					encoded_len += 2;
+				}
+			}
+		}
+
+		if (encoded_len)
+		{
+	    fseek(fh,0,SEEK_SET);
+			if ((encoded = (char*)malloc(encoded_len+1)))
+			{
+				fread(encoded,1,encoded_len,fh);
+				encoded[encoded_len]=0;
+			}
+		}
+
+		fclose(fh);
+	}
+	*line_len_ptr = line_len;
+	return encoded;
+}
+
 
 /**************************************************************************
  Creates a unstructured encoded header field (includes all rules of the
@@ -539,7 +679,8 @@ char *encode_header_field(char *field_name, char *field_contents)
 /**************************************************************************
  Creates a structured address encoded header field (includes all rules of the
  RFC 821 and RFC 2047). List is the list with all addresses.
- The string is allocated with malloc()
+ The string is allocated with malloc().
+ This function is going to be replaced with the below one soon.
 **************************************************************************/
 char *encode_address_field(char *field_name, struct list *address_list)
 {
@@ -562,6 +703,86 @@ char *encode_address_field(char *field_name, struct list *address_list)
 		{
 			struct address *next_address = (struct address*)node_next(&address->node);
 			char *text = encode_header_str(address->realname, &line_len,1);
+			if (text)
+			{
+				fputs(text,fh);
+
+				if (address->email)
+				{
+					int email_len = strlen(address->email) + 2;
+
+					if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
+					{
+						line_len = 1;
+						fprintf(fh,"\n ");
+					} else
+					{
+						fputc(' ',fh);
+						line_len++;
+					}
+
+					fprintf(fh,"<%s>%s",address->email,next_address?",":"");
+					line_len += email_len;
+				}
+				free(text);
+			} else
+			{
+				int email_len = strlen(address->email);
+
+				if (line_len + email_len + (next_address?1:0) > 72) /* <> and space */
+				{
+					line_len = 1;
+					fprintf(fh,"\n ");
+				}
+
+				fprintf(fh,"%s%s",address->email,next_address?",":"");
+				line_len += email_len;
+			}
+
+			address = next_address;
+		}
+
+		if ((header_len = ftell(fh)))
+		{
+	    fseek(fh,0,SEEK_SET);
+			if ((header = (char*)malloc(header_len+1)))
+			{
+				fread(header,1,header_len,fh);
+				header[header_len]=0;
+			}
+		}
+
+		fclose(fh);
+	}
+	return header;
+}
+
+/**************************************************************************
+ Creates a structured address encoded header field (includes all rules of the
+ RFC 821 and RFC 2047). List is the list with all addresses.
+ The string is allocated with malloc()
+**************************************************************************/
+char *encode_address_field_utf8(char *field_name, struct list *address_list)
+{
+	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
+	int header_len;
+	int line_len;
+	char *header = NULL;
+
+	FILE *fh;
+
+	if ((fh = tmpfile()))
+	{
+		struct address *address;
+
+		fprintf(fh, "%s: ",field_name);
+		line_len = field_len;
+
+		address = (struct address*)list_first(address_list);
+		while (address)
+		{
+			struct address *next_address = (struct address*)node_next(&address->node);
+			char *text = encode_header_str_utf8(address->realname, &line_len, 1);
 			if (text)
 			{
 				fputs(text,fh);

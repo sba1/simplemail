@@ -44,6 +44,7 @@ char **codesets_supported(void);
 int codesets_init(void);
 void codesets_cleanup(void);
 struct codeset *codesets_find(char *name);
+struct codeset *codesets_find_best(char *text, int text_len);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))
 #define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
@@ -53,5 +54,6 @@ int uft8len(const utf8 *str);
 utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);
+int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
 
 #endif

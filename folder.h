@@ -117,4 +117,6 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode);
 
 #define folder_get_type(f) ((f)->type)
 
+int folder_filter(struct folder *fold);
+
 #endif

@@ -71,4 +71,9 @@ char *filter_get_rule_string(struct filter_rule *rule);
 
 struct filter_action *filter_find_action(struct filter *filter, int num);
 
+void filter_list_clear(void);
+void filter_list_add_duplicate(struct filter *);
+struct filter *filter_list_first(void);
+struct filter *filter_list_next(struct filter *f);
+
 #endif

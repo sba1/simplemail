@@ -289,6 +289,14 @@ static void rules_new(void)
 }
 
 /**************************************************************************
+ Remove a new rule
+**************************************************************************/
+static void rules_rem(void)
+{
+	DoMethod(rules_page_listview, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+}
+
+/**************************************************************************
  A new rule is active
 **************************************************************************/
 static void rules_active(void)
@@ -350,7 +358,7 @@ static void rules_active(void)
 **************************************************************************/
 static void init_rules(void)
 {
-	Object *ok_button, *cancel_button, *rule_add_button, *folder_list, *move_text, *move_popobject, *move_check;
+	Object *ok_button, *cancel_button, *rule_add_button, *folder_list, *move_text, *move_popobject, *move_check, *rule_rem_button;
 	static struct Hook rules_display_hook;
 	static struct Hook move_objstr_hook, move_strobj_hook;
 	struct folder *f;
@@ -381,7 +389,7 @@ static void init_rules(void)
 						Child, HGroup,
 							Child, rules_page_cycle = MakeCycle(NULL,rule_cycle_array),
 							Child, rule_add_button = MakeButton("Add"),
-							Child, MakeButton("Remove"),
+							Child, rule_rem_button = MakeButton("Remove"),
 							End,
 						End,
 					Child, rules_page_group = VGroup,
@@ -429,6 +437,7 @@ static void init_rules(void)
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(rule_add_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_new);
+		DoMethod(rule_rem_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_rem);
 		DoMethod(rules_page_listview, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_active);
 		DoMethod(move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 		DoMethod(folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, move_popobject, 2, MUIM_Popstring_Close, 1);
@@ -498,7 +507,23 @@ static void filter_new(void)
 **************************************************************************/
 static void filter_ok(void)
 {
+	struct filter *f;
+	int i;
+
 	set(filter_wnd,MUIA_Window_Open,FALSE);
+
+	filter_list_clear();
+
+	for (i=0;i<xget(filter_listview, MUIA_NList_Entries);i++)
+	{
+		DoMethod(filter_listview, MUIM_NList_GetEntry, i, &f);
+		if (f)
+		{
+			filter_list_add_duplicate(f);
+		}
+	}
+
+	DoMethod(filter_listview, MUIM_NList_Clear);
 }
 
 /**************************************************************************
@@ -589,10 +614,23 @@ static void init_filter(void)
 **************************************************************************/
 void filter_open(void)
 {
+	struct filter *f;
+
 	if (!filter_wnd)
 	{
 		init_filter();
 		if (!filter_wnd) return;
+	}
+
+	/* Clear the filter listview contents */
+	DoMethod(filter_list, MUIM_NList_Clear);
+
+	/* Add the filters to the list */
+	f = filter_list_first();
+	while (f)
+	{
+		DoMethod(filter_list, MUIM_NList_InsertSingle, f, MUIV_NList_Insert_Bottom);
+		f = filter_list_next(f);
 	}
 
 	set(filter_wnd, MUIA_Window_Open, TRUE);

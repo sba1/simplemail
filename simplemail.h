@@ -39,6 +39,7 @@ void callback_forward_mail(void);
 void callback_change_mail(void);
 void callback_fetch_mails(void);
 void callback_send_mails(void);
+void callback_filter(void);
 void callback_edit_filter(void);
 void callback_addressbook(void);
 void callback_config(void);

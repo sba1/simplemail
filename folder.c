@@ -30,6 +30,7 @@
 #include <unistd.h>
 
 #include "lists.h"
+#include "filter.h"
 #include "folder.h"
 #include "support.h"
 #include "support_indep.h"
@@ -1238,6 +1239,14 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 			folder->sorted_mail_array = NULL;
 		}
 	}
+}
+
+/******************************************************************
+ Filter all mails in the given folder
+*******************************************************************/
+int folder_filter(struct folder *folder)
+{
+	return 1;
 }
 
 /******************************************************************

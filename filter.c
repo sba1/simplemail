@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "configuration.h"
 #include "lists.h"
 #include "filter.h"
 #include "support_indep.h"
@@ -127,3 +128,43 @@ struct filter_action *filter_find_action(struct filter *filter, int num)
 	return (struct filter_action *)list_find(&filter->action_list,num);
 }
 
+/**************************************************************************
+ Clears the filter list in the configuration
+**************************************************************************/
+void filter_list_clear(void)
+{
+	struct filter *f;
+	while ((f = (struct filter*)list_remove_tail(&user.config.filter_list)))
+	{
+		filter_dispose(f);
+	}
+}
+
+/**************************************************************************
+ Adds a duplicate of the filter to the filter list
+**************************************************************************/
+void filter_list_add_duplicate(struct filter *f)
+{
+	struct filter *df;
+
+	if ((df = filter_duplicate(f)))
+	{
+		list_insert_tail(&user.config.filter_list,&df->node);
+	}
+}
+
+/**************************************************************************
+ Returs the first filter
+**************************************************************************/
+struct filter *filter_list_first(void)
+{
+	return (struct filter*)list_first(&user.config.filter_list);
+}
+
+/**************************************************************************
+ Returs the first filter
+**************************************************************************/
+struct filter *filter_list_next(struct filter *f)
+{
+	return (struct filter*)node_next(&f->node);
+}

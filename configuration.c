@@ -62,6 +62,9 @@ void init_config(void)
 	user.directory = strdup("PROGDIR:");
 	user.config.smtp_port = 25;
 
+	list_init(&user.config.receive_list);
+	list_init(&user.config.filter_list);
+
 	if ((pop3 = pop_malloc()))
 	{
 		list_insert_tail(&user.config.receive_list,&pop3->node);

@@ -233,6 +233,13 @@ void callback_send_mails(void)
 	mails_upload();
 }
 
+/* filter the mails */
+void callback_filter(void)
+{
+	struct folder *f = main_get_folder();
+	if (f) folder_filter(f);
+}
+
 /* the filters should be edited */
 void callback_edit_filter(void)
 {

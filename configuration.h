@@ -50,6 +50,8 @@ struct config
   struct list receive_list;
 
 	int read_wordwrap;
+
+	struct list filter_list; /* List of the filters */
 };
 
 struct user

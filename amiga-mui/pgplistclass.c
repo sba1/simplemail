@@ -53,19 +53,19 @@ struct PGPList_Data
 	char buf[100];
 };
 
-STATIC ASM struct pgp_key *pgp_construct(register __a1 struct NList_ConstructMessage *msg)
+STATIC ASM SAVEDS struct pgp_key *pgp_construct(register __a1 struct NList_ConstructMessage *msg)
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	return pgp_duplicate(key);
 }
 
-STATIC ASM VOID pgp_destruct(register __a1 struct NList_DestructMessage *msg)
+STATIC ASM SAVEDS VOID pgp_destruct(register __a1 struct NList_DestructMessage *msg)
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	if (key) pgp_dispose(key);
 }
 
-STATIC ASM VOID pgp_display(register __a1 struct NList_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID pgp_display(register __a1 struct NList_DisplayMessage *msg, register __a2 Object *obj)
 {
 	struct PGPList_Data *data = (struct PGPList_Data*)INST_DATA(CL_PGPList->mcc_Class,obj);
 	if (msg->entry)

@@ -440,7 +440,9 @@ FILE *tmpfile(void)
 
 char *tmpnam(char *name)
 {
+	static char default_buf[200];
 	ObtainSemaphore(&files_sem);
+	if (!name) name = default_buf;
 	sprintf(name,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
 	ReleaseSemaphore(&files_sem);
 	return name;

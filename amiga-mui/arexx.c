@@ -32,6 +32,7 @@
 #include <proto/dos.h>
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
+#include <proto/asl.h>
 #include <proto/intuition.h> /* ScreenToXXX() */
 
 #include "addressbook.h"
@@ -603,6 +604,147 @@ static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ REQUESTFILE Arexx Command
+*****************************************************************/
+static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR stem;
+		STRPTR drawer;
+		STRPTR file;
+		STRPTR pattern;
+		STRPTR title;
+		STRPTR positive;
+		STRPTR negative;
+		STRPTR acceptpattern;
+		STRPTR rejectpattern;
+		ULONG savemode;
+		ULONG multiselect;
+		ULONG drawersonly;
+		ULONG noicons;
+	} requestfile_arg;
+	memset(&requestfile_arg,0,sizeof(requestfile_arg));
+
+	if ((arg_handle = ParseTemplate("STEM/K,DRAWER,FILE/K,PATTERN/K,TITLE/K,POSITIVE/K,NEGATIVE/K,ACCEPTPATTERN/K,REJECTPATTERN/K,SAVEMODE/S,MULTISELECT/S,DRAWERSONLY/S,NOICONS/S",args,&requestfile_arg)))
+	{
+		struct FileRequester *filereq = AllocAslRequest(ASL_FileRequest,NULL);
+		if (filereq)
+		{
+			UBYTE *acceptpattern = NULL,*rejectpattern = NULL;
+			int stem_len;
+			char *stem_buf;
+			char num_buf[32];
+
+			if (requestfile_arg.stem)
+			{
+				stem_len = strlen(requestfile_arg.stem);
+				if ((stem_buf = malloc(stem_len+20)))
+				{
+					strcpy(stem_buf,requestfile_arg.stem);
+				} else stem_len = 0;
+			} else
+			{
+				stem_buf = 0;
+				stem_len = 0;
+			}
+
+
+			if (requestfile_arg.acceptpattern)
+			{
+				int len = strlen(requestfile_arg.acceptpattern)*2+3;
+				if ((acceptpattern = (UBYTE*)AllocVec(len,0)))
+					ParsePatternNoCase(requestfile_arg.acceptpattern,acceptpattern,len);
+			}
+
+			if (requestfile_arg.rejectpattern)
+			{
+				int len = strlen(requestfile_arg.rejectpattern)*2+3;
+				if ((rejectpattern = (UBYTE*)AllocVec(len,0)))
+					ParsePatternNoCase(requestfile_arg.rejectpattern,rejectpattern,len);
+			}
+
+			if (AslRequestTags(filereq,
+						ASLFR_Screen, main_get_screen(),
+						requestfile_arg.title?ASLFR_TitleText:TAG_IGNORE, requestfile_arg.title,
+						requestfile_arg.positive?ASLFR_PositiveText:TAG_IGNORE, requestfile_arg.positive,
+						requestfile_arg.negative?ASLFR_NegativeText:TAG_IGNORE, requestfile_arg.negative,
+						requestfile_arg.drawer?ASLFR_InitialDrawer:TAG_IGNORE, requestfile_arg.drawer,
+						requestfile_arg.file?ASLFR_InitialFile:TAG_IGNORE, requestfile_arg.file,
+						requestfile_arg.pattern?ASLFR_InitialPattern:TAG_IGNORE, requestfile_arg.pattern,
+						rejectpattern?ASLFR_RejectPattern:TAG_IGNORE, rejectpattern,
+						acceptpattern?ASLFR_AcceptPattern:TAG_IGNORE, acceptpattern,
+						ASLFR_RejectIcons, requestfile_arg.noicons,
+						ASLFR_DrawersOnly, requestfile_arg.drawersonly,
+						ASLFR_DoMultiSelect, requestfile_arg.multiselect,
+						ASLFR_DoSaveMode, requestfile_arg.savemode,
+						requestfile_arg.pattern?ASLFR_DoPatterns:TAG_IGNORE, TRUE,
+						TAG_DONE))
+			{
+				int i;
+				char *name;
+				STRPTR dirname;
+				BPTR dirlock;
+
+				if (stem_buf)
+				{
+					strcpy(&stem_buf[stem_len],"PATH.COUNT");
+					sprintf(num_buf,"%d",filereq->fr_NumArgs);
+					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+					for (i=0;i<filereq->fr_NumArgs;i++)
+					{
+						sprintf(&stem_buf[stem_len],"PATH.%d",i);
+						if ((dirname = NameOfLock(filereq->fr_ArgList[i].wa_Lock)))
+						{
+							if ((name = mycombinepath(dirname,filereq->fr_ArgList[i].wa_Name)))
+							{
+								SetRexxVar(rxmsg,stem_buf,name,strlen(name));
+								free(name);
+							} else SetRexxVar(rxmsg,stem_buf,"",0);
+							FreeVec(dirname);
+						} else SetRexxVar(rxmsg,stem_buf,"",0);
+					}
+
+					strcpy(&stem_buf[stem_len],"FILE");
+					SetRexxVar(rxmsg,stem_buf,filereq->fr_File,mystrlen(filereq->fr_File));
+
+					strcpy(&stem_buf[stem_len],"DRAWER");
+					SetRexxVar(rxmsg,stem_buf,filereq->fr_Drawer,mystrlen(filereq->fr_Drawer));
+
+					strcpy(&stem_buf[stem_len],"PATTERN");
+					SetRexxVar(rxmsg,stem_buf,filereq->fr_Pattern,mystrlen(filereq->fr_Pattern));
+				}
+
+				if ((dirlock = Lock(filereq->fr_Drawer,ACCESS_READ)))
+				{
+					if ((dirname = NameOfLock(dirlock)))
+					{
+						if ((name = mycombinepath(dirname,filereq->fr_File)))
+						{
+							arexx_set_result(rxmsg,name);
+							free(name);
+						}
+						FreeVec(dirname);
+					}
+					UnLock(dirlock);
+				}
+			} else 
+			{
+				if (stem_buf)
+				{
+					strcpy(&stem_buf[stem_len],"PATH.COUNT");
+					SetRexxVar(rxmsg,stem_buf,"0",1);
+				}
+				arexx_set_result(rxmsg,"");
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  MAILINFO Arexx Command
 *****************************************************************/
 static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
@@ -1017,7 +1159,6 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 
 	if ((arg_handle = ParseTemplate("VAR/K,STEM/K",args,&readinfo_arg)))
 	{
-		int num = 0;
 		char num_buf[20];
 		struct mail *mail;
 
@@ -1269,6 +1410,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);
 		else if (!Stricmp("REQUEST",command.command)) arexx_request(rxmsg,command.args);
 		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);
+		else if (!Stricmp("REQUESTFILE",command.command)) arexx_requestfile(rxmsg,command.args);
 		else if (!Stricmp("MAILINFO",command.command)) arexx_mailinfo(rxmsg,command.args);
 		else if (!Stricmp("SETFOLDER",command.command)) arexx_setfolder(rxmsg,command.args);
 		else if (!Stricmp("ADDRGOTO",command.command)) arexx_addrgoto(rxmsg,command.args);

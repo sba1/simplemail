@@ -83,12 +83,22 @@ STATIC ULONG MailInfo_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+STATIC LONG MailInfo_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg)
+{
+  DoSuperMethodA(cl, obj, (Msg) msg);
+  msg->MinMaxInfo->MinWidth = 10;
+  msg->MinMaxInfo->DefWidth = 20;
+  msg->MinMaxInfo->MaxWidth = MUI_MAXMAX;
+  return 0;
+}
+
 STATIC BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return MailInfo_New(cl,obj,(struct opSet*)msg);
 		case	OM_SET: return MailInfo_Set(cl,obj,(struct opSet*)msg);
+		case	MUIM_AskMinMax: return MailInfo_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

@@ -30,7 +30,7 @@ int mails_dl(void)
 		return 0;
 	}
 
-	set_dl_title(server);
+	dl_set_title(server);
 	dl_window_open();
 
 	/* Here we must create a new task which then downloads the mails */
@@ -41,17 +41,18 @@ int mails_dl(void)
 	return 0;
 }
 
-
-int smtp_send(char *server, struct out_mail *om);
-/* bitte in smtp.h public definieren */
-
 int mails_upload(void)
 {
 	char *server, *domain;
 	struct folder *out_folder = folder_outgoing();
 	struct folder *sent_folder = folder_sent();
 	void *handle = NULL;
-	int i,num_mails;
+	int i;
+	struct out_mail **out_array;
+	struct out_mail *out;
+
+	/* the following three fields should be obsolette */
+	int num_mails;
 	struct mail **mail_array;
 	struct mail *m;
 
@@ -87,71 +88,98 @@ int mails_upload(void)
 	mail_array = (struct mail**)malloc(sizeof(struct mail*)*num_mails);
 	if (!mail_array) return 0;
 
-	i=0;
-	handle = NULL;
-	while ((m = folder_next_mail(out_folder, &handle))) mail_array[i++] = m;
-
-	getcwd(path, sizeof(path));
-	if(chdir(out_folder->path) == -1)
+	/* only one malloc() */
+	i = sizeof(struct out_mail*)*(num_mails+1) + sizeof(struct out_mail)*num_mails;
+	out_array = (struct out_mail**)malloc(i);
+	if (!out_array)
 	{
 		free(mail_array);
 		return 0;
 	}
 
-	/* Now send the mails and move them to the sent folder */
-	for (i=0; i<num_mails;i++)
+	/* change into the outgoing folder directory */
+	getcwd(path, sizeof(path));
+	if(chdir(out_folder->path) == -1)
+	{
+		free(out_array);
+		free(mail_array);
+		return 0;
+	}
+
+	/* clear the memory */
+	memset(out_array,0,i);
+
+	/* set the first out */
+	out = (struct out_mail*)(((char*)out_array)+sizeof(struct out_mail*)*(num_mails+1));
+	handle = NULL;
+	i=0;
+
+	/* initialize the arrays */
+	while ((m = folder_next_mail(out_folder, &handle)))
 	{
 		char *from, *to;
 		struct mailbox mb;
-		struct out_mail out;
 		struct list *list; /* "To" address list */
 
-		m = mail_array[i];
+		out_array[i] = out;
+		mail_array[i++] = m; /* store the mail in the array, this should be obsoletted */
+
 		to = mail_find_header_contents(m,"To");
 		from = mail_find_header_contents(m,"From");
 
 		memset(&mb,0,sizeof(struct mailbox));
-		memset(&out,0,sizeof(struct out_mail));
 
-		if (!out_folder || !to || !from ) break;
+		if (!to || !from ) break;
 		if (!parse_mailbox(from,&mb)) break;
 
-		out.domain = domain;
-		out.mailfile = m->filename;
-		out.from = mb.addr_spec;
+		out->domain = domain;
+		out->mailfile = m->filename;
+		out->from = mb.addr_spec; /* must be not freed here */
 
+		/* fill in the recipients */
 		if ((list = create_address_list(to)))
 		{
 			int length = list_length(list);
 			if (length)
 			{
-				if ((out.rcp = (char**)malloc(sizeof(char*)*(length+1))))
+				if ((out->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 				{
 					struct address *addr = (struct address*)list_first(list);
 					int i=0;
 					while (addr)
 					{
-						out.rcp[i++] = addr->email;
+						if (!(out->rcp[i++] = strdup(addr->email))) /* not freed */
+							break;
 						addr = (struct address*)node_next(&addr->node);
 					}
-					out.rcp[i] = NULL;
-
-					smtp_send(server,&out);
+					out->rcp[i] = NULL;
 				}
 			}
 			free_address_list(list);
 		}
 
-		if (mb.phrase) free(mb.phrase);
-		if (mb.addr_spec) free(mb.addr_spec);
+		if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
+/*		if (mb.addr_spec) free(mb.addr_spec); */
+		out++;
+	}
 
-		if (sent_folder)
+	/* now send all mails */
+	smtp_send(server, out_array);
+
+	/* this should be done in smtp_send() but we need some new functions
+   * for that, until this the obsoletted marked stuff if necessary */
+	if (sent_folder)
+	{
+		for (i=0;i<num_mails;i++)
 		{
-			callback_move_mail(m,out_folder,sent_folder);
+			callback_move_mail(mail_array[i],out_folder,sent_folder);
 		}
 	}
 
 	chdir(path);
+	free(out_array);
 	free(mail_array);
+
+	/* NOTE: A lot of memory leaks!! */
 }
 

@@ -1404,7 +1404,7 @@ int utf8stricmp(char *str1, char *str2)
 			if (!c2) return 0;
 			return -1;
 		}
-		if (!c2) return 0;
+		if (!c2) return 1;
 
 		if (c1 < 0x80)
 		{
@@ -1508,7 +1508,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 			if (!c2) return 0;
 			return -1;
 		}
-		if (!c2) return 0;
+		if (!c2) return 1;
 
 		if (c1 < 0x80)
 		{

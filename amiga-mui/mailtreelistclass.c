@@ -152,10 +152,10 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 				{
 					int field_len;
 					sprintf(field_buf,"\33O[%08lx]",data->status_group);
-					if (mail->from)
+					if (field)
 					{
 						field_len = strlen(field_buf);
-						mystrlcpy(field_buf+field_len,mail->from,sizeof(field_buf)-field_len);
+						mystrlcpy(field_buf+field_len,field,sizeof(field_buf)-field_len);
 					}
 					*msg->Array++ = field_buf;
 				} else *msg->Array++ = field;

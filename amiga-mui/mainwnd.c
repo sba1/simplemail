@@ -833,6 +833,15 @@ void main_set_folder_mails(struct folder *folder)
 }
 
 /******************************************************************
+ Activates a different folder
+*******************************************************************/
+void main_set_folder_active(struct folder *folder)
+{
+	struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(folder_tree, folder);
+	set(folder_tree,MUIA_NListtree_Active,tn);
+}
+
+/******************************************************************
  Returns the current selected folder, NULL if no real folder
  has been selected. It returns the true folder like it is
  in the folder list

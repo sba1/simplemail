@@ -33,6 +33,7 @@
 #include "version.h"
 
 /* nongui parts */
+#include "folder.h"
 #include "mail.h"
 
 /* gui parts */
@@ -189,6 +190,7 @@ int gui_main(void)
 	if(all_init())
 	{
 		main_refresh_folders();
+		main_set_folder_active(folder_incoming());
 
 		if(main_window_open())
 		{

@@ -264,6 +264,7 @@ void loop(void)
 *****************************************************************/
 int app_init(void)
 {
+	struct DiskObject *HideIcon = appicon_get_hide_icon();
 	SM_ENTER;
 
 	App = ApplicationObject,

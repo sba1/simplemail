@@ -44,6 +44,24 @@ int read_line(FILE *fh, char *buf);           /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* in configuration.c */
 void app_show(void);                          /* in gui_main.c */
 
+struct AppIcon_Stat
+{
+	int total_msg;
+	int total_new;
+	int total_unread;
+	int total_sent;
+	int total_outgoing;
+	int total_deleted;
+};
+
+struct AppIcon_Config
+{
+	char *filename;
+
+	LONG position_X;
+	LONG position_Y;
+};
+
 static struct MsgPort *appicon_port;
 static struct AppIcon *appicon;
 static struct DiskObject *appicon_diskobject[SM_APPICON_MAX];
@@ -51,7 +69,7 @@ static struct AppIcon_Stat appicon_stat;
 static struct AppIcon_Config appicon_config;
 static int appicon_last_mode;
 
-struct DiskObject *HideIcon;
+static struct DiskObject *HideIcon;
 
 static STRPTR appicon_names[SM_APPICON_MAX] =
 {
@@ -384,4 +402,12 @@ void appicon_unsnapshot(void)
 		}
 	}
 	appicon_refresh(1);
+}
+
+/****************************************************************
+ Returns the HideIcon object pointer
+*****************************************************************/
+struct DiskObject *appicon_get_hide_icon(void)
+{
+	return HideIcon;
 }

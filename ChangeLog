@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-15  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/appicon.(c|h), amiga-mui/gui_main.c: Some master wishes :)
+
 2004-01-14  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/appicon.(c|h): Moved HideIcon creation form app_init() to

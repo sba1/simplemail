@@ -29,27 +29,6 @@
 #define SM_APPICON_OLD   3
 #define SM_APPICON_MAX   4
 
-/* global defined in appicon.c */
-extern struct DiskObject *HideIcon;
-
-struct AppIcon_Stat
-{
-	int total_msg;
-	int total_new;
-	int total_unread;
-	int total_sent;
-	int total_outgoing;
-	int total_deleted;
-};
-
-struct AppIcon_Config
-{
-	char *filename;
-
-	LONG position_X;
-	LONG position_Y;
-};
-
 int appicon_init(void);
 void appicon_free(void);
 ULONG appicon_mask(void);
@@ -57,5 +36,6 @@ void appicon_handle(void);
 void appicon_refresh(int force);
 void appicon_snapshot(void);
 void appicon_unsnapshot(void);
+struct DiskObject *appicon_get_hide_icon(void);
 
 #endif /* SM__APPICON_H */

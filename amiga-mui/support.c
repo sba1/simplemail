@@ -278,3 +278,16 @@ char *mystrndup(const char *str1, int n)
 	return dest;
 }
 
+/**************************************************************************
+ Like strncpy() but ensures that the string is always 0 terminted
+**************************************************************************/
+size_t mystrlcpy(char *dest, const char *src, size_t n)
+{
+	size_t len = strlen(src);
+	size_t num_to_copy = (len >= n) ? n-1 : len;
+	if (num_to_copy>0)
+		memcpy(dest, src, num_to_copy);
+	dest[num_to_copy] = '\0';
+	return len;
+}
+

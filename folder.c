@@ -3095,9 +3095,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 				if (dest_folder && dest_folder != folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
-//					callback_move_mail(m, folder, dest_folder);
-#pragma warning TODO: Implement me
-
+					callback_move_mail(m, folder, dest_folder);
 					handle = old_handle;
 				}
 			}
@@ -3153,8 +3151,7 @@ int folder_filter(struct folder *folder)
 				if (dest_folder && dest_folder != folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
-//					callback_move_mail(m, folder, dest_folder);
-#pragma warning TODO: Implement me
+					callback_move_mail(m, folder, dest_folder);
 					handle = old_handle;
 				}
 			}

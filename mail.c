@@ -303,7 +303,7 @@ static char *quote_text(char *src, int len)
 		}
 
 		cited_len = ftell(fh);
-	  fseek(fh,0,SEEK_SET);
+		fseek(fh,0,SEEK_SET);
 		if ((cited_buf = (char*)malloc(cited_len+1)))
 		{
 			fread(cited_buf,1,cited_len,fh);

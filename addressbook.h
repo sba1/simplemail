@@ -100,10 +100,13 @@ struct addressbook_group *addressbook_add_group(utf8 *name);
 struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_group *group);
 
 /* init and io */
+int read_line(FILE *fh, char *buf);
 void init_addressbook(void);
 void cleanup_addressbook(void);
 int addressbook_load(void);
 void addressbook_save(void);
+int addressbook_import_sm(char *filename);
+int addressbook_import_yam(char *filename);
 int addressbook_import_file(char *filename, int append);
 
 /* general */

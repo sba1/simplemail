@@ -149,6 +149,7 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
 struct folder *folder_prev(struct folder *f);
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
+struct folder *folder_find_special(int sp);
 int folder_position(struct folder *f);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);

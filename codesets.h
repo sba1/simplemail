@@ -57,7 +57,7 @@ int isascii7(const char *str);
 int utf8len(const utf8 *str);
 int utf8realpos(const utf8 *str, int pos);
 int utf8charpos(const utf8 *str, int pos);
-utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
+utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
 utf8 *utf8create_len(void *from, char *charset, int from_len);
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);

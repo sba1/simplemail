@@ -238,7 +238,7 @@ static char *imap_build_address_header(char *str)
 /**************************************************************************
  Send a simple imap command only for checking for success/failure
 **************************************************************************/
-int imap_send_simple_command(struct connection *conn, char *cmd)
+static int imap_send_simple_command(struct connection *conn, char *cmd)
 {
 	char send[200];
 	char tag[20];

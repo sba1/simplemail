@@ -4,8 +4,8 @@ OUT = SimpleMail
 
 G_IPATH     = -I./ -I./indep-include -I./amiga-mui
 G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
-G_OPTFLAGS  = -O2 \
-         -mcpu=603e \
+G_OPTFLAGS  = -O3 \
+         -mcpu=750 \
          -mmultiple \
          -noixemul \
          -Wall \

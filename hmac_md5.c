@@ -2,6 +2,8 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include <hmac_md5.h>
+
 void hmac_md5(unsigned char * text, int text_len, unsigned char *key, int key_len, unsigned char digest[16])
 /* text     pointer to data stream */
 /* text_len length of data stream */

@@ -143,6 +143,9 @@ struct user
 	struct config config;
 };
 
+char *get_config_item(char *buf, char *item);
+void init_config(void);
+char *dupconfigstr(char *str, int utf8);
 int load_config(void);
 void save_config(void);
 void save_filter(void);

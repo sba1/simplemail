@@ -198,6 +198,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		set(abort, MUIA_Weight, 0);
 
 		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+		DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, 0);
 		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD);
 		DoMethod(del, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DELETE);
@@ -347,10 +348,31 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 {
 	extern void loop(void);
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
+	LONG start = 0;
+
+	/* Kill the orginal notifies */
+	DoMethod(data->abort, MUIM_KillNotify, MUIA_Pressed);
+	DoMethod(obj, MUIM_KillNotify, MUIA_Window_CloseRequest);
+
+	/* Set the new notifies */
 	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &start);
+	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+
 	loop();
+
+	/* Kill all new notifies */
+	DoMethod(obj, MUIM_KillNotify, MUIA_Window_CloseRequest);
+	DoMethod(data->abort, MUIM_KillNotify, MUIA_Pressed);
 	DoMethod(data->start, MUIM_KillNotify, MUIA_Pressed);
-	return 0;
+	DoMethod(data->start, MUIM_KillNotify, MUIA_Pressed);
+
+	/* Restore the original notifies */
+	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+
+	return start;
 }
 
 STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)

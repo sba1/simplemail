@@ -217,7 +217,8 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 	if (mails_add && cont)
 	{
 		/* let the user select which mails (s)he wants */
-		thread_call_parent_function_sync(dl_wait,1);
+		if (!(thread_call_parent_function_sync(dl_wait,1)))
+			return NULL;
 
 		for (i=1;i<=amm;i++)
 		{

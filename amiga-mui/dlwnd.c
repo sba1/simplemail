@@ -144,8 +144,8 @@ void dl_clear(void)
 	DoMethod(win_dl, MUIM_transwnd_Clear);
 }
 
-void dl_wait(void)
+int dl_wait(void)
 {
-	DoMethod(win_dl, MUIM_transwnd_Wait);
+	return DoMethod(win_dl, MUIM_transwnd_Wait);
 }
 

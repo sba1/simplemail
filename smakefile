@@ -28,7 +28,7 @@ OBJSDIR1 = sas_objects
 DESTDIR = sm
 LOCALEDIR = ${DESTDIR}/locale/
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
-CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck
+CFLAGS = strmerge nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck
 LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib
 
 # do not change the following lines, expect for improvements!

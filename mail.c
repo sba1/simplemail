@@ -2689,14 +2689,6 @@ void free_address_list(struct list *list)
 }
 
 /**************************************************************************
- Returns a string of all addresses
-**************************************************************************/
-utf8 *get_addresses_from_list(struct list *list)
-{
-	return get_addresses_from_list_safe(list,NULL);
-}
-
-/**************************************************************************
  Returns a string of all addresses but codeset safe (means that punycode
  is used for addresses which contains different char then the given
  codeset provides)
@@ -2724,7 +2716,13 @@ utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 
 		if (address->realname)
 		{
-			string_append(&str,address->realname);
+			if (needs_quotation(address->realname))
+			{
+				string_append(&str,"\"");
+				string_append(&str,address->realname);
+				string_append(&str,"\"");
+			} else string_append(&str,address->realname);
+			
 			string_append(&str," <");
 			string_append(&str,email);
 			string_append(&str,">");

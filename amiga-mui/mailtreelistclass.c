@@ -107,9 +107,8 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 					case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
 					default: status = NULL;
 				}
+				sprintf(status_buf,"\33O[%08lx]",status);
 			}
-
-			sprintf(status_buf,"\33O[%08lx]",status);
 
 			if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
 			if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);

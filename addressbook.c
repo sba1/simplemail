@@ -593,7 +593,7 @@ void init_addressbook(void)
 
 	if (!addressbook_find_entry_by_address("mail@sebastianbauer.info"))
 	{
-		if (entry = addressbook_find_entry_by_address("sebauer@t-online.de"))
+		if ((entry = addressbook_find_entry_by_address("sebauer@t-online.de")))
 		{
 			array_free(entry->email_array);
 			entry->email_array = array_add_string(NULL,"mail@sebastianbauer.info");
@@ -610,7 +610,7 @@ void init_addressbook(void)
 
 	if (!addressbook_find_entry_by_address("bgollesch@sime.at"))
 	{
-		if (entry = addressbook_find_entry_by_address("bgollesch@sime.com"))
+		if ((entry = addressbook_find_entry_by_address("bgollesch@sime.com")))
 		{
 			array_free(entry->email_array);
 			entry->email_array = array_add_string(NULL,"bgollesch@sime.at");

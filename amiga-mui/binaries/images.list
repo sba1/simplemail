@@ -52,3 +52,5 @@ status_mark,702,0,710,10
 status_trashcan,699,12,709,22
 AddAttachment,711,0,731,21
 AttachmentList,733,0,753,19
+Encrypt,754,0,774,18
+Sign,775,0,795,19

@@ -234,6 +234,37 @@ int myfiledatecmp(char *file1, char *file2)
 	}
 }
 
+/******************************************************************
+ Copies a file to another file. Always overwrites the destname
+*******************************************************************/
+int myfilecopy(const char *sourcename, const char *destname)
+{
+	int rc = 0;
+	FILE *in = fopen(sourcename,"rb");
+
+	if (in)
+	{
+		FILE *out = fopen(destname,"wb");
+		if (out)
+		{
+			void *buf = malloc(8192);
+			if (buf)
+			{
+				rc = 1;
+				while (!feof(in))
+				{
+					fread(buf,8192,1,in);
+					fwrite(buf,8192,1,in);
+				}
+				free(buf);
+			}
+			fclose(out);
+		}
+		fclose(in);
+	}
+	return rc;
+}
+
 /**************************************************************************
  Wraps a text. Overwrites the argument!!
 **************************************************************************/

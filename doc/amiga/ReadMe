@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), sebauer@t-online.de (Sebast
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
-Version:   0.16
+Version:   0.21
 
 Introduction
 ~~~~~~~~~~~~
@@ -28,20 +28,6 @@ It also needs some additional MUI Custom Classes:
 
 Make sure that you always have the latest versions installed!
 
-Changes since 0.15
-~~~~~~~~~~~~~~~~~~
-- requires version 18.12 of NListtree
-- speed up within the mail list
-- scrollbars in readwindow for datatypes
-- you can drag attachments from the readwindow and drop them on
-  to the workbench now (requires OS3.9)
-- New Config option: Possibilty that SimpleMail only auto downloads if Miami is online
-- New Config option: Execute an ARexx script if new mails has been arrived
-- New Config option: Download at startup
-- New Filter actions: Play sound and execute an arexx script
-- No longer popups the error window if aborting
-- bug fixes
-		    
 Contact
 ~~~~~~~
 More information about the SimpleMail project can be found at
@@ -64,17 +50,32 @@ There is also a support mailing list:
 SimpleMail is (originally) developed by
 
   Hynek Schlawack <hynek@hys.in-berlin.de> - http://hynek.in-berlin.de/
-  Sebastian Bauer <sebauer@t-online.de>    - http://home.t-online.de/home/sebauer/
+  Sebastian Bauer <sebauer@t-online.de>    - http://www.sebastianbauer.info/
 
 You can also contact them if you have any questions regarding SimpleMail,
 but please use the mailing list if possible.
 
+Code contributions done by:
+  Jörg Strohmayer
+  Bernd Gollesch
+
+Initial guide done by:
+  David Rey
+
 Translations done by:
   Hungarian by Márton Dósa
-  Polish by Jacek Piszczek,Mariusz Danilewicz
+  Polish by Jacek Piszczek, Mariusz Danilewicz
   Finish by Joni Halme
 
-Great thanks to them!
+Images done by:
+  Martin Merz (all GUI images)
+  Richard Kapp (smily images)
+  Uros Lepota (startup/shutdown images)
+
+Taglines contributed by:
+  Andreas Neumann
+
+Great thanks to all of them!
          __
         / /
    __  / /   Only Amiga makes it possible...

@@ -345,6 +345,8 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 
 					if ((buf2 = strstr(buf,"\r\n")))
 					{
+						int bytes_written = 0;
+
 						rc = 1;
 						buf2 += 2;
 						while (running)
@@ -364,6 +366,8 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 							}
 
 							fwrite(buf2, strlen(buf2), 1, fp);
+							bytes_written += strlen(buf2);
+							thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
 
 							if (running)
 							{

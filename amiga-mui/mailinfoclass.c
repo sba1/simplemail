@@ -466,8 +466,8 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
                                    struct field *f, int y, int update)
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
-	struct field *second_f;
-	struct text_node *text, *second_text;
+	struct field *second_f = NULL;;
+	struct text_node *text, *second_text = NULL;
 	int cnt;
 
 	struct TextExtent te;
@@ -657,7 +657,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 				if (cnt < strlen(second_text->text) && real_space_left > dots_width)
 				{
 					cnt = TextFit(_rp(obj),second_text->text,strlen(second_text->text),&te,NULL,1,real_space_left-dots_width,_font(obj)->tf_YSize);
-					text->x_end   = text->x_start + te.te_Width + dots_width - 1;
+					second_text->x_end   = second_text->x_start + te.te_Width + dots_width - 1;
 					draw_dots = 1;
 				} else draw_dots = 0;
 

@@ -689,6 +689,8 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 #define MENU_SETSTATUS_UNREAD 12
 #define MENU_SETSTATUS_HOLD	13
 #define MENU_SETSTATUS_WAITSEND  14
+#define MENU_SETSTATUS_SPAM 15
+#define MENU_SETSTATUS_HAM 16
 
 STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
@@ -712,6 +714,8 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Pending"), MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Read"), MUIA_UserData, MENU_SETSTATUS_READ, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unread"), MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Spam"), MUIA_UserData, MENU_SETSTATUS_SPAM, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Ham"), MUIA_UserData, MENU_SETSTATUS_HAM, End,
 				End,
 			End,
 		End;
@@ -740,6 +744,8 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_UNREAD: callback_mails_set_status(MAIL_STATUS_UNREAD); break;
 		case	MENU_SETSTATUS_HOLD: callback_mails_set_status(MAIL_STATUS_HOLD); break;
 		case	MENU_SETSTATUS_WAITSEND: callback_mails_set_status(MAIL_STATUS_WAITSEND); break;
+		case  MENU_SETSTATUS_SPAM: callback_selected_mails_are_spam();break;
+		case  MENU_SETSTATUS_HAM: callback_selected_mails_are_ham();break;
 		default: 
 		{
 			return DoSuperMethodA(cl,obj,(Msg)msg);

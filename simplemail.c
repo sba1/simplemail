@@ -1021,10 +1021,57 @@ void callback_maildrop(struct folder *dest_folder)
 	if (from_folder != dest_folder)
 	{
 		void *handle;
-		struct mail *mail = main_get_mail_first_selected(&handle);
+		struct mail *mail;
+		int same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
+/*		int local_only = !(from_folder->is_imap || dest_folder->is_imap);*/
+
+		mail = main_get_mail_first_selected(&handle);
+
 		while (mail)
 		{
-			folder_move_mail(from_folder,dest_folder,mail);
+			int was_partial;
+
+			if (!same_server)
+			{
+				if (mail->flags & MAIL_FLAGS_PARTIAL)
+				{
+					imap_download_mail(from_folder,mail);
+					main_refresh_mail(mail);
+					was_partial = 1;
+				} else was_partial = 0;
+
+				if (dest_folder->is_imap)
+				{
+					if (imap_append_mail(mail, from_folder->path, dest_folder->imap_path))
+					{
+						folder_delete_mail(from_folder,mail);
+					}
+				} else
+				if (from_folder->is_imap)
+				{
+					char *filename = mystrdup(mail->filename);
+					if (filename)
+					{
+						/* folder_move_mail() might change the filename */
+						if (folder_move_mail(from_folder,dest_folder,mail))
+						{
+							imap_delete_mail_by_filename(filename,from_folder);
+						}
+						free(filename);
+					}
+				} else
+				{
+					folder_move_mail(from_folder,dest_folder,mail);
+				}
+			} else
+			{
+				/* EMail should be moved on the same imap server */
+				if (imap_move_mail(mail,from_folder,dest_folder))
+				{
+					folder_delete_mail(from_folder,mail);
+				}
+			}
+
 			mail = main_get_mail_next_selected(&handle);
 		}
 		main_refresh_folder(from_folder);

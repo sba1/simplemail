@@ -54,5 +54,9 @@ void imap_free(struct imap_server *imap);
 
 void imap_thread_connect(struct folder *folder);
 int imap_download_mail(struct folder *f, struct mail *m);
+int imap_move_mail(struct mail *mail, struct folder *src_folder, struct folder *dest_folder);
+int imap_delete_mail_by_filename(char *filename, struct folder *folder);
+int imap_append_mail(struct mail *mail, char *source_dir, char *dest_imap_path);
+
 
 #endif

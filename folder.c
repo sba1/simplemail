@@ -267,7 +267,6 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 
 static char *fread_str(FILE *fh);
 static char *fread_str_no_null(FILE *fh);
-//static void folder_config_save(struct folder *f);
 static int folder_config_load(struct folder *f);
 
 /******************************************************************
@@ -627,7 +626,6 @@ void folder_mark_deleted(struct folder *folder, struct mail *mail)
 {
 	char *newfilename = mystrdup(mail->filename);
 	char buf[256];
-	int renamed = 0;
 
 	if (!folder->is_imap) return;
 
@@ -658,7 +656,6 @@ void folder_mark_undeleted(struct folder *folder, struct mail *mail)
 {
 	char *newfilename = mystrdup(mail->filename);
 	char buf[256];
-	int renamed = 0;
 
 	if (!folder->is_imap) return;
 
@@ -1106,7 +1103,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				}
 			}
 			closedir(dfd);
-		}// else printf("%s\n",strerror(errno));
+		}
 
 		chdir(path);
 	}
@@ -3141,6 +3138,16 @@ void folder_create_imap(void)
 		}
 		ac = (struct account*)node_next(&ac->node);
 	}
+}
+
+/**************************************************************************
+ Checks wheather two folders are on the same imap server. Returns 1 if
+ this is the case else 0
+**************************************************************************/
+int folder_on_same_imap_server(struct folder *f1, struct folder *f2)
+{
+	if (!f1->is_imap || !f2->is_imap) return 0;
+	return (!mystrcmp(f1->imap_server,f2->imap_server)) && (!mystrcmp(f1->imap_user,f2->imap_user));
 }
 
 /******************************************************************

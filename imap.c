@@ -230,6 +230,38 @@ static char *imap_build_address_header(char *str)
 #endif
 
 /**************************************************************************
+ Send a simple imap command only for checking for success/failure
+**************************************************************************/
+int imap_send_simple_command(struct connection *conn, char *cmd)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int success;
+
+	/* Now really remove the message */
+	sprintf(tag,"%04x",val++);
+	sm_snprintf(send,sizeof(send),"%s %s\r\n",tag,cmd);
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	success = 0;
+	while ((line = tcp_readln(conn)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		}
+	}
+	return success;
+}
+
+/**************************************************************************
  
 **************************************************************************/
 static int imap_wait_login(struct connection *conn, struct imap_server *server)
@@ -338,6 +370,13 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
 		thread_call_parent_function_sync(status_set_status,1,status_buf);
 
+		if (!num_of_remote_mails)
+		{
+			*num_ptr = 0;
+			*remote_mail_array_ptr = NULL;
+			return 1;
+		}
+
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
@@ -368,7 +407,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					char msgno_buf[100];
 					char stuff_buf[1024];
 					char cmd_buf[1024];
-					char *temp, *line_save;
+					char *temp;
 					int i;
 
 					line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
@@ -842,7 +881,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			} else
 			{
 				if (thread_aborted()) break;
-				else tell_from_subtask(tcp_strerror(tcp_error_code()));
+				else tell_from_subtask((char*)tcp_strerror(tcp_error_code()));
 			}
 
 			/* Clear the preselection entries */
@@ -1486,7 +1525,240 @@ static int imap_thread_download_mail(struct folder *f, struct mail *m)
 			}
 		}
 	}
+	return success;
+}
 
+/**************************************************************************
+	Move a mail from one folder into another one
+**************************************************************************/
+static int imap_thread_move_mail(struct mail *mail, struct folder *src_folder, struct folder *dest_folder)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int uid;
+	int msgno = -1;
+	int success;
+
+	if (!imap_server) return 0;
+	if (!imap_connection) return 0;
+
+	sm_snprintf(send,sizeof(send),"SELECT \"%s\"\r\n",src_folder->imap_path);
+	if (!imap_send_simple_command(imap_connection,send)) return 0;
+
+	success = 0;
+	uid = atoi(mail->filename + 1);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	while ((line = tcp_readln(imap_connection)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			char first[200];
+			char second[200];
+
+			line = imap_get_result(line,first,sizeof(first));
+			line = imap_get_result(line,second,sizeof(second));
+
+			msgno = atoi(second);
+		}
+	}
+
+	if (success && msgno != -1)
+	{
+		success = 0;
+
+		/* Copy the message */
+		sprintf(send,"COPY %d %s\r\n",msgno,dest_folder->imap_path);
+		success = imap_send_simple_command(imap_connection,send);
+
+		if (success)
+		{
+			sprintf(send,"STORE %d +FLAGS.SILENT (\\Deleted)\r\n",msgno);
+			success = imap_send_simple_command(imap_connection,send);
+
+			if (success)
+			{
+				success = imap_send_simple_command(imap_connection,"EXPUNGE");
+			}
+		}
+	}
+
+	return success;
+}
+
+/**************************************************************************
+ Delete a mail permanently. Thread version.
+**************************************************************************/
+static int imap_thread_delete_mail_by_filename(char *filename, struct folder *folder)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int uid;
+	int msgno = -1;
+	int success;
+
+	if (!imap_server) return 0;
+	if (!imap_connection) return 0;
+
+	sm_snprintf(send,sizeof(send),"SELECT \"%s\"\r\n",folder->imap_path);
+	if (!imap_send_simple_command(imap_connection,send)) return 0;
+
+	success = 0;
+	uid = atoi(filename + 1);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	while ((line = tcp_readln(imap_connection)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			char first[200];
+			char second[200];
+
+			line = imap_get_result(line,first,sizeof(first));
+			line = imap_get_result(line,second,sizeof(second));
+
+			msgno = atoi(second);
+		}
+	}
+
+	if (success && msgno != -1)
+	{
+		sprintf(send,"STORE %d +FLAGS.SILENT (\\Deleted)\r\n",msgno);
+		success = imap_send_simple_command(imap_connection,send);
+
+		if (success)
+		{
+			success = imap_send_simple_command(imap_connection,"EXPUNGE");
+		}
+	}
+
+	return success;
+}
+
+/**************************************************************************
+ Store a mail. Thread version.
+**************************************************************************/
+static int imap_thread_append_mail(struct mail *mail, char *source_dir, char *dest_imap_path)
+{
+	char send[200];
+	char buf[380];
+	char *line;
+	int success;
+	FILE *fh,*tfh;
+	char tag[20],path[380];
+	char line_buf[1200];
+	int filesize;
+
+	if (!imap_server) return 0;
+	if (!imap_connection) return 0;
+
+	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
+	if (!(tfh = tmpfile())) return 0;
+	if (chdir(source_dir) == -1)
+	{
+		fclose(tfh);
+		return 0;
+	}
+
+	if (!(fh = fopen(mail->filename,"r")))
+	{
+		chdir(path);
+		fclose(tfh);
+		return 0;
+	}
+
+	while (fgets(line_buf,sizeof(line_buf)-2,fh))
+	{
+		int len = strlen(line_buf);
+		if (len > 2 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
+		{
+			line_buf[len-1] = '\r';
+			line_buf[len] = '\n';
+			line_buf[len+1]=0;
+		} else if (len == 1 && line_buf[0] == '\n')
+		{
+			line_buf[0] = '\r';
+			line_buf[1] = '\n';
+			line_buf[2] = 0;
+		}
+		fputs(line_buf,tfh);
+	}
+	fclose(fh);
+	chdir(path);
+
+	/* Now upload the mail */
+	filesize = ftell(tfh);
+	fseek(tfh,0,SEEK_SET);
+	sprintf(tag,"%04x",val++);
+	sm_snprintf(send,sizeof(send),"%s APPEND %s {%d}\r\n",tag,dest_imap_path,filesize);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	line = tcp_readln(imap_connection);
+	if (line[0] != '+')
+	{
+		fclose(tfh);
+		return 0;
+	}
+
+	success = 1;
+	while (filesize>0)
+	{
+		int read = fread(line_buf,1,sizeof(line_buf),tfh);
+		if (!read || read == -1)
+		{
+			success = 0;
+			break;
+		}
+		tcp_write(imap_connection,line_buf,read);
+		filesize -= read;
+	}
+	fclose(tfh);
+
+	if (success)
+	{
+		tcp_write(imap_connection,"\r\n",2);
+		success = 0;
+		while ((line = tcp_readln(imap_connection)))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,tag))
+			{
+				line = imap_get_result(line,buf,sizeof(buf));
+				if (!mystricmp(buf,"OK"))
+					success = 1;
+				break;
+			}
+		}
+	}
 	return success;
 }
 
@@ -1544,6 +1816,49 @@ int imap_download_mail(struct folder *f, struct mail *m)
 	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 2, f, m))
 	{
 		folder_set_mail_flags(f,m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
+		return 1;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Moves the mail from a source folder to a destination folder
+***************************************************************************/
+int imap_move_mail(struct mail *mail, struct folder *src_folder, struct folder *dest_folder)
+{
+	if (!imap_thread) return 0;
+	if (!src_folder->is_imap || !dest_folder->is_imap) return 0;
+	if (thread_call_function_sync(imap_thread, imap_thread_move_mail, 3, mail, src_folder, dest_folder))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Deletes a mail from the server
+***************************************************************************/
+int imap_delete_mail_by_filename(char *filename, struct folder *folder)
+{
+	if (!imap_thread) return 0;
+	if (!folder->is_imap) return 0;
+
+	if (thread_call_function_sync(imap_thread, imap_thread_delete_mail_by_filename, 2, filename, folder))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Store the given mail in the given folder of an imap server
+***************************************************************************/
+int imap_append_mail(struct mail *mail, char *source_dir, char *dest_imap_path)
+{
+	if (!imap_thread) return 0;
+
+	if (thread_call_function_sync(imap_thread, imap_thread_append_mail, 3, mail, source_dir, dest_imap_path))
+	{
 		return 1;
 	}
 	return 0;

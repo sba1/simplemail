@@ -72,7 +72,6 @@ struct folder
 	char *imap_server;
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
-	int imap_popup_edit; /* state variable */
 	struct list imap_all_folder_list; /* string_node * */
 	struct list imap_sub_folder_list; /* string_node * */
 
@@ -191,5 +190,8 @@ void folder_load_order(void);
 void folder_save_order(void);
 
 void folder_config_save(struct folder *f);
+
+/* imap related */
+int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
 
 #endif

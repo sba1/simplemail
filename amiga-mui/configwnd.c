@@ -238,7 +238,7 @@ static void account_load(void)
 							TAG_DONE);
 		nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
 		setcheckmark(account_recv_active_check,account->pop->active);
-		setcheckmark(account_recv_delete_check,account->pop->del);
+		SetAttrs(account_recv_delete_check,MUIA_Selected, account->pop->del, MUIA_Disabled, account->recv_type, TAG_DONE);
 		nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
 		nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
 		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
@@ -756,6 +756,7 @@ static int init_account_group(void)
 					MUIA_NList_Title, TRUE,
 					MUIA_NList_Format, ",,,",
 					MUIA_NList_DisplayHook, &account_display_hook,
+					MUIA_NList_DragSortable, TRUE,
 					End,
 				End,
 			Child, VGroup,
@@ -801,7 +802,7 @@ static int init_account_group(void)
 					End,
 				Child, HVSpace,
 				End,
-			Child, MakeLabel(_("POP3 Server")),
+			Child, MakeLabel(_("Server")),
 			Child, HGroup,
 				Child, account_recv_server_string = BetterStringObject,
 					StringFrame,
@@ -921,6 +922,8 @@ static int init_account_group(void)
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_remove);
+
+	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, account_recv_avoid_check, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
 	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));

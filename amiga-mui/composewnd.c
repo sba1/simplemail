@@ -894,7 +894,7 @@ void compose_window_open(struct compose_args *args)
 					Child, add_text_button = MakeButton("Add text"),
 					Child, add_multipart_button = MakeButton("Add multipart"),
 					Child, add_files_button = MakeButton("Add file(s)"),
-					Child, MakeButton("Pack & add"),
+/*					Child, MakeButton("Pack & add"),*/
 					Child, remove_button = MakeButton("Remove"),
 					End,
 				Child, HorizLineObject,

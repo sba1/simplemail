@@ -2266,9 +2266,6 @@ static void folder_start_search_entry(struct search_msg *msg)
 	
 			for (i=0;i<f->num_mails;i++)
 			{
-#include <proto/dos.h>
-				Delay(50);
-
 				if (!(m = f->mail_array[i]))
 					break;
 

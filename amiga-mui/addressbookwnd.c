@@ -39,6 +39,7 @@
 
 #include "addressbook.h"
 #include "parse.h"
+#include "pgp.h"
 #include "simplemail.h"
 #include "smintl.h"
 
@@ -48,6 +49,7 @@
 #include "composeeditorclass.h"
 #include "mainwnd.h"
 #include "muistuff.h"
+#include "pgplistclass.h"
 #include "picturebuttonclass.h"
 #include "support_indep.h"
 
@@ -82,6 +84,7 @@ struct Person_Data /* should be a customclass */
 	Object *wnd;
 	Object *alias_string;
 	Object *realname_string;
+	Object *pgp_string;
 	Object *homepage_string;
 	Object *description_string;
 	Object *female_button;
@@ -213,9 +216,11 @@ static void person_window_ok(struct Person_Data **pdata)
 		adoptsnail(&new_entry->u.person.priv,&data->priv);
 		adoptsnail(&new_entry->u.person.work,&data->work);
 		
-		if (new_entry->u.person.homepage) free(new_entry->u.person.homepage);
+		free(new_entry->u.person.pgpid);
+		new_entry->u.person.pgpid = mystrdup((char*)xget(data->pgp_string,MUIA_String_Contents));
+		free(new_entry->u.person.homepage);
 		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
-		if (new_entry->u.person.portrait) free(new_entry->u.person.portrait);
+		free(new_entry->u.person.portrait);
 		new_entry->u.person.portrait = mystrdup((char*)xget(data->portrait_string, MUIA_String_Contents));
 
 		if (addresses)
@@ -339,19 +344,48 @@ static void person_download_portrait(struct Person_Data **pdata)
 }
 
 /******************************************************************
+ Hook function
+*******************************************************************/
+static __asm int person_pgp_strobj(register __a1 Object *str, register __a2 Object *list)
+{
+	DoMethod(list, MUIM_PGPList_Refresh);
+	return 1;
+}
+
+/******************************************************************
+ Hook function
+******************************************************************/
+static __asm void person_pgp_objstr(register __a1 Object *str, register __a2 Object *list)
+{
+	struct pgp_key *key;
+	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &key);
+	if (key)
+	{
+		DoMethod(str, MUIM_SetAsString, MUIA_String_Contents, "0x%lX", key->keyid);
+	}
+}
+
+/******************************************************************
  Opens a person window
 *******************************************************************/
 void person_window_open(struct addressbook_entry *entry)
 {
 	Object *wnd, *email_texteditor;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
-	Object *female_button, *male_button, *birthday_string, *homepage_string, *homepage_button;
+	Object *female_button, *male_button, *birthday_string, *homepage_string, *pgp_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
+	Object *pgp_popobject, *pgp_list;
 	struct Snail_Data priv, work;
 	static const char *register_titles[] = {
 		"Personal","Private","Work","Notes",NULL
 	};
 	int num;
+
+	static struct Hook pgp_strobj_hook;
+	static struct Hook pgp_objstr_hook;
+
+	init_hook(&pgp_strobj_hook, (HOOKFUNC)person_pgp_strobj);
+	init_hook(&pgp_objstr_hook, (HOOKFUNC)person_pgp_objstr);
 
 	for (num=0; num < MAX_PERSON_OPEN; num++)
 		if (!person_open[num]) break;
@@ -387,12 +421,22 @@ void person_window_open(struct addressbook_entry *entry)
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
-/*							Child, MakeLabel("PGP Key-ID"),
-							Child, BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,*/
+							Child, MakeLabel("PGP Key-ID"),
+							Child, pgp_popobject = PopobjectObject,
+								MUIA_Popstring_Button, PopButton(MUII_PopUp),
+								MUIA_Popstring_String, pgp_string = BetterStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								MUIA_Popobject_StrObjHook, &pgp_strobj_hook,
+								MUIA_Popobject_ObjStrHook, &pgp_objstr_hook,
+								MUIA_Popobject_Object, NListviewObject,
+									MUIA_NListview_NList, pgp_list = PGPListObject,
+										MUIA_NList_Title, FALSE,
+										End,
+									End,
+								End,
 							Child, MakeLabel(_("Homepage")),
 							Child, HGroup,
 								MUIA_Group_Spacing, 0,
@@ -458,14 +502,6 @@ void person_window_open(struct addressbook_entry *entry)
 							MUIA_CycleChain,1,
 							End,
 						End,
-
-/*							Child, MakeLabel("Date of birth"),
-							Child, BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,
-							End,*/
 					End,
 
 				Child, VGroup,
@@ -654,6 +690,7 @@ void person_window_open(struct addressbook_entry *entry)
 			data->birthday_string = birthday_string;
 			data->realname_string = realname_string;
 			data->description_string = description_string;
+			data->pgp_string = pgp_string;
 			data->homepage_string = homepage_string;
 			data->portrait_button = portrait_button;
 			data->portrait_string = portrait_string;
@@ -673,6 +710,7 @@ void person_window_open(struct addressbook_entry *entry)
 			DoMethod(female_button, MUIM_Notify, MUIA_Selected, TRUE, male_button, 3, MUIM_Set, MUIA_Selected, FALSE);
 			DoMethod(male_button, MUIM_Notify, MUIA_Selected, TRUE, female_button, 3, MUIM_Set, MUIA_Selected, FALSE);
 			DoMethod(portrait_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_portrait, data);
+			DoMethod(pgp_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, pgp_popobject, 2, MUIM_Popstring_Close, TRUE);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			/* A person must be changed */
@@ -691,6 +729,7 @@ void person_window_open(struct addressbook_entry *entry)
 
 				setstring(realname_string, entry->u.person.realname);
 				setstring(description_string, entry->u.person.description);
+				setstring(pgp_string, entry->u.person.pgpid);
 				setstring(alias_string, entry->u.person.alias);
 				setstring(homepage_string, entry->u.person.homepage);
 				setstring(portrait_string, entry->u.person.portrait);

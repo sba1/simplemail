@@ -118,7 +118,7 @@ int main_window_init(void)
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Send", "Send the mails out", NULL /* private TT */, create_pixmap(main_wnd,"MailsSend.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "ABook", "Open the addressbook", NULL /* private TT */, create_pixmap(main_wnd,"Addressbook.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Config", "Configure SimpleMail", NULL /* private TT */, create_pixmap(main_wnd,"Config.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Config", "Configure SimpleMail", NULL /* private TT */, create_pixmap(main_wnd,"Config.xpm"), callback_config /* CALLBACK */, NULL /* UDATA */);
 
         /* Create the horzontal box */
         hbox = gtk_hbox_new(0,4);
@@ -211,9 +211,6 @@ int main_window_init(void)
 	gtk_paned_add1(GTK_PANED(hpaned),folder_scrolled_window);
 	gtk_paned_add2(GTK_PANED(hpaned),mail_scrolled_window);
 
-	/* Show the window */
-	gtk_widget_show_all(main_wnd);
-
 	return 1;
 }
 
@@ -225,6 +222,7 @@ int main_window_open(void)
 	if (!main_wnd) main_window_init();
 	if (main_wnd)
 	{
+		gtk_widget_show_all(main_wnd);
 	}
 	return 1;
 }

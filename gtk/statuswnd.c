@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <gtk/gtk.h>
+
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -31,14 +33,10 @@
 #include "statuswnd.h"
 #include "subthreads.h"
 
-#if 0
-
-struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
-
-static Object *status_wnd;
+static GtkWidget *status_wnd;
 
 static char *status_title;
-#endif
+
 /**************************************************************************
  Called when abort button presses
 **************************************************************************/
@@ -52,6 +50,44 @@ static void statuswnd_abort(void)
 **************************************************************************/
 int statuswnd_open(int active)
 {
+	if (!status_wnd)
+	{
+		GtkWidget *vbox2;
+		GtkWidget *status_head_label;
+		GtkWidget *status_progress;
+		GtkWidget *hbox3;
+		GtkWidget *status_status_label;
+		GtkWidget *status_abort_button;
+
+		status_wnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title (GTK_WINDOW (status_wnd), _("SimpleMail - Status"));
+
+		vbox2 = gtk_vbox_new (FALSE, 0);
+		gtk_container_add (GTK_CONTAINER (status_wnd), vbox2);
+
+		status_head_label = gtk_label_new (_("Head"));
+		gtk_box_pack_start (GTK_BOX (vbox2), status_head_label, FALSE, FALSE, 0);
+		gtk_label_set_justify (GTK_LABEL (status_head_label), GTK_JUSTIFY_LEFT);
+
+		status_progress = gtk_progress_bar_new ();
+		gtk_box_pack_start (GTK_BOX (vbox2), status_progress, FALSE, FALSE, 0);
+		gtk_progress_set_show_text (GTK_PROGRESS (status_progress), TRUE);
+
+		hbox3 = gtk_hbox_new (FALSE, 0);
+		gtk_box_pack_start (GTK_BOX (vbox2), hbox3, FALSE, FALSE, 0);
+
+		status_status_label = gtk_label_new (_("Status"));
+		gtk_box_pack_start (GTK_BOX (hbox3), status_status_label, TRUE, TRUE, 0);
+		gtk_label_set_justify (GTK_LABEL (status_status_label), GTK_JUSTIFY_LEFT);
+
+		status_abort_button = gtk_button_new_from_stock ("gtk-stop");
+		gtk_box_pack_start (GTK_BOX (hbox3), status_abort_button, FALSE, FALSE, 0);
+	}
+
+	if (status_wnd)
+	{
+		gtk_widget_show_all(status_wnd);
+	}
 #if 0
 	if (!status_wnd)
 	{

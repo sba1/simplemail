@@ -24,10 +24,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <gtk/gtk.h>
+
 #include "configuration.h"
 #include "lists.h"
 #include "pop3.h"
+#include "smintl.h"
 
+static GtkWidget *config_wnd;
 
 #if 0
 
@@ -448,12 +452,80 @@ static int init_mails_read_group(void)
 	if (!mails_read_group) return 0;
 	return 1;
 }
-
+#endif
 /******************************************************************
  Init the config window
 *******************************************************************/
 static void init_config(void)
 {
+	GtkWidget *vbox1;
+	GtkWidget *hbox2;
+	GtkWidget *hpaned1;
+	GtkWidget *scrolledwindow1;
+	GtkWidget *treeview1;
+	GtkWidget *frame1;
+	GtkWidget *config_scrolledwindow;
+	GtkWidget *config_label;
+	GtkWidget *hbuttonbox3;
+	GtkWidget *config_save_button;
+	GtkWidget *config_apply_button;
+	GtkWidget *config_cancel_button;
+
+	config_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title(GTK_WINDOW(config_wnd), "SimpleMail - Configuration");
+	gtk_window_set_default_size(GTK_WINDOW(config_wnd),640,400);
+	gtk_window_set_position(GTK_WINDOW(config_wnd),GTK_WIN_POS_CENTER);
+
+	vbox1 = gtk_vbox_new (FALSE, 0);
+	gtk_widget_show (vbox1);
+	gtk_container_add (GTK_CONTAINER (config_wnd), vbox1);
+
+	hbox2 = gtk_hbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (vbox1), hbox2, TRUE, TRUE, 0);
+
+	hpaned1 = gtk_hpaned_new ();
+	gtk_widget_show (hpaned1);
+	gtk_box_pack_start (GTK_BOX (hbox2), hpaned1, TRUE, TRUE, 0);
+
+	/* The config pages */
+	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+	gtk_paned_pack1 (GTK_PANED (hpaned1), scrolledwindow1, FALSE, TRUE);
+	treeview1 = gtk_tree_view_new ();
+	gtk_container_add (GTK_CONTAINER (scrolledwindow1), treeview1);
+	gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview1), FALSE);
+
+	frame1 = gtk_frame_new (NULL);
+	gtk_paned_pack2 (GTK_PANED (hpaned1), frame1, TRUE, TRUE);
+
+	config_scrolledwindow = gtk_scrolled_window_new (NULL, NULL);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(config_scrolledwindow),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+
+	gtk_container_add (GTK_CONTAINER (frame1), config_scrolledwindow);
+
+	config_label = gtk_label_new (_("label5"));
+	gtk_frame_set_label_widget (GTK_FRAME (frame1), config_label);
+	gtk_label_set_justify (GTK_LABEL (config_label), GTK_JUSTIFY_LEFT);
+
+	hbuttonbox3 = gtk_hbutton_box_new ();
+	gtk_box_pack_start (GTK_BOX (vbox1), hbuttonbox3, FALSE, TRUE, 5);
+	gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox3), GTK_BUTTONBOX_SPREAD);
+	gtk_button_box_set_spacing (GTK_BUTTON_BOX (hbuttonbox3), 0);
+
+	config_save_button = gtk_button_new_from_stock ("gtk-save");
+	gtk_container_add (GTK_CONTAINER (hbuttonbox3), config_save_button);
+	GTK_WIDGET_SET_FLAGS (config_save_button, GTK_CAN_DEFAULT);
+
+	config_apply_button = gtk_button_new_from_stock ("gtk-apply");
+	gtk_container_add (GTK_CONTAINER (hbuttonbox3), config_apply_button);
+	GTK_WIDGET_SET_FLAGS (config_apply_button, GTK_CAN_DEFAULT);
+
+	config_cancel_button = gtk_button_new_from_stock ("gtk-cancel");
+	gtk_container_add (GTK_CONTAINER (hbuttonbox3), config_cancel_button);
+	GTK_WIDGET_SET_FLAGS (config_cancel_button, GTK_CAN_DEFAULT);
+
+	//gtk_signal_connect(GTK_OBJECT(config_wnd), "destroy",GTK_SIGNAL_FUNC (config_quit), NULL);
+
+#if 0
 	Object *save_button, *use_button, *cancel_button;
 
 	if (!create_sizes_class()) return;
@@ -542,20 +614,19 @@ static void init_config(void)
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 		}
 	}
-}
 #endif
+}
+
 /******************************************************************
  Open the config window
 *******************************************************************/
 void open_config(void)
 {
-#if 0
 	if (!config_wnd) init_config();
 	if (config_wnd)
 	{
-		set(config_wnd, MUIA_Window_Open, TRUE);
+		gtk_widget_show_all(config_wnd);
 	}
-#endif
 }
 
 /******************************************************************

@@ -368,9 +368,58 @@ static void phrase_load(void)
 /******************************************************************
  Use the config
 *******************************************************************/
-static void config_use(void)
+static int config_use(void)
 {
-	int i;
+	int i,j;
+
+	/* check if there are any duplicate addresses */
+	account_store();
+	for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
+	{
+		for (j=0;j<xget(account_account_list,MUIA_NList_Entries);j++)
+		{
+			struct account *ac1, *ac2;
+			int invalid = -1;
+
+			if (i==j) continue;
+			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac1);
+			DoMethod(account_account_list,MUIM_NList_GetEntry, j, &ac2);
+
+			if (ac1->email && ac2->email)
+			{
+				char *addr1, *addr2;
+				
+				if (parse_addr_spec(ac1->email, &addr1))
+				{
+					if (parse_addr_spec(ac2->email, &addr2))
+					{
+						if (!mystricmp(addr1,addr2))
+						{
+							set(config_list, MUIA_NList_Active, 1);
+							set(account_account_list, MUIA_NList_Active, j);
+							set(config_wnd,MUIA_Window_ActiveObject,account_email_string);
+							sm_request(NULL,_("SimpleMail currently doesn't support the same email address for\n"
+															  "multiple accounts. Please ensure that every email address is unique.\n"
+															  "However, you can set the reply address field to your prefered addresse."),_("Ok"));
+							return 0;
+						}
+						free(addr2);
+					} else invalid = j;
+					free(addr1);
+				} else invalid = i;
+
+				if (invalid != -1)
+				{
+					set(config_list, MUIA_NList_Active, 1);
+					set(account_account_list, MUIA_NList_Active, invalid);
+					set(config_wnd,MUIA_Window_ActiveObject,account_email_string);
+					sm_request(NULL,_("No valid email address entered. Please correct it."),_("Ok"));
+					return 0;
+				}
+			}
+		}
+	}
+
 
 	/* this is principle the same like in addressbookwnd.c but uses parse_mailbox */
 	{
@@ -399,9 +448,9 @@ static void config_use(void)
 				{
 					set(config_list, MUIA_NList_Active, 6);
 					set(config_wnd,MUIA_Window_ActiveObject,readhtml_mail_editor);
-					DisplayBeep(NULL);
+					sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),buf);
 					FreeVec(addresses);
-					return;
+					return 0;
 				}
 
 				buf = addresses;
@@ -423,7 +472,7 @@ static void config_use(void)
 
 	if (user.new_folder_directory && mystricmp(user.new_folder_directory,user.folder_directory))
 	{
-		sm_request(NULL,_("You have changed the folder direcory! You must quit and restart SimpleMail now."),_("Ok"));
+		sm_request(NULL,_("You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."),_("Ok"));
 	}
 
 	user.config.header_flags = 0;
@@ -483,7 +532,6 @@ static void config_use(void)
 		DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
 		insert_config_account(ac);
 	}
-	set(account_account_list,MUIA_NList_Active,0);
 
 	/* Copy the phrase */
 	phrase_store();
@@ -494,7 +542,6 @@ static void config_use(void)
 		DoMethod(phrase_phrase_list,MUIM_NList_GetEntry, i, &phr);
 		insert_config_phrase(phr);
 	}
-	set(phrase_phrase_list,MUIA_NList_Active,0);
 
 	/* Copy the signature */
 	signature_store();
@@ -505,10 +552,10 @@ static void config_use(void)
 		DoMethod(signature_signature_list,MUIM_NList_GetEntry, i, &sign);
 		insert_config_signature(sign);
 	}
-	set(signature_signature_list,MUIA_NList_Active,0);
 
 	close_config();
 	callback_config_changed();
+	return 1;
 }
 
 /******************************************************************
@@ -516,8 +563,8 @@ static void config_use(void)
 *******************************************************************/
 static void config_save(void)
 {
-	config_use();
-	save_config();
+	if (config_use())
+		save_config();
 }
 
 /******************************************************************
@@ -1783,6 +1830,10 @@ void close_config(void)
 
 		set(config_wnd, MUIA_Window_Open, FALSE);
 		DoMethod(App, OM_REMMEMBER, config_wnd);
+
+		account_last_selected = NULL;
+		phrase_last_selected = NULL;
+		signature_last_selected = NULL;
 
 		/* Free all accounts */
 		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)

@@ -4,7 +4,7 @@ Author:    hynek@rz.uni-potsdam.de (Hynek Schlawack), sebauer@t-online.de (Sebas
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.10
+Version:   0.11
 
 Introduction
 ~~~~~~~~~~~~
@@ -41,6 +41,11 @@ problem.
 
 Changes
 ~~~~~~~
+Version 0.11 (elenvth alpha) - released on 2001/09/23
+  - UIDL Pop3 commando support, so mails won't be downloaded twice
+  - Improved Startup time
+  - Bug fixes
+
 Version 0.10 (tenth alpha) - released on 2001/09/10
   - configurable headers for the read window
   - can read message/rfc822 content type properly

@@ -633,11 +633,11 @@ msgstr "Ignorer"
 
 #: amiga-mui/configwnd.c:989
 msgid "_Add Account"
-msgstr "_Ajouter"
+msgstr "A_jouter"
 
 #: amiga-mui/configwnd.c:991
 msgid "_Remove Account"
-msgstr "_Supprimer"
+msgstr "Su_pprimer"
 
 #: amiga-mui/configwnd.c:996
 msgid "Account Name"
@@ -694,7 +694,7 @@ msgstr "Éviter les doublons"
 
 #: amiga-mui/configwnd.c:1095 amiga-mui/configwnd.c:1096
 msgid "_Delete mails"
-msgstr "_Eff. courriers"
+msgstr "Supprim_er du serveur"
 
 #: amiga-mui/configwnd.c:1102 amiga-mui/configwnd.c:1103
 #: amiga-mui/configwnd.c:1151 amiga-mui/configwnd.c:1152
@@ -715,7 +715,7 @@ msgstr "Utiliser SMTP AUTH"
 
 #: amiga-mui/configwnd.c:1154 amiga-mui/configwnd.c:1155
 msgid "Log into POP3 server first"
-msgstr "Identifier sur POP3 d'abord"
+msgstr "_Identifier sur POP3 d'abord"
 
 #: amiga-mui/configwnd.c:1157 amiga-mui/configwnd.c:1158
 msgid "Use IP as domain"
@@ -1044,7 +1044,7 @@ msgstr "Utilis_er des signatures"
 
 #: amiga-mui/configwnd.c:1622 amiga-mui/configwnd.c:1807
 msgid "_Add"
-msgstr "_Ajouter"
+msgstr "A_jouter"
 
 #: amiga-mui/configwnd.c:1624 amiga-mui/configwnd.c:1811
 #: amiga-mui/filterwnd.c:487
@@ -1749,7 +1749,7 @@ msgstr "_Éditer"
 
 #: amiga-mui/mainwnd.c:98 amiga-mui/readwnd.c:1141
 msgid "_Move"
-msgstr "_Déplacer"
+msgstr "_Dépl."
 
 #: amiga-mui/mainwnd.c:99
 msgid "De_lete"
@@ -1757,15 +1757,15 @@ msgstr "_Effacer"
 
 #: amiga-mui/mainwnd.c:100
 msgid "Ge_tAdd"
-msgstr "A_j. contact"
+msgstr "A_jouter"
 
 #: amiga-mui/mainwnd.c:103 amiga-mui/readwnd.c:1143
 msgid "_Reply"
-msgstr "_Répondre"
+msgstr "_Rép."
 
 #: amiga-mui/mainwnd.c:104
 msgid "For_ward"
-msgstr "Faire s_uivre"
+msgstr "S_uivre"
 
 #: amiga-mui/mainwnd.c:106
 msgid "_Fetch"
@@ -2157,7 +2157,7 @@ msgstr "SimpleMail - Lire message"
 
 #: amiga-mui/readwnd.c:1128
 msgid "_Prev"
-msgstr "_Précédent"
+msgstr "_Préc."
 
 #: amiga-mui/readwnd.c:1129
 msgid "_Next"
@@ -2174,11 +2174,11 @@ msgstr "_Imprimer"
 
 #: amiga-mui/readwnd.c:1142
 msgid "_Delete"
-msgstr "Supprim_er"
+msgstr "_Effacer"
 
 #: amiga-mui/readwnd.c:1144
 msgid "_Forward"
-msgstr "Faire s_uivre"
+msgstr "S_uivre"
 
 #: amiga-mui/readwnd.c:1193 amiga-mui/readwnd.c:1210
 msgid "Attachment"

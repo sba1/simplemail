@@ -34,6 +34,17 @@
 
 #include "debug.h"
 
+/* HookEntry stuff */
+#ifdef __AMIGAOS4__
+extern void hookEntry(void);
+extern ULONG muiDispatcherEntry(void);
+#else
+#ifdef __MORPHOS__
+#define hookEntry HookEntry
+#endif
+#endif
+
+
 LONG xget(Object * obj, ULONG attribute)
 {
   LONG x;
@@ -105,9 +116,6 @@ APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
-	extern ULONG muiDispatcherEntry(void);
-	extern ULONG hookEntry(void);
-
 	struct MUI_CustomClass *cl;
 
 	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
@@ -214,29 +222,6 @@ VOID DisposeAllFamilyChilds(Object *o)
   }
 }
 
-/*
-VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help)
-{
-	struct MUIS_SpeedBar_Button msb;
-	msb.Img = image_idx;
-	msb.Text = text;
-	msb.Help = help;
-	msb.Flags = 0;
-	msb.Class = NULL;
-	msb.Object = NULL;
-
-	DoMethod(speedbar, MUIM_SpeedBar_AddButton, &msb);
-}
-*/
-
-#ifdef __AMIGAOS4__
-extern void hookEntry(void);
-#else
-#ifdef __MORPHOS__
-#define hookEntry HookEntry
-#endif
-#endif
-
 struct Hook hook_standard;
 
 STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1, ULONG * funcptr))
@@ -324,3 +309,4 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 	h->h_Data = data;
 #endif
 }
+

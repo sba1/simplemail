@@ -640,10 +640,10 @@ int esmtp_auth(struct smtp_server *server)
 	{
 		rc = esmtp_auth_cram(server);
 	}
-	else if(server->esmtp.auth_flags & AUTH_DIGEST_MD5)
+/*	else if(server->esmtp.auth_flags & AUTH_DIGEST_MD5)
 	{
 		rc = esmtp_auth_digest_md5(server);
-	}
+	}*/
 	else if(server->esmtp.auth_flags & AUTH_LOGIN)
 	{
 		if(smtp_send_cmd(server, "AUTH", "LOGIN") == 334)

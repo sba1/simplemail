@@ -32,6 +32,7 @@
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/intuition.h>
 #include <proto/muimaster.h>
 #include <proto/locale.h>
 
@@ -299,6 +300,21 @@ int all_init(void)
 	return 1;
 }
 
+/****************************************************************
+ Hides the application
+*****************************************************************/
+void app_hide(void)
+{
+	set(App,MUIA_Application_Iconified,TRUE);
+}
+
+/****************************************************************
+ Shows the application
+*****************************************************************/
+void app_show(void)
+{
+	set(App,MUIA_Application_Iconified,FALSE);
+}
 
 char *initial_mailto;
 char *initial_subject;

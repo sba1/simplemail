@@ -93,6 +93,7 @@ char *text2html(char *buffer, int buffer_len, int flags)
 						else new_color = 1;
 					} else
 					{
+						if (c==10) break;
 						if ((new_color == 1 || new_color == 2) && c != ' ') break;
 						if (c==' ' && new_color == 0) break;
 					}

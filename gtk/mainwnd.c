@@ -381,10 +381,21 @@ void main_insert_mail(struct mail *mail)
 *******************************************************************/
 void main_insert_mail_pos(struct mail *mail, int after)
 {
-	printf("main_insert_mail_pos() not implemented\n");
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	char buf[60];
+
+	sprintf(buf,"%x",mail);
+
+	gtk_tree_store_insert(mail_treestore, &iter, NULL, after+1);
+	gtk_tree_store_set(mail_treestore, &iter,
+			MAIL_SUBJECT_COLUMN, mail->subject,
+			MAIL_FROM_COLUMN, mail->from_phrase?mail->from_phrase:mail->from_addr,
+			MAIL_FILENAME_COLUMN, mail->filename,
+			MAIL_DATE_COLUMN, mail->seconds,
+			MAIL_PTR_COLUMN, buf,
+			-1);
 }
-
-
 
 /******************************************************************
  Remove a given mail from the listview

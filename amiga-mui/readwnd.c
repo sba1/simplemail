@@ -786,7 +786,25 @@ static void delete_button_pressed(struct Read_Data **pdata)
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 
-		if (next) read_window_display_mail(data, next);
+		if (next)
+		{
+			read_window_display_mail(data, next);
+
+			/* Update flags if needed */
+			if (mail_get_status_type(next) == MAIL_STATUS_UNREAD)
+			{
+				struct folder *f = folder_find_by_path(data->folder_path);
+				if (f)
+				{
+					folder_set_mail_status(f,next,MAIL_STATUS_READ | (next->status & (~MAIL_STATUS_MASK)));
+					if (next->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+					next->flags &= ~MAIL_FLAGS_NEW;
+					main_refresh_mail(next);
+					main_refresh_folder(f);
+				}
+			}
+			main_set_active_mail(next);
+		}
 	}
 }
 

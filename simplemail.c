@@ -778,12 +778,14 @@ void callback_move_spam_marked_mails(void)
 	if ((mail_array = folder_query_mails(folder, FOLDER_QUERY_MAILS_PROP_SPAM)))
 	{
 		i = 0;
+		main_freeze_mail_list();
 		while ((m = mail_array[i]))
 		{
 			callback_move_mail(m, folder, spam_folder);
 			i++;
 		}
 		free(mail_array);
+		main_thaw_mail_list();
 	}
 
 	app_unbusy();

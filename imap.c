@@ -334,6 +334,8 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
 
+	if (!path) return 0;
+
 	path = utf8toiutf7(path,strlen(path));
 	if (!path) return 0;
 

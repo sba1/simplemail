@@ -714,7 +714,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 			if (ver == FOLDER_INDEX_VERSION)
 			{
 				int num_mails;
-				int unread_mails;
+				int unread_mails=0;
 				
 				fread(&num_mails,1,4,fh);
 				fread(&unread_mails,1,4,fh);
@@ -723,6 +723,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				{
 					folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 					mail_infos_read = 1;
+					folder->unread_mails = 0;
 					folder_prepare_for_additional_mails(folder, num_mails);
 					while (num_mails--)
 					{

@@ -36,10 +36,12 @@
 
 #include "addressbook.h"
 #include "debug.h"
+#include "simplemail.h"
 #include "smintl.h"
 
 #include "addressentrylistclass.h"
 #include "compiler.h"
+#include "mailtreelistclass.h"
 #include "muistuff.h"
 
 struct AddressEntryList_Data
@@ -144,6 +146,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	ULONG type;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
+					MUIA_Draggable, TRUE,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -258,6 +261,26 @@ STATIC ULONG AddressEntryList_ContextMenuBuild(struct IClass *cl, Object * obj, 
 	return 0;
 }
 
+/********************************************
+ MUIM_DragQuery
+*********************************************/
+STATIC ULONG AddressEntryList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
+{
+/*	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);*/
+
+	if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class) return MUIV_DragQuery_Accept;
+	return MUIV_DragQuery_Refuse;
+}
+
+/********************************************
+ MUIM_DragDrop
+*********************************************/
+STATIC ULONG AddressEntryList_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
+{
+	if (OCLASS(msg->obj) != CL_MailTreelist->mcc_Class) return DoSuperMethodA(cl,obj,(Msg)msg);
+	callback_get_address();
+	return 0;
+}
 
 /********************************************
  Boopsi Dispatcher
@@ -270,6 +293,8 @@ STATIC BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
 		case	OM_DISPOSE: return AddressEntryList_Dispose(cl,obj,msg);
 		case	MUIM_ContextMenuChoice: return AddressEntryList_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		case	MUIM_NList_ContextMenuBuild: return AddressEntryList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
+		case	MUIM_DragQuery: return AddressEntryList_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
+		case	MUIM_DragDrop:  return AddressEntryList_DragDrop(cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_AddressEntryList_Refresh: return AddressEntryList_Refresh(cl,obj,(struct MUIP_AddressEntryList_Refresh *)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

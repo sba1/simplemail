@@ -110,6 +110,19 @@ static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
 }
 
 /**************************************************************************
+ Service ready?
+**************************************************************************/
+static int smtp_service_ready(struct smtp_connection *conn)
+{
+	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
+	{
+		tell_from_subtask("Service not ready.");
+		return 0;
+	}
+	return 1;
+}
+
+/**************************************************************************
  Send the HELO command
 **************************************************************************/
 static int smtp_helo(struct smtp_connection *conn, struct account *account)
@@ -127,12 +140,6 @@ static int smtp_helo(struct smtp_connection *conn, struct account *account)
 		} else dom[0] = 0;
 	}
 	else if(gethostname(dom, 512) != 0);
-
-	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
-	{
-		tell_from_subtask("Service not ready.");
-		return 0;
-	}
 
 	if (smtp_send_cmd(conn,"HELO",dom) != SMTP_OK) return 0;
 
@@ -435,12 +442,6 @@ int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 	}
 	else if(gethostname(dom, 512) != 0);
 
-	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
-	{
-		tell_from_subtask("Service not ready.");
-		return 0;
-	}
-
 	tcp_write(conn->conn, "EHLO ",5);
 	tcp_write(conn->conn, dom, strlen(dom));
 	tcp_write(conn->conn, "\r\n", 2);
@@ -635,6 +636,8 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 **************************************************************************/
 static int smtp_login(struct smtp_connection *conn, struct account *account)
 {
+	if (!smtp_service_ready(conn)) return 0;
+
 	if (account->smtp->auth)
 	{
 		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
@@ -675,7 +678,7 @@ static int count_mails(struct account *account, struct outmail **om)
 
 	while (om[i])
 	{
-		if (!mystricmp(account->email,om[amm]->from))
+		if (!mystricmp(account->email,om[i]->from))
 			amm++;
 		i++;
 	}
@@ -687,15 +690,18 @@ static int count_mails(struct account *account, struct outmail **om)
 **************************************************************************/
 static int smtp_send_mails(struct smtp_connection *conn, struct account *account, struct outmail **om)
 {
-	int i = 0,j = 0,amm = count_mails(account,om);
+	int i,j,amm;
+
+	amm = count_mails(account,om);
 
 	thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
 		
-	while (om[i++] && j < amm)
+	for (i=0,j=0;om[i] && j < amm;i++)
 	{
 		if (mystricmp(account->email,om[i]->from)) continue;
 
-		thread_call_parent_function_sync(up_set_gauge_mail,1,j+1);
+		j++;
+		thread_call_parent_function_sync(up_set_gauge_mail,1,j); /* starts from 1 */
 
 		thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
 		if (!smtp_from(conn,account))
@@ -743,11 +749,10 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 	{
 		struct account *account;
 
-		
 		for (account = (struct account*)list_first(account_list);account;account = (struct account*)node_next(&account->node))
 		{
 			struct smtp_connection conn;
-			memset(&conn,0,sizeof(struct connection));
+			memset(&conn,0,sizeof(struct smtp_connection));
 
 			if (count_mails(account,outmail)==0) continue;
 			

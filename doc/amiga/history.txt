@@ -1,3 +1,10 @@
+Version 0.26 (13th beta) - releases on 2005/03/13
+   - optional TheBar.mcc is now used for all toolbars (bgol)
+   - compacted mailinfo shows now additional the from field (bgol)
+   - simplehtml.library ported to OS4
+   - Fixed broken SMTP STARTTLS support
+   - Minor other improvements and fixes
+
 Version 0.25 (twelfth beta) - released on 2005/02/05
    - RFC 3490 support for domains of email addresses
    - On mail preview the mail header are no longer embedded, but

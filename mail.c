@@ -165,23 +165,27 @@ static void quoting_chars(char *buf, int len, char *text)
 }
 
 /**************************************************************************
- Cites a text
+ Quotes a text
 **************************************************************************/
 static char *quote_text(char *src, int len)
 {
 	FILE *fh = tmpfile();
 	static char temp_buf[128];
+	int temp_len = 0;
 	char *cited_buf = NULL;
-	
 
 	if (fh)
 	{
 		int cited_len;
 		int newline = 1;
+		int wrapped = 0; /* needed for user.config.write_reply_quote */
 		int line_len = 0;
 
 		if (user.config.write_reply_quote)
+		{
 			quoting_chars(temp_buf,sizeof(temp_buf),src);
+			temp_len = strlen(temp_buf);
+		}
 
 		while (len)
 		{
@@ -196,13 +200,30 @@ static char *quote_text(char *src, int len)
 
 			if (c==10)
 			{
-				fputc(10,fh);
-				newline = 1;
 				src++;
 				len--;
 
 				if (user.config.write_reply_quote)
+				{
 					quoting_chars(temp_buf,sizeof(temp_buf),src);
+
+					if (temp_len && temp_len == strlen(temp_buf) && wrapped)
+					{
+						/* the text has been wrapped previouly and the quoting chars
+						   are the same like the previous line, so the following text
+							 probably belongs to the same paragraph */
+						   
+						len -= temp_len; /* skip the quoting chars */
+						src += temp_len;
+						wrapped = 0;
+						continue;
+					}
+					temp_len = strlen(temp_buf);
+					wrapped = 0;
+				}
+
+				fputc(10,fh);
+				newline = 1;
 
 				line_len = 0;
 
@@ -228,6 +249,7 @@ static char *quote_text(char *src, int len)
 					fputs(temp_buf,fh);
 					fputc(' ',fh);
 					line_len=strlen(temp_buf)+2;
+					wrapped = 1;		/* indicates that a word has been wrapped manually */
 					continue;
 				}
 			}

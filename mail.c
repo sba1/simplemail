@@ -1540,7 +1540,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 /**************************************************************************
  Composes a new mail and write's it to the outgoing drawer
 **************************************************************************/
-void mail_compose_new(struct composed_mail *new_mail)
+void mail_compose_new(struct composed_mail *new_mail, int hold)
 {
 	struct folder *outgoing;
 	char path[256];
@@ -1562,7 +1562,7 @@ void mail_compose_new(struct composed_mail *new_mail)
 		struct mail *mail; /* the mail after it has scanned */
 		char *status_name; /* the prober status name */
 
-		if ((status_name = mail_get_status_filename(new_name,MAIL_STATUS_WAITSEND)))
+		if ((status_name = mail_get_status_filename(new_name,hold?MAIL_STATUS_HOLD:MAIL_STATUS_WAITSEND)))
 		{
 			free(new_name);
 			new_name = status_name;

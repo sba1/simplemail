@@ -374,19 +374,18 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 }
 
 /******************************************************************
- A mail should be send later
+ Compose a mail and close the window
 *******************************************************************/
-static void compose_window_send_later(struct Compose_Data **pdata)
+static void compose_mail(struct Compose_Data *data, int hold)
 {
-	struct Compose_Data *data = *pdata;
-	if (compose_expand_to(pdata))
+	if (compose_expand_to(&data))
 	{
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_String_Contents);
 		struct composed_mail new_mail;
 
 		/* update the current attachment */
-		compose_attach_active(pdata);
+		compose_attach_active(&data);
 
 		/* Initialize the structure with default values */
 		composed_mail_init(&new_mail);
@@ -400,11 +399,29 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 		new_mail.mail_folder = data->folder;
 		new_mail.reply_message_id = data->reply_id;
 
-		mail_compose_new(&new_mail);
+		mail_compose_new(&new_mail,hold);
 
 		/* Close (and dispose) the compose window (data) */
 		DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);	
 	}
+}
+
+/******************************************************************
+ A mail should be send later
+*******************************************************************/
+static void compose_window_send_later(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	compose_mail(data,0);
+}
+
+/******************************************************************
+ A mail should be hold
+*******************************************************************/
+static void compose_window_hold(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	compose_mail(data,1);
 }
 
 /******************************************************************
@@ -505,7 +522,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 *******************************************************************/
 void compose_window_open(char *to_str, struct mail *tochange)
 {
-	Object *wnd, *send_later_button, *cancel_button;
+	Object *wnd, *send_later_button, *hold_button, *cancel_button;
 	Object *to_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
@@ -624,6 +641,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 				End,
 			Child, HGroup,
 				Child, send_later_button = MakeButton("Send later"),
+				Child, hold_button = MakeButton("Hold"),
 				Child, cancel_button = MakeButton("Cancel"),
 				End,
 			End,
@@ -671,6 +689,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
 			DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, switch_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
+			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
 			DoMethod(copy_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Copy");
 			DoMethod(cut_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Cut");

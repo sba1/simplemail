@@ -500,7 +500,7 @@ void person_window_open(struct addressbook_entry *entry)
 							End,
 						Child, VGroup,
 							Child, HGroup,
-								Child, MakeLabel(_("Portrait")),
+								Child, MakeLabel(_("Portrait")),
 								Child, HGroup,
 									MUIA_Group_Spacing, 0,
 									Child, PopaslObject,

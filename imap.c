@@ -32,6 +32,7 @@
 #include "mail.h"
 #include "folder.h"
 #include "lists.h"
+#include "parse.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "subthreads.h"
@@ -58,6 +59,7 @@ struct remote_mail
 	unsigned int size;
 
 	/* only if envelope is requested  */
+	char *from;
   char *subject;
   char *date;
 };
@@ -181,6 +183,52 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 	}
 	return NULL;
 }
+
+/**************************************************************************
+ Create back a RFC822 Adress Field from an Address part of an envelope
+**************************************************************************/
+static char *imap_build_address_header(char *str)
+{
+	char buf[360];
+	char name[100];
+	char nil[100];
+	char user[100];
+	char domain[100];
+
+	if (imap_get_result(str,buf,sizeof(buf)))
+	{
+		char *addr;
+		int addr_len;
+		int use_name = 0;
+		char *temp = buf;
+
+		if (strncmp(temp,"NIL",3)) use_name = 1;
+
+		temp = imap_get_result(temp,name,sizeof(name));
+		temp = imap_get_result(temp,nil,sizeof(nil));
+		temp = imap_get_result(temp,user,sizeof(user));
+		temp = imap_get_result(temp,domain,sizeof(domain));
+
+		addr_len = (use_name?(strlen(name)+6):0) + strlen(user) + strlen(domain) + 10;
+
+		if ((addr = malloc(addr_len)))
+		{
+			char *fmt;
+			if (use_name)
+			{
+				if (needs_quotation(name)) fmt = "\"%s\" <%s@%s>";
+				else fmt = "%s <%s@%s>";
+				sm_snprintf(addr,addr_len,fmt,name,user,domain);
+			} else
+			{
+				sm_snprintf(addr,addr_len,"%s@%s",user,domain);
+			}
+			return addr;
+		}
+	}
+	return NULL;
+}
+
 
 /**************************************************************************
  
@@ -316,6 +364,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					unsigned int msgno;
 					unsigned int uid = 0;
 					unsigned int size = 0;
+					char *from = NULL;
 					char *subject = NULL;
 					char *date = NULL;
 					char msgno_buf[100];
@@ -359,6 +408,10 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 							/* Subject */
 							env = imap_get_result(env,env_buf,sizeof(env_buf));
 							subject = mystrdup(env_buf);
+
+							/* From */
+							env = imap_get_result(env,env_buf,sizeof(env_buf));
+							from = imap_build_address_header(env_buf);
 						}
 					}
 
@@ -366,6 +419,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					{
 						remote_mail_array[msgno-1].uid = uid;
 						remote_mail_array[msgno-1].size = size;
+						remote_mail_array[msgno-1].from = from;
 						remote_mail_array[msgno-1].subject = subject;
 						remote_mail_array[msgno-1].date = date;
 					}
@@ -1241,6 +1295,7 @@ static void imap_thread_really_download_mails(void)
 					/* Store as a partial mail */
 					if ((fh = fopen(filename_buf,"w")))
 					{
+						if (remote_mail_array[i].from) fprintf(fh,"From: %s\n",remote_mail_array[i].from);
 						fprintf(fh,"Date: %s\n",remote_mail_array[i].date);
 						fprintf(fh,"Subject: %s\n",remote_mail_array[i].subject);
 						fprintf(fh,"X-SimpleMail-Partial: yes\n");

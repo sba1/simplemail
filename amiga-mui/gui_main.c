@@ -45,7 +45,7 @@
 #endif
 
 
-#include "SimpleMail_rev.h"
+#include "version.h"
 
 /* nongui parts */
 #include "configuration.h"

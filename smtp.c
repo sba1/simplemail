@@ -774,7 +774,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		if (mystricmp(account->email,om[i]->from)) continue;
 
 		j++;
-		thread_call_parent_function_async(status_set_mail,1,j,om[i]->size); /* starts from 1 */
+		thread_call_parent_function_async(status_set_mail,2,j,om[i]->size); /* starts from 1 */
 
 		thread_call_parent_function_async(status_set_status,1,N_("Sending FROM..."));
 		if (!smtp_from(conn,account))

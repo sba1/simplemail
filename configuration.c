@@ -114,6 +114,8 @@ int load_config(void)
 							user.config.smtp_login = strdup(result);
 						if ((result = get_config_item(buf,"SMTP00.Password")))
 							user.config.smtp_password = strdup(result);
+						if ((result = get_config_item(buf,"Read.Wordwrap")))
+							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
 					}
 				}
 
@@ -153,6 +155,7 @@ void save_config(void)
 			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
 			fprintf(fh,"SMTP00.Login=%s\n",MAKESTR(user.config.smtp_login));
 			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));
+			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			
 			fclose(fh);
 		}

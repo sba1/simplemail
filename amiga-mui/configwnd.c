@@ -55,6 +55,7 @@ static Object *smtp_port_string;
 static Object *smtp_auth_check;
 static Object *smtp_login_string;
 static Object *smtp_password_string;
+static Object *read_wrap_checkbox;
 
 static Object *config_group;
 static Object *config_tree;
@@ -62,6 +63,7 @@ static Object *config_tree;
 static Object *user_group;
 static Object *tcpip_send_group;
 static Object *tcpip_receive_group;
+static Object *mails_read_group;
 
 static Object *config_last_visisble_group;
 
@@ -98,6 +100,7 @@ static void config_use(void)
 	user.config.pop_login = mystrdup((char*)xget(pop3_login_string, MUIA_String_Contents));
 	user.config.pop_password = mystrdup((char*)xget(pop3_password_string, MUIA_String_Contents));
 	user.config.pop_delete = xget(pop3_delete_check, MUIA_Selected);
+	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 
 	close_config();
 }
@@ -260,6 +263,21 @@ static int init_tcpip_send_group(void)
 	return 1;
 }
 
+static int init_mails_read_group(void)
+{
+	mails_read_group =  ColGroup(2),
+		MUIA_ShowMe, FALSE,
+		Child, MakeLabel("Wordwrap plain text"),
+		Child, HGroup,
+			Child, read_wrap_checkbox = MakeCheck("Wordwrap plain text",user.config.read_wordwrap),
+			Child, HVSpace,
+			End,
+		End;
+
+	if (!mails_read_group) return 0;
+	return 1;
+}
+
 static void init_config(void)
 {
 	Object *save_button, *use_button, *cancel_button;
@@ -267,6 +285,7 @@ static void init_config(void)
 	init_user_group();
 	init_tcpip_send_group();
 	init_tcpip_receive_group();
+	init_mails_read_group();
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
@@ -285,6 +304,7 @@ static void init_config(void)
   	  			Child, user_group,
     				Child, tcpip_send_group,
     				Child, tcpip_receive_group,
+    				Child, mails_read_group,
     				Child, VSpace(0),
     				End,
     			Child, HVSpace,
@@ -320,7 +340,7 @@ static void init_config(void)
 
 		if ((treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Mails", NULL, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Read", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+			DoMethod(config_tree, MUIM_NListtree_Insert, "Read", mails_read_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Write", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Reply", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Forward", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);

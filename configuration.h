@@ -41,6 +41,8 @@ struct config
 	char *pop_login;
 	char *pop_password;
 	int pop_delete;
+
+	int read_wordwrap;
 };
 
 struct user

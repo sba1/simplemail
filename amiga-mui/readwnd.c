@@ -36,6 +36,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "configuration.h"
 #include "mail.h"
 #include "simplemail.h"
 
@@ -193,7 +194,9 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 
 		while (buf < buf_end)
 		{
-			DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+			if (user.config.read_wordwrap)  DoMethod(data->text_list,MUIM_NList_InsertSingleWrap, buf, MUIV_NList_Insert_Bottom,WRAPCOL0,ALIGN_LEFT);
+			else DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+
 			if ((buf = strchr(buf,10))) buf++;
 			else break;
 		}

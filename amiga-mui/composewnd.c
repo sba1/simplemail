@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** composewnd.c
 */
 
 #include <string.h>
@@ -497,17 +497,19 @@ void compose_window_open(char *to_str, struct mail *tochange)
 				Child, HGroup,
 					MUIA_Group_Spacing,0,
 					Child, to_string = AddressStringObject,
-						MUIA_CycleChain, 1,
 						StringFrame,
+						MUIA_CycleChain, 1,
 						MUIA_ControlChar, 't',
+						MUIA_String_AdvanceOnCR, TRUE,
 						End,
 					Child, expand_to_button = PopButton(MUII_ArrowLeft),
 					End,
 				Child, MakeLabel("_Subject"),
 				Child, subject_string = BetterStringObject,
-					MUIA_CycleChain, 1,
 					StringFrame,
+					MUIA_CycleChain, 1,
 					MUIA_ControlChar, 's',
+					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 				End,
 			Child, contents_page = PageGroup,

@@ -297,7 +297,12 @@ void callback_check_single_account(int account_num)
 void callback_filter(void)
 {
 	struct folder *f = main_get_folder();
-	if (f) folder_filter(f);
+	if (f)
+	{
+		main_freeze_mail_list();
+		folder_filter(f);
+		main_thaw_mail_list();
+	}
 }
 
 /* the filters should be edited */
@@ -533,7 +538,11 @@ void callback_apply_folder(struct filter *filter)
 {
 	struct folder *folder = main_get_folder();
 	if (folder)
+	{
+		main_freeze_mail_list();
 		folder_apply_filter(folder,filter);
+		main_thaw_mail_list();
+	}
 }
 
 /* create a new folder */

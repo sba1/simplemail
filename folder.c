@@ -34,6 +34,7 @@
 #include "filter.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -851,6 +852,8 @@ struct folder *folder_add_with_name(char *path, char *name)
 	{
 		if (f->name) free(f->name);
 		f->name = mystrdup(name);
+
+		folder_config_save(f);
 	}
 	return f;
 }
@@ -887,11 +890,16 @@ int folder_remove(struct folder *f)
 			if (&node->folder == f)
 			{
 				if (sm_request(NULL,
-					"Do you really want to delete the folder\nand all its mails?",
-					"_Yes|_No"))
+					_("Do you really want to delete the folder\nand all its mails?"),
+					_("_Yes|_No")))
 				{
+					char buf[512];
 					node_remove(&node->node);
 					folder_delete_mails(f);
+					sprintf(buf,"%s.index",f->path);
+					remove(buf);
+					sprintf(buf,"%s.config",f->path);
+					remove(buf);
 					remove(f->path);
 					free(node);
 					return 1;
@@ -910,7 +918,7 @@ int folder_remove(struct folder *f)
 			if (&node->folder == f)
 			{
 				if (sm_request(NULL,
-					"Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group","_Yes|_No"))
+					_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group"),_("_Yes|_No")))
 				{
 					node_remove(&node->node);
 					free(node);
@@ -1819,17 +1827,15 @@ struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m
 int folder_apply_filter(struct folder *folder, struct filter *filter)
 {
 	void *handle = NULL;
-	struct mail *nm = folder_next_mail(folder,&handle);
+	struct mail *m;
 
-	if (!nm) return 1;
-
-	do
+	for (;;)
 	{
-		struct mail *m;
+		void *old_handle = handle;
+		struct filter *f;
 
-		m = nm;
-		nm = folder_next_mail(folder,&handle);
-
+		if (!(m = folder_next_mail(folder,&handle))) break;
+		
 		if (mail_matches_filter(folder,m,filter))
 		{
 			if (filter->use_dest_folder && filter->dest_folder)
@@ -1839,11 +1845,12 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
 					callback_move_mail(m, folder, dest_folder);
-					handle = NULL; /* start from the beginning, this really should be improved */
+
+					handle = old_handle;
 				}
 			}
 		}
-	} while (nm);
+	}
 	return 1;
 }
 
@@ -1853,18 +1860,15 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 int folder_filter(struct folder *folder)
 {
 	void *handle = NULL;
-	struct mail *nm = folder_next_mail(folder,&handle);
+	struct mail *m;
 
-	if (!nm) return 1;
-
-	do
+	for (;;)
 	{
+		void *old_handle = handle;
 		struct filter *f;
-		struct mail *m;
 
-		m = nm;
-		nm = folder_next_mail(folder,&handle);
-
+		if (!(m = folder_next_mail(folder,&handle))) break;
+		
 		if ((f = folder_mail_can_be_filtered(folder,m,0)))
 		{
 			if (f->use_dest_folder && f->dest_folder)
@@ -1874,12 +1878,12 @@ int folder_filter(struct folder *folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
 					callback_move_mail(m, folder, dest_folder);
-					handle = NULL; /* start from the beginning, this really should be improved */
+
+					handle = old_handle;
 				}
 			}
 		}
-	} while (nm);
-
+	}
 	return 1;
 }
 

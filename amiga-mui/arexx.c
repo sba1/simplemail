@@ -113,6 +113,17 @@ static void arexx_set_result(struct RexxMsg *rxmsg, STRPTR string)
 }
 
 /****************************************************************
+ Sets a given variable as a integer number
+*****************************************************************/
+static void arexx_set_var_int(struct RexxMsg *rxmsg, char *varname, int num)
+{
+	char num_buf[24];
+	sprintf(num_buf,"%d",num);
+	SetRexxVar(rxmsg,varname,num_buf,strlen(num_buf));
+}
+
+
+/****************************************************************
  MAINTOFRONT Arexx Command
 *****************************************************************/
 static void arexx_maintofront(struct RexxMsg *rxmsg, STRPTR args)
@@ -263,6 +274,105 @@ static void arexx_hide(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ FOLDERINFO Arexx Command
+*****************************************************************/
+static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		STRPTR folder;
+	} folderinfo_arg;
+	memset(&folderinfo_arg,0,sizeof(folderinfo_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,FOLDER",args,&folderinfo_arg)))
+	{
+		struct folder *folder;
+
+		if (folderinfo_arg.folder) folder = folder_find_by_name(folderinfo_arg.folder);
+		else folder = main_get_folder();
+
+		if (folder)
+		{
+			int folder_size = folder_size_of_mails(folder);
+			int folder_type;
+
+			if (folder == folder_incoming()) folder_type = 1;
+			else if (folder == folder_outgoing()) folder_type = 2;
+			else if (folder == folder_sent()) folder_type = 3;
+			else if (folder == folder_deleted()) folder_type = 4;
+			else if (folder->type == FOLDER_TYPE_SEND) folder_type = 5;
+			else if (folder->type == FOLDER_TYPE_SENDRECV) folder_type = 6;
+			else if (folder->special == FOLDER_SPECIAL_GROUP) folder_type = 7;
+			else folder_type = 0;
+
+			if (folderinfo_arg.stem)
+			{
+				int stem_len = strlen(folderinfo_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,folderinfo_arg.stem);
+
+					strcpy(&stem_buf[stem_len],"NUMBER");
+					arexx_set_var_int(rxmsg,stem_buf,folder_position(folder));
+					strcpy(&stem_buf[stem_len],"NAME");
+					SetRexxVar(rxmsg,stem_buf,folder->name,mystrlen(folder->name));
+					strcpy(&stem_buf[stem_len],"PATH");
+					SetRexxVar(rxmsg,stem_buf,folder->path,mystrlen(folder->path));
+					strcpy(&stem_buf[stem_len],"TOTAL");
+					arexx_set_var_int(rxmsg,stem_buf,folder->num_mails);
+					strcpy(&stem_buf[stem_len],"NEW");
+					arexx_set_var_int(rxmsg,stem_buf,folder->new_mails);
+					strcpy(&stem_buf[stem_len],"UNREAD");
+					arexx_set_var_int(rxmsg,stem_buf,folder->unread_mails);
+					strcpy(&stem_buf[stem_len],"SIZE");
+					arexx_set_var_int(rxmsg,stem_buf,folder_size);
+					strcpy(&stem_buf[stem_len],"TYPE");
+					arexx_set_var_int(rxmsg,stem_buf,folder_type);
+
+					free(stem_buf);
+				}
+			} else
+			{
+				char *str;
+				char num_buf[24];
+
+				sprintf(num_buf,"%d",folder_position(folder));
+				str = mystrdup(num_buf);
+				str = stradd(str," \"");
+				str = stradd(str,folder->name);
+				str = stradd(str,"\" \"");
+				str = stradd(str,folder->path);
+				str = stradd(str,"\" ");
+				sprintf(num_buf,"%d",folder->num_mails);
+				str = stradd(str,num_buf);
+				str = stradd(str," ");
+				sprintf(num_buf,"%d",folder->new_mails);
+				str = stradd(str,num_buf);
+				str = stradd(str," ");
+				sprintf(num_buf,"%d",folder->unread_mails);
+				str = stradd(str,num_buf);
+				str = stradd(str," ");
+				sprintf(num_buf,"%d",folder_size);
+				str = stradd(str,num_buf);
+				str = stradd(str," ");
+				sprintf(num_buf,"%d",folder_type);
+				str = stradd(str,num_buf);
+
+				if (folderinfo_arg.var) SetRexxVar(rxmsg,folderinfo_arg.var,str,strlen(str));
+				else arexx_set_result(rxmsg,str);
+
+				free(str);
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -286,6 +396,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
 		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);
+		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

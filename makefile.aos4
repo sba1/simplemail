@@ -18,8 +18,8 @@ MKDIR  = mkdir
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = # -s # -g -DDEBUG
-INC = -I/home/sba/amigaos4/include -I/home/sba/amigaone/netinclude -I/home/sba/amigaone/nonsystem/include -I. -I./indep-include -I./amiga-mui
-CFLAGS = -DNDEBUG -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Wall $(OPTIMIZE) $(DEBUG) $(INC)
+INC = -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
+CFLAGS = -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
 LINK =  -nostartfiles -L/home/sba/amigaone/nonsystem/lib

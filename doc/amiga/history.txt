@@ -1,3 +1,12 @@
+Version 0.19 (sixth beta) - released on 2003/02/05
+  - PGP works again as it did (encrypt/decrypt)
+  - moving through mails updates their state again (Bernd Gollesch)
+  - proper secodary sort support (Bernd Gollesch)
+  - Can read signed S/MIME mails properly (displaing them at least,
+    needs AMISSL)
+  - importing the addressbook of YAM works for newer versions too
+  - Other bug fixes
+
 Version 0.18 (fifth beta) - realesed on 2002/12/24
   - Folder/Export... menu entry added to export a complete mail
     folder

@@ -1,7 +1,7 @@
 <?php
 
-$filename = "simplemail-0.18.lha";
-$version = "0.18";
+$filename = "simplemail-0.19.lha";
+$version = "0.19";
 
   require_once("language.inc.php");
   require_once("support.inc.php");
@@ -26,7 +26,7 @@ $version = "0.18";
 <tr bgcolor="gray">
 <?php
 //  echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.18.lha?download">'.$filename.'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.19.lha?download">'.$filename.'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2002/12/24</td>';
 

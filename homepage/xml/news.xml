@@ -1,7 +1,37 @@
 <?xml version='1.0' ?>
 
 <news>
-  <entry date="2002/12/24">
+  <entry date="2003/02/05">
+   <text lang="en">
+	  Version 0.19 of SimpleMail released!
+
+	  The changes are:
+
+    <list>
+    <item>PGP works again as it did (encrypt/decrypt)</item>
+    <item>moving through mails updates their state again (Bernd Gollesch)</item>
+    <item>proper secodary sort support (Bernd Gollesch)</item>
+    <item>Can read signed S/MIME mails properly (displaing them at least, needs AmiSSL)</item>
+    <item>importing the addressbook of YAM works for newer versions too</item>
+    <item>Other bug fixes</item>
+    </list>
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.19 veröffentlicht!
+
+	  Die Änderungen sind:
+    <list>
+    <item>PGP funktioniert wieder wie vor 0.18 (ver- und entschlüsseln)</item>
+    <item>Beim Bewegen durch die Mails im Lesefeneter wird der Status wieder richtig aktualisiert (Bernd Gollesch)</item>
+    <item>Sekundäre Sortiermodus ist jetzt richtig implementiert (Bernd Gollesch)</item>
+    <item>Signierte S/MIME Nachrichten werden vernünftig angezeigt (AmiSSL wird benötigt)</item>
+    <item>Das Adressbuch von neueren Version zu importieren funktioniert nun</item>
+    <item>Andere Fehlerbeseitigungen</item>
+    </list>
+
+   </text>
+
+
 	<text lang="en">
     Accurately two years, after SimpleMail saw the light of the world we can present
     again a XMas release of SimpleMail with some hopfully great new featues. Again we

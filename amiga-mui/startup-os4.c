@@ -481,7 +481,7 @@ int fseek(FILE *f, long offset, int origin)
 	else if (origin == SEEK_CUR) amiga_seek = OFFSET_CURRENT;
 	else amiga_seek = OFFSET_END;
 
-	if (!IDOS->Flush(fh)) return -1;
+	if (!IDOS->FFlush(fh)) return -1;
 	if (IDOS->Seek(fh,offset,amiga_seek)==-1) return -1;
 	return 0;
 }
@@ -498,7 +498,7 @@ int fflush(FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
 	BPTR fh = files[file->_file];
-	if (IDOS->Flush(fh)) return 0;
+	if (IDOS->FFlush(fh)) return 0;
 	return -1;
 }
 

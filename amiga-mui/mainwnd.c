@@ -529,6 +529,7 @@ int main_window_init(void)
 							MUIA_CycleChain, 1,
 							MUIA_NListview_NList, address_tree = AddressTreelistObject,
 								MUIA_AddressTreelist_InAddressbook, 0,
+								MUIA_ObjectID, MAKE_ID('M','W','A','L'),
 								End,
 							End,
 						End,

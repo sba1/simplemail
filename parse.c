@@ -414,7 +414,19 @@ static char *parse_local_part(char *local_part, char **pbuf)
 **************************************************************************/
 static char *parse_sub_domain(char *sub_domain, char **pbuf)
 {
-	return parse_atom(sub_domain,pbuf);
+	char *ret, *ref;
+
+	if ((ret = parse_atom(sub_domain,&ref)))
+	{
+		/* IDN support */
+		if (!strncmp(ref,"xn--",4))
+		{
+			utf8 *utf8 = punycodetoutf8(ref+4,strlen(ref)-4);
+			free(ref);
+			*pbuf = utf8;
+		} else *pbuf = ref;
+	}
+	return ret;
 }
 
 /**************************************************************************
@@ -487,6 +499,7 @@ char *parse_addr_spec(char *addr_spec, char **pbuf)
 	*pbuf = addr_str.str;
 	return ret;
 out:
+	free(addr_str.str);
 	free(domain);
 	free(local_part);
 	return NULL;

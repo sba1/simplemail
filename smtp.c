@@ -767,7 +767,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 			thread_call_parent_function_sync(up_set_status,1,"Connecting...");
 
-			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port)))
+			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,0)))
 			{
 				if (smtp_login(&conn,account))
 				{

@@ -31,12 +31,10 @@
 #include <sys/errno.h>
 #include <netinet/tcp.h>
 
-#ifndef USE_NO_SSL
 #ifdef _AMIGA /* ugly */
 #include <proto/amissl.h> /* not portable */
 #else
 #include <openssl/ssl.h>
-#endif
 #endif
 
 #include "support.h"
@@ -51,7 +49,7 @@
  Return NULL on error.
  (TODO: Remove the error code handling)
 *******************************************************************/
-struct connection *tcp_connect(char *server, unsigned int port)
+struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 {
 	long sd;
 	struct sockaddr_in sockaddr;
@@ -67,10 +65,8 @@ struct connection *tcp_connect(char *server, unsigned int port)
 
 	memset(conn,0,sizeof(struct connection));
 
-#ifndef USE_NO_SSL
-/*	conn->use_ssl = 1;*/
-
-	if (conn->use_ssl)
+	/* SSL stuff */
+	if (use_ssl)
 	{
 		if (!open_ssl_lib())
 		{
@@ -84,7 +80,6 @@ struct connection *tcp_connect(char *server, unsigned int port)
 			return NULL;
 		}
 	}
-#endif
 
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
@@ -103,25 +98,25 @@ struct connection *tcp_connect(char *server, unsigned int port)
 			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 			{
 				conn->socket = sd;
-#ifndef USE_NO_SSL
-				if (conn->use_ssl)
+				if (use_ssl)
 				{
 					/* Associate a socket with ssl structure */
 					SSL_set_fd(conn->ssl, sd);
 
 					if (SSL_connect(conn->ssl) >= 0)
 					{
-						if (conn->server_cert = SSL_get_peer_certificate(conn->ssl))
+						X509 *server_cert;
+						if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
 						{
+							/* Add some checks here */
+							X509_free(conn->server_cert);
 							return conn;
 						}
 					}
 
 					SSL_shutdown(conn->ssl);
-				} else return conn;
-#else
+				}
 				return conn;
-#endif
 			}
 			else
 			{
@@ -191,13 +186,11 @@ struct connection *tcp_connect(char *server, unsigned int port)
 		tell_from_subtask(err);
 	}  
 
-#ifndef USE_NO_SSL
-	if (conn->use_ssl)
+	if (use_ssl)
 	{
 		if (conn->ssl) SSL_free(conn->ssl);
 		close_ssl_lib();
 	}
-#endif
 
 	free(conn);
 	return NULL;
@@ -209,17 +202,17 @@ struct connection *tcp_connect(char *server, unsigned int port)
 void tcp_disconnect(struct connection *conn)
 {
 	tcp_flush(conn); /* flush the write buffer */
-	myclosesocket(conn->socket); /* not portable */
 
-#ifndef USE_NO_SSL
-	if (conn->use_ssl)
+	if (conn->ssl) SSL_shutdown(conn->ssl);
+
+	myclosesocket(conn->socket);
+
+	if (conn->ssl)
 	{
-		X509_free(conn->server_cert);
-		SSL_shutdown(conn->ssl);
 		SSL_free(conn->ssl);
 		close_ssl_lib();
 	}
-#endif
+
 	if (conn->line) free(conn->line);
 	free(conn);
 }
@@ -238,9 +231,7 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 		conn->read_pos += len;
 		return len;
 	}
-#ifndef USE_NO_SSL
 	if (conn->ssl) return SSL_read(conn->ssl,buf,nbytes);
-#endif
 	return recv(conn->socket,buf,nbytes,0);
 }
 
@@ -256,12 +247,8 @@ static int tcp_read_char(struct connection *conn)
 		int didget;
 		conn->read_pos = 0;
 
-#ifndef USE_NO_SSL
 		if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
 		else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
-#else
-		didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
-#endif	
 
 		if (didget <= 0)
 		{
@@ -305,12 +292,8 @@ int tcp_flush(struct connection *conn)
 {
 	if (conn->write_size)
 	{
-#ifndef USE_NO_SSL
 		if (conn->ssl) SSL_write(conn->ssl, conn->write_buf, conn->write_size);
 		else send(conn->socket, conn->write_buf, conn->write_size, 0);
-#else
-		send(conn->socket, conn->write_buf, conn->write_size,0);
-#endif
 		conn->write_size = 0;
 	}
 	return 1;
@@ -324,9 +307,7 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 	conn->read_pos = conn->read_size = 0;
 	tcp_flush(conn); /* flush the write buffer */
 
-#ifndef USE_NO_SSL
 	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
-#endif
 	return send(conn->socket, buf, nbytes, 0);
 }
 
@@ -377,12 +358,4 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
-
-
-
-
-
-
-
-
 

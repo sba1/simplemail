@@ -27,9 +27,7 @@
 #include <amitcp/socketbasetags.h>
 #endif
 
-#ifndef USE_NO_SSL
 #include <proto/amissl.h>
-#endif
 
 #include "tcpip.h"
 
@@ -67,7 +65,6 @@ void close_socket_lib(void)
 	}
 }
 
-#ifndef USE_NO_SSL
 struct Library *AmiSSLBase;
 static int ssl_in_use;
 static SSL_CTX *ctx;
@@ -92,9 +89,10 @@ int open_ssl_lib(void)
 
 				if (ctx = SSL_CTX_new(SSLv23_client_method()))
 				{
+/*
 					SSL_CTX_set_default_verify_paths(ctx);
 					SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL/*SSL_verify_callback*/);
-
+*/
 					/* Everything is ok */
 					ssl_in_use++;
 					return 1;
@@ -131,8 +129,6 @@ SSL_CTX *ssl_context(void)
 {
 	return ctx;
 }
-
-#endif
 
 long tcp_herrno(void)
 {

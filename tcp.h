@@ -26,19 +26,18 @@
 #define CONN_BUF_READ_SIZE 1024
 #define CONN_BUF_WRITE_SIZE 1024
 
+#ifdef _AMIGA
 #ifndef AMISSL_AMISSL_H
 typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;
 typedef struct x509_st X509;
 #endif
+#endif
 
 struct connection
 {
 	long socket;
-	int use_ssl;
-
 	SSL *ssl;
-	X509 *server_cert;
 
 	/* for tcp_write() */
 	unsigned char write_buf[CONN_BUF_WRITE_SIZE];
@@ -52,7 +51,7 @@ struct connection
 	int line_allocated; /* number of bytes which were allocated (including 0 byte) */
 };
 
-struct connection *tcp_connect(char *server, unsigned int port);
+struct connection *tcp_connect(char *server, unsigned int port, int use_ssl);
 void tcp_disconnect(struct connection *conn);
 long tcp_read(struct connection *conn, void *, long);
 int tcp_write(struct connection *conn, void *, long);

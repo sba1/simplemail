@@ -41,6 +41,9 @@
 #include <mui/nlistview_mcc.h>
 #include <mui/nlist_mcc.h>
 #include <mui/nlisttree_mcc.h>
+#include <mui/BetterString_mcc.h>
+#include <mui/popplaceholder_mcc.h>
+#include <mui/texteditor_mcc.h>
 
 #include <libraries/iffparse.h>
 #include <proto/iffparse.h>

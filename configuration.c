@@ -56,6 +56,8 @@ void init_config(void)
 {
 	memset(&user,0,sizeof(struct user));
 	user.directory = strdup("PROGDIR:");
+	user.config.pop_port = 110;
+	user.config.smtp_port = 25;
 }
 
 int load_config(void)
@@ -92,14 +94,24 @@ int load_config(void)
 							user.config.pop_login = strdup(result);
 						if ((result = get_config_item(buf,"POP00.Server")))
 							user.config.pop_server = strdup(result);
+						if ((result = get_config_item(buf,"POP00.Port")))
+							user.config.pop_port = atoi(result);
 						if ((result = get_config_item(buf,"POP00.Password")))
 							user.config.pop_password = strdup(result);
 						if ((result = get_config_item(buf,"POP00.Delete")))
 							user.config.pop_delete = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"SMTP00.Server")))
 							user.config.smtp_server = strdup(result);
+						if ((result = get_config_item(buf,"SMTP00.Port")))
+							user.config.smtp_port = atoi(result);
 						if ((result = get_config_item(buf,"SMTP00.Domain")))
 							user.config.smtp_domain = strdup(result);
+						if ((result = get_config_item(buf,"SMTP00.Auth")))
+							user.config.smtp_auth = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"SMTP00.Login")))
+							user.config.smtp_login = strdup(result);
+						if ((result = get_config_item(buf,"SMTP00.Password")))
+							user.config.smtp_password = strdup(result);
 					}
 				}
 
@@ -129,10 +141,16 @@ void save_config(void)
 			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
 			fprintf(fh,"POP00.Login=%s\n",MAKESTR(user.config.pop_login));
 			fprintf(fh,"POP00.Server=%s\n",MAKESTR(user.config.pop_server));
+			fprintf(fh,"POP00.Port=%ld\n",user.config.pop_port);
 			fprintf(fh,"POP00.Password=%s\n",MAKESTR(user.config.pop_password));
 			fprintf(fh,"POP00.Delete=%s\n",user.config.pop_delete?"Y":"N");
 			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
+			fprintf(fh,"SMTP00.Port=%ld\n",user.config.smtp_port);
 			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
+			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
+			fprintf(fh,"SMTP00.Login=%s\n",MAKESTR(user.config.smtp_login));
+			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));
+			
 			fclose(fh);
 		}
 	}

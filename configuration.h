@@ -27,9 +27,16 @@ struct config
 {
 	char *realname;
 	char *email;
+
 	char *smtp_server;
+	int smtp_port;
 	char *smtp_domain;
+	int smtp_auth; /* 1 if SMTP Auth should be used */
+	char *smtp_login;
+	char *smtp_password;
+
 	char *pop_server;
+	int pop_port;
 	char *pop_login;
 	char *pop_password;
 	int pop_delete;

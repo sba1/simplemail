@@ -42,7 +42,7 @@ int mails_dl(void)
 	memset(&server,0,sizeof(server));
 
 	server.name = user.config.pop_server;
-	server.port = 110;
+	server.port = user.config.pop_port;
 	server.login = user.config.pop_login;
 	server.passwd = user.config.pop_password;
 	server.socket = SMTP_NO_SOCKET;
@@ -87,7 +87,7 @@ int mails_upload(void)
 	}
 
 	server.name   = user.config.smtp_server;
-	server.port   = 25;
+	server.port   = user.config.smtp_port;
 	server.socket = SMTP_NO_SOCKET;
 	
 	domain = user.config.smtp_domain;

@@ -30,6 +30,8 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "codesets.h"
+#include "configuration.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -97,12 +99,24 @@ void statuswnd_close(void)
 }
 
 /**************************************************************************
- Open the status window
+ Display the status title
 **************************************************************************/
 void statuswnd_set_title(char *title)
 {
 	free(status_title);
 	status_title = mystrdup(title);
+
+	if (!status_wnd) return;
+	set(status_wnd, MUIA_Window_Title,status_title);
+}
+
+/**************************************************************************
+ Display the status title (utf8)
+**************************************************************************/
+void statuswnd_set_title_utf8(char *title)
+{
+	free(status_title);
+	status_title = utf8tostrcreate(title,user.config.default_codeset);
 
 	if (!status_wnd) return;
 	set(status_wnd, MUIA_Window_Title,status_title);

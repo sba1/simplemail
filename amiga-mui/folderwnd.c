@@ -55,6 +55,10 @@ static Object *defto_label;
 static Object *defto_string;
 static Object *server_label;
 static Object *server_string;
+static Object *prim_label;
+static Object *prim_cycle;
+static Object *second_label;
+static Object *second_cycle;
 static int group_mode;
 static int imap_mode;
 
@@ -96,11 +100,33 @@ static void init_folder(void)
 {
 	Object *ok_button, *cancel_button;
 	static char *type_array[5];
+	static char *prim_sort_array[12];
+	static char *second_sort_array[12];
 
 	type_array[0] = _("received");
 	type_array[1] = _("sent");
 	type_array[2] = _("received and sent");
 	type_array[3] = _("mailinglist");
+
+	prim_sort_array[FOLDER_SORT_STATUS] = _("Status");
+	prim_sort_array[FOLDER_SORT_FROMTO] = _("From/TO");
+	prim_sort_array[FOLDER_SORT_SUBJECT] = _("Subject");
+	prim_sort_array[FOLDER_SORT_REPLY] = _("Reply");
+	prim_sort_array[FOLDER_SORT_DATE] = _("Date");
+	prim_sort_array[FOLDER_SORT_SIZE] = _("Size");
+	prim_sort_array[FOLDER_SORT_FILENAME] = _("Filename");
+	prim_sort_array[FOLDER_SORT_POP3] = _("POP3");
+	prim_sort_array[FOLDER_SORT_RECV] = _("Received");
+
+	second_sort_array[FOLDER_SORT_STATUS] = _("Status");
+	second_sort_array[FOLDER_SORT_FROMTO] = _("From/TO");
+	second_sort_array[FOLDER_SORT_SUBJECT] = _("Subject");
+	second_sort_array[FOLDER_SORT_REPLY] = _("Reply");
+	second_sort_array[FOLDER_SORT_DATE] = _("Date");
+	second_sort_array[FOLDER_SORT_SIZE] = _("Size");
+	second_sort_array[FOLDER_SORT_FILENAME] = _("Filename");
+	second_sort_array[FOLDER_SORT_POP3] = _("POP3");
+	second_sort_array[FOLDER_SORT_RECV] = _("Received");
 
 	folder_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
@@ -128,6 +154,12 @@ static void init_folder(void)
 
 				Child, type_label = MakeLabel(_("_Type")),
 				Child, type_cycle = MakeCycle(_("_Type"),type_array),
+
+				Child, prim_label = MakeLabel(_("_Primary sort")),
+				Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
+
+				Child, second_label = MakeLabel(_("_Secondary sort")),
+				Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
 				
 				Child, defto_label = MakeLabel(_("Def. To")),
 				Child, defto_string = AddressStringObject,
@@ -177,6 +209,10 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group, OM_REMMEMBER, path_string);
 			DoMethod(folder_group, OM_REMMEMBER, type_label);
 			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
+			DoMethod(folder_group, OM_REMMEMBER, prim_label);
+			DoMethod(folder_group, OM_REMMEMBER, prim_cycle);
+			DoMethod(folder_group, OM_REMMEMBER, second_label);
+			DoMethod(folder_group, OM_REMMEMBER, second_cycle);
 			if (imap_mode)
 			{
 				DoMethod(folder_group, OM_REMMEMBER, server_label);
@@ -210,6 +246,11 @@ void folder_edit(struct folder *f)
 
 			DoMethod(folder_group, OM_ADDMEMBER, type_label);
 			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
+			DoMethod(folder_group, OM_ADDMEMBER, prim_label);
+			DoMethod(folder_group, OM_ADDMEMBER, prim_cycle);
+			DoMethod(folder_group, OM_ADDMEMBER, second_label);
+			DoMethod(folder_group, OM_ADDMEMBER, second_cycle);
+
 			group_mode = 0;
 			DoMethod(folder_group,MUIM_Group_ExitChange);
 		} else
@@ -220,7 +261,15 @@ void folder_edit(struct folder *f)
 			{
 				DoMethod(folder_group, OM_ADDMEMBER, server_label);
 				DoMethod(folder_group, OM_ADDMEMBER, server_string);
-				DoMethod(folder_group, MUIM_Group_Sort, path_label, path_string, server_label, server_string, type_label, type_cycle, NULL);
+				DoMethod(folder_group, MUIM_Group_Sort,
+						name_label, name_string,
+						path_label, path_string,
+						server_label, server_string,
+						type_label, type_cycle,
+						prim_label, prim_cycle,
+						second_label, second_cycle,
+						defto_label, defto_string,
+						NULL);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
@@ -238,6 +287,8 @@ void folder_edit(struct folder *f)
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
+	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f));
+	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f));
 	set(server_string, MUIA_String_Contents, f->imap_server);
 	changed_folder = f;
 	set(folder_wnd, MUIA_Window_ActiveObject, name_string);

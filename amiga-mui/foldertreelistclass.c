@@ -44,6 +44,9 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
+/* #define MYDEBUG 1 */
+#include "debug.h"
+
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 
 struct FolderTreelist_Data
@@ -65,6 +68,7 @@ struct FolderTreelist_Data
 	APTR image_deleted;
 	APTR image_other;
 	APTR image_group;
+	APTR image_spam;
 
 	char name_buf[300];
 };
@@ -101,6 +105,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 				case	FOLDER_SPECIAL_SENT: image = data->image_sent; break;
 				case	FOLDER_SPECIAL_DELETED: image = data->image_deleted; break;
 				case	FOLDER_SPECIAL_GROUP: image = data->image_group; break;
+				case	FOLDER_SPECIAL_SPAM: image = data->image_spam; break;
 				default: image = data->image_other; break;
 			}
 	
@@ -221,6 +226,7 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End, 0);
 	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End, 0);
 	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End, 0);
+	data->image_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End, 0);
 	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End, 0);
 
 	return 1;
@@ -230,6 +236,7 @@ STATIC ULONG FolderTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (data->image_group) DoMethod(obj, MUIM_NList_DeleteImage, data->image_group);
+	if (data->image_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->image_spam);
 	if (data->image_other) DoMethod(obj, MUIM_NList_DeleteImage, data->image_other);
 	if (data->image_deleted) DoMethod(obj, MUIM_NList_DeleteImage, data->image_deleted);
 	if (data->image_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->image_sent);
@@ -279,17 +286,6 @@ STATIC ULONG FolderTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUI
 	data->mails_drag = 0;
   if (msg->obj == obj)
   {
-		LONG dest = xget(obj,MUIA_NList_DropMark);
-		struct folder *src_folder, *dest_folder;
-		DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &src_folder);
-		DoMethod(obj, MUIM_NList_GetEntry, dest, &dest_folder);
-
-//		if (src_folder && dest_folder)
-//		{
-//			if (!src_folder->is_imap && dest_folder->is_imap)
-//		  	return MUIV_DragQuery_Refuse;
-//		}
-
   	return MUIV_DragQuery_Accept;
   }
 	return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -299,7 +295,25 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
 {
 	if (msg->obj == obj)
 	{
-		ULONG rc = DoSuperMethodA(cl,obj,(Msg)msg);
+		ULONG rc;
+		struct MUI_NListtree_TreeNode *src_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
+		struct MUI_NListtree_TreeNode *dest_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_DropTarget);
+
+		if (src_node && dest_node)
+		{
+			struct folder *src_folder, *dest_folder;
+			
+			src_folder = (struct folder*)src_node->tn_User;
+			dest_folder = (struct folder*)dest_node->tn_User;
+			
+			if (src_folder && dest_folder)
+			{
+				if ((src_folder->is_imap || dest_folder->is_imap) && !folder_on_same_imap_server(src_folder,dest_folder))
+					return 0;
+			}
+		}
+
+		rc = DoSuperMethodA(cl,obj,(Msg)msg);
 		set(obj,MUIA_FolderTreelist_OrderChanged,TRUE);
 		return rc;
 	}

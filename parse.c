@@ -986,27 +986,30 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	day = atoi(date);
 	while (isdigit(*date)) date++;
 	while (isspace(*date)) date++;
-	if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
-	else if (!mystrnicmp(date,"feb",3)) month = 2;
-	else if (!mystrnicmp(date,"mar",3)) month = 3;
-	else if (!mystrnicmp(date,"apr",3)) month = 4;
-	else if (!mystrnicmp(date,"may",3)) month = 5;
-	else if (!mystrnicmp(date,"jun",3)) month = 6;
-	else if (!mystrnicmp(date,"jul",3)) month = 7;
-	else if (!mystrnicmp(date,"aug",3)) month = 8;
-	else if (!mystrnicmp(date,"sep",3)) month = 9;
-	else if (!mystrnicmp(date,"oct",3)) month = 10;
-	else if (!mystrnicmp(date,"nov",3)) month = 11;
-	else if (!mystrnicmp(date,"dec",3)) month = 12;
-	else
+	if (isdigit(*date))
 	{
-		if (!isdigit(*date)) return NULL;
 		month = atoi(date);
 		if (month < 1 || month > 12) return NULL;
 		while (isdigit(*date)) date++;
 	}
+	else
+	{
+		if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
+		else if (!mystrnicmp(date,"feb",3)) month = 2;
+		else if (!mystrnicmp(date,"mar",3)) month = 3;
+		else if (!mystrnicmp(date,"apr",3)) month = 4;
+		else if (!mystrnicmp(date,"may",3)) month = 5;
+		else if (!mystrnicmp(date,"jun",3)) month = 6;
+		else if (!mystrnicmp(date,"jul",3)) month = 7;
+		else if (!mystrnicmp(date,"aug",3)) month = 8;
+		else if (!mystrnicmp(date,"sep",3)) month = 9;
+		else if (!mystrnicmp(date,"oct",3)) month = 10;
+		else if (!mystrnicmp(date,"nov",3)) month = 11;
+		else if (!mystrnicmp(date,"dec",3)) month = 12;
+		else return NULL;
+		while (isalpha(*date)) date++;
+	}
 
-	date += 3;
 	while (isspace(*date)) date++;
 	year = atoi(date);
 	if (year < 78) year += 2000;

@@ -75,7 +75,7 @@ date.h:
 
 smakefile.compile: $(MAKEGENERATOR) smakefile
   list ~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="%s" sort=name >t:objectlist
-  list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
+  list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4|startup-morphos).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
   echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
@@ -96,9 +96,11 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "  copy .taglines $(DESTDIR)/.taglines*n" >>$@
   echo "*nimages:" >>$@ noline
   list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
+  list amiga-mui/binaries/(check|empty|new|old).info lformat="  sm/Images/%n\\" >>$@
   echo "  sm/Images/images.list" >>$@
   echo "*n" >>$@
   list amiga-mui/binaries/\#?img lformat="sm/Images/%m: %p%n*n  copy %p%n sm/Images/%m*n" >>$@
+  list amiga-mui/binaries/(check|empty|new|old).info lformat="sm/Images/%n: %p%n*n  copy %p%n sm/Images*n" >>$@
   echo "sm/Images/images.list: amiga-mui/binaries/images.list*n  copy amiga-mui/binaries/images.list sm/Images*n" >>$@
 
   echo "scripts:" >>$@ noline

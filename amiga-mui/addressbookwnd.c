@@ -413,13 +413,25 @@ static void group_window_ok(struct Group_Data **pdata)
 
 	if ((new_entry = addressbook_new_group(NULL)))
 	{
+		struct MUI_NListtree_TreeNode *treenode = NULL;
 		char *alias = (char*)xget(data->alias_string,MUIA_String_Contents);
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
 		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
 
-		/* Now add it to the listview (in the active list) */
-		DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
+		if (data->group)
+		{
+			if ((treenode = FindListtreeUserData(address_tree, data->group)))
+			{
+				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
+			}
+		}
+
+		if (!treenode)
+		{
+			/* Now add it to the listview (in the active list) */
+			DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
 						   MUIV_NListtree_Insert_ListNode_ActiveFallback,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST|TNF_OPEN);
+		}
 
 		addressbook_free_entry(new_entry);
 	}

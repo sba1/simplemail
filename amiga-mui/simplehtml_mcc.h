@@ -61,13 +61,17 @@ extern struct Library *SimpleHTMLBase;
 
 #define SimpleHTMLObject (Object*)(NewObject)(ObtainSimpleHTMLMCC()->mcc_Class, NULL
 
-#define MUIA_SimpleHTML_Buffer					(TAG_USER+0x31200000) /* NS. */
-#define MUIA_SimpleHTML_BufferLen			(TAG_USER+0x31200001) /* NS. */
-#define MUIA_SimpleHTML_HorizScrollbar	(TAG_USER+0x31200002) /* NS. */
-#define MUIA_SimpleHTML_VertScrollbar	(TAG_USER+0x31200003) /* NS. */
-#define MUIA_SimpleHTML_Priv1					(TAG_USER+0x31200004)
-#define MUIA_SimpleHTML_Priv2					(TAG_USER+0x31200005)
-
+#define MUIA_SimpleHTML_Buffer           (TAG_USER+0x31200000) /* IS. */
+#define MUIA_SimpleHTML_BufferLen        (TAG_USER+0x31200001) /* IS. */
+#define MUIA_SimpleHTML_HorizScrollbar   (TAG_USER+0x31200002) /* IS. */
+#define MUIA_SimpleHTML_VertScrollbar    (TAG_USER+0x31200003) /* IS. */
+#define MUIA_SimpleHTML_TopHoriz         (TAG_USER+0x31200004) /* ISGN */
+#define MUIA_SimpleHTML_TopVert          (TAG_USER+0x31200005) /* ISGN */
+#define MUIA_SimpleHTML_VisibleHoriz     (TAG_USER+0x31200006) /* ..GN */
+#define MUIA_SimpleHTML_VisibleVert      (TAG_USER+0x31200007) /* ..GN */
+#define MUIA_SimpleHTML_TotalHoriz       (TAG_USER+0x31200008) /* ..GN */
+#define MUIA_SimpleHTML_TotalVert        (TAG_USER+0x31200009) /* ..GN */
+#define MUIA_SimpleHTML_ProvideScrollers (TAG_USER+0x3120000a) /* I... */
 
 /* The Hook is called with the hook itself in A0,
  * the object in register A2 and a struct MUIP_SimpleHTML_LoadHook * in A1
@@ -82,6 +86,7 @@ extern struct Library *SimpleHTMLBase;
 #define MUIM_SimpleHTML_AllocateMem		(0x456789)
 #define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
 #define MUIM_SimpleHTML_FontSubst			(0x45678b)
+#define MUIM_SimpleHTML_Private1			(0x45678c)
 
 #if defined(__GNUC__)
 # pragma pack(2)

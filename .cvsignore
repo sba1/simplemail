@@ -1,0 +1,8 @@
+sas_objects
+smakefile.compile
+sm
+*.info
+*.bak
+all.gst
+*.orig
+*.rej

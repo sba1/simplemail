@@ -39,38 +39,38 @@
  
 <html>
   <head>
-    <title>SimpleMail</title>
-    <STYLE TYPE="text/css"><!--
-      A { text-decoration: none }
-      A:hover{ background: #ffa }
+	<title>SimpleMail</title>
+	<STYLE TYPE="text/css"><!--
+	  A { text-decoration: none }
+	  A:hover{ background: #ffa }
 --></STYLE>
 
   </head>
 
   <body bgcolor="white">
 
-    <center><A href="index.php"><IMG border="0" src="pictures/sm_logo.png" alt="sm_logo.png (1171 bytes)" width=274 height=45></A></center>
+	<center><A href="index.php"><IMG border="0" src="pictures/sm_logo.png" alt="sm_logo.png (1171 bytes)" width=274 height=45></A></center>
 
-    <table width="100%" summary="Main page.">
-      <tr bgcolor="black">
-        <th width=0>
-          <font color="white">
-            <tt>
-              <?php echo get_string($MenuText);?>
-            </tt>
-          </font>
-        </th>
-        <th>
-          <font color="white">
-            <tt>
-              <?php echo $LinkMenu[$body]["title"];?>
-            </tt>
-          </font>
-        </th>
-      </tr>
+	<table width="100%" summary="Main page.">
+	  <tr bgcolor="black">
+		<th width=0>
+		  <font color="white">
+			<tt>
+			  <?php echo get_string($MenuText);?>
+			</tt>
+		  </font>
+		</th>
+		<th>
+		  <font color="white">
+			<tt>
+			  <?php echo $LinkMenu[$body]["title"];?>
+			</tt>
+		  </font>
+		</th>
+	  </tr>
 
-      <tr>
-        <td valign="top" width=0>
+	  <tr>
+		<td valign="top" width=0>
 	  <?php
 	    foreach($LinkMenu as $key => $value)
 	    {
@@ -82,39 +82,44 @@
 	        if ($key != $body)
 	          echo "</A>";
 	        echo "<br>";
-              }
+			  }
 	    }
-          ?>
-        </td>
+		  ?>
+		</td>
 
-        <td>
-          <?php
-            include($LinkMenu[$body]["filename"]);
-          ?>
-        </td>
-      </tr>
-    </table>
+		<td>
+		  <?php
+			include($LinkMenu[$body]["filename"]);
+		  ?>
+		</td>
+	  </tr>
+	</table>
 
-    <table align="center" width="100%" summary="Footer containing infos and banners.">
-      <tr bgcolor="black">
-        <td>
-          <center>
-          <font color="white"
-            <tt>
-                <?php
+	<table align="center" width="100%" summary="Footer containing infos and banners.">
+	  <tr bgcolor="black">
+		<td>
+		  <center>
+		  <font color="white"
+			<tt>
+				<?php
 
-                  $unixTime = filemtime($LinkMenu[$body]["datename"]);
+				  $unixTime = filemtime($LinkMenu[$body]["datename"]);
 
 		  printf("%s %s · %s %s",get_string($LastModificationText),date("Y/m/d", $unixTime),
 					 get_string($VisitorsText),$hits);
 		?>
 
-              </tt>
-            </font>
-          </center>
-        </td>
-      </tr>
-    </table>
+			  </tt>
+			</font>
+		  </center>
+		</td>
+	  </tr>
+	  <tr>
+		<td>
+			Hosted by: <A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=15322" width="88" height="31" border="0" alt="SourceForge Logo"></A>
+		</td>
+	  </tr>
+	</table>
 
   </body>
 </html>

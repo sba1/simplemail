@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** $Id: support.c,v
 */
 
 #include <string.h>
@@ -30,7 +30,9 @@
 #include <proto/utility.h>
 #include <proto/muimaster.h>
 
+#include "errorwnd.h"
 #include "muistuff.h"
+#include "subthreads.h"
 #include "support.h"
 
 /******************************************************************
@@ -163,6 +165,22 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 {
 	if (!title) title = "SimpleMail";
 	return MUI_RequestA(App, NULL, 0, title, gadgets, text, (&(gadgets))+1);
+}
+
+/******************************************************************
+ Tells an error message
+*******************************************************************/
+void tell(char *str)
+{
+	error_add_message(str);
+}
+
+/******************************************************************
+ Tells an error message from a subtask
+*******************************************************************/
+void tell_from_subtask(char *str)
+{
+	thread_call_parent_function_sync(tell,1,str);
 }
 
 /******************************************************************

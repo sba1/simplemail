@@ -5,11 +5,9 @@
 
 /* what an ugly hack
    needed for the stdio clone */
-#ifdef __MORPHOS__
 #undef __amigaos__
 #include <dirent.h>
 #define __amigaos__
-#endif /* __MORPHOS__ */
 
 #include <sys/dir.h>
 #include <sys/stat.h>
@@ -39,17 +37,11 @@ struct Library *AslBase;
 struct Library *GfxBase;
 struct Library *LayersBase;
 struct Library *ExpatBase;
-#ifdef __MORPHOS__
 struct Library *SocketBase;
-#endif
 
 int main(int argc, char *argv[]);
 
-#ifdef __MORPHOS__
 int _start(struct WBStartup *wbs);
-#else
-static int start(struct WBStartup *wbs);
-#endif
 
 static int open_libs(void);
 static void close_libs(void);
@@ -58,49 +50,9 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-#ifdef __MORPHOS__
 unsigned long __stack = 30000*2;
-#else
-__saveds static int __startup(void)
-{
-	struct Process *pr;
-	int rc;
 
-	SysBase = *((struct ExecBase**)4);
-	pr = (struct Process*)FindTask(NULL);
-
-	if (!pr->pr_CLI)
-	{
-		struct WBStartup *wbs;
-
-		WaitPort(&pr->pr_MsgPort);
-		wbs = (struct WBStartup*)GetMsg(&pr->pr_MsgPort);
-
-		rc = start(wbs);
-
-		Forbid();
-		ReplyMsg((struct Message *)wbs);
-	}	else rc = start(NULL);
-	return rc;
-}
-
-/* not static so the optimized doesn't inline it */
-int __swap_and_start(struct StackSwapStruct *stk)
-{
-	int rc;
-
-	StackSwap(stk);
-	rc = main(0,NULL);
-	StackSwap(stk);
-	return rc;
-}
-#endif /* __MORPHOS__ */
-
-#ifdef __MORPHOS__
 int _start(struct WBStartup *wbs)
-#else
-static int start(struct WBStartup *wbs)
-#endif
 {
 	int rc = 20;
 	struct Process *pr = (struct Process*)FindTask(NULL);
@@ -128,19 +80,8 @@ static int start(struct WBStartup *wbs)
 
 					if (init_io())
 					{
-#ifdef __MORPHOS__
 						rc = simplemail_main();
-#else
-						struct StackSwapStruct stk;
 
-						if ((stk.stk_Lower = (APTR)AllocVec(30000,MEMF_PUBLIC)))
-						{
-							stk.stk_Upper = (ULONG)stk.stk_Lower + 30000;
-							stk.stk_Pointer = (APTR)stk.stk_Upper;
-							rc = __swap_and_start(&stk);
-							FreeVec(stk.stk_Lower);
-						}
-#endif
 						deinit_io();
 					}
 					deinit_mem();
@@ -309,10 +250,6 @@ void *realloc(void *om, size_t size)
  thread safe (but the file intstances mustn't be
  shared between the threads)
 ****************************************************/
-
-#ifndef __MORPHOS__
-__stdargs int vsnprintf(char *buffer, int buffersize, const char *fmt0, va_list ap);
-#endif
 
 #define MAX_FILES 100
 
@@ -563,19 +500,6 @@ int puts(const char *string)
 	return PutStr(string);
 }
 
-#ifndef __MORPHOS__
-int sprintf(char *buf, const char *fmt, ...)
-{
-	int r;
-	va_list ap;
-
-	va_start(ap, fmt);
-	r = vsnprintf(buf, 0x7fff, fmt, ap);
-	va_end(ap);
-	return r;
-}
-#endif
-
 DIR *opendir(const char *name)
 {
 	BPTR dh;
@@ -670,19 +594,10 @@ int rename(const char *oldname, const char *newname)
 	return 0;
 }
 
-#ifdef __SASC
-void _CXFERR(void)
-{
-    D(bug("CFXERR\n"));
-}
-#endif /* __SASC */
-
 
 /**************
  MUI Dispatcher
 ***************/
-
-#ifdef __MORPHOS__
 
 #include <intuition/classes.h>
 #include <libraries/mui.h>
@@ -707,13 +622,10 @@ struct EmulLibEntry muiDispatcherEntry =
 	TRAP_LIB, 0, (void (*)(void)) muiDispatcherGate
 };
 
-#endif /* __MORPHOS__ */
 
 /********************
  expat.library hack
 *********************/
-
-#ifdef __MORPHOS__
 
 #include <emul/emulregs.h>
 #include "expatinc.h"
@@ -764,6 +676,4 @@ struct EmulLibEntry xml_char_data_trap =
 {
 	TRAP_LIB, 0, (void (*)(void)) xml_char_data_gate
 };
-
-#endif
 

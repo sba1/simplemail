@@ -7,7 +7,7 @@
 <UL>
     <LI><A href="http://www.sourceforge.net/projects/simplemail/">SimpleMail's project page at SourceForge.</A></LI>
     <LI><A href="http://lists.sourceforge.net/lists/listinfo/simplemail-dev/">SimpleMail's developer-mailinglist.</A></LI>
-    <li><A href="http://www.freelists.org/list/simplemail-usr">SimpleMails's user-mailinglist.</A><strong>Joining is explicitly encouraged!</strong></li>
+    <li><A href="http://www.freelists.org/list/simplemail-usr">SimpleMails's user-mailinglist.</A> <strong>Joining is explicitly encouraged!</strong></li>
 </UL>
 
 <?php echo get_string($LinksMCCText); ?>

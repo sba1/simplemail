@@ -830,6 +830,52 @@ struct folder *folder_find_by_mail(struct mail *mail)
 }
 
 /******************************************************************
+ Finds from a folder (which is given by its path) the mail's
+ successor (which is given by the filename)
+*******************************************************************/
+struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename)
+{
+	void *handle = NULL;
+	struct folder *f = folder_find_by_path(folder_path);
+	struct mail *m;
+	int i = 0;
+
+	while ((m = folder_next_mail(f, &handle)))
+	{
+		if (!mystricmp(m->filename,mail_filename))
+		{
+			return folder_next_mail(f,&handle);
+		}
+	}
+
+	if (!f) return NULL;
+}
+
+/******************************************************************
+ Finds from a folder (which is given by its path) the mail's
+ pred (which is given by the filename)
+*******************************************************************/
+struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename)
+{
+	void *handle = NULL;
+	struct folder *f = folder_find_by_path(folder_path);
+	struct mail *lm = NULL;
+	struct mail *m;
+	int i = 0;
+
+	while ((m = folder_next_mail(f, &handle)))
+	{
+		if (!mystricmp(m->filename,mail_filename))
+		{
+			return lm;
+		}
+		lm = m;
+	}
+
+	if (!f) return NULL;
+}
+
+/******************************************************************
  Move a mail from source folder to a destination folder. 0 if the
  moving has failed.
  If mail has sent status and moved to a outgoing drawer it get's
@@ -1270,9 +1316,4 @@ void del_folders(void)
 		f = folder_next(f);
 	}
 }
-
-
-
-
-
 

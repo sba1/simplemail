@@ -46,6 +46,7 @@
 #include "amigasupport.h"
 #include "attachmentlistclass.h"
 #include "compiler.h"
+#include "datatypesclass.h"
 #include "muistuff.h"
 #include "composewnd.h"
 
@@ -62,6 +63,7 @@ struct Compose_Data /* should be a customclass */
 	Object *text_texteditor;
 	Object *attach_tree;
 	Object *contents_page;
+	Object *datatype_datatypes;
 
 	struct FileRequester *file_req;
 
@@ -273,6 +275,8 @@ static void compose_attach_active(struct Compose_Data **pdata)
 				MUIA_Disabled, FALSE,
 				MUIA_Group_ActivePage, attach->editable?0:1,
 				TAG_DONE);
+
+		set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->filename);
 	} else
 	{
 /*		set(data->contents_page, MUIA_Disabled, TRUE); */
@@ -359,6 +363,7 @@ void compose_window_open(char *to_str)
 	Object *wnd, *send_later_button, *cancel_button;
 	Object *to_string, *subject_string;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
+	Object *datatype_datatypes;
 	Object *expand_to_button;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
@@ -424,9 +429,10 @@ void compose_window_open(char *to_str)
 						End,
 					End,
 				Child, VGroup,
-					Child, HVSpace,
-					Child, MakeButton("Test"),
-					Child, HVSpace,
+/*					Child, HVSpace,*/
+					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
+/*					Child, MakeButton("Test"),
+					Child, HVSpace,*/
 					End,
 				End,
 			Child, BalanceObject, End,
@@ -465,6 +471,7 @@ void compose_window_open(char *to_str)
 			data->text_texteditor = text_texteditor;
 			data->attach_tree = attach_tree;
 			data->contents_page = contents_page;
+			data->datatype_datatypes = datatype_datatypes;
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 

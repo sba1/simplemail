@@ -45,6 +45,7 @@
 #include "trans.h" /* for mail_upload_single() */
 
 char *stradd(char *src, const char *str1);
+char *strnadd(char *src, const char *str1, int n);
 
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
@@ -1325,7 +1326,12 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 
 				if (fwd_text)
 				{
-					modified_text = stradd(modified_text,fwd_text);
+					char *sig;
+					if ((sig = strstr(fwd_text,"\n-- \n")))
+					{
+						modified_text = strnadd(modified_text,fwd_text,sig - fwd_text + 3);
+						modified_text = stradd(modified_text,sig + 4);
+					} else modified_text = stradd(modified_text,fwd_text);
 					free(fwd_text);
 				}
 				

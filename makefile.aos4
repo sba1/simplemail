@@ -13,7 +13,7 @@ RANLIB = $(CROSS_COMPILE)ranlib
 # RM     = delete
 RM     = rm -R
 # MKDIR = makedir
-MKDIR  = mkdir
+MKDIR  = mkdir -p
 
 # Change these as required
 OPTIMIZE = -O3

@@ -260,6 +260,14 @@ struct folder *folder_outgoing(void)
 }
 
 /******************************************************************
+ Returns the sent folder (currently always the 3rd folder)
+*******************************************************************/
+struct folder *folder_sent(void)
+{
+	return folder_find(2);
+}
+
+/******************************************************************
  Returns the deleleted folder (currently always the 5th folder)
 *******************************************************************/
 struct folder *folder_deleted(void)
@@ -431,6 +439,8 @@ static void *get_compare_function(int sort_mode, int *reverse)
  The mail iterating function. To get the first mail let handle
  point to NULL. If needed this function sorts the mails according
  to the sort mode. Handle will be updated every time.
+ While iterating through the mails you aren't allowed to (re)move a
+ mail withing the folder,
 *******************************************************************/
 struct mail *folder_next_mail(struct folder *folder, void **handle)
 {

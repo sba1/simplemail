@@ -71,6 +71,7 @@ struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
+struct folder *folder_sent(void);
 struct folder *folder_deleted(void);
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail);
 int folder_delete_mail(struct folder *from_folder, struct mail *mail);

@@ -175,12 +175,32 @@ void callback_new_mail_written(struct mail *mail)
 	main_refresh_folder(folder_outgoing());
 }
 
-/* a mail has been changed */
+/* a mail has been changed/replaced by the user */
 void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail)
 {
 	if (main_get_folder() == folder)
 	{
 		main_replace_mail(oldmail, newmail);
+	}
+}
+
+/* a single mail should be moved from a folder to another folder */
+void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
+{
+	if (from_folder != dest_folder)
+	{
+		folder_move_mail(from_folder,dest_folder,mail);
+
+		/* If outgoing folder is visible remove the mail */
+		if (main_get_folder() == from_folder)
+			main_remove_mail(mail);
+
+		/* If sent folder is visible insert the mail */
+		if (main_get_folder() == dest_folder)
+			main_insert_mail(mail);
+
+		main_refresh_folder(from_folder);
+		main_refresh_folder(dest_folder);
 	}
 }
 

@@ -30,6 +30,7 @@ void callback_folder_active(void);
 
 void callback_write_mail_to(struct addressbook_entry *address);
 
+void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder);
 void callback_maildrop(struct folder *dest_folder);
 
 void callback_new_mail_arrived(struct mail *mail);

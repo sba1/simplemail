@@ -11,13 +11,14 @@
 #include "folder.h"
 #include "parse.h"
 #include "pop3.h"
+#include "simplemail.h"
 #include "smtp.h"
 
 #include "io.h" /* io.c should be removed after stuff has been moved to support.h */
 
 int mails_dl(void)
 {
-	char *server, *login, *passwd, *buf;
+	char *server, *login, *passwd;
 
 	server = user.config.pop_server;
 	login = user.config.pop_login;
@@ -48,10 +49,19 @@ int mails_upload(void)
 {
 	char *server, *domain;
 	struct folder *out_folder = folder_outgoing();
+	struct folder *sent_folder = folder_sent();
 	void *handle = NULL;
+	int i,num_mails;
+	struct mail **mail_array;
 	struct mail *m;
 
 	char path[256];
+
+	if (!out_folder)
+	{
+		tell("Couldn't find an outgoing folder!");
+		return 0;
+	}
 
 	server = user.config.smtp_server;
 	domain = user.config.smtp_domain;
@@ -68,18 +78,37 @@ int mails_upload(void)
 		return 0;
 	}
 
+  /* folder_next_mail() is a little bit limited (not usable when mails are removed
+   * from the folder, so we build an array of all mails first */
+	num_mails = 0;
+	while ((m = folder_next_mail(out_folder, &handle))) num_mails++;
+	if (!num_mails) return 0;
+
+	mail_array = (struct mail**)malloc(sizeof(struct mail*)*num_mails);
+	if (!mail_array) return 0;
+
+	i=0;
+	handle = NULL;
+	while ((m = folder_next_mail(out_folder, &handle))) mail_array[i++] = m;
+
 	getcwd(path, sizeof(path));
-	if(chdir(out_folder->path) == -1) return 0;
-
-	if (!out_folder) return NULL;
-
-	while ((m = folder_next_mail(out_folder, &handle)))
+	if(chdir(out_folder->path) == -1)
 	{
-		char *to = mail_find_header_contents(m,"To");
-		char *from = mail_find_header_contents(m,"From");
+		free(mail_array);
+		return 0;
+	}
+
+	/* Now send the mails and move them to the sent folder */
+	for (i=0; i<num_mails;i++)
+	{
+		char *from, *to;
 		struct mailbox mb;
 		struct out_mail out;
-		struct list *list; /* to address lists */
+		struct list *list; /* "To" address list */
+
+		m = mail_array[i];
+		to = mail_find_header_contents(m,"To");
+		from = mail_find_header_contents(m,"From");
 
 		memset(&mb,0,sizeof(struct mailbox));
 		memset(&out,0,sizeof(struct out_mail));
@@ -115,7 +144,14 @@ int mails_upload(void)
 
 		if (mb.phrase) free(mb.phrase);
 		if (mb.addr_spec) free(mb.addr_spec);
+
+		if (sent_folder)
+		{
+			callback_move_mail(m,out_folder,sent_folder);
+		}
 	}
 
 	chdir(path);
+	free(mail_array);
 }
+

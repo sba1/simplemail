@@ -309,6 +309,18 @@ void main_insert_mail(struct mail *mail)
 }
 
 /******************************************************************
+ Remove a given mail from the listview
+*******************************************************************/
+void main_remove_mail(struct mail *mail)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, mail);
+	if (treenode)
+	{
+		DoMethod(tree_mail, MUIM_NListtree_Remove, NULL, treenode,0);
+	}
+}
+
+/******************************************************************
  Replaces a mail with a new mail
 *******************************************************************/
 void main_replace_mail(struct mail *oldmail, struct mail *newmail)

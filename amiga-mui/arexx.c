@@ -35,6 +35,7 @@
 
 #include "addressbook.h"
 #include "folder.h"
+#include "http.h"
 #include "mail.h"
 #include "support_indep.h"
 
@@ -701,6 +702,37 @@ static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ GETURL Arexx Command
+*****************************************************************/
+static void arexx_geturl(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR url;
+		STRPTR filename;
+	} geturl_arg;
+	memset(&geturl_arg,0,sizeof(geturl_arg));
+
+	if ((arg_handle = ParseTemplate("URL/A,FILENAME/A",args,&geturl_arg)))
+	{
+		void *buf;
+		int buf_len;
+
+		if (http_download(geturl_arg.url, &buf, &buf_len))
+		{
+			FILE *fh;
+			if ((fh = fopen(geturl_arg.filename,"wb")))
+			{
+				fwrite(buf,1,buf_len,fh);
+				fclose(fh);
+			}
+		} else rxmsg->rm_Result1 = 10;
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -733,6 +765,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("ADDRGOTO",command.command)) arexx_addrgoto(rxmsg,command.args);
 		else if (!Stricmp("ADDRNEW",command.command)) arexx_addrnew(rxmsg,command.args);
 		else if (!Stricmp("ADDRSAVE",command.command)) arexx_addrsave(rxmsg,command.args);
+		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

@@ -145,7 +145,7 @@ int mail_create_html_header(struct mail *mail);
 int mail_add_header(struct mail *mail, char *name, int name_len,
 									  char *contents, int contents_len, int avoid_duplicates);
 char *mail_find_header_contents(struct mail *mail, char *name);
-char *mail_get_new_name(void);
+char *mail_get_new_name(int status);
 char *mail_get_status_filename(char *oldfilename, int status_new);
 
 /* was static */

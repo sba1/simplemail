@@ -592,50 +592,6 @@ static char get_char_18(int val)
 	return (char)('a' + val-10);
 }
 
-/**************************************************************************
- Returns a unique filename for a new mail
-**************************************************************************/
-char *mail_get_new_name(void)
-{
-	char *rc;
-	long t;
-	struct tm *d, tm;
-	unsigned short day_secs;
-	short i;
-	char dummy[8]; 
-	char *buf;
-	
-	buf = malloc(17);
-	
-	time(&t);
-	d = localtime(&t);
-	tm = *d;
-	
-	day_secs = (tm.tm_min * 60) + tm.tm_sec;
-	dummy[4] = 0;
-	dummy[3] = get_char_18(day_secs % 18);
-	dummy[2] = get_char_18((day_secs / 18)%18);
-	dummy[1] = get_char_18((day_secs / 18 / 18)%18);
-	dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
-	
-	for (i=0;;i++)
-	{
-		FILE *fp;
-		
-		sprintf(buf,"%02d%02d%04d%s.%03x",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
-
-		fp = fopen(buf, "r");
-		if(fp != NULL)
-		{
-			fclose(fp);
-		} else break;
-	}
-	
-	rc = buf;
-	
-	return(rc);
-}
-
 /* a table with all filename extensions */
 /* they are mapped 1 to 1 */
 static char status_extensions[] =
@@ -643,6 +599,52 @@ static char status_extensions[] =
 	0,'0','1','2','3','4','5','6','7','8','9',
 	'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','!','$','-'
 };
+
+/**************************************************************************
+ Returns a unique filename for a new mail
+**************************************************************************/
+char *mail_get_new_name(int status)
+{
+	long t;
+	struct tm *d, tm;
+	unsigned short day_secs;
+	short i;
+	char dummy[8]; 
+	char status_buf[4];
+	char *buf;
+	
+	buf = malloc(20);
+	
+	time(&t);
+	d = localtime(&t);
+	tm = *d;
+	
+	day_secs = (tm.tm_min * 60) + tm.tm_sec;
+	dummy[4] = 0;
+	dummy[3] = 'a';//get_char_18(day_secs % 18);
+	dummy[2] = 'a';//get_char_18((day_secs / 18)%18);
+	dummy[1] = 'a';//get_char_18((day_secs / 18 / 18)%18);
+	dummy[0] = 'a';//get_char_18(day_secs / 18 / 18 / 18);
+
+	if (status == MAIL_STATUS_UNREAD) status_buf[0] = 0;
+	else {
+		status_buf[0] = '.';
+		status_buf[1] = status_extensions[status&0x1f];
+		status_buf[2] = 0;
+	}
+
+	for (i=0;;i++)
+	{
+		FILE *fp;
+		
+		sprintf(buf,"%02d%02d%04d%s.%03x%s",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i,status_buf);
+
+		if ((fp = fopen(buf, "r"))) fclose(fp);
+		else break;
+	}
+	
+	return buf;
+}
 
 /**************************************************************************
  Returns a new filename for the mail which matches the given status.
@@ -2102,17 +2104,10 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 	getcwd(path, sizeof(path));
 	if (chdir(outgoing->path) == -1) return 0;
 
-	if ((new_name = mail_get_new_name()))
+	if ((new_name = mail_get_new_name(hold?MAIL_STATUS_HOLD:MAIL_STATUS_WAITSEND)))
 	{
 		FILE *fp;
 		struct mail *mail; /* the mail after it has scanned */
-		char *status_name; /* the prober status name */
-
-		if ((status_name = mail_get_status_filename(new_name,hold?MAIL_STATUS_HOLD:MAIL_STATUS_WAITSEND)))
-		{
-			free(new_name);
-			new_name = status_name;
-		}
 
 		if ((fp = fopen(new_name,"wb")))
 		{

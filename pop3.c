@@ -521,7 +521,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
-	if (!(fn = mail_get_new_name()))
+	if (!(fn = mail_get_new_name(MAIL_STATUS_UNREAD)))
 	{
 		tell_from_subtask(N_("Can\'t get new filename!"));
 		return 0;

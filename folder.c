@@ -594,13 +594,24 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 			if (strcmp(mail->filename,filename))
 			{
 				char buf[256];
+				int renamed = 0;
 
 				getcwd(buf, sizeof(buf));
 				chdir(folder->path);
 
-				rename(mail->filename,filename);
-				free(mail->filename);
-				mail->filename = filename;
+				if (rename(mail->filename,filename))
+				{
+					/* renaming went wrong, try a different name */
+					free(filename);
+					filename = mail_get_new_name(status_new);
+					if (!rename(mail->filename,filename)) renamed = 1;
+				} else renamed = 1;
+
+				if (renamed)
+				{
+					free(mail->filename);
+					mail->filename = filename;
+				}
 
 				chdir(buf);
 
@@ -1390,20 +1401,15 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 			getcwd(path,sizeof(path));
 			if (chdir(dest_folder->path) != -1)
 			{
-				char *new_name = mail_get_new_name();
+				char *new_name = mail_get_new_name(mail->status);
 				if (new_name)
 				{
-					char *new_name_status = mail_get_status_filename(new_name, mail->status);
-					if (new_name_status)
+					if (!rename(src_buf,new_name))
 					{
-						if (!rename(src_buf,new_name_status))
-						{
-							if (mail->filename) free(mail->filename);
-							mail->filename = new_name_status;
-							rc = 1;
-						}
-					}
-					free(new_name);
+						free(mail->filename);
+						mail->filename = new_name;
+						rc = 1;
+					} else free(new_name);
 				}
 				chdir(path);
 			}

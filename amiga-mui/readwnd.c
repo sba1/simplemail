@@ -58,6 +58,7 @@
 #include "datatypesclass.h"
 #include "iconclass.h"
 #include "mainwnd.h" /* remove this */
+#include "messageviewclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "readwnd.h"

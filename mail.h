@@ -127,6 +127,7 @@ struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
 struct mail *mail_find_initial(struct mail *m);
 struct mail *mail_get_root(struct mail *m);
+struct mail *mail_get_next(struct mail *m);
 char *mail_get_from_address(struct mail *mail);
 char *mail_get_to_address(struct mail *mail);
 char *mail_get_replyto_address(struct mail *mail);

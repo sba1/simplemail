@@ -621,6 +621,38 @@ struct mail *mail_get_root(struct mail *m)
 }
 
 /**************************************************************************
+ Returns the next part of the mail (excluding multiparts)
+**************************************************************************/
+struct mail *mail_get_next(struct mail *m)
+{
+	while (!m->multipart_array)
+	{
+		struct mail *parent = m->parent_mail;
+		int i;
+
+		if (!parent) return NULL;
+
+		for (i=0;i < parent->num_multiparts;i++)
+		{
+			if (parent->multipart_array[i] == m)
+			{
+				i++;
+				if (i == parent->num_multiparts)
+				{
+					m = parent;
+					break;
+				}
+				m = parent->multipart_array[i];
+				break;
+			}
+		}
+	}
+
+	while (m->multipart_array) m = m->multipart_array[0];
+	return m;
+}
+
+/**************************************************************************
  Converts a number to base 18 character sign
 **************************************************************************/
 static char get_char_18(int val)

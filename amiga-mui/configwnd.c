@@ -149,6 +149,7 @@ static Object *phrase_forward_initial_popph;
 static Object *phrase_forward_terminating_popph;
 
 static Object *spam_mark_before_check;
+static Object *spam_auto_check;
 static Object *spam_addr_book_is_white_check;
 static Object *spam_white_list_editor;
 static Object *spam_black_list_editor;
@@ -578,6 +579,7 @@ static int config_use(void)
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
 	user.config.spam_mark_moved = xget(spam_mark_before_check,MUIA_Selected);
+	user.config.spam_auto_check = xget(spam_auto_check,MUIA_Selected);
 	user.config.spam_addrbook_is_white = xget(spam_addr_book_is_white_check,MUIA_Selected);
 
 	/* Copy the accounts */
@@ -1778,12 +1780,21 @@ int init_spam_group(void)
 		MUIA_ShowMe, FALSE,
 		Child, VGroup,
 			Child, HorizLineTextObject(_("General spam settings")),
+
 			Child, ColGroup(2),
 				Child, MakeLabel(_("Mark mails as spam before moved to the spam folder")),
 				Child, HGroup, Child, spam_mark_before_check = MakeCheck(_("Mark mails as spam before moved to the spam folder"),user.config.spam_mark_moved), Child, HVSpace, End,
 				MUIA_ShortHelp, _("If you activate this option any mail you move to the spam folder\n"
 													"is marked as spam before the operation. Note that only mails\n"
 													"marked as spam can be moved into the spam folder."),
+				End,
+
+			Child, ColGroup(2),
+				Child, MakeLabel(_("Check new mails for spam content")),
+				Child, HGroup, Child, spam_auto_check = MakeCheck(_("Check new mails for spam content"),user.config.spam_auto_check), Child, HVSpace, End,
+				MUIA_ShortHelp, _("If you activate this option any new mail is being checked for its\n"
+													"spam content. This only works if you have more than 500 mails for\n"
+													"every class within the statistics."),
 				End,
 
 			Child, HGroup,

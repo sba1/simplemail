@@ -255,6 +255,8 @@ int load_config(void)
 
 						if ((result = get_config_item(buf,"Spam.MarkMails")))
 							user.config.spam_mark_moved = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Spam.AutoCheck")))
+							user.config.spam_auto_check = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Spam.AddrBookIsWhite")))
 							user.config.spam_addrbook_is_white = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Spam.WhiteAddress")))
@@ -622,6 +624,7 @@ void save_config(void)
 
 			fprintf(fh,"Spam.MarkMails=%s\n",user.config.spam_mark_moved?"Y":"N");
 			fprintf(fh,"Spam.AddrBookIsWhite=%s\n",user.config.spam_addrbook_is_white?"Y":"N");
+			fprintf(fh,"Spam.AutoCheck=%s\n",user.config.spam_auto_check?"Y":"N");
 			if (user.config.spam_white_emails)
 			{
 				for (i=0;user.config.spam_white_emails[i];i++)

@@ -1017,6 +1017,15 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 
 	mail->flags |= MAIL_FLAGS_NEW;
 	pos = folder_add_mail(folder,mail,1);
+
+	if (user.config.spam_auto_check)
+	{
+		if (spam_is_mail_spam(folder,mail))
+		{
+			folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
+		}
+	}
+
 	if (main_get_folder() == folder && pos != -1)
 	{
 		main_insert_mail_pos(mail,pos-1);
@@ -1319,14 +1328,22 @@ void callback_selected_mails_are_ham(void)
 
 		if (spam_feed_mail_as_ham(folder,mail))
 		{
+			int refresh = 0;
+
 			if (mail->flags & MAIL_FLAGS_AUTOSPAM)
+			{
 				folder_set_mail_flags(folder, mail, (mail->flags & (~MAIL_FLAGS_AUTOSPAM)));
+				refresh = 1;
+			}
 
 			if (mail_is_spam(mail))
 			{
 				folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);
-				main_refresh_mail(mail);
+				refresh = 1;
 			}
+
+			if (refresh)
+				main_refresh_mail(mail);
 		}
 		mail = main_get_mail_next_selected(&handle);
 	}	
@@ -1350,7 +1367,7 @@ void callback_check_selected_mails_if_spam(void)
 		{
 			if (spam_is_mail_spam(folder,mail))
 			{
-				folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+				folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
 				if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
 				mail->flags &= ~MAIL_FLAGS_NEW;
 				main_refresh_mail(mail);

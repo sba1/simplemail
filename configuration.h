@@ -110,6 +110,7 @@ struct config
 
 	/* spam */
 	int spam_mark_moved; /* mark mails if they are moved to spam */
+	int spam_auto_check;
 	int spam_addrbook_is_white;
 	char **spam_white_emails;
 	char **spam_black_emails;

@@ -31,7 +31,6 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include "io.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -78,22 +77,22 @@ int pop3_wait_login(struct pop3_server *server)
             }
             else
             {
-               tell(buf);
+               tell_from_subtask(buf);
             }
          }
          else
          {
-            tell("Error receiving data from host!");
+            tell_from_subtask("Error receiving data from host!");
          }
       }
       else
       {
-         tell("Not enough memory!");
+         tell_from_subtask("Not enough memory!");
       }
    }  
    else
    {
-      tell("Not connected!");
+      tell_from_subtask("Not connected!");
    }
    
    return(rc);
@@ -144,39 +143,39 @@ int pop3_login(struct pop3_server *server)
                      }
                      else
                      {
-                        tell(buf);
+                        tell_from_subtask(buf);
                      }
                   }  
                   else
                   {
-                     tell("Reveiving failed.");
+                     tell_from_subtask("Reveiving failed.");
                   }
                }  
                else
                {
-                  tell("Sending failed.");
+                  tell_from_subtask("Sending failed.");
                }
             }
             else
             {
-               tell(buf);
+               tell_from_subtask(buf);
             }
          }
          else
          {
-            tell("Receiving failed!");
+            tell_from_subtask("Receiving failed!");
          }
       }  
       else
       {
-         tell("Sending failed!");
+         tell_from_subtask("Sending failed!");
       }
       
       free(buf);
    }
    else
    {
-      tell("Not enough memory!");
+      tell_from_subtask("Not enough memory!");
    }
    
    
@@ -215,23 +214,23 @@ int pop3_stat(struct pop3_server *server)
             }
             else
             {
-               tell(buf);
+               tell_from_subtask(buf);
             }
          }
          else
          {
-            tell("Receiving failed!");
+            tell_from_subtask("Receiving failed!");
          }
       }
       else
       {
-         tell("Sending failed!");
+         tell_from_subtask("Sending failed!");
       }
       free(buf);
    }
    else
    {
-      tell("Not enough memory!");
+      tell_from_subtask("Not enough memory!");
    }
    
    return(rc);
@@ -263,23 +262,23 @@ int pop3_quit(struct pop3_server *server)
             }
             else
             {
-               tell(buf);
+               tell_from_subtask(buf);
             }
          }
          else
          {
-            tell("Receiving failed!");
+            tell_from_subtask("Receiving failed!");
          }
       }
       else
       {
-         tell("Sending failed!");
+         tell_from_subtask("Sending failed!");
       }
       free(buf);
    }
    else
    {
-      tell("Not enough memory!");
+      tell_from_subtask("Not enough memory!");
    }
    
    return(rc);
@@ -297,20 +296,20 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 
 	if (!(fn = mail_get_new_name()))
 	{
-    tell("Can\'t get new filename!");
+    tell_from_subtask("Can\'t get new filename!");
     return 0;
 	}
 
 	if (!(buf = malloc(REC_BUFFER_SIZE+1)))
 	{
-		tell("Not enough memory!");
+		tell_from_subtask("Not enough memory!");
 		free(fn);
 		return 0;
 	}
 
 	if (!(fp = fopen(fn, "w")))
 	{
-		tell("Can\'t open mail file!");
+		tell_from_subtask("Can\'t open mail file!");
 		free(buf);
 		free(fn);
 		return 0;
@@ -353,7 +352,6 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 							/* Check if the downloading should be aborted */
 							if(thread_call_parent_function_sync(dl_checkabort,0))
 							{
-								tell("Aborted");
 								rc = 0;
 								break;
 							}
@@ -383,7 +381,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 					{
 						if (Errno())
 						{
-							tell("Error retrieving mail!");
+							tell_from_subtask("Error retrieving mail!");
 							rc = 0;
 						}
 
@@ -393,10 +391,10 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 
 						thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
 					}  
-				} else tell(buf);
-			} else tell("Receiving failed!");
-		} else tell(buf);
-	} else tell("Receiving failed!");
+				} else tell_from_subtask(buf);
+			} else tell_from_subtask("Receiving failed!");
+		} else tell_from_subtask(buf);
+	} else tell_from_subtask("Receiving failed!");
 
 	if (fp) fclose(fp);
 	free(buf);
@@ -483,7 +481,7 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
                }  
                else
                {
-                  tell("Error receiving!");
+                  tell_from_subtask("Error receiving!");
                   
                   mail_free(mail);
                }
@@ -495,7 +493,7 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
          }
          else
          {
-            tell("Receiving failed!");
+            tell_from_subtask("Receiving failed!");
          }
          pop3_output_infos(mail);
          mail_scan_buffer_end(&ms);
@@ -506,7 +504,7 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
    }
    else
    {
-      tell("Not enough memory!");
+      tell_from_subtask("Not enough memory!");
    }
    
    return(rc);
@@ -571,7 +569,7 @@ static int pop3_really_dl(struct pop3_server *server)
                   sm_makedir("PROGDIR:.folders/income");
                   if(chdir("PROGDIR:.folders/income") == -1)
                   {
-                     tell("Can\'t access income-folder!");
+                     tell_from_subtask("Can\'t access income-folder!");
                      return(FALSE);
                   }
                   else
@@ -585,12 +583,12 @@ static int pop3_really_dl(struct pop3_server *server)
                         {
                            if(!pop3_del_mail(server, i))
                            {
-                              tell("Can\'t mark mail as deleted!");
+                              tell_from_subtask("Can\'t mark mail as deleted!");
                            }  
                         }
                         else
                         {
-                           tell("Can\'t download mail!");
+                           tell_from_subtask("Can\'t download mail!");
                            break;
                         }
                      }
@@ -607,7 +605,7 @@ static int pop3_really_dl(struct pop3_server *server)
    }
    else
    {
-      tell("You need a bsd-stack to download e-mails!");
+      tell_from_subtask("You need a bsd-stack to download e-mails!");
    }
    
    return(rc);

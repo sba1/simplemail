@@ -35,8 +35,6 @@
 #include "tcp.h"
 #include "upwnd.h"
 
-#include "io.h" /* io.c should be removed after stuff has been moved to support.h */
-
 int mails_dl(void)
 {
 	struct pop3_server server;

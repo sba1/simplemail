@@ -31,7 +31,6 @@
 
 /* nongui parts */
 #include "mail.h"
-#include "io.h"
 
 /* gui parts */
 #include "addressstringclass.h"
@@ -152,7 +151,7 @@ int all_init(void)
 	}
 	else
 	{
-		missing_lib(MUIMASTER_NAME, MUIMASTER_VMIN);
+		printf("Couldn't open " MUIMASTER_NAME " version %ld!\n",MUIMASTER_VMIN);
 	}
 
 	return(rc);

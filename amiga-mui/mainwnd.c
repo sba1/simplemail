@@ -36,7 +36,6 @@
 
 #include "folder.h"
 #include "mail.h"
-#include "io.h"
 #include "simplemail.h"
 #include "support.h"
 

@@ -30,9 +30,9 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
+#include "support.h"
 #include "tcpip.h"
 
-#include "io.h"
 #include "tcp.h"
 
 long tcp_connect(char *server, unsigned int port)
@@ -62,12 +62,12 @@ long tcp_connect(char *server, unsigned int port)
          }
          else
          {
-            tell("Connect() failed!");
+            tell_from_subtask("Connect() failed!");
          }
       }
       else
       {
-         tell("Socket() failed!");
+         tell_from_subtask("Socket() failed!");
       }
    }
    else
@@ -83,7 +83,7 @@ long tcp_connect(char *server, unsigned int port)
          sprintf(err, "%s is not a valid server!", server);
       }
       
-      tell(err);
+      tell_from_subtask(err);
    }  
 
    return(rc);

@@ -31,7 +31,6 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include "io.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -55,7 +54,7 @@ int buf_flush(struct smtp_server *server, char *buf, long len)
       rc = TRUE;
       if(!rc)
       {
-         tell("flushing failed");
+         tell_from_subtask("flushing failed");
       }
       
    }
@@ -96,7 +95,7 @@ __inline static int buf_cat(struct smtp_server *server, char *buf, char c)
       {
          len = 0;
          buf[0] = 0;
-         tell("panic: line with more than 76 chars detected!");
+         tell_from_subtask("panic: line with more than 76 chars detected!");
       }
       else
       {
@@ -173,7 +172,7 @@ int smtp_helo(struct smtp_server *server, char *domain)
    }
    else
    {
-      tell("service not ready");
+      tell_from_subtask("service not ready");
    }
 
    return(rc);
@@ -276,7 +275,6 @@ int smtp_data(struct smtp_server *server, char *mailfile)
                   thread_call_parent_function_sync(up_set_gauge_byte,1,i);
                   if(thread_call_parent_function_sync(up_checkabort,0))
                   {
-                     tell("aborted");
                      rc = FALSE;
                      break;
                   }
@@ -293,7 +291,7 @@ int smtp_data(struct smtp_server *server, char *mailfile)
          }
          else
          {
-            tell("cmd failed");
+            tell_from_subtask("cmd failed");
          }
          
          fclose(fp);
@@ -351,21 +349,21 @@ int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
                thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
                if(!smtp_data(server, om[i]->mailfile))
                {
-                  tell("data failed");
+                  tell_from_subtask("data failed");
                   rc = FALSE;
                   break;
                }
             }
             else
             {
-               tell("rcpt failed");
+               tell_from_subtask("rcpt failed");
                rc = FALSE;
                break;
             }
          }
          else
          {
-            tell("from failed");
+            tell_from_subtask("from failed");
             rc = FALSE;
             break;
          }
@@ -389,7 +387,7 @@ int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
    }
    else
    {
-      tell("helo failed");
+      tell_from_subtask("helo failed");
    }
 
    return(rc);
@@ -412,9 +410,9 @@ static int smtp_send_really(struct smtp_server *server)
 			thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
 			CloseSocket(server->socket);
 			server->socket = SMTP_NO_SOCKET;
-		} else tell("cannot open server");
+		} else tell_from_subtask("cannot open server");
 		close_socket_lib();
-	} else tell("cannot open lib");
+	} else tell_from_subtask("cannot open lib");
 	return rc;
 }
 

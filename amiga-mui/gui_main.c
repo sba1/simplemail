@@ -89,6 +89,7 @@
 #include "shutdownwnd.h"
 #include "subthreads.h"
 #include "subthreads_amiga.h"
+#include "support.h"
 #include "transwndclass.h"
 #include "utf8stringclass.h"
 
@@ -407,16 +408,47 @@ static void refresh_appicon(void)
 int gui_init(void)
 {
 	int rc;
+	int open_config_window = 0;
 
 	SM_ENTER;
 
 #ifdef __AMIGAOS4__
-	if (!user.config.from_disk)
 	{
 		LONG default_charset = GetDiskFontCtrl(DFCTRL_CHARSET);
 		STRPTR charset = (STRPTR)ObtainCharsetInfo(DFCS_NUMBER, default_charset, DFCS_MIMENAME);
-		if (charset)
-			user.config.default_codeset = codesets_find(charset); /* return never NULL */
+		struct codeset *cs = codesets_find(charset);
+
+		if (cs)
+		{
+			if (!user.config.from_disk)
+				user.config.default_codeset = cs;
+			else
+			{
+				BPTR lock = Lock("PROGDIR:.ignorecharset",ACCESS_READ);
+
+				if (cs != user.config.default_codeset && !lock)
+				{
+					int rc;
+	
+					rc = sm_request(NULL,_("The charset configured for SimpleMail (%s) doesn't match\n"
+														"the system's default charset (%s)! How to proceed?"),
+													_("Change|Ignore once|Ignore always"),
+													user.config.default_codeset->name,
+													cs->name);
+
+					if (rc == 1)
+					{
+						user.config.default_codeset = cs;
+						open_config_window = 1;
+					}
+					else if (rc == 0)
+					{
+						BPTR fh = Open("PROGDIR:.ignorecharset",MODE_NEWFILE);
+						if (fh) Close(fh);
+					}
+				} else UnLock(lock);
+			}
+		}
 	}
 #endif
 
@@ -432,6 +464,8 @@ int gui_init(void)
 		if (main_window_open())
 		{
 			startupwnd_close();
+
+			if (open_config_window) open_config();
 
 			/* if we should open the compose window soon after start */
 			if (initial_mailto)

@@ -165,7 +165,7 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_inf
 			if (!field)
 			{
 				field = mail->to_addr;
-				ascii7 = 1;
+				ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ADDR_ASCII7);
 			}
 		}
 	} else
@@ -175,7 +175,7 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_inf
 		if (!field)
 		{
 			field = mail->from_addr;
-			ascii7 = 1;
+			ascii7 = !!(mail->flags & MAIL_FLAGS_FROM_ADDR_ASCII7);
 		}
 	}
 
@@ -251,6 +251,8 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				static char date_buf[64];
 				static char recv_buf[64];
 				static char status_buf[128];
+				
+				char *reply;
 
 				if (mail->flags & MAIL_FLAGS_AUTOSPAM)
 				{
@@ -322,10 +324,17 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 
 				utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
 
+				if (mail->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7) reply = mail->reply_addr;
+				else
+				{
+					utf8tostr(mail->reply_addr,data->reply_buf,sizeof(data->reply_buf),user.config.default_codeset);				
+					reply = data->reply_buf;
+				}
+
 				*array++ = status_buf; /* status */
 				*array++ = mailtree_get_fromto(data,mail);
 				*array++ = data->subject_buf;
-				*array++ = mail->reply_addr;
+				*array++ = reply;
 				*array++ = date_buf;
 				*array++ = size_buf;
 				*array++ = mail->filename;

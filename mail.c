@@ -621,10 +621,10 @@ char *mail_get_new_name(int status)
 	
 	day_secs = (tm.tm_min * 60) + tm.tm_sec;
 	dummy[4] = 0;
-	dummy[3] = 'a';//get_char_18(day_secs % 18);
-	dummy[2] = 'a';//get_char_18((day_secs / 18)%18);
-	dummy[1] = 'a';//get_char_18((day_secs / 18 / 18)%18);
-	dummy[0] = 'a';//get_char_18(day_secs / 18 / 18 / 18);
+	dummy[3] = get_char_18(day_secs % 18);
+	dummy[2] = get_char_18((day_secs / 18)%18);
+	dummy[1] = get_char_18((day_secs / 18 / 18)%18);
+	dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
 
 	if (status == MAIL_STATUS_UNREAD) status_buf[0] = 0;
 	else {

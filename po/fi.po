@@ -1,0 +1,1738 @@
+# FINNISH TRANSLATION FOR SIMPLEMAIL.
+# Copyright (C) 2002 Free Software Foundation, Inc.
+# Joni Halme <joni.halme@satabaana.net>, 2002.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2002-01-03 20:51+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Joni Halme <joni.halme@satabaana.net>\n"
+"Language-Team: Suomi <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+
+#: amiga-mui/addressbookwnd.c:389
+msgid "Personal"
+msgstr "Henkilˆkohtainen"
+
+#: amiga-mui/addressbookwnd.c:390
+msgid "Private"
+msgstr "Liimaa"
+
+#: amiga-mui/addressbookwnd.c:391
+msgid "Work"
+msgstr "Tyˆ"
+
+#: amiga-mui/addressbookwnd.c:392
+msgid "Notes"
+msgstr "Huomautukset"
+
+#: amiga-mui/addressbookwnd.c:407
+msgid "SimpleMail - Edit Person"
+msgstr "SimpleMail - Muokkaa henkilˆtietoja"
+
+#: amiga-mui/addressbookwnd.c:415 amiga-mui/addressbookwnd.c:872
+#: amiga-mui/addresstreelistclass.c:139
+msgid "Alias"
+msgstr "Alias"
+
+#: amiga-mui/addressbookwnd.c:421
+msgid "Real Name"
+msgstr "Oikea nimi"
+
+#: amiga-mui/addressbookwnd.c:427 amiga-mui/addressbookwnd.c:878
+#: amiga-mui/addresstreelistclass.c:140
+msgid "Description"
+msgstr "Kuvaus"
+
+#: amiga-mui/addressbookwnd.c:433
+msgid "PGP Key-ID"
+msgstr "PGP-tunnus"
+
+#: amiga-mui/addressbookwnd.c:449
+msgid "Homepage"
+msgstr "Kotisivut"
+
+#: amiga-mui/addressbookwnd.c:459
+msgid "Date of birth"
+msgstr "Syntym‰aika"
+
+#: amiga-mui/addressbookwnd.c:466
+msgid "Sex"
+msgstr "Sukupuoli"
+
+#: amiga-mui/addressbookwnd.c:476
+msgid "Female"
+msgstr "Nainen"
+
+#: amiga-mui/addressbookwnd.c:486
+msgid "Male"
+msgstr "Mies"
+
+#: amiga-mui/addressbookwnd.c:492
+msgid "Portrait"
+msgstr "Kuva"
+
+#: amiga-mui/addressbookwnd.c:508
+msgid "E-Mail addresses"
+msgstr "S‰hkˆpostiosoitteet"
+
+#: amiga-mui/addressbookwnd.c:519 amiga-mui/addressbookwnd.c:606
+msgid "Street"
+msgstr "Osoite"
+
+#: amiga-mui/addressbookwnd.c:527 amiga-mui/addressbookwnd.c:614
+msgid "City"
+msgstr "Kaupunki"
+
+#: amiga-mui/addressbookwnd.c:533 amiga-mui/addressbookwnd.c:620
+msgid "ZIP/Postal Code"
+msgstr "Postinro"
+
+#: amiga-mui/addressbookwnd.c:539 amiga-mui/addressbookwnd.c:626
+msgid "State/Province"
+msgstr "Osavaltio/Maakunta"
+
+#: amiga-mui/addressbookwnd.c:545 amiga-mui/addressbookwnd.c:632
+msgid "Country"
+msgstr "Maa"
+
+#: amiga-mui/addressbookwnd.c:558 amiga-mui/addressbookwnd.c:645
+msgid "Phone numbers"
+msgstr "Puhelin"
+
+#: amiga-mui/addressbookwnd.c:564 amiga-mui/addressbookwnd.c:651
+msgid "Mobile"
+msgstr "Matkapuhelin"
+
+#: amiga-mui/addressbookwnd.c:576 amiga-mui/addressbookwnd.c:663
+msgid "Fax"
+msgstr "Faksi"
+
+#: amiga-mui/addressbookwnd.c:589
+msgid "Title"
+msgstr "Tyˆnimike"
+
+#: amiga-mui/addressbookwnd.c:595
+msgid "Organization"
+msgstr "Organisaatio"
+
+#: amiga-mui/addressbookwnd.c:683 amiga-mui/addressbookwnd.c:888
+#: amiga-mui/folderwnd.c:133
+msgid "_Ok"
+msgstr "_Ok"
+
+#: amiga-mui/addressbookwnd.c:684 amiga-mui/addressbookwnd.c:889
+#: amiga-mui/composewnd.c:1010 amiga-mui/configwnd.c:1486
+#: amiga-mui/filterwnd.c:493 amiga-mui/folderwnd.c:134
+#: amiga-mui/folderwnd.c:240
+msgid "_Cancel"
+msgstr "_Peru"
+
+#: amiga-mui/addressbookwnd.c:867
+msgid "SimpleMail - Edit Group"
+msgstr "SimpleMail - Ryhm‰n ominaisuudet"
+
+#: amiga-mui/addressbookwnd.c:1059
+msgid "SimpleMail - Addressbook"
+msgstr "SimpleMail - Osoitekirja"
+
+#: amiga-mui/addressbookwnd.c:1065
+msgid "_To:"
+msgstr "T_o:"
+
+#: amiga-mui/addressbookwnd.c:1066
+msgid "_CC:"
+msgstr "_CC:"
+
+#: amiga-mui/addressbookwnd.c:1067
+msgid "_BCC:"
+msgstr "_BCC:"
+
+#: amiga-mui/addressbookwnd.c:1073
+msgid "_Import"
+msgstr "Tuo"
+
+#. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
+#: amiga-mui/addressbookwnd.c:1074 amiga-mui/configwnd.c:1484
+#: amiga-mui/filterwnd.c:491 amiga-mui/readwnd.c:912
+msgid "_Save"
+msgstr "_Tallenna"
+
+#. Child, MakeButton("Search"),
+#: amiga-mui/addressbookwnd.c:1076
+msgid "_Person"
+msgstr "_Henkilˆ"
+
+#. Child, MakeButton("New List"),
+#: amiga-mui/addressbookwnd.c:1078
+msgid "_Group"
+msgstr "_Ryhm‰"
+
+#: amiga-mui/addressbookwnd.c:1079 amiga-mui/mainwnd.c:534
+msgid "_Edit"
+msgstr "_Muokkaa"
+
+#: amiga-mui/addressbookwnd.c:1080 amiga-mui/readwnd.c:918
+msgid "_Delete"
+msgstr "_Poista"
+
+#: amiga-mui/addresstreelistclass.c:138 amiga-mui/configwnd.c:733
+#: amiga-mui/configwnd.c:1229 amiga-mui/foldertreelistclass.c:119
+#: amiga-mui/folderwnd.c:219
+msgid "Name"
+msgstr "Nimi"
+
+#: amiga-mui/addresstreelistclass.c:141
+msgid "Address"
+msgstr "S‰hkˆpostiosoite"
+
+#: amiga-mui/addresstreelistclass.c:205
+msgid "Addresslist Settings"
+msgstr "Osoitteiston ominaisuudet"
+
+#: amiga-mui/addresstreelistclass.c:206
+msgid "Show Realname?"
+msgstr "N‰yt‰ nimi?"
+
+#: amiga-mui/addresstreelistclass.c:207
+msgid "Show Nickname?"
+msgstr "N‰yt‰ alias?"
+
+#: amiga-mui/addresstreelistclass.c:208
+msgid "Show Description?"
+msgstr "N‰yt‰ kuvaus?"
+
+#: amiga-mui/addresstreelistclass.c:209
+msgid "Show E-Mail Address?"
+msgstr "N‰yt‰ s‰hkˆpostiosoitteet?"
+
+#: amiga-mui/addresstreelistclass.c:211 amiga-mui/mailtreelistclass.c:291
+msgid "Default Width: this"
+msgstr "Tallenna leveys: valittu"
+
+#: amiga-mui/addresstreelistclass.c:212 amiga-mui/mailtreelistclass.c:292
+msgid "Default Width: all"
+msgstr "Tallenna leveys: kaikki"
+
+#: amiga-mui/addresstreelistclass.c:213 amiga-mui/mailtreelistclass.c:293
+msgid "Default Order: this"
+msgstr "Tallenna j‰rjestys: valittu"
+
+#: amiga-mui/addresstreelistclass.c:214 amiga-mui/mailtreelistclass.c:294
+msgid "Default Order: all"
+msgstr "Tallenna j‰rjestys: kaikki"
+
+#: amiga-mui/composewnd.c:847
+#, fuzzy
+msgid "No Signature"
+msgstr "Ei allekirjoitusta"
+
+#: amiga-mui/composewnd.c:853 amiga-mui/composewnd.c:854
+msgid "Use signature"
+msgstr "Lis‰‰ allekirjoitus"
+
+#: amiga-mui/composewnd.c:867
+msgid "SimpleMail - Compose Message"
+msgstr "SimpleMail - Luo viesti"
+
+#: amiga-mui/composewnd.c:873
+msgid "_From"
+msgstr "_L‰hett‰j‰"
+
+#: amiga-mui/composewnd.c:884 amiga-mui/composewnd.c:890
+msgid "_To"
+msgstr "_Vastaanottaja"
+
+#: amiga-mui/composewnd.c:895 amiga-mui/composewnd.c:901
+msgid "Copies To"
+msgstr "Kopiot"
+
+#: amiga-mui/composewnd.c:906 amiga-mui/composewnd.c:910
+msgid "S_ubject"
+msgstr "Otsikko"
+
+#: amiga-mui/composewnd.c:920
+msgid "Copy"
+msgstr "Kopioi"
+
+#: amiga-mui/composewnd.c:921
+msgid "Cut"
+msgstr "Leikkaa"
+
+#: amiga-mui/composewnd.c:922
+msgid "Paste"
+msgstr "Liimaa"
+
+#: amiga-mui/composewnd.c:927
+msgid "Undo"
+msgstr "Peru"
+
+#: amiga-mui/composewnd.c:928
+msgid "Redo"
+msgstr "Toista"
+
+#: amiga-mui/composewnd.c:933
+msgid "_Attach"
+msgstr "Lis‰‰ liite"
+
+#: amiga-mui/composewnd.c:934
+msgid "Sho_w At."
+msgstr "Liitteet"
+
+#: amiga-mui/composewnd.c:939
+msgid "_Encrypt"
+msgstr "Salaus"
+
+#: amiga-mui/composewnd.c:940
+msgid "Si_gn"
+msgstr "Allekirjoitus"
+
+#: amiga-mui/composewnd.c:998
+msgid "Add text"
+msgstr "Lis‰‰ teksti"
+
+#: amiga-mui/composewnd.c:999
+msgid "Add multipart"
+msgstr "Lis‰‰ moniosainen"
+
+#: amiga-mui/composewnd.c:1000
+msgid "Add file(s)"
+msgstr "Lis‰‰ tiedosto(t)"
+
+#. Child, MakeButton("Pack & add"),
+#: amiga-mui/composewnd.c:1002 amiga-mui/filterwnd.c:233
+msgid "Remove"
+msgstr "Poista"
+
+#: amiga-mui/composewnd.c:1007
+msgid "_Send now"
+msgstr "L‰het‰ heti"
+
+#: amiga-mui/composewnd.c:1008
+msgid "Send _later"
+msgstr "L‰het‰ myˆhemmin"
+
+#: amiga-mui/composewnd.c:1009
+msgid "_Hold"
+msgstr "Laita pitoon"
+
+#: amiga-mui/configwnd.c:340
+msgid ""
+"You have changed the folder direcory! You must quit and restart SimpleMail "
+"now."
+msgstr "Vaihdoit kansioiden hakemistoa! SimpleMail pit‰‰ k‰ynnist‰‰ uudestaan."
+
+#: amiga-mui/configwnd.c:340 mail.c:1905 mail.c:2677
+msgid "Ok"
+msgstr "Ok"
+
+#: amiga-mui/configwnd.c:556 amiga-mui/configwnd.c:557
+msgid "Add adjustment for daylight saving time"
+msgstr "S‰‰d‰ kello kes‰ajan mukaan"
+
+#: amiga-mui/configwnd.c:561
+msgid "Folder directory"
+msgstr "Kansioiden hakemisto"
+
+#: amiga-mui/configwnd.c:588
+msgid "Disabled"
+msgstr "Ei koskaan"
+
+#: amiga-mui/configwnd.c:589
+msgid "Only Sizes"
+msgstr "Vain koot"
+
+#: amiga-mui/configwnd.c:590
+msgid "Enabled"
+msgstr "Aina"
+
+#: amiga-mui/configwnd.c:596
+msgid "Preselection"
+msgstr "Viestien esivalinta"
+
+#: amiga-mui/configwnd.c:615
+msgid "Automatic operation"
+msgstr "Automaattinen vastaanotto"
+
+#: amiga-mui/configwnd.c:617
+msgid "Check for new mail every"
+msgstr "Tarkista posti"
+
+#: amiga-mui/configwnd.c:624
+msgid "minutes"
+msgstr "minuutin v‰lein"
+
+#: amiga-mui/configwnd.c:626
+msgid "New mails"
+msgstr "Ilmoitus"
+
+#: amiga-mui/configwnd.c:628 amiga-mui/configwnd.c:629
+msgid "Sound"
+msgstr "ƒ‰ni"
+
+#: amiga-mui/configwnd.c:652 amiga-mui/configwnd.c:1526
+msgid "Account"
+msgstr "Tili"
+
+#: amiga-mui/configwnd.c:691 amiga-mui/configwnd.c:864
+msgid "Add new account"
+msgstr "Lis‰‰ uusi tili"
+
+#: amiga-mui/configwnd.c:731 amiga-mui/configwnd.c:1513
+msgid "User"
+msgstr "K‰ytt‰j‰tiedot"
+
+#: amiga-mui/configwnd.c:740
+msgid "E-Mail Address"
+msgstr "S‰hkˆpostiosoite"
+
+#: amiga-mui/configwnd.c:747
+msgid "Reply Address"
+msgstr "Vastausosoite"
+
+#: amiga-mui/configwnd.c:755
+msgid "Receive"
+msgstr "Postin vastaanotto"
+
+#: amiga-mui/configwnd.c:757
+msgid "POP3 Server"
+msgstr "POP3-palvelin"
+
+#: amiga-mui/configwnd.c:764 amiga-mui/configwnd.c:818
+msgid "Port"
+msgstr "Portti"
+
+#: amiga-mui/configwnd.c:773 amiga-mui/configwnd.c:827
+msgid "Login"
+msgstr "Tilinimi"
+
+#: amiga-mui/configwnd.c:780 amiga-mui/configwnd.c:835
+msgid "Password"
+msgstr "Salasana"
+
+#: amiga-mui/configwnd.c:787 amiga-mui/configwnd.c:788
+msgid "Ask"
+msgstr "Kysy"
+
+#: amiga-mui/configwnd.c:792 amiga-mui/configwnd.c:793
+msgid "Active"
+msgstr "Lis‰‰ vastaanotettaviin"
+
+#: amiga-mui/configwnd.c:794 amiga-mui/configwnd.c:795
+msgid "_Delete mails"
+msgstr "Poista viestit palvelimelta"
+
+#: amiga-mui/configwnd.c:796 amiga-mui/configwnd.c:797
+msgid "Avoid duplicates"
+msgstr "V‰lt‰ kopioita"
+
+#: amiga-mui/configwnd.c:798 amiga-mui/configwnd.c:800
+#: amiga-mui/configwnd.c:849 amiga-mui/configwnd.c:850
+msgid "Secure"
+msgstr "Suojattu"
+
+#: amiga-mui/configwnd.c:802 amiga-mui/configwnd.c:803
+msgid "with STLS"
+msgstr "STLS"
+
+#: amiga-mui/configwnd.c:808
+msgid "Send"
+msgstr "Postin l‰hetys"
+
+#: amiga-mui/configwnd.c:811
+msgid "SMTP Server"
+msgstr "SMTP-palvelin"
+
+#: amiga-mui/configwnd.c:846 amiga-mui/configwnd.c:847
+msgid "Use SMTP AUTH"
+msgstr "K‰yt‰ SMTP AUTH"
+
+#: amiga-mui/configwnd.c:852 amiga-mui/configwnd.c:853
+msgid "Log into POP3 server first"
+msgstr "Kirjaudu ensin POP3-palvelimelle"
+
+#: amiga-mui/configwnd.c:855 amiga-mui/configwnd.c:856
+msgid "Use IP as domain"
+msgstr "K‰yt‰ IP:t‰ verkkotunnuksena"
+
+#: amiga-mui/configwnd.c:865
+msgid "Remove account"
+msgstr "Poista t‰m‰ tili"
+
+#: amiga-mui/configwnd.c:882
+msgid "Your full name (required)"
+msgstr "Koko nimesi (pakollinen)."
+
+#: amiga-mui/configwnd.c:883
+msgid "Your E-Mail address for this account (required)"
+msgstr "S‰hkˆpostiosoitteesi t‰h‰n tiliin (pakollinen)."
+
+#: amiga-mui/configwnd.c:884
+msgid ""
+"Address where the replies of the mails should\n"
+"be sent (required only if different from the e-mail address)."
+msgstr ""
+"Osoite minne vastaukset l‰hetet‰‰n\n"
+"(jos eri kuin s‰hkˆpostiosoite)."
+
+#: amiga-mui/configwnd.c:885
+msgid ""
+"The name of the so called POP3 server from\n"
+"which you download your e-Mails (required; ask your\n"
+"provider if unknown)."
+msgstr ""
+"Tulevan postin palvelin (pakollinen).\n"
+"Osoitteen saat tarvittaessa palveluntarjoajaltasi."
+
+#: amiga-mui/configwnd.c:886
+msgid "The port number. Usually 110"
+msgstr "Portin numero. Yleens‰ 110."
+
+#: amiga-mui/configwnd.c:887
+msgid "The login/UserID which you got from your ISP."
+msgstr "K‰ytt‰j‰tunnus/nimi jonka olet saanut palveluntarjoajalta."
+
+#: amiga-mui/configwnd.c:888
+msgid ""
+"Your very own password to access the mails\n"
+"located on the POP3 server."
+msgstr "Salasanasi s‰hkˆpostitilille."
+
+#: amiga-mui/configwnd.c:889
+msgid ""
+"Deactivate this if you don't want SimpleMail to\n"
+"download the e-Mails when pressing on 'Fetch'."
+msgstr "Haetaanko tilin viestit klikattaessa 'Hae'."
+
+#: amiga-mui/configwnd.c:890
+msgid ""
+"After successul downloading the mails should be deleted\n"
+"on the POP3 server."
+msgstr ""
+"Poistetaanko haetut viestit palvelimelta."
+
+#: amiga-mui/configwnd.c:891
+msgid ""
+"When not deleteding e-Mails on the server SimpleMail\n"
+"tries to avoid downloading a message twice the next time."
+msgstr ""
+"Kun viestej‰ ei poisteta palvelimelta, SimpleMail\n"
+"yritt‰‰ v‰ltt‰‰ saman viestin hakemisen kahdesti."
+
+#: amiga-mui/configwnd.c:892
+msgid ""
+"If activated SimpleMail tries to make the connection secure.\n"
+"This is not supported on all servers, so decativate if it doesn't work."
+msgstr ""
+"SimpleMail voi yritt‰‰ avata turvatun yhteyden.\n"
+"Kaikki palvelimet eiv‰t tue t‰t‰ ominaisuutta."
+
+#: amiga-mui/configwnd.c:893
+msgid ""
+"The name of the so called SMTP server which is responlible\n"
+"to send your e-Mails."
+msgstr "SMTP palvelimen osoite, joka hoitaa postien l‰hett‰misen."
+
+#: amiga-mui/configwnd.c:894
+msgid "The port number. Usually 25"
+msgstr "Portin numero. Yleens‰ 25."
+
+#: amiga-mui/configwnd.c:895
+msgid ""
+"Your login/UserID for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"K‰ytt‰j‰tunnus/nimi SMTP palvelimelle.\n"
+"Tarvitaan vain jos palvelin vaatii kirjautumisen."
+
+#: amiga-mui/configwnd.c:896
+msgid ""
+"Your password for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"Salasana SMTP palvelimelle.\n"
+"Tarvitaan vain jos palvelin vaatii kirjautumisen."
+
+#: amiga-mui/configwnd.c:897
+msgid "Activate this if the SMTP server requires authentication."
+msgstr "Aktivoi, jos SMTP palvelin vaatii kirjautumisen."
+
+#: amiga-mui/configwnd.c:898
+msgid ""
+"Activate this if you want a secure connection\n"
+"to the SMTP server. Deactivate this if your SMTP server\n"
+"doesn't support it"
+msgstr ""
+"SimpleMail voi yritt‰‰ avata suojatun yhteyden.\n"
+"Kaikki palvelimet eiv‰t tue t‰t‰ ominaisuutta."
+
+#: amiga-mui/configwnd.c:899
+msgid ""
+"Activate this if you provider needs that\n"
+"you first log into its POP3 sever."
+msgstr ""
+"Aktivoi t‰m‰ jos palveluntarjoajasi vaatii\n"
+"kirjautumisen ensin POP3-palvelimelle."
+
+#: amiga-mui/configwnd.c:900
+msgid ""
+"Send your current IP address together with the intial greetings.\n"
+"This avoids some error headers on some providers."
+msgstr ""
+"L‰het‰ oma IP-osoite yhdess‰ tervehdyksen kanssa.\n"
+"T‰ll‰ v‰ltet‰‰n virhetilanteita joidenkin palveluntarjoajien kanssa."
+
+#: amiga-mui/configwnd.c:901
+msgid "Add a new account."
+msgstr "Lis‰‰ uusi tili."
+
+#: amiga-mui/configwnd.c:902
+msgid "Remove the current account."
+msgstr "Poista valittu tili."
+
+#: amiga-mui/configwnd.c:917
+msgid "off"
+msgstr "ei koskaan"
+
+#: amiga-mui/configwnd.c:918
+msgid "as you type"
+msgstr "kirjoitettaessa"
+
+#: amiga-mui/configwnd.c:919
+msgid "before storing"
+msgstr "ennen tallennusta"
+
+#: amiga-mui/configwnd.c:925
+msgid "Editor"
+msgstr "Viestin kirjoittaminen"
+
+#: amiga-mui/configwnd.c:927
+msgid "Word wrap"
+msgstr "Rivitys"
+
+#: amiga-mui/configwnd.c:931
+msgid "Replying"
+msgstr "Vastaaminen"
+
+#: amiga-mui/configwnd.c:933 amiga-mui/configwnd.c:934
+msgid "Wrap before quoting"
+msgstr "Rivit‰ ennen tekstin lainausta"
+
+#: amiga-mui/configwnd.c:938 amiga-mui/configwnd.c:939
+msgid "Strip signature before quoting"
+msgstr "ƒl‰ lainaa alkuper‰isen viestin allekirjoitusta"
+
+#: amiga-mui/configwnd.c:943 amiga-mui/configwnd.c:944
+msgid "Cite empty lines"
+msgstr "Lainaa myˆs tyhj‰t rivit"
+
+#: amiga-mui/configwnd.c:965
+msgid "Header Configuration"
+msgstr "Viestin yl‰tunniste"
+
+#: amiga-mui/configwnd.c:968 amiga-mui/configwnd.c:969
+msgid "Show all headers"
+msgstr "N‰yt‰ kaikki tunnisteet"
+
+#: amiga-mui/configwnd.c:999
+msgid "Additional headers"
+msgstr "Lis‰tunnisteet"
+
+#: amiga-mui/configwnd.c:1033
+msgid "Background"
+msgstr "Tausta"
+
+#: amiga-mui/configwnd.c:1034
+msgid "Text"
+msgstr "Teksti"
+
+#: amiga-mui/configwnd.c:1035
+msgid "Quoted Text"
+msgstr "Lainattu teksti"
+
+#: amiga-mui/configwnd.c:1036
+msgid "Old Quoted Text"
+msgstr "Vanha lainaus"
+
+#: amiga-mui/configwnd.c:1037
+msgid "Link Text"
+msgstr "Linkki"
+
+#: amiga-mui/configwnd.c:1079
+msgid "Fonts"
+msgstr "Kirjasimet"
+
+#: amiga-mui/configwnd.c:1081
+msgid "Proportional Font"
+msgstr "Suhteutettu kirjasin"
+
+#: amiga-mui/configwnd.c:1088
+msgid "Fixed Font"
+msgstr "Tasalevyinen kirjasin"
+
+#: amiga-mui/configwnd.c:1097
+msgid "Colors"
+msgstr "V‰rit"
+
+#: amiga-mui/configwnd.c:1107 amiga-mui/configwnd.c:1108
+msgid "Wordwrap plain text"
+msgstr "Rivit‰ tavallinen teksti"
+
+#: amiga-mui/configwnd.c:1109 amiga-mui/configwnd.c:1110
+msgid "Underline links"
+msgstr "Alleviivaa linkit"
+
+#: amiga-mui/configwnd.c:1111 amiga-mui/configwnd.c:1112
+msgid "Use graphical smilies"
+msgstr "K‰yt‰ graafisia hymiˆit‰"
+
+#: amiga-mui/configwnd.c:1132
+msgid "Allow to download images from the internet from"
+msgstr "Salli kuvien lataus seuraavista osoitteista"
+
+#: amiga-mui/configwnd.c:1156 amiga-mui/configwnd.c:1566
+msgid "Signature"
+msgstr "Allekirjoitus"
+
+#: amiga-mui/configwnd.c:1197 amiga-mui/configwnd.c:1198
+msgid "Us_e signatures"
+msgstr "Lis‰‰ allekirjoitus l‰hteviin viesteihin"
+
+#: amiga-mui/configwnd.c:1202
+msgid "_Add new signature"
+msgstr "Lis‰‰ uusi allekirjoitus"
+
+#: amiga-mui/configwnd.c:1244
+msgid "Insert random tagline"
+msgstr "Lis‰‰ satunnainen tagi"
+
+#: amiga-mui/configwnd.c:1245
+msgid "Insert ENV:Signature"
+msgstr "Lis‰‰ ENV:Signature"
+
+#: amiga-mui/configwnd.c:1249
+msgid "Add new signature"
+msgstr "Lis‰‰ uusi allekirjoitus"
+
+#: amiga-mui/configwnd.c:1250
+msgid "Remove signature"
+msgstr "Poista allekirjoitus"
+
+#: amiga-mui/configwnd.c:1273 amiga-mui/configwnd.c:1549
+msgid "Phrase"
+msgstr "Vakiotekstit"
+
+#: amiga-mui/configwnd.c:1313
+msgid "_Add new phrase"
+msgstr "Lis‰‰ uusi vakioteksti"
+
+#: amiga-mui/configwnd.c:1360
+msgid "Use on addresses which contain"
+msgstr "K‰yt‰ osoitteissa jotka sis‰lt‰v‰t"
+
+#: amiga-mui/configwnd.c:1367 amiga-mui/configwnd.c:1533
+msgid "Write"
+msgstr "Kirjoitus"
+
+#: amiga-mui/configwnd.c:1369 amiga-mui/configwnd.c:1388
+msgid "Welcome"
+msgstr "Tervetuloa"
+
+#: amiga-mui/configwnd.c:1375
+msgid "Welcome with address"
+msgstr "Osoitteellinen tervetuloa"
+
+#: amiga-mui/configwnd.c:1379 amiga-mui/configwnd.c:1398
+msgid "Close"
+msgstr "Lopetus"
+
+#: amiga-mui/configwnd.c:1386 amiga-mui/mailtreelistclass.c:270
+msgid "Reply"
+msgstr "Vastausosoite"
+
+#: amiga-mui/configwnd.c:1393
+msgid "Intro"
+msgstr "Aloitus"
+
+#: amiga-mui/configwnd.c:1403
+msgid "Forward"
+msgstr "V‰litys"
+
+#: amiga-mui/configwnd.c:1405
+msgid "Initial"
+msgstr "Aloitus"
+
+#: amiga-mui/configwnd.c:1410
+msgid "Finish"
+msgstr "Lopetus"
+
+#: amiga-mui/configwnd.c:1416
+msgid "Add new phrase"
+msgstr "Lis‰‰ uusi vakioteksti"
+
+#: amiga-mui/configwnd.c:1417
+msgid "Remove phrase"
+msgstr "Poista vakioteksti"
+
+#: amiga-mui/configwnd.c:1453
+msgid "SimpleMail - Configuration"
+msgstr "SimpleMail - Asetukset"
+
+#: amiga-mui/configwnd.c:1485 amiga-mui/filterwnd.c:492
+msgid "_Use"
+msgstr "_K‰yt‰"
+
+#: amiga-mui/configwnd.c:1502
+msgid "Save the configuration permanently."
+msgstr "Tallenna asetukset pysyv‰sti."
+
+#: amiga-mui/configwnd.c:1503
+msgid "Use the configuration, but don't save it."
+msgstr "K‰yt‰ asetuksia, mutta ‰l‰ tallenna."
+
+#: amiga-mui/configwnd.c:1504
+msgid "Discards all the changes you have made."
+msgstr "Peru kaikki muutokset."
+
+#: amiga-mui/configwnd.c:1515
+msgid "Accounts"
+msgstr "Tilit"
+
+#: amiga-mui/configwnd.c:1532
+msgid "Receive mail"
+msgstr "Uudet viestit"
+
+#: amiga-mui/configwnd.c:1534
+msgid "Reading"
+msgstr "Lukeminen"
+
+#: amiga-mui/configwnd.c:1535
+msgid "Reading plain"
+msgstr "Teksti"
+
+#: amiga-mui/configwnd.c:1536
+msgid "Reading HTML"
+msgstr "HTML"
+
+#: amiga-mui/configwnd.c:1538
+msgid "Phrases"
+msgstr "Vakiotekstit"
+
+#: amiga-mui/configwnd.c:1555
+msgid "Signatures"
+msgstr "Allekirjoitukset"
+
+#: amiga-mui/configwnd.c:1619
+msgid "All messages"
+msgstr "Kaikki viestit"
+
+#: amiga-mui/configwnd.c:1621
+#, c-format
+msgid "> %ld KB"
+msgstr "> %ld Kt"
+
+#: amiga-mui/dlwnd.c:53 amiga-mui/upwnd.c:52
+#, c-format
+msgid "Connecting to server %s..."
+msgstr "Muodostetaan yhteytt‰ palvelimeen %s..."
+
+#: amiga-mui/dlwnd.c:61
+msgid "Mail %%ld/%d"
+msgstr "Viesti %%ld/%d"
+
+#: amiga-mui/dlwnd.c:78
+msgid "%%ld/%d bytes"
+msgstr "%%ld/%d tavua"
+
+#: amiga-mui/filterruleclass.c:69
+msgid "New"
+msgstr "Uusi"
+
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:451
+msgid "Read"
+msgstr "Luettu"
+
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:452
+msgid "Unread"
+msgstr "Lukematon"
+
+#: amiga-mui/filterruleclass.c:69
+msgid "Replied"
+msgstr "Vastattu"
+
+#: amiga-mui/filterruleclass.c:69
+msgid "Forwarded"
+msgstr "V‰litetty"
+
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:450
+msgid "Pending"
+msgstr "Odottaa"
+
+#: amiga-mui/filterruleclass.c:69
+msgid "Sent"
+msgstr "L‰hetetty"
+
+#: amiga-mui/filterruleclass.c:87
+msgid "Sender"
+msgstr "L‰hett‰j‰"
+
+#: amiga-mui/filterruleclass.c:88 amiga-mui/mailtreelistclass.c:269
+#: amiga-mui/transwndclass.c:120 mail.c:2826 print.c:119
+msgid "Subject"
+msgstr "Otsikko"
+
+#: amiga-mui/filterruleclass.c:89
+msgid "Header"
+msgstr "Otsikko"
+
+#: amiga-mui/filterruleclass.c:90
+msgid "Has attachments"
+msgstr "Sis‰lt‰‰ liitteit‰"
+
+#: amiga-mui/filterruleclass.c:91
+msgid "Status is"
+msgstr "Tila on"
+
+#: amiga-mui/filterruleclass.c:112 amiga-mui/filterruleclass.c:116
+#: amiga-mui/filterruleclass.c:121
+msgid "contains"
+msgstr "sis‰lt‰‰"
+
+#: amiga-mui/filterwnd.c:418
+msgid "SimpleMail - Edit Filter"
+msgstr "SimpleMail - S‰‰nnˆt"
+
+#: amiga-mui/filterwnd.c:440 amiga-mui/mainwnd.c:541
+msgid "_New"
+msgstr "_Uusi"
+
+#: amiga-mui/filterwnd.c:441
+msgid "_Remove"
+msgstr "P_oista"
+
+#: amiga-mui/filterwnd.c:447
+msgid "Apply on request"
+msgstr "K‰yt‰ pyydett‰ess‰"
+
+#: amiga-mui/filterwnd.c:449
+msgid "Apply to new mails"
+msgstr "K‰yt‰ uusiin viesteihin"
+
+#: amiga-mui/filterwnd.c:451
+msgid "Apply to sent mails"
+msgstr "K‰yt‰ l‰hetettyihin viesteihin"
+
+#: amiga-mui/filterwnd.c:463
+msgid "Add new rule"
+msgstr "Lis‰‰ uusi s‰‰ntˆ"
+
+#: amiga-mui/filterwnd.c:464
+msgid "Apply now"
+msgstr "K‰yt‰ heti"
+
+#: amiga-mui/filterwnd.c:469 amiga-mui/filterwnd.c:470
+msgid "Move to Folder"
+msgstr "Siirr‰ kansioon"
+
+#: amiga-mui/folderwnd.c:97
+msgid "received"
+msgstr "vastaanotettu"
+
+#: amiga-mui/folderwnd.c:98
+msgid "sent"
+msgstr "l‰hetetty"
+
+#: amiga-mui/folderwnd.c:99
+msgid "received and sent"
+msgstr "vastaanotettu ja l‰hetetty"
+
+#: amiga-mui/folderwnd.c:100
+msgid "mailinglist"
+msgstr "postituslista"
+
+#: amiga-mui/folderwnd.c:114 amiga-mui/folderwnd.c:226
+msgid "Path"
+msgstr "Polku"
+
+#: amiga-mui/folderwnd.c:120 amiga-mui/folderwnd.c:121
+msgid "_Type"
+msgstr "_Tyyppi"
+
+#: amiga-mui/folderwnd.c:123 amiga-mui/folderwnd.c:127
+msgid "Def. To"
+msgstr "Oletettu vastaanottaja"
+
+#: amiga-mui/folderwnd.c:160
+msgid "SimpleMail - Edit folder group"
+msgstr "SimpleMail - Ryhm‰n ominaisuudet"
+
+#: amiga-mui/folderwnd.c:173
+msgid "SimpleMail - Edit folder"
+msgstr "SimpleMail - Kansion ominaisuudet"
+
+#: amiga-mui/folderwnd.c:239
+msgid "_OK"
+msgstr "_Ok"
+
+#: amiga-mui/foldertreelistclass.c:120
+msgid "Mails"
+msgstr "Viestej‰"
+
+#: amiga-mui/foldertreelistclass.c:152
+msgid "Folders"
+msgstr "Kansiot"
+
+#: amiga-mui/foldertreelistclass.c:153 amiga-mui/mainwnd.c:458
+msgid "New Folder..."
+msgstr "Uusi kansio..."
+
+#: amiga-mui/foldertreelistclass.c:154 amiga-mui/mainwnd.c:457
+msgid "New Group..."
+msgstr "Uusi Ryhm‰..."
+
+#: amiga-mui/foldertreelistclass.c:155
+msgid "Remove..."
+msgstr "Poista..."
+
+#: amiga-mui/foldertreelistclass.c:157 amiga-mui/mainwnd.c:460
+msgid "Settings..."
+msgstr "Ominaisuudet..."
+
+#: amiga-mui/foldertreelistclass.c:159 amiga-mui/mainwnd.c:461
+msgid "Order"
+msgstr "J‰rjestys"
+
+#: amiga-mui/foldertreelistclass.c:160 amiga-mui/mainwnd.c:462
+msgid "Save"
+msgstr "Tallenna"
+
+#: amiga-mui/foldertreelistclass.c:161 amiga-mui/mainwnd.c:463
+msgid "Reset"
+msgstr "Palauta"
+
+#: amiga-mui/gui_main.c:328
+msgid "Failed to create the application\n"
+msgstr "Sovelluksen luominen ep‰onnistui.\n"
+
+#: amiga-mui/gui_main.c:329
+msgid "Could not create mui custom classes\n"
+msgstr "MUI-luokkien luominen ep‰onnistui.\n"
+
+#: amiga-mui/gui_main.c:330
+msgid "Couldn't create arexx port\n"
+msgstr "ARexx-portin luominen ep‰onnistui.\n"
+
+#: amiga-mui/gui_main.c:331
+msgid "Couldn't initialize timer\n"
+msgstr "Ajastimen alustaminen ep‰onnistui.\n"
+
+#: amiga-mui/gui_main.c:332 amiga-mui/gui_main.c:333
+#, c-format
+msgid "Couldn't open %s version %d\n"
+msgstr "%s:n versio %d avaus ep‰onnistui.\n"
+
+#: amiga-mui/mailtreelistclass.c:219
+msgid "Current Message"
+msgstr "Valittu viesti"
+
+#: amiga-mui/mailtreelistclass.c:266
+msgid "Status"
+msgstr "Tila"
+
+#: amiga-mui/mailtreelistclass.c:267 amiga-mui/transwndclass.c:119 mail.c:2763
+#: print.c:53
+msgid "From"
+msgstr "L‰hett‰j‰"
+
+#: amiga-mui/mailtreelistclass.c:268 mail.c:2782 print.c:71
+msgid "To"
+msgstr "Vastaanottaja"
+
+#: amiga-mui/mailtreelistclass.c:271 mail.c:2827 print.c:124
+msgid "Date"
+msgstr "P‰iv‰ys"
+
+#: amiga-mui/mailtreelistclass.c:272 amiga-mui/transwndclass.c:118
+msgid "Size"
+msgstr "Koko"
+
+#: amiga-mui/mailtreelistclass.c:273
+msgid "Filename"
+msgstr "Tiedostonimi"
+
+#: amiga-mui/mailtreelistclass.c:283
+msgid "Mail Settings"
+msgstr "Kansion ominaisuudet"
+
+#: amiga-mui/mailtreelistclass.c:284
+msgid "Show From/To?"
+msgstr "N‰yt‰ L‰hett‰j‰/Vastaanottaja?"
+
+#: amiga-mui/mailtreelistclass.c:285
+msgid "Show Subject?"
+msgstr "N‰yt‰ otsikko?"
+
+#: amiga-mui/mailtreelistclass.c:286
+msgid "Show Reply-To?"
+msgstr "N‰yt‰ vastausosoite?"
+
+#: amiga-mui/mailtreelistclass.c:287
+msgid "Show Date?"
+msgstr "N‰yt‰ p‰iv‰ys?"
+
+#: amiga-mui/mailtreelistclass.c:288
+msgid "Show Size?"
+msgstr "N‰yt‰ koko?"
+
+#: amiga-mui/mailtreelistclass.c:289
+msgid "Show Filename?"
+msgstr "N‰yt‰ tiedostonimi?"
+
+#: amiga-mui/mailtreelistclass.c:445 amiga-mui/readwnd.c:862
+msgid "Mail"
+msgstr "Viesti"
+
+#: amiga-mui/mailtreelistclass.c:446
+msgid "Set status"
+msgstr "Aseta tila"
+
+#: amiga-mui/mailtreelistclass.c:447
+msgid "Mark"
+msgstr "Merkitty"
+
+#: amiga-mui/mailtreelistclass.c:448
+msgid "Unmark"
+msgstr "Poista merkint‰"
+
+#: amiga-mui/mailtreelistclass.c:449
+msgid "Hold"
+msgstr "Pidossa"
+
+#: amiga-mui/mainwnd.c:150
+msgid "SimpleMail - About"
+msgstr "SimpleMail - Tietoja"
+
+#: amiga-mui/mainwnd.c:151
+msgid "*Ok"
+msgstr "Ok"
+
+#: amiga-mui/mainwnd.c:153
+msgid "Copyright ©"
+msgstr "Copyright ©"
+
+#: amiga-mui/mainwnd.c:153
+msgid "and"
+msgstr "ja"
+
+#: amiga-mui/mainwnd.c:153
+msgid "Released under the terms of the GNU Public License"
+msgstr "Julkaistu GNU julkisen lisenssin ehdoilla"
+
+#: amiga-mui/mainwnd.c:451 amiga-mui/readwnd.c:857
+msgid "Project"
+msgstr "Projekti"
+
+#: amiga-mui/mainwnd.c:452 amiga-mui/readwnd.c:858
+msgid "?:About..."
+msgstr "?:Tietoja..."
+
+#: amiga-mui/mainwnd.c:453 amiga-mui/readwnd.c:859
+msgid "About MUI..."
+msgstr "Tietoja MUI:sta..."
+
+#: amiga-mui/mainwnd.c:455 amiga-mui/readwnd.c:861
+msgid "Q:Quit"
+msgstr "Q:Lopeta"
+
+#: amiga-mui/mainwnd.c:456
+msgid "Folder"
+msgstr "Kansio"
+
+#: amiga-mui/mainwnd.c:459 amiga-mui/transwndclass.c:158
+msgid "Delete"
+msgstr "Poista"
+
+#: amiga-mui/mainwnd.c:465
+msgid "Delete all indexfiles..."
+msgstr "Tuhoa indeksit..."
+
+#: amiga-mui/mainwnd.c:467
+msgid "S:Send queued mails..."
+msgstr "S:L‰het‰ viestit..."
+
+#: amiga-mui/mainwnd.c:468
+msgid "F:Fetch mails..."
+msgstr "F:Hae uudet viestit..."
+
+#: amiga-mui/mainwnd.c:469
+msgid "Check single account"
+msgstr "Tarkista yksitt‰inen tili"
+
+#: amiga-mui/mainwnd.c:471
+msgid "Message"
+msgstr "Viesti"
+
+#: amiga-mui/mainwnd.c:472
+msgid "D:Read"
+msgstr "D:Lue"
+
+#: amiga-mui/mainwnd.c:473
+msgid "E:Edit"
+msgstr "E:Muokkaa"
+
+#: amiga-mui/mainwnd.c:474
+msgid "M:Move..."
+msgstr "M:Siirr‰..."
+
+#: amiga-mui/mainwnd.c:475
+msgid "Copy..."
+msgstr "Kopioi..."
+
+#: amiga-mui/mainwnd.c:476
+msgid "Delete..."
+msgstr "Poista..."
+
+#.
+#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+#. {NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
+#. {NM_ITEM, "Save", NULL, NM_ITEMDISABLED, 0L, NULL},
+#. {NM_SUB, "Complete Message...", NULL, 0, 0, NULL},
+#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+#. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
+#.
+#: amiga-mui/mainwnd.c:485
+msgid "Settings"
+msgstr "Asetukset"
+
+#: amiga-mui/mainwnd.c:486
+msgid "Show folders?"
+msgstr "N‰yt‰ kansiot?"
+
+#: amiga-mui/mainwnd.c:487
+msgid "Show addressbook?"
+msgstr "N‰yt‰ osoitekirja?"
+
+#: amiga-mui/mainwnd.c:489
+msgid "Configuration..."
+msgstr "Asetukset..."
+
+#: amiga-mui/mainwnd.c:490
+msgid "Filters..."
+msgstr "Viestien s‰‰nnˆt..."
+
+#: amiga-mui/mainwnd.c:491
+msgid "MUI..."
+msgstr "MUI..."
+
+#: amiga-mui/mainwnd.c:493
+msgid "Save Settings"
+msgstr "Tallenna asetukset"
+
+#: amiga-mui/mainwnd.c:494
+msgid "Scripts"
+msgstr "Skriptit"
+
+#: amiga-mui/mainwnd.c:495
+msgid ".:Execute ARexx Script..."
+msgstr ".:Suorita ARexx skripti..."
+
+#: amiga-mui/mainwnd.c:533
+msgid "Rea_d"
+msgstr "_Lue"
+
+#: amiga-mui/mainwnd.c:535
+msgid "De_lete"
+msgstr "_Poista"
+
+#: amiga-mui/mainwnd.c:536
+msgid "Ge_tAdd"
+msgstr "Osoite"
+
+#. Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),
+#: amiga-mui/mainwnd.c:542 amiga-mui/readwnd.c:920
+msgid "_Reply"
+msgstr "_Vastaa"
+
+#: amiga-mui/mainwnd.c:543
+msgid "For_ward"
+msgstr "V_‰lit‰"
+
+#: amiga-mui/mainwnd.c:547
+msgid "Fetc_h"
+msgstr "_Hae"
+
+#: amiga-mui/mainwnd.c:548
+msgid "_Send"
+msgstr "L‰h_et‰"
+
+#: amiga-mui/mainwnd.c:552
+msgid "F_ilter"
+msgstr "_Suodata"
+
+#: amiga-mui/mainwnd.c:553
+msgid "_Filters"
+msgstr "S‰‰_nnˆt"
+
+#: amiga-mui/mainwnd.c:557
+msgid "_Abook"
+msgstr "_Osoitekirja"
+
+#: amiga-mui/mainwnd.c:558
+msgid "_Config"
+msgstr "Asetukset"
+
+#: amiga-mui/mainwnd.c:632
+#, c-format
+msgid ""
+"SimpleMail needs at least version 1.8 of the NListtree mui subclass!\n"
+"It's available at %s"
+msgstr ""
+"SimpleMail tarvitsee v‰hint‰‰n version 1.8 NListtree-luokasta!\n"
+"Se on saatavilla osoitteesta %s"
+
+#: amiga-mui/mainwnd.c:744
+msgid "Folder:"
+msgstr "Kansio:"
+
+#: amiga-mui/mainwnd.c:744
+msgid "Total:"
+msgstr "Yhteens‰:"
+
+#: amiga-mui/mainwnd.c:744
+msgid "New:"
+msgstr "Uusia:"
+
+#: amiga-mui/mainwnd.c:744
+msgid "Unread:"
+msgstr "Lukematta:"
+
+#: amiga-mui/mainwnd.c:753
+#, c-format
+msgid "Total:%d New:%d Unread:%d"
+msgstr "Yhteens‰:%d Uusia:%d Lukematta:%d"
+
+#: amiga-mui/mainwnd.c:775
+#, c-format
+msgid "%s (T:%ld N:%ld U:%ld)"
+msgstr "%s (Y:%ld U:%ld L:%ld"
+
+#: amiga-mui/mainwnd.c:1208
+msgid "No POP3 Server specified"
+msgstr "Et ole m‰‰ritellyt tulevan postin palvelinta"
+
+#: amiga-mui/pgplistclass.c:79
+msgid "PGP Key ID"
+msgstr "PGP avaimen ID"
+
+#: amiga-mui/pgplistclass.c:80
+msgid "User ID"
+msgstr "K‰ytt‰j‰tunnus"
+
+#: amiga-mui/readwnd.c:192
+msgid "Are you sure that you want to start this executable?"
+msgstr "Oletko varma, ett‰ haluat suorittaa t‰m‰n tiedoston?"
+
+#: amiga-mui/readwnd.c:192
+msgid "*_Yes|_Cancel"
+msgstr "_Kyll‰|_Peru"
+
+#: amiga-mui/readwnd.c:863
+msgid "Show raw format..."
+msgstr "Viestin l‰hde"
+
+#: amiga-mui/readwnd.c:865
+msgid "Print visible mailpart"
+msgstr "Tulosta n‰kyv‰ osa"
+
+#: amiga-mui/readwnd.c:895
+msgid "SimpleMail - Read Message"
+msgstr "SimpleMail - Lue viesti"
+
+#: amiga-mui/readwnd.c:905
+msgid "_Prev"
+msgstr "_Edellinen"
+
+#: amiga-mui/readwnd.c:906
+msgid "_Next"
+msgstr "_Seuraava"
+
+#: amiga-mui/readwnd.c:913
+msgid "Pr_int"
+msgstr "T_ulosta"
+
+#: amiga-mui/readwnd.c:921
+msgid "_Forward"
+msgstr "V‰lit‰"
+
+#: amiga-mui/readwnd.c:970 amiga-mui/readwnd.c:987
+msgid "Attachment"
+msgstr "Liitteet"
+
+#: amiga-mui/readwnd.c:972
+msgid "Open"
+msgstr "Avaa"
+
+#: amiga-mui/readwnd.c:976
+msgid "Save As..."
+msgstr "Tallenna nimell‰..."
+
+#: amiga-mui/readwnd.c:980
+msgid "Print as text"
+msgstr "Tulosta tekstin‰"
+
+#: amiga-mui/readwnd.c:989
+msgid "Save as..."
+msgstr "Tallenna nimell‰..."
+
+#: amiga-mui/readwnd.c:993
+msgid "Save whole document as..."
+msgstr "Tallenna koko dokumentti nimell‰..."
+
+#: amiga-mui/transwndclass.c:117
+msgid "Mail No"
+msgstr "Viesti nro"
+
+#: amiga-mui/transwndclass.c:156
+msgid "Ignore"
+msgstr "Ohita"
+
+#: amiga-mui/transwndclass.c:157
+msgid "Download"
+msgstr "Hae"
+
+#: amiga-mui/transwndclass.c:159
+msgid "Download & Delete"
+msgstr "Hae ja poista"
+
+#: amiga-mui/transwndclass.c:160
+msgid "_Start"
+msgstr "Aloita"
+
+#: amiga-mui/transwndclass.c:163
+msgid "Select All"
+msgstr "Valitse kaikki"
+
+#: amiga-mui/transwndclass.c:164
+msgid "Select None"
+msgstr "ƒl‰ valitse yht‰‰n"
+
+#: amiga-mui/transwndclass.c:165 amiga-mui/transwndclass.c:166
+msgid "Ignore not listed mails"
+msgstr "Ohita listaamattomat viestit"
+
+#: amiga-mui/transwndclass.c:172 amiga-mui/transwndclass.c:177
+#: amiga-mui/transwndclass.c:308 amiga-mui/transwndclass.c:309
+#: amiga-mui/transwndclass.c:312
+msgid "Waiting..."
+msgstr "Odotetaan..."
+
+#: amiga-mui/transwndclass.c:182
+msgid "_Abort"
+msgstr "Peru"
+
+#: mail.c:1026
+#, c-format
+msgid ""
+"Sender address (From) is <%s>, but\n"
+"return address (Reply-To) is <%s>.\n"
+"Which address do you want to use?"
+msgstr ""
+"L‰hett‰j‰n osoite <%s> on eri\n"
+"kuin vastausosoite <%s>.\n"
+"Mihin vastaus l‰hetet‰‰n?"
+
+#: mail.c:1029
+msgid "_From|*_Reply-To|_Both|_Cancel"
+msgstr "_L‰hett‰j‰|*_Vastaus|_Molemmat|_Peru"
+
+#: mail.c:1072
+msgid ""
+"This e-mail has multiple recipients. Should it be answered to all recipients?"
+msgstr ""
+"T‰ll‰ viestill‰ on monta vastaanottajaa. L‰hetet‰‰nkˆ vastaus myˆs kaikille "
+"vastaanottajille?"
+
+#: mail.c:1073
+msgid "*_Yes|_No"
+msgstr "_Kyll‰|_Ei"
+
+#: mail.c:1819
+msgid "This mail is encrypted. Please enter your passphrase now"
+msgstr "T‰m‰ viesti on salattu. Anna salasanasi"
+
+#: mail.c:1903
+msgid ""
+"Decrypting failed! Eighter because the passphrase was incorrect\n"
+"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x "
+"supported for now)!"
+msgstr ""
+"Viestin purkaminen ep‰onnistui! Joko salasanasi oli virheellinen\n"
+"tai t‰m‰ kryptaus ei ole viel‰ tuettu. (Toistaiseksi vain PGP 2.6.x)"
+
+#: mail.c:1917
+msgid "Unsupported encryption"
+msgstr "T‰m‰ kryptaus ei ole tuettu"
+
+#: mail.c:2451
+#, c-format
+msgid "Please select a key for %s <%s>"
+msgstr "Valitse avain %s <%s>"
+
+#: mail.c:2676
+msgid ""
+"No valid from field specified. You must configure some Accounts\n"
+"before creating new mails"
+msgstr "Sinun on luotava tili, ennen kuin voit l‰hett‰‰ viestej‰"
+
+#: mail.c:2805
+msgid "Copies to"
+msgstr "Kopiot"
+
+#: mail.c:2833 print.c:131
+msgid "Replies To"
+msgstr "Vastaukset"
+
+#: pop3.c:66
+msgid "Error receiving data from host!"
+msgstr "Virhe vastaanotettaessa tietoja is‰nn‰lt‰!"
+
+#: pop3.c:102
+msgid "Sending username..."
+msgstr "L‰hetet‰‰n k‰ytt‰j‰tunnusta..."
+
+#: pop3.c:108 pop3.c:117
+msgid "Error while identifing the user"
+msgstr "Virhe tunnistettaessa k‰ytt‰j‰‰"
+
+#: pop3.c:112
+msgid "Sending password..."
+msgstr "L‰hetet‰‰n salasanaa..."
+
+#: pop3.c:121
+msgid "Login successful!"
+msgstr "Kirjautuminen onnistui!"
+
+#: pop3.c:318
+msgid "Checking for mail duplicates..."
+msgstr "Tarkistetaan kopioiden varalta..."
+
+#: pop3.c:372
+msgid "Getting statistics..."
+msgstr "Haetaan tilastoja..."
+
+#: pop3.c:376
+msgid "Could not get server statistics"
+msgstr "Tilastojen hakeminen ep‰onnistui"
+
+#: pop3.c:410
+msgid "Getting mail sizes..."
+msgstr "Haetaan viestien kokoa..."
+
+#. -ERR has been returned, what means that TOP is not supported
+#: pop3.c:471
+msgid "Couldn't receive more statistics"
+msgstr "Lis‰ tilastojen vastaanotto ep‰onnistui"
+
+#: pop3.c:504
+msgid "Waiting for user interaction"
+msgstr "Odotetaan k‰ytt‰j‰n komentoa"
+
+#: pop3.c:524
+msgid "Logging out..."
+msgstr "Kirjaudutaan pois..."
+
+#: pop3.c:545
+msgid "Can't get new filename!"
+msgstr "Uuden tiedostonimen saaminen ep‰onnistui!"
+
+#: pop3.c:554
+msgid "Can't open mail file!"
+msgstr "Viestin avaus ep‰onnistui!"
+
+#: pop3.c:561
+msgid "Couldn't receive the mail"
+msgstr "Viestien vastaanotto ep‰onnistui"
+
+#: pop3.c:575
+msgid "Error while receiving the mail"
+msgstr "Virhe vastaanotettaessa viestej‰"
+
+#: pop3.c:585
+msgid "Error while writing the mail onto disk"
+msgstr "Virhe kirjoitettaessa viestej‰ levylle"
+
+#: pop3.c:661
+msgid "Waiting for login..."
+msgstr "Odotetaan kirjautumista..."
+
+#: pop3.c:681
+msgid "Can't access income-folder!"
+msgstr "Saapuneet-kansion avaus ep‰onnistui!"
+
+#: pop3.c:694
+msgid "Receiving mail..."
+msgstr "Vastaanotetaan viestej‰..."
+
+#: pop3.c:698
+msgid "Couldn't download the mail!\n"
+msgstr "Viestin vastaanottaminen ep‰onnistui!\n"
+
+#: pop3.c:712
+msgid "Marking mail as deleted..."
+msgstr "Merkit‰‰n viesti poistetuksi..."
+
+#: pop3.c:715
+msgid "Can't mark mail as deleted!"
+msgstr "Viestin merkitseminen ep‰onnistui!"
+
+#: pop3.c:739
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Bsdsocket.library:n avaus ep‰onnistui!"
+
+#: print.c:93
+msgid "Carbon Copy"
+msgstr "Kopio"
+
+#: print.c:209
+msgid "I/O-Error."
+msgstr "I/O-virhe."
+
+#: print.c:209 print.c:215 print.c:220 print.c:227
+msgid "Okay"
+msgstr "Ok"
+
+#: print.c:215
+msgid "Not enough memory."
+msgstr "Ei tarpeeksi muistia."
+
+#: print.c:220
+msgid "Internal error."
+msgstr "Ohjelman sis‰inen virhe."
+
+#: print.c:227
+msgid "Can't create temporary file."
+msgstr "V‰liaikaisten tiedostojen luominen ep‰onnistui."
+
+#: simplemail.c:105
+msgid "Do you really want to delete the selected mail permanently?"
+msgstr "Haluatko varmasti poistaa viestin pysyv‰sti?"
+
+#: simplemail.c:106
+#, c-format
+msgid "Do you really want to delete %d mails permanently?"
+msgstr "Haluatko varmasti poistaa n‰m‰ viestit pysyv‰sti?"
+
+#: simplemail.c:107
+msgid "_Yes|_No"
+msgstr "_Kyll‰|_Ei"
+
+#: simplemail.c:725
+msgid "Select an addressbook-file."
+msgstr "Valitse osoitekirjan tiedosto."
+
+#: smtp.c:125
+msgid "Service not ready."
+msgstr "Palvelu ei ole valmis."
+
+#: smtp.c:428
+msgid "DATA-Cmd failed."
+msgstr "DATA-Cmd ep‰onnistui."
+
+#: smtp.c:667
+msgid "Sending EHLO..."
+msgstr "L‰hetet‰‰n EHLO..."
+
+#: smtp.c:670
+msgid "Sending HELO..."
+msgstr "L‰hetet‰‰n HELO..."
+
+#: smtp.c:673 smtp.c:705
+msgid "HELO failed"
+msgstr "HELO ep‰onnistui"
+
+#: smtp.c:682
+msgid ""
+"Connection could not be made secure because the SMTP server doesn't seem to "
+"support it!"
+msgstr ""
+"Suojatun yhteyden muodostaminen ep‰onnistui, koska SMTP palvelin ei tue sit‰!"
+
+#: smtp.c:686
+msgid "Sending STARTTLS..."
+msgstr "L‰hetet‰‰n STARTTLS..."
+
+#: smtp.c:689
+msgid "STARTTLS failed. Connection could not be made secure."
+msgstr "STARTTLS ep‰onnistui. Suojatun yhteyden muodostaminen ep‰onnistui."
+
+#: smtp.c:695
+msgid "Connection could not be made secure."
+msgstr "Suojatun yhteyden muodostaminen ep‰onnistui."
+
+#: smtp.c:699
+msgid "Sending secured EHLO..."
+msgstr "L‰hetet‰‰n suojattu EHLO..."
+
+#: smtp.c:702
+msgid "Sending secured HELO..."
+msgstr "L‰hetet‰‰n suojattu HELO..."
+
+#: smtp.c:713
+msgid "Sending AUTH..."
+msgstr "L‰hetet‰‰n AUTH..."
+
+#: smtp.c:716
+msgid ""
+"AUTH failed. User couldn't be authenticated. Please recheck your settings."
+msgstr ""
+"AUTH ep‰onnistui. K‰ytt‰j‰‰ ei voitu tunnistaa. Tarkista tilin asetukset."
+
+#. starts from 1
+#: smtp.c:759
+msgid "Sending FROM..."
+msgstr "L‰hetet‰‰n FROM..."
+
+#: smtp.c:762
+msgid "FROM failed."
+msgstr "FROM ep‰onnistui."
+
+#: smtp.c:766
+msgid "Sending RCPT..."
+msgstr "L‰hetet‰‰n RCPT..."
+
+#: smtp.c:769
+msgid "RCPT failed."
+msgstr "RCPT ep‰onnistui."
+
+#: smtp.c:773
+msgid "Sending DATA..."
+msgstr "L‰hetet‰‰n DATA..."
+
+#: smtp.c:776
+msgid "DATA failed."
+msgstr "DATA ep‰onnistui."
+
+#. Connect to the pop3 server first
+#: smtp.c:817
+msgid "Log into POP3 Server...."
+msgstr "Kirjaudutaan POP3-palvelimelle..."
+
+#: smtp.c:821
+msgid "Connecting..."
+msgstr "Yhdistet‰‰n..."
+
+#: smtp.c:829
+msgid "Sending QUIT..."
+msgstr "L‰hetet‰‰n QUIT..."
+
+#: smtp.c:834
+msgid "Disconnecting..."
+msgstr "Katkaistaan yhteytt‰..."
+
+#: smtp.c:843
+msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
+msgstr "Bsdsocket.library:n avaus ep‰onnistui. K‰ynnist‰ TCP/IP-pino."

@@ -30,8 +30,9 @@
 #include "smintl.h"
 #include "filter.h"
 #include "folder.h"
+#include "mail.h"
 #include "simplemail.h"
-#include "support.h"
+#include "support_indep.h"
 #include "trans.h"
 
 #include "addressbookwnd.h"
@@ -43,6 +44,7 @@
 #include "mainwnd.h"
 #include "readwnd.h"
 #include "subthreads.h"
+#include "support.h"
 #include "tcpip.h"
 
 /* the current mail should be viewed, returns the number of the window
@@ -343,12 +345,41 @@ void callback_folder_active(void)
 /* a new mail should be added to a given folder */
 struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 {
+	int pos;
+	char buf[256];
+	struct mail *mail = NULL;
+
 	if (!folder) return NULL;
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder->path);
 
 	if (!sm_file_is_in_drawer(filename,folder->path))
 	{
+		char *newname;
+
+		if ((newname = mail_get_new_name(MAIL_STATUS_UNREAD)))
+		{
+			myfilecopy(filename,newname);
+			mail = mail_create_from_file(newname);
+			free(newname);
+		}
+	} else
+	{
+		mail = mail_create_from_file(filename);
 	}
-	main_refresh_folder(folder);
+
+	if (mail)
+	{
+		pos = folder_add_mail(folder,mail,1);
+		if (main_get_folder() == folder && pos != -1)
+			main_insert_mail_pos(mail,pos-1);
+
+		main_refresh_folder(folder);
+	}
+
+	chdir(buf);
+	return mail;
 }
 
 /* a new mail has arrived */

@@ -920,19 +920,40 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 	APTR arg_handle;
 
 	struct	{
+		STRPTR var;
+		STRPTR stem;
 		STRPTR filename;
 		STRPTR folder;
 	} mailadd_arg;
 	memset(&mailadd_arg,0,sizeof(mailadd_arg));
 
-	if ((arg_handle = ParseTemplate("FILENAME/A,FOLDER",args,&mailadd_arg)))
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,FILENAME/A,FOLDER",args,&mailadd_arg)))
 	{
 		struct folder *folder;
 		struct mail *mail;
 		if (mailadd_arg.folder) folder = folder_find_by_name(mailadd_arg.folder);
 		else folder = main_get_folder();
 
-		mail = callback_new_mail_to_folder(mailadd_arg.filename,folder);
+		if ((mail = callback_new_mail_to_folder(mailadd_arg.filename,folder)))
+		{
+			if (mailadd_arg.stem)
+			{
+				int stem_len = strlen(mailadd_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,mailadd_arg.stem);
+					strcat(stem_buf,"FILENAME");
+					SetRexxVar(rxmsg,stem_buf,mail->filename,strlen(mail->filename));
+					free(stem_buf);
+				}
+			} else
+			{
+				if (mailadd_arg.var) SetRexxVar(rxmsg,mailadd_arg.var,mail->filename,strlen(mail->filename));
+				else arexx_set_result(rxmsg,mail->filename);
+			}
+		}
+
 		FreeTemplate(arg_handle);
 	}
 }

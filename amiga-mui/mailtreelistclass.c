@@ -167,6 +167,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default/*|MUIV_NListtree_MultiSelect_Flag_AutoSelectChilds*/,
 					MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
+					MUIA_NListtree_DupNodeName, FALSE,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 

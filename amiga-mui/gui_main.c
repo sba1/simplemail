@@ -364,3 +364,10 @@ int gui_parseargs(int argc, char *argv[])
 	return 1;
 }
 
+/****************************************************************
+ The main entry point
+*****************************************************************/
+void main(int argc, char *argv[])
+{
+	simplemail_main();
+}

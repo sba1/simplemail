@@ -132,9 +132,10 @@ char *decode_base64(unsigned char *buf, unsigned int len, unsigned int *ret_len)
 }
 
 /**************************************************************************
- Decoding a given buffer using the quoted_printable algorithm
+ Decoding a given buffer using the quoted_printable algorithm.
+ Set header to 1 if you want header decoding (underscore = space)
 **************************************************************************/
-char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int *ret_len)
+char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int *ret_len, int header)
 {
 	char *decoded_buf = NULL;
 
@@ -176,7 +177,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 					buf++;
 					continue;
 				}
-			}
+			} else if (c=='_' && header) c = ' ';
 
 			fputc(c,fh);
 			decoded_len++;
@@ -200,13 +201,12 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 }
 
 /**************************************************************************
- Encodes a given header string, it's correctly attached into the
- old_string
+ Encodes a given header string (changed after 1.7)
 **************************************************************************/
-char *encode_header_str(char *old_string, char *toencode, int *line_len_ptr)
+static char *encode_header_str(char *toencode, int *line_len_ptr)
 {
 	int line_len = *line_len_ptr;
-	int encoded_len;
+	int encoded_len = 0;
 	int toencode_len = mystrlen(toencode);
 	char *encoded = NULL;
 	int max_line_len = 72; /* RFC 2047 says it can be 76 */
@@ -214,74 +214,93 @@ char *encode_header_str(char *old_string, char *toencode, int *line_len_ptr)
 
 	if ((fh = tmpfile()))
 	{
-		char buf[32];
-		int quoted_encoding = 0;
+		int quote_encoding = 0;
+		char *test = toencode;
+		unsigned char c;
 
-		if (old_string)
+		/* check if we have any characters which need to be encoded */
+		while ((c = *test++))
 		{
-			fputs(old_string,fh);
-			encoded_len = strlen(old_string);
-		} else encoded_len = 0;
+			if (c > 127 || c == '=' || c == '?')
+			{
+				quote_encoding = 1;
+				break;
+			}
+		}
 
-		while (toencode_len > 0)
+		if (quote_encoding)
 		{
-			int next_len = 1;
-			char *next_str = toencode;
-			unsigned char c = *toencode;
+			int line_start = 1;
 
-			if (c > 127 && !quoted_encoding)
-			{
-				/* put the encoded beginning */
-				max_line_len = 70; /* so that "?=" can be put on the line */
-				sprintf(buf,"=?iso-8859-1?q?=%02lX",c);
-				next_str = buf;
-				next_len = strlen(next_str);
-			}
+			max_line_len = 70;
 
-			if (quoted_encoding && (c > 127 || c == '_' || c == '?' || c == '=' || c == ' '))
+			while (toencode_len > 0)
 			{
-				sprintf(buf,"=%02lX",c);
-				next_str = buf;
-				next_len = strlen(next_str);
-			}
+				int buf_len; /* current len of the buffer */
+				char buf[32];
 
-			if (line_len + next_len > max_line_len)
-			{
-				if (quoted_encoding)
+				if (line_start)
+				{
+					max_line_len = 70;
+					strcpy(buf,"=?iso-8859-1?q?");
+					buf_len = sizeof("=?iso-8859-1?q?")-1;
+					line_start = 0;
+				} else buf_len = 0;
+
+				c = *toencode;
+
+				if (c > 127 || c == '_' || c == '?' || c == '=')
+				{
+					sprintf(&buf[buf_len],"=%02lX",c);
+					buf_len += 3;
+				} else
+				{
+					if (c==' ') c = '_';
+					buf[buf_len++] = c;
+/*					buf[buf_len] = 0;*/ /* Nullbyte not neccessary since we have buf_len */
+				}
+
+				if (line_len + buf_len > max_line_len)
 				{
 					fprintf(fh, "?=\n ");
 					encoded_len += 4;
-				} else
+					line_len = 1;
+					line_start = 1;
+					continue;
+				}
+
+				fwrite(buf,1,buf_len,fh);
+				encoded_len += buf_len;
+				line_len += buf_len;
+
+				toencode_len--;
+				toencode++;
+			}
+
+			/* finish the encoding */
+			fputs("?=",fh);
+			encoded_len += 2;
+		} else
+		{
+			max_line_len = 70;
+
+			while (toencode_len > 0)
+			{
+				if (line_len + 1 > max_line_len)
 				{
 					fprintf(fh, "\n ");
 					encoded_len += 2;
+					line_len = 1;
+					continue;
 				}
-				line_len = 1;
-				quoted_encoding = 0;
-				max_line_len = 72;
-				continue;
+
+				fwrite(toencode,1,1,fh);
+				encoded_len += 1;
+				line_len += 1;
+
+				toencode_len--;
+				toencode++;
 			}
-
-			if (c > 127 && !quoted_encoding)
-			{
-				/* set the flag now so it doesn't conflict with a line end */
-				quoted_encoding = 1;
-			}
-
-			fwrite(next_str,1,next_len,fh);
-
-			encoded_len += next_len;
-			line_len += next_len;
-
-			toencode_len--;
-			toencode++;
-		}
-
-		if (quoted_encoding)
-		{
-			/* finish the encoding */
-			fprintf(fh, "?=");
-			encoded_len += 2;
 		}
 
 		if (encoded_len)
@@ -321,7 +340,7 @@ char *encode_header_field(char *field_name, char *field_contents)
 		fprintf(fh, "%s: ",field_name);
 		line_len = strlen(field_name) + 2;
 
-		if ((encoded = encode_header_str(NULL,field_contents, &line_len)))
+		if ((encoded = encode_header_str(field_contents, &line_len)))
 		{
 			fprintf(fh, "%s", encoded);
 			free(encoded);
@@ -370,7 +389,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 		while (address)
 		{
 			struct address *next_address = (struct address*)node_next(&address->node);
-			char *text = encode_header_str(NULL, address->realname, &line_len);
+			char *text = encode_header_str(address->realname, &line_len);
 			if (text)
 			{
 				fputs(text,fh);
@@ -663,7 +682,7 @@ char *identify_file(char *fname)
 		else if (!mystricmp(ext, "lha") || !strncmp(&buffer[2], "-lh5-", 5))
 			return "application/x-lha";
 		else if (!mystricmp(ext, "lzx") || !strncmp(buffer, "LZX", 3))
-			return "application/x.lzx";
+			return "application/x-lzx";
 		else if (!mystricmp(ext, "zip"))
 			return "application/x-zip";
 		else if (!mystricmp(ext, "rexx") || !mystricmp(ext+strlen(ext)-2, "rx"))

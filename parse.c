@@ -732,7 +732,7 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 		if (!stricmp(encoding,"q"))
 		{
 			unsigned int len;
-			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len);
+			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len,1);
 		} else
 		{
 			free(charset);

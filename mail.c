@@ -922,7 +922,7 @@ void mail_decode(struct mail *mail)
 		mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
 	} else if (!stricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
-		mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
+		mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0);
 	}
 }
 

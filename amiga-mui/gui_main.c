@@ -25,11 +25,11 @@
 #include <stdlib.h>
 
 #include <dos/rdargs.h>
-
 #include <dos/dos.h>
 #include <libraries/mui.h>
 #include <datatypes/soundclass.h>
 #include "simplehtml_mcc.h"
+
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/datatypes.h>
@@ -38,6 +38,12 @@
 #include <proto/muimaster.h>
 #include <proto/locale.h>
 #include <proto/icon.h>
+
+#ifdef __AMIGAOS4__
+#include <diskfont/diskfonttag.h>
+#include <proto/diskfont.h>
+#endif
+
 
 #include "version.h"
 
@@ -403,6 +409,16 @@ int gui_init(void)
 	int rc;
 
 	SM_ENTER;
+
+#ifdef __AMIGAOS4__
+	if (!user.config.from_disk)
+	{
+		LONG default_charset = GetDiskFontCtrl(DFCTRL_CHARSET);
+		STRPTR charset = (STRPTR)ObtainCharsetInfo(DFCS_NUMBER, default_charset, DFCS_MIMENAME);
+		if (charset)
+			user.config.default_codeset = codesets_find(charset); /* return never NULL */
+	}
+#endif
 
 	rc = 0;
 

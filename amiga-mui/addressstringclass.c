@@ -158,8 +158,7 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
-	ULONG rc = DoMethodA(data->list, (Msg)msg);
-	return rc;
+	return DoMethod(data->list, MUIM_AddressEntryList_Refresh, msg->pattern);
 }
 
 STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
@@ -254,7 +253,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	if (msg->imsg && msg->imsg->Class == IDCMP_RAWKEY)
 	{
-    UWORD code;
+		UWORD code;
 		if (msg->imsg->Code == CURSORDOWN && data->match_wnd)
 		{
 			DoMethod(data->match_wnd,MUIM_MatchWindow_Down);
@@ -325,6 +324,9 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	return 0;
 }
 
+/******************************************************************
+ MUIM_DragQuery. Accept dragged objects from Address Entry List
+*******************************************************************/
 STATIC ULONG AddressString_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;

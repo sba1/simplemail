@@ -38,7 +38,7 @@ Save,75,25,98,48
 Sign,75,50,98,73
 Undo,75,75,98,98
 User,75,100,98,123
-Search,75,125,98,148
+;SearchMail 75,125,98,148
 
 folder_deleted,100,0,115,12
 folder_group,100,25,115,37
@@ -54,7 +54,7 @@ status_error,125,75,140,87
 status_reply,125,100,140,112
 ;status_group,125,125,140,137
 status_mark,125,150,132,162
-status_new,125,175,140,187
+;status_new,125,175,140,187
 status_old,125,200,140,212
 status_forward,125,225,140,237
 
@@ -64,5 +64,6 @@ status_trashcan,150,50,165,62
 status_unread,150,75,165,87
 status_urgent,150,100,162,112
 status_waitsend,150,125,165,137
-status_norcpt,150,150,165,162
+;status_noaddress,150,150,165,162
 status_sent,150,175,165,187
+

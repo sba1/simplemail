@@ -28,6 +28,7 @@ struct outmail
 	char *from; /* the from address */
 	char **rcp; /* an array of all recipients (e-mails) */
 	char *mailfile; /* the name of the file */
+	int size; /* the size of the mail */
 };
 
 /* functions for outmail */

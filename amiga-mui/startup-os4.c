@@ -872,4 +872,4 @@ int strncasecmp(const char *str1, const char *str2, size_t size)
 	return IUtility->Strnicmp(str1,str2,size);
 }
 
-int __random_seed = 1;
+//int __random_seed = 1;

@@ -58,6 +58,7 @@ utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
 utf8 *utf8create_len(void *from, char *charset, int from_len);
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);
+char *utf8tostrcreate(utf8 *str, struct codeset *codeset);
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
 char *uft8toucs(char *chr, unsigned int *code);
 char *utf7ntoutf8(char *source, int sourcelen);

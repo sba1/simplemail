@@ -1255,6 +1255,21 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 }
 
 /**************************************************************************
+ Converts a UTF8 string to a given charset. The returned string is
+ allocated with malloc();
+**************************************************************************/
+char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
+{
+	char *dest;
+	int len;
+	if (!str) return NULL;
+	len = strlen(str);
+	if ((dest = malloc(len+1)))
+		utf8tostr(str,dest,len+1,codeset);
+	return dest;
+}
+
+/**************************************************************************
  Converts a single UTF8 char to a given charset. Returns the number of
  bytes to the next utf8 char. *chr might be 0 if it was not in the codeset
 **************************************************************************/

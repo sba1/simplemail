@@ -26,6 +26,7 @@
 #include <ctype.h>
 
 #include "account.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "filter.h"
 #include "phrase.h"
@@ -132,6 +133,14 @@ void init_config(void)
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
 
+/* Duplicates a config string and converts it to utf8 if not already done */
+char *dupconfigstr(char *str, int utf8)
+{
+	if (!str) return NULL;
+	if (utf8) return mystrdup(str);
+	return (char*)utf8create(str,NULL);
+}
+
 int load_config(void)
 {
 	char *buf;
@@ -154,11 +163,14 @@ int load_config(void)
 				read_line(fh,buf);
 				if (!strncmp("SMCO",buf,4))
 				{
+					int utf8 = 0;
 					clear_config_phrases();
 					while (read_line(fh,buf))
 					{
 						char *result;
 
+						if ((result = get_config_item(buf,"UTF8")))
+							utf8 = atoi(result);
 						if ((result = get_config_item(buf,"FolderDirectory")))
 							user.folder_directory = mystrdup(result);
 						if ((result = get_config_item(buf,"DST")))
@@ -235,7 +247,7 @@ int load_config(void)
 								if (*account_buf++ == '.')
 								{
 									if ((result = get_config_item(account_buf,"User.Name")))
-										account->name = mystrdup(result);
+										account->name = dupconfigstr(result,utf8);
 									if ((result = get_config_item(account_buf,"User.EMail")))
 										account->email = mystrdup(result);
 									if ((result = get_config_item(account_buf,"User.Reply")))
@@ -305,21 +317,21 @@ int load_config(void)
 									if ((result = get_config_item(phrase_buf,"Addresses")))
 										phrase->addresses = mystrdup(result);
 									if ((result = get_config_item(phrase_buf,"Write.Welcome")))
-										phrase->write_welcome = mystrdup(result);
+										phrase->write_welcome = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Write.WelcomeRcp")))
-										phrase->write_welcome_repicient = mystrdup(result);
+										phrase->write_welcome_repicient = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Write.Close")))
-										phrase->write_closing = mystrdup(result);
+										phrase->write_closing = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Reply.Welcome")))
-										phrase->reply_welcome = mystrdup(result);
+										phrase->reply_welcome = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Reply.Intro")))
-										phrase->reply_intro = mystrdup(result);
+										phrase->reply_intro = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Reply.Close")))
-										phrase->reply_close = mystrdup(result);
+										phrase->reply_close = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Forward.Initial")))
-										phrase->forward_initial = mystrdup(result);
+										phrase->forward_initial = dupconfigstr(result,utf8);
 									if ((result = get_config_item(phrase_buf,"Forward.Finish")))
-										phrase->forward_finish = mystrdup(result);
+										phrase->forward_finish = dupconfigstr(result,utf8);
 								}
 							}
 						}
@@ -358,15 +370,23 @@ int load_config(void)
 		{
 			if ((fh = fopen(user.signature_filename,"r")))
 			{
+				int utf8 = 0;
 				while ((read_line(fh,buf)))
 				{
+					if (buf[0] == (char)0xef && buf[1] == (char)0xbb && buf[2] == (char)0xbf)
+					{
+						utf8 = 1;
+						continue;
+					}
+
 					if (!mystricmp(buf,"begin signature"))
 					{
 						if (read_line(fh,buf))
 						{
-							char *name = mystrdup(buf);
+							char *name = dupconfigstr(buf,utf8);
 							char *sign = NULL;
 							struct signature *s;
+
 							while (read_line(fh,buf))
 							{
 								int sign_len = sign?strlen(sign):0;
@@ -380,12 +400,19 @@ int load_config(void)
 								}
 							}
 
-							if (sign && strlen(sign)) sign[strlen(sign)-1]=0; /* remove the additional new line */
+							if (sign && strlen(sign))
+								sign[strlen(sign)-1]=0; /* remove the additional new line */
 
 							if ((s = signature_malloc()))
 							{
 								s->name = name;
-								s->signature = sign;
+
+								if (!utf8)
+								{
+									s->signature = utf8create(sign,NULL);
+									free(sign);
+								} else s->signature = sign;
+
 								list_insert_tail(&user.config.signature_list,&s->node);
 							}
 						}
@@ -425,6 +452,8 @@ void save_config(void)
 			int i;
 
 			fputs("SMCO\n\n",fh);
+
+			fputs("UTF8=1\n",fh);
 
 			if (user.new_folder_directory) fprintf(fh,"FolderDirectory=%s\n",user.new_folder_directory);
 			else fprintf(fh,"FolderDirectory=%s\n",user.folder_directory);
@@ -531,6 +560,10 @@ void save_config(void)
 		if (fh)
 		{
 			struct signature *signature;
+			fputc(0xef,fh); /* BOM to identify this file as UTF8 */
+			fputc(0xbb,fh);
+			fputc(0xbf,fh);
+			fputc('\n',fh);
 			signature = (struct signature*)list_first(&user.config.signature_list);
 			while (signature)
 			{

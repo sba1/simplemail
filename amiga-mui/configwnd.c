@@ -49,6 +49,8 @@
 #include "signature.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support.h"
+#include "support_indep.h"
 
 #include "audioselectgroupclass.h"
 #include "compiler.h"
@@ -57,8 +59,7 @@
 #include "configwnd.h"
 #include "muistuff.h"
 #include "multistringclass.h"
-#include "support.h"
-#include "support_indep.h"
+#include "utf8stringclass.h"
 
 static struct MUI_CustomClass *CL_Sizes;
 static int create_sizes_class(void);
@@ -145,7 +146,7 @@ static struct list account_list; /* nodes are struct account * */
 static struct account *account_last_selected;
 
 static APTR phrases_treenode;
-static struct list phrase_list;
+static struct list phrase_list; /* not utf8 encoded */
 static struct phrase *phrase_last_selected;
 
 static APTR signatures_treenode;
@@ -201,7 +202,7 @@ static void get_account(void)
 		if (account_last_selected->smtp->auth_login) free(account_last_selected->smtp->auth_login);
 		if (account_last_selected->smtp->auth_password) free(account_last_selected->smtp->auth_password);
 
-		account_last_selected->name = mystrdup((char*)xget(account_name_string, MUIA_String_Contents));
+		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
@@ -239,8 +240,8 @@ static void get_signature(void)
 
 		text_buf = (char*)DoMethod(signature_texteditor, MUIM_TextEditor_ExportText);
 
-		signature_last_selected->name = mystrdup((char*)xget(signature_name_string,MUIA_String_Contents));
-		signature_last_selected->signature = mystrdup(text_buf);
+		signature_last_selected->name = mystrdup(getutf8string(signature_name_string));
+		signature_last_selected->signature = utf8create(text_buf,user.config.default_codeset?user.config.default_codeset->name:NULL);
 		if (text_buf) FreeVec(text_buf);
 		signature_last_selected = NULL;
 	}
@@ -402,6 +403,40 @@ static void config_use(void)
 	phrase = (struct phrase*)list_first(&phrase_list);
 	while (phrase)
 	{
+		char *str;
+
+		str = utf8create(phrase->write_welcome,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->write_welcome);
+		phrase->write_welcome = str;
+
+		str = utf8create(phrase->write_welcome_repicient,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->write_welcome_repicient);
+		phrase->write_welcome_repicient = str;
+
+		str = utf8create(phrase->write_closing,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->write_closing);
+		phrase->write_closing = str;
+
+		str = utf8create(phrase->reply_welcome,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->reply_welcome);
+		phrase->reply_welcome = str;
+
+		str = utf8create(phrase->reply_intro,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->reply_intro);
+		phrase->reply_intro = str;
+
+		str = utf8create(phrase->reply_close,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->reply_close);
+		phrase->reply_close = str;
+
+		str = utf8create(phrase->forward_initial,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->forward_initial);
+		phrase->forward_initial = str;
+
+		str = utf8create(phrase->forward_finish,user.config.default_codeset?user.config.default_codeset->name:"");
+		free(phrase->forward_finish);
+		phrase->forward_finish = str;
+
 		insert_config_phrase(phrase);
 		phrase = (struct phrase*)node_next(&phrase->node);
 	}
@@ -467,7 +502,7 @@ static void config_tree_active(void)
 
 				if ((account = (struct account*)list_find(&account_list,account_num)))
 				{
-					setstring(account_name_string,account->name);
+					setutf8string(account_name_string,account->name);
 					setstring(account_email_string,account->email);
 					setstring(account_reply_string,account->reply);
 					setstring(account_recv_server_string,account->pop->name);
@@ -511,8 +546,10 @@ static void config_tree_active(void)
 
 				if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
 				{
-					setstring(signature_name_string,signature->name);
-					set(signature_texteditor,MUIA_TextEditor_Contents, signature->signature?signature->signature:"");
+					char *sign = utf8tostrcreate(signature->signature?signature->signature:"",user.config.default_codeset);
+					setutf8string(signature_name_string,signature->name);
+					set(signature_texteditor,MUIA_TextEditor_Contents, sign);
+					free(sign);
 				}
 				signature_last_selected = signature;
 			}
@@ -591,8 +628,6 @@ static int init_user_group(void)
 *******************************************************************/
 static int init_tcpip_receive_group(void)
 {
-	Object *add;
-
 	static char *preselection[4];
 	static int preselection_translated;
 
@@ -744,7 +779,7 @@ static int init_account_group(void)
 		Child, HorizLineTextObject(_("User")),
 		Child, ColGroup(2),
 			Child, MakeLabel(Q_("?people:Name")),
-			Child, account_name_string = BetterStringObject,
+			Child, account_name_string = UTF8StringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_Contents, NULL,
@@ -1240,7 +1275,7 @@ static int init_signature_group(void)
 		MUIA_Weight,300,
 		Child, HGroup,
 			Child, MakeLabel(_("Name")),
-			Child, signature_name_string = BetterStringObject, StringFrame, End,
+			Child, signature_name_string = UTF8StringObject, StringFrame, End,
 /*			Child, edit_button = MakeButton("Edit in external editor"),*/
 			End,
 		Child, HGroup,
@@ -1555,9 +1590,20 @@ static void init_config(void)
 
 			while (phrase)
 			{
-				struct phrase *new_phrase = phrase_duplicate(phrase);
+				struct phrase *new_phrase = malloc(sizeof(struct phrase));
 				if (new_phrase)
 				{
+					/* duplicate by hand because we hold the string in the internal phrase list not utf8 coded */
+					new_phrase->addresses = mystrdup(phrase->addresses);
+					new_phrase->write_welcome = utf8tostrcreate(phrase->write_welcome,user.config.default_codeset);
+					new_phrase->write_welcome_repicient = utf8tostrcreate(phrase->write_welcome_repicient,user.config.default_codeset);
+					new_phrase->write_closing = utf8tostrcreate(phrase->write_closing,user.config.default_codeset);
+					new_phrase->reply_welcome = utf8tostrcreate(phrase->reply_welcome,user.config.default_codeset);
+					new_phrase->reply_intro = utf8tostrcreate(phrase->reply_intro,user.config.default_codeset);
+					new_phrase->reply_close = utf8tostrcreate(phrase->reply_close,user.config.default_codeset);
+					new_phrase->forward_initial = utf8tostrcreate(phrase->forward_initial,user.config.default_codeset);
+					new_phrase->forward_finish = utf8tostrcreate(phrase->forward_finish,user.config.default_codeset);
+
 					list_insert_tail(&phrase_list,&new_phrase->node);
 					DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrase"), phrase_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}

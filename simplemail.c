@@ -758,9 +758,9 @@ void callback_check_selected_folder_for_spam(void)
 		
 		if (!(sm_request(NULL,_("Currently there are too few mails classified as %s.\nStatistical spam identification works only reliable if you classify\n"
 											"enough mails before.\n"
-											"500 mails for both classes are considered enough, but the more\nyou classify the better it works.\n\n"
-											"Number of mails classified as spam (bad mails): %d\n"
-											"Number of mails classified as ham (good mails): %d\n\nContinue to try to look for spam mails?"),
+											"500 mails for both classes are considered enough, but the more\nyou classify correctly the better it works.\n\n"
+											"Number of mails classified as spam (bad mails): %ld\n"
+											"Number of mails classified as ham (good mails): %ld\n\nContinue to try to look for spam mails?"),
 										_("_Look for spam mails|_Cancel"),which_txt,spams,hams))) return;
 	}
 
@@ -1015,10 +1015,13 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	struct filter *f;
 	int pos;
 
+	int spams = spam_num_of_spam_classified_mails();
+	int hams = spam_num_of_ham_classified_mails();
+
 	mail->flags |= MAIL_FLAGS_NEW;
 	pos = folder_add_mail(folder,mail,1);
 
-	if (user.config.spam_auto_check)
+	if (user.config.spam_auto_check && (spams >= 500 && hams >= 500))
 	{
 		if (spam_is_mail_spam(folder,mail))
 		{

@@ -38,6 +38,8 @@
 #include "support.h"
 #include "support_indep.h"
 
+#define FOLDER_INDEX_VERSION 3
+
 static void folder_remove_mail(struct folder *folder, struct mail *mail);
 
 /* folder sort stuff
@@ -709,10 +711,13 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 		{
 			int ver;
 			fread(&ver,1,4,fh);
-			if (ver == 2)
+			if (ver == FOLDER_INDEX_VERSION)
 			{
 				int num_mails;
+				int unread_mails;
+				
 				fread(&num_mails,1,4,fh);
+				fread(&unread_mails,1,4,fh);
 
 				if (!only_num_mails)
 				{
@@ -772,6 +777,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				} else
 				{
 					folder->num_index_mails = num_mails;
+					folder->unread_mails = unread_mails;
 				}
 			}
 		}
@@ -1594,11 +1600,12 @@ int folder_save_index(struct folder *f)
 	if ((fh = folder_open_indexfile(f,"wb")))
 	{
 		int i;
-		int ver = 2;
+		int ver = FOLDER_INDEX_VERSION;
 
 		fwrite("SMFI",1,4,fh);
 		fwrite(&ver,1,4,fh);
 		fwrite(&f->num_mails,1,4,fh);
+		fwrite(&f->unread_mails,1,4,fh);
 
 		for (i=0; i < f->num_mails; i++)
 		{

@@ -454,11 +454,13 @@ static char *parse_domain(char *domain, char **pbuf)
 **************************************************************************/
 char *parse_addr_spec(char *addr_spec, char **pbuf)
 {
-	char *buf,*buf2;
 	char *local_part, *domain;
 	char *ret = parse_local_part(addr_spec,&local_part);
 
+	string addr_str;
+
 	if (!ret) return NULL;
+	if (!string_initialize(&addr_str,100)) return NULL;
 
 	ret = skip_spaces(ret); /* not needed according rfc */
 
@@ -475,21 +477,19 @@ char *parse_addr_spec(char *addr_spec, char **pbuf)
 		return NULL;
 	}
 
-	buf2 = strdupcat(local_part,"@");
+	if (!string_append(&addr_str,local_part)) goto out;
+	if (!(string_append(&addr_str,"@"))) goto out;
+	if (!(string_append(&addr_str,domain))) goto out;
+
+	free(domain);
 	free(local_part);
 
-	if (!buf2)
-	{
-		free(domain);
-		return NULL;
-	}
-
-	buf = strdupcat(buf2,domain);
-	free(buf2);
-	free(domain);
-	if (!buf) return NULL;
-	*pbuf = buf;
+	*pbuf = addr_str.str;
 	return ret;
+out:
+	free(domain);
+	free(local_part);
+	return NULL;
 }
 
 /**************************************************************************

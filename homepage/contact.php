@@ -5,7 +5,7 @@ SimpleMail is currently mainly developed by:
 	<TR>
 		<TD>Sebastian Bauer</TD>
 		<TD><A href="mailto:sebauer@t-online.de">sebauer@t-online.de</A></TD>
-		<TD><A href="http://home.t-online.de/home/sebauer/">http://home.t-online.de/home/sebauer/</A></TD>
+		<TD><A href="http://www.sebastianbauer.info/">http://www.sebastianbauer.info/</A></TD>
 	</TR>
 	<TR>
 		<TD>Hynek Schlawack</TD>
@@ -23,6 +23,11 @@ Additional work:
 		<TD>Jörg Strohmayer</TD>
 		<TD><A href="http://home.wtal.de/js/">http://home.wtal.de/js/</A></TD>
 	</TR>
+  <tr>
+    <td>Various fixes and improvements</td>
+    <td>Bernd Gollesch</td>
+    <td><a href="mailto:bgollesch@sime.com">bgollesch@sime.com</a></td>
+  </tr>
 	<tr>
 		<td>Manual</td>
 		<td>David Rey</td>

@@ -2,6 +2,9 @@ SHELL =  /bin/sh
 
 OUT = SimpleMail
 
+DESTDIR = sm
+LOCALEDIR = ${DESTDIR}/Locale/
+
 G_IPATH     = -I./ -I./indep-include -I./amiga-mui
 G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
 G_OPTFLAGS  = -O3 \
@@ -19,7 +22,8 @@ G_OPTFLAGS  = -O3 \
 
 ##############################################################################
 
-all: amigamui $(OUT)
+all: date.h amigamui $(OUT) locale
+	@echo All done!
 
 ##############################################################################
 
@@ -30,16 +34,13 @@ all: amigamui $(OUT)
 
 LIBS    = -L./amiga-mui
 
-SRC     =
-
-DEST    =
-
-GLOBAL  =
+GLOBAL  = date.h version.h
 
 %.o: %.c $(GLOBAL)
-	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+	@echo "Making $@..."
+	@ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
 
-%.c : %.h $(GLOBAL)
+%.c: %.h $(GLOBAL)
 
 OBJS    = 	account.o \
             addressbook.o \
@@ -80,52 +81,56 @@ OBJS    = 	account.o \
 #####################################################################
 
 start: date.h
-	-mkdir $(DESTDIR)
-	-mkdir $(DESTDIR)/Locale
-	-mkdir $(DESTDIR)/Images
-	-mkdir $(DESTDIR)/ARexx
-	-mkdir $(DESTDIR)/Charsets
-	@rx >t:smdate.h "say '#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
-	cp /t/smdate.h date.h
+	@echo Creating the sm/ tree.
+	@mkdir -p $(DESTDIR)
+	@mkdir -p $(DESTDIR)/ARexx
+	@mkdir -p $(DESTDIR)/Charsets
+	@mkdir -p $(DESTDIR)/Images
+	@mkdir -p $(DESTDIR)/Libs
+	@mkdir -p $(DESTDIR)/Locale
 
 date.h:
-	@echo >date.h
-
+	@echo Creating date.h
+	@rx >t:smdate.h "say '#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
+	@cp /t/smdate.h date.h
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo
-locale: ${LOCALEOBJS}
+LOCALEOBJS = $(LOCALEDIR)de.mo $(LOCALEDIR)fi.mo $(LOCALEDIR)ma.mo $(LOCALEDIR)pl.mo $(LOCALEDIR)es.mo $(LOCALEDIR)fr.mo
+locale: $(LOCALEOBJS)
 
-.po.mo:
-	msgfmt ./$? -o ./$@ # this is the unix style variant of msgfmt (GeekGadgets)
+$(LOCALEDIR)de.mo: po/de.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
 
-${LOCALEDIR}de.mo: po/de.po
-${LOCALEDIR}ma.mo: po/ma.po
-${LOCALEDIR}pl.mo: po/pl.po
-${LOCALEDIR}fi.mo: po/fi.po
-${LOCALEDIR}es.mo: po/es.po
-${LOCALEDIR}fr.mo: po/fr.po
+$(LOCALEDIR)ma.mo: po/ma.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
 
-de.pox:
-	execute CreatePOX de
-ma.pox:
-	execute CreatePOX ma
-pl.pox:
-	execute CreatePOX pl
-fi.pox:
-	execute CreatePOX fi
-es.pox:
-	execute CreatePOX es
-fr.pox:
-	execute CreatePOX fr
+$(LOCALEDIR)pl.mo: po/pl.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)fi.mo: po/fi.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)es.mo: po/es.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)fr.mo: po/fr.po
+	@echo "Making $@..."
+	@msgfmt $? -o $@
 
 amigamui:
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 
 $(OUT): $(OBJS) amiga-mui/libgui.a
-	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).debug
-	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
-	protect $(OUT) +e
+	@echo Linking $@.db...
+	@ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).debug
+	@echo Striping $@...
+	@ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
+	@chmod a+x $(OUT)
 
 # prepare the release archives
 prepare-release:
@@ -135,24 +140,30 @@ prepare-release:
 	cp doc/amiga/ReadMe /ram/SimpleMail/
 	cp doc/amiga/SimpleMail.guide /ram/SimpleMail/
 	cp doc/amiga/history.txt /ram/SimpleMail/
-	cp amiga-mui/binaries/ReadMe.info /ram/SimpleMail/
-	cp amiga-mui/binaries/SimpleMail.guide.info /ram/SimpleMail/
-	cp amiga-mui/binaries/SimpleMail.info /ram/SimpleMail/
-	cp amiga-mui/binaries/Drawer.info /ram/SimpleMail.info
-	cp amiga-mui/binaries/simplehtml.library /ram/SimpleMail/Libs/
-	cp -r sm/Images /ram/SimpleMail/
-	cp -r sm/ARexx /ram/SimpleMail/
+	cp amiga-mui/binaries/check.info /ram/SimpleMail/Images/check.info
+	cp amiga-mui/binaries/empty.info /ram/SimpleMail/Images/empty.info
+	cp amiga-mui/binaries/new.info /ram/SimpleMail/Images/new.info
+	cp amiga-mui/binaries/old.info /ram/SimpleMail/Images/old.info
+	cp amiga-mui/binaries/MorphOS_ReadMe.info /ram/SimpleMail/ReadMe.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail.guide.info /ram/SimpleMail/SimpleMail.guide.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail.info /ram/SimpleMail/SimpleMail.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail_Folder.info /ram/SimpleMail.info
+	cp amiga-mui/binaries/MorphOS_simplehtml.library /ram/SimpleMail/Libs/simplehtml.library
+	cp amiga-mui/binaries/MorphOS_startup.img /ram/SimpleMail/Images/startup
+	cp amiga-mui/binaries/MorphOS_shutdown.img /ram/SimpleMail/Images/shutdown
+	cp -r sm/Images/* /ram/SimpleMail/Images/
+	cp -r amiga-mui/ARexx/*.smrx /ram/SimpleMail/ARexx/
 	cp sm/locale/*.mo /ram/SimpleMail/Locale/
-	cp sm/Charsets/*.txt /ram/SimpleMail/Charsets/
-	cp sm/.taglines /ram/SimpleMail/
-	cp /libs/expat.library /ram/SimpleMail/Libs/
+	cp Charsets/*.txt /ram/SimpleMail/Charsets/
+	cp .taglines /ram/SimpleMail/
+	cp /Utils/Internet/SimpleMail/Libs/expat.library /ram/SimpleMail/Libs/
 	-rm /ram/simplemail.lzx
 	-rm /ram/simplemail.lha
 	lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
 #	 lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
 
 bump:
-	bumprev2 VERSION=0 FILE=$(SRC)SimpleMail_rev TAG=SimpleMail
+	bumprev2 VERSION=0 FILE=$SimpleMail_rev TAG=SimpleMail
 	rm SimpleMail_rev.i
 
 
@@ -160,10 +171,13 @@ dump:
 	ppc-morphos-objdump --reloc --disassemble-all $(OUT).debug >$(OUT).dump
 
 clean:
-	-rm   *.o $(OUT) *.debug *.dump ./amiga-mui/*.o ./amiga-mui/*.a
+	@echo Cleaning...
+	$(MAKE) -C amiga-mui -f Makefile.MorphOS clean
+	@-rm *.o $(OUT) *.debug *.dump ./sm/locale/*.mo
 
 pack: clean
-	-@rm ram:simplemail.lha
+	@echo Packing...
+	@@rm ram:simplemail.lha
 	@cd ..; lha -r a ram:simplemail_src.lha simplemail
 	@echo ram:simplemail_src.lha ready...
 

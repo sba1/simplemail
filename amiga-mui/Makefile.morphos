@@ -30,14 +30,11 @@ all:  $(OUT)
 
 LIB     = -L./amiga-mui/
 
-SRC     =
-
-DEST    =
-
-GLOBAL  = compiler.h
+GLOBAL  = compiler.h ../date.h ../version.h
 
 %.o: %.c $(GLOBAL)
-	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+	@echo "Making amiga-mui/$@..."
+	@ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
 
 %.c : %.h $(GLOBAL)
 
@@ -95,12 +92,14 @@ OBJS = vsnprintf.o \
 #####################################################################
 
 $(OUT): $(OBJS)
-	rm -f $@
-	ppc-morphos-ar rc $@ $(OBJS)
-	ppc-morphos-ranlib $@
+	@echo Linking amiga-mui/$@...
+	@rm -f $@
+	@ppc-morphos-ar rc $@ $(OBJS)
+	@ppc-morphos-ranlib $@
 
 clean:
-	-rm   *.o $(OUT)
+	@echo Cleaning...
+	@-rm *.o $(OUT)
 
 ##############################################################################
 

@@ -29,6 +29,7 @@
 #include <proto/keymap.h>
 #include <proto/graphics.h>
 #include <proto/layers.h>
+#include <proto/utility.h>
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -285,3 +286,11 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 	}
 }
 
+LONG GetControlChar(char *label)
+{
+	LONG control_char;
+	char *buf = strchr(label,'_');
+	if (buf) control_char = ToLower(*(buf+1));
+	else control_char = 0;
+	return control_char;
+}

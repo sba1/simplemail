@@ -31,5 +31,6 @@ STRPTR StrCopy(const STRPTR str);
 ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );
 VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask );
+LONG GetControlChar(char *buf);
 
 #endif

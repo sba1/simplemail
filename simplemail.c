@@ -91,11 +91,23 @@ int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 	num = read_window_open(f->path, mail, window);
 	if (num >= 0)
 	{
+		int refresh = 0;
+
 		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD)
 		{
 			folder_set_mail_status(f, mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
-			if (mail->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+			refresh = 1;
+		}
+
+		if (mail->flags & MAIL_FLAGS_NEW)
+		{
+			if (f->new_mails) f->new_mails--;
 			mail->flags &= ~MAIL_FLAGS_NEW;
+			refresh = 1;
+		}
+
+		if (refresh)
+		{
 			main_refresh_mail(mail);
 			main_refresh_folder(f);
 		}

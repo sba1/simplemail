@@ -1332,8 +1332,9 @@ int mail_process_headers(struct mail *mail)
 			}
 		} else if (!mystricmp("content-id",header->name))
 		{
-			if (*buf++ == '<')
+			if (*buf == '<')
 			{
+				buf++;
 				if (!(parse_addr_spec(buf,&mail->content_id)))
 				{
 					/* for the non rfc conform content-id's */
@@ -1347,6 +1348,11 @@ int mail_process_headers(struct mail *mail)
 						}
 					}
 				}
+			} else
+			{
+				/* for the non rfc conform content-id's */
+				if ((mail->content_id = malloc(strlen(buf)+1)))
+					strcpy(mail->content_id,buf);
 			}
 		} else if (!mystricmp("message-id",header->name))
 		{

@@ -16,7 +16,7 @@
 </item>
 <item id="cdt_indexer">
 <indexEnabled indexValue="true"/>
-<indexerProblemsEnabled indexProblemsValue="7"/>
+<indexerProblemsEnabled indexProblemsValue="0"/>
 </item>
 <item id="cdt_resolver">
 <custom value="false"/>
@@ -34,6 +34,13 @@
 <buildCommand>make</buildCommand>
 <buildArguments>-f makefile.aos4</buildArguments>
 <buildTarget>all</buildTarget>
+<stopOnError>false</stopOnError>
+<useDefaultCommand>false</useDefaultCommand>
+</target>
+<target name="revision" targetID="org.eclipse.cdt.make.MakeTargetBuilder" path="">
+<buildCommand>make</buildCommand>
+<buildArguments>-f makefile.aos4</buildArguments>
+<buildTarget>revision</buildTarget>
 <stopOnError>false</stopOnError>
 <useDefaultCommand>false</useDefaultCommand>
 </target>

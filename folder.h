@@ -155,7 +155,7 @@ struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
 struct folder *folder_find_by_file(char *filename);
 struct folder *folder_find_by_mail(struct mail_info *mail);
-struct folder *folder_find_by_imap(char *server, char *path);
+struct folder *folder_find_by_imap(char *user, char *server, char *path);
 struct mail_info *folder_find_mail_by_position(struct folder *f,int position);
 struct mail_info *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename);
 struct mail_info *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename);

@@ -207,14 +207,14 @@ int callback_delete_mail(struct mail_info *mail)
 }
 
 /* delete mails by uid and folder */
-void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
+void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid)
 {
 	struct folder *f;
 	struct mail_info *mail;
 
 	folders_lock();
 
-	f = folder_find_by_imap(server,path);
+	f = folder_find_by_imap(user,server,path);
 	if (!f)
 	{
 		folders_unlock();
@@ -1251,13 +1251,13 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 }
 
 /* a new mail has been arrived into an imap folder */
-void callback_new_imap_mail_arrived(char *filename, char *server, char *path)
+void callback_new_imap_mail_arrived(char *filename, char *user, char *server, char *path)
 {
 	struct mail_info *mail;
 	struct folder *f;
 	char buf[256];
 
-	f = folder_find_by_imap(server,path);
+	f = folder_find_by_imap(user, server, path);
 	if (!f) return;
 
 	getcwd(buf, sizeof(buf));
@@ -1344,12 +1344,12 @@ void callback_mail_has_not_been_sent(char *filename)
 }
 
 /* adds a new imap folder */
-void callback_add_imap_folder(char *server, char *path)
+void callback_add_imap_folder(char *user, char *server, char *path)
 {
 	struct folder *folder;
 
 	folders_lock();
-	if ((folder = folder_find_by_imap(server,"")))
+	if ((folder = folder_find_by_imap(user, server,"")))
 	{
 		folder_add_imap(folder, path);
 	}
@@ -1614,7 +1614,7 @@ void callback_remove_folder(void)
 /* called when imap folders has been received */
 static void callback_received_imap_folders(struct imap_server *server, struct list *all_folder_list, struct list *sub_folder_list)
 {
-	struct folder *f = folder_find_by_imap(server->name,"");
+	struct folder *f = folder_find_by_imap(server->login, server->name, "");
 	if (!f) return;
 	folder_imap_set_folders(f, all_folder_list, sub_folder_list);
 	folder_fill_lists(all_folder_list, sub_folder_list);

@@ -1431,7 +1431,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 	if (!parent) return NULL;
 	if (!parent->is_imap) return NULL;
 
-	if ((f = folder_find_by_imap(parent->imap_server,imap_path))) return f;
+	if ((f = folder_find_by_imap(parent->imap_user, parent->imap_server,imap_path))) return f;
 
 	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
 	{
@@ -2025,14 +2025,14 @@ struct folder *folder_find_special(int sp)
 /******************************************************************
  Returns the given imap folder server
 *******************************************************************/
-struct folder *folder_find_by_imap(char *server, char *path)
+struct folder *folder_find_by_imap(char *user, char *server, char *path)
 {
 	struct folder *f = folder_first();
 	while (f)
 	{
 		if (f->is_imap)
 		{
-			if (!mystricmp(server,f->imap_server))
+			if (!mystricmp(server,f->imap_server) && !mystricmp(user,f->imap_user))
 			{
 				if (!path && !f->imap_path) return f;
 				if (path && !(*path) && !f->imap_path) return f;
@@ -3533,44 +3533,55 @@ void folder_create_imap(void)
 			f = folder_first();
 			while (f)
 			{
-/*				if (f->is_imap)
-				{
-					if (!mystricmp(f->imap_server,ac->imap->name) &&
-							!mystricmp(f->imap_user,ac->imap->login))
-					{
-						found = 1;
-						break;
-					}
-				}*/
-
-				if (!mystricmp(f->name,ac->imap->name))
+				if (!mystricmp(f->imap_server,ac->imap->name) &&
+						!mystricmp(f->imap_user,ac->imap->login) && f->special == FOLDER_SPECIAL_GROUP)
 				{
 					found = 1;
 					break;
-				}
-				
+				}				
 				f = folder_next(f);
 			}
 
+printf("found %d\n\n",found);
+
 			if (!found)
 			{
-				if ((f = folder_add_group(ac->imap->name)))
+				char buf[128];
+				int tries = 0;
+
+				mystrlcpy(buf,ac->imap->name,sizeof(buf));
+
+				while (folder_find_by_name(buf) && tries < 20)
 				{
-					f->is_imap = 1;
-					f->imap_server = mystrdup(ac->imap->name);
-					f->imap_user = mystrdup(ac->imap->login);
-					f->path = mycombinepath(user.folder_directory,ac->imap->name);
+					sm_snprintf(buf,sizeof(buf),"%s-%d",ac->imap->name,tries);
+					tries++;
+				}
+				
+				if (tries < 20)
+				{
+					if ((f = folder_add_group(buf)))
+					{
+						f->is_imap = 1;
+						f->imap_server = mystrdup(ac->imap->name);
+						f->imap_user = mystrdup(ac->imap->login);
+						f->path = mycombinepath(user.folder_directory,buf);
+						if (f->path)
+						{
+							sm_makedir(f->path);
+							folder_config_save(f);
+						}
+					}
 				}
 			} else
 			{
 				if (f)
 				{
-					/* The folder has been added because a directory has been found. But's
-			     * not considered as a group so we change it manually */
+					/* The folder has been added because a directory has been found. But it
+			     * might be not considered as a group so we change it manually */
 					f->special = FOLDER_SPECIAL_GROUP;
 					f->is_imap = 1;
-					f->imap_server = mystrdup(ac->imap->name);
-					f->imap_user = mystrdup(ac->imap->login);
+					
+					printf("%s %s\n\n",f->name,f->imap_server);
 				}
 			}
 
@@ -3680,7 +3691,10 @@ int init_folders(void)
 								new_folder = folder_add_group(buf);
 								new_folder->closed = closed;
 								if (*path)
+								{
 									new_folder->path = mystrdup(path);
+									folder_config_load(new_folder);
+								}
 							} else
 							{
 								new_folder = folder_add(path);
@@ -3692,7 +3706,6 @@ int init_folders(void)
 						}
 					}
 				}
-
 			}
 			free(buf);
 		}

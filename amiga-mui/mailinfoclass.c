@@ -53,7 +53,7 @@
 /**************************************************************************/
 
 #define BORDER						2		/* border */
-#define CONTENTS_OFFSET 	10	/* offset from field column to text column */
+#define CONTENTS_OFFSET 	8	/* offset from field column to text column */
 
 /**************************************************************************/
 
@@ -74,6 +74,7 @@ struct field
 	int clickable;
 
 	char *name;
+	int name_width;
 
 	struct list text_list;
 };
@@ -197,7 +198,7 @@ struct MailInfoArea_Data
 	int link_pen;
 	struct text_node *redraw_text;
 
-	int fieldname_left;
+	int fieldname_left;			/* excluding BORDER */
 	int fieldname_width;
 	int entries;
 
@@ -230,6 +231,8 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 	struct field *f;
 	struct text_node *t;
 
+	char buf[64];
+
 	if (!(f = malloc(sizeof(*f)))) return 0;
 	if (!(t = malloc(sizeof(*t))))
 	{
@@ -237,8 +240,11 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 		return 0;
 	}
 
+	mystrlcpy(buf,name,sizeof(buf)-1);
+	strcat(buf,":");
+
 	memset(f,0,sizeof(*f));
-	f->name = mystrdup(name);
+	f->name = mystrdup(buf);
 	f->clickable = 0;
 
 	memset(t,0,sizeof(*t));
@@ -259,10 +265,15 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 	struct field *f;
 	struct address *addr;
 
+	char buf[64];
+
 	if (!(f = malloc(sizeof(*f)))) return 0;
 
+	mystrlcpy(buf,name,sizeof(buf)-1);
+	strcat(buf,":");
+
 	memset(f,0,sizeof(*f));
-	f->name = mystrdup(name);
+	f->name = mystrdup(buf);
 	f->clickable = 1;
 
 	list_init(&f->text_list);
@@ -362,18 +373,19 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	comma_width = TextLength(&rp,",",1);
 
 	/* 1st pass, determine sizes of the field name column */
+	SetSoftStyle(&rp,FSF_BOLD,AskSoftStyle(&rp));
 	f = (struct field *)list_first(&data->field_list);
 	while (f)
 	{
-		int new_field_width = TextLength(&rp,f->name,strlen(f->name));
-		if (new_field_width > field_width) field_width = new_field_width;
+		f->name_width = TextLength(&rp,f->name,strlen(f->name));
+		if (f->name_width > field_width) field_width = f->name_width;
 		f = (struct field*)node_next(&f->node);
 		entries++;
 	}
-
 	data->fieldname_width = field_width + CONTENTS_OFFSET;
 
 	/* 2nd pass, determine the link positions */
+	SetSoftStyle(&rp,FS_NORMAL,AskSoftStyle(&rp));
 	f = (struct field *)list_first(&data->field_list);
 	while (f)
 	{
@@ -487,21 +499,32 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	int space_left;
 	int comma_width;
 
+	int fieldname_width, fieldname_width2;
+
 	comma_width = TextLength(_rp(obj),",",1);
+
+	/* display the field name, which is right aligned */
+	fieldname_width = data->fieldname_width;
+	fieldname_width2 = _mwidth(obj) - 2 * BORDER - data->fieldname_left;
+	if (fieldname_width > fieldname_width2) fieldname_width = fieldname_width2;
 
 	SetAPen(_rp(obj), data->text_pen);
 	SetFont(_rp(obj), _font(obj));
-	Move(_rp(obj),_mleft(obj)+ BORDER + data->fieldname_left,ytext);
+	Move(_rp(obj), _mleft(obj) + BORDER + data->fieldname_left + data->fieldname_width - f->name_width - CONTENTS_OFFSET, ytext);
+	SetSoftStyle(_rp(obj),FSF_BOLD,AskSoftStyle(_rp(obj)));
 
-	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,_mwidth(obj) - data->fieldname_left,_font(obj)->tf_YSize);
+	space_left = fieldname_width - data->fieldname_width + f->name_width + CONTENTS_OFFSET;
+	if (space_left < 0) return;
+	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 	if (!cnt) return;
 	if (!update) Text(_rp(obj),f->name,cnt);
 
+	/* display the rest */
 	space_left = _mwidth(obj) - data->fieldname_left - data->fieldname_width - 2 * BORDER;
 	if (space_left <= 0) return;
 
 	Move(_rp(obj),_mleft(obj) + data->fieldname_left + data->fieldname_width + BORDER, ytext);
-
+	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
 	{
@@ -598,7 +621,7 @@ static ASM ULONG MailInfoArea_LayoutFunc( REG(a0, struct Hook *hook), REG(a2, Ob
 
 						if (offset < 0) offset = 0;
 
-						MUI_Layout(data->switch_button, BORDER + 1, BORDER + 1, mw, mh + offset, 0);
+						MUI_Layout(data->switch_button, BORDER, BORDER, mw, mh + offset, 0);
 	  			}
 	  			return 1;
   }
@@ -623,6 +646,7 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	init_hook(layout_hook, (HOOKFUNC)MailInfoArea_LayoutFunc);
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
+					MUIA_Font, MUIV_Font_Tiny,
 					MUIA_Group_Child, switch_button = MyNewObject(CL_TinyButton->mcc_Class, NULL, TAG_DONE),
 					MUIA_Group_LayoutHook, layout_hook,
 					TAG_MORE,msg->ops_AttrList)))

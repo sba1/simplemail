@@ -52,7 +52,7 @@
 #include "readwnd.h"
 
 static void save_contents(struct Read_Data *data, struct mail *mail);
-static int read_window_display_mail(struct Read_Data *data, char *filename);
+static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
 
 #define MAX_READ_OPEN 10
 static int read_open[MAX_READ_OPEN];
@@ -80,6 +80,8 @@ struct Read_Data /* should be a customclass */
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
+
+	struct mail *ref_mail; /* The reference to the original mail */
 	char *folder_path; /* the path of the folder */
 
 	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
@@ -332,12 +334,12 @@ static void save_button_pressed(struct Read_Data **pdata)
 static void prev_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->mail->filename);
+	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
 	if (prev)
 	{
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
-		read_window_display_mail(data, prev->filename);
+		read_window_display_mail(data, prev);
 	}
 }
 
@@ -347,13 +349,58 @@ static void prev_button_pressed(struct Read_Data **pdata)
 static void next_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->mail->filename);
+	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
 	if (next)
 	{
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
-		read_window_display_mail(data, next->filename);
+		read_window_display_mail(data, next);
 	}
+}
+
+/******************************************************************
+ The delete button has been pressed
+*******************************************************************/
+static void delete_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
+	if (!next) next = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
+
+	if (callback_delete_mail(data->ref_mail))
+	{
+		if (!next)
+		{
+			set(data->wnd, MUIA_Window_Open, FALSE);
+			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+		}
+		if (data->mail) mail_free(data->mail);
+		data->mail = NULL;
+
+		if (next) read_window_display_mail(data, next);
+	}
+}
+
+/******************************************************************
+ The reply button has been pressed
+*******************************************************************/
+static void reply_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	if (!data->ref_mail) return;
+
+	callback_reply_this_mail(data->folder_path, data->ref_mail);
+}
+
+/******************************************************************
+ The forward button has been pressed
+*******************************************************************/
+static void forward_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	if (!data->ref_mail) return;
+
+	callback_forward_this_mail(data->folder_path, data->ref_mail);
 }
 
 /******************************************************************
@@ -382,19 +429,20 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 /******************************************************************
  Display the mail
 *******************************************************************/
-static int read_window_display_mail(struct Read_Data *data, char *filename)
+static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 {
 	BPTR lock;
 
 	if (!data->folder_path) return 0;
 
 	set(App, MUIA_Application_Sleep, TRUE);
+	data->ref_mail = mail;
 
 	if ((lock = Lock(data->folder_path,ACCESS_READ))) /* maybe it's better to use an absoulte path here */
 	{
 		BPTR old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_create_from_file(filename)))
+		if ((data->mail = mail_create_from_file(mail->filename)))
 		{
 			mail_read_contents(data->folder_path,data->mail);
 			mail_create_html_header(data->mail);
@@ -441,13 +489,13 @@ static int read_window_display_mail(struct Read_Data *data, char *filename)
 /******************************************************************
  Opens a read window
 *******************************************************************/
-void read_window_open(char *folder, char *filename)
+void read_window_open(char *folder, struct mail *mail)
 {
 	Object *wnd,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
 	Object *attachments_group;
 	Object *datatype_datatypes;
 	Object *text_listview;
-	Object *prev_button, *next_button, *save_button;
+	Object *prev_button, *next_button, *save_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
 	int num;
 
@@ -474,11 +522,11 @@ void read_window_open(char *folder, char *filename)
 					End,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
-					MUIA_Weight, 200,
-					Child, MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
-					Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),
-					Child, MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
-					Child, MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
+					MUIA_Weight, 150,
+					Child, delete_button = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
+/*					Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),*/
+					Child, reply_button = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
+					Child, forward_button = MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
 					End,
 				End,
 			Child, contents_page = PageGroup,
@@ -570,11 +618,14 @@ void read_window_open(char *folder, char *filename)
 			DoMethod(prev_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
 			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
 			DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
+			DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
+			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
+			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 
 			set(App, MUIA_Application_Sleep, TRUE);
 
-			if (read_window_display_mail(data,filename))
+			if (read_window_display_mail(data,mail))
 			{
 				DoMethod(App,OM_ADDMEMBER,wnd);
 				set(wnd,MUIA_Window_Open,TRUE);

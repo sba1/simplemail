@@ -51,7 +51,7 @@ void callback_read_mail(void)
 	if (!(filename = main_get_mail_filename())) return;
 	if (!(m = main_get_active_mail())) return;
 
-	read_window_open(main_get_folder_drawer(), filename);
+	read_window_open(main_get_folder_drawer(), m);
 
 	if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
 	{
@@ -81,6 +81,21 @@ void callback_delete_mails(void)
 	}
 }
 
+/* a single mail of any folder should be deleted */
+int callback_delete_mail(struct mail *mail)
+{
+	struct folder *f = folder_find_by_mail(mail);
+	if (f && f != folder_deleted())
+	{
+		folder_delete_mail(f,mail);
+		main_refresh_folder(f);
+		main_refresh_folder(folder_deleted());
+		if (main_get_folder() == f) main_remove_mail(mail);
+		return 1;
+	}
+	return 0;
+}
+
 /* get the address */
 void callback_get_address(void)
 {
@@ -99,70 +114,81 @@ void callback_new_mail(void)
 	compose_window_open(&ca);
 }
 
+/* reply this mail */
+void callback_reply_this_mail(char *folder_path, struct mail *to_reply)
+{
+	struct mail *mail;
+	char buf[256];
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder_path);
+
+	if ((mail = mail_create_from_file(to_reply->filename)))
+	{
+		struct mail *reply;
+		mail_read_contents("",mail);
+		if ((reply = mail_create_reply(mail)))
+		{
+			struct compose_args ca;
+			memset(&ca,0,sizeof(ca));
+			ca.to_change = reply;
+			ca.action = COMPOSE_ACTION_REPLY;
+			ca.ref_mail = to_reply;
+			compose_window_open(&ca);
+
+			mail_free(reply);
+		}
+		mail_free(mail);
+	}
+
+	chdir(buf);
+}
+
 /* a mail should be replied */
 void callback_reply_mail(void)
 {
-	char *filename;
+	struct mail *m;
 
-	if ((filename = main_get_mail_filename()))
+	if ((m = main_get_active_mail()))
 	{
-		struct mail *mail;
-		char buf[256];
-
-		getcwd(buf, sizeof(buf));
-		chdir(main_get_folder_drawer());
-
-		if ((mail = mail_create_from_file(filename)))
-		{
-			struct mail *reply;
-			mail_read_contents("",mail);
-			if ((reply = mail_create_reply(mail)))
-			{
-				struct compose_args ca;
-				memset(&ca,0,sizeof(ca));
-				ca.to_change = reply;
-				ca.action = COMPOSE_ACTION_REPLY;
-				ca.ref_mail = main_get_active_mail();
-				compose_window_open(&ca);
-
-				mail_free(reply);
-			}
-			mail_free(mail);
-		}
-
-		chdir(buf);
+		callback_reply_this_mail(main_get_folder_drawer(),m);
 	}
 }
 
 /* a mail should be forwarded */
+void callback_forward_this_mail(char *folder_path, struct mail *to_forward)
+{
+	struct mail *mail;
+	char buf[256];
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder_path);
+
+	if ((mail = mail_create_from_file(to_forward->filename)))
+	{
+		mail_read_contents("",mail);
+		if (mail_forward(mail))
+		{
+			struct compose_args ca;
+			memset(&ca,0,sizeof(ca));
+			ca.to_change = mail;
+			ca.action = COMPOSE_ACTION_FORWARD;
+			ca.ref_mail = main_get_active_mail();
+			compose_window_open(&ca);
+		}
+		mail_free(mail);
+	}
+	chdir(buf);
+}
+
+/* the selected mail should be forwarded */
 void callback_forward_mail(void)
 {
-	char *filename;
+	struct mail *m;
 
-	if ((filename = main_get_mail_filename()))
+	if ((m = main_get_active_mail()))
 	{
-		struct mail *mail;
-		char buf[256];
-
-		getcwd(buf, sizeof(buf));
-		chdir(main_get_folder_drawer());
-
-		if ((mail = mail_create_from_file(filename)))
-		{
-			mail_read_contents("",mail);
-			if (mail_forward(mail))
-			{
-				struct compose_args ca;
-				memset(&ca,0,sizeof(ca));
-				ca.to_change = mail;
-				ca.action = COMPOSE_ACTION_FORWARD;
-				ca.ref_mail = main_get_active_mail();
-				compose_window_open(&ca);
-			}
-			mail_free(mail);
-		}
-
-		chdir(buf);
+		callback_forward_this_mail(main_get_folder_drawer(),m);
 	}
 }
 

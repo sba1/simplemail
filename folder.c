@@ -47,6 +47,8 @@ struct folder_node
 };
 
 static char *fread_str(FILE *fh);
+static void folder_config_save(struct folder *f);
+static int folder_config_load(struct folder *f);
 
 /******************************************************************
  Opens the indexfile of the given folder
@@ -567,7 +569,6 @@ static struct folder *folder_add(char *path)
 		{
 			if ((node->folder.path = mystrdup(path)))
 			{
-				FILE *fh;
 				char buf[256];
 
 				node->folder.primary_sort = FOLDER_SORT_DATE;
@@ -575,10 +576,7 @@ static struct folder *folder_add(char *path)
 
 				sprintf(buf,"%s.config",path);
 
-				if ((fh = fopen(buf,"r")))
-				{
-					fclose(fh);
-				} else
+				if (!folder_config_load(&node->folder))
 				{
 					char *folder_name = sm_file_part(path);
 					if ((node->folder.name = mystrdup(folder_name)))
@@ -589,6 +587,7 @@ static struct folder *folder_add(char *path)
 					if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
 					if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
 					if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
+					folder_config_save(&node->folder);
 				}
 
 				/* for test reasons, later this will only be done if the folder gets activated
@@ -647,6 +646,61 @@ int folder_remove(struct folder *f)
 	return 0;
 }
 
+int read_line(FILE *fh, char *buf);
+
+/******************************************************************
+ Load the configuration for the folder
+*******************************************************************/
+static int folder_config_load(struct folder *f)
+{
+	char buf[256];
+	int rc = 0;
+	FILE *fh;
+
+	sprintf(buf,"%s.config",f->path);
+
+	if ((fh = fopen(buf,"r")))
+	{
+		read_line(fh,buf);
+
+		if (!mystrnicmp("FICO",buf,4))
+		{
+			rc = 1;
+			while (read_line(fh,buf))
+			{
+				if (!mystrnicmp("Name=",buf,5))
+				{
+					if (f->name) free(f->name);
+					f->name = mystrdup(&buf[5]);
+				}
+				else if (!mystrnicmp("Type=",buf,5)) f->type = atoi(&buf[5]);
+				else if (!mystrnicmp("Special=",buf,8)) f->special = atoi(&buf[8]);
+			}
+		}
+		fclose(fh);
+	}
+	return rc;
+}
+
+/******************************************************************
+ Save the current configuration for the folder
+*******************************************************************/
+static void folder_config_save(struct folder *f)
+{
+	char buf[256];
+	FILE *fh;
+	sprintf(buf,"%s.config",f->path);
+
+	if ((fh = fopen(buf,"w")))
+	{
+		fputs("FICO\n",fh);
+		fprintf(fh,"Name=%s\n",f->name);
+		fprintf(fh,"Type=%d\n",f->type);
+		fprintf(fh,"Special=%d\n",f->special);
+		fclose(fh);
+	}
+}
+
 /******************************************************************
  Test if the setting the foldersetting would require a reload
  (the mails would get disposed and reloaded)
@@ -663,7 +717,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
 	{
 		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
 			rescan = 1;
-	}
+	}	
 
 	return rescan;
 }
@@ -676,6 +730,8 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 {
 	int refresh = 0;
 	int rescan = 0;
+	int changed = 0;
+
 	if (newname && strcmp(f->name,newname))
 	{
 		if ((newname = mystrdup(newname)))
@@ -683,6 +739,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 			free(f->name);
 			f->name = newname;
 		}
+		changed = 1;
 	}
 
 	if (newpath && strcmp(f->path,newpath))
@@ -701,6 +758,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 			f->path = newpath;
 			rescan = refresh;
 		}
+		changed = 1;
 	}
 
 	if (newtype != f->type)
@@ -716,7 +774,11 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 			rescan = 1;
 		}
 		f->type = newtype;
+		changed = 1;
 	}
+
+	/* Save the settings if the folder settings has been changed */
+	if (changed) folder_config_save(f);
 
 	if (rescan)
 	{
@@ -889,7 +951,6 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
 	void *handle = NULL;
 	struct folder *f = folder_find_by_path(folder_path);
 	struct mail *m;
-	int i = 0;
 
 	while ((m = folder_next_mail(f, &handle)))
 	{
@@ -912,7 +973,6 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
 	struct folder *f = folder_find_by_path(folder_path);
 	struct mail *lm = NULL;
 	struct mail *m;
-	int i = 0;
 
 	while ((m = folder_next_mail(f, &handle)))
 	{
@@ -1026,7 +1086,6 @@ static void folder_delete_mails(struct folder *folder)
 *******************************************************************/
 void folder_delete_deleted(void)
 {
-	struct folder *folder = folder_deleted();
 	folder_delete_mails(folder_deleted());
 }
 

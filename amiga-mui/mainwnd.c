@@ -336,11 +336,11 @@ int main_window_init(void)
 		{NM_SUB, "Save", NULL, 0, 0, NULL},
 		{NM_SUB, "Reset", NULL, 0, 0, NULL},
 		{NM_TITLE, "Message", NULL, 0, 0, NULL},
-		{NM_ITEM, "Read", NULL, 0, 0, NULL},
-		{NM_ITEM, "Edit", NULL, 0, 0, NULL},
-		{NM_ITEM, "Move...", NULL, NM_ITEMDISABLED, 0L, NULL},
-		{NM_ITEM, "Copy...", NULL, NM_ITEMDISABLED, 0L, NULL},
-		{NM_ITEM, "Delete...", "Del", NM_COMMANDSTRING, 0L, NULL},
+		{NM_ITEM, "D\0Read", NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
+		{NM_ITEM, "E\0Edit", NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
+		{NM_ITEM, "M\0Move...", NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_MOVE},
+		{NM_ITEM, "Copy...", NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
+		{NM_ITEM, "Delete...", "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
 /*
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
@@ -461,10 +461,20 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+/*		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+*/		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, App, 2, MUIM_Application_OpenConfigWindow, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION,App, 3, MUIM_CallHook, &hook_standard, callback_config);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+
+		/* Key notifies */
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
 
 		/* Gadget notifies */
 		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_mail);

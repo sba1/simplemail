@@ -972,14 +972,6 @@ static void addressbook_save_pressed(void)
 }
 
 /******************************************************************
-  Adds entries from a selected file.
-*******************************************************************/
-static void addressbook_import_pressed(void)
-{
-	addressbook_import();
-}
-
-/******************************************************************
  Adds a new person to the window
 *******************************************************************/
 static void addressbook_add_person(void)
@@ -1097,7 +1089,7 @@ static void addressbook_init(void)
 	DoMethod(App,OM_ADDMEMBER,address_wnd);
 	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save_pressed);
-	DoMethod(import_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_import_pressed);
+	DoMethod(import_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_import_addressbook);
 	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
 	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_group);
 	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);

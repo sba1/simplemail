@@ -1,6 +1,6 @@
 Short:     A new mailer (alpha version)
 Uploader:  sebauer@t-online.de (Sebastian Bauer)
-Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian Bauer)
+Author:    hynek@rz.uni-potsdam.de (Hynek Schlawack), sebauer@t-online.de (Sebastian Bauer)
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
@@ -120,7 +120,7 @@ and one for the user.
     http://groups.yahoo.com/group/simplemail-usr/
 
 SimpleMail is (orginally) developed by
-  Hynek Schlawack <hynek@schlawack.net> http://www.schlawack.net/
+  Hynek Schlawack <hynek@rz.uni-potsdam.de> http://me.in-berlin.de/~hys/
   Sebastian Bauer <sebauer@t-online.de> http://home.t-online.de/home/sebauer/
 
 You can also contact them if you have any questions regarding SimpleMail.

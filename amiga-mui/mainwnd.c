@@ -892,7 +892,9 @@ void main_remove_mail(struct mail *mail)
 }
 
 /******************************************************************
- Replaces a mail with a new mail
+ Replaces a mail with a new mail.
+ This also activates the new mail, however it would be better if
+ this done by an extra call
 *******************************************************************/
 void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 {
@@ -903,6 +905,7 @@ void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 		set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 		DoMethod(mail_tree, MUIM_NListtree_Remove, NULL, treenode,0);
 		main_insert_mail(newmail);
+		set(mail_tree, MUIA_NListtree_Active, FindListtreeUserData(mail_tree, newmail));
 		set(mail_tree, MUIA_NListtree_Quiet, FALSE);
 	}
 }

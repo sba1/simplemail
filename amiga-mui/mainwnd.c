@@ -426,6 +426,8 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER,
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
+		MENU_FOLDER_SEND,
+		MENU_FOLDER_FETCH,
 		MENU_FOLDER_CHECKSINGLEACCOUNT,
 		MENU_MESSAGE_READ,
 		MENU_MESSAGE_EDIT,
@@ -459,6 +461,8 @@ int main_window_init(void)
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
+		{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
 		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
 
 		{NM_TITLE, N_("Message"), NULL, 0, 0, NULL},
@@ -642,6 +646,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, App, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);

@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 bin_PROGRAMS = simplemail
-INCLUDES = -I$(srcdir)/indep-include
+INCLUDES = -I$(srcdir)/indep-include -I$(srcdir)/gtk
 
 SUBDIRS=	gtk intl po
 

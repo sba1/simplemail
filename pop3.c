@@ -602,8 +602,8 @@ static int pop3_really_dl(struct pop3_server *server)
                   thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
 
                   getcwd(path, 255);
-                  sm_makedir("PROGDIR:.folders/income");
-                  if(chdir("PROGDIR:.folders/income") == -1)
+
+                  if(chdir(server->destdir) == -1)
                   {
                      tell_from_subtask("Can\'t access income-folder!");
                      return(FALSE);
@@ -660,6 +660,7 @@ static int pop3_entry(struct pop3_server *server)
 	copy_server.port = server->port;
 	copy_server.login = mystrdup(server->login);
 	copy_server.passwd = mystrdup(server->passwd);
+	copy_server.destdir = mystrdup(server->destdir);
 	copy_server.socket = server->socket;
 	copy_server.del = server->del;
 

@@ -485,7 +485,7 @@ int folder_read_mail_infos(struct folder *folder)
 *******************************************************************/
 int folder_add_mail_incoming(struct mail *mail)
 {
-	struct folder *folder = folder_first(); /* currently this is the incoming folder */
+	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
 	if (folder)
 	{
 		if (folder_add_mail(folder,mail))

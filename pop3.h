@@ -29,6 +29,7 @@ struct pop3_server
 	unsigned int port;
 	char *login;
 	char *passwd;
+	char *destdir; /* directory where the mails are stored */
 	long socket;
 	int del; /* 1 if downloaded mails should be deleted */
 };

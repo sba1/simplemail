@@ -47,6 +47,7 @@ int mails_dl(void)
 	server.passwd = user.config.pop_password;
 	server.socket = SMTP_NO_SOCKET;
 	server.del = user.config.pop_delete;
+	server.destdir = folder_incoming()->path;
 
 	if (!server.name)
 	{

@@ -1238,7 +1238,7 @@ int mail_process_headers(struct mail *mail)
 			parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt);
 
 			/* Time zone is missing */
-			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (sm_get_gmt_offset() - gmt)*60;
+			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
 		} else if (!mystricmp("from",header->name))
 		{
 			buf = mail_find_header_contents(mail,"from");

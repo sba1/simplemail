@@ -33,6 +33,7 @@
 #include <clib/alib_protos.h>
 
 #include "lists.h"
+#include "compiler.h"
 #include "subthreads.h"
 
 #include "subthreads_amiga.h" /* struct thread_s */

@@ -523,7 +523,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
-		{NM_ITEM, N_("Move spam marked mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
+		{NM_ITEM, N_("Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},

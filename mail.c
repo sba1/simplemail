@@ -81,6 +81,23 @@ const static char pgp_text[] =
  "message, run the next body part through Pretty Good Privacy.\n"
 };
 
+/*
+ * Index into the table below with the first byte of a UTF-8 sequence to
+ * get the number of trailing bytes that are supposed to follow it.
+ */
+
+static const char trailingBytesForUTF8[256] = {
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
+};
+
+
 #ifdef __GNUC__
 #define SM_OPERATIONSYSTEM "Linux/GTK"
 #else
@@ -117,13 +134,14 @@ static int mailncpy(char *dest, const char *src, int n)
 }
 
 /**************************************************************************
- Determines the length from now until a wordend
+ Determines the length from now until a wordend. Input is UTF8
 **************************************************************************/
 static int word_length(const char *buf)
 {
 	unsigned char c;
 	int len = 0;
 
+  /* if word length counting starts on a space we count every space to the the word */
 	while ((c = *buf))
 	{
 		if (isspace(c))
@@ -134,12 +152,11 @@ static int word_length(const char *buf)
 		buf++;
 	}
 
-
 	while ((c = *buf))
 	{
 		if (isspace(c) || c == 0) break;
 		len++;
-		buf++;
+		buf += trailingBytesForUTF8[c] + 1;
 	}
 	return len;
 }
@@ -197,7 +214,8 @@ static char *quote_text(char *src, int len)
 
 		while (len)
 		{
-			char c = *src;
+			unsigned char c = *src;
+			int char_len; /* utf8 characters are not always one byte in size */
 
 			if (c==13)
 			{
@@ -269,12 +287,16 @@ static char *quote_text(char *src, int len)
 				}
 			}
 
-			fputc(c,fh);
-
+			/* write out next character, it's an utf8 one */
+			char_len = trailingBytesForUTF8[c];
+			len -= char_len + 1;
+			if (len < 0) break; /* input not valid */
+			do
+			{
+				c = *src++; /* small overhead because for the first time we already have c */
+				fputc(c,fh);
+			} while (char_len--);
 			line_len++;
-
-			src++;
-			len--;
 		}
 
 		cited_len = ftell(fh);

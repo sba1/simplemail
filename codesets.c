@@ -727,6 +727,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
 	codeset->name = mystrdup("ISO-8859-1");
 	codeset->characterization = mystrdup(_("West European"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -746,6 +747,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-2");
 	codeset->characterization = mystrdup(_("Central/East European"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -766,6 +768,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-3");
 	codeset->characterization = mystrdup(_("South European"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -786,6 +789,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-4");
 	codeset->characterization = mystrdup(_("North European"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -806,6 +810,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-5");
 	codeset->characterization = mystrdup(_("Slavic languages"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -826,6 +831,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-15");
 	codeset->characterization = mystrdup(_("West European (with EURO)"));
+	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -846,6 +852,7 @@ int codesets_init(void)
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("AmigaPL");
 	codeset->characterization = mystrdup("AmigaPL");
+	codeset->read_only = 1;
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -902,33 +909,36 @@ struct codeset *codesets_find_best(char *text, int text_len)
 
 	while (codeset)
 	{
-		struct single_convert conv;
-		char *text_ptr = text;
-		int i;
-		int errors = 0;
-
-		for (i=0;i < text_len;i++)
+		if (!codeset->read_only)
 		{
-			unsigned char c = *text_ptr++;
-			if (c)
+			struct single_convert conv;
+			char *text_ptr = text;
+			int i;
+			int errors = 0;
+	
+			for (i=0;i < text_len;i++)
 			{
-				int len = trailingBytesForUTF8[c];
-				conv.utf8[1] = c;
-				strncpy(&conv.utf8[2],text_ptr,len);
-				conv.utf8[2+len] = 0;
-				text_ptr += len;
+				unsigned char c = *text_ptr++;
+				if (c)
+				{
+					int len = trailingBytesForUTF8[c];
+					conv.utf8[1] = c;
+					strncpy(&conv.utf8[2],text_ptr,len);
+					conv.utf8[2+len] = 0;
+					text_ptr += len;
 
-				if (!bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode))
-					errors++;
-			} else break;
-		}
+					if (!bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode))
+						errors++;
+				} else break;
+			}
 
-		if (errors < best_errors)
-		{
-			best_codeset = codeset;
-			best_errors = errors;
+			if (errors < best_errors)
+			{
+				best_codeset = codeset;
+				best_errors = errors;
+			}
+			if (!best_errors) break;
 		}
-		if (!best_errors) break;
 		codeset = (struct codeset*)node_next(&codeset->node);
 	}
 

@@ -484,7 +484,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 	} else
 	{
 		cmail->content_type = mystrdup(attach->content_type);
-		cmail->text = (attach->contents)?utf8create(attach->contents,NULL):NULL;
+		cmail->text = (attach->contents)?utf8create(attach->contents,user.config.default_codeset?user.config.default_codeset->name:NULL):NULL;
 		cmail->filename = mystrdup(attach->filename);
 		cmail->temporary_filename = mystrdup(attach->temporary_filename);
 	}

@@ -35,6 +35,10 @@
 #include "phrase.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct pop3_server;
 
 #define SHOW_HEADER_NONE			0
@@ -99,6 +103,8 @@ struct config
 	/* array of "internet connectable" e-mail addresses */
 	char **internet_emails;
 
+	/* charset */
+	struct codeset *default_codeset; /* the user default codeset, might be NULL */
 };
 
 struct user

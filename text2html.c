@@ -265,7 +265,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				} else
 				{
 					unsigned int unicode;
-					int len =  utf8tochar(buffer, &unicode, NULL);
+					int len =  utf8tochar(buffer, &unicode, user.config.default_codeset);
 					buffer_len -= len,
 					buffer += len;
 					fprintf(fh,"&#%ld;",unicode);

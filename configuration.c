@@ -163,6 +163,8 @@ int load_config(void)
 							user.folder_directory = mystrdup(result);
 						if ((result = get_config_item(buf,"DST")))
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Charset")))
+							user.config.default_codeset = codesets_find(result);
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
@@ -428,6 +430,7 @@ void save_config(void)
 			else fprintf(fh,"FolderDirectory=%s\n",user.folder_directory);
 
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
+			if (user.config.default_codeset) fprintf(fh,"Charset=%s\n",user.config.default_codeset->name);
 
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);

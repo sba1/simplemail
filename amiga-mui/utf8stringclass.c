@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 
 #include "codesets.h"
+#include "configuration.h"
 #include "support_indep.h"
 
 #include "utf8stringclass.h"
@@ -139,7 +140,7 @@ STATIC ULONG UTF8String_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 					{
 						char *contents = (char*)xget(obj,MUIA_String_Contents);
 						free(data->utf8_string);
-						data->utf8_string = utf8create(contents, NULL);
+						data->utf8_string = utf8create(contents, user.config.default_codeset?user.config.default_codeset->name:NULL);
 						*msg->opg_Storage = (ULONG)data->utf8_string;
 					}
 					break;

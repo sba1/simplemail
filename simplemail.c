@@ -886,10 +886,9 @@ int simplemail_main(void)
 
 	if (!gui_parseargs(0,NULL)) return 0;
 
-	load_config();
-
 	if (codesets_init())
 	{
+		load_config();
 		init_addressbook();
 		if (init_folders())
 		{

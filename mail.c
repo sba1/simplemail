@@ -2773,7 +2773,8 @@ void fputhtmlstr(char *str, FILE *fh)
 		} else
 		{
 			unsigned int unicode;
-			str = uft8toucs(str,&unicode);
+/*			str = uft8toucs(str,&unicode);*/
+			str += utf8tochar(str, &unicode, user.config.default_codeset);
 			fprintf(fh,"&#%u;",unicode);
 		}
 	}

@@ -360,6 +360,7 @@ static void config_use(void)
 	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
+	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
@@ -573,7 +574,10 @@ static int init_user_group(void)
 			Child, MakeLabel(_("Charset used to display text")),
 			Child, PoplistObject,
 				MUIA_Popstring_Button, PopButton(MUII_PopUp),
-				MUIA_Popstring_String, user_charset_string = BetterStringObject, StringFrame, End,
+				MUIA_Popstring_String, user_charset_string = BetterStringObject,
+					StringFrame,
+					MUIA_String_Contents, user.config.default_codeset?user.config.default_codeset->name:(codesets_supported()?codesets_supported()[0]:NULL),
+					End,
 				MUIA_Poplist_Array, codesets_supported(),
 				End,
 			End,

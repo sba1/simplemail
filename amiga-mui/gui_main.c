@@ -20,6 +20,8 @@
 ** $Id$
 */
 
+#include <stdio.h>
+
 #include <dos/dos.h>
 #include <libraries/mui.h>
 #include <clib/alib_protos.h>

@@ -518,6 +518,8 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->name = mystrdup(pop->name);
 		new_pop->login = mystrdup(pop->login);
 		new_pop->passwd = mystrdup(pop->passwd);
+		new_pop->del = pop->del;
+		new_pop->port = pop->port;
 	}
 	return new_pop;
 }

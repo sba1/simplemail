@@ -54,6 +54,7 @@ struct MailTreelist_Data
 	APTR status_waitsend;
 	APTR status_sent;
 	APTR status_mark;
+	APTR status_hold;
 
 	APTR status_important;
 	APTR status_attach;
@@ -96,6 +97,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 				case	MAIL_STATUS_READ:status = data->status_read;break;
 				case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
 				case	MAIL_STATUS_SENT:status = data->status_sent;break;
+				case	MAIL_STATUS_HOLD:status = data->status_hold;break;
 				default: status = NULL;
 			}
 
@@ -213,6 +215,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_waitsend", End, 0);
 	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_sent", End, 0);
 	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_mark", End, 0);
+	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_hold", End, 0);
 
 	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_urgent", End, 0);
 	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_attach", End, 0);
@@ -229,6 +232,7 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
 	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
 	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
+	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);
 	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
 	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
 	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
@@ -253,6 +257,8 @@ STATIC ULONG MailTreelist_MultiTest(struct IClass *cl, Object *obj, struct MUIP_
 #define MENU_SETSTATUS_UNMARK 2
 #define MENU_SETSTATUS_READ   3
 #define MENU_SETSTATUS_UNREAD 4
+#define MENU_SETSTATUS_HOLD	5
+#define MENU_SETSTATUS_WAITSEND  6
 
 STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_ContextMenuBuild *msg)
 {
@@ -266,6 +272,10 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
 			Child, MenuitemObject, MUIA_Menuitem_Title, "Set status",
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Mark", MUIA_UserData, MENU_SETSTATUS_MARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Unmark", MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Hold", MUIA_UserData, MENU_SETSTATUS_HOLD, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Waitsend", MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
 /*
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
@@ -282,17 +292,12 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 {
 	switch(xget(msg->item,MUIA_UserData))
 	{
-		case	MENU_SETSTATUS_MARK:
-					callback_mails_mark(1);
-					break;
-		case	MENU_SETSTATUS_UNMARK:
-					callback_mails_mark(0);
-					break;
-
-		case	MENU_SETSTATUS_READ:
-					break;
-		case	MENU_SETSTATUS_UNREAD:
-					break;
+		case	MENU_SETSTATUS_MARK: callback_mails_mark(1);break;
+		case	MENU_SETSTATUS_UNMARK: callback_mails_mark(0);	break;
+		case	MENU_SETSTATUS_READ: callback_mails_set_status(MAIL_STATUS_READ); break;
+		case	MENU_SETSTATUS_UNREAD: callback_mails_set_status(MAIL_STATUS_UNREAD); break;
+		case	MENU_SETSTATUS_HOLD: callback_mails_set_status(MAIL_STATUS_HOLD); break;
+		case	MENU_SETSTATUS_WAITSEND: callback_mails_set_status(MAIL_STATUS_WAITSEND); break;
 	}
   return 0;
 }

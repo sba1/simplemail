@@ -338,6 +338,44 @@ void callback_mails_mark(int mark)
 	}
 }
 
+/* set the status of all selected mails */
+void callback_mails_set_status(int status)
+{
+	struct folder *folder = main_get_folder();
+	struct mail *mail;
+	void *handle;
+	if (!folder) return;
+
+	mail = main_get_mail_first_selected(&handle);
+	while (mail)
+	{
+		int new_status = mail->status;
+
+		if (status == MAIL_STATUS_HOLD || status == MAIL_STATUS_WAITSEND)
+		{
+			if (mail_get_status_type(mail) == MAIL_STATUS_HOLD || mail_get_status_type(mail) == MAIL_STATUS_WAITSEND)
+				new_status = status;
+		} else
+		{
+			if (status == MAIL_STATUS_READ || status == MAIL_STATUS_UNREAD)
+			{
+				if (mail_get_status_type(mail) == MAIL_STATUS_READ || mail_get_status_type(mail) == MAIL_STATUS_UNREAD)
+					new_status = status;
+			}
+		}
+
+		new_status |= mail->status & MAIL_STATUS_FLAG_MARKED;
+
+		if (new_status != mail->status)
+		{
+			folder_set_mail_status(folder,mail,new_status);
+			main_refresh_mail(mail);
+		}
+
+		mail = main_get_mail_next_selected(&handle);
+	}	
+}
+
 /* a new mail should be written to the given address */
 void callback_write_mail_to(struct addressbook_entry *address)
 {

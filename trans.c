@@ -107,7 +107,11 @@ int mails_upload(void)
   /* folder_next_mail() is a little bit limited (not usable when mails are removed
    * from the folder, so we build an array of all mails first */
 	num_mails = 0;
-	while ((m = folder_next_mail(out_folder, &handle))) num_mails++;
+	while ((m = folder_next_mail(out_folder, &handle)))
+	{
+		/* Only waitsend mails */
+		if (mail_get_status_type(m) == MAIL_STATUS_WAITSEND) num_mails++;
+	}
 	if (!num_mails) return 0;
 
 	/* only one malloc() */
@@ -137,6 +141,8 @@ int mails_upload(void)
 		char *from, *to;
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
+
+		if (mail_get_status_type(m) != MAIL_STATUS_WAITSEND) continue;
 
 		out_array[i++] = out;
 

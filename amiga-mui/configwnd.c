@@ -2215,8 +2215,6 @@ static void init_config_window(void)
 *******************************************************************/
 void open_config(void)
 {
-	SM_ENTER;
-
 	if (!config_wnd) init_config_window();
 	if (config_wnd)
 	{
@@ -2225,7 +2223,6 @@ void open_config(void)
 	{
 		SM_DEBUGF(5,("Config window not initialized!\n"));
 	}
-	SM_LEAVE;
 }
 
 /******************************************************************

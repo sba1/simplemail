@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** support.c
 */
 
 #include <string.h>
@@ -252,12 +252,22 @@ unsigned int mystrlen(const char *str)
 }
 
 /******************************************************************
- Duplicates a string. NULL is accepted (will return NULL)
+ Duplicates a string. NULL is accepted (will return NULL).
+ A null byte string will also return NULL.
 *******************************************************************/
 char *mystrdup(const char *str)
 {
+	char *new_str;
+	int len;
+
 	if (!str) return NULL;
-	return strdup(str);
+	len = strlen(str);
+	if (!len) return NULL;
+
+	if ((new_str = (char*)malloc(len+1)))
+		strcpy(new_str,str);
+
+	return new_str;
 }
 
 /**************************************************************************

@@ -2990,6 +2990,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 						break;
 
 			case	RULE_HEADER_MATCH:
+#pragma warning TODO: Implement me
 #if 0
 						/* NOTE: This doesn't work in subthreads but is actually not used anywhy */
 						{

@@ -348,27 +348,34 @@ static void person_window_ok(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
 	struct addressbook_entry_new *new_entry;
-	char *addresses,*dob;
 	int day = 0, month = 0, year = 0;
+	char *iso_addresses, *dob;
+	utf8 *addresses = NULL;
 
 	/* Check the validity of the e-mail addresses first */
-	if ((addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
+	if ((iso_addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
 	{
 		char *single_address;
-		char *buf = addresses;
-		while ((buf = parse_addr_spec(buf,&single_address)))
+		utf8 *ptr;
+
+		addresses = utf8create(iso_addresses,user.config.default_codeset?user.config.default_codeset->name:NULL);
+		FreeVec(iso_addresses);
+		if (!addresses) return;
+		ptr = addresses;
+		
+		while ((ptr = parse_addr_spec(ptr,&single_address)))
 		{
-			/* ensures that buf != NULL if no error */
-			while (isspace((unsigned char)*buf)) buf++;
-			if (*buf == 0) break;
+			/* ensures that ptr != NULL if no error */
+			while (isspace((unsigned char)*ptr)) ptr++;
+			if (*ptr == 0) break;
 			free(single_address);
 		}
-		if (!buf)
+		if (!ptr)
 		{
 			set(data->reg_group,MUIA_Group_ActivePage,0);
 			set(data->wnd,MUIA_Window_ActiveObject,data->email_texteditor);
 			DisplayBeep(NULL);
-			FreeVec(addresses);
+			free(addresses);
 			return;
 		}
 
@@ -459,7 +466,7 @@ static void person_window_ok(struct Person_Data **pdata)
 	person_window_close(pdata);
 
 	/* free the the addresses memory */
-	if (addresses) FreeVec(addresses);
+	if (addresses) free(addresses);
 
 	/* update the internal addressbook */
 	cleanup_addressbook();
@@ -979,7 +986,20 @@ static void person_window_open(struct addressbook_entry_new *entry)
 			if (entry)
 			{
 				if (entry->email_array)
-					set(email_texteditor,MUIA_ComposeEditor_Array, entry->email_array);
+				{
+					int size = array_length(entry->email_array);
+					char **conv_array = NULL;
+					int i;
+					
+					for (i=0;i<size;i++)
+					{
+						char *iso =  utf8tostrcreate(entry->email_array[i],user.config.default_codeset);
+						if (!iso) break;
+						conv_array = array_add_string(conv_array,iso);
+					}
+
+					set(email_texteditor,MUIA_ComposeEditor_Array, conv_array);
+				}
 
 				setutf8string(realname_string, entry->realname);
 				setutf8string(description_string, entry->description);

@@ -237,7 +237,7 @@ static char *quote_text(char *src, int len)
 
 				line_len = 0;
 
-				if (len >= 3 && user.config.write_reply_stripsig && !strncmp(src,"-- ",3))
+				if (len >= 4 && user.config.write_reply_stripsig && !strncmp(src,"-- \n",4))
 					break;
 
 				continue;

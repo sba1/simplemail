@@ -547,6 +547,10 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 			while ((msg = GetMsg(subthread_port)))
 			{
 				if (msg == &tmsg->msg) ready = 1;
+				else
+				{
+					thread_handle_execute_function_message((struct ThreadMessage*)msg);
+				}
 			}
 		}
 
@@ -610,6 +614,10 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 			while ((msg = GetMsg(subthread_port)))
 			{
 				if (msg == &tmsg->msg) ready = 1;
+				else
+				{
+					thread_handle_execute_function_message((struct ThreadMessage*)msg);
+				}
 			}
 		}
 

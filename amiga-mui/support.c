@@ -57,6 +57,9 @@
 
 void loop(void); /* gui_main.c */
 
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+
 /******************************************************************
  Creates a directory including all necessaries parent directories.
  Nothing will happen if the directory already exists
@@ -711,13 +714,18 @@ void tell_from_subtask(char *str)
 #undef _
 
 #ifndef NO_SSL
-#include <proto/amissl.h>
 
-static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase)
+#include <proto/amissl.h>
+#ifndef __AMIGAOS4__
+struct AmiSSLIFace {int dummy; };
+#endif
+
+
+static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase, struct AmiSSLIFace *IAmiSSL)
 {
 	if (PKCS7_type_is_signed(pkcs7))
 	{
-		return pkcs7_get_data(pkcs7->d.sign->contents,AmiSSLBase);
+		return pkcs7_get_data(pkcs7->d.sign->contents,AmiSSLBase,IAmiSSL);
 	}
 	if (PKCS7_type_is_data(pkcs7))
 	{
@@ -733,21 +741,22 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
 #ifndef NO_SSL
 	struct Library *AmiSSLBase;
+	struct AmiSSLIFace *IAmiSSL;
 	int rc = 0;
 
-	if ((AmiSSLBase = OpenLibrary("amissl.library",1)))
+	if ((AmiSSLBase = OpenLibraryInterface("amissl.library",1,&IAmiSSL)))
 	{
 		if (!InitAmiSSL(AmiSSL_Version,
 				AmiSSL_CurrentVersion,
 				AmiSSL_Revision, AmiSSL_CurrentRevision,
 				TAG_DONE))
 		{
-			char *p = buf;
+			unsigned char *p = buf;
 			PKCS7 *pkcs7;
 
 			if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))
 			{
-				PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7,AmiSSLBase);
+				PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7,AmiSSLBase,IAmiSSL);
 				if (pkcs7_data)
 				{
 					char *mem = malloc(pkcs7_data->d.data->length+1);
@@ -765,7 +774,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 
 			CleanupAmiSSL(TAG_DONE);
 		}
-		CloseLibrary(AmiSSLBase);
+		CloseLibraryInterface(AmiSSLBase,IAmiSSL);
 	}
 	return rc;
 #else

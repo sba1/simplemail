@@ -58,7 +58,13 @@
 #define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif
 
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
 
+/**
+ * Opens the socket lib. Must be done for every thread which want to use
+ * bsd socket functions.
+ */
 int open_socket_lib(void)
 {
 	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
@@ -69,7 +75,7 @@ int open_socket_lib(void)
 		if ((thread->socketlib = OpenLibrary("bsdsocket.library", 4)))
 		{
 #ifdef __AMIGAOS4__
-			if ((thread->isocket = GetInterface(thread->socketlib,"main",1,NULL)))
+			if ((thread->isocket = (struct SocketIFace*)GetInterface(thread->socketlib,"main",1,NULL)))
 			{
 #endif
 				thread->socketlib_opencnt = 1;
@@ -87,6 +93,9 @@ int open_socket_lib(void)
 	return 0;
 }
 
+/**
+ * Close the socket lib.
+ */
 void close_socket_lib(void)
 {
 	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
@@ -95,7 +104,7 @@ void close_socket_lib(void)
 	if (!(--thread->socketlib_opencnt))
 	{
 #ifdef __AMIGAOS4__
-		if (thread->isocket) DropInterface(thread->isocket);
+		if (thread->isocket) DropInterface((struct Interface*)thread->isocket);
 #endif
 		if (thread->socketlib)
 		{
@@ -125,6 +134,11 @@ int is_online(char *iface)
 
 #ifndef NO_SSL
 struct Library *AmiSSLBase;
+#ifdef __AMIGAOS4__
+struct AmiSSLIFace *IAmiSSL;
+#else
+void *IAmiSSL;
+#endif
 static int ssl_in_use;
 static SSL_CTX *ctx;
 #endif
@@ -138,7 +152,7 @@ int open_ssl_lib(void)
 
 	if (!AmiSSLBase)
 	{
-		if ((AmiSSLBase = OpenLibrary("amissl.library",1)))
+		if ((AmiSSLBase = OpenLibraryInterface("amissl.library",1,&IAmiSSL)))
 		{
 			if (!InitAmiSSL(AmiSSL_Version,
 					AmiSSL_CurrentVersion,
@@ -150,18 +164,15 @@ int open_ssl_lib(void)
 				SSLeay_add_ssl_algorithms();
 				SSL_load_error_strings();
 
-				if (ctx = SSL_CTX_new(SSLv23_client_method()))
+				if ((ctx = SSL_CTX_new(SSLv23_client_method())))
 				{
 					/* Everything is ok */
 					ssl_in_use++;
-
-
-
 					return 1;
 				}
 				CleanupAmiSSL(TAG_DONE);
 			}
-			CloseLibrary(AmiSSLBase);
+			CloseLibraryInterface(AmiSSLBase,IAmiSSL);
 			AmiSSLBase = NULL;
 		}
 	} else

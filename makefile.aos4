@@ -18,8 +18,8 @@ MKDIR  = mkdir -p
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = # -g -DDEBUG
-INC = -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
+INC = -I"$(AMISSL_INCLUDE)" -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
+CFLAGS = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
 LINK =  -nostartfiles -L"$(EXPAT_LIB)"

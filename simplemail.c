@@ -50,6 +50,7 @@
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
+#include "upwnd.h"
 
 /* the current mail should be viewed, returns the number of the window
 	which the function has opened or -1 for an error */
@@ -580,6 +581,99 @@ static void callback_new_mail_arrived(struct mail *mail)
 	main_refresh_folder(folder_incoming());
 }
 
+struct export_data
+{
+	char *filename;
+	char *foldername;
+};
+
+/* Entry point for export thread */
+static int export_entry(struct export_data *data)
+{
+	char *filename;
+	char *foldername;
+
+	if ((filename = mystrdup(data->filename)))
+	{
+		if ((foldername = mystrdup(data->foldername)))
+		{
+			if (thread_parent_task_can_contiue())
+			{
+				struct folder *f;
+				/* lock folder list */
+				folders_lock();
+				f = folder_find_by_name(foldername);
+				if (f)
+				{
+					FILE *fh;
+
+					/* now lock the folder */
+					folder_lock(f);
+					/* unlock the folder list */
+					folders_unlock();
+
+					thread_call_parent_function_async(up_window_open,0);
+					thread_call_parent_function_async_string(up_set_status,1,N_("Exporting folder"));
+
+					if ((fh = fopen(filename,"w")))
+					{
+						void *handle = NULL;
+						char buf[384];
+						struct mail *m;
+						char *file_buf;
+						int max_size = 0;
+						int size = 0;
+
+						while ((m = folder_next_mail(f, &handle)))
+							max_size += m->size;
+
+						thread_call_parent_function_async(up_init_gauge_byte,1,max_size);
+
+						if ((file_buf = malloc(8192)))
+						{
+							getcwd(buf, sizeof(buf));
+							chdir(f->path);
+
+							handle = NULL;
+							while ((m = folder_next_mail(f, &handle)))
+							{
+								FILE *in;
+			
+								fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
+			
+								in = fopen(m->filename,"r");
+								if (in)
+								{
+									while (!feof(in))
+									{
+										int blocks = fread(file_buf,1,8192,in);
+										size += fwrite(file_buf,1,blocks,fh);
+										thread_call_parent_function_async(up_set_gauge_byte,1,size);
+									}
+									fclose(in);
+								}
+								fputs("\n",fh);
+							}
+							free(file_buf);
+						}
+			
+						chdir(buf);
+			
+						fclose(fh);
+					}
+
+					thread_call_parent_function_async(up_window_close,0);
+
+					folder_unlock(f);
+				} else folders_unlock();
+			}
+			free(foldername);
+		}
+		free(filename);
+	}
+	return 0;
+}
+
 /* Export mails */
 void callback_export(void)
 {
@@ -591,43 +685,14 @@ void callback_export(void)
 	filename = sm_request_file(_("Choose export filename"), "",1);
 	if (filename && *filename)
 	{
-		FILE *fh = fopen(filename,"w");
-		if (fh)
+		struct export_data data;
+
+		data.filename = filename;
+		data.foldername = f->name;
+
+		if (!(thread_start(THREAD_FUNCTION(export_entry),&data)))
 		{
-			void *handle = NULL;
-			char buf[256];
-			struct mail *m;
-			char *file_buf;
-
-			if ((file_buf = malloc(8192)))
-			{
-				getcwd(buf, sizeof(buf));
-				chdir(f->path);
-
-				while ((m = folder_next_mail(f, &handle)))
-				{
-					FILE *in;
-
-					fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
-
-					in = fopen(m->filename,"r");
-					if (in)
-					{
-						while (!feof(in))
-						{
-							int blocks = fread(file_buf,1,8192,in);
-							fwrite(file_buf,1,blocks,fh);
-						}
-						fclose(in);
-					}
-					fputs("\n",fh);
-				}
-				free(file_buf);
-			}
-
-			chdir(buf);
-
-			fclose(fh);
+			sm_request(NULL,_("Couldn't start process for exporting.\n"),_("Ok"));
 		}
 	}
 	free(filename);

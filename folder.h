@@ -164,7 +164,7 @@ void folder_lock(struct folder *f);
 int folder_attempt_lock(struct folder *f);
 void folder_unlock(struct folder *f);
 void folders_lock(void);
-void folders_lock(void);
+void folders_unlock(void);
 
 void folder_load_order(void);
 void folder_save_order(void);

@@ -20,6 +20,7 @@
 ** codesets.c
 */
 
+#include <dirent.h> /* dir stuff */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -682,6 +683,10 @@ Patents.
 
 /* ------------------------------------- */
 
+int read_line(FILE *fh, char *buf); /* in addressbook.c */
+char *get_config_item(char *buf, char *item); /* configuration.c */
+
+
 struct list codesets_list;
 
 /**************************************************************************
@@ -714,6 +719,62 @@ static int codesets_cmp_unicode(const struct single_convert *arg1, const struct 
 }
 
 /**************************************************************************
+ Reads a coding table and adds it
+**************************************************************************/
+static int codesets_read_table(char *name)
+{
+	char buf[512];
+	FILE *fh = fopen(name,"r");
+	if (fh)
+	{
+		struct codeset *codeset;
+		if ((codeset = (struct codeset*)malloc(sizeof(struct codeset))))
+		{
+			int i;
+			memset(codeset,0,sizeof(struct codeset));
+
+			for (i=0;i<256;i++)
+				codeset->table[i].code = codeset->table[i].ucs4 = i;
+
+			while (read_line(fh,buf))
+			{
+				char *result;
+				if ((result = get_config_item(buf,"Standard"))) codeset->name = mystrdup(result);
+				else if (result = get_config_item(buf,"Characterization"))
+				{
+					if ((result[0] == '_') && (result[1] == '(') && (result[2] == '"'))
+					{
+						char *end = strchr(result+3,'"');
+						if (end)
+						{
+							codeset->characterization = _(mystrndup(result+3,end-result+3));
+						}
+					}
+				} else
+				{
+					
+				}
+			}
+
+			for (i=0;i<256;i++)
+			{
+				UTF32 src = codeset->table[i].ucs4;
+				UTF32 *src_ptr = &src;
+				UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+				ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+				*dest_ptr = 0;
+				codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+			}
+			memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+			qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+			list_insert_tail(&codesets_list,&codeset->node);
+		}
+		fclose(fh);
+	}
+	return 1;
+}
+
+/**************************************************************************
  Initialized and loads the codesets
 **************************************************************************/
 int codesets_init(void)
@@ -725,6 +786,27 @@ int codesets_init(void)
 	list_init(&codesets_list);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
+	codeset->name = mystrdup("ISO-8859-1 + Euro");
+	codeset->characterization = mystrdup(_("West European (with EURO)"));
+	codeset->read_only = 1;
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i==164) src = 0x20AC; /* the EURO sign */
+		else src = i;
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1;
 	codeset->name = mystrdup("ISO-8859-1");
 	codeset->characterization = mystrdup(_("West European"));
 	codeset->read_only = 0;
@@ -829,8 +911,29 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-9");
+	codeset->characterization = mystrdup(_("Turkish"));
+	codeset->read_only = 0;
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_9_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-15");
-	codeset->characterization = mystrdup(_("West European (with EURO)"));
+	codeset->characterization = mystrdup(_("West European II"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
@@ -870,6 +973,34 @@ int codesets_init(void)
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
 	list_insert_tail(&codesets_list,&codeset->node);
 
+
+	{
+		/* dynamicaly loaded */
+
+		DIR *dfd; /* directory descriptor */
+		struct dirent *dptr; /* dir entry */
+
+		char path[256];
+
+		getcwd(path, sizeof(path));
+		if(chdir("PROGDIR:Charsets") != -1)
+		{
+#ifdef _AMIGA
+			if ((dfd = opendir("")))
+#else
+			if ((dfd = opendir("./")))
+#endif
+			{
+				while ((dptr = readdir(dfd)) != NULL)
+				{
+					if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+					codesets_read_table(dptr->d_name);
+				}
+				closedir(dfd);
+			}
+			chdir(path);
+		}
+	}
 	return 1;
 }
 

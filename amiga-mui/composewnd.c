@@ -1164,11 +1164,14 @@ int compose_window_open(struct compose_args *args)
 
 				set(subject_string,MUIA_String_Contents,args->to_change->subject);
 
-				if (args->action == COMPOSE_ACTION_REPLY || args->action == COMPOSE_ACTION_FORWARD)
+				if (args->action == COMPOSE_ACTION_REPLY)
 					set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
 				else
 				{
-					if (to) set(wnd,MUIA_Window_ActiveObject, data->subject_string);
+					if (mystrlen((char*)xget(to_string,MUIA_String_Contents)))
+					{
+						set(wnd,MUIA_Window_ActiveObject, data->subject_string);
+					}
 					else set(wnd,MUIA_Window_ActiveObject, data->to_string);
 				}
 

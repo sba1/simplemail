@@ -49,6 +49,8 @@ struct mail
 	char *to; /* decoded "To" field, only the first address */
 	char *reply;
 	char *subject;
+	char *message_id;
+	char *message_reply_id;
 	unsigned int size; /* the e-mails size in bytes */
 	unsigned int seconds; /* seconds since 1.1.1978 */
 
@@ -82,6 +84,11 @@ struct mail
   /* where to find the mail */
 	char *filename; /* the email filename on disk, NULL if e-mail is not from disk */
 	/*struct folder *folder;*/ /* the mail's folder, not yet implemented */
+
+	/* for mail threads */
+	struct mail *sub_thread_mail; /* one more level */
+	struct mail *next_thread_mail; /* the same level */
+	int child_mail; /* is a child mail */
 };
 
 /* Mail status */

@@ -126,6 +126,8 @@ void folder_delete_indexfile(struct folder *f)
 *******************************************************************/
 int folder_add_mail(struct folder *folder, struct mail *mail)
 {
+	int i;
+
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
 	{
@@ -145,12 +147,69 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 		folder->mail_array_allocated += 50;
 		folder->mail_array = realloc(folder->mail_array,folder->mail_array_allocated*sizeof(struct mail*));
 	}
-	if (folder->mail_array)
+
+	if (!folder->mail_array)
 	{
-		folder->mail_array[folder->num_mails++] = mail;
-		return 1;
+		folder->mail_array_allocated = 0;
+		return 0;
 	}
-	return 0;
+
+	folder->mail_array[folder->num_mails++] = mail;
+
+	/* sort the mails for threads */
+	if (mail->message_id)
+	{
+		for (i=0;i<folder->num_mails;i++)
+		{
+			struct mail *fm = folder->mail_array[i];
+			if (!(mystricmp(mail->message_id,fm->message_reply_id)))
+			{
+				if (!mail->sub_thread_mail)
+				{
+					mail->sub_thread_mail = fm;
+				} else
+				{
+					struct mail *m = mail->sub_thread_mail;
+					struct mail *next = m->next_thread_mail;
+					while (next)
+					{
+						m = next;
+						next = next->next_thread_mail;
+					}
+					m->next_thread_mail = fm;
+				}
+				fm->child_mail = 1;
+			}
+		}
+	}
+	if (mail->message_reply_id)
+	{
+		for (i=0;i<folder->num_mails;i++)
+		{
+			struct mail *fm = folder->mail_array[i];
+			if (!(mystricmp(mail->message_reply_id,fm->message_id)))
+			{
+				if (!fm->sub_thread_mail)
+				{
+					fm->sub_thread_mail = mail;
+				} else
+				{
+					struct mail *m = fm->sub_thread_mail;
+					struct mail *next = m->next_thread_mail;
+					while (next)
+					{
+						m = next;
+						next = next->next_thread_mail;
+					}
+					m->next_thread_mail = mail;
+				}
+				mail->child_mail = 1;
+				break;
+			}
+		}
+	}
+
+	return 1;
 }
 
 /******************************************************************

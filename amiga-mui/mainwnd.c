@@ -383,18 +383,43 @@ void main_refresh_mail(struct mail *m)
 /******************************************************************
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
+static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, void *parentnode)
+{
+	int mail_flags = 0;
+	struct mail *submail;
+	APTR newnode;
+
+	if ((submail = mail->sub_thread_mail))
+	{
+		mail_flags = TNF_LIST|TNF_OPEN;
+	}
+
+	newnode = (APTR)DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+				 parentnode,MUIV_NListtree_Insert_PrevNode_Tail,mail_flags);
+
+	while (submail)
+	{
+		main_insert_mail_threaded(folder,submail,newnode);
+		submail = submail->next_thread_mail;
+	}
+}
+
+/******************************************************************
+ Updates the mail trees with the mails in the given folder
+*******************************************************************/
 void main_set_folder_mails(struct folder *folder)
 { 
 	void *handle = NULL;
 	struct mail *m;
 	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
+	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
 	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
 	DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
 
 	set(tree_mail, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 
-	if (primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT)
+	if ((primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT) && !threaded)
 	{
 		struct mail *lm = NULL; /* last mail */
 		APTR treenode = NULL;
@@ -436,15 +461,25 @@ void main_set_folder_mails(struct folder *folder)
 		}
 	} else
 	{
-		SetAttrs(tree_mail,
-				MUIA_NListtree_TreeColumn, 0,
-				MUIA_NListtree_ShowTree, FALSE,
-				TAG_DONE);
-
-		while ((m = folder_next_mail(folder,&handle)))
+		if (!threaded)
 		{
-			DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
-						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+			SetAttrs(tree_mail,
+					MUIA_NListtree_TreeColumn, 0,
+					MUIA_NListtree_ShowTree, FALSE,
+					TAG_DONE);
+
+			while ((m = folder_next_mail(folder,&handle)))
+			{
+				DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
+							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+			}
+		} else
+		{
+			while ((m = folder_next_mail(folder,&handle)))
+			{
+				if (!m->child_mail)
+					main_insert_mail_threaded(folder,m,(void*)MUIV_NListtree_Insert_ListNode_Root);
+			}
 		}
 	}
 

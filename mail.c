@@ -951,6 +951,20 @@ int mail_process_headers(struct mail *mail)
 		}
 	}
 
+  /* Message ID's */
+  if ((buf = mail_find_header_contents(mail, "Message-ID")))
+  {
+  	if (*buf++ == '<')
+	  	parse_addr_spec(buf,&mail->message_id);
+  }
+
+	/* In-Reply To */
+  if ((buf = mail_find_header_contents(mail, "In-Reply-To")))
+  {
+  	if (*buf++ == '<')
+	  	parse_addr_spec(buf,&mail->message_reply_id);
+  }
+
 	if (!mail->content_type || !mail->content_subtype)
 	{
 		mail->content_type = strdup("text");

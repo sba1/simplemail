@@ -65,6 +65,7 @@ struct folder
 #define FOLDER_TYPE_RECV			0 /* received emails */
 #define FOLDER_TYPE_SEND			1 /* send emails */
 #define FOLDER_TYPE_SENDRECV	2 /* both */
+#define FOLDER_TYPE_MAILINGLIST 3 /* it's a mailing list */
 
 int init_folders(void);
 void del_folders(void);

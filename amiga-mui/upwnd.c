@@ -27,7 +27,7 @@
 #include <proto/intuition.h>
 
 #include "muistuff.h"
-
+#include "subthreads.h"
 #include "transwndclass.h"
 
 static Object *win_up;
@@ -74,6 +74,11 @@ void up_set_gauge_byte(int current)
 	set(win_up, MUIA_transwnd_Gauge2_Val, current);
 }
 
+void up_abort(void)
+{
+	thread_abort();
+}
+
 int up_window_open(void)
 {
 	int rc;
@@ -88,6 +93,7 @@ int up_window_open(void)
 
 		if (win_up)
 		{
+			DoMethod(win_up, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, win_up, 3, MUIM_CallHook, &hook_standard, up_abort);
 			DoMethod(App, OM_ADDMEMBER, win_up);
 		}
 	}

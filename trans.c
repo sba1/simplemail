@@ -32,6 +32,7 @@
 #include "smtp.h"
 #include "support.h"
 #include "tcp.h"
+#include "upwnd.h"
 
 #include "io.h" /* io.c should be removed after stuff has been moved to support.h */
 
@@ -179,9 +180,16 @@ int mails_upload(void)
 		out++;
 	}
 
-	/* now send all mails */
-	smtp_send(server, out_array);
+	server->out_mail = out_array;
 
+	up_set_title(server->name);
+	up_window_open();
+
+	/* now send all mails */
+	if (!(smtp_send(server)))
+	{
+		up_window_close();
+	}
 
 	chdir(path);
 	free(out_array);

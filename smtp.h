@@ -18,8 +18,10 @@ struct smtp_server
 	char *name;
 	unsigned int port;
 	long socket;
+
+	struct out_mail **out_mail;
 };
 
-int smtp_send(struct smtp_server *server, struct out_mail **om);
+int smtp_send(struct smtp_server *server);
 
 #endif

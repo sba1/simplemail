@@ -30,17 +30,16 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include "tcpip.h"
-
 #include "io.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
+#include "smtp.h"
 #include "support.h"
 
+#include "subthreads.h"
+#include "tcpip.h"
 #include "upwnd.h"
-
-#include "smtp.h"
 
 int buf_flush(struct smtp_server *server, char *buf, long len)
 {
@@ -251,7 +250,7 @@ int smtp_data(struct smtp_server *server, char *mailfile)
       {
          fseek(fp, 0L, SEEK_END);
          size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */ /* now it's ok :-) */
-         up_init_gauge_byte(size);
+         thread_call_parent_function_sync(up_init_gauge_byte,1,size);
          fseek(fp, 0L, SEEK_SET);
          
          ret = smtp_send_cmd(server, "DATA", NULL);
@@ -273,8 +272,8 @@ int smtp_data(struct smtp_server *server, char *mailfile)
                }
                if((i++%z) == 0)
                {  
-                  up_set_gauge_byte(i);
-                  if(up_checkabort())
+                  thread_call_parent_function_sync(up_set_gauge_byte,1,i);
+                  if(thread_call_parent_function_sync(up_checkabort,0))
                   {
                      tell("aborted");
                      rc = FALSE;
@@ -314,7 +313,7 @@ int smtp_quit(struct smtp_server *server)
    return(rc);
 }
 
-long get_amm(long *array)
+static long get_amm(struct out_mail **array)
 {
    long rc;
    
@@ -329,26 +328,26 @@ int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
    
    rc = FALSE;
 
-   up_set_status("Sending HELO...");
+   thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
    if(smtp_helo(server, om[0]->domain))
    {
       long i,amm;
       
       rc = TRUE;
-      amm = get_amm((long *) om);
-      up_init_gauge_mail(amm);
+      amm = get_amm(om);
+      thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
       
       for(i = 0; i < amm; i++)   
       {
-         up_set_gauge_mail(i+1);
+         thread_call_parent_function_sync(up_set_gauge_mail,1,i+1);
          
-         up_set_status("Sending FROM...");
+         thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
          if(smtp_from(server, om[i]->from))
          {
-            up_set_status("Sending RCP...");
+            thread_call_parent_function_sync(up_set_status,1,"Sending RCP...");
             if(smtp_rcpt(server, om[i]))
             {
-               up_set_status("Sending DATA...");
+               thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
                if(!smtp_data(server, om[i]->mailfile))
                {
                   tell("data failed");
@@ -374,13 +373,13 @@ int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
          {
             /* no error while mail sending, so it can be moved to the
              * "Sent" folder now */
-            callback_mail_has_been_sent(om[i]->mailfile);
+            thread_call_parent_function_sync(callback_mail_has_been_sent,1,om[i]->mailfile);
          }
       }
       
       if(rc == TRUE)
       {
-         up_set_status("Sending QUIT...");
+         thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
          if(smtp_quit(server))
          {
             rc = TRUE;
@@ -395,40 +394,103 @@ int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
    return(rc);
 }
 
-int smtp_send(struct smtp_server *server, struct out_mail **om)
+static int smtp_send_really(struct smtp_server *server)
 {
-   int rc;
-   
-   rc = FALSE;
-   
-   if(open_socket_lib())
-   {
-      up_window_open();
-      up_set_title(server->name);
-      up_set_status("Connecting...");
-      
-      server->socket = tcp_connect(server->name, server->port);
-      if(server->socket != SMTP_NO_SOCKET)
-      {
-         rc = smtp_send_mail(server, om);
-         
-         up_set_status("Disconnecting...");
-         CloseSocket(server->socket);
-         server->socket = SMTP_NO_SOCKET;
-      }
-      else
-      {
-         tell("cannot open server");
-      }
-      
-      up_window_close();
+	int rc = 0;
+	struct out_mail **om = server->out_mail;
 
-      close_socket_lib();
-   }  
-   else
-   {
-      tell("cannot open lib");
-   }
-   
-   return(rc);
+	if (open_socket_lib())
+	{
+		thread_call_parent_function_sync(up_set_status,1,"Connecting...");
+
+		server->socket = tcp_connect(server->name, server->port);
+		if (server->socket != SMTP_NO_SOCKET)
+		{
+			rc = smtp_send_mail(server, om);
+
+			thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
+			CloseSocket(server->socket);
+			server->socket = SMTP_NO_SOCKET;
+		} else tell("cannot open server");
+		close_socket_lib();
+	} else tell("cannot open lib");
+	return rc;
+}
+
+char **duplicate_string_array(char **rcp)
+{
+	char **newrcp;
+	int rcps=0;
+	while (rcp[rcps]) rcps++;
+
+	if (newrcp = (char**)malloc((rcps+1)*sizeof(char*)))
+	{
+		int i;
+		for (i=0;i<rcps;i++)
+		{
+			newrcp[i] = mystrdup(rcp[i]);
+		}
+		newrcp[i] = NULL;
+	}
+	return newrcp;
+}
+
+struct out_mail **create_outmail_array(int amm)
+{
+	int memsize;
+	struct out_mail **newom;
+
+	memsize = (amm+1)*sizeof(struct out_mail*) + sizeof(struct out_mail)*amm;
+	if ((newom = (struct out_mail**)malloc(memsize)))
+	{
+		int i;
+		struct out_mail *out = (struct out_mail*)(((char*)newom)+sizeof(struct out_mail*)*(amm+1));
+
+		memset(newom,0,memsize);
+
+		for (i=0;i<amm;i++)
+			newom[i] = out++;
+	}
+	return newom;
+}
+
+struct out_mail **duplicate_outmail_array(struct out_mail **om)
+{
+	int amm = get_amm(om);
+	struct out_mail **newom = create_outmail_array(amm);
+	if (newom)
+	{
+		int i;
+
+		for (i=0;i<amm;i++)
+		{
+			newom[i]->domain = mystrdup(om[i]->domain);
+			newom[i]->from = mystrdup(om[i]->from);
+			newom[i]->mailfile = mystrdup(om[i]->mailfile);
+			newom[i]->rcp = duplicate_string_array(om[i]->rcp);
+		}
+	}
+	return newom;
+}
+
+static int smtp_entry(struct smtp_server *server)
+{
+	struct smtp_server copy_server;
+
+	copy_server.name = mystrdup(server->name);
+	copy_server.port = server->port;
+	copy_server.socket = server->socket;
+	copy_server.out_mail = duplicate_outmail_array(server->out_mail);
+
+	if (thread_parent_task_can_contiue())
+	{
+		smtp_send_really(&copy_server);
+		thread_call_parent_function_sync(up_window_close,0);
+	}
+	return 0;
+}
+
+int smtp_send(struct smtp_server *server)
+{
+	return thread_start(smtp_entry,server);
 }

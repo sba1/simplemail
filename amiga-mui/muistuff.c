@@ -38,10 +38,6 @@
 #ifdef __AMIGAOS4__
 extern void hookEntry(void);
 extern ULONG muiDispatcherEntry(void);
-#else
-#ifdef __MORPHOS__
-#define hookEntry HookEntry
-#endif
 #endif
 
 
@@ -134,7 +130,6 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
 	extern ULONG muiDispatcherEntry(void);
-	extern ULONG hookEntry(void);
 
 	struct MUI_CustomClass *cl;
 
@@ -245,7 +240,7 @@ void init_hook_standard(void)
 		hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 	}
 #elif defined(__MORPHOS__)
-	hook_standard.h_Entry = (HOOKFUNC)hookEntry;
+	hook_standard.h_Entry = (HOOKFUNC)HookEntry;
 	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 #else
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
@@ -278,7 +273,7 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 		h->h_SubEntry = (HOOKFUNC)func;
 	}
 #elif defined(__MORPHOS__)
-	h->h_Entry = (HOOKFUNC)hookEntry;
+	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 #else
 	h->h_Entry = (HOOKFUNC)hook_func;
@@ -300,7 +295,7 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 		h->h_Data = data;
 	}
 #elif defined(__MORPHOS__)
-	h->h_Entry = (HOOKFUNC)hookEntry;
+	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 	h->h_Data = data;
 #else

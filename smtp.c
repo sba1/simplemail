@@ -147,26 +147,42 @@ static int smtp_helo(struct smtp_connection *conn, struct account *account)
 	return 1;
 }
 
+/**************************************************************************
+ Send FROM command
+**************************************************************************/
 static int smtp_from(struct smtp_connection *conn, struct account *account)
 {
 	int rc;
-	char *buf;
+	string send_str;
+
+	if (!string_initialize(&send_str, 200))
+		return 0;
 
 	rc = 0;
-	buf = malloc(1024);
 
-	if(buf != NULL)
+	if (!(string_append(&send_str,"FROM:<"))) goto out;
+	if (isascii7(account->email))
 	{
-		sprintf(buf, "FROM:<%s>", account->email);
+		if (!(string_append(&send_str,account->email))) goto out;
+	} else
+	{
+		utf8 *puny;
 
-		if(smtp_send_cmd(conn, "MAIL", buf) == SMTP_OK)
+		if (!(puny = encode_address_puny(account->email)))
+			goto out;
+
+		if (!(string_append(&send_str,puny)))
 		{
-			rc = 1;
+			free(puny);
+			goto out;
 		}
-
-		free(buf);
 	}
+	if (!(string_append(&send_str,">"))) goto out;
 
+	if (smtp_send_cmd(conn, "MAIL", send_str.str) == SMTP_OK) rc = 1;
+
+out:
+	free(send_str.str);
 	return rc;
 }
 

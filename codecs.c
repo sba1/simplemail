@@ -808,7 +808,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 
 /**************************************************************************
  Creates a structured address encoded header field (includes all rules of the
- RFC 821 and RFC 2047). List is the list with all addresses.
+ RFC 821, RFC 2047 and RFC3490). List is the list with all addresses.
  The string is allocated with malloc()
 **************************************************************************/
 char *encode_address_field_utf8(char *field_name, struct list *address_list)
@@ -819,9 +819,16 @@ char *encode_address_field_utf8(char *field_name, struct list *address_list)
 	int line_len;
 	
 	string str;
+	string email_str;
 	
 	if (!string_initialize(&str,200))
 		return NULL;
+
+	if (!string_initialize(&email_str,200))
+	{
+		free(email_str.str);
+		return NULL;
+	}
 
 	string_append(&str,field_name);
 	string_append(&str,": ");
@@ -831,51 +838,108 @@ char *encode_address_field_utf8(char *field_name, struct list *address_list)
 	address = (struct address*)list_first(address_list);
 	while (address)
 	{
-		struct address *next_address = (struct address*)node_next(&address->node);
-		char *text = encode_header_str_utf8(address->realname, &line_len, 1);
-		if (text)
+		struct address *next_address;
+		char *text;
+		char *email;
+		int email_len;
+
+		string_crop(&email_str,0,0);
+
+		next_address = (struct address*)node_next(&address->node);
+
+		/* Build email address */
+		if (isascii7(address->email)) email = address->email;
+		else
+		{
+			char *domain = strchr(address->email,'@') + 1;
+			char *next_domain;
+			char *end = domain + strlen(domain);
+
+			string_append_part(&email_str, address->email, domain - address->email);
+
+			do
+			{
+				int last = 0;
+				int need_puny = 0;
+
+				/* find out the next part of the domain */
+				next_domain = domain;
+				while (1)
+				{
+					unsigned char c;
+
+					c = *next_domain;
+
+					if (!c)
+					{
+						last = 1;
+						break;
+					}
+					if (c == '.') break;
+					if (c > 0x7f) need_puny = 1;
+					next_domain++;
+				}
+
+				if (need_puny)
+				{
+					char *puny;
+					if ((puny = utf8topunycode(domain,next_domain - domain)))
+					{
+						string_append(&email_str,"xn--");
+						string_append(&email_str,puny);
+						if (!last) string_append(&email_str,".");
+						free(puny);
+					}
+				} else
+				{
+					string_append_part(&email_str,domain,next_domain - domain);
+					if (!last) string_append(&email_str,".");
+				}
+
+				domain = next_domain + 1;
+			} while(next_domain != end);
+			email = email_str.str;
+		}
+
+		email_len = strlen(email);
+
+		if ((text = encode_header_str_utf8(address->realname, &line_len, 1)))
 		{
 			string_append(&str,text);
 
-			if (address->email)
+			if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
 			{
-				int email_len = strlen(address->email) + 2;
-
-				if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
-				{
-					line_len = 1;
-					string_append(&str,"\n ");
-				} else
-				{
-					string_append(&str," ");
-					line_len++;
-				}
-
-				string_append(&str,"<");
-				string_append(&str,address->email);
-				string_append(&str,">");
-				if (next_address) string_append(&str,",");
-				line_len += email_len;
+				line_len = 1;
+				string_append(&str,"\n ");
+			} else
+			{
+				string_append(&str," ");
+				line_len++;
 			}
+
+			string_append(&str,"<");
+			string_append(&str,email);
+			string_append(&str,">");
+			if (next_address) string_append(&str,",");
+			line_len += email_len;
+
 			free(text);
 		} else
 		{
-			int email_len = strlen(address->email);
-
 			if (line_len + email_len + (next_address?1:0) > 72) /* <> and space */
 			{
 				line_len = 1;
 				string_append(&str,"\n ");
 			}
 
-			string_append(&str,address->email);
+			string_append(&str,email);
 			if (next_address) string_append(&str,",");
 			line_len += email_len;
 		}
 
 		address = next_address;
 	}
-
+	free(email_str.str);
 	return str.str;
 }
 

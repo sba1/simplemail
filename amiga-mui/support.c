@@ -725,7 +725,7 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 *******************************************************************/
 void sm_put_on_serial_line(char *txt)
 {
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) && defined(RawPutChar)
 	char c;
 	while ((c = *txt++))
 	{

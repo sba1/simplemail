@@ -289,184 +289,119 @@ int pop3_quit(struct pop3_server *server)
 */
 int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 {
-   int rc;
-   char *buf, *fn;
-   int got;
-   unsigned long size;
-   FILE *fp;
-   
-   rc = FALSE;
-   
-   fn = mail_get_new_name();
-   if(fn != NULL)
-   {
-      fp = fopen(fn, "w");
-      if(fp != NULL)
-      {
-   
-         buf = malloc(REC_BUFFER_SIZE+1);
-         if(buf != NULL)
-         {
-            sprintf(buf, "LIST %ld\r\n", nr);
-            send(server->socket, buf, strlen(buf), 0);
-            got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
-            if(got != 0)
-            {
-               if(buf[0] == '+')
-               {
-                  char *str;
-            
-                  str = buf;
-                  str += 4;
+	int rc = 0;
+	char *buf, *fn;
+	int got;
+	FILE *fp;
+
+	if (!(fn = mail_get_new_name()))
+	{
+    tell("Can\'t get new filename!");
+    return 0;
+	}
+
+	if (!(buf = malloc(REC_BUFFER_SIZE+1)))
+	{
+		tell("Not enough memory!");
+		free(fn);
+		return 0;
+	}
+
+	if (!(fp = fopen(fn, "w")))
+	{
+		tell("Can\'t open mail file!");
+		free(buf);
+		free(fn);
+		return 0;
+	}
+
+	sprintf(buf, "LIST %ld\r\n", nr);
+	send(server->socket, buf, strlen(buf), 0);
+
+	if ((got = recv(server->socket, buf, REC_BUFFER_SIZE, 0)) > 0)
+	{
+		if(buf[0] == '+')
+		{
+			char *str = buf + 4;
+			int size;
+
+			while(isdigit(*str++)); /* skip the mail number */
                   
-                  while(isdigit(*str++));
-                  
-                  size = atol(str);
-                  thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
+			size = atoi(str); /* the size of the mail */
+			thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
-                  sprintf(buf, "RETR %ld\r\n", nr);
-                  send(server->socket, buf, strlen(buf), 0);
-                  got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
-                  if(got != 0)
-                  {
-                     if(buf[0] == '+')
-                     {
-                        unsigned long i=0;
-                        int running = TRUE;
+			/* Now retrieve the mail data */
+			sprintf(buf, "RETR %ld\r\n", nr);
 
-/* The scanning while downloading is currently disabled */
-/*                        struct mail *mail = mail_create();
+			send(server->socket, buf, strlen(buf), 0);
+			if ((got = recv(server->socket, buf, REC_BUFFER_SIZE, 0))>0)
+			{
+				if (buf[0] == '+')
+				{
+					char *buf2,*str;
+					int running = 1;
 
-                        if (mail)
-                        {
-                           if (mail_set_stuff(mail,fn,size))
-                           {
-                              struct mail_scan ms;
-                              int scan_more = 1;
+					buf[got] = 0;
 
-                              mail_scan_buffer_start(&ms,mail);*/
-                              buf[got] = 0;
-                        
-                              str = strstr(buf, "\r\n");
-                              str += 2;
-                              if(strlen(str) > 0)
-                              {
-                                 fwrite(str, strlen(str), 1, fp);
+					if ((buf2 = strstr(buf,"\r\n")))
+					{
+						rc = 1;
+						buf2 += 2;
+						while (running)
+						{
+							/* Check if the downloading should be aborted */
+							if(thread_call_parent_function_sync(dl_checkabort,0))
+							{
+								tell("Aborted");
+								rc = 0;
+								break;
+							}
 
-                                 /* scan the headers */
-/*                                 scan_more = mail_scan_buffer(&ms,buf,strlen(buf));*/
-                              }  
-                                 
-                              rc = TRUE;
+							/* possible problem: the following strstr could fail if the 5 chars are splitted */
+							if ((str = strstr(buf2, "\r\n.\r\n")))
+							{
+								str[2] = 0;
+								running = 0;
+							}
 
-                              do
-                              {
-                                 if(thread_call_parent_function_sync(dl_checkabort,0))
-                                 {
-                                    tell("Aborted");
-                                    rc = FALSE;
-                                    break;
-                                 }
-                                 
-                                 got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
-                                 if(got != 0)
-                                 {
-                                    i += got;
-                                    thread_call_parent_function_sync(dl_set_gauge_byte,1,i);
+							fwrite(buf2, strlen(buf2), 1, fp);
 
-                                    buf[got] = 0;
-                                    str = strstr(buf, "\r\n.\r\n");
-                                    if(str != NULL)
-                                    {
-                                       str[2] = 0;
-                                       running = FALSE;
-                                    }
+							if (running)
+							{
+								got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
+								if (got > 0) buf[got] = 0;
+                else running = 0;
+							}
 
-                                    fwrite(buf, strlen(buf), 1, fp);
+							/* now use the buf from beginning */
+							buf2 = buf;
+						}
+					}
 
-                                    /* scan the headers now */
-/*                                    if (scan_more)
-                                    {
-                                       scan_more = mail_scan_buffer(&ms,buf,strlen(buf));
-                                    }*/
-                                 }
-                                 else
-                                 {
-                                    running = FALSE;
-                                 }
-                              }
-                              while(running);
-                              
-/*                              if(rc != FALSE)
-                              {
-                                 mail_scan_buffer_end(&ms);
-                                 mail_process_headers(mail);
-                                 callback_new_mail_arrived(mail);
-                              }  
-                           }
-                        }*/
-                        
-                        if(rc != FALSE)
-                        {
-                           thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
-                           fclose(fp);
-                           fp = NULL;
+					if (rc)
+					{
+						if (Errno())
+						{
+							tell("Error retrieving mail!");
+							rc = 0;
+						}
 
-                           thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
+						thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
+						fclose(fp);
+						fp = NULL;
 
-                           if(Errno())
-                           {
-                              tell("Error retrieving mail!");
-                              rc = FALSE;
-                           }
-                        }  
-                     }
-                     else
-                     {
-                        tell(buf);
-                     }
-                  }
-                  else
-                  {
-                     tell("Receiving failed!");
-                  }
-               
-               }
-               else
-               {
-                  tell(buf);
-               }
-            }
-            else
-            {
-               tell("Receiving failed!");
-            }
-   
-            free(buf);
-         }
-         else
-         {
-            tell("Not enough memory!");
-         }
-         
-         if(fp != NULL)
-         {
-            fclose(fp);
-         }  
-      }
-      else
-      {
-         tell("Can\'t open mail file!");
-      }
+						thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
+					}  
+				} else tell(buf);
+			} else tell("Receiving failed!");
+		} else tell(buf);
+	} else tell("Receiving failed!");
 
-      free(fn);
-   }
-   else
-   {
-      tell("Can\'t get new filename!");
-   }
-   
-   return(rc);
+	if (fp) fclose(fp);
+	free(buf);
+	free(fn);
+
+	return rc;
 }
 
 /*

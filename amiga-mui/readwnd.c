@@ -107,7 +107,7 @@ struct Read_Data /* should be a customclass */
 	struct mail *ref_mail; /* The reference to the original mail which is in the folder */
 	char *folder_path; /* the path of the folder */
 
-	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
+	struct Hook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
 	/* more to add */
 };
 
@@ -1179,7 +1179,7 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			data->num = num;
 			read_open[num] = data;
 
-			init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
+			init_hook_with_data(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
 
 			SetAttrs(data->html_simplehtml,
 					MUIA_SimpleHTML_HorizScrollbar, html_horiz_scrollbar,

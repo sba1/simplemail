@@ -53,8 +53,8 @@ struct AccountPop_Data
 	Object *obj;
 	Object *list;
 	Object *string;
-	struct MyHook objstr_hook;
-	struct MyHook strobj_hook;
+	struct Hook objstr_hook;
+	struct Hook strobj_hook;
 	struct Hook construct_hook;
 	struct Hook destruct_hook;
 	struct Hook display_hook;
@@ -209,8 +209,8 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook(&data->construct_hook,(HOOKFUNC)account_construct);
 	init_hook(&data->destruct_hook,(HOOKFUNC)account_destruct);
 	init_hook(&data->display_hook,(HOOKFUNC)account_display);
-	init_myhook(&data->objstr_hook,(HOOKFUNC)account_objstr,data);
-	init_myhook(&data->strobj_hook,(HOOKFUNC)account_strobj,data);
+	init_hook_with_data(&data->objstr_hook,(HOOKFUNC)account_objstr,data);
+	init_hook_with_data(&data->strobj_hook,(HOOKFUNC)account_strobj,data);
 
 	DoMethod(string, MUIM_Notify, MUIA_Pressed, FALSE, obj, 1, MUIM_Popstring_Open);
 	DoMethod(list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, obj, 2, MUIM_Popstring_Close, 1);

@@ -64,7 +64,7 @@ struct MessageView_Data
 	Object *vert;
 	int show;
 
-	struct MyHook load_hook;
+	struct Hook load_hook;
 
 	char *folder_path;
 	struct mail *ref_mail; /* The mail's reference */
@@ -708,7 +708,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->horiz = horiz;
 	data->vert = vert;
 
-	init_myhook(&data->load_hook, (HOOKFUNC)simplehtml_load_function, data);
+	init_hook_with_data(&data->load_hook, (HOOKFUNC)simplehtml_load_function, data);
 
 	SetAttrs(data->simplehtml,
 			MUIA_SimpleHTML_HorizScrollbar, horiz,

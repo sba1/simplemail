@@ -101,8 +101,28 @@ APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 #endif /* __AMIGAOS4__ */
 
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+#if defined(__AMIGAOS4__)
 
+struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
+{
+	extern ULONG muiDispatcherEntry(void);
+	extern ULONG hookEntry(void);
+
+	struct MUI_CustomClass *cl;
+
+	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+	{
+		cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
+	} else
+	{
+		if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, &muiDispatcherEntry)))
+		{
+			cl->mcc_Class->cl_UserData = dispatcher;
+		}
+	}
+	return cl;
+}
+#elif defined(__MORPHOS__)
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
 	extern ULONG muiDispatcherEntry(void);
@@ -230,7 +250,16 @@ STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object
 /* Must be called before the hook_standard is used */
 void init_hook_standard(void)
 {
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+#if defined(__AMIGAOS4__)
+	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+	{
+		hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
+	} else
+	{
+		hook_standard.h_Entry = (HOOKFUNC)hookEntry;
+		hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
+	}
+#elif defined(__MORPHOS__)
 	hook_standard.h_Entry = (HOOKFUNC)hookEntry;
 	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 #else
@@ -238,20 +267,8 @@ void init_hook_standard(void)
 #endif
 }
 
-#if !defined(__AMIGAOS4__) || !defined(__MORPHOS__)
+#if !defined(__AMIGAOS4__) && !defined(__MORPHOS__)
 /* the hook function, it loads the a4 register and call the subentry */
-STATIC ASM SAVEDS VOID myhook_func(REG(a0,struct MyHook *h), REG(a2, ULONG obj), REG(a1,ULONG msg))
-{
-	ASM VOID (*func) (REG(a0,struct MyHook *), REG(a2, ULONG), REG(a1, ULONG)) =
-		(ASM VOID (*) (REG(a0,struct MyHook *), REG(a2, ULONG), REG(a1, ULONG)))h->hook.h_SubEntry;
-
-	if (func)
-	{
-		func(h,obj,msg);
-	}
-}
-
-/* the hook function */
 STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG(a1, ULONG msg))
 {
 	ASM VOID (*func) (REG(a0, struct Hook *), REG(a2, ULONG), REG(a1, ULONG)) =
@@ -264,23 +281,18 @@ STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG
 }
 #endif
 
-/* initializes a hook (in the past, the a4 register was stored within the myhook, this has been replaced now
- * so that we would need only one type of hook now */
-void init_myhook(struct MyHook *h, unsigned long (*func)(void),void *data)
-{
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
-	h->hook.h_Entry = (HOOKFUNC)hookEntry;
-	h->hook.h_SubEntry = (HOOKFUNC)func;
-#else
-	h->hook.h_Entry = (HOOKFUNC)myhook_func;
-	h->hook.h_SubEntry = func;
-#endif
-	h->hook.h_Data = data;
-}
-
 void init_hook(struct Hook *h, unsigned long (*func)(void))
 {
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+#if defined(__AMIGAOS4__)
+	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+	{
+		h->h_Entry = (HOOKFUNC)func;
+	} else
+	{
+		h->h_Entry = (HOOKFUNC)hookEntry;
+		h->h_SubEntry = (HOOKFUNC)func;
+	}
+#elif defined(__MORPHOS__)
 	h->h_Entry = (HOOKFUNC)hookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 #else
@@ -291,7 +303,18 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 
 void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data)
 {
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+#if defined(__AMIGAOS4__)
+	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+	{
+		h->h_Entry = (HOOKFUNC)func;
+		h->h_Data = data;
+	} else
+	{
+		h->h_Entry = (HOOKFUNC)hookEntry;
+		h->h_SubEntry = (HOOKFUNC)func;
+		h->h_Data = data;
+	}
+#elif defined(__MORPHOS__)
 	h->h_Entry = (HOOKFUNC)hookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 	h->h_Data = data;
@@ -301,4 +324,3 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 	h->h_Data = data;
 #endif
 }
-

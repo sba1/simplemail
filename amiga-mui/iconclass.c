@@ -414,7 +414,7 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_De
 			struct List *path_list;
 			if (WorkbenchControl(NULL,WBCTRLA_GetOpenDrawerList, &path_list, TAG_DONE))
 			{
-				struct MyHook hook;
+				struct Hook hook;
 				struct Selection_Msg sel_msg;
 		    struct Node *n;
 
@@ -424,7 +424,7 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_De
         sel_msg.dest_name = NULL;
         sel_msg.finish = 0;
 
-				init_myhook(&hook, (HOOKFUNC)selection_func, &sel_msg);
+				init_hook_with_data(&hook, (HOOKFUNC)selection_func, &sel_msg);
 
 				if (data->drop_path)
 				{

@@ -58,9 +58,9 @@ struct transwnd_Data
 	Object *status_download;
 	Object *status_trashcan;
 
-	struct MyHook construct_hook;
-	struct MyHook destruct_hook;
-	struct MyHook display_hook;
+	struct Hook construct_hook;
+	struct Hook destruct_hook;
+	struct Hook display_hook;
 
 	char nobuf[32];
 	char sizebuf[32];
@@ -213,9 +213,9 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->status_download = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End;
 		data->status_trashcan = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
 
-		init_myhook(&data->construct_hook, (HOOKFUNC)mail_construct, data);
-		init_myhook(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);
-		init_myhook(&data->display_hook, (HOOKFUNC)mail_display, data);
+		init_hook_with_data(&data->construct_hook, (HOOKFUNC)mail_construct, data);
+		init_hook_with_data(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);
+		init_hook_with_data(&data->display_hook, (HOOKFUNC)mail_display, data);
 
 		SetAttrs(mail_list,
 				MUIA_NList_ConstructHook, &data->construct_hook,

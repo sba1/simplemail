@@ -96,6 +96,17 @@ create-latest:
     multiview ram:simplemail_latest.diff
 <
 
+# prepare the release archives
+prepare-release:
+  -delete ram:SimpleMail all
+  makedir ram:SimpleMail
+  slink sm/simplemail nd TO ram:SimpleMail/SimpleMail
+  copy doc/amiga/ReadMe ram:SimpleMail
+  copy amiga-mui/binaries/ReadMe.info ram:SimpleMail
+  copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
+  copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
+  lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
+
 # clean the source tree
 clean:
   -delete $(OBJSDIR)\#? all

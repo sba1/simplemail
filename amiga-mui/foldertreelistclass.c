@@ -211,13 +211,17 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
 
 STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_NList_DropType *msg)
 {
-	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
+	DoSuperMethodA(cl,obj,(Msg)msg);
+
+//	kprintf("before: %ld\n",*msg->type);
 
 	if (*msg->pos == xget(obj,MUIA_NList_Active))
 		*msg->type = MUIV_NListtree_DropType_None;
 	else *msg->type = MUIV_NListtree_DropType_Onto;
 
-	return rv;
+//	kprintf("after: %ld\n",*msg->type);
+
+	return 0;
 }
 
 STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,struct MUIP_ContextMenuChoice *msg)

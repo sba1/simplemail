@@ -78,7 +78,7 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while (tag = NextTagItem(&tstate))
+	while ((tag = NextTagItem(&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{

@@ -295,7 +295,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 					}
 
 					/* the last line could be have a missing newline character */
-					for (buf2 = buf;c = *buf2;buf2++)
+					for (buf2 = buf;(c = *buf2);buf2++)
 					{
 						if (c == '\n' || c == '\r') break;
 						len++;

@@ -240,7 +240,6 @@ static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
 
 static struct list folder_list;
-static struct folder *folder_root;
 
 struct folder_node
 {
@@ -1142,7 +1141,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				fread(&pending,1,4,fh);
 
 				/* Read in the mail info if index is not marked as having pending mails
-				   or if we know the pending mails. Also only do this if we do not 
+				   or if we know the pending mails. Also only do this if we do not
 				   already know the number of mails */
 
 				/* This whole if cause including needs a small rethought */
@@ -3006,14 +3005,14 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 							{
 								if (header->contents)
 								{
-									char *cont = NULL;
+									utf8 *cont = NULL;
 									parse_text_string(header->contents, &cont);
 
 									if (cont)
 									{
 										int i = 0;
 										while (!take && rule->u.header.contents[i])
-											take = !!mystristr(cont,rule->u.header.contents[i++]);
+											take = !!utf8stristr(cont,rule->u.header.contents[i++]);
 										free(cont);
 									}
 								}

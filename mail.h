@@ -61,7 +61,7 @@ struct mail
 	struct list *cc_list; /* a list of all CC'ed receivers */
 	char *pop3_server; /* the name of the pop3 server where the mail has been downloaded */
 	char *reply_addr; /* the address where the mail should be replied */
-	char *subject;
+	utf8 *subject;
 	char *message_id;
 	char *message_reply_id;
 	unsigned int size; /* the e-mails size in bytes */
@@ -76,7 +76,7 @@ struct mail
 	char *content_type;
 	char *content_subtype; /* the types of the whole mail */
 	char *content_charset; /* the contents charset (usually for text parts only) */
-	char *content_description; /* the description field */
+	utf8 *content_description; /* the description field */
 	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;
 	char *content_id; /* id of the content */

@@ -490,8 +490,10 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 /**************************************************************************
  Sends a noop to the given server
 **************************************************************************/
-static void pop3_noop(struct connection *conn)
+static void pop3_noop(void *arg)
 {
+	struct connection *conn = (struct connection*)arg;
+
 	if (tcp_write(conn,"STAT\r\n",6) == 6)
 	{
 		pop3_receive_answer(conn,0);

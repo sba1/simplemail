@@ -129,14 +129,14 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 			{
 				if(unread > 0)
 				{
-					sprintf(mails_buf,newm?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
+					sprintf(mails_buf,newm?(MUIX_PH "\33b%d"):(MUIX_PH "%d"),num);
 				}
 				else
 				{
-					sprintf(mails_buf,"%ld",num);
+					sprintf(mails_buf,"%d",num);
 				}
-				sprintf(new_buf,"%ld",newm);
-				sprintf(unread_buf,"%ld",unread);
+				sprintf(new_buf,"%d",newm);
+				sprintf(unread_buf,"%d",unread);
 			}
 			else
 			{
@@ -145,7 +145,7 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 				unread_buf[0] = 0;
 			}
 
-			sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
+			sprintf(data->name_buf,"\33O[%08lx]%s",(ULONG)image,newm?"\33b":"");
 			if (folder->name)
 			{
 				/* IMAP folders are UTF8 */

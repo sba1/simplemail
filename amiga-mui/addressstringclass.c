@@ -117,8 +117,8 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	Object *list,*str;
 	struct MatchWindow_Data *data;
 
-	if (!(str = (Object*)GetTagData(MUIA_MatchWindow_String, NULL, msg->ops_AttrList)))
-		return NULL;
+	if (!(str = (Object*)GetTagData(MUIA_MatchWindow_String, (ULONG)NULL, msg->ops_AttrList)))
+		return 0;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Window_Borderless, TRUE,
@@ -167,14 +167,14 @@ STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	set(data->list,MUIA_NList_Active, MUIV_NList_Active_Up);
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	set(data->list,MUIA_NList_Active, MUIV_NList_Active_Down);
-	return NULL;
+	return 0;
 }
 
 STATIC BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
@@ -226,7 +226,7 @@ STATIC ULONG AddressString_Setup(struct IClass *cl, Object *obj,struct MUIP_Setu
 	return 1;
 }
 
-STATIC ULONG AddressString_Cleanup(struct IClass *cl, Object *obj, Msg msg)
+STATIC ULONG AddressString_Cleanup(struct IClass *cl, Object *obj, struct MUIP_Cleanup *msg)
 {
 	return DoSuperMethodA(cl, obj, (Msg)msg);
 }
@@ -415,7 +415,7 @@ STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_
 				set(data->match_wnd,MUIA_Window_Open,TRUE);
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)

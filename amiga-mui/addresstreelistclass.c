@@ -180,8 +180,12 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 	if (ti && ti->ti_Data) type = TYPE_ADDRESSBOOK;
 	else
 	{
+		type = TYPE_MATCHLIST;
+		/* TODO: Cleanup the type definition */
+#if 0
 		ti = FindTagItem(MUIA_AddressTreelist_AsMatchList,msg->ops_AttrList);
 		if (ti && ti->ti_Data) type = TYPE_MATCHLIST;
+#endif
 	}
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
@@ -351,7 +355,7 @@ STATIC ULONG AddressTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP
 	DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
 	AddressTreelist_Add(cl,obj,NULL, MUIV_NListtree_Insert_ListNode_Root,msg->str);
 	set(obj, MUIA_NListtree_Quiet, FALSE);
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG AddressTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
@@ -361,7 +365,7 @@ STATIC ULONG AddressTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * 
 	if (data->type != TYPE_MAIN) return DoSuperMethodA(cl,obj,(Msg)msg);
 
 	if (msg->ontop) return (ULONG)data->title_menu;
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG AddressTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)

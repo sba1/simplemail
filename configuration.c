@@ -579,7 +579,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
 				if (!account->pop->ask) fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
-				fprintf(fh,"ACCOUNT%d.POP3.APOP=%ld\n",i,account->pop->apop);
+				fprintf(fh,"ACCOUNT%d.POP3.APOP=%d\n",i,account->pop->apop);
 				fprintf(fh,"ACCOUNT%d.POP3.SSL=%s\n",i,account->pop->ssl?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.STLS=%s\n",i,account->pop->stls?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Active=%s\n",i,account->pop->active?"Y":"N");

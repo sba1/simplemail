@@ -1041,7 +1041,7 @@ struct mail *callback_new_mail_to_folder_by_file(char *filename)
 	getcwd(buf, sizeof(buf));
 	chdir(folder->path);
 
-	if (mail = mail_create_from_file(filename))
+	if ((mail = mail_create_from_file(filename)))
 	{
 		pos = folder_add_mail(folder,mail,1);
 		if (main_get_folder() == folder && pos != -1)

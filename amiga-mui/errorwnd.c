@@ -154,7 +154,7 @@ void error_add_message(char *msg)
 
 				list_insert_tail(&error_list, &enode->node);
 
-				sprintf(error_label, "Error %%ld/%ld",list_length(&error_list));
+				sprintf(error_label, "Error %%ld/%d",list_length(&error_list));
 
 				SetAttrs(error_numeric,
 						MUIA_Numeric_Min, 1,

@@ -1708,7 +1708,7 @@ int mail_process_headers(struct mail *mail)
 			if (mail->subject && isascii7(mail->subject)) mail->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
 		} else if (!mystricmp("received",header->name))
 		{
-			if (buf = strchr(buf,';'))
+			if ((buf = strchr(buf,';')))
 			{
 				int day,month,year,hour,min,sec,gmt;
 				unsigned int new_recv;

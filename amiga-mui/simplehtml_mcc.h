@@ -42,7 +42,7 @@ extern struct SimpleHTMLIFace *ISimpleHTML;
 #ifndef __AMIGAOS4__
 #define SimpleHTMLObject (Object*)(NewObject)(ObtainSimpleHTMLMCC()->mcc_Class, NULL
 #else
-#define SimpleHTMLObject (Object*)(IIntuition->NewObject)(ISimpleHTML->ObtainSimpleHTMLMCC()->mcc_Class, NULL
+#define SimpleHTMLObject NewObject(ISimpleHTML->ObtainSimpleHTMLMCC()->mcc_Class, NULL
 #endif
 
 #define MUIA_SimpleHTML_Buffer					(TAG_USER+0x31200000) /* NS. */

@@ -271,7 +271,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
 				TAG_DONE);
 
-		if (font_buf = mystrdup(user.config.read_fixedfont))
+		if ((font_buf = mystrdup(user.config.read_fixedfont)))
 		{
 			char *end = strchr(font_buf,'/');
 			if (end)
@@ -284,7 +284,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 			free(font_buf);
 		}
 
-		if (font_buf = mystrdup(user.config.read_propfont))
+		if ((font_buf = mystrdup(user.config.read_propfont)))
 		{
 			char *end = strchr(font_buf,'/');
 			if (end)

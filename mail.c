@@ -2511,8 +2511,8 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	struct composed_mail *cmail;
 	int rc = 1;
 
-	FILE *ofh;
-	char *ofh_name;
+	FILE *ofh = fp;
+	char *ofh_name = NULL;
 
 	if (new_mail->to)
 	{
@@ -2527,10 +2527,6 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			tmpnam(ofh_name);
 			ofh = fopen(ofh_name,"wb");
 		}
-	} else
-	{
-		ofh_name = NULL;
-		ofh = fp;
 	}
 
 	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))

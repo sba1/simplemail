@@ -26,8 +26,6 @@
 
 #include <errno.h>
 
-#ifndef _AROS
-
 #ifdef __WIN32__
 #include <windows.h>
 #else
@@ -255,10 +253,12 @@ int tcp_secure(struct connection *conn)
 }
 
 /******************************************************************
- Disconnect from the server
+ Disconnect from the server. Accepts NULL pointer
 *******************************************************************/
 void tcp_disconnect(struct connection *conn)
 {
+	if (!conn) return;
+
 	tcp_flush(conn); /* flush the write buffer */
 
 #ifndef NO_SSL
@@ -469,79 +469,3 @@ int tcp_gethostname(char *buf, int buf_size)
 	return gethostname(buf,buf_size);
 }
 
-
-#else
-
-
-
-
-
-int tcp_error_code(void)
-{
-	return 1;
-}
-
-const char *tcp_strerror(int code)
-{
-	return "Error";
-}
-
-struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
-{
-	return NULL;
-}
-
-/******************************************************************
- Makes a connction secure. Returns 1 for a success
-*******************************************************************/
-int tcp_make_secure(struct connection *conn)
-{
-	return 0;
-}
-
-/******************************************************************
- Returns whether connection is secure
-*******************************************************************/
-int tcp_secure(struct connection *conn)
-{
-	return 0;
-}
-
-/******************************************************************
- Disconnect from the server
-*******************************************************************/
-void tcp_disconnect(struct connection *conn)
-{
-}
-
-/******************************************************************
- Read a given amount of bytes from the connection.
- NOTE: This function actually can read less than nbytes
-*******************************************************************/
-long tcp_read(struct connection *conn, void *buf, long nbytes)
-{
-	return -1;
-}
-
-int tcp_write(struct connection *conn, void *buf, long nbytes)
-{
-	return -1;
-}
-
-int tcp_flush(struct connection *conn)
-{
-	return -1;
-}
-
-int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
-{
-	return -1;
-}
-
-char *tcp_readln(struct connection *conn)
-{
-	return NULL;
-}
-
-
-#endif

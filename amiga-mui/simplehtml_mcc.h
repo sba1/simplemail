@@ -28,6 +28,9 @@ __stdargs void delete_simplehtml_class(void);
  */
 #define MUIA_SimpleHTML_LoadHook				(TAG_USER+0x31200006)
 
+/* The URI which was clicked */
+#define MUIA_SimpleHTML_URIClicked			(TAG_USER+0x31230007) /* ..GN */
+
 #define MUIM_SimpleHTML_AllocateMem		(0x456789)
 #define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
 

@@ -51,6 +51,7 @@ struct folder
 	char *def_to; /* default to - useful for mailinglists */
 	char *def_from; /* default from address - also useful for mls */
 	char *def_replyto; /* default replyto - " */
+	int def_signature; /* default Signature */ 
 
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted, 
 																			the size of this array is always big as mail_array */
@@ -129,7 +130,7 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);
 
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, int prim_sort, int second_sort);
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, int newdefsignature, int prim_sort, int second_sort);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 
 struct folder *folder_first(void);

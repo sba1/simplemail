@@ -61,6 +61,7 @@
 #include "multistringclass.h"
 #include "picturebuttonclass.h"
 #include "utf8stringclass.h"
+#include "signaturecycleclass.h"
 
 static struct MUI_CustomClass *CL_Sizes;
 static int create_sizes_class(void);
@@ -70,6 +71,7 @@ static int size2value(int val);
 #define SizesObject (Object*)MyNewObject(CL_Sizes->mcc_Class, NULL
 
 void account_recv_port_update(void);
+static void account_refresh_signature_cycle(void);
 
 static Object *config_wnd;
 static Object *user_dst_check;
@@ -107,9 +109,11 @@ static Object *readhtml_mail_editor;
 
 static Object *account_account_list;
 static Object *account_account_name_string;
+static Object *account_user_group;
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
+static Object *account_def_signature_cycle;
 static Object *account_recv_type_radio;
 static Object *account_recv_server_string;
 static Object *account_recv_port_string;
@@ -217,6 +221,7 @@ static void account_store(void)
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
+		account_last_selected->def_signature = xget(account_def_signature_cycle, MUIA_Cycle_Active);
 		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
@@ -256,6 +261,11 @@ static void account_load(void)
 		setutf8string(account_name_string,account->name);
 		nnset(account_email_string, MUIA_String_Contents, account->email);
 		setstring(account_reply_string,account->reply);
+		nnset(account_def_signature_cycle, MUIA_Cycle_Active, account->def_signature);
+		if (xget(account_def_signature_cycle, MUIA_Cycle_Active) != account->def_signature)
+		{
+			nnset(account_def_signature_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
+		}
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
@@ -640,7 +650,17 @@ static void config_selected(void)
 		{
 			DoMethod(config_group,MUIM_Group_InitChange);
 
-			if (config_last_visisble_group) set(config_last_visisble_group,MUIA_ShowMe,FALSE);
+			if (config_last_visisble_group)
+			{
+				set(config_last_visisble_group,MUIA_ShowMe,FALSE);
+				/* if we come from the signature group, we rebuild the SignatureCycle to reflect
+				   the current done settings. We have to recreate the object because Cycle does
+				   not allow Refresh */
+				if (config_last_visisble_group == groups[GROUPS_SIGNATURE])
+				{
+					account_refresh_signature_cycle();
+				}
+			}
 			config_last_visisble_group = group;
 			set(group,MUIA_ShowMe,TRUE);
 
@@ -824,6 +844,56 @@ static void account_update(void)
 }
 
 /******************************************************************
+ Refresh the account SignatureCycle
+*******************************************************************/
+static void account_refresh_signature_cycle(void)
+{
+	struct list tmp_signature_list;
+	struct signature *sign, *new_sign;
+	int i, current_sign;
+
+	/* temporary signature list for SignatureCycle to display the new signatures */
+	list_init(&tmp_signature_list);
+	for (i=0;i<xget(signature_signature_list,MUIA_NList_Entries);i++)
+	{
+		DoMethod(signature_signature_list, MUIM_NList_GetEntry, i, &sign);
+		new_sign = signature_malloc();
+		if (new_sign)
+		{
+			/* I only need the names, not the full signature */
+			new_sign->name = mystrdup(sign->name);
+			list_insert_tail(&tmp_signature_list, &new_sign->node);
+		}
+	}
+
+	current_sign = (int)xget(account_def_signature_cycle, MUIA_Cycle_Active);
+	DoMethod(account_user_group, MUIM_Group_InitChange);
+	DoMethod(account_user_group, OM_REMMEMBER, account_def_signature_cycle);
+	MUI_DisposeObject(account_def_signature_cycle);
+	account_def_signature_cycle = SignatureCycleObject,
+		MUIA_CycleChain, 1,
+		MUIA_Cycle_Active, current_sign,
+		MUIA_SignatureCycle_HasDefaultEntry, TRUE,
+		MUIA_SignatureCycle_SignatureList, &tmp_signature_list,
+		End;
+	if (xget(account_def_signature_cycle, MUIA_Cycle_Active) != current_sign)
+	{
+		/* if the current signature was deleted, set to default */
+		set(account_def_signature_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
+	}
+	set(account_def_signature_cycle,MUIA_ShortHelp,_("The default signature for this account"));
+	DoMethod(account_user_group, OM_ADDMEMBER, account_def_signature_cycle);
+	DoMethod(account_user_group, MUIM_Group_ExitChange);
+
+	/* free the temporary signature list */
+	while ((sign = (struct signature *)list_remove_tail(&tmp_signature_list)))
+	{
+		if (sign->name) free(sign->name);
+		free(sign);
+	}
+}
+
+/******************************************************************
  Set the correct port
 *******************************************************************/
 void account_recv_port_update(void)
@@ -912,7 +982,7 @@ static int init_account_group(void)
 				End,
 			End,
 		Child, HorizLineTextObject(_("User")),
-		Child, ColGroup(2),
+		Child, account_user_group = ColGroup(2),
 			Child, MakeLabel(Q_("?people:Name")),
 			Child, account_name_string = UTF8StringObject,
 				StringFrame,
@@ -930,6 +1000,13 @@ static int init_account_group(void)
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_AdvanceOnCR, TRUE,
+				End,
+			/* This two MUST always be the last objects of this group! */
+			/* because the SignatureCycle() gets removed and reinserted for update. */
+			Child, MakeLabel(_("Use signature")),
+			Child, account_def_signature_cycle = SignatureCycleObject,
+				MUIA_CycleChain, 1,
+				MUIA_SignatureCycle_HasDefaultEntry, TRUE,
 				End,
 			End,
 		Child, HorizLineTextObject(_("Receive")),
@@ -1078,6 +1155,7 @@ static int init_account_group(void)
 	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
 	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));
 	set(account_reply_string,MUIA_ShortHelp,_("Address where the replies of the mails should\nbe sent (required only if different from the e-mail address)."));
+	set(account_def_signature_cycle,MUIA_ShortHelp,_("The default signature for this account"));
 	set(account_recv_server_string,MUIA_ShortHelp,_("The name of the so called POP3 server from\nwhich you download your e-Mails (required; ask your\nprovider if unknown)."));
 	set(account_recv_port_string,MUIA_ShortHelp,_("The port number. Usually 110"));
 	set(account_recv_login_string,MUIA_ShortHelp,_("The login/UserID which you got from your ISP."));
@@ -1380,6 +1458,44 @@ static void signature_remove(void)
 	DoMethod(signature_signature_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &sign);
 	if (sign)
 	{
+		struct account *ac;
+		LONG signature_pos = MUIV_NList_GetPos_Start;
+		int i, use_count = 0;
+
+		/* Check if the signature is used in any of the accounts */
+		DoMethod(signature_signature_list, MUIM_NList_GetPos, sign, &signature_pos);
+		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
+		{
+			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
+			if (ac->def_signature == signature_pos)
+			{
+				use_count++;
+			}
+		}
+		if (use_count > 0)
+		{
+			if (!sm_request(NULL,_("The signature is used in %d account(s)."),_("Delete|*Cancel"),use_count)) return;
+		}
+		/* The Signature will be deleted, we have to reassign the accounts */
+		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
+		{
+			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
+			/* set to default all accounts with the deleted signature */
+			if (ac->def_signature == signature_pos)
+			{
+				ac->def_signature = MUIV_SignatureCycle_Default;
+			}
+			/* minus one for all signatures beyond the deleted one */
+			if (ac->def_signature > signature_pos)
+			{
+				ac->def_signature--;
+			}
+			/* If the account was displayed, we must update the gui elements */
+			if (account_last_selected == ac)
+			{
+				nnset(account_def_signature_cycle, MUIA_Cycle_Active, ac->def_signature);
+			}
+		}
 		signature_last_selected = NULL;
 		DoMethod(signature_signature_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 		signature_free(sign);

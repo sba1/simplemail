@@ -17,55 +17,25 @@
 ***************************************************************************/
 
 /*
-** account.h
+** signaturecycleclass.h
 */
 
+#ifndef SM__SIGNATURECYCLECLASS_H
+#define SM__SIGNATURECYCLECLASS_H
 
-#ifndef SM__ACCOUNT_H
-#define SM__ACCOUNT_H
+IMPORT struct MUI_CustomClass *CL_SignatureCycle;
+#define SignatureCycleObject (Object*)MyNewObject(CL_SignatureCycle->mcc_Class, NULL
 
-#ifndef SM__LISTS_H
-#include "lists.h"
-#endif
+/* a default entry will be shown */
+#define MUIA_SignatureCycle_HasDefaultEntry (TAG_USER | 0x30130001) /* I.. BOOL */
+/* pointer to an SignatureList, defaults to user.config.signature_list */
+#define MUIA_SignatureCycle_SignatureList   (TAG_USER | 0x30130002) /* I.. struct list * */
 
-#ifndef SM__SMTP_H
-#include "smtp.h"
-#endif
+/* special value for setting the Entries */
+#define MUIV_SignatureCycle_Default      -10
+#define MUIV_SignatureCycle_NoSignature  -11
 
-#ifndef SM__POP3_H
-#include "pop3.h"
-#endif
-
-#ifndef SM__IMAP_H
-#include "imap.h"
-#endif
-
-struct folder;
-struct imap_server;
-
-struct account
-{
-	struct node node;
-
-	char *account_name;
-	char *name;
-	char *email;
-	char *reply;
-	int def_signature;
-	int recv_type;
-
-	struct pop3_server *pop;
-	struct imap_server *imap;
-	struct smtp_server *smtp;
-};
-
-struct account *account_malloc(void);
-struct account *account_duplicate(struct account *a);
-void account_free(struct account *a);
-struct account *account_find_by_from(char *email);
-struct imap_server *account_find_imap_server_by_folder(struct folder *f);
-
-#define account_find_by_number(number) \
-	((struct account*)list_find(&user.config.account_list,number))
+int create_signaturecycle_class(void);
+void delete_signaturecycle_class(void);
 
 #endif

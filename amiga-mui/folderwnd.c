@@ -45,6 +45,7 @@
 #include "support_indep.h"
 
 #include "accountpopclass.h"
+#include "signaturecycleclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
@@ -73,9 +74,11 @@ static Object *second_cycle;
 static Object *second_reverse_check;
 static Object *second_reverse_label;
 
+static Object *compose_mail_properties_group;
 static Object *from_accountpop;
 static Object *replyto_string;
 static Object *defto_string;
+static Object *defsign_cycle;
 
 static Object *imap_folders_horizline;
 static Object *imap_folders_group;
@@ -230,6 +233,11 @@ char *folder_get_changed_defreplyto(void)
 	return (char*)xget(replyto_string,MUIA_UTF8String_Contents);
 }
 
+int folder_get_changed_defsignature(void)
+{
+	return (int)xget(defsign_cycle, MUIA_Cycle_Active);
+}
+
 int folder_get_changed_primary_sort(void)
 {
 	return xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
@@ -321,7 +329,7 @@ static void init_folder(void)
 				End,
 
 			Child, HorizLineTextObject(_("Compose Mail Properties")),
-			Child, ColGroup(2),
+			Child, compose_mail_properties_group = ColGroup(2),
 				Child, MakeLabel(_("From")),
 				Child, from_accountpop = AccountPopObject, MUIA_AccountPop_HasDefaultEntry, TRUE, End,
 
@@ -338,6 +346,12 @@ static void init_folder(void)
 					MUIA_CycleChain, 1,
 					MUIA_ControlChar, GetControlChar(_("_Reply To")),
 					End,
+
+				/* This two MUST always be the last objects of this group! */
+				/* because the SignatureCycle() gets removed and reinserted for update. */
+				Child, MakeLabel(_("Use signature")),
+				Child, defsign_cycle = SignatureCycleObject, MUIA_SignatureCycle_HasDefaultEntry, TRUE, End,
+
 				End,
 
 			Child, imap_folders_horizline = HorizLineTextObject(_("IMAP Properties")),
@@ -389,6 +403,18 @@ void folder_edit(struct folder *f)
 	{
 		init_folder();
 		if (!folder_wnd) return;
+	} else
+	{
+		int sign_current = (int)xget(defsign_cycle, MUIA_Cycle_Active);
+		DoMethod(compose_mail_properties_group, MUIM_Group_InitChange);
+		DoMethod(compose_mail_properties_group, OM_REMMEMBER, defsign_cycle);
+		MUI_DisposeObject(defsign_cycle);
+		defsign_cycle = SignatureCycleObject,
+			MUIA_Cycle_Active, sign_current,
+			MUIA_SignatureCycle_HasDefaultEntry, TRUE,
+			End;
+		DoMethod(compose_mail_properties_group, OM_ADDMEMBER, defsign_cycle);
+		DoMethod(compose_mail_properties_group, MUIM_Group_ExitChange);
 	}
 
 	if (f->special == FOLDER_SPECIAL_GROUP)
@@ -503,6 +529,12 @@ void folder_edit(struct folder *f)
 	set(defto_string, MUIA_UTF8String_Contents, f->def_to);
 	set(from_accountpop, MUIA_AccountPop_Account, account_find_by_from(f->def_from));
 	set(replyto_string, MUIA_UTF8String_Contents, f->def_replyto);
+	set(defsign_cycle, MUIA_Cycle_Active, f->def_signature);
+	if (folder_get_changed_defsignature() != f->def_signature)
+	{
+		/* This can happen when signatures are deleted, set to default in this case! */
+		set(defsign_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
+	}
 
 	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);

@@ -17,6 +17,7 @@ amiga-mui/searchwnd.c
 amiga-mui/shutdownwnd.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
+amiga-mui/signaturecycleclassclass.c
 Charsets/cp1252.txt
 Charsets/iso8859-10.txt
 codesets.c

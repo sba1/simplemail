@@ -50,9 +50,9 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
-#include "debug.h"
 
 #include "accountpopclass.h"
+#include "signaturecycleclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "attachmentlistclass.h"
@@ -104,6 +104,7 @@ struct Compose_Data /* should be a customclass */
 	Object *datatype_datatypes;
 	Object *encrypt_button;
 	Object *sign_button;
+	Object *signatures_cycle;
 
 	int reply_stuff_attached;
 
@@ -119,9 +120,6 @@ struct Compose_Data /* should be a customclass */
 
 	int num; /* the number of the window */
 	/* more to add */
-
-	char **sign_array; /* The array which contains the signature names */
-	int sign_array_utf8count; /* The count of the array to free the memory */
 
 	int attachment_unique_id;
 };
@@ -191,15 +189,6 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 	if (data->folder) free(data->folder);
 	if (data->reply_id) free(data->reply_id);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
-	if (data->sign_array)
-	{
-		int i;
-		for (i=0;i<data->sign_array_utf8count;i++)
-		{
-			free(data->sign_array[i]);
-		}
-		free(data->sign_array);
-	}
 	free(data);
 }
 
@@ -810,51 +799,23 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 }
 
 /******************************************************************
- Add a signature if neccesary
+ Set default signature
 *******************************************************************/
-static void compose_add_signature(struct Compose_Data *data)
+static void compose_set_def_signature(struct Compose_Data **pdata)
 {
-	struct signature *sign = (struct signature*)list_first(&user.config.signature_list);
-	if (user.config.signatures_use && sign && sign->signature)
+	struct Compose_Data *data = *pdata;
+	struct account *ac = (struct account *)xget(data->from_accountpop, MUIA_AccountPop_Account);
+
+	if (data->signatures_cycle && ac)
 	{
-		char *text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
-		int add_sign = 0;
-
-		if (text)
+		set(data->signatures_cycle, MUIA_Cycle_Active, ac->def_signature);
+		/* if the signature is not available "NoSignature" will be used. */
+		/* if we want to fallback to default we have to do this: 
+		if (xget(data->signatures_cycle, MUIA_Cycle_Active) != ac->def_signature)
 		{
-			add_sign = strstr(text,"\n-- \n")?(0):(!!strncmp("-- \n",text,4));
+			set(data->signatures_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
 		}
-		if (add_sign)
-		{
-			char *sign_iso = utf8tostrcreate(sign->signature,user.config.default_codeset);
-			if (sign_iso)
-			{
-				char *new_text = (char*)malloc(strlen(text) + strlen(sign_iso) + 50);
-				if (new_text)
-				{
-					strcpy(new_text,text);
-					strcat(new_text,"\n-- \n");
-					strcat(new_text,sign_iso);
-
-					new_text = taglines_add_tagline(new_text);
-				
-/*
-					DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
-					DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
-*/
-					SetAttrs(data->text_texteditor,
-							MUIA_TextEditor_CursorX,0,
-							MUIA_TextEditor_CursorY,0,
-							MUIA_TextEditor_Contents,new_text,
-							TAG_DONE);
-
-					free(new_text);
-				}
-				free(sign_iso);
-			}
-		}
-
-		if (text) FreeVec(text);
+		*/
 	}
 }
 
@@ -864,13 +825,13 @@ static void compose_add_signature(struct Compose_Data *data)
 static void compose_set_signature(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data*)msg[0];
-	int val = (int)msg[1];
-	struct signature *sign = (struct signature*)list_find(&user.config.signature_list,val);
+	int val = (int)xget(data->signatures_cycle, MUIA_Cycle_Active);
+	struct signature *sign;
 	char *text;
 	int x = xget(data->text_texteditor,MUIA_TextEditor_CursorX);
 	int y = xget(data->text_texteditor,MUIA_TextEditor_CursorY);
 
-	if (!sign)
+	if (val == MUIV_SignatureCycle_NoSignature)
 	{
 		if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
 		{
@@ -888,6 +849,9 @@ static void compose_set_signature(void **msg)
 			FreeVec(text);
 		}
 		return;
+	} else
+	{
+		sign = (struct signature*)list_find(&user.config.signature_list,val);
 	}
 	if (!sign->signature) return;
 
@@ -1006,11 +970,7 @@ int compose_window_open(struct compose_args *args)
 	Object *encrypt_button;
 	Object *sign_button;
 
-	struct signature *sign;
-	char **sign_array = NULL;
-	int sign_array_utf8count = 0;
 	int num;
-	int i;
 
 	static char *register_titles[3];
 	static int register_titles_are_translated;
@@ -1044,30 +1004,26 @@ int compose_window_open(struct compose_args *args)
 
 	if (num == MAX_COMPOSE_OPEN) return -1;
 
-	i = list_length(&user.config.signature_list);
-
-	if (user.config.signatures_use && i)
+	if (user.config.signatures_use)
 	{
-		if ((sign_array = (char**)malloc((i+2)*sizeof(char*))))
-		{
-			int j=0;
-			sign = (struct signature*)list_first(&user.config.signature_list);
-			while (sign)
-			{
-				sign_array[j]=utf8tostrcreate(sign->name, user.config.default_codeset);
-				sign = (struct signature*)node_next(&sign->node);
-				j++;
-			}
-			sign_array_utf8count=j;
-			sign_array[j] = _("No Signature");
-			sign_array[j+1] = NULL;
-		}
-
-		signatures_group = HGroup,
-			MUIA_Weight, 33,
-			Child, MakeLabel(_("Use signature")),
-			Child, signatures_cycle = MakeCycle(_("Use signature"),sign_array),
+		/* create SignatureCycle and point to "NoSignatures", so we get notified when the default
+		   signature is set */
+		signatures_cycle = SignatureCycleObject, 
+			MUIA_SignatureCycle_HasDefaultEntry, FALSE,
+			MUIA_Cycle_Active, MUIV_SignatureCycle_NoSignature,
 			End;
+		if (signatures_cycle)
+		{
+			signatures_group = HGroup,
+				MUIA_Weight, 33,
+				Child, MakeLabel(_("Use signature")),
+				Child, signatures_cycle,
+			End;
+		} else
+		{
+			/* there are no signatures */
+			signatures_group = NULL;
+		}
 	} else
 	{
 		signatures_group = NULL;
@@ -1286,6 +1242,7 @@ int compose_window_open(struct compose_args *args)
 			data->paste_button = paste_button;
 			data->undo_button = undo_button;
 			data->redo_button = redo_button;
+			data->signatures_cycle = signatures_cycle;
 
 			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
@@ -1322,7 +1279,6 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
-			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 			DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_replyto, data);
 
 			data->reply_stuff_attached = 1;
@@ -1409,9 +1365,20 @@ int compose_window_open(struct compose_args *args)
 				set(wnd,MUIA_Window_ActiveObject,data->to_string);
 			}
 
-			compose_add_signature(data);
-			data->sign_array = sign_array;
-			data->sign_array_utf8count = sign_array_utf8count;
+			if (signatures_cycle)
+			{
+				struct folder *f = main_get_folder();
+
+				DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
+				DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
+				if (f && f->def_signature != MUIV_SignatureCycle_Default)
+				{
+					set(data->signatures_cycle, MUIA_Cycle_Active, f->def_signature);
+				} else
+				{
+					compose_set_def_signature(&data);
+				}
+			}
 
 			data->compose_action = args->action;
 			data->ref_mail = args->ref_mail;

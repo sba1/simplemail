@@ -87,6 +87,7 @@ struct account *account_duplicate(struct account *a)
 					account->name = mystrdup(a->name);
 					account->email = mystrdup(a->email);
 					account->reply = mystrdup(a->reply);
+					account->def_signature = a->def_signature;
 					account->recv_type = a->recv_type;
 					account->pop = pop;
 					account->smtp = smtp;

@@ -50,6 +50,7 @@
 
 /* gui parts */
 #include "accountpopclass.h"
+#include "signaturecycleclass.h"
 #include "addresstreelistclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
@@ -303,6 +304,7 @@ void all_del(void)
 			app_del();
 
 			delete_accountpop_class();
+			delete_signaturecycle_class();
 			delete_audioselectgroup_class();
 			delete_pgplist_class();
 			delete_addresstreelist_class();
@@ -365,14 +367,16 @@ int all_init(void)
 				{
 					if (arexx_init())
 					{
-						if (create_utf8string_class() && create_foldertreelist_class() && create_mailtreelist_class() &&
-								create_addressstring_class() && create_attachmentlist_class() &&
-								create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
-								create_picturebutton_class() &&
-								create_popupmenu_class() && create_icon_class() &&
-								create_filterlist_class() && create_filterrule_class() &&
-								create_multistring_class() && create_addresstreelist_class() &&
-								create_pgplist_class() && create_audioselectgroup_class() && create_accountpop_class())
+						if (create_utf8string_class() && create_foldertreelist_class() &&
+						    create_mailtreelist_class() && create_addressstring_class() &&
+						    create_attachmentlist_class() && create_datatypes_class() &&
+						    create_transwnd_class() && create_composeeditor_class() &&
+						    create_picturebutton_class() && create_popupmenu_class() &&
+						    create_icon_class() && create_filterlist_class() &&
+						    create_filterrule_class() && create_multistring_class() &&
+						    create_addresstreelist_class() && create_pgplist_class() &&
+						    create_audioselectgroup_class() && create_accountpop_class() &&
+						    create_signaturecycle_class())
 						{
 							if (app_init())
 							{

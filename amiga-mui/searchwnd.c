@@ -70,10 +70,20 @@ STATIC ASM VOID folder_objstr(register __a2 Object *list, register __a1 Object *
 
 	if (tree_node)
 	{
-		if (tree_node->tn_User)
+		APTR user = tree_node->tn_User;
+
+		if (user)
 		{
-			struct folder *f = (struct folder*)tree_node->tn_User;
-			set(str,MUIA_Text_Contents,f->name);
+			if ((ULONG)user == MUIV_FolderTreelist_UserData_Root)
+			{
+				set(str, MUIA_Text_Contents, _("All folders"));
+				set(str,MUIA_UserData,1);
+			} else
+			{
+				struct folder *f = (struct folder*)user;
+				set(str,MUIA_Text_Contents,f->name);
+				set(str,MUIA_UserData,0); /* is folder name */
+			}
 		}
 	}
 }
@@ -104,7 +114,8 @@ static void searchwnd_start(void)
 {
 	struct search_options so;
 	memset(&so,0,sizeof(so));
-	so.folder = (char*)xget(search_folder_text,MUIA_Text_Contents);
+	if (xget(search_folder_text,MUIA_UserData)) so.folder = NULL;
+	else so.folder = (char*)xget(search_folder_text,MUIA_Text_Contents);
 	so.from = (char*)xget(search_from_string,MUIA_UTF8String_Contents);
 	so.to = (char*)xget(search_to_string,MUIA_UTF8String_Contents);
 	so.subject = (char*)xget(search_subject_string,MUIA_UTF8String_Contents);
@@ -160,6 +171,8 @@ static void init_search(void)
 					MUIA_Popobject_StrObjHook, &folder_strobj_hook,
 					MUIA_Popobject_Object, NListviewObject,
 							MUIA_NListview_NList, search_folder_tree = FolderTreelistObject,
+								MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
+								MUIA_FolderTreelist_ShowRoot, TRUE,
 							End,
 						End,
 					End,
@@ -244,7 +257,7 @@ void search_open(char *foldername)
 	}
 
 	set(search_wnd, MUIA_Window_Open, TRUE);
-	set(search_folder_text, MUIA_Text_Contents, foldername);
+	SetAttrs(search_folder_text, MUIA_Text_Contents, foldername, MUIA_UserData, 0, TAG_DONE);
 }
 
 /**************************************************************************

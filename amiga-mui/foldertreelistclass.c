@@ -56,6 +56,7 @@ struct FolderTreelist_Data
 	Object *context_menu;
 
 	int mails_drag;
+	int show_root;
 
 	APTR image_incoming;
 	APTR image_outgoing;
@@ -70,7 +71,7 @@ struct FolderTreelist_Data
 STATIC ASM void folder_close(register __a1 struct MUIP_NListtree_CloseMessage *msg)
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
-	if (folder)
+	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
 		folder->closed = 1;
 }
 
@@ -79,41 +80,48 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(CL_FolderTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
 	{
-		struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
-		static char mails_buf[32];
-		int num = folder_number_of_mails(folder);
-		int unread = folder_number_of_unread_mails(folder);
-		int newm = folder_number_of_new_mails(folder);
-		APTR image;
-
-		switch (folder->special)
+		if ((ULONG)msg->TreeNode->tn_User == MUIV_FolderTreelist_UserData_Root)
 		{
-			case	FOLDER_SPECIAL_INCOMING: image = data->image_incoming; break;
-			case	FOLDER_SPECIAL_OUTGOING: image = data->image_outgoing; break;
-			case	FOLDER_SPECIAL_SENT: image = data->image_sent; break;
-			case	FOLDER_SPECIAL_DELETED: image = data->image_deleted; break;
-			case	FOLDER_SPECIAL_GROUP: image = data->image_group; break;
-			default: image = data->image_other; break;
+			*msg->Array++ = NULL;
+			*msg->Array = "";
+		} else
+		{
+			struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
+			static char mails_buf[32];
+			int num = folder_number_of_mails(folder);
+			int unread = folder_number_of_unread_mails(folder);
+			int newm = folder_number_of_new_mails(folder);
+			APTR image;
+	
+			switch (folder->special)
+			{
+				case	FOLDER_SPECIAL_INCOMING: image = data->image_incoming; break;
+				case	FOLDER_SPECIAL_OUTGOING: image = data->image_outgoing; break;
+				case	FOLDER_SPECIAL_SENT: image = data->image_sent; break;
+				case	FOLDER_SPECIAL_DELETED: image = data->image_deleted; break;
+				case	FOLDER_SPECIAL_GROUP: image = data->image_group; break;
+				default: image = data->image_other; break;
+			}
+	
+			if (num != -1)
+			{
+				if(unread > 0)
+				{
+					sprintf(mails_buf,newm?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
+				}
+				else
+				{
+					sprintf(mails_buf,"%ld",num);
+				}
+			}	
+			else mails_buf[0] = 0;
+	
+			sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
+			if (folder->name) strcat(data->name_buf,folder->name);
+	
+			*msg->Array++ = data->name_buf;
+			*msg->Array = mails_buf;
 		}
-
-		if (num != -1)
-		{
-			if(unread > 0)
-			{
-				sprintf(mails_buf,newm?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
-			}
-			else
-			{
-				sprintf(mails_buf,"%ld",num);
-			}
-		}	
-		else mails_buf[0] = 0;
-
-		sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
-		if (folder->name) strcat(data->name_buf,folder->name);
-
-		*msg->Array++ = data->name_buf;
-		*msg->Array = mails_buf;
 	} else
 	{
 		*msg->Array++ = _("Name");
@@ -124,7 +132,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 STATIC ASM void folder_open(register __a1 struct MUIP_NListtree_OpenMessage *msg)
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
-	if (folder)
+	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
 		folder->closed = 0;
 }
 
@@ -139,11 +147,13 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct FolderTreelist_Data *data;
 	int read_only = GetTagData(MUIA_FolderTreelist_ReadOnly,0,msg->ops_AttrList);
+	int show_root = GetTagData(MUIA_FolderTreelist_ShowRoot,0,msg->ops_AttrList);
 
 	if (!(obj=(Object *)DoSuperMethodA(cl,obj,(Msg)msg)))
 		return 0;
 
 	data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	data->show_root = show_root;
 
 	init_hook(&data->close_hook, (HOOKFUNC)folder_close);
 	init_hook(&data->display_hook,(HOOKFUNC)folder_display);
@@ -353,13 +363,20 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	struct folder *f;
+	APTR root;
 
 	set(obj,MUIA_NListtree_Quiet,TRUE);
 	DoMethod(obj, MUIM_NListtree_Clear, NULL, 0);
 
+	if (data->show_root)
+	{
+		root = (APTR)DoMethod(obj,MUIM_NListtree_Insert,_("All folders") /*name*/, MUIV_FolderTreelist_UserData_Root, /*udata */
+					MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
+	} else root = (APTR)MUIV_NListtree_Insert_ListNode_Root;
+
 	for (f = folder_first();f;f = folder_next(f))
 	{
-		APTR treenode = (APTR)MUIV_NListtree_Insert_ListNode_Root;
+		APTR treenode = root;
 
 		/* groups cannot be excluded at the moment */
 		if (msg->exclude == f && msg->exclude->special != FOLDER_SPECIAL_GROUP) continue;

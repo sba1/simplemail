@@ -29,10 +29,13 @@ IMPORT struct MUI_CustomClass *CL_FolderTreelist;
 #define MUIA_FolderTreelist_MailDrop     (TAG_USER|0x31000001) /* (struct folder *) */
 #define MUIA_FolderTreelist_OrderChanged (TAG_USER|0x31000002) /* BOOL */
 #define MUIA_FolderTreelist_ReadOnly     (TAG_USER|0x31000003) /* i.. BOOL */
+#define MUIA_FolderTreelist_ShowRoot     (TAG_USER|0x31000004) /* i.. BOOL */
 
 #define MUIM_FolderTreelist_Refresh (0x7878787)
 
 struct MUIP_FolderTreelist_Refresh {ULONG MethodID; struct folder *exclude;};
+
+#define MUIV_FolderTreelist_UserData_Root (0x04)
 
 int create_foldertreelist_class(void);
 void delete_foldertreelist_class(void);

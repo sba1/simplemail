@@ -180,6 +180,7 @@ static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
 
 static struct list folder_list;
+static struct folder *folder_root;
 
 struct folder_node
 {
@@ -971,9 +972,9 @@ struct folder *folder_add_with_name(char *path, char *name)
 }
 
 /******************************************************************
- Adds a folder to the internal folder list with a given name
+ Creates a new group but does not add it
 *******************************************************************/
-struct folder *folder_add_group(char *name)
+static struct folder_node *folder_create_group(char *name)
 {
 	struct folder_node *node;
 	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
@@ -985,10 +986,23 @@ struct folder *folder_add_group(char *name)
 
 		if ((node->folder.sem = thread_create_semaphore()))
 		{
-			list_insert_tail(&folder_list,&node->node);
-			return &node->folder;
+			return node;
 		}
 		/* leaks */
+	}
+	return NULL;
+}
+
+/******************************************************************
+ Adds a folder to the internal folder list with a given name
+*******************************************************************/
+struct folder *folder_add_group(char *name)
+{
+	struct folder_node *node = folder_create_group(name);
+	if (node)
+	{
+		list_insert_tail(&folder_list,&node->node);
+		return &node->folder;
 	}
 	return NULL;
 }

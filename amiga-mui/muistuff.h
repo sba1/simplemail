@@ -33,6 +33,18 @@ extern struct Hook hook_standard;
 /* initialized the global hook */
 void init_hook_standard(void);
 
+/* An extented hook structure which also stores the a4 register
+** Use init_myhook() to initalize it.
+*/
+
+struct MyHook
+{
+	struct Hook hook;
+	unsigned long rega4;
+};
+
+void init_hook(struct MyHook *h, unsigned long (*func)(),void *data);
+
 /* Line Macros */
 #define HorizLineObject  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,End
 #define HorizLineTextObject(text)  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,MUIA_Rectangle_BarTitle,text,End

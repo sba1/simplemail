@@ -73,3 +73,25 @@ void init_hook_standard(void)
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
 	hook_standard.h_Data = (void*)getreg(REG_A4);
 }
+
+/* the hook function, it loads the a4 register and call the subentry */
+STATIC ASM /*SAVEDS*/ void hook_func(register __a0 struct MyHook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+{
+	__asm int (*func) (register __a0 struct MyHook *, register __a1 ULONG, register __a2) =
+		(__asm int (*) (register __a0 struct MyHook *, register __a1 ULONG, register __a2))h->hook.h_SubEntry;
+
+	if (func)
+	{
+		putreg(REG_A4,(long)h->rega4);
+		func(h,msg,obj);
+	}
+}
+
+/* Initializes a hook */
+void init_hook(struct MyHook *h, unsigned long (*func)(),void *data)
+{
+	h->hook.h_Entry = (HOOKFUNC)hook_func;
+	h->hook.h_SubEntry = func;
+	h->hook.h_Data = data;
+	h->rega4 = getreg(REG_A4);
+}

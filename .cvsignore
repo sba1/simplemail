@@ -21,3 +21,8 @@ configure
 config,status
 .deps
 mmakefile
+config.log
+config.status
+Makefile
+Makefile.in
+configure

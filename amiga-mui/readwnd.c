@@ -29,6 +29,7 @@
 #include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
+#include <libraries/gadtools.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
 #include "simplehtml_mcc.h"
@@ -60,6 +61,7 @@
 #include "readwnd.h"
 #include "support.h"
 
+void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail *mail);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
 
@@ -453,6 +455,25 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 }
 
 /******************************************************************
+ Show the raw text with multiview
+*******************************************************************/
+static void show_raw(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	BPTR odir, dir_lock;
+
+	if ((dir_lock = Lock(data->folder_path, ACCESS_READ)))
+	{
+		char buf[256];
+		odir = CurrentDir(dir_lock);
+		sprintf(buf,"SYS:Utilities/Multiview \"%s\"",data->mail->filename);
+		sm_system(buf,NULL);
+		CurrentDir(odir);
+		UnLock(dir_lock);
+	}
+}
+
+/******************************************************************
  Returns the currently displayed mail
 *******************************************************************/
 struct mail *read_get_displayed_mail(struct Read_Data *data)
@@ -772,15 +793,55 @@ void read_window_open(char *folder, struct mail *mail)
 	Object *text_listview;
 	Object *prev_button, *next_button, *save_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
+	Object *read_menu;
 	int num;
+
+	enum {
+		MENU_PROJECT,
+		MENU_PROJECT_ABOUT = 1,
+		MENU_PROJECT_ABOUTMUI,
+		MENU_PROJECT_QUIT,
+		MENU_MAIL_RAW
+	};
+
+	static const struct NewMenu nm_untranslated[] =
+	{
+		{NM_TITLE, N_("Project"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("?:About..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
+		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
+		{NM_TITLE, N_("Mail"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Show raw format..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
+		{NM_END, NULL, NULL, 0, 0, NULL}
+	};
+
+	struct NewMenu *nm;
+	int i;
+
+	/* translate the menu entries */
+	if (!(nm = malloc(sizeof(nm_untranslated)))) return;
+	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
+
+	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
+	{
+		if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
+		{
+			nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
+			if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
+		}
+	}
 
 	for (num=0; num < MAX_READ_OPEN; num++)
 		if (!read_open[num]) break;
 
+	read_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
-	 MUIA_Window_Title, _("SimpleMail - Read Message"),
-		  
+		MUIA_Window_Title, _("SimpleMail - Read Message"),
+		MUIA_Window_Menustrip, read_menu,
+
 		WindowContents, VGroup,
 			Child, HGroupV,
 				Child, HGroup,
@@ -909,6 +970,12 @@ void read_window_open(char *folder, struct mail *mail)
 			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+
+			/* Menu notifies */
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, App, 4, MUIM_CallHook, &hook_standard, show_raw, data);
 			
 			set(App, MUIA_Application_Sleep, TRUE);
 

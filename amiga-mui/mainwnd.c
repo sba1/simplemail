@@ -140,7 +140,7 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 /******************************************************************
  Display the about Requester
 *******************************************************************/
-static void display_about(void)
+void display_about(void)
 {
 	MUI_Request(App, NULL, 0, 
 		_("SimpleMail - About"),

@@ -1824,7 +1824,7 @@ static int init_phrase_group(void)
 			Child, phrase_write_welcomeaddr_popph = PopphObject,
 				MUIA_Popph_Array, write_popph_array,
 				End,
-			Child, MakeLabel(_("Close")),
+			Child, MakeLabel(Q_("?phrases:Close")),
 			Child, phrase_write_close_string = BetterStringObject,
 				StringFrame,
 				MUIA_String_AdvanceOnCR, TRUE,

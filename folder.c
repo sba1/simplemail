@@ -1396,8 +1396,12 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 					char *new_name_status = mail_get_status_filename(new_name, mail->status);
 					if (new_name_status)
 					{
-						if (!rename(src_buf,new_name_status)) rc = 1;
-						free(new_name_status);
+						if (!rename(src_buf,new_name_status))
+						{
+							if (mail->filename) free(mail->filename);
+							mail->filename = new_name_status;
+							rc = 1;
+						}
 					}
 					free(new_name);
 				}

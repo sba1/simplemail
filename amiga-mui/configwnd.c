@@ -1126,20 +1126,18 @@ static int init_write_group(void)
 			End,
 		Child, HorizLineTextObject(_("Replying")),
 		Child, HGroup,
-			Child, MakeLabel(_("Wrap before quoting")),
-			Child, write_replywrap_check = MakeCheck(_("Wrap before quoting"),user.config.write_reply_quote),
+			Child, ColGroup(2),
+				Child, MakeLabel(_("Wrap before quoting")),
+				Child, write_replywrap_check = MakeCheck(_("Wrap before quoting"),user.config.write_reply_quote),
+
+				Child, MakeLabel(_("Strip signature before quoting")),
+				Child, write_replystripsig_check = MakeCheck(_("Strip signature before quoting"),user.config.write_reply_stripsig),
+
+				Child, MakeLabel(_("Quote empty lines")),
+				Child, write_replyciteemptyl_check = MakeCheck(_("Quote empty lines"),user.config.write_reply_citeemptyl),
+				End,
 			Child, HVSpace,
 			End,
-		Child, HGroup,
-			Child, MakeLabel(_("Strip signature before quoting")),
-			Child, write_replystripsig_check = MakeCheck(_("Strip signature before quoting"),user.config.write_reply_stripsig),
-			Child, HVSpace,
-			End,
-		Child, HGroup,
-			Child, MakeLabel(_("Quote empty lines")),
-			Child, write_replyciteemptyl_check = MakeCheck(_("Quote empty lines"),user.config.write_reply_citeemptyl),
-			Child, HVSpace,
-			End,	
 		End;
 
 	if (!groups[GROUPS_WRITE]) SM_RETURN(0,"%ld");

@@ -45,7 +45,7 @@ status_new,634,12,649,22
 status_old,652,0,667,10
 status_reply,651,12,666,22
 status_sent,668,12,683,22
-status_signed,669,0,683,0
+status_signed,669,0,683,10
 status_crypt,685,0,700,7
 status_download,685,9,697,19
 status_mark,702,0,710,10

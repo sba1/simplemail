@@ -1,7 +1,7 @@
 <?php
 
 $filename = "simplemail.lha";
-$version = "0.16";
+$version = "0.17";
 
   require_once("language.inc.php");
   require_once("support.inc.php");

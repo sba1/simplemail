@@ -1,6 +1,30 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2002/09/07">
+	<text lang="en">
+	  Version 0.17 of SimpleMail released!
+
+	  The changes are:
+	  <list>
+    <item>shows user@popserver in the check single account sub menu</item>
+    <item>added possibility to add the recpient of an e-mail later</item>
+    <item>closing the compose window will not discard the current edited mail</item>
+    <item>search function added</item>
+		</list>
+	</text>
+	<text lang="de">
+	  SimpleMail Version 0.17 veröffentlicht!
+
+	  Die Änderungen sind:
+	  <list>
+    <item>Zeigt nun user@popserver im Einzelnes Kontoaufrufen Untermenü</item>
+    <item>Empfängeradresse der Nachrichten kann nun auch später festgelegt werden</item>
+    <item>Beim Schließen des Nachrichtenschreibfenster wird die Nachricht nun nicht gesichert, anstatt sie zu löschen</item>
+    <item>Suchfunktion hinzugefügt</item>
+		</list>
+	</text>
+  </entry>
 
   <entry date="2002/05/25">
 	<text lang="en">

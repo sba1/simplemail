@@ -15,11 +15,11 @@
 # Owen Taylor     1997-2001
 
 dnl AM_PATH_GTK_2_0([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, MODULES]]]])
-dnl Test for GTK+, and define GTK_CFLAGS and GTK_LIBS, if gthread is specified in MODULES, 
+dnl Test for GTK+, and define GTK_CFLAGS and GTK_LIBS, if gthread is specified in MODULES,
 dnl pass to pkg-config
 dnl
 AC_DEFUN(AM_PATH_GTK_2_0,
-[dnl 
+[dnl
 dnl Get the cflags and libraries from pkg-config
 dnl
 AC_ARG_ENABLE(gtktest, [  --disable-gtktest       do not try to compile and run a test GTK+ program],
@@ -29,7 +29,7 @@ AC_ARG_ENABLE(gtktest, [  --disable-gtktest       do not try to compile and run 
   for module in . $4
   do
       case "$module" in
-         gthread) 
+         gthread)
              pkg_config_args="$pkg_config_args gthread-2.0"
          ;;
       esac

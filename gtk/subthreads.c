@@ -22,10 +22,13 @@
 
 #include <stdarg.h>
 
+#include <glib.h>
+
 #include "subthreads.h"
 
 int init_threads(void)
 {
+	if (!g_thread_supported ()) g_thread_init (NULL);
 	return 1;
 }
 
@@ -132,7 +135,7 @@ int thread_aborted(void)
 
 struct semaphore_s
 {
-	int s;
+	GMutex *mutex;
 };
 
 semaphore_t thread_create_semaphore(void)
@@ -140,27 +143,29 @@ semaphore_t thread_create_semaphore(void)
 	semaphore_t sem = malloc(sizeof(struct semaphore_s));
 	if (sem)
 	{
-//		InitSemaphore(&sem->sem);
+		if (!(sem->mutex = g_mutex_new()))
+			return NULL;
 	}
 	return sem;
 }
 
 void thread_dispose_semaphore(semaphore_t sem)
 {
+	g_mutex_free(sem->mutex);
 	free(sem);
 }
 
 void thread_lock_semaphore(semaphore_t sem)
 {
-//	ObtainSemaphore(&sem->sem);
+	g_mutex_lock(sem->mutex);
 }
 
 int thread_attempt_lock_semaphore(semaphore_t sem)
 {
-//	return (int)AttemptSemaphore(&sem->sem);
+	return g_mutex_try_lock(sem->mutex);
 }
 
 void thread_unlock_semaphore(semaphore_t sem)
 {
-//	ReleaseSemaphore(&sem->sem);
+	g_mutex_unlock(sem->mutex);
 }

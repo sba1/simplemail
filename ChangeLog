@@ -2,6 +2,13 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-08-26  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass.c: The MUI Bubblehelp will now show the message
+	  under the mousepointer (fixes bug #784813).
+	* parse.c: Fixed a bug in the parse_date() function.
+	* po/POTFILES.in: Added some missing source files.
+	* po/es.po: Corrected wrong translation (fixes bug #1012353).
+
 2004-08-20  Bernd Gollesch <bgollesch@sime.at>
 
 	* amiga-mui/arexx.c: Added GETMAILSTAT command. Small bugfix in the

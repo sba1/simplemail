@@ -56,7 +56,60 @@ struct remote_mail
 {
 	unsigned int uid;
 	unsigned int size;
+
+	/* only if envelope is requested  */
+  char *subject;
+  char *date;
 };
+
+struct local_mail
+{
+	unsigned int uid;
+	unsigned int todel;
+};
+
+/**************************************************************************
+ Returns the local mail array of a given folder. 0 for failure (does not
+ change the contents of the ptrs in that case). Free the array with free()
+ as sonn as no longer needed
+**************************************************************************/
+static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, int *num_of_mails_ptr, int *num_of_todel_mails_ptr)
+{
+	struct local_mail *local_mail_array;
+	int num_of_mails, num_of_todel_mails;
+	void *handle = NULL;
+	int i,success = 0;
+
+	folder_lock(folder);
+	folder_next_mail(folder,&handle);
+
+	num_of_mails = folder->num_mails;
+	num_of_todel_mails = 0;
+	
+	if ((local_mail_array = malloc(sizeof(*local_mail_array) * num_of_mails)))
+	{
+		/* fill in the uids of the mails */
+		for (i=0;i < num_of_mails;i++)
+		{
+			if (folder->mail_array[i])
+			{
+				local_mail_array[i].uid = atoi(folder->mail_array[i]->filename + 1);
+				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_array[i]);
+				num_of_todel_mails += !!local_mail_array[i].todel;
+			} else
+			{
+				local_mail_array[i].uid = 0;
+				local_mail_array[i].todel = 0;
+			}
+		}
+		success = 1;
+		*local_mail_array_ptr = local_mail_array;
+		*num_of_mails_ptr = num_of_mails;
+		*num_of_todel_mails_ptr = num_of_todel_mails;
+	}
+	folder_unlock(folder);
+	return success;
+}
 
 /**************************************************************************
  Free's the given name list
@@ -75,6 +128,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 	char c;
 	char delim = 0;
 
+  dest_size--;
 
 	dest[0] = 0;
 	if (!src) return NULL;
@@ -89,14 +143,25 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 	if (c)
 	{
 		int i = 0;
+		int b = 0;
+		int incr_delim = 0;
 
-		if (c == '(') delim = ')';
+		if (c == '(') { incr_delim = c; delim = ')';}
 		else if (c== '"') delim = '"';
-		if (delim) src++;
+
+		if (delim)
+		{
+			src++;
+			b++;
+		}
 
 		while ((c = *src))
 		{
-			if (c == delim)
+			if (c == incr_delim) 
+			{
+				b++;
+			} else
+			if (c == delim && !(--b))
 			{
 				src++;
 				break;
@@ -107,7 +172,8 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 				if (isspace((unsigned char)c)) break;
 			}
 
-			dest[i++] = c;
+			if (i<dest_size)
+				dest[i++] = c;
 			src++;
 		}
 		dest[i] = 0;
@@ -172,13 +238,13 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 
  Path must be is UTF8 encoded
 **************************************************************************/
-static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
+static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, int envelope, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
 {
 	/* get number of remote mails */
 	char *line;
 	char tag[20];
 	char send[200];
-	char buf[100];
+	char buf[2048];
 	char status_buf[200];
 	int num_of_remote_mails = 0;
 	int success = 0;
@@ -187,11 +253,11 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	path = utf8toiutf7(path,strlen(path));
 	if (!path) return 0;
 
-	sprintf(status_buf,_("Examining folder %s"),path);
+	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
 	thread_call_parent_function_sync(status_set_status,1,status_buf);
 
 	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
+	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
@@ -222,13 +288,15 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 
 	if (success)
 	{
-		sprintf(status_buf,_("Identified %d mails in %s"),num_of_remote_mails,path);
+		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
 		thread_call_parent_function_sync(status_set_status,1,status_buf);
 
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
+			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
+
 			sprintf(tag,"%04x",val++);
-			sprintf(send,"%s FETCH %d:%d (UID RFC822.SIZE)\r\n",tag,1,num_of_remote_mails);
+			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,envelope?" ENVELOPE":"");
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
 			
@@ -248,12 +316,14 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					unsigned int msgno;
 					unsigned int uid = 0;
 					unsigned int size = 0;
+					char *subject = NULL;
+					char *date = NULL;
 					char msgno_buf[100];
-					char cmd_buf[100];
-					char stuff_buf[100];
+					char stuff_buf[1024];
+					char cmd_buf[1024];
 					char *temp;
 					int i;
-	
+
 					line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
 					line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
 					line = imap_get_result(line,stuff_buf,sizeof(stuff_buf));
@@ -261,7 +331,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					msgno = (unsigned int)atoi(msgno_buf);
 					temp = stuff_buf;
 
-					for (i=0;i<2;i++)
+					for (i=0;i<3;i++)
 					{
 						temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 						if (!mystricmp(cmd_buf,"UID"))
@@ -274,12 +344,30 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 							size = atoi(cmd_buf);
 						}
+						else if (!mystricmp(cmd_buf,"ENVELOPE"))
+						{
+							char *env;
+							char env_buf[200];
+
+							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+							env = cmd_buf;
+							
+							/* Date */
+							env = imap_get_result(env,env_buf,sizeof(env_buf));
+							subject = mystrdup(env_buf);
+
+							/* Subject */
+							env = imap_get_result(env,env_buf,sizeof(env_buf));
+							subject = mystrdup(env_buf);
+						}
 					}
 
 					if (msgno <= num_of_remote_mails && msgno > 0)
 					{
 						remote_mail_array[msgno-1].uid = uid;
 						remote_mail_array[msgno-1].size = size;
+						remote_mail_array[msgno-1].subject = subject;
+						remote_mail_array[msgno-1].date = date;
 					}
 				}
 			}
@@ -365,48 +453,31 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	folders_lock();
 	if ((folder = folder_find_by_imap(server->name, imap_path)))
 	{
-		int i;
-
-		struct {
-			unsigned int uid;
-			unsigned int todel;
-		} *local_mail_array;
-
 		int num_of_local_mails;
 		int num_of_todel_local_mails;
-		void *handle = NULL;
+		struct local_mail *local_mail_array;
 		char path[380];
 
-		folder_lock(folder);
-		folder_next_mail(folder,&handle);
-
-		num_of_local_mails = folder->num_mails;
-		num_of_todel_local_mails = 0;
-		if ((local_mail_array = malloc(sizeof(*local_mail_array) * num_of_local_mails)))
+		/* Get the local mails */
+		if (!get_local_mail_array(folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 		{
-			/* fill in the uids of the mails */
-			for (i=0;i < num_of_local_mails;i++)
-			{
-				if (folder->mail_array[i])
-				{
-					local_mail_array[i].uid = atoi(folder->mail_array[i]->filename + 1);
-					local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_array[i]);
-					num_of_todel_local_mails += !!local_mail_array[i].todel;
-				} else
-				{
-					local_mail_array[i].uid = 0;
-					local_mail_array[i].todel = 0;
-				}
-			}
+			folder_unlock(folder);
+			folders_unlock();
+			return 0;
 		}
 
+		/* Change the current directory to the to be synchronized folder */
+		folder_lock(folder);
 		getcwd(path, sizeof(path));
 		if (chdir(folder->path) == -1)
 		{
-			puts("chdir() failed and not handled!\n");
+			free(local_mail_array);
+			folder_unlock(folder);
+			folders_unlock();
+			return 0;
 		}
-
 		folder_unlock(folder);
+
 		folders_unlock();
 
 		if (local_mail_array)
@@ -422,7 +493,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 			if (num_of_todel_local_mails)
 			{
-				if (imap_get_remote_mails(conn, folder->imap_path, 1, &remote_mail_array, &num_of_remote_mails))
+				if (imap_get_remote_mails(conn, folder->imap_path, 1, 0, &remote_mail_array, &num_of_remote_mails))
 				{
 					int i,j;
 					for (i = 0 ; i < num_of_local_mails; i++)
@@ -481,7 +552,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 			}
 
-			if (imap_get_remote_mails(conn, folder->imap_path, 0, &remote_mail_array, &num_of_remote_mails))
+			if (imap_get_remote_mails(conn, folder->imap_path, 0, 0, &remote_mail_array, &num_of_remote_mails))
 			{
 				int i,j;
 				int msgtodl;
@@ -1081,6 +1152,19 @@ void imap_free(struct imap_server *imap)
 	free(imap);
 }
 
+/**************************************************************************
+ Checks if a new connection is needed
+**************************************************************************/
+static int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2)
+{
+	if (!srv1 && !srv2) return 0;
+	if (!srv1) return 1;
+	if (!srv2) return 1;
+
+  return strcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || strcmp(srv1->login,srv2->login) ||
+         strcmp(srv1->passwd,srv2->passwd) || (srv1->ssl != srv2->ssl);
+}
+
 
 /***** IMAP Thread *****/
 
@@ -1088,13 +1172,96 @@ static thread_t imap_thread;
 static struct connection *imap_connection;
 static int imap_socket_lib_open;
 static struct imap_server *imap_server;
+static char *imap_folder;
+static char *imap_local_path;
+
+static void imap_thread_really_download_mails(void)
+{
+	char path[380];
+	struct remote_mail *remote_mail_array;
+	int num_remote_mails;
+
+	if (!imap_connection) return;
+
+	getcwd(path, sizeof(path));
+	if (chdir(imap_local_path) == -1) return;
+
+	if (imap_get_remote_mails(imap_connection, imap_folder, 0, 1, &remote_mail_array, &num_remote_mails))
+	{
+		int i,j;
+		int num_of_local_mails;
+		int num_of_todel_local_mails;
+		struct local_mail *local_mail_array;
+		struct folder *local_folder;
+
+		folders_lock();
+		if ((local_folder = folder_find_by_imap(imap_server->name, imap_folder)))
+		{
+			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
+			{
+				folders_unlock();
+
+				/* delete mails which are not on server but localy */
+				for (i = 0 ; i < num_of_local_mails; i++)
+				{
+					unsigned int local_uid = local_mail_array[i].uid;
+					for (j = 0 ; j < num_remote_mails; j++)
+					{
+						if (local_uid == remote_mail_array[j].uid)
+						{
+							local_uid = 0;
+							break;
+						}
+					}
+					if (local_uid)
+					{
+						thread_call_parent_function_sync(callback_delete_mail_by_uid,3,imap_server->name,imap_folder,local_uid);
+					}
+				}
+
+				for (i=0;i<num_remote_mails;i++)
+				{
+					char filename_buf[60];
+					FILE *fh;
+
+					int does_exist = 0;
+					for (j=0; j < num_of_local_mails;j++)
+					{
+						if (local_mail_array[j].uid == remote_mail_array[i].uid)
+						{
+							does_exist = 1;
+							break;
+						}
+					}
+					if (does_exist) continue;
+
+
+					sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
+
+					/* Store as a partial mail */
+					if ((fh = fopen(filename_buf,"w")))
+					{
+						fprintf(fh,"Date: %s\n",remote_mail_array[i].date);
+						fprintf(fh,"Subject: %s\n",remote_mail_array[i].subject);
+						fprintf(fh,"X-SimpleMail-Partial: yes\n");
+						fprintf(fh,"X-SimpleMail-Size: %d",remote_mail_array[i].size);
+						fclose(fh);
+
+						thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename_buf, imap_server->name, imap_folder);
+					}
+				}
+			} else folders_unlock();
+		} else folders_unlock();
+		free(remote_mail_array);
+	}
+	chdir(path);
+}
 
 static void imap_thread_really_connect_to_server(void)
 {
 	if (imap_server)
 	{
 		char status_buf[256];
-		char temp_buf[200];
 
 		if (!imap_socket_lib_open)
 		 imap_socket_lib_open = open_socket_lib();
@@ -1139,6 +1306,8 @@ static void imap_thread_really_connect_to_server(void)
 
 						imap_free_name_list(folder_list);
 
+						imap_thread_really_download_mails();
+
 						/* Display "Connected" - status message */
 						sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
 						thread_call_parent_function_async_string(status_set_status,1,status_buf);
@@ -1158,12 +1327,30 @@ static void imap_thread_really_connect_to_server(void)
 	}
 }
 
-static int imap_thread_connect_to_server(struct imap_server *server)
+static int imap_thread_connect_to_server(struct imap_server *server, char *folder, char *local_path)
 {
-	if (imap_server) imap_free(imap_server);
-	if ((imap_server = imap_duplicate(server)))
+	if (imap_new_connection_needed(imap_server,server))
 	{
-		return thread_push_function(imap_thread_really_connect_to_server, 0);
+		if (imap_server) imap_free(imap_server);
+		if ((imap_server = imap_duplicate(server)))
+		{
+			if (imap_folder) free(imap_folder);
+			imap_folder = mystrdup(folder);
+
+			if (imap_local_path) free(imap_local_path);
+			imap_local_path = mystrdup(local_path);
+
+			return thread_push_function(imap_thread_really_connect_to_server, 0);
+		}
+	} else
+	{
+		if (imap_folder) free(imap_folder);
+		imap_folder = mystrdup(folder);
+
+		if (imap_local_path) free(imap_local_path);
+		imap_local_path = mystrdup(local_path);
+
+		return thread_push_function(imap_thread_really_download_mails, 0);
 	}
 }
 
@@ -1206,7 +1393,7 @@ void imap_thread_connect(struct folder *folder)
 
 	if (imap_thread)
 	{
-		thread_call_function_sync(imap_thread, imap_thread_connect_to_server,1,server);
+		thread_call_function_sync(imap_thread, imap_thread_connect_to_server,3,server,folder->imap_path, folder->path);
 	}
 }
 

@@ -413,9 +413,10 @@ int gui_init(void)
 			thread_push_function_delayed(2000,refresh_appicon,0);
 			rc = 1;
 		}
+	} else
+	{
+		all_del();
 	}
-
-
 	SM_RETURN(rc,"%ld");
 }
 

@@ -10,7 +10,7 @@ OBJSDIR1 = sas_objects
 DESTDIR = sm
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui
 CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi
-LFLAGS = nover smallcode smalldata noicons
+LFLAGS = nover smallcode smalldata noicons lib:debug.lib
 
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile

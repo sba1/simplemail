@@ -332,7 +332,7 @@ void compose_window_open(char *to_str)
 {
 	Object *wnd, *send_later_button, *cancel_button;
 	Object *to_string, *subject_string;
-	Object *text_texteditor, *xcursor_text, *ycursor_text;
+	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *expand_to_button;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *remove_button;
 	Object *contents_page;
@@ -345,6 +345,8 @@ void compose_window_open(char *to_str)
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
+
+	slider = ScrollbarObject, End;
 
 	wnd = WindowObject,
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
@@ -389,8 +391,14 @@ void compose_window_open(char *to_str)
 								End,
 							End,
 						End,
-					Child, text_texteditor = (Object*)TextEditorObject,
-						MUIA_CycleChain, 1,
+					Child, HGroup,
+						MUIA_Group_Spacing, 0,
+						Child, text_texteditor = (Object*)TextEditorObject,
+							InputListFrame,
+							MUIA_CycleChain, 1,
+							MUIA_TextEditor_Slider, slider,
+							End,
+						Child, slider,
 						End,
 					End,
 				Child, VGroup,

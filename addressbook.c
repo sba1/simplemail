@@ -333,11 +333,6 @@ static struct addressbook_group current_group;
 **************************************************************************/
 SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 {
-/*	struct addressbook_entry *entry;*/
-/*	XML_Parser p = (XML_Parser)data;*/
-
-/*	if (!(entry = (struct addressbook_entry*)XML_GetUserData(p))) return;*/
-
 	/* new addressbook format */
 	if (!mystricmp("newaddressbook",el)) newaddressbook_tag = 1;
 	else if (!mystricmp("newcontact",el))
@@ -373,11 +368,7 @@ SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 **************************************************************************/
 SAVEDS void xml_end_tag(void *data, const char *el)
 {
-/*	struct addressbook_entry *entry;*/
 	struct address_snail_phone *asp = NULL;
-/*	XML_Parser p = (XML_Parser)data;*/
-
-/*	if (!(entry = (struct addressbook_entry*)XML_GetUserData(data))) return;*/
 
 	if (private_tag) asp = &current_entry.priv;
 	else if (work_tag) asp = &current_entry.work;
@@ -556,16 +547,22 @@ SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 **************************************************************************/
 void init_addressbook(void)
 {
+	struct addressbook_entry_new *entry;
+
 	list_init(&group_list);
 	list_init(&address_list);
 
+	/* FIXME; strings returned by Q_ are not in UTF8 */
 	if (!addressbook_load())
-	{
-		struct addressbook_entry_new *entry;
-
 		addressbook_add_group(Q_("?addressgroup:General"));
+
+	/* Add the very important email addresses, in case they are not yet within the
+   * addressbook */
+	if (!addressbook_find_group_by_name(Q_("?addressgroup:SimpleMail Team")))
 		addressbook_add_group(Q_("?addressgroup:SimpleMail Team"));
 
+	if (!addressbook_find_entry_by_address("hynek@rz.uni-potsdam.de"))
+	{
 		if ((entry = addressbook_add_entry("Hynek Schlawack")))
 		{
 			entry->email_array = array_add_string(entry->email_array,"hynek@rz.uni-potsdam.de");
@@ -573,21 +570,38 @@ void init_addressbook(void)
 			entry->description = mystrdup(_("Original author of SimpleMail"));
 			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
 		}
+	}
 
-		if ((entry = addressbook_add_entry("Sebastian Bauer")))
+
+	if (!addressbook_find_entry_by_address("mail@sebastianbauer.info"))
+	{
+		if (entry = addressbook_find_entry_by_address("sebauer@t-online.de"))
 		{
-			entry->email_array = array_add_string(entry->email_array,"mail@sebastianbauer.info");
-			entry->description = mystrdup(_("Original author of SimpleMail"));
-			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			array_free(entry->email_array);
+			entry->email_array = array_add_string(NULL,"mail@sebastianbauer.info");
+		} else
+		{
+			if ((entry = addressbook_add_entry("Sebastian Bauer")))
+			{
+				entry->email_array = array_add_string(entry->email_array,"mail@sebastianbauer.info");
+				entry->description = mystrdup(_("Original author of SimpleMail"));
+				entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			}
 		}
+	}
 
+	if (!addressbook_find_entry_by_address("bgollesch@sime.com"))
+	{
 		if ((entry = addressbook_add_entry("Bernd Gollesch")))
 		{
 			entry->email_array = array_add_string(entry->email_array,"bgollesch@sime.com");
 			entry->description = mystrdup(_("Contributor of SimpleMail"));
 			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
 		}
+	}
 
+	if (!addressbook_find_entry_by_address("henes@morphos.de"))
+	{
 		if ((entry = addressbook_add_entry("Nicolas Sallin")))
 		{
 			entry->email_array = array_add_string(entry->email_array,"henes@morphos.de");
@@ -629,7 +643,6 @@ static void addressbook_load_entries(FILE *fh)
 
 	XML_SetElementHandler(p, xml_start_tag, xml_end_tag);
 	XML_SetCharacterDataHandler(p, xml_char_data);
-/*	XML_SetUserData(p,group);*/
 	XML_UseParserAsHandlerArg(p);
 
 	for (;;)
@@ -790,12 +803,14 @@ int addressbook_import_yam(char *filename)
 **************************************************************************/
 int addressbook_load(void)
 {
-	return addressbook_import_sm("PROGDIR:.newaddressbook.xml");
+	if (!addressbook_import_sm("PROGDIR:.newaddressbook.xml"))
+		return addressbook_import_sm("PROGDIR:.addressbook.xml");
+	return 1;
 }
 
 #define BOOK_UNKNOWN 0
 #define BOOK_YAM 1
-#define BOOK_SM  2
+#define BOOK_SM 2
 
 /**************************************************************************
  Returns the type of an addressbook file
@@ -804,27 +819,16 @@ static int addressbook_get_type(char *filename)
 {
 	int rc = BOOK_UNKNOWN;
 	FILE *fp;
-	char *buf;
+	char buf[64];
 
-	fp = fopen(filename, "r");
-	if(fp != NULL)
+	if ((fp = fopen(filename, "r")))
 	{
-		buf = malloc(23);
-		if(buf != NULL)
+		if (fgets(buf,sizeof(buf),fp))
 		{
-			if(fread(buf, 23, 1, fp) == 1)
-			{
-				if(strncmp(buf, "YAB4 - YAM Addressbook",22) == 0)
-				{
-					rc = BOOK_YAM;
-				} else if(strncmp(buf, "<addressbook>",13) == 0)
-				{
-					rc = BOOK_SM;
-				}
-			}
-			free(buf);
+			if (strncmp(buf, "YAB4 - YAM Addressbook",22) == 0) rc = BOOK_YAM;
+			else if (strncmp(buf, "<addressbook>",13) == 0) rc = BOOK_SM;
+			else if (strncmp(buf, "<newaddressbook>",16) == 0) rc = BOOK_SM;
 		}
-
 		fclose(fp);
 	}
 

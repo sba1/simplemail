@@ -821,6 +821,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
+		thread_call_parent_function_sync(up_window_open,0);
 		smtp_send_really(&copy_list,outmail);
 		thread_call_parent_function_sync(up_window_close,0);
 	}

@@ -55,12 +55,7 @@ int mails_dl(void)
 		account = (struct account*)node_next(&account->node);
 	}
 
-	dl_window_open();
-
-	if (!pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size))
-	{
-		dl_window_close();
-	}
+	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size);
 	return 0;
 }
 
@@ -142,14 +137,8 @@ int mails_upload(void)
 /*		if (mb.addr_spec) free(mb.addr_spec); */
 	}
 
-/*	up_set_title(server.name); */
-	up_window_open();
-
 	/* now send all mails */
-	if (!(smtp_send(&user.config.account_list,out_array,out_folder->path)))
-	{
-		up_window_close();
-	}
+	smtp_send(&user.config.account_list,out_array,out_folder->path);
 
 	free_outmail_array(out_array);
 	return 1;
@@ -212,14 +201,8 @@ int mails_upload_signle(struct mail *m)
 	if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
 /*		if (mb.addr_spec) free(mb.addr_spec); */
 
-/*	up_set_title(server.name); */
-	up_window_open();
-
-	/* now send all mails */
-	if (!(smtp_send(&user.config.account_list,out_array,out_folder->path)))
-	{
-		up_window_close();
-	}
+	/* Send the mail now */
+	smtp_send(&user.config.account_list,out_array,out_folder->path);
 
 	free_outmail_array(out_array);
 	return 1;

@@ -502,6 +502,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
+		thread_call_parent_function_sync(dl_window_open,0);
 		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}

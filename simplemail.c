@@ -54,7 +54,7 @@ void callback_read_mail(void)
 
 	if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
 	{
-		folder_set_mail_status(f,m,MAIL_STATUS_READ & (m->status & (~MAIL_STATUS_MASK)));
+		folder_set_mail_status(f,m,MAIL_STATUS_READ | (m->status & (~MAIL_STATUS_MASK)));
 		if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
 		m->flags &= ~MAIL_FLAGS_NEW;
 		main_refresh_mail(m);

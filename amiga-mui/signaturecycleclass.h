@@ -32,6 +32,8 @@ IMPORT struct MUI_CustomClass *CL_SignatureCycle;
 #define MUIA_SignatureCycle_HasDefaultEntry (TAG_USER | 0x30130001) /* I.. BOOL */
 /* pointer to an SignatureList, defaults to user.config.signature_list */
 #define MUIA_SignatureCycle_SignatureList   (TAG_USER | 0x30130002) /* I.. struct list * */
+/* pointer to an SignatureName (UTF8 String)*/
+#define MUIA_SignatureCycle_Signature       (TAG_USER | 0x30130003) /* ISG char * */
 
 /* special value for setting the Entries */
 #define MUIV_SignatureCycle_Default      FOLDER_SIGNATURE_DEFAULT

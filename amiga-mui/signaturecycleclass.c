@@ -37,6 +37,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -46,7 +47,8 @@ struct SignatureCycle_Data
 {
 	Object *obj;
 	int has_default_entry;    /* if there are NO signatures, a default entry will be showen */
-	char **sign_array;        /* The array which contains the signature names */
+	char **sign_array;        /* The array which contains the signature names (converted)*/
+	char **utf8_sign_array;   /* The array which contains the signature names (UTF8) */
 	int sign_array_default;   /* points to the defaultentry */
 	int sign_array_utf8count; /* The count of the array to free the memory,
 	                             it also points to "No Signature" */
@@ -60,6 +62,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	int sign_array_default=0;
 	struct list *signature_list = &user.config.signature_list;
 	char **sign_array = NULL;
+	char **utf8_sign_array = NULL;
 	int sign_array_utf8count = 0;
 	int i;
 
@@ -74,54 +77,37 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	i = list_length(signature_list);
-
-	if (i || has_default_entry)
+	sign_array = (char**)malloc((i+2+has_default_entry)*sizeof(char*));
+	utf8_sign_array = (char**)malloc(i*sizeof(char*));
+	if (sign_array && utf8_sign_array)
 	{
-		if ((sign_array = (char**)malloc((i+2+has_default_entry)*sizeof(char*))))
+		int j=0;
+		struct signature *sign = (struct signature*)list_first(signature_list);
+		while (sign)
 		{
-			int j=0;
-			struct signature *sign = (struct signature*)list_first(signature_list);
-			while (sign)
-			{
-				sign_array[j]=utf8tostrcreate(sign->name, user.config.default_codeset);
-				sign = (struct signature*)node_next(&sign->node);
-				j++;
-			}
-			sign_array_utf8count = j;
-			sign_array[j] = _("No Signature");
-			if (has_default_entry)
-			{
-				j++;
-				sign_array[j] = _("<Default>");
-				sign_array_default = j;
-			}
-			sign_array[j+1] = NULL;
+			sign_array[j]=utf8tostrcreate(sign->name, user.config.default_codeset);
+			utf8_sign_array[j]=mystrdup(sign->name);
+			sign = (struct signature*)node_next(&sign->node);
+			j++;
+		}
+		sign_array_utf8count = j;
+		sign_array[j] = _("No Signature");
+		if (has_default_entry)
+		{
+			j++;
+			sign_array[j] = _("<Default>");
+			sign_array_default = j;
 		} else
 		{
-			return NULL;
+			/* if there is no <Default> entry, fallback to NoSignature. */
+			sign_array_default = sign_array_utf8count;
 		}
+		sign_array[j+1] = NULL;
 	} else
 	{
+		if (sign_array) free(sign_array);
+		if (utf8_sign_array) free(utf8_sign_array);
 		return NULL;
-	}
-
-	if ((ti = FindTagItem(MUIA_Cycle_Active,msg->ops_AttrList)))
-	{
-		switch (ti->ti_Data)
-		{
-			case	MUIV_SignatureCycle_NoSignature:
-			    		ti->ti_Data = sign_array_utf8count;
-			    		break;
-			case	MUIV_SignatureCycle_Default:
-			    		if (has_default_entry)
-			    		{
-			    			ti->ti_Data = sign_array_default;
-			    		} else
-			    		{
-			    			ti->ti_Data = 0;
-			    		}
-			    		break;
-		}
 	}
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj, MUIA_Cycle_Entries, sign_array, TAG_MORE, msg->ops_AttrList)))
@@ -132,16 +118,53 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			for (i=0;i<sign_array_utf8count;i++)
 			{
 				free(sign_array[i]);
+				free(utf8_sign_array[i]);
 			}
 			free(sign_array);
+			free(utf8_sign_array);
 		}
 		return NULL;
+	}
+
+	if ((ti = FindTagItem(MUIA_SignatureCycle_Signature,msg->ops_AttrList)))
+	{
+		if (mystrcmp((char*)ti->ti_Data, MUIV_SignatureCycle_NoSignature) == 0)
+		{
+			set(obj, MUIA_Cycle_Active, sign_array_utf8count);
+		}
+		else if (mystrcmp((char*)ti->ti_Data, MUIV_SignatureCycle_Default) == 0)
+		{
+			set(obj, MUIA_Cycle_Active, sign_array_default);
+		}
+		else
+		{
+			int status_found = FALSE;
+			if (sign_array)
+			{
+				int i;
+				for (i=0;i<sign_array_utf8count;i++)
+				{
+					if (mystrcmp((char *)ti->ti_Data, utf8_sign_array[i]) == 0)
+					{
+						set(obj, MUIA_Cycle_Active, i);
+						status_found = TRUE;
+						break;
+					}
+				}
+			}
+			if (!status_found)
+			{
+				/* in case we don't find it in the Array, set to Default */
+				set(obj, MUIA_Cycle_Active, sign_array_default);
+			}
+		}
 	}
 
 	data = (struct SignatureCycle_Data*)INST_DATA(cl,obj);
 	data->obj = obj;
 	data->has_default_entry = has_default_entry;
 	data->sign_array = sign_array;
+	data->utf8_sign_array = utf8_sign_array;
 	data->sign_array_default = sign_array_default;
 	data->sign_array_utf8count = sign_array_utf8count;
 
@@ -158,8 +181,10 @@ STATIC ULONG SignatureCycle_Dispose(struct IClass *cl, Object *obj, Msg msg)
 		for (i=0;i<data->sign_array_utf8count;i++)
 		{
 			free(data->sign_array[i]);
+			free(data->utf8_sign_array[i]);
 		}
 		free(data->sign_array);
+		free(data->utf8_sign_array);
 	}
 
 	return DoSuperMethodA(cl,obj,msg);
@@ -170,24 +195,41 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 	struct SignatureCycle_Data *data = (struct SignatureCycle_Data*)INST_DATA(cl,obj);
 	struct TagItem *ti;
 
-	if ((ti = FindTagItem(MUIA_Cycle_Active,msg->ops_AttrList)))
+	/* Change MUIA_SignatureCycle_Signature to MUIA_Cycle_Active */
+	if ((ti = FindTagItem(MUIA_SignatureCycle_Signature,msg->ops_AttrList)))
 	{
-		switch (ti->ti_Data)
+		if (mystrcmp((char*)ti->ti_Data, MUIV_SignatureCycle_NoSignature) == 0)
 		{
-			case	MUIV_SignatureCycle_NoSignature:
-			    		ti->ti_Data = data->sign_array_utf8count;
-			    		break;
-			case	MUIV_SignatureCycle_Default:
-			    		if (data->has_default_entry)
-			    		{
-			    			ti->ti_Data = data->sign_array_utf8count+1;
-			    		} else
-			    		{
-			    			ti->ti_Data = 0;
-			    		}
-			    		break;
+			set(data->obj, MUIA_Cycle_Active, data->sign_array_utf8count);
+		}
+		else if (mystrcmp((char*)ti->ti_Data, MUIV_SignatureCycle_Default) == 0)
+		{
+			set(data->obj, MUIA_Cycle_Active, data->sign_array_default);
+		}
+		else
+		{
+			int status_found = FALSE;
+			if (data->sign_array)
+			{
+				int i;
+				for (i=0;i<data->sign_array_utf8count;i++)
+				{
+					if (mystrcmp((char*)ti->ti_Data, data->utf8_sign_array[i]) == 0)
+					{
+						set(data->obj, MUIA_Cycle_Active, i);
+						status_found = TRUE;
+						break;
+					}
+				}
+			}
+			if (!status_found)
+			{
+				/* in case we don't find it in the Array, set to Default */
+				set(data->obj, MUIA_Cycle_Active, data->sign_array_default);
+			}
 		}
 	}
+
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -195,24 +237,41 @@ STATIC ULONG SignatureCycle_Get(struct IClass *cl, Object *obj, struct opGet *ms
 {
 	struct SignatureCycle_Data *data = (struct SignatureCycle_Data*)INST_DATA(cl,obj);
 
-	DoSuperMethodA(cl,obj,(Msg)msg);
-
-	switch (msg->opg_AttrID)
+	if (msg->opg_AttrID == MUIA_SignatureCycle_Signature)
 	{
-		case	MUIA_Cycle_Active:
-		    		if (*msg->opg_Storage == data->sign_array_utf8count)
-		    		{
-			    		*msg->opg_Storage = MUIV_SignatureCycle_NoSignature;
-			    	} else if (*msg->opg_Storage == data->sign_array_default)
-			    	{
-			    		if (data->has_default_entry)
-			    		{
-			    			*msg->opg_Storage = MUIV_SignatureCycle_Default;
-			    		}
-		    		}
-		    		break;
-	}
-	return 1;
+		ULONG result;
+
+	 	/* Change MUIA_SignatureCycle_Signature to MUIA_Cycle_Active */
+	 	result = xget(data->obj, MUIA_Cycle_Active);
+
+		/* Now change the result back to the SignatureName */
+		if (result == data->sign_array_utf8count)
+		{
+			*msg->opg_Storage = (ULONG)MUIV_SignatureCycle_NoSignature;
+		}
+		else if (result == data->sign_array_default)
+		{
+			*msg->opg_Storage = (ULONG)MUIV_SignatureCycle_Default;
+		}
+		else
+		{
+			int status_found = FALSE;
+			if (data->sign_array)
+			{
+				if ((result >= 0) && (result < data->sign_array_utf8count))
+				{
+					*msg->opg_Storage = (ULONG)(data->utf8_sign_array[result]);
+					status_found = TRUE;
+				}
+			}
+			if (!status_found)
+			{
+				/* in case we don't find it in the Array, set to Default */
+				*msg->opg_Storage = (ULONG)MUIV_SignatureCycle_Default;
+			}
+		}
+		return 1;
+	} else return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC BOOPSI_DISPATCHER(ULONG, SignatureCycle_Dispatcher, cl, obj, msg)

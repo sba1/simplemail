@@ -207,7 +207,7 @@ static char *quote_text(char *src, int len)
 				{
 					quoting_chars(temp_buf,sizeof(temp_buf),src);
 
-					if (temp_len && temp_len == strlen(temp_buf) && wrapped)
+					if (temp_len == strlen(temp_buf) && wrapped)
 					{
 						/* the text has been wrapped previouly and the quoting chars
 						   are the same like the previous line, so the following text

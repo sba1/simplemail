@@ -25,6 +25,15 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "addressbook.h"
+#include "configuration.h"
+#include "smintl.h"
+#include "filter.h"
+#include "folder.h"
+#include "simplemail.h"
+#include "support.h"
+#include "trans.h"
+
 #include "addressbookwnd.h"
 #include "composewnd.h"
 #include "configwnd.h"
@@ -35,14 +44,6 @@
 #include "readwnd.h"
 #include "subthreads.h"
 #include "tcpip.h"
-
-#include "addressbook.h"
-#include "configuration.h"
-#include "trans.h"
-#include "filter.h"
-#include "folder.h"
-#include "simplemail.h"
-#include "support.h"
 
 /* the current mail should be viewed */
 void callback_read_mail(void)
@@ -655,6 +656,13 @@ void callback_timer(void)
 
 int main(int argc, char *argv[])
 {
+
+#ifdef ENABLE_NLS
+  setlocale(LC_ALL, "");
+  bindtextdomain(PACKAGE, LOCALEDIR);
+  textdomain(PACKAGE);
+#endif
+
 	if (!gui_parseargs(argc,argv)) return 0;
 
 	load_config();

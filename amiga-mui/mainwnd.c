@@ -44,6 +44,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "addresstreelistclass.h"
@@ -143,8 +144,11 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 *******************************************************************/
 static void display_about(void)
 {
-	MUI_Request(App, NULL, 0, "SimpleMail - About", "*Ok", "SimpleMail version %ld.%ld\n\nCopyright © 2000-2001\nHynek Schlawack and Sebastian Bauer\nReleased under the terms of the GNU Public License.",
-		VERSION,REVISION);
+	MUI_Request(App, NULL, 0, 
+		_("SimpleMail - About"),
+		_("*Ok"),
+		"SimpleMail version %ld.%ld\n\n%s\nHynek Schlawack %s Sebastian Bauer\n%s.",
+		VERSION,REVISION,_("Copyright © 2000-2001"),_("and"),_("Released under the terms of the GNU Public License"));
 }
 
 /******************************************************************
@@ -461,32 +465,32 @@ int main_window_init(void)
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 200,
-						Child, button_read = MakePictureButton("R_ead","PROGDIR:Images/MailRead"),
-						Child, button_change = MakePictureButton("Edi_t","PROGDIR:Images/MailModify"),
-						Child, button_delete = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
-						Child, button_getadd = MakePictureButton("_GetAdd","PROGDIR:Images/MailGetAddress"),
+						Child, button_read = MakePictureButton(_("R_ead"),"PROGDIR:Images/MailRead"),
+						Child, button_change = MakePictureButton(_("Edi_t"),"PROGDIR:Images/MailModify"),
+						Child, button_delete = MakePictureButton(_("_Delete"),"PROGDIR:Images/MailDelete"),
+						Child, button_getadd = MakePictureButton(_("_GetAdd"),"PROGDIR:Images/MailGetAddress"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 150,
-						Child, button_new = MakePictureButton("_New","PROGDIR:Images/MailNew"),
-						Child, button_reply = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
-						Child, button_forward = MakePictureButton("F_orward","PROGDIR:Images/MailForward"),
+						Child, button_new = MakePictureButton(_("_New"),"PROGDIR:Images/MailNew"),
+						Child, button_reply = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
+						Child, button_forward = MakePictureButton(_("F_orward"),"PROGDIR:Images/MailForward"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_fetch = MakePictureButton("_Fetch","PROGDIR:Images/MailsFetch"),
-						Child, button_send = MakePictureButton("_Send","PROGDIR:Images/MailsSend"),
+						Child, button_fetch = MakePictureButton(_("_Fetch"),"PROGDIR:Images/MailsFetch"),
+						Child, button_send = MakePictureButton(_("_Send"),"PROGDIR:Images/MailsSend"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_filter = MakePictureButton("Filter","PROGDIR:Images/Filter"),
-						Child, button_efilter = MakePictureButton("Edit Filter","PROGDIR:Images/FilterEdit"),
+						Child, button_filter = MakePictureButton(_("Filter"),"PROGDIR:Images/Filter"),
+						Child, button_efilter = MakePictureButton(_("Filters"),"PROGDIR:Images/FilterEdit"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
-						Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
+						Child, button_abook = MakePictureButton(_("_Abook"),"PROGDIR:Images/Addressbook"),
+						Child, button_config = MakePictureButton(_("_Config"),"PROGDIR:Images/Config"),
 						End,
 					End,
 				End,
@@ -555,9 +559,9 @@ int main_window_init(void)
 
 		settings_show_changed();
 
-		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<7))
+		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<8))
     {
-    	printf("SimpleMail needs at least version 1.7 of the NListtree mui subclass!\nIt's available at http://www.aphaso.de\n");
+    	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
     	return 0;
     }
 

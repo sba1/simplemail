@@ -890,55 +890,71 @@ int folder_number_of_new_mails(struct folder *folder)
 *******************************************************************/
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new)
 {
-	int i;
+	int i, mail_found = FALSE;
 	for (i=0;i<folder->num_mails;i++)
 	{
 		if (folder->mail_array[i]==mail)
 		{
-			char *filename;
-
-			if (status_new == mail->status)
-				return;
-
-			/* update the mail statistics */
-			if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
-			if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-
-			mail->status = status_new;
-			if (!mail->filename) return;
-
-			filename = mail_get_status_filename(mail->filename, status_new);
-
-			if (strcmp(mail->filename,filename))
+			mail_found = TRUE;
+			break;
+		}
+	}
+	if (!mail_found)
+	{
+		for (i=0;i<folder->num_pending_mails;i++)
+		{
+			if (folder->pending_mail_array[i]==mail)
 			{
-				char buf[256];
-				int renamed = 0;
+				mail_found = TRUE;
+				break;
+			}
+		}
+	}
+	if (mail_found)
+	{
+		char *filename;
 
-				getcwd(buf, sizeof(buf));
-				chdir(folder->path);
+		if (status_new == mail->status)
+			return;
 
-				if (rename(mail->filename,filename))
-				{
-					/* renaming went wrong, try a different name */
-					free(filename);
-					filename = mail_get_new_name(status_new);
-					if (!rename(mail->filename,filename)) renamed = 1;
-				} else renamed = 1;
+		/* update the mail statistics */
+		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
+		if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 
-				if (renamed)
-				{
-					free(mail->filename);
-					mail->filename = filename;
-				}
+		mail->status = status_new;
+		if (!mail->filename) return;
 
-				chdir(buf);
+		filename = mail_get_status_filename(mail->filename, status_new);
 
-				/* Delete the indexfile if not already done */
-				if (folder->index_uptodate)
-				{
-					folder_delete_indexfile(folder);
-					folder->index_uptodate = 0;
-				}
+		if (strcmp(mail->filename,filename))
+		{
+			char buf[256];
+			int renamed = 0;
+
+			getcwd(buf, sizeof(buf));
+			chdir(folder->path);
+
+			if (rename(mail->filename,filename))
+			{
+				/* renaming went wrong, try a different name */
+				free(filename);
+				filename = mail_get_new_name(status_new);
+				if (!rename(mail->filename,filename)) renamed = 1;
+			} else renamed = 1;
+
+			if (renamed)
+			{
+				free(mail->filename);
+				mail->filename = filename;
+			}
+
+			chdir(buf);
+
+			/* Delete the indexfile if not already done */
+			if (folder->index_uptodate)
+			{
+				folder_delete_indexfile(folder);
+				folder->index_uptodate = 0;
 			}
 		}
 	}
@@ -990,6 +1006,15 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 		if (!mystricmp(folder->mail_array[i]->filename,filename))
 		{
 			return folder->mail_array[i];
+		}
+	}
+
+	/* now check the pendig_mail_array */
+	for (i=0; i < folder->num_pending_mails; i++)
+	{
+		if (!mystricmp(folder->pending_mail_array[i]->filename,filename))
+		{
+			return folder->pending_mail_array[i];
 		}
 	}
 	return NULL;

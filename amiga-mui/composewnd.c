@@ -85,7 +85,7 @@ struct Compose_Data /* should be a customclass */
 	Object *attach_group;
 	Object *vertical_balance;
 	Object *main_group;
-	Object *switch_button;
+	Object *show_attach_button;
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
@@ -310,6 +310,9 @@ static void compose_add_files(struct Compose_Data **pdata)
 
 						compose_add_attachment(data,&attach,0);
 						FreeVec(buf);
+
+						if (!xget(data->show_attach_button,MUIA_Selected))
+							set(data->show_attach_button,MUIA_Selected,TRUE);
 					}
 					FreeVec(drawer);
 				}
@@ -527,7 +530,7 @@ static void compose_switch_view(struct Compose_Data **pdata)
 	struct Compose_Data *data = *pdata;
 
 	DoMethod(data->main_group, MUIM_Group_InitChange);
-	if (xget(data->switch_button, MUIA_Selected))
+	if (xget(data->show_attach_button, MUIA_Selected))
 	{
 		set(data->attach_group, MUIA_ShowMe, TRUE);
 		set(data->vertical_balance, MUIA_ShowMe, TRUE);
@@ -721,11 +724,13 @@ void compose_window_open(struct compose_args *args)
 	Object *expand_to_button;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
-	Object *switch_button;
 	Object *main_group, *attach_group, *vertical_balance;
 	Object *from_popobject;
 	Object *signatures_group;
 	Object *signatures_cycle;
+	Object *show_attach_button;
+	Object *add_attach_button;
+
 	struct signature *sign;
 	char **sign_array = NULL;
 	int num;
@@ -827,8 +832,8 @@ void compose_window_open(struct compose_args *args)
 						Child, HGroup,
 							MUIA_Weight, 66,
 							MUIA_Group_Spacing,0,
-							Child, undo_button = MakePictureButton("Attachments","PROGDIR:Images/AttachmentList"),
-							Child, redo_button = MakePictureButton("Attach","PROGDIR:Images/AddAttachment"),
+							Child, add_attach_button = MakePictureButton("Attach","PROGDIR:Images/AddAttachment"),
+							Child, show_attach_button = MakePictureButton("Show At.","PROGDIR:Images/AttachmentList"),
 							End,
 						Child, RectangleObject,
 							MUIA_FixHeight,1,
@@ -892,11 +897,7 @@ void compose_window_open(struct compose_args *args)
 					Child, MakeButton("Pack & add"),
 					Child, remove_button = MakeButton("Remove"),
 					End,
-				End,
-			Child, switch_button = RectangleObject,
-				ButtonFrame,
-				MUIA_FixHeight,1,
-				MUIA_InputMode, MUIV_InputMode_Toggle,
+				Child, HorizLineObject,
 				End,
 			Child, HGroup,
 				Child, send_now_button = MakeButton("Send now"),
@@ -930,7 +931,7 @@ void compose_window_open(struct compose_args *args)
 			data->attach_group = attach_group;
 			data->vertical_balance = vertical_balance;
 			data->main_group = main_group;
-			data->switch_button = switch_button;
+			data->show_attach_button = show_attach_button;
 			data->copy_button = copy_button;
 			data->cut_button = cut_button;
 			data->paste_button = paste_button;
@@ -945,6 +946,7 @@ void compose_window_open(struct compose_args *args)
 					MUIA_Popobject_StrObjHook, &data->from_strobj_hook,
 					TAG_DONE);
 
+			set(show_attach_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(from_text, MUIA_UserData, reply_string);
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
@@ -988,9 +990,10 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
 			DoMethod(add_multipart_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_multipart, data);
 			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
+			DoMethod(add_attach_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, attach_tree, 4, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
-			DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, switch_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
+			DoMethod(show_attach_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, show_attach_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(send_now_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_now, data);

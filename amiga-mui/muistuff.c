@@ -81,10 +81,6 @@ ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 	return rc;
 }
 
-void SetRexxVar(void)
-{
-}
-
 #else
 
 #ifdef __MORPHOS__

@@ -132,6 +132,10 @@ STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *m
 
 	DoMethod(obj, MUIM_DrawBackground, x1, y1, x2 - x1 + 1, y2 - y1 + 1,0,0,0);
 
+	/* the diff should be even that the plus sign will be symetric */
+	if (((x2-x1)%2) == 1) x2--;
+	if (((y2-y1)%2) == 1) y2--;
+
 	SetAPen(_rp(obj),_dri(obj)->dri_Pens[SHADOWPEN]);
 	Move(_rp(obj),x1,y2);
 	Draw(_rp(obj),x1,y1);
@@ -144,9 +148,9 @@ STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *m
 	Move(_rp(obj),x1+1,y2-1);
 	Draw(_rp(obj),x1+1,y1+1);
 	Draw(_rp(obj),x2-1,y1+1);
-	Move(_rp(obj),x2,y1);
+	Move(_rp(obj),x2,y1+1);
 	Draw(_rp(obj),x2,y2);
-	Draw(_rp(obj),x1,y2);
+	Draw(_rp(obj),x1+1,y2);
 
 	SetAPen(_rp(obj),_dri(obj)->dri_Pens[TEXTPEN]);
 

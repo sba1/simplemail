@@ -236,6 +236,7 @@ static void account_store(void)
 		account_last_selected->imap->port = xget(account_recv_port_string, MUIA_String_Integer);
 		account_last_selected->imap->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->imap->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
+		account_last_selected->imap->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
 		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);

@@ -863,7 +863,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 			/* Ask for the login/password */
-/*			if (server->ask)
+			if (server->ask)
 			{
 				char *password = malloc(512);
 				char *login = malloc(512);
@@ -875,7 +875,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 					if (server->login) mystrlcpy(login,server->login,512);
 					password[0] = 0;
 
-					if ((rc = thread_call_parent_function_sync(sm_request_login,4,server->name,login,password,512)))
+					if ((rc = thread_call_parent_function_sync(NULL,sm_request_login,4,server->name,login,password,512)))
 					{
 						server->login = mystrdup(login);
 						server->passwd = mystrdup(password);
@@ -884,7 +884,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 				free(password);
 				free(login);
-			}*/
+			}
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
@@ -1242,6 +1242,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 		new_imap->port = imap->port;
 		new_imap->active = imap->active;
 		new_imap->ssl = imap->ssl;
+		new_imap->ask = imap->ask;
 	}
 	return new_imap;
 }
@@ -1267,8 +1268,8 @@ static int imap_new_connection_needed(struct imap_server *srv1, struct imap_serv
 	if (!srv1) return 1;
 	if (!srv2) return 1;
 
-  return strcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || strcmp(srv1->login,srv2->login) ||
-         strcmp(srv1->passwd,srv2->passwd) || (srv1->ssl != srv2->ssl);
+  return mystrcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || mystrcmp(srv1->login,srv2->login) ||
+         (mystrcmp(srv1->passwd,srv2->passwd) && !srv1->ask && !srv2->ask)  || (srv1->ask != srv2->ask) || (srv1->ssl != srv2->ssl);
 }
 
 
@@ -1422,7 +1423,36 @@ static int imap_thread_really_connect_and_login_to_server(void)
 		if (!imap_socket_lib_open) return 0;
 
 		if (imap_connection)
+		{
 			tcp_disconnect(imap_connection);
+			imap_connection = NULL;
+		}
+
+		if (imap_server->ask)
+		{
+			char *password = malloc(512);
+			char *login = malloc(512);
+
+			if (password && login)
+			{
+				if (imap_server->login) mystrlcpy(login,imap_server->login,512);
+				password[0] = 0;
+
+				if (thread_call_parent_function_sync(NULL,sm_request_login,4,imap_server->name,login,password,512))
+				{
+					imap_server->login = mystrdup(login);
+					imap_server->passwd = mystrdup(password);
+				} else
+				{
+					free(password);
+					free(login);
+					return 0;
+				}
+			}
+
+			free(password);
+			free(login);
+		}
 
 		/* Display "Connecting" - status message */
 		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
@@ -1447,7 +1477,15 @@ static int imap_thread_really_connect_and_login_to_server(void)
 				{
 					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
 					thread_call_parent_function_async_string(status_set_status,1,status_buf);
+					tcp_disconnect(imap_connection);
+					imap_connection = NULL;
 				}
+			} else
+			{
+				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Unexpected server answer. Connection failed."));
+				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+				tcp_disconnect(imap_connection);
+				imap_connection = NULL;
 			}
 		} else
 		{
@@ -1462,7 +1500,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 
 static int imap_thread_really_login_to_given_server(struct imap_server *server)
 {
-	if (imap_new_connection_needed(imap_server,server))
+	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
 		free(imap_folder); imap_folder = NULL;
 		free(imap_local_path); imap_local_path = NULL;
@@ -1518,7 +1556,7 @@ static void imap_thread_really_connect_to_server(void)
 
 static int imap_thread_connect_to_server(struct imap_server *server, char *folder, char *local_path)
 {
-	if (imap_new_connection_needed(imap_server,server))
+	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
 		if (imap_server) imap_free(imap_server);
 		if ((imap_server = imap_duplicate(server)))
@@ -1769,7 +1807,7 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 	int filesize;
 
 	/* Should be in a separate function */
-	if (imap_new_connection_needed(imap_server,server))
+	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
 		free(imap_folder); imap_folder = NULL;
 		free(imap_local_path);imap_local_path = NULL;

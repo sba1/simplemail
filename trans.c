@@ -291,6 +291,7 @@ int mails_upload_signle(struct mail *m)
 		return 0;
 	}
 
+	out_array[0]->size = m->size;
 	out_array[0]->mailfile = mystrdup(m->filename);
 	out_array[0]->from = mb.addr_spec;
 

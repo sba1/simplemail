@@ -29,6 +29,7 @@
 
      @{" Startup options  " LINK "OPTI" 0} - Shell options
      @{" ARexx interface  " LINK "AREX" 0} - The ARexx interface
+     @{" Contributions    " LINK "CONT" 0} - Some contribution by other authors
      @{" FAQ              " LINK "TIPS" 0} - Read this!
      @{" Technical stuff  " LINK "TECH" 0} - How SimpleMail is archiving your messages
 
@@ -2077,6 +2078,81 @@ SHOW
 Brings SimpleMail back from its iconified state into full view.
 
 @ENDNODE
+
+@NODE "CONT" "Contributions"
+
+CONTRIBUTIONS
+
+Here you will find some contributions to SimpleMail by other authors:
+
+@{" OpenURL Configuration " link "OPENURL"} by Stefan Martens
+@{" IBrowse 2.2 Users     " link "IBROWSE"} by Stefan Martens
+
+@ENDNODE
+
+@NODE "OPENURL" "OpenURL Configuration"
+
+OPENURL
+
+In the OpenURL preferences program can you add a new mailer.
+
+Open the OpenURL program located in the systems "Prefs" dir and click
+at the top on "Mailers". Here at the bottom click "Add...". In the
+"OpenURL Edit Mailer" window you enter the following
+Name:          SimpleMail
+Path:          ...the Path of the SimpleMail program...
+ARexx port:    SIMPLEMAIL
+
+ARexx commands:
+Show/Uniconify:  SHOW
+Screen to front: MAINTOFRONT
+Write Mail:      MAILWRITE MAILTO %a SUBJECT %s
+
+Now you click on "OK" and in the Main Window on "Save".
+OpenURL is now correct configured.
+
+If you have problems while configuration please contact me:
+Stefan1200
+Stefan M.
+info@stefan1200.d
+@ENDNODE
+
+@NODE "IBROWSE" "IBrowse 2.2 Users"
+
+IBROWSE
+
+IBrowse 2.2 doesn't have OpenURL support.
+But no problem, I have write a small script for use with programs like
+IBrowse they allow to set a cli script to do this. I've only tested
+IBrowse 2.2 with this script (the most other programs have OpenURL support),
+so I only write here a manual for IBrowse 2.2.
+
+You click in the IBrowse menu "Preferences" on "Settings...". Then you go
+in the "Network" submenu "EMail & Telnet". Here you enter the following
+
+Mailto:
+Type: External
+Command: Command -> enter here the path to my script. In the right input
+                    line enter: %h %s
+Sendmail:
+Type: External
+Command: Command -> enter here the path to my script. In the right input
+                    line enter: %h %s
+
+Now you click on "OK" and save the config in the IBrowse "Preferences"
+menu. It is now important to restart IBrowse. The first time you click
+in IBrowse on a mail address, my script ask you for the SimpleMail dir.
+Please click on the first mail address a second time, after you have
+select the SimpleMail dir.
+IBrowse is now correctly configured.
+
+
+If you have problems while configuration please contact me:
+Stefan1200
+Stefan M.
+info@stefan1200.d
+@ENDNODE
+
 @NODE "TIPS" "FAQ"
 
 FAQ

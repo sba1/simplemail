@@ -115,14 +115,6 @@ static void init_config(void)
 
 	user.config.header_flags = SHOW_HEADER_FROM | SHOW_HEADER_TO | SHOW_HEADER_CC | SHOW_HEADER_SUBJECT | SHOW_HEADER_DATE | SHOW_HEADER_REPLYTO;
 
-#if defined(_AMIGA) || defined(__MORPHOS__) || defined(__AMIGAOS4__)
-	user.config.read_background = user.config.read_header_background = 0xb0b0b0;
-	user.config.read_text = 0;
-	user.config.read_quoted = 0xffffff;
-	user.config.read_old_quoted = 0xffff00;
-	user.config.read_link = 0x000098;
-	user.config.read_link_underlined = 0;
-#else
 	user.config.read_background = 0xfffff4;
 	user.config.read_header_background = 0xf0f0e0;
 	user.config.read_text = 0;
@@ -130,7 +122,6 @@ static void init_config(void)
 	user.config.read_old_quoted = 0xdd2222;
 	user.config.read_link = 0x000098;
 	user.config.read_link_underlined = 0;
-#endif
 
 	user.config.write_wrap = 76;
 	user.config.write_wrap_type = 2;

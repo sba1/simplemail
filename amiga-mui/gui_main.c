@@ -20,6 +20,7 @@
 #include "attachmentlistclass.h"
 #include "datatypesclass.h"
 #include "dlwnd.h"
+#include "upwnd.h"
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
@@ -37,7 +38,7 @@ void loop(void)
 	ULONG sigs = 0;
 
 	while((LONG) DoMethod(App, MUIM_Application_NewInput, &sigs) != MUIV_Application_ReturnID_Quit)
-  {
+	{
 		if (sigs)
 		{
 			sigs = Wait(sigs | SIGBREAKF_CTRL_C);
@@ -117,7 +118,10 @@ int all_init(void)
 				{
 					if (dl_window_init())
 					{
-						rc = TRUE;
+						if (up_window_init())
+						{
+							rc = TRUE;
+						}	
 					}	
 				}
 			}	

@@ -1,11 +1,11 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.7 (24.12.2003)
+@$VER: SimpleMail.guide 0.8 (17.01.2004)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <sebauer@t-online.de>
 @INDEX "Index"
 
-@NODE "Main" "Welcome to SimpleMail!"
+@NODE "MAIN" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.21 (public BETA)
+                         SimpleMail 0.22 (public BETA)
                           (not completly finished yet)
 
                 © 2000-2003 by Hynek Schlawack & Sebastian Bauer
@@ -593,23 +593,23 @@ and label), keyboard shortcuts and menu items.
 
       Button        Shortcut    Equivalent to menu...
  -----------------------------------------------------------------------
-  1   [Read]        D,<Return>  @{" Message/Read " LINK "MAM3" 0}
-  2   [Edit]        E           @{" Message/Edit " LINK "MAM3" 0}
-  3   [Delete]      L,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
-  4   [GetAdd]      T
-  5   [Move]        M
+  1   [Read]        D,<Return>  @{" Message/Read... " LINK "MAM3" 0}
+  2   [Edit]        E           @{" Message/Edit... " LINK "MAM3" 0}
+  3   [Move]        M           @{" Message/Move... " LINK "MAM3" 0}
+  4   [Delete]      L,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
+  5   [GetAdd]      T
 
-  6   [New]         N
-  7   [Reply]       R
-  8   [Forward]     W
+  6   [New]         N           @{" Message/New... " LINK "MAM3" 0}
+  7   [Reply]       R           @{" Message/Reply... " LINK "MAM3" 0}
+  8   [Forward]     W           @{" Message/Forward... " LINK "MAM3" 0}
 
-  9   [Fetch]       F
- 10   [Send]        S
+  9   [Fetch]       F           @{" Project/Check all active accounts... " LINK "MAM1" 0}
+ 10   [Send]        S           @{" Project/Send queued mails... " LINK "MAM1" 0}
 
  11   [Search]      E
  12   [Filter]      I
- 13   [Spam]        P
- 14   [Isolate]     O
+ 13   [Spam]        P           @{" Folder/Run spam mail check " LINK "MAM2" 0}
+ 14   [Isolate]     O           @{" Folder/Isolate spam mails " LINK "MAM2" 0}
 
  15   [Abook]       A
  16   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
@@ -632,6 +632,39 @@ Project/About MUI...
 Shows copyright and version information for @{" MUI " LINK "MUI" 0}.
 
 
+Project/Delete all indexfiles
+
+This will delete all indexfiles.
+
+
+Project/Save all indexfiles
+
+This will save all changed folderindex back to disk.
+
+
+Project/Import mbox file...
+
+Import a mbox file like fetching new mails without spamcheck. The filters will also
+be applied on the imported mails.
+
+
+Project/Send queued mails...
+
+All mails in the outgoing folder will be send. Incomplete mails or mails which are
+marked as hold will not be send.
+
+
+Project/Check all active accounts...
+
+Start fetching mails from all @{" active accounts " LINK CO01}.
+
+
+Project/Check single account  » [accountlist]
+
+If you have set up several @{" accounts " LINK CO01}, you can use this function to check
+any single account.
+
+
 Project/Quit
 
 Exit from SimpleMail.
@@ -641,6 +674,13 @@ Exit from SimpleMail.
 @TOC "MA_W"
 
 Main window - FOLDER MENU
+
+
+Folder/New...
+
+Creates a new folder and inserts it at the end of the folder list. A
+requester will open asking for the name, path and type of folder that
+should be created.
 
 
 Folder/New Group...
@@ -654,13 +694,6 @@ By default, groups are named "New Group". To rename them, you shall use
 the @{" configuration panel " LINK "FO_W" 0} accordingly.
 
 
-Folder/New Folder...
-
-Creates a new folder and inserts it at the end of the folder list. A
-requester will open asking for the name, path and type of folder that
-should be created.
-
-
 Folder/Delete...
 
 Removes the current (user defined) folder, asking for confirmation first.
@@ -668,22 +701,49 @@ If the folder is actually a folder group, any folders in it will move one
 place up in the hierarchy, i.e. they will NOT be deleted.
 
 
-Folder/Settings...
+Folder/Import mbox file...
+
+Import mails from a mbox file into the current folder. The mails will be
+marked as unread.
+
+
+Folder/Export as mbox...
+
+This will generate a mbox file with all mails from the current folder.
+
+
+Folder/Rescan
+
+The index of the current folder will be rebuild based upon the file
+inside the directory.
+
+
+Folder/Options...
 
 Opens a @{" configuration panel " LINK "FO_W" 0} where you can modify the properties of the
 current folder.
+
+
+Folder/Run spam mail check
+
+All mails of the current folder will be @{" spam " LINK SPAM} checked.
+
+
+Folder/Isolate spam mails
+
+All mails marked as @{" spam " LINK SPAM} will be moved into the spam folder.
+
+
+Folder/Classify all mails as ham
+
+All mails of the current folder will be marked as ham and added to the
+spam checker statistics.
 
 
 Folder/Order  » Save|Reset
 
 Saves or restores the order of the folders in their @{" list " LINK "MA00" 0}. Note this order
 is also saved when modifying the folder settings.
-
-
-Folder/Check single account
-
-If you have set up several POP3 servers, you can use this function to check
-any single account.
 
 @ENDNODE
 @NODE "MAM3" "Main window - Message Menu"
@@ -692,19 +752,42 @@ any single account.
 Main window - MESSAGE MENU
 
 
-Message/Read
+Message/New...
+
+This will open the @{" Compose Message window " LINK WR_W}.
+
+
+Message/Read...
 
 Loads the selected message into a @{" Read window " LINK "RE_W" 0}.
 
 
-Message/Edit
+Message/Edit...
 
 Allows you to edit a message you have composed earlier.
 
 
+Message/Reply...
+
+Use this to reply to a message which someone has sent to you. Subject and
+recipient headers are filled in automatically and the original text is
+quoted. It is also possible to select several messages which will all be
+quoted in the same reply and sent back to the original sender.
+
+
+Message/Forward...
+
+This lets you send the contents of an e-mail on to another recipient. The
+subject and the body text are copied across whereas a new message header is
+created. At the beginning and the end of the quoted text YAM inserts the
+phrases for forwarding, which you can define in the @{" Write " LINK CO03}
+settings in the configuration. You can also select multiple messages, in
+which case these are combined into a single forwarded message.
+
+
 Message/Move...
 
-Moves one or more messages into another folder. Not yet implemented.
+Moves one or more messages into another folder.
 
 
 Message/Copy...
@@ -724,14 +807,14 @@ recovered if needed). The <Del> key can be used as a shortcut.
 Main window - SETTINGS MENU
 
 
-Settings/Show folders
+Settings/Show folders?
 
 This switch allows you to select whether the folder list should appear 
 or not in the main window, acting as a toggle between the "normal" and
 "alternative" view of the main window.
 
 
-Settings/Show address book
+Settings/Show addressbook?
 
 This switch allows you to select whether the address book should appear
 or not in the main window.
@@ -771,6 +854,12 @@ PopPlaceHolder: items using pop-up placeholders under Config/Phrases
 
   BetterString: general one-line text input field.
        Options: font, palette, cursor.
+
+
+Settings/Save Settings
+
+This will save MUI specific settings of the program, eg the balance settings
+of the main window, the list titles of the folder-, address- and messagelist.
 
 @ENDNODE
 @NODE "MAM5" "Main window - Scripts Menu"
@@ -2222,7 +2311,7 @@ In the two lower status lines you can see how many bytes and how many
 messages have been transferred so far, and at what rate.
 
 @ENDNODE
-@NODE "Drag" "Drag & Drop"
+@NODE "DRAG" "Drag & Drop"
 
 DRAG & DROP
 
@@ -2779,23 +2868,23 @@ And all the people who keep submitting bug reports!
 
    @{" Address Book " LINK AB_W}
    @{" Address book - Toolbar " LINK AB_B}
-   @{" ARexx interface " LINK AREX}
+   @{" ARexx interface " LINK AREX}
 
    B...
 
    @{" Bug reports " LINK INFO}
-   
+
    C...
 
-   @{" Compose Message window " LINK WR_W}
+   @{" Compose Message window " LINK WR_W}
    @{" Configuration " LINK CO_W}
    @{" Configuration - Accounts " LINK CO01}
    @{" Configuration - General " LINK CO00}
    @{" Configuration - Phrases " LINK CO07}
    @{" Configuration - Reading " LINK CO04}
-   @{" Configuration - Reading HTML " LINK CO06}
-   @{" Configuration - Reading plain " LINK CO05}
-   @{" Configuration - Receive mail  " LINK CO02}
+   @{" Configuration - Reading HTML " LINK CO06}
+   @{" Configuration - Reading plain " LINK CO05}
+   @{" Configuration - Receive mail " LINK CO02}
    @{" Configuration - Signatures " LINK CO08}
    @{" Configuration - Spam " LINK CO09}
    @{" Configuration - Write " LINK CO03}
@@ -2807,19 +2896,19 @@ And all the people who keep submitting bug reports!
 
    E...
 
-   @{" Edit Folder " LINK FO_W}
+   @{" Edit Folder " LINK FO_W}
+   @{" Editing filters " LINK CO_F}
    @{" Editor features " LINK EDIT}
    @{" Entering addresses " LINK EA_W}
 
    F...
 
    @{" FAQ " LINK TIPS}
-   @{" Filters, Editing " LINK CO_F}
    @{" Further Information about SimpleMail " LINK INFO}
 
    H...
 
-   @{" History " LINK HIST}
+   @{" History " LINK "history.txt/main"}
 
    I...
 
@@ -2833,15 +2922,15 @@ And all the people who keep submitting bug reports!
    M...
 
    @{" Mail Transfers " LINK TR_W}
-   @{" Mailing list, The SimpleMail " LINK INFO}
+   @{" Mailing list, The SimpleMail " LINK INFO}
    @{" Main window " LINK MA_W}
-   @{" Main window - folder list " LINK MA00}
+   @{" Main window - Folder list " LINK MA00}
    @{" Main window - Folder Menu " LINK MAM2}
-   @{" Main window - message list " LINK MA01}
+   @{" Main window - Message list " LINK MA01}
    @{" Main window - Message Menu " LINK MAM3}
    @{" Main window - Project Menu " LINK MAM1}
+   @{" Main window - Scripts Menu " LINK MAM5}
    @{" Main window - Settings Menu " LINK MAM4}
-   @{" Main window - Scripts Menu " LINK MAM5}
    @{" Main window - toolbar " LINK MA02}
    @{" MUI " LINK MUI}
 
@@ -2851,21 +2940,28 @@ And all the people who keep submitting bug reports!
 
    R...
 
-   @{" Read Message window " LINK RE_W}
-   @{" Read Message window - toolbar " LINK RE_B}
+   @{" Read Message window " LINK RE_W}
+   @{" Read Message window - Mail Menu " LINK REM2}
+   @{" Read Message window - Project Menu " LINK REM1}
+   @{" Read Message window - toolbar " LINK RE_B}
    @{" Requirements " LINK REQS}
 
    S...
 
-   @{" SimpleMail - English documentation " LINK MAIN}
-   @{" Sources, how to get them " LINK INFO}
+   @{" SimpleHTML " LINK SimpleHTML}
+   @{" Sources, how to get them " LINK INFO}
    @{" Spam " LINK SPAM}
    @{" Startup options " LINK OPTI}
-   @{" Status icons " LINK MA0S}
+   @{" Status Icons " LINK MA0S}
+   @{" Supported ARexx commands " LINK REX2}
 
    T...
 
    @{" Technical " LINK TECH}
+
+   W...
+
+   @{" Welcome to SimpleMail! " LINK MAIN}
 
 @{BODY}
 @ENDNODE

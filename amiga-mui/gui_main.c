@@ -24,6 +24,7 @@
 
 #include <dos/dos.h>
 #include <libraries/mui.h>
+#include "simplehtml_mcc.h"
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/muimaster.h>
@@ -110,6 +111,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_simplehtml_class();
 		delete_composeeditor_class();
 		delete_readlist_class();
 		delete_transwnd_class();
@@ -140,7 +142,7 @@ int all_init(void)
 		if (create_foldertreelist_class() && create_mailtreelist_class() &&
 				create_addressstring_class() && create_attachmentlist_class() &&
 				create_datatypes_class() && create_transwnd_class() &&
-				create_readlist_class() && create_composeeditor_class())
+				create_readlist_class() && create_composeeditor_class() && create_simplehtml_class())
 		{
 			if (app_init())
 			{

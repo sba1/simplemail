@@ -465,7 +465,8 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		if ((mail_compose_new(&new_mail,hold)))
 		{
 			/* Change the status of a mail if it was replied or forwarded */
-			if (data->ref_mail)
+			if (data->ref_mail && mail_get_status_type(data->ref_mail) != MAIL_STATUS_SENT
+												 && mail_get_status_type(data->ref_mail) != MAIL_STATUS_WAITSEND)
 			{
 				if (data->compose_action == COMPOSE_ACTION_REPLY)
 				{

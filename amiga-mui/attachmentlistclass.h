@@ -36,6 +36,8 @@ struct attachment
 	int editable; /* 1 text is editable */
 
 	char *contents; /* text contents */
+	int lastxcursor; /* last x position of the cursor */
+	int lastycursor; /* last y position of the cursor */
 };
 
 

@@ -254,6 +254,9 @@ static void compose_attach_active(struct Compose_Data **pdata)
 				/* free the memory of the last contents */
 				if (data->last_attachment->contents) free(data->last_attachment->contents);
 				data->last_attachment->contents = mystrdup(text_buf);
+				data->last_attachment->lastxcursor = xget(data->text_texteditor, MUIA_TextEditor_CursorX);
+				data->last_attachment->lastycursor = xget(data->text_texteditor, MUIA_TextEditor_CursorY);
+				set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
 				FreeVec(text_buf);
 			}
 		}
@@ -268,7 +271,11 @@ static void compose_attach_active(struct Compose_Data **pdata)
 	{
 		if (attach->editable)
 		{
-			set(data->text_texteditor, MUIA_TextEditor_Contents, attach->contents?attach->contents:"");
+			SetAttrs(data->text_texteditor,
+					MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
+					MUIA_TextEditor_CursorX,attach->lastxcursor,
+					MUIA_TextEditor_CursorY,attach->lastycursor,
+					TAG_DONE);
 		}
 
 		SetAttrs(data->contents_page,

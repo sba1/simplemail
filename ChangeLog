@@ -4,6 +4,13 @@ SimpleMail Open Source - ChangeLog
 
 2003-12-28  Bernd Gollesch <bgollesch@sime.com>
 
+	* simplemail.c:  Removed callback_refresh_signatures() and merged
+	  it with callback_config_changed().
+	* amiga-mui: composewnd.c configwnd.c folderwnd.c
+	  Changed "Use signature" into "Signature".
+
+2003-12-28  Bernd Gollesch <bgollesch@sime.com>
+
 	* ChangeLog: First entry in the ChangeLog (took me 40min :)
 	* account.h: The default signature is now a char *
 	* amiga-mui/composewnd.c: Changed the def_signature handling to work

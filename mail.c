@@ -1518,24 +1518,7 @@ char *mail_get_to_address(struct mail *mail)
 **************************************************************************/
 char *mail_get_replyto_address(struct mail *mail)
 {
-	struct mailbox mb;
-	char *buf = NULL;
-	char *replyto = mail_find_header_contents(mail,"replyto");
-
-	if (parse_mailbox(replyto,&mb))
-	{
-		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
-		if ((buf = malloc(len)))
-		{
-			if (mb.phrase)
-			{
-				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
-			} else strcpy(buf,mb.addr_spec);
-		}
-		free(mb.addr_spec);
-		free(mb.phrase);
-	}
-	return buf;
+	return mystrdup(mail->reply_addr);
 }
 
 /**************************************************************************

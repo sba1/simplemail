@@ -36,10 +36,12 @@
 #include <proto/intuition.h> /* ScreenToXXX() */
 
 #include "addressbook.h"
+#include "configuration.h"
 #include "folder.h"
 #include "http.h"
 #include "mail.h"
 #include "support_indep.h"
+#include "trans.h"
 
 #include "addressbookwnd.h"
 #include "amigasupport.h"
@@ -1382,6 +1384,33 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILFETCH Arexx Command
+*****************************************************************/
+static void arexx_mailfetch(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR accountemail;
+		LONG *accountnum;
+	} mailfetch_arg;
+	memset(&mailfetch_arg,0,sizeof(mailfetch_arg));
+
+	if ((arg_handle = ParseTemplate("ACCOUNTEMAIL/K,ACCOUNTNUM/K/N",args,&mailfetch_arg)))
+	{
+		if (mailfetch_arg.accountemail)
+		{
+			mails_dl_single_account(account_find_by_from(mailfetch_arg.accountemail));
+		} else
+		if (mailfetch_arg.accountnum)
+		{
+			mails_dl_single_account(account_find_by_number(*mailfetch_arg.accountnum));
+		} else mails_dl(0);
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -1429,6 +1458,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("MAILADD",command.command)) arexx_mailadd(rxmsg,command.args);
 		else if (!Stricmp("MAILLISTFREEZE",command.command)) main_freeze_mail_list();
 		else if (!Stricmp("MAILLISTTHAW",command.command)) main_thaw_mail_list();
+		else if (!Stricmp("MAILFETCH",command.command)) arexx_mailfetch(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

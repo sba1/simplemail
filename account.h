@@ -54,4 +54,7 @@ struct account *account_duplicate(struct account *a);
 void account_free(struct account *a);
 struct account *account_find_by_from(char *email);
 
+#define account_find_by_number(number) \
+	((struct account*)list_find(&user.config.account_list,number))
+
 #endif

@@ -241,9 +241,11 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 			char *to = mail_get_to_address(m);
 			char *replyto = mail_get_replyto_address(m);
 			char date_buf[64];
+			char recv_buf[64];
 			char *buf = data->bubblehelp_buf;
 
 			SecondsToString(date_buf,m->seconds);
+			SecondsToString(recv_buf,m->received);
 
 			/* Help bubble text */
 			sprintf(buf,"\33b%s\33n",_("Current Message"));
@@ -284,9 +286,11 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf = mystpcpy(buf,replyto);
 			}
 
-			sprintf(buf,"\n%s: %s\n%s: %d\n%s: %s",
+			sprintf(buf,"\n%s: %s\n%s: %s\n%s: %d\n%s: %s\n%s: %s",
 							data->date_text, date_buf,
+							data->received_text, recv_buf,
 							data->size_text, m->size,
+							data->pop3_text, m->pop3_server,
 							data->filename_text, m->filename);
 
 			set(obj,MUIA_ShortHelp,data->bubblehelp_buf);

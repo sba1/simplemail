@@ -41,6 +41,8 @@ struct imap_server
 
 	int active;
 	int ssl;
+
+	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
 void imap_synchronize_really(struct list *imap_list, int called_by_auto);

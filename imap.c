@@ -856,7 +856,10 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 			sprintf(head_buf,_("Synchronizing mails with %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-			thread_call_parent_function_async_string(status_set_title, 1, server->name);
+			if (server->title)
+				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+			else
+				thread_call_parent_function_async_string(status_set_title, 1, server->name);
 			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 			/* Ask for the login/password */
@@ -962,7 +965,10 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 
 		sprintf(head_buf,_("Reading folders of %s"),server->name);
 		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+		if (server->title)
+			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+		else
+			thread_call_parent_function_async_string(status_set_title, 1, server->name);
 		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
@@ -1037,7 +1043,10 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 
 		sprintf(head_buf,_("Submitting subscribed folders to %s"),server->name);
 		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+		if (server->title)
+			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+		else
+			thread_call_parent_function_async_string(status_set_title, 1, server->name);
 		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
@@ -1229,6 +1238,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 		new_imap->name = mystrdup(imap->name);
 		new_imap->login = mystrdup(imap->login);
 		new_imap->passwd = mystrdup(imap->passwd);
+		new_imap->title = mystrdup(imap->title);
 		new_imap->port = imap->port;
 		new_imap->active = imap->active;
 		new_imap->ssl = imap->ssl;
@@ -1244,6 +1254,7 @@ void imap_free(struct imap_server *imap)
 	if (imap->name) free(imap->name);
 	if (imap->login) free(imap->login);
 	if (imap->passwd) free(imap->passwd);
+	if (imap->title) free(imap->title);
 	free(imap);
 }
 

@@ -23,12 +23,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dos.h>
 
 #include <intuition/intuitionbase.h>
+#include <datatypes/pictureclass.h>
+
 #include <libraries/mui.h>
 #include <mui/betterstring_mcc.h>
-#include <datatypes/pictureclass.h>
 
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
@@ -113,9 +113,8 @@ STATIC ULONG AudioSelectGroup_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-ASM STATIC ULONG AudioSelectGroup_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, AudioSelectGroup_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch (msg->MethodID)
 	{
 		case OM_NEW        : return AudioSelectGroup_New      (cl,obj,(struct opSet*)msg);
@@ -133,10 +132,7 @@ void delete_audioselectgroup_class(void);
 int create_audioselectgroup_class(void)
 {
 	if ((CL_AudioSelectGroup = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct AudioSelectGroup_Data), AudioSelectGroup_Dispatcher)))
-	{
-		CL_AudioSelectGroup->mcc_Class->cl_UserData = getreg(REG_A4);
 		return TRUE;
-	}
 	return FALSE;
 }
 

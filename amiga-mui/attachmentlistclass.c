@@ -20,7 +20,6 @@
 ** attachmentlistclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,7 +52,7 @@ struct AttachmentList_Data
 	int quick;
 };
 
-STATIC ASM struct attachment *attachment_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+STATIC ASM SAVEDS struct attachment *attachment_construct(REG(a1,struct MUIP_NListtree_ConstructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	struct attachment *new_attach = (struct attachment *)malloc(sizeof(struct attachment));
@@ -69,7 +68,7 @@ STATIC ASM struct attachment *attachment_construct(register __a1 struct MUIP_NLi
 	return new_attach;
 }
 
-STATIC ASM VOID attachment_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+STATIC ASM SAVEDS VOID attachment_destruct(REG(a1,struct MUIP_NListtree_DestructMessage *msg))
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	if (attach)
@@ -87,7 +86,7 @@ STATIC ASM VOID attachment_destruct(register __a1 struct MUIP_NListtree_Destruct
 	}
 }
 
-STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID attachment_display(REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	struct AttachmentList_Data *data = (struct AttachmentList_Data*)INST_DATA(CL_AttachmentList->mcc_Class,obj);
 
@@ -199,10 +198,9 @@ STATIC ULONG AttachmentList_FindUniqueID(struct IClass *cl, Object *obj, struct 
 	return NULL;
 }
 
-STATIC ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG,AttachmentList_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
-	switch(msg->MethodID)
+	switch (msg->MethodID)
 	{
 		case	OM_NEW:				return AttachmentList_New(cl,obj,(struct opSet*)msg);
 		case	MUIM_AskMinMax: return AttachmentList_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
@@ -217,10 +215,7 @@ struct MUI_CustomClass *CL_AttachmentList;
 int create_attachmentlist_class(void)
 {
 	if ((CL_AttachmentList = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct AttachmentList_Data),AttachmentList_Dispatcher)))
-	{
-		CL_AttachmentList->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

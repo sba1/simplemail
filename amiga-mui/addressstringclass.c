@@ -20,7 +20,6 @@
 ** addressstringclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -185,9 +184,8 @@ STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 	return NULL;
 }
 
-STATIC ASM ULONG MatchWindow_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
@@ -237,7 +235,6 @@ STATIC ULONG AddressString_Setup(struct IClass *cl, Object *obj,struct MUIP_Setu
 
 STATIC ULONG AddressString_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	return DoSuperMethodA(cl, obj, (Msg)msg);
 }
 
@@ -493,9 +490,8 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 }
 
 
-STATIC ASM ULONG AddressString_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return AddressString_New(cl,obj,(struct opSet*)msg);
@@ -518,12 +514,8 @@ int create_addressstring_class(void)
 {
 	if ((CL_MatchWindow = MUI_CreateCustomClass(NULL,MUIC_Window,NULL,sizeof(struct MatchWindow_Data),MatchWindow_Dispatcher)))
 	{
-		CL_MatchWindow->mcc_Class->cl_UserData = getreg(REG_A4);
 		if ((CL_AddressString = MUI_CreateCustomClass(NULL,NULL,CL_UTF8String,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
-		{
-			CL_AddressString->mcc_Class->cl_UserData = getreg(REG_A4);
 			return 1;
-		}
 	}
 	return 0;
 }

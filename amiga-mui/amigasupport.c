@@ -20,7 +20,6 @@
 ** amigasupport.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <intuition/intuition.h>
 #include <dos/dos.h>
@@ -230,16 +229,14 @@ struct BltMaskHook
   LONG destx,desty;
 };
 
-#ifndef _DCC
-VOID MyBltMaskBitMap( CONST struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct BitMap *destBitMap, LONG xDest, LONG yDest, LONG xSize, LONG ySize, struct BitMap *maskBitMap )
+VOID MyBltMaskBitMap(CONST struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct BitMap *destBitMap, LONG xDest, LONG yDest, LONG xSize, LONG ySize, struct BitMap *maskBitMap)
 {
   BltBitMap(srcBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0x99,~0,NULL);
   BltBitMap(maskBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0xe2,~0,NULL);
   BltBitMap(srcBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0x99,~0,NULL);
 }
-#endif
 
-__asm void HookFunc_BltMask(register __a0 struct Hook *hook, register __a1 struct LayerHookMsg *msg, register __a2 struct RastPort *rp )
+STATIC ASM SAVEDS VOID HookFunc_BltMask(REG(a0,struct Hook *hook), REG(a2,struct RastPort *rp), REG(a1,struct LayerHookMsg *msg))
 {
   struct BltMaskHook *h = (struct BltMaskHook*)hook;
 
@@ -248,12 +245,10 @@ __asm void HookFunc_BltMask(register __a0 struct Hook *hook, register __a1 struc
   LONG offsetx = h->srcx + msg->offsetx - h->destx;
   LONG offsety = h->srcy + msg->offsety - h->desty;
 
-	putreg(REG_A4,(long)hook->h_Data);
-
   MyBltMaskBitMap( h->srcBitMap, offsetx, offsety, rp->BitMap, msg->bounds.MinX, msg->bounds.MinY, width, height, &h->maskBitMap);
 }
 
-VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask )
+VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask)
 {
 	if (GetBitMapAttr(srcBitMap,BMA_FLAGS)&BMF_INTERLEAVED)
 	{
@@ -269,7 +264,6 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		
 		/* Initialize the hook */
 		hook.hook.h_Entry = (HOOKFUNC)HookFunc_BltMask;
-		hook.hook.h_Data = (void*)getreg(REG_A4);
 		hook.srcBitMap = srcBitMap;
 		hook.srcx = xSrc;
 		hook.srcy = ySrc;

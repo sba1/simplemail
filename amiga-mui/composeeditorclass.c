@@ -20,7 +20,6 @@
 ** composeeditorclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -73,7 +72,6 @@ STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
 	struct TagItem *tstate, *tag;
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
@@ -118,20 +116,6 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-/*
-STATIC ULONG ComposeEditor_Get(struct IClass *cl, Object *obj, struct opGet *msg)
-{
-	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
-
-	if (msg->opg_AttrID == MUIA_ComposeEditor_EMailArray)
-	{
-		return 1;
-	}
-
-	return DoSuperMethodA(cl,obj,(Msg)msg);
-}
-*/
-
 STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
@@ -139,7 +123,6 @@ STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Set
 
 	if (retval)
 	{
-/*		data->cmap[0] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);*/
 		data->cmap[7] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0x80000000,NULL);
 	} else
 	{
@@ -153,17 +136,10 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
 
-/*	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[0]);*/
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[7]);
 
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
-
-/*STATIC ULONG ComposeEditor_InsertText(struct IClass *cl, Object *obj, struct MUIP_TextEditor_InsertText *msg)
-{
-	return DoSuperMethodA(cl,obj,(Msg)msg);
-}*/
-
 
 STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
@@ -201,25 +177,16 @@ STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
-
-STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, ComposeEditor_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return ComposeEditor_New(cl,obj,(struct opSet*)msg);
 		case	OM_SET: return ComposeEditor_Set(cl,obj,(struct opSet*)msg);
-
-/*
-		case	OM_GET: return ComposeEditor_Get(cl,obj,(struct opGet*)msg);
-*/
 		case	MUIM_Setup: return ComposeEditor_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return ComposeEditor_Cleanup(cl,obj,msg);
-
 		case	MUIM_DragQuery: return ComposeEditor_DragQuery(cl, obj, (struct MUIP_DragQuery *)msg);
 		case	MUIM_DragDrop: return ComposeEditor_DragDrop(cl, obj, (struct MUIP_DragDrop *)msg);
-
-/*		case	MUIM_TextEditor_InsertText: return ComposeEditor_InsertText(cl,obj,(struct MUIP_TextEditor_InsertText*)msg);*/
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
@@ -229,10 +196,7 @@ struct MUI_CustomClass *CL_ComposeEditor;
 int create_composeeditor_class(void)
 {
 	if ((CL_ComposeEditor = MUI_CreateCustomClass(NULL,MUIC_TextEditor,NULL,sizeof(struct ComposeEditor_Data),ComposeEditor_Dispatcher)))
-	{
-		CL_ComposeEditor->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

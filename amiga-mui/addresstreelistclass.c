@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <dos.h>
 #include <libraries/iffparse.h>
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
@@ -78,7 +77,7 @@ struct AddressTreelist_Data
 	char description_buf[256];
 };
 
-STATIC ASM int address_compare(register __a1 struct MUIP_NListtree_CompareMessage *msg)
+STATIC ASM SAVEDS LONG address_compare(REG(a1,struct MUIP_NListtree_CompareMessage *msg))
 {
 	struct addressbook_entry *entry1 = (struct addressbook_entry *)msg->TreeNode1->tn_User;
 	struct addressbook_entry *entry2 = (struct addressbook_entry *)msg->TreeNode2->tn_User;
@@ -86,19 +85,19 @@ STATIC ASM int address_compare(register __a1 struct MUIP_NListtree_CompareMessag
 	return mystricmp(entry1->u.person.realname,entry2->u.person.realname);
 }
 
-STATIC ASM struct addressbook_entry *address_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+STATIC ASM SAVEDS struct addressbook_entry *address_construct(REG(a1,struct MUIP_NListtree_ConstructMessage *msg))
 {
 	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
 	return addressbook_duplicate_entry(entry);
 }
 
-STATIC ASM VOID address_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+STATIC ASM SAVEDS VOID address_destruct(REG(a1,struct MUIP_NListtree_DestructMessage *msg))
 {
 	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
 	addressbook_free_entry(entry);
 }
 
-STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID address_display(REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(CL_AddressTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
@@ -284,9 +283,6 @@ STATIC ULONG AddressTreelist_DragQuery(struct IClass *cl, Object *obj, struct MU
 
 STATIC ULONG AddressTreelist_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
-	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
-	struct MUI_NListtree_TreeNode *treenode;
-
 	if (OCLASS(msg->obj) != CL_MailTreelist->mcc_Class) return DoSuperMethodA(cl,obj,(Msg)msg);
 
 	callback_get_address();
@@ -383,9 +379,8 @@ STATIC ULONG AddressTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, s
 }
 
 
-STATIC ASM ULONG AddressTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG,AddressTreelist_Dispatcher,cl,obj,msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return AddressTreelist_New(cl,obj,(struct opSet*)msg);
@@ -409,10 +404,7 @@ struct MUI_CustomClass *CL_AddressTreelist;
 int create_addresstreelist_class(void)
 {
 	if ((CL_AddressTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct AddressTreelist_Data),AddressTreelist_Dispatcher)))
-	{
-		CL_AddressTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

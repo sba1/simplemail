@@ -810,6 +810,8 @@ static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
+static int read_active_window;
+
 /****************************************************************
  MAILREAD ARexx Command
 *****************************************************************/
@@ -830,11 +832,12 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 		if (mailread_arg.window)
 		{
 			read_window_activate(*mailread_arg.window);
+			read_active_window = *mailread_arg.window;
 		} else
 		{
 			int window;
 
-			window = callback_read_mail();
+			read_active_window = window = callback_read_mail();
 
 			if (mailread_arg.stem)
 			{
@@ -853,6 +856,64 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 				sprintf(num_buf,"%d",window);
 				if (mailread_arg.var) SetRexxVar(rxmsg,mailread_arg.var,num_buf,strlen(num_buf));
 				else arexx_set_result(rxmsg,num_buf);
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
+ READCLOSE ARexx Command
+*****************************************************************/
+static void arexx_readclose(struct RexxMsg *rxmsg, STRPTR args)
+{
+	read_window_close(read_active_window);
+}
+
+/****************************************************************
+ READSAVE ARexx Command
+*****************************************************************/
+static void arexx_readsave(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		LONG *part;
+		STRPTR filename;
+		LONG overwrite;
+	} readsave_arg;
+	memset(&readsave_arg,0,sizeof(readsave_arg));
+
+	if ((arg_handle = ParseTemplate("PART/N,FILENAME/A/K,OVERWRITE/S",args,&readsave_arg)))
+	{
+		struct mail *mail = read_window_get_displayed_mail(read_active_window);
+		if (readsave_arg.part)
+		{
+			int i;
+			mail = mail_get_root(mail);
+			for (i=0;i<*readsave_arg.part;i++)
+				mail = mail_get_next(mail);
+		}
+
+		if (mail)
+		{
+			BPTR fh;
+			int ok = 0;
+
+			mail_decode(mail);
+
+			fh = Open(readsave_arg.filename,MODE_OLDFILE);
+			if (fh) Close(fh);
+			else ok = 1;
+
+			if (ok || readsave_arg.overwrite)
+			{
+				if ((fh = Open(readsave_arg.filename, MODE_NEWFILE)))
+				{
+					if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
+					Write(fh,mail->decoded_data,mail->decoded_len);
+					Close(fh);
+				}
 			}
 		}
 		FreeTemplate(arg_handle);
@@ -994,6 +1055,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);
+		else if (!Stricmp("READCLOSE",command.command)) arexx_readclose(rxmsg,command.args);
+		else if (!Stricmp("READSAVE",command.command)) arexx_readsave(rxmsg,command.args);
 		else if (!Stricmp("SCREENTOBACK",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToBack(scr);}
 		else if (!Stricmp("SCREENTOFRONT",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
 		else if (!Stricmp("REQUESTFOLDER",command.command)) arexx_requestfolder(rxmsg,command.args);

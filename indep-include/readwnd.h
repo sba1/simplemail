@@ -25,5 +25,7 @@
 
 int read_window_open(char *folder, struct mail *mail);
 void read_window_activate(int num);
+void read_window_close(int num);
+struct mail *read_window_get_displayed_mail(int num);
 
 #endif

@@ -557,7 +557,7 @@ static void show_mail(struct Read_Data *data, struct mail *m)
  within a normal callback hook (because the object is disposed in
  this function)!
 *******************************************************************/
-static void read_window_close(struct Read_Data **pdata)
+static void read_window_dispose(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
 	read_cleanup(data);
@@ -667,7 +667,7 @@ static void delete_button_pressed(struct Read_Data **pdata)
 		if (!next)
 		{
 			set(data->wnd, MUIA_Window_Open, FALSE);
-			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
 		}
 		read_cleanup(data);
 		if (data->mail) mail_free(data->mail);
@@ -1032,7 +1032,7 @@ int read_window_open(char *folder, struct mail *mail)
 			DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
 			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
 
 			/* Menu notifies */
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
@@ -1066,4 +1066,26 @@ void read_window_activate(int num)
 {
 	if (num < 0 || num >= MAX_READ_OPEN) return;
 	if (read_open[num] && read_open[num]->wnd) set(read_open[num]->wnd,MUIA_Window_Open,TRUE);
+}
+
+/******************************************************************
+ Closes a read window
+*******************************************************************/
+void read_window_close(int num)
+{
+	if (num < 0 || num >= MAX_READ_OPEN) return;
+	if (read_open[num] && read_open[num]->wnd)
+		read_window_dispose(&read_open[num]);
+}
+
+/******************************************************************
+ Returns the displayed mail of the given window
+*******************************************************************/
+struct mail *read_window_get_displayed_mail(int num)
+{
+	if (num < 0 || num >= MAX_READ_OPEN) return NULL;
+	if (read_open[num])
+		return read_get_displayed_mail(read_open[num]);
+
+	return NULL;	
 }

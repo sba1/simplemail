@@ -223,7 +223,7 @@ static int thread_init_timer(struct thread_s *thread)
 				NewList((struct List*)&thread->timer_request_list);
 				return 1;
 			}
-			DeleteIORequest(thread->timer_req);
+			DeleteIORequest((struct IORequest*)thread->timer_req);
 			thread->timer_req = NULL;
 		}
 		DeleteMsgPort(thread->timer_port);
@@ -697,7 +697,7 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 		FreeVec(tmsg);
 	}
 
-	va_end (arg_ptr);
+	va_end (argptr);
 	return rc;
 #else
 	int rc;
@@ -764,7 +764,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 		FreeVec(tmsg);
 	}
 
-	va_end (arg_ptr);
+	va_end (argptr);
 	return rc;
 #else
 	int rc;
@@ -852,7 +852,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 		}
 		FreeVec(tmsg);
 	}
-	va_end (arg_ptr);
+	va_end (argptr);
 	return rc;
 #else
 
@@ -962,7 +962,7 @@ int thread_push_function(void *function, int argcount, ...)
 		rc = 1;
 	}
 
-	va_end (arg_ptr);
+	va_end (argptr);
 	return rc;
 }
 
@@ -999,7 +999,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 		} else FreeVec(tmsg);
 	}
 
-	va_end (arg_ptr);
+	va_end (argptr);
 	return rc;
 }
 
@@ -1027,7 +1027,7 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
 		tmsg->async = 1;
 
-		va_end (arg_ptr);
+		va_end (argptr);
 
 		PutMsg(thread_port,&tmsg->msg);
 		return 1;
@@ -1084,7 +1084,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
 		tmsg->async = 2;
 
-		va_end (arg_ptr);
+		va_end (argptr);
 
 		if (tmsg->arg1 && argcount >= 1)
 		{

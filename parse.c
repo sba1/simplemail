@@ -303,6 +303,7 @@ static char *parse_word(char *word, char **pbuf, char **pcharset)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
+#if 0
 static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quoted)
 {
 	char *ret;
@@ -318,6 +319,29 @@ static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quote
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
 }
+#endif
+
+/**************************************************************************
+ Parses an encoded word and converts it to utf8
+**************************************************************************/
+static char *parse_encoded_word_utf8(char *word, utf8 **pbuf)
+{
+  char *ret;
+	char *charset;
+	char *buf;
+
+	if ((ret = parse_encoded_word(word,&buf,&charset)))
+	{
+		utf8 *newbuf = utf8create(buf,charset);
+
+		if (newbuf) *pbuf = newbuf;
+		else ret = NULL;
+
+		free(buf);
+		free(charset);
+	}
+	return ret;
+}
 
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
@@ -325,19 +349,28 @@ static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quote
 static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
 {
 	char *ret;
-	char *buf;
-	char *charset;
 
-	if ((ret = parse_encoded_word(word,&buf,&charset)))
+	if ((ret = parse_encoded_word_utf8(word,pbuf)))
 	{
-		*pbuf = utf8create(buf,charset);
-		free(buf);
-		free(charset);
 		*quoted = 1;
 		return ret;
 	}
+
 	*quoted = 0;
-	if (!ret) ret = parse_quoted_string(word,pbuf);
+
+	if (!ret)
+	{
+		if ((ret = parse_quoted_string(word,pbuf)))
+		{
+			char *newbuf;
+			if ((parse_encoded_word_utf8(*pbuf,&newbuf)))
+			{
+				*quoted = 1;
+				free(*pbuf);
+				*pbuf = newbuf;
+			}
+		}
+	}
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
 }

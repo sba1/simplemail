@@ -225,6 +225,13 @@ STATIC ULONG AddressTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+STATIC ULONG AddressTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
+{
+  DoSuperMethodA(cl, obj, (Msg) msg);
+  msg->MinMaxInfo->DefHeight = msg->MinMaxInfo->MinHeight + 3*_font(obj)->tf_YSize;
+  return 0;
+}
+
 STATIC ULONG AddressTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)
 {
 	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
@@ -389,6 +396,7 @@ STATIC ASM ULONG AddressTreelist_Dispatcher(register __a0 struct IClass *cl, reg
 	{
 		case	OM_NEW: return AddressTreelist_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE: return AddressTreelist_Dispose(cl,obj,msg);
+		case	MUIM_AskMinMax: return AddressTreelist_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
 		case	MUIM_Export: return AddressTreelist_Export(cl,obj,(struct MUIP_Export*)msg);
 		case	MUIM_Import: return AddressTreelist_Import(cl,obj,(struct MUIP_Import*)msg);
 		case	MUIM_AddressTreelist_Refresh: return AddressTreelist_Refresh(cl,obj,(struct MUIP_AddressTreelist_Refresh*)msg);

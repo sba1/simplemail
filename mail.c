@@ -1247,7 +1247,7 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 
 
 /**************************************************************************
- Returns the name and address (name <address>) of the mail
+ Returns the "from" name and address (name <address>) of the mail.
 **************************************************************************/
 char *mail_get_from_address(struct mail *mail)
 {
@@ -1256,6 +1256,56 @@ char *mail_get_from_address(struct mail *mail)
 	char *from = mail_find_header_contents(mail,"from");
 
 	if (parse_mailbox(from,&mb))
+	{
+		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
+		if ((buf = malloc(len)))
+		{
+			if (mb.phrase)
+			{
+				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
+			} else strcpy(buf,mb.addr_spec);
+		}
+		free(mb.addr_spec);
+		free(mb.phrase);
+	}
+	return buf;
+}
+
+/**************************************************************************
+ Returns the first "to" name and address (name <address>) of the mail
+**************************************************************************/
+char *mail_get_to_address(struct mail *mail)
+{
+	struct mailbox mb;
+	char *buf = NULL;
+	char *to = mail_find_header_contents(mail,"to");
+
+	if (parse_mailbox(to,&mb))
+	{
+		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
+		if ((buf = malloc(len)))
+		{
+			if (mb.phrase)
+			{
+				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
+			} else strcpy(buf,mb.addr_spec);
+		}
+		free(mb.addr_spec);
+		free(mb.phrase);
+	}
+	return buf;
+}
+
+/**************************************************************************
+ Returns the first "to" name and address (name <address>) of the mail
+**************************************************************************/
+char *mail_get_replyto_address(struct mail *mail)
+{
+	struct mailbox mb;
+	char *buf = NULL;
+	char *replyto = mail_find_header_contents(mail,"replyto");
+
+	if (parse_mailbox(replyto,&mb))
 	{
 		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
 		if ((buf = malloc(len)))

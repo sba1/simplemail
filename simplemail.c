@@ -50,6 +50,7 @@
 #include "parse.h"
 #include "readwnd.h"
 #include "searchwnd.h"
+#include "startupwnd.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
@@ -1650,6 +1651,9 @@ int simplemail_main(void)
 #endif
 
 	if (!gui_parseargs(0,NULL)) return 0;
+
+	startupwnd_open();
+
 	if (!init_threads()) return 0;
 
 	if (codesets_init())
@@ -1671,6 +1675,7 @@ int simplemail_main(void)
 	}
 	cleanup_addressbook();
 	cleanup_threads();
+	startupwnd_close();
 	return 0;
 }
 

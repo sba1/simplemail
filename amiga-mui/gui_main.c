@@ -70,6 +70,7 @@
 #include "pgplistclass.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
+#include "startupwnd.h"
 #include "subthreads.h"
 #include "transwndclass.h"
 #include "utf8stringclass.h"
@@ -390,6 +391,8 @@ int gui_main(void)
 
 		if (main_window_open())
 		{
+			startupwnd_close();
+
 			/* if we should open the compose window soon after start */
 			if (initial_mailto)
 				callback_write_mail_to_str(initial_mailto, initial_subject);

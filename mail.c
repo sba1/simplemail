@@ -2711,6 +2711,8 @@ utf8 *get_addresses_from_list(struct list *list)
 			string_append(&str,">");
 		} else string_append(&str,address->email);
 
+		if (nextaddress) string_append(&str,",");
+
 		address = nextaddress;
 	}
 	return str.str;

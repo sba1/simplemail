@@ -55,7 +55,7 @@ int open_socket_lib(void)
 void close_socket_lib(void)
 {
 	if (!bsd_in_use) return;
-	if (!bsd_in_use--)
+	if (!(--bsd_in_use))
 	{
 		if (SocketBase)
 		{
@@ -102,7 +102,7 @@ int open_ssl_lib(void)
 void close_ssl_lib(void)
 {
 	if (!ssl_in_use) return;
-	if (!ssl_in_use--)
+	if (!(--ssl_in_use))
 	{
 		CleanupAmiSSL(TAG_DONE);
 		CloseLibrary(AmiSSLBase);

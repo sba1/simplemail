@@ -748,8 +748,103 @@ int codesets_init(void)
 		UTF32 *src_ptr = &src;
 		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
 
-		if (i < 128) src = i;
-		else src = iso_8859_2_to_ucs4[i-128];
+		if (i < 0xa0) src = i;
+		else src = iso_8859_2_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-3");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_3_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-4");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_4_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-5");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_5_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-15");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_15_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("AmigaPL");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = amigapl_to_ucs4[i-0xa0];
 		codeset->table[i].code = i;
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);

@@ -23,6 +23,7 @@
 #include <dos.h>
 #include <string.h>
 #include <intuition/intuition.h>
+#include <dos/dos.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/locale.h>
@@ -30,6 +31,7 @@
 #include <proto/graphics.h>
 #include <proto/layers.h>
 #include <proto/utility.h>
+#include <proto/rexxsyslib.h>
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -293,4 +295,65 @@ LONG GetControlChar(char *label)
 	if (buf) control_char = ToLower(*(buf+1));
 	else control_char = 0;
 	return control_char;
+}
+
+LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
+{
+	struct MsgPort *RexxPort;
+	struct MsgPort *ReplyPort = &((struct Process *)FindTask(NULL))->pr_MsgPort;
+	struct Library *RexxSysBase;
+	int rc;
+
+	*Result = '\0';
+
+	if ((RexxSysBase = OpenLibrary("rexxsyslib.library", 44L)))
+	{
+		Forbid();
+
+		if (RexxPort = FindPort(port))
+		{
+			struct RexxMsg *rexxMsg, *Answer;
+	
+			if (rexxMsg = CreateRexxMsg(ReplyPort, NULL, NULL))
+			{
+				if (rexxMsg->rm_Args[0] = CreateArgstring(Cmd, strlen(Cmd)))
+				{
+					rexxMsg->rm_Action = RXCOMM | RXFF_RESULT;
+
+					PutMsg(RexxPort, &rexxMsg->rm_Node);
+					Permit();
+
+					do
+					{
+						WaitPort(ReplyPort);
+						Answer = (struct RexxMsg *)GetMsg(ReplyPort);
+					} while (Answer == NULL);
+	
+					if ((rc = (Answer->rm_Result1 == RETURN_OK)))
+					{
+						if (Answer->rm_Result2)
+						{
+							strncpy(Result, (STRPTR)Answer->rm_Result2, ResultSize);
+							DeleteArgstring((UBYTE *)Answer->rm_Result2);
+						}
+					}
+	
+					DeleteArgstring((UBYTE *)ARG0(Answer));
+					DeleteRexxMsg(Answer);
+	
+					CloseLibrary(RexxSysBase);
+					return rc;
+				} else
+				{
+					DeleteRexxMsg(rexxMsg);
+				}
+			}
+		}
+	
+		Permit();
+	
+		CloseLibrary(RexxSysBase);
+	}
+	
+	return 0;
 }

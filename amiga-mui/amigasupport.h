@@ -32,5 +32,6 @@ ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );
 VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct RastPort *destRP, LONG xDest, LONG yDest, LONG xSize, LONG ySize, ULONG minterm, APTR bltMask );
 LONG GetControlChar(char *buf);
+LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize);
 
 #endif

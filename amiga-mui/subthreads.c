@@ -20,6 +20,9 @@
 ** subthreads.c
 */
 
+/* Define DONT_USE_THREADS to disable the multithreading */
+/* #define DONT_USE_THREADS */
+
 #include <stdarg.h>
 #include <proto/exec.h>
 
@@ -107,6 +110,7 @@ static int thread_entry(struct ThreadUData *udata)
 
 int thread_parent_task_can_contiue(void)
 {
+#ifndef DONT_USE_THREADS
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
@@ -122,10 +126,14 @@ int thread_parent_task_can_contiue(void)
 		return 1;
 	}
 	return 0;
+#else
+	return 1;
+#endif
 }
 
 int thread_start(int (*entry)(void*), void *eudata)
 {
+#ifndef DONT_USE_THREADS
 	struct ThreadUData *udata;
 
 	if (subthread)
@@ -148,6 +156,10 @@ int thread_start(int (*entry)(void*), void *eudata)
 		}
 	}
 	return 0;
+#else
+	entry(eudata);
+	return 1;
+#endif
 }
 
 void thread_abort(void)
@@ -168,6 +180,7 @@ void thread_abort(void)
 
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
+#ifndef DONT_USE_THREADS
 	int rc = 0;
 
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
@@ -197,4 +210,27 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 	}
 
 	return rc;
+#else
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+#endif
 }

@@ -751,7 +751,9 @@ void callback_check_selected_folder_for_spam(void)
 
 		if (spam_is_mail_spam(folder,m))
 		{
-			folder_set_mail_flags(folder, m, (m->flags & (~MAIL_FLAGS_NEW)) | MAIL_FLAGS_AUTOSPAM);
+			folder_set_mail_flags(folder, m, m->flags | MAIL_FLAGS_AUTOSPAM);
+			if (m->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			m->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(m);
 		}
 	}
@@ -1339,6 +1341,7 @@ void callback_selected_mails_are_spam(void)
 		if (spam_feed_mail_as_spam(folder,mail))
 		{
 			folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+			if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
 			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 		}
@@ -1394,6 +1397,7 @@ void callback_check_selected_mails_if_spam(void)
 			if (spam_is_mail_spam(folder,mail))
 			{
 				folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+				if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
 				mail->flags &= ~MAIL_FLAGS_NEW;
 				main_refresh_mail(mail);
 			}

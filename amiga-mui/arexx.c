@@ -815,6 +815,30 @@ static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ ADDRLOAD ARexx Command
+*****************************************************************/
+static void arexx_addrload(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR filename;
+		ULONG append;
+	} addrload_arg;
+	memset(&addrload_arg,0,sizeof(addrload_arg));
+
+	if ((arg_handle = ParseTemplate("FILENAME,APPEND/S",args,&addrload_arg)))
+	{
+		addressbook_import_file(addrload_arg.filename,addrload_arg.append);
+		main_build_addressbook();
+		addressbookwnd_refresh();
+
+		FreeTemplate(arg_handle);
+	}
+
+}
+
+/****************************************************************
  GETURL Arexx Command
 *****************************************************************/
 static void arexx_geturl(struct RexxMsg *rxmsg, STRPTR args)
@@ -1250,6 +1274,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("ADDRGOTO",command.command)) arexx_addrgoto(rxmsg,command.args);
 		else if (!Stricmp("ADDRNEW",command.command)) arexx_addrnew(rxmsg,command.args);
 		else if (!Stricmp("ADDRSAVE",command.command)) arexx_addrsave(rxmsg,command.args);
+		else if (!Stricmp("ADDRLOAD",command.command)) arexx_addrload(rxmsg,command.args);
 		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);

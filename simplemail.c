@@ -48,23 +48,6 @@
 #include "support.h"
 #include "tcpip.h"
 
-int callback_import_addressbook(void)
-{
-	int rc = 0;
-	char *filename;
-	
-	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
-	if(filename && *filename)
-	{
-		
-		addressbook_import_file(filename);
-		
-		free(filename);
-	}
-	
-	return rc;
-}
-
 /* the current mail should be viewed, returns the number of the window
    which the function has opened or -1 for an error */
 int callback_read_mail(void)
@@ -355,6 +338,7 @@ void callback_forward_this_mail(char *folder_path, int num, struct mail **to_for
 	chdir(buf);
 }
 
+/* a single or multiple mails should be forwarded */
 void callback_forward_mail(void)
 {
 	struct mail *mail;
@@ -728,6 +712,24 @@ void callback_mails_set_status(int status)
 
 		mail = main_get_mail_next_selected(&handle);
 	}	
+}
+
+/* import a addressbook into SimpleMail, return 1 for success */
+int callback_import_addressbook(void)
+{
+	int rc = 0;
+	char *filename;
+	
+	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
+	if (filename && *filename)
+	{
+		addressbook_import_file(filename,1);
+		main_build_addressbook();
+		addressbookwnd_refresh();
+		free(filename);
+	}
+	
+	return rc;
 }
 
 /* apply a single filter in the active folder */

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <libraries/gadtools.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
@@ -290,7 +291,28 @@ int main_window_init(void)
 	win_main = WindowObject,
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
     MUIA_Window_Title, VERS,
-        
+
+		MUIA_Window_Menustrip, MenustripObject,
+			Child, MenuObjectT("Project"),
+				Child, MenuitemObject, MUIA_Menuitem_Title, "About...",End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "About MUI...",End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, NM_BARLABEL, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Quit",End,
+				End,
+			Child, MenuObjectT("Folder"),
+				Child, MenuitemObject, MUIA_Menuitem_Title, "New Group...",End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...",End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Delete",End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Order",
+					Child, MenuitemObject, MUIA_Menuitem_Title, "Save", End,
+					Child, MenuitemObject, MUIA_Menuitem_Title, "Reset", End,
+					End,
+				End,
+			Child, MenuObjectT("Settings"),
+				Child, MenuitemObject, MUIA_Menuitem_Title, "MUI...",End,
+				End,
+			End,
+
 		WindowContents, main_group = VGroup,
 			Child, buttons_group = HGroupV,
 				Child, HGroup,

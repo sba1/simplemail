@@ -2432,6 +2432,10 @@ static void folder_delete_mails(struct folder *folder)
 	getcwd(path, sizeof(path));
 	if(chdir(folder->path) == -1) return;
 
+	/* If mail infos are not read_yet, read them now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
+
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
 	{

@@ -23,6 +23,8 @@
 #ifndef SM__SIGNATURECYCLECLASS_H
 #define SM__SIGNATURECYCLECLASS_H
 
+#include "folder.h"
+
 IMPORT struct MUI_CustomClass *CL_SignatureCycle;
 #define SignatureCycleObject (Object*)MyNewObject(CL_SignatureCycle->mcc_Class, NULL
 
@@ -32,8 +34,8 @@ IMPORT struct MUI_CustomClass *CL_SignatureCycle;
 #define MUIA_SignatureCycle_SignatureList   (TAG_USER | 0x30130002) /* I.. struct list * */
 
 /* special value for setting the Entries */
-#define MUIV_SignatureCycle_Default      -10
-#define MUIV_SignatureCycle_NoSignature  -11
+#define MUIV_SignatureCycle_Default      FOLDER_SIGNATURE_DEFAULT
+#define MUIV_SignatureCycle_NoSignature  FOLDER_SIGNATURE_NO
 
 int create_signaturecycle_class(void);
 void delete_signaturecycle_class(void);

@@ -27,7 +27,6 @@
 
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
-#include <mui/betterstring_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -139,7 +138,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 							if (!tidata)
 							{
 								data->selected_account = NULL;
-								set(data->string, MUIA_String_Contents,_("<Default>"));
+								set(data->string, MUIA_Text_Contents,_("<Default>"));
 							} else
 							{
 								struct account *ac;
@@ -154,7 +153,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 										else strcpy(buf,ac->name);
 									}
 									sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
-									set(data->string,MUIA_String_Contents,buf);
+									set(data->string,MUIA_Text_Contents,buf);
 								}
 							}
 						}
@@ -173,7 +172,7 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
-					MUIA_Popstring_String, string = BetterStringObject,TextFrame,MUIA_CycleChain,1,MUIA_BetterString_NoInput, TRUE,End,
+					MUIA_Popstring_String, string = TextObject,TextFrame,MUIA_InputMode, MUIV_InputMode_RelVerify,MUIA_CycleChain,1,End,
 					MUIA_Popobject_Object, NListviewObject,
 							MUIA_NListview_NList, list = NListObject,
 								MUIA_NList_Format, ",",
@@ -194,6 +193,7 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_myhook(&data->objstr_hook,(HOOKFUNC)account_objstr,data);
 	init_myhook(&data->strobj_hook,(HOOKFUNC)account_strobj,data);
 
+	DoMethod(string, MUIM_Notify, MUIA_Pressed, FALSE, obj, 1, MUIM_Popstring_Open);
 	DoMethod(list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, obj, 2, MUIM_Popstring_Close, 1);
 
 	SetAttrs(list,

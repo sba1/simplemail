@@ -49,6 +49,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 
+#include "audioselectgroupclass.h"
 #include "compiler.h"
 #include "composeeditorclass.h"
 #include "configtreelistclass.h"
@@ -71,6 +72,8 @@ static Object *user_folder_string;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
+static Object *receive_sound_check;
+static Object *receive_sound_string;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
 static Object *read_wrap_checkbox;
@@ -349,11 +352,14 @@ static void config_use(void)
 
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
+	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
+	user.config.receive_sound = xget(receive_sound_check,MUIA_Selected);
+	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
 	user.config.taglines_use = xget(taglines_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
@@ -602,9 +608,19 @@ static int init_tcpip_receive_group(void)
 				End,
 			Child, TextObject, MUIA_Text_Contents, _("minutes"), End,
 			End,
+		Child, HorizLineTextObject(_("New mails")),
+		Child, ColGroup(3),
+			Child, MakeLabel(_("Sound")),
+			Child, receive_sound_check = MakeCheck(_("Sound"),user.config.receive_sound),
+			Child, receive_sound_string = AudioSelectGroupObject, MUIA_Disabled, !user.config.receive_sound, End,
+			End,
 		End;
 
 	if (!tcpip_receive_group) return 0;
+
+	set(receive_sound_string,MUIA_String_Contents,user.config.receive_sound_file);
+
+	DoMethod(receive_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, receive_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 
 	return 1;
 }

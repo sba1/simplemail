@@ -51,6 +51,7 @@
 #include "amigasupport.h"
 #include "arexx.h"
 #include "attachmentlistclass.h"
+#include "audioselectgroupclass.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
 #include "configtreelistclass.h"
@@ -226,6 +227,7 @@ void all_del(void)
 		{
 			app_del();
 	
+			delete_audioselectgroup_class();
 			delete_pgplist_class();
 			delete_addresstreelist_class();
 			delete_multistring_class();
@@ -282,7 +284,7 @@ int all_init(void)
 							create_popupmenu_class() && create_icon_class() && 
 							create_configtreelist_class() && create_filterrule_class() &&
 							create_multistring_class() && create_addresstreelist_class() &&
-							create_pgplist_class())
+							create_pgplist_class() && create_audioselectgroup_class())
 					{
 						if (app_init())
 						{

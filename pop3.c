@@ -376,7 +376,7 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 **************************************************************************/
 static void pop3_noop(struct connection *conn)
 {
-	if (tcp_write(conn,"NOOP\r\n",6) == 6)
+	if (tcp_write(conn,"STAT\r\n",6) == 6)
 	{
 		pop3_receive_answer(conn);
 	}
@@ -474,7 +474,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if (mno >= 1 && mno <= amm)
 			mail_array[mno].size = msize;
 
-		if ((receive_preselection != 0) && (msize > receive_size * 1024))
+		if ((receive_preselection == 2) || ((receive_preselection == 1) && (msize > receive_size * 1024)))
 		{
 			/* add this mail to the transfer window */
 			thread_call_parent_function_async(status_mail_list_insert,3,mno,mail_array[mno].flags,msize);
@@ -494,7 +494,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	/* No user interaction wanted */
 	if (receive_preselection == 0) return mail_array;
 
-	if (cont && mails_add && receive_preselection == 2)
+	if (cont && mails_add && receive_preselection != 0)
 	{
 		/* no errors and the user wants a more informative preselection */
 		thread_call_parent_function_async(status_set_status,1,N_("Getting mail infos..."));
@@ -555,6 +555,20 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				mail_free(m);
 			}
 		}
+	}
+
+	/* if the application is iconified than only download mails < the selected size
+	   and don't wait for user interaction  */
+	if (main_is_iconified())
+	{
+		for (i=1;i<=amm;i++)
+		{
+			if (mail_array[i].size > receive_size * 1024)
+			{
+				mail_array[i].flags &= ~MAILF_DOWNLOAD;
+			}
+		}
+		return mail_array;
 	}
 
 	if (mails_add && cont)

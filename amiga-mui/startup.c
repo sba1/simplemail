@@ -104,9 +104,9 @@ static int start(struct WBStartup *wbs)
 					{
 						struct StackSwapStruct stk;
 
-						if ((stk.stk_Lower = (APTR)AllocVec(30000,MEMF_PUBLIC)))
+						if ((stk.stk_Lower = (APTR)AllocVec(40000,MEMF_PUBLIC)))
 						{
-					    stk.stk_Upper = (ULONG)stk.stk_Lower + 30000;
+					    stk.stk_Upper = (ULONG)stk.stk_Lower + 40000;
 					    stk.stk_Pointer = (APTR)stk.stk_Upper;
 					    rc = __swap_and_start(&stk);
 					    FreeVec(stk.stk_Lower);

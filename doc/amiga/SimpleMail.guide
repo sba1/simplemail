@@ -881,8 +881,13 @@ exactly under the TLS protocol as described in RFC #2595, using port 995
 instead of the usual 110. In a nutshell, this adds extra security to prevent
 the common eavesdropping and hijacking attacks which POP is subject to.
 
-If your POP3 server does not support this, you'll receive an error message
-while checking for new mail - in that case, switch this option off.
+The "with STLS" gadget enables the use of the POP3 STARTTLS extension, adding
+another layer of security to the process. This will in turn use the standard
+port 110.
+
+If your POP3 server doesn't support any of this or for some reason SimpleMail
+cannot establish a communication with an acceptable level of security, you'll
+receive an error message while checking for new mail.
 
 Also, note this requires AmiSSL to work.
 
@@ -918,7 +923,9 @@ In this case, SimpleMail will use the SMTP STARTTLS extension as
 described in RFC #2487 to request an authenticated communication
 with the SMTP server, trying to protect the communication from
 the typical man-in-the-middle attack coming from any system routing
-the communication.
+the communication. This does not mean that the entire SMTP chain
+has been made private though - any other SMTP server in the chain
+carrying your email to the final recipient is still subject to attacks.
 
 If your SMTP server does not support this, you'll receive an error
 message while trying to send email - in that case, switch this option
@@ -2082,7 +2089,7 @@ FAQ
   YAM development, as YAM is under GPL? 
 
 Because when we started developing SimpleMail, YAM wasn't under GPL and no
-one knew if it ever would be. As we are both students of computer sciences
+one knew if it ever would be. As we both are students of computer sciences
 we decided to write our own mailer to gain some experience, and that's the
 reason why we are still developing it. Another reason is that it would
 probably be more work to rewrite YAM than to write our own mailer. And
@@ -2190,9 +2197,9 @@ david@saug.org
 - This FAQ does not resolve my problem.
 
 Well, as long as your problem is related to SimpleMail ;) feel free to
-join the SimpleMail-Usr mailing list to get feedback from the authors
-as well as from other SimpleMail users. See the @{" Authors " LINK "INFO"} chapter
-for more information.
+join the support mailing list to get feedback from the authors as well
+as from other SimpleMail users. See the @{" Authors " LINK "INFO"} chapter for
+more information.
 
 @ENDNODE
 @NODE "TECH" "Technical"
@@ -2246,7 +2253,7 @@ FURTHER INFORMATION ABOUT SIMPLEMAIL
 @{B}SimpleMail sources @{UB}are available on request from the authors:
 
                Sebastian Bauer <sebauer\@t-online.de>
-             Hynek Schlawack <hynek\@rz.uni-potsdam.de>
+             Hynek Schlawack <hynek\@hys.in-berlin.de>
 
 Developers wanting to join the effort are welcome!
 
@@ -2257,8 +2264,8 @@ The @{B}latest public version @{UB}is always available at
 
 
 If you want to discuss SimpleMail related issues with other users,
-by all means join the @{B}SimpleMail mailing list@{UB} for users. To subscribe,
-send a mail to
+by all means join the @{B}SimpleMail mailing list@{UB}. To subscribe, send a
+mail to
 
                SimpleMail-usr-request\@freelists.org
 
@@ -2291,7 +2298,7 @@ The @{B}SimpleMail User Gallery @{UB}is located at
 Authors
 
 @{b}Sebastian Bauer @{ub}<sebauer\@t-online.de>
-@{b}Hynek Schlawack @{ub}<hynek\@rz.uni-potsdam.de>
+@{b}Hynek Schlawack @{ub}<hynek\@hys.in-berlin.de>
 
 
 Additional programming advice
@@ -2388,6 +2395,7 @@ And all the people who keep submitting bug reports!
    M...
 
    @{" Mail Transfers " LINK TR_W}
+   @{" Mailing list, The SimpleMail " LINK INFO}
    @{" Main window " LINK MA_W}
    @{" Main window - folder list " LINK MA00}
    @{" Main window - Folder Menu " LINK MAM2}

@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "support.h"
 #include "support_indep.h"
 
 /******************************************************************
@@ -305,4 +306,20 @@ void array_free(char **string_array)
 	while ((string = string_array[i++]))
 		free(string);
 	free(string_array);
+}
+
+/**************************************************************************
+ Combines two path components. The returned string is malloc()ed
+**************************************************************************/
+char *mycombinepath(char *drawer, char *file)
+{
+	int len;
+	char *dest;
+	len = strlen(drawer)+strlen(file)+4;
+	if ((dest = malloc(len)))
+	{
+		strcpy(dest,drawer);
+		sm_add_part(dest,file,len);
+	}
+	return dest;
 }

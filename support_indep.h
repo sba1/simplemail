@@ -44,4 +44,6 @@ int array_length(char **strings);
 char **array_duplicate(char **rcp);
 void array_free(char **string_array);
 
+char *mycombinepath(char *drawer, char *file);
+
 #endif

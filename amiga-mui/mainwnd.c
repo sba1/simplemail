@@ -81,7 +81,8 @@ static Object *win_main;
 static Object *main_menu;
 static Object *main_settings_folder_menuitem;
 static Object *main_settings_addressbook_menuitem;
-static Object *main_scripts_menu; /* dynamic */
+static Object *main_scripts_menu;
+static Object *main_scripts_execute_menuitem;
 static Object *main_group;
 static Object *button_fetch;
 static Object *button_send;
@@ -437,7 +438,9 @@ int main_window_init(void)
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
 		MENU_SETTINGS_MUI,
-		MENU_SETTINGS_SAVEPREFS
+		MENU_SETTINGS_SAVEPREFS,
+		MENU_SCRIPTS,
+		MENU_SCRIPTS_EXECUTESCRIPT
 	};
 
 	static const struct NewMenu nm_untranslated[] =
@@ -481,6 +484,8 @@ int main_window_init(void)
 		{NM_ITEM, N_("MUI..."), NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Save Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS_SAVEPREFS},
+		{NM_TITLE, N_("Scripts"), NULL, 0, 0, (APTR)MENU_SCRIPTS},
+		{NM_ITEM, N_(".:Execute ARexx Script..."), NULL, 0, 0, (APTR)MENU_SCRIPTS_EXECUTESCRIPT},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
@@ -607,6 +612,8 @@ int main_window_init(void)
 	{
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
+		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
+		main_scripts_execute_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS_EXECUTESCRIPT);
 
 		set(main_settings_folder_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','F'));
 		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
@@ -651,6 +658,11 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENV);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
+
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
+
+//	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
+
 
 		/* Key notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
@@ -1195,26 +1207,13 @@ void main_build_accounts(void)
 *******************************************************************/
 void main_build_scripts(void)
 {
-	Object *entry;
+//	Object *entry;
 
-	if (!main_scripts_menu) 
-	{
-		main_scripts_menu = MenuObject,
-			MUIA_Menu_Title, "Scripts",
-			End;
-		DoMethod(main_menu,OM_ADDMEMBER,main_scripts_menu);
-	} else
-	{
-		DisposeAllFamilyChilds(main_scripts_menu);
-	}
+	DoMethod(main_scripts_menu, OM_REMMEMBER, main_scripts_execute_menuitem);
+	DisposeAllFamilyChilds(main_scripts_menu);
+	DoMethod(main_scripts_menu, OM_ADDMEMBER, main_scripts_execute_menuitem);
 
-	entry = MenuitemObject,
-		MUIA_Menuitem_Title, _("Execute script..."),
-		End;
-
-	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
-
-	DoMethod(main_scripts_menu, OM_ADDMEMBER, entry);
+//	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 }
 
 /******************************************************************

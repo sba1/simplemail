@@ -2022,8 +2022,8 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 {
 	enum punycode_status status;
 	const utf8 *sourceend;
-	char *punny;
-	punycode_uint punny_len;
+	char *puny;
+	punycode_uint puny_len;
 
 	punycode_uint *dest, *target;
 	punycode_uint dest_len;
@@ -2072,28 +2072,29 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 	}
 
 	dest_len = target - dest; /* No 0 ending */
-	punny_len = dest_len * 2;
+	puny_len = dest_len * 2;
 
 	do
 	{
-		int strored_punny_len = punny_len;
+		int strored_puny_len = puny_len;
 
-		if (!(punny = malloc(punny_len+5)))
+		if (!(puny = malloc(puny_len+5)))
 		{
 			free(dest);
 			return NULL;
 		}
-		status = punycode_encode(dest_len, dest, NULL /* case flags */, &punny_len, punny);
+		status = punycode_encode(dest_len, dest, NULL /* case flags */, &puny_len, puny);
 
 		if (status == punycode_success)
 		{
+			puny[puny_len] = 0;
 			free(dest);
-			return punny;
+			return puny;
 		}
-		punny_len = strored_punny_len * 2;
+		puny_len = strored_puny_len * 2;
 	} while (status == punycode_big_output);
 
-	free(punny);
+	free(puny);
 	free(dest);
 	return NULL;
 }

@@ -20,11 +20,15 @@
 ** shutdownwnd.c
 */
 
+#include <string.h>
+
 #include <datatypes/pictureclass.h>
 
 #include <proto/intuition.h>
 #include <proto/datatypes.h>
 #include <proto/graphics.h>
+
+#include "smintl.h"
 
 #include "datatypescache.h"
 #include "shutdownwnd.h"
@@ -37,8 +41,13 @@ void shutdownwnd_open(void)
 
 	if ((scr = LockPubScreen(NULL)))
 	{
-		Object *obj = LoadPicture("PROGDIR:Images/shutdown",scr);
-		if (obj)
+		Object *obj;
+		LONG pen;
+
+		/* get a white pen for the color of our text */
+		pen = ObtainBestPenA(scr->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);
+
+		if ((obj = LoadPicture("PROGDIR:Images/shutdown",scr)))
 		{
 			struct BitMapHeader *bmhd = NULL;
 			struct BitMap *bitmap = NULL;
@@ -68,13 +77,23 @@ void shutdownwnd_open(void)
 					WA_BackFill, LAYERS_NOBACKFILL,
 					TAG_DONE)))
 				{
+					struct TextExtent te;
+					char *txt = _("Shutting down...");
+
 					BltBitMapRastPort(bitmap,0,0,
 													  shutdown_wnd->RPort, 0, 0, width, height,
 													  0xc0);
+
+					SetDrMd(shutdown_wnd->RPort,JAM1);
+					SetAPen(shutdown_wnd->RPort,pen);
+					TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
+					Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
+					Text(shutdown_wnd->RPort,txt,strlen(txt));
 				}
 			}
 			DisposeDTObject(obj);
 		}
+		ReleasePen(scr->ViewPort.ColorMap,pen);
 		UnlockPubScreen(NULL,scr);
 	}
 }

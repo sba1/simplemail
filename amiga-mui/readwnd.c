@@ -558,6 +558,7 @@ void read_window_open(char *folder, struct mail *mail)
 					Child, reply_button = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
 					Child, forward_button = MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
 					End,
+				Child, HVSpace,
 				End,
 			Child, contents_page = PageGroup,
 				MUIA_Group_ActivePage, PAGE_TEXT,

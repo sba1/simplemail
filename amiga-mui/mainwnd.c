@@ -91,6 +91,7 @@ static Object *button_read;
 static Object *button_getadd;
 static Object *button_delete;
 static Object *button_change;
+static Object *button_move;
 static Object *button_new;
 static Object *button_reply;
 static Object *button_forward;
@@ -520,7 +521,7 @@ int main_window_init(void)
 		{NM_TITLE, N_("Message"), NULL, 0, 0, NULL},
 		{NM_ITEM, N_("D:Read"), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, N_("E:Edit"), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
-		{NM_ITEM, N_("M:Move..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_MOVE},
+		{NM_ITEM, N_("M:Move..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_MOVE},
 		{NM_ITEM, N_("Copy..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
 		{NM_ITEM, N_("Delete..."), "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
 /*
@@ -581,6 +582,7 @@ int main_window_init(void)
 						MUIA_Weight, 200,
 						Child, button_read = MakePictureButton(_("Rea_d"),"PROGDIR:Images/MailRead"),
 						Child, button_change = MakePictureButton(_("_Edit"),"PROGDIR:Images/MailModify"),
+						Child, button_move = MakePictureButton(_("_Move"),"PROGDIR:Images/MailMove"),
 						Child, button_delete = MakePictureButton(_("De_lete"),"PROGDIR:Images/MailDelete"),
 						Child, button_getadd = MakePictureButton(_("Ge_tAdd"),"PROGDIR:Images/MailGetAddress"),
 						End,
@@ -718,8 +720,8 @@ int main_window_init(void)
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
 /*
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
@@ -742,6 +744,7 @@ int main_window_init(void)
 		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
 		DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
 		DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+		DoMethod(button_move, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
 		DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);

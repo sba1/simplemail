@@ -501,6 +501,44 @@ void callback_forward_selected_mails(void)
 	}
 }
 
+void callback_move_selected_mails(void)
+{
+	struct mail *mail;
+	void *handle;
+	int num;
+	struct folder *src_folder;
+	struct folder *dest_folder;
+
+	if (!(src_folder = main_get_folder())) return;
+
+	/* Count the number of selected mails first */
+	mail = main_get_mail_first_selected(&handle);
+	num = 0;
+	while (mail)
+	{
+		num++;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!num) return;
+
+	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mails"),src_folder)))
+	{
+		if (src_folder != dest_folder)
+		{
+			struct mail *mail = main_get_mail_first_selected(&handle);
+			handle = NULL;
+			while (mail)
+			{
+				folder_move_mail(src_folder,dest_folder,mail);
+				mail = main_get_mail_next_selected(&handle);
+			}
+			main_refresh_folder(src_folder);
+			main_refresh_folder(dest_folder);
+			main_remove_mails_selected();
+		}
+	}
+}
 
 /* the currently selected mail should be changed */
 void callback_change_mail(void)

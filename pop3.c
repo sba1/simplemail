@@ -295,6 +295,8 @@ static int uidl_open(struct uidl *uidl, struct pop3_server *server)
 	FILE *fh;
 	int rc = 0;
 
+	SM_ENTER;
+
 	if (!uidl->filename) return 0;
 
 	if ((fh = fopen(uidl->filename,"rb")))
@@ -315,7 +317,7 @@ static int uidl_open(struct uidl *uidl, struct pop3_server *server)
 
 		fclose(fh);
 	}
-	return rc;
+	SM_RETURN(rc,"%ld");
 }
 
 /**************************************************************************
@@ -376,6 +378,8 @@ void uidl_add(struct uidl *uidl, struct dl_mail *m)
 	int i=0;
 	FILE *fh;
 
+	SM_ENTER;
+
 	if (!m->uidl || m->uidl[0] == 0) return;
 	for (i=0;i<uidl->num_entries;i++)
 	{
@@ -388,10 +392,14 @@ void uidl_add(struct uidl *uidl, struct dl_mail *m)
 				uidl->entries[i].size = -1;
 				fwrite(&uidl->entries[i],1,sizeof(uidl->entries[i]),fh);
 				fclose(fh);
+				SM_LEAVE;
 				return;
 			}
 		}
 	}
+
+	SM_DEBUGF(15,("Appending to %s\n",uidl->filename));
+
 	if ((fh = fopen(uidl->filename,"ab")))
 	{
 		struct uidl_entry entry;
@@ -404,7 +412,12 @@ void uidl_add(struct uidl *uidl, struct dl_mail *m)
 		strncpy(entry.uidl,m->uidl,sizeof(entry.uidl));
 		fwrite(&entry,1,sizeof(entry),fh);
 		fclose(fh);
+	} else
+	{
+		SM_DEBUGF(5,("Failed to open %s\n",uidl->filename));
 	}
+
+	SM_LEAVE;
 }
 
 /**************************************************************************
@@ -511,7 +524,7 @@ static void pop3_noop(void *arg)
  above for the dl_mail structure.
 **************************************************************************/
 static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *server,
-																 struct uidl *uidl,
+								 struct uidl *uidl,
                                  int receive_preselection, int receive_size, int has_remote_filter)
 {
 	char *answer;
@@ -554,7 +567,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if (pop3_uidl(conn,server,mail_array,uidl))
 		{
 			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
-  	  uidl_remove_unused(uidl,mail_array);
+			uidl_remove_unused(uidl,mail_array);
 		} else
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED)
@@ -565,7 +578,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
   }
 
-	SM_DEBUGF(10,("Getting mail sizes..."));
+	SM_DEBUGF(10,("Getting mail sizes...\n"));
 	thread_call_parent_function_async(status_set_status,1,_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
@@ -574,7 +587,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		return mail_array;
 	}
 
-  /* Was the command succesful? */
+	/* Was the command succesful? */
 	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
@@ -586,8 +599,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	/* Freeze the list which displays the e-Mails */
 	thread_call_parent_function_async(status_mail_list_freeze,0);
 
-  /* Encounter the sizes of the mails, if we find a mail *
-   * with a bigger size notify the transfer window       */
+	/* Encounter the sizes of the mails, if we find a mail *
+	 * with a bigger size notify the transfer window       */
 	while ((answer = tcp_readln(conn)))
 	{
 		int mno,msize;

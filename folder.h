@@ -56,7 +56,7 @@ struct folder
 	char *def_to; /* default to - useful for mailinglists */
 	char *def_from; /* default from address - also useful for mls */
 	char *def_replyto; /* default replyto - " */
-	int def_signature; /* default Signature */ 
+	char *def_signature; /* default Signature */ 
 
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted, 
 																			the size of this array is always big as mail_array */
@@ -83,8 +83,6 @@ struct folder
 	struct list imap_all_folder_list; /* string_node * */
 	struct list imap_sub_folder_list; /* string_node * */
 
-	int update_signature; /* when an signature gets updated during config but not saved this will be TRUE */
-	int old_def_signature; /* the old signature if the update must be undone */
 	/* more will follow */
 };
 
@@ -115,8 +113,8 @@ struct folder
 #define FOLDER_SPECIAL_GROUP 5
 #define FOLDER_SPECIAL_SPAM 6
 
-#define FOLDER_SIGNATURE_DEFAULT -10  /* the default signature for init */
-#define FOLDER_SIGNATURE_NO      -11  /* the no signature */
+#define FOLDER_SIGNATURE_DEFAULT NULL           /* the default signature for init */
+#define FOLDER_SIGNATURE_NO      "NoSignature"  /* the no signature */
 
 char *default_folder_path(void);
 char *new_folder_path(void);
@@ -136,16 +134,12 @@ int folder_number_of_unread_mails(struct folder *folder);
 int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new);
-int folder_count_signatures(int def_signature);
-int folder_update_signatures(int def_signature);
-void folder_use_updated_signatures(void);
-void folder_save_updated_signatures(void);
-void folder_undo_updated_signatures(void);
+int folder_count_signatures(char *def_signature);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);
 
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, int newdefsignature, int prim_sort, int second_sort);
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, char *newdefsignature, int prim_sort, int second_sort);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 
 struct folder *folder_first(void);

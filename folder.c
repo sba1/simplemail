@@ -963,99 +963,19 @@ void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_n
 /******************************************************************
  Count the signatures. 
 *******************************************************************/
-int folder_count_signatures(int def_signature)
+int folder_count_signatures(char *def_signature)
 {
 	struct folder *f = folder_first();
 	int use_count = 0;
 	while (f)
 	{
-		if (f->def_signature == def_signature)
+		if (mystrcmp(f->def_signature, def_signature) == 0)
 		{
 			use_count++;
 		}
 		f = folder_next(f);
 	}
 	return use_count;
-}
-
-/******************************************************************
- Update the signatures. 
-*******************************************************************/
-int folder_update_signatures(int def_signature)
-{
-	struct folder *f = folder_first();
-	int update_count = 0;
-	while (f)
-	{
-		/* remember the old sig bit only the first time! */
-		if (!f->update_signature) f->old_def_signature = f->def_signature;
-		if (f->def_signature == def_signature)
-		{
-			f->def_signature = FOLDER_SIGNATURE_DEFAULT;
-		}
-		if (f->def_signature > def_signature)
-		{
-			f->def_signature--;
-		}
-		if (f->old_def_signature != f->def_signature)
-		{
-			update_count++;
-			f->update_signature = TRUE;
-		}
-		f = folder_next(f);
-	}
-	return update_count;
-}
-
-/******************************************************************
- Use the signatures. 
-*******************************************************************/
-void folder_use_updated_signatures(void)
-{
-	struct folder *f = folder_first();
-	while (f)
-	{
-		if (f->update_signature)
-		{
-			f->old_def_signature = f->def_signature;
-		}
-		f = folder_next(f);
-	}
-}
-
-/******************************************************************
- Save folder configs with updated signatures. 
-*******************************************************************/
-void folder_save_updated_signatures(void)
-{
-	struct folder *f = folder_first();
-	while (f)
-	{
-		if (f->update_signature)
-		{
-			f->update_signature = FALSE;
-			f->old_def_signature = f->def_signature;
-			folder_config_save(f);
-		}
-		f = folder_next(f);
-	}
-}
-
-/******************************************************************
- Undo folder configs changed signatures. 
-*******************************************************************/
-void folder_undo_updated_signatures(void)
-{
-	struct folder *f = folder_first();
-	while (f)
-	{
-		if (f->update_signature)
-		{
-			f->update_signature = FALSE;
-			f->def_signature = f->old_def_signature;
-		}
-		f = folder_next(f);
-	}
 }
 
 /******************************************************************
@@ -1368,7 +1288,6 @@ static struct folder *folder_add(char *path)
 		/* Initialize everything with 0 */
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.num_index_mails = -1;
-		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);
@@ -1441,7 +1360,6 @@ static struct folder_node *folder_create_group(char *name)
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.name = mystrdup(name);
 		node->folder.special = FOLDER_SPECIAL_GROUP;
-		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);
 
@@ -1492,7 +1410,6 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 
 		name = sm_file_part(imap_path);
 		node->folder.name = mystrdup(name);
-		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 		node->folder.parent_folder = parent;
 		node->folder.path =  mycombinepath(parent->path,name);
 		node->folder.special = FOLDER_SPECIAL_NO;
@@ -1740,7 +1657,11 @@ static int folder_config_load(struct folder *f)
 					free(f->def_replyto);
 					f->def_replyto = mystrdup(&buf[15]);
 				}
-				else if (!mystrnicmp("DefaultSignature=",buf,17)) f->def_signature = atoi(&buf[17]);
+				else if (!mystrnicmp("DefaultSignature=",buf,17))
+				{
+					free(f->def_signature);
+					f->def_signature = mystrdup(&buf[17]);
+				}
 				else if (!mystrnicmp("IsIMap=",buf,7)) f->is_imap = atoi(&buf[7]);
 				else if (!mystrnicmp("IMapUser=",buf,9))
 				{
@@ -1797,7 +1718,7 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"DefaultTo=%s\n", f->def_to?f->def_to:"");
 		fprintf(fh,"DefaultFrom=%s\n", f->def_from?f->def_from:"");
 		fprintf(fh,"DefaultReplyTo=%s\n", f->def_replyto?f->def_replyto:"");
-		fprintf(fh,"DefaultSignature=%d\n",f->def_signature);
+		fprintf(fh,"DefaultSignature=%s\n",f->def_signature?f->def_signature:"");
 		fprintf(fh,"IsIMap=%d\n",f->is_imap);
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
@@ -1882,7 +1803,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
  Set some folder attributes. Returns 1 if the folder must be
  refreshed in the gui.
 *******************************************************************/
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, int newdefsignature, int prim_sort, int second_sort)
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, char* newdefsignature, int prim_sort, int second_sort)
 {
 	int refresh = 0;
 	int rescan = 0;
@@ -1969,9 +1890,10 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		changed = 1;
 	}
 
-	if (newdefsignature != f->def_signature)
+	if (mystrcmp(newdefsignature, f->def_signature) != 0)
 	{
-		f->def_signature = newdefsignature;
+		free(f->def_signature);
+		f->def_signature = mystrdup(newdefsignature);
 		changed = 1;
 	}
 	

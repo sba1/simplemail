@@ -55,6 +55,9 @@ struct transwnd_Data
 	Object *mail_listview, *mail_list, *mail_group;
 	Object *start;
 	Object *ignore_check;
+	Object *status_download;
+	Object *status_trashcan;
+
 	struct MyHook construct_hook;
 	struct MyHook destruct_hook;
 	struct MyHook display_hook;
@@ -207,6 +210,8 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->mail_group = mail_group;
 		data->start = start;
 		data->ignore_check = ignore_check;
+		data->status_download = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End;
+		data->status_trashcan = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
 
 		init_myhook(&data->construct_hook, (HOOKFUNC)mail_construct, data);
 		init_myhook(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);
@@ -237,6 +242,12 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 
 STATIC VOID transwnd_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
+	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
+
+	DoMethod(data->mail_list, MUIM_NList_UseImage, NULL, MUIV_NList_UseImage_All, 0);
+	if (data->status_download) MUI_DisposeObject(data->status_download);
+	if (data->status_trashcan) MUI_DisposeObject(data->status_trashcan);
+
 	DoSuperMethodA(cl, obj, msg);
 }
 
@@ -365,9 +376,9 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 
 	if (!data->mail_group_shown)
 	{
-		DoMethod(data->mail_list, MUIM_NList_UseImage,NULL, -1, 0);
-		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End, 1, 0);
-		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 2, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, NULL, MUIV_NList_UseImage_All, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, data->status_download, 1, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, data->status_trashcan, 2, 0);
 		set(data->mail_group, MUIA_ShowMe, TRUE);
 		data->mail_group_shown = 1;
 	}

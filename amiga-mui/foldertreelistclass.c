@@ -66,6 +66,14 @@ struct FolderTreelist_Data
 	int mails_drag;
 	int show_root;
 
+	Object *image_incoming_obj;
+	Object *image_outgoing_obj;
+	Object *image_sent_obj;
+	Object *image_deleted_obj;
+	Object *image_other_obj;
+	Object *image_group_obj;
+	Object *image_spam_obj;
+
 	APTR image_incoming;
 	APTR image_outgoing;
 	APTR image_sent;
@@ -268,6 +276,15 @@ STATIC ULONG FolderTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 		MUI_DisposeObject(data->context_menu);
 	}
 	if (data->title_menu) MUI_DisposeObject(data->title_menu);
+
+	if (data->image_incoming_obj) MUI_DisposeObject(data->image_incoming_obj);
+	if (data->image_outgoing_obj) MUI_DisposeObject(data->image_outgoing_obj);
+	if (data->image_sent_obj) MUI_DisposeObject(data->image_sent_obj);
+	if (data->image_deleted_obj) MUI_DisposeObject(data->image_deleted_obj);
+	if (data->image_other_obj) MUI_DisposeObject(data->image_other_obj);
+	if (data->image_spam_obj) MUI_DisposeObject(data->image_spam_obj);
+	if (data->image_group_obj) MUI_DisposeObject(data->image_group_obj);
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -276,13 +293,21 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End, 0);
-	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End, 0);
-	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End, 0);
-	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End, 0);
-	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End, 0);
-	data->image_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End, 0);
-	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End, 0);
+	data->image_incoming_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End;
+	data->image_outgoing_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End;
+	data->image_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End;
+	data->image_deleted_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End;
+	data->image_other_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End;
+	data->image_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End;
+	data->image_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End;
+
+	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_incoming_obj, 0);
+	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_outgoing_obj, 0);
+	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_sent_obj, 0);
+	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_deleted_obj, 0);
+	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_other_obj, 0);
+	data->image_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_spam_obj, 0);
+	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_group_obj, 0);
 
 	return 1;
 }

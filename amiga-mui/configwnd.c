@@ -164,6 +164,17 @@ static struct account *account_last_selected;
 static struct phrase *phrase_last_selected;
 static struct signature *signature_last_selected;
 
+static Object *image_prefs_main_obj;
+static Object *image_prefs_account_obj;
+static Object *image_prefs_receive_obj;
+static Object *image_prefs_write_obj;
+static Object *image_prefs_read_obj;
+static Object *image_prefs_readplain_obj;
+static Object *image_prefs_readhtml_obj;
+static Object *image_prefs_signature_obj;
+static Object *image_prefs_phrase_obj;
+static Object *image_prefs_spam_obj;
+
 #define GROUPS_USER			0
 #define GROUPS_ACCOUNT		1
 #define GROUPS_RECEIVE 	2
@@ -1906,16 +1917,27 @@ static void init_config(void)
 		static char texts[GROUPS_MAX][200];
 		int i;
 
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_main", End, 1, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_account", End, 2, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_receive", End, 3, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_write", End, 4, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_read", End, 5, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readplain", End, 6, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readhtml", End, 7, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_signature", End, 8, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End, 9, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_spam", End, 10, 0);
+		image_prefs_main_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_main", End;
+		image_prefs_account_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_account", End;
+		image_prefs_receive_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_receive", End;
+		image_prefs_write_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_write", End;
+		image_prefs_read_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_read", End;
+		image_prefs_readplain_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readplain", End;
+		image_prefs_readhtml_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readhtml", End;
+		image_prefs_signature_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_signature", End;
+		image_prefs_phrase_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End;
+		image_prefs_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_spam", End;
+
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_main_obj, 1, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_account_obj, 2, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_receive_obj, 3, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_write_obj, 4, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_read_obj, 5, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readplain_obj, 6, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readhtml_obj, 7, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_signature_obj, 8, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_phrase_obj, 9, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_spam_obj, 10, 0);
 
 		sprintf(texts[GROUPS_USER],     "\033o[1] %s", _("General"));
 		sprintf(texts[GROUPS_ACCOUNT],  "\033o[2] %s", _("Accounts"));
@@ -2042,6 +2064,18 @@ void close_config(void)
 			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
 			account_free(ac);
 		}
+
+		DoMethod(config_list, MUIM_NList_UseImage, NULL, MUIV_NList_UseImage_All, 0);
+		if (image_prefs_main_obj) MUI_DisposeObject(image_prefs_main_obj);
+		if (image_prefs_account_obj) MUI_DisposeObject(image_prefs_account_obj);
+		if (image_prefs_receive_obj) MUI_DisposeObject(image_prefs_receive_obj);
+		if (image_prefs_write_obj) MUI_DisposeObject(image_prefs_write_obj);
+		if (image_prefs_read_obj) MUI_DisposeObject(image_prefs_read_obj);
+		if (image_prefs_readplain_obj) MUI_DisposeObject(image_prefs_readplain_obj);
+		if (image_prefs_readhtml_obj) MUI_DisposeObject(image_prefs_readhtml_obj);
+		if (image_prefs_signature_obj) MUI_DisposeObject(image_prefs_signature_obj);
+		if (image_prefs_phrase_obj) MUI_DisposeObject(image_prefs_phrase_obj);
+		if (image_prefs_spam_obj) MUI_DisposeObject(image_prefs_spam_obj);
 
 		MUI_DisposeObject(config_wnd);
 		config_wnd = NULL;

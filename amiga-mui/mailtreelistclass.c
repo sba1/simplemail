@@ -64,6 +64,30 @@ struct MailTreelist_Data
 	struct Hook display_hook;
 	int folder_type;
 
+	Object *status_unread_obj;
+	Object *status_read_obj;
+	Object *status_waitsend_obj;
+	Object *status_sent_obj;
+	Object *status_mark_obj;
+	Object *status_hold_obj;
+	Object *status_reply_obj;
+	Object *status_forward_obj;
+	Object *status_norcpt_obj;
+	Object *status_new_partial_obj;
+	Object *status_read_partial_obj;
+	Object *status_unread_partial_obj;
+	Object *status_reply_partial_obj;
+	Object *status_new_spam_obj;
+	Object *status_unread_spam_obj;
+
+	Object *status_important_obj;
+	Object *status_attach_obj;
+	Object *status_group_obj;
+	Object *status_new_obj;
+	Object *status_crypt_obj;
+	Object *status_signed_obj;
+	Object *status_trashcan_obj;
+
 	APTR status_unread;
 	APTR status_read;
 	APTR status_waitsend;
@@ -510,6 +534,31 @@ STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (data->context_menu) MUI_DisposeObject(data->context_menu);
 	if (data->title_menu) MUI_DisposeObject(data->title_menu);
+
+	if (data->status_unread_obj) MUI_DisposeObject(data->status_unread_obj);
+	if (data->status_unread_partial_obj) MUI_DisposeObject(data->status_unread_partial_obj);
+	if (data->status_read_partial_obj) MUI_DisposeObject(data->status_read_partial_obj);
+	if (data->status_reply_partial_obj) MUI_DisposeObject(data->status_reply_partial_obj);
+	if (data->status_read_obj) MUI_DisposeObject(data->status_read_obj);
+	if (data->status_waitsend_obj) MUI_DisposeObject(data->status_waitsend_obj);
+	if (data->status_sent_obj) MUI_DisposeObject(data->status_sent_obj);
+	if (data->status_mark_obj) MUI_DisposeObject(data->status_mark_obj);
+	if (data->status_hold_obj) MUI_DisposeObject(data->status_hold_obj);
+	if (data->status_reply_obj) MUI_DisposeObject(data->status_reply_obj);
+	if (data->status_forward_obj) MUI_DisposeObject(data->status_forward_obj);
+	if (data->status_norcpt_obj) MUI_DisposeObject(data->status_norcpt_obj);
+	if (data->status_new_partial_obj) MUI_DisposeObject(data->status_new_partial_obj);
+	if (data->status_new_spam_obj) MUI_DisposeObject(data->status_new_spam_obj);
+	if (data->status_unread_spam_obj) MUI_DisposeObject(data->status_unread_spam_obj);
+
+	if (data->status_important_obj) MUI_DisposeObject(data->status_important_obj);
+	if (data->status_attach_obj) MUI_DisposeObject(data->status_attach_obj);
+	if (data->status_group_obj) MUI_DisposeObject(data->status_group_obj);
+	if (data->status_new_obj) MUI_DisposeObject(data->status_new_obj);
+	if (data->status_crypt_obj) MUI_DisposeObject(data->status_crypt_obj);
+	if (data->status_signed_obj) MUI_DisposeObject(data->status_signed_obj);
+	if (data->status_trashcan_obj) MUI_DisposeObject(data->status_trashcan_obj);
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -608,29 +657,53 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 		return 0;
 	}
 
-	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End, 0);
-	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End, 0);
-	data->status_read_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old_partial", End, 0);
-	data->status_reply_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply_partial", End, 0);
-	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End, 0);
-	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End, 0);
-	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End, 0);
-	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_mark", End, 0);
-	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End, 0);
-	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End, 0);
-	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End, 0);
-	data->status_norcpt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_norcpt", End, 0);
-	data->status_new_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_partial", End, 0);
-	data->status_new_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_spam",End,0);
-	data->status_unread_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_spam",End,0);
+	data->status_unread_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End;
+	data->status_unread_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End;
+	data->status_read_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old_partial", End;
+	data->status_reply_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply_partial", End;
+	data->status_read_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End;
+	data->status_waitsend_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End;
+	data->status_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End;
+	data->status_mark_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_mark", End;
+	data->status_hold_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End;
+	data->status_reply_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End;
+	data->status_forward_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End;
+	data->status_norcpt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_norcpt", End;
+	data->status_new_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_partial", End;
+	data->status_new_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_spam", End;
+	data->status_unread_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_spam", End;
 
-	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End, 0);
-	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End, 0);
-	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End, 0);
-	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End, 0);
-	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End, 0);
-	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End, 0);
-	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 0);
+	data->status_important_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End;
+	data->status_attach_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End;
+	data->status_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End;
+	data->status_new_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End;
+	data->status_crypt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End;
+	data->status_signed_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End;
+	data->status_trashcan_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
+
+	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_obj, 0);
+	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_partial_obj, 0);
+	data->status_read_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_read_partial_obj, 0);
+	data->status_reply_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_reply_partial_obj, 0);
+	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_read_obj, 0);
+	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_waitsend_obj, 0);
+	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_sent_obj, 0);
+	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_mark_obj, 0);
+	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_hold_obj, 0);
+	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_reply_obj, 0);
+	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_forward_obj, 0);
+	data->status_norcpt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_norcpt_obj, 0);
+	data->status_new_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_partial_obj, 0);
+	data->status_new_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_spam_obj, 0);
+	data->status_unread_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_spam_obj, 0);
+
+	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_important_obj, 0);
+	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_attach_obj, 0);
+	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_group_obj, 0);
+	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_obj, 0);
+	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_crypt_obj, 0);
+	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_signed_obj, 0);
+	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_trashcan_obj, 0);
 
 	SM_LEAVE;
 	return 1;
@@ -639,29 +712,29 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	if (data->status_trashcan) DoMethod(obj, MUIM_NList_DeleteImage, data->status_trashcan);
-	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, data->status_signed);
-	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
-	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
-	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
-	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
-	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
-	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_spam);
-	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_spam);
-
-	if (data->status_reply_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply_partial);
-	if (data->status_read_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read_partial);
-	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_partial);
-	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_norcpt);
-	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);
-	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
-	if (data->status_reply) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply);
-	if (data->status_forward) DoMethod(obj, MUIM_NList_DeleteImage, data->status_forward);
-	if (data->status_unread_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_partial);
 	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
+	if (data->status_unread_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_partial);
+	if (data->status_read_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read_partial);
+	if (data->status_reply_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply_partial);
 	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
 	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, data->status_waitsend);
 	if (data->status_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->status_sent);
+	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
+	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);
+	if (data->status_reply) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply);
+	if (data->status_forward) DoMethod(obj, MUIM_NList_DeleteImage, data->status_forward);
+	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_norcpt);
+	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_partial);
+	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_spam);
+	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_spam);
+
+	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
+	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
+	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
+	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
+	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
+	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, data->status_signed);
+	if (data->status_trashcan) DoMethod(obj, MUIM_NList_DeleteImage, data->status_trashcan);
 	return DoSuperMethodA(cl,obj,msg);
 }
 

@@ -50,7 +50,7 @@ extern const char __far LinkerDB;       /* Original A4 value   */
 extern struct DosLibrary *DOSBase;
 extern char *_ProgramName;
 extern struct ExecBase *SysBase;
-BPTR __curdir;
+BPTR __curdir; /* set by the startup code */
 
 static struct DosLibrary *MyDOSBase;
 
@@ -139,6 +139,7 @@ static void process_starter(void)
    struct Process *proc;
    struct AmiProcMsg *mess;
    struct ExecBase *SysBase = *((struct ExecBase **)4);
+   BPTR olddir;
    __regargs int (*fp)(void *, void *, void *);
          
    proc = (struct Process *)FindTask((char *)NULL);
@@ -155,6 +156,9 @@ static void process_starter(void)
    
    /* Allocate a new data section */
    putreg(REG_A4, _CloneData());
+
+   /* change the directory and save the orginal current directory */
+   olddir = CurrentDir(__curdir);
 
    /* Run autoinitializers.  This has the effect of setting up    */
    /* the standard C and C++ libraries (including stdio), running */
@@ -174,7 +178,10 @@ static void process_starter(void)
 
    /* Run autoterminators to clean up. */
    __fpterm();
-   
+
+   /* Restore the CurrentDir() */
+   CurrentDir(olddir);
+
    /* Free the recently-allocated data section */
 #ifndef _DCC
    _FreeData();

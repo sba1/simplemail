@@ -1872,7 +1872,7 @@ msgstr "Adressen zeigen?"
 
 #: amiga-mui/mainwnd.c:603
 msgid "Show selected message?"
-msgstr "Gewählte Nachrichten zeigen?"
+msgstr "Gewählte Nachricht zeigen?"
 
 #: amiga-mui/mainwnd.c:605
 msgid "Configuration..."

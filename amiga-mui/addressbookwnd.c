@@ -1016,14 +1016,20 @@ static void addressbook_init(void)
 					Child, MakeButton("_CC:"),
 					Child, MakeButton("_BCC:"),
 					End,
-				Child, HGroup,
-					Child, save_button = MakePictureButton("_Save","PROGDIR:Images/Save"),
-/*					Child, MakeButton("Search"),*/
-					Child, new_person_button = MakePictureButton("_Person","PROGDIR:Images/User"),
-/*					Child, MakeButton("New List"),*/
-					Child, new_group_button = MakePictureButton("_Group","PROGDIR:Images/Group"),
-					Child, change_button = MakePictureButton("_Edit","PROGDIR:Images/Edit"),
-					Child, delete_button = MakePictureButton("_Delete","PROGDIR:Images/Delete"),
+				Child, VGroup,
+					Child, HVSpace,
+					Child, HGroup,
+						MUIA_VertWeight,0,
+						Child, save_button = MakePictureButton("_Save","PROGDIR:Images/Save"),
+/*						Child, MakeButton("Search"),*/
+						Child, new_person_button = MakePictureButton("_Person","PROGDIR:Images/User"),
+/*						Child, MakeButton("New List"),*/
+						Child, new_group_button = MakePictureButton("_Group","PROGDIR:Images/Group"),
+						Child, change_button = MakePictureButton("_Edit","PROGDIR:Images/Edit"),
+						Child, delete_button = MakePictureButton("_Delete","PROGDIR:Images/Delete"),
+						Child, HVSpace,
+						End,
+					Child, HVSpace,
 					End,
 				End,
 			Child, HGroup,

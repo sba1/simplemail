@@ -811,6 +811,7 @@ void compose_window_open(struct compose_args *args)
 				MUIA_Group_ActivePage, 0,
 				Child, VGroup,
 					Child, HGroup,
+						MUIA_VertWeight,0,
 						Child, HGroup,
 							MUIA_Group_Spacing,0,
 							Child, copy_button = MakePictureButton("_Copy","PROGDIR:Images/Copy"),

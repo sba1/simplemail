@@ -21,27 +21,46 @@
 */
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/socket.h>
 
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "support_indep.h"
 #include "subthreads.h"
 
 static GCond *thread_cond;
 static GMutex *thread_mutex;
 
 static int input_added;
-static GMutex *input_mutex;
-static GMutex *input_mutex2;
-static GCond *input_cond;
-static int input_msg;
+
+/* Sockets for IPC */
+static int sockets[2];
+
+struct ipc_message
+{
+	int async;
+	int string;
+	int rc;
+	void *function;
+	int argcount;
+	void *arg1;
+	void *arg2;
+	void *arg3;
+	void *arg4;
+};
 
 int init_threads(void)
 {
 	if (!g_thread_supported ()) g_thread_init (NULL);
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
+
+	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
+
 	return 1;
 }
 
@@ -57,37 +76,46 @@ int thread_parent_task_can_contiue(void)
 	return 1;
 }
 
-static void thread_idle(gpointer data)
+static void thread_input(gpointer data, gint source, GdkInputCondition condition)
 {
-	GTimeVal time;
+	int len;
+	struct ipc_message msg;
 
-//	printf("1: idle\n");
+	len = read(source,&msg,sizeof(msg));
 
-	g_mutex_lock(input_mutex);
-
-	if (input_msg)
+	if (len == sizeof(msg))
 	{
-		printf("message arrived\n");
-		input_msg = 0;
-		g_cond_signal(input_cond);
+		int rc = 0;
+
+		switch (msg.argcount)
+		{
+			case	0: rc = ((int (*)(void))msg.function)();break;
+			case	1: rc = ((int (*)(void*))msg.function)(msg.arg1);break;
+			case	2: rc = ((int (*)(void*,void*))msg.function)(msg.arg1,msg.arg2);break;
+			case	3: rc = ((int (*)(void*,void*,void*))msg.function)(msg.arg1,msg.arg2,msg.arg3);break;
+			case	4: rc = ((int (*)(void*,void*,void*,void*))msg.function)(msg.arg1,msg.arg2,msg.arg3,msg.arg4);break;
+		}
+
+		if (msg.async)
+		{
+			if (msg.string)
+			{
+				free(msg.arg1);
+			}
+		}	else
+		{
+			/* synchron call, deliver return code */
+			msg.rc = rc;
+			write(sockets[0],&msg,sizeof(msg));
+		}
 	}
-	g_mutex_unlock(input_mutex);
-
-//	printf("1: endidle\n");
-
-	g_thread_yield();
-
-//	printf("1: endidle2\n");
-
 }
 
 int thread_start(int (*entry)(void*), void *eudata)
 {
 	if (!input_added)
 	{
-		input_mutex = g_mutex_new();
-		input_cond = g_cond_new();
-		gtk_idle_add(thread_idle,NULL);
+		gtk_input_add_full(sockets[0],GDK_INPUT_READ,thread_input, NULL, NULL, NULL);
 		input_added = 1;
 	}
 
@@ -107,99 +135,62 @@ void thread_abort(void)
 
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
-	printf("sync\n");
-#if 0
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
+	struct ipc_message msg;
 	va_list argptr;
 
 	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-#endif
-
-	return 0;
+	memset(&msg,0,sizeof(msg));
+	msg.async = 0;
+	msg.function = function;
+	msg.argcount = argcount;
+	if (argcount--) msg.arg1 = va_arg(argptr, void *);
+	if (argcount--) msg.arg2 = va_arg(argptr, void *);
+	if (argcount--) msg.arg3 = va_arg(argptr, void *);
+	if (argcount--) msg.arg4 = va_arg(argptr, void *);
+	write(sockets[1],&msg,sizeof(msg));
+	va_end(argptr);
+	read(sockets[1],&msg,sizeof(msg));
+	return msg.rc;
 }
 
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
-//	printf("async\n");
-//	write(pipes[1],"test",4);
-
-
-	g_mutex_lock(input_mutex);
-//	printf("%d\n",input_msg);
-	input_msg = 1;
-	g_cond_wait(input_cond,input_mutex);
-//	printf("%d\n",input_msg);
-	g_cond_free(input_cond);
-	input_cond = NULL;
-	g_mutex_unlock(input_mutex);
-
-	g_thread_yield();
-
-#if 0
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
+	struct ipc_message msg;
 	va_list argptr;
 
 	va_start(argptr,argcount);
+	memset(&msg,0,sizeof(msg));
+	msg.async = 1;
+	msg.function = function;
+	msg.argcount = argcount;
+	if (argcount--) msg.arg1 = va_arg(argptr, void *);
+	if (argcount--) msg.arg2 = va_arg(argptr, void *);
+	if (argcount--) msg.arg3 = va_arg(argptr, void *);
+	if (argcount--) msg.arg4 = va_arg(argptr, void *);
+	write(sockets[1],&msg,sizeof(msg));
+	va_end(argptr);
 
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-#endif
 	return 0;
 }
 
 /* Call the function asynchron and duplicate the first argument which us threaded at a string */
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
-	printf("async string\n");
-
-#if 0
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
+	struct ipc_message msg;
 	va_list argptr;
 
 	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-#endif
+	memset(&msg,0,sizeof(msg));
+	msg.async = 1;
+	msg.string = 1;
+	msg.function = function;
+	msg.argcount = argcount;
+	if (argcount--) msg.arg1 = mystrdup(va_arg(argptr, char *));
+	if (argcount--) msg.arg2 = va_arg(argptr, void *);
+	if (argcount--) msg.arg3 = va_arg(argptr, void *);
+	if (argcount--) msg.arg4 = va_arg(argptr, void *);
+	write(sockets[1],&msg,sizeof(msg));
+	va_end(argptr);
 	return 0;
 }
 

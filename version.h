@@ -1,5 +1,8 @@
 #include "SimpleMail_rev.h"
+
+#ifndef SIMPLEMAIL_DATE
 #include "date.h"
+#endif
 
 #define VERSTRING 
 

@@ -79,6 +79,7 @@ struct Read_Data /* should be a customclass */
 	Object *wnd;
 	Object *prev_button;
 	Object *next_button;
+	Object *print_button;
 	Object *contents_page;
 	Object *datatype_datatypes;
 	Object *text_list;
@@ -226,6 +227,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 						TAG_DONE);
 
 			set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
+			set(data->print_button, MUIA_Disabled, !xget(data->datatype_datatypes,MUIA_DataTypes_SupportsPrint));
 			return;
 		}
 		buf = mail->decoded_data;
@@ -244,6 +246,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 				TAG_DONE);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
+		set(data->print_button, MUIA_Disabled,TRUE);
 	} else
 	{
 		char *html_mail;
@@ -290,6 +293,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
+		set(data->print_button, MUIA_Disabled, FALSE);
 	}
 }
 
@@ -519,9 +523,15 @@ static void menu_print(int **pdata)
 
 	if (mail)
 	{
-		set(App, MUIA_Application_Sleep, TRUE);
-		print_mail(mail, TRUE);
-		set(App, MUIA_Application_Sleep, FALSE);
+		if (xget(data->contents_page, MUIA_Group_ActivePage) ==  PAGE_DATATYPE)
+		{
+			DoMethod(data->datatype_datatypes, MUIM_DataTypes_Print);
+		} else
+		{
+			set(App, MUIA_Application_Sleep, TRUE);
+			print_mail(mail, TRUE);
+			set(App, MUIA_Application_Sleep, FALSE);
+		}
 	}
 }
 
@@ -987,6 +997,9 @@ void read_window_open(char *folder, struct mail *mail)
 			data->wnd = wnd;
 			data->folder_path = mystrdup(folder);
 			data->text_list = text_list;
+			data->prev_button = prev_button;
+			data->next_button = next_button;
+			data->print_button = print_button;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
 			data->html_simplehtml = html_simplehtml;

@@ -46,6 +46,7 @@
 #include "mainwnd.h"
 #include "parse.h"
 #include "readwnd.h"
+#include "searchwnd.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
@@ -420,6 +421,25 @@ void callback_check_single_account(int account_num)
 	}
 }
 
+/* open the search window */
+void callback_search(void)
+{
+	struct folder *f = main_get_folder();
+	search_open(f->name);
+}
+
+/* Start the search process with the given search options */
+void callback_start_search(struct search_options *so)
+{
+	search_clear_results();
+	folder_start_search(so);
+}
+
+/* a mail has been found */
+void callback_search_found(struct mail *mail)
+{
+	search_add_result(mail);
+}
 
 /* filter the mails */
 void callback_filter(void)
@@ -761,6 +781,7 @@ void callback_new_group(void)
 {
 	folder_add_group(_("New Group"));
 	main_refresh_folders();
+	search_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -769,6 +790,7 @@ void callback_new_folder_path(char *path, char *name)
 {
 	folder_add_with_name(path, name);
 	main_refresh_folders();
+	search_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -781,6 +803,7 @@ void callback_remove_folder(void)
 		if (folder_remove(f))
 		{
 			main_refresh_folders();
+			search_refresh_folders();
 			filter_update_folder_list();
 		}
 	}
@@ -820,6 +843,7 @@ void callback_change_folder_attrs(void)
 	}
 
 	main_refresh_folder(f);
+	search_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -828,6 +852,7 @@ void callback_reload_folder_order(void)
 {
 	folder_load_order();
 	main_refresh_folders();
+	search_refresh_folders();
 	filter_update_folder_list();
 }
 

@@ -1746,7 +1746,7 @@ int mail_process_headers(struct mail *mail)
 		header = (struct header*)node_next(&header->node);
 	}
 
-	if (!mail->to_phrase || !mail->to_addr)
+	if (!mail->to_phrase && !mail->to_addr)
 		mail->flags |= MAIL_FLAGS_NORCPT;
 
 	if (!mail->content_type || !mail->content_subtype)

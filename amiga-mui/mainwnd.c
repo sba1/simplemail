@@ -69,6 +69,7 @@ static const char *image_files[] = {
 		"PROGDIR:Images/MailForward",
 		"PROGDIR:Images/MailsFetch",
 		"PROGDIR:Images/MailsSend",
+		"PROGDIR:Images/Search",
 		"PROGDIR:Images/Filter",
 		"PROGDIR:Images/FilterEdit",
 		"PROGDIR:Images/Addressbook",
@@ -93,6 +94,7 @@ static Object *button_change;
 static Object *button_new;
 static Object *button_reply;
 static Object *button_forward;
+static Object *button_search;
 static Object *button_filter;
 static Object *button_efilter;
 static Object *button_abook;
@@ -554,7 +556,8 @@ int main_window_init(void)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),	
+						Child, button_search = MakePictureButton(_("S_earch"),"PROGDIR:Images/Search"),
+						Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),
 						Child, button_efilter = MakePictureButton(_("_Filters"),"PROGDIR:Images/FilterEdit"),
 						End,
 					Child, HGroup,
@@ -699,6 +702,7 @@ int main_window_init(void)
 		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
 		DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_mail);
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+		DoMethod(button_search, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_search);
 		DoMethod(button_filter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_filter);
 		DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
@@ -824,7 +828,7 @@ void main_insert_mail(struct mail *mail)
 *******************************************************************/
 static struct MUI_NListtree_TreeNode *main_find_insert_node(struct MUI_NListtree_TreeNode *tn, int *after)
 {
-	while (tn) // && (*after) >= 0)
+	while (tn)
 	{
 		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) (*after)--;
 		if (tn->tn_Flags & TNF_LIST)
@@ -861,47 +865,6 @@ void main_insert_mail_pos(struct mail *mail, int after)
 
 	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
 					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
-
-
-#if 0
-
-	struct MUI_NListtree_TreeNode *tn = NULL;
-	struct MUI_NListtree_TreeNode *list;
-	int i=0;
-	int old_after = after;
-
-  printf("0: after = %d\n",after);
-
-	while (after >= 0)
-	{
-		tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
-		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) after--;
-		i++;
-	}
-
-  list = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
-
-	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
-					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
-
-  printf("1: %lx\n",tn);
-
-/*
-  i = 0;
-  after = old_after;
-	tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,MUIV_NListtree_GetEntry_Position_Head,0);
-	while (tn && after >= 0)
-	{
-		tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Next,0);
-		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) after--;
-		i++;
-	}
-*/
-
-	tn = main_find_insert_node(tn,&after);
-
-  printf("2: %lx\n",tn);
-#endif
 }
 
 

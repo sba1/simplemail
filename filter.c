@@ -96,6 +96,14 @@ struct filter *filter_duplicate(struct filter *filter)
 					case	RULE_STATUS_MATCH:
 								new_rule->u.status.status = rule->u.status.status;
 								break;
+
+					case	RULE_RCPT_MATCH:
+								new_rule->u.rcpt.rcpt = array_duplicate(rule->u.rcpt.rcpt);
+								break;
+
+					case	RULE_BODY_MATCH:
+								new_rule->u.body.body = mystrdup(rule->u.body.body);
+								break;
 				}
 
 				list_insert_tail(&f->rules_list, &new_rule->node);
@@ -325,6 +333,8 @@ void filter_list_load(FILE *fh)
 									else if (!mystricmp(result,"HEADER")) fr->type = RULE_HEADER_MATCH;
 									else if (!mystricmp(result,"ATTACHMENT")) fr->type = RULE_ATTACHMENT_MATCH;
 									else if (!mystricmp(result,"STATUS")) fr->type = RULE_STATUS_MATCH;
+									else if (!mystricmp(result,"RCPT")) fr->type = RULE_RCPT_MATCH;
+									else if (!mystricmp(result,"BODY")) fr->type = RULE_BODY_MATCH;
 								}
 
 								if ((result = get_config_item(rule_buf,"From.Address")))
@@ -337,6 +347,10 @@ void filter_list_load(FILE *fh)
 									fr->u.header.contents = array_add_string(fr->u.header.contents,result);
 								if ((result = get_config_item(rule_buf,"Status.Status")))
 									fr->u.status.status = atoi(result);
+								if ((result = get_config_item(rule_buf,"Rcpt.Address")))
+									fr->u.rcpt.rcpt = array_add_string(fr->u.rcpt.rcpt,result);
+								if ((result = get_config_item(rule_buf,"Body.Contents")))
+									fr->u.body.body = mystrdup(result);
 							}
 						}
 					}
@@ -437,3 +451,37 @@ void filter_list_save(FILE *fh)
 		i++;
 	}
 }
+
+
+
+/**************************************************************************
+ Duplicates a given search option
+**************************************************************************/
+struct search_options *search_options_duplicate(struct search_options *so)
+{
+	struct search_options *new_so = malloc(sizeof(*so));
+	if (new_so)
+	{
+		*new_so = *so;
+		new_so->folder = mystrdup(so->folder);
+		new_so->from = mystrdup(so->from);
+		new_so->to = mystrdup(so->to);
+		new_so->subject = mystrdup(so->subject);
+		new_so->body = mystrdup(so->body);
+	}
+	return new_so;
+}
+
+/**************************************************************************
+ Saves the filter list into the given FILE
+**************************************************************************/
+void search_options_free(struct search_options *so)
+{
+	free(so->folder);
+	free(so->from);
+	free(so->to);
+	free(so->subject);
+	free(so->body);
+	free(so);
+}
+

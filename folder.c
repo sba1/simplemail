@@ -1927,14 +1927,35 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 			case	RULE_FROM_MATCH:
 						if (rule->u.from.from)
 						{
-							int i = 0;
+							int i;
+
+							i = 0;
 							while (!take && rule->u.from.from[i])
 								take = !!utf8stristr(m->from_addr,rule->u.from.from[i++]);
 
 							if (!take)
 							{
+								i = 0;
 								while (!take && rule->u.from.from[i])
 									take = !!utf8stristr(m->from_phrase,rule->u.from.from[i++]);
+							}
+						}
+						break;
+
+			case	RULE_RCPT_MATCH:
+						if (rule->u.rcpt.rcpt)
+						{
+							int i;
+
+							i = 0;
+							while (!take && rule->u.rcpt.rcpt[i])
+								take = !!utf8stristr(m->to_addr,rule->u.rcpt.rcpt[i++]);
+
+							if (!take)
+							{
+								i = 0;
+								while (!take && rule->u.rcpt.rcpt[i])
+									take = !!utf8stristr(m->to_phrase,rule->u.rcpt.rcpt[i++]);
 							}
 						}
 						break;
@@ -2052,20 +2073,26 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 
 					handle = old_handle;
 				}
+			}
 
-				if (filter->sound_file && filter->use_sound_file)
-				{
-					chdir(path);
-					sm_play_sound(filter->sound_file);
-					if(chdir(folder->path) == -1) return 0;
-				}
+			if (filter->sound_file && filter->use_sound_file)
+			{
+				chdir(path);
+				sm_play_sound(filter->sound_file);
+				if(chdir(folder->path) == -1) return 0;
+			}
 
-				if (filter->arexx_file && filter->use_arexx_file)
-				{
-					chdir(path);
-					gui_execute_arexx(filter->arexx_file);
-					if(chdir(folder->path) == -1) return 0;
-				}
+			if (filter->arexx_file && filter->use_arexx_file)
+			{
+				chdir(path);
+				gui_execute_arexx(filter->arexx_file);
+				if(chdir(folder->path) == -1) return 0;
+			}
+
+			if (filter->search_filter)
+			{
+				/* It's a search filter so inform simplemail about a new found mail */
+				callback_search_found(m);
 			}
 		}
 	}
@@ -2103,26 +2130,72 @@ int folder_filter(struct folder *folder)
 					callback_move_mail(m, folder, dest_folder);
 					handle = old_handle;
 				}
+			}
 
-				if (f->sound_file && f->use_sound_file)
-				{
-					chdir(path);
-					sm_play_sound(f->sound_file);
-					if(chdir(folder->path) == -1) return 0;
-				}
+			if (f->sound_file && f->use_sound_file)
+			{
+				chdir(path);
+				sm_play_sound(f->sound_file);
+				if(chdir(folder->path) == -1) return 0;
+			}
 
-				if (f->arexx_file && f->use_arexx_file)
-				{
-					chdir(path);
-					gui_execute_arexx(f->arexx_file);
-					if(chdir(folder->path) == -1) return 0;
-				}
+			if (f->arexx_file && f->use_arexx_file)
+			{
+				chdir(path);
+				gui_execute_arexx(f->arexx_file);
+				if(chdir(folder->path) == -1) return 0;
 			}
 		}
 	}
 	chdir(path);
 	return 1;
 }
+
+/**************************************************************************
+ Start the search with the given options
+**************************************************************************/
+void folder_start_search(struct search_options *sopt)
+{
+	struct folder *f = folder_find_by_name(sopt->folder);
+	struct filter *filter;
+	struct filter_rule *rule;
+
+	if (!f) return;
+
+	filter = filter_create();
+	if (!filter) return;
+
+	if (sopt->from)
+	{
+		if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
+			rule->u.from.from = array_add_string(NULL,sopt->from);
+	}
+
+	if (sopt->subject)
+	{
+		if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
+			rule->u.subject.subject = array_add_string(NULL,sopt->subject);
+	}
+
+	if (sopt->body)
+	{
+		if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
+			rule->u.body.body = mystrdup(sopt->body);
+	}
+
+	if (sopt->to)
+	{
+		if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
+			rule->u.rcpt.rcpt = array_add_string(NULL,sopt->to);
+	}
+
+	filter->search_filter = 1;
+
+	folder_apply_filter(f,filter);
+
+	filter_dispose(filter);
+}
+
 
 /******************************************************************
  Opens the order file and returns the FILE *

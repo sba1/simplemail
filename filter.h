@@ -27,6 +27,8 @@
 #define RULE_HEADER_MATCH			2
 #define RULE_ATTACHMENT_MATCH	3
 #define RULE_STATUS_MATCH			4
+#define RULE_RCPT_MATCH				5
+#define RULE_BODY_MATCH				6
 
 #define RULE_STATUS_NEW			0
 #define RULE_STATUS_READ			1
@@ -46,12 +48,18 @@ struct filter_rule
 			char **from; /* NULL terminated array */
 		} from;
 		struct {
+		  char **rcpt; /* NULL terminated array */
+		} rcpt;
+		struct {
 			char **subject; /* NULL terminated array */
 		} subject;
 		struct {
 			char *name;
 			char **contents; /* NULL terminated array */
 		} header;
+		struct {
+			char *body; /* string */
+		} body;
 		struct {
 			int status;
 		} status;
@@ -85,6 +93,8 @@ struct filter
 	char *arexx_file; /* Execute ARexx Script */
 	int use_arexx_file; /* If set to 1 */
 
+  int search_filter; /* filter is a search filter (used for the search function) */
+
 	struct list action_list; /* list of actions */
 };
 
@@ -105,5 +115,17 @@ struct filter *filter_list_first(void);
 struct filter *filter_list_next(struct filter *f);
 void filter_list_load(FILE *fh);
 void filter_list_save(FILE *fh);
+
+struct search_options
+{
+	char *folder; /* NULL means all folders */
+	char *from;
+	char *to;
+	char *subject;
+	char *body;
+};
+
+struct search_options *search_options_duplicate(struct search_options *so);
+void search_options_free(struct search_options *so);
 
 #endif

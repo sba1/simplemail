@@ -16,26 +16,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** foldertreelistclass.h
-*/
+#ifndef SM__SEARCHWND_H
+#define SM__SEARCHWND_H
 
-#ifndef SM__FOLDERTREELISTCLASS_H
-#define SM__FOLDERTREELISTCLASS_H
-
-IMPORT struct MUI_CustomClass *CL_FolderTreelist;
-#define FolderTreelistObject (Object*)NewObject(CL_FolderTreelist->mcc_Class, NULL
-
-#define MUIA_FolderTreelist_MailDrop     (TAG_USER|0x31000001) /* (struct folder *) */
-#define MUIA_FolderTreelist_OrderChanged (TAG_USER|0x31000002) /* BOOL */
-#define MUIA_FolderTreelist_ReadOnly     (TAG_USER|0x31000003) /* i.. BOOL */
-
-#define MUIM_FolderTreelist_Refresh (0x7878787)
-
-struct MUIP_FolderTreelist_Refresh {ULONG MethodID; struct folder *exclude;};
-
-int create_foldertreelist_class(void);
-void delete_foldertreelist_class(void);
-
+void search_open(char *foldername);
+void search_refresh_folders(void);
+void search_clear_results(void);
+void search_add_result(struct mail *mail);
 
 #endif
+

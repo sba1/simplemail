@@ -138,6 +138,7 @@ STATIC ASM void folder_open(register __a1 struct MUIP_NListtree_OpenMessage *msg
 STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct FolderTreelist_Data *data;
+	int read_only = GetTagData(MUIA_FolderTreelist_ReadOnly,0,msg->ops_AttrList);
 
 	if (!(obj=(Object *)DoSuperMethodA(cl,obj,(Msg)msg)))
 		return 0;
@@ -148,20 +149,23 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook(&data->display_hook,(HOOKFUNC)folder_display);
 	init_hook(&data->open_hook, (HOOKFUNC)folder_open);
 
-	data->context_menu = MenustripObject,
-		Child, MenuObjectT(_("Folders")),
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("New Folder..."), MUIA_UserData, MENU_FOLDER_NEW, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("New Group..."), MUIA_UserData, MENU_FOLDER_GROUP, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("Remove..."), MUIA_UserData, MENU_FOLDER_REM, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("Settings..."), MUIA_UserData, MENU_FOLDER_SETTINGS, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("Order"),
-				Child, MenuitemObject, MUIA_Menuitem_Title, _("Save"), MUIA_UserData, MENU_FOLDER_SAVE, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset"), MUIA_UserData, MENU_FOLDER_RESET, End,		
+	if (!read_only)
+	{
+		data->context_menu = MenustripObject,
+			Child, MenuObjectT(_("Folders")),
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("New Folder..."), MUIA_UserData, MENU_FOLDER_NEW, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("New Group..."), MUIA_UserData, MENU_FOLDER_GROUP, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Remove..."), MUIA_UserData, MENU_FOLDER_REM, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Settings..."), MUIA_UserData, MENU_FOLDER_SETTINGS, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Order"),
+					Child, MenuitemObject, MUIA_Menuitem_Title, _("Save"), MUIA_UserData, MENU_FOLDER_SAVE, End,
+					Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset"), MUIA_UserData, MENU_FOLDER_RESET, End,		
+					End,
 				End,
-			End,
-		End;
+			End;
+	}
 
 	SetAttrs(obj,
 						MUIA_NListtree_CloseHook, &data->close_hook,
@@ -171,7 +175,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
 						MUIA_NListtree_MultiSelect, MUIV_NListtree_MultiSelect_None,
-						MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
+						read_only?TAG_IGNORE:MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 						TAG_DONE);
 
 	return (ULONG)obj;

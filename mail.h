@@ -174,7 +174,7 @@ struct composed_mail
 
 void composed_mail_init(struct composed_mail *mail);
 
-void mail_compose_new(struct composed_mail *new_mail, int hold);
+int mail_compose_new(struct composed_mail *new_mail, int hold);
 
 /* for nodes in an address list NOTE: misplaced in mail.h */
 struct address

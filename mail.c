@@ -1538,23 +1538,32 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 }
 
 /**************************************************************************
- Composes a new mail and write's it to the outgoing drawer
+ Composes a new mail and write's it to the outgoing drawer.
+ Returns 1 if succesful, else 0
 **************************************************************************/
-void mail_compose_new(struct composed_mail *new_mail, int hold)
+int mail_compose_new(struct composed_mail *new_mail, int hold)
 {
 	struct folder *outgoing;
 	char path[256];
 	char *new_name;
+	int rc = 0;
 
 	if (new_mail->mail_folder)
 		outgoing = folder_find_by_name(new_mail->mail_folder);
 	else outgoing = NULL;
 
 	if (!outgoing) outgoing = folder_outgoing();
-	if (!outgoing) return;
+	if (!outgoing) return 0;
+
+	if (!user.config.email || !user.config.realname)
+	{
+		sm_request(NULL, "You must configure your email address and\n"
+										 "your realname before creating a new mail","Ok");
+		return 0;
+	}
 
 	getcwd(path, sizeof(path));
-	if (chdir(outgoing->path) == -1) return;
+	if (chdir(outgoing->path) == -1) return 0;
 
 	if ((new_name = mail_get_new_name()))
 	{
@@ -1571,6 +1580,7 @@ void mail_compose_new(struct composed_mail *new_mail, int hold)
 		if ((fp = fopen(new_name,"wb")))
 		{
 			mail_compose_write(fp, new_mail);
+			rc = 1;
 			fclose(fp);
 		}
 
@@ -1595,4 +1605,6 @@ void mail_compose_new(struct composed_mail *new_mail, int hold)
 	}
 
 	chdir(path);
+
+	return rc;
 }

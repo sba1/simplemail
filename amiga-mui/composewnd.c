@@ -399,10 +399,11 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.mail_folder = data->folder;
 		new_mail.reply_message_id = data->reply_id;
 
-		mail_compose_new(&new_mail,hold);
-
-		/* Close (and dispose) the compose window (data) */
-		DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);	
+		if ((mail_compose_new(&new_mail,hold)))
+		{
+			/* Close (and dispose) the compose window (data) */
+			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);	
+		}
 	}
 }
 

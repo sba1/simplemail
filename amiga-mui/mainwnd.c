@@ -141,7 +141,7 @@ void display_about(void)
 		_("SimpleMail - About"),
 		_("*Ok"),
 		"SimpleMail version %ld.%ld\n\n%s 2000-2004\nHynek Schlawack %s Sebastian Bauer\n%s.",
-		VERSION,REVISION,_("Copyright ©"),_("and"),_("Released under the terms of the GNU Public License"));
+		VERSION,REVISION,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"));
 }
 
 /******************************************************************

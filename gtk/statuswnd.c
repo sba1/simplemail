@@ -174,6 +174,13 @@ void statuswnd_mail_list_insert(int mno, int mflags, int msize)
 }
 
 /**************************************************************************
+ Set flags
+**************************************************************************/
+void statuswnd_mail_list_set_flags(int mno, int mflags)
+{
+}
+
+/**************************************************************************
  Insert mail info
 **************************************************************************/
 void statuswnd_mail_list_set_info(int mno, char *from, char *subject, char *date)

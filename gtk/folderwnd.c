@@ -88,6 +88,21 @@ char *folder_get_changed_defto(void)
 #endif
 }
 
+char *folder_get_changed_deffrom(void)
+{
+	return NULL;
+}
+
+char *folder_get_changed_defreplyto(void)
+{
+	return NULL;
+}
+
+char *folder_get_changed_defsignature(void)
+{
+	return NULL;
+}
+
 int folder_get_changed_primary_sort(void)
 {
 
@@ -102,6 +117,9 @@ int folder_get_changed_secondary_sort(void)
 	return 0;
 }
 
+void folder_refresh_signature_cycle(void)
+{
+}
 
 #if 0
 

@@ -3,28 +3,24 @@
 noinst_LIBRARIES = libgui.a
 INCLUDES = -I. -I$(srcdir)/.. -I$(srcdir)/../indep-include @GUI_CFLAGS@
 
-libgui_a_SOURCES = \
-            addressbookwnd.c \
-            composewnd.c \
-            configwnd.c \
-            dlwnd.c \
-            errorwnd.c \
-            filterwnd.c \
-            folderwnd.c \
-            gtksupport.c \
-            gtksupport.h \
-            gui_main.c \
-            mainwnd.c \
-            readwnd.c \
-	    searchwnd.c \
-	    statuswnd.c \
-            subthreads.c \
-            support.c \
-	    sysprint.c \
-            tcpip.c \
-            upwnd.c
-
-  
-
-
-
+libgui_a_SOURCES =	addressbookwnd.c \
+			composewnd.c \
+			configwnd.c \
+			dlwnd.c \
+			errorwnd.c \
+			filterwnd.c \
+			folderwnd.c \
+			gtksupport.c \
+			gtksupport.h \
+			gui_main.c \
+			mainwnd.c \
+			readwnd.c \
+			searchwnd.c \
+			shutdownwnd.c \
+			startupwnd.c \
+			statuswnd.c \
+			subthreads.c \
+			support.c \
+			sysprint.c \
+			tcpip.c \
+			upwnd.c

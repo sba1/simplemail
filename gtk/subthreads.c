@@ -144,8 +144,9 @@ void thread_abort(thread_t thread)
 }
 
 /* Call the function synchron, calls timer_callback on the calling process context */
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
+	return 0;
 }
 
 /**************************************************************************

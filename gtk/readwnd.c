@@ -511,7 +511,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *m)
 		int dont_show = 0; /* attachments */
 		chdir(path); /* should be a absolute path */
 		mail_read_contents(data->folder_path,data->mail);
-		mail_create_html_header(data->mail);
+		mail_create_html_header(data->mail, 0);
 
 		if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
 		{
@@ -587,7 +587,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *m)
 /******************************************************************
  Opens a read window
 *******************************************************************/
-int read_window_open(char *folder, struct mail *mail)
+int read_window_open(char *folder, struct mail *mail, int window)
 {
 	int num;
 	struct Read_Data *data;

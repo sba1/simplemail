@@ -60,6 +60,9 @@ struct Compose_Data
 	GtkWidget *subject_entry;
 };
 
+void compose_refresh_signature_cycle()
+{
+}
 
 #if 0
 

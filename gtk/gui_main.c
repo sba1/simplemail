@@ -43,6 +43,20 @@ int gui_execute_arexx(char *filename)
 	return NULL;
 }
 
+/****************************************************************
+ The app is busy
+*****************************************************************/
+void app_busy(void)
+{
+}
+
+/****************************************************************
+ The app is ready
+*****************************************************************/
+void app_unbusy(void)
+{
+}
+
 int gui_main(int argc, char *argv[])
 {
 	argc = initial_argc;
@@ -216,6 +230,7 @@ int all_init(void)
 
 	return(rc);
 }
+
 
 int gui_main(void)
 {

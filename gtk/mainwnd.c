@@ -84,7 +84,7 @@ static void folder_cursor_changed(GtkTreeView *treeview, gpointer user_data)
 *******************************************************************/
 static void mail_row_activated(void)//GtkTreeView *treeview, GtkTypeTreePath *arg1, GtkTreeViewColumn *arg2, gpointer user_data))
 {
-	callback_read_mail();
+	callback_read_active_mail();
 }
 
 /******************************************************************
@@ -189,8 +189,8 @@ int main_window_init(void)
 	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Get Addr", "Insert the address into the addressbook", NULL /* private TT */, create_pixmap(main_wnd,"MailGetAddress.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "New", "Create a new mail", NULL /* private TT */, create_pixmap(main_wnd,"MailNew.xpm"), callback_new_mail /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Reply", "Reply the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailReply.xpm"), callback_reply_mail /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Forward", "Forward the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailForward.xpm"), callback_forward_mail /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Reply", "Reply the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailReply.xpm"), callback_reply_selected_mails /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Forward", "Forward the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailForward.xpm"), callback_forward_selected_mails /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Fetch", "Fetch the mails from the POP3 Servers", NULL /* private TT */, create_pixmap(main_wnd,"MailsFetch.xpm"), callback_fetch_mails /* CALLBACK */, NULL /* UDATA */);
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Send", "Send the mails out", NULL /* private TT */, create_pixmap(main_wnd,"MailsSend.xpm"), callback_send_mails /* CALLBACK */, NULL /* UDATA */);

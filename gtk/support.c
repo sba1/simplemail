@@ -222,6 +222,14 @@ char *sm_get_time_str(unsigned int seconds)
 }
 
 /******************************************************************
+ Convert seconds from 1978 to a tm
+*******************************************************************/
+void sm_convert_seconds(unsigned int seconds, struct tm *tm)
+{
+	tm = NULL;
+}
+
+/******************************************************************
  Add a filename component to the drawer
 *******************************************************************/
 int sm_add_part(char *drawer, const char *filename, int buf_size)
@@ -363,7 +371,12 @@ int sm_request_login(char *text, char *login, char *password, int len)
 *******************************************************************/
 char *sm_request_pgp_id(char *text)
 {
-	return 0;
+	return NULL;
+}
+
+struct folder *sm_request_folder(char *text, struct folder *exclude)
+{
+	return NULL;
 }
 
 /******************************************************************
@@ -403,6 +416,23 @@ int sm_system(char *command, char *output)
 int sm_file_is_in_drawer(char *filename, char *path)
 {
 	return 0;
+}
+
+/******************************************************************
+ Like sprintf() but buffer overrun safe
+*******************************************************************/
+int sm_snprintf(char *buf, int n, const char *fmt, ...)
+{
+  int r;
+
+  extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
+
+  va_list ap;
+  
+  va_start(ap, fmt);
+  r = vsnprintf(buf, n, fmt, ap);
+  va_end(ap);
+  return r;
 }
 
 /******************************************************************
@@ -465,3 +495,4 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 	}
 	return rc;
 }
+

@@ -28,6 +28,7 @@ struct folder;
 struct mail;
 struct addressbook_entry;
 struct search_options;
+struct list;
 
 int callback_read_active_mail(void);
 int callback_read_mail(struct folder *f, struct mail *mail, int window);

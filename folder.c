@@ -890,13 +890,13 @@ int folder_number_of_new_mails(struct folder *folder)
 *******************************************************************/
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new)
 {
-	int i, mail_found = FALSE;
+	int i, mail_found = 0;
 	/* first check the pending mail array */
 	for (i=0;i<folder->num_pending_mails;i++)
 	{
 		if (folder->pending_mail_array[i]==mail)
 		{
-			mail_found = TRUE;
+			mail_found = 1;
 			break;
 		}
 	}
@@ -911,7 +911,7 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 		{
 			if (folder->mail_array[i]==mail)
 			{
-				mail_found = TRUE;
+				mail_found = 1;
 				break;
 			}
 		}

@@ -218,6 +218,13 @@ static char *quote_text(char *src, int len)
 						len -= temp_len; /* skip the quoting chars */
 						src += temp_len;
 						wrapped = 0;
+
+						/* add a space to if this was the first quoting */
+						if (!temp_len)
+						{
+							fputc(' ',fh);
+							line_len++;
+						}
 						continue;
 					}
 					temp_len = strlen(temp_buf);

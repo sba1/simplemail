@@ -167,6 +167,8 @@ struct addressbook_entry_new *addressbook_next_entry(struct addressbook_entry_ne
 struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook_entry_new *entry)
 {
 	struct addressbook_entry_new *new_entry = (struct addressbook_entry_new*)malloc(sizeof(*entry));
+	if (!new_entry) return NULL;
+
 	if (entry)
 	{
 		new_entry->alias = mystrdup(entry->alias);

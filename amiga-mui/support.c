@@ -30,6 +30,7 @@
 #include <proto/utility.h>
 #include <proto/muimaster.h>
 
+#include "amigasupport.h"
 #include "errorwnd.h"
 #include "muistuff.h"
 #include "subthreads.h"
@@ -138,6 +139,17 @@ int sm_get_gmt_offset(void)
 		return -DefaultLocale->loc_GMTOffset;
 	}
 	return 0;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_date_str(unsigned int seconds)
+{
+	static char buf[128];
+	SecondsToStringLong(buf,seconds);
+	return buf;
 }
 
 /******************************************************************

@@ -30,6 +30,7 @@ int sm_add_part(char *drawer, const char *filename, int buf_size);
 char *sm_file_part(char *filename);
 char *sm_path_part(char *filename);
 int sm_request(char *title, char *text, char *gadgets, ...);
+char *sm_get_date_str(unsigned int seconds);
 
 void tell_str(char *str);
 void tell_from_subtask(char *str);

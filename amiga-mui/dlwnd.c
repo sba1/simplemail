@@ -21,6 +21,7 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
@@ -29,19 +30,28 @@
 #include <proto/intuition.h>
 
 #include "muistuff.h"
+#include "smintl.h"
 #include "subthreads.h"
+#include "support_indep.h"
 #include "transwndclass.h"
 
 static Object *win_dl;
 
-void dl_set_title(char *str)
-{
-	set(win_dl, MUIA_Window_Title, str);
-}
-
 void dl_set_status(char *str)
 {
-	set(win_dl, MUIA_transwnd_Status, str);
+	set(win_dl, MUIA_transwnd_Status, _(str));
+}
+
+void dl_connect_to_server(char *server)
+{
+	static char buf[400];
+	static char *title; /* this is not really perfect but it works */
+	free(title);
+	title = mystrdup(server);
+	set(win_dl, MUIA_Window_Title, title);
+
+	sprintf(buf,_("Connecting to server %s..."),server);
+	set(win_dl, MUIA_transwnd_Status, buf);
 }
 
 void dl_init_gauge_mail(int amm)

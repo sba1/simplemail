@@ -353,7 +353,7 @@ void callback_mails_set_status(int status)
 
 		if (status == MAIL_STATUS_HOLD || status == MAIL_STATUS_WAITSEND)
 		{
-			if (mail_get_status_type(mail) == MAIL_STATUS_HOLD || mail_get_status_type(mail) == MAIL_STATUS_WAITSEND)
+			if (mail_get_status_type(mail) == MAIL_STATUS_HOLD || mail_get_status_type(mail) == MAIL_STATUS_WAITSEND || mail_get_status_type(mail) == MAIL_STATUS_SENT)
 				new_status = status;
 		} else
 		{

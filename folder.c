@@ -762,8 +762,10 @@ struct folder *folder_find_by_path(char *name)
 }
 
 /******************************************************************
- Move a mail from source folder to a destination folder. 0 if
- the moving has failed
+ Move a mail from source folder to a destination folder. 0 if the
+ moving has failed.
+ If mail has sent status and moved to a outgoing drawer it get's
+ the waitsend status.
 *******************************************************************/
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail)
 {
@@ -779,12 +781,26 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 		strcpy(src_buf,from_folder->path);
 		strcpy(dest_buf,dest_folder->path);
 		sm_add_part(src_buf,mail->filename,256);
+
+		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_get_status_type(mail) == MAIL_STATUS_SENT)
+		{
+			char *newfilename;
+
+			mail->status = MAIL_STATUS_WAITSEND | (mail->status & MAIL_STATUS_FLAG_MARKED);
+
+			if ((newfilename = mail_get_status_filename(mail->filename, mail->status)))
+			{
+				if (mail->filename) free(mail->filename);
+				mail->filename = newfilename;
+			}
+		}
 		sm_add_part(dest_buf,mail->filename,256);
 
 		folder_remove_mail(from_folder,mail);
 		folder_add_mail(dest_folder,mail);
 
 		if (!rename(src_buf,dest_buf)) return 1;
+		free(buf);
 	}
 	return 0;
 }

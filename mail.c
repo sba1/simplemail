@@ -1994,6 +1994,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 	{
 		fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
 	}
+	return 1;
 }
 
 /**************************************************************************

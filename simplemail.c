@@ -40,6 +40,7 @@
 #include "trans.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "support.h"
 
 /* the current mail should be viewed */
 void callback_read_mail(void)
@@ -67,17 +68,42 @@ void callback_read_mail(void)
 void callback_delete_mails(void)
 {
 	struct folder *from_folder = main_get_folder();
-	if (from_folder && from_folder != folder_deleted())
+	struct mail *mail;
+	void *handle;
+	int num;
+	int permanent; /* 1 if mails should be deleted permanently */
+
+	if (from_folder)
 	{
-		void *handle;
-		struct mail *mail = main_get_mail_first_selected(&handle);
+		/* Count the number of selected mails first */
+		mail = main_get_mail_first_selected(&handle);
+		num = 0;
 		while (mail)
 		{
-			folder_delete_mail(from_folder,mail);
+			num++;
+			mail = main_get_mail_next_selected(&handle);
+		}
+
+		if (!num) return;
+		if (from_folder == folder_deleted())
+		{
+			char buf[256];
+			if (num == 1) strcpy(buf,"Do you really want to delete the selected mail permanently?");
+			else sprintf(buf,"Do you really want to delete %d mails permanently?",num);
+			if (!sm_request(NULL,buf,"_Yes|_No")) return;
+			permanent = 1;
+		} else permanent = 0;
+
+		mail = main_get_mail_first_selected(&handle);
+		while (mail)
+		{
+			if (permanent) folder_delete_mail(from_folder,mail);
+			else folder_move_mail(from_folder,folder_deleted(),mail);
 			mail = main_get_mail_next_selected(&handle);
 		}
 		main_refresh_folder(from_folder);
-		main_refresh_folder(folder_deleted());
+		if (!permanent) main_refresh_folder(folder_deleted());
+
 		main_remove_mails_selected();
 	}
 }

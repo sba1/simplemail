@@ -1208,8 +1208,16 @@ void main_build_accounts(void)
 	{
 		if (account->pop && account->pop->name)
 		{
-			Object *entry = MenuitemObject,
-				MUIA_Menuitem_Title, account->pop->name,
+			char buf[200];
+			Object *entry;
+
+			if (account->pop->login)
+			{
+				sprintf(buf,"%s@%s",account->pop->login,account->pop->name);
+			} else strcpy(buf,account->pop->name);
+
+			entry = MenuitemObject,
+				MUIA_Menuitem_Title, mystrdup(buf), /* leakes */
 				End;
 
 			DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);

@@ -528,13 +528,34 @@ void pop3_get_tops(struct pop3_server *server, unsigned long amm)
 */
 int pop3_del_mail(struct pop3_server *server, unsigned long nr)
 {
-   int rc;
+	int rc;
+	char *buf;
+	unsigned long got;
    
-   rc = FALSE;
+	/* DELE nr */
+
+	rc = FALSE;
    
-   rc = TRUE;
+   	buf = malloc(REC_BUFFER_SIZE);
+   	
+   	if(buf != NULL)
+   	{
+		sprintf(buf, "DELE %ld\r\n", nr);
+		send(server->socket, buf, strlen(buf), 0);
+		got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
+	
+		if(got != 0)
+		{
+			if(buf[0] == '+')
+			{
+				rc = TRUE;
+			}
+		}
+		
+		free(buf);
+	}
    
-   return(rc);
+	return(rc);
 }
 
 static int pop3_really_dl(struct pop3_server *server)
@@ -581,10 +602,15 @@ static int pop3_really_dl(struct pop3_server *server)
                         thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
                         if(pop3_get_mail(server, i))
                         {
-                           if(!pop3_del_mail(server, i))
-                           {
-                              tell_from_subtask("Can\'t mark mail as deleted!");
-                           }  
+                        	
+                        	if(server->del)
+                        	{
+                        		thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
+                           		if(!pop3_del_mail(server, i))
+                           		{
+                              		tell_from_subtask("Can\'t mark mail as deleted!");
+                           		}
+                           	}	
                         }
                         else
                         {

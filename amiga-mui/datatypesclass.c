@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include <datatypes/datatypesclass.h>
+#include <devices/printer.h>
 #include <intuition/icclass.h>
 #include <libraries/mui.h>
 
@@ -50,8 +51,36 @@ struct DataTypes_Data
 	int del; /* 1 if filename should be deleted */
 	int show; /* 1 if between show / hide */
 
-	struct MUI_EventHandlerNode ehnode;
+	union printerIO *pio;
+
+	struct MUI_EventHandlerNode ehnode; /* IDCMP_xxx */
+	struct MUI_InputHandlerNode ihnode; /* for reaction on the msg port */
 };
+
+STATIC ULONG DataTypes_PrintCompleted(struct IClass *cl, Object *obj);
+
+static union printerIO *CreatePrtReq(void)
+{
+	union printerIO *pio;
+	struct MsgPort *mp;
+
+	if ((mp = CreateMsgPort()))
+	{
+		if (pio = (union printerIO *)CreateIORequest(mp, sizeof (union printerIO)))
+			return pio;
+		DeleteMsgPort(mp);
+	}
+	return NULL;
+}
+
+static void DeletePrtReq(union printerIO * pio)
+{
+	struct MsgPort *mp;
+
+	mp = pio->ios.io_Message.mn_ReplyPort;
+	DeleteIORequest((struct IORequest *)pio);
+	DeleteMsgPort(mp);
+}
 
 STATIC ULONG DataTypes_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
@@ -181,6 +210,29 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+STATIC ULONG DataTypes_Get(struct IClass *cl, Object *obj, struct opGet *msg)
+{
+	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
+	if (msg->opg_AttrID == MUIA_DataTypes_SupportsPrint)
+	{
+		ULONG *m = GetDTMethods(data->dt_obj);
+		int print = 0;
+
+		for (m = GetDTMethods(data->dt_obj);(*m) != ~0;m++)
+		{
+			if ((*m) == DTM_PRINT)
+			{
+				print = 1;
+				break;
+			}
+		}
+
+		*msg->opg_Storage = print;
+		return 1;
+	}
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
 STATIC ULONG DataTypes_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
 {
   DoSuperMethodA(cl, obj, (Msg) msg);
@@ -288,10 +340,61 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 							  RefreshDTObjects (data->dt_obj, _window(obj), NULL, NULL);
 							}
 						  break;
+
+				case	DTA_PrinterStatus:
+							DataTypes_PrintCompleted(cl, obj);
+							break;
 			}
 		}
 	}
 	return 0;
+}
+
+STATIC ULONG DataTypes_Print(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
+	if (data->dt_obj && !data->pio)
+	{
+		struct dtPrint dtp;
+
+    if ((data->pio = CreatePrtReq()))
+    {
+			if (OpenDevice("printer.device", 0 /* should be user selectable */, (struct IORequest *)data->pio, 0) == 0)
+			{
+				struct TagItem tags[2];
+
+		    tags[0].ti_Tag   = data->show?DTA_RastPort:TAG_IGNORE;
+	  	  tags[0].ti_Data  = (ULONG)(data->show?_rp(obj):NULL);
+	    	tags[1].ti_Tag   = TAG_DONE;
+
+				if (PrintDTObject(data->dt_obj, data->show?_window(obj):FALSE, NULL, DTM_PRINT, NULL, data->pio, tags))
+				{
+/*
+					data->ihnode.ihn_Object = obj;
+					data->ihnode.ihn_Signals = 1UL << (data->pio->ios.io_Message.mn_ReplyPort);
+					data->ihnode.ihn_Flags = 0;
+					data->ihnode.ihn_Method = MUIM_DataTypes_PrintCompleted;
+					DoMethod(_app(obj),MUIM_Application_AddInputHandler,&data->ihnode);*/
+					return TRUE;
+				}
+		    CloseDevice((struct IORequest *)data->pio);
+			}
+			DeletePrtReq(data->pio);
+			data->pio = NULL;
+    }
+	}
+	return FALSE;
+}
+
+STATIC ULONG DataTypes_PrintCompleted(struct IClass *cl, Object *obj)
+{
+	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
+	if (data->pio)
+	{
+		CloseDevice((struct IORequest *)data->pio);
+		DeletePrtReq(data->pio);
+		data->pio = NULL;
+	}
 }
 
 STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
@@ -302,6 +405,7 @@ STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register 
 		case	OM_NEW:				return DataTypes_New(cl,obj,(struct opSet*)msg);
 		case  OM_DISPOSE:		DataTypes_Dispose(cl,obj,msg); return 0;
 		case  OM_SET:				return DataTypes_Set(cl,obj,(struct opSet*)msg);
+		case	OM_GET:				return DataTypes_Get(cl,obj,(struct opGet*)msg);
 		case  MUIM_AskMinMax: return DataTypes_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
 		case	MUIM_Setup:		return DataTypes_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return DataTypes_Cleanup(cl,obj,msg);
@@ -309,6 +413,8 @@ STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register 
 		case	MUIM_Hide:			DataTypes_Hide(cl,obj,msg);return 0;
 		case	MUIM_Draw:			return DataTypes_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return DataTypes_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
+		case	MUIM_DataTypes_Print: return DataTypes_Print(cl,obj,msg);
+		case	MUIM_DataTypes_PrintCompleted: return DataTypes_PrintCompleted(cl,obj);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

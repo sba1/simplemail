@@ -75,12 +75,13 @@ struct filter_action
 #define FILTER_FLAG_REQUEST	(1<<0)
 #define FILTER_FLAG_NEW			(1<<1)
 #define FILTER_FLAG_SENT			(1<<2)
+#define FILTER_FLAG_REMOTE		(1<<3)
 
 struct filter
 {
 	struct node node; /* embedded node structure */
 	char *name; /* name of the filter */
-	int flags; /* filter is active */
+	int flags; /* activity flags of the filter */
 	int mode; /* 0=and  -  1=or */
 	struct list rules_list; /* list of rules */
 
@@ -113,6 +114,7 @@ void filter_list_clear(void);
 void filter_list_add_duplicate(struct filter *);
 struct filter *filter_list_first(void);
 struct filter *filter_list_next(struct filter *f);
+int filter_list_has_remote(void);
 void filter_list_load(FILE *fh);
 void filter_list_save(FILE *fh);
 

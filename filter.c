@@ -247,6 +247,20 @@ struct filter *filter_list_next(struct filter *f)
 }
 
 /**************************************************************************
+ Returs wheather filter list contains remote filters
+**************************************************************************/
+int filter_list_has_remote(void)
+{
+	struct filter *f = filter_list_first();
+	while (f)
+	{
+		if (f->flags & FILTER_FLAG_REMOTE) return 1;
+		f = filter_list_next(f);
+	}
+	return 0;
+}
+
+/**************************************************************************
  Loads the filter list from the given FILE
 **************************************************************************/
 void filter_list_load(FILE *fh)

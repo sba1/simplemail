@@ -31,6 +31,7 @@
 #include "account.h"
 #include "configuration.h"
 #include "dlwnd.h"
+#include "filter.h"
 #include "folder.h"
 #include "imap.h"
 #include "parse.h"
@@ -52,6 +53,7 @@ static int mails_dl_entry(int called_by_auto)
 	char *folder_directory;
 	int receive_preselection = user.config.receive_preselection;
 	int receive_size = user.config.receive_size;
+	int has_remote_filter = filter_list_has_remote();
 	struct pop3_server *pop;
 	struct imap_server *imap;
 
@@ -93,7 +95,7 @@ static int mails_dl_entry(int called_by_auto)
 		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
 		else thread_call_parent_function_async(status_open,0);
 
-		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, folder_directory))
+		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, has_remote_filter, folder_directory))
 		{
 			imap_synchronize_really(&imap_list, called_by_auto);
 		}

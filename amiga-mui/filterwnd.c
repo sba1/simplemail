@@ -55,6 +55,7 @@ static Object *filter_list;
 static struct filter *filter_last_selected;
 static Object *filter_new_button;
 static Object *filter_remove_button;
+static Object *filter_remote_check;
 static Object *filter_request_check;
 static Object *filter_new_check;
 static Object *filter_sent_check;
@@ -169,6 +170,7 @@ static void filter_accept_rule(void)
 		if (xget(filter_request_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REQUEST;
 		if (xget(filter_new_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_NEW;
 		if (xget(filter_sent_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_SENT;
+		if (xget(filter_remote_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REMOTE;		
 
 		/* Go though all objects of the rule_rule_group and build a new
        rule list from it */
@@ -419,6 +421,7 @@ static void filter_active(void)
 		set(filter_request_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_REQUEST));
 		set(filter_new_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_NEW));
 		set(filter_sent_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_SENT));
+		set(filter_remote_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_REMOTE));
 
 	} else filter_refresh_rules();
 	filter_last_selected = f;
@@ -487,16 +490,25 @@ static void init_filter(void)
 						End,
 					Child, BalanceObject, End,
 					Child, VGroup,
+						Child, HorizLineTextObject(_("Activtiy")),
 						Child, HGroup,
-							Child, MakeLabel(_("Apply on request")),
-							Child, filter_request_check = MakeCheck(NULL,FALSE),
-							Child, MakeLabel(_("Apply to new mails")),
-							Child, filter_new_check = MakeCheck(NULL,FALSE),
-							Child, MakeLabel(_("Apply to sent mails")),
-							Child, filter_sent_check = MakeCheck(NULL,FALSE),
-							Child, HVSpace,
+							Child, RectangleObject,MUIA_Weight,25,End,
+							Child, ColGroup(5),
+								Child, MakeLabel(_("On request")),
+								Child, filter_request_check = MakeCheck(NULL,FALSE),
+								Child, RectangleObject,MUIA_Weight,200,End,
+								Child, MakeLabel(_("On sent mails")),
+								Child, filter_sent_check = MakeCheck(NULL,FALSE),
+
+								Child, MakeLabel(_("Remotly on POP3 server")),
+								Child, filter_remote_check = MakeCheck(NULL,FALSE),
+								Child, RectangleObject,MUIA_Weight,200,End,
+								Child, MakeLabel(_("On new mails")),
+								Child, filter_new_check = MakeCheck(NULL,FALSE),
+								End,
+							Child, RectangleObject,MUIA_Weight,25,End,
 							End,
-						Child, HorizLineObject,
+						Child, HorizLineTextObject(_("Rules")),
 						Child, VGroupV,
 							Child, filter_rule_group = ColGroup(2),
 								Child, HVSpace,
@@ -507,7 +519,7 @@ static void init_filter(void)
 							Child, filter_add_rule_button = MakeButton(_("Add new rule")),
 							Child, filter_apply_now_button = MakeButton(_("Apply now")),
 							End,
-						Child, HorizLineObject,
+						Child, HorizLineTextObject(_("Action")),
 						Child, VGroup,
 							Child, ColGroup(3),
 								Child, MakeLabel(_("Move to Folder")),

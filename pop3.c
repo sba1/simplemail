@@ -40,19 +40,19 @@
 
 #include "configuration.h"
 #include "debug.h"
+#include "filter.h"
 #include "mail.h"
+#include "pop3.h"
 #include "tcp.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "status.h"
-#include "support.h"
 #include "support_indep.h"
 
 #include "mainwnd.h"
 #include "subthreads.h"
+#include "support.h"
 #include "tcpip.h"
-
-#include "pop3.h"
 
 #define REC_BUFFER_SIZE 512
 
@@ -733,7 +733,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, char *folder_directory)
+int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory)
 {
 	int rc = 0;
 
@@ -745,7 +745,9 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
 		int nummails = 0; /* number of downloaded e-mails */
 
-		for( ;server; server = (struct pop3_server*)node_next(&server->node))
+		SM_DEBUGF(1,("has_remote_filter=%ld\n",has_remote_filter));
+
+		for (;server; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
 			char head_buf[100];
@@ -949,6 +951,7 @@ struct pop_entry_msg
 	int receive_preselection;
 	int receive_size;
 	int called_by_auto;
+	int has_remote_filter;
 	char *folder_directory;
 };
 
@@ -963,6 +966,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 	int receive_preselection = msg->receive_preselection;
 	int receive_size = msg->receive_size;
 	int called_by_auto = msg->called_by_auto;
+	int has_remote_filter = msg->has_remote_filter;
 
 	list_init(&pop_list);
 	pop = (struct pop3_server*)list_first(msg->pop_list);
@@ -984,10 +988,11 @@ static int pop3_entry(struct pop_entry_msg *msg)
 	if (thread_parent_task_can_contiue())
 	{
 		thread_call_parent_function_async(status_init,1,0);
+
 		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
 		else thread_call_parent_function_async(status_open,0);
 
-		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size,folder_directory);
+		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size,has_remote_filter,folder_directory);
 		thread_call_parent_function_async(status_close,0);
 	}
 	return 0;
@@ -1006,6 +1011,7 @@ int pop3_dl(struct list *pop_list, char *dest_dir,
 	msg.receive_size = receive_size;
 	msg.called_by_auto = called_by_auto;
 	msg.folder_directory = user.folder_directory;
+	msg.has_remote_filter = filter_list_has_remote();
 	return thread_start(THREAD_FUNCTION(&pop3_entry),&msg);
 }
 

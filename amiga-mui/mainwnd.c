@@ -219,9 +219,7 @@ static void foldertreelist_orderchanged(void)
 *******************************************************************/
 static void foldertreelist_doubleclick(void)
 {
-	struct folder *f = main_get_folder();
-	if (f->special != FOLDER_SPECIAL_GROUP)
-		callback_edit_folder();
+	callback_edit_folder();
 }
 
 /******************************************************************

@@ -136,9 +136,10 @@ struct dl_mail
 	char *uidl;				/* the uidl string, might be NULL */
 };
 
-#define MAILF_DELETE   (1<<0) /* mail should be deleted */
-#define MAILF_DOWNLOAD (1<<1) /* mail should be downloaded */
-#define MAILF_DUPLICATE (1<<2) /* mail is duplicated */
+#define MAILF_DELETE     (1<<0) /* mail should be deleted */
+#define MAILF_DOWNLOAD   (1<<1) /* mail should be downloaded */
+#define MAILF_DUPLICATE  (1<<2) /* mail is duplicated */
+#define MAILF_ADDED      (1<<7) /* mails has been added to the status window */
 
 
 struct uidl_entry /* stored on the harddisk */
@@ -403,7 +404,7 @@ static void pop3_noop(struct connection *conn)
 **************************************************************************/
 static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *server,
 																 struct uidl *uidl,
-                                 int receive_preselection, int receive_size)
+                                 int receive_preselection, int receive_size, int has_remote_filter)
 {
 	char *answer;
 	struct dl_mail *mail_array;
@@ -458,7 +459,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
   }
 
-	SM_DEBUGF(18,("Getting mail sizes..."));
+	SM_DEBUGF(10,("Getting mail sizes..."));
 	thread_call_parent_function_async(status_set_status,1,_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
@@ -499,10 +500,14 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if ((receive_preselection == 2 || receive_preselection == 1) && msize > receive_size * 1024)
 		{
 			/* add this mail to the transfer window */
+			mail_array[mno].flags |= MAILF_ADDED;
 			thread_call_parent_function_async(status_mail_list_insert,3,mno,mail_array[mno].flags,msize);
 			mails_add = 1;
 		}
 	}
+
+	/* Thaw the list which displays the e-Mails */
+	thread_call_parent_function_async(status_mail_list_thaw,0);
 
 	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 	{
@@ -510,25 +515,23 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		return NULL;
 	}
 
-	/* Thaw the list which displays the e-Mails */
-	thread_call_parent_function_async(status_mail_list_thaw,0);
-
 	/* No user interaction wanted */
-	if (receive_preselection == 0) return mail_array;
+	if (receive_preselection == 0 && !has_remote_filter) return mail_array;
 
-	if (cont && mails_add && receive_preselection == 2)
+	if (cont && ((mails_add && receive_preselection == 2) || has_remote_filter))
 	{
-		/* no errors and the user wants a more informative preselection */
+		/* no errors and the user wants a more informative preselection or there are any remote filters */
 		thread_call_parent_function_async(status_set_status,1,_("Getting mail infos..."));
 		for (i=1;i<=amm;i++)
 		{
-			int has_added = ((int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i)==-1)?0:1;
-			if (has_added)
+			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i)!=-1);
+			if (issue_top)
 			{
 				char buf[256];
 				struct mail_scan ms;
 				struct mail *m;
 				int more = 1; /* more lines needed */
+				int showme = 0;
 
 				if (!(m = mail_create())) break;
 
@@ -567,9 +570,37 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 					return NULL;
 				}
 
-				/* Tell the gui about the mail info (not asynchron!)*/
-				thread_call_parent_function_sync(status_mail_list_set_info, 4,
-					i, mail_find_header_contents(m,"from"), mail_find_header_contents(m,"subject"),mail_find_header_contents(m,"date"));
+				/* Now check if mail should be filtered */
+				if (has_remote_filter && (mail_array[i].flags & MAILF_DOWNLOAD))
+				{
+					/* process the headers as we require this now */
+					if (mail_process_headers(m))
+					{
+						int ignore = (int)thread_call_parent_function_sync(callback_remote_filter_mail,1,m);
+						if (ignore)
+						{
+							showme = 1;
+
+							mail_array[i].flags &= ~MAILF_DOWNLOAD;
+
+							if (!(mail_array[i].flags & MAILF_ADDED))
+							{
+								thread_call_parent_function_async(status_mail_list_insert,3,i,mail_array[i].flags,mail_array[i].size);
+								mails_add = 1;
+							} else
+							{
+								thread_call_parent_function_async(status_mail_list_set_flags,2,i,mail_array[i].flags);
+							}
+						}
+					}
+				}
+
+				/* Tell the gui about the mail info (not asynchron!) */
+				if (receive_preselection == 2 || showme)
+				{
+					thread_call_parent_function_sync(status_mail_list_set_info, 4,
+						i, mail_find_header_contents(m,"from"), mail_find_header_contents(m,"subject"),mail_find_header_contents(m,"date"));
+				}
 
 				/* Check if we should receive more statitics (also not asynchron) */
 				if (!(int)thread_call_parent_function_sync(status_more_statistics,0)) break;
@@ -745,8 +776,6 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
 		int nummails = 0; /* number of downloaded e-mails */
 
-		SM_DEBUGF(1,("has_remote_filter=%ld\n",has_remote_filter));
-
 		for (;server; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
@@ -795,7 +824,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 						uidl_init(&uidl,server,folder_directory);
 
-						if ((mail_array = pop3_stat(conn,server,&uidl,receive_preselection,receive_size)))
+						if ((mail_array = pop3_stat(conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
 						{
 							int i;
 							int mail_amm = mail_array[0].flags;

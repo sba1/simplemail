@@ -1658,7 +1658,8 @@ void rebuild_parameter_list(struct list *list)
 }
 
 /**************************************************************************
- Interprets the the already read headers. A return value of 0 means error
+ Interprets the the already read headers. A return value of 0 means error.
+ This function can be called from sub threads.
  TODO: Must use functions better since this function is really too big
 **************************************************************************/
 int mail_process_headers(struct mail *mail)

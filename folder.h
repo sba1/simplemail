@@ -204,4 +204,7 @@ void folder_config_save(struct folder *f);
 /* imap related */
 int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
 
+/* misplaced and needs a rework */
+int mail_matches_filter(struct folder *folder, struct mail *m, struct filter *filter);
+
 #endif

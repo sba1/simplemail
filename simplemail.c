@@ -1015,6 +1015,25 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	main_refresh_folder(folder);
 }
 
+/* checks given mail with a remote filter. Returns 1 if mail should be ignored otherwise 0
+ * (yes, this has to be extented in the future) */
+int callback_remote_filter_mail(struct mail *mail)
+{
+	struct filter *f = filter_list_first();
+	while (f)
+	{
+		if (f->flags & FILTER_FLAG_REMOTE)
+		{
+			if (mail_matches_filter(NULL,mail,f))
+			{
+				return 1;
+			}
+		}
+		f = filter_list_next(f);
+	}
+	return 0;
+}
+
 /* Import mails */
 void callback_import_mbox(void)
 {

@@ -2623,7 +2623,7 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 
 /******************************************************************
  Checks if the given filter matches the mail.
- folder is the folder where the mail is located
+ folder is the folder where the mail is located and maybe NULL.
 *******************************************************************/
 int mail_matches_filter(struct folder *folder, struct mail *m,
 											  struct filter *filter)

@@ -85,6 +85,7 @@ void callback_selected_mails_are_ham(void);
 void callback_check_selected_mails_if_spam(void);
 
 void callback_apply_folder(struct filter *filter);
+int callback_remote_filter_mail(struct mail *mail);
 
 struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder);
 void callback_new_mail_arrived_filename(char *filename);

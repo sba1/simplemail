@@ -135,6 +135,17 @@ int sm_get_gmt_offset(void)
 }
 
 /******************************************************************
+ Convert seconds from 1978 to a string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_date_str(unsigned int seconds)
+{
+	static char buf[128];
+	return buf;
+}
+
+
+/******************************************************************
  Add a filename component to the drawer
 *******************************************************************/
 int sm_add_part(char *drawer, const char *filename, int buf_size)
@@ -206,6 +217,7 @@ void tell_from_subtask(char *str)
 {
 	thread_call_parent_function_sync(tell_str,1,str);
 }
+
 
 
 

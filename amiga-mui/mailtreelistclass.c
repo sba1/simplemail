@@ -44,6 +44,7 @@
 
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "mail.h"
 #include "folder.h"
 #include "simplemail.h"
@@ -184,6 +185,8 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	char **preparse = msg->Preparse;
 	struct mail *mail;
 
+	SM_ENTER;
+
 	if (msg->TreeNode)
 	{
 		mail = (struct mail*)msg->TreeNode->tn_User;
@@ -194,6 +197,8 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
 	struct mail *mail;
+
+	SM_ENTER;
 
 	mail = (struct mail*)msg->entry;
 #endif
@@ -317,6 +322,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 			*array = data->received_text;
 		}	
 	}
+	SM_LEAVE;
 }
 
 STATIC VOID MailTreelist_SetNotified(void **msg)
@@ -598,7 +604,14 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
+
+	SM_ENTER;
+
+	if (!DoSuperMethodA(cl,obj,(Msg)msg))
+	{
+		SM_LEAVE;
+		return 0;
+	}
 
 	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End, 0);
 	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End, 0);
@@ -624,6 +637,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End, 0);
 	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 0);
 
+	SM_LEAVE;
 	return 1;
 }
 

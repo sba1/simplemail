@@ -245,6 +245,8 @@ void loop(void)
 *****************************************************************/
 int app_init(void)
 {
+	SM_ENTER;
+
 	App = ApplicationObject,
 		MUIA_Application_Title,			"SimpleMail",
 		MUIA_Application_Version,		VERSTAG,
@@ -255,7 +257,8 @@ int app_init(void)
 		MUIA_Application_UseRexx, FALSE,
 		MUIA_Application_HelpFile, "PROGDIR:SimpleMail.guide",
 	End;
-	
+
+	SM_LEAVE;
 	return !!App;
 }
 
@@ -326,6 +329,8 @@ void all_del(void)
 *****************************************************************/
 int all_init(void)
 {
+	SM_ENTER;
+
 	if ((MUIMasterBase = OpenLibraryInterface(MUIMASTER_NAME, MUIMASTER_VMIN,&IMUIMaster)))
 	{
 		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",0,&IRexxSys)))
@@ -356,7 +361,10 @@ int all_init(void)
 							{
 								if (main_window_init())
 								{
-									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
+									SM_DEBUGF(15,("Going to load environment\n"));
+//									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
+									SM_DEBUGF(15,("Environment loaded\n"));
+									SM_LEAVE;
 									return 1;
 								}
 							} else puts(_("Failed to create the application\n"));
@@ -367,6 +375,7 @@ int all_init(void)
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 
+	SM_LEAVE;
 	return 0;
 }
 
@@ -411,6 +420,9 @@ char *initial_subject;
 int gui_main(void)
 {
 	int rc;
+
+	SM_ENTER;
+
 	rc = 0;
 
 	dt_init();
@@ -447,6 +459,7 @@ int gui_main(void)
 
 	dt_cleanup();
 
+	SM_LEAVE;
 	return rc;
 }
 

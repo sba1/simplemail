@@ -43,6 +43,7 @@
 #include "account.h"
 #include "arexx.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
@@ -541,6 +542,8 @@ int main_window_init(void)
 	struct NewMenu *nm;
 	int i;
 
+	SM_ENTER;
+
 	/* translate the menu entries */
 	if (!(nm = malloc(sizeof(nm_untranslated)))) return 0;
 	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
@@ -668,6 +671,8 @@ int main_window_init(void)
 
 	if (win_main)
 	{
+		SM_DEBUGF(15,("Created Main Window at %p\n",win_main));
+
 		if (xget(folder_tree, MUIA_Version) < 18 || (xget(folder_tree, MUIA_Version) == 18 && xget(folder_tree, MUIA_Revision)<12))
 		{
 			struct EasyStruct es;
@@ -676,7 +681,7 @@ int main_window_init(void)
 			es.es_Title =  "SimpleMail";
 			es.es_TextFormat = _("SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\nIt's available from %s");
 			es.es_GadgetFormat = _("Ok");
-			
+
 	 	EasyRequest(NULL,&es,NULL,18,12,"http://www.sebastianbauer.info/");
 	 	MUI_DisposeObject(win_main);
 	 	win_main = NULL;
@@ -792,6 +797,7 @@ int main_window_init(void)
 		rc = TRUE;
 	}
 
+	SM_LEAVE;
 	return(rc);
 }
 

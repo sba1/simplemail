@@ -22,6 +22,8 @@
 #include <errno.h>
 
 #include <intuition/intuitionbase.h>
+#include <workbench/icon.h>
+#include <libraries/asl.h>
 #include <libraries/mui.h>
 #include <mui/betterstring_mcc.h>
 
@@ -32,11 +34,18 @@
 #include <proto/utility.h>
 #include <proto/graphics.h>
 #include <proto/intuition.h>
+#include <proto/wb.h>
+#include <proto/icon.h>
+
+#ifdef HAVE_OPENURL
+#include <proto/openurl.h>
+#endif
 
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
 #include "mail.h"
+#include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
@@ -61,7 +70,206 @@ struct MessageView_Data
 	struct mail *ref_mail; /* The mail's reference */
 
 	struct mail *mail; /* The currently displayed mail (instance created within this class) */
+
+	struct FileRequester *file_req; /* Filerequester for saving files */
 };
+
+/******************************************************************
+ Save the contents of a given mail to a given dest
+*******************************************************************/
+static void save_contents_to(struct MessageView_Data *data, struct mail *mail, char *drawer, char *file)
+{
+	BPTR dlock;
+	mail_decode(mail);
+
+	if (!file) file = "Unnamed";
+
+	if ((dlock = Lock(drawer,ACCESS_READ)))
+	{
+		BPTR olock;
+		BPTR flock;
+		BPTR fh;
+		int goon = 1;
+
+		olock = CurrentDir(dlock);
+
+		if ((flock = Lock(file,ACCESS_READ)))
+		{
+			UnLock(flock);
+			goon = sm_request(NULL,_("File %s already exists in %s.\nDo you really want to replace it?"),("_Yes|_No"),file,drawer);
+		}
+
+		if (goon)
+		{
+			if (!mystricmp(mail->content_type,"text") && mystricmp(mail->content_subtype, "html"))
+			{
+				void *cont; /* mails content */
+				int cont_len;
+
+				char *charset;
+				char *user_charset;
+
+				if (!(charset = mail->content_charset)) charset = "ISO-8859-1";
+				user_charset = user.config.default_codeset?user.config.default_codeset->name:"ISO-8858-1";
+
+				/* Get the contents */
+				mail_decoded_data(mail,&cont,&cont_len);
+					
+				if (mystricmp(user_charset,charset))
+				{
+					/* The character sets differ so now we create the two strings to see if they differ */
+					char *str; /* That's the string encoded in the mails charset */
+					char *user_str; /* That's the string encoded in the users charset */
+
+					/* encode now */
+					str = utf8tostrcreate((utf8 *)cont, codesets_find(charset));
+					user_str = utf8tostrcreate((utf8 *)cont, codesets_find(user_charset));
+
+					if (str && user_str)
+					{
+						char *towrite;
+
+						/* Let's see if they are different */
+						if (strcmp(str,user_str))
+						{
+							/* Yes, so inform the user */
+							char gadgets[320];
+							int selection;
+
+							sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
+							selection = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),gadgets);
+
+							switch (selection)
+							{
+								case 1: towrite = str; break;
+								case 2: towrite = user_str; break;
+								case 3: towrite = NULL; goon = 1; break; /* will be writeout as utf8 */
+								default: towrite = NULL; goon = 0; break; /* cancel */
+							}
+						} else towrite = user_str;
+
+						if (towrite)
+						{
+							/* Now write out the stuff */
+							if ((fh = Open(file, MODE_NEWFILE)))
+							{
+								char *comment = mail_get_from_address(mail_get_root(mail));
+								Write(fh,towrite,strlen(towrite));
+								Close(fh);
+
+								if (comment)
+								{
+									SetComment(file,comment);
+									free(comment);
+								}
+								goon = 0;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+    if (goon)
+    {
+			if ((fh = Open(file, MODE_NEWFILE)))
+			{
+				char *comment = mail_get_from_address(mail_get_root(mail));
+				void *cont;
+				int cont_len;
+
+				mail_decoded_data(mail,&cont,&cont_len);
+
+				Write(fh,cont,cont_len);
+				Close(fh);
+
+				if (comment)
+				{
+					SetComment(file,comment);
+					free(comment);
+				}
+			}
+		}
+
+		CurrentDir(olock);
+		UnLock(dlock);
+	}
+}
+
+/******************************************************************
+ Save the contents of a given mail
+*******************************************************************/
+static void save_contents(struct MessageView_Data *data, struct mail *mail)
+{
+	if (!mail) return;
+	if (!mail->num_multiparts)
+	{
+		if (MUI_AslRequestTags(data->file_req,
+					mail->content_name?ASLFR_InitialFile:TAG_IGNORE,mail->content_name,
+					TAG_DONE))
+		{
+			save_contents_to(data,mail,data->file_req->fr_Drawer,data->file_req->fr_File);
+		}
+	}
+}
+
+/******************************************************************
+ Open the contents of an icon (requires version 44 of the os)
+*******************************************************************/
+static void open_contents(struct MessageView_Data *data, struct mail *mail)
+{
+	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
+	{
+		BPTR fh;
+		BPTR newdir;
+		BPTR olddir;
+		char filename[100];
+
+		/* Write out the file, create an icon, start it via wb.library */
+		if (mail->content_name)
+		{
+			strcpy(filename,"T:");
+			strcat(filename,data->mail->filename);
+			if ((newdir = CreateDir(filename))) UnLock(newdir);
+
+			if ((newdir = Lock(filename, ACCESS_READ)))
+			{
+				olddir = CurrentDir(newdir);
+
+				if ((fh = Open(mail->content_name,MODE_NEWFILE)))
+				{
+					struct DiskObject *dobj;
+					void *cont;
+					int cont_len;
+
+					mail_decode(mail);
+					mail_decoded_data(mail,&cont,&cont_len);
+
+					Write(fh,cont,cont_len);
+					Close(fh);
+
+					if ((dobj = GetIconTags(mail->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+					{
+						int ok_to_open = 1;
+						if (dobj->do_Type == WBTOOL)
+						{
+							ok_to_open = sm_request(NULL,_("Are you sure that you want to start this executable?"),_("*_Yes|_Cancel"));
+						}
+
+						if (ok_to_open) PutIconTagList(mail->content_name,dobj,NULL);
+						FreeDiskObject(dobj);
+
+						if (ok_to_open)
+							OpenWorkbenchObjectA(mail->content_name,NULL);
+					}
+				}
+
+				CurrentDir(olddir);
+				UnLock(newdir);
+			}
+		}
+	}
+}
 
 /******************************************************************
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
@@ -106,6 +314,60 @@ STATIC ASM SAVEDS LONG simplehtml_load_function(REG(a0,struct Hook *h), REG(a2, 
 	msg->buffer_len = mail->decoded_len;
 	return 1;
 #endif
+}
+
+
+/******************************************************************
+ A an uri has been clicked
+*******************************************************************/
+static void messageview_uri_clicked(void **msg)
+{
+	struct MessageView_Data *data = (struct MessageView_Data*)msg[0];
+	char *uri = (char*)msg[1];
+
+	if (!mystrnicmp(uri,"mailto:",7))
+	{
+		callback_write_mail_to_str(uri+7,NULL);
+	} else
+	{
+		if (!mystrnicmp(uri,"internalview:",13))
+		{
+			void *possible_data = (void*)strtoul(uri+13,NULL,16);
+
+			/* Check if this is really an internal anchor */
+			if (data == possible_data)
+			{
+				struct mail *m = (struct mail*)strtoul(uri+22,NULL,16);
+				if (m)
+					open_contents(data,m);
+			}
+		} else
+		{
+			if (!mystrnicmp(uri,"internalsave:",13))
+			{
+				void *possible_data = (void*)strtoul(uri+13,NULL,16);
+
+				/* Check if this is really an internal anchor */
+				if (data == possible_data)
+				{
+					struct mail *m = (struct mail*)strtoul(uri+22,NULL,16);
+					if (m)
+						save_contents(data,m);
+				}
+			} else
+			{
+#ifdef HAVE_OPENURL
+				struct Library *OpenURLBase;
+
+				if ((OpenURLBase = OpenLibrary("openurl.library",0)))
+				{
+					URL_OpenA(uri,NULL);
+					CloseLibrary(OpenURLBase);
+				}
+#endif
+			}
+		}
+	}
 }
 
 /******************************************************************
@@ -166,7 +428,6 @@ static void messageview_append_mail(struct MessageView_Data *data, struct mail *
 {
 	struct mail *initial_mail;
 	int i;
-	int separator = 0;
 
 	static char temp_buf[512]; /* Ok to use a static buffer although this is a recursive call */
 	static char content_name[256];
@@ -181,22 +442,31 @@ static void messageview_append_mail(struct MessageView_Data *data, struct mail *
 	for (i=0;i<mail->num_multiparts;i++)
 	{
 		struct mail *m = mail->multipart_array[i];
-		if (m == initial_mail) continue;
 
-		if (!separator)
+		if (initial_mail == m) mystrlcpy(content_name,_("Main Message"),sizeof(content_name));
+		else
 		{
-			string_append(str,"<hr>");
-			separator = 1;
+			if (m->content_name) utf8tostr(m->content_name, content_name, sizeof(content_name), user.config.default_codeset);
+			else mystrlcpy(content_name,_("Unnamed"),sizeof(content_name));
 		}
 
-		if (m->content_name) utf8tostr(m->content_name, content_name, sizeof(content_name), user.config.default_codeset);
-		else mystrlcpy(content_name,_("Unnamed"),sizeof(content_name));
+		mail_decoded_data(m, &decoded_data, &decoded_data_len);
 
-		mail_decoded_data(mail, &decoded_data, &decoded_data_len);
-
-		sm_snprintf(temp_buf,sizeof(temp_buf),"<A HREF=\"internal:%08lx\">%s</A> (%ld bytes %s/%s)",m,content_name,decoded_data_len,m->content_type,m->content_subtype);
+		string_append(str,"<tr><td>");
+		string_append(str,content_name);
+		string_append(str,"</td>");
+		
+		sm_snprintf(temp_buf,sizeof(temp_buf),"<td><A HREF=\"internalview:%08lx.%08lx\">%s</A></td>",data,m,Q_("?attachment:View"));
 		string_append(str,temp_buf);
-		string_append(str,"<br>");
+		sm_snprintf(temp_buf,sizeof(temp_buf),"<td><A HREF=\"internalsave:%08lx.%08lx\">%s</A></td>",data,m,Q_("?attachment:Save"));
+		string_append(str,temp_buf);
+		sm_snprintf(temp_buf,sizeof(temp_buf),"<td>%s/%s</td>",m->content_type,m->content_subtype);
+		string_append(str,temp_buf);
+		string_append(str,"<td align=\"right\">");
+		sm_snprintf(temp_buf,sizeof(temp_buf),_("%ld bytes"),decoded_data_len);
+		string_append(str,temp_buf);
+		string_append(str,"</td>");
+		string_append(str,"</tr>");
 	}
 }
 
@@ -287,7 +557,9 @@ static void messageview_show_mail(struct MessageView_Data *data)
 		string_append(&str,html_mail);
 		free(html_mail);
 
+		string_append(&str,"<hr /><table>");
 		messageview_append_mail(data,data->mail,&str);
+		string_append(&str,"</table>");
 
 		string_append(&str,"</BODY>");
 
@@ -348,6 +620,13 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
+	if (!(data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE)))
+	{
+		CoerceMethod(cl,obj,OM_DISPOSE);
+		return NULL;
+	}
+
+
 	data->simplehtml = simplehtml;
 	data->horiz = horiz;
 	data->vert = vert;
@@ -359,6 +638,8 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			MUIA_SimpleHTML_VertScrollbar, vert,
 			MUIA_SimpleHTML_LoadHook, &data->load_hook,
 			TAG_DONE);
+
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, messageview_uri_clicked, data, MUIV_TriggerValue);
 
 	return (ULONG)obj;
 }
@@ -372,6 +653,8 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 	messageview_cleanup_temporary_files(data);
 	mail_free(data->mail); /* NULL safe */	
+	if (data->file_req) MUI_FreeAslRequest(data->file_req);
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 

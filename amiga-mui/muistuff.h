@@ -28,6 +28,7 @@ LONG xget(Object * obj, ULONG attribute);
 ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...);
 Object *MakeLabel(STRPTR str);
 Object *MakeButton(STRPTR str);
+Object *MakeCheck(STRPTR label, ULONG check);
 
 /* global application object, defined in gui_main.c */
 extern Object *App;

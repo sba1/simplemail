@@ -58,6 +58,16 @@ Object *MakeButton(STRPTR str)
   return obj;
 }
 
+Object *MakeCheck(STRPTR label, ULONG check)
+{
+	Object *obj = MUI_MakeObject(MUIO_Checkmark, label);
+	if (obj)
+	{
+		SetAttrs(obj, MUIA_CycleChain, 1, MUIA_Selected, check, TAG_DONE);
+	}
+	return (obj);
+}
+
 struct Hook hook_standard;
 
 STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)

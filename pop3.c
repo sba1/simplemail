@@ -576,7 +576,7 @@ static int pop3_really_dl(struct pop3_server *server)
                   }
                   else
                   {
-                     pop3_get_tops(server, mail_amm);
+/*                     pop3_get_tops(server, mail_amm);*/
                   
                      for(i = 1; i <= mail_amm; i++)
                      {

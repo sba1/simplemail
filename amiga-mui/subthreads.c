@@ -24,6 +24,7 @@
 /* #define DONT_USE_THREADS */
 
 #include <stdarg.h>
+#include <string.h>
 #include <proto/exec.h>
 
 #include "amiproc.h"
@@ -93,7 +94,11 @@ void thread_handle(void)
 				case	4: tmsg->result = ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
 			}
 		}
-		if (tmsg->async) FreeVec(tmsg);
+		if (tmsg->async)
+		{
+			if (tmsg->async == 2 && tmsg->argcount >= 1 && tmsg->arg1) FreeVec(tmsg->arg1);
+			FreeVec(tmsg);
+		}
 		else ReplyMsg(&tmsg->msg);
 	}
 }
@@ -180,6 +185,7 @@ void thread_abort(void)
 	}
 }
 
+/* Call the function synchron */
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
@@ -238,6 +244,7 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 #endif
 }
 
+/* Call the function asynchron */
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
@@ -260,6 +267,74 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 		tmsg->async = 1;
 
 		va_end (arg_ptr);
+
+		PutMsg(thread_port,&tmsg->msg);
+		return 1;
+	}
+
+	return 0;
+#else
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+#endif
+}
+
+/* Call the function asynchron and duplicate the first argument which us threaded at a string */
+int thread_call_parent_function_async_string(void *function, int argcount, ...)
+{
+#ifndef DONT_USE_THREADS
+	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
+	if (tmsg)
+	{
+		struct Process *p = (struct Process*)FindTask(NULL);
+		va_list argptr;
+
+		va_start(argptr,argcount);
+
+		tmsg->msg.mn_ReplyPort = &p->pr_MsgPort;
+		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+		tmsg->function = (int (*)(void))function;
+		tmsg->argcount = argcount;
+		tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
+		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
+		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
+		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+		tmsg->async = 2;
+
+		va_end (arg_ptr);
+
+		if (tmsg->arg1 && argcount >= 1)
+		{
+			STRPTR str = AllocVec(strlen((char*)tmsg->arg1)+1,MEMF_PUBLIC);
+			if (str)
+			{
+				strcpy(str,(char*)tmsg->arg1);
+				tmsg->arg1 = (void*)str;
+			} else
+			{
+				FreeVec(tmsg);
+				return 0;
+			}
+		}
 
 		PutMsg(thread_port,&tmsg->msg);
 		return 1;

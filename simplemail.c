@@ -189,6 +189,7 @@ int callback_write_mail_to_str(char *str, char *subject)
 void callback_new_mail(void)
 {
 	struct folder *f = main_get_folder();
+	if (!f) return;
 	callback_write_mail_to_str(f->def_to,NULL);
 }
 

@@ -136,6 +136,7 @@ void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
 struct mail *mail_create_for(char *to, char *subject);
 struct mail *mail_create_from_file(char *filename);
+struct mail *mail_create_from_files(struct mail **mails, char *filename);
 struct mail *mail_create_reply(struct mail *mail);
 int mail_forward(struct mail *mail);
 void mail_free(struct mail *mail);

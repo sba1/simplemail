@@ -173,18 +173,19 @@ void callback_new_mail(void)
 	callback_write_mail_to_str(strlen(f->def_to)?f->def_to:NULL,NULL);
 }
 
-/* reply this mail */
-void callback_reply_this_mail(char *folder_path, struct mail *to_reply)
+void reply_mails(char *folder_path, struct mail **to_replies)
 {
 	struct mail *mail;
 	char buf[256];
+	char *name = tmpnam(NULL);
 
 	getcwd(buf, sizeof(buf));
 	chdir(folder_path);
 
-	if ((mail = mail_create_from_file(to_reply->filename)))
+	if (mail = mail_create_from_files(to_replies, name))
 	{
 		struct mail *reply;
+		
 		mail_read_contents("",mail);
 		if ((reply = mail_create_reply(mail)))
 		{
@@ -192,26 +193,78 @@ void callback_reply_this_mail(char *folder_path, struct mail *to_reply)
 			memset(&ca,0,sizeof(ca));
 			ca.to_change = reply;
 			ca.action = COMPOSE_ACTION_REPLY;
-			ca.ref_mail = to_reply;
+			ca.ref_mail = to_replies[0];
 			compose_window_open(&ca);
 
 			mail_free(reply);
 		}
 		mail_free(mail);
 	}
+	
+	remove(name);
 
 	chdir(buf);
+}
+
+/* reply this mail */
+void callback_reply_this_mail(char *folder_path, struct mail *to_reply)
+{
+	struct mail **list;
+	
+	list = malloc(2*sizeof(struct mail *));
+	if(list != NULL)
+	{
+		list[0] = to_reply;
+		list[1] = NULL;	
+	
+		reply_mails(folder_path, list);
+	
+		free(list);
+	}	
 }
 
 /* a mail should be replied */
 void callback_reply_mail(void)
 {
-	struct mail *m;
-
-	if ((m = main_get_active_mail()))
+	struct mail **mails,*m;
+	void *handle;
+	int amm = 0,i=0;
+	
+	handle = malloc(sizeof(void *));
+	if(handle != NULL)
 	{
-		callback_reply_this_mail(main_get_folder_drawer(),m);
-	}
+	
+		/* get length */
+		m = main_get_mail_first_selected(handle);
+		while(m)
+		{
+			amm++;
+			m = main_get_mail_next_selected(handle);
+		}	
+	
+		/* allocate memory */
+		mails = malloc(sizeof(struct mail *) * amm+1);
+		if(mails != NULL)
+		{
+			mails[amm] = NULL; /* mark the end */
+
+			/* fill the memory */
+			i = 0;
+			m = main_get_mail_first_selected(handle);
+			while(m)
+			{
+				mails[i] = m;
+				i++;		
+				m = main_get_mail_next_selected(handle);
+			}	
+
+			reply_mails(main_get_folder_drawer(), mails);
+
+			free(mails);
+		}	
+		
+		free(handle);
+	}	
 }
 
 /* a mail should be forwarded */

@@ -861,6 +861,74 @@ struct mail *mail_create_from_file(char *filename)
 }
 
 /**************************************************************************
+ Joins the mails in one file and calls mail_create_from files with the
+ result.
+**************************************************************************/
+struct mail *mail_create_from_files(struct mail **mails, char *name)
+{
+	FILE *fp;
+	struct mail *rc = NULL;
+	
+	if(name != NULL)
+	{
+		fp = fopen(name, "w");
+		if (fp != NULL)
+		{
+			FILE *mfp;
+			
+			/* write first mail */
+			mfp = fopen(mails[0]->filename, "r");
+			if(mfp != NULL)
+			{
+				int size;
+				char *buf;
+				
+				size = myfsize(mfp);
+				buf = malloc(size);
+				if(buf != NULL)
+				{
+					if(fread(buf, size, 1, mfp) == 1)
+					{
+						fclose(mfp);
+						if(fwrite(buf, size, 1, fp) == 1)
+						{
+							if(mails[1] != NULL)
+							{
+								int i, amm;
+								
+								for(i = 1, amm = 0; mails[i];i++,amm++)
+								{
+									mail_decode(mails[i]);
+									if(mails[i]->decoded_len)
+									{
+										fwrite(mails[i]->decoded_data, mails[i]->decoded_len, 1, fp);
+									}	
+									else
+									{
+										fwrite(mails[i]->text+mails[i]->text_begin, mails[i]->text_len, 1, fp);
+									}
+								}
+								fclose(fp);
+								
+								rc = mail_create_from_file(name);
+							}
+							else
+							{
+								fclose(fp);
+								rc = mail_create_from_file(name);
+							}
+						}
+					}
+					free(buf);
+				}
+			}
+		}	
+	}	
+
+	return rc;
+}
+
+/**************************************************************************
  Creates a mail to be send to a given address (fills out the to field
  and the contents)
 **************************************************************************/

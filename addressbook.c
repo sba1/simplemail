@@ -34,7 +34,7 @@ static struct addressbook_entry root_entry;
 /**************************************************************************
  Reads a line. The buffer doesn't contain an LF's
 **************************************************************************/
-static int read_line(FILE *fh, char *buf)
+int read_line(FILE *fh, char *buf)
 {
 	int len;
 

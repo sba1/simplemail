@@ -30,6 +30,7 @@
 #include "readwnd.h"
 
 #include "addressbook.h"
+#include "configuration.h"
 #include "dl.h"
 #include "folder.h"
 #include "simplemail.h"
@@ -212,6 +213,7 @@ void callback_write_mail_to(struct addressbook_entry *address)
 
 int main(void)
 {
+	load_config();
 	init_addressbook();
 	if (init_folders())
 	{

@@ -23,6 +23,7 @@
 
 #include "addressbook.h"
 #include "codecs.h"
+#include "configuration.h"
 #include "folder.h" /* for mail_compose_new() */
 #include "mail.h"
 #include "parse.h"
@@ -1012,15 +1013,6 @@ int mail_strip_lf(char *fn)
 }
 
 /**************************************************************************
- Returns the e-mail Adress of the current user.
- (should be placed otherwhere)
-**************************************************************************/
-char *user_get_email(void)
-{
-	return getenv("SIMPLEMAIL_EMAIL");
-}
-
-/**************************************************************************
  Creates an address list from a given string (Note, that this is probably
  misplaced in mail.c)
 **************************************************************************/
@@ -1085,6 +1077,33 @@ void composed_mail_init(struct composed_mail *mail)
 }
 
 /**************************************************************************
+ Writes out the from header field (it shouldn't be inlined because
+ it uses some stack space
+**************************************************************************/
+int mail_compose_write_from(FILE *fp)
+{
+	struct list list;
+	struct address address;
+	char *from;
+	int rc = 0;
+
+	list_init(&list);
+	memset(&address,0,sizeof(struct address));
+
+	address.realname = user.config.realname;
+	address.email = user.config.email;
+	list_insert_tail(&list,&address.node);
+
+	if ((from = encode_address_field("From", &list)))
+	{
+		if (fprintf(fp,"%s\n",from)>=0) rc = 1;
+		free(from);
+	}
+
+	return rc;
+}
+
+/**************************************************************************
  Writes out the attachments into the body (uses recursion)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
@@ -1094,18 +1113,10 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	if (new_mail->to)
 	{
 		char *subject;
-		struct list *alist = create_address_list(user_get_email());
+		struct list *alist;
 
-		if (alist)
-		{
-			char *from = encode_address_field("From", alist);
-			if (from)
-			{
-				fprintf(fp,"%s\n",from);
-				free(from);
-			}
-			free_address_list(alist);
-		}
+		if (!mail_compose_write_from(fp))
+			return 0;
 
 		if ((alist = create_address_list(new_mail->to)))
 		{
@@ -1208,6 +1219,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 		if (body) free(body);
 	}
+	return 1;
 }
 
 /**************************************************************************

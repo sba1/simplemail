@@ -37,5 +37,13 @@ struct compose_args
 #define COMPOSE_ACTION_FORWARD 3
 
 int compose_window_open(struct compose_args *args);
+void compose_window_activate(int num);
+
+#define COMPOSE_CLOSE_CANCEL 0
+#define COMPOSE_CLOSE_SEND 1
+#define COMPOSE_CLOSE_LATER 2
+#define COMPOSE_CLOSE_HOLD 3
+
+void compose_window_close(int num, int action);
 
 #endif

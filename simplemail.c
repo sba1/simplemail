@@ -175,17 +175,19 @@ void callback_write_mail_to(struct addressbook_entry *address)
 }
 
 /* a new mail should be written to a given address string */
-void callback_write_mail_to_str(char *str, char *subject)
+int callback_write_mail_to_str(char *str, char *subject)
 {
 	struct compose_args ca;
+	int win_num;
 	memset(&ca,0,sizeof(ca));
 
 	ca.action = COMPOSE_ACTION_NEW;
 	ca.to_change = mail_create_for(str,subject);
 
-	compose_window_open(&ca);
+	win_num = compose_window_open(&ca);
 
 	if (ca.to_change) mail_free(ca.to_change);
+	return win_num;
 }
 
 /* a new mail should be composed */

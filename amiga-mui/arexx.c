@@ -43,6 +43,7 @@
 #include "addressbookwnd.h"
 #include "amigasupport.h"
 #include "arexx.h"
+#include "composewnd.h"
 #include "mainwnd.h"
 #include "readwnd.h"
 #include "simplemail.h"
@@ -208,24 +209,66 @@ static void arexx_maintofront(struct RexxMsg *rxmsg, STRPTR args)
 	main_window_open();
 }
 
+static int compose_active_window;
+
 /****************************************************************
- MAINTOFRONT Arexx Command
+ MAILWRITE Arexx Command
 *****************************************************************/
 static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
 
 	struct	{
+		STRPTR var;
+		STRPTR stem;
+		ULONG *window;
+		ULONG quiet;
 		STRPTR mailto;
 		STRPTR subject;
 	} mailwrite_arg;
 	memset(&mailwrite_arg,0,sizeof(mailwrite_arg));
 
-	if ((arg_handle = ParseTemplate("MAILTO/K,SUBJECT/K",args,&mailwrite_arg)))
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S,MAILTO/K,SUBJECT/K",args,&mailwrite_arg)))
 	{
-		callback_write_mail_to_str(mailwrite_arg.mailto,mailwrite_arg.subject);
+		if (mailwrite_arg.window)
+		{
+			compose_window_activate(*mailwrite_arg.window);
+			compose_active_window = *mailwrite_arg.window;
+		} else
+		{
+			int window;
+
+			compose_active_window = window = callback_write_mail_to_str(mailwrite_arg.mailto,mailwrite_arg.subject);
+
+			if (mailwrite_arg.stem)
+			{
+				int stem_len = strlen(mailwrite_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,mailwrite_arg.stem);
+					strcat(stem_buf,"WINDOW");
+					arexx_set_var_int(rxmsg,stem_buf,window);
+					free(stem_buf);
+				}
+			} else
+			{
+				char num_buf[24];
+				sprintf(num_buf,"%d",window);
+				if (mailwrite_arg.var) SetRexxVar(rxmsg,mailwrite_arg.var,num_buf,strlen(num_buf));
+				else arexx_set_result(rxmsg,num_buf);
+			}
+		}
 		FreeTemplate(arg_handle);
 	}
+}
+
+/****************************************************************
+ WRITECLOSE ARexx Command
+*****************************************************************/
+static void arexx_writeclose(struct RexxMsg *rxmsg, STRPTR args)
+{
+	compose_window_close(compose_active_window,COMPOSE_CLOSE_CANCEL);
 }
 
 /****************************************************************
@@ -1193,6 +1236,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	{
 		if (!Stricmp("MAINTOFRONT",command.command)) arexx_maintofront(rxmsg,command.args);
 		else if (!Stricmp("MAILWRITE",command.command)) arexx_mailwrite(rxmsg,command.args);
+		else if (!Stricmp("WRITECLOSE",command.command)) arexx_writeclose(rxmsg,command.args);
 		else if (!Stricmp("SETMAIL",command.command)) arexx_setmail(rxmsg,command.args);
 		else if (!Stricmp("SETMAILFILE",command.command)) arexx_setmailfile(rxmsg,command.args);
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);

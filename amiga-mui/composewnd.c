@@ -158,7 +158,7 @@ STATIC ASM LONG from_strobj(register __a2 Object *list, register __a1 Object *st
  within a normal callback hook (because the object is disposed in
  this function))!
 *******************************************************************/
-static void compose_window_close(struct Compose_Data **pdata)
+static void compose_window_dispose(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	set(data->wnd,MUIA_Window_Open,FALSE);
@@ -523,7 +523,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 				}
 			}
 			/* Close (and dispose) the compose window (data) */
-			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
+			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 		}
 	}
 }
@@ -1037,7 +1037,7 @@ int compose_window_open(struct compose_args *args)
 				}
 			}
 
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 			DoMethod(expand_to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(to_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
@@ -1049,7 +1049,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_remove_file, data);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
 			DoMethod(show_attach_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, show_attach_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
-			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
+			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(send_now_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_now, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
@@ -1148,3 +1148,31 @@ int compose_window_open(struct compose_args *args)
 	}
 	return -1;
 }
+
+/******************************************************************
+ Activate a read window
+*******************************************************************/
+void compose_window_activate(int num)
+{
+	if (num < 0 || num >= MAX_COMPOSE_OPEN) return;
+	if (compose_open[num] && compose_open[num]->wnd) set(compose_open[num]->wnd,MUIA_Window_Open,TRUE);
+}
+
+/******************************************************************
+ Closes a read window
+*******************************************************************/
+void compose_window_close(int num, int action)
+{
+	if (num < 0 || num >= MAX_COMPOSE_OPEN) return;
+	if (compose_open[num] && compose_open[num]->wnd)
+	{
+		switch (action)
+		{
+			case COMPOSE_CLOSE_CANCEL: compose_window_dispose(compose_open[num]); break;
+			case COMPOSE_CLOSE_SEND:  compose_mail(compose_open[num],2);
+			case COMPOSE_CLOSE_LATER: compose_mail(compose_open[num],0);
+			case COMPOSE_CLOSE_HOLD: compose_mail(compose_open[num],1);
+		}
+	}
+}
+

@@ -48,6 +48,23 @@
 #include "support.h"
 #include "tcpip.h"
 
+int callback_import_addressbook(void)
+{
+	int rc = 0;
+	char *filename;
+	
+	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
+	if(filename && *filename)
+	{
+		
+		addressbook_import_file(filename);
+		
+		free(filename);
+	}
+	
+	return rc;
+}
+
 /* the current mail should be viewed, returns the number of the window
    which the function has opened or -1 for an error */
 int callback_read_mail(void)

@@ -602,23 +602,6 @@ int addressbook_import_file(char *filename)
 	return rc;
 }
 
-int addressbook_import(void)
-{
-	int rc = 0;
-	char *filename;
-	
-	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
-	if(filename && *filename)
-	{
-		
-		addressbook_import_file(filename);
-		
-		free(filename);
-	}
-	
-	return rc;
-}
-
 /**************************************************************************
  Saves the address_snail_phone structure as xml
 **************************************************************************/

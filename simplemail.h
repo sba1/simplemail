@@ -80,6 +80,8 @@ void callback_timer(void);
 
 void callback_select_mail(int num);
 
+int callback_import_addressbook(void);
+
 /* the main entry point */
 int simplemail_main(void);
 

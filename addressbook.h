@@ -105,7 +105,6 @@ int addressbook_load(void);
 void addressbook_save(void);
 
 int addressbook_import_file(char *filename);
-int addressbook_import(void);
 
 void addressbook_insert_tail(struct addressbook_entry *entry, struct addressbook_entry *new_entry);
 struct addressbook_entry *addressbook_create_person(char *realname, char *email);

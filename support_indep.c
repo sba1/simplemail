@@ -406,7 +406,7 @@ int array_contains(char **strings, char *str)
 int array_index(char **strings, char *str)
 {
 	int i;
-	if (!strings) return 0;
+	if (!strings) return -1;
 	for (i=0;strings[i];i++)
 	{
 		if (!mystricmp(strings[i],str)) return i;

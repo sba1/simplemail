@@ -27,10 +27,12 @@
 
 #include "SimpleMail_rev.h"
 
+#include "configuration.h"
 #include "folder.h"
 #include "lists.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support.h"
 
 #include "gtksupport.h"
@@ -55,6 +57,9 @@ static GtkWidget *folder_scrolled_window;
 static GtkTreeStore *mail_treestore;
 static GtkWidget *mail_treeview;
 static GtkWidget *mail_scrolled_window;
+
+static GtkWidget *check_single_accounts_menu;
+static GtkWidget *check_single_accounts_menu_menu;
 
 static void main_refresh_folders_text(void);
 
@@ -96,6 +101,18 @@ int main_window_init(void)
 {
 	GtkWidget *vbox, *hbox, *hpaned;
 	GtkWidget *read_button, *edit_button;
+	GtkWidget *menubar1;
+	GtkWidget *folder_menu;
+	GtkWidget *folder_menu_menu;
+	GtkWidget *send_menuitem;
+	GtkWidget *fetch_mails_menuitem;
+	GtkWidget *help_menu;
+	GtkWidget *help_menu_menu;
+	GtkWidget *about_menuitem;
+	GtkWidget *dummy_menuitem;
+	GtkAccelGroup *accel_group;
+
+	accel_group = gtk_accel_group_new ();
 
 	/* Create the window */
 	main_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -107,6 +124,49 @@ int main_window_init(void)
         /* Create the vertical box */
         vbox = gtk_vbox_new(0,4);
         gtk_container_add(GTK_CONTAINER(main_wnd), vbox);
+
+	/* Create the menubar */
+	menubar1 = gtk_menu_bar_new ();
+	gtk_widget_show (menubar1);
+	gtk_box_pack_start (GTK_BOX (vbox), menubar1, FALSE, FALSE, 0);
+
+	folder_menu = gtk_menu_item_new_with_mnemonic (_("Folder"));
+	gtk_widget_show (folder_menu);
+	gtk_container_add (GTK_CONTAINER (menubar1), folder_menu);
+
+	folder_menu_menu = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (folder_menu), folder_menu_menu);
+
+	send_menuitem = gtk_menu_item_new_with_mnemonic (_("Send queued mails..."));
+	gtk_widget_show (send_menuitem);
+	gtk_container_add (GTK_CONTAINER (folder_menu_menu), send_menuitem);
+
+	fetch_mails_menuitem = gtk_menu_item_new_with_mnemonic (_("Fetch mails..."));
+	gtk_widget_show (fetch_mails_menuitem);
+	gtk_container_add (GTK_CONTAINER (folder_menu_menu), fetch_mails_menuitem);
+
+	check_single_accounts_menu = gtk_menu_item_new_with_mnemonic (_("Check single accounts"));
+	gtk_widget_show (check_single_accounts_menu);
+	gtk_container_add (GTK_CONTAINER (folder_menu_menu), check_single_accounts_menu);
+
+	check_single_accounts_menu_menu = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (check_single_accounts_menu), check_single_accounts_menu_menu);
+
+	dummy_menuitem = gtk_menu_item_new_with_mnemonic (_("No accounts"));
+	gtk_widget_show(dummy_menuitem);
+	gtk_container_add(GTK_CONTAINER(check_single_accounts_menu_menu), dummy_menuitem);
+
+
+	help_menu = gtk_menu_item_new_with_mnemonic (_("_Help"));
+	gtk_widget_show (help_menu);
+	gtk_container_add (GTK_CONTAINER (menubar1), help_menu);
+
+	help_menu_menu = gtk_menu_new ();
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (help_menu), help_menu_menu);
+
+	about_menuitem = gtk_menu_item_new_with_mnemonic (_("_About"));
+	gtk_widget_show (about_menuitem);
+	gtk_container_add (GTK_CONTAINER (help_menu_menu), about_menuitem);
 
         /* Create the toolbar */
         toolbar = gtk_toolbar_new();
@@ -218,6 +278,10 @@ int main_window_init(void)
 	/* Add them to the paned */
 	gtk_paned_add1(GTK_PANED(hpaned),folder_scrolled_window);
 	gtk_paned_add2(GTK_PANED(hpaned),mail_scrolled_window);
+
+	gtk_window_add_accel_group(GTK_WINDOW(main_wnd), accel_group);
+	
+	main_build_accounts();
 
 	return 1;
 }
@@ -759,6 +823,42 @@ void main_remove_mails_selected(void)
 *******************************************************************/
 void main_build_accounts(void)
 {
+	struct account *account = (struct account*)list_first(&user.config.account_list);
+	int i=0;
+	
+	gtk_widget_hide_all(check_single_accounts_menu_menu);
+	gtk_menu_item_remove_submenu(GTK_MENU_ITEM (check_single_accounts_menu));
+	printf("%p\n",check_single_accounts_menu_menu);
+	gtk_widget_destroy(GTK_WIDGET(check_single_accounts_menu_menu));
+	printf("%p\n",check_single_accounts_menu_menu);
+	check_single_accounts_menu_menu = gtk_menu_new();
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM (check_single_accounts_menu), check_single_accounts_menu_menu);
+
+	while (account)
+	{
+		if (account->pop && account->pop->name)
+		{
+			char buf[200];
+			GtkWidget *entry;
+
+			if (account->pop->login)
+			{
+				sprintf(buf,"%s@%s",account->pop->login,account->pop->name);
+			} else strcpy(buf,account->pop->name);
+
+			entry = gtk_menu_item_new_with_mnemonic(buf);
+			gtk_container_add(GTK_CONTAINER(check_single_accounts_menu_menu), entry);
+		}
+		account = (struct account*)node_next(&account->node);
+		i++;
+	}
+
+	if (!i)
+	{
+//		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No POP3 Server specified"),	End;
+//		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+	}
+	gtk_widget_show_all(check_single_accounts_menu_menu);
 }
 
 

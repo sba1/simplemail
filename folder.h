@@ -134,6 +134,7 @@ struct folder *folder_first(void);
 void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr);
 
 /* Like a linear list */
+struct folder *folder_prev(struct folder *f);
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
 int folder_position(struct folder *f);

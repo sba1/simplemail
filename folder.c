@@ -1797,6 +1797,23 @@ struct folder *folder_first(void)
 	return NULL;
 }
 
+
+/******************************************************************
+ Returns the prev folder
+*******************************************************************/
+struct folder *folder_prev(struct folder *f)
+{
+	if (f)
+	{
+		struct folder_node *node = (struct folder_node*)(((char*)f)-sizeof(struct node));
+		if ((node = (struct folder_node*)node_prev(&node->node)))
+		{
+			return &node->folder;
+		}
+	}
+	return NULL;
+}
+
 /******************************************************************
  Returns the next folder
 *******************************************************************/

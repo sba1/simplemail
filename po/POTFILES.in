@@ -26,3 +26,4 @@ pop3.c
 print.c
 simplemail.c
 smtp.c
+status.c

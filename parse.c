@@ -129,6 +129,13 @@ static char *parse_atom(const char *atom, char **pbuf)
 	char c;
 	int len;
 
+	/* skip spaces */
+	while ((c = *atom))
+	{
+		if (!isspace(c)) break;
+		atom++;
+	}
+
 	while ((c = *atom))
 	{
 		if (isspace(c) || isspecial(c) || iscntrl(c)) break;

@@ -539,6 +539,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	FILE *fp;
 	int bytes_written;
 	int delete_mail = 0;
+	int headers = 1;
 
 	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
@@ -581,6 +582,13 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 		if (answer[0] == '.' && answer[1] == '\n')
 			break;
+
+		if (headers && answer[0] == '\n')
+		{
+			/* Write out the special SimpleMail header, to find out the pop server later */
+			fprintf(fp,"X-SimpleMail-POP3: %s\n",server->name);
+			headers = 0;
+		}
 
 		if (fputs(answer,fp) == EOF)
 		{

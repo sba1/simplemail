@@ -406,12 +406,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							}
 							if (local_uid)
 							{
-/*
-								struct mail *m;
-								m = folder_imap_find_mail_by_uid(folder,local_uid);
-								printf("%x not on server  %s\n",local_uid,m->subject);
-*/
-								printf("%x not on server\n",local_uid);
+								thread_call_parent_function_sync(callback_delete_mail_by_uid,3,server->name,imap_path,local_uid);
 							}
 						}
 

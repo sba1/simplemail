@@ -76,6 +76,7 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder);
 void callback_new_mail_arrived_filename(char *filename);
 void callback_new_imap_mail_arrived(char *filename, char *server, char *path);
 void callback_new_mail_written(struct mail *mail);
+void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid);
 void callback_number_of_mails_downloaded(int num);
 void callback_mail_has_been_sent(char *filename);
 void callback_add_imap_folder(char *server, char *path);

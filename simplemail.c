@@ -170,6 +170,46 @@ int callback_delete_mail(struct mail *mail)
 	return 0;
 }
 
+/* delete mails by uid and folder */
+void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
+{
+	struct folder *f;
+	struct mail *mail;
+
+#undef printf
+//	printf("deleting %d\n",uid);
+
+	folders_lock();
+
+	f = folder_find_by_imap(server,path);
+	if (!f)
+	{
+		folders_unlock();
+		return;
+	}
+
+	folder_lock(f);
+
+	mail = folder_imap_find_mail_by_uid(f, uid);
+	if (!mail)
+	{
+		folder_unlock(f);
+		folders_unlock();
+		return;
+	}
+
+//  folder_delete_mail(f,mail);
+	folder_move_mail(f,folder_deleted(),mail);
+  main_refresh_folder(f);
+  main_refresh_folder(folder_deleted());
+
+	if (main_get_folder() == f) main_remove_mail(mail);
+	if (search_has_mails()) search_remove_mail(mail);
+
+	folder_unlock(f);
+	folders_unlock();
+}
+
 /* get the address */
 void callback_get_address(void)
 {

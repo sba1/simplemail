@@ -44,6 +44,8 @@
 #include "support_indep.h"
 #include "trans.h" /* for mail_upload_single() */
 
+char *stradd(char *src, const char *str1);
+
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
 /*static struct header *mail_find_header(struct mail *mail, char *name);*/
@@ -861,74 +863,6 @@ struct mail *mail_create_from_file(char *filename)
 }
 
 /**************************************************************************
- Joins the mails in one file and calls mail_create_from files with the
- result.
-**************************************************************************/
-struct mail *mail_create_from_files(struct mail **mails, char *name)
-{
-	FILE *fp;
-	struct mail *rc = NULL;
-	
-	if(name != NULL)
-	{
-		fp = fopen(name, "w");
-		if (fp != NULL)
-		{
-			FILE *mfp;
-			
-			/* write first mail */
-			mfp = fopen(mails[0]->filename, "r");
-			if(mfp != NULL)
-			{
-				int size;
-				char *buf;
-				
-				size = myfsize(mfp);
-				buf = malloc(size);
-				if(buf != NULL)
-				{
-					if(fread(buf, size, 1, mfp) == 1)
-					{
-						fclose(mfp);
-						if(fwrite(buf, size, 1, fp) == 1)
-						{
-							if(mails[1] != NULL)
-							{
-								int i, amm;
-								
-								for(i = 1, amm = 0; mails[i];i++,amm++)
-								{
-									mail_decode(mails[i]);
-									if(mails[i]->decoded_len)
-									{
-										fwrite(mails[i]->decoded_data, mails[i]->decoded_len, 1, fp);
-									}	
-									else
-									{
-										fwrite(mails[i]->text+mails[i]->text_begin, mails[i]->text_len, 1, fp);
-									}
-								}
-								fclose(fp);
-								
-								rc = mail_create_from_file(name);
-							}
-							else
-							{
-								fclose(fp);
-								rc = mail_create_from_file(name);
-							}
-						}
-					}
-					free(buf);
-				}
-			}
-		}	
-	}	
-
-	return rc;
-}
-
-/**************************************************************************
  Creates a mail to be send to a given address (fills out the to field
  and the contents)
 **************************************************************************/
@@ -1043,15 +977,18 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
  and remove the attachments. The mail is proccessed. The given mail should
  be processed to.
 **************************************************************************/
-struct mail *mail_create_reply(struct mail *mail)
+struct mail *mail_create_reply(int num, struct mail **mail_array)
 {
 	struct mail *m = mail_create();
 	if (m)
 	{
+		struct mail *mail = mail_array[0];
 		char *from = mail_find_header_contents(mail,"from");
 		char *to = mail_find_header_contents(mail,"to");
 		struct mail *text_mail;
 		struct phrase *phrase = phrase_find_best(from);
+
+		int i;
 
 		if (from)
 		{
@@ -1235,71 +1172,57 @@ struct mail *mail_create_reply(struct mail *mail)
 			}
 		}
 
-		if ((text_mail = mail_find_content_type(mail, "text", "plain")))
+		if (phrase)
 		{
-			char *replied_text;
-			char *welcome_text;
-
-			if (phrase)
-			{
-				char *intro_text;
-				int welcome_text_len;
-
-				welcome_text = mail_create_string(phrase->reply_welcome,mail,NULL,NULL);
-				welcome_text_len = mystrlen(welcome_text);
-				intro_text = mail_create_string(phrase->reply_intro,mail,NULL,NULL);
-				if ((welcome_text = realloc(welcome_text,welcome_text_len+mystrlen(intro_text)+3)))
-				{
-					if (!welcome_text_len) welcome_text[0] = 0;
-					strcat(welcome_text,"\n");
-					if (intro_text)
-					{
-						strcat(welcome_text,intro_text);
-						strcat(welcome_text,"\n");
-						free(intro_text);
-					}
-				}
-			} else welcome_text = NULL;
-
-			/* city the text and assign it to the mail, it's enough to set decoded_data */
-			mail_decode(text_mail);
-
-			if (text_mail->decoded_data) replied_text = quote_text(text_mail->decoded_data,text_mail->decoded_len);
-			else replied_text = quote_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
-
-			if (replied_text)
-			{
-				if (welcome_text)
-				{
-					char *closing_text;
-					char *buf;
-
-					if (phrase) closing_text = mail_create_string(phrase->reply_close, mail, NULL,NULL);
-					else closing_text = NULL;
-
-					if ((buf = (char*)malloc(strlen(replied_text)+strlen(welcome_text)+mystrlen(closing_text)+8)))
-					{
-						strcpy(buf,welcome_text);
-						strcat(buf,replied_text);
-						if (closing_text)
-						{
-							strcat(buf,"\n");
-							strcat(buf,closing_text);
-							free(closing_text);
-						}
-						free(replied_text);
-						replied_text = buf;
-					}
-				}
-
-				m->decoded_data = replied_text;
-				m->decoded_len = strlen(replied_text);
-			}
+			/* add the welcome phrase */
+			char *welcome_text = mail_create_string(phrase->reply_welcome,mail,NULL,NULL);
+			m->decoded_data = stradd(m->decoded_data,welcome_text);
 			free(welcome_text);
 		}
 
-		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
+		for (i=0;i<num;i++)
+		{
+			if ((text_mail = mail_find_content_type(mail_array[i], "text", "plain")))
+			{
+				char *replied_text;
 
+				m->decoded_data = stradd(m->decoded_data,"\n");
+
+				if (phrase)
+				{
+					/* add the intro phrase */
+					char *intro_text = mail_create_string(phrase->reply_intro,mail_array[i],NULL,NULL);
+					m->decoded_data = stradd(m->decoded_data,intro_text);
+					m->decoded_data = stradd(m->decoded_data,"\n");
+					free(intro_text);
+				}
+				/* decode the text */
+				mail_decode(text_mail);
+
+				/* quote the text */
+				if (text_mail->decoded_data) replied_text = quote_text(text_mail->decoded_data,text_mail->decoded_len);
+				else replied_text = quote_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
+
+				if (replied_text)
+				{
+					m->decoded_data = stradd(m->decoded_data,replied_text);
+					free(replied_text);
+				}
+			}
+		}
+
+		if (phrase)
+		{
+			/* add the closing phrase */
+			char *closing_text = mail_create_string(phrase->reply_close, mail, NULL,NULL);
+			m->decoded_data = stradd(m->decoded_data,"\n");
+			m->decoded_data = stradd(m->decoded_data,closing_text);
+			free(closing_text);
+		}
+
+		m->decoded_len = mystrlen(m->decoded_data);
+
+		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
 		mail_process_headers(m);
 	}
 	return m;

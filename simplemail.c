@@ -173,98 +173,92 @@ void callback_new_mail(void)
 	callback_write_mail_to_str(strlen(f->def_to)?f->def_to:NULL,NULL);
 }
 
-void reply_mails(char *folder_path, struct mail **to_replies)
+/* reply this mail */
+void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply_array)
 {
-	struct mail *mail;
+	struct mail **mail_array;
 	char buf[256];
-	char *name = tmpnam(NULL);
+	int i;
 
 	getcwd(buf, sizeof(buf));
 	chdir(folder_path);
 
-	if (mail = mail_create_from_files(to_replies, name))
+	if ((mail_array = malloc(num*sizeof(struct mail *))))
 	{
 		struct mail *reply;
-		
-		mail_read_contents("",mail);
-		if ((reply = mail_create_reply(mail)))
-		{
-			struct compose_args ca;
-			memset(&ca,0,sizeof(ca));
-			ca.to_change = reply;
-			ca.action = COMPOSE_ACTION_REPLY;
-			ca.ref_mail = to_replies[0];
-			compose_window_open(&ca);
+		int err = 0;
 
-			mail_free(reply);
+		for (i=0;i<num;i++)
+		{
+			if ((mail_array[i] = mail_create_from_file(to_reply_array[i]->filename)))
+			{
+				mail_read_contents("",mail_array[i]);
+			} else 
+			{
+				err = 1;
+				break;
+			}
 		}
-		mail_free(mail);
+
+		if (!err)
+		{
+			if ((reply = mail_create_reply(num,mail_array)))
+			{
+				struct compose_args ca;
+				memset(&ca,0,sizeof(ca));
+				ca.to_change = reply;
+				ca.action = COMPOSE_ACTION_REPLY;
+				ca.ref_mail = to_reply_array[0];
+				compose_window_open(&ca);
+
+				mail_free(reply);
+			}
+		}
+
+		for (i=0;i<num;i++)
+		{
+			if (mail_array[i]) mail_free(mail_array[i]);
+			else break;
+		}
+		free(mail_array);
 	}
-	
-	remove(name);
 
 	chdir(buf);
-}
-
-/* reply this mail */
-void callback_reply_this_mail(char *folder_path, struct mail *to_reply)
-{
-	struct mail **list;
-	
-	list = malloc(2*sizeof(struct mail *));
-	if(list != NULL)
-	{
-		list[0] = to_reply;
-		list[1] = NULL;	
-	
-		reply_mails(folder_path, list);
-	
-		free(list);
-	}	
 }
 
 /* a mail should be replied */
 void callback_reply_mail(void)
 {
-	struct mail **mails,*m;
+	struct mail *mail;
+	struct mail **mail_array;
 	void *handle;
-	int amm = 0,i=0;
-	
-	handle = malloc(sizeof(void *));
-	if(handle != NULL)
+	int num;
+
+	/* Count the number of selected mails first */
+	mail = main_get_mail_first_selected(&handle);
+	num = 0;
+	while (mail)
 	{
-	
-		/* get length */
-		m = main_get_mail_first_selected(handle);
-		while(m)
+		num++;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!num) return;
+
+	if ((mail_array = malloc(sizeof(struct mail *)*num)))
+	{
+		int i = 0;
+
+		mail = main_get_mail_first_selected(&handle);
+		while (mail)
 		{
-			amm++;
-			m = main_get_mail_next_selected(handle);
-		}	
-	
-		/* allocate memory */
-		mails = malloc(sizeof(struct mail *) * amm+1);
-		if(mails != NULL)
-		{
-			mails[amm] = NULL; /* mark the end */
+			mail_array[i++] = mail;
+			mail = main_get_mail_next_selected(&handle);
+		}
 
-			/* fill the memory */
-			i = 0;
-			m = main_get_mail_first_selected(handle);
-			while(m)
-			{
-				mails[i] = m;
-				i++;		
-				m = main_get_mail_next_selected(handle);
-			}	
-
-			reply_mails(main_get_folder_drawer(), mails);
-
-			free(mails);
-		}	
-		
-		free(handle);
-	}	
+		callback_reply_this_mail(main_get_folder_drawer(), num, mail_array);
+		free(mail_array);
+	}
 }
 
 /* a mail should be forwarded */

@@ -685,7 +685,7 @@ static void reply_button_pressed(struct Read_Data **pdata)
 	struct Read_Data *data = *pdata;
 	if (!data->ref_mail) return;
 
-	callback_reply_this_mail(data->folder_path, data->ref_mail);
+	callback_reply_this_mail(data->folder_path, 1, &data->ref_mail);
 }
 
 /******************************************************************

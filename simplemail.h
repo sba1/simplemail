@@ -33,7 +33,7 @@ void callback_delete_mails(void);
 int callback_delete_mail(struct mail *mail);
 void callback_get_address(void);
 void callback_new_mail(void);
-void callback_reply_this_mail(char *folder_path, struct mail *to_reply);
+void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply_array);
 void callback_reply_mail(void);
 void callback_forward_this_mail(char *folder_path, struct mail *to_forward);
 void callback_forward_mail(void);

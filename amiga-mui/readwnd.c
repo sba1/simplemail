@@ -59,6 +59,7 @@
 #include "readlistclass.h"
 #include "readwnd.h"
 #include "support.h"
+#include "virus.h"
 
 static void save_contents(struct Read_Data *data, struct mail *mail);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
@@ -343,6 +344,9 @@ static void context_menu_trigger(int **pdata)
 
 			case	3: /* Open via workbench.library */
 						open_contents(data,mail);
+						break;
+			case	4: /* Check for viruses */			
+						virus_check_mail(mail,TRUE);
 						break;
 		}
 	}
@@ -848,6 +852,7 @@ void read_window_open(char *folder, struct mail *mail)
 			Object *save_contents_item;
 			Object *save_contents2_item;
 			Object *save_document_item;
+			Object *checkv_contents_item;
 
 			data->attachment_standard_menu = MenustripObject,
 				Child, MenuObjectT(_("Attachment")),
@@ -859,7 +864,11 @@ void read_window_open(char *folder, struct mail *mail)
 						MUIA_Menuitem_Title, _("Save As..."),
 						MUIA_UserData, 1,
 						End,
-					End,
+					Child, checkv_contents_item = MenuitemObject,
+						MUIA_Menuitem_Title, _("Check for viruses"),	
+						MUIA_UserData, 4,
+						End,
+					End,	
 				End;
 
 			data->attachment_html_menu = MenustripObject,
@@ -908,6 +917,8 @@ void read_window_open(char *folder, struct mail *mail)
 			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+			
+/*			DoMethod(wnd, MUIM_Notify, MUIA_Window_InputEvent, "space", App, 3, MUIM_CallHook, &hook_standard, &callback_test);*/
 
 			set(App, MUIA_Application_Sleep, TRUE);
 

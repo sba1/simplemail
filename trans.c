@@ -77,15 +77,15 @@ int mails_upload(void)
 	void *handle = NULL; /* folder_next_mail() */
 	struct folder *out_folder = folder_outgoing();
 	struct outmail **out_array;
-	struct mail *m;
+	struct mail *m_iter;
 	int i,num_mails;
 
   /* count the number of mails which could be be sent */
 	num_mails = 0;
-	while ((m = folder_next_mail(out_folder, &handle)))
+	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
 		/* Only waitsend mails should be counted */
-		if (mail_get_status_type(m) == MAIL_STATUS_WAITSEND) num_mails++;
+		if (mail_get_status_type(m_iter) == MAIL_STATUS_WAITSEND) num_mails++;
 	}
 	if (!num_mails) return 0;
   if (!(out_array = create_outmail_array(num_mails))) return 0;
@@ -94,14 +94,25 @@ int mails_upload(void)
 	i=0; /* the current mail no */
 
 	/* initialize the arrays */
-	while ((m = folder_next_mail(out_folder, &handle)))
+	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
+		struct mail *m;
 		char *from, *to, *cc;
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
 		struct outmail *out;
+		char filename_buf[512];
 
-		if (mail_get_status_type(m) != MAIL_STATUS_WAITSEND) continue;
+		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
+
+		strcpy(filename_buf,out_folder->path);
+		sm_add_part(filename_buf,m_iter->filename,sizeof(filename_buf));
+
+		if (!(m = mail_create_from_file(filename_buf)))
+		{
+			free_outmail_array(out_array);
+			return 0;
+		}
 
 		out = out_array[i++];
 		to = mail_find_header_contents(m,"To");
@@ -113,12 +124,14 @@ int mails_upload(void)
 		if (!to || !from)
 		{
 			free_outmail_array(out_array);
+			mail_free(m);
 			return 0;
 		}
 		if (!parse_mailbox(from,&mb))
 		{
 			tell_str("No valid sender address!");
 			free_outmail_array(out_array);
+			mail_free(m);
 			return 0;
 		}
 
@@ -165,6 +178,7 @@ int mails_upload(void)
 
 		if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
 /*		if (mb.addr_spec) free(mb.addr_spec); */
+		mail_free(m);
 	}
 
 	/* now send all mails */
@@ -174,6 +188,7 @@ int mails_upload(void)
 	return 1;
 }
 
+/* Note: the mail must contain all headers in the header list */
 int mails_upload_signle(struct mail *m)
 {
 	char *from, *to, *cc;

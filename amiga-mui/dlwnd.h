@@ -32,6 +32,10 @@ void dl_set_gauge_mail(int);
 void dl_init_gauge_byte(int);
 void dl_set_gauge_byte(int);
 int dl_checkabort(void);
-void dl_insert_mail(int mno, int msize);
+void dl_insert_mail(int mno, int mflags, int msize);
+void dl_insert_mail_info(int mno, char *from, char *subject, unsigned int seconds);
+int dl_get_mail_flags(int mno);
+void dl_clear(void);
+void dl_wait(void);
 
 #endif

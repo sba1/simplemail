@@ -466,7 +466,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
                                    struct field *f, int y, int update)
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
-	struct field *second_f = NULL;;
+	struct field *second_f = NULL;
 	struct text_node *text, *second_text = NULL;
 	int cnt;
 

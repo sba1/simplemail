@@ -874,6 +874,7 @@ static void init_config(void)
 		APTR treenode;
 
 		list_init(&account_list);
+		list_init(&signature_list);
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
 

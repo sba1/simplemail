@@ -102,6 +102,8 @@ struct Compose_Data /* should be a customclass */
 
 	struct Hook from_objstr_hook;
 	struct Hook from_strobj_hook;
+
+	char **sign_array; /* The array which contains the signature names */
 };
 
 STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *str)
@@ -162,6 +164,7 @@ static void compose_window_close(struct Compose_Data **pdata)
 	if (data->folder) free(data->folder);
 	if (data->reply_id) free(data->reply_id);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
+	if (data->sign_array) free(data->sign_array);
 	free(data);
 }
 
@@ -636,6 +639,44 @@ static void compose_add_signature(struct Compose_Data *data)
 	}
 }
 
+/******************************************************************
+ Set a signature
+*******************************************************************/
+static void compose_set_signature(void **msg)
+{
+	struct Compose_Data *data = (struct Compose_Data*)msg[0];
+	int val = (int)msg[1];
+	struct signature *sign = (struct signature*)list_find(&user.config.signature_list,val);
+	char *text;
+	int x = xget(data->text_texteditor,MUIA_TextEditor_CursorX);
+	int y = xget(data->text_texteditor,MUIA_TextEditor_CursorY);
+
+	if (!sign) return;
+	if (!sign->signature) return;
+
+	if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
+	{
+		char *sign_text = strstr(text,"-- \n");
+		char *new_text;
+		if (sign_text) *sign_text = 0;
+
+		if ((new_text = (char*)malloc(strlen(text)+strlen(sign->signature)+8)))
+		{
+			strcpy(new_text,text);
+			strcat(new_text,"-- \n");
+			strcat(new_text,sign->signature);
+
+			SetAttrs(data->text_texteditor,
+					MUIA_TextEditor_Contents,new_text,
+					MUIA_TextEditor_CursorX,x,
+					MUIA_TextEditor_CursorY,y,
+					TAG_DONE);
+
+			free(new_text);
+		}
+		FreeVec(text);
+	}
+}
 
 /******************************************************************
  Opens a compose window
@@ -654,11 +695,49 @@ void compose_window_open(struct compose_args *args)
 	Object *switch_button;
 	Object *main_group, *attach_group, *vertical_balance;
 	Object *from_popobject;
-
+	Object *signatures_group;
+	Object *signatures_cycle;
+	struct signature *sign;
+	char **sign_array = NULL;
 	int num;
+	int i;
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
+
+	i = 0;
+	sign = (struct signature*)list_first(&user.config.signature_list);
+	while(sign)
+	{
+		i++;
+		sign = (struct signature*)node_next(&sign->node);
+	}
+
+	if (user.config.signatures_use && i)
+	{
+		if ((sign_array = (char**)malloc((i+1)*sizeof(char*))))
+		{
+			int j=0;
+			sign = (struct signature*)list_first(&user.config.signature_list);
+			while (sign)
+			{
+				sign_array[j]=sign->name;
+				sign = (struct signature*)node_next(&sign->node);
+				j++;
+			}
+			sign_array[j]=NULL;
+		}
+
+		signatures_group = HGroup,
+			MUIA_Weight, 33,
+			Child, MakeLabel("Use signature"),
+			Child, signatures_cycle = MakeCycle("Use signature",sign_array),
+			End;
+	} else
+	{
+		signatures_group = NULL;
+		signatures_cycle = NULL;
+	}
 
 	slider = ScrollbarObject, End;
 
@@ -706,7 +785,7 @@ void compose_window_open(struct compose_args *args)
 						Child, HGroup,
 							MUIA_Group_Spacing,0,
 							Child, copy_button = MakePictureButton("_Copy","PROGDIR:Images/Copy"),
-							Child, cut_button = MakePictureButton("_Cut","PROGDIR:Images/Cut"),
+							Child, cut_button = MakePictureButton("Cut","PROGDIR:Images/Cut"),
 							Child, paste_button = MakePictureButton("_Paste","PROGDIR:Images/Paste"),
 							End,
 						Child, HGroup,
@@ -715,7 +794,15 @@ void compose_window_open(struct compose_args *args)
 							Child, undo_button = MakePictureButton("_Undo","PROGDIR:Images/Undo"),
 							Child, redo_button = MakePictureButton("_Redo","PROGDIR:Images/Redo"),
 							End,
-						Child, HVSpace,
+						Child, RectangleObject,
+							MUIA_FixHeight,1,
+							MUIA_HorizWeight,signatures_group?33:100,
+							End,
+						signatures_group?Child:TAG_IGNORE,signatures_group,
+						signatures_group?Child:TAG_IGNORE,RectangleObject,
+							MUIA_FixHeight,1,
+							MUIA_HorizWeight,signatures_group?33:100,
+							End,
 						Child, VGroup,
 							TextFrame,
 							MUIA_Group_Spacing, 0,
@@ -876,6 +963,7 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(from_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, from_popobject, 2, MUIM_Popstring_Close, 1);
+			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			if (!args->to_change)
@@ -959,6 +1047,7 @@ void compose_window_open(struct compose_args *args)
 			}
 
 			compose_add_signature(data);
+			data->sign_array = sign_array;
 
 			data->compose_action = args->action;
 			data->ref_mail = args->ref_mail;

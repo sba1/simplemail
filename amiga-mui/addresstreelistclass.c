@@ -162,7 +162,9 @@ STATIC ULONG AddressTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 STATIC ULONG AddressTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
 	if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class) return MUIV_DragQuery_Accept;
+	if (data->in_addressbook) return DoSuperMethodA(cl,obj,(Msg)msg);
 	return MUIV_DragQuery_Refuse;
 }
 
@@ -171,7 +173,7 @@ STATIC ULONG AddressTreelist_DragDrop(struct IClass *cl, Object *obj, struct MUI
 	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
 	struct MUI_NListtree_TreeNode *treenode;
 
-	if (data->in_addressbook) return DoSuperMethodA(cl,obj,(Msg)msg);
+	if (OCLASS(msg->obj) != CL_MailTreelist->mcc_Class) return DoSuperMethodA(cl,obj,(Msg)msg);
 
 	if ((treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active)))
 	{

@@ -312,7 +312,12 @@ STATIC ULONG Popupmenu_Clear(struct IClass *cl, Object *obj, Msg msg)
 	int i;
 	for (i=0;i<data->popup_entries;i++)
 		if (data->popup_array[i]) FreeVec(data->popup_array[i]);
-	if (data->popup_array) FreeVec(data->popup_array);
+	if (data->popup_array)
+	{
+		FreeVec(data->popup_array);
+		data->popup_array = NULL;
+	}
+	data->popup_entries = 0;
 
 	return 1;
 }

@@ -82,7 +82,7 @@ int load_config(void)
 						if ((result = get_config_item(buf,"EmailAddress")))
 							user.config.email = strdup(result);
 						if ((result = get_config_item(buf,"RealName")))
-							user.config.email = strdup(result);
+							user.config.realname = strdup(result);
 						if ((result = get_config_item(buf,"POP00.Login")))
 							user.config.pop_login = strdup(result);
 						if ((result = get_config_item(buf,"POP00.Server")))

@@ -1217,7 +1217,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("REQUESTFOLDER",command.command)) arexx_requestfolder(rxmsg,command.args);
 		else if (!Stricmp("MAILADD",command.command)) arexx_mailadd(rxmsg,command.args);
 		else if (!Stricmp("MAILLISTFREEZE",command.command)) main_freeze_mail_list();
-		else if (!Stricmp("MAILLISTHAW",command.command)) main_thaw_mail_list();
+		else if (!Stricmp("MAILLISTTHAW",command.command)) main_thaw_mail_list();
 
 		FreeTemplate(command_handle);
 	}

@@ -143,7 +143,7 @@ static void get_account(void)
 		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
 		account_last_selected->pop->port = xget(account_recv_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
-		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_String_Integer);
+		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
 		account_last_selected->smtp->name = mystrdup((char*)xget(account_send_server_string, MUIA_String_Contents));
 		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);

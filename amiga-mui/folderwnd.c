@@ -256,7 +256,7 @@ static void init_folder(void)
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
 		WindowContents, VGroup,
 			Child, folder_group = ColGroup(2),
-				Child, name_label = MakeLabel("N_ame"),
+				Child, name_label = MakeLabel(_("N_ame")),
 				Child, name_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,

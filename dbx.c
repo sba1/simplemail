@@ -42,9 +42,9 @@
 
 /***************************************************************************/
 
-#define GetLong(ptr,off) ( (((char*)(ptr))[off]) | (((char*)(ptr))[off+1] << 8) | (((char*)(ptr))[off+2] << 16) | (((char*)(ptr))[off+3] << 24))
+#define GetLong(ptr,off) ( (((unsigned char*)(ptr))[off]) | (((unsigned char*)(ptr))[off+1] << 8) | (((unsigned char*)(ptr))[off+2] << 16) | (((unsigned char*)(ptr))[off+3] << 24))
 
-#define GetShort(ptr,off) ((((char*)(ptr))[off]) | (((char*)(ptr))[off+1] << 8))
+#define GetShort(ptr,off) ((((unsigned char*)(ptr))[off]) | (((unsigned char*)(ptr))[off+1] << 8))
 
 /***************************************************************************/
 
@@ -58,7 +58,7 @@
 static int dbx_read_message(FILE *fh, FILE *out, unsigned int addr)
 {
 	/* This can be static as this function is the leave of the recursion */
-	static char buf[0x210];
+	static unsigned char buf[0x210];
 	int size;
 
 	while (addr)
@@ -89,12 +89,12 @@ static int dbx_read_message(FILE *fh, FILE *out, unsigned int addr)
  */
 static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 {
-	char *buf;
+	unsigned char *buf;
 	unsigned char *mailfilename = NULL;
 	FILE *mailout = NULL;
 
-	char *data;
-	char *body;
+	unsigned char *data;
+	unsigned char *body;
 	int i;
 	int rc = 0;
 	int length_of_idxs;
@@ -224,7 +224,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	/* Write the message into the out file */
 	if (!dbx_read_message(fh,mailout,message))
 	{
-		SM_DEBUGF(5,("Couldn't open %s for output\n",mailfilename));
+		SM_DEBUGF(5,("Couldn't read dbx message\n"));
 		fclose(mailout); mailout = NULL;
 		remove(mailfilename);
 		goto out;
@@ -244,10 +244,10 @@ out:
  * Read recursivly a node within the tree. Everynode can already contain
  * a value (message)
  */
-static int dbx_read_node(FILE *fh, unsigned int addr, unsigned int *mail_accu)
+static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
 {
-	char *buf;
-	char *body;
+	unsigned char *buf;
+	unsigned char *body;
 	int object_marker;
 	unsigned int child;
 	int entries;
@@ -331,7 +331,7 @@ static int dbx_import_entry(struct import_data *data)
 {
 	char *filename,*mailfilename;
 	char *destdir;
-	char *fileheader_buf;
+	unsigned char *fileheader_buf;
 	char head_buf[300];
 	char path[380];
 	int gauge,fsize;
@@ -371,13 +371,12 @@ static int dbx_import_entry(struct import_data *data)
 						fsize = myfsize(fh);
 						thread_call_parent_function_async(status_init_gauge_as_bytes,1,fsize);
 
-						if ((fileheader_buf = malloc(0x24bc)))
+						if ((fileheader_buf = (unsigned char*)malloc(0x24bc)))
 						{
 							mailfilename = NULL;
 							mailfh = NULL;
 							gauge = 0;
 
-							/* read in the file header */
 							if (fread(fileheader_buf,1,0x24bc,fh) == 0x24bc)
 							{
 								if ((fileheader_buf[0] == 0xcf && fileheader_buf[1] == 0xad &&
@@ -394,7 +393,7 @@ static int dbx_import_entry(struct import_data *data)
 
 									/* Start the the roor of the tree */
 									dbx_read_node(fh, root_node, &read_mails);
-								} else SM_DEBUGF(5,("File is not a dbx message file\n"));
+								} else SM_DEBUGF(5,("File is not a dbx message file (header is %02x%02x%02x%02x %02x%02x%02x%02x)\n",fileheader_buf[0],fileheader_buf[1],fileheader_buf[2],fileheader_buf[3],fileheader_buf[4],fileheader_buf[5],fileheader_buf[6],fileheader_buf[7]));
 							} else SM_DEBUGF(5,("Unable to read the file\n"));
 
 							free(fileheader_buf);

@@ -619,7 +619,8 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
 /**************************************************************************
  Encodes the given body. The encoded buffer is allocated with malloc(),
  the length is stored in *ret_len and the used transfer encoding in
- *encoding (MIME Content-Transfer-Encoding)
+ *encoding (MIME Content-Transfer-Encoding). The retured buffer is 0 byte
+ terminated.
 **************************************************************************/
 char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, char **encoding)
 {
@@ -651,6 +652,16 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 		fclose(fh);
 	}
 	return body;
+}
+
+/**************************************************************************
+ Encodes an given string to the base64 format. The string is 0 terminated.
+**************************************************************************/
+char *encode_base64(unsigned char *buf, unsigned int len)
+{
+	unsigned int ret_len;
+	char *encoding;
+	return encode_body(buf,len,"base64",&ret_len,&encoding);
 }
 
 /**************************************************************************

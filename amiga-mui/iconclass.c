@@ -244,7 +244,11 @@ STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
-	if (data->obj) FreeDiskObject(data->obj);
+	if (data->obj)
+	{
+		FreeDiskObject(data->obj);
+		data->obj = NULL;
+	}
 	DoSuperMethodA(cl,obj,msg);
 	return 0;
 }

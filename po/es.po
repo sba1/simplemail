@@ -3,186 +3,209 @@
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
-msgid "es"
-msgstr "es"
+msgid ""
+msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2003-01-05 00:04+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2003-09-08 15:20+0000\n"
+"PO-Revision-Date: 2003-09-09 12:20+0000\n"
+"Last-Translator: Angel MArtin <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: ENCODING\n"
 
-#: amiga-mui/addressbookwnd.c:391
+#: amiga-mui/addressbookwnd.c:219
+msgid ""
+"The date of birth is given in a invalid format.\n"
+"Please use dd mon yyyy or dd mm yyyy."
+msgstr ""
+"La fecha de nacimiento ha sido introducida en un formato no valido.\n"
+"Por favor use dd,mes,aaaa o dd mm aaaa."
+
+#: amiga-mui/addressbookwnd.c:220 amiga-mui/configwnd.c:412
+#: amiga-mui/configwnd.c:469 amiga-mui/configwnd.c:482
+#: amiga-mui/configwnd.c:519 amiga-mui/mainwnd.c:677 mail.c:2087 mail.c:3048
+#: simplemail.c:118 simplemail.c:182 simplemail.c:1133
+msgid "Ok"
+msgstr "Aceptar"
+
+#: amiga-mui/addressbookwnd.c:395
 msgid "Personal"
 msgstr "Personal"
 
-#: amiga-mui/addressbookwnd.c:392
+#: amiga-mui/addressbookwnd.c:396
 msgid "Private"
 msgstr "Privado"
 
-#: amiga-mui/addressbookwnd.c:393
+#: amiga-mui/addressbookwnd.c:397
 msgid "Work"
 msgstr "Trabajo"
 
-#: amiga-mui/addressbookwnd.c:394
+#: amiga-mui/addressbookwnd.c:398
 msgid "Notes"
 msgstr "Notas"
 
-#: amiga-mui/addressbookwnd.c:409
+#: amiga-mui/addressbookwnd.c:413
 msgid "SimpleMail - Edit Person"
 msgstr "SimpleMail - Datos Personales"
 
-#: amiga-mui/addressbookwnd.c:417 amiga-mui/addressbookwnd.c:902
+#: amiga-mui/addressbookwnd.c:421 amiga-mui/addressbookwnd.c:908
 #: amiga-mui/addresstreelistclass.c:150
 msgid "Alias"
 msgstr "Alias"
 
-#: amiga-mui/addressbookwnd.c:424
+#: amiga-mui/addressbookwnd.c:428
 msgid "Real Name"
 msgstr "Nombre Real"
 
-#: amiga-mui/addressbookwnd.c:431 amiga-mui/addressbookwnd.c:909
+#: amiga-mui/addressbookwnd.c:435 amiga-mui/addressbookwnd.c:915
 #: amiga-mui/addresstreelistclass.c:151 amiga-mui/attachmentlistclass.c:118
-#: amiga-mui/composewnd.c:1111 amiga-mui/composewnd.c:1114
+#: amiga-mui/composewnd.c:1210 amiga-mui/composewnd.c:1213
 msgid "Description"
 msgstr "Descripción"
 
-#: amiga-mui/addressbookwnd.c:438
+#: amiga-mui/addressbookwnd.c:442
 msgid "PGP Key-ID"
 msgstr "ID de llave PGP"
 
-#: amiga-mui/addressbookwnd.c:454
+#: amiga-mui/addressbookwnd.c:458
 msgid "Homepage"
 msgstr "Página Personal"
 
-#: amiga-mui/addressbookwnd.c:465
+#: amiga-mui/addressbookwnd.c:469
 msgid "Date of birth"
 msgstr "Fecha de nacimiento"
 
-#: amiga-mui/addressbookwnd.c:472
+#: amiga-mui/addressbookwnd.c:475
+msgid ""
+"The date of the birth of the person.\n"
+"The format is dd mon yyyy or dd mm yyyy."
+msgstr ""
+"Fecha de nacimiento de la persona.\n"
+"El formato es 'dd, mes, aaaa' o 'dd, mm, aaaa'."
+  
+#: amiga-mui/addressbookwnd.c:477
 msgid "Sex"
 msgstr "Sexo"
 
-#: amiga-mui/addressbookwnd.c:482
+#: amiga-mui/addressbookwnd.c:487
 msgid "Female"
 msgstr "Mujer"
 
-#: amiga-mui/addressbookwnd.c:492
+#: amiga-mui/addressbookwnd.c:497
 msgid "Male"
 msgstr "Hombre"
 
-#: amiga-mui/addressbookwnd.c:498
+#: amiga-mui/addressbookwnd.c:503
 msgid "Portrait"
 msgstr "Fotografía"
 
-#: amiga-mui/addressbookwnd.c:518
+#: amiga-mui/addressbookwnd.c:523
 msgid "E-Mail addresses"
 msgstr "Direción de correo electrónico"
 
-#: amiga-mui/addressbookwnd.c:529 amiga-mui/addressbookwnd.c:627
+#: amiga-mui/addressbookwnd.c:534 amiga-mui/addressbookwnd.c:632
 msgid "Street"
 msgstr "Calle"
 
-#: amiga-mui/addressbookwnd.c:538 amiga-mui/addressbookwnd.c:636
+#: amiga-mui/addressbookwnd.c:543 amiga-mui/addressbookwnd.c:641
 msgid "City"
 msgstr "Ciudad"
 
-#: amiga-mui/addressbookwnd.c:545 amiga-mui/addressbookwnd.c:643
+#: amiga-mui/addressbookwnd.c:550 amiga-mui/addressbookwnd.c:648
 msgid "ZIP/Postal Code"
 msgstr "Código Postal"
 
-#: amiga-mui/addressbookwnd.c:552 amiga-mui/addressbookwnd.c:650
+#: amiga-mui/addressbookwnd.c:557 amiga-mui/addressbookwnd.c:655
 msgid "State/Province"
 msgstr "Estado/Provincia"
 
-#: amiga-mui/addressbookwnd.c:559 amiga-mui/addressbookwnd.c:657
+#: amiga-mui/addressbookwnd.c:564 amiga-mui/addressbookwnd.c:662
 msgid "Country"
 msgstr "País"
 
-#: amiga-mui/addressbookwnd.c:573 amiga-mui/addressbookwnd.c:671
+#: amiga-mui/addressbookwnd.c:578 amiga-mui/addressbookwnd.c:676
 msgid "Phone numbers"
 msgstr "Números de Teléfono"
 
-#: amiga-mui/addressbookwnd.c:580 amiga-mui/addressbookwnd.c:678
+#: amiga-mui/addressbookwnd.c:585 amiga-mui/addressbookwnd.c:683
 msgid "Mobile"
 msgstr "Número de Móvil"
 
-#: amiga-mui/addressbookwnd.c:594 amiga-mui/addressbookwnd.c:692
+#: amiga-mui/addressbookwnd.c:599 amiga-mui/addressbookwnd.c:697
 msgid "Fax"
 msgstr "Fax"
 
-#: amiga-mui/addressbookwnd.c:608
+#: amiga-mui/addressbookwnd.c:613
 msgid "Title"
 msgstr "Cargo"
 
-#: amiga-mui/addressbookwnd.c:615
+#: amiga-mui/addressbookwnd.c:620
 msgid "Organization"
 msgstr "Organización"
 
-#: amiga-mui/addressbookwnd.c:713 amiga-mui/addressbookwnd.c:920
-#: amiga-mui/folderwnd.c:314
+#: amiga-mui/addressbookwnd.c:718 amiga-mui/addressbookwnd.c:926
+#: amiga-mui/folderwnd.c:362
 msgid "_Ok"
 msgstr "_Aceptar"
 
-#: amiga-mui/addressbookwnd.c:714 amiga-mui/addressbookwnd.c:921
-#: amiga-mui/composewnd.c:1129 amiga-mui/configwnd.c:1571
-#: amiga-mui/filterwnd.c:536 amiga-mui/folderwnd.c:315
-#: amiga-mui/folderwnd.c:534
+#: amiga-mui/addressbookwnd.c:719 amiga-mui/addressbookwnd.c:927
+#: amiga-mui/composewnd.c:1228 amiga-mui/configwnd.c:1882
+#: amiga-mui/filterwnd.c:545 amiga-mui/folderwnd.c:363
+#: amiga-mui/folderwnd.c:598
 msgid "_Cancel"
 msgstr "_Cancelar"
 
-#: amiga-mui/addressbookwnd.c:897
+#: amiga-mui/addressbookwnd.c:903
 msgid "SimpleMail - Edit Group"
-msgstr ""
-
-#: amiga-mui/addressbookwnd.c:1091
-msgid "SimpleMail - Addressbook"
-msgstr "SimpleMail - Datos de Grupos"
+msgstr "SimpleMail - Editor de Grupos"
 
 #: amiga-mui/addressbookwnd.c:1097
+msgid "SimpleMail - Addressbook"
+msgstr "SimpleMail - Libreta de direcciones"
+
+#: amiga-mui/addressbookwnd.c:1103
 msgid "_To:"
 msgstr "_A"
 
-#: amiga-mui/addressbookwnd.c:1098
+#: amiga-mui/addressbookwnd.c:1104
 msgid "_CC:"
 msgstr "_CC"
 
-#: amiga-mui/addressbookwnd.c:1099
+#: amiga-mui/addressbookwnd.c:1105
 msgid "_BCC:"
 msgstr "_BCC"
 
-#: amiga-mui/addressbookwnd.c:1105
+#: amiga-mui/addressbookwnd.c:1111
 msgid "_Import"
 msgstr "_Importar"
 
 #. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
-#: amiga-mui/addressbookwnd.c:1106 amiga-mui/readwnd.c:1025
+#: amiga-mui/addressbookwnd.c:1112 amiga-mui/readwnd.c:1070
 msgid "_Save"
 msgstr "_Guardar"
 
 #. Child, MakeButton("Search"),
-#: amiga-mui/addressbookwnd.c:1108
+#: amiga-mui/addressbookwnd.c:1114
 msgid "_Person"
 msgstr "_Persona"
 
 #. Child, MakeButton("New List"),
-#: amiga-mui/addressbookwnd.c:1110
+#: amiga-mui/addressbookwnd.c:1116
 msgid "_Group"
 msgstr "_Grupo"
 
-#: amiga-mui/addressbookwnd.c:1111 amiga-mui/mainwnd.c:545
+#: amiga-mui/addressbookwnd.c:1117 amiga-mui/mainwnd.c:575
 msgid "_Edit"
 msgstr "_Editar"
 
-#: amiga-mui/addressbookwnd.c:1112 amiga-mui/readwnd.c:1031
+#: amiga-mui/addressbookwnd.c:1118 amiga-mui/readwnd.c:1077
 msgid "_Delete"
 msgstr "_Borrar"
 
-#: amiga-mui/addresstreelistclass.c:149 amiga-mui/configwnd.c:778
-msgid "¿Nombre del Sujeto?"
-msgstr ""
+#: amiga-mui/addresstreelistclass.c:149 amiga-mui/configwnd.c:900
+msgid "?people:Name"
+msgstr "?Persona:Nombre"
 
 #: amiga-mui/addresstreelistclass.c:152
 msgid "Address"
@@ -206,21 +229,21 @@ msgstr "¿Mostrar descripción?"
 
 #: amiga-mui/addresstreelistclass.c:218
 msgid "Show E-Mail Address?"
-msgstr  "¿Mostrar dirección de Correo Electrónico?"
+msgstr "¿Mostrar dirección de Correo Electrónico?"
 
-#: amiga-mui/addresstreelistclass.c:220 amiga-mui/mailtreelistclass.c:462
+#: amiga-mui/addresstreelistclass.c:220 amiga-mui/mailtreelistclass.c:486
 msgid "Default Width: this"
 msgstr "Ancho por defecto: Este"
 
-#: amiga-mui/addresstreelistclass.c:221 amiga-mui/mailtreelistclass.c:463
+#: amiga-mui/addresstreelistclass.c:221 amiga-mui/mailtreelistclass.c:487
 msgid "Default Width: all"
 msgstr "Ancho por defecto: Todo"
 
-#: amiga-mui/addresstreelistclass.c:222 amiga-mui/mailtreelistclass.c:464
+#: amiga-mui/addresstreelistclass.c:222 amiga-mui/mailtreelistclass.c:488
 msgid "Default Order: this"
 msgstr "Orden por defecto: Este"
 
-#: amiga-mui/addresstreelistclass.c:223 amiga-mui/mailtreelistclass.c:465
+#: amiga-mui/addresstreelistclass.c:223 amiga-mui/mailtreelistclass.c:489
 msgid "Default Order: all"
 msgstr "Orden por defecto: Todo"
 
@@ -232,9 +255,9 @@ msgstr "Texto de correo Editable"
 msgid "File Name"
 msgstr "Nombre del Archivo"
 
-#: amiga-mui/attachmentlistclass.c:116 amiga-mui/folderwnd.c:236
-#: amiga-mui/folderwnd.c:246 amiga-mui/mailtreelistclass.c:433
-#: amiga-mui/transwndclass.c:123
+#: amiga-mui/attachmentlistclass.c:116 amiga-mui/folderwnd.c:261
+#: amiga-mui/folderwnd.c:271 amiga-mui/mailtreelistclass.c:457
+#: amiga-mui/transwndclass.c:124
 msgid "Size"
 msgstr "Tamaño"
 
@@ -242,284 +265,314 @@ msgstr "Tamaño"
 msgid "Contents"
 msgstr "Contenidos"
 
-#: amiga-mui/composewnd.c:927 amiga-mui/mailtreelistclass.c:686
-#: amiga-mui/readwnd.c:975
+#: amiga-mui/composewnd.c:1004 amiga-mui/mailtreelistclass.c:730
+#: amiga-mui/readwnd.c:998
 msgid "Mail"
 msgstr "Correo"
 
-#: amiga-mui/composewnd.c:928
+#: amiga-mui/composewnd.c:1005
 msgid "Attachments"
 msgstr "Adjuntos"
 
-#: amiga-mui/composewnd.c:952
+#: amiga-mui/composewnd.c:1046
 msgid "No Signature"
 msgstr "Sin firma"
 
-#: amiga-mui/composewnd.c:958 amiga-mui/composewnd.c:959
+#: amiga-mui/composewnd.c:1052 amiga-mui/composewnd.c:1053
 msgid "Use signature"
 msgstr "Usar firmar"
 
-#: amiga-mui/composewnd.c:972
+#: amiga-mui/composewnd.c:1066
 msgid "SimpleMail - Compose Message"
 msgstr "SimpleMail - Editor de Mensajes"
 
-#: amiga-mui/composewnd.c:981 amiga-mui/searchwnd.c:175
+#: amiga-mui/composewnd.c:1074 amiga-mui/searchwnd.c:175
 msgid "_From"
 msgstr "_Desde"
 
-#: amiga-mui/composewnd.c:992 amiga-mui/composewnd.c:998
-#: amiga-mui/searchwnd.c:183
+#: amiga-mui/composewnd.c:1078
+msgid "R"
+msgstr "R"
+
+#: amiga-mui/composewnd.c:1081
+msgid "_Replies To"
+msgstr "_Respuestas a"
+
+#: amiga-mui/composewnd.c:1085 amiga-mui/composewnd.c:1089
+#: amiga-mui/composewnd.c:1095 amiga-mui/searchwnd.c:183
 msgid "_To"
 msgstr "_A"
 
-#: amiga-mui/composewnd.c:1003 amiga-mui/composewnd.c:1009
-msgid "Copies To"
+#: amiga-mui/composewnd.c:1101 amiga-mui/composewnd.c:1107
+msgid "C_opies To"
 msgstr "Copias A"
 
-#: amiga-mui/composewnd.c:1014 amiga-mui/composewnd.c:1018
+#: amiga-mui/composewnd.c:1113 amiga-mui/composewnd.c:1117
 msgid "S_ubject"
 msgstr "As_unto"
 
-#: amiga-mui/composewnd.c:1037
+#: amiga-mui/composewnd.c:1136
 msgid "Copy"
 msgstr "Copia"
 
-#: amiga-mui/composewnd.c:1038
+#: amiga-mui/composewnd.c:1137
 msgid "Cut"
 msgstr "Cortar"
 
-#: amiga-mui/composewnd.c:1039
+#: amiga-mui/composewnd.c:1138
 msgid "Paste"
 msgstr "Pegar"
 
-#: amiga-mui/composewnd.c:1044
+#: amiga-mui/composewnd.c:1143
 msgid "Undo"
 msgstr "Deshacer"
 
-#: amiga-mui/composewnd.c:1045
+#: amiga-mui/composewnd.c:1144
 msgid "Redo"
 msgstr "Rehacer"
 
-#: amiga-mui/composewnd.c:1050
+#: amiga-mui/composewnd.c:1149
 msgid "_Attach"
 msgstr "Adjunt_o"
 
-#: amiga-mui/composewnd.c:1055
+#: amiga-mui/composewnd.c:1154
 msgid "_Encrypt"
 msgstr "Encri_ptar"
 
-#: amiga-mui/composewnd.c:1056
+#: amiga-mui/composewnd.c:1155
 msgid "Si_gn"
 msgstr "Fir_ma"
 
-#: amiga-mui/composewnd.c:1118
+#: amiga-mui/composewnd.c:1217
 msgid "Add text"
 msgstr "Añadir Texto"
 
-#: amiga-mui/composewnd.c:1119
+#: amiga-mui/composewnd.c:1218
 msgid "Add multipart"
 msgstr "Añadir raíz"
 
-#: amiga-mui/composewnd.c:1120
+#: amiga-mui/composewnd.c:1219
 msgid "Add file(s)"
 msgstr "Anadir Archivo(s)"
 
-#: amiga-mui/composewnd.c:1121 amiga-mui/filterwnd.c:255
+#: amiga-mui/composewnd.c:1220 amiga-mui/filterwnd.c:262
 msgid "Remove"
 msgstr "Eliminar"
 
-#: amiga-mui/composewnd.c:1126
+#: amiga-mui/composewnd.c:1225
 msgid "_Send now"
 msgstr "_Enviar Ahora"
 
-#: amiga-mui/composewnd.c:1127
+#: amiga-mui/composewnd.c:1226
 msgid "Send _later"
 msgstr "Enviar Despué_s"
 
-#: amiga-mui/composewnd.c:1128
+#: amiga-mui/composewnd.c:1227
 msgid "_Hold"
 msgstr "_Retener"
 
-#: amiga-mui/configwnd.c:422
+#: amiga-mui/configwnd.c:412
+msgid "You have entered an invalid email address. Please correct it."
+msgstr "Ha indicado una dirección de correo no válida. Por favor corrijala."
+
+#: amiga-mui/configwnd.c:467
+msgid ""
+"SimpleMail currently doesn't support the same email address for\n"
+"multiple accounts. Please ensure that every email address is unique.\n"
+"However, you can set the reply address field to your prefered addresse."
+msgstr ""
+"Actualmente Simple Mail no soporta una misma dirección de correo para\n"
+"múltiples cuentas. Por favor, asegurese que cada cuenta de correo sea única.\n"
+"Sin embargo, puede indicar en el campo 'dirección de contestación' la cuenta que prefiera."
+
+#: amiga-mui/configwnd.c:482
+msgid "No valid email address entered. Please correct it."
+msgstr "Dirección de correo no válida. Por favor corrijala."
+
+#: amiga-mui/configwnd.c:519
 msgid ""
 "You have changed the folder direcory! You must quit and restart SimpleMail "
-"now."
-msgstr "¡Se ha cambiado la carpeta de directorios! Se precisa parar y reiniciar SimpleMail/n"
-"ahora."
+"to see an effect."
+msgstr ""
+"¡Se ha cambiado la carpeta del directorio! Se precisa parar y reiniciar\n"
+"SimpleMail ahora para que los cambios tenga efecto."
 
-#: amiga-mui/configwnd.c:422 amiga-mui/mainwnd.c:639 mail.c:2052 mail.c:2964
-#: simplemail.c:108 simplemail.c:171 simplemail.c:767
-msgid "Ok"
-msgstr "Aceptar"
-
-#: amiga-mui/configwnd.c:550 amiga-mui/configwnd.c:551
+#: amiga-mui/configwnd.c:647 amiga-mui/configwnd.c:648
 msgid "Add adjustment for daylight saving time"
 msgstr "Añadir ajuste horario de verano"
 
-#: amiga-mui/configwnd.c:555
+#: amiga-mui/configwnd.c:652
 msgid "Folder directory"
-msgstr "Carpeta de directorio"
+msgstr "Carpeta del directorio"
 
-#: amiga-mui/configwnd.c:566
+#: amiga-mui/configwnd.c:663
 msgid "Charset used to display text"
-msgstr "Juego de carécteres al mostrar texto"
+msgstr "Juego de carácteres al mostrar texto"
 
-#: amiga-mui/configwnd.c:591
+#: amiga-mui/configwnd.c:688
 msgid "Disabled"
 msgstr "Deshabilitar"
 
-#: amiga-mui/configwnd.c:592
+#: amiga-mui/configwnd.c:689
 msgid "Only Sizes"
 msgstr "Sólo tamaños"
 
-#: amiga-mui/configwnd.c:593
+#: amiga-mui/configwnd.c:690
 msgid "Enabled"
 msgstr "Habilitar"
 
-#: amiga-mui/configwnd.c:599
+#: amiga-mui/configwnd.c:696
 msgid "Preselection"
 msgstr "Preselección"
 
-#: amiga-mui/configwnd.c:618
+#: amiga-mui/configwnd.c:715
 msgid "Automatic operation"
 msgstr "Operación automática"
 
-#: amiga-mui/configwnd.c:620
+#: amiga-mui/configwnd.c:717
 msgid "Check for new mail every"
-msgstr "Chaquear nuevo correo cada"
+msgstr "Chequear nuevo correo cada"
 
-#: amiga-mui/configwnd.c:627
+#: amiga-mui/configwnd.c:724
 msgid "minutes"
 msgstr "minutos"
 
-#: amiga-mui/configwnd.c:628 amiga-mui/configwnd.c:629
+#: amiga-mui/configwnd.c:725 amiga-mui/configwnd.c:726
 msgid "On startup"
 msgstr "Al inicio"
 
-#: amiga-mui/configwnd.c:630 amiga-mui/configwnd.c:631
+#: amiga-mui/configwnd.c:727 amiga-mui/configwnd.c:728
 msgid "If online"
 msgstr "Si se está en línea"
 
-#: amiga-mui/configwnd.c:633
+#: amiga-mui/configwnd.c:730
 msgid "New mails"
 msgstr "Nuevos correos"
 
-#: amiga-mui/configwnd.c:635 amiga-mui/configwnd.c:636
+#: amiga-mui/configwnd.c:732 amiga-mui/configwnd.c:733
 msgid "ARexx"
 msgstr "ARexx"
 
-#: amiga-mui/configwnd.c:648 amiga-mui/configwnd.c:649
+#: amiga-mui/configwnd.c:745 amiga-mui/configwnd.c:746
 msgid "Sound"
 msgstr "Sonido"
 
-#: amiga-mui/configwnd.c:737 amiga-mui/configwnd.c:1250
-#: amiga-mui/configwnd.c:1298 amiga-mui/foldertreelistclass.c:135
-#: amiga-mui/folderwnd.c:513
+#: amiga-mui/configwnd.c:769
+msgid "-- New Account --"
+msgstr "-- Nueva Cuenta --"
+
+#: amiga-mui/configwnd.c:851 amiga-mui/configwnd.c:1398
+#: amiga-mui/configwnd.c:1446 amiga-mui/foldertreelistclass.c:140
+#: amiga-mui/folderwnd.c:577
 msgid "Name"
 msgstr "Nombre"
 
-#: amiga-mui/configwnd.c:738
+#: amiga-mui/configwnd.c:852
 msgid "EMail"
 msgstr "Correo Electrónico"
 
-#: amiga-mui/configwnd.c:739 amiga-mui/configwnd.c:800
+#: amiga-mui/configwnd.c:853 amiga-mui/configwnd.c:922
 msgid "Receive"
 msgstr "Recibido"
 
-#: amiga-mui/configwnd.c:740 amiga-mui/configwnd.c:861
+#: amiga-mui/configwnd.c:854 amiga-mui/configwnd.c:983
 msgid "Send"
 msgstr "Enviado"
 
-#: amiga-mui/configwnd.c:770
+#: amiga-mui/configwnd.c:884
 msgid "_Add Account"
 msgstr "_Añadir cuenta"
 
-#: amiga-mui/configwnd.c:772
+#: amiga-mui/configwnd.c:886
 msgid "_Remove Account"
 msgstr "_Borrar cuenta"
 
-#: amiga-mui/configwnd.c:776
+#: amiga-mui/configwnd.c:891
+msgid "Account Name"
+msgstr "Cuentas"
+
+#: amiga-mui/configwnd.c:898
 msgid "User"
 msgstr "Usuario"
 
-#: amiga-mui/configwnd.c:785
+#: amiga-mui/configwnd.c:907
 msgid "E-Mail Address"
 msgstr "Dirección de correo"
 
-#: amiga-mui/configwnd.c:792
+#: amiga-mui/configwnd.c:914
 msgid "Reply Address"
 msgstr "Dirección de respuesta"
 
-#: amiga-mui/configwnd.c:802
+#: amiga-mui/configwnd.c:924
 msgid "Type"
 msgstr "Tipo"
 
-#: amiga-mui/configwnd.c:810
+#: amiga-mui/configwnd.c:932
 msgid "Server"
 msgstr "Servidor"
 
-#: amiga-mui/configwnd.c:817 amiga-mui/configwnd.c:871
+#: amiga-mui/configwnd.c:939 amiga-mui/configwnd.c:993
 msgid "Port"
 msgstr "Puerto"
 
-#: amiga-mui/configwnd.c:826 amiga-mui/configwnd.c:880
+#: amiga-mui/configwnd.c:948 amiga-mui/configwnd.c:1002
 msgid "Login"
 msgstr "Nombre de usuario"
 
-#: amiga-mui/configwnd.c:833 amiga-mui/configwnd.c:888
+#: amiga-mui/configwnd.c:955 amiga-mui/configwnd.c:1010
 msgid "Password"
 msgstr "Contraseña"
 
-#: amiga-mui/configwnd.c:840 amiga-mui/configwnd.c:841
+#: amiga-mui/configwnd.c:962 amiga-mui/configwnd.c:963
 msgid "Ask"
 msgstr "Petición"
 
-#: amiga-mui/configwnd.c:845 amiga-mui/configwnd.c:846
+#: amiga-mui/configwnd.c:967 amiga-mui/configwnd.c:968
 msgid "Active"
 msgstr "Activo"
 
-#: amiga-mui/configwnd.c:847 amiga-mui/configwnd.c:848
+#: amiga-mui/configwnd.c:969 amiga-mui/configwnd.c:970
 msgid "_Delete mails"
 msgstr "_Eliminar correos"
 
-#: amiga-mui/configwnd.c:849 amiga-mui/configwnd.c:850
+#: amiga-mui/configwnd.c:971 amiga-mui/configwnd.c:972
 msgid "Avoid duplicates"
 msgstr "Evitar duplicados"
 
-#: amiga-mui/configwnd.c:851 amiga-mui/configwnd.c:853
-#: amiga-mui/configwnd.c:901 amiga-mui/configwnd.c:902
+#: amiga-mui/configwnd.c:973 amiga-mui/configwnd.c:975
+#: amiga-mui/configwnd.c:1023 amiga-mui/configwnd.c:1024
 msgid "Secure"
 msgstr "Seguridad"
 
-#: amiga-mui/configwnd.c:855 amiga-mui/configwnd.c:856
+#: amiga-mui/configwnd.c:977 amiga-mui/configwnd.c:978
 msgid "with STLS"
 msgstr "con STLS"
 
-#: amiga-mui/configwnd.c:864
+#: amiga-mui/configwnd.c:986
 msgid "SMTP Server"
 msgstr "Servidor SMTP"
 
-#: amiga-mui/configwnd.c:896 amiga-mui/configwnd.c:897
+#: amiga-mui/configwnd.c:1018 amiga-mui/configwnd.c:1019
 msgid "Use SMTP AUTH"
-msgstr "Usar AUTEN SMPT "
+msgstr "Usar AUTEN SMPT"
 
-#: amiga-mui/configwnd.c:904 amiga-mui/configwnd.c:905
+#: amiga-mui/configwnd.c:1026 amiga-mui/configwnd.c:1027
 msgid "Log into POP3 server first"
 msgstr "Primero debe registrase en un servidor POP3"
 
-#: amiga-mui/configwnd.c:907 amiga-mui/configwnd.c:908
+#: amiga-mui/configwnd.c:1029 amiga-mui/configwnd.c:1030
 msgid "Use IP as domain"
 msgstr "Usar IP como dominio"
 
-#: amiga-mui/configwnd.c:933
+#: amiga-mui/configwnd.c:1065
 msgid "Your full name (required)"
-msgstr "Nombre completo (necesario)."
+msgstr "Su nombre completo (necesario)."
 
-#: amiga-mui/configwnd.c:934
+#: amiga-mui/configwnd.c:1066
 msgid "Your E-Mail address for this account (required)"
 msgstr "Su dirección de correo para esta cuenta (necesaria)."
 
-#: amiga-mui/configwnd.c:935
+#: amiga-mui/configwnd.c:1067
 msgid ""
 "Address where the replies of the mails should\n"
 "be sent (required only if different from the e-mail address)."
@@ -527,7 +580,7 @@ msgstr ""
 "Dirección donde se enviarán las respuestas a los correos\n"
 "(necesaria solamente si es distinta a la dirección de correo indicada antes)."
 
-#: amiga-mui/configwnd.c:936
+#: amiga-mui/configwnd.c:1068
 msgid ""
 "The name of the so called POP3 server from\n"
 "which you download your e-Mails (required; ask your\n"
@@ -537,15 +590,15 @@ msgstr ""
 "se descargarán sus correos (necesario; servidor\n"
 "al cual se conecta para descargar el correo)."
 
-#: amiga-mui/configwnd.c:937
+#: amiga-mui/configwnd.c:1069
 msgid "The port number. Usually 110"
 msgstr "El número de puerto. Normalmente el 110."
 
-#: amiga-mui/configwnd.c:938
+#: amiga-mui/configwnd.c:1070
 msgid "The login/UserID which you got from your ISP."
 msgstr "Nombre de usuario facilitado por su ISP."
 
-#: amiga-mui/configwnd.c:939
+#: amiga-mui/configwnd.c:1071
 msgid ""
 "Your very own password to access the mails\n"
 "located on the POP3 server."
@@ -553,7 +606,7 @@ msgstr ""
 "Su contraseña para acceder a los correos\n"
 "situados en el servidor POP3."
 
-#: amiga-mui/configwnd.c:940
+#: amiga-mui/configwnd.c:1072
 msgid ""
 "Deactivate this if you don't want SimpleMail to\n"
 "download the e-Mails when pressing on 'Fetch'."
@@ -561,7 +614,7 @@ msgstr ""
 "Desactivelo si no desea que SimpleMail\n"
 "descarge los correos cuando se presione 'Recoger'."
 
-#: amiga-mui/configwnd.c:941
+#: amiga-mui/configwnd.c:1073
 msgid ""
 "After successul downloading the mails should be deleted\n"
 "on the POP3 server."
@@ -569,7 +622,7 @@ msgstr ""
 "Se borrarán los correos descargados correctamente\n"
 "del servidor POP3."
 
-#: amiga-mui/configwnd.c:942
+#: amiga-mui/configwnd.c:1074
 msgid ""
 "When not deleteding e-Mails on the server SimpleMail\n"
 "tries to avoid downloading a message twice the next time."
@@ -578,7 +631,7 @@ msgstr ""
 "SimpleMail intentará que estos correos no borrados, pero\n"
 "ya descagados, no vuelvan a ser descargados otra vez."
 
-#: amiga-mui/configwnd.c:943
+#: amiga-mui/configwnd.c:1075
 msgid ""
 "If activated SimpleMail tries to make the connection secure.\n"
 "This is not supported on all servers, so decativate if it doesn't work."
@@ -587,19 +640,19 @@ msgstr ""
 "Esto no está soportado por todos lo servidores.\n"
 "Desactivelo si no funciona."
 
-#: amiga-mui/configwnd.c:944
+#: amiga-mui/configwnd.c:1076
 msgid ""
 "The name of the so called SMTP server which is responlible\n"
 "to send your e-Mails."
 msgstr ""
-"El nombre del servidor SMTP responsable del\n "
+"El nombre del servidor SMTP responsable del\n"
 "envío de sus correos eletrónicos."
 
-#: amiga-mui/configwnd.c:945
+#: amiga-mui/configwnd.c:1077
 msgid "The port number. Usually 25"
 msgstr "El número del puerto. Generalmente el 25."
 
-#: amiga-mui/configwnd.c:946
+#: amiga-mui/configwnd.c:1078
 msgid ""
 "Your login/UserID for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
@@ -607,19 +660,19 @@ msgstr ""
 "Su nombre de usuario para el servidor SMTP.\n"
 "Sólo necesario si el servidor SMTP requiere autentificación."
 
-#: amiga-mui/configwnd.c:947
+#: amiga-mui/configwnd.c:1079
 msgid ""
 "Your password for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
 msgstr ""
-"Su contraseña para el servidor SMTP.\n" 
+"Su contraseña para el servidor SMTP.\n"
 "Sólo es necesario si el servidor SMTP requiere autentificación."
 
-#: amiga-mui/configwnd.c:948
+#: amiga-mui/configwnd.c:1080
 msgid "Activate this if the SMTP server requires authentication."
 msgstr "Actívelo si el servidor SMTP requiere autentificación."
 
-#: amiga-mui/configwnd.c:949
+#: amiga-mui/configwnd.c:1081
 msgid ""
 "Activate this if you want a secure connection\n"
 "to the SMTP server. Deactivate this if your SMTP server\n"
@@ -629,7 +682,7 @@ msgstr ""
 "al servidor SMTP. Desactívelo si el servidor SMTP\n"
 "no soporta conexiones seguras."
 
-#: amiga-mui/configwnd.c:950
+#: amiga-mui/configwnd.c:1082
 msgid ""
 "Activate this if you provider needs that\n"
 "you first log into its POP3 sever."
@@ -637,7 +690,7 @@ msgstr ""
 "Actívelo si su proveedor necesita que\n"
 "primero se registre en el servidor POP3."
 
-#: amiga-mui/configwnd.c:951
+#: amiga-mui/configwnd.c:1083
 msgid ""
 "Send your current IP address together with the intial greetings.\n"
 "This avoids some error headers on some providers."
@@ -645,253 +698,375 @@ msgstr ""
 "Enviar su IP actual junto con el saludo inicial.\n"
 "Esto evita algunos errores de cabecera en ciertos proveedores."
 
-#: amiga-mui/configwnd.c:952
+#: amiga-mui/configwnd.c:1084
 msgid "Add a new account."
 msgstr "Añadir nueva cuenta."
 
-#: amiga-mui/configwnd.c:953
+#: amiga-mui/configwnd.c:1085
 msgid "Remove the current account."
 msgstr "Eliminar la cuenta actual."
 
-#: amiga-mui/configwnd.c:968
+#: amiga-mui/configwnd.c:1100
 msgid "off"
 msgstr "apagado"
 
-#: amiga-mui/configwnd.c:969
+#: amiga-mui/configwnd.c:1101
 msgid "as you type"
 msgstr "como se teclee"
 
-#: amiga-mui/configwnd.c:970
+#: amiga-mui/configwnd.c:1102
 msgid "before storing"
 msgstr "antes de almacenar"
 
-#: amiga-mui/configwnd.c:976
+#: amiga-mui/configwnd.c:1108
 msgid "Editor"
 msgstr "Editor"
 
-#: amiga-mui/configwnd.c:978
+#: amiga-mui/configwnd.c:1110
 msgid "Word wrap"
 msgstr "Ajuste de texto"
 
-#: amiga-mui/configwnd.c:982
+#: amiga-mui/configwnd.c:1114
 msgid "Replying"
 msgstr "Contestar"
 
-#: amiga-mui/configwnd.c:984 amiga-mui/configwnd.c:985
+#: amiga-mui/configwnd.c:1116 amiga-mui/configwnd.c:1117
 msgid "Wrap before quoting"
 msgstr "Ajuste antes de cita"
 
-#: amiga-mui/configwnd.c:989 amiga-mui/configwnd.c:990
+#: amiga-mui/configwnd.c:1121 amiga-mui/configwnd.c:1122
 msgid "Strip signature before quoting"
 msgstr "Quitar firma después de cita"
 
-#: amiga-mui/configwnd.c:994 amiga-mui/configwnd.c:995
+#: amiga-mui/configwnd.c:1126 amiga-mui/configwnd.c:1127
 msgid "Quote empty lines"
 msgstr "Entrecomillar líneas vacías"
 
-#: amiga-mui/configwnd.c:1016
+#: amiga-mui/configwnd.c:1148
 msgid "Header Configuration"
 msgstr "Configuración de encabezamiento"
 
-#: amiga-mui/configwnd.c:1019 amiga-mui/configwnd.c:1020
+#: amiga-mui/configwnd.c:1151 amiga-mui/configwnd.c:1152
 msgid "Show all headers"
 msgstr "Mostrar todos los encabezamientos"
 
-#: amiga-mui/configwnd.c:1050
+#: amiga-mui/configwnd.c:1182
 msgid "Additional headers"
 msgstr "Encabezamientos adicionales"
 
-#: amiga-mui/configwnd.c:1084
+#: amiga-mui/configwnd.c:1216
 msgid "Background"
 msgstr "Fondo"
 
-#: amiga-mui/configwnd.c:1085
+#: amiga-mui/configwnd.c:1217
 msgid "Text"
 msgstr "Texto"
 
-#: amiga-mui/configwnd.c:1086
+#: amiga-mui/configwnd.c:1218
 msgid "Quoted Text"
 msgstr "Texto citado"
 
-#: amiga-mui/configwnd.c:1087
+#: amiga-mui/configwnd.c:1219
 msgid "Old Quoted Text"
 msgstr "Texto citado con anterioridad"
 
-#: amiga-mui/configwnd.c:1088
+#: amiga-mui/configwnd.c:1220
 msgid "Link Text"
 msgstr "Enlace"
 
-#: amiga-mui/configwnd.c:1089
+#: amiga-mui/configwnd.c:1221
 msgid "Header Background"
 msgstr "Fondo de cabecera"
 
-#: amiga-mui/configwnd.c:1137
+#: amiga-mui/configwnd.c:1269
 msgid "Fonts"
 msgstr "Fuentes"
 
-#: amiga-mui/configwnd.c:1139
+#: amiga-mui/configwnd.c:1271
 msgid "Proportional Font"
 msgstr "Fuente de ancho variable"
 
-#: amiga-mui/configwnd.c:1146
+#: amiga-mui/configwnd.c:1278
 msgid "Fixed Font"
 msgstr "Fuente de ancho fijo"
 
-#: amiga-mui/configwnd.c:1155
+#: amiga-mui/configwnd.c:1287
 msgid "Colors"
 msgstr "Colores"
 
-#: amiga-mui/configwnd.c:1165 amiga-mui/configwnd.c:1166
+#: amiga-mui/configwnd.c:1297 amiga-mui/configwnd.c:1298
 msgid "Wordwrap plain text"
 msgstr "Texto plano en cabecera"
 
-#: amiga-mui/configwnd.c:1167 amiga-mui/configwnd.c:1168
+#: amiga-mui/configwnd.c:1299 amiga-mui/configwnd.c:1300
 msgid "Underline links"
 msgstr "Subrayar enlances"
 
-#: amiga-mui/configwnd.c:1169 amiga-mui/configwnd.c:1170
+#: amiga-mui/configwnd.c:1301 amiga-mui/configwnd.c:1302
 msgid "Use graphical smilies"
 msgstr "Usar emoticones gráficos"
 
-#: amiga-mui/configwnd.c:1190
+#: amiga-mui/configwnd.c:1322
 msgid "Allow to download images from the internet from"
 msgstr "Permitir que se descarguen imágenes de internet desde:"
 
-#: amiga-mui/configwnd.c:1274 amiga-mui/configwnd.c:1275
+#: amiga-mui/configwnd.c:1345
+msgid "-- New Signature --"
+msgstr "-- Nueva Firma --"
+
+#: amiga-mui/configwnd.c:1422 amiga-mui/configwnd.c:1423
 msgid "Us_e signatures"
 msgstr "U_sar firmas"
 
-#: amiga-mui/configwnd.c:1289 amiga-mui/configwnd.c:1444
+#: amiga-mui/configwnd.c:1437 amiga-mui/configwnd.c:1619
 msgid "_Add"
 msgstr "_Añadir"
 
-#: amiga-mui/configwnd.c:1291 amiga-mui/configwnd.c:1448
-#: amiga-mui/filterwnd.c:467
+#: amiga-mui/configwnd.c:1439 amiga-mui/configwnd.c:1623
+#: amiga-mui/filterwnd.c:476
 msgid "_Remove"
 msgstr "_Retirar"
 
-#: amiga-mui/configwnd.c:1313
+#: amiga-mui/configwnd.c:1465
 msgid "Insert random tagline"
 msgstr "Añadir etiqueta aleatoria"
 
-#: amiga-mui/configwnd.c:1314
+#: amiga-mui/configwnd.c:1466
 msgid "Insert ENV:Signature"
 msgstr "Añadir variable: Firma"
 
-#: amiga-mui/configwnd.c:1387
+#: amiga-mui/configwnd.c:1497
+msgid "-- New Phrase --"
+msgstr "-- Nueva Frase --"
+
+#: amiga-mui/configwnd.c:1561
 msgid "All"
 msgstr "Todo"
 
-#: amiga-mui/configwnd.c:1390
+#: amiga-mui/configwnd.c:1565
 msgid "On addresses"
 msgstr "En direcciones"
 
-#: amiga-mui/configwnd.c:1446
+#: amiga-mui/configwnd.c:1621
 msgid "_Duplicate"
 msgstr "_Duplicar"
 
-#: amiga-mui/configwnd.c:1453
+#: amiga-mui/configwnd.c:1628
 msgid "Use on addresses which contain"
 msgstr "Usar en direcciones que contienen"
 
-#: amiga-mui/configwnd.c:1460 amiga-mui/configwnd.c:1595
+#: amiga-mui/configwnd.c:1635 amiga-mui/configwnd.c:1906
 msgid "Write"
 msgstr "Escribir"
 
-#: amiga-mui/configwnd.c:1462 amiga-mui/configwnd.c:1481
+#: amiga-mui/configwnd.c:1637 amiga-mui/configwnd.c:1656
 msgid "Welcome"
 msgstr "Saludo"
 
-#: amiga-mui/configwnd.c:1468
+#: amiga-mui/configwnd.c:1643
 msgid "Welcome with address"
 msgstr "Saludo con dirección"
 
-#: amiga-mui/configwnd.c:1472 amiga-mui/configwnd.c:1491
+#: amiga-mui/configwnd.c:1647 amiga-mui/configwnd.c:1666
 msgid "Close"
 msgstr "Cierre"
 
-#: amiga-mui/configwnd.c:1479 amiga-mui/folderwnd.c:234
-#: amiga-mui/folderwnd.c:244 amiga-mui/mailtreelistclass.c:431
+#: amiga-mui/configwnd.c:1654 amiga-mui/folderwnd.c:259
+#: amiga-mui/folderwnd.c:269 amiga-mui/mailtreelistclass.c:455
 msgid "Reply"
-msgstr "Respuesta a"
+msgstr "Respuesta"
 
-#: amiga-mui/configwnd.c:1486
+#: amiga-mui/configwnd.c:1661
 msgid "Intro"
 msgstr "Inicio"
 
-#: amiga-mui/configwnd.c:1496
+#: amiga-mui/configwnd.c:1671
 msgid "Forward"
-msgstr "Reenviar"
+msgstr "Reenviar a"
 
-#: amiga-mui/configwnd.c:1498
+#: amiga-mui/configwnd.c:1673
 msgid "Initial"
 msgstr "Iniciar con"
 
-#: amiga-mui/configwnd.c:1503
+#: amiga-mui/configwnd.c:1678
 msgid "Finish"
 msgstr "Finalizar con"
 
-#: amiga-mui/configwnd.c:1541
+#: amiga-mui/configwnd.c:1706
+msgid ""
+"After reseting the ham statistics the spam filter won't work reliable\n"
+"until you have classified some mails as ham.\n"
+"Are you sure to continue?"
+msgstr ""
+"Después de resetear las estadísticas 'Ham' el filtro spam no funcionará\n"
+"hasta que clasifique algún correo como 'Ham'.\n"
+"¿Seguro que quiere continuar?"
+
+#: amiga-mui/configwnd.c:1709
+msgid "Reset the statistics|Cancel"
+msgstr "Resetear estadísticas|Cancelar"
+
+#: amiga-mui/configwnd.c:1724
+msgid ""
+"After reseting the spam statistics the spam filter won't work reliable\n"
+"until you have classified some mails as spam. However, if requested the\n"
+"statistics can be built from the mails inside the spam folder.\n"
+"How to proceed?"
+msgstr ""
+"Después de resetear el estado 'Spam' el filtro 'Spam' no funcionará hasta\n"
+"que clasifique algún correo como 'Spam'. Sin embargo, si se solicitan\n"
+"las estadísticas pueden ser facilitadas a partir de los correos contenidos en carpeta 'Spam'.\n"
+"¿Quiere proceder?"
+
+#: amiga-mui/configwnd.c:1728
+msgid "Reset the statistics|Reset and rebuild|Cancel"
+msgstr "Resetear las estadísticas|Resetear y reconstruir|Cancelar"
+
+#: amiga-mui/configwnd.c:1757
+msgid "General spam settings"
+msgstr "Configuración general de 'Spam'"
+
+#: amiga-mui/configwnd.c:1759 amiga-mui/configwnd.c:1760
+msgid "Mark mails as spam before moved to the spam folder"
+msgstr "Marcar estos correos como 'Spam' antes de moverlos a la carpeta 'Spam'"
+
+#: amiga-mui/configwnd.c:1761
+msgid ""
+"If you activate this option any mail you move to the spam folder\n"
+"is marked as spam before the operation. Note that only mails\n"
+"marked as spam can be moved into the spam folder."
+msgstr ""
+"Si usted activa esta opción cualquier correo que mueva a la carpeta 'Spam'\n"
+"será marcado como 'Spam'. Nota, Sólo los correos marcados como\n"
+"'Spam' podrán ser movidos a la carpeta 'Spam'."
+
+#: amiga-mui/configwnd.c:1768
+msgid ""
+"A white list contains email address of people you usually\n"
+"thrust. This can be used to speed up the spam checking as\n"
+"mails with a listed sender address are skipped."
+msgstr ""
+"La 'Lista Blanca' contiene las direcciones de correo de las personas"
+"con las cuales tiene mayor confianza. Esto sirve para acelerar el chequeo 'Spam'\n"
+"ya que el correo procedente de estas direciones no es filtrado."
+
+#: amiga-mui/configwnd.c:1771
+msgid "White list"
+msgstr "Lista Blanca"
+
+#: amiga-mui/configwnd.c:1778
+msgid ""
+"If enabled all addresses within you addressbook are also\n"
+"considered to be safe."
+msgstr ""
+"Si se activa todas las direcciones contenidas en el\n"
+"libro de direcciones serán consideradas como seguras."
+
+#: amiga-mui/configwnd.c:1780 amiga-mui/configwnd.c:1781
+msgid "Also all addresses within the addressbook"
+msgstr "Incluir las diercciones contenidas en el libro de direcciones"
+
+#: amiga-mui/configwnd.c:1786
+msgid ""
+"A black list contains email address which you don't thrust.\n"
+"Mails from these addresses are always marked as spam."
+msgstr ""
+"La 'Lista Negra' contiene las direcciones en las que usted no confia.\n"
+"Los correos recibidos de estas direcciones serán considerados como 'Spam'."
+
+#: amiga-mui/configwnd.c:1788
+msgid "Black list"
+msgstr "Lista Negra"
+
+#: amiga-mui/configwnd.c:1797
+msgid "Statistics"
+msgstr "Estadísticas"
+
+#: amiga-mui/configwnd.c:1800
+msgid "Number of mails classified as ham"
+msgstr "Número de correos clasificados como 'Ham'"
+
+#: amiga-mui/configwnd.c:1802 amiga-mui/configwnd.c:1807
+msgid "Reset statistics..."
+msgstr "Resetear estadísticas..."
+
+#: amiga-mui/configwnd.c:1805
+msgid "Number of mails classified as spam"
+msgstr "Número de correos clasificados como 'Spam'"
+
+#: amiga-mui/configwnd.c:1819
+msgid "Resets all ham statistics."
+msgstr "Resetear todas las estadísticas 'Ham'."
+
+#: amiga-mui/configwnd.c:1820
+msgid "Resets all spam statistics."
+msgstr "Resetear todas las estadísticas 'Spam'."
+
+#: amiga-mui/configwnd.c:1851
 msgid "SimpleMail - Configuration"
 msgstr "SimpleMail - Configuración"
 
-#: amiga-mui/configwnd.c:1569
+#: amiga-mui/configwnd.c:1880
 msgid "?config:_Save"
 msgstr "?configuración:_Guardar"
 
-#: amiga-mui/configwnd.c:1570 amiga-mui/filterwnd.c:535
+#: amiga-mui/configwnd.c:1881 amiga-mui/filterwnd.c:544
 msgid "_Use"
 msgstr "_Usar"
 
-#: amiga-mui/configwnd.c:1592
+#: amiga-mui/configwnd.c:1903
 msgid "General"
 msgstr "General"
 
-#: amiga-mui/configwnd.c:1593
+#: amiga-mui/configwnd.c:1904
 msgid "Accounts"
 msgstr "Cuentas"
 
-#: amiga-mui/configwnd.c:1594
+#: amiga-mui/configwnd.c:1905
 msgid "Receive mail"
 msgstr "Correos recibidos"
 
-#: amiga-mui/configwnd.c:1596
+#: amiga-mui/configwnd.c:1907
 msgid "Reading"
 msgstr "Lectura"
 
-#: amiga-mui/configwnd.c:1597
+#: amiga-mui/configwnd.c:1908
 msgid "Reading plain"
 msgstr "Lectura de texto"
 
-#: amiga-mui/configwnd.c:1598
+#: amiga-mui/configwnd.c:1909
 msgid "Reading HTML"
 msgstr "Lectura HTML"
 
-#: amiga-mui/configwnd.c:1599
+#: amiga-mui/configwnd.c:1910
 msgid "Phrases"
 msgstr "Frases"
 
-#: amiga-mui/configwnd.c:1600
+#: amiga-mui/configwnd.c:1911
 msgid "Signatures"
 msgstr "Firmas"
 
-#: amiga-mui/configwnd.c:1606
+#: amiga-mui/configwnd.c:1912
+msgid "Spam"
+msgstr "Spam"
+
+#: amiga-mui/configwnd.c:1918
 msgid "Save the configuration permanently."
 msgstr "Guardar la configuración de forma permanente."
 
-#: amiga-mui/configwnd.c:1607
+#: amiga-mui/configwnd.c:1919
 msgid "Use the configuration, but don't save it."
 msgstr "Usar esta configuración, pero no guardarla."
 
-#: amiga-mui/configwnd.c:1608
+#: amiga-mui/configwnd.c:1920
 msgid "Discards all the changes you have made."
 msgstr "Descartar los cambios realizados"
 
-#: amiga-mui/configwnd.c:1724
+#: amiga-mui/configwnd.c:2041
 msgid "All messages"
 msgstr "Todos los mensajes"
 
-#: amiga-mui/configwnd.c:1726
+#: amiga-mui/configwnd.c:2043
 #, c-format
 msgid "> %ld KB"
 msgstr "> %ld KB"
@@ -900,11 +1075,11 @@ msgstr "> %ld KB"
 msgid "New"
 msgstr "Nuevo"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:692
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:739
 msgid "Read"
 msgstr "Leído"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:693
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:740
 msgid "Unread"
 msgstr "Sin Leer"
 
@@ -916,7 +1091,7 @@ msgstr "Respondido"
 msgid "Forwarded"
 msgstr "Reenviado"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:691
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:737
 msgid "Pending"
 msgstr "Pendiente"
 
@@ -932,9 +1107,9 @@ msgstr "Remitente"
 msgid "Receiver"
 msgstr "Destinatario"
 
-#: amiga-mui/filterruleclass.c:89 amiga-mui/folderwnd.c:233
-#: amiga-mui/folderwnd.c:243 amiga-mui/mailtreelistclass.c:430
-#: amiga-mui/transwndclass.c:125 mail.c:3155 print.c:119
+#: amiga-mui/filterruleclass.c:89 amiga-mui/folderwnd.c:258
+#: amiga-mui/folderwnd.c:268 amiga-mui/mailtreelistclass.c:454
+#: amiga-mui/transwndclass.c:126 mail.c:3246 print.c:119
 msgid "Subject"
 msgstr "Asunto"
 
@@ -955,372 +1130,453 @@ msgstr "El estatus es"
 msgid "contains"
 msgstr "contenidos"
 
-#: amiga-mui/filterwnd.c:444
+#: amiga-mui/filterwnd.c:453
 msgid "SimpleMail - Edit Filter"
 msgstr "SimpleMail - Editor de Filtros"
 
-#: amiga-mui/filterwnd.c:466 amiga-mui/mainwnd.c:552
+#: amiga-mui/filterwnd.c:475 amiga-mui/mainwnd.c:583
 msgid "_New"
 msgstr "_Nuevo"
 
-#: amiga-mui/filterwnd.c:473
+#: amiga-mui/filterwnd.c:482
 msgid "Apply on request"
 msgstr "Aplicar bajo petición"
 
-#: amiga-mui/filterwnd.c:475
+#: amiga-mui/filterwnd.c:484
 msgid "Apply to new mails"
 msgstr "Aplicar a nuevos correos"
 
-#: amiga-mui/filterwnd.c:477
+#: amiga-mui/filterwnd.c:486
 msgid "Apply to sent mails"
 msgstr "Aplicar al envío de correos"
 
-#: amiga-mui/filterwnd.c:489
+#: amiga-mui/filterwnd.c:498
 msgid "Add new rule"
 msgstr "Añadir nueva regla"
 
-#: amiga-mui/filterwnd.c:490
+#: amiga-mui/filterwnd.c:499
 msgid "Apply now"
 msgstr "Aplicar ahora"
 
-#: amiga-mui/filterwnd.c:495 amiga-mui/filterwnd.c:496
+#: amiga-mui/filterwnd.c:504 amiga-mui/filterwnd.c:505
 msgid "Move to Folder"
 msgstr "Mover a Carpeta"
 
-#: amiga-mui/filterwnd.c:511 amiga-mui/filterwnd.c:512
+#: amiga-mui/filterwnd.c:520 amiga-mui/filterwnd.c:521
 msgid "Execute ARexx Script"
 msgstr "Ejecutar lista de comandos Arexx"
 
-#: amiga-mui/filterwnd.c:523 amiga-mui/filterwnd.c:524
+#: amiga-mui/filterwnd.c:532 amiga-mui/filterwnd.c:533
 msgid "Play Sound"
 msgstr "Interpretar sonido"
 
-#: amiga-mui/filterwnd.c:534
+#: amiga-mui/filterwnd.c:543
 msgid "?filter:_Save"
 msgstr "?filtro:_Guardar"
 
-#: amiga-mui/folderwnd.c:226
+#: amiga-mui/folderwnd.c:251
 msgid "received"
 msgstr "recibir"
 
-#: amiga-mui/folderwnd.c:227
+#: amiga-mui/folderwnd.c:252
 msgid "sent"
 msgstr "enviar"
 
-#: amiga-mui/folderwnd.c:228
+#: amiga-mui/folderwnd.c:253
 msgid "received and sent"
 msgstr "recibir y enviar"
 
-#: amiga-mui/folderwnd.c:229
+#: amiga-mui/folderwnd.c:254
 msgid "mailinglist"
 msgstr "lista de envío"
 
-#: amiga-mui/folderwnd.c:231 amiga-mui/folderwnd.c:241
-#: amiga-mui/mailtreelistclass.c:427
+#: amiga-mui/folderwnd.c:256 amiga-mui/folderwnd.c:266
+#: amiga-mui/mailtreelistclass.c:451
 msgid "Status"
 msgstr "Estado"
 
-#: amiga-mui/folderwnd.c:232 amiga-mui/folderwnd.c:242
-msgid "From/TO"
+#: amiga-mui/folderwnd.c:257
+msgid "From/To"
 msgstr "Desde/A"
 
-#: amiga-mui/folderwnd.c:235 amiga-mui/folderwnd.c:245
-#: amiga-mui/mailtreelistclass.c:432 mail.c:3167 print.c:124
+#: amiga-mui/folderwnd.c:260 amiga-mui/folderwnd.c:270
+#: amiga-mui/mailtreelistclass.c:456 mail.c:3258 print.c:124
 msgid "Date"
 msgstr "Fecha"
 
-#: amiga-mui/folderwnd.c:237 amiga-mui/folderwnd.c:247
-#: amiga-mui/mailtreelistclass.c:434
+#: amiga-mui/folderwnd.c:262 amiga-mui/folderwnd.c:272
+#: amiga-mui/mailtreelistclass.c:458
 msgid "Filename"
 msgstr "Nombre del fichero"
 
-#: amiga-mui/folderwnd.c:238 amiga-mui/folderwnd.c:248
+#: amiga-mui/folderwnd.c:263 amiga-mui/folderwnd.c:273
 msgid "POP3"
 msgstr "POP3"
 
-#: amiga-mui/folderwnd.c:239 amiga-mui/folderwnd.c:249
-#: amiga-mui/mailtreelistclass.c:436
+#: amiga-mui/folderwnd.c:264 amiga-mui/folderwnd.c:274
+#: amiga-mui/mailtreelistclass.c:460
 msgid "Received"
 msgstr "Recibido"
 
 #: amiga-mui/folderwnd.c:267
+msgid "From/TO"
+msgstr "Desde/A"
+
+#: amiga-mui/folderwnd.c:283
+msgid "Folder Properties"
+msgstr "Carpeta de directorio"
+
+#: amiga-mui/folderwnd.c:285
+msgid "N_ame"
+msgstr "N_ombre"
+
+#: amiga-mui/folderwnd.c:293
 msgid "IMAP Server"
 msgstr "Servidor IMAP"
 
-#: amiga-mui/folderwnd.c:273 amiga-mui/folderwnd.c:520
+#: amiga-mui/folderwnd.c:299 amiga-mui/folderwnd.c:584
 msgid "Path"
 msgstr "Ruta"
 
-#: amiga-mui/folderwnd.c:279 amiga-mui/folderwnd.c:280
+#: amiga-mui/folderwnd.c:305 amiga-mui/folderwnd.c:306
 msgid "_Type"
 msgstr "_Tipo"
 
-#: amiga-mui/folderwnd.c:282 amiga-mui/folderwnd.c:283
+#: amiga-mui/folderwnd.c:308 amiga-mui/folderwnd.c:310
 msgid "_Primary sort"
 msgstr "Clase _primaria"
 
-#: amiga-mui/folderwnd.c:285 amiga-mui/folderwnd.c:286
+#: amiga-mui/folderwnd.c:311 amiga-mui/folderwnd.c:312
+#: amiga-mui/folderwnd.c:318 amiga-mui/folderwnd.c:319
+msgid "Reverse"
+msgstr "Destinatario"
+
+#: amiga-mui/folderwnd.c:315 amiga-mui/folderwnd.c:317
 msgid "_Secondary sort"
 msgstr "Clase _secundaria"
 
-#: amiga-mui/folderwnd.c:288 amiga-mui/folderwnd.c:292
-msgid "Def. To"
-msgstr "Def. A"
+#: amiga-mui/folderwnd.c:323
+msgid "Compose Mail Properties"
+msgstr "Facilitar las propiedades del correo"
 
-#: amiga-mui/folderwnd.c:305
+#: amiga-mui/folderwnd.c:325 amiga-mui/mailtreelistclass.c:452
+#: amiga-mui/transwndclass.c:125 mail.c:3164 print.c:53
+msgid "From"
+msgstr "Desde"
+
+#: amiga-mui/folderwnd.c:328 amiga-mui/folderwnd.c:332
+msgid "T_o"
+msgstr "_A"
+
+#: amiga-mui/folderwnd.c:335 amiga-mui/folderwnd.c:339
+msgid "_Reply To"
+msgstr "_Responder"
+
+#: amiga-mui/folderwnd.c:343
+msgid "IMAP Properties"
+msgstr "Servidor IMAP"
+
+#: amiga-mui/folderwnd.c:353
 msgid "Subscribe"
 msgstr "Suscribir"
 
-#: amiga-mui/folderwnd.c:306
+#: amiga-mui/folderwnd.c:354
 msgid "Unsubscribe"
 msgstr "Desuscribir"
 
-#: amiga-mui/folderwnd.c:307
+#: amiga-mui/folderwnd.c:355
 msgid "Reload from server"
 msgstr "Recargar desde el servidor"
 
-#: amiga-mui/folderwnd.c:308
+#: amiga-mui/folderwnd.c:356
 msgid "Submit to server"
 msgstr "Enviar al servidor"
 
-#: amiga-mui/folderwnd.c:349
+#: amiga-mui/folderwnd.c:398
 msgid "SimpleMail - Edit IMAP Server"
 msgstr "SimpleAmil - Editor de servidor IMAP"
 
-#: amiga-mui/folderwnd.c:353
+#: amiga-mui/folderwnd.c:404
 msgid "SimpleMail - Edit folder group"
 msgstr "Simple Mail - Editor de grupo de carpeta "
 
-#: amiga-mui/folderwnd.c:381
+#: amiga-mui/folderwnd.c:433
 msgid "SimpleMail - Edit folder"
 msgstr "SimpleMail - Editor de carpeta"
 
-#: amiga-mui/folderwnd.c:533
+#: amiga-mui/folderwnd.c:597
 msgid "_OK"
 msgstr "_Aceptar"
 
-#: amiga-mui/foldertreelistclass.c:136
+#: amiga-mui/foldertreelistclass.c:141
 msgid "Mails"
 msgstr "Correos"
 
-#: amiga-mui/foldertreelistclass.c:173
+#: amiga-mui/foldertreelistclass.c:178
 msgid "Folders"
 msgstr "Carpetas"
 
-#: amiga-mui/foldertreelistclass.c:174 amiga-mui/mainwnd.c:467
+#: amiga-mui/foldertreelistclass.c:179
 msgid "New Folder..."
 msgstr "Nueva Carpeta..."
 
-#: amiga-mui/foldertreelistclass.c:175 amiga-mui/mainwnd.c:466
+#: amiga-mui/foldertreelistclass.c:180
 msgid "New Group..."
 msgstr "Nuevo Grupo..."
 
-#: amiga-mui/foldertreelistclass.c:176
+#: amiga-mui/foldertreelistclass.c:181
 msgid "Remove..."
 msgstr "Borrar..."
 
-#: amiga-mui/foldertreelistclass.c:178 amiga-mui/mainwnd.c:469
+#: amiga-mui/foldertreelistclass.c:183
 msgid "Settings..."
 msgstr "Ajustes..."
 
-#: amiga-mui/foldertreelistclass.c:180 amiga-mui/mainwnd.c:470
+#: amiga-mui/foldertreelistclass.c:185 amiga-mui/mainwnd.c:505
 msgid "Order"
 msgstr "Orden"
 
-#: amiga-mui/foldertreelistclass.c:181 amiga-mui/mainwnd.c:471
+#: amiga-mui/foldertreelistclass.c:186 amiga-mui/mainwnd.c:506
 msgid "Save"
 msgstr "Guardar"
 
-#: amiga-mui/foldertreelistclass.c:182 amiga-mui/mainwnd.c:472
+#: amiga-mui/foldertreelistclass.c:187 amiga-mui/mainwnd.c:507
 msgid "Reset"
 msgstr "Restaurar"
 
-#: amiga-mui/foldertreelistclass.c:395 amiga-mui/searchwnd.c:79
+#: amiga-mui/foldertreelistclass.c:415 amiga-mui/searchwnd.c:79
 msgid "All folders"
 msgstr "Todas las carpetas"
 
-#: amiga-mui/gui_main.c:327
+#: amiga-mui/gui_main.c:331
 msgid "Failed to create the application\n"
 msgstr "Error al crear la aplicación\n"
 
-#: amiga-mui/gui_main.c:328
+#: amiga-mui/gui_main.c:332
 msgid "Could not create mui custom classes\n"
 msgstr "No se ha podido crear la clase especifica MUI\n"
 
-#: amiga-mui/gui_main.c:329
+#: amiga-mui/gui_main.c:333
 msgid "Couldn't create arexx port\n"
 msgstr "No se ha podido crear el puerto Arexx\n"
 
-#: amiga-mui/gui_main.c:330
+#: amiga-mui/gui_main.c:334
 msgid "Couldn't initialize timer\n"
-msgstr "No se ha poddio iniciar el contador\n"
+msgstr "No se ha podido iniciar el contador\n"
 
-#: amiga-mui/gui_main.c:331 amiga-mui/gui_main.c:332
+#: amiga-mui/gui_main.c:335 amiga-mui/gui_main.c:336
 #, c-format
 msgid "Couldn't open %s version %d\n"
 msgstr "No se ha podido abrir %s versión %d\n"
 
-#: amiga-mui/mailtreelistclass.c:127
+#: amiga-mui/mailtreelistclass.c:133
 msgid "<No Recipient>"
 msgstr "<Sin Recipiente>"
 
 #. Help bubble text
-#: amiga-mui/mailtreelistclass.c:330
+#: amiga-mui/mailtreelistclass.c:354
 msgid "Current Message"
 msgstr "Mensaje en curso"
 
-#: amiga-mui/mailtreelistclass.c:428 amiga-mui/transwndclass.c:124 mail.c:3073
-#: print.c:53
-msgid "From"
-msgstr "Desde"
-
-#: amiga-mui/mailtreelistclass.c:429 mail.c:3101 print.c:71
+#: amiga-mui/mailtreelistclass.c:453 mail.c:3192 print.c:71
 msgid "To"
 msgstr "A"
 
-#: amiga-mui/mailtreelistclass.c:435
+#: amiga-mui/mailtreelistclass.c:459
 msgid "POP3 Server"
 msgstr "Servidor POP3"
 
-#: amiga-mui/mailtreelistclass.c:452
+#: amiga-mui/mailtreelistclass.c:476
 msgid "Mail Settings"
 msgstr "Ajustes de Correo"
 
-#: amiga-mui/mailtreelistclass.c:453
+#: amiga-mui/mailtreelistclass.c:477
 msgid "Show From/To?"
-msgstr "¿Mostrar Desde/A"
+msgstr "¿Mostrar Desde/A?"
 
-#: amiga-mui/mailtreelistclass.c:454
+#: amiga-mui/mailtreelistclass.c:478
 msgid "Show Subject?"
 msgstr "¿Mostrar Asunto?"
 
-#: amiga-mui/mailtreelistclass.c:455
+#: amiga-mui/mailtreelistclass.c:479
 msgid "Show Reply-To?"
 msgstr "¿Mostrar Respuesta-A?"
 
-#: amiga-mui/mailtreelistclass.c:456
+#: amiga-mui/mailtreelistclass.c:480
 msgid "Show Date?"
 msgstr "¿Mostrar Fecha?"
 
-#: amiga-mui/mailtreelistclass.c:457
+#: amiga-mui/mailtreelistclass.c:481
 msgid "Show Size?"
 msgstr "¿Mostrar Tamaño?"
 
-#: amiga-mui/mailtreelistclass.c:458
+#: amiga-mui/mailtreelistclass.c:482
 msgid "Show Filename?"
 msgstr "¿Mostrar Nombre de fichero?"
 
-#: amiga-mui/mailtreelistclass.c:459
+#: amiga-mui/mailtreelistclass.c:483
 msgid "Show POP3 Server?"
 msgstr "¿Mostrar Servidor POP3?"
 
-#: amiga-mui/mailtreelistclass.c:460
+#: amiga-mui/mailtreelistclass.c:484
 msgid "Show Received?"
 msgstr "¿Mostrar Recibidos?"
 
-#: amiga-mui/mailtreelistclass.c:687
+#: amiga-mui/mailtreelistclass.c:731
+msgid "Spam Check"
+msgstr "Chequear 'Spam'"
+
+#: amiga-mui/mailtreelistclass.c:732
 msgid "Set status"
 msgstr "Fijar estado"
 
-#: amiga-mui/mailtreelistclass.c:688
+#: amiga-mui/mailtreelistclass.c:733
 msgid "Mark"
 msgstr "Marcar"
 
-#: amiga-mui/mailtreelistclass.c:689
+#: amiga-mui/mailtreelistclass.c:734
 msgid "Unmark"
 msgstr "Desmarcar"
 
-#: amiga-mui/mailtreelistclass.c:690
+#: amiga-mui/mailtreelistclass.c:736
 msgid "Hold"
 msgstr "Congelar"
 
-#: amiga-mui/mainwnd.c:151
+#: amiga-mui/mailtreelistclass.c:742
+msgid "Is Spam"
+msgstr "Es 'Spam'"
+
+#: amiga-mui/mailtreelistclass.c:743
+msgid "Is Ham"
+msgstr "Es 'Ham'"
+
+#: amiga-mui/mainwnd.c:137
 msgid "SimpleMail - About"
 msgstr "SimpleMail - Sobre"
 
-#: amiga-mui/mainwnd.c:152
+#: amiga-mui/mainwnd.c:138
 msgid "*Ok"
 msgstr "*Ok"
 
-#: amiga-mui/mainwnd.c:154
+#: amiga-mui/mainwnd.c:140
 msgid "Copyright ©"
 msgstr "Copyright ©"
 
-#: amiga-mui/mainwnd.c:154
+#: amiga-mui/mainwnd.c:140
 msgid "and"
 msgstr "y"
 
-#: amiga-mui/mainwnd.c:154
+#: amiga-mui/mainwnd.c:140
 msgid "Released under the terms of the GNU Public License"
 msgstr "Distribuido bajo los términos de la licencia pública GNU"
 
-#: amiga-mui/mainwnd.c:460 amiga-mui/readwnd.c:970
+#: amiga-mui/mainwnd.c:481 amiga-mui/readwnd.c:993
 msgid "Project"
-msgstr "Projecto"
+msgstr "Proyecto"
 
-#: amiga-mui/mainwnd.c:461 amiga-mui/readwnd.c:971
+#: amiga-mui/mainwnd.c:482 amiga-mui/readwnd.c:994
 msgid "?:About..."
 msgstr "?:Sobre..."
 
-#: amiga-mui/mainwnd.c:462 amiga-mui/readwnd.c:972
+#: amiga-mui/mainwnd.c:483 amiga-mui/readwnd.c:995
 msgid "About MUI..."
 msgstr "Sobre MUI..."
 
-#: amiga-mui/mainwnd.c:464 amiga-mui/readwnd.c:974
-msgid "Q:Quit"
-msgstr "Q:Salir"
-
-#: amiga-mui/mainwnd.c:465
-msgid "Folder"
-msgstr "Carpeta"
-
-#: amiga-mui/mainwnd.c:468 amiga-mui/transwndclass.c:165
-msgid "Delete"
-msgstr "Borrar"
-
-#: amiga-mui/mainwnd.c:474
-msgid "Delete all indexfiles..."
+#: amiga-mui/mainwnd.c:485
+msgid "Delete all indexfiles"
 msgstr "Borrar todos los ficheros índice..."
 
-#: amiga-mui/mainwnd.c:476
-msgid "Export..."
-msgstr "Exportar..."
-
-#: amiga-mui/mainwnd.c:478
+#: amiga-mui/mainwnd.c:487
 msgid "S:Send queued mails..."
 msgstr "S:Enviar correos en cola... "
 
-#: amiga-mui/mainwnd.c:479
-msgid "F:Fetch mails..."
-msgstr "F:Recoger correos..."
+#: amiga-mui/mainwnd.c:488
+msgid "F:Check all active accounts..."
+msgstr "F:Comprobar todas las cuentas activas"
 
-#: amiga-mui/mainwnd.c:480
+#: amiga-mui/mainwnd.c:489
 msgid "Check single account"
-msgstr "Comprabar una sóla cuenta"
+msgstr "Comprobar una sóla cuenta"
 
-#: amiga-mui/mainwnd.c:482
+#: amiga-mui/mainwnd.c:491 amiga-mui/readwnd.c:997
+msgid "Q:Quit"
+msgstr "Q:Salir"
+
+#: amiga-mui/mainwnd.c:492
+msgid "Folder"
+msgstr "Carpeta"
+
+#: amiga-mui/mainwnd.c:493
+msgid "New..."
+msgstr "Nuevo"
+
+#: amiga-mui/mainwnd.c:494
+msgid "New group..."
+msgstr "Nuevo Grupo..."
+
+#: amiga-mui/mainwnd.c:496
+msgid "Delete..."
+msgstr "Borrar..."
+
+#: amiga-mui/mainwnd.c:497
+msgid "Export..."
+msgstr "Exportar..."
+
+#: amiga-mui/mainwnd.c:498
+msgid "Rescan"
+msgstr "Re-examinar"
+
+#: amiga-mui/mainwnd.c:499
+msgid "Options..."
+msgstr "Ajustes..."
+
+#: amiga-mui/mainwnd.c:501
+msgid "P:Run spam mail check"
+msgstr "P:Ejecutar chequeo 'Spam'"
+
+#: amiga-mui/mainwnd.c:502
+msgid "O:Isolate spam mails"
+msgstr "O:Aislar correos 'Spam'"
+
+#: amiga-mui/mainwnd.c:503
+msgid "H:Classify all mails as ham"
+msgstr "H:Clasificar todos los correos como 'Ham'"
+
+#: amiga-mui/mainwnd.c:508
 msgid "Message"
 msgstr "Mensaje"
 
-#: amiga-mui/mainwnd.c:483
-msgid "D:Read"
+#: amiga-mui/mainwnd.c:509
+msgid "N:New..."
+msgstr "N:Nuevo..."
+
+#: amiga-mui/mainwnd.c:510
+msgid "D:Read..."
 msgstr "D:Leer"
 
-#: amiga-mui/mainwnd.c:484
-msgid "E:Edit"
+#: amiga-mui/mainwnd.c:511
+msgid "E:Edit..."
 msgstr "E:Editar..."
 
-#: amiga-mui/mainwnd.c:485
+#: amiga-mui/mainwnd.c:512
+msgid "R:Reply..."
+msgstr "R:Respuesta a"
+
+#: amiga-mui/mainwnd.c:513
+msgid "W:Forward..."
+msgstr "W:Reenviar"
+
+#: amiga-mui/mainwnd.c:515
 msgid "M:Move..."
 msgstr "M:Mover..."
 
-#: amiga-mui/mainwnd.c:486
+#: amiga-mui/mainwnd.c:516
 msgid "Copy..."
 msgstr "Copiar..."
 
-#: amiga-mui/mainwnd.c:487
-msgid "Delete..."
-msgstr "Borrar..."
+#: amiga-mui/mainwnd.c:517 amiga-mui/transwndclass.c:167
+msgid "Delete"
+msgstr "Borrar"
 
 #.
 #. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
@@ -1330,128 +1586,165 @@ msgstr "Borrar..."
 #. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 #. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 #.
-#: amiga-mui/mainwnd.c:496
+#: amiga-mui/mainwnd.c:526 amiga-mui/readwnd.c:1002
 msgid "Settings"
 msgstr "Ajustes"
 
-#: amiga-mui/mainwnd.c:497
+#: amiga-mui/mainwnd.c:527
 msgid "Show folders?"
 msgstr "¿Mostrar carpetas?"
 
-#: amiga-mui/mainwnd.c:498
+#: amiga-mui/mainwnd.c:528
 msgid "Show addressbook?"
 msgstr "¿Mostrar libreta de direcciones?"
 
-#: amiga-mui/mainwnd.c:500
+#: amiga-mui/mainwnd.c:530
 msgid "Configuration..."
 msgstr "Configuración..."
 
-#: amiga-mui/mainwnd.c:501
+#: amiga-mui/mainwnd.c:531
 msgid "Filters..."
 msgstr "Filtros..."
 
-#: amiga-mui/mainwnd.c:502
+#: amiga-mui/mainwnd.c:532
 msgid "MUI..."
 msgstr "MUI..."
 
-#: amiga-mui/mainwnd.c:504
+#: amiga-mui/mainwnd.c:534
 msgid "Save Settings"
 msgstr "Guardar ajustes"
 
-#: amiga-mui/mainwnd.c:505
+#: amiga-mui/mainwnd.c:535
 msgid "Scripts"
 msgstr "Comandos"
 
-#: amiga-mui/mainwnd.c:506
+#: amiga-mui/mainwnd.c:536
 msgid ".:Execute ARexx Script..."
 msgstr ".:Ejecutar comandos ARexx..."
 
-#: amiga-mui/mainwnd.c:544
+#: amiga-mui/mainwnd.c:574
 msgid "Rea_d"
 msgstr "_Leer"
 
-#: amiga-mui/mainwnd.c:546
+#: amiga-mui/mainwnd.c:576 amiga-mui/readwnd.c:1076
+msgid "_Move"
+msgstr "_Mover"
+
+#: amiga-mui/mainwnd.c:577
 msgid "De_lete"
 msgstr "B_orrar"
 
-#: amiga-mui/mainwnd.c:547
+#: amiga-mui/mainwnd.c:578
 msgid "Ge_tAdd"
 msgstr "Aña_dir"
 
-#. Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),
-#: amiga-mui/mainwnd.c:553 amiga-mui/readwnd.c:1033
+#: amiga-mui/mainwnd.c:584 amiga-mui/readwnd.c:1078
 msgid "_Reply"
 msgstr "_Responder"
 
-#: amiga-mui/mainwnd.c:554
+#: amiga-mui/mainwnd.c:585
 msgid "For_ward"
 msgstr "Ree_nviar"
 
-#: amiga-mui/mainwnd.c:558
-msgid "Fetc_h"
+#: amiga-mui/mainwnd.c:589
+msgid "_Fetch"
 msgstr "Reco_ger"
 
-#: amiga-mui/mainwnd.c:559
+#: amiga-mui/mainwnd.c:590
 msgid "_Send"
 msgstr "En_viar"
 
-#: amiga-mui/mainwnd.c:563
-msgid "S_earch"
+#: amiga-mui/mainwnd.c:595
+msgid "Searc_h"
 msgstr "Bús_queda"
 
-#: amiga-mui/mainwnd.c:564
+#: amiga-mui/mainwnd.c:596
 msgid "F_ilter"
 msgstr "F_iltro"
 
-#: amiga-mui/mainwnd.c:565
-msgid "_Filters"
-msgstr "_Filtros"
+#: amiga-mui/mainwnd.c:597
+msgid "S_pam"
+msgstr "S_pam"
 
-#: amiga-mui/mainwnd.c:569
+#: amiga-mui/mainwnd.c:598
+msgid "Is_olate"
+msgstr "Ai_slar"
+
+#: amiga-mui/mainwnd.c:603
 msgid "_Abook"
 msgstr "Libret_a"
 
-#: amiga-mui/mainwnd.c:570
+#: amiga-mui/mainwnd.c:604
+msgid "Fi_lters"
+msgstr "_Filtros"
+
+#: amiga-mui/mainwnd.c:605
 msgid "_Config"
 msgstr "_Configurar"
 
-#: amiga-mui/mainwnd.c:638
+#: amiga-mui/mainwnd.c:676
 #, c-format
 msgid ""
 "SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI "
 "subclass!\n"
 "It's available from %s"
-msgstr "SimpleMail necesita la versión %ld.%ld de la NListtree.mcc MUI"
+msgstr "SimpleMail necesita la versión %ld.%ld de la subclase NListtree.mcc MUI\n"
+"La puede encontrar en %s"
 
-#: amiga-mui/mainwnd.c:767
+#. Short Help
+#: amiga-mui/mainwnd.c:686
+msgid "Opens a window where you can search through your mail folder."
+msgstr "Abre una ventana para que usted pueda buscar en su carpeta de correo."
+
+#: amiga-mui/mainwnd.c:687
+msgid "Process every mail within the current selected folder via the filters."
+msgstr "Filtra cualquier correo contenido en la carpeta selecionada."
+
+#: amiga-mui/mainwnd.c:688
+msgid "Opens a window where the filters can be edited."
+msgstr "Abre una ventana para que los filtros puedan ser corregidos."
+
+#: amiga-mui/mainwnd.c:689
+msgid ""
+"Checks the current selected folder for spam.\n"
+"If a potential spam mail has been found it will be marked."
+msgstr ""
+"Chequea la actual carpeta en busca de 'Spam'\n "
+"Si un potencial correo 'Spam, es encontrado este será marcado."
+
+#: amiga-mui/mainwnd.c:690
+msgid "Isolates all spam marked mails within the current selected folder."
+msgstr "Aisla el 'Spam' marcado dentro de la carpeta elegida."
+
+#: amiga-mui/mainwnd.c:824
 msgid "Folder:"
 msgstr "Carpeta:"
 
-#: amiga-mui/mainwnd.c:767
+#: amiga-mui/mainwnd.c:824
 msgid "Total:"
 msgstr "Total"
 
-#: amiga-mui/mainwnd.c:767
+#: amiga-mui/mainwnd.c:824
 msgid "New:"
 msgstr "Nuevo/s:"
 
-#: amiga-mui/mainwnd.c:767
+#: amiga-mui/mainwnd.c:824
 msgid "Unread:"
 msgstr "Sin leer:"
 
-#: amiga-mui/mainwnd.c:776
+#: amiga-mui/mainwnd.c:833
 #, c-format
 msgid "Total:%d New:%d Unread:%d"
 msgstr "Total/es:%d Nuevo/s:%d Sin leer:%d"
 
-#: amiga-mui/mainwnd.c:798
+#: amiga-mui/mainwnd.c:855
 #, c-format
-msgid "%s (T:%ld N:%ld SL:%ld)"
-msgstr ""
+msgid "%s (T:%ld N:%ld U:%ld)"
+msgstr "%s (T:%ld N:%ld S:%ld)"
 
-#: amiga-mui/mainwnd.c:1019
-msgid "No POP3 Server specified"
-msgstr "No se ha especificado un servidor POP3"
+#: amiga-mui/mainwnd.c:1082
+msgid "No fetchable account specified"
+msgstr "No se ha especificado ninguna cuenta para buscar"
 
 #: amiga-mui/pgplistclass.c:79
 msgid "PGP Key ID"
@@ -1481,124 +1774,131 @@ msgstr "Comen_zar la búsqueda"
 msgid "Sto_p search"
 msgstr "Pa_rar la búsqueda"
 
-#: amiga-mui/readwnd.c:197
+#: amiga-mui/readwnd.c:200
 msgid "Are you sure that you want to start this executable?"
 msgstr "¿Seguro que quiere ejecutar este programa?"
 
-#: amiga-mui/readwnd.c:197
+#: amiga-mui/readwnd.c:200
 msgid "*_Yes|_Cancel"
 msgstr "_Sí|_Cancelar"
 
-#: amiga-mui/readwnd.c:479
+#: amiga-mui/readwnd.c:482
 #, c-format
 msgid ""
 "File %s already exists in %s.\n"
 "Do you really want to replace it?"
-msgstr "El archivo %s ya existe en %s.\n"
+msgstr ""
+"El archivo %s ya existe en %s.\n"
 "¿Desea reemplazarlo?"
 
-#: amiga-mui/readwnd.c:519
+#: amiga-mui/readwnd.c:522
 #, c-format
 msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
 msgstr "_Original (%s)|_Transformado (%s)|_UTF8|_Cancelar"
 
-#: amiga-mui/readwnd.c:520
+#: amiga-mui/readwnd.c:523
 msgid ""
 "The orginal charset of the attached file differs from yours.\n"
 "In which charset do you want the file being saved?"
-msgstr "El juego de caracteres del fichero adjunto difiere del suyo.\n"
+msgstr ""
+"El juego de caracteres del fichero adjunto difiere del suyo.\n"
 "¿Con qué juego de carácteres desea guardar el archivo?"
 
-#: amiga-mui/readwnd.c:976
+#: amiga-mui/readwnd.c:999
 msgid "Show raw format..."
 msgstr "Ver como formato en crudo..."
 
-#: amiga-mui/readwnd.c:978
+#: amiga-mui/readwnd.c:1001
 msgid "Print visible mailpart"
 msgstr "Imprimir el área visible del correo"
 
-#: amiga-mui/readwnd.c:1008
+#: amiga-mui/readwnd.c:1003
+msgid "Show all headers?"
+msgstr "Mostrar todos los encabezamientos"
+
+#: amiga-mui/readwnd.c:1053
 msgid "SimpleMail - Read Message"
 msgstr "SimpleMail - Lector de Mensajes"
 
-#: amiga-mui/readwnd.c:1018
+#: amiga-mui/readwnd.c:1063
 msgid "_Prev"
 msgstr "_Previo"
 
-#: amiga-mui/readwnd.c:1019
+#: amiga-mui/readwnd.c:1064
 msgid "_Next"
 msgstr "_Siguiente"
 
-#: amiga-mui/readwnd.c:1026
+#: amiga-mui/readwnd.c:1071
 msgid "Pr_int"
 msgstr "Impr_imir"
 
-#: amiga-mui/readwnd.c:1034
+#: amiga-mui/readwnd.c:1079
 msgid "_Forward"
 msgstr "Reen_viar"
 
-#: amiga-mui/readwnd.c:1083 amiga-mui/readwnd.c:1100
+#: amiga-mui/readwnd.c:1128 amiga-mui/readwnd.c:1145
 msgid "Attachment"
 msgstr "Adjuntos"
 
-#: amiga-mui/readwnd.c:1085
+#: amiga-mui/readwnd.c:1130
 msgid "Open"
 msgstr "Abrir"
 
-#: amiga-mui/readwnd.c:1089
+#: amiga-mui/readwnd.c:1134
 msgid "Save As..."
 msgstr "Guardar como..."
 
-#: amiga-mui/readwnd.c:1093
+#: amiga-mui/readwnd.c:1138
 msgid "Print as text"
 msgstr "Imprimir como texto"
 
-#: amiga-mui/readwnd.c:1102
+#: amiga-mui/readwnd.c:1147
 msgid "Save as..."
 msgstr "Guardar como..."
 
-#: amiga-mui/readwnd.c:1106
+#: amiga-mui/readwnd.c:1151
 msgid "Save whole document as..."
 msgstr "Guardar el documento entero como..."
 
-#: amiga-mui/transwndclass.c:122
+#: amiga-mui/transwndclass.c:123
 msgid "Mail No"
 msgstr "Correo No"
 
-#: amiga-mui/transwndclass.c:163
+#: amiga-mui/transwndclass.c:165
 msgid "Ignore"
 msgstr "Ignorar"
 
-#: amiga-mui/transwndclass.c:164
+#: amiga-mui/transwndclass.c:166
 msgid "Download"
 msgstr "Descargar"
 
-#: amiga-mui/transwndclass.c:166
+#: amiga-mui/transwndclass.c:168
 msgid "Download & Delete"
 msgstr "Descargar y borrar"
 
-#: amiga-mui/transwndclass.c:167
+#: amiga-mui/transwndclass.c:169
 msgid "_Start"
-msgstr "_Enpezar"
+msgstr "_Empezar"
 
-#: amiga-mui/transwndclass.c:170
+#: amiga-mui/transwndclass.c:172
 msgid "Select All"
 msgstr "Elegir todo"
 
-#: amiga-mui/transwndclass.c:171
+#: amiga-mui/transwndclass.c:173
 msgid "Select None"
 msgstr "Elegir uno"
 
-#: amiga-mui/transwndclass.c:172 amiga-mui/transwndclass.c:173
+#: amiga-mui/transwndclass.c:174 amiga-mui/transwndclass.c:175
 msgid "Ignore not listed mails"
 msgstr "Ignorar los correos no listados"
 
-#: amiga-mui/transwndclass.c:179 amiga-mui/transwndclass.c:320
-#: amiga-mui/transwndclass.c:321 amiga-mui/transwndclass.c:324
+#. MUIA_Window_Title,"SimpleMail",
+#: amiga-mui/transwndclass.c:181 amiga-mui/transwndclass.c:322
+#: amiga-mui/transwndclass.c:323 amiga-mui/transwndclass.c:326
 msgid "Waiting..."
 msgstr "Esperando..."
 
-#: amiga-mui/transwndclass.c:189
+#: amiga-mui/transwndclass.c:191
 msgid "_Abort"
 msgstr "_Abortar"
 
@@ -1610,117 +1910,146 @@ msgstr "Europa de Oeste (Windows)"
 msgid "Nordic"
 msgstr "Nórdico"
 
-#: codesets.c:815
+#: codesets.c:817
 msgid "West European (with EURO)"
 msgstr "Europa del Oeste (con euro)"
 
-#: codesets.c:836
+#: codesets.c:839
 msgid "West European"
 msgstr "Europa del Oeste"
 
-#: codesets.c:856
+#: codesets.c:860
 msgid "Central/East European"
 msgstr "Central/Europa del Este"
 
-#: codesets.c:877
+#: codesets.c:882
 msgid "South European"
 msgstr "Sur de Europa"
 
-#: codesets.c:898
+#: codesets.c:904
 msgid "North European"
 msgstr "Norte de Europa"
 
-#: codesets.c:919
+#: codesets.c:926
 msgid "Russian"
 msgstr "Ruso"
 
-#: codesets.c:940
+#: codesets.c:948
 msgid "Slavic languages"
 msgstr "Lenguas eslavas"
 
-#: codesets.c:961
+#: codesets.c:970
 msgid "Turkish"
 msgstr "Turco"
 
-#: codesets.c:982
+#: codesets.c:992
 msgid "West European II"
 msgstr "Oeste de Europa II"
 
-#: imap.c:189
+#: imap.c:342
 #, c-format
 msgid "Examining folder %s"
 msgstr "Examinando carpeta %s"
 
-#: imap.c:224
+#: imap.c:377
 #, c-format
 msgid "Identified %d mails in %s"
 msgstr "Identificados %d correos en %s"
 
-#: imap.c:286
+#: imap.c:489
 msgid "Failed examining the folder"
 msgstr "Error examinado la carpeta"
 
-#: imap.c:544
+#: imap.c:730
 #, c-format
 msgid "Fetching mail %d from server"
 msgstr "Recogiendo correos %d desde servidor"
 
-#: imap.c:641
+#: imap.c:827
 #, c-format
 msgid "Synchronizing mails with %s"
 msgstr "Sincronizando correos con %s"
 
-#: imap.c:672 imap.c:808 imap.c:883 pop3.c:734
+#: imap.c:858 imap.c:994 imap.c:1069 pop3.c:776
 msgid "Waiting for login..."
 msgstr "Esperando para registro..."
 
-#: imap.c:675 imap.c:811 imap.c:886
+#: imap.c:861 imap.c:997 imap.c:1072
 msgid "Login..."
 msgstr "Registrando..."
 
-#: imap.c:679
+#: imap.c:865
 msgid "Login successful"
 msgstr "Registro correcto"
 
-#: imap.c:680
+#: imap.c:866
 msgid "Checking for folders"
 msgstr "Comprabando las carpetas"
 
-#: imap.c:706
+#: imap.c:892
 msgid "Login failed!"
 msgstr "Error al registrarse"
 
-#: imap.c:726 pop3.c:855
+#: imap.c:912 pop3.c:897
 msgid "Cannot open the bsdsocket.library!"
 msgstr "¡No se puede abrir la bsdsockert.library!"
 
-#: imap.c:801
+#: imap.c:987
 #, c-format
 msgid "Reading folders of %s"
 msgstr "Leyendo carpetas de %s"
 
-#: imap.c:815 imap.c:890
+#: imap.c:1001 imap.c:1076
 msgid "Reading folders..."
 msgstr "Leyendo carpetas..."
 
-#: imap.c:876
+#: imap.c:1062
 #, c-format
 msgid "Submitting subscribed folders to %s"
 msgstr "Comprobando las carpetas suscritas a %s"
 
-#: imap.c:894
+#: imap.c:1080
 msgid "Reading subscribed folders..."
 msgstr "Leyendo carpetas suscritas..."
 
-#: imap.c:929
+#: imap.c:1115
 msgid "Subscribing folders failed!"
 msgstr "¡Error suscribiendo carpetas!"
 
-#: imap.c:966
+#: imap.c:1152
 msgid "Unsubscribing folders failed!"
 msgstr "¡Error desuscribiendo carpetas!"
 
-#: mail.c:1158
+#. Display "Connecting" - status message
+#: imap.c:1436 smtp.c:855
+msgid "Connecting..."
+msgstr "Conectando..."
+
+#. Display "Loggin in" - status message
+#: imap.c:1444
+msgid "Logging in..."
+msgstr "Saliendo de registro..."
+
+#. Display "Connected" - status message
+#: imap.c:1450 imap.c:1520
+msgid "Connected"
+msgstr "Conectando..."
+
+#: imap.c:1456
+msgid "Loggin in failed. Check Username and Password for this account"
+msgstr "Registro fallido. Compruebe el nombre de usuario y la contraseña de esta cuenta"
+
+#. Display "Failed to connect" - status message
+#: imap.c:1463
+msgid "Connecting to the server failed"
+msgstr "Conectado a servidor %s..."
+
+#. Display "Retrieving mail" - status message
+#: imap.c:1498
+msgid "Retrieving mail folders..."
+msgstr "Leyendo carpetas..."
+
+#: mail.c:1182
 #, c-format
 msgid ""
 "Sender address (From) is <%s>, but\n"
@@ -1731,68 +2060,70 @@ msgstr ""
 "la dirección de respuesta (Responder-A) es <%s>.\n"
 "¿Qué dirección es la que desea usar?"
 
-#: mail.c:1161
+#: mail.c:1185
 msgid "_From|*_Reply-To|_Both|_Cancel"
 msgstr "_Desde|_Responder-A|_Ambos|_Cancelar"
 
-#: mail.c:1204
+#: mail.c:1228
 msgid ""
 "This e-mail has multiple recipients. Should it be answered to all recipients?"
 msgstr ""
-"Este correo contien multiples destinatarios. ¿Desea contestar a todos?"
+"Este correo contiene multiples destinatarios. ¿Desea contestar a todos?"
 
-#: mail.c:1205
+#: mail.c:1229
 msgid "*_Yes|_No"
 msgstr "*_Sí|_No"
 
-#: mail.c:1966
+#: mail.c:2001
 msgid "This mail is encrypted. Please enter your passphrase now"
 msgstr "Este correo está encriptado. Por favor, introduzca su frase clave."
 
-#: mail.c:2050
+#: mail.c:2085
 msgid ""
 "Decrypting failed! Eighter because the passphrase was incorrect\n"
 "or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x "
 "supported for now)!"
 msgstr ""
-"¡Error en desencriptado! Esto se debe a que  la frase clave es incorrecta\n"
-"o a que la encriptación no esta soportada por SimpleMail (sólo PGP 2.6.x está\n "
-"soportada por ahora)"
+"¡Error en desencriptado! Esto se debe a que la frase clave es incorrecta\n"
+"o a que la encriptación no está soportada por SimpleMail (sólo PGP 2.6.x "
+"está soportada por ahora)"
 
-#: mail.c:2064
+#: mail.c:2099
 msgid "Unsupported encryption"
 msgstr "Encriptación no soportada"
 
-#: mail.c:2667
+#: mail.c:2751
 #, c-format
 msgid "Please select a key for %s <%s>"
-msgstr "Elika claves para %s <%s>"
+msgstr "Elija claves para %s <%s>"
 
-#: mail.c:2819
+#: mail.c:2903
 msgid ""
 "Converting this e-mail will cause the loss of some characters.\n"
 "SimpleMail can store the mail as Unicode so this doesn't happen."
-msgstr "Convertir este correo causara la perdida de algunos caracteres.\n"
+msgstr ""
+"Convertir este correo causará la perdida de algunos caracteres.\n"
 "SimpleMail puede guardar el correo como Unicode pero esto no sería correcto."
 
-#: mail.c:2821
+#: mail.c:2905
 msgid "Use Unicode|No Unicode"
 msgstr "Usar Unicode|Sin Unicode"
 
-#: mail.c:2963
+#: mail.c:3047
 msgid ""
 "No valid from field specified. You must configure some Accounts\n"
 "before creating new mails"
-msgstr "No valido para el campo especificdo. Primero debe crearse alguna cuenta\n"
+msgstr ""
+"No válido para el campo especificado.  Debe configurar alguna cuenta\n"
 "antes de enviar un nuevo correo."
 
-#: mail.c:3129
+#: mail.c:3220
 msgid "Copies to"
 msgstr "Copias a"
 
-#: mail.c:3183 print.c:131
+#: mail.c:3274 print.c:131
 msgid "Replies To"
-msgstr "Respuestas a"
+msgstr "Respuestas A"
 
 #: pop3.c:70
 msgid "Error receiving data from host!"
@@ -1814,78 +2145,83 @@ msgstr "Enviando contraseña..."
 msgid "Login successful!"
 msgstr "¡Registro conseguido!"
 
-#: pop3.c:323
+#: pop3.c:326
 msgid "Checking for mail duplicates..."
 msgstr "Comprobando correos duplicados"
 
-#: pop3.c:366
+#: pop3.c:369
 #, c-format
 msgid "Found %d mail duplicates"
 msgstr "Encontrados %d correos duplicados"
 
-#: pop3.c:390
+#: pop3.c:404
 msgid "Getting statistics..."
 msgstr "Recibiendo estadísticas..."
 
-#: pop3.c:396
+#: pop3.c:410
 msgid "Could not get server statistics"
-msgstr "No se han podico conseguir las estadisticas del servidor"
+msgstr "No se han podido conseguir las estadisticas del servidor"
 
-#: pop3.c:430
+#: pop3.c:452
 msgid "Getting mail sizes..."
 msgstr "Recibiendo el tamaño de los correos..."
 
+#. no errors and the user wants a more informative preselection
+#: pop3.c:512
+msgid "Getting mail infos..."
+msgstr "Recibiendo información sobre los correos..."
+
 #. -ERR has been returned and nobody breaked the connection, what means that TOP is not supported
-#: pop3.c:513
+#: pop3.c:537
 msgid "Couldn't receive more statistics"
-msgstr "No se han podido recivir más estadisticas"
+msgstr "No se han podido recibir más estadisticas"
 
-#: pop3.c:553
+#: pop3.c:592
 msgid "Waiting for user interaction"
-msgstr "Esparando respuesta del usuario"
+msgstr "Esparando la respuesta del usuario"
 
-#: pop3.c:573
+#: pop3.c:613
 msgid "Logging out..."
 msgstr "Saliendo de registro..."
 
-#: pop3.c:596
+#: pop3.c:636
 msgid "Can't get new filename!"
 msgstr "¡No se puede dar un nombre al fichero!"
 
-#: pop3.c:605
+#: pop3.c:645
 msgid "Can't open mail file!"
 msgstr "¡No se puede abrir el fichero del correo!"
 
-#: pop3.c:613
+#: pop3.c:653
 msgid "Couldn't receive the mail"
 msgstr "No se puede recoger correo"
 
-#: pop3.c:628
+#: pop3.c:668
 msgid "Error while receiving the mail"
 msgstr "Error cuando se recogía el correo"
 
-#: pop3.c:645
+#: pop3.c:685
 msgid "Error while writing the mail onto disk"
 msgstr "Error cuando se escribía el correo en el disco"
 
-#: pop3.c:703
+#: pop3.c:745
 #, c-format
 msgid "Fetching mails from %s"
 msgstr "Recogiendo correo de %s"
 
-#: pop3.c:754
+#: pop3.c:796
 msgid "Can't access income-folder!"
 msgstr "No se puede acceder a la carpeda de llegada!"
 
-#: pop3.c:799
+#: pop3.c:841
 msgid "Couldn't download the mail!\n"
 msgstr "¡No se ha podido descargar el correo!\n"
 
-#: pop3.c:815
+#: pop3.c:857
 msgid "Marking mail as deleted..."
 msgstr "Marcando correo para borrado..."
 
-#: pop3.c:818
+#: pop3.c:860
 msgid "Can't mark mail as deleted!"
 msgstr "¡No se puede elegir un correo borrado!"
 
@@ -1913,193 +2249,220 @@ msgstr "Error interno."
 msgid "Can't create temporary file."
 msgstr "No se ha podido crear el archivo temporal."
 
-#: simplemail.c:108 simplemail.c:171
+#: simplemail.c:118 simplemail.c:182
 msgid "Cannot delete mails, because folder is in use.\n"
 msgstr "No se puenden borrar los correo ya que la carpeta está en uso.\n"
 
-#: simplemail.c:125
+#: simplemail.c:135
 msgid "Do you really want to delete the selected mail permanently?"
 msgstr "¿Desea eliminar los correos seleccionados de forma permanente?"
 
-#: simplemail.c:126
+#: simplemail.c:136
 #, c-format
 msgid "Do you really want to delete %d mails permanently?"
 msgstr "¿Desea eliminar estos %d correos de forma permanente?"
 
-#: simplemail.c:127
+#: simplemail.c:137
 msgid "_Yes|_No"
 msgstr "_Sí|_No"
 
-#: simplemail.c:679
+#: simplemail.c:676 simplemail.c:717
+msgid "Please select the folder where to move the mails"
+msgstr "Por favor, elija la carpeta a la que desee mover los correos"
+
+#: simplemail.c:1045
 #, c-format
 msgid "Exporting folder %s to %s"
-msgstr "Exportando carpeta %s de %s"
+msgstr "Exportando carpeta %s a %s"
 
-#: simplemail.c:681
+#: simplemail.c:1047
 msgid "SimpleMail - Exporting folder"
 msgstr "SimpleMail - Exportando carpeta"
 
-#: simplemail.c:757
+#: simplemail.c:1123
 msgid "Choose export filename"
 msgstr "Elija archivo a exportar"
 
-#: simplemail.c:767
+#: simplemail.c:1133
 msgid "Couldn't start process for exporting.\n"
-msgstr "No se ha podido uniciar el proceso de exportar.\n"
+msgstr "No se ha podido iniciar el proceso de exportar.\n"
 
-#: simplemail.c:1000
+#: simplemail.c:1408
 msgid "Select an addressbook-file."
-msgstr "Eleja un archivo de direcciones"
+msgstr "Elija un archivo de direcciones"
 
-#: simplemail.c:1033
+#: simplemail.c:1441
 msgid "New Group"
 msgstr "Nuevo grupo"
 
-#: smtp.c:123
+#: smtp.c:116
 msgid "Service not ready."
 msgstr "Servicio no disponible"
 
-#: smtp.c:427
+#: smtp.c:423
 msgid "DATA-Cmd failed."
 msgstr "Error en DATA-cmd"
 
-#: smtp.c:666
+#: smtp.c:665
 msgid "Sending EHLO..."
 msgstr "Enviado EHLO..."
 
-#: smtp.c:671
+#: smtp.c:670
 msgid "Sending HELO..."
 msgstr "Enviado HELO..."
 
-#: smtp.c:674 smtp.c:708
+#: smtp.c:673 smtp.c:707
 msgid "HELO failed"
 msgstr "Error en HELO"
 
-#: smtp.c:683
+#: smtp.c:682
 msgid ""
 "Connection could not be made secure because the SMTP server doesn't seem to "
 "support it!"
-msgstr "No se ha podido realizar una conexíon segura ya que el servidor SMTP no"
-"soporta esta característica."
+msgstr ""
+"No se ha podido realizar una conexíon segura ya que el servidor SMTP "
+"no soporta esta característica."
 
-#: smtp.c:687
+#: smtp.c:686
 msgid "Sending STARTTLS..."
 msgstr "Enviado STARTTLS..."
 
-#: smtp.c:690
+#: smtp.c:689
 msgid "STARTTLS failed. Connection could not be made secure."
 msgstr "Error STARTTLS. No se ha podido realizar una conexíon segura. "
 
-#: smtp.c:696
+#: smtp.c:695
 msgid "Connection could not be made secure."
 msgstr "No se ha podido realizar una conexíon segura."
 
-#: smtp.c:700
+#: smtp.c:699
 msgid "Sending secured EHLO..."
 msgstr "Enviado EHLO seguro..."
 
-#: smtp.c:705
+#: smtp.c:704
 msgid "Sending secured HELO..."
-msgstr "Enviado HOLA seguro..."
+msgstr "Enviado HELO seguro..."
 
-#: smtp.c:716
+#: smtp.c:715
 msgid "Sending AUTH..."
-msgstr "Enviado AUTEN"
+msgstr "Enviado AUTEN..."
 
-#: smtp.c:719
+#: smtp.c:718
 msgid ""
 "AUTH failed. User couldn't be authenticated. Please recheck your settings."
-msgstr "Error en AUTEN. Usuario no autentificado. Por favor conpruebe sus preferencias. "
+msgstr ""
+"Error en AUTEN.... Usuario no autentificado. Por favor compruebe sus preferencias."
 
 #. starts from 1
-#: smtp.c:781
+#: smtp.c:780
 msgid "Sending FROM..."
 msgstr "Enviando DESDE..."
 
-#: smtp.c:784
+#: smtp.c:783
 msgid "FROM failed."
 msgstr "Error en DESDE"
 
-#: smtp.c:788
+#: smtp.c:787
 msgid "Sending RCPT..."
 msgstr "Enviando RCPT..."
 
-#: smtp.c:791
+#: smtp.c:790
 msgid "RCPT failed."
 msgstr "Error RCPT"
 
-#: smtp.c:795
+#: smtp.c:794
 msgid "Sending DATA..."
 msgstr "Enviado Datos..."
 
-#: smtp.c:799
+#: smtp.c:798
 msgid "DATA failed."
 msgstr "Error en los Datos"
 
 #. Connect to the pop3 server first
-#: smtp.c:845
+#: smtp.c:844
 #, c-format
 msgid "Sending mails to %s, connecting to %s first"
 msgstr "Enviado correos a %s, conectando a %s primero"
 
-#: smtp.c:848
+#: smtp.c:847
 msgid "Log into POP3 Server...."
 msgstr "Registrando en servidor POP3..."
 
-#: smtp.c:852
+#: smtp.c:851
 #, c-format
 msgid "Sending mails to %s"
 msgstr "Enviando correos a %s"
 
-#: smtp.c:856
-msgid "Connecting..."
-msgstr "Conectando..."
-
-#: smtp.c:866
+#: smtp.c:865
 msgid "Aborted - Sending QUIT..."
-msgstr "Abortando - Envio rápido..."
+msgstr "Abortando - Envío rápido..."
 
-#: smtp.c:868 smtp.c:879
+#: smtp.c:867 smtp.c:878
 msgid "Aborted - Disconnecting..."
 msgstr "Abortando - Desconectando..."
 
-#: smtp.c:873
+#: smtp.c:872
 msgid "Sending QUIT..."
 msgstr "Envío rápido..."
 
-#: smtp.c:884
+#: smtp.c:883
 msgid "Disconnecting..."
 msgstr "Desconectando..."
 
-#: smtp.c:897
+#: smtp.c:896
 msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
 msgstr "No se puede abrir la bsdsocket.library. Por favor inicie una pila TCP/IP."
 
-#: status.c:53 status.c:66
+#: status.c:54 status.c:67
 #, c-format
 msgid "%d s"
 msgstr "%d s"
 
-#: status.c:54 status.c:67
+#: status.c:55 status.c:68
 #, c-format
 msgid "%d min %d s"
-msgstr  "%d min %d s"
+msgstr "%d min %d s"
 
-#: status.c:56
+#: status.c:57
 msgid "Time remaining:"
 msgstr "Tiempo restante:"
 
-#: status.c:118
+#: status.c:119
 #, c-format
 msgid "Connecting to server %s..."
-msgstr "Conectado a servidor %s..."
+msgstr "Conectando a servidor %s..."
 
-#: status.c:148
+#: status.c:149
 #, c-format
 msgid "%d KB / %d KB (time left: %s)"
 msgstr "%d KB / %d KB (tiempo transcurrido: %s)"
 
-#: status.c:153
+#: status.c:154
 #, c-format
 msgid "Processing mail %d (%d KB) of %d"
 msgstr "Procesando correo  %d (%d KB) of %d"
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+#~ msgid "es"
+#~ msgstr ""
+#~ "esProject-Id-Version: PACKAGE VERSION\n"
+#~ "POT-Creation-Date: 2003-01-05 00:01+0000\n"
+#~ "PO-Revision-Date: 2003-09-09 12:20+0000\n"
+#~ "Last-Translator: Angel Martin <EMAIL@ADDRESS>\n"
+#~ "Language-Team: LANGUAGE <LL@li.org>\n"
+#~ "MIME-Version: 1.0\n"
+#~ "Content-Type: text/plain; charset=CHARSET\n"
+#~ "Content-Transfer-Encoding: ENCODING\n"
+
+#~ msgid "Def. To"
+#~ msgstr "Def. A"
+
+#~ msgid "F:Fetch mails..."
+#~ msgstr "F:Recoger correos..."
+
+#~ msgid "No POP3 Server specified"
+#~ msgstr "No se ha especificado un servidor POP3"

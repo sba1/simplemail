@@ -1204,12 +1204,46 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 
 /**************************************************************************
  Encodes an given string to the base64 format. The string is 0 terminated.
+ No line feeds are inserted.
 **************************************************************************/
 char *encode_base64(unsigned char *buf, unsigned int len)
 {
-	unsigned int ret_len;
-	char *encoding;
-	return encode_body(buf,len,"base64",&ret_len,&encoding);
+	unsigned char *dest = malloc((len * 4)/3 + 8);
+	unsigned char *ptr;
+
+	if (!dest) return NULL;
+	ptr = dest;
+
+	while (len >= 3)
+	{
+		unsigned char c1 = *buf++;
+		unsigned char c2 = *buf++;
+		unsigned char c3 = *buf++;
+
+    *ptr++ = encoding_table[(c1 >> 2) & 0x3f];
+    *ptr++ = encoding_table[(((c1 << 4) & 0x30) | ((c2 >> 4) & 0x0f)) & 0x3f];
+    *ptr++ = encoding_table[((c2  << 2) & 0x3c) | ((c3 >> 6) & 0x03)];
+    *ptr++ = encoding_table[c3 & 0x3f];
+		len -= 3;
+	}
+
+	if (len)
+	{
+		unsigned char c1,c2;
+
+		c1 = *buf++;
+		if (len == 2) c2 = *buf;
+		else c2 = 0;
+
+    *ptr++ = encoding_table[(c1 >> 2) & 0x3f];
+    *ptr++ = encoding_table[((c1 << 4) & 0x30) | ((c2 >> 4) & 0x0f)];
+		if (len == 2) *ptr++ = encoding_table[(c2  << 2) & 0x3c];
+		else *ptr++ = '=';
+		*ptr++ = '=';
+	}
+
+  *ptr = 0;
+	return dest;
 }
 
 /**************************************************************************

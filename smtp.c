@@ -559,12 +559,12 @@ static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account
 
 	hmac_md5(challenge,strlen(challenge),password,strlen(password),(char*)digest);
 	free(challenge);
-	sprintf(buf,"%s %08lx%08lx%08lx%08lx%c%c",login,
-					digest[0],digest[1],digest[2],digest[3],0,0); /* I don't know if the two nullbytes should be counted as well */
+	sm_snprintf(buf,sizeof(buf),"%s %08lx%08lx%08lx%08lx",login,
+					digest[0],digest[1],digest[2],digest[3]);
 
 	encoded_str = encode_base64(buf,strlen(buf));
 	if (!encoded_str) return 0;
-	tcp_write(conn->conn,encoded_str,strlen(encoded_str)-1); /* -1 because of the linefeed */
+	tcp_write(conn->conn,encoded_str,strlen(encoded_str));
 	tcp_write(conn->conn,"\r\n",2);
 	free(encoded_str);
 
@@ -612,7 +612,7 @@ static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *se
 	encoded_str = encode_base64(buf,strlen(buf));
 	if (!encoded_str) return 0;
 
-	tcp_write(conn,encoded_str,strlen(encoded_str)-1); /* -1 because of the line feed */
+	tcp_write(conn,encoded_str,strlen(encoded_str));
 	tcp_write(conn,"\r\n",2);
 	free(encoded_str);
 
@@ -662,8 +662,6 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 			if ((buf = encode_base64(prep, strlen(prep))))
 			{
-				buf[strlen(buf) - 1] = 0;
-			
 				if (smtp_send_cmd(conn, buf, NULL) == 334)
 				{
 					free(buf);
@@ -672,8 +670,6 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 					if ((buf = encode_base64(prep, strlen(prep))))
 					{
-						buf[strlen(buf) - 1] = 0;
-
 						success = smtp_send_cmd(conn, buf, NULL) == 235;
 
 						free(buf);

@@ -154,10 +154,9 @@ long tcp_write(long sd, void *buf, long nbytes)
 
 /******************************************************************
  Read a complete line from the given socket. Not very well
- implemented (big overhead) but it works for now. Line
- will end with a '\n' an '\r' is removed. The returned
- buffer is allocated with malloc(). Returns NULL if end
- of stream is reached.
+ implemented (big overhead) but it works for now. Line will
+ end with a '\n'. A '\r' is removed. The returned buffer is
+ allocated with malloc(). Returns NULL if if an error occured
 *******************************************************************/
 char *tcp_readln(long sd)
 {

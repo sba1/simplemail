@@ -75,6 +75,7 @@ void callback_mails_mark(int mark);
 void callback_mails_set_status(int status);
 void callback_selected_mails_are_spam(void);
 void callback_selected_mails_are_ham(void);
+void callback_check_selected_mails_if_spam(void);
 
 void callback_apply_folder(struct filter *filter);
 

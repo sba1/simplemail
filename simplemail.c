@@ -1173,6 +1173,9 @@ void callback_selected_mails_are_spam(void)
 
 	while (mail)
 	{
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
+			imap_download_mail(folder,mail);
+
 		if (spam_feed_mail_as_spam(folder,mail))
 		{
 			folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
@@ -1193,6 +1196,9 @@ void callback_selected_mails_are_ham(void)
 
 	while (mail)
 	{
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
+			imap_download_mail(folder,mail);
+
 		if (spam_feed_mail_as_ham(folder,mail))
 		{
 			if (mail_is_spam(mail)) folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);
@@ -1200,6 +1206,25 @@ void callback_selected_mails_are_ham(void)
 		}
 		mail = main_get_mail_next_selected(&handle);
 	}	
+}
+
+/* Check if selected mails are spam */
+void callback_check_selected_mails_if_spam(void)
+{
+	struct folder *folder = main_get_folder();
+	struct mail *mail;
+	void *handle;
+	if (!folder) return;
+	mail = main_get_mail_first_selected(&handle);
+
+	while (mail)
+	{
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
+			imap_download_mail(folder,mail);
+
+		spam_is_mail_spam(folder,mail);
+		mail = main_get_mail_next_selected(&handle);
+	}
 }
 
 /* import a addressbook into SimpleMail, return 1 for success */

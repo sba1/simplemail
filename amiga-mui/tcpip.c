@@ -54,8 +54,8 @@
 #define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
 #else
 /* calling FindTask(NULL) below makes problems when compiling */
-#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
-#define ISocket ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->isocket
+#define SocketBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->socketlib
+#define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif
 
 

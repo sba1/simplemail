@@ -57,6 +57,6 @@ void myclosesocket(int fd);
 
 #define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
 #ifdef __AMIGAOS4__
-#define ISocket ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->isocket
+#define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif
 #endif

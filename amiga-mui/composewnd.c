@@ -110,6 +110,7 @@ struct Compose_Data /* should be a customclass */
 	struct Hook from_strobj_hook;
 
 	char **sign_array; /* The array which contains the signature names */
+	int sign_array_utf8count; /* The count of the array to free the memory */
 
 	int attachment_unique_id;
 };
@@ -174,7 +175,15 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 	if (data->folder) free(data->folder);
 	if (data->reply_id) free(data->reply_id);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
-	if (data->sign_array) free(data->sign_array);
+	if (data->sign_array)
+	{
+		int i;
+		for (i=0;i<data->sign_array_utf8count;i++)
+		{
+			free(data->sign_array[i]);
+		}
+		free(data->sign_array);
+	}
 	free(data);
 }
 
@@ -917,6 +926,7 @@ int compose_window_open(struct compose_args *args)
 
 	struct signature *sign;
 	char **sign_array = NULL;
+	int sign_array_utf8count = 0;
 	int num;
 	int i;
 
@@ -962,10 +972,11 @@ int compose_window_open(struct compose_args *args)
 			sign = (struct signature*)list_first(&user.config.signature_list);
 			while (sign)
 			{
-				sign_array[j]=sign->name;
+				sign_array[j]=utf8tostrcreate(sign->name, user.config.default_codeset);
 				sign = (struct signature*)node_next(&sign->node);
 				j++;
 			}
+			sign_array_utf8count=j;
 			sign_array[j] = _("No Signature");
 			sign_array[j+1] = NULL;
 		}
@@ -1341,6 +1352,7 @@ int compose_window_open(struct compose_args *args)
 
 			compose_add_signature(data);
 			data->sign_array = sign_array;
+			data->sign_array_utf8count = sign_array_utf8count;
 
 			data->compose_action = args->action;
 			data->ref_mail = args->ref_mail;

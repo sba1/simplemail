@@ -133,6 +133,12 @@ struct mail
 #define MAIL_FLAGS_CRYPT     (1L << 4) /* mail is crypted */
 #define MAIL_FLAGS_SIGNED    (1L << 5) /* mail has been signed */
 
+/* The following stuff is for optimizing displaying on AmigaOS, as strings
+** must be converted here */
+#define MAIL_FLAGS_SUBJECT_ASCII7 (1L << 24) /* subject uses only 7 bit */
+#define MAIL_FLAGS_FROM_ASCII7    (1L << 25) /* from uses only 7 bit */
+#define MAIL_FLAGS_TO_ASCII7      (1L << 26) /* to uses only 7 bit */
+
 #define mail_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
 #define mail_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
 

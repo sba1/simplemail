@@ -1746,3 +1746,17 @@ char *utf7ntoutf8(char *source, int sourcelen)
 
 	return dest;
 }
+
+/**************************************************************************
+ Is string ASCII 7 bit only?
+**************************************************************************/
+int isascii7(const char *str)
+{
+	char c;
+	if (!str) return 1;
+	while ((c = *str++))
+	{
+		if (c & 0x80) return 0;
+	}
+	return 1;
+}

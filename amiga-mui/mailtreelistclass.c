@@ -104,6 +104,57 @@ struct MailTreelist_Data
 	char bubblehelp_buf[4096];
 };
 
+static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *mail)
+{
+	char *field;
+	char *dest;
+	int ascii7;
+
+	if (data->folder_type == FOLDER_TYPE_SEND)
+	{
+		field = mail->to_phrase;
+		ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ASCII7);
+		if (!field)
+		{
+			field = mail->to_addr;
+			ascii7 = 1;
+		}
+	} else
+	{
+		field = mail->from_phrase;
+		ascii7 = !!(mail->flags & MAIL_FLAGS_FROM_ASCII7);
+		if (!field)
+		{
+			field = mail->from_addr;
+			ascii7 = 1;
+		}
+	}
+
+	if (!field)
+	{
+		field = "";
+		ascii7 = 1;
+	}
+
+	if (!(mail->flags & MAIL_FLAGS_GROUP) && ascii7)
+		return field;
+
+	dest = data->fromto_buf;
+	if (mail->flags & MAIL_FLAGS_GROUP)
+	{
+		sprintf(dest,"\33O[%08lx]",data->status_group);
+		dest += strlen(dest);
+	}
+
+	if (ascii7)
+		strcpy(dest,field);
+	else
+		utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),user.config.default_codeset);
+
+	return data->fromto_buf;
+}
+
+
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(CL_MailTreelist->mcc_Class,obj);
@@ -125,6 +176,10 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		{
 			/* is a mail */
 			APTR status;
+
+			char *fromto_text;
+			char *subject_text;
+
 			static char size_buf[32];
 			static char date_buf[64];
 			static char recv_buf[64];
@@ -172,33 +227,10 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			if (xget(data->show_recv_item,MUIA_Menuitem_Checked))
 				SecondsToString(recv_buf,mail->received);
 
-			{
-				char *field;
-				char *dest = data->fromto_buf;
-
-				if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to_phrase;
-				else field = mail->from_phrase;
-
-				if (mail->flags & MAIL_FLAGS_GROUP)
-				{
-					sprintf(dest,"\33O[%08lx]",data->status_group);
-					dest += strlen(dest);
-				}
-
-				if (field)
-				{
-					utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),user.config.default_codeset);
-				} else
-				{
-					if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to_addr;
-					else field = mail->from_addr;
-					if (field) strcpy(dest,field); /* Could be optimized */
-				}
-			}
 			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
 
 			*msg->Array++ = status_buf; /* status */
-			*msg->Array++ = data->fromto_buf;
+			*msg->Array++ = mailtree_get_fromto(data,mail);
 			*msg->Array++ = data->subject_buf;
 			*msg->Array++ = mail->reply_addr;
 			*msg->Array++ = date_buf;

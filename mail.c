@@ -1532,6 +1532,7 @@ int mail_process_headers(struct mail *mail)
 	while (header)
 	{
 		char *buf = header->contents;
+
 		if (!mystricmp("date",header->name))
 		{
 			/* syntax should be checked before! */
@@ -1543,6 +1544,8 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("from",header->name))
 		{
 			extract_name_from_address(buf,&mail->from_phrase,&mail->from_addr,NULL);
+			/* for display optimization */
+			if (isascii7(mail->from_phrase)) mail->flags |= MAIL_FLAGS_FROM_ASCII7;
 		} else if (!mystricmp("reply-to",header->name))
 		{
 			extract_name_from_address(buf,NULL,&mail->reply_addr,NULL);
@@ -1551,12 +1554,16 @@ int mail_process_headers(struct mail *mail)
 			int more;
 			extract_name_from_address(buf,&mail->to_phrase,&mail->to_addr,&more);
 			if (more) mail->flags |= MAIL_FLAGS_GROUP;
+			/* for display optimization */
+			if (isascii7(mail->to_phrase)) mail->flags |= MAIL_FLAGS_TO_ASCII7;
 		} else if (!mystricmp("cc",header->name))
 		{
 			mail->flags |= MAIL_FLAGS_GROUP;
 		} else if (!mystricmp("subject",header->name))
 		{
 			parse_text_string(buf,&mail->subject);
+			/* for display optimization */
+			if (isascii7(mail->subject)) mail->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
 		} else if (!mystricmp("received",header->name))
 		{
 			if (buf = strchr(buf,';'))

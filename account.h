@@ -51,7 +51,7 @@ struct account
 	char *name;
 	char *email;
 	char *reply;
-	int def_signature;
+	char *def_signature;
 	int recv_type;
 
 	struct pop3_server *pop;

@@ -87,7 +87,7 @@ struct account *account_duplicate(struct account *a)
 					account->name = mystrdup(a->name);
 					account->email = mystrdup(a->email);
 					account->reply = mystrdup(a->reply);
-					account->def_signature = a->def_signature;
+					account->def_signature = mystrdup(a->def_signature);
 					account->recv_type = a->recv_type;
 					account->pop = pop;
 					account->smtp = smtp;
@@ -112,6 +112,7 @@ void account_free(struct account *a)
 	if (a->name) free(a->name);
 	if (a->email) free(a->email);
 	if (a->reply) free(a->reply);
+	if (a->def_signature) free(a->def_signature);
 
 	if (a->pop) pop_free(a->pop);
 	if (a->smtp) smtp_free(a->smtp);

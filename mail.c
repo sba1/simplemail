@@ -3055,6 +3055,14 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 		hold = 1;
 	}
 
+	if (!new_mail->subject || !new_mail->subject[0])
+	{
+		if (sm_request(NULL,_("No subject was specified. It is not recommended to create mails\n"
+		                  "without any subject. Do you want to add a subject line?"),
+		                  _("Yes|No")))
+			return 0;
+	}
+
 	getcwd(path, sizeof(path));
 	if (chdir(outgoing->path) == -1) return 0;
 

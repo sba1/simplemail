@@ -334,7 +334,7 @@ int all_init(void)
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 
-	return 1;
+	return 0;
 }
 
 /****************************************************************

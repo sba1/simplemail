@@ -99,11 +99,15 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 /******************************************************************
  Converts a given sort mode to a nlist title mark
 *******************************************************************/
-static ULONG sortmode2titlemark(int sortmode)
+static ULONG sortmode2titlemark(int sortmode, int type)
 {
 	int col = 0;
 	if (sortmode == FOLDER_SORT_THREAD) return 0;
 	col = sortmode & FOLDER_SORT_MODEMASK;
+	if (col == 1) /* from/to */
+	{
+		if (type == FOLDER_TYPE_SEND) col = 2;
+	} else if (col > 1) col++;
 	return (col | ((sortmode & FOLDER_SORT_REVERSE)?MUIV_NList_TitleMark_Up:MUIV_NList_TitleMark_Down));
 }
 
@@ -112,8 +116,11 @@ static ULONG sortmode2titlemark(int sortmode)
 *******************************************************************/
 static int titlemark2sortmode(int titlemark)
 {
+	int col = titlemark & MUIV_NList_TitleMark_ColMask;
 	if (titlemark == 0) return FOLDER_SORT_THREAD;
-	return (titlemark & MUIV_NList_TitleMark_ColMask)|((titlemark & MUIV_NList_TitleMark_Up)?FOLDER_SORT_REVERSE:0);
+	if (col == 2) col = 1; /* from/to column */
+	else if (col > 2) col--;
+	return col|((titlemark & MUIV_NList_TitleMark_Up)?FOLDER_SORT_REVERSE:0);
 }
 
 /******************************************************************
@@ -125,8 +132,8 @@ static void mailtreelist_update_title_markers(void)
 	struct folder *folder = main_get_folder();
 	if (!folder) return;
 
-	nnset(tree_mail, MUIA_NList_TitleMark, sortmode2titlemark(folder_get_primary_sort(folder)));
-	nnset(tree_mail, MUIA_NList_TitleMark2, sortmode2titlemark(folder_get_secondary_sort(folder)));
+	nnset(tree_mail, MUIA_NList_TitleMark, sortmode2titlemark(folder_get_primary_sort(folder),folder_get_type(folder)));
+	nnset(tree_mail, MUIA_NList_TitleMark2, sortmode2titlemark(folder_get_secondary_sort(folder),folder_get_type(folder)));
 }
 
 /******************************************************************
@@ -353,23 +360,30 @@ void main_set_folder_mails(struct folder *folder)
 	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
 	DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
 
-	if (primary_sort == FOLDER_SORT_AUTHOR || primary_sort == FOLDER_SORT_SUBJECT)
+	set(tree_mail, MUIA_MailTreelist_FolderType, folder_get_type(folder));
+
+	if (primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT)
 	{
 		struct mail *lm = NULL; /* last mail */
 		APTR treenode = NULL;
 
 		SetAttrs(tree_mail,
-				MUIA_NListtree_TreeColumn, primary_sort,
+				MUIA_NListtree_TreeColumn, (primary_sort==2)?3:(folder_get_type(folder)==FOLDER_TYPE_SEND?2:1),
 				MUIA_NListtree_ShowTree, TRUE,
 				TAG_DONE);
 
 		while ((m = folder_next_mail(folder,&handle)))
 		{
-			if (primary_sort == FOLDER_SORT_AUTHOR)
+			if (primary_sort == FOLDER_SORT_FROMTO)
 			{
-				if (!lm || mystricmp(m->author,lm->author))
+				int res;
+
+				if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = mystricmp(m->to, lm->to);
+				else res = mystricmp(m->from, lm->from);
+
+				if (!lm || res)
 				{
-					treenode = (APTR)DoMethod(tree_mail, MUIM_NListtree_Insert, m->author, MUIV_MailTreelist_UserData_Name, /* special hint */
+					treenode = (APTR)DoMethod(tree_mail, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?m->to:m->from, MUIV_MailTreelist_UserData_Name, /* special hint */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST|TNF_OPEN);
 				}
 			} else

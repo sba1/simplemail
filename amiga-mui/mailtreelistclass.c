@@ -45,16 +45,20 @@
 struct MailTreelist_Data
 {
 	struct Hook display_hook;
+	int folder_type;
 };
 
-STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(CL_MailTreelist->mcc_Class,obj);
+
 	if (msg->TreeNode)
 	{
 		struct mail *mail = (struct mail*)msg->TreeNode->tn_User;
 		if (mail == (struct mail*)MUIV_MailTreelist_UserData_Name)
 		{
 			/* only one string should be displayed */
+			*msg->Array++ = NULL; /* status */
 			*msg->Array++ = NULL; /* status */
 			*msg->Array++ = NULL; /* status */
 			*msg->Array++ = NULL; /* status */
@@ -72,7 +76,8 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			SecondsToString(date_buf,mail->seconds);
 
 			*msg->Array++ = ""; /* status */
-			*msg->Array++ = mail->author;
+			*msg->Array++ = mail->from;
+			*msg->Array++ = mail->to;
 			*msg->Array++ = mail->subject;
 			*msg->Array++ = mail->reply;
 			*msg->Array++ = date_buf;
@@ -82,7 +87,8 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 	} else
 	{
 		*msg->Array++ = "Status";
-		*msg->Array++ = "Author";
+		*msg->Array++ = "From";
+		*msg->Array++ = "To";
 		*msg->Array++ = "Subject";
 		*msg->Array++ = "Reply";
 		*msg->Array++ = "Date";
@@ -107,10 +113,42 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, ",,,,,,",
+						MUIA_NListtree_Format, ",,COL=3,COL=4,COL=5,COL=6",
 						TAG_DONE);
 
 	return (ULONG)obj;
+}
+
+STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	struct TagItem *tstate, *tag;
+
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
+	while (tag = NextTagItem (&tstate))
+	{
+		ULONG tidata = tag->ti_Data;
+
+		switch (tag->ti_Tag)
+		{
+			case	MUIA_MailTreelist_FolderType:
+						if (data->folder_type != tag->ti_Data)
+						{
+							data->folder_type = tag->ti_Data;
+							if (data->folder_type == FOLDER_TYPE_SEND)
+							{
+								set(obj,MUIA_NListtree_Format,",COL=2,COL=3,COL=4,COL=5,COL=6");
+							} else
+							{
+								set(obj,MUIA_NListtree_Format,",,COL=3,COL=4,COL=5,COL=6");
+							}
+						}
+						break;
+		}
+	}
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
@@ -131,6 +169,7 @@ STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, regist
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
+		case	OM_SET:				return MailTreelist_Set(cl,obj,(struct opSet*)msg);
     case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
     case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);

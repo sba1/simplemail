@@ -44,7 +44,8 @@ struct content_parameter
 struct mail
 {
 	int status;
-	char *author;
+	char *from; /* decoded "From" field */
+	char *to; /* decoded "To" field, only the first address */
 	char *reply;
 	char *subject;
 	unsigned int size; /* the e-mails size in bytes */

@@ -592,13 +592,45 @@ struct mail *mail_create_reply(struct mail *mail)
 }
 
 /**************************************************************************
+ Extract the name of a given address (and looks for matches in the
+ addressbook)
+**************************************************************************/
+static char *extract_name_from_address(char *addr)
+{
+	char *name = NULL;
+	struct parse_address paddr;
+
+	if ((name = parse_address(addr,&paddr)))
+	{
+		struct mailbox *first_addr = (struct mailbox*)list_first(&paddr.mailbox_list);
+		if (first_addr)
+		{
+			if (first_addr->phrase) name = strdup(first_addr->phrase);
+			else
+			{
+				if (first_addr->addr_spec)
+				{
+					if (!(name = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
+					{
+						name = mystrdup(first_addr->addr_spec);
+					}
+				}
+			}
+		}
+		free_address(&paddr);
+	}
+
+	if (!name) name = mystrdup(addr);
+	return name;
+}
+
+/**************************************************************************
  Interprets the the already read headers. A return value of 0 means error
  TODO: Must use functions better since this function is really too big
 **************************************************************************/
 int mail_process_headers(struct mail *mail)
 {
 	char *buf;
-	char *from;
 
 	/* find out the date of the mail */
 	if ((buf = mail_find_header_contents(mail,"date")))
@@ -652,35 +684,13 @@ int mail_process_headers(struct mail *mail)
 		mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;
 	}
 
-	from = mail_find_header_contents(mail,"from");
-	if (from)
-	{
-		struct parse_address paddr;
+	buf = mail_find_header_contents(mail,"from");
+	if (buf) mail->from = extract_name_from_address(buf);
+	else mail->from = NULL;
 
-		mail->author = NULL;
-
-		if ((buf = parse_address(from,&paddr)))
-		{
-			struct mailbox *first_addr = (struct mailbox*)list_first(&paddr.mailbox_list);
-			if (first_addr)
-			{
-				if (first_addr->phrase) mail->author = strdup(first_addr->phrase);
-				else
-				{
-					if (first_addr->addr_spec)
-					{
-						if (!(mail->author = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
-						{
-							mail->author = strdup(first_addr->addr_spec);
-						}
-					}
-				}
-			}
-			free_address(&paddr);
-		}
-
-		if (!mail->author) mail->author = strdup(from);
-	}
+	buf = mail_find_header_contents(mail,"to");
+	if (buf) mail->to = extract_name_from_address(buf);
+	else mail->to = NULL;
 
 	if ((buf = mail_find_header_contents(mail,"subject")))
 	{

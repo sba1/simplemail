@@ -44,12 +44,13 @@ struct folder
 
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted */
 
+	int type;
 	/* more will follow */
 };
 
 /* the sort modes of the folder */
 #define FOLDER_SORT_STATUS		0
-#define FOLDER_SORT_AUTHOR		1
+#define FOLDER_SORT_FROMTO		1
 #define FOLDER_SORT_SUBJECT	2
 #define FOLDER_SORT_REPLY		3
 #define FOLDER_SORT_DATE			4
@@ -58,6 +59,10 @@ struct folder
 #define FOLDER_SORT_THREAD		7  /* sort by thread, secondary is ignored */
 #define FOLDER_SORT_MODEMASK	(0x7)
 #define FOLDER_SORT_REVERSE	(0x80) /* reverse sort mode */
+
+#define FOLDER_TYPE_RECV			0 /* received emails */
+#define FOLDER_TYPE_SEND			1 /* send emails */
+#define FOLDER_TYPE_SENDRECV	2 /* both */
 
 int init_folders(void);
 void del_folders(void);
@@ -84,9 +89,12 @@ void folder_delete_deleted(void);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
 struct mail *folder_next_mail(struct folder *folder, void **handle);
+
 int folder_get_primary_sort(struct folder *folder);
 void folder_set_primary_sort(struct folder *folder, int sort_mode);
 int folder_get_secondary_sort(struct folder *folder);
 void folder_set_secondary_sort(struct folder *folder, int sort_mode);
+
+#define folder_get_type(f) ((f)->type)
 
 #endif

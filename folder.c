@@ -199,7 +199,7 @@ struct folder *folder_add(char *name, char *path)
 				if ((node->folder.path = strdup(path)))
 				{
 					node->folder.primary_sort = FOLDER_SORT_DATE;
-					node->folder.secondary_sort = FOLDER_SORT_AUTHOR;
+					node->folder.secondary_sort = FOLDER_SORT_FROMTO;
 /*
 					node->folder.mail_array = NULL;
 					node->folder.mail_array_allocated = node->folder.num_mails = 0;
@@ -418,9 +418,14 @@ static int mail_compare_status(const struct mail *arg1, const struct mail *arg2,
 	return 0;
 }
 
-static int mail_compare_author(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->author,arg2->author);
+	return mystricmp(arg1->from,arg2->from);
+}
+
+static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	return mystricmp(arg1->to,arg2->to);
 }
 
 static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
@@ -455,7 +460,7 @@ static int mail_compare_filename(const struct mail *arg1, const struct mail *arg
 /******************************************************************
  Returns the correct sorting function and fills the reverse pointer
 *******************************************************************/
-static void *get_compare_function(int sort_mode, int *reverse)
+static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 {
 	if (sort_mode & FOLDER_SORT_REVERSE) *reverse = 1;
 	else reverse = 0;
@@ -463,7 +468,7 @@ static void *get_compare_function(int sort_mode, int *reverse)
 	switch (sort_mode & FOLDER_SORT_MODEMASK)
 	{
 		case	FOLDER_SORT_STATUS: return mail_compare_status;
-		case	FOLDER_SORT_AUTHOR: return mail_compare_author;
+		case	FOLDER_SORT_FROMTO: return folder_type?mail_compare_to:mail_compare_from;
 		case	FOLDER_SORT_SUBJECT: return mail_compare_subject;
 		case	FOLDER_SORT_REPLY: return mail_compare_reply;
 		case	FOLDER_SORT_DATE: return mail_compare_date;
@@ -493,8 +498,8 @@ struct mail *folder_next_mail(struct folder *folder, void **handle)
 			memcpy(folder->sorted_mail_array, folder->mail_array, sizeof(struct mail*)*folder->num_mails);
 
 			/* set the correct search function */
-			compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse);
-			compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse);
+			compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
+			compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
 
 			if (compare_primary) qsort(folder->sorted_mail_array, folder->num_mails, sizeof(struct mail*),mail_compare);
 			mail_array = folder->sorted_mail_array;
@@ -575,6 +580,8 @@ int init_folders(void)
 				{
 					if (folder_add("Deleted", "PROGDIR:.folders/deleted"))
 					{
+						folder_outgoing()->type = FOLDER_TYPE_SEND;
+						folder_sent()->type = FOLDER_TYPE_SEND;
 						return 1;
 					}
 				}

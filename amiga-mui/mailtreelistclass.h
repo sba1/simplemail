@@ -30,6 +30,8 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 /* Special User Data field */
 #define MUIV_MailTreelist_UserData_Name (-1)
 
+#define MUIA_MailTreelist_FolderType (TAG_USER+0x34567891)
+
 int create_mailtreelist_class(void);
 void delete_mailtreelist_class(void);
 

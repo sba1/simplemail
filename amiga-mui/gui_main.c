@@ -288,11 +288,19 @@ void all_del(void)
 *****************************************************************/
 int all_init(void)
 {
+	int rexxsyslib_version;
+
 	SM_ENTER;
+
+#ifdef __AMIGAOS4__
+	rexxsyslib_version = 45;
+#else
+	rexxsyslib_version = 0;
+#endif
 
 	if ((MUIMasterBase = OpenLibraryInterface(MUIMASTER_NAME, MUIMASTER_VMIN,&IMUIMaster)))
 	{
-		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",0,&IRexxSys)))
+		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",rexxsyslib_version,&IRexxSys)))
 		{
 			SimpleHTMLBase = OpenLibraryInterface("PROGDIR:Libs/simplehtml.library",0,&ISimpleHTML);
 			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibraryInterface("PROGDIR:simplehtml.library",0,&ISimpleHTML);
@@ -331,7 +339,7 @@ int all_init(void)
 					} else puts(_("Couldn't create appicon port\n"));
 				} else puts(_("Couldn't create arexx port\n"));
 			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);
-		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
+		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",rexxsyslib_version);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 
 	SM_LEAVE;

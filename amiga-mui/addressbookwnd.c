@@ -42,6 +42,7 @@
 #include "pgp.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "addressbookwnd.h"
 #include "addresstreelistclass.h"
@@ -51,7 +52,7 @@
 #include "muistuff.h"
 #include "pgplistclass.h"
 #include "picturebuttonclass.h"
-#include "support_indep.h"
+#include "utf8stringclass.h"
 
 static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group);
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
@@ -108,17 +109,17 @@ struct Person_Data /* should be a customclass */
 *******************************************************************/
 static void setsnail(struct Snail_Data *data, struct address_snail_phone *asp)
 {
-	if (data->title_string) setstring(data->title_string,asp->title);
-	if (data->organization_string) setstring(data->organization_string,asp->organization);
-	if (data->street_string) setstring(data->street_string,asp->street);
-	if (data->city_string) setstring(data->city_string,asp->city);
-	if (data->zip_string) setstring(data->zip_string,asp->zip);
-	if (data->state_string) setstring(data->state_string,asp->state);
-	if (data->country_string) setstring(data->country_string,asp->country);
-	if (data->phone1_string) setstring(data->phone1_string,asp->phone1);
-	if (data->phone2_string) setstring(data->phone2_string,asp->phone2);
-	if (data->mobil_string) setstring(data->mobil_string,asp->mobil);
-	if (data->fax_string) setstring(data->fax_string,asp->fax);
+	if (data->title_string) setutf8string(data->title_string,asp->title);
+	if (data->organization_string) setutf8string(data->organization_string,asp->organization);
+	if (data->street_string) setutf8string(data->street_string,asp->street);
+	if (data->city_string) setutf8string(data->city_string,asp->city);
+	if (data->zip_string) setutf8string(data->zip_string,asp->zip);
+	if (data->state_string) setutf8string(data->state_string,asp->state);
+	if (data->country_string) setutf8string(data->country_string,asp->country);
+	if (data->phone1_string) setutf8string(data->phone1_string,asp->phone1);
+	if (data->phone2_string) setutf8string(data->phone2_string,asp->phone2);
+	if (data->mobil_string) setutf8string(data->mobil_string,asp->mobil);
+	if (data->fax_string) setutf8string(data->fax_string,asp->fax);
 }
 
 /******************************************************************
@@ -139,17 +140,17 @@ static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
 	free(asp->mobil);
 	free(asp->fax);
 
-	if (data->title_string) asp->title = mystrdup((char*)xget(data->title_string,MUIA_String_Contents));
-	if (data->organization_string) asp->organization = mystrdup((char*)xget(data->organization_string,MUIA_String_Contents));
-	if (data->street_string) asp->street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
-	if (data->city_string) asp->city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
-	if (data->zip_string) asp->zip = mystrdup((char*)xget(data->zip_string,MUIA_String_Contents));
-	if (data->state_string) asp->state = mystrdup((char*)xget(data->state_string,MUIA_String_Contents));
-	if (data->country_string) asp->country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
-	if (data->phone1_string) asp->phone1 = mystrdup((char*)xget(data->phone1_string,MUIA_String_Contents));
-	if (data->phone2_string) asp->phone2 = mystrdup((char*)xget(data->phone2_string,MUIA_String_Contents));
-	if (data->mobil_string) asp->mobil = mystrdup((char*)xget(data->mobil_string,MUIA_String_Contents));
-	if (data->fax_string) asp->fax = mystrdup((char*)xget(data->fax_string,MUIA_String_Contents));
+	if (data->title_string) asp->title = mystrdup(getutf8string(data->title_string));
+	if (data->organization_string) asp->organization = mystrdup(getutf8string(data->organization_string));
+	if (data->street_string) asp->street = mystrdup(getutf8string(data->street_string));
+	if (data->city_string) asp->city = mystrdup(getutf8string(data->city_string));
+	if (data->zip_string) asp->zip = mystrdup(getutf8string(data->zip_string));
+	if (data->state_string) asp->state = mystrdup(getutf8string(data->state_string));
+	if (data->country_string) asp->country = mystrdup(getutf8string(data->country_string));
+	if (data->phone1_string) asp->phone1 = mystrdup(getutf8string(data->phone1_string));
+	if (data->phone2_string) asp->phone2 = mystrdup(getutf8string(data->phone2_string));
+	if (data->mobil_string) asp->mobil = mystrdup(getutf8string(data->mobil_string));
+	if (data->fax_string) asp->fax = mystrdup(getutf8string(data->fax_string));
 }
 
 /******************************************************************
@@ -204,24 +205,24 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
-	if ((new_entry = addressbook_create_person((char*)xget(data->realname_string,MUIA_String_Contents), NULL)))
+	if ((new_entry = addressbook_create_person(getutf8string(data->realname_string), NULL)))
 	{
 		char *alias;
 		struct MUI_NListtree_TreeNode *treenode = NULL;
 
-		alias = (char*)xget(data->alias_string,MUIA_String_Contents);
+		alias = getutf8string(data->alias_string);
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
-		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
+		addressbook_set_description(new_entry, getutf8string(data->description_string));
 
 		adoptsnail(&new_entry->u.person.priv,&data->priv);
 		adoptsnail(&new_entry->u.person.work,&data->work);
 		
 		free(new_entry->u.person.pgpid);
-		new_entry->u.person.pgpid = mystrdup((char*)xget(data->pgp_string,MUIA_String_Contents));
+		new_entry->u.person.pgpid = mystrdup(getutf8string(data->pgp_string));
 		free(new_entry->u.person.homepage);
-		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
+		new_entry->u.person.homepage = mystrdup(getutf8string(data->homepage_string));
 		free(new_entry->u.person.portrait);
-		new_entry->u.person.portrait = mystrdup((char*)xget(data->portrait_string, MUIA_String_Contents));
+		new_entry->u.person.portrait = mystrdup(getutf8string(data->portrait_string));
 
 		if (addresses)
 		{
@@ -388,8 +389,8 @@ void person_window_open(struct addressbook_entry *entry)
 	{
 		register_titles[0] = _("Personal");
 		register_titles[1] = _("Private");
-		register_titles[1] = _("Work");
-		register_titles[1] = _("Notes");
+		register_titles[2] = _("Work");
+		register_titles[3] = _("Notes");
 		register_titles_are_translated = 1;
 	};
 
@@ -413,19 +414,19 @@ void person_window_open(struct addressbook_entry *entry)
 						Child, ColGroup(2),
 							MUIA_HorizWeight,170,
 							Child, MakeLabel(_("Alias")),
-							Child, alias_string = BetterStringObject,
+							Child, alias_string = UTF8StringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							Child, MakeLabel(_("Real Name")),
-							Child, realname_string = BetterStringObject,
+							Child, realname_string = UTF8StringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							Child, MakeLabel(_("Description")),
-							Child, description_string = BetterStringObject,
+							Child, description_string = UTF8StringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
@@ -433,7 +434,7 @@ void person_window_open(struct addressbook_entry *entry)
 							Child, MakeLabel(_("PGP Key-ID")),
 							Child, pgp_popobject = PopobjectObject,
 								MUIA_Popstring_Button, PopButton(MUII_PopUp),
-								MUIA_Popstring_String, pgp_string = BetterStringObject,
+								MUIA_Popstring_String, pgp_string = UTF8StringObject,
 									StringFrame,
 									MUIA_CycleChain, 1,
 									MUIA_String_AdvanceOnCR, TRUE,
@@ -449,7 +450,7 @@ void person_window_open(struct addressbook_entry *entry)
 							Child, MakeLabel(_("Homepage")),
 							Child, HGroup,
 								MUIA_Group_Spacing, 0,
-								Child, homepage_string = BetterStringObject,
+								Child, homepage_string = UTF8StringObject,
 									StringFrame,
 									MUIA_CycleChain, 1,
 									MUIA_String_AdvanceOnCR, TRUE,
@@ -493,7 +494,7 @@ void person_window_open(struct addressbook_entry *entry)
 								Child, HGroup,
 									MUIA_Group_Spacing, 0,
 									Child, PopaslObject,
-										MUIA_Popstring_String, portrait_string = BetterStringObject,MUIA_CycleChain,1,StringFrame, End,
+										MUIA_Popstring_String, portrait_string = UTF8StringObject,MUIA_CycleChain,1,StringFrame, End,
 										MUIA_Popstring_Button, PopButton(MUII_PopFile),
 										End,
 									Child, download_button = PopButton(MUII_Disk),
@@ -517,7 +518,7 @@ void person_window_open(struct addressbook_entry *entry)
 					Child, HVSpace,
 					Child, HGroup,
 						Child, MakeLabel(_("Street")),
-						Child, priv.street_string = BetterStringObject,
+						Child, priv.street_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -525,25 +526,25 @@ void person_window_open(struct addressbook_entry *entry)
 						End,
 					Child, ColGroup(4),
 						Child, MakeLabel(_("City")),
-						Child, priv.city_string = BetterStringObject,
+						Child, priv.city_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("ZIP/Postal Code")),
-						Child, priv.zip_string = BetterStringObject,
+						Child, priv.zip_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("State/Province")),
-						Child, priv.state_string = BetterStringObject,
+						Child, priv.state_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Country")),
-						Child, priv.country_string = BetterStringObject,
+						Child, priv.country_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -556,25 +557,25 @@ void person_window_open(struct addressbook_entry *entry)
 
 					Child, ColGroup(4),
 						Child, MakeLabel(_("Phone numbers")),
-						Child, priv.phone1_string = BetterStringObject,
+						Child, priv.phone1_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Mobile")),
-						Child, priv.mobil_string = BetterStringObject,
+						Child, priv.mobil_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, HSpace(0),
-						Child, priv.phone2_string = BetterStringObject,
+						Child, priv.phone2_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Fax")),
-						Child, priv.fax_string = BetterStringObject,
+						Child, priv.fax_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -587,13 +588,13 @@ void person_window_open(struct addressbook_entry *entry)
 					Child, HVSpace,
 					Child, HGroup,
 						Child, MakeLabel(_("Title")),
-						Child, work.title_string = BetterStringObject,
+						Child, work.title_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Organization")),
-						Child, work.organization_string = BetterStringObject,
+						Child, work.organization_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -604,7 +605,7 @@ void person_window_open(struct addressbook_entry *entry)
 					Child, HVSpace,
 					Child, HGroup,
 						Child, MakeLabel(_("Street")),
-						Child, work.street_string = BetterStringObject,
+						Child, work.street_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -612,25 +613,25 @@ void person_window_open(struct addressbook_entry *entry)
 						End,
 					Child, ColGroup(4),
 						Child, MakeLabel(_("City")),
-						Child, work.city_string = BetterStringObject,
+						Child, work.city_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("ZIP/Postal Code")),
-						Child, work.zip_string = BetterStringObject,
+						Child, work.zip_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("State/Province")),
-						Child, work.state_string = BetterStringObject,
+						Child, work.state_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Country")),
-						Child, work.country_string = BetterStringObject,
+						Child, work.country_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -643,25 +644,25 @@ void person_window_open(struct addressbook_entry *entry)
 
 					Child, ColGroup(4),
 						Child, MakeLabel(_("Phone numbers")),
-						Child, work.phone1_string = BetterStringObject,
+						Child, work.phone1_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Mobile")),
-						Child, work.mobil_string = BetterStringObject,
+						Child, work.mobil_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, HSpace(0),
-						Child, work.phone2_string = BetterStringObject,
+						Child, work.phone2_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel(_("Fax")),
-						Child, work.fax_string = BetterStringObject,
+						Child, work.fax_string = UTF8StringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
@@ -736,12 +737,12 @@ void person_window_open(struct addressbook_entry *entry)
 					free(array);
 				}
 
-				setstring(realname_string, entry->u.person.realname);
-				setstring(description_string, entry->description);
-				setstring(pgp_string, entry->u.person.pgpid);
-				setstring(alias_string, entry->alias);
-				setstring(homepage_string, entry->u.person.homepage);
-				setstring(portrait_string, entry->u.person.portrait);
+				setutf8string(realname_string, entry->u.person.realname);
+				setutf8string(description_string, entry->description);
+				setutf8string(pgp_string, entry->u.person.pgpid);
+				setutf8string(alias_string, entry->alias);
+				setutf8string(homepage_string, entry->u.person.homepage);
+				setutf8string(portrait_string, entry->u.person.portrait);
 
 				if (entry->u.person.sex == 1) set(data->female_button,MUIA_Selected,TRUE);
 				else if (entry->u.person.sex == 2) set(data->male_button,MUIA_Selected,TRUE);
@@ -819,9 +820,9 @@ static void group_window_ok(struct Group_Data **pdata)
 	if ((new_entry = addressbook_create_group()))
 	{
 		struct MUI_NListtree_TreeNode *treenode = NULL;
-		char *alias = (char*)xget(data->alias_string,MUIA_String_Contents);
+		char *alias = (char*)getutf8string(data->alias_string);
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
-		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
+		addressbook_set_description(new_entry, getutf8string(data->description_string));
 
 		if (data->group)
 		{
@@ -870,13 +871,13 @@ static void group_window_open(struct addressbook_entry *entry)
 			Child, VGroup,
 				Child, ColGroup(2),
 					Child, MakeLabel(_("Alias")),
-					Child, alias_string = BetterStringObject,
+					Child, alias_string = UTF8StringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
 						End,
 
 					Child, MakeLabel(_("Description")),
-					Child, description_string = BetterStringObject,
+					Child, description_string = UTF8StringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
 						End,
@@ -913,8 +914,8 @@ static void group_window_open(struct addressbook_entry *entry)
 			/* A group must be changed */
 			if (entry && entry->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				set(alias_string, MUIA_String_Contents, entry->alias);
-				set(description_string, MUIA_String_Contents, entry->description);
+				setutf8string(alias_string, entry->alias);
+				setutf8string(description_string, entry->description);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);

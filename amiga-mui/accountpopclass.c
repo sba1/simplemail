@@ -129,6 +129,13 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 			case	MUIA_AccountPop_Account:
 						{
 							if (data->selected_account) account_free(data->selected_account);
+							if (!tidata && !data->has_default_entry)
+							{
+								/* Choose the first account if no account is specified and we have not
+								 * the posibility to use a default account */
+								tidata = (ULONG)list_first(&user.config.account_list);
+							}
+
 							if (!tidata)
 							{
 								data->selected_account = NULL;

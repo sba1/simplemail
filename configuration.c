@@ -98,6 +98,8 @@ int load_config(void)
 							user.config.email = strdup(result);
 						if ((result = get_config_item(buf,"RealName")))
 							user.config.realname = strdup(result);
+						if ((result = get_config_item(buf,"DST")))
+							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
@@ -182,6 +184,7 @@ void save_config(void)
 
 			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
 			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
+			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);

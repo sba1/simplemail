@@ -33,6 +33,7 @@ struct config
 {
 	char *realname;
 	char *email;
+	int dst;
 
 	char *smtp_server;
 	int smtp_port;

@@ -54,6 +54,7 @@ static int size2value(int val);
 static Object *config_wnd;
 static Object *user_realname_string;
 static Object *user_email_string;
+static Object *user_dst_check;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *pop3_login_string;
@@ -121,6 +122,7 @@ static void config_use(void)
 
 	user.config.realname = mystrdup((char*)xget(user_realname_string, MUIA_String_Contents));
 	user.config.email = mystrdup((char*)xget(user_email_string, MUIA_String_Contents));
+	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.smtp_domain = mystrdup((char*)xget(smtp_domain_string, MUIA_String_Contents));
 	user.config.smtp_ip_as_domain = xget(smtp_ip_check, MUIA_Selected);
 	user.config.smtp_server = mystrdup((char*)xget(smtp_server_string, MUIA_String_Contents));
@@ -212,19 +214,26 @@ static void config_tree_active(void)
 *******************************************************************/
 static int init_user_group(void)
 {
-	user_group = ColGroup(2),
+	user_group = VGroup,
 		MUIA_ShowMe, FALSE,
-		Child, MakeLabel("Real Name"),
-		Child, user_realname_string = BetterStringObject,
-			StringFrame,
-			MUIA_CycleChain, 1,
-			MUIA_String_Contents, user.config.realname,
+		Child, ColGroup(2),
+			Child, MakeLabel("Real Name"),
+			Child, user_realname_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, user.config.realname,
+				End,
+			Child, MakeLabel("E-Mail Address"),
+			Child, user_email_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, user.config.email,
+				End,
 			End,
-		Child, MakeLabel("E-Mail Address"),
-		Child, user_email_string = BetterStringObject,
-			StringFrame,
-			MUIA_CycleChain, 1,
-			MUIA_String_Contents, user.config.email,
+		Child, HGroup,
+			Child, MakeLabel("Add adjustment for daylight saving time"),
+			Child, user_dst_check = MakeCheck("Add adjustment for daylight saving time",user.config.dst),
+			Child, HSpace(0),
 			End,
 		End;
 	if (!user_group) return 0;

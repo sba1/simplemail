@@ -95,6 +95,7 @@ struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
+struct folder *folder_find_by_mail(struct mail *mail);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);

@@ -783,6 +783,26 @@ struct folder *folder_find_by_path(char *name)
 }
 
 /******************************************************************
+ Finds the folder of a mail.
+*******************************************************************/
+struct folder *folder_find_by_mail(struct mail *mail)
+{
+	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+	while (node)
+	{
+		struct folder *folder = &node->folder;
+		int i;
+		for (i=0; i < folder->num_mails; i++)
+		{
+			if (folder->mail_array[i] == mail)
+				return folder;
+		}
+		node = (struct folder_node *)node_next(&node->node);
+	}
+	return NULL;
+}
+
+/******************************************************************
  Move a mail from source folder to a destination folder. 0 if the
  moving has failed.
  If mail has sent status and moved to a outgoing drawer it get's

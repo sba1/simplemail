@@ -59,7 +59,6 @@
 #include "readlistclass.h"
 #include "readwnd.h"
 #include "support.h"
-#include "virus.h"
 
 static void save_contents(struct Read_Data *data, struct mail *mail);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
@@ -345,9 +344,6 @@ static void context_menu_trigger(int **pdata)
 			case	3: /* Open via workbench.library */
 						open_contents(data,mail);
 						break;
-			case	4: /* Check for viruses */			
-						virus_check_mail(mail,TRUE);
-						break;
 		}
 	}
 }
@@ -585,7 +581,7 @@ static void next_button_pressed(struct Read_Data **pdata)
 			}
 		}
 
-    /* will also refresh the mail, in case of updated flags */
+	 /* will also refresh the mail, in case of updated flags */
 		main_set_active_mail(next);
 	}
 }
@@ -783,8 +779,8 @@ void read_window_open(char *folder, struct mail *mail)
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
-    MUIA_Window_Title, _("SimpleMail - Read Message"),
-        
+	 MUIA_Window_Title, _("SimpleMail - Read Message"),
+		  
 		WindowContents, VGroup,
 			Child, HGroupV,
 				Child, HGroup,
@@ -863,10 +859,6 @@ void read_window_open(char *folder, struct mail *mail)
 					Child, save_contents_item = MenuitemObject,
 						MUIA_Menuitem_Title, _("Save As..."),
 						MUIA_UserData, 1,
-						End,
-					Child, checkv_contents_item = MenuitemObject,
-						MUIA_Menuitem_Title, _("Check for viruses"),	
-						MUIA_UserData, 4,
 						End,
 					End,	
 				End;

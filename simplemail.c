@@ -1312,6 +1312,8 @@ void callback_mails_set_status(int status)
 		if (new_status != mail->status)
 		{
 			folder_set_mail_status(folder,mail,new_status);
+			if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 			main_refresh_folder(folder);
 		}

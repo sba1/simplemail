@@ -17,8 +17,11 @@
     <LI><A href="http://wuarchive.wustl.edu/pub/aminet/dev/mui/MCC_TextEditor.lha">The TextEditor MCC from Allan Odgaard.</A></LI>
     <LI><A href="http://www.aphaso.de/download/MCC_NList0_90.lha">The NList MCC from Gilles Masson.</A></LI>
     <LI><A href="http://www.aphaso.de/download/MCC_NListtree18.7.lha">The NListtree MCC from Carsten Scholling.</A></LI>
-    <LI><A href="http://tesla.rcub.bg.ac.yu/~antony/AmiSSL/Arcives/AmiSSLInstall.lha">AmiSSL by Andrija Antonijevic.</A></LI>
 </UL>
+
+Here you will find the AmiSSL package by Andrija Antonijevic:
+<A href="http://tesla.rcub.bg.ac.yu/~antony/AmiSSL/">AmiSSL</A>
+
 <br>
 <center>
     <TABLE BORDER=1 BGCOLOR="#EEEEEE" CELLPADDING=5 CELLSPACING=0>

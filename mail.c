@@ -31,6 +31,7 @@
 #include "addressbook.h"
 #include "codecs.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h" /* for mail_compose_new() */
 #include "mail.h"
 #include "parse.h"
@@ -2447,6 +2448,13 @@ void mail_info_free(struct mail_info *info)
 {
 	if (!info) return;
 
+	/* don't free anything, if there still other refrences of this mail */
+	if (info->reference_count)
+	{
+		info->to_be_freed = 1;
+		return;
+	}
+
 	free(info->from_phrase);
 	free(info->from_addr);
 	free(info->to_phrase);
@@ -2499,6 +2507,30 @@ void mail_complete_free(struct mail_complete *mail)
 
 	mail_info_free(mail->info);
 	free(mail);
+}
+
+/**************************************************************************
+ Increase reference counter
+**************************************************************************/
+void mail_reference(struct mail_info *mail)
+{
+	mail->reference_count++;
+	SM_DEBUGF(20,("Increased refrence count of mail %p to %ld\n",mail,mail->reference_count));
+}
+
+/**************************************************************************
+ Decrease reference counter
+**************************************************************************/
+void mail_dereference(struct mail_info *mail)
+{
+	if (mail->reference_count <= 0)
+	{
+		SM_DEBUGF(1,("Wrong reference count!\n"));
+		return;
+	}
+	mail->reference_count--;
+	SM_DEBUGF(20,("Decreased refrence count of mail %p to %ld\n",mail,mail->reference_count));
+	if (mail->to_be_freed) mail_info_free(mail);
 }
 
 /**************************************************************************
@@ -3122,8 +3154,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 				folder_replace_mail(outgoing, old_mail, mail);
 				callback_mail_changed(outgoing, old_mail, mail);
 				remove(old_mail->filename);
-#pragma warning: Fix memory leak
-//				free(old_mail); /* TODO: Fix possible race condition, if mail is still used */
+				mail_info_free(old_mail);
 			} else
 			{
 				callback_new_mail_written(mail);

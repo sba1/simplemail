@@ -66,6 +66,9 @@ struct mail_info
 
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
+	unsigned short reference_count; /* number of additional references to this object */
+	unsigned short to_be_freed;
+
 	/* for mail threads */
 	struct mail_info *sub_thread_mail;	/* one more level */
 	struct mail_info *next_thread_mail;	/* the same level */
@@ -195,11 +198,12 @@ void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr);
 void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int *decoded_data_len_ptr);
 int mail_create_html_header(struct mail_complete *mail, int all_headers);
 
-//int mail_add_header(struct mail *mail, char *name, int name_len,
-//									  char *contents, int contents_len, int avoid_duplicates);
 char *mail_find_header_contents(struct mail_complete *mail, char *name);
 char *mail_get_new_name(int status);
 char *mail_get_status_filename(char *oldfilename, int status_new);
+
+void mail_reference(struct mail_info *mail);
+void mail_dereference(struct mail_info *mail);
 
 /* was static */
 struct header *mail_find_header(struct mail_complete *mail, char *name);

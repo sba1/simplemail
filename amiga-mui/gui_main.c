@@ -42,6 +42,7 @@
 #include "version.h"
 
 /* nongui parts */
+#include "configuration.h"
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
@@ -259,6 +260,13 @@ void loop(void)
 	}
 }
 
+/****************************************************************
+ The app is getting (un)iconified
+*****************************************************************/
+void app_change_iconified_state(void)
+{
+	if (user.config.appicon_show == 1) appicon_refresh(1);
+}
 
 /****************************************************************
  Initialize the application object
@@ -283,6 +291,9 @@ int app_init(void)
 #endif
 		HideIcon ? MUIA_Application_DiskObject : TAG_IGNORE, HideIcon,
 	End;
+
+	if (App)
+		DoMethod(App, MUIM_Notify, MUIA_Application_Iconified, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, app_change_iconified_state);
 
 	SM_LEAVE;
 	return !!App;

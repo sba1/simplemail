@@ -1,0 +1,115 @@
+Version 0.13 (thirteenth alpha) - released on 2001/12/07
+  - Included a real manual at last. Thanks to David Rey!
+  - SMTP over SSL.
+  - POP3 connections can now be made secure with the STLS command.
+    (RFC 2595)
+  - (A rather primitive) ARexx port.
+  - Support for playing sounds.
+  - Taglines.
+  - Folders holding unread mails appear highlighted now.
+  - Localization.
+
+Version 0.12 (twelfth alpha) - released on 2001/11/11
+  - Fix for the MUI exploit where pipes could be used for malicious
+    purposes combined with escape sequences
+  - Messages can now be encrypted, again with PGP 2.6.x.
+  - The columns in the message list can now be turned on/off on
+    an individual basis; their status is saved via "Save Prefs"
+  - Better email address completer
+  - A small menu in the Read window makes it possible to see the
+    message in raw format.
+  - The mouse wheel support in the Read window is now more tolerant.
+  - Icons for attachments are better identified now if you have OS3.9
+    and DefIcons is running: you can double-click an icon to trigger
+    an action, for instance launching UnArc to extract an archive as
+    used by the default DefIcons config.
+  - You can now print messages and plain text attachments.
+
+Version 0.11 (eleventh alpha) - released on 2001/09/23
+  - UIDL POP3 command support, so mails won't be downloaded twice
+  - Improved startup time
+  - Several bugfixes
+
+Version 0.10 (tenth alpha) - released on 2001/09/10
+  - Configurable headers for the Read window
+  - Can read message/rfc822 content type properly
+  - Can decrypt encrypted PGP messages using PGP 2.6.x
+  - minor improvements
+  - Improved filters
+  - Wordwrapping for composed messages
+
+Version 0.9 (ninth alpha) - released on 2001/09/03
+  - Improved addressbook
+  - Predefined text phrases
+  - Periodical mail download
+  - Now requires the popplaceholder MUI custom class
+
+Version 0.8 (eighth alpha) - released on 2001/08/01
+  - SSL support for POP3 servers. Requires AmiSSL.
+  - POP3 servers can be individually deactivated, and they are ignored.
+  - Menu bar in the main window; needs to grow though.
+  - A new Read setting, so that smilies can be replaced with images
+    (images created by Richard Kapp).
+  - Groups can be deleted now
+
+Version 0.7 (seventh alpha) - released on 2001/06/29
+  - The attachment icons required OS3.5+ to be displayed
+  - Signature support
+  - Configurable greetings text when writing new mails
+  - The fonts and colors for reading email can be configured now
+  - Hierarchical folders and folder images
+
+Version 0.6 (sixth alpha) - released on 2001/06/05
+  - Improved e-mail account configuration (multiple SMTP servers)
+  - Can log into POP3 servers before sending email
+  - The address book is now stored in XML format
+  - Initial filter support
+  - New folders can be created within the GUI, and their settings
+    are stored immediately.
+  - Lots of bugfixes
+
+Version 0.5 (fifth alpha) - released on 2001/02/25
+  - Added email preselection.
+  - Supports 8-bit MIME email (if a SMTP server doesn't support them,
+    they will be encoded on the fly).
+  - Improved the Read window, making extensive use of the SimpleHTML
+    engine.
+  - Button images are cached now
+  - Added support for the new SimpleMail User Gallery
+
+Version 0.4 (fourth alpha) - released on 2001/02/25
+  - Multiple POP3 servers
+  - Images for replied/forwarded emails
+  - Faster QP/Base64 routines
+  - Some images have been redrawn
+  - Fixed problems with special chars in real names
+  - Many other bugfixes
+
+Version 0.3 (third alpha) - released on 2001/02/05
+  - Added a "Forward" button
+  - The main window has two different views, which are easily switchable.
+  - Improved Compose window (got some images)
+  - The "To" button in the address book works correctly now.
+  - Group mails (mails with multiple recipients), mails with
+    attachments and important mails can now be easily identified.
+  - Added a small context menu for the mailtree list; mails can now
+    be marked, and forced to remain hold.
+  - Added the possibility to use your IP addresss as your domain in
+    the HELO/EHLO dialog (no X-Authentification warning headers anymore).
+  - Added SMTP AUTH according to RFC 2554.
+  - It is now possible to specify which port you would like to use on
+    the servers instead of the default 25 and 110.
+  - Other smaller improvements and bugfixes
+
+Version 0.2 (second alpha) - released on 2001/01/14
+  - Buttons have now images.
+  - Can display HTML email now, using the SimpleHTML engine.
+  - Index files for folders
+  - Mails can have different statuses (new, read, pending, sent).
+  - Support for mail threads.
+  - The address book is now more complete
+  - Bugfixes and smaller enhancements.
+
+Version 0.1 (first alpha) - released on 2000/12/24
+  - Initial alpha.
+

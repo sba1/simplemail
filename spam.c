@@ -525,3 +525,20 @@ unsigned int spam_num_of_ham_classified_mails(void)
 {
 	return ham_table.data;
 }
+
+/**************************************************************************
+ Resets the ham statistics
+**************************************************************************/
+void spam_reset_ham(void)
+{
+	hash_table_clear(&ham_table);
+}
+
+/**************************************************************************
+ Resets the spam statistics
+**************************************************************************/
+void spam_reset_spam(void)
+{
+	hash_table_clear(&spam_table);
+}
+

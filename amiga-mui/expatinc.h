@@ -14,9 +14,13 @@
 *********************/
 #if defined(__MORPHOS__)
 #include <emul/emulregs.h>
+#include <ppcinline/macros.h>
 extern struct EmulLibEntry xml_start_tag_trap;
 extern struct EmulLibEntry xml_end_tag_trap;
 extern struct EmulLibEntry xml_char_data_trap;
+#ifndef EXPAT_BASE_NAME
+#define EXPAT_BASE_NAME ExpatBase
+#endif
 #undef XML_SetCharacterDataHandler
 #undef XML_SetElementHandler
 #define XML_SetCharacterDataHandler(__p0, __p1) \

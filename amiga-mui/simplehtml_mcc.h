@@ -13,6 +13,7 @@ struct MUI_CustomClass *ObtainSimpleHTMLMCC(void);
 #pragma libcall SimpleHTMLBase ObtainSimpleHTMLMCC 1e 00
 #else
 #if defined(__MORPHOS__) && defined(__GNUC__)
+#include <ppcinline/macros.h>
 #define ObtainSimpleHTMLMCC() \
 	LP0(0x1e, struct MUI_CustomClass *, ObtainSimpleHTMLMCC, \
 		, SimpleHTMLBase, 0, 0, 0, 0, 0, 0)

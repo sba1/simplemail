@@ -70,7 +70,7 @@ static int mailncpy(char *dest, const char *src, int n)
   char *dest_ptr = dest;
 
 	/* skip spaces */
-	while(n && isspace(*src))
+	while(n && isspace((unsigned char)(*src)))
 	{
 		src++;
 		n--;
@@ -235,7 +235,7 @@ static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, in
 **************************************************************************/
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 {
-	char c;
+	unsigned char c;
 	char *name_start = NULL; /* start of the header */
 	int name_size = 0; /* size of the header's name (without colon) */
 	char *contents_start = NULL; /* start of the headers's contents */
@@ -363,7 +363,7 @@ struct mail *mail_find_compound_object(struct mail *m, char *id)
 	int content_id = !mystrnicmp("cid:",id,4);
 	if (content_id)
 	{
-		char c;
+		unsigned char c;
 		id += 4;
 		while ((c=*id))
 		{
@@ -858,7 +858,7 @@ int mail_process_headers(struct mail *mail)
 	{
 		/* syntax should be checked before! */
 		int day,month,year,hour,min,sec;
-		char *date = strstr(buf,",");
+		unsigned char *date = strstr(buf,",");
 		if (!date) date = buf;
 		else date++;
 

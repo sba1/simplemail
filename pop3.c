@@ -311,7 +311,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server, un
 	{
 		if(buf[0] == '+')
 		{
-			char *str = buf + 4;
+			unsigned char *str = buf + 4;
 			int size;
 
 			while(isdigit(*str++)); /* skip the mail number */

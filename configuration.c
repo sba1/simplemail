@@ -35,7 +35,7 @@ static char *get_config_item(char *buf, char *item)
 	int len = strlen(item);
 	if (!mystrnicmp(buf,item,len))
 	{
-		char c;
+		unsigned char c;
 		buf += len;
 
 		/* skip spaces */

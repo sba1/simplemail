@@ -137,7 +137,7 @@ int needs_quotation(char *str)
 **************************************************************************/
 static char *skip_spaces(const char *buf)
 {
-	char c;
+	unsigned char c;
 	int brackets = 0;
 	while ((c = *buf))
 	{
@@ -157,7 +157,7 @@ static char *parse_atom(const char *atom, char **pbuf)
 {
 	const char *atom_start;
 	char *buf;
-	char c;
+	unsigned char c;
 	int len;
 
 	atom_start = atom = skip_spaces(atom); /* skip spaces */
@@ -187,7 +187,7 @@ static char *parse_atom(const char *atom, char **pbuf)
 static char *parse_quoted_string(char *quoted_string, char **pbuf)
 {
 	char *quoted_string_start;
-	char c;
+	unsigned char c;
 	int escape = 0;
 	if (*quoted_string != '"') return NULL;
 

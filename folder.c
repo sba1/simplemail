@@ -23,7 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <ctype.h>
+#include <ctype.h> /* toupper() */
 #include <sys/dir.h> /* unix dir stuff */
 #include <sys/stat.h> /* state() */
 
@@ -549,7 +549,7 @@ static struct folder *folder_add(char *path)
 					char *folder_name = sm_file_part(path);
 					if ((node->folder.name = strdup(folder_name)))
 					{
-						node->folder.name[0] = toupper(node->folder.name[0]);
+						node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
 					}
 					if (!stricmp(folder_name,"Income") || !stricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
 					if (!stricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;

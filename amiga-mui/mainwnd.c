@@ -118,6 +118,7 @@ static Object *address_tree;
 static Object *left_listview_group;
 static Object *left_listview_balance;
 static Object *folder_checksingleaccount_menuitem;
+static Object *status_text;
 
 static int folders_in_popup;
 
@@ -661,6 +662,9 @@ int main_window_init(void)
 						End,
 					End,
 				End,
+			Child, status_text = TextObject,
+				TextFrame,
+				End,
 			End,
 		End;
 	
@@ -1124,4 +1128,13 @@ int main_is_iconified(void)
 struct Screen *main_get_screen(void)
 {
 	return (struct Screen*)xget(win_main,MUIA_Window_Screen);
+}
+
+/******************************************************************
+ Sets an UTF formated status text
+*******************************************************************/
+void main_set_status_text(char *txt)
+{
+	/* TODO: Convert to host charset */
+	set(status_text, MUIA_Text_Contents, txt);
 }

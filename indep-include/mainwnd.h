@@ -58,4 +58,6 @@ void main_thaw_mail_list(void);
 void main_select_mail(int mail);
 int main_is_iconified(void);
 
+void main_set_status_text(char *txt);
+
 #endif

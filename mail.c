@@ -1505,6 +1505,15 @@ static void mail_decrypt(struct mail *mail)
 						}
 						
 						remove(tmpname);
+					} else
+					{
+						sm_request(NULL,
+							"Decrypting failed! Eighter because the passphrase was incorrect\n"
+							"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!",
+							"Ok");
+
+						free(saved_passphrase);
+						saved_passphrase = NULL;
 					}
 				}
 

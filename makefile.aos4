@@ -1,0 +1,155 @@
+#
+# Makefile for SimpleMail
+#
+
+# Uncomment the next line if you are cross compiling
+CROSS_COMPILE = ppc-amigaos-
+
+CC     = $(CROSS_COMPILE)gcc
+CXX    = $(CROSS_COMPILE)c++
+AS     = $(CROSS_COMPILE)as
+LD     = $(CROSS_COMPILE)ld
+RANLIB = $(CROSS_COMPILE)ranlib
+# RM     = delete
+RM     = rm -R
+# MKDIR = makedir
+MKDIR  = mkdir
+
+# Change these as required
+OPTIMIZE = -O3
+DEBUG = # -s # -g -DDEBUG
+INC = -I/home/sba/amigaos4/include -I/home/sba/amigaone/netinclude -I/home/sba/amigaone/nonsystem/include -I. -I./indep-include -I./amiga-mui
+CFLAGS = -DNDEBUG -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Wall $(OPTIMIZE) $(DEBUG) $(INC)
+
+# Flags passed to gcc during linking
+LINK =  -nostartfiles -L/home/sba/amigaone/nonsystem/lib
+
+# Name of the "thing" to build
+TARGET = SimpleMail
+
+# Additional linker libraries
+LIBS = -ldebug -lexpat
+
+# Version of the library to build
+VERSION = 50
+
+# Source code files used in this project
+
+ASRCS= amiga-mui/hookentry.S amiga-mui/muidispatcherentry.S
+
+ARCHSRCS=\
+	accountpopclass.c \
+	addressbookwnd.c \
+	addressentrylistclass.c \
+	addressgrouplistclass.c \
+	addressstringclass.c \
+	appicon.c \
+	amigasupport.c \
+	arexx.c \
+	attachmentlistclass.c \
+	audioselectgroupclass.c \
+	composeeditorclass.c \
+	composewnd.c \
+	configwnd.c \
+	configwnd_stuff.c \
+	datatypescache.c \
+	datatypesclass.c \
+	errorwnd.c \
+	filterlistclass.c \
+	filterruleclass.c \
+	filterwnd.c \
+	foldertreelistclass.c \
+	folderwnd.c \
+	gettext.c \
+	gui_main.c \
+	iconclass.c \
+	mailtreelistclass.c \
+	mainwnd.c \
+	messageviewclass.c \
+	muistuff.c \
+	multistringclass.c \
+	pgplistclass.c \
+	picturebuttonclass.c \
+	popupmenuclass.c \
+	readwnd.c \
+	searchwnd.c \
+	shutdownwnd.c \
+	startup-os4.c \
+	signaturecycleclass.c \
+	startupwnd.c \
+	statuswnd.c \
+	subthreads.c \
+	support.c \
+	sysprint.c \
+	tcpip.c \
+	transwndclass.c \
+	utf8stringclass.c \
+	vsnprintf.c
+
+NONARCHSRCS=\
+	account.c \
+	addressbook.c \
+	codecs.c \
+	codesets.c \
+	configuration.c \
+	debug.c \
+	estimate.c \
+	filter.c \
+	folder.c \
+	hash.c \
+	hmac_md5.c \
+	http.c \
+	imap.c \
+	lists.c \
+	mail.c \
+	mbox.c \
+	md5.c \
+	parse.c \
+	pgp.c \
+	phrase.c \
+	pop3.c \
+	print.c \
+	signature.c \
+	simplemail.c \
+	smintl.c \
+	smtp.c \
+	spam.c \
+	status.c \
+	support_indep.c \
+	taglines.c \
+	tcp.c \
+	text2html.c \
+	trans.c
+
+
+SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
+
+# -------------------------------------------------------------
+
+OBJS = $(SRCS:%.c=ppc-amigaos-objs/%.o)
+AOBJS = $(ASRCS:%.S=ppc-amigaos-objs/%.o)
+
+all: dirs $(TARGET)
+
+dirs:
+	-$(MKDIR) ppc-amigaos-objs ppc-amigaos-objs/amiga-mui
+
+# Rules for building
+$(TARGET): $(OBJS) $(AOBJS)
+	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS)
+	ppc-amigaos-strip --strip-all -o $@ $@.debug
+
+ppc-amigaos-objs/%.o: %.S
+	$(CC) -Wa,-mregnames $(AFLAGS) -I$/home/sba/amigaos4/include -c $< -o $@
+
+ppc-amigaos-objs/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGET) $(OBJS) ppc-amigaos-objs
+
+.PHONY: revision
+revision:
+	bumprev $(VERSION) $(TARGET)
+

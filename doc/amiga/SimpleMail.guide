@@ -31,34 +31,78 @@
 @endnode
 
 @node intro "SimpleMail - Introduction"
+@{line}
+@{b}Introduction@{ub}
+@{line}
+
 @endnode
 
 @node copy "SimpleMail - Copyright"
+@{line}
+@{b}Copyright@{ub}
+@{line}
+
 @endnode
 
 @node disc "SimpleMail - Disclaimer"
+@{line}
+@{b}Disclaimer@{ub}
+@{line}
+
 @endnode
 
-@node contact "SimpleMail - Conatact"
+@node contact "SimpleMail - Contact"
+@{line}
+@{b}Contact@{ub}
+@{line}
+
 @endnode
 
 @node req "SimpleMail - Requirements"
+@{line}
+@{b}Requirements@{ub}
+@{line}
+
 @endnode
 
 @node install "SimpleMail - Installation"
+@{line}
+@{b}Installation@{ub}
+@{line}
+
 @endnode
 
 @node config "SimpleMail - Configuration"
+@{line}
+@{b}Configuration@{ub}
+@{line}
+
 @endnode
 
 @node useage "SimpleMail - Useage"
+@{line}
+@{b}Useage@{ub}
+@{line}
+
 @endnode
 
 @node part "SimpleMail - How to participate?"
+@{line}
+@{b}How to participate?@{ub}
+@{line}
+
 @endnode
 
 @node bugs "SimpleMail - Bugs"
+@{line}
+@{b}Bugs@{ub}
+@{line}
+
 @endnode
 
 @node credits "SimpleMail - Credits"
+@{line}
+@{b}Credits@{ub}
+@{line}
+
 @endnode

@@ -136,7 +136,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 				TAG_DONE);
 
 		html_mail = text2html(buf, buf_end - buf,
-													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT);
+													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP));
 
 		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);

@@ -93,6 +93,9 @@ struct config
 
 	/* array of "internet connectable" e-mail addresses */
 	char **internet_emails;
+
+	/* check for viruses when writing mails to disk? */
+	int check_for_viruses;
 };
 
 struct user

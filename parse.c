@@ -189,6 +189,8 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 	char *quoted_string_start;
 	unsigned char c;
 	int escape = 0;
+
+	quoted_string = skip_spaces(quoted_string);
 	if (*quoted_string != '"') return NULL;
 
 	quoted_string_start = ++quoted_string;

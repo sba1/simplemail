@@ -479,6 +479,9 @@ int main_window_init(void)
 		MENU_FOLDER_FETCH,
 		MENU_FOLDER_EXPORT,
 		MENU_FOLDER_CHECKSINGLEACCOUNT,
+		MENU_MESSAGE_NEW,
+		MENU_MESSAGE_REPLY,
+		MENU_MESSAGE_FORWARD,
 		MENU_MESSAGE_READ,
 		MENU_MESSAGE_EDIT,
 		MENU_MESSAGE_MOVE,
@@ -501,31 +504,35 @@ int main_window_init(void)
 		{NM_ITEM, N_("?:About..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
 		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
+			{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
+		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
-		{NM_ITEM, N_("New Group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
-		{NM_ITEM, N_("New Folder..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
-		{NM_ITEM, N_("Delete"), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
-		{NM_ITEM, N_("Settings..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
+		{NM_ITEM, N_("New..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
+		{NM_ITEM, N_("New group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
+		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
+		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
+		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
-		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
-		{NM_ITEM, N_("Delete all indexfiles..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
-		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
-		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
-		{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
-		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
-
 		{NM_TITLE, N_("Message"), NULL, 0, 0, NULL},
-		{NM_ITEM, N_("D:Read"), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
-		{NM_ITEM, N_("E:Edit"), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
+		{NM_ITEM, N_("N:New..."), NULL, 0, 0, (APTR)MENU_MESSAGE_NEW},
+		{NM_ITEM, N_("D:Read..."), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
+		{NM_ITEM, N_("E:Edit..."), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
+		{NM_ITEM, N_("R:Reply..."), NULL, 0, 0, (APTR)MENU_MESSAGE_REPLY},
+		{NM_ITEM, N_("W:Forward..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FORWARD},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("M:Move..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_MOVE},
 		{NM_ITEM, N_("Copy..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
-		{NM_ITEM, N_("Delete..."), "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
+		{NM_ITEM, N_("Delete"), "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
 /*
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
@@ -722,6 +729,9 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FORWARD, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);

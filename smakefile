@@ -114,6 +114,8 @@ prepare-release:
   copy amiga-mui/binaries/ReadMe.info ram:SimpleMail
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
+  copy sm/images TO ram:SimpleMail/Images
+  -delete ram:simplemail.lzx
   lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
 
 # bump the revison

@@ -185,16 +185,15 @@ void icon_selected(int **pdata)
 void context_menu_trigger(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	Object *icon = (Object*)(pdata[1]);
+	struct mail *mail = (struct mail *)(pdata[1]);
 	Object *item = (Object*)(pdata[2]);
 
-	if (item)
+	if (item && mail)
 	{
-		struct mail *m = (struct mail*)xget(icon,MUIA_UserData);
 		switch (xget(item,MUIA_UserData))
 		{
 			case	1: /* save attachment */
-						save_contents(data,m);
+						save_contents(data,mail);
 						break;
 
 			case	2: /* save whole document */
@@ -209,6 +208,8 @@ void context_menu_trigger(int **pdata)
 static void insert_mail(struct Read_Data *data, struct mail *mail)
 {
 	int i;
+
+	if (!data->attachments_group) return;
 
 	if (mail->num_multiparts == 0)
 	{
@@ -236,7 +237,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		if (icon)
 		{
 			DoMethod(data->attachments_group, OM_ADDMEMBER, group);
-			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, icon, MUIV_TriggerValue);
+			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, mail, MUIV_TriggerValue);
 		}
 
 
@@ -290,7 +291,13 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
 {
-	DoMethod(data->attachments_group, MUIM_SetUDataOnce, m, MUIA_Selected, 1);
+	if (!data->attachments_group)
+	{
+		insert_text(data, m);
+	} else
+	{
+		DoMethod(data->attachments_group, MUIM_SetUDataOnce, m, MUIA_Selected, 1);
+	}
 }
 
 /******************************************************************
@@ -356,6 +363,7 @@ void read_window_open(char *folder, char *filename)
 	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page, *save_button;
 	Object *attachments_group;
 	Object *datatype_datatypes;
+	Object *text_listview;
 	int num;
 
 	for (num=0; num < MAX_READ_OPEN; num++)
@@ -383,7 +391,7 @@ void read_window_open(char *folder, char *filename)
 			Child, contents_page = PageGroup,
 				MUIA_Group_ActivePage, PAGE_TEXT,
 				Child, VGroup,
-					Child, NListviewObject,
+					Child, text_listview = NListviewObject,
 						MUIA_CycleChain, 1,
 						MUIA_NListview_NList, text_list = ReadListObject,
 							End,
@@ -449,6 +457,13 @@ void read_window_open(char *folder, char *filename)
 							End,
 						End;
 
+					if (!data->mail->num_multiparts)
+					{
+						/* mail has only one part */
+						set(attachments_group, MUIA_ShowMe, FALSE);
+						attachments_group = NULL;
+					}
+
 					data->text_list = text_list;
 					data->contents_page = contents_page;
 					data->datatype_datatypes = datatype_datatypes;
@@ -467,10 +482,16 @@ void read_window_open(char *folder, char *filename)
 							MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
 							TAG_DONE);
 
+					set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
+					DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);
+
 					insert_headers(header_list,data->mail);
 					insert_mail(data,data->mail);
 
-					DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
+					if (attachments_group)
+					{
+						DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
+					}
 
 					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);

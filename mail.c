@@ -728,10 +728,7 @@ char *mail_get_new_name(int status)
 	short i;
 	char dummy[8];
 	char status_buf[4];
-	char *buf;
-
-	buf = malloc(20);
-	if (!buf) return NULL;
+	char buf[64];
 
 	secs = sm_get_current_seconds();
 	sm_convert_seconds(secs, &tm);
@@ -754,13 +751,13 @@ char *mail_get_new_name(int status)
 	{
 		FILE *fp;
 
-		sprintf(buf,"%02d%02d%04d%s.%03x%s",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i,status_buf);
+		sm_snprintf(buf,sizeof(buf),"%02d%02d%04d%s.%03x%s",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i,status_buf);
 
 		if ((fp = fopen(buf, "r"))) fclose(fp);
 		else break;
 	}
 
-	return buf;
+	return mystrdup(buf);
 }
 
 /**************************************************************************
@@ -2709,12 +2706,9 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 **************************************************************************/
 static char *get_boundary_id(FILE *fp)
 {
-	char *boundary = (char*)malloc(128);
-	if (boundary)
-	{
-		sprintf(boundary, "--==bound%x%lx----",(int)boundary,ftell(fp));
-	}
-	return boundary;
+	char boundary[64];
+	sm_snprintf(boundary, sizeof(boundary), "--==bound%x%lx----",(int)boundary,ftell(fp));
+	return mystrdup(boundary);
 }
 
 /**************************************************************************

@@ -84,14 +84,14 @@ static int export_entry(struct export_data *data)
 				if (f)
 				{
 					FILE *fh;
-					char head_buf[300];
+					char head_buf[256];
 
 					/* now lock the folder */
 					folder_lock(f);
 					/* unlock the folder list */
 					folders_unlock();
 
-					sprintf(head_buf, _("Exporting folder %s to %s"),f->name,filename);
+					sm_snprintf(head_buf, sizeof(head_buf), _("Exporting folder %s to %s"),f->name,filename);
 					thread_call_parent_function_async(status_init,1,0);
 					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
 					thread_call_parent_function_async_string(status_set_head,1,head_buf);
@@ -132,7 +132,7 @@ static int export_entry(struct export_data *data)
 								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->size);
 
 								sm_convert_seconds(m->received,&tm);
-								sprintf(date_buf,"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
+								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
 
 								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:"",date_buf);
 			

@@ -6,8 +6,11 @@
 
 <UL>
     <LI><A href="http://www.sourceforge.net/projects/simplemail/">SimpleMail's project page at SourceForge.</A></LI>
-    <LI><A href="http://groups.yahoo.com/group/simplemail-usr/">SimpleMail's user-mailinglist.</A> Joining is explicitly encouraged!</LI>
     <LI><A href="http://lists.sourceforge.net/lists/listinfo/simplemail-dev/">SimpleMails's developer-mailinglist.</A></LI>
+
+    <li>In order to join the user-mailinglist of SimpleMail, please send a mail to: <A href="mailto:mailto:simplemail-usr-request@freelists.org?subject=subscribe" target="Main">simplemail-usr-request@freelists.org </A>
+      with the subject "subscribe". If you use this link, the subject should be set automagically. (btw: The list at YahooGroups has been killed
+      beacause of SPAM.) <strong>Joining is explicitly encouraged!</strong></li>
 </UL>
 
 <?php echo get_string($LinksMCCText); ?>

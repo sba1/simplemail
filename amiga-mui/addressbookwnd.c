@@ -1346,7 +1346,7 @@ static void addressbookwnd_edit_person(void)
 *******************************************************************/
 static void addressbookwnd_remove_person(void)
 {
-	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Selected);
 
 	/* update the internal addressbook */
 	cleanup_addressbook();

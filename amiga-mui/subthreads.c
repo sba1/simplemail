@@ -401,6 +401,11 @@ void thread_lock_semaphore(semaphore_t sem)
 	ObtainSemaphore(&sem->sem);
 }
 
+int thread_attempt_lock_semaphore(semaphore_t sem)
+{
+	return (int)AttemptSemaphore(&sem->sem);
+}
+
 void thread_unlock_semaphore(semaphore_t sem)
 {
 	ReleaseSemaphore(&sem->sem);

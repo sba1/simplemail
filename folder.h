@@ -161,6 +161,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter);
 void folder_start_search(struct search_options *sopt);
 
 void folder_lock(struct folder *f);
+int folder_attempt_lock(struct folder *f);
 void folder_unlock(struct folder *f);
 void folders_lock(void);
 void folders_lock(void);

@@ -42,6 +42,7 @@ typedef struct semaphore_s * semaphore_t; /* opaque type */
 
 semaphore_t thread_create_semaphore(void);
 void thread_dispose_semaphore(semaphore_t sem);
+int thread_attempt_lock_semaphore(semaphore_t sem);
 void thread_lock_semaphore(semaphore_t sem);
 void thread_unlock_semaphore(semaphore_t sem);
 

@@ -989,6 +989,12 @@ struct folder *folder_add_group(char *name)
 *******************************************************************/
 int folder_remove(struct folder *f)
 {
+  if (!folder_attempt_lock(f))
+  {
+  	sm_request(NULL,_("Can't delete folder because it is actually in use."),_("_Ok"));
+  	return 0;
+  }
+
 	if (f->special == FOLDER_SPECIAL_NO)
 	{
 		struct folder_node *node = (struct folder_node*)list_first(&folder_list);
@@ -1001,6 +1007,7 @@ int folder_remove(struct folder *f)
 					_("_Yes|_No")))
 				{
 					char buf[512];
+
 					node_remove(&node->node);
 					folder_delete_mails(f);
 					sprintf(buf,"%s.index",f->path);
@@ -1008,6 +1015,7 @@ int folder_remove(struct folder *f)
 					sprintf(buf,"%s.config",f->path);
 					remove(buf);
 					remove(f->path);
+					folder_unlock(f);
 					thread_dispose_semaphore(node->folder.sem);
 					free(node);
 					return 1;
@@ -1029,6 +1037,7 @@ int folder_remove(struct folder *f)
 					_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group"),_("_Yes|_No")))
 				{
 					node_remove(&node->node);
+					folder_unlock(f);
 					free(node);
 					rc = 1;
 				}
@@ -1048,9 +1057,13 @@ int folder_remove(struct folder *f)
 				}
 				node = (struct folder_node*)node_next(&node->node);
 			}
+		} else
+		{
+			folder_unlock(f);
 		}
 		return rc;
 	}
+	folder_unlock(f);
 	return 0;
 }
 
@@ -2240,6 +2253,9 @@ static void folder_start_search_entry(struct search_msg *msg)
 	
 			for (i=0;i<f->num_mails;i++)
 			{
+#include <proto/dos.h>
+				Delay(50);
+
 				if (!(m = f->mail_array[i]))
 					break;
 
@@ -2592,6 +2608,14 @@ void del_folders(void)
 void folder_lock(struct folder *f)
 {
 	thread_lock_semaphore(f->sem);
+}
+
+/******************************************************************
+ Tries to lock the folder. Returns FALSE if folder is used.
+*******************************************************************/
+int folder_attempt_lock(struct folder *f)
+{
+	return thread_attempt_lock_semaphore(f->sem);
 }
 
 /******************************************************************

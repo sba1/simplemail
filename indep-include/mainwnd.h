@@ -53,6 +53,6 @@ void main_build_addressbook(void);
 
 void main_freeze_mail_list(void);
 void main_thaw_mail_list(void);
-
+void main_select_mail(int mail);
 
 #endif

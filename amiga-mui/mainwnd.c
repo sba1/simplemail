@@ -1180,3 +1180,10 @@ void main_thaw_mail_list(void)
 	set(mail_tree,MUIA_NListtree_Quiet,FALSE);
 }
 
+/******************************************************************
+ Select a mail, specified by number
+*******************************************************************/
+void main_select_mail(int mail)
+{
+	set(mail_tree,MUIA_NList_Active, mail);
+}

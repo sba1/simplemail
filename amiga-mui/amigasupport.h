@@ -24,6 +24,7 @@
 #define AMIGASUPPORT_H
 
 void SecondsToString( char *buf, unsigned int seconds);
+void SecondsToStringLong( char *buf, unsigned int seconds);
 STRPTR StrCopy(const STRPTR str);
 ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );

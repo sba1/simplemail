@@ -449,8 +449,9 @@ int main_window_init(void)
 	main_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
 	win_main = WindowObject,
+		MUIA_HelpNode, "MA_W",
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
-	 MUIA_Window_Title, VERS,
+		MUIA_Window_Title, VERS,
 
 		MUIA_Window_Menustrip,main_menu,
 
@@ -557,10 +558,10 @@ int main_window_init(void)
 		settings_show_changed();
 
 		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<8))
-	 {
+		{
 	 	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
 	 	return 0;
-	 }
+		}
 
 		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 

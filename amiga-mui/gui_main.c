@@ -197,6 +197,7 @@ int app_init(void)
 		MUIA_Application_Description,	"A mailer.",
 		MUIA_Application_Base,			"SIMPLEMAIL",
 		MUIA_Application_UseRexx, FALSE,
+		MUIA_Application_HelpFile, "PROGDIR:SimpleMail.guide",
 	End;
 	
 	return !!App;

@@ -1045,6 +1045,7 @@ static void addressbook_init(void)
 	Object *to_button;
 
 	address_wnd = WindowObject,
+		MUIA_HelpNode, "AB_W",
 		MUIA_Window_ID, MAKE_ID('A','D','B','K'),
     MUIA_Window_Title, _("SimpleMail - Addressbook"),
         

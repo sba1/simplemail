@@ -887,6 +887,7 @@ void read_window_open(char *folder, struct mail *mail)
 	read_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
 	wnd = WindowObject,
+		MUIA_HelpNode, "RE_W",
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
 		MUIA_Window_Title, _("SimpleMail - Read Message"),
 		MUIA_Window_Menustrip, read_menu,

@@ -740,8 +740,8 @@ static int init_account_group(void)
 			Child, HGroup, Child, account_recv_delete_check = MakeCheck(_("_Delete mails"), FALSE), Child, HSpace(0), End,
 			Child, MakeLabel(_("Avoid duplicates")),
 			Child, HGroup, Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE), Child, HSpace(0), End,
-			Child, MakeLabel(_("Use SSL")),
-			Child, HGroup, Child, account_recv_ssl_check = MakeCheck(_("Use SSL"), FALSE), Child, HSpace(0), End,
+			Child, MakeLabel(_("Secure")),
+			Child, HGroup, Child, account_recv_ssl_check = MakeCheck(_("Secure"), FALSE), Child, HSpace(0), End,
 			Child, HVSpace,
 			End,
 
@@ -832,6 +832,29 @@ static int init_account_group(void)
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_remove);
+
+
+	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
+	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));
+	set(account_reply_string,MUIA_ShortHelp,_("Address where the replies of the mails should\nbe sent (required only if different from the e-mail address)."));
+	set(account_recv_server_string,MUIA_ShortHelp,_("The name of the so called POP3 server from\nwhich you download your e-Mails (required; ask your\nprovider if unknown)."));
+	set(account_recv_port_string,MUIA_ShortHelp,_("The port number. Usually 110"));
+	set(account_recv_login_string,MUIA_ShortHelp,_("The login/UserID which you got from your ISP."));
+	set(account_recv_password_string,MUIA_ShortHelp,_("Your very own password to access the mails\nlocated on the POP3 server."));
+	set(account_recv_active_check,MUIA_ShortHelp,_("Deactivate this if you don't want SimpleMail to\ndownload the e-Mails when pressing on 'Fetch'."));
+	set(account_recv_delete_check,MUIA_ShortHelp,_("After successul downloading the mails should be deleted\non the POP3 server."));
+	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleteding e-Mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
+	set(account_recv_ssl_check,MUIA_ShortHelp,_("If activated SimpleMail tries to make the connection secure.\nThis is not supported on all servers, so decativate if it doesn't work."));
+	set(account_send_server_string,MUIA_ShortHelp,_("The name of the so called SMTP server which is responlible\nto send your e-Mails."));
+	set(account_send_port_string,MUIA_ShortHelp,_("The port number. Usually 25"));
+	set(account_send_login_string,MUIA_ShortHelp,_("Your login/UserID for the SMTP server.\nOnly required if the SMTP server requires authentication."));
+	set(account_send_password_string,MUIA_ShortHelp,_("Your password for the SMTP server.\nOnly required if the SMTP server requires authentication."));
+	set(account_send_auth_check,MUIA_ShortHelp,_("Activate this if the SMTP server requires authentication."));
+	set(account_send_secure_check,MUIA_ShortHelp,_("Activate this if you want a secure connection\nto the SMTP server. Deactivate this if your SMTP server\ndoesn't support it"));
+	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
+	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the intial greetings.\nThis avoids some error headers on some providers."));
+	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));
+	set(account_remove_button,MUIA_ShortHelp,_("Remove the current account."));
 
 	return 1;
 }
@@ -1365,9 +1388,10 @@ static void init_config(void)
 	init_phrase_group();
 
 	config_wnd = WindowObject,
+		MUIA_HelpNode, "CO_W",
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
-	 MUIA_Window_Title, _("SimpleMail - Configuration"),
-	 WindowContents, VGroup,
+		MUIA_Window_Title, _("SimpleMail - Configuration"),
+		WindowContents, VGroup,
 	 	Child, HGroup,
 	 		Child, NListviewObject,
 	 			MUIA_HorizWeight, 33,
@@ -1414,6 +1438,10 @@ static void init_config(void)
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
 		phrase_last_selected = NULL;
+
+		set(save_button, MUIA_ShortHelp, _("Save the configuration permanently."));
+		set(use_button, MUIA_ShortHelp, _("Use the configuration, but don't save it."));
+		set(cancel_button, MUIA_ShortHelp, _("Discards all the changes you have made."));
 
 		DoMethod(App, OM_ADDMEMBER, config_wnd);
 		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);

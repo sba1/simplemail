@@ -91,13 +91,24 @@ struct mail
 	int child_mail; /* is a child mail */
 };
 
-/* Mail status */
-#define MAIL_STATUS_UNREAD   0 /* unread messages */
+/* Mail status (uses a range from 0-32) */
+#define MAIL_STATUS_UNREAD   0 /* unread message */
 #define MAIL_STATUS_READ     1 /* read message */
 #define MAIL_STATUS_WAITSEND 2 /* wait to be sendet, new composed mail */
 #define MAIL_STATUS_SENT     3 /* sent the mail */
+#define MAIL_STATUS_REPLIED  4 /* mail has been replied */
+#define MAIL_STATUS_FORWARD  5 /* mail has been forwared */
+#define MAIL_STATUS_REPLFORW 6 /* mail has been replied and forwarded */
+#define MAIL_STATUS_HOLD		 7 /* mail should not be send */
+#define MAIL_STATUS_ERROR    8 /* mail has an error */
+#define MAIL_STATUS_MAX		 15
+#define MAIL_STATUS_MASK		 (0xf) /* the mask for the status types */
+#define MAIL_STATUS_FLAG_MARKED	(1 << 4) /* the mail is marked */
 
-/* Mail flags */
+/* A macro to easly get the mails status type */
+#define mail_get_status_type(x) ((x->status) & (MAIL_STATUS_MASK))
+
+/* Additional mail flags, they don't need to be stored within the filename */
 #define MAIL_FLAGS_NEW       (1L << 0) /* it's a new mail */
 #define MAIL_FLAGS_GROUP     (1L << 1) /* it has been sent to more persons */
 #define MAIL_FLAGS_ATTACH    (1L << 2) /* it has attachments */

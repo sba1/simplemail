@@ -463,6 +463,14 @@ char *mail_get_new_name(void)
 	return(rc);
 }
 
+/* a table with all filename extensions */
+/* they are mapped 1 to 1 */
+static char status_extensions[] =
+{
+	0,'0','1','2','3','4','5','6','7','8','9',
+	'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','!','$','-'
+};
+
 /**************************************************************************
  Returns a new filename for the mail which matches the given status.
  String is allocated with malloc
@@ -474,6 +482,7 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 	if (filename)
 	{
 		char *suffix;
+		int new_suffix;
 
 		strcpy(filename,oldfilename);
 		suffix = strrchr(filename,'.');
@@ -487,13 +496,19 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 			}
 		}
 
-		switch (status_new)
+		if (status_new < 0 | status_new >= 32)
 		{
-			case	MAIL_STATUS_UNREAD: *suffix = 0; break;
-			case	MAIL_STATUS_READ: strcpy(suffix,".0"); break;
-			case	MAIL_STATUS_WAITSEND: strcpy(suffix,".1"); break;
-			case	MAIL_STATUS_SENT: strcpy(suffix,".2"); break;
-			default: *suffix = 0;break;
+			*suffix = 0;
+			return filename;
+		}
+
+		new_suffix = status_extensions[status_new];
+		if (!new_suffix) *suffix = 0;
+		else
+		{
+			*suffix++ = '.';
+			*suffix++ = new_suffix;
+			*suffix = 0;
 		}
 	}
 	return filename;
@@ -505,6 +520,7 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 void mail_identify_status(struct mail *m)
 {
 	char *suffix;
+	int i;
 	if (!m->filename) return;
 	suffix = strrchr(m->filename,'.');
 	if (!suffix || suffix[2])
@@ -512,12 +528,12 @@ void mail_identify_status(struct mail *m)
 		m->status = MAIL_STATUS_UNREAD;
 		return;
 	}
-	switch (suffix[1])
+
+  /* decode the status information */
+	for (i=0;i<sizeof(status_extensions);i++)
 	{
-		case	'0':m->status = MAIL_STATUS_READ;break;
-		case	'1':m->status = MAIL_STATUS_WAITSEND;break;
-		case	'2':m->status = MAIL_STATUS_SENT;break;
-		default: m->status = MAIL_STATUS_UNREAD; break;
+	  if (suffix[1] == status_extensions[i])
+	  	m->status = i;
 	}
 }
 

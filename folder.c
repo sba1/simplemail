@@ -157,7 +157,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 	}
 
 	folder->mail_array[folder->num_mails++] = mail;
-	if (mail->status == MAIL_STATUS_UNREAD) folder->unread_mails++;
+	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
 	/* sort the mails for threads */
@@ -288,7 +288,7 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 		}
 	}
 
-	if ((mail->status == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
+	if ((mail_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
 	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 }
 
@@ -324,10 +324,10 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 	}
 
 	/* update the mail statistics */
-	if ((toreplace->status == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
+	if ((mail_get_status_type(toreplace) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
 	if ((toreplace->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 
-	if (newmail->status == MAIL_STATUS_UNREAD) folder->unread_mails++;
+	if (mail_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (newmail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 }
 
@@ -350,8 +350,8 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 			if (status_new == mail->status) return;
 
 			/* update the mail statistics */
-			if ((mail->status == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
-			if (status_new == MAIL_STATUS_UNREAD) folder->unread_mails++;
+			if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
+			if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 
 			mail->status = status_new;
 			if (!mail->filename) return;

@@ -52,9 +52,9 @@ void callback_read_mail(void)
 
 	read_window_open(main_get_folder_drawer(), filename);
 
-	if (m && m->status == MAIL_STATUS_UNREAD)
+	if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
 	{
-		folder_set_mail_status(f,m,MAIL_STATUS_READ);
+		folder_set_mail_status(f,m,MAIL_STATUS_READ & (m->status & (~MAIL_STATUS_MASK)));
 		if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
 		m->flags &= ~MAIL_FLAGS_NEW;
 		main_refresh_mail(m);
@@ -309,6 +309,32 @@ void callback_maildrop(struct folder *dest_folder)
 		main_refresh_folder(from_folder);
 		main_refresh_folder(dest_folder);
 		main_remove_mails_selected();
+	}
+}
+
+/* mark/unmark all selected mails */
+void callback_mails_mark(int mark)
+{
+	struct folder *folder = main_get_folder();
+	struct mail *mail;
+	void *handle;
+	if (!folder) return;
+
+	mail = main_get_mail_first_selected(&handle);
+	while (mail)
+	{
+		int new_status;
+
+		if (mark) new_status = mail->status | MAIL_STATUS_FLAG_MARKED;
+		else new_status = mail->status & (~MAIL_STATUS_FLAG_MARKED);
+
+		if (new_status != mail->status)
+		{
+			folder_set_mail_status(folder,mail,new_status);
+			main_refresh_mail(mail);
+		}
+
+		mail = main_get_mail_next_selected(&handle);
 	}
 }
 

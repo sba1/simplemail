@@ -43,6 +43,7 @@ void callback_change_folder_attrs(void);
 
 void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder);
 void callback_maildrop(struct folder *dest_folder);
+void callback_mails_mark(int mark);
 
 void callback_new_mail_arrived(struct mail *mail);
 void callback_new_mail_arrived_filename(char *filename);

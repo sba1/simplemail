@@ -50,6 +50,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "accountpopclass.h"
 #include "signaturecycleclass.h"
@@ -104,6 +105,7 @@ struct Compose_Data /* should be a customclass */
 	Object *datatype_datatypes;
 	Object *encrypt_button;
 	Object *sign_button;
+	Object *signatures_group;
 	Object *signatures_cycle;
 
 	int reply_stuff_attached;
@@ -808,30 +810,32 @@ static void compose_set_def_signature(struct Compose_Data **pdata)
 
 	if (data->signatures_cycle && ac)
 	{
-		set(data->signatures_cycle, MUIA_Cycle_Active, ac->def_signature);
-		/* if the signature is not available "NoSignature" will be used. */
-		/* if we want to fallback to default we have to do this: 
-		if (xget(data->signatures_cycle, MUIA_Cycle_Active) != ac->def_signature)
+		if (mystrcmp(ac->def_signature, MUIV_SignatureCycle_Default) == 0)
 		{
-			set(data->signatures_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
+			/* If the account is set to <Default> we fallback to the first entry */
+			set(data->signatures_cycle, MUIA_Cycle_Active, 0);
+		} else
+		{
+			/* if the signature is not available "NoSignature" will be used. */
+			set(data->signatures_cycle, MUIA_SignatureCycle_Signature, ac->def_signature);
 		}
-		*/
 	}
 }
 
 /******************************************************************
  Set a signature
 *******************************************************************/
-static void compose_set_signature(void **msg)
+static void compose_set_signature(struct Compose_Data **pdata)
 {
-	struct Compose_Data *data = (struct Compose_Data*)msg[0];
+	struct Compose_Data *data = *pdata;
 	int val = (int)xget(data->signatures_cycle, MUIA_Cycle_Active);
+	char *sign_name = (char *)xget(data->signatures_cycle, MUIA_SignatureCycle_Signature);
 	struct signature *sign;
 	char *text;
 	int x = xget(data->text_texteditor,MUIA_TextEditor_CursorX);
 	int y = xget(data->text_texteditor,MUIA_TextEditor_CursorY);
 
-	if (val == MUIV_SignatureCycle_NoSignature)
+	if (mystrcmp(sign_name, MUIV_SignatureCycle_NoSignature) == 0)
 	{
 		if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
 		{
@@ -884,6 +888,44 @@ static void compose_set_signature(void **msg)
 			free(sign_iso);
 		}
 		FreeVec(text);
+	}
+}
+
+/******************************************************************
+ Refresh the Signature Cycle if the config has changed
+*******************************************************************/
+void compose_refresh_signature_cycle()
+{
+	int num;
+	struct Compose_Data *data;
+
+	for (num=0; num < MAX_COMPOSE_OPEN; num++)
+	{
+		if (compose_open[num])
+		{
+			data = compose_open[num];
+			if (data->signatures_cycle)
+			{
+				char *sign_current = mystrdup((char *)xget(data->signatures_cycle, MUIA_SignatureCycle_Signature));
+				DoMethod(data->signatures_group, MUIM_Group_InitChange);
+				DoMethod(data->signatures_group, OM_REMMEMBER, data->signatures_cycle);
+				MUI_DisposeObject(data->signatures_cycle);
+				data->signatures_cycle = SignatureCycleObject,
+					MUIA_SignatureCycle_HasDefaultEntry, FALSE,
+					MUIA_SignatureCycle_Signature, MUIV_SignatureCycle_NoSignature,
+					End;
+				DoMethod(data->signatures_group, OM_ADDMEMBER, data->signatures_cycle);
+				DoMethod(data->signatures_group, MUIM_Group_ExitChange);
+				if (data->signatures_cycle)
+				{
+					set(data->signatures_cycle, MUIA_SignatureCycle_Signature, sign_current);
+					compose_set_signature(&data);
+					DoMethod(data->signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, data->signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
+					DoMethod(data->from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, data->from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
+				}
+				if (sign_current) free(sign_current);
+			}
+		}
 	}
 }
 
@@ -1010,7 +1052,7 @@ int compose_window_open(struct compose_args *args)
 		   signature is set */
 		signatures_cycle = SignatureCycleObject, 
 			MUIA_SignatureCycle_HasDefaultEntry, FALSE,
-			MUIA_Cycle_Active, MUIV_SignatureCycle_NoSignature,
+			MUIA_SignatureCycle_Signature, MUIV_SignatureCycle_NoSignature,
 			End;
 		if (signatures_cycle)
 		{
@@ -1242,6 +1284,7 @@ int compose_window_open(struct compose_args *args)
 			data->paste_button = paste_button;
 			data->undo_button = undo_button;
 			data->redo_button = redo_button;
+			data->signatures_group = signatures_group;
 			data->signatures_cycle = signatures_cycle;
 
 			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
@@ -1371,9 +1414,9 @@ int compose_window_open(struct compose_args *args)
 
 				DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
 				DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
-				if (f && f->def_signature != MUIV_SignatureCycle_Default)
+				if (f && (mystrcmp(f->def_signature, MUIV_SignatureCycle_Default) != 0))
 				{
-					set(data->signatures_cycle, MUIA_Cycle_Active, f->def_signature);
+					set(data->signatures_cycle, MUIA_SignatureCycle_Signature, f->def_signature);
 				} else
 				{
 					compose_set_def_signature(&data);

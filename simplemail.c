@@ -543,6 +543,10 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 
 		/* Reset the autoflag since the mail now is really marked as spam */
 		folder_set_mail_flags(from_folder,mail,mail->flags & (~MAIL_FLAGS_AUTOSPAM));
+
+		/* remove the new flag */
+		if (mail->flags & MAIL_FLAGS_NEW && from_folder->new_mails) from_folder->new_mails--;
+		mail->flags &= ~MAIL_FLAGS_NEW;
 	}
 
 	same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */

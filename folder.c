@@ -1572,7 +1572,7 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 							{
 								int i = 0;
 								while (!take && rule->u.subject.subject[i])
-									take = !!mystristr(m->from,rule->u.subject.subject[i++]);
+									take = !!mystristr(m->subject,rule->u.subject.subject[i++]);
 							}
 							break;
 
@@ -1585,7 +1585,7 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 									{
 										int i = 0;
 										while (!take && rule->u.header.contents[i])
-											take = !!mystristr(m->from,rule->u.header.contents[i++]);
+											take = !!mystristr(header->contents,rule->u.header.contents[i++]);
 									}
 								}
 							}

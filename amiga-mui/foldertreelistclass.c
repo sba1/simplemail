@@ -115,7 +115,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 /*						MUIA_NListtree_ConstructHook, &data->construct_hook,
 						MUIA_NListtree_DestructHook, &data->destruct_hook,*/
 						MUIA_NListtree_DisplayHook, &data->display_hook,
-						MUIA_NListtree_Format, ",",
+						MUIA_NListtree_Format, "BAR,",
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
 						TAG_DONE);

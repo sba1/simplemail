@@ -113,7 +113,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, ",,COL=3,COL=4,COL=5,COL=6",
+						MUIA_NListtree_Format, "BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,COL=6",
 						TAG_DONE);
 
 	return (ULONG)obj;
@@ -138,10 +138,10 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							data->folder_type = tag->ti_Data;
 							if (data->folder_type == FOLDER_TYPE_SEND)
 							{
-								set(obj,MUIA_NListtree_Format,",COL=2,COL=3,COL=4,COL=5,COL=6");
+								set(obj,MUIA_NListtree_Format,"BAR,BAR COL=2,BAR COL=3,BAR COL=4,BAR COL=5,COL=6");
 							} else
 							{
-								set(obj,MUIA_NListtree_Format,",,COL=3,COL=4,COL=5,COL=6");
+								set(obj,MUIA_NListtree_Format,"BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6");
 							}
 						}
 						break;

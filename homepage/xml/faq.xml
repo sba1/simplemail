@@ -1,0 +1,87 @@
+<?xml version='1.0' ?>
+
+<faq>
+  <entry>
+    <question>
+      Why do you write a completly new mailer and don't simply take part
+      on the YAM development as YAM is under GPL?
+    </question>
+    <answer>
+      Because when we started developing SimpleMail, YAM wasn't under GPL
+      and no one knew if it ever will be. As we are both students of computer
+      sciences we decided to write our own mailer to gain some practice and
+      that's the reason why we are still developing it on. An other reason is
+      that it would probably be more work to rewrite YAM than to write our own
+      mailer. And last but not least, it's fun to code and to create something
+      new and own.
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      Will SimpleMail be as powerful as YAM?
+    </question>
+    <answer>
+      Yes, SimpleMail will have all the functions that YAM has but
+      less bugs and many new features you have missed.
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      I don't like MUI, will you make a ReAction/ClassAct version?
+    </question>
+    <answer>
+      I think nobody thinks that MUI is perfect but there is a
+      very big variety of public MUI classes that are vital for SimpleMail.
+      However, as SimpleMail is portable concerning platforms it is also
+      portable concerning the GUI so there is a possibility that when SimpleMail
+      isn't alpha/beta anymore that we will provide also a version basing on
+      other GUI systems but that's no promise and we hope that maybe one of
+      you ReAction-Fans could do it when the time arrives?
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      Will you include news support? (NNTP)
+    </question>
+    <answer>
+      Rather not as we think that it is better to make two seperate
+      programs, because adding news would be too much ballast for users that
+      don't want it. Wait for SimpleNews instead. ;)
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      Will you include SSL? (POP3S)
+    </question>
+    <answer>
+      Definitly yes!
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      Will you make a version for the AmigaDE?
+    </question>
+    <answer>
+      Yes we hope so.
+    </answer>
+  </entry>
+
+  <entry>
+    <question>
+      Will there be a port for Windows/MacOS/QNX/Linux/#? ?
+    </question>
+    <answer>
+      We think that the sourcecode of SimpleMail is quite portable
+      and so it should be no problem to port it. But we cannot do everything
+      so when SimpleMail has left the alpha/beta stage, feel free to contact
+      us if you want to port it to your favorite platform.
+    </answer>
+  </entry>
+
+</faq>
+

@@ -1,0 +1,145 @@
+<?xml version='1.0' ?>
+
+<news>
+
+  <entry>
+    <date>
+      2001/04/12
+    </date>
+    <text>
+      Again the homepage has been redesigned (mainly internal). Most noteably
+      difference: the downloadscript works much better now, you don't have
+      to rename the file in your filerequester anymore.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/03/25
+    </date>
+    <text>
+      Introduced the new SimpleMail <a href="index.html?galery">User Gallery</a>.
+      Alpha 0.5 has been released. New features are:
+      <list>
+        <item>Configurable mail download selection added.</item>
+        <item>Supports 8 bit mime mails (if a SMTP Server don't support them they are encoded on the fly).</item>
+        <item>Improved the readwindow. Now used extensivly the SimpleHTML engine.</item>
+        <item>Button images are cached now.</item>
+        <item>Support of the new SimpleMail User Gallery.</item>
+      </list>
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/02/25
+    </date>
+
+    <text>
+      A new alpha 0.4 has been released. Most important new feature is the possibility to
+      configure more then one POP3 server.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/02/09
+    </date>
+
+    <text>
+      I (Hynek) am leaving today and will come back in April so send all mail you
+      send to me also to Sebastian as he will stay here.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/02/06
+    </date>
+
+    <text>
+      New frequently asked questions added to the <a href="index.html?part=faq">FAQ</a>.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/02/05
+    </date>
+
+    <text>
+      Alpha-Version 0.3 released! This time we have added quiet a bunch of new
+      features:
+      <list>
+        <item>Forward button.</item>
+        <item>The main window has two different views which are switchable
+          within the mainwindow.</item>
+        <item>Improved the composewindow (some buttons added, also a undo/redo).</item>
+        <item>The "To" button in the addressbook works now.</item>
+        <item>Group mails (mails with multiple recipients), mails with attachments,
+          important mails can now easily identified.</item>
+        <item>Added a small context menu for the mailtreelist, mails can now be
+          marked and hold.</item>
+        <item>Added the possibility to use your IP-addresss as you domain in
+          the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore).</item>
+        <item>Added smtp-auth according to rfc2554.</item>
+        <item>It is now possible to specify which port you would like to use on
+          the servers instead of 25 (SMTP) and 110 (POP3).</item>
+        <item>Other smaller improvements and bug fixes.</item>
+      </list>
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/01/26
+    </date>
+
+    <text>
+      New frequently asked question added to the <a href="index.html?faq">FAQ</a>.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/01/26
+    </date>
+
+    <text>
+      Added some banners for your homepages made by Richard Wagenführer.
+      You can find them in the <a href="index.html?downloads">downloads-section</a>.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/01/23
+    </date>
+
+    <text>
+      The homepage moves to http://simplemail.sourceforge.net/. A completly new
+      design is introduced.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2001/01/14
+    </date>
+
+    <text>
+      The second alpha version 0.2 is released.
+    </text>
+  </entry>
+
+  <entry>
+    <date>
+      2000/12/24
+    </date>
+
+    <text>
+      The first alpha version 0.1 is released.
+    </text>
+  </entry>
+
+</news>

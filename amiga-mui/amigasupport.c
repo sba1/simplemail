@@ -130,7 +130,7 @@ void SecondsToDateString( char *buf, unsigned int seconds)
 	{
 		struct Hook date_hook;
 
-#ifndef __AMIGAOS4__
+#ifdef __AMIGAOS4__
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -157,7 +157,7 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 	if (LocaleBase && DefaultLocale)
 	{
 		struct Hook date_hook;
-#ifndef __AMIGAOS4__
+#ifdef __AMIGAOS4__
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else

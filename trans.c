@@ -30,6 +30,7 @@
 #include "pop3.h"
 #include "simplemail.h"
 #include "smtp.h"
+#include "tcp.h"
 
 #include "io.h" /* io.c should be removed after stuff has been moved to support.h */
 
@@ -60,7 +61,7 @@ int mails_dl(void)
 
 int mails_upload(void)
 {
-	char *server, *domain;
+	char *domain;
 	struct folder *out_folder = folder_outgoing();
 	void *handle = NULL;
 	int i;
@@ -68,6 +69,7 @@ int mails_upload(void)
 	struct out_mail *out;
 	struct mail *m;
 	int num_mails;
+	struct smtp_server *server;
 
 	char path[256];
 
@@ -77,10 +79,15 @@ int mails_upload(void)
 		return 0;
 	}
 
-	server = user.config.smtp_server;
+	server = malloc(sizeof(struct smtp_server));
+	server->name   = malloc(256);
+	strcpy(server->name, user.config.smtp_server);
+	server->port   = 25;
+	server->socket = SMTP_NO_SOCKET;
+	
 	domain = user.config.smtp_domain;
 
-	if (!server)
+	if (!server->name)
 	{
 		tell("Please specify a smtp server!");
 		return 0;
@@ -173,6 +180,9 @@ int mails_upload(void)
 
 	chdir(path);
 	free(out_array);
+	
+	free(server->name);
+	free(server);
 
 	/* NOTE: A lot of memory leaks!! */
 }

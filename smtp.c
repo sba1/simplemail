@@ -43,14 +43,14 @@
 
 #include "smtp.h"
 
-int buf_flush(long hsocket, char *buf, long len)
+int buf_flush(struct smtp_server *server, char *buf, long len)
 {
 	int rc;
 	long sent;
    
 	rc = FALSE;
    
-	sent = send(hsocket, buf, len, 0);
+	sent = send(server->socket, buf, len, 0);
 	if(sent == len)
 	{
 		rc = TRUE;
@@ -64,7 +64,7 @@ int buf_flush(long hsocket, char *buf, long len)
 	return(rc);
 }
 
-__inline static int buf_cat(long hsocket, char *buf, char c)
+__inline static int buf_cat(struct smtp_server *server, char *buf, char c)
 {
 	int rc;
 	static len = 0;
@@ -80,7 +80,7 @@ __inline static int buf_cat(long hsocket, char *buf, char c)
 			CR = FALSE;
 		}	
 		buf[len++] = '\n';
-		rc  = buf_flush(hsocket, buf, len);
+		rc  = buf_flush(server, buf, len);
 		len = 0;
 		buf[0]=0;
 	}
@@ -123,7 +123,7 @@ void buf_free(char *buf)
 	free(buf);
 }
 
-int smtp_send_cmd(long hsocket, char *cmd, char *args)
+int smtp_send_cmd(struct smtp_server *server, char *cmd, char *args)
 {
 	int rc;
 	char *buf;
@@ -142,7 +142,7 @@ int smtp_send_cmd(long hsocket, char *cmd, char *args)
 		{
 			sprintf(buf, "%s\r\n", cmd);
 		}
-		count = send(hsocket, buf, strlen(buf), 0);
+		count = send(server->socket, buf, strlen(buf), 0);
 		
 		if(count != strlen(buf))
 		{
@@ -150,7 +150,7 @@ int smtp_send_cmd(long hsocket, char *cmd, char *args)
 		}
 	}
 	
-	count = recv(hsocket, buf, 1023, 0);
+	count = recv(server->socket, buf, 1023, 0);
 	if(count != -1)
 	{
 		buf[count] = 0;
@@ -160,14 +160,14 @@ int smtp_send_cmd(long hsocket, char *cmd, char *args)
 	return(rc);
 }
 
-int smtp_helo(long hsocket, char *domain)
+int smtp_helo(struct smtp_server *server, char *domain)
 {
 	int rc;
 
 	rc = FALSE;
-	if(smtp_send_cmd(hsocket, NULL, NULL) == SMTP_SERVICE_READY)
+	if(smtp_send_cmd(server, NULL, NULL) == SMTP_SERVICE_READY)
 	{
-		if(smtp_send_cmd(hsocket, "HELO", domain) == SMTP_OK)
+		if(smtp_send_cmd(server, "HELO", domain) == SMTP_OK)
 		{
 			rc = TRUE;
 		}
@@ -180,7 +180,7 @@ int smtp_helo(long hsocket, char *domain)
 	return(rc);
 }
 
-int smtp_from(long hsocket, char *from)
+int smtp_from(struct smtp_server *server, char *from)
 {
 	int rc;
 	char *buf;
@@ -192,7 +192,7 @@ int smtp_from(long hsocket, char *from)
 	{
 		sprintf(buf, "FROM:<%s>", from);
 
-		if(smtp_send_cmd(hsocket, "MAIL", buf) == SMTP_OK)
+		if(smtp_send_cmd(server, "MAIL", buf) == SMTP_OK)
 		{
 			rc = TRUE;
 		}
@@ -203,7 +203,7 @@ int smtp_from(long hsocket, char *from)
 	return(rc);
 }
 
-int smtp_rcpt(long hsocket, struct out_mail *om)
+int smtp_rcpt(struct smtp_server *server, struct out_mail *om)
 {
 	int rc;
 	long i;
@@ -219,7 +219,7 @@ int smtp_rcpt(long hsocket, struct out_mail *om)
 		for(i = 0; om->rcp[i] != NULL; i++)
 		{
 			sprintf(buf, "TO:<%s>", om->rcp[i]);
-			if(smtp_send_cmd(hsocket, "RCPT", buf) != SMTP_OK)
+			if(smtp_send_cmd(server, "RCPT", buf) != SMTP_OK)
 			{
 				rc = FALSE;
 				break;
@@ -233,7 +233,7 @@ int smtp_rcpt(long hsocket, struct out_mail *om)
 
 }
 
-int smtp_data(long hsocket, char *mailfile)
+int smtp_data(struct smtp_server *server, char *mailfile)
 {
 	int rc;
 	long ret;
@@ -255,7 +255,7 @@ int smtp_data(long hsocket, char *mailfile)
 			up_init_gauge_byte(size);
 			fseek(fp, 0L, SEEK_SET);
 			
-			ret = smtp_send_cmd(hsocket, "DATA", NULL);
+			ret = smtp_send_cmd(server, "DATA", NULL);
 			if((ret == SMTP_OK) || (ret == SMTP_SEND_MAIL))
 			{
 				long i;
@@ -267,7 +267,7 @@ int smtp_data(long hsocket, char *mailfile)
 				
 				while((c = fgetc(fp)) != EOF)
 				{
-					if(buf_cat(hsocket, buf, c) == FALSE)
+					if(buf_cat(server, buf, c) == FALSE)
 					{
 						rc = FALSE;
 						break;
@@ -285,8 +285,8 @@ int smtp_data(long hsocket, char *mailfile)
 				}
 				if(rc == TRUE)
 				{
-					buf_flush(hsocket, buf, strlen(buf));
-					if(smtp_send_cmd(hsocket, "\r\n.\n", NULL) != SMTP_OK)
+					buf_flush(server, buf, strlen(buf));
+					if(smtp_send_cmd(server, "\r\n.\n", NULL) != SMTP_OK)
 					{
 						rc = FALSE;
 					}
@@ -306,11 +306,11 @@ int smtp_data(long hsocket, char *mailfile)
 	return(rc);
 }
 
-int smtp_quit(long hsocket)
+int smtp_quit(struct smtp_server *server)
 {
 	int rc;
 
-	rc = (smtp_send_cmd(hsocket, "QUIT", NULL) == SMTP_OK);
+	rc = (smtp_send_cmd(server, "QUIT", NULL) == SMTP_OK);
 
 	return(rc);
 }
@@ -324,14 +324,14 @@ long get_amm(long *array)
 	return(rc);
 }
 
-int smtp_send_mail(long hsocket, struct out_mail **om)
+int smtp_send_mail(struct smtp_server *server, struct out_mail **om)
 {
 	int rc;
    
 	rc = FALSE;
 
 	up_set_status("Sending HELO...");
-	if(smtp_helo(hsocket, om[0]->domain))
+	if(smtp_helo(server, om[0]->domain))
 	{
 		long i,amm;
 		
@@ -344,13 +344,13 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 			up_set_gauge_mail(i+1);
 			
 			up_set_status("Sending FROM...");
-			if(smtp_from(hsocket, om[i]->from))
+			if(smtp_from(server, om[i]->from))
 			{
 				up_set_status("Sending RCP...");
-				if(smtp_rcpt(hsocket, om[i]))
+				if(smtp_rcpt(server, om[i]))
 				{
 					up_set_status("Sending DATA...");
-					if(!smtp_data(hsocket, om[i]->mailfile))
+					if(!smtp_data(server, om[i]->mailfile))
 					{
 						tell("data failed");
 						rc = FALSE;
@@ -382,7 +382,7 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 		if(rc == TRUE)
 		{
 			up_set_status("Sending QUIT...");
-			if(smtp_quit(hsocket))
+			if(smtp_quit(server))
 			{
 				rc = TRUE;
 			}
@@ -396,27 +396,27 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 	return(rc);
 }
 
-int smtp_send(char *server, struct out_mail **om)
+int smtp_send(struct smtp_server *server, struct out_mail **om)
 {
 	int rc;
-	long hsocket;
-
+	
 	rc = FALSE;
    
 	SocketBase = OpenLibrary("bsdsocket.library", 4);  
 	if(SocketBase != NULL)  
 	{
 		up_window_open();
-		up_set_title(server);
+		up_set_title(server->name);
 		up_set_status("Connecting...");
 		
-		hsocket = tcp_connect(server, 25);
-		if(hsocket != SMTP_NO_SOCKET)
+		server->socket = tcp_connect(server->name, server->port);
+		if(server->socket != SMTP_NO_SOCKET)
 		{
-			rc = smtp_send_mail(hsocket, om);
+			rc = smtp_send_mail(server, om);
          
 			up_set_status("Disconnecting...");
-			CloseSocket(hsocket);
+			CloseSocket(server->socket);
+			server->socket = SMTP_NO_SOCKET;
 		}
 		else
 		{

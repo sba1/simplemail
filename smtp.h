@@ -13,6 +13,13 @@ struct out_mail
    char *mailfile;
 };
 
-int smtp_send(char *server, struct out_mail **om);
+struct smtp_server
+{
+	char *name;
+	long port;
+	long socket;
+};
+
+int smtp_send(struct smtp_server *server, struct out_mail **om);
 
 #endif

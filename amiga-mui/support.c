@@ -343,7 +343,20 @@ int sm_request(char *title, char *text, char *gadgets, ...)
   vsnprintf(text_buf, 2048, text, ap);
   va_end(ap);
 
-	rc = MUI_RequestA(App, NULL, 0, title, gadgets, text_buf, NULL);
+	if (MUIMasterBase)
+	{
+		rc = MUI_RequestA(App, NULL, 0, title, gadgets, text_buf, NULL);
+	} else
+	{
+		struct EasyStruct es;
+		memset(&es,0,sizeof(es));
+		es.es_StructSize = sizeof(es);
+		es.es_Title = title?title:"SimpleMail";
+		es.es_TextFormat = text_buf;
+		es.es_GadgetFormat = gadgets;
+
+		rc = EasyRequestArgs(NULL,&es,NULL,NULL);
+	}
 
 	free(text_buf);
 	return rc;

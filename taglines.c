@@ -92,24 +92,51 @@ char *taglines_add_tagline(char *buf)
 	char *tagline;
 	long len;
 
-	tagline = get_tagline();
-
-	if(tagline != NULL)
+	if(strstr(buf,"%t"))
 	{
-		len = strlen(buf) + strlen(tagline);
+		tagline = get_tagline();
 
-		rc = malloc(len+1);
-		if(rc != NULL)
+		if(tagline != NULL)
 		{
-			strcpy(rc, buf);
-			strcat(rc, tagline);
-			free(tagline);
-			free(buf);
+			len = strlen(buf) + strlen(tagline) - 2;
+
+			rc = malloc(len+1);
+			if(rc != NULL)
+			{
+				char *ptr;
+
+				for(ptr = buf+strlen(buf); ptr != buf; ptr--) // Search from the end.
+				{
+					if(strstr(ptr,"%t"))	// tagline-placeholder found.
+					{
+						strcpy(rc, buf);
+						rc[ptr-buf] = 0;
+						strcat(rc, tagline);
+						strcat(rc, ptr+2);
+
+						break;
+					}
+				}
+
+				if(ptr!=buf && rc && rc[0])
+				{
+					free(tagline);
+					free(buf);
+				}
+				else
+				{
+					if(rc)
+					{
+						free(rc);
+					}
+					rc = buf;
+				}
+			}
 		}
-	}
-	else
-	{
-		rc = buf;
+		else
+		{
+			rc = buf;
+		}
 	}
 
 	return rc;

@@ -543,6 +543,7 @@ void callback_reload_folder_order(void)
 /* the configuration has been changed */
 void callback_config_changed(void)
 {
+	/* Build the check single account menu */
 	main_build_accounts();
 }
 

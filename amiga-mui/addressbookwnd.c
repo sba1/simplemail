@@ -270,17 +270,22 @@ static void person_window_ok(struct Person_Data **pdata)
 		new_entry->dob_day = day;
 		new_entry->dob_year = year;
 
+		/* Remove old entry if it was a edit operation */
 		if (data->person)
 		{
 			pos = MUIV_NList_GetPos_Start;
 			DoMethod(address_list, MUIM_NList_GetPos, data->person, &pos);
+			if (pos != MUIV_NList_GetPos_End) DoMethod(address_list, MUIM_NList_Remove, pos);
+		}
 
-			if (pos != MUIV_NList_GetPos_End) DoMethod(address_list, MUIM_NList_ReplaceSingle, new_entry, pos, NOWRAP, 0);
-			else pos = -1;
-		} else pos = -1;
+		DoMethod(address_list, MUIM_NList_InsertSingle, new_entry, MUIV_NList_Insert_Sorted);
 
-		if (pos == -1)
-			DoMethod(address_list, MUIM_NList_InsertSingle, new_entry, MUIV_NList_Insert_Sorted);
+/*		if (new_entry)
+		{
+			pos = MUIV_NList_GetPos_Start;
+			DoMethod(address_list, MUIM_NList_GetPos, new_entry, &pos);
+			if (pos != MUIV_NList_GetPos_End) set(address_list, MUIA_NList_Active, pos);
+		}*/
 
 		addressbook_free_entry_new(new_entry);
 	}
@@ -387,6 +392,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	Object *female_button, *male_button, *birthday_string, *homepage_string, *pgp_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
 	Object *pgp_popobject, *pgp_list;
+	Object *group_list, *add_to_group_button, *rem_from_group_button;
 	struct Snail_Data priv, work;
 	int num;
 
@@ -526,10 +532,27 @@ static void person_window_open(struct addressbook_entry_new *entry)
 							End,
 						End,
 					Child, VGroup,
-						Child, HorizLineTextObject(_("E-Mail addresses")),
-						Child, email_texteditor = ComposeEditorObject,
-							InputListFrame,
-							MUIA_CycleChain,1,
+						Child, HGroup,
+							Child, VGroup,
+								Child, HorizLineTextObject(_("E-Mail addresses")),
+								Child, email_texteditor = ComposeEditorObject,
+									InputListFrame,
+									MUIA_CycleChain,1,
+									End,
+								End,
+							Child, BalanceObject, End,
+							Child, VGroup,
+								MUIA_Weight, 50,
+								Child, HorizLineTextObject(_("Belonging groups")),
+								Child, NListviewObject,
+									MUIA_NListview_NList, group_list = NListObject,
+										End,
+									End,
+								Child, HGroup,
+									Child, add_to_group_button = MakeButton(_("Add")),
+									Child, rem_from_group_button = MakeButton(_("Remove")),
+									End,
+								End,
 							End,
 						End,
 					End,

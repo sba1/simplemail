@@ -1276,6 +1276,38 @@ static void addressbookwnd_rem_group(void)
 
 	if (group)
 	{
+		int i;
+		int num = 0;
+		int entries = xget(address_list,MUIA_NList_Entries);
+
+		for (i=0;i<entries;i++)
+		{
+			struct addressbook_entry_new *entry;
+			DoMethod(address_list,MUIM_NList_GetEntry, i, &entry);
+			if (entry && array_contains(entry->group_array,group->name))
+				num++;
+		}
+
+		if (num)
+		{
+			if (!sm_request(NULL,_("There are %d addresses belonging to the group.\n"
+			                  "Do you really want to delete this group?"),_("Yes|No"), num))
+				return;
+
+			for (i=0;i<entries;i++)
+			{
+				struct addressbook_entry_new *entry;
+				DoMethod(address_list,MUIM_NList_GetEntry, i, &entry);
+				if (entry)
+				{
+					int idx = array_index(entry->group_array,group->name);
+					if (idx != -1)
+						array_remove_idx(entry->group_array,idx);
+				}
+			}
+			DoMethod(address_list,MUIM_NList_Redraw,MUIV_NList_Redraw_All);
+		}
+
 		DoMethod(group_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 
 		/* update the internal addressbook */

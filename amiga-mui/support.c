@@ -244,7 +244,7 @@ void sm_convert_seconds(unsigned int seconds, struct tm *tm)
 	tm->tm_min = cd.min;
 	tm->tm_hour = cd.hour;
 	tm->tm_mday = cd.mday;
-	tm->tm_mon = cd.month;
+	tm->tm_mon = cd.month - 1;
 	tm->tm_year = cd.year - 1900;
 	tm->tm_wday = cd.wday;
 }

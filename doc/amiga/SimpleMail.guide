@@ -1,5 +1,5 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.1 (18.11.2001)
+@$VER: SimpleMail.guide 0.2 (24.11.2001)
 @AUTHOR David Rey <david@saug.org>
 @INDEX "Index"
 
@@ -46,38 +46,38 @@ The program and the general usage is very similar to YAM's, although YAM is
 currently much more powerful. However, SimpleMail has (or should have in
 the future) some features which YAM doesn't offer yet.
 
-Please note this is an ALPHA release. Don't expect too much at this early
+Please note this is an ALPHA release. Don't expect too much at these early
 stages - SimpleMail is still very limited and has probably lots of bugs.
 But it will get better over time... :-)
 
 
 Current features of SimpleMail
 
-- Very simple @{"installation" link "INST" 0} process.
+- Very simple @{" installation " LINK "INST" 0} process.
 
 - Easy operation using buttons, menus, the keyboard and drag&drop.
 
-- Comprehensive main window, offering quick access to your @{"address book" link "AB_W" 0} and
-  sporting threaded views.
+- Comprehensive main window, offering quick access to your @{" address book " LINK "AB_W" 0}
+  and sporting threaded views.
 
-- Any number of @{"user-defined folders" link "FO_W" 0}, which can also be arranged
+- Any number of @{" user-defined folders " LINK "FO_W" 0}, which can also be arranged
   in groups.
 
-- Hierarchical @{"address book" link "AB_W" 0}, including groups and tons of data
+- Hierarchical @{" address book " LINK "AB_W" 0}, including groups and tons of data
   for each entry.
 
-- Freely customisable interface, thanks to @{"MUI" link MUI}.
+- Freely customisable interface, thanks to @{" MUI " link MUI}.
 
 - Built-in POP3 & SMTP clients, which can check any number of different
   mail servers in one connection and preselect messages for download.
 
-- Automatic message sorting, using @{"filters" link "CO_F" 0}.
+- Automatic message handling, using @{" filters " LINK "CO_F" 0}.
 
 - Built-in support for UUencode and MIME for sending and receiving binary
   data.
 
 - HTML mail compatible, thanks to the built-in HTML client based on the
-  @{"SimpleHTML" link SimpleHTML} engine.
+  @{" SimpleHTML " link SimpleHTML} engine.
 
 - ARexx port
 
@@ -96,18 +96,18 @@ Software
 
  - AmigaOS 3.0+
  - AmiTCP/IP compatible stack (AmiTCP, Miami[DX], Genesis...)
- - @{"MUI 3.8" link MUI} or higher
+ - @{" MUI " link MUI} 3.8 or higher
  - 3rd party MUI custom classes:
 
-   BetterString   - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
-   NList          - http://www.aphaso.de/download/MCC_NList0_90.lha
-   NListtree      - http://www.aphaso.de/download/MCC_NListtree18.8.lha
-   PopPlaceHolder - http://us.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
-   TextEditor     - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
+   BetterString   - http:\//www.p2p-it.dk/duff/MCC_BetterString.LZX
+   NList          - http:\//www.aphaso.de/download/MCC_NList0_90.lha
+   NListtree      - http:\//www.aphaso.de/download/MCC_NListtree18.8.lha
+   PopPlaceHolder - http:\//us.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
+   TextEditor     - http:\//www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
- - optional: OpenURL    - http://www.cc.jyu.fi/~sintonen/bin/OpenURL31.lha
- - optional: PGP 2.6.x  - http://us.aminet.net/pub/aminet/util/crypt/PGPAmiga-2.6.3is.lha
- - optional: AmiSSL     - http://tesla.rcub.bg.ac.yu/~antony/AmiSSL/
+ - (optional) OpenURL    - http:\//www.cc.jyu.fi/~sintonen/bin/OpenURL31.lha
+ - (optional) PGP 2.6.x  - http:\//us.aminet.net/pub/aminet/util/crypt/PGPAmiga-2.6.3is.lha
+ - (optional) AmiSSL     - http:\//tesla.rcub.bg.ac.yu/~antony/AmiSSL/
 
 @ENDNODE
 @NODE "COPY" "Legal issues"
@@ -117,7 +117,7 @@ LEGAL STUFF
 SimpleMail is © 2000-2001 by Hynek Schlawack & Sebastian Bauer and released
 under the GNU Public License.
 
-See @{"here" link INFO} if you are a developer and want to join the effort, get access
+See @{" here " link INFO} if you are a developer and want to join the effort, get access
 to the CVS or just get the sources.
 
 @ENDNODE
@@ -151,7 +151,7 @@ local bulletin boards or on public domain disks.
 
              Support and online registration is available at
 
-                          http://www.sasg.com/
+                          http:\//www.sasg.com/
 
 @ENDNODE
 @NODE "INST" "Installation"
@@ -179,7 +179,8 @@ user or are otherwise familiarised with email, you probably won't need to
 read this at all.
 
 
-1. Before we go ahead, you need this info from your Internet Service Provider:
+1. Before we go ahead, you need this info from your Internet Service
+Provider:
 
  - your e-mail address
  - the Internet address of your mail server (also known as "POP3" or "SMTP
@@ -197,14 +198,14 @@ the message list and a cut-down version of the address book- and a row
 of buttons.
 
 3. The program must be configured before you can do anything else. Choose
-'Configuration...'  from the 'Settings' menu or just click the "Config"
+"Configuration..." from the "Settings" menu or just click the "Config"
 button at the top-right corner to open the Configuration window.
 
-4. The sheet which then appears is called 'User'. Here you can select your
-folder directory and set the adjustment for daylight savings time. If daylight
-saving time applies to you at the time of installation, turn it on here.
-Leave the folder directory as it is for now, and select the "-/-" entry under
-"Accounts" in the left list to create a new account.
+4. The sheet which then appears is called "User". Here you can select
+your folder directory and set the adjustment for daylight saving time.
+If daylight saving time applies to you at the time of installation, turn
+it on here. Leave the folder directory as it is for now, and select the
+"-/-" entry under "Accounts" in the left list to create a new account.
 
 5. Here is where you must enter the absolutely vital information needed
 for you to be able to send and receive email. Following our example, we
@@ -230,9 +231,9 @@ server first".
 7. Save the settings now by clicking on [Save]. SimpleMail should now have
 enough data to allow you to send and receive email.
 
-8. After saving the  settings, you're back in the main window. Click the
-button  [New] (fifth button from the  left) - the Compose Message window
-will open. As a quick test, type your own address into the 'To' text field
+8. After saving the settings, you're back in the main window. Click the
+[New] button (fifth button from the left) - the Compose Message window
+will open. As a quick test, type your own address into the "To" text field
 (like "ralf@provider.de"), and then something to indicate the subject of
 your message into the "Subject" text field. As you press <Return> in this
 field, you're brought to the large blank area where you can type the actual
@@ -246,35 +247,35 @@ composition in a more verbose way - which by the way you can activate
 at any time using the "Show Attachments" button.
 
 9. Assuming you are not currently online (your TCP/IP stack is not running),
-click on [Send later]. This moves the message to the 'Outgoing' folder
+click on [Send later]. This moves the message to the "Outgoing" folder
 instead of sending it immediately as [Send now] would try to do.
 
-10. Now start your TCP/IP stack and go online. Open the 'Outgoing' folder
-by clicking on 'Outgoing' in the folder list contained in the main window.
-The message is already selected, so send it by  clicking the 'Send' button
+10. Now start your TCP/IP stack and go online. Open the "Outgoing" folder
+by clicking on "Outgoing" in the folder list contained in the main window.
+The message is already selected, so send it by clicking the "Send" button
 at the top. The transfer status window will appear and report the progress
 as SimpleMail logs in on the mail server and sends your message.
 
-11. As  you've  probably noticed, the mail has vanished from the 'Outgoing'
+11. As you've probably noticed, the mail has vanished from the 'Outgoing'
 folder, and can be found now in the "Sent" folder. The letter picture in
-the list  has  a little stamp on it now, which means that the message has
+the list has a little stamp on it now, which means that the message has
 been sent successfully.
 
-12. When  you  double-click  the  message, the Read Message window will open.
-You should  be  able  to  recognize  the text written by you. The lines in
-the upper part of  the  message  have  been inserted by SimpleMail and
+12. When you double-click the message, the Read Message window will open.
+You should be able to recognize the text written by you. The lines in
+the upper part of the message have been inserted by SimpleMail and
 contain data needed for mail transfer (the so-called "headers").
 
 13. Since you've written the mail to yourself, it's time to check your
 account for new mail. Close the read window and then click the "Fetch"
 button at the top of the main window.
 
-14. The  transfer  status  window  you  saw before opens again and you can
-watch  how  SimpleMail downloads  your  mail from the mail server. Provided
-that everything  runs as it should, you will now be able to read your email
+14. The transfer status window you saw before opens again and you can
+watch how SimpleMail downloads your mail from the mail server. Provided
+that everything runs as it should, you will now be able to read your email
 in the "Incoming" folder.
 
-If  you've  made  it  this  far  without any major  problem, you should now
+If you've made it this far without any major problem, you should now
 know the basic operation of SimpleMail. Keep reading the following chapters
 for further information about the single topics related to SimpleMail.
 
@@ -287,19 +288,19 @@ SimpleMail's main window is laid out like thus:
 
     Menu bar:
 
-    @{"Project" LINK "MAM1" 0} @{"Folder" LINK "MAM2" 0} @{"Message" LINK "MAM3" 0} @{"Settings" LINK "MAM4" 0}
+    @{" Project " LINK "MAM1" 0} @{" Folder " LINK "MAM2" 0} @{" Message " LINK "MAM3" 0} @{" Settings " LINK "MAM4" 0}
 
    .--------------------------------------------------------.
-   |              @{"Toolbar" LINK "MA02" 0}                                   |
+   |              @{" Toolbar " LINK "MA02" 0}                                 |
    |________________________________________________________|
    |                 |                                      |
-   |   @{"Folder list" link "MA00" 0}   |         @{"Message list" link "MA01" 0}                |
+   |  @{" Folder list " link "MA00" 0}  |         @{" Message list " link "MA01" 0}              |
    |                 |      This shows the contents         |
    |- - - - - - - - -|      of the selected folder          |
    |    Status bar   |                                      |
    |-----------------|                                      |
    |                 |                                      |
-   |   @{"Address book" link "AB_W" 0} |                                      |
+   | @{" Address book " link "AB_W" 0}  |                                      |
    |                 |                                      |
    `--------------------------------------------------------'
 
@@ -312,31 +313,32 @@ Main window - FOLDER LIST
 
 The following four standard 'mailbox' folders are always present:
 
-Incoming:  This  mailbox holds new messages addressed to you. Whenever you
-download  new  mail, this is where the new messages will go initially. You
-can  however  redistribute incoming messages to other folders, as desired,
+Incoming:  This mailbox holds new messages addressed to you. Whenever you
+download new mail, this is where the new messages will go initially. You
+can however redistribute incoming messages to other folders, as desired,
 using @{" filters " LINK "CO_F" 0}.
 
-Outgoing: This mailbox holds the messages which you have written and which
+Outgoing:  This mailbox holds the messages which you have written and which
 you intend to transmit the next time you go online.
 
 Sent:  Here you can see the messages which you have already sent. Messages
-are   moved   to  this  box  (from  'Outgoing')  when  they  are  actually
-transmitted. Again, you can use @{" filters " LINK "CO_F" 0} to transfer sent messages to other
-folders.
+are moved to this mailbox (from "Outgoing") when they are actually
+transmitted. Again, you can use @{" filters " LINK "CO_F" 0} to transfer sent messages to
+other folders.
 
-Deleted: This box contains messages marked for deletion. Usually, messages
-are  not actually  deleted  from  the hard disk until you quit SimpleMail.
-This allows you to recover messages deleted earlier in the session.
+Deleted:  This mailbox contains messages marked for deletion. Usually,
+messages are not actually deleted from the hard disk until you quit
+SimpleMail. This allows you to recover messages deleted earlier in the
+session.
 
 
-Using the @{" Folder menu " LINK "MAM2" 0} you can create more folders (and folder
-groups) to hold messages which you have received and/or sent, so you
-can arrange your email in whatever way you like.
+Using the @{" Folder menu " LINK "MAM2" 0} you can create more folders (and folder groups)
+to hold messages which you have received and/or sent, so you can arrange
+your email in whatever way you like.
 
 The folder list contains two columns: one for the name of the folder, and
 another one for the total number of messages in every folder. The column
-widths can be adjusted by using the mouse  to drag the thin line separating
+widths can be adjusted by using the mouse to drag the thin line separating
 the column headings in the folder list itself.
 
 You can rearrange the folders using the @{" Drag&Drop " LINK "Drag" 0} technique.
@@ -347,12 +349,12 @@ in the folder list -- the message list will then appear at the right.
 Double clicking an entry in the list opens the @{" Edit folder " LINK "FO_W" 0} window,
 where you can edit some properties for the selected folder.
 
-Under the folder list there is a status bar listing the total, new and unread
-messages in the currently selected folder. There is also a button at the
-right side of this status bar, allowing you switch to the "alternative"
-view of the main window and back: the folder list will disappear, and this
-status bar will jump to the top. Also, an additional pop-up gadget will
-appear now at the right side of the status bar, allowing you to select
+Under the folder list there is a status bar listing the total, new and
+unread messages in the currently selected folder. There is also a button
+at the right side of this status bar, allowing you to switch to & from
+the "alternative" view of the main window: the folder list will disappear,
+and this status bar will jump to the top. Also, an additional pop-up gadget
+will appear now at the right side of the status bar, allowing you to select
 another folder easily.
 
 @ENDNODE
@@ -364,50 +366,50 @@ Main window - MESSAGE LIST
 
 The message list has seven columns:
 
-Message  status:  An  icon showing the @{" status " LINK "MA0S" 0} of the message (new, unread,
+Message status:  An icon showing the @{" status " LINK "MA0S" 0} of the message (new, unread,
 read, etc.)
 
 Sender/Recipient:  Displays the e-mail address or the name of the sender
-or  recipient  of  the message, depending on the type of mailbox. If the
-message  was sent to several people at the same time, a little icon appears
-in front of the name, showing three tiny heads.
+or recipient of the message, depending on the type of mailbox. If the
+message was sent to several people at the same time, a little icon will
+appear in front of the name, showing three tiny heads.
 
-Subject: Subject of the message.
+Subject:  Subject of the message.
 
-Reply address: Contents of the Reply-To: header in the message. If this header
-is missing, this field will be blank.
+Reply address:  Contents of the Reply-To: header in the message. If the
+header is missing, this field will be blank.
 
-Date:  The  date and time that the message was posted, calculated according
+Date:  The date and time that the message was posted, calculated according
 to the local time (for you). For this to work, both you and the sender must
 have set your correct @{" timezone " LINK "CO00" 0}.
 
-Size: Size of the message, in bytes.
+Size:  Size of the message, in bytes.
 
-Filename: Name of the file containing this message.
+Filename:  Name of the file containing this message.
 
 
-The  column  widths  can  be  adjusted by using the mouse to drag the thin
+The column widths can be adjusted by using the mouse to drag the thin
 lines separating the column headings in the message list itself. The order
-of the columns can be modified by dragging the column headers with the
+of the columns can also be modified by dragging the column headers with the
 mouse.
 
 You can also turn on/off individual columns using the pop-up menu that will
 appear if you keep the right mouse button pressed while the pointer is
 over the headings.
 
-A  little  arrow  in the one of the column headings shows how the messages
-are sorted. One click on a column heading causes the messages to be sorted
-according  to  this criteria. A second click on the same heading reverses
-the  order  of sorting (Z->A instead of A->Z). To set the second sort key,
+A little arrow in one of the column headings shows how the messages are
+sorted. One click on a column heading causes the messages to be sorted
+according to  this criteria. A second click on the same heading reverses
+the order of sorting (Z->A instead of A->Z). To set the second sort key,
 keep the <Shift> key pressed while clicking on the column heading. Please
 note the From/To fields are always used as a sort criteria; this part of
 SimpleMail still needs some work. :o)
 
-A  double  click  on an entry in the list opens a @{" Read window " LINK "RE_W" 0} and displays
-the  corresponding  message.  You  can  use  the mouse to move messages to
-another  folder.  Click  on an entry and drag down (holding the left mouse
-button)  to mark a block of messages. Then click and @{" drag " LINK "Drag" 0} the marked block
-to the left, into the folder list, and drop it onto the chosen folder.
+A double click on an entry in the list opens a @{" Read window " LINK "RE_W" 0} and displays
+the corresponding message. You can use the mouse to move messages to
+another folder. Click on an entry and drag up/down (holding the left mouse
+button) to mark a block of messages. Then click and @{" drag " LINK "Drag" 0} the marked
+block to the left, into the folder list, and drop it onto the chosen folder.
 
 @ENDNODE
 @NODE "MA0S" "Status Icons"
@@ -433,10 +435,10 @@ STATUS ICONS
    Messages which have been forwarded to a third party.
 
  Unsent messages               front of envelope
-   Messages in 'Outgoing', ready to send
+   Messages in "Outgoing", ready to send
 
  Held messages                 envelope (front) with a red 'H'
-   Messages in 'Outgoing' which need further work before sending.
+   Messages in "Outgoing" which need further work before sending.
 
  Sent messages                 stamped envelope
    Messages which have already been sent.
@@ -476,23 +478,23 @@ and label), keyboard shortcuts and menu commands.
 
       Button        Shortcut    Equivalent to menu...
  -----------------------------------------------------------------------
-  1   [Read]        E,<Return>  @{"Message/Read" LINK "MAM3" 0}
-  2   [Edit]        T           @{"Message/Edit" LINK "MAM3" 0}
-  3   [Delete]      D,<Del>     @{"Message/Delete..." LINK "MAM3" 0}
+  1   [Read]        E,<Return>  @{" Message/Read " LINK "MAM3" 0}
+  2   [Edit]        T           @{" Message/Edit " LINK "MAM3" 0}
+  3   [Delete]      D,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
   4   [GetAdd]      G
 
   5   [New]         N
   6   [Reply]       R
   7   [Forward]     O
 
-  8   [Fetch]       F           N/A
-  9   [Send]        S           N/A
+  8   [Fetch]       F
+  9   [Send]        S
 
- 10   [Filter]                  N/A
- 11   [Filters]                 @{"Settings/Filter..." link "CO_F" 0}
+ 10   [Filter]
+ 11   [Filters]                 @{" Settings/Filters... " LINK "CO_F" 0}
 
- 12   [Abook]       A           @{"Settings/Address book..." LINK "MAM4" 0}
- 13   [Config]      C           @{"Settings/Configuration..." LINK "MAM4" 0}
+ 12   [Abook]       A
+ 13   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
 
 @ENDNODE
 @NODE "MAM1" "Main window - Project Menu"
@@ -500,13 +502,19 @@ and label), keyboard shortcuts and menu commands.
 
 Main window - PROJECT MENU
 
+
 Project/About...
-Shows @{"Copyright Information" LINK "COPY" 0} for this program.
+
+Shows @{" Copyright Information " LINK "COPY" 0} for this program.
+
 
 Project/About MUI...
-Shows copyright and version information for @{"MUI" LINK "MUI" 0}.
+
+Shows copyright and version information for @{" MUI " LINK "MUI" 0}.
+
 
 Project/Quit
+
 Exit from SimpleMail.
 
 @ENDNODE
@@ -515,35 +523,47 @@ Exit from SimpleMail.
 
 Main window - FOLDER MENU
 
+
 Folder/New Group...
+
 Creates a new folder group and inserts it at the end of the folder list.
 Groups can hold folders as well as another folder groups. This way you
 can arrange your folders in groups and keep your folder list clean and
 tidy.
 
 By default, groups are named "New Group". To rename them, you shall use
-the @{" configuration panel " link "FO_W" 0} accordingly.
+the @{" configuration panel " LINK "FO_W" 0} accordingly.
+
 
 Folder/New Folder...
-Creates  a  new folder and inserts it at the end of the folder list. A
+
+Creates a new folder and inserts it at the end of the folder list. A
 requester will open asking for the name, path and type of folder that
 should be created.
 
+
 Folder/Delete...
+
 Removes the current (user defined) folder, asking for confirmation first.
 If the folder is actually a folder group, any folders in it will move one
 place up the hierarchy, i.e. they will NOT be deleted.
 
+
 Folder/Options...
-Opens a @{"configuration panel" LINK "FO_W" 0} where you can modify the properties of the
+
+Opens a @{" configuration panel " LINK "FO_W" 0} where you can modify the properties of the
 current folder.
 
+
 Folder/Order  » Save|Reset
-Saves  or  restores  the order of the folders in their @{"list" LINK "MA00" 0}. This order is
+
+Saves or restores the order of the folders in their @{" list " LINK "MA00" 0}. This order is
 also saved when modifying the folder settings.
 
+
 Folder/Check single account
-If  you  have  set  up  several POP3 servers, you can use this function to
+
+If you have set up several POP3 servers, you can use this function to
 check any single account.
 
 @ENDNODE
@@ -552,19 +572,29 @@ check any single account.
 
 Main window - MESSAGE MENU
 
+
 Message/Read
-Loads the selected message into a @{"Read window" LINK "RE_W" 0}.
+
+Loads the selected message into a @{" Read window " LINK "RE_W" 0}.
+
 
 Message/Edit
+
 Allows you to edit a message you have composed earlier.
 
+
 Message/Move...
+
 Moves one or more messages into another folder. Not yet implemented.
 
+
 Message/Copy...
+
 Copies one or more messages to another folder. Not yet implemented.
 
+
 Message/Delete...
+
 Moves one or more messages to the 'Deleted' folder (from which they can be
 recovered if needed). The <Del> key can be used as a shortcut.
 
@@ -574,31 +604,38 @@ recovered if needed). The <Del> key can be used as a shortcut.
 
 Main window - SETTINGS MENU
 
+
 Settings/Show folders
+
 This switch allows you to select whether the folder list should appear 
 or not in the main window, acting as a toggle between the "normal" and
 "alternative" view of the main window.
 
+
 Settings/Show address book
+
 This switch allows you to select whether the address book should appear
 or not in the main window.
 
-Settings/Address book...
-Opens the main @{"address book" LINK "AB_W" 0} window.
 
 Settings/Configuration...
-Opens the @{"configuration window" LINK "CO_W" 0}, in which you can change SimpleMail's settings.
+
+Opens the @{" configuration window " LINK "CO_W" 0}, in which you can change SimpleMail's settings.
+
 
 Settings/Filter...
-Opens the @{"Edit Filter" link "CO_F" 0} window, where you can edit your current filters or
+
+Opens the @{" Edit Filters " LINK "CO_F" 0} window, where you can edit your current filters or
 add a new one.
 
+
 Settings/MUI...
-Open  the settings window for @{"MUI" LINK "MUI" 0} where you can specify virtually all of
-the  visual  features  of  SimpleMail,  including  fonts,  palette,  screen mode,
+
+Opens the settings window for @{" MUI " LINK "MUI" 0}, where you can specify virtually all of
+the visual features of SimpleMail, including fonts, palette, screen mode,
 background, borders, gadgets, keyboard shortcuts and so on. Please see the
-MUI  documentation  for more information. SimpleMail utilises several MUI
-classes which  were  not  in  the  original  release of MUI. For this reason,
+MUI documentation for more information. SimpleMail utilises several MUI
+classes which were not in the original release of MUI. For this reason,
 some settings are not made in SimpleMail's configuration window, but in MUI's.
 These MUI modules are:
 
@@ -616,35 +653,41 @@ PopPlaceHolder: items using pop-up placeholders under Config/Phrases
       Options: font, palette, cursor.
 
 @ENDNODE
-@NODE "FO_W" "Folder settings"
+@NODE "FO_W" "Edit Folder"
 @TOC "MA00"
 
-FOLDER SETTINGS
+EDIT FOLDER
 
-Apart  from  the  four  mailbox folders 'Incoming', 'Outgoing', 'Sent' and
-'Deleted' you can create any number of user-defined folders. These folders
-are   useful   e.g.  for  archiving  received  and/or  sent  mail  or  for
-administrating mailing lists.
+Apart from the four mailbox folders "Incoming", "Outgoing", "Sent" and
+"Deleted", you can create any number of user-defined folders. These folders
+are useful e.g. to archive received and/or sent mail or to administrate
+mailing lists.
+
 
 Name
-The  name  of  the  folder  will  appear in the folder listing in the main
+
+The name of the folder will appear in the folder listing in the main
 window.
 
     Example:  SimpleMail
 
+
 Path
+
 This is the path in which the messages of the actual folder will be saved.
-Usually this is a subdirectory of the  actual basic  folder directory, but
+Usually this is a subdirectory of the actual basic folder directory, but
 you can specify any other place, like another hard disk partition for
 example.
 
     Example:  SimpleMail_ml
 
+
 Type
-Here  you  choose  if  the  folder  is for received and/or sent mail. This
+
+Here you choose if the folder is for received and/or sent mail. This
 influences the column titles and whose address is displayed in the message
 list. If you select "mailing list", the message list for this folder will
-be threaded.
+be threaded by default.
 
 @ENDNODE
 @NODE "CO_W" "Configuration"
@@ -667,16 +710,21 @@ the configuration window.
   @{" Phrases        " LINK "CO07" 0}   - Options related to message quoting
   @{" Signatures     " LINK "CO08" 0}   - Signature settings
 
+
 The same three buttons appear on each sheet:
 
 [Save]
-Use  this  to  save  all  changes to the hard disk, so they will survive a
-reboot of the computer.
+
+Use this to save all changes to the hard disk, so they will survive a reboot
+of the computer.
 
 [Use]
-With this the changes are temporary and apply only until SimpleMail is closed.
+
+With this the changes are temporary and apply only until SimpleMail is
+closed.
 
 [Cancel]
+
 Discard any changes.
 
 @ENDNODE
@@ -687,9 +735,9 @@ Configuration - USER (Essential information needed for SimpleMail to work)
 
 
 The time and date displayed by SimpleMail in the message list is always
-converted to  your  local time. This guarantees correct sorting of messages
-from all over  the  world sent out from different time zones. The time zone
-is part of  the message's date and specifies the difference between local
+converted to your local time. This guarantees correct sorting of messages
+from all over the world sent out from different time zones. The time zone
+is part of the message's date and specifies the difference between local
 time and Greenwich Mean Time (GMT).
 
 Usually SimpleMail will get the time zone from your Locale settings.
@@ -700,11 +748,15 @@ an hour) it can be defined in the environment variable ENV:TZ.
              GMT   (for the U.K.)
              GMT-5 (for U.S. EST e.g.  New York City)
 
+
 [ ] Add adjustment for daylight saving time
-This  option  is  to be activated during daylight saving time. By doing so,
+
+This option is to be activated during daylight saving time. By doing so,
 one hour will be added to the time zone value.
 
+
 Folder directory
+
 Here you can select the directory where your folders will be stored by
 default when they are created.
 
@@ -721,84 +773,102 @@ is currently no limit for the number of accounts you can create.
 Note that every account can be for the same user on a different server, or
 a different user on the same server. Either way, you can check for new mail
 with a single mouse-click by clicking "Fetch" in the main window. Click on
-[Add new account] to insert the data required  for a new  e-mail  account.
+[Add new account] to insert the data required for a new e-mail account.
 With [Remove account] you can (obviously) delete accounts.
 
 
 ---- User ----------------------------------------------------------------
 
 Name
+
 You should enter your real name here.
 
+
 E-Mail Address
+
 Guess what you should enter here! :)
 
+
 Reply Address
-Usually this  field should remain empty. The default Reply-To address is
-your  e-mail address. ONLY if you want to use a different address you
+
+Usually this field should remain empty. The default Reply-To address is
+your e-mail address. ONLY if you want to use a different address you
 should enter that here.
 
 
 ---- Receive -------------------------------------------------------------
 
 POP3 Server
-The  internet  address  of  your  system's  mail server. This server which
-normally  is  a  computer  of your ISP (Internet Service Provider) must be
+
+The Internet address of your system's mail server. This server which
+normally is a computer of your ISP (Internet Service Provider) must be
 capable of working with the POP3 protocol.
 
   Example:  mail.provider.uk
 
 
 Port
-Since the port number of the POP3 service is 110 in most cases, this is the
-default value. If yours is different, enter that number here.
+
+Since the port number of the POP3 service is 110 in most cases, this is
+the default value. If yours is different, enter that number here.
 
   Example:  110
 
 
 Login
-Insert  the  User ID  for the POP3-server here. In most cases this will be
-identical  with  the  username  in  your e-mail address. However there are
-exceptions,  so check the instructions from your ISP. (SimpleMail then
+
+Insert the User ID for the POP3 server here. In most cases this will be
+identical to the username in your e-mail address. However there are
+exceptions, so check the instructions from your ISP. (SimpleMail then
 constructs the full account name in the form <login>\@<server>.)
 
   Example:  sebauer
 
 
 Password
-The password which is asked from you by your mail server. This password is
-possibly  but  not  necessarily  identical  to  the password you use for
-logging into your ISP (e.g. using PPP).
+
+The password which is asked by your mail server. This password is possibly
+but not necessarily identical to the password you use to log into your ISP
+(e.g. using PPP).
 
   Example:  codingismylife
 
+
 [ ] Active
-Turn  this  option on to have the selected POP3 server checked for new
-mail.  If  you don't want this e-mail account to  be checked automatically
-whenever you push the "Fetch"  button, switch  off  this  option  and  use
-the menu item 'Folder/Check single account' from the main window instead.
+
+Turn this option on to have the selected POP3 server checked for new
+mail every time you push the "Fetch" button. If you don't want this e-mail
+account to be checked automatically when using this button, switch off
+this option and instead use the menu item "Folder/Check single account"
+in the main window.
+
 
 [ ] Delete mails
-If this  option is activated, new mail will be deleted after downloading
+
+If this option is activated, new mail will be deleted after downloading
 it from the mail server. The messages will be deleted only after they have
-been  successfully  saved to your computer. If the POP3 account is used by
-several  people,  or if you'd like to access your account at a later time
+been successfully saved to your computer. If the POP3 account is used by
+several people, or if you'd like to access your account at a later time
 from another computer, turn this option off.
 
+
 [ ] Avoid duplicates
-If  you  choose  not to have SimpleMail delete the mail on the server after
+
+If you decide not to have SimpleMail delete the mail on the server after
 downloading, it will be downloaded again the next time SimpleMail gets your
-mail, so every message  will appear twice in your mail folder. To prevent
-this, turn this option on -- as long as this option is activated, SimpleMail
+mail, so every message will appear twice in your mail folder. To prevent
+this, turn this option on - as long as this option is activated, SimpleMail
 will keep track of all your downloaded messages in the '.uidl.<account>'
-file, using special  commands of the POP3 server to avoid downloading the
-same message twice.  If the POP3 server supports these UIDL commands, this
+file, using special commands of the POP3 server to avoid downloading the
+same message twice. If the POP3 server supports these UIDL commands, this
 check will be done rather quickly. If the server doesn't support these
-commands, SimpleMail will try  to read  the Message-ID field using the TOP
-command instead of the UIDL commands.  In  case  the mail server doesn't
+commands, SimpleMail will try to read the Message-ID field using the TOP
+command instead of the UIDL commands. In case the mail server doesn't
 support any of these commands, this option shall be turned off.
 
+
 [ ] Use SSL
+
 If this option is activated, the whole communication process between
 SimpleMail and your mail server will happen under SSL encryption. If
 your POP3 server does not support this, you'll receive an error message
@@ -808,28 +878,37 @@ while checking for new mail - in that case, switch this option off.
 ---- Send ----------------------------------------------------------------
 
 SMTP Server
-The  Internet  address  of  the  system  you're sending your mail to. This
+
+The Internet address of the system you're sending your mail to. This
 server which usually is a computer of your ISP (Internet Service Provider)
-must  be  capable  of processing the SMTP protocol.
+must be capable of handling the SMTP protocol.
 
   Example:  smtp.provider.de
 
+
 Port
+
 Since the port number of the SMTP service is 25 in most cases, this is the
 default value. If yours is different, enter that number here.
 
+
 [ ] Use SMTP AUTH
+
 Enable this if you're using a server which requires authentication (ask
 your ISP if in doubt). You will need an additional login and password in
 this case, to be entered in the Login/Password fields above.
 
+
 [ ] Log into POP3 server first
+
 Some Internet Service Providers require you to log into your POP3 server
 before you are allowed to send email, as this step requires you to identify
 yourself and thus helps keeping SMTP abusers out. If your ISP requires this,
 tick this box.
 
+
 [ ] Use IP as domain
+
 Enable this if you keep getting requesters like "X-Authentification-Error:
 pD957C509.dip.t-dialin.net claimed to be t-online.de" when trying to send
 your email -- this will force SimpleMail to use your current IP instead of
@@ -841,11 +920,12 @@ the domain part of your email address while talking to your mail server.
 
 Configuration - RECEIVE MAIL  (Setup for downloading mail)
 
+
 ---- Preselection --------------------------------------------------------
 
-After  establishing  a link with the POP3 server, you might be interested
-in using a @{"preselection window" LINK "TR_W" 0} showing  a list of all new mail in the
-POP3 mailbox. This allows you to  decide  whether  to download, delete or
+After establishing a link with the POP3 server, you might be interested
+in using a @{" preselection window " LINK "TR_W" 0} showing a list of all new mail in the
+POP3 mailbox. This allows you to decide whether to download, delete or
 leave a message on the server, according to its size, topic or sender. For
 pre-selection to work properly, the server must support the TOP command
 (which most of them do).
@@ -858,17 +938,18 @@ pre-selection to work properly, the server must support the TOP command
 
 
 Size limit
-If  pre-selection is activated, messages which exceed the value given here
-in  size will be highlighted. This way you avoid downloading messages with
-huge attachments.  If you want all messages to be listed, select "All
+
+If pre-selection is activated, messages which exceed the value given here
+in size will be highlighted. This way you avoid downloading messages with
+huge attachments. If you want all messages to be listed, select "All
 messages".
 
 
 ---- Automatic operation -------------------------------------------------
 
 Check for new mail every [xx] minutes
-Here  you  can  specify a time interval after which SimpleMail will
-automatically recheck  your  mail  server for new mail. To deactivate
+Here you can specify a time interval after which SimpleMail will
+automatically recheck your mail server for new mail. To deactivate
 this option, just enter zero.
 
   Example:  15 minutes
@@ -883,13 +964,13 @@ Configuration - WRITE  (Wordwrap settings)
 ---- Editor --------------------------------------------------------------
 
 Word wrap
+
 While you are writing a new message, the message will be formatted to make
-sure that no  line  has more characters than the value specified here. You
+sure that no line has more characters than the value specified here. You
 can also choose if SimpleMail should insert line breaks as you type or if
-this should be delayed until you send the message.
+this should be postponed until you send the message.
 
   Example:  76
-
 
 By default, wordwrapping is disabled.
 
@@ -897,6 +978,7 @@ By default, wordwrapping is disabled.
 ---- Replying ------------------------------------------------------------
 
 [ ] Wrap before quoting
+
 If this option is activated, SimpleMail will wordwrap the message you are
 replying to, according to the wordwrap setting entered above.
 
@@ -909,7 +991,7 @@ Configuration - READING  (Settings for message header layout)
 
 ---- Header Configuration ------------------------------------------------
 
-If  "Show all headers" is selected, all the headers will be displayed.
+If "Show all headers" is selected, all the headers will be displayed.
 On the other side, you can unselect all the options if you don't want
 to see any header, or select only some of them at the left. If you want
 to see some headers not listed here, enter their names in the text field
@@ -932,10 +1014,13 @@ Configuration - READING PLAIN  (Font and colour settings for the Read window)
 ---- Fonts ---------------------------------------------------------------
 
 Proportional Font
+
 This font will be used to display the headers. You can still select a
 fixed-width font, if that's what you really want. :)
 
+
 Fixed Font
+
 If you select one, this font will be used to display the message body in
 the Read message window. Fixed-width fonts are usually better suited for
 this task, as proportional fonts will break about any fancy ASCII signature
@@ -947,20 +1032,25 @@ or table you will read. :)
 Here you can select the palette colours for the various items composing the
 Read message window: background, plain text, quoted text, old quoted text
 (two generations old instead of one) and text which is part of a link,
-like email and WWW addresses. Colours can be "fine tuned" using the colour
+like email and WWW addresses. Colours can be "finetuned" using the colour
 wheel.
 
 
 [ ] Wordwrap plain text
+
 If this option is activated, very long lines going beyond the right border
 of the Read window will be wordwrapped. This is irrelevant for headers,
 which are always wordwrapped if needed.
 
+
 [ ] Underline links
+
 Tick this option to make links (e.g. email and WWW addresses) to be displayed
 underlined. This also includes links appearing in the message headers.
 
+
 [ ] Use graphical smilies
+
 If this option is activated, those ever-popular ASCII smilies like ":)",
 ":D", ":-(" and others will be converted to a cute graphic, as seen in
 popular websites like amiga.org. Have fun!
@@ -970,6 +1060,7 @@ popular websites like amiga.org. Have fun!
 @TOC "CO_W"
 
 Configuration - READING HTML
+
 
 If you use to receive email in HTML format, here you can tell SimpleMail
 from which addresses you don't mind to download images linked in the HTML
@@ -1001,6 +1092,7 @@ significative other. Keep readin'! ;^D
 
 
 Use on addresses which contain
+
 Enter here the pattern that the TO: field of your outgoing message should
 be compared to. If the contents of the TO: field of your message match
 this pattern, the appropriate set of phrases will be used, depending on
@@ -1015,21 +1107,26 @@ is case no other set apply.
 ---- Write ---------------------------------------------------------------
 
 Welcome
+
 SimpleMail will insert this text at the beginning of every new message you
 write (except for answers and forwarded messages). You can define a line
 break by inserting '\\n'.
 
   Example:  Hi!\\n
 
+
 Welcome with address
+
 If you use the addressbook to start a new message, SimpleMail will use this
-welcome text instead. Click  on  the  pop-up  button  to  select a variable
-from the list.
+welcome text instead. Click on the pop-up button to select a variable from
+the list.
 
   Example:  Hello %r,\\n
 
+
 Close
-This  text  is  inserted  at  the end of every new message you write, just
+
+This text is inserted at the end of every new message you write, just
 before the signature separator. You can insert a line break with '\\n'.
 
   Example:  bye,\\nSebastian Bauer
@@ -1038,6 +1135,7 @@ before the signature separator. You can insert a line break with '\\n'.
 ---- Reply ---------------------------------------------------------------
 
 Welcome, Intro, Close
+
 Whenever you reply to a message, SimpleMail will automatically insert these
 in your reply.
 
@@ -1051,19 +1149,23 @@ in your reply.
 ---- Forward -------------------------------------------------------------
 
 Initial (NYI)
-This  text  will  be  added  at  the beginning of the original text of any
-message  you  forward whenever this set of phrases apply. Click on the pop-up
-button to select from a list of variables which can be inserted (for example
-%r stands for the name of the recipient, %s stands for the subject, etc.).
-When the text is inserted into the message, SimpleMail replaces the variables
-with their values, which are taken from the forwarded message.
+
+This text will be added at the beginning of the original text of any
+message you forward whenever this set of phrases apply. Click on the
+pop-up button to select from a list of variables which can be inserted
+(for example %r stands for the name of the recipient, %s stands for the
+subject, etc.). When the text is inserted into the message, SimpleMail
+replaces the variables with their values, which are taken from the
+forwarded message.
 
   Example:  *** Forwarded message, originally by %n on %d: ***\\n
 
+
 Finish (NYI)
-This  text  will be inserted at the end of a forwarded message (but before
-the  close  phrase).  Click  on the pop-up button to select a variable
-from the list (for subject, date, sender, etc.).
+
+This text will be inserted at the end of a forwarded message (but before
+the close phrase). Click on the pop-up button to select a variable from
+the list (for subject, date, sender, etc.).
 
   Example:  *** End of forwarded message ***\\n
 
@@ -1074,19 +1176,29 @@ from the list (for subject, date, sender, etc.).
 Configuration - SIGNATURES  (Definition of signatures)
 
 
-With SimpleMail, you  can  define as many signatures as you want (e.g., one
-signature  for  private  mail, another one for business, another one for a
+With SimpleMail, you can define as many signatures as you want (e.g., one
+signature for private mail, another one for business, another one for a
 certain mailing list, etcetera).
 
 [Use signatures]
+
 Tick this box if you really want to use signatures.
 
+
 [Add new signature]
+
 Click here to define a new signature, and then enter a name and the text
 for it.
 
+
 [Remove signature]
+
 Obviously, this gadget allows you to remove a signature already defined.
+
+
+If more than one signature is defined and the use of signatures is
+activated, a pop-up button will appear in the Write window to let you
+select which one you would like to use in the message being written.
 
 @ENDNODE
 @NODE "CO_F" "Editing filters"
@@ -1104,36 +1216,36 @@ though.
 
 The list on the left shows the names of the filters defined so far.
 Click on a name to bring up its details on the right, on [New] to create
-a new filter, or use [Remove] to delete one of them.  Please note that
+a new filter, or use [Remove] to delete one of them. Please note that
 filters are executed in top-to-bottom order.
 
 
-[Add new rule] allows you to define a new rule, selecting what  part of
-the e-mail should be scanned for a given search  pattern. You can use
+[Add new rule] allows you to define a new rule, selecting what part of
+the e-mail should be scanned for a given search pattern. You can use
 as many rules as you want, and they accumulate in a "If all these rules
 are true for this email, then do this" fashion.
 
 To start with, you can select a header you want to be searched for a
-given pattern. You can choose either select "Sender" (to look in the "FROM:"
-field) or "Subject". (If you want to check a different header, select
-"Header" instead and then type the header that should be scanned, without
-any trailing colon.) Then, you must enter the search pattern you want to
-use.
+given pattern. You can choose either select "Sender" (to look in the
+"FROM:" field) or "Subject". (If you want to check a different header,
+select "Header" instead and then type the header that should be scanned,
+without any trailing colon.) Then, you must enter the search pattern
+you want to use.
 
-Alternatively, you can also make a rule that will turn true if the email
-has attachments, or is matching a given status.
+Alternatively, you can also enter a rule that will turn true if the email
+has attachments, or is matching a given status (read, forwarded, etc.).
 
 You don't need to type the whole pattern, as SimpleMail will use a pair
-of surrounding "#?" pattern matching characters there to look in the header
-for the string you have typed. Still, the search pattern may contain
-AmigaDOS wildcards such as ?, #?, (a|b) or [abc].
+of surrounding "#?" pattern matching characters there to look in the
+header for the string you have typed. Still, the search pattern may
+contain AmigaDOS wildcards such as ?, #?, (a|b) or [abc].
 
-Please  note  that  the  search  pattern  [RED]#?  will filter all messages
-beginning  with  R, E or D. To filter email coming from a mailing list
+Please note that the search pattern [RED]#? will filter all messages
+beginning with  R, E or D. To filter email coming from a mailing list
 (for example, a mailing list related to SimpleMail), you'd better use
 the search pattern "SimpleMail" (without the quotes) or have the filter
-compare the 'Reply-To' field with the address of the mailing list,
-provided the mailing list sets this field correctly.
+compare the "Reply-To" field with the address of the mailing list,
+provided the mailing list sets this header correctly.
 
   Examples:
 
@@ -1146,28 +1258,36 @@ Remember, case is not important here!
 
 
 [Apply now]
+
 Applies this filter immediately to the contents of the currently selected
 folder. This way you can see if your newly created filter works like it
 should before saving your settings.
 
+
 [ ] Apply on request
-If this  option  is  activated, the filtering process will be started by
-clicking on  the [Filter] button in the main window. This way you can also
+
+If this option is activated, the filtering process will be started by
+clicking on the [Filter] button in the main window. This way you can also
 process old messages which do not necessarily have to be in the Incoming
 folder.
 
+
 [ ] Apply to new mails
-Activate  this  option  to  have  all  new  mail processed by this filter.
+
+Activate this option to have all new mail processed by this filter.
 Processing will be initiated automatically after receiving new mail.
 
+
 [ ] Apply to sent mails
-Activate  this  option  to  have  all  sent mail processed by this filter.
+
+Activate this option to have all sent mail processed by this filter.
 Processing will be initiated automatically after sending mail.
 
 
 [ ] Move to Folder
+
 Here you can instruct SimpleMail to move any email matching the above
-rules to  another  folder.  Select the folder with the pop-up button at
+rules to another folder. Select the folder with the pop-up button at
 the right.
 
 @ENDNODE
@@ -1178,34 +1298,35 @@ ADDRESS BOOK
 The main window for the address book looks like this:
 
 
-   .-------------------------------------------------------------------.
-   |                            @{"toolbar" LINK "AB_B" 0}                                |
-   |___________________________________________________________________|
+   .--------------------------------------------------------------------.
+   |                           @{" toolbar " LINK "AB_B" 0}                               |
+   |____________________________________________________________________|
 
-   .-------------------------------------------------------------------.
-   | Name     |     Alias    |   Description     |       Address       |
-   |----------|--------------|-------------------|---------------------|
-   |Sebastian | sba          | SimpleMail author | sebauer@t-online.de |
-   |          |              |                   |                     |
-   |          |              |                   |                     |
-   |          |              |                   |                     |
-   `-------------------------------------------------------------------'
+   .--------------------------------------------------------------------.
+   | Name      | Alias        | Description       | Address             |
+   |-----------|--------------|-------------------|---------------------|
+   | Sebastian | sba          | SimpleMail author | sebauer@t-online.de |
+   |           |              |                   |                     |
+   |           |              |                   |                     |
+   |           |              |                   |                     |
+   `--------------------------------------------------------------------'
+
 
 You can click and drag the column dividers to change their size, or the
 headers to reposition them.
 
-Double  click  on  an  entry  to  see  or  edit  the  information  in  the
-@{" edit address " LINK "EA_W" 0}  window.
+Double click on an entry to see or edit the information in the
+@{" edit address " LINK "EA_W" 0} window.
 
-An  entry  must contain at least the real name and the e-mail address. The
-point of the Alias is to save typing; you can put a short nickname, or
-initials,  into  the To field of an e-mail message and let SimpleMail fill
-in the details for you. For this to work, however, the alias obviously has
-to be unique for that entry.
+An entry must contain at least the real name and the email address.
+The point of the Alias is to save typing; you can put a short nickname,
+or initials, into the "To" field of an email message and let SimpleMail
+to look in your addressbook for a likely candidate. For this to work,
+however, the alias obviously has to be unique for that entry.
 
 Individual entries can be arranged into groups, which are like
-subdirectories,  used  to  keep  the  address book clearly arranged.
-Use @{"drag & drop" LINK "Drag" 0} to move an entry from one group into another.
+subdirectories, used to keep the address book clearly arranged.
+Use @{" drag & drop " LINK "Drag" 0} to move an entry from one group into another.
 
 @ENDNODE
 @NODE "AB_B" "Address book - Toolbar"
@@ -1213,28 +1334,42 @@ Use @{"drag & drop" LINK "Drag" 0} to move an entry from one group into another.
 
 Address book - TOOLBAR
 
+
 [Save]
+
 Saves the address book to your hard disk.
 
+
 [Person] [Group]
-Both buttons open the @{"edit address" LINK "EA_W" 0} window to add a new entry to the
-address  book. However, the appearance of the window depends on the type of
-entry, since the information stored is different.
+
+Both buttons open the @{" edit address " LINK "EA_W" 0} window to let you add a new entry
+to the address book. However, the appearance of the window depends on
+the type of entry, since the information stored is different.
+
 
 [Edit]
-This  also  opens  the edit address window, to see or edit the information
+
+This also opens the edit address window, to see or edit the information
 stored. Again, the layout depends on the type of entry.
 
+
 [Delete]
+
 Deletes the selected entry from the address book.
 
+
 [To:]
+
 Uses the selected entry as the primary recipient of a new email.
 
+
 [CC:] (NYI)
-Uses the  selected entry as secondary recipient of a new email.
+
+Uses the selected entry as secondary recipient of a new email.
+
 
 [BCC:] (NYI)
+
 Uses the selected entry as recipient of a hidden copy of a new email.
 
 @ENDNODE
@@ -1243,70 +1378,89 @@ Uses the selected entry as recipient of a hidden copy of a new email.
 
 Address book - ENTERING ADDRESSES
 
-In this window a single address book entry can be edited. According to the
-kind  of  entry  (person or group) you will see a different set of editing
-fields. Click on [Ok] to accept the changes, or [Cancel] if you change your
-mind.
+
+In this window a single address book entry can be edited. According
+to the kind of entry (person or group) you will see a different set
+of editing fields. Click on [Ok] to accept the changes, or [Cancel]
+if you change your mind.
 
 PERSON
 ------
 
 ---- Personal -----------------------------------------------------
 
-Alias   (applies to both person or group)
-An  'Alias'  is  a  convenient  short name that identifies the address book
-entry  unambiguously.  Its  function  is  to save typing - you can put the
-alias into the TO: field of a message, and SimpleMail fills in the details
-when sending  the  message.
+Alias  (applies to both person or group)
 
-  Example: Seb
+An  'Alias' is a convenient short name that identifies the address
+book entry unambiguously. Its function is to save typing - you can
+start to type the alias into the TO: field of a message, and SimpleMail
+fills in the details when sending the message.
+
+  Example:  Seb
+
 
 Real Name
+
 The person's first name and surname.
 
-  Example: Sebastian Bauer
+  Example:  Sebastian Bauer
 
-Description    (applies to both person or group)
+
+Description  (applies to both person or group)
+
 Any comment you'd like to enter to describe the current entry.
 
-Homepage
-The  URL  for the person's homepage in the World Wide Web. SimpleMail can
-connect to this address via your browser, provided that OpenURL is installed.
-All  you  have  to  do  is  to  click  on  the  button to the right of the
-textfield.
 
-  Example:  http://sf.net/projects/SimpleMail
+Homepage
+
+The URL for the person's homepage in the World Wide Web. SimpleMail
+can connect to this address via your browser, provided that OpenURL
+is installed. All you have to do is to click on the button to the
+right of the text field.
+
+  Example:  http:\//sf.net/projects/SimpleMail
+
 
 Date of birth
+
 The person's date of birth. Enter it in the format DD-MMM-YYYY.
 
   Example:  12-Dec-1967
 
+
 Sex
-Additional info just in case the real name is ambiguous or your memory
-fails. :)
+
+Additional info just in case the real name is ambiguous and/or your
+memory fails. :)
+
 
 Portrait
-Here  you  can  select a picture (preferably a portrait) of the person. By
-using the datatypes library you may use any kind of picture format as long
-as  you've  installed  the datatypes needed for displaying it. This picture
-will show up whenever you read a message written by this person.
+
+Here you can select a picture (preferably a portrait) of the person.
+By using the datatypes library you may use any kind of picture format
+as long as you've installed the datatypes needed for displaying it.
+This picture will show up whenever you read a message written by this
+person.
+
 
 Download
-You  can find a steadily growing number of portraits of other users of
+
+You can find a steadily growing number of portraits of other users of
 SimpleMail at the SimpleMail homepage. SimpleMail can access this data
-bank automatically; all you need  to do is to input the name and/or
-the e-mail address, connect to the Internet  and click the floppy disk
-button. SimpleMail starts by getting a list of available  photos  and
-searching it for the named person. If found, any information  missing
+bank automatically; all you need to do is to input the name and/or
+the e-mail address, connect to the Internet and click the floppy disk
+button. SimpleMail starts by getting a list of available photos and
+searching it for the named person. If found, any information missing
 from the address book entry (currently, only name and e-mail address)
-is  made good and  the picture downloaded and saved in the gallery. 
+is made good and the picture downloaded and saved in the gallery. 
 If you want to add your picture to the collection, please visit
-http://simplemail.sourceforge.net/index.php?body=gallery and enter
+http:\//simplemail.sourceforge.net/index.php?body=gallery and enter
 your details. Please note you will need a browser with HTTP upload
 support to be able to upload your photo.
 
+
 E-Mail addresses
+
 The internet addresses to use to send e-mail to this person.
 
   Example:  sebauer\@t-online.de
@@ -1316,20 +1470,26 @@ The internet addresses to use to send e-mail to this person.
 ---- Private -------------------------------------------------------------
 
 Street
+
 Street and house number of the postal address.
 
   Example:  43 High street
 
+
 City / ZIP
+
 City and (ZIP) postcode.
 
   Example:  Shrewsbury SY1 3PE
 
+
 State / Country
 
-  Example: Shropshire, England
+  Example:  Shropshire, England
+
 
 Phone number(s)
+
 One or more phone numbers (voice, FAX, mobile phone).
 
   Example:  08154711
@@ -1353,107 +1513,135 @@ GROUP
 Only the Alias and Description fields apply in this case.
 
 @ENDNODE
-@NODE "WR_W" "Compose window"
+@NODE "WR_W" "Compose Message window"
 
 WRITING MESSAGES
 
-This  window  will appear when you choose to write a new message or answer
-or  forward an existing message. There isn't any fixed limit to the number
-of Write windows you can open simultaneously, besides your ability to
-discern what is what under all that clutter. :)
+This window will appear when you choose to write a new message or answer
+or forward an existing message. There isn't any fixed limit to the number
+of Compose Message windows you can open simultaneously, besides your ability
+to discern what is what under all that clutter. :)
 
-Above the large @{"text editor" LINK "EDIT" 0} field there are at least
-three header fields and a toolbar.
+Above the large @{" text editor " LINK "EDIT" 0} field there are at least three header
+fields and a toolbar.
 
 
 From
+
 This field is automatically filled with your name and email address. You
 can use the pop-up button to select another account, in case you have
-defined several of them in the config.
+defined several of them in the configuration.
+
 
 To
-Insert here the  main  recipient you wish to send this message to.
-You  may  use  names  or aliases from the address book or even full e-mail
-addresses in case the recipient does not exist in the address book. If you
-wish to  enter  several recipients, you shall separate them by inserting
-commas. To insert an address book entry, just drag that entry from the
-address book listview over the main window and drop it over this field (you
-could also open the full-view address book window and drag&drop entries
-from there, but why should you bother? :). Alternatively, you can also
-open the address book window, select and entry and then select the [To:]
-button, but remember this will spawn a new Compose window!
 
-If SimpleMail cannot find a name or alias you've  inserted  manually into
+Insert here the main recipient you wish to send this message to. You can
+use names or aliases from the address book or even full e-mail addresses
+in case the recipient does not exist in the address book. If you wish to
+enter several recipients, you shall separate them by inserting commas.
+To insert an address book entry, just drag that entry from the address
+book listview over the main window and drop it over this field (you could
+also open the full-view address book window and drag&drop entries from
+there, but why should you bother? :). Alternatively, you can also open
+the address book window, select and entry and then select the [To:] button,
+but remember this will spawn a new Compose Message window!
+
+If SimpleMail cannot find a name or alias you've inserted manually into
 this field, the screen will flash as soon as you press the <Return>. You
-can change an alias  to  an e-mail address manually by clicking on the [<]
+can change an alias to an e-mail address manually by clicking on the [<]
 button to the right.
 
   Example:  jdoe, boss\@work.whyme.com
 
+
 Subject
-What  the mail is all about. As the mail is answered there will be a 'Re:'
-inserted  in  front of the original subject, whereas if an email is being
-forwarded, a '(fwd)' will be added to the subject.
+
+What the mail is all about. As the mail is answered there will be a "Re:"
+inserted in front of the original subject, whereas if an email is being
+forwarded, a "(fwd)" will be added to the subject.
 
 
 The toolbar contains the following gadgets:
 
 Copy
+
 Places a copy of the marked text on the clipboard.
 
+
 Cut
+
 Cuts the marked text and saves it to the clipboard.
 
+
 Paste
+
 Inserts the text currently in the Clipboard at the current cursor position.
 
+
 Undo
+
 Undoes the last change made in the editor
 
+
 Redo
+
 Restores the change just undone with [Undo].
 
+
 Attach
+
 Opens a file requester to let you select some file or files to attach
 to the message.
 
+
 Show Attachments
-Forces the Compose window to be more verbose about the internal structure
-of the message, showing a listview with the MIME type that SimpleMail has
-selected for your attachments, as well as other info and additional
-buttons. *Please note* this is still experimental, and the MIME type used
-for attachments is always "application/octet-stream".
+
+Forces the Compose Message window to be more verbose about the internal
+structure of the message, showing a listview with the MIME type that
+SimpleMail has selected for your attachments, as well as other info and
+additional buttons. *Please note* this is still experimental, and the
+MIME type used for attachments is always "application/octet-stream".
+
 
 Encrypt
+
 Push this button if you want this message to be PGP encrypted. When you try
 to send this email, SimpleMail will list the PGP keys in your keyring to
 let you select the key that should be used.
 
 
 Also, if you have defined two or more signatures in the configuration
-and the signature usage is activated, an additional popup gadget will
+and the signature usage is activated, an additional pop-up gadget will
 appear to let you select the signature you want to use with this message.
 
 
 At the bottom of the window you will see a row with four gadgets:
 
+
 Send now
-Prepares  the  message  for  sending, copies it to the outgoing folder and
-tries  to  send  the mail immediately. For this option to work correctly
+
+Prepares the message for sending, copies it to the Outgoing folder and
+tries to send the mail immediately. For this option to work correctly
 there must be a TCP/IP stack already running and online.
 
+
 Send later
-Prepares the message for sending and copies it to the outgoing folder. Use
-this button when you're working offline.
+
+Prepares the message for sending and copies it to the Outgoing folder.
+Use this button when you're working offline.
+
 
 Hold
-The  message  will  be prepared as described in [Send later] and copied to
-the  outgoing  folder, but will be held back and NOT sent. Use this button
-for  unfinished messages (e.g. if you'd like to make some additions to the
+
+The message will be prepared as described in [Send later] and copied to
+the Outgoing folder, but will be held back and NOT sent. Use this button
+for unfinished messages (e.g. if you'd like to make some additions to the
 email at a later time and you don't want it to be sent by mistake).
 
+
 Cancel
-Click here in  case you've changed your mind. Beware, any information
+
+Click here in case you've changed your mind. Beware, any information
 introduced so far in the window will be lost!
 
 @ENDNODE
@@ -1461,10 +1649,11 @@ introduced so far in the window will be lost!
 
 THE INTERNAL EDITOR
 
-SimpleMail  uses the efficient MUI class "TextEditor.mcc" of messages.
+SimpleMail uses the efficient MUI class "TextEditor.mcc" of messages.
 Many aspects of the editor such as key bindings, spell checking or fonts
-can be changed in  the  'TextEditor'  sheet  of  the  @{"MUI configuration" LINK "MAM4" 0}. Albeit you
-can modify the key bindings, here is a list of the important default settings:
+can be changed in the 'TextEditor' sheet of the @{" MUI configuration " LINK "MAM4" 0}.
+Albeit you can modify the key bindings, here is a list of the important
+default settings:
 
         <Control-Up>         go to the start of the text
         <Control-Down>       go to the end of the text
@@ -1489,20 +1678,25 @@ can modify the key bindings, here is a list of the important default settings:
 
 The TextEditor homepage can be found at:
 
-            http://www.DIKU.dk/students/duff/TextEditor/index.html
+            http:\//www.DIKU.dk/students/duff/TextEditor/index.html
 
 @ENDNODE
-@NODE "RE_W" "Read window"
+@NODE "RE_W" "Read Message window"
 
 READING MESSAGES
 
-This  window  opens when you choose to read a message. There isn't any
-fixed limit for the number of Read windows you can open simultaneously.
+This window opens when you choose to read a message. There isn't any fixed
+limit for the number of Read Message windows you can open simultaneously.
 The window is laid out as shown:
 
+
+  Menu bar:
+
+    @{" Project " LINK "REM1" 0}  @{" Mail " LINK "REM2" 0}
+
  .--------------------------------------------------. .--------.
- |                    @{"Toolbar" LINK "RE_B" 0}                       | |      |
- |__________________________________________________| |________|
+ |                  @{" Toolbar " LINK "RE_B" 0}                       | | Sig. # |
+ `--------------------------------------------------' `--------'
 
  .-------------------------------------------------------------.
  |                                                             |
@@ -1518,89 +1712,137 @@ The window is laid out as shown:
  | Icons representing attachments                              |
  `-------------------------------------------------------------'
 
+
 Message headers
-The  amount  of  information  displayed  in  the  header list for the
-selected   message  is  set  in  the  @{"configuration" LINK "CO04" 0}. If you want to
-copy some of the lines  to  the  clipboard,  click and drag with the
+
+The amount of information displayed in the header list for the
+selected message is set in the @{" configuration " LINK "CO04" 0}. If you want to
+copy some of the lines to the clipboard, click and drag with the
 mouse to highlight the lines -- the copy action is automatic and the
 highlighting disappears. You can also click on email addresses appearing
-here to automatically open a new Compose window with this address as
-recipient.
+here to automatically open a new Compose Message window with the selected
+address already filled in as recipient.
+
 
 Message body
-The  largest  part of the window shows the message body. Only text is shown
+
+The largest part of the window shows the message body. Only text is shown
 here; if the message contains several parts (e.g. some text with a sound
 sample attached), some icons will appear at the bottom of the window to
 let you browse among them at your leasure.
 
-Navigation within the message  uses  the Cursor up/down keys. You can also
+Navigation within the message uses the Cursor up/down keys. You can also
 use Shift-Up/Down to jump up/down one page at a time. To copy part of the
 message to the clipboard, click and drag with the mouse to highlight the
-text. The copy   action  is  automatic  and  the  highlighting  disappears.
-If  you click  on  an  e-mail  address,  a  new Compose window opens and
-the address  is  automatically copied into the TO: header. A double click
-on a URL, be it either http:// or ftp://, calls openurl.library (if present)
-to start your favourite browser and go to this address.
+text. The copy action is automatic and the highlighting disappears.
+If you click on an e-mail address, a new Compose Message window opens
+and the address is automatically copied into the TO: header. A double
+click on a URL, be it either http:\// or ftp:\//, calls openurl.library
+(if present) to start your favourite browser and go to this address.
 
-You can also use a mouse wheel to navigate the Read window.
+You can also use a mouse wheel to navigate the Read Message window.
+
 
 Icons representing attachments
+
 If the message being read contains attachments, the bottom part of the Read
 window will be occupied by icons representing those. Provided you have OS3.9
-installed and DefIcons running, double clicking an icon can trigger a certain
-action, for instance to launch UnArc to uncompress an LhA archive.
+installed and DefIcons is running, double clicking an icon will trigger a
+certain action, for instance launch UnArc to uncompress an LhA archive.
 
 @ENDNODE
-@NODE "RE_B" "Read window - toolbar"
+@NODE "RE_B" "Read Message window - toolbar"
 @TOC "RE_W"
 
-Read window - TOOLBAR
+Read Message window - TOOLBAR
 
-The toolbar in the Read window contains the following gadgets:
+The toolbar in the Read Message window contains the following gadgets:
 
 
 Previous
+
 Displays the previous message, i.e. the one above the current message
 in the main window. Shortcut: <P>
 
+
 Next
+
 Displays the next message, i.e. the one below the current message in
 the main window. Shortcut: <N>
 
+
 Save
+
 Opens a file requester to let you save on disk the part of the email that
 is currently being displayed.
 
+
 Delete
-Deletes  the  current message and loads the next one into the Read window.
+
+Deletes the current message and loads the next one into the Read window.
 BEWARE: whilst both the "Delete" gadget and the "Message/Delete" menu item
 in the main window move the message to the "Deleted" folder, this gadget
 deletes the message IMMEDIATELY, i.e. the message can not be recovered.
 
+
 Reply
+
 Use this to reply to the current message. The "Subject:" and "To:" fields
 are filled in automatically and the original message is quoted.
 
+
 Forward
-Use  this to forward the contents of the message to another recipient. The
-subject  and  the  message body are automatically copied and a new message
-header   is  created.  The phrase set selected for  forwarding  defined 
-in  the @{" configuration " link "CO07" 0} is inserted appropriately. (NYI)
+
+Use this to forward the contents of the message to another recipient. The
+subject and the message body are automatically copied and a new message
+header is created. The phrase set selected for forwarding defined in the
+@{" configuration " LINK "CO07" 0} is inserted appropriately. (NYI)
+
+@ENDNODE
+@NODE "REM1" "Read Message window - Project Menu"
+@TOC "RE_W"
+
+Read Message window - PROJECT MENU
+
+
+Project/About...
+Project/About MUI...
+Project/Quit
+
+They serve the same purpose as those in the Project menu in the main window.
+
+@ENDNODE
+@NODE "REM2" "Read Message window - Mail Menu"
+@TOC "RE_W"
+
+Read Message window - MAIL MENU
+
+
+Mail/Show raw format...
+
+This item will run Multiview to show the contents of this email in
+raw format, i.e. just "like it is".
+
+
+Print visible mailpart
+
+Will sent to the printer the currently selected part of the email, in all
+its entirety.
 
 @ENDNODE
 @NODE "TR_W" "Mail Transfers"
 
 MAIL TRANSFERS
 
-When  fetching or sending email, SimpleMail opens a tranfer window which
+When fetching or sending email, SimpleMail opens a tranfer window which
 allows you to have some control over the process.
 
 If preselection is enabled, SimpleMail displays a list of the messages
 available for download. Messages which exceed the pre-set maximum
-size  will be  listed. Two explanatory status symbols may appear next
-to the message -- a little trashcan means that the message  will  be
+size will be listed. Two explanatory status symbols may appear next
+to the message -- a little trashcan means that the message will be
 deleted from the server, whilst the floppy disk icon indicates that
-the  message  will  be downloaded. There are therefore the following
+the message will be downloaded. There are therefore the following
 possibilities:
 
   Diskette  Trashcan   Action
@@ -1617,32 +1859,46 @@ possibilities:
 Meaning of the buttons:
 
 Ignore
-Clears  both  the diskette and trashcan icons for all selected messages,
+
+Clears both the diskette and trashcan icons for all selected messages,
 i.e. no action is done on them.
 
+
 Download
-Sets  the  diskette  icon  and  clears  the trashcan icon for all selected
+
+Sets the diskette icon and clears the trashcan icon for all selected
 messages -> download, but leave on server.
 
+
 Delete
-Clears  the  diskette  icon  and  sets  the trashcan icon for all selected
+
+Clears the diskette icon and sets the trashcan icon for all selected
 messages -> do not download, but delete from server!
 
+
 Download & Delete
-Sets  both  the  diskette  and trashcan icons for all selected messages ->
+
+Sets both the diskette and trashcan icons for all selected messages ->
 download and then delete from server.
 
+
 Start
+
 The selection stage ends and the actual mail transfer begins.
 
+
 Abort
+
 The mail transfer is terminated immediately.
 
+
 [ ] Ignore not listed mails
+
 If this gadget is activated, all the messages not listed above will be
 left in the server and won't be downloaded.
 
-In  the two lower status lines you can see how many bytes and how many
+
+In the two lower status lines you can see how many bytes and how many
 messages have been transferred so far, and at what rate.
 
 @ENDNODE
@@ -1650,7 +1906,7 @@ messages have been transferred so far, and at what rate.
 
 DRAG & DROP
 
-Like many modern programs, SimpleMail supports  drag&drop. This means that
+Like many modern programs, SimpleMail supports drag&drop. This means that
 you can grab an object with the left mouse button and drop it over another
 object by releasing the mouse button to trigger some operation.
 
@@ -1672,15 +1928,19 @@ SimpleMail supports the following drag&drop operations:
 STARTUP OPTIONS
 
 
-SimpleMail supports a couple of startup options which can be used from the
-Shell:
+SimpleMail supports a couple of startup options which can be used
+from the Shell:
+
 
 MAILTO=address
-Creates a new message for the specified recipient on startup. You can enter
-an alias or the real name of a person that can be found in your address book,
-and let SimpleMail to fill the details for you.
+
+Creates a new message for the specified recipient on startup. You
+can enter an alias or the real name of a person that can be found
+in your address book, and let SimpleMail to fill the details for you.
+
 
 SUBJECT=subject
+
 Sets the subject for the new message.
 
   Examples:
@@ -1708,10 +1968,12 @@ reason why we are still developing it. Another reason is that it would
 probably be more work to rewrite YAM than to write our own mailer. And
 last but not least, it's fun to code and to create something new and own.
 
+
 - Will SimpleMail be as powerful as YAM? 
 
 Yes, SimpleMail will have all the functions that YAM has, but less bugs
 and many new features you have missed all this time.
+
 
 - I don't like MUI, will you make a ReAction/ClassAct version?
 
@@ -1723,15 +1985,18 @@ status (no alpha/beta anymore) we provide also a version based on other
 GUI engines. No promises, though. We hope that maybe one of you ReAction
 fans could do it when the time comes?
 
+
 - Will you include news support? (NNTP) 
-  
+
 Rather not, as we think that it is better to build two separate programs,
-because adding news support would be too inconvenient for users that don't
+because adding news support would be too inconvenient for users who don't
 want it. Wait for SimpleNews instead. ;) 
+
 
 - Will you make a version for the AmigaDE? 
 
 Yes, we hope so. 
+
 
 - Will there be a port for Windows/MacOS/QNX/Linux/... ?
 
@@ -1740,6 +2005,7 @@ should be no problem to get it ported to other platforms. However, we
 cannot do everything, so once SimpleMail leaves the alpha/beta stages
 behind, feel free to contact us if you want to port it to your favourite
 platform. 
+
 
 - Where can I download the sources?
 
@@ -1752,58 +2018,67 @@ They are available on request from the @{" Authors " link INFO}.
 
 - How can I snapshot the position and size of windows?
 
-Start the MUI settings interface by selecting 'Settings/MUI', then select
-the 'Windows' section and make sure the third of the little system gadget
-buttons is activated. After  saving  the  settings,  every  window will
-have an additional system gadget  in  the upper right corner -- one click
+Start the MUI settings interface by selecting "Settings/MUI...", then select
+the "Windows" section and make sure the third of the little system gadget
+buttons is activated. After saving the settings, every window will have
+an additional system gadget in the upper right corner -- one click
 on this gadget will snapshot the current size and position of the window
 for future sessions.
+
 
 - What does "NYI" mean? I find this here and there through the guide...
 
 Not Yet Implemented. This abbreviature is used to note something that
 still doesn't work as it should, or not at all.
 
+
 - How can I mark a mail as "Important"?
 
 NYI :)
 
+
 - Can I use PGP to sign/encrypt messages?
 
-Not yet. You should be able to decrypt messages encrypted with PGP 2.6.x,
-though, if you have PGP correctly installed. (NYI)
+You can encrypt messages with PGP 2.6.x, but you won't be able to edit
+the message once it gets queued to be sent. This problem will be addressed
+very soon.
+
 
 - Can I use SimpleMail as an external mailer from my browser?
 
-Yes. See the @{" Startup options " link "OPTI" 0} for more info.
+Yes. See the @{" Startup options " LINK "OPTI" 0} for more info.
+
 
 - What about ARexx support?
 
 Currently only the basic commands supplied by MUI can be used, as
-SimpleMail lacks their own.
+SimpleMail lacks its own.
+
 
 - How about implementing this and this and...?
 
 (David) Please bear with the developers. SimpleMail is only a hobby, and
 intelligent as they are, they're very busy students, also working in other
-projects  :-) Currently SimpleMail is being developed at a slow but also
+projects :-) Currently SimpleMail is being developed at a slow but also
 continuous pace. Please be patient. :-)
 
-In the meantime, feel free to enter feature requests and report bugs at the
-SourceForge site. See the @{" Authors " link "INFO"} chapter for more info.
+In the meantime, feel free to enter feature requests and report bugs at
+the SourceForge site. See the @{" Authors " LINK "INFO"} chapter for more info.
 
-- This guide sux!
+
+- The style of this guide seems familiar...
 
 Well, I (David) used YAM.guide as <ahem> inspiration. Why should I
 reinvent something so well done? :) Feel free to send suggestions to
 david@saug.org
 
+
 - This FAQ does not resolve my problem.
 
 Well, as long as your problem is related to SimpleMail ;) feel free to
 join the SimpleMail-Usr mailing list to get feedback from the authors
-as well as from other SimpleMail users. See the @{" Authors " link "INFO"} for the
-details.
+as well as from other SimpleMail users. See the @{" Authors " LINK "INFO"} chapter
+for more information.
 
 @ENDNODE
 @NODE "TECH" "Technical"
@@ -1813,35 +2088,36 @@ TECHNICAL
 
 File structure
 
-In  the program directory the following files and directories can be found:
+In the program directory the following files and directories can be found:
 
  SimpleMail        The program itself
  SimpleMail.info   The program icon
  SimpleMail.guide  This documentation in AmigaGuide format
 
- .config           the @{"configuration" LINK "CO_W" 0} file
+ .config           The @{" configuration " LINK "CO_W" 0} file
  Images/           Icons used in the folder and message lists, the toolbars
                    and the graphical smilies, all of them in IFF/ILBM format
 
  .portraits/       Pictures of people mentioned in the address book
 
  .folders/         Folder directory
-   incoming/         the incoming folder directory
-   outgoing/         the outgoing folder directory
-   sent/             the directory for sent mail
-   deleted/          the directory for mail marked for deletion
-   folderX/         the @{"user-defined archive folders" LINK "FO_W" 0} (X is a number)
-   .uidl.<account>   used to @{"avoid duplicates" LINK "CO01" 0}
-   <folder>.config   configuration of this folder
-   <folder>.index    index of this folder's messages
- .addressbook.xml  The @{"address book" LINK "AB_W" 0}, in XML format
- .signatures       Your personal @{"signatures" LINK "CO08" 0}
+   incoming/         The Incoming folder directory
+   outgoing/         The Outgoing folder directory
+   sent/             The directory for sent mail
+   deleted/          The directory for mail marked for deletion
+   folderX/         The @{" user-defined archive folders " LINK "FO_W" 0} (X is a number)
+   .uidl.<account>   Used to @{" avoid duplicates " LINK "CO01" 0}
+   <folder>.config   Configuration of this folder
+   <folder>.index    Index of this folder's messages
+ .addressbook.xml  The @{" address book " LINK "AB_W" 0}, in XML format
+ .signatures       Your personal @{" signatures " LINK "CO08" 0}
 
-Each message is saved as a separate file of which the filename constructed
-by joining the date the file was saved and a running number for that day.
-The mail status is saved as a suffix. For every folder there exists an index
-which contains the headers of every message in the directory. There is also
-a configuration file which holds the settings for that particular folder.
+Each message is saved as a separate file of which the filename is
+constructed by joining the date the file was saved and a running
+number for that day. The mail status is saved as a suffix. For every
+folder there exists an index which contains the headers of every message
+in the directory. There is also a configuration file which holds the
+settings for that particular folder.
 
 @ENDNODE
 @NODE "PLAN" "Future Plans"
@@ -1849,6 +2125,7 @@ a configuration file which holds the settings for that particular folder.
 FUTURE PLANS
 
 Eventually SimpleMail will support:
+
 
   - The IMAP-4 Protocol
   - Asynchronous mail transfer
@@ -1861,22 +2138,22 @@ FURTHER INFORMATION ABOUT SIMPLEMAIL
 
 @{B}SimpleMail sources@{UB} are available on request from the authors:
 
-                  Sebastian Bauer <sebauer@t-online.de>
-                Hynek Schlawack <hynek@rz.uni-potsdam.de>
+               Sebastian Bauer <sebauer\@t-online.de>
+             Hynek Schlawack <hynek\@rz.uni-potsdam.de>
 
 Developers wanting to join the effort are welcome!
 
 
 The @{B}latest version@{UB} is always available at
 
-                      http://www.simplemail.de.vu
+                   http:\//www.simplemail.de.vu
 
 
-If  you  want to discuss SimpleMail related issues with other users,
+If you want to discuss SimpleMail related issues with other users,
 by all means join the @{B}SimpleMail mailing list@{UB} for users. To subscribe,
 send a mail to
 
-                SimpleMail-usr-request@freelists.org
+               SimpleMail-usr-request\@freelists.org
 
 with "subscribe" (without the quotes) as the subject. Your subscription
 request will be processed ASAP.
@@ -1884,12 +2161,12 @@ request will be processed ASAP.
 
 @{B}Bug reports@{UB} can be entered from here:
 
-      http://sourceforge.net/tracker/?group_id=15322&atid=115322
+      http:\//sourceforge.net/tracker/?group_id=15322&atid=115322
 
 
 @{B}Feature requests@{UB} have also a place at
 
- http://sourceforge.net/tracker/?atid=365322&group_id=15322&func=browse
+ http:\//sourceforge.net/tracker/?atid=365322&group_id=15322&func=browse
 
 
 Please take some time to browse the bugs already reported to avoid
@@ -1898,42 +2175,48 @@ duplicated reports. Ditto for feature requests! :)
 
 The @{B}SimpleMail User Gallery@{UB} is located at
 
-       http://simplemail.sourceforge.net/index.php?body=gallery
+       http:\//simplemail.sourceforge.net/index.php?body=gallery
 
 
 @ENDNODE
 @NODE "CRED" "Credits"
+@{jcenter}
 
-CREDITS
+Authors
 
-
-Authors:
-
-Sebastian Bauer <sebauer@t-online.de>
-Hynek Schlawack <hynek@rz.uni-potsdam.de>
+@{b}Sebastian Bauer@{ub} <sebauer\@t-online.de>
+@{b}Hynek Schlawack@{ub} <hynek\@rz.uni-potsdam.de>
 
 
-Icon Artists:
+Additional programming advice
 
-Richard "zeg" Wagenführer & Richard Kapp (SimpleMail banners, available
-at the SimpleMail homepage)
-
-
-SimpleMail.guide:
-
-David Rey <david@saug.org>
+@{b}Jörg Strohmayer@{ub}
 
 
-Programmers:
+Icon Artists
 
-Stefan Stuntz        (MUI)
-Allan Odgaard        (TextEditor.mcc, BetterString.mcc)
-Carsten Scholling    (NList.mcc, NListtree.mcc)
-Marcin Orlowski      (Popplaceholder.mcc)
+Homepage banners provided by @{b}Richard "zeg" Wagenführer@{ub}
+Toolbar icons & additional banners provided by @{b}Martin Merz@{ub}
+Smiley gfx courtesy of @{b}Richard Kapp@{ub}
+
+
+SimpleMail.guide
+
+@{b}David Rey@{ub} <david\@saug.org>
+based upon the YAM 2.2 guide by @{b}Marcel Beck@{ub}
+
+
+Programmers
+
+@{b}Stefan Stuntz@{ub} (MUI)
+@{b}Allan Odgaard@{ub} (TextEditor.mcc, BetterString.mcc)
+@{b}Carsten Scholling@{ub} (NList.mcc, NListtree.mcc)
+@{b}Marcin Orlowski@{ub} (Popplaceholder.mcc)
 
 
 And all the people who keep submitting bug reports!
 
+@{jleft}
 @ENDNODE
 @NODE INDEX "Index"
 @{CODE}
@@ -1942,9 +2225,14 @@ And all the people who keep submitting bug reports!
 
    @{" Address Book " LINK AB_W}
    @{" Address book - Toolbar " LINK AB_B}
+
+   B...
+
+   @{" Bug reports " LINK INFO}
    
    C...
 
+   @{" Compose Message window " LINK WR_W}
    @{" Configuration " LINK CO_W}
    @{" Configuration - Accounts " LINK CO01}
    @{" Configuration - Phrases " LINK CO07}
@@ -1963,6 +2251,7 @@ And all the people who keep submitting bug reports!
 
    E...
 
+   @{" Edit Folder " LINK FO_W}
    @{" Editor features " LINK EDIT}
    @{" Entering addresses " LINK EA_W}
 
@@ -1970,13 +2259,12 @@ And all the people who keep submitting bug reports!
 
    @{" FAQ " LINK TIPS}
    @{" Filters, Editing " LINK CO_F}
-   @{" Folder settings " LINK FO_W}
    @{" Further Information about SimpleMail " LINK INFO}
    @{" Future Plans " LINK PLAN}
 
    H...
 
-   @{" History " link HIST}
+   @{" History " LINK HIST}
 
    I...
 
@@ -2006,26 +2294,19 @@ And all the people who keep submitting bug reports!
 
    R...
 
-   @{" Read window " LINK RE_W}
-   @{" Read window - Buttons " LINK RE_B}
+   @{" Read Message window " LINK RE_W}
+   @{" Read Message window - toolbar " LINK RE_B}
    @{" Requirements " LINK REQS}
 
    S...
 
+   @{" SimpleMail - English documentation " LINK MAIN}
    @{" Startup options " LINK OPTI}
    @{" Status Icons " LINK MA0S}
 
    T...
 
    @{" Technical " LINK TECH}
-
-   W...
-
-   @{" Write window " LINK WR_W}
-
-   Y...
-
-   @{" SimpleMail - English documentation " LINK MAIN}
 
 @{BODY}
 @ENDNODE
@@ -2041,33 +2322,37 @@ HISTORY
   - The columns in the message list can now be turned on/off on
     an individual basis; their status is saved via "Save Prefs"
   - Better email address completer
-  - A small menu in the Read window makes it possible to see the
+  - A small menu in the Read Message window makes it possible to see the
     message in raw format.
-  - The mouse wheel support in the Read window is now more tolerant.
+  - The mouse wheel support in the Read Message window is now more tolerant.
   - Icons for attachments are better identified now if you have OS3.9
     and DefIcons is running: you can double-click an icon to trigger
     an action, for instance launching UnArc to extract an archive as
     used by the default DefIcons config.
   - You can now print messages and plain text attachments.
 
+
 0.11 (eleventh alpha) - released on 2001/09/23
   - UIDL POP3 command support, so mails won't be downloaded twice
   - Improved startup time
   - Several bugfixes
 
+
 0.10 (tenth alpha) - released on 2001/09/10
   - Configurable headers for the Read window
   - Can read message/rfc822 content type properly
   - Can decrypt encrypted PGP messages using PGP 2.6.x
-  - minor improvements
+  - Minor improvements
   - Improved filters
   - Wordwrapping for composed messages
+
 
 0.9 (ninth alpha) - released on 2001/09/03
   - Improved addressbook
   - Predefined text phrases
   - Periodical mail download
   - Now requires the popplaceholder MUI custom class
+
 
 0.8 (eighth alpha) - released on 2001/08/01
   - SSL support for POP3 servers. Requires AmiSSL.
@@ -2077,12 +2362,14 @@ HISTORY
     (images created by Richard Kapp).
   - Groups can be deleted now
 
+
 0.7 (seventh alpha) - released on 2001/06/29
   - The attachment icons required OS3.5+ to be displayed
   - Signature support
   - Configurable greetings text when writing new mails
   - The fonts and colors for reading email can be configured now
   - Hierarchical folders and folder images
+
 
 0.6 (sixth alpha) - released on 2001/06/05
   - Improved e-mail account configuration (multiple SMTP servers)
@@ -2093,14 +2380,16 @@ HISTORY
     are stored immediately.
   - Lots of bugfixes
 
+
 0.5 (fifth alpha) - released on 2001/02/25
   - Added email preselection.
   - Supports 8-bit MIME email (if a SMTP server doesn't support them,
     they will be encoded on the fly).
-  - Improved the Read window, making extensive use of the SimpleHTML
-    engine.
+  - Improved the Read Message window, making extensive use of the
+    SimpleHTML engine.
   - Button images are cached now
   - Added support for the new SimpleMail User Gallery
+
 
 0.4 (fourth alpha) - released on 2001/02/25
   - Multiple POP3 servers
@@ -2110,21 +2399,23 @@ HISTORY
   - Fixed problems with special chars in real names
   - Many other bugfixes
 
+
 0.3 (third alpha) - released on 2001/02/05
   - Added a "Forward" button
   - The main window has two different views, which are easily switchable.
-  - Improved Compose window (got some images)
+  - Improved Compose Message window (got some images)
   - The "To" button in the address book works correctly now.
   - Group mails (mails with multiple recipients), mails with
     attachments and important mails can now be easily identified.
   - Added a small context menu for the mailtree list; mails can now
-    be marked, and forced to remain hold.
+    be marked, and forced to remain held.
   - Added the possibility to use your IP addresss as your domain in
     the HELO/EHLO dialog (no X-Authentification warning headers anymore).
   - Added SMTP AUTH according to RFC 2554.
   - It is now possible to specify which port you would like to use on
     the servers instead of the default 25 and 110.
   - Other smaller improvements and bugfixes
+
 
 0.2 (second alpha) - released on 2001/01/14
   - Buttons have now images.
@@ -2134,6 +2425,7 @@ HISTORY
   - Support for mail threads.
   - The address book is now more complete
   - Bugfixes and smaller enhancements.
+
 
 0.1 (first alpha) - released on 2000/12/24
   - Initial alpha.
@@ -2148,10 +2440,10 @@ example.
 
 The SimpleHTML engine is already built-in in SimpleMail to allow you to
 easily read HTML mail, i.e. you don't need to go and install SimpleHTML
-separarely. Still, if you want to give SimpleHTML a try (which is
+separately. Still, if you want to give SimpleHTML a try (which is
 probably a good idea anyway :), the latest version should be always
 available in Sebastian's homepage:
 
-              http://home.t-online.de/home/sebauer/
+              http:\//home.t-online.de/home/sebauer/
 
 @ENDNODE

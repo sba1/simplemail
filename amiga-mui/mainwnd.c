@@ -30,6 +30,7 @@
 #include <libraries/asl.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
+#include <mui/thebar_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/asl.h>
 #include <proto/dos.h>
@@ -74,6 +75,64 @@
 
 /*****************************************************/
 
+#define ROWS     10
+#define COLS      7
+#define HSPACE    1
+#define VSPACE    1
+#define PIC(x,y) (x+y*COLS)
+
+static struct MUIS_TheBar_Button thebar_buttons[] =
+{
+    {PIC(2,2),  0, "Rea_d"},
+    {PIC(1,7),  1, "_Edit"},
+    {PIC(1,9),  2, "_Move"},
+    {PIC(0,6),  3, "De_lete"},
+    {PIC(1,6),  4, "Ge_tAdd"},
+    {MUIV_TheBar_BarSpacer},
+    {PIC(1,9),  5, "_New"},
+    {PIC(1,5),  6, "_Reply"},
+    {PIC(2,3),  7, "For_ward"},
+    {MUIV_TheBar_BarSpacer},
+    {PIC(2,5),  8, "_Fetch"},
+    {PIC(2,7),  9, "_Send"},
+    {MUIV_TheBar_BarSpacer},
+    {PIC(3,5), 10, "Searc_h"},
+    {PIC(0,9), 11, "F_ilter"},
+    {PIC(3,6), 12, "S_pam"},
+    {PIC(3,7), 13, "Is_olate"},
+    {MUIV_TheBar_BarSpacer},
+    {PIC(0,1), 14, "_Abook"},
+    {PIC(1,0), 15, "Fi_lters"},
+    {PIC(0,3), 16, "_Config"},
+    {MUIV_TheBar_End},
+};
+
+/* The order must match id above */
+static void *thebar_callbacks[] = {
+	callback_read_active_mail,
+	callback_change_mail,
+	callback_move_selected_mails,
+	callback_delete_mails,
+	callback_get_address,
+
+	callback_new_mail,
+	callback_reply_selected_mails,
+	callback_forward_selected_mails,
+
+	callback_fetch_mails,
+	callback_send_mails,
+
+	callback_search,
+	callback_filter,
+	callback_check_selected_folder_for_spam,
+	callback_move_spam_marked_mails,
+
+	callback_addressbook,
+	callback_edit_filter,
+	callback_config
+};
+
+/*****************************************************/
 
 static Object *win_main;
 static Object *main_menu;
@@ -83,23 +142,6 @@ static Object *main_settings_messageview_menuitem;
 static Object *main_scripts_menu;
 static Object *main_scripts_execute_menuitem;
 static Object *main_group;
-static Object *button_fetch;
-static Object *button_send;
-static Object *button_read;
-static Object *button_getadd;
-static Object *button_delete;
-static Object *button_change;
-static Object *button_move;
-static Object *button_new;
-static Object *button_reply;
-static Object *button_forward;
-static Object *button_search;
-static Object *button_filter;
-static Object *button_efilter;
-static Object *button_spamcheck;
-static Object *button_isolate;
-static Object *button_abook;
-static Object *button_config;
 static Object *switch1_button; /* switch button for the two views */
 static Object *switch2_button; /* switch button for the two views */
 static Object *mail_tree;
@@ -502,9 +544,139 @@ void main_save_environment(void)
 /******************************************************************
  Initialize the main window
 *******************************************************************/
+static Object *main_initialize_bar(void)
+{
+	Object *bar;
+	Object *button_fetch;
+	Object *button_send;
+	Object *button_read;
+	Object *button_getadd;
+	Object *button_delete;
+	Object *button_change;
+	Object *button_move;
+	Object *button_new;
+	Object *button_reply;
+	Object *button_forward;
+	Object *button_search;
+	Object *button_filter;
+	Object *button_efilter;
+	Object *button_spamcheck;
+	Object *button_isolate;
+	Object *button_abook;
+	Object *button_config;
+
+	int i;
+
+	for (i=0;i<sizeof(thebar_buttons)/sizeof(thebar_buttons[0]);i++)
+	{
+		if (thebar_buttons[i].text) thebar_buttons[i].text = _(thebar_buttons[i].text);
+	}
+
+	bar = TheBarVirtObject,
+        MUIA_Group_Horiz,            TRUE,
+				MUIA_TheBar_EnableKeys,      TRUE,
+				MUIA_TheBar_Buttons,         thebar_buttons,
+				MUIA_TheBar_Strip,           "PROGDIR:Images/images",
+				MUIA_TheBar_StripRows,       ROWS,
+				MUIA_TheBar_StripCols,       COLS,
+				MUIA_TheBar_StripHorizSpace, HSPACE,
+				MUIA_TheBar_StripVertSpace,  VSPACE,
+				End;
+
+	if (bar)
+	{
+		/* create notifies */
+		for (i=0;i<sizeof(thebar_callbacks)/sizeof(thebar_callbacks[0]);i++)
+		{
+			Object *but = (Object*)DoMethod(bar, MUIM_TheBar_GetObject, i);
+			if (but)
+			{
+				DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, thebar_callbacks[i]);
+			}
+		}
+		return bar;
+	}
+
+	bar = HGroupV,
+		Child, HGroup,
+			MUIA_VertWeight,0,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				MUIA_Weight, 250,
+				Child, button_read = MakePictureButton(_("Rea_d"),"PROGDIR:Images/MailRead"),
+				Child, button_change = MakePictureButton(_("_Edit"),"PROGDIR:Images/MailModify"),
+				Child, button_move = MakePictureButton(_("_Move"),"PROGDIR:Images/MailMove"),
+				Child, button_delete = MakePictureButton(_("De_lete"),"PROGDIR:Images/MailDelete"),
+				Child, button_getadd = MakePictureButton(_("Ge_tAdd"),"PROGDIR:Images/MailGetAddress"),
+				End,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				MUIA_Weight, 150,
+				Child, button_new = MakePictureButton(_("_New"),"PROGDIR:Images/MailNew"),
+				Child, button_reply = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
+				Child, button_forward = MakePictureButton(_("For_ward"),"PROGDIR:Images/MailForward"),
+				End,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				Child, button_fetch = MakePictureButton(_("_Fetch"),"PROGDIR:Images/MailsFetch"),
+				Child, button_send = MakePictureButton(_("_Send"),"PROGDIR:Images/MailsSend"),
+				End,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				MUIA_Weight, 200,
+				Child, button_search = MakePictureButton(_("Searc_h"),"PROGDIR:Images/Search"),
+				Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),
+				Child, button_spamcheck = MakePictureButton(_("S_pam"),"PROGDIR:Images/SpamCheck"),
+				Child, button_isolate = MakePictureButton(_("Is_olate"),"PROGDIR:Images/SpamIsolate"),
+				End,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				MUIA_Weight, 150,
+				Child, button_abook = MakePictureButton(_("_Abook"),"PROGDIR:Images/Addressbook"),
+				Child, button_efilter = MakePictureButton(_("Fi_lters"),"PROGDIR:Images/FilterEdit"),
+				Child, button_config = MakePictureButton(_("_Config"),"PROGDIR:Images/Config"),
+				End,
+			End,
+		End;
+
+	/* Gadget notifies */
+	DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
+	DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
+	DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+	DoMethod(button_move, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
+	DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
+	DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
+	DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
+	DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
+	DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
+	DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+	DoMethod(button_search, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_search);
+	DoMethod(button_filter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_filter);
+	DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+	DoMethod(button_spamcheck, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
+	DoMethod(button_isolate, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
+	DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
+	DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
+
+	/* Short Help */
+	set(button_search, MUIA_ShortHelp, _("Opens a window where you can search through your mail folder."));
+	set(button_filter, MUIA_ShortHelp, _("Process every mail within the current selected folder via the filters."));
+	set(button_efilter, MUIA_ShortHelp, _("Opens a window where the filters can be edited."));
+	set(button_spamcheck, MUIA_ShortHelp, _("Checks the current selected folder for spam.\nIf a potential spam mail has been found it will be marked."));
+	set(button_isolate, MUIA_ShortHelp, _("Isolates all spam marked mails within the current selected folder."));
+
+	return bar;
+}
+
+/******************************************************************
+ Initialize the main window
+*******************************************************************/
 int main_window_init(void)
 {
+	Object *bar;
+
 	int rc;
+
 	enum {
 		MENU_PROJECT,
 		MENU_PROJECT_ABOUT = 1,
@@ -644,6 +816,8 @@ int main_window_init(void)
 
 	main_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
+	bar = main_initialize_bar();
+
 	win_main = WindowObject,
 		MUIA_HelpNode, "MA_W",
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
@@ -652,47 +826,7 @@ int main_window_init(void)
 		MUIA_Window_Menustrip,main_menu,
 
 		WindowContents, main_group = VGroup,
-			Child, HGroupV,
-				Child, HGroup,
-					MUIA_VertWeight,0,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 250,
-						Child, button_read = MakePictureButton(_("Rea_d"),"PROGDIR:Images/MailRead"),
-						Child, button_change = MakePictureButton(_("_Edit"),"PROGDIR:Images/MailModify"),
-						Child, button_move = MakePictureButton(_("_Move"),"PROGDIR:Images/MailMove"),
-						Child, button_delete = MakePictureButton(_("De_lete"),"PROGDIR:Images/MailDelete"),
-						Child, button_getadd = MakePictureButton(_("Ge_tAdd"),"PROGDIR:Images/MailGetAddress"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 150,
-						Child, button_new = MakePictureButton(_("_New"),"PROGDIR:Images/MailNew"),
-						Child, button_reply = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
-						Child, button_forward = MakePictureButton(_("For_ward"),"PROGDIR:Images/MailForward"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						Child, button_fetch = MakePictureButton(_("_Fetch"),"PROGDIR:Images/MailsFetch"),
-						Child, button_send = MakePictureButton(_("_Send"),"PROGDIR:Images/MailsSend"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 200,
-						Child, button_search = MakePictureButton(_("Searc_h"),"PROGDIR:Images/Search"),
-						Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),
-						Child, button_spamcheck = MakePictureButton(_("S_pam"),"PROGDIR:Images/SpamCheck"),
-						Child, button_isolate = MakePictureButton(_("Is_olate"),"PROGDIR:Images/SpamIsolate"),
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 150,
-						Child, button_abook = MakePictureButton(_("_Abook"),"PROGDIR:Images/Addressbook"),
-						Child, button_efilter = MakePictureButton(_("Fi_lters"),"PROGDIR:Images/FilterEdit"),
-						Child, button_config = MakePictureButton(_("_Config"),"PROGDIR:Images/Config"),
-						End,
-					End,
-				End,
+			Child, bar,
 
 			Child, folder_group = HGroup,
 				MUIA_Group_Spacing,0,
@@ -814,13 +948,6 @@ int main_window_init(void)
 		}
 		MUI_DisposeObject(testnlist);
 
-		/* Short Help */
-		set(button_search, MUIA_ShortHelp, _("Opens a window where you can search through your mail folder."));
-		set(button_filter, MUIA_ShortHelp, _("Process every mail within the current selected folder via the filters."));
-		set(button_efilter, MUIA_ShortHelp, _("Opens a window where the filters can be edited."));
-		set(button_spamcheck, MUIA_ShortHelp, _("Checks the current selected folder for spam.\nIf a potential spam mail has been found it will be marked."));
-		set(button_isolate, MUIA_ShortHelp, _("Isolates all spam marked mails within the current selected folder."));
-
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
 		main_settings_messageview_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_SELECTED_MESSAGE);
@@ -886,26 +1013,6 @@ int main_window_init(void)
 
 		/* Key notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
-
-		/* Gadget notifies */
-		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
-		DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
-		DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
-		DoMethod(button_move, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
-		DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
-		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-		DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
-		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
-		DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
-		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-		DoMethod(button_search, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_search);
-		DoMethod(button_filter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_filter);
-		DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
-		DoMethod(button_spamcheck, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
-		DoMethod(button_isolate, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
-
-		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
-		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
 
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);

@@ -62,6 +62,7 @@
 #include "picturebuttonclass.h"
 #include "utf8stringclass.h"
 #include "signaturecycleclass.h"
+#include "configwnd_stuff.h"
 
 static struct MUI_CustomClass *CL_Sizes;
 static int create_sizes_class(void);
@@ -207,6 +208,7 @@ static void account_store(void)
 		free(account_last_selected->name);
 		free(account_last_selected->email);
 		free(account_last_selected->reply);
+		free(account_last_selected->def_signature);
 		free(account_last_selected->pop->name);
 		free(account_last_selected->pop->login);
 		free(account_last_selected->pop->passwd);
@@ -221,7 +223,7 @@ static void account_store(void)
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
-		account_last_selected->def_signature = xget(account_def_signature_cycle, MUIA_Cycle_Active);
+		account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
 		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
@@ -261,11 +263,7 @@ static void account_load(void)
 		setutf8string(account_name_string,account->name);
 		nnset(account_email_string, MUIA_String_Contents, account->email);
 		setstring(account_reply_string,account->reply);
-		nnset(account_def_signature_cycle, MUIA_Cycle_Active, account->def_signature);
-		if (xget(account_def_signature_cycle, MUIA_Cycle_Active) != account->def_signature)
-		{
-			nnset(account_def_signature_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
-		}
+		nnset(account_def_signature_cycle, MUIA_SignatureCycle_Signature, account->def_signature);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
@@ -398,60 +396,6 @@ static void phrase_load(void)
 	}
 }
 
-
-/******************************************************************
- Convert addresses from a texteditor object to an array.
- this is principle the same like in addressbookwnd.c but uses
- parse_mailbox
-*******************************************************************/
-static char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_ptr)
-{
-	char *addresses;
-	char **new_array = NULL;
-
-	/* Check the validity of the e-mail addresses first */
-	if ((addresses = (char*)DoMethod(editor, MUIM_TextEditor_ExportText)))
-	{
-		struct mailbox mb;
-		char *buf = addresses;
-
-		while (isspace((unsigned char)*buf) && *buf) buf++;
-
-		if (*buf)
-		{
-			while ((buf = parse_mailbox(buf,&mb)))
-			{
-				/* ensures that buf != NULL if no error */
-				while (isspace((unsigned char)*buf)) buf++;
-				if (*buf == 0) break;
-				free(mb.addr_spec);
-				free(mb.phrase);
-			}
-			if (!buf)
-			{
-				set(config_list, MUIA_NList_Active, page);
-				set(config_wnd,MUIA_Window_ActiveObject,editor);
-				sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),NULL);
-				FreeVec(addresses);
-				array_free(new_array);
-				*error_ptr = 1;
-				return NULL;
-			}
-
-			buf = addresses;
-			while ((buf = parse_mailbox(buf,&mb)))
-			{
-				new_array = array_add_string(new_array,mb.addr_spec);
-				free(mb.addr_spec);
-				free(mb.phrase);
-			}
-		}
-		FreeVec(addresses);		
-	}
-	*error_ptr = 0;
-	return new_array;
-}
-
 /******************************************************************
  Use the config
 *******************************************************************/
@@ -483,7 +427,7 @@ static int config_use(void)
 					{
 						if (!mystricmp(addr1,addr2))
 						{
-							set(config_list, MUIA_NList_Active, 1);
+							set(config_list, MUIA_NList_Active, GROUPS_ACCOUNT);
 							set(account_account_list, MUIA_NList_Active, j);
 							set(config_wnd,MUIA_Window_ActiveObject,account_email_string);
 							sm_request(NULL,_("SimpleMail currently doesn't support the same email address for\n"
@@ -498,7 +442,7 @@ static int config_use(void)
 
 				if (invalid != -1)
 				{
-					set(config_list, MUIA_NList_Active, 1);
+					set(config_list, MUIA_NList_Active, GROUPS_ACCOUNT);
 					set(account_account_list, MUIA_NList_Active, invalid);
 					set(config_wnd,MUIA_Window_ActiveObject,account_email_string);
 					sm_request(NULL,_("No valid email address entered. Please correct it."),_("Ok"));
@@ -508,17 +452,50 @@ static int config_use(void)
 		}
 	}
 
-	internet_emails = array_of_addresses_from_texteditor(readhtml_mail_editor,6,&err);
+	/* check if there are any duplicate signatures */
+	signature_store();
+	for (i=0;i<xget(signature_signature_list,MUIA_NList_Entries);i++)
+	{
+		struct signature *sign1, *sign2;
+		DoMethod(signature_signature_list,MUIM_NList_GetEntry, i, &sign1);
+
+		if ((mystrcmp(sign1->name, MUIV_SignatureCycle_NoSignature) == 0) ||
+		    (mystrcmp(sign1->name, MUIV_SignatureCycle_Default) == 0))
+		{
+			set(config_list, MUIA_NList_Active, GROUPS_SIGNATURE);
+			set(signature_signature_list, MUIA_NList_Active, i);
+			set(config_wnd,MUIA_Window_ActiveObject,signature_name_string);
+			sm_request(NULL,_("This Signaturename is not allowed."), _("Ok"),NULL);
+			return 0;
+		}
+
+		for (j=0;j<xget(signature_signature_list,MUIA_NList_Entries);j++)
+		{
+			if (i==j) continue;
+			DoMethod(signature_signature_list,MUIM_NList_GetEntry, j, &sign2);
+
+			if (mystrcmp(sign1->name, sign2->name) == 0)
+			{
+				set(config_list, MUIA_NList_Active, GROUPS_SIGNATURE);
+				set(signature_signature_list, MUIA_NList_Active, j);
+				set(config_wnd,MUIA_Window_ActiveObject,signature_name_string);
+				sm_request(NULL,_("Signaturenames must be unique."), _("Ok"),NULL);
+				return 0;
+			}
+		}
+	}
+
+	internet_emails = array_of_addresses_from_texteditor(readhtml_mail_editor,6,&err,config_wnd,config_list);
 	if (err) return 0;
 
-	spam_white_emails = array_of_addresses_from_texteditor(spam_white_list_editor,9,&err);
+	spam_white_emails = array_of_addresses_from_texteditor(spam_white_list_editor,9,&err,config_wnd,config_list);
 	if (err)
 	{
 		array_free(internet_emails);
 		return 0;
 	}
 
-	spam_black_emails = array_of_addresses_from_texteditor(spam_black_list_editor,9,&err);
+	spam_black_emails = array_of_addresses_from_texteditor(spam_black_list_editor,9,&err,config_wnd,config_list);
 	if (err)
 	{
 		array_free(internet_emails);
@@ -622,8 +599,6 @@ static int config_use(void)
 		insert_config_signature(sign);
 	}
 
-	callback_folder_use_updated_signatures();
-
 	close_config();
 	callback_config_changed();
 	return 1;
@@ -637,7 +612,6 @@ static void config_save(void)
 	if (config_use())
 	{
 		save_config();
-		callback_folder_save_updated_signatures();
 	}
 }
 
@@ -646,7 +620,6 @@ static void config_save(void)
 *******************************************************************/
 static void config_cancel(void)
 {
-	callback_folder_undo_updated_signatures();
 	close_config();
 }
 
@@ -864,7 +837,8 @@ static void account_refresh_signature_cycle(void)
 {
 	struct list tmp_signature_list;
 	struct signature *sign, *new_sign;
-	int i, current_sign;
+	char *current_sign;
+	int i;
 
 	/* temporary signature list for SignatureCycle to display the new signatures */
 	list_init(&tmp_signature_list);
@@ -880,31 +854,27 @@ static void account_refresh_signature_cycle(void)
 		}
 	}
 
-	current_sign = (int)xget(account_def_signature_cycle, MUIA_Cycle_Active);
+	current_sign = mystrdup((char *)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
 	DoMethod(account_user_group, MUIM_Group_InitChange);
 	DoMethod(account_user_group, OM_REMMEMBER, account_def_signature_cycle);
 	MUI_DisposeObject(account_def_signature_cycle);
 	account_def_signature_cycle = SignatureCycleObject,
 		MUIA_CycleChain, 1,
-		MUIA_Cycle_Active, current_sign,
+		MUIA_SignatureCycle_Signature, current_sign,
 		MUIA_SignatureCycle_HasDefaultEntry, TRUE,
 		MUIA_SignatureCycle_SignatureList, &tmp_signature_list,
 		End;
-	if (xget(account_def_signature_cycle, MUIA_Cycle_Active) != current_sign)
-	{
-		/* if the current signature was deleted, set to default */
-		set(account_def_signature_cycle, MUIA_Cycle_Active, MUIV_SignatureCycle_Default);
-	}
 	set(account_def_signature_cycle,MUIA_ShortHelp,_("The default signature for this account"));
 	DoMethod(account_user_group, OM_ADDMEMBER, account_def_signature_cycle);
 	DoMethod(account_user_group, MUIM_Group_ExitChange);
 
-	/* free the temporary signature list */
+	/* free the temporary list and the current signature */
 	while ((sign = (struct signature *)list_remove_tail(&tmp_signature_list)))
 	{
 		if (sign->name) free(sign->name);
 		free(sign);
 	}
+	free(current_sign);
 }
 
 /******************************************************************
@@ -1473,34 +1443,31 @@ static void signature_remove(void)
 	if (sign)
 	{
 		struct account *ac;
-		LONG signature_pos = MUIV_NList_GetPos_Start;
 		int i, use_count_accounts = 0, use_count_folders = 0;
 
 		/* Check if the signature is used in any of the accounts */
-		DoMethod(signature_signature_list, MUIM_NList_GetPos, sign, &signature_pos);
 		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
 		{
 			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
-			if (ac->def_signature == signature_pos)
+			if (mystrcmp(ac->def_signature, sign->name) == 0)
 			{
 				use_count_accounts++;
 			}
 		}
-		use_count_folders = callback_folder_count_signatures(signature_pos);
-		SM_DEBUGF(1,("counts: acc=%ld fol=%ld\n",use_count_accounts,use_count_folders));
+		use_count_folders = callback_folder_count_signatures(sign->name);
 		if (use_count_accounts || use_count_folders)
 		{
 			if (use_count_folders == 0)
 			{
-				if (!sm_request(NULL,_("The signature is used in %d account(s)."),_("Delete|*Cancel"),use_count_accounts)) return;
+				if (!sm_request(NULL,_("The signature is used in %d account(s)."),_("Remove|*Cancel"),use_count_accounts)) return;
 			} else
 			{
 				if (use_count_accounts == 0)
 				{
-					if (!sm_request(NULL,_("The signature is used in %d folder(s)."),_("Delete|*Cancel"),use_count_folders)) return;
+					if (!sm_request(NULL,_("The signature is used in %d folder(s)."),_("Remove|*Cancel"),use_count_folders)) return;
 				} else
 				{
-					if (!sm_request(NULL,_("The signature is used in %d account(s) and %d folder(s)."),_("Delete|*Cancel"),use_count_accounts,use_count_folders)) return;
+					if (!sm_request(NULL,_("The signature is used in %d account(s) and %d folder(s)."),_("Remove|*Cancel"),use_count_accounts,use_count_folders)) return;
 				}
 			}
 		}
@@ -1509,23 +1476,19 @@ static void signature_remove(void)
 		{
 			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
 			/* set to default all accounts with the deleted signature */
-			/* minus one for all signatures beyond the deleted one */
-			if (ac->def_signature == signature_pos)
+			if (mystrcmp(ac->def_signature, sign->name) == 0)
 			{
 				ac->def_signature = MUIV_SignatureCycle_Default;
-			}
-			if (ac->def_signature > signature_pos)
-			{
-				ac->def_signature--;
 			}
 			/* If the account was displayed, we must update the gui elements */
 			if (account_last_selected == ac)
 			{
-				nnset(account_def_signature_cycle, MUIA_Cycle_Active, ac->def_signature);
+				nnset(account_def_signature_cycle, MUIA_SignatureCycle_Signature, ac->def_signature);
+				free(account_last_selected->def_signature);
+				account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
 			}
 		}
-		/* now update the folders */
-		callback_folder_update_signatures(signature_pos);
+		/* do not touch the folders config! */
 
 		signature_last_selected = NULL;
 		DoMethod(signature_signature_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);

@@ -218,8 +218,8 @@ static void account_store(void)
 
 		account_last_selected->account_name = mystrdup(getutf8string(account_account_name_string));
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
-		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
-		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
+		account_last_selected->email = mystrdup(getutf8string(account_email_string));
+		account_last_selected->reply = mystrdup(getutf8string(account_reply_string));
 		account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName));
 		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
@@ -259,8 +259,8 @@ static void account_load(void)
 	{
 		nnsetutf8string(account_account_name_string,account->account_name);
 		setutf8string(account_name_string,account->name);
-		nnset(account_email_string, MUIA_String_Contents, account->email);
-		setstring(account_reply_string,account->reply);
+		nnset(account_email_string, MUIA_UTF8String_Contents, account->email);
+		setutf8string(account_reply_string,account->reply);
 		nnset(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName, account->def_signature);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
@@ -1001,13 +1001,13 @@ static int init_account_group(void)
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
 			Child, MakeLabel(_("E-Mail Address")),
-			Child, account_email_string = BetterStringObject,
+			Child, account_email_string = UTF8StringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
 			Child, MakeLabel(_("Reply Address")),
-			Child, account_reply_string = BetterStringObject,
+			Child, account_reply_string = UTF8StringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_AdvanceOnCR, TRUE,
@@ -2020,7 +2020,7 @@ int init_spam_group(void)
 /******************************************************************
  Init the config window
 *******************************************************************/
-static void init_config(void)
+static void init_config_window(void)
 {
 	Object *save_button, *use_button, *cancel_button;
 
@@ -2200,7 +2200,7 @@ void open_config(void)
 {
 	SM_ENTER;
 
-	if (!config_wnd) init_config();
+	if (!config_wnd) init_config_window();
 	if (config_wnd)
 	{
 		set(config_wnd, MUIA_Window_Open, TRUE);

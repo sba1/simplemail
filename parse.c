@@ -798,9 +798,9 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 /**************************************************************************
  Parses the date
 **************************************************************************/
-char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec)
+char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec, int *pgmt)
 {
-	int day, month, year, hour, min, sec;
+	int day, month, year, hour, min, sec, gmt;
 	unsigned char *date;
 	if (!buf) return NULL;
 	date = strstr(buf,",");
@@ -847,6 +847,10 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 		sec = 0;
 	}
 	while (isdigit(*date)) date++;
+	while (isspace(*date)) date++;
+	gmt = atoi(date);
+	gmt = (gmt % 60) + (gmt / 100)*60;
+	while (isdigit(*date)) date++;
 
 	if (pday) *pday = day;
 	if (pmonth) *pmonth = month;
@@ -854,6 +858,7 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	if (phour) *phour = hour;
 	if (pmin) *pmin = min;
 	if (psec) *psec = sec;
+	if (pgmt) *pgmt = gmt;
 
 	return date;
 }

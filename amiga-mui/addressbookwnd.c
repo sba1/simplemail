@@ -240,7 +240,7 @@ static void person_window_ok(struct Person_Data **pdata)
     {
     	char *buf = (char*)xget(data->birthday_string,MUIA_String_Contents);
     	int day=0,month=0,year=0;
-    	if ((parse_date(buf,&day,&month,&year,NULL,NULL,NULL)))
+    	if ((parse_date(buf,&day,&month,&year,NULL,NULL,NULL,NULL)))
     	{
     		new_entry->u.person.dob_month = month;
     		new_entry->u.person.dob_day = day;

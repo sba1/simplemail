@@ -68,6 +68,6 @@ struct parse_parameter
 };
 
 char *parse_parameter(char *parameter, struct parse_parameter *dest);
-char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec);
+char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmin,int *psec, int *pgmt);
 
 #endif

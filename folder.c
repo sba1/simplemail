@@ -1332,9 +1332,23 @@ int folder_remove(struct folder *f)
 		{
 			if (&node->folder == f)
 			{
-				if (sm_request(NULL,
-					_("Do you really want to delete the folder\nand all its mails?"),
-					_("_Yes|_No")))
+				int ok;
+
+				if (f->is_imap)
+				{
+					ok = sm_request(NULL,
+							_("You are going to delete an imap folder.\n"
+							  "This will remove the folder locally but not on the server.\n"
+							  "The next time you connect to the server the folder will reapear."),
+							_("_Delete it|_Cancel"));
+				} else
+				{
+					ok = sm_request(NULL,
+							_("Do you really want to delete the folder\nand all its mails?"),
+							_("_Delete it|_Cancel"));
+				}
+
+				if (ok)
 				{
 					char buf[512];
 
@@ -1364,14 +1378,55 @@ int folder_remove(struct folder *f)
 		{
 			if (&node->folder == f)
 			{
-				if (sm_request(NULL,
-					_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group"),_("_Yes|_No")))
+				if (f->is_imap)
 				{
-					node_remove(&node->node);
-					folder_unlock(f);
-					free(node);
-					rc = 1;
+					if (sm_request(NULL,
+						_("You are going to delete an imap server.\n"
+						  "Unless you don't remove it from the accounts setting page\n"
+						  "it will reapear after SimpleMail is restarted."),
+						_("_Delete it|_Cancel")))
+					{
+						struct folder_node *node2;
+
+						/* delete the contents of the directory */
+						mydeletedir(f->path);
+
+						/* remoce the imap server node from the list so it won't be deleted twice */
+						node_remove(&node->node);
+
+						/* remove all folders which are on the same imap server like the imap server folder */
+						node2 = (struct folder_node*)list_first(&folder_list);
+						while (node2)
+						{
+							struct folder *nf = &node2->folder;
+							struct folder_node *next_node = (struct folder_node*)node_next(&node2->node);
+
+							if (folder_on_same_imap_server(f,nf))
+							{
+								node_remove(&node2->node);
+								free(node2);
+							}
+
+							node2 = next_node;
+						}
+
+						folder_unlock(f);
+						free(node);
+						return 1;
+					}
+				} else
+				{
+					if (sm_request(NULL,
+						_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group"),
+						_("_Delete it|_Cancel")))
+					{
+						node_remove(&node->node);
+						folder_unlock(f);
+						free(node);
+						rc = 1;
+					}
 				}
+				break;
 			}
 			node = (struct folder_node*)node_next(&node->node);
 		}

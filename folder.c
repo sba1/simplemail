@@ -536,12 +536,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						if (m)
 						{
 							char *buf;
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"Subject",7,buf,strlen(buf),0);
-								free(buf);
-							}
 
+							m->subject = fread_str(fh);
 							m->filename = fread_str(fh);
 
 							if ((buf = fread_str(fh)))

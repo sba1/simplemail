@@ -238,6 +238,7 @@ int main(void)
 	if (init_folders())
 	{
 		gui_main();
+		folder_delete_deleted();
 	}
 	cleanup_addressbook();
 	return 0;

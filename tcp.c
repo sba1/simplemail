@@ -152,23 +152,40 @@ long tcp_write(long sd, void *buf, long nbytes)
 
 #define TCP_READLN_BUFSIZE 1500
 
+/******************************************************************
+ Read a complete line from the given socket. Not very well
+ implemented (big overhead) but it works for now. Line
+ will end with a '\n' an '\r' is removed. The returned
+ buffer is allocated with malloc(). Returns NULL if end
+ of stream is reached.
+*******************************************************************/
 char *tcp_readln(long sd)
 {
-	char *rc = NULL;
-	static char readbuf[TCP_READLN_BUFSIZE + 1];
-	unsigned long i=0;
+	char *rc;
+	static char readbuf[TCP_READLN_BUFSIZE + 2];
+	int i=0;
 
-	while(1)
+	while (i<TCP_READLN_BUFSIZE)
 	{
-		tcp_read(sd, &readbuf[i++], 1);
-		readbuf[i] = 0;
+		if (tcp_read(sh, &readbuf[i],1)<=0)
+			return NULL;
 
-		if(strstr(readbuf, "\r\n"))
+		if (readbuf[i]=='\n')
+		{
+			if (i && readbuf[i-1] == '\r')
+			{
+				readbuf[i-1] = '\n';
+			} else i++;
 			break;
+		}
+		i++;
 	}
 
-	rc = malloc(strlen(readbuf) + 1);
-	strcpy(rc, readbuf);
+	/* add a nullbyte at the end */
+	readbuf[i] = 0;
+
+	if ((rc = malloc(strlen(readbuf) + 1)))
+		strcpy(rc, readbuf);
 
 	return rc;
 }

@@ -1,6 +1,6 @@
 Short:     A new mailer (beta version)
-Uploader:  sebauer@t-online.de (Sebastian Bauer)
-Author:    hynek@hys.in-berlin.de (Hynek Schlawack), sebauer@t-online.de (Sebastian Bauer)
+Uploader:  mail@sebastianbauer.info (Sebastian Bauer)
+Author:    hynek@hys.in-berlin.de (Hynek Schlawack), mail@sebastianbauer.info (Sebastian Bauer)
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
@@ -49,8 +49,8 @@ There is also a support mailing list:
 
 SimpleMail is (originally) developed by
 
-  Hynek Schlawack <hynek@hys.in-berlin.de> - http://hynek.in-berlin.de/
-  Sebastian Bauer <sebauer@t-online.de>    - http://www.sebastianbauer.info/
+  Hynek Schlawack <hynek@hys.in-berlin.de>   - http://hynek.in-berlin.de/
+  Sebastian Bauer <mail@sebastianbauer.info> - http://www.sebastianbauer.info/
 
 You can also contact them if you have any questions regarding SimpleMail,
 but please use the mailing list if possible.

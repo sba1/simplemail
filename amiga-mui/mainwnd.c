@@ -416,7 +416,9 @@ void main_set_folder_mails(struct folder *folder)
 	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
 	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
-	DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
+
+/*	DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);*/
+	DoMethod(tree_mail, MUIM_NList_Clear);
 
 	set(tree_mail, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 

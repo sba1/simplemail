@@ -498,6 +498,24 @@ static int init_mails_read_group(void)
 
 static void account_cell_data_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell, GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
+	struct account *ac;
+	gtk_tree_model_get(model,iter,ACCOUNT_POINTER,&ac,-1);
+	char *text;
+
+	switch ((int)data)
+	{
+		case	ACCOUNT_EMAIL:
+			text = ac->email;
+			break;
+		case	ACCOUNT_POP3:
+			text = ac->pop->name;
+			break;
+		case	ACCOUNT_SMTP:
+			text = ac->smtp->name;
+			break;
+
+	}
+	g_object_set(cell,"text",text, NULL);
 }
 
 static void add_account(struct account *account)

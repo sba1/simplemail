@@ -55,12 +55,17 @@
 #include "messageviewclass.h"
 #include "simplehtml_mcc.h"
 
+/**************************************************************************/
+
 struct MessageView_Data
 {
 	Object *mailinfo;
+	Object *display_group;
 	Object *simplehtml;
 	Object *horiz;
 	Object *vert;
+/*	Object *scroll_button;*/
+
 	int show;
 
 	struct Hook load_hook;
@@ -71,6 +76,8 @@ struct MessageView_Data
 	struct mail_complete *mail; /* The currently displayed mail (instance created within this class) */
 
 	struct FileRequester *file_req; /* Filerequester for saving files */
+
+	int horizbar_visible;
 };
 
 /******************************************************************
@@ -695,14 +702,13 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 	return rc;
 }
 
-
 /******************************************************************
  OM_NEW
 *******************************************************************/
 STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MessageView_Data *data;
-	Object *simplehtml, *horiz, *vert, *mailinfo;
+	Object *simplehtml, *horiz, *vert, *mailinfo, *display_group;/*, *scroll_button;*/
 	struct TagItem *oid_tag;
 
 	/* Filter out MUIA_ObjectID tag as this is used for the switch_button */
@@ -720,20 +726,25 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					MUIA_InnerBottom, 0,
 					oid_tag?MUIA_ObjectID:TAG_IGNORE, oid_tag?oid_tag->ti_Tag:0,
 					End,
-		Child, HGroup,
+		Child, display_group = HGroup,
 			MUIA_Group_Spacing, 0,
-			Child, simplehtml = SimpleHTMLObject,
+			Child, VGroup,
+				MUIA_Group_Spacing, 0,
+				Child, simplehtml = SimpleHTMLObject,
 					TextFrame,
 					MUIA_InnerLeft, 0,
 					MUIA_InnerTop, 0,
 					MUIA_InnerRight, 0,
 					MUIA_InnerBottom, 0,
 					End,
+				Child, horiz = ScrollbarObject, MUIA_ShowMe, FALSE, MUIA_Group_Horiz, TRUE, End,
+				End,
 			Child, vert = ScrollbarObject, End,
 			End,
-		Child, horiz = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
 		TAG_MORE,msg->ops_AttrList)))
+	{
 		return 0;
+	}
 
 	data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
@@ -743,11 +754,12 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 	}
 
-
 	data->simplehtml = simplehtml;
+	data->display_group = display_group;
 	data->horiz = horiz;
 	data->vert = vert;
 	data->mailinfo = mailinfo;
+/*	data->scroll_button = scroll_button;*/
 
 	init_hook_with_data(&data->load_hook, (HOOKFUNC)simplehtml_load_function, data);
 
@@ -758,6 +770,8 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			TAG_DONE);
 
 	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, messageview_uri_clicked, data, MUIV_TriggerValue);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalHoriz, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalVert, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
 
 	return (ULONG)obj;
 }
@@ -854,6 +868,34 @@ STATIC ULONG MessageView_DisplayMail(struct IClass *cl, Object *obj, struct MUIP
 	return 1;
 }
 
+/******************************************************************
+ MUIM_MessageView_DisplayMail
+*******************************************************************/
+STATIC ULONG MessageView_Changed(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
+	int totalHoriz = xget(data->simplehtml, MUIA_SimpleHTML_TotalHoriz);
+	int visibleHoriz = xget(data->simplehtml, MUIA_SimpleHTML_VisibleHoriz);
+
+	if (totalHoriz <= visibleHoriz)
+	{
+		if (data->horizbar_visible)
+		{
+			data->horizbar_visible = 0;
+			set(data->horiz, MUIA_ShowMe, FALSE);
+		}
+	} else
+	{
+		if (!data->horizbar_visible)
+		{
+			data->horizbar_visible = 1;
+			set(data->horiz, MUIA_ShowMe, TRUE);
+		}
+	}
+
+	return 0;
+}
+
 STATIC BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -865,6 +907,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
 		case	MUIM_Show:			return MessageView_Show(cl,obj,(struct MUIP_Show*)msg);
 		case	MUIM_Hide:			return MessageView_Hide(cl,obj,(struct MUIP_Hide*)msg);
 		case	MUIM_MessageView_DisplayMail: return MessageView_DisplayMail(cl,obj,(struct MUIP_MessageView_DisplayMail*)msg);
+		case	MUIM_MessageView_Changed: return MessageView_Changed(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

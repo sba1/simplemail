@@ -29,6 +29,7 @@ IMPORT struct MUI_CustomClass *CL_MessageView;
 #define MessageViewObject (Object*)MyNewObject(CL_MessageView->mcc_Class, NULL
 
 #define MUIM_MessageView_DisplayMail				(TAG_USER | 0x30140101)
+#define MUIM_MessageView_Changed						(TAG_USER | 0x30140102)
 
 struct MUIP_MessageView_DisplayMail {ULONG MethodID; struct mail_info *mail; char *folder_path;};
 /*#define MUIA_MessageView_xxx (TAG_USER | 0x30140001)*/ /* I.. type */

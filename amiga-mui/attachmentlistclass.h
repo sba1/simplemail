@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_AttachmentList;
-#define AttachmentListObject (Object*)(NewObject)(CL_AttachmentList->mcc_Class, NULL
+#define AttachmentListObject (Object*)MyNewObject(CL_AttachmentList->mcc_Class, NULL
 
 #define MUIA_AttachmentList_Quick (TAG_USER+0x92733) /* (ULONG) */
 

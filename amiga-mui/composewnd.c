@@ -603,14 +603,24 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
 		struct composed_mail new_mail;
 
+		from[0] = 0;
 		account = (struct account*)xget(data->from_accountpop,MUIA_AccountPop_Account);
 		if (account)
 		{
 			char *fmt;
-			if (needs_quotation(account->name)) fmt = "\"%s\" <%s>";
-			else fmt = "%s <%s>";
-			sm_snprintf(from,sizeof(from),fmt,account->name,account->email);
-	  }
+			if (account->email)
+			{
+				if (!account->name || !account->name[0])
+				{
+					if (needs_quotation(account->name)) fmt = "\"%s\" <%s>";
+					else fmt = "%s <%s>";
+					sm_snprintf(from,sizeof(from),fmt,account->name,account->email);
+				} else
+				{
+					mystrlcpy(from,account->email,sizeof(from));
+				}
+			}
+		}
 
 		/* update the current attachment */
 		compose_attach_active(&data);
@@ -623,7 +633,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 
 		/* TODO: free this stuff!! */
 
-		new_mail.from = account?from:NULL;
+		new_mail.from = from[0]?from:NULL;
 		new_mail.replyto = replyto;
 		new_mail.to = to;
 		new_mail.cc = cc;

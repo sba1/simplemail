@@ -23,7 +23,7 @@
 #ifndef SM__MULTISTRINGCLASS_H
 #define SM__MULTISTRINGCLASS_H
 
-#define MultiStringObject (Object*)(NewObject)(CL_MultiString->mcc_Class, NULL
+#define MultiStringObject (Object*)MyNewObject(CL_MultiString->mcc_Class, NULL
 
 #define MUIA_MultiString_ContentsArray		(TAG_USER+0x182c000) /* STRPTR * */
 

@@ -127,6 +127,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 			case	MUIA_AccountPop_Account:
 						{
 							if (data->selected_account) account_free(data->selected_account);
+
 							if (!tidata && !data->has_default_entry)
 							{
 								/* Choose the first account if no account is specified and we have not
@@ -142,11 +143,14 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 							{
 								struct account *ac;
 								ac = data->selected_account = account_duplicate((struct account*)tidata);
-								if (ac)
+								if (ac && ac->email)
 								{
 									char iso_buf[256];
 									char buf[256];
 									char smtp_buf[128];
+
+									buf[0] = 0;
+
 									if (ac->name)
 									{
 										if (needs_quotation(ac->name))
@@ -157,12 +161,18 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 									if (ac->account_name && *ac->account_name)
 									{
 										sm_snprintf(smtp_buf,sizeof(smtp_buf),"%s: %s",ac->account_name,ac->smtp->name);
-									} else mystrlcpy(smtp_buf,ac->smtp->name,sizeof(smtp_buf));
+									} else
+									{
+										mystrlcpy(smtp_buf,ac->smtp->name?ac->smtp->name:_("Unconfigured"),sizeof(smtp_buf));
+									}
 
 									sm_snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf)," <%s> (%s)",ac->email, smtp_buf);
 
 									utf8tostr(buf, iso_buf, sizeof(iso_buf), user.config.default_codeset);
 									set(data->string,MUIA_Text_Contents,iso_buf);
+								} else
+								{
+									set(data->string, MUIA_Text_Contents,_("Unconfigured"));
 								}
 							}
 						}

@@ -31,6 +31,8 @@
 #include "compiler.h"
 #include "muistuff.h"
 
+#include "debug.h"
+
 LONG xget(Object * obj, ULONG attribute)
 {
   LONG x;
@@ -39,25 +41,30 @@ LONG xget(Object * obj, ULONG attribute)
 }
 
 #ifdef __AMIGAOS4__
-#undef NewObject
 #include <stdarg.h>
 
-APTR NewObject( struct IClass *cl, CONST_STRPTR id, ULONG tag1, ... )
+APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 {
+	ULONG *tags;
 	Object *o;
 	va_list args;
+
 	va_startlinear(args,id);
 
-	o = NewObjectA(cl,id,va_getlinearva(args,void*));
+	tags = va_getlinearva(args,void*);
+
+	SM_DEBUGF(25,("tag=%p [0]=%p [1]=%p [2]=%p id=%p\n",tags,tags[0],tags[1],tags[2],id));
+
+	o = NewObjectA(cl,id,va_getlinearva(args,ULONG));
 	va_end(args);
 	return o;
 }
 
-ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
+ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 {
 	ULONG rc;
 	va_list args;
-	va_startlinear(args,tag1);
+	va_startlinear(args,obj);
 
 	rc = DoSuperMethod(cl, obj, OM_NEW, va_getlinearva(args,ULONG), NULL);
 	va_end(args);
@@ -87,10 +94,16 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 	return MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
 }
 
-ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
+ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 {
-  return DoSuperMethod(cl, obj, OM_NEW, &tag1, NULL);
+  return DoSuperMethod(cl, obj, OM_NEW, (((ULONG*)&obj)+1), NULL);
 }
+
+APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
+{
+	return NewObjectA(cl,id, (struct TagItem*)((&id)+1));
+}
+
 
 #endif
 

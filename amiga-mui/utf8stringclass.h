@@ -25,11 +25,7 @@
 
 IMPORT struct MUI_CustomClass *CL_UTF8String;
 
-#ifdef __AMIGAOS4__
-#define UTF8StringObject (Object*)(IIntuition->NewObject)(CL_UTF8String->mcc_Class, NULL
-#else
-#define UTF8StringObject (Object*)(NewObject)(CL_UTF8String->mcc_Class, NULL
-#endif
+#define UTF8StringObject (Object*)MyNewObject(CL_UTF8String->mcc_Class, NULL
 
 #define MUIM_UTF8String_Insert (0x7878782)
 

@@ -40,6 +40,7 @@
 #include "account.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "imap.h"
 #include "lists.h"
 #include "parse.h"
@@ -66,7 +67,7 @@ static int create_sizes_class(void);
 static void delete_sizes_class(void);
 static int value2size(int val);
 static int size2value(int val);
-#define SizesObject (Object*)(NewObject)(CL_Sizes->mcc_Class, NULL
+#define SizesObject (Object*)MyNewObject(CL_Sizes->mcc_Class, NULL
 
 void account_recv_port_update(void);
 
@@ -861,6 +862,9 @@ static int init_account_group(void)
 {
 	static char *recv_entries[3];
 	static struct Hook account_display_hook;
+
+	SM_ENTER;
+
 	init_hook(&account_display_hook,(HOOKFUNC)account_display);
 
 	recv_entries[0] = "POP3";
@@ -1033,7 +1037,7 @@ static int init_account_group(void)
 			End,
 		End;
 
-	if (!groups[GROUPS_ACCOUNT]) return 0;
+	if (!groups[GROUPS_ACCOUNT]) SM_RETURN(0,"%ld");
 
 	DoMethod(account_account_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_selected);
 
@@ -1083,7 +1087,7 @@ static int init_account_group(void)
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));
 	set(account_remove_button,MUIA_ShortHelp,_("Remove the current account."));
 
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1093,6 +1097,8 @@ static int init_write_group(void)
 {
 	static char *wordwrap_entries[4];
 	static int wordwrap_entries_translated;
+
+	SM_ENTER;
 
 	if (!wordwrap_entries_translated)
 	{
@@ -1128,10 +1134,10 @@ static int init_write_group(void)
 			End,	
 		End;
 
-	if (!groups[GROUPS_WRITE]) return 0;
+	if (!groups[GROUPS_WRITE]) SM_RETURN(0,"%ld");
 
 	set(write_wordwrap_cycle,MUIA_Cycle_Active, user.config.write_wrap_type);
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1140,6 +1146,8 @@ static int init_write_group(void)
 static int init_mails_readmisc_group(void)
 {
 	int i;
+
+	SM_ENTER;
 
 	groups[GROUPS_READMISC] =  VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1191,7 +1199,7 @@ static int init_mails_readmisc_group(void)
 			End,
 		End;
 
-	if (!groups[GROUPS_READMISC]) return 0;
+	if (!groups[GROUPS_READMISC]) SM_RETURN(0,"%ld");
 
 	DoMethod(mails_readmisc_all_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, mails_readmisc_check_group, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 	if (user.config.header_flags & SHOW_HEADER_ALL) set(mails_readmisc_all_check, MUIA_Selected, TRUE);
@@ -1199,7 +1207,7 @@ static int init_mails_readmisc_group(void)
 	{
 		if (user.config.header_flags & (1<<i)) set(mails_readmisc_check[i],MUIA_Selected,TRUE);
 	}
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1209,6 +1217,8 @@ static int init_mails_read_group(void)
 {
 	static char *read_palette_names[7];
 	static int read_palette_names_translated;
+
+	SM_ENTER;
 
 	if (!read_palette_names_translated)
 	{
@@ -1303,8 +1313,8 @@ static int init_mails_read_group(void)
 			End,
 		End;
 
-	if (!groups[GROUPS_READ]) return 0;
-	return 1;
+	if (!groups[GROUPS_READ]) SM_RETURN(0,"%ld");
+	SM_RETURN(1,"%ld");
 }
 
 
@@ -1313,6 +1323,8 @@ static int init_mails_read_group(void)
 *******************************************************************/
 static int init_mails_readhtml_group(void)
 {
+	SM_ENTER;
+
 	groups[GROUPS_READHTML] =  VGroup,
 		MUIA_ShowMe, FALSE,
 
@@ -1328,9 +1340,9 @@ static int init_mails_readhtml_group(void)
 			End,
 		End;
 
-	if (!groups[GROUPS_READHTML]) return 0;
+	if (!groups[GROUPS_READHTML]) SM_RETURN(0,"%ld");
 	set(readhtml_mail_editor,MUIA_ComposeEditor_Array,user.config.internet_emails);
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1412,6 +1424,8 @@ static int init_signature_group(void)
 
 	Object *add_button, *rem_button;
 
+	SM_ENTER;
+
 	init_hook(&signature_display_hook,(HOOKFUNC)signature_display);
 
 	groups[GROUPS_SIGNATURE] =  VGroup,
@@ -1466,7 +1480,7 @@ static int init_signature_group(void)
   		End,
 		End;
 
-	if (!groups[GROUPS_SIGNATURE]) return 0;
+	if (!groups[GROUPS_SIGNATURE]) SM_RETURN(0,"%ld");
 /*	set(edit_button, MUIA_Weight,0);*/
 
 	/* connect the up/down keys to the List */
@@ -1482,7 +1496,7 @@ static int init_signature_group(void)
 	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
 	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_remove);
 	DoMethod(signature_signature_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, signature_selected);
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1601,6 +1615,8 @@ static int init_phrase_group(void)
 		NULL
 	};
 
+	SM_ENTER;
+
 	init_hook(&phrase_display_hook,(HOOKFUNC)phrase_display);
 
 	groups[GROUPS_PHRASE] =  VGroup,
@@ -1681,7 +1697,7 @@ static int init_phrase_group(void)
 			End,
 		End;
 
-	if (!groups[GROUPS_PHRASE]) return 0;
+	if (!groups[GROUPS_PHRASE]) SM_RETURN(0,"%ld");
 	/* connect the up/down keys to the List */
 	set(phrase_addresses_string, MUIA_String_AttachedList, phrase_phrase_list);
 
@@ -1693,7 +1709,7 @@ static int init_phrase_group(void)
 	DoMethod(dup_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_dup);
 	DoMethod(rem_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_remove);
 	DoMethod(phrase_phrase_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, phrase_selected);
-	return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1747,8 +1763,10 @@ int init_spam_group(void)
 	char spam_buf[16];
 	char ham_buf[16];
 
-	sprintf(spam_buf,"%ld",spam_num_of_spam_classified_mails());
-	sprintf(ham_buf,"%ld",spam_num_of_ham_classified_mails());
+	SM_ENTER;
+
+	sprintf(spam_buf,"%d",spam_num_of_spam_classified_mails());
+	sprintf(ham_buf,"%d",spam_num_of_ham_classified_mails());
 
 	groups[GROUPS_SPAM] =  VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1810,7 +1828,7 @@ int init_spam_group(void)
 			End,
 		End;
 
-  if (!groups[GROUPS_SPAM]) return 0;
+  if (!groups[GROUPS_SPAM]) SM_RETURN(0,"%ld");
 
 	set(spam_white_list_editor,MUIA_ComposeEditor_Array,user.config.spam_white_emails);
 	set(spam_black_list_editor,MUIA_ComposeEditor_Array,user.config.spam_black_emails);
@@ -1821,7 +1839,7 @@ int init_spam_group(void)
 	DoMethod(spam_reset_ham_stat_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, spam_cfg_reset_ham);
 	DoMethod(spam_reset_spam_stat_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, spam_cfg_reset_spam);
 
-  return 1;
+	SM_RETURN(1,"%ld");
 }
 
 /******************************************************************
@@ -1830,6 +1848,8 @@ int init_spam_group(void)
 static void init_config(void)
 {
 	Object *save_button, *use_button, *cancel_button;
+
+	SM_ENTER;
 
 	if (!create_sizes_class()) return;
 
@@ -1980,6 +2000,7 @@ static void init_config(void)
 			set(signature_signature_list, MUIA_NList_Active, 0);
 		}
 	}
+	SM_LEAVE;
 }
 
 /******************************************************************

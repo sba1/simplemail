@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_Icon;
-#define IconObject (Object*)(NewObject)(CL_Icon->mcc_Class, NULL
+#define IconObject (Object*)MyNewObject(CL_Icon->mcc_Class, NULL
 
 #define MUIA_Icon_MimeType (TAG_USER+0x45687a) /* (STRPTR) IS. */
 #define MUIA_Icon_MimeSubType (TAG_USER+0x45687b) /* (STRPTR) IS. */

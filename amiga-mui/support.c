@@ -280,7 +280,7 @@ char *sm_request_file(char *title, char *path, int save)
 {
 	char *rc = NULL;
 	struct FileRequester *fr;
-	
+
 	fr = AllocAslRequestTags(ASL_FileRequest,
 	TAG_DONE);
 	if(fr != NULL)

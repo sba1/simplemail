@@ -23,7 +23,7 @@
 #ifndef SM__AUDIOSELECTGROUPCLASS_H
 #define SM__AUDIOSELECTGROUPCLASS_H
 
-#define AudioSelectGroupObject (Object*)(NewObject)(CL_AudioSelectGroup->mcc_Class, NULL
+#define AudioSelectGroupObject (Object*)MyNewObject(CL_AudioSelectGroup->mcc_Class, NULL
 
 extern struct MUI_CustomClass *CL_AudioSelectGroup;
 

@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_DataTypes;
-#define DataTypesObject (Object*)(NewObject)(CL_DataTypes->mcc_Class, NULL
+#define DataTypesObject (Object*)MyNewObject(CL_DataTypes->mcc_Class, NULL
 
 #define MUIA_DataTypes_FileName  (TAG_USER+0x45678) /* (char*) .S. */
 #define MUIA_DataTypes_Buffer    (TAG_USER+0x45679) /* (void *) .S. */

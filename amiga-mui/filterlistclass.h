@@ -24,7 +24,7 @@
 #define SM__FILTERLISTCLASS_H
 
 IMPORT struct MUI_CustomClass *CL_FilterList;
-#define FilterListObject (Object*)(NewObject)(CL_FilterList->mcc_Class, NULL
+#define FilterListObject (Object*)MyNewObject(CL_FilterList->mcc_Class, NULL
 
 int create_filterlist_class(void);
 void delete_filterlist_class(void);

@@ -23,9 +23,14 @@
 #ifndef SM__MUISTUFF_H
 #define SM__MUISTUFF_H
 
+#ifndef __AMIGAOS4__
+#define VARARGS68K
+#endif
+
 /* useful MUI supports */
 LONG xget(Object * obj, ULONG attribute);
-ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...);
+ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
+APTR VARARGS68K MyNewObject( struct IClass *cl, CONST_STRPTR id, ...);
 Object *MakeLabel(STRPTR str);
 Object *MakeButton(STRPTR str);
 Object *MakeCheck(STRPTR label, ULONG check);

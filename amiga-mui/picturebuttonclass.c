@@ -112,10 +112,13 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct PictureButton_Data *data;
 
-	if (!(obj=(Object *)DoSuperNew(cl,obj,
+/*	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Font, MUIV_Font_Tiny,
 					TAG_MORE, msg->ops_AttrList)))
 	        return 0;
+*/
+	if (!(obj = (Object*)DoSuperMethodA(cl,obj,(Msg)msg)))
+		return 0;
 
 	data = (struct PictureButton_Data*)INST_DATA(cl,obj);
 
@@ -332,7 +335,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, PictureButton_Dispatcher, cl, obj, msg)
 		case MUIM_AskMinMax: return PictureButton_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
 		case MUIM_Draw     : return PictureButton_Draw     (cl,obj,(struct MUIP_Draw*)msg);
 	}
-	
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -356,12 +359,15 @@ void delete_picturebutton_class(void)
 
 Object *MakePictureButton(char *label, char *filename)
 {
+
 	int control_char = GetControlChar(label);
+	struct TagItem tags[7];
+
+	SM_DEBUGF(5,("MUIA_Frame=%lx MUIA_Background=%lx mcc_Class=%p\n",MUIA_Frame,MUIA_Background,CL_PictureButton->mcc_Class));
 
 	return PictureButtonObject,
 		ButtonFrame,
 		MUIA_Background, MUII_ButtonBack,
-/*		  MUIA_CycleChain, 1,*/
 		control_char?MUIA_ControlChar:TAG_IGNORE, control_char,
 		MUIA_InputMode, MUIV_InputMode_RelVerify,
 		MUIA_PictureButton_Label,label,

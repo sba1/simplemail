@@ -153,7 +153,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
 }
 
 struct MUI_CustomClass *CL_SingleString;
-#define SingleStringObject (Object*)(NewObject)(CL_SingleString->mcc_Class, NULL
+#define SingleStringObject (Object*)MyNewObject(CL_SingleString->mcc_Class, NULL
 
 
 /* This is the multistring class */
@@ -397,7 +397,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MultiString_Dispatcher, cl, obj, msg)
 				 	return 0; /* return value is private */
 					}
 	}
-	
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 

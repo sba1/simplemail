@@ -23,7 +23,7 @@
 #ifndef SM__PICTUREBUTTONCLASS_H
 #define SM__PICTUREBUTTONCLASS_H
 
-#define PictureButtonObject (Object*)(NewObject)(CL_PictureButton->mcc_Class, NULL
+#define PictureButtonObject (Object*)MyNewObject(CL_PictureButton->mcc_Class, NULL
 
 #define MUIA_PictureButton_Filename			(TAG_USER+0x182b000) /* STRPTR */
 #define MUIA_PictureButton_Label					(TAG_USER+0x182b001) /* STRPTR */

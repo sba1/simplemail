@@ -554,6 +554,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 			}
 
 			if (draw_text) Text(_rp(obj),text->text,cnt);
+			else Move(_rp(obj),_rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
 
 			space_left -= te.te_Width;
 			if (next_text)
@@ -562,6 +563,8 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 				{
 					if (f->clickable) SetAPen(_rp(obj),data->text_pen);
 					if (!update) Text(_rp(obj),",",1);
+					else Move(_rp(obj),_rp(obj)->cp_x + comma_width, _rp(obj)->cp_y);
+
 					space_left -= comma_width;
 				} else break;
 			}

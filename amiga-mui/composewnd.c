@@ -242,8 +242,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 	if (!treenode)
 	{
 		/* no list */
-		treenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_Active);
-		if (treenode)
+		if ((treenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_Active)))
 		{
 			/* we have another entry inside but no list (multipart), so insert also a multipart node */
 			struct attachment multipart;
@@ -270,11 +269,11 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 		}
 	}
 
-	DoMethod(data->attach_tree, MUIM_NListtree_Insert, "" /*name*/, attach, /* udata */
-					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?TNF_OPEN|TNF_LIST:0));
+	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree, MUIM_NListtree_Insert, "" /*name*/, attach, /* udata */
+					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?(TNF_OPEN|TNF_LIST):(xget(data->attach_tree, MUIA_NListtree_Active)?0:MUIV_NListtree_Insert_Flag_Active)));
 
 	/* for the quick attachments list */
-	if (!list)
+	if (!list && treenode)
 	{
 		DoMethod(data->quick_attach_tree, MUIM_NListtree_Insert, "", attach, /* udata */
 					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, 0);

@@ -4,7 +4,7 @@ Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.2
+Version:   0.3
 
 Introduction
 ~~~~~~~~~~~~
@@ -39,6 +39,18 @@ servers). If you are familiar with YAM it should be no problem.
 
 Changes
 ~~~~~~~
+Version 0.3 (third alpha) - released on 05.02.2001
+  - added a forward button
+  - main window has two differnt views, which are changeable within
+    the main window
+  - improved the compose window (got some images)
+  - to button in the addressbook works now correctly
+  - group mails (mails with multiple recipients), mails with
+    attachments, important mails can now easily identified
+  - added a small context menu for the mailtreelist, mails can now
+    be marked and hold
+  - other smaller improvements and bug fixes.
+
 Version 0.2 (second alpha) - released on 14.01.2001
   - buttons have now images
   - now can display HTML mails (uses SimpleHTML engine)
@@ -53,10 +65,9 @@ Version 0.1 (first alpha) - released on 24.12.2000
 
 Contact
 ~~~~~~~
-More information  about  the  SimpleMail  project  can  be  found
-(currently) at
+More information about the SimpleMail  project  can  be  found at
 
-    http://www.schlawack.net/simplemail/ .
+    http://sourceforge.sourceforge.net/
 
 Developers might take look at
 
@@ -77,6 +88,8 @@ SimpleMail is (orginally) developed by
 
 You can also contact them if you have any questions regarding SimpleMail.
 
+All the images including the icons have been created by
+  Martin Merz <mason.home@t-online.de>
          __
         / /
    __  / /   Only Amiga makes it possible...

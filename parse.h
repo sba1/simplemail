@@ -27,6 +27,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 /* some string functions, should be in strings.c or simliar */
 char *strdupcat(const char *string1, const char *string2);
 char *strndup(const char *str1, int n);
@@ -48,7 +52,7 @@ struct parse_address
 struct mailbox
 {
 	struct node node;
-	char *phrase; /* ususally a real name */
+	utf8 *phrase; /* ususally a real name */
 	char *addr_spec; /* usually the e-mail address */
 };
 
@@ -58,7 +62,7 @@ void free_address(struct parse_address *addr);
 
 char *parse_token(char *token, char **pbuf);
 char *parse_value(char *value, char **pbuf);
-void parse_text_string(char *text, char **pbuf);
+void parse_text_string(char *text, utf8 **pbuf);
 
 
 struct parse_parameter

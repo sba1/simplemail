@@ -257,6 +257,18 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 }
 
 /**************************************************************************
+ word        =  atom / quoted-string
+**************************************************************************/
+static char *parse_word_simple(char *word, char **pbuf)
+{
+	char *ret;
+
+	ret = parse_quoted_string(word,pbuf);
+	if (!ret) ret = parse_atom(word,pbuf);
+	return ret;
+}
+
+/**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
 static char *parse_word(char *word, char **pbuf, char **pcharset)
@@ -291,12 +303,35 @@ static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quote
 }
 
 /**************************************************************************
+ word        =  atom / quoted-string (encoded_word)
+**************************************************************************/
+static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
+{
+	char *ret;
+	char *buf;
+	char *charset;
+
+	if ((ret = parse_encoded_word(word,&buf,&charset)))
+	{
+		*pbuf = utf8create(buf,charset);
+		free(buf);
+		free(charset);
+		*quoted = 1;
+		return ret;
+	}
+	*quoted = 0;
+	if (!ret) ret = parse_quoted_string(word,pbuf);
+	if (!ret) ret = parse_atom(word,pbuf);
+	return ret;
+}
+
+/**************************************************************************
  local-part  =  word *("." word)
 **************************************************************************/
 static char *parse_local_part(char *local_part, char **pbuf)
 {
 	char *buf;
-	char *ret = parse_word(local_part,&buf);
+	char *ret = parse_word_simple(local_part,&buf);
 	char *ret_save;
 	if (!ret) return NULL;
 
@@ -304,7 +339,7 @@ static char *parse_local_part(char *local_part, char **pbuf)
 	while ((*ret++ == '.'))
 	{
 		char *new_word;
-		if ((ret = parse_word(ret,&new_word)))
+		if ((ret = parse_word_simple(ret,&new_word)))
 		{
 			char *new_buf = strdupcat(buf,".");
 			free(buf);
@@ -410,20 +445,20 @@ char *parse_addr_spec(char *addr_spec, char **pbuf)
 /**************************************************************************
  phrase      =  1*word 
 **************************************************************************/
-static char *parse_phrase(char *phrase, char **pbuf)
+static char *parse_phrase(char *phrase, utf8 **pbuf)
 {
+	utf8 *buf;
 	int q;
-	char *buf;
-	char *ret = parse_word_new(phrase,&buf,&q);
+	char *ret = parse_word_new_utf8(phrase,&buf,&q);
 	char *ret_save;
 	if (!ret) return NULL;
 
 	ret_save = ret;
 	while (ret)
 	{
-		char *buf2;
+		utf8 *buf2;
 		int q2;
-		ret = parse_word_new(ret_save,&buf2,&q2);
+		ret = parse_word_new_utf8(ret_save,&buf2,&q2);
 		if (ret)
 		{
 			char *buf3 = strdupcat(buf,(q && q2)?"":" ");
@@ -613,9 +648,10 @@ void free_address(struct parse_address *addr)
 
  text_string = *(encoded-word/text)
 **************************************************************************/
-void parse_text_string(char *text, char **pbuf)
+void parse_text_string(char *text, utf8 **pbuf)
 {
 	int len = strlen(text);
+	int buf_allocated = len + 1;
 	char *text_end = text + len;
 	char *buf = (char*)malloc(len+1);
 	char *buf_ptr;
@@ -627,22 +663,63 @@ void parse_text_string(char *text, char **pbuf)
 	while (text < text_end)
 	{
 		char *word;
+		char *charset;
 		char *new_text;
 
-		if ((*text != ' ' || enc) && (new_text = parse_encoded_word(text, &word)))
+		if ((*text != ' ' || enc) && (new_text = parse_encoded_word(text, &word, &charset)))
 		{
-			strcpy(buf_ptr,word);
-			buf_ptr += strlen(word);
+			utf8 *word_utf8 = utf8create(word,charset);
+			int word_utf8_size = utf8size(word_utf8);
+
+			if (word_utf8_size)
+			{
+				int old_pos = buf_ptr - buf;
+				if (old_pos + word_utf8_size + 1 >= buf_allocated)
+				{
+					if ((buf = realloc(buf,old_pos + word_utf8_size + 1 + 8)))
+					{
+						buf_ptr = buf + old_pos;
+						buf_allocated = old_pos + word_utf8_size + 1 + 8;
+					} else
+					{
+						*pbuf = NULL;
+						return;
+					}
+				}
+
+				if (buf)
+				{
+					utf8cpy(buf_ptr, word_utf8);
+					buf_ptr += word_utf8_size;
+				}
+				free(word_utf8);
+			}
+
 			free(word);
+			free(charset);
 			text = new_text;
 			enc = 1;
 		} else
 		{
+			int old_pos = buf_ptr - buf;
+			if (old_pos + 1 + 1 >= buf_allocated)
+			{
+				if ((buf = realloc(buf,old_pos + 1 + 1 + 8)))
+				{
+					buf_ptr = buf + old_pos;
+					buf_allocated = old_pos + 1 + 1 + 8;
+				} else
+				{
+					*pbuf = NULL;
+					return;
+				}
+			}
 			*buf_ptr++ = *text++;
 			enc = 0;
 		}
 	}
 
+	/* The last byte guaranted to be allocated */
   *buf_ptr = 0;
 	*pbuf = buf;
 }

@@ -25,7 +25,7 @@ char **codesets_supported(void);
 int codesets_init(void);
 void codesets_cleanup(void);
 
-#define utf8size(s) (s)?(strlen(s):0)
+#define utf8size(s) ((s)?(strlen(s)):(0))
 #define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
 #define utf8cat(dest,src) ((utf8*)strcat(dest,src))
 

@@ -82,12 +82,12 @@ int codesets_init(void)
 	list_init(&codesets_list);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
-	codeset->name = mystrdup("ISO Latin 1");
+	codeset->name = mystrdup("ISO-8859-1");
 	codeset->to_utf8 = iso_8859_1_to_utf8;
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
-	codeset->name = mystrdup("ISO Latin 2");
+	codeset->name = mystrdup("ISO-8859-2");
 	codeset->to_utf8 = iso_8859_2_to_utf8;
 	list_insert_tail(&codesets_list,&codeset->node);
 
@@ -107,6 +107,10 @@ void codesets_cleanup(void)
 utf8 **codesets_find_to_utf8(char *codeset_name)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
+
+	/* Return ISO-8859-1 as default codeset */
+	if (!codeset_name) return codeset?(codeset->to_utf8):NULL;
+
 	while (codeset)
 	{
 		if (!mystricmp(codeset_name,codeset->name)) return codeset->to_utf8;

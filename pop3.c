@@ -30,7 +30,7 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include <proto/socket.h> /* not nice */ /* blabla :) */ /* nicht blabla! :-) */ /* doch blabla, sonst müsste ich die pragmas nehmen, vom Regen in die Traufe :) */ /* ja, der comment war aber für die Zunkunft gedacht (für mich), irgendwann muß es weg, momentan ist es aber ok (sonst hätte ich es irgendwie weggemacht) ;-) */ /* Wie willst Du es denn umgehen? amiga.h? */ /* config.h */ /* achso, und wann kommt es? */ /* wenn die Zeit reif ist ;-) */
+#include <proto/socket.h> /* not nice */ /* blabla :) */ /* nicht blabla! :-) */ /* doch blabla, sonst müsste ich die pragmas nehmen, vom Regen in die Traufe :) */ /* ja, der comment war aber für die Zunkunft gedacht (für mich), irgendwann muß es weg, momentan ist es aber ok (sonst hätte ich es irgendwie weggemacht) ;-) */ /* Wie willst Du es denn umgehen? amiga.h? */ /* config.h */ /* achso, und wann kommt es? */ /* wenn die Zeit reif ist ;-) */ /* Wann ist sie denn reif? :) */
 #include <proto/exec.h>
 
 #include "io.h"

@@ -319,6 +319,8 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
 {
+	if (!m) return;
+
 	if (!data->attachments_group || !data->mail->num_multiparts)
 	{
 		mail_decode(m);

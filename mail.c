@@ -2666,7 +2666,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		};
 
 		fputs(subject,fp);
-		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2002 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATIONSYSTEM);
+		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2003 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATIONSYSTEM);
 
 		time(&t);
 		d = localtime(&t);
@@ -3112,12 +3112,19 @@ void fputhtmlstr(char *str, FILE *fh)
  Creates an HTML File from a header. Currently only the most important
  headers were created.
 **************************************************************************/
-int mail_create_html_header(struct mail *mail)
+int mail_create_html_header(struct mail *mail, int all_headers)
 {
 	int rc = 0;
+	
 	FILE *fh;
 
-	if (mail->html_header) return 1;
+	if (mail->html_header)
+	{
+		free(mail->html_header);
+		mail->html_header = NULL;
+	}
+	
+	all_headers = all_headers || (user.config.header_flags & SHOW_HEADER_ALL);
 
 	if ((fh = tmpfile()))
 	{
@@ -3158,7 +3165,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->to_list && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
+		if (mail->to_list && ((user.config.header_flags & (SHOW_HEADER_TO)) || all_headers))
 		{
 			struct address *addr;
 
@@ -3186,7 +3193,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->cc_list && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
+		if (mail->cc_list && ((user.config.header_flags & (SHOW_HEADER_CC)) || all_headers))
 		{
 			struct address *addr;
 
@@ -3214,7 +3221,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
+		if (mail->subject && ((user.config.header_flags & (SHOW_HEADER_SUBJECT)) || all_headers))
 		{
 			fputs("<TR>",fh);
 			fputs("<TD>",fh);
@@ -3226,7 +3233,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</TD>",fh);
 			fputs("</TR>",fh);
 		}
-		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
+		if ((user.config.header_flags & (SHOW_HEADER_DATE)) || all_headers)
 		{
 			fputs("<TR>",fh);
 			fputs("<TD>",fh);
@@ -3239,7 +3246,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</TR>",fh);
 		}
 
-		if (replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
+		if (replyto && ((user.config.header_flags & (SHOW_HEADER_REPLYTO)) || all_headers))
 		{
 			struct mailbox addr;
 			if (parse_mailbox(replyto, &addr))
@@ -3272,7 +3279,7 @@ int mail_create_html_header(struct mail *mail)
 		header = (struct header*)list_first(&mail->header_list);
 		while (header)
 		{
-			if ((user.config.header_flags & SHOW_HEADER_ALL) || array_contains(user.config.header_array,header->name))
+			if (all_headers || array_contains(user.config.header_array,header->name))
 			{
 				if (mystricmp(header->contents,"from") && mystricmp(header->contents,"to") &&
 					  mystricmp(header->contents,"cc") && mystricmp(header->contents,"reply-to") &&

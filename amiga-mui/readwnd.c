@@ -90,6 +90,8 @@ struct Read_Data /* should be a customclass */
 	Object *attachments_last_selected;
 	Object *attachment_standard_menu; /* standard context menu */
 	Object *attachment_html_menu; /* for html files */
+
+	Object *settings_show_all_headers_menu;
 	int attachment_show_me;
 
 	struct FileRequester *file_req;
@@ -256,6 +258,8 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 	{
 		char *html_mail;
 		char *font_buf;
+		int all_headers = xget(data->settings_show_all_headers_menu,MUIA_Menuitem_Checked);
+		mail_create_html_header(data->mail,all_headers);
 
 		SetAttrs(data->html_simplehtml,
 				MUIA_SimpleHTML_Buffer,data->mail->html_header,
@@ -394,8 +398,6 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		char content_name[256];
 
 		utf8tostr(mail->content_name, content_name, sizeof(content_name), user.config.default_codeset);
-//#undef printf
-//		printf("%s\n",mail->content_name);
 
 		buffer = mail_decode_bytes(mail,&buffer_len);
 
@@ -666,6 +668,24 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 }
 
 /******************************************************************
+ Returns the currently displayed mail
+*******************************************************************/
+static void show_all_headers(void **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	struct mail *mail;
+	
+	if (!data->attachments_last_selected)
+	{
+		insert_text(data, data->mail);
+		return;
+	}
+	if (!(mail = (struct mail*)xget(data->attachments_last_selected, MUIA_UserData))) return;
+
+	insert_text(data, mail);
+}
+
+/******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
  this function)!
@@ -871,7 +891,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 		{
 			int dont_show = 0;
 			mail_read_contents(data->folder_path,data->mail);
-			mail_create_html_header(data->mail);
+			mail_create_html_header(data->mail,0);
 
 			if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
 			{
@@ -947,7 +967,8 @@ int read_window_open(char *folder, struct mail *mail, int window)
 		MENU_PROJECT_ABOUTMUI,
 		MENU_PROJECT_QUIT,
 		MENU_MAIL_RAW,
-		MENU_MAIL_PRINT
+		MENU_MAIL_PRINT,
+		MENU_SETTINGS_SHOW_ALLHEADERS
 	};
 
 	static const struct NewMenu nm_untranslated[] =
@@ -961,6 +982,8 @@ int read_window_open(char *folder, struct mail *mail, int window)
 		{NM_ITEM, N_("Show raw format..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Print visible mailpart"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
+		{NM_TITLE, N_("Settings"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Show all headers?"), NULL, MENUTOGGLE|CHECKIT, 0, (APTR)MENU_SETTINGS_SHOW_ALLHEADERS},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
@@ -1160,6 +1183,8 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, App, 4, MUIM_CallHook, &hook_standard, show_raw, data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_PRINT, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ALLHEADERS, App, 4, MUIM_CallHook, &hook_standard, show_all_headers, data);
+			data->settings_show_all_headers_menu = (Object*)DoMethod(read_menu, MUIM_FindUData, MENU_SETTINGS_SHOW_ALLHEADERS);
 
 			set(App, MUIA_Application_Sleep, TRUE);
 

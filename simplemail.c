@@ -203,9 +203,6 @@ void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
 	struct folder *f;
 	struct mail *mail;
 
-#undef printf
-//	printf("deleting %d\n",uid);
-
 	folders_lock();
 
 	f = folder_find_by_imap(server,path);
@@ -294,11 +291,24 @@ void callback_new_mail(void)
 }
 
 /* reply this mail */
-void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply_array)
+void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_array)
 {
+	struct folder *f = folder_find_by_path(folder_path);
 	struct mail **mail_array;
-	char buf[256];
+	char buf[380];
 	int i;
+
+	if (!f) return;
+
+	/* Download the mails if needed */
+	for (i=0;i<num;i++)
+	{
+		if (to_reply_array[i]->flags & MAIL_FLAGS_PARTIAL)
+		{
+			imap_download_mail(f,to_reply_array[i]);
+			main_refresh_mail(to_reply_array[i]);
+		}
+	}
 
 	if (getcwd(buf, sizeof(buf)) == NULL) return;
 
@@ -354,7 +364,7 @@ void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply
 }
 
 /* a mail should be replied */
-void callback_reply_mail(void)
+void callback_reply_selected_mails(void)
 {
 	struct mail *mail;
 	struct mail **mail_array;
@@ -383,19 +393,34 @@ void callback_reply_mail(void)
 			mail = main_get_mail_next_selected(&handle);
 		}
 
-		callback_reply_this_mail(main_get_folder_drawer(), num, mail_array);
+		callback_reply_mails(main_get_folder_drawer(), num, mail_array);
 		free(mail_array);
 	}
 }
 
 /* a mail should be forwarded */
-void callback_forward_this_mail(char *folder_path, int num, struct mail **to_forward_array)
+void callback_forward_mails(char *folder_path, int num, struct mail **to_forward_array)
 {
+	struct folder *f = folder_find_by_path(folder_path);
 	struct mail **mail_array;
-	char buf[256];
+	char buf[380];
 	int i;
 
+	if (!f) return;
+
+	/* Download the mails if needed */
+	for (i=0;i<num;i++)
+	{
+		if (to_forward_array[i]->flags & MAIL_FLAGS_PARTIAL)
+		{
+			imap_download_mail(f,to_forward_array[i]);
+			main_refresh_mail(to_forward_array[i]);
+		}
+	}
+
 	getcwd(buf, sizeof(buf));
+	if (getcwd(buf, sizeof(buf)) == NULL) return;
+
 	chdir(folder_path);
 
 	if ((mail_array = malloc(num*sizeof(struct mail *))))
@@ -442,7 +467,7 @@ void callback_forward_this_mail(char *folder_path, int num, struct mail **to_for
 }
 
 /* a single or multiple mails should be forwarded */
-void callback_forward_mail(void)
+void callback_forward_selected_mails(void)
 {
 	struct mail *mail;
 	struct mail **mail_array;
@@ -471,7 +496,7 @@ void callback_forward_mail(void)
 			mail = main_get_mail_next_selected(&handle);
 		}
 
-		callback_forward_this_mail(main_get_folder_drawer(), num, mail_array);
+		callback_forward_mails(main_get_folder_drawer(), num, mail_array);
 		free(mail_array);
 	}
 }

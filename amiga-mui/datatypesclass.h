@@ -23,6 +23,8 @@ IMPORT struct MUI_CustomClass *CL_DataTypes;
 #define DataTypesObject (Object*)NewObject(CL_DataTypes->mcc_Class, NULL
 
 #define MUIA_DataTypes_FileName (TAG_USER+0x45678) /* (char*) .S. */
+#define MUIA_DataTypes_Buffer   (TAG_USER+0x45679) /* (void *) .S. */
+#define MUIA_DataTypes_BufferLen (TAG_USER+0x4567a) /* (ULONG) .S. */
 
 int create_datatypes_class(void);
 void delete_datatypes_class(void);

@@ -39,8 +39,8 @@
 
 struct DataTypes_Data
 {
-	char *filename;
 	Object *dt_obj;
+	char *filename; /* Cache the filename */
 	int show; /* 1 if between show / hide */
 
 	struct MUI_EventHandlerNode ehnode;
@@ -56,8 +56,8 @@ STATIC ULONG DataTypes_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 
 	data = (struct DataTypes_Data*)INST_DATA(cl,obj);
-	data->filename = NULL;
 	data->dt_obj = NULL;
+	data->filename = NULL;
 
 	data->ehnode.ehn_Priority = 1;
 	data->ehnode.ehn_Flags    = 0;
@@ -71,8 +71,8 @@ STATIC ULONG DataTypes_New(struct IClass *cl,Object *obj,struct opSet *msg)
 STATIC VOID DataTypes_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
-	if (data->filename) FreeVec(data->filename);
 	if (data->dt_obj) DisposeDTObject(data->dt_obj);
+	if (data->filename) FreeVec(data->filename);
 
 	DoSuperMethodA(cl,obj,msg);
 }
@@ -80,44 +80,75 @@ STATIC VOID DataTypes_Dispose(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
-	struct TagItem *ti;
+	struct TagItem *tstate, *tag;
 
-	if ((ti = FindTagItem(MUIA_DataTypes_FileName,msg->ops_AttrList)))
+	char *newfilename = NULL;
+	void *newbuffer = NULL;
+	ULONG newbufferlen = 0;
+
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
+	while (tag = NextTagItem (&tstate))
 	{
-		if (mystricmp(data->filename, (char*)ti->ti_Data))
+		ULONG tidata = tag->ti_Data;
+
+		switch (tag->ti_Tag)
 		{
+			case	MUIA_DataTypes_FileName:
+						if (mystricmp(data->filename, (char*)tidata))
+							newfilename = (char*)tidata;
+						break;
+
+			case	MUIA_DataTypes_Buffer:
+						newbuffer = (void*)tidata;
+						break;
+
+			case	MUIA_DataTypes_BufferLen:
+						newbufferlen = tidata;
+						break;
+		}
+	}
+
+	if (newfilename || newbuffer)
+	{
+		if (data->filename) FreeVec(data->filename);
+		data->filename = StrCopy(newfilename);
+
+		if (data->dt_obj)
+		{
+			/* Remove the datatype object if it is shown */
+			if (data->show) RemoveDTObject(_window(obj),data->dt_obj);
+
+			/* Dispose the datatype object */
 			if (data->dt_obj)
 			{
-				if (data->show)
-					RemoveDTObject(_window(obj),data->dt_obj);
-
-				if (data->dt_obj)
-				{
-					DisposeDTObject(data->dt_obj);
-					data->dt_obj = NULL;
-				}
+				DisposeDTObject(data->dt_obj);
+				data->dt_obj = NULL;
 			}
+		}
 
-			if (data->filename) FreeVec(data->filename);
-			if ((data->filename = StrCopy((char*)ti->ti_Data)))
+		/* DTST_MEMORY is new for version 44 of the datatypes.library */
+		data->dt_obj = NewDTObject(newfilename,
+				DTA_SourceType, newfilename?DTST_FILE:DTST_MEMORY,
+				newbuffer?DTA_SourceAddress:TAG_IGNORE, newbuffer,
+				newbuffer?DTA_SourceSize:TAG_IGNORE, newbufferlen,
+				TAG_DONE);
+
+		if (data->dt_obj)
+		{
+			/* If is between MUIM_Show and MUIM_Hide add the datatype to the window */
+			if (data->show)
 			{
-				data->dt_obj = NewDTObject(data->filename,
-						TAG_DONE);
+				SetDTAttrs(data->dt_obj, NULL, NULL,
+					GA_Left,		_mleft(obj),
+					GA_Top,		_mtop(obj),
+					GA_Width,	_mwidth(obj),
+					GA_Height,	_mheight(obj),
+					ICA_TARGET,	ICTARGET_IDCMP,
+					TAG_DONE);
 
-				if (data->show)
-				{
-					SetDTAttrs(data->dt_obj, NULL, NULL,
-						GA_Left,		_mleft(obj),
-						GA_Top,		_mtop(obj),
-						GA_Width,	_mwidth(obj),
-						GA_Height,	_mheight(obj),
-						ICA_TARGET,	ICTARGET_IDCMP,
-						TAG_DONE);
-
-					AddDTObject(_window(obj), NULL, data->dt_obj, -1);
-				}
+				AddDTObject(_window(obj), NULL, data->dt_obj, -1);
 			}
-
 			MUI_Redraw(obj, MADF_DRAWOBJECT);
 		}
 	}
@@ -209,9 +240,9 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 
 	if (msg->imsg && msg->imsg->Class == IDCMP_IDCMPUPDATE)
 	{
-		struct TagItem *tstate, *tags, *tag;
+		struct TagItem *tstate, *tag;
 
-		tstate = tags = (struct TagItem *)msg->imsg->IAddress;
+		tstate = (struct TagItem *)msg->imsg->IAddress;
 
 		while (tag = NextTagItem (&tstate))
 		{

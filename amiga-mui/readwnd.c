@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** readwnd.c
 */
 
 #include <string.h>
@@ -39,18 +39,18 @@
 #include "configuration.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "support.h"
 
 #include "compiler.h"
 #include "datatypesclass.h"
+#include "iconclass.h"
 #include "muistuff.h"
 #include "readlistclass.h"
 #include "readwnd.h"
 
 static struct Hook header_display_hook;
-static struct Hook mime_construct_hook;
-static struct Hook mime_destruct_hook;
-static struct Hook mime_display_hook;
-static struct Hook mime_findname_hook;
+
+static void save_contents(struct Read_Data *data, struct mail *mail);
 
 #define MAX_READ_OPEN 10
 static int read_open[MAX_READ_OPEN];
@@ -62,11 +62,16 @@ static int read_open[MAX_READ_OPEN];
 struct Read_Data /* should be a customclass */
 {
 	Object *wnd;
-	Object *mime_tree;
 	Object *contents_page;
 	Object *datatype_datatypes;
 	Object *text_list;
 	Object *html_simplehtml;
+	Object *attachments_group;
+
+	Object *attachments_last_selected;
+	Object *attachment_standard_menu; /* standard context menu */
+	Object *attachment_html_menu; /* for html files */
+
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
@@ -82,58 +87,6 @@ STATIC ASM VOID header_display(register __a2 char **array, register __a1 struct 
 		*array++ = header->name;
 		*array = header->contents;
 	}
-}
-
-struct mime_entry
-{
-	struct mail *mail;
-	int save_button_no;
-};
-
-STATIC ASM struct mime_entry *mime_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
-{
-	struct mime_entry *new_mime_entry = (struct mime_entry*)malloc(sizeof(struct mime_entry));
-	if (new_mime_entry)
-	{
-		struct mime_entry *mime_entry = (struct mime_entry*)msg->UserData;
-		if (mime_entry) *new_mime_entry = *mime_entry;
-		else memset(new_mime_entry,0,sizeof(struct mime_entry));
-	}
-	return new_mime_entry;
-}
-
-STATIC ASM VOID mime_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
-{
-	struct mime_entry *mime_entry = (struct mime_entry*)msg->UserData;
-	free(mime_entry);
-}
-
-STATIC ASM VOID mime_display(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_DisplayMessage *msg)
-{
-	if (msg->TreeNode)
-	{
-		struct mime_entry *mime_entry = (struct mime_entry*)msg->TreeNode->tn_User;
-		struct mail *mail = mime_entry->mail;
-		static char buf[256];
-		sprintf(buf,"%s/%s",mail->content_type,mail->content_subtype);
-		*msg->Array++ = buf;
-		*msg->Array++ = mail->content_transfer_encoding;
-		if (mime_entry->save_button_no)
-		{
-			static char buf2[128];
-			sprintf(buf2, "\033o[%ld@%ld]", mime_entry->save_button_no,mime_entry->save_button_no-1);
-			*msg->Array++ = buf2;
-		} else *msg->Array++ = NULL;
-	} else
-	{
-	}
-}
-
-STATIC ASM int mime_findname(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_FindNameMessage *msg)
-{
-	struct mime_entry *entry = (struct mime_entry *)msg->UserData;
-	if (entry->mail == (struct mail*)msg->Name) return 0;
-	return -1;
 }
 
 /******************************************************************
@@ -206,41 +159,102 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 }
 
 /******************************************************************
- inserts the mime informations (uses ugly recursion)
+ An Icon has selected
 *******************************************************************/
-static void insert_mime(Object *mime_tree, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
+void icon_selected(int **pdata)
 {
-	struct MUI_NListtree_TreeNode *treenode;
-	int i;
-	struct mime_entry mime_entry;
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	Object *icon = (Object*)(pdata[1]);
+	struct mail *mail;
 
-	mime_entry.mail = mail;
+	if (icon == data->attachments_last_selected) return;
+	if (data->attachments_last_selected)
+		set(data->attachments_last_selected, MUIA_Selected, 0);
 
-	if (mail->num_multiparts == 0)
+	if ((mail = (struct mail*)xget(icon,MUIA_UserData)))
 	{
-		/* Add a save button because the contents could be saved */
-		mime_entry.save_button_no = xget(mime_tree,MUIA_NList_Entries)+1;
-		DoMethod(mime_tree,MUIM_NList_UseImage,MakeButton("Save"),mime_entry.save_button_no,-1);
-	} else mime_entry.save_button_no = 0;
+		mail_decode(mail);
+		insert_text(data,mail);
+	}
+	data->attachments_last_selected = icon;
+}
 
-	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(mime_tree,MUIM_NListtree_Insert,"",&mime_entry,listnode,MUIV_NListtree_Insert_PrevNode_Tail,(mail->num_multiparts==0)?0:(TNF_LIST|TNF_OPEN));
-	if (!treenode) return;
+/******************************************************************
+ A context menu item has been selected
+*******************************************************************/
+void context_menu_trigger(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	Object *icon = (Object*)(pdata[1]);
+	Object *item = (Object*)(pdata[1]);
 
-	for (i=0;i<mail->num_multiparts;i++)
+	if (item)
 	{
-		insert_mime(mime_tree,mail->multipart_array[i],treenode);
+		struct mail *m = (struct mail*)xget(icon,MUIA_UserData);
+		switch (xget(item,MUIA_UserData))
+		{
+			case	1: /* save attachment */
+						break;
+
+			case	2: /* save whole document */
+						break;
+		}
 	}
 }
 
 /******************************************************************
- Save the contents of a given treenode
+ inserts the mime informations (uses ugly recursion)
 *******************************************************************/
-static void save_contents(struct Read_Data *data, struct MUI_NListtree_TreeNode *treenode)
+static void insert_mail(struct Read_Data *data, struct mail *mail)
 {
-	if (!(treenode->tn_Flags & TNF_LIST))
-	{
-		struct mail *mail = ((struct mime_entry*)treenode->tn_User)->mail;
+	int i;
 
+	if (mail->num_multiparts == 0)
+	{
+		Object *group, *icon, *context_menu;
+
+		context_menu = data->attachment_standard_menu;
+		if (!mystricmp(mail->content_subtype,"html"))
+			context_menu = data->attachment_html_menu;
+
+		group = VGroup,
+			Child, icon = IconObject,
+					MUIA_InputMode, MUIV_InputMode_Immediate,
+					MUIA_Icon_MimeType, mail->content_type,
+					MUIA_Icon_MimeSubType, mail->content_subtype,
+					MUIA_UserData, mail,
+					MUIA_ContextMenu, context_menu,
+					End,
+			Child, TextObject,
+					MUIA_Font, MUIV_Font_Tiny,
+					MUIA_Text_Contents, mail->filename,
+					MUIA_Text_PreParse, "\33c",
+					End,
+			End;
+
+		if (icon)
+		{
+			DoMethod(data->attachments_group, OM_ADDMEMBER, group);
+			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, icon, &hook_standard, data, context_menu_trigger, MUIV_TriggerValue);
+		}
+
+
+		DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
+	}
+
+	for (i=0;i<mail->num_multiparts;i++)
+	{
+		insert_mail(data,mail->multipart_array[i]);
+	}
+}
+
+/******************************************************************
+ Save the contents of a given mail
+*******************************************************************/
+static void save_contents(struct Read_Data *data, struct mail *mail)
+{
+	if (!mail->num_multiparts)
+	{
 		if (MUI_AslRequestTags(data->file_req,
 					mail->filename?ASLFR_InitialFile:TAG_IGNORE,mail->filename,
 					TAG_DONE))
@@ -275,13 +289,7 @@ static void save_contents(struct Read_Data *data, struct MUI_NListtree_TreeNode 
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)
-		DoMethod(data->mime_tree, MUIM_NListtree_FindName, MUIV_NListtree_FindName_ListNode_Root,
-						m,0);
-	if (treenode)
-	{
-		set(data->mime_tree, MUIA_NListtree_Active, treenode);
-	}
+	DoMethod(data->attachments_group, MUIM_SetUDataOnce, m, MUIA_Selected, 1);
 }
 
 /******************************************************************
@@ -295,6 +303,10 @@ static void read_window_close(struct Read_Data **pdata)
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	MUI_DisposeObject(data->wnd);
+
+	if (data->attachment_html_menu) MUI_DisposeObject(data->attachment_html_menu);
+	if (data->attachment_standard_menu) MUI_DisposeObject(data->attachment_standard_menu);
+
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	mail_free(data->mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = 0;
@@ -302,52 +314,15 @@ static void read_window_close(struct Read_Data **pdata)
 }
 
 /******************************************************************
- A new mime part has been activated
-*******************************************************************/
-static void mime_tree_active(struct Read_Data **pdata)
-{
-	struct Read_Data *data = *pdata;
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
-	if (treenode)
-	{
-		if (!(treenode->tn_Flags & TNF_LIST))
-		{
-			mail_decode(((struct mime_entry*)treenode->tn_User)->mail);
-			insert_text(data,((struct mime_entry*)treenode->tn_User)->mail);
-		}
-	}
-}
-
-/******************************************************************
- A button inside the mime tree has been clicked
-*******************************************************************/
-static void mime_tree_button(struct Read_Data **pdata)
-{
-	struct Read_Data *data = *pdata;
-	int pos = xget(data->mime_tree, MUIA_NList_ButtonClick);
-	if (pos >= 0)
-	{
-		struct MUI_NListtree_TreeNode *treenode;
-		DoMethod(data->mime_tree, MUIM_NList_GetEntry, pos, &treenode);
-
-		if (treenode)
-		{
-			save_contents(data,treenode);
-		}
-	}
-}
-
-/******************************************************************
  The save button has been clicked
 *******************************************************************/
 static void save_button_pressed(struct Read_Data **pdata)
 {
+	struct mail *mail;
 	struct Read_Data *data = *pdata;
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
-	if (treenode)
-	{
-		save_contents(data,treenode);
-	}
+	if (!data->attachments_last_selected) return;
+	if (!(mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData))) return;
+	save_contents(data,mail);
 }
 
 /******************************************************************
@@ -360,11 +335,8 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 	char *uri = msg->uri;
 	struct mail *mail;
 
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
-	if (!treenode) return 0;
-	if (!treenode->tn_User) return 0;
-
-	if (!(mail = ((struct mime_entry*)treenode->tn_User)->mail)) return 0;
+	if (!data->attachments_last_selected) return 0;
+	if (!(mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData))) return 0;
 	if (!(mail = mail_find_compound_object(mail,uri))) return 0;
 	mail_decode(mail);
 	if (!mail->decoded_data || !mail->decoded_len) return 0;
@@ -380,7 +352,8 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 *******************************************************************/
 void read_window_open(char *folder, char *filename)
 {
-	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *mime_tree, *contents_page, *save_button;
+	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page, *save_button;
+	Object *attachments_group;
 	Object *datatype_datatypes;
 	int num;
 
@@ -388,10 +361,6 @@ void read_window_open(char *folder, char *filename)
 		if (!read_open[num]) break;
 
 	init_hook(&header_display_hook,(HOOKFUNC)header_display);
-	init_hook(&mime_construct_hook,(HOOKFUNC)mime_construct);
-	init_hook(&mime_destruct_hook,(HOOKFUNC)mime_destruct);
-	init_hook(&mime_display_hook,(HOOKFUNC)mime_display);
-	init_hook(&mime_findname_hook,(HOOKFUNC)mime_findname);
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
@@ -406,18 +375,6 @@ void read_window_open(char *folder, char *filename)
 					MUIA_NListview_NList, header_list = NListObject,
 						MUIA_NList_DisplayHook, &header_display_hook,
 						MUIA_NList_Format, "P=" MUIX_R MUIX_PH ",",
-						End,
-					End,
-				Child, BalanceObject, End,
-				Child, NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, mime_tree = NListtreeObject,
-						MUIA_NListtree_ConstructHook, &mime_construct_hook,
-						MUIA_NListtree_DestructHook, &mime_destruct_hook,
-						MUIA_NListtree_DisplayHook, &mime_display_hook,
-						MUIA_NListtree_FindNameHook, &mime_findname_hook,
-						MUIA_NListtree_DragDropSort, FALSE,
-						MUIA_NListtree_Format,",,",
 						End,
 					End,
 				End,
@@ -445,6 +402,8 @@ void read_window_open(char *folder, char *filename)
 					Child, save_button = MakeButton("Save"),
 					End,
 				End,
+			Child, attachments_group = HGroupV,
+				End,
 			End,
 		End;
 	
@@ -462,16 +421,42 @@ void read_window_open(char *folder, char *filename)
 				if ((data->mail = mail_create_from_file(filename)))
 				{
 					struct mail *text_mail;
+					Object *save_contents_item;
+					Object *save_contents2_item;
+					Object *save_document_item;
 
 					mail_read_contents(folder,data->mail);
 
+					data->attachment_standard_menu = MenustripObject,
+						Child, MenuObjectT("Attachment"),
+							Child, save_contents_item = MenuitemObject,
+								MUIA_Menuitem_Title, "Save As...",
+								MUIA_UserData, 1,
+								End,
+							End,
+						End;
+
+					data->attachment_html_menu = MenustripObject,
+						Child, MenuObjectT("Attachment"),
+							Child, save_contents2_item = MenuitemObject,
+								MUIA_Menuitem_Title, "Save as...",
+								MUIA_UserData, 1,
+								End,
+							Child, save_document_item = MenuitemObject,
+								MUIA_Menuitem_Title, "Save whole document as...",
+								MUIA_UserData, 2,
+								End,
+							End,
+						End;
+
 					data->text_list = text_list;
-					data->mime_tree = mime_tree;
 					data->contents_page = contents_page;
 					data->datatype_datatypes = datatype_datatypes;
 					data->html_simplehtml = html_simplehtml;
 					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
+					data->attachments_group = attachments_group;
 					data->num = num;
+					data->attachments_last_selected = NULL;
 					read_open[num] = 1;
 
 					init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
@@ -483,12 +468,12 @@ void read_window_open(char *folder, char *filename)
 							TAG_DONE);
 
 					insert_headers(header_list,data->mail);
-					insert_mime(mime_tree,data->mail,MUIV_NListtree_Insert_ListNode_Root);
+					insert_mail(data,data->mail);
+
+					DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
 
 					text_mail = mail_find_content_type(data->mail, "text", "plain");
 
-					DoMethod(mime_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_active, data);
-					DoMethod(mime_tree, MUIM_Notify, MUIA_NList_ButtonClick, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_button, data);
 					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);

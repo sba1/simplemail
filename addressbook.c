@@ -190,6 +190,7 @@ void xml_end_tag(void *data, const char *el)
 	else if (!mystricmp("name",el)) entry->u.person.realname = mystrdup(data_buf);
 	else if (!mystricmp("email",el)) addressbook_person_add_email(entry,data_buf);
 	else if (!mystricmp("description",el)) addressbook_set_description(entry,data_buf);
+	else if (!mystricmp("pgpid",el)) entry->u.person.pgpid = mystrdup(data_buf);
 	else if (!mystricmp("homepage",el)) entry->u.person.homepage = mystrdup(data_buf);
 	else if (!mystricmp("portrait",el)) entry->u.person.portrait = mystrdup(data_buf);
 	else if (!mystricmp("note",el)) entry->u.person.notepad = mystrdup(data_buf);
@@ -474,6 +475,7 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 			put_xml_element_string(fh,"alias",entry->u.person.alias);
 			put_xml_element_string(fh,"name",entry->u.person.realname);
 			put_xml_element_string(fh,"description",entry->u.person.description);
+			put_xml_element_string(fh,"pgpid",entry->u.person.pgpid);
 			for (i=0;i<entry->u.person.num_emails;i++)
 				put_xml_element_string(fh,"email",entry->u.person.emails[i]);
 			put_xml_element_string(fh,"homepage",entry->u.person.homepage);

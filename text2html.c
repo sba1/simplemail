@@ -107,6 +107,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		int last_color = 0; /* the color of the current line */
 		int eval_color = 2; /* recheck the color */
 		int initial_color = 1;
+		int line = 0; /* the type of the line */
 
 		if (flags & TEXT2HTML_BODY_TAG) fprintf(fh,"<BODY BGCOLOR=\"#%06lx\" TEXT=\"#%06lx\" LINK=\"#%06lx\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		if (fonttag) fputs(fonttag,fh);
@@ -212,6 +213,25 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		  		if (smily_used) continue;
 		  	}
 
+				if (!strncmp("\n<sb>",buffer,5))
+				{
+					line = 1;
+					buffer += 5;
+					buffer_len -= 5;
+
+					fputs("<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>",fh);
+					continue;
+				}
+
+				if (!strncmp("\n<tsb>",buffer,6))
+				{
+					line = 2;
+					buffer += 6;
+					buffer_len -= 6;
+
+					fputs("<TABLE WIDTH=\"100%\" BORDER=\"0\"><TR><TD VALIGN=\"middle\" WIDTH=\"50%\"><HR></TD><TD>",fh);
+					continue;
+				}
 
 				buffer++;
 				buffer_len--;
@@ -221,6 +241,11 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				{
 					eval_color = 1;
 					fputs("<BR>\n",fh);
+					if (line)
+					{
+						fputs("</TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>",fh);
+						line = 0;
+					}
 				} else
 				{
 					if (c == 32) {

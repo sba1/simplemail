@@ -62,10 +62,12 @@ static Object *defto_label;
 static Object *defto_string;
 static Object *server_label;
 static Object *server_string;
+static Object *prim_group;
 static Object *prim_label;
 static Object *prim_cycle;
 static Object *prim_reverse_check;
 static Object *prim_reverse_label;
+static Object *second_group;
 static Object *second_label;
 static Object *second_cycle;
 static Object *second_reverse_check;
@@ -284,14 +286,14 @@ static void init_folder(void)
 				Child, type_cycle = MakeCycle(_("_Type"),type_array),
 
 				Child, prim_label = MakeLabel(_("_Primary sort")),
-                                Child, HGroup,
+				Child, prim_group = HGroup,
 					Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
 					Child, prim_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, prim_reverse_label = MakeLabel(_("Reverse")),
 				End,
 
 				Child, second_label = MakeLabel(_("_Secondary sort")),
-				Child, HGroup,
+				Child, second_group = HGroup,
 					Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
 					Child, second_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, second_reverse_label = MakeLabel(_("Reverse")),
@@ -335,6 +337,7 @@ static void init_folder(void)
 		DoMethod(folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, folder_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		group_mode = 0;
 
 		DoMethod(imap_folders_check, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_check_pressed);
 		DoMethod(imap_folders_submit, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_submit_pressed);
@@ -376,13 +379,9 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group, OM_REMMEMBER, type_label);
 			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
 			DoMethod(folder_group, OM_REMMEMBER, prim_label);
-			DoMethod(folder_group, OM_REMMEMBER, prim_cycle);
-			DoMethod(folder_group, OM_REMMEMBER, prim_reverse_check);
-			DoMethod(folder_group, OM_REMMEMBER, prim_reverse_label);
+			DoMethod(folder_group, OM_REMMEMBER, prim_group);
 			DoMethod(folder_group, OM_REMMEMBER, second_label);
-			DoMethod(folder_group, OM_REMMEMBER, second_cycle);
-			DoMethod(folder_group, OM_REMMEMBER, second_reverse_check);
-			DoMethod(folder_group, OM_REMMEMBER, second_reverse_label);
+			DoMethod(folder_group, OM_REMMEMBER, second_group);
 			if (imap_mode)
 			{
 				DoMethod(folder_group, OM_REMMEMBER, server_label);
@@ -396,9 +395,9 @@ void folder_edit(struct folder *f)
 	{
 		set(folder_wnd,MUIA_Window_Title, _("SimpleMail - Edit folder"));
 		set(imap_folders_group,MUIA_ShowMe, FALSE);
+		DoMethod(folder_group,MUIM_Group_InitChange);
 		if (group_mode)
 		{
-			DoMethod(folder_group,MUIM_Group_InitChange);
 			DoMethod(folder_group, OM_ADDMEMBER, path_label);
 			DoMethod(folder_group, OM_ADDMEMBER, path_string);
 
@@ -418,35 +417,16 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group, OM_ADDMEMBER, type_label);
 			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
 			DoMethod(folder_group, OM_ADDMEMBER, prim_label);
-			DoMethod(folder_group, OM_ADDMEMBER, prim_cycle);
-			DoMethod(folder_group, OM_ADDMEMBER, prim_reverse_check);
-			DoMethod(folder_group, OM_ADDMEMBER, prim_reverse_label);
+			DoMethod(folder_group, OM_ADDMEMBER, prim_group);
 			DoMethod(folder_group, OM_ADDMEMBER, second_label);
-			DoMethod(folder_group, OM_ADDMEMBER, second_cycle);
-			DoMethod(folder_group, OM_ADDMEMBER, second_reverse_check);
-			DoMethod(folder_group, OM_ADDMEMBER, second_reverse_label);
-
+			DoMethod(folder_group, OM_ADDMEMBER, second_group);
 			group_mode = 0;
-			DoMethod(folder_group,MUIM_Group_ExitChange);
 		} else
 		{
-			DoMethod(folder_group,MUIM_Group_InitChange);
-
 			if (f->is_imap && !imap_mode)
 			{
 				DoMethod(folder_group, OM_ADDMEMBER, server_label);
 				DoMethod(folder_group, OM_ADDMEMBER, server_string);
-				DoMethod(folder_group, MUIM_Group_Sort,
-						name_label, name_string,
-						path_label, path_string,
-						server_label, server_string,
-						type_label, type_cycle,
-						prim_label, prim_cycle,
-						prim_reverse_check, prim_reverse_label,
-						second_label, second_cycle,
-						second_reverse_check, second_reverse_label,
-						defto_label, defto_string,
-						NULL);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
@@ -455,9 +435,30 @@ void folder_edit(struct folder *f)
 				DoMethod(folder_group, OM_REMMEMBER, server_string);
 				imap_mode = 0;
 			}
-
-			DoMethod(folder_group,MUIM_Group_ExitChange);
 		}
+		if (imap_mode)
+		{
+			DoMethod(folder_group, MUIM_Group_Sort,
+			         name_label, name_string,
+			         path_label, path_string,
+			         server_label, server_string,
+			         type_label, type_cycle,
+			         prim_label, prim_group,
+			         second_label, second_group,
+			         defto_label, defto_string,
+			         NULL);
+		} else
+		{
+			DoMethod(folder_group, MUIM_Group_Sort,
+			         name_label, name_string,
+			         path_label, path_string,
+			         type_label, type_cycle,
+			         prim_label, prim_group, 
+			         second_label, second_group,
+			         defto_label, defto_string,
+			         NULL);
+		}
+		DoMethod(folder_group,MUIM_Group_ExitChange);
 	}
 
 	set(name_string, MUIA_String_Contents, f->name);

@@ -113,8 +113,6 @@ int load_config(void)
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
 							user.config.receive_size = atoi(result);
-						if ((result = get_config_item(buf,"Read.Wordwrap")))
-							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Read.PropFont")))
 							user.config.read_propfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Read.FixedFont")))
@@ -131,8 +129,12 @@ int load_config(void)
 							sscanf(result,"%x",&user.config.read_old_quoted);
 						if ((result = get_config_item(buf,"Read.LinkColor")))
 							sscanf(result,"%x",&user.config.read_link);
+						if ((result = get_config_item(buf,"Read.Wordwrap")))
+							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
 							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Read.Smilies")))
+							user.config.read_smilies = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Write.Welcome")))
 							user.config.write_welcome = mystrdup(result);
 						if ((result = get_config_item(buf,"Write.WelcomeAddress")))
@@ -322,7 +324,6 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s",user.config.signatures_use?"Y":"N");
-			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
 			fprintf(fh,"Read.BackgroundColor=0x%lx\n",user.config.read_background);
@@ -330,7 +331,9 @@ void save_config(void)
 			fprintf(fh,"Read.QuotedColor=0x%lx\n",user.config.read_quoted);
 			fprintf(fh,"Read.OldQuotedColor=0x%lx\n",user.config.read_old_quoted);
 			fprintf(fh,"Read.LinkColor=0x%lx\n",user.config.read_link);
+			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
+			fprintf(fh,"Read.Smilies=%s\n",user.config.read_smilies?"Y":"N");
 			fprintf(fh,"Write.Welcome=%s\n",MAKESTR(user.config.write_welcome));
 			fprintf(fh,"Write.WelcomeAddress=%s\n",MAKESTR(user.config.write_welcome_address));
 			fprintf(fh,"Write.Close=%s\n",MAKESTR(user.config.write_close));

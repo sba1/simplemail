@@ -33,6 +33,23 @@
 
 static const char legalchars[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz@_?+-,.~/%&=:*#";
 
+struct smily
+{
+	char *ascii;
+	char *gfx;
+};
+
+const static struct smily smily[] =
+{
+	{":)","smily_smile"},
+	{":-)","smily_smile"},
+	{":|","smily_neutral"},
+	{":-|","smily_neutral"},
+	{":(","smily_sad"},
+	{":-(","smily_sad"}
+};
+
+
 static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 {
 	char uri[SIZE_URI];
@@ -159,6 +176,25 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					}
 				}
 
+		  	if (user.config.read_smilies)
+		  	{
+		  		int i;
+		  		int smily_used = 0;
+			  	/* No look into the smily table, this is slow and needs to be improved */
+		  		for (i=0;i<sizeof(smily)/sizeof(struct smily);i++)
+		  		{
+		  			if (!strncmp(smily[i].ascii,buffer,strlen(smily[i].ascii)))
+		  			{
+		  				buffer += strlen(smily[i].ascii);
+		  				buffer_len -= strlen(smily[i].ascii);
+		  				fprintf(fh,"<IMG SRC=\"PROGDIR:Images/%s\" VALIGN=\"middle\" ALT=\"%s\">",smily[i].gfx,smily[i].ascii);
+		  				smily_used = 1;
+		  			}
+		  		}
+		  		if (smily_used) continue;
+		  	}
+
+
 				buffer++;
 				buffer_len--;
 				if (c== '<') fputs("&lt;",fh);
@@ -173,7 +209,10 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) fputs("&nbsp;",fh);
 						else fputc(32,fh);
 					} else {
-					  if (c) fputc(c,fh);
+					  if (c)
+					  {
+					  	fputc(c,fh);
+					  }
 					}
 				}
 			}

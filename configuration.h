@@ -48,7 +48,6 @@ struct config
 	char *write_welcome_address;
 	char *write_close;
 
-	int read_wordwrap;
 	char *read_fixedfont;
 	char *read_propfont;
 
@@ -60,7 +59,9 @@ struct config
 	int read_link;
 	
 	/* Boolean */
+	int read_wordwrap;
 	int read_link_underlined;
+	int read_smilies;
 
 	/* list of the filters */
 	struct list filter_list; 

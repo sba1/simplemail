@@ -60,10 +60,11 @@ static Object *config_wnd;
 static Object *user_dst_check;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
-static Object *read_wrap_checkbox;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
+static Object *read_wrap_checkbox;
 static Object *read_linkunderlined_checkbox;
+static Object *read_smilies_checkbox;
 static Object *read_palette;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
@@ -186,7 +187,6 @@ static void config_use(void)
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
-	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
@@ -197,7 +197,9 @@ static void config_use(void)
 	user.config.read_quoted = ((read_palette_entries[2].mpe_Red >> 24)<<16)     | ((read_palette_entries[2].mpe_Green>>24)<<8) | (read_palette_entries[2].mpe_Blue>>24);
 	user.config.read_old_quoted = ((read_palette_entries[3].mpe_Red >> 24)<<16) | ((read_palette_entries[3].mpe_Green>>24)<<8) | (read_palette_entries[3].mpe_Blue>>24);
 	user.config.read_link = ((read_palette_entries[4].mpe_Red >> 24)<<16)       | ((read_palette_entries[4].mpe_Green>>24)<<8) | (read_palette_entries[4].mpe_Blue>>24);
+	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
+	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
 	user.config.write_welcome = mystrdup((char*)xget(write_welcome_string,MUIA_String_Contents));
 	user.config.write_close = mystrdup((char*)xget(write_close_string,MUIA_String_Contents));
 
@@ -700,6 +702,8 @@ static int init_mails_read_group(void)
 			Child, read_wrap_checkbox = MakeCheck("Wordwrap plain text",user.config.read_wordwrap),
 			Child, MakeLabel("Underline links"),
 			Child, read_linkunderlined_checkbox = MakeCheck("Underline links",user.config.read_link_underlined),
+			Child, MakeLabel("Use graphical smilies"),
+			Child, read_smilies_checkbox = MakeCheck("Use graphical smilies",user.config.read_smilies),
 			Child, HVSpace,
 			End,
 		End;
@@ -760,7 +764,7 @@ static int init_signatures_group(void)
 		MUIA_Weight,300,
   	Child, VGroup,
   		Child, HGroup,
-  			Child, MakeLabel("_Use signatures"),
+  			Child, MakeLabel("Us_e signatures"),
   			Child, signatures_use_checkbox = MakeCheck("_Use signatures",user.config.signatures_use),
   			Child, HSpace(0),
 	  		End,

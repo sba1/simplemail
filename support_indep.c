@@ -174,6 +174,23 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 }
 
 /**************************************************************************
+ Like strcpy() but returns the end of the destianation string (mean the
+ pointer to the NULL byte), after src has been copied. Useful to for
+ building strings from several pieces. src might be NULL which then does
+ nothing
+**************************************************************************/
+char *mystpcpy(char *dest, const char *src)
+{
+	if (!src) return dest;
+	while((*dest = *src))
+	{
+		dest++;
+		src++;
+	}
+	return dest;
+}
+
+/**************************************************************************
  Returns the size of a given previously opened file
 **************************************************************************/
 unsigned int myfsize(FILE *file)

@@ -396,8 +396,8 @@ static LONG internal_seek(BPTR fh, LONG pos, LONG mode)
 {
 	LONG rc;
 
-	if (DOSBase->lib_Version < 51) rc = IDOS->Seek(fh,0,OFFSET_END);
-	else rc = IDOS->FSeek(fh,0,OFFSET_END);
+	if (DOSBase->lib_Version < 51) rc = IDOS->Seek(fh,pos,mode);
+	else rc = IDOS->FSeek(fh,pos,mode);
 
 	return rc;
 }
@@ -487,6 +487,7 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *f)
 	file = (struct myfile*)f;
 	fh = files[file->_file];
 	len = (size_t)IDOS->FRead(fh,buffer,size,count);
+
 	if (!len && size && count) file->_eof = 1;
 #ifdef FAST_SEEK
 	file->_rcnt += len;
@@ -557,11 +558,11 @@ int fseek(FILE *f, long offset, int origin)
 long ftell(FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
-	D(bug("0x%lx ftell() = %ld\n",file,internal_seek(fh,0,OFFSET_CURRENT)));
+	BPTR fh = files[file->_file];
 #ifdef FAST_SEEK
+	D(bug("0x%lx ftell() = %ld, seek=%ld\n",file, file->_rcnt,internal_seek(fh,0,OFFSET_CURRENT)));
 	return file->_rcnt;
 #else
-	BPTR fh = files[file->_file];
 	return internal_seek(fh,0,OFFSET_CURRENT);
 #endif
 }

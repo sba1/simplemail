@@ -33,9 +33,11 @@
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
 
+#include "folder.h"
+#include "mail.h"
+
 #include "amigasupport.h"
 #include "arexx.h"
-#include "folder.h"
 #include "mainwnd.h"
 #include "simplemail.h"
 #include "support.h"
@@ -462,6 +464,125 @@ static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILINFO Arexx Command
+*****************************************************************/
+static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR stem;
+		ULONG *index;
+	} mailinfo_arg;
+	memset(&mailinfo_arg,0,sizeof(mailinfo_arg));
+
+	if ((arg_handle = ParseTemplate("STEM/K,INDEX/N",args,&mailinfo_arg)))
+	{
+		struct mail *mail = NULL;
+		if (mailinfo_arg.index)
+		{
+			struct folder *f = main_get_folder();
+			if (f) mail = folder_find_mail(f, *mailinfo_arg.index);
+		} else mail = main_get_active_mail();
+
+		if (mail)
+		{
+			char *mail_status;
+			char *mail_from = mail_get_from_address(mail);
+			char *mail_to = mail_get_to_address(mail);
+			char *mail_replyto = mail_get_replyto_address(mail);
+			char *mail_date = NULL;
+			char mail_flags[9];
+			int mail_index;
+
+			switch (mail_get_status_type(mail))
+			{
+				case	MAIL_STATUS_READ: mail_status = "O";break;
+				case	MAIL_STATUS_WAITSEND: mail_status = "W";break;
+				case	MAIL_STATUS_SENT: mail_status = "S";break;
+				case	MAIL_STATUS_REPLIED: mail_status = "R";break;
+				case	MAIL_STATUS_FORWARD: mail_status = "F";break;
+				case	MAIL_STATUS_REPLFORW: mail_status = "R";break;
+				case	MAIL_STATUS_HOLD: mail_status = "H";break;
+				case	MAIL_STATUS_ERROR: mail_status = "E";break;
+				default: if (mail->flags & MAIL_FLAGS_NEW) mail_status = "N";
+								 else mail_status = "U"; break;
+			}
+
+			mail_index = folder_get_index_of_mail(main_get_folder(),mail);
+
+			{
+				char *date = malloc(LEN_DATSTRING);
+				char *time = malloc(LEN_DATSTRING);
+				struct DateTime dt;
+
+				if (date && time)
+				{
+					dt.dat_Stamp.ds_Days = mail->seconds / (60*60*24);
+					dt.dat_Stamp.ds_Minute = (mail->seconds % (60*60*24))/60;
+					dt.dat_Stamp.ds_Tick = (mail->seconds % 60) * 50;
+					dt.dat_Format = FORMAT_USA;
+					dt.dat_Flags = 0;
+					dt.dat_StrDate = date;
+					dt.dat_StrTime = time;
+					DateToStr(&dt);
+					if ((mail_date = malloc(2*LEN_DATSTRING)))
+					sprintf(mail_date,"%s %s",date,time);
+				}
+				free(date);
+				free(time);
+			}
+
+			strcpy(mail_flags,"--------");
+			if (mail->flags & MAIL_FLAGS_GROUP) mail_flags[0] = 'M';
+			if (mail->flags & MAIL_FLAGS_ATTACH) mail_flags[1] = 'A';
+			if (mail->flags & MAIL_FLAGS_CRYPT) mail_flags[3] = 'C';
+			if (mail->flags & MAIL_FLAGS_SIGNED) mail_flags[3] = 'S';
+
+			if (mailinfo_arg.stem)
+			{
+				int stem_len = strlen(mailinfo_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,mailinfo_arg.stem);
+
+					strcpy(&stem_buf[stem_len],"INDEX");
+					arexx_set_var_int(rxmsg,stem_buf,mail_index);
+					strcpy(&stem_buf[stem_len],"STATUS");
+					SetRexxVar(rxmsg,stem_buf,mail_status,1);
+					strcpy(&stem_buf[stem_len],"FROM");
+					SetRexxVar(rxmsg,stem_buf,mail_from,mystrlen(mail_from));
+					strcpy(&stem_buf[stem_len],"TO");
+					SetRexxVar(rxmsg,stem_buf,mail_to,mystrlen(mail_to));
+					strcpy(&stem_buf[stem_len],"REPLYTO");
+					SetRexxVar(rxmsg,stem_buf,mail_replyto,mystrlen(mail_replyto));
+					strcpy(&stem_buf[stem_len],"SUBJECT");
+					SetRexxVar(rxmsg,stem_buf,mail->subject,mystrlen(mail->subject));
+					strcpy(&stem_buf[stem_len],"FILENAME");
+					SetRexxVar(rxmsg,stem_buf,mail->filename,mystrlen(mail->filename));
+					strcpy(&stem_buf[stem_len],"SIZE");
+					arexx_set_var_int(rxmsg,stem_buf,mail->size);
+					strcpy(&stem_buf[stem_len],"DATE");
+					SetRexxVar(rxmsg,stem_buf,mail_date,strlen(mail_date));
+					strcpy(&stem_buf[stem_len],"FLAGS");
+					SetRexxVar(rxmsg,stem_buf,mail_flags,strlen(mail_flags));
+					strcpy(&stem_buf[stem_len],"MSGID");
+					arexx_set_var_int(rxmsg,stem_buf,0); /* Not supported yet */
+
+					free(stem_buf);
+				}
+			}
+			free(mail_date);
+			free(mail_replyto);
+			free(mail_to);
+			free(mail_from);
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -488,6 +609,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);
 		else if (!Stricmp("REQUEST",command.command)) arexx_request(rxmsg,command.args);
 		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);
+		else if (!Stricmp("MAILINFO",command.command)) arexx_mailinfo(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

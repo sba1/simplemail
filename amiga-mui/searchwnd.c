@@ -108,7 +108,7 @@ static void searchwnd_start(void)
 	so.from = (char*)xget(search_from_string,MUIA_UTF8String_Contents);
 	so.to = (char*)xget(search_to_string,MUIA_UTF8String_Contents);
 	so.subject = (char*)xget(search_subject_string,MUIA_UTF8String_Contents);
-	so.body = (char*)xget(search_body_string,MUIA_UTF8String_Contents);
+	so.body = NULL;//(char*)xget(search_body_string,MUIA_UTF8String_Contents);
 
 	MAKE_NULL(so.folder);
 	MAKE_NULL(so.from);
@@ -188,13 +188,13 @@ static void init_search(void)
 					MUIA_UTF8String_Charset, user.config.default_codeset,
 					End,
 
-				Child, MakeLabel(_("_Body")),
+/*				Child, MakeLabel(_("_Body")),
 				Child, search_body_string = UTF8StringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
 					MUIA_UTF8String_Charset, user.config.default_codeset,
-					End,
+					End,*/
 
 				End,
 

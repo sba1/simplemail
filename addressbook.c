@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <expat.h>
+
 #include "addressbook.h"
 #include "http.h"
 #include "lists.h"
@@ -35,6 +37,24 @@
 #include "support_indep.h"
 
 static struct addressbook_entry root_entry;
+
+/**************************************************************************
+ Returns the group where the person or group belongs to
+**************************************************************************/
+static struct addressbook_entry *addressbook_get_group(struct addressbook_entry *entry)
+{
+	struct list *list;
+	struct addressbook_entry *fake = NULL;
+	int size;
+
+	if (&root_entry == entry) return NULL;
+	if (!(list = node_list(&entry->node))) return NULL;
+
+	size = ((char*)(&fake->u.group.list)) - (char*)fake;
+	entry = (struct addressbook_entry*)(((char*)list)-size);
+
+	return entry;
+}
 
 /**************************************************************************
  Reads a line. The buffer doesn't contain an LF's
@@ -52,6 +72,134 @@ int read_line(FILE *fh, char *buf)
 		else if (buf[len-2] == '\r') buf[len-2] = 0;
 	}
 	return 1;
+}
+
+/**************************************************************************
+ Put a xml elelemt into a file (if string exists)
+**************************************************************************/
+void put_xml_element_string(FILE *fh, char *element, char *contents)
+{
+	if (!contents) return;
+	fprintf(fh,"<%s>%s</%s>\n",element,contents,element);
+}
+
+static int addressbook_tag;
+static int contact_tag;
+static int group_tag;
+static char *data_buf;
+
+/**************************************************************************
+ Start Tag
+**************************************************************************/
+void xml_start_tag(void *data, const char *el, const char **attr)
+{
+	struct addressbook_entry *entry;
+	XML_Parser p = (XML_Parser)data;
+
+	if (!(entry = (struct addressbook_entry*)XML_GetUserData(p))) return;
+
+	if (!mystricmp("addressbook",el)) addressbook_tag = 1;
+	else if (!mystricmp("contact",el))
+	{
+		if (!contact_tag)
+		{
+			entry = addressbook_new_person(entry,NULL,NULL);
+			contact_tag = 1;
+			XML_SetUserData(p,entry);
+		}
+	} else if(!mystricmp("group",el))
+	{
+		if (!contact_tag)
+		{
+			entry = addressbook_new_group(entry);
+			group_tag++;
+			XML_SetUserData(p,entry);
+		}
+	}
+}  /* End of start handler */
+
+/**************************************************************************
+ End Tag
+**************************************************************************/
+void xml_end_tag(void *data, const char *el)
+{
+	struct addressbook_entry *entry;
+	XML_Parser p = (XML_Parser)data;
+
+	if (!(entry = (struct addressbook_entry*)XML_GetUserData(data))) return;
+
+	if (!mystricmp("addressbook",el)) addressbook_tag = 0;
+	else if (!mystricmp("contact",el))
+	{
+		if (contact_tag)
+		{
+			entry = addressbook_get_group(entry);
+			XML_SetUserData(p,entry);
+			contact_tag = 0;
+		}
+	} else if (!mystricmp("group",el))
+	{
+		if (group_tag)
+		{
+			entry = addressbook_get_group(entry);
+			XML_SetUserData(p,entry);
+			group_tag--;
+		}
+	}
+	else if (!mystricmp("alias",el)) addressbook_set_alias(entry,data_buf);
+	else if (!mystricmp("name",el)) entry->u.person.realname = mystrdup(data_buf);
+	else if (!mystricmp("email",el)) addressbook_person_add_email(entry,data_buf);
+	else if (!mystricmp("street",el)) entry->u.person.street = mystrdup(data_buf);
+	else if (!mystricmp("description",el)) addressbook_set_description(entry,data_buf);
+	else if (!mystricmp("city",el)) entry->u.person.city = mystrdup(data_buf);
+	else if (!mystricmp("country",el)) entry->u.person.country = mystrdup(data_buf);
+	else if (!mystricmp("homepage",el)) entry->u.person.homepage = mystrdup(data_buf);
+	else if (!mystricmp("phone",el))
+	{
+		if (!entry->u.person.phone1) entry->u.person.phone1 = mystrdup(data_buf);
+		else if (!entry->u.person.phone2) entry->u.person.phone2 = mystrdup(data_buf);
+	}
+	else if (!mystricmp("portrait",el)) entry->u.person.portrait = mystrdup(data_buf);
+	else if (!mystricmp("note",el)) entry->u.person.notepad = mystrdup(data_buf);
+
+	if (data_buf)
+	{
+		free(data_buf);
+		data_buf = NULL;
+	}
+}
+
+/**************************************************************************
+ Read the characters
+**************************************************************************/
+void xml_char_data(void *data, const XML_Char *s, int len)
+{
+	if (contact_tag || group_tag)
+	{
+		if (data_buf) free(data_buf);
+		if ((data_buf = (char*)malloc(len+1)))
+		{
+			unsigned char *src = (char*)s;
+			unsigned char *dest = (char*)data_buf;
+
+			/* Skip trailing spaces */
+			while ((isspace(*src) && len))
+			{
+				src++;
+				len--;
+			}
+			strncpy(dest,src,len);
+
+			/* Remove ending spaces */
+			while (len && isspace(dest[len-1]))
+			{
+				if (isspace(dest[len-1]))
+				len--;
+			}
+
+			dest[len]=0;
+		}
+	}
 }
 
 /**************************************************************************
@@ -92,9 +240,10 @@ void cleanup_addressbook(void)
 }
 
 /**************************************************************************
- Load the entries in the current group. (recursive)
+ Load the entries in the current group. (recursive).
+ Has to be removed somewhen (format has been used in earlier alpha's)
 **************************************************************************/
-static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, char *buf)
+static void addressbook_load_entries_old(struct addressbook_entry *group, FILE *fh, char *buf)
 {
 	struct addressbook_entry *entry;
 
@@ -143,10 +292,46 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, 
 			if ((entry = addressbook_new_group(group)))
 			{
 				addressbook_set_alias(entry, &buf[7]);
-				addressbook_load_entries(entry,fh,buf);
+				addressbook_load_entries_old(entry,fh,buf);
 			}
 		}
 	}
+}
+
+/**************************************************************************
+ Load the entries in the current group as XML
+**************************************************************************/
+static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh)
+{
+	char *buf;
+	XML_Parser p;
+
+	if (!(buf = malloc(512))) return;
+	if (!(p = XML_ParserCreate(NULL)))
+	{
+		free(buf);
+		return;
+	}
+
+	XML_SetElementHandler(p, xml_start_tag, xml_end_tag);
+	XML_SetCharacterDataHandler(p, xml_char_data);
+	XML_SetUserData(p,group);
+	XML_UseParserAsHandlerArg(p);
+
+	for (;;)
+	{
+		int len;
+
+		len = fread(buf, 1, 512, fh);
+		if (len <= 0) break;
+
+    if (!XML_Parse(p, buf, len, 0)) break;
+  }
+
+  XML_Parse(p,buf,0,1); /* is_final have to be done */
+
+	XML_ParserFree(p);
+	free(buf);
 }
 
 /**************************************************************************
@@ -155,8 +340,15 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, 
 int addressbook_load(void)
 {
 	int retval = 0;
-	FILE *fh = fopen("PROGDIR:.addressbook","r");
-	if (fh)
+	FILE *fh;
+
+	if ((fh = fopen("PROGDIR:.addressbook.xml","r")))
+	{
+		addressbook_load_entries(&root_entry,fh);
+		fclose(fh);
+		retval = 1;
+	} else
+	if ((fh = fopen("PROGDIR:.addressbook","r")))
 	{
 		char *buf = (char*)malloc(512);
 		if (buf)
@@ -166,7 +358,7 @@ int addressbook_load(void)
 				if (!strncmp(buf,"SMAB",4))
 				{
 					buf[0] = 0;
-					addressbook_load_entries(&root_entry,fh,buf);
+					addressbook_load_entries_old(&root_entry,fh,buf);
 					retval = 1;
 				}
 			}
@@ -190,28 +382,33 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 	{
 		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 		{
-			fprintf(fh,"@USER %s\n",entry->u.person.alias?entry->u.person.alias:"");
-			if (entry->u.person.realname) fprintf(fh,"RealName=%s\n",entry->u.person.realname);
-			if (entry->u.person.description) fprintf(fh,"Description=%s\n",entry->u.person.description);
+			fputs("<contact>\n",fh);
+
+			put_xml_element_string(fh,"alias",entry->u.person.alias);
+			put_xml_element_string(fh,"name",entry->u.person.realname);
+			put_xml_element_string(fh,"description",entry->u.person.description);
 			for (i=0;i<entry->u.person.num_emails;i++)
-			{
-				fprintf(fh,"EMail=%s\n",entry->u.person.emails[i]);
-			}
-			if (entry->u.person.street) fprintf(fh,"Street=%s\n",entry->u.person.street);
-			if (entry->u.person.city) fprintf(fh,"City=%s\n",entry->u.person.city);
-			if (entry->u.person.country) fprintf(fh,"Country=%s\n",entry->u.person.country);
-			if (entry->u.person.homepage) fprintf(fh,"Homepage=%s\n",entry->u.person.homepage);
-			if (entry->u.person.phone1) fprintf(fh,"Phone1=%s\n",entry->u.person.phone1);
-			if (entry->u.person.phone2) fprintf(fh,"Phone2=%s\n",entry->u.person.phone2);
-			if (entry->u.person.portrait) fprintf(fh,"Portrait=%s\n",entry->u.person.portrait);
-			fprintf(fh,"@ENDUSER\n");
+				put_xml_element_string(fh,"email",entry->u.person.emails[i]);
+			put_xml_element_string(fh,"street",entry->u.person.street);
+			put_xml_element_string(fh,"city",entry->u.person.city);
+			put_xml_element_string(fh,"country",entry->u.person.country);
+			put_xml_element_string(fh,"homepage",entry->u.person.homepage);
+			put_xml_element_string(fh,"phone",entry->u.person.phone1);
+			put_xml_element_string(fh,"phone",entry->u.person.phone2);
+			put_xml_element_string(fh,"portrait",entry->u.person.portrait);
+			put_xml_element_string(fh,"note",entry->u.person.notepad);
+			
+			fputs("</contact>\n",fh);
+
 		} else
 		{
 			if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				fprintf(fh,"@GROUP %s\n",entry->u.group.alias?entry->u.group.alias:"");
+				fputs("<group>\n",fh);
+				put_xml_element_string(fh,"alias",entry->u.group.alias);
+				put_xml_element_string(fh,"description",entry->u.person.description);
 				addressbook_save_group(entry,fh);
-				fprintf(fh,"@ENDGROUP\n");
+				fputs("</group>\n",fh);
 			}
 		}
 
@@ -224,11 +421,12 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 **************************************************************************/
 void addressbook_save(void)
 {
-	FILE *fh = fopen("PROGDIR:.addressbook","w");
+	FILE *fh = fopen("PROGDIR:.addressbook.xml","w");
 	if (fh)
 	{
-		fputs("SMAB - SimpleMail Addressbook\n",fh);
+		fputs("<addressbook>\n",fh);
 		addressbook_save_group(&root_entry,fh);
+		fputs("</addressbook>\n",fh);
 		fclose(fh);
 	}
 }

@@ -25,8 +25,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "taglines.h"
 #include "configuration.h"
+#include "support_indep.h"
+#include "taglines.h"
+
+#define TAGLINES_INDEX_VERSION 0
+
+int read_line(FILE *fh, char *buf); /* in addressbook.c */
+
+static int taglines_num;
+static int *taglines_positions;
+static char *taglines_filename;
 
 int random(int max)
 {
@@ -127,4 +136,100 @@ void taglines_free_tagline(struct tagline *t)
 		}
 		free(t);
 	}
+}
+
+/******************************************************************
+ Creates a tagline index file for the given tagline file
+*******************************************************************/
+static void taglines_create_index(char *filename, char *indexname)
+{
+	FILE *tagfh, *indexfh;
+	char *buf;
+
+	if (!(buf = malloc(512))) return;
+
+	if ((tagfh = fopen(filename,"r")))
+	{
+		if ((indexfh = fopen(indexname,"wb")))
+		{
+			int pos = 0;
+			int ver = TAGLINES_INDEX_VERSION;
+
+			fwrite("SMTI",1,4,indexfh);
+			fwrite(&ver,1,4,indexfh);
+
+			while (read_line(tagfh,buf))
+			{
+				if (strcmp(buf, "%%") == 0)
+				{
+					fwrite(&pos,1,4,indexfh);
+					pos = ftell(indexfh);
+				}
+			}
+
+			fclose(indexfh);
+		}
+		fclose(tagfh);
+	}
+	free(buf);
+}
+
+
+/******************************************************************
+ Loads the tagline information (and creates the index if
+ neccessary
+*******************************************************************/
+void taglines_cleanup(void)
+{
+	free(taglines_filename);
+	free(taglines_positions);
+	taglines_filename = NULL;
+	taglines_positions = NULL;
+	taglines_num = 0;
+}
+
+/******************************************************************
+ Loads the tagline information (and creates the index if
+ neccessary)
+*******************************************************************/
+void taglines_init(char *filename)
+{
+	FILE *fh;
+	char *indexname;
+	unsigned int fh_size;
+	taglines_cleanup();
+
+	if (!(indexname = malloc(mystrlen(filename)+10)))
+		return;
+
+	strcat(indexname,".index");
+
+	if (myfiledatecmp(filename,indexname)>0)
+	{
+		taglines_create_index(filename,indexname);
+	}
+
+	if ((fh = fopen(indexname,"rb")))
+	{
+		char buf[4];
+		fread(buf,1,4,fh);
+		if (!strncmp("SMTI",buf,4))
+		{
+			int ver;
+			fread(&ver,1,4,fh);
+			if (ver == TAGLINES_INDEX_VERSION)
+			{
+				fh_size = myfsize(fh);
+				if ((taglines_positions = malloc(fh_size - 8 + sizeof(int))))
+				{
+					fread(taglines_positions,1,fh_size - 8,fh);
+					taglines_num = (fh_size - 8) / sizeof(int);
+					taglines_positions[taglines_num] = fh_size;
+				}
+			}
+		}
+
+		fclose(fh);
+	}
+	free(indexname);
 }

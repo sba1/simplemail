@@ -305,6 +305,10 @@ static void filter_remove_rule_gui(Object **objs)
 	struct filter_rule *fr;
 	Object *parent;
 
+	/* The pointer to the real filter rule is stored in MUIA_UserData */
+	if ((fr = (struct filter_rule*)xget(objs[0],MUIA_UserData)))
+		filter_remove_rule(fr);
+
 	/* Get the parent of the objects and remove the objects */
 	parent = (Object*)xget(objs[0],MUIA_Parent);
 	DoMethod(parent,MUIM_Group_InitChange);
@@ -313,11 +317,6 @@ static void filter_remove_rule_gui(Object **objs)
 	DoMethod(parent,MUIM_Group_ExitChange);
 	MUI_DisposeObject(objs[1]);
 	MUI_DisposeObject(objs[0]);
-
-	/* The pointer to the real filter rule is stored in MUIA_UserData */
-	if ((fr = (struct filter_rule*)xget(objs[0],MUIA_UserData)))
-		filter_remove_rule(fr);
-
 }
 
 /**************************************************************************

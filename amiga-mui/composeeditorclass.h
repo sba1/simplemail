@@ -24,7 +24,7 @@
 #define SM__COMPOSEEDITORCLASS_H
 
 extern struct MUI_CustomClass *CL_ComposeEditor;
-#define ComposeEditorObject (Object*)NewObject(CL_ComposeEditor->mcc_Class, NULL
+#define ComposeEditorObject (Object*)(NewObject)(CL_ComposeEditor->mcc_Class, NULL
 
 #define MUIA_ComposeEditor_Array					(TAG_USER+0x467767)
 #define MUIA_ComposeEditor_UTF8Contents	(TAG_USER+0x467768)

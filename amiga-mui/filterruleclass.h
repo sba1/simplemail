@@ -18,7 +18,7 @@
 #ifndef SM__FILTERRULECLASS_H
 #define SM__FILTERRULECLASS_H
 
-#define FilterRuleObject NewObject(CL_FilterRule->mcc_Class, NULL
+#define FilterRuleObject (Object*)(NewObject)(CL_FilterRule->mcc_Class, NULL
 
 extern struct MUI_CustomClass *CL_FilterRule;
 

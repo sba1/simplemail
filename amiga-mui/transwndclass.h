@@ -25,7 +25,7 @@
 
 extern struct MUI_CustomClass *CL_transwnd;
 
-#define transwndObject (Object *) NewObject(CL_transwnd->mcc_Class, NULL
+#define transwndObject (Object *)(NewObject)(CL_transwnd->mcc_Class, NULL
 
 int create_transwnd_class(void);
 void delete_transwnd_class(void);

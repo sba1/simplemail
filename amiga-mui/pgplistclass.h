@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_PGPList;
-#define PGPListObject (Object*)NewObject(CL_PGPList->mcc_Class, NULL
+#define PGPListObject (Object*)(NewObject)(CL_PGPList->mcc_Class, NULL
 
 #define MUIM_PGPList_Refresh (0x627637)
 struct MUIP_PGPList_Refresh { ULONG MethodID;};

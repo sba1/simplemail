@@ -24,7 +24,8 @@
 #define SM__UTF8STRING_HPP
 
 IMPORT struct MUI_CustomClass *CL_UTF8String;
-#define UTF8StringObject (Object*)NewObject(CL_UTF8String->mcc_Class, NULL
+
+#define UTF8StringObject (Object*)(NewObject)(CL_UTF8String->mcc_Class, NULL
 
 #define MUIM_UTF8String_Insert (0x7878782)
 

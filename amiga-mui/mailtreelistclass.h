@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_MailTreelist;
-#define MailTreelistObject (Object*)NewObject(CL_MailTreelist->mcc_Class, NULL
+#define MailTreelistObject (Object*)(NewObject)(CL_MailTreelist->mcc_Class, NULL
 
 /* Special User Data field */
 #define MUIV_MailTreelist_UserData_Name (-1)

@@ -19,7 +19,7 @@
 #define SM__POPUPMENUCLASS_H
 
 IMPORT struct MUI_CustomClass *CL_Popupmenu;
-#define PopupmenuObject (Object*)NewObject(CL_Popupmenu->mcc_Class, NULL
+#define PopupmenuObject (Object*)(NewObject)(CL_Popupmenu->mcc_Class, NULL
 
 int create_popupmenu_class(void);
 void delete_popupmenu_class(void);

@@ -24,7 +24,7 @@
 #define SM__ADDRESSTREELISTCLASS_H
 
 IMPORT struct MUI_CustomClass *CL_AddressTreelist;
-#define AddressTreelistObject (Object*)NewObject(CL_AddressTreelist->mcc_Class, NULL
+#define AddressTreelistObject (Object*)(NewObject)(CL_AddressTreelist->mcc_Class, NULL
 
 #define MUIA_AddressTreelist_InAddressbook	(TAG_USER+0x27878) /* BOOL */
 #define MUIA_AddressTreelist_AsMatchList		(TAG_USER+0x27879) /* BOOL */

@@ -101,15 +101,15 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}hu.mo
+LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}ma.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:
   msgfmt ./$? -o ./$@ # this is the unix style variant of msgfmt (GeekGadgets)
 # msgfmt $? -o $@     # this is the Amiga style variant of msgfmt
 
-${LOCALEDIR}de.mo: ${FREECIV_DIR}po/de.po
-${LOCALEDIR}hu.mo: ${FREECIV_DIR}po/hu.po
+${LOCALEDIR}de.mo: po/de.po
+${LOCALEDIR}ma.mo: po/ma.po
 
 # some fake targets
 generate:
@@ -150,6 +150,7 @@ prepare-release:
   slink sm/simplemail nd TO ram:SimpleMail/SimpleMail
   copy doc/amiga/ReadMe ram:SimpleMail
   copy doc/amiga/SimpleMail.guide ram:SimpleMail
+  copy doc/amiga/history.txt ram:SimpleMail
   copy amiga-mui/binaries/ReadMe.info ram:SimpleMail
   copy amiga-mui/binaries/SimpleMail.guide.info ram:SimpleMail
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail

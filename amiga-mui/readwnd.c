@@ -45,6 +45,7 @@
 #include <proto/icon.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "http.h"
 #include "mail.h"
@@ -933,6 +934,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 	if (data->mail) mail_free(data->mail);
 	data->mail = NULL;
 
+	SM_DEBUGF(15,("displaying mail at %p with subject %s\n",mail,mail->subject?mail->subject:"no subject"));
+
 	if (!data->folder_path) return 0;
 
 	set(App, MUIA_Application_Sleep, TRUE);
@@ -940,9 +943,15 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 
 	set(data->move_button, MUIA_Disabled, FALSE);
 
+	SM_DEBUGF(15,("Locking folder %s\n",data->folder_path));
+
 	if ((lock = Lock(data->folder_path,ACCESS_READ))) /* maybe it's better to use an absoulte path here */
 	{
-		BPTR old_dir = CurrentDir(lock);
+		BPTR old_dir;
+
+		SM_DEBUGF(15,("Got lock at %p\n",lock));
+		
+		old_dir = CurrentDir(lock);
 
 		if ((data->mail = mail_create_from_file(mail->filename)))
 		{
@@ -986,11 +995,15 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 			else
 				set(data->prev_button, MUIA_Disabled, TRUE);
 
+			SM_DEBUGF(15,("Displayed\n"));
+
 			CurrentDir(old_dir);
 			UnLock(lock);
 			set(App, MUIA_Application_Sleep, FALSE);
 			return 1;
 		}
+		SM_DEBUGF(15,("Not displayed\n"));
+
 		CurrentDir(old_dir);
 		UnLock(lock);
 	}

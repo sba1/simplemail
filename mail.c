@@ -1683,11 +1683,104 @@ int mail_create_html_header(struct mail *mail)
 	if ((fh = tmpfile()))
 	{
 		int len;
+		char *from = mail_find_header_contents(mail,"from");
+		char *to = mail_find_header_contents(mail,"to");
+		char *replyto = mail_find_header_contents(mail, "reply-to");
+		char *cc = mail_find_header_contents(mail, "cc");
+
 		fputs("<HTML><BODY>",fh);
-		fputs("<IMG SRC=\"SimpleMailPicture:\" WIDTH=30 HEIGHT=40 ALIGN=LEFT>",fh);
-		if (mail->from) fprintf(fh,"<STRONG>From: </STRONG>%s<BR>",mail->from);
-		if (mail->subject) fprintf(fh,"<STRONG>Subject: </STRONG>%s<BR>",mail->subject);
+		fputs("<IMG SRC=\"SimpleMailPicture:\" WIDTH=30 HEIGHT=40 ALIGN=RIGHT>",fh);
+
+		if (from)
+		{
+			struct mailbox mb;
+			parse_mailbox(from, &mb);
+			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\">",mb.addr_spec);
+
+			if (mb.phrase)
+			{
+				fprintf(fh,"%s &lt;%s&gt;",mb.phrase,mb.addr_spec);
+			} else
+			{
+				fputs(mb.addr_spec,fh);
+			}
+
+			if (mb.phrase)  free(mb.phrase);
+			if (mb.addr_spec) free(mb.addr_spec);
+
+			fputs("</A><BR>",fh);
+		}
+
+		if (to)
+		{
+			struct parse_address p_addr;
+			fputs("<STRONG>To:</STRONG> ",fh);
+			if ((parse_address(to,&p_addr)))
+			{
+				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
+				while (mb)
+				{
+					fprintf(fh,"<A HREF=\"mailto:%s\">",mb->addr_spec);
+					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
+					else fputs(mb->addr_spec,fh);
+					fputs("</A>",fh);
+					if ((mb = (struct mailbox*)node_next(&mb->node)))
+					{
+						fputs(", ",fh);
+					}
+				}
+				free_address(&p_addr);
+			}
+			fputs("<BR>",fh);
+		}
+
+		if (cc)
+		{
+			struct parse_address p_addr;
+			fputs("<STRONG>Copies to:</STRONG> ",fh);
+			if ((parse_address(cc,&p_addr)))
+			{
+				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
+				while (mb)
+				{
+					fprintf(fh,"<A HREF=\"mailto:%s\">",mb->addr_spec);
+					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
+					else fputs(mb->addr_spec,fh);
+					fputs("</A>",fh);
+					if ((mb = (struct mailbox*)node_next(&mb->node)))
+					{
+						fputs(", ",fh);
+					}
+				}
+				free_address(&p_addr);
+			}
+			fputs("<BR>",fh);
+		}
+
+
+		if (mail->subject) fprintf(fh,"<STRONG>Subject:</STRONG> %s<BR>",mail->subject);
 		fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_str(mail->seconds));
+
+		if (replyto)
+		{
+			struct mailbox addr;
+			parse_mailbox(replyto, &addr);
+			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\">");
+
+			if (addr.phrase)
+			{
+				fprintf(fh,"%s &lt;%s&gt;",addr.phrase,addr.addr_spec);
+			} else
+			{
+				fputs(addr.addr_spec,fh);
+			}
+
+			if (addr.phrase)  free(addr.phrase);
+			if (addr.addr_spec) free(addr.addr_spec);
+
+			fputs("</A><BR>",fh);
+		}
+		
 		fputs("<BR CLEAR=ALL><HR>",fh);
 		fputs("</BODY></HTML>",fh);
 

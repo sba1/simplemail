@@ -33,6 +33,7 @@ void main_replace_mail(struct mail *oldmail, struct mail *newmail);
 void main_set_folder_mails(struct folder *folder);
 struct folder *main_get_folder(void);
 char *main_get_folder_drawer(void);
+struct mail *main_get_active_mail(void);
 char *main_get_mail_filename(void);
 
 struct mail *main_get_mail_first_selected(void *handle);

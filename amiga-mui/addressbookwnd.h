@@ -24,5 +24,6 @@
 #define SM__ADDRESSBOOKWND_H
 
 void addressbook_open(void);
+void addressbook_open_with_new_address(struct mail *m);
 
 #endif

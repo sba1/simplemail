@@ -50,6 +50,7 @@ static Object *win_main;
 static Object *button_fetch;
 static Object *button_send;
 static Object *button_read;
+static Object *button_getadd;
 static Object *button_delete;
 static Object *button_change;
 static Object *button_new;
@@ -193,6 +194,7 @@ int main_window_init(void)
 				Child, button_read = MakeButton("_Read"),
 				Child, button_change = MakeButton("_Change"),
 				Child, button_delete = MakeButton("_Delete"),
+				Child, button_getadd = MakeButton("_GetAdd"),
 				Child, button_new = MakeButton("_New"),
 				Child, button_reply = MakeButton("_Reply"),
 				Child, button_fetch = MakeButton("_Fetch Mails"),
@@ -227,6 +229,7 @@ int main_window_init(void)
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
+		DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
 		DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
 		DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
@@ -439,10 +442,9 @@ char *main_get_folder_drawer(void)
 }
 
 /******************************************************************
- Returns the filename of the active mail, NULL if no thing is
- selected
+ Returns the active mail. NULL if no one is active
 *******************************************************************/
-char *main_get_mail_filename(void)
+struct mail *main_get_active_mail(void)
 {
 	struct MUI_NListtree_TreeNode *tree_node;
 	tree_node = (struct MUI_NListtree_TreeNode *)xget(tree_mail,MUIA_NListtree_Active);
@@ -451,9 +453,20 @@ char *main_get_mail_filename(void)
 	{
 		if (tree_node->tn_User && tree_node->tn_User != (void*)MUIV_MailTreelist_UserData_Name)
 		{
-			return ((struct mail*)(tree_node->tn_User))->filename;
+			return (struct mail*)tree_node->tn_User;
 		}
 	}
+	return NULL;
+}
+
+/******************************************************************
+ Returns the filename of the active mail, NULL if no thing is
+ selected
+*******************************************************************/
+char *main_get_mail_filename(void)
+{
+	struct mail *m = main_get_active_mail();
+	if (m) return m->filename;
 	return NULL;
 }
 

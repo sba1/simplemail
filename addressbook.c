@@ -26,6 +26,7 @@
 
 #include "addressbook.h"
 #include "lists.h"
+#include "mail.h"
 #include "parse.h"
 #include "support.h"
 
@@ -773,6 +774,30 @@ char *addressbook_get_expand_str(char *unexpand)
 		}
 	}
 	return expand;
+}
+
+/**************************************************************************
+ Completes an alias/realname/e-mail address of the addressbook
+**************************************************************************/
+struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m)
+{
+	struct addressbook_entry *e = NULL;
+	char *from = mail_find_header_contents(m, "from");
+	if (from)
+	{
+		struct parse_address addr;
+		if (parse_address(from,&addr))
+		{
+			struct mailbox *mb = (struct mailbox *)list_first(&addr.mailbox_list);
+			if (mb)
+			{
+				e = addressbook_create_person(mb->phrase, mb->addr_spec);
+			}
+
+			free_address(&addr);
+		}
+	}
+	return e;
 }
 
 /**************************************************************************

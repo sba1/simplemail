@@ -68,6 +68,16 @@ void callback_delete_mails(void)
 	}
 }
 
+/* get the address */
+void callback_get_address(void)
+{
+	struct mail *m = main_get_active_mail();
+	if (m)
+	{
+		addressbook_open_with_new_address(m);
+	}
+}
+
 /* a new mail should be composed */
 void callback_new_mail(void)
 {

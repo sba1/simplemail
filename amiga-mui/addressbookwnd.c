@@ -794,3 +794,17 @@ void addressbook_open(void)
 		set(address_wnd, MUIA_Window_Open, TRUE);
 	}
 }
+
+/******************************************************************
+ Opens the addressbook with a new person taken from the mail
+*******************************************************************/
+void addressbook_open_with_new_address(struct mail *m)
+{
+	struct addressbook_entry *entry = addressbook_get_entry_from_mail(m);
+	if (entry)
+	{
+		addressbook_open();
+		person_window_open(entry);
+		addressbook_free_entry(entry);
+	}
+}

@@ -1090,17 +1090,23 @@ static int mail_compare_status(const struct mail *arg1, const struct mail *arg2,
 
 static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->from,arg2->from);
+	int rc = mystricmp(arg1->from,arg2->from);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->to,arg2->to);
+	int rc = mystricmp(arg1->to,arg2->to);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->subject,arg2->subject);
+	int rc = mystricmp(arg1->subject,arg2->subject);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
@@ -1133,7 +1139,7 @@ static int mail_compare_filename(const struct mail *arg1, const struct mail *arg
 static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 {
 	if (sort_mode & FOLDER_SORT_REVERSE) *reverse = 1;
-	else reverse = 0;
+	else *reverse = 0;
 
 	switch (sort_mode & FOLDER_SORT_MODEMASK)
 	{

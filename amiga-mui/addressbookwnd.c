@@ -361,7 +361,7 @@ static __asm void person_pgp_objstr(register __a1 Object *str, register __a2 Obj
 	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &key);
 	if (key)
 	{
-		DoMethod(str, MUIM_SetAsString, MUIA_String_Contents, "0x%lX", key->keyid);
+		DoMethod(str, MUIM_SetAsString, MUIA_String_Contents, "0x%08lX", key->keyid);
 	}
 }
 

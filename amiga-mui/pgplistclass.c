@@ -71,7 +71,7 @@ STATIC ASM VOID pgp_display(register __a1 struct NList_DisplayMessage *msg, regi
 	if (msg->entry)
 	{
 		struct pgp_key *key = (struct pgp_key *)msg->entry;
-		sprintf(data->buf,"0x%lx",key->keyid);
+		sprintf(data->buf,"0x%08lX",key->keyid);
 		msg->strings[0] = data->buf;
 		msg->strings[1] = key->userids?key->userids[0]:NULL;
 	} else

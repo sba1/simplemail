@@ -206,6 +206,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 						MUIA_NList_DisplayHook2, &data->display_hook,
 						MUIA_NList_Title, TRUE,
 						MUIA_NList_Format, ",,,,",
+						MUIA_NList_MultiSelect, TRUE,
 						TAG_DONE);
 
 	if (data->type == MUIV_AddressEntryList_Type_Main)

@@ -23,11 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "configuration.h"
-#include "parse.h"
-#include "pop3.h"
 #include "signature.h"
-#include "smtp.h"
 #include "support_indep.h"
 
 /**************************************************************************

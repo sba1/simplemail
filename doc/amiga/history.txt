@@ -1,3 +1,9 @@
+Version 0.22 (nineth beta) - released on 2004/01/01
+  - Signatures can now be chooses on a per folder base (bgol)
+  - No longer needs to load the indexfile if you move mails to a folder
+  - Realname wasn't used in the From field. Fixed.
+  - Happy new Year 2004!
+
 Version 0.21 (eighth beta) - released on 2003/12/24
   - Can import mbox files
   - Fixed memory leaks (bgol)

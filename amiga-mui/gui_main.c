@@ -264,7 +264,7 @@ int app_init(void)
 	App = ApplicationObject,
 		MUIA_Application_Title,			"SimpleMail",
 		MUIA_Application_Version,		VERSTAG,
-		MUIA_Application_Copyright,		"Copyright (c) 2000-2003 by Sebastian Bauer & Hynek Schlawack",
+		MUIA_Application_Copyright,		"Copyright (c) 2000-2004 by Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Author,		"Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Description,	"A mailer.",
 		MUIA_Application_Base,			"SIMPLEMAIL",

@@ -1,6 +1,36 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2004/01/01">
+   <text lang="en">
+
+	  Version 0.22 of SimpleMail released!
+
+	  The changes are:
+
+    <list>
+ 		<item>Signatures can now be chooses on a per folder base (bgol)</item>
+      <item>No longer needs to load the indexfile if you move mails to a folder</item>
+      <item>From field always missed the Realname. Fixed.</item>
+      <item>Happy new Year 2004!</item>
+    </list>
+
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.22 veröffentlicht!
+
+	  Die Änderungen sind:
+    <list>
+ 	 <item>Signaturen können nun für jeden Ordner separat eingestellt werden (bgol)</item>
+     <item>Indexdateien des Zielordner werden bei der Verschiebeoperation nicht länger geladen.</item>
+     <item>From Feld hatte keinen Realnamen mehr. Behoben.</item>
+     <item>Ein gesundes neues Jahr 2004!</item>
+    </list>
+
+   </text>
+  </entry>
+
+
   <entry date="2003/12/24">
    <text lang="en">
 

@@ -24,7 +24,7 @@
 	  Die Änderungen sind:
 	  <list>
     <item>SimpleMail wurde intern auf Unicode umgestellt</item>
-		<item>Man kann bzw. sollte nun die Zeichentabelle wählen, die auf dem System benutzt wird/item>
+		<item>Man kann bzw. sollte nun die Zeichentabelle wählen, die auf dem System benutzt wird</item>
 		<item>Neue Übersetzungen hinzugefügt</item>
 		<item>Zwei neue Spalten in der Nachrichtenliste: "POP3 Server" und "Emfangen"</item>
 		<item>Kleine Layoutänderungen im Nachrrichtenschreibfenster</item>

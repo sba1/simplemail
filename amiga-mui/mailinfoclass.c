@@ -39,6 +39,7 @@
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
+#include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
@@ -48,28 +49,48 @@
 #include "mailinfoclass.h"
 #include "muistuff.h"
 
+/**************************************************************************/
+
+#define BORDER						2		/* border */
+#define CONTENTS_OFFSET 	10	/* offset from field column to text column */
+
+/**************************************************************************/
+
 struct text_node
 {
 	struct node node;
 
 	char *text;
+	char *link;
+
+	int x_start;
+	int x_end;
 };
 
 struct field
 {
 	struct node node;
 	int clickable;
+
 	char *name;
 
 	struct list text_list;
 };
 
+/**************************************************************************/
+
 struct MailInfoArea_Data
 {
 	int setup;
+	struct MUI_EventHandlerNode mb_handler;
+	struct MUI_EventHandlerNode mv_handler;
 
 	struct mail_info *mail;
 	struct list field_list;
+
+	struct field *selected_field;
+	struct text_node *selected_text;
+	int selected_mouse_over;
 
 	int background_pen;
 	int text_pen;
@@ -79,6 +100,25 @@ struct MailInfoArea_Data
 	int entries;
 };
 
+/********************************************************************
+ Free a complete field and its memory
+*********************************************************************/
+static void field_free(struct field *f)
+{
+	struct text_node *t;
+
+	while ((t = (struct text_node*)list_remove_tail(&f->text_list)))
+	{
+		free(t->text);
+		free(t->link);
+		free(t);
+	}
+	free(f);
+}
+
+/********************************************************************
+ Add a new text field into the given field list
+*********************************************************************/
 static struct field *field_add_text(struct list *list, char *name, char *text)
 {
 	struct field *f;
@@ -105,6 +145,9 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 	return f;
 }
 
+/********************************************************************
+ Add a new address field into the given field list
+*********************************************************************/
 static struct field *field_add_addresses(struct list *list, char *name, struct list *addr_list)
 {
 	struct field *f;
@@ -136,6 +179,9 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 		if (!(t->text = mystrdup(buf)))
 			goto out;
 
+		if (!(t->link = mystrdup(addr->email)))
+			goto out;
+
 		list_insert_tail(&f->text_list,&t->node);
 
 		addr = (struct address*)node_next(&addr->node);
@@ -145,15 +191,54 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 
 	return f;
 out:
-	free(f);
+	field_free(f);
 	return 0;
 }
 
+/********************************************************************
+ Finds the text node on the given position
+*********************************************************************/
+static void field_find(struct list *field_list, int x, int y, int fonty, struct field **field_ptr, struct text_node **text_ptr)
+{
+	struct text_node *text;
+	struct field *f;
+	
+	*field_ptr = NULL;
+	*text_ptr = NULL;
+
+	/* "find" correct line */
+	f = (struct field *)list_first(field_list);
+	while (f && y >= fonty)
+	{
+		y -= fonty;
+		f = (struct field*)node_next(&f->node);
+	}
+
+	if (!f) return;
+
+	text = (struct text_node*)list_first(&f->text_list);
+	while (text)
+	{
+		if (x >= text->x_start && x <= text->x_end)
+		{
+			*field_ptr = f;
+			*text_ptr = text;
+			return;
+		}
+		text = (struct text_node*)node_next(&text->node);
+	}
+}
+
+/********************************************************************
+ Determine the space requirements of the current field list (if
+ possible)
+*********************************************************************/
 STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *data)
 {
 	struct field *f;
 	struct RastPort rp;
 
+	int x,comma_width;
 	int field_width = 0;
 	int entries = 0;
 
@@ -166,6 +251,9 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	InitRastPort(&rp);
 	SetFont(&rp,_font(obj));
 
+	comma_width = TextLength(&rp,",",1);
+
+	/* 1st pass, determine sizes of the field name column */
 	f = (struct field *)list_first(&data->field_list);
 	while (f)
 	{
@@ -175,8 +263,31 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 		entries++;
 	}
 
-	data->fieldname_width = field_width + 10;
+	data->fieldname_width = field_width + CONTENTS_OFFSET;
 
+	/* 2nd pass, determine the link positions */
+	f = (struct field *)list_first(&data->field_list);
+	while (f)
+	{
+		struct text_node *text;
+
+		x = BORDER + data->fieldname_width;
+		text = (struct text_node*)list_first(&f->text_list);
+		while (text)
+		{
+			if (text->text)
+			{
+				text->x_start = x;
+				x += TextLength(_rp(obj),text->text,strlen(text->text));
+				text->x_end = x - 1;
+				x += comma_width;
+			}
+			text = (struct text_node*)node_next(&text->node);
+		}
+		f = (struct field*)node_next(&f->node);
+	}
+
+	/* "Resize" the object if required */
 	if (data->entries != entries)
 	{
 		Object *group;
@@ -191,8 +302,14 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	}
 }
 
+/********************************************************************
+ Sets a new mail info
+*********************************************************************/
 VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struct mail_info *mi)
 {
+	data->selected_field = NULL;
+	data->selected_text = NULL;
+
 	if (data->mail) mail_dereference(data->mail);
 	if ((data->mail = mi))
 	{
@@ -201,7 +318,8 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 
 		mail_reference(data->mail);
 
-		list_init(&data->field_list);
+		while ((f = (struct field*)list_remove_tail(&data->field_list)))
+			field_free(f);
 
 		if (user.config.header_flags & (SHOW_HEADER_FROM))
 		{
@@ -214,33 +332,35 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 			}
 
 			if ((f = field_add_text(&data->field_list,_("From"),buf)))
+			{
+				struct text_node *t;
+
 				f->clickable = 1;
+
+				if ((t = (struct text_node*)list_first(&f->text_list)))
+					t->link = mystrdup(mi->from_addr);
+			}
 		}
 
 		if (user.config.header_flags & (SHOW_HEADER_TO))
-		{
 			field_add_addresses(&data->field_list, _("To"), mi->to_list);
-		}
 
 		if ((user.config.header_flags & (SHOW_HEADER_CC)) && mi->cc_list)
-		{
 			field_add_addresses(&data->field_list, _("Copies to"), mi->cc_list);
-		}
 
 		if (user.config.header_flags & (SHOW_HEADER_SUBJECT))
-		{
 			field_add_text(&data->field_list,_("Subject"),mi->subject);
-		}
 
 		if (user.config.header_flags & (SHOW_HEADER_DATE))
-		{
 			field_add_text(&data->field_list,_("Date"),sm_get_date_long_str(mi->seconds));
-		}
 	}
 
 	MailInfoArea_DetermineSizes(obj, data);
 }
 
+/********************************************************************
+ Draw a given field at the given y position (relativ to the object)
+*********************************************************************/
 STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, struct field *f, int y)
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
@@ -262,7 +382,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 	if (!cnt) return;
 	Text(_rp(obj),f->name,cnt);
 
-	space_left = _mwidth(obj) - data->fieldname_width - 4;
+	space_left = _mwidth(obj) - data->fieldname_width - 2 * BORDER;
 	if (space_left <= 0) return;
 
 	Move(_rp(obj),_mleft(obj) + data->fieldname_width, ytext);
@@ -279,7 +399,12 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 			cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 			if (!cnt) break;
 
-			if (f->clickable) SetAPen(_rp(obj),data->link_pen);
+			if (f->clickable)
+			{
+				if (f == data->selected_field && data->selected_mouse_over)
+					SetAPen(_rp(obj),_dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN]);
+				else SetAPen(_rp(obj),data->link_pen);
+			}
 			Text(_rp(obj),text->text,cnt);
 			space_left -= te.te_Width;
 			if (next_text)
@@ -299,9 +424,9 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 
 /*************************************************************************/
 
-/*************************************************************************
+/********************************************************************
  OM_NEW
-**************************************************************************/
+*********************************************************************/
 STATIC ULONG MailInfoArea_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MailInfoArea_Data *data;
@@ -314,24 +439,43 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	list_init(&data->field_list);
 
+	data->mb_handler.ehn_Priority = 1;
+	data->mb_handler.ehn_Flags    = 0;
+	data->mb_handler.ehn_Object   = obj;
+	data->mb_handler.ehn_Class    = cl;
+	data->mb_handler.ehn_Events   = IDCMP_MOUSEBUTTONS;
+
+	data->mv_handler.ehn_Priority = 1;
+	data->mv_handler.ehn_Flags    = 0;
+	data->mv_handler.ehn_Object   = obj;
+	data->mv_handler.ehn_Class    = cl;
+	data->mv_handler.ehn_Events   = IDCMP_MOUSEMOVE;
+
 	set(obj, MUIA_FillArea, FALSE);
 
 	return (ULONG)obj;
 }
 
-/*************************************************************************
+/********************************************************************
  OM_DISPOSE
-**************************************************************************/
+*********************************************************************/
 STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+	struct MailInfoArea_Data *data;
+	struct field *f;
+
+	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	if (data->mail) mail_dereference(data->mail);
+
+	while ((f = (struct field*)list_remove_tail(&data->field_list)))
+		field_free(f);
+
 	return DoSuperMethodA(cl,obj,msg);
 }
 
-/*************************************************************************
+/********************************************************************
  OM_SET
-**************************************************************************/
+*********************************************************************/
 STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -354,9 +498,9 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-/*************************************************************************
+/********************************************************************
  MUIM_Setup
-**************************************************************************/
+*********************************************************************/
 STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -381,15 +525,18 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 				MAKECOLOR32((user.config.read_text & 0xff00) >> 8),
 				MAKECOLOR32((user.config.read_text & 0xff)), NULL);
 
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mb_handler);
+
 	return rc;
 }
 
-/*************************************************************************
+/********************************************************************
  MUIM_Cleanup
-**************************************************************************/
+*********************************************************************/
 STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mb_handler);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->text_pen);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->link_pen);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->background_pen);
@@ -397,9 +544,9 @@ STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
 }
 
-/*************************************************************************
+/********************************************************************
  MUIM_AskMinMax
-**************************************************************************/
+*********************************************************************/
 STATIC LONG MailInfoArea_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
@@ -410,19 +557,19 @@ STATIC LONG MailInfoArea_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_A
 	entries = data->entries;
 
   msg->MinMaxInfo->MinWidth += 10;
-  msg->MinMaxInfo->DefWidth += 20;
+  msg->MinMaxInfo->DefWidth += 200;
   msg->MinMaxInfo->MaxWidth = MUI_MAXMAX;
 
-  msg->MinMaxInfo->MinHeight += entries * _font(obj)->tf_YSize + 4;
-  msg->MinMaxInfo->DefWidth  += entries * _font(obj)->tf_YSize + 4;
-  msg->MinMaxInfo->MaxHeight += entries * _font(obj)->tf_YSize + 4;
+  msg->MinMaxInfo->MinHeight += entries * _font(obj)->tf_YSize + 2*BORDER;
+  msg->MinMaxInfo->DefWidth  += entries * _font(obj)->tf_YSize + 2*BORDER;
+  msg->MinMaxInfo->MaxHeight += entries * _font(obj)->tf_YSize + 2*BORDER;
 
   return 0;
 }
 
-/*************************************************************************
+/********************************************************************
  MUIM_Draw
-**************************************************************************/
+*********************************************************************/
 STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {	
 	struct field *f;
@@ -448,6 +595,106 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 	return 0;
 }
 
+/********************************************************************
+ MUIM_HandleEvent
+*********************************************************************/
+STATIC LONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
+{	
+	struct IntuiMessage *imsg;
+	struct MailInfoArea_Data *data;
+
+	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+
+	if ((imsg = msg->imsg))
+	{
+		int x = imsg->MouseX;
+		int y = imsg->MouseY;
+
+		struct field *f;
+		struct text_node *t;
+
+		if (imsg->Class == IDCMP_MOUSEBUTTONS)
+		{
+			if (x < _mleft(obj) || x > _mright(obj) || y < _mtop(obj) || y > _mbottom(obj))
+				return 0;
+
+			/* normalize positions */
+			x -= _mleft(obj);
+			y -= _mtop(obj);
+
+			if (imsg->Code == SELECTDOWN)
+			{
+				field_find(&data->field_list, x, y, _font(obj)->tf_YSize, &f, &t);
+
+				if (f && t)
+				{
+					DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mv_handler);
+
+					data->selected_field = f;
+					data->selected_text = t;
+					data->selected_mouse_over = 1;
+					MUI_Redraw(obj, MADF_DRAWOBJECT);
+					return MUI_EventHandlerRC_Eat;
+				}
+				return 0;
+			}
+			if (imsg->Code == SELECTUP)
+			{
+				if (data->selected_text)
+				{
+					field_find(&data->field_list, x, y, _font(obj)->tf_YSize, &f, &t);
+
+					/* TODO: Instead calling this directly, this should issue a notify */
+					if (t && t==data->selected_text) callback_write_mail_to_str(t->link,NULL);
+
+					DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mv_handler);
+
+					data->selected_field = NULL;
+					data->selected_text = NULL;
+					data->selected_mouse_over = 0;
+					MUI_Redraw(obj, MADF_DRAWOBJECT);
+					return MUI_EventHandlerRC_Eat;
+				}
+			}
+		} else if (imsg->Class == IDCMP_MOUSEMOVE)
+		{
+			if (x < _mleft(obj) || x > _mright(obj) || y < _mtop(obj) || y > _mbottom(obj))
+			{
+				if (data->selected_mouse_over)
+				{
+					data->selected_mouse_over = 0;
+					MUI_Redraw(obj, MADF_DRAWOBJECT);
+				}
+				return MUI_EventHandlerRC_Eat;
+			}
+
+			/* normalize positions */
+			x -= _mleft(obj);
+			y -= _mtop(obj);
+
+			field_find(&data->field_list, x, y, _font(obj)->tf_YSize, &f, &t);
+
+			if (t && t == data->selected_text)
+			{
+				if (!data->selected_mouse_over)
+				{
+					data->selected_mouse_over = 1;
+					MUI_Redraw(obj, MADF_DRAWOBJECT);
+				}
+			} else
+			{
+				if (data->selected_mouse_over)
+				{
+					data->selected_mouse_over = 0;
+					MUI_Redraw(obj, MADF_DRAWOBJECT);				
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 STATIC BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -459,6 +706,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
 		case	MUIM_Cleanup: return MailInfoArea_Cleanup(cl,obj,msg);
 		case	MUIM_AskMinMax: return MailInfoArea_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
 		case	MUIM_Draw: return MailInfoArea_Draw(cl,obj,(struct MUIP_Draw*)msg);
+		case	MUIM_HandleEvent: return MailInfoArea_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** addressstringclass.h
 */
 
 #ifndef SM__ADDRESSSTRING_HPP
@@ -25,6 +25,9 @@
 
 IMPORT struct MUI_CustomClass *CL_AddressString;
 #define AddressStringObject (Object*)NewObject(CL_AddressString->mcc_Class, NULL
+
+#define MUIM_AddressString_Complete 0x676767
+struct MUIP_AddressString_Complete {ULONG MethodID; char *text;};
 
 int create_addressstring_class(void);
 void delete_addressstring_class(void);

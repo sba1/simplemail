@@ -26,13 +26,16 @@
 
 #include <gtk/gtk.h>
 
+#include "account.h"
 #include "addressbook.h"
 #include "codecs.h"
+#include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
 #include "support.h"
+#include "support_indep.h"
 
 #include "gtksupport.h"
 
@@ -43,12 +46,17 @@ static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
 
 struct Compose_Data
 {
+	int num;
+	
 	GtkWidget *wnd;
 	GtkWidget *toolbar;
 	GtkWidget *text_view;
 	GtkWidget *text_scrolled_window;
 
-	int num;
+	GtkWidget *from_combo;
+	GtkWidget *to_entry;
+	GtkWidget *cc_entry;
+	GtkWidget *subject_entry;
 };
 
 
@@ -556,6 +564,42 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 #endif
 
 /******************************************************************
+ Cancel button
+*******************************************************************/
+static void compose_cancel(GtkButton *button, gpointer user_data)
+{
+	struct Compose_Data *data = (struct Compose_Data*)user_data;
+	gtk_widget_destroy(data->wnd);
+}
+
+/******************************************************************
+ Send now
+*******************************************************************/
+static void compose_send_now(GtkButton *button, gpointer user_data)
+{
+	struct Compose_Data *data = (struct Compose_Data*)user_data;
+	compose_cancel(button,user_data);
+}
+
+/******************************************************************
+ Send later
+*******************************************************************/
+static void compose_send_later(GtkButton *button, gpointer user_data)
+{
+	struct Compose_Data *data = (struct Compose_Data*)user_data;
+	compose_cancel(button,user_data);
+}
+
+/******************************************************************
+ Hold
+*******************************************************************/
+static void compose_hold(GtkButton *button, gpointer user_data)
+{
+	struct Compose_Data *data = (struct Compose_Data*)user_data;
+	compose_cancel(button,user_data);
+}
+
+/******************************************************************
  Compose window dispose
 *******************************************************************/
 static void compose_window_dispose(GtkObject *object, gpointer user_data)
@@ -575,6 +619,7 @@ int compose_window_open(struct compose_args *args)
 	int num;
 	struct Compose_Data *data;
 	GtkWidget *vbox, *but_box, *send_now_button, *send_later_button, *hold_button, *cancel_button;
+	GtkWidget *fields_table, *t;
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
@@ -595,6 +640,49 @@ int compose_window_open(struct compose_args *args)
 
 		vbox = gtk_vbox_new(0,4);
 		gtk_container_add(GTK_CONTAINER(data->wnd), vbox);
+
+		fields_table = gtk_table_new(4,2,FALSE);
+		gtk_table_set_col_spacings(GTK_TABLE(fields_table),4);
+		gtk_table_attach(GTK_TABLE(fields_table),gtk_label_new("From"),0,1,0,1,0,0,0,0);
+		t = data->from_combo = gtk_combo_new();
+		gtk_combo_set_value_in_list(GTK_COMBO(data->from_combo),TRUE,FALSE);
+
+		{
+			struct account *account = (struct account*)list_first(&user.config.account_list);
+			char buf[512];
+
+			GList *accounts = NULL;
+
+			while ((account))
+			{
+				if (account->smtp->name && *account->smtp->name && account->email)
+				{
+					if (account->name)
+					{
+						if (needs_quotation(account->name))
+							sprintf(buf, "\"%s\"",account->name);
+						else strcpy(buf,account->name);
+					}
+
+					sprintf(buf+strlen(buf)," <%s> (%s)",account->email, account->smtp->name);
+					accounts = g_list_append(accounts,mystrdup(buf));
+				}
+				account = (struct account*)node_next(&account->node);
+			}
+			gtk_combo_set_popdown_strings(GTK_COMBO(data->from_combo), accounts);
+		}
+
+		gtk_table_attach(GTK_TABLE(fields_table),t,1,2,0,1,GTK_FILL|GTK_EXPAND,0,0,0);
+		gtk_table_attach(GTK_TABLE(fields_table),gtk_label_new("To"),0,1,1,2,0,0,0,0);
+		t = data->to_entry = gtk_entry_new();
+		gtk_table_attach(GTK_TABLE(fields_table),t,1,2,1,2,GTK_FILL|GTK_EXPAND,0,0,0);
+		gtk_table_attach(GTK_TABLE(fields_table),gtk_label_new("CC"),0,1,2,3,0,0,0,0);
+		t = data->cc_entry = gtk_entry_new();
+		gtk_table_attach(GTK_TABLE(fields_table),t,1,2,2,3,GTK_FILL|GTK_EXPAND,0,0,0);
+		gtk_table_attach(GTK_TABLE(fields_table),gtk_label_new("Subject"),0,1,3,4,0,0,0,0);
+		t = data->subject_entry = gtk_entry_new();
+		gtk_table_attach(GTK_TABLE(fields_table),t,1,2,3,4,GTK_FILL|GTK_EXPAND,0,0,0);
+		gtk_box_pack_start(GTK_BOX(vbox), fields_table, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
 		data->toolbar = gtk_toolbar_new();
 		gtk_box_pack_start(GTK_BOX(vbox), data->toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
@@ -622,15 +710,19 @@ int compose_window_open(struct compose_args *args)
 		gtk_box_pack_start(GTK_BOX(vbox), but_box, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
 		send_now_button =  gtk_button_new_with_label("Send Now");
+		gtk_signal_connect_after(GTK_OBJECT(send_now_button),"clicked",GTK_SIGNAL_FUNC(compose_send_now),data);
 		gtk_box_pack_start(GTK_BOX(but_box), send_now_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
 		send_later_button =  gtk_button_new_with_label("Send later");
+		gtk_signal_connect_after(GTK_OBJECT(send_later_button),"clicked",GTK_SIGNAL_FUNC(compose_send_later),data);
 		gtk_box_pack_start(GTK_BOX(but_box), send_later_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
 		hold_button =  gtk_button_new_with_label("Hold");
+		gtk_signal_connect_after(GTK_OBJECT(hold_button),"clicked",GTK_SIGNAL_FUNC(compose_hold),data);
 		gtk_box_pack_start(GTK_BOX(but_box), hold_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
 		cancel_button = gtk_button_new_with_label("Cancel");
+		gtk_signal_connect_after(GTK_OBJECT(cancel_button),"clicked",GTK_SIGNAL_FUNC (compose_cancel),data);
 		gtk_box_pack_start(GTK_BOX(but_box), cancel_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
 		gtk_widget_show_all(data->wnd);

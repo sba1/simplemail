@@ -63,12 +63,15 @@ static Object *user_group;
 static Object *tcpip_send_group;
 static Object *tcpip_receive_group;
 
+static Object *config_last_visisble_group;
+
 static void close_config(void)
 {
 	set(config_wnd, MUIA_Window_Open, FALSE);
 	DoMethod(App, OM_REMMEMBER, config_wnd);
 	MUI_DisposeObject(config_wnd);
 	config_wnd = NULL;
+	config_last_visisble_group = NULL;
 }
 
 static void config_use(void)
@@ -113,10 +116,9 @@ static void config_tree_active(void)
 		Object *group = (Object*)treenode->tn_User;
 		if (group)
 		{
-			static Object *last_group;
 			DoMethod(config_group,MUIM_Group_InitChange);
-			if (last_group) set(last_group,MUIA_ShowMe,FALSE);
-			last_group = group;
+			if (config_last_visisble_group) set(config_last_visisble_group,MUIA_ShowMe,FALSE);
+			config_last_visisble_group = group;
 			set(group,MUIA_ShowMe,TRUE);
 			DoMethod(config_group,MUIM_Group_ExitChange);
 		}

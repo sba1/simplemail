@@ -249,6 +249,7 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 									break;
 					}
 					*msg->opg_Storage = (ULONG)&data->get_rule;
+					return TRUE;
 					break;
 
 		default:

@@ -1920,7 +1920,7 @@ msgstr "SimpleMail - Nachricht lesen"
 
 #: amiga-mui/readwnd.c:1069
 msgid "_Prev"
-msgstr "_Vorher"
+msgstr "V_orher"
 
 #: amiga-mui/readwnd.c:1070
 msgid "_Next"

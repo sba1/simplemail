@@ -26,6 +26,7 @@
 GSTFILE = all.gst
 OBJSDIR1 = sas_objects
 DESTDIR = sm
+LOCALEDIR = ${DESTDIR}/locale/
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
 CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck
 LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib amiga-mui/binaries/expat.lib amiga-mui/binaries/simplehtml_mcc.lib
@@ -44,6 +45,9 @@ start: date.h $(GSTFILE) smakefile.compile
     endif
     if not exists $(DESTDIR)
       makedir $(DESTDIR)
+    endif
+    if not exists $(DESTDIR)/locale
+      makedir $(DESTDIR)/locale
     endif
     if not exists $(DESTDIR)/Images
       makedir $(DESTDIR)/Images
@@ -87,6 +91,16 @@ $(MAKEGENERATOR): $(MAKEGENERATOR).c
 $(GSTFILE): amiga-mui/headers.c
   sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
+#locale
+LOCALEOBJS = ${LOCALEDIR}de.mo
+locale: ${LOCALEOBJS}
+
+.po.mo:
+  msgfmt ./$? -o ./$@ # this is the unix style variant of msgfmt (GeekGadgets)
+# msgfmt $? -o $@     # this is the Amiga style variant of msgfmt
+
+${LOCALEDIR}de.mo: ${FREECIV_DIR}po/de.po
+
 # some fake targets
 generate:
   -delete smakefile.compile
@@ -129,6 +143,7 @@ prepare-release:
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
   copy sm/images TO ram:SimpleMail/Images
+  copy sm/locale/\#?.mo To ram:SimpleMail/Locale
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha
   lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info

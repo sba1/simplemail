@@ -563,7 +563,6 @@ void compose_window_open(char *to_str, struct mail *tochange)
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_ControlChar, 's',
-					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 				End,
 			Child, contents_page = PageGroup,
@@ -697,6 +696,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			DoMethod(paste_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Paste");
 			DoMethod(undo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Undo");
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
+			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			if (!tochange)

@@ -18,11 +18,16 @@
    </text>
 
    <text lang="de">
+    SimpleMail Version 0.26 veröffentlicht!
+
+	  Die Änderungen sind:
+   	<list>
      <item>Optionale TheBar.mcc wird nun für alle Toolbars verwendet (bgol)</item>
      <item>Kompakte Form der Nachrichtenkenndaten zeigt nun zusätzlich das Absenderfeld</item>
      <item>simplehtml.library nach OS4 portiert</item>
      <item>Probleme mit SMTP STARTTLS behoben</item>
      <item>Minor other improvements and fixes</item>
+    </list>
    </text>
   </entry>
 

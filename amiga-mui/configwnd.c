@@ -579,8 +579,16 @@ static int init_user_group(void)
 static int init_tcpip_receive_group(void)
 {
 	Object *add;
-	static const char *preselection[] = {
-		"Disabled","Only Sizes", "Enabled", NULL
+
+	static char *preselection[4];
+	static int preselection_translated;
+
+	if (!preselection_translated)
+	{
+		preselection[0] = _("Disabled");
+		preselection[1] = _("Only Sizes");
+		preselection[2] = _("Enabled");
+		preselection_translated = 1;
 	};
 
 	tcpip_receive_group = VGroup,
@@ -901,8 +909,16 @@ static int init_account_group(void)
 *******************************************************************/
 static int init_write_group(void)
 {
-	static char *wordwrap_entries[] =
-		{"off","as you type", "before storing"/*,"before sending"*/,NULL};
+	static char *wordwrap_entries[4];
+	static int wordwrap_entries_translated;
+
+	if (!wordwrap_entries_translated)
+	{
+		wordwrap_entries[0] = _("off");
+		wordwrap_entries[1] = _("as you type");
+		wordwrap_entries[2] = _("before storing");
+		wordwrap_entries_translated = 1;
+	}
 
 	write_group = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1009,14 +1025,16 @@ static int init_mails_readmisc_group(void)
 *******************************************************************/
 static int init_mails_read_group(void)
 {
-	static const char *read_palette_names[] =
+	static char *read_palette_names[6];
+	static int read_palette_names_translated;
+
+	if (!read_palette_names_translated)
 	{
-		"Background",
-		"Text",
-		"Quoted Text",
-		"Old Quoted Text",
-		"Link Text",
-		NULL,
+		read_palette_names[0] = _("Background");
+		read_palette_names[1] = _("Text");
+		read_palette_names[2] = _("Quoted Text");
+		read_palette_names[3] = _("Old Quoted Text");
+		read_palette_names[4] = _("Link Text");
 	};
 
 	read_palette_entries[0].mpe_ID = 0;
@@ -1494,7 +1512,7 @@ static void init_config(void)
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, _("User"), user_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 
-		if ((treenode = accounts_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Accounts", accounts_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		if ((treenode = accounts_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Accounts"), accounts_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct account *account;
 			account = (struct account*)list_first(&user.config.account_list);
@@ -1534,7 +1552,7 @@ static void init_config(void)
 			}
 		}
 
-		if ((treenode = signatures_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Signatures", signatures_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		if ((treenode = signatures_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Signatures"), signatures_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct signature *signature;
 			signature = (struct signature*)list_first(&user.config.signature_list);

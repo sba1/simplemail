@@ -376,13 +376,22 @@ void person_window_open(struct addressbook_entry *entry)
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
 	Object *pgp_popobject, *pgp_list;
 	struct Snail_Data priv, work;
-	static const char *register_titles[] = {
-		"Personal","Private","Work","Notes",NULL
-	};
 	int num;
 
 	static struct Hook pgp_strobj_hook;
 	static struct Hook pgp_objstr_hook;
+
+	static char *register_titles[5];
+	static int register_titles_are_translated;
+
+	if (!register_titles_are_translated)
+	{
+		register_titles[0] = _("Personal");
+		register_titles[1] = _("Private");
+		register_titles[1] = _("Work");
+		register_titles[1] = _("Notes");
+		register_titles_are_translated = 1;
+	};
 
 	init_hook(&pgp_strobj_hook, (HOOKFUNC)person_pgp_strobj);
 	init_hook(&pgp_objstr_hook, (HOOKFUNC)person_pgp_objstr);
@@ -421,7 +430,7 @@ void person_window_open(struct addressbook_entry *entry)
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
-							Child, MakeLabel("PGP Key-ID"),
+							Child, MakeLabel(_("PGP Key-ID")),
 							Child, pgp_popobject = PopobjectObject,
 								MUIA_Popstring_Button, PopButton(MUII_PopUp),
 								MUIA_Popstring_String, pgp_string = BetterStringObject,

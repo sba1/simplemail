@@ -32,6 +32,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 #include "trans.h"
 
@@ -100,9 +101,9 @@ void callback_delete_mails(void)
 		if (from_folder == folder_deleted())
 		{
 			char buf[256];
-			if (num == 1) strcpy(buf,"Do you really want to delete the selected mail permanently?");
-			else sprintf(buf,"Do you really want to delete %d mails permanently?",num);
-			if (!sm_request(NULL,buf,"_Yes|_No")) return;
+			if (num == 1) strcpy(buf,_("Do you really want to delete the selected mail permanently?"));
+			else sprintf(buf,_("Do you really want to delete %d mails permanently?"),num);
+			if (!sm_request(NULL,buf,_("_Yes|_No"))) return;
 			permanent = 1;
 		} else permanent = 0;
 

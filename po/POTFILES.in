@@ -19,4 +19,5 @@ amiga-mui/upwnd.c
 mail.c
 pop3.c
 print.c
+simplemail.c
 smtp.c

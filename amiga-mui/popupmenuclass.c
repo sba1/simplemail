@@ -21,7 +21,6 @@
 */
 
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -220,14 +219,12 @@ STATIC ULONG Popupmenu_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 
 STATIC ULONG Popupmenu_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
-	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
 	ULONG retval = DoSuperMethodA(cl,obj,(Msg)msg);
 	return retval;
 }
 
 STATIC ULONG Popupmenu_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -361,9 +358,8 @@ STATIC ULONG Popupmenu_AddEntry(struct IClass *cl, Object *obj,struct MUIP_Popup
 	return 0;
 }
 
-STATIC ASM ULONG Popupmenu_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, Popupmenu_Dispatcher,cl,obj,msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return Popupmenu_New(cl,obj,(struct opSet*)msg);
@@ -385,10 +381,7 @@ struct MUI_CustomClass *CL_Popupmenu;
 int create_popupmenu_class(void)
 {
 	if ((CL_Popupmenu = MUI_CreateCustomClass(NULL,MUIC_Image,NULL,sizeof(struct Popupmenu_Data),Popupmenu_Dispatcher)))
-	{
-		CL_Popupmenu->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

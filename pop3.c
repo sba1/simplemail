@@ -239,10 +239,13 @@ void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
 			char *uidl_entry = uidl->entries[i].uidl;
 			for (j=1;j<=amm;j++)
 			{
-				if (!strcmp(uidl_entry,mail_array[j].uidl))
+				if (mail_array[j].uidl)
 				{
-					found = 1;
-					break;
+					if (!strcmp(uidl_entry,mail_array[j].uidl))
+					{
+						found = 1;
+						break;
+					}
 				}
 			}
 
@@ -432,10 +435,18 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		uidl_open(uidl,server);
 
 		/* call the POP3 UIDL command */
-		pop3_uidl(conn,server,mail_array,uidl);
-
-		/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
-    uidl_remove_unused(uidl,mail_array);
+		if (pop3_uidl(conn,server,mail_array,uidl))
+		{
+			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
+  	  uidl_remove_unused(uidl,mail_array);
+		} else
+		{
+			if (tcp_error_code() == TCP_INTERRUPTED)
+			{
+				free(mail_array);
+				return mail_array;
+			}
+		}
   }
 
 	thread_call_parent_function_async(status_set_status,1,N_("Getting mail sizes..."));
@@ -729,6 +740,8 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 			struct connection *conn;
 			char head_buf[100];
 
+			rc = 0;
+
 			sprintf(head_buf,_("Fetching mails from %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 			thread_call_parent_function_async_string(status_set_title, 1, server->name);
@@ -854,7 +867,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 									}
 								}
 
-								rc = success;
+																	rc = success;
 								chdir(path);
 							}
 						}
@@ -883,7 +896,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 	{
 		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
 	}
-	
+
 	return rc;
 }
 

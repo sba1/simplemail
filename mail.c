@@ -2152,41 +2152,64 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 						addr = (struct address*)list_first(tolist);
 						while (addr)
 						{
-							fprintf(id_fh,"%s\n",addr->email);
+							struct addressbook_entry *entry = addressbook_find_entry_by_address(addr->email);
+							if (!entry || !entry->u.person.pgpid || !*entry->u.person.pgpid)
+							{
+								char *pgpid;
+								char *text = malloc(512);
+								if (text)
+								{
+									sprintf(text,_("Please select a key for %s <%s>"),addr->realname,addr->email);
+								}
+								pgpid = sm_request_pgp_id(text);
+								free(text);
+								if (pgpid)
+								{
+									fprintf(id_fh,"%s\n",pgpid);
+									free(pgpid);
+								} else
+								{
+									rc = 0;
+									break;
+								}
+							}  else fprintf(id_fh,"%s\n",entry->u.person.pgpid);
 							addr = (struct address*)node_next(&addr->node);
 						}
 						fclose(id_fh);
 					}
 
-					fprintf(fp,"MIME-Version: 1.0\n");
-					fprintf(fp,"Content-Type: multipart/encrypted; boundary=\"%s\";\n protocol=\"application/pgp-encrypted\"\n", boundary);
-					fprintf(fp,"\n");
-					fprintf(fp, "--%s\n",boundary);
-					fputs(pgp_text,fp);
-					fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
-					sprintf(cmd, "pgp -ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
-
-					sys_rc = sm_system(cmd,NULL);
-
-					if (!sys_rc)
+					if (rc)
 					{
-						char *buf = malloc(512);
-						if (buf)
+						fprintf(fp,"MIME-Version: 1.0\n");
+						fprintf(fp,"Content-Type: multipart/encrypted; boundary=\"%s\";\n protocol=\"application/pgp-encrypted\"\n", boundary);
+						fprintf(fp,"\n");
+						fprintf(fp, "--%s\n",boundary);
+						fputs(pgp_text,fp);
+						fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
+						sprintf(cmd, "pgp -ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
+
+						sys_rc = sm_system(cmd,NULL);
+
+						if (!sys_rc)
 						{
-							FILE *encrypted_fh = fopen(encrypted_name,"rb");
-							if (encrypted_fh)
+							char *buf = malloc(512);
+							if (buf)
 							{
-								while (fgets(buf,512,encrypted_fh))
+								FILE *encrypted_fh = fopen(encrypted_name,"rb");
+								if (encrypted_fh)
 								{
-									fputs(buf,fp);
+									while (fgets(buf,512,encrypted_fh))
+									{
+										fputs(buf,fp);
+									}
+									fclose(encrypted_fh);
 								}
-								fclose(encrypted_fh);
+								free(buf);
 							}
-							free(buf);
-						}
-					} else rc = 0;
-					
-					fprintf(fp, "\n--%s--\n",boundary);
+						} else rc = 0;
+						
+						fprintf(fp, "\n--%s--\n",boundary);
+					}
 					remove(encrypted_name);
 					remove(id_name);
 				} else rc = 0;

@@ -38,6 +38,7 @@ struct compose_args
 
 int compose_window_open(struct compose_args *args);
 void compose_window_activate(int num);
+void compose_refresh_signature_cycle(void);
 
 #define COMPOSE_CLOSE_CANCEL 0
 #define COMPOSE_CLOSE_SEND 1

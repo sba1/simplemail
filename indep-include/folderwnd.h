@@ -31,11 +31,12 @@ int folder_get_changed_type(void);
 char *folder_get_changed_defto(void);
 char *folder_get_changed_deffrom(void);
 char *folder_get_changed_defreplyto(void);
-int folder_get_changed_defsignature(void);
+char *folder_get_changed_defsignature(void);
 int folder_get_changed_primary_sort(void);
 int folder_get_changed_secondary_sort(void);
 
 void folder_edit_new_path(char *init_path);
+void folder_refresh_signature_cycle(void);
 
 #endif
 

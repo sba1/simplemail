@@ -28,6 +28,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/filio.h>
 #include <netinet/tcp.h>
 
 #include "support.h"
@@ -63,7 +64,7 @@ long tcp_connect(char *server, unsigned int port)
 			}
 			else
 			{
-				switch(id=Errno())
+				switch(id=tcp_errno())
 				{
 					case EADDRNOTAVAIL:
 						strcpy(err, "The specified address is not avaible on this machine.");
@@ -98,7 +99,7 @@ long tcp_connect(char *server, unsigned int port)
 	}
 	else
 	{
-		switch(id = h_errno)
+		switch(id = tcp_herrno())
 		{
 			case HOST_NOT_FOUND:
 				sprintf(err, "Host \"%s\" not found.", server);
@@ -149,136 +150,25 @@ long tcp_write(long sd, void *buf, long nbytes)
 	return send(sd, buf, nbytes, 0);
 }
 
-/*
- * Returns a string if everything went okay,
- * an empty string if no data is present
- * or 0 on error.
- */
 #define TCP_READLN_BUFSIZE 1500
-/*
+
 char *tcp_readln(long sd)
 {
 	char *rc = NULL;
-	static char readbuf[TCP_READLN_BUFSIZE + 1], *rptr;
-	char *pos;
-	unsigned long len;
-
-	if(rptr != NULL && *rptr != 0)
-	{
-		pos = strstr(rptr, "\r\n");
-		if(pos != NULL)
-		{
-			len = (unsigned long) readbuf - rptr;
-			rc = malloc(len + 1);
-			strncpy(rc, rptr, len);
-			rptr += len;
-			memcpy(readbuf, rptr);
-			rptr = readbuf;
-			rptr += len;
-		}
-	}
-	long stat;
-
-	IoctlSocket(sd, FIONBIO, 1);
-
-	len = 0;
+	static char readbuf[TCP_READLN_BUFSIZE + 1];
+	unsigned long i=0;
 
 	while(1)
 	{
-		stat = tcp_read(sd, rptr, TCP_READLN_BUFSIZE);
-		if(stat == -1 && Errno() == EAGAIN)
-		{
-			break;
-		}
-		else
-		{
+		tcp_read(sd, &readbuf[i++], 1);
+		readbuf[i] = 0;
 
-		}
+		if(strstr(readbuf, "\r\n"))
+			break;
 	}
 
-	IoctlSocket(sd, FIOBBIO, 0);
+	rc = malloc(strlen(readbuf) + 1);
+	strcpy(rc, readbuf);
 
 	return rc;
 }
-*/
-
-/*
-char *tcp_readln(long sd)
-{
-	char *rc = NULL;
-	static char readbuf[TCP_READLN_BUFSIZE + 1], *rptr;
-	char *buf, *b1, b2;
-	int stat;
-	long got = 0;
-
-	IoctlSocket(sd, FIONBIO, 1);
-
-	buf = b1 = b2 = NULL;
-
-	while(1)
-	{
-		stat = tcp_read(sd, readbuf, TCP_READLN_BUFSIZE);
-
-		if(stat == -1 && (Errno() == EWOULDBLOCK || Errno() == EAGAIN))
-		{
-			rc = malloc(got+1);
-			strcpy(rc, buf);
-			break;
-		}
-		else if(stat == -1)
-		{
-			tell_from_subthread("Error while receiving.");
-			break;
-		}
-		else
-		{
-			got += stat;
-			readbuf[stat] = '\0';
-
-			if(b1 == NULL && b2 == NULL && buf == NULL)
-			{
-				buf = b1 = malloc(stat + 1)
-			}
-			else
-			{
-				if(b1 == buf)
-				{
-					if(b2)
-					{
-						free(b2);
-					}
-
-					buf = b2 = malloc(stat + 1);
-
-					free(b1);
-					b1 = NULL;
-				}
-				else
-				{
-					if(b1)
-					{
-						free(b1);
-					}
-
-					buf = b1 = malloc(stat + 1);
-
-					free(b2);
-					b2 = NULL;
-
-				}
-			}
-
-			strcpy(buf, stat);
-			if(pos = strstr(buf, "\r\n"))
-			{
-				rptr = pos;
-			}
-		}
-	}
-
-	free(buf);
-
-	IoctlSocket(sd, FIOBBIO, 0);
-
-	return rc;
-}*/

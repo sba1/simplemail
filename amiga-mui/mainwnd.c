@@ -1160,7 +1160,7 @@ void main_build_accounts(void)
 *******************************************************************/
 void main_build_addressbook(void)
 {
-	DoMethod(address_tree, MUIM_AddressTreelist_Refresh);
+	DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
 }
 
 /******************************************************************

@@ -1065,7 +1065,7 @@ void addressbook_open(void)
 	if (address_wnd)
 	{
 		if (!xget(address_wnd, MUIA_Window_Open))
-			DoMethod(address_tree, MUIM_AddressTreelist_Refresh);
+			DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
 		set(address_wnd, MUIA_Window_Open, TRUE);
 	}
 }

@@ -66,6 +66,17 @@ const static char mime_preample[] =
 	"http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html\n"
 };
 
+const static char pgp_text[] =
+{
+ "Content-Type: application/pgp-encrypted\n"
+ "\n"
+ "Version: 1\n"
+ "The following body part contains a PGP encrypted message. Either your\n"
+ "mail reader doesn't support MIME/PGP as specified in RFC 2015, or\n"
+ "the message was encrypted for someone else. To read the encrypted\n"
+ "message, run the next body part through Pretty Good Privacy.\n"
+};
+
 
 /**************************************************************************
  like strncpy() but for mail headers, returns the length of the string
@@ -1933,6 +1944,19 @@ static int mail_compose_write_reply(FILE *fp, char *reply)
 }
 
 /**************************************************************************
+ Retiurns an unique boundary id string
+**************************************************************************/
+static char *get_boundary_id(FILE *fp)
+{
+	char *boundary = (char*)malloc(128);
+	if (boundary)
+	{
+		sprintf(boundary, "--==bound%x%lx----",(int)boundary,ftell(fp));
+	}
+	return boundary;
+}
+
+/**************************************************************************
  Writes out the attachments into the body (uses recursion)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
@@ -1992,23 +2016,22 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))
 	{
 		/* mail is a multipart message */
-		char *boundary = (char*)malloc(128);
+		char *boundary = get_boundary_id(fp);
 		if (boundary)
 		{
 			fprintf(fp,"MIME-Version: 1.0\n");
-			sprintf(boundary, "--==bound%x%lx----",(int)boundary,ftell(fp));
 			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
 			fprintf(fp, "\n");
-			if (new_mail->to) fprintf(fp, mime_preample);
+			if (new_mail->to) fputs(mime_preample,fp);
 
 			while (cmail)
 			{
-				fprintf(fp, "--%s\n",boundary);
+				fprintf(fp, "\n--%s\n",boundary);
 				mail_compose_write(fp,cmail);
 				cmail = (struct composed_mail*)node_next(&cmail->node);
 			}
 
-			fprintf(fp, "--%s--\n",boundary);
+			fprintf(fp, "\n--%s--\n",boundary);
 
 			free(boundary);
 		}
@@ -2017,6 +2040,13 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		unsigned int body_len;
 		char *body_encoding = NULL;
 		char *body = NULL;
+
+		FILE *ofh;
+
+		if (new_mail->encrypt)
+			ofh = tmpfile();
+		else
+			ofh = fp;
 
 		if (new_mail->text)
 		{
@@ -2036,8 +2066,8 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				body = encode_body(text, strlen(text), new_mail->content_type, &body_len, &body_encoding);
 				if (body_encoding && mystricmp(body_encoding,"7bit"))
 				{
-					if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
-				  fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
+				  fprintf(ofh,"Content-Type: text/plain; charset=ISO-8859-1\n");
 				}
 				if (user.config.write_wrap_type == 2) free(text);
 			}
@@ -2047,9 +2077,9 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			{
 				FILE *fh;
 
-				if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
-				fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
-				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
+				if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
+				fprintf(ofh,"Content-Type: %s\n",new_mail->content_type);
+				fprintf(ofh,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 
 				if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
 				{
@@ -2072,12 +2102,32 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		}
 
 		if (body_encoding && mystricmp(body_encoding,"7bit"))
-			fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+			fprintf(ofh,"Content-transfer-encoding: %s\n",body_encoding);
 
-		fprintf(fp,"\n");
-		fprintf(fp,"%s\n",body?body:"");
+		fprintf(ofh,"\n");
+		if (body)
+		{
+			fputs(body,ofh);
+			free(body);
+		}
 
-		if (body) free(body);
+		if (new_mail->encrypt)
+		{
+			char *boundary = get_boundary_id(fp);
+			if (boundary)
+			{
+				fprintf(fp,"MIME-Version: 1.0\n");
+				fprintf(fp,"Content-Type: multipart/encrypted; boundary=\"%s\";\n protocol=\"pgp-encrypted\"\n", new_mail->content_type,boundary);
+				fprintf(fp,"\n");
+				fprintf(fp, "--%s\n",boundary);
+				fputs(pgp_text,fp);
+				fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
+				
+				fprintf(fp, "\n--%s--\n",boundary);
+				free(boundary);
+			}
+			fclose(ofh);
+		}
 	}
 	return 1;
 }

@@ -1255,11 +1255,13 @@ char *addressbook_completed_by_entry(char *part, struct addressbook_entry *entry
 	pl = mystrlen(part);
 
 	if (entry->type != ADDRESSBOOK_ENTRY_PERSON) return NULL;
-	if (!mystrnicmp(part,entry->u.person.alias,pl))
+
+	if (!mystrnicmp(part,entry->u.person.alias,pl) && entry->u.person.alias)
 	{
 		if (type_ptr) *type_ptr = 0;
 		return entry->u.person.alias + pl;
 	}
+
 	if (!mystrnicmp(part,entry->u.person.realname,pl))
 	{
 		if (type_ptr) *type_ptr = 1;

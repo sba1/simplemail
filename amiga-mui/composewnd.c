@@ -394,7 +394,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 		{
 			if (attach->editable)
 			{
-				set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_MIME);
+				set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_EMail);
 				SetAttrs(data->text_texteditor,
 						MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
 						MUIA_TextEditor_CursorX,attach->lastxcursor,

@@ -38,6 +38,7 @@
 #include "simplemail.h"
 
 /* gui parts */
+#include "addresstreelistclass.h"
 #include "addressstringclass.h"
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
@@ -215,6 +216,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_addresstreelist_class();
 		delete_multistring_class();
 		delete_filterrule_class();
 		delete_configtreelist_class();
@@ -264,7 +266,7 @@ int all_init(void)
 					create_simplehtml_class() && create_picturebutton_class() &&
 					create_popupmenu_class() && create_icon_class() && 
 					create_configtreelist_class() && create_filterrule_class() &&
-					create_multistring_class())
+					create_multistring_class() && create_addresstreelist_class())
 			{
 				if (app_init())
 				{

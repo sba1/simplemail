@@ -54,7 +54,7 @@ struct DataTypes_Data
 	int show; /* 1 if between show / hide */
 
 	Object *horiz_scrollbar;
-  Object *vert_scrollbar;
+	Object *vert_scrollbar;
 
 	union printerIO *pio;
 
@@ -168,12 +168,6 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	{
 		char tmpname[L_tmpnam];
 
-		if (data->filename)
-		{
-			if (data->del) DeleteFile(data->filename);
-			FreeVec(data->filename);
-		}
-
 		if (newbuffer)
 		{
 			BPTR out;
@@ -187,7 +181,6 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 			newfilename = tmpname;
 		}
-		data->filename = StrCopy(newfilename);
 
 		if (data->dt_obj)
 		{
@@ -201,6 +194,13 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 				data->dt_obj = NULL;
 			}
 		}
+
+		if (data->filename)
+		{
+			if (data->del) DeleteFile(data->filename);
+			FreeVec(data->filename);
+		}
+		data->filename = StrCopy(newfilename);
 
 		data->dt_obj = NewDTObject(newfilename, PDTA_DestMode, PMODE_V43, TAG_DONE);
 
@@ -286,6 +286,7 @@ STATIC ULONG DataTypes_Show(struct IClass *cl, Object *obj, Msg msg)
 
 	DoSuperMethodA(cl,obj,msg);
 
+	data->del = 1;
 	data->show = 1;
 
 	if (data->dt_obj)
@@ -309,6 +310,7 @@ STATIC VOID DataTypes_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 
+	data->del = 1;
 	data->show = 0;
 
 	if (data->dt_obj)
@@ -358,40 +360,40 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 				case	DTA_Sync:
 							if (data->show && data->dt_obj)
 							{
-							  RefreshDTObjects (data->dt_obj, _window(obj), NULL, NULL);
+								RefreshDTObjects (data->dt_obj, _window(obj), NULL, NULL);
 							}
-						  break;
+							break;
 
 				case	DTA_PrinterStatus:
 							DataTypes_PrintCompleted(cl, obj);
 							break;
 
-				case  DTA_TopVert:
+				case	DTA_TopVert:
 							vert_tl[vert_pos].ti_Tag = MUIA_Prop_First;
 							vert_tl[vert_pos++].ti_Data = tidata;
 							break;
 
-				case  DTA_TotalVert:
+				case	DTA_TotalVert:
 							vert_tl[vert_pos].ti_Tag = MUIA_Prop_Entries;
 							vert_tl[vert_pos++].ti_Data = tidata;
 							break;
 
-				case  DTA_VisibleVert:
+				case 	DTA_VisibleVert:
 							vert_tl[vert_pos].ti_Tag = MUIA_Prop_Visible;
 							vert_tl[vert_pos++].ti_Data = tidata;
 							break;
 
-				case  DTA_TopHoriz:
+				case	DTA_TopHoriz:
 							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_First;
 							horiz_tl[horiz_pos++].ti_Data = tidata;
 							break;
 
-				case  DTA_TotalHoriz:
+				case	DTA_TotalHoriz:
 							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_Entries;
 							horiz_tl[horiz_pos++].ti_Data = tidata;
 							break;
 
-				case  DTA_VisibleHoriz:
+				case	DTA_VisibleHoriz:
 							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_Visible;
 							horiz_tl[horiz_pos++].ti_Data = tidata;
 							break;
@@ -424,9 +426,9 @@ STATIC ULONG DataTypes_Print(struct IClass *cl, Object *obj, Msg msg)
 			{
 				struct TagItem tags[2];
 
-		    tags[0].ti_Tag   = data->show?DTA_RastPort:TAG_IGNORE;
-	  	  tags[0].ti_Data  = (ULONG)(data->show?_rp(obj):NULL);
-	    	tags[1].ti_Tag   = TAG_DONE;
+				tags[0].ti_Tag   = data->show?DTA_RastPort:TAG_IGNORE;
+				tags[0].ti_Data  = (ULONG)(data->show?_rp(obj):NULL);
+				tags[1].ti_Tag   = TAG_DONE;
 
 				if (PrintDTObject(data->dt_obj, data->show?_window(obj):FALSE, NULL, DTM_PRINT, NULL, data->pio, tags))
 				{
@@ -480,10 +482,10 @@ STATIC BOOPSI_DISPATCHER(ULONG,DataTypes_Dispatcher,cl,obj,msg)
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return DataTypes_New(cl,obj,(struct opSet*)msg);
-		case  OM_DISPOSE:		DataTypes_Dispose(cl,obj,msg); return 0;
-		case  OM_SET:				return DataTypes_Set(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE:		  DataTypes_Dispose(cl,obj,msg); return 0;
+		case	OM_SET:				  return DataTypes_Set(cl,obj,(struct opSet*)msg);
 		case	OM_GET:				return DataTypes_Get(cl,obj,(struct opGet*)msg);
-		case  MUIM_AskMinMax: return DataTypes_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
+		case	MUIM_AskMinMax: return DataTypes_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
 		case	MUIM_Setup:		return DataTypes_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return DataTypes_Cleanup(cl,obj,msg);
 		case	MUIM_Show:			return DataTypes_Show(cl,obj,msg);

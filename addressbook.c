@@ -365,13 +365,8 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh)
 		return;
 	}
 
-/* TODO: Remove me */
-#ifndef XML_HANDLER_REF
-#define XML_HANDLER_REF(x) x
-#endif
-
-	XML_SetElementHandler(p, XML_HANDLER_REF(xml_start_tag), XML_HANDLER_REF(xml_end_tag));
-	XML_SetCharacterDataHandler(p, XML_HANDLER_REF(xml_char_data));
+	XML_SetElementHandler(p, xml_start_tag, xml_end_tag);
+	XML_SetCharacterDataHandler(p, xml_char_data);
 	XML_SetUserData(p,group);
 	XML_UseParserAsHandlerArg(p);
 

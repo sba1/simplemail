@@ -63,13 +63,11 @@ static char *get_address_start(char *contents, int pos, int select_size)
 		start_pos--;
 	}
 
-	if (select_size)
-	{
-		buf = malloc(pos - start_pos + 1);
-		if (!buf) return NULL;
-		strncpy(buf,&contents[start_pos],pos - start_pos);
-		buf[pos-start_pos]=0;
-	} else buf = NULL;
+	buf = malloc(pos - start_pos + 1);
+	if (!buf) return NULL;
+	strncpy(buf,&contents[start_pos],pos - start_pos);
+	buf[pos-start_pos]=0;
+
 	return buf;
 }
 
@@ -230,8 +228,7 @@ struct AddressString_Data
 
 STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj);
 STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj);
-STATIC VOID AddressString_UpdateList(struct IClass *cl, Object *obj);
-
+STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj);
 
 STATIC ULONG AddressString_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
@@ -267,6 +264,7 @@ STATIC ULONG AddressString_GoActive(struct IClass *cl, Object *obj,Msg msg)
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
 	AddressString_OpenList(cl,obj);
+	DoMethod(obj, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, obj, 1, MUIM_AddressString_UpdateList);
 	return DoSuperMethodA(cl, obj, msg);
 }
 
@@ -274,6 +272,7 @@ STATIC ULONG AddressString_GoInactive(struct IClass *cl, Object *obj,Msg msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	AddressString_CloseList(cl,obj);
+	DoMethod(obj, MUIM_KillNotify, MUIA_String_Contents);
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
 	set(obj, MUIA_BetterString_SelectSize, 0);
 	return DoSuperMethodA(cl, obj, msg);
@@ -339,7 +338,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 				}
 			}
 
-			AddressString_UpdateList(cl,obj);
+/*			AddressString_UpdateList(cl,obj);*/
 
 			return MUI_EventHandlerRC_Eat;
 		}
@@ -429,6 +428,7 @@ STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_
 					MUIA_String_Contents,newcontents,
 					MUIA_String_BufferPos,bufferpos,
 					MUIA_BetterString_SelectSize, strlen(newcontents) - bufferpos,
+					MUIA_NoNotify, TRUE,
 					TAG_DONE);
 		free(newcontents);
 	}
@@ -464,7 +464,7 @@ STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
 	}
 }
 
-STATIC VOID AddressString_UpdateList(struct IClass *cl, Object *obj)
+STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	char *contents = (char*)xget(obj,MUIA_String_Contents);
@@ -487,6 +487,7 @@ STATIC VOID AddressString_UpdateList(struct IClass *cl, Object *obj)
 		} else set(data->match_wnd, MUIA_Window_Open, FALSE);
 	}
 	free(addr_start);
+	return 0;
 }
 
 
@@ -504,6 +505,7 @@ STATIC ASM ULONG AddressString_Dispatcher(register __a0 struct IClass *cl, regis
 		case	MUIM_DragQuery: return AddressString_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_DragDrop: return AddressString_DragDrop(cl,obj,(struct MUIP_DragDrop*)msg);
 		case  MUIM_AddressString_Complete: return AddressString_Complete(cl,obj,(struct MUIP_AddressString_Complete*)msg);
+		case  MUIM_AddressString_UpdateList: return AddressString_UpdateList(cl,obj);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

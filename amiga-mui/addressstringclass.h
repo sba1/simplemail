@@ -27,7 +27,9 @@ IMPORT struct MUI_CustomClass *CL_AddressString;
 #define AddressStringObject (Object*)NewObject(CL_AddressString->mcc_Class, NULL
 
 #define MUIM_AddressString_Complete 0x676767
+#define MUIM_AddressString_UpdateList   0x676768
 struct MUIP_AddressString_Complete {ULONG MethodID; char *text;};
+struct MUIP_AddressString_UpdateList {ULONG MethodID;};
 
 int create_addressstring_class(void);
 void delete_addressstring_class(void);

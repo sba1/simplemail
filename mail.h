@@ -190,6 +190,8 @@ struct composed_mail
 	char *mail_folder; /* the folder of the mail ( -- " -- ) */
 
 	char *reply_message_id; /* only for the root mail */
+	int encrypt;
+	int sign;
 
 	/* more will follow */
 };

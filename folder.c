@@ -1438,6 +1438,16 @@ static int folder_config_load(struct folder *f)
 					free(f->def_to);
 					f->def_to = mystrdup(&buf[10]);
 				}
+				else if (!mystrnicmp("DefaultFrom=",buf,12))
+				{
+					free(f->def_from);
+					f->def_from = mystrdup(&buf[12]);
+				}
+				else if (!mystrnicmp("DefaultReplyTo=",buf,15))
+				{
+					free(f->def_replyto);
+					f->def_replyto = mystrdup(&buf[15]);
+				}
 				else if (!mystrnicmp("IsIMap=",buf,7)) f->is_imap = atoi(&buf[7]);
 				else if (!mystrnicmp("IMapUser=",buf,9))
 				{
@@ -1492,6 +1502,8 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
 		fprintf(fh,"SecondarySort=%d\n",f->secondary_sort);
 		fprintf(fh,"DefaultTo=%s\n", f->def_to?f->def_to:"");
+		fprintf(fh,"DefaultFrom=%s\n", f->def_from?f->def_from:"");
+		fprintf(fh,"DefaultReplyTo=%s\n", f->def_replyto?f->def_replyto:"");
 		fprintf(fh,"IsIMap=%d\n",f->is_imap);
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
@@ -1576,7 +1588,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
  Set some folder attributes. Returns 1 if the folder must be
  refreshed in the gui.
 *******************************************************************/
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, int prim_sort, int second_sort)
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, int prim_sort, int second_sort)
 {
 	int refresh = 0;
 	int rescan = 0;
@@ -1646,6 +1658,20 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 	{
 		free(f->def_to);
 		f->def_to = mystrdup(newdefto);
+		changed = 1;
+	}
+
+	if (mystrcmp(newdeffrom,f->def_from) != 0)
+	{
+		free(f->def_from);
+		f->def_from = mystrdup(newdeffrom);
+		changed = 1;
+	}
+
+	if (mystrcmp(newdefreplyto,f->def_replyto) != 0)
+	{
+		free(f->def_replyto);
+		f->def_replyto = mystrdup(newdefreplyto);
 		changed = 1;
 	}
 

@@ -159,7 +159,7 @@ char *mail_get_replyto_address(struct mail *mail);
 int mail_is_marked_as_deleted(struct mail *mail);
 void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
-struct mail *mail_create_for(char *to, char *subject);
+struct mail *mail_create_for(char *from, char *to, char *subject);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(int num, struct mail **mail_array);
 struct mail *mail_create_forward(int num, struct mail **mail_array);

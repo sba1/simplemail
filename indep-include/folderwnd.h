@@ -29,6 +29,8 @@ char *folder_get_changed_name(void);
 char *folder_get_changed_path(void);
 int folder_get_changed_type(void);
 char *folder_get_changed_defto(void);
+char *folder_get_changed_deffrom(void);
+char *folder_get_changed_defreplyto(void);
 int folder_get_changed_primary_sort(void);
 int folder_get_changed_secondary_sort(void);
 

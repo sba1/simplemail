@@ -958,7 +958,7 @@ struct mail *mail_create_from_file(char *filename)
  Creates a mail to be send to a given address (fills out the to field
  and the contents)
 **************************************************************************/
-struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
+struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *subject)
 {
 	struct mail *mail;
 	char *to_str;
@@ -983,6 +983,11 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 		}
 		*mail_contents = 0;
 		phrase = phrase_find_best(to_str);
+
+		if (from)
+		{
+			mail_add_header(mail,"From",4,from,strlen(from),0);
+		}
 
 		/* TODO: write a function for this! */
 		if (to_str)

@@ -257,6 +257,21 @@ void callback_get_address(void)
 	}
 }
 
+int callback_write_mail(char *from, char *to, char *subject)
+{
+	struct compose_args ca;
+	int win_num;
+	memset(&ca,0,sizeof(ca));
+
+	ca.action = COMPOSE_ACTION_NEW;
+	ca.to_change = mail_create_for(from,to,subject);
+
+	win_num = compose_window_open(&ca);
+
+	if (ca.to_change) mail_free(ca.to_change);
+	return win_num;
+}
+
 /* a new mail should be written to the given address */
 void callback_write_mail_to(struct addressbook_entry *address)
 {
@@ -268,17 +283,7 @@ void callback_write_mail_to(struct addressbook_entry *address)
 /* a new mail should be written to a given address string */
 int callback_write_mail_to_str(char *str, char *subject)
 {
-	struct compose_args ca;
-	int win_num;
-	memset(&ca,0,sizeof(ca));
-
-	ca.action = COMPOSE_ACTION_NEW;
-	ca.to_change = mail_create_for(str,subject);
-
-	win_num = compose_window_open(&ca);
-
-	if (ca.to_change) mail_free(ca.to_change);
-	return win_num;
+	return callback_write_mail(NULL,str,subject);
 }
 
 /* a new mail should be composed */
@@ -286,7 +291,7 @@ void callback_new_mail(void)
 {
 	struct folder *f = main_get_folder();
 	if (!f) return;
-	callback_write_mail_to_str(f->def_to,NULL);
+	callback_write_mail(f->def_from,f->def_to,NULL);
 }
 
 /* reply this mail */
@@ -1231,7 +1236,8 @@ void callback_change_folder_attrs(void)
 		refresh = 1;
 	} else refresh = 0;
 
-	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type(), folder_get_changed_defto(), folder_get_changed_primary_sort(), folder_get_changed_secondary_sort()))
+	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type(), folder_get_changed_defto(),
+										folder_get_changed_deffrom(), folder_get_changed_defreplyto(), folder_get_changed_primary_sort(), folder_get_changed_secondary_sort()))
 	{
 		if (main_get_folder() == f || refresh)
 		{

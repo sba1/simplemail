@@ -44,6 +44,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "accountpopclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
@@ -51,15 +52,13 @@
 #include "muistuff.h"
 
 static Object *folder_wnd;
-static Object *folder_group;
+static Object *folder_properties_group;
 static Object *name_label;
 static Object *name_string;
 static Object *path_label;
 static Object *path_string;
 static Object *type_label;
 static Object *type_cycle;
-static Object *defto_label;
-static Object *defto_string;
 static Object *server_label;
 static Object *server_string;
 static Object *prim_group;
@@ -72,6 +71,12 @@ static Object *second_label;
 static Object *second_cycle;
 static Object *second_reverse_check;
 static Object *second_reverse_label;
+
+static Object *from_accountpop;
+static Object *defto_label;
+static Object *defto_string;
+
+static Object *imap_folders_horizline;
 static Object *imap_folders_group;
 static Object *imap_folders_list;
 static Object *imap_folders_listview;
@@ -212,6 +217,18 @@ char *folder_get_changed_defto(void)
 	return (char *)xget(defto_string,MUIA_String_Contents);
 }
 
+char *folder_get_changed_deffrom(void)
+{
+	struct account *ac = (struct account*)xget(from_accountpop, MUIA_AccountPop_Account);
+	if (ac) return ac->email;
+	return NULL;
+}
+
+char *folder_get_changed_defreplyto(void)
+{
+	return NULL;
+}
+
 int folder_get_changed_primary_sort(void)
 {
 	return xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
@@ -221,6 +238,7 @@ int folder_get_changed_secondary_sort(void)
 {
 	return xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
+
 
 static void init_folder(void)
 {
@@ -235,7 +253,7 @@ static void init_folder(void)
 	type_array[3] = _("mailinglist");
 
 	prim_sort_array[FOLDER_SORT_STATUS] = _("Status");
-	prim_sort_array[FOLDER_SORT_FROMTO] = _("From/TO");
+	prim_sort_array[FOLDER_SORT_FROMTO] = _("From/To");
 	prim_sort_array[FOLDER_SORT_SUBJECT] = _("Subject");
 	prim_sort_array[FOLDER_SORT_REPLY] = _("Reply");
 	prim_sort_array[FOLDER_SORT_DATE] = _("Date");
@@ -261,7 +279,8 @@ static void init_folder(void)
 	folder_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
 		WindowContents, VGroup,
-			Child, folder_group = ColGroup(2),
+			Child, HorizLineTextObject(_("Folder Properties")),
+			Child, folder_properties_group = ColGroup(2),
 				Child, name_label = MakeLabel(_("N_ame")),
 				Child, name_string = BetterStringObject,
 					StringFrame,
@@ -290,23 +309,37 @@ static void init_folder(void)
 					Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
 					Child, prim_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, prim_reverse_label = MakeLabel(_("Reverse")),
-				End,
+					End,
 
 				Child, second_label = MakeLabel(_("_Secondary sort")),
 				Child, second_group = HGroup,
 					Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
 					Child, second_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, second_reverse_label = MakeLabel(_("Reverse")),
-				End,
-				
-				Child, defto_label = MakeLabel(_("Def. To")),
-				Child, defto_string = AddressStringObject,
-					StringFrame,
-					MUIA_CycleChain, 1,
-					MUIA_ControlChar, GetControlChar(_("Def. To")),
 					End,
 				End,
 
+			Child, HorizLineTextObject(_("Compose Mail Properties")),
+			Child, ColGroup(2),
+				Child, MakeLabel(_("From")),
+				Child, from_accountpop = AccountPopObject, MUIA_AccountPop_HasDefaultEntry, TRUE, End,
+
+				Child, defto_label = MakeLabel(_("T_o")),
+				Child, defto_string = AddressStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_ControlChar, GetControlChar(_("T_o")),
+					End,
+
+				Child, MakeLabel(_("_Reply To")),
+				Child, AddressStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_ControlChar, GetControlChar(_("_Reply To")),
+					End,
+				End,
+
+			Child, imap_folders_horizline = HorizLineTextObject(_("IMAP Properties")),
 			Child, imap_folders_group = VGroup,
 				Child, imap_folders_listview = NListviewObject,
 					MUIA_NListview_NList, imap_folders_list = NListObject,
@@ -362,109 +395,113 @@ void folder_edit(struct folder *f)
 		if (f->is_imap)
 		{
 			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
+			
 			set(imap_folders_group,MUIA_ShowMe, TRUE);
+			set(imap_folders_horizline,MUIA_ShowMe, TRUE);
 		} else
 		{
 			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
 			set(imap_folders_group,MUIA_ShowMe, FALSE);
+			set(imap_folders_horizline,MUIA_ShowMe, FALSE);
 		}
 
 
 		if (!group_mode)
 		{
-			DoMethod(folder_group,MUIM_Group_InitChange);
+			DoMethod(folder_properties_group,MUIM_Group_InitChange);
 
-			DoMethod(folder_group, OM_REMMEMBER, path_label);
-			DoMethod(folder_group, OM_REMMEMBER, path_string);
-			DoMethod(folder_group, OM_REMMEMBER, type_label);
-			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
-			DoMethod(folder_group, OM_REMMEMBER, prim_label);
-			DoMethod(folder_group, OM_REMMEMBER, prim_group);
-			DoMethod(folder_group, OM_REMMEMBER, second_label);
-			DoMethod(folder_group, OM_REMMEMBER, second_group);
+			DoMethod(folder_properties_group, OM_REMMEMBER, path_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, path_string);
+			DoMethod(folder_properties_group, OM_REMMEMBER, type_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, type_cycle);
+			DoMethod(folder_properties_group, OM_REMMEMBER, prim_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, prim_group);
+			DoMethod(folder_properties_group, OM_REMMEMBER, second_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, second_group);
 			if (imap_mode)
 			{
-				DoMethod(folder_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
 				imap_mode = 0;
 			}
 			group_mode = 1;
-			DoMethod(folder_group,MUIM_Group_ExitChange);
+			DoMethod(folder_properties_group,MUIM_Group_ExitChange);
 		}
 	} else
 	{
 		set(folder_wnd,MUIA_Window_Title, _("SimpleMail - Edit folder"));
 		set(imap_folders_group,MUIA_ShowMe, FALSE);
-		DoMethod(folder_group,MUIM_Group_InitChange);
+		set(imap_folders_horizline,MUIA_ShowMe, FALSE);
+		DoMethod(folder_properties_group,MUIM_Group_InitChange);
 		if (group_mode)
 		{
-			DoMethod(folder_group, OM_ADDMEMBER, path_label);
-			DoMethod(folder_group, OM_ADDMEMBER, path_string);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, path_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, path_string);
 
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_group, OM_ADDMEMBER, server_label);
-				DoMethod(folder_group, OM_ADDMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, server_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, server_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
 				imap_mode = 0;
 			}
 
-			DoMethod(folder_group, OM_ADDMEMBER, type_label);
-			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
-			DoMethod(folder_group, OM_ADDMEMBER, prim_label);
-			DoMethod(folder_group, OM_ADDMEMBER, prim_group);
-			DoMethod(folder_group, OM_ADDMEMBER, second_label);
-			DoMethod(folder_group, OM_ADDMEMBER, second_group);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, type_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, type_cycle);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, prim_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, prim_group);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, second_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, second_group);
 			group_mode = 0;
 		} else
 		{
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_group, OM_ADDMEMBER, server_label);
-				DoMethod(folder_group, OM_ADDMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, server_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, server_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
 				imap_mode = 0;
 			}
 		}
 		if (imap_mode)
 		{
-			DoMethod(folder_group, MUIM_Group_Sort,
+			DoMethod(folder_properties_group, MUIM_Group_Sort,
 			         name_label, name_string,
 			         path_label, path_string,
 			         server_label, server_string,
 			         type_label, type_cycle,
 			         prim_label, prim_group,
 			         second_label, second_group,
-			         defto_label, defto_string,
 			         NULL);
 		} else
 		{
-			DoMethod(folder_group, MUIM_Group_Sort,
+			DoMethod(folder_properties_group, MUIM_Group_Sort,
 			         name_label, name_string,
 			         path_label, path_string,
 			         type_label, type_cycle,
 			         prim_label, prim_group, 
 			         second_label, second_group,
-			         defto_label, defto_string,
 			         NULL);
 		}
-		DoMethod(folder_group,MUIM_Group_ExitChange);
+		DoMethod(folder_properties_group,MUIM_Group_ExitChange);
 	}
 
 	set(name_string, MUIA_String_Contents, f->name);
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
+	set(from_accountpop, MUIA_AccountPop_Account, account_find_by_from(f->def_from));
+
 	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);
 	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & FOLDER_SORT_MODEMASK);

@@ -100,3 +100,15 @@ void dl_window_close(void)
 		set(win_dl, MUIA_Window_Open, FALSE);
 	}
 }
+
+int dl_checkabort(void)
+{
+	int rc;
+	
+	if(GetAttr(MUIA_transwnd_Aborted, win_dl, (ULONG *) &rc) == FALSE)
+	{
+		rc = FALSE;
+	}
+	
+	return(rc);
+}

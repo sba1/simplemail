@@ -117,3 +117,15 @@ void up_window_close(void)
 		set(win_up, MUIA_Window_Open, FALSE);
 	}
 }
+
+int up_checkabort(void)
+{
+	int rc;
+	
+	if(GetAttr(MUIA_transwnd_Aborted, win_up, (ULONG *) &rc) == FALSE)
+	{
+		rc = FALSE;
+	}
+	
+	return(rc);
+}

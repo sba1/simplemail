@@ -14,5 +14,6 @@ void up_init_gauge_mail(int);
 void up_set_gauge_mail(int);
 void up_init_gauge_byte(int);
 void up_set_gauge_byte(int);
+int up_checkabort(void);
 
 #endif

@@ -379,7 +379,7 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 			}
 		}
 		
-		if(rc = TRUE)
+		if(rc == TRUE)
 		{
 			up_set_status("Sending QUIT...");
 			if(smtp_quit(hsocket))

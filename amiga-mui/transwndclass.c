@@ -18,33 +18,36 @@
 
 #include "transwndclass.h"
 
+#define MUIV_transwnd_Aborted 2
+
 struct transwnd_Data
 {
-	Object *gauge1, *gauge2, *status;
+	Object *gauge1, *gauge2, *status, *abort;
 };
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,*gauge2,*status;
+	Object *gauge1,*gauge2,*status,*abort;
 	
 	obj = (Object *) DoSuperNew(cl, obj,
-				MUIA_Window_ID,	MAKE_ID('T','E','S','T'),
 				WindowContents, VGroup,
 					Child, gauge1 = GaugeObject,
-	        	GaugeFrame,
-        		MUIA_Gauge_InfoText,		"Mail 0/0",
-        		MUIA_Gauge_Horiz,			TRUE,
-        		End,
-    	    Child, gauge2 = GaugeObject,
-	        	GaugeFrame,
-        		MUIA_Gauge_InfoText,		"0/0 bytes",
-        		MUIA_Gauge_Horiz,			TRUE,
-        		End,
-    	    Child, status = TextObject,
+	        			GaugeFrame,
+		        		MUIA_Gauge_InfoText,		"Mail 0/0",
+       			 		MUIA_Gauge_Horiz,			TRUE,
+	        		End,
+    			    Child, gauge2 = GaugeObject,
+	        			GaugeFrame,
+			        	MUIA_Gauge_InfoText,		"0/0 bytes",
+		        		MUIA_Gauge_Horiz,			TRUE,
+	        		End,
+    			    Child, status = TextObject,
 						TextFrame,
-   	    	End,	
-					End,	
-				TAG_MORE, msg->ops_AttrList);
+   	    			End,
+   	    			Child, abort = KeyButton("Abort", 'a'),
+				End,	
+				TAG_MORE, msg->ops_AttrList,
+				TAG_DONE);
 
 	if (obj != NULL)
 	{
@@ -52,10 +55,11 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->gauge1 = gauge1;
 		data->gauge2 = gauge2;
 		data->status = status;
-
+		data->abort  = abort;
+		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_transwnd_Aborted);
 	}
 
-	return (ULONG)obj;
+	return((ULONG) obj);
 }
 
 STATIC VOID transwnd_Dispose(struct IClass *cl, Object *obj, Msg msg)
@@ -104,16 +108,22 @@ STATIC ASM SAVEDS ULONG transwnd_Set(register __a0 struct IClass *cl, register _
 		}
 	}
 	
-	return DoSuperMethodA(cl, obj, (Msg)msg);
+	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 
-STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
+STATIC ULONG ASM SAVEDS transwnd_Get(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 struct opGet *msg)
 {
+	ULONG *store = ((struct opGet *)msg)->opg_Storage;
+	
 	switch (msg->opg_AttrID)
 	{
+		case MUIA_transwnd_Aborted:
+			*store = (ULONG) (DoMethod(App, MUIM_Application_NewInput, 0) == MUIV_transwnd_Aborted);
+			return(TRUE);
+		break;
 	}
 
-	return DoSuperMethodA(cl, obj, (Msg)msg);
+	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 
 STATIC ASM SAVEDS ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)

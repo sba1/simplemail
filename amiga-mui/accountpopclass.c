@@ -46,9 +46,6 @@
 #include "muistuff.h"
 #include "accountpopclass.h"
 
-#define MYDEBUG 1
-#include "debug.h"
-
 struct AccountPop_Data
 {
 	int has_default_entry;

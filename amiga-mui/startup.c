@@ -10,7 +10,7 @@
 #include <proto/dos.h>
 
 //#define MYDEBUG
-#include "debug.h"
+#include "amigadebug.h"
 
 struct ExecBase *SysBase;
 struct DosLibrary *DOSBase;

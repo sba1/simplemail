@@ -45,9 +45,6 @@
 #include "muistuff.h"
 #include "utf8stringclass.h"
 
-/* #define MYDEBUG 1 */
-#include "debug.h"
-
 /******************************************************************
  Returns a malloced() sting for the address start (this what should
  be completed)
@@ -303,17 +300,12 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 				int buf_pos = utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 				char *addr_start;
 
-				D(bug("get_address_start(%s,%ld)\n",contents,buf_pos));
-				
 				if ((addr_start = get_address_start(contents,buf_pos)))
 				{
 					char *completed;
 
-					D(bug("addressbook_complete_address(%s)\n",addr_start));
-
 					if ((completed = addressbook_complete_address(addr_start)))
 					{
-						D(bug("Calling MUIM_AddressString_Complete %s\n",completed));
 						DoMethod(obj, MUIM_AddressString_Complete, completed);
 					}
 					free(addr_start);

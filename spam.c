@@ -34,9 +34,6 @@
 
 #include "support_indep.h"
 
-#define MYDEBUG 1
-#include "debug.h"
-
 static struct hash_table spam_table;
 static struct hash_table ham_table;
 /*static struct hash_table spam_prob_table;*/

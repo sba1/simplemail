@@ -39,7 +39,7 @@
 #include "subthreads_amiga.h" /* struct thread_s */
 
 /* #define MYDEBUG */
-#include "debug.h"
+#include "amigadebug.h"
 
 /* TODO:
     add thread_call_function_async_callback() which calls the functions asynchron but 

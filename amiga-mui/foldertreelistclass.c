@@ -45,9 +45,6 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
-/* #define MYDEBUG 1 */
-#include "debug.h"
-
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 
 struct FolderTreelist_Data

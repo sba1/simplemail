@@ -791,12 +791,15 @@ int mail_forward(struct mail *mail)
 
 /**************************************************************************
  Extract the name of a given address (and looks for matches in the
- addressbook)
+ addressbook). If more than one e-mail address is specified, *more_prt
+ will be set to 1.
 **************************************************************************/
-static char *extract_name_from_address(char *addr)
+static char *extract_name_from_address(char *addr, int *more_ptr)
 {
 	char *name = NULL;
 	struct parse_address paddr;
+
+	if (more_ptr) *more_ptr = 0;
 
 	if ((name = parse_address(addr,&paddr)))
 	{
@@ -813,6 +816,10 @@ static char *extract_name_from_address(char *addr)
 						name = mystrdup(first_addr->addr_spec);
 					}
 				}
+			}
+			if (node_next(&first_addr->node))
+			{
+				if (more_ptr) *more_ptr = 1;
 			}
 		}
 		free_address(&paddr);
@@ -883,12 +890,21 @@ int mail_process_headers(struct mail *mail)
 	}
 
 	buf = mail_find_header_contents(mail,"from");
-	if (buf) mail->from = extract_name_from_address(buf);
+	if (buf) mail->from = extract_name_from_address(buf,NULL);
 	else mail->from = NULL;
 
 	buf = mail_find_header_contents(mail,"to");
-	if (buf) mail->to = extract_name_from_address(buf);
-	else mail->to = NULL;
+	if (buf)
+	{
+		int more;
+		mail->to = extract_name_from_address(buf,&more);
+		if (more) mail->flags |= MAIL_FLAGS_GROUP;
+	} else mail->to = NULL;
+
+	if ((buf = mail_find_header_contents(mail, "cc")))
+	{
+		mail->flags |= MAIL_FLAGS_GROUP;
+	}
 
 	if ((buf = mail_find_header_contents(mail,"subject")))
 	{
@@ -1036,6 +1052,16 @@ int mail_process_headers(struct mail *mail)
 	{
 		mail->content_transfer_encoding = strdup("7bit");
 	}
+
+	if (!mystricmp(mail->content_type, "multipart"))
+	{
+		mail->flags |= MAIL_FLAGS_ATTACH;
+	}
+
+  if ((buf = mail_find_header_contents(mail, "Importance")))
+  {
+		if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
+  }
 
 /*
 	if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))

@@ -418,7 +418,7 @@ int folder_read_mail_infos(struct folder *folder)
 		{
 			int ver;
 			fread(&ver,1,4,fh);
-			if (ver == 0)
+			if (ver == 1)
 			{
 				int num_mails;
 				fread(&num_mails,1,4,fh);
@@ -458,9 +458,12 @@ int folder_read_mail_infos(struct folder *folder)
 						fseek(fh,ftell(fh)%2,SEEK_CUR);
 						fread(&m->size,1,sizeof(m->size),fh);
 						fread(&m->seconds,1,sizeof(m->seconds),fh);
+						fread(&m->flags,1,sizeof(m->flags),fh);
 						mail_identify_status(m);
 						mail_process_headers(m);
 						folder_add_mail(folder,m);
+
+						m->flags &= ~MAIL_FLAGS_NEW;
 					}
 				}
 			}
@@ -892,7 +895,7 @@ int folder_save_index(struct folder *f)
 	if (fh)
 	{
 		int i;
-		int ver = 0;
+		int ver = 1;
 		fwrite("SMFI",1,4,fh);
 		fwrite(&ver,1,4,fh);
 		fwrite(&f->num_mails,1,4,fh);
@@ -921,6 +924,7 @@ int folder_save_index(struct folder *f)
 
 			fwrite(&f->mail_array[i]->size,1,sizeof(f->mail_array[i]->size),fh);
 			fwrite(&f->mail_array[i]->seconds,1,sizeof(f->mail_array[i]->seconds),fh);
+			fwrite(&f->mail_array[i]->flags,1,sizeof(f->mail_array[i]->flags),fh);
 		}
 		fclose(fh);
 	}

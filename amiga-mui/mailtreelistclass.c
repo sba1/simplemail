@@ -41,6 +41,7 @@
 #include "compiler.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "support.h"
 
 struct MailTreelist_Data
 {
@@ -51,6 +52,10 @@ struct MailTreelist_Data
 	APTR status_read;
 	APTR status_waitsend;
 	APTR status_sent;
+
+	APTR status_important;
+	APTR status_attach;
+	APTR status_group;
 	APTR status_new;
 };
 
@@ -79,6 +84,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			static char size_buf[32];
 			static char date_buf[64];
 			static char status_buf[128];
+			static char from_buf[256];
 
 			switch(mail->status)
 			{
@@ -91,12 +97,25 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 
 			sprintf(status_buf,"\33O[%08lx]",status);
 			if (mail->flags & MAIL_FLAGS_NEW) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_new);
+			if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
+			if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
 
 			sprintf(size_buf,"%ld",mail->size);
 			SecondsToString(date_buf,mail->seconds);
 
 			*msg->Array++ = status_buf; /* status */
-			*msg->Array++ = mail->from;
+			if (mail->flags & MAIL_FLAGS_GROUP)
+			{
+				int from_len;
+				sprintf(from_buf,"\33O[%08lx]",data->status_group);
+				if (mail->from)
+				{
+					from_len = strlen(from_buf);
+					mystrlcpy(from_buf+from_len,mail->from,sizeof(from_buf)-from_len);
+				}
+				*msg->Array++ = from_buf;
+			} else *msg->Array++ = mail->from;
+
 			*msg->Array++ = mail->to;
 			*msg->Array++ = mail->subject;
 			*msg->Array++ = mail->reply;
@@ -181,6 +200,9 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_waitsend", End, 0);
 	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_sent", End, 0);
 
+	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_urgent", End, 0);
+	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_attach", End, 0);
+	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_group", End, 0);
 	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_new", End, 0);
 	
 	return 1;
@@ -190,6 +212,9 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
+	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
+	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
+	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
 	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
 	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
 	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, data->status_waitsend);

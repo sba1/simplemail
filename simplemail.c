@@ -137,18 +137,18 @@ void callback_get_address(void)
 void callback_write_mail_to(struct addressbook_entry *address)
 {
 	char *to_str = addressbook_get_address_str(address);
-	callback_write_mail_to_str(to_str);
+	callback_write_mail_to_str(to_str,NULL);
 	free(to_str);
 }
 
 /* a new mail should be written to a given address string */
-void callback_write_mail_to_str(char *str)
+void callback_write_mail_to_str(char *str, char *subject)
 {
 	struct compose_args ca;
 	memset(&ca,0,sizeof(ca));
 
 	ca.action = COMPOSE_ACTION_NEW;
-	ca.to_change = mail_create_for(str);
+	ca.to_change = mail_create_for(str,subject);
 
 	compose_window_open(&ca);
 
@@ -158,7 +158,7 @@ void callback_write_mail_to_str(char *str)
 /* a new mail should be composed */
 void callback_new_mail(void)
 {
-	callback_write_mail_to_str(NULL);
+	callback_write_mail_to_str(NULL,NULL);
 }
 
 /* reply this mail */
@@ -605,6 +605,8 @@ void callback_timer(void)
 
 int main(int argc, char *argv[])
 {
+	if (!gui_parseargs(argc,argv)) return 0;
+
 	load_config();
 	init_addressbook();
 	if (init_folders())

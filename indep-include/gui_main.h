@@ -25,6 +25,7 @@
 
 
 int gui_main(int argc, char *argv[]);
+int gui_parseargs(int argc, char *argv[]);
 
 #endif
 

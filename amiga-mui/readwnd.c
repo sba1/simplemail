@@ -484,7 +484,7 @@ static void uri_clicked(void **msg)
 
 	if (!mystrnicmp(uri,"mailto:",7))
 	{
-		callback_write_mail_to_str(uri+7);
+		callback_write_mail_to_str(uri+7,NULL);
 	} else
 	{
 		struct Library *OpenURLBase;

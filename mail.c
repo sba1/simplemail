@@ -745,7 +745,7 @@ struct mail *mail_create_from_file(char *filename)
  Creates a mail to be send to a given address (fills out the to field
  and the contents)
 **************************************************************************/
-struct mail *mail_create_for(char *to_str_unexpanded)
+struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 {
 	struct mail *mail;
 	char *to_str;
@@ -787,6 +787,17 @@ struct mail *mail_create_for(char *to_str_unexpanded)
 					mail_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4);
 					free(to_header);
 				}
+			}
+		}
+
+		/* TODO: write a function for this! */
+		if (subject)
+		{
+			char *subject_header;
+			if ((subject_header = encode_header_field("Subject",subject)))
+			{
+				mail_add_header(mail, "Subject", 7, subject_header+9, strlen(subject_header)-9);
+				free(subject_header);
 			}
 		}
 

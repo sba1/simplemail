@@ -21,12 +21,17 @@
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <dos/rdargs.h>
 
 #include <dos/dos.h>
 #include <libraries/mui.h>
 #include "simplehtml_mcc.h"
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
+#include <proto/dos.h>
 #include <proto/muimaster.h>
 #include <proto/locale.h>
 
@@ -36,6 +41,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "support_indep.h"
 
 /* gui parts */
 #include "addresstreelistclass.h"
@@ -286,6 +292,10 @@ int all_init(void)
 	return(rc);
 }
 
+
+char *initial_mailto;
+char *initial_subject;
+
 /****************************************************************
  Entry point for the GUI depend part
 *****************************************************************/
@@ -301,8 +311,17 @@ int gui_main(void)
 		main_refresh_folders();
 		main_set_folder_active(folder_incoming());
 
-		if(main_window_open())
+		if (main_window_open())
 		{
+			/* if we should open the compose window soon after start */
+			if (initial_mailto)
+				callback_write_mail_to_str(initial_mailto, initial_subject);
+
+			free(initial_mailto);
+			free(initial_subject);
+			initial_mailto = NULL;
+			initial_subject = NULL;
+
 			/* send the first timer */
 			timer_send(1,0);
 			callback_autocheck_refresh();
@@ -316,7 +335,31 @@ int gui_main(void)
 	all_del();
 
 	dt_cleanup();
-	
+
 	return rc;
+}
+
+
+/****************************************************************
+ Parse the start arguments
+*****************************************************************/
+int gui_parseargs(int argc, char *argv[])
+{
+	struct command_args {
+	  char *mailto;
+	  char *subject;
+	} shell_args;
+
+	struct RDArgs *rdargs;
+
+	memset(&shell_args,0,sizeof(shell_args));
+
+	if ((rdargs = ReadArgs("MAILTO/K,SUBJECT/K",(LONG*)&shell_args, NULL)))
+	{
+		initial_mailto = mystrdup(shell_args.mailto);
+		initial_subject = mystrdup(shell_args.subject);
+		FreeArgs(rdargs);
+	}
+	return 1;
 }
 

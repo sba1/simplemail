@@ -121,7 +121,7 @@ struct mail *mail_find_initial(struct mail *m);
 
 void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
-struct mail *mail_create_for(char *to);
+struct mail *mail_create_for(char *to, char *subject);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(struct mail *mail);
 int mail_forward(struct mail *mail);

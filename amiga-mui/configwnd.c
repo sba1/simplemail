@@ -73,6 +73,26 @@ static Object *mails_read_group;
 static Object *config_last_visisble_group;
 
 /******************************************************************
+ Gets the current settings of the POP3 server
+*******************************************************************/
+static void get_pop3_server(void)
+{
+	if (receive_last_selected)
+	{
+		/* Save the pop3 server if a server was selected */
+		if (receive_last_selected->name) free(receive_last_selected->name);
+		if (receive_last_selected->login) free(receive_last_selected->login);
+		if (receive_last_selected->passwd) free(receive_last_selected->passwd);
+		receive_last_selected->name = mystrdup((char*)xget(pop3_server_string, MUIA_String_Contents));
+		receive_last_selected->login = mystrdup((char*)xget(pop3_login_string, MUIA_String_Contents));
+		receive_last_selected->passwd = mystrdup((char*)xget(pop3_password_string, MUIA_String_Contents));
+		receive_last_selected->del = xget(pop3_delete_check, MUIA_Selected);
+		receive_last_selected->port = xget(pop3_port_string, MUIA_String_Integer);
+		receive_last_selected = NULL;
+	}
+}
+
+/******************************************************************
  Close and dispose the config window
 *******************************************************************/
 static void close_config(void)
@@ -112,6 +132,8 @@ static void config_use(void)
 	user.config.smtp_password = mystrdup((char*)xget(smtp_password_string, MUIA_String_Contents));
 	user.config.smtp_auth = xget(smtp_auth_check, MUIA_Selected);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
+
+  get_pop3_server();
 
 	/* Copy the pop3 servers */
 	free_config_pop();
@@ -157,19 +179,7 @@ static void config_tree_active(void)
 				init_change = 1;
 			} else init_change = 0;
 
-			if (receive_last_selected)
-			{
-				/* Save the pop3 server if a server was selected */
-				if (receive_last_selected->name) free(receive_last_selected->name);
-				if (receive_last_selected->login) free(receive_last_selected->login);
-				if (receive_last_selected->passwd) free(receive_last_selected->passwd);
-				receive_last_selected->name = mystrdup((char*)xget(pop3_server_string, MUIA_String_Contents));
-				receive_last_selected->login = mystrdup((char*)xget(pop3_login_string, MUIA_String_Contents));
-				receive_last_selected->passwd = mystrdup((char*)xget(pop3_password_string, MUIA_String_Contents));
-				receive_last_selected->del = xget(pop3_delete_check, MUIA_Selected);
-				receive_last_selected->port = xget(pop3_port_string, MUIA_String_Integer);
-				receive_last_selected = NULL;
-			}
+			get_pop3_server();
 
 			if (list_treenode == receive_treenode)
 			{

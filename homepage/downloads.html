@@ -25,11 +25,24 @@ The following downloads are currently avaible (please shift-click the files and 
     </TR>
     <TR>
         <TD align="center" bgcolor="gray">
-            <A href="download.php?what=simplemail.lzx">simplemail.lzx</A>
+            <A href="download.php?simplemail.lzx">simplemail.lzx</A>
         </TD>
-        <TD align="center" bgcolor="gray">0.3</TD>
-        <TD align="center" bgcolor="gray">2001/02/05</TD>
-        <TD align="center" bgcolor="gray">92,743 bytes</TD>
+        <TD align="center" bgcolor="gray">0.4</TD>
+        <TD align="center" bgcolor="gray">
+         <?php
+          $fd = filemtime("files/simplemail.lzx");
+          echo date("Y/m/d",$fd);
+          ?>
+        </TD>
+        <TD align="center" bgcolor="gray">
+         <?php 
+           $fs = filesize("files/simplemail.lzx");
+           echo (int)($fs / 1000);
+           echo ",";
+           echo ($fs % 1000);
+           ?>
+         bytes
+         </TD>
     </TR>
 </TABLE>
 <br>

@@ -1,3 +1,5 @@
+<?php-track-vars?>
+<?php $part=$HTTP_SERVER_VARS["QUERY_STRING"];?>
 <?php require("counter.php"); ?>
 
 <!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
@@ -68,19 +70,19 @@
                         <TD><A href="index.html">Welcome</A></TD>
                     </TR>
                     <TR>
-                        <TD><A href="index.html?part=screenshots">Screenshots</A></TD>
+                        <TD><A href="index.html?screenshots">Screenshots</A></TD>
                     </TR>
                     <TR>
-                        <TD><A href="index.html?part=downloads">Downloads</A></TD>
+                        <TD><A href="index.html?downloads">Downloads</A></TD>
                     </TR>
                     <TR>
-                        <TD><A href="index.html?part=faq">FAQ</A></TD>
+                        <TD><A href="index.html?faq">FAQ</A></TD>
                     </TR>
                     <TR>
-                        <TD><A href="index.html?part=links">Links</A></TD>
+                        <TD><A href="index.html?links">Links</A></TD>
                     </TR>
                     <TR>
-                        <TD><A href="index.html?part=contact">Contact</A></TD>
+                        <TD><A href="index.html?contact">Contact</A></TD>
                     </TR>
                 </TABLE>
             </TD>
@@ -92,27 +94,27 @@
                                 switch($part)
                                 {
                                     case "":
-                                        readfile("welcome.html");
+                                        include("welcome.html");
                                         break;
 
                                     case "screenshots":
-                                        readfile("screenshots.html");
+                                        include("screenshots.html");
                                         break;
 
                                     case "downloads":
-                                        readfile("downloads.html");
+                                        include("downloads.html");
                                         break;
 
                                     case "faq":
-                                        readfile("faq.html");
+                                        include("faq.html");
                                         break;
 
                                     case "links":
-                                        readfile("links.html");
+                                        include("links.html");
                                         break;
 
                                     case "contact":
-                                        readfile("contact.html");
+                                        include("contact.html");
                                         break;
                                 }
                             ?>

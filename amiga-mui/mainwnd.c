@@ -396,7 +396,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("New Group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
 		{NM_ITEM, N_("New Folder..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
 		{NM_ITEM, N_("Delete"), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
-		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
+		{NM_ITEM, N_("Settings..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},

@@ -433,25 +433,16 @@ STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_
 					MUIA_NoNotify, TRUE,
 					TAG_DONE);
 		free(newcontents);
+
+		/* Open the window if not open and if the list contains some entries */
+		if (data->match_wnd)
+		{
+			int entries = xget(data->match_wnd, MUIA_MatchWindow_Entries);
+			if (entries > 1 && !xget(data->match_wnd,MUIA_Window_Open))
+				set(data->match_wnd,MUIA_Window_Open,TRUE);
+		}
 	}
 	return NULL;
-}
-
-STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj)
-{
-	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	struct Window *wnd = (struct Window *)xget(_win(obj),MUIA_Window_Window);
-
-	if ((data->match_wnd = NewObject(CL_MatchWindow->mcc_Class, NULL,
-				MUIA_MatchWindow_String, obj,
-				MUIA_Window_LeftEdge, wnd->LeftEdge + _left(obj),
-				MUIA_Window_TopEdge, wnd->TopEdge + _top(obj) + _height(obj),
-				MUIA_Window_Width, _width(obj),
-				TAG_DONE)))
-	{
-		DoMethod(_app(obj),OM_ADDMEMBER, data->match_wnd);
-		AddressString_UpdateList(cl,obj);
-	}
 }
 
 STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
@@ -463,6 +454,25 @@ STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
 		DoMethod(_app(obj),OM_REMMEMBER, data->match_wnd);
 		MUI_DisposeObject(data->match_wnd);
 		data->match_wnd = NULL;
+	}
+}
+
+STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj)
+{
+	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
+	struct Window *wnd = (struct Window *)xget(_win(obj),MUIA_Window_Window);
+
+	if (data->match_wnd) AddressString_CloseList(cl,obj);
+
+	if ((data->match_wnd = NewObject(CL_MatchWindow->mcc_Class, NULL,
+				MUIA_MatchWindow_String, obj,
+				MUIA_Window_LeftEdge, wnd->LeftEdge + _left(obj),
+				MUIA_Window_TopEdge, wnd->TopEdge + _top(obj) + _height(obj),
+				MUIA_Window_Width, _width(obj),
+				TAG_DONE)))
+	{
+		DoMethod(_app(obj),OM_ADDMEMBER, data->match_wnd);
+		AddressString_UpdateList(cl,obj);
 	}
 }
 
@@ -485,7 +495,10 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 		if (entries > 1)
 		{
 			if (!xget(data->match_wnd, MUIA_Window_Open))
-				set(data->match_wnd, MUIA_Window_Open, TRUE);
+			{
+				if (strlen(addr_start))
+					set(data->match_wnd, MUIA_Window_Open, TRUE);
+			}
 		} else set(data->match_wnd, MUIA_Window_Open, FALSE);
 	}
 	free(addr_start);

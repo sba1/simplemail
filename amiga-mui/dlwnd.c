@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** dlwnd.c
 */
 
 #include <stdio.h>
@@ -123,7 +123,32 @@ int dl_checkabort(void)
 	return 0;
 }
 
-void dl_insert_mail(int mno, int msize)
+void dl_insert_mail(int mno, int mflags, int msize)
 {
-	DoMethod(win_dl, MUIM_transwnd_InsertMailSize, mno, msize);
+	DoMethod(win_dl, MUIM_transwnd_InsertMailSize, mno, mflags, msize);
 }
+
+void dl_insert_mail_info(int mno, char *from, char *subject, unsigned int seconds)
+{
+	DoMethod(win_dl, MUIM_transwnd_InsertMailInfo, mno, from, subject, seconds);
+}
+
+/* returns -1 if the mail is not in the mail selection */
+int dl_get_mail_flags(int mno)
+{
+	return (int)DoMethod(win_dl, MUIM_transwnd_GetMailFlags, mno);
+}
+
+void dl_clear(void)
+{
+	DoMethod(win_dl, MUIM_transwnd_Clear);
+}
+
+void loop(void);
+
+void dl_wait(void)
+{
+  /* we simply call the mail loop here but this is not more than a hack! */
+  loop();
+}
+

@@ -116,7 +116,8 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 {
 	char *answer;
 	int *mail_array;
-	int i,amm,cont = 0;
+	int i,amm,mails_add = 0,cont = 0;
+	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
 
 	thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
@@ -134,7 +135,7 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 
 	/* Initial all mails should be downloaded */
 	for (i=1;i<=amm;i++)
-		mail_array[i] = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
+		mail_array[i] = initial_mflags;
 
 	/* Test if the user wished preselection at all */
 	if (receive_preselection == 0) return mail_array;
@@ -161,13 +162,66 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 		if (msize > receive_size * 1024)
 		{
 			/* add this mail to the transfer window */
-			thread_call_parent_function_sync(dl_insert_mail,2,mno,msize);
+			thread_call_parent_function_sync(dl_insert_mail,3,mno,initial_mflags,msize);
+			mails_add = 1;
 		}
 	}
 
-	if (cont && receive_preselection == 2)
+	if (cont && mails_add && receive_preselection == 2)
 	{
 		/* no errors and the user wants a more informative preselection */
+		for (i=1;i<=amm;i++)
+		{
+			int has_added = ((int)thread_call_parent_function_sync(dl_get_mail_flags,1,i)==-1)?0:1;
+			if (has_added)
+			{
+				char buf[256];
+				struct mail_scan ms;
+				struct mail *m;
+				int more = 1; /* more lines needed */
+
+				if (!(m = mail_create())) break;
+
+				sprintf(buf, "TOP %ld 1\r\n",i);
+				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
+				if (!(answer = pop3_receive_answer(conn)))
+				{
+					/* -ERR has been returned, what means that TOP is not supported */
+					thread_call_parent_function_sync(dl_set_status,1,"Couldn't receive more statistics");
+					break;
+				}
+
+				mail_scan_buffer_start(&ms, m);
+
+				/* Read out the important infos */
+				while ((answer = tcp_readln(conn)))
+				{
+					if (answer[0] == '.' && answer[1] == '\n') break;
+					if (more)
+						more = mail_scan_buffer(&ms, answer, strlen(answer));
+				}
+
+				mail_scan_buffer_end(&ms);
+				mail_process_headers(m);
+
+				/* Tell the gui about the mail info */
+				thread_call_parent_function_sync(dl_insert_mail_info, 4, i, m->from, m->subject, m->seconds);
+
+				mail_free(m);
+			}
+		}
+	}
+
+	if (mails_add && cont)
+	{
+		/* let the user select which mails (s)he wants */
+		thread_call_parent_function_sync(dl_wait,1);
+
+		for (i=1;i<=amm;i++)
+		{
+			int fl = (int)thread_call_parent_function_sync(dl_get_mail_flags,1,i);
+			if (fl != -1) mail_array[i] = fl;
+		}
 	}
 
 	return mail_array;
@@ -357,7 +411,9 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										}
 									}
 								}
-							
+
+								/* Clear the preselection entries */
+								thread_call_parent_function_sync(dl_clear,0);
 								chdir(path);
 							}
 						}
@@ -396,6 +452,8 @@ static int pop3_entry(struct pop_entry_msg *msg)
 	struct list pop_list;
 	struct pop3_server *pop;
 	char *dest_dir;
+	int receive_preselection = msg->receive_preselection;
+	int receive_size = msg->receive_size;
 
 	list_init(&pop_list);
 	pop = (struct pop3_server*)list_first(msg->pop_list);
@@ -412,7 +470,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		pop3_really_dl(&pop_list,dest_dir,msg->receive_preselection,msg->receive_size);
+		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}
 	return 0;
@@ -427,7 +485,7 @@ int pop3_dl(struct list *pop_list, char *dest_dir,
 	struct pop_entry_msg msg;
 	msg.pop_list = pop_list;
 	msg.dest_dir = dest_dir;
-	msg,receive_preselection = receive_preselection;
+	msg.receive_preselection = receive_preselection;
 	msg.receive_size = receive_size;
 	return thread_start(&pop3_entry,&msg);
 }

@@ -232,7 +232,10 @@ static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, in
 
 /**************************************************************************
  scans a buffer and fill the given mail instance. If more info is needed
- 1 is returned, else 0 (error handling not supported yet, but it's safe)
+ 1 is returned, else 0 (error handling not supported yet, but it's safe).
+
+ This function could now be replaced by a line version, since we now have
+ tcp_readln()
 **************************************************************************/
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 {
@@ -332,7 +335,10 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 			if (mode == 3 && (c == 10 || c == 13))
 			{
 				if (c==13) mode = 4; /* a LF (10) should follow now */
-				else mode = 0;
+				else
+				{
+					mode = 0;
+				}
 			}
 		}
 
@@ -343,7 +349,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 	/* if we are here the buffersize was too small */
 	{
 		if (/*name_start && !name_size &&*/mode == 1) name_size = buf - name_start;
-		if (contents_start && !contents_size && (mode == 3 || mode ==4)) contents_size = buf - contents_start;
+		if (contents_start && !contents_size && (mode == 3 || mode ==4 || mode == 0)) contents_size = buf - contents_start;
 
 		if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
 			return 0;

@@ -97,6 +97,10 @@ int load_config(void)
 							user.config.email = strdup(result);
 						if ((result = get_config_item(buf,"RealName")))
 							user.config.realname = strdup(result);
+						if ((result = get_config_item(buf, "Receive.Preselection")))
+							user.config.receive_preselection = atoi(result);
+						if ((result = get_config_item(buf, "Receive.Size")))
+							user.config.receive_size = atoi(result);
 						if ((result = get_config_item(buf,"SMTP00.Server")))
 							user.config.smtp_server = strdup(result);
 						if ((result = get_config_item(buf,"SMTP00.Port")))
@@ -177,6 +181,10 @@ void save_config(void)
 
 			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
 			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
+
+			/* Write out receive stuff */
+			fprintf(fh,"Receive.Preselection=%ld\n",user.config.receive_preselection);
+			fprintf(fh,"Receive.Size=%ld\n",user.config.receive_size);
 
 			/* Write the pop3 servers */
 			i = 0;

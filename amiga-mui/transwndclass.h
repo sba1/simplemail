@@ -41,10 +41,13 @@ void delete_transwnd_class(void);
 
 #define MUIM_transwnd_InsertMailSize  0x4545454
 #define MUIM_transwnd_InsertMailInfo  0x4545455
+#define MUIM_transwnd_GetMailFlags    0x4545456
+#define MUIM_transwnd_Clear           0x4545457
 
 struct MUIP_transwnd_InsertMailSize {
 	ULONG MethodId;
 	LONG Num;
+	LONG Flags;
 	LONG Size;
 };
 
@@ -54,6 +57,11 @@ struct MUIP_transwnd_InsertMailInfo {
 	STRPTR From;
 	STRPTR Subject;
 	ULONG Seconds;
+};
+
+struct MUIP_transwnd_GetMailFlags {
+	ULONG MethodID;
+	LONG Num;
 };
 
 #endif

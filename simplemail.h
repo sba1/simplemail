@@ -23,6 +23,7 @@
 #ifndef SM__SIMPLEMAIL_H
 #define SM__SIMPLEMAIL_H
 
+struct filter;
 struct folder;
 struct mail;
 struct addressbook_entry;
@@ -76,4 +77,5 @@ void callback_autocheck_refresh(void);
 void callback_timer(void);
 
 #endif
+
 

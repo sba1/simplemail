@@ -135,7 +135,29 @@ int sm_get_gmt_offset(void)
 }
 
 /******************************************************************
- Convert seconds from 1978 to a string.
+ Returns the current current seconds (since 1.1.1978)
+*******************************************************************/
+unsigned int sm_get_current_seconds(void)
+{
+	struct timezone tz;
+	struct timeval tv;
+
+	gettimeofday(&tv,&tz);
+	return 0;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a long form string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_date_long_str(unsigned int seconds)
+{
+	static char buf[128];
+	return buf;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a date string.
  The returned string is static.
 *******************************************************************/
 char *sm_get_date_str(unsigned int seconds)
@@ -144,6 +166,15 @@ char *sm_get_date_str(unsigned int seconds)
 	return buf;
 }
 
+/******************************************************************
+ Convert seconds from 1978 to a string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_time_str(unsigned int seconds)
+{
+	static char buf[128];
+	return buf;
+}
 
 /******************************************************************
  Add a filename component to the drawer
@@ -202,6 +233,46 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 }
 
 /******************************************************************
+ Opens a requester to enter a string. Returns NULL on error.
+ Otherwise the malloc()ed string
+*******************************************************************/
+char *sm_request_string(char *title, char *text, char *contents, int secret)
+{
+	printf("sm_request_string()\n");
+	return NULL;
+}
+
+/******************************************************************
+ Get environment variables
+*******************************************************************/
+char *sm_getenv(char *name)
+{
+	return getenv(name);
+}
+
+/******************************************************************
+ Set environment variables
+*******************************************************************/
+void sm_setenv(char *name, char *value)
+{
+}
+
+/******************************************************************
+ Unset environment variables
+*******************************************************************/
+void sm_unsetenv(char *name)
+{
+}
+
+/******************************************************************
+ An system() replacement
+*******************************************************************/
+int sm_system(char *command, char *output)
+{
+  return 20;
+}
+
+/******************************************************************
  Tells an error message
 *******************************************************************/
 void tell_str(char *str)
@@ -217,6 +288,8 @@ void tell_from_subtask(char *str)
 {
 	thread_call_parent_function_sync(tell_str,1,str);
 }
+
+
 
 
 

@@ -168,6 +168,17 @@ void dl_wait(void)
 {
 }
 
+void dl_freeze_list(void)
+{
+}
 
+void dl_thaw_list(void)
+{
+}
+
+int dl_more_statistics(void)
+{
+  return 1;
+}
 
 

@@ -1085,6 +1085,8 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
 	struct folder *f = folder_find_by_path(folder_path);
 	struct mail *m;
 
+	if (!f) return NULL;
+
 	while ((m = folder_next_mail(f, &handle)))
 	{
 		if (!mystricmp(m->filename,mail_filename))
@@ -1092,8 +1094,7 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
 			return folder_next_mail(f,&handle);
 		}
 	}
-
-	if (!f) return NULL;
+	return NULL;
 }
 
 /******************************************************************
@@ -1107,6 +1108,8 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
 	struct mail *lm = NULL;
 	struct mail *m;
 
+	if (!f) return NULL;
+
 	while ((m = folder_next_mail(f, &handle)))
 	{
 		if (!mystricmp(m->filename,mail_filename))
@@ -1116,7 +1119,7 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
 		lm = m;
 	}
 
-	if (!f) return NULL;
+	return NULL;
 }
 
 /******************************************************************
@@ -1672,7 +1675,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 			}
 		}
 	} while (nm);
-
+	return 1;
 }
 
 /******************************************************************
@@ -1960,4 +1963,5 @@ void del_folders(void)
 		f = folder_next(f);
 	}
 }
+
 

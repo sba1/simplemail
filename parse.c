@@ -168,7 +168,7 @@ static char *skip_spaces(const char *buf)
 /**************************************************************************
  atom        =  1*<any CHAR except specials, SPACE and CTLs> 
 **************************************************************************/
-static char *parse_atom(const char *atom, char **pbuf)
+static char *parse_atom(char *atom, char **pbuf)
 {
 	const char *atom_start;
 	char *buf;
@@ -857,3 +857,5 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 
 	return date;
 }
+
+

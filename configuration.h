@@ -31,6 +31,10 @@
 #include "account.h"
 #endif
 
+#ifndef SM__PHRASE_H
+#include "phrase.h"
+#endif
+
 struct pop3_server;
 
 #define SHOW_HEADER_NONE			0
@@ -120,4 +124,5 @@ void insert_config_phrase(struct phrase *phrase);
 extern struct user user; /* the current user */
 
 #endif
+
 

@@ -43,6 +43,7 @@ static GtkWidget *mail_ctree_scrolled_window;
 static struct list mail_ctree_string_list;
 
 static GtkWidget *folder_ctree; /* the folders */
+static GtkWidget *folder_ctree_scrolled_window;
 static GtkCTreeNode *folder_ctree_mailbox_node; /* the mailbox node */
 static struct list folder_ctree_string_list; /* the list of all strings the folder list contains */
 
@@ -105,6 +106,22 @@ static void mail_ctree_insert(struct mail *m)
 
 
 /******************************************************************
+ Freezes the mail list
+*******************************************************************/
+static void mail_ctree_freeze(void)
+{
+	gtk_clist_freeze(GTK_CLIST(mail_ctree));
+}
+
+/******************************************************************
+ Thaw the mail list
+*******************************************************************/
+static void mail_ctree_thaw(void)
+{
+	gtk_clist_thaw(GTK_CLIST(mail_ctree));
+}
+
+/******************************************************************
  Clears the whole folder list
 *******************************************************************/
 static void folder_ctree_clear(void)
@@ -157,6 +174,8 @@ static void main_quit(void)
 static void folder_select_row_callback(GtkCTree *ctree, GList *node, gint column, gpointer user_data)
 {
 	callback_folder_active();
+
+	callback_change_folder_attrs(); /* test reasons */
 }
 
 /******************************************************************
@@ -215,21 +234,27 @@ int main_window_init(void)
 	gtk_container_add(GTK_CONTAINER(hbox), hpaned);
 
         /* Create the folder tree */
+        folder_ctree_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+        gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(folder_ctree_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
         folder_ctree = gtk_ctree_new_with_titles(2,0,folder_names);
 	gtk_signal_connect(GTK_OBJECT(folder_ctree), "tree-select-row",GTK_SIGNAL_FUNC(folder_select_row_callback), NULL);
+	gtk_container_add(GTK_CONTAINER(folder_ctree_scrolled_window),folder_ctree);
 
         /* Create the mail tree */
         mail_ctree_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
         gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(mail_ctree_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
 	mail_ctree = gtk_ctree_new_with_titles(4,0,mail_names);
+	gtk_container_add(GTK_CONTAINER(mail_ctree_scrolled_window),mail_ctree);
 
 	/* Add them to the paned */
-	gtk_paned_add1(GTK_PANED(hpaned),folder_ctree);
-	gtk_paned_add2(GTK_PANED(hpaned),mail_ctree);
+	gtk_paned_add1(GTK_PANED(hpaned),folder_ctree_scrolled_window);
+	gtk_paned_add2(GTK_PANED(hpaned),mail_ctree_scrolled_window);
 
 	/* Show the window */
 	gtk_widget_show(folder_ctree);
+	gtk_widget_show(folder_ctree_scrolled_window);
 	gtk_widget_show(mail_ctree);
+	gtk_widget_show(mail_ctree_scrolled_window);
 	gtk_widget_show(hpaned);
 	gtk_widget_show(hbox);
         gtk_widget_show(toolbar);
@@ -578,12 +603,14 @@ void main_set_folder_mails(struct folder *folder)
 	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
 	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
+	mail_ctree_freeze();
 	mail_ctree_clear();
 
 	while ((m = folder_next_mail(folder,&handle)))
 	{
 		mail_ctree_insert(m);
 	}
+	mail_ctree_thaw();
 
 
 #if 0
@@ -844,18 +871,12 @@ void main_remove_mails_selected(void)
 #endif
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+/******************************************************************
+ Build the check singe account menu
+*******************************************************************/
+void main_build_accounts(void)
+{
+}
 
 
 

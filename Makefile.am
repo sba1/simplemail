@@ -29,6 +29,8 @@ simplemail_SOURCES = account.c \
                      md5.h \
                      parse.c \
                      parse.h \
+                     phrase.c \
+                     phrase.h \
                      pop3.c \
                      pop3.h \
                      signature.c \
@@ -48,6 +50,7 @@ simplemail_SOURCES = account.c \
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
 simplemail_LDADD        = ./gtk/libgui.a @GUI_LIBS@
+
 
 
 

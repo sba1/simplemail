@@ -24,6 +24,7 @@
 #define SM__HTTP_H
 
 int http_download_photo(char *path, char *email);
-int http_download(char *uri, void *buf, int *buf_len);
+int http_download(char *uri, void **buf, int *buf_len);
 
 #endif
+

@@ -147,7 +147,7 @@ void xml_start_tag(void *data, const char *el, const char **attr)
 void xml_end_tag(void *data, const char *el)
 {
 	struct addressbook_entry *entry;
-	struct address_snail_phone *asp;
+	struct address_snail_phone *asp = NULL;
 	XML_Parser p = (XML_Parser)data;
 
 	if (!(entry = (struct addressbook_entry*)XML_GetUserData(data))) return;
@@ -275,7 +275,7 @@ static char *uft8toucs(char *chr, unsigned int *code)
 			bytes = 5;
 			ucs = c & 0x3;
 		}
-		else if (!(c & 0x02))
+		else /* if (!(c & 0x02)) */
 		{
 			bytes = 6;
 			ucs = c & 0x1;
@@ -334,7 +334,7 @@ void xml_char_data(void *data, const XML_Char *s, int len)
 				src = uft8toiso(src,&code);
 				if (!code) break; /* null byte will be added below */
 				*dest++ = code;
-				len -= src - oldsrc;
+				len -= (char*)src - oldsrc;
 			}
 
 			*dest = 0;
@@ -1269,4 +1269,6 @@ struct addressbook_entry *addressbook_next(struct addressbook_entry *entry)
 	new_entry = (struct addressbook_entry *)node_next(&entry->node);
 	return new_entry;
 }
+
+
 

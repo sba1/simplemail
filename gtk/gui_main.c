@@ -24,12 +24,21 @@
 
 #include "mainwnd.h"
 
+#include "simplemail.h"
+
+int gui_parseargs(int argc, char *argv[])
+{
+	return 1;
+}
+
+
 int gui_main(int argc, char *argv[])
 {
 	gtk_init(&argc, &argv);
 	main_window_init();
 	main_refresh_folders();
 	main_window_open();
+	callback_change_folder_attrs();
 	gtk_main();
 	return 1;
 }
@@ -212,13 +221,4 @@ int gui_main(void)
 }
 
 #endif
-
-
-
-
-
-
-
-
-
 

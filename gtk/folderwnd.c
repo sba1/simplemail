@@ -51,6 +51,7 @@ static void folder_ok(void)
 
 struct folder *folder_get_changed_folder(void)
 {
+	return folder_incoming();
 #if 0
 	return changed_folder;
 #endif
@@ -58,6 +59,7 @@ struct folder *folder_get_changed_folder(void)
 
 char *folder_get_changed_name(void)
 {
+	return "incoming";
 #if 0
 	return (char*)xget(name_string,MUIA_String_Contents);
 #endif
@@ -65,6 +67,7 @@ char *folder_get_changed_name(void)
 
 char *folder_get_changed_path(void)
 {
+	return strdup(folder_incoming()->path);
 #if 0
 	return (char*)xget(path_string,MUIA_String_Contents);
 #endif
@@ -72,6 +75,7 @@ char *folder_get_changed_path(void)
 
 int folder_get_changed_type(void)
 {
+	return folder_incoming()->type == 3?0:3;
 #if 0
 	return (int)xget(type_cycle, MUIA_Cycle_Active);
 #endif
@@ -155,3 +159,5 @@ void folder_edit(struct folder *f)
 void folder_edit_new_path(char *init_path)
 {
 }
+
+

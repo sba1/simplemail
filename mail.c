@@ -2290,6 +2290,7 @@ static char *get_first_name(char *realname, char *addr_spec)
  first name.
  Returns a static buffer.
 **************************************************************************/
+#if 0
 static char *get_last_name(char *realname, char *addr_spec)
 {
 	static char buf[256];
@@ -2304,6 +2305,7 @@ static char *get_last_name(char *realname, char *addr_spec)
 	} else buf[0]=0;
 	return buf;
 }
+#endif
 
 /**************************************************************************
  Creates a string for a greeting/closing phrase. orig_mail, realname, addr_spec
@@ -2452,3 +2454,4 @@ int mail_allowed_to_download(struct mail *mail)
 	}
 	return rc;
 }
+

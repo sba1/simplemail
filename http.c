@@ -45,7 +45,7 @@ int http_download_photo(char *path, char *email)
 
 	if (!open_socket_lib()) return 0;
 
-  rc = 0;
+	rc = 0;
 
 	if ((conn = tcp_connect("simplemail.sourceforge.net",80,0)))
 	{
@@ -88,7 +88,7 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 {
 	int rc = 0;
 
-	if (!strnicmp(uri,"http://",7))
+	if (!mystrnicmp(uri,"http://",7))
 	{
 		int port;
 		char *path_buf;
@@ -150,7 +150,7 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 							len += got;
 						}
 
-						if (*buf_ptr = malloc(len))
+						if ((*buf_ptr = malloc(len)))
 						{
 							fseek(fh,0,SEEK_SET);
 							fread(*buf_ptr,1,len,fh);
@@ -168,3 +168,4 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 	}
 	return rc;
 }
+

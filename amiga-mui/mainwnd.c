@@ -931,16 +931,18 @@ void main_set_folder_mails(struct folder *folder)
 			if (primary_sort == FOLDER_SORT_FROMTO)
 			{
 				int res;
+				char *m_to = mail_get_to(m);
+				char *m_from = mail_get_from(m);
 
 				if (lm)
 				{
-					if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = mystricmp(m->to, lm->to);
-					else res = mystricmp(m->from, lm->from);
+					if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = mystricmp(m_to, mail_get_to(lm));
+					else res = mystricmp(m_from, mail_get_from(lm));
 				}
 
 				if (!lm || res)
 				{
-					treenode = (APTR)DoMethod(mail_tree, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?(m->to?m->to:""):(m->from?m->from:""), MUIV_MailTreelist_UserData_Name, /* special hint */
+					treenode = (APTR)DoMethod(mail_tree, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?m_to:m_from, MUIV_MailTreelist_UserData_Name, /* special hint */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST/*|TNF_OPEN*/);
 				}
 			} else

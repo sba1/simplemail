@@ -167,15 +167,24 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 				char *field;
 				char *dest = data->fromto_buf;
 
-				if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to;
-				else field = mail->from;
+				if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to_phrase;
+				else field = mail->from_phrase;
 
 				if (mail->flags & MAIL_FLAGS_GROUP)
 				{
 					sprintf(dest,"\33O[%08lx]",data->status_group);
 					dest += strlen(dest);
 				}
-				utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),NULL);
+
+				if (field)
+				{
+					utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),NULL);
+				} else
+				{
+					if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to_addr;
+					else field = mail->from_addr;
+					if (field) strcpy(dest,field); /* Could be optimized */
+				}
 			}
 			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),NULL);
 
@@ -233,22 +242,22 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 			buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
 		}
 
-		if (m->from)
+		if (from)
 		{
 			*buf++ = '\n';
 			buf = mystpcpy(buf,data->from_text);
 			*buf++ = ':';
 			*buf++ = ' ';
-			buf += utf8tostr(m->from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			buf += utf8tostr(from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
 		}
 
-		if (m->to)
+		if (to)
 		{
 			*buf++ = '\n';
 			buf = mystpcpy(buf,data->to_text);
 			*buf++ = ':';
 			*buf++ = ' ';
-			buf += utf8tostr(m->to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
 		}
 
 		if (m->reply)

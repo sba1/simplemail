@@ -38,7 +38,7 @@
 #include "support.h"
 #include "support_indep.h"
 
-#define FOLDER_INDEX_VERSION 3
+#define FOLDER_INDEX_VERSION 4
 
 static void folder_remove_mail(struct folder *folder, struct mail *mail);
 
@@ -73,14 +73,14 @@ static int mail_compare_status(const struct mail *arg1, const struct mail *arg2,
 
 static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->from,arg2->from);
+	int rc = mystricmp(mail_get_from(arg1),mail_get_from(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
 
 static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->to,arg2->to);
+	int rc = mystricmp(mail_get_to(arg1),mail_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -179,6 +179,7 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 
 
 static char *fread_str(FILE *fh);
+static char *fread_str_no_null(FILE *fh);
 static void folder_config_save(struct folder *f);
 static int folder_config_load(struct folder *f);
 
@@ -774,18 +775,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 							m->subject = fread_str(fh);
 							m->filename = fread_str(fh);
-
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"From",4,buf,strlen(buf),0);
-								free(buf);
-							}
-
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"To",2,buf,strlen(buf),0);
-								free(buf);
-							}
+							m->from_phrase = fread_str_no_null(fh);
+							m->from_addr = fread_str_no_null(fh);
+							m->to_phrase = fread_str_no_null(fh);
+							m->to_addr = fread_str_no_null(fh);
 
 							if ((buf = fread_str(fh)))
 							{
@@ -1708,6 +1701,31 @@ static char *fread_str(FILE *fh)
 }
 
 /******************************************************************
+ Reads a string from a filehandle. It is allocated with malloc().
+ Returns NULL if the string has an length of 0.
+*******************************************************************/
+static char *fread_str_no_null(FILE *fh)
+{
+	unsigned char a;
+	char *txt;
+	int len;
+
+	a = fgetc(fh);
+	len = a << 8;
+	a = fgetc(fh);
+	len += a;
+
+	if (!len) return NULL;
+
+	if ((txt = malloc(len+1)))
+	{
+		fread(txt,1,len,fh);
+		txt[len]=0;
+	}
+	return txt;
+}
+
+/******************************************************************
  Saved the index of an folder
 *******************************************************************/
 int folder_save_index(struct folder *f)
@@ -1728,8 +1746,6 @@ int folder_save_index(struct folder *f)
 
 		for (i=0; i < f->num_mails; i++)
 		{
-			char *from = mail_find_header_contents(f->mail_array[i],"from");
-			char *to = mail_find_header_contents(f->mail_array[i],"to");
 			char *reply_to = mail_find_header_contents(f->mail_array[i],"reply-to");
 			char *message_id = mail_find_header_contents(f->mail_array[i],"message-id");
 			char *in_reply_to = mail_find_header_contents(f->mail_array[i],"in-reply-to");
@@ -1740,9 +1756,13 @@ int folder_save_index(struct folder *f)
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->filename))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, from))) break;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_phrase))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, to))) break;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_addr))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_phrase))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_addr))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, reply_to))) break;
 			len += len_add;
@@ -1899,7 +1919,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						{
 							int i = 0;
 							while (!take && rule->u.from.from[i])
-								take = !!mystristr(m->from,rule->u.from.from[i++]);
+								take = !!mystristr(mail_get_from(m),rule->u.from.from[i++]);
 
 							if (!take)
 							{
@@ -2002,7 +2022,6 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 	for (;;)
 	{
 		void *old_handle = handle;
-		struct filter *f;
 
 		if (!(m = folder_next_mail(folder,&handle))) break;
 		

@@ -460,6 +460,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				struct mail_scan ms;
 				struct mail *m;
 				int more = 1; /* more lines needed */
+				char *m_from;
 
 				if (!(m = mail_create())) break;
 
@@ -485,8 +486,9 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				mail_scan_buffer_end(&ms);
 				mail_process_headers(m);
 
+				m_from = m->from_phrase?m->from_phrase:m->from_addr;
 				/* Tell the gui about the mail info (not asynchron!)*/
-				thread_call_parent_function_sync(dl_insert_mail_info, 4, i, m->from, m->subject, m->seconds);
+				thread_call_parent_function_sync(dl_insert_mail_info, 4, i, m_from, m->subject, m->seconds);
 
 				/* Check if we should receive more statitics (also not asynchron)*/
 				if (!(int)thread_call_parent_function_sync(dl_more_statistics,0)) break;

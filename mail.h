@@ -51,10 +51,12 @@ struct content_parameter
 
 struct mail
 {
-	int status; /* see below */
-	int flags; /* see below */
-	char *from; /* decoded "From" field */
-	char *to; /* decoded "To" field, only the first address */
+	int status;			/* see below */
+	int flags;				/* see below */
+	char *from_phrase;/* decoded "From" field, might be NULL if no phrase was defined */
+	char *from_addr;	/* the email address */
+	char *to_phrase;	/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
+	char *to_addr;		/* the email address, only a single one */
 	char *reply;
 	char *subject;
 	char *message_id;
@@ -128,6 +130,9 @@ struct mail
 #define MAIL_FLAGS_CRYPT     (1L << 4) /* mail is crypted */
 #define MAIL_FLAGS_SIGNED    (1L << 5) /* mail has been signed */
 
+#define mail_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
+#define mail_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
+
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
 struct mail *mail_find_initial(struct mail *m);
@@ -143,7 +148,6 @@ struct mail *mail_create_for(char *to, char *subject);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(int num, struct mail **mail_array);
 struct mail *mail_create_forward(int num, struct mail **mail_array);
-int mail_forward(struct mail *mail);
 void mail_free(struct mail *mail);
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
 int mail_process_headers(struct mail *mail);

@@ -1402,73 +1402,33 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 }
 
 /**************************************************************************
- Modifies the mail to a forwared one
-**************************************************************************/
-int mail_forward(struct mail *mail)
-{
-	char *subject = mail->subject;
-
-	struct header *header = mail_find_header(mail,"to");
-
-	if (header)
-	{
-		/* remove the to header */
-		node_remove(&header->node);
-		if (header->name) free(header->name);
-		if (header->contents) free(header->contents);
-		free(header);
-	}
-
-	if (mail->to) free(mail->to);
-	mail->to = NULL;
-	if (mail->message_id) free(mail->message_id);
-	mail->message_id = NULL;
-	if (mail->message_reply_id) free(mail->message_reply_id);
-	mail->message_reply_id = NULL;
-
-	if (subject)
-	{
-		char *new_subject;
-		int len = strlen(subject);
-
-		if ((new_subject = (char*)malloc(len+10)))
-		{
-			strcpy(new_subject,subject);
-			strcat(new_subject," (fwd)");
-			mail->subject = new_subject;
-			free(subject);
-		}
-	}
-	return 1;
-}
-
-
-/**************************************************************************
  Extract the name of a given address (and looks for matches in the
  addressbook). If more than one e-mail address is specified, *more_prt
  will be set to 1.
 **************************************************************************/
-static char *extract_name_from_address(char *addr, int *more_ptr)
+static int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
 {
-	char *name = NULL;
 	struct parse_address paddr;
 
 	if (more_ptr) *more_ptr = 0;
+	*dest_phrase = *dest_addr = NULL;
+	if (!addr) return 0;
 
-	if ((name = parse_address(addr,&paddr)))
+	if ((addr = parse_address(addr,&paddr)))
 	{
 		struct mailbox *first_addr = (struct mailbox*)list_first(&paddr.mailbox_list);
 		if (first_addr)
 		{
-			if (first_addr->phrase) name = strdup(first_addr->phrase);
-			else
+			if (first_addr->phrase)
+			{
+				*dest_phrase = mystrdup(first_addr->phrase);
+				*dest_addr = mystrdup(first_addr->addr_spec);
+			} else
 			{
 				if (first_addr->addr_spec)
 				{
-					if (!(name = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
-					{
-						name = mystrdup(first_addr->addr_spec);
-					}
+					*dest_phrase = mystrdup(addressbook_get_realname(first_addr->addr_spec));
+					*dest_addr = mystrdup(first_addr->addr_spec);
 				}
 			}
 			if (node_next(&first_addr->node))
@@ -1479,8 +1439,8 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 		free_address(&paddr);
 	}
 
-	if (!name) name = mystrdup(addr);
-	return name;
+	if (!*dest_addr) *dest_addr = mystrdup(addr);
+	return 1;
 }
 
 
@@ -1489,6 +1449,13 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 **************************************************************************/
 char *mail_get_from_address(struct mail *mail)
 {
+	char *buf = malloc(mystrlen(mail->from_phrase) + mystrlen(mail->from_addr)+10);
+	if (buf)
+	{
+		if (mail->from_phrase) sprintf(buf,"%s <%s>",mail->from_phrase,mail->from_addr);
+		else strcpy(buf,mail->from_addr?mail->from_addr:"");
+	}
+/*
 	struct mailbox mb;
 	char *buf = NULL;
 	char *from = mail_find_header_contents(mail,"from");
@@ -1505,7 +1472,7 @@ char *mail_get_from_address(struct mail *mail)
 		}
 		free(mb.addr_spec);
 		free(mb.phrase);
-	}
+	}*/
 	return buf;
 }
 
@@ -1514,6 +1481,14 @@ char *mail_get_from_address(struct mail *mail)
 **************************************************************************/
 char *mail_get_to_address(struct mail *mail)
 {
+	char *buf = malloc(mystrlen(mail->to_phrase) + mystrlen(mail->to_addr)+10);
+	if (buf)
+	{
+		if (mail->to_phrase) sprintf(buf,"%s <%s>",mail->to_phrase,mail->to_addr);
+		else strcpy(buf,mail->to_addr?mail->to_addr:"");
+	}
+
+/*
 	struct mailbox mb;
 	char *buf = NULL;
 	char *to = mail_find_header_contents(mail,"to");
@@ -1530,7 +1505,7 @@ char *mail_get_to_address(struct mail *mail)
 		}
 		free(mb.addr_spec);
 		free(mb.phrase);
-	}
+	}*/
 	return buf;
 }
 
@@ -1580,16 +1555,12 @@ int mail_process_headers(struct mail *mail)
 			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
 		} else if (!mystricmp("from",header->name))
 		{
-			if (buf) mail->from = extract_name_from_address(buf,NULL);
-			else mail->from = NULL;
+			extract_name_from_address(buf,&mail->from_phrase,&mail->from_addr,NULL);
 		} else if (!mystricmp("to",header->name))
 		{
-			if (buf)
-			{
-				int more;
-				mail->to = extract_name_from_address(buf,&more);
-				if (more) mail->flags |= MAIL_FLAGS_GROUP;
-			} else mail->to = NULL;
+			int more;
+			extract_name_from_address(buf,&mail->to_phrase,&mail->to_addr,&more);
+			if (more) mail->flags |= MAIL_FLAGS_GROUP;
 		} else if (!mystricmp("cc",header->name))
 		{
 			mail->flags |= MAIL_FLAGS_GROUP;

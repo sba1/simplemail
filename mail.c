@@ -99,7 +99,7 @@ static int mailncpy(char *dest, const char *src, int n)
   for (i=0;i<n;i++)
   {
     c = *src++;
-    if (c==10 || c == 13) continue;
+    if (c==10 || c == 13 || c == 27) continue;
     if (c=='\t') c=' ';
     len++;
     *dest_ptr++ = c;

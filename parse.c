@@ -597,6 +597,7 @@ void parse_text_string(char *text, char **pbuf)
 	char *text_end = text + len;
 	char *buf = (char*)malloc(len+1);
 	char *buf_ptr;
+	int enc = 0;
 
 	if (!buf) return;
 	buf_ptr = buf;
@@ -604,16 +605,19 @@ void parse_text_string(char *text, char **pbuf)
 	while (text < text_end)
 	{
 		char *word;
-		char *new_text = parse_encoded_word(text, &word);
-		if (new_text)
+		char *new_text;
+
+		if ((*text != ' ' || enc) && (new_text = parse_encoded_word(text, &word)))
 		{
 			strcpy(buf_ptr,word);
 			buf_ptr += strlen(word);
 			free(word);
 			text = new_text;
+			enc = 1;
 		} else
 		{
 			*buf_ptr++ = *text++;
+			enc = 0;
 		}
 	}
 
@@ -737,6 +741,7 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 	char *ret,*encoding_start;
 	char *charset;
 	char *encoding;
+	unsigned int len;
 
 	ret = skip_spaces(encoded_word);
 	if (*ret != '=') return NULL;
@@ -769,15 +774,15 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 		return NULL;
 	}
 
+	len = (unsigned int)-1;
+
 	if (!mystricmp(encoding,"b"))
 	{
-		unsigned int len = (unsigned int)-1;
 		*pbuf = decode_base64(encoding_start, ret - encoding_start, &len);
 	} else
 	{
 		if (!mystricmp(encoding,"q"))
 		{
-			unsigned int len = (unsigned int)-1;
 			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len,1);
 		} else
 		{
@@ -790,9 +795,15 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 	free(charset);
 	free(encoding);
 
-	if (!*pbuf) return NULL;
+	if (*pbuf)
+	{
+		int i;
+		for (i=0;i<len;i++)
+			if ((*pbuf)[i]==27) (*pbuf)[i]=' ';
 
-	return ret + 2;
+		return ret + 2;
+	}
+	return NULL;
 }
 
 /**************************************************************************

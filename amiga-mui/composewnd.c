@@ -870,7 +870,7 @@ void compose_window_open(struct compose_args *args)
 							Child, show_attach_button = MakePictureButton(_("Show At."),"PROGDIR:Images/AttachmentList"),
 							End,
 						Child, HGroup,
-							MUIA_Weight, 66,
+							MUIA_Weight, 33,
 							MUIA_Group_Spacing,0,
 							Child, encrypt_button = MakePictureButton(_("Encrypt"),"PROGDIR:Images/Encrypt"),
 							Child, sign_button = MakePictureButton(_("Sign"),"PROGDIR:Images/Sign"),
@@ -954,6 +954,8 @@ void compose_window_open(struct compose_args *args)
 		if (data)
 		{
 			char buf[512];
+
+			set(sign_button,MUIA_ShowMe, FALSE); /* temporary not shown because not implemented */
 
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;

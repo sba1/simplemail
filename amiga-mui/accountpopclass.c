@@ -59,7 +59,10 @@ struct AccountPop_Data
 	struct Hook destruct_hook;
 	struct Hook display_hook;
 
-	struct account *selected_account; /* is always an copy */
+	struct account *selected_account; /* is always a copy */
+
+	char name_buf[64];
+	char email_buf[64];
 };
 
 STATIC ASM SAVEDS struct account *account_construct(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_ConstructMessage *msg))
@@ -76,6 +79,8 @@ STATIC ASM SAVEDS VOID account_destruct(REG(a0,struct Hook *h),REG(a2,Object *ob
 
 STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
+	struct AccountPop_Data *data = h->h_Data;
+
 	if (msg->entry)
 	{
 		if ((LONG)msg->entry == -1)
@@ -86,8 +91,12 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h),REG(a2,Object *obj
 		} else
 		{
 			struct account *account = (struct account *)msg->entry;
-			msg->strings[0] = account->email;
-			msg->strings[1] = account->account_name;
+
+			utf8tostr(account->email,data->email_buf,sizeof(data->email_buf),user.config.default_codeset);
+			utf8tostr(account->account_name,data->name_buf,sizeof(data->name_buf),user.config.default_codeset);
+
+			msg->strings[0] = data->email_buf;
+			msg->strings[1] = data->name_buf;
 			msg->strings[2] = account->smtp->name;
 		}
 	}
@@ -208,7 +217,7 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	init_hook(&data->construct_hook,(HOOKFUNC)account_construct);
 	init_hook(&data->destruct_hook,(HOOKFUNC)account_destruct);
-	init_hook(&data->display_hook,(HOOKFUNC)account_display);
+	init_hook_with_data(&data->display_hook,(HOOKFUNC)account_display,data);
 	init_hook_with_data(&data->objstr_hook,(HOOKFUNC)account_objstr,data);
 	init_hook_with_data(&data->strobj_hook,(HOOKFUNC)account_strobj,data);
 

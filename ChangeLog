@@ -2,6 +2,19 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2003-12-30  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/signaturecycleclass.h: Renamed MUIA_SignatureCycle_Signature
+	  to MUIA_SignatureCycle_SignatureName.
+	  Added MUIA_SignatureCycle_Active for Notification.
+	  Added MUI(M|P)_SignatureCycle_Refresh.
+	  Added MUIV_SignatureCycle_(Next|Prev) because it's an Cycle :)
+	* amiga-mui/signaturecycleclass.c: The Class is now derived from MUIC_Group
+	  so it was possible to add the Refresh() Method which has to dispose
+	  the Cycle and Recreate it. Now we don't need to do it ourself anymore.
+	* amiga-mui: composewnd.c configwnd.c folderwnd.c
+	  Changed the code to use the new functionality of the SignatureCycleObject.
+
 2003-12-28  Bernd Gollesch <bgollesch@sime.com>
 
 	* simplemail.c:  Removed callback_refresh_signatures() and merged

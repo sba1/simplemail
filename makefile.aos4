@@ -30,8 +30,8 @@ TARGET = SimpleMail
 # Additional linker libraries
 LIBS = -ldebug -lexpat
 
-# Version of the library to build
-VERSION = 50
+# Version of the binary to build
+VERSION = 0
 
 # Source code files used in this project
 

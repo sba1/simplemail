@@ -36,7 +36,6 @@
 #include <proto/datatypes.h>
 #include <proto/muimaster.h>
 
-#include "debug.h"
 #include "support_indep.h"
 
 #include "amigasupport.h"
@@ -180,7 +179,6 @@ STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
-	SM_ENTER;
 
 	if (!DoSuperMethodA(cl,obj,msg))
 		return 0;
@@ -188,7 +186,6 @@ STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 	PictureButton_Load(data,obj);
 
 	data->setup = 1;
-	SM_LEAVE;
 	return 1;
 }
 
@@ -207,8 +204,6 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 
 	int minwidth,minheight;
 
-	SM_ENTER;
-
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
 	mi = msg->MinMaxInfo;
@@ -217,10 +212,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	{
 		minwidth  = dt_width(data->dt);
 		minheight = dt_height(data->dt);
-		SM_DEBUGF(18,("Taking datatypes picture into account (%ldx%ld)\n",minwidth,minheight));
 	} else
 	{
-		SM_DEBUGF(18,("No datatypes picture associated\n"));
 		minwidth = 0;
 		minheight = 0;
 	}
@@ -257,8 +250,6 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	mi->MinWidth += minwidth;
 	mi->DefWidth += minwidth;
 	mi->MaxWidth = MUI_MAXMAX;
-
-	SM_RETURN(0,"%ld");
 }
 
 STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
@@ -362,8 +353,6 @@ Object *MakePictureButton(char *label, char *filename)
 
 	int control_char = GetControlChar(label);
 	struct TagItem tags[7];
-
-	SM_DEBUGF(5,("MUIA_Frame=%lx MUIA_Background=%lx mcc_Class=%p\n",MUIA_Frame,MUIA_Background,CL_PictureButton->mcc_Class));
 
 	return PictureButtonObject,
 		ButtonFrame,

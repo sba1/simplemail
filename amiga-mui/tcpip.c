@@ -27,7 +27,9 @@
 #include <amitcp/socketbasetags.h>
 #endif
 
+#ifndef USE_NO_SSL
 #include <proto/amissl.h>
+#endif
 
 #include "tcpip.h"
 
@@ -65,6 +67,7 @@ void close_socket_lib(void)
 	}
 }
 
+#ifndef USE_NO_SSL
 struct Library *AmiSSLBase;
 static int ssl_in_use;
 static SSL_CTX *ctx;
@@ -129,6 +132,7 @@ SSL_CTX *ssl_context(void)
 	return ctx;
 }
 
+#endif
 
 long tcp_herrno(void)
 {

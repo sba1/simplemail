@@ -87,6 +87,7 @@
 #include "popupmenuclass.h"
 #include "startupwnd.h"
 #include "shutdownwnd.h"
+#include "smtoolbarclass.h"
 #include "subthreads.h"
 #include "subthreads_amiga.h"
 #include "support.h"
@@ -249,6 +250,7 @@ void all_del(void)
 		{
 			app_del();
 
+			delete_smtoolbar_class();
 			delete_mailinfo_class();
 			delete_addressmatchlist_class();
 			delete_pgplist_class();
@@ -343,7 +345,7 @@ int all_init(void)
 						    create_signaturecycle_class() && create_messageview_class() &&
 								create_addressgrouplist_class() && create_addressentrylist_class() &&
 								create_pgplist_class() && create_addressmatchlist_class() &&
-								create_mailinfo_class())
+								create_mailinfo_class() && create_smtoolbar_class())
 						{
 							if (app_init())
 							{

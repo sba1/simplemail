@@ -72,6 +72,7 @@ static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
 static Object *user_charset_string;
+static Object *appicon_show_cycle;
 static Object *appicon_label_popph;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
@@ -537,6 +538,7 @@ static int config_use(void)
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
+	user.config.appicon_show = xget(appicon_show_cycle, MUIA_Cycle_Active);
 	user.config.appicon_label = mystrdup((char*)xget(appicon_label_popph, MUIA_Popph_Contents));
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
@@ -661,7 +663,7 @@ static void config_selected(void)
 *******************************************************************/
 static int init_user_group(void)
 {
-
+  static char *appicon_show_labels[4];
 	static const char *appicon_popph_array[] =
 	{
 		"%t|Total messages",
@@ -672,6 +674,11 @@ static int init_user_group(void)
 		"%d|Deleted messages",
 		NULL
 	};
+
+  appicon_show_labels[0] = _("Always");
+  appicon_show_labels[1] = _("Iconified");
+  appicon_show_labels[2] = _("Never");
+  appicon_show_labels[3] = NULL;
 
 	groups[GROUPS_USER] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -704,6 +711,8 @@ static int init_user_group(void)
 				End,
 			End,
 		Child, HGroup,
+		  Child, MakeLabel(_("AppIcon Show")),
+		  Child, HGroup, Child, appicon_show_cycle = MakeCycle(_("AppIcon Show"), appicon_show_labels), Child, HSpace(0), End,
 			Child, MakeLabel(_("AppIcon Label")),
 			Child, appicon_label_popph = PopphObject,
 				MUIA_Popph_Array, appicon_popph_array,
@@ -712,6 +721,9 @@ static int init_user_group(void)
 			End,
 		End;
 	if (!groups[GROUPS_USER]) return 0;
+
+  set(appicon_show_cycle, MUIA_Cycle_Active, user.config.appicon_show);
+
 	return 1;
 }
 

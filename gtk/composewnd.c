@@ -47,7 +47,7 @@ static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
 struct Compose_Data
 {
 	int num;
-	
+
 	GtkWidget *wnd;
 	GtkWidget *toolbar;
 	GtkWidget *text_view;
@@ -564,6 +564,86 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 #endif
 
 /******************************************************************
+ Compose a mail and close the window
+*******************************************************************/
+static int compose_mail(struct Compose_Data *data, int hold)
+{
+	int rc = 0;
+#if 0
+	if (compose_expand_to(&data) && compose_expand_cc(&data))
+#endif
+	{
+
+		char *from = gtk_entry_get_text( ((GtkCombo*)(data->from_combo))->entry);
+		char *to = gtk_entry_get_text(data->to_entry);
+		char *cc = gtk_entry_get_text(data->cc_entry);
+		char *subject = gtk_entry_get_text(data->subject_entry);
+		char *reply = NULL;
+		struct composed_mail new_mail;
+
+		GtkTextIter start, end;
+
+#if 0
+		/* update the current attachment */
+		compose_attach_active(&data);
+#endif
+		/* Initialize the structure with default values */
+		composed_mail_init(&new_mail);
+#if 0
+		/* Attach the mails recursivly */
+		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
+#endif
+		gtk_text_buffer_get_start_iter(gtk_text_view_get_buffer(data->text_view),&start);
+		gtk_text_buffer_get_end_iter(gtk_text_view_get_buffer(data->text_view),&end);
+
+		new_mail.content_type = "text/plain";
+		new_mail.text = gtk_text_buffer_get_text(gtk_text_view_get_buffer(data->text_view),&start,&end,FALSE);
+
+		/* TODO: free this stuff!! */
+		new_mail.from = from;
+		new_mail.replyto = reply;
+		new_mail.to = to;
+		new_mail.cc = cc;
+		new_mail.subject = subject;
+		new_mail.mail_filename = NULL;//data->filename;
+		new_mail.mail_folder = NULL;//data->folder;
+		new_mail.reply_message_id = NULL;//data->reply_id;
+		new_mail.encrypt = 0;//xget(data->encrypt_button,MUIA_Selected);
+		new_mail.sign = 0;//xget(data->sign_button,MUIA_Selected);
+
+		/* Move this out */
+		if ((mail_compose_new(&new_mail,hold)))
+		{
+			rc = 1;
+#if 0			/* Change the status of a mail if it was replied or forwarded */
+			if (data->ref_mail && mail_get_status_type(data->ref_mail) != MAIL_STATUS_SENT
+												 && mail_get_status_type(data->ref_mail) != MAIL_STATUS_WAITSEND)
+			{
+				if (data->compose_action == COMPOSE_ACTION_REPLY)
+				{
+					struct folder *f = folder_find_by_mail(data->ref_mail);
+					if (f)
+					{
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						main_refresh_mail(data->ref_mail);
+					}
+				} else
+				{
+					if (data->compose_action == COMPOSE_ACTION_FORWARD)
+					{
+						struct folder *f = folder_find_by_mail(data->ref_mail);
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						main_refresh_mail(data->ref_mail);
+					}
+				}
+			}
+#endif
+		}
+	}
+	return rc;
+}
+
+/******************************************************************
  Cancel button
 *******************************************************************/
 static void compose_cancel(GtkButton *button, gpointer user_data)
@@ -578,7 +658,8 @@ static void compose_cancel(GtkButton *button, gpointer user_data)
 static void compose_send_now(GtkButton *button, gpointer user_data)
 {
 	struct Compose_Data *data = (struct Compose_Data*)user_data;
-	compose_cancel(button,user_data);
+	if (compose_mail(data,2))
+		compose_cancel(button,user_data);
 }
 
 /******************************************************************
@@ -587,7 +668,8 @@ static void compose_send_now(GtkButton *button, gpointer user_data)
 static void compose_send_later(GtkButton *button, gpointer user_data)
 {
 	struct Compose_Data *data = (struct Compose_Data*)user_data;
-	compose_cancel(button,user_data);
+	if (compose_mail(data,0))
+		compose_cancel(button,user_data);
 }
 
 /******************************************************************
@@ -596,7 +678,8 @@ static void compose_send_later(GtkButton *button, gpointer user_data)
 static void compose_hold(GtkButton *button, gpointer user_data)
 {
 	struct Compose_Data *data = (struct Compose_Data*)user_data;
-	compose_cancel(button,user_data);
+	if (compose_mail(data,1))
+		compose_cancel(button,user_data);
 }
 
 /******************************************************************

@@ -180,12 +180,12 @@ static int smtp_rcpt(struct smtp_connection *conn, struct account *account, stru
 	char *buf;
 
 	rc = 0;
-	
+
 	buf = malloc(1024);
 	if(buf != NULL)
 	{
 		rc = 1;
-		
+
 		for(i = 0; om->rcp[i] != NULL; i++)
 		{
 			int res;
@@ -193,14 +193,14 @@ static int smtp_rcpt(struct smtp_connection *conn, struct account *account, stru
 			sprintf(buf, "TO:<%s>", om->rcp[i]);
 
 			res = smtp_send_cmd(conn, "RCPT", buf);
-			
+
 			if (res != SMTP_OK && res != SMTP_OK_FORWARD)
 			{
 				rc = 0;
 				break;
 			}
 		}
-		
+
 		free(buf);
 	}
 
@@ -904,6 +904,7 @@ struct smtp_entry_msg
 {
 	struct list *account_list;
 	struct outmail **outmail;
+	char *folder_path;
 };
 
 /**************************************************************************
@@ -914,6 +915,8 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 	struct list copy_list;
 	struct account *account;
 	struct outmail **outmail;
+	char path[256];
+
 	list_init(&copy_list);
 
 	for (account = (struct account*)list_first(msg->account_list);account;account = (struct account*)node_next(&account->node))
@@ -927,6 +930,9 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	outmail = duplicate_outmail_array(msg->outmail);
 
+	getcwd(path, sizeof(path));
+	chdir(msg->folder_path);
+
 	if (thread_parent_task_can_contiue())
 	{
 		thread_call_parent_function_async(status_init,1,0);
@@ -935,26 +941,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 		thread_call_parent_function_async(status_close,0);
 	}
 
-/*
-	struct smtp_server copy_server;
-
-	memset(&copy_server,0,sizeof(copy_server));
-
-	copy_server.name          			= mystrdup(server->name);
-	copy_server.domain					= mystrdup(server->domain);
-	copy_server.port          			= server->port;
-	copy_server.esmtp.auth          	= server->esmtp.auth;
-	copy_server.esmtp.auth_login    	= mystrdup(server->esmtp.auth_login);
-	copy_server.esmtp.auth_password 	= mystrdup(server->esmtp.auth_password);
-	copy_server.ip_as_domain  			= server->ip_as_domain;
-	copy_server.outmail      			= duplicate_outmail_array(server->outmail);
-
-	if (thread_parent_task_can_contiue())
-	{
-		smtp_send_really(&copy_server);
-		thread_call_parent_function_sync(up_window_close,0);
-	}
-*/
+ 	chdir(path);
 	return 0;
 }
 
@@ -964,18 +951,19 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path)
 {
 	int rc;
-	char path[256];
+//	char path[256];
 	struct smtp_entry_msg msg; /* should be not onto stack */
 
 	msg.account_list = account_list;
 	msg.outmail = outmail;
+	msg.folder_path = folder_path;
 
-	getcwd(path, sizeof(path));
-	if (chdir(folder_path) == -1)
-		return 0;
+//	getcwd(path, sizeof(path));
+//	if (chdir(folder_path) == -1)
+//		return 0;
 
 	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
- 	chdir(path);
+// 	chdir(path);
 	return rc;
 }
 

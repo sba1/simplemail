@@ -81,7 +81,7 @@ int mails_upload(void)
 	int i,num_mails;
 	char path[512];
 
-  /* count the number of mails which could be be sent */
+	/* count the number of mails which could be be sent */
 	num_mails = 0;
 	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
@@ -89,7 +89,7 @@ int mails_upload(void)
 		if (mail_get_status_type(m_iter) == MAIL_STATUS_WAITSEND) num_mails++;
 	}
 	if (!num_mails) return 0;
-  if (!(out_array = create_outmail_array(num_mails))) return 0;
+	if (!(out_array = create_outmail_array(num_mails))) return 0;
 
 	handle = NULL; /* for folder_next_mail() */
 	i=0; /* the current mail no */
@@ -188,11 +188,12 @@ int mails_upload(void)
 		mail_free(m);
 	}
 
+	chdir(path);
+	
 	/* now send all mails */
 	smtp_send(&user.config.account_list,out_array,out_folder->path);
 
 	free_outmail_array(out_array);
-	chdir(path);
 	return 1;
 }
 

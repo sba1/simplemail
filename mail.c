@@ -81,6 +81,11 @@ const static char pgp_text[] =
  "message, run the next body part through Pretty Good Privacy.\n"
 };
 
+#ifdef __GNUC__
+#define SM_OPERATIONSYSTEM "Linux/GTK"
+#else
+#define SM_OPERATIONSYSTEM "AmigaOS/MUI"
+#endif
 
 /**************************************************************************
  like strncpy() but for mail headers, returns the length of the string
@@ -2419,7 +2424,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		};
 
 		fputs(subject,fp);
-		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2002 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
+		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2002 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATIONSYSTEM);
 
 		time(&t);
 		d = localtime(&t);
@@ -2659,7 +2664,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				if (body_encoding && mystricmp(body_encoding,"7bit") || new_mail->content_description)
 				{
 					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
-				  fprintf(ofh,"Content-Type: text/plain; charset=%s\n",unicode?"utf-8":best_codeset->name);
+					fprintf(ofh,"Content-Type: text/plain; charset=%s\n",unicode?"utf-8":best_codeset->name);
 
 					/* Write the Content Description out */
 					if (new_mail->content_description && *new_mail->content_description)

@@ -115,7 +115,7 @@ int main_window_init(void)
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Forward", "Forward the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailForward.xpm"), callback_forward_mail /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Fetch", "Fetch the mails from the POP3 Servers", NULL /* private TT */, create_pixmap(main_wnd,"MailsFetch.xpm"), callback_fetch_mails /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Send", "Send the mails out", NULL /* private TT */, create_pixmap(main_wnd,"MailsSend.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Send", "Send the mails out", NULL /* private TT */, create_pixmap(main_wnd,"MailsSend.xpm"), callback_send_mails /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "ABook", "Open the addressbook", NULL /* private TT */, create_pixmap(main_wnd,"Addressbook.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Config", "Configure SimpleMail", NULL /* private TT */, create_pixmap(main_wnd,"Config.xpm"), callback_config /* CALLBACK */, NULL /* UDATA */);

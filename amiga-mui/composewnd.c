@@ -322,6 +322,28 @@ static void compose_add_files(struct Compose_Data **pdata)
 }
 
 /******************************************************************
+ Add files to the list
+*******************************************************************/
+static void compose_remove_file(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Active,0);
+	int rem;
+
+	rem = DoMethod(data->attach_tree, MUIM_NListtree_GetNr, treenode, MUIV_NListtree_GetNr_Flag_CountLevel) == 2;
+
+	treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Parent,0);
+
+	DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
+
+	if (treenode && rem)
+	{
+		struct MUI_NListtree_TreeNode *newtreelist = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
+		DoMethod(data->attach_tree, MUIM_NListtree_Move, treenode, MUIV_NListtree_Move_OldTreeNode_Head, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Head);
+	}
+}
+
+/******************************************************************
  A new attachment has been clicked
 *******************************************************************/
 static void compose_attach_active(struct Compose_Data **pdata)
@@ -991,7 +1013,7 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(add_multipart_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_multipart, data);
 			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(add_attach_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
-			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, attach_tree, 4, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
+			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_remove_file, data);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
 			DoMethod(show_attach_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, show_attach_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);

@@ -12,7 +12,7 @@
 
   $LinkMenu["downloads"]["filename"]="downloads.php";
   $LinkMenu["downloads"]["title"]=get_string($DownloadsText);
-  $LinkMenu["downloads"]["datename"]="xml/downloads.xml";
+  $LinkMenu["downloads"]["datename"]="downloads.php";
 
   $LinkMenu["faq"]["filename"]="faq.php";
   $LinkMenu["faq"]["title"]=get_string($FAQText);

@@ -176,6 +176,8 @@ int load_config(void)
 							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Read.Smilies")))
 							user.config.read_smilies = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
+							user.config.internet_emails = array_add_string(user.config.internet_emails,result);
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
 							/* it's a POP Server config line */
@@ -419,6 +421,13 @@ void save_config(void)
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
 			fprintf(fh,"Read.Smilies=%s\n",user.config.read_smilies?"Y":"N");
 
+			if (user.config.internet_emails)
+			{
+				for (i=0;user.config.internet_emails[i];i++)
+				{
+					fprintf(fh,"ReadHTML.AllowAddress=%s\n",user.config.internet_emails[i]);
+				}
+			}
 
 			i = 0;
 			phrase = (struct phrase*)list_first(&user.config.phrase_list);

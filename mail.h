@@ -201,4 +201,6 @@ void free_address_list(struct list *list);
 char *mail_create_string(char *format, struct mail *mail, char *realname,
 												 char *addr_spec);
 
+int mail_allowed_to_download(struct mail *mail);
+
 #endif

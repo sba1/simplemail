@@ -69,6 +69,9 @@ struct config
 
 	/* list of the filters */
 	struct list filter_list; 
+
+	/* array of "internet connectable" e-mail addresses */
+	char **internet_emails;
 };
 
 struct user

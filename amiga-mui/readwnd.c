@@ -39,6 +39,7 @@
 
 #include "configuration.h"
 #include "folder.h"
+#include "http.h"
 #include "mail.h"
 #include "simplemail.h"
 #include "support_indep.h"
@@ -508,6 +509,27 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 
 	if (!data->attachments_last_selected) return 0;
 	if (!(mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData))) return 0;
+
+	if (!mystrnicmp("http://",uri,7) && mail_allowed_to_download(data->mail))
+	{
+		void *buf;
+		int buf_len;
+		int rc = 0;
+
+		if (http_download(uri,&buf,&buf_len))
+		{
+			if ((msg->buffer = (void*)DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AllocateMem, buf_len)))
+			{
+				msg->buffer_len = buf_len;
+				CopyMem(buf,msg->buffer,buf_len);
+				rc = 1;
+			}
+			
+			free(buf);
+		}
+		return rc;
+	}
+
 	if (!(mail = mail_find_compound_object(mail,uri))) return 0;
 	mail_decode(mail);
 	if (!mail->decoded_data || !mail->decoded_len) return 0;

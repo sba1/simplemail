@@ -20,6 +20,7 @@
 ** configwnd.c
 */
 
+#include <ctype.h>
 #include <dos.h>
 #include <string.h>
 #include <stdlib.h>
@@ -41,12 +42,14 @@
 #include "account.h"
 #include "configuration.h"
 #include "lists.h"
+#include "parse.h"
 #include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
 #include "simplemail.h"
 
 #include "compiler.h"
+#include "composeeditorclass.h"
 #include "configtreelistclass.h"
 #include "configwnd.h"
 #include "muistuff.h"
@@ -71,6 +74,8 @@ static Object *read_linkunderlined_checkbox;
 static Object *read_smilies_checkbox;
 static Object *read_palette;
 static struct MUI_Palette_Entry read_palette_entries[7];
+
+static Object *readhtml_mail_editor;
 
 static Object *account_name_string;
 static Object *account_email_string;
@@ -122,11 +127,14 @@ static APTR signatures_treenode;
 static struct list signature_list;
 static struct signature *signature_last_selected;
 
+static APTR mails_readhtml_treenode;
+
 static Object *user_group;
 static Object *tcpip_receive_group;
 static Object *accounts_group;
 static Object *account_group;
 static Object *mails_read_group;
+static Object *mails_readhtml_group;
 static Object *signatures_group;
 static Object *signature_group;
 static Object *phrases_group;
@@ -233,6 +241,53 @@ static void config_use(void)
 	struct account *account;
 	struct signature *signature;
 	struct phrase *phrase;
+
+	/* this is principle the same like in addressbookwnd.c but uses parse_mailbox */
+	{
+		char *addresses;
+		char **new_array = NULL;
+
+		/* Check the validity of the e-mail addresses first */
+		if ((addresses = (char*)DoMethod(readhtml_mail_editor, MUIM_TextEditor_ExportText)))
+		{
+			struct mailbox mb;
+			char *buf = addresses;
+
+			while (isspace((unsigned char)*buf) && *buf) buf++;
+
+			if (*buf)
+			{
+				while ((buf = parse_mailbox(buf,&mb)))
+				{
+					/* ensures that buf != NULL if no error */
+					while (isspace((unsigned char)*buf)) buf++;
+					if (*buf == 0) break;
+					free(mb.addr_spec);
+					free(mb.phrase);
+				}
+				if (!buf)
+				{
+					set(config_tree, MUIA_NListtree_Active, mails_readhtml_treenode);
+					set(config_wnd,MUIA_Window_ActiveObject,readhtml_mail_editor);
+					DisplayBeep(NULL);
+					FreeVec(addresses);
+					return;
+				}
+
+				buf = addresses;
+				while ((buf = parse_mailbox(buf,&mb)))
+				{
+					new_array = array_add_string(new_array,mb.addr_spec);
+					free(mb.addr_spec);
+					free(mb.phrase);
+				}
+			}
+			FreeVec(addresses);		
+		}
+		array_free(user.config.internet_emails);
+		user.config.internet_emails = new_array;
+	}
+
 
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
@@ -797,6 +852,32 @@ static int init_mails_read_group(void)
 	return 1;
 }
 
+
+/******************************************************************
+ Init the readhtml group
+*******************************************************************/
+static int init_mails_readhtml_group(void)
+{
+	mails_readhtml_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+
+		Child, HGroup,
+			Child, HVSpace,
+			Child, MakeLabel("Allow to download images from the internet from"),
+			Child, HVSpace,
+			End,
+		Child, readhtml_mail_editor = ComposeEditorObject,
+			InputListFrame,
+			MUIA_CycleChain, 1,
+			MUIA_TextEditor_FixedFont, TRUE,
+			End,
+		End;
+
+	if (!mails_readhtml_group) return 0;
+	set(readhtml_mail_editor,MUIA_ComposeEditor_Array,user.config.internet_emails);
+	return 1;
+}
+
 /******************************************************************
  Add a new signature
 *******************************************************************/
@@ -1094,6 +1175,7 @@ static void init_config(void)
 	init_user_group();
 	init_tcpip_receive_group();
 	init_mails_read_group();
+	init_mails_readhtml_group();
 	init_signatures_group();
 	init_signature_group();
 	init_phrases_group();
@@ -1117,6 +1199,7 @@ static void init_config(void)
   	  			Child, account_group,
     				Child, tcpip_receive_group,
     				Child, mails_read_group,
+    				Child, mails_readhtml_group,
     				Child, signatures_group,
     				Child, signature_group,
     				Child, phrase_group,
@@ -1174,7 +1257,8 @@ static void init_config(void)
 		}
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Read", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Reading HTML Mails", mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 
 		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Phrases", phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{

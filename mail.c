@@ -2065,6 +2065,8 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 									strcpy(dest,mb.addr_spec);
 									dest += strlen(mb.addr_spec);
 								}
+								free(mb.phrase);
+								free(mb.addr_spec);
 							}
 						}
 
@@ -2103,4 +2105,33 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 		*dest = 0;
 	}
 	return str;
+}
+
+/**************************************************************************
+ Tests if the mail is allowed to download from internet
+**************************************************************************/
+int mail_allowed_to_download(struct mail *mail)
+{
+	char *from = mail_find_header_contents(mail,"from");
+	struct mailbox mb;
+	int rc = 0;
+
+	if (parse_mailbox(from,&mb))
+	{
+		if (user.config.internet_emails)
+		{
+			int i;
+			for (i=0;user.config.internet_emails[i];i++)
+			{
+				if (!mystricmp(user.config.internet_emails[i],mb.addr_spec))
+				{
+					rc = 1;
+					break;
+				}
+			}
+		}
+		free(mb.addr_spec);
+		free(mb.phrase);
+	}
+	return rc;
 }

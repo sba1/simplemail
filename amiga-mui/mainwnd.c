@@ -29,7 +29,6 @@
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
-/*#include <mui/speedbar_mcc.h>*/
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
@@ -54,7 +53,6 @@
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
-/*#include "mybrush.h"*/
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 
@@ -439,9 +437,9 @@ int main_window_init(void)
 	if (!(nm = malloc(sizeof(nm_untranslated)))) return 0;
 	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
 
-	for (i=0;i<sizeof(nm_untranslated)/sizeof(struct NewMenu);i++)
+	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 	{
-		if (nm[i].nm_Label != NM_BARLABEL)
+		if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
 		{
 			nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
 			if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
@@ -666,7 +664,8 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, MUIX_B "Folder:"  MUIX_N "%s " MUIX_B "Messages:"  MUIX_N "%ld " MUIX_B "New:"  MUIX_N "%ld: " MUIX_B "Unread:"  MUIX_N "%ld",f->name,f->num_mails,f->new_mails,f->unread_mails);
+			sprintf(buf, MUIX_B "%s"  MUIX_N "%s " MUIX_B "%s"  MUIX_N "%ld " MUIX_B "%s"  MUIX_N "%ld: " MUIX_B "%s"  MUIX_N "%ld",
+			        _("Folder:"),f->name,_("Messages:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
 	}

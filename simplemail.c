@@ -31,7 +31,7 @@
 
 #include "addressbook.h"
 #include "configuration.h"
-#include "dl.h"
+#include "trans.h"
 #include "folder.h"
 #include "simplemail.h"
 

@@ -75,7 +75,7 @@ generate:
 pack:
   -delete ram:simplemail_src.l?? quiet
   makedir T:SimpleMail
-  copy ((\#?.(asm|c|h))|smakefile|diff_ignore|.cvsignore) clone T:SimpleMail
+  copy ((\#?.(asm|c|h|rev))|smakefile|diff_ignore|.cvsignore) clone T:SimpleMail
   copy amiga-mui/((\#?.(asm|c|h))|.cvsignore) clone T:SimpleMail/amiga-mui
   lzx -9 -r a ram:simplemail_src T:SimpleMail
   delete T:SimpleMail quiet all
@@ -106,6 +106,11 @@ prepare-release:
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
   lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
+
+# bump the revison
+bump:
+  bumprev 0 SimpleMail
+  delete SimpleMail_rev.i
 
 # clean the source tree
 clean:

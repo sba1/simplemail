@@ -30,7 +30,7 @@ extern Object *App;
 /* global hook, use it for easy notifications */
 extern struct Hook hook_standard;
 
-/* initialized the global hook */
+/* initialized the global notify hook */
 void init_hook_standard(void);
 
 /* An extented hook structure which also stores the a4 register
@@ -43,7 +43,10 @@ struct MyHook
 	unsigned long rega4;
 };
 
-void init_hook(struct MyHook *h, unsigned long (*func)(),void *data);
+void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data);
+
+/* Use this function if the data field of the hook structure is not needed */
+void init_hook(struct Hook *h, unsigned long (*func)());
 
 /* Line Macros */
 #define HorizLineObject  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,End

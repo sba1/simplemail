@@ -58,7 +58,7 @@ Object *MakeButton(STRPTR str)
 
 struct Hook hook_standard;
 
-STATIC ASM /*SAVEDS*/ void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)
+STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)
 {
 	void (*func) (ULONG *) = (void (*)(ULONG *)) (*funcptr);
 	putreg(REG_A4,(long)h->h_Data);
@@ -75,7 +75,7 @@ void init_hook_standard(void)
 }
 
 /* the hook function, it loads the a4 register and call the subentry */
-STATIC ASM /*SAVEDS*/ void hook_func(register __a0 struct MyHook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+STATIC ASM void myhook_func(register __a0 struct MyHook *h, register __a1 ULONG msg, register __a2 ULONG obj)
 {
 	__asm int (*func) (register __a0 struct MyHook *, register __a1 ULONG, register __a2) =
 		(__asm int (*) (register __a0 struct MyHook *, register __a1 ULONG, register __a2))h->hook.h_SubEntry;
@@ -88,10 +88,31 @@ STATIC ASM /*SAVEDS*/ void hook_func(register __a0 struct MyHook *h, register __
 }
 
 /* Initializes a hook */
-void init_hook(struct MyHook *h, unsigned long (*func)(),void *data)
+void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
 {
-	h->hook.h_Entry = (HOOKFUNC)hook_func;
+	h->hook.h_Entry = (HOOKFUNC)myhook_func;
 	h->hook.h_SubEntry = func;
 	h->hook.h_Data = data;
 	h->rega4 = getreg(REG_A4);
 }
+
+/* the hook function, it loads the a4 register and call the subentry */
+STATIC ASM void hook_func(register __a0 struct Hook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+{
+	__asm int (*func) (register __a0 struct Hook *, register __a1 ULONG, register __a2) =
+		(__asm int (*) (register __a0 struct Hook *, register __a1 ULONG, register __a2))h->h_SubEntry;
+
+	if (func)
+	{
+		putreg(REG_A4,(long)h->h_Data);
+		func(h,msg,obj);
+	}
+}
+
+void init_hook(struct Hook *h, unsigned long (*func)())
+{
+	h->h_Entry = (HOOKFUNC)hook_func;
+	h->h_SubEntry = func;
+	h->h_Data = (void*)getreg(REG_A4);
+}
+

@@ -63,6 +63,18 @@
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 
+/*****************************************************/
+/* Minimum requirements of some external MUI classes */
+
+#define NLISTTREE_MIN_VERSION   18
+#define NLISTTREE_MIN_REVISION  22
+
+#define NLIST_MIN_VERSION   20
+#define NLIST_MIN_REVISION  115
+
+/*****************************************************/
+
+
 static Object *win_main;
 static Object *main_menu;
 static Object *main_settings_folder_menuitem;
@@ -755,9 +767,12 @@ int main_window_init(void)
 
 	if (win_main)
 	{
+		Object *testnlist;
+
 		SM_DEBUGF(15,("Created Main Window at %p\n",win_main));
 
-		if (xget(folder_tree, MUIA_Version) < 18 || (xget(folder_tree, MUIA_Version) == 18 && xget(folder_tree, MUIA_Revision)<12))
+		if (xget(folder_tree, MUIA_Version) < NLISTTREE_MIN_VERSION ||
+		   (xget(folder_tree, MUIA_Version) == NLISTTREE_MIN_VERSION && xget(folder_tree, MUIA_Revision) < NLISTTREE_MIN_REVISION))
 		{
 			struct EasyStruct es;
 			es.es_StructSize = sizeof(struct EasyStruct);
@@ -766,11 +781,37 @@ int main_window_init(void)
 			es.es_TextFormat = _("SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\nIt's available from %s");
 			es.es_GadgetFormat = _("Ok");
 
-	 	EasyRequest(NULL,&es,NULL,18,12,"http://www.sebastianbauer.info/");
-	 	MUI_DisposeObject(win_main);
-	 	win_main = NULL;
-	 	return 0;
+			EasyRequest(NULL,&es,NULL,NLISTTREE_MIN_VERSION,NLISTTREE_MIN_REVISION,"http://www.sourceforge.net/projects/nlist-classes");
+			MUI_DisposeObject(win_main);
+			win_main = NULL;
+			return 0;
 		}
+
+		testnlist = NListObject, End;
+		if (!testnlist)
+		{
+			MUI_DisposeObject(win_main);
+			win_main = NULL;
+			return 0;
+		}
+
+		if (xget(testnlist, MUIA_Version) < NLIST_MIN_VERSION ||
+		   (xget(testnlist, MUIA_Version) == NLIST_MIN_VERSION && xget(testnlist, MUIA_Revision) < NLIST_MIN_REVISION))
+		{
+			struct EasyStruct es;
+			es.es_StructSize = sizeof(struct EasyStruct);
+			es.es_Flags = 0;
+			es.es_Title =  "SimpleMail";
+			es.es_TextFormat = _("SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\nIt's available from %s");
+			es.es_GadgetFormat = _("Ok");
+
+			EasyRequest(NULL,&es,NULL,NLIST_MIN_VERSION,NLIST_MIN_REVISION,"http://www.sourceforge.net/projects/nlist-classes");
+			MUI_DisposeObject(testnlist);
+			MUI_DisposeObject(win_main);
+			win_main = NULL;
+			return 0;
+		}
+		MUI_DisposeObject(testnlist);
 
 		/* Short Help */
 		set(button_search, MUIA_ShortHelp, _("Opens a window where you can search through your mail folder."));

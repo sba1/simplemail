@@ -120,6 +120,28 @@ struct Person_Data /* should be a customclass */
 	/* more to add */
 };
 
+static char group_name_buf[64];
+static struct Hook group_name_display_hook;
+
+/********************************************
+ Dislayfunction function for addressgroups
+*********************************************/
+STATIC ASM SAVEDS VOID group_name_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
+{
+	char **array = msg->strings;
+	char *group_name = (char *)msg->entry;
+
+	if (group_name)
+	{
+		utf8tostr(group_name, group_name_buf, sizeof(group_name_buf), user.config.default_codeset);
+
+		*array++ = group_name_buf;
+	} else
+	{
+	 *array++ = _("Name");
+	}
+}
+
 /******************************************************************
  Set the contents of this group
 *******************************************************************/
@@ -256,6 +278,7 @@ static void person_add_group(struct Person_Data **pdata)
 				Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
 				Child, NListviewObject,
 					MUIA_NListview_NList, data->group_wnd_list = NListObject,
+					MUIA_NList_DisplayHook2, &group_name_display_hook,
 						End,
 					End,
 				Child, HorizLineObject,
@@ -556,6 +579,8 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	init_hook(&pgp_strobj_hook, (HOOKFUNC)person_pgp_strobj);
 	init_hook(&pgp_objstr_hook, (HOOKFUNC)person_pgp_objstr);
 
+	init_hook(&group_name_display_hook,(HOOKFUNC)group_name_display);
+
 	for (num=0; num < MAX_PERSON_OPEN; num++)
 		if (!person_open[num]) break;
 
@@ -690,6 +715,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 									MUIA_NListview_NList, person_group_list = NListObject,
 										MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
 										MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+										MUIA_NList_DisplayHook2, &group_name_display_hook,
 										End,
 									End,
 								Child, HGroup,

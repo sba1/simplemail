@@ -2990,32 +2990,30 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 						break;
 
 			case	RULE_HEADER_MATCH:
-#pragma warning TODO: Implement me
-#if 0
-						/* NOTE: This doesn't work in subthreads but is actually not used anywhy */
 						{
-							struct header *header;
-
-							mail_read_header_list_if_empty(m);
-
-							if ((header = mail_find_header(m,rule->u.header.name)))
+							struct mail_complete *mc = mail_complete_create_from_file(m->filename);
+							if (mc)
 							{
-								if (header->contents)
+								struct header *header;
+								if ((header = mail_find_header(mc,rule->u.header.name)))
 								{
-									utf8 *cont = NULL;
-									parse_text_string(header->contents, &cont);
-
-									if (cont)
+									if (header->contents)
 									{
-										int i = 0;
-										while (!take && rule->u.header.contents[i])
-											take = !!utf8stristr(cont,rule->u.header.contents[i++]);
-										free(cont);
+										utf8 *cont = NULL;
+										parse_text_string(header->contents, &cont);
+
+										if (cont)
+										{
+											int i = 0;
+											while (!take && rule->u.header.contents[i])
+												take = !!utf8stristr(cont,rule->u.header.contents[i++]);
+											free(cont);
+										}
 									}
 								}
+								mail_complete_free(mc);
 							}
 						}
-#endif
 						break;
 
 			case	RULE_ATTACHMENT_MATCH:

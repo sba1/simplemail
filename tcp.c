@@ -42,6 +42,8 @@
 
 #include "tcp.h"
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 /******************************************************************
  Establish the connection to the given server.
  Return NULL on error.
@@ -214,6 +216,15 @@ void tcp_disconnect(struct connection *conn)
 long tcp_read(struct connection *conn, void *buf, long nbytes)
 {
 	tcp_flush(conn); /* flush the write buffer */
+	if (conn->read_pos < conn->read_size)
+	{
+		int len = MIN(conn->read_size - conn->read_pos,nbytes);
+		memcpy(buf,&conn->read_buf[conn->read_pos],len);
+		nbytes -= len;
+		conn->read_pos += len;
+		return len;
+	}
+
 	if (conn->ssl) return SSL_read(conn->ssl,buf,nbytes);
 	return recv(conn->socket,buf,nbytes,0);
 }

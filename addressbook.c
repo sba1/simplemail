@@ -20,14 +20,18 @@
 ** addressbook.c
 */
 
+#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "addressbook.h"
+#include "http.h"
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
+#include "support.h"
 #include "support_indep.h"
 
 static struct addressbook_entry root_entry;
@@ -62,11 +66,11 @@ void init_addressbook(void)
 	if (!addressbook_load())
 	{
 		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@schlawack.net");
-		addressbook_set_description(entry, "Orginal author of SimpleMail");
+		addressbook_set_description(entry, "Original author of SimpleMail");
 		addressbook_person_add_email(entry, "Hynek.Schlawack@t-online.de");
 
 		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
-		addressbook_set_description(entry, "Orginal author of SimpleMail");
+		addressbook_set_description(entry, "Original author of SimpleMail");
 		addressbook_person_add_email(entry, "Sebastian.Bauer@in.stud.tu-ilmenau.de");
 	}
 }
@@ -117,6 +121,7 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, 
 					if (!mystrnicmp(buf,"Homepage=",9)) entry->u.person.homepage = mystrdup(&buf[9]);
 					if (!mystrnicmp(buf,"Phone1=",7)) entry->u.person.phone1 = mystrdup(&buf[7]);
 					if (!mystrnicmp(buf,"Phone2=",7)) entry->u.person.phone2 = mystrdup(&buf[7]);
+					if (!mystrnicmp(buf,"Portrait=",9)) entry->u.person.portrait = mystrdup(&buf[9]);
 
 					if (!mystricmp(buf,"@ENDUSER"))
 					{
@@ -198,6 +203,7 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 			if (entry->u.person.homepage) fprintf(fh,"Homepage=%s\n",entry->u.person.homepage);
 			if (entry->u.person.phone1) fprintf(fh,"Phone1=%s\n",entry->u.person.phone1);
 			if (entry->u.person.phone2) fprintf(fh,"Phone2=%s\n",entry->u.person.phone2);
+			if (entry->u.person.portrait) fprintf(fh,"Portrait=%s\n",entry->u.person.portrait);
 			fprintf(fh,"@ENDUSER\n");
 		} else
 		{
@@ -481,6 +487,55 @@ char *addressbook_get_realname(char *email)
 }
 
 /**************************************************************************
+ Returns the portrait of the owner of the given e-Mail address. NULL
+ if e-mail is not in the addressbook or no picture is in the galery
+**************************************************************************/
+char *addressbook_get_portrait(char *email)
+{
+	struct addressbook_entry *entry = addressbook_find_entry(NULL, email, 1, NULL, ADDRESSBOOK_FIND_ENTRY_EMAIL);
+	if (entry) return entry->u.person.portrait;
+	return NULL;
+}
+
+/**************************************************************************
+ Returns a path to the portait of the given e-mail. The returned string
+ is allocated with malloc().
+**************************************************************************/
+char *addressbook_download_portrait(char *email)
+{
+	if (sm_makedir("PROGDIR:.portraits"))
+	{
+		char filename[64];
+		char *buf;
+
+		strcpy(filename,"PROGDIR:.portraits/");
+
+		while (1)
+		{
+			int i;
+			FILE *fh;
+
+			buf = filename+strlen(filename);
+
+			for (i=0;i<12 && email[i];i++)
+			{
+				if (isalpha((unsigned char)email[i]))
+					*buf++ = email[i];
+			}
+			sprintf(buf,".%lx",time(NULL));
+
+			if (!(fh = fopen(filename,"rb"))) break;
+			fclose(fh);
+		}
+		if (http_download_photo(filename, email))
+		{
+			return mystrdup(filename);
+		}
+	}
+	return NULL;
+}
+
+/**************************************************************************
  Duplicates a given entry. If it is a group, the group members are not
  duplicated!
 **************************************************************************/
@@ -515,6 +570,7 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 							new_entry->u.person.phone2 = mystrdup(entry->u.person.phone2);
 							new_entry->u.person.notepad = mystrdup(entry->u.person.notepad);
 							new_entry->u.person.description = mystrdup(entry->u.person.description);
+							new_entry->u.person.portrait = mystrdup(entry->u.person.portrait);
 
 							if ((new_entry->u.person.emails = (char**)malloc(entry->u.person.num_emails*sizeof(char*))))
 							{
@@ -573,6 +629,7 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 						if (entry->u.person.phone2) free(entry->u.person.phone2);
 						if (entry->u.person.notepad) free(entry->u.person.notepad);
 						if (entry->u.person.description) free(entry->u.person.description);
+						if (entry->u.person.portrait) free(entry->u.person.portrait);
 
 						for (i=0;i<entry->u.person.num_emails;i++)
 						{
@@ -887,7 +944,4 @@ struct addressbook_entry *addressbook_next(struct addressbook_entry *entry)
 	new_entry = (struct addressbook_entry *)node_next(&entry->node);
 	return new_entry;
 }
-
-
-
 

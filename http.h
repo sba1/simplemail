@@ -23,5 +23,6 @@
 #ifndef SM__HTTP_H
 #define SM__HTTP_H
 
+int http_download_photo(char *path, char *email);
 
 #endif

@@ -1687,14 +1687,20 @@ int mail_create_html_header(struct mail *mail)
 		char *to = mail_find_header_contents(mail,"to");
 		char *replyto = mail_find_header_contents(mail, "reply-to");
 		char *cc = mail_find_header_contents(mail, "cc");
+		char *portrait;
 
 		fputs("<HTML><BODY>",fh);
-		fputs("<IMG SRC=\"SimpleMailPicture:\" WIDTH=30 HEIGHT=40 ALIGN=RIGHT>",fh);
 
 		if (from)
 		{
 			struct mailbox mb;
 			parse_mailbox(from, &mb);
+
+			if ((portrait = addressbook_get_portrait(mb.addr_spec)))
+			{
+				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
+			}
+
 			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\">",mb.addr_spec);
 
 			if (mb.phrase)

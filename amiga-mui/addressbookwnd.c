@@ -75,6 +75,7 @@ struct Person_Data /* should be a customclass */
 	Object *country_string;
 	Object *phone1_string;
 	Object *phone2_string;
+	Object *download_string;
 
 	struct addressbook_entry *person; /* NULL if new person */
 
@@ -132,6 +133,8 @@ static void person_window_ok(struct Person_Data **pdata)
 		new_entry->u.person.country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
 		if (new_entry->u.person.homepage) free(new_entry->u.person.homepage);
 		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
+		if (new_entry->u.person.portrait) free(new_entry->u.person.portrait);
+		new_entry->u.person.portrait = mystrdup((char*)xget(data->download_string, MUIA_String_Contents));
 
 		for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
 		{
@@ -144,7 +147,15 @@ static void person_window_ok(struct Person_Data **pdata)
 		{
 			if ((treenode = FindListtreeUserData(address_tree, data->person)))
 			{
-				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
+/*				DoMethod(address_tree, MUIM_NListtree_Remove, */
+				APTR parent = DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
+
+				DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
+							   parent,treenode,0);
+				DoMethod(address_tree, MUIM_NListtree_Remove, parent,treenode,0);
+
+
+/*				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);*/
 			}
 		}
 
@@ -215,6 +226,34 @@ static void person_email_string_contents(struct Person_Data **pdata)
 }
 
 /******************************************************************
+ Try to downloads the portait of the person
+*******************************************************************/
+static void person_download_portrait(struct Person_Data **pdata)
+{
+	struct Person_Data *data = *pdata;
+	int i;
+
+	set(App, MUIA_Application_Sleep, TRUE);
+
+	for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
+	{
+		char *email;
+		char *filename;
+
+		DoMethod(data->email_list, MUIM_NList_GetEntry, i, &email);
+
+		filename = addressbook_download_portrait(email);
+		if (filename)
+		{
+			set(data->download_string, MUIA_String_Contents, filename);
+			free(filename);
+		}
+	}
+	
+	set(App, MUIA_Application_Sleep, FALSE);
+}
+
+/******************************************************************
  Opens a person window
 *******************************************************************/
 void person_window_open(struct addressbook_entry *entry)
@@ -222,7 +261,7 @@ void person_window_open(struct addressbook_entry *entry)
 	Object *wnd, *add_button, *rem_button, *email_list, *email_string;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
 	Object *homepage_string, *street_string, *city_string, *country_string, *phone1_string, *phone2_string;
-	Object *description_string;
+	Object *description_string, *download_button, *download_string;
 	int num;
 
 	for (num=0; num < MAX_PERSON_OPEN; num++)
@@ -290,10 +329,10 @@ void person_window_open(struct addressbook_entry *entry)
 				End,
 
 			Child, HGroup,
-				Child, ColGroup(2),
+				Child, ColGroup(3),
 					Child, HorizLineTextObject("Snail mail"),
 					Child, HorizLineTextObject("Miscellanous"),
-/*					Child, HorizLineTextObject("Portrait"),*/
+					Child, HorizLineTextObject("Portrait"),
 	
 					Child, ColGroup(2),
 						Child, MakeLabel("Street"),
@@ -354,6 +393,13 @@ void person_window_open(struct addressbook_entry *entry)
 								End,
 							End,
 						End,
+					Child, VGroup,
+						Child, download_button = MakeButton("Download"),
+						Child, PopaslObject,
+							MUIA_Popstring_String, download_string = BetterStringObject, StringFrame, End,
+							MUIA_Popstring_Button, PopButton(MUII_PopFile),
+							End,
+						End,
 					End,
 				End,
 
@@ -383,6 +429,7 @@ void person_window_open(struct addressbook_entry *entry)
 			data->country_string = country_string;
 			data->phone1_string = phone1_string;
 			data->phone2_string = phone2_string;
+			data->download_string = download_string;
 			data->person = entry;
 			data->num = num;
 
@@ -398,6 +445,7 @@ void person_window_open(struct addressbook_entry *entry)
 			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_ok, data);
 			DoMethod(add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_add_email, data);
 			DoMethod(rem_button, MUIM_Notify, MUIA_Pressed, FALSE, email_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+			DoMethod(download_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_download_portrait, data);
 			DoMethod(email_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_email_list_active, data);
 			DoMethod(email_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_email_string_contents, data);
 			DoMethod(App,OM_ADDMEMBER,wnd);
@@ -419,6 +467,7 @@ void person_window_open(struct addressbook_entry *entry)
 				set(city_string, MUIA_String_Contents, entry->u.person.city);
 				set(country_string, MUIA_String_Contents, entry->u.person.country);
 				set(homepage_string, MUIA_String_Contents, entry->u.person.homepage);
+				set(download_string, MUIA_String_Contents, entry->u.person.portrait);
 			}
 
 			person_email_list_active(&data);

@@ -62,6 +62,7 @@ struct addressbook_entry
 			char *phone2;
 			char *description;
 			char *notepad;
+			char *portrait; /* filename to a picture of this person */
 			unsigned int dob; /* days since 1900 */
 			int num_emails; /* number of email addresses */
 			char **emails; /* array of email addresses */
@@ -97,6 +98,8 @@ struct addressbook_entry *addressbook_new_group(struct addressbook_entry *list);
 struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *entry);
 void addressbook_free_entry(struct addressbook_entry *entry);
 char *addressbook_get_realname(char *email);
+char *addressbook_get_portrait(char *email);
+char *addressbook_download_portrait(char *email);
 char *addressbook_get_address_str(struct addressbook_entry *entry);
 char *addressbook_get_expand_str(char *unexpand);
 struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m);

@@ -33,31 +33,37 @@
 #include <netinet/tcp.h>
 
 #include "tcp.h"
+#include "tcpip.h"
 #include "support_indep.h"
 
 #include "http.h"
 
 int http_download_photo(char *path, char *email)
 {
-	struct connection *conn = tcp_connect("simplemail.sourceforge.net",80);
-	int rc = 0;
-	if (conn)
+	struct connection *conn;
+	int rc;
+
+	if (!open_socket_lib()) return 0;
+
+  rc = 0;
+
+	if ((conn = tcp_connect("simplemail.sourceforge.net",80)))
 	{
 		char *line;
 		int download = 0;
 
-		tcp_write(conn,"GET /test/galery_get_image.php?");
-		tcp_write(conn,email);
-                tcp_write(conn," HTTP/1.0\r\nhost: simplemail.sourceforge.net\r\n\r\n");
+		tcp_write(conn,"GET /test/galery_get_image.php?",sizeof("GET /test/galery_get_image.php?")-1);
+		tcp_write(conn,email,strlen(email));
+		tcp_write(conn," HTTP/1.0\r\nhost: simplemail.sourceforge.net\r\n\r\n",sizeof(" HTTP/1.0\r\nhost: simplemail.sourceforge.net\r\n\r\n")-1);
 
 		while ((line = tcp_readln(conn)))
-                {
+		{
 			if (!mystrnicmp("Content-Type: image/",line,20)) download = 1;
 			if (line[0] == 10 && line[1] == 0) break;
-                }
+		}
 
 		if (download)
-                {
+		{
 			FILE *fp = fopen(path,"wb");
 			if (fp)
 			{
@@ -65,14 +71,15 @@ int http_download_photo(char *path, char *email)
 				char buf[1024];
 				while ((got = tcp_read(conn,buf,1024))>0)
 				{
-					fwritef(fp,1,got,buf);
+					fwrite(buf,1,got,fp);
 				}
 				rc = 1;
 				fclose(fp);
 			}
-                }
+		}
 
 		tcp_disconnect(conn);
 	}
+	close_socket_lib();
 	return rc;
 }

@@ -25,6 +25,10 @@ struct MUI_CustomClass *ObtainSimpleHTMLMCC(void);
 #include <exec/interfaces.h>
 #endif
 
+#ifndef EXEC_EMULATION_H
+#include <exec/emulation.h>
+#endif
+
 struct SimpleHTMLIFace
 {
         struct InterfaceData Data;
@@ -37,14 +41,25 @@ struct SimpleHTMLIFace
 };
 
 extern struct SimpleHTMLIFace *ISimpleHTML;
+extern struct Library *SimpleHTMLBase;
+
+#define ObtainSimpleHTMLMCC() ({ \
+	struct MUI_CustomClass * _ret; \
+	if (ISimpleHTML != NULL) { \
+		_ret = ISimpleHTML->ObtainSimpleHTMLMCC(); \
+	} else { \
+		_ret = (struct MUI_CustomClass*)EmulateTags(SimpleHTMLBase, \
+			ET_Offset, -30, \
+			ET_RegisterA6, SimpleHTMLBase, \
+			ET_SaveRegs, TRUE, \
+			TAG_DONE); \
+	} \
+	_ret; \
+})
 
 #endif
 
-#ifndef __AMIGAOS4__
 #define SimpleHTMLObject (Object*)(NewObject)(ObtainSimpleHTMLMCC()->mcc_Class, NULL
-#else
-#define SimpleHTMLObject NewObject(ISimpleHTML->ObtainSimpleHTMLMCC()->mcc_Class, NULL
-#endif
 
 #define MUIA_SimpleHTML_Buffer					(TAG_USER+0x31200000) /* NS. */
 #define MUIA_SimpleHTML_BufferLen			(TAG_USER+0x31200001) /* NS. */

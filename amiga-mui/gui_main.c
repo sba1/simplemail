@@ -279,7 +279,10 @@ void all_del(void)
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
 
-			CloseLibraryInterface(SimpleHTMLBase,ISimpleHTML); /* accepts NULL */
+#ifdef __AMIGAOS4__
+			DropInterface((struct Interface*)ISimpleHTML);
+#endif
+			CloseLibrary(SimpleHTMLBase); /* accepts NULL */
 			CloseLibraryInterface(RexxSysBase,IRexxSys);
 			RexxSysBase = NULL;
 		}
@@ -312,12 +315,16 @@ int all_init(void)
 	{
 		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",rexxsyslib_version,&IRexxSys)))
 		{
-			SimpleHTMLBase = OpenLibraryInterface("PROGDIR:Libs/simplehtml.library",0,&ISimpleHTML);
-			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibraryInterface("PROGDIR:simplehtml.library",0,&ISimpleHTML);
-			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibraryInterface("simplehtml.library",0,&ISimpleHTML);
+			SimpleHTMLBase = OpenLibrary("PROGDIR:Libs/simplehtml.library",0);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("PROGDIR:simplehtml.library",0);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("simplehtml.library",0);
 
 			if (SimpleHTMLBase)
 			{
+#ifdef __AMIGAOS4__
+				ISimpleHTML = (struct SimpleHTMLIFace*)GetInterface(SimpleHTMLBase, "main", 1, NULL);
+#endif
+
 				DefaultLocale = OpenLocale(NULL);
 				init_hook_standard();
 

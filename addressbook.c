@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** addressbook.c
 */
 
 #include <string.h>
@@ -111,6 +111,12 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, 
 
 					if (!mystrnicmp(buf,"EMail=",6)) addressbook_person_add_email(entry,&buf[6]);
 					if (!mystrnicmp(buf,"Description=",12)) addressbook_set_description(entry,&buf[12]);
+					if (!mystrnicmp(buf,"Street=",7)) entry->person.street = strdup(&buf[7]);
+					if (!mystrnicmp(buf,"City=",5)) entry->person.city = strdup(&buf[5]);
+					if (!mystrnicmp(buf,"Country=",8)) entry->person.country = strdup(&buf[8]);
+					if (!mystrnicmp(buf,"Homepage=",9)) entry->person.homepage = strdup(&buf[9]);
+					if (!mystrnicmp(buf,"Phone1=",7)) entry->person.phone1 = strdup(&buf[7]);
+					if (!mystrnicmp(buf,"Phone2=",7)) entry->person.phone2 = strdup(&buf[7]);
 
 					if (!mystricmp(buf,"@ENDUSER"))
 					{
@@ -186,6 +192,12 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 			{
 				fprintf(fh,"EMail=%s\n",entry->person.emails[i]);
 			}
+			if (entry->person.street) fprintf(fh,"Street=%s\n",entry->person.street);
+			if (entry->person.city) fprintf(fh,"City=%s\n",entry->person.city);
+			if (entry->person.country) fprintf(fh,"Country=%s\n",entry->person.country);
+			if (entry->person.homepage) fprintf(fh,"Homepage=%s\n",entry->person.homepage);
+			if (entry->person.phone1) fprintf(fh,"Phone1=%s\n",entry->person.phone1);
+			if (entry->person.phone2) fprintf(fh,"Phone2=%s\n",entry->person.phone2);
 			fprintf(fh,"@ENDUSER\n");
 		} else
 		{

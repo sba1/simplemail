@@ -1798,15 +1798,25 @@ void callback_autocheck_reset(void)
 ***************************************************/
 int simplemail_main(void)
 {
+	if (!debug_init()) return 0;
+
 #ifdef ENABLE_NLS
   setlocale(LC_ALL, "");
   bindtextdomain(PACKAGE, LOCALEDIR);
   textdomain(PACKAGE);
 #endif
-	if (!gui_parseargs(0,NULL)) return 0;
+	if (!gui_parseargs(0,NULL))
+	{
+		debug_deinit();
+		return 0;
+	}
 
 	startupwnd_open();
-	if (!init_threads()) return 0;
+	if (!init_threads())
+	{
+		debug_deinit();
+		return 0;
+	}
 
 	if (codesets_init())
 	{
@@ -1845,5 +1855,6 @@ int simplemail_main(void)
 	cleanup_threads();
 	startupwnd_close();
 	shutdownwnd_close();
+	debug_deinit();
 	return 0;
 }

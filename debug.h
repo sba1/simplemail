@@ -27,13 +27,21 @@
 #include "arch.h"
 #endif
 
-void set_debug_level(int);
+int debug_init(void);
+void debug_deinit(void);
+
+void debug_set_level(int);
+void debug_set_out(char *);
+
+void __debug_begin(void);
+void __debug_print(const char *fmt, ...);
+void __debug_end(void);
 
 #ifdef NODEBUG
 #define SM_DEBUGF(level,x)
 #else
 extern int __debuglevel;
-#define SM_DEBUGF(level,x) do { if (level <= __debuglevel) ARCH_DEBUG(x); } while (0)
+#define SM_DEBUGF(level,x) do { if (level <= __debuglevel) { __debug_begin(); __debug_print("%s/%d [%s()] (%s) => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,ARCH_DEBUG_EXTRA); __debug_print x; __debug_end(); }} while (0)
 #define SM_ENTER SM_DEBUGF(20,("Entered function\n"))
 #define SM_LEAVE SM_DEBUGF(20,("Leave function\n"))
 #define SM_RETURN(val,type) do {SM_DEBUGF(20,("Leave (" type ")\n",val)); return (val);} while (0)

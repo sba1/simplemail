@@ -44,13 +44,11 @@
 #endif
 #endif
 
-/* Debug - defines ARCH_DEBUG */
+/* Debug - defines ARCH_DEBUG_EXTRA */
 #if defined(__GNUC__) && defined(__AMIGAOS4__)
-#define ARCH_DEBUG(x) do { (IExec->Forbid)(); (IExec->DebugPrintF)("%s/%ld [%s()] Task \"%s\" => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,(IExec->FindTask)(NULL)->tc_Node.ln_Name); (IExec->DebugPrintF) x; (IExec->Permit)();} while (0)
-#undef NDEBUG
+#define ARCH_DEBUG_EXTRA ((IExec->FindTask)(NULL)->tc_Node.ln_Name)
 #else
-void kprintf(char *string, ...);
-#define ARCH_DEBUG(x) do { Forbid(); kprintf("%s/%ld Task \"%s\" => ",__FILE__,__LINE__,FindTask(NULL)->tc_Node.ln_Name); kprintf x; Permit();} while (0)
+#define ARCH_DEBUG_EXTRA (FindTask(NULL)->tc_Node.ln_Name)
 #endif
 
 #endif

@@ -48,6 +48,7 @@ int mails_dl(void)
 	server.login = user.config.pop_login;
 	server.passwd = user.config.pop_password;
 	server.socket = SMTP_NO_SOCKET;
+	server.del = user.config.pop_delete;
 
 	if (!server.name)
 	{

@@ -622,6 +622,7 @@ static int pop3_entry(struct pop3_server *server)
 	copy_server.login = mystrdup(server->login);
 	copy_server.passwd = mystrdup(server->passwd);
 	copy_server.socket = server->socket;
+	copy_server.del = server->del;
 
 	if (thread_parent_task_can_contiue())
 	{

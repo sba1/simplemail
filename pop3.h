@@ -30,6 +30,7 @@ struct pop3_server
 	char *login;
 	char *passwd;
 	long socket;
+	int del; /* 1 if downloaded mails should be deleted */
 };
 
 int pop3_dl(struct pop3_server *server);

@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 int mystrcmp(const char *str1, const char *str2);
+int mystrncmp(unsigned char *str1, unsigned char *str2,int len);
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
 char *mystristr(const char *str1, const char *str2);
@@ -51,5 +52,26 @@ void array_free(char **string_array);
 char *mycombinepath(char *drawer, char *file);
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+
+/* search a sorted array in O(log n) e.g.
+   BIN_SEARCH(strings,0,sizeof(strings)/sizeof(strings[0]),strcmp(key,array[mid]),res); */
+#define BIN_SEARCH(array,low,high,compare,result) \
+	{\
+		int l = low;\
+		int h = high;\
+		int m = (low+high)/2;\
+		result = NULL;\
+		while (l<=h)\
+		{\
+			int c = compare;\
+			if (!c){ result = &array[m]; break; }\
+			if (c < 0) h = m - 1;\
+			else l = m + 1;\
+			m = (l + h)/2;\
+		}\
+	}
+
+
+
 
 #endif

@@ -922,7 +922,7 @@ void main_set_folder_mails(struct folder *folder)
 		APTR treenode = NULL;
 
 		SetAttrs(mail_tree,
-				MUIA_NListtree_TreeColumn, (primary_sort==2)?3:(folder_get_type(folder)==FOLDER_TYPE_SEND?2:1),
+				MUIA_NListtree_TreeColumn, (primary_sort==FOLDER_SORT_SUBJECT)?2:1,
 				MUIA_NListtree_ShowTree, TRUE,
 				TAG_DONE);
 
@@ -947,7 +947,7 @@ void main_set_folder_mails(struct folder *folder)
 				}
 			} else
 			{
-				if (!lm || mystricmp(m->subject,lm->subject))
+				if (!lm || utf8stricmp(m->subject,lm->subject))
 				{
 					treenode = (APTR)DoMethod(mail_tree, MUIM_NListtree_Insert, m->subject, MUIV_MailTreelist_UserData_Name, /* special hint */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST/*|TNF_OPEN*/);

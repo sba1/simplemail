@@ -49,6 +49,21 @@ int mystrcmp(const char *str1, const char *str2)
 	return strcmp(str1,str2);
 }
 
+/**************************************************************************
+ A Replacement for strncmp() as this doesn't return the same values as
+ strcmp()
+**************************************************************************/
+int mystrncmp(unsigned char *str1, unsigned char *str2,int len)
+{
+	while (len)
+	{
+		int d;
+		if ((d = *str1++ - *str2++)) return d;
+		len--;
+	}
+	return 0;
+}
+
 /******************************************************************
  Compares a string case insensitive. Accepts NULL pointers
 *******************************************************************/

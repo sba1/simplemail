@@ -29,6 +29,7 @@
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 
+#include "codesets.h"
 #include "configuration.h"
 #include "lists.h"
 #include "filter.h"
@@ -87,7 +88,7 @@ static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int
 
 static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = mystricmp(arg1->subject,arg2->subject);
+	int rc = utf8stricmp(arg1->subject,arg2->subject);
 	if (reverse) rc *= -1;
 	return rc;
 }

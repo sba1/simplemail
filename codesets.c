@@ -20,6 +20,7 @@
 ** codesets.c
 */
 
+#include <ctype.h>
 #include <dirent.h> /* dir stuff */
 #include <string.h>
 #include <stdlib.h>
@@ -1219,7 +1220,6 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 {
 	int i;
-	struct single_convert conv;
 	struct single_convert *f;
 	char *dest_iter = dest;
 
@@ -1232,22 +1232,23 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 
 	for (i=0;i < dest_size-1;i++)
 	{
-		unsigned char c = *str++;
+		unsigned char c = *str;
 		if (c)
 		{
 			if (c > 127)
 			{
-				int len = trailingBytesForUTF8[c];
-				conv.utf8[1] = c;
-				strncpy(&conv.utf8[2],str,len);
-				conv.utf8[2+len] = 0;
-				str += len;
+				int len_add = trailingBytesForUTF8[c];
+				int len_str = len_add + 1;
 
-				if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
-				{
-					*dest_iter++ = f->code;
-				} else *dest_iter++ = '_';
+				BIN_SEARCH(codeset->table_sorted,0,255,mystrncmp(str,codeset->table_sorted[m].utf8+1,len_str),f);
+
+				if (f) *dest_iter++ = f->code;
+				else *dest_iter++ = '_';
+
+				str += len_add;
 			} else *dest_iter++ = c;
+
+			str++;
 		} else break;
 	}
 	*dest_iter = 0;
@@ -1296,6 +1297,111 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 		} else *chr = 0;
 	} else *chr = 0;
 	return len+1;
+}
+
+/**************************************************************************
+ Compares two utf8 string case-insensitive (the args might be NULL).
+ Note: Changes for little endian
+**************************************************************************/
+int utf8stricmp(char *str1, char *str2)
+{
+	unsigned char c1;
+	unsigned char c2;
+
+	if (!str1)
+	{
+		if (!str2) return 0;
+		return -1;
+	}
+
+	if (!str2) return 1;
+
+	while (1)
+	{
+		int d;
+		char bytes1,bytes2;
+		struct uniconv *res;
+
+		c1 = *str1++;
+		c2 = *str2++;
+
+		if (!c1)
+		{
+			if (!c2) return 0;
+			return -1;
+		}
+		if (!c2) return 0;
+
+		if (c1 < 0x80)
+		{
+			if (c2 < 0x80)
+			{
+				d = tolower(c1) - tolower(c2);
+				if (d) return d;
+				continue;
+			} else
+			{
+				/* TODO: must use locale sensitive sorting */
+				return -1;
+			}
+		}
+		if (c2 < 0x80) return 1; /* TODO: must use locale sensitive sorting */
+
+		bytes1 = trailingBytesForUTF8[c1];
+		bytes2 = trailingBytesForUTF8[c2];
+
+		/* case mapping only happens within same number of bytes (currently) */
+		if ((d = bytes1 - bytes2)) return d;
+
+		if (bytes1 > 3)
+		{
+			/* case mapping relevant characters are only withing 4 bytes */
+			while (bytes1)
+			{
+				if ((d = *str1++ - *str2++)) return d;
+				bytes1--;
+			}
+		} else
+		{
+
+			unsigned char ch1[4],ch2[4];
+			struct uniconv *uc1;
+			struct uniconv *uc2;
+			int ch1l;
+			int ch2l;
+			int i = 3 - bytes1;
+
+			*((unsigned int *)ch1) = 0;
+			*((unsigned int *)ch2) = 0;
+
+			ch1[3-bytes1] = c1;
+			ch2[3-bytes1] = c2;
+
+			while (bytes1)
+			{
+				bytes1--;
+				ch1[3 - bytes1] = *str1++;
+				ch2[3 - bytes1] = *str2++;
+			}
+
+
+			BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch1)),uc1);
+			BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch2)),uc2);
+
+			if (uc1) ch1l = *((unsigned int *)uc1->to);
+			else ch1l = *((unsigned int *)ch1);
+
+			if (uc2) ch2l = *((unsigned int *)uc2->to);
+			else ch2l = *((unsigned int *)ch2);
+
+			if (ch1l != ch2l)
+			{
+				if (ch1l < ch2l) return -1;
+				return 1;
+			}
+		}
+	}
+	return 0;
 }
 
 /**************************************************************************

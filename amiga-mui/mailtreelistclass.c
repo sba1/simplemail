@@ -222,63 +222,70 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	if (treenode && treenode->tn_User)
 	{
 		struct mail *m = (struct mail*)treenode->tn_User;
-		char *from = mail_get_from_address(m);
-		char *to = mail_get_to_address(m);
-		char *replyto = mail_get_replyto_address(m);
-		char date_buf[64];
-		char *buf = data->bubblehelp_buf;
 
-		SecondsToString(date_buf,m->seconds);
-
-		/* Help bubble text */
-		sprintf(buf,"\33b%s\33n",_("Current Message"));
-		buf += strlen(buf);
-		if (m->subject)
+		if (m != (struct mail*)MUIV_MailTreelist_UserData_Name)
 		{
-			*buf++ = '\n';
-			buf = mystpcpy(buf,data->subject_text);
-			*buf++ = ':';
-			*buf++ = ' ';
-			buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
-		}
+			char *from = mail_get_from_address(m);
+			char *to = mail_get_to_address(m);
+			char *replyto = mail_get_replyto_address(m);
+			char date_buf[64];
+			char *buf = data->bubblehelp_buf;
 
-		if (from)
+			SecondsToString(date_buf,m->seconds);
+
+			/* Help bubble text */
+			sprintf(buf,"\33b%s\33n",_("Current Message"));
+			buf += strlen(buf);
+			if (m->subject)
+			{
+				*buf++ = '\n';
+				buf = mystpcpy(buf,data->subject_text);
+				*buf++ = ':';
+				*buf++ = ' ';
+				buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			}
+
+			if (from)
+			{
+				*buf++ = '\n';
+				buf = mystpcpy(buf,data->from_text);
+				*buf++ = ':';
+				*buf++ = ' ';
+				buf += utf8tostr(from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			}
+
+			if (to)
+			{
+				*buf++ = '\n';
+				buf = mystpcpy(buf,data->to_text);
+				*buf++ = ':';
+				*buf++ = ' ';
+				buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			}
+
+			if (m->reply)
+			{
+				*buf++ = '\n';
+				buf = mystpcpy(buf,data->to_text);
+				*buf++ = ':';
+				*buf++ = ' ';
+				buf = mystpcpy(buf,replyto);
+			}
+
+			sprintf(buf,"\n%s: %s\n%s: %d\n%s: %s",
+							data->date_text, date_buf,
+							data->size_text, m->size,
+							data->filename_text, m->filename);
+
+			set(obj,MUIA_ShortHelp,data->bubblehelp_buf);
+
+			free(replyto);
+			free(to);
+			free(from);
+		} else
 		{
-			*buf++ = '\n';
-			buf = mystpcpy(buf,data->from_text);
-			*buf++ = ':';
-			*buf++ = ' ';
-			buf += utf8tostr(from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+			set(obj,MUIA_ShortHelp,NULL);
 		}
-
-		if (to)
-		{
-			*buf++ = '\n';
-			buf = mystpcpy(buf,data->to_text);
-			*buf++ = ':';
-			*buf++ = ' ';
-			buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
-		}
-
-		if (m->reply)
-		{
-			*buf++ = '\n';
-			buf = mystpcpy(buf,data->to_text);
-			*buf++ = ':';
-			*buf++ = ' ';
-			buf = mystpcpy(buf,replyto);
-		}
-
-		sprintf(buf,"\n%s: %s\n%s: %d\n%s: %s",
-						data->date_text, date_buf,
-						data->size_text, m->size,
-						data->filename_text, m->filename);
-
-		set(obj,MUIA_ShortHelp,data->bubblehelp_buf);
-
-		free(replyto);
-		free(to);
-		free(from);
 	}	
 }
 

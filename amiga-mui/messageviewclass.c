@@ -244,8 +244,10 @@ static void open_contents(struct MessageView_Data *data, struct mail *mail)
 		if (mail->content_name)
 		{
 			strcpy(filename,"T:");
-			strcat(filename,data->mail->filename);
-			if ((newdir = CreateDir(filename))) UnLock(newdir);
+			mystrlcpy(&filename[2],mail->filename,sizeof(filename));
+
+			if ((newdir = CreateDir(filename)))
+				UnLock(newdir);
 
 			if ((newdir = Lock(filename, ACCESS_READ)))
 			{
@@ -425,7 +427,7 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 
 	if (!data->mail) return 1;
 	strcpy(filename,"T:");
-	strcat(filename,mail->filename);
+	mystrlcpy(&filename[2],mail->filename,sizeof(filename));
 	dirlock = Lock(filename,ACCESS_READ);
 	if (!dirlock) return 1;
 
@@ -564,7 +566,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 		return;
 
 	/* non text types cannot be displayed yet */
-	if (stricmp(mail->content_type,"text"))
+	if (mystricmp(mail->content_type,"text"))
 		return;
 
 	if (!mail->text) return;
@@ -589,7 +591,6 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				TAG_DONE);
 	} else
 	{
-		char *html_mail;
 		char *font_buf;
 
 		string str;
@@ -684,7 +685,6 @@ static int messageview_setup(struct MessageView_Data *data, struct mail *mail, c
 STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MessageView_Data *data;
-	struct TagItem *ti;
 	Object *simplehtml, *horiz, *vert;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
@@ -704,7 +704,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if (!(data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE)))
 	{
 		CoerceMethod(cl,obj,OM_DISPOSE);
-		return NULL;
+		return 0;
 	}
 
 
@@ -752,7 +752,7 @@ STATIC ULONG MessageView_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 *******************************************************************/
 STATIC ULONG MessageView_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
-	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
+/*	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);*/
 	switch (msg->opg_AttrID)
 	{
 		default:

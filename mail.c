@@ -33,6 +33,7 @@
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h" /* for the callbacks() */
+#include "simplemail_rev.h"
 #include "support.h"
 #include "textinterpreter.h"
 
@@ -1497,7 +1498,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			};
 
 			fprintf(fp,"%s", subject);
-			fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
+			fprintf(fp,"X-Mailer: SimpleMail %ld.%ld (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
 			fprintf(fp,"MIME-Version: 1.0\n");
 
 			time(&t);
@@ -1521,7 +1522,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
 			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
 			fprintf(fp, "\n");
-			fprintf(fp, mime_preample);
+			if (new_mail->to) fprintf(fp, mime_preample);
 
 			while (cmail)
 			{

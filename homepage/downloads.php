@@ -25,13 +25,17 @@ $version = "0.23";
 
 <tr bgcolor="gray">
 <?php
-//  echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.23.lha?download">'.$filename.'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2004/02/05</td>';
+?>
+</tr>
 
-//  echo '<td align="center">'.date("Y/m/d", filemtime("files/".$filename)).'</td>';
-//  echo '<td align="center">'.get_filesize("files/".$filename).'</td>';
+<tr bgcolor="gray">
+<?php
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.23-morphos.lha?download">'."simplemail-0.23-morphos.lha".'</A></td>';
+  echo '<td align="center">'.$version.'</td>';
+  echo '<td align="center">2004/02/05</td>';
 ?>
 </tr>
 

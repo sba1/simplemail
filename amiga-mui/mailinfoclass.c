@@ -34,6 +34,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
 #include "lists.h"
@@ -132,7 +133,7 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 	}
 
 	memset(f,0,sizeof(*f));
-	f->name = mystrdup(name);
+	f->name = utf8tostrcreate(name,user.config.default_codeset);
 	f->clickable = 0;
 
 	memset(t,0,sizeof(*t));
@@ -176,7 +177,7 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 			else buf[0] = 0;
 		}
 
-		if (!(t->text = mystrdup(buf)))
+		if (!(t->text = utf8tostrcreate(buf,user.config.default_codeset)))
 			goto out;
 
 		if (!(t->link = mystrdup(addr->email)))

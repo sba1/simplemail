@@ -98,71 +98,49 @@ int imap_dl_headers(struct list *imap_list)
 	serv = (struct imap_server*)list_first(imap_list);
 	while (serv)
 	{
-		if (open_socket_lib())
+		struct folder *folder = folder_find_by_imap(serv->name);
+		if (folder)
 		{
-			struct connection *conn;
-			if ((conn = tcp_connect(serv->name,serv->port,0)))
+			if (open_socket_lib())
 			{
-				char tag[20];
-				char send[200];
-				char buf[200];
-
-				char *line;
-				int ok = 0;
-
-				puts("connected to imap server\n");
-
-				while ((line = tcp_readln(conn)))
+				struct connection *conn;
+				if ((conn = tcp_connect(serv->name,serv->port,0)))
 				{
-					puts(line);
-					line = imap_get_result(line,buf,sizeof(buf));
-					line = imap_get_result(line,buf,sizeof(buf));
-					if (!mystricmp(buf,"OK"))
-					{
-						ok = 1;
-						break;
-					} else break;
+					char tag[20];
+					char send[200];
+					char buf[200];
 
-				}
+					char *line;
+					int ok = 0;
 
-				if (ok)
-				{
-					puts("now sending login\n");
-
-					sprintf(tag,"%04x",val++);
-					sprintf(send,"%s LOGIN %s %s\r\n",tag,serv->login,serv->passwd);
-
-					puts(send);
-					tcp_write(conn,send,strlen(send));
-					tcp_flush(conn);
-
-					ok = 0;
+					puts("connected to imap server\n");
 
 					while ((line = tcp_readln(conn)))
 					{
 						puts(line);
 						line = imap_get_result(line,buf,sizeof(buf));
-						if (!mystricmp(buf,tag))
+						line = imap_get_result(line,buf,sizeof(buf));
+						if (!mystricmp(buf,"OK"))
 						{
-							line = imap_get_result(line,buf,sizeof(buf));
-							if (!mystricmp(buf,"OK"))
-							{
-								puts("Login successful\n");
-								ok = 1;
-							}
+							ok = 1;
 							break;
-						}
+						} else break;
+	
 					}
 
 					if (ok)
 					{
+						puts("now sending login\n");
+	
 						sprintf(tag,"%04x",val++);
-						sprintf(send,"%s LIST \"\" *\r\n",tag,serv->login,serv->passwd);
+						sprintf(send,"%s LOGIN %s %s\r\n",tag,serv->login,serv->passwd);
+	
 						puts(send);
-
 						tcp_write(conn,send,strlen(send));
 						tcp_flush(conn);
-
+	
+						ok = 0;
+	
 						while ((line = tcp_readln(conn)))
 						{
 							puts(line);
@@ -172,37 +150,63 @@ int imap_dl_headers(struct list *imap_list)
 								line = imap_get_result(line,buf,sizeof(buf));
 								if (!mystricmp(buf,"OK"))
 								{
-									puts("List successful\n");
+									puts("Login successful\n");
 									ok = 1;
 								}
 								break;
-							} else
-							{
-								/* command */
-								line = imap_get_result(line,buf,sizeof(buf));
-
-								/* read flags */
-								line = imap_get_result(line,buf,sizeof(buf));
-
-								/* read delim */
-								line = imap_get_result(line,buf,sizeof(buf));
-
-								/* read name */
-								line = imap_get_result(line,buf,sizeof(buf));
-
-								puts(buf);puts("\n");
 							}
 						}
-						
-					}
-				} else
-				{
-					puts("error before logging in\n");
-				}
 
-				tcp_disconnect(conn);
+						if (ok)
+						{
+							sprintf(tag,"%04x",val++);
+							sprintf(send,"%s LIST \"\" *\r\n",tag,serv->login,serv->passwd);
+							puts(send);
+
+							tcp_write(conn,send,strlen(send));
+							tcp_flush(conn);
+
+							while ((line = tcp_readln(conn)))
+							{
+								puts(line);
+								line = imap_get_result(line,buf,sizeof(buf));
+								if (!mystricmp(buf,tag))
+								{
+									line = imap_get_result(line,buf,sizeof(buf));
+									if (!mystricmp(buf,"OK"))
+									{
+										puts("List successful\n");
+										ok = 1;
+									}
+									break;
+								} else
+								{
+									/* command */
+									line = imap_get_result(line,buf,sizeof(buf));
+
+									/* read flags */
+									line = imap_get_result(line,buf,sizeof(buf));
+
+									/* read delim */
+									line = imap_get_result(line,buf,sizeof(buf));
+
+									/* read name */
+									line = imap_get_result(line,buf,sizeof(buf));
+
+									puts(buf);puts("\n");
+								}
+							}
+							
+						}
+					} else
+					{
+						puts("error before logging in\n");
+					}
+
+					tcp_disconnect(conn);
+				}
+				close_socket_lib();
 			}
-			close_socket_lib();
 		}
 		
 		serv = (struct imap_server*)node_next(&serv->node);

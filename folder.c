@@ -1399,6 +1399,26 @@ struct folder *folder_find_special(int sp)
 }
 
 /******************************************************************
+ Returns the given imap folder server
+*******************************************************************/
+struct folder *folder_find_by_imap(char *path)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (f->is_imap)
+		{
+			if (!mystricmp(path,f->imap_server))
+			{
+				return f;
+			}
+		}
+		f = folder_next(f);
+	}
+	return NULL;
+}
+
+/******************************************************************
  Returns the incoming folder
 *******************************************************************/
 struct folder *folder_incoming(void)

@@ -34,6 +34,7 @@
 #include <proto/intuition.h>
 
 #include "filter.h"
+#include "smintl.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -63,10 +64,12 @@ struct rule
 	int type;
 };
 
-const static char *status_labels[] =
+const static char *status_labels_untranslated[] =
 {
-	"New","Read","Unread","Replied","Forwarded","Pending","Sent",NULL
+	N_("New"),N_("Read"),N_("Unread"),N_("Replied"),N_("Forwarded"),N_("Pending"),N_("Sent"),NULL
 };
+
+char *status_labels[sizeof(status_labels_untranslated)/sizeof(char*)];
 
 const static char *status_filenames[] =
 {
@@ -80,12 +83,12 @@ const static char *status_filenames[] =
 	NULL
 };
 
-static struct rule rules[] = {
-	{"Sender", RULE_FROM_MATCH},
-	{"Subject", RULE_SUBJECT_MATCH},
-	{"Header", RULE_HEADER_MATCH},
-	{"Has attachments", RULE_ATTACHMENT_MATCH},
-	{"Status is", RULE_STATUS_MATCH},
+const static struct rule rules[] = {
+	{N_("Sender"), RULE_FROM_MATCH},
+	{N_("Subject"), RULE_SUBJECT_MATCH},
+	{N_("Header"), RULE_HEADER_MATCH},
+	{N_("Has attachments"), RULE_ATTACHMENT_MATCH},
+	{N_("Status is"), RULE_STATUS_MATCH},
 	{NULL,NULL},
 };
 static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
@@ -106,16 +109,16 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 
 	if (data->type == RULE_FROM_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_SUBJECT_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_HEADER_MATCH)
 	{
 		data->object1 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
-		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
+		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
 		data->object3 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_STATUS_MATCH)
 	{
@@ -268,7 +271,10 @@ int create_filterrule_class(void)
 		CL_FilterRule->mcc_Class->cl_UserData = getreg(REG_A4);
 
 		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
-			rule_cycle_array[i] = rules[i].name;
+			rule_cycle_array[i] = _(rules[i].name);
+
+		for (i=0;i<sizeof(status_labels_untranslated)/sizeof(char*);i++)
+			status_labels[i] = _(status_labels_untranslated[i]);
 
 		return 1;
 	}

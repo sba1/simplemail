@@ -17,10 +17,11 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** upwnd.c
 */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <clib/alib_protos.h>
@@ -28,19 +29,28 @@
 #include <proto/intuition.h>
 
 #include "muistuff.h"
+#include "smintl.h"
 #include "subthreads.h"
+#include "support_indep.h"
 #include "transwndclass.h"
 
 static Object *win_up;
 
-void up_set_title(char *str)
-{
-	set(win_up, MUIA_Window_Title, str);
-}
-
 void up_set_status(char *str)
 {
-	set(win_up, MUIA_transwnd_Status, str);
+	set(win_up, MUIA_transwnd_Status, _(str));
+}
+
+void up_connect_to_server(char *server)
+{
+	static char buf[400];
+	static char *title; /* this is not really perfect but it works */
+	free(title);
+	title = mystrdup(server);
+	set(win_up, MUIA_Window_Title, title);
+
+	sprintf(buf,_("Connecting to server %s..."),server);
+	set(win_up, MUIA_transwnd_Status, buf);
 }
 
 void up_init_gauge_mail(int amm)

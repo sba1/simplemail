@@ -38,6 +38,7 @@
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "addressbookwnd.h"
@@ -108,10 +109,10 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 		}
 	} else
 	{
-		*msg->Array++ = "Name";
-		*msg->Array++ = "Alias";
-		*msg->Array++ = "Description";
-		*msg->Array = "Address";
+		*msg->Array++ = _("Name");
+		*msg->Array++ = _("Alias");
+		*msg->Array++ = _("Description");
+		*msg->Array = _("Address");
 	}
 }
 

@@ -36,6 +36,7 @@
 
 #include "folder.h"
 #include "simplemail.h"
+#include "smintl.h"
 
 #include "compiler.h"
 #include "foldertreelistclass.h"
@@ -131,8 +132,8 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		*msg->Array = mails_buf;
 	} else
 	{
-		*msg->Array++ = "Name";
-		*msg->Array = "Mails";
+		*msg->Array++ = _("Name");
+		*msg->Array = _("Mails");
 	}
 }
 
@@ -164,16 +165,16 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook(&data->open_hook, (HOOKFUNC)folder_open);
 
 	data->context_menu = MenustripObject,
-		Child, MenuObjectT("Folders"),
-			Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...", MUIA_UserData, MENU_FOLDER_NEW, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, "New Group...", MUIA_UserData, MENU_FOLDER_GROUP, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, "Remove...", MUIA_UserData, MENU_FOLDER_REM, End,
+		Child, MenuObjectT(_("Folders")),
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("New Folder..."), MUIA_UserData, MENU_FOLDER_NEW, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("New Group..."), MUIA_UserData, MENU_FOLDER_GROUP, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Remove..."), MUIA_UserData, MENU_FOLDER_REM, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, "Settings...", MUIA_UserData, MENU_FOLDER_SETTINGS, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Settings..."), MUIA_UserData, MENU_FOLDER_SETTINGS, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, "Order",
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Save", MUIA_UserData, MENU_FOLDER_SAVE, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Reset", MUIA_UserData, MENU_FOLDER_RESET, End,		
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Order"),
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Save"), MUIA_UserData, MENU_FOLDER_SAVE, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset"), MUIA_UserData, MENU_FOLDER_RESET, End,		
 				End,
 			End,
 		End;

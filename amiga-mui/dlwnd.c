@@ -58,7 +58,7 @@ void dl_init_gauge_mail(int amm)
 {
 	static char str[256];
 	
-	sprintf(str, "Mail %%ld/%d", amm);
+	sprintf(str, _("Mail %%ld/%d"), amm);
 
 	set(win_dl, MUIA_transwnd_Gauge1_Str, str);
 	set(win_dl, MUIA_transwnd_Gauge1_Max, amm);
@@ -74,7 +74,7 @@ void dl_init_gauge_byte(int size)
 {
 	static char str[256];
 	
-	sprintf(str, "%%ld/%d bytes", size);
+	sprintf(str, _("%%ld/%d bytes"), size);
 
 	set(win_dl, MUIA_transwnd_Gauge2_Str, str);
 	set(win_dl, MUIA_transwnd_Gauge2_Max, size);

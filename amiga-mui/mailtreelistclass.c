@@ -37,6 +37,7 @@
 #include "mail.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "smintl.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -66,6 +67,16 @@ struct MailTreelist_Data
 	APTR status_crypt;
 
 	Object *context_menu;
+
+	/* translated strings (faster to hold the translation) */
+	char *status_text;
+	char *from_text;
+	char *to_text;
+	char *subject_text;
+	char *reply_text;
+	char *date_text;
+	char *size_text;
+	char *filename_text;
 };
 
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
@@ -158,17 +169,17 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		}
 	} else
 	{
-		*msg->Array++ = "Status";
+		*msg->Array++ = data->status_text;
 
 		if (data->folder_type != FOLDER_TYPE_SEND)
-			*msg->Array++ = "From";
-		else *msg->Array++ = "To";
+			*msg->Array++ = data->from_text;
+		else *msg->Array++ = data->to_text;
 
-		*msg->Array++ = "Subject";
-		*msg->Array++ = "Reply";
-		*msg->Array++ = "Date";
-		*msg->Array++ = "Size";
-		*msg->Array = "Filename";
+		*msg->Array++ = data->subject_text;
+		*msg->Array++ = data->reply_text;
+		*msg->Array++ = data->date_text;
+		*msg->Array++ = data->size_text;
+		*msg->Array = data->filename_text;
 	}
 }
 
@@ -185,6 +196,16 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 
 	data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
+	data->status_text = _("Status");
+	data->from_text = _("From");
+	data->to_text = _("To");
+	data->subject_text = _("Subject");
+	data->reply_text = _("Reply");
+	data->date_text = _("Date");
+	data->size_text = _("Size");
+	data->filename_text = ("Filename");
+
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
 	SetAttrs(obj,
@@ -303,14 +324,14 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 	if (msg->ontop) return NULL; /* The default NList Menu should be returned */
 
 	context_menu = MenustripObject,
-		Child, MenuObjectT("Mail"),
-			Child, MenuitemObject, MUIA_Menuitem_Title, "Set status",
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Mark", MUIA_UserData, MENU_SETSTATUS_MARK, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Unmark", MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Hold", MUIA_UserData, MENU_SETSTATUS_HOLD, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Pending", MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
+		Child, MenuObjectT(_("Mail")),
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Set status"),
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Mark"), MUIA_UserData, MENU_SETSTATUS_MARK, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unmark"), MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Hold"), MUIA_UserData, MENU_SETSTATUS_HOLD, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Pending"), MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Read"), MUIA_UserData, MENU_SETSTATUS_READ, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unread"), MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
 				End,
 			End,
 		End;

@@ -36,6 +36,7 @@
 #include "filter.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "compiler.h"
@@ -229,7 +230,7 @@ static void filter_refresh_rules(void)
 
 			group = HGroup,
 				Child, RectangleObject,MUIA_HorizWeight,0,MUIA_Rectangle_VBar, TRUE,End,
-				Child, rem = MakeButton("Remove"),
+				Child, rem = MakeButton(_("Remove")),
 				End;
 
 			set(rem,MUIA_Weight,0);
@@ -414,7 +415,7 @@ static void init_filter(void)
 
 	filter_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','I','L','T'),
-		MUIA_Window_Title, "SimpleMail - Edit Filter",
+		MUIA_Window_Title, _("SimpleMail - Edit Filter"),
 		WindowContents, VGroup,
 			Child, VGroup,
 				Child, HGroup,
@@ -436,18 +437,18 @@ static void init_filter(void)
 								End,
 							End,
 						Child, HGroup,
-							Child, filter_new_button = MakeButton("_New"),
-							Child, filter_remove_button = MakeButton("_Remove"),
+							Child, filter_new_button = MakeButton(_("_New")),
+							Child, filter_remove_button = MakeButton(_("_Remove")),
 							End,
 						End,
 					Child, BalanceObject, End,
 					Child, VGroup,
 						Child, HGroup,
-							Child, MakeLabel("Apply on request"),
+							Child, MakeLabel(_("Apply on request")),
 							Child, filter_request_check = MakeCheck(NULL,FALSE),
-							Child, MakeLabel("Apply to new mails"),
+							Child, MakeLabel(_("Apply to new mails")),
 							Child, filter_new_check = MakeCheck(NULL,FALSE),
-							Child, MakeLabel("Apply to sent mails"),
+							Child, MakeLabel(_("Apply to sent mails")),
 							Child, filter_sent_check = MakeCheck(NULL,FALSE),
 							Child, HVSpace,
 							End,
@@ -459,14 +460,14 @@ static void init_filter(void)
 								End,
 							End,
 						Child, HGroup,
-							Child, filter_add_rule_button = MakeButton("Add new rule"),
-							Child, filter_apply_now_button = MakeButton("Apply now"),
+							Child, filter_add_rule_button = MakeButton(_("Add new rule")),
+							Child, filter_apply_now_button = MakeButton(_("Apply now")),
 							End,
 						Child, HorizLineObject,
 						Child, VGroup,
 							Child, ColGroup(3),
-								Child, MakeLabel("Move to Folder"),
-								Child, filter_move_check = MakeCheck("Move to Folder",FALSE),
+								Child, MakeLabel(_("Move to Folder")),
+								Child, filter_move_check = MakeCheck(_("Move to Folder"),FALSE),
 								Child, filter_move_popobject = PopobjectObject,
 									MUIA_Disabled, TRUE,
 									MUIA_Popstring_Button, PopButton(MUII_PopUp),
@@ -487,9 +488,9 @@ static void init_filter(void)
 				End,
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, save_button = MakeButton("_Save"),
-				Child, ok_button = MakeButton("_Use"),
-				Child, cancel_button = MakeButton("_Cancel"),
+				Child, save_button = MakeButton(_("_Save")),
+				Child, ok_button = MakeButton(_("_Use")),
+				Child, cancel_button = MakeButton(_("_Cancel")),
 				End,
 			End,
 		End;

@@ -1,6 +1,30 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2003/09/07">
+   <text lang="en">
+	  Version 0.20 of SimpleMail released!
+
+	  The changes are:
+
+    <list>
+		<item>Can now download mails from an imap server partly</item>
+		<item>Added an statistcal spam filter</item>
+		<item>Lots of other minor improvements and bug fixes (see trackers at sourceforge page)</item>
+    </list>
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.20 veröffentlicht!
+
+	  Die Änderungen sind:
+    <list>
+		<item>Nachrichten von einem Imap Server können nun teilweise heruntergeladen werden</item>
+		<item>Statistischer Spam Filter hinzugefügt</item>
+		<item>Viele andere kleine Verbesserungen und Bug fixes (siehe Tracker auf SourceForge)</item>
+    </list>
+   </text>
+  </entry>
+
   <entry date="2003/02/05">
    <text lang="en">
 	  Version 0.19 of SimpleMail released!

@@ -63,11 +63,11 @@ static char *get_tagline(void)
 	int nr;
 	char *tagline = NULL;
 	
-	if (!taglines_filename || !taglines_indexname || !taglines_num) return NULL;
+	if (!taglines_filename || !taglines_indexname ||!taglines_num) return NULL;
 
 	nr = random(taglines_num);
 
-	if ((fh = fopen(taglines_filename, "rb")))
+	if ((fh = fopen(taglines_filename,"rb")))
 	{
 		int len = taglines_positions[nr+1] - taglines_positions[nr];
 
@@ -88,7 +88,7 @@ static char *get_tagline(void)
 *******************************************************************/
 char *taglines_add_tagline(char *buf)
 {
-	long len;
+	long len = 0;
 	char *fmt;
 
 	if ((fmt = strstr(buf,"%t")))

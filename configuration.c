@@ -31,6 +31,7 @@
 #include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
+#include "cookies.h"
 #include "support_indep.h"
 
 #include "support.h"
@@ -172,6 +173,8 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Cookies.Use")))
+							user.config.cookies_use = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.Wrap")))
 							user.config.write_wrap = atoi(result);
 						if ((result = get_config_item(buf,"Write.WrapType")))
@@ -375,6 +378,54 @@ int load_config(void)
 				fclose(fh);
 			}
 		}
+		
+		if (user.directory) strcpy(buf,user.directory);
+		else buf[0] = 0;
+		sm_add_part(buf,".cookies",512);
+		list_init(&user.config.cookie_list);
+
+		if(user.cookies_filename = mystrdup(buf))
+		{
+			if ((fh = fopen(user.cookies_filename,"r")))
+			{
+				char *txt = NULL;
+				char lf[]="\n";
+
+				while (read_line(fh,buf))
+				{
+					if(txt)
+					{
+						if(strcmp(buf, "%%") == 0)
+						{
+							struct cookie *c;
+
+							txt[strlen(txt) - 1] = '\0';
+
+							c = cookies_create_cookie(txt);
+							if(c != NULL)
+							{
+								list_insert_tail(&user.config.cookie_list, (struct node *) c);
+							}
+
+							free(txt);
+							txt = NULL;
+						}
+						else
+						{
+							txt = mystrcat(txt, buf);
+							txt = mystrcat(txt, lf);
+						}
+					}
+					else
+					{
+						txt = malloc(strlen(buf) + 2);
+						strcpy(txt, buf);
+						txt = strcat(txt, lf);
+					}
+				}
+				fclose(fh);
+			}
+		}
 
 		free(buf);
 	}
@@ -440,6 +491,7 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
+			fprintf(fh,"Cookies.Use=%s\n",user.config.cookies_use?"Y":"N");
 			fprintf(fh,"Write.Wrap=%d\n",user.config.write_wrap);
 			fprintf(fh,"Write.WrapType=%d\n",user.config.write_wrap_type);
 			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");

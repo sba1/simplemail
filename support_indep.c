@@ -185,6 +185,25 @@ unsigned int myfsize(FILE *file)
 }
 
 /**************************************************************************
+ Joins the strings with reloc and free of the old one
+**************************************************************************/
+char *mystrcat(char *str1, char *str2)
+{
+	int len = strlen(str1) + strlen(str2) + 1;
+	char *rc = malloc(len);
+
+	if(rc != NULL)
+	{
+		strcpy(rc, str1);
+		strcat(rc, str2);
+	}
+
+	free(str1);
+
+	return rc;
+}
+
+/**************************************************************************
  Wraps a text. Overwrites the argument!!
 **************************************************************************/
 void wrap_text(char *text, int border)

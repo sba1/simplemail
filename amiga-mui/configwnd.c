@@ -114,6 +114,8 @@ static Object *signatures_use_checkbox;
 static Object *signature_texteditor;
 static Object *signature_name_string;
 
+static Object *cookies_use_checkbox;
+
 static Object *phrase_addresses_string;
 static Object *phrase_write_welcome_string;
 static Object *phrase_write_welcomeaddr_popph;
@@ -349,6 +351,7 @@ static void config_use(void)
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
+	user.config.cookies_use = xget(cookies_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
@@ -1100,6 +1103,9 @@ static int init_signatures_group(void)
   			Child, MakeLabel(_("Us_e signatures")),
   			Child, signatures_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
   			Child, HSpace(0),
+			Child, MakeLabel(_("Us_e cookies")),
+			Child, cookies_use_checkbox = MakeCheck(_("Us_e cookies"),user.config.cookies_use),
+			Child, HSpace(0),
 	  		End,
 	  	Child, HorizLineObject,
 			Child, add_button = MakeButton(_("_Add new signature")),
@@ -1354,41 +1360,41 @@ static void init_config(void)
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
-    MUIA_Window_Title, _("SimpleMail - Configuration"),
-    WindowContents, VGroup,
-    	Child, HGroup,
-    		Child, NListviewObject,
-    			MUIA_HorizWeight, 33,
-    			MUIA_NListview_NList, config_tree = ConfigTreelistObject,
-    				End,
-    			End,
-    		Child, BalanceObject, End,
-    		Child, VGroup,
+	 MUIA_Window_Title, _("SimpleMail - Configuration"),
+	 WindowContents, VGroup,
+	 	Child, HGroup,
+	 		Child, NListviewObject,
+	 			MUIA_HorizWeight, 33,
+	 			MUIA_NListview_NList, config_tree = ConfigTreelistObject,
+	 				End,
+	 			End,
+	 		Child, BalanceObject, End,
+	 		Child, VGroup,
 	    		Child, config_group = VGroup,
   	  			Child, user_group,
   	  			Child, accounts_group,
   	  			Child, account_group,
-    				Child, tcpip_receive_group,
-    				Child, write_group,
-    				Child, mails_readmisc_group,
-    				Child, mails_read_group,
-    				Child, mails_readhtml_group,
-    				Child, signatures_group,
-    				Child, signature_group,
-    				Child, phrase_group,
-    				Child, phrases_group,
-    				Child, RectangleObject,
+	 				Child, tcpip_receive_group,
+	 				Child, write_group,
+	 				Child, mails_readmisc_group,
+	 				Child, mails_read_group,
+	 				Child, mails_readhtml_group,
+	 				Child, signatures_group,
+	 				Child, signature_group,
+	 				Child, phrase_group,
+	 				Child, phrases_group,
+	 				Child, RectangleObject,
 	   				MUIA_Weight, 1,
   						End,
-    				End,
-    			End,
-    		End,
-    	Child, HorizLineObject,
-    	Child, HGroup,
-    		Child, save_button = MakeButton(_("_Save")),
-    		Child, use_button = MakeButton(_("_Use")),
-    		Child, cancel_button = MakeButton(_("_Cancel")),
-    		End,
+	 				End,
+	 			End,
+	 		End,
+	 	Child, HorizLineObject,
+	 	Child, HGroup,
+	 		Child, save_button = MakeButton(_("_Save")),
+	 		Child, use_button = MakeButton(_("_Use")),
+	 		Child, cancel_button = MakeButton(_("_Cancel")),
+	 		End,
 			End,
 		End;
 

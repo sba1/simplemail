@@ -41,6 +41,7 @@
 #include "addressbook.h"
 #include "codecs.h"
 #include "configuration.h"
+#include "cookies.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
@@ -581,7 +582,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 {
 	/* Note, the following three datas are static although the function is recursive
 	 * It minimalizes the possible stack overflow
-   */
+	*/
 	static char buf[128];
 	static char tmpname[L_tmpnam+1];
 	static struct attachment attach;
@@ -670,6 +671,12 @@ static void compose_add_signature(struct Compose_Data *data)
 				strcpy(new_text,text);
 				strcat(new_text,"\n-- \n");
 				strcat(new_text,sign->signature);
+
+				if(user.config.cookies_use)
+				{
+					new_text = cookies_add_cookie(new_text);
+				}
+				
 /*
 				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
 				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
@@ -811,8 +818,8 @@ void compose_window_open(struct compose_args *args)
 
 	wnd = WindowObject,
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
-    MUIA_Window_Title, _("SimpleMail - Compose Message"),
-        
+	 MUIA_Window_Title, _("SimpleMail - Compose Message"),
+		  
 		WindowContents, main_group = VGroup,
 			Child, reply_string = BetterStringObject, MUIA_ShowMe, FALSE, End,
 

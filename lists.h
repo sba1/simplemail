@@ -46,7 +46,7 @@ struct string_node
 /* Prototypes */
 void list_init(struct list *list);
 void list_insert(struct list *list, struct node *newnode, struct node *prednode);
-void list_insert_tail(struct list *list, struct node *prednode);
+void list_insert_tail(struct list *list, struct node *newnode);
 struct node *list_remove_tail(struct list *list);
 struct node *list_find(struct list *list, int num);
 int list_length(struct list *list);

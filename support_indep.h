@@ -33,6 +33,7 @@ char *mystristr(const char *str1, const char *str2);
 char *mystrdup(const char *str);
 char *mystrndup(const char *str, int len);
 size_t mystrlcpy(char *dest, const char *src, size_t n);
+char *mystrcat(char *str1, char *str2);
 
 unsigned int myfsize(FILE *file);
 

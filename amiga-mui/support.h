@@ -28,6 +28,7 @@ unsigned int sm_get_seconds(int day, int month, int year);
 int sm_get_gmt_offset(void);
 int sm_add_part(char *drawer, const char *filename, int buf_size);
 char *sm_file_part(char *filename);
+char *sm_path_part(char *filename);
 int sm_request(char *title, char *text, char *gadgets, ...);
 
 void tell(char *str);

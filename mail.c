@@ -149,7 +149,7 @@ static char *cite_text(char *src, int len)
 /**************************************************************************
  Allocate an header and insert it into the header list
 **************************************************************************/
-static int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len)
+int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len)
 {
 	struct header *header;
 
@@ -499,39 +499,14 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 }
 
 /**************************************************************************
- Sets a new status of the mail. It also renames the file, to match the
- status. (on the Amiga this will be done by setting a new comment later)
- Note that the current directory must be the directory where the mail
- is located.
- Also note that this function makes no check if the status change makes
- sense.
+ Identifies the status of the mail (using the filename)
 **************************************************************************/
-void mail_set_status(struct mail *mail, int status_new)
-{
-	char *filename;
-
-	if (status_new == mail->status) return;
-	mail->status = status_new;
-	if (!mail->filename) return;
-	filename = mail_get_status_filename(mail->filename, status_new);
-
-	if (strcmp(mail->filename,filename))
-	{
-		rename(mail->filename,filename);
-		free(mail->filename);
-		mail->filename = filename;
-	}
-}
-
-/**************************************************************************
- Identifies the status of the mail
-**************************************************************************/
-static void mail_identify_status(struct mail *m)
+void mail_identify_status(struct mail *m)
 {
 	char *suffix;
 	if (!m->filename) return;
 	suffix = strrchr(m->filename,'.');
-	if (suffix[2])
+	if (!suffix || suffix[2])
 	{
 		m->status = MAIL_STATUS_UNREAD;
 		return;

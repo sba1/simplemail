@@ -45,18 +45,15 @@ void callback_read_mail(void)
 
 	if ((filename = main_get_mail_filename()))
 	{
-		char buf[256];
 		struct mail *m = main_get_active_mail();
 
 		read_window_open(main_get_folder_drawer(), filename);
 
 		if (m && m->status == MAIL_STATUS_UNREAD)
 		{
-			getcwd(buf, sizeof(buf));
-			chdir(main_get_folder_drawer());
-			mail_set_status(m,MAIL_STATUS_READ);
+			folder_set_mail_status(main_get_folder(),m,MAIL_STATUS_READ);
+			m->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(m);
-			chdir(buf);
 		}
 	}
 }
@@ -303,6 +300,7 @@ int main(void)
 			folder_delete_deleted();
 			cleanup_threads();
 		}
+		del_folders();
 	}
 	cleanup_addressbook();
 	return 0;

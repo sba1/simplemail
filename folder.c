@@ -37,6 +37,90 @@ struct folder_node
 	struct folder folder; /* this must follow! */
 };
 
+static char *fread_str(FILE *fh);
+
+/******************************************************************
+ Opens the indexfile of the given folder
+*******************************************************************/
+static FILE *folder_open_indexfile(struct folder *f, char *mode)
+{
+	FILE *fh;
+	char *path;
+	char *index_name;
+	char *filename_ptr;
+
+	char cpath[256];
+
+	if (!f || !f->path) return 0;
+	if (!(path = strdup(f->path))) return 0;
+
+	*sm_path_part(path) = 0;
+	filename_ptr = sm_file_part(f->path);
+	index_name = (char*)malloc(strlen(filename_ptr)+16);
+	if (!index_name)
+	{
+		free(path);
+		return 0;
+	}
+
+	sprintf(index_name,"%s.index",filename_ptr);
+
+	getcwd(cpath, sizeof(cpath));
+	if(chdir(path) == -1)
+	{
+		free(index_name);
+		free(path);
+		return 0;
+	}
+
+	fh = fopen(index_name,mode);
+
+	chdir(cpath);
+	free(index_name);
+	free(path);
+	return fh;
+}
+
+/******************************************************************
+ Delete the indexfile of the given folder
+*******************************************************************/
+void folder_delete_indexfile(struct folder *f)
+{
+	char *path;
+	char *index_name;
+	char *filename_ptr;
+
+	char cpath[256];
+
+	if (!f || !f->path) return;
+	if (!(path = strdup(f->path))) return;
+
+	*sm_path_part(path) = 0;
+	filename_ptr = sm_file_part(f->path);
+	index_name = (char*)malloc(strlen(filename_ptr)+16);
+	if (!index_name)
+	{
+		free(path);
+		return;
+	}
+
+	sprintf(index_name,"%s.index",filename_ptr);
+
+	getcwd(cpath, sizeof(cpath));
+	if(chdir(path) == -1)
+	{
+		free(index_name);
+		free(path);
+		return;
+	}
+
+	remove(index_name);
+
+	chdir(cpath);
+	free(index_name);
+	free(path);
+}
+
 /******************************************************************
  Adds a new mail into the given folder
 *******************************************************************/
@@ -47,6 +131,13 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 	{
 		free(folder->sorted_mail_array);
 		folder->sorted_mail_array = NULL;
+	}
+
+	/* delete the indexfile if not already done */
+	if (folder->index_uptodate)
+	{
+		folder_delete_indexfile(folder);
+		folder->index_uptodate = 0;
 	}
 
 	if (folder->mail_array_allocated == folder->num_mails)
@@ -74,6 +165,13 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 	{
 		free(folder->sorted_mail_array);
 		folder->sorted_mail_array = NULL;
+	}
+
+	/* delete the indexfile if not already done */
+	if (folder->index_uptodate)
+	{
+		folder_delete_indexfile(folder);
+		folder->index_uptodate = 0;
 	}
 
 	for (i=0; i < folder->num_mails; i++)
@@ -105,12 +203,64 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 		folder->sorted_mail_array = NULL;
 	}
 
+	/* Delete the indexfile if not already done */
+	if (folder->index_uptodate)
+	{
+		folder_delete_indexfile(folder);
+		folder->index_uptodate = 0;
+	}
+
 	for (i=0; i < folder->num_mails; i++)
 	{
 		if (folder->mail_array[i] == toreplace)
 		{
 			folder->mail_array[i] = newmail;
 			break;
+		}
+	}
+}
+
+/******************************************************************
+ Sets a new status of a mail which is inside the given folder.
+ It also renames the file, to match the
+ status. (on the Amiga this will be done by setting a new comment later)
+ Also note that this function makes no check if the status change makes
+ sense.
+*******************************************************************/
+void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new)
+{
+	int i;
+	for (i=0;i<folder->num_mails;i++)
+	{
+		if (folder->mail_array[i]==mail)
+		{
+			char *filename;
+
+			if (status_new == mail->status) return;
+			mail->status = status_new;
+			if (!mail->filename) return;
+			filename = mail_get_status_filename(mail->filename, status_new);
+
+			if (strcmp(mail->filename,filename))
+			{
+				char buf[256];
+
+				getcwd(buf, sizeof(buf));
+				chdir(folder->path);
+
+				rename(mail->filename,filename);
+				free(mail->filename);
+				mail->filename = filename;
+
+				chdir(buf);
+
+				/* Delete the indexfile if not already done */
+				if (folder->index_uptodate)
+				{
+					folder_delete_indexfile(folder);
+					folder->index_uptodate = 0;
+				}
+			}
 		}
 	}
 }
@@ -140,33 +290,99 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 *******************************************************************/
 int folder_read_mail_infos(struct folder *folder)
 {
-	DIR *dfd; /* directory descriptor */
-	struct dirent *dptr; /* dir entry */
+  int mail_infos_read = 0;
 
-	char path[256];
-
-	getcwd(path, sizeof(path));
-	if(chdir(folder->path) == -1) return 0;
-
-	dfd = opendir("");
-	while ((dptr = readdir(dfd)) != NULL)
+	FILE *fh = folder_open_indexfile(folder,"rb");
+	if (fh)
 	{
-		struct mail *m = mail_create_from_file(dptr->d_name);
-		if (m)
+		char buf[4];
+		fread(buf,1,4,fh);
+		if (!strncmp("SMFI",buf,4))
 		{
-			folder_add_mail(folder,m);
+			int ver;
+			fread(&ver,1,4,fh);
+			if (ver == 0)
+			{
+				int num_mails;
+				fread(&num_mails,1,4,fh);
+				mail_infos_read = 1;
+				while (num_mails--)
+				{
+					struct mail *m = mail_create();
+					if (m)
+					{
+						char *buf;
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"Subject",7,buf,strlen(buf));
+							free(buf);
+						}
+
+						m->filename = fread_str(fh);
+
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"From",4,buf,strlen(buf));
+							free(buf);
+						}
+
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"To",2,buf,strlen(buf));
+							free(buf);
+						}
+
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"Reply-To",8,buf,strlen(buf));
+							free(buf);
+						}
+
+						fseek(fh,ftell(fh)%2,SEEK_CUR);
+						fread(&m->size,1,sizeof(m->size),fh);
+						fread(&m->seconds,1,sizeof(m->seconds),fh);
+						mail_identify_status(m);
+						mail_process_headers(m);
+						folder_add_mail(folder,m);
+					}
+				}
+			}
 		}
+		fclose(fh);
 	}
 
-	closedir(dfd);
+	folder->index_uptodate = mail_infos_read;
 
-	chdir(path);
+	if (!mail_infos_read)
+	{
+		DIR *dfd; /* directory descriptor */
+		struct dirent *dptr; /* dir entry */
+
+		char path[256];
+
+		getcwd(path, sizeof(path));
+		if(chdir(folder->path) == -1) return 0;
+
+		dfd = opendir("");
+		while ((dptr = readdir(dfd)) != NULL)
+		{
+			struct mail *m = mail_create_from_file(dptr->d_name);
+			if (m)
+			{
+				folder_add_mail(folder,m);
+			}
+		}
+
+		closedir(dfd);
+
+		chdir(path);
+	}
 	return 1;
 }
 
 /******************************************************************
  Adds a mail to the incoming folder (the mail not actually not
- copied)
+ copied). The mail will get a New Flag
 *******************************************************************/
 int folder_add_mail_incoming(struct mail *mail)
 {
@@ -175,6 +391,7 @@ int folder_add_mail_incoming(struct mail *mail)
 	{
 		if (folder_add_mail(folder,mail))
 		{
+			mail->flags |= MAIL_FLAGS_NEW;
 			return 1;
 		}
 	}
@@ -392,6 +609,96 @@ void folder_delete_deleted(void)
 	chdir(path);
 }
 
+/******************************************************************
+ Writes a string into a filehandle. Returns 0 for an error else
+ the number of bytes which has been written (at least two).
+*******************************************************************/
+static int fwrite_str(FILE *fh, char *str)
+{
+	if (str)
+	{
+		int len;
+		int strl = strlen(str);
+
+		if (fputc((strl/256)%256,fh)==EOF) return 0;
+		if (fputc(strl%256,fh)==EOF) return 0;
+
+		len = fwrite(str,1,strl,fh);
+		if (len == strl) return len + 2;
+	}
+	fputc(0,fh);
+	fputc(0,fh);
+	return 2;
+}
+
+/******************************************************************
+ Reads a string from a filehandle. It is allocated with malloc()
+*******************************************************************/
+static char *fread_str(FILE *fh)
+{
+	unsigned char a;
+	char *txt;
+	int len;
+
+	a = fgetc(fh);
+	len = a << 8;
+	a = fgetc(fh);
+	len += a;
+
+	if ((txt = malloc(len+1)))
+	{
+		fread(txt,1,len,fh);
+		txt[len]=0;
+	}
+	return txt;
+}
+
+/******************************************************************
+ Saved the index of an folder
+*******************************************************************/
+int folder_save_index(struct folder *f)
+{
+	FILE *fh = folder_open_indexfile(f,"wb");
+
+	if (fh)
+	{
+		int i;
+		int ver = 0;
+		fwrite("SMFI",1,4,fh);
+		fwrite(&ver,1,4,fh);
+		fwrite(&f->num_mails,1,4,fh);
+
+		for (i=0; i < f->num_mails; i++)
+		{
+			char *from = mail_find_header_contents(f->mail_array[i],"from");
+			char *to = mail_find_header_contents(f->mail_array[i],"to");
+			char *reply_to = mail_find_header_contents(f->mail_array[i],"reply-to");
+			int len = 0;
+			int len_add;
+
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->subject))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->filename))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, from))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, to))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, reply_to))) break;
+			len += len_add;
+
+			/* so that integervars are aligned */
+			if (len % 2) fputc(0,fh);
+
+			fwrite(&f->mail_array[i]->size,1,sizeof(f->mail_array[i]->size),fh);
+			fwrite(&f->mail_array[i]->seconds,1,sizeof(f->mail_array[i]->seconds),fh);
+		}
+		fclose(fh);
+	}
+
+	return 1;
+}
+
 /* to control the compare functions */
 static int compare_primary_reverse;
 static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
@@ -596,4 +903,10 @@ int init_folders(void)
 *******************************************************************/
 void del_folders(void)
 {
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (!f->index_uptodate) folder_save_index(f);
+		f = folder_next(f);
+	}
 }

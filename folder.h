@@ -44,7 +44,9 @@ struct folder
 
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted */
 
-	int type;
+	int index_uptodate; /* 1 if the indexfile is uptodate */
+
+	int type; /* see below */
 	/* more will follow */
 };
 
@@ -71,6 +73,7 @@ int folder_read_mail_infos(struct folder *folder);
 int folder_add_mail(struct folder *folder, struct mail *mail);
 int folder_add_mail_incoming(struct mail *mail);
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
+void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
 struct folder *folder_add(char *name, char *path);
@@ -86,6 +89,7 @@ struct folder *folder_deleted(void);
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail);
 int folder_delete_mail(struct folder *from_folder, struct mail *mail);
 void folder_delete_deleted(void);
+int folder_save_index(struct folder *f);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
 struct mail *folder_next_mail(struct folder *folder, void **handle);

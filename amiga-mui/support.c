@@ -158,6 +158,14 @@ char *sm_file_part(char *filename)
 }
 
 /******************************************************************
+ Return the character after the last path component
+*******************************************************************/
+char *sm_path_part(char *filename)
+{
+	return (char*)PathPart(filename);
+}
+
+/******************************************************************
  Opens a requester. Returns 0 if the rightmost gadgets is pressed
  otherwise the position of the gadget from left to right
 *******************************************************************/

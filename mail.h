@@ -44,6 +44,7 @@ struct content_parameter
 struct mail
 {
 	int status; /* see below */
+	int flags; /* see below */
 	char *from; /* decoded "From" field */
 	char *to; /* decoded "To" field, only the first address */
 	char *reply;
@@ -89,20 +90,25 @@ struct mail
 #define MAIL_STATUS_WAITSEND 2 /* wait to be sendet, new composed mail */
 #define MAIL_STATUS_SENT     3 /* sent the mail */
 
+/* Mail flags */
+#define MAIL_FLAGS_NEW (1L << 0) /* it's a new mail */
+
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
+void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(struct mail *mail);
 void mail_free(struct mail *mail);
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
-void mail_set_status(struct mail *mail, int status_new);
 int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
 
+int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len);
 char *mail_find_header_contents(struct mail *mail, char *name);
 char *mail_get_new_name(void);
+char *mail_get_status_filename(char *oldfilename, int status_new);
 
 /* mail scan functions */
 

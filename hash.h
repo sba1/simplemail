@@ -35,6 +35,7 @@ struct hash_table
 	int bits;
 	unsigned int mask; /* The bit mask for accessing the elements */
 	unsigned int size; /* Size of the hash table */
+	unsigned int data;
 	const char *filename;
 
 	struct hash_bucket *table;
@@ -46,5 +47,7 @@ void hash_table_clear(struct hash_table *ht);
 
 struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, unsigned int data);
 struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string);
+
+void hash_table_call_for_every_entry(struct hash_table *ht, void (*func)(struct hash_entry *entry, void *data), void *data);
 
 #endif

@@ -75,33 +75,40 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 	ht->table = table;
 	ht->filename = filename;
 
-	if ((fh = fopen(filename,"r")))
+	if (filename)
 	{
-		char buf[512];
-		fgets(buf,sizeof(buf),fh);
-		if (!strncmp(buf,"SMHASH1",7))
+		if ((fh = fopen(filename,"r")))
 		{
-			while (fgets(buf,sizeof(buf),fh))
+			char buf[512];
+			fgets(buf,sizeof(buf),fh);
+			if (!strncmp(buf,"SMHASH1",7))
 			{
-				int len = strlen(buf);
-				char *lc;
-				unsigned int data;
+				fgets(buf,sizeof(buf),fh);
+				ht->data = atoi(buf);
 
-				if (len && buf[len-1] == '\n') buf[len-1] = 0;
-				if ((len>1) && buf[len-2] == '\r') buf[len-2]=0;
-
-				data = strtoul(buf,&lc,10);
-				if (lc)
+				while (fgets(buf,sizeof(buf),fh))
 				{
-					if (isspace((unsigned char)*lc))
+					int len = strlen(buf);
+					char *lc;
+					unsigned int data;
+
+					if (len && buf[len-1] == '\n') buf[len-1] = 0;
+					if ((len>1) && buf[len-2] == '\r') buf[len-2]=0;
+
+					data = strtoul(buf,&lc,10);
+					if (lc)
 					{
-						char *string;
-						lc++;
-						if ((string = mystrdup(lc)))
-							hash_table_insert(ht, string, data);
+						if (isspace((unsigned char)*lc))
+						{
+							char *string;
+							lc++;
+							if ((string = mystrdup(lc)))
+								hash_table_insert(ht, string, data);
+						}
 					}
 				}
 			}
+			fclose(fh);
 		}
 	}
 	
@@ -114,6 +121,27 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 **************************************************************************/
 void hash_table_clear(struct hash_table *ht)
 {
+	unsigned int i;
+
+	if (ht->table)
+	{
+		for (i=0;i<ht->size;i++)
+		{
+			struct hash_bucket *hb = &ht->table[i];
+			if (hb->entry.string) free((void*)hb->entry.string);
+			hb = hb->next;
+			while (hb)
+			{
+				struct hash_bucket *thb = hb->next;
+				free((void*)hb->entry.string);
+				free(hb);
+				hb = thb;
+			}
+		}
+		free(ht->table);
+		ht->table = NULL;
+		ht->data = 0;
+	}
 }
 
 /**************************************************************************
@@ -178,6 +206,7 @@ void hash_table_store(struct hash_table *ht)
 	{
 		unsigned int i;
 		fputs("SMHASH1\n",fh);
+		fprintf(fh,"%d\n",ht->data);
 		for (i=0;i<ht->size;i++)
 		{
 			struct hash_bucket *hb = &ht->table[i];
@@ -193,3 +222,22 @@ void hash_table_store(struct hash_table *ht)
 	}
 }
 
+/**************************************************************************
+ For every entry in the hash table call the given function
+**************************************************************************/
+void hash_table_call_for_every_entry(struct hash_table *ht, void (*func)(struct hash_entry *entry, void *data), void *data)
+{
+	unsigned int i;
+	if (!func) return;
+
+	for (i=0;i<ht->size;i++)
+	{
+		struct hash_bucket *hb = &ht->table[i];
+		while (hb)
+		{
+			if (hb->entry.string)
+				func(&hb->entry,data);
+			hb = hb->next;
+		}
+	}
+}

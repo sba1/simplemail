@@ -1,6 +1,6 @@
 <?php
 
-$version = "0.25";
+$version = "0.26";
 
   require_once("language.inc.php");
   require_once("support.inc.php");
@@ -24,7 +24,7 @@ $version = "0.25";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.25-os3.lha?download">'."simplemail-0.25-os3.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.26-os3.lha?download">'."simplemail-0.26-os3.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2005/02/05</td>';
 ?>
@@ -32,7 +32,7 @@ $version = "0.25";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.25-os4.lha?download">'."simplemail-0.25-os4.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.26-os4.lha?download">'."simplemail-0.26-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2005/02/05</td>';
 ?>
@@ -40,7 +40,7 @@ $version = "0.25";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.25-morphos.lha?download">'."simplemail-0.25-morphos.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.26-morphos.lha?download">'."simplemail-0.26-morphos.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2005/02/05</td>';
 ?>

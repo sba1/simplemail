@@ -2,6 +2,31 @@
 
 <news>
 
+  <entry date="2005/03/13">
+
+   <text lang="en">
+	  Version 0.26 of SimpleMail released!
+
+	  The changes are:
+   	<list>
+     <item>optional TheBar.mcc is now used for all toolbars (bgol)</item>
+     <item>compacted mailinfo shows now additional the from field (bgol)</item>
+     <item>simplehtml.library ported to OS4</item>
+     <item>Fixed broken SMTP STARTTLS support</item>
+     <item>Minor other improvements and fixes</item>
+    </list>
+   </text>
+
+   <text lang="de">
+     <item>Optionale TheBar.mcc wird nun für alle Toolbars verwendet (bgol)</item>
+     <item>Kompakte Form der Nachrichtenkenndaten zeigt nun zusätzlich das Absenderfeld</item>
+     <item>simplehtml.library nach OS4 portiert</item>
+     <item>Probleme mit SMTP STARTTLS behoben</item>
+     <item>Minor other improvements and fixes</item>
+   </text>
+  </entry>
+
+
   <entry date="2005/02/05">
    <text lang="en">
 	  Version 0.25 of SimpleMail released!

@@ -91,9 +91,11 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 		return 0;
 	}
 
-	memset(f,0,sizeof(f));
+	memset(f,0,sizeof(*f));
 	f->name = mystrdup(name);
+	f->clickable = 0;
 
+	memset(t,0,sizeof(*t));
 	list_init(&f->text_list);
 	t->text = mystrdup(text);
 	list_insert_tail(&f->text_list,&t->node);
@@ -110,7 +112,7 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 
 	if (!(f = malloc(sizeof(*f)))) return 0;
 
-	memset(f,0,sizeof(f));
+	memset(f,0,sizeof(*f));
 	f->name = mystrdup(name);
 	f->clickable = 1;
 
@@ -277,12 +279,14 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 			cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 			if (!cnt) break;
 
+			if (f->clickable) SetAPen(_rp(obj),data->link_pen);
 			Text(_rp(obj),text->text,cnt);
 			space_left -= te.te_Width;
 			if (next_text)
 			{
 				if (space_left >= comma_width)
 				{
+					if (f->clickable) SetAPen(_rp(obj),data->text_pen);
 					Text(_rp(obj),",",1);
 					space_left -= comma_width;
 				} else break;

@@ -458,7 +458,7 @@ void main_load_environment(void)
 		count = StrToLong(ls, &weight);
 	}
 	set(left_listview_group, MUIA_HorizWeight, Weights[0]);
-	set(mail_listview, MUIA_HorizWeight, Weights[1]);
+	set(right_group, MUIA_HorizWeight, Weights[1]);
 	set(folder_listview_group, MUIA_VertWeight, Weights[2]);
 	set(address_listview_group, MUIA_VertWeight, Weights[3]);
 }
@@ -471,7 +471,7 @@ void main_save_environment(void)
 	char buf[80];
 
 	Weights[0] = xget(left_listview_group, MUIA_HorizWeight);
-	Weights[1] = xget(mail_listview, MUIA_HorizWeight);
+	Weights[1] = xget(right_group, MUIA_HorizWeight);
 	Weights[2] = xget(folder_listview_group, MUIA_VertWeight);
 	Weights[3] = xget(address_listview_group, MUIA_VertWeight);
 

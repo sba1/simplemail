@@ -310,6 +310,7 @@ FILE *fopen(const char *filename, const char *mode)
 	LONG amiga_mode;
 	if (*mode == 'w') amiga_mode = MODE_NEWFILE;
 	else if (*mode == 'r') amiga_mode = MODE_OLDFILE;
+	else if (*mode == 'a') amiga_mode = MODE_READWRITE;
 	else return NULL;
 
 	ObtainSemaphore(&files_sem);
@@ -323,6 +324,11 @@ FILE *fopen(const char *filename, const char *mode)
 
 	if (!(files[_file] = Open(filename,amiga_mode))) goto fail;
 	file->_file = _file;
+
+	if (amiga_mode == MODE_READWRITE)
+	{
+		Seek(files[_file],0,OFFSET_END);
+	}
 
 	ReleaseSemaphore(&files_sem);
 	D(bug("0x%lx opened %s\n",file,filename));

@@ -54,23 +54,21 @@ struct addressbook_entry
 	struct node node; /* embedded node structure */
 	int type; /* see above */
 
+	char *alias;
+	char *description;
+
 	union
 	{
 		struct
 		{
-			char *alias;
-			char *description;
-
 			struct list list; /* more addressbook entries */
 		} group;
 
 		struct
 		{
-			char *alias;
 			char *realname;
 			char *pgpid;
 			char *homepage;
-			char *description;
 			char *notepad;
 			char *portrait; /* filename to a picture of this person */
 
@@ -88,10 +86,8 @@ struct addressbook_entry
 
 		struct
 		{
-			char *alias;
 			char *replyaddress;
 			char *nameofml;
-			char *description;
 			int num_members;
 			char **members;
 		} list;

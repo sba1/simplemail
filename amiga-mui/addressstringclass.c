@@ -374,7 +374,7 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 		{
 			char *append;
-			append = entry->u.person.alias;
+			append = entry->alias;
 			if (!append || !*append)
 			{
 				append = entry->u.person.realname;

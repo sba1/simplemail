@@ -29,5 +29,7 @@ void addressbook_open(void);
 void addressbook_open_with_new_address(struct mail *m);
 int addressbook_set_active(char *alias);
 
+void addressbookwnd_refresh(void);
+
 #endif
 

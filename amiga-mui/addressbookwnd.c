@@ -728,9 +728,9 @@ void person_window_open(struct addressbook_entry *entry)
 				}
 
 				setstring(realname_string, entry->u.person.realname);
-				setstring(description_string, entry->u.person.description);
+				setstring(description_string, entry->description);
 				setstring(pgp_string, entry->u.person.pgpid);
-				setstring(alias_string, entry->u.person.alias);
+				setstring(alias_string, entry->alias);
 				setstring(homepage_string, entry->u.person.homepage);
 				setstring(portrait_string, entry->u.person.portrait);
 
@@ -904,8 +904,8 @@ static void group_window_open(struct addressbook_entry *entry)
 			/* A group must be changed */
 			if (entry && entry->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				set(alias_string, MUIA_String_Contents, entry->u.group.alias);
-				set(description_string, MUIA_String_Contents, entry->u.group.description);
+				set(alias_string, MUIA_String_Contents, entry->alias);
+				set(description_string, MUIA_String_Contents, entry->description);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);
@@ -1144,7 +1144,7 @@ int addressbook_set_active(char *alias)
 
 			if (entry)
 			{
-				if (!mystricmp(alias,entry->u.person.alias)) /* alias should be moved out of the union */
+				if (!mystricmp(alias,entry->alias)) /* alias should be moved out of the union */
 				{
 					set(address_tree,MUIA_NListtree_Active,tn);
 					return 1;
@@ -1153,4 +1153,12 @@ int addressbook_set_active(char *alias)
 		}
 	}
 	return 0;
+}
+
+/******************************************************************
+ Refreshs the addressbook
+*******************************************************************/
+void addressbookwnd_refresh(void)
+{
+	DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
 }

@@ -33,16 +33,17 @@
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
 
-#include "addressbookwnd.h"
+#include "addressbook.h"
 #include "folder.h"
 #include "mail.h"
+#include "support_indep.h"
 
+#include "addressbookwnd.h"
 #include "amigasupport.h"
 #include "arexx.h"
 #include "mainwnd.h"
 #include "simplemail.h"
 #include "support.h"
-#include "support_indep.h"
 
 static struct MsgPort *arexx_port;
 
@@ -646,6 +647,60 @@ static void arexx_addrgoto(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ ADDRNEW Arexx Command
+*****************************************************************/
+static void arexx_addrnew(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR type;
+		STRPTR alias;
+		STRPTR name;
+		STRPTR email;
+	} addrnew_arg;
+	memset(&addrnew_arg,0,sizeof(addrnew_arg));
+
+	if ((arg_handle = ParseTemplate("TYPE,ALIAS,NAME,EMAIL",args,&addrnew_arg)))
+	{
+		struct addressbook_entry *entry;
+		if (addrnew_arg.type && (toupper((unsigned char)(*addrnew_arg.type)) == 'G'))
+		{
+			entry = addressbook_new_group(NULL);
+		} else
+		{
+			entry = addressbook_new_person(NULL,addrnew_arg.name,addrnew_arg.email);
+		}
+
+		if (addrnew_arg.alias) addressbook_set_alias(entry,addrnew_arg.alias);
+		main_build_addressbook();
+		addressbookwnd_refresh();
+
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
+ ADDRSAVE Arexx Command
+ TODO: FILENAME
+*****************************************************************/
+static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR filename;
+	} addrsave_arg;
+	memset(&addrsave_arg,0,sizeof(addrsave_arg));
+
+	if ((arg_handle = ParseTemplate("FILENAME",args,&addrsave_arg)))
+	{
+		addressbook_save();
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -676,6 +731,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("MAILINFO",command.command)) arexx_mailinfo(rxmsg,command.args);
 		else if (!Stricmp("SETFOLDER",command.command)) arexx_setfolder(rxmsg,command.args);
 		else if (!Stricmp("ADDRGOTO",command.command)) arexx_addrgoto(rxmsg,command.args);
+		else if (!Stricmp("ADDRNEW",command.command)) arexx_addrnew(rxmsg,command.args);
+		else if (!Stricmp("ADDRSAVE",command.command)) arexx_addrsave(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

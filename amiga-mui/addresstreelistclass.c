@@ -100,16 +100,16 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 		switch (entry->type)
 		{
 			case	ADDRESSBOOK_ENTRY_GROUP:
-						*msg->Array++ = entry->u.group.alias;
+						*msg->Array++ = entry->alias;
 						*msg->Array++ = NULL;
-						*msg->Array++ = entry->u.group.description;
+						*msg->Array++ = entry->description;
 						*msg->Array = NULL;
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
 						*msg->Array++ = entry->u.person.realname;
-						*msg->Array++ = entry->u.person.alias;
-						*msg->Array++ = entry->u.person.description;
+						*msg->Array++ = entry->alias;
+						*msg->Array++ = entry->description;
 						if (entry->u.person.num_emails)
 							*msg->Array = entry->u.person.emails[0];
 						if (data->type == TYPE_MATCHLIST && data->filter)
@@ -126,8 +126,8 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 
 			case	ADDRESSBOOK_ENTRY_LIST:
 						*msg->Array++ = entry->u.list.nameofml;
-						*msg->Array++ = entry->u.list.alias;
-						*msg->Array++ = entry->u.list.description;
+						*msg->Array++ = entry->alias;
+						*msg->Array++ = entry->description;
 						*msg->Array = NULL;
 						break;
 		}

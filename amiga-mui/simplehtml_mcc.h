@@ -29,6 +29,7 @@ __stdargs void delete_simplehtml_class(void);
 #define MUIA_SimpleHTML_LoadHook				(TAG_USER+0x31200006)
 
 #define MUIM_SimpleHTML_AllocateMem		(0x456789)
+#define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
 
 struct MUIP_SimpleHTML_LoadHook
 {
@@ -44,6 +45,13 @@ struct MUIP_SimpleHTML_AllocateMem
 {
 	ULONG MethodID;
 	ULONG Size;
+};
+
+struct MUIP_SimpleHTML_AppendBuffer
+{
+	ULONG MethodID;
+	STRPTR Buffer; /* the buffer which should be appended */
+	ULONG BufferLen; /* the length of the buffer */
 };
 
 #endif

@@ -20,6 +20,7 @@
 ** configwnd.c
 */
 
+#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,12 +39,23 @@
 #include "lists.h"
 #include "pop3.h"
 
+#include "compiler.h"
+#include "configwnd.h"
 #include "muistuff.h"
 #include "support.h"
+
+static struct MUI_CustomClass *CL_Sizes;
+static int create_sizes_class(void);
+static void delete_sizes_class(void);
+static int value2size(int val);
+static int size2value(int val);
+#define SizesObject (Object*)NewObject(CL_Sizes->mcc_Class, NULL
 
 static Object *config_wnd;
 static Object *user_realname_string;
 static Object *user_email_string;
+static Object *receive_preselection_radio;
+static Object *receive_sizes_sizes;
 static Object *pop3_login_string;
 static Object *pop3_server_string;
 static Object *pop3_port_string;
@@ -68,6 +80,7 @@ static struct pop3_server *receive_last_selected; /* last selected pop3_server *
 static Object *user_group;
 static Object *tcpip_send_group;
 static Object *tcpip_receive_group;
+static Object *tcpip_pop3_group;
 static Object *mails_read_group;
 
 static Object *config_last_visisble_group;
@@ -93,23 +106,6 @@ static void get_pop3_server(void)
 }
 
 /******************************************************************
- Close and dispose the config window
-*******************************************************************/
-static void close_config(void)
-{
-	struct pop3_server *pop;
-
-	set(config_wnd, MUIA_Window_Open, FALSE);
-	DoMethod(App, OM_REMMEMBER, config_wnd);
-	MUI_DisposeObject(config_wnd);
-	config_wnd = NULL;
-	config_last_visisble_group = NULL;
-
-	while ((pop = (struct pop3_server*)list_remove_tail(&receive_list)))
-		pop_free(pop);
-}
-
-/******************************************************************
  Use the config
 *******************************************************************/
 static void config_use(void)
@@ -132,6 +128,9 @@ static void config_use(void)
 	user.config.smtp_password = mystrdup((char*)xget(smtp_password_string, MUIA_String_Contents));
 	user.config.smtp_auth = xget(smtp_auth_check, MUIA_Selected);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
+
+	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
+	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 
   get_pop3_server();
 
@@ -241,7 +240,7 @@ static void tcpip_receive_add_pop3(void)
 	if (pop3)
 	{
 		list_insert_tail(&receive_list, &pop3->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_receive_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_pop3_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 	}
 }
 
@@ -277,9 +276,50 @@ static void tcpip_receive_rem_pop3(void)
 *******************************************************************/
 static int init_tcpip_receive_group(void)
 {
-	Object *add, *rem;
+	Object *add;
+	static const char *preselection[] = {
+		"Disabled","Only Sizes", "Enabled", NULL
+	};
 
 	tcpip_receive_group = VGroup,
+		MUIA_ShowMe, FALSE,
+		Child, HorizLineTextObject("Preselection"),
+		Child, HGroup,
+			Child, receive_preselection_radio = RadioObject,
+				MUIA_Radio_Entries, preselection,
+				MUIA_Radio_Active, user.config.receive_preselection,
+				End,
+			Child, RectangleObject, MUIA_Weight, 33, End,
+			Child, VGroup,
+				Child, HVSpace,
+				Child, receive_sizes_sizes = SizesObject,
+					MUIA_CycleChain, 1,
+					MUIA_Numeric_Min,0,
+					MUIA_Numeric_Max,50,
+					MUIA_Numeric_Value, size2value(user.config.receive_size),
+					End,
+				Child, HVSpace,
+				End,
+			Child, RectangleObject, MUIA_Weight, 33, End,
+			End,
+		Child, HorizLineObject,
+		Child, add = MakeButton("Add new POP3 Server"),
+		End;
+
+	if (!tcpip_receive_group) return 0;
+
+	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_add_pop3);
+	return 1;
+}
+
+/******************************************************************
+ Initialize the receive group
+*******************************************************************/
+static int init_tcpip_pop3_group(void)
+{
+	Object *add, *rem;
+
+	tcpip_pop3_group = VGroup,
 		MUIA_ShowMe, FALSE,
 		Child, ColGroup(2),
 			Child, MakeLabel("POP3 Server"),
@@ -424,9 +464,12 @@ static void init_config(void)
 {
 	Object *save_button, *use_button, *cancel_button;
 
+	if (!create_sizes_class()) return;
+
 	init_user_group();
 	init_tcpip_send_group();
 	init_tcpip_receive_group();
+	init_tcpip_pop3_group();
 	init_mails_read_group();
 
 	config_wnd = WindowObject,
@@ -446,6 +489,7 @@ static void init_config(void)
   	  			Child, user_group,
     				Child, tcpip_send_group,
     				Child, tcpip_receive_group,
+    				Child, tcpip_pop3_group,
     				Child, mails_read_group,
     				Child, VSpace(0),
     				End,
@@ -491,7 +535,7 @@ static void init_config(void)
 				if (new_pop)
 				{
 					list_insert_tail(&receive_list,&new_pop->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_receive_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_pop3_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
 				pop = (struct pop3_server*)node_next(&pop->node);
 			}
@@ -520,3 +564,79 @@ void open_config(void)
 	}
 }
 
+/******************************************************************
+ Close and dispose the config window
+*******************************************************************/
+void close_config(void)
+{
+	struct pop3_server *pop;
+
+	if (config_wnd)
+	{
+		set(config_wnd, MUIA_Window_Open, FALSE);
+		DoMethod(App, OM_REMMEMBER, config_wnd);
+		MUI_DisposeObject(config_wnd);
+		config_wnd = NULL;
+		config_last_visisble_group = NULL;
+
+		while ((pop = (struct pop3_server*)list_remove_tail(&receive_list)))
+			pop_free(pop);
+	}
+	delete_sizes_class();
+}
+
+/******************************************************************
+ The size custom class. Only used in this file.
+*******************************************************************/
+STATIC ASM ULONG Sizes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+{
+	putreg(REG_A4,cl->cl_UserData);
+	switch(msg->MethodID)
+	{
+		case	MUIM_Numeric_Stringify:
+					{
+						static char buf[64];
+						LONG val = ((struct MUIP_Numeric_Stringify*)msg)->value;
+						if (!val) return (ULONG)"All messages";
+						val = value2size(val);
+						sprintf(buf, "> %ld KB",val);
+						return (ULONG)buf;
+					}
+					break;
+		default: return DoSuperMethodA(cl,obj,msg);
+	}
+}
+
+static int create_sizes_class(void)
+{
+	if ((CL_Sizes = MUI_CreateCustomClass(NULL,MUIC_Slider,NULL,4,Sizes_Dispatcher)))
+	{
+		CL_Sizes->mcc_Class->cl_UserData = getreg(REG_A4);
+		return 1;
+	}
+	return 0;
+}
+
+static void delete_sizes_class(void)
+{
+	if (CL_Sizes)
+	{
+		MUI_DeleteCustomClass(CL_Sizes);
+		CL_Sizes = NULL;
+	}
+}
+
+static int value2size(int val)
+{
+	if (val > 35) val = (val - 33)*100;
+	else if (val > 16) val = (val - 15)*10;
+	return val;
+}
+
+static int size2value(int val)
+{
+	if (val >= 300) return (val/100)+33;
+	if (val >= 20) return (val/10)+15;
+	if (val >= 16) return 16;
+	return val;
+}

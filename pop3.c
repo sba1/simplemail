@@ -102,14 +102,21 @@ static int pop3_login(struct connection *conn, struct pop3_server *server)
 	return 1;
 }
 
+#define MAILF_DELETE   (1<<0) /* mail should be deleted */
+#define MAILF_DOWNLOAD (1<<1) /* mail should be downloaded */
 
 /**************************************************************************
- Get statistics about pop3-folder contents (returns the number of mails
- inside the pop3 server)
+ Get statistics about pop3-folder contents. It returns an array of mail
+ numbers which should be downloaded. The first (0) index gives the total
+ amount of messages. It is followed by some flags which belong to the
+ mail with the same index. See above for the flags.
 **************************************************************************/
-static int pop3_stat(struct connection *conn, struct pop3_server *server)
+static int *pop3_stat(struct connection *conn, struct pop3_server *server,
+                      int receive_preselection, int receive_size)
 {
 	char *answer;
+	int *mail_array;
+	int i,amm,cont = 0;
 
 	thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
@@ -119,8 +126,51 @@ static int pop3_stat(struct connection *conn, struct pop3_server *server)
 		return 0;
 	}
 
-	if ((*answer++) != ' ') return 0;
-	return atoi(answer);
+	if ((*answer++) != ' ') return NULL;
+	if ((amm = atoi(answer))<=0) return NULL;
+
+	if (!(mail_array = malloc((amm+2)*sizeof(int)))) return NULL;
+	mail_array[0] = amm;
+
+	/* Initial all mails should be downloaded */
+	for (i=1;i<=amm;i++)
+		mail_array[i] = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
+
+	/* Test if the user wished preselection at all */
+	if (receive_preselection == 0) return mail_array;
+
+  /* List all mails with sizes */
+	if (tcp_write(conn,"LIST\r\n",6) != 6) return mail_array;
+
+  /* Was the command succesful? */
+	if (!(answer = pop3_receive_answer(conn))) return mail_array;
+
+  /* Encounter the sizes of the mails, if we find a mail *
+   * with a bigger size notify the transfer window       */
+	while ((answer = tcp_readln(conn)))
+	{
+		int mno,msize;
+		if (answer[0] == '.' && answer[1] == '\n')
+		{
+			cont = 1; /* no errors occured */
+			break;
+		}
+		mno = strtol(answer,&answer,10);
+		msize = strtol(answer, NULL, 10);
+
+		if (msize > receive_size * 1024)
+		{
+			/* add this mail to the transfer window */
+			thread_call_parent_function_sync(dl_insert_mail,2,mno,msize);
+		}
+	}
+
+	if (cont && receive_preselection == 2)
+	{
+		/* no errors and the user wants a more informative preselection */
+	}
+
+	return mail_array;
 }
 
 /**************************************************************************
@@ -245,7 +295,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-static int pop3_really_dl(struct list *pop_list, char *dest_dir)
+static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size)
 {
 	int rc = 0;
 
@@ -268,10 +318,11 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir)
 				{
 					if (pop3_login(conn,server))
 					{
-						int mail_amm = pop3_stat(conn,server);
-						if (mail_amm != 0)
+						int *mail_array = pop3_stat(conn,server,receive_preselection,receive_size);
+						if (mail_array)
 						{
 							int i;
+							int mail_amm = mail_array[0];
 							char path[256];
 						
 							thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
@@ -287,21 +338,23 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir)
 								for(i = 1; i <= mail_amm; i++)
 								{
 									thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
-									if(pop3_get_mail(conn,server, i))
+
+									if (mail_array[i] & MAILF_DOWNLOAD)
 									{
-										if (server->del)
+										if (!pop3_get_mail(conn,server, i))
 										{
-											thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
-											if (!pop3_del_mail(conn,server, i))
-											{
-												tell_from_subtask("Can\'t mark mail as deleted!");
-											}
-										}  
+											tell_from_subtask("Couldn't download the mail!\n");
+											break;
+										}
 									}
-									else
+									
+									if (mail_array[i] & MAILF_DELETE)
 									{
-										tell_from_subtask("Can\'t download mail!");
-										break;
+										thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
+										if (!pop3_del_mail(conn,server, i))
+										{
+											tell_from_subtask("Can\'t mark mail as deleted!");
+										}
 									}
 								}
 							
@@ -331,6 +384,8 @@ struct pop_entry_msg
 {
 	struct list *pop_list;
 	char *dest_dir;
+	int receive_preselection;
+	int receive_size;
 };
 
 /**************************************************************************
@@ -357,7 +412,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		pop3_really_dl(&pop_list,dest_dir);
+		pop3_really_dl(&pop_list,dest_dir,msg->receive_preselection,msg->receive_size);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}
 	return 0;
@@ -366,11 +421,14 @@ static int pop3_entry(struct pop_entry_msg *msg)
 /**************************************************************************
  Fetch the mails. Starts a subthread.
 **************************************************************************/
-int pop3_dl(struct list *pop_list, char *dest_dir)
+int pop3_dl(struct list *pop_list, char *dest_dir,
+            int receive_preselection, int receive_size)
 {
 	struct pop_entry_msg msg;
 	msg.pop_list = pop_list;
 	msg.dest_dir = dest_dir;
+	msg,receive_preselection = receive_preselection;
+	msg.receive_size = receive_size;
 	return thread_start(&pop3_entry,&msg);
 }
 

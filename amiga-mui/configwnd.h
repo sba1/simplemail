@@ -17,7 +17,8 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** configwnd.h
 */
 
 void open_config(void);
+void close_config(void);

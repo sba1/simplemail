@@ -34,7 +34,7 @@ struct pop3_server
 	int del; /* 1 if downloaded mails should be deleted */
 };
 
-int pop3_dl(struct list *pop_list, char *dest_dir);
+int pop3_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size);
 struct pop3_server *pop_malloc(void);
 struct pop3_server *pop_duplicate(struct pop3_server *pop);
 void pop_free(struct pop3_server *pop);

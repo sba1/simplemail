@@ -39,6 +39,7 @@
 #include "addressstringclass.h"
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
+#include "configwnd.h"
 #include "datatypesclass.h"
 #include "foldertreelistclass.h"
 #include "iconclass.h"
@@ -185,6 +186,7 @@ int gui_main(void)
 		{
 			loop();
 			rc = 1;
+			close_config();
 		}
 	}
 

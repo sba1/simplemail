@@ -48,7 +48,7 @@ int mails_dl(void)
 	dl_set_title(pop->name);
 	dl_window_open();
 
-	if (!pop3_dl(&user.config.receive_list,folder_incoming()->path))
+	if (!pop3_dl(&user.config.receive_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size))
 	{
 		dl_window_close();
 	}

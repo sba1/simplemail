@@ -122,3 +122,8 @@ int dl_checkabort(void)
 	/* unneccessary in the amiga client, because it supports subthreading */
 	return 0;
 }
+
+void dl_insert_mail(int mno, int msize)
+{
+	DoMethod(win_dl, MUIM_transwnd_InsertMailSize, mno, msize);
+}

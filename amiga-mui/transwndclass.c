@@ -17,14 +17,16 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** transwndclass.c
 */
 
 #include <dos.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libraries/mui.h>
+#include <mui/NListview_MCC.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -33,22 +35,89 @@
 #include <proto/intuition.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 
+#include "support.h"
+
 #include "compiler.h"
 #include "muistuff.h"
-
 #include "transwndclass.h"
 
 struct transwnd_Data
 {
 	Object *gauge1, *gauge2, *status, *abort;
+	Object *mail_listview, *mail_list, *mail_group;
+	struct MyHook construct_hook;
+	struct MyHook destruct_hook;
+	struct MyHook display_hook;
+
+	char nobuf[32];
+	char sizebuf[32];
 };
+
+struct mail_entry
+{
+	int no;
+	int size;
+	char *subject;
+	char *from;
+};
+
+STATIC ASM APTR mail_construct(register __a2 APTR pool, register __a1 struct mail_entry *ent)
+{
+	struct mail_entry *new_ent = (struct mail_entry*)malloc(sizeof(*new_ent));
+	if (new_ent)
+	{
+		new_ent->no = ent->no;
+		new_ent->size = ent->size;
+		new_ent->subject = mystrdup(ent->subject);
+		new_ent->from = mystrdup(ent->from);
+	}
+	return new_ent;
+}
+
+STATIC ASM VOID mail_destruct( register __a2 APTR pool, register __a1 struct mail_entry *ent)
+{
+	if (ent)
+	{
+		if (ent->subject) free(ent->subject);
+		if (ent->from) free(ent->from);
+		free(ent);
+	}
+}
+
+STATIC ASM VOID mail_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct mail_entry *ent)
+{
+	if (ent)
+	{
+		struct transwnd_Data *data = (struct transwnd_Data*)h->h_Data;
+		sprintf(data->nobuf,"%ld",ent->no);
+		sprintf(data->sizebuf, "%ld",ent->size);
+		*array++ = data->nobuf;
+		*array++ = ent->from;
+		*array++ = ent->subject;
+		*array++ = data->sizebuf;
+	} else
+	{
+		*array++ = "Mail No";
+		*array++ = "Author";
+		*array++ = "Subject";
+		*array++ = "Size";
+	}
+}
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,*gauge2,*status,*abort;
+	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group;
 	
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
+					Child, mail_group = VGroup,
+						Child, mail_listview = NListviewObject,
+							MUIA_NListview_NList, mail_list = NListObject,
+								MUIA_NList_Title, TRUE,
+								MUIA_NList_Format, ",,,",
+								End,
+							End,
+						End,
 					Child, gauge1 = GaugeObject,
 						GaugeFrame,
 						MUIA_Gauge_InfoText,		"Mail 0/0",
@@ -73,6 +142,21 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->gauge2 = gauge2;
 		data->status = status;
 		data->abort  = abort;
+		data->mail_listview = mail_listview;
+		data->mail_list = mail_list;
+		data->mail_group = mail_group;
+
+		init_myhook(&data->construct_hook, (HOOKFUNC)mail_construct, data);
+		init_myhook(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);
+		init_myhook(&data->display_hook, (HOOKFUNC)mail_display, data);
+
+		set(mail_group, MUIA_ShowMe, FALSE);
+
+		SetAttrs(mail_list,
+				MUIA_NList_ConstructHook, &data->construct_hook,
+				MUIA_NList_DestructHook, &data->destruct_hook,
+				MUIA_NList_DisplayHook, &data->display_hook,
+				TAG_DONE);
 
 		set(abort, MUIA_Weight, 0);
 
@@ -89,6 +173,8 @@ STATIC VOID transwnd_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
+	int close = 0;
+	ULONG rc;
 	struct transwnd_Data *data;
 	struct TagItem *tags, *tag;
 	
@@ -124,11 +210,17 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				
 			case MUIA_transwnd_Gauge2_Val:	
 				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data);
-				break;	
+				break;
+
+			case MUIA_Window_Open:
+				if (!tag->ti_Data) close = 1;
+				break;
 		}
 	}
 	
-	return(DoSuperMethodA(cl, obj, (Msg)msg));
+	rc = DoSuperMethodA(cl, obj, (Msg)msg);
+	if (close) DoMethod(data->mail_list, MUIM_NList_Clear);
+	return rc;
 }
 
 STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
@@ -147,6 +239,26 @@ STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 
+STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUIP_transwnd_InsertMailSize *msg)
+{
+	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
+	struct mail_entry ent;
+	ent.no = msg->Num;
+	ent.size = msg->Size;
+	ent.subject = NULL;
+	ent.from = NULL;
+	DoMethod(data->mail_list, MUIM_NList_InsertSingle, &ent,  MUIV_NList_Insert_Bottom);
+	set(data->mail_group, MUIA_ShowMe, TRUE);
+
+	return NULL;
+}
+
+STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUIP_transwnd_InsertMailInfo *msg)
+{
+	return NULL;
+}
+
+
 STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -156,6 +268,8 @@ STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register _
 		case OM_DISPOSE: transwnd_Dispose	(cl, obj,  msg);return 0;
 		case OM_SET: return(transwnd_Set		(cl, obj, (struct opSet*) msg));
 		case OM_GET: return(transwnd_Get		(cl, obj, (struct opGet*) msg));
+		case MUIM_transwnd_InsertMailSize: return transwnd_InsertMailSize (cl, obj, (struct MUIP_transwnd_InsertMailSize*)msg);
+		case MUIM_transwnd_InsertMailInfo: return transwnd_InsertMailInfo (cl, obj, (struct MUIP_transwnd_InsertMailInfo*)msg);
 	}
 	
 	return(DoSuperMethodA(cl, obj, msg));

@@ -40,6 +40,9 @@ struct config
 	char *smtp_login;
 	char *smtp_password;
 
+	int receive_preselection; /* 0 no selection, 1 size selection, 2 full selection */
+	int receive_size; /* the size in kb */
+
   /* list of pop3 servers */
   struct list receive_list;
 

@@ -291,7 +291,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 								rc = 0;
 								break;
 							}
-							bytes_send = 5;
+							bytes_send += 5;
 							pos = 5;
 						} else if('.' == buf[0])
 						{
@@ -300,7 +300,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 								rc = 0;
 								break;
 							}
-							bytes_send = 1;
+							bytes_send++;
 							pos = 1;
 						}
 

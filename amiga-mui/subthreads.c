@@ -127,6 +127,7 @@ int thread_parent_task_can_contiue(void)
 	}
 	return 0;
 #else
+--
 	return 1;
 #endif
 }

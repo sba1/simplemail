@@ -35,7 +35,7 @@ void callback_get_address(void);
 void callback_new_mail(void);
 void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply_array);
 void callback_reply_mail(void);
-void callback_forward_this_mail(char *folder_path, struct mail *to_forward);
+void callback_forward_this_mail(char *folder_path, int num, struct mail **to_forward_array);
 void callback_forward_mail(void);
 void callback_change_mail(void);
 void callback_fetch_mails(void);

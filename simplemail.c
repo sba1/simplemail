@@ -303,41 +303,92 @@ void callback_reply_mail(void)
 }
 
 /* a mail should be forwarded */
-void callback_forward_this_mail(char *folder_path, struct mail *to_forward)
+void callback_forward_this_mail(char *folder_path, int num, struct mail **to_forward_array)
 {
-	struct mail *mail;
+	struct mail **mail_array;
 	char buf[256];
+	int i;
 
 	getcwd(buf, sizeof(buf));
 	chdir(folder_path);
 
-	if ((mail = mail_create_from_file(to_forward->filename)))
+	if ((mail_array = malloc(num*sizeof(struct mail *))))
 	{
-		mail_read_contents("",mail);
-		if (mail_forward(mail))
+		struct mail *forward;
+		int err = 0;
+
+		for (i=0;i<num;i++)
 		{
-			struct compose_args ca;
-			memset(&ca,0,sizeof(ca));
-			ca.to_change = mail;
-			ca.action = COMPOSE_ACTION_FORWARD;
-			ca.ref_mail = main_get_active_mail();
-			compose_window_open(&ca);
+			if ((mail_array[i] = mail_create_from_file(to_forward_array[i]->filename)))
+			{
+				mail_read_contents("",mail_array[i]);
+			} else 
+			{
+				err = 1;
+				break;
+			}
 		}
-		mail_free(mail);
+
+		if (!err)
+		{
+			if ((forward = mail_create_forward(num,mail_array)))
+			{
+				struct compose_args ca;
+				memset(&ca,0,sizeof(ca));
+				ca.to_change = forward;
+				ca.action = COMPOSE_ACTION_REPLY;
+//				ca.ref_mail = to_forward_array[0];
+				compose_window_open(&ca);
+
+				mail_free(forward);
+			}
+		}
+
+		for (i=0;i<num;i++)
+		{
+			if (mail_array[i]) mail_free(mail_array[i]);
+			else break;
+		}
+		free(mail_array);
 	}
+
 	chdir(buf);
 }
 
-/* the selected mail should be forwarded */
 void callback_forward_mail(void)
 {
-	struct mail *m;
+	struct mail *mail;
+	struct mail **mail_array;
+	void *handle;
+	int num;
 
-	if ((m = main_get_active_mail()))
+	/* Count the number of selected mails first */
+	mail = main_get_mail_first_selected(&handle);
+	num = 0;
+	while (mail)
 	{
-		callback_forward_this_mail(main_get_folder_drawer(),m);
+		num++;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!num) return;
+
+	if ((mail_array = malloc(sizeof(struct mail *)*num)))
+	{
+		int i = 0;
+
+		mail = main_get_mail_first_selected(&handle);
+		while (mail)
+		{
+			mail_array[i++] = mail;
+			mail = main_get_mail_next_selected(&handle);
+		}
+
+		callback_forward_this_mail(main_get_folder_drawer(), num, mail_array);
+		free(mail_array);
 	}
 }
+
 
 /* the currently selected mail should be changed */
 void callback_change_mail(void)

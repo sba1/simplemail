@@ -52,7 +52,7 @@ static char *mail_find_content_parameter_value(struct mail *mail, char *attribut
 static int mail_read_structure(struct mail *mail);
 
 /* the mime preample used in mime multipart messages */
-const static char mime_preample[] = 
+const static char mime_preample[] =
 {
 	"Warning: This is a message in MIME format. Your mail reader does not\n"
 	"support MIME. Some parts of this message will be readable as plain text.\n"
@@ -214,7 +214,7 @@ static char *quote_text(char *src, int len)
 						/* the text has been wrapped previouly and the quoting chars
 						   are the same like the previous line, so the following text
 							 probably belongs to the same paragraph */
-						   
+
 						len -= temp_len; /* skip the quoting chars */
 						src += temp_len;
 						wrapped = 0;
@@ -687,16 +687,16 @@ char *mail_get_new_name(int status)
 	struct tm *d, tm;
 	unsigned short day_secs;
 	short i;
-	char dummy[8]; 
+	char dummy[8];
 	char status_buf[4];
 	char *buf;
-	
+
 	buf = malloc(20);
-	
+
 	time(&t);
 	d = localtime(&t);
 	tm = *d;
-	
+
 	day_secs = (tm.tm_min * 60) + tm.tm_sec;
 	dummy[4] = 0;
 	dummy[3] = get_char_18(day_secs % 18);
@@ -714,13 +714,13 @@ char *mail_get_new_name(int status)
 	for (i=0;;i++)
 	{
 		FILE *fp;
-		
+
 		sprintf(buf,"%02d%02d%04d%s.%03x%s",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i,status_buf);
 
 		if ((fp = fopen(buf, "r"))) fclose(fp);
 		else break;
 	}
-	
+
 	return buf;
 }
 
@@ -786,7 +786,7 @@ void mail_identify_status(struct mail *m)
 	for (i=0;i<sizeof(status_extensions);i++)
 	{
 	  if (suffix[1] == status_extensions[i])
-	  	m->status = i;
+		m->status = i;
 	}
 }
 
@@ -824,7 +824,7 @@ struct mail *mail_create_from_file(char *filename)
 			char *buf;
 
 			size = myfsize(fh); /* get the size of the file */
-	
+
 			if (size) /* empty mails are no mails */
 			{
 				if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
@@ -850,7 +850,7 @@ struct mail *mail_create_from_file(char *filename)
 					free(buf);
 				}
 			}
-	
+
 			fclose(fh);
 		} else
 		{
@@ -1235,6 +1235,103 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 	return m;
 }
 
+struct mail *mail_create_forward(int num, struct mail **mail_array)
+{
+	struct mail *m = mail_create();
+	if (m)
+	{
+		struct mail *mail = mail_array[0];
+		struct mail *text_mail;
+		int i;
+
+		if (mail->subject)
+		{
+			char *new_subject = (char*)malloc(strlen(mail->subject)+8);
+			if (new_subject)
+			{
+				char *subject_header;
+
+				char *src = mail->subject;
+				char *dest = new_subject;
+				char c;
+
+				/* Add a Fwd: before the new subject */
+				strcpy(dest,"Fwd: ");
+				dest += 5;
+
+				while ((c = *src))
+				{
+					*dest++= c;
+					src++;
+				}
+				*dest = 0;
+
+				if ((subject_header = encode_header_field("Subject",new_subject)))
+				{
+					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
+					free(subject_header);
+				}
+
+				free(new_subject);
+			}
+		}
+
+		for (i=0;i<num;i++)
+		{
+			if ((text_mail = mail_find_content_type(mail_array[i], "text", "plain")))
+			{
+				char *fwd_text;
+				char *from = mail_find_header_contents(mail_array[i],"from");
+				struct phrase *phrase;
+				
+				phrase = phrase_find_best(from);
+				
+				if (phrase)
+				{
+					/* add the welcome phrase */
+					char *welcome_text = mail_create_string(phrase->forward_initial,mail_array[i], NULL, NULL);
+					m->decoded_data = stradd(m->decoded_data,welcome_text);
+					free(welcome_text);
+				}
+
+				m->decoded_data = stradd(m->decoded_data,"\n");
+
+				/* decode the text */
+				mail_decode(text_mail);
+
+				if (text_mail->decoded_data)
+				{
+					fwd_text = mystrndup(text_mail->decoded_data,text_mail->decoded_len);
+				}
+				else
+				{
+					fwd_text = mystrndup(text_mail->text + text_mail->text_begin, text_mail->text_len);
+				}
+
+				if (fwd_text)
+				{
+					m->decoded_data = stradd(m->decoded_data,fwd_text);
+					free(fwd_text);
+				}
+				
+				if (phrase)
+				{
+					/* add the closing phrase */
+					char *closing_text = mail_create_string(phrase->forward_finish, mail_array[i], NULL,NULL);
+					m->decoded_data = stradd(m->decoded_data,closing_text);
+					free(closing_text);
+				}
+			}
+		}
+
+		m->decoded_len = mystrlen(m->decoded_data);
+
+/*		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);*/
+		mail_process_headers(m);
+	}
+	return m;
+}
+
 /**************************************************************************
  Modifies the mail to a forwared one
 **************************************************************************/
@@ -1467,10 +1564,10 @@ int mail_process_headers(struct mail *mail)
 					if ((mail->content_type = malloc(len+1)))
 					{
 						subtype++;
-	
+
 						strncpy(mail->content_type,buf,len);
 						mail->content_type[len]=0;
-	
+
 						if ((subtype = parse_token(subtype,&mail->content_subtype)))
 						{
 							while (1)
@@ -1480,17 +1577,17 @@ int mail_process_headers(struct mail *mail)
 									struct content_parameter *new_param;
 									struct parse_parameter dest;
 									unsigned char c;
-	
+
 									/* Skip spaces */
 									while ((c = *subtype))
 									{
 										if (!isspace(c)) break;
 										subtype++;
 									}
-	
+
 									if (!(subtype = parse_parameter(subtype, &dest)))
 										break;
-	
+
 									if (!mystricmp(dest.attribute,"name"))
 									{
 										if (dest.attribute) free(dest.attribute);
@@ -1540,18 +1637,18 @@ int mail_process_headers(struct mail *mail)
 			}
 		} else if (!mystricmp("message-id",header->name))
 		{
-	  	if (*buf++ == '<')
-		  	parse_addr_spec(buf,&mail->message_id);
+		if (*buf++ == '<')
+			parse_addr_spec(buf,&mail->message_id);
 		} else if (!mystricmp("in-reply-to",header->name))
 		{
-	  	if (*buf++ == '<')
-		  	parse_addr_spec(buf,&mail->message_reply_id);
+		if (*buf++ == '<')
+			parse_addr_spec(buf,&mail->message_reply_id);
 		} else if (!mystricmp("content-transfer-encoding",header->name))
 		{
 			mail->content_transfer_encoding = strdup(buf);
 		} else if (!mystricmp("Importance",header->name))
 		{
-			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;		
+			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
 		}
 
 		header = (struct header*)node_next(&header->node);
@@ -1614,7 +1711,7 @@ static void mail_decrypt(struct mail *mail)
 	if (!mystricmp(mail->content_subtype,"encrypted"))
 	{
 		if (mail->num_multiparts==2 &&
-				!mystricmp(mail_find_content_parameter_value(mail,"protocol"),"application/pgp-encrypted") && 
+				!mystricmp(mail_find_content_parameter_value(mail,"protocol"),"application/pgp-encrypted") &&
 			  !mystricmp(mail->multipart_array[0]->content_type,"application") &&
 			  !mystricmp(mail->multipart_array[0]->content_subtype,"pgp-encrypted"))
 		{
@@ -1711,7 +1808,7 @@ static void mail_decrypt(struct mail *mail)
 							free(saved_passphrase);
 							saved_passphrase = NULL;
 						}
-						
+
 						remove(tmpname);
 					} else
 					{
@@ -2192,7 +2289,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		struct tm *d;
 		int offset = sm_get_gmt_offset();
 
-		const char *mon_str[] = 
+		const char *mon_str[] =
 		{
 			"Jan","Feb","Mar","Apr","May","Jun",
 			"Jul","Aug","Sep","Oct","Nov","Dec"
@@ -2311,7 +2408,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 						free(buf);
 					}
 				} else rc = 0;
-				
+
 				fprintf(fp, "\n--%s--\n",boundary);
 			}
 			remove(encrypted_name);
@@ -2679,7 +2776,7 @@ int mail_create_html_header(struct mail *mail)
 			}
 			header = (struct header*)node_next(&header->node);
 		}
-		
+
 		fputs("<BR CLEAR=ALL><HR>",fh);
 		fputs("</BODY></HTML>",fh);
 

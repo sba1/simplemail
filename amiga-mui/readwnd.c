@@ -60,6 +60,7 @@
 #include "readlistclass.h"
 #include "readwnd.h"
 #include "support.h"
+#include "print.h"
 
 void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail *mail);
@@ -346,6 +347,9 @@ static void context_menu_trigger(int **pdata)
 			case	3: /* Open via workbench.library */
 						open_contents(data,mail);
 						break;
+			case 	4: /* print as text */
+				print_mail(mail);
+				break;
 		}
 	}
 }
@@ -909,7 +913,8 @@ void read_window_open(char *folder, struct mail *mail)
 			Object *save_contents_item;
 			Object *save_contents2_item;
 			Object *save_document_item;
-			Object *checkv_contents_item;
+			Object *printtxt_contents_item;
+
 
 			data->attachment_standard_menu = MenustripObject,
 				Child, MenuObjectT(_("Attachment")),
@@ -920,6 +925,10 @@ void read_window_open(char *folder, struct mail *mail)
 					Child, save_contents_item = MenuitemObject,
 						MUIA_Menuitem_Title, _("Save As..."),
 						MUIA_UserData, 1,
+						End,
+					Child, MenuitemObject,
+						MUIA_Menuitem_Title, _("Print as text"),
+						MUIA_UserData, 4,
 						End,
 					End,	
 				End;

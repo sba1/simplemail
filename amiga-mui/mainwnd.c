@@ -106,6 +106,10 @@ static Object *left_listview_balance;
 static Object *project_checksingleaccount_menuitem;
 static Object *status_text;
 
+/* For the Balance Snapshot */
+static Object *balance_text;
+LONG Weights[4];
+
 static int folders_in_popup;
 
 static void main_refresh_folders_text(void);
@@ -426,6 +430,37 @@ static void settings_show_changed(void)
 }
 
 /******************************************************************
+ Loads environment and sets the balance groups
+*******************************************************************/
+void main_load_environment(void)
+{
+   char *ls;
+   DoMethod(App, MUIM_Application_Load, MUIV_Application_Load_ENV);
+   if (!*(ls = (STRPTR)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100";
+   sscanf(ls, "%ld %ld %ld %ld", &Weights[0], &Weights[1], &Weights[2], &Weights[3]);
+   set(left_listview_group, MUIA_HorizWeight, Weights[0]);
+   set(mail_listview, MUIA_HorizWeight, Weights[1]);
+   set(folder_listview_group, MUIA_VertWeight, Weights[2]);
+   set(address_listview_group, MUIA_VertWeight, Weights[3]);
+}
+
+/******************************************************************
+ Saves environment and snapshots the balance groups
+*******************************************************************/
+void main_save_environment(void)
+{
+   char buf[80];
+   Weights[0] = xget(left_listview_group, MUIA_HorizWeight);
+   Weights[1] = xget(mail_listview, MUIA_HorizWeight);
+   Weights[2] = xget(folder_listview_group, MUIA_VertWeight);
+   Weights[3] = xget(address_listview_group, MUIA_VertWeight);
+   sprintf(buf, "%ld %ld %ld %ld", Weights[0], Weights[1], Weights[2], Weights[3]);
+   setstring(balance_text, buf);
+   DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENV);
+   DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
+}
+
+/******************************************************************
  Initialize the main window
 *******************************************************************/
 int main_window_init(void)
@@ -451,6 +486,7 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
 		MENU_FOLDER_DELALLINDEX,
+		MENU_FOLDER_SAVEALLINDEX,
 		MENU_FOLDER_EXPORT,
 		MENU_FOLDER_SPAMCHECK,
 		MENU_FOLDER_MOVESPAM,
@@ -483,6 +519,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
+		{NM_ITEM, N_("Save all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_SAVEALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Import mbox file..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTMBOX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
@@ -624,6 +661,7 @@ int main_window_init(void)
 				End,
 
 			Child, mail_tree_group = HGroup,
+				MUIA_Group_Spacing, 1,
 				Child, left_listview_group = VGroup,
 					MUIA_HorizWeight, 33,
 					Child, folder_listview_group = VGroup,
@@ -665,6 +703,12 @@ int main_window_init(void)
 				End,
 			Child, status_text = TextObject,
 				TextFrame,
+				End,
+
+			Child, balance_text = StringObject,
+				MUIA_ObjectID, MAKE_ID('M','W','B','S'),
+				MUIA_String_MaxLen, 80,
+				MUIA_ShowMe, FALSE,
 				End,
 			End,
 		End;
@@ -726,6 +770,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, App, 3, MUIM_CallHook, &hook_standard, callback_rescan_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SAVEALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_save_all_indexfiles);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
@@ -747,8 +792,11 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
+/*
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENV);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
+*/
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 3, MUIM_CallHook, &hook_standard, main_save_environment);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 

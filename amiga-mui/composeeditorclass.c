@@ -92,10 +92,10 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 							{
 								while (array[cnt])
 								{
-									len += strlen(array[cnt]);
+									len += strlen(array[cnt])+1; /* for the \n */
 									cnt++;
 								}
-								if ((buf = AllocVec(len+1,0)))
+								if ((buf = AllocVec(len+2,0)))
 								{
 									buf[0] = 0;
 									for (i=0;i<cnt;i++)

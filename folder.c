@@ -160,6 +160,22 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
+
+	if (mail->message_id)
+	{
+		/* check if there is already an mail with the same message id, this would cause
+  	   problems */
+		for (i=0;i<folder->num_mails;i++)
+		{
+			struct mail *fm = folder->mail_array[i];
+			if (!(mystricmp(mail->message_id,fm->message_id)))
+			{
+				free(mail->message_id);
+				mail->message_id = NULL;
+			}
+		}
+	}
+
 	/* sort the mails for threads */
 	if (mail->message_id)
 	{

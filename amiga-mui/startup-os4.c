@@ -187,7 +187,7 @@ static int open_libs(void)
 						{
 							if ((IconBase = OpenLibraryInterface("icon.library",37,&IIcon)))
 							{
-								if ((DiskfontBase = OpenLibraryInterface("diskfont.library",37,&IDiskfont)))
+								if ((DiskfontBase = OpenLibraryInterface("diskfont.library",50,&IDiskfont)))
 								{
 									if ((WorkbenchBase = OpenLibraryInterface("workbench.library",37,&IWorkbench)))
 									{

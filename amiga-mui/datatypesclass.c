@@ -202,7 +202,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 			}
 		}
 
-		data->dt_obj = NewDTObjectA(newfilename,NULL);
+		data->dt_obj = NewDTObject(newfilename, PDTA_DestMode, PMODE_V43, TAG_DONE);
 
 		if (data->dt_obj)
 		{
@@ -215,7 +215,6 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 					GA_Width,	_mwidth(obj),
 					GA_Height,	_mheight(obj),
 					ICA_TARGET,	ICTARGET_IDCMP,
-					PDTA_DestMode, PMODE_V43,
 					TAG_DONE);
 
 				AddDTObject(_window(obj), NULL, data->dt_obj, -1);

@@ -991,7 +991,7 @@ struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *replyto,
 
 		if (replyto)
 		{
-			struct list *list = create_address_list(to_str);
+			struct list *list = create_address_list(replyto);
 			if (list)
 			{
 				struct address *addr = (struct address*)list_first(list);

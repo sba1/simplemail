@@ -1221,8 +1221,8 @@ char *encode_base64(unsigned char *buf, unsigned int len)
 		unsigned char c3 = *buf++;
 
     *ptr++ = encoding_table[(c1 >> 2) & 0x3f];
-    *ptr++ = encoding_table[(((c1 << 4) & 0x30) | ((c2 >> 4) & 0x0f)) & 0x3f];
-    *ptr++ = encoding_table[((c2  << 2) & 0x3c) | ((c3 >> 6) & 0x03)];
+    *ptr++ = encoding_table[((c1 << 4) & 0x30) | ((c2 >> 4) & 0x0f)];
+    *ptr++ = encoding_table[((c2 << 2) & 0x3c) | ((c3 >> 6) & 0x03)];
     *ptr++ = encoding_table[c3 & 0x3f];
 		len -= 3;
 	}

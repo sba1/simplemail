@@ -34,6 +34,7 @@
 
 #include "lists.h"
 #include "compiler.h"
+#include "debug.h"
 #include "subthreads.h"
 
 #include "subthreads_amiga.h" /* struct thread_s */
@@ -304,6 +305,12 @@ void cleanup_threads(void)
 		{
 			if (tmsg->startup)
 				thread_remove(tmsg);
+			else
+			{
+				/* TODO: handle non async messages, e.g. reply that the call couldn't
+				 * be executed */
+				SM_DEBUGF(1,("Got non thread message (async=%ld)\n",tmsg->async));
+			}
 		}
 	}
 

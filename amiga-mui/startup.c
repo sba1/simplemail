@@ -631,3 +631,8 @@ int rename(const char *oldname, const char *newname)
 		return -1;
 	return 0;
 }
+
+void _CXFERR(void)
+{
+    D(bug("CFXERR\n"));
+}

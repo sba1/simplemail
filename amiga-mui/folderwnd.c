@@ -117,7 +117,7 @@ STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 s
 		} else
 		{
 			buf[0] = '(';
-			utf8tostr(entry->name, &buf[1], sizeof(buf) - 1, user.config.default_codeset);
+			utf8tostr(entry->name, &buf[1], sizeof(buf) - 2, user.config.default_codeset);
 			strcat(buf,")");
 		}
 		*array = buf;

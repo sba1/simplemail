@@ -34,6 +34,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "configuration.h"
 #include "folder.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -120,7 +121,10 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 			if (folder->name)
 			{
 				/* IMAP folders are UTF8 */
-				strcat(data->name_buf,folder->name);
+				if (folder->is_imap)
+				{
+					utf8tostr(folder->name, data->name_buf, sizeof(data->name_buf), user.config.default_codeset);
+				} else strcat(data->name_buf,folder->name);
 			}
 	
 			*msg->Array++ = data->name_buf;

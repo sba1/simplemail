@@ -370,7 +370,12 @@ static void compose_remove_file(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Active,0);
-	int rem;
+	struct MUI_NListtree_TreeNode *act_treenode = treenode;
+	int rem, id;
+
+  if (!treenode) return;
+
+  id = ((struct attachment*)treenode->tn_User)->unique_id;
 
 	rem = DoMethod(data->attach_tree, MUIM_NListtree_GetNr, treenode, MUIV_NListtree_GetNr_Flag_CountLevel) == 2;
 
@@ -386,6 +391,13 @@ static void compose_remove_file(struct Compose_Data **pdata)
 		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First); 
 		set(data->attach_tree, MUIA_NListtree_Quiet,FALSE);
 	}
+
+  treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->quick_attach_tree, MUIM_AttachmentList_FindUniqueID, id);
+  if (treenode)
+  {
+		DoMethod(data->quick_attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode, 0);
+  }
+  
 }
 
 /******************************************************************

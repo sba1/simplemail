@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-01-19 20:02+0000\n"
+"POT-Creation-Date: 2002-01-20 00:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -157,8 +157,8 @@ msgid "_Import"
 msgstr "_Importieren."
 
 #. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
-#: amiga-mui/addressbookwnd.c:1075 amiga-mui/configwnd.c:1497
-#: amiga-mui/filterwnd.c:491 amiga-mui/readwnd.c:914
+#: amiga-mui/addressbookwnd.c:1075 amiga-mui/filterwnd.c:491
+#: amiga-mui/readwnd.c:914
 msgid "_Save"
 msgstr "Speich."
 
@@ -182,7 +182,7 @@ msgstr "Löschen"
 
 #: amiga-mui/addresstreelistclass.c:148 amiga-mui/configwnd.c:746
 msgid "?people:Name"
-msgstr ""
+msgstr "Name"
 
 #: amiga-mui/addresstreelistclass.c:151
 msgid "Address"
@@ -226,7 +226,7 @@ msgstr "Vorgabeanordnung: Alle"
 
 #: amiga-mui/attachmentlistclass.c:103
 msgid "Editable Mailtext"
-msgstr ""
+msgstr "Veränderbarer Text"
 
 #: amiga-mui/attachmentlistclass.c:115
 msgid "File Name"
@@ -360,7 +360,7 @@ msgstr "Ordnerverzeichnis"
 
 #: amiga-mui/configwnd.c:574
 msgid "Charset used to display text"
-msgstr ""
+msgstr "Zeichentabelle des benutzten Zeichensatzes"
 
 #: amiga-mui/configwnd.c:601
 msgid "Disabled"
@@ -827,6 +827,10 @@ msgstr "Phrase entfernen"
 #: amiga-mui/configwnd.c:1466
 msgid "SimpleMail - Configuration"
 msgstr "SimpleMail - Konfiguration"
+
+#: amiga-mui/configwnd.c:1497
+msgid "?config:_Save"
+msgstr "_Speichern"
 
 #: amiga-mui/configwnd.c:1498 amiga-mui/filterwnd.c:492
 msgid "_Use"
@@ -1485,35 +1489,35 @@ msgstr ""
 
 #: codesets.c:808
 msgid "West European (with EURO)"
-msgstr ""
+msgstr "West Europa (mit EURO)"
 
 #: codesets.c:829
 msgid "West European"
-msgstr ""
+msgstr "Westeuropa"
 
 #: codesets.c:849
 msgid "Central/East European"
-msgstr ""
+msgstr "Zentral-/Osteuropa"
 
 #: codesets.c:870
 msgid "South European"
-msgstr ""
+msgstr "Südeuropa"
 
 #: codesets.c:891
 msgid "North European"
-msgstr ""
+msgstr "Nordeuropa"
 
 #: codesets.c:912
 msgid "Slavic languages"
-msgstr ""
+msgstr "Slavische Sprachen"
 
 #: codesets.c:933
 msgid "Turkish"
-msgstr ""
+msgstr "Türkisch"
 
 #: codesets.c:954
 msgid "West European II"
-msgstr ""
+msgstr "Westeuropa II"
 
 #: mail.c:1089
 #, c-format

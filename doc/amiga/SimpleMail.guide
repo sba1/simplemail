@@ -1,11 +1,13 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.4 (08.12.2001)
+@$VER: SimpleMail.guide 0.5 (24.12.2001)
 @AUTHOR David Rey <david@saug.org>
 @INDEX "Index"
 
+$Id$
+
 @NODE "Main" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.13 (public ALPHA)
+                         SimpleMail 0.14 (public BETA)
 
                 © 2000-2001 by Hynek Schlawack & Sebastian Bauer
  
@@ -48,9 +50,8 @@ The program and the general usage is very similar to YAM's, although YAM is
 currently much more powerful. However, SimpleMail has (or should have in
 the future) some features which YAM doesn't offer yet.
 
-Please note this is an ALPHA release. Don't expect too much at these early
-stages - SimpleMail is still very limited and has probably lots of bugs.
-But it is getting better... :-)
+Please note this is a BETA release. This means lots of bugs are lurking
+there, some of them dangerous - you have been warned.
 
 
 Current features of SimpleMail:
@@ -81,7 +82,7 @@ Current features of SimpleMail:
 - HTML mail compatible, thanks to the built-in HTML client based on the
   @{" SimpleHTML " LINK SimpleHTML} engine.
 
-- ARexx port
+- Quite powerful ARexx port
 
 @ENDNODE
 @NODE "REQS" "Requirements"
@@ -697,10 +698,9 @@ be threaded by default.
 
 CONFIGURATION
 
-Even at these early stages, SimpleMail has already quite several options
-which can be set up in the configuration window. The program options are
-initially divided into 9 sheets which can be selected at the left part of
-the configuration window.
+SimpleMail a good number of options which can be set up in the configuration
+window. The program options are initially divided into 9 sheets which can be
+selected at the left part of the configuration window.
 
   @{" User           " LINK "CO00" 0}   - Basic information: folder directory and
                        timezone
@@ -1442,6 +1442,7 @@ to the kind of entry (person or group) you will see a different set
 of editing fields. Click on [Ok] to accept the changes, or [Cancel]
 if you change your mind.
 
+
 PERSON
 ------
 
@@ -2044,15 +2045,92 @@ won't work, as there is a space in the variable. Better use this instead:
 SUPPORTED AREXX COMMANDS
 
 
-GETSELECTED      VAR/K,STEM/K => NUM/N/M
+ADDRGOTO        ALIAS/A
+
+Makes the address book entry referred by ALIAS the current one.
+
+
+ADDRNEW         VAR/K,STEM/K,TYPE,ALIAS,NAME,EMAIL => ALIAS
+
+Creates a new entry in the address book and inserts it below the active
+entry. TYPE can be G for groups and defaults to a person entry. At least
+one of the fields ALIAS, NAME, or EMAIL must be specified. On success,
+the alias of the created entry will be returned.
+
+
+ADDRSAVE        FILENAME
+
+Saves the address book using the specified filename, or the current one
+if no filename is specified.
+
+
+FOLDERINFO      VAR/K,STEM/K,FOLDER => NUMBER/N,NAME,PATH,TOTAL/N,NEW/N,
+                UNREAD/N,SIZE/N,TYPE/N
+		
+Returns information about the specified FOLDER, or the current folder if
+no folder is specified. NUMBER selects a folder by its position in the
+folder list (0 = top folder), PATH is the directory and SIZE is the total
+size in bytes. TOTAL, NEW and UNREAD are the number of total, new and
+unread messages, respectively. TYPE is the type of folder, possible
+values are 0 (normal), 1 (incoming), 2 (outgoing), 3 (sent, this is the
+default), 4 (deleted), 5 (sent and received) and 6 (sent).
+
+
+GETSELECTED     VAR/K,STEM/K => NUM/N/M
 
 Get positions of selected messages in the current folder. The message on
 top of the list gets position 0.
 
 
+GETURL          URL/A,FILENAME/A
+
+Downloads a file from the web using the HTTP protocol and saves it to
+FILENAME. RC is set to 5 if you're not online, or 10 if the URL couldn't
+be found.
+
+
 HIDE
 
 Switches SimpleMail to iconified state.
+
+
+MAILADD         VAR/K,STEM/K,FILENAME/A,FOLDER => FILENAME
+
+Adds the message file FILENAME to the folder. If FILENAME already exists
+in the folder, nothing will happen. The result is the filename of the
+message as it can be changed by SimpleMail.
+
+
+MAILINFO        VAR/K,STEM/K,INDEX/N => INDEX/N,STATUS,FROM,TO,REPLYTO,
+                SUBJECT,FILENAME,SIZE/N,DATE,FLAGS,MSGID/N
+
+Returns information about the message at position INDEX in the message
+list, or the current message if INDEX is omitted.
+
+STATUS is N, O, U, R, F, S, W, H or E, FROM contains the sender, TO is the
+recipient, REPLYTO is the return address, SUBJECT and DATE are obvious and
+FILENAME contains the  file path of the message. SIZE is the size of the
+message  in  bytes, whereas FLAGS is an 8 byte string in "MARCS-00" format
+(M = multiple recipients, A = attachments, R = report, C = encrypted,
+S = signed; the last two digits aren't used at the moment). MSGID contains
+a compressed 32 bit representation of the Message-ID.
+
+
+MAILLISTFREEZE
+
+Freezes the Maillist. Useful if many MAILADDs have to be done.
+
+      
+MAILLISTTHAW
+
+Thaws the Maillist. Used in conjunction with MAILLISTFREEZE
+
+	
+MAILREAD        VAR/K,STEM/K,WINDOW/N,QUIET/S => WINDOW/N
+
+Loads the active message in the Read Message window or, if WINDOW is
+specified, activates an already opened Read Message window. Use QUIET
+if the window should stay invisible.
 
 
 MAILWRITE        MAILTO/K,SUBJECT/K
@@ -2068,9 +2146,73 @@ MAINTOFRONT
 Brings the main window to the front.
 
 
+NEWMAILFILE      VAR/K,STEM/K,FOLDER => FILENAME
+
+Returns a valid, but unused message filename for the FOLDER.
+
+
+READCLOSE
+
+Closes the active Read Message window.
+
+
+READINFO         VAR/K,STEM/K => FILENAME/M,FILETYPE/M,FILESIZE/N/M
+
+Gets details about the attachments of a message in the active Read Message
+window.
+
+
+READSAVE         PART/N,FILENAME/K,OVERWRITE/S
+
+Saves an attachment (or the visible message if PART is omitted) to a file.
+
+
+REQUEST          VAR/K,STEM/K,BODY/A,GADGETS/A => RESULT/N
+
+Opens a requester containing the text BODY and the buttons GADGETS. The
+number of the selected button is returned as RESULT (0 = right, 1 = left,
+2 = second one from the left, etc). You can define as many buttons as you
+want, e.g. "Yes|Maybe|No|Cancel".
+
+
+REQUESTFOLDER    VAR/K,STEM/K,BODY/A,EXCLUDEACTIVE/S => FOLDER
+
+Opens a requester containing the text BODY and asking the user to select a
+folder. Specify EXCLUDEACTIVE if the current folder shouldn't be listed.
+The return value contains the name of the folder. If the requester is
+cancelled, RC is set to 1.
+
+
+REQUESTSTRING    VAR/K,STEM/K,BODY/A,STRING/K,SECRET/S => STRING
+
+Opens a requester containing the text BODY and asking for a text. STRING
+is the default text, SECRET can be used to request secret data like
+passwords. If the requester is cancelled, RC is set to 1.
+
+
+SCREENTOBACK
+
+Brings the SimpleMail screen to the background.
+
+
+SCREENTOFRONT
+
+Brings the SimpleMail screen to the foreground.
+
+
+SETFOLDER        FOLDER/A
+
+Changes the current FOLDER.
+
+
 SETMAIL          NUM/N/A
 
 Selects the current message in the current folder, NUM is 0 to n-1.
+
+
+SETMAILFILE      MAILFILE/A
+
+Selects the current message. MAILFILE is the filename of the message.
 
 
 SHOW
@@ -2078,81 +2220,6 @@ SHOW
 Brings SimpleMail back from its iconified state into full view.
 
 @ENDNODE
-
-@NODE "CONT" "Contributions"
-
-CONTRIBUTIONS
-
-Here you will find some contributions to SimpleMail by other authors:
-
-@{" OpenURL Configuration " link "OPENURL"} by Stefan Martens
-@{" IBrowse 2.2 Users     " link "IBROWSE"} by Stefan Martens
-
-@ENDNODE
-
-@NODE "OPENURL" "OpenURL Configuration"
-
-OPENURL
-
-In the OpenURL preferences program can you add a new mailer.
-
-Open the OpenURL program located in the systems "Prefs" dir and click
-at the top on "Mailers". Here at the bottom click "Add...". In the
-"OpenURL Edit Mailer" window you enter the following
-Name:          SimpleMail
-Path:          ...the Path of the SimpleMail program...
-ARexx port:    SIMPLEMAIL
-
-ARexx commands:
-Show/Uniconify:  SHOW
-Screen to front: MAINTOFRONT
-Write Mail:      MAILWRITE MAILTO %a SUBJECT %s
-
-Now you click on "OK" and in the Main Window on "Save".
-OpenURL is now correct configured.
-
-If you have problems while configuration please contact me:
-Stefan1200
-Stefan M.
-info@stefan1200.d
-@ENDNODE
-
-@NODE "IBROWSE" "IBrowse 2.2 Users"
-
-IBROWSE
-
-IBrowse 2.2 doesn't have OpenURL support.
-But no problem, I have write a small script for use with programs like
-IBrowse they allow to set a cli script to do this. I've only tested
-IBrowse 2.2 with this script (the most other programs have OpenURL support),
-so I only write here a manual for IBrowse 2.2.
-
-You click in the IBrowse menu "Preferences" on "Settings...". Then you go
-in the "Network" submenu "EMail & Telnet". Here you enter the following
-
-Mailto:
-Type: External
-Command: Command -> enter here the path to my script. In the right input
-                    line enter: %h %s
-Sendmail:
-Type: External
-Command: Command -> enter here the path to my script. In the right input
-                    line enter: %h %s
-
-Now you click on "OK" and save the config in the IBrowse "Preferences"
-menu. It is now important to restart IBrowse. The first time you click
-in IBrowse on a mail address, my script ask you for the SimpleMail dir.
-Please click on the first mail address a second time, after you have
-select the SimpleMail dir.
-IBrowse is now correctly configured.
-
-
-If you have problems while configuration please contact me:
-Stefan1200
-Stefan M.
-info@stefan1200.d
-@ENDNODE
-
 @NODE "TIPS" "FAQ"
 
 FAQ
@@ -2161,8 +2228,8 @@ FAQ
 ---- Project Administration ----------------------------------------------
 
 
-- Why do you write a completely new mailer instead of just take part on the
-  YAM development, as YAM is under GPL? 
+- Why are you writing a completely new mailer instead of just taking part
+  on the YAM development, as YAM is under GPL? 
 
 Because when we started developing SimpleMail, YAM wasn't under GPL and no
 one knew if it ever would be. As we both are students of computer sciences
@@ -2249,7 +2316,27 @@ very soon.
 
 - Can I use SimpleMail as an external mailer from my browser?
 
-Yes. See the @{" Startup options " LINK "OPTI" 0} for more info.
+Yes. On @{" Startup options " LINK "OPTI" 0} you can see the most simple way to do
+it, and here's also how to do it using OpenURL (these instructions courtesy
+of Stefan Martens):
+
+ 1. Open the OpenURL prefs program, usually installed in your "Prefs"
+    directory.
+
+ 2. Click the "Mailers" tab, then click the [Add...] button to add a
+    new mailer to the configuration.
+
+ 3. In the new window, enter the following:
+
+      Name:             SimpleMail
+      Path:             (SimpleMail path, like "Work:SimpleMail/SimpleMail")
+      ARexx port:       SIMPLEMAIL
+
+      Show/Uniconify:   SHOW
+      Screen to front:  SCREENTOFRONT
+      Write Mail:       MAILWRITE MAILTO '%a' SUBJECT '%s'
+
+ 4. Click [Ok] and save the configuration.
 
 
 - How about implementing this and this and...?

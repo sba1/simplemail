@@ -79,6 +79,7 @@ int mails_upload(void)
 	struct outmail **out_array;
 	struct mail *m_iter;
 	int i,num_mails;
+	char path[512];
 
   /* count the number of mails which could be be sent */
 	num_mails = 0;
@@ -93,6 +94,13 @@ int mails_upload(void)
 	handle = NULL; /* for folder_next_mail() */
 	i=0; /* the current mail no */
 
+	getcwd(path, sizeof(path));
+	if (chdir(out_folder->path) == -1)
+	{
+		free_outmail_array(out_array);
+		return 0;
+	}
+
 	/* initialize the arrays */
 	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
@@ -101,16 +109,13 @@ int mails_upload(void)
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
 		struct outmail *out;
-		char filename_buf[512];
 
 		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
 
-		strcpy(filename_buf,out_folder->path);
-		sm_add_part(filename_buf,m_iter->filename,sizeof(filename_buf));
-
-		if (!(m = mail_create_from_file(filename_buf)))
+		if (!(m = mail_create_from_file(m_iter->filename)))
 		{
 			free_outmail_array(out_array);
+			chdir(path);
 			return 0;
 		}
 
@@ -125,6 +130,7 @@ int mails_upload(void)
 		{
 			free_outmail_array(out_array);
 			mail_free(m);
+			chdir(path);
 			return 0;
 		}
 		if (!parse_mailbox(from,&mb))
@@ -132,6 +138,7 @@ int mails_upload(void)
 			tell_str("No valid sender address!");
 			free_outmail_array(out_array);
 			mail_free(m);
+			chdir(path);
 			return 0;
 		}
 
@@ -168,7 +175,6 @@ int mails_upload(void)
 							addr = (struct address*)node_next(&addr->node);
 						}
 					}
-
 					out->rcp[i] = NULL;
 				}
 				if (cc_list) free_address_list(cc_list);
@@ -185,6 +191,7 @@ int mails_upload(void)
 	smtp_send(&user.config.account_list,out_array,out_folder->path);
 
 	free_outmail_array(out_array);
+	chdir(path);
 	return 1;
 }
 

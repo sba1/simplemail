@@ -324,12 +324,14 @@ static void icon_selected(int **pdata)
 	if (data->attachments_last_selected)
 		set(data->attachments_last_selected, MUIA_Selected, 0);
 
+	/* We need this to do here bcause insert_text() might use it */
+	data->attachments_last_selected = icon;
+
 	if ((mail = (struct mail*)xget(icon,MUIA_UserData)))
 	{
 		mail_decode(mail);
 		insert_text(data,mail);
 	}
-	data->attachments_last_selected = icon;
 }
 
 /******************************************************************

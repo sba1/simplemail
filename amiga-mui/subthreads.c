@@ -41,6 +41,7 @@ struct ThreadMessage
 {
 	struct Message msg;
 	int startup; /* message is startup message */
+	thread_t thread; /* The thread which it is the startup message for */
 	int (*function)(void);
 	int async;
 	int argcount;
@@ -120,9 +121,25 @@ void thread_handle(void)
 	{
 		if (tmsg->startup)
 		{
-			D(bug("Got startup message back\n"));
-			FreeVec(tmsg);
-			thread = NULL;
+			struct thread_node *node = (struct thread_node*)list_first(&thread_list);
+			while (node)
+			{
+				if (node->thread == tmsg->thread)
+				{
+					D(bug("Got startup message of %0xlx back\n",node->thread));
+					Remove(&node->node);
+					FreeVec(tmsg);
+					FreeVec(node);
+				}
+				node = (struct thread_node*)node_next(&node->node);
+			}
+
+			if (!node)
+			{
+				D(bug("Got startup message of default task back\n"));
+				FreeVec(tmsg);
+				thread = NULL;
+			}
 			continue;
 		}
 		if (tmsg->function)
@@ -198,7 +215,7 @@ int thread_parent_task_can_contiue(void)
 #endif
 }
 
-thread_t thread_start_new(int (*entry)(void*), void *eudata)
+static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
 {
 #ifndef DONT_USE_THREADS
 	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
@@ -213,6 +230,7 @@ thread_t thread_start_new(int (*entry)(void*), void *eudata)
 			msg->msg.mn_ReplyPort = thread_port;
 			msg->msg.mn_Length = sizeof(*msg);
 			msg->startup = 1;
+			msg->thread = thread;
 			msg->function = (int (*)(void))entry;
 			msg->arg1 = eudata;
 	
@@ -226,7 +244,7 @@ thread_t thread_start_new(int (*entry)(void*), void *eudata)
 				thread->process = CreateNewProcTags(
 							NP_Entry,      thread_entry,
 							NP_StackSize,  16384,
-							NP_Name,       "SimpleMail - Subthread",
+							NP_Name,       thread_name,
 							NP_Priority,   -1,
 							NP_Input,      in,
 							NP_Output,     out,
@@ -268,12 +286,12 @@ thread_t thread_start_new(int (*entry)(void*), void *eudata)
 #endif
 }
 
-thread_t thread_add(int (*entry)(void *), void *eudata)
+thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_node *thread_node = (struct thread_node*)AllocVec(sizeof(struct thread_node),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread_node)
 	{
-		thread_t thread = thread_start_new(entry, eudata);
+		thread_t thread = thread_start_new(thread_name, entry, eudata);
 		if (thread)
 		{
 			thread_node->thread = thread;

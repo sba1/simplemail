@@ -34,6 +34,7 @@ typedef struct thread_s * thread_t; /* opaque type */
 
 int thread_parent_task_can_contiue(void);
 int thread_start(int (*entry)(void*), void *udata);
+thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata);
 void thread_abort(void);
 int thread_aborted(void);
 int thread_call_parent_function_sync(void *function, int argcount, ...);

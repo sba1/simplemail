@@ -1,112 +1,98 @@
 <?php
+  include("language.inc.php");
+
   $file='xml/news.xml';
   $maxnews=5;
-  $ammount=0;
-  $tableended=true;
+
+  $news = array();  // the array of all the news
+  $date = 0;        // the date of the current news
+  $text = array();  // the text array of the current news
+  $lang = 0;        // current language
+  $inside_text = 1;
+
+  function add_text($str)
+  {
+    global $text;
+    global $lang;
+    global $inside_text;
+
+    if ($inside_text) $text[$lang] .= $str;
+  }
 
   function startElement($parser, $name, $attrs)
   {
-    global $ammount;
-    global $maxnews;
-
-    if($ammount > $maxnews)
-    {
-      if($tableended == false)
-      {
-        echo('</table>');
-        $tableended=true;
-      }
-      return;
-    }
+    global $date;
+    global $text;
+    global $lang;
+    global $inside_text;
 
     switch($name)
     {
-      case 'NEWS':
-        include('newsheader.html');
-        $tableended = false;
-        break;
-
       case 'ENTRY':
-        echo('<tr bgcolor="#CACACA">');
-        $ammount++;
-        break;
-
-      case 'DATE':
-        echo('<td valign="top">');
+        $date = $attrs[DATE];
+        $text = array();
         break;
 
       case 'TEXT':
-        echo('<td>');
+        if (isset($attrs[LANG])) $lang = $attrs[LANG];
+        else $lang = "en";
+        unset($text[$lang]);
+        $inside_text = 1;
         break;
 
-      case 'A':
-        echo("<a href=$attrs[HREF]>");
+      case 'A': 
+        add_text("<a href=$attrs[HREF]>");
         break;
 
       case 'LIST':
-        echo("<ul>");
+        add_text("<ul>");
         break;
 
       case 'ITEM':
-        echo('<li>');
+        add_text("<li>");
         break;
     }
   }
 
   function endElement($parser, $name)
   {
-    global $ammount;
-    global $maxnews;
-
-    if($ammount > $maxnews)
-    {
-      return;
-    }
+    global $date;
+    global $text;
+    global $lang;
+    global $news;
+    global $inside_text;
 
     switch($name)
     {
-      case 'NEWS':
-        echo('</table>');
-        break;
-
       case 'ENTRY':
-        echo('</tr>');
-        break;
-
-      case 'DATE':
-        echo('</td>');
+        $news[] = array(DATE => $date, TEXT => $text);
         break;
 
       case 'TEXT':
-        echo('</td>');
+        $inside_text = 0;
         break;
 
       case 'A':
-        echo('</a>');
+        add_text("</a>");
         break;
 
       case 'LIST':
-        echo('</ul>');
+        add_text("</ul>");
         break;
 
       case 'ITEM':
-        echo('</li>');
+        add_text("</li>");
+        break;
     }
   }
 
   function characterData($parser, $data)
   {
-    global $ammount;
-    global $maxnews;
+    global $text;
+    global $lang;
 
-    if($ammount > $maxnews)
-    {
-      return;
-    }
-
-    echo($data);
+    add_text($data);
   }
-
 
   $xml_parser = xml_parser_create();
   xml_set_character_data_handler($xml_parser, 'characterData');
@@ -129,4 +115,27 @@
 
   xml_parser_free($xml_parser);
 
+  echo "<table><tr bgcolor=\"black\">";
+  echo "<th><font color=\"white\">".get_string($DateText)."</font></th>";
+  echo "<th><font color=\"white\">".get_string($NewsText)."</font></th>";
+  echo "</tr>";
+
+  $news_count = 0;
+
+  foreach ($news as $val)
+  {
+    echo "<tr bgcolor=\"#CACACA\"><td valign=\"top\">$val[DATE]</td>";
+
+    echo "<td>".get_string($val[TEXT])."</td>";
+
+    echo "</tr>";
+
+    $news_count++;
+    if ($news_count == $maxnews) break;
+  }  
+
+  echo "</table>"; 
+
+
 ?>
+

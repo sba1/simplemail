@@ -1,24 +1,19 @@
 <?xml version='1.0' ?>
 
 <news>
-
-  <entry>
-    <date>
-      2001/04/12
-    </date>
-    <text>
-      Again the homepage has been redesigned (mainly internal). Most noteably
-      difference: the downloadscript works much better now, you don't have
-      to rename the file in your filerequester anymore.
+  <entry date="2001/04/12">
+    <text lang="en">
+      Again the homepage has been redesigned (mainly internal). 
+      There exists now also a german version of the homepage.
+    </text>
+    <text lang="de">
+      Die Seiten wurden wieder etwas überarbeitet. Es gibt nun auch eine deutsche Version der Homepage.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/03/25
-    </date>
-    <text>
-      Introduced the new SimpleMail <a href="index.html?galery">User Gallery</a>.
+  <entry date="2001/03/25">
+    <text lang="en">
+      Introduced the new SimpleMail <a href="index.php?body=gallery">User Gallery</a>.
       Alpha 0.5 has been released. New features are:
       <list>
         <item>Configurable mail download selection added.</item>
@@ -28,46 +23,51 @@
         <item>Support of the new SimpleMail User Gallery.</item>
       </list>
     </text>
+    <text lang="de">
+      Die SimpleMail <a href="index.php?body=gallery">User Gallery</a> wurde eingerichtet. Alpha 0.5 wurde veröffentlicht. Neue Features sind:
+      <list>
+        <item>Optionale Mailvorauswahl bevor die Mails runtergeladen werden</item>
+        <item>Unterstützt das Senden von 8bit Mime Mails, falls der SMTP Server dies erlaubt</item>
+        <item>Verbessertes Maillesefenster.</item>
+        <item>Button Bilder werden jetzt nicht jedesmal neugeladen</item>
+        <item>Unterstützung der SimpleMail User Gallery</item>
+      </list>
+    </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/02/25
-    </date>
-
-    <text>
+  <entry date="2001/02/25">
+    <text lang="en">
       A new alpha 0.4 has been released. Most important new feature is the possibility to
       configure more then one POP3 server.
     </text>
+    <text lang="de">
+      Eine neue Alpha 0.4 Version wurde veröffentlicht. Wichtigstes neues Merkmal ist die Möglichkeit
+      zur Konfigurationen mehrerer POP3 Server.
+    </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/02/09
-    </date>
-
-    <text>
+  <entry date="2001/02/09">
+    <text lang="en">
       I (Hynek) am leaving today and will come back in April so send all mail you
       send to me also to Sebastian as he will stay here.
     </text>
-  </entry>
-
-  <entry>
-    <date>
-      2001/02/06
-    </date>
-
-    <text>
-      New frequently asked questions added to the <a href="index.html?part=faq">FAQ</a>.
+    <text lang="de">
+      Hynek ist bis April nicht erreichbar, deshalb sollten alle Mails bzgl. SimpleMail die zu ihm gehen auch an Sebastian
+      geschickt werden.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/02/05
-    </date>
+  <entry date="2001/02/06">
+    <text lang="en">
+      New frequently asked questions added to the <a href="index.html?part=faq">FAQ</a>.
+    </text>
+    <text lang="de">
+      Neue häufig gestellte Fragen der <a href="index.php?part=faq">FAQ</a> hinzugefügt.
+    </text>
+  </entry>
 
-    <text>
+  <entry date="2001/02/05">
+    <text lang="en">
       Alpha-Version 0.3 released! This time we have added quiet a bunch of new
       features:
       <list>
@@ -90,53 +90,33 @@
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/01/26
-    </date>
-
+  <entry date="2001/01/26">
     <text>
       New frequently asked question added to the <a href="index.html?faq">FAQ</a>.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/01/26
-    </date>
-
+  <entry date="2001/01/26">
     <text>
       Added some banners for your homepages made by Richard Wagenführer.
       You can find them in the <a href="index.html?downloads">downloads-section</a>.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/01/23
-    </date>
-
+  <entry date="2001/01/23">
     <text>
       The homepage moves to http://simplemail.sourceforge.net/. A completly new
       design is introduced.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2001/01/14
-    </date>
-
+  <entry date="2001/01/14">
     <text>
       The second alpha version 0.2 is released.
     </text>
   </entry>
 
-  <entry>
-    <date>
-      2000/12/24
-    </date>
-
+  <entry date="2000/12/24">
     <text>
       The first alpha version 0.1 is released.
     </text>

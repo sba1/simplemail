@@ -12,6 +12,8 @@
 //#define MYDEBUG
 #include "amigadebug.h"
 
+#define FAST_SEEK
+
 struct ExecBase *SysBase;
 struct DosLibrary *DOSBase;
 struct Library *UtilityBase;
@@ -328,6 +330,7 @@ FILE *fopen(const char *filename, const char *mode)
 	if (amiga_mode == MODE_READWRITE)
 	{
 		Seek(files[_file],0,OFFSET_END);
+		file->_rcnt = Seek(files[_file],0,OFFSET_CURRENT);
 	}
 
 	ReleaseSemaphore(&files_sem);
@@ -359,7 +362,9 @@ int fclose(FILE *file)
 size_t fwrite(const void *buffer, size_t size, size_t count, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return (size_t)FWrite(fh,(void*)buffer,size,count);
+	size_t rc = (size_t)FWrite(fh,(void*)buffer,size,count);
+	file->_rcnt += rc * size;
+	return rc;
 }
 
 size_t fread(void *buffer, size_t size, size_t count, FILE *file)
@@ -369,19 +374,25 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *file)
 	len = (size_t)FRead(fh,buffer,size,count);
 	if (!len && size && count) file->_flag |= _IOEOF;
 	D(bug("0x%lx reading %ld bytes\n",file,len * size));
+	file->_rcnt += len * size;
 	return len;
 }
 
 int fputs(const char *string, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FPuts(fh,(char*)string);
+	int rc = FPuts(fh,(char*)string);
+	if (!rc) /* DOSFALSE is true here */
+		file->_rcnt += strlen(string);
+	return rc;
 }
 
 int fputc(int character, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FPutC(fh,character);
+	int rc = FPutC(fh,character);
+	if (rc != -1) file->_rcnt++;
+	return rc;
 }
 
 int fseek(FILE *file, long offset, int origin)
@@ -390,11 +401,24 @@ int fseek(FILE *file, long offset, int origin)
 	ULONG amiga_seek;
 
 	if (origin == SEEK_SET) amiga_seek = OFFSET_BEGINNING;
-	else if (origin == SEEK_CUR) amiga_seek = OFFSET_CURRENT;
+	else if (origin == SEEK_CUR)
+	{
+		/* Optimize trival cases (used heavily when loading indexfiles) */
+		amiga_seek = OFFSET_CURRENT;
+#ifdef FAST_SEEK
+		if (!offset) return 0;
+		if (offset == 1)
+		{
+			fgetc(file);
+			return 0;
+		}
+#endif
+	}
 	else amiga_seek = OFFSET_END;
 
 	if (!Flush(fh)) return -1;
 	if (Seek(fh,offset,amiga_seek)==-1) return -1;
+	file->_rcnt = Seek(fh,0,OFFSET_CURRENT);
 	return 0;
 }
 
@@ -402,7 +426,11 @@ long ftell(FILE *file)
 {
 	BPTR fh = files[file->_file];
 	D(bug("0x%lx ftell() = %ld\n",file,Seek(fh,0,OFFSET_CURRENT)));
+#ifdef FAST_SEEK
+	return file->_rcnt;
+#else
 	return Seek(fh,0,OFFSET_CURRENT);
+#endif
 }
 
 int fflush(FILE *file)
@@ -418,13 +446,16 @@ char *fgets(char *string, int n, FILE *file)
 	BPTR fh = files[file->_file];
 	char *rc =  (char*)FGets(fh,string,n);
 	if (!rc && !IoErr()) file->_flag |= _IOEOF;
+	else if (rc) file->_rcnt += strlen(rc);
 	return rc;
 }
 
 int fgetc(FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FGetC(fh);
+	int rc = FGetC(fh);
+	if (rc != -1) file->_rcnt++;
+	return rc;
 }
 
 FILE *tmpfile(void)

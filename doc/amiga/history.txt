@@ -1,4 +1,4 @@
-Version 0.14 (fourtheenth alpha) - released on ?
+Version 0.14 (first beta) - released on 2001/12/24
   - ARexx: The following commands have been added:
     · ADDRGOTO
     · ADDRNEW
@@ -22,13 +22,14 @@ Version 0.14 (fourtheenth alpha) - released on ?
     · SETFOLDER
     · SETMAILFILE
   - Signatures can be stripped before quoting now.
-  - The number of mails of folders is rendered boldly when containing
+  - The name of folders is rendered boldly when containing
     new mails.
   - Quotation wordwrap improved.
   - Option to not cite empty lines.
-  - Own address is filtered out when repling a multiple recipient email.
+  - Own address is filtered out when replying a multiple recipient email.
   - Modified STARTTLS according to suggestions by Jörg Strohmayer.
   - A default recipient can be defined for each folder.
+  - Importing of addressbooks from YAM added.
 
 Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!

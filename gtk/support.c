@@ -144,7 +144,19 @@ unsigned int sm_get_current_seconds(void)
 	struct timeval tv;
 
 	gettimeofday(&tv,&tz);
-	return 0;
+	return tv.tv_sec;
+}
+
+/******************************************************************
+ Returns the current microseconds
+*******************************************************************/
+unsigned int sm_get_current_micros(void)
+{
+	struct timezone tz;
+	struct timeval tv;
+
+	gettimeofday(&tv,&tz);
+	return tv.tv_usec;
 }
 
 /******************************************************************
@@ -235,7 +247,7 @@ char *sm_path_part(char *filename)
 /******************************************************************
  Returns the full path of a selected file.
 ******************************************************************/
-char *sm_request_file(char *title, char *path)
+char *sm_request_file(char *title, char *path, int save)
 {
 	return NULL;
 }

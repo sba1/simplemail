@@ -20,6 +20,8 @@ simplemail_SOURCES = 	acconfig.h \
 						codesets_table.h \
 						configuration.c \
 						configuration.h \
+						estimate.c \
+						estimate.h \
 						filter.c \
 						filter.h \
 						folder.c \
@@ -52,6 +54,8 @@ simplemail_SOURCES = 	acconfig.h \
 						smintl.h \
 						smtp.c \
 						smtp.h \
+						status.c \
+						status.h \
 						support_indep.c \
 						support_indep.h \
 						taglines.c \

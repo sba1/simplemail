@@ -22,6 +22,8 @@
 
 #include <stdarg.h>
 
+#include "subthreads.h"
+
 int init_threads(void)
 {
 	return 1;
@@ -40,6 +42,10 @@ int thread_start(int (*entry)(void*), void *eudata)
 {
 	entry(eudata);
 	return 1;
+}
+
+void thread_abort(void)
+{
 }
 
 int thread_call_parent_function_sync(void *function, int argcount, ...)
@@ -124,3 +130,37 @@ int thread_aborted(void)
 }
 
 
+struct semaphore_s
+{
+	int s;
+};
+
+semaphore_t thread_create_semaphore(void)
+{
+	semaphore_t sem = malloc(sizeof(struct semaphore_s));
+	if (sem)
+	{
+//		InitSemaphore(&sem->sem);
+	}
+	return sem;
+}
+
+void thread_dispose_semaphore(semaphore_t sem)
+{
+	free(sem);
+}
+
+void thread_lock_semaphore(semaphore_t sem)
+{
+//	ObtainSemaphore(&sem->sem);
+}
+
+int thread_attempt_lock_semaphore(semaphore_t sem)
+{
+//	return (int)AttemptSemaphore(&sem->sem);
+}
+
+void thread_unlock_semaphore(semaphore_t sem)
+{
+//	ReleaseSemaphore(&sem->sem);
+}

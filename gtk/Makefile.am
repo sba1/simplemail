@@ -16,6 +16,8 @@ libgui_a_SOURCES = \
             gui_main.c \
             mainwnd.c \
             readwnd.c \
+	    searchwnd.c \
+	    statuswnd.c \
             subthreads.c \
             support.c \
 	    sysprint.c \

@@ -2079,7 +2079,6 @@ int folder_filter(struct folder *folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
 					callback_move_mail(m, folder, dest_folder);
-
 					handle = old_handle;
 				}
 			}

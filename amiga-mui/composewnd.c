@@ -693,6 +693,21 @@ static void compose_set_signature(void **msg)
 }
 
 /******************************************************************
+ New Gadget should be activated
+*******************************************************************/
+static void compose_new_active(void **msg)
+{
+	struct Compose_Data *data = (struct Compose_Data *)msg[0];
+	Object *obj = (Object*)msg[1];
+
+	if ((ULONG)obj == (ULONG)MUIV_Window_ActiveObject_Next &&
+		  (ULONG)xget(data->wnd, MUIA_Window_ActiveObject) == (ULONG)data->copy_button)
+	{
+		set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
+	}
+}
+
+/******************************************************************
  Opens a compose window
 *******************************************************************/
 void compose_window_open(struct compose_args *args)
@@ -799,13 +814,13 @@ void compose_window_open(struct compose_args *args)
 						Child, HGroup,
 							MUIA_Group_Spacing,0,
 							Child, copy_button = MakePictureButton("_Copy","PROGDIR:Images/Copy"),
-							Child, cut_button = MakePictureButton("Cut","PROGDIR:Images/Cut"),
+							Child, cut_button = MakePictureButton("C_ut","PROGDIR:Images/Cut"),
 							Child, paste_button = MakePictureButton("_Paste","PROGDIR:Images/Paste"),
 							End,
 						Child, HGroup,
 							MUIA_Weight, 66,
 							MUIA_Group_Spacing,0,
-							Child, undo_button = MakePictureButton("_Undo","PROGDIR:Images/Undo"),
+							Child, undo_button = MakePictureButton("Un_do","PROGDIR:Images/Undo"),
 							Child, redo_button = MakePictureButton("_Redo","PROGDIR:Images/Redo"),
 							End,
 						Child, RectangleObject,
@@ -977,6 +992,7 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(undo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Undo");
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
 			DoMethod(from_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, from_popobject, 2, MUIM_Popstring_Close, 1);
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 			DoMethod(App,OM_ADDMEMBER,wnd);

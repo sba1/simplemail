@@ -636,6 +636,7 @@ void callback_move_mail(struct mail *mail, struct folder *from_folder, struct fo
 
 			main_refresh_folder(from_folder);
 			main_refresh_folder(dest_folder);
+			main_display_active_mail();
 
 			read_refresh_prevnext_button(from_folder);
 			read_refresh_prevnext_button(dest_folder);
@@ -694,6 +695,8 @@ void callback_maildrop(struct folder *dest_folder)
 		main_thaw_mail_list();
 
 		app_unbusy();
+
+		main_display_active_mail();
 	}
 }
 
@@ -705,7 +708,7 @@ int callback_move_mail_request(char *folder_path, struct mail *mail)
 
 	if (!src_folder) return 0;
 
-	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mails"),src_folder)))
+	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mail"),src_folder)))
 	{
 		if (move_mail_helper(mail,src_folder,dest_folder))
 		{
@@ -717,6 +720,8 @@ int callback_move_mail_request(char *folder_path, struct mail *mail)
 
 			if (main_get_folder() == dest_folder)
 				main_insert_mail(mail);
+
+			main_display_active_mail();
 
 			return 1;
 		}
@@ -764,6 +769,7 @@ void callback_move_selected_mails(void)
 			read_refresh_prevnext_button(src_folder);
 			read_refresh_prevnext_button(dest_folder);
 			main_remove_mails_selected();
+			main_display_active_mail();
 		}
 	}
 

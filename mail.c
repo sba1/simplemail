@@ -2216,11 +2216,8 @@ struct list *create_address_list(char *str)
 				struct address *new_addr = (struct address*)malloc(sizeof(struct address));
 				if (new_addr)
 				{
-					if (mb->phrase) new_addr->realname = strdup(mb->phrase);
-					else new_addr->realname = NULL;
-					if (mb->addr_spec) new_addr->email = strdup(mb->addr_spec);
-					else new_addr->email = NULL;
-
+					new_addr->realname = mystrdup(mb->phrase);
+					new_addr->email = mystrdup(mb->addr_spec);
 					list_insert_tail(list,&new_addr->node);
 				}
 				mb = (struct mailbox*)node_next(&mb->node);
@@ -2339,7 +2336,7 @@ static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *hea
 
 	if (list)
 	{
-		char *hc = encode_address_field(header_name, list);
+		char *hc = encode_address_field_utf8(header_name, list);
 		if (hc)
 		{
 			if (fprintf(fp,"%s\n",hc)>=0) rc = 1;

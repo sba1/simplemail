@@ -28,6 +28,15 @@
 
 #include "codesets.h"
 #include "codesets_table.h"
+#include "lists.h"
+#include "support_indep.h"
+
+struct codeset
+{
+	struct node node;
+	char *name;
+	const utf8 **to_utf8;
+};
 
 static const char trailingBytesForUTF8[256] =
 {
@@ -40,6 +49,71 @@ static const char trailingBytesForUTF8[256] =
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
+
+struct list codesets_list;
+
+/**************************************************************************
+ Returns the supported codesets as an null terminated array
+**************************************************************************/
+char **codesets_supported(void)
+{
+	static char **array;
+	if (array) return array;
+	if ((array = (char**)malloc(sizeof(char*)*(list_length(&codesets_list)+1))))
+	{
+		struct codeset *code = (struct codeset*)list_first(&codesets_list);
+		int i = 0;
+		while (code)
+		{
+			array[i++] = code->name;
+			code = (struct codeset*)node_next(&code->node);
+		}
+		array[i] = NULL;
+	}
+	return array;
+}
+
+/**************************************************************************
+ Initialized and loads the codesets
+**************************************************************************/
+int codesets_init(void)
+{
+	struct codeset *codeset;
+	list_init(&codesets_list);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
+	codeset->name = mystrdup("ISO Latin 1");
+	codeset->to_utf8 = iso_8859_1_to_utf8;
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO Latin 2");
+	codeset->to_utf8 = iso_8859_2_to_utf8;
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	return 1;
+}
+
+/**************************************************************************
+ Cleanup the memory for the codeset
+**************************************************************************/
+void codesets_cleanup(void)
+{
+}
+
+/**************************************************************************
+ Returns the to utf8 entry by a special codeset
+**************************************************************************/
+utf8 **codesets_find_to_utf8(char *codeset_name)
+{
+	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
+	while (codeset)
+	{
+		if (!mystricmp(codeset_name,codeset->name)) return codeset->to_utf8;
+		codeset = (struct codeset*)node_next(&codeset->node);
+	}
+	return NULL;
+}
 
 /**************************************************************************
  Returns the number of characters a uft8 string has. This is not
@@ -87,39 +161,38 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
  Creates a uf8 string from a different one. from is the iso string and
  charset the charset of from
 **************************************************************************/
-utf8 *utf8create(void *from, int charset)
+utf8 *utf8create(void *from, char *charset)
 {
-	if (charset >= 0 && charset < CHARSET_MAX)
+	int dest_size = 0;
+	char *dest;
+	char *src = (char*)from;
+	unsigned char c;
+	const utf8 **table = codesets_find_to_utf8(charset);
+
+	if (!table) return NULL;
+
+	while ((c = *src++))
+		dest_size += (table[c])[0];
+
+	if ((dest = malloc(dest_size+1)))
 	{
-		int dest_size = 0;
-		char *dest;
-		char *src = (char*)from;
-		unsigned char c;
-		const utf8 **table = iso2utf8[charset];
+		char *dest_ptr = dest;
+		src = (char*)from;
 
-		while ((c = *src++))
-			dest_size += (table[c])[0];
-
-		if ((dest = malloc(dest_size+1)))
+		while ((c = *src))
 		{
-			char *dest_ptr = dest;
-			src = (char*)from;
+			const unsigned char *utf8_seq = table[c]+1;
 
-			while ((c = *src))
+			while ((c = *utf8_seq))
 			{
-				const unsigned char *utf8_seq = table[c]+1;
-
-				while ((c = *utf8_seq))
-				{
-					*dest_ptr++ = c;
-					utf8_seq++;
-				}
-				src++;
+				*dest_ptr++ = c;
+				utf8_seq++;
 			}
-
-			*dest_ptr = 0;
-			return dest;
+			src++;
 		}
+
+		*dest_ptr = 0;
+		return dest;
 	}
 	return NULL;
 }

@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "addressbook.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "smintl.h"
 #include "filter.h"
@@ -886,17 +887,22 @@ int simplemail_main(void)
 	if (!gui_parseargs(0,NULL)) return 0;
 
 	load_config();
-	init_addressbook();
-	if (init_folders())
+
+	if (codesets_init())
 	{
-		if (init_threads())
+		init_addressbook();
+		if (init_folders())
 		{
-			gui_main(0,NULL);
-			folder_delete_deleted();
-			cleanup_threads();
+			if (init_threads())
+			{
+				gui_main(0,NULL);
+				folder_delete_deleted();
+				cleanup_threads();
+			}
+/*			folder_save_order();*/
+			del_folders();
 		}
-/*		folder_save_order();*/
-		del_folders();
+		codesets_cleanup();
 	}
 	cleanup_addressbook();
 	return 0;

@@ -21,15 +21,9 @@
 
 typedef unsigned char	utf8;
 
-
-/* supported charsets (e.g. for utf8create) */
-enum
-{
-	CHARSET_ISO_8859_1 = 0,
-	CHARSET_ISO_8859_2,
-	CHARSET_MAX
-};
-
+char **codesets_supported(void);
+int codesets_init(void);
+void codesets_cleanup(void);
 
 #define utf8size(s) (s)?(strlen(s):0)
 #define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
@@ -37,6 +31,6 @@ enum
 
 int uft8len(const utf8 *str);
 utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
-utf8 *utf8create(void *from, int charset);
+utf8 *utf8create(void *from, char *charset);
 
 #endif

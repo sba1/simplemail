@@ -55,15 +55,6 @@
 
   <entry>
     <question>
-      Will you include SSL? (POP3S)
-    </question>
-    <answer>
-      Definitly yes!
-    </answer>
-  </entry>
-
-  <entry>
-    <question>
       Will you make a version for the AmigaDE?
     </question>
     <answer>

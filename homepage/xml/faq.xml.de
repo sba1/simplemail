@@ -9,7 +9,7 @@
     <answer>
       Als wir mit der Entwicklung von SimpleMail begannen war YAM noch nicht
       unter GPL und niemand wusste, ob es je sein wird. Da wir beiden Studenten
-      der Informatik sind, entschieden wir uns einen eigenen Maile rzu schreiben
+      der Informatik sind, entschieden wir uns einen eigenen Mailer zu schreiben
       um etwas Übung zu bekommen und das ist auch der Grund warum wir immernoch
       SimpleMail weiterentwickeln. Ein anderes Grund dürfte sein, dass es
       wahrscheinlich mühseliger wäre, YAM umzuschreiben, als etwas komplett
@@ -52,15 +52,6 @@
       Eher nicht, da wir denken, dass es besser ist zwei einzelne Programme
       zu haben, denn das Hinzufügen von News würde zuviel Ballast für User
       die es nicht wollen bedeuten. Wartet lieber auf SimpleNews. ;)
-    </answer>
-  </entry>
-
-  <entry>
-    <question>
-      Werdet Ihr SSL-Unterstützung einbauen? (POP3S)
-    </question>
-    <answer>
-      Definitiv ja!
     </answer>
   </entry>
 

@@ -92,26 +92,30 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 
 		SM_DEBUGF(15,("POP3 Server answered: %s",answer));
 
-		/* If server supports APOP it places a timestamp within its welcome message. Extracting it */
-		ptr = answer;
-		startptr = endptr = NULL;
-		while ((c = *ptr))
+		/* If server supports APOP it places a timestamp within its welcome message. Extracting it,
+     * not, if apop shouldn't be tried (in which case apop is 2) */
+		if (server->apop != 2)
 		{
-			if (c=='<') startptr = ptr;
-			else if (c=='>') 
+			ptr = answer;
+			startptr = endptr = NULL;
+			while ((c = *ptr))
 			{
-				endptr = ptr;
-				break;
+				if (c=='<') startptr = ptr;
+				else if (c=='>') 
+				{
+					endptr = ptr;
+					break;
+				}
+				ptr++;
 			}
-			ptr++;
-		}
-		if (startptr && endptr && startptr<endptr && timestamp_ptr)
-		{
-			if ((timestamp = (char*)malloc(endptr-startptr+3)))
+			if (startptr && endptr && startptr<endptr && timestamp_ptr)
 			{
-				strncpy(timestamp,startptr,endptr-startptr+1);
-				timestamp[endptr-startptr+1] = 0;
-				SM_DEBUGF(15,("Found timestamp: %s\n",timestamp));
+				if ((timestamp = (char*)malloc(endptr-startptr+3)))
+				{
+					strncpy(timestamp,startptr,endptr-startptr+1);
+					timestamp[endptr-startptr+1] = 0;
+					SM_DEBUGF(15,("Found timestamp: %s\n",timestamp));
+				}
 			}
 		}
 
@@ -153,7 +157,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 	if (!timestamp && server->apop)
 	{
-		SM_DEBUGF(5,("Server did not deliver timestamp but APOP authentfication was requested\n"));
+		tell_from_subtask(_("Failed to authentificate via APOP. Server hasn't delivered a timestamp."));
 		return 0;
 	}
 

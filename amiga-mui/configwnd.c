@@ -118,7 +118,7 @@ static Object *account_recv_password_string;
 static Object *account_recv_ask_checkbox;
 static Object *account_recv_active_check;
 static Object *account_recv_delete_check;
-static Object *account_recv_apop_check;
+static Object *account_recv_apop_cycle;
 static Object *account_recv_ssl_check;
 static Object *account_recv_stls_check;
 static Object *account_recv_avoid_check;
@@ -227,7 +227,7 @@ static void account_store(void)
 		account_last_selected->pop->passwd = account_last_selected->pop->ask?NULL:mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->pop->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
-		account_last_selected->pop->apop = xget(account_recv_apop_check, MUIA_Selected);
+		account_last_selected->pop->apop = xget(account_recv_apop_cycle, MUIA_Cycle_Active);
 		account_last_selected->pop->ssl = xget(account_recv_ssl_check, MUIA_Selected);
 		account_last_selected->pop->stls = xget(account_recv_stls_check, MUIA_Selected);
 		account_last_selected->pop->nodupl = xget(account_recv_avoid_check, MUIA_Selected);
@@ -272,7 +272,7 @@ static void account_load(void)
 		nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
 		setcheckmark(account_recv_active_check,account->pop->active);
 		SetAttrs(account_recv_delete_check,MUIA_Selected, account->pop->del, MUIA_Disabled, account->recv_type, TAG_DONE);
-		setcheckmark(account_recv_apop_check,account->pop->apop);
+		set(account_recv_apop_cycle,MUIA_Cycle_Active,account->pop->apop);
 		nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
 		nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
 		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
@@ -937,6 +937,7 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
 static int init_account_group(void)
 {
 	static char *recv_entries[3];
+	static char *apop_labels[4];
 	static struct Hook account_display_hook;
 
 	SM_ENTER;
@@ -945,6 +946,10 @@ static int init_account_group(void)
 
 	recv_entries[0] = "POP3";
 	recv_entries[1] = "IMAP4";
+
+	apop_labels[0] = _("Try");
+	apop_labels[1] = _("Enforce");
+	apop_labels[2] = _("Don't try");
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1055,7 +1060,7 @@ static int init_account_group(void)
 			Child, MakeLabel(_("Avoid duplicates")),
 			Child, HGroup, Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE), Child, HSpace(0), End,
 			Child, MakeLabel(_("APOP")),
-			Child, HGroup, Child, account_recv_apop_check = MakeCheck(_("APOP"),FALSE), Child, HSpace(0),End,
+			Child, HGroup, Child, account_recv_apop_cycle = MakeCycle(_("APOP"),apop_labels), Child, HSpace(0),End,
 			Child, MakeLabel(_("Secure")),
 			Child, HGroup,
 				Child, account_recv_ssl_check = MakeCheck(_("Secure"), FALSE),
@@ -1159,7 +1164,7 @@ static int init_account_group(void)
 	set(account_recv_active_check,MUIA_ShortHelp,_("Deactivate this if you don't want SimpleMail to\ndownload the e-Mails when pressing on 'Fetch'."));
 	set(account_recv_delete_check,MUIA_ShortHelp,_("After successul downloading the mails should be deleted\non the POP3 server."));
 	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleteding e-Mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
-	set(account_recv_apop_check,MUIA_ShortHelp,_("If activated SimpleMail aborts transfer if APOP authentification fails."));
+	set(account_recv_apop_cycle,MUIA_ShortHelp,_("Choose how APOP is handled. If you encounter login probelms\nyou might change this setting to \"Don't try\"."));
 	set(account_recv_ssl_check,MUIA_ShortHelp,_("If activated SimpleMail tries to make the connection secure.\nThis is not supported on all servers, so decativate if it doesn't work."));
 	set(account_send_server_string,MUIA_ShortHelp,_("The name of the so called SMTP server which is responlible\nto send your e-Mails."));
 	set(account_send_port_string,MUIA_ShortHelp,_("The port number. Usually 25"));

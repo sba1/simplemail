@@ -128,7 +128,7 @@ struct Compose_Data /* should be a customclass */
 /******************************************************************
  Convert the contents of the from popup to the text field
 *******************************************************************/
-STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *str)
+STATIC ASM SAVEDS VOID from_objstr(REG(a2,Object *list), REG(a1,Object *str))
 {
 	struct account *ac;
 	char buf[256];
@@ -149,17 +149,17 @@ STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *st
 	set(str,MUIA_UserData,ac);
 }
 
-STATIC ASM struct account *from_construct(register __a2 APTR pool, register __a1 struct account *ent)
+STATIC ASM SAVEDS struct account *from_construct(REG(a2,APTR pool), REG(a1, struct account *ent))
 {
 	return account_duplicate(ent);
 }
 
-STATIC ASM void from_destruct(register __a2 APTR pool, register __a1 struct account *ent)
+STATIC ASM SAVEDS VOID from_destruct(REG(a2,APTR pool), REG(a1,struct account *ent))
 {
 	account_free(ent);
 }
 
-STATIC ASM VOID from_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct account *account)
+STATIC ASM SAVEDS VOID from_display(REG(a0,struct Hook *h), REG(a2, char **array), REG(a1,struct account *account))
 {
 	if (account)
 	{

@@ -21,7 +21,6 @@
 */
 
 #include <ctype.h>
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -835,7 +834,7 @@ void account_recv_port_update(void)
 	set(account_recv_stls_check, MUIA_Disabled, !ssl);
 }
 
-STATIC ASM VOID account_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct account *ent)
+STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **array), REG(a1,struct account *ent))
 {
 	if (ent)
 	{
@@ -1386,7 +1385,7 @@ static void signature_update(void)
 	DoMethod(signature_signature_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
 }
 
-STATIC ASM VOID signature_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct signature *ent)
+STATIC ASM SAVEDS VOID signature_display(REG(a0,struct Hook *h), REG(a2,char **array), REG(a1,struct signature *ent))
 {
 	if (ent)
 	{
@@ -1553,7 +1552,7 @@ static void phrase_update(void)
 	DoMethod(phrase_phrase_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
 }
 
-STATIC ASM VOID phrase_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct phrase *ent)
+STATIC ASM SAVEDS VOID phrase_display(REG(a0,struct Hook *h), REG(a2,char **array), REG(a1,struct phrase *ent))
 {
 	if (ent)
 	{
@@ -2029,9 +2028,8 @@ void close_config(void)
 /******************************************************************
  The size custom class. Only used in this file.
 *******************************************************************/
-STATIC ASM ULONG Sizes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	MUIM_Numeric_Stringify:
@@ -2051,10 +2049,7 @@ STATIC ASM ULONG Sizes_Dispatcher(register __a0 struct IClass *cl, register __a2
 static int create_sizes_class(void)
 {
 	if ((CL_Sizes = MUI_CreateCustomClass(NULL,MUIC_Slider,NULL,4,Sizes_Dispatcher)))
-	{
-		CL_Sizes->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

@@ -40,6 +40,10 @@
 
 static struct MsgPort *arexx_port;
 
+/* from gui_main.c */
+void app_hide(void);
+void app_show(void);
+
 /****************************************************************
  Returns the arexx message port if it already exists. Should
  be called in Forbid() state.
@@ -120,6 +124,41 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ SETMAIL Arexx Command
+*****************************************************************/
+static void arexx_setmail(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		LONG *num;
+	} setmail_arg;
+	memset(&setmail_arg,0,sizeof(setmail_arg));
+
+	if ((arg_handle = ParseTemplate("NUM/N/A",args,&setmail_arg)))
+	{
+		callback_select_mail(*setmail_arg.num);
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
+ SHOW Arexx Command
+*****************************************************************/
+static void arexx_show(struct RexxMsg *rxmsg, STRPTR args)
+{
+	app_show();
+}
+
+/****************************************************************
+ HIDE Arexx Command
+*****************************************************************/
+static void arexx_hide(struct RexxMsg *rxmsg, STRPTR args)
+{
+	app_hide();
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -139,6 +178,9 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	{
 		if (!Stricmp("MAINTOFRONT",command.command)) arexx_maintofront(rxmsg,command.args);
 		else if (!Stricmp("MAILWRITE",command.command)) arexx_mailwrite(rxmsg,command.args);
+		else if (!Stricmp("SETMAIL",command.command)) arexx_setmail(rxmsg,command.args);
+		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
+		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

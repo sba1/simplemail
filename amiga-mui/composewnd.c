@@ -711,7 +711,6 @@ static void compose_new_active(void **msg)
  Opens a compose window
 *******************************************************************/
 void compose_window_open(struct compose_args *args)
-/*void compose_window_open(char *to_str, struct mail *tochange)*/
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
 	Object *from_text, *from_list, *reply_string, *to_string, *subject_string;
@@ -997,48 +996,31 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
-			if (!args->to_change)
-				compose_add_text(&data);
-
-			if (args->to_str)
-			{
-				set(to_string,MUIA_String_Contents,args->to_str);
-				/* activate the "Subject" field */
-				set(wnd,MUIA_Window_ActiveObject,data->subject_string);
-			} else
-			{
-				/* activate the "To" field */
-				set(wnd,MUIA_Window_ActiveObject,data->to_string);
-			}
-
 			if (args->to_change)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *to;
+				char *from, *to;
 				char *decoded_to = NULL;
 
-				if (args->to_change)
+				/* Find and set the correct account */
+				if ((from = mail_find_header_contents(args->to_change, "from")))
 				{
-					char *from = mail_find_header_contents(args->to_change, "from");
-					if (from)
+					struct account *ac = account_find_by_from(from);
+					if (ac)
 					{
-						struct account *ac = account_find_by_from(from);
-						if (ac)
+						if (ac->smtp && ac->smtp->name && *ac->smtp->name && ac->email)
 						{
-							if (ac->smtp && ac->smtp->name && *ac->smtp->name && ac->email)
+							if (ac->name)
 							{
-								if (ac->name)
-								{
-									if (needs_quotation(ac->name))
-										sprintf(buf, "\"%s\"",ac->name);
-									else strcpy(buf,ac->name);
-								}
+								if (needs_quotation(ac->name))
+									sprintf(buf, "\"%s\"",ac->name);
+								else strcpy(buf,ac->name);
+							}
 
-								sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
-								set(from_text, MUIA_Text_Contents, buf);
-								set(reply_string, MUIA_String_Contents, ac->reply);
-							}	
+							sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
+							set(from_text, MUIA_Text_Contents, buf);
+							set(reply_string, MUIA_String_Contents, ac->reply);
 						}
 					}
 				}
@@ -1046,7 +1028,6 @@ void compose_window_open(struct compose_args *args)
 				compose_add_mail(data,args->to_change,NULL);
 
 				entries = xget(attach_tree,MUIA_NList_Entries);
-
 				if (entries==0)
 				{
 					compose_add_text(&data);
@@ -1054,33 +1035,48 @@ void compose_window_open(struct compose_args *args)
 				{
 					/* Active the first entry if there is only one entry */
 					if (entries==1) set(attach_tree,MUIA_NList_Active,0);
-					else
-					{
-						set(attach_tree,MUIA_NList_Active,1);
-					}
+					else set(attach_tree,MUIA_NList_Active,1);
 				}
 
 				if ((to = mail_find_header_contents(args->to_change,"To")))
 				{
 					/* set the To string */
 					parse_text_string(to,&decoded_to);
+					set(to_string,MUIA_String_Contents,decoded_to);
+					if (decoded_to) free(decoded_to);
 				}
 
 				set(subject_string,MUIA_String_Contents,args->to_change->subject);
-				set(to_string,MUIA_String_Contents,decoded_to);
 
-				set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
-				if (decoded_to) free(decoded_to);
+				if (args->action == COMPOSE_ACTION_REPLY || args->action == COMPOSE_ACTION_FORWARD)
+					set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
+				else
+				{
+					if (to) set(wnd,MUIA_Window_ActiveObject, data->subject_string);
+					else set(wnd,MUIA_Window_ActiveObject, data->to_string);
+				}
 
-				if (args->to_change->filename) data->filename = strdup(args->to_change->filename);
-				data->folder = strdup("Outgoing");
+				data->filename = mystrdup(args->to_change->filename);
+				data->folder = mystrdup("Outgoing");
 				data->reply_id = mystrdup(args->to_change->message_reply_id);
 			} else
 			{
+				compose_add_text(&data);
+				/* activate the "To" field */
+				set(wnd,MUIA_Window_ActiveObject,data->to_string);
+			}
+
+#if 0
+ else
+			{
 				/* Add the predefined text */
-				char *welcome = mail_create_string(user.config.write_welcome,NULL);
-				char *close = mail_create_string(user.config.write_close,NULL);
-				char *new_text = malloc((welcome?strlen(welcome):0) + (close?strlen(close):0) + 40);
+				char *welcome;
+				char *close;
+				char *new_text;
+
+				welcome = mail_create_string(user.config.write_welcome,NULL);
+				close = mail_create_string(user.config.write_close,NULL);
+				new_text = malloc((welcome?strlen(welcome):0) + (close?strlen(close):0) + 40);
 
 				if (new_text)
 				{
@@ -1099,6 +1095,7 @@ void compose_window_open(struct compose_args *args)
 				if (welcome) free(welcome);
 				if (close) free(close);
 			}
+#endif
 
 			compose_add_signature(data);
 			data->sign_array = sign_array;

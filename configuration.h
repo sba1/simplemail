@@ -52,10 +52,6 @@ struct config
 
 	int signatures_use;
 
-	char *write_welcome;
-	char *write_welcome_address;
-	char *write_close;
-
 	char *read_fixedfont;
 	char *read_propfont;
 

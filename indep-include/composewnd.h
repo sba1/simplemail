@@ -25,11 +25,11 @@
 
 struct compose_args
 {
-	char *to_str; /* the initial to string */
-	struct mail *to_change; /* this mail is changed (can be freed) */
+//	char *to_str; /* the initial to string */
+	struct mail *to_change; /* this mail is changed (can be freed afterwards) might be NULL */
 
-	int action;
-	struct mail *ref_mail; /* the status of this mail is changed after successful editing */
+	struct mail *ref_mail;	/* the status of this mail is changed after successful editing */
+	int action;						/* how the status will be changed */
 };
 
 #define COMPOSE_ACTION_NEW     0

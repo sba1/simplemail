@@ -150,13 +150,6 @@ int load_config(void)
 							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Read.Smilies")))
 							user.config.read_smilies = ((*result == 'Y') || (*result == 'y'))?1:0;
-						if ((result = get_config_item(buf,"Write.Welcome")))
-							user.config.write_welcome = mystrdup(result);
-						if ((result = get_config_item(buf,"Write.WelcomeAddress")))
-							user.config.write_welcome_address = mystrdup(result);
-						if ((result = get_config_item(buf,"Write.Close")))
-							user.config.write_close = mystrdup(result);
-
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
 							/* it's a POP Server config line */

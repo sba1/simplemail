@@ -1078,7 +1078,6 @@ char *addressbook_get_address_str_expanded(struct addressbook_entry *entry)
 	return str;
 }
 
-
 /**************************************************************************
  This function returns a expanded string of e-mail Addresses. It uses
  the address book for that purpose and performs syntax checks (uses

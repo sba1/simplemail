@@ -133,12 +133,32 @@ void callback_get_address(void)
 	}
 }
 
-/* a new mail should be composed */
-void callback_new_mail(void)
+/* a new mail should be written to the given address */
+void callback_write_mail_to(struct addressbook_entry *address)
+{
+	char *to_str = addressbook_get_address_str(address);
+	callback_write_mail_to_str(to_str);
+	free(to_str);
+}
+
+/* a new mail should be written to a given address string */
+void callback_write_mail_to_str(char *str)
 {
 	struct compose_args ca;
 	memset(&ca,0,sizeof(ca));
+
+	ca.action = COMPOSE_ACTION_NEW;
+	ca.to_change = mail_create_for(str);
+
 	compose_window_open(&ca);
+
+	if (ca.to_change) mail_free(ca.to_change);
+}
+
+/* a new mail should be composed */
+void callback_new_mail(void)
+{
+	callback_write_mail_to_str(NULL);
 }
 
 /* reply this mail */
@@ -469,27 +489,6 @@ void callback_mails_set_status(int status)
 
 		mail = main_get_mail_next_selected(&handle);
 	}	
-}
-
-/* a new mail should be written to the given address */
-void callback_write_mail_to(struct addressbook_entry *address)
-{
-	struct compose_args ca;
-	memset(&ca,0,sizeof(ca));
-	ca.to_str = addressbook_get_address_str(address);
-	ca.action = COMPOSE_ACTION_NEW;
-	compose_window_open(&ca);
-	if (ca.to_str) free(ca.to_str);
-}
-
-/* a new mail should be written to a given address string */
-void callback_write_mail_to_str(char *str)
-{
-	struct compose_args ca;
-	memset(&ca,0,sizeof(ca));
-	ca.to_str = str;
-	ca.action = COMPOSE_ACTION_NEW;
-	compose_window_open(&ca);
 }
 
 /* create a new folder */

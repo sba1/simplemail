@@ -1051,7 +1051,7 @@ static int init_phrase_group(void)
 				End,
 
 			Child, MakeLabel("Close"),
-			Child, phrase_reply_intro_popph = PopphObject,
+			Child, phrase_reply_close_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 			End,

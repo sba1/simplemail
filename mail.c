@@ -34,6 +34,8 @@
 #include "folder.h" /* for mail_compose_new() */
 #include "mail.h"
 #include "parse.h"
+#include "phrase.h"
+#include "signature.h"
 #include "simplemail.h" /* for the callbacks() */
 #include "SimpleMail_rev.h"
 #include "support.h"
@@ -657,12 +659,93 @@ struct mail *mail_create_from_file(char *filename)
 }
 
 /**************************************************************************
+ Creates a mail to be send to a given address (fills out the to field
+ and the contents)
+**************************************************************************/
+struct mail *mail_create_for(char *to_str_unexpanded)
+{
+	struct mail *mail;
+	char *to_str;
+
+	struct mailbox mb;
+	memset(&mb,0,sizeof(mb));
+
+	to_str = to_str_unexpanded?addressbook_get_expand_str(to_str_unexpanded):NULL;
+
+	if (to_str) parse_mailbox(to_str,&mb);
+	if ((mail = mail_create()))
+	{
+		char *mail_contents;
+		struct phrase *phrase;
+
+		/* this makes some things simpler */
+		if (!(mail_contents = malloc(1)))
+		{
+			mail_free(mail);
+			free(to_str);
+			return NULL;
+		}
+		*mail_contents = 0;
+		phrase = phrase_find_best(to_str);
+
+		/* TODO: write a function for this! */
+		if (to_str)
+		{
+			struct list *list = create_address_list(to_str);
+			if (list)
+			{
+				char *to_header;
+
+				to_header = encode_address_field("To",list);
+				free_address_list(list);
+
+				if (to_header)
+				{
+					mail_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4);
+					free(to_header);
+				}
+			}
+		}
+
+		if (mb.phrase)
+		{
+			if (phrase && phrase->write_welcome_repicient)
+			{
+				char *str = mail_create_string(phrase->write_welcome_repicient, NULL, mb.phrase, mb.addr_spec);
+				if (str)
+				{
+					mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(str)+1+1);
+					if (mail_contents) { strcat(mail_contents,str); strcat(mail_contents,"\n");}
+				}
+			}
+		} else
+		{
+			if (phrase && phrase->write_welcome)
+			{
+				mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(phrase->write_welcome)+1+1);
+				if (mail_contents) { strcat(mail_contents,phrase->write_welcome); strcat(mail_contents,"\n");}
+			}
+		}
+
+		if (phrase && phrase->write_closing)
+		{
+			mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(phrase->write_closing)+1);
+			if (mail_contents) strcat(mail_contents,phrase->write_closing);
+		}
+
+		mail->decoded_data = mail_contents;
+		mail->decoded_len = mail_contents?strlen(mail_contents):0;
+		mail_process_headers(mail);
+	}
+	free(to_str);
+	return mail;
+}
+
+/**************************************************************************
  Creates a Reply to a given mail. That means change the contents of
  "From:" to "To:", change the subject, quote the first text passage
  and remove the attachments. The mail is proccessed. The given mail should
  be processed to.
-
- Should use mail_compose_mail() to create the temporary mail
 **************************************************************************/
 struct mail *mail_create_reply(struct mail *mail)
 {
@@ -672,6 +755,7 @@ struct mail *mail_create_reply(struct mail *mail)
 		char *from = mail_find_header_contents(mail,"from");
 		char *to;
 		struct mail *text_mail;
+		struct phrase *phrase = phrase_find_best(from);
 
 		if (from)
 		{
@@ -798,10 +882,30 @@ struct mail *mail_create_reply(struct mail *mail)
 		if ((text_mail = mail_find_content_type(mail, "text", "plain")))
 		{
 			char *replied_text;
+			char *welcome_text;
 
-			/* city the text and assign it to the mail, it's enough to set
-         decoded_data */
+			if (phrase)
+			{
+				char *intro_text;
+				int welcome_text_len;
 
+				welcome_text = mail_create_string(phrase->reply_welcome,mail,NULL,NULL);
+				welcome_text_len = mystrlen(welcome_text);
+				intro_text = mail_create_string(phrase->reply_intro,mail,NULL,NULL);
+				if ((welcome_text = realloc(welcome_text,welcome_text_len+mystrlen(intro_text)+3)))
+				{
+					if (!welcome_text_len) welcome_text[0] = 0;
+					strcat(welcome_text,"\n");
+					if (intro_text)
+					{
+						strcat(welcome_text,intro_text);
+						strcat(welcome_text,"\n");
+						free(intro_text);
+					}
+				}
+			} else welcome_text = NULL;
+
+			/* city the text and assign it to the mail, it's enough to set decoded_data */
 			mail_decode(text_mail);
 
 			if (text_mail->decoded_data) replied_text = cite_text(text_mail->decoded_data,text_mail->decoded_len);
@@ -809,10 +913,33 @@ struct mail *mail_create_reply(struct mail *mail)
 
 			if (replied_text)
 			{
+				if (welcome_text)
+				{
+					char *closing_text;
+					char *buf;
+
+					if (phrase) closing_text = mail_create_string(phrase->reply_close, mail, NULL,NULL);
+					else closing_text = NULL;
+
+					if ((buf = (char*)malloc(strlen(replied_text)+strlen(welcome_text)+mystrlen(closing_text)+8)))
+					{
+						strcpy(buf,welcome_text);
+						strcat(buf,replied_text);
+						if (closing_text)
+						{
+							strcat(buf,"\n");
+							strcat(buf,closing_text);
+							free(closing_text);
+						}
+						free(replied_text);
+						replied_text = buf;
+					}
+				}
+
 				m->decoded_data = replied_text;
 				m->decoded_len = strlen(replied_text);
-/*				free(replied_text);*/
 			}
+			free(welcome_text);
 		}
 
 		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
@@ -1767,7 +1894,7 @@ int mail_create_html_header(struct mail *mail)
 
 
 		if (mail->subject) fprintf(fh,"<STRONG>Subject:</STRONG> %s<BR>",mail->subject);
-		fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_str(mail->seconds));
+		fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_long_str(mail->seconds));
 
 		if (replyto)
 		{
@@ -1808,14 +1935,55 @@ int mail_create_html_header(struct mail *mail)
 }
 
 /**************************************************************************
- Creates a string for a greeting/closing phrase. Mail maybe NULL
+ Returns the first name of a given person.
+ Also (will somewhen) performs addressbook look up to determine the
+ first name.
+ Returns a static buffer.
 **************************************************************************/
-char *mail_create_string(char *format, struct mail *mail)
+static char *get_first_name(char *realname, char *addr_spec)
+{
+	static char buf[256];
+	if (realname)
+	{
+		char *sp;
+		mystrlcpy(buf,realname,256);
+		if ((sp = strchr(buf,' '))) *sp = 0;
+	} else buf[0]=0;
+	return buf;
+}
+
+/**************************************************************************
+ Returns the last name of a given person.
+ Also (will somewhen) performs addressbook look up to determine the
+ first name.
+ Returns a static buffer.
+**************************************************************************/
+static char *get_last_name(char *realname, char *addr_spec)
+{
+	static char buf[256];
+	if (realname)
+	{
+		char *sp = strchr(realname,' ');
+		if (sp)
+		{
+			sp++;
+			mystrlcpy(buf,sp,256);
+		}
+	} else buf[0]=0;
+	return buf;
+}
+
+/**************************************************************************
+ Creates a string for a greeting/closing phrase. orig_mail, realname, addr_spec
+ might be NULL
+**************************************************************************/
+char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
+												 char *addr_spec)
 {
 	char *str;
 
 	if (!format) return NULL;
-	if ((str = (char*)malloc(1024)))
+	if ((str = (char*)malloc(2048)))
 	{
 		char *src = format;
 		char *dest = str;
@@ -1823,6 +1991,85 @@ char *mail_create_string(char *format, struct mail *mail)
 
 		while ((c = *src++))
 		{
+			if (c=='%')
+			{
+				if (*src == '%') { c = '%';src++;}
+				else
+				{
+					if (*src == 0) continue;
+					if (*src == 'a' && addr_spec)
+					{
+						strcpy(dest,addr_spec);
+						dest += strlen(addr_spec);
+						continue;
+					}
+					if (*src == 'r' && realname)
+					{
+						char *first_name = get_first_name(realname,addr_spec); /* returns a static buffer and never fails */
+						strcpy(dest,first_name);
+						dest += strlen(first_name);
+					}
+					if (*src == 'v' && realname)
+					{
+						char *last_name = get_last_name(realname,addr_spec); /* returns a static buffer and never fails */
+						strcpy(dest,last_name);
+						dest += strlen(last_name);
+					}
+
+					if (orig_mail)
+					{
+						char *from = mail_find_header_contents(orig_mail,"from");
+						if (from)
+						{
+							struct mailbox mb;
+							if (parse_mailbox(from,&mb))
+							{
+								if (*src == 'n')
+								{
+									char *last_name = get_last_name(mb.phrase,mb.addr_spec);
+									strcpy(dest,last_name);
+									dest += strlen(last_name);
+								}
+
+								if (*src == 'f')
+								{
+									char *first_name = get_first_name(mb.phrase,mb.addr_spec);
+									strcpy(dest,first_name);
+									dest += strlen(first_name);
+								}
+
+								if (*src == 'e' && mb.addr_spec)
+								{
+									strcpy(dest,mb.addr_spec);
+									dest += strlen(mb.addr_spec);
+								}
+							}
+						}
+
+						if (*src == 'd')
+						{
+							char *date = sm_get_date_str(orig_mail->seconds);
+							strcpy(dest,date);
+							dest += strlen(date);
+						}
+						if (*src == 't')
+						{
+							char *date = sm_get_time_str(orig_mail->seconds);
+							strcpy(dest,date);
+							dest += strlen(date);
+						}
+						if (*src == 's' && orig_mail->subject)
+						{
+							strcpy(dest,orig_mail->subject);
+							dest += strlen(orig_mail->subject);
+						}
+					}
+
+					src++;
+					continue;
+				}
+			}
+
 			if (c=='\\')
 			{
 				if (*src == '\\') { c = '\\';src++;}
@@ -1835,5 +2082,3 @@ char *mail_create_string(char *format, struct mail *mail)
 	}
 	return str;
 }
-
-

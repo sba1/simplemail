@@ -35,6 +35,7 @@
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "smtp.h"
 #include "support.h"
 #include "support_indep.h"
@@ -116,7 +117,7 @@ static int smtp_service_ready(struct smtp_connection *conn)
 {
 	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
 	{
-		tell_from_subtask("Service not ready.");
+		tell_from_subtask(N_("Service not ready."));
 		return 0;
 	}
 	return 1;
@@ -219,7 +220,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 			unsigned int size;
 
 			size = myfsize(fp);
-			thread_call_parent_function_sync(up_init_gauge_byte,1,size);
+			thread_call_parent_function_async(up_init_gauge_byte,1,size);
 
 
 			if(SMTP_SEND_MAIL == smtp_send_cmd(conn, "DATA", NULL))
@@ -269,12 +270,13 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_parent_function_sync(up_set_gauge_byte,1,bytes_send);
+						thread_call_parent_function_async(up_set_gauge_byte,1,bytes_send);
+/*
 						if(thread_call_parent_function_sync(up_checkabort,0))
 						{
 							rc = 0;
 							break;
-						}
+						}*/
 					}
 					last_bytes_send = bytes_send;
 
@@ -393,12 +395,13 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_parent_function_sync(up_set_gauge_byte,1,bytes_send);
+						thread_call_parent_function_async(up_set_gauge_byte,1,bytes_send);
+/*
 						if(thread_call_parent_function_sync(up_checkabort,0))
 						{
 							rc = 0;
 							break;
-						}
+						}*/
 					}
 					last_bytes_send = bytes_send;
 				}
@@ -411,7 +414,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 					}
 				}
 			} else {
-				tell_from_subtask("DATA-Cmd failed.");
+				tell_from_subtask(N_("DATA-Cmd failed."));
 			}
 
 			fclose(fp);
@@ -644,27 +647,27 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 
 	if (account->smtp->auth)
 	{
-		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
-			tell_from_subtask("EHLO failed");
+			tell_from_subtask(N_("EHLO failed"));
 			return 0;
 		}
-		thread_call_parent_function_sync(up_set_status,1,"Sending AUTH...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
-			tell_from_subtask("AUTH failed");
+			tell_from_subtask(N_("AUTH failed"));
 			return 0;
 		}
 	} else
 	{
-		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
-			thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
+			thread_call_parent_function_async(up_set_status,1,N_("Sending HELO..."));
 			if (!smtp_helo(conn,account))
 			{
-				tell_from_subtask("HELO failed");
+				tell_from_subtask(N_("HELO failed"));
 				return 0;
 			}
 		}
@@ -698,38 +701,38 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 
 	amm = count_mails(account,om);
 
-	thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
+	thread_call_parent_function_async(up_init_gauge_mail,1,amm);
 		
 	for (i=0,j=0;om[i] && j < amm;i++)
 	{
 		if (mystricmp(account->email,om[i]->from)) continue;
 
 		j++;
-		thread_call_parent_function_sync(up_set_gauge_mail,1,j); /* starts from 1 */
+		thread_call_parent_function_async(up_set_gauge_mail,1,j); /* starts from 1 */
 
-		thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending FROM..."));
 		if (!smtp_from(conn,account))
 		{
-			tell_from_subtask("FROM failed.");
+			tell_from_subtask(N_("FROM failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_sync(up_set_status,1,"Sending RCPT...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending RCPT..."));
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
-			tell_from_subtask("RCPT failed.");
+			tell_from_subtask(N_("RCPT failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
+		thread_call_parent_function_async(up_set_status,1,N_("Sending DATA..."));
 		if (!smtp_data(conn,account, om[i]->mailfile))
 		{
-			tell_from_subtask("DATA failed.");
+			tell_from_subtask(N_("DATA failed."));
 			return 0;
 		}
 
 		/* no error while mail sending, so it can be moved to the "Sent" folder now */
-		thread_call_parent_function_sync(callback_mail_has_been_sent,1,om[i]->mailfile);
+		thread_call_parent_function_async_string(callback_mail_has_been_sent,1,om[i]->mailfile);
 	}
 	return 1;
 }
@@ -760,16 +763,16 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 			if (count_mails(account,outmail)==0) continue;
 			
-			thread_call_parent_function_sync(up_set_title,1,account->smtp->name);
+			thread_call_parent_function_async_string(up_connect_to_server,1,account->smtp->name);
 
 			if (account->smtp->pop3_first)
 			{
 				/* Connect to the pop3 server first */
-				thread_call_parent_function_sync(up_set_status,1,"Log into POP3 Server....");
+				thread_call_parent_function_async(up_set_status,1,N_("Log into POP3 Server...."));
 				pop3_login_only(account->pop);
 			}
 
-			thread_call_parent_function_sync(up_set_status,1,"Connecting...");
+			thread_call_parent_function_async(up_set_status,1,N_("Connecting..."));
 
 			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,0)))
 			{
@@ -777,12 +780,12 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 				{
 					if (smtp_send_mails(&conn,account,outmail))
 					{
-						thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
+						thread_call_parent_function_async(up_set_status,1,N_("Sending QUIT..."));
 						rc = smtp_quit(&conn);
 					}
 				}
 	
-				thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
+				thread_call_parent_function_async(up_set_status,1,N_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			}
 		}
@@ -791,7 +794,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 	}
 	else
 	{
-		tell_from_subtask("Cannot open bsdsocket.library. Please start a TCP/IP-Stack.");
+		tell_from_subtask(N_("Cannot open bsdsocket.library. Please start a TCP/IP-Stack."));
 	}
 
 	return rc;
@@ -825,9 +828,9 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_sync(up_window_open,0);
+		thread_call_parent_function_async(up_window_open,0);
 		smtp_send_really(&copy_list,outmail);
-		thread_call_parent_function_sync(up_window_close,0);
+		thread_call_parent_function_async(up_window_close,0);
 	}
 
 /*

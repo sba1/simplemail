@@ -1416,5 +1416,6 @@ int addressbookwnd_set_active_alias(char *alias)
 *******************************************************************/
 void addressbookwnd_refresh(void)
 {
-	DoMethod(address_list, MUIM_AddressTreelist_Refresh, NULL);
+	DoMethod(address_list, MUIM_AddressEntryList_Refresh, NULL);
+	DoMethod(group_list, MUIM_AddressGroupList_Refresh);
 }

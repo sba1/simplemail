@@ -339,10 +339,7 @@ void delete_picturebutton_class(void)
 
 Object *MakePictureButton(char *label, char *filename)
 {
-	int control_char;
-	char *buf = strchr(label,'_');
-	if (buf) control_char = ToLower(*(buf+1));
-	else control_char = 0;
+	int control_char = GetControlChar(label);
 
 	return PictureButtonObject,
 		ButtonFrame,

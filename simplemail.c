@@ -969,6 +969,36 @@ void callback_folder_active(void)
 	}
 }
 
+/* count the signatures used in folders */
+int callback_folder_count_signatures(int def_signature)
+{
+	return folder_count_signatures(def_signature);
+}
+
+/* update the signatures used in folders */
+int callback_folder_update_signatures(int def_signature)
+{
+	return folder_update_signatures(def_signature);
+}
+
+/* update the signatures used in folders */
+void callback_folder_use_updated_signatures(void)
+{
+	folder_use_updated_signatures();
+}
+
+/* update the signatures used in folders */
+void callback_folder_save_updated_signatures(void)
+{
+	folder_save_updated_signatures();
+}
+
+/* undo the update of signatures used in folders */
+void callback_folder_undo_updated_signatures(void)
+{
+	folder_undo_updated_signatures();
+}
+
 /* a new mail should be added to a given folder */
 struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 {

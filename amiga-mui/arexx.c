@@ -33,6 +33,7 @@
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
 
+#include "addressbookwnd.h"
 #include "folder.h"
 #include "mail.h"
 
@@ -626,6 +627,25 @@ static void arexx_setfolder(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ ADDRGOTO Arexx Command
+*****************************************************************/
+static void arexx_addrgoto(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR alias;
+	} addrgoto_arg;
+	memset(&addrgoto_arg,0,sizeof(addrgoto_arg));
+
+	if ((arg_handle = ParseTemplate("ALIAS/A",args,&addrgoto_arg)))
+	{
+		addressbook_set_active(addrgoto_arg.alias);
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -655,6 +675,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);
 		else if (!Stricmp("MAILINFO",command.command)) arexx_mailinfo(rxmsg,command.args);
 		else if (!Stricmp("SETFOLDER",command.command)) arexx_setfolder(rxmsg,command.args);
+		else if (!Stricmp("ADDRGOTO",command.command)) arexx_addrgoto(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

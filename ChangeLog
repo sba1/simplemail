@@ -2,6 +2,19 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-09-17  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/addressentrylistclass.c: Fixed memory leak.
+	* amiga-mui/mainwnd.c: Added refresh of the Prev/Next button in a readwindow
+	  if the sorting change (fixes bug #947498).
+	* amiga-mui/messageviewclass.c: Added missing UnLock().
+	* amiga-mui/readwnd.c: Added refresh function for the Prev/Next button.
+	  Added missing UnLock()'s.
+	* amiga-mui/utf8stringclass.c: Fixed memory leak.
+	* indep-include/readwnd.h: Added prototype for new refresh function.
+	* simplemail.c: Added refresh of the Prev/Next button in a readwindow
+	  if something in the maillist changes (fixes bug #947498).
+	* tcp.c: Initilize buffer added for the DEBUG_OUTPUT.
+
 2004-08-26  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass.c: The MUI Bubblehelp will now show the message
 	  under the mousepointer (fixes bug #784813).

@@ -183,13 +183,11 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 		if (ti && ti->ti_Data) type = TYPE_MATCHLIST;
 	}
 
-	
-
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 /*					in_addressbook?TAG_IGNORE:MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default, */
 					MUIA_NListtree_Title, type != TYPE_MATCHLIST,
 					MUIA_NListtree_Format, ",,,",
-					MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
+					MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Off,
 					MUIA_NListtree_ShowTree, type == TYPE_ADDRESSBOOK,
 					MUIA_NList_ShowDropMarks, type == TYPE_ADDRESSBOOK,
 					TAG_MORE,msg->ops_AttrList)))

@@ -43,10 +43,28 @@ const static struct smily smily[] =
 {
 	{":)","smily_smile"},
 	{":-)","smily_smile"},
+	{"(-:","smily_smile"},
 	{":|","smily_neutral"},
 	{":-|","smily_neutral"},
 	{":(","smily_sad"},
-	{":-(","smily_sad"}
+	{":-(","smily_sad"},
+	{")-:","smily_sad"},
+	{";-)","smily_winky"},
+	{";)","smily_winky"},
+	{":-/","smily_undecided"},
+	{":/","smily_undecided"},
+	{":-D","smily_laugh"},
+	{":D","smily_laugh"},
+	{":-P","smily_nyah"},
+	{":P","smily_nyah"},
+	{":-O","smily_uhoh"},
+	{":-I","smily_neutral"},
+	{"8-)","smily_cool"},
+	{"%-)","smily_weird"},
+	{":*)","smily_crazy"},
+	{":'-(","smily_cry"},
+	{":*","smily_kiss"},
+	{":-e","smily_angry"}
 };
 
 

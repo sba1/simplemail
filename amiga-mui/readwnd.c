@@ -43,6 +43,8 @@
 #include "readwnd.h"
 
 static struct Hook header_display_hook;
+static struct Hook mime_construct_hook;
+static struct Hook mime_destruct_hook;
 static struct Hook mime_display_hook;
 
 #define MAX_READ_OPEN 10
@@ -69,21 +71,50 @@ STATIC ASM SAVEDS VOID header_display(register __a2 char **array, register __a1 
 	}
 }
 
+struct mime_entry
+{
+	struct mail *mail;
+	int save_button_no;
+};
 
-STATIC ASM SAVEDS VOID mime_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM SAVEDS struct mime_entry *mime_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+{
+	struct mime_entry *new_mime_entry = (struct mime_entry*)malloc(sizeof(struct mime_entry));
+	if (new_mime_entry)
+	{
+		struct mime_entry *mime_entry = (struct mime_entry*)msg->UserData;
+		if (mime_entry) *new_mime_entry = *mime_entry;
+		else memset(new_mime_entry,0,sizeof(struct mime_entry));
+	}
+	return new_mime_entry;
+}
+
+STATIC ASM SAVEDS VOID mime_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+{
+	struct mime_entry *mime_entry = (struct mime_entry*)msg->UserData;
+	free(mime_entry);
+}
+
+STATIC ASM SAVEDS VOID mime_display(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
-		struct mail *mail = (struct mail*)msg->TreeNode->tn_User;
+		struct mime_entry *mime_entry = (struct mime_entry*)msg->TreeNode->tn_User;
+		struct mail *mail = mime_entry->mail;
 		static char buf[256];
 		sprintf(buf,"%s/%s",mail->content_type,mail->content_subtype);
 		*msg->Array++ = buf;
-		*msg->Array = mail->content_transfer_encoding;
+		*msg->Array++ = mail->content_transfer_encoding;
+		if (mime_entry->save_button_no)
+		{
+			static char buf2[128];
+			sprintf(buf2, "\033o[%ld@%ld]", mime_entry->save_button_no,mime_entry->save_button_no-1);
+			*msg->Array++ = buf2;
+		} else *msg->Array++ = NULL;
 	} else
 	{
 	}
 }
-
 
 /******************************************************************
  inserts the headers of the mail into the given nlist object
@@ -149,13 +180,58 @@ static void insert_mime(Object *mime_tree, struct mail *mail, struct MUI_NListtr
 {
 	struct MUI_NListtree_TreeNode *treenode;
 	int i;
+	struct mime_entry mime_entry;
 
-	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(mime_tree,MUIM_NListtree_Insert,"",mail,listnode,MUIV_NListtree_Insert_PrevNode_Tail,(mail->num_multiparts==0)?0:(TNF_LIST|TNF_OPEN));
+	mime_entry.mail = mail;
+
+	if (mail->num_multiparts == 0)
+	{
+		/* Add a save button because the contents could be saved */
+		mime_entry.save_button_no = xget(mime_tree,MUIA_NList_Entries)+1;
+		DoMethod(mime_tree,MUIM_NList_UseImage,MakeButton("Save"),mime_entry.save_button_no,-1);
+	} else mime_entry.save_button_no = 0;
+
+	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(mime_tree,MUIM_NListtree_Insert,"",&mime_entry,listnode,MUIV_NListtree_Insert_PrevNode_Tail,(mail->num_multiparts==0)?0:(TNF_LIST|TNF_OPEN));
 	if (!treenode) return;
 
 	for (i=0;i<mail->num_multiparts;i++)
 	{
 		insert_mime(mime_tree,mail->multipart_array[i],treenode);
+	}
+}
+
+/******************************************************************
+ Save the contents of a given treenode
+*******************************************************************/
+static void save_contents(struct Read_Data *data, struct MUI_NListtree_TreeNode *treenode)
+{
+	if (!(treenode->tn_Flags & TNF_LIST))
+	{
+		if (MUI_AslRequest(data->file_req, NULL))
+		{
+			BPTR dlock;
+			STRPTR drawer = data->file_req->fr_Drawer;
+			struct mail *mail = ((struct mime_entry*)treenode->tn_User)->mail;
+
+			mail_decode(mail);
+
+			if ((dlock = Lock(drawer,ACCESS_READ)))
+			{
+				BPTR olock;
+				BPTR fh;
+
+				olock = CurrentDir(dlock);
+
+				if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
+				{
+					Write(fh,mail->decoded_data,mail->decoded_len);
+					Close(fh);
+				}
+
+				CurrentDir(olock);
+				UnLock(dlock);
+			}
+		}
 	}
 }
 
@@ -187,8 +263,27 @@ static void mime_tree_active(struct Read_Data **pdata)
 	{
 		if (!(treenode->tn_Flags & TNF_LIST))
 		{
-			mail_decode((struct mail*)treenode->tn_User);
-			insert_text(data,(struct mail*)treenode->tn_User);
+			mail_decode(((struct mime_entry*)treenode->tn_User)->mail);
+			insert_text(data,((struct mime_entry*)treenode->tn_User)->mail);
+		}
+	}
+}
+
+/******************************************************************
+ A button inside the mime tree has been clicked
+*******************************************************************/
+static void mime_tree_button(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	int pos = xget(data->mime_tree, MUIA_NList_ButtonClick);
+	if (pos >= 0)
+	{
+		struct MUI_NListtree_TreeNode *treenode;
+		DoMethod(data->mime_tree, MUIM_NList_GetEntry, pos, &treenode);
+
+		if (treenode)
+		{
+			save_contents(data,treenode);
 		}
 	}
 }
@@ -202,34 +297,7 @@ static void save_button_pressed(struct Read_Data **pdata)
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
 	if (treenode)
 	{
-		if (!(treenode->tn_Flags & TNF_LIST))
-		{
-			if (MUI_AslRequest(data->file_req, NULL))
-			{
-				BPTR dlock;
-				STRPTR drawer = data->file_req->fr_Drawer;
-				struct mail *mail = (struct mail*)treenode->tn_User;
-
-				mail_decode(mail);
-
-				if ((dlock = Lock(drawer,ACCESS_READ)))
-				{
-					BPTR olock;
-					BPTR fh;
-
-					olock = CurrentDir(dlock);
-
-					if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
-					{
-						Write(fh,mail->decoded_data,mail->decoded_len);
-						Close(fh);
-					}
-
-					CurrentDir(olock);
-					UnLock(dlock);
-				}
-			}
-		}
+		save_contents(data,treenode);
 	}
 }
 
@@ -245,6 +313,8 @@ void read_window_open(char *folder, char *filename)
 		if (!read_open[num]) break;
 
 	header_display_hook.h_Entry = (HOOKFUNC)header_display;
+	mime_construct_hook.h_Entry = (HOOKFUNC)mime_construct;
+	mime_destruct_hook.h_Entry = (HOOKFUNC)mime_destruct;
 	mime_display_hook.h_Entry = (HOOKFUNC)mime_display;
 
 	wnd = WindowObject,
@@ -264,9 +334,11 @@ void read_window_open(char *folder, char *filename)
 				Child, BalanceObject, End,
 				Child, NListviewObject,
 					MUIA_NListview_NList, mime_tree = NListtreeObject,
+						MUIA_NListtree_ConstructHook, &mime_construct_hook,
+						MUIA_NListtree_DestructHook, &mime_destruct_hook,
 						MUIA_NListtree_DisplayHook, &mime_display_hook,
 						MUIA_NListtree_DragDropSort, FALSE,
-						MUIA_NListtree_Format,",",
+						MUIA_NListtree_Format,",,",
 						End,
 					End,
 				End,
@@ -315,6 +387,7 @@ void read_window_open(char *folder, char *filename)
 					insert_headers(header_list,data->mail);
 					insert_mime(mime_tree,data->mail,MUIV_NListtree_Insert_ListNode_Root);
 					DoMethod(mime_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_active, data);
+					DoMethod(mime_tree, MUIM_Notify, MUIA_NList_ButtonClick, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_button, data);
 					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);

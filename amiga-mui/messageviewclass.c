@@ -748,6 +748,7 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 	messageview_cleanup_temporary_files(data);
 	mail_complete_free(data->mail); /* NULL safe */	
+	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 
 	return DoSuperMethodA(cl,obj,msg);
@@ -815,12 +816,14 @@ STATIC ULONG MessageView_DisplayMail(struct IClass *cl, Object *obj, struct MUIP
 	data->mail = NULL;
 
 	/* remove referencs */
+	if (data->ref_mail) mail_dereference(data->ref_mail);
 	data->ref_mail = NULL;
 	free(data->folder_path);
 
 	/* create resources */
 	data->folder_path = mystrdup(msg->folder_path);
-	data->ref_mail = msg->mail;
+	if ((data->ref_mail = msg->mail))
+		mail_reference(data->ref_mail);
 
 	if (data->show)
 	{

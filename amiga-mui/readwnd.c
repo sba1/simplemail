@@ -744,6 +744,7 @@ static void read_window_dispose(struct Read_Data **pdata)
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->folder_path) free(data->folder_path);
 	mail_complete_free(data->mail);
+	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
 }
@@ -939,7 +940,10 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 	if (!data->folder_path) return 0;
 
 	set(App, MUIA_Application_Sleep, TRUE);
+
+	if (data->ref_mail) mail_dereference(data->ref_mail);
 	data->ref_mail = mail;
+	mail_reference(mail);
 
 	set(data->move_button, MUIA_Disabled, FALSE);
 

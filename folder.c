@@ -782,6 +782,7 @@ static int folder_config_load(struct folder *f)
 				}
 				else if (!mystrnicmp("Type=",buf,5)) f->type = atoi(&buf[5]);
 				else if (!mystrnicmp("Special=",buf,8)) f->special = atoi(&buf[8]);
+				else if (!mystrnicmp("PrimarySort=",buf,12)) f->primary_sort = atoi(&buf[12]);
 			}
 		}
 		fclose(fh);
@@ -808,6 +809,7 @@ static void folder_config_save(struct folder *f)
 		fprintf(fh,"Name=%s\n",f->name);
 		fprintf(fh,"Type=%d\n",f->type);
 		fprintf(fh,"Special=%d\n",f->special);
+		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
 		fclose(fh);
 	}
 }

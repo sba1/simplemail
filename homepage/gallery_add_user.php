@@ -12,8 +12,6 @@
     echo("</center>");
   }
 
-  phpinfo();
-
   if ($name != "" && $email != "" && $userfile != "")
   {
     if (file_exists("gallery/users.csv")) $fh = fopen("gallery/users.csv","r+");
@@ -38,7 +36,32 @@
 
     if ($add_pic == 1)
     {
-      echo "jkjkaadadasdsadsddadasdsaadas";
+      $uh = fopen($userfile,"rb");
+      if ($uh)
+      {
+	$binary = fread($uh,$userfile_size);
+        $base64 = base64_encode($binary);
+        $boundary = "--=gzdsghkdgsdfjkdsjfk";
+
+	mail("sebauer@t-online.de","SimpleMail User Gallery",
+	     /* The mail's body */
+	     "--".$boundary."\n".
+             "Content-Type: text/plain\n".
+             "Content-transfer-encoding: base64\n".
+             "\n".base64_encode("Name: ".$name."\n".
+						"EMail: ".$email."\n")."\n".
+             "--".$boundary."\n".
+	     "Content-Disposition: attachment; filename=image".
+             "Content-Type: application/octet-stream\n".
+             "Content-transfer-encoding: base64\n".
+	     "\n".$base64."\n".
+	     "--".$boundary."--\n",
+             /* Additional headers */
+	     "MIME-Version: 1.0\n",
+	     "Content-Type: multipart/mixed; boundary=\"".$boundary."\"");
+
+	fclose($uh);
+      }
     }
   }
     

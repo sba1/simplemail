@@ -44,6 +44,7 @@ void callback_move_selected_mails(void);
 void callback_check_selected_folder_for_spam(void);
 void callback_move_spam_marked_mails(void);
 void callback_add_spam_folder_to_statistics(void);
+void callback_classify_selected_folder_as_ham(void);
 
 void callback_fetch_mails(void);
 void callback_check_single_account(int account_num);

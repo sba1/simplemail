@@ -805,6 +805,26 @@ void callback_add_spam_folder_to_statistics(void)
 	app_unbusy();
 }
 
+/* classifies all mails within the selected folder as ham */
+void callback_classify_selected_folder_as_ham(void)
+{
+	struct folder *folder;
+	void *handle = NULL;
+	struct mail *m;
+
+	if (!(folder = main_get_folder()))
+		return;
+
+	app_busy();
+
+	while ((m = folder_next_mail(folder,&handle)))
+	{
+		spam_feed_mail_as_ham(folder,m);
+	}
+
+	app_unbusy();
+}
+
 /* the currently selected mail should be changed */
 void callback_change_mail(void)
 {
@@ -1339,6 +1359,9 @@ void callback_selected_mails_are_ham(void)
 
 		if (spam_feed_mail_as_ham(folder,mail))
 		{
+			if (mail->flags & MAIL_FLAGS_AUTOSPAM)
+				folder_set_mail_flags(folder, mail, (mail->flags & (~MAIL_FLAGS_AUTOSPAM)));
+
 			if (mail_is_spam(mail))
 			{
 				folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);

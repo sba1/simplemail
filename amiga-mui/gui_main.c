@@ -111,6 +111,18 @@ static struct MsgPort *timer_port;
 static struct timerequest *timer_req;
 static ULONG timer_outstanding;
 
+/* New since V20 */
+static STRPTR UsedClasses[] =
+{
+	"NList.mcc",
+	"NListview.mcc",
+	"NListtree.mcc",
+	"TextEditor.mcc",
+	"BetterString.mcc",
+	"Popplaceholder.mcc",
+	NULL
+};
+
 /****************************************************************
  Sends a timer
 *****************************************************************/
@@ -257,6 +269,10 @@ int app_init(void)
 		MUIA_Application_Base,			"SIMPLEMAIL",
 		MUIA_Application_UseRexx, FALSE,
 		MUIA_Application_HelpFile, "PROGDIR:SimpleMail.guide",
+#ifdef MUIA_Application_UsedClasses
+		/* V20, no includes right now */
+		MUIA_Application_UsedClasses, UsedClasses,
+#endif
 	End;
 
 	SM_LEAVE;

@@ -2888,11 +2888,10 @@ void folder_create_imap(void)
 								}
 							}
 						}
+						closedir(dfd);
 					}
 					free(st);
 				}
-
-				closedir(dfd);
 			}
 
 			folders_unlock();

@@ -60,9 +60,10 @@ void dl_init_gauge_mail(int amm)
 	
 	sprintf(str, _("Mail %%ld/%d"), amm);
 
-	set(win_dl, MUIA_transwnd_Gauge1_Str, str);
-	set(win_dl, MUIA_transwnd_Gauge1_Max, amm);
-	set(win_dl, MUIA_transwnd_Gauge1_Val, 0);
+	SetAttrs(win_dl, MUIA_transwnd_Gauge1_Str, str,
+									 MUIA_transwnd_Gauge1_Max, amm,
+									 MUIA_transwnd_Gauge1_Val, 0,
+									 TAG_DONE);
 }
 
 void dl_set_gauge_mail(int current)

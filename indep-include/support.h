@@ -34,6 +34,7 @@ int sm_request(char *title, char *text, char *gadgets, ...);
 char *sm_request_string(char *title, char *text, char *contents, int secret);
 int sm_request_login(char *text, char *login, char *password, int len);
 char *sm_request_pgp_id(char *text);
+void sm_play_sound(char *filename);
 
 char *sm_getenv(char *name);
 void sm_setenv(char *name, char *value);

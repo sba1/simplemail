@@ -28,9 +28,11 @@
 
 #include <dos/dos.h>
 #include <libraries/mui.h>
+#include <datatypes/soundclass.h>
 #include "simplehtml_mcc.h"
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
+#include <proto/datatypes.h>
 #include <proto/dos.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
@@ -161,6 +163,33 @@ static void timer_handle(void)
 	if (!timer_outstanding) timer_send(1, 0);
 }
 
+static Object *sound_obj;
+
+/****************************************************************
+ Play a sound (from support.c)
+*****************************************************************/
+void sm_play_sound(char *filename)
+{
+	if (sound_obj) DisposeObject(sound_obj);
+
+	if ((sound_obj = NewDTObject(filename,
+			DTA_GroupID, GID_SOUND,
+			TAG_DONE)))
+	{
+		struct dtTrigger dtt;
+
+		/* Fill out the method message */
+		dtt.MethodID     = DTM_TRIGGER;
+		dtt.dtt_GInfo    = NULL;
+		dtt.dtt_Function = STM_PLAY;
+		dtt.dtt_Data     = NULL;
+
+		/* Play the sound */
+		DoMethodA(sound_obj, (Msg)&dtt);
+	}
+}
+
+
 /****************************************************************
  The main loop
 *****************************************************************/
@@ -248,6 +277,9 @@ void all_del(void)
 
 			arexx_cleanup();
 			timer_free();
+
+			/* free the sound object */
+			if (sound_obj) DisposeObject(sound_obj);
 
 			CloseLibrary(RexxSysBase);
 			RexxSysBase = NULL;

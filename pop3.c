@@ -624,6 +624,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	if (open_socket_lib())
 	{
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
+		int nummails = 0; /* number of downloaded e-mails */
 
 		for( ;server; server = (struct pop3_server*)node_next(&server->node))
 		{
@@ -631,6 +632,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 
 			thread_call_parent_function_async_string(dl_connect_to_server,1,server->name);
 
+			/* Ask for the login/password */
 			if (server->ask)
 			{
 				char *password = malloc(512);
@@ -702,6 +704,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										{
 											uidl_add(&uidl,&mail_array[i]);
 										}
+										nummails++;
 									}
 									
 									if (del)
@@ -728,6 +731,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 			thread_call_parent_function_sync(dl_clear,0);
 		}
 		close_socket_lib();
+
+		thread_call_parent_function_async(callback_number_of_mails_downloaded,1,nummails);
 	}
 	else
 	{

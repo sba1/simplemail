@@ -377,6 +377,15 @@ void callback_new_mail_arrived_filename(char *filename)
 	chdir(buf);
 }
 
+/* After downloading this function is called */
+void callback_number_of_mails_downloaded(int num)
+{
+	if (num && user.config.receive_sound)
+	{
+		sm_play_sound(user.config.receive_sound_file);
+	}
+}
+
 /* a new mail has been written */
 void callback_new_mail_written(struct mail *mail)
 {

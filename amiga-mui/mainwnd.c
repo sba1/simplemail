@@ -1299,5 +1299,9 @@ void main_set_status_text(char *txt)
 *******************************************************************/
 void main_display_active_mail(void)
 {
-	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, main_get_active_mail(), main_get_folder_drawer());
+	struct mail *m = main_get_active_mail();
+	struct folder *f = main_get_folder_drawer();
+
+	if (f && m)
+		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
 }

@@ -45,6 +45,7 @@ static struct Read_Data *read_open[MAX_READ_OPEN];
 struct Read_Data
 {
 	GtkWidget *wnd;
+	GtkWidget *toolbar;
 	GtkWidget *text_view;
 	GtkWidget *text_scrolled_window;
 
@@ -522,6 +523,8 @@ int read_window_open(char *folder, struct mail *mail)
 
 	if ((data = (struct Read_Data*)malloc(sizeof(struct Read_Data))))
 	{
+		GtkWidget *vbox;
+
 		memset(data,0,sizeof(struct Read_Data));
 		data->folder_path = mystrdup(folder);
 
@@ -534,13 +537,28 @@ int read_window_open(char *folder, struct mail *mail)
 		gtk_window_set_position(GTK_WINDOW(data->wnd),GTK_WIN_POS_CENTER);
 		gtk_signal_connect(GTK_OBJECT(data->wnd), "destroy",GTK_SIGNAL_FUNC (read_window_dispose), data);
 
+		vbox = gtk_vbox_new(0,4);
+		gtk_container_add(GTK_CONTAINER(data->wnd), vbox);
+
+		data->toolbar = gtk_toolbar_new();
+		gtk_box_pack_start(GTK_BOX(vbox), data->toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
+		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Prev", "", NULL /* private TT */, create_pixmap(data->wnd,"MailPrev.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Next", "", NULL /* private TT */, create_pixmap(data->wnd,"MailNext.xpm"), NULL/* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_space(GTK_TOOLBAR(data->toolbar));
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Save", "", NULL /* private TT */, create_pixmap(data->wnd,"MailSave.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Print", "", NULL /* private TT */, create_pixmap(data->wnd,"Print.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_space(GTK_TOOLBAR(data->toolbar));
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Delete", "", NULL /* private TT */, create_pixmap(data->wnd,"MailDelete.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Reply", "", NULL /* private TT */, create_pixmap(data->wnd,"MailReply.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Forward", "", NULL /* private TT */, create_pixmap(data->wnd,"MailForward.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+
 		data->text_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->text_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
 
 		data->text_view = gtk_text_view_new();
 		g_object_set(data->text_view, "editable", FALSE, NULL);
 		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
-		gtk_container_add(GTK_CONTAINER(data->wnd), data->text_scrolled_window);
+		gtk_box_pack_start(GTK_BOX(vbox), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
 
 		read_window_display_mail(data,mail);

@@ -118,6 +118,9 @@ struct config
 	/* charset */
 	struct codeset *default_codeset; /* the user default codeset, might be NULL */
 
+	/* appicon */
+	char *appicon_label; /* the label to be shown with the appicon */
+
 	/* hidden */
 	int set_all_stati;          /* expand the context menu of the maillisttree to set all stati */
 	int min_classified_mails;   /* number of minimum spam/ham classification to invoke the auto spamcheck */

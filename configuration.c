@@ -141,6 +141,8 @@ void init_config(void)
   user.config.spam_mark_moved = 1;
   user.config.spam_addrbook_is_white = 1;
 
+	user.config.appicon_label = mystrdup("T:%t N:%n U:%u");
+
 	/* defaults for Hidden options */
 	user.config.set_all_stati = 0;
 	user.config.min_classified_mails = 500;
@@ -194,6 +196,8 @@ int load_config(void)
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Charset")))
 							user.config.default_codeset = codesets_find(result);
+						if ((result = get_config_item(buf,"AppIconLabel")))
+							user.config.appicon_label = mystrdup(result);
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
@@ -527,6 +531,7 @@ void save_config(void)
 
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 			if (user.config.default_codeset) fprintf(fh,"Charset=%s\n",user.config.default_codeset->name);
+			if (user.config.appicon_label) fprintf(fh,"AppIconLabel=%s\n",user.config.appicon_label);
 
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);

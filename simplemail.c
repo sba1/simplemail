@@ -431,6 +431,16 @@ void callback_write_mail_to(struct addressbook_entry *address)
 	if (ca.to_str) free(ca.to_str);
 }
 
+/* a new mail should be written to a given address string */
+void callback_write_mail_to_str(char *str)
+{
+	struct compose_args ca;
+	memset(&ca,0,sizeof(ca));
+	ca.to_str = str;
+	ca.action = COMPOSE_ACTION_NEW;
+	compose_window_open(&ca);
+}
+
 /* edit folder settings */
 void callback_edit_folder(void)
 {

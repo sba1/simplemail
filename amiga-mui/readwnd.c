@@ -404,6 +404,20 @@ static void forward_button_pressed(struct Read_Data **pdata)
 }
 
 /******************************************************************
+ A an uri has been clicked
+*******************************************************************/
+static void uri_clicked(void **msg)
+{
+	struct Read_Data *data = (struct Read_Data*)msg[0];
+	char *uri = (char*)msg[1];
+
+	if (!mystrnicmp(uri,"mailto:",7))
+	{
+		callback_write_mail_to_str(uri+7);
+	}
+}
+
+/******************************************************************
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
  otherwise 0.
 *******************************************************************/
@@ -611,6 +625,8 @@ void read_window_open(char *folder, struct mail *mail)
 					MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
 					MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
 					TAG_DONE);
+
+			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, uri_clicked, data, MUIV_TriggerValue);
 
 			set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
 			DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);

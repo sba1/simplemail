@@ -44,6 +44,7 @@ void callback_config(void);
 void callback_folder_active(void);
 
 void callback_write_mail_to(struct addressbook_entry *address);
+void callback_write_mail_to_str(char *str);
 
 void callback_edit_folder(void);
 void callback_change_folder_attrs(void);

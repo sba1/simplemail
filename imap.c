@@ -32,6 +32,7 @@
 #include "support_indep.h"
 #include "tcp.h"
 
+#include "support.h"
 #include "tcpip.h"
 
 #include "imap.h"
@@ -99,7 +100,7 @@ int imap_dl_headers(struct list *imap_list)
 					puts(line);
 					line = imap_get_result(line,buf,sizeof(buf));
 					line = imap_get_result(line,buf,sizeof(buf));
-					if (!stricmp(buf,"OK"))
+					if (!mystricmp(buf,"OK"))
 					{
 						ok = 1;
 						break;
@@ -124,10 +125,10 @@ int imap_dl_headers(struct list *imap_list)
 					{
 						puts(line);
 						line = imap_get_result(line,buf,sizeof(buf));
-						if (!stricmp(buf,tag))
+						if (!mystricmp(buf,tag))
 						{
 							line = imap_get_result(line,buf,sizeof(buf));
-							if (!stricmp(buf,"OK"))
+							if (!mystricmp(buf,"OK"))
 							{
 								puts("Login successful\n");
 								ok = 1;
@@ -149,10 +150,10 @@ int imap_dl_headers(struct list *imap_list)
 						{
 							puts(line);
 							line = imap_get_result(line,buf,sizeof(buf));
-							if (!stricmp(buf,tag))
+							if (!mystricmp(buf,tag))
 							{
 								line = imap_get_result(line,buf,sizeof(buf));
-								if (!stricmp(buf,"OK"))
+								if (!mystricmp(buf,"OK"))
 								{
 									puts("List successful\n");
 									ok = 1;

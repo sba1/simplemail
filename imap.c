@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "account.h"
 #include "codesets.h"
 #include "mail.h"
 #include "folder.h"
@@ -1084,17 +1085,53 @@ void imap_free(struct imap_server *imap)
 /***** IMAP Thread *****/
 
 static thread_t imap_thread;
+static struct connection *imap_connection;
+static int imap_socket_lib_open;
 
 static void imap_thread_entry(void *test)
 {
 	if (thread_parent_task_can_contiue())
 	{
 		thread_wait(NULL,NULL,0);
+
+		if (imap_connection)
+		{
+			tcp_disconnect(imap_connection);
+			imap_connection = NULL;
+		}
+
+		if (imap_socket_lib_open)
+		{
+			close_socket_lib();
+			imap_socket_lib_open = 0;
+		}
 	}
+}
+
+static int imap_thread_connect_to_server(struct imap_server *server)
+{
+	if (!imap_socket_lib_open)
+	{
+		 imap_socket_lib_open = open_socket_lib();
+	}
+
+	if (!imap_socket_lib_open) return 0;
+
+	if (imap_connection)
+		tcp_disconnect(imap_connection);
+
+	if ((imap_connection = tcp_connect(server->name, server->port, server->ssl)))
+	{
+		return 1;
+	}
+	return 0;
 }
 
 void imap_thread_connect(struct folder *folder)
 {
+	struct imap_server *server = account_find_imap_server_by_folder(folder);
+	if (!server) return;
+
 	if (!imap_thread)
 	{
 		imap_thread = thread_add("SimpleMail - IMAP thread", THREAD_FUNCTION(&imap_thread_entry),NULL);
@@ -1102,6 +1139,7 @@ void imap_thread_connect(struct folder *folder)
 
 	if (imap_thread)
 	{
+		thread_call_function_sync(imap_thread, imap_thread_connect_to_server,1,server);
 	}
 }
 

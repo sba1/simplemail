@@ -495,6 +495,70 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 #endif
 }
 
+/**************************************************************************
+ Call a function in the context of the given thread synchron
+ 
+ NOTE: Should call thread_handle()
+**************************************************************************/
+int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+{
+#ifndef DONT_USE_THREADS
+	va_list argptr;
+	int rc = 0;
+	struct ThreadMessage *tmsg;
+
+	va_start(argptr,argcount);
+
+	if ((tmsg = thread_create_message(function, argcount, argptr)))
+	{
+		struct MsgPort *subthread_port = tmsg->msg.mn_ReplyPort;
+		int ready = 0;
+
+		PutMsg(thread->thread_port,&tmsg->msg);
+
+		while (!ready)
+		{
+			struct Message *msg;
+			WaitPort(subthread_port);
+
+			while ((msg = GetMsg(subthread_port)))
+			{
+				if (msg == &tmsg->msg) ready = 1;
+			}
+		}
+
+		rc = tmsg->result;
+		FreeVec(tmsg);
+	}
+
+	va_end (arg_ptr);
+	return rc;
+#else
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+#endif
+}
+
+
 struct timer
 {
 	struct MsgPort *timer_port;

@@ -1494,7 +1494,7 @@ static void init_config(void)
 	 		End,
 	 	Child, HorizLineObject,
 	 	Child, HGroup,
-	 		Child, save_button = MakeButton(_("_Save")),
+	 		Child, save_button = MakeButton(Q_("?config:_Save")),
 	 		Child, use_button = MakeButton(_("_Use")),
 	 		Child, cancel_button = MakeButton(_("_Cancel")),
 	 		End,

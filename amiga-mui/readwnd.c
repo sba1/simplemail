@@ -827,7 +827,7 @@ void read_window_open(char *folder, struct mail *mail)
 	Object *attachments_group;
 	Object *datatype_datatypes;
 	Object *text_listview;
-	Object *prev_button, *next_button, *save_button, *delete_button, *reply_button, *forward_button;
+	Object *prev_button, *next_button, *print_button, *save_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
 	Object *read_menu;
 	int num;
@@ -893,9 +893,10 @@ void read_window_open(char *folder, struct mail *mail)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 50,
+						MUIA_Weight, 100,
 /*						Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),*/
 						Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/MailSave"),
+						Child, print_button = MakePictureButton(_("Pr_int"),"PROGDIR:Images/Print"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
@@ -1010,6 +1011,7 @@ void read_window_open(char *folder, struct mail *mail)
 			DoMethod(prev_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
 			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
 			DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
+			DoMethod(print_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
 			DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
 			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);

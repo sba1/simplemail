@@ -46,6 +46,9 @@
 #include "muistuff.h"
 #include "utf8stringclass.h"
 
+/* #define MYDEBUG 1 */
+#include "debug.h"
+
 /******************************************************************
  Returns a malloced() sting for the address start (this what should
  be completed)
@@ -54,6 +57,9 @@ static char *get_address_start(char *contents, int pos)
 {
 	char *buf;
 	int start_pos = pos;
+
+	if (start_pos && contents[start_pos] == ',')
+		start_pos--;
 
 	while (start_pos)
 	{
@@ -64,6 +70,9 @@ static char *get_address_start(char *contents, int pos)
 		}
 		start_pos--;
 	}
+
+	while (start_pos < pos && contents[start_pos]==' ')
+		start_pos++;
 
 	buf = malloc(pos - start_pos + 1);
 	if (!buf) return NULL;
@@ -244,8 +253,8 @@ STATIC ULONG AddressString_GoActive(struct IClass *cl, Object *obj,Msg msg)
 STATIC ULONG AddressString_GoInactive(struct IClass *cl, Object *obj,Msg msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	AddressString_CloseList(cl,obj);
 	DoMethod(obj, MUIM_KillNotify, MUIA_String_Contents);
+	AddressString_CloseList(cl,obj);
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
 	set(obj, MUIA_BetterString_SelectSize, 0);
 	return DoSuperMethodA(cl, obj, msg);
@@ -273,13 +282,12 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
     if (code == ',')
     {
-			char *contents = (char*)xget(obj,MUIA_UTF8String_Contents);
-			int buf_pos =  utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
-    	int selectsize = utf8realpos(contents+buf_pos,xget(obj,MUIA_BetterString_SelectSize));
+			int buf_pos = xget(obj,MUIA_String_BufferPos);
+    	int selectsize = xget(obj,MUIA_BetterString_SelectSize);
 
-			if (selectsize && selectsize == strlen(contents + buf_pos))
+			if (selectsize)
 			{
-				SetAttrs(obj,MUIA_String_BufferPos, strlen(contents),
+				SetAttrs(obj,MUIA_String_BufferPos, buf_pos + selectsize,
 										 MUIA_BetterString_SelectSize, 0,
 										 TAG_DONE);
 			}
@@ -295,18 +303,23 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
 			if (strlen(contents))
 			{
-				char *comma = strrchr(contents,',');
-				char *completed = NULL;
+				int buf_pos = utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
+				char *addr_start;
 
-				if (comma)
+				D(bug("get_address_start(%s,%ld)\n",contents,buf_pos));
+				
+				if ((addr_start = get_address_start(contents,buf_pos)))
 				{
-					while (*++comma == ' ');
-					if (strlen(comma)) completed = addressbook_complete_address(comma);
-				} else completed = addressbook_complete_address(contents);
+					char *completed;
 
-				if (completed)
-				{
-					DoMethod(obj, MUIM_AddressString_Complete, completed);
+					D(bug("addressbook_complete_address(%s)\n",addr_start));
+
+					if ((completed = addressbook_complete_address(addr_start)))
+					{
+						D(bug("Calling MUIM_AddressString_Complete %s\n",completed));
+						DoMethod(obj, MUIM_AddressString_Complete, completed);
+					}
+					free(addr_start);
 				}
 			}
 			return MUI_EventHandlerRC_Eat;
@@ -390,14 +403,21 @@ STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_
 	char *completed = msg->text;
 	char *newcontents;
 
-	if ((newcontents = (char*)malloc(strlen(contents)+strlen(completed)+1)))
+	int len = strlen(contents) + strlen(completed) + 1;
+
+	if ((newcontents = (char*)malloc(len+100)))
 	{
-		strcpy(newcontents, contents);
+		char *comma;
+		strncpy(newcontents, contents, buf_pos);
 		strcpy(&newcontents[buf_pos], completed);
+
+		comma = strchr(&contents[buf_pos],',');
+		if (comma) strcpy(&newcontents[buf_pos+strlen(completed)],comma);
+
 		SetAttrs(obj,
 					MUIA_UTF8String_Contents, newcontents,
 					MUIA_String_BufferPos, buf_pos,
-					MUIA_BetterString_SelectSize, utf8len(newcontents) - buf_pos,
+					MUIA_BetterString_SelectSize, utf8len(completed),
 					MUIA_NoNotify, TRUE,
 					TAG_DONE);
 		free(newcontents);

@@ -78,12 +78,19 @@ void status_init(int type)
 }
 
 /******************************************************************
- Opens the status window. Type indicates the type of the status
- window
+ Opens the status window. 
 *******************************************************************/
 int status_open(void)
 {
 	return statuswnd_open(1);
+}
+
+/******************************************************************
+ Opens the status window but doesn't not activate it.
+*******************************************************************/
+int status_open_notactivated(void)
+{
+	return statuswnd_open(0);
 }
 
 /******************************************************************

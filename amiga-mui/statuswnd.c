@@ -63,8 +63,7 @@ int statuswnd_open(int active)
 		status_wnd = transwndObject,
 			MUIA_Window_ID,	MAKE_ID('S','T','A','T'),
 			MUIA_Window_Title, status_title,
-			
-		End;
+			End;
 
 		if (status_wnd)
 		{
@@ -77,7 +76,10 @@ int statuswnd_open(int active)
 	
 	if (status_wnd)
 	{
-		set(status_wnd, MUIA_Window_Open, TRUE);
+		SetAttrs(status_wnd,
+				MUIA_Window_Activate, active,
+				MUIA_Window_Open, TRUE,
+				TAG_DONE);
 		return 1;
 	}
 	return 0;

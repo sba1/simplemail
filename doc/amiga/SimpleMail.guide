@@ -1,14 +1,14 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.6 (24.12.2002)
+@$VER: SimpleMail.guide 0.7 (24.12.2003)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <sebauer@t-online.de>
 @INDEX "Index"
 
 @NODE "Main" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.18 (public BETA)
+                         SimpleMail 0.21 (public BETA)
                           (not completly finished yet)
 
-                © 2000-2002 by Hynek Schlawack & Sebastian Bauer
+                © 2000-2003 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 
@@ -19,6 +19,7 @@
 
      @{" Installation    " LINK "INST" 0} - Installing SimpleMail on your hard drive
      @{" Quickstart      " LINK "TUTO" 0} - Getting SimpleMail started in 5 minutes
+     @{" Spam            " LINK "SPAM" 0} - SimpleMail can identify undesired mails
 
      @{" Main Window     " LINK "MA_W" 0} - How to receive and send mail, copy it, etc.
      @{" Configuration   " LINK "CO_W" 0} - Configuring SimpleMail to your tastes
@@ -292,6 +293,100 @@ know the basic operation of SimpleMail. Keep reading the following chapters
 for further information about the single topics related to SimpleMail.
 
 @ENDNODE
+
+@NODE "SPAM" "Spam"
+@SMARTWRAP
+@{b}Introduction@{ub}@{LINE}
+~~~~~~~~~~~~@{LINE}
+Most people commuincating via email also receive emails with very dusky
+content. It's not only that fetching those mails cost bandwidth and resulting in time
+to download them, but also very much time to sort them out manually. To make
+the life a little bit easier SimpleMail provides for the latter thing
+some useful and quite powerful tools.
+
+
+@{b}Terms@{ub}@{LINE}
+~~~~~@{LINE}
+SimpleMail uses some common terms describing the value of an email. Emails
+which aren't desired because of there dusty contents are called @{i}Spam@{ui} mails.
+Within the @{" Main Window " link "MA_W"} such mails contains a special status image.
+Mails which are valualbe for you and hence you actually want to read are called @{i}Ham@{ui} mails.
+
+
+@{b}Statstical Spam identification@{ub}@{LINE}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@{LINE}
+This kind of filtering is the center and the most powerful spam identification
+feature of SimpleMail. However to work properly you have to setup it correctly.
+
+But setting up the identifaction is not very complicated. Basically you have to tell
+SimpleMail which mails are spam and which mails are ham. With help of this procedure
+SimpleMail learns which kind mails you consider as spam or which as ham. For example
+spam mails often contains charateristic words. SimpleMail will find out which these
+are.
+
+Once SimpleMail has gathered enough information it is now able on request to go through
+the contents of new mails and hopfully will identify its spamness correctly.
+
+
+@{b}Black and White Lists@{ub}@{LINE}
+~~~~~~~~~~~~~~~~~~~~~@{LINE}
+Depending of the size of an email the processing might take very long. Also you might
+know some email addresses from which owner you know that they surly produces contents which you consider
+as spam. On the other hand there you also have many thrusted friends of and you know that no
+spam mails are sent by them.
+
+For this purpose SimpleMail knows about the concept of black and white lists. These lists
+can be manipluated by you. Usually you add known spaming email addresses to black lists.
+As soon as an email you want to process is originated from such a mail adress its contents
+is completly ignored. Instead the mail is marked as spam. The same counts for addresses within
+the white list, except that the mails orginated from one of these addresses are never
+marked as spam. Additionally SimpleMail knows also about a option that all addresses within your
+address book are seen as they were in your white list.
+
+
+@{b}And how can I use these functions now?@{ub}@{LINE}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@{LINE}
+Simliar to the "Incoming", "Outgoing" and "Sent" folder SimpleMail always presents also a "Spam"
+folder. This is the folder were all mails which you consider as spam should be placed. Only mails
+in this folder count really to the spam statistics. So if you want to tell SimpleMail about spam mails
+you have to move these mails somehow into this folder.
+
+The first way to do it is to move mails manually to this folder, eighter by drag and drop or by
+selecting the "Move" operation from the menu or via the buttons. However as only spam mail are allowed inside this folder,
+you have to mark the mails as spam before. This can be by selecting the mails and setting the
+mail status to spam. SimpleMail also supports the possibility to change the status of all mails
+before they are moved to the folder automatically. This option can be set within SimpleMail's
+@{" Configuration " link "CO_W"} on the Spam page. The option is on by default.
+
+The second way is to press the "Isolate" button within the @{" Main Window " link MA_W}. All mails which
+are marked as spam are moved then into the spam folder.
+
+Teaching SimpleMail about ham mails can be done via the "Folder/Classify all Mails as Ham" menu entry.
+Note that selecting this entry classifies all mails within the current folder as ham (except those
+already marked as spam). So you must be sure that no spam mail has been not marked as such.
+
+Alternativly you can select the mails and use the context menu. This is also a way to revert a wrong
+classified mail.
+
+If you have classified about 500 emails for every class you can now try to issue SimpleMail to do
+a spam check. This can be done with the "Spam" button within the @{" Main Window " link "MA_W"}.
+Hopefully it works properly otherwise you should revert SimpleMail decision via the context menu.
+After all mails are classified correctly you should press the already know "Isolate" button which moves
+the spam mails into the folder where they belongs to.
+
+To setup the black and white lists you have to go to the @{" Configuration " link "CO_W"} onto
+the "Spam" page. This is also the place where you can switch on the "auto spam check" feature. That
+option activated means SimpleMail now does a spam check on every new mail you have been finished to
+download. All what you need to do is to press the "Isolate" button. But don't forget to check at least quickly
+that SimpleMail hasn't identfied accidently a ham mail as spam mail. That's the reason that this
+step has be done still manually. Although if you have setup the filter properly it is always possible.
+It's always better to be safe then sorry.
+
+In case you think there is something wrong with the spam identification you also have the possibility
+to separatly reset the statistics within the very same window.
+
+@ENDNODE
+
 @NODE "MA_W" "Main window"
 
 MAIN WINDOW

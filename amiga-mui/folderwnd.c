@@ -41,9 +41,14 @@
 #include "muistuff.h"
 
 static Object *folder_wnd;
+static Object *folder_group;
+static Object *name_label;
 static Object *name_string;
+static Object *path_label;
 static Object *path_string;
+static Object *type_label;
 static Object *type_cycle;
+static int group_mode;
 
 struct folder *changed_folder;
 
@@ -86,10 +91,9 @@ static void init_folder(void)
 
 	folder_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
-		MUIA_Window_Title, "SimpleMail - Edit folder",
 		WindowContents, VGroup,
-			Child, ColGroup(2),
-				Child, MakeLabel("N_ame"),
+			Child, folder_group = ColGroup(2),
+				Child, name_label = MakeLabel("N_ame"),
 				Child, name_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
@@ -97,13 +101,13 @@ static void init_folder(void)
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 
-				Child, MakeLabel("Path"),
+				Child, path_label = MakeLabel("Path"),
 				Child, path_string = BetterStringObject,
 					TextFrame,
 					MUIA_BetterString_NoInput, TRUE,
 					End,
 
-				Child, MakeLabel("_Type"),
+				Child, type_label = MakeLabel("_Type"),
 				Child, type_cycle = MakeCycle("_Type",type_array),
 				End,
 
@@ -134,10 +138,39 @@ void folder_edit(struct folder *f)
 		if (!folder_wnd) return;
 	}
 
+	if (f->special == FOLDER_SPECIAL_GROUP)
+	{
+		set(folder_wnd,MUIA_Window_Title,"SimpleMail - Edit folder group");
+		if (!group_mode)
+		{
+			DoMethod(folder_group,MUIM_Group_InitChange);
+			DoMethod(folder_group, OM_REMMEMBER, path_label);
+			DoMethod(folder_group, OM_REMMEMBER, path_string);
+			DoMethod(folder_group, OM_REMMEMBER, type_label);
+			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
+			group_mode = 1;
+			DoMethod(folder_group,MUIM_Group_ExitChange);
+		}
+	} else
+	{
+		set(folder_wnd,MUIA_Window_Title, "SimpleMail - Edit folder");
+		if (group_mode)
+		{
+			DoMethod(folder_group,MUIM_Group_InitChange);
+			DoMethod(folder_group, OM_ADDMEMBER, path_label);
+			DoMethod(folder_group, OM_ADDMEMBER, path_string);
+			DoMethod(folder_group, OM_ADDMEMBER, type_label);
+			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
+			group_mode = 0;
+			DoMethod(folder_group,MUIM_Group_ExitChange);
+		}
+	}
+
 	set(name_string, MUIA_String_Contents, f->name);
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	changed_folder = f;
+	set(folder_wnd, MUIA_Window_ActiveObject, name_string);
 	set(folder_wnd, MUIA_Window_Open, TRUE);
 }
 

@@ -231,7 +231,7 @@ static void save_contents(struct MessageView_Data *data, struct mail *mail)
 /******************************************************************
  Open the contents of an icon (requires version 44 of the os)
 *******************************************************************/
-static void open_contents(struct MessageView_Data *data, struct mail *mail)
+static void open_contents(struct MessageView_Data *data, struct mail *mail_part)
 {
 	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
 	{
@@ -241,10 +241,10 @@ static void open_contents(struct MessageView_Data *data, struct mail *mail)
 		char filename[100];
 
 		/* Write out the file, create an icon, start it via wb.library */
-		if (mail->content_name)
+		if (mail_part->content_name)
 		{
 			strcpy(filename,"T:");
-			mystrlcpy(&filename[2],mail->filename,sizeof(filename));
+			mystrlcpy(&filename[2],data->mail->filename,sizeof(filename));
 
 			if ((newdir = CreateDir(filename)))
 				UnLock(newdir);
@@ -253,19 +253,19 @@ static void open_contents(struct MessageView_Data *data, struct mail *mail)
 			{
 				olddir = CurrentDir(newdir);
 
-				if ((fh = Open(mail->content_name,MODE_NEWFILE)))
+				if ((fh = Open(mail_part->content_name,MODE_NEWFILE)))
 				{
 					struct DiskObject *dobj;
 					void *cont;
 					int cont_len;
 
-					mail_decode(mail);
-					mail_decoded_data(mail,&cont,&cont_len);
+					mail_decode(mail_part);
+					mail_decoded_data(mail_part,&cont,&cont_len);
 
 					Write(fh,cont,cont_len);
 					Close(fh);
 
-					if ((dobj = GetIconTags(mail->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+					if ((dobj = GetIconTags(mail_part->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
 					{
 						int ok_to_open = 1;
 						if (dobj->do_Type == WBTOOL)
@@ -273,11 +273,11 @@ static void open_contents(struct MessageView_Data *data, struct mail *mail)
 							ok_to_open = sm_request(NULL,_("Are you sure that you want to start this executable?"),_("*_Yes|_Cancel"));
 						}
 
-						if (ok_to_open) PutIconTagList(mail->content_name,dobj,NULL);
+						if (ok_to_open) PutIconTagList(mail_part->content_name,dobj,NULL);
 						FreeDiskObject(dobj);
 
 						if (ok_to_open)
-							OpenWorkbenchObjectA(mail->content_name,NULL);
+							OpenWorkbenchObjectA(mail_part->content_name,NULL);
 					}
 				}
 
@@ -423,9 +423,11 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 	BPTR dirlock;
 	char filename[100];
 	int rc = 1;
-	struct mail *mail = data->mail;
+	struct mail *mail;
 
-	if (!data->mail) return 1;
+	if (!(mail = data->mail))
+		return 1;
+
 	strcpy(filename,"T:");
 	mystrlcpy(&filename[2],mail->filename,sizeof(filename));
 	dirlock = Lock(filename,ACCESS_READ);

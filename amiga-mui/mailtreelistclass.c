@@ -36,6 +36,7 @@
 
 #include "mail.h"
 #include "folder.h"
+#include "simplemail.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -52,11 +53,14 @@ struct MailTreelist_Data
 	APTR status_read;
 	APTR status_waitsend;
 	APTR status_sent;
+	APTR status_mark;
 
 	APTR status_important;
 	APTR status_attach;
 	APTR status_group;
 	APTR status_new;
+
+	Object *context_menu;
 };
 
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
@@ -86,7 +90,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			static char status_buf[128];
 			static char from_buf[256];
 
-			switch(mail->status)
+			switch(mail_get_status_type(mail))
 			{
 				case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
 				case	MAIL_STATUS_READ:status = data->status_read;break;
@@ -96,6 +100,8 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			}
 
 			sprintf(status_buf,"\33O[%08lx]",status);
+
+			if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
 			if (mail->flags & MAIL_FLAGS_NEW) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_new);
 			if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
 			if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
@@ -158,6 +164,13 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->context_menu) MUI_DisposeObject(data->context_menu);
+	return DoSuperMethodA(cl,obj,msg);
+}
+
 STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
@@ -199,6 +212,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_old", End, 0);
 	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_waitsend", End, 0);
 	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_sent", End, 0);
+	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_mark", End, 0);
 
 	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_urgent", End, 0);
 	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_attach", End, 0);
@@ -215,6 +229,7 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
 	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
 	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
+	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
 	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
 	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
 	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, data->status_waitsend);
@@ -234,17 +249,70 @@ STATIC ULONG MailTreelist_MultiTest(struct IClass *cl, Object *obj, struct MUIP_
 	return TRUE;
 }
 
+#define MENU_SETSTATUS_MARK   1
+#define MENU_SETSTATUS_UNMARK 2
+#define MENU_SETSTATUS_READ   3
+#define MENU_SETSTATUS_UNREAD 4
+
+STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_ContextMenuBuild *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+  Object *context_menu = NULL;
+
+  if (data->context_menu) MUI_DisposeObject(data->context_menu);
+
+	context_menu = MenustripObject,
+		Child, MenuObjectT("Mail"),
+			Child, MenuitemObject, MUIA_Menuitem_Title, "Set status",
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Mark", MUIA_UserData, MENU_SETSTATUS_MARK, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Unmark", MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
+/*
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
+*/
+				End,
+			End,
+		End;
+
+  data->context_menu = context_menu;
+  return (ULONG) context_menu;
+}
+
+STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)
+{
+	switch(xget(msg->item,MUIA_UserData))
+	{
+		case	MENU_SETSTATUS_MARK:
+					callback_mails_mark(1);
+					break;
+		case	MENU_SETSTATUS_UNMARK:
+					callback_mails_mark(0);
+					break;
+
+		case	MENU_SETSTATUS_READ:
+					break;
+		case	MENU_SETSTATUS_UNREAD:
+					break;
+	}
+  return 0;
+}
+
+
+
 STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE:		return MailTreelist_Dispose(cl,obj,msg);
 		case	OM_SET:				return MailTreelist_Set(cl,obj,(struct opSet*)msg);
 		case	MUIM_Setup:		return MailTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return MailTreelist_Cleanup(cl,obj,msg);
-    case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
-    case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
+		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
+		case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
+		case	MUIM_ContextMenuBuild: return MailTreelist_ContextMenuBuild(cl, obj, (struct MUIP_ContextMenuBuild *)msg);
+		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

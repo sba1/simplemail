@@ -568,7 +568,7 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
  Retrieve mail.
 **************************************************************************/
 static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
-												 int nr, int size)
+												 int nr, int size, int already_dl)
 {
 	char *fn,*answer;
 	char buf[256];
@@ -576,6 +576,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	int bytes_written;
 	int delete_mail = 0;
 	int headers = 1;
+	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
 
 	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
@@ -611,6 +612,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	/* read the mail in now */
 	while (1)
 	{
+		unsigned int new_secs;
 		if (!(answer = tcp_readln(conn)))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED)
@@ -635,9 +637,20 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 			delete_mail = 1;
 			break;
 		}
-		bytes_written += strlen(answer);
-		thread_call_parent_function_async(dl_set_gauge_byte,1,bytes_written);
+		bytes_written += strlen(answer) + 1; /* tcp_readln() removes the \r */
+
+		new_secs = sm_get_current_seconds();
+
+		if (new_secs != secs)
+		{
+    	thread_call_parent_function_async(dl_set_mail_size_sum,1,already_dl + bytes_written);
+			thread_call_parent_function_async(dl_set_gauge_byte,1,bytes_written);
+			secs = new_secs;
+		}
 	}
+
+  thread_call_parent_function_async(dl_set_mail_size_sum,1,already_dl + bytes_written);
+	thread_call_parent_function_async(dl_set_gauge_byte,1,bytes_written);
 
 	fclose(fp);
 	if (delete_mail) remove(fn);
@@ -730,7 +743,19 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 								tell_from_subtask(N_("Can\'t access income-folder!"));
 							} else
 							{
-								for(i = 1; i <= mail_amm; i++)
+								int max_mail_size_sum = 0;
+								int mail_size_sum = 0;
+
+								/* determine the size of the mails which should be downloaded */
+								for (i=1; i<=mail_amm; i++)
+								{
+									if (mail_array[i].flags & MAILF_DOWNLOAD)
+										max_mail_size_sum += mail_array[i].size;
+								}
+
+								thread_call_parent_function_async(dl_init_mail_size_sum,1,max_mail_size_sum);
+
+								for (i=1; i<=mail_amm; i++)
 								{
 									int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
 									int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
@@ -742,7 +767,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 									{
 										thread_call_parent_function_async(dl_set_status,1,N_("Receiving mail..."));
 
-										if (!pop3_get_mail(conn,server, i, mail_array[i].size))
+										if (!pop3_get_mail(conn, server, i, mail_array[i].size, mail_size_sum))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
 											break;
@@ -754,6 +779,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 											uidl_add(&uidl,&mail_array[i]);
 										}
 										nummails++;
+										mail_size_sum += mail_array[i].size;
+										thread_call_parent_function_async(dl_set_mail_size_sum,1,mail_size_sum);
 									}
 									
 									if (del)

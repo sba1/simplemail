@@ -54,21 +54,53 @@ void dl_connect_to_server(char *server)
 	set(win_dl, MUIA_transwnd_Status, buf);
 }
 
+static int max_mail;
+static int cur_mail;
+static int max_mail_sum;
+
 void dl_init_gauge_mail(int amm)
 {
-	static char str[256];
-	
-	sprintf(str, _("Mail %%ld/%d"), amm);
+	static char str[128];
+
+	max_mail = amm;
+	cur_mail = 0;
+
+	sprintf(str, _("-/- Bytes (-/%d Mails)"),max_mail);
 
 	SetAttrs(win_dl, MUIA_transwnd_Gauge1_Str, str,
-									 MUIA_transwnd_Gauge1_Max, amm,
+									 MUIA_transwnd_Gauge1_Max, 1,
 									 MUIA_transwnd_Gauge1_Val, 0,
 									 TAG_DONE);
 }
 
 void dl_set_gauge_mail(int current)
 {
-	set(win_dl, MUIA_transwnd_Gauge1_Val, current);
+	cur_mail = current;
+}
+
+/* The number of bytes which we are going to download */
+void dl_init_mail_size_sum(int sum)
+{
+	static char str[128];
+	max_mail_sum = sum;
+
+	sprintf(str, _("%%ld/%d Bytes (%d/%d Mails)"),sum,cur_mail,max_mail);
+
+	SetAttrs(win_dl, MUIA_transwnd_Gauge1_Str, str,
+									 MUIA_transwnd_Gauge1_Max, sum,
+									 MUIA_transwnd_Gauge1_Val, 0,
+									 TAG_DONE);
+}
+
+/* The number of bytes which we have downloaded */
+void dl_set_mail_size_sum(int sum)
+{
+	static char str[128];
+	sprintf(str, _("%%ld/%d Bytes (%d/%d Mails)"),max_mail_sum,cur_mail,max_mail);
+
+	SetAttrs(win_dl, MUIA_transwnd_Gauge1_Str, str,
+									 MUIA_transwnd_Gauge1_Val, sum,
+									 TAG_DONE);
 }
 
 void dl_init_gauge_byte(int size)

@@ -29,6 +29,8 @@ void dl_set_status(char *);
 void dl_connect_to_server(char *server);
 void dl_init_gauge_mail(int);
 void dl_set_gauge_mail(int);
+void dl_init_mail_size_sum(int sum);
+void dl_set_mail_size_sum(int sum);
 void dl_init_gauge_byte(int);
 void dl_set_gauge_byte(int);
 int dl_checkabort(void);

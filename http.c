@@ -52,7 +52,7 @@ int http_download_photo(char *path, char *email)
 		char *line;
 		int download = 0;
 
-		tcp_write(conn,"GET /galery_get_image.php?",sizeof("GET /galery_get_image.php?")-1);
+		tcp_write(conn,"GET /gallery_get_image.php?",sizeof("GET /gallery_get_image.php?")-1);
 		tcp_write(conn,email,strlen(email));
 		tcp_write(conn," HTTP/1.0\r\nhost: simplemail.sourceforge.net\r\n\r\n",sizeof(" HTTP/1.0\r\nhost: simplemail.sourceforge.net\r\n\r\n")-1);
 

@@ -26,6 +26,7 @@
 #include <ctype.h>
 
 #include "configuration.h"
+#include "pop3.h"
 #include "support.h"
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
@@ -54,10 +55,16 @@ struct user user;
 
 void init_config(void)
 {
+	struct pop3_server *pop3;
+
 	memset(&user,0,sizeof(struct user));
 	user.directory = strdup("PROGDIR:");
-	user.config.pop_port = 110;
 	user.config.smtp_port = 25;
+
+	if ((pop3 = pop_malloc()))
+	{
+		list_insert_tail(&user.config.receive_list,&pop3->node);
+	}
 }
 
 int load_config(void)
@@ -90,16 +97,6 @@ int load_config(void)
 							user.config.email = strdup(result);
 						if ((result = get_config_item(buf,"RealName")))
 							user.config.realname = strdup(result);
-						if ((result = get_config_item(buf,"POP00.Login")))
-							user.config.pop_login = strdup(result);
-						if ((result = get_config_item(buf,"POP00.Server")))
-							user.config.pop_server = strdup(result);
-						if ((result = get_config_item(buf,"POP00.Port")))
-							user.config.pop_port = atoi(result);
-						if ((result = get_config_item(buf,"POP00.Password")))
-							user.config.pop_password = strdup(result);
-						if ((result = get_config_item(buf,"POP00.Delete")))
-							user.config.pop_delete = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"SMTP00.Server")))
 							user.config.smtp_server = strdup(result);
 						if ((result = get_config_item(buf,"SMTP00.Port")))
@@ -116,6 +113,40 @@ int load_config(void)
 							user.config.smtp_password = strdup(result);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
+
+						if (!mystrnicmp(buf, "POP",3))
+						{
+							/* it's a POP Server config line */
+							unsigned char *pop_buf = buf + 3;
+							int pop_no = atoi(pop_buf);
+							struct pop3_server *pop;
+
+							pop = (struct pop3_server*)list_find(&user.config.receive_list,pop_no);
+							if (!pop)
+							{
+								if ((pop = pop_malloc()))
+									list_insert_tail(&user.config.receive_list,&pop->node);
+								pop = (struct pop3_server*)list_find(&user.config.receive_list,pop_no);
+							}
+
+							if (pop)
+							{
+								while (isdigit(*pop_buf)) pop_buf++;
+								if (*pop_buf++ == '.')
+								{
+									if ((result = get_config_item(pop_buf,"Login")))
+										pop->login = mystrdup(result);
+									if ((result = get_config_item(pop_buf,"Server")))
+										pop->name = mystrdup(result);
+									if ((result = get_config_item(pop_buf,"Port")))
+										pop->port = atoi(result);
+									if ((result = get_config_item(pop_buf,"Password")))
+										pop->passwd = mystrdup(result);
+									if ((result = get_config_item(pop_buf,"Delete")))
+										pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;
+								}
+							}
+						}
 					}
 				}
 
@@ -139,15 +170,28 @@ void save_config(void)
 		FILE *fh = fopen(user.config_filename, "w");
 		if (fh)
 		{
+			struct pop3_server *pop;
+			int i;
+
 			fputs("SMCO\n\n",fh);
 
 			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
 			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
-			fprintf(fh,"POP00.Login=%s\n",MAKESTR(user.config.pop_login));
-			fprintf(fh,"POP00.Server=%s\n",MAKESTR(user.config.pop_server));
-			fprintf(fh,"POP00.Port=%ld\n",user.config.pop_port);
-			fprintf(fh,"POP00.Password=%s\n",MAKESTR(user.config.pop_password));
-			fprintf(fh,"POP00.Delete=%s\n",user.config.pop_delete?"Y":"N");
+
+			/* Write the pop3 servers */
+			i = 0;
+			pop = (struct pop3_server*)list_first(&user.config.receive_list);
+			while (pop)
+			{
+				fprintf(fh,"POP%ld.Login=%s\n",i,MAKESTR(pop->login));
+				fprintf(fh,"POP%ld.Server=%s\n",i,MAKESTR(pop->name));
+				fprintf(fh,"POP%ld.Port=%ld\n",i,pop->port);
+				fprintf(fh,"POP%ld.Password=%s\n",i,MAKESTR(pop->passwd));
+				fprintf(fh,"POP%ld.Delete=%s\n",i,pop->del?"Y":"N");
+				pop = (struct pop3_server*)node_next(&pop->node);
+				i++;
+			}
+
 			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
 			fprintf(fh,"SMTP00.Port=%ld\n",user.config.smtp_port);
 			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
@@ -162,3 +206,19 @@ void save_config(void)
 	}
 }
 
+/* Empties the config list */
+void free_config_pop(void)
+{
+	struct pop3_server *pop;
+
+	while ((pop = (struct pop3_server*)list_remove_tail(&user.config.receive_list)))
+		pop_free(pop);
+}
+
+/* Insert a new pop server */
+void insert_config_pop(struct pop3_server *pop)
+{
+	struct pop3_server *new_pop = pop_duplicate(pop);
+	if (new_pop)
+		list_insert_tail(&user.config.receive_list,&new_pop->node);
+}

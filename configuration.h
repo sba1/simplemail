@@ -23,6 +23,10 @@
 #ifndef SM__CONFIGURATION_H
 #define SM__CONFIGURATION_H
 
+#ifndef SM__LISTS_H
+#include "lists.h"
+#endif
+
 struct config
 {
 	char *realname;
@@ -36,11 +40,8 @@ struct config
 	char *smtp_login;
 	char *smtp_password;
 
-	char *pop_server;
-	int pop_port;
-	char *pop_login;
-	char *pop_password;
-	int pop_delete;
+  /* list of pop3 servers */
+  struct list receive_list;
 
 	int read_wordwrap;
 };
@@ -57,6 +58,8 @@ struct user
 
 int load_config(void);
 void save_config(void);
+void free_config_pop(void);
+void insert_config_pop(struct pop3_server *pop);
 
 extern struct user user; /* the current user */
 

@@ -349,6 +349,11 @@ int main_window_init(void)
 	if(win_main != NULL)
 	{
 		if (!init_folder_placement()) return 0;
+		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<7))
+    {
+    	printf("SimpleMail needs at least version 1.7 of the NListtree mui subclass!\nIt's available at http://www.aphaso.de\n");
+    	return 0;
+    }
 
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);

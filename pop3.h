@@ -25,14 +25,18 @@
 
 struct pop3_server
 {
+	struct node node;
+
 	char *name;
 	unsigned int port;
 	char *login;
 	char *passwd;
-	char *destdir; /* directory where the mails are stored */
 	int del; /* 1 if downloaded mails should be deleted */
 };
 
-int pop3_dl(struct pop3_server *server);
+int pop3_dl(struct list *pop_list, char *dest_dir);
+struct pop3_server *pop_malloc(void);
+struct pop3_server *pop_duplicate(struct pop3_server *pop);
+void pop_free(struct pop3_server *pop);
 
 #endif

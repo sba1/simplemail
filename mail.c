@@ -881,7 +881,8 @@ int mail_process_headers(struct mail *mail)
 		date += 3;
 		while (isspace(*date)) date++;
 		year = atoi(date);
-		if (year < 200) year += 1900;
+		if (year < 78) year += 2000;
+		else if (year < 200) year += 1900;
 
 		while (isdigit(*date)) date++;
 		while (isspace(*date)) date++;

@@ -37,27 +37,18 @@
 
 int mails_dl(void)
 {
-	struct pop3_server server;
+	struct pop3_server *pop = (struct pop3_server*)list_first(&user.config.receive_list);
 
-	memset(&server,0,sizeof(server));
-
-	server.name = user.config.pop_server;
-	server.port = user.config.pop_port;
-	server.login = user.config.pop_login;
-	server.passwd = user.config.pop_password;
-	server.del = user.config.pop_delete;
-	server.destdir = folder_incoming()->path;
-
-	if (!server.name)
+	if (!pop || !pop->name)
 	{
 		tell("Please configure a pop3 server!");
-		return(0);
+		return 0;
 	}
 
-	dl_set_title(server.name);
+	dl_set_title(pop->name);
 	dl_window_open();
 
-	if (!pop3_dl(&server))
+	if (!pop3_dl(&user.config.receive_list,folder_incoming()->path))
 	{
 		dl_window_close();
 	}

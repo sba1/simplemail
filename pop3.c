@@ -245,69 +245,77 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-static int pop3_really_dl(struct pop3_server *server)
+static int pop3_really_dl(struct list *pop_list, char *dest_dir)
 {
-	int rc;
-	
-	rc = 0;
+	int rc = 0;
 
 	if (open_socket_lib())
 	{
-		struct connection *conn;
-		thread_call_parent_function_sync(dl_set_status,1,"Connecting to server...");
-
-		if ((conn = tcp_connect(server->name, server->port)))
+		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
+		while (server)
 		{
-			thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
-			if (pop3_wait_login(conn,server))
+			struct connection *conn;
+			char buf[512];
+
+			sprintf(buf,"Connecting to server %s...",server->name);
+			thread_call_parent_function_sync(dl_set_title,1,server->name);
+			thread_call_parent_function_sync(dl_set_status,1,buf);
+
+			if ((conn = tcp_connect(server->name, server->port)))
 			{
-				if (pop3_login(conn,server))
+				thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
+				if (pop3_wait_login(conn,server))
 				{
-					int mail_amm = pop3_stat(conn,server);
-					if (mail_amm != 0)
+					if (pop3_login(conn,server))
 					{
-						int i;
-						char path[256];
+						int mail_amm = pop3_stat(conn,server);
+						if (mail_amm != 0)
+						{
+							int i;
+							char path[256];
 						
-						thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
-						thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
+							thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
+							thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
 
-						getcwd(path, 255);
+							getcwd(path, 255);
 
-						if(chdir(server->destdir) == -1)
-						{
-							tell_from_subtask("Can\'t access income-folder!");
-						} else
-						{
-							for(i = 1; i <= mail_amm; i++)
+							if(chdir(dest_dir) == -1)
 							{
-								thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
-								if(pop3_get_mail(conn,server, i))
+								tell_from_subtask("Can\'t access income-folder!");
+							} else
+							{
+								for(i = 1; i <= mail_amm; i++)
 								{
-									if (server->del)
+									thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
+									if(pop3_get_mail(conn,server, i))
 									{
-										thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
-										if (!pop3_del_mail(conn,server, i))
+										if (server->del)
 										{
-											tell_from_subtask("Can\'t mark mail as deleted!");
-										}
-									}  
+											thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
+											if (!pop3_del_mail(conn,server, i))
+											{
+												tell_from_subtask("Can\'t mark mail as deleted!");
+											}
+										}  
+									}
+									else
+									{
+										tell_from_subtask("Can\'t download mail!");
+										break;
+									}
 								}
-								else
-								{
-									tell_from_subtask("Can\'t download mail!");
-									break;
-								}
-							}
 							
-							chdir(path);
+								chdir(path);
+							}
 						}
-					}
 				
-					pop3_quit(conn,server);
-				}
-			}  
-			tcp_disconnect(conn);
+						pop3_quit(conn,server);
+					}
+				}  
+				tcp_disconnect(conn);
+			}
+
+			server = (struct pop3_server*)node_next(&server->node);
 		}
 		close_socket_lib();
 	}
@@ -319,23 +327,37 @@ static int pop3_really_dl(struct pop3_server *server)
 	return rc;
 }
 
+struct pop_entry_msg
+{
+	struct list *pop_list;
+	char *dest_dir;
+};
+
 /**************************************************************************
  Entrypoint for the fetch mail process
 **************************************************************************/
-static int pop3_entry(struct pop3_server *server)
+static int pop3_entry(struct pop_entry_msg *msg)
 {
-	struct pop3_server copy_server;
+	struct list pop_list;
+	struct pop3_server *pop;
+	char *dest_dir;
 
-	copy_server.name = mystrdup(server->name);
-	copy_server.port = server->port;
-	copy_server.login = mystrdup(server->login);
-	copy_server.passwd = mystrdup(server->passwd);
-	copy_server.destdir = mystrdup(server->destdir);
-	copy_server.del = server->del;
+	list_init(&pop_list);
+	pop = (struct pop3_server*)list_first(msg->pop_list);
+
+	while (pop)
+	{
+		struct pop3_server *new_pop = pop_duplicate(pop);
+		if (new_pop)
+			list_insert_tail(&pop_list,&new_pop->node);
+		pop = (struct pop3_server*)node_next(&pop->node);
+	}
+
+	dest_dir = mystrdup(msg->dest_dir);
 
 	if (thread_parent_task_can_contiue())
 	{
-		pop3_really_dl(&copy_server);
+		pop3_really_dl(&pop_list,dest_dir);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}
 	return 0;
@@ -344,7 +366,51 @@ static int pop3_entry(struct pop3_server *server)
 /**************************************************************************
  Fetch the mails. Starts a subthread.
 **************************************************************************/
-int pop3_dl(struct pop3_server *server)
+int pop3_dl(struct list *pop_list, char *dest_dir)
 {
-	return thread_start(pop3_entry,server);
+	struct pop_entry_msg msg;
+	msg.pop_list = pop_list;
+	msg.dest_dir = dest_dir;
+	return thread_start(&pop3_entry,&msg);
+}
+
+/**************************************************************************
+ malloc() a pop3_server and initializes it with default values.
+ TODO: rename all pop3 identifiers to pop
+**************************************************************************/
+struct pop3_server *pop_malloc(void)
+{
+	struct pop3_server *pop3;
+	if ((pop3 = (struct pop3_server*)malloc(sizeof(*pop3))))
+	{
+		memset(pop3,0,sizeof(struct pop3_server));
+		pop3->port = 110;
+	}
+	return pop3;
+}
+
+/**************************************************************************
+ Duplicates a pop3_server
+**************************************************************************/
+struct pop3_server *pop_duplicate(struct pop3_server *pop)
+{
+	struct pop3_server *new_pop = pop_malloc();
+	if (new_pop)
+	{
+		new_pop->name = mystrdup(pop->name);
+		new_pop->login = mystrdup(pop->login);
+		new_pop->passwd = mystrdup(pop->passwd);
+	}
+	return new_pop;
+}
+
+/**************************************************************************
+ Frees a pop3_server completly
+**************************************************************************/
+void pop_free(struct pop3_server *pop)
+{
+	if (pop->name) free(pop->name);
+	if (pop->login) free(pop->login);
+	if (pop->passwd) free(pop->passwd);
+	free(pop);
 }

@@ -2,11 +2,10 @@
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # Joni Halme <joni.halme@satabaana.net>, 2002.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2002-01-03 20:51+0000\n"
+"POT-Creation-Date: 2002-01-07 21:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Joni Halme <joni.halme@satabaana.net>\n"
 "Language-Team: Suomi <LL@li.org>\n"
@@ -35,7 +34,7 @@ msgid "SimpleMail - Edit Person"
 msgstr "SimpleMail - Muokkaa henkilötietoja"
 
 #: amiga-mui/addressbookwnd.c:415 amiga-mui/addressbookwnd.c:872
-#: amiga-mui/addresstreelistclass.c:139
+#: amiga-mui/addresstreelistclass.c:149
 msgid "Alias"
 msgstr "Alias"
 
@@ -44,7 +43,7 @@ msgid "Real Name"
 msgstr "Oikea nimi"
 
 #: amiga-mui/addressbookwnd.c:427 amiga-mui/addressbookwnd.c:878
-#: amiga-mui/addresstreelistclass.c:140
+#: amiga-mui/addresstreelistclass.c:150
 msgid "Description"
 msgstr "Kuvaus"
 
@@ -126,7 +125,7 @@ msgid "_Ok"
 msgstr "_Ok"
 
 #: amiga-mui/addressbookwnd.c:684 amiga-mui/addressbookwnd.c:889
-#: amiga-mui/composewnd.c:1010 amiga-mui/configwnd.c:1486
+#: amiga-mui/composewnd.c:1011 amiga-mui/configwnd.c:1495
 #: amiga-mui/filterwnd.c:493 amiga-mui/folderwnd.c:134
 #: amiga-mui/folderwnd.c:240
 msgid "_Cancel"
@@ -157,7 +156,7 @@ msgid "_Import"
 msgstr "Tuo"
 
 #. Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),
-#: amiga-mui/addressbookwnd.c:1074 amiga-mui/configwnd.c:1484
+#: amiga-mui/addressbookwnd.c:1074 amiga-mui/configwnd.c:1493
 #: amiga-mui/filterwnd.c:491 amiga-mui/readwnd.c:912
 msgid "_Save"
 msgstr "_Tallenna"
@@ -180,298 +179,301 @@ msgstr "_Muokkaa"
 msgid "_Delete"
 msgstr "_Poista"
 
-#: amiga-mui/addresstreelistclass.c:138 amiga-mui/configwnd.c:733
-#: amiga-mui/configwnd.c:1229 amiga-mui/foldertreelistclass.c:119
+#: amiga-mui/addresstreelistclass.c:148 amiga-mui/configwnd.c:742
+#: amiga-mui/configwnd.c:1238 amiga-mui/foldertreelistclass.c:119
 #: amiga-mui/folderwnd.c:219
 msgid "Name"
 msgstr "Nimi"
 
-#: amiga-mui/addresstreelistclass.c:141
+#: amiga-mui/addresstreelistclass.c:151
 msgid "Address"
 msgstr "Sähköpostiosoite"
 
-#: amiga-mui/addresstreelistclass.c:205
+#: amiga-mui/addresstreelistclass.c:215
 msgid "Addresslist Settings"
 msgstr "Osoitteiston ominaisuudet"
 
-#: amiga-mui/addresstreelistclass.c:206
+#: amiga-mui/addresstreelistclass.c:216
 msgid "Show Realname?"
 msgstr "Näytä nimi?"
 
-#: amiga-mui/addresstreelistclass.c:207
+#: amiga-mui/addresstreelistclass.c:217
 msgid "Show Nickname?"
 msgstr "Näytä alias?"
 
-#: amiga-mui/addresstreelistclass.c:208
+#: amiga-mui/addresstreelistclass.c:218
 msgid "Show Description?"
 msgstr "Näytä kuvaus?"
 
-#: amiga-mui/addresstreelistclass.c:209
+#: amiga-mui/addresstreelistclass.c:219
 msgid "Show E-Mail Address?"
 msgstr "Näytä sähköpostiosoitteet?"
 
-#: amiga-mui/addresstreelistclass.c:211 amiga-mui/mailtreelistclass.c:291
+#: amiga-mui/addresstreelistclass.c:221 amiga-mui/mailtreelistclass.c:327
 msgid "Default Width: this"
 msgstr "Tallenna leveys: valittu"
 
-#: amiga-mui/addresstreelistclass.c:212 amiga-mui/mailtreelistclass.c:292
+#: amiga-mui/addresstreelistclass.c:222 amiga-mui/mailtreelistclass.c:328
 msgid "Default Width: all"
 msgstr "Tallenna leveys: kaikki"
 
-#: amiga-mui/addresstreelistclass.c:213 amiga-mui/mailtreelistclass.c:293
+#: amiga-mui/addresstreelistclass.c:223 amiga-mui/mailtreelistclass.c:329
 msgid "Default Order: this"
 msgstr "Tallenna järjestys: valittu"
 
-#: amiga-mui/addresstreelistclass.c:214 amiga-mui/mailtreelistclass.c:294
+#: amiga-mui/addresstreelistclass.c:224 amiga-mui/mailtreelistclass.c:330
 msgid "Default Order: all"
 msgstr "Tallenna järjestys: kaikki"
 
-#: amiga-mui/composewnd.c:847
-#, fuzzy
+#: amiga-mui/composewnd.c:848
 msgid "No Signature"
 msgstr "Ei allekirjoitusta"
 
-#: amiga-mui/composewnd.c:853 amiga-mui/composewnd.c:854
+#: amiga-mui/composewnd.c:854 amiga-mui/composewnd.c:855
 msgid "Use signature"
 msgstr "Lisää allekirjoitus"
 
-#: amiga-mui/composewnd.c:867
+#: amiga-mui/composewnd.c:868
 msgid "SimpleMail - Compose Message"
 msgstr "SimpleMail - Luo viesti"
 
-#: amiga-mui/composewnd.c:873
+#: amiga-mui/composewnd.c:874
 msgid "_From"
 msgstr "_Lähettäjä"
 
-#: amiga-mui/composewnd.c:884 amiga-mui/composewnd.c:890
+#: amiga-mui/composewnd.c:885 amiga-mui/composewnd.c:891
 msgid "_To"
 msgstr "_Vastaanottaja"
 
-#: amiga-mui/composewnd.c:895 amiga-mui/composewnd.c:901
+#: amiga-mui/composewnd.c:896 amiga-mui/composewnd.c:902
 msgid "Copies To"
 msgstr "Kopiot"
 
-#: amiga-mui/composewnd.c:906 amiga-mui/composewnd.c:910
+#: amiga-mui/composewnd.c:907 amiga-mui/composewnd.c:911
 msgid "S_ubject"
 msgstr "Otsikko"
 
-#: amiga-mui/composewnd.c:920
+#: amiga-mui/composewnd.c:921
 msgid "Copy"
 msgstr "Kopioi"
 
-#: amiga-mui/composewnd.c:921
+#: amiga-mui/composewnd.c:922
 msgid "Cut"
 msgstr "Leikkaa"
 
-#: amiga-mui/composewnd.c:922
+#: amiga-mui/composewnd.c:923
 msgid "Paste"
 msgstr "Liimaa"
 
-#: amiga-mui/composewnd.c:927
+#: amiga-mui/composewnd.c:928
 msgid "Undo"
 msgstr "Peru"
 
-#: amiga-mui/composewnd.c:928
+#: amiga-mui/composewnd.c:929
 msgid "Redo"
 msgstr "Toista"
 
-#: amiga-mui/composewnd.c:933
+#: amiga-mui/composewnd.c:934
 msgid "_Attach"
 msgstr "Lisää liite"
 
-#: amiga-mui/composewnd.c:934
+#: amiga-mui/composewnd.c:935
 msgid "Sho_w At."
 msgstr "Liitteet"
 
-#: amiga-mui/composewnd.c:939
+#: amiga-mui/composewnd.c:940
 msgid "_Encrypt"
 msgstr "Salaus"
 
-#: amiga-mui/composewnd.c:940
+#: amiga-mui/composewnd.c:941
 msgid "Si_gn"
 msgstr "Allekirjoitus"
 
-#: amiga-mui/composewnd.c:998
+#: amiga-mui/composewnd.c:999
 msgid "Add text"
 msgstr "Lisää teksti"
 
-#: amiga-mui/composewnd.c:999
+#: amiga-mui/composewnd.c:1000
 msgid "Add multipart"
 msgstr "Lisää moniosainen"
 
-#: amiga-mui/composewnd.c:1000
+#: amiga-mui/composewnd.c:1001
 msgid "Add file(s)"
 msgstr "Lisää tiedosto(t)"
 
 #. Child, MakeButton("Pack & add"),
-#: amiga-mui/composewnd.c:1002 amiga-mui/filterwnd.c:233
+#: amiga-mui/composewnd.c:1003 amiga-mui/filterwnd.c:233
 msgid "Remove"
 msgstr "Poista"
 
-#: amiga-mui/composewnd.c:1007
+#: amiga-mui/composewnd.c:1008
 msgid "_Send now"
 msgstr "Lähetä heti"
 
-#: amiga-mui/composewnd.c:1008
+#: amiga-mui/composewnd.c:1009
 msgid "Send _later"
 msgstr "Lähetä myöhemmin"
 
-#: amiga-mui/composewnd.c:1009
+#: amiga-mui/composewnd.c:1010
 msgid "_Hold"
 msgstr "Laita pitoon"
 
-#: amiga-mui/configwnd.c:340
+#: amiga-mui/configwnd.c:342
 msgid ""
 "You have changed the folder direcory! You must quit and restart SimpleMail "
 "now."
 msgstr "Vaihdoit kansioiden hakemistoa! SimpleMail pitää käynnistää uudestaan."
 
-#: amiga-mui/configwnd.c:340 mail.c:1905 mail.c:2677
+#: amiga-mui/configwnd.c:342 mail.c:1905 mail.c:2677
 msgid "Ok"
 msgstr "Ok"
 
-#: amiga-mui/configwnd.c:556 amiga-mui/configwnd.c:557
+#: amiga-mui/configwnd.c:557 amiga-mui/configwnd.c:558
 msgid "Add adjustment for daylight saving time"
 msgstr "Säädä kello kesäajan mukaan"
 
-#: amiga-mui/configwnd.c:561
+#: amiga-mui/configwnd.c:562
 msgid "Folder directory"
 msgstr "Kansioiden hakemisto"
 
-#: amiga-mui/configwnd.c:588
+#: amiga-mui/configwnd.c:573
+msgid "Charset used to display text"
+msgstr "Merkistö"
+
+#: amiga-mui/configwnd.c:597
 msgid "Disabled"
 msgstr "Ei koskaan"
 
-#: amiga-mui/configwnd.c:589
+#: amiga-mui/configwnd.c:598
 msgid "Only Sizes"
 msgstr "Vain koot"
 
-#: amiga-mui/configwnd.c:590
+#: amiga-mui/configwnd.c:599
 msgid "Enabled"
 msgstr "Aina"
 
-#: amiga-mui/configwnd.c:596
+#: amiga-mui/configwnd.c:605
 msgid "Preselection"
 msgstr "Viestien esivalinta"
 
-#: amiga-mui/configwnd.c:615
+#: amiga-mui/configwnd.c:624
 msgid "Automatic operation"
 msgstr "Automaattinen vastaanotto"
 
-#: amiga-mui/configwnd.c:617
+#: amiga-mui/configwnd.c:626
 msgid "Check for new mail every"
 msgstr "Tarkista posti"
 
-#: amiga-mui/configwnd.c:624
+#: amiga-mui/configwnd.c:633
 msgid "minutes"
 msgstr "minuutin välein"
 
-#: amiga-mui/configwnd.c:626
+#: amiga-mui/configwnd.c:635
 msgid "New mails"
 msgstr "Ilmoitus"
 
-#: amiga-mui/configwnd.c:628 amiga-mui/configwnd.c:629
+#: amiga-mui/configwnd.c:637 amiga-mui/configwnd.c:638
 msgid "Sound"
 msgstr "Ääni"
 
-#: amiga-mui/configwnd.c:652 amiga-mui/configwnd.c:1526
+#: amiga-mui/configwnd.c:661 amiga-mui/configwnd.c:1535
 msgid "Account"
 msgstr "Tili"
 
-#: amiga-mui/configwnd.c:691 amiga-mui/configwnd.c:864
+#: amiga-mui/configwnd.c:700 amiga-mui/configwnd.c:873
 msgid "Add new account"
 msgstr "Lisää uusi tili"
 
-#: amiga-mui/configwnd.c:731 amiga-mui/configwnd.c:1513
+#: amiga-mui/configwnd.c:740 amiga-mui/configwnd.c:1522
 msgid "User"
 msgstr "Käyttäjätiedot"
 
-#: amiga-mui/configwnd.c:740
+#: amiga-mui/configwnd.c:749
 msgid "E-Mail Address"
 msgstr "Sähköpostiosoite"
 
-#: amiga-mui/configwnd.c:747
+#: amiga-mui/configwnd.c:756
 msgid "Reply Address"
 msgstr "Vastausosoite"
 
-#: amiga-mui/configwnd.c:755
+#: amiga-mui/configwnd.c:764
 msgid "Receive"
 msgstr "Postin vastaanotto"
 
-#: amiga-mui/configwnd.c:757
+#: amiga-mui/configwnd.c:766
 msgid "POP3 Server"
 msgstr "POP3-palvelin"
 
-#: amiga-mui/configwnd.c:764 amiga-mui/configwnd.c:818
+#: amiga-mui/configwnd.c:773 amiga-mui/configwnd.c:827
 msgid "Port"
 msgstr "Portti"
 
-#: amiga-mui/configwnd.c:773 amiga-mui/configwnd.c:827
+#: amiga-mui/configwnd.c:782 amiga-mui/configwnd.c:836
 msgid "Login"
 msgstr "Tilinimi"
 
-#: amiga-mui/configwnd.c:780 amiga-mui/configwnd.c:835
+#: amiga-mui/configwnd.c:789 amiga-mui/configwnd.c:844
 msgid "Password"
 msgstr "Salasana"
 
-#: amiga-mui/configwnd.c:787 amiga-mui/configwnd.c:788
+#: amiga-mui/configwnd.c:796 amiga-mui/configwnd.c:797
 msgid "Ask"
 msgstr "Kysy"
 
-#: amiga-mui/configwnd.c:792 amiga-mui/configwnd.c:793
+#: amiga-mui/configwnd.c:801 amiga-mui/configwnd.c:802
 msgid "Active"
 msgstr "Lisää vastaanotettaviin"
 
-#: amiga-mui/configwnd.c:794 amiga-mui/configwnd.c:795
+#: amiga-mui/configwnd.c:803 amiga-mui/configwnd.c:804
 msgid "_Delete mails"
 msgstr "Poista viestit palvelimelta"
 
-#: amiga-mui/configwnd.c:796 amiga-mui/configwnd.c:797
+#: amiga-mui/configwnd.c:805 amiga-mui/configwnd.c:806
 msgid "Avoid duplicates"
 msgstr "Vältä kopioita"
 
-#: amiga-mui/configwnd.c:798 amiga-mui/configwnd.c:800
-#: amiga-mui/configwnd.c:849 amiga-mui/configwnd.c:850
+#: amiga-mui/configwnd.c:807 amiga-mui/configwnd.c:809
+#: amiga-mui/configwnd.c:858 amiga-mui/configwnd.c:859
 msgid "Secure"
 msgstr "Suojattu"
 
-#: amiga-mui/configwnd.c:802 amiga-mui/configwnd.c:803
+#: amiga-mui/configwnd.c:811 amiga-mui/configwnd.c:812
 msgid "with STLS"
 msgstr "STLS"
 
-#: amiga-mui/configwnd.c:808
+#: amiga-mui/configwnd.c:817
 msgid "Send"
 msgstr "Postin lähetys"
 
-#: amiga-mui/configwnd.c:811
+#: amiga-mui/configwnd.c:820
 msgid "SMTP Server"
 msgstr "SMTP-palvelin"
 
-#: amiga-mui/configwnd.c:846 amiga-mui/configwnd.c:847
+#: amiga-mui/configwnd.c:855 amiga-mui/configwnd.c:856
 msgid "Use SMTP AUTH"
 msgstr "Käytä SMTP AUTH"
 
-#: amiga-mui/configwnd.c:852 amiga-mui/configwnd.c:853
+#: amiga-mui/configwnd.c:861 amiga-mui/configwnd.c:862
 msgid "Log into POP3 server first"
 msgstr "Kirjaudu ensin POP3-palvelimelle"
 
-#: amiga-mui/configwnd.c:855 amiga-mui/configwnd.c:856
+#: amiga-mui/configwnd.c:864 amiga-mui/configwnd.c:865
 msgid "Use IP as domain"
 msgstr "Käytä IP:tä verkkotunnuksena"
 
-#: amiga-mui/configwnd.c:865
+#: amiga-mui/configwnd.c:874
 msgid "Remove account"
 msgstr "Poista tämä tili"
 
-#: amiga-mui/configwnd.c:882
+#: amiga-mui/configwnd.c:891
 msgid "Your full name (required)"
 msgstr "Koko nimesi (pakollinen)."
 
-#: amiga-mui/configwnd.c:883
+#: amiga-mui/configwnd.c:892
 msgid "Your E-Mail address for this account (required)"
 msgstr "Sähköpostiosoitteesi tähän tiliin (pakollinen)."
 
-#: amiga-mui/configwnd.c:884
+#: amiga-mui/configwnd.c:893
 msgid ""
 "Address where the replies of the mails should\n"
 "be sent (required only if different from the e-mail address)."
@@ -479,7 +481,7 @@ msgstr ""
 "Osoite minne vastaukset lähetetään\n"
 "(jos eri kuin sähköpostiosoite)."
 
-#: amiga-mui/configwnd.c:885
+#: amiga-mui/configwnd.c:894
 msgid ""
 "The name of the so called POP3 server from\n"
 "which you download your e-Mails (required; ask your\n"
@@ -488,34 +490,33 @@ msgstr ""
 "Tulevan postin palvelin (pakollinen).\n"
 "Osoitteen saat tarvittaessa palveluntarjoajaltasi."
 
-#: amiga-mui/configwnd.c:886
+#: amiga-mui/configwnd.c:895
 msgid "The port number. Usually 110"
 msgstr "Portin numero. Yleensä 110."
 
-#: amiga-mui/configwnd.c:887
+#: amiga-mui/configwnd.c:896
 msgid "The login/UserID which you got from your ISP."
 msgstr "Käyttäjätunnus/nimi jonka olet saanut palveluntarjoajalta."
 
-#: amiga-mui/configwnd.c:888
+#: amiga-mui/configwnd.c:897
 msgid ""
 "Your very own password to access the mails\n"
 "located on the POP3 server."
 msgstr "Salasanasi sähköpostitilille."
 
-#: amiga-mui/configwnd.c:889
+#: amiga-mui/configwnd.c:898
 msgid ""
 "Deactivate this if you don't want SimpleMail to\n"
 "download the e-Mails when pressing on 'Fetch'."
 msgstr "Haetaanko tilin viestit klikattaessa 'Hae'."
 
-#: amiga-mui/configwnd.c:890
+#: amiga-mui/configwnd.c:899
 msgid ""
 "After successul downloading the mails should be deleted\n"
 "on the POP3 server."
-msgstr ""
-"Poistetaanko haetut viestit palvelimelta."
+msgstr "Poistetaanko haetut viestit palvelimelta."
 
-#: amiga-mui/configwnd.c:891
+#: amiga-mui/configwnd.c:900
 msgid ""
 "When not deleteding e-Mails on the server SimpleMail\n"
 "tries to avoid downloading a message twice the next time."
@@ -523,7 +524,7 @@ msgstr ""
 "Kun viestejä ei poisteta palvelimelta, SimpleMail\n"
 "yrittää välttää saman viestin hakemisen kahdesti."
 
-#: amiga-mui/configwnd.c:892
+#: amiga-mui/configwnd.c:901
 msgid ""
 "If activated SimpleMail tries to make the connection secure.\n"
 "This is not supported on all servers, so decativate if it doesn't work."
@@ -531,17 +532,17 @@ msgstr ""
 "SimpleMail voi yrittää avata turvatun yhteyden.\n"
 "Kaikki palvelimet eivät tue tätä ominaisuutta."
 
-#: amiga-mui/configwnd.c:893
+#: amiga-mui/configwnd.c:902
 msgid ""
 "The name of the so called SMTP server which is responlible\n"
 "to send your e-Mails."
 msgstr "SMTP palvelimen osoite, joka hoitaa postien lähettämisen."
 
-#: amiga-mui/configwnd.c:894
+#: amiga-mui/configwnd.c:903
 msgid "The port number. Usually 25"
 msgstr "Portin numero. Yleensä 25."
 
-#: amiga-mui/configwnd.c:895
+#: amiga-mui/configwnd.c:904
 msgid ""
 "Your login/UserID for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
@@ -549,7 +550,7 @@ msgstr ""
 "Käyttäjätunnus/nimi SMTP palvelimelle.\n"
 "Tarvitaan vain jos palvelin vaatii kirjautumisen."
 
-#: amiga-mui/configwnd.c:896
+#: amiga-mui/configwnd.c:905
 msgid ""
 "Your password for the SMTP server.\n"
 "Only required if the SMTP server requires authentication."
@@ -557,11 +558,11 @@ msgstr ""
 "Salasana SMTP palvelimelle.\n"
 "Tarvitaan vain jos palvelin vaatii kirjautumisen."
 
-#: amiga-mui/configwnd.c:897
+#: amiga-mui/configwnd.c:906
 msgid "Activate this if the SMTP server requires authentication."
 msgstr "Aktivoi, jos SMTP palvelin vaatii kirjautumisen."
 
-#: amiga-mui/configwnd.c:898
+#: amiga-mui/configwnd.c:907
 msgid ""
 "Activate this if you want a secure connection\n"
 "to the SMTP server. Deactivate this if your SMTP server\n"
@@ -570,7 +571,7 @@ msgstr ""
 "SimpleMail voi yrittää avata suojatun yhteyden.\n"
 "Kaikki palvelimet eivät tue tätä ominaisuutta."
 
-#: amiga-mui/configwnd.c:899
+#: amiga-mui/configwnd.c:908
 msgid ""
 "Activate this if you provider needs that\n"
 "you first log into its POP3 sever."
@@ -578,7 +579,7 @@ msgstr ""
 "Aktivoi tämä jos palveluntarjoajasi vaatii\n"
 "kirjautumisen ensin POP3-palvelimelle."
 
-#: amiga-mui/configwnd.c:900
+#: amiga-mui/configwnd.c:909
 msgid ""
 "Send your current IP address together with the intial greetings.\n"
 "This avoids some error headers on some providers."
@@ -586,251 +587,251 @@ msgstr ""
 "Lähetä oma IP-osoite yhdessä tervehdyksen kanssa.\n"
 "Tällä vältetään virhetilanteita joidenkin palveluntarjoajien kanssa."
 
-#: amiga-mui/configwnd.c:901
+#: amiga-mui/configwnd.c:910
 msgid "Add a new account."
 msgstr "Lisää uusi tili."
 
-#: amiga-mui/configwnd.c:902
+#: amiga-mui/configwnd.c:911
 msgid "Remove the current account."
 msgstr "Poista valittu tili."
 
-#: amiga-mui/configwnd.c:917
+#: amiga-mui/configwnd.c:926
 msgid "off"
 msgstr "ei koskaan"
 
-#: amiga-mui/configwnd.c:918
+#: amiga-mui/configwnd.c:927
 msgid "as you type"
 msgstr "kirjoitettaessa"
 
-#: amiga-mui/configwnd.c:919
+#: amiga-mui/configwnd.c:928
 msgid "before storing"
 msgstr "ennen tallennusta"
 
-#: amiga-mui/configwnd.c:925
+#: amiga-mui/configwnd.c:934
 msgid "Editor"
 msgstr "Viestin kirjoittaminen"
 
-#: amiga-mui/configwnd.c:927
+#: amiga-mui/configwnd.c:936
 msgid "Word wrap"
 msgstr "Rivitys"
 
-#: amiga-mui/configwnd.c:931
+#: amiga-mui/configwnd.c:940
 msgid "Replying"
 msgstr "Vastaaminen"
 
-#: amiga-mui/configwnd.c:933 amiga-mui/configwnd.c:934
+#: amiga-mui/configwnd.c:942 amiga-mui/configwnd.c:943
 msgid "Wrap before quoting"
 msgstr "Rivitä ennen tekstin lainausta"
 
-#: amiga-mui/configwnd.c:938 amiga-mui/configwnd.c:939
+#: amiga-mui/configwnd.c:947 amiga-mui/configwnd.c:948
 msgid "Strip signature before quoting"
 msgstr "Älä lainaa alkuperäisen viestin allekirjoitusta"
 
-#: amiga-mui/configwnd.c:943 amiga-mui/configwnd.c:944
+#: amiga-mui/configwnd.c:952 amiga-mui/configwnd.c:953
 msgid "Cite empty lines"
 msgstr "Lainaa myös tyhjät rivit"
 
-#: amiga-mui/configwnd.c:965
+#: amiga-mui/configwnd.c:974
 msgid "Header Configuration"
 msgstr "Viestin ylätunniste"
 
-#: amiga-mui/configwnd.c:968 amiga-mui/configwnd.c:969
+#: amiga-mui/configwnd.c:977 amiga-mui/configwnd.c:978
 msgid "Show all headers"
 msgstr "Näytä kaikki tunnisteet"
 
-#: amiga-mui/configwnd.c:999
+#: amiga-mui/configwnd.c:1008
 msgid "Additional headers"
 msgstr "Lisätunnisteet"
 
-#: amiga-mui/configwnd.c:1033
+#: amiga-mui/configwnd.c:1042
 msgid "Background"
 msgstr "Tausta"
 
-#: amiga-mui/configwnd.c:1034
+#: amiga-mui/configwnd.c:1043
 msgid "Text"
 msgstr "Teksti"
 
-#: amiga-mui/configwnd.c:1035
+#: amiga-mui/configwnd.c:1044
 msgid "Quoted Text"
 msgstr "Lainattu teksti"
 
-#: amiga-mui/configwnd.c:1036
+#: amiga-mui/configwnd.c:1045
 msgid "Old Quoted Text"
 msgstr "Vanha lainaus"
 
-#: amiga-mui/configwnd.c:1037
+#: amiga-mui/configwnd.c:1046
 msgid "Link Text"
 msgstr "Linkki"
 
-#: amiga-mui/configwnd.c:1079
+#: amiga-mui/configwnd.c:1088
 msgid "Fonts"
 msgstr "Kirjasimet"
 
-#: amiga-mui/configwnd.c:1081
+#: amiga-mui/configwnd.c:1090
 msgid "Proportional Font"
 msgstr "Suhteutettu kirjasin"
 
-#: amiga-mui/configwnd.c:1088
+#: amiga-mui/configwnd.c:1097
 msgid "Fixed Font"
 msgstr "Tasalevyinen kirjasin"
 
-#: amiga-mui/configwnd.c:1097
+#: amiga-mui/configwnd.c:1106
 msgid "Colors"
 msgstr "Värit"
 
-#: amiga-mui/configwnd.c:1107 amiga-mui/configwnd.c:1108
+#: amiga-mui/configwnd.c:1116 amiga-mui/configwnd.c:1117
 msgid "Wordwrap plain text"
 msgstr "Rivitä tavallinen teksti"
 
-#: amiga-mui/configwnd.c:1109 amiga-mui/configwnd.c:1110
+#: amiga-mui/configwnd.c:1118 amiga-mui/configwnd.c:1119
 msgid "Underline links"
 msgstr "Alleviivaa linkit"
 
-#: amiga-mui/configwnd.c:1111 amiga-mui/configwnd.c:1112
+#: amiga-mui/configwnd.c:1120 amiga-mui/configwnd.c:1121
 msgid "Use graphical smilies"
 msgstr "Käytä graafisia hymiöitä"
 
-#: amiga-mui/configwnd.c:1132
+#: amiga-mui/configwnd.c:1141
 msgid "Allow to download images from the internet from"
 msgstr "Salli kuvien lataus seuraavista osoitteista"
 
-#: amiga-mui/configwnd.c:1156 amiga-mui/configwnd.c:1566
+#: amiga-mui/configwnd.c:1165 amiga-mui/configwnd.c:1575
 msgid "Signature"
 msgstr "Allekirjoitus"
 
-#: amiga-mui/configwnd.c:1197 amiga-mui/configwnd.c:1198
+#: amiga-mui/configwnd.c:1206 amiga-mui/configwnd.c:1207
 msgid "Us_e signatures"
 msgstr "Lisää allekirjoitus lähteviin viesteihin"
 
-#: amiga-mui/configwnd.c:1202
+#: amiga-mui/configwnd.c:1211
 msgid "_Add new signature"
 msgstr "Lisää uusi allekirjoitus"
 
-#: amiga-mui/configwnd.c:1244
+#: amiga-mui/configwnd.c:1253
 msgid "Insert random tagline"
 msgstr "Lisää satunnainen tagi"
 
-#: amiga-mui/configwnd.c:1245
+#: amiga-mui/configwnd.c:1254
 msgid "Insert ENV:Signature"
 msgstr "Lisää ENV:Signature"
 
-#: amiga-mui/configwnd.c:1249
+#: amiga-mui/configwnd.c:1258
 msgid "Add new signature"
 msgstr "Lisää uusi allekirjoitus"
 
-#: amiga-mui/configwnd.c:1250
+#: amiga-mui/configwnd.c:1259
 msgid "Remove signature"
 msgstr "Poista allekirjoitus"
 
-#: amiga-mui/configwnd.c:1273 amiga-mui/configwnd.c:1549
+#: amiga-mui/configwnd.c:1282 amiga-mui/configwnd.c:1558
 msgid "Phrase"
 msgstr "Vakiotekstit"
 
-#: amiga-mui/configwnd.c:1313
+#: amiga-mui/configwnd.c:1322
 msgid "_Add new phrase"
 msgstr "Lisää uusi vakioteksti"
 
-#: amiga-mui/configwnd.c:1360
+#: amiga-mui/configwnd.c:1369
 msgid "Use on addresses which contain"
 msgstr "Käytä osoitteissa jotka sisältävät"
 
-#: amiga-mui/configwnd.c:1367 amiga-mui/configwnd.c:1533
+#: amiga-mui/configwnd.c:1376 amiga-mui/configwnd.c:1542
 msgid "Write"
 msgstr "Kirjoitus"
 
-#: amiga-mui/configwnd.c:1369 amiga-mui/configwnd.c:1388
+#: amiga-mui/configwnd.c:1378 amiga-mui/configwnd.c:1397
 msgid "Welcome"
 msgstr "Tervetuloa"
 
-#: amiga-mui/configwnd.c:1375
+#: amiga-mui/configwnd.c:1384
 msgid "Welcome with address"
 msgstr "Osoitteellinen tervetuloa"
 
-#: amiga-mui/configwnd.c:1379 amiga-mui/configwnd.c:1398
+#: amiga-mui/configwnd.c:1388 amiga-mui/configwnd.c:1407
 msgid "Close"
 msgstr "Lopetus"
 
-#: amiga-mui/configwnd.c:1386 amiga-mui/mailtreelistclass.c:270
+#: amiga-mui/configwnd.c:1395 amiga-mui/mailtreelistclass.c:306
 msgid "Reply"
 msgstr "Vastausosoite"
 
-#: amiga-mui/configwnd.c:1393
+#: amiga-mui/configwnd.c:1402
 msgid "Intro"
 msgstr "Aloitus"
 
-#: amiga-mui/configwnd.c:1403
+#: amiga-mui/configwnd.c:1412
 msgid "Forward"
 msgstr "Välitys"
 
-#: amiga-mui/configwnd.c:1405
+#: amiga-mui/configwnd.c:1414
 msgid "Initial"
 msgstr "Aloitus"
 
-#: amiga-mui/configwnd.c:1410
+#: amiga-mui/configwnd.c:1419
 msgid "Finish"
 msgstr "Lopetus"
 
-#: amiga-mui/configwnd.c:1416
+#: amiga-mui/configwnd.c:1425
 msgid "Add new phrase"
 msgstr "Lisää uusi vakioteksti"
 
-#: amiga-mui/configwnd.c:1417
+#: amiga-mui/configwnd.c:1426
 msgid "Remove phrase"
 msgstr "Poista vakioteksti"
 
-#: amiga-mui/configwnd.c:1453
+#: amiga-mui/configwnd.c:1462
 msgid "SimpleMail - Configuration"
 msgstr "SimpleMail - Asetukset"
 
-#: amiga-mui/configwnd.c:1485 amiga-mui/filterwnd.c:492
+#: amiga-mui/configwnd.c:1494 amiga-mui/filterwnd.c:492
 msgid "_Use"
 msgstr "_Käytä"
 
-#: amiga-mui/configwnd.c:1502
+#: amiga-mui/configwnd.c:1511
 msgid "Save the configuration permanently."
 msgstr "Tallenna asetukset pysyvästi."
 
-#: amiga-mui/configwnd.c:1503
+#: amiga-mui/configwnd.c:1512
 msgid "Use the configuration, but don't save it."
 msgstr "Käytä asetuksia, mutta älä tallenna."
 
-#: amiga-mui/configwnd.c:1504
+#: amiga-mui/configwnd.c:1513
 msgid "Discards all the changes you have made."
 msgstr "Peru kaikki muutokset."
 
-#: amiga-mui/configwnd.c:1515
+#: amiga-mui/configwnd.c:1524
 msgid "Accounts"
 msgstr "Tilit"
 
-#: amiga-mui/configwnd.c:1532
+#: amiga-mui/configwnd.c:1541
 msgid "Receive mail"
 msgstr "Uudet viestit"
 
-#: amiga-mui/configwnd.c:1534
+#: amiga-mui/configwnd.c:1543
 msgid "Reading"
 msgstr "Lukeminen"
 
-#: amiga-mui/configwnd.c:1535
+#: amiga-mui/configwnd.c:1544
 msgid "Reading plain"
 msgstr "Teksti"
 
-#: amiga-mui/configwnd.c:1536
+#: amiga-mui/configwnd.c:1545
 msgid "Reading HTML"
 msgstr "HTML"
 
-#: amiga-mui/configwnd.c:1538
+#: amiga-mui/configwnd.c:1547
 msgid "Phrases"
 msgstr "Vakiotekstit"
 
-#: amiga-mui/configwnd.c:1555
+#: amiga-mui/configwnd.c:1564
 msgid "Signatures"
 msgstr "Allekirjoitukset"
 
-#: amiga-mui/configwnd.c:1619
+#: amiga-mui/configwnd.c:1628
 msgid "All messages"
 msgstr "Kaikki viestit"
 
-#: amiga-mui/configwnd.c:1621
+#: amiga-mui/configwnd.c:1630
 #, c-format
 msgid "> %ld KB"
 msgstr "> %ld Kt"
@@ -852,11 +853,11 @@ msgstr "%%ld/%d tavua"
 msgid "New"
 msgstr "Uusi"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:451
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:487
 msgid "Read"
 msgstr "Luettu"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:452
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:488
 msgid "Unread"
 msgstr "Lukematon"
 
@@ -868,7 +869,7 @@ msgstr "Vastattu"
 msgid "Forwarded"
 msgstr "Välitetty"
 
-#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:450
+#: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:486
 msgid "Pending"
 msgstr "Odottaa"
 
@@ -880,7 +881,7 @@ msgstr "Lähetetty"
 msgid "Sender"
 msgstr "Lähettäjä"
 
-#: amiga-mui/filterruleclass.c:88 amiga-mui/mailtreelistclass.c:269
+#: amiga-mui/filterruleclass.c:88 amiga-mui/mailtreelistclass.c:305
 #: amiga-mui/transwndclass.c:120 mail.c:2826 print.c:119
 msgid "Subject"
 msgstr "Otsikko"
@@ -1014,101 +1015,102 @@ msgstr "Tallenna"
 msgid "Reset"
 msgstr "Palauta"
 
-#: amiga-mui/gui_main.c:328
+#: amiga-mui/gui_main.c:330
 msgid "Failed to create the application\n"
 msgstr "Sovelluksen luominen epäonnistui.\n"
 
-#: amiga-mui/gui_main.c:329
+#: amiga-mui/gui_main.c:331
 msgid "Could not create mui custom classes\n"
 msgstr "MUI-luokkien luominen epäonnistui.\n"
 
-#: amiga-mui/gui_main.c:330
+#: amiga-mui/gui_main.c:332
 msgid "Couldn't create arexx port\n"
 msgstr "ARexx-portin luominen epäonnistui.\n"
 
-#: amiga-mui/gui_main.c:331
+#: amiga-mui/gui_main.c:333
 msgid "Couldn't initialize timer\n"
 msgstr "Ajastimen alustaminen epäonnistui.\n"
 
-#: amiga-mui/gui_main.c:332 amiga-mui/gui_main.c:333
+#: amiga-mui/gui_main.c:334 amiga-mui/gui_main.c:335
 #, c-format
 msgid "Couldn't open %s version %d\n"
 msgstr "%s:n versio %d avaus epäonnistui.\n"
 
-#: amiga-mui/mailtreelistclass.c:219
+#. Help bubble text
+#: amiga-mui/mailtreelistclass.c:221
 msgid "Current Message"
 msgstr "Valittu viesti"
 
-#: amiga-mui/mailtreelistclass.c:266
+#: amiga-mui/mailtreelistclass.c:302
 msgid "Status"
 msgstr "Tila"
 
-#: amiga-mui/mailtreelistclass.c:267 amiga-mui/transwndclass.c:119 mail.c:2763
+#: amiga-mui/mailtreelistclass.c:303 amiga-mui/transwndclass.c:119 mail.c:2763
 #: print.c:53
 msgid "From"
 msgstr "Lähettäjä"
 
-#: amiga-mui/mailtreelistclass.c:268 mail.c:2782 print.c:71
+#: amiga-mui/mailtreelistclass.c:304 mail.c:2782 print.c:71
 msgid "To"
 msgstr "Vastaanottaja"
 
-#: amiga-mui/mailtreelistclass.c:271 mail.c:2827 print.c:124
+#: amiga-mui/mailtreelistclass.c:307 mail.c:2827 print.c:124
 msgid "Date"
 msgstr "Päiväys"
 
-#: amiga-mui/mailtreelistclass.c:272 amiga-mui/transwndclass.c:118
+#: amiga-mui/mailtreelistclass.c:308 amiga-mui/transwndclass.c:118
 msgid "Size"
 msgstr "Koko"
 
-#: amiga-mui/mailtreelistclass.c:273
+#: amiga-mui/mailtreelistclass.c:309
 msgid "Filename"
 msgstr "Tiedostonimi"
 
-#: amiga-mui/mailtreelistclass.c:283
+#: amiga-mui/mailtreelistclass.c:319
 msgid "Mail Settings"
 msgstr "Kansion ominaisuudet"
 
-#: amiga-mui/mailtreelistclass.c:284
+#: amiga-mui/mailtreelistclass.c:320
 msgid "Show From/To?"
 msgstr "Näytä Lähettäjä/Vastaanottaja?"
 
-#: amiga-mui/mailtreelistclass.c:285
+#: amiga-mui/mailtreelistclass.c:321
 msgid "Show Subject?"
 msgstr "Näytä otsikko?"
 
-#: amiga-mui/mailtreelistclass.c:286
+#: amiga-mui/mailtreelistclass.c:322
 msgid "Show Reply-To?"
 msgstr "Näytä vastausosoite?"
 
-#: amiga-mui/mailtreelistclass.c:287
+#: amiga-mui/mailtreelistclass.c:323
 msgid "Show Date?"
 msgstr "Näytä päiväys?"
 
-#: amiga-mui/mailtreelistclass.c:288
+#: amiga-mui/mailtreelistclass.c:324
 msgid "Show Size?"
 msgstr "Näytä koko?"
 
-#: amiga-mui/mailtreelistclass.c:289
+#: amiga-mui/mailtreelistclass.c:325
 msgid "Show Filename?"
 msgstr "Näytä tiedostonimi?"
 
-#: amiga-mui/mailtreelistclass.c:445 amiga-mui/readwnd.c:862
+#: amiga-mui/mailtreelistclass.c:481 amiga-mui/readwnd.c:862
 msgid "Mail"
 msgstr "Viesti"
 
-#: amiga-mui/mailtreelistclass.c:446
+#: amiga-mui/mailtreelistclass.c:482
 msgid "Set status"
 msgstr "Aseta tila"
 
-#: amiga-mui/mailtreelistclass.c:447
+#: amiga-mui/mailtreelistclass.c:483
 msgid "Mark"
 msgstr "Merkitty"
 
-#: amiga-mui/mailtreelistclass.c:448
+#: amiga-mui/mailtreelistclass.c:484
 msgid "Unmark"
 msgstr "Poista merkintä"
 
-#: amiga-mui/mailtreelistclass.c:449
+#: amiga-mui/mailtreelistclass.c:485
 msgid "Hold"
 msgstr "Pidossa"
 
@@ -1434,7 +1436,7 @@ msgstr "Odotetaan..."
 msgid "_Abort"
 msgstr "Peru"
 
-#: mail.c:1026
+#: mail.c:1089
 #, c-format
 msgid ""
 "Sender address (From) is <%s>, but\n"
@@ -1445,18 +1447,18 @@ msgstr ""
 "kuin vastausosoite <%s>.\n"
 "Mihin vastaus lähetetään?"
 
-#: mail.c:1029
+#: mail.c:1092
 msgid "_From|*_Reply-To|_Both|_Cancel"
 msgstr "_Lähettäjä|*_Vastaus|_Molemmat|_Peru"
 
-#: mail.c:1072
+#: mail.c:1135
 msgid ""
 "This e-mail has multiple recipients. Should it be answered to all recipients?"
 msgstr ""
 "Tällä viestillä on monta vastaanottajaa. Lähetetäänkö vastaus myös kaikille "
 "vastaanottajille?"
 
-#: mail.c:1073
+#: mail.c:1136
 msgid "*_Yes|_No"
 msgstr "_Kyllä|_Ei"
 

@@ -61,6 +61,20 @@ $BannersText["en"]="Here are some banners you might want to put on your homepage
 $BannersText["de"]="Hier sind noch einige Banner, die auf der eigenen Homepage gezeigt werden können";
 $BannersCreatorText["en"]="They are made by Richard \"zeg\" Wagenführer, thank you very much for it!";
 $BannersCreatorText["de"]="Sie wurden von Richard \"zeg\" Wagenführer erstellt.";
+$GalleryUsersText["en"]="There are %d users in this database";
+$GalleryUsersText["de"]="Es befinden sich %d Benutzer in der Datenbank.";
+$GalleryNoUsersText["en"]="No users are in the database.";
+$GalleryNoUsersText["de"]="Es ist niemand in der Datenbank eingetragen.";
+$GalleryIntroText["en"]="Please fill in the formular to be added into the database.";
+$GalleryIntroText["de"]="Um in die Datenbank eingetragen zu werden, füllen Sie bitte das Formular aus.";
+$GalleryNameText["en"]="Your Name:";
+$GalleryNameText["de"]="Ihr Name:";
+$GalleryEMailText["en"]="Your E-Mail Address:";
+$GalleryEMailText["de"]="Ihre E-Mail Adresse:";
+$GalleryPhotoText["en"]="Your Photo:";
+$GalleryPhotoText["de"]="Ihr Foto:";
+$GalleryAlreadyText["en"]="Your photo is already inside SimpleMail's gallery";
+$GalleryAlreadyText["de"]="Ihr Foto ist bereits in SimpleMail's Galery";
 
 ?>
 

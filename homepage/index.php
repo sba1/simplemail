@@ -30,6 +30,10 @@
   $LinkMenu["gallery"]["title"]=get_string($GalleryText);
   $LinkMenu["gallery"]["datename"]="gallery.php";
 
+  $LinkMenu["gallery_add_user"]["filename"]="gallery_add_user.php";
+  $LinkMenu["gallery_add_user"]["title"]=get_string($GalleryText);
+  $LinkMenu["gallery_add_user"]["datename"]="gallery.php";
+
   if (!isset($body)) $body="default";
 ?>
  
@@ -38,7 +42,7 @@
     <title>SimpleMail</title>
     <STYLE TYPE="text/css"><!--
       A { text-decoration: none }
-      A:hover{ text-decoration:underline; background: #ffa }
+      A:hover{ background: #ffa }
 --></STYLE>
 
   </head>
@@ -70,12 +74,15 @@
 	  <?php
 	    foreach($LinkMenu as $key => $value)
 	    {
-	      if ($key != $body)
-	        printf("<A CLASS=\"menu\" HREF=\"index.php%s\">",$key!="default"?"?body=".$key:"");
-	      echo $value["title"];
-	      if ($key != $body)
-	        echo "</A>";
-	      echo "<br>";
+	      if ($key != "gallery_add_user")
+	      {
+	        if ($key != $body)
+	          printf("<A CLASS=\"menu\" HREF=\"index.php%s\">",$key!="default"?"?body=".$key:"");
+	        echo $value["title"];
+	        if ($key != $body)
+	          echo "</A>";
+	        echo "<br>";
+              }
 	    }
           ?>
         </td>

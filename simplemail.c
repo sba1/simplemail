@@ -636,6 +636,8 @@ void callback_maildrop(struct folder *dest_folder)
 		if (!num) return;
 		if (!(mail_array = (struct mail**)malloc(num*sizeof(struct mail*)))) return;
 
+		app_busy();
+
 		/* move mail per mail, store all success full moves into the array */
 		moved_num = 0;
 		mail = main_get_mail_first_selected(&handle);
@@ -658,6 +660,8 @@ void callback_maildrop(struct folder *dest_folder)
 		}
 		free(mail_array);
 		main_thaw_mail_list();
+
+		app_unbusy();
 	}
 }
 
@@ -708,6 +712,8 @@ void callback_move_selected_mails(void)
 
 	if (!num) return;
 
+	app_busy();
+
 	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mails"),src_folder)))
 	{
 		if (src_folder != dest_folder)
@@ -724,6 +730,8 @@ void callback_move_selected_mails(void)
 			main_remove_mails_selected();
 		}
 	}
+
+	app_unbusy();
 }
 
 /* Process the current selected folder and mark all mails which are identified as spam */
@@ -732,6 +740,8 @@ void callback_check_selected_folder_for_spam(void)
 	struct folder *folder = main_get_folder();
 	void *handle = NULL;
 	struct mail *m;
+
+	app_busy();
 
 	while ((m = folder_next_mail(folder, &handle)))
 	{
@@ -744,6 +754,8 @@ void callback_check_selected_folder_for_spam(void)
 			main_refresh_mail(m);
 		}
 	}
+
+	app_unbusy();
 }
 
 /* Move all mails marked as spam into the spam folder */
@@ -758,6 +770,8 @@ void callback_move_spam_marked_mails(void)
 	if (folder == spam_folder) return;
 	if (!spam_folder) return;
 
+	app_busy();
+
 	if ((mail_array = folder_query_mails(folder, FOLDER_QUERY_MAILS_PROP_SPAM)))
 	{
 		i = 0;
@@ -768,6 +782,8 @@ void callback_move_spam_marked_mails(void)
 		}
 		free(mail_array);
 	}
+
+	app_unbusy();
 }
 
 /* the currently selected mail should be changed */

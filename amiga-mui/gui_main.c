@@ -354,6 +354,22 @@ void app_show(void)
 	set(App,MUIA_Application_Iconified,FALSE);
 }
 
+/****************************************************************
+ The app is busy
+*****************************************************************/
+void app_busy(void)
+{
+	set(App,MUIA_Application_Sleep,TRUE);
+}
+
+/****************************************************************
+ The app is ready
+*****************************************************************/
+void app_unbusy(void)
+{
+	set(App,MUIA_Application_Sleep,FALSE);
+}
+
 char *initial_mailto;
 char *initial_subject;
 

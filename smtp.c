@@ -105,6 +105,10 @@ static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
 		{
 			ready = 1;
 			rc = atol(buf);
+		} else
+		{
+			if(buf[3] != '-')
+				break;
 		}
 	}
 	

@@ -79,8 +79,19 @@ int read_line(FILE *fh, char *buf)
 **************************************************************************/
 static void put_xml_element_string(FILE *fh, char *element, char *contents)
 {
+	char *src;
+	char c;
 	if (!contents) return;
-	fprintf(fh,"<%s>%s</%s>\n",element,contents,element);
+
+	src = contents;
+
+	fprintf(fh,"<%s>",element);
+	while ((c = *src++))
+	{
+		if (((unsigned char)c)>=128) fprintf(fh,"&#%d;",(unsigned char)c);
+		else fputc(c,fh);
+	}
+	fprintf(fh,"</%s>",element);
 }
 
 static int addressbook_tag;
@@ -230,6 +241,67 @@ void xml_end_tag(void *data, const char *el)
 }
 
 /**************************************************************************
+ Converts a single UFT-8 Chracter to a Unicode character very very
+ incomplete. Should return NULL if invalid (actualy not implemented)
+**************************************************************************/
+static char *uft8toucs(char *chr, unsigned int *code)
+{
+	unsigned char c = *chr++;
+	unsigned int ucs = 0;
+	int i,bytes;
+	if (!(c & 0x80))
+	{
+		*code = c;
+		return chr;
+	} else
+	{
+		if (!(c & 0x20))
+		{
+			bytes = 2;
+			ucs = c & 0x1f;
+		}
+		else if (!(c & 0x10))
+		{
+			bytes = 3;
+			ucs = c & 0xf;
+		}
+		else if (!(c & 0x08))
+		{
+			bytes = 4;
+			ucs = c & 0x7;
+		}
+		else if (!(c & 0x04))
+		{
+			bytes = 5;
+			ucs = c & 0x3;
+		}
+		else if (!(c & 0x02))
+		{
+			bytes = 6;
+			ucs = c & 0x1;
+		}
+
+		for (i=1;i<bytes;i++)
+			ucs = (ucs << 6) | ((*chr++)&0x3f);
+	}
+	*code = ucs;
+	return chr;
+}
+
+
+/**************************************************************************
+ Converts a single UFT-8 Chracter to ISO-Latin 1 one, very very
+ incomplete.
+**************************************************************************/
+static char *uft8toiso(char *chr, char *code)
+{
+	unsigned int unicode;
+	char *ret = uft8toucs(chr,&unicode);
+	*code = unicode;
+	return ret;
+}
+
+/**************************************************************************
  Read the characters
 **************************************************************************/
 void xml_char_data(void *data, const XML_Char *s, int len)
@@ -248,14 +320,24 @@ void xml_char_data(void *data, const XML_Char *s, int len)
 			if (!old_len)
 			{
 				/* Skip trailing spaces */
-				while ((isspace(*src) && len))
+				while ((isspace(*src) && len)) /* is not really correct */
 				{
 					src++;
 					len--;
 				}
 			}
-			strncpy(dest,src,len);
-			dest[old_len+len]=0;
+
+			while (src && len)
+			{
+				char code;
+				char *oldsrc = src;
+				src = uft8toiso(src,&code);
+				if (!code) break; /* null byte will be added below */
+				*dest++ = code;
+				len -= src - oldsrc;
+			}
+
+			*dest = 0;
 		}
 	}
 }

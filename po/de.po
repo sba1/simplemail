@@ -1,0 +1,95 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2001-09-29 17:10+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+
+#: amiga-mui/mainwnd.c:148
+msgid "SimpleMail - About"
+msgstr "SimpleMail - Über"
+
+#: amiga-mui/mainwnd.c:149
+msgid "*Ok"
+msgstr "*Ok"
+
+#: amiga-mui/mainwnd.c:151
+msgid "Copyright © 2000-2001"
+msgstr "Copyright © 2000-2001"
+
+#: amiga-mui/mainwnd.c:151
+msgid "and"
+msgstr ""
+
+#: amiga-mui/mainwnd.c:151
+msgid "Released under the terms of the GNU Public License"
+msgstr "Veröffentlichter unter den Bedingungen der GNU Public Lizenz"
+
+#: amiga-mui/mainwnd.c:468
+msgid "R_ead"
+msgstr "Lesen"
+
+#: amiga-mui/mainwnd.c:469
+msgid "Edi_t"
+msgstr "Bearb."
+
+#: amiga-mui/mainwnd.c:470
+msgid "_Delete"
+msgstr "Löschen"
+
+#: amiga-mui/mainwnd.c:471
+msgid "_GetAdd"
+msgstr "InsAB"
+
+#: amiga-mui/mainwnd.c:476
+msgid "_New"
+msgstr "Neu"
+
+#: amiga-mui/mainwnd.c:477
+msgid "_Reply"
+msgstr "Antw."
+
+#: amiga-mui/mainwnd.c:478
+msgid "F_orward"
+msgstr "Weiterl."
+
+#: amiga-mui/mainwnd.c:482
+msgid "_Fetch"
+msgstr "Holen"
+
+#: amiga-mui/mainwnd.c:483
+msgid "_Send"
+msgstr "Senden"
+
+#: amiga-mui/mainwnd.c:487
+msgid "Filter"
+msgstr "Filtern"
+
+#: amiga-mui/mainwnd.c:488
+msgid "Filters"
+msgstr "Filter"
+
+#: amiga-mui/mainwnd.c:492
+msgid "_Abook"
+msgstr "ABuch"
+
+#: amiga-mui/mainwnd.c:493
+msgid "_Config"
+msgstr "Konfig"
+
+#: amiga-mui/mainwnd.c:564
+#, c-format
+msgid ""
+"SimpleMail needs at least version 1.8 of the NListtree mui subclass!\n"
+"It's available at %s"
+msgstr ""
+

@@ -1,0 +1,3 @@
+# List of source files containing translatable strings.
+# (Filenames relative to top-level directory.)
+amiga-mui/mainwnd.c

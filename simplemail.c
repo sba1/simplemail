@@ -34,6 +34,7 @@
 #include "mainwnd.h"
 #include "readwnd.h"
 #include "subthreads.h"
+#include "tcpip.h"
 
 #include "addressbook.h"
 #include "configuration.h"
@@ -598,7 +599,14 @@ void callback_timer(void)
 			/* nothing should happen when mails_dl() is called twice,
 			   this could happen if a mail downloading takes very long */
 			callback_autocheck_refresh();
-			mails_dl(1);
+
+			/* If socket library cannot be opened we also shouldn't try
+				 to download the mails */
+			if (open_socket_lib())
+			{
+				close_socket_lib();
+				mails_dl(1);
+			}
 		}
 	}
 }

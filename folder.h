@@ -37,7 +37,7 @@ struct folder
 	/* the array of mails, no list used here because this would slowdown maybe the processing later */
 	struct mail **mail_array; /* but don't access this here, use folder_next_mail() */
 	int mail_array_allocated; /* how many entries could be in the array */
-	int num_mails; /* number of mails */
+	int num_mails; /* number of mails in the mail_array. Might be 0 if index is not loaded! */
 
 	int primary_sort;
 	int secondary_sort;
@@ -45,12 +45,14 @@ struct folder
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted */
 
 	int index_uptodate; /* 1 if the indexfile is uptodate */
+	int mail_infos_loaded; /* 1 if the mailinfos has loaded */
 
 	int type; /* see below */
 	int special; /* see below */
 
 	int new_mails; /* number of new mails */
 	int unread_mails; /* number of unread mails */
+	int num_index_mails; /* number of mails, might be -1 for being unknown  */
 
 	struct folder *parent_folder; /* pointer to the parent folder */
 
@@ -87,10 +89,10 @@ char *new_folder_path(void);
 int init_folders(void);
 void del_folders(void);
 
-int folder_read_mail_infos(struct folder *folder);
 int folder_add_mail(struct folder *folder, struct mail *mail);
 int folder_add_mail_incoming(struct mail *mail);
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
+int folder_number_of_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 

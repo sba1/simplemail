@@ -37,6 +37,7 @@
 #include "support_indep.h"
 
 static void folder_delete_mails(struct folder *folder);
+static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
 
 static struct list folder_list;
 
@@ -82,6 +83,7 @@ static FILE *folder_open_indexfile(struct folder *f, char *mode)
 	char cpath[256];
 
 	if (!f || !f->path) return 0;
+	if (f->special == FOLDER_SPECIAL_GROUP) return 0;
 	if (!(path = mystrdup(f->path))) return 0;
 
 	*sm_path_part(path) = 0;
@@ -152,11 +154,25 @@ void folder_delete_indexfile(struct folder *f)
 }
 
 /******************************************************************
+ Prepare the folder for a given ammount of mails
+*******************************************************************/
+static int folder_prepare_for_additional_mails(struct folder *folder, int num_mails)
+{
+	folder->mail_array_allocated += num_mails + 5;
+	folder->mail_array = realloc(folder->mail_array,folder->mail_array_allocated*sizeof(struct mail*));
+	return folder->mail_array?1:0;
+}
+
+/******************************************************************
  Adds a new mail into the given folder
 *******************************************************************/
 int folder_add_mail(struct folder *folder, struct mail *mail)
 {
 	int i;
+
+	/* If mails info is not read_yet, read it now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
@@ -203,6 +219,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 	}
 
 	folder->mail_array[folder->num_mails++] = mail;
+	if (folder->num_mails > folder->num_index_mails) folder->num_index_mails = folder->num_mails;
 	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
@@ -271,6 +288,10 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 	int i;
 	struct mail *submail;
 
+	/* If mails info is not read_yet, read it now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
+
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
 	{
@@ -334,6 +355,7 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 		}
 	}
 
+	folder->num_index_mails--;
 	if ((mail_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
 	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 }
@@ -345,6 +367,10 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail)
 {
 	int i;
+
+	/* If mails info is not read_yet, read it now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
@@ -375,6 +401,33 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 
 	if (mail_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (newmail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+}
+
+/******************************************************************
+ Returns the number of mails. For groups it counts the whole
+ number of mails. -1 for an error
+*******************************************************************/
+int folder_number_of_mails(struct folder *folder)
+{
+	if (folder->special == FOLDER_SPECIAL_GROUP)
+	{
+		int num_mails = 0;
+		struct folder *iter = folder_next(folder);
+		struct folder *parent = folder->parent_folder;
+		
+		while (iter)
+		{
+			if (iter->parent_folder == parent) break;
+			if (iter->special != FOLDER_SPECIAL_GROUP)
+			{
+				if (folder->num_index_mails == -1) return -1;
+				num_mails += iter->num_index_mails;
+			}
+			iter = folder_next(iter);
+		}
+
+		return num_mails;
+	} else return folder->num_index_mails;
 }
 
 /******************************************************************
@@ -451,12 +504,14 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
  ans friends)
  returns 0 if an error has happended otherwise 0
 *******************************************************************/
-int folder_read_mail_infos(struct folder *folder)
+static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 {
+	FILE *fh;
   int mail_infos_read = 0;
 
-	FILE *fh = folder_open_indexfile(folder,"rb");
-	if (fh)
+	if (folder->special == FOLDER_SPECIAL_GROUP) return 0;
+
+	if ((fh = folder_open_indexfile(folder,"rb")))
 	{
 		char buf[4];
 		fread(buf,1,4,fh);
@@ -468,66 +523,77 @@ int folder_read_mail_infos(struct folder *folder)
 			{
 				int num_mails;
 				fread(&num_mails,1,4,fh);
-				mail_infos_read = 1;
-				while (num_mails--)
+
+				if (!only_num_mails)
 				{
-					struct mail *m = mail_create();
-					if (m)
+					folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+					mail_infos_read = 1;
+					folder_prepare_for_additional_mails(folder, num_mails);
+					while (num_mails--)
 					{
-						char *buf;
-						if ((buf = fread_str(fh)))
+						struct mail *m = mail_create();
+						if (m)
 						{
-							mail_add_header(m,"Subject",7,buf,strlen(buf),0);
-							free(buf);
+							char *buf;
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"Subject",7,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							m->filename = fread_str(fh);
+
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"From",4,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"To",2,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"Reply-To",8,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"Message-ID",10,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							if ((buf = fread_str(fh)))
+							{
+								mail_add_header(m,"In-Reply-To",11,buf,strlen(buf),0);
+								free(buf);
+							}
+
+							fseek(fh,ftell(fh)%2,SEEK_CUR);
+							fread(&m->size,1,sizeof(m->size),fh);
+							fread(&m->seconds,1,sizeof(m->seconds),fh);
+							fread(&m->flags,1,sizeof(m->flags),fh);
+							mail_identify_status(m);
+							mail_process_headers(m);
+							m->flags &= ~MAIL_FLAGS_NEW;
+							folder_add_mail(folder,m);
 						}
-
-						m->filename = fread_str(fh);
-
-						if ((buf = fread_str(fh)))
-						{
-							mail_add_header(m,"From",4,buf,strlen(buf),0);
-							free(buf);
-						}
-
-						if ((buf = fread_str(fh)))
-						{
-							mail_add_header(m,"To",2,buf,strlen(buf),0);
-							free(buf);
-						}
-
-						if ((buf = fread_str(fh)))
-						{
-							mail_add_header(m,"Reply-To",8,buf,strlen(buf),0);
-							free(buf);
-						}
-
-						if ((buf = fread_str(fh)))
-						{
-							mail_add_header(m,"Message-ID",10,buf,strlen(buf),0);
-							free(buf);
-						}
-
-						if ((buf = fread_str(fh)))
-						{
-							mail_add_header(m,"In-Reply-To",11,buf,strlen(buf),0);
-							free(buf);
-						}
-
-						fseek(fh,ftell(fh)%2,SEEK_CUR);
-						fread(&m->size,1,sizeof(m->size),fh);
-						fread(&m->seconds,1,sizeof(m->seconds),fh);
-						fread(&m->flags,1,sizeof(m->flags),fh);
-						mail_identify_status(m);
-						mail_process_headers(m);
-						folder_add_mail(folder,m);
-
-						m->flags &= ~MAIL_FLAGS_NEW;
 					}
+				} else
+				{
+					folder->num_index_mails = num_mails;
 				}
 			}
 		}
 		fclose(fh);
 	}
+
+	if (only_num_mails)
+		return 1;
 
 	folder->index_uptodate = mail_infos_read;
 
@@ -547,6 +613,8 @@ int folder_read_mail_infos(struct folder *folder)
 		if ((dfd = opendir("./")))
 #endif
 		{
+			folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+
 			while ((dptr = readdir(dfd)) != NULL)
 			{
 				struct mail *m;
@@ -622,11 +690,7 @@ static struct folder *folder_add(char *path)
 					if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
 					folder_config_save(&node->folder);
 				}
-
-				/* for test reasons, later this will only be done if the folder gets activated
-				   (in folder_next_mail()) */
-				folder_read_mail_infos(&node->folder);
-
+				folder_read_mail_infos(&node->folder,1);
 				list_insert_tail(&folder_list,&node->node);
 				return &node->folder;
 			}
@@ -924,8 +988,9 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 		f->mail_array_allocated = 0;
 		f->new_mails = 0;
 		f->unread_mails = 0;
+		f->num_index_mails = 0;
 
-		folder_read_mail_infos(f);
+		folder_read_mail_infos(f,0);
 	}
 
 	return refresh;
@@ -1304,9 +1369,11 @@ static char *fread_str(FILE *fh)
 *******************************************************************/
 int folder_save_index(struct folder *f)
 {
-	FILE *fh = folder_open_indexfile(f,"wb");
+	FILE *fh;
 
-	if (fh)
+	if (!f->mail_infos_loaded) return 0;
+
+	if ((fh = folder_open_indexfile(f,"wb")))
 	{
 		int i;
 		int ver = 2;
@@ -1454,7 +1521,13 @@ static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 *******************************************************************/
 struct mail *folder_next_mail(struct folder *folder, void **handle)
 {
-	struct mail **mail_array = folder->mail_array;
+	struct mail **mail_array;
+
+	/* If mails info is not read_yet, read it now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
+
+	mail_array = folder->mail_array;
 	if (!folder->sorted_mail_array && *((int**)handle) == 0 && folder->num_mails)
 	{
 		/* the array is not sorted, so sort it now */
@@ -1963,5 +2036,3 @@ void del_folders(void)
 		f = folder_next(f);
 	}
 }
-
-

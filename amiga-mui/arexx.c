@@ -68,6 +68,19 @@ struct Screen *main_get_screen(void);
 char *stradd(char *src, const char *str1);
 
 /****************************************************************
+ SetRexxVarFromMsg() replacement
+*****************************************************************/
+LONG MySetRexxVarFromMsg(STRPTR name, STRPTR value, struct RexxMsg *message)
+{
+#ifdef __AMIGAOS4__
+	if (IRexxSys) return SetRexxVarFromMsg(name,value,message);
+	return 0;
+#else
+	return SetRexxVar(message,name,value,strlen(value));
+#endif
+}
+
+/****************************************************************
  Returns the arexx message port if it already exists. Should
  be called in Forbid() state.
 *****************************************************************/
@@ -131,7 +144,7 @@ void arexx_cleanup(void)
 *****************************************************************/
 ULONG arexx_mask(void)
 {
-	if (!arexx_port) return NULL;
+	if (!arexx_port) return 0UL;
 	return 1UL << arexx_port->mp_SigBit;
 }
 
@@ -200,7 +213,7 @@ static void arexx_set_var_int(struct RexxMsg *rxmsg, char *varname, int num)
 {
 	char num_buf[24];
 	sprintf(num_buf,"%d",num);
-	SetRexxVar(rxmsg,varname,num_buf,strlen(num_buf));
+	MySetRexxVarFromMsg(varname,num_buf,rxmsg);
 }
 
 
@@ -258,7 +271,7 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 			{
 				char num_buf[24];
 				sprintf(num_buf,"%d",window);
-				if (mailwrite_arg.var) SetRexxVar(rxmsg,mailwrite_arg.var,num_buf,strlen(num_buf));
+				if (mailwrite_arg.var) MySetRexxVarFromMsg(mailwrite_arg.var,num_buf,rxmsg);
 				else arexx_set_result(rxmsg,num_buf);
 			}
 		}
@@ -362,14 +375,14 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 					strcpy(stem_buf,getselected_arg.stem);
 					strcpy(&stem_buf[stem_len],"NUM.COUNT");
 					sprintf(num_buf,"%d",num);
-					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+					MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 					mail = main_get_mail_first_selected(&handle);
 					while (mail)
 					{
 						sprintf(&stem_buf[stem_len],"NUM.%d",i);
 						sprintf(num_buf,"%d",folder_get_index_of_mail(folder,mail));
-						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+						MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 						i++;
 						mail = main_get_mail_next_selected(&handle);
 					}
@@ -392,7 +405,7 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 					mail = main_get_mail_next_selected(&handle);
 				}
 
-				if (getselected_arg.var) SetRexxVar(rxmsg,getselected_arg.var,str,strlen(str));
+				if (getselected_arg.var) MySetRexxVarFromMsg(getselected_arg.var,str,rxmsg);
 				else arexx_set_result(rxmsg,str);
 
 				free(str);
@@ -442,7 +455,7 @@ static void arexx_getmailstat(struct RexxMsg *rxmsg, STRPTR args)
 		{
 			char num_buf[36];
 			sprintf(num_buf,"%d %d %d",total_msg,total_new,total_unread);
-			if (getmailstat_arg.var) SetRexxVar(rxmsg,getmailstat_arg.var,num_buf,strlen(num_buf));
+			if (getmailstat_arg.var) MySetRexxVarFromMsg(getmailstat_arg.var,num_buf,rxmsg);
 			else arexx_set_result(rxmsg,num_buf);
 		}
 		FreeTemplate(arg_handle);
@@ -512,9 +525,9 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 					strcpy(&stem_buf[stem_len],"NUMBER");
 					arexx_set_var_int(rxmsg,stem_buf,folder_position(folder));
 					strcpy(&stem_buf[stem_len],"NAME");
-					SetRexxVar(rxmsg,stem_buf,folder->name,mystrlen(folder->name));
+					MySetRexxVarFromMsg(stem_buf,folder->name,rxmsg);
 					strcpy(&stem_buf[stem_len],"PATH");
-					SetRexxVar(rxmsg,stem_buf,folder->path,mystrlen(folder->path));
+					MySetRexxVarFromMsg(stem_buf,folder->path,rxmsg);
 					strcpy(&stem_buf[stem_len],"TOTAL");
 					arexx_set_var_int(rxmsg,stem_buf,folder->num_mails);
 					strcpy(&stem_buf[stem_len],"NEW");
@@ -555,7 +568,7 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 				sprintf(num_buf,"%d",folder_type);
 				str = stradd(str,num_buf);
 
-				if (folderinfo_arg.var) SetRexxVar(rxmsg,folderinfo_arg.var,str,strlen(str));
+				if (folderinfo_arg.var) MySetRexxVarFromMsg(folderinfo_arg.var,str,rxmsg);
 				else arexx_set_result(rxmsg,str);
 
 				free(str);
@@ -599,7 +612,7 @@ static void arexx_request(struct RexxMsg *rxmsg, STRPTR args)
 		{
 			char num_buf[24];
 			sprintf(num_buf,"%d",result);
-			if (request_arg.var) SetRexxVar(rxmsg,request_arg.var,num_buf,strlen(num_buf));
+			if (request_arg.var) MySetRexxVarFromMsg(request_arg.var,num_buf,rxmsg);
 			else arexx_set_result(rxmsg,num_buf);
 		}
 		FreeTemplate(arg_handle);
@@ -635,12 +648,12 @@ static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
 				{
 					strcpy(stem_buf,requeststring_arg.stem);
 					strcat(stem_buf,"STRING");
-					SetRexxVar(rxmsg,stem_buf,result,strlen(result));
+					MySetRexxVarFromMsg(stem_buf,result,rxmsg);
 					free(stem_buf);
 				}
 			} else
 			{
-				if (requeststring_arg.var) SetRexxVar(rxmsg,requeststring_arg.var,result,strlen(result));
+				if (requeststring_arg.var) MySetRexxVarFromMsg(requeststring_arg.var,result,rxmsg);
 				else arexx_set_result(rxmsg,result);
 			}
 			free(result);
@@ -740,8 +753,8 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 				if (stem_buf)
 				{
 					strcpy(&stem_buf[stem_len],"PATH.COUNT");
-					sprintf(num_buf,"%d",filereq->fr_NumArgs);
-					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+					sprintf(num_buf,"%ld",filereq->fr_NumArgs);
+					MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 					for (i=0;i<filereq->fr_NumArgs;i++)
 					{
@@ -750,21 +763,21 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 						{
 							if ((name = mycombinepath(dirname,filereq->fr_ArgList[i].wa_Name)))
 							{
-								SetRexxVar(rxmsg,stem_buf,name,strlen(name));
+								MySetRexxVarFromMsg(stem_buf,name,rxmsg);
 								free(name);
-							} else SetRexxVar(rxmsg,stem_buf,"",0);
+							} else MySetRexxVarFromMsg(stem_buf,"",rxmsg);
 							FreeVec(dirname);
-						} else SetRexxVar(rxmsg,stem_buf,"",0);
+						} else MySetRexxVarFromMsg(stem_buf,"",rxmsg);
 					}
 
 					strcpy(&stem_buf[stem_len],"FILE");
-					SetRexxVar(rxmsg,stem_buf,filereq->fr_File,mystrlen(filereq->fr_File));
+					MySetRexxVarFromMsg(stem_buf,filereq->fr_File,rxmsg);
 
 					strcpy(&stem_buf[stem_len],"DRAWER");
-					SetRexxVar(rxmsg,stem_buf,filereq->fr_Drawer,mystrlen(filereq->fr_Drawer));
+					MySetRexxVarFromMsg(stem_buf,filereq->fr_Drawer,rxmsg);
 
 					strcpy(&stem_buf[stem_len],"PATTERN");
-					SetRexxVar(rxmsg,stem_buf,filereq->fr_Pattern,mystrlen(filereq->fr_Pattern));
+					MySetRexxVarFromMsg(stem_buf,filereq->fr_Pattern,rxmsg);
 				}
 
 				if ((dirlock = Lock(filereq->fr_Drawer,ACCESS_READ)))
@@ -785,7 +798,7 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 				if (stem_buf)
 				{
 					strcpy(&stem_buf[stem_len],"PATH.COUNT");
-					SetRexxVar(rxmsg,stem_buf,"0",1);
+					MySetRexxVarFromMsg(stem_buf,"0",rxmsg);
 				}
 				arexx_set_result(rxmsg,"");
 			}
@@ -881,23 +894,23 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 					strcpy(&stem_buf[stem_len],"INDEX");
 					arexx_set_var_int(rxmsg,stem_buf,mail_index);
 					strcpy(&stem_buf[stem_len],"STATUS");
-					SetRexxVar(rxmsg,stem_buf,mail_status,1);
+					MySetRexxVarFromMsg(stem_buf,mail_status,rxmsg);
 					strcpy(&stem_buf[stem_len],"FROM");
-					SetRexxVar(rxmsg,stem_buf,mail_from,mystrlen(mail_from));
+					MySetRexxVarFromMsg(stem_buf,mail_from,rxmsg);
 					strcpy(&stem_buf[stem_len],"TO");
-					SetRexxVar(rxmsg,stem_buf,mail_to,mystrlen(mail_to));
+					MySetRexxVarFromMsg(stem_buf,mail_to,rxmsg);
 					strcpy(&stem_buf[stem_len],"REPLYTO");
-					SetRexxVar(rxmsg,stem_buf,mail_replyto,mystrlen(mail_replyto));
+					MySetRexxVarFromMsg(stem_buf,mail_replyto,rxmsg);
 					strcpy(&stem_buf[stem_len],"SUBJECT");
-					SetRexxVar(rxmsg,stem_buf,mail->subject,mystrlen(mail->subject));
+					MySetRexxVarFromMsg(stem_buf,mail->subject,rxmsg);
 					strcpy(&stem_buf[stem_len],"FILENAME");
-					SetRexxVar(rxmsg,stem_buf,mail->filename,mystrlen(mail->filename));
+					MySetRexxVarFromMsg(stem_buf,mail->filename,rxmsg);
 					strcpy(&stem_buf[stem_len],"SIZE");
 					arexx_set_var_int(rxmsg,stem_buf,mail->size);
 					strcpy(&stem_buf[stem_len],"DATE");
-					SetRexxVar(rxmsg,stem_buf,mail_date,strlen(mail_date));
+					MySetRexxVarFromMsg(stem_buf,mail_date,rxmsg);
 					strcpy(&stem_buf[stem_len],"FLAGS");
-					SetRexxVar(rxmsg,stem_buf,mail_flags,strlen(mail_flags));
+					MySetRexxVarFromMsg(stem_buf,mail_flags,rxmsg);
 					strcpy(&stem_buf[stem_len],"MSGID");
 					arexx_set_var_int(rxmsg,stem_buf,0); /* Not supported yet */
 
@@ -1119,12 +1132,12 @@ static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 								{
 									strcpy(stem_buf,newmailfile_arg.stem);
 									strcat(stem_buf,"FILENAME");
-									SetRexxVar(rxmsg,stem_buf,newname,strlen(newname));
+									MySetRexxVarFromMsg(stem_buf,newname,rxmsg);
 									free(stem_buf);
 								}
 							} else
 							{
-								if (newmailfile_arg.var) SetRexxVar(rxmsg,newmailfile_arg.var,newname,strlen(newname));
+								if (newmailfile_arg.var) MySetRexxVarFromMsg(newmailfile_arg.var,newname,rxmsg);
 								else arexx_set_result(rxmsg,newname);
 							}
 
@@ -1187,7 +1200,7 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 			{
 				char num_buf[24];
 				sprintf(num_buf,"%d",window);
-				if (mailread_arg.var) SetRexxVar(rxmsg,mailread_arg.var,num_buf,strlen(num_buf));
+				if (mailread_arg.var) MySetRexxVarFromMsg(mailread_arg.var,num_buf,rxmsg);
 				else arexx_set_result(rxmsg,num_buf);
 			}
 		}
@@ -1244,15 +1257,15 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 					strcpy(stem_buf,readinfo_arg.stem);
 					strcpy(&stem_buf[stem_len],"FILENAME.COUNT");
 					sprintf(num_buf,"%d",count);
-					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+					MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 					strcpy(&stem_buf[stem_len],"FILETYPE.COUNT");
 					sprintf(num_buf,"%d",count);
-					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+					MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 					strcpy(&stem_buf[stem_len],"FILESIZE.COUNT");
 					sprintf(num_buf,"%d",count);
-					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+					MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 					i = 0;
 
@@ -1266,19 +1279,19 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 
 						sprintf(&stem_buf[stem_len],"FILENAME.%d",i);
 						sprintf(num_buf,"%d",count);
-						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+						MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 						sprintf(&stem_buf[stem_len],"FILETYPE.%d",i);
 						type_buf = mystrdup(mail->content_type);
 						type_buf = stradd(type_buf,"/");
 						type_buf = stradd(type_buf,mail->content_subtype);
 						if (type_buf)
-							SetRexxVar(rxmsg,stem_buf,type_buf,strlen(type_buf));
+							MySetRexxVarFromMsg(stem_buf,type_buf,rxmsg);
 						free(type_buf);
 
 						sprintf(&stem_buf[stem_len],"FILESIZE.%d",i);
 						sprintf(num_buf,"%d",mail_size);
-						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+						MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
 
 						mail = mail_get_next(mail);
 						i++;
@@ -1373,12 +1386,12 @@ static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
 				{
 					strcpy(stem_buf,requestfolder_arg.stem);
 					strcat(stem_buf,"FOLDER");
-					SetRexxVar(rxmsg,stem_buf,folder->name,strlen(folder->name));
+					MySetRexxVarFromMsg(stem_buf,folder->name,rxmsg);
 					free(stem_buf);
 				}
 			} else
 			{
-				if (requestfolder_arg.var) SetRexxVar(rxmsg,requestfolder_arg.var,folder->name,strlen(folder->name));
+				if (requestfolder_arg.var) MySetRexxVarFromMsg(requestfolder_arg.var,folder->name,rxmsg);
 				else arexx_set_result(rxmsg,folder->name);
 			}
 		} else
@@ -1426,12 +1439,12 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 				{
 					strcpy(stem_buf,mailadd_arg.stem);
 					strcat(stem_buf,"FILENAME");
-					SetRexxVar(rxmsg,stem_buf,mail->filename,strlen(mail->filename));
+					MySetRexxVarFromMsg(stem_buf,mail->filename,rxmsg);
 					free(stem_buf);
 				}
 			} else
 			{
-				if (mailadd_arg.var) SetRexxVar(rxmsg,mailadd_arg.var,mail->filename,strlen(mail->filename));
+				if (mailadd_arg.var) MySetRexxVarFromMsg(mailadd_arg.var,mail->filename,rxmsg);
 				else arexx_set_result(rxmsg,mail->filename);
 			}
 		}
@@ -1481,7 +1494,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	} command;
 
 	command.command = command.args = NULL;
-	rxmsg->rm_Result2 = NULL;
+	rxmsg->rm_Result2 = 0;
 
 	if ((command_handle = ParseTemplate("COMMAND/A,ARGS/F",command_line,(LONG*)&command)))
 	{

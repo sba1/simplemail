@@ -31,12 +31,11 @@ IMPORT struct MUI_CustomClass *CL_AddressEntryList;
 
 #define MUIM_AddressEntryList_Refresh			(TAG_USER | 0x30160101)
 
-struct MUIP_AddressEntryList_Refresh {ULONG MethodID; char *pattern;};
+struct MUIP_AddressEntryList_Refresh {ULONG MethodID;};
 
 /* Data for MUIA_AddressEntryList_Type */
 #define MUIV_AddressEntryList_Type_Addressbook	0
-#define MUIV_AddressEntryList_Type_Match				1
-#define MUIV_AddressEntryList_Type_Main					2
+#define MUIV_AddressEntryList_Type_Main					1
 
 int create_addressentrylist_class(void);
 void delete_addressentrylist_class(void);

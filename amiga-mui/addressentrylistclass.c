@@ -63,8 +63,6 @@ struct AddressEntryList_Data
 	char email_buf[128];
 	char group_buf[128];
 
-	char *pattern;
-
 	/* Menu */
 	Object *title_menu;
 	Object *show_realname_item;
@@ -98,7 +96,6 @@ STATIC ASM SAVEDS VOID addressentry_destruct(REG(a0, struct Hook *h), REG(a2, Ob
 STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
-	char **preparse = msg->preparses;
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)msg->entry;
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)h->h_Data;
 
@@ -116,29 +113,6 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 
 		if (entry->email_array) *array = entry->email_array[0];
 		else *array = NULL;
-
-		/* pattern */
-		if (data->pattern)
-		{
-			int pl = strlen(data->pattern);
-
-			if (!utf8stricmp_len(entry->alias, data->pattern, pl)) preparse[1] = "\033b";
-			if (!utf8stricmp_len(entry->realname, data->pattern, pl)) preparse[0] = "\033b";
-
-			for (i=0;i<array_length(entry->email_array);i++)
-			{
-				if (!utf8stricmp_len(entry->email_array[i],data->pattern, pl))
-				{
-					/* Check if this email is displayed, if not append it */
-					if (i != 0)
-					{
-						sm_snprintf(data->email_buf, sizeof(data->email_buf), "%s,\033b%s", entry->email_array[0], entry->email_array[i]);
-						*array = data->email_buf;
-					} else preparse[3] = "\033b";
-					break;
-				}
-			}
-		}
 
 		array++;
 
@@ -264,7 +238,6 @@ STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
 	if (data->title_menu) MUI_DisposeObject(data->title_menu);
-	free(data->pattern);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -273,16 +246,7 @@ STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 *********************************************/
 STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
 {
-	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
 	struct addressbook_entry_new *entry;
-	char *pattern;
-
-	if (data->type == MUIV_AddressEntryList_Type_Match)
-		pattern = msg->pattern;
-	else pattern = NULL;
-
-	free(data->pattern);
-	data->pattern = mystrdup(pattern);
 
 	set(obj, MUIA_NList_Quiet, TRUE);
 	DoMethod(obj, MUIM_NList_Clear);
@@ -290,9 +254,7 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	entry = addressbook_first_entry();
 	while (entry)
 	{
-		if (!msg->pattern || (msg->pattern && addressbook_get_entry_completing_part(entry,msg->pattern,NULL)))
-			DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
-
+		DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
 		entry = addressbook_next_entry(entry);
 	}
 	set(obj, MUIA_NList_Quiet, FALSE);

@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "mail.h"
 #include "folder.h"
 #include "lists.h"
 #include "simplemail.h"
@@ -245,8 +246,14 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	if ((folder = folder_find_by_imap(server->name, imap_path)))
 	{
 		int i;
-		unsigned int *local_uid_array;
+
+		struct {
+			unsigned int uid;
+			unsigned int todel;
+		} *local_mail_array;
+
 		int num_of_local_mails;
+		int num_of_todel_local_mails;
 		void *handle = NULL;
 		char path[380];
 
@@ -254,15 +261,22 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		folder_next_mail(folder,&handle);
 
 		num_of_local_mails = folder->num_mails;
-		if ((local_uid_array = malloc(sizeof(unsigned int) * num_of_local_mails)))
+		num_of_todel_local_mails = 0;
+		if ((local_mail_array = malloc(sizeof(*local_mail_array) * num_of_local_mails)))
 		{
 			/* fill in the uids of the mails */
 			for (i=0;i < num_of_local_mails;i++)
 			{
 				if (folder->mail_array[i])
-					local_uid_array[i] = atoi(folder->mail_array[i]->filename + 1);
-				else
-					local_uid_array[i] = 0;
+				{
+					local_mail_array[i].uid = atoi(folder->mail_array[i]->filename + 1);
+					local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_array[i]);
+					num_of_todel_local_mails += !!local_mail_array[i].todel;
+				} else
+				{
+					local_mail_array[i].uid = 0;
+					local_mail_array[i].todel = 0;
+				}
 			}
 		}
 
@@ -275,7 +289,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 		folder_unlock(folder);
 		folders_unlock();
 
-		if (local_uid_array)
+		if (local_mail_array)
 		{
 			/* get number of remote mails */
 			char *line;
@@ -398,7 +412,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 						for (i = 0 ; i < num_of_local_mails; i++)
 						{
-							unsigned int local_uid = local_uid_array[i];
+							unsigned int local_uid = local_mail_array[i].uid;
 							for (j = 0 ; j < num_of_remote_mails; j++)
 							{
 								if (local_uid == remote_mail_array[j].uid)
@@ -416,7 +430,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							int does_exist = 0;
 							for (i=0; i < num_of_local_mails;i++)
 							{
-								if (local_uid_array[i] == remote_mail_array[msgtodl-1].uid)
+								if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
 									does_exist = 1;
 							}
 							if (does_exist) continue;
@@ -432,7 +446,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							int does_exist = 0;
 							for (i=0; i < num_of_local_mails;i++)
 							{
-								if (local_uid_array[i] == remote_mail_array[msgtodl-1].uid)
+								if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
 									does_exist = 1;
 							}
 							if (does_exist) continue;
@@ -516,7 +530,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 		chdir(path);
 
-		free(local_uid_array);
+		free(local_mail_array);
 	} else folders_unlock();
 	return success;
 }

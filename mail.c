@@ -1723,9 +1723,11 @@ int mail_process_headers(struct mail_complete *mail)
 			extract_name_from_address(buf,&mail->info->from_phrase,&mail->info->from_addr,NULL);
 			/* for display optimization */
 			if (isascii7(mail->info->from_phrase)) mail->info->flags |= MAIL_FLAGS_FROM_ASCII7;
+			if (isascii7(mail->info->from_addr)) mail->info->flags |= MAIL_FLAGS_FROM_ADDR_ASCII7;
 		} else if (!mystricmp("reply-to",header->name))
 		{
 			extract_name_from_address(buf,NULL,&mail->info->reply_addr,NULL);
+			if (isascii7(mail->info->reply_addr)) mail->info->flags |= MAIL_FLAGS_REPLYTO_ADDR_ASCII7;
 		} else if (!mystricmp("to",header->name))
 		{
 			int more;
@@ -1733,8 +1735,10 @@ int mail_process_headers(struct mail_complete *mail)
 			if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
 
 			mail->info->to_list = create_address_list(buf);
+
 			/* for display optimization */
 			if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
+			if (isascii7(mail->info->to_addr)) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
 		} else if (!mystricmp("cc",header->name))
 		{
 			mail->info->cc_list = create_address_list(buf);

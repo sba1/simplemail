@@ -152,9 +152,12 @@ struct mail_complete
 
 /* The following stuff is for optimizing displaying on AmigaOS, as strings
 ** must be converted here */
-#define MAIL_FLAGS_SUBJECT_ASCII7 (1L << 24) /* subject uses only 7 bit */
-#define MAIL_FLAGS_FROM_ASCII7    (1L << 25) /* from uses only 7 bit */
-#define MAIL_FLAGS_TO_ASCII7      (1L << 26) /* to uses only 7 bit */
+#define MAIL_FLAGS_SUBJECT_ASCII7   (1L << 24) /* subject uses only 7 bit */
+#define MAIL_FLAGS_FROM_ASCII7      (1L << 25) /* from uses only 7 bit */
+#define MAIL_FLAGS_TO_ASCII7        (1L << 26) /* to uses only 7 bit */
+#define MAIL_FLAGS_FROM_ADDR_ASCII7 (1L << 27) /* from addr uses only 7 bit */
+#define MAIL_FLAGS_TO_ADDR_ASCII7   (1L << 28) /* to addr uses only 7 bit */
+#define MAIL_FLAGS_REPLYTO_ADDR_ASCII7 (1L << 29) /* reply to addr " */
 
 #define mail_get_from(x) ((x)->info->from_phrase?((x)->info->from_phrase):((x)->info->from_addr))
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))

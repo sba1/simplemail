@@ -506,9 +506,9 @@ int folder_add_mail_incoming(struct mail *mail)
 	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
 	if (folder)
 	{
+		mail->flags |= MAIL_FLAGS_NEW;
 		if (folder_add_mail(folder,mail))
 		{
-			mail->flags |= MAIL_FLAGS_NEW;
 			return 1;
 		}
 	}

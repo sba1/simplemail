@@ -223,9 +223,9 @@ static void folder_popup_objstrfunc(void)
 *******************************************************************/
 static int init_folder_placement(void)
 {
-	void *act;
-	if (folder_tree) act = (void*)xget(folder_tree,MUIA_NListtree_Active);
-	else act = NULL;
+	struct folder *act_folder;
+	if (folder_tree) act_folder = main_get_folder();
+	else act_folder = NULL;
 
 	{
 		DoMethod(main_group, MUIM_Group_InitChange);
@@ -307,7 +307,7 @@ static int init_folder_placement(void)
 		}
 
 		main_refresh_folders();
-		nnset(folder_tree,MUIA_NListtree_Active,act);
+		nnset(folder_tree,MUIA_NListtree_Active,FindListtreeUserData(folder_tree,act_folder));
 		main_refresh_folders_text();
 
 		DoMethod(mail_tree_group, MUIM_Group_ExitChange);

@@ -46,6 +46,7 @@ char *parse_address(char *address, struct parse_address *dest);
 void free_address(struct parse_address *addr);
 
 char *parse_token(char *token, char **pbuf);
+char *parse_value(char *value, char **pbuf);
 void parse_text_string(char *text, char **pbuf);
 
 

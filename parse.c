@@ -567,7 +567,7 @@ char *parse_token(char *token, char **pbuf)
  In Mime support
  value := token / quoted-string 
 **************************************************************************/
-static char *parse_value(char *value, char **pbuf)
+char *parse_value(char *value, char **pbuf)
 {
 	char *ret;
 	if ((ret = parse_token(value,pbuf))) return ret;

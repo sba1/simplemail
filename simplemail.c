@@ -167,6 +167,9 @@ void callback_delete_mails(void)
 			main_refresh_folder(from_folder);
 			if (!permanent) main_refresh_folder(folder_deleted());
 
+			read_refresh_prevnext_button(from_folder);
+			if (!permanent) read_refresh_prevnext_button(folder_deleted());
+
 			main_remove_mails_selected();
 		}
 
@@ -193,6 +196,8 @@ int callback_delete_mail(struct mail *mail)
 			main_refresh_folder(f);
 		} else folder_delete_mail(f,mail);
 		main_refresh_folder(fd);
+		read_refresh_prevnext_button(f);
+		read_refresh_prevnext_button(fd);
 		if (main_get_folder() == f) main_remove_mail(mail);
 		if (search_has_mails()) search_remove_mail(mail);
 		folder_unlock(f);
@@ -229,6 +234,9 @@ void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
 	folder_move_mail(f,folder_deleted(),mail);
   main_refresh_folder(f);
   main_refresh_folder(folder_deleted());
+
+	read_refresh_prevnext_button(f);
+	read_refresh_prevnext_button(folder_deleted());
 
 	if (main_get_folder() == f) main_remove_mail(mail);
 	if (search_has_mails()) search_remove_mail(mail);
@@ -627,6 +635,9 @@ void callback_move_mail(struct mail *mail, struct folder *from_folder, struct fo
 
 			main_refresh_folder(from_folder);
 			main_refresh_folder(dest_folder);
+
+			read_refresh_prevnext_button(from_folder);
+			read_refresh_prevnext_button(dest_folder);
 		}
 	}
 }
@@ -668,6 +679,8 @@ void callback_maildrop(struct folder *dest_folder)
 
 		main_refresh_folder(from_folder);
 		main_refresh_folder(dest_folder);
+		read_refresh_prevnext_button(from_folder);
+		read_refresh_prevnext_button(dest_folder);
 
 		/* remove all successful removed mails within the main window */
 		main_freeze_mail_list();
@@ -698,6 +711,8 @@ int callback_move_mail_request(char *folder_path, struct mail *mail)
 			main_remove_mail(mail);
 			main_refresh_folder(src_folder);
 			main_refresh_folder(dest_folder);
+			read_refresh_prevnext_button(src_folder);
+			read_refresh_prevnext_button(dest_folder);
 
 			if (main_get_folder() == dest_folder)
 				main_insert_mail(mail);
@@ -745,6 +760,8 @@ void callback_move_selected_mails(void)
 			}
 			main_refresh_folder(src_folder);
 			main_refresh_folder(dest_folder);
+			read_refresh_prevnext_button(src_folder);
+			read_refresh_prevnext_button(dest_folder);
 			main_remove_mails_selected();
 		}
 	}
@@ -1052,6 +1069,7 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 			main_insert_mail_pos(mail,pos-1);
 
 		main_refresh_folder(folder);
+		read_refresh_prevnext_button(folder);
 	}
 
 	chdir(buf);
@@ -1078,6 +1096,7 @@ struct mail *callback_new_mail_to_folder_by_file(char *filename)
 			main_insert_mail_pos(mail,pos-1);
 
 		main_refresh_folder(folder);
+		read_refresh_prevnext_button(folder);
 	}
 
 	chdir(buf);
@@ -1113,6 +1132,7 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	}
 
 	main_refresh_folder(folder);
+	read_refresh_prevnext_button(folder);
 }
 
 /* checks given mail with a remote filter. Returns 1 if mail should be ignored otherwise 0
@@ -1236,6 +1256,7 @@ void callback_new_mail_written(struct mail *mail)
 		main_insert_mail(mail);
 	}
 	main_refresh_folder(folder_outgoing());
+	read_refresh_prevnext_button(folder_outgoing());
 }
 
 /* a mail has been send so it can be moved to the "Sent" drawer now */
@@ -1629,6 +1650,7 @@ void callback_change_folder_attrs(void)
 	}
 
 	main_refresh_folder(f);
+	read_refresh_prevnext_button(f);
 	search_refresh_folders();
 	filter_update_folder_list();
 }
@@ -1688,6 +1710,7 @@ void callback_rescan_folder(void)
 		folder_rescan(f);
 		main_set_folder_mails(f);
 		main_refresh_folder(f);
+		read_refresh_prevnext_button(f);
 	}
 }
 

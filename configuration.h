@@ -32,7 +32,7 @@ struct config
 	char *pop_server;
 	char *pop_login;
 	char *pop_password;
-	char *pop_delete;
+	int pop_delete;
 };
 
 struct user

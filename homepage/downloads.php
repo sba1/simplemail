@@ -26,7 +26,7 @@ $version = "0.8";
 <?php
   echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
   echo '<td align="center">'.$version.'</td>';
-  echo '<td align="center">'.date("Y/m/d", filemtime("downloads/".$filename)).'</td>';
+  echo '<td align="center">'.date("Y/m/d", filemtime("files/".$filename)).'</td>';
   echo '<td align="center">'.get_filesize("files/".$filename).'</td>';
 
 ?>
@@ -54,5 +54,6 @@ $version = "0.8";
 
 <p>
 <?php echo get_string($BannersCreator2Text); get_img("banner/sm_now5.png");?>
+
 
 

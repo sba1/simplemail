@@ -15,7 +15,11 @@
   $fp = fopen("downloads.txt", "w");
   fwrite($fp, strval($downs));
   fclose($fp);
-  header("Content-Type: application/x-lzx");
+  header("Content-Type: application/x-lha");
+  header("Content-Length: " . filesize($path));
+  header("Content-Disposition: attachment; filename=\"".$filename."\"");
+
   readfile($path);
 
 ?>
+

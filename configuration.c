@@ -84,6 +84,31 @@ void init_config(void)
 	if ((phrase = phrase_malloc()))
 	{
 		list_insert_tail(&user.config.phrase_list,&phrase->node);
+
+		phrase->addresses = NULL;
+		phrase->write_welcome = mystrdup("Hello,\\n");
+		phrase->write_welcome_repicient = mystrdup("Hello %r\\n");
+		phrase->write_closing = mystrdup("Gruss,");
+		phrase->reply_welcome = mystrdup("Hello %f,\\n");
+		phrase->reply_intro = mystrdup("On %d, you wrote:");
+		phrase->reply_close = mystrdup("Regards");
+		phrase->forward_initial = mystrdup("*** Begin of forwarded message ***\\n\\nDate: %d %t\\nFrom: %n <%e>\\nSubject: %s\\n\\n--- Forwarded message follows ---\\n\\n");
+		phrase->forward_finish = mystrdup("*** End of forwarded message ***\\n");
+	}
+
+	if ((phrase = phrase_malloc()))
+	{
+		list_insert_tail(&user.config.phrase_list,&phrase->node);
+
+		phrase->addresses = mystrdup(".de");
+		phrase->write_welcome = mystrdup("Hallo,\\n");
+		phrase->write_welcome_repicient = mystrdup("Hallo %r\\n");
+		phrase->write_closing = mystrdup("Gruss,");
+		phrase->reply_welcome = mystrdup("Hallo %f,\\n");
+		phrase->reply_intro = mystrdup("Am %d schriebst Du:");
+		phrase->reply_close = mystrdup("Gruss,");
+		phrase->forward_initial = mystrdup("*** Start der weitergeleiteten Nachricht ***\\n\\nDatum: %d %t\\nVon: %n <%e>\\nBetreff: %s\\n\\n--- Weitergeleitete Nachricht folgt ---\\n\\n");
+		phrase->forward_finish = mystrdup("*** Ende der weitergeleiteten Nachricht ***\\n");
 	}
 
 	user.config.read_background = 0xb0b0b0;
@@ -116,6 +141,7 @@ int load_config(void)
 				read_line(fh,buf);
 				if (!strncmp("SMCO",buf,4))
 				{
+					clear_config_phrases();
 					while (read_line(fh,buf))
 					{
 						char *result;

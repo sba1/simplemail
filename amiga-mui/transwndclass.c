@@ -35,13 +35,17 @@
 #include <proto/intuition.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 
+#include "parse.h"
 #include "smintl.h"
 #include "support_indep.h"
 
 #include "compiler.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "support.h"
 #include "transwndclass.h"
+
+int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
 
 struct transwnd_Data
 {
@@ -82,6 +86,7 @@ STATIC ASM APTR mail_construct(register __a2 APTR pool, register __a1 struct mai
 		new_ent->flags = ent->flags;
 		new_ent->no = ent->no;
 		new_ent->size = ent->size;
+		new_ent->seconds = ent->seconds;
 		new_ent->subject = mystrdup(ent->subject);
 		new_ent->from = mystrdup(ent->from);
 	}
@@ -371,9 +376,22 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
 		if (entry->no == msg->Num)
 		{
-			entry->from = mystrdup(msg->From);
-			entry->subject = mystrdup(msg->Subject);
-			entry->seconds = msg->Seconds;
+			char *phrase, *addr;
+			int day,month,year,hour,min,sec,gmt;
+			int more;
+
+			extract_name_from_address(msg->From, &phrase, &addr, &more);
+			if (phrase)
+			{
+				entry->from = phrase;
+				free(addr);
+			} else entry->from = addr;
+
+			parse_date(msg->Date,&day,&month,&year,&hour,&min,&sec,&gmt);
+			entry->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+
+			parse_text_string(msg->Subject, &entry->subject);
+
 			DoMethod(data->mail_list,MUIM_NList_Redraw,i);
 			return NULL;
 		}

@@ -59,7 +59,7 @@ struct MUIP_transwnd_InsertMailInfo {
 	LONG Num;
 	STRPTR From;
 	STRPTR Subject;
-	ULONG Seconds;
+	STRPTR Date;
 };
 
 struct MUIP_transwnd_GetMailFlags {

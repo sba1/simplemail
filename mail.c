@@ -1406,7 +1406,7 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
  addressbook). If more than one e-mail address is specified, *more_prt
  will be set to 1.
 **************************************************************************/
-static int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
+int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
 {
 	struct parse_address paddr;
 

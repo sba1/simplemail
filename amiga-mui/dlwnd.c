@@ -143,9 +143,9 @@ void dl_insert_mail(int mno, int mflags, int msize)
 	DoMethod(win_dl, MUIM_transwnd_InsertMailSize, mno, mflags, msize);
 }
 
-void dl_insert_mail_info(int mno, char *from, char *subject, unsigned int seconds)
+void dl_insert_mail_info(int mno, char *from, char *subject, char *date)
 {
-	DoMethod(win_dl, MUIM_transwnd_InsertMailInfo, mno, from, subject, seconds);
+	DoMethod(win_dl, MUIM_transwnd_InsertMailInfo, mno, from, subject, date);
 }
 
 /* returns -1 if the mail is not in the mail selection */

@@ -39,6 +39,7 @@
 #include "configuration.h"
 #include "parse.h"
 #include "smintl.h"
+#include "support.h"
 #include "support_indep.h"
 
 #include "amigasupport.h"
@@ -84,11 +85,13 @@ STATIC ASM SAVEDS VOID account_display(register __a1 struct NList_DisplayMessage
 		{
 			msg->strings[0] = _("<Default>");
 			msg->strings[1] = "";
+			msg->strings[2] = "";
 		} else
 		{
 			struct account *account = (struct account *)msg->entry;
 			msg->strings[0] = account->email;
-			msg->strings[1] = account->smtp->name;
+			msg->strings[1] = account->account_name;
+			msg->strings[2] = account->smtp->name;
 		}
 	}
 }
@@ -146,13 +149,20 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 								if (ac)
 								{
 									char buf[256];
+									char smtp_buf[128];
 									if (ac->name)
 									{
 										if (needs_quotation(ac->name))
-											sprintf(buf, "\"%s\"",ac->name);
-										else strcpy(buf,ac->name);
+											sm_snprintf(buf,sizeof(buf),"\"%s\"",ac->name);
+										else mystrlcpy(buf,ac->name,sizeof(buf));
 									}
-									sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
+
+									if (ac->account_name && *ac->account_name)
+									{
+										sm_snprintf(smtp_buf,sizeof(smtp_buf),"%s: %s",ac->account_name,ac->smtp->name);
+									} else mystrlcpy(smtp_buf,ac->smtp->name,sizeof(smtp_buf));
+
+									sm_snprintf(buf+strlen(buf),sizeof(buf)-strlen(buf)," <%s> (%s)",ac->email, smtp_buf);
 									set(data->string,MUIA_Text_Contents,buf);
 								}
 							}
@@ -175,7 +185,6 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					MUIA_Popstring_String, string = TextObject,TextFrame,MUIA_InputMode, MUIV_InputMode_RelVerify,MUIA_CycleChain,1,End,
 					MUIA_Popobject_Object, NListviewObject,
 							MUIA_NListview_NList, list = NListObject,
-								MUIA_NList_Format, ",",
 								End,
 							End,
 
@@ -200,7 +209,7 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 						MUIA_NList_ConstructHook2, &data->construct_hook,
 						MUIA_NList_DestructHook2, &data->destruct_hook,
 						MUIA_NList_DisplayHook2, &data->display_hook,
-						MUIA_NList_Format, ",",
+						MUIA_NList_Format, ",,",
 						TAG_DONE);
 
 	SetAttrs(obj,

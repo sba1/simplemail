@@ -331,11 +331,12 @@ void callback_folder_active(void)
 static void callback_new_mail_arrived(struct mail *mail)
 {
 	struct filter *f;
+	int pos;
 
-	folder_add_mail_incoming(mail);
-	if (main_get_folder() == folder_incoming())
+	pos = folder_add_mail_incoming(mail);
+	if (main_get_folder() == folder_incoming() && pos)
 	{
-		main_insert_mail(mail);
+		main_insert_mail_pos(mail,pos-1);
 	}
 
 	/* This has to be optmized! */
@@ -373,7 +374,7 @@ void callback_new_mail_arrived_filename(char *filename)
 /* a new mail has been written */
 void callback_new_mail_written(struct mail *mail)
 {
-	folder_add_mail(folder_outgoing(),mail);
+	folder_add_mail(folder_outgoing(),mail,1);
 	if (main_get_folder() == folder_outgoing())
 	{
 		main_insert_mail(mail);

@@ -770,13 +770,34 @@ void main_refresh_folder(struct folder *folder)
 }
 
 /******************************************************************
- Inserts a new mail into the listview
+ Inserts a new mail into the listview at the end
 *******************************************************************/
 void main_insert_mail(struct mail *mail)
 {
 	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
 					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 }
+
+/******************************************************************
+ Inserts a new mail into the listview after a given position
+*******************************************************************/
+void main_insert_mail_pos(struct mail *mail, int after)
+{
+	struct MUI_NListtree_TreeNode *tn = NULL;
+	int i=0;
+
+	while (after >= 0)
+	{
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) after--;
+		i++;
+	}
+
+	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+					 MUIV_NListtree_Insert_ListNode_Root,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+}
+
+
 
 /******************************************************************
  Remove a given mail from the listview

@@ -37,6 +37,113 @@
 #include "support.h"
 #include "support_indep.h"
 
+
+/* folder sort stuff
+   to control the compare functions */
+static int compare_primary_reverse;
+static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
+static int compare_secondary_reverse;
+static int (*compare_secondary)(const struct mail *arg1, const struct mail *arg2, int reverse);
+
+/******************************************************************
+ The general sorting function
+*******************************************************************/
+static int mail_compare(const void *arg1, const void *arg2)
+{
+	int ret = 0;
+
+	if (compare_primary) ret = compare_primary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse);
+	if (ret == 0 && compare_secondary) ret = compare_secondary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_secondary_reverse);
+	return ret;
+}
+
+/******************************************************************
+ The special sorting functions
+*******************************************************************/
+static int mail_compare_status(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) return -1;
+	if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) return 1;
+	return (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
+}
+
+static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	int rc = mystricmp(arg1->from,arg2->from);
+	if (reverse) rc *= -1;
+	return rc;
+}
+
+static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	int rc = mystricmp(arg1->to,arg2->to);
+	if (reverse) rc *= -1;
+	return rc;
+}
+
+static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	int rc = mystricmp(arg1->subject,arg2->subject);
+	if (reverse) rc *= -1;
+	return rc;
+}
+
+static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	return 0;
+}
+
+static int mail_compare_date(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	if (arg1->seconds > arg2->seconds) return reverse?(-1):1;
+	else if (arg1->seconds == arg2->seconds) return 0;
+	return reverse?1:(-1);
+}
+
+static int mail_compare_size(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	if (arg1->size > arg2->size) return reverse?(-1):1;
+	else if (arg1->size == arg2->size) return 0;
+	return reverse?1:(-1);
+}
+
+static int mail_compare_filename(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	return mystricmp(arg1->filename, arg2->filename);
+}
+
+/******************************************************************
+ Returns the correct sorting function and fills the reverse pointer
+*******************************************************************/
+static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
+{
+	if (sort_mode & FOLDER_SORT_REVERSE) *reverse = 1;
+	else *reverse = 0;
+
+	switch (sort_mode & FOLDER_SORT_MODEMASK)
+	{
+		case	FOLDER_SORT_STATUS: return mail_compare_status;
+		case	FOLDER_SORT_FROMTO: return folder_type?mail_compare_to:mail_compare_from;
+		case	FOLDER_SORT_SUBJECT: return mail_compare_subject;
+		case	FOLDER_SORT_REPLY: return mail_compare_reply;
+		case	FOLDER_SORT_DATE: return mail_compare_date;
+		case	FOLDER_SORT_SIZE: return mail_compare_size;
+		case	FOLDER_SORT_FILENAME: return mail_compare_filename;
+	}
+	return NULL; /* thread */
+}
+
+/******************************************************************
+ Set the sort functions for mail_compare
+*******************************************************************/
+static void mail_compare_set_sort_mode(struct folder *folder)
+{
+	compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
+	compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
+}
+
+
+
 static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
 
@@ -165,21 +272,30 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 }
 
 /******************************************************************
- Adds a new mail into the given folder
+ Adds a new mail into the given folder. The mail is added at the
+ end and the sort is destroyed if sort = 0. Else the mail is
+ correctly sorted in and the sorted array is not destroyed.
+ The position of the mail is returned if the array was sorted or
+ the number of mails if not else (-1) for an error.
 *******************************************************************/
-int folder_add_mail(struct folder *folder, struct mail *mail)
+int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 {
-	int i;
+	int i,pos;
 
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
 		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
-	if (folder->sorted_mail_array)
+	if (folder->sorted_mail_array && !sort)
 	{
 		free(folder->sorted_mail_array);
 		folder->sorted_mail_array = NULL;
+	} else if (!folder->sorted_mail_array && sort)
+	{
+		void *handle = NULL;
+		/* this should sort the folder */
+		folder_next_mail(folder, &handle);
 	}
 
 	/* delete the indexfile if not already done */
@@ -193,12 +309,15 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 	{
 		folder->mail_array_allocated += 50;
 		folder->mail_array = realloc(folder->mail_array,folder->mail_array_allocated*sizeof(struct mail*));
+
+		if (folder->sorted_mail_array)
+			folder->sorted_mail_array = realloc(folder->sorted_mail_array,folder->mail_array_allocated*sizeof(struct mail*));
 	}
 
 	if (!folder->mail_array)
 	{
 		folder->mail_array_allocated = 0;
-		return 0;
+		return -1;
 	}
 
 	if (mail->message_id)
@@ -218,6 +337,20 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 			}
 		}
 	}
+
+	if (folder->sorted_mail_array)
+	{
+		mail_compare_set_sort_mode(folder);
+
+		/* this search routine has O(n) but should be improved to O(log n) with binary serach */
+		for (pos=0;pos<folder->num_mails;pos++)
+		{
+			if (mail_compare(&folder->sorted_mail_array[pos],&mail) > 0) break;
+		}
+
+		memmove(&folder->sorted_mail_array[pos+1],&folder->sorted_mail_array[pos],(folder->num_mails - pos)*sizeof(struct mail*));
+		folder->sorted_mail_array[pos] = mail;
+	} else pos = folder->num_mails;
 
 	folder->mail_array[folder->num_mails++] = mail;
 	if (folder->num_mails > folder->num_index_mails) folder->num_index_mails = folder->num_mails;
@@ -277,7 +410,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 		}
 	}
 
-	return 1;
+	return pos;
 }
 
 /******************************************************************
@@ -577,7 +710,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							mail_identify_status(m);
 							mail_process_headers(m);
 							m->flags &= ~MAIL_FLAGS_NEW;
-							folder_add_mail(folder,m);
+							folder_add_mail(folder,m,0);
 						}
 					}
 				} else
@@ -620,7 +753,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 				if ((m = mail_create_from_file(dptr->d_name)))
 				{
-					folder_add_mail(folder,m);
+					folder_add_mail(folder,m,0);
 				}
 			}
 			closedir(dfd);
@@ -633,7 +766,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 /******************************************************************
  Adds a mail to the incoming folder (the mail not actually not
- copied). The mail will get a New Flag
+ copied). The mail will get a New Flag. The mail is correctly
+ sorted in and the position is returned (-1 for an error)
 *******************************************************************/
 int folder_add_mail_incoming(struct mail *mail)
 {
@@ -641,12 +775,9 @@ int folder_add_mail_incoming(struct mail *mail)
 	if (folder)
 	{
 		mail->flags |= MAIL_FLAGS_NEW;
-		if (folder_add_mail(folder,mail))
-		{
-			return 1;
-		}
+		return folder_add_mail(folder,mail,1);
 	}
-	return 0;
+	return -1;
 }
 
 /******************************************************************
@@ -1248,7 +1379,7 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 		sm_add_part(dest_buf,mail->filename,256);
 
 		folder_remove_mail(from_folder,mail);
-		folder_add_mail(dest_folder,mail);
+		folder_add_mail(dest_folder,mail,1);
 
 		if (!rename(src_buf,dest_buf)) return 1;
 		free(buf);
@@ -1417,98 +1548,6 @@ int folder_save_index(struct folder *f)
 	return 1;
 }
 
-/* to control the compare functions */
-static int compare_primary_reverse;
-static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
-static int compare_secondary_reverse;
-static int (*compare_secondary)(const struct mail *arg1, const struct mail *arg2, int reverse);
-
-/******************************************************************
- The general sorting function
-*******************************************************************/
-static int mail_compare(const void *arg1, const void *arg2)
-{
-	int ret = 0;
-
-	if (compare_primary) ret = compare_primary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse);
-	if (ret == 0 && compare_secondary) ret = compare_secondary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_secondary_reverse);
-	return ret;
-}
-
-/******************************************************************
- The special sorting functions
-*******************************************************************/
-static int mail_compare_status(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	return 0;
-}
-
-static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	int rc = mystricmp(arg1->from,arg2->from);
-	if (reverse) rc *= -1;
-	return rc;
-}
-
-static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	int rc = mystricmp(arg1->to,arg2->to);
-	if (reverse) rc *= -1;
-	return rc;
-}
-
-static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	int rc = mystricmp(arg1->subject,arg2->subject);
-	if (reverse) rc *= -1;
-	return rc;
-}
-
-static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	return 0;
-}
-
-static int mail_compare_date(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	if (arg1->seconds > arg2->seconds) return reverse?(-1):1;
-	else if (arg1->seconds == arg2->seconds) return 0;
-	return reverse?1:(-1);
-}
-
-static int mail_compare_size(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	if (arg1->size > arg2->size) return reverse?(-1):1;
-	else if (arg1->size == arg2->size) return 0;
-	return reverse?1:(-1);
-}
-
-static int mail_compare_filename(const struct mail *arg1, const struct mail *arg2, int reverse)
-{
-	return mystricmp(arg1->filename, arg2->filename);
-}
-
-/******************************************************************
- Returns the correct sorting function and fills the reverse pointer
-*******************************************************************/
-static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
-{
-	if (sort_mode & FOLDER_SORT_REVERSE) *reverse = 1;
-	else *reverse = 0;
-
-	switch (sort_mode & FOLDER_SORT_MODEMASK)
-	{
-		case	FOLDER_SORT_STATUS: return mail_compare_status;
-		case	FOLDER_SORT_FROMTO: return folder_type?mail_compare_to:mail_compare_from;
-		case	FOLDER_SORT_SUBJECT: return mail_compare_subject;
-		case	FOLDER_SORT_REPLY: return mail_compare_reply;
-		case	FOLDER_SORT_DATE: return mail_compare_date;
-		case	FOLDER_SORT_SIZE: return mail_compare_size;
-		case	FOLDER_SORT_FILENAME: return mail_compare_filename;
-	}
-	return NULL; /* thread */
-}
-
 /******************************************************************
  The mail iterating function. To get the first mail let handle
  point to NULL. If needed this function sorts the mails according
@@ -1525,18 +1564,17 @@ struct mail *folder_next_mail(struct folder *folder, void **handle)
 		folder_read_mail_infos(folder,0);
 
 	mail_array = folder->mail_array;
-	if (!folder->sorted_mail_array && *((int**)handle) == 0 && folder->num_mails)
+	if (!folder->sorted_mail_array && *((int**)handle) == 0 && folder->num_mails && folder->mail_array_allocated)
 	{
 		/* the array is not sorted, so sort it now */
-		folder->sorted_mail_array = (struct mail**)malloc(sizeof(struct mail*)*folder->num_mails);
+		folder->sorted_mail_array = (struct mail**)malloc(sizeof(struct mail*)*folder->mail_array_allocated);
 		if (folder->sorted_mail_array)
 		{
 			/* copy the mail pointers into the buffer */
 			memcpy(folder->sorted_mail_array, folder->mail_array, sizeof(struct mail*)*folder->num_mails);
 
 			/* set the correct search function */
-			compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
-			compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
+			mail_compare_set_sort_mode(folder);
 
 			if (compare_primary) qsort(folder->sorted_mail_array, folder->num_mails, sizeof(struct mail*),mail_compare);
 			mail_array = folder->sorted_mail_array;

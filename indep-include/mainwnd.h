@@ -31,6 +31,7 @@ int main_window_open(void);
 void main_refresh_folders(void);
 void main_refresh_folder(struct folder *folder);
 void main_insert_mail(struct mail *mail);
+void main_insert_mail_pos(struct mail *mail, int after);
 void main_remove_mail(struct mail *mail);
 void main_replace_mail(struct mail *oldmail, struct mail *newmail);
 void main_refresh_mail(struct mail *m);

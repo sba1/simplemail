@@ -98,7 +98,7 @@ struct mail
 	int child_mail; /* is a child mail */
 };
 
-/* Mail status (uses a range from 0-32) */
+/* Mail status (uses a range from 0-15) */
 #define MAIL_STATUS_UNREAD   0 /* unread message */
 #define MAIL_STATUS_READ     1 /* read message */
 #define MAIL_STATUS_WAITSEND 2 /* wait to be sendet, new composed mail */

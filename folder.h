@@ -42,7 +42,8 @@ struct folder
 	int primary_sort;
 	int secondary_sort;
 
-	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted */
+	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted, 
+																			the size of this array is always big as mail_array */
 
 	int index_uptodate; /* 1 if the indexfile is uptodate */
 	int mail_infos_loaded; /* 1 if the mailinfos has loaded */
@@ -90,7 +91,7 @@ char *new_folder_path(void);
 int init_folders(void);
 void del_folders(void);
 
-int folder_add_mail(struct folder *folder, struct mail *mail);
+int folder_add_mail(struct folder *folder, struct mail *mail, int sort);
 int folder_add_mail_incoming(struct mail *mail);
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
 int folder_number_of_mails(struct folder *folder);

@@ -21,14 +21,27 @@
 */
 
 #include <stdarg.h>
+#include <unistd.h>
 
 #include <glib.h>
+#include <gtk/gtk.h>
 
 #include "subthreads.h"
+
+static GCond *thread_cond;
+static GMutex *thread_mutex;
+
+static int input_added;
+static GMutex *input_mutex;
+static GMutex *input_mutex2;
+static GCond *input_cond;
+static int input_msg;
 
 int init_threads(void)
 {
 	if (!g_thread_supported ()) g_thread_init (NULL);
+	if (!(thread_cond = g_cond_new())) return 0;
+	if (!(thread_mutex = g_mutex_new())) return 0;
 	return 1;
 }
 
@@ -38,13 +51,54 @@ void cleanup_threads(void)
 
 int thread_parent_task_can_contiue(void)
 {
+	g_mutex_lock(thread_mutex);
+	g_cond_signal(thread_cond);
+	g_mutex_unlock(thread_mutex);
 	return 1;
+}
+
+static void thread_idle(gpointer data)
+{
+	GTimeVal time;
+
+//	printf("1: idle\n");
+
+	g_mutex_lock(input_mutex);
+
+	if (input_msg)
+	{
+		printf("message arrived\n");
+		input_msg = 0;
+		g_cond_signal(input_cond);
+	}
+	g_mutex_unlock(input_mutex);
+
+//	printf("1: endidle\n");
+
+	g_thread_yield();
+
+//	printf("1: endidle2\n");
+
 }
 
 int thread_start(int (*entry)(void*), void *eudata)
 {
-	entry(eudata);
-	return 1;
+	if (!input_added)
+	{
+		input_mutex = g_mutex_new();
+		input_cond = g_cond_new();
+		gtk_idle_add(thread_idle,NULL);
+		input_added = 1;
+	}
+
+	if ((g_thread_create(entry,eudata,TRUE,NULL)))
+	{
+		g_mutex_lock(thread_mutex);
+		g_cond_wait(thread_cond,thread_mutex);
+		g_mutex_unlock(thread_mutex);
+		return 1;
+	}
+	return 0;
 }
 
 void thread_abort(void)
@@ -53,6 +107,8 @@ void thread_abort(void)
 
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
+	printf("sync\n");
+#if 0
 	int rc;
 	void *arg1,*arg2,*arg3,*arg4;
 	va_list argptr;
@@ -72,12 +128,29 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
 		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
 	}
+#endif
 
 	return 0;
 }
 
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
+//	printf("async\n");
+//	write(pipes[1],"test",4);
+
+
+	g_mutex_lock(input_mutex);
+//	printf("%d\n",input_msg);
+	input_msg = 1;
+	g_cond_wait(input_cond,input_mutex);
+//	printf("%d\n",input_msg);
+	g_cond_free(input_cond);
+	input_cond = NULL;
+	g_mutex_unlock(input_mutex);
+
+	g_thread_yield();
+
+#if 0
 	int rc;
 	void *arg1,*arg2,*arg3,*arg4;
 	va_list argptr;
@@ -97,13 +170,16 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
 		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
 	}
-
+#endif
 	return 0;
 }
 
 /* Call the function asynchron and duplicate the first argument which us threaded at a string */
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
+	printf("async string\n");
+
+#if 0
 	int rc;
 	void *arg1,*arg2,*arg3,*arg4;
 	va_list argptr;
@@ -123,7 +199,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
 		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
 	}
-
+#endif
 	return 0;
 }
 

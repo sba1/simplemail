@@ -34,6 +34,9 @@
 #include "subthreads.h"
 
 static GtkWidget *status_wnd;
+static GtkWidget *status_head_label;
+static GtkWidget *status_progress;
+static GtkWidget *status_status_label;
 
 static char *status_title;
 
@@ -53,10 +56,7 @@ int statuswnd_open(int active)
 	if (!status_wnd)
 	{
 		GtkWidget *vbox2;
-		GtkWidget *status_head_label;
-		GtkWidget *status_progress;
 		GtkWidget *hbox3;
-		GtkWidget *status_status_label;
 		GtkWidget *status_abort_button;
 
 		status_wnd = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -120,12 +120,10 @@ int statuswnd_open(int active)
 **************************************************************************/
 void statuswnd_close(void)
 {
-#if 0
 	if (status_wnd)
 	{
-		set(status_wnd, MUIA_Window_Open, FALSE);
+		gtk_widget_hide_all(status_wnd);
 	}
-#endif
 }
 
 /**************************************************************************
@@ -169,9 +167,8 @@ void statuswnd_set_gauge(int value)
 **************************************************************************/
 void statuswnd_set_gauge_text(char *text)
 {
-#if 0
-	set(status_wnd, MUIA_transwnd_Gauge1_Str, text);
-#endif
+	if (!status_wnd) return;
+	gtk_progress_bar_set_text(status_progress,text);
 }
 
 /**************************************************************************
@@ -179,10 +176,8 @@ void statuswnd_set_gauge_text(char *text)
 **************************************************************************/
 void statuswnd_set_status(char *text)
 {
-#if 0
 	if (!status_wnd) return;
-	set(status_wnd, MUIA_transwnd_Status, text);
-#endif
+	gtk_label_set_text(GTK_LABEL(status_status_label),text);
 }
 
 /**************************************************************************
@@ -190,12 +185,7 @@ void statuswnd_set_status(char *text)
 **************************************************************************/
 void statuswnd_set_head(char *text)
 {
-#if 0
-	static char *head_text;
-	if (text != NULL) head_text = text;
-	if (!status_wnd) return;
-	set(status_wnd, MUIA_transwnd_Head, head_text);
-#endif
+	gtk_label_set_text(GTK_LABEL(status_head_label),text);
 }
 
 /**************************************************************************

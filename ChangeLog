@@ -2,6 +2,17 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-14  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/appicon.(c|h): Moved HideIcon creation form app_init() to
+	  appicon_init(). Added the ToolTypes APPICON_POSX and APPICON_POSY
+	  for positioning the AppIcon with wb.lib < V44.
+	  The UnSnapshot function now also updates the display of the AppIcon.
+	* amiga-mui/gui_main.c: Moved HideIcon to appicon.c
+	* amiga-mui/mainwnd.c: Removed the AppIcon menuitems.
+	* doc/amiga/SimpleMail.guide: Updated guide with AppIcon infos.
+	* lists.c: Made some functions NULL pointer safe.
+
 2004-01-13  Bernd Gollesch <bgollesch@sime.com>
 
 	* doc/amiga/SimpleMail.guide: Added short description of AppIcon Label.

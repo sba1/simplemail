@@ -986,13 +986,18 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 **************************************************************************/
 void mail_compose_new(struct composed_mail *new_mail)
 {
-	struct folder *outgoing = folder_outgoing();
+	struct folder *outgoing;
 	char path[256];
 	char *new_name;
+
+	if (new_mail->mail_folder)
+		outgoing = folder_find_by_name(new_mail->mail_folder);
+
+	if (!outgoing) outgoing = folder_outgoing();
 	if (!outgoing) return;
 
 	getcwd(path, sizeof(path));
-	if(chdir(outgoing->path) == -1) return;
+	if (chdir(outgoing->path) == -1) return;
 
 	if ((new_name = mail_get_new_name()))
 	{
@@ -1007,7 +1012,21 @@ void mail_compose_new(struct composed_mail *new_mail)
 
 		if ((mail = mail_create_from_file(new_name)))
 		{
-			callback_new_mail_written(mail);
+			struct mail *old_mail;
+
+			if (new_mail->mail_filename) old_mail = folder_find_mail_by_filename(outgoing,new_mail->mail_filename);
+			else old_mail = NULL;
+
+			if (old_mail)
+			{
+				folder_replace_mail(outgoing, old_mail, mail);
+				callback_mail_changed(outgoing, old_mail, mail);
+				remove(old_mail->filename);
+				free(old_mail);
+			} else
+			{
+				callback_new_mail_written(mail);
+			}
 		}
 	}
 

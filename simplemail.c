@@ -145,6 +145,15 @@ void callback_new_mail_written(struct mail *mail)
 	main_refresh_folder(folder_outgoing());
 }
 
+/* a mail has been changed */
+void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail)
+{
+	if (main_get_folder() == folder)
+	{
+		main_replace_mail(oldmail, newmail);
+	}
+}
+
 /* mails has been droped onto the folder */
 void callback_maildrop(struct folder *dest_folder)
 {

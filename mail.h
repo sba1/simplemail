@@ -113,6 +113,9 @@ struct composed_mail
 	char *content_type; /* maybe NULL */
 	struct list list; /* more entries */
 
+	char *mail_filename; /* The name of the mail (mainly used for changeing) */
+	char *mail_folder; /* the folder of the mail ( -- " -- ) */
+
 	/* more will follow */
 };
 

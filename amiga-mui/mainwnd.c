@@ -306,6 +306,22 @@ void main_insert_mail(struct mail *mail)
 }
 
 /******************************************************************
+ Replaces a mail with a new mail
+*******************************************************************/
+void main_replace_mail(struct mail *oldmail, struct mail *newmail)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, oldmail);
+	if (treenode)
+	{
+/*		DoMethod(tree_mail, MUIM_NListtree_Rename, treenode, newmail, MUIV_NListtree_Rename_Flag_User);*/
+		set(tree_mail, MUIA_NListtree_Quiet, TRUE);
+		DoMethod(tree_mail, MUIM_NListtree_Remove, NULL, treenode,0);
+		main_insert_mail(newmail);
+		set(tree_mail, MUIA_NListtree_Quiet, FALSE);
+	}
+}
+
+/******************************************************************
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)

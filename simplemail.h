@@ -34,4 +34,7 @@ void callback_maildrop(struct folder *dest_folder);
 void callback_new_mail_arrived(struct mail *mail);
 void callback_new_mail_written(struct mail *mail);
 
+void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail);
+
+
 #endif

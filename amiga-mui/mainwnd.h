@@ -23,6 +23,7 @@ int main_window_open(void);
 void main_refresh_folders(void);
 void main_refresh_folder(struct folder *folder);
 void main_insert_mail(struct mail *mail);
+void main_replace_mail(struct mail *oldmail, struct mail *newmail);
 void main_set_folder_mails(struct folder *folder);
 struct folder *main_get_folder(void);
 char *main_get_folder_drawer(void);

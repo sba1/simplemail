@@ -68,6 +68,9 @@ struct Compose_Data /* should be a customclass */
 	Object *contents_page;
 	Object *datatype_datatypes;
 
+	char *filename; /* the emails filename if changed */
+	char *folder; /* the emails folder if changed */
+
 	struct FileRequester *file_req;
 
 	struct attachment *last_attachment;
@@ -89,6 +92,8 @@ static void compose_window_close(struct Compose_Data **pdata)
 	set(data->datatype_datatypes, MUIA_DataTypes_FileName, NULL);
 	MUI_DisposeObject(data->wnd);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
+	if (data->filename) free(data->filename);
+	if (data->folder) free(data->folder);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
 	free(data);
 }
@@ -363,6 +368,8 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 
 		new_mail.to = to;
 		new_mail.subject = subject;
+		new_mail.mail_filename = data->filename;
+		new_mail.mail_folder = data->folder;
 
 		mail_compose_new(&new_mail);
 
@@ -543,6 +550,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 		struct Compose_Data *data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data));
 		if (data)
 		{
+			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
 			data->to_string = to_string;
@@ -621,6 +629,9 @@ void compose_window_open(char *to_str, struct mail *tochange)
 
 				set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
 				if (decoded_to) free(decoded_to);
+
+				if (tochange->filename) data->filename = strdup(tochange->filename);
+				data->folder = strdup("Outgoing");
 			}
 
 			set(wnd,MUIA_Window_Open,TRUE);

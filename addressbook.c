@@ -625,11 +625,11 @@ void init_addressbook(void)
 		}
 	}
 
-	if (!addressbook_find_entry_by_address("henes@morphos.de"))
+	if (!addressbook_find_entry_by_address("henes@biclodon.com"))
 	{
 		if ((entry = addressbook_add_entry("Nicolas Sallin")))
 		{
-			entry->email_array = array_add_string(entry->email_array,"henes@morphos.de");
+			entry->email_array = array_add_string(entry->email_array,"henes@biclodon.com");
 			entry->description = mystrdup(_("MorphOS maintainer of SimpleMail"));
 			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
 		}

@@ -144,11 +144,8 @@ void dl_clear(void)
 	DoMethod(win_dl, MUIM_transwnd_Clear);
 }
 
-void loop(void);
-
 void dl_wait(void)
 {
-  /* we simply call the mail loop here but this is not more than a hack! */
-  loop();
+	DoMethod(win_dl, MUIM_transwnd_Wait);
 }
 

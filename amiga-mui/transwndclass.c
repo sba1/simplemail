@@ -198,7 +198,6 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		set(abort, MUIA_Weight, 0);
 
 		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
-		DoMethod(start, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, 0);
 		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD);
 		DoMethod(del, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DELETE);
@@ -344,6 +343,16 @@ STATIC ULONG transwnd_Clear (struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
+{
+	extern void loop(void);
+	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
+	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	loop();
+	DoMethod(data->start, MUIM_KillNotify, MUIA_Pressed);
+	return 0;
+}
+
 STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -357,6 +366,7 @@ STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register _
 		case MUIM_transwnd_InsertMailInfo: return transwnd_InsertMailInfo (cl, obj, (struct MUIP_transwnd_InsertMailInfo*)msg);
 		case MUIM_transwnd_GetMailFlags: return transwnd_GetMailFlags (cl, obj, (struct MUIP_transwnd_GetMailFlags*)msg);
 		case MUIM_transwnd_Clear: return transwnd_Clear (cl, obj, msg);
+		case MUIM_transwnd_Wait: return transwnd_Wait (cl, obj, msg);
 	}
 	
 	return(DoSuperMethodA(cl, obj, msg));

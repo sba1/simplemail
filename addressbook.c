@@ -32,6 +32,24 @@
 static struct addressbook_entry root_entry;
 
 /**************************************************************************
+ Reads a line. The buffer doesn't contain an LF's
+**************************************************************************/
+static int read_line(FILE *fh, char *buf)
+{
+	int len;
+
+	if (!fgets(buf,512,fh)) return 0;
+	
+	len = strlen(buf);
+	if (len)
+	{
+		if (buf[len-1] == '\n') buf[len-1] = 0;
+		else if (buf[len-2] == '\r') buf[len-2] = 0;
+	}
+	return 1;
+}
+
+/**************************************************************************
  Initializes the Addressbook
 **************************************************************************/
 void init_addressbook(void)
@@ -40,11 +58,16 @@ void init_addressbook(void)
 	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
 	list_init(&root_entry.group.list);
 
-	/* just a test */
-	entry = addressbook_new_person(NULL, "Hynek Schlawack", "Hynek.Schlawack@t-online.de");
-	addressbook_set_description(entry, "Author of SimpleMail");
-	entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
-	addressbook_set_description(entry, "Author of SimpleMail");
+	if (!addressbook_load())
+	{
+		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@schlawack.net");
+		addressbook_set_description(entry, "Orginal author of SimpleMail");
+		addressbook_person_add_email(entry, "Hynek.Schlawack@t-online.de");
+
+		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
+		addressbook_set_description(entry, "Orginal author of SimpleMail");
+		addressbook_person_add_email(entry, "Sebastian.Bauer@in.stud.tu-ilmenau.de");
+	}
 }
 
 /**************************************************************************
@@ -61,6 +84,134 @@ void cleanup_addressbook(void)
 
 	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
 	list_init(&root_entry.group.list);
+}
+
+/**************************************************************************
+ Load the entries in the current group. (recursive)
+**************************************************************************/
+static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, char *buf)
+{
+	struct addressbook_entry *entry;
+
+	while (read_line(fh,buf))
+	{
+		if (!mystrnicmp(buf,"@USER ",6))
+		{
+			if ((entry = addressbook_new_person(group,NULL,NULL)))
+			{
+				addressbook_set_alias(entry,&buf[6]);
+				while (read_line(fh,buf))
+				{
+					if (!mystrnicmp(buf,"RealName=",9))
+					{
+						if (entry->person.realname) free(entry->person.realname);
+						entry->person.realname = strdup(&buf[9]);
+					}
+
+					if (!mystrnicmp(buf,"EMail=",6)) addressbook_person_add_email(entry,&buf[6]);
+					if (!mystrnicmp(buf,"Description=",12)) addressbook_set_description(entry,&buf[12]);
+
+					if (!mystricmp(buf,"@ENDUSER"))
+					{
+						/* User has been read */
+						break;
+					}
+				}
+			}
+		}
+
+		if (!mystricmp(buf,"@ENDGROUP"))
+		{
+			/* the group has been read */
+			break;
+		}
+
+		if (!mystrnicmp(buf,"@GROUP ", 7))
+		{
+			if ((entry = addressbook_new_group(group)))
+			{
+				addressbook_set_alias(entry, &buf[7]);
+				addressbook_load_entries(entry,fh,buf);
+			}
+		}
+	}
+}
+
+/**************************************************************************
+ Load the addressbook. Returns 0 for an error
+**************************************************************************/
+int addressbook_load(void)
+{
+	int retval = 0;
+	FILE *fh = fopen("PROGDIR:.addressbook","r");
+	if (fh)
+	{
+		char *buf = (char*)malloc(512);
+		if (buf)
+		{
+			if (fgets(buf,512,fh))
+			{
+				if (!strncmp(buf,"SMAB",4))
+				{
+					buf[0] = 0;
+					addressbook_load_entries(&root_entry,fh,buf);
+					retval = 1;
+				}
+			}
+			free(buf);
+		}
+		fclose(fh);
+	}
+	return retval;
+}
+
+/**************************************************************************
+ Saves a address group (recursivly)
+**************************************************************************/
+static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
+{
+	struct addressbook_entry *entry;
+	int i;
+
+	entry = addressbook_first(group);
+	while (entry)
+	{
+		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
+		{
+			fprintf(fh,"@USER %s\n",entry->person.alias?entry->person.alias:"");
+			if (entry->person.realname) fprintf(fh,"RealName=%s\n",entry->person.realname);
+			if (entry->person.description) fprintf(fh,"Description=%s\n",entry->person.description);
+			for (i=0;i<entry->person.num_emails;i++)
+			{
+				fprintf(fh,"EMail=%s\n",entry->person.emails[i]);
+			}
+			fprintf(fh,"@ENDUSER\n");
+		} else
+		{
+			if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
+			{
+				fprintf(fh,"@GROUP %s\n",entry->group.alias?entry->group.alias:"");
+				addressbook_save_group(entry,fh);
+				fprintf(fh,"@ENDGROUP\n");
+			}
+		}
+
+		entry = addressbook_next(entry);
+	}
+}
+
+/**************************************************************************
+ Saves the addressbook to disk
+**************************************************************************/
+void addressbook_save(void)
+{
+	FILE *fh = fopen("PROGDIR:.addressbook","w");
+	if (fh)
+	{
+		fputs("SMAB - SimpleMail Addressbook\n",fh);
+		addressbook_save_group(&root_entry,fh);
+		fclose(fh);
+	}
 }
 
 /**************************************************************************
@@ -253,7 +404,7 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystricmp(entry_contents,entry->person.realname);
 			if (mode == ADDRESSBOOK_FIND_ENTRY_EMAIL)
 			{
-				for (i=0; i<entry->person.num_emails;i++)
+				for (i=0; i<entry->person.num_emails && !found;i++)
 					found = !mystricmp(entry_contents,entry->person.emails[i]);
 			}
 		} else
@@ -262,7 +413,7 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystrnicmp(entry_contents,entry->person.realname,cl);
 			if (mode == ADDRESSBOOK_FIND_ENTRY_EMAIL)
 			{
-				for (i=0; i<entry->person.num_emails;i++)
+				for (i=0; i<entry->person.num_emails && !found;i++)
 					found = !mystrnicmp(entry_contents,entry->person.emails[i],cl);
 			}
 		}

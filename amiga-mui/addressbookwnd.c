@@ -601,10 +601,11 @@ static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct a
 /******************************************************************
  Save the addressbook to disk
 *******************************************************************/
-static void addressbook_save(void)
+static void addressbook_save_pressed(void)
 {
 	cleanup_addressbook();
 	addressbook_update(NULL,NULL);
+	addressbook_save();
 }
 
 /******************************************************************
@@ -760,7 +761,7 @@ static void addressbook_init(void)
 	if (!address_wnd) return;
 	DoMethod(App,OM_ADDMEMBER,address_wnd);
 	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save);
+	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save_pressed);
 	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
 	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_group);
 	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);

@@ -33,6 +33,8 @@
 
 static GtkWidget *config_wnd;
 
+static GtkWidget *config_account_box;
+
 #if 0
 
 #include "compiler.h"
@@ -453,6 +455,393 @@ static int init_mails_read_group(void)
 	return 1;
 }
 #endif
+
+static void init_account_group(void)
+{
+  GtkWidget *hbox4;
+  GtkWidget *scrolledwindow2;
+  GtkWidget *config_account_tree;
+  GtkWidget *vbuttonbox1;
+  GtkWidget *config_account_new_button;
+  GtkWidget *alignment1;
+  GtkWidget *hbox5;
+  GtkWidget *image1;
+  GtkWidget *label1;
+  GtkWidget *config_account_remove_button;
+  GtkWidget *alignment2;
+  GtkWidget *hbox6;
+  GtkWidget *image2;
+  GtkWidget *label2;
+  GtkWidget *frame5;
+  GtkWidget *table1;
+  GtkWidget *config_account_user_name_text;
+  GtkWidget *config_account_user_email_text;
+  GtkWidget *config_account_user_reply_text;
+  GtkWidget *label8;
+  GtkWidget *label9;
+  GtkWidget *label7;
+  GtkWidget *label6;
+  GtkWidget *frame3;
+  GtkWidget *table2;
+  GtkWidget *label10;
+  GtkWidget *label11;
+  GtkWidget *hbox7;
+  GtkWidget *config_account_receive_server_text;
+  GtkWidget *label13;
+  GtkWidget *config_account_receive_port_text;
+  GtkWidget *config_account_receive_active_checkbox;
+  GtkWidget *hbox8;
+  GtkWidget *config_account_receive_login_text;
+  GtkWidget *label12;
+  GtkWidget *config_account_receive_password_text;
+  GtkWidget *checkbutton1;
+  GtkWidget *hbox9;
+  GtkWidget *config_account_receive_remove_checkbox;
+  GtkWidget *config_account_receive_avoid_checkbox;
+  GtkWidget *config_account_receive_secure_checkbox;
+  GtkWidget *config_account_receive_stls_checkbox;
+  GtkWidget *label4;
+  GtkWidget *frame4;
+  GtkWidget *table3;
+  GtkWidget *label14;
+  GtkWidget *label15;
+  GtkWidget *hbox13;
+  GtkWidget *config_account_send_login_text;
+  GtkWidget *label17;
+  GtkWidget *config_account_send_password_text;
+  GtkWidget *config_account_send_auth_checkbox;
+  GtkWidget *hbox10;
+  GtkWidget *config_account_send_ip_checkbox;
+  GtkWidget *config_account_send_secure_checkbox;
+  GtkWidget *config_account_send_login_checkbox;
+  GtkWidget *hbox11;
+  GtkWidget *config_account_send_server_text;
+  GtkWidget *label16;
+  GtkWidget *config_account_send_port_text;
+  GtkWidget *label5;
+
+  config_account_box = gtk_vbox_new (FALSE, 0);
+  gtk_widget_show (config_account_box);
+
+  hbox4 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox4);
+  gtk_box_pack_start (GTK_BOX (config_account_box), hbox4, TRUE, TRUE, 0);
+
+  scrolledwindow2 = gtk_scrolled_window_new (NULL, NULL);
+  gtk_widget_show (scrolledwindow2);
+  gtk_box_pack_start (GTK_BOX (hbox4), scrolledwindow2, TRUE, TRUE, 0);
+
+  config_account_tree = gtk_tree_view_new ();
+  gtk_widget_show (config_account_tree);
+  gtk_container_add (GTK_CONTAINER (scrolledwindow2), config_account_tree);
+
+  vbuttonbox1 = gtk_vbutton_box_new ();
+  gtk_widget_show (vbuttonbox1);
+  gtk_box_pack_start (GTK_BOX (hbox4), vbuttonbox1, FALSE, TRUE, 4);
+  gtk_button_box_set_layout (GTK_BUTTON_BOX (vbuttonbox1), GTK_BUTTONBOX_SPREAD);
+  gtk_button_box_set_spacing (GTK_BUTTON_BOX (vbuttonbox1), 0);
+
+  config_account_new_button = gtk_button_new ();
+  gtk_widget_show (config_account_new_button);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox1), config_account_new_button);
+  GTK_WIDGET_SET_FLAGS (config_account_new_button, GTK_CAN_DEFAULT);
+
+  alignment1 = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_widget_show (alignment1);
+  gtk_container_add (GTK_CONTAINER (config_account_new_button), alignment1);
+
+  hbox5 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox5);
+  gtk_container_add (GTK_CONTAINER (alignment1), hbox5);
+
+  image1 = gtk_image_new_from_stock ("gtk-add", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image1);
+  gtk_box_pack_start (GTK_BOX (hbox5), image1, FALSE, FALSE, 0);
+
+  label1 = gtk_label_new_with_mnemonic (_("Add Account"));
+  gtk_widget_show (label1);
+  gtk_box_pack_start (GTK_BOX (hbox5), label1, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label1), GTK_JUSTIFY_LEFT);
+
+  config_account_remove_button = gtk_button_new ();
+  gtk_widget_show (config_account_remove_button);
+  gtk_container_add (GTK_CONTAINER (vbuttonbox1), config_account_remove_button);
+  GTK_WIDGET_SET_FLAGS (config_account_remove_button, GTK_CAN_DEFAULT);
+
+  alignment2 = gtk_alignment_new (0.5, 0.5, 0, 0);
+  gtk_widget_show (alignment2);
+  gtk_container_add (GTK_CONTAINER (config_account_remove_button), alignment2);
+
+  hbox6 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox6);
+  gtk_container_add (GTK_CONTAINER (alignment2), hbox6);
+
+  image2 = gtk_image_new_from_stock ("gtk-remove", GTK_ICON_SIZE_BUTTON);
+  gtk_widget_show (image2);
+  gtk_box_pack_start (GTK_BOX (hbox6), image2, FALSE, FALSE, 0);
+
+  label2 = gtk_label_new_with_mnemonic (_("Remove Account"));
+  gtk_widget_show (label2);
+  gtk_box_pack_start (GTK_BOX (hbox6), label2, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label2), GTK_JUSTIFY_LEFT);
+
+  frame5 = gtk_frame_new (NULL);
+  gtk_widget_show (frame5);
+  gtk_box_pack_start (GTK_BOX (config_account_box), frame5, FALSE, TRUE, 0);
+
+  table1 = gtk_table_new (3, 2, FALSE);
+  gtk_widget_show (table1);
+  gtk_container_add (GTK_CONTAINER (frame5), table1);
+  gtk_table_set_row_spacings (GTK_TABLE (table1), 2);
+  gtk_table_set_col_spacings (GTK_TABLE (table1), 2);
+
+  config_account_user_name_text = gtk_entry_new ();
+  gtk_widget_show (config_account_user_name_text);
+  gtk_table_attach (GTK_TABLE (table1), config_account_user_name_text, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  config_account_user_email_text = gtk_entry_new ();
+  gtk_widget_show (config_account_user_email_text);
+  gtk_table_attach (GTK_TABLE (table1), config_account_user_email_text, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  config_account_user_reply_text = gtk_entry_new ();
+  gtk_widget_show (config_account_user_reply_text);
+  gtk_table_attach (GTK_TABLE (table1), config_account_user_reply_text, 1, 2, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+
+  label8 = gtk_label_new (_("EMail Address"));
+  gtk_widget_show (label8);
+  gtk_table_attach (GTK_TABLE (table1), label8, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label8), GTK_JUSTIFY_LEFT);
+  gtk_misc_set_alignment (GTK_MISC (label8), 0, 0.5);
+
+  label9 = gtk_label_new (_("Replyaddress"));
+  gtk_widget_show (label9);
+  gtk_table_attach (GTK_TABLE (table1), label9, 0, 1, 2, 3,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label9), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label9), 0, 0.5);
+
+  label7 = gtk_label_new (_("Name"));
+  gtk_widget_show (label7);
+  gtk_table_attach (GTK_TABLE (table1), label7, 0, 1, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label7), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label7), 0, 0.5);
+
+  label6 = gtk_label_new (_("User"));
+  gtk_widget_show (label6);
+  gtk_frame_set_label_widget (GTK_FRAME (frame5), label6);
+  gtk_label_set_justify (GTK_LABEL (label6), GTK_JUSTIFY_LEFT);
+
+  frame3 = gtk_frame_new (NULL);
+  gtk_widget_show (frame3);
+  gtk_box_pack_start (GTK_BOX (config_account_box), frame3, FALSE, TRUE, 0);
+
+  table2 = gtk_table_new (3, 2, FALSE);
+  gtk_widget_show (table2);
+  gtk_container_add (GTK_CONTAINER (frame3), table2);
+  gtk_table_set_row_spacings (GTK_TABLE (table2), 2);
+  gtk_table_set_col_spacings (GTK_TABLE (table2), 2);
+
+  label10 = gtk_label_new (_("POP3 Server"));
+  gtk_widget_show (label10);
+  gtk_table_attach (GTK_TABLE (table2), label10, 0, 1, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label10), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label10), 0, 0.5);
+
+  label11 = gtk_label_new (_("Login"));
+  gtk_widget_show (label11);
+  gtk_table_attach (GTK_TABLE (table2), label11, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label11), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label11), 0, 0.5);
+
+  hbox7 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox7);
+  gtk_table_attach (GTK_TABLE (table2), hbox7, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_receive_server_text = gtk_entry_new ();
+  gtk_widget_show (config_account_receive_server_text);
+  gtk_box_pack_start (GTK_BOX (hbox7), config_account_receive_server_text, TRUE, TRUE, 0);
+
+  label13 = gtk_label_new (_("Port"));
+  gtk_widget_show (label13);
+  gtk_box_pack_start (GTK_BOX (hbox7), label13, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label13), GTK_JUSTIFY_LEFT);
+
+  config_account_receive_port_text = gtk_entry_new ();
+  gtk_widget_show (config_account_receive_port_text);
+  gtk_box_pack_start (GTK_BOX (hbox7), config_account_receive_port_text, FALSE, TRUE, 0);
+  gtk_entry_set_text (GTK_ENTRY (config_account_receive_port_text), _("110"));
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_receive_port_text), 5);
+
+  config_account_receive_active_checkbox = gtk_check_button_new_with_mnemonic (_("Active"));
+  gtk_widget_show (config_account_receive_active_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox7), config_account_receive_active_checkbox, FALSE, FALSE, 0);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (config_account_receive_active_checkbox), TRUE);
+
+  hbox8 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox8);
+  gtk_table_attach (GTK_TABLE (table2), hbox8, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_receive_login_text = gtk_entry_new ();
+  gtk_widget_show (config_account_receive_login_text);
+  gtk_box_pack_start (GTK_BOX (hbox8), config_account_receive_login_text, TRUE, TRUE, 0);
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_receive_login_text), 10);
+
+  label12 = gtk_label_new (_("Password"));
+  gtk_widget_show (label12);
+  gtk_box_pack_start (GTK_BOX (hbox8), label12, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label12), GTK_JUSTIFY_LEFT);
+
+  config_account_receive_password_text = gtk_entry_new ();
+  gtk_widget_show (config_account_receive_password_text);
+  gtk_box_pack_start (GTK_BOX (hbox8), config_account_receive_password_text, TRUE, TRUE, 0);
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_receive_password_text), 10);
+
+  checkbutton1 = gtk_check_button_new_with_mnemonic (_("Ask"));
+  gtk_widget_show (checkbutton1);
+  gtk_box_pack_start (GTK_BOX (hbox8), checkbutton1, FALSE, FALSE, 0);
+
+  hbox9 = gtk_hbox_new (FALSE, 0);
+  gtk_widget_show (hbox9);
+  gtk_table_attach (GTK_TABLE (table2), hbox9, 1, 2, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_receive_remove_checkbox = gtk_check_button_new_with_mnemonic (_("Remove mails"));
+  gtk_widget_show (config_account_receive_remove_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox9), config_account_receive_remove_checkbox, FALSE, FALSE, 0);
+
+  config_account_receive_avoid_checkbox = gtk_check_button_new_with_mnemonic (_("Avoid duplicates"));
+  gtk_widget_show (config_account_receive_avoid_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox9), config_account_receive_avoid_checkbox, FALSE, FALSE, 0);
+
+  config_account_receive_secure_checkbox = gtk_check_button_new_with_mnemonic (_("Secure"));
+  gtk_widget_show (config_account_receive_secure_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox9), config_account_receive_secure_checkbox, FALSE, FALSE, 0);
+
+  config_account_receive_stls_checkbox = gtk_check_button_new_with_mnemonic (_("with STLS"));
+  gtk_widget_show (config_account_receive_stls_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox9), config_account_receive_stls_checkbox, FALSE, FALSE, 0);
+
+  label4 = gtk_label_new (_("Receive"));
+  gtk_widget_show (label4);
+  gtk_frame_set_label_widget (GTK_FRAME (frame3), label4);
+  gtk_label_set_justify (GTK_LABEL (label4), GTK_JUSTIFY_LEFT);
+
+  frame4 = gtk_frame_new (NULL);
+  gtk_widget_show (frame4);
+  gtk_box_pack_start (GTK_BOX (config_account_box), frame4, FALSE, TRUE, 0);
+
+  table3 = gtk_table_new (3, 2, FALSE);
+  gtk_widget_show (table3);
+  gtk_container_add (GTK_CONTAINER (frame4), table3);
+  gtk_table_set_row_spacings (GTK_TABLE (table3), 2);
+  gtk_table_set_col_spacings (GTK_TABLE (table3), 2);
+
+  label14 = gtk_label_new (_("SMTP Server"));
+  gtk_widget_show (label14);
+  gtk_table_attach (GTK_TABLE (table3), label14, 0, 1, 0, 1,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label14), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label14), 0, 0.5);
+
+  label15 = gtk_label_new (_("Login"));
+  gtk_widget_show (label15);
+  gtk_table_attach (GTK_TABLE (table3), label15, 0, 1, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (0), 0, 0);
+  gtk_label_set_justify (GTK_LABEL (label15), GTK_JUSTIFY_RIGHT);
+  gtk_misc_set_alignment (GTK_MISC (label15), 0, 0.5);
+
+  hbox13 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox13);
+  gtk_table_attach (GTK_TABLE (table3), hbox13, 1, 2, 1, 2,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_send_login_text = gtk_entry_new ();
+  gtk_widget_show (config_account_send_login_text);
+  gtk_box_pack_start (GTK_BOX (hbox13), config_account_send_login_text, TRUE, TRUE, 0);
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_send_login_text), 10);
+
+  label17 = gtk_label_new (_("Password"));
+  gtk_widget_show (label17);
+  gtk_box_pack_start (GTK_BOX (hbox13), label17, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label17), GTK_JUSTIFY_LEFT);
+
+  config_account_send_password_text = gtk_entry_new ();
+  gtk_widget_show (config_account_send_password_text);
+  gtk_box_pack_start (GTK_BOX (hbox13), config_account_send_password_text, TRUE, TRUE, 0);
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_send_password_text), 10);
+
+  config_account_send_auth_checkbox = gtk_check_button_new_with_mnemonic (_("Needs authentification"));
+  gtk_widget_show (config_account_send_auth_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox13), config_account_send_auth_checkbox, FALSE, FALSE, 0);
+
+  hbox10 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox10);
+  gtk_table_attach (GTK_TABLE (table3), hbox10, 1, 2, 2, 3,
+                    (GtkAttachOptions) (GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_send_ip_checkbox = gtk_check_button_new_with_mnemonic (_("IP as domain"));
+  gtk_widget_show (config_account_send_ip_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox10), config_account_send_ip_checkbox, FALSE, FALSE, 0);
+
+  config_account_send_secure_checkbox = gtk_check_button_new_with_mnemonic (_("Secure"));
+  gtk_widget_show (config_account_send_secure_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox10), config_account_send_secure_checkbox, FALSE, FALSE, 0);
+
+  config_account_send_login_checkbox = gtk_check_button_new_with_mnemonic (_("Login into POP3 server first"));
+  gtk_widget_show (config_account_send_login_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox10), config_account_send_login_checkbox, FALSE, FALSE, 0);
+
+  hbox11 = gtk_hbox_new (FALSE, 2);
+  gtk_widget_show (hbox11);
+  gtk_table_attach (GTK_TABLE (table3), hbox11, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK | GTK_FILL),
+                    (GtkAttachOptions) (GTK_FILL), 0, 0);
+
+  config_account_send_server_text = gtk_entry_new ();
+  gtk_widget_show (config_account_send_server_text);
+  gtk_box_pack_start (GTK_BOX (hbox11), config_account_send_server_text, TRUE, TRUE, 0);
+
+  label16 = gtk_label_new (_("Port"));
+  gtk_widget_show (label16);
+  gtk_box_pack_start (GTK_BOX (hbox11), label16, FALSE, FALSE, 0);
+  gtk_label_set_justify (GTK_LABEL (label16), GTK_JUSTIFY_LEFT);
+
+  config_account_send_port_text = gtk_entry_new ();
+  gtk_widget_show (config_account_send_port_text);
+  gtk_box_pack_start (GTK_BOX (hbox11), config_account_send_port_text, FALSE, TRUE, 0);
+  gtk_entry_set_text (GTK_ENTRY (config_account_send_port_text), _("25"));
+  gtk_entry_set_width_chars (GTK_ENTRY (config_account_send_port_text), 5);
+
+  label5 = gtk_label_new (_("Send"));
+  gtk_widget_show (label5);
+  gtk_frame_set_label_widget (GTK_FRAME (frame4), label5);
+  gtk_label_set_justify (GTK_LABEL (label5), GTK_JUSTIFY_LEFT);
+}
+
 /******************************************************************
  Init the config window
 *******************************************************************/
@@ -490,6 +879,8 @@ static void init_config(void)
 	/* The config pages */
 	scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
 	gtk_paned_pack1 (GTK_PANED (hpaned1), scrolledwindow1, FALSE, TRUE);
+	gtk_widget_set_usize (scrolledwindow1, 120, -2);
+
 	treeview1 = gtk_tree_view_new ();
 	gtk_container_add (GTK_CONTAINER (scrolledwindow1), treeview1);
 	gtk_tree_view_set_enable_search (GTK_TREE_VIEW (treeview1), FALSE);
@@ -524,6 +915,11 @@ static void init_config(void)
 	GTK_WIDGET_SET_FLAGS (config_cancel_button, GTK_CAN_DEFAULT);
 
 	//gtk_signal_connect(GTK_OBJECT(config_wnd), "destroy",GTK_SIGNAL_FUNC (config_quit), NULL);
+
+	init_account_group();
+
+
+	gtk_scrolled_window_add_with_viewport(GTK_CONTAINER (config_scrolledwindow), config_account_box);
 
 #if 0
 	Object *save_button, *use_button, *cancel_button;

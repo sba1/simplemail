@@ -137,6 +137,8 @@ simplemail_SOURCES = acconfig.h \
 						hmac_md5.h \
 						http.c \
 						http.h \
+						imap.c \
+						imap.h \
 						lists.c \
 						lists.h \
 						mail.c \
@@ -189,9 +191,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am_simplemail_OBJECTS = account.$(OBJEXT) addressbook.$(OBJEXT) \
 	codecs.$(OBJEXT) codesets.$(OBJEXT) configuration.$(OBJEXT) \
 	estimate.$(OBJEXT) filter.$(OBJEXT) folder.$(OBJEXT) \
-	hmac_md5.$(OBJEXT) http.$(OBJEXT) lists.$(OBJEXT) \
-	mail.$(OBJEXT) md5.$(OBJEXT) parse.$(OBJEXT) pgp.$(OBJEXT) \
-	phrase.$(OBJEXT) pop3.$(OBJEXT) print.$(OBJEXT) \
+	hmac_md5.$(OBJEXT) http.$(OBJEXT) imap.$(OBJEXT) \
+	lists.$(OBJEXT) mail.$(OBJEXT) md5.$(OBJEXT) parse.$(OBJEXT) \
+	pgp.$(OBJEXT) phrase.$(OBJEXT) pop3.$(OBJEXT) print.$(OBJEXT) \
 	signature.$(OBJEXT) simplemail.$(OBJEXT) smintl.$(OBJEXT) \
 	smtp.$(OBJEXT) status.$(OBJEXT) support_indep.$(OBJEXT) \
 	taglines.$(OBJEXT) tcp.$(OBJEXT) text2html.$(OBJEXT) \
@@ -212,14 +214,14 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/configuration.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/estimate.Po ./$(DEPDIR)/filter.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/folder.Po ./$(DEPDIR)/hmac_md5.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/http.Po ./$(DEPDIR)/lists.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/mail.Po ./$(DEPDIR)/md5.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/parse.Po ./$(DEPDIR)/pgp.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/phrase.Po ./$(DEPDIR)/pop3.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/print.Po ./$(DEPDIR)/signature.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/simplemail.Po ./$(DEPDIR)/smintl.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/smtp.Po ./$(DEPDIR)/status.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/support_indep.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/http.Po ./$(DEPDIR)/imap.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/lists.Po ./$(DEPDIR)/mail.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/md5.Po ./$(DEPDIR)/parse.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pgp.Po ./$(DEPDIR)/phrase.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/pop3.Po ./$(DEPDIR)/print.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/signature.Po ./$(DEPDIR)/simplemail.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/smintl.Po ./$(DEPDIR)/smtp.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/status.Po ./$(DEPDIR)/support_indep.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/taglines.Po ./$(DEPDIR)/tcp.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/text2html.Po ./$(DEPDIR)/trans.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -324,6 +326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/folder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hmac_md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lists.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mail.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/md5.Po@am__quote@

@@ -30,6 +30,8 @@ simplemail_SOURCES = 	acconfig.h \
 						hmac_md5.h \
 						http.c \
 						http.h \
+						imap.c \
+						imap.h \
 						lists.c \
 						lists.h \
 						mail.c \

@@ -38,10 +38,14 @@
 #include "configuration.h"
 #include "debug.h"
 #include "smintl.h"
+#include "support_indep.h"
 
+#include "addressentrylistclass.h"
 #include "addressgrouplistclass.h"
 #include "compiler.h"
 #include "muistuff.h"
+
+void addressbookwnd_store(void); /* from addressbookwnd.c */
 
 struct AddressGroupList_Data
 {
@@ -114,7 +118,6 @@ STATIC ASM SAVEDS LONG addressgroup_compare(REG(a0, struct Hook *h), REG(a2, Obj
 STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressGroupList_Data *data;
-	int type;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					TAG_MORE,msg->ops_AttrList)))
@@ -144,8 +147,75 @@ STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *ms
 *********************************************/
 STATIC ULONG AddressGroupList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)INST_DATA(cl,obj);
+/*	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)INST_DATA(cl,obj);*/
 	return DoSuperMethodA(cl,obj,msg);
+}
+
+/********************************************
+ MUIM_DragQuery
+*********************************************/
+STATIC ULONG AddressGroupList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
+{
+	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;
+	return MUIV_DragQuery_Refuse;
+}
+
+/********************************************
+ MUIM_DropType
+*********************************************/
+STATIC ULONG AddressGroupList_DropType(struct IClass *cl, Object *obj, struct MUIP_NList_DropType *msg)
+{
+	*msg->type = MUIV_NList_DropType_Onto;
+	return 1;
+}
+
+/********************************************
+ MUIM_DragDrop
+*********************************************/
+STATIC ULONG AddressGroupList_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
+{
+	LONG pos;
+
+	struct addressbook_entry_new *entry;
+	struct addressbook_group *group;
+
+	int need_refresh = 0;
+
+	Object *address_list;
+	
+	if (!(address_list = msg->obj)) return 0;
+
+	DoMethod(obj,MUIM_NList_GetEntry, xget(obj,MUIA_NList_DropMark),&group);
+	if (!group) return 0;
+
+	pos = MUIV_NList_NextSelected_Start;
+	while (1)
+	{
+		DoMethod(address_list, MUIM_NList_NextSelected, &pos);
+		if (pos == MUIV_NList_NextSelected_End) break;
+
+		DoMethod(address_list, MUIM_NList_GetEntry, pos, &entry);
+		if (entry && !array_contains(entry->group_array,group->name))
+		{
+			char **newarray = array_add_string(entry->group_array,group->name);
+			if (newarray)
+			{
+				entry->group_array = newarray;
+				need_refresh = 1;
+			}
+		}
+	}
+
+	if (need_refresh)
+	{
+		DoMethod(address_list, MUIM_NList_Redraw, MUIV_NList_Redraw_All);
+
+		/* TODO: Do this via a notify */
+		cleanup_addressbook();
+		addressbookwnd_store();
+	}
+
+	return 1;
 }
 
 /********************************************
@@ -173,11 +243,16 @@ STATIC ULONG AddressGroupList_Refresh(struct IClass *cl, Object *obj, Msg msg)
 *********************************************/
 STATIC BOOPSI_DISPATCHER(ULONG,AddressGroupList_Dispatcher,cl,obj,msg)
 {
+
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return AddressGroupList_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE: return AddressGroupList_Dispose(cl,obj,msg);
+		case	MUIM_DragQuery: return AddressGroupList_DragQuery(cl,obj,(struct MUIP_DragQuery*)msg);
+		case	MUIM_DragDrop: return AddressGroupList_DragDrop(cl,obj,(struct MUIP_DragDrop*)msg);
+		case	MUIM_NList_DropType: return AddressGroupList_DropType(cl,obj,(struct MUIP_NList_DropType*)msg);
 		case	MUIM_AddressGroupList_Refresh: return AddressGroupList_Refresh(cl,obj,msg);
+		
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

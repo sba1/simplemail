@@ -1,6 +1,32 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/09/10">
+   <text lang="en">
+      Version 0.10 of SimpleMail has been released! Changes since last release were:
+      <list>
+        <item>configurable headers for the read window</item>
+        <item>can read message/rfc822 content type properly</item>
+        <item>can decrypt encryptet pgp message using pgp 2.6.x</item>
+        <item>minor other improvements</item>
+        <item>filter has been improved</item>
+        <item>wordwrapping for composed messages</item>
+      </list>
+    </text>
+
+    <text lang="de">
+      Version 0.10 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+      <list>
+        <item>Konfigurierbare Headers im Lesefenster</item>
+        <item>Message/rfc822 Content Type Unterstützung</item>
+        <item>Verschlüsselte Mail können gelesen werden (pgp 2.6.x)</item>
+        <item>Kleinere andere Verbesserungen</item>
+        <item>Verbesserter Filter</item>
+        <item>Automatischer Zeilenumbruch im Schreibfenster</item>
+      </list>
+    </text>
+  </entry>
+
   <entry date="2001/09/03">
    <text lang="en">
       Version 0.9 of SimpleMail has been released! Changes since last release were:
@@ -226,5 +252,6 @@
   </entry>
 
 </news>
+
 
 

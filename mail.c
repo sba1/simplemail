@@ -268,8 +268,15 @@ static char *quote_text(char *src, int len)
 
 			if (newline)
 			{
-				if (c=='>') { fputc('>',fh); line_len++;}
-				else { fputs("> ",fh); line_len+=2;}
+				if (user.config.write_wrap)
+				{
+					if (!strlen(temp_buf)) { fputs("> ",fh); line_len+=2;}
+					else {fputc('>',fh); line_len++;}
+				} else
+				{
+					if (c=='>') { fputc('>',fh); line_len++;}
+					else { fputs("> ",fh); line_len+=2;}
+				}
 				newline = 0;
 			}
 

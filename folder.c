@@ -692,7 +692,8 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 		{
 			char *filename;
 
-			if (status_new == mail->status) return;
+			if (status_new == mail->status)
+				return;
 
 			/* update the mail statistics */
 			if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;

@@ -133,6 +133,7 @@ struct mail
 #define MAIL_FLAGS_IMPORTANT (1L << 3) /* mail is important */
 #define MAIL_FLAGS_CRYPT     (1L << 4) /* mail is crypted */
 #define MAIL_FLAGS_SIGNED    (1L << 5) /* mail has been signed */
+#define MAIL_FLAGS_NORCPT    (1L << 6) /* mail has no recipient */
 
 /* The following stuff is for optimizing displaying on AmigaOS, as strings
 ** must be converted here */

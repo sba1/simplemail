@@ -692,8 +692,13 @@ void callback_mails_set_status(int status)
 
 		if (status == MAIL_STATUS_HOLD || status == MAIL_STATUS_WAITSEND)
 		{
-			if (mail_get_status_type(mail) == MAIL_STATUS_HOLD || mail_get_status_type(mail) == MAIL_STATUS_WAITSEND || mail_get_status_type(mail) == MAIL_STATUS_SENT)
-				new_status = status;
+			if (!(mail->flags & MAIL_FLAGS_NORCPT))
+			{
+				/* Only change the status if mail has an recipient. All new mails with no recipient
+				 * Will automatically get the hold state */
+				if (mail_get_status_type(mail) == MAIL_STATUS_HOLD || mail_get_status_type(mail) == MAIL_STATUS_WAITSEND || mail_get_status_type(mail) == MAIL_STATUS_SENT)
+					new_status = status;
+			}
 		} else
 		{
 			if (status == MAIL_STATUS_READ || status == MAIL_STATUS_UNREAD)

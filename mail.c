@@ -1746,6 +1746,9 @@ int mail_process_headers(struct mail *mail)
 		header = (struct header*)node_next(&header->node);
 	}
 
+	if (!mail->to_phrase || !mail->to_addr)
+		mail->flags |= MAIL_FLAGS_NORCPT;
+
 	if (!mail->content_type || !mail->content_subtype)
 	{
 		mail->content_type = strdup("text");
@@ -2423,8 +2426,9 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 	if (!mail_compose_write_addr_header(fp,"From",new_mail->from))
 		return 0;
 
-	if (!mail_compose_write_addr_header(fp,"To",new_mail->to))
-		return 0;
+	if (new_mail->to && *new_mail->to)
+		if (!mail_compose_write_addr_header(fp,"To",new_mail->to))
+			return 0;
 
 	if (new_mail->replyto && *new_mail->replyto)
 		if (!mail_compose_write_addr_header(fp,"Reply-To",new_mail->replyto))
@@ -2440,7 +2444,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		struct tm *d;
 		int offset = sm_get_gmt_offset();
 
-		const char *mon_str[] =
+		static const char *mon_str[] =
 		{
 			"Jan","Feb","Mar","Apr","May","Jun",
 			"Jul","Aug","Sep","Oct","Nov","Dec"
@@ -2585,11 +2589,8 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	FILE *ofh = fp;
 	char *ofh_name = NULL;
 
-	if (new_mail->to)
-	{
-		if (!(mail_compose_write_headers(fp,new_mail)))
-			return 0;
-	}
+	if (!(mail_compose_write_headers(fp,new_mail)))
+		return 0;
 
 	if (new_mail->encrypt)
 	{
@@ -2788,6 +2789,12 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 		sm_request(NULL, _("No valid from field specified. You must configure some Accounts\n"
 										 "before creating new mails"),_("Ok"));
 		return 0;
+	}
+
+	if (!new_mail->to || (new_mail->to && !(*new_mail->to)))
+	{
+		/* mail has no recipient, so it automatically get the hold state */
+		hold = 1;
 	}
 
 	getcwd(path, sizeof(path));

@@ -183,16 +183,22 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 static int compose_expand_to(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
-	char *str = addressbook_get_expand_str((char*)xget(data->to_string, MUIA_String_Contents));
-	if (str)
+	char *to_contents = (char*)xget(data->to_string, MUIA_UTF8String_Contents);
+
+	if (to_contents && *to_contents)
 	{
-		set(data->to_string, MUIA_String_Contents, str);
-		free(str);
-		return 1;
+		char *str;
+		if ((str = addressbook_get_expand_str(to_contents)))
+		{
+			set(data->to_string, MUIA_UTF8String_Contents, str);
+			free(str);
+			return 1;
+		}
+		DisplayBeep(NULL);
+		set(data->wnd, MUIA_Window_ActiveObject,data->to_string);
+		return 0;
 	}
-	DisplayBeep(NULL);
-	set(data->wnd, MUIA_Window_ActiveObject,data->to_string);
-	return 0;
+	return 1;
 }
 
 /******************************************************************
@@ -201,14 +207,14 @@ static int compose_expand_to(struct Compose_Data **pdata)
 static int compose_expand_cc(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
-	char *cc_contents = (char*)xget(data->cc_string, MUIA_String_Contents);
-	char *str;
+	char *cc_contents = (char*)xget(data->cc_string, MUIA_UTF8String_Contents);
 
 	if (cc_contents && *cc_contents)
 	{
+		char *str;
 		if ((str = addressbook_get_expand_str(cc_contents)))
 		{
-			set(data->cc_string, MUIA_String_Contents, str);
+			set(data->cc_string, MUIA_UTF8String_Contents, str);
 			free(str);
 			return 1;
 		}
@@ -1202,7 +1208,7 @@ int compose_window_open(struct compose_args *args)
 				}
 			}
 
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(expand_to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(expand_cc_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
 			DoMethod(to_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);

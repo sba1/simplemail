@@ -64,6 +64,7 @@ struct MailTreelist_Data
 	APTR status_hold;
 	APTR status_reply;
 	APTR status_forward;
+	APTR status_norcpt;
 
 	APTR status_important;
 	APTR status_attach;
@@ -112,12 +113,19 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 
 	if (data->folder_type == FOLDER_TYPE_SEND)
 	{
-		field = mail->to_phrase;
-		ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ASCII7);
-		if (!field)
+		if (mail->flags & MAIL_FLAGS_NORCPT)
 		{
-			field = mail->to_addr;
+			field = _("<No Recipient>");
 			ascii7 = 1;
+		} else
+		{
+			field = mail->to_phrase;
+			ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ASCII7);
+			if (!field)
+			{
+				field = mail->to_addr;
+				ascii7 = 1;
+			}
 		}
 	} else
 	{
@@ -195,21 +203,25 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 				*msg->Preparse++ = "\33b";
 				*msg->Preparse++ = "\33b";
 				*msg->Preparse = "\33b";
-
 			} else
 			{
-				switch(mail_get_status_type(mail))
+				if (mail->flags & MAIL_FLAGS_NORCPT)
+					sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
+				else
 				{
-					case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
-					case	MAIL_STATUS_READ:status = data->status_read;break;
-					case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
-					case	MAIL_STATUS_SENT:status = data->status_sent;break;
-					case	MAIL_STATUS_HOLD:status = data->status_hold;break;
-					case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
-					case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
-					default: status = NULL;
+					switch(mail_get_status_type(mail))
+					{
+						case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
+						case	MAIL_STATUS_READ:status = data->status_read;break;
+						case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
+						case	MAIL_STATUS_SENT:status = data->status_sent;break;
+						case	MAIL_STATUS_HOLD:status = data->status_hold;break;
+						case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
+						case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
+						default: status = NULL;
+					}
+					sprintf(status_buf,"\33O[%08lx]",status);
 				}
-				sprintf(status_buf,"\33O[%08lx]",status);
 			}
 
 			if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
@@ -460,6 +472,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End, 0);
 	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End, 0);
 	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End, 0);
+	data->status_norcpt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_norcpt", End, 0);
 
 	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End, 0);
 	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End, 0);
@@ -480,6 +493,7 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
 	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
 	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
+	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_norcpt);
 	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);
 	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
 	if (data->status_reply) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply);

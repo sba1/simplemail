@@ -28,3 +28,4 @@ sas_objects
 date.h
 xpm
 .folders
+*.csv

@@ -75,7 +75,7 @@ SUBDIRS = gtk
 
 EXTRA_DIST = diff_ignore
 
-simplemail_SOURCES = addressbook.c                      addressbook.h                      codecs.c                      codecs.h                      configuration.c                      configuration.h                      folder.c                      folder.h                      hmac_md5.c                      hmac_md5.h                      lists.c                      lists.h                      mail.c                      mail.h                      md5.c                      md5.h                      parse.c                      parse.h                      pop3.c                      pop3.h                      simplemail.c                      simplemail.h                      support_indep.c                      support_indep.h                      smtp.c                      smtp.h                      tcp.c                      tcp.h                      text2html.c                      text2html.h                      trans.c                      trans.h
+simplemail_SOURCES = addressbook.c                      addressbook.h                      codecs.c                      codecs.h                      configuration.c                      configuration.h                      folder.c                      folder.h                      hmac_md5.c                      hmac_md5.h 		     http.h 		     http.c                      lists.c                      lists.h                      mail.c                      mail.h                      md5.c                      md5.h                      parse.c                      parse.h                      pop3.c                      pop3.h                      simplemail.c                      simplemail.h                      support_indep.c                      support_indep.h                      smtp.c                      smtp.h                      tcp.c                      tcp.h                      text2html.c                      text2html.h                      trans.c                      trans.h
 
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
@@ -92,7 +92,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 simplemail_OBJECTS =  addressbook.o codecs.o configuration.o folder.o \
-hmac_md5.o lists.o mail.o md5.o parse.o pop3.o simplemail.o \
+hmac_md5.o http.o lists.o mail.o md5.o parse.o pop3.o simplemail.o \
 support_indep.o smtp.o tcp.o text2html.o trans.o
 simplemail_LDFLAGS = 
 CFLAGS = @CFLAGS@
@@ -109,8 +109,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/addressbook.P .deps/codecs.P .deps/configuration.P \
-.deps/folder.P .deps/hmac_md5.P .deps/lists.P .deps/mail.P .deps/md5.P \
-.deps/parse.P .deps/pop3.P .deps/simplemail.P .deps/smtp.P \
+.deps/folder.P .deps/hmac_md5.P .deps/http.P .deps/lists.P .deps/mail.P \
+.deps/md5.P .deps/parse.P .deps/pop3.P .deps/simplemail.P .deps/smtp.P \
 .deps/support_indep.P .deps/tcp.P .deps/text2html.P .deps/trans.P
 SOURCES = $(simplemail_SOURCES)
 OBJECTS = $(simplemail_OBJECTS)

@@ -15,6 +15,8 @@ simplemail_SOURCES = addressbook.c \
                      folder.h \
                      hmac_md5.c \
                      hmac_md5.h \
+		     http.h \
+		     http.c \
                      lists.c \
                      lists.h \
                      mail.c \
@@ -40,6 +42,7 @@ simplemail_SOURCES = addressbook.c \
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
 simplemail_LDADD        = ./gtk/libgui.a @GUI_LIBS@
+
 
 
 

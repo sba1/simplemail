@@ -40,7 +40,7 @@
 
 #ifndef NO_SSL
 
-#if defined(_AMIGA ) || defined(__AMIGAOS4__)/* ugly */
+#if defined(_AMIGA ) || defined(__AMIGAOS4__) || defined(__MORPHOS__)/* ugly */
 #include <proto/amissl.h> /* not portable */
 #else
 #include <openssl/ssl.h>

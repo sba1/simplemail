@@ -27,7 +27,7 @@
 #include <exec/types.h>
 #endif
 
-#if INCLUDE_VERSION < 50
+#if (INCLUDE_VERSION < 50) || defined(__MORPHOS__)
 
 #ifdef __SASC
 

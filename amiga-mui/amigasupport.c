@@ -38,6 +38,9 @@
 
 #ifdef __AMIGAOS4__
 extern ULONG hookEntry();
+#else
+#ifdef __MORPHOS__
+#define hookEntry HookEntry
 #endif
 
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
@@ -61,7 +64,7 @@ void SecondsToString( char *buf, unsigned int seconds)
 		struct Hook date_hook;
 
 		date_hook.h_Data = buf;
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -96,7 +99,7 @@ void SecondsToStringLong( char *buf, unsigned int seconds)
 		struct Hook date_hook;
 
 		date_hook.h_Data = buf;
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -130,7 +133,7 @@ void SecondsToDateString( char *buf, unsigned int seconds)
 	{
 		struct Hook date_hook;
 
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -157,7 +160,7 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 	if (LocaleBase && DefaultLocale)
 	{
 		struct Hook date_hook;
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -286,7 +289,7 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		rect.MaxY = yDest + ySize - 1;
 		
 		/* Initialize the hook */
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		hook.hook.h_Entry = (HOOKFUNC)hookEntry;
 		hook.hook.h_SubEntry = (HOOKFUNC)HookFunc_BltMask;
 #else

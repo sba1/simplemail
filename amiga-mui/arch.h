@@ -37,7 +37,11 @@
 #ifdef __AMIGAOS4__
 #define SM_OPERATIONSYSTEM "AmigaOS4/MUI"
 #else
+#ifdef __MORPHOS__
+#define SM_OPERATIONSYSTEM "MorphOS/MUI"
+#else
 #define SM_OPERATIONSYSTEM "AmigaOS/MUI"
+#endif
 #endif
 
 /* Debug - defines ARCH_DEBUG */

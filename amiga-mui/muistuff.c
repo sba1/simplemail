@@ -77,14 +77,39 @@ void SetRexxVar(void)
 {
 }
 
+#else
+
+#ifdef __MORPHOS__
+APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
+{
+	ULONG *tags;
+	Object *o;
+	va_list args;
+
+	va_start(args,id);
+
+	tags = (ULONG *)args->overflow_arg_area;
+
+	SM_DEBUGF(25,("tag=%p [0]=%p [1]=%p [2]=%p id=%p\n",tags,tags[0],tags[1],tags[2],id));
+
+	o = NewObjectA(cl,id,(struct TagItem *)tags);
+	va_end(args);
+	return o;
+}
+#endif /* __MORPHOS__ */
+
+#endif /* __AMIGAOS4__ */
+
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
-	extern ULONG muiDispatcherEntry();
-	extern ULONG hookEntry();
+	extern ULONG muiDispatcherEntry(void);
+	extern ULONG hookEntry(void);
 
 	struct MUI_CustomClass *cl;
 
-	if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, muiDispatcherEntry)))
+	if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, &muiDispatcherEntry)))
 	{
 		cl->mcc_Class->cl_UserData = dispatcher;
 	}
@@ -106,8 +131,7 @@ APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 	return NewObjectA(cl,id, (struct TagItem*)((&id)+1));
 }
 
-
-#endif
+#endif /* __AMIGAOS4__ || __MORPHOS__ */
 
 
 Object *MakeLabel(STRPTR str)
@@ -186,6 +210,10 @@ VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help
 
 #ifdef __AMIGAOS4__
 extern void hookEntry(void);
+#else
+#ifdef __MORPHOS__
+#define hookEntry HookEntry
+#endif
 #endif
 
 struct Hook hook_standard;
@@ -201,7 +229,7 @@ STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object
 /* Must be called before the hook_standard is used */
 void init_hook_standard(void)
 {
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 	hook_standard.h_Entry = (HOOKFUNC)hookEntry;
 	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 #else
@@ -209,7 +237,7 @@ void init_hook_standard(void)
 #endif
 }
 
-#ifndef __AMIGAOS4__
+#if !defined(__AMIGAOS4__) || !defined(__MORPHOS__)
 /* the hook function, it loads the a4 register and call the subentry */
 STATIC ASM SAVEDS VOID myhook_func(REG(a0,struct MyHook *h), REG(a2, ULONG obj), REG(a1,ULONG msg))
 {
@@ -237,9 +265,9 @@ STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG
 
 /* initializes a hook (in the past, the a4 register was stored within the myhook, this has been replaced now
  * so that we would need only one type of hook now */
-void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
+void init_myhook(struct MyHook *h, unsigned long (*func)(void),void *data)
 {
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 	h->hook.h_Entry = (HOOKFUNC)hookEntry;
 	h->hook.h_SubEntry = (HOOKFUNC)func;
 #else
@@ -249,9 +277,9 @@ void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
 	h->hook.h_Data = data;
 }
 
-void init_hook(struct Hook *h, unsigned long (*func)())
+void init_hook(struct Hook *h, unsigned long (*func)(void))
 {
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 	h->h_Entry = (HOOKFUNC)hookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 #else
@@ -259,3 +287,4 @@ void init_hook(struct Hook *h, unsigned long (*func)())
 	h->h_SubEntry = func;
 #endif
 }
+

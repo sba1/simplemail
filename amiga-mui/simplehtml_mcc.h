@@ -11,6 +11,12 @@ extern struct Library *SimpleHTMLBase;
 struct MUI_CustomClass *ObtainSimpleHTMLMCC(void);
 #ifdef __SASC
 #pragma libcall SimpleHTMLBase ObtainSimpleHTMLMCC 1e 00
+#else
+#if defined(__MORPHOS__) && defined(__GNUC__)
+#define ObtainSimpleHTMLMCC() \
+	LP0(0x1e, struct MUI_CustomClass *, ObtainSimpleHTMLMCC, \
+		, SimpleHTMLBase, 0, 0, 0, 0, 0, 0)
+#endif
 #endif
 #else
 
@@ -61,6 +67,10 @@ extern struct SimpleHTMLIFace *ISimpleHTML;
 #define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
 #define MUIM_SimpleHTML_FontSubst			(0x45678b)
 
+#if defined(__GNUC__)
+# pragma pack(2)
+#endif
+
 struct MUIP_SimpleHTML_LoadHook
 {
 	STRPTR uri; /* the uri which should be loaded */
@@ -92,5 +102,9 @@ struct MUIP_SimpleHTML_FontSubst
 	STRPTR newname; /* new font name (without .font) */
 	LONG newsize; /* the new size (in pixels) */
 };
+
+#if defined(__GNUC__)
+# pragma pack()
+#endif
 
 #endif

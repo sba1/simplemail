@@ -354,7 +354,12 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 			{
 				thread->process = CreateNewProcTags(
 							NP_Entry,      thread_entry,
+#ifdef __MORPHOS__
+							NP_CodeType,   MACHINE_PPC,
+							NP_StackSize,  16384*2,
+#else
 							NP_StackSize,  16384,
+#endif
 							NP_Name,       thread_name,
 							NP_Priority,   -1,
 							NP_Input,      in,

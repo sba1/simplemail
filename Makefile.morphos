@@ -1,0 +1,107 @@
+SHELL =  /bin/sh
+
+OUT = SimpleMail
+
+G_IPATH     = -I./ -I./indep-include -I./amiga-mui -I./include-morphos
+G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
+G_OPTFLAGS  = -O2 \
+         -mcpu=603e \
+         -mmultiple \
+         -noixemul \
+         -Wall \
+         -Wno-parentheses \
+         -Wno-switch \
+         -Wstrict-prototypes \
+         -Wpointer-arith \
+         -Wmissing-prototypes \
+         -Wmissing-declarations \
+         -Werror-implicit-function-declaration
+
+##############################################################################
+
+all:  $(OUT)
+
+##############################################################################
+
+.c.o:
+	 ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+
+##############################################################################
+
+LIBS    = -L./amiga-mui
+
+SRC     =
+
+DEST    =
+
+GLOBAL  =
+
+%.o: %.c $(GLOBAL)
+	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+
+amiga-mui/libgui.a:
+	$(MAKE) -C amiga-mui -f Makefile.MorphOS
+
+%.c : %.h $(GLOBAL)
+
+OBJS    = 	account.o \
+            addressbook.o \
+            codecs.o \
+            codesets.o \
+            configuration.o \
+			debug.o \
+            estimate.o \
+            filter.o \
+            folder.o \
+			hash.o \
+            hmac_md5.o \
+            http.o \
+            imap.o \
+            lists.o \
+            mail.o \
+			mbox.o \
+            md5.o \
+            parse.o \
+            pgp.o \
+            phrase.o \
+            pop3.o \
+            print.o \
+            signature.o \
+            simplemail.o \
+            smintl.o \
+            smtp.o \
+			spam.o \
+            status.o \
+            support_indep.o \
+            taglines.o \
+            tcp.o \
+            text2html.o \
+            trans.o
+
+#####################################################################
+
+$(OUT): amiga-mui/libgui.a $(OBJS)
+	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lc -labox -laboxstubs -lamissl -lexpat -ldebug -o $(OUT).db
+	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).db
+	protect $(OUT) +e
+
+
+bump:
+	bumprev2 VERSION=$(VERSION) FILE=$(SRC)SimpleMail_rev TAG=SimpleMail
+
+
+dump: $(OUT)
+	ppc-morphos-objdump --reloc --disassemble-all $(OUT).db >$(OUT).dump
+
+clean:
+	-rm   *.o $(OUT) *.db *.dump ./amiga-mui/*.o ./amiga-mui/*.a
+
+lha: clean
+	-@rm ram:simplemail.lha
+	@cd ..; lha -r a ram:simplemail.lha simplemail
+	@echo ram:simplemail.lha ready...
+
+##############################################################################
+
+.PHONY: all
+

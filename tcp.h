@@ -26,7 +26,7 @@
 #define CONN_BUF_READ_SIZE 1024
 #define CONN_BUF_WRITE_SIZE 1024
 
-#ifdef _AMIGA
+#if defined(_AMIGA) || defined(__MORPHOS__)
 #ifndef AMISSL_AMISSL_H
 typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;

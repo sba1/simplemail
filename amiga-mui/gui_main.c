@@ -542,7 +542,15 @@ int gui_execute_arexx(char *filename)
 /****************************************************************
  The main entry point.
 *****************************************************************/
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-	simplemail_main();
+#if __MORPHOS__
+	#include <workbench/startup.h>
+	extern int _start(struct WBStartup *);
+
+	return _start(NULL);
+#else
+	return simplemail_main();
+#endif
 }
+

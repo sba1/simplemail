@@ -115,7 +115,7 @@ void init_config(void)
 
 	user.config.header_flags = SHOW_HEADER_FROM | SHOW_HEADER_TO | SHOW_HEADER_CC | SHOW_HEADER_SUBJECT | SHOW_HEADER_DATE | SHOW_HEADER_REPLYTO;
 
-#ifdef _AMIGA
+#if defined(_AMIGA) || defined(__MORPHOS__) || defined(__AMIGAOS4__)
 	user.config.read_background = user.config.read_header_background = 0xb0b0b0;
 	user.config.read_text = 0;
 	user.config.read_quoted = 0xffffff;

@@ -29,8 +29,12 @@
 
 /* useful MUI supports */
 LONG xget(Object * obj, ULONG attribute);
+#ifdef __MORPHOS__
+APTR MyNewObject( struct IClass *cl, CONST_STRPTR id, ...) __attribute__((varargs68k));
+#else
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
 APTR VARARGS68K MyNewObject( struct IClass *cl, CONST_STRPTR id, ...);
+#endif
 Object *MakeLabel(STRPTR str);
 Object *MakeButton(STRPTR str);
 Object *MakeCheck(STRPTR label, ULONG check);
@@ -61,10 +65,10 @@ struct MyHook
 	unsigned long rega4;
 };
 
-void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data);
+void init_myhook(struct MyHook *h, unsigned long (*func)(void),void *data);
 
 /* Use this function if the data field of the hook structure is not needed */
-void init_hook(struct Hook *h, unsigned long (*func)());
+void init_hook(struct Hook *h, unsigned long (*func)(void));
 
 /* Some macros to be used in custom classes */
 #define _between(a,x,b) ((x)>=(a) && (x)<=(b))
@@ -85,8 +89,10 @@ void init_hook(struct Hook *h, unsigned long (*func)());
 
 #define MUIM_DeleteDragImage 0x80423037
 
+#if (MUIMASTER_VMIN < 18)
 #define MUIM_DoDrag 0x804216bb /* private */ /* V18 */
 struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; /* private */
+#endif
 
 #define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */
 
@@ -96,8 +102,9 @@ struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; 
 
 #define MAKECOLOR32(x) (((x)<<24)|((x)<<16)|((x)<<8)|(x))
 
-#ifndef BOOPSI_DISPATHCER
+#ifndef BOOPSI_DISPATCHER
 #define BOOPSI_DISPATCHER(rettype,name,cl,obj,msg)  ASM SAVEDS rettype name(REG(a0,struct IClass *cl),REG(a2,Object *obj), REG(a1, Msg msg))
 #endif
 
-#endif
+#endif /* SM_MUISTUFF_H */
+

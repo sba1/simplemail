@@ -1,0 +1,103 @@
+SHELL =  /bin/sh
+
+OUT = libgui.a
+
+G_IPATH     = -I./ -I../ -I../indep-include/ -I../include-morphos
+G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
+G_OPTFLAGS  = -O2 \
+         -mcpu=603e \
+         -mmultiple \
+         -noixemul \
+         -Wall \
+         -Wno-parentheses \
+         -Wno-switch \
+         -Wstrict-prototypes \
+         -Wpointer-arith \
+         -Wmissing-prototypes \
+         -Wmissing-declarations \
+         -Werror-implicit-function-declaration
+
+##############################################################################
+
+all:  $(OUT)
+
+##############################################################################
+
+.c.o:
+	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+
+##############################################################################
+
+LIB     = -L./amiga-mui/
+
+SRC     =
+
+DEST    =
+
+GLOBAL  = compiler.h
+
+%.o: %.c $(GLOBAL)
+	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
+
+%.c : %.h $(GLOBAL)
+
+OBJS    =	utf8stringclass.o \
+			transwndclass.o \
+			tcpip.o \
+			sysprint.o \
+			support.o \
+			subthreads.o \
+			statuswnd.o \
+			startupwnd.o \
+			startup-morphos.o \
+			signaturecycleclass.o \
+			shutdownwnd.o \
+			searchwnd.o \
+			readwnd.o \
+			popupmenuclass.o \
+			picturebuttonclass.o \
+			pgplistclass.o \
+			multistringclass.o \
+			muistuff.o \
+            mainwnd.o \
+            mailtreelistclass.o \
+			muistuff.o \
+            iconclass.o \
+            headers.o \
+            gui_main.o \
+            gettext.o \
+            folderwnd.o \
+            foldertreelistclass.o \
+            filterwnd.o \
+            filterruleclass.o \
+            filterlistclass.o \
+            errorwnd.o \
+            datatypesclass.o \
+            datatypescache.o \
+			configwnd_stuff.o \
+            configwnd.o \
+            composewnd.o \
+            composeeditorclass.o \
+            audioselectgroupclass.o \
+            attachmentlistclass.o \
+            arexx.o \
+            amigasupport.o \
+            addresstreelistclass.o \
+            addressstringclass.o \
+            addressbookwnd.o \
+			accountpopclass.o
+
+#####################################################################
+
+$(OUT): $(OBJS)
+	rm -f $@
+	ppc-morphos-ar rc $@ $(OBJS)
+	ppc-morphos-ranlib $@
+
+clean:
+	-rm   *.o $(OUT)
+
+##############################################################################
+
+.PHONY: all
+

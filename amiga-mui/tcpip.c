@@ -22,6 +22,11 @@
 
 #include <proto/exec.h>
 
+#ifdef __MORPHOS__
+#include <sys/socket.h>
+#include <net/socketbasetags.h>
+#include <proto/socket.h>
+#else
 #ifdef AMITCP_SDK
 #include <amitcp/socketbasetags.h>
 #else
@@ -34,6 +39,7 @@
 #include <pragmas/miami_pragmas.h>
 #endif
 #endif
+#endif
 
 #ifndef NO_SSL
 #include <proto/amissl.h>
@@ -42,9 +48,13 @@
 #include "tcpip.h"
 #include "subthreads_amiga.h"
 
+#ifdef __MORPHOS__
+#define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
+#else
 /* calling FindTask(NULL) below makes problems when compiling */
 #define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
 #define ISocket ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->isocket
+#endif
 
 
 int open_socket_lib(void)

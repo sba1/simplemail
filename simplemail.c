@@ -43,19 +43,21 @@
 void callback_read_mail(void)
 {
 	char *filename;
+	struct mail *m;
+	struct folder *f;
 
-	if ((filename = main_get_mail_filename()))
+	if (!(f = main_get_folder())) return;
+	if (!(filename = main_get_mail_filename())) return;
+	if (!(m = main_get_active_mail())) return;
+
+	read_window_open(main_get_folder_drawer(), filename);
+
+	if (m && m->status == MAIL_STATUS_UNREAD)
 	{
-		struct mail *m = main_get_active_mail();
-
-		read_window_open(main_get_folder_drawer(), filename);
-
-		if (m && m->status == MAIL_STATUS_UNREAD)
-		{
-			folder_set_mail_status(main_get_folder(),m,MAIL_STATUS_READ);
-			m->flags &= ~MAIL_FLAGS_NEW;
-			main_refresh_mail(m);
-		}
+		folder_set_mail_status(f,m,MAIL_STATUS_READ);
+		if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+		m->flags &= ~MAIL_FLAGS_NEW;
+		main_refresh_mail(m);
 	}
 }
 

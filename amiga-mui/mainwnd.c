@@ -354,7 +354,7 @@ int main_window_init(void)
 					MUIA_Group_Spacing, 0,
 					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
 					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
-					Child, button_switch = MakePictureButton("_Switch", "PROGDIR:Images/Switch"),
+					Child, button_switch = MakePictureButton("S_witch", "PROGDIR:Images/Switch"),
 					End,
 				End,
 
@@ -431,7 +431,7 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, "Folder:"  MUIX_PH "%s " MUIX_PT "Messages:"  MUIX_PH "%ld " MUIX_PT "New:"  MUIX_PH "%ld: " MUIX_PT "Unread:"  MUIX_PH "%ld",f->name,f->num_mails,0,0);
+			sprintf(buf, MUIX_PH "Folder:"  MUIX_PT "%s " MUIX_PH "Messages:"  MUIX_PT "%ld " MUIX_PH "New:"  MUIX_PT "%ld: " MUIX_PH "Unread:"  MUIX_PT "%ld",f->name,f->num_mails,f->new_mails,f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
 	}
@@ -518,6 +518,7 @@ void main_refresh_mail(struct mail *m)
 	if (treenode)
 	{
 		DoMethod(mail_tree, MUIM_NListtree_Redraw, treenode, 0);
+		main_refresh_folders_text();
 	}
 }
 

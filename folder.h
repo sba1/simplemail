@@ -48,6 +48,9 @@ struct folder
 
 	int type; /* see below */
 	int special; /* see below */
+
+	int new_mails; /* number of new mails */
+	int unread_mails; /* number of unread mails */
 	/* more will follow */
 };
 

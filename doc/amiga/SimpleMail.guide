@@ -3,8 +3,6 @@
 @AUTHOR David Rey <david@saug.org>
 @INDEX "Index"
 
-$Id$
-
 @NODE "Main" "Welcome to SimpleMail!"
 
                          SimpleMail 0.14 (public BETA)
@@ -2371,7 +2369,7 @@ of Stefan Martens):
 
       Name:             SimpleMail
       Path:             (SimpleMail path, like "Work:SimpleMail/SimpleMail")
-      ARexx port:       SIMPLEMAIL
+      ARexx port:       SIMPLEMAIL.1
 
       Show/Uniconify:   SHOW
       Screen to front:  SCREENTOFRONT
@@ -2515,6 +2513,11 @@ Authors
 Additional programming advice
 
 @{b}Jörg Strohmayer @{ub}
+
+
+Translators
+
+@{b}Márton Dósa@{ub} hungarian
 
 
 Programmers

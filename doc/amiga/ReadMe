@@ -41,6 +41,7 @@ Changes since 0.13
 - Every folder can now have a default recipient address
 - Can now import address books from YAM
 - Implemented CC support in the Compose Message window
+- Added (partial) hungarian translation by Márton Dósa
 		    
 Contact
 ~~~~~~~
@@ -65,6 +66,9 @@ SimpleMail is (originally) developed by
 
   Hynek Schlawack <hynek@hys.in-berlin.de> - http://hynek.in-berlin.de/
   Sebastian Bauer <sebauer@t-online.de>    - http://home.t-online.de/home/sebauer/
+
+Translations done by:
+  Hungarian by Márton Dósa
 
 You can also contact them if you have any questions regarding SimpleMail,
 but please use the mailing list if possible.

@@ -1089,6 +1089,7 @@ int simplemail_main(void)
 #endif
 
 	if (!gui_parseargs(0,NULL)) return 0;
+	if (!init_threads()) return 0;
 
 	if (codesets_init())
 	{
@@ -1096,18 +1097,15 @@ int simplemail_main(void)
 		init_addressbook();
 		if (init_folders())
 		{
-			if (init_threads())
-			{
-				gui_main(0,NULL);
-				folder_delete_deleted();
-				cleanup_threads();
-			}
-/*			folder_save_order();*/
+			gui_main(0,NULL);
+			folder_delete_deleted();
+/*		folder_save_order();*/
 			del_folders();
 		}
 		codesets_cleanup();
 	}
 	cleanup_addressbook();
+	cleanup_threads();
 	return 0;
 }
 

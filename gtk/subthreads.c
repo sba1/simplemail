@@ -162,7 +162,7 @@ void thread_lock_semaphore(semaphore_t sem)
 
 int thread_attempt_lock_semaphore(semaphore_t sem)
 {
-	return g_mutex_try_lock(sem->mutex);
+	return g_mutex_trylock(sem->mutex);
 }
 
 void thread_unlock_semaphore(semaphore_t sem)

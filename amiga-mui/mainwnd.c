@@ -45,6 +45,7 @@
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 
 static Object *win_main;
 static Object *button_fetch;
@@ -197,17 +198,30 @@ int main_window_init(void)
     MUIA_Window_Title, VERS,
         
 		WindowContents, VGroup,
-			Child, HGroup,
-				Child, button_read = MakeButton("R_ead"),
-				Child, button_change = MakeButton("_Modify"),
-				Child, button_delete = MakeButton("_Delete"),
-				Child, button_getadd = MakeButton("_GetAdd"),
-				Child, button_new = MakeButton("_New"),
-				Child, button_reply = MakeButton("_Reply"),
-				Child, button_fetch = MakeButton("_Fetch Mails"),
-				Child, button_send = MakeButton("_Send Mails"),
-				Child, button_abook = MakeButton("_Addressbook"),
-				Child, button_config = MakeButton("_Config"),
+			Child, HGroupV,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					MUIA_Weight, 200,
+					Child, button_read = MakePictureButton("R_ead","PROGDIR:Images/MailRead"),
+					Child, button_change = MakePictureButton("_Modify","PROGDIR:Images/MailModify"),
+					Child, button_delete = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
+					Child, button_getadd = MakePictureButton("_GetAdd","PROGDIR:Images/MailGetAddress"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					Child, button_new = MakePictureButton("_New","PROGDIR:Images/MailNew"),
+					Child, button_reply = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					Child, button_fetch = MakePictureButton("_Fetch","PROGDIR:Images/MailsFetch"),
+					Child, button_send = MakePictureButton("_Send","PROGDIR:Images/MailsSend"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
+					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
+					End,
 				End,
 			Child, HGroup,
 				Child, NListviewObject,

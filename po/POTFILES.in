@@ -16,6 +16,8 @@ amiga-mui/pgplistclass.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
 amiga-mui/upwnd.c
+Charsets/iso8859-10.txt
+codesets.c
 mail.c
 pop3.c
 print.c

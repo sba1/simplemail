@@ -120,10 +120,12 @@ struct config
 
 	/* appicon */
 	char *appicon_label; /* the label to be shown with the appicon */
+	int appicon_show;    /* when should the appicon be displayed */
 
 	/* hidden */
 	int set_all_stati;          /* expand the context menu of the maillisttree to set all stati */
 	int min_classified_mails;   /* number of minimum spam/ham classification to invoke the auto spamcheck */
+	int dont_show_shutdown_text; /* Do not show the text in the shutdown window */
 };
 
 struct user

@@ -142,10 +142,12 @@ void init_config(void)
   user.config.spam_addrbook_is_white = 1;
 
 	user.config.appicon_label = mystrdup("T:%t N:%n U:%u");
+	user.config.appicon_show  = 0;
 
 	/* defaults for Hidden options */
 	user.config.set_all_stati = 0;
 	user.config.min_classified_mails = 500;
+	user.config.dont_show_shutdown_text = 0;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -198,6 +200,8 @@ int load_config(void)
 							user.config.default_codeset = codesets_find(result);
 						if ((result = get_config_item(buf,"AppIconLabel")))
 							user.config.appicon_label = mystrdup(result);
+						if ((result = get_config_item(buf,"AppIconShow")))
+							user.config.appicon_show = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
@@ -276,6 +280,8 @@ int load_config(void)
 							user.config.set_all_stati = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Hidden.MinClassifiedMails")))
 							user.config.min_classified_mails = atoi(result);
+						if ((result = get_config_item(buf,"Hidden.DontShowShutdownText")))
+							user.config.dont_show_shutdown_text = CONFIG_BOOL_VAL(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -534,6 +540,7 @@ void save_config(void)
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 			if (user.config.default_codeset) fprintf(fh,"Charset=%s\n",user.config.default_codeset->name);
 			if (user.config.appicon_label) fprintf(fh,"AppIconLabel=%s\n",user.config.appicon_label);
+			fprintf(fh,"AppIconShow=%d\n",user.config.appicon_show);
 
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);
@@ -668,6 +675,10 @@ void save_config(void)
 			if (user.config.min_classified_mails != 500)
 			{
 				fprintf(fh,"Hidden.MinClassifiedMails=%d\n",user.config.min_classified_mails);
+			}
+			if (user.config.dont_show_shutdown_text)
+			{
+				fprintf(fh,"Hidden.DontShowShutdownText=Y\n");
 			}
 
 			fclose(fh);

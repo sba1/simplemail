@@ -34,3 +34,8 @@ po2tbl.sed
 POTFILES
 *.pox
 .#*
+Makefile.in
+configure
+aclocal.m4
+simplemail.pot
+config.h.in

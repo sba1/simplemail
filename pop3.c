@@ -687,6 +687,9 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 {
 	int rc = 0;
 
+	/* If pop list is empty we of course succeed */
+	if (!list_first(pop_list)) return 1;
+
 	if (open_socket_lib())
 	{
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);

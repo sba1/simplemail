@@ -461,7 +461,14 @@ int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 	else if(gethostname(dom, 512) != 0);
 
 	tcp_write(conn->conn, "EHLO ",5);
-	tcp_write(conn->conn, dom, strlen(dom));
+	if (account->smtp->secure && !tcp_secure(conn->conn))
+	{
+		/* don't send any private date until connection is secure */
+		tcp_write(conn->conn, "simplemail.sourceforge.net",26);
+	} else 
+	{
+		tcp_write(conn->conn, dom, strlen(dom));
+	}
 	tcp_write(conn->conn, "\r\n", 2);
 	tcp_flush(conn->conn);
 
@@ -679,14 +686,25 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		thread_call_parent_function_async(up_set_status,1,N_("Sending STARTTLS..."));
 		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
 		{
-			tell_from_subtask(N_("STARTTLS failed"));
+			tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
 			return 0;
 		}
 
 		if (!(tcp_make_secure(conn->conn)))
 		{
-			tell_from_subtask(N_("Connection could not be made secure"));
+			tell_from_subtask(N_("Connection could not be made secure."));
 			return 0;
+		}
+
+		thread_call_parent_function_async(up_set_status,1,N_("Sending secured EHLO..."));
+		if (!esmtp_ehlo(conn,account))
+		{
+			thread_call_parent_function_async(up_set_status,1,N_("Sending secured HELO..."));
+			if (!smtp_helo(conn,account))
+			{
+				tell_from_subtask(N_("HELO failed"));
+				return 0;
+			}
 		}
 	}
 
@@ -695,7 +713,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		thread_call_parent_function_async(up_set_status,1,N_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
-			tell_from_subtask(N_("AUTH failed"));
+			tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
 			return 0;
 		}
 	}

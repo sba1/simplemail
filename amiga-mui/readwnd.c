@@ -293,6 +293,7 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 {
 	if (!data->attachments_group)
 	{
+		mail_decode(m);
 		insert_text(data, m);
 	} else
 	{

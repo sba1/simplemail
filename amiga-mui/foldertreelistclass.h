@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** foldertreelistclass.h
 */
 
 #ifndef SM__FOLDERTREELISTCLASS_H

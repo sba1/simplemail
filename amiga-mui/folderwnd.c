@@ -26,10 +26,13 @@
 
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
+#include <libraries/asl.h>
 #include <mui/betterstring_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+#include <proto/dos.h>
+#include <proto/utility.h>
 
 #include "folder.h"
 #include "simplemail.h"
@@ -136,4 +139,90 @@ void folder_edit(struct folder *f)
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	changed_folder = f;
 	set(folder_wnd, MUIA_Window_Open, TRUE);
+}
+
+/*************************************************************/
+
+static Object *new_folder_wnd;
+static Object *new_folder_name_string;
+static Object *new_folder_path_string;
+
+void new_folder_create(void)
+{
+	char *name_str = (char*)xget(new_folder_name_string, MUIA_String_Contents);
+	char *path_str = (char*)xget(new_folder_path_string, MUIA_String_Contents);
+
+	set(new_folder_wnd,MUIA_Window_Open, FALSE);
+	callback_new_folder_path(path_str,name_str);
+}
+
+void init_new_folder(void)
+{
+	Object *create_button, *cancel_button;
+
+	new_folder_wnd = WindowObject,
+		MUIA_Window_ID, MAKE_ID('F','O','L','N'),
+		MUIA_Window_Title, "SimpleMail - New folder",
+		WindowContents, VGroup,
+			Child, ColGroup(2),
+				Child, MakeLabel("Name"),
+				Child, new_folder_name_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_String_AdvanceOnCR, TRUE,
+					End,
+
+				Child, MakeLabel("Path"),
+				Child, PopaslObject,
+					ASLFR_DrawersOnly, TRUE,
+					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
+					MUIA_Popstring_String, new_folder_path_string = BetterStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, create_button = MakeButton("_Create"),
+				Child, cancel_button = MakeButton("_Cancel"),
+				End,
+			End,
+		End;
+
+	if (new_folder_wnd)
+	{
+		DoMethod(App, OM_ADDMEMBER, new_folder_wnd);
+		DoMethod(new_folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(create_button, MUIM_Notify, MUIA_Pressed, FALSE, new_folder_wnd, 3, MUIM_CallHook, &hook_standard, new_folder_create);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+	}
+
+}
+
+void folder_edit_new_path(char *init_path)
+{
+	if (!new_folder_wnd)
+	{
+		init_new_folder();
+		if (!new_folder_wnd) return;
+	}
+
+	if (new_folder_wnd)
+	{
+		if (init_path)
+		{
+			char *buf = malloc(strlen(FilePart(init_path))+1);
+			if (buf)
+			{
+				strcpy(buf,FilePart(init_path));
+				*buf = ToUpper(*buf);
+				set(new_folder_name_string, MUIA_String_Contents, buf);
+				free(buf);
+			}
+		}
+		set(new_folder_path_string, MUIA_String_Contents, init_path);
+		set(new_folder_wnd, MUIA_Window_Open, TRUE);
+	}
 }

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** foldertreelistclass.c
 */
 
 #include <string.h>
@@ -35,6 +35,7 @@
 #include <proto/intuition.h>
 
 #include "folder.h"
+#include "simplemail.h"
 
 #include "compiler.h"
 #include "foldertreelistclass.h"
@@ -51,6 +52,8 @@ struct FolderTreelist_Data
 	struct Hook display_hook;
 
 	struct folder *folder_maildrop;
+
+	Object *context_menu;
 };
 
 /*
@@ -96,6 +99,10 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 }
 
 
+#define MENU_FOLDER_NEW			1
+#define MENU_FOLDER_REM			2
+#define MENU_FOLDER_SETTINGS	3
+
 STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct FolderTreelist_Data *data;
@@ -105,22 +112,37 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 
-/*
-	data->construct_hook.h_Entry = (HOOKFUNC)folder_construct;
-	data->destruct_hook.h_Entry = (HOOKFUNC)folder_destruct;
-*/
 	init_hook(&data->display_hook,(HOOKFUNC)folder_display);
 
+	data->context_menu = MenustripObject,
+		Child, MenuObjectT("Folders"),
+			Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...", MUIA_UserData, MENU_FOLDER_NEW, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, "Remove Folder...", MUIA_UserData, MENU_FOLDER_REM, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, "Settings...", MUIA_UserData, MENU_FOLDER_SETTINGS, End,
+			End,
+		End;
+
 	SetAttrs(obj,
-/*						MUIA_NListtree_ConstructHook, &data->construct_hook,
-						MUIA_NListtree_DestructHook, &data->destruct_hook,*/
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Format, "BAR,",
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
+						MUIA_ContextMenu, data->context_menu,
 						TAG_DONE);
 
 	return (ULONG)obj;
+}
+
+STATIC ULONG FolderTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	if (data->context_menu)
+	{
+		set(obj,MUIA_ContextMenu, NULL);
+		MUI_DisposeObject(data->context_menu);
+	}
+	return DoSuperMethodA(cl,obj,msg);
 }
 
 STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
@@ -187,7 +209,7 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG FolderTreelist_DropType(struct IClass *cl,Object *obj,struct MUIP_NList_DropType *msg)
+STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_NList_DropType *msg)
 {
 	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
 
@@ -198,17 +220,30 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	return rv;
 }
 
+STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,struct MUIP_ContextMenuChoice *msg)
+{
+	switch(xget(msg->item,MUIA_UserData))
+	{
+		case	MENU_FOLDER_NEW: callback_new_folder(); break;
+		case	MENU_FOLDER_REM: callback_remove_folder(); break;
+		case	MENU_FOLDER_SETTINGS: callback_edit_folder(); break;
+	}
+	return 0;
+}
+
 STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return FolderTreelist_New(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE:		return FolderTreelist_Dispose(cl,obj,msg);
 		case	OM_SET:				return FolderTreelist_Set(cl,obj,(struct opSet*)msg);
 		case	OM_GET:				return FolderTreelist_Get(cl,obj,(struct opGet*)msg);
     case  MUIM_DragQuery: return FolderTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
     case  MUIM_DragDrop:  return FolderTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
-    case	MUIM_NList_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NList_DropType*)msg); 
+    case	MUIM_NList_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NList_DropType*)msg);
+    case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

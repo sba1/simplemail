@@ -455,6 +455,30 @@ void callback_write_mail_to_str(char *str)
 	compose_window_open(&ca);
 }
 
+/* create a new folder */
+void callback_new_folder(void)
+{
+	folder_edit_new_path(new_folder_path());
+}
+
+/* create a new folder */
+void callback_new_folder_path(char *path, char *name)
+{
+	folder_add_with_name(path, name);
+	main_refresh_folders();
+}
+
+/* Remove the selected folder */
+void callback_remove_folder(void)
+{
+	struct folder *f = main_get_folder();
+	if (f)
+	{
+		if (folder_remove(f))
+			main_refresh_folders();
+	}
+}
+
 /* edit folder settings */
 void callback_edit_folder(void)
 {

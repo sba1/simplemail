@@ -36,6 +36,8 @@
 #include "support.h"
 #include "support_indep.h"
 
+static void folder_delete_mails(struct folder *folder);
+
 static struct list folder_list;
 
 struct folder_node
@@ -552,8 +554,11 @@ int folder_add_mail_incoming(struct mail *mail)
 *******************************************************************/
 static struct folder *folder_add(char *path)
 {
-	struct folder_node *node = (struct folder_node*)malloc(sizeof(struct folder_node));
-	if (node)
+	struct folder_node *node;
+
+	if (folder_find_by_path(path)) return NULL;
+
+	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
 	{
 		/* Initialize everything with 0 */
 		memset(node,0,sizeof(struct folder_node));
@@ -596,6 +601,50 @@ static struct folder *folder_add(char *path)
 		}
 	}
 	return NULL;
+}
+
+/******************************************************************
+ Adds a folder to the internal folder list with a given name
+*******************************************************************/
+struct folder *folder_add_with_name(char *path, char *name)
+{
+	struct folder *f = folder_add(path);
+	if (f)
+	{
+		if (f->name) free(f->name);
+		f->name = mystrdup(name);
+	}
+	return f;
+}
+
+/******************************************************************
+ Remove given folder from the folder list, if possible
+*******************************************************************/
+int folder_remove(struct folder *f)
+{
+	if (f->special == FOLDER_SPECIAL_NO)
+	{
+		struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+
+		while (node)
+		{
+			if (&node->folder == f)
+			{
+				if (sm_request(NULL,
+					"Do you really want to delete the folder\nand all its mails?",
+					"_Yes|_No"))
+				{
+					node_remove(&node->node);
+					folder_delete_mails(f);
+					remove(f->path);
+					free(node);
+					return 1;
+				}
+			}
+			node = (struct folder_node*)node_next(&node->node);
+		}
+	}
+	return 0;
 }
 
 /******************************************************************
@@ -935,12 +984,11 @@ int folder_delete_mail(struct folder *from_folder, struct mail *mail)
 }
 
 /******************************************************************
- Really delete all mails in the delete folder
+ Really delete all mails in the given folder
 *******************************************************************/
-void folder_delete_deleted(void)
+static void folder_delete_mails(struct folder *folder)
 {
 	int i;
-	struct folder *folder = folder_deleted();
 	char path[256];
 
 	if (!folder) return;
@@ -971,6 +1019,15 @@ void folder_delete_deleted(void)
 	}
 
 	chdir(path);
+}
+
+/******************************************************************
+ Really delete all mails in the delete folder
+*******************************************************************/
+void folder_delete_deleted(void)
+{
+	struct folder *folder = folder_deleted();
+	folder_delete_mails(folder_deleted());
 }
 
 /******************************************************************
@@ -1338,6 +1395,52 @@ int folder_filter(struct folder *folder)
 }
 
 /******************************************************************
+ Returns the default folder path
+*******************************************************************/
+char *default_folder_path(void)
+{
+#ifdef _AMIGA
+	#define FOLDER_PATH "PROGDIR:.folders"
+	char *folder_path = "PROGDIR:.folders";
+#else
+	#define FOLDER_PATH ".folders"
+	char *folder_path = ".folders";
+#endif
+
+	return folder_path;
+}
+
+/******************************************************************
+ Returns a possible path for new folders (in a static buffer)
+*******************************************************************/
+char *new_folder_path(void)
+{
+	static char buf[256];
+	char *buf2;
+	int i=0;
+
+	strcpy(buf,default_folder_path());
+	sm_add_part(buf,"folder",256);
+	buf2 = buf + strlen(buf);
+
+	while (1)
+	{
+		DIR *dfd;
+
+		sprintf(buf2,"%d",i);
+
+		if (!(dfd = opendir(buf)))
+			break;
+
+		closedir(dfd);
+		
+		i++;
+	}
+
+	return buf;
+}
+
+/******************************************************************
  Initializes the default folders
 *******************************************************************/
 int init_folders(void)
@@ -1350,16 +1453,10 @@ int init_folders(void)
 	}
 */
 
-#ifdef _AMIGA
-	#define FOLDER_PATH "PROGDIR:.folders"
-	char *folder_path = "PROGDIR:.folders";
-#else
-	#define FOLDER_PATH ".folders"
-	char *folder_path = ".folders";
-#endif
 	DIR *dfd;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
+	char *folder_path = default_folder_path();
 
 	list_init(&folder_list);
 

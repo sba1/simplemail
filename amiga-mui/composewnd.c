@@ -64,7 +64,7 @@
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
 #define MAX_COMPOSE_OPEN 10
-static int compose_open[MAX_COMPOSE_OPEN];
+static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
 
 struct Compose_Data /* should be a customclass */
 {
@@ -752,7 +752,7 @@ static void compose_new_active(void **msg)
 /******************************************************************
  Opens a compose window
 *******************************************************************/
-void compose_window_open(struct compose_args *args)
+int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
 	Object *from_text, *from_list, *reply_string, *to_string, *subject_string;
@@ -778,6 +778,8 @@ void compose_window_open(struct compose_args *args)
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
+
+	if (num == MAX_COMPOSE_OPEN) return -1;
 
 	i = 0;
 	sign = (struct signature*)list_first(&user.config.signature_list);
@@ -1005,7 +1007,7 @@ void compose_window_open(struct compose_args *args)
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
 			/* mark the window as opened */
-			compose_open[num] = 1;
+			compose_open[num] = data;
 
 			/* Insert all from addresss */
 			{
@@ -1140,8 +1142,9 @@ void compose_window_open(struct compose_args *args)
 
 			set(wnd,MUIA_Window_Open,TRUE);
 
-			return;
+			return num;
 		}
 		MUI_DisposeObject(wnd);
 	}
+	return -1;
 }

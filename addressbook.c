@@ -1027,6 +1027,39 @@ char *addressbook_get_address_str(struct addressbook_entry *entry)
 }
 
 /**************************************************************************
+ Returns the expanded string of the given entry, but prefers the given
+ e-mail address
+**************************************************************************/
+static char *addressbook_get_address_str_expanded_email(struct addressbook_entry *entry, char *email)
+{
+	char *str = NULL;
+	if (entry->type == ADDRESSBOOK_ENTRY_PERSON && entry->u.person.num_emails)
+	{
+		if (!email) email = entry->u.person.emails[0];
+		if (entry->u.person.realname && strlen(entry->u.person.realname))
+		{
+			if (needs_quotation(entry->u.person.realname))
+			{
+				str = stradd(str,"\"");
+				str = stradd(str,entry->u.person.realname);
+				str = stradd(str,"\"");
+			} else
+			{
+				str = stradd(str,entry->u.person.realname);
+			}
+				
+			str = stradd(str," <");
+			str = stradd(str,email);
+			return stradd(str,">");
+		} else
+		{
+			return mystrdup(email);
+		}
+	}
+	return NULL;
+}
+
+/**************************************************************************
  Returns the address string of the given entry (recursivly).
  The returned string is expanded (means it contains the e-mail address)
 **************************************************************************/
@@ -1051,29 +1084,7 @@ char *addressbook_get_address_str_expanded(struct addressbook_entry *entry)
 		}
 	} else
 	{
-		if (entry->type == ADDRESSBOOK_ENTRY_PERSON && entry->u.person.num_emails)
-		{
-			if (entry->u.person.realname && strlen(entry->u.person.realname))
-			{
-				if (needs_quotation(entry->u.person.realname))
-				{
-					str = stradd(str,"\"");
-					str = stradd(str,entry->u.person.realname);
-					str = stradd(str,"\"");
-				} else
-				{
-					str = stradd(str,entry->u.person.realname);
-				}
-				
-				str = stradd(str," <");
-				str = stradd(str,entry->u.person.emails[0]);
-				return stradd(str,">");
-			} else
-			{
-				return mystrdup(entry->u.person.emails[0]);
-			}
-		}
-		return NULL;
+		return addressbook_get_address_str_expanded_email(entry,NULL);
 	}
 	return str;
 }
@@ -1119,13 +1130,18 @@ char *addressbook_get_expand_str(char *unexpand)
 				} else
 				{
 					/* first check if the address is in the address book */
+					int email = 0;
 					struct addressbook_entry *entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_ALIAS);
 					if (!entry) entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_REALNAME);
-					if (!entry) entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
+					if (!entry)
+					{
+						entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
+						email = 1;
+					}
 
 					if (entry)
 					{
-						char *new_str = addressbook_get_address_str_expanded(entry);
+						char *new_str = email?addressbook_get_address_str_expanded_email(entry,mb->addr_spec):addressbook_get_address_str_expanded(entry);
 						if (!new_str)
 						{
 							if (expand) free(expand);
@@ -1156,10 +1172,15 @@ char *addressbook_get_expand_str(char *unexpand)
 
 			if ((tolook = strndup(buf,ret - buf)))
 			{
-				char *new_str;
+				char *new_str = NULL;
+				int email = 0;
 				struct addressbook_entry *entry = addressbook_find_entry(NULL,tolook,1,NULL,ADDRESSBOOK_FIND_ENTRY_ALIAS);
 				if (!entry) entry = addressbook_find_entry(NULL,tolook,1,NULL,ADDRESSBOOK_FIND_ENTRY_REALNAME);
-				if (!entry) entry = addressbook_find_entry(NULL,tolook,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
+				if (!entry)
+				{
+					email = 1;
+					entry = addressbook_find_entry(NULL,tolook,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
+				}
 
 				if (!entry)
 				{
@@ -1167,7 +1188,11 @@ char *addressbook_get_expand_str(char *unexpand)
 					return NULL;
 				}
 
-				if (!(new_str = addressbook_get_address_str_expanded(entry)))
+				if (email)
+					new_str = addressbook_get_address_str_expanded_email(entry,tolook);
+				if (!new_str) new_str = addressbook_get_address_str_expanded(entry);
+
+				if (!new_str)
 				{
 					if (expand) free(expand);
 					return NULL;

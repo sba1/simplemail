@@ -408,6 +408,25 @@ int addressbook_import_sm(char *filename)
 	return retval;
 }
 
+static utf8 *striplr(utf8 *string)
+{
+	int len;
+	char *line = (char *)string;
+
+	if (line)
+	{
+		if ((len = strlen(line)))
+		{
+			if(line[len-1] == '\n')
+			{
+				line[len-1] = 0;
+			}
+		}
+	}
+
+	return string;
+}
+
 /**************************************************************************
  Import addressbook entries from YAM
 **************************************************************************/
@@ -425,35 +444,35 @@ static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 			struct addressbook_entry *newperson;
 			char *alias, *name, *email;
 
-			alias = utf8create(line + 6, charset);
+			alias = striplr(utf8create(line + 6, charset));
 
 			if (!fgets(line,sizeof(line),fp)) return 0;
-			email = utf8create(line, charset);
+			email = striplr(utf8create(line, charset));
 
 			if (!fgets(line,sizeof(line),fp)) return 0;
-			name = utf8create(line, charset);
+			name = striplr(utf8create(line, charset));
 
 			if ((newperson = addressbook_new_person(group, name, email)))
 			{
 				newperson->alias = alias;
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->description = utf8create(line, charset);
+				newperson->description = striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.priv.phone1 = utf8create(line, charset);
+				newperson->u.person.priv.phone1 = striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.priv.street = utf8create(line, charset);
+				newperson->u.person.priv.street = striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.priv.zip	= utf8create(line, charset);
+				newperson->u.person.priv.zip	= striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.priv.country = utf8create(line, charset);
+				newperson->u.person.priv.country = striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.pgpid = utf8create(line, charset);
+				newperson->u.person.pgpid = striplr(utf8create(line, charset));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
 				newperson->u.person.dob_day   = 10*(line[0]-'0') + (line[1]-'0');
@@ -461,10 +480,10 @@ static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 				newperson->u.person.dob_year  = 1000*(line[4]-'0') + 100*(line[5]-'0') + 10*(line[6]-'0') + (line[7]-'0');
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.portrait = mystrdup(line);
+				newperson->u.person.portrait = striplr((utf8 *)mystrdup(line));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->u.person.homepage = mystrdup(line);
+				newperson->u.person.homepage = striplr((utf8 *)mystrdup(line));
 
 				while (fgets(line,sizeof(line),fp))
 				{
@@ -476,10 +495,10 @@ static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 		{
 			struct addressbook_entry *newgroup = addressbook_new_group(group);
 
-			newgroup->alias = utf8create(line + 7, charset);
+			newgroup->alias = striplr(utf8create(line + 7, charset));
 
 			if (!fgets(line,sizeof(line),fp)) return 0;
-			newgroup->description = utf8create(line, charset);
+			newgroup->description = striplr(utf8create(line, charset));
 
 			rc = yam_import_entries(newgroup, fp);
 		}

@@ -816,8 +816,16 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	struct folder *folder = msg->f;
 	void *handle = NULL;
 	struct mail *m;
-	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
-	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
+	int primary_sort, threaded;
+
+	if (!folder)
+	{
+		DoMethod(obj, MUIM_MailTree_Clear);
+		return NULL;
+	}
+
+	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
+  threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
 	DoMethod(obj, MUIM_MailTree_Freeze);
 	DoMethod(obj, MUIM_MailTree_Clear);

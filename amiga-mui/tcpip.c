@@ -21,7 +21,11 @@
 */
 
 #include <proto/exec.h>
+#ifdef __SASC
 #include <bsdsocket/socketbasetags.h>
+#else
+#include <amitcp/socketbasetags.h>
+#endif
 
 #include "tcpip.h"
 
@@ -66,9 +70,17 @@ long tcp_herrno(void)
 {
 	long id;
 
+#ifdef _DCC
+   struct TagItem tags[2]={0, 0, TAG_DONE, 0};
+   tags[0].ti_Tag=(ULONG)SBTM_GETREF(SBTC_HERRNO);
+   tags[0].ti_Data=(ULONG)&id;
+
+	if(SocketBaseTagList(tags) != 0)
+#else
 	if(SocketBaseTags(
 		SBTM_GETREF(SBTC_HERRNO), &id,
 	TAG_DONE) != 0)
+#endif
 	{
 		id = -1;
 	}

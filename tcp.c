@@ -28,7 +28,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/filio.h>
+#include <sys/errno.h>
 #include <netinet/tcp.h>
 
 #include "support.h"

@@ -119,19 +119,19 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
 		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
 
-		if (new_entry->person.phone1) free(new_entry->person.phone1);
-		new_entry->person.phone1 = mystrdup((char *)xget(data->phone1_string,MUIA_String_Contents));
-		if (new_entry->person.phone2) free(new_entry->person.phone2);
-		new_entry->person.phone2 = mystrdup((char *)xget(data->phone2_string,MUIA_String_Contents));
+		if (new_entry->u.person.phone1) free(new_entry->u.person.phone1);
+		new_entry->u.person.phone1 = mystrdup((char *)xget(data->phone1_string,MUIA_String_Contents));
+		if (new_entry->u.person.phone2) free(new_entry->u.person.phone2);
+		new_entry->u.person.phone2 = mystrdup((char *)xget(data->phone2_string,MUIA_String_Contents));
 
-		if (new_entry->person.street) free(new_entry->person.street);
-		new_entry->person.street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
-		if (new_entry->person.city) free(new_entry->person.city);
-		new_entry->person.city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
-		if (new_entry->person.country) free(new_entry->person.country);
-		new_entry->person.country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
-		if (new_entry->person.homepage) free(new_entry->person.homepage);
-		new_entry->person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
+		if (new_entry->u.person.street) free(new_entry->u.person.street);
+		new_entry->u.person.street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
+		if (new_entry->u.person.city) free(new_entry->u.person.city);
+		new_entry->u.person.city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
+		if (new_entry->u.person.country) free(new_entry->u.person.country);
+		new_entry->u.person.country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
+		if (new_entry->u.person.homepage) free(new_entry->u.person.homepage);
+		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
 
 		for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
 		{
@@ -406,19 +406,19 @@ void person_window_open(struct addressbook_entry *entry)
 			if (entry && entry->type == ADDRESSBOOK_ENTRY_PERSON)
 			{
 				int i;
-				for (i=0;i<entry->person.num_emails;i++)
+				for (i=0;i<entry->u.person.num_emails;i++)
 				{
-					DoMethod(email_list, MUIM_NList_InsertSingle, entry->person.emails[i], MUIV_NList_Insert_Bottom);
+					DoMethod(email_list, MUIM_NList_InsertSingle, entry->u.person.emails[i], MUIV_NList_Insert_Bottom);
 				}
-				set(realname_string, MUIA_String_Contents, entry->person.realname);
-				set(description_string, MUIA_String_Contents, entry->person.description);
-				set(alias_string, MUIA_String_Contents, entry->person.alias);
-				set(phone1_string, MUIA_String_Contents, entry->person.phone1);
-				set(phone2_string, MUIA_String_Contents, entry->person.phone2);
-				set(street_string, MUIA_String_Contents, entry->person.street);
-				set(city_string, MUIA_String_Contents, entry->person.city);
-				set(country_string, MUIA_String_Contents, entry->person.country);
-				set(homepage_string, MUIA_String_Contents, entry->person.homepage);
+				set(realname_string, MUIA_String_Contents, entry->u.person.realname);
+				set(description_string, MUIA_String_Contents, entry->u.person.description);
+				set(alias_string, MUIA_String_Contents, entry->u.person.alias);
+				set(phone1_string, MUIA_String_Contents, entry->u.person.phone1);
+				set(phone2_string, MUIA_String_Contents, entry->u.person.phone2);
+				set(street_string, MUIA_String_Contents, entry->u.person.street);
+				set(city_string, MUIA_String_Contents, entry->u.person.city);
+				set(country_string, MUIA_String_Contents, entry->u.person.country);
+				set(homepage_string, MUIA_String_Contents, entry->u.person.homepage);
 			}
 
 			person_email_list_active(&data);
@@ -570,8 +570,8 @@ static void group_window_open(struct addressbook_entry *entry)
 			/* A group must be changed */
 			if (entry && entry->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				set(alias_string, MUIA_String_Contents, entry->group.alias);
-				set(description_string, MUIA_String_Contents, entry->group.description);
+				set(alias_string, MUIA_String_Contents, entry->u.group.alias);
+				set(description_string, MUIA_String_Contents, entry->u.group.description);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);
@@ -605,24 +605,24 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 		switch (entry->type)
 		{
 			case	ADDRESSBOOK_ENTRY_GROUP:
-						*msg->Array++ = entry->group.alias;
+						*msg->Array++ = entry->u.group.alias;
 						*msg->Array++ = NULL;
-						*msg->Array++ = entry->group.description;
+						*msg->Array++ = entry->u.group.description;
 						*msg->Array = NULL;
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
-						*msg->Array++ = entry->person.alias;
-						*msg->Array++ = entry->person.realname;
-						*msg->Array++ = entry->person.description;
-						if (entry->person.num_emails)
-							*msg->Array = entry->person.emails[0];
+						*msg->Array++ = entry->u.person.alias;
+						*msg->Array++ = entry->u.person.realname;
+						*msg->Array++ = entry->u.person.description;
+						if (entry->u.person.num_emails)
+							*msg->Array = entry->u.person.emails[0];
 						break;
 
 			case	ADDRESSBOOK_ENTRY_LIST:
-						*msg->Array++ = entry->list.alias;
-						*msg->Array++ = entry->list.nameofml;
-						*msg->Array++ = entry->list.description;
+						*msg->Array++ = entry->u.list.alias;
+						*msg->Array++ = entry->u.list.nameofml;
+						*msg->Array++ = entry->u.list.description;
 						*msg->Array = NULL;
 						break;
 		}

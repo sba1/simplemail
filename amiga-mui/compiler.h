@@ -25,7 +25,7 @@
 
 /* Some compiler depend stuff */
 
-#if defined(__MAXON__) || defined(__STORM__)
+#if defined(__MAXON__) || defined(__STORM__) || defined(_DCC)
 #define ASM
 #define SAVEDS
 #define FAR

@@ -160,15 +160,15 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 		{
 			char *append;
-			append = entry->person.alias;
+			append = entry->u.person.alias;
 			if (!append || !*append)
 			{
-				append = entry->person.realname;
+				append = entry->u.person.realname;
 				if (!append || !*append)
 				{
-					if (entry->person.num_emails)
+					if (entry->u.person.num_emails)
 					{
-						append = entry->person.emails[0];
+						append = entry->u.person.emails[0];
 					} else append = NULL;
 				}
 			}

@@ -52,6 +52,9 @@
 
 __near long __stack = 30000;
 
+#ifdef _DCC
+extern
+#endif
 struct Library *MUIMasterBase;
 struct Locale *DefaultLocale;
 

@@ -139,7 +139,7 @@ STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 	
 		if (data->dto)
 		{
-			struct FrameInfo fri = {NULL};
+			struct FrameInfo fri = {0};
 	
 			DoMethod(data->dto,DTM_FRAMEBOX,NULL,&fri,&fri,sizeof(struct FrameInfo),0);
 	

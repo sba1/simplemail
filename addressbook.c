@@ -57,7 +57,7 @@ void init_addressbook(void)
 {
 	struct addressbook_entry *entry;
 	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
-	list_init(&root_entry.group.list);
+	list_init(&root_entry.u.group.list);
 
 	if (!addressbook_load())
 	{
@@ -78,13 +78,13 @@ void cleanup_addressbook(void)
 {
 	struct addressbook_entry *entry;
 
-	while ((entry = (struct addressbook_entry *)list_remove_tail(&root_entry.group.list)))
+	while ((entry = (struct addressbook_entry *)list_remove_tail(&root_entry.u.group.list)))
 	{
 		addressbook_free_entry(entry);
 	}
 
 	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
-	list_init(&root_entry.group.list);
+	list_init(&root_entry.u.group.list);
 }
 
 /**************************************************************************
@@ -105,18 +105,18 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh, 
 				{
 					if (!mystrnicmp(buf,"RealName=",9))
 					{
-						if (entry->person.realname) free(entry->person.realname);
-						entry->person.realname = strdup(&buf[9]);
+						if (entry->u.person.realname) free(entry->u.person.realname);
+						entry->u.person.realname = strdup(&buf[9]);
 					}
 
 					if (!mystrnicmp(buf,"EMail=",6)) addressbook_person_add_email(entry,&buf[6]);
 					if (!mystrnicmp(buf,"Description=",12)) addressbook_set_description(entry,&buf[12]);
-					if (!mystrnicmp(buf,"Street=",7)) entry->person.street = strdup(&buf[7]);
-					if (!mystrnicmp(buf,"City=",5)) entry->person.city = strdup(&buf[5]);
-					if (!mystrnicmp(buf,"Country=",8)) entry->person.country = strdup(&buf[8]);
-					if (!mystrnicmp(buf,"Homepage=",9)) entry->person.homepage = strdup(&buf[9]);
-					if (!mystrnicmp(buf,"Phone1=",7)) entry->person.phone1 = strdup(&buf[7]);
-					if (!mystrnicmp(buf,"Phone2=",7)) entry->person.phone2 = strdup(&buf[7]);
+					if (!mystrnicmp(buf,"Street=",7)) entry->u.person.street = strdup(&buf[7]);
+					if (!mystrnicmp(buf,"City=",5)) entry->u.person.city = strdup(&buf[5]);
+					if (!mystrnicmp(buf,"Country=",8)) entry->u.person.country = strdup(&buf[8]);
+					if (!mystrnicmp(buf,"Homepage=",9)) entry->u.person.homepage = strdup(&buf[9]);
+					if (!mystrnicmp(buf,"Phone1=",7)) entry->u.person.phone1 = strdup(&buf[7]);
+					if (!mystrnicmp(buf,"Phone2=",7)) entry->u.person.phone2 = strdup(&buf[7]);
 
 					if (!mystricmp(buf,"@ENDUSER"))
 					{
@@ -185,25 +185,25 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 	{
 		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 		{
-			fprintf(fh,"@USER %s\n",entry->person.alias?entry->person.alias:"");
-			if (entry->person.realname) fprintf(fh,"RealName=%s\n",entry->person.realname);
-			if (entry->person.description) fprintf(fh,"Description=%s\n",entry->person.description);
-			for (i=0;i<entry->person.num_emails;i++)
+			fprintf(fh,"@USER %s\n",entry->u.person.alias?entry->u.person.alias:"");
+			if (entry->u.person.realname) fprintf(fh,"RealName=%s\n",entry->u.person.realname);
+			if (entry->u.person.description) fprintf(fh,"Description=%s\n",entry->u.person.description);
+			for (i=0;i<entry->u.person.num_emails;i++)
 			{
-				fprintf(fh,"EMail=%s\n",entry->person.emails[i]);
+				fprintf(fh,"EMail=%s\n",entry->u.person.emails[i]);
 			}
-			if (entry->person.street) fprintf(fh,"Street=%s\n",entry->person.street);
-			if (entry->person.city) fprintf(fh,"City=%s\n",entry->person.city);
-			if (entry->person.country) fprintf(fh,"Country=%s\n",entry->person.country);
-			if (entry->person.homepage) fprintf(fh,"Homepage=%s\n",entry->person.homepage);
-			if (entry->person.phone1) fprintf(fh,"Phone1=%s\n",entry->person.phone1);
-			if (entry->person.phone2) fprintf(fh,"Phone2=%s\n",entry->person.phone2);
+			if (entry->u.person.street) fprintf(fh,"Street=%s\n",entry->u.person.street);
+			if (entry->u.person.city) fprintf(fh,"City=%s\n",entry->u.person.city);
+			if (entry->u.person.country) fprintf(fh,"Country=%s\n",entry->u.person.country);
+			if (entry->u.person.homepage) fprintf(fh,"Homepage=%s\n",entry->u.person.homepage);
+			if (entry->u.person.phone1) fprintf(fh,"Phone1=%s\n",entry->u.person.phone1);
+			if (entry->u.person.phone2) fprintf(fh,"Phone2=%s\n",entry->u.person.phone2);
 			fprintf(fh,"@ENDUSER\n");
 		} else
 		{
 			if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				fprintf(fh,"@GROUP %s\n",entry->group.alias?entry->group.alias:"");
+				fprintf(fh,"@GROUP %s\n",entry->u.group.alias?entry->u.group.alias:"");
 				addressbook_save_group(entry,fh);
 				fprintf(fh,"@ENDGROUP\n");
 			}
@@ -236,9 +236,9 @@ void addressbook_set_alias(struct addressbook_entry *entry, char *alias)
 
 	switch (entry->type)
 	{
-		case	ADDRESSBOOK_ENTRY_GROUP: string = &entry->group.alias; break;
-		case	ADDRESSBOOK_ENTRY_PERSON: string = &entry->person.alias; break;
-		case	ADDRESSBOOK_ENTRY_LIST: string = &entry->list.alias; break;
+		case	ADDRESSBOOK_ENTRY_GROUP: string = &entry->u.group.alias; break;
+		case	ADDRESSBOOK_ENTRY_PERSON: string = &entry->u.person.alias; break;
+		case	ADDRESSBOOK_ENTRY_LIST: string = &entry->u.list.alias; break;
 	}
 
 	if (string)
@@ -257,9 +257,9 @@ void addressbook_set_description(struct addressbook_entry *entry, char *desc)
 
 	switch (entry->type)
 	{
-		case	ADDRESSBOOK_ENTRY_GROUP: string = &entry->group.description; break;
-		case	ADDRESSBOOK_ENTRY_PERSON: string = &entry->person.description; break;
-		case	ADDRESSBOOK_ENTRY_LIST: string = &entry->list.description; break;
+		case	ADDRESSBOOK_ENTRY_GROUP: string = &entry->u.group.description; break;
+		case	ADDRESSBOOK_ENTRY_PERSON: string = &entry->u.person.description; break;
+		case	ADDRESSBOOK_ENTRY_LIST: string = &entry->u.list.description; break;
 	}
 
 	if (string)
@@ -278,18 +278,18 @@ int addressbook_person_add_email(struct addressbook_entry *entry, char *email)
 	if (!email) return 0;
 	if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 	{
-		char **new_array = (char**)malloc(sizeof(char*)*(entry->person.num_emails+1));
+		char **new_array = (char**)malloc(sizeof(char*)*(entry->u.person.num_emails+1));
 		if (new_array)
 		{
-			if ((new_array[entry->person.num_emails] = strdup(email)))
+			if ((new_array[entry->u.person.num_emails] = strdup(email)))
 			{
-				if (entry->person.emails)
+				if (entry->u.person.emails)
 				{
-					memcpy(new_array, entry->person.emails, sizeof(char*)*entry->person.num_emails);
-					free(entry->person.emails);
+					memcpy(new_array, entry->u.person.emails, sizeof(char*)*entry->u.person.num_emails);
+					free(entry->u.person.emails);
 				}
-				entry->person.num_emails++;
-				entry->person.emails = new_array;
+				entry->u.person.num_emails++;
+				entry->u.person.emails = new_array;
 				return 1;
 			}
 		}
@@ -303,12 +303,12 @@ int addressbook_person_add_email(struct addressbook_entry *entry, char *email)
 void addressbook_insert_tail(struct addressbook_entry *list, struct addressbook_entry *new_entry)
 {
 	if (!list)
-		list_insert_tail(&root_entry.group.list,&new_entry->node);
+		list_insert_tail(&root_entry.u.group.list,&new_entry->node);
 	else
 	{
 		if (list->type == ADDRESSBOOK_ENTRY_GROUP)
 		{
-			list_insert_tail(&list->group.list,&new_entry->node);
+			list_insert_tail(&list->u.group.list,&new_entry->node);
 		}
 	}
 }
@@ -323,7 +323,7 @@ struct addressbook_entry *addressbook_create_person(char *realname, char *email)
 	{
 		memset(entry,0,sizeof(struct addressbook_entry));
 		entry->type = ADDRESSBOOK_ENTRY_PERSON;
-		entry->person.realname = mystrdup(realname);
+		entry->u.person.realname = mystrdup(realname);
 		addressbook_person_add_email(entry,email);
 	}
 	return entry;
@@ -341,12 +341,12 @@ struct addressbook_entry *addressbook_new_person(struct addressbook_entry *list,
 	if (entry)
 	{
 		if (!list)
-			list_insert_tail(&root_entry.group.list,&entry->node);
+			list_insert_tail(&root_entry.u.group.list,&entry->node);
 		else
 		{
 			if (list->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				list_insert_tail(&list->group.list,&entry->node);
+				list_insert_tail(&list->u.group.list,&entry->node);
 			}
 		}
 	}
@@ -378,12 +378,12 @@ struct addressbook_entry *addressbook_new_group(struct addressbook_entry *list)
 	if (entry)
 	{
 		if (!list)
-			list_insert_tail(&root_entry.group.list,&entry->node);
+			list_insert_tail(&root_entry.u.group.list,&entry->node);
 		else
 		{
 			if (list->type == ADDRESSBOOK_ENTRY_GROUP)
 			{
-				list_insert_tail(&list->group.list,&entry->node);
+				list_insert_tail(&list->u.group.list,&entry->node);
 			}
 		}
 	}
@@ -412,21 +412,21 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 		int i;
 		if (complete)
 		{
-			if (mode == ADDRESSBOOK_FIND_ENTRY_ALIAS) found = !mystricmp(entry_contents,entry->person.alias);
-			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystricmp(entry_contents,entry->person.realname);
+			if (mode == ADDRESSBOOK_FIND_ENTRY_ALIAS) found = !mystricmp(entry_contents,entry->u.person.alias);
+			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystricmp(entry_contents,entry->u.person.realname);
 			if (mode == ADDRESSBOOK_FIND_ENTRY_EMAIL)
 			{
-				for (i=0; i<entry->person.num_emails && !found;i++)
-					found = !mystricmp(entry_contents,entry->person.emails[i]);
+				for (i=0; i<entry->u.person.num_emails && !found;i++)
+					found = !mystricmp(entry_contents,entry->u.person.emails[i]);
 			}
 		} else
 		{
-			if (mode == ADDRESSBOOK_FIND_ENTRY_ALIAS) found = !mystrnicmp(entry_contents,entry->person.alias,cl);
-			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystrnicmp(entry_contents,entry->person.realname,cl);
+			if (mode == ADDRESSBOOK_FIND_ENTRY_ALIAS) found = !mystrnicmp(entry_contents,entry->u.person.alias,cl);
+			if (mode == ADDRESSBOOK_FIND_ENTRY_REALNAME) found = !mystrnicmp(entry_contents,entry->u.person.realname,cl);
 			if (mode == ADDRESSBOOK_FIND_ENTRY_EMAIL)
 			{
-				for (i=0; i<entry->person.num_emails && !found;i++)
-					found = !mystrnicmp(entry_contents,entry->person.emails[i],cl);
+				for (i=0; i<entry->u.person.num_emails && !found;i++)
+					found = !mystrnicmp(entry_contents,entry->u.person.emails[i],cl);
 			}
 		}
 	}
@@ -437,10 +437,10 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 		{
 			if (complete)
 			{
-				found = !mystricmp(entry_contents,entry->group.alias);
+				found = !mystricmp(entry_contents,entry->u.group.alias);
 			} else
 			{
-				found = !mystrnicmp(entry_contents,entry->group.alias,cl);
+				found = !mystrnicmp(entry_contents,entry->u.group.alias,cl);
 			}
 		}
 
@@ -476,7 +476,7 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 char *addressbook_get_realname(char *email)
 {
 	struct addressbook_entry *entry = addressbook_find_entry(NULL, email, 1, NULL, ADDRESSBOOK_FIND_ENTRY_EMAIL);
-	if (entry) return entry->person.realname;
+	if (entry) return entry->u.person.realname;
 	return NULL;
 }
 
@@ -496,34 +496,34 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 		{
 			case	ADDRESSBOOK_ENTRY_GROUP:
 						{
-							new_entry->group.alias = mystrdup(entry->group.alias);
-							new_entry->group.description = mystrdup(entry->group.description);
-							list_init(&new_entry->group.list);
+							new_entry->u.group.alias = mystrdup(entry->u.group.alias);
+							new_entry->u.group.description = mystrdup(entry->u.group.description);
+							list_init(&new_entry->u.group.list);
 						}
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
 						{
-							new_entry->person.alias = mystrdup(entry->person.alias);
-							new_entry->person.realname = mystrdup(entry->person.realname);
-							new_entry->person.pgpid = mystrdup(entry->person.pgpid);
-							new_entry->person.homepage = mystrdup(entry->person.homepage);
-							new_entry->person.street = mystrdup(entry->person.street);
-							new_entry->person.city = mystrdup(entry->person.city);
-							new_entry->person.country = mystrdup(entry->person.country);
-							new_entry->person.phone1 = mystrdup(entry->person.phone1);
-							new_entry->person.phone2 = mystrdup(entry->person.phone2);
-							new_entry->person.notepad = mystrdup(entry->person.notepad);
-							new_entry->person.description = mystrdup(entry->person.description);
+							new_entry->u.person.alias = mystrdup(entry->u.person.alias);
+							new_entry->u.person.realname = mystrdup(entry->u.person.realname);
+							new_entry->u.person.pgpid = mystrdup(entry->u.person.pgpid);
+							new_entry->u.person.homepage = mystrdup(entry->u.person.homepage);
+							new_entry->u.person.street = mystrdup(entry->u.person.street);
+							new_entry->u.person.city = mystrdup(entry->u.person.city);
+							new_entry->u.person.country = mystrdup(entry->u.person.country);
+							new_entry->u.person.phone1 = mystrdup(entry->u.person.phone1);
+							new_entry->u.person.phone2 = mystrdup(entry->u.person.phone2);
+							new_entry->u.person.notepad = mystrdup(entry->u.person.notepad);
+							new_entry->u.person.description = mystrdup(entry->u.person.description);
 
-							if ((new_entry->person.emails = (char**)malloc(entry->person.num_emails*sizeof(char*))))
+							if ((new_entry->u.person.emails = (char**)malloc(entry->u.person.num_emails*sizeof(char*))))
 							{
 								int i;
-								for (i=0;i<entry->person.num_emails;i++)
-									new_entry->person.emails[i] = mystrdup(entry->person.emails[i]);
-								new_entry->person.num_emails = entry->person.num_emails;
+								for (i=0;i<entry->u.person.num_emails;i++)
+									new_entry->u.person.emails[i] = mystrdup(entry->u.person.emails[i]);
+								new_entry->u.person.num_emails = entry->u.person.num_emails;
 							}
-							new_entry->person.dob = entry->person.dob;
+							new_entry->u.person.dob = entry->u.person.dob;
 						}
 						break;
 
@@ -546,8 +546,8 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 		case	ADDRESSBOOK_ENTRY_GROUP:
 					{
 						struct addressbook_entry *e = addressbook_first(entry);
-						if (entry->group.alias) free(entry->group.alias);
-						if (entry->group.description) free(entry->group.description);
+						if (entry->u.group.alias) free(entry->u.group.alias);
+						if (entry->u.group.description) free(entry->u.group.description);
 
 						while (e)
 						{
@@ -562,23 +562,23 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 					{
 						int i;
 
-						if (entry->person.alias) free(entry->person.alias);
-						if (entry->person.realname) free(entry->person.realname);
-						if (entry->person.pgpid) free(entry->person.pgpid);
-						if (entry->person.homepage) free(entry->person.homepage);
-						if (entry->person.street) free(entry->person.street);
-						if (entry->person.city) free(entry->person.city);
-						if (entry->person.country) free(entry->person.country);
-						if (entry->person.phone1) free(entry->person.phone1);
-						if (entry->person.phone2) free(entry->person.phone2);
-						if (entry->person.notepad) free(entry->person.notepad);
-						if (entry->person.description) free(entry->person.description);
+						if (entry->u.person.alias) free(entry->u.person.alias);
+						if (entry->u.person.realname) free(entry->u.person.realname);
+						if (entry->u.person.pgpid) free(entry->u.person.pgpid);
+						if (entry->u.person.homepage) free(entry->u.person.homepage);
+						if (entry->u.person.street) free(entry->u.person.street);
+						if (entry->u.person.city) free(entry->u.person.city);
+						if (entry->u.person.country) free(entry->u.person.country);
+						if (entry->u.person.phone1) free(entry->u.person.phone1);
+						if (entry->u.person.phone2) free(entry->u.person.phone2);
+						if (entry->u.person.notepad) free(entry->u.person.notepad);
+						if (entry->u.person.description) free(entry->u.person.description);
 
-						for (i=0;i<entry->person.num_emails;i++)
+						for (i=0;i<entry->u.person.num_emails;i++)
 						{
-							if (entry->person.emails[i]) free(entry->person.emails[i]);
+							if (entry->u.person.emails[i]) free(entry->u.person.emails[i]);
 						}
-						if (entry->person.emails) free(entry->person.emails);
+						if (entry->u.person.emails) free(entry->u.person.emails);
 					}
 					break;
 
@@ -600,7 +600,7 @@ char *addressbook_get_address_str(struct addressbook_entry *entry)
 	if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
 	{
 		struct addressbook_entry *e;
-		if (entry->group.alias) return strdup(entry->group.alias);
+		if (entry->u.group.alias) return strdup(entry->u.group.alias);
 		e = addressbook_first(entry);
 
 		if (e)
@@ -635,9 +635,9 @@ char *addressbook_get_address_str(struct addressbook_entry *entry)
 	{
 		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
 		{
-			if (entry->person.alias) return strdup(entry->person.alias);
-			if (entry->person.realname) return strdup(entry->person.realname);
-			if (entry->person.num_emails) return strdup(entry->person.emails[0]);
+			if (entry->u.person.alias) return strdup(entry->u.person.alias);
+			if (entry->u.person.realname) return strdup(entry->u.person.realname);
+			if (entry->u.person.num_emails) return strdup(entry->u.person.emails[0]);
 		}
 	}
 	return str;
@@ -668,18 +668,18 @@ char *addressbook_get_address_str_expanded(struct addressbook_entry *entry)
 		}
 	} else
 	{
-		if (entry->type == ADDRESSBOOK_ENTRY_PERSON && entry->person.num_emails)
+		if (entry->type == ADDRESSBOOK_ENTRY_PERSON && entry->u.person.num_emails)
 		{
-			if (entry->person.realname && strlen(entry->person.realname))
+			if (entry->u.person.realname && strlen(entry->u.person.realname))
 			{
 				/* note "'s must be setted in special cases */
-				str = stradd(str,entry->person.realname);
+				str = stradd(str,entry->u.person.realname);
 				str = stradd(str," <");
-				str = stradd(str,entry->person.emails[0]);
+				str = stradd(str,entry->u.person.emails[0]);
 				return stradd(str,">");
 			} else
 			{
-				return strdup(entry->person.emails[0]);
+				return strdup(entry->u.person.emails[0]);
 			}
 		}
 		return NULL;
@@ -827,20 +827,20 @@ char *addressbook_complete_address(char *address)
 
 	entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_ALIAS);
 	if (entry && hits == 1)
-		return entry->person.alias + al; /* alias should be removed out of the union */
+		return entry->u.person.alias + al; /* alias should be removed out of the union */
 
 	if (!entry) entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_REALNAME);
 	if (entry && hits == 1)
-		return entry->person.realname + al; /* alias should be removed out of the union */
+		return entry->u.person.realname + al; /* alias should be removed out of the union */
 
 	if (!entry) entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_EMAIL);
 	if (entry && hits == 1)
 	{
 		int i;
-		for (i=0; i<entry->person.num_emails;i++)
+		for (i=0; i<entry->u.person.num_emails;i++)
 		{
-			if (!mystrnicmp(address,entry->person.emails[i],al))
-				return entry->person.emails[i] + al; /* alias should be removed out of the union */
+			if (!mystrnicmp(address,entry->u.person.emails[i],al))
+				return entry->u.person.emails[i] + al; /* alias should be removed out of the union */
 		}
 	}
 
@@ -852,10 +852,10 @@ char *addressbook_complete_address(char *address)
 **************************************************************************/
 struct addressbook_entry *addressbook_first(struct addressbook_entry *group)
 {
-	if (!group) return (struct addressbook_entry *)list_first(&root_entry.group.list);
+	if (!group) return (struct addressbook_entry *)list_first(&root_entry.u.group.list);
 	if (group->type == ADDRESSBOOK_ENTRY_GROUP)
 	{
-		return (struct addressbook_entry *)list_first(&group->group.list);
+		return (struct addressbook_entry *)list_first(&group->u.group.list);
 	}
 	return NULL;
 }

@@ -74,8 +74,9 @@ struct addressbook_entry
 			int num_members;
 			char **members;
 		} list;
-	};
+	} u;
 };
+
 
 void addressbook_set_description(struct addressbook_entry *entry, char *desc);
 void addressbook_set_alias(struct addressbook_entry *entry, char *alias);

@@ -246,7 +246,7 @@ void status_mail_list_clear(void)
 *******************************************************************/
 void status_mail_list_freeze(void)
 {
-	statuswnd_mail_list_clear();
+	statuswnd_mail_list_freeze();
 }
 
 /******************************************************************

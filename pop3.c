@@ -353,9 +353,18 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 											/* scan the headers */
 											scan_more = mail_scan_buffer(&ms,buf,strlen(buf));
 										}	
+											
+										rc = TRUE;
 
 										do
 										{
+											if(dl_checkabort())
+											{
+												tell("Aborted");
+												rc = FALSE;
+												break;
+											}
+											
 											got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
 											if(got != 0)
 											{
@@ -384,25 +393,27 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 											}
 										}
 										while(running);
-
-										mail_scan_buffer_end(&ms);
-										mail_process_headers(mail);
-										callback_new_mail_arrived(mail);
+										
+										if(rc != FALSE)
+										{
+											mail_scan_buffer_end(&ms);
+											mail_process_headers(mail);
+											callback_new_mail_arrived(mail);
+										}	
 									}
 								}
 								
-								dl_set_gauge_byte(size);
-								fclose(fp);
-								fp = NULL;
-								
-								if(Errno())
+								if(rc != FALSE)
 								{
-									tell("Error retrieving mail!");
-								}
-								else
-								{
-									rc = TRUE;
+									dl_set_gauge_byte(size);
+									fclose(fp);
+									fp = NULL;
 									
+									if(Errno())
+									{
+										tell("Error retrieving mail!");
+										rc = FALSE;
+									}
 								}	
 							}
 							else

@@ -250,15 +250,20 @@ int smtp_data(long hsocket, char *mailfile)
 		fp = fopen(mailfile, "r");
 		if(fp)
 		{
-			
 			fseek(fp, 0L, SEEK_END);
-			size = ftell(fp); /* what's that?? */
+			size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */
+			up_init_gauge_byte(size);
 			fseek(fp, 0L, SEEK_SET);
 			
 			ret = smtp_send_cmd(hsocket, "DATA", NULL);
 			if((ret == SMTP_OK) || (ret == SMTP_SEND_MAIL))
 			{
+				long i;
+				long z;
+				
+				i = 0;
 				rc = TRUE;
+				z = ((z = size / 100) >1)?z:1;
 				
 				while((c = fgetc(fp)) != EOF)
 				{
@@ -267,6 +272,10 @@ int smtp_data(long hsocket, char *mailfile)
 						rc = FALSE;
 						break;
 					}
+					if((i++%z) == 0)
+					{
+						up_set_gauge_byte(i);
+					}	
 				}
 				buf_flush(hsocket, buf, strlen(buf));
 				if(smtp_send_cmd(hsocket, "\r\n.\n", NULL) != SMTP_OK)
@@ -297,39 +306,71 @@ int smtp_quit(long hsocket)
 	return(rc);
 }
 
-int smtp_send_mail(long hsocket, struct out_mail *om)
+long get_amm(long *array)
+{
+	long rc;
+	
+	for(rc = 0; array[rc] != NULL; rc++);
+	
+	return(rc);
+}
+
+int smtp_send_mail(long hsocket, struct out_mail **om)
 {
 	int rc;
    
 	rc = FALSE;
 
-	if(smtp_helo(hsocket, om->domain))
+	up_set_status("Sending HELO...");
+	if(smtp_helo(hsocket, om[0]->domain))
 	{
-		if(smtp_from(hsocket, om->from))
+		long i,amm;
+		
+		rc = TRUE;
+		amm = get_amm((long *) om);
+		up_init_gauge_mail(amm);
+		
+		for(i = 0; i < amm; i++)	
 		{
-			if(smtp_rcpt(hsocket, om))
+			up_set_gauge_mail(i+1);
+			
+			up_set_status("Sending FROM...");
+			if(smtp_from(hsocket, om[i]->from))
 			{
-				if(smtp_data(hsocket, om->mailfile))
+				up_set_status("Sending RCP...");
+				if(smtp_rcpt(hsocket, om[i]))
 				{
-					if(smtp_quit(hsocket))
+					up_set_status("Sending DATA...");
+					if(!smtp_data(hsocket, om[i]->mailfile))
 					{
-						rc = TRUE;
+						puts("data failed");
+						rc = FALSE;
+						break;
 					}
 				}
 				else
 				{
-					puts("data failed");
+					puts("rcpt failed");
+					rc = FALSE;
+					break;
 				}
 			}
 			else
 			{
-				puts("rcpt failed");
+				puts("from failed");
+				rc = FALSE;
+				break;
 			}
 		}
-		else
+		
+		if(rc = TRUE)
 		{
-			puts("from failed");
-		}
+			up_set_status("Sending QUIT...");
+			if(smtp_quit(hsocket))
+			{
+				rc = TRUE;
+			}
+		}	
 	}
 	else
 	{
@@ -349,24 +390,24 @@ int smtp_send(char *server, struct out_mail **om)
 	SocketBase = OpenLibrary("bsdsocket.library", 4);  
 	if(SocketBase != NULL)  
 	{
+		up_window_open();
+		up_set_title(server);
+		up_set_status("Connecting...");
+		
 		hsocket = tcp_connect(server, 25);
 		if(hsocket != SMTP_NO_SOCKET)
 		{
-			long i;
-			
-			for(i = 0; om[i] != NULL; i++)
-			{
-				smtp_send_mail(hsocket, om[i]);
-			}
-			
-			rc = TRUE;
+			rc = smtp_send_mail(hsocket, om);
          
+         	up_set_status("Disconnecting...");
 			CloseSocket(hsocket);
 		}
 		else
 		{
 			puts("cannot open server");
 		}
+		
+		up_window_close();
 
 		CloseLibrary(SocketBase);
 	}  
@@ -377,24 +418,3 @@ int smtp_send(char *server, struct out_mail **om)
    
 	return(rc);
 }
-/*
-void
-main(void)
-{
-	struct out_mail *om;
-
-	om = malloc(sizeof(struct out_mail));
-	om->domain = malloc(256);
-	strcpy(om->domain, "t-online.de");
-	om->from = malloc(256);
-	strcpy(om->from, "hynek.schlawack@t-online.de");
-	om->rcp = malloc(3 * sizeof(char *));
-	om->rcp[0] = malloc(1024);
-	strcpy(om->rcp[0], "test@hys.in-berlin.de");
-	om->rcp[1] = NULL;
-	om->mailfile = malloc(256);
-	strcpy(om->mailfile, "test.mail");
-
-	smtp_send("mailto.t-online.de", om);
-}
-*/

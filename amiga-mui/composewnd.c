@@ -298,7 +298,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 				MUIA_Group_ActivePage, attach->editable?0:1,
 				TAG_DONE);
 
-		set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->filename);
+		set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->temporary_filename?attach->temporary_filename:attach->filename);
 	} else
 	{
 /*		set(data->contents_page, MUIA_Disabled, TRUE); */

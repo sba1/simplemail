@@ -733,6 +733,79 @@ static void arexx_geturl(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ NEWMAILFILE ARexx Command
+*****************************************************************/
+static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		STRPTR folder;
+	} newmailfile_arg;
+	memset(&newmailfile_arg,0,sizeof(newmailfile_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,FOLDER",args,&newmailfile_arg)))
+	{
+		struct folder *folder;
+
+		if (newmailfile_arg.folder) folder = folder_find_by_name(newmailfile_arg.folder);
+		else folder = main_get_folder();
+
+		if (folder)
+		{
+			BPTR lock = Lock(folder->path,ACCESS_READ);
+			if (lock)
+			{
+				BPTR odir = CurrentDir(lock);
+				char *name = mail_get_new_name(MAIL_STATUS_UNREAD);
+				if (name)
+				{
+					STRPTR fulldirname = NameOfLock(lock);
+					if (fulldirname)
+					{
+						char *newname = mycombinepath(fulldirname, name);
+						if (newname)
+						{
+							BPTR out;
+
+							/* create the file, so a next call would not return the same result */
+							if ((out = Open(newname,MODE_NEWFILE))) Close(out);
+
+							if (newmailfile_arg.stem)
+							{
+								int stem_len = strlen(newmailfile_arg.stem);
+								char *stem_buf = malloc(stem_len+20);
+								if (stem_buf)
+								{
+									strcpy(stem_buf,newmailfile_arg.stem);
+									strcat(stem_buf,"FILENAME");
+									SetRexxVar(rxmsg,stem_buf,newname,strlen(newname));
+									free(stem_buf);
+								}
+							} else
+							{
+								if (newmailfile_arg.var) SetRexxVar(rxmsg,newmailfile_arg.var,newname,strlen(newname));
+								else arexx_set_result(rxmsg,newname);
+							}
+
+							free(newname);
+						}
+						FreeVec(fulldirname);
+					}
+					free(name);
+				}
+				CurrentDir(odir);
+				UnLock(lock);
+			}
+		}
+
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -766,6 +839,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("ADDRNEW",command.command)) arexx_addrnew(rxmsg,command.args);
 		else if (!Stricmp("ADDRSAVE",command.command)) arexx_addrsave(rxmsg,command.args);
 		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
+		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

@@ -759,26 +759,31 @@ static void compose_add_signature(struct Compose_Data *data)
 		}
 		if (add_sign)
 		{
-			char *new_text = (char*)malloc(strlen(text) + strlen(sign->signature) + 50);
-			if (new_text)
+			char *sign_iso = utf8tostrcreate(sign->signature,user.config.default_codeset);
+			if (sign_iso)
 			{
-				strcpy(new_text,text);
-				strcat(new_text,"\n-- \n");
-				strcat(new_text,sign->signature);
+				char *new_text = (char*)malloc(strlen(text) + strlen(sign_iso) + 50);
+				if (new_text)
+				{
+					strcpy(new_text,text);
+					strcat(new_text,"\n-- \n");
+					strcat(new_text,sign_iso);
 
-				new_text = taglines_add_tagline(new_text);
+					new_text = taglines_add_tagline(new_text);
 				
 /*
-				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
-				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
+					DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
+					DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
 */
-				SetAttrs(data->text_texteditor,
-						MUIA_TextEditor_CursorX,0,
-						MUIA_TextEditor_CursorY,0,
-						MUIA_TextEditor_Contents,new_text,
-						TAG_DONE);
+					SetAttrs(data->text_texteditor,
+							MUIA_TextEditor_CursorX,0,
+							MUIA_TextEditor_CursorY,0,
+							MUIA_TextEditor_Contents,new_text,
+							TAG_DONE);
 
-				free(new_text);
+					free(new_text);
+				}
+				free(sign_iso);
 			}
 		}
 
@@ -822,25 +827,30 @@ static void compose_set_signature(void **msg)
 	if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
 	{
 		char *sign_text = strstr(text,"\n-- \n");
+		char *sign_iso = utf8tostrcreate(sign->signature,user.config.default_codeset);
 		char *new_text;
 
 		if (sign_text) *sign_text = 0;
 
-		if ((new_text = (char*)malloc(strlen(text)+strlen(sign->signature)+8)))
+		if (sign_iso)
 		{
-			strcpy(new_text,text);
-			strcat(new_text,"\n-- \n");
-			strcat(new_text,sign->signature);
+			if ((new_text = (char*)malloc(strlen(text)+strlen(sign_iso)+10)))
+			{
+				strcpy(new_text,text);
+				strcat(new_text,"\n-- \n");
+				strcat(new_text,sign_iso);
 
-			new_text = taglines_add_tagline(new_text);
+				new_text = taglines_add_tagline(new_text);
 
-			SetAttrs(data->text_texteditor,
-					MUIA_TextEditor_Contents,new_text,
-					MUIA_TextEditor_CursorX,x,
-					MUIA_TextEditor_CursorY,y,
-					TAG_DONE);
+				SetAttrs(data->text_texteditor,
+						MUIA_TextEditor_Contents,new_text,
+						MUIA_TextEditor_CursorX,x,
+						MUIA_TextEditor_CursorY,y,
+						TAG_DONE);
 
-			free(new_text);
+				free(new_text);
+			}
+			free(sign_iso);
 		}
 		FreeVec(text);
 	}

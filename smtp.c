@@ -1,3 +1,4 @@
+/***************************************************************************
  SimpleMail - Copyright (C) 2000 Hynek Schlawack and Sebastian Bauer
 
  This program is free software; you can redistribute it and/or modify

@@ -1123,3 +1123,34 @@ void addressbook_open_with_new_address(struct mail *m)
 		addressbook_free_entry(entry);
 	}
 }
+
+/******************************************************************
+ Selects an address entry to the actual one
+*******************************************************************/
+int addressbook_set_active(char *alias)
+{
+	if (!address_wnd) addressbook_init();
+	if (address_wnd)
+	{
+		int i;
+		int count = DoMethod(address_tree,MUIM_NListtree_GetNr, MUIV_NListtree_GetNr_TreeNode_Active,MUIV_NListtree_GetNr_Flag_CountAll);
+
+		for (i=0;i<count;i++)
+		{
+			struct addressbook_entry *entry;
+			struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
+				DoMethod(address_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+			entry = (struct addressbook_entry*)tn->tn_User;
+
+			if (entry)
+			{
+				if (!mystricmp(alias,entry->u.person.alias)) /* alias should be moved out of the union */
+				{
+					set(address_tree,MUIA_NListtree_Active,tn);
+					return 1;
+				}
+			}
+		}
+	}
+	return 0;
+}

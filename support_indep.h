@@ -73,7 +73,14 @@ char *mycombinepath(char *drawer, char *file);
 		}\
 	}
 
+typedef struct
+{
+	char *str;
+	int len;
+	int allocated;
+} string;
 
-
+int string_initialize(string *string, unsigned int size);
+int string_append(string *string, char *appstr);
 
 #endif

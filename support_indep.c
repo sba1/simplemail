@@ -501,6 +501,51 @@ void array_free(char **string_array)
 }
 
 /**************************************************************************
+ Initialize the given string and reserve the wanted amount of memory
+**************************************************************************/
+int string_initialize(string *string, unsigned int size)
+{
+	if (!size) size = 1;
+	string->str = malloc(size);
+	if (!string->str) return 0;
+	string->allocated = size;
+	string->len = 0;
+	return 1;
+}
+
+/**************************************************************************
+ Append the string given by appstr
+ addstr maybe NULL (nothing is done in this case).
+**************************************************************************/
+int string_append(string *string, char *appstr)
+{
+	int applen,alloclen;
+
+	if (!appstr) return 1;
+
+	applen = strlen(appstr);
+	alloclen = string->allocated;
+
+	while (applen + string->len >= alloclen) /* >= because of the ending 0 byte */
+		alloclen *= 2;
+
+	if (alloclen != string->allocated)
+	{
+		char *newstr;
+
+		/* We have to allocate more memory */
+		newstr = realloc(string->str,alloclen);
+		if (!newstr) return 0;
+		string->allocated = alloclen;
+	}
+
+	strcpy(&string->str[string->len],string->str);
+	string->len += applen;
+	return 1;
+}
+
+
+/**************************************************************************
  Combines two path components. The returned string is malloc()ed
 **************************************************************************/
 char *mycombinepath(char *drawer, char *file)

@@ -1,5 +1,6 @@
 # List of source files containing translatable strings.
 # (Filenames relative to top-level directory.)
+addressbook.c
 amiga-mui/addressbookwnd.c
 amiga-mui/addresstreelistclass.c
 amiga-mui/attachmentlistclass.c

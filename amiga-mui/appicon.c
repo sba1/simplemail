@@ -68,6 +68,7 @@ static struct DiskObject *appicon_diskobject[SM_APPICON_MAX];
 static struct AppIcon_Stat appicon_stat;
 static struct AppIcon_Config appicon_config;
 static int appicon_last_mode;
+static int appicon_last_show;
 
 static struct DiskObject *HideIcon;
 
@@ -228,7 +229,8 @@ void appicon_refresh(int force)
 	    (appicon_stat.total_sent == total_sent) &&
 	    (appicon_stat.total_outgoing == total_outgoing) &&
 	    (appicon_stat.total_deleted == total_deleted) &&
-	    (appicon_last_mode == appicon_mode))
+	    (appicon_last_mode == appicon_mode) &&
+			(appicon_last_show == user.config.appicon_show))
 	{
 		return;
 	}
@@ -244,6 +246,13 @@ void appicon_refresh(int force)
 	{
 		RemoveAppIcon(appicon);
 		appicon=NULL;
+	}
+
+	appicon_last_show = user.config.appicon_show;
+	switch (user.config.appicon_show)
+	{
+		case 2: return;                           /* never */
+		case 1: if (!main_is_iconified()) return; /* only when iconified */
 	}
 
 	if (appicon_diskobject[appicon_mode])

@@ -138,6 +138,7 @@ struct LocaleConv {
 {"russian", "ru"},
 {"svenska", "sv"},
 {"suomi","fi"},
+{"magyar","ma"},
 {0, 0},
 };
 

@@ -39,25 +39,28 @@
 
 int mails_dl(void)
 {
-/*
-	struct pop3_server *pop = (struct pop3_server*)list_first(&user.config.receive_list);
+	struct list pop_list;
+	struct account *account;
 
-	if (!pop || !pop->name)
+	/* build up the pop list, we take the pop nodes it self,		*
+	 * they are not used anywhere else (the pop function should *
+   * be modified to use the account list 										*/
+	list_init(&pop_list);
+
+	account = (struct account*)list_first(&user.config.account_list);
+	while (account)
 	{
-		tell_str("Please configure a pop3 server!");
-		return 0;
+		if (account->pop)
+			list_insert_tail(&pop_list,&account->pop->node);
+		account = (struct account*)node_next(&account->node);
 	}
 
-	dl_set_title(pop->name);
 	dl_window_open();
 
-	if (!pop3_dl(&user.config.receive_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size))
+	if (!pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size))
 	{
 		dl_window_close();
 	}
-
-*/
-
 	return 0;
 }
 
@@ -68,18 +71,6 @@ int mails_upload(void)
 	struct outmail **out_array;
 	struct mail *m;
 	int i,num_mails;
-
-/*
-	struct smtp_server server;
-
-	server.name = user.config.smtp_server;
-	server.domain = user.config.smtp_domain;
-	server.port = user.config.smtp_port;
-	server.esmtp.auth = user.config.smtp_auth;
-	server.esmtp.auth_login = user.config.smtp_login;
-	server.esmtp.auth_password = user.config.smtp_password;
-	server.ip_as_domain = user.config.smtp_ip_as_domain;
-*/
 
   /* count the number of mails which could be be sent */
 	num_mails = 0;

@@ -19,7 +19,7 @@
 #ifndef SM__TEXT2HTML_H
 #define SM__TEXT2HTML_H
 
-char *text2html(char *buffer, int buffer_len, int flags);
+char *text2html(unsigned char *buffer, int buffer_len, int flags);
 
 #define TEXT2HTML_BODY_TAG				(1 << 0)
 #define TEXT2HTML_ENDBODY_TAG		(1 << 1)

@@ -39,6 +39,7 @@ static GtkWidget *main_wnd;
 static GtkWidget *toolbar;
 
 static GtkWidget *mail_ctree;
+static GtkWidget *mail_ctree_scrolled_window;
 static struct list mail_ctree_string_list;
 
 static GtkWidget *folder_ctree; /* the folders */
@@ -218,6 +219,8 @@ int main_window_init(void)
 	gtk_signal_connect(GTK_OBJECT(folder_ctree), "tree-select-row",GTK_SIGNAL_FUNC(folder_select_row_callback), NULL);
 
         /* Create the mail tree */
+        mail_ctree_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+        gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(mail_ctree_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
 	mail_ctree = gtk_ctree_new_with_titles(4,0,mail_names);
 
 	/* Add them to the paned */

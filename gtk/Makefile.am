@@ -9,6 +9,7 @@ libgui_a_SOURCES = \
             configwnd.c \
             dlwnd.c \
             errorwnd.c \
+            filterwnd.c \
             folderwnd.c \
             gtksupport.c \
             gtksupport.h \

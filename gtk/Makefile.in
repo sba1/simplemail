@@ -71,7 +71,7 @@ VERSION = @VERSION@
 noinst_LIBRARIES = libgui.a
 INCLUDES = -I. -I$(srcdir)/.. -I$(srcdir)/../indep-include @GUI_CFLAGS@
 
-libgui_a_SOURCES =              addressbookwnd.c             composewnd.c             configwnd.c             dlwnd.c             errorwnd.c             folderwnd.c             gtksupport.c             gtksupport.h             gui_main.c             mainwnd.c             readwnd.c             subthreads.c             support.c             tcpip.c             upwnd.c
+libgui_a_SOURCES =              addressbookwnd.c             composewnd.c             configwnd.c             dlwnd.c             errorwnd.c             filterwnd.c             folderwnd.c             gtksupport.c             gtksupport.h             gui_main.c             mainwnd.c             readwnd.c             subthreads.c             support.c             tcpip.c             upwnd.c
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -85,8 +85,8 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libgui_a_LIBADD = 
 libgui_a_OBJECTS =  addressbookwnd.o composewnd.o configwnd.o dlwnd.o \
-errorwnd.o folderwnd.o gtksupport.o gui_main.o mainwnd.o readwnd.o \
-subthreads.o support.o tcpip.o upwnd.o
+errorwnd.o filterwnd.o folderwnd.o gtksupport.o gui_main.o mainwnd.o \
+readwnd.o subthreads.o support.o tcpip.o upwnd.o
 AR = ar
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -100,9 +100,9 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DEP_FILES =  .deps/addressbookwnd.P .deps/composewnd.P .deps/configwnd.P \
-.deps/dlwnd.P .deps/errorwnd.P .deps/folderwnd.P .deps/gtksupport.P \
-.deps/gui_main.P .deps/mainwnd.P .deps/readwnd.P .deps/subthreads.P \
-.deps/support.P .deps/tcpip.P .deps/upwnd.P
+.deps/dlwnd.P .deps/errorwnd.P .deps/filterwnd.P .deps/folderwnd.P \
+.deps/gtksupport.P .deps/gui_main.P .deps/mainwnd.P .deps/readwnd.P \
+.deps/subthreads.P .deps/support.P .deps/tcpip.P .deps/upwnd.P
 SOURCES = $(libgui_a_SOURCES)
 OBJECTS = $(libgui_a_OBJECTS)
 

@@ -60,7 +60,7 @@ static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 	return 1;
 }
 
-char *text2html(char *buffer, int buffer_len, int flags)
+char *text2html(unsigned char *buffer, int buffer_len, int flags)
 {
 	char *html_buf;
 	FILE *fh;

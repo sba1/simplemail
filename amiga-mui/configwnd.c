@@ -131,6 +131,7 @@ static void init_config(void)
 						StringFrame,
 						MUIA_CycleChain, 1,
 						MUIA_String_Contents, user.config.pop_password,
+						MUIA_String_Secret, TRUE,
 						End,
 					Child, MakeLabel("_Delete mails"),
 					Child, HGroup, Child, pop3_delete_check = MakeCheck("_Delete mails", user.config.pop_delete), Child, HSpace(0), End,

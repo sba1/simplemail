@@ -43,11 +43,15 @@ void del_folders(void);
 int folder_read_mail_infos(struct folder *folder);
 int folder_add_mail(struct folder *folder, struct mail *mail);
 int folder_add_mail_incoming(struct mail *mail);
+void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
+struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
 struct folder *folder_add(char *name, char *path);
 struct folder *folder_first(void);
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
+struct folder *folder_find_by_name(char *name);
+struct folder *folder_find_by_path(char *name);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_deleted(void);

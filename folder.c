@@ -46,6 +46,14 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 static void folder_remove_mail(struct folder *folder, struct mail *mail)
 {
 	int i;
+
+	/* free the sorted mail array */
+	if (folder->sorted_mail_array)
+	{
+		free(folder->sorted_mail_array);
+		folder->sorted_mail_array = NULL;
+	}
+
 	for (i=0; i < folder->num_mails; i++)
 	{
 		if (folder->mail_array[i] == mail)
@@ -58,6 +66,48 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 			}
 		}
 	}
+}
+
+/******************************************************************
+ Replaces a mail with a new one (the replaced mail isn't freed)
+ in the given folder
+*******************************************************************/
+void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail)
+{
+	int i;
+
+	/* free the sorted mail array */
+	if (folder->sorted_mail_array)
+	{
+		free(folder->sorted_mail_array);
+		folder->sorted_mail_array = NULL;
+	}
+
+	for (i=0; i < folder->num_mails; i++)
+	{
+		if (folder->mail_array[i] == toreplace)
+		{
+			folder->mail_array[i] = newmail;
+			break;
+		}
+	}
+}
+
+/******************************************************************
+ Finds a mail with a given filename in the given folder
+*******************************************************************/
+struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
+{
+	int i;
+
+	for (i=0; i < folder->num_mails; i++)
+	{
+		if (!mystricmp(folder->mail_array[i]->filename,filename))
+		{
+			return folder->mail_array[i];
+		}
+	}
+	return NULL;
 }
 
 /******************************************************************
@@ -203,6 +253,34 @@ struct folder *folder_find(int pos)
 	struct folder_node *node = (struct folder_node*)list_find(&folder_list,pos);
 	if (!node) return NULL;
 	return &node->folder;
+}
+
+/******************************************************************
+ Finds a folder by name. Returns NULL if folder hasn't found
+*******************************************************************/
+struct folder *folder_find_by_name(char *name)
+{
+	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+	while (node)
+	{
+		if (!mystricmp(name, node->folder.name)) return &node->folder;
+		node = (struct folder_node *)node_next(&node->node);
+	}
+	return NULL;
+}
+
+/******************************************************************
+ Finds a folder by path. Returns NULL if folder hasn't found
+*******************************************************************/
+struct folder *folder_find_by_path(char *name)
+{
+	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+	while (node)
+	{
+		if (!mystricmp(name, node->folder.path)) return &node->folder;
+		node = (struct folder_node *)node_next(&node->node);
+	}
+	return NULL;
 }
 
 /******************************************************************

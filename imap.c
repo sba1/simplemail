@@ -1106,6 +1106,23 @@ static void imap_thread_really_connect_to_server(void)
 			{
 				if (imap_login(imap_connection,imap_server))
 				{
+					struct list *folder_list;
+					/* We have now connected to the server, check for the folders at first */
+					folder_list = imap_get_folders(imap_connection, imap_server, 0);
+					if (folder_list)
+					{
+						struct string_node *node;
+						/* add the folders */
+						node = (struct string_node*)list_first(folder_list);
+						while (node)
+						{
+							thread_call_parent_function_sync(callback_add_imap_folder,2,imap_server->name,node->string);
+							node = (struct string_node*)node_next(&node->node);
+						}
+						thread_call_parent_function_sync(callback_refresh_folders,0);
+
+						imap_free_name_list(folder_list);
+					}
 				}
 			}
 		}

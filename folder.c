@@ -2093,13 +2093,27 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 							i = 0;
 							while (!take && rule->u.rcpt.rcpt[i])
-								take = !!utf8stristr(m->to_addr,rule->u.rcpt.rcpt[i++]);
-
-							if (!take)
 							{
-								i = 0;
-								while (!take && rule->u.rcpt.rcpt[i])
-									take = !!utf8stristr(m->to_phrase,rule->u.rcpt.rcpt[i++]);
+								struct address *addr;
+								addr = (struct address*)list_first(m->to_list);
+								while (!take && addr)
+								{
+									take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
+									if (!take) take = !!utf8stristr(addr->email,rule->u.rcpt.rcpt[i]);
+									addr = (struct address*)node_next(&addr->node);
+								}
+
+								if (!take)
+								{
+									addr = (struct address*)list_first(m->cc_list);
+									while (!take && addr)
+									{
+										take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
+										if (!take) take = !!utf8stristr(addr->email,rule->u.rcpt.rcpt[i]);
+										addr = (struct address*)node_next(&addr->node);
+									}
+								}
+								i++;
 							}
 						}
 						break;

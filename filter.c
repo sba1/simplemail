@@ -407,6 +407,19 @@ void filter_list_save(FILE *fh)
 								}
 							}
 							break;
+				case	RULE_RCPT_MATCH:
+							fprintf(fh,"FILTER%d.RULE%d.Type=Rcpt\n",i,j);
+							if (rule->u.from.from)
+							{
+								char *str;
+								int k = 0;
+								while ((str = rule->u.from.from[k]))
+								{
+									fprintf(fh,"FILTER%d.RULE%d.Rcpt.Address=%s\n",i,j,rule->u.rcpt.rcpt[k]);
+									k++;
+								}
+							}
+							break;
 				case	RULE_SUBJECT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Subject\n",i,j);
 							if (rule->u.subject.subject)

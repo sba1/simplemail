@@ -23,11 +23,11 @@
 #endif
 
 #define RULE_FROM_MATCH				0
-#define RULE_SUBJECT_MATCH			1
-#define RULE_HEADER_MATCH			2
-#define RULE_ATTACHMENT_MATCH	3
-#define RULE_STATUS_MATCH			4
-#define RULE_RCPT_MATCH				5
+#define RULE_RCPT_MATCH				1
+#define RULE_SUBJECT_MATCH			2
+#define RULE_HEADER_MATCH			3
+#define RULE_ATTACHMENT_MATCH	4
+#define RULE_STATUS_MATCH			5
 #define RULE_BODY_MATCH				6
 
 #define RULE_STATUS_NEW			0

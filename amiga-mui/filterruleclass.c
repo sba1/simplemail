@@ -85,6 +85,7 @@ const static char *status_filenames[] =
 
 const static struct rule rules[] = {
 	{N_("Sender"), RULE_FROM_MATCH},
+	{N_("Receiver"), RULE_RCPT_MATCH},
 	{N_("Subject"), RULE_SUBJECT_MATCH},
 	{N_("Header"), RULE_HEADER_MATCH},
 	{N_("Has attachments"), RULE_ATTACHMENT_MATCH},
@@ -108,6 +109,10 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 	data->object1 = data->object2 = data->object3 = data->object4 = NULL;
 
 	if (data->type == RULE_FROM_MATCH)
+	{
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
+		data->object2 = MultiStringObject, StringFrame, End;
+	} else if (data->type == RULE_RCPT_MATCH)
 	{
 		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
@@ -149,6 +154,9 @@ STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *
 	{
 		case	RULE_FROM_MATCH:
 					set(data->object2,MUIA_MultiString_ContentsArray,fr->u.from.from);
+					break;
+		case	RULE_RCPT_MATCH:
+					set(data->object2,MUIA_MultiString_ContentsArray,fr->u.rcpt.rcpt);
 					break;
 		case	RULE_SUBJECT_MATCH:
 					set(data->object2,MUIA_MultiString_ContentsArray,fr->u.subject.subject);
@@ -227,6 +235,9 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 					{
 						case	RULE_FROM_MATCH:
 									data->get_rule.u.from.from = (char**)xget(data->object2,MUIA_MultiString_ContentsArray);
+									break;
+						case	RULE_RCPT_MATCH:
+									data->get_rule.u.rcpt.rcpt = (char**)xget(data->object2,MUIA_MultiString_ContentsArray);
 									break;
 						case	RULE_SUBJECT_MATCH:
 									data->get_rule.u.subject.subject = (char**)xget(data->object2,MUIA_MultiString_ContentsArray);

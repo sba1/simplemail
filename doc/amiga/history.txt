@@ -1,3 +1,10 @@
+Version 0.18 (fifth beta) - realesed on ???
+  - found a simple work around for the "refresh complete listtree if
+    mail is inserted problem"
+  - Folder/Export... menu entry added to export a complete mail
+    folder
+  - Added Recpient filter rule type (which matches To and CC)
+
 Version 0.17 (fourth beta) - released on 2002/09/07
   - speed up the insert of new mails if the folder is selected
     (still not perfect)

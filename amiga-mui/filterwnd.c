@@ -181,6 +181,7 @@ static void filter_accept_rule(void)
 					switch (fr->type)
 					{
 						case	RULE_FROM_MATCH: array_free(fr->u.from.from); break;
+						case	RULE_RCPT_MATCH: array_free(fr->u.rcpt.rcpt); break;
 						case	RULE_SUBJECT_MATCH: array_free(fr->u.subject.subject); break;
 						case	RULE_HEADER_MATCH:
 									if (fr->u.header.name) free(fr->u.header.name);
@@ -198,6 +199,9 @@ static void filter_accept_rule(void)
 					{
 						case	RULE_FROM_MATCH:
 									fr->u.from.from = array_duplicate(new_fr->u.from.from);
+									break;
+						case	RULE_RCPT_MATCH:
+									fr->u.rcpt.rcpt = array_duplicate(new_fr->u.rcpt.rcpt);
 									break;
 						case	RULE_SUBJECT_MATCH:
 									fr->u.subject.subject = array_duplicate(new_fr->u.subject.subject);
@@ -527,7 +531,7 @@ static void init_filter(void)
 				End,
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, save_button = MakeButton(_("_Save")),
+				Child, save_button = MakeButton(Q_("?filter:_Save")),
 				Child, ok_button = MakeButton(_("_Use")),
 				Child, cancel_button = MakeButton(_("_Cancel")),
 				End,

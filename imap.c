@@ -99,7 +99,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 /**************************************************************************
  
 **************************************************************************/
-static void imap_really_dl(struct list *imap_list, int called_by_auto)
+static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 {
 }
 
@@ -138,12 +138,23 @@ static int imap_entry(struct imap_entry_msg *msg)
 		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
 		else thread_call_parent_function_async(status_open,0);
 
-		imap_really_dl(&imap_list, called_by_auto);
+		imap_synchronize_really(&imap_list, called_by_auto);
 
 		thread_call_parent_function_async(status_close,0);
 	}
 	return 0;
 
+}
+
+/**************************************************************************
+ Synchronizes the given imap servers
+**************************************************************************/
+int imap_synchronize(struct list *imap_list, int called_by_auto)
+{
+	struct imap_entry_msg msg;
+	msg.imap_list = imap_list;
+	msg.called_by_auto = called_by_auto;
+	return thread_start(THREAD_FUNCTION(&imap_entry),&msg);
 }
 
 /**************************************************************************
@@ -484,7 +495,10 @@ int imap_dl_headers(struct list *imap_list)
 													}
 													if (local_uid)
 													{
-														printf("%x not on server\n",local_uid);
+														struct mail *m;
+														m = folder_imap_find_mail_by_uid(inbox,local_uid);
+														printf("%x not on server  %s\n",local_uid,m->subject);
+														
 													}
 												}
 											}

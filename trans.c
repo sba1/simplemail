@@ -78,7 +78,7 @@ int mails_dl_single_account(struct account *ac)
 	} else
 	{
 		list_insert_tail(&pop_list,&ac->imap->node);
-		imap_dl_headers(&pop_list);
+		imap_synchronize(&pop_list,0);
 	}
 	return 0;
 }

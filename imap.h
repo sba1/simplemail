@@ -40,6 +40,7 @@ struct imap_server
 };
 
 int imap_dl_headers(struct list *imap_list);
+int imap_synchronize(struct list *imap_list, int called_by_auto);
 
 struct imap_server *imap_malloc(void);
 struct imap_server *imap_duplicate(struct imap_server *imap);

@@ -4,7 +4,7 @@ Author:    hynek@rz.uni-potsdam.de (Hynek Schlawack), sebauer@t-online.de (Sebas
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.9
+Version:   0.10
 
 Introduction
 ~~~~~~~~~~~~
@@ -41,6 +41,13 @@ problem.
 
 Changes
 ~~~~~~~
+Version 0.10 (tenth alpha) - released on 2001/09/10
+  - configurable headers inside the read window
+  - can read message/rfc822 content type properly
+  - can decrypt encryptet pgp message using pgp 2.6.x
+  - minor other improvements
+  - filter has been improved
+
 Version 0.9 (ninth alpha) - released on 2001/09/03
   - improved addressbook
   - predefined text phrases

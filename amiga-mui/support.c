@@ -708,6 +708,36 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 }
 
 /******************************************************************
+ Used for logging
+*******************************************************************/
+void sm_put_on_serial_line(char *txt)
+{
+#ifdef __AMIGAOS4__
+	char c;
+	while ((c = *txt++))
+	{
+		RawPutChar(c);
+	}
+#else
+	char buf[800];
+	char c;
+	int i;
+
+	i = 0;
+
+	while ((c = *txt++) && i < sizeof(buf)-3)
+	{
+		if (c == '%') buf[i++] = c;
+		buf[i++] = c;
+	}
+	
+	buf[i] = 0;
+
+	kprintf(buf);
+#endif
+}
+
+/******************************************************************
  Tells an error message
 *******************************************************************/
 void tell_str(char *str)

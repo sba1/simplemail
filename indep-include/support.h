@@ -55,6 +55,8 @@ char *sm_get_time_str(unsigned int seconds);
 
 int sm_snprintf(char *buf, int n, const char *fmt, ...);
 
+void sm_put_on_serial_line(char *txt);
+
 void tell_str(char *str);
 void tell_from_subtask(char *str);
 

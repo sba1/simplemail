@@ -23,11 +23,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #include "configuration.h"
 #include "support_indep.h"
 #include "taglines.h"
+
+#include "support.h"
 
 #define TAGLINES_INDEX_VERSION 0
 
@@ -47,7 +48,7 @@ static int sm_random(int max)
 
 	if(!x)
 	{
-		srand(time(0));
+		srand(sm_get_current_seconds());
 		x = 1;
 	}
 

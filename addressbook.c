@@ -24,7 +24,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
 #include "expatinc.h"
 
@@ -524,6 +523,7 @@ SAVEDS void xml_end_tag(void *data, const char *el)
  Converts a single UFT-8 Chracter to ISO-Latin 1 one, very very
  incomplete.
 **************************************************************************/
+#if 0
 static char *uft8toiso(char *chr, char *code)
 {
 	unsigned int unicode;
@@ -531,6 +531,7 @@ static char *uft8toiso(char *chr, char *code)
 	*code = unicode;
 	return ret;
 }
+#endif
 
 /**************************************************************************
  Read the characters
@@ -984,7 +985,7 @@ char *addressbook_download_portrait(char *email)
 				if (isalpha((unsigned char)email[i]))
 					*buf++ = email[i];
 			}
-			sprintf(buf,".%lx",time(NULL));
+			sprintf(buf,".%x",sm_get_current_seconds());
 
 			if (!(fh = fopen(filename,"rb"))) break;
 			fclose(fh);

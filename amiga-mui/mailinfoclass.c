@@ -71,6 +71,8 @@ struct MailInfoArea_Data
 	struct mail_info *mail;
 	struct list field_list;
 
+	int background_pen;
+
 	int fieldname_width;
 	int entries;
 };
@@ -247,12 +249,12 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 
 	SetAPen(_rp(obj), _dri(obj)->dri_Pens[TEXTPEN]);
 	SetFont(_rp(obj), _font(obj));
-	Move(_rp(obj),_mleft(obj),ytext);
+	Move(_rp(obj),_mleft(obj)+2,ytext);
 	Text(_rp(obj),f->name,strlen(f->name));
 
 	Move(_rp(obj),_mleft(obj) + data->fieldname_width, ytext);
 
-	space_left = _mwidth(obj) - data->fieldname_width;
+	space_left = _mwidth(obj) - data->fieldname_width - 4;
 
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
@@ -301,6 +303,8 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 
 	list_init(&data->field_list);
+
+	set(obj, MUIA_FillArea, FALSE);
 
 	return (ULONG)obj;
 }
@@ -352,6 +356,10 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 	if (!rc) return 0;
 
 	data->setup = 1;
+	data->background_pen = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,
+				MAKECOLOR32((user.config.read_header_background & 0xff0000) >> 16),
+				MAKECOLOR32((user.config.read_header_background & 0xff00) >> 8),
+				MAKECOLOR32((user.config.read_header_background & 0xff)), NULL);
 
 	return rc;
 }
@@ -362,6 +370,7 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->background_pen);
 	data->setup = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
 }
@@ -382,9 +391,9 @@ STATIC LONG MailInfoArea_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_A
   msg->MinMaxInfo->DefWidth += 20;
   msg->MinMaxInfo->MaxWidth = MUI_MAXMAX;
 
-  msg->MinMaxInfo->MinHeight += entries * _font(obj)->tf_YSize;
-  msg->MinMaxInfo->DefWidth  += entries * _font(obj)->tf_YSize;
-  msg->MinMaxInfo->MaxHeight += entries * _font(obj)->tf_YSize;
+  msg->MinMaxInfo->MinHeight += entries * _font(obj)->tf_YSize + 4;
+  msg->MinMaxInfo->DefWidth  += entries * _font(obj)->tf_YSize + 4;
+  msg->MinMaxInfo->MaxHeight += entries * _font(obj)->tf_YSize + 4;
 
   return 0;
 }
@@ -396,10 +405,13 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 {	
 	struct field *f;
 	struct MailInfoArea_Data *data;
-	int y = 0;
+	int y = 2;
 
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	DoSuperMethodA(cl,obj,(Msg)msg);
+
+	SetAPen(_rp(obj), data->background_pen);
+	RectFill(_rp(obj), _mleft(obj), _mtop(obj), _mright(obj), _mbottom(obj));
 
 	f = (struct field *)list_first(&data->field_list);
 	while (f)

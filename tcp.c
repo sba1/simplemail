@@ -51,6 +51,8 @@
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
+/*#define DEBUG_OUTPUT*/
+
 /******************************************************************
  Establish the connection to the given server.
  Return NULL on error.
@@ -72,25 +74,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 	memset(conn,0,sizeof(struct connection));
 
-#ifndef NO_SSL
-	/* SSL stuff */
-	if (use_ssl)
-	{
-		if (!open_ssl_lib())
-		{
-			free(conn);
-			return NULL;
-		}
-		if (!(conn->ssl = SSL_new(ssl_context())))
-		{
-			close_ssl_lib();
-			free(conn);
-			return NULL;
-		}
-	}
-#endif
-	hostent = gethostbyname(server);
-	if(hostent != NULL)
+	if ((hostent = gethostbyname(server)))
 	{
 #ifdef _AMIGA /* ugly */
 		sockaddr.sin_len = sizeof(struct sockaddr_in);
@@ -101,29 +85,20 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		bzero(&(sockaddr.sin_zero), 8);
 
 		sd = socket(PF_INET, SOCK_STREAM, 0);
-		if(sd != -1)
+		if (sd != -1)
 		{
-			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
+			if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 			{
 				conn->socket = sd;
 #ifndef NO_SSL
 				if (use_ssl)
 				{
-					/* Associate a socket with ssl structure */
-					SSL_set_fd(conn->ssl, sd);
-
-					if (SSL_connect(conn->ssl) >= 0)
+					if (tcp_make_secure(conn)) return conn;
+					else
 					{
-						X509 *server_cert;
-						if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
-						{
-							/* Add some checks here */
-							X509_free(server_cert);
-							return conn;
-						}
+						tcp_disconnect(conn);
+						return NULL;
 					}
-
-					SSL_shutdown(conn->ssl);
 				}
 #endif
 				return conn;
@@ -201,16 +176,53 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		tell_from_subtask(err);
 	}  
 
-	if (use_ssl)
-	{
-#ifndef NO_SSL
-		if (conn->ssl) SSL_free(conn->ssl);
-#endif
-		close_ssl_lib();
-	}
-
 	free(conn);
 	return NULL;
+}
+
+/******************************************************************
+ Makes a connction secure. Returns 1 for a success
+*******************************************************************/
+int tcp_make_secure(struct connection *conn)
+{
+#ifndef NO_SSL
+
+	if (!open_ssl_lib()) return 0;
+	if (!(conn->ssl = SSL_new(ssl_context())))
+	{
+		close_ssl_lib();
+		return 0;
+	}
+
+	/* Associate a socket with ssl structure */
+	SSL_set_fd(conn->ssl, conn->socket);
+
+	if (SSL_connect(conn->ssl) >= 0)
+	{
+		X509 *server_cert;
+		if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
+		{
+			/* Add some checks here */
+			X509_free(server_cert);
+#ifdef DEBUG_OUTPUT
+			printf("Connection is secure\n");
+#endif
+			return 1;
+		}
+	}
+
+	SSL_shutdown(conn->ssl);
+	SSL_free(conn->ssl);
+	close_ssl_lib();
+	conn->ssl = NULL;
+
+#ifdef DEBUG_OUTPUT
+			printf("Connection couldn't be made secure\n");
+#endif
+
+#endif
+
+	return 0;
 }
 
 /******************************************************************
@@ -271,7 +283,7 @@ static int tcp_read_char(struct connection *conn)
 		if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
 		else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
 #else
-                didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+		didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
 #endif
 
 		if (didget <= 0)
@@ -316,11 +328,19 @@ int tcp_flush(struct connection *conn)
 {
 	if (conn->write_size)
 	{
+#ifdef DEBUG_OUTPUT
+		printf("C: ");
+		fwrite(conn->write_buf,1,conn->write_size,stdout);
+
+		if (conn->write_buf[conn->write_size-1]!='\n')
+			printf("\n");
+#endif
+
 #ifndef NO_SSL
 		if (conn->ssl) SSL_write(conn->ssl, conn->write_buf, conn->write_size);
 		else send(conn->socket, conn->write_buf, conn->write_size, 0);
 #else
-                send(conn->socket, conn->write_buf, conn->write_size, 0);
+		send(conn->socket, conn->write_buf, conn->write_size, 0);
 #endif
 
 		conn->write_size = 0;
@@ -386,6 +406,10 @@ char *tcp_readln(struct connection *conn)
 			conn->line[line_pos-1]=0;
 		}
 	}
+
+#ifdef DEBUG_OUTPUT
+	printf("S: %s",conn->line);
+#endif
 
 	return conn->line;
 }

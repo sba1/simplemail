@@ -250,7 +250,7 @@ char *sm_path_part(char *filename)
 /******************************************************************
  Returns the full path of a selected file.
 ******************************************************************/
-char *sm_request_file(char *title, char *path)
+char *sm_request_file(char *title, char *path, int save)
 {
 	char *rc = NULL;
 	struct FileRequester *fr;
@@ -261,7 +261,8 @@ char *sm_request_file(char *title, char *path)
 	{
 		if(AslRequestTags(fr,
 			ASLFR_InitialDrawer, path,
-		TAG_DONE))
+			ASLFR_DoSaveMode, save,
+			TAG_DONE))
 		{
 			int len = strlen(fr->fr_File) + strlen(fr->fr_Drawer) + 5;
 

@@ -50,7 +50,7 @@
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-/* #define DEBUG_OUTPUT */
+/*#define DEBUG_OUTPUT*/
 
 static int error_code;
 
@@ -127,7 +127,14 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		    memcpy(&sockaddr.sin_addr, hostent->h_addr_list[i], hostent->h_length);
 				if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 				{
+//					char *send_str = "POST http://pop.btx.dtag.de:110/ HTTP/1.0\r\n\r\n";
+//													 "Host: pop.btx.dtag.de:110\r\n"
+//													 "User-Agent: SimpleMail\r\n\r\n\r\n";
 					conn->socket = sd;
+
+//					tcp_write(conn,send_str,strlen(send_str));
+//					while(tcp_readln(conn));
+
 #ifndef NO_SSL
 					if (use_ssl)
 					{

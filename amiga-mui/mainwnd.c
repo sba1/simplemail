@@ -436,6 +436,7 @@ int main_window_init(void)
 		MENU_FOLDER_DELALLINDEX,
 		MENU_FOLDER_SEND,
 		MENU_FOLDER_FETCH,
+		MENU_FOLDER_EXPORT,
 		MENU_FOLDER_CHECKSINGLEACCOUNT,
 		MENU_MESSAGE_READ,
 		MENU_MESSAGE_EDIT,
@@ -470,6 +471,8 @@ int main_window_init(void)
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete all indexfiles..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
 		{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
@@ -667,6 +670,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 

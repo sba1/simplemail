@@ -55,6 +55,7 @@ void callback_edit_filter(void);
 void callback_addressbook(void);
 void callback_config(void);
 void callback_folder_active(void);
+void callback_export(void);
 
 void callback_write_mail_to(struct addressbook_entry *address);
 int callback_write_mail_to_str(char *str, char *subject);

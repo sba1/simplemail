@@ -580,6 +580,59 @@ static void callback_new_mail_arrived(struct mail *mail)
 	main_refresh_folder(folder_incoming());
 }
 
+/* Export mails */
+void callback_export(void)
+{
+	struct folder *f;
+	char *filename;
+
+	if (!(f = main_get_folder())) return;
+
+	filename = sm_request_file(_("Choose export filename"), "",1);
+	if (filename && *filename)
+	{
+		FILE *fh = fopen(filename,"w");
+		if (fh)
+		{
+			void *handle = NULL;
+			char buf[256];
+			struct mail *m;
+			char *file_buf;
+
+			if ((file_buf = malloc(8192)))
+			{
+				getcwd(buf, sizeof(buf));
+				chdir(f->path);
+
+				while ((m = folder_next_mail(f, &handle)))
+				{
+					FILE *in;
+
+					fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
+
+					in = fopen(m->filename,"r");
+					if (in)
+					{
+						while (!feof(in))
+						{
+							int blocks = fread(file_buf,1,8192,in);
+							fwrite(file_buf,1,blocks,fh);
+						}
+						fclose(in);
+					}
+					fputs("\n",fh);
+				}
+				free(file_buf);
+			}
+
+			chdir(buf);
+
+			fclose(fh);
+		}
+	}
+	free(filename);
+}
+
 /* a new mail has been arrived, only the filename is given */
 void callback_new_mail_arrived_filename(char *filename)
 {
@@ -777,7 +830,7 @@ int callback_import_addressbook(void)
 	int rc = 0;
 	char *filename;
 	
-	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
+	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:",0);
 	if (filename && *filename)
 	{
 		addressbook_import_file(filename,1);

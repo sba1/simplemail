@@ -1,7 +1,7 @@
 <?php
 
 $filename = "simplemail.lha";
-$version = "0.19";
+$version = "0.11";
 
   require_once("language.inc.php");
   require_once("support.inc.php");
@@ -54,6 +54,7 @@ $version = "0.19";
 
 <p>
 <?php echo get_string($BannersCreator2Text); get_img("banner/sm_now5.png");?>
+
 
 
 

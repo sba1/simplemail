@@ -22,5 +22,6 @@ int spam_init(void);
 void spam_cleanup(void);
 int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail);
 int spam_feed_mail_as_ham(struct folder *folder, struct mail *mail);
+int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail);
 
 #endif

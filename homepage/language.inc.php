@@ -1,5 +1,20 @@
 <?php
 
+/* Function returns correct filename (localized) */
+function get_filename($fn)
+{
+  global $HTTP_ACCEPT_LANGUAGE;
+  if (isset($HTTP_ACCEPT_LANGUAGE)) $accepted_langs = explode(" ",$HTTP_ACCEPT_LANGUAGE);
+  else $accepted_langs = array("en");
+
+  foreach($accepted_langs as $lang)
+  {
+    $new_fn = $fn . ".".$lang;
+    if (file_exists($new_fn)) return $new_fn;
+  }
+  return $fn;
+}
+
 /* Function returns the correct translated string of a string array */
 function get_string($text_array)
 {
@@ -42,6 +57,7 @@ $GalleryText["en"]="Gallery";
 $GalleryText["de"]="Galery";
 
 ?>
+
 
 
 

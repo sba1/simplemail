@@ -16,7 +16,7 @@
 
   $LinkMenu["faq"]["filename"]="faq.php";
   $LinkMenu["faq"]["title"]=get_string($FAQText);
-  $LinkMenu["faq"]["datename"]="xml/faq.xml";
+  $LinkMenu["faq"]["datename"]=get_filename("xml/faq.xml");
 
   $LinkMenu["links"]["filename"]="links.php";
   $LinkMenu["links"]["title"]=get_string($LinksText);
@@ -111,6 +111,7 @@
 
   </body>
 </html>
+
 
 
 

@@ -1,5 +1,6 @@
 <?php
-  $file='xml/faq.xml';
+  require_once("language.inc.php");
+  $file=get_filename('xml/faq.xml');
 
   function startElement($parser, $name, $attrs)
   {
@@ -98,4 +99,5 @@
   xml_parser_free($xml_parser);
 
 ?>
+
 

@@ -786,6 +786,25 @@ void callback_move_spam_marked_mails(void)
 	app_unbusy();
 }
 
+/* Adds all mails into the spam folder into the spam statistics */
+void callback_add_spam_folder_to_statistics(void)
+{
+	struct folder *spam_folder = folder_spam();
+	void *handle = NULL;
+	struct mail *m;
+
+	if (!spam_folder) return;
+
+	app_busy();
+
+	while ((m = folder_next_mail(spam_folder,&handle)))
+	{
+		spam_feed_mail_as_spam(spam_folder,m);
+	}
+
+	app_unbusy();
+}
+
 /* the currently selected mail should be changed */
 void callback_change_mail(void)
 {

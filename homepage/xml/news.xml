@@ -1,332 +1,365 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/12/07">
+	<text lang="en">
+	  Version 0.13 of SimpleMail released!
+
+	  The changes are:
+	  <list>
+		<item>Included a real manual at last. Thanks to David Rey!</item>
+		<item>SMTP over SSL.</item>
+		<item>POP3 connections can be made secure with the STLS
+		  command now. (RFC 2595)</item>
+		<item>Primitive ARexx-port.</item>
+		<item>Support for playing sounds.</item>
+		<item>Taglines.</item>
+		<item>Folders holding unread mails are hilighted now.</item>
+	  </list>
+	</text>
+
+	<text lang="de">
+	  SimpleMail Version 0.13 veröffentlicht!
+
+	  Die Änderungen sind:
+	  <list>
+		<item>Endlich eine echte Anleitung! Danke an David Rey.</item>
+		<item>SMTP over SSL.</item>
+		<item>POP3-Verbindungen könnnen mit dem STLS-Kommando sicher gemacht werden. (RFC 2595)</item>
+		<item>Primitiver ARexx-Port.</item>
+		<item>Unterstützung für das Abspielen von Sounds.</item>
+		<item>Taglines.</item>
+		<item>Folder mit ungelesenen Mails werden nun hevorgehoben.</item>
+	  </list>
+	</text>
+
+  </entry>
 
   <entry date="2001/11/10">
-    <text lang="en">
-      Due to a exploit in MUI in combination with some PIPE-handlers
-      we have released a new version now, everybody actually should
-      update, as the old versions has a really nasty security-problem.
+	<text lang="en">
+	  Due to a exploit in MUI in combination with some PIPE-handlers
+	  we have released a new version now, everybody actually should
+	  update, as the old versions has a really nasty security-problem.
 
-      The changes are:
-      <list>
-        <item>Fix for the MUI exploit.</item>
-        <item> Messages can be also encrypted with PGP 2.6.x.</item>
-        <item> Switching away of columns in the message list is possible now.
-          (save it via "Save Prefs") </item>
-        <item> Completion of email-addresses improved. </item>
-        <item> A small menu added to the readwindow that makes it possible to
-          see the raw mail. </item>
-        <item> Mousewheelsupport of the readwindow is more tolerant now.</item>
-        <item> The attachments are better identified if you have OS3.9
-          and DefIcons. You can double-click on an icon to start an
-          action (needs also OS3.9 and DefIcons, e.g. double-click on an
-          archive will start UnArc in the default config of DefIcons).</item>
-        <item> Printing of messages and text-attachments is possible now.</item>
-      </list>
-    </text>
+	  The changes are:
+	  <list>
+		<item>Fix for the MUI exploit.</item>
+		<item> Messages can be also encrypted with PGP 2.6.x.</item>
+		<item> Switching away of columns in the message list is possible now.
+		  (save it via "Save Prefs") </item>
+		<item> Completion of email-addresses improved. </item>
+		<item> A small menu added to the readwindow that makes it possible to
+		  see the raw mail. </item>
+		<item> Mousewheelsupport of the readwindow is more tolerant now.</item>
+		<item> The attachments are better identified if you have OS3.9
+		  and DefIcons. You can double-click on an icon to start an
+		  action (needs also OS3.9 and DefIcons, e.g. double-click on an
+		  archive will start UnArc in the default config of DefIcons).</item>
+		<item> Printing of messages and text-attachments is possible now.</item>
+	  </list>
+	</text>
 
-    <text lang="de">
-      Wegen einer Sicherheitslücke in MUI in Kombination mit einigen PIPE-Handlern
-      haben wir soeben eine neue Version, die u.a. diesen Fehler behebt, veröffentlicht.
-      Jeder sollte updaten, da die alte Version sehr üble Sicherheitsprobleme hat.
+	<text lang="de">
+	  Wegen einer Sicherheitslücke in MUI in Kombination mit einigen PIPE-Handlern
+	  haben wir soeben eine neue Version, die u.a. diesen Fehler behebt, veröffentlicht.
+	  Jeder sollte updaten, da die alte Version sehr üble Sicherheitsprobleme hat.
 
-      Die Änderungen sind:
-      <list>
-        <item>Behebung der MUI-Sicherheitslücke.</item>
-        <item>Mails können nun auch mit PGP 2.6.x verschlüsselt werden.</item>
-        <item>Einzelne Spalten können in der Liste der Mails ausgeblendet werden.</item>
-        <item>Vervollständigung der E-Mail-Adressen wurde verbessert.</item>
-        <item>Ein kleines Menü wurde dem Lesefenster hinzugefügt und es ist
-        möglich sich die Mails im Rohformat anzuschauen.</item>
-        <item>Unterstützung von Mausrädern im Lesefenster ist nun toleranter.</item>
-        <item>Die Anhänge werden jetzt besser erkannt, wenn man OS3.9 und
-        DefIcons installiert hat. Durch Doppelklicks werden die eingestellten
-        Standardaktionen gestartet (z.B. UnArc bei Archiven). </item>
-        <item>Mails und Textanhänge können nun ausgedruckt werden.</item>
-      </list>
-    </text>
+	  Die Änderungen sind:
+	  <list>
+		<item>Behebung der MUI-Sicherheitslücke.</item>
+		<item>Mails können nun auch mit PGP 2.6.x verschlüsselt werden.</item>
+		<item>Einzelne Spalten können in der Liste der Mails ausgeblendet werden.</item>
+		<item>Vervollständigung der E-Mail-Adressen wurde verbessert.</item>
+		<item>Ein kleines Menü wurde dem Lesefenster hinzugefügt und es ist
+		möglich sich die Mails im Rohformat anzuschauen.</item>
+		<item>Unterstützung von Mausrädern im Lesefenster ist nun toleranter.</item>
+		<item>Die Anhänge werden jetzt besser erkannt, wenn man OS3.9 und
+		DefIcons installiert hat. Durch Doppelklicks werden die eingestellten
+		Standardaktionen gestartet (z.B. UnArc bei Archiven). </item>
+		<item>Mails und Textanhänge können nun ausgedruckt werden.</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/10/21">
    <text lang="en">
-     Our user-mailinglist moves to http://freelist.org/ due to extensive spam.
+	 Our user-mailinglist moves to http://freelist.org/ due to extensive spam.
    </text>
 
-    <text lang="de">
-     Unsere Usermailingliste wurde wegen übermässigen Spam nach http://freelist.org/
-     verlegt.
-    </text>
+	<text lang="de">
+	 Unsere Usermailingliste wurde wegen übermässigen Spam nach http://freelist.org/
+	 verlegt.
+	</text>
   </entry>
 
   <entry date="2001/09/23">
    <text lang="en">
-      Version 0.11 of SimpleMail has been released! Changes since last release were:
-      <list>
-       <item>UIDL Pop3 command support, so mails won't be downloaded twice</item>
-       <item>Improved Startup time</item>
-       <item>Bug fixes</item>
-      </list>
-    </text>
+	  Version 0.11 of SimpleMail has been released! Changes since last release were:
+	  <list>
+	   <item>UIDL Pop3 command support, so mails won't be downloaded twice</item>
+	   <item>Improved Startup time</item>
+	   <item>Bug fixes</item>
+	  </list>
+	</text>
 
-    <text lang="de">
-      Version 0.11 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
-      <list>
-       <item>UIDL Pop3 Kommando wird unterstützt, so das Mails nicht zwei mal runtergeladen werden</item>
-       <item>Startzeit beschleunigt</item>
-       <item>Bug fixes</item>
-      </list>
-    </text>
+	<text lang="de">
+	  Version 0.11 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+	  <list>
+	   <item>UIDL Pop3 Kommando wird unterstützt, so das Mails nicht zwei mal runtergeladen werden</item>
+	   <item>Startzeit beschleunigt</item>
+	   <item>Bug fixes</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/09/10">
    <text lang="en">
-      Version 0.10 of SimpleMail has been released! Changes since last release were:
-      <list>
-        <item>configurable headers for the read window</item>
-        <item>can read message/rfc822 content type properly</item>
-        <item>can decrypt encryptet pgp message using pgp 2.6.x</item>
-        <item>minor other improvements</item>
-        <item>filter has been improved</item>
-        <item>wordwrapping for composed messages</item>
-      </list>
-    </text>
+	  Version 0.10 of SimpleMail has been released! Changes since last release were:
+	  <list>
+		<item>configurable headers for the read window</item>
+		<item>can read message/rfc822 content type properly</item>
+		<item>can decrypt encryptet pgp message using pgp 2.6.x</item>
+		<item>minor other improvements</item>
+		<item>filter has been improved</item>
+		<item>wordwrapping for composed messages</item>
+	  </list>
+	</text>
 
-    <text lang="de">
-      Version 0.10 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
-      <list>
-        <item>Konfigurierbare Headers im Lesefenster</item>
-        <item>Message/rfc822 Content Type Unterstützung</item>
-        <item>Verschlüsselte Mail können gelesen werden (pgp 2.6.x)</item>
-        <item>Kleinere andere Verbesserungen</item>
-        <item>Verbesserter Filter</item>
-        <item>Automatischer Zeilenumbruch im Schreibfenster</item>
-      </list>
-    </text>
+	<text lang="de">
+	  Version 0.10 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+	  <list>
+		<item>Konfigurierbare Headers im Lesefenster</item>
+		<item>Message/rfc822 Content Type Unterstützung</item>
+		<item>Verschlüsselte Mail können gelesen werden (pgp 2.6.x)</item>
+		<item>Kleinere andere Verbesserungen</item>
+		<item>Verbesserter Filter</item>
+		<item>Automatischer Zeilenumbruch im Schreibfenster</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/09/03">
    <text lang="en">
-      Version 0.9 of SimpleMail has been released! Changes since last release were:
-      <list>
-       <item>improved addressbook</item>
-       <item>predefined text phrases</item>
-       <item>periodical mail download</item>
-       <item>requires now the popplaceholder mui custom class</item>
-      </list>
-    </text>
+	  Version 0.9 of SimpleMail has been released! Changes since last release were:
+	  <list>
+	   <item>improved addressbook</item>
+	   <item>predefined text phrases</item>
+	   <item>periodical mail download</item>
+	   <item>requires now the popplaceholder mui custom class</item>
+	  </list>
+	</text>
 
-    <text lang="de">
-      Version 0.9 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
-      <list>
-       <item>Verbessertes Addressbuch</item>
-       <item>Vordefinierte Textphrasen</item>
-       <item>Periodischen Runterladen von Mails</item>
-       <item>Benötigt nun die  Popplaceholder Mui Custom Class</item>
-      </list>
-    </text>
+	<text lang="de">
+	  Version 0.9 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+	  <list>
+	   <item>Verbessertes Addressbuch</item>
+	   <item>Vordefinierte Textphrasen</item>
+	   <item>Periodischen Runterladen von Mails</item>
+	   <item>Benötigt nun die  Popplaceholder Mui Custom Class</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/08/01">
-    <text lang="en">
-      Version 0.8 of SimpleMail has been released! Changes since last release were:
-      <list>
-       <item>SSL support for POP3 Servers. Needs AmiSSL</item>
-       <item>POP3 servers can be individually deactivated and they are ignored</item>
-       <item>Menubar in the main window; needs to grow though</item>
-       <item>A new read setting, so that smilies can be replaced with images (images created by Richard Kapp)</item>
-       <item>Groups can be deleted now</item>
-      </list>
-      To report bugs please use now the <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> and
-      if you want special new featutes the <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> should be used.
-    </text>
+	<text lang="en">
+	  Version 0.8 of SimpleMail has been released! Changes since last release were:
+	  <list>
+	   <item>SSL support for POP3 Servers. Needs AmiSSL</item>
+	   <item>POP3 servers can be individually deactivated and they are ignored</item>
+	   <item>Menubar in the main window; needs to grow though</item>
+	   <item>A new read setting, so that smilies can be replaced with images (images created by Richard Kapp)</item>
+	   <item>Groups can be deleted now</item>
+	  </list>
+	  To report bugs please use now the <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> and
+	  if you want special new featutes the <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> should be used.
+	</text>
 
-    <text lang="de">
-      Version 0.8 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
-      <list>
-       <item>SSL Unterstüzung für POP3 Server. AmiSSL wird dazu benötigt!</item>
-       <item>POP3 Server können individuell deaktiviert werden</item>
-       <item>Menüleiste im Hauptfenster.</item>
-       <item>Ein neue Lesefenstereinstellung, die es ermöglicht Smilies durch Bildchen ersetzen zu lassen (Bilder erstellt von Richard Kapp)</item>
-       <item>Gruppen können nun ebenfalls gelöscht werden</item>
-      </list>
-      Für Bug Reports sollte jetzt das <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> und
-      Wünsche das <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> benutzt werden.
-    </text>
+	<text lang="de">
+	  Version 0.8 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+	  <list>
+	   <item>SSL Unterstüzung für POP3 Server. AmiSSL wird dazu benötigt!</item>
+	   <item>POP3 Server können individuell deaktiviert werden</item>
+	   <item>Menüleiste im Hauptfenster.</item>
+	   <item>Ein neue Lesefenstereinstellung, die es ermöglicht Smilies durch Bildchen ersetzen zu lassen (Bilder erstellt von Richard Kapp)</item>
+	   <item>Gruppen können nun ebenfalls gelöscht werden</item>
+	  </list>
+	  Für Bug Reports sollte jetzt das <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> und
+	  Wünsche das <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> benutzt werden.
+	</text>
   </entry>
 
   <entry date="2001/06/29">
-    <text lang="en">
-      Version 0.7 of SimpleMail has been released! Changes since last release were:
-      <list>
-       <item>the attachment icons weren't displayed on OSes with version below 3.5</item>
-       <item>signatures support</item>
-       <item>configurable greetings text when writing new mails</item>
-       <item>the fonts and colors for reading a mail can be configured</item>
-       <item>hierachical folders and folder images</item>
-      </list>
-    </text>
+	<text lang="en">
+	  Version 0.7 of SimpleMail has been released! Changes since last release were:
+	  <list>
+	   <item>the attachment icons weren't displayed on OSes with version below 3.5</item>
+	   <item>signatures support</item>
+	   <item>configurable greetings text when writing new mails</item>
+	   <item>the fonts and colors for reading a mail can be configured</item>
+	   <item>hierachical folders and folder images</item>
+	  </list>
+	</text>
 
-    <text lang="de">
-      Version 0.7 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
-      <list>
-       <item>Die Icons der Anhänge wurden auf Betriebssytemversionen kleiner als 3.5 nicht dargestellt</item>
-       <item>Signaturen werden unterstützt</item>
-       <item>Konfigurierbare Begrüßungs- und Schlußtext beim Erstellen einer neuen E-Mail</item>
-       <item>Zeichensätze und Farben im Lesefenster einstellbar</item>
-       <item>Hierachische Ordner mit kleinen Bildchen</item>
-      </list>
-    </text>
+	<text lang="de">
+	  Version 0.7 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+	  <list>
+	   <item>Die Icons der Anhänge wurden auf Betriebssytemversionen kleiner als 3.5 nicht dargestellt</item>
+	   <item>Signaturen werden unterstützt</item>
+	   <item>Konfigurierbare Begrüßungs- und Schlußtext beim Erstellen einer neuen E-Mail</item>
+	   <item>Zeichensätze und Farben im Lesefenster einstellbar</item>
+	   <item>Hierachische Ordner mit kleinen Bildchen</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/06/05">
-    <text lang="en">
-      There was a problem with the last alpha of SimpleMail. It was compiled under WinUAE which seems not to be a good idea.
-      The results were crashed when starting an e-mail download. Please download the archive again. Sorry for this inconvenience.
-    </text>
+	<text lang="en">
+	  There was a problem with the last alpha of SimpleMail. It was compiled under WinUAE which seems not to be a good idea.
+	  The results were crashed when starting an e-mail download. Please download the archive again. Sorry for this inconvenience.
+	</text>
 
-    <text lang="de">
-      Es gab ein Problem bei der letzten Alpha von SimpleMail. Es wurde unter WinUAE kompiliert, was scheinbar keine so gute Idee war.
-      Es entstanden Abstürze beim Herunterladen von e-Mails. Das neue Archiv enthält eine hoffentlich fehlerfreiere Version.
-    </text>
+	<text lang="de">
+	  Es gab ein Problem bei der letzten Alpha von SimpleMail. Es wurde unter WinUAE kompiliert, was scheinbar keine so gute Idee war.
+	  Es entstanden Abstürze beim Herunterladen von e-Mails. Das neue Archiv enthält eine hoffentlich fehlerfreiere Version.
+	</text>
   </entry>
 
   <entry date="2001/06/05">
-    <text lang="en">
-      Again the homepage has been redesigned (mainly internal). 
-      There exists now also a german version of the homepage. Some passages are still in english. Additionally a new SimpleMail alpha has been released. Changes since last version:
-       <list>
-        <item>Improved e-mail account configuration (multiple smtp servers)</item>
+	<text lang="en">
+	  Again the homepage has been redesigned (mainly internal). 
+	  There exists now also a german version of the homepage. Some passages are still in english. Additionally a new SimpleMail alpha has been released. Changes since last version:
+	   <list>
+		<item>Improved e-mail account configuration (multiple smtp servers)</item>
   <item>Can log into pop3 servers before sending e-mails</item>
   <item>Addressbook is now stored in xml</item>
   <item>Initial filter support</item>
   <item>New folders can be created within the gui and their settings are stored</item>
   <item>A lot of bug fixes</item>
-       </list>
-    </text>
+	   </list>
+	</text>
 
-    <text lang="de">
-      Die Seiten wurden wieder etwas überarbeitet. Es gibt nun auch eine deutsche Version der Homepage, die jedoch noch nicht komplett fertig ist. Außerdem wurde eine neue Alpha Version von SimpleMail veröffentlicht. Änderungen seit der leztzen Version sind:
-       <list>
-        <item>Verbesserte e-Mail Kontoverwaltung (u.a. auch mit mehereren SMTP Server)</item>
+	<text lang="de">
+	  Die Seiten wurden wieder etwas überarbeitet. Es gibt nun auch eine deutsche Version der Homepage, die jedoch noch nicht komplett fertig ist. Außerdem wurde eine neue Alpha Version von SimpleMail veröffentlicht. Änderungen seit der leztzen Version sind:
+	   <list>
+		<item>Verbesserte e-Mail Kontoverwaltung (u.a. auch mit mehereren SMTP Server)</item>
   <item>Kann sich in POP3 Server einwählen, bevor e-Mails versandt werden</item>
   <item>Addressbuch wird jetzt in XML gesichert</item>
   <item>Erste Filterunterstützung</item>
   <item>Ordner können jetzt auch innerhalb der GUI erstellt werden und die Einstellungen werden beibehalten.</item>
   <item>Viele Bugfixes</item>
-       </list>
-    </text>
+	   </list>
+	</text>
   </entry>
 
   <entry date="2001/03/25">
-    <text lang="en">
-      Introduced the new SimpleMail <a href="index.php?body=gallery">User Gallery</a>.
-      Alpha 0.5 has been released. New features are:
-      <list>
-        <item>Configurable mail download selection added.</item>
-        <item>Supports 8 bit mime mails (if a SMTP Server don't support them they are encoded on the fly).</item>
-        <item>Improved the readwindow. Now used extensivly the SimpleHTML engine.</item>
-        <item>Button images are cached now.</item>
-        <item>Support of the new SimpleMail User Gallery.</item>
-      </list>
-    </text>
-    <text lang="de">
-      Die SimpleMail <a href="index.php?body=gallery">User Gallery</a> wurde eingerichtet. Alpha 0.5 wurde veröffentlicht. Neue Features sind:
-      <list>
-        <item>Optionale Mailvorauswahl bevor die Mails runtergeladen werden</item>
-        <item>Unterstützt das Senden von 8bit Mime Mails, falls der SMTP Server dies erlaubt</item>
-        <item>Verbessertes Maillesefenster.</item>
-        <item>Button Bilder werden jetzt nicht jedesmal neugeladen</item>
-        <item>Unterstützung der SimpleMail User Gallery</item>
-      </list>
-    </text>
+	<text lang="en">
+	  Introduced the new SimpleMail <a href="index.php?body=gallery">User Gallery</a>.
+	  Alpha 0.5 has been released. New features are:
+	  <list>
+		<item>Configurable mail download selection added.</item>
+		<item>Supports 8 bit mime mails (if a SMTP Server don't support them they are encoded on the fly).</item>
+		<item>Improved the readwindow. Now used extensivly the SimpleHTML engine.</item>
+		<item>Button images are cached now.</item>
+		<item>Support of the new SimpleMail User Gallery.</item>
+	  </list>
+	</text>
+	<text lang="de">
+	  Die SimpleMail <a href="index.php?body=gallery">User Gallery</a> wurde eingerichtet. Alpha 0.5 wurde veröffentlicht. Neue Features sind:
+	  <list>
+		<item>Optionale Mailvorauswahl bevor die Mails runtergeladen werden</item>
+		<item>Unterstützt das Senden von 8bit Mime Mails, falls der SMTP Server dies erlaubt</item>
+		<item>Verbessertes Maillesefenster.</item>
+		<item>Button Bilder werden jetzt nicht jedesmal neugeladen</item>
+		<item>Unterstützung der SimpleMail User Gallery</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/02/25">
-    <text lang="en">
-      A new alpha 0.4 has been released. Most important new feature is the possibility to
-      configure more then one POP3 server.
-    </text>
-    <text lang="de">
-      Eine neue Alpha 0.4 Version wurde veröffentlicht. Wichtigstes neues Merkmal ist die Möglichkeit
-      zur Konfigurationen mehrerer POP3 Server.
-    </text>
+	<text lang="en">
+	  A new alpha 0.4 has been released. Most important new feature is the possibility to
+	  configure more then one POP3 server.
+	</text>
+	<text lang="de">
+	  Eine neue Alpha 0.4 Version wurde veröffentlicht. Wichtigstes neues Merkmal ist die Möglichkeit
+	  zur Konfigurationen mehrerer POP3 Server.
+	</text>
   </entry>
 
   <entry date="2001/02/09">
-    <text lang="en">
-      I (Hynek) am leaving today and will come back in April so send all mail you
-      send to me also to Sebastian as he will stay here.
-    </text>
-    <text lang="de">
-      Hynek ist bis April nicht erreichbar, deshalb sollten alle Mails bzgl. SimpleMail die zu ihm gehen auch an Sebastian
-      geschickt werden.
-    </text>
+	<text lang="en">
+	  I (Hynek) am leaving today and will come back in April so send all mail you
+	  send to me also to Sebastian as he will stay here.
+	</text>
+	<text lang="de">
+	  Hynek ist bis April nicht erreichbar, deshalb sollten alle Mails bzgl. SimpleMail die zu ihm gehen auch an Sebastian
+	  geschickt werden.
+	</text>
   </entry>
 
   <entry date="2001/02/06">
-    <text lang="en">
-      New frequently asked questions added to the <a href="index.html?part=faq">FAQ</a>.
-    </text>
-    <text lang="de">
-      Neue häufig gestellte Fragen der <a href="index.php?part=faq">FAQ</a> hinzugefügt.
-    </text>
+	<text lang="en">
+	  New frequently asked questions added to the <a href="index.html?part=faq">FAQ</a>.
+	</text>
+	<text lang="de">
+	  Neue häufig gestellte Fragen der <a href="index.php?part=faq">FAQ</a> hinzugefügt.
+	</text>
   </entry>
 
   <entry date="2001/02/05">
-    <text lang="en">
-      Alpha-Version 0.3 released! This time we have added quiet a bunch of new
-      features:
-      <list>
-        <item>Forward button.</item>
-        <item>The main window has two different views which are switchable
-          within the mainwindow.</item>
-        <item>Improved the composewindow (some buttons added, also a undo/redo).</item>
-        <item>The "To" button in the addressbook works now.</item>
-        <item>Group mails (mails with multiple recipients), mails with attachments,
-          important mails can now easily identified.</item>
-        <item>Added a small context menu for the mailtreelist, mails can now be
-          marked and hold.</item>
-        <item>Added the possibility to use your IP-addresss as you domain in
-          the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore).</item>
-        <item>Added smtp-auth according to rfc2554.</item>
-        <item>It is now possible to specify which port you would like to use on
-          the servers instead of 25 (SMTP) and 110 (POP3).</item>
-        <item>Other smaller improvements and bug fixes.</item>
-      </list>
-    </text>
+	<text lang="en">
+	  Alpha-Version 0.3 released! This time we have added quiet a bunch of new
+	  features:
+	  <list>
+		<item>Forward button.</item>
+		<item>The main window has two different views which are switchable
+		  within the mainwindow.</item>
+		<item>Improved the composewindow (some buttons added, also a undo/redo).</item>
+		<item>The "To" button in the addressbook works now.</item>
+		<item>Group mails (mails with multiple recipients), mails with attachments,
+		  important mails can now easily identified.</item>
+		<item>Added a small context menu for the mailtreelist, mails can now be
+		  marked and hold.</item>
+		<item>Added the possibility to use your IP-addresss as you domain in
+		  the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore).</item>
+		<item>Added smtp-auth according to rfc2554.</item>
+		<item>It is now possible to specify which port you would like to use on
+		  the servers instead of 25 (SMTP) and 110 (POP3).</item>
+		<item>Other smaller improvements and bug fixes.</item>
+	  </list>
+	</text>
   </entry>
 
   <entry date="2001/01/26">
-    <text>
-      New frequently asked question added to the <a href="index.html?faq">FAQ</a>.
-    </text>
+	<text>
+	  New frequently asked question added to the <a href="index.html?faq">FAQ</a>.
+	</text>
   </entry>
 
   <entry date="2001/01/26">
-    <text>
-      Added some banners for your homepages made by Richard Wagenführer.
-      You can find them in the <a href="index.html?downloads">downloads-section</a>.
-    </text>
+	<text>
+	  Added some banners for your homepages made by Richard Wagenführer.
+	  You can find them in the <a href="index.html?downloads">downloads-section</a>.
+	</text>
   </entry>
 
   <entry date="2001/01/23">
-    <text>
-      The homepage moves to http://simplemail.sourceforge.net/. A completly new
-      design is introduced.
-    </text>
+	<text>
+	  The homepage moves to http://simplemail.sourceforge.net/. A completly new
+	  design is introduced.
+	</text>
   </entry>
 
   <entry date="2001/01/14">
-    <text>
-      The second alpha version 0.2 is released.
-    </text>
+	<text>
+	  The second alpha version 0.2 is released.
+	</text>
   </entry>
 
   <entry date="2000/12/24">
-    <text>
-      The first alpha version 0.1 is released.
-    </text>
+	<text>
+	  The first alpha version 0.1 is released.
+	</text>
   </entry>
 
 </news>

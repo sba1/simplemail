@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), sebauer@t-online.de (Sebast
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.12
+Version:   0.13
 
 Introduction
 ~~~~~~~~~~~~
@@ -13,9 +13,8 @@ program  and  the usage is very similar to to YAM's (although YAM
 is actually much more powerful) but it has (or should  get)  some
 features  which  YAM doesn't offer. Note that this is really only
 an alpha version, so don't expect too much of it at  this  stage.
-It  is  really very limited. The source of SimpleMail is open and
-released under the GNU Public license. Look at the bottom how  to
-obtain it.
+The source of SimpleMail is open and released under the GNU Public
+license. Look at the bottom how to obtain it.
 
 Requirements
 ~~~~~~~~~~~~
@@ -28,19 +27,20 @@ It also needs some additional MUI Custom Classes:
  PopPlaceholder - ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
-
 Ensure  that  you  always  have  the  latest  versions installed.
-
-Usage
-~~~~~
-Just double click the SimpleMail icon and if  your  machine  fits
-the  requirements  you  should  see  the  main  window. Press the
-"Config" button to configure important things of SimpleMail (SMTP
-and  POP3  servers). If you are familiar with YAM it should be no
-problem. A "real" documentation will come soon.
 
 Changes
 ~~~~~~~
+Version 0.13 (thirteenth alpha) - released on 2001/12/07
+  - Included a real manual at last. Thanks to David Rey!
+  - SMTP over SSL.
+  - POP3 connections can be made secure with the STLS
+    command now. (RFC 2595) 
+  - Primitive ARexx-port.
+  - Support for playing sounds.
+  - Taglines.
+  - Folders holding unread mails are hilighted now.
+
 Version 0.12 (twelfth alpha) - released on 2001/11/10
   - Fix for the MUI exploit.
   - Messages can be also encrypted with PGP 2.6.x.

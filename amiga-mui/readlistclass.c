@@ -132,37 +132,54 @@ STATIC ULONG ReadList_InsertSingle(struct IClass *cl, Object *obj, struct MUIP_N
 
 	char *text = (char*)msg->entry;
 	char *buf;
-	int len = strlen(text);
 
-	if ((buf = malloc(len+8)))
+	char *text_end = strchr(text,'\n');
+	int len;
+
+	if (text_end) len = text_end - text;
+	else len = strlen(text);
+
+	if (!len) return DoSuperMethodA(cl,obj,(Msg)msg);
+
+	if ((buf = malloc(len+16)))
 	{
+		ULONG retval;
 		char *src = text;
-		int mode = 0;
-		int c;
+		int i = 0,mode = 0;
 
-		while ((c = *src++))
+		while (i<len)
 		{
-			if (c=='>')
+			int c = *src++;
+
+			if (c == '>')
 			{
 				if (mode == 2) mode = 3;
 				else mode = 2;
 			} else
 			{
 				if ((mode == 2 || mode == 3) && c != ' ') break;
+				if (c==' ' && mode == 0) break;
 			}
-
-			if (c==10) break;
+			i++;
 		}
 
 		if (mode == 2 || mode == 3)
 		{
+			int buf_len;
 			sprintf(buf,"\033mode[%ld]",mode-2);
-			strcat(buf,text);
-		} else strcpy(buf,text);
+			buf_len = strlen(buf);
+			strncpy(buf+buf_len,text,len);
+			buf[len+buf_len]=0;
+		} else
+		{
+			strncpy(buf,text,len);
+			buf[len]=0;
+		}
 
-		DoSuperMethod(cl,obj, MUIM_NList_InsertSingle, buf, msg->pos);
+		retval = DoSuperMethod(cl,obj, MUIM_NList_InsertSingle, buf, msg->pos);
 
 		free(buf);
+		return retval;
 	} else return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 

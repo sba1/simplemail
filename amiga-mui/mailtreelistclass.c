@@ -284,7 +284,7 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Mark", MUIA_UserData, MENU_SETSTATUS_MARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Unmark", MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Hold", MUIA_UserData, MENU_SETSTATUS_HOLD, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Waitsend", MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, "Pending", MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
 /*

@@ -186,7 +186,7 @@ void context_menu_trigger(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
 	Object *icon = (Object*)(pdata[1]);
-	Object *item = (Object*)(pdata[1]);
+	Object *item = (Object*)(pdata[2]);
 
 	if (item)
 	{
@@ -194,6 +194,7 @@ void context_menu_trigger(int **pdata)
 		switch (xget(item,MUIA_UserData))
 		{
 			case	1: /* save attachment */
+						save_contents(data,m);
 						break;
 
 			case	2: /* save whole document */
@@ -235,7 +236,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		if (icon)
 		{
 			DoMethod(data->attachments_group, OM_ADDMEMBER, group);
-			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, icon, &hook_standard, data, context_menu_trigger, MUIV_TriggerValue);
+			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, icon, MUIV_TriggerValue);
 		}
 
 
@@ -420,7 +421,6 @@ void read_window_open(char *folder, char *filename)
 				
 				if ((data->mail = mail_create_from_file(filename)))
 				{
-					struct mail *text_mail;
 					Object *save_contents_item;
 					Object *save_contents2_item;
 					Object *save_document_item;
@@ -472,13 +472,11 @@ void read_window_open(char *folder, char *filename)
 
 					DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
 
-					text_mail = mail_find_content_type(data->mail, "text", "plain");
-
 					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);
 
-					show_mail(data,text_mail?text_mail:data->mail);
+					show_mail(data,mail_find_initial(data->mail));
 					set(wnd,MUIA_Window_DefaultObject, data->text_list);
 					set(wnd,MUIA_Window_Open,TRUE);
 					CurrentDir(old_dir);

@@ -58,6 +58,11 @@ void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data);
 /* Use this function if the data field of the hook structure is not needed */
 void init_hook(struct Hook *h, unsigned long (*func)());
 
+/* Some macros to be used in custom classes */
+#define _between(a,x,b) ((x)>=(a) && (x)<=(b))
+#define _isinobject(o,x,y) (_between(_mleft(o),(x),_mright (o)) && _between(_mtop(o) ,(y),_mbottom(o)))
+#define _isinwholeobject(o,x,y) (_between(_left(o),(x),_right (o)) && _between(_top(o) ,(y),_bottom(o)))
+
 /* Line Macros */
 #define HorizLineObject  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,End
 #define HorizLineTextObject(text)  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,MUIA_Rectangle_BarTitle,text,End

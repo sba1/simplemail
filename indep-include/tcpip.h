@@ -30,6 +30,7 @@
 
 int open_socket_lib(void);
 void close_socket_lib(void);
+int is_online(char *iface);
 int open_ssl_lib(void);
 void close_ssl_lib(void);
 

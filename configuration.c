@@ -183,6 +183,8 @@ int load_config(void)
 							user.config.receive_size = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Autocheck")))
 							user.config.receive_autocheck = atoi(result);
+						if ((result = get_config_item(buf, "Receive.AutocheckIfOnline")))
+							user.config.receive_autoifonline = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Receive.SoundPlay")))
 							user.config.receive_sound = atoi(result);
 						if ((result = get_config_item(buf,"Receive.SoundFile")))
@@ -465,6 +467,7 @@ void save_config(void)
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);
 			fprintf(fh,"Receive.Size=%d\n",user.config.receive_size);
 			fprintf(fh,"Receive.Autocheck=%d\n",user.config.receive_autocheck);
+			fprintf(fh,"Receive.AutocheckIfOnline=%s\n",user.config.receive_autoifonline?"Y":"N");
 			fprintf(fh,"Receive.SoundPlay=%d\n",user.config.receive_sound);
 			fprintf(fh,"Receive.SoundFile=%s\n",MAKESTR(user.config.receive_sound_file));
 

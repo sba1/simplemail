@@ -77,6 +77,7 @@ static Object *user_charset_string;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
+static Object *receive_autocheckifonline_check;
 static Object *receive_sound_check;
 static Object *receive_sound_string;
 static Object *read_fixedfont_string;
@@ -365,6 +366,7 @@ static void config_use(void)
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
+	user.config.receive_autoifonline = xget(receive_autocheckifonline_check,MUIA_Selected);
 	user.config.receive_sound = xget(receive_sound_check,MUIA_Selected);
 	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
@@ -670,6 +672,8 @@ static int init_tcpip_receive_group(void)
 				MUIA_String_Integer, user.config.receive_autocheck,
 				End,
 			Child, TextObject, MUIA_Text_Contents, _("minutes"), End,
+			Child, MakeLabel(_("If online")),
+			Child, receive_autocheckifonline_check = MakeCheck(_("If online"),user.config.receive_autoifonline),
 			End,
 		Child, HorizLineTextObject(_("New mails")),
 		Child, ColGroup(3),
@@ -988,8 +992,8 @@ static int init_write_group(void)
 			Child, HVSpace,
 			End,
 		Child, HGroup,
-			Child, MakeLabel(_("Cite empty lines")),
-			Child, write_replyciteemptyl_check = MakeCheck(_("Cite empty lines"),user.config.write_reply_citeemptyl),
+			Child, MakeLabel(_("Quote empty lines")),
+			Child, write_replyciteemptyl_check = MakeCheck(_("Quote empty lines"),user.config.write_reply_citeemptyl),
 			Child, HVSpace,
 			End,	
 		End;

@@ -851,7 +851,11 @@ void callback_timer(void)
 			if (open_socket_lib())
 			{
 				close_socket_lib();
-				mails_dl(1);
+
+				if (!user.config.receive_autoifonline || is_online("mi0"))
+				{
+					mails_dl(1);
+				}
 			}
 		}
 	}

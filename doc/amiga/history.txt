@@ -3,7 +3,8 @@ Version 0.16 (third beta) -
   - speed up within the mail list
   - scrollbars in readwindow for datatypes
   - you can drag attachments from the readwindow and drop them on
-    to the workbench now (required OS3.9)
+    to the workbench now (requires OS3.9)
+  - New Config option: Possibilty that SimpleMail only auto downloads if Miami is online
 
 Version 0.15 (second beta) - released on 2002/02/05
   - internally most strings are utf8 now. Note: Maybe I missed

@@ -27,6 +27,8 @@
 #include <amitcp/socketbasetags.h>
 #endif
 
+#include <clib/miami_protos.h>
+#include <pragmas/miami_pragmas.h>
 #include <proto/amissl.h>
 
 #include "tcpip.h"
@@ -63,6 +65,20 @@ void close_socket_lib(void)
 			SocketBase = NULL;
 		}
 	}
+}
+
+/* Returns true if given interface is online, if the information is not querryable
+   we will return 1 */
+int is_online(char *iface)
+{
+	struct Library *MiamiBase = OpenLibrary("miami.library",10); /* required by MiamiIsOnline() */
+	int rc = 1;
+	if (MiamiBase)
+	{
+		rc = MiamiIsOnline(iface);
+		CloseLibrary(MiamiBase);
+	}
+	return rc;
 }
 
 struct Library *AmiSSLBase;

@@ -57,6 +57,7 @@ struct config
 	int receive_preselection; /* 0 no selection, 1 size selection, 2 full selection */
 	int receive_size; /* the size in kb */
 	int receive_autocheck; /* 0 no auto check */
+	int receive_autoifonline; /* before auto check, check if online */
 
 	int receive_sound;
 	char *receive_sound_file;

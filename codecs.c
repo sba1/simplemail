@@ -457,7 +457,7 @@ static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
 		char digit_buf[16];
 		int next_len = 1;
 
-		if (c < 33 || c == 61 || c > 126)
+		if ((c < 33 || c == 61 || c > 126) && c != 10)
 		{
 			sprintf(digit_buf,"=%02lX",c);
 			next_str = digit_buf;
@@ -481,6 +481,8 @@ static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
 			fwrite(next_str,1,next_len,fh);
 			line_len += next_len;
 		}
+
+		if (c==10) line_len = 0;
 
 		buf++;
 		len--;

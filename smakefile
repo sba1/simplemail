@@ -27,7 +27,7 @@ GSTFILE = all.gst
 OBJSDIR1 = sas_objects
 DESTDIR = sm
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
-CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63
+CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck
 LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib
 
 # do not change the following lines, expect for improvements!

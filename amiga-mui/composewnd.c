@@ -1322,39 +1322,12 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_replyto, data);
 
 			/* create notifies for toolbar buttons */
-			i=0;
-			while (sm_composewnd_buttons[i].pos != MUIV_SMToolbar_End)
-			{
-				if (sm_composewnd_buttons[i].pos != MUIV_SMToolbar_Space)
-				{
-					Object *but = (Object*)DoMethod(data->toolbar, MUIM_SMToolbar_GetObject, sm_composewnd_buttons[i].id);
-					if (but)
-					{
-						switch (sm_composewnd_buttons[i].id)
-						{
-							case SM_COMPOSEWND_BUTTON_COPY:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Copy");
-							    	break;
-							case SM_COMPOSEWND_BUTTON_CUT:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Cut");
-							    	break;
-							case SM_COMPOSEWND_BUTTON_PASTE:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Paste");
-							    	break;
-							case SM_COMPOSEWND_BUTTON_UNDO:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Undo");
-							    	break;
-							case SM_COMPOSEWND_BUTTON_REDO:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Redo");
-							    	break;
-							case SM_COMPOSEWND_BUTTON_ATTACH:
-							    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
-							    	break;
-						}
-					}
-				}
-				i++;
-			}
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_COPY,   7, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Copy");
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_CUT,    7, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Cut");
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_PASTE,  7, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Paste");
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_UNDO,   7, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Undo");
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_REDO,   7, MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd, "Redo");
+			DoMethod(toolbar, MUIM_SMToolbar_DoMethod, SM_COMPOSEWND_BUTTON_ATTACH, 9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 
 			data->reply_stuff_attached = 1;
 			set(data->reply_button,MUIA_Selected,FALSE);

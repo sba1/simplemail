@@ -897,72 +897,23 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 
 		/* Toolbar notifies */
-		i=0;
-		while (sm_mainwnd_buttons[i].pos != MUIV_SMToolbar_End)
-		{
-			if (sm_mainwnd_buttons[i].pos != MUIV_SMToolbar_Space)
-			{
-				Object *but = (Object*)DoMethod(main_toolbar, MUIM_SMToolbar_GetObject, sm_mainwnd_buttons[i].id);
-				if (but)
-				{
-					switch (sm_mainwnd_buttons[i].id)
-					{
-						case SM_MAINWND_BUTTON_READ:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
-						    	break;
-						case SM_MAINWND_BUTTON_EDIT:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-						    	break;
-						case SM_MAINWND_BUTTON_MOVE:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_DELETE:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_GETADDRESS:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_get_address);
-						    	break;
-						case SM_MAINWND_BUTTON_NEW:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
-						    	break;
-						case SM_MAINWND_BUTTON_REPLY:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_FORWARD:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_FETCH:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_SEND:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_SEARCH:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_search);
-						    	break;
-						case SM_MAINWND_BUTTON_FILTER:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_filter);
-						    	break;
-						case SM_MAINWND_BUTTON_SPAM:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
-						    	break;
-						case SM_MAINWND_BUTTON_ISOLATE:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
-						    	break;
-						case SM_MAINWND_BUTTON_ADDRESSBOOK:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
-						    	break;
-						case SM_MAINWND_BUTTON_EDITFILTER:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
-						    	break;
-						case SM_MAINWND_BUTTON_CONFIG:
-						    	DoMethod(but, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_config);
-						    	break;
-						}
-					}
-				}
-				i++;
-			}
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_READ,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDIT,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_MOVE,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_DELETE,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_GETADDRESS,  8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_get_address);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_NEW,         8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_REPLY,       8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FORWARD,     8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FETCH,       8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEND,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEARCH,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_search);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FILTER,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_filter);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SPAM,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ISOLATE,     8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ADDRESSBOOK, 8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDITFILTER,  8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_CONFIG,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_config);
 
 		/* Key notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);

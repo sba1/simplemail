@@ -972,6 +972,14 @@ static void addressbook_save_pressed(void)
 }
 
 /******************************************************************
+  Adds entries from a selected file.
+*******************************************************************/
+static void addressbook_import_pressed(void)
+{
+	addressbook_import();
+}
+
+/******************************************************************
  Adds a new person to the window
 *******************************************************************/
 static void addressbook_add_person(void)
@@ -1041,7 +1049,7 @@ static void addressbook_delete(void)
 *******************************************************************/
 static void addressbook_init(void)
 {
-	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button;
+	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button, *import_button;
 	Object *to_button;
 
 	address_wnd = WindowObject,
@@ -1061,6 +1069,7 @@ static void addressbook_init(void)
 					Child, HVSpace,
 					Child, HGroup,
 						MUIA_VertWeight,0,
+						Child, import_button = MakePictureButton(_("_Import"),"PROGDIR:Images/Save"),
 						Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/Save"),
 /*						Child, MakeButton("Search"),*/
 						Child, new_person_button = MakePictureButton(_("_Person"),"PROGDIR:Images/User"),
@@ -1088,6 +1097,7 @@ static void addressbook_init(void)
 	DoMethod(App,OM_ADDMEMBER,address_wnd);
 	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save_pressed);
+	DoMethod(import_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_import_pressed);
 	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
 	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_group);
 	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);

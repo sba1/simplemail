@@ -51,6 +51,7 @@
 #include "support_indep.h"
 #include "text2html.h"
 
+#include "amigasupport.h"
 #include "compiler.h"
 #include "datatypesclass.h"
 #include "iconclass.h"
@@ -464,17 +465,32 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 static void show_raw(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	BPTR odir, dir_lock;
+	BPTR lock;
+	int len;
+	char *buf;
+	char *dirname;
 
-	if ((dir_lock = Lock(data->folder_path, ACCESS_READ)))
+	if (!(lock = Lock(data->folder_path,ACCESS_READ)))
+		return;
+
+	dirname = NameOfLock(lock);
+	UnLock(lock);
+	if (!dirname) return;
+
+	len = strlen(dirname)+strlen(data->mail->filename) + 6;
+	if (!(buf = malloc(len+40)))
 	{
-		char buf[256];
-		odir = CurrentDir(dir_lock);
-		sprintf(buf,"SYS:Utilities/Multiview \"%s\"",data->mail->filename);
-		sm_system(buf,NULL);
-		CurrentDir(odir);
-		UnLock(dir_lock);
+		FreeVec(dirname);
+		return;
 	}
+
+	strcpy(buf,"SYS:Utilities/Multiview \"");
+	strcat(buf,dirname);
+	AddPart(buf+27,data->mail->filename,len);
+	strcat(buf+27,"\"");
+	sm_system(buf,NULL);
+	free(buf);
+	FreeVec(dirname);
 }
 
 /******************************************************************

@@ -57,6 +57,27 @@ int pgp_update_key_list(void)
 	tmpname = tmpnam(NULL);
 	if (sm_system("pgp -kv",tmpname))
 	{
+		FILE *fh = fopen(tmpname,"rb");
+		if (fh)
+		{
+			char buf[512];
+			while (fgets(buf,512,fh))
+			{
+				if (buf[9] == '/' && buf[23] == '/')
+				{
+					struct pgp_key *key = (struct pgp_key*)malloc(sizeof(struct pgp_key));
+					if (key)
+					{
+						key->userids = NULL;
+						key->keyid = strtol(&buf[10],NULL,16);
+						key->userids = array_add_string(key->userids,&buf[29]);
+						list_insert_tail(&pgp_list,&key->node);
+					}
+				}
+			}
+			fclose(fh);
+		}
+		remove(tmpname);
 	}
 	return rc;
 }

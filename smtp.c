@@ -453,7 +453,7 @@ int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 			mystrlcpy(dom,domain,sizeof(dom));
 		} else dom[0] = 0;
 	}
-	else if(tcp_gethostname(dom, sizeof(dom) != 0))
+	else if(tcp_gethostname(dom, sizeof(dom)) != 0)
 	{
 		return 0;
 	}

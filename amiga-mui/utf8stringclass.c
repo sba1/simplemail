@@ -107,7 +107,7 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 		if (newcont)
 		{
-			utf8tostr(new_contents,newcont,len+1,data->codeset);
+			utf8tostr(new_contents,newcont,len+1,data->codeset?data->codeset:user.config.default_codeset);
 		}
 
 		if ((tag = FindTagItem(MUIA_UTF8String_Contents,newtags)))

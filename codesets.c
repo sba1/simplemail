@@ -917,6 +917,27 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("KOI8-R");
+	codeset->characterization = mystrdup(_("Russian"));
+	codeset->read_only = 0;
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0x80) src = i;
+		else src = koi8r_to_ucs4[i-0x80];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-5");
 	codeset->characterization = mystrdup(_("Slavic languages"));
 	codeset->read_only = 0;

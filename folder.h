@@ -110,8 +110,8 @@ struct folder
 #define FOLDER_SPECIAL_GROUP 5
 #define FOLDER_SPECIAL_SPAM 6
 
-#define FOLDER_SIGNATURE_NO      -10  /* the default signature for init */
-#define FOLDER_SIGNATURE_DEFAULT -11  /* the no signature */
+#define FOLDER_SIGNATURE_DEFAULT -10  /* the default signature for init */
+#define FOLDER_SIGNATURE_NO      -11  /* the no signature */
 
 char *default_folder_path(void);
 char *new_folder_path(void);

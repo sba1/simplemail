@@ -521,6 +521,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 							InputListFrame,
 							MUIA_CycleChain, 1,
 							MUIA_TextEditor_Slider, slider,
+							MUIA_TextEditor_FixedFont, TRUE,
 							End,
 						Child, slider,
 						End,

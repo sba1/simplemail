@@ -171,6 +171,9 @@ void folder_add_to_tree(struct folder *fold,struct folder *parent);
 struct mail *folder_next_mail(struct folder *folder, void **handle);
 /* Use this rarly */
 struct mail **folder_get_mail_array(struct folder *folder);
+/* query function, free the result with free() */
+#define FOLDER_QUERY_MAILS_PROP_SPAM 1
+struct mail **folder_query_mails(struct folder *folder, int properties);
 
 int folder_get_primary_sort(struct folder *folder);
 void folder_set_primary_sort(struct folder *folder, int sort_mode);

@@ -2442,7 +2442,7 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
  point to NULL. If needed this function sorts the mails according
  to the sort mode. Handle will be updated every time.
  While iterating through the mails you aren't allowed to (re)move a
- mail withing the folder,
+ mail within the folder,
 *******************************************************************/
 struct mail *folder_next_mail(struct folder *folder, void **handle)
 {
@@ -2492,6 +2492,69 @@ struct mail **folder_get_mail_array(struct folder *folder)
 	return folder->mail_array;
 }
 
+/******************************************************************
+ Helper function which returns 1 if a given mail has the given
+ property. If property is unknown 0 is returned.
+*******************************************************************/
+static int folder_mail_has_property(struct folder *folder, struct mail *mail, int properties)
+{
+	if (!properties) return 1;
+	if (properties & FOLDER_QUERY_MAILS_PROP_SPAM && mail_is_spam(mail))
+		return 1;
+
+	return 0;
+}
+
+/******************************************************************
+ Returns a NULL terminated array of mail with the given properties
+ or NULL. No properties means all mails. The array must be freed
+ with free()
+*******************************************************************/
+struct mail **folder_query_mails(struct folder *folder, int properties)
+{
+	int i,num;
+	void *handle;
+	struct mail *m;
+	struct mail **array;
+
+	if (!properties)
+	{
+		struct mail **src_array = folder_get_mail_array(folder);
+
+		/* ensure that the array is sorted */
+		num = folder->num_mails;
+
+		if ((array = (struct mail**)malloc(sizeof(struct mail*)*(num+1))))
+		{
+			memcpy(array,src_array,sizeof(struct mail*)*num);
+			array[num] = NULL;
+			return array;
+		}
+	}
+
+	num = 0;
+	handle = NULL;
+	while ((m = folder_next_mail(folder,&handle)))
+	{
+		if (folder_mail_has_property(folder,m,properties))
+			num++;
+	}
+
+	if (!(array = (struct mail**)malloc(sizeof(struct mail*)*(num+1))))
+		return NULL;
+
+	i = 0;
+	handle = NULL;
+
+	while ((m = folder_next_mail(folder,&handle)))
+	{
+		if (folder_mail_has_property(folder,m,properties))
+			array[i++] = m;
+	}
+
+	array[num] = NULL;
+	return array;
+}
 
 /******************************************************************
  Returns the primary sort mode

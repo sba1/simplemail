@@ -47,6 +47,12 @@
 #include "iconclass.h"
 #include "muistuff.h"
 
+/**********************************************************************/
+
+STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg);
+
+/**********************************************************************/
+
 struct Icon_Data
 {
 	char *type;
@@ -63,8 +69,10 @@ struct Icon_Data
 	char *drop_path;
 };
 
-STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg);
 
+/***********************************************************
+ OM_NEW
+************************************************************/
 STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct Icon_Data *data;
@@ -80,6 +88,9 @@ STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+/***********************************************************
+ OM_DISPOSE
+************************************************************/
 STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -90,6 +101,9 @@ STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	DoSuperMethodA(cl,obj,msg);
 }
 
+/***********************************************************
+ OM_SET
+************************************************************/
 STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -141,6 +155,9 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	return 1;
 }
 
+/***********************************************************
+ OM_GET
+************************************************************/
 STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -157,53 +174,36 @@ STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-
+/***********************************************************
+ MUIM_Setup
+************************************************************/
 STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
-	char *def = NULL;
 
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
 	if (IconBase->lib_Version >= 44 && data->buffer && FindPort("DEFICONS"))
 	{
+		/* If DefIcons is available, write the supplied buffer into a file
+		 * and open the file's icon via icon.library. DefIcons delivers
+		 * a proper icon in this case */
+
 		BPTR fh;
-		char command[40];
-		sprintf(command,"IDENTIFY T:SM_%x",FindTask(NULL));
-		if ((fh = Open(command + 9, MODE_NEWFILE)))
+		char filename[40];
+
+		sprintf(filename,"T:SM_icon_%p",FindTask(NULL));
+		if ((fh = Open(filename, MODE_NEWFILE)))
 		{
 			Write(fh,data->buffer,data->buffer_len);
 			Close(fh);
 
-/* TODO: Enable this if we support icon caching */
-#if 0
-			if (SendRexxCommand("DEFICONS",command,result,sizeof(result)))
-			{
-				def = result;
-			}
-#endif
-
-			data->obj = GetIconTags(command + 9,
+			data->obj = GetIconTags(filename,
 				ICONGETA_FailIfUnavailable,FALSE,
 				ICONGETA_Screen, _screen(obj),
 				TAG_DONE);
 
-			DeleteFile(command+9);
-		}
-	}
-
-	if (!def)
-	{
-		if (!mystricmp(data->type, "image")) def = "picture";
-		else if (!mystricmp(data->type, "audio")) def = "audio";
-		else
-		{
-			if (!mystricmp(data->type, "text"))
-			{
-				if (!mystricmp(data->subtype, "html")) def = "html";
-				else if (!mystricmp(data->subtype, "plain")) def = "ascii";
-				else def = "text";
-			} else def = "attach";
+			DeleteFile(filename);
 		}
 	}
 
@@ -211,6 +211,21 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 	{
 		if (IconBase->lib_Version >= 44)
 		{
+			char *def;
+
+			/* No icon yet, build a icon default name */
+			if (!mystricmp(data->type, "image")) def = "picture";
+			else if (!mystricmp(data->type, "audio")) def = "audio";
+			else
+			{
+				if (!mystricmp(data->type, "text"))
+				{
+					if (!mystricmp(data->subtype, "html")) def = "html";
+					else if (!mystricmp(data->subtype, "plain")) def = "ascii";
+					else def = "text";
+				} else def = "attach";
+			}
+
 			data->obj = GetIconTags(NULL,
 					ICONGETA_GetDefaultName, def,
 					ICONGETA_Screen, _screen(obj),
@@ -218,6 +233,7 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 
 			if (!data->obj)
 			{
+				/* Still no icon, now use a project icon */
 				data->obj = GetIconTags(NULL,
 					ICONGETA_GetDefaultType, WBPROJECT,
 					ICONGETA_Screen, _screen(obj),
@@ -225,6 +241,7 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 			}
 		} else
 		{
+			/* Old OS, we can only use a project icon */
 			data->obj = GetDefDiskObject(WBPROJECT);
 		}
 	}
@@ -240,6 +257,9 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 	return 1;
 }
 
+/***********************************************************
+ MUIM_Cleanup
+************************************************************/
 STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -253,6 +273,9 @@ STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+/***********************************************************
+ MUIM_AskMinMax
+************************************************************/
 STATIC ULONG Icon_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
 {
 	int w,h;
@@ -291,6 +314,9 @@ STATIC ULONG Icon_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax
   return 0;
 }
 
+/***********************************************************
+ MUIM_Draw
+************************************************************/
 STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -314,6 +340,9 @@ STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 	return 1;
 }
 
+/***********************************************************
+ MUIM_HandleEvent
+************************************************************/
 STATIC ULONG Icon_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
@@ -375,6 +404,10 @@ struct Selection_Msg
 	int finish;
 };
 
+/***********************************************************
+ The selection hook functions. It checks whether the
+ mouse is placed on an icon
+************************************************************/
 STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1,struct IconSelectMsg *ism))
 {
 	struct Selection_Msg *msg = (struct Selection_Msg *)h->h_Data;
@@ -403,7 +436,14 @@ STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *o
 	return ISMACTION_Ignore;
 }
 
-STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_DeleteDragImage *msg)
+/***********************************************************
+ MUIM_DeleteDragImage
+
+ This method is issued, to delete the image data when the
+ dragged object is released (done by Area class in this
+ case). We use it to determine a possible workbench drawer.
+************************************************************/
+STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	if (WorkbenchBase->lib_Version >= 45)
@@ -485,6 +525,8 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_De
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+/**********************************************************************/
+
 STATIC BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -498,10 +540,12 @@ STATIC BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
 		case	MUIM_Cleanup:	return Icon_Cleanup(cl,obj,msg);
 		case	MUIM_Draw:			return Icon_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return Icon_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
-		case  MUIM_DeleteDragImage: return Icon_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage*)msg);
+		case  MUIM_DeleteDragImage: return Icon_DeleteDragImage(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
+
+/**********************************************************************/
 
 struct MUI_CustomClass *CL_Icon;
 

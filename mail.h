@@ -99,16 +99,24 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size);
 
 int mail_strip_lf(char *fn);
 
-/* for mail composing */
 
+/* for mail composing */
 struct composed_mail
 {
-	char *to;
-	char *subject;
-	char *text;
+	struct node node; /* embedded node structure */
+
+	char *to; /* maybe NULL */
+	char *subject; /* maybe NULL */
+
+	char *filename; /* filename, maybe NULL */
+	char *text; /* maybe NULL */
+	char *content_type; /* maybe NULL */
+	struct list list; /* more entries */
 
 	/* more will follow */
 };
+
+void composed_mail_init(struct composed_mail *mail);
 
 void mail_compose_new(struct composed_mail *new_mail);
 

@@ -299,6 +299,45 @@ static void compose_attach_active(struct Compose_Data **pdata)
 }
 
 /******************************************************************
+ Attach the mail given in the treenode to the current mail
+ (recursive)
+*******************************************************************/
+static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NListtree_TreeNode *treenode, struct composed_mail *cmail)
+{
+	struct attachment *attach;
+
+	if (!treenode) treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,
+				MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
+
+	if (!treenode) return;
+	if (!(attach = (struct attachment *)treenode->tn_User)) return;
+
+	if (treenode->tn_Flags & TNF_LIST)
+	{
+		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,
+				MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Head, 0);
+
+		cmail->content_type = mystrdup(attach->mime);
+
+		while (tn)
+		{
+			struct composed_mail *newcmail = (struct composed_mail *)malloc(sizeof(struct composed_mail));
+			if (newcmail)
+			{
+				composed_mail_init(newcmail);
+				compose_window_attach_mail(data,tn,newcmail);
+				list_insert_tail(&cmail->list,&newcmail->node);
+			}
+			tn = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Next,0);
+		}
+	} else
+	{
+		cmail->content_type = mystrdup(attach->mime);
+		cmail->text = mystrdup(attach->contents);
+	}
+}
+
+/******************************************************************
  A mail should be send later
 *******************************************************************/
 static void compose_window_send_later(struct Compose_Data **pdata)
@@ -308,17 +347,21 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 	{
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_String_Contents);
+		struct composed_mail new_mail;
 
-		STRPTR text_buf = (STRPTR)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
-		if (text_buf)
-		{
-			struct composed_mail new_mail;
-			new_mail.to = to;
-			new_mail.subject = subject;
-			new_mail.text = text_buf;
-			mail_compose_new(&new_mail);
-			FreeVec(text_buf);
-		}
+		/* update the current attachment */
+		compose_attach_active(pdata);
+
+		/* Initialize the structure with default values */
+		composed_mail_init(&new_mail);
+
+		/* Attach the mails recursivly */
+		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
+
+		new_mail.to = to;
+		new_mail.subject = subject;
+
+		mail_compose_new(&new_mail);
 
 		/* Close (and dispose) the compose window (data) */
 		DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);	

@@ -29,6 +29,24 @@
 #include "support.h"
 #include "textinterpreter.h"
 
+/* the mime preample used in mime multipart messages */
+const static char mime_preample[] = 
+{
+	"Warning: This is a message in MIME format. Your mail reader does not\n"
+	"support MIME. Some parts of this message will be readable as plain text.\n"
+	"To see the rest, you will need to upgrade your mail reader. Following are\n"
+	"some URLs where you can find MIME-capable mail programs for common platforms:\n"
+	"\n"
+	"  Amiga............: SimpleMail   http://www.simplemail.sourceforge.net/\n"
+	"  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/\n"
+	"  Windows/Macintosh: Eudora       http://www.qualcomm.com/\n"
+	"\n"
+	"General info about MIME can be found at:\n"
+	"\n"
+	"http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html\n"
+};
+
+
 /**************************************************************************
  like strncpy() but for mail headers, returns the length of the string
 **************************************************************************/
@@ -829,6 +847,87 @@ void free_address_list(struct list *list)
 }
 
 /**************************************************************************
+ Initialized a composed mail instance
+**************************************************************************/
+void composed_mail_init(struct composed_mail *mail)
+{
+	memset(mail, 0, sizeof(struct composed_mail));
+	list_init(&mail->list);
+}
+
+/**************************************************************************
+ Writes out the attachments into the body (uses recursion)
+**************************************************************************/
+static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
+{
+	if (new_mail->to)
+	{
+		char *subject;
+		struct list *alist = create_address_list(user_get_email());
+
+		if (alist)
+		{
+			char *from = encode_address_field("From", alist);
+			if (from) fprintf(fp,"%s\n",from);
+			free_address_list(alist);
+		}
+
+		if ((alist = create_address_list(new_mail->to)))
+		{
+			char *to = encode_address_field("To", alist);
+			if (to) fprintf(fp,"%s\n",to);
+			free_address_list(alist);
+		}
+
+		if ((subject = encode_header_field("Subject",new_mail->subject)))
+		{
+			fprintf(fp,"%s", subject);
+			fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
+			fprintf(fp,"MIME-Version: 1.0\n");
+		}
+	}
+
+	if (new_mail->text)
+	{
+		/* mail text */
+		unsigned int body_len;
+		char *body_encoding;
+		char *body = encode_body(new_mail->text, strlen(new_mail->text), &body_len, &body_encoding);
+
+		fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+		fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+		fprintf(fp,"\n");
+		fprintf(fp,"%s\n",body);
+	} else
+	{
+		struct composed_mail *cmail = (struct composed_mail *)list_first(&new_mail->list);
+		if (cmail)
+		{
+			/* mail is a multipart message */
+			char *boundary = (char*)malloc(128);
+			if (boundary)
+			{
+				sprintf(boundary, "--==bound%lx----",boundary);
+				fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
+				fprintf(fp, "\n");
+				fprintf(fp, mime_preample);
+
+				while (cmail)
+				{
+					fprintf(fp, "--%s\n",boundary);
+					mail_compose_write(fp,cmail);
+					cmail = (struct composed_mail*)node_next(&cmail->node);
+				}
+
+				fprintf(fp, "--%s\n",boundary);
+
+				free(boundary);
+			}
+		}
+	}
+}
+
+/**************************************************************************
  Composes a new mail and write's it to the outgoing drawer
 **************************************************************************/
 void mail_compose_new(struct composed_mail *new_mail)
@@ -848,40 +947,7 @@ void mail_compose_new(struct composed_mail *new_mail)
 
 		if ((fp = fopen(new_name,"wb")))
 		{
-			char *subject = encode_header_field("Subject",new_mail->subject);
-
-			if (subject)
-			{
-				struct list *alist = create_address_list(user_get_email());
-				unsigned int body_len;
-				char *body_encoding;
-				char *body = encode_body(new_mail->text, strlen(new_mail->text), &body_len, &body_encoding);
-
-				if (alist)
-				{
-					char *from = encode_address_field("From", alist);
-					if (from) fprintf(fp,"%s\n",from);
-					free_address_list(alist);
-				}
-
-				if ((alist = create_address_list(new_mail->to)))
-				{
-					char *to = encode_address_field("To", alist);
-					if (to) fprintf(fp,"%s\n",to);
-					free_address_list(alist);
-				}
-
-				fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
-				fprintf(fp,"%s", subject);
-				fprintf(fp,"MIME-Version: 1.0\n");
-				fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
-				fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
-				fprintf(fp,"\n");
-				fprintf(fp,"%s",body);
-
-				if (body) free(body);
-				free(subject);
-			}
+			mail_compose_write(fp, new_mail);
 			fclose(fp);
 		}
 

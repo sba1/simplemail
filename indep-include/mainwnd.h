@@ -38,6 +38,7 @@ void main_clear_folder_mails(void);
 void main_set_folder_mails(struct folder *folder);
 struct folder *main_get_folder(void);
 char *main_get_folder_drawer(void);
+void main_set_active_mail(struct mail *m);
 struct mail *main_get_active_mail(void);
 char *main_get_mail_filename(void);
 

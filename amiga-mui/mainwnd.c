@@ -730,7 +730,6 @@ static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, 
 void main_clear_folder_mails(void)
 {
 	DoMethod(mail_tree, MUIM_NListtree_Clear, NULL, 0);
-/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
 }
 
 /******************************************************************
@@ -746,7 +745,6 @@ void main_set_folder_mails(struct folder *folder)
 	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
 	main_clear_folder_mails();
-/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
 
 	set(mail_tree, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 
@@ -864,6 +862,15 @@ char *main_get_folder_drawer(void)
 	struct folder *folder = main_get_folder();
 	if (folder) return folder->path;
 	return NULL;
+}
+
+/******************************************************************
+ Sets the active mail
+*******************************************************************/
+void main_set_active_mail(struct mail *m)
+{
+  struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(mail_tree,m);
+  set(mail_tree,MUIA_NListtree_Active,tn);
 }
 
 /******************************************************************

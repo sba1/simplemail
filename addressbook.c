@@ -819,7 +819,14 @@ char *addressbook_complete_address(char *address)
 
 	if (!entry) entry = addressbook_find_entry(NULL, address, 0, &hits, ADDRESSBOOK_FIND_ENTRY_EMAIL);
 	if (entry && hits == 1)
-		return entry->person.emails[0] + al; /* alias should be removed out of the union */
+	{
+		int i;
+		for (i=0; i<entry->person.num_emails;i++)
+		{
+			if (!mystrnicmp(address,entry->person.emails[i],al))
+				return entry->person.emails[i] + al; /* alias should be removed out of the union */
+		}
+	}
 
 	return NULL;
 }

@@ -1700,7 +1700,7 @@ void mail_decode(struct mail *mail)
 	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
 		unsigned int decoded_len = (unsigned int)-1;
-		if ((mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0)))
+		if ((mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&decoded_len,0)))
 			mail->decoded_len = decoded_len;
 	}
 }

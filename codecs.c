@@ -242,7 +242,11 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
                   *dest++ = c;
                   break;
             }
-					  if ((dest-deststart)>= limit) break;
+            if ((dest-deststart)>= limit)
+            {
+            	text = NULL;
+            	break;
+            }
          } while (c);
       }
       /* Add string terminator */

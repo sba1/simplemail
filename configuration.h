@@ -54,6 +54,9 @@ struct config
 	int receive_size; /* the size in kb */
 	int receive_autocheck; /* 0 no auto check */
 
+	int receive_sound;
+	char *receive_sound_file;
+
 	/* list of all accounts */
 	struct list account_list;
 

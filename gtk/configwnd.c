@@ -515,14 +515,23 @@ static void account_cell_data_func(GtkTreeViewColumn *tree_column, GtkCellRender
 			break;
 
 	}
+	if (!text) text = "-";
 	g_object_set(cell,"text",text, NULL);
 }
 
-static void add_account(struct account *account)
+static void add_account(struct account *account, int make_active)
 {
 	GtkTreeIter iter;
+	GtkTreePath *path;
+
 	gtk_list_store_append(config_account_liststore,&iter);
 	gtk_list_store_set(config_account_liststore,&iter, ACCOUNT_POINTER, account, -1);
+	
+	if (make_active)
+	{
+		path = gtk_tree_model_get_path(GTK_TREE_MODEL(config_account_liststore),&iter);
+		gtk_tree_view_set_cursor(config_account_tree,path,NULL,0);
+	}
 }
 
 static void store_account(struct account *account)
@@ -556,26 +565,26 @@ static void get_account(struct account *account)
 {
 	if (!account) return;
 
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_name_text),SAFESTR(account->name));
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_email_text),SAFESTR(account->email));
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_reply_text),SAFESTR(account->reply));
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_server_text),SAFESTR(account->pop->name));
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_login_text),SAFESTR(account->pop->login));
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_ask_checkbox),account->pop->ask);
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_password_text),SAFESTR(account->pop->passwd));
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_remove_checkbox),account->pop->del);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_secure_checkbox),account->pop->ssl);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_stls_checkbox),account->pop->stls);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_avoid_checkbox),account->pop->nodupl);
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_name_text),SAFESTR(account->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_email_text),SAFESTR(account->email));
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_reply_text),SAFESTR(account->reply));
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_server_text),SAFESTR(account->pop->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_login_text),SAFESTR(account->pop->login));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_ask_checkbox),account->pop->ask);
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_password_text),SAFESTR(account->pop->passwd));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_remove_checkbox),account->pop->del);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_secure_checkbox),account->pop->ssl);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_stls_checkbox),account->pop->stls);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_avoid_checkbox),account->pop->nodupl);
 	gtk_spin_button_set_value(GTK_WIDGET(config_account_receive_port_spin),account->pop->port);
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_server_text),SAFESTR(account->smtp->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_server_text),SAFESTR(account->smtp->name));
 	gtk_spin_button_set_value(GTK_WIDGET(config_account_send_port_spin),account->smtp->port);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_ip_checkbox),account->smtp->ip_as_domain);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_login_checkbox),account->smtp->pop3_first);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_secure_checkbox),account->smtp->secure);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_auth_checkbox),account->smtp->auth);
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_login_text),SAFESTR(account->smtp->auth_login));
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_password_text),SAFESTR(account->smtp->auth_password));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_ip_checkbox),account->smtp->ip_as_domain);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_login_checkbox),account->smtp->pop3_first);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_secure_checkbox),account->smtp->secure);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_auth_checkbox),account->smtp->auth);
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_login_text),SAFESTR(account->smtp->auth_login));
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_password_text),SAFESTR(account->smtp->auth_password));
 }
 
 static void on_config_account_tree_cursor_changed(void)
@@ -604,7 +613,12 @@ static void on_config_account_tree_cursor_changed(void)
 static void on_config_account_add_button_clicked(GtkButton *button, gpointer user_data)
 {
 	struct account *ac = account_malloc();
-	add_account(ac);
+	if (account_selected)
+	{
+		store_account(account_selected);
+		ac->name = mystrdup(account_selected->name);
+	}
+	add_account(ac,1);
 }
 
 static void on_config_account_remove_button_clicked(GtkButton *button, gpointer user_data)
@@ -982,54 +996,24 @@ static void on_config_cancel_button_clicked(GtkButton *button, gpointer user_dat
 static void on_config_apply_button_clicked(GtkButton *button, gpointer user_data)
 {
 	struct account *account;
+	GtkTreeModel *model;
+	GtkTreeIter iter;
 
 	/* Copy the accounts */
 	clear_config_accounts();
+	if (account_selected)
+		store_account(account_selected);
 
-/*account = (struct account *)list_first(&account_list);
-	while (account)
+	model = gtk_tree_view_get_model(config_account_tree);
+	if (gtk_tree_model_get_iter_first(model,&iter))
 	{
-		insert_config_account(account);
-		account = (struct account *)node_next(&account->node);
+		do
+		{
+			struct account *ac;
+			gtk_tree_model_get(model,&iter,ACCOUNT_POINTER,&ac,-1);
+			insert_config_account(ac);
+		}	while ((gtk_tree_model_iter_next(model,&iter)));
 	}
-*/
-
-	account = account_malloc();
-
-	account->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_name_text)));
-	account->email = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_email_text)));
-	account->reply = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_reply_text)));
-	account->pop->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_server_text)));
-	account->pop->login = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_login_text)));
-	account->pop->ask = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_ask_checkbox));
-	account->pop->passwd = account->pop->ask?NULL:mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_password_text)));
-
-
-/*	{
-		gboolean val;
-		g_object_get(G_OBJECT(config_account_receive_active_checkbox),"active",&val,NULL);
-		printf("%d\n",val);
-	}*/
-
-	account->pop->active = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_active_checkbox));
-	account->pop->del = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_remove_checkbox));
-	account->pop->ssl = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_secure_checkbox));
-	account->pop->stls = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_stls_checkbox));
-	account->pop->nodupl = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_avoid_checkbox));
-	account->pop->port = gtk_spin_button_get_value_as_int(GTK_WIDGET(config_account_receive_port_spin));
-
-	account->smtp->port = gtk_spin_button_get_value_as_int(GTK_WIDGET(config_account_send_port_spin));
-	account->smtp->ip_as_domain = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_ip_checkbox));
-	account->smtp->pop3_first = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_login_checkbox));
-	account->smtp->secure = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_secure_checkbox));
-	account->smtp->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_server_text)));
-	account->smtp->auth = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_auth_checkbox));
-	account->smtp->auth_login = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_login_text)));
-	account->smtp->auth_password = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_password_text)));
-
-	insert_config_account(account);
-
-	account_free(account);
 
 	on_config_cancel_button_clicked(NULL,user_data);
 }
@@ -1043,27 +1027,27 @@ static void on_config_save_button_clicked(GtkButton *button, gpointer user_data)
 
 static void set_account_group(struct account *account)
 {
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_name_text),SAFESTR(account->name));
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_email_text),SAFESTR(account->email));
-	gtk_entry_set_text(GTK_WIDGET(config_account_user_reply_text),SAFESTR(account->reply));
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_server_text),SAFESTR(account->pop->name));
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_login_text),SAFESTR(account->pop->login));
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_ask_checkbox),account->pop->ask);
-	gtk_entry_set_text(GTK_WIDGET(config_account_receive_password_text),SAFESTR(account->pop->passwd));
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_remove_checkbox),account->pop->del);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_secure_checkbox),account->pop->ssl);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_stls_checkbox),account->pop->stls);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_avoid_checkbox),account->pop->nodupl);
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_name_text),SAFESTR(account->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_email_text),SAFESTR(account->email));
+	gtk_entry_set_text(GTK_ENTRY(config_account_user_reply_text),SAFESTR(account->reply));
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_server_text),SAFESTR(account->pop->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_login_text),SAFESTR(account->pop->login));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_ask_checkbox),account->pop->ask);
+	gtk_entry_set_text(GTK_ENTRY(config_account_receive_password_text),SAFESTR(account->pop->passwd));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_remove_checkbox),account->pop->del);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_secure_checkbox),account->pop->ssl);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_stls_checkbox),account->pop->stls);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_receive_avoid_checkbox),account->pop->nodupl);
 	gtk_spin_button_set_value(GTK_WIDGET(config_account_receive_port_spin),account->pop->port);
 
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_server_text),SAFESTR(account->smtp->name));
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_server_text),SAFESTR(account->smtp->name));
 	gtk_spin_button_set_value(GTK_WIDGET(config_account_send_port_spin),account->smtp->port);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_ip_checkbox),account->smtp->ip_as_domain);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_login_checkbox),account->smtp->pop3_first);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_secure_checkbox),account->smtp->secure);
-	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_auth_checkbox),account->smtp->auth);
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_login_text),SAFESTR(account->smtp->auth_login));
-	gtk_entry_set_text(GTK_WIDGET(config_account_send_password_text),SAFESTR(account->smtp->auth_password));
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_ip_checkbox),account->smtp->ip_as_domain);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_login_checkbox),account->smtp->pop3_first);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_secure_checkbox),account->smtp->secure);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(config_account_send_auth_checkbox),account->smtp->auth);
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_login_text),SAFESTR(account->smtp->auth_login));
+	gtk_entry_set_text(GTK_ENTRY(config_account_send_password_text),SAFESTR(account->smtp->auth_password));
 }
 
 /******************************************************************
@@ -1155,17 +1139,19 @@ static void init_config(void)
 	init_account_group();
 	{
 		struct account *account;
+		int first = 1;
+
 		account = (struct account*)list_first(&user.config.account_list);
 
 		while (account)
 		{
-//			struct account *new_account = account_duplicate(account);
-//			if (new_account)
-//			{
-//				list_insert_tail(&account_list,&new_account->node);
-//				DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
-//			}
-			set_account_group(account);
+			struct account *new_account = account_duplicate(account);
+			if (new_account)
+			{
+				add_account(new_account,first);
+				first = 0;
+			}
+//			set_account_group(account);
 			account = (struct account*)node_next(&account->node);
 		}
 	}

@@ -2100,6 +2100,39 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 }
 
 /**************************************************************************
+ 
+**************************************************************************/
+utf8 *punycodetoutf8(const char *source, int sourcelen)
+{
+	enum punycode_status status;
+	punycode_uint *utf32;
+	punycode_uint length;
+
+	length = sourcelen;
+
+	if (!(utf32 = (punycode_uint*)malloc(sizeof(punycode_uint)*sourcelen)))
+		return NULL;
+		
+	status = punycode_decode(sourcelen, source, &length, utf32, NULL);
+	if (status == punycode_success)
+	{
+		utf8 *dest = (utf8*)malloc(sourcelen * 4);
+		if (dest)
+		{
+			UTF8 *dest_start = (UTF8*)dest;
+			UTF32 *source_start = (UTF32*)utf32;
+
+			ConvertUTF32toUTF8((UTF32**)&source_start, (UTF32*)(utf32) + length, &dest_start, dest_start + sourcelen * 4 - 2, 0);
+			*dest_start = 0;
+			free(utf32);
+			return dest;
+		}
+	}
+	free(utf32);
+	return NULL;
+}
+
+/**************************************************************************
  Is string ASCII 7 bit only?
 **************************************************************************/
 int isascii7(const char *str)

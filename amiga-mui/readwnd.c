@@ -41,6 +41,7 @@
 #include "compiler.h"
 #include "datatypesclass.h"
 #include "muistuff.h"
+#include "readlistclass.h"
 #include "readwnd.h"
 
 static struct Hook header_display_hook;
@@ -363,12 +364,7 @@ void read_window_open(char *folder, char *filename)
 				Child, VGroup,
 					Child, NListviewObject,
 						MUIA_CycleChain, 1,
-						MUIA_NListview_NList, text_list = NListObject,
-							MUIA_Font, MUIV_Font_Fixed,
-							MUIA_NList_TypeSelect, MUIV_NList_TypeSelect_Char,
-							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
-							MUIA_NList_KeepActive, TRUE,
+						MUIA_NListview_NList, text_list = ReadListObject,
 							End,
 						End,
 					End,

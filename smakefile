@@ -52,7 +52,7 @@ start: date.h $(GSTFILE) smakefile.compile
     if not exists $(DESTDIR)/Images
       makedir $(DESTDIR)/Images
     endif
-    if not exists $(DESTDIR)ARexx
+    if not exists $(DESTDIR)/ARexx
       makedir $(DESTDIR)/ARexx
     endif
 

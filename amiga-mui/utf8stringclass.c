@@ -69,8 +69,8 @@ STATIC ULONG UTF8String_New(struct IClass *cl,Object *obj,struct opSet *msg)
 STATIC ULONG UTF8String_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
-	if (data->utf8_string) FreeVec(data->utf8_string);
-	return NULL;
+	free(data->utf8_string);
+	return 0;
 }
 
 STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
@@ -83,7 +83,7 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while (tag = NextTagItem (&tstate))
+	while ((tag = NextTagItem (&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{
@@ -118,7 +118,11 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 		if (msg->MethodID != OM_NEW)
 			rc = DoSuperMethod(cl,obj,msg->MethodID,newtags,NULL);
-		else set(obj,MUIA_String_Contents,newcont);
+		else 
+		{
+			set(obj,MUIA_String_Contents,newcont);
+			rc = 0;
+		}
 
 		free(newcont);
 		FreeTagItems(newtags);
@@ -177,8 +181,9 @@ STATIC BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return UTF8String_New(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE: return UTF8String_Dispose(cl, obj, msg);
 		case	OM_SET: return UTF8String_Set(cl,obj,(struct opSet*)msg);
-		case  OM_GET: return UTF8String_Get(cl,obj,(struct opGet*)msg);
+		case 	OM_GET: return UTF8String_Get(cl,obj,(struct opGet*)msg);
 		case	MUIM_UTF8String_Insert: return UTF8String_Insert(cl,obj,(struct MUIP_BetterString_Insert*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

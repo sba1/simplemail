@@ -30,6 +30,8 @@ struct Library *ExpatBase;
 
 int main(int argc, char *argv[]);
 
+static int start(struct WBStartup *wbs);
+
 static int open_libs(void);
 static void close_libs(void);
 static int init_mem(void);
@@ -40,29 +42,89 @@ static void deinit_io(void);
 __saveds static int __startup(void)
 {
 	struct Process *pr;
-	int rc = 20;
+	int rc;
 
 	SysBase = *((struct ExecBase**)4);
 	pr = (struct Process*)FindTask(NULL);
 
-	if (open_libs())
+	if (!pr->pr_CLI)
 	{
-		if (init_mem())
+		struct WBStartup *wbs;
+
+		WaitPort(&pr->pr_MsgPort);
+		wbs = (struct WBStartup*)GetMsg(&pr->pr_MsgPort);
+
+		rc = start(wbs);
+
+		Forbid();
+		ReplyMsg((struct Message *)wbs);
+	}	else rc = start(NULL);
+	return rc;
+}
+
+static int rc;
+
+/* not static so the optimized doesn't inline it */
+int __swap_and_start(struct StackSwapStruct *stk)
+{
+	StackSwap(stk);
+	rc = main(0,NULL);
+	StackSwap(stk);
+	return rc;
+}
+
+static int start(struct WBStartup *wbs)
+{
+	int rc = 20;
+	struct Process *pr = (struct Process*)FindTask(NULL);
+
+	if ((DOSBase = (struct DosLibrary*)OpenLibrary("dos.library",37)))
+	{
+		BPTR out;
+		BPTR oldout;
+
+		if (wbs)
 		{
-			BPTR dirlock = DupLock(pr->pr_CurrentDir);
-			if (dirlock)
-			{
-				BPTR odir = CurrentDir(dirlock);
-				if (init_io())
-				{
-					rc = main(0,NULL);
-					deinit_io();
-				}
-				deinit_mem();
-				UnLock(CurrentDir(odir));
-			}
+			if ((out = Open("CON:10/10/320/80/SimpleMail/AUTO/CLOSE/WAIT",MODE_OLDFILE)))
+				oldout = SelectOutput(out);
 		}
-		close_libs();
+
+		if (open_libs())
+		{
+			if (init_mem())
+			{
+				BPTR dirlock = DupLock(pr->pr_CurrentDir);
+				if (!dirlock) dirlock = Lock("PROGDIR:",ACCESS_READ);
+				if (dirlock)
+				{
+					BPTR odir = CurrentDir(dirlock);
+					if (init_io())
+					{
+						struct StackSwapStruct stk;
+
+						if ((stk.stk_Lower = (APTR)AllocVec(30000,MEMF_PUBLIC)))
+						{
+					    stk.stk_Upper = (ULONG)stk.stk_Lower + 30000;
+					    stk.stk_Pointer = (APTR)stk.stk_Upper;
+					    rc = __swap_and_start(&stk);
+					    FreeVec(stk.stk_Lower);
+					   }
+						deinit_io();
+					}
+					deinit_mem();
+					UnLock(CurrentDir(odir));
+				}
+			}
+			close_libs();
+		}
+
+		if (wbs && out)
+		{
+			SelectOutput(oldout);
+			Close(out);
+		}
+
+		CloseLibrary((struct Library*)DOSBase);
 	}
 
 	return rc;
@@ -70,47 +132,47 @@ __saveds static int __startup(void)
 
 static int open_libs(void)
 {
-	if ((DOSBase = (struct DosLibrary*)OpenLibrary("dos.library",37)))
+	if ((IntuitionBase = OpenLibrary("intuition.library",37)))
 	{
-		if ((IntuitionBase = OpenLibrary("intuition.library",37)))
+		if ((UtilityBase = OpenLibrary("utility.library",37)))
 		{
-			if ((UtilityBase = OpenLibrary("utility.library",37)))
+			if ((LocaleBase = OpenLibrary("locale.library",37)))
 			{
-				if ((LocaleBase = OpenLibrary("locale.library",37)))
+				if ((DataTypesBase = OpenLibrary("datatypes.library",39)))
 				{
-					if ((DataTypesBase = OpenLibrary("datatypes.library",39)))
+					if ((KeymapBase = OpenLibrary("keymap.library",36)))
 					{
-						if ((KeymapBase = OpenLibrary("keymap.library",36)))
+						if ((IFFParseBase = OpenLibrary("iffparse.library",37)))
 						{
-							if ((IFFParseBase = OpenLibrary("iffparse.library",37)))
+							if ((IconBase = OpenLibrary("icon.library",37)))
 							{
-								if ((IconBase = OpenLibrary("icon.library",37)))
+								if ((DiskfontBase = OpenLibrary("diskfont.library",37)))
 								{
-									if ((DiskfontBase = OpenLibrary("diskfont.library",37)))
+									if ((WorkbenchBase = OpenLibrary("workbench.library",37)))
 									{
-										if ((WorkbenchBase = OpenLibrary("workbench.library",37)))
+										if ((AslBase = OpenLibrary("asl.library",38)))
 										{
-											if ((AslBase = OpenLibrary("asl.library",38)))
+											if ((GfxBase = OpenLibrary("graphics.library",37)))
 											{
-												if ((GfxBase = OpenLibrary("graphics.library",37)))
+												if ((LayersBase = OpenLibrary("layers.library",37)))
 												{
-													if ((LayersBase = OpenLibrary("layers.library",37)))
+													if (!(ExpatBase = OpenLibrary("expat.library",0)))
+														ExpatBase = OpenLibrary("PROGDIR:libs/expat.library",0);
+
+													if (ExpatBase)
 													{
-														if ((ExpatBase = OpenLibrary("expat.library",0)))
-														{
-															return 1;
-														}
-													}
+														return 1;
+													} else PutStr("Couldn't open expat.library. Please download it from aminet or somewhere else.\n");
 												}
 											}
-										}
-									}
-								}
-							}
-						}
+										} else PutStr("Couldn't open asl.library\n");
+									} else PutStr("Couldn't open workbench.library\n");
+								} else PutStr("Couldn't open diskfont.library\n");
+							} else PutStr("Couldn't open icon.library\n");
+						} else PutStr("Couldn't open iffparse.library\n");
 					}
-				}
-			}
+				} else PutStr("Couldn't open datatypes.library\n");
+			} else PutStr("Couldn't open locale.library\n");
 		}
 	}
 	close_libs();
@@ -132,7 +194,6 @@ static void close_libs(void)
 	if (LocaleBase) CloseLibrary(LocaleBase);
 	if (UtilityBase) CloseLibrary(UtilityBase);
 	if (IntuitionBase) CloseLibrary(IntuitionBase);
-	if (DOSBase) CloseLibrary((struct Library*)DOSBase);
 }
 
 /*****************************************

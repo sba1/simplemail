@@ -355,7 +355,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 {
 	Object *obj = (Object*)msg[0];
 	struct IClass *cl = (struct IClass*)msg[1];
-	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+/*	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);*/
 	struct mail *m;
 
 	struct TagItem tags[2];
@@ -468,7 +468,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 			return (ULONG)data->bubblehelp_buf;
 		}
 	}	
-	return NULL;
+	return 0L;
 }
 
 STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
@@ -635,7 +635,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while (tag = NextTagItem (&tstate))
+	while ((tag = NextTagItem (&tstate)))
 	{
 /*		ULONG tidata = tag->ti_Data;*/
 
@@ -988,7 +988,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	if (!folder)
 	{
 		DoMethod(obj, MUIM_MailTreelist_Clear);
-		return NULL;
+		return 0L;
 	}
 
 	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
@@ -1091,6 +1091,13 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 				break;
 			}
 		}
+
+		/* no mail has been selected */
+		if (i==folder->num_mails)
+		{
+			/* issue notify */
+			SetSuperAttrs(cl, obj, MUIA_MailTreelist_Active, NULL, TAG_DONE);
+		}
 	}
 
 /*
@@ -1102,7 +1109,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 #endif
 
 	DoMethod(obj, MUIM_MailTreelist_Thaw);
-	return NULL;
+	return 0L;
 }
 
 STATIC ULONG MailTreelist_Freeze(struct IClass *cl, Object *obj, Msg msg)
@@ -1209,7 +1216,7 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 	if (pos == MUIV_NList_NextSelected_End)
 	{
 		*((LONG*)handle) = 0;
-		return NULL;
+		return 0L;
 	}
 	*((LONG*)handle) = pos;
 	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);
@@ -1238,7 +1245,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 	if (pos == MUIV_NList_NextSelected_End)
 	{
 		*((LONG*)handle) = 0;
-		return NULL;
+		return 0L;
 	}
 	*((LONG*)handle) = pos;
 	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);

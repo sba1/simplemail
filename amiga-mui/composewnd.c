@@ -1378,7 +1378,7 @@ int compose_window_open(struct compose_args *args)
 					utf8 *cc_str = get_addresses_from_list_safe(args->to_change->info->cc_list,user.config.default_codeset);
 					if (cc_str)
 					{
-						set(to_string,MUIA_UTF8String_Contents,cc_str);
+						set(cc_string,MUIA_UTF8String_Contents,cc_str);
 						free(cc_str);
 					}
 				}

@@ -229,7 +229,7 @@ STATIC ULONG AccountPop_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	{
 		case	MUIA_AccountPop_Account:
 					*msg->opg_Storage = (ULONG)data->selected_account;
-					break;
+					return 1;
 
 		default:
 					return DoSuperMethodA(cl,obj,(Msg)msg);

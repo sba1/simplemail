@@ -1164,3 +1164,12 @@ void main_select_mail(int mail)
 {
 	set(mail_tree,MUIA_NList_Active, mail);
 }
+
+
+/******************************************************************
+ A amiga private function!!! Returns the screen of the main window
+*******************************************************************/
+struct Screen *main_get_screen(void)
+{
+	return (struct Screen*)xget(win_main,MUIA_Window_Screen);
+}

@@ -32,6 +32,7 @@
 #include <proto/dos.h>
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
+#include <proto/intuition.h> /* ScreenToXXX() */
 
 #include "addressbook.h"
 #include "folder.h"
@@ -52,6 +53,9 @@ static struct MsgPort *arexx_port;
 /* from gui_main.c */
 void app_hide(void);
 void app_show(void);
+
+/* from mainwnd.c */
+struct Screen *main_get_screen(void);
 
 char *stradd(char *src, const char *str1);
 
@@ -892,6 +896,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);
+		else if (!Stricmp("SCREENTOBACK",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToBack(scr);}
+		else if (!Stricmp("SCREENTOFRONT",command.command))  {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
 
 		FreeTemplate(command_handle);
 	}

@@ -57,12 +57,14 @@ struct mail
 	char *from_addr;	/* the email address */
 	char *to_phrase;	/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
 	char *to_addr;		/* the email address, only a single one */
-	char *reply;
+	char *pop3_server; /* the name of the pop3 server where the mail has been downloaded */
+	char *reply_addr; /* the address where the mail should be replied */
 	char *subject;
 	char *message_id;
 	char *message_reply_id;
 	unsigned int size; /* the e-mails size in bytes */
 	unsigned int seconds; /* seconds since 1.1.1978 */
+	unsigned int received; /* seconds since 1.1.1978 */
 
 	struct list header_list; /* the mail's headers */
 	char *html_header; /* the header in html format, created by mail_create_html_header */

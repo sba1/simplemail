@@ -80,6 +80,8 @@ struct MailTreelist_Data
 	Object *show_date_item;
 	Object *show_size_item;
 	Object *show_filename_item;
+	Object *show_pop3_item;
+	Object *show_recv_item;
 
 	/* translated strings (faster to hold the translation) */
 	char *status_text;
@@ -90,6 +92,8 @@ struct MailTreelist_Data
 	char *date_text;
 	char *size_text;
 	char *filename_text;
+	char *pop3_text;
+	char *received_text;
 
 	/* the converted strings */
 	char fromto_buf[256];
@@ -110,18 +114,19 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		{
 			/* only one string should be displayed */
 			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array = NULL; /* status */
+			*msg->Array++ = NULL;
+			*msg->Array++ = NULL;
+			*msg->Array++ = NULL;
+			*msg->Array++ = NULL;
+			*msg->Array++ = NULL;
+			*msg->Array = NULL;
 		} else
 		{
 			/* is a mail */
 			APTR status;
 			static char size_buf[32];
 			static char date_buf[64];
+			static char recv_buf[64];
 			static char status_buf[128];
 
 			if (mail->flags & MAIL_FLAGS_NEW)
@@ -163,6 +168,9 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			sprintf(size_buf,"%ld",mail->size);
 			SecondsToString(date_buf,mail->seconds);
 
+			if (xget(data->show_recv_item,MUIA_Menuitem_Checked))
+				SecondsToString(recv_buf,mail->received);
+
 			{
 				char *field;
 				char *dest = data->fromto_buf;
@@ -191,10 +199,12 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			*msg->Array++ = status_buf; /* status */
 			*msg->Array++ = data->fromto_buf;
 			*msg->Array++ = data->subject_buf;
-			*msg->Array++ = mail->reply;
+			*msg->Array++ = mail->reply_addr;
 			*msg->Array++ = date_buf;
 			*msg->Array++ = size_buf;
-			*msg->Array = mail->filename;
+			*msg->Array++ = mail->filename;
+			*msg->Array++ = mail->pop3_server;
+			*msg->Array = recv_buf;
 		}
 	} else
 	{
@@ -208,7 +218,9 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		*msg->Array++ = data->reply_text;
 		*msg->Array++ = data->date_text;
 		*msg->Array++ = data->size_text;
-		*msg->Array = data->filename_text;
+		*msg->Array++ = data->filename_text;
+		*msg->Array++ = data->pop3_text;
+		*msg->Array = data->received_text;
 	}
 }
 
@@ -263,7 +275,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
 			}
 
-			if (m->reply)
+			if (m->reply_addr)
 			{
 				*buf++ = '\n';
 				buf = mystpcpy(buf,data->to_text);
@@ -302,6 +314,8 @@ STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=4");
 	if (xget(data->show_size_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=5");
 	if (xget(data->show_filename_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=6");
+	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=7");
+	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=8");
 
 	set(obj, MUIA_NListtree_Format, buf);
 }
@@ -327,6 +341,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->date_text = _("Date");
 	data->size_text = _("Size");
 	data->filename_text = _("Filename");
+	data->pop3_text = _("POP3 Server");
+	data->received_text = _("Received");
 
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
@@ -343,6 +359,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			Child, data->show_date_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','D','T'),MUIA_Menuitem_Title, _("Show Date?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_size_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','Z'),MUIA_Menuitem_Title, _("Show Size?"), MUIA_UserData, 5, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_filename_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"), MUIA_UserData, 6,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_pop3_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'),MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_recv_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"), MUIA_UserData, 8,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,
@@ -457,6 +475,8 @@ STATIC ULONG MailTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Exp
 	DoMethodA(data->show_date_item, (Msg)msg);
 	DoMethodA(data->show_size_item, (Msg)msg);
 	DoMethodA(data->show_filename_item, (Msg)msg);
+	DoMethodA(data->show_pop3_item, (Msg)msg);
+	DoMethodA(data->show_recv_item, (Msg)msg);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -470,6 +490,8 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 	DoMethodA(data->show_date_item, (Msg)msg);
 	DoMethodA(data->show_size_item, (Msg)msg);
 	DoMethodA(data->show_filename_item, (Msg)msg);	
+	DoMethodA(data->show_pop3_item, (Msg)msg);
+	DoMethodA(data->show_recv_item, (Msg)msg);
 
 	MailTreelist_UpdateFormat(cl,obj);
 
@@ -477,12 +499,12 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 }
 
 
-#define MENU_SETSTATUS_MARK   7
-#define MENU_SETSTATUS_UNMARK 8
-#define MENU_SETSTATUS_READ   9
-#define MENU_SETSTATUS_UNREAD 10
-#define MENU_SETSTATUS_HOLD	11
-#define MENU_SETSTATUS_WAITSEND  12
+#define MENU_SETSTATUS_MARK   9
+#define MENU_SETSTATUS_UNMARK 10
+#define MENU_SETSTATUS_READ   11
+#define MENU_SETSTATUS_UNREAD 12
+#define MENU_SETSTATUS_HOLD	13
+#define MENU_SETSTATUS_WAITSEND  14
 
 STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
@@ -524,6 +546,8 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case  4:
 		case  5:
 		case  6:
+		case	7:
+		case	8:
 				  MailTreelist_UpdateFormat(cl,obj);
 				  break;
 		case	MENU_SETSTATUS_MARK: callback_mails_mark(1); break;

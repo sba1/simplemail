@@ -72,7 +72,9 @@ struct folder
 #define FOLDER_SORT_SIZE			5
 #define FOLDER_SORT_FILENAME	6
 #define FOLDER_SORT_THREAD		7  /* sort by thread, secondary is ignored */
-#define FOLDER_SORT_MODEMASK	(0x7)
+#define FOLDER_SORT_POP3			8
+#define FOLDER_SORT_RECV			9
+#define FOLDER_SORT_MODEMASK	(0xf)
 #define FOLDER_SORT_REVERSE	(0x80) /* reverse sort mode */
 
 #define FOLDER_TYPE_RECV			0 /* received emails */

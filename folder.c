@@ -39,7 +39,7 @@
 #include "support.h"
 #include "support_indep.h"
 
-#define FOLDER_INDEX_VERSION 4
+#define FOLDER_INDEX_VERSION 5
 
 static void folder_remove_mail(struct folder *folder, struct mail *mail);
 
@@ -395,7 +395,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 	/* sort the mails for threads */
 	if (mail->message_id)
 	{
-		for (i=0;i<folder->num_mails;i++)
+		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
 			struct mail *fm = folder->mail_array[i];
 			if (!(mystricmp(mail->message_id,fm->message_reply_id)))
@@ -420,7 +420,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 	}
 	if (mail->message_reply_id)
 	{
-		for (i=0;i<folder->num_mails;i++)
+		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
 			struct mail *fm = folder->mail_array[i];
 			if (!(mystricmp(mail->message_reply_id,fm->message_id)))
@@ -772,36 +772,21 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						struct mail *m = mail_create();
 						if (m)
 						{
-							char *buf;
-
 							m->subject = fread_str(fh);
 							m->filename = fread_str(fh);
 							m->from_phrase = fread_str_no_null(fh);
 							m->from_addr = fread_str_no_null(fh);
 							m->to_phrase = fread_str_no_null(fh);
 							m->to_addr = fread_str_no_null(fh);
-
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"Reply-To",8,buf,strlen(buf),0);
-								free(buf);
-							}
-
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"Message-ID",10,buf,strlen(buf),0);
-								free(buf);
-							}
-
-							if ((buf = fread_str(fh)))
-							{
-								mail_add_header(m,"In-Reply-To",11,buf,strlen(buf),0);
-								free(buf);
-							}
+							m->pop3_server = fread_str_no_null(fh);
+							m->message_id = fread_str_no_null(fh);
+							m->message_reply_id = fread_str_no_null(fh);
+							m->reply_addr = fread_str_no_null(fh);
 
 							fseek(fh,ftell(fh)%2,SEEK_CUR);
 							fread(&m->size,1,sizeof(m->size),fh);
 							fread(&m->seconds,1,sizeof(m->seconds),fh);
+							fread(&m->received,1,sizeof(m->received),fh);
 							fread(&m->flags,1,sizeof(m->flags),fh);
 							mail_identify_status(m);
 							mail_process_headers(m);
@@ -1747,9 +1732,6 @@ int folder_save_index(struct folder *f)
 
 		for (i=0; i < f->num_mails; i++)
 		{
-			char *reply_to = mail_find_header_contents(f->mail_array[i],"reply-to");
-			char *message_id = mail_find_header_contents(f->mail_array[i],"message-id");
-			char *in_reply_to = mail_find_header_contents(f->mail_array[i],"in-reply-to");
 			int len = 0;
 			int len_add;
 
@@ -1760,16 +1742,18 @@ int folder_save_index(struct folder *f)
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_phrase))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_addr))) break;
-			len += len_add;
+			len += len_add; 
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_phrase))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_addr))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, reply_to))) break;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->pop3_server))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, message_id))) break;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->message_id))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, in_reply_to))) break;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->message_reply_id))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, f->mail_array[i]->reply_addr))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */
@@ -1777,6 +1761,7 @@ int folder_save_index(struct folder *f)
 
 			fwrite(&f->mail_array[i]->size,1,sizeof(f->mail_array[i]->size),fh);
 			fwrite(&f->mail_array[i]->seconds,1,sizeof(f->mail_array[i]->seconds),fh);
+			fwrite(&f->mail_array[i]->received,1,sizeof(f->mail_array[i]->received),fh);
 			fwrite(&f->mail_array[i]->flags,1,sizeof(f->mail_array[i]->flags),fh);
 		}
 		fclose(fh);

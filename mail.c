@@ -1411,7 +1411,8 @@ static int extract_name_from_address(char *addr, char **dest_phrase, char **dest
 	struct parse_address paddr;
 
 	if (more_ptr) *more_ptr = 0;
-	*dest_phrase = *dest_addr = NULL;
+	if (dest_phrase) *dest_phrase = NULL;
+	if (dest_addr) *dest_addr = NULL;
 	if (!addr) return 0;
 
 	if ((addr = parse_address(addr,&paddr)))
@@ -1421,14 +1422,14 @@ static int extract_name_from_address(char *addr, char **dest_phrase, char **dest
 		{
 			if (first_addr->phrase)
 			{
-				*dest_phrase = mystrdup(first_addr->phrase);
-				*dest_addr = mystrdup(first_addr->addr_spec);
+				if (dest_phrase) *dest_phrase = mystrdup(first_addr->phrase);
+				if (dest_addr) *dest_addr = mystrdup(first_addr->addr_spec);
 			} else
 			{
 				if (first_addr->addr_spec)
 				{
-					*dest_phrase = mystrdup(addressbook_get_realname(first_addr->addr_spec));
-					*dest_addr = mystrdup(first_addr->addr_spec);
+					if (dest_phrase) *dest_phrase = mystrdup(addressbook_get_realname(first_addr->addr_spec));
+					if (dest_addr) *dest_addr = mystrdup(first_addr->addr_spec);
 				}
 			}
 			if (node_next(&first_addr->node))
@@ -1439,7 +1440,10 @@ static int extract_name_from_address(char *addr, char **dest_phrase, char **dest
 		free_address(&paddr);
 	}
 
-	if (!*dest_addr) *dest_addr = mystrdup(addr);
+	if (dest_addr)
+	{
+		if (!*dest_addr) *dest_addr = mystrdup(addr);
+	}
 	return 1;
 }
 
@@ -1556,6 +1560,9 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("from",header->name))
 		{
 			extract_name_from_address(buf,&mail->from_phrase,&mail->from_addr,NULL);
+		} else if (!mystricmp("reply-to",header->name))
+		{
+			extract_name_from_address(buf,NULL,&mail->reply_addr,NULL);
 		} else if (!mystricmp("to",header->name))
 		{
 			int more;
@@ -1567,6 +1574,17 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("subject",header->name))
 		{
 			parse_text_string(buf,&mail->subject);
+		} else if (!mystricmp("received",header->name))
+		{
+			if (buf = strchr(buf,';'))
+			{
+				int day,month,year,hour,min,sec,gmt;
+				unsigned int new_recv;
+				buf++;
+				parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt);
+				new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+				if (new_recv > mail->received) mail->received = new_recv;
+			}
 		} else if (!mystricmp("mime-version",header->name))
 		{
 			int version;
@@ -1697,6 +1715,9 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("Importance",header->name))
 		{
 			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
+		} else if (!mystricmp("X-SimpleMail-POP3",header->name))
+		{
+			mail->pop3_server = mystrdup(buf);
 		}
 		header = (struct header*)node_next(&header->node);
 	}
@@ -2152,6 +2173,13 @@ void mail_free(struct mail *mail)
 		if (hdr->contents) free(hdr->contents);
 		free(hdr);
 	}
+
+	free(mail->from_phrase);
+	free(mail->from_addr);
+	free(mail->to_phrase);
+	free(mail->to_addr);
+	free(mail->reply_addr);
+	free(mail->pop3_server);
 
 	for (i=0;i<mail->num_multiparts;i++)
 	{

@@ -1944,6 +1944,59 @@ static int mail_compose_write_reply(FILE *fp, char *reply)
 }
 
 /**************************************************************************
+ Writes out all headers
+**************************************************************************/
+static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
+{
+	char *subject;
+	struct list *alist;
+
+	if (!mail_compose_write_from(fp,new_mail->from))
+		return 0;
+
+	if (new_mail->replyto && *new_mail->replyto)
+		if (!mail_compose_write_reply(fp,new_mail->replyto))
+			return 0;
+
+	if ((alist = create_address_list(new_mail->to)))
+	{
+		char *to = encode_address_field("To", alist);
+		if (to)
+		{
+			fprintf(fp,"%s\n",to);
+			free(to);
+		}
+		free_address_list(alist);
+	}
+
+	if ((subject = encode_header_field("Subject",new_mail->subject)))
+	{
+		time_t t;
+		struct tm *d;
+		int offset = sm_get_gmt_offset();
+
+		const char *mon_str[] = 
+		{
+			"Jan","Feb","Mar","Apr","May","Jun",
+			"Jul","Aug","Sep","Oct","Nov","Dec"
+		};
+
+		fprintf(fp,"%s", subject);
+		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
+
+		time(&t);
+		d = localtime(&t);
+
+		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60+user.config.dst,offset%60);
+	}
+
+	if (new_mail->reply_message_id)
+	{
+		fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
+	}
+}
+
+/**************************************************************************
  Retiurns an unique boundary id string
 **************************************************************************/
 static char *get_boundary_id(FILE *fp)
@@ -1966,52 +2019,8 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 	if (new_mail->to)
 	{
-		char *subject;
-		struct list *alist;
-
-		if (!mail_compose_write_from(fp,new_mail->from))
+		if (!(mail_compose_write_headers(fp,new_mail)))
 			return 0;
-
-		if (new_mail->replyto && *new_mail->replyto)
-			if (!mail_compose_write_reply(fp,new_mail->replyto))
-				return 0;
-
-		if ((alist = create_address_list(new_mail->to)))
-		{
-			char *to = encode_address_field("To", alist);
-			if (to)
-			{
-				fprintf(fp,"%s\n",to);
-				free(to);
-			}
-			free_address_list(alist);
-		}
-
-		if ((subject = encode_header_field("Subject",new_mail->subject)))
-		{
-			time_t t;
-			struct tm *d;
-			int offset = sm_get_gmt_offset();
-
-			const char *mon_str[] = 
-			{
-				"Jan","Feb","Mar","Apr","May","Jun",
-				"Jul","Aug","Sep","Oct","Nov","Dec"
-			};
-
-			fprintf(fp,"%s", subject);
-			fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
-
-			time(&t);
-			d = localtime(&t);
-
-			fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60+user.config.dst,offset%60);
-		}
-
-		if (new_mail->reply_message_id)
-		{
-			fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
-		}
 	}
 
 	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))

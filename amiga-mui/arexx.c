@@ -451,6 +451,7 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 			else if (folder->type == FOLDER_TYPE_SEND) folder_type = 5;
 			else if (folder->type == FOLDER_TYPE_SENDRECV) folder_type = 6;
 			else if (folder->special == FOLDER_SPECIAL_GROUP) folder_type = 7;
+			else if (folder == folder_spam()) folder_type = 8;
 			else folder_type = 0;
 
 			if (folderinfo_arg.stem)

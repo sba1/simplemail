@@ -11,6 +11,9 @@ Version 0.14 (fourtheenth alpha) - released on ?
     · MAILLISTFREEZ 
     · MAILREAD
     · NEWMAILFILE
+    · READCLOSE
+    · READINFO
+    · READSAVE
     · REQUEST
     · REQUESTFOLDER
     · REQUESTSTRING

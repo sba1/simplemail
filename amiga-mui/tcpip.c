@@ -47,7 +47,7 @@ int open_socket_lib(void)
 	{
 		if ((thread->socketlib = OpenLibrary("bsdsocket.library", 4)))
 		{
-			thread->socketlib_opencnt++;
+			thread->socketlib_opencnt = 1;
 			return 1;
 		}
 	} else
@@ -63,7 +63,7 @@ void close_socket_lib(void)
 	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
 	if (!thread) return; /* assert */
 
-	if (!(--thread->socketlib))
+	if (!(--thread->socketlib_opencnt))
 	{
 		if (thread->socketlib)
 		{

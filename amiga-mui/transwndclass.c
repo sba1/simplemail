@@ -44,7 +44,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
     			    Child, status = TextObject,
 						TextFrame,
    	    			End,
-   	    			Child, abort = KeyButton("Abort", 'a'),
+   	    			Child, abort = MakeButton("_Abort"),
 				End,	
 				TAG_MORE, msg->ops_AttrList,
 				TAG_DONE);

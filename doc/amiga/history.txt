@@ -1,8 +1,8 @@
 Version 0.14 (fourtheenth alpha) - released on ?
   - ARexx: The following commands have been added:
+    · ADDRGOTO
     · ADDRNEW
     · ADDRSAVE
-    · ADDRGOTO
     · FOLDERINFO
     · MAILINFO
     · REQUEST

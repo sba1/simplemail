@@ -75,6 +75,21 @@ struct MessageView_Data
 };
 
 /******************************************************************
+ Checks if a given picture describes a picture
+*******************************************************************/
+static int is_picture(void *data, int len)
+{
+	char *buffer = (char*)data;
+
+	if (!strncmp(&buffer[6], "JFIF", 4)) return 1;
+	if (!strncmp(buffer, "GIF8", 4)) return 1;
+	if (!strncmp(&buffer[1], "PNG", 3)) return 1;
+	if (!strncmp(buffer, "FORM", 4) && !strncmp(&buffer[8], "ILBM", 4)) return 1;
+
+	return 0;
+}
+
+/******************************************************************
  Save the contents of a given mail to a given dest
 *******************************************************************/
 static void save_contents_to(struct MessageView_Data *data, struct mail *mail, char *drawer, char *file)
@@ -279,7 +294,33 @@ STATIC ASM SAVEDS LONG simplehtml_load_function(REG(a0,struct Hook *h), REG(a2, 
 {
 	struct MessageView_Data *data = (struct MessageView_Data*)h->h_Data;
 	char *uri = msg->uri;
-	struct mail *mail;
+
+	void *decoded_data;
+	int decoded_data_len;
+
+/*	struct mail *mail;*/
+
+	if (!mystrnicmp("internalimg:",uri,12))
+	{
+		void *possible_data = (void*)strtoul(uri+12,NULL,16);
+
+		/* Check if this is really an internal image */
+		if (data == possible_data)
+		{
+			struct mail *m = (struct mail*)strtoul(uri+21,NULL,16);
+
+			mail_decode(m);
+			mail_decoded_data(m, &decoded_data, &decoded_data_len);
+
+			if ((msg->buffer = (void*)DoMethod(data->simplehtml, MUIM_SimpleHTML_AllocateMem, decoded_data_len)))
+			{
+				msg->buffer_len = decoded_data_len;
+				CopyMem(decoded_data,msg->buffer,decoded_data_len);
+				return 1;
+			}
+		}
+		return -1;
+	}
 
 	return -1;
 #if 0
@@ -422,12 +463,50 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 }
 
 /******************************************************************
- String support
+ Append and mail
 *******************************************************************/
-static void messageview_append_mail(struct MessageView_Data *data, struct mail *mail, string *str)
+static void messageview_append_as_mail(struct MessageView_Data *data, struct mail *mail, string *str)
 {
-	struct mail *initial_mail;
 	int i;
+
+	void *decoded_data;
+	int decoded_data_len;
+
+	static char temp_buf[512];
+
+	mail_decoded_data(mail, &decoded_data, &decoded_data_len);
+
+	if (!mail->num_multiparts)
+	{
+		if (!mystricmp(mail->content_type,"text") && !mystricmp(mail->content_subtype,"plain"))
+		{
+			char *html_txt = text2html((char*)decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+			string_append(str,html_txt);
+			free(html_txt);		
+		} else
+		{
+			if (is_picture(decoded_data,decoded_data_len))
+			{
+				sm_snprintf(temp_buf,sizeof(temp_buf),"<table align=\"center\" cellpadding=\"5\"><tr><td><IMG SRC=\"internalimg:%08lx.%08lx /></td></tr></table>",data,mail);
+				string_append(str,temp_buf);
+			}
+		}
+	}
+
+	for (i=0;i<mail->num_multiparts;i++)
+	{
+		messageview_append_as_mail(data,mail->multipart_array[i],str);
+	}
+}
+
+/******************************************************************
+ Append an attachment
+*******************************************************************/
+static void messageview_append_as_attachment(struct MessageView_Data *data, struct mail *mail, string *str)
+{
+	int i;
+
+	struct mail *initial_mail;
 
 	static char temp_buf[512]; /* Ok to use a static buffer although this is a recursive call */
 	static char content_name[256];
@@ -450,6 +529,7 @@ static void messageview_append_mail(struct MessageView_Data *data, struct mail *
 			else mystrlcpy(content_name,_("Unnamed"),sizeof(content_name));
 		}
 
+		mail_decode(m);
 		mail_decoded_data(m, &decoded_data, &decoded_data_len);
 
 		string_append(str,"<tr><td>");
@@ -552,13 +632,10 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
 				TAG_DONE);
 
-
-		html_mail = text2html(buf, buf_end - buf, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
-		string_append(&str,html_mail);
-		free(html_mail);
+		messageview_append_as_mail(data,data->mail,&str);
 
 		string_append(&str,"<hr /><table>");
-		messageview_append_mail(data,data->mail,&str);
+		messageview_append_as_attachment(data,data->mail,&str);
 		string_append(&str,"</table>");
 
 		string_append(&str,"</BODY>");
@@ -678,8 +755,6 @@ STATIC ULONG MessageView_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 					return DoSuperMethodA(cl,obj,(Msg)msg);
 	}
 }
-
-#undef printf
 
 /******************************************************************
  MUIM_Setup

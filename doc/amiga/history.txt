@@ -5,6 +5,7 @@ Version 0.14 (fourtheenth alpha) - released on ?
     · ADDRSAVE
     · GETURL
     · FOLDERINFO
+    · MAILADD
     · MAILINFO
     · MAILLISTTHAW 
     · MAILLISTFREEZ 

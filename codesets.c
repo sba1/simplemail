@@ -1633,6 +1633,9 @@ char *uft8toucs(char *chr, unsigned int *code)
 static char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static short invbase64[128];
 
+static char ibase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
+static short iinvbase64[128];
+
 static char direct[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'(),-./:?";
 static char optional[] = "!\"#$%&*;<=>@[]^_`{|}";
 static char spaces[] = " \011\015\012";		/* space, tab, return, line feed */
@@ -1662,6 +1665,11 @@ static void tabinit(void)
 	limit = strlen(base64);
 	for (i = 0; i < limit; ++i)
 		invbase64[base64[i]] = i;
+
+	/* that's for the modified imap utf7 stuff */
+	limit = strlen(ibase64);
+	for (i = 0; i < limit; ++i)
+		iinvbase64[ibase64[i]] = i;
 
 	needtables = 0;
 }
@@ -1775,6 +1783,114 @@ char *utf7ntoutf8(char *source, int sourcelen)
 
 	return dest;
 }
+
+/**************************************************************************
+ Converts a IMAP "UTF7" string into UTF8. (see RFC2060)
+
+ Entw&APw-rfe => Entwürfe
+**************************************************************************/
+char *iutf7ntoutf8(char *source, int sourcelen)
+{
+	FILE *fh;
+	int base64value,base64EOF,first=0;
+	int shifted = 0;
+	char *dest = NULL;
+	DECLARE_BIT_BUFFER;
+
+	if (needtables) tabinit();
+
+	if ((fh = tmpfile()))
+	{
+		int dest_len;
+
+		while (sourcelen)
+		{
+			unsigned char c = *source++;
+			sourcelen--;
+
+			if (shifted)
+			{
+				if ((base64EOF = (!sourcelen) || (c > 0x7f) || (base64value = invbase64[c]) < 0))
+				{
+					shifted = 0;
+					/* If the character causing us to drop out was SHIFT_IN or
+					   SHIFT_OUT, it may be a special escape for SHIFT_IN. The
+					   test for SHIFT_IN is not necessary, but allows an alternate
+					   form of UTF-7 where SHIFT_IN is escaped by SHIFT_IN. This
+					   only works for some values of SHIFT_IN.
+					 */
+					if (c && sourcelen && (c == '-'))
+					{
+						/* get another character c */
+						unsigned char prevc = c;
+
+						c = *source++;
+
+						/* If no base64 characters were encountered, and the
+							 character terminating the shift sequence was
+							 SHIFT_OUT, then it's a special escape for SHIFT_IN.
+						*/
+						if (first && prevc == '-')
+						{
+							fputc('&',fh);
+						}
+					}
+				} else
+				{
+					/* Add another 6 bits of base64 to the bit buffer. */
+					WRITE_N_BITS(base64value, 6);
+					first = 0;
+				}
+			}
+
+			/* Extract as many full 16 bit characters as possible from the
+			   bit buffer.
+			 */
+			while (BITS_IN_BUFFER >= 16)
+			{
+				UTF32 src_utf32 = READ_N_BITS(16);
+				UTF32 *src_utf32_ptr = &src_utf32;
+				UTF8 target_utf8[10];
+				UTF8 *target_utf8_ptr = target_utf8;
+
+				ConvertUTF32toUTF8(&src_utf32_ptr,src_utf32_ptr+1,&target_utf8_ptr,target_utf8+10, strictConversion);
+
+				fwrite(target_utf8,1,target_utf8_ptr - target_utf8,fh);
+			}
+
+			if (!c) break;
+
+			if (base64EOF) BITS_IN_BUFFER = 0;
+
+			if (!shifted)
+			{
+				if (c == '&')
+				{
+					shifted = first = 1;
+				} else
+				{
+					if (c <= 0x7f)
+					{
+						fputc(c,fh);
+					} /* else the source is invalid, so we ignore this */
+				}
+			}
+		}
+
+		if ((dest_len = ftell(fh)))
+		{
+	    fseek(fh,0,SEEK_SET);
+			if ((dest = (char*)malloc(dest_len+1)))
+			{
+				fread(dest,1,dest_len,fh);
+				dest[dest_len]=0;
+			}
+		}
+	}
+
+	return dest;
+}
+
 
 /**************************************************************************
  Is string ASCII 7 bit only?

@@ -52,6 +52,15 @@ void init_addressbook(void)
 **************************************************************************/
 void cleanup_addressbook(void)
 {
+	struct addressbook_entry *entry;
+
+	while ((entry = (struct addressbook_entry *)list_remove_tail(&root_entry.group.list)))
+	{
+		addressbook_free_entry(entry);
+	}
+
+	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
+	list_init(&root_entry.group.list);
 }
 
 /**************************************************************************
@@ -123,6 +132,22 @@ int addressbook_person_add_email(struct addressbook_entry *entry, char *email)
 		}
 	}
 	return 0;
+}
+
+/**************************************************************************
+ Inserts an entry into the given group
+**************************************************************************/
+void addressbook_insert_tail(struct addressbook_entry *list, struct addressbook_entry *new_entry)
+{
+	if (!list)
+		list_insert_tail(&root_entry.group.list,&new_entry->node);
+	else
+	{
+		if (list->type == ADDRESSBOOK_ENTRY_GROUP)
+		{
+			list_insert_tail(&list->group.list,&new_entry->node);
+		}
+	}
 }
 
 /**************************************************************************

@@ -76,6 +76,7 @@ int addressbook_person_add_email(struct addressbook_entry *entry, char *email);
 
 void init_addressbook(void);
 void cleanup_addressbook(void);
+void addressbook_insert_tail(struct addressbook_entry *entry, struct addressbook_entry *new_entry);
 struct addressbook_entry *addressbook_create_person(char *realname, char *email);
 struct addressbook_entry *addressbook_new_person(struct addressbook_entry *list, char *realname, char *email);
 struct addressbook_entry *addressbook_create_group(void);

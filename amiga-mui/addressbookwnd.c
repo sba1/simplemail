@@ -259,10 +259,10 @@ void person_window_open(struct addressbook_entry *entry)
 				End,
 
 			Child, HGroup,
-				Child, ColGroup(3),
+				Child, ColGroup(2),
 					Child, HorizLineTextObject("Snail mail"),
 					Child, HorizLineTextObject("Miscellanous"),
-					Child, HorizLineTextObject("Portrait"),
+/*					Child, HorizLineTextObject("Portrait"),*/
 	
 					Child, ColGroup(2),
 						Child, MakeLabel("Street"),
@@ -299,7 +299,7 @@ void person_window_open(struct addressbook_entry *entry)
 							MUIA_CycleChain, 1,
 							End,
 						End,
-					Child, HVSpace, /* portrait */
+/*					Child, HVSpace,*/ /* portrait */
 					End,
 				End,
 
@@ -557,6 +557,57 @@ STATIC ASM SAVEDS VOID address_display(register __a1 struct MUIP_NListtree_Displ
 }
 
 /******************************************************************
+ Updates the internal address book
+*******************************************************************/
+static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group)
+{
+	struct addressbook_entry *entry;
+/*	cleanup_addressbook();*/
+	if (!treenode) treenode = (struct MUI_NListtree_TreeNode *)DoMethod(address_tree,
+				MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
+
+	if (!treenode) return;
+
+	while (treenode)
+	{
+		if ((entry = (struct addressbook_entry *)treenode->tn_User))
+		{
+			if (treenode->tn_Flags & TNF_LIST)
+			{
+				struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)DoMethod(address_tree,
+						MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Head, 0);
+				struct addressbook_entry *new_group = addressbook_duplicate_entry(entry);
+				
+				if (new_group)
+				{
+					addressbook_insert_tail(group,new_group);
+					if (tn) addressbook_update(tn,new_group);
+				}
+			} else
+			{
+				if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
+				{
+					struct addressbook_entry *new_person = addressbook_duplicate_entry(entry);
+
+					if (new_person)
+						addressbook_insert_tail(group,new_person);
+				}
+			}
+		}
+		treenode = (struct MUI_NListtree_TreeNode*)DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0);
+	}
+}
+
+/******************************************************************
+ Save the addressbook to disk
+*******************************************************************/
+static void addressbook_save(void)
+{
+	cleanup_addressbook();
+	addressbook_update(NULL,NULL);
+}
+
+/******************************************************************
  Adds a new person to the window
 *******************************************************************/
 static void addressbook_add_person(void)
@@ -709,6 +760,7 @@ static void addressbook_init(void)
 	if (!address_wnd) return;
 	DoMethod(App,OM_ADDMEMBER,address_wnd);
 	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save);
 	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
 	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_group);
 	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);

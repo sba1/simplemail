@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 #include <proto/locale.h>
+#include <proto/icon.h>
 
 #include "version.h"
 
@@ -112,7 +113,9 @@ static struct MsgPort *timer_port;
 static struct timerequest *timer_req;
 static ULONG timer_outstanding;
 
-/* New since V20 */
+static struct DiskObject *HideIcon;
+
+/* New since MUI V20 */
 static STRPTR UsedClasses[] =
 {
 	"NList.mcc",
@@ -271,9 +274,10 @@ int app_init(void)
 		MUIA_Application_UseRexx, FALSE,
 		MUIA_Application_HelpFile, "PROGDIR:SimpleMail.guide",
 #ifdef MUIA_Application_UsedClasses
-		/* V20, no includes right now */
+		/* MUI V20, no includes right now, but found it in YAM :) */
 		MUIA_Application_UsedClasses, UsedClasses,
 #endif
+		MUIA_Application_DiskObject, HideIcon = GetDiskObject("PROGDIR:SimpleMail"),
 	End;
 
 	SM_LEAVE;
@@ -290,6 +294,8 @@ void app_del(void)
 		MUI_DisposeObject(App);
 		App = NULL;
 	}
+	if (HideIcon) FreeDiskObject(HideIcon);
+
 }
 
 /****************************************************************

@@ -115,6 +115,14 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+STATIC ULONG AttachmentList_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
+{
+  DoSuperMethodA(cl, obj, (Msg) msg);
+  msg->MinMaxInfo->DefHeight = msg->MinMaxInfo->MinHeight + _font(obj)->tf_YSize;
+  return 0;
+}
+
+
 STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_NList_DropType *msg)
 {
 	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
@@ -147,6 +155,7 @@ STATIC SAVEDS ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *c
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return AttachmentList_New(cl,obj,(struct opSet*)msg);
+		case	MUIM_AskMinMax: return AttachmentList_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
     case	MUIM_NList_DropType: return AttachmentList_DropType(cl,obj,(struct MUIP_NList_DropType*)msg); 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

@@ -235,7 +235,7 @@ char *folder_get_changed_defreplyto(void)
 
 char *folder_get_changed_defsignature(void)
 {
-	return (char *)xget(defsign_cycle, MUIA_SignatureCycle_Signature);
+	return (char *)xget(defsign_cycle, MUIA_SignatureCycle_SignatureName);
 }
 
 int folder_get_changed_primary_sort(void)
@@ -253,17 +253,9 @@ void folder_refresh_signature_cycle(void)
 {
 	if (folder_wnd)
 	{
-		char *sign_current = mystrdup((char *)xget(defsign_cycle, MUIA_SignatureCycle_Signature));
 		DoMethod(compose_mail_properties_group, MUIM_Group_InitChange);
-		DoMethod(compose_mail_properties_group, OM_REMMEMBER, defsign_cycle);
-		MUI_DisposeObject(defsign_cycle);
-		defsign_cycle = SignatureCycleObject,
-			MUIA_SignatureCycle_Signature, sign_current,
-			MUIA_SignatureCycle_HasDefaultEntry, TRUE,
-			End;
-		DoMethod(compose_mail_properties_group, OM_ADDMEMBER, defsign_cycle);
+		DoMethod(defsign_cycle, MUIM_SignatureCycle_Refresh, &user.config.signature_list);
 		DoMethod(compose_mail_properties_group, MUIM_Group_ExitChange);
-		if (sign_current) free(sign_current);
 	}
 }
 
@@ -535,7 +527,7 @@ void folder_edit(struct folder *f)
 	set(defto_string, MUIA_UTF8String_Contents, f->def_to);
 	set(from_accountpop, MUIA_AccountPop_Account, account_find_by_from(f->def_from));
 	set(replyto_string, MUIA_UTF8String_Contents, f->def_replyto);
-	set(defsign_cycle, MUIA_SignatureCycle_Signature, f->def_signature);
+	set(defsign_cycle, MUIA_SignatureCycle_SignatureName, f->def_signature);
 
 	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);

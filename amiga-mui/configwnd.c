@@ -223,7 +223,7 @@ static void account_store(void)
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
-		account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
+		account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName));
 		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
@@ -263,7 +263,7 @@ static void account_load(void)
 		setutf8string(account_name_string,account->name);
 		nnset(account_email_string, MUIA_String_Contents, account->email);
 		setstring(account_reply_string,account->reply);
-		nnset(account_def_signature_cycle, MUIA_SignatureCycle_Signature, account->def_signature);
+		nnset(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName, account->def_signature);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
@@ -837,7 +837,6 @@ static void account_refresh_signature_cycle(void)
 {
 	struct list tmp_signature_list;
 	struct signature *sign, *new_sign;
-	char *current_sign;
 	int i;
 
 	/* temporary signature list for SignatureCycle to display the new signatures */
@@ -854,27 +853,16 @@ static void account_refresh_signature_cycle(void)
 		}
 	}
 
-	current_sign = mystrdup((char *)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
 	DoMethod(account_user_group, MUIM_Group_InitChange);
-	DoMethod(account_user_group, OM_REMMEMBER, account_def_signature_cycle);
-	MUI_DisposeObject(account_def_signature_cycle);
-	account_def_signature_cycle = SignatureCycleObject,
-		MUIA_CycleChain, 1,
-		MUIA_SignatureCycle_Signature, current_sign,
-		MUIA_SignatureCycle_HasDefaultEntry, TRUE,
-		MUIA_SignatureCycle_SignatureList, &tmp_signature_list,
-		End;
-	set(account_def_signature_cycle,MUIA_ShortHelp,_("The default signature for this account"));
-	DoMethod(account_user_group, OM_ADDMEMBER, account_def_signature_cycle);
+	DoMethod(account_def_signature_cycle, MUIM_SignatureCycle_Refresh, &tmp_signature_list);
 	DoMethod(account_user_group, MUIM_Group_ExitChange);
 
-	/* free the temporary list and the current signature */
+	/* free the temporary list */
 	while ((sign = (struct signature *)list_remove_tail(&tmp_signature_list)))
 	{
 		if (sign->name) free(sign->name);
 		free(sign);
 	}
-	free(current_sign);
 }
 
 /******************************************************************
@@ -1483,9 +1471,9 @@ static void signature_remove(void)
 			/* If the account was displayed, we must update the gui elements */
 			if (account_last_selected == ac)
 			{
-				nnset(account_def_signature_cycle, MUIA_SignatureCycle_Signature, ac->def_signature);
+				nnset(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName, ac->def_signature);
 				free(account_last_selected->def_signature);
-				account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_Signature));
+				account_last_selected->def_signature = mystrdup((char*)xget(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName));
 			}
 		}
 		/* do not touch the folders config! */

@@ -813,11 +813,11 @@ static void compose_set_def_signature(struct Compose_Data **pdata)
 		if (mystrcmp(ac->def_signature, MUIV_SignatureCycle_Default) == 0)
 		{
 			/* If the account is set to <Default> we fallback to the first entry */
-			set(data->signatures_cycle, MUIA_Cycle_Active, 0);
+			set(data->signatures_cycle, MUIA_SignatureCycle_Active, 0);
 		} else
 		{
 			/* if the signature is not available "NoSignature" will be used. */
-			set(data->signatures_cycle, MUIA_SignatureCycle_Signature, ac->def_signature);
+			set(data->signatures_cycle, MUIA_SignatureCycle_SignatureName, ac->def_signature);
 		}
 	}
 }
@@ -828,8 +828,8 @@ static void compose_set_def_signature(struct Compose_Data **pdata)
 static void compose_set_signature(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
-	int val = (int)xget(data->signatures_cycle, MUIA_Cycle_Active);
-	char *sign_name = (char *)xget(data->signatures_cycle, MUIA_SignatureCycle_Signature);
+	int val = (int)xget(data->signatures_cycle, MUIA_SignatureCycle_Active);
+	char *sign_name = (char *)xget(data->signatures_cycle, MUIA_SignatureCycle_SignatureName);
 	struct signature *sign;
 	char *text;
 	int x = xget(data->text_texteditor,MUIA_TextEditor_CursorX);
@@ -906,24 +906,9 @@ void compose_refresh_signature_cycle()
 			data = compose_open[num];
 			if (data->signatures_cycle)
 			{
-				char *sign_current = mystrdup((char *)xget(data->signatures_cycle, MUIA_SignatureCycle_Signature));
 				DoMethod(data->signatures_group, MUIM_Group_InitChange);
-				DoMethod(data->signatures_group, OM_REMMEMBER, data->signatures_cycle);
-				MUI_DisposeObject(data->signatures_cycle);
-				data->signatures_cycle = SignatureCycleObject,
-					MUIA_SignatureCycle_HasDefaultEntry, FALSE,
-					MUIA_SignatureCycle_Signature, MUIV_SignatureCycle_NoSignature,
-					End;
-				DoMethod(data->signatures_group, OM_ADDMEMBER, data->signatures_cycle);
+				DoMethod(data->signatures_cycle, MUIM_SignatureCycle_Refresh, &user.config.signature_list);
 				DoMethod(data->signatures_group, MUIM_Group_ExitChange);
-				if (data->signatures_cycle)
-				{
-					set(data->signatures_cycle, MUIA_SignatureCycle_Signature, sign_current);
-					compose_set_signature(&data);
-					DoMethod(data->signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, data->signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
-					DoMethod(data->from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, data->from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
-				}
-				if (sign_current) free(sign_current);
 			}
 		}
 	}
@@ -1052,7 +1037,7 @@ int compose_window_open(struct compose_args *args)
 		   signature is set */
 		signatures_cycle = SignatureCycleObject, 
 			MUIA_SignatureCycle_HasDefaultEntry, FALSE,
-			MUIA_SignatureCycle_Signature, MUIV_SignatureCycle_NoSignature,
+			MUIA_SignatureCycle_SignatureName, MUIV_SignatureCycle_NoSignature,
 			End;
 		if (signatures_cycle)
 		{
@@ -1412,11 +1397,12 @@ int compose_window_open(struct compose_args *args)
 			{
 				struct folder *f = main_get_folder();
 
-				DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
+				DoMethod(signatures_cycle, MUIM_Notify, MUIA_SignatureCycle_Active, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
+				DoMethod(signatures_cycle, MUIM_Notify, MUIA_SignatureCycle_SignatureName, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
 				DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
 				if (f && (mystrcmp(f->def_signature, MUIV_SignatureCycle_Default) != 0))
 				{
-					set(data->signatures_cycle, MUIA_SignatureCycle_Signature, f->def_signature);
+					set(data->signatures_cycle, MUIA_SignatureCycle_SignatureName, f->def_signature);
 				} else
 				{
 					compose_set_def_signature(&data);

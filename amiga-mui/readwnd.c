@@ -29,6 +29,7 @@
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
+#include "simplehtml_mcc.h"
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
@@ -53,13 +54,18 @@ static struct Hook mime_findname_hook;
 #define MAX_READ_OPEN 10
 static int read_open[MAX_READ_OPEN];
 
+#define PAGE_TEXT			0
+#define PAGE_HTML			1
+#define PAGE_DATATYPE	2
+
 struct Read_Data /* should be a customclass */
 {
 	Object *wnd;
 	Object *mime_tree;
-	Object *text_list;
 	Object *contents_page;
 	Object *datatype_datatypes;
+	Object *text_list;
+	Object *html_simplehtml;
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
@@ -150,9 +156,6 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 
 	if (!mail->text) return;
 
-	set(data->text_list, MUIA_NList_Quiet, TRUE);
-	DoMethod(data->text_list,MUIM_NList_Clear);
-
 	if (mail->decoded_data)
 	{
 		if (stricmp(mail->content_type,"text"))
@@ -162,12 +165,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 						MUIA_DataTypes_BufferLen, mail->decoded_len,
 						TAG_DONE);
 
-			set(data->contents_page, MUIA_Group_ActivePage, 1);
-/*
-			sprintf(buf,"Base64 encoded data (size %ld)",mail->decoded_len);
-			DoMethod(data->text_list,MUIM_NList_InsertSingle,buf,MUIV_NList_Insert_Bottom);
-*/
-			set(data->text_list, MUIA_NList_Quiet, FALSE);
+			set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
 			return;
 		}
 		buf = mail->decoded_data;
@@ -178,16 +176,28 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 		buf_end = buf + mail->text_len;
 	}
 
-	while (buf < buf_end)
+	if (!stricmp(mail->content_subtype, "html"))
 	{
-		DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
-		if ((buf = strchr(buf,10))) buf++;
-		else break;
+		SetAttrs(data->html_simplehtml,
+				MUIA_SimpleHTML_Buffer, buf,
+				MUIA_SimpleHTML_BufferLen, buf_end - buf,
+				TAG_DONE);
+
+		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
+	} else
+	{
+		set(data->text_list, MUIA_NList_Quiet, TRUE);
+		DoMethod(data->text_list,MUIM_NList_Clear);
+
+		while (buf < buf_end)
+		{
+			DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+			if ((buf = strchr(buf,10))) buf++;
+			else break;
+		}
+		set(data->text_list, MUIA_NList_Quiet, FALSE);
+		set(data->contents_page, MUIA_Group_ActivePage, PAGE_TEXT);
 	}
-
-	set(data->text_list, MUIA_NList_Quiet, FALSE);
-
-	set(data->contents_page, MUIA_Group_ActivePage, 0);
 }
 
 /******************************************************************
@@ -340,7 +350,7 @@ static void save_button_pressed(struct Read_Data **pdata)
 *******************************************************************/
 void read_window_open(char *folder, char *filename)
 {
-	Object *wnd,*header_list,*text_list, *mime_tree, *contents_page, *save_button;
+	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *mime_tree, *contents_page, *save_button;
 	Object *datatype_datatypes;
 	int num;
 
@@ -383,13 +393,22 @@ void read_window_open(char *folder, char *filename)
 				End,
 			Child, BalanceObject,End,
 			Child, contents_page = PageGroup,
-				MUIA_Group_ActivePage, 0,
+				MUIA_Group_ActivePage, PAGE_TEXT,
 				Child, VGroup,
 					Child, NListviewObject,
 						MUIA_CycleChain, 1,
 						MUIA_NListview_NList, text_list = ReadListObject,
 							End,
 						End,
+					End,
+				Child, VGroup,
+					MUIA_Group_Spacing, 0,
+					Child, HGroup,
+						MUIA_Group_Spacing, 0,
+						Child, html_simplehtml = SimpleHTMLObject,TextFrame,End,
+						Child, html_vert_scrollbar = ScrollbarObject,End,
+						End,
+					Child, html_horiz_scrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
 					End,
 				Child, VGroup,
 					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
@@ -420,9 +439,15 @@ void read_window_open(char *folder, char *filename)
 					data->mime_tree = mime_tree;
 					data->contents_page = contents_page;
 					data->datatype_datatypes = datatype_datatypes;
+					data->html_simplehtml = html_simplehtml;
 					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 					data->num = num;
 					read_open[num] = 1;
+
+					SetAttrs(data->html_simplehtml,
+							MUIA_SimpleHTML_HorizScrollbar,html_horiz_scrollbar,
+							MUIA_SimpleHTML_VertScrollbar,html_vert_scrollbar,
+							TAG_DONE);
 
 					insert_headers(header_list,data->mail);
 					insert_mime(mime_tree,data->mail,MUIV_NListtree_Insert_ListNode_Root);

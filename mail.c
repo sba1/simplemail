@@ -520,10 +520,10 @@ int mail_process_headers(struct mail *mail)
 	{
 		if (!mail->filename)
 		{
-			char *fn = strstr(buf,"filename=");
+			char *fn = mystristr(buf,"filename=");
 			if (fn)
 			{
-				fn += sizeof("filename=");
+				fn += sizeof("filename=")-1;
 				parse_value(fn,&mail->filename);
 			}
 		}

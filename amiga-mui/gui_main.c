@@ -126,6 +126,7 @@ static STRPTR UsedClasses[] =
 	"TextEditor.mcc",
 	"BetterString.mcc",
 	"Popplaceholder.mcc",
+	"TheBar.mcc",
 	NULL
 };
 

@@ -1,4 +1,4 @@
-Short:     A new Mailer (alpha version)
+Short:     A new mailer (alpha version)
 Uploader:  sebauer@t-online.de (Sebastian Bauer)
 Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian Bauer)
 Type:      comm/mail
@@ -9,7 +9,7 @@ Version:   0.2
 Introduction
 ~~~~~~~~~~~~
 Welcome to SimpleMail an email program for your Amiga. The program and the
-usage is very simliar to to YAM's (although YAM is actually much more powerful)
+usage is very similar to to YAM's (although YAM is actually much more powerful)
 but it has (or should get) some features which YAM doesn't offer.
 Note that this is really only an alpha version, so don't expect too much
 of it at this stage. It is really very limited.
@@ -26,11 +26,11 @@ MUI Custom Classes:
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
 Ensure that you always have the latest versions installed (especially
-from the NListtree)
+from the NListtree).
 
 Usage
 ~~~~~
-Just double click the SimpleMail Icon and if you machine fits the requirements
+Just double click the SimpleMail icon and if you machine fits the requirements
 you should see the main window. Press the "Config" button to configure important
 things of SimpleMail (smtp and pop3 servers). If you are familiar with YAM
 it should be no problem.
@@ -38,14 +38,14 @@ it should be no problem.
 Contact
 ~~~~~~~
 More information about the SimpleMail project can be found (currently) at
-http://www.schlawack.net/simplemail.
-Developers might take look at http://sourceforge.net/projects/simplemail
+http://www.schlawack.net/simplemail/ .
+Developers might take look at http://sourceforge.net/projects/simplemail/
 if they want to participate to the project. Here they can submit patches,
 subscribe to the mailing lists or get access to the cvs.
 
-SimpleMail is (orginal) developed by
-  Hynek Schlawack <hynek@schlawack.net> http://www.schlawack.net
-  Sebastian Bauer <sebauer@t-online.de> http://home.t-online.de/home/sebauer
+SimpleMail is (orginally) developed by
+  Hynek Schlawack <hynek@schlawack.net> http://www.schlawack.net/
+  Sebastian Bauer <sebauer@t-online.de> http://home.t-online.de/home/sebauer/
 
 At the moment until the mailing lists are active you should contact them if
 you have any questions regarding SimpleMail.

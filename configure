@@ -2036,7 +2036,7 @@ fi
 done
 
 
-ALL_LINGUAS="de"
+ALL_LINGUAS="de hu"
 echo $ac_n "checking for POSIXized ISC""... $ac_c" 1>&6
 echo "configure:2042: checking for POSIXized ISC" >&5
 if test -d /etc/conf/kconfig.d &&
@@ -4204,6 +4204,7 @@ EOF
 chmod +x $CONFIG_STATUS
 rm -fr confdefs* $ac_clean_files
 test "$no_create" = yes || ${CONFIG_SHELL-/bin/sh} $CONFIG_STATUS || exit 1
+
 
 
 

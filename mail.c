@@ -820,7 +820,9 @@ struct mail *mail_create_from_file(char *filename)
 		if (!size)
 		{
 			/* we remove files with a size of 0 */
-			remove(filename);
+/*			remove(filename);*/
+			mail_free(m);
+			return NULL;
 		}
 	}
 	return m;

@@ -48,6 +48,7 @@
 #include "support_indep.h"
 
 /* gui parts */
+#include "accountpopclass.h"
 #include "addresstreelistclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
@@ -255,7 +256,8 @@ void all_del(void)
 		if (RexxSysBase)
 		{
 			app_del();
-	
+
+			delete_accountpop_class();
 			delete_audioselectgroup_class();
 			delete_pgplist_class();
 			delete_addresstreelist_class();
@@ -317,7 +319,7 @@ int all_init(void)
 							create_popupmenu_class() && create_icon_class() && 
 							create_filterlist_class() && create_filterrule_class() &&
 							create_multistring_class() && create_addresstreelist_class() &&
-							create_pgplist_class() && create_audioselectgroup_class())
+							create_pgplist_class() && create_audioselectgroup_class() && create_accountpop_class())
 					{
 						if (app_init())
 						{

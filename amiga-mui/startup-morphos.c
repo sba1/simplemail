@@ -37,7 +37,6 @@ struct Library *AslBase;
 struct Library *GfxBase;
 struct Library *LayersBase;
 struct Library *ExpatBase;
-struct Library *SocketBase;
 
 int main(int argc, char *argv[]);
 

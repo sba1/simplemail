@@ -1,15 +1,16 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.2 (24.11.2001)
+@$VER: SimpleMail.guide 0.3 (05.12.2001)
 @AUTHOR David Rey <david@saug.org>
 @INDEX "Index"
 
 @NODE "Main" "Welcome to SimpleMail!"
 
-                               SimpleMail 0.12 (public ALPHA)
+                               SimpleMail 0.13 (public ALPHA)
 
                       © 2000-2001 by Hynek Schlawack & Sebastian Bauer
  
                            Released under the GNU Public License
+
 
      @{" Introduction     " LINK "INTR" 0} - About SimpleMail
      @{" Requirements     " LINK "REQS" 0} - System requirements and software needed
@@ -27,11 +28,11 @@
      @{" Mail transfers   " LINK "TR_W" 0} - Downloading and sending messages
 
      @{" Startup options  " LINK "OPTI" 0} - Shell options
+     @{" ARexx interface  " LINK "AREX" 0} - The ARexx interface
      @{" FAQ              " LINK "TIPS" 0} - Read this!
      @{" Technical stuff  " LINK "TECH" 0} - How SimpleMail is archiving your messages
 
-     @{" The future       " LINK "PLAN" 0} - Planned improvements
-     @{" Authors          " LINK "INFO" 0} - How to contact the Authors, interesting links
+     @{" Authors          " LINK "INFO" 0} - How to contact the Authors, useful links
      @{" Thanks to        " LINK "CRED" 0} - Those who keep supporting the developers
 
      @{" History          " LINK "HIST" 0} - The story so far...
@@ -48,14 +49,15 @@ the future) some features which YAM doesn't offer yet.
 
 Please note this is an ALPHA release. Don't expect too much at these early
 stages - SimpleMail is still very limited and has probably lots of bugs.
-But it will get better over time... :-)
+But it is getting better... :-)
 
 
-Current features of SimpleMail
+Current features of SimpleMail:
 
 - Very simple @{" installation " LINK "INST" 0} process.
 
-- Easy operation using buttons, menus, the keyboard and drag&drop.
+- Easy operation using buttons, menus, the keyboard and drag&drop within
+  a freely customizable interface, thanks to @{" MUI " LINK MUI}.
 
 - Comprehensive main window, offering quick access to your @{" address book " LINK "AB_W" 0}
   and sporting threaded views.
@@ -66,10 +68,9 @@ Current features of SimpleMail
 - Hierarchical @{" address book " LINK "AB_W" 0}, including groups and tons of data
   for each entry.
 
-- Freely customisable interface, thanks to @{" MUI " link MUI}.
-
 - Built-in POP3 & SMTP clients, which can check any number of different
-  mail servers in one connection and preselect messages for download.
+  mail servers in one connection, preselect messages for download and
+  (optionally) use SSL/TLS based encryption for added security.
 
 - Automatic message handling, using @{" filters " LINK "CO_F" 0}.
 
@@ -77,7 +78,7 @@ Current features of SimpleMail
   data.
 
 - HTML mail compatible, thanks to the built-in HTML client based on the
-  @{" SimpleHTML " link SimpleHTML} engine.
+  @{" SimpleHTML " LINK SimpleHTML} engine.
 
 - ARexx port
 
@@ -96,7 +97,7 @@ Software
 
  - AmigaOS 3.0+
  - AmiTCP/IP compatible stack (AmiTCP, Miami[DX], Genesis...)
- - @{" MUI " link MUI} 3.8 or higher
+ - @{" MUI " LINK MUI} 3.8 or higher
  - 3rd party MUI custom classes:
 
    BetterString   - http:\//www.p2p-it.dk/duff/MCC_BetterString.LZX
@@ -114,11 +115,11 @@ Software
 
 LEGAL STUFF
 
-SimpleMail is © 2000-2001 by Hynek Schlawack & Sebastian Bauer and released
-under the GNU Public License.
+SimpleMail is Copyright © 2000-2001 by Hynek Schlawack & Sebastian Bauer
+and released under the GNU Public License.
 
-See @{" here " link INFO} if you are a developer and want to join the effort, get access
-to the CVS or just get the sources.
+See @{" here " LINK INFO} if you are a developer and want to join the effort, get access
+to the CVS or just obtain the sources.
 
 @ENDNODE
 @NODE "MUI" "MUI"
@@ -166,7 +167,7 @@ double click the SimpleMail icon to run the program.
 
 Exception: you might have some old MUI custom classes lying around that will
 be used by SimpleMail; make sure you're using the latest versions of those
-mentioned under @{" Requirements " link REQS}.
+mentioned under @{" Requirements " LINK REQS}.
 
 @ENDNODE
 @NODE "TUTO" "Quickstart"
@@ -267,7 +268,7 @@ the upper part of the message have been inserted by SimpleMail and
 contain data needed for mail transfer (the so-called "headers").
 
 13. Since you've written the mail to yourself, it's time to check your
-account for new mail. Close the read window and then click the "Fetch"
+account for new mail. Close the Read Message and then click the "Fetch"
 button at the top of the main window.
 
 14. The transfer status window you saw before opens again and you can
@@ -294,13 +295,13 @@ SimpleMail's main window is laid out like thus:
    |              @{" Toolbar " LINK "MA02" 0}                                 |
    |________________________________________________________|
    |                 |                                      |
-   |  @{" Folder list " link "MA00" 0}  |         @{" Message list " link "MA01" 0}              |
+   |  @{" Folder list " LINK "MA00" 0}  |         @{" Message list " LINK "MA01" 0}              |
    |                 |      This shows the contents         |
    |- - - - - - - - -|      of the selected folder          |
    |    Status bar   |                                      |
    |-----------------|                                      |
    |                 |                                      |
-   | @{" Address book " link "AB_W" 0}  |                                      |
+   | @{" Address book " LINK "AB_W" 0}  |                                      |
    |                 |                                      |
    `--------------------------------------------------------'
 
@@ -355,7 +356,7 @@ at the right side of this status bar, allowing you to switch to & from
 the "alternative" view of the main window: the folder list will disappear,
 and this status bar will jump to the top. Also, an additional pop-up gadget
 will appear now at the right side of the status bar, allowing you to select
-another folder easily.
+another folder easily and see some stats.
 
 @ENDNODE
 @NODE "MA01" "Main window - Message list"
@@ -405,11 +406,12 @@ keep the <Shift> key pressed while clicking on the column heading. Please
 note the From/To fields are always used as a sort criteria; this part of
 SimpleMail still needs some work. :o)
 
-A double click on an entry in the list opens a @{" Read window " LINK "RE_W" 0} and displays
-the corresponding message. You can use the mouse to move messages to
-another folder. Click on an entry and drag up/down (holding the left mouse
-button) to mark a block of messages. Then click and @{" drag " LINK "Drag" 0} the marked
-block to the left, into the folder list, and drop it onto the chosen folder.
+A double click on an entry in the list opens a @{" Read Message window " LINK "RE_W" 0} and
+displays the corresponding message. You can use the mouse to move messages
+to another folder. Click on an entry and drag up/down (holding the left
+mouse button) to mark a block of messages. Then click and @{" drag " LINK "Drag" 0} the
+marked block to the left, into the folder list, and drop it onto the chosen
+folder.
 
 @ENDNODE
 @NODE "MA0S" "Status Icons"
@@ -474,24 +476,24 @@ The toolbar gives you easy access to the most frequently used functions.
     `---^---^---^---' `---^---^---'  `---^---'  `---^---' `---^---'
 
 The following table shows the equivalences between buttons (position
-and label), keyboard shortcuts and menu commands.
+and label), keyboard shortcuts and menu items.
 
       Button        Shortcut    Equivalent to menu...
  -----------------------------------------------------------------------
-  1   [Read]        E,<Return>  @{" Message/Read " LINK "MAM3" 0}
-  2   [Edit]        T           @{" Message/Edit " LINK "MAM3" 0}
-  3   [Delete]      D,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
-  4   [GetAdd]      G
+  1   [Read]        D,<Return>  @{" Message/Read " LINK "MAM3" 0}
+  2   [Edit]        E           @{" Message/Edit " LINK "MAM3" 0}
+  3   [Delete]      L,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
+  4   [GetAdd]      T
 
   5   [New]         N
   6   [Reply]       R
-  7   [Forward]     O
+  7   [Forward]     W
 
-  8   [Fetch]       F
+  8   [Fetch]       H
   9   [Send]        S
 
- 10   [Filter]
- 11   [Filters]                 @{" Settings/Filters... " LINK "CO_F" 0}
+ 10   [Filter]      I
+ 11   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
 
  12   [Abook]       A
  13   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
@@ -546,10 +548,10 @@ Folder/Delete...
 
 Removes the current (user defined) folder, asking for confirmation first.
 If the folder is actually a folder group, any folders in it will move one
-place up the hierarchy, i.e. they will NOT be deleted.
+place up in the hierarchy, i.e. they will NOT be deleted.
 
 
-Folder/Options...
+Folder/Settings...
 
 Opens a @{" configuration panel " LINK "FO_W" 0} where you can modify the properties of the
 current folder.
@@ -557,14 +559,14 @@ current folder.
 
 Folder/Order  » Save|Reset
 
-Saves or restores the order of the folders in their @{" list " LINK "MA00" 0}. This order is
-also saved when modifying the folder settings.
+Saves or restores the order of the folders in their @{" list " LINK "MA00" 0}. Note this order
+is also saved when modifying the folder settings.
 
 
 Folder/Check single account
 
-If you have set up several POP3 servers, you can use this function to
-check any single account.
+If you have set up several POP3 servers, you can use this function to check
+any single account.
 
 @ENDNODE
 @NODE "MAM3" "Main window - Message Menu"
@@ -623,7 +625,7 @@ Settings/Configuration...
 Opens the @{" configuration window " LINK "CO_W" 0}, in which you can change SimpleMail's settings.
 
 
-Settings/Filter...
+Settings/Filters...
 
 Opens the @{" Edit Filters " LINK "CO_F" 0} window, where you can edit your current filters or
 add a new one.
@@ -639,18 +641,19 @@ classes which were not in the original release of MUI. For this reason,
 some settings are not made in SimpleMail's configuration window, but in MUI's.
 These MUI modules are:
 
-   TextEditor: internal editor as well as message display in read window.
-      Options: fonts, colours, cursor, separator, keybindings, spell
-               checker.
+    TextEditor: internal editor as well as message display in Read Message
+                window.
+       Options: fonts, colours, cursor, separator, keybindings, spell
+                checker.
 
-    NListtree: structured lists, e.g. folder and message lists,
-               address book, sheets in config window
-      Options: appearance of lines and group icons.
+     NListtree: structured lists, i.e. folder and message lists,
+                address book, sheets in config window
+       Options: appearance of lines and group icons.
 
 PopPlaceHolder: items using pop-up placeholders under Config/Phrases
 
- BetterString: general one-line text input field.
-      Options: font, palette, cursor.
+  BetterString: general one-line text input field.
+       Options: font, palette, cursor.
 
 @ENDNODE
 @NODE "FO_W" "Edit Folder"
@@ -660,7 +663,7 @@ EDIT FOLDER
 
 Apart from the four mailbox folders "Incoming", "Outgoing", "Sent" and
 "Deleted", you can create any number of user-defined folders. These folders
-are useful e.g. to archive received and/or sent mail or to administrate
+are useful e.g. to archive received and/or sent mail, or to administrate
 mailing lists.
 
 
@@ -675,9 +678,8 @@ window.
 Path
 
 This is the path in which the messages of the actual folder will be saved.
-Usually this is a subdirectory of the actual basic folder directory, but
-you can specify any other place, like another hard disk partition for
-example.
+Usually this is a subdirectory in the basic "/.folders" directory, but you
+can specify any other place, like another hard disk partition for example.
 
     Example:  SimpleMail_ml
 
@@ -708,7 +710,7 @@ the configuration window.
   @{" Reading plain  " LINK "CO05" 0}   - Main layout options for reading email
   @{" Reading HTML   " LINK "CO06" 0}   - Image download filter for HTML mail
   @{" Phrases        " LINK "CO07" 0}   - Options related to message quoting
-  @{" Signatures     " LINK "CO08" 0}   - Signature settings
+  @{" Signatures     " LINK "CO08" 0}   - Signature and cookie settings
 
 
 The same three buttons appear on each sheet:
@@ -867,12 +869,18 @@ command instead of the UIDL commands. In case the mail server doesn't
 support any of these commands, this option shall be turned off.
 
 
-[ ] Use SSL
+[ ] Secure
 
 If this option is activated, the whole communication process between
-SimpleMail and your mail server will happen under SSL encryption. If
-your POP3 server does not support this, you'll receive an error message
+SimpleMail and your mail server will happen under SSL encryption, or more
+exactly under the TLS protocol as described in RFC #2595, using port 995
+instead of the usual 110. In a nutshell, this adds extra security to prevent
+the common eavesdropping and hijacking attacks which POP is subject to.
+
+If your POP3 server does not support this, you'll receive an error message
 while checking for new mail - in that case, switch this option off.
+
+Also, note this requires AmiSSL to work.
 
 
 ---- Send ----------------------------------------------------------------
@@ -897,6 +905,22 @@ default value. If yours is different, enter that number here.
 Enable this if you're using a server which requires authentication (ask
 your ISP if in doubt). You will need an additional login and password in
 this case, to be entered in the Login/Password fields above.
+
+
+[ ] Secure
+
+Enable this to use a secure SSL/TLS connection with the SMTP server.
+In this case, SimpleMail will use the SMTP STARTTLS extension as
+described in RFC #2487 to request an authenticated communication
+with the SMTP server, trying to protect the communication from
+the typical man-in-the-middle attack coming from any system routing
+the communication.
+
+If your SMTP server does not support this, you'll receive an error
+message while trying to send email - in that case, switch this option
+off.
+
+Again, this requires AmiSSL to work.
 
 
 [ ] Log into POP3 server first
@@ -1000,15 +1024,15 @@ under "Additional headers" one by one, pressing <Return> after each one.
   Example:  X-Mailer
             In-Reply-To
 
-By default, the "From", "To", "Subject" and "Date" headers are displayed.
-In the Read message window, the selected headers will be displayed in the
-order you set here.
+By default, all the "From", "To", "CC", "Subject", "Date" and "Reply-To"
+headers are displayed. In the Read Message window, the selected headers
+will be displayed in the order you set here.
 
 @ENDNODE
 @NODE "CO05" "Configuration - Reading plain"
 @TOC "CO_W"
 
-Configuration - READING PLAIN  (Font and colour settings for the Read window)
+Configuration - READING PLAIN  (Fonts and colours for the Read Message window)
 
 
 ---- Fonts ---------------------------------------------------------------
@@ -1030,9 +1054,9 @@ or table you will read. :)
 ---- Colours -------------------------------------------------------------
 
 Here you can select the palette colours for the various items composing the
-Read message window: background, plain text, quoted text, old quoted text
+Read Message window: background, plain text, quoted text, old quoted text
 (two generations old instead of one) and text which is part of a link,
-like email and WWW addresses. Colours can be "finetuned" using the colour
+like e-mail and WWW addresses. Colours can be "finetuned" using the colour
 wheel.
 
 
@@ -1045,8 +1069,9 @@ which are always wordwrapped if needed.
 
 [ ] Underline links
 
-Tick this option to make links (e.g. email and WWW addresses) to be displayed
-underlined. This also includes links appearing in the message headers.
+Tick this option to make links (e.g. e-mail and WWW addresses) to be
+displayed underlined. This also includes links appearing in the message
+headers.
 
 
 [ ] Use graphical smilies
@@ -1173,21 +1198,28 @@ the list (for subject, date, sender, etc.).
 @NODE "CO08" "Configuration - Signatures"
 @TOC "CO_W"
 
-Configuration - SIGNATURES  (Definition of signatures)
+Configuration - SIGNATURES  (Definition of signatures and cookies)
 
 
 With SimpleMail, you can define as many signatures as you want (e.g., one
 signature for private mail, another one for business, another one for a
 certain mailing list, etcetera).
 
-[Use signatures]
+
+Use signatures
 
 Tick this box if you really want to use signatures.
 
 
-[Add new signature]
+Use cookies
 
-Click here to define a new signature, and then enter a name and the text
+Tick this box is you want SimpleMail to automatically add a random
+cookie to every email you write. (NYI)
+
+
+Add new signature
+
+Click here to define a new signature and then enter a name and the text
 for it.
 
 
@@ -1197,8 +1229,9 @@ Obviously, this gadget allows you to remove a signature already defined.
 
 
 If more than one signature is defined and the use of signatures is
-activated, a pop-up button will appear in the Write window to let you
-select which one you would like to use in the message being written.
+activated, a pop-up button will appear in the Compose Message window
+to let you select which one you would like to use in the message that
+is being written.
 
 @ENDNODE
 @NODE "CO_F" "Editing filters"
@@ -1731,16 +1764,17 @@ here; if the message contains several parts (e.g. some text with a sound
 sample attached), some icons will appear at the bottom of the window to
 let you browse among them at your leasure.
 
-Navigation within the message uses the Cursor up/down keys. You can also
-use Shift-Up/Down to jump up/down one page at a time. To copy part of the
-message to the clipboard, click and drag with the mouse to highlight the
-text. The copy action is automatic and the highlighting disappears.
-If you click on an e-mail address, a new Compose Message window opens
-and the address is automatically copied into the TO: header. A double
-click on a URL, be it either http:\// or ftp:\//, calls openurl.library
-(if present) to start your favourite browser and go to this address.
+Navigation within the message is usually done with the Cursor up/down keys.
+You can also use Shift-Up/Down to jump up/down one page at a time. To copy
+part of the message to the clipboard, click and drag with the mouse to
+highlight the text. The copy action is automatic and the highlighting
+disappears. If you click on an e-mail address, a new Compose Message
+window opens and the address is automatically copied into the TO:
+header. A double click on a URL, be it either http:\// or ftp:\//, calls
+openurl.library (if present) to start your favourite browser and go to
+this address.
 
-You can also use a mouse wheel to navigate the Read Message window.
+Lastly, you can also use a mouse wheel to navigate the Read Message window.
 
 
 Icons representing attachments
@@ -1782,7 +1816,7 @@ Delete
 Deletes the current message and loads the next one into the Read window.
 BEWARE: whilst both the "Delete" gadget and the "Message/Delete" menu item
 in the main window move the message to the "Deleted" folder, this gadget
-deletes the message IMMEDIATELY, i.e. the message can not be recovered.
+removes the message IMMEDIATELY, i.e. the message can not be recovered.
 
 
 Reply
@@ -1821,13 +1855,13 @@ Read Message window - MAIL MENU
 Mail/Show raw format...
 
 This item will run Multiview to show the contents of this email in
-raw format, i.e. just "like it is".
+raw format, i.e. "as is".
 
 
 Print visible mailpart
 
-Will sent to the printer the currently selected part of the email, in all
-its entirety.
+Will sent to the printer the currently selected part of the email in all
+its entirety, using datatypes.
 
 @ENDNODE
 @NODE "TR_W" "Mail Transfers"
@@ -1950,6 +1984,73 @@ Sets the subject for the new message.
     SimpleMail MAILTO "Sebastian Bauer, Hynek Schlawack" SUBJECT Wonderful!
 
 @ENDNODE
+@NODE "AREX" "ARexx interface"
+
+AREXX INTERFACE
+
+
+SimpleMail sports an ARexx interface supporting a growing number of
+@{" commands " LINK "REX2" 0} which can be called through the ARexx port "SIMPLEMAIL.1".
+With the help of ARexx scripts, you can, for instance, let it do things
+automatically.
+
+Explanation for the syntax templates of the ARexx commands:
+
+  /A   The parameter is compulsory
+  /K   The parameter must be preceeded by the keyword
+  /N   Numerical argument or result
+  /M   Argument or result is a list of zero or more elements
+
+
+Be careful when passing arguments containing spaces. For instance,
+
+  subj = 'Just testing'
+  MAILWRITE MAILTO ralf@provider.de SUBJECT subj
+
+won't work, as there is a space in the variable. Better use this instead:
+
+  MAILWRITE MAILTO ralf@provider.de SUBJECT "'subj'"
+
+@ENDNODE
+@NODE "REX2" "Supported ARexx commands"
+
+SUPPORTED AREXX COMMANDS
+
+
+GETSELECTED      VAR/K,STEM/K => NUM/N/M
+
+Get positions of selected messages in the current folder. The message on
+top of the list gets position 0.
+
+
+HIDE
+
+Switches SimpleMail to iconified state.
+
+
+MAILWRITE        MAILTO/K,SUBJECT/K
+
+Opens a new Write Message window using the recipient and subject
+provided, if any. MAILTO can be either an email address or an alias
+(or even group name) that can be found in the addressbook - SimpleMail
+will resolve aliases and group names as appropriate.
+
+
+MAINTOFRONT
+
+Brings the main window to the front.
+
+
+SETMAIL          NUM/N/A
+
+Selects the current message in the current folder, NUM is 0 to n-1.
+
+
+SHOW
+
+Brings SimpleMail back from its iconified state into full view.
+
+@ENDNODE
 @NODE "TIPS" "FAQ"
 
 FAQ
@@ -2009,7 +2110,7 @@ platform.
 
 - Where can I download the sources?
 
-They are available on request from the @{" Authors " link INFO}.
+They are available on request from the @{" Authors " LINK INFO}.
 
 
 
@@ -2047,12 +2148,6 @@ very soon.
 - Can I use SimpleMail as an external mailer from my browser?
 
 Yes. See the @{" Startup options " LINK "OPTI" 0} for more info.
-
-
-- What about ARexx support?
-
-Currently only the basic commands supplied by MUI can be used, as
-SimpleMail lacks its own.
 
 
 - How about implementing this and this and...?
@@ -2120,17 +2215,6 @@ in the directory. There is also a configuration file which holds the
 settings for that particular folder.
 
 @ENDNODE
-@NODE "PLAN" "Future Plans"
-
-FUTURE PLANS
-
-Eventually SimpleMail will support:
-
-
-  - The IMAP-4 Protocol
-  - Asynchronous mail transfer
-
-@ENDNODE
 @NODE "INFO" "Further Information about SimpleMail"
 
 FURTHER INFORMATION ABOUT SIMPLEMAIL
@@ -2180,7 +2264,6 @@ The @{B}SimpleMail User Gallery@{UB} is located at
 
 @ENDNODE
 @NODE "CRED" "Credits"
-@{jcenter}
 
 Authors
 
@@ -2202,7 +2285,7 @@ Smiley gfx courtesy of @{b}Richard Kapp@{ub}
 
 SimpleMail.guide
 
-@{b}David Rey@{ub} <david\@saug.org>
+@{b}David Rey @{ub}<david\@saug.org>
 based upon the YAM 2.2 guide by @{b}Marcel Beck@{ub}
 
 
@@ -2216,7 +2299,6 @@ Programmers
 
 And all the people who keep submitting bug reports!
 
-@{jleft}
 @ENDNODE
 @NODE INDEX "Index"
 @{CODE}
@@ -2225,6 +2307,7 @@ And all the people who keep submitting bug reports!
 
    @{" Address Book " LINK AB_W}
    @{" Address book - Toolbar " LINK AB_B}
+   @{" ARexx interface " LINK AREX}
 
    B...
 
@@ -2260,7 +2343,6 @@ And all the people who keep submitting bug reports!
    @{" FAQ " LINK TIPS}
    @{" Filters, Editing " LINK CO_F}
    @{" Further Information about SimpleMail " LINK INFO}
-   @{" Future Plans " LINK PLAN}
 
    H...
 
@@ -2301,6 +2383,7 @@ And all the people who keep submitting bug reports!
    S...
 
    @{" SimpleMail - English documentation " LINK MAIN}
+   @{" Sources, how to get them " LINK INFO}
    @{" Startup options " LINK OPTI}
    @{" Status Icons " LINK MA0S}
 
@@ -2440,9 +2523,9 @@ example.
 
 The SimpleHTML engine is already built-in in SimpleMail to allow you to
 easily read HTML mail, i.e. you don't need to go and install SimpleHTML
-separately. Still, if you want to give SimpleHTML a try (which is
-probably a good idea anyway :), the latest version should be always
-available in Sebastian's homepage:
+separately. Still, if you want to give SimpleHTML a try (which is probably
+a good idea anyway :), the latest version should be always available in
+Sebastian's homepage:
 
               http:\//home.t-online.de/home/sebauer/
 

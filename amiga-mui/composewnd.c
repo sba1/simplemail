@@ -40,6 +40,7 @@
 #include "account.h"
 #include "addressbook.h"
 #include "codecs.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "taglines.h"
 #include "folder.h"
@@ -483,7 +484,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 	} else
 	{
 		cmail->content_type = mystrdup(attach->content_type);
-		cmail->text = mystrdup(attach->contents);
+		cmail->text = (attach->contents)?utf8create(attach->contents,NULL):NULL;
 		cmail->filename = mystrdup(attach->filename);
 		cmail->temporary_filename = mystrdup(attach->temporary_filename);
 	}
@@ -642,7 +643,17 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 		/* if the content type is a text it can be edited */
 		if (!mystricmp(buf,"text/plain"))
 		{
-			attach.contents = mystrndup((char*)cont,cont_len);
+			char *isobuf = NULL;
+			char *cont_dup = mystrndup((char*)cont,cont_len); /* we duplicate this only because we need a null byte */
+
+			if (cont_dup)
+			{
+				if ((isobuf = (char*)malloc(cont_len+1)))
+					utf8tostr(cont_dup, isobuf, cont_len+1, NULL);
+				free(cont_dup);
+			}
+
+			attach.contents = isobuf;
 			attach.editable = 1;
 			attach.lastxcursor = 0;
 			attach.lastycursor = 0;

@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 
+#include "codesets.h"
 #include "mail.h"
 #include "support.h"
 
@@ -108,6 +109,9 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 								}
 							}
 						}
+						break;
+
+			case	MUIA_ComposeEditor_UTF8Contents:
 						break;
 		}
 	}

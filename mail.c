@@ -2610,26 +2610,29 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 		if (new_mail->text)
 		{
-			char *text;
+			char *convtext;
+			int unconvtext_len = strlen(new_mail->text);
+			struct codeset *best_codeset = codesets_find_best(new_mail->text, strlen(new_mail->text));
+
+			if ((convtext = malloc(unconvtext_len+1)))
+				utf8tostr(new_mail->text, convtext, unconvtext_len+1, best_codeset);
 
 			/* mail text */
 			if (new_mail->to) body_encoding = "8bit"; /* mail has only one part which is a text, so it can be encoded in 8bit */
 
 			if (user.config.write_wrap_type == 2)
-			{
-				text = mystrdup(new_mail->text);
-				wrap_text(text,user.config.write_wrap);
-			} else text = new_mail->text;
+				wrap_text(convtext,user.config.write_wrap);
 
-			if (text)
+			if (convtext)
 			{
-				body = encode_body(text, strlen(text), new_mail->content_type, &body_len, &body_encoding);
+				body = encode_body(convtext, strlen(convtext), new_mail->content_type, &body_len, &body_encoding);
 				if (body_encoding && mystricmp(body_encoding,"7bit"))
 				{
 					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
-				  fprintf(ofh,"Content-Type: text/plain; charset=ISO-8859-1\n");
+				  fprintf(ofh,"Content-Type: text/plain; charset=%s\n",best_codeset->name);
 				}
-				if (user.config.write_wrap_type == 2) free(text);
+
+				free(convtext);
 			}
 		} else
 		{

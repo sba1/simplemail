@@ -303,9 +303,10 @@ static int uidl_open(struct uidl *uidl, struct pop3_server *server)
 	{
 		unsigned char id[4];
 		int fsize = myfsize(fh);
-		fread(id,1,4,fh);
+		int cnt = fread(id,1,4,fh);
 
-		if (id[0] == 'S' && id[1] == 'M' && id[2] == 'U' && id[3] == 0 && ((fsize - 4)%sizeof(struct uidl_entry))==0)
+		if (cnt == 4 && id[0] == 'S' && id[1] == 'M' && id[2] == 'U' && id[3] == 0 &&
+		    ((fsize - 4)%sizeof(struct uidl_entry)) == 0)
 		{
 			uidl->num_entries = (fsize - 4)/sizeof(struct uidl_entry);
 			if ((uidl->entries = malloc(fsize - 4)))

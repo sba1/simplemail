@@ -2237,6 +2237,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 			/* Prevent folder changes */
 			folder_lock(f_array[i]);
 		}
+		f_array[i] = NULL;
 	}
 
   if (thread_parent_task_can_contiue())
@@ -2306,6 +2307,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 						{
 							thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
 							found_num = 0;
+							secs = new_secs;
 						}
 					}
 
@@ -2356,7 +2358,7 @@ void folder_start_search(struct search_options *sopt)
 			struct folder *parent;
 			parent = start->parent_folder;
 			f = folder_next(start);
-			while (f->parent_folder != parent)
+			while (f && f->parent_folder != parent)
 				f = folder_next(f);
 			end = f;
 		}

@@ -308,7 +308,7 @@ void search_enable_search(void)
 void search_disable_search(void)
 {
 	set(search_start_button,MUIA_Disabled,FALSE);
-	set(search_stop_button,MUIA_Disabled,TRUE);
+	SetAttrs(search_stop_button,MUIA_Disabled,TRUE,MUIA_Selected,FALSE,TAG_DONE);
 }
 
 /**************************************************************************

@@ -139,6 +139,7 @@ struct address
 };
 
 struct list *create_address_list(char *str);
+void append_to_address_list(struct list *list, char *str);
 void free_address_list(struct list *list);
 
 #endif

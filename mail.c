@@ -455,10 +455,42 @@ struct mail *mail_create_reply(struct mail *mail)
 
 		if (from)
 		{
-			struct list *alist = create_address_list(from);
+			struct list *alist;
+			char *replyto = mail_find_header_contents(mail, "reply-to");
+			struct mailbox from_addr;
+			struct mailbox replyto_addr;
+			int which_address = 1;
+
+			if (replyto)
+			{
+				parse_mailbox(from, &from_addr);
+				parse_mailbox(replyto,&replyto_addr);
+
+				which_address = sm_request(NULL,
+												"Sender address (From) is <%s>, but\n"
+												"return address (Reply-To) is <%s>.\n"
+												"Which address do you want to use?","_From|*_Reply-To|_Both|_Cancel",
+												from_addr.addr_spec,replyto_addr.addr_spec);
+
+				if (from_addr.phrase)  free(from_addr.phrase);
+				if (from_addr.addr_spec) free(from_addr.addr_spec);
+				if (replyto_addr.phrase)  free(replyto_addr.phrase);
+				if (replyto_addr.addr_spec) free(replyto_addr.addr_spec);
+
+				if (!which_address) return NULL;
+			}
+
+			if (which_address == 2) from = replyto;
+
+			alist = create_address_list(from);
 			if (alist)
 			{
-				char *to_header = encode_address_field("To",alist);
+				char *to_header;
+
+				if (which_address == 3)
+					append_to_address_list(alist, replyto);
+
+				to_header = encode_address_field("To",alist);
 				free_address_list(alist);
 
 				if (to_header)
@@ -1056,6 +1088,24 @@ struct list *create_address_list(char *str)
 		
 	}
 	return list;
+}
+
+/**************************************************************************
+ Appends a address from a given address string to the list
+**************************************************************************/
+void append_to_address_list(struct list *list, char *str)
+{
+	struct list *append_list = create_address_list(str);
+	if (append_list)
+	{
+		struct mailbox *mb;
+
+		while ((mb = (struct mailbox*)list_remove_tail(append_list)))
+		{
+			list_insert_tail(list,&mb->node);
+		}
+		free(append_list);
+	}
 }
 
 /**************************************************************************

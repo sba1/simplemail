@@ -296,20 +296,26 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
 	if (msg->obj == obj)
 	{
 		ULONG rc;
+		ULONG droptype = xget(obj,MUIA_NListtree_DropType);
 		struct MUI_NListtree_TreeNode *src_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
 		struct MUI_NListtree_TreeNode *dest_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_DropTarget);
 
 		if (src_node && dest_node)
 		{
-			struct folder *src_folder, *dest_folder;
+			struct folder *src_folder, *dest_folder, *prev_dest_folder;
 			
 			src_folder = (struct folder*)src_node->tn_User;
 			dest_folder = (struct folder*)dest_node->tn_User;
-			
+
 			if (src_folder && dest_folder)
 			{
-				if ((src_folder->is_imap || dest_folder->is_imap) && !folder_on_same_imap_server(src_folder,dest_folder))
-					return 0;
+				prev_dest_folder = folder_prev(dest_folder);
+
+				if (!(droptype == MUIV_NListtree_DropType_Above && (!prev_dest_folder || !folder_on_same_imap_server(prev_dest_folder,dest_folder))))
+				{
+					if ((src_folder->is_imap || dest_folder->is_imap) && !folder_on_same_imap_server(src_folder,dest_folder))
+						return 0;
+				}
 			}
 		}
 

@@ -42,23 +42,19 @@
 #include "simplemail.h"
 
 #include "addressbookwnd.h"
+#include "addresstreelistclass.h"
 #include "compiler.h"
+#include "mainwnd.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "support_indep.h"
 
+static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group);
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
-
-/* some local functions and data */
-static void addressbook_refresh(void);
 
 /* for the address window */
 static Object *address_wnd;
 static Object *address_tree;
-static struct Hook address_construct_hook;
-static struct Hook address_destruct_hook;
-static struct Hook address_display_hook;
-
 
 /* the Person Window */
 #define MAX_PERSON_OPEN 10
@@ -276,6 +272,11 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	/* free the the addresses memory */
 	if (addresses) FreeVec(addresses);
+
+	/* update the internal addressbook */
+	cleanup_addressbook();
+	addressbook_update(NULL,NULL);	
+	main_build_addressbook();
 }
 
 /******************************************************************
@@ -787,6 +788,11 @@ static void group_window_ok(struct Group_Data **pdata)
 	}
 
 	group_window_close(pdata);
+
+	/* update the internal addressbook */
+	cleanup_addressbook();
+	addressbook_update(NULL,NULL);	
+	main_build_addressbook();
 }
 
 /******************************************************************
@@ -867,56 +873,6 @@ static void group_window_open(struct addressbook_entry *entry)
 
 
 /* the address window functions */
-STATIC ASM struct addressbook_entry *address_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
-{
-	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
-	return addressbook_duplicate_entry(entry);
-}
-
-STATIC ASM VOID address_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
-{
-	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
-	addressbook_free_entry(entry);
-}
-
-STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
-{
-	if (msg->TreeNode)
-	{
-		struct addressbook_entry *entry = (struct addressbook_entry *)msg->TreeNode->tn_User;
-
-		switch (entry->type)
-		{
-			case	ADDRESSBOOK_ENTRY_GROUP:
-						*msg->Array++ = entry->u.group.alias;
-						*msg->Array++ = NULL;
-						*msg->Array++ = entry->u.group.description;
-						*msg->Array = NULL;
-						break;
-
-			case	ADDRESSBOOK_ENTRY_PERSON:
-						*msg->Array++ = entry->u.person.alias;
-						*msg->Array++ = entry->u.person.realname;
-						*msg->Array++ = entry->u.person.description;
-						if (entry->u.person.num_emails)
-							*msg->Array = entry->u.person.emails[0];
-						break;
-
-			case	ADDRESSBOOK_ENTRY_LIST:
-						*msg->Array++ = entry->u.list.alias;
-						*msg->Array++ = entry->u.list.nameofml;
-						*msg->Array++ = entry->u.list.description;
-						*msg->Array = NULL;
-						break;
-		}
-	} else
-	{
-		*msg->Array++ = "Alias";
-		*msg->Array++ = "Name";
-		*msg->Array++ = "Description";
-		*msg->Array = "Address";
-	}
-}
 
 /******************************************************************
  Updates the internal address book
@@ -924,7 +880,7 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group)
 {
 	struct addressbook_entry *entry;
-/*	cleanup_addressbook();*/
+
 	if (!treenode) treenode = (struct MUI_NListtree_TreeNode *)DoMethod(address_tree,
 				MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
 
@@ -1028,46 +984,11 @@ static void addressbook_to(void)
 static void addressbook_delete(void)
 {
 	DoMethod(address_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
-}
 
-/******************************************************************
- Adds an entry to the addressbook (recursivly)
-*******************************************************************/
-static void addressbook_add(struct addressbook_entry *entry, APTR listnode)
-{
-	entry = addressbook_first(entry);
-
-	while (entry)
-	{
-		struct MUI_NListtree_TreeNode *treenode;
-		LONG flags = 0;
-
-		if (entry->type == ADDRESSBOOK_ENTRY_GROUP) flags = TNF_LIST|TNF_OPEN;
-
-		treenode = (struct MUI_NListtree_TreeNode*)DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, entry, /*udata */
-						   listnode,MUIV_NListtree_Insert_PrevNode_Tail,flags);
-
-		if (entry && (flags & TNF_LIST))
-		{
-			addressbook_add(entry,treenode);
-		}
-		entry = addressbook_next(entry);
-	}
-}
-
-/******************************************************************
- Refreshes the addressbook to match the internal addressbook list
-*******************************************************************/
-static void addressbook_refresh(void)
-{
-	if (!address_wnd) return;
-
-	set(address_tree, MUIA_NListtree_Quiet, TRUE);
-	DoMethod(address_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
-
-	addressbook_add(NULL, MUIV_NListtree_Insert_ListNode_Root);
-
-	set(address_tree, MUIA_NListtree_Quiet, FALSE);
+	/* update the internal addressbook */
+	cleanup_addressbook();
+	addressbook_update(NULL,NULL);	
+	main_build_addressbook();
 }
 
 /******************************************************************
@@ -1077,10 +998,6 @@ static void addressbook_init(void)
 {
 	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button;
 	Object *to_button;
-
-	init_hook(&address_construct_hook, (HOOKFUNC)address_construct);
-	init_hook(&address_destruct_hook, (HOOKFUNC)address_destruct);
-	init_hook(&address_display_hook, (HOOKFUNC)address_display);
 
 	address_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('A','D','B','K'),
@@ -1107,13 +1024,8 @@ static void addressbook_init(void)
 			Child, HGroup,
 				Child, NListviewObject,
 					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, address_tree = NListtreeObject,
-						MUIA_NListtree_ConstructHook, &address_construct_hook,
-						MUIA_NListtree_DestructHook, &address_destruct_hook,
-						MUIA_NListtree_DisplayHook, &address_display_hook,
-						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format,",,,",
-						MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
+					MUIA_NListview_NList, address_tree = AddressTreelistObject, 
+						MUIA_AddressTreelist_InAddressbook, TRUE,
 						End,
 					End,
 				End,
@@ -1130,9 +1042,6 @@ static void addressbook_init(void)
 	DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_delete);
 	DoMethod(to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_to);
 	DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);
-
-	set(address_tree, MUIA_UserData, 1); /* used in addresstringclass.c */
-
 }
 
 /******************************************************************
@@ -1143,7 +1052,8 @@ void addressbook_open(void)
 	if (!address_wnd) addressbook_init();
 	if (address_wnd)
 	{
-		if (!xget(address_wnd, MUIA_Window_Open)) addressbook_refresh();
+		if (!xget(address_wnd, MUIA_Window_Open))
+			DoMethod(address_tree, MUIM_AddressTreelist_Refresh);
 		set(address_wnd, MUIA_Window_Open, TRUE);
 	}
 }

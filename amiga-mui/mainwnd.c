@@ -46,13 +46,14 @@
 #include "simplemail.h"
 #include "support_indep.h"
 
+#include "addresstreelistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
-#include "mybrush.h"
+/*#include "mybrush.h"*/
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 
@@ -75,6 +76,9 @@ static const char *image_files[] = {
 struct MyBrush *brushes[sizeof(image_files)/sizeof(char*)];
 
 static Object *win_main;
+static Object *main_menu;
+static Object *main_settings_folder_menuitem;
+static Object *main_settings_addressbook_menuitem;
 static Object *main_group;
 /*static Object *speedbar;*/
 static Object *button_fetch;
@@ -103,13 +107,17 @@ static Object *folder_balance;
 static Object *folder_group;
 static Object *folder_text;
 static Object *folder_popupmenu;
-
+static Object *address_listview_group;
+static Object *address_listview;
+static Object *address_tree;
+static Object *left_listview_group;
+static Object *left_listview_balance;
 static Object *folder_checksingleaccount_menuitem;
 
 static int folders_in_popup;
 
 static void main_refresh_folders_text(void);
-static int init_folder_placement(void);
+static void settings_show_changed(void);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
@@ -224,6 +232,19 @@ static void foldertreelist_doubleclick(void)
 }
 
 /******************************************************************
+ An addressbook entry has been doubleclicked
+*******************************************************************/
+static void addresstreelist_doubleclick(void)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(address_tree, MUIA_NListtree_Active);
+	if (treenode && treenode->tn_User)
+	{
+		callback_write_mail_to((struct addressbook_entry *)treenode->tn_User);
+	}
+}
+
+
+/******************************************************************
  The Mailtree's title has been clicked, so change the sort
  mode if necessary
 *******************************************************************/
@@ -273,8 +294,8 @@ static void menu_check_single_account(int *val)
 *******************************************************************/
 static void switch_folder_view(void)
 {
-	folders_in_popup = !folders_in_popup;
-	init_folder_placement();
+	set(main_settings_folder_menuitem, MUIA_Menuitem_Checked, !xget(main_settings_folder_menuitem,MUIA_Menuitem_Checked));
+	settings_show_changed();
 }
 
 /******************************************************************
@@ -298,28 +319,27 @@ static void popup_selected(void)
 }
 
 /******************************************************************
- Initialize the main window
+ Some show settings has been changed
 *******************************************************************/
-static int init_folder_placement(void)
+static void settings_show_changed(void)
 {
+	int folder, addressbook;
+
 	DoMethod(main_group, MUIM_Group_InitChange);
 	DoMethod(mail_tree_group, MUIM_Group_InitChange);
 
-	if (folders_in_popup)
-	{
-		set(folder_group, MUIA_ShowMe, TRUE);
-		set(folder_balance, MUIA_ShowMe, FALSE);
-		set(folder_listview_group, MUIA_ShowMe, FALSE);
-	} else
-	{
-		set(folder_group, MUIA_ShowMe, FALSE);
-		set(folder_balance, MUIA_ShowMe, TRUE);
-		set(folder_listview_group, MUIA_ShowMe, TRUE);
-	}
+	folder = xget(main_settings_folder_menuitem,MUIA_Menuitem_Checked);
+	addressbook = xget(main_settings_addressbook_menuitem,MUIA_Menuitem_Checked);
+
+	set(folder_group, MUIA_ShowMe, !folder);
+	set(folder_listview_group, MUIA_ShowMe, folder);
+	set(address_listview_group,MUIA_ShowMe, addressbook);
+	set(folder_balance, MUIA_ShowMe, folder || addressbook);
+	set(left_listview_group, MUIA_ShowMe, folder || addressbook);
+	set(left_listview_balance, MUIA_ShowMe, folder && addressbook);
 
 	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
 	DoMethod(main_group, MUIM_Group_ExitChange);
-	return 1;
 }
 
 /******************************************************************
@@ -339,8 +359,7 @@ static void main_free_brushes(void)
 *******************************************************************/
 int main_window_init(void)
 {
-	int i, rc;
-	Object *menu;
+	int rc;
 	enum {
 		MENU_PROJECT,
 		MENU_PROJECT_ABOUT = 1,
@@ -361,6 +380,8 @@ int main_window_init(void)
 		MENU_MESSAGE_COPY,
 		MENU_MESSAGE_DELETE,
 		MENU_SETTINGS,
+		MENU_SETTINGS_SHOW_FOLDERS,
+		MENU_SETTINGS_SHOW_ADDRESSBOOK,
 		MENU_SETTINGS_ADDRESSBOOK,
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
@@ -401,6 +422,9 @@ int main_window_init(void)
 		{NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 */
 		{NM_TITLE, "Settings", NULL, 0, 0, (APTR)MENU_SETTINGS},
+		{NM_ITEM, "Show folders?", NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
+		{NM_ITEM, "Show addressbook?", NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Addressbook", NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
 		{NM_ITEM, "Configuration...", NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, "Filter...", NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
@@ -418,13 +442,13 @@ int main_window_init(void)
 
 	rc = FALSE;
 
-	menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+	main_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
 	win_main = WindowObject,
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
     MUIA_Window_Title, VERS,
 
-		MUIA_Window_Menustrip,menu,
+		MUIA_Window_Menustrip,main_menu,
 
 		WindowContents, main_group = VGroup,
 /*			Child, HGroupV,
@@ -482,20 +506,31 @@ int main_window_init(void)
 				End,
 
 			Child, mail_tree_group = HGroup,
-				Child, folder_listview_group = VGroup,
+				Child, left_listview_group = VGroup,
 					MUIA_HorizWeight, 33,
-					Child, folder_listview = NListviewObject,
-						MUIA_CycleChain, 1,
-						MUIA_NListview_NList, folder_tree = FolderTreelistObject,
-							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-							MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+					Child, folder_listview_group = VGroup,
+						Child, folder_listview = NListviewObject,
+							MUIA_CycleChain, 1,
+							MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+								MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+								MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+								MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+								End,
+							End,
+						Child, HGroup,
+							MUIA_Group_Spacing, 0,
+							Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,MUIA_Background, MUII_TextBack, End,
+							Child, switch2_button = PopButton(MUII_ArrowRight),
 							End,
 						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,MUIA_Background, MUII_TextBack, End,
-						Child, switch2_button = PopButton(MUII_ArrowRight),
+					Child, left_listview_balance = BalanceObject, End,
+					Child, address_listview_group = VGroup,
+						Child, address_listview = NListviewObject,
+							MUIA_CycleChain, 1,
+							MUIA_NListview_NList, address_tree = AddressTreelistObject,
+								MUIA_AddressTreelist_InAddressbook, 0,
+								End,
+							End,
 						End,
 					End,
 				Child, folder_balance = BalanceObject, End,
@@ -514,7 +549,11 @@ int main_window_init(void)
 	
 	if(win_main != NULL)
 	{
-		if (!init_folder_placement()) return 0;
+		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
+		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
+
+		settings_show_changed();
+
 		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<7))
     {
     	printf("SimpleMail needs at least version 1.7 of the NListtree mui subclass!\nIt's available at http://www.aphaso.de\n");
@@ -542,7 +581,7 @@ int main_window_init(void)
 		AddButtonToSpeedBar(speedbar, 12, "_Config", "Configure SimpleMail");
 */
 
-		folder_checksingleaccount_menuitem = (Object*)DoMethod(menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
+		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
@@ -571,6 +610,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION,App, 3, MUIM_CallHook, &hook_standard, callback_config);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 
 		/* Key notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
@@ -601,8 +642,10 @@ int main_window_init(void)
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard,  foldertreelist_doubleclick);
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
+		DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, addresstreelist_doubleclick);
 
 		main_build_accounts();
+		main_build_addressbook();
 
 		rc = TRUE;
 	}
@@ -1110,4 +1153,12 @@ void main_build_accounts(void)
 		Object *entry = MenuitemObject, MUIA_Menuitem_Title, "No POP3 Server specified",	End;
 		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 	}
+}
+
+/******************************************************************
+ Build the addressbook which is displayed in this window
+*******************************************************************/
+void main_build_addressbook(void)
+{
+	DoMethod(address_tree, MUIM_AddressTreelist_Refresh);
 }

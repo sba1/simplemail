@@ -121,7 +121,7 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 	{
 		if ((cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, &muiDispatcherEntry)))
 		{
-			cl->mcc_Class->cl_UserData = dispatcher;
+			cl->mcc_Class->cl_UserData = (ULONG)dispatcher;
 		}
 	}
 	return cl;

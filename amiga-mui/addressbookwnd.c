@@ -52,7 +52,6 @@
 #include "addressbookwnd.h"
 #include "addressentrylistclass.h"
 #include "addressgrouplistclass.h"
-#include "addresstreelistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "composeeditorclass.h"

@@ -85,8 +85,8 @@ OBJS = vsnprintf.o \
 	arexx.o \
 	appicon.o \
 	amigasupport.o \
-	addresstreelistclass.o \
 	addressstringclass.o \
+	addressmatchlistclass.o \
 	addressgrouplistclass.o \
 	addressentrylistclass.o \
 	addressbookwnd.o \

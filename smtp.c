@@ -30,6 +30,7 @@
 #include "account.h"
 #include "codecs.h"
 #include "configuration.h"
+#include "debug.h"
 #include "mail.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -533,11 +534,7 @@ static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account
 	if (!(line = tcp_readln(conn->conn))) return 0;
 	rc = atoi(line);
 
-	if (rc != 235)
-	{
-		tell_from_subtask("SMTP AUTH CRAM failed");
-	} else return 1;
-	return 0;
+	return rc == 235;
 }
 
 #if 0
@@ -593,31 +590,43 @@ static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *se
 
 #endif
 
+
+/************************************************************
+ Authentificate via AUTH commands. It tries all supported
+ methods, starting at the strongest.
+************************************************************/
 int esmtp_auth(struct smtp_connection *conn, struct account *account)
 {
-	int rc;
+	int flags, success;
 	char *buf, prep[1024];
 
-	rc = 0;
+	flags = conn->auth_flags;
 
-  if (conn->auth_flags & AUTH_CRAM_MD5)
+  if (flags & AUTH_CRAM_MD5)
 	{
-		rc = esmtp_auth_cram(conn, account);
+		SM_DEBUGF(10,("Trying AUTH CRAM-MD5\n"));
+		if (esmtp_auth_cram(conn, account))
+			return 1;
 	}
-/*	else if(server->esmtp.auth_flags & AUTH_DIGEST_MD5)
+	
+/*
+	if (flags & AUTH_DIGEST_MD5)
 	{
 		rc = esmtp_auth_digest_md5(conn, server);
 	}*/
-	else if(conn->auth_flags & AUTH_LOGIN)
+
+	if (flags & AUTH_LOGIN)
 	{
-		if(smtp_send_cmd(conn, "AUTH", "LOGIN") == 334)
+		SM_DEBUGF(10,("Trying AUTH LOGIN\n"));
+
+		if (smtp_send_cmd(conn, "AUTH", "LOGIN") == 334)
 		{
 			strcpy(prep, account->smtp->auth_login);
 
 			buf = encode_base64(prep, strlen(prep));
 			buf[strlen(buf) - 1] = 0;
 			
-			if(smtp_send_cmd(conn, buf, NULL) == 334)
+			if (smtp_send_cmd(conn, buf, NULL) == 334)
 			{
 				free(buf);
 
@@ -626,16 +635,20 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 				buf = encode_base64(prep, strlen(prep));
 				buf[strlen(buf) - 1] = 0;
 
-				if(smtp_send_cmd(conn, buf, NULL) == 235)
-				{
-					rc = 1;
-				}
+				success = smtp_send_cmd(conn, buf, NULL) == 235;
+
+				free(buf);
+
+				return success;
 			}
 		}
 	}
-	else if(conn->auth_flags & AUTH_PLAIN)
+
+	if (flags & AUTH_PLAIN)
 	{
-		if(smtp_send_cmd(conn, "AUTH", "PLAIN") == 334)
+		SM_DEBUGF(10,("Trying AUTH PLAIN\n"));
+
+		if (smtp_send_cmd(conn, "AUTH", "PLAIN") == 334)
 		{
 			prep[0]=0;
 			strcpy(prep + 1, account->smtp->auth_login);
@@ -643,15 +656,14 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 			
 			buf = encode_base64(prep, strlen(account->smtp->auth_login) + strlen(account->smtp->auth_password) + 2);
 			buf[strlen(buf) - 1] = 0;
-			if(smtp_send_cmd(conn, buf, NULL) == 235)
-			{
-				rc = 1;
-			}
+			success = smtp_send_cmd(conn, buf, NULL) == 235;
 			free(buf);
+			return success;
 		}
 	}
 
-	return rc;
+	SM_DEBUGF(5,("Authentication failed\n"));
+	return 0;
 }
 
 /**************************************************************************

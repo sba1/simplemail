@@ -1149,6 +1149,8 @@ char *addressbook_get_expand_str(char *unexpand)
 		} else
 		{
 			char *tolook;
+			while (isspace((unsigned char)*buf))
+				buf++;
 			ret = strchr(buf,',');
 			if (!ret) ret = unexpand_end;
 

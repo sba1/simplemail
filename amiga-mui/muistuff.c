@@ -38,15 +38,10 @@ LONG xget(Object * obj, ULONG attribute)
   return (x);
 }
 
-ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
-{
-  return (DoSuperMethod(cl, obj, OM_NEW, &tag1, NULL));
-}
-
-
 #ifdef __AMIGAOS4__
 #undef NewObject
 #include <stdarg.h>
+
 APTR NewObject( struct IClass *cl, CONST_STRPTR id, ULONG tag1, ... )
 {
 	Object *o;
@@ -56,6 +51,17 @@ APTR NewObject( struct IClass *cl, CONST_STRPTR id, ULONG tag1, ... )
 	o = NewObjectA(cl,id,va_getlinearva(args,void*));
 	va_end(args);
 	return o;
+}
+
+ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
+{
+	ULONG rc;
+	va_list args;
+	va_startlinear(args,tag1);
+
+	rc = DoSuperMethod(cl, obj, OM_NEW, va_getlinearva(args,ULONG), NULL);
+	va_end(args);
+	return rc;
 }
 
 void SetRexxVar(void)
@@ -79,6 +85,11 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
 	return MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
+}
+
+ULONG DoSuperNew(struct IClass *cl, Object * obj, ULONG tag1,...)
+{
+  return DoSuperMethod(cl, obj, OM_NEW, &tag1, NULL);
 }
 
 #endif

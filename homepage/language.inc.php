@@ -75,6 +75,8 @@ $GalleryPhotoText["en"]="Your Photo:";
 $GalleryPhotoText["de"]="Ihr Foto:";
 $GalleryAlreadyText["en"]="Your photo is already inside SimpleMail's gallery";
 $GalleryAlreadyText["de"]="Ihr Foto ist bereits in SimpleMail's Galery";
+$GalleryMailSent["en"]="The mail with the picture has been successfully sent. It's get added as soon as possible.";
+$GalleryMailSent["de"]="Die e-Mail mit dem Foto wurde erfolgreich versandt. Es wird sobald wie möglich in die Datenbank aufgenommen.";
 
 ?>
 

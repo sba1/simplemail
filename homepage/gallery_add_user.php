@@ -40,7 +40,7 @@
       if ($uh)
       {
 	$binary = fread($uh,$userfile_size);
-        $base64 = wordwrap(base64_encode($binary),64,"\n",!);
+        $base64 = wordwrap(base64_encode($binary),64,"\n",1);
         $boundary = "--=gzdsghkdgsdfjkdsjfk";
 
 	mail("sebauer@t-online.de","SimpleMail User Gallery",
@@ -57,8 +57,10 @@
 	     "\n".$base64."\n".
 	     "--".$boundary."--\n",
              /* Additional headers */
-	     "MIME-Version: 1.0\n",
+	     "MIME-Version: 1.0\n".
 	     "Content-Type: multipart/mixed; boundary=\"".$boundary."\"");
+
+	echo $GalleryMailSent."<br>";
 
 	fclose($uh);
       }

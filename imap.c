@@ -361,6 +361,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 				{
 					/* untagged */
 					unsigned int msgno;
+					int is_mail = 0;
 					unsigned int uid = 0;
 					unsigned int size = 0;
 					char *headers = NULL;
@@ -384,6 +385,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 						{
 							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 							uid = atoi(cmd_buf);
+							is_mail = 1;
 						}
 						else if (!mystricmp(cmd_buf,"RFC822.SIZE"))
 						{
@@ -420,7 +422,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 						}
 					}
 
-					if (msgno <= num_of_remote_mails && msgno > 0)
+					if (msgno <= num_of_remote_mails && msgno > 0 && is_mail)
 					{
 						remote_mail_array[msgno-1].uid = uid;
 						remote_mail_array[msgno-1].size = size;
@@ -1291,7 +1293,6 @@ static void imap_thread_really_download_mails(void)
 						}
 					}
 					if (does_exist) continue;
-
 
 					sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
 

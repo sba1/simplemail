@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include <libraries/iffparse.h> /* MAKE_ID */
+#include <libraries/gadtools.h>
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/betterstring_mcc.h>
@@ -52,6 +53,7 @@
 #include "addressentrylistclass.h"
 #include "addressgrouplistclass.h"
 #include "addresstreelistclass.h"
+#include "amigasupport.h"
 #include "compiler.h"
 #include "composeeditorclass.h"
 #include "mainwnd.h"
@@ -64,11 +66,13 @@ static void addressbookwnd_store(void);
 
 /* for the address window */
 static Object *address_wnd;
+static Object *address_menu;
 
 static Object *group_list;
 static Object *address_list;
 
-/* the Person Window */
+/**********************************************************************/
+
 #define MAX_PERSON_OPEN 10
 static int person_open[MAX_PERSON_OPEN];
 
@@ -801,9 +805,9 @@ static void person_window_open(struct addressbook_entry_new *entry)
 
 
 
+/**********************************************************************/
 
 
-/* the Group Window */
 #define MAX_GROUP_OPEN 10
 static int group_open[MAX_GROUP_OPEN];
 
@@ -849,8 +853,6 @@ static void group_window_ok(struct Group_Data **pdata)
 
 	if ((new_group = malloc(sizeof(*new_group))))
 	{
-		LONG pos;
-
 		memset(new_group,0,sizeof(*new_group));
 
 		new_group->name = mystrdup(getutf8string(data->alias_string));
@@ -858,15 +860,13 @@ static void group_window_ok(struct Group_Data **pdata)
 
 		if (data->group)
 		{
-			pos = MUIV_NList_GetPos_Start;
+			LONG pos = MUIV_NList_GetPos_Start;
 			DoMethod(group_list, MUIM_NList_GetPos, data->group, &pos);
 
-			if (pos != MUIV_NList_GetPos_End) DoMethod(group_list, MUIM_NList_ReplaceSingle, new_group, pos, NOWRAP, 0);
-			else pos = -1;
-		} else pos = -1;
+			if (pos != MUIV_NList_GetPos_End) DoMethod(group_list, MUIM_NList_Remove, pos);
+		}
 
-		if (pos == -1)
-			DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
+		DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
 
 		addressbook_free_group(new_group);
 	}
@@ -899,18 +899,20 @@ static void group_window_open(struct addressbook_group *group)
 		WindowContents, VGroup,
 			Child, VGroup,
 				Child, ColGroup(2),
-					Child, MakeLabel(_("Alias")),
+					Child, MakeLabel(_("_Name")),
 					Child, alias_string = UTF8StringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
 						MUIA_UTF8String_Charset, user.config.default_codeset,
+						MUIA_ControlChar, GetControlChar(_("_Name")),
 						End,
 
-					Child, MakeLabel(_("Description")),
+					Child, MakeLabel(_("_Description")),
 					Child, description_string = UTF8StringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
 						MUIA_UTF8String_Charset, user.config.default_codeset,
+						MUIA_ControlChar, GetControlChar(_("_Description")),
 						End,
 					End,
 				End,
@@ -958,6 +960,8 @@ static void group_window_open(struct addressbook_group *group)
 }
 
 
+/**********************************************************************/
+
 /* the address window functions */
 
 /******************************************************************
@@ -987,7 +991,7 @@ static void addressbookwnd_store(void)
 /******************************************************************
  Save the addressbook to disk
 *******************************************************************/
-static void addressbook_save_pressed(void)
+static void addressbookwnd_save_pressed(void)
 {
 	cleanup_addressbook();
 	addressbookwnd_store();
@@ -997,7 +1001,7 @@ static void addressbook_save_pressed(void)
 /******************************************************************
  Adds a new person to the window
 *******************************************************************/
-static void addressbook_add_person(void)
+static void addressbookwnd_add_person(void)
 {
 	person_window_open(NULL);
 }
@@ -1011,9 +1015,42 @@ static void addressbookwnd_add_group(void)
 }
 
 /******************************************************************
+ Remove selected group. Warn's if there a members of the group
+*******************************************************************/
+static void addressbookwnd_rem_group(void)
+{
+	struct addressbook_group *group;
+
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+
+	if (group)
+	{
+		DoMethod(group_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+
+		/* update the internal addressbook */
+		cleanup_addressbook();
+		addressbookwnd_store();
+		main_build_addressbook();
+	}
+}
+
+/******************************************************************
+ Opens a edut window for the current selected group
+*******************************************************************/
+static void addressbookwnd_edit_group(void)
+{
+	struct addressbook_group *group;
+
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+
+	if (group)
+		group_window_open(group);
+}
+
+/******************************************************************
  Change the current selected entry
 *******************************************************************/
-static void addressbook_change_address(void)
+static void addressbookwnd_edit_person(void)
 {
 	struct addressbook_entry_new *entry;
 
@@ -1022,20 +1059,9 @@ static void addressbook_change_address(void)
 }
 
 /******************************************************************
- Change the current selected entry
-*******************************************************************/
-static void addressbook_change_group(void)
-{
-	struct addressbook_group *group;
-
-	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
-	if (group) group_window_open(group);
-}
-
-/******************************************************************
  Removes the currently selected entry
 *******************************************************************/
-static void addressbook_delete(void)
+static void addressbookwnd_remove_person(void)
 {
 	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 
@@ -1048,46 +1074,84 @@ static void addressbook_delete(void)
 /******************************************************************
  Initialzes the addressbook window
 *******************************************************************/
-static void addressbook_init(void)
+static void addressbookwnd_init(void)
 {
-	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button, *import_button;
+	static const struct NewMenu nm_untranslated[] =
+	{
+		{NM_TITLE, N_("Project"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Import addressbook..."), NULL, 0, 0, (APTR)1},
+		{NM_END, NULL, NULL, 0, 0, NULL}
+	};
+
+	static struct NewMenu *nm;
+
+	Object *add_group_button, *edit_group_button, *rem_group_button;
+	Object *add_contact_button, *edit_contact_button, *rem_contact_button;
+	Object *save_button, *close_button;
+
+	int i;
+
+	/* translate the menu entries */
+	if (!nm)
+	{
+		if (!(nm = malloc(sizeof(nm_untranslated)))) return;
+		memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
+
+		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
+		{
+			if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
+			{
+				nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
+				if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
+			}
+		}
+	}
+
+	address_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
 	address_wnd = WindowObject,
 		MUIA_HelpNode, "AB_W",
 		MUIA_Window_ID, MAKE_ID('A','D','B','K'),
     MUIA_Window_Title, _("SimpleMail - Addressbook"),
+
+		MUIA_Window_Menustrip, address_menu,
         
 		WindowContents, VGroup,
 			Child, HGroup,
-				MUIA_VertWeight,0,
-				Child, HVSpace,
-				Child, import_button = MakePictureButton(_("_Import"),"PROGDIR:Images/Save"),
-				Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/Save"),
-/*				Child, MakeButton("Search"),*/
-				Child, new_person_button = MakePictureButton(_("_Person"),"PROGDIR:Images/User"),
-/*				Child, MakeButton("New List"),*/
-				Child, new_group_button = MakePictureButton(_("_Group"),"PROGDIR:Images/Group"),
-				Child, change_button = MakePictureButton(_("_Edit"),"PROGDIR:Images/Edit"),
-				Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/Delete"),
-				Child, HVSpace,
-				Child, HVSpace,
-				End,
-			Child, HGroup,
 				Child, VGroup,
 					MUIA_Weight, 25,
+					Child, HorizLineTextObject(_("Groups")),
 					Child, NListviewObject,
 						MUIA_CycleChain, 1,
 						MUIA_NListview_NList, group_list = AddressGroupListObject, End,
 						End,
 					Child, HGroup,
-						Child, MakeButton(_("Add...")),
-						Child, MakeButton(_("Remove...")),
+						Child, add_group_button = MakeButton(_("Add...")),
+						Child, edit_group_button = MakeButton(_("Edit...")),
+						Child, rem_group_button = MakeButton(_("Remove")),
 						End,
 					End,
-				Child, NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, address_list = AddressEntryListObject, End,
+				Child, BalanceObject, End,
+				Child, VGroup,
+					Child, HorizLineTextObject(_("Contacts")),
+					Child, NListviewObject,
+						MUIA_CycleChain, 1,
+						MUIA_NListview_NList, address_list = AddressEntryListObject, End,
+						End,
+					Child, HGroup,
+						Child, add_contact_button = MakeButton(_("Add...")),
+						Child, edit_contact_button = MakeButton(_("Edit...")),
+						Child, rem_contact_button = MakeButton(_("Remove")),
+						End,
 					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, HVSpace,
+				Child, save_button = MakeButton(Q_("?textbutton:_Save")),
+				Child, HVSpace,
+				Child, close_button = MakeButton(Q_("?textbutton:_Close")),
+				Child, HVSpace,
 				End,
 			End,
 		End;
@@ -1095,13 +1159,19 @@ static void addressbook_init(void)
 	if (!address_wnd) return;
 	DoMethod(App,OM_ADDMEMBER,address_wnd);
 	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save_pressed);
-	DoMethod(import_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_import_addressbook);
-	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
-	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_group);
-	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change_address);
-	DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_delete);
-	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbook_change_address);
+	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_save_pressed);
+	DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_MenuAction, 1, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, callback_import_addressbook);
+
+	DoMethod(add_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_group);
+	DoMethod(edit_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
+	DoMethod(rem_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_rem_group);
+	DoMethod(group_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
+
+	DoMethod(add_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_person);
+	DoMethod(edit_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_person);
+	DoMethod(rem_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard,  addressbookwnd_remove_person);
+	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_person);
 }
 
 /******************************************************************
@@ -1109,7 +1179,7 @@ static void addressbook_init(void)
 *******************************************************************/
 void addressbookwnd_open(void)
 {
-	if (!address_wnd) addressbook_init();
+	if (!address_wnd) addressbookwnd_init();
 	if (address_wnd)
 	{
 		if (!xget(address_wnd, MUIA_Window_Open))
@@ -1135,7 +1205,7 @@ void addressbookwnd_create_entry(struct addressbook_entry_new *entry)
 *******************************************************************/
 int addressbookwnd_set_active_alias(char *alias)
 {
-	if (!address_wnd) addressbook_init();
+	if (!address_wnd) addressbookwnd_init();
 	if (address_wnd)
 	{
 		int i;

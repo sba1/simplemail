@@ -1242,7 +1242,7 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 				if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
 				{
 					*dest_iter++ = f->code;
-				} else *dest_iter = ' ';
+				} else *dest_iter++ = '_';
 			} else *dest_iter++ = c;
 		} else break;
 	}

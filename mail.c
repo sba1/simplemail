@@ -2746,6 +2746,7 @@ void fputhtmlstr(char *str, FILE *fh)
 			unsigned int unicode;
 /*			str = uft8toucs(str,&unicode);*/
 			str += utf8tochar(str, &unicode, user.config.default_codeset);
+			if (unicode == 0) unicode = '_';
 			fprintf(fh,"&#%u;",unicode);
 		}
 	}

@@ -489,9 +489,9 @@ Main window - TOOLBAR
 
 The toolbar gives you easy access to the most frequently used functions.
 
-    .---.---.---.---. .---.---.---.  .---.---.  .---.---.---. .---.---.
-    | 1 | 2 | 3 | 4 | | 5 | 6 | 7 |  | 8 | 9 |  |10 |11 |12 | |13 |14 |
-    `---^---^---^---' `---^---^---'  `---^---'  `---^---^---' `---^---'
+ .---.---.---.---.---. .---.---.---.  .---.---.  .---.---.---.---. .---.---.---.
+ | 1 | 2 | 3 | 4 | 5 | | 6 | 7 | 8 |  | 9 |10 |  |11 |12 |13 |14 | |15 |16 |17 |
+ `---^---^---^---^---' `---^---^---'  `---^---'  `---^---^---^---' `---^---^---'
 
 The following table shows the equivalences between buttons (position
 and label), keyboard shortcuts and menu items.
@@ -502,20 +502,23 @@ and label), keyboard shortcuts and menu items.
   2   [Edit]        E           @{" Message/Edit " LINK "MAM3" 0}
   3   [Delete]      L,<Del>     @{" Message/Delete... " LINK "MAM3" 0}
   4   [GetAdd]      T
+  5   [Move]        M
 
-  5   [New]         N
-  6   [Reply]       R
-  7   [Forward]     W
+  6   [New]         N
+  7   [Reply]       R
+  8   [Forward]     W
 
-  8   [Fetch]       H
-  9   [Send]        S
+  9   [Fetch]       F
+ 10   [Send]        S
 
- 10   [Search]      E
- 11   [Filter]      I
- 12   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
+ 11   [Search]      E
+ 12   [Filter]      I
+ 13   [Spam]        P
+ 14   [Isolate]     O
 
- 13   [Abook]       A
- 14   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
+ 15   [Abook]       A
+ 16   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
+ 17   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
 
 @ENDNODE
 @NODE "MAM1" "Main window - Project Menu"

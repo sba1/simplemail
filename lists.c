@@ -109,7 +109,7 @@ struct node *list_remove_tail(struct list *list)
 *******************************************************************/
 struct node *list_first(struct list *list)
 {
-  return list->first;
+  return (list ? list->first : NULL);
 }
 
 /******************************************************************
@@ -117,7 +117,7 @@ struct node *list_first(struct list *list)
 *******************************************************************/
 struct node *list_last(struct list *list)
 {
-  return list->last;
+  return (list ? list->last : NULL);
 }
 
 /******************************************************************
@@ -155,7 +155,7 @@ int list_length(struct list *list)
 *******************************************************************/
 struct node *node_next(struct node *node)
 {
-  return node->next;
+  return (node ? node->next : NULL);
 }
 
 /******************************************************************
@@ -163,7 +163,7 @@ struct node *node_next(struct node *node)
 *******************************************************************/
 struct node *node_prev(struct node *node)
 {
-  return node->prev;
+  return (node ? node->prev : NULL);
 }
 
 /******************************************************************
@@ -172,7 +172,7 @@ struct node *node_prev(struct node *node)
 *******************************************************************/
 struct list *node_list(struct node *node)
 {
-  return node->list;
+  return (node ? node->list : NULL);
 }
 
 /******************************************************************

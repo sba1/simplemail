@@ -202,8 +202,10 @@ int thread_start(int (*entry)(void*), void *eudata)
 		msg->function = (int (*)(void))entry;
 		msg->arg1 = eudata;
 
-		in = Open("NIL:",MODE_NEWFILE);
-		out = Open("NIL:",MODE_NEWFILE);
+		in = Open("CONSOLE:",MODE_NEWFILE);
+		if (!in) in = Open("NIL:",MODE_NEWFILE);
+		out = Open("CONSOLE:",MODE_NEWFILE);
+		if (!out) out = Open("NIL:",MODE_NEWFILE);
 
 		if (in && out)
 		{

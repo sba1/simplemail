@@ -300,7 +300,7 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *file)
 	size_t len;
 	BPTR fh = files[file->_file];
 	len = (size_t)FRead(fh,buffer,size,count);
-	//_rcnt
+	if (!len && size && count) file->_flag |= _IOEOF;
 	D(bug("0x%lx reading %ld bytes\n",file,len * size));
 	return len;
 }
@@ -349,7 +349,9 @@ int fflush(FILE *file)
 char *fgets(char *string, int n, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return (char*)FGets(fh,string,n);
+	char *rc =  (char*)FGets(fh,string,n);
+	if (!rc && !IoErr()) file->_flag |= _IOEOF;
+	return rc;
 }
 
 int fgetc(FILE *file)

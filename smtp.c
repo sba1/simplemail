@@ -775,6 +775,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		}
 
 		thread_call_parent_function_async(up_set_status,1,N_("Sending DATA..."));
+
 		if (!smtp_data(conn,account, om[i]->mailfile))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("DATA failed."));

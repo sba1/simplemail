@@ -18,6 +18,10 @@
 #ifndef SM__PGP_H
 #define SM__PGP_H
 
+#ifndef SM__LISTS_H
+#include "lists.h"
+#endif
+
 struct pgp_key
 {
 	struct node node;

@@ -378,7 +378,33 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 	memset(mb,0,sizeof(struct mailbox));
 
 	if ((ret = parse_addr_spec(mailbox,&mb->addr_spec)))
+	{
+		/* the phrase can now be placed in the brackets */
+		char *buf = ret;
+		while (isspace(*buf)) buf++;
+		if (*buf == '(')
+		{
+			char *comment_start = ++buf;
+
+			while (*buf)
+			{
+				if (*buf++ == ')')
+				{
+					char *temp_str = (char*)malloc(buf - comment_start);
+					if (temp_str)
+					{
+						strncpy(temp_str,comment_start,buf - comment_start - 1);
+						temp_str[buf - comment_start - 1] = 0;
+						parse_phrase(temp_str,&mb->phrase);
+						free(temp_str);
+					}
+					ret = buf;
+					break;
+				}
+			}
+		}
 		return ret;
+	}
 
 	ret = parse_phrase(mailbox,&mb->phrase);
 	if (!ret) return NULL;

@@ -164,9 +164,23 @@ static int compose_expand_to(struct Compose_Data **pdata)
 		char *str;
 		if ((str = addressbook_get_expanded(to_contents)))
 		{
-			set(data->to_string, MUIA_UTF8String_Contents, str);
+			/* We create now a list of addresses and recreate a string afterwards,
+			 * which may include puny code or not (depending on the charset) */
+			struct list *list = create_address_list(str);
+			if (list)
+			{
+				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				if (puny)
+				{
+					set(data->to_string, MUIA_UTF8String_Contents, puny);
+					free(puny);
+					free_address_list(list);
+					free(str);
+					return 1;
+				}
+				free_address_list(list);
+			}
 			free(str);
-			return 1;
 		}
 		DisplayBeep(NULL);
 		set(data->wnd, MUIA_Window_ActiveObject,data->to_string);
@@ -188,9 +202,23 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 		char *str;
 		if ((str = addressbook_get_expanded(cc_contents)))
 		{
-			set(data->cc_string, MUIA_UTF8String_Contents, str);
+			/* We create now a list of addresses and recreate a string afterwards,
+			 * which may include puny code or not (depending on the charset) */
+			struct list *list = create_address_list(str);
+			if (list)
+			{
+				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				if (puny)
+				{
+					set(data->cc_string, MUIA_UTF8String_Contents, puny);
+					free(puny);
+					free_address_list(list);
+					free(str);
+					return 1;
+				}
+				free_address_list(list);
+			}
 			free(str);
-			return 1;
 		}
 		DisplayBeep(NULL);
 		set(data->wnd, MUIA_Window_ActiveObject,data->cc_string);

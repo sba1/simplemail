@@ -1,8 +1,14 @@
 Version 0.14 (fourtheenth alpha) - released on ?
   - ARexx: The following commands have been added:
+    · ADDRNEW
+    · ADDRSAVE
+    · ADDRGOTO
     · FOLDERINFO
+    · MAILINFO
     · REQUEST
     · REQUESTSTRING
+    · SETFOLDER
+    · SETMAILFILE
   - Signatures can be stripped before quoting now.
   - The number of mails of folders is rendered boldly when containing
     new mails.

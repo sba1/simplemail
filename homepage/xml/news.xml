@@ -17,6 +17,19 @@
 		<item>Folders holding unread mails are hilighted now.</item>
 		<item>Localization.</item>
 	  </list>
+	  
+	  Please note: if you downloaded your archive before xxx, there were informations
+	  about the taglines missing in the guide so the guide has been replaced just
+	  now. If you don't want to download the whole archive again, here is the changeg
+	  paragraph:
+
+      Tick this box is you want SimpleMail to automatically add a random
+      tagline to every email you write. Simply insert a %t in the signature
+      and it will be replaced by a random tagline found in .taglines when
+      composing a mail.
+      
+      Sorry for the inconvience.
+	  
 	</text>
 
 	<text lang="de">

@@ -754,9 +754,13 @@ static int codesets_read_table(char *name)
 				} else
 				{
 					char *p = buf;
+					int fmt2 = 0;
 
-					if (*p++ == '=')
+					if ((*p == '=') || (fmt2 = ((*p == '0') || (*(p+1)=='x'))))
 					{
+						p++;
+						p += fmt2;
+
 						i = strtol(p,&p,16);
 						if (i > 0 && i < 256)
 						{

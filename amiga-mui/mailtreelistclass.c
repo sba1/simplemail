@@ -79,6 +79,7 @@ struct MailTreelist_Data
 	Object *status_reply_partial_obj;
 	Object *status_new_spam_obj;
 	Object *status_unread_spam_obj;
+	Object *status_error_obj;
 
 	Object *status_important_obj;
 	Object *status_attach_obj;
@@ -103,6 +104,7 @@ struct MailTreelist_Data
 	APTR status_reply_partial;
 	APTR status_new_spam;
 	APTR status_unread_spam;
+	APTR status_error;
 
 	APTR status_important;
 	APTR status_attach;
@@ -290,6 +292,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 								case	MAIL_STATUS_HOLD:status = data->status_hold;break;
 								case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
 								case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
+								case	MAIL_STATUS_ERROR:status = data->status_error;break;
 								default: status = NULL;
 							}
 						}
@@ -498,6 +501,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->status_new_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_partial", End;
 	data->status_new_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_spam", End;
 	data->status_unread_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_spam", End;
+	data->status_error_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_error", End;
 
 	data->status_important_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End;
 	data->status_attach_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End;
@@ -574,6 +578,7 @@ STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_new_partial_obj) MUI_DisposeObject(data->status_new_partial_obj);
 	if (data->status_new_spam_obj) MUI_DisposeObject(data->status_new_spam_obj);
 	if (data->status_unread_spam_obj) MUI_DisposeObject(data->status_unread_spam_obj);
+	if (data->status_error_obj) MUI_DisposeObject(data->status_error_obj);
 
 	if (data->status_important_obj) MUI_DisposeObject(data->status_important_obj);
 	if (data->status_attach_obj) MUI_DisposeObject(data->status_attach_obj);
@@ -696,6 +701,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_new_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_partial_obj, 0);
 	data->status_new_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_spam_obj, 0);
 	data->status_unread_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_spam_obj, 0);
+	data->status_error = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_error_obj, 0);
 
 	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_important_obj, 0);
 	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_attach_obj, 0);
@@ -727,6 +733,7 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_partial);
 	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_spam);
 	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_spam);
+	if (data->status_error) DoMethod(obj, MUIM_NList_DeleteImage, data->status_error);
 
 	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
 	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
@@ -796,11 +803,16 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 #define MENU_SETSTATUS_HAM 16
 #define MENU_SPAMCHECK 17
 #define MENU_DELETE 18
+#define MENU_SETSTATUS_SENT 19
+#define MENU_SETSTATUS_ERROR 20
+#define MENU_SETSTATUS_REPLIED 21
+#define MENU_SETSTATUS_FORWARD 22
+#define MENU_SETSTATUS_REPLFORW 23
 
 STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-  Object *context_menu;
+  Object *context_menu, *stati_menu, *last_menu, *hidden_menu;
 
   if (data->context_menu)
   {
@@ -813,7 +825,7 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 	context_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail")),
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Spam Check"), MUIA_UserData, MENU_SPAMCHECK, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, _("Set status"),
+			Child, stati_menu = MenuitemObject, MUIA_Menuitem_Title, _("Set status"),
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Mark"), MUIA_UserData, MENU_SETSTATUS_MARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unmark"), MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, ~0, End,
@@ -824,12 +836,33 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unread"), MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, ~0, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Spam"), MUIA_UserData, MENU_SETSTATUS_SPAM, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Ham"), MUIA_UserData, MENU_SETSTATUS_HAM, End,
+				Child, last_menu = MenuitemObject, MUIA_Menuitem_Title, _("Is Ham"), MUIA_UserData, MENU_SETSTATUS_HAM, End,
 				End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Delete"), MUIA_UserData, MENU_DELETE, End,
 			End,
 		End;
 
+	if (user.config.set_all_stati)
+	{
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, ~0, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		last_menu = hidden_menu;
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Sent"), MUIA_UserData, MENU_SETSTATUS_SENT, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		last_menu = hidden_menu;
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Error"), MUIA_UserData, MENU_SETSTATUS_ERROR, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		last_menu = hidden_menu;
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Replied"), MUIA_UserData, MENU_SETSTATUS_REPLIED, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		last_menu = hidden_menu;
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Forward"), MUIA_UserData, MENU_SETSTATUS_FORWARD, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		last_menu = hidden_menu;
+		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Repl. & Forw."), MUIA_UserData, MENU_SETSTATUS_REPLFORW, End;
+		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+	}
+	
   data->context_menu = context_menu;
   return (ULONG) context_menu;
 }
@@ -856,6 +889,11 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_WAITSEND: callback_mails_set_status(MAIL_STATUS_WAITSEND); break;
 		case  MENU_SETSTATUS_SPAM: callback_selected_mails_are_spam();break;
 		case  MENU_SETSTATUS_HAM: callback_selected_mails_are_ham();break;
+		case	MENU_SETSTATUS_SENT: callback_mails_set_status(MAIL_STATUS_SENT); break;
+		case	MENU_SETSTATUS_ERROR: callback_mails_set_status(MAIL_STATUS_ERROR); break;
+		case	MENU_SETSTATUS_REPLIED: callback_mails_set_status(MAIL_STATUS_REPLIED); break;
+		case	MENU_SETSTATUS_FORWARD: callback_mails_set_status(MAIL_STATUS_FORWARD); break;
+		case	MENU_SETSTATUS_REPLFORW: callback_mails_set_status(MAIL_STATUS_REPLFORW); break;
 		case  MENU_SPAMCHECK: callback_check_selected_mails_if_spam();break;
 		case  MENU_DELETE: callback_delete_mails();break;
 		default: 

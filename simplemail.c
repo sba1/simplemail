@@ -40,6 +40,7 @@
 #include "support_indep.h"
 #include "status.h"
 #include "trans.h"
+#include "debug.h"
 
 #include "addressbookwnd.h"
 #include "composewnd.h"
@@ -747,13 +748,13 @@ void callback_check_selected_folder_for_spam(void)
 	int spams = spam_num_of_spam_classified_mails();
 	int hams = spam_num_of_ham_classified_mails();
 
-	if (spams < 500 || hams < 500)
+	if (spams < user.config.min_classified_mails || hams < user.config.min_classified_mails)
 	{
 		char *which_txt;
 
-		if (spams < 500)
+		if (spams < user.config.min_classified_mails)
 		{
-			if (hams < 500) which_txt = _("spam and ham");
+			if (hams < user.config.min_classified_mails) which_txt = _("spam and ham");
 			else which_txt = _("spam");
 		} else which_txt = _("ham");
 		
@@ -1201,6 +1202,23 @@ void callback_mail_has_been_sent(char *filename)
 	}
 }
 
+/* a mail has NOT been send, something went wrong, set ERROR status */
+void callback_mail_has_not_been_sent(char *filename)
+{
+	struct folder *out = folder_outgoing();
+	struct mail *m;
+	if (!out) return;
+
+	if ((m = folder_find_mail_by_filename(out,filename)))
+	{
+		/* set the new mail status to error */
+		folder_set_mail_status(out,m,MAIL_STATUS_ERROR);
+		/* refresh the folder if visible */
+		main_refresh_mail(m);
+		main_refresh_folder(out);
+	}
+}
+
 /* adds a new imap folder */
 void callback_add_imap_folder(char *server, char *path)
 {
@@ -1274,7 +1292,11 @@ void callback_mails_set_status(int status)
 			}
 		} else
 		{
-			if (status == MAIL_STATUS_READ || status == MAIL_STATUS_UNREAD)
+			if (user.config.set_all_stati)
+			{
+				new_status = status;
+			}
+			else if (status == MAIL_STATUS_READ || status == MAIL_STATUS_UNREAD)
 			{
 				if (mail_get_status_type(mail) == MAIL_STATUS_READ || mail_get_status_type(mail) == MAIL_STATUS_UNREAD)
 					new_status = status;

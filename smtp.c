@@ -781,6 +781,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		if (!smtp_from(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("FROM failed."));
+			thread_call_parent_function_async_string(callback_mail_has_not_been_sent,1,om[i]->mailfile);
 			return 0;
 		}
 
@@ -788,6 +789,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("RCPT failed."));
+			thread_call_parent_function_async_string(callback_mail_has_not_been_sent,1,om[i]->mailfile);
 			return 0;
 		}
 
@@ -796,6 +798,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("DATA failed."));
+			thread_call_parent_function_async_string(callback_mail_has_not_been_sent,1,om[i]->mailfile);
 			return 0;
 		}
 

@@ -474,6 +474,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 
 	int space_left, real_space_left;
 	int comma_width, space_width, second_width;
+	int dots_width, draw_dots;
 
 	int fieldname_width, fieldname_width2;
 
@@ -482,6 +483,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
 	comma_width = TextLength(_rp(obj),",",1);
 	space_width = TextLength(_rp(obj)," ",1);
+	dots_width  = TextLength(_rp(obj),"...",3);
 
 	/* display the field name, which is right aligned */
 	fieldname_width = data->fieldname_width;
@@ -540,8 +542,31 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 			text->x_end   = text->x_start + te.te_Width - 1;
 			text->y_start = y;
 			text->y_end   = text->y_start + _font(obj)->tf_YSize - 1;
-
-			if (!cnt) break;
+			if (!cnt)
+			{
+				if (data->compact && node_index(&text->node) == 0)
+				{
+					/* if the first text of the first field doesn't match on the screen
+					   switch of the second field */
+					space_left = real_space_left;
+					cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
+					text->x_end   = text->x_start + te.te_Width - 1;
+				} else break;
+			}
+			if (cnt < strlen(text->text) && space_left > dots_width)
+			{
+				cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left-dots_width,_font(obj)->tf_YSize);
+				if (cnt > 0)
+				{
+					text->x_end   = text->x_start + te.te_Width + dots_width - 1;
+					draw_dots = 1;
+				} else
+				{
+					cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
+					text->x_end   = text->x_start + te.te_Width - 1;
+					draw_dots = 0;
+				}
+			} else draw_dots = 0;
 
 			if (update && text == data->redraw_text)
 			{
@@ -559,9 +584,16 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 
 			if (draw_text) Text(_rp(obj),text->text,cnt);
 			else Move(_rp(obj),_rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
-
+			if (draw_dots)
+			{
+				if (draw_text) Text(_rp(obj),"...",3);
+				else Move(_rp(obj),_rp(obj)->cp_x + dots_width, _rp(obj)->cp_y);
+				space_left -= dots_width;
+				real_space_left -= dots_width;
+			}
 			space_left -= te.te_Width;
 			real_space_left -= te.te_Width;
+
 			if (next_text)
 			{
 				if (space_left >= comma_width && strlen(text->text) == cnt)
@@ -622,6 +654,12 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 				second_text->y_start = y;
 				second_text->y_end   = second_text->y_start + _font(obj)->tf_YSize - 1;
 				if (!cnt) return;
+				if (cnt < strlen(second_text->text) && real_space_left > dots_width)
+				{
+					cnt = TextFit(_rp(obj),second_text->text,strlen(second_text->text),&te,NULL,1,real_space_left-dots_width,_font(obj)->tf_YSize);
+					text->x_end   = text->x_start + te.te_Width + dots_width - 1;
+					draw_dots = 1;
+				} else draw_dots = 0;
 
 				if (update && second_text == data->redraw_text)
 				{
@@ -639,6 +677,12 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 				if (draw_text) Text(_rp(obj),second_text->text,cnt);
 				else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
 				real_space_left -= te.te_Width;
+				if (draw_dots)
+				{
+					if (draw_text) Text(_rp(obj),"...",3);
+					else Move(_rp(obj),_rp(obj)->cp_x + dots_width, _rp(obj)->cp_y);
+					real_space_left -= dots_width;
+				}
 
 				if (next_text)
 				{

@@ -452,7 +452,7 @@ static void init_filter(void)
 	static struct Hook filter_display_hook;
 	static struct Hook move_objstr_hook, move_strobj_hook;
 	Object *ok_button, *cancel_button, *save_button;
-	Object *filter_add_rule_button, *filter_apply_now_button, *filter_move_popobject;
+	Object *filter_add_rule_button, *filter_apply_now_button, *filter_move_popobject, *filter_remote_label;
 
 	init_hook(&filter_construct_hook,(HOOKFUNC)filter_construct);
 	init_hook(&filter_destruct_hook,(HOOKFUNC)filter_destruct);
@@ -500,7 +500,7 @@ static void init_filter(void)
 								Child, MakeLabel(_("On sent mails")),
 								Child, filter_sent_check = MakeCheck(NULL,FALSE),
 
-								Child, MakeLabel(_("Remotly on POP3 server")),
+								Child, filter_remote_label = MakeLabel(_("Remotly on POP3 server")),
 								Child, filter_remote_check = MakeCheck(NULL,FALSE),
 								Child, RectangleObject,MUIA_Weight,200,End,
 								Child, MakeLabel(_("On new mails")),
@@ -570,6 +570,13 @@ static void init_filter(void)
 
 	if (filter_wnd)
 	{
+		char *short_help_txt = _("If activated the filter will be used remotly on POP3 servers\n"
+                             "which support the TOP command. Mails which matches the filter\n"
+														 "are presented to the user and automatically marked as to be ignored.");
+
+		set(filter_remote_label, MUIA_ShortHelp, short_help_txt);
+		set(filter_remote_check, MUIA_ShortHelp, short_help_txt);
+
 		DoMethod(App, OM_ADDMEMBER, filter_wnd);
 		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);

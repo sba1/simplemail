@@ -108,14 +108,33 @@ int load_config(void)
 		}
 		free(buf);
 	}
+	if (!user.config.email) user.config.email = mystrdup("");
+	if (!user.config.realname) user.config.realname = mystrdup("");
+
 	return 1;
 }
+
+#define MAKESTR(x) ((x)?(char*)(x):"")
 
 void save_config(void)
 {
 	if (user.config_filename)
 	{
-		
+		FILE *fh = fopen(user.config_filename, "w");
+		if (fh)
+		{
+			fputs("SMCO\n\n",fh);
+
+			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
+			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
+			fprintf(fh,"POP00.Login=%s\n",MAKESTR(user.config.pop_login));
+			fprintf(fh,"POP00.Server=%s\n",MAKESTR(user.config.pop_server));
+			fprintf(fh,"POP00.Password=%s\n",MAKESTR(user.config.pop_password));
+			fprintf(fh,"POP00.Delete=%s\n",user.config.pop_delete?"Y":"N");
+			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
+			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
+			fclose(fh);
+		}
 	}
 }
 

@@ -55,7 +55,6 @@ void callback_send_mails(void);
 void callback_search(void);
 void callback_start_search(struct search_options *so);
 void callback_stop_search(void);
-void callback_search_found(struct mail *mail);
 void callback_filter(void);
 void callback_new_folder(void);
 void callback_new_folder_path(char *path, char *name);

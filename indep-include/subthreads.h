@@ -23,6 +23,8 @@
 #ifndef SM__SUBTHREADS_H
 #define SM__SUBTHREADS_H
 
+#define THREAD_FUNCTION(x) ((int (*)(void*))x)
+
 int init_threads(void);
 void cleanup_threads(void);
 int thread_parent_task_can_contiue(void);

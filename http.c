@@ -25,12 +25,16 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-
 #include <errno.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
+#endif
 
 #include "tcp.h"
 #include "tcpip.h"

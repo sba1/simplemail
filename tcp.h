@@ -33,14 +33,19 @@ typedef struct ssl_ctx_st SSL_CTX;
 typedef struct x509_st X509;
 #endif
 #else
+
+#ifndef NO_SSL
 #include <openssl/ssl.h>
+#endif
+
 #endif
 
 struct connection
 {
 	long socket;
+#ifndef NO_SSL
 	SSL *ssl;
-
+#endif
 	/* for tcp_write() */
 	unsigned char write_buf[CONN_BUF_WRITE_SIZE];
 	int write_size;

@@ -32,7 +32,10 @@ int open_socket_lib(void);
 void close_socket_lib(void);
 int open_ssl_lib(void);
 void close_ssl_lib(void);
+
+#ifndef NO_SSL
 SSL_CTX *ssl_context(void);
+#endif
 
 long tcp_herrno(void);
 long tcp_errno(void);

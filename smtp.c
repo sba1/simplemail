@@ -26,10 +26,15 @@
 #include <unistd.h>
 
 #include <errno.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
+#endif
 
 #include "account.h"
 #include "mail.h"
@@ -872,7 +877,7 @@ int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_
 	if (chdir(folder_path) == -1)
 		return 0;
 
-	rc = thread_start(smtp_entry,&msg);
+	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
  	chdir(path);
 	return rc;
 }

@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h> /* toupper() */
-#include <sys/dir.h> /* unix dir stuff */
+#include <dirent.h> /* unix dir stuff */
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 

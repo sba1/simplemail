@@ -25,12 +25,16 @@
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
-
 #include <errno.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
+#endif
 
 #include "configuration.h"
 #include "mail.h"
@@ -787,7 +791,7 @@ int pop3_dl(struct list *pop_list, char *dest_dir,
 	msg.receive_size = receive_size;
 	msg.called_by_auto = called_by_auto;
 	msg.folder_directory = user.folder_directory;
-	return thread_start(&pop3_entry,&msg);
+	return thread_start(THREAD_FUNCTION(&pop3_entry),&msg);
 }
 
 /**************************************************************************

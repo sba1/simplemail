@@ -25,16 +25,23 @@
 #include <string.h>
 
 #include <errno.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/errno.h>
 #include <netinet/tcp.h>
+#endif
 
 #ifdef _AMIGA /* ugly */
 #include <proto/amissl.h> /* not portable */
 #else
+#ifndef NO_SSL
 #include <openssl/ssl.h>
+#endif
 #endif
 
 #include "support.h"
@@ -65,6 +72,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 	memset(conn,0,sizeof(struct connection));
 
+#ifndef NO_SSL
 	/* SSL stuff */
 	if (use_ssl)
 	{
@@ -80,7 +88,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 			return NULL;
 		}
 	}
-
+#endif
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
 	{
@@ -98,6 +106,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 			{
 				conn->socket = sd;
+#ifndef NO_SSL
 				if (use_ssl)
 				{
 					/* Associate a socket with ssl structure */
@@ -116,10 +125,12 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 					SSL_shutdown(conn->ssl);
 				}
+#endif
 				return conn;
 			}
 			else
 			{
+#ifndef __WIN32__
 				switch(id=tcp_errno())
 				{
 					case EADDRNOTAVAIL:
@@ -144,6 +155,9 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 				}
 
 				tell_from_subtask(err);
+#else
+                                tell_from_subtask("Couldn't connect to server!");
+#endif
 			}
 			myclosesocket(sd);
 		}
@@ -189,7 +203,9 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 	if (use_ssl)
 	{
+#ifndef NO_SSL
 		if (conn->ssl) SSL_free(conn->ssl);
+#endif
 		close_ssl_lib();
 	}
 
@@ -204,16 +220,17 @@ void tcp_disconnect(struct connection *conn)
 {
 	tcp_flush(conn); /* flush the write buffer */
 
+#ifndef NO_SSL
 	if (conn->ssl) SSL_shutdown(conn->ssl);
-
+#endif
 	myclosesocket(conn->socket);
-
+#ifndef NO_SSL
 	if (conn->ssl)
 	{
 		SSL_free(conn->ssl);
 		close_ssl_lib();
 	}
-
+#endif
 	if (conn->line) free(conn->line);
 	free(conn);
 }
@@ -232,7 +249,9 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 		conn->read_pos += len;
 		return len;
 	}
+#ifndef NO_SSL
 	if (conn->ssl) return SSL_read(conn->ssl,buf,nbytes);
+#endif
 	return recv(conn->socket,buf,nbytes,0);
 }
 
@@ -248,8 +267,12 @@ static int tcp_read_char(struct connection *conn)
 		int didget;
 		conn->read_pos = 0;
 
+#ifndef NO_SSL
 		if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
 		else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+#else
+                didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+#endif
 
 		if (didget <= 0)
 		{
@@ -293,8 +316,13 @@ int tcp_flush(struct connection *conn)
 {
 	if (conn->write_size)
 	{
+#ifndef NO_SSL
 		if (conn->ssl) SSL_write(conn->ssl, conn->write_buf, conn->write_size);
 		else send(conn->socket, conn->write_buf, conn->write_size, 0);
+#else
+                send(conn->socket, conn->write_buf, conn->write_size, 0);
+#endif
+
 		conn->write_size = 0;
 	}
 	return 1;
@@ -308,7 +336,9 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 	conn->read_pos = conn->read_size = 0;
 	tcp_flush(conn); /* flush the write buffer */
 
+#ifndef NO_SSL
 	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
+#endif
 	return send(conn->socket, buf, nbytes, 0);
 }
 
@@ -359,6 +389,3 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
-
-
-

@@ -15,7 +15,7 @@
     }
     printf(get_string($GalleryUsersText)."<br>",$num_users);
 
-    $fh = fopen("galery/users.csv","r");
+    $fh = fopen("gallery/users.csv","r");
     if ($fh)
     {
       while ($data = fgetcsv($fh, 1000, ",")) 

@@ -7,7 +7,7 @@
   {
     if (!strcasecmp($data[0],$email))
     {
-       $size = GetImageSize("galery/" . $data[2]);
+       $size = GetImageSize("gallery/" . $data[2]);
        switch($size[2])
        {
 	  case 1: header("Content-Type: image/gif");break;

@@ -23,6 +23,7 @@
 
 #define FAST_SEEK
 #define BIG_BUFFER
+#define DELETE_TMPFILE
 
 #include "simplemail.h"
 
@@ -254,7 +255,7 @@ void *realloc(void *om, size_t size)
 static struct SignalSemaphore files_sem;
 static BPTR files[MAX_FILES];
 static char filesbuf[4096];
-static unsigned long tmpno = 0;
+static unsigned long tmpno;
 
 static int init_io(void)
 {
@@ -342,6 +343,13 @@ int fclose(FILE *file)
 		if(file)
 		{
 			free(file->_bf._base);
+		}
+#endif
+#ifdef DELETE_TMPFILE
+		if(file->_cookie)
+		{
+			DeleteFile(file->_cookie);
+			free(file->_cookie);
 		}
 #endif
 		free(file);
@@ -451,6 +459,27 @@ int fgetc(FILE *file)
 
 FILE *tmpfile(void)
 {
+#ifdef DELETE_TMPFILE
+	char *buf;
+	FILE *file = NULL;
+	buf = malloc(40);
+	if(buf)
+	{
+		ObtainSemaphore(&files_sem);
+		sprintf(buf,"T:%p%lx.tmp",FindTask(NULL),tmpno++);
+		file = fopen(buf,"w");
+		ReleaseSemaphore(&files_sem);
+		if(file)
+		{
+			file->_cookie = buf; /* hack to delete tmp files at fclose() */
+		}
+		else
+		{
+			free(buf);
+		}
+	}
+	return file;
+#else
 	char buf[40];
 	FILE *file;
 	ObtainSemaphore(&files_sem);
@@ -458,6 +487,7 @@ FILE *tmpfile(void)
 	file = fopen(buf,"w");
 	ReleaseSemaphore(&files_sem);
 	return file;
+#endif
 }
 
 char *tmpnam(char *name)

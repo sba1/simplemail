@@ -1204,7 +1204,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 		{
 			return utf7ntoutf8((char *)from,from_len);
 		}
-		return NULL;
+		codeset = (struct codeset*)list_first(&codesets_list);
 	}
 
 	len = from_len;

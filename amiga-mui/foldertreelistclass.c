@@ -170,6 +170,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 						MUIA_NListtree_Format, "BAR,",
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
+						MUIA_NListtree_MultiSelect, MUIV_NListtree_MultiSelect_None,
 						MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 						TAG_DONE);
 

@@ -228,6 +228,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 	struct MUI_NListtree_TreeNode *activenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_Active);
 	struct MUI_NListtree_TreeNode *insertlist = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_Insert_ListNode_ActiveFallback;
 	int quiet = 0;
+	int act;
 
 	if (activenode)
 	{
@@ -269,14 +270,16 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 		}
 	}
 
+	act = !xget(data->attach_tree, MUIA_NListtree_Active);
+
 	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree, MUIM_NListtree_Insert, "" /*name*/, attach, /* udata */
-					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?(TNF_OPEN|TNF_LIST):(xget(data->attach_tree, MUIA_NListtree_Active)?0:MUIV_NListtree_Insert_Flag_Active)));
+					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?(TNF_OPEN|TNF_LIST):(act?MUIV_NListtree_Insert_Flag_Active:0)));
 
 	/* for the quick attachments list */
 	if (!list && treenode)
 	{
 		DoMethod(data->quick_attach_tree, MUIM_NListtree_Insert, "", attach, /* udata */
-					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, (act?MUIV_NListtree_Insert_Flag_Active:0));
 	}
 					
 
@@ -1215,6 +1218,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
 			DoMethod(from_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, from_popobject, 2, MUIM_Popstring_Close, 1);
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
+
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			if (args->to_change)

@@ -232,6 +232,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(obj, MUIA_NListtree_Active);
+
 	if (treenode && treenode->tn_User)
 	{
 		struct mail *m = (struct mail*)treenode->tn_User;

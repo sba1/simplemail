@@ -412,6 +412,26 @@ STATIC ULONG SMToolbar_GetObject(struct IClass *cl, Object *obj, struct MUIP_SMT
 
 	return NULL;}
 
+STATIC ULONG SMToolbar_DoMethod(struct IClass *cl, Object *obj, struct MUIP_SMToolbar_DoMethod *msg)
+{
+	Object *button_obj = (Object *)DoMethod(obj, MUIM_SMToolbar_GetObject, msg->id);
+
+	if (button_obj &&
+	    (msg->FollowParams >= 1) && (msg->FollowParams < 40))
+	{
+		LONG *table1 = (LONG *)&msg->FollowParams;
+		LONG table2[40];
+		int num;
+
+		for (num=0;num<msg->FollowParams;num++)
+		{
+			table2[num] = table1[num+1];
+		}
+		return DoMethodA(button_obj,(Msg) table2);
+  }
+	return 0;
+}
+
 STATIC BOOPSI_DISPATCHER(ULONG, SMToolbar_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -421,6 +441,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, SMToolbar_Dispatcher, cl, obj, msg)
 		case MUIM_SMToolbar_GetObject: return SMToolbar_GetObject(cl,obj,(struct MUIP_SMToolbar_GetObject*)msg);
 		case MUIM_SMToolbar_GetAttr: return SMToolbar_GetAttr(cl,obj,(struct MUIP_SMToolbar_GetAttr*)msg);
 		case MUIM_SMToolbar_SetAttr: return SMToolbar_SetAttr(cl,obj,(struct MUIP_SMToolbar_SetAttr*)msg);
+		case MUIM_SMToolbar_DoMethod: return SMToolbar_DoMethod(cl,obj,(struct MUIP_SMToolbar_DoMethod*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

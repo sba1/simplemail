@@ -46,11 +46,13 @@ IMPORT struct MUI_CustomClass *CL_SMToolbar;
 #define MUIM_SMToolbar_SetAttr   (TAG_USER | 0x30180101)
 #define MUIM_SMToolbar_GetAttr   (TAG_USER | 0x30180102)
 #define MUIM_SMToolbar_GetObject (TAG_USER | 0x30180103)
+#define MUIM_SMToolbar_DoMethod  (TAG_USER | 0x30180104)
 
 /* Methods structures */
 struct  MUIP_SMToolbar_SetAttr   { ULONG MethodID; ULONG id; Tag attr; ULONG value; };
 struct  MUIP_SMToolbar_GetAttr   { ULONG MethodID; ULONG id; Tag attr; ULONG *storage; };
 struct  MUIP_SMToolbar_GetObject { ULONG MethodID; ULONG id; };
+struct  MUIP_SMToolbar_DoMethod  { ULONG MethodID; ULONG id; ULONG FollowParams; /* ... */};
 
 /* Button structure */
 struct MUIS_SMToolbar_Button

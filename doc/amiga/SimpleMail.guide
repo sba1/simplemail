@@ -710,7 +710,7 @@ the configuration window.
   @{" Reading plain  " LINK "CO05" 0}   - Main layout options for reading email
   @{" Reading HTML   " LINK "CO06" 0}   - Image download filter for HTML mail
   @{" Phrases        " LINK "CO07" 0}   - Options related to message quoting
-  @{" Signatures     " LINK "CO08" 0}   - Signature and cookie settings
+  @{" Signatures     " LINK "CO08" 0}   - Signature and tagline settings
 
 
 The same three buttons appear on each sheet:
@@ -1198,7 +1198,7 @@ the list (for subject, date, sender, etc.).
 @NODE "CO08" "Configuration - Signatures"
 @TOC "CO_W"
 
-Configuration - SIGNATURES  (Definition of signatures and cookies)
+Configuration - SIGNATURES  (Definition of signatures and taglines)
 
 
 With SimpleMail, you can define as many signatures as you want (e.g., one
@@ -1211,10 +1211,10 @@ Use signatures
 Tick this box if you really want to use signatures.
 
 
-Use cookies
+Use taglines
 
 Tick this box is you want SimpleMail to automatically add a random
-cookie to every email you write. (NYI)
+tagline to every email you write.
 
 
 Add new signature

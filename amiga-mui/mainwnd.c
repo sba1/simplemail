@@ -88,8 +88,22 @@ static int init_folder_placement(void);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
+
+/*
 	DoMethod(tree, MUIA_NListtree_FindUserDataHook, MUIV_NListtree_FindUserDataHook_PointerCompare);
 	return (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_FindUserData,  MUIV_NListtree_FindUserData_ListNode_Root, udata, 0);
+*/
+
+	int i;
+	int count = DoMethod(tree,MUIM_NListtree_GetNr, MUIV_NListtree_GetNr_TreeNode_Active,MUIV_NListtree_GetNr_Flag_CountAll);
+
+	for (i=0;i<count;i++)
+	{
+		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
+			DoMethod(tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+		if (tn->tn_User == udata) return tn;
+	}
+	return NULL;
 }
 
 /******************************************************************

@@ -574,6 +574,15 @@ struct mail *mail_find_initial(struct mail *m)
 }
 
 /**************************************************************************
+ Returns the root of the mail
+**************************************************************************/
+struct mail *mail_get_root(struct mail *m)
+{
+	while (m->parent_mail) m = m->parent_mail;
+	return m;
+}
+
+/**************************************************************************
  Converts a number to base 18 character sign
 **************************************************************************/
 static char get_char_18(int val)
@@ -1168,6 +1177,32 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 
 	if (!name) name = mystrdup(addr);
 	return name;
+}
+
+
+/**************************************************************************
+ Returns the name and address (name <address>) of the mail
+**************************************************************************/
+char *mail_get_from_address(struct mail *mail)
+{
+	struct mailbox mb;
+	char *buf = NULL;
+	char *from = mail_find_header_contents(mail,"from");
+
+	if (parse_mailbox(from,&mb))
+	{
+		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
+		if ((buf = malloc(len)))
+		{
+			if (mb.phrase)
+			{
+				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
+			} else strcpy(buf,mb.addr_spec);
+		}
+		free(mb.addr_spec);
+		free(mb.phrase);
+	}
+	return buf;
 }
 
 /**************************************************************************

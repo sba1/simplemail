@@ -41,6 +41,7 @@
 #include "composeeditorclass.h"
 #include "datatypesclass.h"
 #include "foldertreelistclass.h"
+#include "iconclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
@@ -116,6 +117,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_icon_class();
 		delete_popupmenu_class();
 		delete_picturebutton_class();
 		delete_simplehtml_class();
@@ -151,7 +153,7 @@ int all_init(void)
 				create_datatypes_class() && create_transwnd_class() &&
 				create_readlist_class() && create_composeeditor_class() &&
 				create_simplehtml_class() && create_picturebutton_class() &&
-				create_popupmenu_class())
+				create_popupmenu_class() && create_icon_class())
 		{
 			if (app_init())
 			{

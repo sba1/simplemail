@@ -288,6 +288,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 				left += (_mwidth(obj) - te.te_Width)/2;
 				Move(rp,left,_mbottom(obj)+_font(obj)->tf_Baseline - data->label_height);
 				SetAPen(rp,_dri(obj)->dri_Pens[TEXTPEN]);
+				SetDrMd(rp,JAM1);
 
 				{
 					char *str = data->label;

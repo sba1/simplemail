@@ -820,12 +820,57 @@ void main_insert_mail(struct mail *mail)
 }
 
 /******************************************************************
+ 
+*******************************************************************/
+static struct MUI_NListtree_TreeNode *main_find_insert_node(struct MUI_NListtree_TreeNode *tn, int *after)
+{
+	while (tn) // && (*after) >= 0)
+	{
+		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) (*after)--;
+		if (tn->tn_Flags & TNF_LIST)
+		{
+			struct MUI_NListtree_TreeNode *first;
+			struct MUI_NListtree_TreeNode *found;
+
+			first = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Head,0);
+			found =  main_find_insert_node(first,after);
+			if (found) return found;
+		}
+
+		if (*after < 0) return tn;
+
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Next,0);
+	}
+	return tn;
+}
+
+/******************************************************************
  Inserts a new mail into the listview after a given position
 *******************************************************************/
 void main_insert_mail_pos(struct mail *mail, int after)
 {
+	struct MUI_NListtree_TreeNode *tn;
+	struct MUI_NListtree_TreeNode *list;
+
+	tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,MUIV_NListtree_GetEntry_Position_Head,0);
+	tn = main_find_insert_node(tn,&after);
+	if (tn)
+	{
+		list = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
+	} else list = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_Insert_ListNode_Root;
+
+	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+
+
+#if 0
+
 	struct MUI_NListtree_TreeNode *tn = NULL;
+	struct MUI_NListtree_TreeNode *list;
 	int i=0;
+	int old_after = after;
+
+  printf("0: after = %d\n",after);
 
 	while (after >= 0)
 	{
@@ -834,8 +879,29 @@ void main_insert_mail_pos(struct mail *mail, int after)
 		i++;
 	}
 
+  list = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
+
 	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
-					 MUIV_NListtree_Insert_ListNode_Root,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+
+  printf("1: %lx\n",tn);
+
+/*
+  i = 0;
+  after = old_after;
+	tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,MUIV_NListtree_GetEntry_Position_Head,0);
+	while (tn && after >= 0)
+	{
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Next,0);
+		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) after--;
+		i++;
+	}
+*/
+
+	tn = main_find_insert_node(tn,&after);
+
+  printf("2: %lx\n",tn);
+#endif
 }
 
 

@@ -1,3 +1,7 @@
+Version 0.17 (fourth beta) - released on ...
+  - speed up the insert of new mails if the folder is selected
+  - shows user@popserver in the check single account sub menu
+
 Version 0.16 (third beta) - released on 2002/05/25
   - requires version 18.12 of NListtree
   - speed up within the mail list

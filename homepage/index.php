@@ -37,8 +37,8 @@
   <head>
     <title>SimpleMail</title>
     <STYLE TYPE="text/css"><!--
-      A.menu_active { text-decoration: none; color: red; }
-      A.menu_inactive { text-decoration: none; color: gray; }
+      A { text-decoration: none }
+      A:hover{ text-decoration:underline; background: #ffa }
 --></STYLE>
 
   </head>
@@ -70,10 +70,12 @@
 	  <?php
 	    foreach($LinkMenu as $key => $value)
 	    {
-	      if ($key == $body) $class = "menu_active";
-	      else $class = "menu_inactive";
-
-	      printf("<A CLASS=\"%s\" HREF=\"index.php%s\">%s</A><br>",$class,$key!="default"?"?body=".$key:"",$value["title"]);
+	      if ($key != $body)
+	        printf("<A CLASS=\"menu\" HREF=\"index.php%s\">",$key!="default"?"?body=".$key:"");
+	      echo $value["title"];
+	      if ($key != $body)
+	        echo "</A>";
+	      echo "<br>";
 	    }
           ?>
         </td>
@@ -107,16 +109,9 @@
       </tr>
     </table>
 
-    <table>
-      <tr>
-        <td>
-
-        </td>
-      </tr>
-    </table>
-
   </body>
 </html>
+
 
 
 

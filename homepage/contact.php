@@ -4,7 +4,7 @@ SimpleMail is currently mainly developed by:
 <TABLE border=0 cellspacing=3 cellpadding=3 align="center" summary="Contact">
 	<TR>
 		<TD>Sebastian Bauer</TD>
-		<TD><A href="mail@sebastianbauer.info">mail@sebastianbauer.info</A></TD>
+		<TD><A href="mailto:mail@sebastianbauer.info">mail@sebastianbauer.info</A></TD>
 		<TD><A href="http://www.sebastianbauer.info/">http://www.sebastianbauer.info/</A></TD>
 	</TR>
 	<TR>

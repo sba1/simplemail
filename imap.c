@@ -27,9 +27,121 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "folder.h"
+#include "lists.h"
 #include "support_indep.h"
+#include "tcp.h"
+
+#include "tcpip.h"
 
 #include "imap.h"
+
+static int val;
+
+/**************************************************************************
+ Writes the next word into the dest buffer but not more than dest_size
+**************************************************************************/
+static char *imap_get_result(char *src, char *dest, int dest_size)
+{
+	char c;
+
+	dest[0] = 0;
+	if (!src) return NULL;
+
+	while ((c = *src))
+	{
+		if (!isspace((unsigned char)c))
+			break;
+		src++;
+	}
+
+	if (c)
+	{
+		int i = 0;
+		while ((c = *src))
+		{
+			if (isspace((unsigned char)c)) break;
+			dest[i++] = c;
+			src++;
+		}
+		dest[i] = 0;
+		return src;
+	}
+
+	return NULL;
+}
+
+/**************************************************************************
+ 
+**************************************************************************/
+int imap_dl_headers(struct list *imap_list)
+{
+	struct imap_server *serv;
+	serv = (struct imap_server*)list_first(imap_list);
+	while (serv)
+	{
+		if (open_socket_lib())
+		{
+			struct connection *conn;
+			if ((conn = tcp_connect(serv->name,serv->port,0)))
+			{
+				char tag[200];
+				char buf[200];
+
+				char *line;
+				int ok = 0;
+
+				puts("connected to imap server\n");
+
+				while ((line = tcp_readln(conn)))
+				{
+					puts(line);
+					line = imap_get_result(line,buf,sizeof(buf));
+					line = imap_get_result(line,buf,sizeof(buf));
+					if (!stricmp(buf,"OK"))
+					{
+						ok = 1;
+						break;
+					} else break;
+
+				}
+
+				if (ok)
+				{
+					puts("now sending login\n");
+					sprintf(tag,"%04x LOGIN %s %s\r\n",val++,serv->login,serv->passwd);
+					puts(tag);
+					tcp_write(conn,tag,strlen(tag));
+					tcp_flush(conn);
+
+					while ((line = tcp_readln(conn)))
+					{
+						puts(line);
+						line = imap_get_result(line,buf,sizeof(buf));
+						if (!stricmp(buf,tag))
+						{
+							line = imap_get_result(line,buf,sizeof(buf));
+							if (!stricmp(buf,"OK"))
+							{
+								puts("Login successful\n");
+							}
+							break;
+						}
+					}
+				} else
+				{
+					puts("error before logging in\n");
+				}
+
+				tcp_disconnect(conn);
+			}
+			close_socket_lib();
+		}
+		
+		serv = (struct imap_server*)node_next(&serv->node);
+	}
+	return 1;
+}
 
 /**************************************************************************
  malloc() a imap_server and initializes it with default values.

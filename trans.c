@@ -50,7 +50,7 @@ int mails_dl(int called_by_auto)
 	account = (struct account*)list_first(&user.config.account_list);
 	while (account)
 	{
-		if (account->pop && account->pop->active)
+		if (account->pop && account->pop->active && !account->recv_type)
 			list_insert_tail(&pop_list,&account->pop->node);
 		account = (struct account*)node_next(&account->node);
 	}
@@ -58,6 +58,7 @@ int mails_dl(int called_by_auto)
 	pop3_dl(&pop_list,folder_incoming()->path,
 	        user.config.receive_preselection, user.config.receive_size,
 	        called_by_auto);
+
 	return 0;
 }
 
@@ -65,10 +66,18 @@ int mails_dl_single_account(struct account *ac)
 {
 	struct list pop_list;
 	if (!ac) return 0;
+
 	list_init(&pop_list);
-	
-	list_insert_tail(&pop_list,&ac->pop->node);
-	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size,0);
+
+	if (!ac->recv_type)
+	{
+		list_insert_tail(&pop_list,&ac->pop->node);
+		pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size,0);
+	} else
+	{
+		list_insert_tail(&pop_list,&ac->imap->node);
+		imap_dl_headers(&pop_list);
+	}
 	return 0;
 }
 

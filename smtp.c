@@ -56,7 +56,7 @@ int buf_flush(long hsocket, char *buf, long len)
 		rc = TRUE;
 		if(!rc)
 		{
-			puts("flushing failed");
+			tell("flushing failed");
 		}
 		
 	}
@@ -97,7 +97,7 @@ __inline static int buf_cat(long hsocket, char *buf, char c)
 		{
 			len = 0;
 			buf[0] = 0;
-			puts("panic: line with more than 76 chars detected!");
+			tell("panic: line with more than 76 chars detected!");
 		}
 		else
 		{
@@ -174,7 +174,7 @@ int smtp_helo(long hsocket, char *domain)
 	}
 	else
 	{
-		puts("service not ready");
+		tell("service not ready");
 	}
 
 	return(rc);
@@ -273,19 +273,28 @@ int smtp_data(long hsocket, char *mailfile)
 						break;
 					}
 					if((i++%z) == 0)
-					{
+					{	
 						up_set_gauge_byte(i);
+						if(up_checkabort())
+						{
+							tell("aborted");
+							rc = FALSE;
+							break;
+						}
 					}	
 				}
-				buf_flush(hsocket, buf, strlen(buf));
-				if(smtp_send_cmd(hsocket, "\r\n.\n", NULL) != SMTP_OK)
+				if(rc == TRUE)
 				{
-					rc = FALSE;
+					buf_flush(hsocket, buf, strlen(buf));
+					if(smtp_send_cmd(hsocket, "\r\n.\n", NULL) != SMTP_OK)
+					{
+						rc = FALSE;
+					}
 				}	
 			}
 			else
 			{
-				puts("cmd failed");
+				tell("cmd failed");
 			}
 			
 			fclose(fp);
@@ -343,21 +352,21 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 					up_set_status("Sending DATA...");
 					if(!smtp_data(hsocket, om[i]->mailfile))
 					{
-						puts("data failed");
+						tell("data failed");
 						rc = FALSE;
 						break;
 					}
 				}
 				else
 				{
-					puts("rcpt failed");
+					tell("rcpt failed");
 					rc = FALSE;
 					break;
 				}
 			}
 			else
 			{
-				puts("from failed");
+				tell("from failed");
 				rc = FALSE;
 				break;
 			}
@@ -381,7 +390,7 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 	}
 	else
 	{
-		puts("helo failed");
+		tell("helo failed");
 	}
 
 	return(rc);
@@ -411,7 +420,7 @@ int smtp_send(char *server, struct out_mail **om)
 		}
 		else
 		{
-			puts("cannot open server");
+			tell("cannot open server");
 		}
 		
 		up_window_close();
@@ -420,7 +429,7 @@ int smtp_send(char *server, struct out_mail **om)
 	}  
 	else
 	{
-		puts("cannot open lib");
+		tell("cannot open lib");
 	}
    
 	return(rc);

@@ -105,6 +105,7 @@ static Object *write_replyciteemptyl_check;
 static Object *readhtml_mail_editor;
 
 static Object *account_account_list;
+static Object *account_account_name_string;
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
@@ -175,6 +176,7 @@ static void account_store(void)
 	if (account_last_selected)
 	{
 		/* Save the account if a server was selected */
+		free(account_last_selected->account_name);
 		free(account_last_selected->name);
 		free(account_last_selected->email);
 		free(account_last_selected->reply);
@@ -188,6 +190,7 @@ static void account_store(void)
 		free(account_last_selected->smtp->auth_login);
 		free(account_last_selected->smtp->auth_password);
 
+		account_last_selected->account_name = mystrdup(getutf8string(account_account_name_string));
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
@@ -226,6 +229,7 @@ static void account_load(void)
 	struct account *account = account_last_selected;
 	if (account)
 	{
+		nnsetutf8string(account_account_name_string,account->account_name);
 		setutf8string(account_name_string,account->name);
 		nnset(account_email_string, MUIA_String_Contents, account->email);
 		setstring(account_reply_string,account->reply);
@@ -333,7 +337,7 @@ static void phrase_load(void)
 	{
 		char buf[320];
 		utf8tostr(phrase->addresses, buf, sizeof(buf), user.config.default_codeset);
-		set(phrase_addresses_string,MUIA_String_Contents, buf);
+		nnset(phrase_addresses_string,MUIA_String_Contents, buf);
 
 		utf8tostr(phrase->write_welcome, buf, sizeof(buf), user.config.default_codeset);
 		set(phrase_write_welcome_string,MUIA_String_Contents, buf);
@@ -669,8 +673,13 @@ static void account_add(void)
 	struct account *account = account_malloc();
 	if (account)
 	{
+		account->account_name = utf8create(_("-- New Account --"),user.config.default_codeset?user.config.default_codeset->name:NULL);
+
 		DoMethod(account_account_list, MUIM_NList_InsertSingle, account, MUIV_NList_Insert_Bottom);
 		set(account_account_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
+
+		set(account_account_name_string, MUIA_BetterString_SelectSize, -utf8len(account->account_name));
+		set(config_wnd, MUIA_Window_ActiveObject, account_account_name_string);
 	}
 }
 
@@ -737,7 +746,10 @@ STATIC ASM VOID account_display(register __a0 struct Hook *h, register __a2 char
 {
 	if (ent)
 	{
-		*array++ = ent->account_name;
+		static char buf[320];
+		utf8tostr(ent->account_name, buf, sizeof(buf), user.config.default_codeset);
+
+		*array++ = buf;
 		*array++ = ent->email?ent->email:"-";
 		*array++ = ent->pop->name;
 		*array++ = ent->smtp->name;
@@ -780,6 +792,14 @@ static int init_account_group(void)
 				Child, HVSpace,
 				Child, account_remove_button = MakeButton(_("_Remove Account")),
 				Child, HVSpace,
+				End,
+			End,
+		Child, HGroup,
+			Child, MakeLabel(_("Account Name")),
+			Child, account_account_name_string = UTF8StringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_AdvanceOnCR, TRUE,
 				End,
 			End,
 		Child, HorizLineTextObject(_("User")),
@@ -925,8 +945,12 @@ static int init_account_group(void)
 
 	DoMethod(account_account_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_selected);
 
+	/* connect the up/down keys to the List */
+	set(account_account_name_string, MUIA_String_AttachedList, account_account_list);
+
 	/* Update the account_list if one of the displayd fields are changed */
-  /* This fields must be set without notification in the account_load() function! */
+	/* This fields must be set without notification in the account_load() function! */
+	DoMethod(account_account_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
 	DoMethod(account_email_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
 	DoMethod(account_recv_server_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
 	DoMethod(account_send_server_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
@@ -1225,11 +1249,12 @@ static void signature_add(void)
 	struct signature *s = signature_malloc();
 	if (s)
 	{
-		s->name = mystrdup(_("-- New Signature --"));
+		s->name = utf8create(_("-- New Signature --"),user.config.default_codeset?user.config.default_codeset->name:NULL);
+
 		DoMethod(signature_signature_list,MUIM_NList_InsertSingle,s,MUIV_NList_Insert_Bottom);
 		set(signature_signature_list,MUIA_NList_Active,MUIV_NList_Active_Bottom);
-		setutf8string(signature_name_string,s->name);
-		set(signature_name_string, MUIA_BetterString_SelectSize, -mystrlen(s->name));
+
+		set(signature_name_string, MUIA_BetterString_SelectSize, -utf8len(s->name));
 		set(config_wnd, MUIA_Window_ActiveObject, signature_name_string);
 	}
 }
@@ -1272,7 +1297,9 @@ STATIC ASM VOID signature_display(register __a0 struct Hook *h, register __a2 ch
 {
 	if (ent)
 	{
-		*array = ent->name;
+		static char buf[320];
+		utf8tostr(ent->name, buf, sizeof(buf), user.config.default_codeset);
+		*array = buf;
 	} else
 	{
 		*array = _("Name");
@@ -1367,15 +1394,20 @@ static int init_signature_group(void)
 }
 
 /******************************************************************
- Add a new signature
+ Add a new phrase
 *******************************************************************/
 static void phrase_add(void)
 {
 	struct phrase *p = phrase_malloc();
 	if (p)
 	{
+		p->addresses = utf8create(_("-- New Phrase --"),user.config.default_codeset?user.config.default_codeset->name:NULL);
+
 		DoMethod(phrase_phrase_list, MUIM_NList_InsertSingle, p, MUIV_NList_Insert_Bottom);
 		set(phrase_phrase_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
+
+		set(phrase_addresses_string, MUIA_BetterString_SelectSize, -utf8len(p->addresses));
+		set(config_wnd, MUIA_Window_ActiveObject, phrase_addresses_string);
 	}
 }
 
@@ -1395,7 +1427,7 @@ static void phrase_dup(void)
 }
 
 /******************************************************************
- Remove a signature
+ Remove a phrase
 *******************************************************************/
 static void phrase_remove(void)
 {
@@ -1419,11 +1451,22 @@ static void phrase_selected(void)
 	phrase_load();
 }
 
+/******************************************************************
+ Redraw the List content if there is an input in the Stringgadget
+*******************************************************************/
+static void phrase_update(void)
+{
+	phrase_store();
+	DoMethod(phrase_phrase_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
+}
+
 STATIC ASM VOID phrase_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct phrase *ent)
 {
 	if (ent)
 	{
-		*array++ = ent->addresses?((*ent->addresses)?ent->addresses:_("All")):_("All");
+		static char buf[320];
+		utf8tostr(ent->addresses?((*ent->addresses)?ent->addresses:_("All")):_("All"), buf, sizeof(buf), user.config.default_codeset);
+		*array++ = buf;
 	} else
 	{
 		*array++ = _("On addresses");
@@ -1547,6 +1590,13 @@ static int init_phrase_group(void)
 		End;
 
 	if (!groups[GROUPS_PHRASE]) return 0;
+	/* connect the up/down keys to the List */
+	set(phrase_addresses_string, MUIA_String_AttachedList, phrase_phrase_list);
+
+	/* Keep the list in sync with the field. */
+	/* This field must be set without notification in the signature_load() function! */
+	DoMethod(phrase_addresses_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, phrase_update);
+
 	DoMethod(add_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
 	DoMethod(dup_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_dup);
 	DoMethod(rem_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_remove);

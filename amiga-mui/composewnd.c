@@ -487,6 +487,15 @@ static void compose_mail(struct Compose_Data *data, int hold)
 }
 
 /******************************************************************
+ The mail should be send immediatly
+*******************************************************************/
+static void compose_window_send_now(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	compose_mail(data,2);
+}
+
+/******************************************************************
  A mail should be send later
 *******************************************************************/
 static void compose_window_send_later(struct Compose_Data **pdata)
@@ -603,7 +612,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 static void compose_add_signature(struct Compose_Data *data)
 {
 	struct signature *sign = (struct signature*)list_first(&user.config.signature_list);
-	if (user.config.signatures_use)
+	if (user.config.signatures_use && sign)
 	{
 		char *text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
 		int add_sign = 0;
@@ -634,7 +643,7 @@ static void compose_add_signature(struct Compose_Data *data)
 void compose_window_open(struct compose_args *args)
 /*void compose_window_open(char *to_str, struct mail *tochange)*/
 {
-	Object *wnd, *send_later_button, *hold_button, *cancel_button;
+	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
 	Object *from_text, *from_list, *reply_string, *to_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
@@ -765,6 +774,7 @@ void compose_window_open(struct compose_args *args)
 				MUIA_InputMode, MUIV_InputMode_Toggle,
 				End,
 			Child, HGroup,
+				Child, send_now_button = MakeButton("Send now"),
 				Child, send_later_button = MakeButton("Send later"),
 				Child, hold_button = MakeButton("Hold"),
 				Child, cancel_button = MakeButton("Cancel"),
@@ -857,6 +867,7 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, switch_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
+			DoMethod(send_now_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_now, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
 			DoMethod(copy_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Copy");
 			DoMethod(cut_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Cut");

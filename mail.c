@@ -38,6 +38,7 @@
 #include "SimpleMail_rev.h"
 #include "support.h"
 #include "support_indep.h"
+#include "trans.h" /* for mail_upload_single() */
 
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
@@ -1697,6 +1698,12 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 			{
 				callback_new_mail_written(mail);
 			}
+		}
+
+		if (hold == 2)
+		{
+			/* Mail should be send now! */
+			mails_upload_signle(mail);
 		}
 	}
 

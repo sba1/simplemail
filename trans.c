@@ -155,3 +155,73 @@ int mails_upload(void)
 	return 1;
 }
 
+int mails_upload_signle(struct mail *m)
+{
+	char *from, *to;
+	struct outmail **out_array;
+	struct mailbox mb;
+	struct list *list; /* "To" address list */
+	int i;
+	struct folder *out_folder = folder_outgoing();
+
+	if (!m) return 0;
+  if (!(out_array = create_outmail_array(1))) return 0;
+
+	to = mail_find_header_contents(m,"To");
+	from = mail_find_header_contents(m,"From");
+
+	memset(&mb,0,sizeof(struct mailbox));
+
+	if (!to || !from)
+	{
+		free_outmail_array(out_array);
+		return 0;
+	}
+	if (!parse_mailbox(from,&mb))
+	{
+		tell_str("No valid sender address!");
+		free_outmail_array(out_array);
+		return 0;
+	}
+
+	out_array[0]->mailfile = mystrdup(m->filename);
+	out_array[0]->from = mb.addr_spec;
+
+	/* fill in the recipients */
+	if ((list = create_address_list(to)))
+	{
+		int length = list_length(list);
+		if (length)
+		{
+			if ((out_array[0]->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
+			{
+				struct address *addr = (struct address*)list_first(list);
+				int i=0;
+				while (addr)
+				{
+					if (!(out_array[0]->rcp[i++] = strdup(addr->email))) /* not freed */
+						break;
+					addr = (struct address*)node_next(&addr->node);
+				}
+				out_array[0]->rcp[i] = NULL;
+			}
+		}
+		free_address_list(list);
+	}
+
+	if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
+/*		if (mb.addr_spec) free(mb.addr_spec); */
+
+/*	up_set_title(server.name); */
+	up_window_open();
+
+	/* now send all mails */
+	if (!(smtp_send(&user.config.account_list,out_array,out_folder->path)))
+	{
+		up_window_close();
+	}
+
+	free_outmail_array(out_array);
+	return 1;
+}
+

@@ -863,6 +863,21 @@ int mail_process_headers(struct mail *mail)
 		mail->mime = (version << 16) | revision;
 	} else mail->mime = 0;
 
+
+	/* Check the Content-Disposition of the whole mail*/
+	if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
+	{
+		if (!mail->filename)
+		{
+			char *fn = mystristr(buf,"filename=");
+			if (fn)
+			{
+				fn += sizeof("filename=")-1;
+				parse_value(fn,&mail->filename);
+			}
+		}
+	}
+
 	/* Check the content-type of the whole mail */
 	if ((buf = mail_find_header_contents(mail, "content-type")))
 	{
@@ -901,31 +916,27 @@ int mail_process_headers(struct mail *mail)
 								if (!(subtype = parse_parameter(subtype, &dest)))
 									break;
 
-								if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+								if (!mystricmp(dest.attribute,"name"))
 								{
-									new_param->attribute = dest.attribute;
-									new_param->value = dest.value;
-									list_insert_tail(&mail->content_parameter_list,&new_param->node);
-								} else break;
+									if (dest.attribute) free(dest.attribute);
+									if (!mail->filename) mail->filename = dest.value;
+									else
+									{
+										if (dest.value) free(dest.value);
+									}
+								} else
+								{
+									if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+									{
+										new_param->attribute = dest.attribute;
+										new_param->value = dest.value;
+										list_insert_tail(&mail->content_parameter_list,&new_param->node);
+									} else break;
+								}
 							} else break;
-
 						}
 					}
 				}
-			}
-		}
-	}
-
-	/* Check the Content-Disposition of the whole mail*/
-	if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
-	{
-		if (!mail->filename)
-		{
-			char *fn = mystristr(buf,"filename=");
-			if (fn)
-			{
-				fn += sizeof("filename=")-1;
-				parse_value(fn,&mail->filename);
 			}
 		}
 	}

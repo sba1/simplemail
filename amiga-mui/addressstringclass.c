@@ -103,10 +103,15 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 		char *addr_start;
 		char *complete;
 
-		addr_start = get_address_start(contents, buf_pos);
-		complete = addressbook_get_entry_completing_part(entry, addr_start, NULL);
-
-		DoMethod(data->str, MUIM_AddressString_Complete, complete);
+		if ((addr_start = get_address_start(contents, buf_pos)))
+		{
+			if ((complete = addressbook_get_entry_completing_part(entry, addr_start, NULL)))
+			{
+				DoMethod(data->str, MUIM_AddressString_Complete, complete);
+				/* complete must be not freed */
+			}
+			free(addr_start);
+		}
 	}
 }
 

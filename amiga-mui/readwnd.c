@@ -39,6 +39,7 @@
 #include "simplemail.h"
 
 #include "compiler.h"
+#include "datatypesclass.h"
 #include "muistuff.h"
 #include "readwnd.h"
 
@@ -56,6 +57,7 @@ struct Read_Data /* should be a customclass */
 	Object *mime_tree;
 	Object *text_list;
 	Object *contents_page;
+	Object *datatype_datatypes;
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
@@ -147,9 +149,16 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 		if (stricmp(mail->content_type,"text"))
 		{
 			char buf[256];
+			SetAttrs(data->datatype_datatypes,
+						MUIA_DataTypes_Buffer, mail->decoded_data,
+						MUIA_DataTypes_BufferLen, mail->decoded_len,
+						TAG_DONE);
+
 			set(data->contents_page, MUIA_Group_ActivePage, 1);
+/*
 			sprintf(buf,"Base64 encoded data (size %ld)",mail->decoded_len);
 			DoMethod(data->text_list,MUIM_NList_InsertSingle,buf,MUIV_NList_Insert_Bottom);
+*/
 			set(data->text_list, MUIA_NList_Quiet, FALSE);
 			return;
 		}
@@ -307,6 +316,7 @@ static void save_button_pressed(struct Read_Data **pdata)
 void read_window_open(char *folder, char *filename)
 {
 	Object *wnd,*header_list,*text_list, *mime_tree, *contents_page, *save_button;
+	Object *datatype_datatypes;
 	int num;
 
 	for (num=0; num < MAX_READ_OPEN; num++)
@@ -354,9 +364,8 @@ void read_window_open(char *folder, char *filename)
 						End,
 					End,
 				Child, VGroup,
-					Child, HVSpace,
+					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
 					Child, save_button = MakeButton("Save"),
-					Child, HVSpace,
 					End,
 				End,
 			End,
@@ -380,6 +389,7 @@ void read_window_open(char *folder, char *filename)
 					data->text_list = text_list;
 					data->mime_tree = mime_tree;
 					data->contents_page = contents_page;
+					data->datatype_datatypes = datatype_datatypes;
 					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 					data->num = num;
 					read_open[num] = 1;

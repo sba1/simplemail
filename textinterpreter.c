@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** textinterpreter.c - nothing useful now
+** $Id$
 */
 
 #include <string.h>

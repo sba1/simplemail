@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** amigasupport.c - functions which are only called from the platform depend part
+** $Id$
 */
 
 #include <string.h>

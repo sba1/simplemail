@@ -17,8 +17,7 @@
 ***************************************************************************/
 
 /*
-** support.c - functions which are used in gui independed parts but
-**             which uses things which are not ansi c or unix compatible
+** $Id$
 */
 
 #include <string.h>

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** amiproc.c - (taken from the SAS examples)
+** $Id$
 */
 
 #include <exec/memory.h>

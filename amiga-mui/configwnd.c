@@ -622,6 +622,8 @@ static int config_use(void)
 		insert_config_signature(sign);
 	}
 
+	callback_folder_use_updated_signatures();
+
 	close_config();
 	callback_config_changed();
 	return 1;
@@ -633,7 +635,19 @@ static int config_use(void)
 static void config_save(void)
 {
 	if (config_use())
+	{
 		save_config();
+		callback_folder_save_updated_signatures();
+	}
+}
+
+/******************************************************************
+ Save the configuration
+*******************************************************************/
+static void config_cancel(void)
+{
+	callback_folder_undo_updated_signatures();
+	close_config();
 }
 
 /******************************************************************
@@ -1460,7 +1474,7 @@ static void signature_remove(void)
 	{
 		struct account *ac;
 		LONG signature_pos = MUIV_NList_GetPos_Start;
-		int i, use_count = 0;
+		int i, use_count_accounts = 0, use_count_folders = 0;
 
 		/* Check if the signature is used in any of the accounts */
 		DoMethod(signature_signature_list, MUIM_NList_GetPos, sign, &signature_pos);
@@ -1469,23 +1483,37 @@ static void signature_remove(void)
 			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
 			if (ac->def_signature == signature_pos)
 			{
-				use_count++;
+				use_count_accounts++;
 			}
 		}
-		if (use_count > 0)
+		use_count_folders = callback_folder_count_signatures(signature_pos);
+		SM_DEBUGF(1,("counts: acc=%ld fol=%ld\n",use_count_accounts,use_count_folders));
+		if (use_count_accounts || use_count_folders)
 		{
-			if (!sm_request(NULL,_("The signature is used in %d account(s)."),_("Delete|*Cancel"),use_count)) return;
+			if (use_count_folders == 0)
+			{
+				if (!sm_request(NULL,_("The signature is used in %d account(s)."),_("Delete|*Cancel"),use_count_accounts)) return;
+			} else
+			{
+				if (use_count_accounts == 0)
+				{
+					if (!sm_request(NULL,_("The signature is used in %d folder(s)."),_("Delete|*Cancel"),use_count_folders)) return;
+				} else
+				{
+					if (!sm_request(NULL,_("The signature is used in %d account(s) and %d folder(s)."),_("Delete|*Cancel"),use_count_accounts,use_count_folders)) return;
+				}
+			}
 		}
 		/* The Signature will be deleted, we have to reassign the accounts */
 		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
 		{
 			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
 			/* set to default all accounts with the deleted signature */
+			/* minus one for all signatures beyond the deleted one */
 			if (ac->def_signature == signature_pos)
 			{
 				ac->def_signature = MUIV_SignatureCycle_Default;
 			}
-			/* minus one for all signatures beyond the deleted one */
 			if (ac->def_signature > signature_pos)
 			{
 				ac->def_signature--;
@@ -1496,6 +1524,9 @@ static void signature_remove(void)
 				nnset(account_def_signature_cycle, MUIA_Cycle_Active, ac->def_signature);
 			}
 		}
+		/* now update the folders */
+		callback_folder_update_signatures(signature_pos);
+
 		signature_last_selected = NULL;
 		DoMethod(signature_signature_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 		signature_free(sign);
@@ -2084,8 +2115,8 @@ static void init_config(void)
 		set(cancel_button, MUIA_ShortHelp, _("Discards all the changes you have made."));
 
 		DoMethod(App, OM_ADDMEMBER, config_wnd);
-		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
-		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
+		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_cancel);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_cancel);
 		DoMethod(use_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_use);
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_save);
 		DoMethod(config_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, config_selected);

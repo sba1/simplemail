@@ -142,6 +142,7 @@ int mails_upload(void)
 			return 0;
 		}
 
+		out->size = m->size;
 		out->mailfile = mystrdup(m->filename); /* will be freed in free_outmail_array() */
 		out->from = mb.addr_spec; /* must be not freed here */
 

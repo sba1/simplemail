@@ -37,23 +37,21 @@
 #endif
 
 #include "account.h"
+#include "codecs.h"
+#include "configuration.h"
 #include "mail.h"
-#include "tcp.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "smtp.h"
-#include "support.h"
+#include "status.h"
 #include "support_indep.h"
+#include "tcp.h"
 
+#include "support.h"
 #include "subthreads.h"
 #include "tcpip.h"
-#include "upwnd.h"
-
-#include "configuration.h"
-
 #include "md5.h"
 #include "hmac_md5.h"
-#include "codecs.h"
 
 static char *buf_init(void)
 {
@@ -210,7 +208,7 @@ static int smtp_rcpt(struct smtp_connection *conn, struct account *account, stru
 
 }
 
-static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile)
+static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile, int cur_mail_size)
 {
 	int rc = 0;
 	unsigned char *buf;
@@ -225,7 +223,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 			unsigned int size;
 
 			size = myfsize(fp);
-			thread_call_parent_function_async(up_init_gauge_byte,1,size);
+//			thread_call_parent_function_async(up_init_gauge_byte,1,size);
 
 
 			if(SMTP_SEND_MAIL == smtp_send_cmd(conn, "DATA", NULL))
@@ -275,7 +273,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_parent_function_async(up_set_gauge_byte,1,bytes_send);
+						thread_call_parent_function_async(status_set_gauge,1,cur_mail_size + bytes_send);
 /*
 						if(thread_call_parent_function_sync(up_checkabort,0))
 						{
@@ -406,7 +404,8 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_parent_function_async(up_set_gauge_byte,1,bytes_send);
+						thread_call_parent_function_async(status_set_gauge,1,cur_mail_size + bytes_send);
+
 /*
 						if(thread_call_parent_function_sync(up_checkabort,0))
 						{
@@ -664,12 +663,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 {
 	if (!smtp_service_ready(conn)) return 0;
 
-	thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
+	thread_call_parent_function_async(status_set_status,1,N_("Sending EHLO..."));
 	if (!esmtp_ehlo(conn,account))
 	{
 		if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending HELO..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending HELO..."));
 		if (!smtp_helo(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -685,7 +684,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending STARTTLS..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending STARTTLS..."));
 		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
@@ -698,12 +697,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending secured EHLO..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending secured EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-			thread_call_parent_function_async(up_set_status,1,N_("Sending secured HELO..."));
+			thread_call_parent_function_async(status_set_status,1,N_("Sending secured HELO..."));
 			if (!smtp_helo(conn,account))
 			{
 				if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -714,7 +713,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 
 	if (account->smtp->auth)
 	{
-		thread_call_parent_function_async(up_set_status,1,N_("Sending AUTH..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
@@ -743,44 +742,66 @@ static int count_mails(struct account *account, struct outmail **om)
 }
 
 /**************************************************************************
+ Count the number of mails which belongs to the given account
+**************************************************************************/
+static int count_mails_size(struct account *account, struct outmail **om)
+{
+	int size=0;
+	int i=0;
+
+	while (om[i])
+	{
+		if (!mystricmp(account->email,om[i]->from))
+			size += om[i]->size;
+		i++;
+	}
+	return size;
+}
+
+/**************************************************************************
  Send all the mails which belongs to the account now.
 **************************************************************************/
 static int smtp_send_mails(struct smtp_connection *conn, struct account *account, struct outmail **om)
 {
-	int i,j,amm;
+	int i,j,amm,max_mail_size_sum,mail_size_sum = 0;
 
 	amm = count_mails(account,om);
+	max_mail_size_sum = count_mails_size(account,om);
 
-	thread_call_parent_function_async(up_init_gauge_mail,1,amm);
-		
+	thread_call_parent_function_async(status_init_mail,1,amm);
+	thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_mail_size_sum);
+
 	for (i=0,j=0;om[i] && j < amm;i++)
 	{
 		if (mystricmp(account->email,om[i]->from)) continue;
 
 		j++;
-		thread_call_parent_function_async(up_set_gauge_mail,1,j); /* starts from 1 */
+		thread_call_parent_function_async(status_set_mail,1,j,om[i]->size); /* starts from 1 */
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending FROM..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending FROM..."));
 		if (!smtp_from(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("FROM failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending RCPT..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending RCPT..."));
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("RCPT failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_async(up_set_status,1,N_("Sending DATA..."));
+		thread_call_parent_function_async(status_set_status,1,N_("Sending DATA..."));
 
-		if (!smtp_data(conn,account, om[i]->mailfile))
+		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("DATA failed."));
 			return 0;
 		}
+
+		mail_size_sum += om[i]->size;
+		thread_call_parent_function_async(status_set_gauge,1,mail_size_sum);
 
 		/* no error while mail sending, so it can be moved to the "Sent" folder now */
 		thread_call_parent_function_async_string(callback_mail_has_been_sent,1,om[i]->mailfile);
@@ -810,20 +831,29 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 		for (account = (struct account*)list_first(account_list);account;account = (struct account*)node_next(&account->node))
 		{
 			struct smtp_connection conn;
+			char head_buf[100];
+
 			memset(&conn,0,sizeof(struct smtp_connection));
 
 			if (count_mails(account,outmail)==0) continue;
-			
-			thread_call_parent_function_async_string(up_connect_to_server,1,account->smtp->name);
+
+			thread_call_parent_function_async_string(status_set_title, 1, account->smtp->name);
 
 			if (account->smtp->pop3_first)
 			{
 				/* Connect to the pop3 server first */
-				thread_call_parent_function_async(up_set_status,1,N_("Log into POP3 Server...."));
+				sprintf(head_buf,_("Sending mails to %s, connecting to %s first"),account->smtp->name,account->pop->name);
+				thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+
+				thread_call_parent_function_async(status_set_status,1,N_("Log into POP3 Server...."));
 				pop3_login_only(account->pop);
 			}
 
-			thread_call_parent_function_async(up_set_status,1,N_("Connecting..."));
+			sprintf(head_buf,_("Sending mails to %s"),account->smtp->name);
+			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+			thread_call_parent_function_async_string(status_set_connect_to_server,1,account->smtp->name);
+
+//			thread_call_parent_function_async(status_set_status,1,N_("Connecting..."));
 
 			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,0)))
 			{
@@ -833,25 +863,25 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 					if (thread_aborted())
 					{
-						thread_call_parent_function_async(up_set_status,1,N_("Aborted - Sending QUIT..."));
+						thread_call_parent_function_async(status_set_status,1,N_("Aborted - Sending QUIT..."));
 						smtp_quit(&conn);
-						thread_call_parent_function_async(up_set_status,1,N_("Aborted - Disconnecting..."));
+						thread_call_parent_function_async(status_set_status,1,N_("Aborted - Disconnecting..."));
 						tcp_disconnect(conn.conn);
 						break;
 					}
 
-					thread_call_parent_function_async(up_set_status,1,N_("Sending QUIT..."));
+					thread_call_parent_function_async(status_set_status,1,N_("Sending QUIT..."));
 					smtp_quit(&conn);
 				}
 
 				if (thread_aborted())
 				{
-					thread_call_parent_function_async(up_set_status,1,N_("Aborted - Disconnecting..."));
+					thread_call_parent_function_async(status_set_status,1,N_("Aborted - Disconnecting..."));
 					tcp_disconnect(conn.conn);
 					break;
 				}
 
-				thread_call_parent_function_async(up_set_status,1,N_("Disconnecting..."));
+				thread_call_parent_function_async(status_set_status,1,N_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			} else
 			{
@@ -899,9 +929,10 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_async(up_window_open,0);
+		thread_call_parent_function_async(status_init,1,0);
+		thread_call_parent_function_async(status_open,0);
 		smtp_send_really(&copy_list,outmail);
-		thread_call_parent_function_async(up_window_close,0);
+		thread_call_parent_function_async(status_close,0);
 	}
 
 /*
@@ -992,6 +1023,7 @@ struct outmail **duplicate_outmail_array(struct outmail **om_array)
 			newom_array[i]->from = mystrdup(om_array[i]->from);
 			newom_array[i]->mailfile = mystrdup(om_array[i]->mailfile);
 			newom_array[i]->rcp = array_duplicate(om_array[i]->rcp);
+			newom_array[i]->size = om_array[i]->size;
 		}
 	}
 	return newom_array;

@@ -1,3 +1,12 @@
+Version 0.21 (eighth beta) - released on 2003/12/24
+  - Can import mbox files
+  - Fixed memory leaks (bgol)
+  - Basic Remote Filter: Mails which matches a filter are ignored
+  - Simplehtml support code is now inside a shared library
+  - Ported to OS4
+  - Describes now how spam itentfication can be used within the guide
+  - Bug fixes and minor other improvements (see trackers at sf)
+
 Version 0.20 (seventh beta) - released on 2003/09/07
   - Can now download mails from an imap server partly
   - Added an statistcal spam filter

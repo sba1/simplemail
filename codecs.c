@@ -829,7 +829,7 @@ char *encode_address_puny(utf8 *email)
 		int last = 0;
 		int need_puny = 0;
 
-		/* find out the next part of the domain */
+		/* find out the next part of the domain and check if it conatins chars > 0x7f */
 		next_domain = domain;
 		while (1)
 		{
@@ -865,7 +865,6 @@ char *encode_address_puny(utf8 *email)
 
 		domain = next_domain + 1;
 	} while(next_domain != end);
-	email = email_str.str;
 
 	return email_str.str;
 }

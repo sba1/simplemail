@@ -228,7 +228,7 @@ static FILE *folder_open_indexfile(struct folder *f, char *mode)
 /******************************************************************
  Delete the indexfile of the given folder
 *******************************************************************/
-void folder_delete_indexfile(struct folder *f)
+static void folder_delete_indexfile(struct folder *f)
 {
 	char *path;
 	char *index_name;
@@ -263,6 +263,19 @@ void folder_delete_indexfile(struct folder *f)
 	chdir(cpath);
 	free(index_name);
 	free(path);
+}
+
+/******************************************************************
+ Delete all the index files
+*******************************************************************/
+void folder_delete_all_indexfiles(void)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		folder_delete_indexfile(f);
+		f = folder_next(f);
+	}
 }
 
 /******************************************************************
@@ -1629,6 +1642,8 @@ static void folder_delete_mails(struct folder *folder)
 	}
 
 	folder->num_mails = 0;
+	folder->unread_mails = 0;
+	folder->new_mails = 0;
 	folder->mail_array_allocated = 0;
 
 	if (folder->mail_array)

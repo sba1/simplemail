@@ -868,6 +868,12 @@ void callback_select_mail(int num)
 	main_select_mail(num);
 }
 
+/* delete all indexfiles */
+void callback_delete_all_indexfiles(void)
+{
+	folder_delete_all_indexfiles();
+}
+
 int simplemail_main(void)
 {
 #ifdef ENABLE_NLS

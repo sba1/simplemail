@@ -426,6 +426,7 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER,
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
+		MENU_FOLDER_DELALLINDEX,
 		MENU_FOLDER_SEND,
 		MENU_FOLDER_FETCH,
 		MENU_FOLDER_CHECKSINGLEACCOUNT,
@@ -460,6 +461,8 @@ int main_window_init(void)
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Delete all indexfiles..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
 		{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
@@ -646,6 +649,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, App, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 
@@ -666,8 +670,6 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
-
-//	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 
 
 		/* Key notifies */

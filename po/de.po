@@ -624,7 +624,7 @@ msgid ""
 "After successul downloading the mails should be deleted\n"
 "on the POP3 server."
 msgstr ""
-"Nachdem die Nachrricht erfolgreich herruntergeladen wurde\n"
+"Nachdem die Nachricht erfolgreich herruntergeladen wurde\n"
 "wird sie vom Server gelöscht."
 
 #: amiga-mui/configwnd.c:1087
@@ -980,7 +980,7 @@ msgid ""
 "is marked as spam before the operation. Note that only mails\n"
 "marked as spam can be moved into the spam folder."
 msgstr ""
-"Falls diese Option aktiviert wird, werden alle Nachrrichten, die in\n"
+"Falls diese Option aktiviert wird, werden alle Nachrichten, die in\n"
 "den Spam Ordner verschoben werden, vorher als Spam klassifiziert.\n"
 "Nur als Spam klassifizierte Nachrichten können in den Spam Ordner verschoben "
 "werden."
@@ -1006,7 +1006,7 @@ msgid ""
 "mails with a listed sender address are skipped."
 msgstr ""
 "Eine weiße Liste enthält alle vertrauenwürdigen Adressen\n"
-"Nachrrichten von diesen Adressen werden nicht auf Spamgehalt getestet."
+"Nachrichten von diesen Adressen werden nicht auf Spamgehalt getestet."
 
 #: amiga-mui/configwnd.c:1805
 msgid "White list"
@@ -1042,7 +1042,7 @@ msgstr "Statistik"
 
 #: amiga-mui/configwnd.c:1834
 msgid "Number of mails classified as ham"
-msgstr "Anzahl hamklassifitierter Nachrrichten"
+msgstr "Anzahl hamklassifitierter Nachrichten"
 
 #: amiga-mui/configwnd.c:1836 amiga-mui/configwnd.c:1841
 msgid "Reset statistics..."
@@ -1576,7 +1576,7 @@ msgstr "Alle Indexdateien löschen"
 
 #: amiga-mui/mainwnd.c:534
 msgid "Save all indexfiles"
-msgstr "Alle Indexdateien speichernö"
+msgstr "Alle Indexdateien speichern"
 
 #: amiga-mui/mainwnd.c:536
 msgid "Import mbox file..."
@@ -1916,7 +1916,7 @@ msgstr "Alle Header anzeigen?"
 
 #: amiga-mui/readwnd.c:1059
 msgid "SimpleMail - Read Message"
-msgstr "SimpleMail - Nachrricht lesen"
+msgstr "SimpleMail - Nachricht lesen"
 
 #: amiga-mui/readwnd.c:1069
 msgid "_Prev"
@@ -2376,7 +2376,7 @@ msgstr "Der Ordner kann nicht gelöscht werden, da er gerade benutzt wird.\n"
 #: simplemail.c:138
 msgid "Do you really want to delete the selected mail permanently?"
 msgstr ""
-"Solle die selektierte Nachrricht wirklich dauerhaft\n"
+"Solle die selektierte Nachricht wirklich dauerhaft\n"
 "gelöscht werden?"
 
 #: simplemail.c:139
@@ -2420,7 +2420,7 @@ msgid ""
 msgstr ""
 "Im Moment sind zu wenige Nachrichten als %s klassifiziert.\n"
 "Statistische Spam Identfikation funktioniert nur bei genügend\n"
-"klassifizierten Nachrrichten.\n"
+"klassifizierten Nachrichten.\n"
 "Es solten mindestens 500 sein, jedoch gilt: Je mehr desto besser.\n"
 "\n"
 "Anzahl Spam-klassifizierter Nachrichten (schlechte): %ld\n"

@@ -851,7 +851,6 @@ static int yam_import_entries(FILE *fp)
 					newperson->group_array = array_add_string(newperson->group_array,grp->name);
 					grp = (struct addressbook_group*)node_next(&grp->node);
 				}
-
 			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{
@@ -914,13 +913,8 @@ int addressbook_import_yam(char *filename)
 		fclose(fp);
 
 		/* Free the temporary YAM Import group list */
-		grp = (struct addressbook_group*)list_first(&yamimport_group_list);
-		while (grp)
-		{
+		while ((grp = (struct addressbook_group*)list_remove_tail(&yamimport_group_list)))
 			addressbook_free_group(grp);
-			grp = (struct addressbook_group*)node_next(&grp->node);
-		}
-
 	}
 
 	return rc;

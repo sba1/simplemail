@@ -115,7 +115,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
 
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
-  sc nover link $(MAKEGENERATOR)
+  sc nover ign=79,110 link $(MAKEGENERATOR)
 
 $(GSTFILE): amiga-mui/headers.c
   sc nover ign=79,110 noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)

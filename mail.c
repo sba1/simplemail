@@ -2885,7 +2885,6 @@ int mail_create_html_header(struct mail *mail)
 	if ((fh = tmpfile()))
 	{
 		int len;
-		char *from = mail_find_header_contents(mail,"from");
 		char *to = mail_find_header_contents(mail,"to");
 		char *replyto = mail_find_header_contents(mail, "reply-to");
 		char *cc = mail_find_header_contents(mail, "cc");
@@ -2895,29 +2894,21 @@ int mail_create_html_header(struct mail *mail)
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 
-		if (from && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
+		if (mail->from_addr && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 		{
-			struct mailbox mb;
-			parse_mailbox(from, &mb);
-
-			if ((portrait = addressbook_get_portrait(mb.addr_spec)))
-			{
+			if ((portrait = addressbook_get_portrait(mail->from_addr)))
 				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
-			}
 
-			fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("From"),mb.addr_spec,style_text);
+			fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("From"),mail->from_addr,style_text);
 
-			if (mb.phrase)
+			if (mail->from_phrase)
 			{
-				fputhtmlstr(mb.phrase,fh);
-				fprintf(fh," &lt;%s&gt;",mb.addr_spec);
+				fputhtmlstr(mail->from_phrase,fh);
+				fprintf(fh," &lt;%s&gt;",mail->from_addr);
 			} else
 			{
-				fputs(mb.addr_spec,fh);
+				fputs(mail->from_addr,fh);
 			}
-
-			if (mb.phrase)  free(mb.phrase);
-			if (mb.addr_spec) free(mb.addr_spec);
 
 			fputs("</A><BR>",fh);
 		}

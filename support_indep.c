@@ -253,8 +253,8 @@ int myfilecopy(const char *sourcename, const char *destname)
 				rc = 1;
 				while (!feof(in))
 				{
-					fread(buf,8192,1,in);
-					fwrite(buf,8192,1,in);
+					int blocks = fread(buf,1,8192,in);
+					fwrite(buf,1,blocks,out);
 				}
 				free(buf);
 			}

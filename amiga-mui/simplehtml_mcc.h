@@ -33,6 +33,7 @@ __stdargs void delete_simplehtml_class(void);
 
 #define MUIM_SimpleHTML_AllocateMem		(0x456789)
 #define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
+#define MUIM_SimpleHTML_FontSubst			(0x45678b)
 
 struct MUIP_SimpleHTML_LoadHook
 {
@@ -55,6 +56,15 @@ struct MUIP_SimpleHTML_AppendBuffer
 	ULONG MethodID;
 	STRPTR Buffer; /* the buffer which should be appended */
 	ULONG BufferLen; /* the length of the buffer */
+};
+
+struct MUIP_SimpleHTML_FontSubst
+{
+	ULONG MethodID;
+	STRPTR name;
+	LONG size; /* 1 - 7 */
+	STRPTR newname; /* new font name (without .font) */
+	LONG newsize; /* the new size (in pixels) */
 };
 
 #endif

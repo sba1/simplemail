@@ -41,7 +41,7 @@ problem.
 
 Changes
 ~~~~~~~
-Version 0.11 (elenvth alpha) - released on 2001/09/23
+Version 0.11 (eleventh alpha) - released on 2001/09/23
   - UIDL Pop3 commando support, so mails won't be downloaded twice
   - Improved Startup time
   - Bug fixes
@@ -133,7 +133,7 @@ Contact
 ~~~~~~~
 More information about the SimpleMail  project  can  be  found at
 
-    http://simplemail.sourceforge.net/
+    http://simplemail.sf.net/ or http://www.simplemail.de.vu/
 
 Developers might take look at
 
@@ -145,11 +145,11 @@ patches, subscribe to the mailing lists or get access to the cvs.
 There are also two mailing lists for SimpleMail. One for the developers
 and one for the user.
 
-    http://lists.sourceforge.net/lists/listinfo/simplemail-dev
-    http://groups.yahoo.com/group/simplemail-usr/
+    http://lists.sourceforge.net/lists/listinfo/simplemail-dev/
+    http://http://www.freelists.org/list/simplemail-usr
 
 SimpleMail is (originally) developed by
-  Hynek Schlawack <hynek@rz.uni-potsdam.de> http://me.in-berlin.de/~hys/
+  Hynek Schlawack <hynek@hys.in-berlin.de> http://hynek.in-berlin.de/
   Sebastian Bauer <sebauer@t-online.de> http://home.t-online.de/home/sebauer/
 
 You can also contact them if you have any questions regarding SimpleMail.

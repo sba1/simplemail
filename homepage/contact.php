@@ -9,8 +9,8 @@ SimpleMail is currently mainly developed by:
     </TR>
     <TR>
         <TD>Hynek Schlawack</TD>
-        <TD><A href="mailto:hynek@rz.uni-potsdam.de">hynek@hys.in-berlin.de</A></TD>
-        <TD><A href="http://me.in-berlin.de/~hys/">http://me.in-berlin.de/~hys/</A></TD>
+        <TD><A href="mailto:hynek@hys.in-berlin.de">mailto:hynek@hys.in-berlin.de</A></TD>
+        <TD><A href="http://hynek.in-berlin.de/">http://hynek.in-berlin.de/</A></TD>
     </TR>
 </TABLE>
 <br>

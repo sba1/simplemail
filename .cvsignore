@@ -19,3 +19,4 @@ stamp-h1
 configure
 config,status
 .deps
+mmakefile

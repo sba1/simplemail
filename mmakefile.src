@@ -1,0 +1,57 @@
+# Makefile for AROS version of SimpleMail
+#
+#
+
+include $(TOP)/config/make.cfg
+
+FILES   := \
+	account \
+	addressbook \
+	codecs \
+	codesets \
+	configuration \
+	estimate \
+	filter \
+	folder \
+	hmac_md5 \
+	http \
+	imap \
+	lists \
+	mail \
+	md5 \
+	parse \
+	pgp \
+	phrase \
+	pop3 \
+	print \
+	support_indep \
+	taglines \
+	tcp \
+	text2html \
+	trans
+
+EXEDIR := $(CONTRIBDIR)/SimpleMail
+EXE := $(EXEDIR)/SimpleMail
+
+USE_CLIB_SHARED := yes
+USE_AMIGALIB    := yes
+USE_MUILIB      := yes
+USE_AROSLIB     := yes
+
+USER_INCLUDES := -I./indep-include -I./amiga-mui
+
+#MM contrib-mui-simplemail : includes linklibs
+
+%make_prog_setup mmake=contrib-mui-simplemail
+
+contrib-mui-simplemail : setup $(EXE)
+
+%make_prog_multi dir=$(EXEDIR) target=$(EXE)
+
+#MM setup
+setup ::
+        %mkdirs_q $(EXEDIR)
+
+%common
+%include_deps
+

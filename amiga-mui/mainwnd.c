@@ -107,6 +107,15 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 }
 
 /******************************************************************
+ Display the about Requester
+*******************************************************************/
+static void display_about(void)
+{
+	MUI_Request(App, NULL, 0, "SimpleMail - About", "*Ok", "SimpleMail version %ld.%ld\n\nCopyright © 2000-2001\nHynek Schlawack and Sebastian Bauer\nReleased under the terms of the GNU Public License.",
+		VERSION,REVISION);
+}
+
+/******************************************************************
  Converts a given sort mode to a nlist title mark
 *******************************************************************/
 static ULONG sortmode2titlemark(int sortmode, int type)
@@ -286,32 +295,78 @@ static int init_folder_placement(void)
 int main_window_init(void)
 {
 	int rc;
+	Object *menu;
+	enum {
+		MENU_PROJECT,
+		MENU_PROJECT_ABOUT = 1,
+		MENU_PROJECT_ABOUTMUI,
+		MENU_PROJECT_QUIT,
+		MENU_FOLDER,
+		MENU_FOLDER_NEWGROUP,
+		MENU_FOLDER_NEWFOLDER,
+		MENU_FOLDER_DELETE,
+		MENU_FOLDER_ORDER,
+		MENU_FOLDER_ORDER_SAVE,
+		MENU_FOLDER_ORDER_RESET,
+		MENU_MESSAGE_READ,
+		MENU_MESSAGE_EDIT,
+		MENU_MESSAGE_MOVE,
+		MENU_MESSAGE_COPY,
+		MENU_MESSAGE_DELETE,
+		MENU_SETTINGS,
+		MENU_SETTINGS_ADDRESSBOOK,
+		MENU_SETTINGS_CONFIGURATION,
+		MENU_SETTINGS_FILTER,
+		MENU_SETTINGS_MUI
+
+	};
+
+	static const struct NewMenu nm[] =
+	{
+		{NM_TITLE, "Project", NULL, 0, 0, NULL},
+		{NM_ITEM, "?\0About...", NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
+		{NM_ITEM, "About MUI...", NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, "Q\0Quit", NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
+		{NM_TITLE, "Folder", NULL, 0, 0, NULL},
+		{NM_ITEM, "New Group...", NULL, 0, 0, NULL},
+		{NM_ITEM, "New Folder...", NULL, 0, 0, NULL},
+		{NM_ITEM, "Delete", NULL, 0, 0, NULL},
+		{NM_ITEM, "Order", NULL, 0, 0, NULL},
+		{NM_SUB, "Save", NULL, 0, 0, NULL},
+		{NM_SUB, "Reset", NULL, 0, 0, NULL},
+		{NM_TITLE, "Message", NULL, 0, 0, NULL},
+		{NM_ITEM, "Read", NULL, 0, 0, NULL},
+		{NM_ITEM, "Edit", NULL, 0, 0, NULL},
+		{NM_ITEM, "Move...", NULL, NM_ITEMDISABLED, 0L, NULL},
+		{NM_ITEM, "Copy...", NULL, NM_ITEMDISABLED, 0L, NULL},
+		{NM_ITEM, "Delete...", "Del", NM_COMMANDSTRING, 0L, NULL},
+/*
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
+		{NM_ITEM, "Save", NULL, NM_ITEMDISABLED, 0L, NULL},
+		{NM_SUB, "Complete Message...", NULL, 0, 0, NULL},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
+*/
+		{NM_TITLE, "Settings", NULL, 0, 0, (APTR)MENU_SETTINGS},
+		{NM_ITEM, "Addressbook", NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
+		{NM_ITEM, "Configuration...", NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
+		{NM_ITEM, "Filter...", NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, "MUI...", NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
+		{NM_END, NULL, NULL, 0, 0, NULL}
+	};
+
 	rc = FALSE;
+
+	menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
 	win_main = WindowObject,
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
     MUIA_Window_Title, VERS,
 
-		MUIA_Window_Menustrip, MenustripObject,
-			Child, MenuObjectT("Project"),
-				Child, MenuitemObject, MUIA_Menuitem_Title, "About...",End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "About MUI...",End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, NM_BARLABEL, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Quit",End,
-				End,
-			Child, MenuObjectT("Folder"),
-				Child, MenuitemObject, MUIA_Menuitem_Title, "New Group...",End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...",End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Delete",End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Order",
-					Child, MenuitemObject, MUIA_Menuitem_Title, "Save", End,
-					Child, MenuitemObject, MUIA_Menuitem_Title, "Reset", End,
-					End,
-				End,
-			Child, MenuObjectT("Settings"),
-				Child, MenuitemObject, MUIA_Menuitem_Title, "MUI...",End,
-				End,
-			End,
+		MUIA_Window_Menustrip,menu,
 
 		WindowContents, main_group = VGroup,
 			Child, buttons_group = HGroupV,
@@ -401,6 +456,17 @@ int main_window_init(void)
 
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+
+		/* Menu notifies */
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, App, 2, MUIM_Application_OpenConfigWindow, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION,App, 3, MUIM_CallHook, &hook_standard, callback_config);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+
+		/* Gadget notifies */
 		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
 		DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);

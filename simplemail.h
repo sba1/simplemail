@@ -26,7 +26,7 @@
 struct filter;
 struct folder;
 struct mail;
-struct addressbook_entry;
+struct addressbook_entry_new;
 struct search_options;
 struct list;
 

@@ -208,19 +208,23 @@ static int import_entry(struct import_data *data)
 	{
 		if ((destdir = mystrdup(data->destdir)))
 		{
-			int in_folder = data->in_folder;
 			struct folder *dest_folder;
+			int in_folder;
+			
+			in_folder = data->in_folder;
+			if (data->in_folder) dest_folder = folder_find_by_path(destdir);
+			else dest_folder = NULL;
+
+			if (dest_folder)
+			{
+				sm_snprintf(head_buf, sizeof(head_buf), _("Importing %s to %s"),filename,dest_folder->name);
+			} else
+			{
+				sm_snprintf(head_buf, sizeof(head_buf), _("Importing %s"),filename);
+			}
+
 			if (thread_parent_task_can_contiue())
 			{
-				if (in_folder) dest_folder = folder_find_by_path(destdir);
-				if (dest_folder)
-				{
-					sprintf(head_buf, _("Importing %s to %s"),filename,dest_folder->name);
-				} else
-				{
-					sprintf(head_buf, _("Importing %s"),filename);
-				}
-
 				thread_call_parent_function_async(status_init,1,0);
 				thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Importing a mbox file"));
 				thread_call_parent_function_async_string(status_set_head,1,head_buf);

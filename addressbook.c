@@ -260,6 +260,7 @@ struct addressbook_entry_new *addressbook_add_entry(char *realname)
 	memset(entry,0,sizeof(*entry));
 	entry->realname = mystrdup(realname);
 	list_insert_tail(&address_list,&entry->node);
+	return entry;
 }
 
 /*************** FileIO ******************/
@@ -1269,7 +1270,7 @@ char *addressbook_complete_address(char *address)
 		for (i=0; i < array_length(entry->email_array); i++)
 		{
 			if (!mystrnicmp(entry->email_array[i],address,al))
-				return entry->email_array[i],address + al;
+				return entry->email_array[i] + al;
 		}
 		entry = addressbook_next_entry(entry);
 	}

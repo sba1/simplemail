@@ -546,10 +546,10 @@ char *parse_mailbox(char *mailbox, struct mailbox *mbox)
 	if ((ret = parse_addr_spec(mailbox, &mb.addr_spec)))
 	{
 		/* the phrase can now be placed in the brackets */
-		unsigned char *buf = ret;
+		char *buf = ret;
 
 		/* don't use skip_spaces() because it skips comments */
-		while (isspace(*buf)) buf++;
+		while (isspace((unsigned char)(*buf))) buf++;
 
 		if (*buf == '(')
 		{

@@ -1868,12 +1868,12 @@ int mail_process_headers(struct mail *mail)
 			}
 		} else if (!mystricmp("message-id",header->name))
 		{
-		if (*buf++ == '<')
-			parse_addr_spec(buf,&mail->message_id);
+			if (*buf++ == '<')
+				parse_addr_spec(buf,&mail->message_id);
 		} else if (!mystricmp("in-reply-to",header->name))
 		{
-		if (*buf++ == '<')
-			parse_addr_spec(buf,&mail->message_reply_id);
+			if (*buf++ == '<')
+				parse_addr_spec(buf,&mail->message_reply_id);
 		} else if (!mystricmp("content-transfer-encoding",header->name))
 		{
 			mail->content_transfer_encoding = mystrdup(buf);
@@ -1886,6 +1886,9 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("X-SimpleMail-POP3",header->name))
 		{
 			mail->pop3_server = mystrdup(buf);
+		} else if (!mystricmp("X-SimpleMail-Partial", header->name))
+		{
+			if (!mystricmp(buf,"yes")) mail->flags |= MAIL_FLAGS_PARTIAL;
 		}
 		header = (struct header*)node_next(&header->node);
 	}

@@ -37,6 +37,7 @@
 #include "amigasupport.h"
 #include "errorwnd.h"
 #include "muistuff.h"
+#include "smintl.h"
 #include "subthreads.h"
 #include "support.h"
 #include "support_indep.h"
@@ -327,7 +328,7 @@ int sm_system(char *command, char *output)
 *******************************************************************/
 void tell_str(char *str)
 {
-	error_add_message(str);
+	error_add_message(_(str));
 }
 
 /******************************************************************

@@ -630,7 +630,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 					if (server->login) mystrlcpy(login,server->login,512);
 					password[0] = 0;
 
-					if ((rc = thread_call_parent_function_sync(sm_request_login,4,server->name,password,login,512)))
+					if ((rc = thread_call_parent_function_sync(sm_request_login,4,server->name,login,password,512)))
 					{
 						server->login = mystrdup(login);
 						server->passwd = mystrdup(password);

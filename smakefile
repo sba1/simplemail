@@ -115,7 +115,7 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo
+LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:
@@ -126,6 +126,7 @@ ${LOCALEDIR}de.mo: po/de.po
 ${LOCALEDIR}ma.mo: po/ma.po
 ${LOCALEDIR}pl.mo: po/pl.po
 ${LOCALEDIR}fi.mo: po/fi.po
+${LOCALEDIR}es.mo: po/es.po
 
 de.pox:
   execute CreatePOX de

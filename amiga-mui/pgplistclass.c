@@ -20,7 +20,6 @@
 ** pgplistclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,19 +52,19 @@ struct PGPList_Data
 	char buf[100];
 };
 
-STATIC ASM SAVEDS struct pgp_key *pgp_construct(register __a1 struct NList_ConstructMessage *msg)
+STATIC ASM SAVEDS struct pgp_key *pgp_construct(REG(a1,struct NList_ConstructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	return pgp_duplicate(key);
 }
 
-STATIC ASM SAVEDS VOID pgp_destruct(register __a1 struct NList_DestructMessage *msg)
+STATIC ASM SAVEDS VOID pgp_destruct(REG(a1,struct NList_DestructMessage *msg))
 {
 	struct pgp_key *key = (struct pgp_key*)msg->entry;
 	if (key) pgp_dispose(key);
 }
 
-STATIC ASM SAVEDS VOID pgp_display(register __a1 struct NList_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID pgp_display(REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
 	struct PGPList_Data *data = (struct PGPList_Data*)INST_DATA(CL_PGPList->mcc_Class,obj);
 	if (msg->entry)
@@ -124,9 +123,8 @@ STATIC ULONG PGPList_Refresh(struct IClass *cl,Object *obj, Msg msg)
 	return 0;
 }
 
-STATIC ASM ULONG PGPList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, PGPList_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return PGPList_New(cl,obj,(struct opSet*)msg);
@@ -140,10 +138,7 @@ struct MUI_CustomClass *CL_PGPList;
 int create_pgplist_class(void)
 {
 	if ((CL_PGPList = MUI_CreateCustomClass(NULL,MUIC_NList,NULL,sizeof(struct PGPList_Data),PGPList_Dispatcher)))
-	{
-		CL_PGPList->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

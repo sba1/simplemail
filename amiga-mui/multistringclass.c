@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dos.h>
 
 #include <intuition/intuitionbase.h>
 #include <libraries/mui.h>
@@ -139,9 +138,8 @@ STATIC ULONG SingleString_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
-STATIC ASM ULONG SingleString_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case OM_SET: return SingleString_Set(cl,obj,(struct opSet*)msg);
@@ -190,7 +188,7 @@ STATIC VOID MultiString_Acknowledge(void **msg)
 
 STATIC VOID MultiString_Event(void **msg)
 {
-	struct IClass *cl = (struct IClass*)msg[0];
+/*	struct IClass *cl = (struct IClass*)msg[0];*/
 	Object *obj = (Object*)msg[1];
 	struct object_node *obj_node = (struct object_node*)msg[2];
 	Object *window = (Object*)xget(obj,MUIA_WindowObject);
@@ -384,9 +382,8 @@ STATIC Object *MultiString_AddStringField(struct IClass *cl,Object *obj, struct 
 	return NULL;
 }
 
-ASM STATIC ULONG MultiString_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, MultiString_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch (msg->MethodID)
 	{
 		case  OM_NEW: return MultiString_New(cl,obj,(struct opSet*)msg);
@@ -410,10 +407,8 @@ int create_multistring_class(void)
 {
 	if ((CL_SingleString = MUI_CreateCustomClass(NULL, NULL, CL_UTF8String, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
 	{
-		CL_SingleString->mcc_Class->cl_UserData = getreg(REG_A4);
 		if ((CL_MultiString = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct MultiString_Data), MultiString_Dispatcher)))
 		{
-			CL_MultiString->mcc_Class->cl_UserData = getreg(REG_A4);
 			return TRUE;
 		}
 	}

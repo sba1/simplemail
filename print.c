@@ -20,23 +20,51 @@
 ** print.c
 */
 
+#include <stdlib.h>
 
 #include "print.h"
 #include "mail.h"
 
+#include "sysprint.h"
+
+#define ANSI_NORMAL     "[0m"
+#define ANSI_BOLD       "[1m"
+#define ANSI_UNDER      "[4m"
+
+/*
+** print_mail - prints a given mail.
+**
+** These are the system-independent routines.
+*/
 int print_mail(struct mail *m)
 {
 	int rc = 0;
+	char *text;
+	PrintHandle *ph;
+	unsigned long len;
 
 	mail_decode(m);
 
 	if(m->decoded_data)
 	{
-		kprintf(m->decoded_data);
+		text = m->decoded_data;
+		len = m->decoded_len;
 	}
 	else
 	{
-		kprintf(m->text);
+		text = m->text+m->text_begin;
+		len = m->text_len;
+	}
+
+	/* Just a very simple and basic routine so far. */
+	ph = sysprint_prepare();
+	if(ph != NULL)
+	{
+		if(sysprint_print(ph, text, len))
+		{
+			rc = 1; /* Mark success. */
+		}
+		sysprint_cleanup(ph);
 	}
 
 	return rc;

@@ -76,6 +76,7 @@ struct folder
 #define FOLDER_SPECIAL_OUTGOING 2
 #define FOLDER_SPECIAL_SENT 3
 #define FOLDER_SPECIAL_DELETED 4
+#define FOLDER_SPECIAL_GROUP 5
 
 char *default_folder_path(void);
 char *new_folder_path(void);
@@ -110,6 +111,7 @@ int folder_delete_mail(struct folder *from_folder, struct mail *mail);
 void folder_delete_deleted(void);
 int folder_save_index(struct folder *f);
 struct folder *folder_add_with_name(char *path, char *name);
+struct folder *folder_add_group(char *name);
 int folder_remove(struct folder *f);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */

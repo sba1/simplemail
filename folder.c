@@ -631,6 +631,25 @@ struct folder *folder_add_with_name(char *path, char *name)
 }
 
 /******************************************************************
+ Adds a folder to the internal folder list with a given name
+*******************************************************************/
+struct folder *folder_add_group(char *name)
+{
+	struct folder_node *node;
+	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+	{
+		/* Initialize everything with 0 */
+		memset(node,0,sizeof(struct folder_node));
+		node->folder.name = mystrdup(name);
+		node->folder.special = FOLDER_SPECIAL_GROUP;
+		
+		list_insert_tail(&folder_list,&node->node);
+		return &node->folder;
+	}
+	return NULL;
+}
+
+/******************************************************************
  Remove given folder from the folder list, if possible
 *******************************************************************/
 int folder_remove(struct folder *f)

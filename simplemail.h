@@ -42,6 +42,7 @@ void callback_send_mails(void);
 void callback_filter(void);
 void callback_new_folder(void);
 void callback_new_folder_path(char *path, char *name);
+void callback_new_group(void);
 void callback_remove_folder(void);
 void callback_edit_filter(void);
 void callback_addressbook(void);

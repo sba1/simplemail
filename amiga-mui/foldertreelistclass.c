@@ -102,6 +102,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 #define MENU_FOLDER_NEW			1
 #define MENU_FOLDER_REM			2
 #define MENU_FOLDER_SETTINGS	3
+#define MENU_FOLDER_GROUP		4
 
 STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
@@ -117,6 +118,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->context_menu = MenustripObject,
 		Child, MenuObjectT("Folders"),
 			Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...", MUIA_UserData, MENU_FOLDER_NEW, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, "New Group...", MUIA_UserData, MENU_FOLDER_GROUP, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, "Remove Folder...", MUIA_UserData, MENU_FOLDER_REM, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, "Settings...", MUIA_UserData, MENU_FOLDER_SETTINGS, End,
@@ -229,6 +231,7 @@ STATIC ULONG FolderTreelist_ContextMenuChoice(struct IClass *cl, Object *obj,str
 	switch(xget(msg->item,MUIA_UserData))
 	{
 		case	MENU_FOLDER_NEW: callback_new_folder(); break;
+		case	MENU_FOLDER_GROUP: callback_new_group(); break;
 		case	MENU_FOLDER_REM: callback_remove_folder(); break;
 		case	MENU_FOLDER_SETTINGS: callback_edit_folder(); break;
 	}

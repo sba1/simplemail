@@ -88,39 +88,8 @@ static int init_folder_placement(void);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
-	struct MUI_NListtree_TreeNode *listnode = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_GetEntry_ListNode_Root;
-
-	while (1)
-	{
-		struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree,
-				MUIM_NListtree_GetEntry, listnode, MUIV_NListtree_GetEntry_Position_Head, 0);
-
-		while (treenode)
-		{
-			struct MUI_NListtree_TreeNode *newtreenode;
-			if (treenode->tn_User == udata) return treenode;
-			if (treenode->tn_Flags & TNF_LIST)
-			{
-				listnode = treenode;
-				break;
-			}
-
-			if (!(newtreenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0)))
-			{
-				do
-				{
-					newtreenode = (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_GetEntry, treenode,MUIV_NListtree_GetEntry_Position_Parent,0);
-					if (!newtreenode) break;
-					treenode = newtreenode;
-					newtreenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0);
-				} while (!newtreenode);
-			}
-			treenode = newtreenode;
-		}
-
-		if (!treenode) break;
-	}
-	return NULL;
+	DoMethod(tree, MUIA_NListtree_FindUserDataHook, MUIV_NListtree_FindUserDataHook_PointerCompare);
+	return (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_FindUserData,  MUIV_NListtree_FindUserData_ListNode_Root, udata, 0);
 }
 
 /******************************************************************
@@ -225,7 +194,7 @@ static void switch_folder_view(void)
 *******************************************************************/
 static void popup_selected(void)
 {
-	LONG newact = xget(folder_popupmenu,MUIA_Popupmenu_Selected);
+	LONG newact = xget(folder_popupmenu,MUIA_Popupmenu_SelectedData);
 	if (newact != -1)
 	{
 		struct folder *f = folder_find(newact);
@@ -453,6 +422,7 @@ void main_refresh_folders(void)
 {
 	struct folder *f = folder_first();
 	char buf[256];
+	int i=0;
 
 	int act = xget(folder_tree, MUIA_NList_Active);
 
@@ -465,15 +435,23 @@ void main_refresh_folders(void)
 
 	while (f)
 	{
-		DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
+		if (f->special == FOLDER_SPECIAL_GROUP)
+		{
+			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
+						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
+		} else
+		{
+			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
 						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 
-		if (folder_popupmenu)
-		{
-			sprintf(buf,"%s (T:%ld N:%ld U:%ld)",f->name,f->num_mails,f->new_mails,f->unread_mails);
-			DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf);
+			if (folder_popupmenu)
+			{
+				sprintf(buf,"%s (T:%ld N:%ld U:%ld)",f->name,f->num_mails,f->new_mails,f->unread_mails);
+				DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
+			}
 		}
 		f = folder_next(f);
+		i++;
 	}
 	nnset(folder_tree,MUIA_NList_Active,act);
 	set(folder_tree,MUIA_NListtree_Quiet,FALSE);

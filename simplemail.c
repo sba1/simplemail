@@ -461,6 +461,13 @@ void callback_new_folder(void)
 	folder_edit_new_path(new_folder_path());
 }
 
+/* create a new group */
+void callback_new_group(void)
+{
+	folder_add_group("New Group");
+	main_refresh_folders();
+}
+
 /* create a new folder */
 void callback_new_folder_path(char *path, char *name)
 {

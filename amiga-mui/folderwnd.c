@@ -226,3 +226,4 @@ void folder_edit_new_path(char *init_path)
 		set(new_folder_wnd, MUIA_Window_Open, TRUE);
 	}
 }
+

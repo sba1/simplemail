@@ -322,13 +322,15 @@ static struct {
 	int newaddressbook_tag;
 	int newcontact_tag;
 	int newgroup_tag;
-	int is_classic_addressbook;
 	int private_tag;
 	int work_tag;
 	char *data_buf;
 
 	struct addressbook_entry_new current_entry;
 	struct addressbook_group current_group;
+
+	int is_classic_addressbook;
+	int contact_tag;
 } xml_context;
 
 /**************************************************************************
@@ -368,6 +370,10 @@ SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 	{
 		xml_context.is_classic_addressbook = 1;
 	}
+	else if (!mystricmp("contact",el))
+	{
+		if (xml_context.is_classic_addressbook) xml_context.contact_tag++;
+	}
 }  /* End of start handler */
 
 /**************************************************************************
@@ -393,9 +399,10 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 	}
 
 	if (!mystricmp("newaddressbook",el)) xml_context.newaddressbook_tag = 0;
-	else if (!mystricmp("newcontact",el))
+	else if (!mystricmp("addressbook",el)) xml_context.is_classic_addressbook = 0;
+	else if (!mystricmp("newcontact",el) || !mystricmp("contact",el))
 	{
-		if (xml_context.newcontact_tag)
+		if (xml_context.newcontact_tag || xml_context.contact_tag)
 		{
 			struct addressbook_entry_new *entry;
 
@@ -440,12 +447,12 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 	else if (!mystricmp("name",el))
 	{
 		if (xml_context.newgroup_tag) xml_context.current_group.name = mystrdup(data_buf);
-		else if (xml_context.newcontact_tag) xml_context.current_entry.realname = mystrdup(data_buf);
+		else if (xml_context.newcontact_tag || xml_context.contact_tag) xml_context.current_entry.realname = mystrdup(data_buf);
 	}
 	else if (!mystricmp("description",el))
 	{
 		if (xml_context.newgroup_tag) xml_context.current_group.description = mystrdup(data_buf);
-		else if (xml_context.newcontact_tag) xml_context.current_entry.description = mystrdup(data_buf);
+		else if (xml_context.newcontact_tag || xml_context.contact_tag) xml_context.current_entry.description = mystrdup(data_buf);
 	}
 	else if (!mystricmp("email",el)) xml_context.current_entry.email_array = array_add_string(xml_context.current_entry.email_array,data_buf);
 	else if (!mystricmp("pgpid",el)) xml_context.current_entry.pgpid = mystrdup(data_buf);
@@ -515,7 +522,7 @@ static char *uft8toiso(char *chr, char *code)
 **************************************************************************/
 SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 {
-	if (xml_context.newcontact_tag || xml_context.newgroup_tag || xml_context.newgroup_tag)
+	if (xml_context.newcontact_tag || xml_context.newgroup_tag || xml_context.contact_tag)
 	{
 		int old_len = 0;
 		if (xml_context.data_buf)

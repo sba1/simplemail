@@ -23,7 +23,8 @@ Version 0.14 (fourtheenth alpha) - released on ?
   - Quotation wordwrap improved.
   - Option to not cite empty lines.
   - Own address is filtered out when repling a multiple recipient email.
-  - Modified STARTTLS according to suggestions by Jörg Strohmayer. 
+  - Modified STARTTLS according to suggestions by Jörg Strohmayer.
+  - A default recipient can be defined for each folder.
 
 Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!

@@ -631,7 +631,7 @@ char *tmpnam(char *name)
 	static char default_buf[L_tmpnam];
 	IExec->ObtainSemaphore(&files_sem);
 	if (!name) name = default_buf;
-	vsnprintf(name,sizeof(default_buf),"T:sm%05lx",(void*)&tmpno);
+	snprintf(name,sizeof(default_buf),"T:sm%05lx",tmpno);
 	tmpno++;
 	IExec->ReleaseSemaphore(&files_sem);
 	return name;

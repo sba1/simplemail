@@ -24,5 +24,6 @@ int sm_add_part(char *drawer, const char *filename, int buf_size);
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
 unsigned int mystrlen(const char *str);
+char *mystrdup(const char *str);
 
 #endif

@@ -173,3 +173,12 @@ unsigned int mystrlen(const char *str)
 	if (!str) return 0;
 	return strlen(str);
 }
+
+/******************************************************************
+ Duplicates a string. NULL is accepted (will return NULL)
+*******************************************************************/
+char *mystrdup(const char *str)
+{
+	if (!str) return NULL;
+	return strdup(str);
+}

@@ -2865,12 +2865,18 @@ int mail_create_html_header(struct mail *mail)
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 
+		fputs("<TABLE BORDER=\"1\" WIDTH=\"100%\">",fh);
+
 		if (mail->from_addr && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 		{
-			if ((portrait = addressbook_get_portrait(mail->from_addr)))
-				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
+			fputs("<TR>",fh);
 
-			fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("From"),mail->from_addr,style_text);
+			fputs("<TD>",fh);
+			fprintf(fh,"<STRONG>%s:</STRONG>",_("From"));
+			fputs("</TD>",fh);
+
+			fputs("<TD>",fh);
+			fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mail->from_addr,style_text);
 
 			if (mail->from_phrase)
 			{
@@ -2881,16 +2887,24 @@ int mail_create_html_header(struct mail *mail)
 				fputs(mail->from_addr,fh);
 			}
 
-			fputs("</A><BR>",fh);
+			fputs("</A></TD>",fh);
+
+			if ((portrait = addressbook_get_portrait(mail->from_addr)))
+				fprintf(fh,"<TD><IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT></TD>",portrait);
+			fputs("</TR>",fh);
 		}
 
 		if (mail->to_list && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 		{
 			struct address *addr;
 
+			fputs("<TR>",fh);
+			fputs("<TD>",fh);
 			fprintf(fh,"<STRONG>%s:</STRONG> ",_("To"));
-			addr = (struct address*)list_first(mail->to_list);
+			fputs("</TD>",fh);
 
+			fputs("<TD>",fh);
+			addr = (struct address*)list_first(mail->to_list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);
@@ -2900,20 +2914,25 @@ int mail_create_html_header(struct mail *mail)
 					fprintf(fh," &lt;%s&gt;",addr->email);
 				} else fputs(addr->email,fh);
 				fputs("</A>",fh);
-					
+
 				if ((addr = (struct address*)node_next(&addr->node)))
 					fputs(", ",fh);
 			}
-			fputs("<BR>",fh);
+			fputs("</TD>",fh);
+			fputs("</TR>",fh);
 		}
 
 		if (mail->cc_list && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 		{
 			struct address *addr;
 
+			fputs("<TR>",fh);
+			fputs("<TD>",fh);
 			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Copies to"));
-			addr = (struct address*)list_first(mail->cc_list);
+			fputs("</TD>",fh);
 
+			fputs("<TD>",fh);
+			addr = (struct address*)list_first(mail->cc_list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);
@@ -2923,24 +2942,37 @@ int mail_create_html_header(struct mail *mail)
 					fprintf(fh," &lt;%s&gt;",addr->email);
 				} else fputs(addr->email,fh);
 				fputs("</A>",fh);
-					
+
 				if ((addr = (struct address*)node_next(&addr->node)))
 					fputs(", ",fh);
 			}
-			fputs("<BR>",fh);
+			fputs("</TD>",fh);
+			fputs("</TR>",fh);
 		}
 
 		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
 		{
+			fputs("<TR>",fh);
+			fputs("<TD>",fh);
 			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Subject"));
+			fputs("</TD>",fh);
+
+			fputs("<TD>",fh);
 			fputhtmlstr(mail->subject,fh);
-			fputs("<BR>",fh);
+			fputs("</TD>",fh);
+			fputs("</TR>",fh);
 		}
 		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
 		{
+			fputs("<TR>",fh);
+			fputs("<TD>",fh);
 			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Date"));
+			fputs("</TD>",fh);
+
+			fputs("<TD>",fh);
 			fputhtmlstr(sm_get_date_long_str_utf8(mail->seconds),fh);
-			fputs("<BR>",fh);
+			fputs("</TD>",fh);
+			fputs("</TR>",fh);
 		}
 
 		if (replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
@@ -2948,8 +2980,13 @@ int mail_create_html_header(struct mail *mail)
 			struct mailbox addr;
 			if (parse_mailbox(replyto, &addr))
 			{
-				fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("Replies To"),addr.addr_spec,style_text);
+				fputs("<TR>",fh);
+				fputs("<TD>",fh);
+				fprintf(fh,"<STRONG>%s:</STRONG>",_("Replies To"));
+				fputs("</TD>",fh);
 
+				fputs("<TD>",fh);
+				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr.addr_spec,style_text);
 				if (addr.phrase)
 				{
 					fputhtmlstr(addr.phrase,fh);
@@ -2961,8 +2998,10 @@ int mail_create_html_header(struct mail *mail)
 
 				if (addr.phrase)  free(addr.phrase);
 				if (addr.addr_spec) free(addr.addr_spec);
+				fputs("</A>",fh);
 
-				fputs("</A><BR>",fh);
+				fputs("</TD>",fh);
+				fputs("</TR>",fh);
 			}
 		}
 
@@ -2975,15 +3014,20 @@ int mail_create_html_header(struct mail *mail)
 					  mystricmp(header->contents,"cc") && mystricmp(header->contents,"reply-to") &&
 					  mystricmp(header->contents,"date") && mystricmp(header->contents,"subject"))
 				{
+					fputs("<TR>",fh);
+					fputs("<TD>",fh);
 					fprintf(fh,"<STRONG>%s:</STRONG> ",header->name);
+					fputs("</TD>",fh);
+					fputs("<TD>",fh);
 					fputhtmlstr(header->contents,fh);
-					fputs("<BR>\n",fh);
+					fputs("</TD>",fh);
+					fputs("</TR>",fh);
 				}
 			}
 			header = (struct header*)node_next(&header->node);
 		}
 
-		fputs("<BR CLEAR=ALL><HR>",fh);
+		fputs("</TABLE>",fh);
 		fputs("</BODY></HTML>",fh);
 
 		if ((len = ftell(fh)))

@@ -56,5 +56,6 @@ void main_build_scripts(void);
 void main_freeze_mail_list(void);
 void main_thaw_mail_list(void);
 void main_select_mail(int mail);
+int main_is_iconified(void);
 
 #endif

@@ -1108,6 +1108,13 @@ void main_select_mail(int mail)
 	set(mail_tree,MUIA_NList_Active, mail);
 }
 
+/******************************************************************
+ Return the iconified status of the Application
+*******************************************************************/
+int main_is_iconified(void)
+{
+	return xget(App, MUIA_Application_Iconified);
+}
 
 /******************************************************************
  A amiga private function!!! Returns the screen of the main window

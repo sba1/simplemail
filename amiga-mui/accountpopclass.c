@@ -246,7 +246,7 @@ STATIC ULONG AccountPop_Refresh(struct IClass *cl, Object *obj, Msg msg)
 		account = (struct account*)node_next(&account->node);
 	}
 
-	if (data->selected_account == NULL)
+	if (data->selected_account == NULL && !data->has_default_entry)
 	{
 		set(obj, MUIA_AccountPop_Account, (struct account*)list_first(&user.config.account_list));
 	}

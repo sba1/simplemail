@@ -13,7 +13,7 @@
 		  command now. (RFC 2595)</item>
 		<item>Primitive ARexx-port.</item>
 		<item>Support for playing sounds.</item>
-		<item>Taglines.</item>
+		<item>Taglines, the last %t in the signature will be replaced by a tagline.</item>
 		<item>Folders holding unread mails are hilighted now.</item>
 		<item>Localization.</item>
 	  </list>
@@ -29,7 +29,7 @@
 		<item>POP3-Verbindungen könnnen mit dem STLS-Kommando sicher gemacht werden. (RFC 2595)</item>
 		<item>Primitiver ARexx-Port.</item>
 		<item>Unterstützung für das Abspielen von Sounds.</item>
-		<item>Taglines.</item>
+		<item>Taglines, das letzte %t in der signatur wird durch ein Tagline ersetzt.</item>
 		<item>Folder mit ungelesenen Mails werden nun hevorgehoben.</item>
 		<item>Lokalisation.</item>
 	  </list>

@@ -1214,7 +1214,9 @@ Tick this box if you really want to use signatures.
 Use taglines
 
 Tick this box is you want SimpleMail to automatically add a random
-tagline to every email you write.
+tagline to every email you write. Simply insert a %t in the signature
+and it will be replaced by a random tagline found in .taglines when
+composing a mail.
 
 
 Add new signature

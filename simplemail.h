@@ -89,6 +89,7 @@ void callback_apply_folder(struct filter *filter);
 int callback_remote_filter_mail(struct mail *mail);
 
 struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder);
+struct mail *callback_new_mail_to_folder_by_file(char *filename);
 void callback_new_mail_arrived_filename(char *filename, int spam);
 void callback_new_imap_mail_arrived(char *filename, char *server, char *path);
 void callback_new_mail_written(struct mail *mail);

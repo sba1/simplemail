@@ -1024,6 +1024,32 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 	return mail;
 }
 
+/* a new mail should be added to a folder, only filename known */
+struct mail *callback_new_mail_to_folder_by_file(char *filename)
+{
+	int pos;
+	char buf[256];
+	struct mail *mail = NULL;
+	struct folder *folder;
+
+	if (!(folder = folder_find_by_file(filename))) return NULL;
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder->path);
+
+	if (mail = mail_create_from_file(filename))
+	{
+		pos = folder_add_mail(folder,mail,1);
+		if (main_get_folder() == folder && pos != -1)
+			main_insert_mail_pos(mail,pos-1);
+
+		main_refresh_folder(folder);
+	}
+
+	chdir(buf);
+	return mail;
+}
+
 /* a new mail has arrived */
 static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 {

@@ -698,7 +698,7 @@ static void uri_clicked(void **msg)
 
 /******************************************************************
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
- otherwise 0.
+ otherwise 0. -1 means reject this object totaly
 *******************************************************************/
 __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struct MUIP_SimpleHTML_LoadHook *msg)
 {
@@ -706,7 +706,7 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 	char *uri = msg->uri;
 	struct mail *mail;
 
-	if (!(mail = read_get_displayed_mail(data))) return 0;
+	if (!(mail = read_get_displayed_mail(data))) return -1;
 
 	if (!mystrnicmp("http://",uri,7) && mail_allowed_to_download(data->mail))
 	{
@@ -728,9 +728,9 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 		return rc;
 	}
 
-	if (!(mail = mail_find_compound_object(mail,uri))) return 0;
+	if (!(mail = mail_find_compound_object(mail,uri))) return -1;
 	mail_decode(mail);
-	if (!mail->decoded_data || !mail->decoded_len) return 0;
+	if (!mail->decoded_data || !mail->decoded_len) return -1;
 	msg->buffer = (void*)DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AllocateMem, mail->decoded_len);
 	if (!msg->buffer) return 0;
 	CopyMem(mail->decoded_data,msg->buffer,mail->decoded_len);

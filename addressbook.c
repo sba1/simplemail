@@ -318,15 +318,18 @@ static void put_xml_element_string(FILE *fh, char *element, char *contents)
 #endif
 #endif
 
-static int newaddressbook_tag;
-static int newcontact_tag;
-static int newgroup_tag;
-static int private_tag;
-static int work_tag;
-static char *data_buf;
+static struct {
+	int newaddressbook_tag;
+	int newcontact_tag;
+	int newgroup_tag;
+	int is_classic_addressbook;
+	int private_tag;
+	int work_tag;
+	char *data_buf;
 
-static struct addressbook_entry_new current_entry;
-static struct addressbook_group current_group;
+	struct addressbook_entry_new current_entry;
+	struct addressbook_group current_group;
+} xml_context;
 
 /**************************************************************************
  Start Tag
@@ -334,32 +337,36 @@ static struct addressbook_group current_group;
 SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 {
 	/* new addressbook format */
-	if (!mystricmp("newaddressbook",el)) newaddressbook_tag = 1;
+	if (!mystricmp("newaddressbook",el)) xml_context.newaddressbook_tag = 1;
 	else if (!mystricmp("newcontact",el))
 	{
-		if (!newcontact_tag)
+		if (!xml_context.newcontact_tag)
 		{
-			memset(&current_entry,0,sizeof(current_entry));
-			newcontact_tag = 1;
+			memset(&xml_context.current_entry,0,sizeof(xml_context.current_entry));
+			xml_context.newcontact_tag = 1;
 		}
 	}
 	else if (!mystricmp("newgroup",el))
 	{
-		if (!newgroup_tag)
+		if (!xml_context.newgroup_tag)
 		{
-			memset(&current_group,0,sizeof(current_group));
-			newgroup_tag = 1;
+			memset(&xml_context.current_group,0,sizeof(xml_context.current_group));
+			xml_context.newgroup_tag = 1;
 		}
 	}
 	else if (!mystricmp("private",el))
 	{
-		if (!private_tag)
-			private_tag = 1;
+		if (!xml_context.private_tag)
+			xml_context.private_tag = 1;
 	}
 	else if (!mystricmp("work",el))
 	{
-		if (!work_tag)
-			work_tag = 1;
+		if (!xml_context.work_tag)
+			xml_context.work_tag = 1;
+	}
+	else if (!mystricmp("addressbook",el))
+	{
+		xml_context.is_classic_addressbook = 1;
 	}
 }  /* End of start handler */
 
@@ -369,9 +376,10 @@ SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 SAVEDS void xml_end_tag(void *data, const char *el)
 {
 	struct address_snail_phone *asp = NULL;
+	char *data_buf = xml_context.data_buf;
 
-	if (private_tag) asp = &current_entry.priv;
-	else if (work_tag) asp = &current_entry.work;
+	if (xml_context.private_tag) asp = &xml_context.current_entry.priv;
+	else if (xml_context.work_tag) asp = &xml_context.current_entry.work;
 
 	/* Remove ending spaces */
 	if (data_buf)
@@ -384,70 +392,70 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 		}
 	}
 
-	if (!mystricmp("newaddressbook",el)) newaddressbook_tag = 0;
+	if (!mystricmp("newaddressbook",el)) xml_context.newaddressbook_tag = 0;
 	else if (!mystricmp("newcontact",el))
 	{
-		if (newcontact_tag)
+		if (xml_context.newcontact_tag)
 		{
 			struct addressbook_entry_new *entry;
 
-			newcontact_tag = 0;
+			xml_context.newcontact_tag = 0;
 
 			if ((entry = (struct addressbook_entry_new*)malloc(sizeof(struct addressbook_entry_new))))
 			{
-				*entry = current_entry;
-				memset(&current_entry,0,sizeof(current_entry));
+				*entry = xml_context.current_entry;
+				memset(&xml_context.current_entry,0,sizeof(xml_context.current_entry));
 				list_insert_tail(&address_list,&entry->node);
 			}
 		}
 	} else if (!mystricmp("newgroup",el))
 	{
-		if (newgroup_tag)
+		if (xml_context.newgroup_tag)
 		{
 			struct addressbook_group *group;
 
-			newgroup_tag = 0;
+			xml_context.newgroup_tag = 0;
 
 			if ((group = (struct addressbook_group*)malloc(sizeof(struct addressbook_group))))
 			{
-				*group = current_group;
-				memset(&current_group,0,sizeof(current_group));
+				*group = xml_context.current_group;
+				memset(&xml_context.current_group,0,sizeof(xml_context.current_group));
 				list_insert_tail(&group_list,&group->node);
 			}
 		}
 	}
   else if (!mystricmp("group",el))
 	{
-		if (newcontact_tag) current_entry.group_array = array_add_string(current_entry.group_array,data_buf);
+		if (xml_context.newcontact_tag) xml_context.current_entry.group_array = array_add_string(xml_context.current_entry.group_array,data_buf);
 	}
-	else if (!mystricmp("private",el)) private_tag = 0;
-	else if (!mystricmp("work",el)) work_tag = 0;
+	else if (!mystricmp("private",el)) xml_context.private_tag = 0;
+	else if (!mystricmp("work",el)) xml_context.work_tag = 0;
 	else if (!mystricmp("alias",el))
 	{
-		if (newcontact_tag)
+		if (xml_context.newcontact_tag)
 		{
-			current_entry.alias = mystrdup(data_buf);
+			xml_context.current_entry.alias = mystrdup(data_buf);
 		}
 	}
 	else if (!mystricmp("name",el))
 	{
-		if (newgroup_tag) current_group.name = mystrdup(data_buf);
-		else if (newcontact_tag) current_entry.realname = mystrdup(data_buf);
+		if (xml_context.newgroup_tag) xml_context.current_group.name = mystrdup(data_buf);
+		else if (xml_context.newcontact_tag) xml_context.current_entry.realname = mystrdup(data_buf);
 	}
 	else if (!mystricmp("description",el))
 	{
-		if (newgroup_tag) current_group.description = mystrdup(data_buf);
-		else if (newcontact_tag) current_entry.description = mystrdup(data_buf);
+		if (xml_context.newgroup_tag) xml_context.current_group.description = mystrdup(data_buf);
+		else if (xml_context.newcontact_tag) xml_context.current_entry.description = mystrdup(data_buf);
 	}
-	else if (!mystricmp("email",el)) current_entry.email_array = array_add_string(current_entry.email_array,data_buf);
-	else if (!mystricmp("pgpid",el)) current_entry.pgpid = mystrdup(data_buf);
-	else if (!mystricmp("homepage",el)) current_entry.homepage = mystrdup(data_buf);
-	else if (!mystricmp("portrait",el)) current_entry.portrait = mystrdup(data_buf);
-	else if (!mystricmp("note",el)) current_entry.notepad = mystrdup(data_buf);
+	else if (!mystricmp("email",el)) xml_context.current_entry.email_array = array_add_string(xml_context.current_entry.email_array,data_buf);
+	else if (!mystricmp("pgpid",el)) xml_context.current_entry.pgpid = mystrdup(data_buf);
+	else if (!mystricmp("homepage",el)) xml_context.current_entry.homepage = mystrdup(data_buf);
+	else if (!mystricmp("portrait",el)) xml_context.current_entry.portrait = mystrdup(data_buf);
+	else if (!mystricmp("note",el)) xml_context.current_entry.notepad = mystrdup(data_buf);
 	else if (!mystricmp("sex",el))
 	{
-		if (!mystricmp(data_buf,"female")) current_entry.sex = 1;
-		else if (!mystricmp(data_buf,"male")) current_entry.sex = 2;
+		if (!mystricmp(data_buf,"female")) xml_context.current_entry.sex = 1;
+		else if (!mystricmp(data_buf,"male")) xml_context.current_entry.sex = 2;
 	}
 	else if (!mystricmp("birthday",el))
 	{
@@ -457,11 +465,11 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 		i = atoi(buf);
 		if (i >= 1 && i <= 12)
 		{
-			current_entry.dob_month = i;
+			xml_context.current_entry.dob_month = i;
 			if ((buf = strchr(buf,'/'))) buf++;
-			if (buf) current_entry.dob_day = atoi(buf);
+			if (buf) xml_context.current_entry.dob_day = atoi(buf);
 			if ((buf = strchr(buf,'/'))) buf++;
-			if (buf) current_entry.dob_year = atoi(buf);
+			if (buf) xml_context.current_entry.dob_year = atoi(buf);
 		}
 	} else
 	{
@@ -484,11 +492,8 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 		}
 	}
 
-	if (data_buf)
-	{
-		free(data_buf);
-		data_buf = NULL;
-	}
+	free(data_buf);
+	xml_context.data_buf = NULL;
 }
 
 /**************************************************************************
@@ -510,16 +515,16 @@ static char *uft8toiso(char *chr, char *code)
 **************************************************************************/
 SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 {
-	if (newcontact_tag || newgroup_tag || newgroup_tag)
+	if (xml_context.newcontact_tag || xml_context.newgroup_tag || xml_context.newgroup_tag)
 	{
 		int old_len = 0;
-		if (data_buf)
-			old_len = strlen(data_buf);
+		if (xml_context.data_buf)
+			old_len = strlen(xml_context.data_buf);
 
-		if ((data_buf = (char*)realloc(data_buf,old_len+len+1)))
+		if ((xml_context.data_buf = (char*)realloc(xml_context.data_buf,old_len+len+1)))
 		{
 			unsigned char *src = (char*)s;
-			unsigned char *dest = (char*)data_buf + old_len;
+			unsigned char *dest = (char*)xml_context.data_buf + old_len;
 
 			if (!old_len)
 			{
@@ -633,6 +638,8 @@ static void addressbook_load_entries(FILE *fh)
 {
 	char *buf;
 	XML_Parser p;
+
+	memset(&xml_context,0,sizeof(xml_context));
 
 	if (!(buf = malloc(512))) return;
 	if (!(p = XML_ParserCreate(NULL)))

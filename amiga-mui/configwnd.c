@@ -987,7 +987,7 @@ static int init_account_group(void)
 				End,
 			/* This two MUST always be the last objects of this group! */
 			/* because the SignatureCycle() gets removed and reinserted for update. */
-			Child, MakeLabel(_("Use signature")),
+			Child, MakeLabel(_("Signature")),
 			Child, account_def_signature_cycle = SignatureCycleObject,
 				MUIA_CycleChain, 1,
 				MUIA_SignatureCycle_HasDefaultEntry, TRUE,

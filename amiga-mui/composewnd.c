@@ -1058,7 +1058,7 @@ int compose_window_open(struct compose_args *args)
 		{
 			signatures_group = HGroup,
 				MUIA_Weight, 33,
-				Child, MakeLabel(_("Use signature")),
+				Child, MakeLabel(_("Signature")),
 				Child, signatures_cycle,
 			End;
 		} else

@@ -68,7 +68,6 @@ int mails_dl(void)
 
 int mails_upload(void)
 {
-	char *domain;
 	struct folder *out_folder = folder_outgoing();
 	void *handle = NULL;
 	int i;
@@ -86,11 +85,15 @@ int mails_upload(void)
 		return 0;
 	}
 
-	server.name   = user.config.smtp_server;
-	server.port   = user.config.smtp_port;
-	server.socket = SMTP_NO_SOCKET;
+	server.name 		         = user.config.smtp_server;
+	server.domain 					= user.config.smtp_domain;
+	server.port         		 	= user.config.smtp_port;
+	server.socket        		= SMTP_NO_SOCKET;
+	server.esmtp.auth          = user.config.smtp_auth;
+	server.esmtp.auth_login    = user.config.smtp_login;
+	server.esmtp.auth_password = user.config.smtp_password;
+	server.ip_as_domain  		= user.config.smtp_ip_as_domain;
 	
-	domain = user.config.smtp_domain;
 
 	if (!server.name)
 	{
@@ -98,14 +101,14 @@ int mails_upload(void)
 		return 0;
 	}
 
-	if (!domain)
+	if (!server.domain && !server.ip_as_domain)
 	{
 		tell("Please configure a domain!");
 		return 0;
 	}
 
   /* folder_next_mail() is a little bit limited (not usable when mails are removed
-   * from the folder, so we build an array of all mails first */
+	* from the folder, so we build an array of all mails first */
 	num_mails = 0;
 	while ((m = folder_next_mail(out_folder, &handle)))
 	{
@@ -154,7 +157,6 @@ int mails_upload(void)
 		if (!to || !from ) break;
 		if (!parse_mailbox(from,&mb)) break;
 
-		out->domain = domain;
 		out->mailfile = m->filename;
 		out->from = mb.addr_spec; /* must be not freed here */
 

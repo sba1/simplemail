@@ -23,25 +23,47 @@
 #ifndef SM__SMTP_H
 #define SM__SMTP_H
 
+
 struct out_mail
 {
-	char *domain;
 	char *from;
 	char **rcp;
 	char *mailfile;
 };
 
+#define ESMTP_ENHACEDSTATUSCODES 1
+#define ESMTP_8BITMIME           2
+#define ESMTP_ONEX               4
+#define ESMTP_ETRN               8
+#define ESMTP_XUSR               16
+#define ESMTP_AUTH               32
+
+#define AUTH_PLAIN					1
+#define AUTH_LOGIN					2
+#define AUTH_DIGEST_MD5				4
+#define AUTH_CRAM_MD5            8
+
+struct esmtp
+{
+	long 	flags;
+	long 	auth_flags;
+
+	int 	auth;
+	char 	*auth_login;
+	char 	*auth_password;
+};
+
 struct smtp_server
 {
-	char *name;
-	unsigned int port;
-	long socket;
-	int ip_as_domain;
-	int auth;
-	char *auth_login;
-	char *auth_password;
+	char 					*name;
+	unsigned int		port;
+	long 					socket;
+	char					*domain;
+	int 					ip_as_domain;
 
-	struct out_mail **out_mail;
+	struct esmtp 		esmtp;
+
+	struct out_mail	**out_mail;
 };
 
 int smtp_send(struct smtp_server *server);

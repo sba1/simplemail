@@ -48,6 +48,10 @@ struct Icon_Data
 {
 	char *type;
 	char *subtype;
+
+	void *buffer;
+	int buffer_len;
+
 	struct DiskObject *obj;
 
 	struct MUI_EventHandlerNode ehnode;
@@ -83,6 +87,8 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	struct TagItem *tstate, *tag;
+	void *new_buffer = NULL;
+	int new_buffer_len = 0;
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
@@ -101,9 +107,30 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 						if (data->subtype) FreeVec(data->subtype);
 						data->subtype = StrCopy((STRPTR)tidata);
 						break;
+
+			case	MUIA_Icon_Buffer:
+						if (data->buffer) FreeVec(data->buffer);
+						data->buffer = NULL;
+						new_buffer = (void*)tidata;
+						break;
+
+			case	MUIA_Icon_BufferLen:
+						new_buffer_len = tidata;
+						break;
+
 		}
 	}
 	if (msg->MethodID == OM_SET) return DoSuperMethodA(cl,obj,(Msg)msg);
+
+	if (new_buffer_len && new_buffer)
+	{
+		if ((data->buffer = AllocVec(new_buffer_len,0x0)))
+		{
+			data->buffer_len = new_buffer_len;
+			CopyMem(new_buffer,data->buffer,new_buffer_len);
+		}
+	}
+
 	return 1;
 }
 
@@ -121,39 +148,73 @@ STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
-	char *def;
+	char *def = NULL;
+	char result[40];
 
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	if (!mystricmp(data->type, "image")) def = "picture";
-	else if (!mystricmp(data->type, "audio")) def = "audio";
-	else
+	if (IconBase->lib_Version >= 44 && data->buffer)
 	{
-		if (!mystricmp(data->type, "text"))
+		BPTR fh;
+		char command[40];
+		sprintf(command,"IDENTIFY T:SM_%x",FindTask(NULL));
+		if ((fh = Open(command + 9, MODE_NEWFILE)))
 		{
-			if (!mystricmp(data->subtype, "html")) def = "html";
-			else if (!mystricmp(data->subtype, "plain")) def = "ascii";
-			else def = "text";
-		} else def = "attach";
+			Write(fh,data->buffer,data->buffer_len);
+			Close(fh);
+
+			data->obj = GetIconTags(command + 9,
+				ICONGETA_FailIfUnavailable,FALSE,
+				ICONGETA_Screen, _screen(obj),
+				TAG_DONE);
+
+
+#if 0
+/* Doesn't work */
+			if (SendRexxCommand("deficons",command,result,sizeof(result)))
+			{
+				def = result;
+			}
+#endif
+			DeleteFile(command+9);
+		}
 	}
 
-	if (IconBase->lib_Version >= 44)
+	if (!def)
 	{
-		data->obj = GetIconTags(NULL,
-				ICONGETA_GetDefaultName, def,
-				ICONGETA_Screen, _screen(obj),
-				TAG_DONE);
+		if (!mystricmp(data->type, "image")) def = "picture";
+		else if (!mystricmp(data->type, "audio")) def = "audio";
+		else
+		{
+			if (!mystricmp(data->type, "text"))
+			{
+				if (!mystricmp(data->subtype, "html")) def = "html";
+				else if (!mystricmp(data->subtype, "plain")) def = "ascii";
+				else def = "text";
+			} else def = "attach";
+		}
+	}
 
-		if (!data->obj)
+	if (!data->obj)
+	{
+		if (IconBase->lib_Version >= 44)
 		{
 			data->obj = GetIconTags(NULL,
-				ICONGETA_GetDefaultType, WBPROJECT,
-				ICONGETA_Screen, _screen(obj),
-				TAG_DONE);
+					ICONGETA_GetDefaultName, def,
+					ICONGETA_Screen, _screen(obj),
+					TAG_DONE);
+
+			if (!data->obj)
+			{
+				data->obj = GetIconTags(NULL,
+					ICONGETA_GetDefaultType, WBPROJECT,
+					ICONGETA_Screen, _screen(obj),
+					TAG_DONE);
+			}
+		} else
+		{
+			data->obj = GetDefDiskObject(WBPROJECT);
 		}
-	} else
-	{
-		data->obj = GetDefDiskObject(WBPROJECT);
 	}
 
 	data->ehnode.ehn_Priority = -1;

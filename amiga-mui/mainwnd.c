@@ -621,8 +621,23 @@ int main_window_init(void)
 			End,
 		End;
 	
-	if(win_main != NULL)
+	if (win_main)
 	{
+		if (xget(folder_tree, MUIA_Version) < 18 || (xget(folder_tree, MUIA_Version) == 18 && xget(folder_tree, MUIA_Revision)<12))
+		{
+			struct EasyStruct es;
+			es.es_StructSize = sizeof(struct EasyStruct);
+			es.es_Flags = 0;
+			es.es_Title =  "SimpleMail";
+			es.es_TextFormat = _("SimpleMail needs at least version 18.12 of the NListtree.mcc MUI subclass!\nIt's available from %s");
+			es.es_GadgetFormat = _("Ok");
+			
+	 	EasyRequest(NULL,&es,NULL,"http://home.t-online.de/home/sebauer/");
+	 	MUI_DisposeObject(win_main);
+	 	win_main = NULL;
+	 	return 0;
+		}
+
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
 		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
@@ -632,12 +647,6 @@ int main_window_init(void)
 		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
 
 		settings_show_changed();
-
-		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<8))
-		{
-	 	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
-	 	return 0;
-		}
 
 		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 

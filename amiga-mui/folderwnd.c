@@ -49,6 +49,8 @@ static Object *path_label;
 static Object *path_string;
 static Object *type_label;
 static Object *type_cycle;
+static Object *defto_label;
+static Object *defto_string;
 static int group_mode;
 
 struct folder *changed_folder;
@@ -78,6 +80,11 @@ char *folder_get_changed_path(void)
 int folder_get_changed_type(void)
 {
 	return (int)xget(type_cycle, MUIA_Cycle_Active);
+}
+
+char *folder_get_changed_defto(void)
+{
+	return (char *)xget(defto_string,MUIA_String_Contents);
 }
 
 static void init_folder(void)
@@ -110,6 +117,15 @@ static void init_folder(void)
 
 				Child, type_label = MakeLabel(_("_Type")),
 				Child, type_cycle = MakeCycle(_("_Type"),type_array),
+				
+				Child, defto_label = MakeLabel("Def. _to"),
+				Child, defto_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_ControlChar, 't',
+					MUIA_String_AdvanceOnCR, TRUE,
+					End,
+				
 				End,
 
 			Child, HorizLineObject,
@@ -170,6 +186,7 @@ void folder_edit(struct folder *f)
 	set(name_string, MUIA_String_Contents, f->name);
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
+	set(defto_string, MUIA_String_Contents, f->def_to);
 	changed_folder = f;
 	set(folder_wnd, MUIA_Window_ActiveObject, name_string);
 	set(folder_wnd, MUIA_Window_Open, TRUE);

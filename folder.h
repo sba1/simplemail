@@ -41,6 +41,8 @@ struct folder
 
 	int primary_sort;
 	int secondary_sort;
+	
+	char *def_to; /* default to - useful for mailinglists */
 
 	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted, 
 																			the size of this array is always big as mail_array */
@@ -100,8 +102,8 @@ int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
-int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype);
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
+int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 
 struct folder *folder_first(void);
 void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr);

@@ -6,6 +6,8 @@ Version 0.14 (fourtheenth alpha) - released on ?
     · GETURL
     · FOLDERINFO
     · MAILINFO
+    · MAILLISTTHAW 
+    · MAILLISTFREEZ 
     · MAILREAD
     · NEWMAILFILE
     · REQUEST

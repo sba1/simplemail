@@ -895,6 +895,8 @@ static struct folder *folder_add(char *path)
 
 				node->folder.primary_sort = FOLDER_SORT_DATE;
 				node->folder.secondary_sort = FOLDER_SORT_FROMTO;
+				node->folder.def_to = malloc(1);
+				node->folder.def_to[0] = 0;
 
 				sprintf(buf,"%s.config",path);
 
@@ -1075,6 +1077,7 @@ static int folder_config_load(struct folder *f)
 				else if (!mystrnicmp("Type=",buf,5)) f->type = atoi(&buf[5]);
 				else if (!mystrnicmp("Special=",buf,8)) f->special = atoi(&buf[8]);
 				else if (!mystrnicmp("PrimarySort=",buf,12)) f->primary_sort = atoi(&buf[12]);
+				else if (!mystrnicmp("DefaultTo=",buf,10)) f->def_to = mystrdup(&buf[10]);
 			}
 		}
 		fclose(fh);
@@ -1102,6 +1105,7 @@ static void folder_config_save(struct folder *f)
 		fprintf(fh,"Type=%d\n",f->type);
 		fprintf(fh,"Special=%d\n",f->special);
 		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
+		fprintf(fh,"DefaultTo=%s\n", f->def_to);
 		fclose(fh);
 	}
 }
@@ -1110,7 +1114,7 @@ static void folder_config_save(struct folder *f)
  Test if the setting the foldersetting would require a reload
  (the mails would get disposed and reloaded)
 *******************************************************************/
-int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype)
+int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto)
 {
 	/* Currentry we need never to reload the mails because the message id and
      in reply to field are always read and hold in the index file */
@@ -1136,7 +1140,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
  Set some folder attributes. Returns 1 if the folder must be
  refreshed in the gui.
 *******************************************************************/
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto)
 {
 	int refresh = 0;
 	int rescan = 0;
@@ -1185,6 +1189,16 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 			rescan = 1;
 		}
 		f->type = newtype;
+		changed = 1;
+	}
+	
+	if (strcmp(newdefto,f->def_to) != 0)
+	{
+		if (newdefto = mystrdup(newdefto))
+		{
+			if(f->def_to) free(f->def_to);
+			f->def_to = newdefto;
+		}
 		changed = 1;
 	}
 

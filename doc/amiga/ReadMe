@@ -37,6 +37,20 @@ requirements  you  should see the main window. Press the "Config"
 button to configure important things of SimpleMail (smtp and pop3
 servers). If you are familiar with YAM it should be no problem.
 
+Changes
+~~~~~~~
+Version 0.2 (second alpha) - released on 14.01.2001
+  - buttons have now images
+  - now can display HTML mails (uses SimpleHTML engine)
+  - indexfiles for folders
+  - mails can have differnt statuses (new,read,waitsend,sent)
+  - support of mailthreads
+  - addressbook is now more complete
+  - bugfixes and smaller enhancements
+
+Version 0.1 (first alpha) - released on 24.12.2000
+  - initial alpha
+
 Contact
 ~~~~~~~
 More information  about  the  SimpleMail  project  can  be  found
@@ -51,12 +65,17 @@ Developers might take look at
 if they want to participate to the project. Here they can  submit
 patches, subscribe to the mailing lists or get access to the cvs.
 
+There are also two mailing lists for SimpleMail. One for the developers
+and one for the user.
+
+    http://lists.sourceforge.net/lists/listinfo/simplemail-dev
+    http://lists.sourceforge.net/lists/listinfo/simplemail-user
+
 SimpleMail is (orginally) developed by
   Hynek Schlawack <hynek@schlawack.net> http://www.schlawack.net/
   Sebastian Bauer <sebauer@t-online.de> http://home.t-online.de/home/sebauer/
 
-At the moment until the  mailing  lists  are  active  you  should
-contact them if you have any questions regarding SimpleMail.
+You can also contact them if you have any questions regarding SimpleMail.
 
          __
         / /

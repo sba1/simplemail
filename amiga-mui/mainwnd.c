@@ -808,6 +808,7 @@ void main_refresh_mail(struct mail *m)
 	if (treenode)
 	{
 		DoMethod(mail_tree, MUIM_NListtree_Redraw, treenode, 0);
+		DoMethod(folder_tree, MUIM_NListtree_Redraw, MUIV_NListtree_Redraw_Active, 0);
 		main_refresh_folders_text();
 	}
 }

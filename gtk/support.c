@@ -278,7 +278,7 @@ char *sm_path_part(char *filename)
 /******************************************************************
  Returns the full path of a selected file.
 ******************************************************************/
-char *sm_request_file(char *title, char *path, int save)
+char *sm_request_file(char *title, char *path, int save, char *extension)
 {
 	return NULL;
 }

@@ -277,24 +277,34 @@ char *sm_path_part(char *filename)
 /******************************************************************
  Returns the full path of a selected file.
 ******************************************************************/
-char *sm_request_file(char *title, char *path, int save)
+char *sm_request_file(char *title, char *path, int save, char *extension)
 {
 	char *rc = NULL;
 	struct FileRequester *fr;
 
-	fr = AllocAslRequestTags(ASL_FileRequest,
-	TAG_DONE);
-	if(fr != NULL)
+	char *aosext;
+
+	if (extension)
+	{	
+		if (!(aosext = malloc(strlen(extension)+10)))
+			return NULL;
+		strcpy(aosext,"#?");
+		strcat(aosext,extension);
+	} else aosext = NULL;
+
+	if ((fr = AllocAslRequestTags(ASL_FileRequest,
+				TAG_DONE)))
 	{
-		if(AslRequestTags(fr,
+		if (AslRequestTags(fr,
 			ASLFR_InitialDrawer, path,
+			aosext?ASLFR_InitialPattern:TAG_IGNORE, aosext,
+			aosext?ASLFR_DoPatterns:TAG_IGNORE, TRUE,
 			ASLFR_DoSaveMode, save,
 			TAG_DONE))
 		{
 			int len = strlen(fr->fr_File) + strlen(fr->fr_Drawer) + 5;
 
-			rc = malloc(len);
-			if(rc != NULL)
+			if ((rc = malloc(len)))
 			{
 				strcpy(rc, fr->fr_Drawer);
 				if(!AddPart(rc, fr->fr_File, len) || !strlen(fr->fr_File))

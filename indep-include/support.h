@@ -34,7 +34,7 @@ void sm_convert_seconds(unsigned int seconds, struct tm *tm);
 int sm_add_part(char *drawer, const char *filename, int buf_size);
 char *sm_file_part(char *filename);
 char *sm_path_part(char *filename);
-char *sm_request_file(char *title, char *path, int save);
+char *sm_request_file(char *title, char *path, int save, char *extension);
 int sm_request(char *title, char *text, char *gadgets, ...);
 char *sm_request_string(char *title, char *text, char *contents, int secret);
 int sm_request_login(char *text, char *login, char *password, int len);

@@ -1171,7 +1171,7 @@ void callback_import_mbox(int *in_folder_ptr)
 		if (!(f = main_get_folder())) return;
 	}
 
-	filename = sm_request_file(_("Choose the file which you like to import"),"",0);
+	filename = sm_request_file(_("Choose the file which you like to import"),"",0,NULL);
 	if (filename && *filename)
 	{
 		if (!mbox_import_to_folder(f,filename))
@@ -1196,7 +1196,7 @@ void callback_import_dbx(int *in_folder_ptr)
 		if (!(f = main_get_folder())) return;
 	}
 
-	filename = sm_request_file(_("Choose the file which you like to import"),"",0);
+	filename = sm_request_file(_("Choose the file which you like to import"),"",0,".dbx");
 	if (filename && *filename)
 	{
 		if (!dbx_import_to_folder(f,filename))
@@ -1215,7 +1215,7 @@ void callback_export(void)
 
 	if (!(f = main_get_folder())) return;
 
-	filename = sm_request_file(_("Choose export filename"), "",1);
+	filename = sm_request_file(_("Choose export filename"), "",1,NULL);
 	if (filename && *filename)
 	{
 		if (!(mbox_export_folder(f,filename)))
@@ -1539,7 +1539,7 @@ int callback_import_addressbook(void)
 	int rc = 0;
 	char *filename;
 	
-	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:",0);
+	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:",0,NULL);
 	if (filename && *filename)
 	{
 		addressbook_import_file(filename,1);

@@ -287,7 +287,7 @@ int main_window_init(void)
 					MUIA_Weight, 150,
 					Child, button_new = MakePictureButton("_New","PROGDIR:Images/MailNew"),
 					Child, button_reply = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
-					Child, button_forward = MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
+					Child, button_forward = MakePictureButton("F_orward","PROGDIR:Images/MailForward"),
 					End,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,

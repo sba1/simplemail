@@ -2,7 +2,7 @@ SHELL =  /bin/sh
 
 OUT = SimpleMail
 
-G_IPATH     = -I./ -I./indep-include -I./amiga-mui -I./include-morphos
+G_IPATH     = -I./ -I./indep-include -I./amiga-mui
 G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
 G_OPTFLAGS  = -O2 \
          -mcpu=603e \
@@ -46,6 +46,7 @@ OBJS    = 	account.o \
             codecs.o \
             codesets.o \
             configuration.o \
+            dbx.o \
             debug.o \
             estimate.o \
             filter.o \

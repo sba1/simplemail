@@ -122,7 +122,7 @@ fr.pox:
 amigamui:
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 
-$(OUT): $(OBJS)
+$(OUT): $(OBJS) amiga-mui/libgui.a
 	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).debug
 	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	protect $(OUT) +e

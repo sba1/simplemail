@@ -26,6 +26,7 @@
 #include <exec/memory.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <mui/betterstring_mcc.h>
+#include <mui/NListview_mcc.h>
 #include <libraries/locale.h>
 #include <dos/dostags.h>
 #include <proto/dos.h>
@@ -37,6 +38,8 @@
 #include "amigasupport.h"
 #include "errorwnd.h"
 #include "muistuff.h"
+#include "pgp.h"
+#include "pgplistclass.h"
 #include "smintl.h"
 #include "subthreads.h"
 #include "support.h"
@@ -265,6 +268,67 @@ char *sm_request_string(char *title, char *text, char *contents, int secret)
 		if (!cancel)
 		{
 			ret = mystrdup((char*)xget(string,MUIA_String_Contents));
+		}
+		DoMethod(App, OM_REMMEMBER, wnd);
+		MUI_DisposeObject(wnd);
+	}
+	return ret;
+}
+
+/******************************************************************
+ Returns a malloc()ed string of a selected pgp. NULL for cancel
+ or an error
+*******************************************************************/
+char *sm_request_pgp_id(char *text)
+{
+	char *ret = NULL;
+	Object *pgp_list;
+	Object *wnd;
+	Object *ok_button, *cancel_button;
+
+	wnd = WindowObject,
+		MUIA_Window_Title, _("SimpleMail - Select PGP Key"),
+		MUIA_Window_ID, MAKE_ID('S','R','P','G'),
+		WindowContents, VGroup,
+			Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
+			Child, NListviewObject,
+				MUIA_NListview_NList, pgp_list = PGPListObject,
+					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, ok_button = MakeButton(_("_Ok")),
+				Child, HVSpace,
+				Child, cancel_button = MakeButton(_("_Cancel")),
+				End,
+			End,
+		End;
+
+	if (wnd)
+	{
+		ULONG cancel=0;
+		DoMethod(App, OM_ADDMEMBER, wnd);
+		DoMethod(pgp_list, MUIM_PGPList_Refresh);
+
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 3, MUIM_WriteLong, 1, &cancel);
+		DoMethod(pgp_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &cancel);
+
+		set(wnd,MUIA_Window_Open,TRUE);
+		loop();
+
+		if (!cancel)
+		{
+			struct pgp_key *key;
+			DoMethod(pgp_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active,&key);
+			if (key)
+			{
+				ret = malloc(16);
+				sprintf(ret,"0x%08lX",key->keyid);
+			}
 		}
 		DoMethod(App, OM_REMMEMBER, wnd);
 		MUI_DisposeObject(wnd);

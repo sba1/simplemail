@@ -82,7 +82,12 @@ struct field
 
 struct MailInfoArea_Data
 {
+	struct Hook *layout_hook;
+
 	int setup;
+
+	Object *switch_button;
+
 	struct MUI_EventHandlerNode mb_handler;
 	struct MUI_EventHandlerNode mv_handler;
 
@@ -93,13 +98,17 @@ struct MailInfoArea_Data
 	struct text_node *selected_text;
 	int selected_mouse_over;
 
-	int background_pen;
 	int text_pen;
 	int link_pen;
 	struct text_node *redraw_text;
 
+	int fieldname_left;
 	int fieldname_width;
 	int entries;
+
+	int compact;
+
+	char background[60];
 };
 
 /********************************************************************
@@ -134,12 +143,12 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 	}
 
 	memset(f,0,sizeof(*f));
-	f->name = utf8tostrcreate(name,user.config.default_codeset);
+	f->name = mystrdup(name);
 	f->clickable = 0;
 
 	memset(t,0,sizeof(*t));
 	list_init(&f->text_list);
-	t->text = mystrdup(text);
+	t->text = utf8tostrcreate(text,user.config.default_codeset);
 	list_insert_tail(&f->text_list,&t->node);
 
 	list_insert_tail(list,&f->node);
@@ -244,6 +253,8 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	int field_width = 0;
 	int entries = 0;
 
+	SM_DEBUGF(20,("Enter\n"));
+
 	if (!data->setup)
 	{
 		data->entries = list_length(&data->field_list);
@@ -273,14 +284,14 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	{
 		struct text_node *text;
 
-		x = BORDER + data->fieldname_width;
+		x = BORDER + data->fieldname_left + data->fieldname_width;
 		text = (struct text_node*)list_first(&f->text_list);
 		while (text)
 		{
 			if (text->text)
 			{
 				text->x_start = x;
-				x += TextLength(_rp(obj),text->text,strlen(text->text));
+				x += TextLength(&rp,text->text,strlen(text->text));
 				text->x_end = x - 1;
 				x += comma_width;
 			}
@@ -293,7 +304,6 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	if (data->entries != entries)
 	{
 		Object *group;
-		
 		group = (Object*)xget(obj, MUIA_Parent);
 
 		DoMethod(group, MUIM_Group_InitChange);
@@ -302,6 +312,8 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 		DoMethod(group, OM_ADDMEMBER, obj);
 		DoMethod(group, MUIM_Group_ExitChange);
 	}
+
+	SM_DEBUGF(20,("Leave\n"));
 }
 
 /********************************************************************
@@ -309,6 +321,8 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 *********************************************************************/
 VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struct mail_info *mi)
 {
+	SM_DEBUGF(20,("Enter\n"));
+	
 	data->selected_field = NULL;
 	data->selected_text = NULL;
 
@@ -358,6 +372,8 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 	}
 
 	MailInfoArea_DetermineSizes(obj, data);
+
+	SM_DEBUGF(20,("Leave\n"));
 }
 
 /********************************************************************
@@ -380,16 +396,16 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 
 	SetAPen(_rp(obj), data->text_pen);
 	SetFont(_rp(obj), _font(obj));
-	Move(_rp(obj),_mleft(obj)+BORDER,ytext);
+	Move(_rp(obj),_mleft(obj)+ BORDER + data->fieldname_left,ytext);
 
-	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,_mwidth(obj),_font(obj)->tf_YSize);
+	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,_mwidth(obj) - data->fieldname_left,_font(obj)->tf_YSize);
 	if (!cnt) return;
 	if (!update) Text(_rp(obj),f->name,cnt);
 
-	space_left = _mwidth(obj) - data->fieldname_width - 2 * BORDER;
+	space_left = _mwidth(obj) - data->fieldname_left - data->fieldname_width - 2 * BORDER;
 	if (space_left <= 0) return;
 
-	Move(_rp(obj),_mleft(obj) + data->fieldname_width + BORDER, ytext);
+	Move(_rp(obj),_mleft(obj) + data->fieldname_left + data->fieldname_width + BORDER, ytext);
 
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
@@ -407,9 +423,8 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 
 			if (update && text == data->redraw_text)
 			{
-				SetAPen(_rp(obj), data->background_pen);
-				RectFill(_rp(obj), _mleft(obj) + text->x_start, _mtop(obj) + y,
-													 _mleft(obj) + text->x_end, _mtop(obj) + y + _font(obj)->tf_YSize);
+				DoMethod(obj, MUIM_DrawBackground, _mleft(obj) + text->x_start, _mtop(obj) + y,
+													 text->x_end - text->x_start + 1, _font(obj)->tf_YSize,0,0,0);
 				draw_text = 1;
 			} else draw_text = !update;
 
@@ -441,19 +456,94 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 /*************************************************************************/
 
 /********************************************************************
+ Layout hook function
+*********************************************************************/
+static ASM ULONG MailInfoArea_LayoutFunc( REG(a0, struct Hook *hook), REG(a2, Object *obj), REG(a1,struct MUI_LayoutMsg *lm))
+{
+	extern struct MUI_CustomClass *CL_MailInfoArea;
+
+SM_DEBUGF(20,("Layout %ld\n",lm->lm_Type));
+
+  switch (lm->lm_Type)
+  {
+    case  MUILM_MINMAX:
+          {
+						struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(CL_MailInfoArea->mcc_Class,obj);
+						int entries = data->entries;
+						int minheight = entries * _font(obj)->tf_YSize + 2 * BORDER;
+
+						/* We only have one child and we know which one */
+						if (minheight < _minheight(data->switch_button) + 2 * BORDER)
+							minheight = _minheight(data->switch_button) + 2 * BORDER;
+
+						entries = data->entries;
+
+						lm->lm_MinMax.MinWidth  = 2 * BORDER + _minwidth(data->switch_button);
+						lm->lm_MinMax.MinHeight = minheight;
+						lm->lm_MinMax.DefWidth  = lm->lm_MinMax.MinWidth * 10;
+						lm->lm_MinMax.DefHeight = minheight;
+						lm->lm_MinMax.MaxWidth  = MUI_MAXMAX;
+						lm->lm_MinMax.MaxHeight = minheight;
+
+						data->fieldname_left = _minwidth(data->switch_button) + 4;
+						return 0;
+          }
+
+	  case  MUILM_LAYOUT:
+	  			{
+						struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(CL_MailInfoArea->mcc_Class,obj);
+	  				int mw = _minwidth(data->switch_button);
+					  int mh = _minheight(data->switch_button);
+
+						MUI_Layout(data->switch_button, BORDER, BORDER, mw, mh, 0);
+	  			}
+	  			return 1;
+  }
+  return MUILM_UNKNOWN;
+}
+
+/********************************************************************
  OM_NEW
 *********************************************************************/
-STATIC ULONG MailInfoArea_New(struct IClass *cl,Object *obj,struct opSet *msg)
+STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailInfoArea_Data *data;
+	Object *switch_button;
+
+	struct Hook *layout_hook;
+
+	if (!(layout_hook = (struct Hook*)AllocVec(sizeof(*layout_hook),MEMF_CLEAR)))
+		return 0;
+
+	init_hook(layout_hook, (HOOKFUNC)MailInfoArea_LayoutFunc);
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
+					MUIA_Group_Child, switch_button = TextObject,
+							ButtonFrame,
+							MUIA_Background, MUII_ButtonBack,
+							MUIA_InputMode, MUIV_InputMode_Toggle,
+							MUIA_Text_Contents, "+",
+							End,
+					MUIA_Group_LayoutHook, layout_hook,
 					TAG_MORE,msg->ops_AttrList)))
+	{
+		FreeVec(layout_hook);
 		return 0;
+	}
 
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 
+	sm_snprintf(data->background,sizeof(data->background),"2:%08x,%08x,%08x",
+					MAKECOLOR32((user.config.read_header_background & 0xff0000)>>16),
+					MAKECOLOR32((user.config.read_header_background & 0xff00)>>8),
+					MAKECOLOR32((user.config.read_header_background & 0xff)));
+
+	set(obj,MUIA_Background, data->background);
+
+
 	list_init(&data->field_list);
+
+	data->switch_button = switch_button;
 
 	data->mb_handler.ehn_Priority = 1;
 	data->mb_handler.ehn_Flags    = 0;
@@ -467,8 +557,6 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->mv_handler.ehn_Class    = cl;
 	data->mv_handler.ehn_Events   = IDCMP_MOUSEMOVE;
 
-	set(obj, MUIA_FillArea, FALSE);
-
 	return (ULONG)obj;
 }
 
@@ -479,6 +567,8 @@ STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data;
 	struct field *f;
+	struct Hook *layout_hook;
+	ULONG rc;
 
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	if (data->mail) mail_dereference(data->mail);
@@ -486,7 +576,13 @@ STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	while ((f = (struct field*)list_remove_tail(&data->field_list)))
 		field_free(f);
 
-	return DoSuperMethodA(cl,obj,msg);
+	/* Layout hook should be freed after object's disposion */
+	layout_hook = data->layout_hook;
+
+	rc = DoSuperMethodA(cl,obj,msg);
+
+	FreeVec(layout_hook);
+	return rc;
 }
 
 /********************************************************************
@@ -495,6 +591,7 @@ STATIC ULONG MailInfoArea_Dispose(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+	ULONG rc;
 	struct TagItem *tstate, *tag;
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
@@ -511,7 +608,8 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		}
 	}
 
-	return DoSuperMethodA(cl,obj,(Msg)msg);
+	rc = DoSuperMethodA(cl,obj,(Msg)msg);
+	return rc;
 }
 
 /********************************************************************
@@ -526,10 +624,6 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 	if (!rc) return 0;
 
 	data->setup = 1;
-	data->background_pen = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,
-				MAKECOLOR32((user.config.read_header_background & 0xff0000) >> 16),
-				MAKECOLOR32((user.config.read_header_background & 0xff00) >> 8),
-				MAKECOLOR32((user.config.read_header_background & 0xff)), NULL);
 
 	data->link_pen  = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,
 				MAKECOLOR32((user.config.read_link & 0xff0000) >> 16),
@@ -555,32 +649,9 @@ STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mb_handler);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->text_pen);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->link_pen);
-	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->background_pen);
+/*	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->background_pen);*/
 	data->setup = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
-}
-
-/********************************************************************
- MUIM_AskMinMax
-*********************************************************************/
-STATIC LONG MailInfoArea_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg)
-{
-	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
-	int entries;
-
-  DoSuperMethodA(cl, obj, (Msg) msg);
-
-	entries = data->entries;
-
-  msg->MinMaxInfo->MinWidth += 10;
-  msg->MinMaxInfo->DefWidth += 200;
-  msg->MinMaxInfo->MaxWidth = MUI_MAXMAX;
-
-  msg->MinMaxInfo->MinHeight += entries * _font(obj)->tf_YSize + 2*BORDER;
-  msg->MinMaxInfo->DefWidth  += entries * _font(obj)->tf_YSize + 2*BORDER;
-  msg->MinMaxInfo->MaxHeight += entries * _font(obj)->tf_YSize + 2*BORDER;
-
-  return 0;
 }
 
 /********************************************************************
@@ -594,16 +665,10 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 	int update;
 
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
 	update = !!(msg->flags & MADF_DRAWUPDATE);
-
-	if (!update)
-	{
-		SetAPen(_rp(obj), data->background_pen);
-		SetDrMd(_rp(obj), JAM1);
-		RectFill(_rp(obj), _mleft(obj), _mtop(obj), _mright(obj), _mbottom(obj));
-	}
 
 	f = (struct field *)list_first(&data->field_list);
 	while (f)
@@ -731,7 +796,6 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
 		case	OM_SET: return MailInfoArea_Set(cl,obj,(struct opSet*)msg);
 		case	MUIM_Setup: return MailInfoArea_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return MailInfoArea_Cleanup(cl,obj,msg);
-		case	MUIM_AskMinMax: return MailInfoArea_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
 		case	MUIM_Draw: return MailInfoArea_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return MailInfoArea_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
@@ -753,7 +817,7 @@ STATIC ULONG MailInfo_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct MailInfo_Data *data;
 	Object *mailinfo;
 	extern struct MUI_CustomClass *CL_MailInfoArea;
-
+			
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Group_Child, mailinfo = MyNewObject(CL_MailInfoArea->mcc_Class, NULL, TAG_DONE),
 					TAG_MORE,msg->ops_AttrList)))
@@ -785,7 +849,7 @@ struct MUI_CustomClass *CL_MailInfoArea;
 int create_mailinfo_class(void)
 {
 	SM_ENTER;
-	if ((CL_MailInfoArea = CreateMCC(MUIC_Area, NULL, sizeof(struct MailInfoArea_Data), MailInfoArea_Dispatcher)))
+	if ((CL_MailInfoArea = CreateMCC(MUIC_Group, NULL, sizeof(struct MailInfoArea_Data), MailInfoArea_Dispatcher)))
 	{
 		SM_DEBUGF(15,("Create CL_MailInfoArea: 0x%lx\n",CL_MailInfoArea));
 

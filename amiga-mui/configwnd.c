@@ -27,6 +27,7 @@
 
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
+#include <mui/texteditor_mcc.h>
 #include <mui/betterstring_mcc.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
@@ -39,6 +40,7 @@
 #include "configuration.h"
 #include "lists.h"
 #include "pop3.h"
+#include "signature.h"
 
 #include "compiler.h"
 #include "configtreelistclass.h"
@@ -77,23 +79,35 @@ static Object *account_send_ip_check;
 static Object *account_add_button;
 static Object *account_remove_button;
 
+static Object *signatures_use_checkbox;
+
+static Object *signature_texteditor;
+static Object *signature_name_string;
+
 static Object *config_group;
 static Object *config_tree;
 static struct Hook config_construct_hook, config_destruct_hook, config_display_hook;
+
 static APTR accounts_treenode;
 static struct list account_list; /* nodes are struct account * */
 static struct account *account_last_selected;
+
+static APTR signatures_treenode;
+static struct list signature_list;
+static struct signature *signature_last_selected;
 
 static Object *user_group;
 static Object *tcpip_receive_group;
 static Object *accounts_group;
 static Object *account_group;
 static Object *mails_read_group;
+static Object *signatures_group;
+static Object *signature_group;
 
 static Object *config_last_visisble_group;
 
 /******************************************************************
- Gets the 
+ Gets the Account which was last selected
 *******************************************************************/
 static void get_account(void)
 {
@@ -129,6 +143,26 @@ static void get_account(void)
 	}
 }
 
+/******************************************************************
+ Gets the Signature which was last selected
+*******************************************************************/
+static void get_signature(void)
+{
+	if (signature_last_selected)
+	{
+		char *text_buf;
+		if (signature_last_selected->name) free(signature_last_selected->name);
+		if (signature_last_selected->signature) free(signature_last_selected->signature);
+
+		text_buf = (char*)DoMethod(signature_texteditor, MUIM_TextEditor_ExportText);
+
+		signature_last_selected->name = mystrdup((char*)xget(signature_name_string,MUIA_String_Contents));
+		signature_last_selected->signature = mystrdup(text_buf);
+		if (text_buf) FreeVec(text_buf);
+		signature_last_selected = NULL;
+	}
+}
+
 
 /******************************************************************
  Use the config
@@ -136,13 +170,16 @@ static void get_account(void)
 static void config_use(void)
 {
 	struct account *account;
+	struct signature *signature;
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
+	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
 
   get_account();
+  get_signature();
 
 	/* Copy the accounts */
 	clear_config_accounts();
@@ -151,6 +188,15 @@ static void config_use(void)
 	{
 		insert_config_account(account);
 		account = (struct account *)node_next(&account->node);
+	}
+
+	/* Copy the signature */
+	clear_config_signatures();
+	signature = (struct signature*)list_first(&signature_list);
+	while (signature)
+	{
+		insert_config_signature(signature);
+		signature = (struct signature*)node_next(&signature->node);
 	}
 
 	close_config();
@@ -189,6 +235,7 @@ static void config_tree_active(void)
 			} else init_change = 0;
 
 			get_account();
+			get_signature();
 
 			if (list_treenode == accounts_treenode)
 			{
@@ -219,6 +266,25 @@ static void config_tree_active(void)
 					setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
 				}
 				account_last_selected = account;
+			}
+
+			if (list_treenode == signatures_treenode)
+			{
+				int signature_num = 0;
+				struct signature *signature;
+				APTR tn = treenode;
+
+				/* Find out the position of the new selected account in the list */
+				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
+					signature_num++;
+
+				if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
+				{
+					setstring(signature_name_string,signature->name);
+					set(signature_texteditor,MUIA_TextEditor_Contents, signature->signature?signature->signature:"");
+				}
+				signature_last_selected = signature;
+				
 			}
 
 			if (init_change) DoMethod(config_group,MUIM_Group_ExitChange);
@@ -282,7 +348,7 @@ static int init_tcpip_receive_group(void)
 }
 
 /******************************************************************
- 
+ Add a new account
 *******************************************************************/
 static void account_add(void)
 {
@@ -292,7 +358,6 @@ static void account_add(void)
 		list_insert_tail(&account_list, &account->node);
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Account", account_group, accounts_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 	}
-
 }
 
 /******************************************************************
@@ -340,7 +405,6 @@ static int init_accounts_group(void)
 
 	return 1;
 }
-
 
 /******************************************************************
  Initalize the account group
@@ -520,6 +584,124 @@ static int init_mails_read_group(void)
 }
 
 /******************************************************************
+ Add a new signature
+*******************************************************************/
+static void signature_add(void)
+{
+	struct signature *s = signature_malloc();
+	if (s)
+	{
+		list_insert_tail(&signature_list, &s->node);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", signature_group, signatures_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+	}
+}
+
+/******************************************************************
+ Remove a signature
+*******************************************************************/
+static void signature_remove(void)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
+	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	{
+		struct signature *signature;
+		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
+		APTR tn = treenode;
+		int signature_num = 0;
+
+		/* Find out the position of the new selected server in the list */
+		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
+			signature_num++;
+
+		if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
+		{
+			node_remove(&signature->node);
+			signature_free(signature);
+
+			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+		}
+	}
+
+}
+
+/******************************************************************
+ Init the signatures group
+*******************************************************************/
+static int init_signatures_group(void)
+{
+	Object *add_button;
+	signatures_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+		MUIA_Weight,300,
+  	Child, VGroup,
+  		Child, HGroup,
+  			Child, MakeLabel("_Use signatures"),
+  			Child, signatures_use_checkbox = MakeCheck("_Use signatures",user.config.signatures_use),
+  			Child, HSpace(0),
+	  		End,
+	  	Child, HorizLineObject,
+			Child, add_button = MakeButton("_Add new signature"),
+			End,
+		End;
+
+	if (!signatures_group) return 0;
+
+	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
+
+	return 1;
+}
+
+/******************************************************************
+ Init the signature group
+*******************************************************************/
+static int init_signature_group(void)
+{
+	Object *edit_button;
+	Object *slider = ScrollbarObject, End;
+	Object *tagline_button;
+	Object *env_button;
+	Object *add_button, *rem_button;
+
+	signature_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+		MUIA_Weight,300,
+		Child, HGroup,
+			Child, MakeLabel("Name"),
+			Child, signature_name_string = BetterStringObject, StringFrame, End,
+			Child, edit_button = MakeButton("Edit in external editor"),
+			End,
+		Child, HGroup,
+			MUIA_Group_Spacing, 0,
+			Child, signature_texteditor = TextEditorObject,
+				InputListFrame,
+				MUIA_CycleChain, 1,
+				MUIA_TextEditor_Slider, slider,
+				MUIA_TextEditor_FixedFont, TRUE,
+				End,
+			Child, slider,
+			End,
+		Child, HGroup,
+  		Child, tagline_button = MakeButton("Insert random tagline"),
+  		Child, env_button = MakeButton("Insert ENV:Signature"),
+  		End,
+  	Child, HorizLineObject,
+  	Child, HGroup,
+			Child, add_button = MakeButton("Add new signature"),
+			Child, rem_button = MakeButton("Remove signature"),
+			End,
+		End;
+
+	if (!signature_group) return 0;
+	set(edit_button, MUIA_Weight,0);
+
+	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t",MUIV_TextEditor_InsertText_Cursor);
+	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
+	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
+	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_remove);
+	return 1;
+}
+
+/******************************************************************
  Init the config window
 *******************************************************************/
 static void init_config(void)
@@ -534,6 +716,8 @@ static void init_config(void)
 	init_user_group();
 	init_tcpip_receive_group();
 	init_mails_read_group();
+	init_signatures_group();
+	init_signature_group();
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
@@ -547,19 +731,17 @@ static void init_config(void)
     			End,
     		Child, BalanceObject, End,
     		Child, VGroup,
-    			Child, RectangleObject,
-    				MUIA_Weight,1,
-    				End,
 	    		Child, config_group = VGroup,
   	  			Child, user_group,
   	  			Child, accounts_group,
   	  			Child, account_group,
     				Child, tcpip_receive_group,
     				Child, mails_read_group,
-    				Child, VSpace(0),
-    				End,
-    			Child, RectangleObject,
-    				MUIA_Weight, 1,
+    				Child, signatures_group,
+    				Child, signature_group,
+    				Child, RectangleObject,
+	   				MUIA_Weight, 1,
+  						End,
     				End,
     			End,
     		End,
@@ -578,6 +760,7 @@ static void init_config(void)
 
 		list_init(&account_list);
 		account_last_selected = NULL;
+		signature_last_selected = NULL;
 
 		DoMethod(App, OM_ADDMEMBER, config_wnd);
 		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
@@ -613,7 +796,23 @@ static void init_config(void)
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Write", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Reply", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Forward", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		}
+
+		if ((treenode = signatures_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Signatures", signatures_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		{
+			struct signature *signature;
+			signature = (struct signature*)list_first(&user.config.signature_list);
+
+			while (signature)
+			{
+				struct signature *new_signature = signature_duplicate(signature);
+				if (new_signature)
+				{
+					list_insert_tail(&signature_list,&new_signature->node);
+					DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", signature_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+				}
+				signature = (struct signature*)node_next(&signature->node);
+			}
 		}
 	}
 }

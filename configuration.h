@@ -39,6 +39,10 @@ struct config
 	/* list of all accounts */
 	struct list account_list;
 
+	/* list of all signatures */
+	struct list signature_list;
+
+	int signatures_use;
 	int read_wordwrap;
 
 	/* list of the filters */
@@ -52,6 +56,7 @@ struct user
 
 	char *config_filename; /* path to the the configuration */
 	char *filter_filename; /* path to the separate filter config file */
+	char *signature_filename; /* path to the sparate signature config file */
 
 	struct config config;
 };
@@ -62,6 +67,9 @@ void save_filter(void);
 
 void clear_config_accounts(void);
 void insert_config_account(struct account *account);
+
+void clear_config_signatures(void);
+void insert_config_signature(struct signature *signature);
 
 extern struct user user; /* the current user */
 

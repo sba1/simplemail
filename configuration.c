@@ -29,6 +29,7 @@
 #include "configuration.h"
 #include "filter.h"
 #include "pop3.h"
+#include "signature.h"
 #include "support_indep.h"
 
 #include "support.h"
@@ -107,6 +108,8 @@ int load_config(void)
 							user.config.receive_size = atoi(result);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Signatures.Use")))
+							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -189,6 +192,51 @@ int load_config(void)
 			}
 		}
 
+		if (user.directory) strcpy(buf,user.directory);
+		else buf[0] = 0;
+
+		sm_add_part(buf,".signatures",512);
+
+		if ((user.signature_filename = mystrdup(buf)))
+		{
+			if ((fh = fopen(user.signature_filename,"r")))
+			{
+				while ((read_line(fh,buf)))
+				{
+					if (!stricmp(buf,"begin signature"))
+					{
+						if (read_line(fh,buf))
+						{
+							char *name = mystrdup(buf);
+							char *sign = NULL;
+							struct signature *s;
+							while (read_line(fh,buf))
+							{
+								int sign_len = sign?strlen(sign):0;
+								if (!stricmp(buf,"end signature"))
+									break;
+
+								if ((sign = realloc(sign,sign_len + strlen(buf) + 2)))
+								{
+									strcpy(&sign[sign_len],buf + 1 /* skip space */);
+									strcat(&sign[sign_len],"\n");
+								}
+							}
+
+							if (sign && strlen(sign)) sign[strlen(sign)-1]=0; /* remove the additional new line */
+
+							if ((s = signature_malloc()))
+							{
+								s->name = name;
+								s->signature = sign;
+								list_insert_tail(&user.config.signature_list,&s->node);
+							}
+						}
+					}
+				}
+				fclose(fh);
+			}
+		}
 		free(buf);
 	}
 
@@ -212,8 +260,6 @@ void save_config(void)
 
 			fputs("SMCO\n\n",fh);
 
-/*			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
-			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));*/
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 
 			/* Write out receive stuff */
@@ -246,15 +292,43 @@ void save_config(void)
 				i++;
 			}
 
-/*			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
-			fprintf(fh,"SMTP00.Port=%d\n",user.config.smtp_port);
-			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
-			fprintf(fh,"SMTP00.IPAsDomain=%s\n",user.config.smtp_ip_as_domain?"Y":"N");
-			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
-			fprintf(fh,"SMTP00.Login=%s\n",MAKESTR(user.config.smtp_login));
-			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));*/
+			fprintf(fh,"Signatures.Use=%s",user.config.signatures_use?"Y":"N");
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			
+			fclose(fh);
+		}
+	}
+
+	if (user.signature_filename)
+	{
+		int i;
+		FILE *fh = fopen(user.signature_filename, "w");
+		if (fh)
+		{
+			struct signature *signature;
+			signature = (struct signature*)list_first(&user.config.signature_list);
+			while (signature)
+			{
+				char *start = signature->signature;
+				char *end;
+				fputs("begin signature\n",fh);
+				fputs(signature->name,fh);
+				fputc(10,fh);
+
+				while ((end = strchr(start,10)))
+				{
+					fputc(' ',fh);
+					fwrite(start,end-start,1,fh);
+					fputc(10,fh);
+					start = end + 1;
+				}
+				fputc(' ',fh);
+				fputs(start,fh);
+
+				fputs("\nend signature\n",fh); /* the additional line will filtered out when loaded */
+
+				signature = (struct signature*)node_next(&signature->node);
+			}
 			fclose(fh);
 		}
 	}
@@ -293,5 +367,22 @@ void insert_config_account(struct account *account)
 	struct account *new_account = account_duplicate(account);
 	if (new_account)
 		list_insert_tail(&user.config.account_list,&new_account->node);
+}
+
+/* Clear all the signatures  */
+void clear_config_signatures(void)
+{
+	struct signature *s;
+
+	while ((s = (struct signature*)list_remove_tail(&user.config.signature_list)))
+		signature_free(s);
+}
+
+/* Insert a mew account into the configuration list */
+void insert_config_signature(struct signature *signature)
+{
+	struct signature *new_signature = signature_duplicate(signature);
+	if (new_signature)
+		list_insert_tail(&user.config.signature_list,&new_signature->node);
 }
 

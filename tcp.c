@@ -30,73 +30,71 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include <proto/socket.h> /* not nice */
+#include "tcpip.h"
 
 #include "io.h"
 #include "tcp.h"
 
-struct Library *SocketBase;
-
 long tcp_connect(char *server, unsigned int port)
 {
-	long hsocket, rc;
-	struct sockaddr_in sockaddr;
-	struct hostent *hostent;
-	
-	rc = SMTP_NO_SOCKET;
+   long hsocket, rc;
+   struct sockaddr_in sockaddr;
+   struct hostent *hostent;
+   
+   rc = SMTP_NO_SOCKET;
 
-	hostent = gethostbyname(server);
-	if(hostent != NULL)
-	{
-		sockaddr.sin_len = sizeof(struct sockaddr_in);
-		sockaddr.sin_family = AF_INET;
-		sockaddr.sin_port = port;
-		sockaddr.sin_addr.s_addr = 0;
+   hostent = gethostbyname(server);
+   if(hostent != NULL)
+   {
+      sockaddr.sin_len = sizeof(struct sockaddr_in);
+      sockaddr.sin_family = AF_INET;
+      sockaddr.sin_port = port;
+      sockaddr.sin_addr.s_addr = 0;
 
-		memcpy(&sockaddr.sin_addr, hostent->h_addr, hostent->h_length);
-		
-		hsocket = socket(hostent->h_addrtype, SOCK_STREAM, 0);
-		if(hsocket != -1)
-		{
-			if(connect(hsocket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr_in)) != -1)
-			{
-				rc = hsocket;
-			}
-			else
-			{
-				tell("Connect() failed!");
-			}
-		}
-		else
-		{
-			tell("Socket() failed!");
-		}
-	}
-	else
-	{
-		static char err[256];
-		
-		if(Errno() == TRY_AGAIN)
-		{
-			sprintf(err, "Can'\t locate %s. Try again later!", server);
-		}
-		else
-		{
-			sprintf(err, "%s is not a valid server!", server);
-		}
-		
-		tell(err);
-	}	
+      memcpy(&sockaddr.sin_addr, hostent->h_addr, hostent->h_length);
+      
+      hsocket = socket(hostent->h_addrtype, SOCK_STREAM, 0);
+      if(hsocket != -1)
+      {
+         if(connect(hsocket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr_in)) != -1)
+         {
+            rc = hsocket;
+         }
+         else
+         {
+            tell("Connect() failed!");
+         }
+      }
+      else
+      {
+         tell("Socket() failed!");
+      }
+   }
+   else
+   {
+      static char err[256];
+      
+      if(Errno() == TRY_AGAIN)
+      {
+         sprintf(err, "Can'\t locate %s. Try again later!", server);
+      }
+      else
+      {
+         sprintf(err, "%s is not a valid server!", server);
+      }
+      
+      tell(err);
+   }  
 
-	return(rc);
+   return(rc);
 }
 
 void tcp_disconnect(long hsocket)
 {
-	if(hsocket != SMTP_NO_SOCKET)
-	{
-		CloseSocket(hsocket);
-		shutdown(hsocket, 2);
-	}
+   if(hsocket != SMTP_NO_SOCKET)
+   {
+      CloseSocket(hsocket);
+      shutdown(hsocket, 2);
+   }
 }
 

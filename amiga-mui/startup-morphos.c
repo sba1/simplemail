@@ -172,15 +172,13 @@ static void close_libs(void)
  Memory stuff (thread safe)
 ******************************************/
 
-APTR pool;
-struct SignalSemaphore pool_sem;
+static APTR pool;
 
 static int init_mem(void)
 {
 	/* Stuff can be used by multiple tasks */
-	if ((pool = CreatePool(MEMF_PUBLIC,16384,8192)))
+	if ((pool = CreatePool(MEMF_PUBLIC|MEMF_SEM_PROTECTED,16384,8192)))
 	{
-		InitSemaphore(&pool_sem);
 		return 1;
 	}
 	return 0;
@@ -194,9 +192,7 @@ static void deinit_mem(void)
 void *malloc(size_t size)
 {
 	ULONG *mem;
-	ObtainSemaphore(&pool_sem);
 	mem = AllocPooled(pool,4+size);
-	ReleaseSemaphore(&pool_sem);
 	if (!mem) return NULL;
 	mem[0] = size;
 	return mem+1;
@@ -207,9 +203,7 @@ void free(void *m)
 	ULONG *mem = (ULONG*)m;
 	if (!m) return;
 	mem--;
-	ObtainSemaphore(&pool_sem);
 	FreePooled(pool,mem,mem[0]+4);
-	ReleaseSemaphore(&pool_sem);
 }
 
 void *realloc(void *om, size_t size)
@@ -246,7 +240,7 @@ void *realloc(void *om, size_t size)
  This is a very simple and primitive functions of
  the ANSI C File IOs. Only the SimpleMail neeeded
  functionality is implemented. The functions are
- thread safe (but the file intstances mustn't be
+ thread safe (but the file instances must not be
  shared between the threads)
 ****************************************************/
 
@@ -269,8 +263,6 @@ static void deinit_io(void)
 	for (i=0;i<MAX_FILES;i++)
 		if (files[i]) Close(files[i]);
 }
-
-int errno;
 
 FILE *fopen(const char *filename, const char *mode)
 {
@@ -397,7 +389,7 @@ int fgetc(FILE *file)
 	return FGetC(fh);
 }
 
-FILE *tmpfile(void)
+static FILE *tmpfile(void)
 {
 	char buf[40];
 	FILE *file;
@@ -408,7 +400,7 @@ FILE *tmpfile(void)
 	return file;
 }
 
-char *tmpnam(char *name)
+static char *tmpnam(char *name)
 {
 	static char default_buf[200];
 	ObtainSemaphore(&files_sem);

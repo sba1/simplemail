@@ -46,6 +46,7 @@ void wrap_text(char *text, int border);
 
 int array_contains(char **strings, char *str);
 char **array_add_string(char **strings, char *str);
+char **array_add_array(char **dest, char **src);
 int array_length(char **strings);
 char **array_duplicate(char **rcp);
 void array_free(char **string_array);

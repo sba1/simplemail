@@ -425,6 +425,32 @@ char **array_add_string(char **strings, char *str)
 }
 
 /**************************************************************************
+ Add the string str to an array. Returns the new array which must be used
+ then. Use only rarly because its slow! Indented for easier creation of
+ small arrays. dest and src might be NULL. (if both are NULL NULL is
+ returned). src is not touched at all.
+**************************************************************************/
+char **array_add_array(char **dest, char **src)
+{
+	int dest_len = array_length(dest);
+	int src_len = array_length(src);
+	char **new_strings;
+
+	/* Nothing to add */
+	if (!src_len) return dest;
+
+	if ((new_strings = (char**)realloc(dest,(dest_len + src_len + 1)*sizeof(char*))))
+	{
+		int i,j;
+
+		for (i=0,j=dest_len;i<src_len;i++,j++)
+			new_strings[j] = mystrdup(src[i]);
+		new_strings[j] = NULL;
+	}
+	return new_strings;
+}
+
+/**************************************************************************
  Returns the length of a string array (safe to call with NULL pointer)
 **************************************************************************/
 int array_length(char **strings)

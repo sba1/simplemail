@@ -45,6 +45,9 @@ extern ULONG hookEntry();
 #endif
 #endif
 
+struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
+void CloseLibraryInterface(struct Library *lib, void *interface);
+
 static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
 {
 	char *data = (char*)j->h_Data;
@@ -302,7 +305,7 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		hook.srcy = ySrc;
 		hook.destx = xDest;
 		hook.desty = yDest;
-		
+
 		/* Initialize a bitmap where all plane pointers points to the mask */
 		InitBitMap(&hook.maskBitMap,src_depth,GetBitMapAttr(srcBitMap,BMA_WIDTH),GetBitMapAttr(srcBitMap,BMA_HEIGHT));
 		while (src_depth)
@@ -381,18 +384,23 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 	struct MsgPort *RexxPort;
 	struct MsgPort *ReplyPort = &((struct Process *)FindTask(NULL))->pr_MsgPort;
 	struct Library *RexxSysBase;
+#ifdef __AMIGAOS4__
+	struct RexxSysIFace *IRexxSys;
+#else
+	void *IRexxSys;
+#endif
 	int rc;
 
 	*Result = '\0';
 
-	if ((RexxSysBase = OpenLibrary("rexxsyslib.library", 44L)))
+	if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library", 44L, &IRexxSys)))
 	{
 		Forbid();
 
 		if ((RexxPort = FindPort(port)))
 		{
 			struct RexxMsg *rexxMsg, *Answer;
-	
+
 			if ((rexxMsg = CreateRexxMsg(ReplyPort, NULL, NULL)))
 			{
 				if ((rexxMsg->rm_Args[0] = CreateArgstring(Cmd, strlen(Cmd))))
@@ -407,7 +415,7 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 						WaitPort(ReplyPort);
 						Answer = (struct RexxMsg *)GetMsg(ReplyPort);
 					} while (Answer == NULL);
-	
+
 					if ((rc = (Answer->rm_Result1 == RETURN_OK)))
 					{
 						if (Answer->rm_Result2)
@@ -416,11 +424,11 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 							DeleteArgstring((UBYTE *)Answer->rm_Result2);
 						}
 					}
-	
+
 					DeleteArgstring((UBYTE *)ARG0(Answer));
 					DeleteRexxMsg(Answer);
-	
-					CloseLibrary(RexxSysBase);
+
+					CloseLibraryInterface(RexxSysBase,IRexxSys);
 					return rc;
 				} else
 				{
@@ -428,12 +436,12 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 				}
 			}
 		}
-	
+
 		Permit();
-	
-		CloseLibrary(RexxSysBase);
+
+		CloseLibraryInterface(RexxSysBase,IRexxSys);
 	}
-	
+
 	return 0;
 }
 

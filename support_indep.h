@@ -45,6 +45,7 @@ int mydeletedir(const char *path);
 void wrap_text(char *text, int border);
 
 int array_contains(char **strings, char *str);
+int array_index(char **strings, char *str);
 char **array_add_string(char **strings, char *str);
 char **array_add_array(char **dest, char **src);
 int array_length(char **strings);

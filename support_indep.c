@@ -397,13 +397,21 @@ void wrap_text(char *text, int border)
 **************************************************************************/
 int array_contains(char **strings, char *str)
 {
+	return array_index(strings,str)!=-1;
+}
+
+/**************************************************************************
+ Returns the index of the string within the array or -1 on failure.
+**************************************************************************/
+int array_index(char **strings, char *str)
+{
 	int i;
 	if (!strings) return 0;
 	for (i=0;strings[i];i++)
 	{
-		if (!mystricmp(strings[i],str)) return 1;
+		if (!mystricmp(strings[i],str)) return i;
 	}
-	return 0;
+	return -1;
 }
 
 /**************************************************************************
@@ -508,6 +516,7 @@ int string_initialize(string *string, unsigned int size)
 	if (!size) size = 1;
 	string->str = malloc(size);
 	if (!string->str) return 0;
+	string->str[0] = 0;
 	string->allocated = size;
 	string->len = 0;
 	return 1;

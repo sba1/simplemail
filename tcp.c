@@ -241,7 +241,9 @@ static int tcp_read_char(struct connection *conn)
 		int didget;
 		conn->read_pos = 0;
 
-		didget = tcp_read(conn,conn->read_buf,sizeof(conn->read_buf));
+		if (conn->ssl) didget = SSL_read(conn->ssl,conn->read_buf,sizeof(conn->read_buf));
+		else didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+
 		if (didget <= 0)
 		{
 			conn->read_size = 0;

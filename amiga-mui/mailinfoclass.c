@@ -752,7 +752,7 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 /********************************************************************
  MUIM_Setup
 *********************************************************************/
-STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
+STATIC ULONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	ULONG rc;
@@ -778,7 +778,7 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 /********************************************************************
  MUIM_Cleanup
 *********************************************************************/
-STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
+STATIC ULONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->text_pen);
@@ -790,7 +790,7 @@ STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 /********************************************************************
  MUIM_Show
 *********************************************************************/
-STATIC LONG MailInfoArea_Show(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
+STATIC ULONG MailInfoArea_Show(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	ULONG rc;
@@ -805,7 +805,7 @@ STATIC LONG MailInfoArea_Show(struct IClass *cl, Object *obj, struct MUIP_Setup 
 /********************************************************************
  MUIM_Cleanup
 *********************************************************************/
-STATIC LONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
+STATIC ULONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mb_handler);
@@ -815,7 +815,7 @@ STATIC LONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
 /********************************************************************
  MUIM_Draw
 *********************************************************************/
-STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
+STATIC ULONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 {	
 	struct field *f;
 	struct MailInfoArea_Data *data;
@@ -845,7 +845,7 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 /********************************************************************
  MUIM_HandleEvent
 *********************************************************************/
-STATIC LONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
+STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {	
 	struct IntuiMessage *imsg;
 	struct MailInfoArea_Data *data;

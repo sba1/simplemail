@@ -60,7 +60,4 @@ int main_is_iconified(void);
 
 void main_set_status_text(char *txt);
 
-void main_load_environment(void);
-void main_save_environment(void);
-
 #endif

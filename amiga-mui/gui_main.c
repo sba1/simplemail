@@ -80,6 +80,8 @@ struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
 struct Library *SimpleHTMLBase;
 
+void main_load_environment(void);
+
 #ifdef __AMIGAOS4__
 struct MUIMasterIFace *IMUIMaster;
 struct Interface *IRexxSys;

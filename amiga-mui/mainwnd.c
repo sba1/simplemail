@@ -108,7 +108,7 @@ static Object *status_text;
 
 /* For the Balance Snapshot */
 static Object *balance_text;
-LONG Weights[4];
+static LONG Weights[4];
 
 static int folders_in_popup;
 

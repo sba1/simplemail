@@ -89,7 +89,7 @@ void init_config(void)
 
 		phrase->addresses = NULL;
 		phrase->write_welcome = mystrdup("Hello,\\n");
-		phrase->write_welcome_repicient = mystrdup("Hello %r\\n");
+		phrase->write_welcome_repicient = mystrdup("Hello %v\\n");
 		phrase->write_closing = mystrdup("Gruss,");
 		phrase->reply_welcome = mystrdup("Hello %f,\\n");
 		phrase->reply_intro = mystrdup("On %d, you wrote:");
@@ -104,7 +104,7 @@ void init_config(void)
 
 		phrase->addresses = mystrdup(".de");
 		phrase->write_welcome = mystrdup("Hallo,\\n");
-		phrase->write_welcome_repicient = mystrdup("Hallo %r\\n");
+		phrase->write_welcome_repicient = mystrdup("Hallo %v\\n");
 		phrase->write_closing = mystrdup("Gruss,");
 		phrase->reply_welcome = mystrdup("Hallo %f,\\n");
 		phrase->reply_intro = mystrdup("Am %d schriebst Du:");

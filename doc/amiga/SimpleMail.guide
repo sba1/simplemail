@@ -1001,6 +1001,17 @@ to display the text. Default is IS0-8859-1 with Euro, which are the fonts
 of the euro update. E.g. Polish Amiga Users should use AmigaPL.
 
 
+AppIcon Show
+
+You can select the appearance from the AppIcon.
+   Always     ->  Always show the AppIcon.
+   Iconified  ->  Only show the AppIcon when SimpleMail is iconified.
+   Never      ->  Never show the AppIcon
+
+The normal iconified Icon of SimpleMail can be turned on/off in the MUI-Prefs
+of Simplemail in the "System" group.
+
+
 AppIcon Label
 
 SimpleMail will use this text to be shown under the AppIcon. Click on the

@@ -1504,13 +1504,19 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 int folder_filter(struct folder *folder)
 {
 	void *handle = NULL;
-	struct mail *m;
+	struct mail *nm = folder_next_mail(folder,&handle);
 
-	while ((m = folder_next_mail(folder,&handle)))
+	if (!nm) return 1;
+
+	do
 	{
-		struct filter *f = folder_mail_filter(folder,m);
+		struct filter *f;
+		struct mail *m;
 
-		if (f)
+		m = nm;
+		nm = folder_next_mail(folder,&handle);
+
+		if ((f = folder_mail_filter(folder,m)))
 		{
 			if (f->use_dest_folder && f->dest_folder)
 			{
@@ -1523,7 +1529,8 @@ int folder_filter(struct folder *folder)
 				}
 			}
 		}
-	}
+	} while (nm);
+
 	return 1;
 }
 

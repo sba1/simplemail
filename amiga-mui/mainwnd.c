@@ -628,10 +628,10 @@ int main_window_init(void)
 			es.es_StructSize = sizeof(struct EasyStruct);
 			es.es_Flags = 0;
 			es.es_Title =  "SimpleMail";
-			es.es_TextFormat = _("SimpleMail needs at least version 18.12 of the NListtree.mcc MUI subclass!\nIt's available from %s");
+			es.es_TextFormat = _("SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\nIt's available from %s");
 			es.es_GadgetFormat = _("Ok");
 			
-	 	EasyRequest(NULL,&es,NULL,"http://home.t-online.de/home/sebauer/");
+	 	EasyRequest(NULL,&es,NULL,18,12,"http://home.t-online.de/home/sebauer/");
 	 	MUI_DisposeObject(win_main);
 	 	win_main = NULL;
 	 	return 0;

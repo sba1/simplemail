@@ -29,6 +29,7 @@
 
 #include "account.h"
 #include "codesets.h"
+#include "debug.h"
 #include "mail.h"
 #include "folder.h"
 #include "lists.h"
@@ -501,9 +502,12 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 
 /**************************************************************************
  Returns a list with string_node nodes which describes the folder names
+ If you only want the subscribed folders set all to 1. Note that the
+ INBOX folder is always included if it does exist.
 **************************************************************************/
 static struct list *imap_get_folders(struct connection *conn, struct imap_server *server, int all)
 {
+	int ok;
 	char *line;
 	char tag[20];
 	char send[200];
@@ -512,6 +516,8 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 	struct list *list = malloc(sizeof(struct list));
 	if (!list) return NULL;
 	list_init(list);
+
+	ok = 0;
 
 	sprintf(tag,"%04x",val++);
 	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB");
@@ -524,10 +530,7 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 		if (!mystricmp(buf,tag))
 		{
 			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,"OK"))
-			{
-				return list;
-			}
+			if (!mystricmp(buf,"OK")) ok = 1;
 			break;
 		} else
 		{
@@ -552,6 +555,33 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 			}
 		}
 	}
+
+	/* Some IMAP servers don't list the INBOX server on LSUB and don't allow subscribing of it,
+   * so we add it manually in case it exists*/
+	if (ok && !all && !string_list_find(list,"INBOX"))
+	{
+		sprintf(tag,"%04x",val++);
+		sprintf(send,"%s STATUS INBOX (MESSAGES)\r\n",tag);
+		tcp_write(conn,send,strlen(send));
+		tcp_flush(conn);
+
+		SM_DEBUGF(20,("%s",send));
+		
+		while ((line = tcp_readln(conn)))
+		{
+			SM_DEBUGF(20,("%s\n",line));
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,tag))
+			{
+				line = imap_get_result(line,buf,sizeof(buf));
+				if (!mystricmp(buf,"OK"))
+					string_list_insert_tail(list,"INBOX");
+				break;
+			}
+		}
+	}
+
+	if (ok) return list;
 
 	imap_free_name_list(list);
 	return NULL;
@@ -855,15 +885,15 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
-				thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
 				if (imap_wait_login(conn,server))
 				{
-					thread_call_parent_function_async(status_set_status,1,N_("Login..."));
+					thread_call_parent_function_async(status_set_status,1,_("Login..."));
 					if (imap_login(conn,server))
 					{
 						struct list *folder_list;
-						thread_call_parent_function_async(status_set_status,1,N_("Login successful"));
-						thread_call_parent_function_async(status_set_status,1,N_("Checking for folders"));
+						thread_call_parent_function_async(status_set_status,1,_("Login successful"));
+						thread_call_parent_function_async(status_set_status,1,_("Checking for folders"));
 
 						if ((folder_list = imap_get_folders(conn,server,0)))
 						{
@@ -889,7 +919,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 							imap_free_name_list(folder_list);
 						}
-					} else thread_call_parent_function_async(status_set_status,1,N_("Login failed!"));
+					} else thread_call_parent_function_async(status_set_status,1,_("Login failed!"));
 				}
 				tcp_disconnect(conn);
 
@@ -1012,18 +1042,18 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 
 		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 		{
-			thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+			thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
 			if (imap_wait_login(conn,server))
 			{
-				thread_call_parent_function_async(status_set_status,1,N_("Login..."));
+				thread_call_parent_function_async(status_set_status,1,_("Login..."));
 				if (imap_login(conn,server))
 				{
 					struct list *all_folder_list;
-					thread_call_parent_function_async(status_set_status,1,N_("Reading folders..."));
+					thread_call_parent_function_async(status_set_status,1,_("Reading folders..."));
 					if ((all_folder_list = imap_get_folders(conn,server,1)))
 					{
 						struct list *sub_folder_list;
-						thread_call_parent_function_async(status_set_status,1,N_("Reading subscribed folders..."));
+						thread_call_parent_function_async(status_set_status,1,_("Reading subscribed folders..."));
 						if ((sub_folder_list = imap_get_folders(conn,server,0)))
 						{
 							char *line;
@@ -1049,6 +1079,8 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 	
 										while ((line = tcp_readln(conn)))
 										{
+											char *saved_line = line; /* for debugging reasons */
+
 											line = imap_get_result(line,buf,sizeof(buf));
 											if (!mystricmp(buf,tag))
 											{
@@ -1058,7 +1090,10 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 													success = 1;
 												} else
 												{
-													tell_from_subtask(N_("Subscribing folders failed!"));
+													SM_DEBUGF(20,("%s",send));
+													SM_DEBUGF(20,("%s",saved_line));
+
+													tell_from_subtask(_("Subscribing folders failed!"));
 												}
 												break;
 											}
@@ -1095,7 +1130,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 													success = 1;
 												} else
 												{
-													tell_from_subtask(N_("Unsubscribing folders failed!"));
+													tell_from_subtask(_("Unsubscribing folders failed!"));
 												}
 												break;
 											}

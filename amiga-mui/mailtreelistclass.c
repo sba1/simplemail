@@ -20,6 +20,9 @@
 ** mailtreelistclass.c
 */
 
+/* If mail list should be really a tree define the next */
+#define MAILLIST_IS_TREE
+
 #include <dos.h>
 #include <string.h>
 #include <stdio.h>
@@ -29,7 +32,10 @@
 
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
+
+#ifdef MAILLIST_IS_TREE
 #include <mui/NListtree_Mcc.h>
+#endif
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -50,6 +56,8 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "support_indep.h"
+
+struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 
 struct MailTreelist_Data
 {
@@ -163,109 +171,129 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 }
 
 
+#ifdef MAILLIST_IS_TREE
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
-	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(CL_MailTreelist->mcc_Class,obj);
+	char **array = msg->Array;
+	char **preparse = msg->Preparse;
+	struct mail *mail;
 
 	if (msg->TreeNode)
 	{
-		struct mail *mail = (struct mail*)msg->TreeNode->tn_User;
-		if (mail == (struct mail*)MUIV_MailTreelist_UserData_Name)
+		mail = (struct mail*)msg->TreeNode->tn_User;
+	} else mail = NULL;
+#else
+STATIC ASM VOID mails_display(register __a1 struct NList_DisplayMessage *msg, register __a2 Object *obj)
+{
+	char **array = msg->strings;
+	char **preparse = msg->preparses;
+	struct mail *mail;
+
+	mail = (struct mail*)msg->entry;
+#endif
+
+	{
+		struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(CL_MailTreelist->mcc_Class,obj);
+
+		if (mail)
 		{
-			/* only one string should be displayed */
-			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL;
-			*msg->Array++ = NULL;
-			*msg->Array++ = NULL;
-			*msg->Array++ = NULL;
-			*msg->Array++ = NULL;
-			*msg->Array = NULL;
-		} else
-		{
-			/* is a mail */
-			APTR status;
-
-			char *fromto_text;
-			char *subject_text;
-
-			static char size_buf[32];
-			static char date_buf[64];
-			static char recv_buf[64];
-			static char status_buf[128];
-
-			if (mail->flags & MAIL_FLAGS_NEW)
+			if (mail == (struct mail*)MUIV_MailTreelist_UserData_Name)
 			{
-				sprintf(status_buf,"\33O[%08lx]",data->status_new);
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse++ = "\33b";
-				*msg->Preparse = "\33b";
+				/* only one string should be displayed */
+				*array++ = NULL; /* status */
+				*array++ = NULL;
+				*array++ = NULL;
+				*array++ = NULL;
+				*array++ = NULL;
+				*array++ = NULL;
+				*array = NULL;
 			} else
 			{
-				if (mail->flags & MAIL_FLAGS_NORCPT)
-					sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
+				/* is a mail */
+				APTR status;
+
+				char *fromto_text;
+				char *subject_text;
+
+				static char size_buf[32];
+				static char date_buf[64];
+				static char recv_buf[64];
+				static char status_buf[128];
+
+				if (mail->flags & MAIL_FLAGS_NEW)
+				{
+					sprintf(status_buf,"\33O[%08lx]",data->status_new);
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
+					*preparse = "\33b";
+				} else
+				{
+					if (mail->flags & MAIL_FLAGS_NORCPT)
+						sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
+					else
+					{
+						switch(mail_get_status_type(mail))
+						{
+							case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
+							case	MAIL_STATUS_READ:status = data->status_read;break;
+							case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
+							case	MAIL_STATUS_SENT:status = data->status_sent;break;
+							case	MAIL_STATUS_HOLD:status = data->status_hold;break;
+							case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
+							case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
+							default: status = NULL;
+						}
+						sprintf(status_buf,"\33O[%08lx]",status);
+					}
+				}
+
+				if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
+				if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
+				if (mail->flags & MAIL_FLAGS_CRYPT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_crypt);
 				else
 				{
-					switch(mail_get_status_type(mail))
-					{
-						case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
-						case	MAIL_STATUS_READ:status = data->status_read;break;
-						case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
-						case	MAIL_STATUS_SENT:status = data->status_sent;break;
-						case	MAIL_STATUS_HOLD:status = data->status_hold;break;
-						case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
-						case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
-						default: status = NULL;
-					}
-					sprintf(status_buf,"\33O[%08lx]",status);
+					if (mail->flags & MAIL_FLAGS_SIGNED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_signed);
+					else if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
 				}
+
+				sprintf(size_buf,"%ld",mail->size);
+				SecondsToString(date_buf,mail->seconds);
+
+				if (xget(data->show_recv_item,MUIA_Menuitem_Checked))
+					SecondsToString(recv_buf,mail->received);
+
+				utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
+
+				*array++ = status_buf; /* status */
+				*array++ = mailtree_get_fromto(data,mail);
+				*array++ = data->subject_buf;
+				*array++ = mail->reply_addr;
+				*array++ = date_buf;
+				*array++ = size_buf;
+				*array++ = mail->filename;
+				*array++ = mail->pop3_server;
+				*array = recv_buf;
 			}
+		} else
+		{
+			*array++ = data->status_text;
 
-			if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
-			if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
-			if (mail->flags & MAIL_FLAGS_CRYPT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_crypt);
-			else
-			{
-				if (mail->flags & MAIL_FLAGS_SIGNED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_signed);
-				else if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
-			}
+			if (data->folder_type != FOLDER_TYPE_SEND)
+				*array++ = data->from_text;
+			else *array++ = data->to_text;
 
-			sprintf(size_buf,"%ld",mail->size);
-			SecondsToString(date_buf,mail->seconds);
-
-			if (xget(data->show_recv_item,MUIA_Menuitem_Checked))
-				SecondsToString(recv_buf,mail->received);
-
-			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
-
-			*msg->Array++ = status_buf; /* status */
-			*msg->Array++ = mailtree_get_fromto(data,mail);
-			*msg->Array++ = data->subject_buf;
-			*msg->Array++ = mail->reply_addr;
-			*msg->Array++ = date_buf;
-			*msg->Array++ = size_buf;
-			*msg->Array++ = mail->filename;
-			*msg->Array++ = mail->pop3_server;
-			*msg->Array = recv_buf;
-		}
-	} else
-	{
-		*msg->Array++ = data->status_text;
-
-		if (data->folder_type != FOLDER_TYPE_SEND)
-			*msg->Array++ = data->from_text;
-		else *msg->Array++ = data->to_text;
-
-		*msg->Array++ = data->subject_text;
-		*msg->Array++ = data->reply_text;
-		*msg->Array++ = data->date_text;
-		*msg->Array++ = data->size_text;
-		*msg->Array++ = data->filename_text;
-		*msg->Array++ = data->pop3_text;
-		*msg->Array = data->received_text;
+			*array++ = data->subject_text;
+			*array++ = data->reply_text;
+			*array++ = data->date_text;
+			*array++ = data->size_text;
+			*array++ = data->filename_text;
+			*array++ = data->pop3_text;
+			*array = data->received_text;
+		}	
 	}
 }
 
@@ -274,13 +302,19 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	Object *obj = (Object*)msg[0];
 	struct IClass *cl = (struct IClass*)msg[1];
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	struct mail *m;
 
+#ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(obj, MUIA_NListtree_Active);
 
-	if (treenode && treenode->tn_User)
-	{
-		struct mail *m = (struct mail*)treenode->tn_User;
+	if (treenode && treenode->tn_User) m = (struct mail*)treenode->tn_User;
+	else m = NULL;
+#else
+	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &m);
+#endif
 
+	if (m)
+	{
 		if (m != (struct mail*)MUIV_MailTreelist_UserData_Name)
 		{
 			char *from = mail_get_from_address(m);
@@ -367,7 +401,11 @@ STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=7");
 	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=8");
 
+#ifdef MAILLIST_IS_TREE
 	set(obj, MUIA_NListtree_Format, buf);
+#else
+	set(obj, MUIA_NList_Format, buf);
+#endif
 }
 
 STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
@@ -375,9 +413,13 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct MailTreelist_Data *data;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
+#ifdef MAILLIST_IS_TREE
 					MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default/*|MUIV_NListtree_MultiSelect_Flag_AutoSelectChilds*/,
-					MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 					MUIA_NListtree_DupNodeName, FALSE,
+#else
+					MUIA_NList_MultiSelect, MUIV_NList_MultiSelect_Default,
+#endif
+					MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -397,8 +439,13 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
 	SetAttrs(obj,
+#ifdef MAILLIST_IS_TREE
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
+#else
+						MUIA_NList_DisplayHook2, &data->display_hook,
+						MUIA_NList_Title, TRUE,
+#endif
 						TAG_DONE);
 
 	data->title_menu = MenustripObject,
@@ -421,7 +468,11 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	MailTreelist_UpdateFormat(cl,obj);
 
+#ifdef MAILLIST_IS_TREE
 	DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
+#else
+	DoMethod(obj, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
+#endif
 
 	return (ULONG)obj;
 }
@@ -453,9 +504,38 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							data->folder_type = tag->ti_Data;
 						}
 						break;
+
+			case	MUIA_MailTree_Active:
+						{
+							struct mail *m = (struct mail*)tag->ti_Data;
+						  struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(obj,m);
+							set(obj,MUIA_NListtree_Active,tn);
+						}
+						break;
 		}
 	}
 
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
+{
+	if (msg->opg_AttrID == MUIA_MailTree_Active)
+	{
+		struct MUI_NListtree_TreeNode *tree_node;
+		tree_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
+
+		if (tree_node)
+		{
+			if (tree_node->tn_User && tree_node->tn_User != (void*)MUIV_MailTreelist_UserData_Name)
+			{
+				*msg->opg_Storage = (struct mail*)tree_node->tn_User;
+				return 1;
+			}
+		}
+		*msg->opg_Storage = 0;
+		return 1;
+	}
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -511,11 +591,13 @@ STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+#ifdef MAILLIST_IS_TREE
 STATIC ULONG MailTreelist_MultiTest(struct IClass *cl, Object *obj, struct MUIP_NListtree_MultiTest *msg)
 {
 	if (msg->TreeNode->tn_User == (APTR)MUIV_MailTreelist_UserData_Name) return FALSE;
 	return TRUE;
 }
+#endif
 
 STATIC ULONG MailTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)
 {
@@ -616,6 +698,332 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
   return 0;
 }
 
+STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
+{
+#ifdef MAILLIST_IS_TREE
+	return DoMethod(obj, MUIM_NListtree_Clear, NULL, 0);
+#else
+	return DoMethod(obj, MUIM_NList_Clear);
+#endif
+}
+
+/******************************************************************
+ Updates the mail trees with the mails in the given folder
+*******************************************************************/
+static void main_insert_mail_threaded(Object *obj, struct mail *mail, void *parentnode)
+{
+	int mail_flags = 0;
+	struct mail *submail;
+	APTR newnode;
+
+	if ((submail = mail->sub_thread_mail))
+	{
+		mail_flags = TNF_LIST|TNF_OPEN;
+	}
+
+	newnode = (APTR)DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+				 parentnode,MUIV_NListtree_Insert_PrevNode_Tail,mail_flags);
+
+	while (submail)
+	{
+		main_insert_mail_threaded(obj,submail,newnode);
+		submail = submail->next_thread_mail;
+	}
+}
+
+STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct MUIP_MailTree_SetFolderMails *msg)
+{
+	struct folder *folder = msg->f;
+	void *handle = NULL;
+	struct mail *m;
+	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
+	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
+
+	set(obj, MUIA_NListtree_Quiet, TRUE);
+	DoMethod(obj, MUIM_MailTree_Clear);
+	set(obj, MUIA_MailTreelist_FolderType, folder_get_type(folder));
+
+	if ((primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT) && !threaded)
+	{
+		struct mail *lm = NULL; /* last mail */
+		APTR treenode = NULL;
+
+		SetAttrs(obj,
+				MUIA_NListtree_TreeColumn, (primary_sort==FOLDER_SORT_SUBJECT)?2:1,
+				MUIA_NListtree_ShowTree, TRUE,
+				TAG_DONE);
+
+		while ((m = folder_next_mail(folder,&handle)))
+		{
+			if (primary_sort == FOLDER_SORT_FROMTO)
+			{
+				int res;
+				char *m_to = mail_get_to(m);
+				char *m_from = mail_get_from(m);
+
+				if (lm)
+				{
+					if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = utf8stricmp(m_to, mail_get_to(lm));
+					else res = utf8stricmp(m_from, mail_get_from(lm));
+				}
+
+				if (!lm || res)
+				{
+					treenode = (APTR)DoMethod(obj, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?m_to:m_from, MUIV_MailTreelist_UserData_Name, /* special hint */
+							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST/*|TNF_OPEN*/);
+				}
+			} else
+			{
+				if (!lm || utf8stricmp(m->subject,lm->subject))
+				{
+					treenode = (APTR)DoMethod(obj, MUIM_NListtree_Insert, m->subject, MUIV_MailTreelist_UserData_Name, /* special hint */
+							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST/*|TNF_OPEN*/);
+				}
+			}
+
+			if (!treenode) break;
+
+			DoMethod(obj, MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
+						 treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+
+			lm = m;
+		}
+	} else
+	{
+		if (!threaded)
+		{
+			SetAttrs(obj,
+					MUIA_NListtree_TreeColumn, 0,
+					MUIA_NListtree_ShowTree, FALSE,
+					TAG_DONE);
+
+			while ((m = folder_next_mail(folder,&handle)))
+			{
+				DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
+							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+			}
+		} else
+		{
+			SetAttrs(obj,
+					MUIA_NListtree_TreeColumn, 0,
+					MUIA_NListtree_ShowTree, TRUE,
+					TAG_DONE);
+
+			while ((m = folder_next_mail(folder,&handle)))
+			{
+				if (!m->child_mail)
+					main_insert_mail_threaded(obj, m,(void*)MUIV_NListtree_Insert_ListNode_Root);
+			}
+		}
+	}
+
+	if ((m = folder_find_best_mail_to_select(folder)))
+	{
+		set(obj, MUIA_NListtree_Active, FindListtreeUserData(obj, m));
+	}
+
+	SetAttrs(obj,
+				MUIA_NListtree_Quiet, FALSE,
+				TAG_DONE);
+
+	return NULL;
+}
+
+STATIC ULONG MailTreelist_Freeze(struct IClass *cl, Object *obj, Msg msg)
+{
+#ifdef MAILLIST_IS_TREE
+	set(obj,MUIA_NListtree_Quiet,TRUE);
+#else
+	set(obj,MUIA_NList_Quiet,TRUE);
+#endif
+	return 0;
+}
+
+STATIC ULONG MailTreelist_Thaw(struct IClass *cl, Object *obj, Msg msg)
+{
+#ifdef MAILLIST_IS_TREE
+	set(obj,MUIA_NListtree_Quiet,FALSE);
+#else
+	set(obj,MUIA_NList_Quiet,FALSE);
+#endif
+	return 0;
+}
+
+STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MUI_NListtree_TreeNode *treenode;
+	int j = 0, i = 0;
+	struct MUI_NListtree_TreeNode **array;
+
+	treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_Start;
+
+	for (;;)
+	{
+		DoMethod(obj, MUIM_NListtree_PrevSelected, &treenode);
+		if (treenode==(struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_End)
+			break;
+		if (!treenode) break;
+		i++;
+	}
+
+	if (!i) return 0; /* no emails selected */
+
+	set(obj, MUIA_NListtree_Quiet, TRUE);
+
+	if ((array = (struct MUI_NListtree_TreeNode **)AllocVec(sizeof(struct MUI_NListtree_TreeNode *)*i,0)))
+	{
+		treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_Start;
+
+		for (;;)
+		{
+			DoMethod(obj, MUIM_NListtree_PrevSelected, &treenode);
+			if (treenode==(struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_End)
+				break;
+			array[j++] = treenode;
+		}
+
+		for (i=0;i<j;i++)
+		{
+			if ((ULONG)array[i]->tn_User == MUIV_MailTreelist_UserData_Name) continue;
+
+			if (array[i]->tn_Flags & TNF_LIST)
+			{
+				struct MUI_NListtree_TreeNode *node = (struct MUI_NListtree_TreeNode *)
+					DoMethod(obj, MUIM_NListtree_GetEntry, array[i], MUIV_NListtree_GetEntry_Position_Head, 0);
+
+				while (node)
+				{
+					struct MUI_NListtree_TreeNode *nextnode = (struct MUI_NListtree_TreeNode *)
+						DoMethod(obj, MUIM_NListtree_GetEntry, node, MUIV_NListtree_GetEntry_Position_Next, 0);
+
+					DoMethod(obj, MUIM_NListtree_Move, array[i], node, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Tail);
+					node = nextnode;
+				}
+			}
+
+			DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
+		}		
+
+		FreeVec(array);
+	}
+	set(obj, MUIA_NListtree_Quiet, FALSE);
+	return 0;
+}
+
+ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTree_GetFirstSelected *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_Start;
+	void *handle = msg->handle;
+	DoMethod(obj, MUIM_NListtree_NextSelected, &treenode);
+	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
+	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
+	if ((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name) return DoMethod(obj, MUIM_MailTree_GetNextSelected, msg->handle);
+	if (treenode) return (ULONG)treenode->tn_User;
+	return NULL;
+}
+
+ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTree_GetNextSelected *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode;
+	void *handle = msg->handle;
+	do
+	{
+		treenode = *((struct MUI_NListtree_TreeNode **)handle);
+		DoMethod(obj, MUIM_NListtree_NextSelected, &treenode);
+		if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
+		*((struct MUI_NListtree_TreeNode **)handle) = treenode;
+	} while((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name);
+	return (ULONG)treenode->tn_User;
+}
+
+ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_RefreshMail *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->m);
+	if (treenode)
+		DoMethod(obj, MUIM_NListtree_Redraw, treenode, 0);
+	return 0;
+}
+
+static struct MUI_NListtree_TreeNode *main_find_insert_node(Object *obj, struct MUI_NListtree_TreeNode *tn, int *after)
+{
+	while (tn)
+	{
+		if (tn->tn_User != (APTR)MUIV_MailTreelist_UserData_Name) (*after)--;
+		if (tn->tn_Flags & TNF_LIST)
+		{
+			struct MUI_NListtree_TreeNode *first;
+			struct MUI_NListtree_TreeNode *found;
+
+			first = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Head,0);
+			found =  main_find_insert_node(obj, first,after);
+			if (found) return found;
+		}
+
+		if (*after < 0) return tn;
+
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Next,0);
+	}
+	return tn;
+}
+
+ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_InsertMail *msg)
+{
+	int after = msg->after;
+	struct mail *mail = msg->m;
+
+	if (after == -2)
+	{
+		DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+	} else
+	{
+		struct MUI_NListtree_TreeNode *tn;
+		struct MUI_NListtree_TreeNode *list;
+
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,MUIV_NListtree_GetEntry_Position_Head,0);
+		tn = main_find_insert_node(obj,tn,&after);
+		if (tn)
+		{
+			list = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
+		} else list = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_Insert_ListNode_Root;
+
+
+		/* Indeed this is a lot of faster with current NListtree */
+		set(obj,MUIA_NListtree_Quiet, TRUE);
+
+		DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+
+		set(obj,MUIA_NListtree_Quiet, FALSE);
+	}
+	return 0;
+}
+
+STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_RemoveMail *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->m);
+	if (treenode)
+	{
+		DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
+	}
+	return 0;
+}
+
+STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_ReplaceMail *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->oldmail);
+	if (treenode)
+	{
+/*		DoMethod(mail_tree, MUIM_NListtree_Rename, treenode, newmail, MUIV_NListtree_Rename_Flag_User);*/
+		set(obj, MUIA_NListtree_Quiet, TRUE);
+		DoMethod(obj, MUIM_NListtree_Remove, NULL, treenode,0);
+		DoMethod(obj, MUIM_MailTree_InsertMail, msg->newmail, -2);
+		set(obj, MUIA_NListtree_Active, FindListtreeUserData(obj, msg->newmail));
+		set(obj, MUIA_NListtree_Quiet, FALSE);
+	}
+	return 0;
+}
+
 STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -624,23 +1032,47 @@ STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, regist
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE:		return MailTreelist_Dispose(cl,obj,msg);
 		case	OM_SET:				return MailTreelist_Set(cl,obj,(struct opSet*)msg);
+		case	OM_GET:				return MailTreelist_Get(cl,obj,(struct opGet*)msg);
 		case	MUIM_Setup:		return MailTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return MailTreelist_Cleanup(cl,obj,msg);
 		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_Export:		return MailTreelist_Export(cl,obj,(struct MUIP_Export *)msg);
 		case	MUIM_Import:		return MailTreelist_Import(cl,obj,(struct MUIP_Import *)msg);
+
+#ifdef MAILLIST_IS_TREE
 		case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
+#endif
+
 		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		case  MUIM_NList_ContextMenuBuild: return MailTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
+
+		case	MUIM_MailTree_Clear: return MailTreelist_Clear(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_Freeze: return MailTreelist_Freeze(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_Thaw: return MailTreelist_Thaw(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTree_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTree_InsertMail: return MailTreelist_InsertMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTree_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTree_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(APTR)msg);
+
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
 
 struct MUI_CustomClass *CL_MailTreelist;
 
+#ifdef MAILLIST_IS_TREE
+#define MAILLIST_PARENTCLASS "NListtree.mcc"
+#else
+#define MAILLIST_PARENTCLASS "NList.mcc"
+#endif
+
 int create_mailtreelist_class(void)
 {
-	if ((CL_MailTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
+	if ((CL_MailTreelist = MUI_CreateCustomClass(NULL, MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
 	{
 		CL_MailTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;

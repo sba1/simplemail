@@ -78,6 +78,14 @@ int sm_makedir(char *path)
 		return 1;
 	}
 
+#ifdef __AMIGAOS4__
+	if ((lock = CreateDirTree(path)))
+	{
+		rc = 1;
+		UnLock(lock);
+	} else rc = 0;
+#else
+
 	if ((lock = CreateDir(path)))
 	{
 		UnLock(lock);
@@ -137,6 +145,7 @@ int sm_makedir(char *path)
 			FreeVec(buf);
 		}
 	}
+#endif
 	return rc;
 }
 

@@ -1190,6 +1190,7 @@ static struct folder *folder_add(char *path)
 						if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
 						if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
 						if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
+						if (!mystricmp(folder_name,"Spam")) node->folder.special = FOLDER_SPECIAL_SPAM;
 						folder_config_save(&node->folder);
 					}
 					folder_read_mail_infos(&node->folder,1);
@@ -1347,6 +1348,7 @@ int folder_remove(struct folder *f)
 					folder_unlock(f);
 					thread_dispose_semaphore(node->folder.sem);
 					free(node);
+					folder_save_order();
 					return 1;
 				}
 			}
@@ -1386,6 +1388,7 @@ int folder_remove(struct folder *f)
 				}
 				node = (struct folder_node*)node_next(&node->node);
 			}
+			folder_save_order();
 		} else
 		{
 			folder_unlock(f);
@@ -1821,6 +1824,14 @@ struct folder *folder_sent(void)
 struct folder *folder_deleted(void)
 {
 	return folder_find_special(FOLDER_SPECIAL_DELETED);
+}
+
+/******************************************************************
+ Returns the spam folder
+*******************************************************************/
+struct folder *folder_spam(void)
+{
+	return folder_find_special(FOLDER_SPECIAL_SPAM);
 }
 
 /******************************************************************
@@ -3309,7 +3320,18 @@ int init_folders(void)
 		}
 	}
 
-	if (!folder_incoming() || !folder_outgoing() || !folder_deleted() || !folder_sent())
+	if (!folder_spam())
+	{
+		char *new_folder = mycombinepath(user.folder_directory,"spam");
+		if (new_folder)
+		{
+			folder_add(new_folder);
+			free(new_folder);
+			write_order = 1;
+		}
+	}
+
+	if (!folder_incoming() || !folder_outgoing() || !folder_deleted() || !folder_sent() || !folder_spam())
 		return 0;
 
 	folder_outgoing()->type = FOLDER_TYPE_SEND;

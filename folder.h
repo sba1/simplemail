@@ -103,6 +103,7 @@ struct folder
 #define FOLDER_SPECIAL_SENT 3
 #define FOLDER_SPECIAL_DELETED 4
 #define FOLDER_SPECIAL_GROUP 5
+#define FOLDER_SPECIAL_SPAM 6
 
 char *default_folder_path(void);
 char *new_folder_path(void);
@@ -150,6 +151,7 @@ struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);
 struct folder *folder_deleted(void);
+struct folder *folder_spam(void);
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail);
 int folder_delete_mail(struct folder *from_folder, struct mail *mail);
 void folder_delete_deleted(void);

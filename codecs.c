@@ -579,7 +579,7 @@ static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int struc
 						buf_len += 3;
 					} else
 					{
-						if (nc==' ') nc = '_';
+						if (nc==' ' || !nc) nc = '_';
 						buf[buf_len++] = nc;
 					}
 
@@ -653,6 +653,49 @@ char *encode_header_field(char *field_name, char *field_contents)
 		line_len = strlen(field_name) + 2;
 
 		if ((encoded = encode_header_str(field_contents, &line_len,0)))
+		{
+			fprintf(fh, "%s", encoded);
+			free(encoded);
+		}
+		fputc('\n',fh);
+
+		if ((header_len = ftell(fh)))
+		{
+			fseek(fh,0,SEEK_SET);
+			if ((header = (char*)malloc(header_len+1)))
+			{
+				fread(header,1,header_len,fh);
+				header[header_len]=0;
+			}
+		}
+
+
+		fclose(fh);
+	}
+
+	return header;
+}
+
+/**************************************************************************
+ Creates a unstructured encoded header field (includes all rules of the
+ RFC 821 and RFC 2047)
+ The string is allocated with malloc()
+**************************************************************************/
+char *encode_header_field_utf8(char *field_name, char *field_contents)
+{
+	char *header = NULL;
+	int line_len;
+	FILE *fh;
+
+	if ((fh = tmpfile()))
+	{
+		char *encoded;
+		int header_len;
+
+		fprintf(fh, "%s: ",field_name);
+		line_len = strlen(field_name) + 2;
+
+		if ((encoded = encode_header_str_utf8(field_contents, &line_len,0)))
 		{
 			fprintf(fh, "%s", encoded);
 			free(encoded);

@@ -499,7 +499,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char *from = (char*)xget(data->from_text, MUIA_Text_Contents);
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
 		char *cc = (char*)xget(data->cc_string, MUIA_String_Contents);
-		char *subject = (char*)xget(data->subject_string, MUIA_String_Contents);
+		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
 		char *reply = (char*)xget(data->reply_string, MUIA_String_Contents);
 		struct composed_mail new_mail;
 

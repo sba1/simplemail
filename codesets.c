@@ -783,7 +783,11 @@ struct codeset *codesets_find_best(char *text, int text_len)
 			} else break;
 		}
 
-		if (errors < best_errors) best_codeset = codeset;
+		if (errors < best_errors)
+		{
+			best_codeset = codeset;
+			best_errors = errors;
+		}
 		if (!best_errors) break;
 		codeset = (struct codeset*)node_next(&codeset->node);
 	}

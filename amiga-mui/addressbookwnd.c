@@ -249,15 +249,16 @@ static void person_window_ok(struct Person_Data **pdata)
 		{
 			if ((treenode = FindListtreeUserData(address_tree, data->person)))
 			{
-/*				DoMethod(address_tree, MUIM_NListtree_Remove, */
+				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
+#if 0
+				/* Prior versions of NListree had problems with MUIM_NListtree_Rename, this code was used
+				   as a workaround */
 				APTR parent = (APTR)DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
 
 				DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
 							   parent,treenode,0);
 				DoMethod(address_tree, MUIM_NListtree_Remove, parent,treenode,0);
-
-
-/*				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);*/
+#endif
 			}
 		}
 

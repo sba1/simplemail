@@ -55,6 +55,7 @@
 #include "signaturecycleclass.h"
 #include "addressentrylistclass.h"
 #include "addressgrouplistclass.h"
+#include "addressmatchlistclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "appicon.h"
@@ -239,6 +240,7 @@ void all_del(void)
 		{
 			app_del();
 
+			delete_addressmatchlist_class();
 			delete_pgplist_class();
 			delete_addressentrylist_class();
 			delete_addressgrouplist_class();
@@ -315,7 +317,7 @@ int all_init(void)
 						    create_audioselectgroup_class() && create_accountpop_class() &&
 						    create_signaturecycle_class() && create_messageview_class() &&
 								create_addressgrouplist_class() && create_addressentrylist_class() &&
-								create_pgplist_class())
+								create_pgplist_class() && create_addressmatchlist_class())
 						{
 							if (app_init())
 							{

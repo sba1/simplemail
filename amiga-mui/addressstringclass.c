@@ -40,6 +40,7 @@
 
 #include "addressstringclass.h"
 #include "addressentrylistclass.h"
+#include "addressmatchlistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "muistuff.h"
@@ -89,10 +90,14 @@ struct MatchWindow_Data
 
 struct MUI_CustomClass *CL_MatchWindow;
 
+/***********************************************************
+ Completes the address if a new entry within the match list
+ gets activated
+************************************************************/
 STATIC VOID MatchWindow_NewActive(void **msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data *)msg[0];
-	struct addressbook_entry_new *entry;
+	struct address_match_entry *entry;
 
 	DoMethod(data->list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
 
@@ -105,10 +110,18 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 
 		if ((addr_start = get_address_start(contents, buf_pos)))
 		{
-			if ((complete = addressbook_get_entry_completing_part(entry, addr_start, NULL)))
+			if (entry->is_group)
 			{
-				DoMethod(data->str, MUIM_AddressString_Complete, complete);
-				/* complete must be not freed */
+				int addr_start_len = strlen(addr_start);
+
+				/* Get the completed string */
+				if (!utf8stricmp_len(addr_start,entry->o.group->name,addr_start_len))
+					DoMethod(data->str, MUIM_AddressString_Complete, entry->o.group->name + addr_start_len);
+			} else
+			{
+				/* Address entries have an own function to get the completed string */
+				if ((complete = addressbook_get_entry_completing_part(entry->o.entry, addr_start, NULL)))
+					DoMethod(data->str, MUIM_AddressString_Complete, complete);
 			}
 			free(addr_start);
 		}
@@ -133,8 +146,7 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					WindowContents, VGroup,
 						InnerSpacing(0,0),
 						Child, NListviewObject,
-							MUIA_NListview_NList, list = AddressEntryListObject,
-								MUIA_AddressEntryList_Type, MUIV_AddressEntryList_Type_Match,
+							MUIA_NListview_NList, list = AddressMatchListObject,
 								End,
 							End,
 						End,
@@ -160,10 +172,10 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
+STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressMatchList_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
-	return DoMethod(data->list, MUIM_AddressEntryList_Refresh, msg->pattern);
+	return DoMethod(data->list, MUIM_AddressMatchList_Refresh, msg->pattern);
 }
 
 STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
@@ -186,7 +198,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
-		case  MUIM_AddressEntryList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressEntryList_Refresh*)msg);
+		case  MUIM_AddressMatchList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressMatchList_Refresh*)msg);
 		case  MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
 		case	MUIM_MatchWindow_Down: return MatchWindow_Down(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
@@ -484,7 +496,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	if (data->match_wnd)
 	{
 		int entries;
-		DoMethod(data->match_wnd, MUIM_AddressEntryList_Refresh, addr_start);
+		DoMethod(data->match_wnd, MUIM_AddressMatchList_Refresh, addr_start);
 		entries = xget(data->match_wnd, MUIA_MatchWindow_Entries);
 
 		if (entries > 1)

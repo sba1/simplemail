@@ -227,9 +227,10 @@ STATIC ULONG AddressTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 STATIC ULONG AddressTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax *msg)
 {
-  DoSuperMethodA(cl, obj, (Msg) msg);
-  msg->MinMaxInfo->DefHeight = msg->MinMaxInfo->MinHeight + 3*_font(obj)->tf_YSize;
-  return 0;
+  ULONG rc = DoSuperMethodA(cl, obj, (Msg) msg);
+  if (_screen(obj)->Height <= 300)
+	  msg->MinMaxInfo->DefHeight = msg->MinMaxInfo->MinHeight + 3*_font(obj)->tf_YSize;
+  return rc;
 }
 
 STATIC ULONG AddressTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)

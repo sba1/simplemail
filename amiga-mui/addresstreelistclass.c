@@ -145,7 +145,7 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 		}
 	} else
 	{
-		*msg->Array++ = _("Name");
+		*msg->Array++ = Q_("?people:Name");
 		*msg->Array++ = _("Alias");
 		*msg->Array++ = _("Description");
 		*msg->Array = _("Address");

@@ -739,7 +739,7 @@ static int init_account_group(void)
 		VirtualFrame,
 		Child, HorizLineTextObject(_("User")),
 		Child, ColGroup(2),
-			Child, MakeLabel(_("Name")),
+			Child, MakeLabel(Q_("?people:Name")),
 			Child, account_name_string = BetterStringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,

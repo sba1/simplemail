@@ -244,7 +244,7 @@ static void open_contents(struct MessageView_Data *data, struct mail *mail_part)
 		if (mail_part->content_name)
 		{
 			strcpy(filename,"T:");
-			mystrlcpy(&filename[2],data->mail->filename,sizeof(filename));
+			mystrlcpy(&filename[2],data->mail->info->filename,sizeof(filename));
 
 			if ((newdir = CreateDir(filename)))
 				UnLock(newdir);
@@ -429,7 +429,7 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 		return 1;
 
 	strcpy(filename,"T:");
-	mystrlcpy(&filename[2],mail->filename,sizeof(filename));
+	mystrlcpy(&filename[2],mail->info->filename,sizeof(filename));
 	dirlock = Lock(filename,ACCESS_READ);
 	if (!dirlock) return 1;
 
@@ -676,7 +676,7 @@ static int messageview_setup(struct MessageView_Data *data, struct mail *mail, c
 	{
 		BPTR old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_create_from_file(mail->filename)))
+		if ((data->mail = mail_create_from_file(mail->info->filename)))
 		{
 			mail_read_contents(folder_path,data->mail);
 			mail_create_html_header(data->mail,0);

@@ -280,11 +280,11 @@ static int spam_feed_mail(struct folder *folder, struct mail *to_parse_mail, str
 
 	chdir(folder->path);
 
-	if ((mail = mail_create_from_file(to_parse_mail->filename)))
+	if ((mail = mail_create_from_file(to_parse_mail->info->filename)))
 	{
 		mail_read_contents("",mail);
 
-		spam_tokenize(mail->subject,"*Subject:",spam_feed_hash_table_callback,ht);
+		spam_tokenize(mail->info->subject,"*Subject:",spam_feed_hash_table_callback,ht);
 		spam_feed_parsed_mail(ht,mail);
 
 		rc = 1;
@@ -462,7 +462,7 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to
 		chdir(folder_path);
 	}
 
-	if ((mail = mail_create_from_file(to_check_mail->filename)))
+	if ((mail = mail_create_from_file(to_check_mail->info->filename)))
 	{
 		double prod;
 		double prod2;
@@ -470,7 +470,7 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to
 		double p;
 
 		mail_read_contents("",mail);
-		spam_tokenize(mail->subject,"*Subject:",spam_extract_prob_callback,prob);
+		spam_tokenize(mail->info->subject,"*Subject:",spam_extract_prob_callback,prob);
 		spam_extract_parsed_mail(prob,mail);
 
 		prod = prob[0].prob;
@@ -520,7 +520,7 @@ int spam_is_mail_spam(char *folder_path, struct mail *to_check_mail, char **whit
 	int rc;
 
 	thread_lock_semaphore(sem);
-	if ((from_addr = to_check_mail->from_addr))
+	if ((from_addr = to_check_mail->info->from_addr))
 	{
 		if (array_contains(white,from_addr))
 			return 0;

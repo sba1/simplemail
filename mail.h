@@ -45,28 +45,37 @@ struct content_parameter
 	char *value;
 };
 
-/* TODO: Create a "struct short_mail" or simliar because
-   struct mail contains some stuff which isn't used for only
-   displaying */
-
-struct mail
+struct mail_info
 {
-	int status;			/* see below */
-	int flags;				/* see below */
-	char *from_phrase;/* decoded "From" field, might be NULL if no phrase was defined */
-	char *from_addr;	/* the email address */
-	char *to_phrase;	/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
-	char *to_addr;		/* the email address, only a single one */
-	struct list *to_list; /* a list of all TO'ed receivers */
-	struct list *cc_list; /* a list of all CC'ed receivers */
-	char *pop3_server; /* the name of the pop3 server where the mail has been downloaded */
-	char *reply_addr; /* the address where the mail should be replied */
+	int status;						/* see below */
+	int flags;						/* see below */
+	utf8 *from_phrase;  	/* decoded "From" field, might be NULL if no phrase was defined */
+	char *from_addr;			/* the email address */
+	utf8 *to_phrase;			/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
+	char *to_addr;				/* the email address, only a single one */
+	struct list *to_list; /* a list of all TO'ed receivers (if any) */
+	struct list *cc_list; /* a list of all CC'ed receivers (if any) */
+	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */
+	char *reply_addr;			/* the address where the mail should be replied */
 	utf8 *subject;
 	char *message_id;
 	char *message_reply_id;
-	unsigned int size; /* the e-mails size in bytes */
-	unsigned int seconds; /* seconds since 1.1.1978 */
-	unsigned int received; /* seconds since 1.1.1978 */
+	unsigned int size;			/* the e-mails size in bytes */
+	unsigned int seconds; 	/* seconds since 1.1.1978 */
+	unsigned int received;	/* seconds since 1.1.1978 */
+
+	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
+
+	/* for mail threads */
+	struct mail *sub_thread_mail;		/* one more level */
+	struct mail *next_thread_mail;	/* the same level */
+	int child_mail;									/* is a child mail */
+
+};
+
+struct mail
+{
+	struct mail_info *info;   /* can be NULL for multipart mails */
 
 	struct list header_list; /* the mail's headers */
 	char *html_header; /* the header in html format, created by mail_create_html_header */
@@ -102,14 +111,7 @@ struct mail
 	char *decoded_data; /* the decoded data */
 	unsigned int decoded_len;
 
-  /* where to find the mail */
-	char *filename; /* the email filename on disk, NULL if e-mail is not from disk */
-	/*struct folder *folder;*/ /* the mail's folder, not yet implemented */
-
-	/* for mail threads */
-	struct mail *sub_thread_mail; /* one more level */
-	struct mail *next_thread_mail; /* the same level */
-	int child_mail; /* is a child mail */
+//	unsigned int part_size; /* size of this mail part (including header) */
 };
 
 /* Mail status (uses a range from 0-15) */
@@ -128,7 +130,7 @@ struct mail
 #define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
 
 /* A macro to easly get the mails status type */
-#define mail_get_status_type(x) ((x->status) & (MAIL_STATUS_MASK))
+#define mail_get_status_type(x) (((x)->info->status) & (MAIL_STATUS_MASK))
 #define mail_is_spam(x) (mail_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /* Additional mail flags, they don't need to be stored within the filename */
@@ -148,8 +150,11 @@ struct mail
 #define MAIL_FLAGS_FROM_ASCII7    (1L << 25) /* from uses only 7 bit */
 #define MAIL_FLAGS_TO_ASCII7      (1L << 26) /* to uses only 7 bit */
 
-#define mail_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
-#define mail_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
+#define mail_get_from(x) ((x)->info->from_phrase?((x)->info->from_phrase):((x)->info->from_addr))
+#define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
+
+struct mail_info *mail_info_create(void);
+void mail_info_free(struct mail_info *);
 
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);

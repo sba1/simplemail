@@ -78,9 +78,9 @@ static int mail_compare_status(const struct mail *arg1, const struct mail *arg2,
 {
 	int rc;
 
-	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) rc = -1;
-	else if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) rc = 1;
-	else rc = (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
+	if (arg1->info->flags & MAIL_FLAGS_NEW && !(arg2->info->flags & MAIL_FLAGS_NEW)) rc = -1;
+	else if (arg2->info->flags & MAIL_FLAGS_NEW && !(arg1->info->flags & MAIL_FLAGS_NEW)) rc = 1;
+	else rc = (arg1->info->status & MAIL_STATUS_MASK) - (arg2->info->status & MAIL_STATUS_MASK);
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -159,46 +159,46 @@ static char *mail_get_compare_subject(char *subj)
 
 static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = utf8stricmp(mail_get_compare_subject(arg1->subject),mail_get_compare_subject(arg2->subject));
+	int rc = utf8stricmp(mail_get_compare_subject(arg1->info->subject),mail_get_compare_subject(arg2->info->subject));
 	if (reverse) rc *= -1;
 	return rc;
 }
 
 static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = utf8stricmp(arg1->reply_addr,arg2->reply_addr);
+	int rc = utf8stricmp(arg1->info->reply_addr,arg2->info->reply_addr);
 	if (reverse) rc *= -1;
 	return rc;
 }
 
 static int mail_compare_date(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	if (arg1->seconds > arg2->seconds) return reverse?(-1):1;
-	else if (arg1->seconds == arg2->seconds) return 0;
+	if (arg1->info->seconds > arg2->info->seconds) return reverse?(-1):1;
+	else if (arg1->info->seconds == arg2->info->seconds) return 0;
 	return reverse?1:(-1);
 }
 
 static int mail_compare_size(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	if (arg1->size > arg2->size) return reverse?(-1):1;
-	else if (arg1->size == arg2->size) return 0;
+	if (arg1->info->size > arg2->info->size) return reverse?(-1):1;
+	else if (arg1->info->size == arg2->info->size) return 0;
 	return reverse?1:(-1);
 }
 
 static int mail_compare_filename(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->filename, arg2->filename);
+	return mystricmp(arg1->info->filename, arg2->info->filename);
 }
 
 static int mail_compare_pop3(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return mystricmp(arg1->pop3_server, arg2->pop3_server);
+	return mystricmp(arg1->info->pop3_server, arg2->info->pop3_server);
 }
 
 static int mail_compare_recv(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	if (arg1->received > arg2->received) return reverse?(-1):1;
-	else if (arg1->received == arg2->received) return 0;
+	if (arg1->info->received > arg2->info->received) return reverse?(-1):1;
+	else if (arg1->info->received == arg2->info->received) return 0;
 	return reverse?1:(-1);
 }
 
@@ -474,7 +474,7 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 		folder->pending_mail_array[folder->num_pending_mails++] = mail;
 		folder->num_index_mails++;
 		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-		if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+		if (mail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 		SM_DEBUGF(10,("Mail has been successfully added as a pending mail\n"));
 		return 1;
 	}
@@ -513,19 +513,19 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 		return -1;
 	}
 
-	if (mail->message_id)
+	if (mail->info->message_id)
 	{
 		/* check if there is already an mail with the same message id, this would cause
   	   problems */
 		for (i=0;i<folder->num_mails;i++)
 		{
 			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->message_id,fm->message_id)))
+			if (!(mystricmp(mail->info->message_id,fm->info->message_id)))
 			{
-				if (mail->message_id)
+				if (mail->info->message_id)
 				{
-					free(mail->message_id);
-					mail->message_id = NULL;
+					free(mail->info->message_id);
+					mail->info->message_id = NULL;
 				}
 			}
 		}
@@ -548,56 +548,56 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 	folder->mail_array[folder->num_mails++] = mail;
 	if (folder->num_mails > folder->num_index_mails) folder->num_index_mails = folder->num_mails;
 	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+	if (mail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
 	/* sort the mails for threads */
-	if (mail->message_id)
+	if (mail->info->message_id)
 	{
 		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
 			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->message_id,fm->message_reply_id)))
+			if (!(mystricmp(mail->info->message_id,fm->info->message_reply_id)))
 			{
-				if (!mail->sub_thread_mail)
+				if (!mail->info->sub_thread_mail)
 				{
-					mail->sub_thread_mail = fm;
+					mail->info->sub_thread_mail = fm;
 				} else
 				{
-					struct mail *m = mail->sub_thread_mail;
-					struct mail *next = m->next_thread_mail;
+					struct mail *m = mail->info->sub_thread_mail;
+					struct mail *next = m->info->next_thread_mail;
 					while (next)
 					{
 						m = next;
-						next = next->next_thread_mail;
+						next = next->info->next_thread_mail;
 					}
-					m->next_thread_mail = fm;
+					m->info->next_thread_mail = fm;
 				}
-				fm->child_mail = 1;
+				fm->info->child_mail = 1;
 			}
 		}
 	}
-	if (mail->message_reply_id)
+	if (mail->info->message_reply_id)
 	{
 		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
 			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->message_reply_id,fm->message_id)))
+			if (!(mystricmp(mail->info->message_reply_id,fm->info->message_id)))
 			{
-				if (!fm->sub_thread_mail)
+				if (!fm->info->sub_thread_mail)
 				{
-					fm->sub_thread_mail = mail;
+					fm->info->sub_thread_mail = mail;
 				} else
 				{
-					struct mail *m = fm->sub_thread_mail;
-					struct mail *next = m->next_thread_mail;
+					struct mail *m = fm->info->sub_thread_mail;
+					struct mail *next = m->info->next_thread_mail;
 					while (next)
 					{
 						m = next;
-						next = next->next_thread_mail;
+						next = next->info->next_thread_mail;
 					}
-					m->next_thread_mail = mail;
+					m->info->next_thread_mail = mail;
 				}
-				mail->child_mail = 1;
+				mail->info->child_mail = 1;
 				break;
 			}
 		}
@@ -638,9 +638,9 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (folder->mail_array[i]->sub_thread_mail == mail)
+		if (folder->mail_array[i]->info->sub_thread_mail == mail)
 		{
-			folder->mail_array[i]->sub_thread_mail = mail->next_thread_mail;
+			folder->mail_array[i]->info->sub_thread_mail = mail->info->next_thread_mail;
 /*		struct mail *nm = mail->next_thread_mail;
 			folder->mail_array[i]->sub_thread_mail = NULL;
 			while (nm)
@@ -652,25 +652,25 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 			}*/
 		}
 
-		if (folder->mail_array[i]->next_thread_mail == mail)
+		if (folder->mail_array[i]->info->next_thread_mail == mail)
 		{
-			folder->mail_array[i]->next_thread_mail = mail->next_thread_mail;
+			folder->mail_array[i]->info->next_thread_mail = mail->info->next_thread_mail;
 		}
 	}
 
-	if ((submail = mail->sub_thread_mail))
+	if ((submail = mail->info->sub_thread_mail))
 	{
 		while (submail)
 		{
-			struct mail *next = submail->next_thread_mail;
-			submail->next_thread_mail = NULL;
-			submail->child_mail = 0;
+			struct mail *next = submail->info->next_thread_mail;
+			submail->info->next_thread_mail = NULL;
+			submail->info->child_mail = 0;
 			submail = next;
 		}
 	}
-	mail->sub_thread_mail = NULL;
-	mail->next_thread_mail = NULL;
-	mail->child_mail = 0;
+	mail->info->sub_thread_mail = NULL;
+	mail->info->next_thread_mail = NULL;
+	mail->info->child_mail = 0;
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -687,7 +687,7 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 
 	folder->num_index_mails--;
 	if ((mail_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
-	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+	if ((mail->info->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 
 	folder_unlock(folder);
 }
@@ -697,7 +697,7 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 *******************************************************************/
 void folder_mark_deleted(struct folder *folder, struct mail *mail)
 {
-	char *newfilename = mystrdup(mail->filename);
+	char *newfilename = mystrdup(mail->info->filename);
 	char buf[256];
 
 	if (!folder->is_imap) return;
@@ -706,10 +706,10 @@ void folder_mark_deleted(struct folder *folder, struct mail *mail)
 	chdir(folder->path);
 
 	if ((*newfilename == 'u') || (*newfilename == 'U')) *newfilename = 'd';
-	if (!rename(mail->filename,newfilename))
+	if (!rename(mail->info->filename,newfilename))
 	{
-		free(mail->filename);
-		mail->filename = newfilename;
+		free(mail->info->filename);
+		mail->info->filename = newfilename;
 
 		/* delete the indexfile if not already done */
 		if (folder->index_uptodate)
@@ -727,7 +727,7 @@ void folder_mark_deleted(struct folder *folder, struct mail *mail)
 *******************************************************************/
 void folder_mark_undeleted(struct folder *folder, struct mail *mail)
 {
-	char *newfilename = mystrdup(mail->filename);
+	char *newfilename = mystrdup(mail->info->filename);
 	char buf[256];
 
 	if (!folder->is_imap) return;
@@ -736,10 +736,10 @@ void folder_mark_undeleted(struct folder *folder, struct mail *mail)
 	chdir(folder->path);
 
 	if ((*newfilename == 'd') || (*newfilename == 'D')) *newfilename = 'u';
-	if (!rename(mail->filename,newfilename))
+	if (!rename(mail->info->filename,newfilename))
 	{
-		free(mail->filename);
-		mail->filename = newfilename;
+		free(mail->info->filename);
+		mail->info->filename = newfilename;
 
 		/* delete the indexfile if not already done */
 		if (folder->index_uptodate)
@@ -791,10 +791,10 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 
 	/* update the mail statistics */
 	if ((mail_get_status_type(toreplace) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
-	if ((toreplace->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+	if ((toreplace->info->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 
 	if (mail_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-	if (newmail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+	if (newmail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
   folder_unlock(folder);
 }
@@ -919,19 +919,19 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 	{
 		char *filename;
 
-		if (status_new == mail->status)
+		if (status_new == mail->info->status)
 			return;
 
 		/* update the mail statistics */
 		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
 		if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 
-		mail->status = status_new;
-		if (!mail->filename) return;
+		mail->info->status = status_new;
+		if (!mail->info->filename) return;
 
-		filename = mail_get_status_filename(mail->filename, status_new);
+		filename = mail_get_status_filename(mail->info->filename, status_new);
 
-		if (strcmp(mail->filename,filename))
+		if (strcmp(mail->info->filename,filename))
 		{
 			char buf[256];
 			int renamed = 0;
@@ -939,18 +939,18 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 			getcwd(buf, sizeof(buf));
 			chdir(folder->path);
 
-			if (rename(mail->filename,filename))
+			if (rename(mail->info->filename,filename))
 			{
 				/* renaming went wrong, try a different name */
 				free(filename);
 				filename = mail_get_new_name(status_new);
-				if (!rename(mail->filename,filename)) renamed = 1;
+				if (!rename(mail->info->filename,filename)) renamed = 1;
 			} else renamed = 1;
 
 			if (renamed)
 			{
-				free(mail->filename);
-				mail->filename = filename;
+				free(mail->info->filename);
+				mail->info->filename = filename;
 			}
 
 			chdir(buf);
@@ -970,8 +970,8 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 *******************************************************************/
 void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new)
 {
-	if (mail->flags == flags_new) return;
-	mail->flags = flags_new;
+	if (mail->info->flags == flags_new) return;
+	mail->info->flags = flags_new;
 
 	/* Delete the indexfile if not already done */
 	if (folder->index_uptodate)
@@ -1009,7 +1009,7 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 	/* first check the pendig mail array */
 	for (i=0; i < folder->num_pending_mails; i++)
 	{
-		if (!mystricmp(folder->pending_mail_array[i]->filename,filename))
+		if (!mystricmp(folder->pending_mail_array[i]->info->filename,filename))
 		{
 			return folder->pending_mail_array[i];
 		}
@@ -1022,7 +1022,7 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (!mystricmp(folder->mail_array[i]->filename,filename))
+		if (!mystricmp(folder->mail_array[i]->info->filename,filename))
 		{
 			return folder->mail_array[i];
 		}
@@ -1048,9 +1048,9 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int ui
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (!mystrnicmp(buf,folder->mail_array[i]->filename + 1,l))
+		if (!mystrnicmp(buf,folder->mail_array[i]->info->filename + 1,l))
 		{
-			if (folder->mail_array[i]->filename[l+1] == '.' || folder->mail_array[i]->filename[l+1] == 0)
+			if (folder->mail_array[i]->info->filename[l+1] == '.' || folder->mail_array[i]->info->filename[l+1] == 0)
 				return folder->mail_array[i];
 		}
 	}
@@ -1181,14 +1181,14 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							{
 								int first = 1;
 
-								m->subject = fread_str(fh);
-								m->filename = fread_str(fh);
-								m->from_phrase = fread_str_no_null(fh);
-								m->from_addr = fread_str_no_null(fh);
+								m->info->subject = fread_str(fh);
+								m->info->filename = fread_str(fh);
+								m->info->from_phrase = fread_str_no_null(fh);
+								m->info->from_addr = fread_str_no_null(fh);
 
 								/* Read the to list */
-								if ((m->to_list = malloc(sizeof(struct list))))
-									list_init(m->to_list);
+								if ((m->info->to_list = malloc(sizeof(struct list))))
+									list_init(m->info->to_list);
 
 								while (num_to--)
 								{
@@ -1198,25 +1198,25 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 									if (first)
 									{
-										m->to_phrase = mystrdup(realname);
-										m->to_addr = mystrdup(email);
+										m->info->to_phrase = mystrdup(realname);
+										m->info->to_addr = mystrdup(email);
 										first = 0;
 									}
 
-									if (m->to_list)
+									if (m->info->to_list)
 									{
 										if ((addr = malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->to_list, &addr->node);
+											list_insert_tail(m->info->to_list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
 
 								/* Read the cc list */
-								if ((m->cc_list = malloc(sizeof(struct list))))
-									list_init(m->cc_list);
+								if ((m->info->cc_list = malloc(sizeof(struct list))))
+									list_init(m->info->cc_list);
 
 								while (num_cc--)
 								{
@@ -1224,27 +1224,27 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 									char *email = fread_str_no_null(fh);
 									struct address *addr;
 
-									if (m->cc_list)
+									if (m->info->cc_list)
 									{
 										if ((addr = malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->cc_list, &addr->node);
+											list_insert_tail(m->info->cc_list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
 
-								m->pop3_server = fread_str_no_null(fh);
-								m->message_id = fread_str_no_null(fh);
-								m->message_reply_id = fread_str_no_null(fh);
-								m->reply_addr = fread_str_no_null(fh);
+								m->info->pop3_server = fread_str_no_null(fh);
+								m->info->message_id = fread_str_no_null(fh);
+								m->info->message_reply_id = fread_str_no_null(fh);
+								m->info->reply_addr = fread_str_no_null(fh);
 
 								fseek(fh,ftell(fh)%2,SEEK_CUR);
-								fread(&m->size,1,sizeof(m->size),fh);
-								fread(&m->seconds,1,sizeof(m->seconds),fh);
-								fread(&m->received,1,sizeof(m->received),fh);
-								fread(&m->flags,1,sizeof(m->flags),fh);
+								fread(&m->info->size,1,sizeof(m->info->size),fh);
+								fread(&m->info->seconds,1,sizeof(m->info->seconds),fh);
+								fread(&m->info->received,1,sizeof(m->info->received),fh);
+								fread(&m->info->flags,1,sizeof(m->info->flags),fh);
 								mail_identify_status(m);
 
 								/* TODO: I think it's not necessary to call this function here, however
@@ -1253,7 +1253,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 								 * sets defaults which isn't done here) */
 								mail_process_headers(m);
 
-								m->flags &= ~MAIL_FLAGS_NEW;
+								m->info->flags &= ~MAIL_FLAGS_NEW;
 								folder_add_mail(folder,m,0);
 							}
 						}
@@ -1305,7 +1305,7 @@ int folder_add_mail_incoming(struct mail *mail)
 	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
 	if (folder)
 	{
-		mail->flags |= MAIL_FLAGS_NEW;
+		mail->info->flags |= MAIL_FLAGS_NEW;
 		return folder_add_mail(folder,mail,1);
 	}
 	return -1;
@@ -2225,7 +2225,7 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
 
 	while ((m = folder_next_mail(f, &handle)))
 	{
-		if (!mystricmp(m->filename,mail_filename))
+		if (!mystricmp(m->info->filename,mail_filename))
 		{
 			return folder_next_mail(f,&handle);
 		}
@@ -2248,7 +2248,7 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
 
 	while ((m = folder_next_mail(f, &handle)))
 	{
-		if (!mystricmp(m->filename,mail_filename))
+		if (!mystricmp(m->info->filename,mail_filename))
 		{
 			return lm;
 		}
@@ -2313,7 +2313,7 @@ int folder_size_of_mails(struct folder *f)
 	if (!f) return 0;
 
 	while ((m = folder_next_mail(f, &handle)))
-		size += m->size;
+		size += m->info->size;
 	return size;
 }
 
@@ -2352,23 +2352,23 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 	{
 		struct mail *mail = mail_array[i];
 
-		sm_add_part(src_buf,mail->filename,512);
+		sm_add_part(src_buf,mail->info->filename,512);
 
 		/* Change the status of mails if moved to outgoing and had formerly a sent flag set */
 		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_get_status_type(mail) == MAIL_STATUS_SENT)
 		{
 			char *newfilename;
 
-			mail->status = MAIL_STATUS_WAITSEND | (mail->status & MAIL_STATUS_FLAG_MARKED);
+			mail->info->status = MAIL_STATUS_WAITSEND | (mail->info->status & MAIL_STATUS_FLAG_MARKED);
 
-			if ((newfilename = mail_get_status_filename(mail->filename, mail->status)))
+			if ((newfilename = mail_get_status_filename(mail->info->filename, mail->info->status)))
 			{
-				if (mail->filename) free(mail->filename);
-				mail->filename = newfilename;
+				if (mail->info->filename) free(mail->info->filename);
+				mail->info->filename = newfilename;
 			}
 		}
 
-		sm_add_part(dest_buf,mail->filename,512);
+		sm_add_part(dest_buf,mail->info->filename,512);
 
 		if (rename(src_buf,dest_buf) != 0)
 		{
@@ -2384,13 +2384,13 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 				path_changed = 1;
 			}
 
-			if ((new_name = mail_get_new_name(mail->status)))
+			if ((new_name = mail_get_new_name(mail->info->status)))
 			{
 				if (rename(src_buf,new_name) == 0)
 				{
 					/* renaming was successfully */
-					free(mail->filename);
-					mail->filename = new_name;
+					free(mail->info->filename);
+					mail->info->filename = new_name;
 				} else
 				{
 					free(new_name);
@@ -2433,7 +2433,7 @@ int folder_delete_mail(struct folder *from_folder, struct mail *mail)
 	if (!from_folder) return 0;
 	folder_remove_mail(from_folder,mail);
 	strcpy(path,from_folder->path);
-	sm_add_part(path,mail->filename,512);
+	sm_add_part(path,mail->info->filename,512);
 	remove(path);
 	mail_free(mail);
 	return 1;
@@ -2465,13 +2465,13 @@ static void folder_delete_mails(struct folder *folder)
 
 	for (i=0;i<folder->num_mails;i++)
 	{
-		remove(folder->mail_array[i]->filename);
+		remove(folder->mail_array[i]->info->filename);
 		mail_free(folder->mail_array[i]);
 	}
 
 	for (i=0;i<folder->num_pending_mails;i++)
 	{
-		remove(folder->pending_mail_array[i]->filename);
+		remove(folder->pending_mail_array[i]->info->filename);
 		mail_free(folder->pending_mail_array[i]);
 	}
 
@@ -2632,28 +2632,28 @@ int folder_save_index(struct folder *f)
 			struct address *to_addr = NULL;
 			struct address *cc_addr = NULL;
 
-			if (m->to_list)
+			if (m->info->to_list)
 			{
-				num_to = list_length(m->to_list);
-				to_addr = (struct address*)list_first(m->to_list);
+				num_to = list_length(m->info->to_list);
+				to_addr = (struct address*)list_first(m->info->to_list);
 			}
 
-			if (m->cc_list)
+			if (m->info->cc_list)
 			{
-				num_cc = list_length(m->cc_list);
-				cc_addr = (struct address*)list_first(m->cc_list);
+				num_cc = list_length(m->info->cc_list);
+				cc_addr = (struct address*)list_first(m->info->cc_list);
 			}
 
 			fwrite(&num_to,1,4,fh);
 			fwrite(&num_cc,1,4,fh);
 
-			if (!(len_add = fwrite_str(fh, m->subject))) break;
+			if (!(len_add = fwrite_str(fh, m->info->subject))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->filename))) break;
+			if (!(len_add = fwrite_str(fh, m->info->filename))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->from_phrase))) break;
+			if (!(len_add = fwrite_str(fh, m->info->from_phrase))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->info->from_addr))) break;
 			len += len_add;
 			
 			while (to_addr)
@@ -2674,22 +2674,22 @@ int folder_save_index(struct folder *f)
 				cc_addr = (struct address*)node_next(&cc_addr->node);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->pop3_server))) break;
+			if (!(len_add = fwrite_str(fh, m->info->pop3_server))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_id))) break;
+			if (!(len_add = fwrite_str(fh, m->info->message_id))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->message_reply_id))) break;
+			if (!(len_add = fwrite_str(fh, m->info->message_reply_id))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->reply_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->info->reply_addr))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */
 			if (len % 2) fputc(0,fh);
 
-			fwrite(&m->size,1,sizeof(m->size),fh);
-			fwrite(&m->seconds,1,sizeof(m->seconds),fh);
-			fwrite(&m->received,1,sizeof(m->received),fh);
-			fwrite(&m->flags,1,sizeof(m->flags),fh);
+			fwrite(&m->info->size,1,sizeof(m->info->size),fh);
+			fwrite(&m->info->seconds,1,sizeof(m->info->seconds),fh);
+			fwrite(&m->info->received,1,sizeof(m->info->received),fh);
+			fwrite(&m->info->flags,1,sizeof(m->info->flags),fh);
 		}
 
 		if (append)
@@ -2810,7 +2810,7 @@ struct mail **folder_get_mail_array(struct folder *folder)
 static int folder_mail_has_property(struct folder *folder, struct mail *mail, int properties)
 {
 	if (!properties) return 1;
-	if (properties & FOLDER_QUERY_MAILS_PROP_SPAM && (mail_is_spam(mail) || mail->flags & MAIL_FLAGS_AUTOSPAM))
+	if (properties & FOLDER_QUERY_MAILS_PROP_SPAM && (mail_is_spam(mail) || mail->info->flags & MAIL_FLAGS_AUTOSPAM))
 		return 1;
 
 	return 0;
@@ -2942,13 +2942,13 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 							i = 0;
 							while (!take && rule->u.from.from[i])
-								take = !!utf8stristr(m->from_addr,rule->u.from.from[i++]);
+								take = !!utf8stristr(m->info->from_addr,rule->u.from.from[i++]);
 
 							if (!take)
 							{
 								i = 0;
 								while (!take && rule->u.from.from[i])
-									take = !!utf8stristr(m->from_phrase,rule->u.from.from[i++]);
+									take = !!utf8stristr(m->info->from_phrase,rule->u.from.from[i++]);
 							}
 						}
 						break;
@@ -2962,7 +2962,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 							while (!take && rule->u.rcpt.rcpt[i])
 							{
 								struct address *addr;
-								addr = (struct address*)list_first(m->to_list);
+								addr = (struct address*)list_first(m->info->to_list);
 								while (!take && addr)
 								{
 									take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
@@ -2972,7 +2972,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 								if (!take)
 								{
-									addr = (struct address*)list_first(m->cc_list);
+									addr = (struct address*)list_first(m->info->cc_list);
 									while (!take && addr)
 									{
 										take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
@@ -2990,7 +2990,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						{
 							int i = 0;
 							while (!take && rule->u.subject.subject[i])
-								take = !!utf8stristr(m->subject,rule->u.subject.subject[i++]);
+								take = !!utf8stristr(m->info->subject,rule->u.subject.subject[i++]);
 						}
 						break;
 
@@ -3021,11 +3021,11 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						break;
 
 			case	RULE_ATTACHMENT_MATCH:
-						take = !!(m->flags & MAIL_FLAGS_ATTACH);
+						take = !!(m->info->flags & MAIL_FLAGS_ATTACH);
 						break;
 
 			case	RULE_STATUS_MATCH:
-						if (rule->u.status.status == RULE_STATUS_NEW && (m->flags & MAIL_FLAGS_NEW)) take = 1;
+						if (rule->u.status.status == RULE_STATUS_NEW && (m->info->flags & MAIL_FLAGS_NEW)) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_READ && mail_get_status_type(m)==MAIL_STATUS_READ) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_UNREAD && mail_get_status_type(m)==MAIL_STATUS_UNREAD) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_REPLIED && (mail_get_status_type(m)==MAIL_STATUS_REPLIED || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;

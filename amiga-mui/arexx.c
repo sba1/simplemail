@@ -849,7 +849,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 				case	MAIL_STATUS_REPLFORW: mail_status = "R";break;
 				case	MAIL_STATUS_HOLD: mail_status = "H";break;
 				case	MAIL_STATUS_ERROR: mail_status = "E";break;
-				default: if (mail->flags & MAIL_FLAGS_NEW) mail_status = "N";
+				default: if (mail->info->flags & MAIL_FLAGS_NEW) mail_status = "N";
 								 else mail_status = "U"; break;
 			}
 
@@ -862,9 +862,9 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 
 				if (date && time)
 				{
-					dt.dat_Stamp.ds_Days = mail->seconds / (60*60*24);
-					dt.dat_Stamp.ds_Minute = (mail->seconds % (60*60*24))/60;
-					dt.dat_Stamp.ds_Tick = (mail->seconds % 60) * 50;
+					dt.dat_Stamp.ds_Days = mail->info->seconds / (60*60*24);
+					dt.dat_Stamp.ds_Minute = (mail->info->seconds % (60*60*24))/60;
+					dt.dat_Stamp.ds_Tick = (mail->info->seconds % 60) * 50;
 					dt.dat_Format = FORMAT_USA;
 					dt.dat_Flags = 0;
 					dt.dat_StrDate = date;
@@ -878,10 +878,10 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 			}
 
 			strcpy(mail_flags,"--------");
-			if (mail->flags & MAIL_FLAGS_GROUP) mail_flags[0] = 'M';
-			if (mail->flags & MAIL_FLAGS_ATTACH) mail_flags[1] = 'A';
-			if (mail->flags & MAIL_FLAGS_CRYPT) mail_flags[3] = 'C';
-			if (mail->flags & MAIL_FLAGS_SIGNED) mail_flags[4] = 'S';
+			if (mail->info->flags & MAIL_FLAGS_GROUP) mail_flags[0] = 'M';
+			if (mail->info->flags & MAIL_FLAGS_ATTACH) mail_flags[1] = 'A';
+			if (mail->info->flags & MAIL_FLAGS_CRYPT) mail_flags[3] = 'C';
+			if (mail->info->flags & MAIL_FLAGS_SIGNED) mail_flags[4] = 'S';
 
 			if (mailinfo_arg.stem)
 			{
@@ -902,11 +902,11 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 					strcpy(&stem_buf[stem_len],"REPLYTO");
 					MySetRexxVarFromMsg(stem_buf,mail_replyto,rxmsg);
 					strcpy(&stem_buf[stem_len],"SUBJECT");
-					MySetRexxVarFromMsg(stem_buf,mail->subject,rxmsg);
+					MySetRexxVarFromMsg(stem_buf,mail->info->subject,rxmsg);
 					strcpy(&stem_buf[stem_len],"FILENAME");
-					MySetRexxVarFromMsg(stem_buf,mail->filename,rxmsg);
+					MySetRexxVarFromMsg(stem_buf,mail->info->filename,rxmsg);
 					strcpy(&stem_buf[stem_len],"SIZE");
-					arexx_set_var_int(rxmsg,stem_buf,mail->size);
+					arexx_set_var_int(rxmsg,stem_buf,mail->info->size);
 					strcpy(&stem_buf[stem_len],"DATE");
 					MySetRexxVarFromMsg(stem_buf,mail_date,rxmsg);
 					strcpy(&stem_buf[stem_len],"FLAGS");
@@ -1439,13 +1439,13 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 				{
 					strcpy(stem_buf,mailadd_arg.stem);
 					strcat(stem_buf,"FILENAME");
-					MySetRexxVarFromMsg(stem_buf,mail->filename,rxmsg);
+					MySetRexxVarFromMsg(stem_buf,mail->info->filename,rxmsg);
 					free(stem_buf);
 				}
 			} else
 			{
-				if (mailadd_arg.var) MySetRexxVarFromMsg(mailadd_arg.var,mail->filename,rxmsg);
-				else arexx_set_result(rxmsg,mail->filename);
+				if (mailadd_arg.var) MySetRexxVarFromMsg(mailadd_arg.var,mail->info->filename,rxmsg);
+				else arexx_set_result(rxmsg,mail->info->filename);
 			}
 		}
 

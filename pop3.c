@@ -860,9 +860,9 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 			struct mail *mail = mail_create();
 			if (mail)
 			{
-				mail->filename = fn;
+				mail->info->filename = fn;
 				is_spam = spam_is_mail_spam(NULL,mail,white,black);
-				mail->filename = NULL;
+				mail->info->filename = NULL;
 				mail_free(mail);
 			}
 		}

@@ -251,7 +251,7 @@ int mails_upload(void)
 
 		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
 
-		if (!(m = mail_create_from_file(m_iter->filename)))
+		if (!(m = mail_create_from_file(m_iter->info->filename)))
 		{
 			free_outmail_array(out_array);
 			chdir(path);
@@ -281,8 +281,8 @@ int mails_upload(void)
 			return 0;
 		}
 
-		out->size = m->size;
-		out->mailfile = mystrdup(m->filename); /* will be freed in free_outmail_array() */
+		out->size = m->info->size;
+		out->mailfile = mystrdup(m->info->filename); /* will be freed in free_outmail_array() */
 		out->from = mb.addr_spec; /* must be not freed here */
 
 		/* fill in the recipients */
@@ -366,8 +366,8 @@ int mails_upload_signle(struct mail *m)
 		return 0;
 	}
 
-	out_array[0]->size = m->size;
-	out_array[0]->mailfile = mystrdup(m->filename);
+	out_array[0]->size = m->info->size;
+	out_array[0]->mailfile = mystrdup(m->info->filename);
 	out_array[0]->from = mb.addr_spec;
 
 	/* fill in the recipients */

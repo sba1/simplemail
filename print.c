@@ -114,14 +114,14 @@ static int create_ansi_header(FILE *fp, struct mail *mail)
 		fprintf(fp, "\n");
 	}
 
-	if(m->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
+	if(m->info->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL" %s\n", _("Subject"), m->subject);
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL" %s\n", _("Subject"), m->info->subject);
 	}
 
 	if((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Date"),sm_get_date_long_str(m->seconds));
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Date"),sm_get_date_long_str(m->info->seconds));
 	}
 
 	if(replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))

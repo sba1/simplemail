@@ -1146,7 +1146,7 @@ struct mail *main_get_active_mail(void)
 char *main_get_mail_filename(void)
 {
 	struct mail *m = main_get_active_mail();
-	if (m) return m->filename;
+	if (m) return m->info->filename;
 	return NULL;
 }
 
@@ -1300,7 +1300,7 @@ void main_set_status_text(char *txt)
 void main_display_active_mail(void)
 {
 	struct mail *m = main_get_active_mail();
-	struct folder *f = main_get_folder_drawer();
+	char *f = main_get_folder_drawer();
 
 	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
 }

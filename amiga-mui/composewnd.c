@@ -610,7 +610,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					struct folder *f = folder_find_by_mail(data->ref_mail);
 					if (f)
 					{
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->info->status & MAIL_STATUS_FLAG_MARKED));
 						main_refresh_mail(data->ref_mail);
 					}
 				} else
@@ -618,7 +618,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					if (data->compose_action == COMPOSE_ACTION_FORWARD)
 					{
 						struct folder *f = folder_find_by_mail(data->ref_mail);
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->info->status & MAIL_STATUS_FLAG_MARKED));
 						main_refresh_mail(data->ref_mail);
 					}
 				}
@@ -1007,13 +1007,13 @@ int compose_window_open(struct compose_args *args)
 	}
 
 	/* Find out if window is already open */
-	if (args->to_change && args->to_change->filename)
+	if (args->to_change && args->to_change->info->filename)
 	{
 		for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		{
 			if (compose_open[num])
 			{
-				if (!mystricmp(args->to_change->filename, compose_open[num]->filename))
+				if (!mystricmp(args->to_change->info->filename, compose_open[num]->filename))
 				{
 					DoMethod(compose_open[num]->wnd, MUIM_Window_ToFront);
 					set(compose_open[num]->wnd, MUIA_Window_Activate, TRUE);
@@ -1367,7 +1367,7 @@ int compose_window_open(struct compose_args *args)
 					set(data->reply_button,MUIA_Selected,TRUE);
 				}
 
-				set(subject_string,MUIA_UTF8String_Contents,args->to_change->subject);
+				set(subject_string,MUIA_UTF8String_Contents,args->to_change->info->subject);
 
 				if (args->action == COMPOSE_ACTION_REPLY)
 					set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
@@ -1380,9 +1380,9 @@ int compose_window_open(struct compose_args *args)
 					else set(wnd,MUIA_Window_ActiveObject, data->to_string);
 				}
 
-				data->filename = mystrdup(args->to_change->filename);
+				data->filename = mystrdup(args->to_change->info->filename);
 				data->folder = mystrdup("Outgoing");
-				data->reply_id = mystrdup(args->to_change->message_reply_id);
+				data->reply_id = mystrdup(args->to_change->info->message_reply_id);
 			} else
 			{
 				compose_add_text(&data);

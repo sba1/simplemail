@@ -99,7 +99,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		{
 			if (folder->mail_array[i])
 			{
-				local_mail_array[i].uid = atoi(folder->mail_array[i]->filename + 1);
+				local_mail_array[i].uid = atoi(folder->mail_array[i]->info->filename + 1);
 				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_array[i]);
 				num_of_todel_mails += !!local_mail_array[i].todel;
 			} else
@@ -1555,7 +1555,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	uid = atoi(m->filename + 1);
+	uid = atoi(m->info->filename + 1);
 
 	sprintf(tag,"%04x",val++);
 	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
@@ -1599,7 +1599,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 					FILE *fh;
 
 					mystrlcpy(buf,f->path,sizeof(buf));
-					sm_add_part(buf,m->filename,sizeof(buf));
+					sm_add_part(buf,m->info->filename,sizeof(buf));
 
 					if ((fh = fopen(buf,"w")))
 					{
@@ -1640,7 +1640,7 @@ static int imap_thread_move_mail(struct mail *mail, struct imap_server *server, 
 	if (!imap_send_simple_command(imap_connection,send)) return 0;
 
 	success = 0;
-	uid = atoi(mail->filename + 1);
+	uid = atoi(mail->info->filename + 1);
 
 	sprintf(tag,"%04x",val++);
 	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
@@ -1792,7 +1792,7 @@ static int imap_thread_append_mail(struct mail *mail, char *source_dir, struct i
 		return 0;
 	}
 
-	if (!(fh = fopen(mail->filename,"r")))
+	if (!(fh = fopen(mail->info->filename,"r")))
 	{
 		chdir(path);
 		fclose(tfh);
@@ -1886,13 +1886,13 @@ int imap_download_mail(struct folder *f, struct mail *m)
 {
 	struct imap_server *server;
 
-	if (!(m->flags & MAIL_FLAGS_PARTIAL)) return 0;
+	if (!(m->info->flags & MAIL_FLAGS_PARTIAL)) return 0;
 	if (!(server = account_find_imap_server_by_folder(f))) return 0;
 	if (!imap_start_thread()) return 0;
 
 	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 3, server, f, m))
 	{
-		folder_set_mail_flags(f,m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
+		folder_set_mail_flags(f,m, (m->info->flags & (~MAIL_FLAGS_PARTIAL)));
 		return 1;
 	}
 	return 0;

@@ -126,7 +126,7 @@ static int read_cleanup(struct Read_Data *data)
 
 	if (!data->mail) return 1;
 	strcpy(filename,"T:");
-	strcat(filename,mail->filename);
+	strcat(filename,mail->info->filename);
 	dirlock = Lock(filename,ACCESS_READ);
 	if (!dirlock) return 1;
 
@@ -179,7 +179,7 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 		if (mail->content_name)
 		{
 			strcpy(filename,"T:");
-			strcat(filename,data->mail->filename);
+			strcat(filename,data->mail->info->filename);
 			if ((newdir = CreateDir(filename))) UnLock(newdir);
 
 			if ((newdir = Lock(filename, ACCESS_READ)))
@@ -605,7 +605,7 @@ static void show_raw(int **pdata)
 	UnLock(lock);
 	if (!dirname) return;
 
-	len = strlen(dirname)+strlen(data->ref_mail->filename) + 6;
+	len = strlen(dirname)+strlen(data->ref_mail->info->filename) + 6;
 	if (!(buf = malloc(len+40)))
 	{
 		FreeVec(dirname);
@@ -614,7 +614,7 @@ static void show_raw(int **pdata)
 
 	strcpy(buf,"SYS:Utilities/Multiview \"");
 	strcat(buf,dirname);
-	AddPart(buf+27,data->ref_mail->filename,len);
+	AddPart(buf+27,data->ref_mail->info->filename,len);
 	strcat(buf+27,"\"");
 	sm_system(buf,NULL);
 	free(buf);
@@ -711,12 +711,12 @@ void read_refresh_prevnext_button(struct folder *f)
 			data = read_open[num];
 			if (!mystrcmp(f->path, data->folder_path))
 			{
-				if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename))
+				if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
 					set(data->next_button, MUIA_Disabled, FALSE);
 				else
 					set(data->next_button, MUIA_Disabled, TRUE);
 
-				if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename))
+				if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
 					set(data->prev_button, MUIA_Disabled, FALSE);
 				else
 					set(data->prev_button, MUIA_Disabled, TRUE);
@@ -768,7 +768,7 @@ static void save_button_pressed(struct Read_Data **pdata)
 static void prev_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
+	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
 
 	if (prev)
 	{
@@ -785,7 +785,7 @@ static void prev_button_pressed(struct Read_Data **pdata)
 static void next_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
+	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
 
 	if (next)
 	{
@@ -801,8 +801,8 @@ static void next_button_pressed(struct Read_Data **pdata)
 static void delete_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
-	if (!next) next = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
+	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
+	if (!next) next = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
 
 	if (callback_delete_mail(data->ref_mail))
 	{
@@ -934,7 +934,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 	if (data->mail) mail_free(data->mail);
 	data->mail = NULL;
 
-	SM_DEBUGF(15,("displaying mail at %p with subject %s\n",mail,mail->subject?mail->subject:"no subject"));
+	SM_DEBUGF(15,("displaying mail at %p with subject %s\n",mail,mail->info->subject?mail->info->subject:(utf8*)"no subject"));
 
 	if (!data->folder_path) return 0;
 
@@ -953,7 +953,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 		
 		old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_create_from_file(mail->filename)))
+		if ((data->mail = mail_create_from_file(mail->info->filename)))
 		{
 			int dont_show = 0;
 			mail_read_contents(data->folder_path,data->mail);
@@ -985,12 +985,12 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 			show_mail(data,mail_find_initial(data->mail));
 
 			/* set the prev/next button to disabled if last mail is reached */
-			if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename))
+			if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
 				set(data->next_button, MUIA_Disabled, FALSE);
 			else
 				set(data->next_button, MUIA_Disabled, TRUE);
 
-			if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename))
+			if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
 				set(data->prev_button, MUIA_Disabled, FALSE);
 			else
 				set(data->prev_button, MUIA_Disabled, TRUE);

@@ -495,7 +495,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 				if (c==10 || c==13)
 				{
 					mail->text_begin = ms->position+((c==13)?2:1);
-					mail->text_len = mail->size - mail->text_begin;
+					mail->text_len = mail->info->size - mail->text_begin;
 					return 0; /* all headers have been read */
 				}
 
@@ -765,7 +765,7 @@ char *mail_get_new_name(int status)
 **************************************************************************/
 int 	mail_is_marked_as_deleted(struct mail *mail)
 {
-	return (*mail->filename == 'd') || (*mail->filename == 'D');
+	return (*mail->info->filename == 'd') || (*mail->info->filename == 'D');
 }
 
 /**************************************************************************
@@ -818,11 +818,11 @@ void mail_identify_status(struct mail *m)
 {
 	char *suffix;
 	int i;
-	if (!m->filename) return;
-	suffix = strrchr(m->filename,'.');
+	if (!m->info->filename) return;
+	suffix = strrchr(m->info->filename,'.');
 	if (!suffix || suffix[2])
 	{
-		m->status = MAIL_STATUS_UNREAD;
+		m->info->status = MAIL_STATUS_UNREAD;
 		return;
 	}
 
@@ -830,8 +830,20 @@ void mail_identify_status(struct mail *m)
 	for (i=0;i<sizeof(status_extensions);i++)
 	{
 	  if (suffix[1] == status_extensions[i])
-		m->status = i;
+		m->info->status = i;
 	}
+}
+
+/**************************************************************************
+ creates a mail, initialize it to deault values
+**************************************************************************/
+struct mail_info *mail_info_create(void)
+{
+	struct mail_info *m;
+
+	if ((m = (struct mail_info*)malloc(sizeof(struct mail_info))))
+		memset(m,0,sizeof(*m));
+	return m;
 }
 
 /**************************************************************************
@@ -843,12 +855,18 @@ struct mail *mail_create(void)
 
 	if ((m = (struct mail*)malloc(sizeof(struct mail))))
 	{
-		memset(m,0,sizeof(struct mail));
-		list_init(&m->content_parameter_list);
-		list_init(&m->header_list); /* initialze the header_list */
+		memset(m,0,sizeof(*m));
+		if ((m->info = mail_info_create()))
+		{
+			list_init(&m->content_parameter_list);
+			list_init(&m->header_list);
+			return m;
+		}
+		mail_free(m);
 	}
-	return m;
+	return NULL;
 }
+
 
 /**************************************************************************
  This function fills in the header list if it is empty.
@@ -860,8 +878,8 @@ int mail_read_header_list_if_empty(struct mail *m)
 	FILE *fh;
 
 	if (list_first(&m->header_list)) return 1;
-	if (!m->filename) return 0;
-	if (!(fh = fopen(m->filename,"rb"))) return 0;
+	if (!m->info->filename) return 0;
+	if (!(fh = fopen(m->info->filename,"rb"))) return 0;
 
 	if ((buf = (char*)malloc(2048)))
 	{
@@ -907,12 +925,12 @@ struct mail *mail_create_from_file(char *filename)
 			{
 				if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
 				{
-					if ((m->filename = mystrdup(filename))) /* Not ANSI C */
+					if ((m->info->filename = mystrdup(filename))) /* Not ANSI C */
 					{
 						struct mail_scan ms;
 						unsigned int bytes_read = 0;
 
-						m->size = size;
+						m->info->size = size;
 						mail_scan_buffer_start(&ms,m,0);
 
 						while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
@@ -1079,10 +1097,10 @@ struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *replyto,
 static char *mail_create_replied_subject_line(int num, struct mail **mail_array)
 {
 	struct mail *mail = mail_array[0];
-	char *new_subject = (char*)malloc(mystrlen(mail->subject)+8);
+	char *new_subject = (char*)malloc(mystrlen(mail->info->subject)+8);
 	if (new_subject)
 	{
-		char *src = mail->subject;
+		char *src = mail->info->subject;
 		char *dest = new_subject;
 		char c;
 		int brackets = 0;
@@ -1272,7 +1290,7 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 			}
 		}
 
-		m->subject = mail_create_replied_subject_line(num,mail_array);
+		m->info->subject = mail_create_replied_subject_line(num,mail_array);
 
 		if (phrase)
 		{
@@ -1327,12 +1345,13 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 
 		m->decoded_len = mystrlen(m->decoded_data);
 
-		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
+		if (mail->info->message_id) m->info->message_reply_id = mystrdup(mail->info->message_id);
 		mail_process_headers(m);
 	}
 	return m;
 }
 
+/* TODO: */
 /**************************************************************************
  Creates a Forwarded mail to the given mails. Note that the input mails
  can be changed! And should be be freeed with mail_free() afterwards.
@@ -1347,14 +1366,14 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 		char *modified_text = NULL; /* This holds the modified mail text */
 		int i;
 
-		if (mail->subject)
+		if (mail->info->subject)
 		{
-			char *new_subject = (char*)malloc(strlen(mail->subject)+8);
+			char *new_subject = (char*)malloc(strlen(mail->info->subject)+8);
 			if (new_subject)
 			{
 				char *subject_header;
 
-				char *src = mail->subject;
+				char *src = mail->info->subject;
 				char *dest = new_subject;
 				char c;
 
@@ -1546,11 +1565,11 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 **************************************************************************/
 char *mail_get_from_address(struct mail *mail)
 {
-	char *buf = malloc(mystrlen(mail->from_phrase) + mystrlen(mail->from_addr)+10);
+	char *buf = malloc(mystrlen(mail->info->from_phrase) + mystrlen(mail->info->from_addr)+10);
 	if (buf)
 	{
-		if (mail->from_phrase) sprintf(buf,"%s <%s>",mail->from_phrase,mail->from_addr);
-		else strcpy(buf,mail->from_addr?mail->from_addr:"");
+		if (mail->info->from_phrase) sprintf(buf,"%s <%s>",mail->info->from_phrase,mail->info->from_addr);
+		else strcpy(buf,mail->info->from_addr?mail->info->from_addr:"");
 	}
 	return buf;
 }
@@ -1560,11 +1579,11 @@ char *mail_get_from_address(struct mail *mail)
 **************************************************************************/
 char *mail_get_to_address(struct mail *mail)
 {
-	char *buf = malloc(mystrlen(mail->to_phrase) + mystrlen(mail->to_addr)+10);
+	char *buf = malloc(mystrlen(mail->info->to_phrase) + mystrlen(mail->info->to_addr)+10);
 	if (buf)
 	{
-		if (mail->to_phrase) sprintf(buf,"%s <%s>",mail->to_phrase,mail->to_addr);
-		else strcpy(buf,mail->to_addr?mail->to_addr:"");
+		if (mail->info->to_phrase) sprintf(buf,"%s <%s>",mail->info->to_phrase,mail->info->to_addr);
+		else strcpy(buf,mail->info->to_addr?mail->info->to_addr:"");
 	}
 	return buf;
 }
@@ -1574,7 +1593,7 @@ char *mail_get_to_address(struct mail *mail)
 **************************************************************************/
 char *mail_get_replyto_address(struct mail *mail)
 {
-	return mystrdup(mail->reply_addr);
+	return mystrdup(mail->info->reply_addr);
 }
 
 
@@ -1677,36 +1696,36 @@ int mail_process_headers(struct mail *mail)
 			int day,month,year,hour,min,sec,gmt;
 			if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
 			{
-				mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
-			} else mail->seconds = 0;
+				mail->info->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+			} else mail->info->seconds = 0;
 		} else if (!mystricmp("from",header->name))
 		{
-			extract_name_from_address(buf,&mail->from_phrase,&mail->from_addr,NULL);
+			extract_name_from_address(buf,&mail->info->from_phrase,&mail->info->from_addr,NULL);
 			/* for display optimization */
-			if (isascii7(mail->from_phrase)) mail->flags |= MAIL_FLAGS_FROM_ASCII7;
+			if (isascii7(mail->info->from_phrase)) mail->info->flags |= MAIL_FLAGS_FROM_ASCII7;
 		} else if (!mystricmp("reply-to",header->name))
 		{
-			extract_name_from_address(buf,NULL,&mail->reply_addr,NULL);
+			extract_name_from_address(buf,NULL,&mail->info->reply_addr,NULL);
 		} else if (!mystricmp("to",header->name))
 		{
 			int more;
-			extract_name_from_address(buf,&mail->to_phrase,&mail->to_addr,&more);
-			if (more) mail->flags |= MAIL_FLAGS_GROUP;
+			extract_name_from_address(buf,&mail->info->to_phrase,&mail->info->to_addr,&more);
+			if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
 
-			mail->to_list = create_address_list(buf);
+			mail->info->to_list = create_address_list(buf);
 			/* for display optimization */
-			if (isascii7(mail->to_phrase)) mail->flags |= MAIL_FLAGS_TO_ASCII7;
+			if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
 		} else if (!mystricmp("cc",header->name))
 		{
-			mail->cc_list = create_address_list(buf);
-			mail->flags |= MAIL_FLAGS_GROUP;
+			mail->info->cc_list = create_address_list(buf);
+			mail->info->flags |= MAIL_FLAGS_GROUP;
 		} else if (!mystricmp("subject",header->name))
 		{
-			if (buf) parse_text_string(buf,&mail->subject);
-			else mail->subject = mystrdup("");
+			if (buf) parse_text_string(buf,&mail->info->subject);
+			else mail->info->subject = mystrdup("");
 
 			/* for display optimization */
-			if (mail->subject && isascii7(mail->subject)) mail->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
+			if (mail->info->subject && isascii7(mail->info->subject)) mail->info->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
 		} else if (!mystricmp("received",header->name))
 		{
 			if ((buf = strchr(buf,';')))
@@ -1717,7 +1736,7 @@ int mail_process_headers(struct mail *mail)
 				if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
 				{
 					new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
-					if (new_recv > mail->received) mail->received = new_recv;
+					if (new_recv > mail->info->received) mail->info->received = new_recv;
 				}
 			}
 		} else if (!mystricmp("mime-version",header->name))
@@ -1889,11 +1908,11 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("message-id",header->name))
 		{
 			if (*buf++ == '<')
-				parse_addr_spec(buf,&mail->message_id);
+				parse_addr_spec(buf,&mail->info->message_id);
 		} else if (!mystricmp("in-reply-to",header->name))
 		{
 			if (*buf++ == '<')
-				parse_addr_spec(buf,&mail->message_reply_id);
+				parse_addr_spec(buf,&mail->info->message_reply_id);
 		} else if (!mystricmp("content-transfer-encoding",header->name))
 		{
 			mail->content_transfer_encoding = mystrdup(buf);
@@ -1902,19 +1921,19 @@ int mail_process_headers(struct mail *mail)
 			parse_text_string(buf,&mail->content_description);
 		} else if (!mystricmp("Importance",header->name))
 		{
-			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
+			if (!mystricmp(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
 		} else if (!mystricmp("X-SimpleMail-POP3",header->name))
 		{
-			mail->pop3_server = mystrdup(buf);
+			mail->info->pop3_server = mystrdup(buf);
 		} else if (!mystricmp("X-SimpleMail-Partial", header->name))
 		{
-			if (!mystricmp(buf,"yes")) mail->flags |= MAIL_FLAGS_PARTIAL;
+			if (!mystricmp(buf,"yes")) mail->info->flags |= MAIL_FLAGS_PARTIAL;
 		}
 		header = (struct header*)node_next(&header->node);
 	}
 
-	if (!mail->to_phrase && !mail->to_addr && !mail->cc_list)
-		mail->flags |= MAIL_FLAGS_NORCPT;
+	if (!mail->info->to_phrase && !mail->info->to_addr && !mail->info->cc_list)
+		mail->info->flags |= MAIL_FLAGS_NORCPT;
 
 	if (!mail->content_type || !mail->content_subtype)
 	{
@@ -1927,15 +1946,15 @@ int mail_process_headers(struct mail *mail)
 
 	if (!mystricmp(mail->content_type, "multipart"))
 	{
-		mail->flags |= MAIL_FLAGS_ATTACH;
-		if (!mystricmp(mail->content_subtype,"encrypted")) mail->flags |= MAIL_FLAGS_CRYPT;
-		else if (!mystricmp(mail->content_subtype,"signed")) mail->flags |= MAIL_FLAGS_SIGNED;
+		mail->info->flags |= MAIL_FLAGS_ATTACH;
+		if (!mystricmp(mail->content_subtype,"encrypted")) mail->info->flags |= MAIL_FLAGS_CRYPT;
+		else if (!mystricmp(mail->content_subtype,"signed")) mail->info->flags |= MAIL_FLAGS_SIGNED;
 	}
 
 	if (!mystricmp(mail->content_type,"application") &&
 		 (!mystricmp(mail->content_subtype, "x-pkcs7-mime") || !mystricmp(mail->content_subtype, "pkcs7-mime")))
 	{
-		mail->flags |= MAIL_FLAGS_CRYPT;
+		mail->info->flags |= MAIL_FLAGS_CRYPT;
 	}
 
 
@@ -2054,7 +2073,7 @@ static void mail_decrypt(struct mail *mail)
 									mail->num_multiparts = 1;
 									mail->multipart_array[0] = new_mail;
 
-									new_mail->size = size;
+									new_mail->info->size = size;
 
 									mail_scan_buffer_start(&ms,new_mail,0);
 									mail_scan_buffer(&ms, newtext, size);
@@ -2138,7 +2157,7 @@ static void mail_resolve_smime(struct mail *mail)
 
 		if (pkcs7_decode((char*)data, data_len, &decoded_data, &decoded_data_len))
 		{
-			new_mail->size = decoded_data_len;
+			new_mail->info->size = decoded_data_len;
 			new_mail->text = decoded_data;
 			new_mail->extra_text = decoded_data;
 
@@ -2205,7 +2224,7 @@ static int mail_read_structure(struct mail *mail)
 						{
 							struct mail_scan ms;
 
-							new_mail->size = end_part - buf;
+							new_mail->info->size = end_part - buf;
 
 							mail_scan_buffer_start(&ms,new_mail,0);
 							mail_scan_buffer(&ms, buf, end_part - buf);
@@ -2250,7 +2269,7 @@ static int mail_read_structure(struct mail *mail)
 		if (!(mail->multipart_array = malloc(sizeof(struct mail*)))) return 0;
 		if (!(new_mail = mail->multipart_array[0] = mail_create())) return 0;
 		mail->multipart_allocated = mail->num_multiparts = 1;
-		new_mail->size = mail->text_len;
+		new_mail->info->size = mail->text_len;
 
 		mail_decode(mail);
 		mail_decoded_data(mail,&data,&data_len);
@@ -2299,12 +2318,12 @@ void mail_read_contents(char *folder, struct mail *mail)
 		if(chdir(folder) == -1) return;
 	}
 
-	if ((fp = fopen(mail->filename,"rb")))
+	if ((fp = fopen(mail->info->filename,"rb")))
 	{
-		if ((mail->text = malloc(mail->size+1)))
+		if ((mail->text = malloc(mail->info->size+1)))
 		{
-			fread(mail->text,1,mail->size,fp);
-			mail->text[mail->size]=0;
+			fread(mail->text,1,mail->info->size,fp);
+			mail->text[mail->info->size]=0;
 		}
 
 		mail_read_structure(mail);
@@ -2419,6 +2438,25 @@ int mail_set_stuff(struct mail *mail, char *filename, unsigned int size)
 }
 #endif
 
+
+/**************************************************************************
+ frees all memory associated with a mail info
+**************************************************************************/
+void mail_info_free(struct mail_info *info)
+{
+	free(info->from_phrase);
+	free(info->from_addr);
+	free(info->to_phrase);
+	free(info->to_addr);
+	if (info->to_list) free_address_list(info->to_list);
+	if (info->cc_list) free_address_list(info->cc_list);
+	free(info->reply_addr);
+	free(info->pop3_server);
+	if (info->message_id) free(info->message_id);
+	if (info->message_reply_id) free(info->message_reply_id);
+	if (info->filename) free(info->filename);
+}
+
 /**************************************************************************
  frees all memory associated with a mail
 **************************************************************************/
@@ -2438,15 +2476,6 @@ void mail_free(struct mail *mail)
 		free(hdr);
 	}
 
-	free(mail->from_phrase);
-	free(mail->from_addr);
-	free(mail->to_phrase);
-	free(mail->to_addr);
-	if (mail->to_list) free_address_list(mail->to_list);
-	if (mail->cc_list) free_address_list(mail->cc_list);
-	free(mail->reply_addr);
-	free(mail->pop3_server);
-
 	for (i=0;i<mail->num_multiparts;i++)
 	{
 		mail_free(mail->multipart_array[i]); /* recursion */
@@ -2455,8 +2484,6 @@ void mail_free(struct mail *mail)
 
 	if (mail->extra_text) free(mail->extra_text);
 
-	if (mail->message_id) free(mail->message_id);
-	if (mail->message_reply_id) free(mail->message_reply_id);
 	if (mail->content_charset) free(mail->content_charset);
 	if (mail->content_type) free(mail->content_type);
 	if (mail->content_subtype) free(mail->content_subtype);
@@ -2464,9 +2491,10 @@ void mail_free(struct mail *mail)
 	if (mail->content_name) free(mail->content_name);
 
 	if (mail->decoded_data) free(mail->decoded_data);
-	if (mail->filename && mail->text) free(mail->text);
-	if (mail->filename) free(mail->filename);
 
+	if (mail->info->filename && mail->text) free(mail->text);
+
+	mail_info_free(mail->info);
 	free(mail);
 }
 
@@ -3090,8 +3118,8 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 			{
 				folder_replace_mail(outgoing, old_mail, mail);
 				callback_mail_changed(outgoing, old_mail, mail);
-				remove(old_mail->filename);
-				free(old_mail);
+				remove(old_mail->info->filename);
+				free(old_mail); /* TODO: Fix possible race condition, if mail is still used */
 			} else
 			{
 				callback_new_mail_written(mail);
@@ -3158,13 +3186,13 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 		char *replyto = mail_find_header_contents(mail, "reply-to");
 		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 		struct header *header;
-		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail->from_addr);
+		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail->info->from_addr);
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		fprintf(fh,"<TABLE WIDTH=\"100%%\" BORDER=\"1\" CELLPADDING=\"0\" BGCOLOR=\"#%06x\"><TR><TD><TABLE>",user.config.read_header_background);
 
 
-		if (mail->from_addr && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
+		if (mail->info->from_addr && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 		{
 			fputs("<TR>",fh);
 
@@ -3173,15 +3201,15 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mail->from_addr,style_text);
+			fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mail->info->from_addr,style_text);
 
-			if (mail->from_phrase)
+			if (mail->info->from_phrase)
 			{
-				fputhtmlstr(mail->from_phrase,fh);
-				fprintf(fh," &lt;%s&gt;",mail->from_addr);
+				fputhtmlstr(mail->info->from_phrase,fh);
+				fprintf(fh," &lt;%s&gt;",mail->info->from_addr);
 			} else
 			{
-				fputs(mail->from_addr,fh);
+				fputs(mail->info->from_addr,fh);
 			}
 
 			fputs("</A></TD>",fh);
@@ -3191,7 +3219,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->to_list && ((user.config.header_flags & (SHOW_HEADER_TO)) || all_headers))
+		if (mail->info->to_list && ((user.config.header_flags & (SHOW_HEADER_TO)) || all_headers))
 		{
 			struct address *addr;
 
@@ -3201,7 +3229,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			addr = (struct address*)list_first(mail->to_list);
+			addr = (struct address*)list_first(mail->info->to_list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);
@@ -3219,7 +3247,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->cc_list && ((user.config.header_flags & (SHOW_HEADER_CC)) || all_headers))
+		if (mail->info->cc_list && ((user.config.header_flags & (SHOW_HEADER_CC)) || all_headers))
 		{
 			struct address *addr;
 
@@ -3229,7 +3257,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			addr = (struct address*)list_first(mail->cc_list);
+			addr = (struct address*)list_first(mail->info->cc_list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);
@@ -3247,7 +3275,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TR>",fh);
 		}
 
-		if (mail->subject && ((user.config.header_flags & (SHOW_HEADER_SUBJECT)) || all_headers))
+		if (mail->info->subject && ((user.config.header_flags & (SHOW_HEADER_SUBJECT)) || all_headers))
 		{
 			fputs("<TR>",fh);
 			fputs("<TD>",fh);
@@ -3255,7 +3283,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			fputhtmlstr(mail->subject,fh);
+			fputhtmlstr(mail->info->subject,fh);
 			fputs("</TD>",fh);
 			fputs("</TR>",fh);
 		}
@@ -3267,7 +3295,7 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			fputhtmlstr(sm_get_date_long_str_utf8(mail->seconds),fh);
+			fputhtmlstr(sm_get_date_long_str_utf8(mail->info->seconds),fh);
 			fputs("</TD>",fh);
 			fputs("</TR>",fh);
 		}
@@ -3387,8 +3415,8 @@ static char *get_last_name(char *realname, char *addr_spec)
  Creates a string for a greeting/closing phrase. orig_mail, realname, addr_spec
  might be NULL
 **************************************************************************/
-char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
-												 char *addr_spec)
+char *mail_create_string(char *format, struct mail *orig_mail,
+												char *realname, char *addr_spec)
 {
 	char *str;
 
@@ -3431,7 +3459,7 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 
 					if (orig_mail)
 					{
-						char *from = mail_find_header_contents(orig_mail,"from");
+						char *from = mail_find_header_contents(orig_mail,"from"); /* TODO: use from_phrase */
 						if (from)
 						{
 							struct mailbox mb;
@@ -3467,20 +3495,20 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 
 						if (*src == 'd')
 						{
-							char *date = sm_get_date_str(orig_mail->seconds);
+							char *date = sm_get_date_str(orig_mail->info->seconds);
 							strcpy(dest,date);
 							dest += strlen(date);
 						}
 						if (*src == 't')
 						{
-							char *date = sm_get_time_str(orig_mail->seconds);
+							char *date = sm_get_time_str(orig_mail->info->seconds);
 							strcpy(dest,date);
 							dest += strlen(date);
 						}
-						if (*src == 's' && orig_mail->subject)
+						if (*src == 's' && orig_mail->info->subject)
 						{
-							strcpy(dest,orig_mail->subject);
-							dest += strlen(orig_mail->subject);
+							strcpy(dest,orig_mail->info->subject);
+							dest += strlen(orig_mail->info->subject);
 						}
 					}
 

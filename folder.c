@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/dir.h> /* unix dir stuff */
+#include <sys/stat.h> /* state() */
 
 #include "lists.h"
 #include "folder.h"
@@ -213,11 +214,13 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 }
 
 /******************************************************************
- Removes a mail from the given folder
+ Removes a mail from the given folder.
+ (does not free it)
 *******************************************************************/
 static void folder_remove_mail(struct folder *folder, struct mail *mail)
 {
 	int i;
+	struct mail *submail;
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array)
@@ -232,6 +235,42 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 		folder_delete_indexfile(folder);
 		folder->index_uptodate = 0;
 	}
+
+	for (i=0; i < folder->num_mails; i++)
+	{
+		if (folder->mail_array[i]->sub_thread_mail == mail)
+		{
+			folder->mail_array[i]->sub_thread_mail = mail->next_thread_mail;
+/*		struct mail *nm = mail->next_thread_mail;
+			folder->mail_array[i]->sub_thread_mail = NULL;
+			while (nm)
+			{
+				struct mail *save = nm;
+				nm = mail->next_thread_mail;
+				save->child_mail = 0;
+				save->next_thread_mail = NULL;
+			}*/
+		}
+
+		if (folder->mail_array[i]->next_thread_mail == mail)
+		{
+			folder->mail_array[i]->next_thread_mail = mail->next_thread_mail;
+		}
+	}
+
+	if ((submail = mail->sub_thread_mail))
+	{
+		while (submail)
+		{
+			struct mail *next = submail->next_thread_mail;
+			submail->next_thread_mail = NULL;
+			submail->child_mail = 0;
+			submail = next;
+		}
+	}
+	mail->sub_thread_mail = NULL;
+	mail->next_thread_mail = NULL;
+	mail->child_mail = 0;
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -1016,6 +1055,14 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 *******************************************************************/
 int init_folders(void)
 {
+/*
+	stat()
+
+	if (st.st_mode & S_IFDIR)
+	{
+	}
+*/
+
 	list_init(&folder_list);
 	if (folder_add("Incoming","PROGDIR:.folders/income"))
 	{

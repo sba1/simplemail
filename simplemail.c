@@ -334,7 +334,7 @@ static void callback_new_mail_arrived(struct mail *mail)
 	int pos;
 
 	pos = folder_add_mail_incoming(mail);
-	if (main_get_folder() == folder_incoming() && pos)
+	if (main_get_folder() == folder_incoming() && pos != -1)
 	{
 		main_insert_mail_pos(mail,pos-1);
 	}

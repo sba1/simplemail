@@ -111,7 +111,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 			default: image = data->image_other; break;
 		}
 
-		sprintf(mails_buf,"%ld",folder->num_mails);
+		sprintf(mails_buf,"%ld",folder_number_of_mails(folder));
 
 		sprintf(data->name_buf,"\33O[%08lx]",image);
 		if (folder->name) strcat(data->name_buf,folder->name);

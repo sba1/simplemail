@@ -1302,6 +1302,5 @@ void main_display_active_mail(void)
 	struct mail *m = main_get_active_mail();
 	struct folder *f = main_get_folder_drawer();
 
-	if (f && m)
-		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
+	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
 }

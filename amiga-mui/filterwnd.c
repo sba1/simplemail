@@ -44,16 +44,6 @@
 
 static void rules_refresh(void);
 
-struct rule
-{
-	char *name; /* Name of the rule */
-	Object *page;
-	int (*create)(struct rule*);
-	void (*set_page)(struct filter_rule*);
-	void (*get_page)(struct filter_rule*);
-	int type;
-};
-
 static Object *filter_wnd;
 static Object *filter_name_string;
 static Object *filter_listview;
@@ -79,11 +69,6 @@ STATIC ASM VOID filter_destruct( register __a2 APTR pool, register __a1 struct f
 STATIC ASM VOID filter_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter *ent)
 {
 	if (ent) *array = ent->name;
-}
-
-STATIC ASM VOID rules_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter_rule *rule)
-{
-	if (rule) *array = filter_get_rule_string(rule);
 }
 
 STATIC ASM VOID move_objstr(register __a2 Object *list, register __a1 Object *str)
@@ -183,6 +168,9 @@ static void rules_ok(void)
 						case	RULE_HEADER_MATCH:
 									fr->u.header.name = mystrdup(new_fr->u.header.name);
 									fr->u.header.contents = array_duplicate(new_fr->u.header.contents);
+									break;
+						case	RULE_STATUS_MATCH:
+									fr->u.status.status = new_fr->u.status.status;
 									break;
 					}
 		  	}
@@ -433,6 +421,19 @@ static void filter_ok(void)
 }
 
 /**************************************************************************
+ Cancel the filter
+**************************************************************************/
+static void filter_cancel(void)
+{
+	if (rules_wnd)
+	{
+		set(rules_wnd,MUIA_Window_Open,FALSE);
+		rules_filter = NULL;
+	}
+	set(filter_wnd,MUIA_Window_Open,FALSE);
+}
+
+/**************************************************************************
  New Entry has been activated
 **************************************************************************/
 static void filter_active(void)
@@ -510,11 +511,12 @@ static void init_filter(void)
 	if (filter_wnd)
 	{
 		DoMethod(App, OM_ADDMEMBER, filter_wnd);
-		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, filter_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, save_filter);
-		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
+		
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
 		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_listview, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 		DoMethod(filter_edit_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_edit);

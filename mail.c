@@ -2689,6 +2689,34 @@ void free_address_list(struct list *list)
 }
 
 /**************************************************************************
+ Returns a string of all addresses
+**************************************************************************/
+utf8 *get_addresses_from_list(struct list *list)
+{
+	struct address *address = (struct address*)list_first(list);
+	string str;
+
+	if (!string_initialize(&str,200))
+		return NULL;
+		
+	while (address)
+	{
+		struct address *nextaddress = (struct address*)node_next(&address->node);
+
+		if (address->realname)
+		{
+			string_append(&str,address->realname);
+			string_append(&str," <");
+			string_append(&str,address->email);
+			string_append(&str,">");
+		} else string_append(&str,address->email);
+
+		address = nextaddress;
+	}
+	return str.str;
+}
+
+/**************************************************************************
  Initialized a composed mail instance
 **************************************************************************/
 void composed_mail_init(struct composed_mail *mail)

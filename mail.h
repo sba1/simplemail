@@ -278,6 +278,7 @@ void append_to_address_list(struct list *list, char *str);
 void append_mailbox_to_address_list(struct list *list, struct mailbox *mb);
 void remove_from_address_list(struct list *list, char *email);
 void free_address_list(struct list *list);
+utf8 *get_addresses_from_list(struct list *list);
 
 char *mail_create_string(char *format, struct mail_info *mail, char *realname,
 												 char *addr_spec);

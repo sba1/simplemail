@@ -293,7 +293,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 /**************************************************************************
  Returns a list with string_node nodes which describes the folder names
 **************************************************************************/
-static struct list *imap_get_folders(struct connection *conn, struct imap_server *server)
+static struct list *imap_get_folders(struct connection *conn, struct imap_server *server, int all)
 {
 	char *line;
 	char tag[20];
@@ -305,7 +305,7 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 	list_init(list);
 
 	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s LIST \"\" *\r\n",tag,server->login,server->passwd);
+	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB",server->login,server->passwd);
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
@@ -665,7 +665,7 @@ static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 						thread_call_parent_function_async(status_set_status,1,N_("Login successful"));
 						thread_call_parent_function_async(status_set_status,1,N_("Checking for folders"));
 
-						if ((folder_list = imap_get_folders(conn,server)))
+						if ((folder_list = imap_get_folders(conn,server,1)))
 						{
 							struct string_node *node;
 
@@ -802,7 +802,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 					thread_call_parent_function_async(status_set_status,1,N_("Login..."));
 					if (imap_login(conn,server))
 					{
-						if ((folder_list = imap_get_folders(conn,server)))
+						if ((folder_list = imap_get_folders(conn,server,1)))
 						{
 							thread_call_parent_function_sync(callback,2,server,folder_list);
 						}

@@ -209,7 +209,7 @@ static struct folder_node *find_folder_node_by_folder(struct folder *f)
 
 static char *fread_str(FILE *fh);
 static char *fread_str_no_null(FILE *fh);
-static void folder_config_save(struct folder *f);
+//static void folder_config_save(struct folder *f);
 static int folder_config_load(struct folder *f);
 
 /******************************************************************
@@ -1306,7 +1306,7 @@ static int folder_config_load(struct folder *f)
 /******************************************************************
  Save the current configuration for the folder
 *******************************************************************/
-static void folder_config_save(struct folder *f)
+void folder_config_save(struct folder *f)
 {
 	char buf[256];
 	FILE *fh;
@@ -1362,7 +1362,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
  Set some folder attributes. Returns 1 if the folder must be
  refreshed in the gui.
 *******************************************************************/
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto)
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, int prim_sort, int second_sort)
 {
 	int refresh = 0;
 	int rescan = 0;
@@ -1411,6 +1411,18 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 			rescan = 1;
 		}
 		f->type = newtype;
+		changed = 1;
+	}
+
+	if (prim_sort != folder_get_primary_sort(f))
+	{
+		folder_set_primary_sort(f,prim_sort);
+		changed = 1;
+	}
+
+	if (second_sort != folder_get_secondary_sort(f))
+	{
+		folder_set_primary_sort(f,second_sort);
 		changed = 1;
 	}
 	

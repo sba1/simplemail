@@ -283,6 +283,7 @@ static void mailtreelist_title_click(void)
 	if (folder)
 	{
 		folder_set_primary_sort(folder, titlemark2sortmode(title_mark));
+		folder_config_save(folder);
 		main_set_folder_mails(folder);
 	}
 }

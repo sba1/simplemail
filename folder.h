@@ -118,7 +118,7 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 
-int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, int prim_sort, int second_sort);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 
 struct folder *folder_first(void);
@@ -180,5 +180,7 @@ void folders_unlock(void);
 
 void folder_load_order(void);
 void folder_save_order(void);
+
+void folder_config_save(struct folder *f);
 
 #endif

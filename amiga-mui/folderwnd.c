@@ -96,6 +96,16 @@ char *folder_get_changed_defto(void)
 	return (char *)xget(defto_string,MUIA_String_Contents);
 }
 
+int folder_get_changed_primary_sort(void)
+{
+	return xget(prim_cycle, MUIA_Cycle_Active);
+}
+
+int folder_get_changed_secondary_sort(void)
+{
+	return xget(second_cycle, MUIA_Cycle_Active);
+}
+
 static void init_folder(void)
 {
 	Object *ok_button, *cancel_button;

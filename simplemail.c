@@ -1019,7 +1019,7 @@ void callback_change_folder_attrs(void)
 		refresh = 1;
 	} else refresh = 0;
 
-	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type(), folder_get_changed_defto()))
+	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type(), folder_get_changed_defto(), folder_get_changed_primary_sort(), folder_get_changed_secondary_sort()))
 	{
 		if (main_get_folder() == f || refresh)
 		{

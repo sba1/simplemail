@@ -28,6 +28,8 @@ char *folder_get_changed_name(void);
 char *folder_get_changed_path(void);
 int folder_get_changed_type(void);
 char *folder_get_changed_defto(void);
+int folder_get_changed_primary_sort(void);
+int folder_get_changed_secondary_sort(void);
 
 void folder_edit_new_path(char *init_path);
 

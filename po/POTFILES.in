@@ -5,7 +5,6 @@ amiga-mui/addresstreelistclass.c
 amiga-mui/attachmentlistclass.c
 amiga-mui/composewnd.c
 amiga-mui/configwnd.c
-amiga-mui/dlwnd.c
 amiga-mui/filterruleclass.c
 amiga-mui/filterwnd.c
 amiga-mui/folderwnd.c
@@ -17,7 +16,6 @@ amiga-mui/pgplistclass.c
 amiga-mui/searchwnd.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
-amiga-mui/upwnd.c
 Charsets/cp1252.txt
 Charsets/iso8859-10.txt
 codesets.c

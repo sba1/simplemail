@@ -270,7 +270,6 @@ int main(void)
 	{
 		if (init_threads())
 		{
-			init_socket_lib();
 			gui_main();
 			folder_delete_deleted();
 			cleanup_threads();

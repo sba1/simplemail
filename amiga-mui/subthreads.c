@@ -98,8 +98,6 @@ static int thread_entry(struct ThreadUData *udata)
 {
 	int retval;
 
-	init_socket_lib();
-
 	thread_port = udata->server_port;
 
 	retval = udata->entry(udata->udata);

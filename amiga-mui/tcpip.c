@@ -26,19 +26,11 @@
 
 struct Library *SocketBase;
 
-static struct SignalSemaphore semaphore;
 static long bsd_in_use;
-
-void init_socket_lib(void)
-{
-	InitSemaphore(&semaphore);
-}
 
 int open_socket_lib(void)
 {
    int rc;
-
-   ObtainSemaphore(&semaphore);
 
    rc = FALSE;
 
@@ -52,15 +44,11 @@ int open_socket_lib(void)
       }
    }
 
-   ReleaseSemaphore(&semaphore);
-
    return(rc);
 }
 
 void close_socket_lib(void)
 {
-   ObtainSemaphore(&semaphore);
-
    bsd_in_use--;
 
    if(bsd_in_use == 0)
@@ -71,5 +59,4 @@ void close_socket_lib(void)
          SocketBase = NULL;
       }
    }
-   ReleaseSemaphore(&semaphore);
 }

@@ -22,7 +22,6 @@
 
 #include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
 
-void init_socket_lib(void);
 int open_socket_lib(void);
 void close_socket_lib(void);
 

@@ -217,7 +217,7 @@ int mails_upload(void)
 			if (length)
 			{
 				struct list *cc_list = create_address_list(cc);
-				if (cc_list) length += list_length(list);
+				if (cc_list) length += list_length(cc_list);
 
 				if ((out->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 				{

@@ -1731,8 +1731,9 @@ int mail_create_html_header(struct mail *mail)
 		char *replyto = mail_find_header_contents(mail, "reply-to");
 		char *cc = mail_find_header_contents(mail, "cc");
 		char *portrait;
+		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 
-		fputs("<HTML><BODY>",fh);
+		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06lx\" TEXT=\"#%06lx\" LINK=\"#%06lx\">",user.config.read_background,user.config.read_text,user.config.read_link);
 
 		if (from)
 		{
@@ -1744,7 +1745,7 @@ int mail_create_html_header(struct mail *mail)
 				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
 			}
 
-			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb.addr_spec);
+			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\"%s>",mb.addr_spec,style_text);
 
 			if (mb.phrase)
 			{
@@ -1769,7 +1770,7 @@ int mail_create_html_header(struct mail *mail)
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
 				while (mb)
 				{
-					fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb->addr_spec);
+					fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mb->addr_spec,style_text);
 					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
 					else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
@@ -1792,7 +1793,7 @@ int mail_create_html_header(struct mail *mail)
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
 				while (mb)
 				{
-					fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb->addr_spec);
+					fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mb->addr_spec,style_text);
 					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
 					else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
@@ -1814,7 +1815,7 @@ int mail_create_html_header(struct mail *mail)
 		{
 			struct mailbox addr;
 			parse_mailbox(replyto, &addr);
-			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",addr.addr_spec);
+			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\"%s>",addr.addr_spec,style_text);
 
 			if (addr.phrase)
 			{

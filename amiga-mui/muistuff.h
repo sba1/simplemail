@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** muistuff.h
 */
 
 #ifndef SM__MUISTUFF_H
@@ -67,5 +67,7 @@ void init_hook(struct Hook *h, unsigned long (*func)());
 #define MUIA_Dtpic_Name 0x80423d72
 /*#define MUIC_Dtpic "Dtpic.mui",*/
 #define DtpicObject MUI_NewObject("Dtpic.mui"
+
+#define MAKECOLOR32(x) (((x)<<24)|((x)<<16)|((x)<<8)|(x))
 
 #endif

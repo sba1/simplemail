@@ -72,6 +72,13 @@ void init_config(void)
 	{
 		list_insert_tail(&user.config.account_list,&account->node);
 	}
+
+	user.config.read_background = 0xb0b0b0;
+	user.config.read_text = 0;
+	user.config.read_quoted = 0xffffff;
+	user.config.read_old_quoted = 0xffff00;
+	user.config.read_link = 0x000098;
+	user.config.read_link_underlined = 0;
 }
 
 int load_config(void)
@@ -114,6 +121,18 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Read.BackgroundColor")))
+							sscanf(result,"%x",&user.config.read_background);
+						if ((result = get_config_item(buf,"Read.TextColor")))
+							sscanf(result,"%x",&user.config.read_text);
+						if ((result = get_config_item(buf,"Read.QuotedColor")))
+							sscanf(result,"%x",&user.config.read_quoted);
+						if ((result = get_config_item(buf,"Read.OldQuotedColor")))
+							sscanf(result,"%x",&user.config.read_old_quoted);
+						if ((result = get_config_item(buf,"Read.LinkColor")))
+							sscanf(result,"%x",&user.config.read_link);
+						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
+							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -300,7 +319,13 @@ void save_config(void)
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
-			
+			fprintf(fh,"Read.BackgroundColor=0x%lx\n",user.config.read_background);
+			fprintf(fh,"Read.TextColor=0x%lx\n",user.config.read_text);
+			fprintf(fh,"Read.QuotedColor=0x%lx\n",user.config.read_quoted);
+			fprintf(fh,"Read.OldQuotedColor=0x%lx\n",user.config.read_old_quoted);
+			fprintf(fh,"Read.LinkColor=0x%lx\n",user.config.read_link);
+			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
+
 			fclose(fh);
 		}
 	}

@@ -63,6 +63,9 @@ static Object *receive_sizes_sizes;
 static Object *read_wrap_checkbox;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
+static Object *read_linkunderlined_checkbox;
+static Object *read_palette;
+static struct MUI_Palette_Entry read_palette_entries[7];
 
 static Object *account_name_string;
 static Object *account_email_string;
@@ -186,6 +189,12 @@ static void config_use(void)
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
+	user.config.read_background = ((read_palette_entries[0].mpe_Red >> 24)<<16) | ((read_palette_entries[0].mpe_Green>>24)<<8) | (read_palette_entries[0].mpe_Blue>>24);
+	user.config.read_text = ((read_palette_entries[1].mpe_Red >> 24)<<16)       | ((read_palette_entries[1].mpe_Green>>24)<<8) | (read_palette_entries[1].mpe_Blue>>24);
+	user.config.read_quoted = ((read_palette_entries[2].mpe_Red >> 24)<<16)     | ((read_palette_entries[2].mpe_Green>>24)<<8) | (read_palette_entries[2].mpe_Blue>>24);
+	user.config.read_old_quoted = ((read_palette_entries[3].mpe_Red >> 24)<<16) | ((read_palette_entries[3].mpe_Green>>24)<<8) | (read_palette_entries[3].mpe_Blue>>24);
+	user.config.read_link = ((read_palette_entries[4].mpe_Red >> 24)<<16)       | ((read_palette_entries[4].mpe_Green>>24)<<8) | (read_palette_entries[4].mpe_Blue>>24);
+	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 
   get_account();
   get_signature();
@@ -599,26 +608,87 @@ static int init_account_group(void)
 *******************************************************************/
 static int init_mails_read_group(void)
 {
-	mails_read_group =  ColGroup(2),
+	static const char *read_palette_names[] =
+	{
+		"Background",
+		"Text",
+		"Quoted Text",
+		"Old Quoted Text",
+		"Link Text",
+		NULL,
+	};
+
+	read_palette_entries[0].mpe_ID = 0;
+	read_palette_entries[0].mpe_Red = MAKECOLOR32((user.config.read_background&0x00ff0000)>>16);
+	read_palette_entries[0].mpe_Green = MAKECOLOR32((user.config.read_background&0x0000ff00)>>8);
+	read_palette_entries[0].mpe_Blue = MAKECOLOR32((user.config.read_background&0x000000ff));
+	read_palette_entries[0].mpe_Group = 0;
+
+	read_palette_entries[1].mpe_ID = 1;
+	read_palette_entries[1].mpe_Red = MAKECOLOR32((user.config.read_text&0x00ff0000)>>16);
+	read_palette_entries[1].mpe_Green = MAKECOLOR32((user.config.read_text&0x0000ff00)>>8);
+	read_palette_entries[1].mpe_Blue = MAKECOLOR32((user.config.read_text&0x00ff));
+	read_palette_entries[1].mpe_Group = 1;
+
+	read_palette_entries[2].mpe_ID = 2;
+	read_palette_entries[2].mpe_Red = MAKECOLOR32((user.config.read_quoted&0x00ff0000)>>16);
+	read_palette_entries[2].mpe_Green = MAKECOLOR32((user.config.read_quoted&0x0000ff00)>>8);
+	read_palette_entries[2].mpe_Blue = MAKECOLOR32((user.config.read_quoted&0x000000ff));
+	read_palette_entries[2].mpe_Group = 2;
+
+	read_palette_entries[3].mpe_ID = 3;
+	read_palette_entries[3].mpe_Red = MAKECOLOR32((user.config.read_old_quoted&0x00ff0000)>>16);
+	read_palette_entries[3].mpe_Green = MAKECOLOR32((user.config.read_old_quoted&0x0000ff00)>>8);
+	read_palette_entries[3].mpe_Blue = MAKECOLOR32((user.config.read_old_quoted&0x0000ff));
+	read_palette_entries[3].mpe_Group = 3;
+
+	read_palette_entries[4].mpe_ID = 4;
+	read_palette_entries[4].mpe_Red = MAKECOLOR32((user.config.read_link&0x00ff0000)>>16);
+	read_palette_entries[4].mpe_Green = MAKECOLOR32((user.config.read_link&0x0000ff00)>>8);
+	read_palette_entries[4].mpe_Blue = MAKECOLOR32((user.config.read_link&0x0000ff));
+	read_palette_entries[4].mpe_Group = 4;
+
+	read_palette_entries[5].mpe_ID = MUIV_Palette_Entry_End;
+	read_palette_entries[5].mpe_Red = 0;
+	read_palette_entries[5].mpe_Green = 0;
+	read_palette_entries[5].mpe_Blue = 0;
+	read_palette_entries[5].mpe_Group = 0;
+
+	mails_read_group =  VGroup,
 		MUIA_ShowMe, FALSE,
-		Child, MakeLabel("Proportional Font"),
-		Child, PopaslObject,
-			MUIA_Popasl_Type, ASL_FontRequest,
-			MUIA_Popstring_String, read_propfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_propfont,End,
-			MUIA_Popstring_Button, PopButton(MUII_PopUp),
+
+		Child, HorizLineTextObject("Fonts"),
+		Child, ColGroup(2),
+			Child, MakeLabel("Proportional Font"),
+			Child, PopaslObject,
+				MUIA_Popasl_Type, ASL_FontRequest,
+				MUIA_Popstring_String, read_propfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_propfont,End,
+				MUIA_Popstring_Button, PopButton(MUII_PopUp),
+				End,
+
+			Child, MakeLabel("Fixed Font"),
+			Child, PopaslObject,
+				MUIA_Popasl_Type, ASL_FontRequest,
+				MUIA_Popstring_String, read_fixedfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_fixedfont, End,
+				MUIA_Popstring_Button, PopButton(MUII_PopUp),
+				ASLFO_FixedWidthOnly, TRUE,
+				End,
 			End,
 
-		Child, MakeLabel("Fixed Font"),
-		Child, PopaslObject,
-			MUIA_Popasl_Type, ASL_FontRequest,
-			MUIA_Popstring_String, read_fixedfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_fixedfont, End,
-			MUIA_Popstring_Button, PopButton(MUII_PopUp),
-			ASLFO_FixedWidthOnly, TRUE,
+		Child, HorizLineTextObject("Colors"),
+		Child, read_palette = PaletteObject,
+			MUIA_Palette_Entries, read_palette_entries,
+			MUIA_Palette_Names  , read_palette_names,
+			MUIA_Palette_Groupable, FALSE,
 			End,
 
-		Child, MakeLabel("Wordwrap plain text"),
+		Child, HorizLineObject,
+
 		Child, HGroup,
+			Child, MakeLabel("Wordwrap plain text"),
 			Child, read_wrap_checkbox = MakeCheck("Wordwrap plain text",user.config.read_wordwrap),
+			Child, MakeLabel("Underline links"),
+			Child, read_linkunderlined_checkbox = MakeCheck("Underline links",user.config.read_link_underlined),
 			Child, HVSpace,
 			End,
 		End;

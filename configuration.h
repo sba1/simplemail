@@ -48,6 +48,16 @@ struct config
 	char *read_fixedfont;
 	char *read_propfont;
 
+	/* Colors */
+	int read_background;
+	int read_text;
+	int read_quoted;
+	int read_old_quoted;
+	int read_link;
+	
+	/* Boolean */
+	int read_link_underlined;
+
 	/* list of the filters */
 	struct list filter_list; 
 };

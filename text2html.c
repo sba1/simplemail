@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "configuration.h"
 #include "parse.h"
 #include "support_indep.h"
 #include "text2html.h"
@@ -51,7 +52,7 @@ static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 
 	if (i)
 	{
-		fprintf(fh,"<A HREF=\"%s\" STYLE=\"TEXT-DECORATION: none\">%s</A>",uri,uri);
+		fprintf(fh,"<A HREF=\"%s\"%s>%s</A>",uri, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"" , uri);
 	}
 
 	*buffer_ptr = buffer;
@@ -72,7 +73,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		int eval_color = 2; /* recheck the color */
 		int initial_color = 1;
 
-		if (flags & TEXT2HTML_BODY_TAG) fputs("<BODY>",fh);
+		if (flags & TEXT2HTML_BODY_TAG) fprintf(fh,"<BODY BGCOLOR=\"#%06lx\" TEXT=\"#%06lx\" LINK=\"#%06lx\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		if (fonttag) fputs(fonttag,fh);
 
 		while (buffer_len)
@@ -102,8 +103,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				if (last_color != new_color)
 				{
 					if (!initial_color) fputs("</FONT>",fh);
-					if (new_color == 1) fputs("<FONT COLOR=\"white\">",fh);
-					else if (new_color == 2) fputs("<FONT COLOR=\"yellow\">",fh);
+					if (new_color == 1) fprintf(fh,"<FONT COLOR=\"#%lx\">",user.config.read_quoted);
+					else if (new_color == 2) fprintf(fh,"<FONT COLOR=\"#%lx\">",user.config.read_old_quoted);
 					last_color = new_color;
 					if (new_color) initial_color = 0;
 					else initial_color = 1;
@@ -150,7 +151,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						email_len = buffer3 - buffer;
 						buffer_len -= email_len;
 						buffer = buffer3;
-						fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",address);
+						fprintf(fh,"<A HREF=\"mailto:%s\"%s>",address, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"");
 						fputs(address,fh);
 						fputs("</A>",fh);
 						free(address);

@@ -28,6 +28,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "mbox.h"
+#include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
 #include "status.h"
@@ -178,5 +179,126 @@ int mbox_export_folder(struct folder *folder, char *filename)
 	data.foldername = folder->name;
 
 	return thread_start(THREAD_FUNCTION(export_entry),&data);
+}
+
+/*************************************************************************/
+
+struct import_data
+{
+	char *filename;
+	char *destdir;
+};
+
+/**************************************************************************
+ Entry point for the import subthread
+**************************************************************************/
+static int import_entry(struct import_data *data)
+{
+	char *filename,*mailfilename;
+	char *destdir;
+	char *line_buf;
+	char head_buf[300];
+	char path[380];
+	int gauge,fsize,line_len,empty_line;
+	FILE *fh,*mailfh;
+
+	if ((filename = mystrdup(data->filename)))
+	{
+		if ((destdir = mystrdup(data->destdir)))
+		{
+			if (thread_parent_task_can_contiue())
+			{
+				sprintf(head_buf, _("Importing %s"),filename);
+				thread_call_parent_function_async(status_init,1,0);
+				thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Importing a mbox file"));
+				thread_call_parent_function_async_string(status_set_head,1,head_buf);
+				thread_call_parent_function_async(status_open,0);
+
+				if ((fh = fopen(filename,"r")))
+				{
+					getcwd(path,sizeof(path));
+					if (chdir(destdir)!=-1)
+					{
+						fsize = myfsize(fh);
+						thread_call_parent_function_async(status_init_gauge_as_bytes,1,fsize);
+
+						if ((line_buf = malloc(8192)))
+						{
+							mailfilename = NULL;
+							mailfh = NULL;
+							gauge = empty_line = 0;
+
+							while (fgets(line_buf,8192,fh))
+							{
+								line_len = strlen(line_buf);
+								gauge += line_len;
+
+								if (line_buf[0] == '\n' || (line_buf[0] == '\r' || line_buf[1] == '\n'))
+								{
+									if (empty_line && mailfh) fputs("\n",mailfh);
+									empty_line = 1;
+									continue;
+								}
+
+								if (!strncmp(line_buf, "From ",5))
+								{
+									if (mailfh)
+									{
+										fclose(mailfh);
+										thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, mailfilename);
+									}
+
+									if (!(mailfilename = mail_get_new_name(MAIL_STATUS_UNREAD))) break;
+									if (!(mailfh = fopen(mailfilename,"w"))) break;
+									empty_line = 0;
+									continue;
+								}
+
+								if (empty_line)
+								{
+									empty_line = 0;
+									fputs("\n",mailfh);
+								}
+								fputs(line_buf + line_is_any_from(line_buf),mailfh);
+								thread_call_parent_function_async(status_set_gauge,1,gauge);
+							}
+
+							if (mailfh)
+							{
+								if (empty_line) fputs("\n",mailfh);
+								fclose(mailfh);
+								thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, mailfilename);
+							}
+							
+							free(line_buf);
+						}
+						chdir(path);
+					}
+					fclose(fh);
+				}
+				thread_call_parent_function_async(status_close,0);
+			}
+			free(destdir);
+		}
+		free(filename);
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Export a given a given file which must be a mbox file to a given folder.
+ folder may be NULL which means that the mails are imported like fetching
+ mails.
+**************************************************************************/
+int mbox_import_to_folder(struct folder *folder, char *filename)
+{
+	struct import_data data;
+
+	if (folder) return 0; /* importing to a specified folder not supported yet */
+
+	data.filename = filename;
+	data.destdir = folder?folder->path:folder_incoming()->path;
+
+	return thread_start(THREAD_FUNCTION(import_entry),&data);
 }
 

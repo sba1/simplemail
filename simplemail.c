@@ -1012,6 +1012,21 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	main_refresh_folder(folder);
 }
 
+/* Import mails */
+void callback_import_mbox(void)
+{
+	char *filename;
+
+	filename = sm_request_file(_("Choose the file which you like to import"),"",0);
+	if (filename && *filename)
+	{
+		if (!mbox_import_to_folder(NULL,filename))
+		{
+			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
+		}
+	}
+	free(filename);
+}
 
 /* Export mails */
 void callback_export(void)

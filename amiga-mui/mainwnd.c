@@ -434,6 +434,7 @@ int main_window_init(void)
 		MENU_PROJECT,
 		MENU_PROJECT_ABOUT = 1,
 		MENU_PROJECT_ABOUTMUI,
+		MENU_PROJECT_IMPORTMBOX,
 		MENU_PROJECT_FETCH,
 		MENU_PROJECT_CHECKSINGLEACCOUNT,
 		MENU_PROJECT_SEND,
@@ -482,6 +483,8 @@ int main_window_init(void)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Import mbox file..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTMBOX},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_PROJECT_SEND},
 		{NM_ITEM, N_("F:Check all active accounts..."), NULL, 0, 0, (APTR)MENU_PROJECT_FETCH},
 		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
@@ -492,7 +495,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("New group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
-		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
+		{NM_ITEM, N_("Export as mbox..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
 		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
@@ -705,6 +708,7 @@ int main_window_init(void)
 		/* Menu notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 3, MUIM_CallHook, &hook_standard, callback_import_mbox);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);

@@ -21,5 +21,6 @@
 struct folder;
 
 int mbox_export_folder(struct folder *folder, char *filename);
+int mbox_import_to_folder(struct folder *folder, char *filename);
 
 #endif

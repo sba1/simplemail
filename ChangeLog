@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-03-06  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/composewnd.c: The foldertree must also be updated (fixes bug #1117613).
+	* folder.c: If a mail get touched by a status change, remove the NEW flag of
+	  the mail (fixes bug #1117613).
+
 2005-03-05  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailinfoclass.c: Small visual changes.
 

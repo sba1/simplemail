@@ -664,6 +664,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					{
 						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
 						main_refresh_mail(data->ref_mail);
+						main_refresh_folder(f);
 					}
 				} else
 				{

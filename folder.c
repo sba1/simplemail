@@ -925,6 +925,8 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 
 		/* update the mail statistics */
 		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
+		if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+		mail->flags &= ~MAIL_FLAGS_NEW;
 		if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 
 		mail->status = status_new;

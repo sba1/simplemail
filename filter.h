@@ -30,6 +30,19 @@ struct filter_rule
 {
 	struct node node; /* embedded node structure */
 	int type; /* type of the rule */
+	union
+	{
+		struct {
+			char *from;
+		} from;
+		struct {
+			char *subject;
+		} subject;
+		struct {
+			char *name;
+			char *contents;
+		} header;
+	} u;
 };
 
 struct filter_action

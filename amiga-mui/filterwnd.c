@@ -33,6 +33,8 @@
 #include <proto/muimaster.h>
 
 #include "filter.h"
+#include "folder.h"
+#include "support_indep.h"
 
 #include "compiler.h"
 #include "filterwnd.h"
@@ -43,12 +45,15 @@ struct rule
 	char *name; /* Name of the rule */
 	Object *page;
 	int (*create)(struct rule*);
+	void (*set_page)(struct filter_rule*);
+	void (*get_page)(struct filter_rule*);
 	int type;
 };
 
 static Object *filter_wnd;
 static Object *filter_name_string;
 static Object *filter_listview;
+static Object *filter_list;
 static Object *filter_new_button;
 static Object *filter_remove_button;
 
@@ -60,14 +65,21 @@ static int rules_create_from(struct rule *rule);
 static int rules_create_subject(struct rule *rule);
 static int rules_create_header(struct rule *rule);
 
+static void rules_set_from(struct filter_rule *rule);
+static void rules_set_subject(struct filter_rule *rule);
+static void rules_set_header(struct filter_rule *rule);
+
+static void rules_get_from(struct filter_rule *rule);
+static void rules_get_subject(struct filter_rule *rule);
+static void rules_get_header(struct filter_rule *rule);
+
 struct rule rules[] = {
-	{"From match",NULL,rules_create_from,RULE_FROM_MATCH},
-	{"Subject macth",NULL,rules_create_subject,RULE_SUBJECT_MATCH},
-	{"Header match",NULL,rules_create_header,RULE_HEADER_MATCH},
+	{"From match", NULL, rules_create_from, rules_set_from, rules_get_from, RULE_FROM_MATCH},
+	{"Subject macth", NULL, rules_create_subject, rules_set_subject, rules_get_subject, RULE_SUBJECT_MATCH},
+	{"Header match", NULL, rules_create_header, rules_set_header, rules_get_header, RULE_HEADER_MATCH},
 	{NULL,NULL,NULL,NULL},
 };
 char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
-
 
 STATIC ASM APTR filter_construct(register __a2 APTR pool, register __a1 struct filter *ent)
 {
@@ -76,33 +88,64 @@ STATIC ASM APTR filter_construct(register __a2 APTR pool, register __a1 struct f
 
 STATIC ASM VOID filter_destruct( register __a2 APTR pool, register __a1 struct filter *ent)
 {
-	if (ent)
-	{
-		filter_dispose(ent);
-	}
+	if (ent) filter_dispose(ent);
 }
 
 STATIC ASM VOID filter_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter *ent)
 {
-	if (ent)
-	{
-		*array = ent->name;
-	}
+	if (ent) *array = ent->name;
 }
 
 STATIC ASM VOID rules_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter_rule *rule)
 {
-	if (rule)
-	{
-		*array = filter_get_rule_string(rule);
-	}
+	if (rule) *array = filter_get_rule_string(rule);
 }
+
+STATIC ASM VOID move_objstr(register __a2 Object *list, register __a1 Object *str)
+{
+	char *x;
+	DoMethod(list,MUIM_NList_GetEntry,MUIV_List_GetEntry_Active,&x);
+	set(str,MUIA_Text_Contents,x);
+}
+
+STATIC ASM LONG move_strobj(register __a2 Object *list, register __a1 Object *str)
+{
+	char *x,*s;
+	int i = 0;
+	get(str,MUIA_Text_Contents,&s);
+
+	while (1)
+	{
+		DoMethod(list,MUIM_NList_GetEntry,i,&x);
+		if (!x)
+		{
+			set(list,MUIA_NList_Active,MUIV_NList_Active_Off);
+			break;
+		}
+		else if (!mystricmp(x,s))
+	  {
+			set(list,MUIA_NList_Active,i);
+			break;
+		}
+		i++;
+	}
+	return 1;
+}
+
 
 static Object *rules_wnd;
 static Object *rules_page_listview;
 static Object *rules_page_group;
 static Object *rules_page_space;
 static Object *rules_page_cycle;
+static Object *rules_from_string;
+static Object *rules_subject_string;
+static Object *rules_header_name_string;
+static Object *rules_header_contents_string;
+
+static struct filter_rule *rules_active_rule;
+
+static struct filter *rules_filter;
 
 /**************************************************************************
  Create the from match object
@@ -112,7 +155,7 @@ static int rules_create_from(struct rule *rule)
 	rule->page = HGroup,
 		MUIA_ShowMe, FALSE,
 		Child, MakeLabel("Address"),
-		Child, BetterStringObject,
+		Child, rules_from_string = BetterStringObject,
 			StringFrame,
 			End,
 		End;
@@ -128,7 +171,7 @@ static int rules_create_subject(struct rule *rule)
 	rule->page = HGroup,
 		MUIA_ShowMe, FALSE,
 		Child, MakeLabel("Subject"),
-		Child, BetterStringObject,
+		Child, rules_subject_string = BetterStringObject,
 			StringFrame,
 			End,
 		End;
@@ -145,13 +188,13 @@ static int rules_create_header(struct rule *rule)
 		MUIA_ShowMe, FALSE,
 		Child, HGroup,
 			Child, MakeLabel("Name"),
-			Child, BetterStringObject,
+			Child, rules_header_name_string = BetterStringObject,
 				StringFrame,
 				End,
 			End,
 		Child, HGroup,
 			Child, MakeLabel("Contents"),
-			Child, BetterStringObject,
+			Child, rules_header_contents_string = BetterStringObject,
 				StringFrame,
 				End,
 			End,
@@ -162,10 +205,69 @@ static int rules_create_header(struct rule *rule)
 
 
 /**************************************************************************
+...
+**************************************************************************/
+static void rules_set_from(struct filter_rule *rule)
+{
+	set(rules_from_string, MUIA_String_Contents, rule->u.from.from);
+}
+
+/**************************************************************************
+...
+**************************************************************************/
+static void rules_set_subject(struct filter_rule *rule)
+{
+	set(rules_subject_string, MUIA_String_Contents, rule->u.subject.subject);
+}
+
+/**************************************************************************
+...
+**************************************************************************/
+static void rules_set_header(struct filter_rule *rule)
+{
+	set(rules_header_name_string, MUIA_String_Contents, rule->u.header.name);
+	set(rules_header_contents_string, MUIA_String_Contents, rule->u.header.contents);
+}
+
+
+/**************************************************************************
+...
+**************************************************************************/
+static void rules_get_from(struct filter_rule *rule)
+{
+	if (rule->u.from.from) free(rule->u.from.from);
+	rule->u.from.from = mystrdup((char*)xget(rules_from_string,MUIA_String_Contents));
+}
+
+/**************************************************************************
+...
+**************************************************************************/
+static void rules_get_subject(struct filter_rule *rule)
+{
+	if (rule->u.subject.subject) free(rule->u.subject.subject);
+	rule->u.subject.subject = mystrdup((char*)xget(rules_subject_string,MUIA_String_Contents));
+}
+
+/**************************************************************************
+...
+**************************************************************************/
+static void rules_get_header(struct filter_rule *rule)
+{
+	if (rule->u.header.name) free(rule->u.header.name);
+	rule->u.header.name = mystrdup((char*)xget(rules_header_name_string,MUIA_String_Contents));
+	if (rule->u.header.contents) free(rule->u.header.contents);
+	rule->u.header.contents = mystrdup((char*)xget(rules_header_contents_string,MUIA_String_Contents));
+}
+
+
+/**************************************************************************
  Ok the rule 
 **************************************************************************/
 static void rules_ok(void)
 {
+	if (rules_filter)
+	{
+	}
 	set(rules_wnd, MUIA_Window_Open, FALSE);
 }
 
@@ -192,19 +294,53 @@ static void rules_new(void)
 static void rules_active(void)
 {
 	struct filter_rule *fr;
+	int i,changed = 0;
+
+	if (rules_active_rule)
+	{
+		if (rules[rules_active_rule->type].get_page)
+			rules[rules_active_rule->type].get_page(rules_active_rule);
+	}
+
 	DoMethod(rules_page_listview, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &fr);
+
+	rules_active_rule = fr;
+
 	if (fr)
 	{
-		int i;
 		for (i=0;rules[i].name;i++)
 		{
 			if (rules[i].type == fr->type)
 			{
-				set(rules[i].page,MUIA_ShowMe, TRUE);
+				if (!xget(rules[i].page,MUIA_UserData))
+				{
+					if (!changed)
+					{
+						DoMethod(rules_page_group,MUIM_Group_InitChange);
+						changed = 1;
+					}
+					set(rules[i].page, MUIA_ShowMe, TRUE);
+					set(rules[i].page, MUIA_UserData, 1);
+				}
+				if (rules[i].set_page) rules[i].set_page(fr);
 			} else
 			{
-				set(rules[i].page,MUIA_ShowMe, FALSE);
+				if (xget(rules[i].page,MUIA_UserData))
+				{
+					if (!changed)
+					{
+						DoMethod(rules_page_group,MUIM_Group_InitChange);
+						changed = 1;
+					}
+					set(rules[i].page, MUIA_ShowMe, FALSE);
+					set(rules[i].page, MUIA_UserData, 0);
+				}
 			}
+		}
+
+		if (changed)
+		{
+			DoMethod(rules_page_group,MUIM_Group_ExitChange);
 		}
 	}
 }
@@ -214,11 +350,15 @@ static void rules_active(void)
 **************************************************************************/
 static void init_rules(void)
 {
-	Object *ok_button, *cancel_button, *rule_add_button;
+	Object *ok_button, *cancel_button, *rule_add_button, *folder_list, *move_text, *move_popobject, *move_check;
 	static struct Hook rules_display_hook;
+	static struct Hook move_objstr_hook, move_strobj_hook;
+	struct folder *f;
 	int i;
 
 	init_hook(&rules_display_hook,(HOOKFUNC)rules_display);
+	init_hook(&move_objstr_hook, (HOOKFUNC)move_objstr);
+	init_hook(&move_strobj_hook, (HOOKFUNC)move_strobj);
 
 	for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
 	{
@@ -230,21 +370,42 @@ static void init_rules(void)
 		MUIA_Window_ID, MAKE_ID('R','U','L','S'),
 		MUIA_Window_Title, "SimpleMail - Edit Rule",
 		WindowContents, VGroup,
-			Child, HGroup,
-				Child, VGroup,
-					Child, rules_page_listview = NListviewObject,
-						MUIA_NListview_NList, NListObject,
-							MUIA_NList_DisplayHook, &rules_display_hook,
+			Child, VGroup,
+				Child, HGroup,
+					Child, VGroup,
+						Child, rules_page_listview = NListviewObject,
+							MUIA_NListview_NList, NListObject,
+								MUIA_NList_DisplayHook, &rules_display_hook,
+								End,
+							End,
+						Child, HGroup,
+							Child, rules_page_cycle = MakeCycle(NULL,rule_cycle_array),
+							Child, rule_add_button = MakeButton("Add"),
+							Child, MakeButton("Remove"),
 							End,
 						End,
-					Child, HGroup,
-						Child, rules_page_cycle = MakeCycle(NULL,rule_cycle_array),
-						Child, rule_add_button = MakeButton("Add"),
-						Child, MakeButton("Remove"),
+					Child, rules_page_group = VGroup,
+						Child, rules_page_space = HVSpace,
 						End,
 					End,
-				Child, rules_page_group = VGroup,
-					Child, rules_page_space = HVSpace,
+				Child, VGroup,
+					Child, ColGroup(3),
+						Child, MakeLabel("Move to Folder"),
+						Child, move_check = MakeCheck("Move to Folder",FALSE),
+						Child, move_popobject = PopobjectObject,
+							MUIA_Disabled, TRUE,
+							MUIA_Popstring_Button, PopButton(MUII_PopUp),
+							MUIA_Popstring_String, move_text = TextObject, TextFrame, End,
+							MUIA_Popobject_ObjStrHook, &move_objstr_hook,
+							MUIA_Popobject_StrObjHook, &move_strobj_hook,
+							MUIA_Popobject_Object, NListviewObject,
+								MUIA_NListview_NList, folder_list = NListObject,
+									MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+									MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+									End,
+								End,
+							End,
+						End,
 					End,
 				End,
 			Child, HorizLineObject,
@@ -269,6 +430,16 @@ static void init_rules(void)
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(rule_add_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_new);
 		DoMethod(rules_page_listview, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_active);
+		DoMethod(move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, move_popobject, 2, MUIM_Popstring_Close, 1);
+	}
+
+	/* Count the number of folders */
+	f = folder_first();
+	while (f)
+	{
+		DoMethod(folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
+		f = folder_next(f);
 	}
 }
 
@@ -277,6 +448,19 @@ static void init_rules(void)
 **************************************************************************/
 static void set_rules(struct filter *f)
 {
+	int i;
+	struct filter_rule *fr;
+
+	rules_filter = f;
+	DoMethod(rules_page_listview, MUIM_NList_Clear);
+
+	fr = (struct filter_rule*)list_first(&f->rules_list);
+
+	while (fr)
+	{
+		DoMethod(rules_page_listview, MUIM_NList_InsertSingle, fr, MUIV_NList_Insert_Bottom);
+		fr = (struct filter_rule*)node_next(&fr->node);
+	}
 }
 
 /**************************************************************************
@@ -318,6 +502,31 @@ static void filter_ok(void)
 }
 
 /**************************************************************************
+ New Entry has been activated
+**************************************************************************/
+static void filter_active(void)
+{
+	struct filter *f;
+	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &f);
+	if (f) nnset(filter_name_string,MUIA_String_Contents, f->name);
+}
+
+/**************************************************************************
+ A new name
+**************************************************************************/
+static void filter_name(void)
+{
+	struct filter *f;
+	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &f);
+	if (f)
+	{
+		if (f->name) free(f->name);
+		f->name = mystrdup((char*)xget(filter_name_string, MUIA_String_Contents));
+		DoMethod(filter_list,MUIM_NList_Redraw,MUIV_NList_Redraw_Active);
+	}
+}
+
+/**************************************************************************
  Init the filter window
 **************************************************************************/
 static void init_filter(void)
@@ -336,7 +545,7 @@ static void init_filter(void)
 				Child, VGroup,
 					MUIA_Group_Spacing, 0,
 					Child, filter_listview = NListviewObject,
-						MUIA_NListview_NList, NListObject,
+						MUIA_NListview_NList, filter_list = NListObject,
 							MUIA_NList_ConstructHook, &filter_construct_hook,
 							MUIA_NList_DestructHook, &filter_destruct_hook,
 							MUIA_NList_DisplayHook, &filter_display_hook,
@@ -367,8 +576,11 @@ static void init_filter(void)
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
 		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_listview, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+		DoMethod(filter_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_edit);
 
 		set(filter_name_string,MUIA_String_AttachedList,filter_listview);
+		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_active);
+		DoMethod(filter_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_name);
 	}
 }
 

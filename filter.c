@@ -124,6 +124,6 @@ char *filter_get_rule_string(struct filter_rule *rule)
 **************************************************************************/
 struct filter_action *filter_find_action(struct filter *filter, int num)
 {
-	return (struct filter_rule *)list_find(&filter->action_list,num);
+	return (struct filter_action *)list_find(&filter->action_list,num);
 }
 

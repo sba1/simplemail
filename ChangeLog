@@ -1,1 +1,42 @@
-Not yet written.
+----------------------------------
+SimpleMail Open Source - ChangeLog
+----------------------------------
+
+2003-12-28  Bernd Gollesch <bgollesch@sime.com>
+
+	* ChangeLog: First entry in the ChangeLog (took me 40min :)
+	* account.h: The default signature is now a char *
+	* amiga-mui/composewnd.c: Changed the def_signature handling to work
+	  with the new version of SignatureCycleObject.
+	  Added compose_refresh_signature() to update the SignatureCycle if
+	  the user changed the config.
+	* amiga-mui/configwnd.c: Removed a function and placed it in configwnd_stuff.c
+	  so we can compile without code=far.
+	  Changed the def_signature handling to work with the new version of
+	  SignatureCycleObject.
+	  Added the check for unique SignatureNames because they are used for
+	  configuration in the seperate FolderConfig.
+	  Changed the gadgets of the SignatureRemove requester from "Delete|Cancel"
+	  to "Remove|Cancel" to be consistend with the button.
+	* amiga-mui/configwnd_stuff.(c|h): see configwnd.c
+	* amiga-mui/folderwnd.c: Changed the def_signature handling to work
+	  with the new version of SignatureCycleObject.
+	  Added folder_refresh_signature() to update the SignatureCycle if
+	  the user changed the config.
+	* amiga-mui/signaturecycle.(c|h): Added MUIA_SignatureCycle_Signature
+	  to New()/Set()/Get() an UTF8 String of the SignatureCycle.
+	  Changed the MUIV_SignatureCycle_(Default|NoSignature) to strings.
+	* configuration.c: Save/Load of the configuration now uses strings for
+	  the default signature of an account.
+	* folder.c: Removed not used functions. Changed the def_signature handling
+	  to work with the new version of SignatureCycleObject.
+	* folder.h: Removed not used vars from the folder structure. Changed the
+	  FOLDER_SIGNATURE_(DEFAULT|NO) to strings.
+	  Updated the prototypedefinitions.
+	* indep-include/composewnd.h: Added new prototypefunction.
+	* indep-include/folderwnd.h: Added/Updated new prototypefunction.
+	* simplemail.c: Added new callback-functions for folderwnd/composewnd.
+	  Updated the def_signature handling to work with the new functions.
+	  Removed not used functions. Added callback_refresh_signatures() to
+	  update the SignatureCycle in opened windows.
+	* simplemail.h: Updated the prototypedefinitions.

@@ -354,6 +354,44 @@ int folder_delete_mail(struct folder *from_folder, struct mail *mail)
 	return 0;
 }
 
+/******************************************************************
+ Really delete all mails in the delete folder
+*******************************************************************/
+void folder_delete_deleted(void)
+{
+	int i;
+	struct folder *folder = folder_deleted();
+	char path[256];
+
+	if (!folder) return;
+
+	getcwd(path, sizeof(path));
+	if(chdir(folder->path) == -1) return;
+
+	/* free the sorted mail array */
+	if (folder->sorted_mail_array)
+	{
+		free(folder->sorted_mail_array);
+		folder->sorted_mail_array = NULL;
+	}
+
+	for (i=0;i<folder->num_mails;i++)
+	{
+		remove(folder->mail_array[i]->filename);
+		mail_free(folder->mail_array[i]);
+	}
+
+	folder->num_mails = 0;
+
+	if (folder->mail_array)
+	{
+		free(folder->mail_array);
+		folder->mail_array = NULL;
+	}
+
+	chdir(path);
+}
+
 /* to control the compare functions */
 static int compare_primary_reverse;
 static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);

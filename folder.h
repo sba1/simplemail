@@ -75,6 +75,7 @@ struct folder *folder_sent(void);
 struct folder *folder_deleted(void);
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail);
 int folder_delete_mail(struct folder *from_folder, struct mail *mail);
+void folder_delete_deleted(void);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
 struct mail *folder_next_mail(struct folder *folder, void **handle);

@@ -98,7 +98,7 @@ struct imap_folder_entry
 	int subscribed;
 };
 
-STATIC ASM APTR imap_folders_construct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
+STATIC ASM SAVEDS APTR imap_folders_construct(REG(a2,APTR pool), REG(a1,struct imap_folder_entry *entry))
 {
 	struct imap_folder_entry *new_entry = malloc(sizeof(*entry));
 	if (new_entry)
@@ -109,7 +109,7 @@ STATIC ASM APTR imap_folders_construct(register __a2 APTR pool, register __a1 st
 	return new_entry;
 }
 
-STATIC ASM VOID imap_folders_destruct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
+STATIC ASM SAVEDS VOID imap_folders_destruct(REG(a2,APTR pool), REG(a1,struct imap_folder_entry *entry))
 {
 	if (entry)
 	{
@@ -118,7 +118,7 @@ STATIC ASM VOID imap_folders_destruct(register __a2 APTR pool, register __a1 str
 	}
 }
 
-STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 struct imap_folder_entry *entry)
+STATIC ASM SAVEDS VOID imap_folders_display(REG(a2,char **array), REG(a1,struct imap_folder_entry *entry))
 {
 	if (entry)
 	{

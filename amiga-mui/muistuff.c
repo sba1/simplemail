@@ -20,8 +20,6 @@
 ** muistuff.c
 */
 
-#include <dos.h>
-
 #include <utility/hooks.h>
 #include <intuition/classusr.h> /* Object * */
 #include <libraries/mui.h>
@@ -120,10 +118,9 @@ VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help
 
 struct Hook hook_standard;
 
-STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)
+STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1, ULONG * funcptr))
 {
 	void (*func) (ULONG *) = (void (*)(ULONG *)) (*funcptr);
-	putreg(REG_A4,(long)h->h_Data);
 
 	if (func)
 		func(funcptr + 1);
@@ -133,41 +130,38 @@ STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 U
 void init_hook_standard(void)
 {
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
-	hook_standard.h_Data = (void*)getreg(REG_A4);
 }
 
 /* the hook function, it loads the a4 register and call the subentry */
-STATIC ASM void myhook_func(register __a0 struct MyHook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+STATIC ASM SAVEDS VOID myhook_func(REG(a0,struct MyHook *h), REG(a2, ULONG obj), REG(a1,ULONG msg))
 {
-	__asm int (*func) (register __a0 struct MyHook *, register __a1 ULONG, register __a2) =
-		(__asm int (*) (register __a0 struct MyHook *, register __a1 ULONG, register __a2))h->hook.h_SubEntry;
+	ASM VOID (*func) (REG(a0,struct MyHook *), REG(a2, ULONG), REG(a1, ULONG)) =
+		(ASM VOID (*) (REG(a0,struct MyHook *), REG(a2, ULONG), REG(a1, ULONG)))h->hook.h_SubEntry;
 
 	if (func)
 	{
-		putreg(REG_A4,(long)h->rega4);
-		func(h,msg,obj);
+		func(h,obj,msg);
 	}
 }
 
-/* Initializes a hook */
+/* initializes a hook (in the past, the a4 register was stored within the myhook, this has been replaced now
+ * so that we would need only one type of hook now */
 void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
 {
 	h->hook.h_Entry = (HOOKFUNC)myhook_func;
 	h->hook.h_SubEntry = func;
 	h->hook.h_Data = data;
-	h->rega4 = getreg(REG_A4);
 }
 
-/* the hook function, it loads the a4 register and call the subentry */
-STATIC ASM void hook_func(register __a0 struct Hook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+/* the hook function */
+STATIC ASM SAVEDS VOID hook_func(register __a0 struct Hook *h, register __a1 ULONG msg, register __a2 ULONG obj)
 {
-	__asm int (*func) (register __a0 struct Hook *, register __a1 ULONG, register __a2) =
-		(__asm int (*) (register __a0 struct Hook *, register __a1 ULONG, register __a2))h->h_SubEntry;
+	ASM VOID (*func) (REG(a0, struct Hook *), REG(a2, ULONG), REG(a1, ULONG)) =
+		(ASM  VOID (*) (REG(a0,struct Hook *), REG(a2, ULONG), REG(a1, ULONG)))h->h_SubEntry;
 
 	if (func)
 	{
-		putreg(REG_A4,(long)h->h_Data);
-		func(h,msg,obj);
+		func(h,obj,msg);
 	}
 }
 
@@ -175,6 +169,5 @@ void init_hook(struct Hook *h, unsigned long (*func)())
 {
 	h->h_Entry = (HOOKFUNC)hook_func;
 	h->h_SubEntry = func;
-	h->h_Data = (void*)getreg(REG_A4);
 }
 

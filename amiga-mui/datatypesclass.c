@@ -20,7 +20,6 @@
 ** datatypesclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -418,8 +417,6 @@ STATIC ULONG DataTypes_Print(struct IClass *cl, Object *obj, Msg msg)
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 	if (data->dt_obj && !data->pio)
 	{
-		struct dtPrint dtp;
-
     if ((data->pio = CreatePrtReq()))
     {
 			if (OpenDevice("printer.device", 0 /* should be user selectable */, (struct IORequest *)data->pio, 0) == 0)
@@ -477,9 +474,8 @@ STATIC ULONG DataTypes_HorizUpdate(struct IClass *cl, Object *obj)
 	return 0;
 }
 
-STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG,DataTypes_Dispatcher,cl,obj,msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return DataTypes_New(cl,obj,(struct opSet*)msg);
@@ -507,10 +503,7 @@ struct MUI_CustomClass *CL_DataTypes;
 int create_datatypes_class(void)
 {
 	if ((CL_DataTypes = MUI_CreateCustomClass(NULL,MUIC_Area,NULL,sizeof(struct DataTypes_Data),DataTypes_Dispatcher)))
-	{
-		CL_DataTypes->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

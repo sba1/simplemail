@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <dos.h>
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
 #include <mui/NListtree_Mcc.h>
@@ -80,14 +79,14 @@ struct FolderTreelist_Data
 	char name_buf[300];
 };
 
-STATIC ASM void folder_close(register __a1 struct MUIP_NListtree_CloseMessage *msg)
+STATIC ASM SAVEDS VOID folder_close(REG(a1,struct MUIP_NListtree_CloseMessage *msg))
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
 		folder->closed = 1;
 }
 
-STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID folder_display(REG(a1,struct MUIP_NListtree_DisplayMessage *msg), REG(a2, Object *obj))
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(CL_FolderTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
@@ -164,7 +163,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 	}
 }
 
-STATIC ASM void folder_open(register __a1 struct MUIP_NListtree_OpenMessage *msg)
+STATIC ASM SAVEDS VOID folder_open(REG(a1,struct MUIP_NListtree_OpenMessage *msg))
 {
 	struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 	if (folder && ((ULONG)folder != MUIV_FolderTreelist_UserData_Root))
@@ -528,10 +527,9 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
-STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, FolderTreelist_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
-	switch(msg->MethodID)
+	switch (msg->MethodID)
 	{
 		case	OM_NEW:				return FolderTreelist_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE:		return FolderTreelist_Dispose(cl,obj,msg);
@@ -556,10 +554,7 @@ struct MUI_CustomClass *CL_FolderTreelist;
 int create_foldertreelist_class(void)
 {
 	if ((CL_FolderTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct FolderTreelist_Data),FolderTreelist_Dispatcher)))
-	{
-		CL_FolderTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

@@ -106,7 +106,7 @@ static long openmo(char *dir, char *loc)
 
 								if (!strcmp("pl",loc))
 								{
-									int i,j;
+									int i;
 
 									/* convert the charset...if OS4 is installed this is will be not necessary */
 

@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <dos.h>
 #include <intuition/intuitionbase.h>
 #include <libraries/mui.h>
 #include <mui/betterstring_mcc.h>
@@ -213,13 +212,11 @@ STATIC ULONG FilterRule_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 STATIC ULONG FilterRule_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
-	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
 STATIC ULONG FilterRule_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	struct FilterRule_Data *data = (struct FilterRule_Data*)INST_DATA(cl,obj);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -258,9 +255,8 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	}
 }
 
-STATIC ASM ULONG FilterRule_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return FilterRule_New(cl,obj,(struct opSet*)msg);
@@ -278,8 +274,6 @@ int create_filterrule_class(void)
 	if ((CL_FilterRule = MUI_CreateCustomClass(NULL,MUIC_Group,NULL,sizeof(struct FilterRule_Data),FilterRule_Dispatcher)))
 	{
 		int i;
-
-		CL_FilterRule->mcc_Class->cl_UserData = getreg(REG_A4);
 
 		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
 			rule_cycle_array[i] = _(rules[i].name);

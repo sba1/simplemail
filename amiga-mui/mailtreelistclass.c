@@ -23,7 +23,6 @@
 /* If mail list should be really a tree define the next */
 #undef MAILLIST_IS_TREE
 
-#include <dos.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -179,7 +178,7 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 
 
 #ifdef MAILLIST_IS_TREE
-STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID mails_display(REG(a2,Object *obj), REG(a1,struct MUIP_NListtree_DisplayMessage *msg))
 {
 	char **array = msg->Array;
 	char **preparse = msg->Preparse;
@@ -190,7 +189,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		mail = (struct mail*)msg->TreeNode->tn_User;
 	} else mail = NULL;
 #else
-STATIC ASM VOID mails_display(register __a1 struct NList_DisplayMessage *msg, register __a2 Object *obj)
+STATIC ASM SAVEDS VOID mails_display(REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
@@ -820,9 +819,11 @@ static void main_insert_mail_threaded(Object *obj, struct mail *mail, void *pare
 
 STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct MUIP_MailTree_SetFolderMails *msg)
 {
-	struct folder *folder = msg->f;
-	void *handle = NULL;
+#ifdef MAILTREE_IS_TREE
 	struct mail *m;
+	void *handle = NULL;
+#endif
+	struct folder *folder = msg->f;
 	int primary_sort, threaded;
 
 	if (!folder)
@@ -1234,9 +1235,8 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 	return 0;
 }
 
-STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
@@ -1284,10 +1284,7 @@ struct MUI_CustomClass *CL_MailTreelist;
 int create_mailtreelist_class(void)
 {
 	if ((CL_MailTreelist = MUI_CreateCustomClass(NULL, MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
-	{
-		CL_MailTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

@@ -20,7 +20,6 @@
 ** iconclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -75,7 +74,7 @@ STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct Icon_Data *data;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
-//					MUIA_Draggable, WorkbenchBase->lib_Version >= 45,
+/*					MUIA_Draggable, WorkbenchBase->lib_Version >= 45,*/
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -167,7 +166,6 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	char *def = NULL;
-	char result[40];
 
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
@@ -377,7 +375,7 @@ struct Selection_Msg
 	int finish;
 };
 
-STATIC __asm ULONG selection_func(register __a0 struct Hook *h, register __a1 struct IconSelectMsg *ism)
+STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a1,struct IconSelectMsg *ism))
 {
 	struct Selection_Msg *msg = (struct Selection_Msg *)h->h_Data;
 	struct Window *wnd = ism->ism_ParentWindow;
@@ -487,9 +485,8 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_De
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ASM ULONG Icon_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return Icon_New(cl,obj,(struct opSet*)msg);
@@ -511,10 +508,7 @@ struct MUI_CustomClass *CL_Icon;
 int create_icon_class(void)
 {
 	if ((CL_Icon = MUI_CreateCustomClass(NULL,MUIC_Area,NULL,sizeof(struct Icon_Data),Icon_Dispatcher)))
-	{
-		CL_Icon->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <dos.h>
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
 
@@ -34,6 +33,7 @@
 #include <proto/intuition.h>
 
 #include "compiler.h"
+#include "muistuff.h"
 
 struct FilterList_Data
 {
@@ -54,7 +54,6 @@ STATIC ULONG FilterList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 STATIC ULONG FilterList_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
-	struct FilterList_Data *data = (struct FilterList_Data*)INST_DATA(cl,obj);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -63,9 +62,8 @@ STATIC ULONG FilterList_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragD
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ASM ULONG FilterList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return FilterList_New(cl,obj,(struct opSet*)msg);
@@ -80,10 +78,7 @@ struct MUI_CustomClass *CL_FilterList;
 int create_filterlist_class(void)
 {
 	if ((CL_FilterList = MUI_CreateCustomClass(NULL,MUIC_NList,NULL,sizeof(struct FilterList_Data),FilterList_Dispatcher)))
-	{
-		CL_FilterList->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

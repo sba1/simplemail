@@ -1,5 +1,5 @@
 Standard=CP1252
-Name=Windows
+Name=CP1252
 Characterization=_("West European (Windows)")
 ReadOnly=1
 #

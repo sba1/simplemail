@@ -120,6 +120,7 @@ int folder_number_of_mails(struct folder *folder);
 int folder_number_of_unread_mails(struct folder *folder);
 int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
+void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);

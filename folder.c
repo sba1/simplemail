@@ -874,6 +874,33 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 }
 
 /******************************************************************
+ Sets a new status of a mail which is inside the given folder.
+ It also renames the file, to match the
+ status. (on the Amiga this will be done by setting a new comment later)
+ Also note that this function makes no check if the status change makes
+ sense.
+*******************************************************************/
+void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new)
+{
+	int i;
+	for (i=0;i<folder->num_mails;i++)
+	{
+		if (folder->mail_array[i]==mail)
+		{
+			if (mail->flags == flags_new) return;
+			mail->flags = flags_new;
+
+			/* Delete the indexfile if not already done */
+			if (folder->index_uptodate)
+			{
+				folder_delete_indexfile(folder);
+				folder->index_uptodate = 0;
+			}
+		}
+	}
+}
+
+/******************************************************************
  Finds a mail with a given filename in the given folder
 *******************************************************************/
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)

@@ -39,6 +39,8 @@ Sign,75,50,98,73
 Undo,75,75,98,98
 User,75,100,98,123
 ;SearchMail 75,125,98,148
+SpamCheck,75,150,98,173
+SpamIsolate,75,175,98,198
 
 folder_deleted,100,0,115,12
 folder_group,100,25,115,37

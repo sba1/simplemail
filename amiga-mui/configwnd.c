@@ -58,6 +58,7 @@
 #include "configwnd.h"
 #include "muistuff.h"
 #include "multistringclass.h"
+#include "picturebuttonclass.h"
 #include "utf8stringclass.h"
 
 static struct MUI_CustomClass *CL_Sizes;
@@ -1574,18 +1575,29 @@ static void init_config(void)
 
 	if (config_wnd)
 	{
-		static char *texts[GROUPS_MAX];
+		static char texts[GROUPS_MAX][200];
+		int i;
 
-		texts[GROUPS_USER] = _("General");
-		texts[GROUPS_ACCOUNT] = _("Accounts");
-		texts[GROUPS_RECEIVE] = _("Receive mail");
-		texts[GROUPS_WRITE] = _("Write");
-		texts[GROUPS_READMISC] = _("Reading");
-		texts[GROUPS_READ] = _("Reading plain");
-		texts[GROUPS_READHTML] = _("Reading HTML");
-		texts[GROUPS_PHRASE] = _("Phrases");
-		texts[GROUPS_SIGNATURE] = _("Signatures");
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_main", End, 1, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_account", End, 2, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_receive", End, 3, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_write", End, 4, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_read", End, 5, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readplain", End, 6, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readhtml", End, 7, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_signature", End, 8, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End, 9, 0);
 
+
+		sprintf(texts[GROUPS_USER],     "\033o[1] %s", _("General"));
+		sprintf(texts[GROUPS_ACCOUNT],  "\033o[2] %s", _("Accounts"));
+		sprintf(texts[GROUPS_RECEIVE],  "\033o[3] %s", _("Receive mail"));
+		sprintf(texts[GROUPS_WRITE],    "\033o[4] %s", _("Write"));
+		sprintf(texts[GROUPS_READMISC], "\033o[5] %s", _("Reading"));
+		sprintf(texts[GROUPS_READ],     "\033o[6] %s", _("Reading plain"));
+		sprintf(texts[GROUPS_READHTML], "\033o[7] %s", _("Reading HTML"));
+		sprintf(texts[GROUPS_PHRASE],   "\033o[8] %s", _("Phrases"));
+		sprintf(texts[GROUPS_SIGNATURE],"\033o[9] %s", _("Signatures"));
 
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
@@ -1602,7 +1614,11 @@ static void init_config(void)
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_save);
 		DoMethod(config_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, config_selected);
 
-		DoMethod(config_list, MUIM_NList_Insert, texts, GROUPS_MAX, MUIV_NList_Insert_Bottom);
+		for (i=0;i<GROUPS_MAX;i++)
+		{
+			DoMethod(config_list, MUIM_NList_InsertSingle, texts[i], MUIV_NList_Insert_Bottom);
+		}
+
 		set(config_list,MUIA_NList_Active,0);
 
 		{

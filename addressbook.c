@@ -154,8 +154,8 @@ void xml_end_tag(void *data, const char *el)
 	if (private_tag) asp = &entry->u.person.priv;
 	else if (work_tag) asp = &entry->u.person.work;
 
-
 	/* Remove ending spaces */
+	if (data_buf)
 	{
 		int len = strlen(data_buf);
 		while (len && isspace((unsigned char)data_buf[len-1]))

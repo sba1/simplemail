@@ -56,6 +56,7 @@
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
+#include "messageviewclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
@@ -64,6 +65,7 @@ static Object *win_main;
 static Object *main_menu;
 static Object *main_settings_folder_menuitem;
 static Object *main_settings_addressbook_menuitem;
+static Object *main_settings_messageview_menuitem;
 static Object *main_scripts_menu;
 static Object *main_scripts_execute_menuitem;
 static Object *main_group;
@@ -89,6 +91,7 @@ static Object *switch2_button; /* switch button for the two views */
 static Object *mail_tree;
 static Object *mail_tree_group;
 static Object *mail_listview;
+static Object *mail_messageview;
 static Object *folder_listview_group;
 static Object *folder_listview;
 static Object *folder_tree;
@@ -102,6 +105,8 @@ static Object *address_listview;
 static Object *address_tree;
 static Object *left_listview_group;
 static Object *left_listview_balance;
+static Object *right_group;
+static Object *right_balance;
 static Object *project_checksingleaccount_menuitem;
 static Object *status_text;
 
@@ -409,13 +414,15 @@ static void popup_selected(void)
 *******************************************************************/
 static void settings_show_changed(void)
 {
-	int folder, addressbook;
+	int folder, addressbook, messageview;
 
 	DoMethod(main_group, MUIM_Group_InitChange);
 	DoMethod(mail_tree_group, MUIM_Group_InitChange);
+	DoMethod(right_group, MUIM_Group_InitChange);
 
 	folder = xget(main_settings_folder_menuitem,MUIA_Menuitem_Checked);
 	addressbook = xget(main_settings_addressbook_menuitem,MUIA_Menuitem_Checked);
+	messageview = xget(main_settings_messageview_menuitem,MUIA_Menuitem_Checked);
 
 	set(folder_group, MUIA_ShowMe, !folder);
 	set(folder_listview_group, MUIA_ShowMe, folder);
@@ -423,7 +430,10 @@ static void settings_show_changed(void)
 	set(folder_balance, MUIA_ShowMe, folder || addressbook);
 	set(left_listview_group, MUIA_ShowMe, folder || addressbook);
 	set(left_listview_balance, MUIA_ShowMe, folder && addressbook);
+	set(right_balance, MUIA_ShowMe, messageview);
+	set(mail_messageview, MUIA_ShowMe, messageview);
 
+	DoMethod(right_group, MUIM_Group_ExitChange);
 	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
 	DoMethod(main_group, MUIM_Group_ExitChange);
 }
@@ -517,6 +527,7 @@ int main_window_init(void)
 		MENU_SETTINGS,
 		MENU_SETTINGS_SHOW_FOLDERS,
 		MENU_SETTINGS_SHOW_ADDRESSBOOK,
+		MENU_SETTINGS_SHOW_SELECTED_MESSAGE,
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
 		MENU_SETTINGS_MUI,
@@ -580,6 +591,7 @@ int main_window_init(void)
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS},
 		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
 		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_ITEM, N_("Show selected message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
@@ -706,14 +718,18 @@ int main_window_init(void)
 						End,
 					End,
 				Child, folder_balance = BalanceObject, End,
-				Child, mail_listview = NListviewObject,
-					MUIA_CycleChain,1,
-					MUIA_NListview_NList, mail_tree = MailTreelistObject,
-						MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','M','T'),
+				Child, right_group = VGroup,
+					Child, mail_listview = NListviewObject,
+						MUIA_CycleChain,1,
+						MUIA_NListview_NList, mail_tree = MailTreelistObject,
+							MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4,
+							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+							MUIA_ObjectID, MAKE_ID('M','W','M','T'),
+							End,
 						End,
+					Child, right_balance = BalanceObject, End,
+					Child, mail_messageview = MessageViewObject, MUIA_CycleChain, 1, End,
 					End,
 				End,
 			Child, status_text = TextObject,
@@ -756,11 +772,13 @@ int main_window_init(void)
 
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
+		main_settings_messageview_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_SELECTED_MESSAGE);
 		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
 		main_scripts_execute_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS_EXECUTESCRIPT);
 
 		set(main_settings_folder_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','F'));
 		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
+		set(main_settings_messageview_menuitem,MUIA_ObjectID,MAKE_ID('M','N','M','V'));
 
 		settings_show_changed();
 
@@ -808,6 +826,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_SELECTED_MESSAGE, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 3, MUIM_CallHook, &hook_standard, main_save_environment);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
@@ -838,7 +857,8 @@ int main_window_init(void)
 
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_active_mail);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_mail_within_main_selected);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_active_mail);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick2, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click2);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
@@ -1065,7 +1085,7 @@ void main_set_active_mail(struct mail *m)
 *******************************************************************/
 struct mail *main_get_active_mail(void)
 {
-	return (struct mail*)xget(mail_tree, MUIA_MailTree_Active);
+	return (struct mail*)xget(mail_tree, MUIA_MailTreelist_Active);
 }
 
 /******************************************************************
@@ -1161,13 +1181,9 @@ void main_build_accounts(void)
 *******************************************************************/
 void main_build_scripts(void)
 {
-//	Object *entry;
-
 	DoMethod(main_scripts_menu, OM_REMMEMBER, main_scripts_execute_menuitem);
 	DisposeAllFamilyChilds(main_scripts_menu);
 	DoMethod(main_scripts_menu, OM_ADDMEMBER, main_scripts_execute_menuitem);
-
-//	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 }
 
 /******************************************************************
@@ -1225,4 +1241,12 @@ void main_set_status_text(char *txt)
 {
 	/* TODO: Convert to host charset */
 	set(status_text, MUIA_Text_Contents, txt);
+}
+
+/******************************************************************
+ Displays the given mail within the message view
+*******************************************************************/
+void main_display_active_mail(void)
+{
+	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, main_get_active_mail(), main_get_folder_drawer());
 }

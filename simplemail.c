@@ -741,6 +741,13 @@ void callback_move_selected_mails(void)
 	app_unbusy();
 }
 
+/* a new mail within the main window has been selected */
+void callback_mail_within_main_selected(void)
+{
+	/* TODO: This should issue a short timer, before the message is displayed */
+	main_display_active_mail();
+}
+
 /* Process the current selected folder and mark all mails which are identified as spam */
 void callback_check_selected_folder_for_spam(void)
 {

@@ -140,6 +140,10 @@ void init_config(void)
 
   user.config.spam_mark_moved = 1;
   user.config.spam_addrbook_is_white = 1;
+
+	/* defaults for Hidden options */
+	user.config.set_all_stati = 0;
+	user.config.min_classified_mails = 500;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -263,6 +267,11 @@ int load_config(void)
 							user.config.spam_white_emails = array_add_string(user.config.spam_white_emails,result);
 						if ((result = get_config_item(buf,"Spam.BlackAddress")))
 							user.config.spam_black_emails = array_add_string(user.config.spam_black_emails,result);
+
+						if ((result = get_config_item(buf,"Hidden.SetAllStati")))
+							user.config.set_all_stati = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.MinClassifiedMails")))
+							user.config.min_classified_mails = atoi(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -641,6 +650,16 @@ void save_config(void)
 				{
 					fprintf(fh,"Spam.BlackAddress=%s\n",user.config.spam_black_emails[i]);
 				}
+			}
+
+			/* hidden options only get written out, if they where not the default */
+			if (user.config.set_all_stati)
+			{
+				fprintf(fh,"Hidden.SetAllStati=Y\n");
+			}
+			if (user.config.min_classified_mails != 500)
+			{
+				fprintf(fh,"Hidden.MinClassifiedMails=%d\n",user.config.min_classified_mails);
 			}
 
 			fclose(fh);

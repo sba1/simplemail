@@ -39,6 +39,7 @@
 
 #include "amigasupport.h"
 #include "compiler.h"
+#include "datatypescache.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
@@ -113,50 +114,18 @@ STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
 	
 	if (!DoSuperMethodA(cl,obj,msg))
-	return(FALSE);
+		return(FALSE);
 	
 	if (data->name)
 	{
-		/* tell DOS not to bother us with requesters */
-		struct Process *myproc = (struct Process *)FindTask(NULL);
-		APTR oldwindowptr = myproc->pr_WindowPtr;
-		myproc->pr_WindowPtr = (APTR)-1;
-	
-		/* create the datatypes object */
-		data->dto = NewDTObject(data->name,
-			DTA_GroupID          , GID_PICTURE,
-			OBP_Precision        , PRECISION_EXACT,
-			PDTA_Screen          , _screen(obj),
-			PDTA_FreeSourceBitMap, TRUE,
-			PDTA_DestMode        , PMODE_V43,
-			PDTA_UseFriendBitMap , TRUE,
-			TAG_DONE);
-	
-		myproc->pr_WindowPtr = oldwindowptr;
-	
-		/* do all the setup/layout stuff that's necessary to get a bitmap from the dto    */
-		/* note that when using V43 datatypes, this might not be a real "struct BitMap *" */
-	
-		if (data->dto)
+		if (data->dto = dt_load_picture(data->name, _screen(obj)))
 		{
-			struct FrameInfo fri = {0};
-	
-			DoMethod(data->dto,DTM_FRAMEBOX,NULL,&fri,&fri,sizeof(struct FrameInfo),0);
-	
-			if (fri.fri_Dimensions.Depth>0)
+			GetDTAttrs(data->dto,PDTA_BitMapHeader,&data->bmhd,TAG_DONE);
+			if (data->bmhd)
 			{
-				if (DoMethod(data->dto,DTM_PROCLAYOUT,NULL,1))
-				{
-					GetDTAttrs(data->dto,PDTA_BitMapHeader,&data->bmhd,TAG_DONE);
-	
-					if (data->bmhd)
-					{
-						GetDTAttrs(data->dto,PDTA_DestBitMap,&data->bitmap,TAG_DONE);
-	
-						if (!data->bitmap)
-							GetDTAttrs(data->dto,PDTA_BitMap,&data->bitmap,TAG_DONE);
-					}
-				}
+				GetDTAttrs(data->dto,PDTA_DestBitMap,&data->bitmap,TAG_DONE);
+				if (!data->bitmap)
+					GetDTAttrs(data->dto,PDTA_BitMap,&data->bitmap,TAG_DONE);
 			}
 		}
 	}
@@ -171,7 +140,7 @@ STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
  
 	if (data->dto)
 	{
-		DisposeDTObject(data->dto);
+		dt_dispose_object(data->dto);
 		data->dto = NULL;
 	}
  

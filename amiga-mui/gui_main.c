@@ -40,6 +40,7 @@
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
+#include "datatypescache.h"
 #include "datatypesclass.h"
 #include "foldertreelistclass.h"
 #include "iconclass.h"
@@ -177,6 +178,8 @@ int gui_main(void)
 {
 	int rc;
 	rc = 0;
+
+	dt_init();
 	
 	if(all_init())
 	{
@@ -191,6 +194,8 @@ int gui_main(void)
 	}
 
 	all_del();
+
+	dt_cleanup();
 	
 	return rc;
 }

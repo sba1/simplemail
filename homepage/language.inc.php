@@ -85,6 +85,8 @@ $LinksIntroText["en"]="Some useful links concerning SimpleMail";
 $LinksIntroText["de"]="Einige nützliche Links für SimpleMail";
 $LinksMCCText["en"]="Some needed MUI Custom Classes (MCC)";
 $LinksMCCText["de"]="MUI Custom Classes (MCC), die von SimpleMail benötigt werden";
+$LinksOptionalMCCText["en"]="Some optional used MUI Custom Classes (MCC)";
+$LinksOptionalMCCText["de"]="MUI Custom Classes (MCC), die von SimpleMail verwendet werden, falls sie installiert sind.";
 ?>
 
 

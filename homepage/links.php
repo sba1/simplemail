@@ -21,6 +21,13 @@
 </UL>
 <br>
 
+<?php echo get_string($LinksOptionalMCCText); ?>
+
+<UL>
+	<LI><A href="http://alfie.altervista.org/">TheBar MCC from Alfonso Ranieri.</A></LI>
+</UL>
+<br>
+
 Contributions by our users:
 <ul>
 	<li>

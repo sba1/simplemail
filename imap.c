@@ -56,6 +56,12 @@ struct name_node
 	char *name;
 };
 
+struct remote_mail
+{
+	unsigned int uid;
+	unsigned int size;
+};
+
 /**************************************************************************
  Free's the given name list
 **************************************************************************/
@@ -171,6 +177,132 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 
 	thread_call_parent_function_async(status_set_status,1,N_("Login failed!"));
 	return 0;
+}
+
+/**************************************************************************
+ Returns wheather succesful.
+ The given path stays in selected/examine state
+**************************************************************************/
+static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
+{
+	/* get number of remote mails */
+	char *line;
+	char tag[20];
+	char send[200];
+	char buf[100];
+	char status_buf[200];
+	int num_of_remote_mails = 0;
+	int success = 0;
+	struct remote_mail *remote_mail_array = NULL;
+
+	sprintf(status_buf,_("Examining folder %s"),path);
+	thread_call_parent_function_sync(status_set_status,1,status_buf);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s %s %s\r\n",tag,writemode?"SELECT":"EXAMINE",path);
+	tcp_write(conn,send,strlen(send));
+	tcp_flush(conn);
+
+	while ((line = tcp_readln(conn)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			char first[200];
+			char second[200];
+
+			line = imap_get_result(line,first,sizeof(first));
+			line = imap_get_result(line,second,sizeof(second));
+
+			if (!mystricmp("EXISTS",second))
+			{
+				num_of_remote_mails = atoi(first);
+			}
+		}
+	}
+
+	if (success)
+	{
+		sprintf(status_buf,_("Identified %d mails in %s"),num_of_remote_mails,path);
+		thread_call_parent_function_sync(status_set_status,1,status_buf);
+
+		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
+		{
+			sprintf(tag,"%04x",val++);
+			sprintf(send,"%s FETCH %d:%d (UID RFC822.SIZE)\r\n",tag,1,num_of_remote_mails);
+			tcp_write(conn,send,strlen(send));
+			tcp_flush(conn);
+			
+			success = 0;
+	
+			while ((line = tcp_readln(conn)))
+			{
+				line = imap_get_result(line,buf,sizeof(buf));
+				if (!mystricmp(buf,tag))
+				{
+					line = imap_get_result(line,buf,sizeof(buf));
+					if (!mystricmp(buf,"OK")) success = 1;
+					break;
+				} else
+				{
+					/* untagged */
+					unsigned int msgno;
+					unsigned int uid = 0;
+					unsigned int size = 0;
+					char msgno_buf[100];
+					char cmd_buf[100];
+					char stuff_buf[100];
+					char *temp;
+					int i;
+	
+					line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+					line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
+					line = imap_get_result(line,stuff_buf,sizeof(stuff_buf));
+
+					msgno = (unsigned int)atoi(msgno_buf);
+					temp = stuff_buf;
+
+					for (i=0;i<2;i++)
+					{
+						temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+						if (!mystricmp(cmd_buf,"UID"))
+						{
+							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+							uid = atoi(cmd_buf);
+						}
+						else if (!mystricmp(cmd_buf,"RFC822.SIZE"))
+						{
+							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+							size = atoi(cmd_buf);
+						}
+					}
+
+					if (msgno <= num_of_remote_mails && msgno > 0)
+					{
+						remote_mail_array[msgno-1].uid = uid;
+						remote_mail_array[msgno-1].size = size;
+					}
+				}
+			}
+		}
+	} else thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+	if (!success)
+	{
+		free(remote_mail_array);
+	} else
+	{
+		*remote_mail_array_ptr = remote_mail_array;
+		*num_ptr = num_of_remote_mails;
+	}
+
+	return success;
 }
 
 /**************************************************************************
@@ -298,234 +430,202 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			char buf[100];
 			char status_buf[200];
 			int num_of_remote_mails = 0;
+			struct remote_mail *remote_mail_array = NULL;
 
-			sprintf(status_buf,_("Examining folder %s"),imap_path);
-			thread_call_parent_function_sync(status_set_status,1,status_buf);
-
-			sprintf(tag,"%04x",val++);
-			sprintf(send,"%s EXAMINE %s\r\n",tag,folder->imap_path);
-			tcp_write(conn,send,strlen(send));
-			tcp_flush(conn);
-
-			while ((line = tcp_readln(conn)))
+			if (num_of_todel_local_mails)
 			{
-				line = imap_get_result(line,buf,sizeof(buf));
-				if (!mystricmp(buf,tag))
+				if (imap_get_remote_mails(conn, folder->imap_path, 1, &remote_mail_array, &num_of_remote_mails))
 				{
-					line = imap_get_result(line,buf,sizeof(buf));
-					if (!mystricmp(buf,"OK"))
-						success = 1;
-					break;
-				} else
-				{
-					/* untagged */
-					char first[200];
-					char second[200];
-
-					line = imap_get_result(line,first,sizeof(first));
-					line = imap_get_result(line,second,sizeof(second));
-
-					if (!mystricmp("EXISTS",second))
+					int i,j;
+					for (i = 0 ; i < num_of_local_mails; i++)
 					{
-						num_of_remote_mails = atoi(first);
+						if (mail_is_marked_as_deleted(folder->mail_array[i]))
+						{
+							for (j = 0; j < num_of_remote_mails; j++)
+							{
+								if (local_mail_array[i].uid == remote_mail_array[j].uid)
+								{
+									sprintf(tag,"%04x",val++);
+									sprintf(send,"%s STORE %d +FLAGS.SILENT (\\Deleted)\r\n",tag,j+1);
+									tcp_write(conn,send,strlen(send));
+									tcp_flush(conn);
+
+									success = 0;
+									while ((line = tcp_readln(conn)))
+									{
+										line = imap_get_result(line,buf,sizeof(buf));
+										if (!mystricmp(buf,tag))
+										{
+											line = imap_get_result(line,buf,sizeof(buf));
+											if (!mystricmp(buf,"OK"))
+												success = 1;
+											break;
+										}
+									}
+									if (!success) break;
+								}
+							}
+						}
 					}
+
+					if (success)
+					{
+						sprintf(tag,"%04x",val++);
+						sprintf(send,"%s EXPUNGE\r\n",tag);
+						tcp_write(conn,send,strlen(send));
+						tcp_flush(conn);
+
+						success = 0;
+						while ((line = tcp_readln(conn)))
+						{
+							line = imap_get_result(line,buf,sizeof(buf));
+							if (!mystricmp(buf,tag))
+							{
+								line = imap_get_result(line,buf,sizeof(buf));
+								if (!mystricmp(buf,"OK"))
+									success = 1;
+								break;
+							}
+						}
+					}
+					free(remote_mail_array);
+					remote_mail_array = NULL;
 				}
 			}
 
-			if (success)
+			if (imap_get_remote_mails(conn, folder->imap_path, 0, &remote_mail_array, &num_of_remote_mails))
 			{
-				struct {
-					unsigned int uid;
-					unsigned int size;
-				} *remote_mail_array;
+				int i,j;
+				int msgtodl;
+				unsigned int max_todl_bytes = 0;
+				unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
+				unsigned int todl_bytes = 0;
 
-				sprintf(status_buf,_("Identified %d mails in %s"),num_of_remote_mails,imap_path);
-				thread_call_parent_function_sync(status_set_status,1,status_buf);
-
-				if ((remote_mail_array = malloc(sizeof(*remote_mail_array)*num_of_remote_mails)))
+				/* delete mails which are not on server but localy */
+				for (i = 0 ; i < num_of_local_mails; i++)
 				{
+					unsigned int local_uid = local_mail_array[i].uid;
+					for (j = 0 ; j < num_of_remote_mails; j++)
+					{
+						if (local_uid == remote_mail_array[j].uid)
+						{
+							local_uid = 0;
+							break;
+						}
+					}
+					if (local_uid)
+					{
+						thread_call_parent_function_sync(callback_delete_mail_by_uid,3,server->name,imap_path,local_uid);
+					}
+				}
+
+				for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
+				{
+					/* check if the mail already exists */
+					int does_exist = 0;
+					for (i=0; i < num_of_local_mails;i++)
+					{
+						if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
+							does_exist = 1;
+					}
+					if (does_exist) continue;
+
+					max_todl_bytes += remote_mail_array[msgtodl-1].size;
+				}
+
+				thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_todl_bytes);
+
+				if (!num_of_remote_mails) success = 1;
+
+				for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
+				{
+					/* check if the mail already exists */
+					int does_exist = 0;
+					for (i=0; i < num_of_local_mails;i++)
+					{
+						if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
+							does_exist = 1;
+					}
+					if (does_exist)
+					{
+						success = 1;
+						continue;
+					}
+
+					accu_todl_bytes += remote_mail_array[msgtodl-1].size;
+
+					sprintf(status_buf,_("Fetching mail %d from server"),msgtodl);
+					thread_call_parent_function_sync(status_set_status,1,status_buf);
+
 					sprintf(tag,"%04x",val++);
-					sprintf(send,"%s FETCH %d:%d (UID RFC822.SIZE)\r\n",tag,1,num_of_remote_mails);
+					sprintf(send,"%s FETCH %d RFC822\r\n",tag,msgtodl);
 					tcp_write(conn,send,strlen(send));
 					tcp_flush(conn);
-					
+
 					success = 0;
-			
 					while ((line = tcp_readln(conn)))
 					{
 						line = imap_get_result(line,buf,sizeof(buf));
 						if (!mystricmp(buf,tag))
 						{
 							line = imap_get_result(line,buf,sizeof(buf));
-							if (!mystricmp(buf,"OK")) success = 1;
+							if (!mystricmp(buf,"OK"))
+								success = 1;
 							break;
 						} else
 						{
 							/* untagged */
-							unsigned int msgno;
-							unsigned int uid = 0;
-							unsigned int size = 0;
-							char msgno_buf[100];
-							char cmd_buf[100];
-							char stuff_buf[100];
-							char *temp;
-							int i;
-			
-							line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-							line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
-							line = imap_get_result(line,stuff_buf,sizeof(stuff_buf));
-		
-							msgno = (unsigned int)atoi(msgno_buf);
-							temp = stuff_buf;
-	
-							for (i=0;i<2;i++)
+							if (buf[0] == '*')
 							{
-								temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
-								if (!mystricmp(cmd_buf,"UID"))
+								char msgno_buf[200];
+								char *temp_ptr;
+								int msgno;
+								int todownload;
+								line++;
+
+								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+								msgno = atoi(msgno_buf); /* ignored */
+
+								/* skip the fetch command */
+								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+								if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
 								{
-									temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
-									uid = atoi(cmd_buf);
-								}
-								else if (!mystricmp(cmd_buf,"RFC822.SIZE"))
+									temp_ptr++;
+									todownload = atoi(temp_ptr);
+								} else todownload = 0;
+
+								if (todownload)
 								{
-									temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
-									size = atoi(cmd_buf);
-								}
-							}
+									FILE *fh;
+									char filename_buf[60];
+									sprintf(filename_buf,"u%d",remote_mail_array[msgtodl-1].uid); /* u means unchanged */
 
-							if (msgno <= num_of_remote_mails)
-							{
-								remote_mail_array[msgno-1].uid = uid;
-								remote_mail_array[msgno-1].size = size;
-							}
-						}
-					}
-	
-					if (success)
-					{
-						/* now check for mails which are local but not on the imap */
-						int i,j;
-						int msgtodl;
-						unsigned int max_todl_bytes = 0;
-						unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
-						unsigned int todl_bytes = 0;
-
-						for (i = 0 ; i < num_of_local_mails; i++)
-						{
-							unsigned int local_uid = local_mail_array[i].uid;
-							for (j = 0 ; j < num_of_remote_mails; j++)
-							{
-								if (local_uid == remote_mail_array[j].uid)
-								local_uid = 0;
-							}
-							if (local_uid)
-							{
-								thread_call_parent_function_sync(callback_delete_mail_by_uid,3,server->name,imap_path,local_uid);
-							}
-						}
-
-						for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
-						{
-							/* check if the mail already exists */
-							int does_exist = 0;
-							for (i=0; i < num_of_local_mails;i++)
-							{
-								if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
-									does_exist = 1;
-							}
-							if (does_exist) continue;
-
-							max_todl_bytes += remote_mail_array[msgtodl-1].size;
-						}
-
-						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_todl_bytes);
-
-						for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
-						{
-							/* check if the mail already exists */
-							int does_exist = 0;
-							for (i=0; i < num_of_local_mails;i++)
-							{
-								if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
-									does_exist = 1;
-							}
-							if (does_exist) continue;
-
-							accu_todl_bytes += remote_mail_array[msgtodl-1].size;
-
-							sprintf(status_buf,_("Fetching mail %d from server"),msgtodl);
-							thread_call_parent_function_sync(status_set_status,1,status_buf);
-
-							sprintf(tag,"%04x",val++);
-							sprintf(send,"%s FETCH %d RFC822\r\n",tag,msgtodl);
-							tcp_write(conn,send,strlen(send));
-							tcp_flush(conn);
-
-							success = 0;
-							while ((line = tcp_readln(conn)))
-							{
-								line = imap_get_result(line,buf,sizeof(buf));
-								if (!mystricmp(buf,tag))
-								{
-									line = imap_get_result(line,buf,sizeof(buf));
-									if (!mystricmp(buf,"OK"))
-										success = 1;
-									break;
-								} else
-								{
-									/* untagged */
-									if (buf[0] == '*')
+									if ((fh = fopen(filename_buf,"w")))
 									{
-										char msgno_buf[200];
-										char *temp_ptr;
-										int msgno;
-										int todownload;
-										line++;
-
-										line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-										msgno = atoi(msgno_buf); /* ignored */
-
-										/* skip the fetch command */
-										line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-										if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+										while (todownload)
 										{
-											temp_ptr++;
-											todownload = atoi(temp_ptr);
-										} else todownload = 0;
-
-										if (todownload)
-										{
-											FILE *fh;
-											char filename_buf[60];
-											sprintf(filename_buf,"u%d",remote_mail_array[msgtodl-1].uid); /* u means unchanged */
-
-											if ((fh = fopen(filename_buf,"w")))
-											{
-												while (todownload)
-												{
-													char buf[200];
-													int dl = tcp_read(conn,buf,MIN(sizeof(buf),todownload));
-													if (dl == -1 || !dl) break;
-													todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
-													thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
-													fwrite(buf,1,dl,fh);
-													todownload -= dl;
-												}
-												fclose(fh);
-												callback_new_imap_mail_arrived(filename_buf, server->name, imap_path);
-											}
+											char buf[204];
+											int dl = tcp_read(conn,buf,MIN((sizeof(buf)-4),todownload));
+											if (dl == -1 || !dl) break;
+											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
+											thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
+											fwrite(buf,1,dl,fh);
+											todownload -= dl;
 										}
+										fclose(fh);
+										callback_new_imap_mail_arrived(filename_buf, server->name, imap_path);
 									}
 								}
 							}
-							if (!success) break;
-							todl_bytes = accu_todl_bytes;
-							/* TODO: should be enforced */
-							thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
 						}
 					}
+
+					if (!success) break;
+					todl_bytes = accu_todl_bytes;
+					/* TODO: should be enforced */
+					thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
 				}
-			} else thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+			}
 		}
 
 		chdir(path);

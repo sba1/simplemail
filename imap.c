@@ -85,7 +85,8 @@ int imap_dl_headers(struct list *imap_list)
 			struct connection *conn;
 			if ((conn = tcp_connect(serv->name,serv->port,0)))
 			{
-				char tag[200];
+				char tag[20];
+				char send[200];
 				char buf[200];
 
 				char *line;
@@ -109,10 +110,15 @@ int imap_dl_headers(struct list *imap_list)
 				if (ok)
 				{
 					puts("now sending login\n");
-					sprintf(tag,"%04x LOGIN %s %s\r\n",val++,serv->login,serv->passwd);
-					puts(tag);
-					tcp_write(conn,tag,strlen(tag));
+
+					sprintf(tag,"%04x",val++);
+					sprintf(send,"%s LOGIN %s %s\r\n",tag,serv->login,serv->passwd);
+
+					puts(send);
+					tcp_write(conn,send,strlen(send));
 					tcp_flush(conn);
+
+					ok = 0;
 
 					while ((line = tcp_readln(conn)))
 					{
@@ -124,9 +130,37 @@ int imap_dl_headers(struct list *imap_list)
 							if (!stricmp(buf,"OK"))
 							{
 								puts("Login successful\n");
+								ok = 1;
 							}
 							break;
 						}
+					}
+
+					if (ok)
+					{
+						sprintf(tag,"%04x",val++);
+						sprintf(send,"%s LIST \"\" *\r\n",tag,serv->login,serv->passwd);
+						puts(send);
+
+						tcp_write(conn,send,strlen(send));
+						tcp_flush(conn);
+
+						while ((line = tcp_readln(conn)))
+						{
+							puts(line);
+							line = imap_get_result(line,buf,sizeof(buf));
+							if (!stricmp(buf,tag))
+							{
+								line = imap_get_result(line,buf,sizeof(buf));
+								if (!stricmp(buf,"OK"))
+								{
+									puts("List successful\n");
+									ok = 1;
+								}
+								break;
+							}
+						}
+						
 					}
 				} else
 				{

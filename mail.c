@@ -1509,7 +1509,6 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 			fprintf(fp,"%s", subject);
 			fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000,2001 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
-			fprintf(fp,"MIME-Version: 1.0\n");
 
 			time(&t);
 			d = localtime(&t);
@@ -1529,6 +1528,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		char *boundary = (char*)malloc(128);
 		if (boundary)
 		{
+			fprintf(fp,"MIME-Version: 1.0\n");
 			sprintf(boundary, "--==bound%x%lx----",(int)boundary,ftell(fp));
 			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
 			fprintf(fp, "\n");
@@ -1556,13 +1556,18 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			/* mail text */
 			if (new_mail->to) body_encoding = "8bit"; /* mail has only one part which is a text, so it can be encoded in 8bit */
 			body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
-			fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+			if (body_encoding && mystricmp(body_encoding,"7bit"))
+			{
+				if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
+			  fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+			}
 		} else
 		{
 			if (new_mail->filename)
 			{
 				FILE *fh;
 
+				if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
 				fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
 				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 

@@ -80,5 +80,5 @@ create-latest:
 clean:
   -delete $(OBJSDIR)\#? all
   -delete smakefile.compile
-  -delete #?.tmp
+  -delete \#?.tmp
 

@@ -23,6 +23,7 @@
 #include <dos.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libraries/iffparse.h>
 
@@ -67,6 +68,7 @@ struct MailTreelist_Data
 	APTR status_group;
 	APTR status_new;
 	APTR status_crypt;
+	APTR status_signed;
 
 	Object *context_menu;
 	Object *title_menu;
@@ -87,6 +89,8 @@ struct MailTreelist_Data
 	char *date_text;
 	char *size_text;
 	char *filename_text;
+
+	char bubblehelp_buf[4096];
 };
 
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
@@ -193,6 +197,42 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 	}
 }
 
+STATIC VOID MailTreelist_SetNotified(void **msg)
+{
+	Object *obj = (Object*)msg[0];
+	struct IClass *cl = (struct IClass*)msg[1];
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(obj, MUIA_NListtree_Active);
+	if (treenode && treenode->tn_User)
+	{
+		struct mail *m = (struct mail*)treenode->tn_User;
+		char *from = mail_get_from_address(m);
+		char *to = mail_get_to_address(m);
+		char *replyto = mail_get_replyto_address(m);
+		char date_buf[64];
+
+		SecondsToString(date_buf,m->seconds);
+
+		/* Help bubble text */
+		sprintf(data->bubblehelp_buf,"\033b%s\033n\n%s: %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s\n%s: %d\n%s: %s",
+						_("Current Message"),
+						data->subject_text,m->subject?m->subject:"",
+						data->from_text,from?from:"",
+						data->to_text,to?to:"",
+						data->reply_text,replyto?replyto:"",
+						data->date_text, date_buf,
+						data->size_text,m->size,
+						data->filename_text,m->filename);
+
+		set(obj,MUIA_ShortHelp,data->bubblehelp_buf);
+
+		free(replyto);
+		free(to);
+		free(from);
+	}	
+}
+
 STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
@@ -230,7 +270,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->reply_text = _("Reply");
 	data->date_text = _("Date");
 	data->size_text = _("Size");
-	data->filename_text = ("Filename");
+	data->filename_text = _("Filename");
 
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
@@ -257,6 +297,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	MailTreelist_UpdateFormat(cl,obj);
 
+	DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
+
 	return (ULONG)obj;
 }
 
@@ -277,7 +319,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	while (tag = NextTagItem (&tstate))
 	{
-		ULONG tidata = tag->ti_Data;
+/*		ULONG tidata = tag->ti_Data;*/
 
 		switch (tag->ti_Tag)
 		{
@@ -312,6 +354,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End, 0);
 	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End, 0);
 	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End, 0);
+	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End, 0);
 	
 	return 1;
 }
@@ -319,6 +362,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, data->status_signed);
 	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
 	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
 	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);

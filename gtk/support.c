@@ -29,10 +29,13 @@
 #include <unistd.h>
 #include <time.h>
 #include <glib.h>
+#include <gtk/gtk.h>
 
 #include "errorwnd.h"
 #include "subthreads.h"
 #include "support.h"
+
+#include "smintl.h"
 #include "support_indep.h"
 
 /******************************************************************
@@ -277,8 +280,60 @@ char *sm_request_file(char *title, char *path, int save)
 *******************************************************************/
 int sm_request(char *title, char *text, char *gadgets, ...)
 {
-	printf("sm_request()\n");
-	return 0;
+	int gadno = 1;
+	char *gadget_end = gadgets;
+	char buf[200];
+	char c;
+	int i;
+	int rc;
+
+	GtkWidget *dialog1;
+	GtkWidget *dialog_vbox1;
+	GtkWidget *dialog_action_area1;
+	GtkWidget *label;
+
+	dialog1 = gtk_dialog_new ();
+	gtk_window_set_title (GTK_WINDOW (dialog1), title);
+
+	dialog_vbox1 = GTK_DIALOG (dialog1)->vbox;
+
+	label = gtk_label_new(text);
+	gtk_box_pack_start (GTK_BOX (dialog_vbox1), label, TRUE, FALSE, 0);
+	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_LEFT);
+	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
+
+	dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
+	gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
+
+	i = 0;
+	while (1)
+	{
+		c = *gadget_end++;
+
+		if (!c || c == '|')
+		{
+			buf[i] = 0;
+
+			if (c)
+			{
+				gtk_dialog_add_button(GTK_DIALOG(dialog1),buf,gadno++);
+				i=0;
+				continue;
+			} else
+			{
+				gtk_dialog_add_button(GTK_DIALOG(dialog1),buf,0);
+				break;
+			}
+		}
+
+		buf[i++] = c;
+	}
+
+	gtk_widget_show_all(dialog1);
+	rc = gtk_dialog_run(dialog1);
+	gtk_widget_destroy(dialog1);
+
+	return rc;
 }
 
 /******************************************************************

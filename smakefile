@@ -47,6 +47,9 @@ start: $(GSTFILE) smakefile.compile
     if not exists $(DESTDIR)
       makedir $(DESTDIR)
     endif
+    if not exists $(DESTDIR)/Images
+      makedir $(DESTDIR)/Images
+    endif
 <
   smake -f smakefile.compile
 

@@ -18,6 +18,8 @@
 
 /*
 ** text2html.c
+**
+** TODO: Rewrite this
 */
 
 #include <string.h>
@@ -70,15 +72,48 @@ const static struct smily smily[] =
 	{":-e","smily_angry"}
 };
 
+static int write_unicode(utf8 *src, string *str)
+{
+	int len;
+	char buf[16];
+
+	len = strlen(src);
+
+	while (len > 0)
+	{
+		unsigned char c;
+
+		c = *src;
+
+		if (c > 127)
+		{
+			unsigned int iso = 0;
+			int advance = utf8tochar(src, &iso, user.config.default_codeset);
+			if (iso == 0) iso = '_';
+
+			sm_snprintf(buf,sizeof(buf),"&#%d;",iso);
+			string_append(str,buf);
+
+			len -= advance;
+			src += advance;
+		} else
+		{
+			string_append_part(str,&c,1);
+			src++;
+			len--;
+		}
+	}
+	return 1;
+}
 
 static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *str)
 {
 	char uri[SIZE_URI];
-	char *buffer = *buffer_ptr;
+	unsigned char *buffer = *buffer_ptr;
 	int buffer_len = *buffer_len_ptr;
 	int i;
 	
-	for (i = 0; buffer_len && *buffer && strchr(legalchars, *buffer) && i < SIZE_URI-1; i++)
+	for (i = 0; buffer_len && *buffer && (strchr(legalchars, *buffer) || *buffer > 127) && i < SIZE_URI-1; i++)
 	{
 		uri[i] = *buffer++;
 		buffer_len--;
@@ -90,9 +125,13 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *st
 
 	if (i)
 	{
-		char buf[512];
-		sm_snprintf(buf,sizeof(buf),"<A HREF=\"%s\"%s>%s</A>",uri, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"" , uri);
-		string_append(str,buf);
+		string_append(str,"<A HREF=\"");
+		string_append(str,uri);
+		string_append(str,"\"");
+		if (!user.config.read_link_underlined) string_append(str," STYLE=\"TEXT-DECORATION: none\"");
+		string_append(str,">");
+		write_unicode(uri,str);
+		string_append(str,"</A>");
 	}
 
 	*buffer_ptr = buffer;
@@ -166,7 +205,6 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				eval_color = 0;
 			}
 
-
 			if (!mystrnicmp("http:",buffer,5)) write_uri(&buffer, &buffer_len, &str);
 			else if (!mystrnicmp("mailto:",buffer,7)) write_uri(&buffer, &buffer_len, &str);
 			else if (!mystrnicmp("ftp:",buffer,4)) write_uri(&buffer, &buffer_len, &str);
@@ -204,7 +242,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 						/* crop the string to the beginning of the email address */
 						string_crop(&str,0,str.len - (buffer - buffer2));
-
+						
 						buffer_len += buffer - buffer2;
 						buffer -= buffer - buffer2;
 						email_len = buffer3 - buffer;
@@ -214,7 +252,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 						sm_snprintf(buf,sizeof(buf),"<A HREF=\"mailto:%s\"%s>",address, user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"");
 						string_append(&str,buf);
-						string_append(&str,address);
+						write_unicode(address,&str);
 						string_append(&str,"</A>");
 						free(address);
 						continue;
@@ -283,10 +321,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						} else {
 						  if (c)
 						  {
-						  	char t[2];
-						  	t[0] = c;
-						  	t[1] = 0;
-						  	string_append(&str,t);
+						  	string_append_part(&str,&c,1);
 						  }
 						}
 					}

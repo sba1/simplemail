@@ -1070,8 +1070,12 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 {
 	struct folder_node *node;
 	struct folder_node *parent_node = (struct folder_node*)(((char*)parent)-sizeof(struct node));
+	struct folder *f;
 
+	if (!parent) return NULL;
 	if (!parent->is_imap) return NULL;
+
+	if ((f = folder_find_by_imap(parent->imap_server,imap_path))) return f;
 
 	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
 	{
@@ -1082,7 +1086,8 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 
 		name = sm_file_part(imap_path);
 		node->folder.name = mystrdup(name);
-		node->folder.path =  mycombinepath(user.folder_directory,name);
+		node->folder.parent_folder = parent;
+		node->folder.path =  mycombinepath(parent->path,name);
 		node->folder.special = FOLDER_SPECIAL_NO;
 		node->folder.is_imap = 1;
 		node->folder.imap_server = mystrdup(parent->imap_server);
@@ -1096,7 +1101,8 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 			if (sm_makedir(node->folder.path))
 			{
 				folder_config_save(&node->folder);
-				return node;
+				list_insert(&folder_list, &node->node, &parent_node->node);
+				return &node->folder;
 			}
 		}
 		/* leaks */
@@ -1288,9 +1294,9 @@ static void folder_config_save(struct folder *f)
 		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
 		fprintf(fh,"DefaultTo=%s\n", f->def_to?f->def_to:"");
 		fprintf(fh,"IsIMap=%d\n",f->is_imap);
-		fprintf(fh,"IMapUser=%s\n",f->imap_user);
-		fprintf(fh,"IMapPath=%s\n",f->imap_path);
-		fprintf(fh,"IMapServer=%s\n",f->imap_server);
+		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
+		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
+		fprintf(fh,"IMapServer=%s\n",f->imap_server?f->imap_server:"");
 		fclose(fh);
 	}
 }
@@ -1463,16 +1469,18 @@ struct folder *folder_find_special(int sp)
 /******************************************************************
  Returns the given imap folder server
 *******************************************************************/
-struct folder *folder_find_by_imap(char *path)
+struct folder *folder_find_by_imap(char *server, char *path)
 {
 	struct folder *f = folder_first();
 	while (f)
 	{
 		if (f->is_imap)
 		{
-			if (!mystricmp(path,f->imap_server))
+			if (!mystricmp(server,f->imap_server))
 			{
-				return f;
+				if (!path && !f->imap_path) return f;
+				if (path && !(*path) && !f->imap_path) return f;
+				if (!mystricmp(path,f->imap_path)) return f;
 			}
 		}
 		f = folder_next(f);
@@ -2764,7 +2772,7 @@ void folder_create_imap(void)
 			f = folder_first();
 			while (f)
 			{
-				if (f->is_imap)
+/*				if (f->is_imap)
 				{
 					if (!mystricmp(f->imap_server,ac->imap->name) &&
 							!mystricmp(f->imap_user,ac->imap->login))
@@ -2772,6 +2780,12 @@ void folder_create_imap(void)
 						found = 1;
 						break;
 					}
+				}*/
+
+				if (!mystricmp(f->name,ac->imap->name))
+				{
+					found = 1;
+					break;
 				}
 				
 				f = folder_next(f);
@@ -2782,8 +2796,20 @@ void folder_create_imap(void)
 				if ((f = folder_add_group(ac->imap->name)))
 				{
 					f->is_imap = 1;
-					f->imap_server = ac->imap->name;
-					f->imap_user = ac->imap->login;
+					f->imap_server = mystrdup(ac->imap->name);
+					f->imap_user = mystrdup(ac->imap->login);
+					f->path = mycombinepath(user.folder_directory,ac->imap->name);
+				}
+			} else
+			{
+				if (f)
+				{
+					/* The folder has been added because a directory has been found. But's
+			     * not considered as a group so we change it manually */
+					f->special = FOLDER_SPECIAL_GROUP;
+					f->is_imap = 1;
+					f->imap_server = mystrdup(ac->imap->name);
+					f->imap_user = mystrdup(ac->imap->login);
 				}
 			}
 

@@ -1018,6 +1018,11 @@ void callback_change_folder_attrs(void)
 void callback_reload_folder_order(void)
 {
 	folder_load_order();
+	callback_refresh_folders();
+}
+
+void callback_refresh_folders(void)
+{
 	main_refresh_folders();
 	search_refresh_folders();
 	filter_update_folder_list();

@@ -95,10 +95,12 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 int imap_dl_headers(struct list *imap_list)
 {
 	struct imap_server *serv;
+
 	serv = (struct imap_server*)list_first(imap_list);
 	while (serv)
 	{
-		struct folder *folder = folder_find_by_imap(serv->name);
+		struct folder *folder = folder_find_by_imap(serv->name,"");
+
 		if (folder)
 		{
 			if (open_socket_lib())
@@ -193,7 +195,10 @@ int imap_dl_headers(struct list *imap_list)
 									/* read name */
 									line = imap_get_result(line,buf,sizeof(buf));
 
-									puts(buf);puts("\n");
+									if ((folder_add_imap(folder, buf)))
+									{
+										puts("Created ");puts(buf);puts("\n");
+									}
 								}
 							}
 							
@@ -204,6 +209,11 @@ int imap_dl_headers(struct list *imap_list)
 					}
 
 					tcp_disconnect(conn);
+				} else
+				{
+					puts("Couldn't connect to server ");
+					puts(serv->name);
+					puts("\n");
 				}
 				close_socket_lib();
 			}
@@ -211,6 +221,7 @@ int imap_dl_headers(struct list *imap_list)
 		
 		serv = (struct imap_server*)node_next(&serv->node);
 	}
+	callback_refresh_folders();
 	return 1;
 }
 

@@ -31,6 +31,8 @@
 #include <sys/errno.h>
 #include <netinet/tcp.h>
 
+#include <proto/amissl.h> /* not portable */
+
 #include "support.h"
 #include "tcpip.h"
 
@@ -55,6 +57,23 @@ struct connection *tcp_connect(char *server, unsigned int port)
 
 	memset(conn,0,sizeof(struct connection));
 
+/*	conn->use_ssl = 1;*/
+
+	if (conn->use_ssl)
+	{
+		if (!open_ssl_lib())
+		{
+			free(conn);
+			return NULL;
+		}
+		if (!(conn->ssl = SSL_new(ssl_context())))
+		{
+			close_ssl_lib();
+			free(conn);
+			return NULL;
+		}
+	}
+
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
 	{
@@ -70,7 +89,21 @@ struct connection *tcp_connect(char *server, unsigned int port)
 			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 			{
 				conn->socket = sd;
-				return conn;
+				if (conn->use_ssl)
+				{
+					/* Associate a socket with ssl structure */
+					SSL_set_fd(conn->ssl, sd);
+
+					if (SSL_connect(conn->ssl) >= 0)
+					{
+						if (conn->server_cert = SSL_get_peer_certificate(conn->ssl))
+						{
+							return conn;
+						}
+					}
+
+					SSL_shutdown(conn->ssl);
+				} else return conn;
 			}
 			else
 			{
@@ -99,6 +132,7 @@ struct connection *tcp_connect(char *server, unsigned int port)
 
 				tell_from_subtask(err);
 			}
+			CloseSocket(sd);
 		}
 		else
 		{
@@ -139,6 +173,12 @@ struct connection *tcp_connect(char *server, unsigned int port)
 		tell_from_subtask(err);
 	}  
 
+	if (conn->use_ssl)
+	{
+		if (conn->ssl) SSL_free(conn->ssl);
+		close_ssl_lib();
+	}
+
 	free(conn);
 	return NULL;
 }
@@ -149,7 +189,15 @@ struct connection *tcp_connect(char *server, unsigned int port)
 void tcp_disconnect(struct connection *conn)
 {
 	tcp_flush(conn); /* flush the write buffer */
-	shutdown(conn->socket, 2);
+	CloseSocket(conn->socket); /* not portable */
+
+	if (conn->use_ssl)
+	{
+		X509_free(conn->server_cert);
+		SSL_shutdown(conn->ssl);
+		SSL_free(conn->ssl);
+		close_ssl_lib();
+	}
 	if (conn->line) free(conn->line);
 	free(conn);
 }
@@ -160,6 +208,7 @@ void tcp_disconnect(struct connection *conn)
 long tcp_read(struct connection *conn, void *buf, long nbytes)
 {
 	tcp_flush(conn); /* flush the write buffer */
+	if (conn->ssl) return SSL_read(conn->ssl,buf,nbytes);
 	return recv(conn->socket,buf,nbytes,0);
 }
 
@@ -174,7 +223,7 @@ static int tcp_read_char(struct connection *conn)
 		int didget;
 		conn->read_pos = 0;
 
-		didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+		didget = tcp_read(conn,conn->read_buf,sizeof(conn->read_buf));
 		if (didget < 0)
 		{
 			conn->read_size = 0;
@@ -192,6 +241,7 @@ static int tcp_read_char(struct connection *conn)
 int tcp_write(struct connection *conn, void *buf, long nbytes)
 {
 	conn->read_pos = conn->read_size = 0;
+	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
 	return send(conn->socket, buf, nbytes, 0);
 }
 
@@ -210,6 +260,7 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 {
 	conn->read_pos = conn->read_size = 0;
 	tcp_flush(conn); /* flush the write buffer */
+	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
 	return send(conn->socket, buf, nbytes, 0);
 }
 

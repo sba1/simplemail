@@ -23,10 +23,14 @@
 #include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
 /*#include <proto/amissl.h>*/
 
+typedef struct ssl_st SSL;
+typedef struct ssl_ctx_st SSL_CTX;
+
 int open_socket_lib(void);
 void close_socket_lib(void);
 int open_ssl_lib(void);
 void close_ssl_lib(void);
+SSL_CTX *ssl_context(void);
 
 long tcp_herrno(void);
 long tcp_errno(void);

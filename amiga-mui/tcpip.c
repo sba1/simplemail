@@ -67,6 +67,7 @@ void close_socket_lib(void)
 
 struct Library *AmiSSLBase;
 static int ssl_in_use;
+static SSL_CTX *ctx;
 
 int open_ssl_lib(void)
 {
@@ -83,9 +84,19 @@ int open_ssl_lib(void)
 					/*	AmiSSL_VersionOverride, TRUE,*/ /* If you insist */
 					TAG_DONE))
 			{
-				/* Everything is ok */
-				ssl_in_use++;
-				return 1;
+				SSLeay_add_ssl_algorithms();
+				SSL_load_error_strings();
+
+				if (ctx = SSL_CTX_new(SSLv23_client_method()))
+				{
+					SSL_CTX_set_default_verify_paths(ctx);
+					SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL/*SSL_verify_callback*/);
+
+					/* Everything is ok */
+					ssl_in_use++;
+					return 1;
+				}
+				CleanupAmiSSL(TAG_DONE);
 			}
 			CloseLibrary(AmiSSLBase);
 		}
@@ -104,11 +115,20 @@ void close_ssl_lib(void)
 	if (!ssl_in_use) return;
 	if (!(--ssl_in_use))
 	{
+		SSL_CTX_free(ctx);
+		ctx = NULL;
 		CleanupAmiSSL(TAG_DONE);
 		CloseLibrary(AmiSSLBase);
+		AmiSSLBase = NULL;
 		close_socket_lib();
 	}
 }
+
+SSL_CTX *ssl_context(void)
+{
+	return ctx;
+}
+
 
 long tcp_herrno(void)
 {

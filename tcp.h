@@ -26,9 +26,17 @@
 #define CONN_BUF_READ_SIZE 1024
 #define CONN_BUF_WRITE_SIZE 1024
 
+typedef struct ssl_st SSL;
+typedef struct ssl_ctx_st SSL_CTX;
+typedef struct x509_st X509;
+
 struct connection
 {
 	long socket;
+	int use_ssl;
+
+	SSL *ssl;
+	X509 *server_cert;
 
 	/* for tcp_readln() */
 	char read_buf[CONN_BUF_READ_SIZE];

@@ -52,6 +52,8 @@ struct pop3_server;
 
 struct config
 {
+	int from_disk; /* 1 if config has been loaded from disk */
+
 	int dst;
 
 	int receive_preselection; /* 0 no selection, 1 size selection, 2 full selection */

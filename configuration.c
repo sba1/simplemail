@@ -174,7 +174,10 @@ int load_config(void)
 				if (!strncmp("SMCO",buf,4))
 				{
 					int utf8 = 0;
+
 					clear_config_phrases();
+					user.config.from_disk = 1;
+
 					while (read_line(fh,buf))
 					{
 						char *result;
@@ -718,6 +721,8 @@ void save_config(void)
 			fclose(fh);
 		}
 	}
+
+//	init_platform_config();
 }
 
 void save_filter(void)

@@ -361,6 +361,8 @@ void read_window_open(char *folder, char *filename)
 				Child, VGroup,
 					Child, NListviewObject,
 						MUIA_NListview_NList, text_list = NListObject,
+							MUIA_Font, MUIV_Font_Fixed,
+							MUIA_NList_TypeSelect, MUIV_NList_TypeSelect_Char,
 							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
 							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
 							End,

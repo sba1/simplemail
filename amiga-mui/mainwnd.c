@@ -369,6 +369,18 @@ void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 }
 
 /******************************************************************
+ Refresh a mail (if it status has changed fx)
+*******************************************************************/
+void main_refresh_mail(struct mail *m)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, m);
+	if (treenode)
+	{
+		DoMethod(tree_mail, MUIM_NListtree_Redraw, treenode, 0);
+	}
+}
+
+/******************************************************************
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)

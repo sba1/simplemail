@@ -45,7 +45,19 @@ void callback_read_mail(void)
 
 	if ((filename = main_get_mail_filename()))
 	{
+		char buf[256];
+		struct mail *m = main_get_active_mail();
+
 		read_window_open(main_get_folder_drawer(), filename);
+
+		if (m && m->status == MAIL_STATUS_UNREAD)
+		{
+			getcwd(buf, sizeof(buf));
+			chdir(main_get_folder_drawer());
+			mail_set_status(m,MAIL_STATUS_READ);
+			main_refresh_mail(m);
+			chdir(buf);
+		}
 	}
 }
 

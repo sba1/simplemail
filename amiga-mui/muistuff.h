@@ -62,5 +62,8 @@ void init_hook(struct Hook *h, unsigned long (*func)());
 #define MUIM_GoActive                0x8042491a
 #define MUIM_GoInactive              0x80422c0c
 
+#define MUIA_Dtpic_Name 0x80423d72
+/*#define MUIC_Dtpic "Dtpic.mui",*/
+#define DtpicObject MUI_NewObject("Dtpic.mui"
 
 #endif

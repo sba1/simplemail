@@ -410,6 +410,142 @@ struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype)
 }
 
 /**************************************************************************
+ Converts a number to base 18 character sign
+**************************************************************************/
+static char get_char_18(int val)
+{
+	if (val >= 0 && val <= 9) return (char)('0' + val);
+	return (char)('a' + val-10);
+}
+
+/**************************************************************************
+ Returns a unique filename for a new mail
+**************************************************************************/
+char *mail_get_new_name(void)
+{
+	char *rc;
+	long t;
+	struct tm *d, tm;
+	unsigned short day_secs;
+	short i;
+	char dummy[8]; 
+	char *buf;
+	
+	buf = malloc(17);
+	
+	time(&t);
+	d = localtime(&t);
+	tm = *d;
+	
+	day_secs = (tm.tm_min * 60) + tm.tm_sec;
+	dummy[4] = 0;
+	dummy[3] = get_char_18(day_secs % 18);
+	dummy[2] = get_char_18((day_secs / 18)%18);
+	dummy[1] = get_char_18((day_secs / 18 / 18)%18);
+	dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
+	
+	for (i=0;;i++)
+	{
+		FILE *fp;
+		
+		sprintf(buf,"%02ld%02ld%04ld%s.%03lx",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
+
+		fp = fopen(buf, "r");
+		if(fp != NULL)
+		{
+			fclose(fp);
+		} else break;
+	}
+	
+	rc = buf;
+	
+	return(rc);
+}
+
+/**************************************************************************
+ Returns a new filename for the mail which matches the given status.
+ String is allocated with malloc
+**************************************************************************/
+char *mail_get_status_filename(char *oldfilename, int status_new)
+{
+	int len = strlen(oldfilename);
+	char *filename = (char*)malloc(len+6);
+	if (filename)
+	{
+		char *suffix;
+
+		strcpy(filename,oldfilename);
+		suffix = strrchr(filename,'.');
+		if (!suffix) suffix = filename + len;
+		else
+		{
+			if (suffix[2])
+			{
+				/* the point is not the status point, so it must be added */
+				suffix = filename + len;
+			}
+		}
+
+		switch (status_new)
+		{
+			case	MAIL_STATUS_UNREAD: *suffix = 0; break;
+			case	MAIL_STATUS_READ: strcpy(suffix,".0"); break;
+			case	MAIL_STATUS_WAITSEND: strcpy(suffix,".1"); break;
+			case	MAIL_STATUS_SENT: strcpy(suffix,".2"); break;
+			default: *suffix = 0;break;
+		}
+	}
+	return filename;
+}
+
+/**************************************************************************
+ Sets a new status of the mail. It also renames the file, to match the
+ status. (on the Amiga this will be done by setting a new comment later)
+ Note that the current directory must be the directory where the mail
+ is located.
+ Also note that this function makes no check if the status change makes
+ sense.
+**************************************************************************/
+void mail_set_status(struct mail *mail, int status_new)
+{
+	char *filename;
+
+	if (status_new == mail->status) return;
+	mail->status = status_new;
+	if (!mail->filename) return;
+	filename = mail_get_status_filename(mail->filename, status_new);
+
+	if (strcmp(mail->filename,filename))
+	{
+		rename(mail->filename,filename);
+		free(mail->filename);
+		mail->filename = filename;
+	}
+}
+
+/**************************************************************************
+ Identifies the status of the mail
+**************************************************************************/
+static void mail_identify_status(struct mail *m)
+{
+	char *suffix;
+	if (!m->filename) return;
+	suffix = strrchr(m->filename,'.');
+	if (suffix[2])
+	{
+		m->status = MAIL_STATUS_UNREAD;
+		return;
+	}
+	switch (suffix[1])
+	{
+		case	'0':m->status = MAIL_STATUS_READ;break;
+		case	'1':m->status = MAIL_STATUS_WAITSEND;break;
+		case	'2':m->status = MAIL_STATUS_SENT;break;
+		default: m->status = MAIL_STATUS_UNREAD; break;
+	}
+}
+
+/**************************************************************************
  creates a mail, initialize it to deault values
 **************************************************************************/
 struct mail *mail_create(void)
@@ -464,6 +600,7 @@ struct mail *mail_create_from_file(char *filename)
 
 					mail_scan_buffer_end(&ms);
 					mail_process_headers(m);
+					mail_identify_status(m);
 				}
 				free(buf);
 			}
@@ -1081,71 +1218,6 @@ char *mail_find_header_contents(struct mail *mail, char *name)
 }
 
 /**************************************************************************
- Converts a number to base 18 character sign
-**************************************************************************/
-static char get_char_18(int val)
-{
-	if (val >= 0 && val <= 9) return (char)('0' + val);
-	return (char)('a' + val-10);
-}
-
-/**************************************************************************
- Returns a unique filename for a new mail
-**************************************************************************/
-char *mail_get_new_name(void)
-{
-	char *rc;
-	long t;
-	struct tm *d, tm;
-	unsigned short day_secs;
-	short i;
-	char dummy[8]; 
-	char *buf;
-	
-	buf = malloc(17);
-	
-	time(&t);
-	d = localtime(&t);
-	tm = *d;
-	
-	day_secs = (tm.tm_min * 60) + tm.tm_sec;
-	dummy[4] = 0;
-	dummy[3] = get_char_18(day_secs % 18);
-	dummy[2] = get_char_18((day_secs / 18)%18);
-	dummy[1] = get_char_18((day_secs / 18 / 18)%18);
-	dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
-	
-	for (i=0;;i++)
-	{
-		FILE *fp;
-		
-		sprintf(buf,"%02ld%02ld%04ld%s.%03lx",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
-
-		fp = fopen(buf, "r");
-		if(fp != NULL)
-		{
-			fclose(fp);
-		} else break;
-	}
-	
-	rc = buf;
-	
-	return(rc);
-}
-
-/**************************************************************************
- Strips the LFs from a file. Not implemented.
-**************************************************************************/
-int mail_strip_lf(char *fn)
-{
-	int rc;
-	
-	rc = FALSE;
-	
-	return(rc);
-}
-
-/**************************************************************************
  Creates an address list from a given string (Note, that this is probably
  misplaced in mail.c)
 **************************************************************************/
@@ -1394,6 +1466,13 @@ void mail_compose_new(struct composed_mail *new_mail)
 	{
 		FILE *fp;
 		struct mail *mail; /* the mail after it has scanned */
+		char *status_name; /* the prober status name */
+
+		if ((status_name = mail_get_status_filename(new_name,MAIL_STATUS_WAITSEND)))
+		{
+			free(new_name);
+			new_name = status_name;
+		}
 
 		if ((fp = fopen(new_name,"wb")))
 		{

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** mail.h
 */
 
 #ifndef SM__MAIL_H
@@ -43,7 +43,7 @@ struct content_parameter
 
 struct mail
 {
-	int status;
+	int status; /* see below */
 	char *from; /* decoded "From" field */
 	char *to; /* decoded "To" field, only the first address */
 	char *reply;
@@ -61,30 +61,33 @@ struct mail
 	char *content_transfer_encoding;
 	char *content_id; /* id of the content */
 
-/*	char *multipart_related_type;*/ /* the type of a multipart/related type, need not to be freed */
-
 	unsigned int text_begin; /* the beginning of the mail's text */
 	unsigned int text_len; /* the length of the mails text */
 	char *text; /* the mails text, allocated only for mails with filename */
 
-	/* the following is valiad after mail_read_structure */
-
-  /* only used in multipart messages */
+	/* after mail_read_structure() */
+	/* only used in multipart messages */
 	struct mail **multipart_array;
 	int multipart_allocated;
 	int num_multiparts;
 
-	/* only used in multipart/related messages */
-/*	struct mail *multipart_related_root;*/ /* the root/start of the related messages */
+  /* for "childs" of multipart messages */
+	struct mail *parent_mail; /* if NULL, mail is root */
 
-
-	struct mail *parent_mail;
-
+	/* after mail_decode() */
 	char *decoded_data; /* the decoded data */
 	unsigned int decoded_len;
 
+  /* where to find the mail */
 	char *filename; /* the email filename on disk, NULL if e-mail is not from disk */
+	/*struct folder *folder;*/ /* the mail's folder, not yet implemented */
 };
+
+/* Mail status */
+#define MAIL_STATUS_UNREAD   0 /* unread messages */
+#define MAIL_STATUS_READ     1 /* read message */
+#define MAIL_STATUS_WAITSEND 2 /* wait to be sendet, new composed mail */
+#define MAIL_STATUS_SENT     3 /* sent the mail */
 
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
@@ -93,6 +96,7 @@ struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(struct mail *mail);
 void mail_free(struct mail *mail);
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
+void mail_set_status(struct mail *mail, int status_new);
 int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
@@ -117,9 +121,6 @@ struct mail_scan /* don't not access this */
 void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail);
 void mail_scan_buffer_end(struct mail_scan *ms);
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size);
-
-int mail_strip_lf(char *fn);
-
 
 /* for mail composing */
 struct composed_mail

@@ -46,6 +46,11 @@ struct MailTreelist_Data
 {
 	struct Hook display_hook;
 	int folder_type;
+
+	APTR status_unread;
+	APTR status_read;
+	APTR status_waitsend;
+	APTR status_sent;
 };
 
 STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
@@ -69,13 +74,25 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 		} else
 		{
 			/* is a mail */
+			APTR status;
 			static char size_buf[32];
 			static char date_buf[64];
+			static char status_buf[64];
 
+			switch(mail->status)
+			{
+				case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
+				case	MAIL_STATUS_READ:status = data->status_read;break;
+				case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
+				case	MAIL_STATUS_SENT:status = data->status_sent;break;
+				default: status = NULL;
+			}
+
+			sprintf(status_buf,"\33O[%08lx]",status);
 			sprintf(size_buf,"%ld",mail->size);
 			SecondsToString(date_buf,mail->seconds);
 
-			*msg->Array++ = ""; /* status */
+			*msg->Array++ = status_buf; /* status */
 			*msg->Array++ = mail->from;
 			*msg->Array++ = mail->to;
 			*msg->Array++ = mail->subject;
@@ -113,7 +130,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, "BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,COL=6",
+						MUIA_NListtree_Format, "BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,COL=6,COL=7",
 						TAG_DONE);
 
 	return (ULONG)obj;
@@ -138,10 +155,10 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							data->folder_type = tag->ti_Data;
 							if (data->folder_type == FOLDER_TYPE_SEND)
 							{
-								set(obj,MUIA_NListtree_Format,"BAR,BAR COL=2,BAR COL=3,BAR COL=4,BAR COL=5,COL=6");
+								set(obj,MUIA_NListtree_Format,"BAR,BAR COL=2,BAR COL=3,BAR COL=4,BAR COL=5,COL=6,COL=7");
 							} else
 							{
-								set(obj,MUIA_NListtree_Format,"BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6");
+								set(obj,MUIA_NListtree_Format,"BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6,COL=7");
 							}
 						}
 						break;
@@ -149,6 +166,29 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	}
 
 	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
+
+	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_unread", End, 0);
+	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_old", End, 0);
+	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_waitsend", End, 0);
+	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_sent", End, 0);
+	
+	return 1;
+}
+
+STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
+	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
+	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, data->status_waitsend);
+	if (data->status_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->status_sent);
+	return DoSuperMethodA(cl,obj,msg);
 }
 
 STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
@@ -170,6 +210,8 @@ STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, regist
 	{
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
 		case	OM_SET:				return MailTreelist_Set(cl,obj,(struct opSet*)msg);
+		case	MUIM_Setup:		return MailTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
+		case	MUIM_Cleanup:	return MailTreelist_Cleanup(cl,obj,msg);
     case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
     case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);

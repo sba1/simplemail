@@ -40,7 +40,7 @@
       if ($uh)
       {
 	$binary = fread($uh,$userfile_size);
-        $base64 = base64_encode($binary);
+        $base64 = wordwrap(base64_encode($binary),64,"\n",!);
         $boundary = "--=gzdsghkdgsdfjkdsjfk";
 
 	mail("sebauer@t-online.de","SimpleMail User Gallery",
@@ -48,10 +48,10 @@
 	     "--".$boundary."\n".
              "Content-Type: text/plain\n".
              "Content-transfer-encoding: base64\n".
-             "\n".base64_encode("Name: ".$name."\n".
-						"EMail: ".$email."\n")."\n".
+             "\n".wordwrap(base64_encode("Name: ".$name."\n".
+						"EMail: ".$email."\n"),64,"\n",1)."\n".
              "--".$boundary."\n".
-	     "Content-Disposition: attachment; filename=image".
+	     "Content-Disposition: attachment; filename=image\n".
              "Content-Type: application/octet-stream\n".
              "Content-transfer-encoding: base64\n".
 	     "\n".$base64."\n".

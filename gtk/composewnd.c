@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <gtk/gtk.h>
+
 #include "addressbook.h"
 #include "codecs.h"
 #include "folder.h"
@@ -32,7 +34,23 @@
 #include "simplemail.h"
 #include "support.h"
 
+#include "gtksupport.h"
+
 #include "composewnd.h"
+
+#define MAX_COMPOSE_OPEN 10
+static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
+
+struct Compose_Data
+{
+	GtkWidget *wnd;
+	GtkWidget *toolbar;
+	GtkWidget *text_view;
+	GtkWidget *text_scrolled_window;
+
+	int num;
+};
+
 
 #if 0
 
@@ -538,10 +556,88 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 #endif
 
 /******************************************************************
+ Compose window dispose
+*******************************************************************/
+static void compose_window_dispose(GtkObject *object, gpointer user_data)
+{
+	struct Compose_Data *data = (struct Compose_Data*)user_data;
+
+	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = NULL;
+	free(data);
+	gtk_widget_hide_all(GTK_WIDGET(object));
+}
+
+/******************************************************************
  Opens a compose window
 *******************************************************************/
 int compose_window_open(struct compose_args *args)
 {
+	int num;
+	struct Compose_Data *data;
+	GtkWidget *vbox, *but_box, *send_now_button, *send_later_button, *hold_button, *cancel_button;
+
+	for (num=0; num < MAX_COMPOSE_OPEN; num++)
+		if (!compose_open[num]) break;
+
+	if (num == MAX_COMPOSE_OPEN) return -1;
+
+	if ((data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data))))
+	{
+		memset(data,0,sizeof(struct Compose_Data));
+		data->num = num;
+		compose_open[num] = data;
+
+		data->wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(data->wnd), "SimpleMail - Compose mail");
+		gtk_window_set_default_size(GTK_WINDOW(data->wnd),640,400);
+		gtk_window_set_position(GTK_WINDOW(data->wnd),GTK_WIN_POS_CENTER);
+		gtk_signal_connect(GTK_OBJECT(data->wnd), "destroy",GTK_SIGNAL_FUNC (compose_window_dispose), data);
+
+		vbox = gtk_vbox_new(0,4);
+		gtk_container_add(GTK_CONTAINER(data->wnd), vbox);
+
+		data->toolbar = gtk_toolbar_new();
+		gtk_box_pack_start(GTK_BOX(vbox), data->toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
+		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Copy", "", NULL /* private TT */, create_pixmap(data->wnd,"Copy.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Cut", "", NULL /* private TT */, create_pixmap(data->wnd,"Cut.xpm"), NULL/* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Paste", "", NULL /* private TT */, create_pixmap(data->wnd,"Paste.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_space(GTK_TOOLBAR(data->toolbar));
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Undo", "", NULL /* private TT */, create_pixmap(data->wnd,"Undo.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Redo", "", NULL /* private TT */, create_pixmap(data->wnd,"Redo.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_space(GTK_TOOLBAR(data->toolbar));
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Attach", "", NULL /* private TT */, create_pixmap(data->wnd,"AddAttachment.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+		gtk_toolbar_append_space(GTK_TOOLBAR(data->toolbar));
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Encrypt", "", NULL /* private TT */, create_pixmap(data->wnd,"Encrypt.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        	gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Sign", "", NULL /* private TT */, create_pixmap(data->wnd,"Sign.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+
+		data->text_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->text_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+
+		data->text_view = gtk_text_view_new();
+		g_object_set(data->text_view, "editable", TRUE, NULL);
+		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
+		gtk_box_pack_start(GTK_BOX(vbox), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		but_box = gtk_hbox_new(0,4);
+		gtk_box_pack_start(GTK_BOX(vbox), but_box, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
+
+		send_now_button =  gtk_button_new_with_label("Send Now");
+		gtk_box_pack_start(GTK_BOX(but_box), send_now_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		send_later_button =  gtk_button_new_with_label("Send later");
+		gtk_box_pack_start(GTK_BOX(but_box), send_later_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		hold_button =  gtk_button_new_with_label("Hold");
+		gtk_box_pack_start(GTK_BOX(but_box), hold_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		cancel_button = gtk_button_new_with_label("Cancel");
+		gtk_box_pack_start(GTK_BOX(but_box), cancel_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		gtk_widget_show_all(data->wnd);
+	}
+	return num;
+}
+
 #if 0
 	Object *wnd, *send_later_button, *hold_button, *cancel_button;
 	Object *to_string, *subject_string;
@@ -564,7 +660,7 @@ int compose_window_open(struct compose_args *args)
 	wnd = WindowObject,
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
     MUIA_Window_Title, "SimpleMail - Compose Message",
-        
+
 		WindowContents, main_group = VGroup,
 			Child, ColGroup(2),
 				Child, MakeLabel("_To"),
@@ -666,7 +762,7 @@ int compose_window_open(struct compose_args *args)
 				End,
 			End,
 		End;
-	
+
 	if (wnd)
 	{
 		struct Compose_Data *data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data));
@@ -784,7 +880,6 @@ int compose_window_open(struct compose_args *args)
 		MUI_DisposeObject(wnd);
 	}
 #endif
-}
 
 
 

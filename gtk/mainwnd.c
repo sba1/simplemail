@@ -88,6 +88,7 @@ static void mail_row_activated(void)//GtkTreeView *treeview, GtkTypeTreePath *ar
 int main_window_init(void)
 {
 	GtkWidget *vbox, *hbox, *hpaned;
+	GtkWidget *read_button, *edit_button;
 
 	/* Create the window */
 	main_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -104,14 +105,14 @@ int main_window_init(void)
         toolbar = gtk_toolbar_new();//GTK_ORIENTATION_HORIZONTAL,GTK_TOOLBAR_BOTH);
         gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Read", "Reads the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailRead.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Edit", "Edit the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailModify.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Delete", "Delete the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailDelete.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Get Addr", "Insert the address into the addressbook", NULL /* private TT */, create_pixmap(main_wnd,"MailGetAddress.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Read", "Reads the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailRead.xpm"), callback_read_mail /* CALLBACK */, NULL /* UDATA */);
+	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Edit", "Edit the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailModify.xpm"), callback_change_mail /* CALLBACK */, NULL /* UDATA */);
+	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Delete", "Delete the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailDelete.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+	gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Get Addr", "Insert the address into the addressbook", NULL /* private TT */, create_pixmap(main_wnd,"MailGetAddress.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "New", "Create a new mail", NULL /* private TT */, create_pixmap(main_wnd,"MailNew.xpm"), callback_new_mail /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Reply", "Reply the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailReply.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
-        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Forward", "Forward the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailForward.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Reply", "Reply the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailReply.xpm"), callback_reply_mail /* CALLBACK */, NULL /* UDATA */);
+        gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Forward", "Forward the mail", NULL /* private TT */, create_pixmap(main_wnd,"MailForward.xpm"), callback_forward_mail /* CALLBACK */, NULL /* UDATA */);
 	gtk_toolbar_append_space(GTK_TOOLBAR(toolbar));
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Fetch", "Fetch the mails from the POP3 Servers", NULL /* private TT */, create_pixmap(main_wnd,"MailsFetch.xpm"), callback_fetch_mails /* CALLBACK */, NULL /* UDATA */);
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Send", "Send the mails out", NULL /* private TT */, create_pixmap(main_wnd,"MailsSend.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
@@ -279,7 +280,7 @@ void main_refresh_folders(void)
 		gtk_tree_store_append(folder_treestore, &iter, NULL);
 		gtk_tree_store_set(folder_treestore, &iter,
 			FOLDER_NAME_COLUMN, f->name,
-			FOLDER_MAILS_COLUMN, f->num_mails,
+			FOLDER_MAILS_COLUMN, folder_number_of_mails(f),
 			-1);
 
 		f = folder_next(f);

@@ -43,7 +43,7 @@
 #include "gui_main.h" /* gui_execute_arexx() */
 #include "searchwnd.h"
 
-#define FOLDER_INDEX_VERSION 5
+#define FOLDER_INDEX_VERSION 6
 
 static void folder_remove_mail(struct folder *folder, struct mail *mail);
 
@@ -810,12 +810,43 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						struct mail *m = mail_create();
 						if (m)
 						{
+							int first = 1;
+							int num_to = 0;
+
+							fread(&num_to,1,4,fh);
+
 							m->subject = fread_str(fh);
 							m->filename = fread_str(fh);
 							m->from_phrase = fread_str_no_null(fh);
 							m->from_addr = fread_str_no_null(fh);
-							m->to_phrase = fread_str_no_null(fh);
-							m->to_addr = fread_str_no_null(fh);
+
+							if ((m->to_list = malloc(sizeof(struct list))))
+								list_init(m->to_list);
+
+							while (num_to--)
+							{
+								char *realname = fread_str_no_null(fh);
+								char *email = fread_str_no_null(fh);
+								struct address *addr;
+
+								if (first)
+								{
+									m->to_phrase = mystrdup(realname);
+									m->to_addr = mystrdup(email);
+									first = 0;
+								}
+
+								if (m->to_list)
+								{
+									if ((addr = malloc(sizeof(struct address))))
+									{
+										addr->realname = realname;
+										addr->email = email;
+										list_insert_tail(m->to_list, &addr->node);
+									} /* should free realname and email on failure */
+								}
+							}
+
 							m->pop3_server = fread_str_no_null(fh);
 							m->message_id = fread_str_no_null(fh);
 							m->message_reply_id = fread_str_no_null(fh);
@@ -1810,8 +1841,19 @@ int folder_save_index(struct folder *f)
 
 		for (i=0; i < f->num_mails; i++)
 		{
+			struct mail *m = f->mail_array[i];
 			int len = 0;
 			int len_add;
+			int num_to = 0;
+			struct address *to_addr = NULL;
+
+			if (m->to_list)
+			{
+				num_to = list_length(m->to_list);
+				to_addr = (struct address*)list_first(m->to_list);
+			}
+
+			fwrite(&num_to,1,4,fh);
 
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->subject))) break;
 			len += len_add;
@@ -1820,11 +1862,17 @@ int folder_save_index(struct folder *f)
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_phrase))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->from_addr))) break;
-			len += len_add; 
-			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_phrase))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, f->mail_array[i]->to_addr))) break;
-			len += len_add;
+			
+			while (to_addr)
+			{
+				if (!(len_add = fwrite_str(fh, to_addr->realname))) break;
+				len += len_add;
+				if (!(len_add = fwrite_str(fh, to_addr->email))) break;
+				len += len_add;
+				to_addr = (struct address*)node_next(&to_addr->node);
+			}
+
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->pop3_server))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, f->mail_array[i]->message_id))) break;

@@ -57,8 +57,6 @@ void loop(void); /* gui_main.c */
 /******************************************************************
  Creates a directory including all necessaries parent directories.
  Nothing will happen if the directory already exists
- (should be in a sperate file, because of many many AmigaOS
- functions but I'm too lazy atm ;-) )
 *******************************************************************/
 int sm_makedir(char *path)
 {

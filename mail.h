@@ -57,6 +57,7 @@ struct mail
 	char *from_addr;	/* the email address */
 	char *to_phrase;	/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
 	char *to_addr;		/* the email address, only a single one */
+	struct list *to_list; /* a list of all receivers */
 	char *pop3_server; /* the name of the pop3 server where the mail has been downloaded */
 	char *reply_addr; /* the address where the mail should be replied */
 	char *subject;

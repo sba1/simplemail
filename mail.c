@@ -1493,24 +1493,6 @@ char *mail_get_from_address(struct mail *mail)
 		if (mail->from_phrase) sprintf(buf,"%s <%s>",mail->from_phrase,mail->from_addr);
 		else strcpy(buf,mail->from_addr?mail->from_addr:"");
 	}
-/*
-	struct mailbox mb;
-	char *buf = NULL;
-	char *from = mail_find_header_contents(mail,"from");
-
-	if (parse_mailbox(from,&mb))
-	{
-		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
-		if ((buf = malloc(len)))
-		{
-			if (mb.phrase)
-			{
-				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
-			} else strcpy(buf,mb.addr_spec);
-		}
-		free(mb.addr_spec);
-		free(mb.phrase);
-	}*/
 	return buf;
 }
 
@@ -1525,25 +1507,6 @@ char *mail_get_to_address(struct mail *mail)
 		if (mail->to_phrase) sprintf(buf,"%s <%s>",mail->to_phrase,mail->to_addr);
 		else strcpy(buf,mail->to_addr?mail->to_addr:"");
 	}
-
-/*
-	struct mailbox mb;
-	char *buf = NULL;
-	char *to = mail_find_header_contents(mail,"to");
-
-	if (parse_mailbox(to,&mb))
-	{
-		int len = mystrlen(mb.addr_spec) + mystrlen(mb.phrase) + 10;
-		if ((buf = malloc(len)))
-		{
-			if (mb.phrase)
-			{
-				sprintf(buf,"%s <%s>",mb.phrase,mb.addr_spec);
-			} else strcpy(buf,mb.addr_spec);
-		}
-		free(mb.addr_spec);
-		free(mb.phrase);
-	}*/
 	return buf;
 }
 
@@ -1588,6 +1551,8 @@ int mail_process_headers(struct mail *mail)
 			int more;
 			extract_name_from_address(buf,&mail->to_phrase,&mail->to_addr,&more);
 			if (more) mail->flags |= MAIL_FLAGS_GROUP;
+
+			mail->to_list = create_address_list(buf);
 			/* for display optimization */
 			if (isascii7(mail->to_phrase)) mail->flags |= MAIL_FLAGS_TO_ASCII7;
 		} else if (!mystricmp("cc",header->name))
@@ -2209,6 +2174,7 @@ void mail_free(struct mail *mail)
 	free(mail->from_addr);
 	free(mail->to_phrase);
 	free(mail->to_addr);
+	if (mail->to_list) free_address_list(mail->to_list);
 	free(mail->reply_addr);
 	free(mail->pop3_server);
 

@@ -559,7 +559,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 	/* if the application is iconified than only download mails < the selected size
 	   and don't wait for user interaction  */
-	if (main_is_iconified())
+
+	if (thread_call_parent_function_sync(main_is_iconified,0))
 	{
 		for (i=1;i<=amm;i++)
 		{

@@ -41,6 +41,7 @@
 
 #include "audioselectgroupclass.h"
 #include "compiler.h"
+#include "filterlistclass.h"
 #include "filterruleclass.h"
 #include "filterwnd.h"
 #include "muistuff.h"
@@ -458,7 +459,7 @@ static void init_filter(void)
 						Child, VGroup,
 							MUIA_Group_Spacing, 0,
 							Child, NListviewObject,
-								MUIA_NListview_NList, filter_list = NListObject,
+								MUIA_NListview_NList, filter_list = FilterListObject,
 									MUIA_NList_ConstructHook, &filter_construct_hook,
 									MUIA_NList_DestructHook, &filter_destruct_hook,
 									MUIA_NList_DisplayHook, &filter_display_hook,

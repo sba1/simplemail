@@ -110,11 +110,13 @@ char *mystristr(const char *str1, const char *str2)
  returns the length of a string. Accepts NULL pointer (returns 0
  then)
 *******************************************************************/
+#if 0
 unsigned int mystrlen(const char *str)
 {
 	if (!str) return 0;
 	return strlen(str);
 }
+#endif
 
 /******************************************************************
  Duplicates a string. NULL is accepted (will return NULL).

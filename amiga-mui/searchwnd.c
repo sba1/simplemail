@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** filterwnd.c
+** searchwnd.c
 */
 
 #include <string.h>
@@ -138,8 +138,8 @@ static void searchwnd_start(void)
 **************************************************************************/
 static void searchwnd_read(void)
 {
-	struct mail *mail;
-	mail = (struct mail*)xget(search_mail_tree, MUIA_MailTreelist_Active);
+	struct mail_info *mail;
+	mail = (struct mail_info*)xget(search_mail_tree, MUIA_MailTreelist_Active);
 	if (mail) callback_read_mail(NULL,mail,-1);
 }
 
@@ -267,7 +267,7 @@ void search_clear_results(void)
 /**************************************************************************
  Opens the search window
 **************************************************************************/
-void search_add_result(struct mail **array, int size)
+void search_add_result(struct mail_info **array, int size)
 {
 	int i;
 
@@ -316,7 +316,7 @@ int search_has_mails(void)
 /**************************************************************************
  Remove the given mail
 **************************************************************************/
-void search_remove_mail(struct mail *m)
+void search_remove_mail(struct mail_info *m)
 {
 	DoMethod(search_mail_tree, MUIM_MailTree_RemoveMail, m);
 }

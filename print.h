@@ -24,10 +24,8 @@
 #ifndef SM__PRINT_H
 #define SM__PRINT_H
 
-#ifdef __GNUC__
-struct mail;
-#endif
+struct mail_complete;
 
-int print_mail(struct mail *, int);
+int print_mail(struct mail_complete *, int);
 
 #endif

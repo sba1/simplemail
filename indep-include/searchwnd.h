@@ -22,11 +22,11 @@
 void search_open(char *foldername);
 void search_refresh_folders(void);
 void search_clear_results(void);
-void search_add_result(struct mail **array, int size);
+void search_add_result(struct mail_info **array, int size);
 void search_enable_search(void);
 void search_disable_search(void);
 int search_has_mails(void);
-void search_remove_mail(struct mail *m);
+void search_remove_mail(struct mail_info *m);
 
 #endif
 

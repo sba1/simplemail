@@ -67,13 +67,13 @@ struct mail_info
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
 	/* for mail threads */
-	struct mail *sub_thread_mail;		/* one more level */
-	struct mail *next_thread_mail;	/* the same level */
+	struct mail_info *sub_thread_mail;	/* one more level */
+	struct mail_info *next_thread_mail;	/* the same level */
 	int child_mail;									/* is a child mail */
 
 };
 
-struct mail
+struct mail_complete
 {
 	struct mail_info *info;   /* can be NULL for multipart mails */
 
@@ -100,12 +100,12 @@ struct mail
 
 	/* after mail_read_structure() */
 	/* only used in multipart messages */
-	struct mail **multipart_array;
+	struct mail_complete **multipart_array;
 	int multipart_allocated;
 	int num_multiparts;
 
   /* for "childs" of multipart messages */
-	struct mail *parent_mail; /* if NULL, mail is root */
+	struct mail_complete *parent_mail; /* if NULL, mail is root */
 
 	/* after mail_decode() */
 	char *decoded_data; /* the decoded data */
@@ -130,8 +130,11 @@ struct mail
 #define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
 
 /* A macro to easly get the mails status type */
-#define mail_get_status_type(x) (((x)->info->status) & (MAIL_STATUS_MASK))
+#define mail_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
 #define mail_is_spam(x) (mail_get_status_type(x) == MAIL_STATUS_SPAM)
+
+#define mail_info_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
+#define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /* Additional mail flags, they don't need to be stored within the filename */
 #define MAIL_FLAGS_NEW	     (1L << 0) /* it's a new mail */
@@ -153,49 +156,59 @@ struct mail
 #define mail_get_from(x) ((x)->info->from_phrase?((x)->info->from_phrase):((x)->info->from_addr))
 #define mail_get_to(x) ((x)->info->to_phrase?((x)->info->to_phrase):((x)->info->to_addr))
 
+#define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
+#define mail_info_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
+
 struct mail_info *mail_info_create(void);
 void mail_info_free(struct mail_info *);
 
-struct mail *mail_find_compound_object(struct mail *m, char *id);
-struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
-struct mail *mail_find_initial(struct mail *m);
-struct mail *mail_get_root(struct mail *m);
-struct mail *mail_get_next(struct mail *m);
+struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *id);
+struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype);
+struct mail_complete *mail_find_initial(struct mail_complete *m);
+struct mail_complete *mail_get_root(struct mail_complete *m);
+struct mail_complete *mail_get_next(struct mail_complete *m);
 int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
-char *mail_get_from_address(struct mail *mail);
-char *mail_get_to_address(struct mail *mail);
-char *mail_get_replyto_address(struct mail *mail);
+char *mail_get_from_address(struct mail_info *mail);
+char *mail_get_to_address(struct mail_info *mail);
+char *mail_get_replyto_address(struct mail_info *mail);
 
-int mail_is_marked_as_deleted(struct mail *mail);
-void mail_identify_status(struct mail *m);
-struct mail *mail_create(void);
-struct mail *mail_create_for(char *from, char *to, char *replyto, char *subject);
+int mail_is_marked_as_deleted(struct mail_info *mail);
+void mail_identify_status(struct mail_info *m);
+
+struct mail_complete *mail_complete_create(void);
+struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject);
 struct mail *mail_create_from_file(char *filename);
-struct mail *mail_create_reply(int num, struct mail **mail_array);
-struct mail *mail_create_forward(int num, struct mail **mail_array);
-void mail_free(struct mail *mail);
-int mail_read_header_list_if_empty(struct mail *m);
-int mail_process_headers(struct mail *mail);
-void mail_read_contents(char *folder, struct mail *mail);
-void mail_decode(struct mail *mail);
-void *mail_decode_bytes(struct mail *mail, unsigned int *len_ptr);
-void mail_decoded_data(struct mail *mail, void **decoded_data_ptr, int *decoded_data_len_ptr);
-int mail_create_html_header(struct mail *mail, int all_headers);
+struct mail_complete *mail_complete_create_from_file(char *filename);
+struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array);
+struct mail_complete *mail_create_forward(int num, struct mail_complete **mail_array);
 
-int mail_add_header(struct mail *mail, char *name, int name_len,
-									  char *contents, int contents_len, int avoid_duplicates);
-char *mail_find_header_contents(struct mail *mail, char *name);
+struct mail_info *mail_info_create_from_file(char *filename);
+
+
+void mail_complete_free(struct mail_complete *mail);
+
+int mail_read_header_list_if_empty(struct mail_complete *m);
+int mail_process_headers(struct mail_complete *mail);
+void mail_read_contents(char *folder, struct mail_complete *mail);
+void mail_decode(struct mail_complete *mail);
+void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr);
+void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int *decoded_data_len_ptr);
+int mail_create_html_header(struct mail_complete *mail, int all_headers);
+
+//int mail_add_header(struct mail *mail, char *name, int name_len,
+//									  char *contents, int contents_len, int avoid_duplicates);
+char *mail_find_header_contents(struct mail_complete *mail, char *name);
 char *mail_get_new_name(int status);
 char *mail_get_status_filename(char *oldfilename, int status_new);
 
 /* was static */
-struct header *mail_find_header(struct mail *mail, char *name);
+struct header *mail_find_header(struct mail_complete *mail, char *name);
 
 /* mail scan functions */
 
 struct mail_scan /* don't not access this */
 {
-	struct mail *mail; /* the mail */
+	struct mail_complete *mail; /* the mail */
 	int avoid_duplicates;
 
 	int position; /* the current position inside the mail */
@@ -206,7 +219,7 @@ struct mail_scan /* don't not access this */
 	int mode;
 };
 
-void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail, int avoid_duplicates);
+void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, int avoid_duplicates);
 void mail_scan_buffer_end(struct mail_scan *ms);
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size);
 
@@ -259,9 +272,9 @@ void append_mailbox_to_address_list(struct list *list, struct mailbox *mb);
 void remove_from_address_list(struct list *list, char *email);
 void free_address_list(struct list *list);
 
-char *mail_create_string(char *format, struct mail *mail, char *realname,
+char *mail_create_string(char *format, struct mail_info *mail, char *realname,
 												 char *addr_spec);
 
-int mail_allowed_to_download(struct mail *mail);
+int mail_allowed_to_download(struct mail_info *mail);
 
 #endif

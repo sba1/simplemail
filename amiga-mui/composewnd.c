@@ -114,7 +114,7 @@ struct Compose_Data /* should be a customclass */
 	char *folder; /* the emails folder if changed */
 	char *reply_id; /* the emails reply-id if changed */
 	int compose_action;
-	struct mail *ref_mail; /* the mail which status should be changed after editing */
+	struct mail_info *ref_mail; /* the mail which status should be changed after editing */
 
 	struct FileRequester *file_req;
 
@@ -610,7 +610,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					struct folder *f = folder_find_by_mail(data->ref_mail);
 					if (f)
 					{
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->info->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_REPLIED|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
 						main_refresh_mail(data->ref_mail);
 					}
 				} else
@@ -618,7 +618,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 					if (data->compose_action == COMPOSE_ACTION_FORWARD)
 					{
 						struct folder *f = folder_find_by_mail(data->ref_mail);
-						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->info->status & MAIL_STATUS_FLAG_MARKED));
+						folder_set_mail_status(f, data->ref_mail, MAIL_STATUS_FORWARD|(data->ref_mail->status & MAIL_STATUS_FLAG_MARKED));
 						main_refresh_mail(data->ref_mail);
 					}
 				}
@@ -663,7 +663,7 @@ static void compose_window_hold(struct Compose_Data **pdata)
 /******************************************************************
  inserts a mail into the listtree (uses recursion)
 *******************************************************************/
-static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
+static void compose_add_mail(struct Compose_Data *data, struct mail_complete *mail, struct MUI_NListtree_TreeNode *listnode)
 {
 	/* Note, the following three datas are static although the function is recursive
 	 * It minimalizes the possible stack overflow

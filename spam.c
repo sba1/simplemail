@@ -31,6 +31,7 @@
 #include "hash.h"
 #include "mail.h"
 #include "folder.h"
+#include "spam.h"
 #include "subthreads.h"
 
 #include "support_indep.h"
@@ -235,7 +236,7 @@ static int spam_feed_hash_table_callback(char *token, void *data)
 /**************************************************************************
  
 **************************************************************************/
-static void spam_feed_parsed_mail(struct hash_table *ht, struct mail *mail)
+static void spam_feed_parsed_mail(struct hash_table *ht, struct mail_complete *mail)
 {
 	if (mail->num_multiparts == 0)
 	{
@@ -270,17 +271,17 @@ static void spam_feed_parsed_mail(struct hash_table *ht, struct mail *mail)
 /**************************************************************************
  ...
 **************************************************************************/
-static int spam_feed_mail(struct folder *folder, struct mail *to_parse_mail, struct hash_table *ht)
+static int spam_feed_mail(struct folder *folder, struct mail_info *to_parse_mail, struct hash_table *ht)
 {
 	char path[380];
-	struct mail *mail;
+	struct mail_complete *mail;
 	int rc = 0;
 
 	if (getcwd(path, sizeof(path)) == NULL) return 0;
 
 	chdir(folder->path);
 
-	if ((mail = mail_create_from_file(to_parse_mail->info->filename)))
+	if ((mail = mail_complete_create_from_file(to_parse_mail->filename)))
 	{
 		mail_read_contents("",mail);
 
@@ -289,7 +290,7 @@ static int spam_feed_mail(struct folder *folder, struct mail *to_parse_mail, str
 
 		rc = 1;
 
-		mail_free(mail);
+		mail_complete_free(mail);
 	}
 	chdir(path);
 
@@ -299,7 +300,7 @@ static int spam_feed_mail(struct folder *folder, struct mail *to_parse_mail, str
 /**************************************************************************
  ...
 **************************************************************************/
-int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail)
+int spam_feed_mail_as_spam(struct folder *folder, struct mail_info *mail)
 {
 	int rc;
 	thread_lock_semaphore(sem);
@@ -315,7 +316,7 @@ int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail)
 /**************************************************************************
  ...
 **************************************************************************/
-int spam_feed_mail_as_ham(struct folder *folder, struct mail *mail)
+int spam_feed_mail_as_ham(struct folder *folder, struct mail_info *mail)
 {
 	int rc;
 
@@ -401,7 +402,7 @@ static int spam_extract_prob_callback(char *token, void *data)
 /**************************************************************************
  
 **************************************************************************/
-static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct mail *mail)
+static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct mail_complete *mail)
 {
 	if (mail->num_multiparts == 0)
 	{
@@ -437,10 +438,10 @@ static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct
  Determines wheater a mail is spam or not via statistics.
  folder_path maybe NULL.
 **************************************************************************/
-static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to_check_mail)
+static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail_info *to_check_mail)
 {
 	char path[380];
-	struct mail *mail;
+	struct mail_complete *mail;
 	int i,rc = 0;
 	struct spam_token_probability prob[NUM_OF_PROBABILITIES];
 
@@ -462,7 +463,7 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to
 		chdir(folder_path);
 	}
 
-	if ((mail = mail_create_from_file(to_check_mail->info->filename)))
+	if ((mail = mail_complete_create_from_file(to_check_mail->filename)))
 	{
 		double prod;
 		double prod2;
@@ -484,20 +485,8 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to
 		p = prod/(prod+prod2);
 		if (p>0.99) p=0.99;
 
-/*
-		for (i=0;i<NUM_OF_PROBABILITIES;i++)
-		{
-			if (prob[i].string)
-			{
-				Printf("%s %ld\n",prob[i].string,(int)(prob[i].prob*1000.0));
-			}
-		}
-
-		Printf("Prob: 0.%ld\n\n",(int)(p*100.0));
-*/
-
 		if (p > 0.9) rc = 1;
-		mail_free(mail);
+		mail_complete_free(mail);
 	}
 
 	/* change the path back */
@@ -514,13 +503,13 @@ static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to
  arrays (created via the array_xxx() functions) and stand for white
  and black lists.
 **************************************************************************/
-int spam_is_mail_spam(char *folder_path, struct mail *to_check_mail, char **white, char **black)
+int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char **white, char **black)
 {
 	char *from_addr;
 	int rc;
 
 	thread_lock_semaphore(sem);
-	if ((from_addr = to_check_mail->info->from_addr))
+	if ((from_addr = to_check_mail->from_addr))
 	{
 		if (array_contains(white,from_addr))
 			return 0;

@@ -69,9 +69,9 @@
 struct Read_Data;
 
 void display_about(void);
-static void save_contents(struct Read_Data *data, struct mail *mail);
-static void save_contents_to(struct Read_Data *data, struct mail *mail, char *drawer, char *file);
-static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
+static void save_contents(struct Read_Data *data, struct mail_complete *mail);
+static void save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file);
+static int read_window_display_mail(struct Read_Data *data, struct mail_info *mail);
 
 #define MAX_READ_OPEN 10
 static struct Read_Data *read_open[MAX_READ_OPEN];
@@ -103,9 +103,9 @@ struct Read_Data /* should be a customclass */
 
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
-	struct mail *mail; /* the mail which is displayed, a copy of the ref_mail */
+	struct mail_complete *mail; /* the mail which is displayed, a copy of the ref_mail */
 
-	struct mail *ref_mail; /* The reference to the original mail which is in the folder */
+	struct mail_info *ref_mail; /* The reference to the original mail which is in the folder */
 	char *folder_path; /* the path of the folder */
 
 	struct Hook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
@@ -122,7 +122,7 @@ static int read_cleanup(struct Read_Data *data)
 	BPTR dirlock;
 	char filename[100];
 	int rc = 1;
-	struct mail *mail = data->mail;
+	struct mail_complete *mail = data->mail;
 
 	if (!data->mail) return 1;
 	strcpy(filename,"T:");
@@ -166,7 +166,7 @@ static int read_cleanup(struct Read_Data *data)
 /******************************************************************
  Open the contents of an icon (requires version 44 of the os)
 *******************************************************************/
-static void open_contents(struct Read_Data *data, struct mail *mail)
+static void open_contents(struct Read_Data *data, struct mail_complete *mail)
 {
 	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
 	{
@@ -224,7 +224,7 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 /******************************************************************
  inserts the text of the mail into the given nlist object
 *******************************************************************/
-static void insert_text(struct Read_Data *data, struct mail *mail)
+static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 {
 	char *buf;
 	char *buf_end;
@@ -320,7 +320,7 @@ static void icon_selected(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
 	Object *icon = (Object*)(pdata[1]);
-	struct mail *mail;
+	struct mail_complete *mail;
 
 	if (icon == data->attachments_last_selected) return;
 	if (data->attachments_last_selected)
@@ -329,7 +329,7 @@ static void icon_selected(int **pdata)
 	/* We need this to do here bcause insert_text() might use it */
 	data->attachments_last_selected = icon;
 
-	if ((mail = (struct mail*)xget(icon,MUIA_UserData)))
+	if ((mail = (struct mail_complete*)xget(icon,MUIA_UserData)))
 	{
 		mail_decode(mail);
 		insert_text(data,mail);
@@ -342,7 +342,7 @@ static void icon_selected(int **pdata)
 static void icon_open(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	struct mail *mail = (struct mail *)(pdata[1]);
+	struct mail_complete *mail = (struct mail_complete *)(pdata[1]);
 
 	open_contents(data,mail);
 }
@@ -353,7 +353,7 @@ static void icon_open(int **pdata)
 static void icon_drop(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	struct mail *mail = (struct mail *)(pdata[1]);
+	struct mail_complete *mail = (struct mail_complete *)(pdata[1]);
 	Object *icon = (Object*)(pdata[2]);
 	char *path = (char*)xget(icon,MUIA_Icon_DropPath);
 
@@ -366,7 +366,7 @@ static void icon_drop(int **pdata)
 static void context_menu_trigger(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	struct mail *mail = (struct mail *)(pdata[1]);
+	struct mail_complete *mail = (struct mail_complete *)(pdata[1]);
 	Object *item = (Object*)(pdata[2]);
 
 	if (item && mail)
@@ -393,7 +393,7 @@ static void context_menu_trigger(int **pdata)
 /******************************************************************
  inserts the mime informations (uses ugly recursion)
 *******************************************************************/
-static void insert_mail(struct Read_Data *data, struct mail *mail)
+static void insert_mail(struct Read_Data *data, struct mail_complete *mail)
 {
 	int i;
 
@@ -451,7 +451,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 /******************************************************************
  Save the contents of a given mail
 *******************************************************************/
-static void save_contents(struct Read_Data *data, struct mail *mail)
+static void save_contents(struct Read_Data *data, struct mail_complete *mail)
 {
 	if (!mail) return;
 	if (!mail->num_multiparts)
@@ -468,7 +468,7 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 /******************************************************************
  Save the contents of a given mail to a given dest
 *******************************************************************/
-static void save_contents_to(struct Read_Data *data, struct mail *mail, char *drawer, char *file)
+static void save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file)
 {
 	BPTR dlock;
 	mail_decode(mail);
@@ -544,7 +544,7 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
 							/* Now write out the stuff */
 							if ((fh = Open(file, MODE_NEWFILE)))
 							{
-								char *comment = mail_get_from_address(mail_get_root(mail));
+								char *comment = mail_get_from_address(mail_get_root(mail)->info);
 								Write(fh,towrite,strlen(towrite));
 								Close(fh);
 
@@ -565,7 +565,7 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
     {
 			if ((fh = Open(file, MODE_NEWFILE)))
 			{
-				char *comment = mail_get_from_address(mail_get_root(mail));
+				char *comment = mail_get_from_address(mail_get_root(mail)->info);
 				void *cont;
 				int cont_len;
 
@@ -605,7 +605,7 @@ static void show_raw(int **pdata)
 	UnLock(lock);
 	if (!dirname) return;
 
-	len = strlen(dirname)+strlen(data->ref_mail->info->filename) + 6;
+	len = strlen(dirname)+strlen(data->ref_mail->filename) + 6;
 	if (!(buf = malloc(len+40)))
 	{
 		FreeVec(dirname);
@@ -614,7 +614,7 @@ static void show_raw(int **pdata)
 
 	strcpy(buf,"SYS:Utilities/Multiview \"");
 	strcat(buf,dirname);
-	AddPart(buf+27,data->ref_mail->info->filename,len);
+	AddPart(buf+27,data->ref_mail->filename,len);
 	strcat(buf+27,"\"");
 	sm_system(buf,NULL);
 	free(buf);
@@ -624,12 +624,12 @@ static void show_raw(int **pdata)
 /******************************************************************
  Returns the currently displayed mail
 *******************************************************************/
-struct mail *read_get_displayed_mail(struct Read_Data *data)
+struct mail_complete *read_get_displayed_mail(struct Read_Data *data)
 {
-	struct mail *mail;
+	struct mail_complete *mail;
 	if (data->attachments_last_selected)
 	{
-		mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData);
+		mail = (struct mail_complete*)xget(data->attachments_last_selected,MUIA_UserData);
 	} else {
 		if (!data->mail->num_multiparts) mail = data->mail;
 		else mail = NULL;
@@ -643,7 +643,7 @@ struct mail *read_get_displayed_mail(struct Read_Data *data)
 static void menu_print(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	struct mail *mail = read_get_displayed_mail(data);
+	struct mail_complete *mail = read_get_displayed_mail(data);
 
 	if (mail)
 	{
@@ -662,7 +662,7 @@ static void menu_print(int **pdata)
 /******************************************************************
  Shows a given mail (part)
 *******************************************************************/
-static void show_mail(struct Read_Data *data, struct mail *m)
+static void show_mail(struct Read_Data *data, struct mail_complete *m)
 {
 	if (!m) return;
 
@@ -682,14 +682,14 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 static void show_all_headers(void **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	struct mail *mail;
+	struct mail_complete *mail;
 	
 	if (!data->attachments_last_selected)
 	{
 		insert_text(data, data->mail);
 		return;
 	}
-	if (!(mail = (struct mail*)xget(data->attachments_last_selected, MUIA_UserData))) return;
+	if (!(mail = (struct mail_complete*)xget(data->attachments_last_selected, MUIA_UserData))) return;
 
 	insert_text(data, mail);
 }
@@ -711,12 +711,12 @@ void read_refresh_prevnext_button(struct folder *f)
 			data = read_open[num];
 			if (!mystrcmp(f->path, data->folder_path))
 			{
-				if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
+				if (folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 					set(data->next_button, MUIA_Disabled, FALSE);
 				else
 					set(data->next_button, MUIA_Disabled, TRUE);
 
-				if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
+				if (folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 					set(data->prev_button, MUIA_Disabled, FALSE);
 				else
 					set(data->prev_button, MUIA_Disabled, TRUE);
@@ -743,7 +743,7 @@ static void read_window_dispose(struct Read_Data **pdata)
 
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->folder_path) free(data->folder_path);
-	mail_free(data->mail);
+	mail_complete_free(data->mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
 }
@@ -753,7 +753,7 @@ static void read_window_dispose(struct Read_Data **pdata)
 *******************************************************************/
 static void save_button_pressed(struct Read_Data **pdata)
 {
-	struct mail *mail;
+	struct mail_complete *mail;
 	struct Read_Data *data = *pdata;
 
 	if (!(mail = read_get_displayed_mail(data))) return;
@@ -768,7 +768,7 @@ static void save_button_pressed(struct Read_Data **pdata)
 static void prev_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
+	struct mail_info *prev = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 	if (prev)
 	{
@@ -785,7 +785,7 @@ static void prev_button_pressed(struct Read_Data **pdata)
 static void next_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
+	struct mail_info *next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 	if (next)
 	{
@@ -801,8 +801,8 @@ static void next_button_pressed(struct Read_Data **pdata)
 static void delete_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
-	if (!next) next = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename);
+	struct mail_info *next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+	if (!next) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 	if (callback_delete_mail(data->ref_mail))
 	{
@@ -888,11 +888,11 @@ STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Obje
 {
 	struct Read_Data *data = (struct Read_Data*)h->h_Data;
 	char *uri = msg->uri;
-	struct mail *mail;
+	struct mail_complete *mail;
 
 	if (!(mail = read_get_displayed_mail(data))) return -1;
 
-	if (!mystrnicmp("http://",uri,7) && mail_allowed_to_download(data->mail))
+	if (!mystrnicmp("http://",uri,7) && mail_allowed_to_download(data->mail->info))
 	{
 		void *buf;
 		int buf_len;
@@ -926,15 +926,15 @@ STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Obje
 /******************************************************************
  Display the mail
 *******************************************************************/
-static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
+static int read_window_display_mail(struct Read_Data *data, struct mail_info *mail)
 {
 	BPTR lock;
 
 	read_cleanup(data);
-	if (data->mail) mail_free(data->mail);
+	if (data->mail) mail_complete_free(data->mail);
 	data->mail = NULL;
 
-	SM_DEBUGF(15,("displaying mail at %p with subject %s\n",mail,mail->info->subject?mail->info->subject:(utf8*)"no subject"));
+	SM_DEBUGF(15,("displaying mail at %p with subject %s\n",mail,mail->subject?mail->subject:(utf8*)"no subject"));
 
 	if (!data->folder_path) return 0;
 
@@ -953,7 +953,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 		
 		old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_create_from_file(mail->info->filename)))
+		if ((data->mail = mail_complete_create_from_file(mail->filename)))
 		{
 			int dont_show = 0;
 			mail_read_contents(data->folder_path,data->mail);
@@ -985,12 +985,12 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 			show_mail(data,mail_find_initial(data->mail));
 
 			/* set the prev/next button to disabled if last mail is reached */
-			if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
+			if (folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 				set(data->next_button, MUIA_Disabled, FALSE);
 			else
 				set(data->next_button, MUIA_Disabled, TRUE);
 
-			if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->info->filename))
+			if (folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 				set(data->prev_button, MUIA_Disabled, FALSE);
 			else
 				set(data->prev_button, MUIA_Disabled, TRUE);
@@ -1022,7 +1022,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
  for an error. You can specify the number of the window which to
  use or -1 for a random one.
 *******************************************************************/
-int read_window_open(char *folder, struct mail *mail, int window)
+int read_window_open(char *folder, struct mail_info *mail, int window)
 {
 	Object *wnd, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
@@ -1300,7 +1300,7 @@ void read_window_close(int num)
 /******************************************************************
  Returns the displayed mail of the given window
 *******************************************************************/
-struct mail *read_window_get_displayed_mail(int num)
+struct mail_complete *read_window_get_displayed_mail(int num)
 {
 	if (num < 0 || num >= MAX_READ_OPEN) return NULL;
 	if (read_open[num])

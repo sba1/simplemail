@@ -65,7 +65,7 @@
 int callback_read_active_mail(void)
 {
 	char *filename;
-	struct mail *m;
+	struct mail_info *m;
 	struct folder *f;
 
 	if (!(f = main_get_folder())) return -1;
@@ -75,15 +75,14 @@ int callback_read_active_mail(void)
 	return callback_read_mail(f,m,-1);
 }
 
-
-int callback_read_mail(struct folder *f, struct mail *mail, int window)
+int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 {
 	int num;
 
 	if (!f) f = folder_find_by_mail(mail);
 	if (!f) return -1;
 
-	if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+	if (mail->flags & MAIL_FLAGS_PARTIAL)
 	{
 		imap_download_mail(f,mail);
 		main_refresh_mail(mail);
@@ -92,11 +91,11 @@ int callback_read_mail(struct folder *f, struct mail *mail, int window)
 	num = read_window_open(f->path, mail, window);
 	if (num >= 0)
 	{
-		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD)
+		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD)
 		{
-			folder_set_mail_status(f,mail, MAIL_STATUS_READ | (mail->info->status & (~MAIL_STATUS_MASK)));
-			if (mail->info->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-			mail->info->flags &= ~MAIL_FLAGS_NEW;
+			folder_set_mail_status(f, mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
+			if (mail->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 			main_refresh_folder(f);
 		}
@@ -108,7 +107,7 @@ int callback_read_mail(struct folder *f, struct mail *mail, int window)
 void callback_delete_mails(void)
 {
 	struct folder *from_folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	int num;
 	int permanent; /* 1 if mails should be deleted permanently */
@@ -148,8 +147,8 @@ void callback_delete_mails(void)
 			mail = main_get_mail_first_selected(&handle);
 			while (mail)
 			{
-				if (mail_is_marked_as_deleted(mail)) folder_mark_undeleted(from_folder,mail);
-				else folder_mark_deleted(from_folder,mail);
+				if (mail_is_marked_as_deleted(mail)) folder_mark_mail_as_undeleted(from_folder,mail);
+				else folder_mark_mail_as_deleted(from_folder,mail);
 				mail = main_get_mail_next_selected(&handle);
 			}
 			main_refresh_mails_selected();
@@ -179,7 +178,7 @@ void callback_delete_mails(void)
 }
 
 /* a single mail of any folder should be deleted */
-int callback_delete_mail(struct mail *mail)
+int callback_delete_mail(struct mail_info *mail)
 {
 	struct folder *f = folder_find_by_mail(mail);
 	struct folder *fd = folder_deleted();
@@ -211,7 +210,7 @@ int callback_delete_mail(struct mail *mail)
 void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
 {
 	struct folder *f;
-	struct mail *mail;
+	struct mail_info *mail;
 
 	folders_lock();
 
@@ -249,7 +248,7 @@ void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
 /* get the address */
 void callback_get_address(void)
 {
-	struct mail *mail = main_get_active_mail();
+	struct mail_info *mail = main_get_active_mail();
 	if (mail)
 	{
 		char *addr,*phrase;
@@ -259,12 +258,12 @@ void callback_get_address(void)
 
 		if (folder_get_type(f) == FOLDER_TYPE_SEND)
 		{
-			phrase = mail->info->to_phrase;
-			addr = mail->info->to_addr;
+			phrase = mail->to_phrase;
+			addr = mail->to_addr;
 		} else
 		{
-			phrase = mail->info->from_phrase;
-			addr = mail->info->from_addr;
+			phrase = mail->from_phrase;
+			addr = mail->from_addr;
 		}
 
 		if (addr && !addressbook_find_entry_by_address(addr))
@@ -293,7 +292,7 @@ int callback_write_mail(char *from, char *to, char *replyto, char *subject)
 
 	win_num = compose_window_open(&ca);
 
-	if (ca.to_change) mail_free(ca.to_change);
+	if (ca.to_change) mail_complete_free(ca.to_change);
 	return win_num;
 }
 
@@ -319,10 +318,10 @@ void callback_new_mail(void)
 }
 
 /* reply this mail */
-void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_array)
+void callback_reply_mails(char *folder_path, int num, struct mail_info **to_reply_array)
 {
 	struct folder *f = folder_find_by_path(folder_path);
-	struct mail **mail_array;
+	struct mail_complete **mail_array;
 	char buf[380];
 	int i;
 
@@ -331,7 +330,7 @@ void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_arr
 	/* Download the mails if needed */
 	for (i=0;i<num;i++)
 	{
-		if (to_reply_array[i]->info->flags & MAIL_FLAGS_PARTIAL)
+		if (to_reply_array[i]->flags & MAIL_FLAGS_PARTIAL)
 		{
 			imap_download_mail(f,to_reply_array[i]);
 			main_refresh_mail(to_reply_array[i]);
@@ -340,16 +339,16 @@ void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_arr
 
 	if (getcwd(buf, sizeof(buf)) == NULL) return;
 
-	if ((mail_array = malloc(num*sizeof(struct mail *))))
+	if ((mail_array = malloc(num*sizeof(struct mail_complete *))))
 	{
-		struct mail *reply;
+		struct mail_complete *reply;
 		int err = 0;
 
 		chdir(folder_path);
 
 		for (i=0;i<num;i++)
 		{
-			if (!(mail_array[i] = mail_create_from_file(to_reply_array[i]->info->filename)))
+			if (!(mail_array[i] = mail_complete_create_from_file(to_reply_array[i]->filename)))
 			{
 				err = 1;
 				break;
@@ -378,13 +377,13 @@ void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_arr
 				ca.ref_mail = to_reply_array[0];
 				compose_window_open(&ca);
 
-				mail_free(reply);
+				mail_complete_free(reply);
 			}
 		}
 
 		for (i=0;i<num;i++)
 		{
-			if (mail_array[i]) mail_free(mail_array[i]);
+			if (mail_array[i]) mail_complete_free(mail_array[i]);
 			else break;
 		}
 		free(mail_array);
@@ -394,8 +393,8 @@ void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_arr
 /* a mail should be replied */
 void callback_reply_selected_mails(void)
 {
-	struct mail *mail;
-	struct mail **mail_array;
+	struct mail_info *mail;
+	struct mail_info **mail_array;
 	void *handle;
 	int num;
 
@@ -410,7 +409,7 @@ void callback_reply_selected_mails(void)
 
 	if (!num) return;
 
-	if ((mail_array = malloc(sizeof(struct mail *)*num)))
+	if ((mail_array = malloc(sizeof(struct mail_info *)*num)))
 	{
 		int i = 0;
 
@@ -427,10 +426,10 @@ void callback_reply_selected_mails(void)
 }
 
 /* a mail should be forwarded */
-void callback_forward_mails(char *folder_path, int num, struct mail **to_forward_array)
+void callback_forward_mails(char *folder_path, int num, struct mail_info **to_forward_array)
 {
 	struct folder *f = folder_find_by_path(folder_path);
-	struct mail **mail_array;
+	struct mail_complete **mail_array;
 	char buf[380];
 	int i;
 
@@ -439,7 +438,7 @@ void callback_forward_mails(char *folder_path, int num, struct mail **to_forward
 	/* Download the mails if needed */
 	for (i=0;i<num;i++)
 	{
-		if (to_forward_array[i]->info->flags & MAIL_FLAGS_PARTIAL)
+		if (to_forward_array[i]->flags & MAIL_FLAGS_PARTIAL)
 		{
 			imap_download_mail(f,to_forward_array[i]);
 			main_refresh_mail(to_forward_array[i]);
@@ -451,14 +450,14 @@ void callback_forward_mails(char *folder_path, int num, struct mail **to_forward
 
 	chdir(folder_path);
 
-	if ((mail_array = malloc(num*sizeof(struct mail *))))
+	if ((mail_array = malloc(num*sizeof(struct mail_complete *))))
 	{
-		struct mail *forward;
+		struct mail_complete *forward;
 		int err = 0;
 
 		for (i=0;i<num;i++)
 		{
-			if ((mail_array[i] = mail_create_from_file(to_forward_array[i]->info->filename)))
+			if ((mail_array[i] = mail_complete_create_from_file(to_forward_array[i]->filename)))
 			{
 				mail_read_contents("",mail_array[i]);
 			} else 
@@ -479,13 +478,13 @@ void callback_forward_mails(char *folder_path, int num, struct mail **to_forward
 				ca.ref_mail = to_forward_array[0];
 				compose_window_open(&ca);
 
-				mail_free(forward);
+				mail_complete_free(forward);
 			}
 		}
 
 		for (i=0;i<num;i++)
 		{
-			if (mail_array[i]) mail_free(mail_array[i]);
+			if (mail_array[i]) mail_complete_free(mail_array[i]);
 			else break;
 		}
 		free(mail_array);
@@ -497,8 +496,8 @@ void callback_forward_mails(char *folder_path, int num, struct mail **to_forward
 /* a single or multiple mails should be forwarded */
 void callback_forward_selected_mails(void)
 {
-	struct mail *mail;
-	struct mail **mail_array;
+	struct mail_info *mail;
+	struct mail_info **mail_array;
 	void *handle;
 	int num;
 
@@ -513,7 +512,7 @@ void callback_forward_selected_mails(void)
 
 	if (!num) return;
 
-	if ((mail_array = malloc(sizeof(struct mail *)*num)))
+	if ((mail_array = malloc(sizeof(struct mail_info *)*num)))
 	{
 		int i = 0;
 
@@ -531,7 +530,7 @@ void callback_forward_selected_mails(void)
 
 /* This is a helper function used by several other move functions. Its purpose is to move
    a mail from a folder to another with support for IMAP */
-static int move_mail_helper(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
+static int move_mail_helper(struct mail_info *mail, struct folder *from_folder, struct folder *dest_folder)
 {
 	int same_server;
 	int success = 0;
@@ -541,7 +540,7 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 	{
 		/* Into a spam folder only mails marked as spam can be moved unless the option
 		 * to change the mails to spam mails if moved to the spam folder is selected */
-		if (!mail_is_spam(mail) && !(mail->info->flags & MAIL_FLAGS_AUTOSPAM) && !user.config.spam_mark_moved)
+		if (!mail_is_spam(mail) && !(mail->flags & MAIL_FLAGS_AUTOSPAM) && !user.config.spam_mark_moved)
 			return 0;
 
 		if (!mail_is_spam(mail))
@@ -549,7 +548,7 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 			/* If we are here then because the mail has an autospam flag or user has configured that
 			 * all mails which goes to the spam folder get the status changes.
 			 * In both cases we change the mail status to spam and add it into the spam statistics */
-			if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+			if (mail->flags & MAIL_FLAGS_PARTIAL)
 			{
 				if (!(imap_download_mail(from_folder,mail)))
 					return 0;
@@ -562,18 +561,18 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 		}
 
 		/* Reset the autoflag since the mail now is really marked as spam */
-		folder_set_mail_flags(from_folder,mail,mail->info->flags & (~MAIL_FLAGS_AUTOSPAM));
+		folder_set_mail_flags(from_folder,mail,mail->flags & (~MAIL_FLAGS_AUTOSPAM));
 
 		/* remove the new flag */
-		if (mail->info->flags & MAIL_FLAGS_NEW && from_folder->new_mails) from_folder->new_mails--;
-		mail->info->flags &= ~MAIL_FLAGS_NEW;
+		if (mail->flags & MAIL_FLAGS_NEW && from_folder->new_mails) from_folder->new_mails--;
+		mail->flags &= ~MAIL_FLAGS_NEW;
 	}
 
 	same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
 
 	if (!same_server)
 	{
-		if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
 		{
 			imap_download_mail(from_folder,mail);
 			main_refresh_mail(mail);
@@ -584,7 +583,7 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 			if (imap_append_mail(mail, from_folder->path, dest_folder))
 			{
 				if (from_folder->is_imap)
-					imap_delete_mail_by_filename(mail->info->filename,from_folder);
+					imap_delete_mail_by_filename(mail->filename,from_folder);
 
 				folder_delete_mail(from_folder,mail);
 				success = 1;
@@ -592,7 +591,7 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 		} else
 		if (from_folder->is_imap)
 		{
-			char *filename = mystrdup(mail->info->filename);
+			char *filename = mystrdup(mail->filename);
 			if (filename)
 			{
 				/* folder_move_mail() might change the filename */
@@ -620,7 +619,7 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 }
 
 /* a single mail should be moved from a folder to another folder */
-void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
+void callback_move_mail(struct mail_info *mail, struct folder *from_folder, struct folder *dest_folder)
 {
 	if (from_folder != dest_folder)
 	{
@@ -651,8 +650,8 @@ void callback_maildrop(struct folder *dest_folder)
 	if (from_folder != dest_folder)
 	{
 		void *handle;
-		struct mail *mail;
-		struct mail **mail_array;
+		struct mail_info *mail;
+		struct mail_info **mail_array;
 		int num,moved_num;
 
 		/* find out the number of selected mails */
@@ -665,7 +664,8 @@ void callback_maildrop(struct folder *dest_folder)
 		}
 
 		if (!num) return;
-		if (!(mail_array = (struct mail**)malloc(num*sizeof(struct mail*)))) return;
+		if (!(mail_array = (struct mail_info**)malloc(num*sizeof(struct mail_info*))))
+			return;
 
 		app_busy();
 
@@ -701,7 +701,7 @@ void callback_maildrop(struct folder *dest_folder)
 }
 
 /* a single mail should be moved */
-int callback_move_mail_request(char *folder_path, struct mail *mail)
+int callback_move_mail_request(char *folder_path, struct mail_info *mail)
 {
 	struct folder *src_folder = folder_find_by_path(folder_path);
 	struct folder *dest_folder;
@@ -732,7 +732,7 @@ int callback_move_mail_request(char *folder_path, struct mail *mail)
 /* all selected mails should be moved */
 void callback_move_selected_mails(void)
 {
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	int num;
 	struct folder *src_folder;
@@ -757,7 +757,7 @@ void callback_move_selected_mails(void)
 	{
 		if (src_folder != dest_folder)
 		{
-			struct mail *mail = main_get_mail_first_selected(&handle);
+			struct mail_info *mail = main_get_mail_first_selected(&handle);
 			handle = NULL;
 			while (mail)
 			{
@@ -776,7 +776,7 @@ void callback_move_selected_mails(void)
 	app_unbusy();
 }
 
-static void display_mail(struct mail *m)
+static void display_mail(struct mail_info *m)
 {
 	/* Only display mail if it is still the active one because
 	   another mail might be selected during the delay */
@@ -800,7 +800,7 @@ void callback_check_selected_folder_for_spam(void)
 {
 	struct folder *folder = main_get_folder();
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 	char **white;
 
 	int spams = spam_num_of_spam_classified_mails();
@@ -831,16 +831,16 @@ void callback_check_selected_folder_for_spam(void)
 	else white = NULL;
 	white = array_add_array(white,user.config.spam_white_emails);
 
-	while ((m = folder_next_mail(folder, &handle)))
+	while ((m = folder_next_mail_info(folder, &handle)))
 	{
-		if (m->info->flags & MAIL_FLAGS_PARTIAL)
+		if (m->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,m);
 
 		if (spam_is_mail_spam(folder->path,m,white,user.config.spam_black_emails))
 		{
-			folder_set_mail_flags(folder, m, m->info->flags | MAIL_FLAGS_AUTOSPAM);
-			if (m->info->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
-			m->info->flags &= ~MAIL_FLAGS_NEW;
+			folder_set_mail_flags(folder, m, m->flags | MAIL_FLAGS_AUTOSPAM);
+			if (m->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			m->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(m);
 		}
 	}
@@ -855,8 +855,8 @@ void callback_move_spam_marked_mails(void)
 {
 	struct folder *folder = main_get_folder();
 	struct folder *spam_folder = folder_spam();
-	struct mail **mail_array;
-	struct mail *m;
+	struct mail_info **mail_array;
+	struct mail_info *m;
 	int i;
 
 	if (folder == spam_folder) return;
@@ -885,7 +885,7 @@ void callback_add_spam_folder_to_statistics(void)
 {
 	struct folder *spam_folder = folder_spam();
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 
 	if (!spam_folder) return;
 
@@ -904,7 +904,7 @@ void callback_classify_selected_folder_as_ham(void)
 {
 	struct folder *folder;
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 
 	if (!(folder = main_get_folder()))
 		return;
@@ -913,7 +913,7 @@ void callback_classify_selected_folder_as_ham(void)
 
 	while ((m = folder_next_mail(folder,&handle)))
 	{
-		if (!(mail_is_spam(m) || (m->info->flags & MAIL_FLAGS_AUTOSPAM)))
+		if (!(mail_is_spam(m) || (m->flags & MAIL_FLAGS_AUTOSPAM)))
 		{
 			spam_feed_mail_as_ham(folder,m);
 		}
@@ -929,13 +929,13 @@ void callback_change_mail(void)
 
 	if ((filename = main_get_mail_filename()))
 	{
-		struct mail *mail;
+		struct mail_complete *mail;
 		char buf[256];
 
 		getcwd(buf, sizeof(buf));
 		chdir(main_get_folder_drawer());
 
-		if ((mail = mail_create_from_file(filename)))
+		if ((mail = mail_complete_create_from_file(filename)))
 		{
 			struct compose_args ca;
 			mail_read_contents("",mail);
@@ -943,7 +943,7 @@ void callback_change_mail(void)
 			ca.to_change = mail;
 			ca.action = COMPOSE_ACTION_EDIT;
 			compose_window_open(&ca);
-			mail_free(mail);
+			mail_complete_free(mail);
 		}
 
 		chdir(buf);
@@ -1043,11 +1043,11 @@ int callback_folder_count_signatures(char *def_signature)
 }
 
 /* a new mail should be added to a given folder */
-struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
+struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *folder)
 {
 	int pos;
 	char buf[256];
-	struct mail *mail = NULL;
+	struct mail_info *mail = NULL;
 
 	if (!folder) return NULL;
 
@@ -1061,12 +1061,12 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 		if ((newname = mail_get_new_name(MAIL_STATUS_UNREAD)))
 		{
 			myfilecopy(filename,newname);
-			mail = mail_create_from_file(newname);
+			mail = mail_info_create_from_file(newname);
 			free(newname);
 		}
 	} else
 	{
-		mail = mail_create_from_file(filename);
+		mail = mail_info_create_from_file(filename);
 	}
 
 	if (mail)
@@ -1084,11 +1084,11 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 }
 
 /* a new mail should be added to a folder, only filename known */
-struct mail *callback_new_mail_to_folder_by_file(char *filename)
+struct mail_info *callback_new_mail_to_folder_by_file(char *filename)
 {
 	int pos;
 	char buf[256];
-	struct mail *mail = NULL;
+	struct mail_info *mail = NULL;
 	struct folder *folder;
 
 	if (!(folder = folder_find_by_file(filename))) return NULL;
@@ -1096,7 +1096,7 @@ struct mail *callback_new_mail_to_folder_by_file(char *filename)
 	getcwd(buf, sizeof(buf));
 	chdir(folder->path);
 
-	if ((mail = mail_create_from_file(filename)))
+	if ((mail = mail_info_create_from_file(filename)))
 	{
 		pos = folder_add_mail(folder,mail,1);
 		if (main_get_folder() == folder && pos != -1)
@@ -1111,12 +1111,12 @@ struct mail *callback_new_mail_to_folder_by_file(char *filename)
 }
 
 /* a new mail has arrived */
-static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
+static void callback_new_mail_arrived(struct mail_info *mail, struct folder *folder)
 {
 	struct filter *f;
 	int pos;
 
-	mail->info->flags |= MAIL_FLAGS_NEW;
+	mail->flags |= MAIL_FLAGS_NEW;
 	pos = folder_add_mail(folder,mail,1);
 
 	if (main_get_folder() == folder && pos != -1)
@@ -1144,7 +1144,7 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 
 /* checks given mail with a remote filter. Returns 1 if mail should be ignored otherwise 0
  * (yes, this has to be extented in the future) */
-int callback_remote_filter_mail(struct mail *mail)
+int callback_remote_filter_mail(struct mail_info *mail)
 {
 	struct filter *f = filter_list_first();
 	while (f)
@@ -1235,15 +1235,15 @@ void callback_export(void)
 /* a new mail has been arrived, only the filename is given */
 void callback_new_mail_arrived_filename(char *filename, int is_spam)
 {
-	struct mail *mail;
+	struct mail_info *mail;
 	char buf[256];
 
 	getcwd(buf, sizeof(buf));
 	chdir(folder_incoming()->path);
 
-	if ((mail = mail_create_from_file(filename)))
+	if ((mail = mail_info_create_from_file(filename)))
 	{
-		if (is_spam) mail->info->flags |= MAIL_FLAGS_AUTOSPAM;
+		if (is_spam) mail->flags |= MAIL_FLAGS_AUTOSPAM;
 		callback_new_mail_arrived(mail,folder_incoming());
 	}
 
@@ -1253,7 +1253,7 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 /* a new mail has been arrived into an imap folder */
 void callback_new_imap_mail_arrived(char *filename, char *server, char *path)
 {
-	struct mail *mail;
+	struct mail_info *mail;
 	struct folder *f;
 	char buf[256];
 
@@ -1263,7 +1263,7 @@ void callback_new_imap_mail_arrived(char *filename, char *server, char *path)
 	getcwd(buf, sizeof(buf));
 	chdir(f->path);
 
-	if ((mail = mail_create_from_file(filename)))
+	if ((mail = mail_info_create_from_file(filename)))
 		callback_new_mail_arrived(mail,f);
 
 	chdir(buf);
@@ -1284,7 +1284,7 @@ void callback_number_of_mails_downloaded(int num)
 }
 
 /* a new mail has been written */
-void callback_new_mail_written(struct mail *mail)
+void callback_new_mail_written(struct mail_info *mail)
 {
 	folder_add_mail(folder_outgoing(),mail,1);
 	if (main_get_folder() == folder_outgoing())
@@ -1301,7 +1301,7 @@ void callback_mail_has_been_sent(char *filename)
 	struct filter *f;
 	struct folder *out = folder_outgoing();
 	struct folder *sent = folder_sent();
-	struct mail *m;
+	struct mail_info *m;
 	if (!out || !sent) return;
 
 	if ((m = folder_find_mail_by_filename(out,filename)))
@@ -1330,7 +1330,7 @@ void callback_mail_has_been_sent(char *filename)
 void callback_mail_has_not_been_sent(char *filename)
 {
 	struct folder *out = folder_outgoing();
-	struct mail *m;
+	struct mail_info *m;
 	if (!out) return;
 
 	if ((m = folder_find_mail_by_filename(out,filename)))
@@ -1357,7 +1357,7 @@ void callback_add_imap_folder(char *server, char *path)
 }
 
 /* a mail has been changed/replaced by the user */
-void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail)
+void callback_mail_changed(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail)
 {
 	if (main_get_folder() == folder)
 	{
@@ -1370,7 +1370,7 @@ void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct m
 void callback_mails_mark(int mark)
 {
 	struct folder *folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	if (!folder) return;
 
@@ -1379,10 +1379,10 @@ void callback_mails_mark(int mark)
 	{
 		int new_status;
 
-		if (mark) new_status = mail->info->status | MAIL_STATUS_FLAG_MARKED;
-		else new_status = mail->info->status & (~MAIL_STATUS_FLAG_MARKED);
+		if (mark) new_status = mail->status | MAIL_STATUS_FLAG_MARKED;
+		else new_status = mail->status & (~MAIL_STATUS_FLAG_MARKED);
 
-		if (new_status != mail->info->status)
+		if (new_status != mail->status)
 		{
 			folder_set_mail_status(folder,mail,new_status);
 			main_refresh_mail(mail);
@@ -1396,18 +1396,18 @@ void callback_mails_mark(int mark)
 void callback_mails_set_status(int status)
 {
 	struct folder *folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	if (!folder) return;
 
 	mail = main_get_mail_first_selected(&handle);
 	while (mail)
 	{
-		int new_status = mail->info->status;
+		int new_status = mail->status;
 
 		if (status == MAIL_STATUS_HOLD || status == MAIL_STATUS_WAITSEND)
 		{
-			if (!(mail->info->flags & MAIL_FLAGS_NORCPT))
+			if (!(mail->flags & MAIL_FLAGS_NORCPT))
 			{
 				/* Only change the status if mail has an recipient. All new mails with no recipient
 				 * Will automatically get the hold state */
@@ -1427,13 +1427,13 @@ void callback_mails_set_status(int status)
 			}
 		}
 
-		new_status |= mail->info->status & MAIL_STATUS_FLAG_MARKED;
+		new_status |= mail->status & MAIL_STATUS_FLAG_MARKED;
 
-		if (new_status != mail->info->status)
+		if (new_status != mail->status)
 		{
 			folder_set_mail_status(folder,mail,new_status);
-			if (mail->info->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
-			mail->info->flags &= ~MAIL_FLAGS_NEW;
+			if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 			main_refresh_folder(folder);
 		}
@@ -1446,21 +1446,21 @@ void callback_mails_set_status(int status)
 void callback_selected_mails_are_spam(void)
 {
 	struct folder *folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	if (!folder) return;
 	mail = main_get_mail_first_selected(&handle);
 
 	while (mail)
 	{
-		if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,mail);
 
 		if (spam_feed_mail_as_spam(folder,mail))
 		{
 			folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
-			if (mail->info->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
-			mail->info->flags &= ~MAIL_FLAGS_NEW;
+			if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 		}
 		mail = main_get_mail_next_selected(&handle);
@@ -1471,23 +1471,23 @@ void callback_selected_mails_are_spam(void)
 void callback_selected_mails_are_ham(void)
 {
 	struct folder *folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	void *handle;
 	if (!folder) return;
 	mail = main_get_mail_first_selected(&handle);
 
 	while (mail)
 	{
-		if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,mail);
 
 		if (spam_feed_mail_as_ham(folder,mail))
 		{
 			int refresh = 0;
 
-			if (mail->info->flags & MAIL_FLAGS_AUTOSPAM)
+			if (mail->flags & MAIL_FLAGS_AUTOSPAM)
 			{
-				folder_set_mail_flags(folder, mail, (mail->info->flags & (~MAIL_FLAGS_AUTOSPAM)));
+				folder_set_mail_flags(folder, mail, (mail->flags & (~MAIL_FLAGS_AUTOSPAM)));
 				refresh = 1;
 			}
 
@@ -1508,7 +1508,7 @@ void callback_selected_mails_are_ham(void)
 void callback_check_selected_mails_if_spam(void)
 {
 	struct folder *folder = main_get_folder();
-	struct mail *mail;
+	struct mail_info *mail;
 	char **white;
 	void *handle;
 	if (!folder) return;
@@ -1521,16 +1521,16 @@ void callback_check_selected_mails_if_spam(void)
 	mail = main_get_mail_first_selected(&handle);
 	while (mail)
 	{
-		if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,mail);
 
 		if (!mail_is_spam(mail))
 		{
 			if (spam_is_mail_spam(folder->path,mail,white,user.config.spam_black_emails))
 			{
-				folder_set_mail_flags(folder, mail, mail->info->flags | MAIL_FLAGS_AUTOSPAM);
-				if (mail->info->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
-				mail->info->flags &= ~MAIL_FLAGS_NEW;
+				folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
+				if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+				mail->flags &= ~MAIL_FLAGS_NEW;
 				main_refresh_mail(mail);
 			}
 		}

@@ -97,10 +97,10 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		/* fill in the uids of the mails */
 		for (i=0;i < num_of_mails;i++)
 		{
-			if (folder->mail_array[i])
+			if (folder->mail_info_array[i])
 			{
-				local_mail_array[i].uid = atoi(folder->mail_array[i]->info->filename + 1);
-				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_array[i]);
+				local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
+				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);
 				num_of_todel_mails += !!local_mail_array[i].todel;
 			} else
 			{
@@ -642,7 +642,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					int i,j;
 					for (i = 0 ; i < num_of_local_mails; i++)
 					{
-						if (mail_is_marked_as_deleted(folder->mail_array[i]))
+						if (mail_is_marked_as_deleted(folder->mail_info_array[i]))
 						{
 							for (j = 0; j < num_of_remote_mails; j++)
 							{
@@ -1544,7 +1544,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 	}
 }
 
-static int imap_thread_download_mail(struct imap_server *server, struct folder *f, struct mail *m)
+static int imap_thread_download_mail(struct imap_server *server, struct folder *f, struct mail_info *m)
 {
 	char send[200];
 	char tag[20];
@@ -1555,7 +1555,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	uid = atoi(m->info->filename + 1);
+	uid = atoi(m->filename + 1);
 
 	sprintf(tag,"%04x",val++);
 	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
@@ -1599,7 +1599,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 					FILE *fh;
 
 					mystrlcpy(buf,f->path,sizeof(buf));
-					sm_add_part(buf,m->info->filename,sizeof(buf));
+					sm_add_part(buf,m->filename,sizeof(buf));
 
 					if ((fh = fopen(buf,"w")))
 					{
@@ -1624,7 +1624,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 /**************************************************************************
 	Move a mail from one folder into another one
 **************************************************************************/
-static int imap_thread_move_mail(struct mail *mail, struct imap_server *server, struct folder *src_folder, struct folder *dest_folder)
+static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *server, struct folder *src_folder, struct folder *dest_folder)
 {
 	char send[200];
 	char tag[20];
@@ -1640,7 +1640,7 @@ static int imap_thread_move_mail(struct mail *mail, struct imap_server *server, 
 	if (!imap_send_simple_command(imap_connection,send)) return 0;
 
 	success = 0;
-	uid = atoi(mail->info->filename + 1);
+	uid = atoi(mail->filename + 1);
 
 	sprintf(tag,"%04x",val++);
 	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
@@ -1757,7 +1757,7 @@ static int imap_thread_delete_mail_by_filename(char *filename, struct imap_serve
 /**************************************************************************
  Store a mail. Thread version.
 **************************************************************************/
-static int imap_thread_append_mail(struct mail *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
+static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
 {
 	char send[200];
 	char buf[380];
@@ -1792,7 +1792,7 @@ static int imap_thread_append_mail(struct mail *mail, char *source_dir, struct i
 		return 0;
 	}
 
-	if (!(fh = fopen(mail->info->filename,"r")))
+	if (!(fh = fopen(mail->filename,"r")))
 	{
 		chdir(path);
 		fclose(tfh);
@@ -1882,17 +1882,17 @@ void imap_thread_connect(struct folder *folder)
 /**************************************************************************
  Download the given mail from the imap server using 
 ***************************************************************************/
-int imap_download_mail(struct folder *f, struct mail *m)
+int imap_download_mail(struct folder *f, struct mail_info *m)
 {
 	struct imap_server *server;
 
-	if (!(m->info->flags & MAIL_FLAGS_PARTIAL)) return 0;
+	if (!(m->flags & MAIL_FLAGS_PARTIAL)) return 0;
 	if (!(server = account_find_imap_server_by_folder(f))) return 0;
 	if (!imap_start_thread()) return 0;
 
 	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 3, server, f, m))
 	{
-		folder_set_mail_flags(f,m, (m->info->flags & (~MAIL_FLAGS_PARTIAL)));
+		folder_set_mail_flags(f, m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
 		return 1;
 	}
 	return 0;
@@ -1901,7 +1901,7 @@ int imap_download_mail(struct folder *f, struct mail *m)
 /**************************************************************************
  Moves the mail from a source folder to a destination folder
 ***************************************************************************/
-int imap_move_mail(struct mail *mail, struct folder *src_folder, struct folder *dest_folder)
+int imap_move_mail(struct mail_info *mail, struct folder *src_folder, struct folder *dest_folder)
 {
 	struct imap_server *server;
 
@@ -1936,7 +1936,7 @@ int imap_delete_mail_by_filename(char *filename, struct folder *folder)
 /**************************************************************************
  Store the given mail in the given folder of an imap server
 ***************************************************************************/
-int imap_append_mail(struct mail *mail, char *source_dir, struct folder *dest_folder)
+int imap_append_mail(struct mail_info *mail, char *source_dir, struct folder *dest_folder)
 {
 	struct imap_server *server;
 

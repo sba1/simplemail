@@ -47,7 +47,7 @@
 
 #define FOLDER_INDEX_VERSION 7
 
-static void folder_remove_mail(struct folder *folder, struct mail *mail);
+static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
 
 /* folder sort stuff
    to control the compare functions */
@@ -74,27 +74,27 @@ static int mail_compare(const void *arg1, const void *arg2)
 /******************************************************************
  The special sorting functions
 *******************************************************************/
-static int mail_compare_status(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_status(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
 	int rc;
 
-	if (arg1->info->flags & MAIL_FLAGS_NEW && !(arg2->info->flags & MAIL_FLAGS_NEW)) rc = -1;
-	else if (arg2->info->flags & MAIL_FLAGS_NEW && !(arg1->info->flags & MAIL_FLAGS_NEW)) rc = 1;
-	else rc = (arg1->info->status & MAIL_STATUS_MASK) - (arg2->info->status & MAIL_STATUS_MASK);
+	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) rc = -1;
+	else if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) rc = 1;
+	else rc = (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
 	if (reverse) rc *= -1;
 	return rc;
 }
 
-static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_from(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = utf8stricmp(mail_get_from(arg1),mail_get_from(arg2));
+	int rc = utf8stricmp(mail_info_get_from(arg1),mail_info_get_from(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
 
-static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_to(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = utf8stricmp(mail_get_to(arg1),mail_get_to(arg2));
+	int rc = utf8stricmp(mail_info_get_to(arg1),mail_info_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -157,48 +157,48 @@ static char *mail_get_compare_subject(char *subj)
 	return subj;
 }
 
-static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_subject(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = utf8stricmp(mail_get_compare_subject(arg1->info->subject),mail_get_compare_subject(arg2->info->subject));
+	int rc = utf8stricmp(mail_get_compare_subject(arg1->subject),mail_get_compare_subject(arg2->subject));
 	if (reverse) rc *= -1;
 	return rc;
 }
 
-static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_reply(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	int rc = utf8stricmp(arg1->info->reply_addr,arg2->info->reply_addr);
+	int rc = utf8stricmp(arg1->reply_addr, arg2->reply_addr);
 	if (reverse) rc *= -1;
 	return rc;
 }
 
-static int mail_compare_date(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_date(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	if (arg1->info->seconds > arg2->info->seconds) return reverse?(-1):1;
-	else if (arg1->info->seconds == arg2->info->seconds) return 0;
+	if (arg1->seconds > arg2->seconds) return reverse?(-1):1;
+	else if (arg1->seconds == arg2->seconds) return 0;
 	return reverse?1:(-1);
 }
 
-static int mail_compare_size(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_size(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	if (arg1->info->size > arg2->info->size) return reverse?(-1):1;
-	else if (arg1->info->size == arg2->info->size) return 0;
+	if (arg1->size > arg2->size) return reverse?(-1):1;
+	else if (arg1->size == arg2->size) return 0;
 	return reverse?1:(-1);
 }
 
-static int mail_compare_filename(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_filename(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	return mystricmp(arg1->info->filename, arg2->info->filename);
+	return mystricmp(arg1->filename, arg2->filename);
 }
 
-static int mail_compare_pop3(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	return mystricmp(arg1->info->pop3_server, arg2->info->pop3_server);
+	return mystricmp(arg1->pop3_server, arg2->pop3_server);
 }
 
-static int mail_compare_recv(const struct mail *arg1, const struct mail *arg2, int reverse)
+static int mail_compare_recv(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	if (arg1->info->received > arg2->info->received) return reverse?(-1):1;
-	else if (arg1->info->received == arg2->info->received) return 0;
+	if (arg1->received > arg2->received) return reverse?(-1):1;
+	else if (arg1->received == arg2->received) return 0;
 	return reverse?1:(-1);
 }
 
@@ -373,14 +373,14 @@ void folder_delete_all_indexfiles(void)
 *******************************************************************/
 static int folder_prepare_for_additional_mails(struct folder *folder, int num_mails)
 {
-	struct mail **new_mail_array;
-	int new_mail_array_allocated = folder->mail_array_allocated + num_mails + 5;
+	struct mail_info **new_mail_array;
+	int new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
 
-	new_mail_array = realloc(folder->mail_array,new_mail_array_allocated*sizeof(struct mail*));
+	new_mail_array = realloc(folder->mail_info_array, new_mail_array_allocated*sizeof(struct mail_info*));
 	if (!new_mail_array) return 0;
 
-	folder->mail_array_allocated = new_mail_array_allocated;
-	folder->mail_array = new_mail_array;
+	folder->mail_info_array_allocated = new_mail_array_allocated;
+	folder->mail_info_array = new_mail_array;
 
 	return 1;
 }
@@ -434,7 +434,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
  The position of the mail is returned if the array was sorted or
  the number of mails if not else (-1) for an error.
 *******************************************************************/
-int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
+int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 {
 	int i,pos;
 
@@ -456,13 +456,13 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 			return 1;
 		}
 
-		if (folder->num_pending_mails == folder->pending_mail_array_allocated)
+		if (folder->num_pending_mails == folder->pending_mail_info_array_allocated)
 		{
-			struct mail **array = realloc(folder->pending_mail_array,(folder->pending_mail_array_allocated + 16)*sizeof(struct mail*));
+			struct mail_info **array = realloc(folder->pending_mail_info_array,(folder->pending_mail_info_array_allocated + 16)*sizeof(struct mail_info*));
 			if (!array) return 0;
 
-			folder->pending_mail_array_allocated += 16;
-			folder->pending_mail_array = array;
+			folder->pending_mail_info_array_allocated += 16;
+			folder->pending_mail_info_array = array;
 		}
 
 		/* set the pending flag within the indexfile if there were no pending mails before */
@@ -471,24 +471,24 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 			if (!folder_set_pending_flag_in_indexfile(folder)) return 0;
 		}
 
-		folder->pending_mail_array[folder->num_pending_mails++] = mail;
+		folder->pending_mail_info_array[folder->num_pending_mails++] = mail;
 		folder->num_index_mails++;
-		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-		if (mail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
+		if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 		SM_DEBUGF(10,("Mail has been successfully added as a pending mail\n"));
 		return 1;
 	}
 
 	/* free the sorted mail array */
-	if (folder->sorted_mail_array && !sort)
+	if (folder->sorted_mail_info_array && !sort)
 	{
-		free(folder->sorted_mail_array);
-		folder->sorted_mail_array = NULL;
-	} else if (!folder->sorted_mail_array && sort)
+		free(folder->sorted_mail_info_array);
+		folder->sorted_mail_info_array = NULL;
+	} else if (!folder->sorted_mail_info_array && sort)
 	{
 		void *handle = NULL;
 		/* this should sort the folder */
-		folder_next_mail(folder, &handle);
+		folder_next_mail_info(folder, &handle);
 	}
 
 	/* delete the indexfile if not already done */
@@ -498,106 +498,107 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 		folder->index_uptodate = 0;
 	}
 
-	if (folder->mail_array_allocated == folder->num_mails)
+	if (folder->mail_info_array_allocated == folder->num_mails)
 	{
-		folder->mail_array_allocated += 50;
-		folder->mail_array = realloc(folder->mail_array,folder->mail_array_allocated*sizeof(struct mail*));
+		folder->mail_info_array_allocated += 50;
+		folder->mail_info_array = realloc(folder->mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail*));
 
-		if (folder->sorted_mail_array)
-			folder->sorted_mail_array = realloc(folder->sorted_mail_array,folder->mail_array_allocated*sizeof(struct mail*));
+		if (folder->sorted_mail_info_array)
+			folder->sorted_mail_info_array = realloc(folder->sorted_mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail*));
 	}
 
-	if (!folder->mail_array)
+	if (!folder->mail_info_array)
 	{
-		folder->mail_array_allocated = 0;
+		folder->mail_info_array_allocated = 0;
 		return -1;
 	}
 
-	if (mail->info->message_id)
+	if (mail->message_id)
 	{
 		/* check if there is already an mail with the same message id, this would cause
   	   problems */
 		for (i=0;i<folder->num_mails;i++)
 		{
-			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->info->message_id,fm->info->message_id)))
+			struct mail_info *fm = folder->mail_info_array[i];
+			if (!(mystricmp(mail->message_id,fm->message_id)))
 			{
-				if (mail->info->message_id)
+				if (mail->message_id)
 				{
-					free(mail->info->message_id);
-					mail->info->message_id = NULL;
+					free(mail->message_id);
+					mail->message_id = NULL;
 				}
 			}
 		}
 	}
 
-	if (folder->sorted_mail_array)
+	if (folder->sorted_mail_info_array)
 	{
 		mail_compare_set_sort_mode(folder);
 
 		/* this search routine has O(n) but should be improved to O(log n) with binary serach */
 		for (pos=0;pos<folder->num_mails;pos++)
 		{
-			if (mail_compare(&folder->sorted_mail_array[pos],&mail) > 0) break;
+			if (mail_compare(&folder->sorted_mail_info_array[pos],&mail) > 0) break;
 		}
 
-		memmove(&folder->sorted_mail_array[pos+1],&folder->sorted_mail_array[pos],(folder->num_mails - pos)*sizeof(struct mail*));
-		folder->sorted_mail_array[pos] = mail;
+		memmove(&folder->sorted_mail_info_array[pos+1],&folder->sorted_mail_info_array[pos],(folder->num_mails - pos)*sizeof(struct mail*));
+		folder->sorted_mail_info_array[pos] = mail;
 	} else pos = folder->num_mails;
 
-	folder->mail_array[folder->num_mails++] = mail;
+	folder->mail_info_array[folder->num_mails++] = mail;
 	if (folder->num_mails > folder->num_index_mails) folder->num_index_mails = folder->num_mails;
-	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-	if (mail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+	if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
+	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
 	/* sort the mails for threads */
-	if (mail->info->message_id)
+	if (mail->message_id)
 	{
 		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
-			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->info->message_id,fm->info->message_reply_id)))
+			struct mail_info *fm = folder->mail_info_array[i];
+			if (!(mystricmp(mail->message_id,fm->message_reply_id)))
 			{
-				if (!mail->info->sub_thread_mail)
+				if (!mail->sub_thread_mail)
 				{
-					mail->info->sub_thread_mail = fm;
+					mail->sub_thread_mail = fm;
 				} else
 				{
-					struct mail *m = mail->info->sub_thread_mail;
-					struct mail *next = m->info->next_thread_mail;
+					struct mail_info *m = mail->sub_thread_mail;
+					struct mail_info *next = m->next_thread_mail;
 					while (next)
 					{
 						m = next;
-						next = next->info->next_thread_mail;
+						next = next->next_thread_mail;
 					}
-					m->info->next_thread_mail = fm;
+					m->next_thread_mail = fm;
 				}
-				fm->info->child_mail = 1;
+				fm->child_mail = 1;
 			}
 		}
 	}
-	if (mail->info->message_reply_id)
+
+	if (mail->message_reply_id)
 	{
 		for (i=0;i<folder->num_mails-1;i++) /* ignore the last mail since it is this mail */
 		{
-			struct mail *fm = folder->mail_array[i];
-			if (!(mystricmp(mail->info->message_reply_id,fm->info->message_id)))
+			struct mail_info *fm = folder->mail_info_array[i];
+			if (!(mystricmp(mail->message_reply_id,fm->message_id)))
 			{
-				if (!fm->info->sub_thread_mail)
+				if (!fm->sub_thread_mail)
 				{
-					fm->info->sub_thread_mail = mail;
+					fm->sub_thread_mail = mail;
 				} else
 				{
-					struct mail *m = fm->info->sub_thread_mail;
-					struct mail *next = m->info->next_thread_mail;
+					struct mail_info *m = fm->sub_thread_mail;
+					struct mail_info *next = m->next_thread_mail;
 					while (next)
 					{
 						m = next;
-						next = next->info->next_thread_mail;
+						next = next->next_thread_mail;
 					}
-					m->info->next_thread_mail = mail;
+					m->next_thread_mail = mail;
 				}
-				mail->info->child_mail = 1;
+				mail->child_mail = 1;
 				break;
 			}
 		}
@@ -610,10 +611,10 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
  Removes a mail from the given folder.
  (does not free it)
 *******************************************************************/
-static void folder_remove_mail(struct folder *folder, struct mail *mail)
+static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail)
 {
 	int i;
-	struct mail *submail;
+	struct mail_info *submail;
 
 	/* lock the folder, because we are going to remove something */
 	folder_lock(folder);
@@ -623,10 +624,10 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
-	if (folder->sorted_mail_array)
+	if (folder->sorted_mail_info_array)
 	{
-		free(folder->sorted_mail_array);
-		folder->sorted_mail_array = NULL;
+		free(folder->sorted_mail_info_array);
+		folder->sorted_mail_info_array = NULL;
 	}
 
 	/* delete the indexfile if not already done */
@@ -638,9 +639,9 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (folder->mail_array[i]->info->sub_thread_mail == mail)
+		if (folder->mail_info_array[i]->sub_thread_mail == mail)
 		{
-			folder->mail_array[i]->info->sub_thread_mail = mail->info->next_thread_mail;
+			folder->mail_info_array[i]->sub_thread_mail = mail->next_thread_mail;
 /*		struct mail *nm = mail->next_thread_mail;
 			folder->mail_array[i]->sub_thread_mail = NULL;
 			while (nm)
@@ -652,42 +653,42 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 			}*/
 		}
 
-		if (folder->mail_array[i]->info->next_thread_mail == mail)
+		if (folder->mail_info_array[i]->next_thread_mail == mail)
 		{
-			folder->mail_array[i]->info->next_thread_mail = mail->info->next_thread_mail;
+			folder->mail_info_array[i]->next_thread_mail = mail->next_thread_mail;
 		}
 	}
 
-	if ((submail = mail->info->sub_thread_mail))
+	if ((submail = mail->sub_thread_mail))
 	{
 		while (submail)
 		{
-			struct mail *next = submail->info->next_thread_mail;
-			submail->info->next_thread_mail = NULL;
-			submail->info->child_mail = 0;
+			struct mail_info *next = submail->next_thread_mail;
+			submail->next_thread_mail = NULL;
+			submail->child_mail = 0;
 			submail = next;
 		}
 	}
-	mail->info->sub_thread_mail = NULL;
-	mail->info->next_thread_mail = NULL;
-	mail->info->child_mail = 0;
+	mail->sub_thread_mail = NULL;
+	mail->next_thread_mail = NULL;
+	mail->child_mail = 0;
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (folder->mail_array[i] == mail)
+		if (folder->mail_info_array[i] == mail)
 		{
 			folder->num_mails--;
 
 			for (; i < folder->num_mails; i++)
 			{
-				folder->mail_array[i] = folder->mail_array[i+1];
+				folder->mail_info_array[i] = folder->mail_info_array[i+1];
 			}
 		}
 	}
 
 	folder->num_index_mails--;
-	if ((mail_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
-	if ((mail->info->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+	if ((mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
+	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 
 	folder_unlock(folder);
 }
@@ -695,9 +696,9 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 /******************************************************************
  Mark the mail as deleted (only imap folders)
 *******************************************************************/
-void folder_mark_deleted(struct folder *folder, struct mail *mail)
+void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail)
 {
-	char *newfilename = mystrdup(mail->info->filename);
+	char *newfilename = mystrdup(mail->filename);
 	char buf[256];
 
 	if (!folder->is_imap) return;
@@ -706,10 +707,10 @@ void folder_mark_deleted(struct folder *folder, struct mail *mail)
 	chdir(folder->path);
 
 	if ((*newfilename == 'u') || (*newfilename == 'U')) *newfilename = 'd';
-	if (!rename(mail->info->filename,newfilename))
+	if (!rename(mail->filename,newfilename))
 	{
-		free(mail->info->filename);
-		mail->info->filename = newfilename;
+		free(mail->filename);
+		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
 		if (folder->index_uptodate)
@@ -725,9 +726,9 @@ void folder_mark_deleted(struct folder *folder, struct mail *mail)
 /******************************************************************
  Mark the mail as undeleted (only imap folders)
 *******************************************************************/
-void folder_mark_undeleted(struct folder *folder, struct mail *mail)
+void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail)
 {
-	char *newfilename = mystrdup(mail->info->filename);
+	char *newfilename = mystrdup(mail->filename);
 	char buf[256];
 
 	if (!folder->is_imap) return;
@@ -736,10 +737,10 @@ void folder_mark_undeleted(struct folder *folder, struct mail *mail)
 	chdir(folder->path);
 
 	if ((*newfilename == 'd') || (*newfilename == 'D')) *newfilename = 'u';
-	if (!rename(mail->info->filename,newfilename))
+	if (!rename(mail->filename,newfilename))
 	{
-		free(mail->info->filename);
-		mail->info->filename = newfilename;
+		free(mail->filename);
+		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
 		if (folder->index_uptodate)
@@ -756,7 +757,7 @@ void folder_mark_undeleted(struct folder *folder, struct mail *mail)
  Replaces a mail with a new one (the replaced mail isn't freed)
  in the given folder
 *******************************************************************/
-void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail)
+void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, struct mail_info *newmail)
 {
 	int i;
 
@@ -767,10 +768,10 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
-	if (folder->sorted_mail_array)
+	if (folder->sorted_mail_info_array)
 	{
-		free(folder->sorted_mail_array);
-		folder->sorted_mail_array = NULL;
+		free(folder->sorted_mail_info_array);
+		folder->sorted_mail_info_array = NULL;
 	}
 
 	/* Delete the indexfile if not already done */
@@ -782,19 +783,19 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (folder->mail_array[i] == toreplace)
+		if (folder->mail_info_array[i] == toreplace)
 		{
-			folder->mail_array[i] = newmail;
+			folder->mail_info_array[i] = newmail;
 			break;
 		}
 	}
 
 	/* update the mail statistics */
-	if ((mail_get_status_type(toreplace) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
-	if ((toreplace->info->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+	if ((mail_info_get_status_type(toreplace) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
+	if ((toreplace->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 
-	if (mail_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-	if (newmail->info->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+	if (mail_info_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
+	if (newmail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
   folder_unlock(folder);
 }
@@ -887,13 +888,13 @@ int folder_number_of_new_mails(struct folder *folder)
  Also note that this function makes no check if the status change makes
  sense.
 *******************************************************************/
-void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new)
+void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int status_new)
 {
 	int i, mail_found = 0;
 	/* first check the pending mail array */
 	for (i=0;i<folder->num_pending_mails;i++)
 	{
-		if (folder->pending_mail_array[i]==mail)
+		if (folder->pending_mail_info_array[i]==mail)
 		{
 			mail_found = 1;
 			break;
@@ -908,7 +909,7 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 		
 		for (i=0;i<folder->num_mails;i++)
 		{
-			if (folder->mail_array[i]==mail)
+			if (folder->mail_info_array[i]==mail)
 			{
 				mail_found = 1;
 				break;
@@ -919,19 +920,19 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 	{
 		char *filename;
 
-		if (status_new == mail->info->status)
+		if (status_new == mail->status)
 			return;
 
 		/* update the mail statistics */
-		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
+		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD && folder->unread_mails) folder->unread_mails--;
 		if ((status_new & MAIL_STATUS_MASK) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 
-		mail->info->status = status_new;
-		if (!mail->info->filename) return;
+		mail->status = status_new;
+		if (!mail->filename) return;
 
-		filename = mail_get_status_filename(mail->info->filename, status_new);
+		filename = mail_get_status_filename(mail->filename, status_new);
 
-		if (strcmp(mail->info->filename,filename))
+		if (strcmp(mail->filename,filename))
 		{
 			char buf[256];
 			int renamed = 0;
@@ -939,18 +940,18 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 			getcwd(buf, sizeof(buf));
 			chdir(folder->path);
 
-			if (rename(mail->info->filename,filename))
+			if (rename(mail->filename,filename))
 			{
 				/* renaming went wrong, try a different name */
 				free(filename);
 				filename = mail_get_new_name(status_new);
-				if (!rename(mail->info->filename,filename)) renamed = 1;
+				if (!rename(mail->filename,filename)) renamed = 1;
 			} else renamed = 1;
 
 			if (renamed)
 			{
-				free(mail->info->filename);
-				mail->info->filename = filename;
+				free(mail->filename);
+				mail->filename = filename;
 			}
 
 			chdir(buf);
@@ -968,10 +969,10 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 /******************************************************************
  Set the flags of a mail. 
 *******************************************************************/
-void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new)
+void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int flags_new)
 {
-	if (mail->info->flags == flags_new) return;
-	mail->info->flags = flags_new;
+	if (mail->flags == flags_new) return;
+	mail->flags = flags_new;
 
 	/* Delete the indexfile if not already done */
 	if (folder->index_uptodate)
@@ -1002,16 +1003,16 @@ int folder_count_signatures(char *def_signature)
 /******************************************************************
  Finds a mail with a given filename in the given folder
 *******************************************************************/
-struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
+struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename)
 {
 	int i;
 
 	/* first check the pendig mail array */
 	for (i=0; i < folder->num_pending_mails; i++)
 	{
-		if (!mystricmp(folder->pending_mail_array[i]->info->filename,filename))
+		if (!mystricmp(folder->pending_mail_info_array[i]->filename,filename))
 		{
-			return folder->pending_mail_array[i];
+			return folder->pending_mail_info_array[i];
 		}
 	}
 
@@ -1022,9 +1023,9 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (!mystricmp(folder->mail_array[i]->info->filename,filename))
+		if (!mystricmp(folder->mail_info_array[i]->filename,filename))
 		{
-			return folder->mail_array[i];
+			return folder->mail_info_array[i];
 		}
 	}
 
@@ -1035,7 +1036,7 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
  Find a mail with a given uid (which maps to a filename) in the
  given imap folder
 *******************************************************************/
-struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid)
+struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid)
 {
 	int i,l;
 	char buf[20];
@@ -1048,10 +1049,10 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int ui
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (!mystrnicmp(buf,folder->mail_array[i]->info->filename + 1,l))
+		if (!mystrnicmp(buf,folder->mail_info_array[i]->filename + 1,l))
 		{
-			if (folder->mail_array[i]->info->filename[l+1] == '.' || folder->mail_array[i]->info->filename[l+1] == 0)
-				return folder->mail_array[i];
+			if (folder->mail_info_array[i]->filename[l+1] == '.' || folder->mail_info_array[i]->filename[l+1] == 0)
+				return folder->mail_info_array[i];
 		}
 	}
 	return NULL;
@@ -1077,10 +1078,10 @@ int folder_rescan(struct folder *folder)
 
 	if ((dfd = opendir(SM_CURRENT_DIR)))
 	{
-		free(folder->mail_array);
-		free(folder->sorted_mail_array);
-		folder->mail_array = folder->sorted_mail_array = NULL;
-		folder->mail_array_allocated = 0;
+		free(folder->mail_info_array);
+		free(folder->sorted_mail_info_array);
+		folder->mail_info_array = folder->sorted_mail_info_array = NULL;
+		folder->mail_info_array_allocated = 0;
 		folder->num_mails = 0;
 		folder->new_mails = 0;
 		folder->unread_mails = 0;
@@ -1090,11 +1091,11 @@ int folder_rescan(struct folder *folder)
 
 		while ((dptr = readdir(dfd)) != NULL)
 		{
-			struct mail *m;
+			struct mail_info *m;
 
 			if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
 
-			if ((m = mail_create_from_file(dptr->d_name)))
+			if ((m = mail_info_create_from_file(dptr->d_name)))
 			{
 				folder_add_mail(folder,m,0);
 			}
@@ -1170,25 +1171,25 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 						while (num_mails-- && !feof(fh))
 						{
-							struct mail *m;
+							struct mail_info *m;
 							int num_to = 0;
 							int num_cc = 0;
 
 							if (fread(&num_to,1,4,fh) != 4) break;
 							if (fread(&num_cc,1,4,fh) != 4) break;
 
-							if ((m = mail_create()))
+							if ((m = mail_info_create()))
 							{
 								int first = 1;
 
-								m->info->subject = fread_str(fh);
-								m->info->filename = fread_str(fh);
-								m->info->from_phrase = fread_str_no_null(fh);
-								m->info->from_addr = fread_str_no_null(fh);
+								m->subject = fread_str(fh);
+								m->filename = fread_str(fh);
+								m->from_phrase = fread_str_no_null(fh);
+								m->from_addr = fread_str_no_null(fh);
 
 								/* Read the to list */
-								if ((m->info->to_list = malloc(sizeof(struct list))))
-									list_init(m->info->to_list);
+								if ((m->to_list = malloc(sizeof(struct list))))
+									list_init(m->to_list);
 
 								while (num_to--)
 								{
@@ -1198,25 +1199,25 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 									if (first)
 									{
-										m->info->to_phrase = mystrdup(realname);
-										m->info->to_addr = mystrdup(email);
+										m->to_phrase = mystrdup(realname);
+										m->to_addr = mystrdup(email);
 										first = 0;
 									}
 
-									if (m->info->to_list)
+									if (m->to_list)
 									{
 										if ((addr = malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->info->to_list, &addr->node);
+											list_insert_tail(m->to_list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
 
 								/* Read the cc list */
-								if ((m->info->cc_list = malloc(sizeof(struct list))))
-									list_init(m->info->cc_list);
+								if ((m->cc_list = malloc(sizeof(struct list))))
+									list_init(m->cc_list);
 
 								while (num_cc--)
 								{
@@ -1224,36 +1225,30 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 									char *email = fread_str_no_null(fh);
 									struct address *addr;
 
-									if (m->info->cc_list)
+									if (m->cc_list)
 									{
 										if ((addr = malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->info->cc_list, &addr->node);
+											list_insert_tail(m->cc_list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
 
-								m->info->pop3_server = fread_str_no_null(fh);
-								m->info->message_id = fread_str_no_null(fh);
-								m->info->message_reply_id = fread_str_no_null(fh);
-								m->info->reply_addr = fread_str_no_null(fh);
+								m->pop3_server = fread_str_no_null(fh);
+								m->message_id = fread_str_no_null(fh);
+								m->message_reply_id = fread_str_no_null(fh);
+								m->reply_addr = fread_str_no_null(fh);
 
 								fseek(fh,ftell(fh)%2,SEEK_CUR);
-								fread(&m->info->size,1,sizeof(m->info->size),fh);
-								fread(&m->info->seconds,1,sizeof(m->info->seconds),fh);
-								fread(&m->info->received,1,sizeof(m->info->received),fh);
-								fread(&m->info->flags,1,sizeof(m->info->flags),fh);
+								fread(&m->size,1,sizeof(m->size),fh);
+								fread(&m->seconds,1,sizeof(m->seconds),fh);
+								fread(&m->received,1,sizeof(m->received),fh);
+								fread(&m->flags,1,sizeof(m->flags),fh);
 								mail_identify_status(m);
 
-								/* TODO: I think it's not necessary to call this function here, however
-								 * I let it in because there might occur strange side effects if some
-								 * additions are done and is not carefully enough (e.g. mail_process_header()
-								 * sets defaults which isn't done here) */
-								mail_process_headers(m);
-
-								m->info->flags &= ~MAIL_FLAGS_NEW;
+								m->flags &= ~MAIL_FLAGS_NEW;
 								folder_add_mail(folder,m,0);
 							}
 						}
@@ -1261,7 +1256,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 						if (folder->num_pending_mails)
 						{
 							for (i=0;i<folder->num_pending_mails;i++)
-								folder_add_mail(folder,folder->pending_mail_array[i],0);
+								folder_add_mail(folder,folder->pending_mail_info_array[i],0);
 							folder->num_pending_mails = 0;
 
 							fclose(fh);
@@ -1300,12 +1295,12 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
  copied). The mail will get a New Flag. The mail is correctly
  sorted in and the position is returned (-1 for an error)
 *******************************************************************/
-int folder_add_mail_incoming(struct mail *mail)
+int folder_add_mail_incoming(struct mail_info *mail)
 {
 	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
 	if (folder)
 	{
-		mail->info->flags |= MAIL_FLAGS_NEW;
+		mail->flags |= MAIL_FLAGS_NEW;
 		return folder_add_mail(folder,mail,1);
 	}
 	return -1;
@@ -1944,22 +1939,22 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		/* free all kind of data */
 
 		/* free the sorted mail array */
-		if (f->sorted_mail_array)
+		if (f->sorted_mail_info_array)
 		{
-			free(f->sorted_mail_array);
-			f->sorted_mail_array = NULL;
+			free(f->sorted_mail_info_array);
+			f->sorted_mail_info_array = NULL;
 		}
 
 		for (i=0;i < f->num_mails; i++)
-			mail_free(f->mail_array[i]);
+			mail_info_free(f->mail_info_array[i]);
 
-		if (f->mail_array)
+		if (f->mail_info_array)
 		{
-			free(f->mail_array);
-			f->mail_array = NULL;
+			free(f->mail_info_array);
+			f->mail_info_array = NULL;
 		}
 		f->num_mails = 0;
-		f->mail_array_allocated = 0;
+		f->mail_info_array_allocated = 0;
 		f->new_mails = 0;
 		f->unread_mails = 0;
 		f->num_index_mails = -1;
@@ -2181,7 +2176,7 @@ struct folder *folder_find_by_file(char *filename)
 /******************************************************************
  Finds the folder of a mail.
 *******************************************************************/
-struct folder *folder_find_by_mail(struct mail *mail)
+struct folder *folder_find_by_mail(struct mail_info *mail)
 {
 	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
 	while (node)
@@ -2190,7 +2185,7 @@ struct folder *folder_find_by_mail(struct mail *mail)
 		int i;
 		for (i=0; i < folder->num_mails; i++)
 		{
-			if (folder->mail_array[i] == mail)
+			if (folder->mail_info_array[i] == mail)
 				return folder;
 		}
 		node = (struct folder_node *)node_next(&node->node);
@@ -2201,33 +2196,33 @@ struct folder *folder_find_by_mail(struct mail *mail)
 /******************************************************************
  Returns the mail at the given position
 *******************************************************************/
-struct mail *folder_find_mail(struct folder *f, int position)
+struct mail_info *folder_find_mail_by_position(struct folder *f, int position)
 {
 	void *handle = NULL;
-	if (!f->sorted_mail_array) return NULL;
+	if (!f->sorted_mail_info_array) return NULL;
 	if (position >= f->num_mails) return NULL;
-	folder_next_mail(f,&handle); /* sort the stuff */
-	if (f->sorted_mail_array) return f->sorted_mail_array[position];
-	return f->mail_array[position];
+	folder_next_mail_info(f,&handle); /* sort the stuff */
+	if (f->sorted_mail_info_array) return f->sorted_mail_info_array[position];
+	return f->mail_info_array[position];
 }
 
 /******************************************************************
  Finds from a folder (which is given by its path) the mail's
  successor (which is given by the filename)
 *******************************************************************/
-struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename)
+struct mail_info *folder_find_next_mail_info_by_filename(char *folder_path, char *mail_filename)
 {
 	void *handle = NULL;
 	struct folder *f = folder_find_by_path(folder_path);
-	struct mail *m;
+	struct mail_info *m;
 
 	if (!f) return NULL;
 
-	while ((m = folder_next_mail(f, &handle)))
+	while ((m = folder_next_mail_info(f, &handle)))
 	{
-		if (!mystricmp(m->info->filename,mail_filename))
+		if (!mystricmp(m->filename,mail_filename))
 		{
-			return folder_next_mail(f,&handle);
+			return folder_next_mail_info(f,&handle);
 		}
 	}
 	return NULL;
@@ -2237,18 +2232,18 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
  Finds from a folder (which is given by its path) the mail's
  pred (which is given by the filename)
 *******************************************************************/
-struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename)
+struct mail_info *folder_find_prev_mail_info_by_filename(char *folder_path, char *mail_filename)
 {
 	void *handle = NULL;
 	struct folder *f = folder_find_by_path(folder_path);
-	struct mail *lm = NULL;
-	struct mail *m;
+	struct mail_info *lm = NULL;
+	struct mail_info *m;
 
 	if (!f) return NULL;
 
-	while ((m = folder_next_mail(f, &handle)))
+	while ((m = folder_next_mail_info(f, &handle)))
 	{
-		if (!mystricmp(m->info->filename,mail_filename))
+		if (!mystricmp(m->filename,mail_filename))
 		{
 			return lm;
 		}
@@ -2262,24 +2257,24 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
  Finds a mail which should be selected (depending on the folder
  type this could be a unread or a held mail)
 *******************************************************************/
-struct mail *folder_find_best_mail_to_select(struct folder *folder)
+struct mail_info *folder_find_best_mail_info_to_select(struct folder *folder)
 {
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 
 	int relevant_types;
 
 	if (folder->special == FOLDER_SPECIAL_OUTGOING) relevant_types = MAIL_STATUS_HOLD;
 	else relevant_types = MAIL_STATUS_UNREAD;
 
-	while ((m = folder_next_mail(folder, &handle)))
+	while ((m = folder_next_mail_info(folder, &handle)))
 	{
-		if (mail_get_status_type(m) == relevant_types) return m;
+		if (mail_info_get_status_type(m) == relevant_types) return m;
 	}
 
 	/* take the first mail */
 	handle = NULL;
-	m = folder_next_mail(folder, &handle);
+	m = folder_next_mail_info(folder, &handle);
 	return m;
 }
 
@@ -2287,13 +2282,13 @@ struct mail *folder_find_best_mail_to_select(struct folder *folder)
  Returns the index (starting with 0) of the mail in this folder.
  -1 if mail is not found.
 *******************************************************************/
-int folder_get_index_of_mail(struct folder *f, struct mail *mail)
+int folder_get_index_of_mail(struct folder *f, struct mail_info *mail)
 {
 	int index = 0;
 	void *handle = 0;
-	struct mail *m;
+	struct mail_info *m;
 
-	while ((m = folder_next_mail(f, &handle)))
+	while ((m = folder_next_mail_info(f, &handle)))
 	{
 		if (m == mail) return index;
 		index ++;
@@ -2308,12 +2303,12 @@ int folder_size_of_mails(struct folder *f)
 {
 	int size = 0;
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 
 	if (!f) return 0;
 
-	while ((m = folder_next_mail(f, &handle)))
-		size += m->info->size;
+	while ((m = folder_next_mail_info(f, &handle)))
+		size += m->size;
 	return size;
 }
 
@@ -2324,7 +2319,7 @@ int folder_size_of_mails(struct folder *f)
  If mail has sent status and moved to a outgoing drawer it get's
  the waitsend status.
 *******************************************************************/
-int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail **mail_array, int num_mails)
+int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail_info **mail_info_array, int num_mails)
 {
 	char *buf, *src_buf, *src_path_end_buf, *dest_buf, *dest_path_end_buf;
 	char path[512];
@@ -2350,25 +2345,25 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 
 	for (i=0;i<num_mails;i++)
 	{
-		struct mail *mail = mail_array[i];
+		struct mail_info *mail = mail_info_array[i];
 
-		sm_add_part(src_buf,mail->info->filename,512);
+		sm_add_part(src_buf,mail->filename,512);
 
 		/* Change the status of mails if moved to outgoing and had formerly a sent flag set */
-		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_get_status_type(mail) == MAIL_STATUS_SENT)
+		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_info_get_status_type(mail) == MAIL_STATUS_SENT)
 		{
 			char *newfilename;
 
-			mail->info->status = MAIL_STATUS_WAITSEND | (mail->info->status & MAIL_STATUS_FLAG_MARKED);
+			mail->status = MAIL_STATUS_WAITSEND | (mail->status & MAIL_STATUS_FLAG_MARKED);
 
-			if ((newfilename = mail_get_status_filename(mail->info->filename, mail->info->status)))
+			if ((newfilename = mail_get_status_filename(mail->filename, mail->status)))
 			{
-				if (mail->info->filename) free(mail->info->filename);
-				mail->info->filename = newfilename;
+				if (mail->filename) free(mail->filename);
+				mail->filename = newfilename;
 			}
 		}
 
-		sm_add_part(dest_buf,mail->info->filename,512);
+		sm_add_part(dest_buf,mail->filename,512);
 
 		if (rename(src_buf,dest_buf) != 0)
 		{
@@ -2384,13 +2379,13 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 				path_changed = 1;
 			}
 
-			if ((new_name = mail_get_new_name(mail->info->status)))
+			if ((new_name = mail_get_new_name(mail->status)))
 			{
 				if (rename(src_buf,new_name) == 0)
 				{
 					/* renaming was successfully */
-					free(mail->info->filename);
-					mail->info->filename = new_name;
+					free(mail->filename);
+					mail->filename = new_name;
 				} else
 				{
 					free(new_name);
@@ -2399,7 +2394,7 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 			}
 		}
 
-		folder_remove_mail(from_folder,mail);
+		folder_remove_mail_info(from_folder,mail);
 		folder_add_mail(dest_folder,mail,1);
 
 		/* reset the path buffers */
@@ -2419,7 +2414,7 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
  If mail has sent status and moved to a outgoing drawer it get's
  the waitsend status.
 *******************************************************************/
-int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail)
+int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail_info *mail)
 {
 	return folder_move_mail_array(from_folder,dest_folder,&mail,1);
 }
@@ -2427,15 +2422,15 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 /******************************************************************
  Deletes a mail permanently
 *******************************************************************/
-int folder_delete_mail(struct folder *from_folder, struct mail *mail)
+int folder_delete_mail(struct folder *from_folder, struct mail_info *mail)
 {
 	char path[512];
 	if (!from_folder) return 0;
-	folder_remove_mail(from_folder,mail);
+	folder_remove_mail_info(from_folder,mail);
 	strcpy(path,from_folder->path);
-	sm_add_part(path,mail->info->filename,512);
+	sm_add_part(path,mail->filename,512);
 	remove(path);
-	mail_free(mail);
+	mail_info_free(mail);
 	return 1;
 }
 
@@ -2457,37 +2452,37 @@ static void folder_delete_mails(struct folder *folder)
 		folder_read_mail_infos(folder,0);
 
 	/* free the sorted mail array */
-	if (folder->sorted_mail_array)
+	if (folder->sorted_mail_info_array)
 	{
-		free(folder->sorted_mail_array);
-		folder->sorted_mail_array = NULL;
+		free(folder->sorted_mail_info_array);
+		folder->sorted_mail_info_array = NULL;
 	}
 
 	for (i=0;i<folder->num_mails;i++)
 	{
-		remove(folder->mail_array[i]->info->filename);
-		mail_free(folder->mail_array[i]);
+		remove(folder->mail_info_array[i]->filename);
+		mail_info_free(folder->mail_info_array[i]);
 	}
 
 	for (i=0;i<folder->num_pending_mails;i++)
 	{
-		remove(folder->pending_mail_array[i]->info->filename);
-		mail_free(folder->pending_mail_array[i]);
+		remove(folder->pending_mail_info_array[i]->filename);
+		mail_info_free(folder->pending_mail_info_array[i]);
 	}
 
 	folder->num_mails = 0;
 	folder->num_index_mails = 0;
 	folder->unread_mails = 0;
 	folder->new_mails = 0;
-	folder->mail_array_allocated = 0;
+	folder->mail_info_array_allocated = 0;
 	folder->num_pending_mails = 0;
-	folder->pending_mail_array_allocated = 0;
+	folder->pending_mail_info_array_allocated = 0;
 
-	free(folder->mail_array);
-	folder->mail_array = NULL;
+	free(folder->mail_info_array);
+	folder->mail_info_array = NULL;
 
-	free(folder->pending_mail_array);
-	folder->pending_mail_array = NULL;
+	free(folder->pending_mail_info_array);
+	folder->pending_mail_info_array = NULL;
 
 	folder->index_uptodate = 0;
 
@@ -2608,23 +2603,23 @@ int folder_save_index(struct folder *f)
 	if ((fh = folder_open_indexfile(f,append?"ab":"wb")))
 	{
 		int i;
-		struct mail **mail_array;
+		struct mail_info **mail_info_array;
 		int num_mails;
 
 		if (append)
 		{
 			num_mails = f->num_pending_mails;
-			mail_array = f->pending_mail_array;
+			mail_info_array = f->pending_mail_info_array;
 		} else
 		{
 			folder_save_index_header(f,fh);
 			num_mails = f->num_mails;
-			mail_array = f->mail_array;
+			mail_info_array = f->mail_info_array;
 		}
 
 		for (i=0; i < num_mails; i++)
 		{
-			struct mail *m = mail_array[i];
+			struct mail_info *m = mail_info_array[i];
 			int len = 0;
 			int len_add;
 			int num_to = 0;
@@ -2632,28 +2627,28 @@ int folder_save_index(struct folder *f)
 			struct address *to_addr = NULL;
 			struct address *cc_addr = NULL;
 
-			if (m->info->to_list)
+			if (m->to_list)
 			{
-				num_to = list_length(m->info->to_list);
-				to_addr = (struct address*)list_first(m->info->to_list);
+				num_to = list_length(m->to_list);
+				to_addr = (struct address*)list_first(m->to_list);
 			}
 
-			if (m->info->cc_list)
+			if (m->cc_list)
 			{
-				num_cc = list_length(m->info->cc_list);
-				cc_addr = (struct address*)list_first(m->info->cc_list);
+				num_cc = list_length(m->cc_list);
+				cc_addr = (struct address*)list_first(m->cc_list);
 			}
 
 			fwrite(&num_to,1,4,fh);
 			fwrite(&num_cc,1,4,fh);
 
-			if (!(len_add = fwrite_str(fh, m->info->subject))) break;
+			if (!(len_add = fwrite_str(fh, m->subject))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->filename))) break;
+			if (!(len_add = fwrite_str(fh, m->filename))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->from_phrase))) break;
+			if (!(len_add = fwrite_str(fh, m->from_phrase))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->from_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
 			len += len_add;
 			
 			while (to_addr)
@@ -2674,29 +2669,29 @@ int folder_save_index(struct folder *f)
 				cc_addr = (struct address*)node_next(&cc_addr->node);
 			}
 
-			if (!(len_add = fwrite_str(fh, m->info->pop3_server))) break;
+			if (!(len_add = fwrite_str(fh, m->pop3_server))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->message_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_id))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->message_reply_id))) break;
+			if (!(len_add = fwrite_str(fh, m->message_reply_id))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->info->reply_addr))) break;
+			if (!(len_add = fwrite_str(fh, m->reply_addr))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */
 			if (len % 2) fputc(0,fh);
 
-			fwrite(&m->info->size,1,sizeof(m->info->size),fh);
-			fwrite(&m->info->seconds,1,sizeof(m->info->seconds),fh);
-			fwrite(&m->info->received,1,sizeof(m->info->received),fh);
-			fwrite(&m->info->flags,1,sizeof(m->info->flags),fh);
+			fwrite(&m->size,1,sizeof(m->size),fh);
+			fwrite(&m->seconds,1,sizeof(m->seconds),fh);
+			fwrite(&m->received,1,sizeof(m->received),fh);
+			fwrite(&m->flags,1,sizeof(m->flags),fh);
 		}
 
 		if (append)
 		{
 			/* the pending mails are stored so we can free them */
 			for (i=0;i<num_mails;i++)
-				mail_free(mail_array[i]);
+				mail_info_free(mail_info_array[i]);
 
 			f->num_pending_mails = 0;
 			fseek(fh,SEEK_SET,0);
@@ -2755,34 +2750,34 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
  While iterating through the mails you aren't allowed to (re)move a
  mail within the folder,
 *******************************************************************/
-struct mail *folder_next_mail(struct folder *folder, void **handle)
+struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 {
-	struct mail **mail_array;
+	struct mail_info **mail_info_array;
 
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
 		folder_read_mail_infos(folder,0);
 
-	mail_array = folder->mail_array;
-	if (!folder->sorted_mail_array && /* *((int**)handle) == 0 && */ folder->num_mails && folder->mail_array_allocated)
+	mail_info_array = folder->mail_info_array;
+	if (!folder->sorted_mail_info_array && /* *((int**)handle) == 0 && */ folder->num_mails && folder->mail_info_array_allocated)
 	{
 		/* the array is not sorted, so sort it now */
-		folder->sorted_mail_array = (struct mail**)malloc(sizeof(struct mail*)*folder->mail_array_allocated);
-		if (folder->sorted_mail_array)
+		folder->sorted_mail_info_array = (struct mail_info**)malloc(sizeof(struct mail_info*)*folder->mail_info_array_allocated);
+		if (folder->sorted_mail_info_array)
 		{
 			/* copy the mail pointers into the buffer */
-			memcpy(folder->sorted_mail_array, folder->mail_array, sizeof(struct mail*)*folder->num_mails);
+			memcpy(folder->sorted_mail_info_array, folder->mail_info_array, sizeof(struct mail*)*folder->num_mails);
 
 			/* set the correct search function */
 			mail_compare_set_sort_mode(folder);
 
-			if (compare_primary) qsort(folder->sorted_mail_array, folder->num_mails, sizeof(struct mail*),mail_compare);
-			mail_array = folder->sorted_mail_array;
+			if (compare_primary) qsort(folder->sorted_mail_info_array, folder->num_mails, sizeof(struct mail*),mail_compare);
+			mail_info_array = folder->sorted_mail_info_array;
 		}
 	}
 
-	if (folder->sorted_mail_array) mail_array = folder->sorted_mail_array;
-	return (struct mail*)(((*((int*)handle))<folder->num_mails)?(mail_array[(*((int*)handle))++]):NULL);
+	if (folder->sorted_mail_info_array) mail_info_array = folder->sorted_mail_info_array;
+	return (struct mail_info*)(((*((int*)handle))<folder->num_mails)?(mail_info_array[(*((int*)handle))++]):NULL);
 }
 /* we define a macro for mail iterating, handle must be initialzed to NULL at start */
 /*#define folder_next_mail(folder,handle) ( ((*((int*)handle))<folder->num_mails)?(folder->mail_array[(*((int*)handle))++]):NULL)*/
@@ -2793,24 +2788,24 @@ struct mail *folder_next_mail(struct folder *folder, void **handle)
  the array. NOTE: function can disappear in a future, so use
  it rarly. It's better to use folder_next_mail() instead
 *******************************************************************/
-struct mail **folder_get_mail_array(struct folder *folder)
+struct mail_info **folder_get_mail_info_array(struct folder *folder)
 {
 	void *handle = NULL;
 
 	/* start sort stuff */
-	folder_next_mail(folder,&handle);
-	if (folder->sorted_mail_array) return folder->sorted_mail_array;
-	return folder->mail_array;
+	folder_next_mail_info(folder,&handle);
+	if (folder->sorted_mail_info_array) return folder->sorted_mail_info_array;
+	return folder->mail_info_array;
 }
 
 /******************************************************************
  Helper function which returns 1 if a given mail has the given
  property. If property is unknown 0 is returned.
 *******************************************************************/
-static int folder_mail_has_property(struct folder *folder, struct mail *mail, int properties)
+static int folder_mail_info_has_property(struct folder *folder, struct mail_info *mail, int properties)
 {
 	if (!properties) return 1;
-	if (properties & FOLDER_QUERY_MAILS_PROP_SPAM && (mail_is_spam(mail) || mail->info->flags & MAIL_FLAGS_AUTOSPAM))
+	if (properties & FOLDER_QUERY_MAILS_PROP_SPAM && (mail_info_is_spam(mail) || mail->flags & MAIL_FLAGS_AUTOSPAM))
 		return 1;
 
 	return 0;
@@ -2821,21 +2816,21 @@ static int folder_mail_has_property(struct folder *folder, struct mail *mail, in
  or NULL. No properties means all mails. The array must be freed
  with free()
 *******************************************************************/
-struct mail **folder_query_mails(struct folder *folder, int properties)
+struct mail_info **folder_query_mails(struct folder *folder, int properties)
 {
 	int i,num;
 	void *handle;
-	struct mail *m;
-	struct mail **array;
+	struct mail_info *m;
+	struct mail_info **array;
 
 	if (!properties)
 	{
-		struct mail **src_array = folder_get_mail_array(folder);
+		struct mail_info **src_array = folder_get_mail_info_array(folder);
 
 		/* ensure that the array is sorted */
 		num = folder->num_mails;
 
-		if ((array = (struct mail**)malloc(sizeof(struct mail*)*(num+1))))
+		if ((array = (struct mail_info**)malloc(sizeof(struct mail_info*)*(num+1))))
 		{
 			memcpy(array,src_array,sizeof(struct mail*)*num);
 			array[num] = NULL;
@@ -2845,21 +2840,21 @@ struct mail **folder_query_mails(struct folder *folder, int properties)
 
 	num = 0;
 	handle = NULL;
-	while ((m = folder_next_mail(folder,&handle)))
+	while ((m = folder_next_mail_info(folder,&handle)))
 	{
-		if (folder_mail_has_property(folder,m,properties))
+		if (folder_mail_info_has_property(folder,m,properties))
 			num++;
 	}
 
-	if (!(array = (struct mail**)malloc(sizeof(struct mail*)*(num+1))))
+	if (!(array = (struct mail_info**)malloc(sizeof(struct mail_info*)*(num+1))))
 		return NULL;
 
 	i = 0;
 	handle = NULL;
 
-	while ((m = folder_next_mail(folder,&handle)))
+	while ((m = folder_next_mail_info(folder,&handle)))
 	{
-		if (folder_mail_has_property(folder,m,properties))
+		if (folder_mail_info_has_property(folder,m,properties))
 			array[i++] = m;
 	}
 
@@ -2885,10 +2880,10 @@ void folder_set_primary_sort(struct folder *folder, int sort_mode)
 		folder->primary_sort = sort_mode;
 
 		/* free the sorted mail array */
-		if (folder->sorted_mail_array)
+		if (folder->sorted_mail_info_array)
 		{
-			free(folder->sorted_mail_array);
-			folder->sorted_mail_array = NULL;
+			free(folder->sorted_mail_info_array);
+			folder->sorted_mail_info_array = NULL;
 		}
 	}
 }
@@ -2911,10 +2906,10 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 		folder->secondary_sort = sort_mode;
 
 		/* free the sorted mail array */
-		if (folder->sorted_mail_array)
+		if (folder->sorted_mail_info_array)
 		{
-			free(folder->sorted_mail_array);
-			folder->sorted_mail_array = NULL;
+			free(folder->sorted_mail_info_array);
+			folder->sorted_mail_info_array = NULL;
 		}
 	}
 }
@@ -2924,7 +2919,7 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
  Checks if the given filter matches the mail.
  folder is the folder where the mail is located and maybe NULL.
 *******************************************************************/
-int mail_matches_filter(struct folder *folder, struct mail *m,
+int mail_matches_filter(struct folder *folder, struct mail_info *m,
 											  struct filter *filter)
 {
 	struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
@@ -2942,13 +2937,13 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 							i = 0;
 							while (!take && rule->u.from.from[i])
-								take = !!utf8stristr(m->info->from_addr,rule->u.from.from[i++]);
+								take = !!utf8stristr(m->from_addr, rule->u.from.from[i++]);
 
 							if (!take)
 							{
 								i = 0;
 								while (!take && rule->u.from.from[i])
-									take = !!utf8stristr(m->info->from_phrase,rule->u.from.from[i++]);
+									take = !!utf8stristr(m->from_phrase, rule->u.from.from[i++]);
 							}
 						}
 						break;
@@ -2962,7 +2957,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 							while (!take && rule->u.rcpt.rcpt[i])
 							{
 								struct address *addr;
-								addr = (struct address*)list_first(m->info->to_list);
+								addr = (struct address*)list_first(m->to_list);
 								while (!take && addr)
 								{
 									take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
@@ -2972,7 +2967,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 								if (!take)
 								{
-									addr = (struct address*)list_first(m->info->cc_list);
+									addr = (struct address*)list_first(m->cc_list);
 									while (!take && addr)
 									{
 										take = !!utf8stristr(addr->realname,rule->u.rcpt.rcpt[i]);
@@ -2990,11 +2985,12 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						{
 							int i = 0;
 							while (!take && rule->u.subject.subject[i])
-								take = !!utf8stristr(m->info->subject,rule->u.subject.subject[i++]);
+								take = !!utf8stristr(m->subject,rule->u.subject.subject[i++]);
 						}
 						break;
 
 			case	RULE_HEADER_MATCH:
+#if 0
 						/* NOTE: This doesn't work in subthreads but is actually not used anywhy */
 						{
 							struct header *header;
@@ -3018,14 +3014,15 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 								}
 							}
 						}
+#endif
 						break;
 
 			case	RULE_ATTACHMENT_MATCH:
-						take = !!(m->info->flags & MAIL_FLAGS_ATTACH);
+						take = !!(m->flags & MAIL_FLAGS_ATTACH);
 						break;
 
 			case	RULE_STATUS_MATCH:
-						if (rule->u.status.status == RULE_STATUS_NEW && (m->info->flags & MAIL_FLAGS_NEW)) take = 1;
+						if (rule->u.status.status == RULE_STATUS_NEW && (m->flags & MAIL_FLAGS_NEW)) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_READ && mail_get_status_type(m)==MAIL_STATUS_READ) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_UNREAD && mail_get_status_type(m)==MAIL_STATUS_UNREAD) take = 1;
 						else if (rule->u.status.status == RULE_STATUS_REPLIED && (mail_get_status_type(m)==MAIL_STATUS_REPLIED || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
@@ -3052,7 +3049,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
  Checks if a mail should be filtered (returns the filter which
  actions should performed or NULL)
 *******************************************************************/
-struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m, int action)
+struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail_info *m, int action)
 {
 	struct filter *filter = filter_list_first();
 
@@ -3078,7 +3075,7 @@ struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m
 int folder_apply_filter(struct folder *folder, struct filter *filter)
 {
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 	char path[512];
 
 	getcwd(path, sizeof(path));
@@ -3088,7 +3085,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 	{
 		void *old_handle = handle;
 
-		if (!(m = folder_next_mail(folder,&handle))) break;
+		if (!(m = folder_next_mail_info(folder,&handle))) break;
 		
 		if (mail_matches_filter(folder,m,filter))
 		{
@@ -3098,7 +3095,8 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 				if (dest_folder && dest_folder != folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
-					callback_move_mail(m, folder, dest_folder);
+//					callback_move_mail(m, folder, dest_folder);
+#pragma warning TODO: Implement me
 
 					handle = old_handle;
 				}
@@ -3134,7 +3132,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 int folder_filter(struct folder *folder)
 {
 	void *handle = NULL;
-	struct mail *m;
+	struct mail_info *m;
 	char path[512];
 
 	getcwd(path, sizeof(path));
@@ -3145,7 +3143,7 @@ int folder_filter(struct folder *folder)
 		void *old_handle = handle;
 		struct filter *f;
 
-		if (!(m = folder_next_mail(folder,&handle))) break;
+		if (!(m = folder_next_mail_info(folder,&handle))) break;
 		
 		if ((f = folder_mail_can_be_filtered(folder,m,0)))
 		{
@@ -3155,7 +3153,8 @@ int folder_filter(struct folder *folder)
 				if (dest_folder && dest_folder != folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
-					callback_move_mail(m, folder, dest_folder);
+//					callback_move_mail(m, folder, dest_folder);
+#pragma warning TODO: Implement me
 					handle = old_handle;
 				}
 			}
@@ -3197,7 +3196,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 	struct filter_rule *rule;
 	struct search_options *sopt;
 #define NUM_FOUND 100
-	struct mail *found_array[NUM_FOUND];
+	struct mail_info *found_array[NUM_FOUND];
 	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
 
 	sopt = search_options_duplicate(msg->sopt);
@@ -3251,7 +3250,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 		{
 			int folder_num = 0;
 			int found_num = 0;
-			struct mail *m;
+			struct mail_info *m;
 			struct folder *f;
 			char path[512];
 
@@ -3267,7 +3266,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 				for (i=0;i<f->num_mails;i++)
 				{
-					if (!(m = f->mail_array[i]))
+					if (!(m = f->mail_info_array[i]))
 						break;
 
 					/* mail_matches_filter() is thread safe as long as no header search is used, like here */
@@ -3362,7 +3361,7 @@ void folder_start_search(struct search_options *sopt)
 			if (f->special != FOLDER_SPECIAL_GROUP)
 			{
 				void *handle = NULL;
-			  folder_next_mail(f,&handle);
+			  folder_next_mail_info(f,&handle);
 				array[i++]  = f;
 			}
 			f = folder_next(f);

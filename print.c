@@ -36,10 +36,10 @@
 #define ANSI_BOLD       "[1m"
 #define ANSI_UNDER      "[4m"
 
-static int create_ansi_header(FILE *fp, struct mail *mail)
+static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 {
 	char rc = 0;
-	struct mail *m = mail_get_root(mail);
+	struct mail_complete *m = mail_get_root(mail);
 	char *from = mail_find_header_contents(m,"from");
 	char *to = mail_find_header_contents(m,"to");
 	char *cc = mail_find_header_contents(m, "cc");
@@ -157,7 +157,7 @@ static int create_ansi_header(FILE *fp, struct mail *mail)
 **
 ** These are the system-independent routines.
 */
-int print_mail(struct mail *m, int printhdr)
+int print_mail(struct mail_complete *m, int printhdr)
 {
 	int rc = 0;
 	char *text, *buf;

@@ -30,7 +30,7 @@ IMPORT struct MUI_CustomClass *CL_MessageView;
 
 #define MUIM_MessageView_DisplayMail				(TAG_USER | 0x30140101)
 
-struct MUIP_MessageView_DisplayMail {ULONG MethodID; struct mail *mail; char *folder_path;};
+struct MUIP_MessageView_DisplayMail {ULONG MethodID; struct mail_info *mail; char *folder_path;};
 /*#define MUIA_MessageView_xxx (TAG_USER | 0x30140001)*/ /* I.. type */
 
 int create_messageview_class(void);

@@ -25,23 +25,23 @@
 
 struct filter;
 struct folder;
-struct mail;
+struct mail_info;
 struct addressbook_entry_new;
 struct search_options;
 struct list;
 
 int callback_read_active_mail(void);
-int callback_read_mail(struct folder *f, struct mail *mail, int window);
+int callback_read_mail(struct folder *f, struct mail_info *mail, int window);
 void callback_delete_mails(void);
-int callback_delete_mail(struct mail *mail);
+int callback_delete_mail(struct mail_info *mail);
 void callback_get_address(void);
 void callback_new_mail(void);
-void callback_reply_mails(char *folder_path, int num, struct mail **to_reply_array);
+void callback_reply_mails(char *folder_path, int num, struct mail_info **to_reply_array);
 void callback_reply_selected_mails(void);
-void callback_forward_mails(char *folder_path, int num, struct mail **to_forward_array);
+void callback_forward_mails(char *folder_path, int num, struct mail_info **to_forward_array);
 void callback_forward_selected_mails(void);
 void callback_change_mail(void);
-int callback_move_mail_request(char *folder_path, struct mail *mail);
+int callback_move_mail_request(char *folder_path, struct mail_info *mail);
 void callback_move_selected_mails(void);
 void callback_check_selected_folder_for_spam(void);
 void callback_move_spam_marked_mails(void);
@@ -80,7 +80,7 @@ void callback_change_folder_attrs(void);
 void callback_reload_folder_order(void);
 void callback_refresh_folders(void);
 
-void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder);
+void callback_move_mail(struct mail_info *mail, struct folder *from_folder, struct folder *dest_folder);
 void callback_maildrop(struct folder *dest_folder);
 void callback_mails_mark(int mark);
 void callback_mails_set_status(int status);
@@ -89,20 +89,20 @@ void callback_selected_mails_are_ham(void);
 void callback_check_selected_mails_if_spam(void);
 
 void callback_apply_folder(struct filter *filter);
-int callback_remote_filter_mail(struct mail *mail);
+int callback_remote_filter_mail(struct mail_info *mail);
 
-struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder);
-struct mail *callback_new_mail_to_folder_by_file(char *filename);
+struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *folder);
+struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
 void callback_new_mail_arrived_filename(char *filename, int spam);
 void callback_new_imap_mail_arrived(char *filename, char *server, char *path);
-void callback_new_mail_written(struct mail *mail);
+void callback_new_mail_written(struct mail_info *mail);
 void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid);
 void callback_number_of_mails_downloaded(int num);
 void callback_mail_has_been_sent(char *filename);
 void callback_mail_has_not_been_sent(char *filename);
 void callback_add_imap_folder(char *server, char *path);
 
-void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail);
+void callback_mail_changed(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail);
 
 void callback_config_changed(void);
 

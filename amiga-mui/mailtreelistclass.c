@@ -146,7 +146,7 @@ struct MailTreelist_Data
 	char bubblehelp_buf[4096];
 };
 
-static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *mail)
+static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail_info *mail)
 {
 	char *field;
 	char *dest;
@@ -154,27 +154,27 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 
 	if (data->folder_type == FOLDER_TYPE_SEND)
 	{
-		if (mail->info->flags & MAIL_FLAGS_NORCPT)
+		if (mail->flags & MAIL_FLAGS_NORCPT)
 		{
 			field = _("<No Recipient>");
 			ascii7 = 1;
 		} else
 		{
-			field = mail->info->to_phrase;
-			ascii7 = !!(mail->info->flags & MAIL_FLAGS_TO_ASCII7);
+			field = mail->to_phrase;
+			ascii7 = !!(mail->flags & MAIL_FLAGS_TO_ASCII7);
 			if (!field)
 			{
-				field = mail->info->to_addr;
+				field = mail->to_addr;
 				ascii7 = 1;
 			}
 		}
 	} else
 	{
-		field = mail->info->from_phrase;
-		ascii7 = !!(mail->info->flags & MAIL_FLAGS_FROM_ASCII7);
+		field = mail->from_phrase;
+		ascii7 = !!(mail->flags & MAIL_FLAGS_FROM_ASCII7);
 		if (!field)
 		{
-			field = mail->info->from_addr;
+			field = mail->from_addr;
 			ascii7 = 1;
 		}
 	}
@@ -185,13 +185,13 @@ static char *mailtree_get_fromto(struct MailTreelist_Data *data, struct mail *ma
 		ascii7 = 1;
 	}
 
-	if (!(mail->info->flags & MAIL_FLAGS_GROUP) && ascii7)
+	if (!(mail->flags & MAIL_FLAGS_GROUP) && ascii7)
 		return field;
 
 	dest = data->fromto_buf;
-	if (mail->info->flags & MAIL_FLAGS_GROUP)
+	if (mail->flags & MAIL_FLAGS_GROUP)
 	{
-		sprintf(dest,"\33O[%08lx]",data->status_group);
+		sprintf(dest,"\33O[%08lx]",(ULONG)data->status_group);
 		dest += strlen(dest);
 	}
 
@@ -209,7 +209,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 {
 	char **array = msg->Array;
 	char **preparse = msg->Preparse;
-	struct mail *mail;
+	struct mail_info *mail;
 
 	if (msg->TreeNode)
 	{
@@ -220,9 +220,9 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 {
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
-	struct mail *mail;
+	struct mail_info *mail;
 
-	mail = (struct mail*)msg->entry;
+	mail = (struct mail_info*)msg->entry;
 #endif
 
 	{
@@ -230,7 +230,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 
 		if (mail)
 		{
-			if (mail == (struct mail*)MUIV_MailTreelist_UserData_Name)
+			if (mail == (struct mail_info*)MUIV_MailTreelist_UserData_Name)
 			{
 				/* only one string should be displayed */
 				*array++ = NULL; /* status */
@@ -252,15 +252,15 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				static char recv_buf[64];
 				static char status_buf[128];
 
-				if (mail->info->flags & MAIL_FLAGS_AUTOSPAM)
+				if (mail->flags & MAIL_FLAGS_AUTOSPAM)
 				{
-					sprintf(status_buf,"\33O[%08lx]",data->status_new_spam);
+					sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new_spam);
 				} else
-				if (mail->info->flags & MAIL_FLAGS_NEW)
+				if (mail->flags & MAIL_FLAGS_NEW)
 				{
-					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",data->status_new_spam);
-					else if (mail->info->flags & MAIL_FLAGS_PARTIAL)	sprintf(status_buf,"\33O[%08lx]",data->status_new_partial);
-					else sprintf(status_buf,"\33O[%08lx]",data->status_new);
+					if (mail_info_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new_spam);
+					else if (mail->flags & MAIL_FLAGS_PARTIAL)	sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new_partial);
+					else sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_new);
 
 					*preparse++ = "\33b";
 					*preparse++ = "\33b";
@@ -273,11 +273,11 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 					*preparse = "\33b";
 				} else
 				{
-					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",data->status_unread_spam);
-					else if ((mail->info->flags & MAIL_FLAGS_NORCPT) && data->folder_type == FOLDER_TYPE_SEND) sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
+					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_unread_spam);
+					else if ((mail->flags & MAIL_FLAGS_NORCPT) && data->folder_type == FOLDER_TYPE_SEND) sprintf(status_buf,"\33O[%08lx]",(ULONG)data->status_norcpt);
 					else
 					{
-						if (mail->info->flags & MAIL_FLAGS_PARTIAL)
+						if (mail->flags & MAIL_FLAGS_PARTIAL)
 						{
 							switch(mail_get_status_type(mail))
 							{
@@ -300,36 +300,36 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 								default: status = NULL;
 							}
 						}
-						sprintf(status_buf,"\33O[%08lx]",status);
+						sprintf(status_buf,"\33O[%08lx]",(ULONG)status);
 					}
 				}
 
-				if (mail->info->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
-				if (mail->info->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
-				if (mail->info->flags & MAIL_FLAGS_CRYPT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_crypt);
+				if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_mark);
+				if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_important);
+				if (mail->flags & MAIL_FLAGS_CRYPT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_crypt);
 				else
 				{
-					if (mail->info->flags & MAIL_FLAGS_SIGNED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_signed);
-					else if (mail->info->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
+					if (mail->flags & MAIL_FLAGS_SIGNED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_signed);
+					else if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_attach);
 				}
-				if (mail_is_marked_as_deleted(mail)) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_trashcan);
+				if (mail_is_marked_as_deleted(mail)) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",(ULONG)data->status_trashcan);
 
-				sprintf(size_buf,"%ld",mail->info->size);
-				SecondsToString(date_buf,mail->info->seconds);
+				sprintf(size_buf,"%d",mail->size);
+				SecondsToString(date_buf,mail->seconds);
 
 				if (xget(data->show_recv_item,MUIA_Menuitem_Checked))
-					SecondsToString(recv_buf,mail->info->received);
+					SecondsToString(recv_buf,mail->received);
 
-				utf8tostr(mail->info->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
+				utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
 
 				*array++ = status_buf; /* status */
 				*array++ = mailtree_get_fromto(data,mail);
 				*array++ = data->subject_buf;
-				*array++ = mail->info->reply_addr;
+				*array++ = mail->reply_addr;
 				*array++ = date_buf;
 				*array++ = size_buf;
-				*array++ = mail->info->filename;
-				*array++ = mail->info->pop3_server;
+				*array++ = mail->filename;
+				*array++ = mail->pop3_server;
 				*array = recv_buf;
 			}
 		} else
@@ -381,7 +381,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct MUIP_CreateShortHelp *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	struct mail *m = NULL;
+	struct mail_info *m = NULL;
 #ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TestPos_Result tpres;
 
@@ -403,7 +403,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 
 	if (m)
 	{
-		if (m != (struct mail*)MUIV_MailTreelist_UserData_Name)
+		if (m != (struct mail_info*)MUIV_MailTreelist_UserData_Name)
 		{
 			char *from = mail_get_from_address(m);
 			char *to = mail_get_to_address(m);
@@ -412,19 +412,19 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 			char recv_buf[64];
 			char *buf = data->bubblehelp_buf;
 
-			SecondsToString(date_buf,m->info->seconds);
-			SecondsToString(recv_buf,m->info->received);
+			SecondsToString(date_buf,m->seconds);
+			SecondsToString(recv_buf,m->received);
 
 			/* Help bubble text */
 			sprintf(buf,"\33b%s\33n",_("Message"));
 			buf += strlen(buf);
-			if (m->info->subject)
+			if (m->subject)
 			{
 				*buf++ = '\n';
 				buf = mystpcpy(buf,data->subject_text);
 				*buf++ = ':';
 				*buf++ = ' ';
-				buf += utf8tostr(m->info->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
+				buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
 			}
 
 			if (from)
@@ -457,9 +457,9 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 			sprintf(buf,"\n%s: %s\n%s: %s\n%s: %d\n%s: %s\n%s: %s",
 							data->date_text, date_buf,
 							data->received_text, recv_buf,
-							data->size_text, m->info->size,
-							data->pop3_text, m->info->pop3_server?m->info->pop3_server:"",
-							data->filename_text, m->info->filename);
+							data->size_text, m->size,
+							data->pop3_text, m->pop3_server?m->pop3_server:"",
+							data->filename_text, m->filename);
 
 			free(replyto);
 			free(to);
@@ -1078,7 +1078,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 #else
 	{
 		int i;
-		struct mail **array = folder_get_mail_array(folder);
+		struct mail_info **array = folder_get_mail_info_array(folder);
 
 		DoMethod(obj, MUIM_NList_Insert, array, folder->num_mails, MUIV_NList_Insert_Bottom);
 

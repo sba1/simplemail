@@ -20,9 +20,9 @@
 
 int spam_init(void);
 void spam_cleanup(void);
-int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail);
-int spam_feed_mail_as_ham(struct folder *folder, struct mail *mail);
-int spam_is_mail_spam(char *folder_path, struct mail *to_check_mail, char **white, char **black);
+int spam_feed_mail_as_spam(struct folder *folder, struct mail_info *mail);
+int spam_feed_mail_as_ham(struct folder *folder, struct mail_info *mail);
+int spam_is_mail_spam(char *folder_path, struct mail_info *to_check_mail, char **white, char **black);
 
 unsigned int spam_num_of_spam_classified_mails(void);
 unsigned int spam_num_of_ham_classified_mails(void);

@@ -67,9 +67,9 @@ struct MessageView_Data
 	struct Hook load_hook;
 
 	char *folder_path;
-	struct mail *ref_mail; /* The mail's reference */
+	struct mail_info *ref_mail; /* The mail's reference */
 
-	struct mail *mail; /* The currently displayed mail (instance created within this class) */
+	struct mail_complete *mail; /* The currently displayed mail (instance created within this class) */
 
 	struct FileRequester *file_req; /* Filerequester for saving files */
 };
@@ -92,9 +92,10 @@ static int is_picture(void *data, int len)
 /******************************************************************
  Save the contents of a given mail to a given dest
 *******************************************************************/
-static void save_contents_to(struct MessageView_Data *data, struct mail *mail, char *drawer, char *file)
+static void save_contents_to(struct MessageView_Data *data, struct mail_complete *mail, char *drawer, char *file)
 {
 	BPTR dlock;
+
 	mail_decode(mail);
 
 	if (!file) file = "Unnamed";
@@ -168,7 +169,7 @@ static void save_contents_to(struct MessageView_Data *data, struct mail *mail, c
 							/* Now write out the stuff */
 							if ((fh = Open(file, MODE_NEWFILE)))
 							{
-								char *comment = mail_get_from_address(mail_get_root(mail));
+								char *comment = mail_get_from_address(mail_get_root(mail)->info);
 								Write(fh,towrite,strlen(towrite));
 								Close(fh);
 
@@ -189,7 +190,7 @@ static void save_contents_to(struct MessageView_Data *data, struct mail *mail, c
     {
 			if ((fh = Open(file, MODE_NEWFILE)))
 			{
-				char *comment = mail_get_from_address(mail_get_root(mail));
+				char *comment = mail_get_from_address(mail_get_root(mail)->info);
 				void *cont;
 				int cont_len;
 
@@ -214,7 +215,7 @@ static void save_contents_to(struct MessageView_Data *data, struct mail *mail, c
 /******************************************************************
  Save the contents of a given mail
 *******************************************************************/
-static void save_contents(struct MessageView_Data *data, struct mail *mail)
+static void save_contents(struct MessageView_Data *data, struct mail_complete *mail)
 {
 	if (!mail) return;
 	if (!mail->num_multiparts)
@@ -231,7 +232,7 @@ static void save_contents(struct MessageView_Data *data, struct mail *mail)
 /******************************************************************
  Open the contents of an icon (requires version 44 of the os)
 *******************************************************************/
-static void open_contents(struct MessageView_Data *data, struct mail *mail_part)
+static void open_contents(struct MessageView_Data *data, struct mail_complete *mail_part)
 {
 	if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
 	{
@@ -309,7 +310,7 @@ STATIC ASM SAVEDS LONG simplehtml_load_function(REG(a0,struct Hook *h), REG(a2, 
 		/* Check if this is really an internal image */
 		if (data == possible_data)
 		{
-			struct mail *m = (struct mail*)strtoul(uri+21,NULL,16);
+			struct mail_complete *m = (struct mail_complete*)strtoul(uri+21,NULL,16);
 
 			mail_decode(m);
 			mail_decoded_data(m, &decoded_data, &decoded_data_len);
@@ -380,7 +381,7 @@ static void messageview_uri_clicked(void **msg)
 			/* Check if this is really an internal anchor */
 			if (data == possible_data)
 			{
-				struct mail *m = (struct mail*)strtoul(uri+22,NULL,16);
+				struct mail_complete *m = (struct mail_complete*)strtoul(uri+22,NULL,16);
 				if (m)
 					open_contents(data,m);
 			}
@@ -393,7 +394,7 @@ static void messageview_uri_clicked(void **msg)
 				/* Check if this is really an internal anchor */
 				if (data == possible_data)
 				{
-					struct mail *m = (struct mail*)strtoul(uri+22,NULL,16);
+					struct mail_complete *m = (struct mail_complete*)strtoul(uri+22,NULL,16);
 					if (m)
 						save_contents(data,m);
 				}
@@ -423,7 +424,7 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 	BPTR dirlock;
 	char filename[100];
 	int rc = 1;
-	struct mail *mail;
+	struct mail_complete *mail;
 
 	if (!(mail = data->mail))
 		return 1;
@@ -469,7 +470,7 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 /******************************************************************
  Append and mail
 *******************************************************************/
-static void messageview_append_as_mail(struct MessageView_Data *data, struct mail *mail, string *str)
+static void messageview_append_as_mail(struct MessageView_Data *data, struct mail_complete *mail, string *str)
 {
 	int i;
 
@@ -506,11 +507,11 @@ static void messageview_append_as_mail(struct MessageView_Data *data, struct mai
 /******************************************************************
  Append an attachment
 *******************************************************************/
-static void messageview_append_as_attachment(struct MessageView_Data *data, struct mail *mail, string *str)
+static void messageview_append_as_attachment(struct MessageView_Data *data, struct mail_complete *mail, string *str)
 {
 	int i;
 
-	struct mail *initial_mail;
+	struct mail_complete *initial_mail;
 
 	static char temp_buf[512]; /* Ok to use a static buffer although this is a recursive call */
 	static char content_name[256];
@@ -524,7 +525,7 @@ static void messageview_append_as_attachment(struct MessageView_Data *data, stru
 
 	for (i=0;i<mail->num_multiparts;i++)
 	{
-		struct mail *m = mail->multipart_array[i];
+		struct mail_complete *m = mail->multipart_array[i];
 
 		if (initial_mail == m) mystrlcpy(content_name,_("Main Message"),sizeof(content_name));
 		else
@@ -561,7 +562,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 {
 	char *buf;
 	char *buf_end;
-	struct mail *mail;
+	struct mail_complete *mail;
 
 	/* Find out the mail part which should be displayed */
 	if (!(mail = mail_find_initial(data->mail)))
@@ -652,7 +653,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
  Argument mail and folder_path can be NULL. In eighter case
  a empty text is displayed.
 *******************************************************************/
-static int messageview_setup(struct MessageView_Data *data, struct mail *mail, char *folder_path)
+static int messageview_setup(struct MessageView_Data *data, struct mail_info *mail, char *folder_path)
 {
 	int rc = 0;
 	BPTR lock;
@@ -676,7 +677,7 @@ static int messageview_setup(struct MessageView_Data *data, struct mail *mail, c
 	{
 		BPTR old_dir = CurrentDir(lock);
 
-		if ((data->mail = mail_create_from_file(mail->info->filename)))
+		if ((data->mail = mail_complete_create_from_file(mail->filename)))
 		{
 			mail_read_contents(folder_path,data->mail);
 			mail_create_html_header(data->mail,0);
@@ -746,7 +747,7 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
 	messageview_cleanup_temporary_files(data);
-	mail_free(data->mail); /* NULL safe */	
+	mail_complete_free(data->mail); /* NULL safe */	
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 
 	return DoSuperMethodA(cl,obj,msg);
@@ -810,7 +811,7 @@ STATIC ULONG MessageView_DisplayMail(struct IClass *cl, Object *obj, struct MUIP
 
 	/* cleanup */
 	messageview_cleanup_temporary_files(data);
-	mail_free(data->mail); /* NULL safe */
+	mail_complete_free(data->mail); /* NULL safe */
 	data->mail = NULL;
 
 	/* remove referencs */

@@ -24,28 +24,28 @@
 #define SM__MAINWND_H
 
 struct folder;
-struct mail;
+struct mail_info;
 
 int main_window_init(void);
 int main_window_open(void);
 void main_refresh_folders(void);
 void main_refresh_folder(struct folder *folder);
-void main_insert_mail(struct mail *mail);
-void main_insert_mail_pos(struct mail *mail, int after);
-void main_remove_mail(struct mail *mail);
-void main_replace_mail(struct mail *oldmail, struct mail *newmail);
-void main_refresh_mail(struct mail *m);
+void main_insert_mail(struct mail_info *mail);
+void main_insert_mail_pos(struct mail_info *mail, int after);
+void main_remove_mail(struct mail_info *mail);
+void main_replace_mail(struct mail_info *oldmail, struct mail_info *newmail);
+void main_refresh_mail(struct mail_info *m);
 void main_clear_folder_mails(void);
 void main_set_folder_mails(struct folder *folder);
 void main_set_folder_active(struct folder *folder);
 struct folder *main_get_folder(void);
 char *main_get_folder_drawer(void);
-void main_set_active_mail(struct mail *m);
-struct mail *main_get_active_mail(void);
+void main_set_active_mail(struct mail_info *m);
+struct mail_info *main_get_active_mail(void);
 char *main_get_mail_filename(void);
 
-struct mail *main_get_mail_first_selected(void *handle);
-struct mail *main_get_mail_next_selected(void *handle);
+struct mail_info *main_get_mail_first_selected(void *handle);
+struct mail_info *main_get_mail_next_selected(void *handle);
 void main_remove_mails_selected(void);
 void main_refresh_mails_selected(void);
 

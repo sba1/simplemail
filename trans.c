@@ -216,7 +216,7 @@ int mails_upload(void)
 	void *handle = NULL; /* folder_next_mail() */
 	struct folder *out_folder = folder_outgoing();
 	struct outmail **out_array;
-	struct mail *m_iter;
+	struct mail_info *m_iter;
 	int i,num_mails;
 	char path[512];
 
@@ -243,7 +243,7 @@ int mails_upload(void)
 	/* initialize the arrays */
 	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
-		struct mail *m;
+		struct mail_complete *m;
 		char *from, *to, *cc;
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
@@ -251,7 +251,7 @@ int mails_upload(void)
 
 		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
 
-		if (!(m = mail_create_from_file(m_iter->info->filename)))
+		if (!(m = mail_complete_create_from_file(m_iter->filename)))
 		{
 			free_outmail_array(out_array);
 			chdir(path);
@@ -268,7 +268,7 @@ int mails_upload(void)
 		if (!to || !from)
 		{
 			free_outmail_array(out_array);
-			mail_free(m);
+			mail_complete_free(m);
 			chdir(path);
 			return 0;
 		}
@@ -276,7 +276,7 @@ int mails_upload(void)
 		{
 			tell_str("No valid sender address!");
 			free_outmail_array(out_array);
-			mail_free(m);
+			mail_complete_free(m);
 			chdir(path);
 			return 0;
 		}
@@ -324,7 +324,7 @@ int mails_upload(void)
 
 		if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
 /*		if (mb.addr_spec) free(mb.addr_spec); */
-		mail_free(m);
+		mail_complete_free(m);
 	}
 
 	chdir(path);
@@ -337,8 +337,10 @@ int mails_upload(void)
 }
 
 /* Note: the mail must contain all headers in the header list */
-int mails_upload_signle(struct mail *m)
+int mails_upload_signle(struct mail_info *m)
 {
+#pragma TODO: implement me
+#if 0
 	char *from, *to, *cc;
 	struct outmail **out_array;
 	struct mailbox mb;
@@ -416,6 +418,9 @@ int mails_upload_signle(struct mail *m)
 
 	free_outmail_array(out_array);
 	return 1;
+#else
+	return 0;
+#endif
 }
 
 

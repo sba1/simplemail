@@ -41,13 +41,13 @@ struct folder
 	/* the following data is private only */
 
 	/* the array of mails, no list used here because this would slowdown maybe the processing later */
-	struct mail **mail_array; /* but don't access this here, use folder_next_mail() */
-	int mail_array_allocated; /* how many entries could be in the array */
+	struct mail_info **mail_info_array; /* but don't access this here, use folder_next_mail() */
+	int mail_info_array_allocated; /* how many entries could be in the array */
 	int num_mails; /* number of mails in the mail_array. Might be 0 if index is not loaded! */
 
 	/* the array of pending added mails. This is used if you add mails but mail infos has been not read */
-	struct mail **pending_mail_array;
-	int pending_mail_array_allocated;
+	struct mail_info **pending_mail_info_array;
+	int pending_mail_info_array_allocated;
 	int num_pending_mails;
 
 	int primary_sort;
@@ -58,7 +58,7 @@ struct folder
 	char *def_replyto; /* default replyto - " */
 	char *def_signature; /* default Signature */ 
 
-	struct mail **sorted_mail_array; /* the sorted mail array, NULL if not sorted, 
+	struct mail_info **sorted_mail_info_array; /* the sorted mail array, NULL if not sorted, 
 																			the size of this array is always big as mail_array */
 
 	int index_uptodate; /* 1 if the indexfile is uptodate */
@@ -124,19 +124,19 @@ void folder_create_imap(void);
 int init_folders(void);
 void del_folders(void);
 
-int folder_add_mail(struct folder *folder, struct mail *mail, int sort);
-int folder_add_mail_incoming(struct mail *mail);
-void folder_mark_deleted(struct folder *folder, struct mail *mail);
-void folder_mark_undeleted(struct folder *folder, struct mail *mail);
-void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
+int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort);
+int folder_add_mail_incoming(struct mail_info *mail);
+void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail);
+void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail);
+void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, struct mail_info *newmail);
 int folder_number_of_mails(struct folder *folder);
 int folder_number_of_unread_mails(struct folder *folder);
 int folder_number_of_new_mails(struct folder *folder);
-void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
-void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_new);
+void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int status_new);
+void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int flags_new);
 int folder_count_signatures(char *def_signature);
-struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
-struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
+struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename);
+struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
 void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);
 
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, char *newdefsignature, int prim_sort, int second_sort);
@@ -154,22 +154,22 @@ int folder_position(struct folder *f);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
 struct folder *folder_find_by_file(char *filename);
-struct folder *folder_find_by_mail(struct mail *mail);
+struct folder *folder_find_by_mail(struct mail_info *mail);
 struct folder *folder_find_by_imap(char *server, char *path);
-struct mail *folder_find_mail(struct folder *f,int position);
-struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename);
-struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename);
-struct mail *folder_find_best_mail_to_select(struct folder *folder);
-int folder_get_index_of_mail(struct folder *f, struct mail *mail);
+struct mail_info *folder_find_mail_by_position(struct folder *f,int position);
+struct mail_info *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename);
+struct mail_info *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename);
+struct mail_info *folder_find_best_mail_to_select(struct folder *folder);
+int folder_get_index_of_mail(struct folder *f, struct mail_info *mail);
 int folder_size_of_mails(struct folder *f);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);
 struct folder *folder_deleted(void);
 struct folder *folder_spam(void);
-int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail);
-int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail **mail_array, int num_mails);
-int folder_delete_mail(struct folder *from_folder, struct mail *mail);
+int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail_info *mail);
+int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail_info **mail_array, int num_mails);
+int folder_delete_mail(struct folder *from_folder, struct mail_info *mail);
 void folder_delete_deleted(void);
 int folder_save_index(struct folder *f);
 void folder_save_all_indexfiles(void);
@@ -184,12 +184,13 @@ void folder_unlink_all(void);
 void folder_add_to_tree(struct folder *fold,struct folder *parent);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
-struct mail *folder_next_mail(struct folder *folder, void **handle);
+struct mail_info *folder_next_mail(struct folder *folder, void **handle);
+#define folder_next_mail_info(f,handle) folder_next_mail(f,handle)
 /* Use this rarly */
-struct mail **folder_get_mail_array(struct folder *folder);
+struct mail_info **folder_get_mail_info_array(struct folder *folder);
 /* query function, free the result with free() */
 #define FOLDER_QUERY_MAILS_PROP_SPAM 1
-struct mail **folder_query_mails(struct folder *folder, int properties);
+struct mail_info **folder_query_mails(struct folder *folder, int properties);
 
 int folder_get_primary_sort(struct folder *folder);
 void folder_set_primary_sort(struct folder *folder, int sort_mode);
@@ -198,7 +199,7 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode);
 
 #define folder_get_type(f) ((f)->type)
 
-struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m, int action);
+struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail_info *m, int action);
 int folder_filter(struct folder *fold);
 int folder_apply_filter(struct folder *folder, struct filter *filter);
 void folder_start_search(struct search_options *sopt);
@@ -218,6 +219,6 @@ void folder_config_save(struct folder *f);
 int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
 
 /* misplaced and needs a rework */
-int mail_matches_filter(struct folder *folder, struct mail *m, struct filter *filter);
+int mail_matches_filter(struct folder *folder, struct mail_info *m, struct filter *filter);
 
 #endif

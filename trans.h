@@ -23,9 +23,11 @@
 #ifndef SM__TRANS_H
 #define SM__TRANS_H
 
+struct mail_info;
+
 int mails_dl(int called_by_auto);
 int mails_dl_single_account(struct account *ac);
 int mails_upload(void);
-int mails_upload_signle(struct mail *);
+int mails_upload_signle(struct mail_info *);
 
 #endif

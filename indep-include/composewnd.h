@@ -25,9 +25,9 @@
 
 struct compose_args
 {
-	struct mail *to_change; /* this mail is changed (can be freed afterwards) might be NULL */
+	struct mail_complete *to_change; /* this mail is changed (can be freed afterwards) might be NULL */
 
-	struct mail *ref_mail;	/* the status of this mail is changed after successful editing */
+	struct mail_info *ref_mail;	/* the status of this mail is changed after successful editing */
 	int action;						/* how the status will be changed */
 };
 

@@ -649,11 +649,11 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 			{
 				char buf[256];
 				struct mail_scan ms;
-				struct mail *m;
+				struct mail_complete *m;
 				int more = 1; /* more lines needed */
 				int showme = 0;
 
-				if (!(m = mail_create())) break;
+				if (!(m = mail_complete_create())) break;
 
 				sprintf(buf, "TOP %d 1\r\n",i);
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
@@ -661,7 +661,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				{
 					if (tcp_error_code() == TCP_INTERRUPTED)
 					{
-						mail_free(m);
+						mail_complete_free(m);
 						free(mail_array);
 						return NULL;
 					}
@@ -685,7 +685,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 				if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 				{
-					mail_free(m);
+					mail_complete_free(m);
 					free(mail_array);
 					return NULL;
 				}
@@ -725,7 +725,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				/* Check if we should receive more statitics (also not asynchron) */
 				if (!(int)thread_call_parent_function_sync(NULL, status_more_statistics,0)) break;
 
-				mail_free(m);
+				mail_complete_free(m);
 			}
 		}
 	}
@@ -857,13 +857,13 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 		if (auto_spam)
 		{
-			struct mail *mail = mail_create();
+			struct mail_info *mail = mail_info_create();
 			if (mail)
 			{
-				mail->info->filename = fn;
+				mail->filename = fn;
 				is_spam = spam_is_mail_spam(NULL,mail,white,black);
-				mail->info->filename = NULL;
-				mail_free(mail);
+				mail->filename = NULL;
+				mail_info_free(mail);
 			}
 		}
 

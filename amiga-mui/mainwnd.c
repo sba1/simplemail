@@ -128,8 +128,6 @@ static Object *status_text;
 static Object *balance_text;
 static LONG Weights[6] = {33, 100, 100, 100, 100, 100};
 
-static int folders_in_popup;
-
 static void main_refresh_folders_text(void);
 static void settings_show_changed(void);
 
@@ -963,7 +961,7 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, MUIX_B "%s"  MUIX_N " %s  " MUIX_B "%s"  MUIX_N " %ld  " MUIX_B "%s"  MUIX_N " %ld  " MUIX_B "%s"  MUIX_N " %ld  ",
+			sprintf(buf, MUIX_B "%s"  MUIX_N " %s  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  ",
 			        _("Folder:"),f->name,_("Total:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
@@ -995,7 +993,7 @@ void main_refresh_folders(void)
 
 		for (f=folder_first();f;f=folder_next(f),i++)
 		{
-			sprintf(buf,_("%s (T:%ld N:%ld U:%ld)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
+			sprintf(buf,_("%s (T:%d N:%d U:%d)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
 			DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
 		}
 	}
@@ -1024,7 +1022,7 @@ void main_refresh_folder(struct folder *folder)
 /******************************************************************
  Inserts a new mail into the listview at the end
 *******************************************************************/
-void main_insert_mail(struct mail *mail)
+void main_insert_mail(struct mail_info *mail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_InsertMail, mail, -2);
 }
@@ -1032,7 +1030,7 @@ void main_insert_mail(struct mail *mail)
 /******************************************************************
  Inserts a new mail into the listview after a given position
 *******************************************************************/
-void main_insert_mail_pos(struct mail *mail, int after)
+void main_insert_mail_pos(struct mail_info *mail, int after)
 {
 	DoMethod(mail_tree, MUIM_MailTree_InsertMail, mail, after);
 }
@@ -1040,7 +1038,7 @@ void main_insert_mail_pos(struct mail *mail, int after)
 /******************************************************************
  Remove a given mail from the listview
 *******************************************************************/
-void main_remove_mail(struct mail *mail)
+void main_remove_mail(struct mail_info *mail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RemoveMail, mail);
 }
@@ -1050,7 +1048,7 @@ void main_remove_mail(struct mail *mail)
  This also activates the new mail, however it would be better if
  this done by an extra call
 *******************************************************************/
-void main_replace_mail(struct mail *oldmail, struct mail *newmail)
+void main_replace_mail(struct mail_info *oldmail, struct mail_info *newmail)
 {
 	DoMethod(mail_tree, MUIM_MailTree_ReplaceMail, oldmail, newmail);
 }
@@ -1058,7 +1056,7 @@ void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 /******************************************************************
  Refresh a mail (if it status has changed fx)
 *******************************************************************/
-void main_refresh_mail(struct mail *m)
+void main_refresh_mail(struct mail_info *m)
 {
 	DoMethod(mail_tree, MUIM_MailTree_RefreshMail, m);
 	DoMethod(folder_tree, MUIM_NListtree_Redraw, MUIV_NListtree_Redraw_Active, 0);
@@ -1126,7 +1124,7 @@ char *main_get_folder_drawer(void)
 /******************************************************************
  Sets the active mail
 *******************************************************************/
-void main_set_active_mail(struct mail *m)
+void main_set_active_mail(struct mail_info *m)
 {
 	set(mail_tree, MUIA_MailTree_Active, m);
 }
@@ -1134,9 +1132,9 @@ void main_set_active_mail(struct mail *m)
 /******************************************************************
  Returns the active mail. NULL if no one is active
 *******************************************************************/
-struct mail *main_get_active_mail(void)
+struct mail_info *main_get_active_mail(void)
 {
-	return (struct mail*)xget(mail_tree, MUIA_MailTreelist_Active);
+	return (struct mail_info*)xget(mail_tree, MUIA_MailTreelist_Active);
 }
 
 /******************************************************************
@@ -1145,26 +1143,26 @@ struct mail *main_get_active_mail(void)
 *******************************************************************/
 char *main_get_mail_filename(void)
 {
-	struct mail *m = main_get_active_mail();
-	if (m) return m->info->filename;
+	struct mail_info *m = main_get_active_mail();
+	if (m) return m->filename;
 	return NULL;
 }
 
 /******************************************************************
  Returns the first selected mail. NULL if no mail is selected
 *******************************************************************/
-struct mail *main_get_mail_first_selected(void *handle)
+struct mail_info *main_get_mail_first_selected(void *handle)
 {
-	return (struct mail*)DoMethod(mail_tree, MUIM_MailTree_GetFirstSelected, handle);
+	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetFirstSelected, handle);
 }
 
 /******************************************************************
  Returns the next selected mail. NULL if no more mails are
  selected
 *******************************************************************/
-struct mail *main_get_mail_next_selected(void *handle)
+struct mail_info *main_get_mail_next_selected(void *handle)
 {
-	return (struct mail*)DoMethod(mail_tree, MUIM_MailTree_GetNextSelected, handle);
+	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetNextSelected, handle);
 }
 
 /******************************************************************
@@ -1299,7 +1297,7 @@ void main_set_status_text(char *txt)
 *******************************************************************/
 void main_display_active_mail(void)
 {
-	struct mail *m = main_get_active_mail();
+	struct mail_info *m = main_get_active_mail();
 	char *f = main_get_folder_drawer();
 
 	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);

@@ -101,14 +101,14 @@ static int export_entry(struct export_data *data)
 					{
 						void *handle = NULL;
 						char buf[384];
-						struct mail *m;
+						struct mail_info *m;
 						char *file_buf;
 						int max_size = 0;
 						int size = 0;
 						int mail_no = 1;
 
 						while ((m = folder_next_mail(f, &handle)))
-							max_size += m->info->size;
+							max_size += m->size;
 
 						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_size);
 						thread_call_parent_function_async(status_init_mail, 1, f->num_mails);
@@ -129,14 +129,14 @@ static int export_entry(struct export_data *data)
 								static const char *week_str[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 								struct tm tm;
 
-								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->info->size);
+								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->size);
 
-								sm_convert_seconds(m->info->received,&tm);
+								sm_convert_seconds(m->received,&tm);
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
 
-								fprintf(fh, "From %s %s\n",m->info->from_addr?m->info->from_addr:"",date_buf);
+								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:"",date_buf);
 			
-								in = fopen(m->info->filename,"r");
+								in = fopen(m->filename,"r");
 								if (in)
 								{
 									while (fgets(file_buf,8192,in))

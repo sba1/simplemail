@@ -779,6 +779,11 @@ void main_set_folder_mails(struct folder *folder)
 		}
 	}
 
+	if ((m = folder_find_best_mail_to_select(folder)))
+	{
+		set(mail_tree, MUIA_NListtree_Active, FindListtreeUserData(mail_tree, m));
+	}
+
 	SetAttrs(mail_tree,
 				MUIA_NListtree_Quiet, FALSE,
 				TAG_DONE);

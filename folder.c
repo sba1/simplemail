@@ -1050,6 +1050,23 @@ struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_fil
 }
 
 /******************************************************************
+ Finds a mail which should be selected (depending on the folder
+ type this could be a unread or a held mail)
+*******************************************************************/
+struct mail *folder_find_best_mail_to_select(struct folder *folder)
+{
+	void *handle = NULL;
+	struct mail *m;
+
+	while ((m = folder_next_mail(folder, &handle)))
+	{
+		if (mail_get_status_type(m)==MAIL_STATUS_UNREAD) return m;
+	}
+
+	return m;
+}
+
+/******************************************************************
  Move a mail from source folder to a destination folder. 0 if the
  moving has failed.
  If mail has sent status and moved to a outgoing drawer it get's

@@ -709,26 +709,11 @@ static void prev_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
 	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
+
 	if (prev)
 	{
-		read_cleanup(data);
-		if (data->mail) mail_free(data->mail);
-		data->mail = NULL;
-		read_window_display_mail(data, prev);
-
-		/* Update flags if needed */
-		if (mail_get_status_type(prev) == MAIL_STATUS_UNREAD)
-		{
-			struct folder *f = folder_find_by_path(data->folder_path);
-			if (f)
-			{
-				folder_set_mail_status(f,prev,MAIL_STATUS_READ | (prev->status & (~MAIL_STATUS_MASK)));
-				if (prev->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-				prev->flags &= ~MAIL_FLAGS_NEW;
-				main_refresh_folder(f);
-			}
-		}
-
+		callback_read_mail(folder_find_by_path(data->folder_path),prev,data->num);
+		/* will also refresh the mail, in case of updated flags */
 		main_set_active_mail(prev);
 	}
 }
@@ -741,27 +726,11 @@ static void next_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
 	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
+
 	if (next)
 	{
-		read_cleanup(data);
-		if (data->mail) mail_free(data->mail);
-		data->mail = NULL;
-		read_window_display_mail(data, next);
-
-		/* Update flags if needed */
-		if (mail_get_status_type(next) == MAIL_STATUS_UNREAD)
-		{
-			struct folder *f = folder_find_by_path(data->folder_path);
-			if (f)
-			{
-				folder_set_mail_status(f,next,MAIL_STATUS_READ | (next->status & (~MAIL_STATUS_MASK)));
-				if (next->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-				next->flags &= ~MAIL_FLAGS_NEW;
-				main_refresh_folder(f);
-			}
-		}
-
-	 /* will also refresh the mail, in case of updated flags */
+		callback_read_mail(folder_find_by_path(data->folder_path),next,data->num);
+		/* will also refresh the mail, in case of updated flags */
 		main_set_active_mail(next);
 	}
 }
@@ -777,33 +746,15 @@ static void delete_button_pressed(struct Read_Data **pdata)
 
 	if (callback_delete_mail(data->ref_mail))
 	{
-		if (!next)
+		if (next)
+		{
+			callback_read_mail(folder_find_by_path(data->folder_path),next,data->num);
+			/* will also refresh the mail, in case of updated flags */
+			main_set_active_mail(next);
+		} else
 		{
 			set(data->wnd, MUIA_Window_Open, FALSE);
 			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
-		}
-		read_cleanup(data);
-		if (data->mail) mail_free(data->mail);
-		data->mail = NULL;
-
-		if (next)
-		{
-			read_window_display_mail(data, next);
-
-			/* Update flags if needed */
-			if (mail_get_status_type(next) == MAIL_STATUS_UNREAD)
-			{
-				struct folder *f = folder_find_by_path(data->folder_path);
-				if (f)
-				{
-					folder_set_mail_status(f,next,MAIL_STATUS_READ | (next->status & (~MAIL_STATUS_MASK)));
-					if (next->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-					next->flags &= ~MAIL_FLAGS_NEW;
-					main_refresh_mail(next);
-					main_refresh_folder(f);
-				}
-			}
-			main_set_active_mail(next);
 		}
 	}
 }
@@ -902,6 +853,10 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 {
 	BPTR lock;
+
+	read_cleanup(data);
+	if (data->mail) mail_free(data->mail);
+	data->mail = NULL;
 
 	if (!data->folder_path) return 0;
 
@@ -1128,6 +1083,7 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			Object *save_document_item;
 			Object *printtxt_contents_item;
 
+			memset(data,0,sizeof(struct Read_Data));
 
 			data->attachment_standard_menu = MenustripObject,
 				Child, MenuObjectT(_("Attachment")),

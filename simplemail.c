@@ -67,33 +67,35 @@ int callback_read_active_mail(void)
 	if (!(filename = main_get_mail_filename())) return -1;
 	if (!(m = main_get_active_mail())) return -1;
 
-	if (m->flags & MAIL_FLAGS_PARTIAL)
+	return callback_read_mail(f,m,-1);
+}
+
+
+int callback_read_mail(struct folder *f, struct mail *mail, int window)
+{
+	int num;
+
+	if (!f) f = folder_find_by_mail(mail);
+	if (!f) return -1;
+
+	if (mail->flags & MAIL_FLAGS_PARTIAL)
 	{
-		imap_download_mail(f,m);
-		main_refresh_mail(m);
+		imap_download_mail(f,mail);
+		main_refresh_mail(mail);
 	}
 
-	num = read_window_open(main_get_folder_drawer(), m, -1);
-
+	num = read_window_open(f->path, mail, window);
 	if (num >= 0)
 	{
-		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
+		if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD)
 		{
-			folder_set_mail_status(f,m,MAIL_STATUS_READ | (m->status & (~MAIL_STATUS_MASK)));
-			if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-			m->flags &= ~MAIL_FLAGS_NEW;
-			main_refresh_mail(m);
+			folder_set_mail_status(f,mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
+			if (mail->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+			mail->flags &= ~MAIL_FLAGS_NEW;
+			main_refresh_mail(mail);
 			main_refresh_folder(f);
 		}
 	}
-	return num;
-}
-
-int callback_read_this_mail(struct mail *m)
-{
-	struct folder *f = folder_find_by_mail(m);
-	int num;
-	num = read_window_open(f->path, m, -1);
 	return num;
 }
 

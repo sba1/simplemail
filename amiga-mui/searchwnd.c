@@ -140,7 +140,7 @@ static void searchwnd_read(void)
 {
 	struct mail *mail;
 	mail = (struct mail*)xget(search_mail_tree, MUIA_MailTree_Active);
-	if (mail) callback_read_this_mail(mail);
+	if (mail) callback_read_mail(NULL,mail,-1);
 }
 
 /**************************************************************************

@@ -108,6 +108,12 @@ struct config
 	/* array of "internet connectable" e-mail addresses */
 	char **internet_emails;
 
+	/* spam */
+	int spam_mark_moved; /* mark mails if they are moved to spam */
+	int spam_addrbook_is_white;
+	char **spam_white_emails;
+	char **spam_black_emails;
+
 	/* charset */
 	struct codeset *default_codeset; /* the user default codeset, might be NULL */
 };

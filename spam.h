@@ -24,4 +24,7 @@ int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail);
 int spam_feed_mail_as_ham(struct folder *folder, struct mail *mail);
 int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail);
 
+unsigned int spam_num_of_spam_classified_mails(void);
+unsigned int spam_num_of_ham_classified_mails(void);
+
 #endif

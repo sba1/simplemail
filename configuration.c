@@ -139,6 +139,9 @@ void init_config(void)
 	user.config.write_reply_quote = 1;
 	user.config.write_reply_stripsig = 1;
 	user.config.write_reply_citeemptyl = 0;
+
+  user.config.spam_mark_moved = 1;
+  user.config.spam_addrbook_is_white = 1;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)

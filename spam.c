@@ -483,3 +483,19 @@ int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
 	chdir(path);
 	return rc;
 }
+
+/**************************************************************************
+ Returns the number of mails classified as spam
+**************************************************************************/
+unsigned int spam_num_of_spam_classified_mails(void)
+{
+	return spam_table.data;
+}
+
+/**************************************************************************
+ Returns the number of mails classified as ham
+**************************************************************************/
+unsigned int spam_num_of_ham_classified_mails(void)
+{
+	return spam_table.data;
+}

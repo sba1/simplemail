@@ -49,6 +49,7 @@
 #include "signature.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "spam.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -147,6 +148,14 @@ static Object *phrase_reply_close_popph;
 static Object *phrase_forward_initial_popph;
 static Object *phrase_forward_terminating_popph;
 
+static Object *spam_mark_before_check;
+static Object *spam_addr_book_is_white_check;
+static Object *spam_white_list_editor;
+static Object *spam_black_list_editor;
+static Object *spam_reset_ham_stat_button;
+static Object *spam_reset_spam_stat_button;
+static Object *spam_clean_spam_folder_button;
+
 static Object *config_group;
 static Object *config_list;
 
@@ -163,7 +172,8 @@ static struct signature *signature_last_selected;
 #define GROUPS_READHTML	6
 #define GROUPS_PHRASE		7
 #define GROUPS_SIGNATURE	8
-#define GROUPS_MAX				9
+#define GROUPS_SPAM			9
+#define GROUPS_MAX				10
 
 static Object *groups[GROUPS_MAX];
 static Object *config_last_visisble_group;
@@ -1651,6 +1661,83 @@ static int init_phrase_group(void)
 	return 1;
 }
 
+/******************************************************************
+ Init the signature group
+*******************************************************************/
+int init_spam_group(void)
+{
+	char spam_buf[16];
+	char ham_buf[16];
+
+	sprintf(spam_buf,"%ld",spam_num_of_spam_classified_mails());
+	sprintf(ham_buf,"%ld",spam_num_of_ham_classified_mails());
+
+	groups[GROUPS_SPAM] =  VGroup,
+		MUIA_ShowMe, FALSE,
+		Child, VGroup,
+			Child, HorizLineTextObject(_("General spam settings")),
+			Child, ColGroup(2),
+				Child, MakeLabel(_("Mark mails as spam when moved to the spam folder")),
+				Child, HGroup, Child, spam_mark_before_check = MakeCheck(_("Mark mails as spam before moved to the spam folder"),user.config.spam_mark_moved), Child, HVSpace, End,
+				MUIA_ShortHelp, _("If you activate this option any mail you move to the spam folder\n"
+													"is marked as spam before the operation. Note that only mails\n"
+													"marked as spam can be moved into the spam folder."),
+				End,
+
+			Child, HGroup,
+				Child, VGroup,
+					MUIA_ShortHelp, _("A white list contains email address of people you usually\n"
+                            "thrust. This can be used to speed up the spam checking as\n"
+                            "mails with a listed sender address is skipped."),
+					Child, HorizLineTextObject(_("White list")),
+					Child, spam_white_list_editor = ComposeEditorObject,
+						InputListFrame,
+						MUIA_CycleChain, 1,
+						MUIA_TextEditor_FixedFont, TRUE,
+						End,
+					Child, HGroup,
+						MUIA_ShortHelp, _("If enabled all addresses within you addressbook are also\n"
+														  "considered to be safe."),
+						Child, MakeLabel(_("Also all addresses within the addressbook")),
+						Child, spam_addr_book_is_white_check = MakeCheck(_("Additional all addresses within the addressbook"),user.config.spam_addrbook_is_white),
+						End,
+					End,
+
+				Child, VGroup,
+					MUIA_ShortHelp, _("A black list contains email address which you don't thrust.\n"
+														"Mails from these addresses are always marked as spam."),
+					Child, HorizLineTextObject(_("Black list")),
+					Child, spam_black_list_editor = ComposeEditorObject,
+						InputListFrame,
+						MUIA_CycleChain, 1,
+						MUIA_TextEditor_FixedFont, TRUE,
+						End,
+					End,
+				End,
+
+			Child, HorizLineTextObject(_("Statistics")),
+			Child, VGroup,
+				Child, ColGroup(5),
+					Child, MakeLabel(_("Number of classified ham mails")),
+					Child, TextObject, TextFrame, MUIA_Text_Contents, ham_buf, End,
+					Child, spam_reset_ham_stat_button = MakeButton(_("Reset statistics")),
+					Child, HVSpace,
+					Child, HVSpace,
+
+					Child, MakeLabel(_("Number of classified spam mails")),
+					Child, TextObject, TextFrame, MUIA_Text_Contents, spam_buf, End,
+					Child, spam_reset_spam_stat_button = MakeButton(_("Reset statistics")),
+					Child, spam_clean_spam_folder_button = MakeButton(_("Clean spam folder")),
+					Child, HVSpace,
+					End,
+				End,
+			End,
+		End;
+
+  if (!groups[GROUPS_SPAM]) return 0;
+
+  return 1;
+}
 
 /******************************************************************
  Init the config window
@@ -1670,6 +1757,7 @@ static void init_config(void)
 	init_mails_readhtml_group();
 	init_signature_group();
 	init_phrase_group();
+	init_spam_group();
 
 	config_wnd = WindowObject,
 		MUIA_HelpNode, "CO_W",
@@ -1694,6 +1782,7 @@ static void init_config(void)
 	 				Child, groups[GROUPS_READHTML],
 	 				Child, groups[GROUPS_SIGNATURE],
 	 				Child, groups[GROUPS_PHRASE],
+	 				Child, groups[GROUPS_SPAM],
 	 				Child, RectangleObject,
 	   				MUIA_Weight, 1,
   						End,
@@ -1723,7 +1812,7 @@ static void init_config(void)
 		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readhtml", End, 7, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_signature", End, 8, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End, 9, 0);
-
+		DoMethod(config_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_spam", End, 10, 0);
 
 		sprintf(texts[GROUPS_USER],     "\033o[1] %s", _("General"));
 		sprintf(texts[GROUPS_ACCOUNT],  "\033o[2] %s", _("Accounts"));
@@ -1734,6 +1823,7 @@ static void init_config(void)
 		sprintf(texts[GROUPS_READHTML], "\033o[7] %s", _("Reading HTML"));
 		sprintf(texts[GROUPS_PHRASE],   "\033o[8] %s", _("Phrases"));
 		sprintf(texts[GROUPS_SIGNATURE],"\033o[9] %s", _("Signatures"));
+		sprintf(texts[GROUPS_SPAM],		"\033o[10] %s", _("Spam"));
 
 		account_last_selected = NULL;
 		signature_last_selected = NULL;

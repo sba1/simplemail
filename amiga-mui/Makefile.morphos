@@ -41,7 +41,8 @@ GLOBAL  = compiler.h
 
 %.c : %.h $(GLOBAL)
 
-OBJS = utf8stringclass.o \
+OBJS = vsnprintf.o \
+	utf8stringclass.o \
 	transwndclass.o \
 	tcpip.o \
 	sysprint.o \

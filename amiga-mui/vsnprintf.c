@@ -225,7 +225,7 @@ int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap)
   fmt = (char *)fmt0;
   argtable = NULL;
   nextarg = 1;
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
   __va_copy(orgap,ap);
 #else
   orgap = ap;

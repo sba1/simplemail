@@ -259,8 +259,11 @@ static void compose_attach_active(struct Compose_Data **pdata)
 		struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(data->attach_tree, data->last_attachment);
 		if (tn)
 		{
-			STRPTR text_buf = (STRPTR)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
-			if (text_buf)
+			STRPTR text_buf;
+
+			set(data->text_texteditor, MUIA_TextEditor_ExportHook, MUIV_TextEditor_ExportHook_EMail);
+
+			if ((text_buf = (STRPTR)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
 			{
 				/* free the memory of the last contents */
 				if (data->last_attachment->contents) free(data->last_attachment->contents);
@@ -269,6 +272,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 				data->last_attachment->lastycursor = xget(data->text_texteditor, MUIA_TextEditor_CursorY);
 				FreeVec(text_buf);
 			}
+			set(data->text_texteditor, MUIA_TextEditor_ExportHook, MUIV_TextEditor_ExportHook_Plain);
 		}
 	}
 
@@ -277,7 +281,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 		attach = (struct attachment *)activenode->tn_User;
 	}
 
-	if (attach)
+	if (attach != data->last_attachment)
 	{
 		if (attach->editable)
 		{
@@ -427,8 +431,8 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 				attach.contents = mystrndup(mail->text + mail->text_begin,mail->text_len);
 			}
 			attach.editable = 1;
-			attach.lastxcursor = 0x7fff;
-			attach.lastycursor = 0x7fff;
+			attach.lastxcursor = 0;
+			attach.lastycursor = 0;
 		} else
 		{
 			BPTR fh;

@@ -182,7 +182,7 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
-					MUIA_Popstring_String, string = TextObject,TextFrame,MUIA_InputMode, MUIV_InputMode_RelVerify,MUIA_CycleChain,1,End,
+					MUIA_Popstring_String, string = TextObject,TextFrame,MUIA_Text_SetMin,FALSE,MUIA_InputMode, MUIV_InputMode_RelVerify,MUIA_CycleChain,1,End,
 					MUIA_Popobject_Object, NListviewObject,
 							MUIA_NListview_NList, list = NListObject,
 								End,

@@ -46,6 +46,7 @@
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "popupmenuclass.h"
 
 static Object *win_main;
 static Object *main_group;
@@ -64,11 +65,12 @@ static Object *button_switch; /* switch button for the two views */
 static Object *mail_tree;
 static Object *mail_tree_group;
 static Object *mail_listview;
-static Object *folder_tree;
-static Object *folder_text;
 static Object *folder_listview;
+static Object *folder_tree;
 static Object *folder_balance;
-static Object *folder_popobject;
+static Object *folder_group;
+static Object *folder_text;
+static Object *folder_popupmenu;
 
 static int folders_in_popup;
 
@@ -210,12 +212,23 @@ static void switch_folder_view(void)
 }
 
 /******************************************************************
- This hook is called after the popup has succesfully closed
+ A new entry in the popupmenu has been selected
 *******************************************************************/
-static void folder_popup_objstrfunc(void)
+static void popup_selected(void)
 {
-	DoMethod(App, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
-	DoMethod(App, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
+	LONG newact = xget(folder_popupmenu,MUIA_Popupmenu_Selected);
+	if (newact != -1)
+	{
+		struct folder *f = folder_find(newact);
+		if (f)
+		{
+			APTR treenode = FindListtreeUserData(folder_tree, f);
+			if (treenode)
+			{
+				set(folder_tree, MUIA_NListtree_Active, treenode);
+			}
+		}
+	}
 }
 
 /******************************************************************
@@ -223,98 +236,23 @@ static void folder_popup_objstrfunc(void)
 *******************************************************************/
 static int init_folder_placement(void)
 {
-	struct folder *act_folder;
-	if (folder_tree) act_folder = main_get_folder();
-	else act_folder = NULL;
+	DoMethod(main_group, MUIM_Group_InitChange);
+	DoMethod(mail_tree_group, MUIM_Group_InitChange);
 
+	if (folders_in_popup)
 	{
-		DoMethod(main_group, MUIM_Group_InitChange);
-		DoMethod(mail_tree_group, MUIM_Group_InitChange);
-
-		if (folder_popobject)
-		{
-			DoMethod(main_group, OM_REMMEMBER, folder_popobject);
-
-			MUI_DisposeObject(folder_popobject);
-			folder_popobject = NULL;
-			folder_text = NULL;
-			folder_listview = NULL;
-			folder_tree = NULL;
-		}
-		else
-		{
-			if (folder_listview)
-			{
-				DoMethod(mail_tree_group, OM_REMMEMBER, folder_listview);
-
-				MUI_DisposeObject(folder_listview);
-				folder_listview = NULL;
-				folder_tree = NULL;
-			}
-			if (folder_balance)
-			{
-				DoMethod(mail_tree_group, OM_REMMEMBER, folder_balance);
-				MUI_DisposeObject(folder_balance);
-				folder_balance = NULL;
-			}
-		}
-
-		if (folders_in_popup)
-		{
-			static struct Hook folder_popup_objstrhook;
-
-			folder_popobject = PopobjectObject,
-				MUIA_Popstring_Button, PopButton(MUII_PopUp),
-				MUIA_Popstring_String, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
-				MUIA_Popobject_ObjStrHook, &folder_popup_objstrhook,
-				MUIA_Popobject_Object, folder_listview = NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
-						End,
-					End,
-				End;
-
-			init_hook(&folder_popup_objstrhook,(HOOKFUNC)folder_popup_objstrfunc);
-
-			DoMethod(main_group, OM_ADDMEMBER, folder_popobject);
-			DoMethod(main_group, MUIM_Group_Sort, buttons_group, folder_popobject, mail_tree_group,0);
-
-			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, folder_popobject, 2, MUIM_Popstring_Close, 1);
-		} else
-		{
-			folder_listview = folder_listview = NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_HorizWeight, 33,
-					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
-						End,
-					End,
-
-			folder_balance = BalanceObject, End;
-
-			DoMethod(mail_tree_group, OM_ADDMEMBER, folder_listview);
-			DoMethod(mail_tree_group, OM_ADDMEMBER, folder_balance);
-			DoMethod(mail_tree_group, MUIM_Group_Sort, folder_listview, folder_balance, mail_listview, 0);
-
-			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
-			DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
-			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
-		}
-
-		main_refresh_folders();
-		nnset(folder_tree,MUIA_NListtree_Active,FindListtreeUserData(folder_tree,act_folder));
-		main_refresh_folders_text();
-
-		DoMethod(mail_tree_group, MUIM_Group_ExitChange);
-		DoMethod(main_group, MUIM_Group_ExitChange);
+		set(folder_group, MUIA_ShowMe, TRUE);
+		set(folder_balance, MUIA_ShowMe, FALSE);
+		set(folder_listview, MUIA_ShowMe, FALSE);
+	} else
+	{
+		set(folder_group, MUIA_ShowMe, FALSE);
+		set(folder_balance, MUIA_ShowMe, TRUE);
+		set(folder_listview, MUIA_ShowMe, TRUE);
 	}
 
-	set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
+	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
+	DoMethod(main_group, MUIM_Group_ExitChange);
 	return 1;
 }
 
@@ -358,7 +296,26 @@ int main_window_init(void)
 					End,
 				End,
 
+			Child, folder_group = HGroup,
+				MUIA_Group_Spacing,0,
+				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
+				Child, folder_popupmenu = PopupmenuObject,
+					ImageButtonFrame,
+					MUIA_Image_Spec, MUII_PopUp,
+					MUIA_Image_FreeVert, TRUE,
+					End,
+				End,
 			Child, mail_tree_group = HGroup,
+				Child, folder_listview = NListviewObject,
+					MUIA_CycleChain, 1,
+					MUIA_HorizWeight, 33,
+					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+						End,
+					End,
+				Child, folder_balance = BalanceObject, End,
 				Child, mail_listview = NListviewObject,
 					MUIA_CycleChain,1,
 					MUIA_NListview_NList, mail_tree = MailTreelistObject,
@@ -391,11 +348,14 @@ int main_window_init(void)
 		DoMethod(button_switch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
-
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
+		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
+		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
 		rc = TRUE;
-		
-	}
-	else
+	} else
 	{
 		tell("Can\'t create window!");
 	}
@@ -431,7 +391,7 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, MUIX_PH "Folder:"  MUIX_PT "%s " MUIX_PH "Messages:"  MUIX_PT "%ld " MUIX_PH "New:"  MUIX_PT "%ld: " MUIX_PH "Unread:"  MUIX_PT "%ld",f->name,f->num_mails,f->new_mails,f->unread_mails);
+			sprintf(buf, MUIX_B "Folder:"  MUIX_N "%s " MUIX_B "Messages:"  MUIX_N "%ld " MUIX_B "New:"  MUIX_N "%ld: " MUIX_B "Unread:"  MUIX_N "%ld",f->name,f->num_mails,f->new_mails,f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
 	}
@@ -446,12 +406,16 @@ void main_refresh_folders(void)
 
 	int act = xget(folder_tree, MUIA_NList_Active);
 
+	if (folder_popupmenu) DoMethod(folder_popupmenu,MUIM_Popupmenu_Clear);
+
 	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
 	DoMethod(folder_tree,MUIM_NList_Clear);
 	while (f)
 	{
 		DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
 						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+
+		if (folder_popupmenu) DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, f->name);
 		f = folder_next(f);
 	}
 	nnset(folder_tree,MUIA_NList_Active,act);

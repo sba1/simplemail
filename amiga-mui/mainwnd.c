@@ -452,7 +452,7 @@ int main_window_init(void)
 
 	win_main = WindowObject,
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
-    MUIA_Window_Title, VERS,
+	 MUIA_Window_Title, VERS,
 
 		MUIA_Window_Menustrip,main_menu,
 
@@ -482,8 +482,8 @@ int main_window_init(void)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_filter = MakePictureButton(_("Filter"),"PROGDIR:Images/Filter"),
-						Child, button_efilter = MakePictureButton(_("Filters"),"PROGDIR:Images/FilterEdit"),
+						Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),
+						Child, button_efilter = MakePictureButton(_("Fi_lters"),"PROGDIR:Images/FilterEdit"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
@@ -558,10 +558,10 @@ int main_window_init(void)
 		settings_show_changed();
 
 		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<8))
-    {
-    	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
-    	return 0;
-    }
+	 {
+	 	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
+	 	return 0;
+	 }
 
 		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 

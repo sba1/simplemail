@@ -132,6 +132,9 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 				ICONGETA_Screen, _screen(obj),
 				TAG_DONE);
 		}
+	} else
+	{
+		data->obj = GetDefDiskObject(WBPROJECT);
 	}
 
 	return DoSuperMethodA(cl,obj,(Msg)msg);

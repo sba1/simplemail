@@ -372,6 +372,17 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 }
 
 /**************************************************************************
+ Sends a noop to the given server
+**************************************************************************/
+static void pop3_noop(struct connection *conn)
+{
+	if (tcp_write(conn,"NOOP\r\n",6) == 6)
+	{
+		pop3_receive_answer(conn);
+	}
+}
+
+/**************************************************************************
  Get statistics about pop3-folder contents. It returns the an array of
  dl_mail instances. The first (0) index gives the total amount of messages
  stored in the flags field.
@@ -552,7 +563,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		int start;
 
 		thread_call_parent_function_async(status_set_status,1,N_("Waiting for user interaction"));
-		if (!(start = thread_call_parent_function_sync(status_wait,0)))
+
+		if (!(start = thread_call_parent_function_sync_timer_callback( (void(*)(void*))pop3_noop, conn, 5000, status_wait,0)))
 			return NULL;
 
 		for (i=1;i<=amm;i++)

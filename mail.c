@@ -1440,7 +1440,7 @@ static void mail_decrypt(struct mail *mail)
 			}
 
 			if (!saved_passphrase)
-				saved_passphrase = sm_request_string(NULL,"This mail is encrypted. Please enter your passphrase now", "", 1);
+				saved_passphrase = sm_request_string(NULL,_("This mail is encrypted. Please enter your passphrase now"), "", 1);
 
 			if (saved_passphrase)
 			{
@@ -1524,9 +1524,9 @@ static void mail_decrypt(struct mail *mail)
 					} else
 					{
 						sm_request(NULL,
-							"Decrypting failed! Eighter because the passphrase was incorrect\n"
-							"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!",
-							"Ok");
+							_("Decrypting failed! Eighter because the passphrase was incorrect\n"
+							"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!"),
+							_("Ok"));
 
 						free(saved_passphrase);
 						saved_passphrase = NULL;
@@ -1538,7 +1538,7 @@ static void mail_decrypt(struct mail *mail)
 			}
 		} else
 		{
-			mail->decoded_data = mystrdup("Unsupported encryption");
+			mail->decoded_data = mystrdup(_("Unsupported encryption"));
 			mail->decoded_len = strlen(mail->decoded_data);
 			if (mail->multipart_array)
 			{
@@ -2354,14 +2354,14 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 					}
 					if (*src == 'r' && realname)
 					{
-						char *first_name = get_first_name(realname,addr_spec); /* returns a static buffer and never fails */
-						strcpy(dest,first_name);
-						dest += strlen(first_name);
+						strcpy(dest,realname);
+						dest += strlen(realname);
 					}
 					if (*src == 'v' && realname)
 					{
-						strcpy(dest,realname);
-						dest += strlen(realname);
+						char *first_name = get_first_name(realname,addr_spec); /* returns a static buffer and never fails */
+						strcpy(dest,first_name);
+						dest += strlen(first_name);
 /*
 						char *last_name = get_last_name(realname,addr_spec);
 						strcpy(dest,last_name);

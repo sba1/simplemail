@@ -95,17 +95,79 @@ static int mailncpy(char *dest, const char *src, int n)
 }
 
 /**************************************************************************
+ Determines the length from now until a wordend
+**************************************************************************/
+static int word_length(const char *buf)
+{
+	unsigned char c;
+	int len = 0;
+
+	while ((c = *buf))
+	{
+		if (isspace(c))
+		{
+			if (c == 10 || c == 13) return 0;
+			len++;
+		} else break;
+		buf++;
+	}
+
+
+	while ((c = *buf))
+	{
+		if (isspace(c) || c == 0) break;
+		len++;
+		buf++;
+	}
+	return len;
+}
+
+/**************************************************************************
+ Copies to quoting chars in to the buffer. len is the length of the
+ buffer to avoid overflow
+**************************************************************************/
+static void quoting_chars(char *buf, int len, char *text)
+{
+	unsigned char c;
+	int new_color = 0;
+	int i=0;
+	int last_bracket = 0;
+	while ((c = *text++) && i<len-1)
+	{
+		if (c == '>')
+		{
+			last_bracket = i+1;
+			if (new_color == 1) new_color = 2;
+			else new_color = 1;
+		} else
+		{
+			if (c==10) break;
+			if ((new_color == 1 || new_color == 2) && c != ' ') break;
+			if (c==' ' && new_color == 0) break;
+		}
+		buf[i++] = c;
+	}
+	buf[last_bracket]=0;
+}
+
+/**************************************************************************
  Cites a text
 **************************************************************************/
-static char *cite_text(char *src, int len)
+static char *quote_text(char *src, int len)
 {
 	FILE *fh = tmpfile();
+	static char temp_buf[128];
 	char *cited_buf = NULL;
+	
 
 	if (fh)
 	{
 		int cited_len;
 		int newline = 1;
+		int line_len = 0;
+
+		if (user.config.write_reply_quote)
+			quoting_chars(temp_buf,sizeof(temp_buf),src);
 
 		while (len)
 		{
@@ -124,17 +186,38 @@ static char *cite_text(char *src, int len)
 				newline = 1;
 				src++;
 				len--;
+
+				if (user.config.write_reply_quote)
+					quoting_chars(temp_buf,sizeof(temp_buf),src);
+
+				line_len = 0;
+
 				continue;
 			}
 
 			if (newline)
 			{
-				if (c=='>') fputc('>',fh);
-				else fputs("> ",fh);
+				if (c=='>') { fputc('>',fh); line_len++;}
+				else { fputs("> ",fh); line_len+=2;}
 				newline = 0;
 			}
 
+			if (user.config.write_reply_quote)
+			{
+				if (isspace(c) && line_len + word_length(src) >= user.config.write_wrap)
+				{
+					src++;
+					fputs("\n>",fh);
+					fputs(temp_buf,fh);
+					fputc(' ',fh);
+					line_len=strlen(temp_buf)+2;
+					continue;
+				}
+			}
+
 			fputc(c,fh);
+
+			line_len++;
 
 			src++;
 			len--;
@@ -923,8 +1006,8 @@ struct mail *mail_create_reply(struct mail *mail)
 			/* city the text and assign it to the mail, it's enough to set decoded_data */
 			mail_decode(text_mail);
 
-			if (text_mail->decoded_data) replied_text = cite_text(text_mail->decoded_data,text_mail->decoded_len);
-			else replied_text = cite_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
+			if (text_mail->decoded_data) replied_text = quote_text(text_mail->decoded_data,text_mail->decoded_len);
+			else replied_text = quote_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
 
 			if (replied_text)
 			{

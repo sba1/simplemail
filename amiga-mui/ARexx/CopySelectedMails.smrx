@@ -1,0 +1,47 @@
+/*
+This is an ARexx-Script for SimpleMail
+
+Bases on ImportMails.smrx from Sebastian Bauer
+
+$VER: CopySelectedMails.smrx 0.1 (01.01.04)
+$Author: Bernd Gollesch
+$Label: Copy selected mails
+$Desc: Copy selected mails from one folder to another
+
+*/
+
+debug = 0
+OPTIONS RESULTS
+
+/* Store the SimpleMail Port */
+smport = ADDRESS()
+
+IF smport ~== "SIMPLEMAIL.1" THEN
+DO
+	smport = "SIMPLEMAIL.1"
+	address "SIMPLEMAIL.1"
+END
+
+FOLDERINFO STEM source_folder.
+IF debug THEN SAY " src path:" source_folder.path
+
+REQUESTFOLDER EXCLUDEACTIVE BODY '"' || "Please select the folder where to copy the mails" || '"' STEM dest_folder.
+IF rc ~= 0 THEN EXIT
+
+IF debug THEN SAY "dest name:" dest_folder.folder
+
+GETSELECTED STEM source_mail.
+DO i = 0 TO (source_mail.num.count-1)
+	MAILINFO INDEX source_mail.num.i STEM copy_mail.
+	IF debug THEN SAY "orig mail:" copy_mail.filename
+	check_path = RIGHT(source_folder.path, 1)
+	IF (check_path = "/") | (check_path = ":") THEN DO
+		add_mail.filename = source_folder.path || copy_mail.filename
+	END
+	ELSE DO
+		add_mail.filename = source_folder.path || "/" || copy_mail.filename
+	END
+	IF debug THEN SAY " add mail:" add_mail.filename
+	MAILADD FOLDER '"' || dest_folder.folder || '"' FILENAME '"' || add_mail.filename || '"' STEM new_mail.
+	IF debug THEN SAY " new mail:" new_mail.filename
+END

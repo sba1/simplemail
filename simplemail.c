@@ -534,7 +534,7 @@ void callback_start_search(struct search_options *so)
 /* Stop the search process */
 void callback_stop_search(void)
 {
-	thread_abort();
+	thread_abort(NULL);
 }
 
 /* filter the mails */

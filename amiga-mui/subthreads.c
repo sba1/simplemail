@@ -68,6 +68,29 @@ struct thread_s
 	struct Process *process;
 };
 
+static void thread_remove(struct ThreadMessage *tmsg)
+{
+	struct thread_node *node = (struct thread_node*)list_first(&thread_list);
+	while (node)
+	{
+		if (node->thread == tmsg->thread)
+		{
+			D(bug("Got startup message of %0xlx back\n",node->thread));
+			node_remove(&node->node);
+			FreeVec(tmsg);
+			FreeVec(node);
+		}
+		node = (struct thread_node*)node_next(&node->node);
+	}
+
+	if (!node)
+	{
+		D(bug("Got startup message of default task back\n"));
+		FreeVec(tmsg);
+		thread = NULL;
+	}
+}
+
 int init_threads(void)
 {
 	if ((thread_port = CreateMsgPort()))
@@ -81,24 +104,27 @@ int init_threads(void)
 void cleanup_threads(void)
 {
 	/* It's safe to call this if no thread is actually running */
-	thread_abort();
-
-	if (thread)
+	struct thread_node *node = (struct thread_node*)list_first(&thread_list);
+	while (node)
 	{
-		int ready = 0;
-		while (!ready)
+		/* FIXME: This could cause a possible race condition if the task is already removed
+		 * but not yet removed in the list */
+		Signal(&node->thread->process->pr_Task, SIGBREAKF_CTRL_C);
+		node = (struct thread_node*)node_next(&node->node);
+	}
+	thread_abort(NULL);
+
+	/* wait until every task has been removed */
+	while (thread || list_first(&thread_list))
+	{
+		struct ThreadMessage *tmsg;
+
+		WaitPort(thread_port);
+		while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
 		{
-			struct ThreadMessage *tmsg;
-
-			WaitPort(thread_port);
-
-			while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
-			{
-				if (tmsg->startup)
-					ready = 1;
-			}
+			if (tmsg->startup)
+				thread_remove(tmsg);
 		}
-		thread = NULL;
 	}
 
 	if (thread_port)
@@ -121,25 +147,7 @@ void thread_handle(void)
 	{
 		if (tmsg->startup)
 		{
-			struct thread_node *node = (struct thread_node*)list_first(&thread_list);
-			while (node)
-			{
-				if (node->thread == tmsg->thread)
-				{
-					D(bug("Got startup message of %0xlx back\n",node->thread));
-					Remove(&node->node);
-					FreeVec(tmsg);
-					FreeVec(node);
-				}
-				node = (struct thread_node*)node_next(&node->node);
-			}
-
-			if (!node)
-			{
-				D(bug("Got startup message of default task back\n"));
-				FreeVec(tmsg);
-				thread = NULL;
-			}
+			thread_remove(tmsg);
 			continue;
 		}
 		if (tmsg->function)
@@ -194,6 +202,7 @@ static __saveds void thread_entry(void)
 }
 
 
+/* informs the parent task that it can continue */
 int thread_parent_task_can_contiue(void)
 {
 #ifndef DONT_USE_THREADS
@@ -371,14 +380,20 @@ int thread_start(int (*entry)(void*), void *eudata)
 #endif
 }
 
-void thread_abort(void)
+void thread_abort(thread_t thread_to_abort)
 {
-	Forbid();
-	if (thread)
+	if (!thread_to_abort)
 	{
-		Signal(&thread->pr_Task, SIGBREAKF_CTRL_C);
+		if (thread)
+		{
+			Signal(&thread->pr_Task, SIGBREAKF_CTRL_C);
+		}
+	} else
+	{
+		/* FIXME: This could cause a possible race condition if the task is already removed
+		 * but not yet removed in the list */
+		Signal(&thread_to_abort->process->pr_Task, SIGBREAKF_CTRL_C);
 	}
-	Permit();
 }
 
 /* Call the function synchron */

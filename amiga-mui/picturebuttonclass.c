@@ -344,7 +344,7 @@ Object *MakePictureButton(char *label, char *filename)
 {
 	int control_char;
 	char *buf = strchr(label,'_');
-	if (buf) control_char = *(buf+1);
+	if (buf) control_char = ToLower(*(buf+1));
 	else control_char = 0;
 
 	return PictureButtonObject,

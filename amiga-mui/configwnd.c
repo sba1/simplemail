@@ -1723,7 +1723,7 @@ int init_spam_group(void)
 				Child, VGroup,
 					MUIA_ShortHelp, _("A white list contains email address of people you usually\n"
                             "thrust. This can be used to speed up the spam checking as\n"
-                            "mails with a listed sender address is skipped."),
+                            "mails with a listed sender address are skipped."),
 					Child, HorizLineTextObject(_("White list")),
 					Child, spam_white_list_editor = ComposeEditorObject,
 						InputListFrame,
@@ -1753,13 +1753,13 @@ int init_spam_group(void)
 			Child, HorizLineTextObject(_("Statistics")),
 			Child, VGroup,
 				Child, ColGroup(5),
-					Child, MakeLabel(_("Number of classified ham mails")),
+					Child, MakeLabel(_("Number of mails classified as ham")),
 					Child, TextObject, TextFrame, MUIA_Text_Contents, ham_buf, End,
 					Child, spam_reset_ham_stat_button = MakeButton(_("Reset statistics")),
 					Child, HVSpace,
 					Child, HVSpace,
 
-					Child, MakeLabel(_("Number of classified spam mails")),
+					Child, MakeLabel(_("Number of mails classified as spam")),
 					Child, TextObject, TextFrame, MUIA_Text_Contents, spam_buf, End,
 					Child, spam_reset_spam_stat_button = MakeButton(_("Reset statistics")),
 					Child, spam_clean_spam_folder_button = MakeButton(_("Clean spam folder")),

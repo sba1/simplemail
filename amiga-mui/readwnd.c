@@ -130,14 +130,44 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 	} else
 	{
 		char *html_mail;
+		char *font_buf;
 
 		SetAttrs(data->html_simplehtml,
 				MUIA_SimpleHTML_Buffer,data->mail->html_header,
 				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
 				TAG_DONE);
 
+		if (font_buf = mystrdup(user.config.read_fixedfont))
+		{
+			char *end = strchr(font_buf,'/');
+			if (end)
+			{
+				int size = atoi(end+1);
+				*end = 0;
+
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"fixedmail",3,font_buf,size);
+			}
+			free(font_buf);
+		}
+
+		if (font_buf = mystrdup(user.config.read_propfont))
+		{
+			char *end = strchr(font_buf,'/');
+			if (end)
+			{
+				int size = atoi(end+1);
+				*end = 0;
+
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",2,font_buf,size);
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",3,font_buf,size);
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",4,font_buf,size);
+			}
+			free(font_buf);
+		}
+
+
 		html_mail = text2html(buf, buf_end - buf,
-													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP));
+													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 
 		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);

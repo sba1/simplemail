@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/texteditor_mcc.h>
@@ -60,6 +61,8 @@ static Object *user_dst_check;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *read_wrap_checkbox;
+static Object *read_fixedfont_string;
+static Object *read_propfont_string;
 
 static Object *account_name_string;
 static Object *account_email_string;
@@ -98,6 +101,7 @@ static struct signature *signature_last_selected;
 
 static Object *user_group;
 static Object *tcpip_receive_group;
+static Object *write_group;
 static Object *accounts_group;
 static Object *account_group;
 static Object *mails_read_group;
@@ -172,11 +176,16 @@ static void config_use(void)
 	struct account *account;
 	struct signature *signature;
 
+	if (user.config.read_propfont) free(user.config.read_propfont);
+	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
+
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
+	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
+	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
 
   get_account();
   get_signature();
@@ -344,6 +353,26 @@ static int init_tcpip_receive_group(void)
 
 	if (!tcpip_receive_group) return 0;
 
+	return 1;
+}
+
+/******************************************************************
+ Initialize the write group
+*******************************************************************/
+static int init_write_group(void)
+{
+	write_group = ColGroup(2),
+		MUIA_ShowMe, FALSE,
+		Child, MakeLabel("Welcome phrase"),
+		Child, BetterStringObject,StringFrame,End,
+
+		Child, MakeLabel("Welcome phrase with address"),
+		Child, BetterStringObject,StringFrame,End,
+
+		Child, MakeLabel("Closing phrase"),
+		Child, BetterStringObject,StringFrame,End,
+		End;
+	if (!write_group) return 0;
 	return 1;
 }
 
@@ -572,6 +601,21 @@ static int init_mails_read_group(void)
 {
 	mails_read_group =  ColGroup(2),
 		MUIA_ShowMe, FALSE,
+		Child, MakeLabel("Proportional Font"),
+		Child, PopaslObject,
+			MUIA_Popasl_Type, ASL_FontRequest,
+			MUIA_Popstring_String, read_propfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_propfont,End,
+			MUIA_Popstring_Button, PopButton(MUII_PopUp),
+			End,
+
+		Child, MakeLabel("Fixed Font"),
+		Child, PopaslObject,
+			MUIA_Popasl_Type, ASL_FontRequest,
+			MUIA_Popstring_String, read_fixedfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_fixedfont, End,
+			MUIA_Popstring_Button, PopButton(MUII_PopUp),
+			ASLFO_FixedWidthOnly, TRUE,
+			End,
+
 		Child, MakeLabel("Wordwrap plain text"),
 		Child, HGroup,
 			Child, read_wrap_checkbox = MakeCheck("Wordwrap plain text",user.config.read_wordwrap),
@@ -656,7 +700,7 @@ static int init_signatures_group(void)
 *******************************************************************/
 static int init_signature_group(void)
 {
-	Object *edit_button;
+/*	Object *edit_button;*/
 	Object *slider = ScrollbarObject, End;
 	Object *tagline_button;
 	Object *env_button;
@@ -668,7 +712,7 @@ static int init_signature_group(void)
 		Child, HGroup,
 			Child, MakeLabel("Name"),
 			Child, signature_name_string = BetterStringObject, StringFrame, End,
-			Child, edit_button = MakeButton("Edit in external editor"),
+/*			Child, edit_button = MakeButton("Edit in external editor"),*/
 			End,
 		Child, HGroup,
 			MUIA_Group_Spacing, 0,
@@ -692,7 +736,7 @@ static int init_signature_group(void)
 		End;
 
 	if (!signature_group) return 0;
-	set(edit_button, MUIA_Weight,0);
+/*	set(edit_button, MUIA_Weight,0);*/
 
 	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t",MUIV_TextEditor_InsertText_Cursor);
 	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
@@ -712,12 +756,12 @@ static void init_config(void)
 
 	init_accounts_group();
 	init_account_group();
-
 	init_user_group();
 	init_tcpip_receive_group();
 	init_mails_read_group();
 	init_signatures_group();
 	init_signature_group();
+	init_write_group();
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
@@ -739,6 +783,7 @@ static void init_config(void)
     				Child, mails_read_group,
     				Child, signatures_group,
     				Child, signature_group,
+    				Child, write_group,
     				Child, RectangleObject,
 	   				MUIA_Weight, 1,
   						End,
@@ -793,7 +838,7 @@ static void init_config(void)
 		if ((treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Mails", NULL, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Read", mails_read_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Write", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+			DoMethod(config_tree, MUIM_NListtree_Insert, "Write", write_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Reply", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 			DoMethod(config_tree, MUIM_NListtree_Insert, "Forward", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 		}

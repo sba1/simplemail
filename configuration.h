@@ -43,7 +43,10 @@ struct config
 	struct list signature_list;
 
 	int signatures_use;
+
 	int read_wordwrap;
+	char *read_fixedfont;
+	char *read_propfont;
 
 	/* list of the filters */
 	struct list filter_list; 

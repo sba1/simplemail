@@ -108,6 +108,10 @@ int load_config(void)
 							user.config.receive_size = atoi(result);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Read.PropFont")))
+							user.config.read_propfont = mystrdup(result);
+						if ((result = get_config_item(buf,"Read.FixedFont")))
+							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
 
@@ -294,6 +298,8 @@ void save_config(void)
 
 			fprintf(fh,"Signatures.Use=%s",user.config.signatures_use?"Y":"N");
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
+			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
+			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
 			
 			fclose(fh);
 		}

@@ -60,7 +60,7 @@ static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 	return 1;
 }
 
-char *text2html(unsigned char *buffer, int buffer_len, int flags)
+char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 {
 	char *html_buf;
 	FILE *fh;
@@ -73,7 +73,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags)
 		int initial_color = 1;
 
 		if (flags & TEXT2HTML_BODY_TAG) fputs("<BODY>",fh);
-		if (flags & TEXT2HTML_FIXED_FONT) fputs("<FONT SIZE=-1><TT>",fh);
+		if (fonttag) fputs(fonttag,fh);
 
 		while (buffer_len)
 		{
@@ -150,7 +150,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags)
 						email_len = buffer3 - buffer;
 						buffer_len -= email_len;
 						buffer = buffer3;
-						fprintf(fh,"<A HREF=\"mailto:%s\">",address);
+						fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",address);
 						fputs(address,fh);
 						fputs("</A>",fh);
 						free(address);
@@ -178,7 +178,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags)
 			}
 		}
 
-		if (flags & TEXT2HTML_FIXED_FONT) fputs("</TT></FONT>",fh);
+		if (fonttag) fputs("</FONT>",fh);
+
 		if (flags & TEXT2HTML_ENDBODY_TAG) fputs("</BODY>",fh);
 		if ((len = ftell(fh)))
 		{

@@ -28,7 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#if 0   /* FIXME */
 #include <stat.h>
+#endif
+#include <sys/stat.h>
 
 #include "support.h"
 #include "support_indep.h"

@@ -788,7 +788,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				{
 					folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 					mail_infos_read = 1;
-					folder->unread_mails = 0;
+					folder->unread_mails=0;
 					folder_prepare_for_additional_mails(folder, num_mails);
 					while (num_mails--)
 					{

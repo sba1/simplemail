@@ -482,7 +482,7 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 			mail = mail_create_from_file(newname);
 			free(newname);
 		}
-	} else
+	}else
 	{
 		mail = mail_create_from_file(filename);
 	}

@@ -540,7 +540,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 /******************************************************************
  Opens a compose window
 *******************************************************************/
-void compose_window_open(struct compose_args *args)
+int compose_window_open(struct compose_args *args)
 {
 #if 0
 	Object *wnd, *send_later_button, *hold_button, *cancel_button;

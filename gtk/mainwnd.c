@@ -94,7 +94,7 @@ static void mail_ctree_insert(struct mail *m)
 {
 	gchar *text[4];
 	text[0] = "";
-	text[1] = string_list_insert_tail(&folder_ctree_string_list, m->from)->string;
+	text[1] = string_list_insert_tail(&folder_ctree_string_list, m->from_addr)->string;
 	text[2] = string_list_insert_tail(&folder_ctree_string_list, m->subject)->string;
 	text[3] = "";
 

@@ -628,9 +628,12 @@ static void messageview_show_mail(struct MessageView_Data *data)
 
 		messageview_append_as_mail(data,data->mail,&str);
 
-		string_append(&str,"<hr /><table>");
-		messageview_append_as_attachment(data,data->mail,&str);
-		string_append(&str,"</table>");
+		if (data->mail->multipart_array)
+		{
+			string_append(&str,"<hr /><table>");
+			messageview_append_as_attachment(data,data->mail,&str);
+			string_append(&str,"</table>");
+		}
 
 		string_append(&str,"</BODY>");
 

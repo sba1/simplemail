@@ -2589,8 +2589,11 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	FILE *ofh = fp;
 	char *ofh_name = NULL;
 
-	if (!(mail_compose_write_headers(fp,new_mail)))
-		return 0;
+	if (new_mail->from) /* check is necessary to distinguish the root mail */
+	{
+		if (!(mail_compose_write_headers(fp,new_mail)))
+			return 0;
+	}
 
 	if (new_mail->encrypt)
 	{

@@ -2,6 +2,15 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-09-26  Bernd Gollesch <bgollesch@sime.at>
+	* addressbook.c: Added support for Groupimport of the YAM Addressbook.
+	  Added the group.description to duplicate and free function.
+	  Changed my EMail from ".com" to ".at".
+	* amiga-mui/addressbookwnd.c: Added Hook for displaying the Groupnames in the
+	  correct charset, because the names are in UTF8!
+	* amiga-mui/addressstringclass.c: Corrected the auto-completer of addresses when
+	  scrolling through the List of possibilities.
+
 2004-09-17  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/addressentrylistclass.c: Fixed memory leak.
 	* amiga-mui/mainwnd.c: Added refresh of the Prev/Next button in a readwindow

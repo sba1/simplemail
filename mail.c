@@ -1004,8 +1004,8 @@ struct mail *mail_create_reply(struct mail *mail)
 								{
 									if (!take_mult)
 									{
-										take_mult = sm_request(NULL,_
-													("This e-mail has multiple recipients. Should it be answered to all recipients?"),
+										take_mult = sm_request(NULL,
+													_("This e-mail has multiple recipients. Should it be answered to all recipients?"),
 													_("*_Yes|_No"));
 										if (!take_mult)
 										{

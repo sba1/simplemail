@@ -46,6 +46,7 @@ struct transwnd_Data
 	Object *gauge1, *gauge2, *status, *abort;
 	Object *mail_listview, *mail_list, *mail_group;
 	Object *start;
+	Object *ignore_check;
 	struct MyHook construct_hook;
 	struct MyHook destruct_hook;
 	struct MyHook display_hook;
@@ -54,6 +55,8 @@ struct transwnd_Data
 	char sizebuf[32];
 
 	int mail_group_shown;
+
+	int start_pressed;
 };
 
 #define MAILF_DELETE   (1<<0) /* mail should be deleted */
@@ -135,7 +138,7 @@ STATIC void transwnd_set_mail_flags(void **args)
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel;
+	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check;
 	
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
@@ -147,13 +150,18 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 								MUIA_NList_Format, "P=\033r,,,",
 								End,
 							End,
-							Child, HGroup,
-								Child, ignore = MakeButton("Ignore"),
-								Child, down = MakeButton("Download"),
-								Child, del = MakeButton("Delete"),
-								Child, downdel = MakeButton("Download & Delete"),
-								Child, start = MakeButton("_Start"),
-								End,
+						Child, HGroup,
+							Child, ignore = MakeButton("Ignore"),
+							Child, down = MakeButton("Download"),
+							Child, del = MakeButton("Delete"),
+							Child, downdel = MakeButton("Download & Delete"),
+							Child, start = MakeButton("_Start"),
+							End,
+						Child, HGroup,
+							Child, MakeLabel("Ignore not listed mails"),
+							Child, ignore_check = MakeCheck("Ignore not listed mails",FALSE),
+							Child, HVSpace,
+							End,
 						End,
 					Child, gauge1 = GaugeObject,
 						GaugeFrame,
@@ -183,6 +191,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->mail_list = mail_list;
 		data->mail_group = mail_group;
 		data->start = start;
+		data->ignore_check = ignore_check;
 
 		init_myhook(&data->construct_hook, (HOOKFUNC)mail_construct, data);
 		init_myhook(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);
@@ -198,6 +207,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		set(abort, MUIA_Weight, 0);
 
 		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+		DoMethod(start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, (1<<0), &data->start_pressed);
 		DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, 0);
 		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD);
@@ -254,6 +264,10 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data);
 				break;
 
+			case MUIA_transwnd_QuietList:
+				set(data->mail_list, MUIA_NList_Quiet, tag->ti_Data);
+				break;
+
 			case MUIA_Window_Open:
 				if (!tag->ti_Data) close = 1;
 				break;
@@ -267,18 +281,23 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
-/*
+	struct transwnd_Data *data = (struct transwnd_Data *)INST_DATA(cl, obj);
 	ULONG *store = ((struct opGet *)msg)->opg_Storage;
 
 	switch (msg->opg_AttrID)
 	{
+/*
 		case MUIA_transwnd_Aborted:
 			*store = (ULONG) (DoMethod(App, MUIM_Application_NewInput, 0) == MUIV_transwnd_Aborted);
 			return(TRUE);
-		break;
+		break;*/
+		case	MUIA_transwnd_StartPressed:
+					*store = data->start_pressed;
+					data->start_pressed = 0;
+					break;
 	}
-*/
-	return(DoSuperMethodA(cl, obj, (Msg)msg));
+
+	return DoSuperMethodA(cl, obj, (Msg)msg);
 }
 
 STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUIP_transwnd_InsertMailSize *msg)
@@ -356,7 +375,7 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 
 	/* Set the new notifies */
 	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &start);
+	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, (1<<0), &start);
 	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
@@ -371,6 +390,11 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	/* Restore the original notifies */
 	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+
+	if (start && xget(data->ignore_check,MUIA_Selected))
+		start |= (1<<1);
+
+	data->start_pressed = 0;
 
 	return start;
 }

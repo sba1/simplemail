@@ -148,6 +148,9 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
   /* Was the command succesful? */
 	if (!(answer = pop3_receive_answer(conn))) return mail_array;
 
+	/* Freeze the list which displays the e-Mails */
+	thread_call_parent_function_sync(dl_freeze_list,0);
+
   /* Encounter the sizes of the mails, if we find a mail *
    * with a bigger size notify the transfer window       */
 	while ((answer = tcp_readln(conn)))
@@ -168,6 +171,9 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 			mails_add = 1;
 		}
 	}
+
+	/* Thaw the list which displays the e-Mails */
+	thread_call_parent_function_sync(dl_thaw_list,0);
 
 	if (cont && mails_add && receive_preselection == 2)
 	{
@@ -209,6 +215,9 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 				/* Tell the gui about the mail info */
 				thread_call_parent_function_sync(dl_insert_mail_info, 4, i, m->from, m->subject, m->seconds);
 
+				/* Check if we should receive more statitics */
+				if (!(int)thread_call_parent_function_sync(dl_more_statistics,0)) break;
+
 				mail_free(m);
 			}
 		}
@@ -217,13 +226,17 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 	if (mails_add && cont)
 	{
 		/* let the user select which mails (s)he wants */
-		if (!(thread_call_parent_function_sync(dl_wait,1)))
+		int start;
+
+		thread_call_parent_function_sync(dl_set_status,1,"Waiting for user interaction");
+		if (!(start = thread_call_parent_function_sync(dl_wait,0)))
 			return NULL;
 
 		for (i=1;i<=amm;i++)
 		{
 			int fl = (int)thread_call_parent_function_sync(dl_get_mail_flags,1,i);
 			if (fl != -1) mail_array[i] = fl;
+			else if (start & (1<<1)) mail_array[i] = 0; /* not listed mails should be ignored */
 		}
 	}
 

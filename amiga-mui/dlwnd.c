@@ -149,3 +149,19 @@ int dl_wait(void)
 	return DoMethod(win_dl, MUIM_transwnd_Wait);
 }
 
+void dl_freeze_list(void)
+{
+	set(win_dl,MUIA_transwnd_QuietList,TRUE);
+}
+
+void dl_thaw_list(void)
+{
+	set(win_dl,MUIA_transwnd_QuietList,FALSE);
+}
+
+int dl_more_statistics(void)
+{
+  LONG start_pressed = xget(win_dl,MUIA_transwnd_StartPressed);
+  return !start_pressed;
+}
+

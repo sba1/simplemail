@@ -37,5 +37,8 @@ void dl_insert_mail_info(int mno, char *from, char *subject, unsigned int second
 int dl_get_mail_flags(int mno);
 void dl_clear(void);
 int dl_wait(void);
+void dl_freeze_list(void);
+void dl_thaw_list(void);
+int dl_more_statistics(void);
 
 #endif

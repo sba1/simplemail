@@ -45,6 +45,8 @@ static int val;
 static char *imap_get_result(char *src, char *dest, int dest_size)
 {
 	char c;
+	char delim = 0;
+
 
 	dest[0] = 0;
 	if (!src) return NULL;
@@ -59,9 +61,24 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 	if (c)
 	{
 		int i = 0;
+
+		if (c == '(') delim = ')';
+		else if (c== '"') delim = '"';
+		if (delim) src++;
+
 		while ((c = *src))
 		{
-			if (isspace((unsigned char)c)) break;
+			if (c == delim)
+			{
+				src++;
+				break;
+			}
+
+			if (!delim)
+			{
+				if (isspace((unsigned char)c)) break;
+			}
+
 			dest[i++] = c;
 			src++;
 		}
@@ -159,6 +176,21 @@ int imap_dl_headers(struct list *imap_list)
 									ok = 1;
 								}
 								break;
+							} else
+							{
+								/* command */
+								line = imap_get_result(line,buf,sizeof(buf));
+
+								/* read flags */
+								line = imap_get_result(line,buf,sizeof(buf));
+
+								/* read delim */
+								line = imap_get_result(line,buf,sizeof(buf));
+
+								/* read name */
+								line = imap_get_result(line,buf,sizeof(buf));
+
+								puts(buf);puts("\n");
 							}
 						}
 						

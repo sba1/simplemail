@@ -2,6 +2,13 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-16  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/mainwnd.c: Added "Import mbox file..." menuitem to the folder menu.
+	* lists.c: Added debug output.
+	* mbox.c: Now also support import to a specific folder.
+	* simplemail.(c|h): Changes for mbox import to folder.
+
 2004-01-15  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/appicon.(c|h), amiga-mui/gui_main.c: Some master wishes :)

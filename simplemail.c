@@ -807,6 +807,19 @@ void callback_mail_has_been_sent(char *filename)
 	}
 }
 
+/* adds a new imap folder */
+void callback_add_imap_folder(char *server, char *path)
+{
+	struct folder *folder;
+
+	folders_lock();
+	if ((folder = folder_find_by_imap(server,"")))
+	{
+		folder_add_imap(folder, path);
+	}
+	folders_unlock();
+}
+
 /* a mail has been changed/replaced by the user */
 void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail)
 {

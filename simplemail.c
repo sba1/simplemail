@@ -79,6 +79,14 @@ int callback_read_mail(void)
 	return num;
 }
 
+int callback_read_this_mail(struct mail *m)
+{
+	struct folder *f = folder_find_by_mail(m);
+	int num;
+	num = read_window_open(f->path, m);
+	return num;
+}
+
 /* the selected mails should be deleted */
 void callback_delete_mails(void)
 {

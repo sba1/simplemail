@@ -120,6 +120,24 @@ static void searchwnd_start(void)
 }
 
 /**************************************************************************
+ Read the selected mail
+**************************************************************************/
+static void searchwnd_read(void)
+{
+	struct MUI_NListtree_TreeNode *tree_node;
+	tree_node = (struct MUI_NListtree_TreeNode *)xget(search_mail_tree,MUIA_NListtree_Active);
+
+	if (tree_node)
+	{
+		struct mail *m = (struct mail*)tree_node->tn_User;
+		if (m)
+		{
+			callback_read_this_mail(m);
+		}
+	}
+}
+
+/**************************************************************************
  Init the search window
 **************************************************************************/
 static void init_search(void)
@@ -200,6 +218,8 @@ static void init_search(void)
 		DoMethod(search_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, search_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
 		DoMethod(search_start_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, searchwnd_start);
 		DoMethod(search_stop_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, callback_stop_search);
+		DoMethod(search_mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, searchwnd_read);
+
 		search_refresh_folders();
 	}
 }

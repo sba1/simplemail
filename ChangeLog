@@ -2,6 +2,20 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-02-06  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/amigadebug.h: Corrected wrong SASC #ifdef
+	* amiga-mui/composewnd.c: Added (En-|Dis-)abling of Undo/Redo button.
+	* amiga-mui/mailinfoclass.c: Changed some LONGs to ULONGs.
+	* amiga-mui/mainwnd.c: Doubleclick on an email in the Outgoing-Folder now
+	  opens the composewindow instead of the readwindow.
+	* addressbook.c: Added null check for a memory allocation.
+	* codesets.c: UTF8 strings must not be converted.
+	* debug.h: Added __FUNC__ for SASC instead of __PRETTY_FUNCTION__
+
+2005-02-05  Release Version 0.25
+
+2004-12-24  Release Version 0.24
+
 2004-09-26  Bernd Gollesch <bgollesch@sime.at>
 	* addressbook.c: Added support for Groupimport of the YAM Addressbook.
 	  Added the group.description to duplicate and free function.

@@ -1081,11 +1081,8 @@ struct list *create_address_list(char *str)
 				}
 				mb = (struct mailbox*)node_next(&mb->node);
 			}
-
-			
 			free_address(&addr);
 		}
-		
 	}
 	return list;
 }

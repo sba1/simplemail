@@ -2864,8 +2864,8 @@ int mail_create_html_header(struct mail *mail)
 		struct header *header;
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
+		fprintf(fh,"<TABLE WIDTH=\"100%%\" BORDER=\"1\" CELLPADDING=\"1\" BGCOLOR=\"#%06x\"><TR><TD><TABLE>",user.config.read_header_background);
 
-		fputs("<TABLE BORDER=\"1\" WIDTH=\"100%\">",fh);
 
 		if (mail->from_addr && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 		{
@@ -3027,7 +3027,7 @@ int mail_create_html_header(struct mail *mail)
 			header = (struct header*)node_next(&header->node);
 		}
 
-		fputs("</TABLE>",fh);
+		fputs("</TABLE></TD></TR></TABLE><BR>",fh);
 		fputs("</BODY></HTML>",fh);
 
 		if ((len = ftell(fh)))

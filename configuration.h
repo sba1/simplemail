@@ -95,7 +95,8 @@ struct config
 	int read_quoted;
 	int read_old_quoted;
 	int read_link;
-	
+	int read_header_background;
+
 	/* Boolean */
 	int read_wordwrap;
 	int read_link_underlined;

@@ -94,6 +94,8 @@ int load_config(void)
 							user.config.pop_server = strdup(result);
 						if ((result = get_config_item(buf,"POP00.Password")))
 							user.config.pop_password = strdup(result);
+						if ((result = get_config_item(buf,"POP00.Delete")))
+							user.config.pop_delete = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"SMTP00.Server")))
 							user.config.smtp_server = strdup(result);
 						if ((result = get_config_item(buf,"SMTP00.Domain")))

@@ -233,6 +233,17 @@ void callback_send_mails(void)
 	mails_upload();
 }
 
+/* Check the mails of a single acount */
+void callback_check_single_account(int account_num)
+{
+	struct account *ac = (struct account*)list_find(&user.config.account_list,account_num);
+	if (ac)
+	{
+		mails_dl_single_account(ac);
+	}
+}
+
+
 /* filter the mails */
 void callback_filter(void)
 {
@@ -527,6 +538,12 @@ void callback_reload_folder_order(void)
 {
 	folder_load_order();
 	main_refresh_folders();
+}
+
+/* the configuration has been changed */
+void callback_config_changed(void)
+{
+	main_build_accounts();
 }
 
 int main(int argc, char *argv[])

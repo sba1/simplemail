@@ -59,6 +59,17 @@ int mails_dl(void)
 	return 0;
 }
 
+int mails_dl_single_account(struct account *ac)
+{
+	struct list pop_list;
+	if (!ac) return 0;
+	list_init(&pop_list);
+	
+	list_insert_tail(&pop_list,&ac->pop->node);
+	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size);
+	return 0;
+}
+
 int mails_upload(void)
 {
 	void *handle = NULL; /* folder_next_mail() */

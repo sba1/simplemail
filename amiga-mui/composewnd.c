@@ -1026,7 +1026,7 @@ void compose_window_open(struct compose_args *args)
 						struct account *ac = account_find_by_from(from);
 						if (ac)
 						{
-							if (ac->smtp->name && *ac->smtp->name && ac->email)
+							if (ac->smtp && ac->smtp->name && *ac->smtp->name && ac->email)
 							{
 								if (ac->name)
 								{

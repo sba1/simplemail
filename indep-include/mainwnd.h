@@ -45,4 +45,6 @@ struct mail *main_get_mail_first_selected(void *handle);
 struct mail *main_get_mail_next_selected(void *handle);
 void main_remove_mails_selected(void);
 
+void main_build_accounts(void);
+
 #endif

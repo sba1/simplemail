@@ -24,6 +24,7 @@
 #define SM__TRANS_H
 
 int mails_dl(void);
+int mails_dl_single_account(struct account *ac);
 int mails_upload(void);
 int mails_upload_signle(struct mail *);
 

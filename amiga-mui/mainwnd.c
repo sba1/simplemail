@@ -37,6 +37,8 @@
 
 #include "SimpleMail_rev.h"
 
+#include "account.h"
+#include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
@@ -81,6 +83,8 @@ static Object *folder_balance;
 static Object *folder_group;
 static Object *folder_text;
 static Object *folder_popupmenu;
+
+static Object *folder_checksingleaccount_menuitem;
 
 static int folders_in_popup;
 
@@ -235,6 +239,15 @@ static void mailtreelist_title_click(void)
 	}
 }
 
+
+/******************************************************************
+ Switch the view of the folders
+*******************************************************************/
+static void menu_check_single_account(int *val)
+{
+	callback_check_single_account(*val);
+}
+
 /******************************************************************
  Switch the view of the folders
 *******************************************************************/
@@ -309,6 +322,7 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER,
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
+		MENU_FOLDER_CHECKSINGLEACCOUNT,
 		MENU_MESSAGE_READ,
 		MENU_MESSAGE_EDIT,
 		MENU_MESSAGE_MOVE,
@@ -337,6 +351,9 @@ int main_window_init(void)
 		{NM_ITEM, "Order", NULL, 0, 0, NULL},
 		{NM_SUB, "Save", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
 		{NM_SUB, "Reset", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, "Check single account", NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
+
 		{NM_TITLE, "Message", NULL, 0, 0, NULL},
 		{NM_ITEM, "D\0Read", NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, "E\0Edit", NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
@@ -456,6 +473,8 @@ int main_window_init(void)
     	return 0;
     }
 
+		folder_checksingleaccount_menuitem = (Object*)DoMethod(menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
+
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
@@ -512,6 +531,9 @@ int main_window_init(void)
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard,  foldertreelist_doubleclick);
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
+
+		main_build_accounts();
+
 		rc = TRUE;
 	}
 	
@@ -970,4 +992,36 @@ void main_remove_mails_selected(void)
 	}
 
 	set(mail_tree, MUIA_NListtree_Quiet, FALSE);
+}
+
+/******************************************************************
+ Build the check singe account menu
+*******************************************************************/
+void main_build_accounts(void)
+{
+	struct account *account = (struct account*)list_first(&user.config.account_list);
+	int i=0;
+
+	DisposeAllFamilyChilds(folder_checksingleaccount_menuitem);
+
+	while (account)
+	{
+		if (account->pop && account->pop->name)
+		{
+			Object *entry = MenuitemObject,
+				MUIA_Menuitem_Title, account->pop->name,
+				End;
+
+			DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+			DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_check_single_account,i);
+		}
+		account = (struct account*)node_next(&account->node);
+		i++;
+	}
+
+	if (!i)
+	{
+		Object *entry = MenuitemObject, MUIA_Menuitem_Title, "No POP3 Server specified",	End;
+		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+	}
 }

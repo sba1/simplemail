@@ -38,6 +38,7 @@ void callback_forward_this_mail(char *folder_path, struct mail *to_forward);
 void callback_forward_mail(void);
 void callback_change_mail(void);
 void callback_fetch_mails(void);
+void callback_check_single_account(int account_num);
 void callback_send_mails(void);
 void callback_filter(void);
 void callback_new_folder(void);
@@ -67,6 +68,8 @@ void callback_new_mail_written(struct mail *mail);
 void callback_mail_has_been_sent(char *filename);
 
 void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail);
+
+void callback_config_changed(void);
 
 
 #endif

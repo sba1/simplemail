@@ -42,6 +42,7 @@
 #include "lists.h"
 #include "pop3.h"
 #include "signature.h"
+#include "simplemail.h"
 
 #include "compiler.h"
 #include "configtreelistclass.h"
@@ -229,6 +230,7 @@ static void config_use(void)
 	}
 
 	close_config();
+	callback_config_changed();
 }
 
 /******************************************************************

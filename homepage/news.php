@@ -1,5 +1,5 @@
 <?php
-  include("language.inc.php");
+  require_once("language.inc.php");
 
   $file='xml/news.xml';
   $maxnews=5;
@@ -138,4 +138,5 @@
 
 
 ?>
+
 

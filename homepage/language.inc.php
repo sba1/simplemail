@@ -24,5 +24,29 @@ $DateText["de"]="Datum";
 $DateText["en"]="Date";
 $NewsText["de"]="News";
 $NewsText["en"]="News";
+$MenuText["de"]="Menü";
+$MenuText["en"]="Menu";
+$LastModificationText["de"]="Letzte Änderung:";
+$LastModificationText["en"]="Last modification:";
+$VisitorsText["de"]="Besucher:";
+$VisitorsText["en"]="Visitors:";
+$WelcomeText["de"]="Willkommen";
+$WelcomeText["en"]="Welcome";
+$ScreenshotsText["en"]="Screenshots";
+$DownloadsText["en"]="Downloads";
+$FAQText["en"]="FAQ";
+$LinksText["en"]="Links";
+$ContactText["en"]="Contact";
+$ContactText["de"]="Kontakt";
+$GalleryText["en"]="Gallery";
+$GalleryText["de"]="Galery";
 
 ?>
+
+
+
+
+
+
+
+

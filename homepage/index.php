@@ -1,7 +1,46 @@
-<?php require("counter.php"); ?>
+<?php
+  require("counter.php");
+  require_once("language.inc.php");
+
+  $LinkMenu["default"]["filename"]="main.php";
+  $LinkMenu["default"]["title"]=get_string($WelcomeText);
+  $LinkMenu["default"]["datename"]="xml/news.xml";
+
+  $LinkMenu["screenshots"]["filename"]="screenshots.php";
+  $LinkMenu["screenshots"]["title"]=get_string($ScreenshotsText);
+  $LinkMenu["screenshots"]["datename"]="xml/screenshots.xml";
+
+  $LinkMenu["downloads"]["filename"]="downloads.php";
+  $LinkMenu["downloads"]["title"]=get_string($DownloadsText);
+  $LinkMenu["downloads"]["datename"]="xml/downloads.xml";
+
+  $LinkMenu["faq"]["filename"]="faq.php";
+  $LinkMenu["faq"]["title"]=get_string($FAQText);
+  $LinkMenu["faq"]["datename"]="xml/faq.xml";
+
+  $LinkMenu["links"]["filename"]="links.php";
+  $LinkMenu["links"]["title"]=get_string($LinksText);
+  $LinkMenu["links"]["datename"]="links.php";
+
+  $LinkMenu["contact"]["filename"]="contact.php";
+  $LinkMenu["contact"]["title"]=get_string($ContactText);
+  $LinkMenu["contact"]["datename"]="contact.php";
+
+  $LinkMenu["gallery"]["filename"]="gallery.php";
+  $LinkMenu["gallery"]["title"]=get_string($GalleryText);
+  $LinkMenu["gallery"]["datename"]="gallery.php";
+
+  if (!isset($body)) $body="default";
+?>
+ 
 <html>
   <head>
     <title>SimpleMail</title>
+    <STYLE TYPE="text/css"><!--
+      A.menu_active { text-decoration: none; color: red; }
+      A.menu_inactive { text-decoration: none; color: gray; }
+--></STYLE>
+
   </head>
 
   <body bgcolor="white">
@@ -10,93 +49,38 @@
 
     <table width="100%" summary="Main page.">
       <tr bgcolor="black">
-        <th>
+        <th width=0>
           <font color="white">
             <tt>
-              Menu
+              <?php echo get_string($MenuText);?>
             </tt>
           </font>
         </th>
         <th>
           <font color="white">
             <tt>
-              <?php
-                switch($body)
-                {
-
-                  case 'screenshots':
-                    echo('Screenshots');
-                    break;
-
-                  case 'downloads':
-                    echo('Downloads');
-                    break;
-
-                  case 'faq':
-                    echo('FAQ');
-                    break;
-
-                  case 'links':
-                    echo('Links');
-                    break;
-
-                  case 'contact':
-                    echo('Contact');
-                    break;
-
-                  case 'gallery':
-                    echo('Gallery');
-                    break;
-
-                  default:
-                    echo('Welcome');
-                    break;
-                }
-              ?>
+              <?php echo $LinkMenu[$body]["title"];?>
             </tt>
           </font>
         </th>
       </tr>
 
       <tr>
-        <td valign="top">
-          <?php require('menu.php'); ?>
+        <td valign="top" width=0>
+	  <?php
+	    foreach($LinkMenu as $key => $value)
+	    {
+	      if ($key == $body) $class = "menu_active";
+	      else $class = "menu_inactive";
+
+	      printf("<A CLASS=\"%s\" HREF=\"index.php%s\">%s</A><br>",$class,$key!="default"?"?body=".$key:"",$value["title"]);
+	    }
+          ?>
         </td>
 
         <td>
           <?php
-            switch($body)
-            {
-
-              case 'screenshots':
-                require('screenshots.php');
-                break;
-
-              case 'downloads':
-                require('downloads.php');
-                break;
-
-              case 'faq':
-                require('faq.php');
-                break;
-
-              case 'links':
-                require('links.php');
-                break;
-
-              case 'contact':
-                require('contact.php');
-                break;
-
-              case 'gallery':
-                require('gallery.php');
-                break;
-
-              default:
-                require('main.php');
-                break;
-            }
-
+            include($LinkMenu[$body]["filename"]);
           ?>
         </td>
       </tr>
@@ -110,39 +94,12 @@
             <tt>
                 <?php
 
-                  switch(body)
-                  {
+                  $unixTime = filemtime($LinkMenu[$body]["datename"]);
 
-                    case 'screenshots':
-                    $file = 'xml/screenshots.xml';
-                      break;
+		  printf("%s %s · %s %s",get_string($LastModificationText),date("Y/m/d", $unixTime),
+					 get_string($VisitorsText),$hits);
+		?>
 
-                    case 'downloads':
-                      $file = 'xml/downloads.xml';
-                      break;
-
-                    case 'faq':
-                      $file = 'xml/faq.xml';
-                      break;
-
-                    case 'links':
-                      $file = 'xml/links.xml';
-                      break;
-
-                    case 'contact':
-                      $file = 'contact.php';
-                      break;
-
-                    default:
-                      $file = 'xml/news.xml';
-                      break;
-                  }
-
-                  $unixTime = filemtime($file);
-
-                  echo("Last modification: ".date("Y/m/d", $unixTime));
-                  echo(' · ');
-                  echo("Visitors: $hits"); ?>
               </tt>
             </font>
           </center>
@@ -160,3 +117,6 @@
 
   </body>
 </html>
+
+
+

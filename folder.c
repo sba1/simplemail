@@ -2648,6 +2648,54 @@ char *new_folder_path(void)
 }
 
 /******************************************************************
+ This functions scans the current configuration and creates
+ necessary imap folders if they don't exists already
+*******************************************************************/
+void folder_create_imap(void)
+{
+	struct account *ac = (struct account*)list_first(&user.config.account_list);
+	while (ac)
+	{
+		if (ac->recv_type)
+		{
+			struct folder *f;
+			int found = 0;
+
+			folders_lock();
+
+			f = folder_first();
+			while (f)
+			{
+				if (f->is_imap)
+				{
+					if (!mystricmp(f->imap_server,ac->imap->name) &&
+							!mystricmp(f->imap_user,ac->imap->login))
+					{
+						found = 1;
+						break;
+					}
+				}
+				
+				f = folder_next(f);
+			}
+
+			if (!found)
+			{
+				if ((f = folder_add_group(ac->imap->name)))
+				{
+					f->is_imap = 1;
+					f->imap_server = ac->imap->name;
+					f->imap_user = ac->imap->login;
+				}
+			}
+
+			folders_unlock();
+		}
+		ac = (struct account*)node_next(&ac->node);
+	}
+}
+
+/******************************************************************
  Initializes the default folders
 *******************************************************************/
 int init_folders(void)
@@ -2788,11 +2836,11 @@ int init_folders(void)
 
 	folder_outgoing()->type = FOLDER_TYPE_SEND;
 	folder_sent()->type = FOLDER_TYPE_SEND;
+
+	folder_create_imap();
 	
 	if (write_order)
-	{
 		folder_save_order();
-	}
 
 	return 1;
 }

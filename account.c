@@ -26,6 +26,7 @@
 #include "account.h"
 #include "configuration.h"
 #include "parse.h"
+#include "imap.h"
 #include "pop3.h"
 #include "smtp.h"
 #include "support_indep.h"
@@ -42,13 +43,19 @@ struct account *account_malloc(void)
 		struct smtp_server *smtp;
 		if ((smtp = smtp_malloc()))
 		{
-			struct account *account = (struct account*)malloc(sizeof(struct account));
-			if (account)
+			struct imap_server *imap;
+			if ((imap = imap_malloc()))
 			{
-				memset(account,0,sizeof(struct account));
-				account->pop = pop;
-				account->smtp = smtp;
-				return account;
+				struct account *account;
+				if ((account = (struct account*)malloc(sizeof(struct account))))
+				{
+					memset(account,0,sizeof(struct account));
+					account->pop = pop;
+					account->smtp = smtp;
+					account->imap = imap;
+					return account;
+				}
+				imap_free(imap);
 			}
 			smtp_free(smtp);
 		}
@@ -69,18 +76,24 @@ struct account *account_duplicate(struct account *a)
 		struct smtp_server *smtp;
 		if ((smtp = smtp_duplicate(a->smtp)))
 		{
-			struct account *account = (struct account*)malloc(sizeof(struct account));
-			if (account)
+			struct imap_server *imap;
+			if ((imap = imap_duplicate(a->imap)))
 			{
-				account->account_name = mystrdup(a->account_name);
-				account->name = mystrdup(a->name);
-				account->email = mystrdup(a->email);
-				account->reply = mystrdup(a->reply);
-				account->pop = pop;
-				account->smtp = smtp;
-				return account;
+				struct account *account = (struct account*)malloc(sizeof(struct account));
+				if (account)
+				{
+					account->account_name = mystrdup(a->account_name);
+					account->name = mystrdup(a->name);
+					account->email = mystrdup(a->email);
+					account->reply = mystrdup(a->reply);
+					account->recv_type = a->recv_type;
+					account->pop = pop;
+					account->smtp = smtp;
+					account->imap = imap;
+					return account;
+				}
+				imap_free(imap);
 			}
-			
 			smtp_free(smtp);
 		}
 		pop_free(pop);
@@ -100,6 +113,7 @@ void account_free(struct account *a)
 
 	if (a->pop) pop_free(a->pop);
 	if (a->smtp) smtp_free(a->smtp);
+	if (a->imap) imap_free(a->imap);
 
 	free(a);
 }

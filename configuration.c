@@ -294,6 +294,9 @@ int load_config(void)
 									if ((result = get_config_item(account_buf,"SMTP.Secure")))
 										account->smtp->secure = CONFIG_BOOL_VAL(result);
 
+									if ((result = get_config_item(account_buf,"RECV.Type")))
+										account->recv_type = atoi(result);
+
 									if ((result = get_config_item(account_buf,"POP3.Server")))
 										account->pop->name = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Port")))
@@ -314,6 +317,17 @@ int load_config(void)
 										account->pop->nodupl = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.Ask")))
 										account->pop->ask = CONFIG_BOOL_VAL(result);
+
+									if ((result = get_config_item(account_buf,"IMAP.Server")))
+										account->imap->name = mystrdup(result);
+									if ((result = get_config_item(account_buf,"IMAP.Port")))
+										account->imap->port = atoi(result);
+									if ((result = get_config_item(account_buf,"IMAP.Login")))
+										account->imap->login = mystrdup(result);
+									if ((result = get_config_item(account_buf,"IMAP.Password")))
+										account->imap->passwd = mystrdup(result);
+									if ((result = get_config_item(account_buf,"IMAP.Active")))
+										account->imap->active = atoi(result);
 								}
 							}
 						}
@@ -514,6 +528,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.SMTP.POP3first=%s\n",i,account->smtp->pop3_first?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.SMTP.Secure=%s\n",i,account->smtp->secure?"Y":"N");
 
+				fprintf(fh,"ACCOUNT%d.RECV.Type=%d\n",i,account->recv_type);
 				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));
 				fprintf(fh,"ACCOUNT%d.POP3.Port=%d\n",i,account->pop->port);
 				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
@@ -524,6 +539,13 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.POP3.Active=%s\n",i,account->pop->active?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.AvoidDupl=%s\n",i,account->pop->nodupl?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Ask=%s\n",i,account->pop->ask?"Y":"N");
+
+				fprintf(fh,"ACCOUNT%d.IMAP.Server=%s\n",i,MAKESTR(account->imap->name));
+				fprintf(fh,"ACCOUNT%d.IMAP.Port=%d\n",i,account->imap->port);
+				fprintf(fh,"ACCOUNT%d.IMAP.Login=%s\n",i,MAKESTR(account->imap->login));
+				fprintf(fh,"ACCOUNT%d.IMAP.Password=%s\n",i,MAKESTR(account->imap->passwd));
+				fprintf(fh,"ACCOUNT%d.IMAP.Active=%d\n",i,account->imap->active);
+
 				account = (struct account*)node_next(&account->node);
 				i++;
 			}

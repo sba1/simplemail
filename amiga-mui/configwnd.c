@@ -41,6 +41,7 @@
 #include "account.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "imap.h"
 #include "lists.h"
 #include "parse.h"
 #include "phrase.h"
@@ -106,6 +107,7 @@ static Object *account_account_list;
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
+static Object *account_recv_type_radio;
 static Object *account_recv_server_string;
 static Object *account_recv_port_string;
 static Object *account_recv_login_string;
@@ -172,19 +174,23 @@ static void account_store(void)
 	if (account_last_selected)
 	{
 		/* Save the account if a server was selected */
-		if (account_last_selected->name) free(account_last_selected->name);
-		if (account_last_selected->email) free(account_last_selected->email);
-		if (account_last_selected->reply) free(account_last_selected->reply);
-		if (account_last_selected->pop->name) free(account_last_selected->pop->name);
-		if (account_last_selected->pop->login) free(account_last_selected->pop->login);
-		if (account_last_selected->pop->passwd) free(account_last_selected->pop->passwd);
-		if (account_last_selected->smtp->name) free(account_last_selected->smtp->name);
-		if (account_last_selected->smtp->auth_login) free(account_last_selected->smtp->auth_login);
-		if (account_last_selected->smtp->auth_password) free(account_last_selected->smtp->auth_password);
+		free(account_last_selected->name);
+		free(account_last_selected->email);
+		free(account_last_selected->reply);
+		free(account_last_selected->pop->name);
+		free(account_last_selected->pop->login);
+		free(account_last_selected->pop->passwd);
+		free(account_last_selected->imap->name);
+		free(account_last_selected->imap->login);
+		free(account_last_selected->imap->passwd);
+		free(account_last_selected->smtp->name);
+		free(account_last_selected->smtp->auth_login);
+		free(account_last_selected->smtp->auth_password);
 
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
 		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
+		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
 		account_last_selected->pop->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
@@ -195,6 +201,11 @@ static void account_store(void)
 		account_last_selected->pop->stls = xget(account_recv_stls_check, MUIA_Selected);
 		account_last_selected->pop->nodupl = xget(account_recv_avoid_check, MUIA_Selected);
 		account_last_selected->pop->port = xget(account_recv_port_string, MUIA_String_Integer);
+		account_last_selected->imap->port = xget(account_recv_port_string, MUIA_String_Integer);
+		account_last_selected->imap->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
+		account_last_selected->imap->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
+		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
+		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
@@ -217,6 +228,7 @@ static void account_load(void)
 		setutf8string(account_name_string,account->name);
 		setstring(account_email_string,account->email);
 		setstring(account_reply_string,account->reply);
+		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		setstring(account_recv_server_string,account->pop->name);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
 		setstring(account_recv_login_string,account->pop->login);
@@ -693,10 +705,15 @@ void account_recv_port_update(void)
 {
 	int ssl = xget(account_recv_ssl_check,MUIA_Selected);
 	int stls = xget(account_recv_stls_check,MUIA_Selected);
+	int imap = xget(account_recv_type_radio,MUIA_Radio_Active);
 	int port;
 
-	if (ssl & !stls) port = 995;
-	else port = 110;
+	if (imap) port = 143;
+	else
+	{
+		if (ssl & !stls) port = 995;
+		else port = 110;
+	}
 
 	set(account_recv_port_string, MUIA_String_Integer, port);
 	set(account_recv_stls_check, MUIA_Disabled, !ssl);
@@ -724,8 +741,12 @@ STATIC ASM VOID account_display(register __a0 struct Hook *h, register __a2 char
 *******************************************************************/
 static int init_account_group(void)
 {
+	static char *recv_entries[3];
 	static struct Hook account_display_hook;
 	init_hook(&account_display_hook,(HOOKFUNC)account_display);
+
+	recv_entries[0] = "POP3";
+	recv_entries[1] = "IMAP4";
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -772,6 +793,14 @@ static int init_account_group(void)
 			End,
 		Child, HorizLineTextObject(_("Receive")),
 		Child, ColGroup(2),
+			Child, MakeLabel(_("Type")),
+			Child, HGroup,
+				Child, account_recv_type_radio = RadioObject,
+					MUIA_Group_Horiz, TRUE,
+					MUIA_Radio_Entries, recv_entries,
+					End,
+				Child, HVSpace,
+				End,
 			Child, MakeLabel(_("POP3 Server")),
 			Child, HGroup,
 				Child, account_recv_server_string = BetterStringObject,
@@ -887,6 +916,7 @@ static int init_account_group(void)
 
 	DoMethod(account_recv_stls_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_recv_port_update);
 	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_recv_port_update);
+	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_recv_port_update);
 	DoMethod(account_recv_ask_checkbox, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_recv_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);

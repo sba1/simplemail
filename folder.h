@@ -66,6 +66,10 @@ struct folder
 
   semaphore_t sem; /* use folder_lock()/folder_unlock() */
 
+	int is_imap; /* true if folder is imap folder */
+	char *imap_server;
+	char *imap_user;
+
 	/* more will follow */
 };
 
@@ -97,6 +101,8 @@ struct folder
 
 char *default_folder_path(void);
 char *new_folder_path(void);
+
+void folder_create_imap(void);
 
 int init_folders(void);
 void del_folders(void);

@@ -312,7 +312,7 @@ static void init_rules(void)
 						Child, move_popobject = PopobjectObject,
 							MUIA_Disabled, TRUE,
 							MUIA_Popstring_Button, PopButton(MUII_PopUp),
-							MUIA_Popstring_String, rules_move_text = TextObject, TextFrame, End,
+							MUIA_Popstring_String, rules_move_text = TextObject, TextFrame, MUIA_Background, MUII_TextBack, End,
 							MUIA_Popobject_ObjStrHook, &move_objstr_hook,
 							MUIA_Popobject_StrObjHook, &move_strobj_hook,
 							MUIA_Popobject_Object, NListviewObject,
@@ -344,7 +344,8 @@ static void init_rules(void)
 	f = folder_first();
 	while (f)
 	{
-		DoMethod(folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
+		if (f->special != FOLDER_SPECIAL_GROUP)
+			DoMethod(folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
 		f = folder_next(f);
 	}
 }

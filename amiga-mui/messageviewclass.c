@@ -49,6 +49,7 @@
 #include "text2html.h"
 
 #include "compiler.h"
+#include "mailinfoclass.h"
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "messageviewclass.h"
@@ -56,6 +57,7 @@
 
 struct MessageView_Data
 {
+	Object *mailinfo;
 	Object *simplehtml;
 	Object *horiz;
 	Object *vert;
@@ -651,6 +653,9 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 	if (!mail || !folder_path)
 	{
 		char text[256];
+
+		set(data->mailinfo, MUIA_MailInfo_MailInfo, NULL);
+
 		sm_snprintf(text,sizeof(text),"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\"></BODY></HTML>",user.config.read_background,user.config.read_text,user.config.read_link);
 
 		SetAttrs(data->simplehtml,
@@ -668,6 +673,8 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 
 		if ((data->mail = mail_complete_create_from_file(mail->filename)))
 		{
+			set(data->mailinfo, MUIA_MailInfo_MailInfo, data->mail->info);
+
 			mail_read_contents(NULL,data->mail); /* already cd'ed in */
 			mail_create_html_header(data->mail,0);
 			messageview_show_mail(data);
@@ -689,11 +696,12 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MessageView_Data *data;
-	Object *simplehtml, *horiz, *vert;
+	Object *simplehtml, *horiz, *vert, *mailinfo;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_Group_Spacing, 0,
 		MUIA_Group_Horiz, FALSE,
+		Child, mailinfo = MailInfoObject, End,
 		Child, HGroup,
 			MUIA_Group_Spacing, 0,
 			Child, simplehtml = SimpleHTMLObject,TextFrame,End,
@@ -715,6 +723,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->simplehtml = simplehtml;
 	data->horiz = horiz;
 	data->vert = vert;
+	data->mailinfo = mailinfo;
 
 	init_hook_with_data(&data->load_hook, (HOOKFUNC)simplehtml_load_function, data);
 

@@ -522,8 +522,11 @@ static int move_mail_helper(struct mail *mail, struct folder *from_folder, struc
 
 		if (dest_folder->is_imap)
 		{
-			if (imap_append_mail(mail, from_folder->path, dest_folder->imap_path))
+			if (imap_append_mail(mail, from_folder->path, dest_folder))
 			{
+				if (from_folder->is_imap)
+					imap_delete_mail_by_filename(mail->filename,from_folder);
+
 				folder_delete_mail(from_folder,mail);
 				success = 1;
 			}

@@ -36,6 +36,7 @@
 #include <proto/datatypes.h>
 #include <proto/muimaster.h>
 
+#include "debug.h"
 #include "support_indep.h"
 
 #include "amigasupport.h"
@@ -176,13 +177,15 @@ STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+	SM_ENTER;
 
 	if (!DoSuperMethodA(cl,obj,msg))
-		return(FALSE);
+		return 0;
 
 	PictureButton_Load(data,obj);
 
 	data->setup = 1;
+	SM_LEAVE;
 	return 1;
 }
 
@@ -201,6 +204,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 
 	int minwidth,minheight;
 
+	SM_ENTER;
+
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
 	mi = msg->MinMaxInfo;
@@ -209,8 +214,10 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	{
 		minwidth  = dt_width(data->dt);
 		minheight = dt_height(data->dt);
+		SM_DEBUGF(18,("Taking datatypes picture into account (%ldx%ld)\n",minwidth,minheight));
 	} else
 	{
+		SM_DEBUGF(18,("No datatypes picture associated\n"));
 		minwidth = 0;
 		minheight = 0;
 	}
@@ -224,6 +231,9 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 		char *uptr;
 
 		data->label_height = _font(obj)->tf_YSize;
+
+		SM_DEBUGF(18,("0x%08lx has label \"%s\" which is %ld pixels high\n",obj,str,data->label_height));
+
 		minheight += data->label_height + (!!data->dt);
 		InitRastPort(&rp);
 		SetFont(&rp,_font(obj));
@@ -246,6 +256,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	mi->MinWidth += minwidth;
 	mi->DefWidth += minwidth;
 	mi->MaxWidth = MUI_MAXMAX;
+
+	SM_LEAVE;
 	return 0;
 }
 
@@ -257,7 +269,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
   struct RastPort *rp = _rp(obj);
 
 	DoSuperMethodA(cl,obj,(Msg)msg);
- 
+
 	if (data->dt)
 	{
 		dt_put_on_rastport(data->dt,rp, _mleft(obj)+(_mwidth(obj) - dt_width(data->dt))/2, _mtop(obj) + (_mheight(obj) - data->label_height - dt_height(data->dt))/2);

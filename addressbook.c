@@ -337,6 +337,8 @@ static struct {
 
 	int is_classic_addressbook;
 	int contact_tag;
+	int group_tag;
+	char *classic_group_name;
 } xml_context;
 
 /**************************************************************************
@@ -380,6 +382,10 @@ SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 	{
 		if (xml_context.is_classic_addressbook) xml_context.contact_tag++;
 	}
+	else if (!mystricmp("group",el))
+	{
+		if (xml_context.is_classic_addressbook) xml_context.group_tag++;
+	}
 }  /* End of start handler */
 
 /**************************************************************************
@@ -416,6 +422,13 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 
 			if ((entry = (struct addressbook_entry_new*)malloc(sizeof(struct addressbook_entry_new))))
 			{
+				/* Add the group to the entry, if it is a classical address book */
+				if (xml_context.is_classic_addressbook && xml_context.classic_group_name)
+				{
+					xml_context.current_entry.group_array =
+						array_add_string(xml_context.current_entry.group_array,xml_context.classic_group_name);
+				}
+
 				*entry = xml_context.current_entry;
 				memset(&xml_context.current_entry,0,sizeof(xml_context.current_entry));
 				list_insert_tail(&address_list,&entry->node);
@@ -440,14 +453,30 @@ SAVEDS void xml_end_tag(void *data, const char *el)
   else if (!mystricmp("group",el))
 	{
 		if (xml_context.newcontact_tag) xml_context.current_entry.group_array = array_add_string(xml_context.current_entry.group_array,data_buf);
+		else if (xml_context.is_classic_addressbook && xml_context.group_tag)
+		{
+			/* Old addressbook group */
+			xml_context.group_tag--;
+			if (!xml_context.group_tag)
+			{
+				free(xml_context.classic_group_name);
+				xml_context.classic_group_name = NULL;
+			}
+		}
 	}
 	else if (!mystricmp("private",el)) xml_context.private_tag = 0;
 	else if (!mystricmp("work",el)) xml_context.work_tag = 0;
 	else if (!mystricmp("alias",el))
 	{
 		if (xml_context.newcontact_tag)
-		{
 			xml_context.current_entry.alias = mystrdup(data_buf);
+		else if (xml_context.is_classic_addressbook && xml_context.group_tag == 1 && !xml_context.contact_tag)
+		{
+			if (!xml_context.classic_group_name)
+			{
+				xml_context.classic_group_name = mystrdup(data_buf);
+				addressbook_add_group(data_buf);
+			}
 		}
 	}
 	else if (!mystricmp("name",el))
@@ -528,7 +557,8 @@ static char *uft8toiso(char *chr, char *code)
 **************************************************************************/
 SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 {
-	if (xml_context.newcontact_tag || xml_context.newgroup_tag || xml_context.contact_tag)
+	if (xml_context.newcontact_tag || xml_context.newgroup_tag ||
+	    xml_context.contact_tag || xml_context.group_tag)
 	{
 		int old_len = 0;
 		if (xml_context.data_buf)

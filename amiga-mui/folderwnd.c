@@ -73,7 +73,7 @@ static Object *second_reverse_check;
 static Object *second_reverse_label;
 
 static Object *from_accountpop;
-static Object *defto_label;
+static Object *replyto_string;
 static Object *defto_string;
 
 static Object *imap_folders_horizline;
@@ -226,7 +226,7 @@ char *folder_get_changed_deffrom(void)
 
 char *folder_get_changed_defreplyto(void)
 {
-	return NULL;
+	return (char*)xget(replyto_string,MUIA_String_Contents);
 }
 
 int folder_get_changed_primary_sort(void)
@@ -324,7 +324,7 @@ static void init_folder(void)
 				Child, MakeLabel(_("From")),
 				Child, from_accountpop = AccountPopObject, MUIA_AccountPop_HasDefaultEntry, TRUE, End,
 
-				Child, defto_label = MakeLabel(_("T_o")),
+				Child, MakeLabel(_("T_o")),
 				Child, defto_string = AddressStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
@@ -332,7 +332,7 @@ static void init_folder(void)
 					End,
 
 				Child, MakeLabel(_("_Reply To")),
-				Child, AddressStringObject,
+				Child, replyto_string = AddressStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_ControlChar, GetControlChar(_("_Reply To")),
@@ -501,6 +501,7 @@ void folder_edit(struct folder *f)
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
 	set(from_accountpop, MUIA_AccountPop_Account, account_find_by_from(f->def_from));
+	set(replyto_string, MUIA_String_Contents, f->def_replyto);
 
 	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);

@@ -958,7 +958,7 @@ struct mail *mail_create_from_file(char *filename)
  Creates a mail to be send to a given address (fills out the to field
  and the contents)
 **************************************************************************/
-struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *subject)
+struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject)
 {
 	struct mail *mail;
 	char *to_str;
@@ -987,6 +987,18 @@ struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *subject)
 		if (from)
 		{
 			mail_add_header(mail,"From",4,from,strlen(from),0);
+		}
+
+		if (replyto)
+		{
+			struct list *list = create_address_list(to_str);
+			if (list)
+			{
+				struct address *addr = (struct address*)list_first(list);
+				if (addr)
+					mail_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email),0);
+				free_address_list(list);
+			}
 		}
 
 		/* TODO: write a function for this! */
@@ -1642,9 +1654,6 @@ void rebuild_parameter_list(struct list *list)
 			}
 			param->attribute[attribute_len-1] =  0;
 		}
-
-//#undef printf
-//		printf("%s: %s\n",param->attribute,param->value);
 
 		param = (struct content_parameter*)node_next(&param->node);
 	}

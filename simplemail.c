@@ -257,14 +257,14 @@ void callback_get_address(void)
 	}
 }
 
-int callback_write_mail(char *from, char *to, char *subject)
+int callback_write_mail(char *from, char *to, char *replyto, char *subject)
 {
 	struct compose_args ca;
 	int win_num;
 	memset(&ca,0,sizeof(ca));
 
 	ca.action = COMPOSE_ACTION_NEW;
-	ca.to_change = mail_create_for(from,to,subject);
+	ca.to_change = mail_create_for(from,to,replyto,subject);
 
 	win_num = compose_window_open(&ca);
 
@@ -283,7 +283,7 @@ void callback_write_mail_to(struct addressbook_entry *address)
 /* a new mail should be written to a given address string */
 int callback_write_mail_to_str(char *str, char *subject)
 {
-	return callback_write_mail(NULL,str,subject);
+	return callback_write_mail(NULL,str,NULL,subject);
 }
 
 /* a new mail should be composed */
@@ -291,7 +291,7 @@ void callback_new_mail(void)
 {
 	struct folder *f = main_get_folder();
 	if (!f) return;
-	callback_write_mail(f->def_from,f->def_to,NULL);
+	callback_write_mail(f->def_from,f->def_to,f->def_replyto,NULL);
 }
 
 /* reply this mail */

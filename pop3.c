@@ -76,7 +76,20 @@ static char *pop3_receive_answer(struct connection *conn)
 **************************************************************************/
 static int pop3_wait_login(struct connection *conn, struct pop3_server *server)
 {
-	return pop3_receive_answer(conn)?1:0;
+	if (pop3_receive_answer(conn))
+	{
+		/* Make the connection secure if requested */
+		if (server->ssl && server->stls)
+		{
+			if (tcp_write(conn,"STLS\r\n",6) <= 0) return 0;
+
+			if (pop3_receive_answer(conn))
+			{
+				return tcp_make_secure(conn);
+			}
+		} else return 1;
+	}
+	return 0;
 }
 
 /**************************************************************************
@@ -641,7 +654,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 				free(login);
 			}
 
-			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+			if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
 			{
 				thread_call_parent_function_async(dl_set_status,1,N_("Waiting for login..."));
 				if (pop3_wait_login(conn,server))
@@ -735,7 +748,7 @@ int pop3_login_only(struct pop3_server *server)
 	{
 		struct connection *conn;
 
-		if ((conn = tcp_connect(server->name, server->port,server->ssl)))
+		if ((conn = tcp_connect(server->name, server->port,server->ssl && (!server->stls))))
 		{
 			if (pop3_wait_login(conn,server))
 			{
@@ -850,6 +863,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->del = pop->del;
 		new_pop->port = pop->port;
 		new_pop->ssl = pop->ssl;
+		new_pop->stls = pop->stls;
 		new_pop->active = pop->active;
 		new_pop->nodupl = pop->nodupl;
 		new_pop->ask = pop->ask;

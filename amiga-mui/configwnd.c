@@ -66,6 +66,8 @@ static int value2size(int val);
 static int size2value(int val);
 #define SizesObject (Object*)NewObject(CL_Sizes->mcc_Class, NULL
 
+void account_recv_port_update(void);
+
 static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
@@ -103,6 +105,7 @@ static Object *account_recv_ask_checkbox;
 static Object *account_recv_active_check;
 static Object *account_recv_delete_check;
 static Object *account_recv_ssl_check;
+static Object *account_recv_stls_check;
 static Object *account_recv_avoid_check;
 static Object *account_send_server_string;
 static Object *account_send_port_string;
@@ -206,6 +209,7 @@ static void get_account(void)
 		account_last_selected->pop->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
 		account_last_selected->pop->ssl = xget(account_recv_ssl_check, MUIA_Selected);
+		account_last_selected->pop->stls = xget(account_recv_stls_check, MUIA_Selected);
 		account_last_selected->pop->nodupl = xget(account_recv_avoid_check, MUIA_Selected);
 		account_last_selected->pop->port = xget(account_recv_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
@@ -474,6 +478,8 @@ static void config_tree_active(void)
 					setcheckmark(account_recv_active_check,account->pop->active);
 					setcheckmark(account_recv_delete_check,account->pop->del);
 					nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
+					nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
+					set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
 					setcheckmark(account_recv_avoid_check,account->pop->nodupl);
 					setstring(account_send_server_string,account->smtp->name);
 					set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
@@ -684,6 +690,22 @@ static int init_accounts_group(void)
 }
 
 /******************************************************************
+ Set the correct port
+*******************************************************************/
+void account_recv_port_update(void)
+{
+	int ssl = xget(account_recv_ssl_check,MUIA_Selected);
+	int stls = xget(account_recv_stls_check,MUIA_Selected);
+	int port;
+
+	if (ssl & !stls) port = 995;
+	else port = 110;
+
+	set(account_recv_port_string, MUIA_String_Integer, port);
+	set(account_recv_stls_check, MUIA_Disabled, !ssl);
+}
+
+/******************************************************************
  Initalize the account group
 *******************************************************************/
 static int init_account_group(void)
@@ -765,7 +787,12 @@ static int init_account_group(void)
 			Child, MakeLabel(_("Avoid duplicates")),
 			Child, HGroup, Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE), Child, HSpace(0), End,
 			Child, MakeLabel(_("Secure")),
-			Child, HGroup, Child, account_recv_ssl_check = MakeCheck(_("Secure"), FALSE), Child, HSpace(0), End,
+			Child, HGroup,
+				Child, account_recv_ssl_check = MakeCheck(_("Secure"), FALSE),
+				Child, HSpace(0),
+				Child, MakeLabel(_("with STLS")),
+				Child, account_recv_stls_check = MakeCheck(_("with STLS"), FALSE),
+				End,
 			Child, HVSpace,
 			End,
 
@@ -836,8 +863,8 @@ static int init_account_group(void)
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, TRUE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, account_send_login_string);
 
-	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, TRUE, account_recv_port_string, 3, MUIM_Set, MUIA_String_Integer, 995);
-	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, FALSE, account_recv_port_string, 3, MUIM_Set, MUIA_String_Integer, 110);
+	DoMethod(account_recv_stls_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_recv_port_update);
+	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_recv_port_update);
 	DoMethod(account_recv_ask_checkbox, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_recv_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);

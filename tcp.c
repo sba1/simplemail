@@ -51,7 +51,7 @@
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-/*#define DEBUG_OUTPUT*/
+/* #define DEBUG_OUTPUT */
 
 /******************************************************************
  Establish the connection to the given server.

@@ -264,6 +264,8 @@ int load_config(void)
 										account->pop->del = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.SSL")))
 										account->pop->ssl = CONFIG_BOOL_VAL(result);
+									if ((result = get_config_item(account_buf,"POP3.STLS")))
+										account->pop->stls = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.Active")))
 										account->pop->active = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.AvoidDupl")))
@@ -495,6 +497,7 @@ void save_config(void)
 				if (!account->pop->ask) fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.SSL=%s\n",i,account->pop->ssl?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.POP3.STLS=%s\n",i,account->pop->stls?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Active=%s\n",i,account->pop->active?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.AvoidDupl=%s\n",i,account->pop->nodupl?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Ask=%s\n",i,account->pop->ask?"Y":"N");

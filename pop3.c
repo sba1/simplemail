@@ -633,8 +633,9 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	{
 		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
 		int nummails = 0; /* number of downloaded e-mails */
+		int aborted = 0;
 
-		for( ;server; server = (struct pop3_server*)node_next(&server->node))
+		for( ;server && !aborted; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
 
@@ -703,7 +704,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 
 										if (!pop3_get_mail(conn,server, i, mail_array[i].size))
 										{
-											tell_from_subtask(N_("Couldn't download the mail!\n"));
+											if (!thread_aborted()) tell_from_subtask(N_("Couldn't download the mail!\n"));
+											else aborted = 1;
 											break;
 										}
 
@@ -720,7 +722,12 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										thread_call_parent_function_async(dl_set_status,1,N_("Marking mail as deleted..."));
 										if (!pop3_del_mail(conn,server, i))
 										{
-											tell_from_subtask(N_("Can\'t mark mail as deleted!"));
+											if (!thread_aborted()) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
+											else
+											{
+												aborted = 1;
+												break;
+											}
 										}
 									}
 								}
@@ -728,12 +735,17 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 								chdir(path);
 							}
 						}
-
 						pop3_quit(conn,server);
 					}
 				}
 				tcp_disconnect(conn);
-			} else tell_from_subtask(tcp_strerror(tcp_error_code()));
+
+				if (thread_aborted()) aborted = 1;
+			} else
+			{
+				if (thread_aborted()) aborted = 1;
+				else tell_from_subtask(tcp_strerror(tcp_error_code()));
+			}
 
 			/* Clear the preselection entries */
 			thread_call_parent_function_sync(dl_clear,0);

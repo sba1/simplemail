@@ -274,7 +274,7 @@ static SAVEDS void thread_entry(void)
 
 	/* Set the task's UserData field to strore per thread data */
 	thread = msg->thread;
-	if (thread->thread_port = CreateMsgPort())
+	if ((thread->thread_port = CreateMsgPort()))
 	{
 		D(bug("Subthreaded created port at 0x%lx\n",thread->thread_port));
 
@@ -352,20 +352,27 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 	
 			if (in && out)
 			{
+#ifdef __MORPHOS__
+				static const struct TagItem extraTags[] =
+				{
+					{NP_CodeType,   MACHINE_PPC},
+					{TAG_DONE,0}
+				};
+#else
+				static const struct TagItem extraTags[] =
+				{
+					{TAG_DONE,0}
+				};
+#endif
 				thread->process = CreateNewProcTags(
 							NP_Entry,      thread_entry,
-#ifdef __MORPHOS__
-							NP_CodeType,   MACHINE_PPC,
-							NP_StackSize,  16384*2,
-#else
 							NP_StackSize,  16384,
-#endif
 							NP_Name,       thread_name,
 							NP_Priority,   -1,
 							NP_Input,      in,
 							NP_Output,     out,
-							TAG_END);
-	
+							TAG_MORE, extraTags);
+
 				if (thread->process)
 				{
 					struct ThreadMessage *thread_msg;

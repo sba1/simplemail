@@ -74,10 +74,10 @@ struct Compose_Data /* should be a customclass */
 {
 	Object *wnd;
 	Object *from_accountpop;
+	Object *reply_string;
 	Object *to_string;
 	Object *cc_string;
 	Object *subject_string;
-/*	Object *reply_string; */
 	Object *copy_button;
 	Object *cut_button;
 	Object *paste_button;
@@ -384,7 +384,6 @@ static void compose_remove_file(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Active,0);
-	struct MUI_NListtree_TreeNode *act_treenode = treenode;
 	int rem, id;
 
   if (!treenode) return;
@@ -588,6 +587,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char from[200];
 		char *to = (char*)xget(data->to_string, MUIA_UTF8String_Contents);
 		char *cc = (char*)xget(data->cc_string, MUIA_UTF8String_Contents);
+		char *replyto = (char*)xget(data->reply_string, MUIA_UTF8String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
 		struct composed_mail new_mail;
 
@@ -612,7 +612,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		/* TODO: free this stuff!! */
 
 		new_mail.from = account?from:NULL;
-		new_mail.replyto = account?account->reply:NULL;
+		new_mail.replyto = replyto;
 		new_mail.to = to;
 		new_mail.cc = cc;
 		new_mail.subject = subject;
@@ -896,6 +896,16 @@ static void compose_set_signature(void **msg)
 }
 
 /******************************************************************
+ Set the reply to the current selected account
+*******************************************************************/
+static void compose_set_replyto(void **msg)
+{
+	struct Compose_Data *data = (struct Compose_Data*)msg[0];
+	struct account *ac = (struct account*)xget(data->from_accountpop, MUIA_AccountPop_Account);
+	if (ac) set(data->reply_string, MUIA_UTF8String_Contents, ac->reply);
+}
+
+/******************************************************************
  New Gadget should be activated
 *******************************************************************/
 static void compose_new_active(void **msg)
@@ -1010,10 +1020,10 @@ int compose_window_open(struct compose_args *args)
 				/* First register */
 				Child, VGroup,
 					Child, HGroup,
-/*						Child, reply_string = StringObject, MUIA_ShowMe, FALSE, End,*/
 						Child, ColGroup(2),
 							Child, MakeLabel(_("_From")),
 							Child, from_accountpop = AccountPopObject, End,
+
 							Child, MakeLabel(_("_To")),
 							Child, HGroup,
 								MUIA_Group_Spacing,0,
@@ -1025,17 +1035,27 @@ int compose_window_open(struct compose_args *args)
 									End,
 								Child, expand_to_button = PopButton(MUII_ArrowLeft),
 								End,
-							Child, MakeLabel(_("Copies To")),
+
+							Child, MakeLabel(_("C_opies To")),
 							Child, HGroup,
 								MUIA_Group_Spacing,0,
 								Child, cc_string = AddressStringObject,
 									StringFrame,
 									MUIA_CycleChain, 1,
-									MUIA_ControlChar, GetControlChar(_("Copies To")),
+									MUIA_ControlChar, GetControlChar(_("C_opies To")),
 									MUIA_String_AdvanceOnCR, TRUE,
 									End,
 								Child, expand_cc_button = PopButton(MUII_ArrowLeft),
 								End,
+
+							Child, MakeLabel(_("_Replies To")),
+							Child, reply_string = AddressStringObject,
+								StringFrame,
+								MUIA_CycleChain,1,
+								MUIA_ControlChar, GetControlChar(_("_To")),
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,
+
 							Child, MakeLabel(_("S_ubject")),
 							Child, subject_string = UTF8StringObject,
 								StringFrame,
@@ -1169,7 +1189,7 @@ int compose_window_open(struct compose_args *args)
 			data->from_accountpop = from_accountpop;
 			data->to_string = to_string;
 			data->cc_string = cc_string;
-/*			data->reply_string = reply_string;*/
+			data->reply_string = reply_string;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
 			data->x_text = xcursor_text;
@@ -1189,7 +1209,6 @@ int compose_window_open(struct compose_args *args)
 
 			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
-/*			set(from_text, MUIA_UserData, reply_string);*/
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
@@ -1223,6 +1242,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
+			DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_replyto, data);
 
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
@@ -1232,7 +1252,7 @@ int compose_window_open(struct compose_args *args)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *from, *to, *cc;
+				char *from, *to, *cc, *reply;
 
 				/* Find and set the correct account */
 				if ((from = mail_find_header_contents(args->to_change, "from")))
@@ -1265,12 +1285,22 @@ int compose_window_open(struct compose_args *args)
 
 				if ((cc = mail_find_header_contents(args->to_change,"cc")))
 				{
-					/* set the To string */
+					/* set the CC string */
 					char *decoded_cc;
 					parse_text_string(cc,&decoded_cc);
 					set(cc_string,MUIA_UTF8String_Contents,decoded_cc);
 					free(decoded_cc);
 				}
+
+				if ((reply = mail_find_header_contents(args->to_change,"replyto")))
+				{
+					/* set the ReplyTo string */
+					char *decoded_reply;
+					parse_text_string(reply,&decoded_reply);
+					set(reply_string,MUIA_UTF8String_Contents,decoded_reply);
+					free(decoded_reply);
+				}
+
 
 				set(subject_string,MUIA_UTF8String_Contents,args->to_change->subject);
 

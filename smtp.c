@@ -271,12 +271,6 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
 						thread_call_parent_function_async(status_set_gauge,1,cur_mail_size + bytes_send);
-/*
-						if(thread_call_parent_function_sync(up_checkabort,0))
-						{
-							rc = 0;
-							break;
-						}*/
 					}
 					last_bytes_send = bytes_send;
 
@@ -402,13 +396,6 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
 						thread_call_parent_function_async(status_set_gauge,1,cur_mail_size + bytes_send);
-
-/*
-						if(thread_call_parent_function_sync(up_checkabort,0))
-						{
-							rc = 0;
-							break;
-						}*/
 					}
 					last_bytes_send = bytes_send;
 				}

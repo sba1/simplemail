@@ -17,9 +17,9 @@ MKDIR  = mkdir
 
 # Change these as required
 OPTIMIZE = -O3
-DEBUG = # -s # -g -DDEBUG
+DEBUG = -g # -g -DDEBUG
 INC = -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Wall $(OPTIMIZE) $(DEBUG) $(INC)
+CFLAGS = -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DNO_SSL -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
 LINK =  -nostartfiles -L"$(EXPAT_LIB)"
@@ -138,6 +138,7 @@ dirs:
 $(TARGET): $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS)
 	ppc-amigaos-strip --strip-all -o $@ $@.debug
+	cp SimpleMail.debug "/cygdrive/c/Dokumente und Einstellungen/sba/Eigene Dateien/AmigaOne/SimpleMail/SimpleMail"
 
 ppc-amigaos-objs/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$/home/sba/amigaos4/include -c $< -o $@

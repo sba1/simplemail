@@ -643,7 +643,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		thread_call_parent_function_async(status_set_status,1,_("Getting mail infos..."));
 		for (i=1;i<=amm;i++)
 		{
-			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i)!=-1);
+			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i)!=-1);
 			if (issue_top)
 			{
 				char buf[256];
@@ -695,7 +695,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 					/* process the headers as we require this now */
 					if (mail_process_headers(m))
 					{
-						int ignore = (int)thread_call_parent_function_sync(callback_remote_filter_mail,1,m);
+						int ignore = (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,m);
 						if (ignore)
 						{
 							showme = 1;
@@ -717,12 +717,12 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				/* Tell the gui about the mail info (not asynchron!) */
 				if (receive_preselection == 2 || showme)
 				{
-					thread_call_parent_function_sync(status_mail_list_set_info, 4,
+					thread_call_parent_function_sync(NULL,status_mail_list_set_info, 4,
 						i, mail_find_header_contents(m,"from"), mail_find_header_contents(m,"subject"),mail_find_header_contents(m,"date"));
 				}
 
 				/* Check if we should receive more statitics (also not asynchron) */
-				if (!(int)thread_call_parent_function_sync(status_more_statistics,0)) break;
+				if (!(int)thread_call_parent_function_sync(NULL, status_more_statistics,0)) break;
 
 				mail_free(m);
 			}
@@ -731,8 +731,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 	/* if the application is iconified than only download mails < the selected size
 	   and don't wait for user interaction  */
-
-	if (thread_call_parent_function_sync(main_is_iconified,0))
+	if (thread_call_parent_function_sync(NULL,main_is_iconified,0))
 	{
 		for (i=1;i<=amm;i++)
 		{
@@ -743,7 +742,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
 		return mail_array;
 	}
-
+	
 	if (mails_add && cont)
 	{
 		/* let the user select which mails (s)he wants */
@@ -756,7 +755,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 		for (i=1;i<=amm;i++)
 		{
-			int fl = (int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i);
+			int fl = (int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i);
 			if (fl != -1) mail_array[i].flags = fl;
 			else if (start & (1<<1)) mail_array[i].flags = 0; /* not listed mails should be ignored */
 		}
@@ -770,7 +769,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 **************************************************************************/
 static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
-	thread_call_parent_function_sync(status_set_status,1,_("Logging out..."));
+	thread_call_parent_function_sync(NULL,status_set_status,1,_("Logging out..."));
 	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
 	return pop3_receive_answer(conn,1)?1:0;
 }
@@ -930,7 +929,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 					if (server->login) mystrlcpy(login,server->login,512);
 					password[0] = 0;
 
-					if ((rc = thread_call_parent_function_sync(sm_request_login,4,server->name,login,password,512)))
+					if ((rc = thread_call_parent_function_sync(NULL,sm_request_login,4,server->name,login,password,512)))
 					{
 						server->login = mystrdup(login);
 						server->passwd = mystrdup(password);
@@ -1085,7 +1084,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 			}
 
 			/* Clear the preselection entries */
-			thread_call_parent_function_sync(status_mail_list_clear,0);
+			thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
 		}
 		close_socket_lib();
 
@@ -1149,7 +1148,7 @@ int pop3_login_only(struct pop3_server *server)
 	}
 
 	/* Refresh the autocheck */
-	thread_call_parent_function_sync(callback_autocheck_reset,0);
+	thread_call_parent_function_sync(NULL,callback_autocheck_reset,0);
 	return rc;
 }
 

@@ -341,7 +341,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	if (!path) return 0;
 
 	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
-	thread_call_parent_function_sync(status_set_status,1,status_buf);
+	thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
 
 	sprintf(tag,"%04x",val++);
 	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
@@ -376,7 +376,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	if (success)
 	{
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
-		thread_call_parent_function_sync(status_set_status,1,status_buf);
+		thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
 
 		if (!num_of_remote_mails)
 		{
@@ -718,7 +718,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					}
 					if (local_uid)
 					{
-						thread_call_parent_function_sync(callback_delete_mail_by_uid,3,server->name,imap_path,local_uid);
+						thread_call_parent_function_sync(NULL,callback_delete_mail_by_uid,3,server->name,imap_path,local_uid);
 					}
 				}
 
@@ -758,7 +758,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					accu_todl_bytes += remote_mail_array[msgtodl-1].size;
 
 					sprintf(status_buf,_("Fetching mail %d from server"),msgtodl);
-					thread_call_parent_function_sync(status_set_status,1,status_buf);
+					thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
 
 					sprintf(tag,"%04x",val++);
 					sprintf(send,"%s FETCH %d RFC822\r\n",tag,msgtodl);
@@ -818,7 +818,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 											todownload -= dl;
 										}
 										fclose(fh);
-										thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename_buf, server->name, imap_path);
+										thread_call_parent_function_sync(NULL,callback_new_imap_mail_arrived, 3, filename_buf, server->name, imap_path);
 									}
 								}
 							}
@@ -906,10 +906,10 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 							node = (struct string_node*)list_first(folder_list);
 							while (node)
 							{
-								thread_call_parent_function_sync(callback_add_imap_folder,2,server->name,node->string);
+								thread_call_parent_function_sync(NULL,callback_add_imap_folder,2,server->name,node->string);
 								node = (struct string_node*)node_next(&node->node);
 							}
-							thread_call_parent_function_sync(callback_refresh_folders,0);
+							thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 
 							/* sync the folders */
 							node = (struct string_node*)list_first(folder_list);
@@ -934,7 +934,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			}
 
 			/* Clear the preselection entries */
-			thread_call_parent_function_sync(status_mail_list_clear,0);
+			thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
 		}
 		close_socket_lib();
 
@@ -986,7 +986,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 						struct list *sub_folder_list;
 						if ((sub_folder_list = imap_get_folders(conn,server,0)))
 						{
-							thread_call_parent_function_sync(callback,3,server,all_folder_list,sub_folder_list);
+							thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
 							imap_free_name_list(sub_folder_list);
 						}
 						imap_free_name_list(all_folder_list);
@@ -1359,7 +1359,7 @@ static void imap_thread_really_download_mails(void)
 					}
 					if (local_uid)
 					{
-						thread_call_parent_function_sync(callback_delete_mail_by_uid,3,imap_server->name,imap_folder,local_uid);
+						thread_call_parent_function_sync(NULL,callback_delete_mail_by_uid,3,imap_server->name,imap_folder,local_uid);
 					}
 				}
 
@@ -1397,7 +1397,7 @@ static void imap_thread_really_download_mails(void)
 							if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
 							fclose(fh);
 
-							thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename, imap_server->name, imap_folder);
+							thread_call_parent_function_sync(NULL,callback_new_imap_mail_arrived, 3, filename, imap_server->name, imap_folder);
 						}
 						free(filename);
 					}
@@ -1499,10 +1499,10 @@ static void imap_thread_really_connect_to_server(void)
 				node = (struct string_node*)list_first(folder_list);
 				while (node)
 				{
-					thread_call_parent_function_sync(callback_add_imap_folder,2,imap_server->name,node->string);
+					thread_call_parent_function_sync(NULL,callback_add_imap_folder,2,imap_server->name,node->string);
 					node = (struct string_node*)node_next(&node->node);
 				}
-				thread_call_parent_function_sync(callback_refresh_folders,0);
+				thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 
 				imap_free_name_list(folder_list);
 

@@ -20,9 +20,6 @@
 ** subthreads.c
 */
 
-/* Define DONT_USE_THREADS to disable the multithreading */
-/*#define DONT_USE_THREADS*/
-
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
@@ -163,6 +160,7 @@ struct ThreadMessage
 	int argcount;
 	void *arg1,*arg2,*arg3,*arg4;
 	int result;
+	int called;
 };
 
 /*** TimerMessage ***/
@@ -310,6 +308,15 @@ void cleanup_threads(void)
 				/* TODO: handle non async messages, e.g. reply that the call couldn't
 				 * be executed */
 				SM_DEBUGF(1,("Got non thread message (async=%ld)\n",tmsg->async));
+				
+				if (!tmsg->async)
+				{
+					tmsg->called = 0;
+					ReplyMsg(&tmsg->msg);
+				} else
+				{
+					FreeVec(tmsg);
+				}
 			}
 		}
 	}
@@ -411,7 +418,10 @@ static SAVEDS void thread_entry(void)
 		NewList((struct List*)&thread->push_list);
 		if (thread_init_timer(thread))
 		{
+			/* Store the thread pointer as userdata */
 			proc->pr_Task.tc_UserData = thread;
+
+			/* get task's entry function */
 			entry = (int(*)(void*))msg->function;
 
 			dirlock = DupLock(proc->pr_CurrentDir);
@@ -437,7 +447,6 @@ static SAVEDS void thread_entry(void)
 **************************************************************************/
 int thread_parent_task_can_contiue(void)
 {
-#ifndef DONT_USE_THREADS
 	struct ThreadMessage *msg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	D(bug("Thread can continue\n"));
 	if (msg)
@@ -451,9 +460,6 @@ int thread_parent_task_can_contiue(void)
 		return 1;
 	}
 	return 0;
-#else
-	return 1;
-#endif
 }
 
 /**************************************************************************
@@ -461,7 +467,6 @@ int thread_parent_task_can_contiue(void)
 **************************************************************************/
 static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
 {
-#ifndef DONT_USE_THREADS
 	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread)
 	{
@@ -536,10 +541,6 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 		}
 	}
 	return NULL;
-#else
-	entry(eudata);
-	return NULL;
-#endif
 }
 
 /**************************************************************************
@@ -631,6 +632,7 @@ static struct ThreadMessage *thread_create_message(void *function, int argcount,
 			}
 		}
 		tmsg->async = 0;
+		tmsg->called = 0;
 	}
 	return tmsg;
 }
@@ -662,16 +664,18 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 	else
 	{
 		D(bug("Repling Message at 0x%lx\n",tmsg));
+		tmsg->called = 1;
 		ReplyMsg(&tmsg->msg);
 	}
 }
 
 /**************************************************************************
- Call a function in context of the parent task synchronly
+ Call a function in context of the parent task synchronly. The contents of
+ success is set to 1, if the call was successful otherwise to 0.
+ success may be NULL. If success would be 0, the call returns 0 as well.
 **************************************************************************/
-int thread_call_parent_function_sync(void *function, int argcount, ...)
+int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
-#ifndef DONT_USE_THREADS
 	va_list argptr;
 	int rc = 0;
 	struct ThreadMessage *tmsg;
@@ -701,34 +705,15 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 		}
 
 		rc = tmsg->result;
+		if (success) *success = tmsg->called;
 		FreeVec(tmsg);
+	} else
+	{
+		if (success) *success = 0;
 	}
 
 	va_end (argptr);
 	return rc;
-#else
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-
-	return 0;
-#endif
 }
 
 /**************************************************************************
@@ -738,7 +723,6 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 **************************************************************************/
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
-#ifndef DONT_USE_THREADS
 	va_list argptr;
 	int rc = 0;
 	struct ThreadMessage *tmsg;
@@ -773,29 +757,6 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 	va_end (argptr);
 	return rc;
-#else
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-
-	return 0;
-#endif
 }
 
 /**************************************************************************
@@ -804,7 +765,6 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 **************************************************************************/
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
-#ifndef DONT_USE_THREADS
 	va_list argptr;
 	int rc = 0;
 	struct ThreadMessage *tmsg;
@@ -861,30 +821,6 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 	}
 	va_end (argptr);
 	return rc;
-#else
-
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-
-	return 0;
-#endif
 }
 
 
@@ -1015,7 +951,6 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 **************************************************************************/
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
-#ifndef DONT_USE_THREADS
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
@@ -1041,29 +976,6 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 	}
 
 	return 0;
-#else
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-
-	return 0;
-#endif
 }
 
 /**************************************************************************
@@ -1072,7 +984,6 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 **************************************************************************/
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
-#ifndef DONT_USE_THREADS
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
@@ -1112,29 +1023,6 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	}
 
 	return 0;
-#else
-	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
-
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-
-	return 0;
-#endif
 }
 
 /* Check if thread is aborted and return 1 if so */

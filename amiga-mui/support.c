@@ -694,7 +694,7 @@ void tell_str(char *str)
 *******************************************************************/
 void tell_from_subtask(char *str)
 {
-	thread_call_parent_function_sync(tell_str,1,str);
+	thread_call_parent_function_sync(NULL,tell_str,1,str);
 }
 
 

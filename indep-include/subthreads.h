@@ -40,7 +40,7 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis);
 void thread_abort(thread_t thread); /* NULL means default thread */
 int thread_aborted(void);
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...);
-int thread_call_parent_function_sync(void *function, int argcount, ...);
+int thread_call_parent_function_sync(int *success, void *function, int argcount, ...);
 int thread_call_parent_function_async(void *function, int argcount, ...);
 int thread_call_parent_function_async_string(void *function, int argcount, ...);
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);

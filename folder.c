@@ -3257,7 +3257,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 			getcwd(path, sizeof(path));
 
-			thread_call_parent_function_sync(search_enable_search, 0);
+			thread_call_parent_function_sync(NULL,search_enable_search, 0);
 	
 			while ((f = f_array[folder_num++]))
 			{
@@ -3279,7 +3279,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 						if (found_num == NUM_FOUND || new_secs != secs)
 						{
-							thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
+							thread_call_parent_function_sync(NULL,search_add_result, 2, found_array, found_num);
 							found_num = 0;
 							secs = new_secs;
 						}
@@ -3292,9 +3292,9 @@ cancel:
 			chdir(path);
 
 			if (found_num)
-				thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
+				thread_call_parent_function_sync(NULL,search_add_result, 2, found_array, found_num);
 
-			thread_call_parent_function_sync(search_disable_search, 0);
+			thread_call_parent_function_sync(NULL,search_disable_search, 0);
 		}
 	}
 

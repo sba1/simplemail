@@ -48,7 +48,9 @@ static unsigned long sdbm(const unsigned char *str)
 }
 
 /**************************************************************************
- Initialize the given hash table space with 2^bits 
+ Initialize the given hash table with space for 2^bits entries. With
+ filename you can specify a filename (may be NULL) where the hash_table
+ is stored if calling hash_table_store().
 **************************************************************************/
 int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 {
@@ -197,27 +199,27 @@ struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string)
 }
 
 /**************************************************************************
+ Callback which is called for every entry. It stores the line
+**************************************************************************/
+static void hash_table_store_callback(struct hash_entry *entry, void *data)
+{
+	fprintf((FILE*)data,"%d %s\n",entry->data,entry->string);
+}
+
+/**************************************************************************
  Store the hash table under the name given at hash_table_init()
 **************************************************************************/
 void hash_table_store(struct hash_table *ht)
 {
-	FILE *fh = fopen(ht->filename,"w");
-	if (fh)
+	FILE *fh;
+
+	if (!ht->filename) return;
+
+	if ((fh = fopen(ht->filename,"w")))
 	{
-		unsigned int i;
 		fputs("SMHASH1\n",fh);
 		fprintf(fh,"%d\n",ht->data);
-		for (i=0;i<ht->size;i++)
-		{
-			struct hash_bucket *hb = &ht->table[i];
-			while (hb)
-			{
-				if (hb->entry.string)
-					fprintf(fh,"%d %s\n",hb->entry.data,hb->entry.string);
-				hb = hb->next;
-			}
-
-		}
+		hash_table_call_for_every_entry(ht,hash_table_store_callback, fh);
 		fclose(fh);
 	}
 }

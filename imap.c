@@ -49,6 +49,25 @@
 
 static int val;
 
+struct name_node
+{
+	struct node node;
+	char *name;
+};
+
+/**************************************************************************
+ Free's the given name list
+**************************************************************************/
+static void free_name_list(struct list *list)
+{
+	struct name_node *node;
+	while ((node = (struct name_node*)list_remove_tail(list)))
+	{
+		free(node->name);
+		free(node);
+	}
+}
+
 /**************************************************************************
  Writes the next word into the dest buffer but not more than dest_size
 **************************************************************************/
@@ -154,14 +173,18 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 }
 
 /**************************************************************************
- 
+ Returns a list with name_node nodes which describes the folder names
 **************************************************************************/
-static int imap_synchronize_folders(struct connection *conn, struct imap_server *server)
+static struct list *imap_synchronize_folders(struct connection *conn, struct imap_server *server)
 {
 	char *line;
 	char tag[20];
 	char send[200];
 	char buf[100];
+
+	struct list *list = malloc(sizeof(struct list));
+	if (!list) return NULL;
+	list_init(list);
 
 	thread_call_parent_function_async(status_set_status,1,N_("Fetching folders..."));
 
@@ -178,7 +201,7 @@ static int imap_synchronize_folders(struct connection *conn, struct imap_server 
 			line = imap_get_result(line,buf,sizeof(buf));
 			if (!mystricmp(buf,"OK"))
 			{
-				return 1;
+				return list;
 			}
 			break;
 		} else
@@ -196,8 +219,19 @@ static int imap_synchronize_folders(struct connection *conn, struct imap_server 
 			line = imap_get_result(line,buf,sizeof(buf));
 
 			thread_call_parent_function_sync(callback_add_imap_folder,2,server->name,buf);
+			{
+				struct name_node *node = (struct name_node*)malloc(sizeof(*node));
+				if (node)
+				{
+					node->name = mystrdup(buf);
+					list_insert_tail(list,&node->node);
+				}
+			}
 		}
 	}
+
+	free_name_list(list);
+	return NULL;
 }
 
 /**************************************************************************
@@ -206,6 +240,7 @@ static int imap_synchronize_folders(struct connection *conn, struct imap_server 
 static int imap_synchonize_folder(struct connection *conn, struct imap_server *server, char *imap_path)
 {
 	struct folder *folder;
+	int success = 0;
 	folders_lock();
 	if ((folder = folder_find_by_imap(server->name, imap_path)))
 	{
@@ -249,7 +284,6 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			char buf[100];
 			char status_buf[200];
 			int num_of_remote_mails = 0;
-			int success = 0;
 
 			sprintf(status_buf,_("Examining folder %s"),imap_path);
 			thread_call_parent_function_sync(status_set_status,1,status_buf);
@@ -396,7 +430,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							tcp_write(conn,send,strlen(send));
 							tcp_flush(conn);
 
-							success = 0;	
+							success = 0;
 							while ((line = tcp_readln(conn)))
 							{
 								line = imap_get_result(line,buf,sizeof(buf));
@@ -461,7 +495,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 		free(local_uid_array);
 	} else folders_unlock();
-	return 0;
+	return success;
 }
 
 /**************************************************************************
@@ -514,10 +548,20 @@ static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				{
 					if (imap_login(conn,server))
 					{
-						if (imap_synchronize_folders(conn,server))
+						struct list *folder_list;
+						if ((folder_list = imap_synchronize_folders(conn,server)))
 						{
+							struct name_node *node;
+
 							thread_call_parent_function_sync(callback_refresh_folders,0);
-							imap_synchonize_folder(conn, server, "INBOX");
+							node = (struct name_node*)list_first(folder_list);
+							while (node)
+							{
+								if (!(imap_synchonize_folder(conn, server, node->name)))
+									break;
+								node = (struct name_node*)node_next(&node->node);
+							}
+							free_name_list(folder_list);
 						}
 					}
 				}

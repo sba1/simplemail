@@ -16,7 +16,7 @@ struct out_mail
 struct smtp_server
 {
 	char *name;
-	long port;
+	unsigned int port;
 	long socket;
 };
 

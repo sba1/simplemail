@@ -21,6 +21,7 @@
 int sm_makedir(char *path);
 unsigned int sm_get_seconds(int day, int month, int year);
 int sm_add_part(char *drawer, const char *filename, int buf_size);
+char *sm_file_part(char *filename);
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
 unsigned int mystrlen(const char *str);

@@ -133,6 +133,14 @@ int sm_add_part(char *drawer, const char *filename, int buf_size)
 }
 
 /******************************************************************
+ Return the file component of a path
+*******************************************************************/
+char *sm_file_part(char *filename)
+{
+	return (char*)FilePart(filename);
+}
+
+/******************************************************************
  Compares a string case insensitive. Accepts NULL pointers
 *******************************************************************/
 int mystricmp(const char *str1, const char *str2)

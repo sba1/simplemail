@@ -118,7 +118,7 @@ msgstr "Code postal"
 
 #: amiga-mui/addressbookwnd.c:562 amiga-mui/addressbookwnd.c:660
 msgid "State/Province"
-msgstr "Etat/Province"
+msgstr "État/Province"
 
 #: amiga-mui/addressbookwnd.c:569 amiga-mui/addressbookwnd.c:667
 msgid "Country"
@@ -158,7 +158,7 @@ msgstr "_Annuler"
 
 #: amiga-mui/addressbookwnd.c:908
 msgid "SimpleMail - Edit Group"
-msgstr "SimpleMail - Editer groupe"
+msgstr "SimpleMail - Éditer groupe"
 
 #: amiga-mui/addressbookwnd.c:1102
 msgid "SimpleMail - Addressbook"
@@ -549,7 +549,7 @@ msgstr "_Effacer courriers"
 
 #: amiga-mui/configwnd.c:1055 amiga-mui/configwnd.c:1056
 msgid "Avoid duplicates"
-msgstr "Eviter les doublons"
+msgstr "Éviter les doublons"
 
 #: amiga-mui/configwnd.c:1057 amiga-mui/configwnd.c:1058
 msgid "APOP"
@@ -593,8 +593,8 @@ msgid ""
 "Address where the replies of the mails should\n"
 "be sent (required only if different from the e-mail address)."
 msgstr ""
-"L'adresse ou les réponses du courrier doivent\n"
-"être envoyées (requis uniquement si différent de l'adresse d'envoi)."
+"L'adresse où les réponses du courrier doivent\n"
+"être envoyées (requis uniquement si différente de l'adresse d'envoi)."
 
 #: amiga-mui/configwnd.c:1154
 msgid "The default signature for this account"
@@ -639,7 +639,7 @@ msgid ""
 "After successul downloading the mails should be deleted\n"
 "on the POP3 server."
 msgstr ""
-"Après avoir rapatrier les courriers, ils sont effacés\n"
+"Après avoir rapatrié les courriers, ils sont effacés\n"
 "du serveur POP3."
 
 #: amiga-mui/configwnd.c:1161
@@ -721,7 +721,7 @@ msgid ""
 "Send your current IP address together with the intial greetings.\n"
 "This avoids some error headers on some providers."
 msgstr ""
-"Envoi votre adresse IP courante avec les commandes initiales.\n"
+"Envoie votre adresse IP courante avec les commandes initiales.\n"
 "Cela évite des erreurs d'en-tête chez certains fournisseurs."
 
 #: amiga-mui/configwnd.c:1172
@@ -746,7 +746,7 @@ msgstr "avant de stocker"
 
 #: amiga-mui/configwnd.c:1199
 msgid "Editor"
-msgstr "Editeur"
+msgstr "Éditeur"
 
 #: amiga-mui/configwnd.c:1201
 msgid "Word wrap"
@@ -810,7 +810,7 @@ msgstr "Répondre à"
 
 #: amiga-mui/configwnd.c:1273
 msgid "Additional headers"
-msgstr "En-têtes additonnels"
+msgstr "En-têtes additionnels"
 
 #: amiga-mui/configwnd.c:1309
 msgid "Background"
@@ -862,7 +862,7 @@ msgstr "Souligner liens"
 
 #: amiga-mui/configwnd.c:1394 amiga-mui/configwnd.c:1395
 msgid "Use graphical smilies"
-msgstr "Utiliser les smiles"
+msgstr "Utiliser les smilies"
 
 #: amiga-mui/configwnd.c:1417
 msgid "Allow to download images from the internet from"
@@ -936,7 +936,7 @@ msgstr "Utiliser sur les adresses contenant"
 
 #: amiga-mui/configwnd.c:1783 amiga-mui/configwnd.c:2083
 msgid "Write"
-msgstr "Ecrire"
+msgstr "Écrire"
 
 #: amiga-mui/configwnd.c:1785 amiga-mui/configwnd.c:1804
 msgid "Welcome"
@@ -977,11 +977,11 @@ msgid ""
 "until you have classified some mails as ham.\n"
 "Are you sure to continue?"
 msgstr ""
-"Après avoir réinitialiser les statistiques de ham, le filtre spam ne "
+"Après avoir réinitialisé les statistiques de ham, le filtre spam ne "
 "fonctionnera pas\n"
-"correctement tant que vous n'aurez pas classer des messages comme étant "
+"correctement tant que vous n'aurez pas classé des messages comme étant "
 "ham.\n"
-"Etes-vous sûr de vouloir continuer?"
+"Êtes-vous sûr de vouloir continuer?"
 
 #: amiga-mui/configwnd.c:1857
 msgid "Reset the statistics|Cancel"
@@ -994,9 +994,9 @@ msgid ""
 "statistics can be built from the mails inside the spam folder.\n"
 "How to proceed?"
 msgstr ""
-"Après avoir réinitialiser les statistiques de spam, le filtre spam ne "
+"Après avoir réinitialisé les statistiques de spam, le filtre spam ne "
 "fonctionnera pas\n"
-"correctement tant que vous n'aurez pas classer des messages comme étant ham. "
+"correctement tant que vous n'aurez pas classé des messages comme étant ham. "
 "Toutefois,\n"
 "si vous le désirez, les statistiques peuvent être construites dans le "
 "dossier spam.\n"
@@ -1034,8 +1034,8 @@ msgid ""
 "spam content. This only works if you have more than 500 mails for\n"
 "every class within the statistics."
 msgstr ""
-"Si vous activez cette option chaque nouveau message est vérifier pour voir\n"
-"si il s'agit de spam. Celà fonctionne uniquement si vous avez plus de 500 \n"
+"Si vous activez cette option chaque nouveau message est vérifié pour voir\n"
+"s'il s'agit de spam. Celà fonctionne uniquement si vous avez plus de 500 \n"
 "messages pour chaque classe dans les statistiques."
 
 #: amiga-mui/configwnd.c:1928
@@ -1394,15 +1394,15 @@ msgstr "Soumettre au serveur"
 
 #: amiga-mui/folderwnd.c:422
 msgid "SimpleMail - Edit IMAP Server"
-msgstr "SimpleMail - Editer serveur IMAP"
+msgstr "SimpleMail - Éditer serveur IMAP"
 
 #: amiga-mui/folderwnd.c:428
 msgid "SimpleMail - Edit folder group"
-msgstr "SimpleMail - Editer groupe de dossiers"
+msgstr "SimpleMail - Éditer groupe de dossiers"
 
 #: amiga-mui/folderwnd.c:457
 msgid "SimpleMail - Edit folder"
-msgstr "SimpleMail - Editer dossier"
+msgstr "SimpleMail - Éditer dossier"
 
 #: amiga-mui/folderwnd.c:622
 msgid "_OK"
@@ -1693,7 +1693,7 @@ msgstr "D:Lire..."
 
 #: amiga-mui/mainwnd.c:565
 msgid "E:Edit..."
-msgstr "E:Editer..."
+msgstr "E:Éditer..."
 
 #: amiga-mui/mainwnd.c:566
 msgid "R:Reply..."
@@ -1830,7 +1830,7 @@ msgstr ""
 #. Short Help
 #: amiga-mui/mainwnd.c:751
 msgid "Opens a window where you can search through your mail folder."
-msgstr "Ouvre une fenêtre ou vous pouvez chercher dans votre dossier."
+msgstr "Ouvre une fenêtre où vous pouvez chercher dans votre dossier."
 
 #: amiga-mui/mainwnd.c:752
 msgid "Process every mail within the current selected folder via the filters."
@@ -1916,7 +1916,7 @@ msgstr "Fermeture..."
 
 #: amiga-mui/readwnd.c:204
 msgid "Are you sure that you want to start this executable?"
-msgstr "Etes vous sûr de lancer cet exécutable?"
+msgstr "Êtes vous sûr de lancer cet exécutable?"
 
 #: amiga-mui/readwnd.c:204
 msgid "*_Yes|_Cancel"
@@ -2106,7 +2106,7 @@ msgstr "Identification de %d messages dans %s"
 
 #: imap.c:489
 msgid "Failed examining the folder"
-msgstr "Echec de l'examen du dossier"
+msgstr "Échec de l'examen du dossier"
 
 #: imap.c:730
 #, c-format
@@ -2185,7 +2185,7 @@ msgstr "Connecté"
 
 #: imap.c:1402
 msgid "Loggin in failed. Check Username and Password for this account"
-msgstr "Connexion échouée. Vérifiez votre identifiant ainsi que le mot de passe"
+msgstr "Connexion échouée. Vérifiez l'identifiant ainsi que le mot de passe"
 
 #. Display "Failed to connect" - status message
 #: imap.c:1409
@@ -2431,12 +2431,12 @@ msgstr "Impossible d'effacer les courriers, car le dossier est utilisé.\n"
 
 #: simplemail.c:139
 msgid "Do you really want to delete the selected mail permanently?"
-msgstr "Désirez-vous vraiment effacer les courriers sélectionnés définitivement?"
+msgstr "Désirez-vous vraiment définitivement effacer les courriers sélectionnés?"
 
 #: simplemail.c:140
 #, c-format
 msgid "Do you really want to delete %d mails permanently?"
-msgstr "Désirez-vous vraiment effacer les %d courriers définitivement?"
+msgstr "Désirez-vous vraiment définitivement effacer les %d courriers?"
 
 #: simplemail.c:141
 msgid "_Yes|_No"
@@ -2566,7 +2566,7 @@ msgstr "Envoi AUTH..."
 msgid ""
 "AUTH failed. User couldn't be authenticated. Please recheck your settings."
 msgstr ""
-"AUTH a échoué. L'utilisateur ne peut-être authentifier. Vérifiez vos "
+"AUTH a échoué. L'utilisateur ne peut-être authentifié. Vérifiez vos "
 "réglages."
 
 #. starts from 1

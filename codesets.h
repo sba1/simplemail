@@ -70,5 +70,6 @@ char *uft8toucs(char *chr, unsigned int *code);
 char *utf7ntoutf8(char *source, int sourcelen);
 char *iutf7ntoutf8(char *source, int sourcelen);
 char *utf8toiutf7(char *utf8, int sourcelen);
+char *utf8topunycode(const utf8 *str, int sourcelen);
 
 #endif

@@ -32,6 +32,7 @@
 #include "codesets_table.h"
 #include "debug.h"
 #include "lists.h"
+#include "punycode.h"
 #include "smintl.h"
 #include "support_indep.h"
 
@@ -2012,6 +2013,89 @@ char *iutf7ntoutf8(char *source, int sourcelen)
 	}
 
 	return dest;
+}
+
+/**************************************************************************
+ 
+**************************************************************************/
+char *utf8topunycode(const utf8 *source, int sourcelen)
+{
+	enum punycode_status status;
+	const utf8 *sourceend;
+	char *punny;
+	punycode_uint punny_len;
+
+	punycode_uint *dest, *target;
+	punycode_uint dest_len;
+
+	if (!(dest = malloc(sourcelen * sizeof(punycode_uint))))
+		return NULL;
+
+	target = dest;
+	sourceend = source + sourcelen;
+
+	while (source < sourceend)
+	{
+		punycode_uint ch = 0;
+		unsigned short extraBytesToRead = trailingBytesForUTF8[*source];
+
+		if (source + extraBytesToRead >= sourceend)
+		{
+			/* source exhausted */
+			free(dest);
+			return NULL;
+		}
+
+		/* Do this check whether lenient or strict */
+		if (!isLegalUTF8((UTF8*)source, extraBytesToRead+1))
+		{
+			free(dest);
+			return NULL;
+		}
+
+		/*
+		 * The cases all fall through.
+		 */
+		switch (extraBytesToRead) {
+			case 3:	ch += *source++; ch <<= 6;
+			case 2:	ch += *source++; ch <<= 6;
+			case 1:	ch += *source++; ch <<= 6;
+			case 0:	ch += *source++;
+		}
+		ch -= offsetsFromUTF8[extraBytesToRead];
+
+		if (ch <= UNI_MAX_UTF32) {
+			*target++ = ch;
+		} else if (ch > UNI_MAX_UTF32) {
+			*target++ = UNI_REPLACEMENT_CHAR;
+		}
+	}
+
+	dest_len = target - dest; /* No 0 ending */
+	punny_len = dest_len * 2;
+
+	do
+	{
+		int strored_punny_len = punny_len;
+
+		if (!(punny = malloc(punny_len+5)))
+		{
+			free(dest);
+			return NULL;
+		}
+		status = punycode_encode(dest_len, dest, NULL /* case flags */, &punny_len, punny);
+
+		if (status == punycode_success)
+		{
+			free(dest);
+			return punny;
+		}
+		punny_len = strored_punny_len * 2;
+	} while (status == punycode_big_output);
+
+	free(punny);
+	free(dest);
+	return NULL;
 }
 
 /**************************************************************************

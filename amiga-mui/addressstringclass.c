@@ -258,15 +258,32 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	if (msg->imsg && msg->imsg->Class == IDCMP_RAWKEY)
 	{
-		UWORD code;
-		if (msg->imsg->Code == CURSORDOWN && data->match_wnd)
+		int buf_pos = xget(obj,MUIA_String_BufferPos);
+		int selectsize = xget(obj,MUIA_BetterString_SelectSize);
+
+		UWORD code = msg->imsg->Code;
+
+		/* TODO: Clear the matchwindow if CURSOR is moved left or right */
+		if (data->match_wnd && (code == CURSORDOWN || code == CURSORUP))
 		{
-			DoMethod(data->match_wnd,MUIM_MatchWindow_Down);
-			return MUI_EventHandlerRC_Eat;
-		} else
-		if (msg->imsg->Code == CURSORUP && data->match_wnd)
-		{
-			DoMethod(data->match_wnd,MUIM_MatchWindow_Up);
+			/* Determine needed size of the selection, where address replacement works */
+			char *part = ((char*)xget(obj, MUIA_String_Contents)) + buf_pos;
+			char *end = strchr(part,',');
+			if (!end) end = part + strlen(part);
+
+			if (selectsize == end-part)
+			{
+				/* Address replacements works */
+				if (code == CURSORDOWN) DoMethod(data->match_wnd,MUIM_MatchWindow_Down);
+				else DoMethod(data->match_wnd,MUIM_MatchWindow_Up);
+			} else
+			{
+				/* Address replacement doesn't work, so select the characters that way,
+				 * that it works the next time */
+				set(obj,MUIA_BetterString_SelectSize, end-part);
+				AddressString_UpdateList(cl,obj);
+			}
+
 			return MUI_EventHandlerRC_Eat;
 		}
 
@@ -274,9 +291,6 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
     if (code == ',')
     {
-			int selectsize = xget(obj,MUIA_BetterString_SelectSize);
-			int buf_pos = xget(obj,MUIA_String_BufferPos);
-
 			if (selectsize)
 			{
 				SetAttrs(obj,MUIA_String_BufferPos, buf_pos + selectsize,

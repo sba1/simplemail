@@ -51,6 +51,7 @@ char **array_add_array(char **dest, char **src);
 int array_length(char **strings);
 char **array_duplicate(char **rcp);
 void array_free(char **string_array);
+char **array_replace_idx(char **strings, int idx, char *str);
 
 char *mycombinepath(char *drawer, char *file);
 

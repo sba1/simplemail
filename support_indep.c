@@ -416,6 +416,19 @@ int array_index(char **strings, char *str)
 }
 
 /**************************************************************************
+ Returns the index of the string within the array or -1 on failure.
+**************************************************************************/
+char **array_replace_idx(char **strings, int idx, char *str)
+{
+	char *dup = mystrdup(str);
+	if (!dup) return NULL;
+
+	if (strings[idx]) free(strings[idx]);
+	strings[idx] = dup;
+	return strings;
+}
+
+/**************************************************************************
  Add the string str to an array. Returns the new array which must be used
  then. Use only rarly because its slow! Indented for easier creation of
  small arrays. strings might be NULL.

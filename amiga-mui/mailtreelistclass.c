@@ -37,6 +37,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "codesets.h"
 #include "mail.h"
 #include "folder.h"
 #include "simplemail.h"
@@ -89,6 +90,11 @@ struct MailTreelist_Data
 	char *date_text;
 	char *size_text;
 	char *filename_text;
+
+	/* the converted strings */
+	char fromto_buf[256];
+	char subject_buf[512];
+	char reply_buf[256];
 
 	char bubblehelp_buf[4096];
 };
@@ -154,28 +160,25 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			sprintf(size_buf,"%ld",mail->size);
 			SecondsToString(date_buf,mail->seconds);
 
-			*msg->Array++ = status_buf; /* status */
-
 			{
 				char *field;
+				char *dest = data->fromto_buf;
 
 				if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to;
 				else field = mail->from;
 
 				if (mail->flags & MAIL_FLAGS_GROUP)
 				{
-					int field_len;
-					sprintf(field_buf,"\33O[%08lx]",data->status_group);
-					if (field)
-					{
-						field_len = strlen(field_buf);
-						mystrlcpy(field_buf+field_len,field,sizeof(field_buf)-field_len);
-					}
-					*msg->Array++ = field_buf;
-				} else *msg->Array++ = field;
+					sprintf(dest,"\33O[%08lx]",data->status_group);
+					dest += strlen(dest);
+				}
+				utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),NULL);
 			}
+			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),NULL);
 
-			*msg->Array++ = mail->subject;
+			*msg->Array++ = status_buf; /* status */
+			*msg->Array++ = data->fromto_buf;
+			*msg->Array++ = data->subject_buf;
 			*msg->Array++ = mail->reply;
 			*msg->Array++ = date_buf;
 			*msg->Array++ = size_buf;
@@ -211,19 +214,53 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 		char *to = mail_get_to_address(m);
 		char *replyto = mail_get_replyto_address(m);
 		char date_buf[64];
+		char *buf = data->bubblehelp_buf;
 
 		SecondsToString(date_buf,m->seconds);
 
 		/* Help bubble text */
-		sprintf(data->bubblehelp_buf,"\033b%s\033n\n%s: %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s\n%s: %d\n%s: %s",
-						_("Current Message"),
-						data->subject_text,m->subject?m->subject:"",
-						data->from_text,from?from:"",
-						data->to_text,to?to:"",
-						data->reply_text,replyto?replyto:"",
+		sprintf(buf,"\33b%s\33n",_("Current Message"));
+		buf += strlen(buf);
+		if (m->subject)
+		{
+			*buf++ = '\n';
+			buf = mystpcpy(buf,data->subject_text);
+			*buf++ = ':';
+			*buf++ = ' ';
+			buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+		}
+
+		if (m->from)
+		{
+			*buf++ = '\n';
+			buf = mystpcpy(buf,data->from_text);
+			*buf++ = ':';
+			*buf++ = ' ';
+			buf += utf8tostr(m->from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+		}
+
+		if (m->to)
+		{
+			*buf++ = '\n';
+			buf = mystpcpy(buf,data->to_text);
+			*buf++ = ':';
+			*buf++ = ' ';
+			buf += utf8tostr(m->to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+		}
+
+		if (m->reply)
+		{
+			*buf++ = '\n';
+			buf = mystpcpy(buf,data->to_text);
+			*buf++ = ':';
+			*buf++ = ' ';
+			buf = mystpcpy(buf,replyto);
+		}
+
+		sprintf(buf,"\n%s: %s\n%s: %d\n%s: %s",
 						data->date_text, date_buf,
-						data->size_text,m->size,
-						data->filename_text,m->filename);
+						data->size_text, m->size,
+						data->filename_text, m->filename);
 
 		set(obj,MUIA_ShortHelp,data->bubblehelp_buf);
 

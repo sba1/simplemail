@@ -19,11 +19,31 @@
 #ifndef SM__CODESETS_H
 #define SM__CODESETS_H
 
+#ifndef SM__LISTS_H
+#include "lists.h"
+#endif
+
 typedef unsigned char	utf8;
+
+struct single_convert
+{
+	unsigned char code; /* the code in this representation */
+	char utf8[8]; /* the utf8 string, first byte is alway the length of the string */
+	unsigned int ucs4; /* the full 32 bit unicode */
+};
+
+struct codeset
+{
+	struct node node;
+	char *name;
+	struct single_convert table[256];
+	struct single_convert table_sorted[256];
+};
 
 char **codesets_supported(void);
 int codesets_init(void);
 void codesets_cleanup(void);
+struct codeset *codesets_find(char *name);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))
 #define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
@@ -32,5 +52,6 @@ void codesets_cleanup(void);
 int uft8len(const utf8 *str);
 utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
+int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);
 
 #endif

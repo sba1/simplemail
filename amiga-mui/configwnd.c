@@ -40,6 +40,7 @@
 #include <proto/muimaster.h>
 
 #include "account.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "lists.h"
 #include "parse.h"
@@ -71,6 +72,7 @@ void account_recv_port_update(void);
 static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
+static Object *user_charset_string;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
@@ -353,7 +355,6 @@ static void config_use(void)
 	array_free(user.config.header_array);
 	user.config.header_array = array_duplicate((char**)xget(mails_readmisc_additional_string,MUIA_MultiString_ContentsArray));
 
-
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
 	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
@@ -566,6 +567,14 @@ static int init_user_group(void)
 					MUIA_CycleChain,1,
 					MUIA_String_Contents,user.new_folder_directory?user.new_folder_directory:user.folder_directory,
 					End,
+				End,
+			End,
+		Child, HGroup,
+			Child, MakeLabel(_("Charset used to display text")),
+			Child, PoplistObject,
+				MUIA_Popstring_Button, PopButton(MUII_PopUp),
+				MUIA_Popstring_String, user_charset_string = BetterStringObject, StringFrame, End,
+				MUIA_Poplist_Array, codesets_supported(),
 				End,
 			End,
 		End;

@@ -31,183 +31,7 @@
 #include "lists.h"
 #include "support_indep.h"
 
-struct codeset
-{
-	struct node node;
-	char *name;
-	const utf8 **to_utf8;
-};
-
-static const char trailingBytesForUTF8[256] =
-{
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
-};
-
-struct list codesets_list;
-
-/**************************************************************************
- Returns the supported codesets as an null terminated array
-**************************************************************************/
-char **codesets_supported(void)
-{
-	static char **array;
-	if (array) return array;
-	if ((array = (char**)malloc(sizeof(char*)*(list_length(&codesets_list)+1))))
-	{
-		struct codeset *code = (struct codeset*)list_first(&codesets_list);
-		int i = 0;
-		while (code)
-		{
-			array[i++] = code->name;
-			code = (struct codeset*)node_next(&code->node);
-		}
-		array[i] = NULL;
-	}
-	return array;
-}
-
-/**************************************************************************
- Initialized and loads the codesets
-**************************************************************************/
-int codesets_init(void)
-{
-	struct codeset *codeset;
-	list_init(&codesets_list);
-
-	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
-	codeset->name = mystrdup("ISO-8859-1");
-	codeset->to_utf8 = iso_8859_1_to_utf8;
-	list_insert_tail(&codesets_list,&codeset->node);
-
-	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
-	codeset->name = mystrdup("ISO-8859-2");
-	codeset->to_utf8 = iso_8859_2_to_utf8;
-	list_insert_tail(&codesets_list,&codeset->node);
-
-	return 1;
-}
-
-/**************************************************************************
- Cleanup the memory for the codeset
-**************************************************************************/
-void codesets_cleanup(void)
-{
-}
-
-/**************************************************************************
- Returns the to utf8 entry by a special codeset
-**************************************************************************/
-utf8 **codesets_find_to_utf8(char *codeset_name)
-{
-	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
-
-	/* Return ISO-8859-1 as default codeset */
-	if (!codeset_name) return codeset?(codeset->to_utf8):NULL;
-
-	while (codeset)
-	{
-		if (!mystricmp(codeset_name,codeset->name)) return codeset->to_utf8;
-		codeset = (struct codeset*)node_next(&codeset->node);
-	}
-	return NULL;
-}
-
-/**************************************************************************
- Returns the number of characters a uft8 string has. This is not
- identically with the size of memory is required to hold the string.
- Please use uftsize() for this.
-**************************************************************************/
-int utf8len(const utf8 *str)
-{
-	int len ;
-	unsigned char c;
-
-	if (!str) return 0;
-	len = 0;
-
-	while ((c = *str++))
-	{
-		len++;
-		str += trailingBytesForUTF8[c];
-	}
-
-	return len;
-}
-
-/**************************************************************************
- Copies a number of characters from "from" to "to". 
-**************************************************************************/
-utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
-{
-	utf8 *saved_to = to;
-	for (;n;n--)
-	{
-		unsigned char c = *from++;
-		int len = trailingBytesForUTF8[c];
-
-		*to++ = c;
-		for (;len;len--)
-		{
-			*to++ = *from++;
-		}
-	}
-	return saved_to;
-}
-
-/**************************************************************************
- Creates a uf8 string from a different one. from is the iso string and
- charset the charset of from
-**************************************************************************/
-utf8 *utf8create(void *from, char *charset)
-{
-	int dest_size = 0;
-	char *dest;
-	char *src = (char*)from;
-	unsigned char c;
-	const utf8 **table = codesets_find_to_utf8(charset);
-
-	if (!table) return NULL;
-
-	while ((c = *src++))
-		dest_size += (table[c])[0];
-
-	if ((dest = malloc(dest_size+1)))
-	{
-		char *dest_ptr = dest;
-		src = (char*)from;
-
-		while ((c = *src))
-		{
-			const unsigned char *utf8_seq = table[c]+1;
-
-			while ((c = *utf8_seq))
-			{
-				*dest_ptr++ = c;
-				utf8_seq++;
-			}
-			src++;
-		}
-
-		*dest_ptr = 0;
-		return dest;
-	}
-	return NULL;
-}
-
-#ifdef BUILD_TABLES
-
-/* define BUILD_TABLES and compile and link this file to
-** build the uft8 tables
-*/
-
-/* ConvertUTF.h */
+/* from ConvertUTF.h */
 
 /*
  * Copyright 2001 Unicode, Inc.
@@ -493,7 +317,7 @@ if (result == sourceIllegal) {
  * Index into the table below with the first byte of a UTF-8 sequence to
  * get the number of trailing bytes that are supposed to follow it.
  */
-/*
+
 static const char trailingBytesForUTF8[256] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -504,7 +328,7 @@ static const char trailingBytesForUTF8[256] = {
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
-*/
+
 /*
  * Magic values subtracted from a buffer value during UTF8 conversion.
  * This table contains as many values as there might be trailing bytes
@@ -818,34 +642,224 @@ ConversionResult ConvertUTF8toUTF32 (
 
    --------------------------------------------------------------------- */
 
-void main(void)
+/* ------------------------------------- */
+
+struct list codesets_list;
+
+/**************************************************************************
+ Returns the supported codesets as an null terminated array
+**************************************************************************/
+char **codesets_supported(void)
+{
+	static char **array;
+	if (array) return array;
+	if ((array = (char**)malloc(sizeof(char*)*(list_length(&codesets_list)+1))))
+	{
+		struct codeset *code = (struct codeset*)list_first(&codesets_list);
+		int i = 0;
+		while (code)
+		{
+			array[i++] = code->name;
+			code = (struct codeset*)node_next(&code->node);
+		}
+		array[i] = NULL;
+	}
+	return array;
+}
+
+/**************************************************************************
+ The compare function
+**************************************************************************/
+static int codesets_cmp_unicode(const struct single_convert *arg1, const struct single_convert *arg2)
+{
+	return (int)(strcmp(arg1->utf8+1,arg2->utf8+1));
+}
+
+/**************************************************************************
+ Initialized and loads the codesets
+**************************************************************************/
+int codesets_init(void)
 {
 	int i;
+	struct codeset *codeset;
 	UTF32 src;
-	UTF8 dest[16];
 
+	list_init(&codesets_list);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
+	codeset->name = mystrdup("ISO-8859-1");
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
-		UTF8 *dest_ptr = dest;
-		int j;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
 
-/*		src = i;*/
+		src = i;
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-2");
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
 		if (i < 128) src = i;
 		else src = iso_8859_2_to_ucs4[i-128];
-
-		ConvertUTF32toUTF8 (&src_ptr, src_ptr + 1, &dest_ptr, dest + 16, strictConversion);
-
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-
-		printf("  \"\\0%03lo",strlen(dest));
-		for (j=0;dest[j];j++)
-		{
-			printf("\\%03lo",(int)dest[j]);
-
-		}
-		printf("\", /* 0x%04lx */\n",src);
+		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
 	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	return 1;
 }
 
-#endif
+/**************************************************************************
+ Cleanup the memory for the codeset
+**************************************************************************/
+void codesets_cleanup(void)
+{
+}
+
+/**************************************************************************
+ Returns the given codeset. NULL returns ISO-8859-1 Latin 1
+**************************************************************************/
+struct codeset *codesets_find(char *name)
+{
+	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
+
+	/* Return ISO-8859-1 as default codeset */
+	if (!name) return codeset;
+
+	while (codeset)
+	{
+		if (!mystricmp(name,codeset->name)) return codeset;
+		codeset = (struct codeset*)node_next(&codeset->node);
+	}
+	return NULL;
+}
+
+/**************************************************************************
+ Returns the number of characters a uft8 string has. This is not
+ identically with the size of memory is required to hold the string.
+ Please use uftsize() for this.
+**************************************************************************/
+int utf8len(const utf8 *str)
+{
+	int len ;
+	unsigned char c;
+
+	if (!str) return 0;
+	len = 0;
+
+	while ((c = *str++))
+	{
+		len++;
+		str += trailingBytesForUTF8[c];
+	}
+
+	return len;
+}
+
+/**************************************************************************
+ Copies a number of characters from "from" to "to". 
+**************************************************************************/
+utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
+{
+	utf8 *saved_to = to;
+	for (;n;n--)
+	{
+		unsigned char c = *from++;
+		int len = trailingBytesForUTF8[c];
+
+		*to++ = c;
+		for (;len;len--)
+		{
+			*to++ = *from++;
+		}
+	}
+	return saved_to;
+}
+
+/**************************************************************************
+ Creates a uf8 string from a different one. from is the iso string and
+ charset the charset of from
+**************************************************************************/
+utf8 *utf8create(void *from, char *charset)
+{
+	int dest_size = 0;
+	char *dest;
+	char *src = (char*)from;
+	unsigned char c;
+	struct codeset *codeset = codesets_find(charset);
+
+	if (!codeset) return NULL;
+
+	while ((c = *src++))
+		dest_size += codeset->table[c].utf8[0];
+
+	if ((dest = malloc(dest_size+1)))
+	{
+		char *dest_ptr = dest;
+
+		for (src = (char*)from;c = *src;src++)
+		{
+			unsigned char *utf8_seq;
+
+			for(utf8_seq = &codeset->table[c].utf8[1];c = *utf8_seq;utf8_seq++)
+				*dest_ptr++ = c;
+		}
+
+		*dest_ptr = 0;
+		return dest;
+	}
+	return NULL;
+}
+
+/**************************************************************************
+ Converts a UTF8 string to a given charset. Return the number of bytes
+ written to dest excluding the NULL byte (which is always ensured by this
+ function).
+**************************************************************************/
+int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
+{
+	int i;
+	struct single_convert conv;
+	struct single_convert *f;
+	char *dest_iter = dest;
+
+	if (!codeset) codeset = (struct codeset*)list_first(&codesets_list);
+	if (!codeset) return 0;
+
+	for (i=0;i < dest_size-1;i++)
+	{
+		unsigned char c = *str++;
+		if (c)
+		{
+			int len = trailingBytesForUTF8[c];
+			conv.utf8[1] = c;
+			strncpy(&conv.utf8[2],str,len);
+			conv.utf8[2+len] = 0;
+			str += len;
+
+			if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
+			{
+				*dest_iter++ = f->code;
+			} else *dest_iter = ' ';
+		} else break;
+	}
+	*dest_iter = 0;
+	return i;
+}

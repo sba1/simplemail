@@ -319,14 +319,30 @@ void main_refresh_folders(void)
 *******************************************************************/
 void main_refresh_folder(struct folder *folder)
 {
-#if 0
-	struct MUI_NListtree_TreeNode *tree_node = FindListtreeUserData(folder_tree, folder);
-	if (tree_node)
+	void *handle = NULL;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+
+	/* load the folder */
+	folder_next_mail(folder,&handle);
+
+	/* This should be moved in a extra helper function */
+	model = gtk_tree_view_get_model(folder_treeview);
+	if (gtk_tree_model_get_iter_first(model,&iter))
 	{
-		DoMethod(folder_tree,MUIM_NListtree_Redraw,tree_node,0);
+		do
+		{
+			gchar *name;
+			gtk_tree_model_get(model,&iter,FOLDER_NAME_COLUMN,&name,-1);
+			if (!strcmp(name,folder->name))
+			{
+				gtk_tree_store_set(folder_treestore, &iter,
+					FOLDER_MAILS_COLUMN, folder_number_of_mails(folder),
+					-1);
+				break;
+			}
+		}	while ((gtk_tree_model_iter_next(model,&iter)));
 	}
-	main_refresh_folders_text();
-#endif
 }
 
 /******************************************************************
@@ -356,7 +372,7 @@ void main_insert_mail(struct mail *mail)
 *******************************************************************/
 void main_insert_mail_pos(struct mail *mail, int after)
 {
-	printf("main_insert_mail_pos() not implemented");
+	printf("main_insert_mail_pos() not implemented\n");
 }
 
 
@@ -454,20 +470,13 @@ void main_set_folder_mails(struct folder *folder)
 
 	gtk_tree_store_clear(mail_treestore);
 
+	main_refresh_folder(folder);
+
 	while ((m = folder_next_mail(folder,&handle)))
 	{
 		main_insert_mail(m);
 	}
-#if 0
-	mail_ctree_freeze();
-	mail_ctree_clear();
 
-	while ((m = folder_next_mail(folder,&handle)))
-	{
-		mail_ctree_insert(m);
-	}
-	mail_ctree_thaw();
-#endif
 
 #if 0
 	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
@@ -576,29 +585,6 @@ struct folder *main_get_folder(void)
 			return folder_find_by_name(name);
 		}
 	}
-#if 0
-	GList *sel_list = gtk_ctree_find_all_selected(GTK_CTREE(folder_ctree),NULL);
-	if (sel_list)
-	{
-		GtkCTreeNode *node = GTK_CTREE_NODE(sel_list->data);
-		if (node) return (struct folder*)gtk_ctree_node_get_row_data(GTK_CTREE(folder_ctree),node);
-	}
-
-#endif
-
-#if 0
-	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(folder_tree,MUIA_NListtree_Active);
-
-	if (tree_node)
-	{
-		if (tree_node->tn_User)
-		{
-			return (struct folder*)tree_node->tn_User;
-		}
-	}
-	return NULL;
-#endif
 	return NULL;
 }
 
@@ -738,7 +724,7 @@ void main_remove_mails_selected(void)
 			}
 
 			DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
-		}		
+		}
 
 		FreeVec(array);
 	}

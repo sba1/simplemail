@@ -2001,6 +2001,22 @@ struct mail *folder_next_mail(struct folder *folder, void **handle)
 /*#define folder_next_mail(folder,handle) ( ((*((int*)handle))<folder->num_mails)?(folder->mail_array[(*((int*)handle))++]):NULL)*/
 
 /******************************************************************
+ This function is the same as above but it returns the complete
+ array or NULL for an error. Check folder.num_mails for size of
+ the array. NOTE: function can disappear in a future, so use
+ it rarly. It's better to use folder_next_mail() instead
+*******************************************************************/
+struct mail **folder_get_mail_array(struct folder *folder)
+{
+	void *handle = NULL;
+
+	/* start sort stuff */
+	folder_next_mail(folder,&handle);
+	if (folder->sorted_mail_array) return folder->sorted_mail_array;
+	return folder->mail_array;
+}
+
+/******************************************************************
  Returns the primary sort mode
 *******************************************************************/
 int folder_get_primary_sort(struct folder *folder)

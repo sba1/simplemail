@@ -153,6 +153,8 @@ void folder_add_to_tree(struct folder *fold,struct folder *parent);
 
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
 struct mail *folder_next_mail(struct folder *folder, void **handle);
+/* Use this rarly */
+struct mail **folder_get_mail_array(struct folder *folder);
 
 int folder_get_primary_sort(struct folder *folder);
 void folder_set_primary_sort(struct folder *folder, int sort_mode);

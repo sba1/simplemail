@@ -41,7 +41,7 @@ static char *taglines_indexname;
 /******************************************************************
  Returns a random number
 *******************************************************************/
-static int random(int max)
+static int sm_random(int max)
 {
 	static int x=0;
 
@@ -65,7 +65,7 @@ static char *get_tagline(void)
 	
 	if (!taglines_filename || !taglines_indexname ||!taglines_num) return NULL;
 
-	nr = random(taglines_num);
+	nr = sm_random(taglines_num);
 
 	if ((fh = fopen(taglines_filename,"rb")))
 	{

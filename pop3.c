@@ -58,9 +58,10 @@
 
 /**************************************************************************
  Recieves a single line answer. Returns the line if this is positive
- (without the +OK) else 0
+ (without the +OK) else 0. If silent is 1 simplemail doesn't notify the
+ user about an error.
 **************************************************************************/
-static char *pop3_receive_answer(struct connection *conn)
+static char *pop3_receive_answer(struct connection *conn, int silent)
 {
 	char *answer;
 	if (!(answer = tcp_readln(conn)))
@@ -71,7 +72,7 @@ static char *pop3_receive_answer(struct connection *conn)
 		return NULL;
 	}
 	if (!strncmp(answer,"+OK",3)) return answer+3;
-	if (!strncmp(answer,"-ERR",4)) tell_from_subtask(answer);
+	if (!strncmp(answer,"-ERR",4)) if (!silent) tell_from_subtask(answer);
 	return NULL;
 }
 
@@ -84,7 +85,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 {
 	char *answer;
 
-	if ((answer = pop3_receive_answer(conn)))
+	if ((answer = pop3_receive_answer(conn,0)))
 	{
 		char *ptr,*startptr,*endptr,*timestamp = NULL;
 		char c;
@@ -104,7 +105,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 			}
 			ptr++;
 		}
-		if (startptr && endptr && startptr<endptr)
+		if (startptr && endptr && startptr<endptr && timestamp_ptr)
 		{
 			if ((timestamp = (char*)malloc(endptr-startptr+3)))
 			{
@@ -120,17 +121,17 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 			if (tcp_write(conn,"STLS\r\n",6) <= 0) return 0;
 
 			/* TODO: check if this call delivers a new timestamp */
-			if (pop3_receive_answer(conn))
+			if (pop3_receive_answer(conn,0))
 			{
 				if (tcp_make_secure(conn))
 				{
-					*timestamp_ptr = timestamp;
+					if (timestamp_ptr) *timestamp_ptr = timestamp;
 					return 1;
 				}
 			}
 		} else
 		{
-			*timestamp_ptr = timestamp;
+			if (timestamp_ptr) *timestamp_ptr = timestamp;
 			return 1;
 		}
 		free(timestamp);
@@ -185,9 +186,13 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		SM_DEBUGF(15,("Sending %s",buf));
 				
 		if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
-		if (!pop3_receive_answer(conn))
+		if (!pop3_receive_answer(conn,1))
 		{
-			if (server->apop) return 0;
+			if (server->apop)
+			{
+				tell_from_subtask(_("Failed to authentificate via APOP"));
+				return 0;
+			}
 			SM_DEBUGF(15,("APOP authentification failed. Trying plain text method\n"));
 		} else
 		{
@@ -200,9 +205,9 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 	sprintf(buf, "USER %s\r\n",server->login);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
-	if (!pop3_receive_answer(conn))
+	if (!pop3_receive_answer(conn,!!timestamp)) /* be silent if timestamp has given */
 	{
-		if (tcp_error_code() != TCP_INTERRUPTED)
+		if (tcp_error_code() != TCP_INTERRUPTED && !timestamp)
 			tell_from_subtask(N_("Error while identifing the user"));
 		return 0;
 	}
@@ -210,7 +215,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 	thread_call_parent_function_async(status_set_status,1,_("Sending password..."));
 	sprintf(buf,"PASS %s\r\n",server->passwd);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
-	if (!pop3_receive_answer(conn))
+	if (!pop3_receive_answer(conn,0))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
 			tell_from_subtask(N_("Error while identifing the user"));
@@ -428,7 +433,7 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 	if (tcp_write(conn,"UIDL\r\n",6) == 6)
 	{
 		char *answer;
-		if ((answer = pop3_receive_answer(conn)))
+		if ((answer = pop3_receive_answer(conn,0)))
 		{
 			char status_buf[200];
 			int num_duplicates = 0;
@@ -483,7 +488,7 @@ static void pop3_noop(struct connection *conn)
 {
 	if (tcp_write(conn,"STAT\r\n",6) == 6)
 	{
-		pop3_receive_answer(conn);
+		pop3_receive_answer(conn,0);
 	}
 }
 
@@ -506,7 +511,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	thread_call_parent_function_async(status_set_status,1,_("Getting statistics..."));
 
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
-	if (!(answer = pop3_receive_answer(conn)))
+	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
 			tell_from_subtask(N_("Could not get server statistics"));
@@ -559,7 +564,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	}
 
   /* Was the command succesful? */
-	if (!(answer = pop3_receive_answer(conn)))
+	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
 			return mail_array;
@@ -627,7 +632,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 				sprintf(buf, "TOP %d 1\r\n",i);
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
-				if (!(answer = pop3_receive_answer(conn)))
+				if (!(answer = pop3_receive_answer(conn,0)))
 				{
 					if (tcp_error_code() == TCP_INTERRUPTED)
 					{
@@ -743,7 +748,7 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
 	thread_call_parent_function_sync(status_set_status,1,_("Logging out..."));
 	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
-	return pop3_receive_answer(conn)?1:0;
+	return pop3_receive_answer(conn,1)?1:0;
 }
 
 /**************************************************************************
@@ -775,7 +780,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 		return 0;
 	}
 
-	if (!(answer = pop3_receive_answer(conn)))
+	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
 			tell_from_subtask(N_("Couldn't receive the mail"));
@@ -854,7 +859,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 	char *answer;
 	sprintf(buf, "DELE %d\r\n",nr);
 	if (tcp_write(conn,buf,strlen(buf))<=0) return 0;
-	if (!(answer = pop3_receive_answer(conn))) return 0;
+	if (!(answer = pop3_receive_answer(conn,0))) return 0;
 	return 1;
 }
 

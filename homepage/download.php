@@ -17,5 +17,7 @@
     $fp = fopen("downloads.txt", "w");
     fwrite($fp, strval($downs));
     fclose($fp);
+    header("Content-Type: application/x-lzx");
     readfile("files/simplemail.lzx");
 ?>
+

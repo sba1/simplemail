@@ -14,7 +14,7 @@
 
 <body bgcolor="white">
     <center>
-        <IMG src="sm_logo.png" alt="sm_logo.png (1171 bytes)" width=274 height=45>
+        <IMG src="pictures/sm_logo.png" alt="sm_logo.png (1171 bytes)" width=274 height=45>
     </center>
 
     <TABLE border=0 cellspacing=3 cellpadding=3 align="center" width="100%" summary="Main">
@@ -56,6 +56,11 @@
                                 case "contact":
                                     echo("Contact");
                                     break;
+
+				case "galery":
+				case "galery_add_user":
+				    echo("User Galery");
+				    break;
                             }
 
                         ?>
@@ -64,7 +69,7 @@
             </TD>
         </TR>
         <TR>
-            <TD>
+            <TD width="50" valign="top">
                 <TABLE border=0 cellspacing=3 cellpadding=3 align="center" summary="Menu">
                     <TR>
                         <TD><A href="index.html">Welcome</A></TD>
@@ -84,6 +89,9 @@
                     <TR>
                         <TD><A href="index.html?contact">Contact</A></TD>
                     </TR>
+                    <TR>
+                        <TD><A href="index.html?galery">User Galery</A></TD>
+                    </TR>
                 </TABLE>
             </TD>
             <TD>
@@ -91,32 +99,14 @@
                     <TR>
                         <TD>
                             <?php
-                                switch($part)
-                                {
-                                    case "":
-                                        include("welcome.html");
-                                        break;
-
-                                    case "screenshots":
-                                        include("screenshots.html");
-                                        break;
-
-                                    case "downloads":
-                                        include("downloads.html");
-                                        break;
-
-                                    case "faq":
-                                        include("faq.html");
-                                        break;
-
-                                    case "links":
-                                        include("links.html");
-                                        break;
-
-                                    case "contact":
-                                        include("contact.html");
-                                        break;
-                                }
+				if ($part == "") include("welcome.html");
+				else
+				{
+				  if (file_exists($part . ".html"))
+				  {
+				    include($part . ".html");
+				  } else echo("Unknown part!");
+				}
                             ?>
                         </TD>
                     </TR>
@@ -146,3 +136,7 @@
 </body>
 
 </html>
+
+
+
+

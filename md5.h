@@ -1,14 +1,36 @@
-typedef unsigned char *POINTER;
-typedef unsigned short int UINT2;
-typedef unsigned long int UINT4;
+#ifndef MD5_H
+#define MD5_H
 
-typedef struct
-{
-  UINT4 state[4];
-  UINT4 count[2];
-  unsigned char buffer[64];
-} MD5_CTX;
+#ifdef AMIGA
+ #define HIGHFIRST
+#else
+ #include <machine/endian.h>
+  #if BYTE_ORDER == BIG_ENDIAN
+  #define HIGHFIRST
+ #endif
+#endif
 
-void MD5Init (MD5_CTX *);
-void MD5Update (MD5_CTX *, unsigned char *, unsigned int);
-void MD5Final (unsigned char [16], MD5_CTX *);
+#ifdef __alpha
+typedef unsigned int uint32;
+#else
+typedef unsigned long uint32;
+#endif
+
+struct MD5Context {
+	uint32 buf[4];
+	uint32 bits[2];
+	unsigned char in[64];
+};
+
+void MD5Init(struct MD5Context *context);
+void MD5Update(struct MD5Context *context, unsigned char const *buf,
+	       unsigned len);
+void MD5Final(unsigned char digest[16], struct MD5Context *context);
+void MD5Transform(uint32 buf[4], uint32 const in[16]);
+
+/*
+ * This is needed to make RSAREF happy on some MS-DOS compilers.
+ */
+typedef struct MD5Context MD5_CTX;
+
+#endif /* !MD5_H */

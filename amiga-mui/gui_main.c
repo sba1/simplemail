@@ -43,6 +43,7 @@
 #include "configtreelistclass.h"
 #include "datatypescache.h"
 #include "datatypesclass.h"
+#include "filterruleclass.h"
 #include "foldertreelistclass.h"
 #include "iconclass.h"
 #include "mainwnd.h"
@@ -120,6 +121,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_filterrule_class();
 		delete_configtreelist_class();
 		delete_icon_class();
 		delete_popupmenu_class();
@@ -158,7 +160,7 @@ int all_init(void)
 				create_readlist_class() && create_composeeditor_class() &&
 				create_simplehtml_class() && create_picturebutton_class() &&
 				create_popupmenu_class() && create_icon_class() && 
-				create_configtreelist_class())
+				create_configtreelist_class() && create_filterrule_class())
 		{
 			if (app_init())
 			{

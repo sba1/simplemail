@@ -4,7 +4,7 @@ Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.4
+Version:   0.5
 
 Introduction
 ~~~~~~~~~~~~
@@ -39,6 +39,13 @@ problem.
 
 Changes
 ~~~~~~~
+Version 0.5 (fifth alpha) - released on 2001/02/25
+  - configurable mail download selection added.
+  - supports 8 bit mime mails (if a SMTP Server don't support them
+    they are encoded on the gly).
+  - improved the readwindow. Now used extensivly the SimpleHTML engine.
+  - button images are cached now.
+                <LI>Support of the new SimpleMail User Galery.<LI>
 Version 0.4 (fourth alpha) - released on 2001/02/25
   - multiple pop3 servers
   - images for replied/forwarded mails

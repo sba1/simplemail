@@ -728,15 +728,12 @@ int compose_window_open(struct compose_args *args)
 		data->notebook = gtk_notebook_new();
 		gtk_container_add(GTK_CONTAINER(vbox), data->notebook);
 
-		label1 = gtk_label_new(_("Mail"));
-		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),0), label1);
-
-		label2 = gtk_label_new(_("Attachments"));
-		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),1), label2);
-
 		/* Page 1 */
 		page1 = gtk_vbox_new(0,4);
 		gtk_container_add(GTK_CONTAINER(data->notebook), page1);
+
+		label1 = gtk_label_new(_("Mail"));
+		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),0), label1);
 
 		fields_table = gtk_table_new(4,2,FALSE);
 		gtk_table_set_col_spacings(GTK_TABLE(fields_table),4);
@@ -803,9 +800,14 @@ int compose_window_open(struct compose_args *args)
 		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
 		gtk_box_pack_start(GTK_BOX(page1), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
 
+		/* Page 2 */
 		page2 = gtk_vbox_new(0,4);
 		gtk_container_add(GTK_CONTAINER(data->notebook), page2);
 
+		label2 = gtk_label_new(_("Attachments"));
+		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),1), label2);
+
+		/* Below the pages */
 		but_box = gtk_hbox_new(0,4);
 		gtk_box_pack_start(GTK_BOX(vbox), but_box, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 

@@ -54,6 +54,7 @@
 #include "configwnd.h"
 #include "muistuff.h"
 #include "multistringclass.h"
+#include "support.h"
 #include "support_indep.h"
 
 static struct MUI_CustomClass *CL_Sizes;
@@ -65,6 +66,7 @@ static int size2value(int val);
 
 static Object *config_wnd;
 static Object *user_dst_check;
+static Object *user_folder_string;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
@@ -316,6 +318,14 @@ static void config_use(void)
 		user.config.internet_emails = new_array;
 	}
 
+	free(user.new_folder_directory);
+	user.new_folder_directory = mystrdup((char*)xget(user_folder_string,MUIA_String_Contents));
+
+	if (user.new_folder_directory && mystricmp(user.new_folder_directory,user.folder_directory))
+	{
+		sm_request(NULL,"You have changed the folder direcory! You must quit and restart SimpleMail now.","Ok");
+	}
+
 	user.config.header_flags = 0;
 
 	if (xget(mails_readmisc_all_check,MUIA_Selected))
@@ -520,6 +530,17 @@ static int init_user_group(void)
 			Child, MakeLabel("Add adjustment for daylight saving time"),
 			Child, user_dst_check = MakeCheck("Add adjustment for daylight saving time",user.config.dst),
 			Child, HSpace(0),
+			End,
+		Child, HGroup,
+			Child, MakeLabel("Folder diretory"),
+			Child, PopaslObject,
+				MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
+				MUIA_Popstring_String, user_folder_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain,1,
+					MUIA_String_Contents,user.new_folder_directory?user.new_folder_directory:user.folder_directory,
+					End,
+				End,
 			End,
 		End;
 	if (!user_group) return 0;

@@ -474,8 +474,7 @@ int pop3_get_top(long hsocket, unsigned long nr)
 
 	rc = FALSE;
 
-	buf = malloc(REC_BUFFER_SIZE + 1);
-	if(buf != NULL)
+	if ((buf = malloc(REC_BUFFER_SIZE + 1)))
 	{
 		struct mail *mail;
 
@@ -492,33 +491,37 @@ int pop3_get_top(long hsocket, unsigned long nr)
 			got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
 			if(got > 0)
 			{
+				buf[got] = 0;
+
 				if(strncmp(buf, "+OK", 3) == 0)
 				{
 					int running = TRUE, more = TRUE;
-					char *str;
+					char *str,*buf2;
 
-					while(running)
+					/* set buf2 to the last line */
+					if ((buf2 = strstr(buf,"\r\n")))
 					{
-						got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
-						if(got > 0)
+						buf2 += 2;
+						while (running)
 						{
-							buf[got] = 0;
-
-							str = strstr(buf, "\r\n.\r\n");
-							if(str != NULL)
+							if ((str = strstr(buf2, "\r\n.\r\n")))
 							{
 								str[2] = 0;
 								running = FALSE;
 							}
 
-							if(more)	
+							if (more)	
 							{
-								more = mail_scan_buffer(&ms, buf, strlen(buf));
+								/* scan the mail */
+								more = mail_scan_buffer(&ms, buf2, strlen(buf2));
 							}	
-						}
-						else
-						{
-							running = FALSE;
+
+							if (running) got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+							if (got > 0) buf[got] = 0;
+							else running = FALSE;
+
+							/* now use the buf from beginning */
+							buf2 = buf;
 						}
 					}
 						

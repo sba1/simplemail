@@ -700,7 +700,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 					/* process the headers as we require this now */
 					if (mail_process_headers(m))
 					{
-						int ignore = (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,m);
+						int ignore = (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,m->info);
 						if (ignore)
 						{
 							showme = 1;

@@ -173,6 +173,24 @@ int mystrnicmp(const char *str1, const char *str2, int n)
 	return Strnicmp(str1,str2,n);
 }
 
+/**************************************************************************
+ Checks if a string is inside a string (not case sensitive)
+**************************************************************************/
+char *mystristr(const char *str1, const char *str2)
+{
+	const char *buf = str1;
+	char c;
+	int str2_len = strlen(str2);
+
+	while (*str1)
+	{
+		if (!Strnicmp(buf,str1,str2_len))
+			return str1;
+		str1++;
+	}
+	return NULL;
+}
+
 /******************************************************************
  returns the length of a string. Accepts NULL pointer (returns 0
  then)

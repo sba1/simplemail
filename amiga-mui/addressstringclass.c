@@ -382,13 +382,18 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_AddressString_Complete *msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	char *contents = (char*)xget(obj, MUIA_UTF8String_Contents);
-	int buf_pos_unreal = xget(obj, MUIA_String_BufferPos);
-	int buf_pos = utf8realpos(contents,buf_pos_unreal);
+	char *contents, *newcontents;
+	int buf_pos_unreal, buf_pos, len;
 	char *completed = msg->text;
-	char *newcontents;
 
-	int len = strlen(contents) + strlen(completed) + 1;
+	/* First clear the old completed string */
+	DoMethod(obj, MUIM_BetterString_ClearSelected);
+
+	contents = (char*)xget(obj, MUIA_UTF8String_Contents);
+	buf_pos_unreal = xget(obj, MUIA_String_BufferPos);
+	buf_pos = utf8realpos(contents,buf_pos_unreal);
+
+	len = strlen(contents) + strlen(completed) + 1;
 
 	if ((newcontents = (char*)malloc(len+100)))
 	{

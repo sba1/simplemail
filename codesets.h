@@ -19,13 +19,13 @@
 #ifndef SM__CODESETS_H
 #define SM__CODESETS_H
 
-typedef unsigned char	uft8;
+typedef unsigned char	utf8;
 
-#define uft8size(s) (s)?(strlen(s):0)
-#define uft8cpy(dest,src) ((uft8*)strcpy(dest,src))
-#define uft8cat(dest,src) ((uft8*)strcat(dest,src))
+#define utf8size(s) (s)?(strlen(s):0)
+#define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
+#define utf8cat(dest,src) ((utf8*)strcat(dest,src))
 
-int uft8len(const uft8 *str);
-uft8 *uft8ncpy(uft8 *to, const uft8 *from, int n);
+int uft8len(const utf8 *str);
+utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
 
 #endif

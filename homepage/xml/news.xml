@@ -1,6 +1,28 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/08/03">
+   <text lang="en">
+      Version 0.9 of SimpleMail has been released! Changes since last release were:
+      <list>
+			 <item>improved addressbook</item>
+			 <item>predefined text phrases</item>
+			 <item>periodical mail download</item>
+       <item>requires now the popplaceholder mui custom class</item>
+      </list>
+    </text>
+
+    <text lang="de">
+      Version 0.9 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+      <list>
+			 <item>Verbessertes Addressbuch</item>
+			 <item>Vordefinierte Textphrasen</item>
+			 <item>Periodischen Runterladen von Mails</item>
+       <item>Benötigt nun die  Popplaceholder Mui Custom Class</item>
+      </list>
+    </text>
+  </entry>
+
   <entry date="2001/08/01">
     <text lang="en">
       Version 0.8 of SimpleMail has been released! Changes since last release were:

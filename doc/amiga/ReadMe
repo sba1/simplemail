@@ -4,7 +4,7 @@ Author:    hynek@rz.uni-potsdam.de (Hynek Schlawack), sebauer@t-online.de (Sebas
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.8
+Version:   0.9
 
 Introduction
 ~~~~~~~~~~~~
@@ -25,7 +25,9 @@ It also needs some additional MUI Custom Classes:
  BetterString - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
  NList - http://www.aphaso.de/download/MCC_NList0_90.lha
  NListtree - http://www.aphaso.de/download/MCC_NListtree18.8.lha
+ PopPlaceholder - ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
+
 
 Ensure  that  you  always  have  the  latest  versions installed.
 
@@ -39,6 +41,12 @@ problem.
 
 Changes
 ~~~~~~~
+Version 0.9 (ninth alpha) - released on 2001/09/03
+  - improved addressbook
+  - predefined text phrases
+  - periodical mail download
+  - requires now the popplaceholder mui custom class
+
 Version 0.8 (eighth alpha) - released on 2001/08/01
   - SSL support for POP3 Servers. Needs AmiSSL
   - POP3 servers can be individually deactivated and they are ignored

@@ -107,7 +107,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 				if (comma)
 				{
 					while (*++comma == ' ');
-					if (strlen(comma)) completed = addressbook_complete_address(contents);
+					if (strlen(comma)) completed = addressbook_complete_address(comma);
 				} else completed = addressbook_complete_address(contents);
 
 				if (completed)

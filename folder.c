@@ -1191,16 +1191,18 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 }
 
 /******************************************************************
- Deletes a mail (move it to the delete drawer)
+ Deletes a mail permanently
 *******************************************************************/
 int folder_delete_mail(struct folder *from_folder, struct mail *mail)
 {
-	struct folder *dest_folder = folder_deleted();
-	if (dest_folder)
-	{
-		return folder_move_mail(from_folder,dest_folder,mail);
-	}
-	return 0;
+	char path[512];
+	if (!from_folder) return 0;
+	folder_remove_mail(from_folder,mail);
+	strcpy(path,from_folder->path);
+	sm_add_part(path,mail->filename,512);
+	remove(path);
+	mail_free(mail);
+	return 1;
 }
 
 /******************************************************************

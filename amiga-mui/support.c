@@ -28,6 +28,7 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/utility.h>
+#include <proto/intuition.h>
 #include <proto/muimaster.h>
 
 #include "amigasupport.h"
@@ -139,6 +140,16 @@ int sm_get_gmt_offset(void)
 		return -DefaultLocale->loc_GMTOffset;
 	}
 	return 0;
+}
+
+/******************************************************************
+ Returns the current current seconds (since 1.1.1978)
+*******************************************************************/
+unsigned int sm_get_current_seconds(void)
+{
+	ULONG mics,secs;
+	CurrentTime(&secs,&mics);
+	return secs;
 }
 
 /******************************************************************

@@ -205,6 +205,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
 				TAG_DONE);
 
+		/* substituate the fixed font */
 		if ((font_buf = mystrdup(user.config.read_fixedfont)))
 		{
 			char *end = strchr(font_buf,'/');
@@ -218,6 +219,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 			free(font_buf);
 		}
 
+		/* substituate the proportional font */
 		if ((font_buf = mystrdup(user.config.read_propfont)))
 		{
 			char *end = strchr(font_buf,'/');

@@ -29,6 +29,11 @@
 
 #include <gtk/gtk.h>
 
+#include <libgtkhtml/gtkhtmlcontext.h>
+#include <libgtkhtml/graphics/htmlpainter.h>
+#include <libgtkhtml/layout/htmlbox.h>
+#include <libgtkhtml/view/htmlview.h>
+#include <libgtkhtml/dom/dom-types.h>
 
 #include "configuration.h"
 #include "lists.h"
@@ -47,7 +52,12 @@ struct Read_Data
 {
 	GtkWidget *wnd;
 	GtkWidget *toolbar;
+#if 0
 	GtkWidget *text_view;
+#else
+	GtkWidget *html_view;
+	struct HtmlDocument *html_document;
+#endif
 	GtkWidget *text_scrolled_window;
 
 	int num; /* the number of the window */
@@ -352,28 +362,49 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 {
 	char *buf;
 	int buf_len;
-	GtkTextBuffer *buffer;
-	GtkTextIter iter;
 
 	mail_decode(m);
 	mail_decoded_data(m,(void**)&buf,&buf_len);
-
-	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view));
-
-	gtk_text_buffer_get_iter_at_line(buffer,&iter,0);
 
 	if (!mystricmp(m->content_type,"text") && !mystricmp(m->content_subtype,"plain"))
 	{
 		char *html_mail;
 
 		html_mail = text2html(buf, buf_len,TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"");//<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+		if (html_mail)
+		{
+			#if 0
+			GtkTextBuffer *buffer;
+			GtkTextIter iter;
+			buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view));
+			gtk_text_buffer_get_iter_at_line(buffer,&iter,0);
+			gtk_text_buffer_insert(buffer,&iter,m->html_header,strlen(m->html_header));
+			gtk_text_buffer_insert(buffer,&iter,html_mail,strlen(html_mail));
+			#else
+			html_document_clear(data->html_document);
 
-		gtk_text_buffer_insert(buffer,&iter,m->html_header,strlen(m->html_header));
-		gtk_text_buffer_insert(buffer,&iter,html_mail,strlen(html_mail));
+			if (html_document_open_stream(data->html_document, "text/html"))
+			{
+				if (m->html_header) html_document_write_stream(data->html_document, m->html_header, strlen(m->html_header)-14 /* FIXME: hacky, remove </BODY></HTML>*/);
+				html_document_write_stream(data->html_document, html_mail, strlen(html_mail));
+				html_document_close_stream(data->html_document);
+			}
+
+			//printf("%s%s\n",m->html_header,html_mail);
+			#endif
+		}
 
 	} else
 	{
+		#if 0
+		GtkTextBuffer *buffer;
+		GtkTextIter iter;
+		buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view));
+		gtk_text_buffer_get_iter_at_line(buffer,&iter,0);
+		gtk_text_buffer_insert(buffer,&iter,m->html_header,strlen(m->html_header));
+		gtk_text_buffer_insert(buffer,&iter,html_mail,strlen(html_mail));
 		gtk_text_buffer_insert(buffer,&iter,buf,buf_len);
+		#endif
 	}
 
 #if 0
@@ -600,11 +631,21 @@ int read_window_open(char *folder, struct mail *mail)
 		data->text_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->text_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
 
+		/* create the html document */
+		data->html_document = html_document_new();
+		data->html_view = html_view_new();
+		gtk_container_add (GTK_CONTAINER (data->text_scrolled_window), data->html_view);
+		gtk_box_pack_start(GTK_BOX(vbox), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+		/* FIXME: ugly ugly! sba: ??? */
+		html_view_set_document (HTML_VIEW (data->html_view), data->html_document);
+
+
+#if 0
 		data->text_view = gtk_text_view_new();
 		g_object_set(data->text_view, "editable", FALSE, NULL);
 		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
 		gtk_box_pack_start(GTK_BOX(vbox), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
-
+#endif
 
 		read_window_display_mail(data,mail);
 

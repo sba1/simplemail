@@ -26,12 +26,6 @@
 
 #include <gtk/gtk.h>
 
-#include <libgtkhtml/gtkhtmlcontext.h>
-#include <libgtkhtml/graphics/htmlpainter.h>
-#include <libgtkhtml/layout/htmlbox.h>
-#include <libgtkhtml/view/htmlview.h>
-#include <libgtkhtml/dom/dom-types.h>
-
 #include "account.h"
 #include "addressbook.h"
 #include "codecs.h"
@@ -57,7 +51,6 @@ struct Compose_Data
 	GtkWidget *wnd;
 	GtkWidget *toolbar;
 	GtkWidget *text_view;
-	GtkWidget *html_view;
 	GtkWidget *text_scrolled_window;
 
 	GtkWidget *from_combo;
@@ -790,8 +783,6 @@ int compose_window_open(struct compose_args *args)
 
 		data->text_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->text_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-
-		data->html_view = html_view_new ();
 
 		data->text_view = gtk_text_view_new();
 		g_object_set(data->text_view, "editable", TRUE, NULL);

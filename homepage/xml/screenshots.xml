@@ -1,0 +1,82 @@
+<?xml version='1.0' ?>
+
+<screenshots>
+
+  <shot>
+    <description>
+      The main window.
+    </description>
+    <version>
+      0.3
+    </version>
+    <size>
+      13,956
+    </size>
+    <filename>
+      sm_main_0_3.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
+      The alternative main window.
+    </description>
+    <version>
+      0.3
+    </version>
+    <size>
+      13,385
+    </size>
+    <filename>
+      sm_alter_main_0_3.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
+      The configuration window.
+    </description>
+    <version>
+      0.3
+    </version>
+    <size>
+      4,247
+    </size>
+    <filename>
+      sm_config_0_3.png
+    </filename>
+  </shot>
+
+
+  <shot>
+    <description>
+      The compose window.
+    </description>
+    <version>
+      0.3
+    </version>
+    <size>
+      9,587
+    </size>
+    <filename>
+      sm_compose_0_3.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
+      The main window.
+    </description>
+    <version>
+      0.2
+    </version>
+    <size>
+      9,961
+    </size>
+    <filename>
+      sm_main_0_2.png
+    </filename>
+  </shot>
+
+</screenshots>
+

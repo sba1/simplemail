@@ -1,18 +1,13 @@
-
 <?php
   $file='xml/news.xml';
   $maxnews=5;
   $ammount=0;
-  $context;
   $tableended=true;
 
   function startElement($parser, $name, $attrs)
   {
     global $ammount;
     global $maxnews;
-    global $context;
-
-    $context = $name;
 
     if($ammount > $maxnews)
     {

@@ -72,7 +72,7 @@ int statuswnd_open(int active)
 
 		status_progress = gtk_progress_bar_new ();
 		gtk_box_pack_start (GTK_BOX (vbox2), status_progress, FALSE, FALSE, 0);
-		gtk_progress_set_show_text (GTK_PROGRESS (status_progress), TRUE);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(status_progress),"");
 
 		hbox3 = gtk_hbox_new (FALSE, 0);
 		gtk_box_pack_start (GTK_BOX (vbox2), hbox3, FALSE, FALSE, 0);
@@ -89,30 +89,7 @@ int statuswnd_open(int active)
 	{
 		gtk_widget_show_all(status_wnd);
 	}
-#if 0
-	if (!status_wnd)
-	{
-		status_wnd = transwndObject,
-			MUIA_Window_ID,	MAKE_ID('S','T','A','T'),
-			MUIA_Window_Title, status_title,
 
-		End;
-
-		if (status_wnd)
-		{
-			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, status_wnd, 3, MUIM_CallHook, &hook_standard, statuswnd_abort);
-			DoMethod(App, OM_ADDMEMBER, status_wnd);
-
-			statuswnd_set_head(NULL);
-		}
-	}
-
-	if (status_wnd)
-	{
-		set(status_wnd, MUIA_Window_Open, TRUE);
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -141,15 +118,14 @@ void statuswnd_set_title(char *title)
 #endif
 }
 
+static int gauge_maximal;
+
 /**************************************************************************
  Initialize the gauge bar with the given maximum value
 **************************************************************************/
 void statuswnd_init_gauge(int maximal)
 {
-#if 0
-	if (!status_wnd) return;
-	set(status_wnd, MUIA_transwnd_Gauge1_Max, maximal);
-#endif
+	gauge_maximal = maximal;
 }
 
 /**************************************************************************
@@ -157,10 +133,8 @@ void statuswnd_init_gauge(int maximal)
 **************************************************************************/
 void statuswnd_set_gauge(int value)
 {
-#if 0
 	if (!status_wnd) return;
-	set(status_wnd, MUIA_transwnd_Gauge1_Val, value);
-#endif
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(status_progress),(double)value / gauge_maximal);
 }
 
 /**************************************************************************
@@ -169,7 +143,7 @@ void statuswnd_set_gauge(int value)
 void statuswnd_set_gauge_text(char *text)
 {
 	if (!status_wnd) return;
-	gtk_progress_bar_set_text(status_progress,text);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(status_progress),text);
 }
 
 /**************************************************************************

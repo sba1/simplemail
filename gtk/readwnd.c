@@ -370,7 +370,7 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 	{
 		char *html_mail;
 
-		html_mail = text2html(buf, buf_len,TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"");//<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+		html_mail = text2html(buf, buf_len,TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT/*|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP)*/,"");//<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 		if (html_mail)
 		{
 			#if 0

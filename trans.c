@@ -1,5 +1,5 @@
 /*
-** dl.c
+** trans.c
 */
 
 #include <string.h>

@@ -49,17 +49,22 @@ struct Icon_Data
 	char *type;
 	char *subtype;
 	struct DiskObject *obj;
+
+	struct MUI_EventHandlerNode ehnode;
+	ULONG select_secs,select_mics;
 };
 
 STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg);
 
 STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
-	struct DataTypes_Data *data;
+	struct Icon_Data *data;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
+
+	data = (struct Icon_Data*)INST_DATA(cl,obj);
 
 	Icon_Set(cl,obj,msg);
 	return (ULONG)obj;
@@ -102,10 +107,23 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	return 1;
 }
 
+STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
+{
+	if (msg->opg_AttrID == MUIA_Icon_DoubleClick)
+	{
+		*msg->opg_Storage = 1;
+		return 1;
+	}
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+
 STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	char *def;
+
+	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
 	if (!mystricmp(data->type, "image")) def = "picture";
 	else if (!mystricmp(data->type, "audio")) def = "audio";
@@ -138,12 +156,21 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 		data->obj = GetDefDiskObject(WBPROJECT);
 	}
 
-	return DoSuperMethodA(cl,obj,(Msg)msg);
+	data->ehnode.ehn_Priority = -1;
+	data->ehnode.ehn_Flags    = 0;
+	data->ehnode.ehn_Object   = obj;
+	data->ehnode.ehn_Class    = cl;
+	data->ehnode.ehn_Events   = IDCMP_MOUSEBUTTONS;
+
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
+
+	return 1;
 }
 
 STATIC ULONG Icon_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
 	if (data->obj) FreeDiskObject(data->obj);
 	DoSuperMethodA(cl,obj,msg);
 	return 0;
@@ -210,6 +237,27 @@ STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 	return 1;
 }
 
+STATIC ULONG Icon_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
+{
+	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
+	if (msg->imsg && msg->imsg->Class == IDCMP_MOUSEBUTTONS)
+	{
+		if (msg->imsg->Code == SELECTUP && _isinobject(obj,msg->imsg->MouseX,msg->imsg->MouseY))
+		{
+			ULONG secs, mics;
+			CurrentTime(&secs,&mics);
+
+			if (DoubleClick(data->select_secs,data->select_mics, secs, mics))
+			{
+				set(obj,MUIA_Icon_DoubleClick, TRUE);
+			}
+			data->select_secs = secs;
+			data->select_mics = mics;	
+		}
+	}
+	return 0;
+}
+
 STATIC ASM ULONG Icon_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -218,10 +266,12 @@ STATIC ASM ULONG Icon_Dispatcher(register __a0 struct IClass *cl, register __a2 
 		case	OM_NEW:				return Icon_New(cl,obj,(struct opSet*)msg);
 		case  OM_DISPOSE:		Icon_Dispose(cl,obj,msg); return 0;
 		case  OM_SET:				return Icon_Set(cl,obj,(struct opSet*)msg);
+//		case	OM_GET:				return Icon_Get(cl,obj,(struct opGet*)msg);
 		case  MUIM_AskMinMax: return Icon_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
 		case	MUIM_Setup:		return Icon_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return Icon_Cleanup(cl,obj,msg);
 		case	MUIM_Draw:			return Icon_Draw(cl,obj,(struct MUIP_Draw*)msg);
+		case	MUIM_HandleEvent: return Icon_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

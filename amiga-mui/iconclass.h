@@ -29,6 +29,7 @@ IMPORT struct MUI_CustomClass *CL_Icon;
 
 #define MUIA_Icon_MimeType (TAG_USER+0x45687a) /* (STRPTR) IS. */
 #define MUIA_Icon_MimeSubType (TAG_USER+0x45687b) /* (STRPTR) IS. */
+#define MUIA_Icon_DoubleClick (TAG_USER+0x45687c) /* (BOOL) ...N */
 
 int create_icon_class(void);
 void delete_icon_class(void);

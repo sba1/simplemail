@@ -369,6 +369,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 		address = (struct address*)list_first(address_list);
 		while (address)
 		{
+			struct address *next_address = (struct address*)node_next(&address->node);
 			char *text = encode_header_str(NULL, address->realname, &line_len);
 			if (text)
 			{
@@ -378,7 +379,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 				{
 					int email_len = strlen(address->email) + 2;
 
-					if (line_len + email_len  + 1 > 72) /* <> and space */
+					if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
 					{
 						line_len = 1;
 						fprintf(fh,"\n ");
@@ -388,7 +389,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 						line_len++;
 					}
 
-					fprintf(fh,"<%s>",address->email);
+					fprintf(fh,"<%s>%s",address->email,next_address?",":"");
 					line_len += email_len;
 				}
 				free(text);
@@ -396,17 +397,17 @@ char *encode_address_field(char *field_name, struct list *address_list)
 			{
 				int email_len = strlen(address->email);
 
-				if (line_len + email_len > 72) /* <> and space */
+				if (line_len + email_len + (next_address?1:0) > 72) /* <> and space */
 				{
 					line_len = 1;
 					fprintf(fh,"\n ");
 				}
 
-				fprintf(fh,"%s",address->email);
+				fprintf(fh,"%s%s",address->email,next_address?",":"");
 				line_len += email_len;
 			}
 
-			address = (struct address*)node_next(&address->node);
+			address = next_address;
 		}
 
 		if ((header_len = ftell(fh)))

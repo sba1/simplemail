@@ -1,6 +1,8 @@
-Version 0.20 (seventh beta) - released on 2003/xx/xx
-  - IMAP improvments: SimpleMail can now download the mails partly
-  - Serveral bug fixex (see bug tracker at sourceforge page)
+Version 0.20 (seventh beta) - released on 2003/09/07
+  - Can now download mails from an imap server partly
+  - Added an statistcal spam filter
+  - Lots of other minor improvements and bug fixes
+    (see trackers at sourceforge page)
 
 Version 0.19 (sixth beta) - released on 2003/02/05
   - PGP works again as it did (encrypt/decrypt)

@@ -319,8 +319,8 @@ void callback_forward_this_mail(char *folder_path, int num, struct mail **to_for
 				struct compose_args ca;
 				memset(&ca,0,sizeof(ca));
 				ca.to_change = forward;
-				ca.action = COMPOSE_ACTION_REPLY;
-//				ca.ref_mail = to_forward_array[0];
+				ca.action = COMPOSE_ACTION_FORWARD;
+				ca.ref_mail = to_forward_array[0];
 				compose_window_open(&ca);
 
 				mail_free(forward);

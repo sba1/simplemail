@@ -1595,6 +1595,16 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 							take = !!(m->flags & MAIL_FLAGS_ATTACH);
 							break;
 
+				case	RULE_STATUS_MATCH:
+							if (rule->u.status.status == RULE_STATUS_NEW && (m->flags & MAIL_FLAGS_NEW)) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_READ && mail_get_status_type(m)==MAIL_STATUS_READ) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_UNREAD && mail_get_status_type(m)==MAIL_STATUS_UNREAD) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_REPLIED && (mail_get_status_type(m)==MAIL_STATUS_REPLIED || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_FORWARDED && (mail_get_status_type(m)==MAIL_STATUS_FORWARD || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_PENDING && mail_get_status_type(m)==MAIL_STATUS_WAITSEND) take = 1;
+							else if (rule->u.status.status == RULE_STATUS_SENT && mail_get_status_type(m)==MAIL_STATUS_SENT) take = 1;
+							break;
+
 				default:
 							break;
 			}

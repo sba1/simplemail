@@ -62,11 +62,17 @@ struct rule
 	int type;
 };
 
+const static char *status_labels[] =
+{
+	"New","Read","Unread","Replied","Forwarded","Pending","Sent",NULL
+};
+
 static struct rule rules[] = {
 	{"Sender", RULE_FROM_MATCH},
 	{"Subject", RULE_SUBJECT_MATCH},
 	{"Header", RULE_HEADER_MATCH},
 	{"Has attachments", RULE_ATTACHMENT_MATCH},
+	{"Status is", RULE_STATUS_MATCH},
 	{NULL,NULL},
 };
 static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
@@ -92,6 +98,9 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 		data->object1 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
 		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
 		data->object3 = MultiStringObject, StringFrame, End;
+	} else if (data->type == RULE_STATUS_MATCH)
+	{
+		data->object1 = MakeCycle(NULL,status_labels);
 	}
 
 	if (data->object1) DoMethod(data->group,OM_ADDMEMBER,data->object1);
@@ -125,6 +134,9 @@ STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *
 					set(data->object3,MUIA_MultiString_ContentsArray,fr->u.header.contents);
 					break;
 		case	RULE_ATTACHMENT_MATCH:
+					break;
+		case	RULE_STATUS_MATCH:
+					set(data->object1,MUIA_Cycle_Active,fr->u.status.status);
 					break;
 	}
 	DoMethod(data->group, MUIM_Group_ExitChange);
@@ -198,6 +210,9 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 						case	RULE_HEADER_MATCH:
 									data->get_rule.u.header.name = (char*)xget(data->object1,MUIA_String_Contents);
 									data->get_rule.u.header.contents = (char**)xget(data->object3,MUIA_MultiString_ContentsArray);
+									break;
+						case	RULE_STATUS_MATCH:
+									data->get_rule.u.status.status = (int)xget(data->object1,MUIA_Cycle_Active);
 									break;
 					}
 					*msg->opg_Storage = (ULONG)&data->get_rule;

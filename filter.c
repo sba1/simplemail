@@ -90,6 +90,10 @@ struct filter *filter_duplicate(struct filter *filter)
 								new_rule->u.header.name = mystrdup(rule->u.header.name);
 								new_rule->u.header.contents = array_duplicate(rule->u.header.contents);
 								break;
+
+					case	RULE_STATUS_MATCH:
+								new_rule->u.status.status = rule->u.status.status;
+								break;
 				}
 
 				list_insert_tail(&f->rules_list, &new_rule->node);
@@ -147,6 +151,7 @@ struct filter_rule *filter_find_fule(struct filter *filter, int num)
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
 }
 
+#if 0
 /**************************************************************************
  Returns a string from a rule
 **************************************************************************/
@@ -180,7 +185,7 @@ char *filter_get_rule_string(struct filter_rule *rule)
 	}
 	return buf;
 }
-
+#endif
 
 /**************************************************************************
  Find a action of the filter
@@ -305,6 +310,7 @@ void filter_list_load(FILE *fh)
 									else if (!mystricmp(result,"SUBJECT")) fr->type = RULE_SUBJECT_MATCH;
 									else if (!mystricmp(result,"HEADER")) fr->type = RULE_HEADER_MATCH;
 									else if (!mystricmp(result,"ATTACHMENT")) fr->type = RULE_ATTACHMENT_MATCH;
+									else if (!mystricmp(result,"STATUS")) fr->type = RULE_STATUS_MATCH;
 								}
 
 								if ((result = get_config_item(rule_buf,"From.Address")))
@@ -315,6 +321,8 @@ void filter_list_load(FILE *fh)
 									fr->u.header.name = mystrdup(result);
 								if ((result = get_config_item(rule_buf,"Header.Contents")))
 									fr->u.header.contents = array_add_string(fr->u.header.contents,result);
+								if ((result = get_config_item(rule_buf,"Status.Status")))
+									fr->u.status.status = atoi(result);
 							}
 						}
 					}
@@ -394,6 +402,10 @@ void filter_list_save(FILE *fh)
 							break;
 				case	RULE_ATTACHMENT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Attachment\n",i,j);
+							break;
+				case	RULE_STATUS_MATCH:
+							fprintf(fh,"FILTER%d.RULE%d.Type=Status\n",i,j);
+							fprintf(fh,"FILTER%d.RULE%d.Status.Status=%d\n",i,j,rule->u.status.status);
 							break;
 			}
 			rule = (struct filter_rule*)node_next(&rule->node);

@@ -26,6 +26,15 @@
 #define RULE_SUBJECT_MATCH			1
 #define RULE_HEADER_MATCH			2
 #define RULE_ATTACHMENT_MATCH	3
+#define RULE_STATUS_MATCH			4
+
+#define RULE_STATUS_NEW			0
+#define RULE_STATUS_READ			1
+#define RULE_STATUS_UNREAD		2
+#define RULE_STATUS_REPLIED	3
+#define RULE_STATUS_FORWARDED 4
+#define RULE_STATUS_PENDING   5
+#define RULE_STATUS_SENT			6
 
 struct filter_rule
 {
@@ -43,6 +52,9 @@ struct filter_rule
 			char *name;
 			char **contents; /* NULL terminated array */
 		} header;
+		struct {
+			int status;
+		} status;
 	} u;
 };
 

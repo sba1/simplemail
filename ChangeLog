@@ -7,7 +7,8 @@ SimpleMail Open Source - ChangeLog
 	* amiga-mui/composewnd.c: Added function to set the correct signature
 	  when edit a previous written mail.
 	* amiga-mui/composeeditorclass.c: Set the same colour for alternate quote
-	  quote colour in editor as in the reader (Featurerequest #891842)
+	  colour in editor as in the reader (Featurerequest #891842)
+	* amiga-mui/configwnd.c: Relayout of the account group.
 
 2004-02-14  Bernd Gollesch <bgollesch@sime.com>
 

@@ -499,6 +499,7 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER_RESET,
 		MENU_FOLDER_DELALLINDEX,
 		MENU_FOLDER_SAVEALLINDEX,
+		MENU_FOLDER_IMPORTMBOX,
 		MENU_FOLDER_EXPORT,
 		MENU_FOLDER_SPAMCHECK,
 		MENU_FOLDER_MOVESPAM,
@@ -546,6 +547,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("New group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
+		{NM_ITEM, N_("Import mbox file..."), NULL, 0, 0, (APTR)MENU_FOLDER_IMPORTMBOX},
 		{NM_ITEM, N_("Export as mbox..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
 		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
@@ -770,7 +772,7 @@ int main_window_init(void)
 		/* Menu notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 3, MUIM_CallHook, &hook_standard, callback_import_mbox);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
@@ -784,6 +786,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, App, 3, MUIM_CallHook, &hook_standard, callback_rescan_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SAVEALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_save_all_indexfiles);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 1);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);

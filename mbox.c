@@ -188,6 +188,7 @@ struct import_data
 {
 	char *filename;
 	char *destdir;
+	struct folder *dest_folder;
 };
 
 /**************************************************************************
@@ -207,9 +208,16 @@ static int import_entry(struct import_data *data)
 	{
 		if ((destdir = mystrdup(data->destdir)))
 		{
+			struct folder *dest_folder = data->dest_folder;
 			if (thread_parent_task_can_contiue())
 			{
-				sprintf(head_buf, _("Importing %s"),filename);
+				/* now lock the destination folder if there is one */
+				if (dest_folder)
+				{
+					folder_lock(dest_folder);
+					sprintf(head_buf, _("Importing %s to %s"),filename,dest_folder->name);
+				} else sprintf(head_buf, _("Importing %s"),filename);
+
 				thread_call_parent_function_async(status_init,1,0);
 				thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Importing a mbox file"));
 				thread_call_parent_function_async_string(status_set_head,1,head_buf);
@@ -246,7 +254,13 @@ static int import_entry(struct import_data *data)
 									if (mailfh)
 									{
 										fclose(mailfh);
-										thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
+										if (dest_folder)
+										{
+											thread_call_parent_function_async_string(callback_new_mail_to_folder, 2, mailfilename, dest_folder);
+										} else
+										{
+											thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
+										}
 									}
 
 									if (!(mailfilename = mail_get_new_name(MAIL_STATUS_UNREAD))) break;
@@ -268,7 +282,13 @@ static int import_entry(struct import_data *data)
 							{
 								if (empty_line) fputs("\n",mailfh);
 								fclose(mailfh);
-								thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
+								if (dest_folder)
+								{
+									thread_call_parent_function_async_string(callback_new_mail_to_folder, 2, mailfilename, dest_folder);
+								} else
+								{
+									thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
+								}
 							}
 							
 							free(line_buf);
@@ -278,6 +298,7 @@ static int import_entry(struct import_data *data)
 					fclose(fh);
 				}
 				thread_call_parent_function_async(status_close,0);
+				if (dest_folder) folder_unlock(dest_folder);
 			}
 			free(destdir);
 		}
@@ -295,10 +316,9 @@ int mbox_import_to_folder(struct folder *folder, char *filename)
 {
 	struct import_data data;
 
-	if (folder) return 0; /* importing to a specified folder not supported yet */
-
 	data.filename = filename;
 	data.destdir = folder?folder->path:folder_incoming()->path;
+	data.dest_folder = folder;
 
 	return thread_start(THREAD_FUNCTION(import_entry),&data);
 }

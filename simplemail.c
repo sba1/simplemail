@@ -1075,14 +1075,21 @@ int callback_remote_filter_mail(struct mail *mail)
 }
 
 /* Import mails */
-void callback_import_mbox(void)
+void callback_import_mbox(int *in_folder_ptr)
 {
+	int in_folder = *in_folder_ptr;
+	struct folder *f=NULL;
 	char *filename;
+
+	if (in_folder)
+	{
+		if (!(f = main_get_folder())) return;
+	}
 
 	filename = sm_request_file(_("Choose the file which you like to import"),"",0);
 	if (filename && *filename)
 	{
-		if (!mbox_import_to_folder(NULL,filename))
+		if (!mbox_import_to_folder(f,filename))
 		{
 			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
 		}

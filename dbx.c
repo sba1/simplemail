@@ -105,6 +105,8 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	unsigned char *msg_entry;
 	unsigned int message;
 
+	int new_mail_status = MAIL_STATUS_UNREAD;
+
 	if (size < 12) size = 12;
 
 	if (!(buf = malloc(size)))
@@ -197,6 +199,14 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 		body += 4;
 	}
 
+	/* Index number 1 points to flags */
+	if (entries[1])
+	{
+		unsigned int flags = GetLong(entries[1],0);
+		if (flags & (1UL << 19)) new_mail_status = MAIL_STATUS_REPLIED;
+		else if (flags & (1UL << 7)) new_mail_status = MAIL_STATUS_READ;
+	}
+
 	/* Index number 4 points to the whole message */
 	if (!(msg_entry = entries[4]))
 	{
@@ -208,7 +218,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	message = GetLong(msg_entry,0);
 
 	/* Get mail name */
-	if (!(mailfilename = mail_get_new_name(MAIL_STATUS_UNREAD)))
+	if (!(mailfilename = mail_get_new_name(new_mail_status)))
 	{
 		SM_DEBUGF(5,("Couldn't get mail filename\n"));
 		goto out;

@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-02-15  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/composewnd.c: Added function to set the correct signature
+	  when edit a previous written mail.
+
 2004-02-14  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/appicon.c: Added "AppIcon Show" config handling.

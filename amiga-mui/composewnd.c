@@ -892,6 +892,42 @@ static void compose_set_signature(struct Compose_Data **pdata)
 }
 
 /******************************************************************
+ Set the correct signature when edit a previous written mail
+*******************************************************************/
+static void compose_set_old_signature(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	char *text;
+
+	if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
+	{
+		char *sign_text = strstr(text,"\n-- \n");
+		if (sign_text)
+		{
+			struct signature *sign;
+			char *sign_iso;
+
+			sign_text += 5;
+			sign = (struct signature*)list_first(&user.config.signature_list);
+			while (sign)
+			{
+				sign_iso = utf8tostrcreate(sign->signature,user.config.default_codeset);
+				if (mystrcmp(sign_text, sign_iso) == 0)
+				{
+					set(data->signatures_cycle, MUIA_SignatureCycle_SignatureName, sign->name);
+					sign = NULL;
+				} else
+				{
+					sign = (struct signature*)node_next(&sign->node);
+				}
+				free(sign_iso);
+			}
+		}
+		FreeVec(text);
+	}
+}
+
+/******************************************************************
  Refresh the Signature Cycle if the config has changed
 *******************************************************************/
 void compose_refresh_signature_cycle()
@@ -1400,12 +1436,18 @@ int compose_window_open(struct compose_args *args)
 				DoMethod(signatures_cycle, MUIM_Notify, MUIA_SignatureCycle_Active, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
 				DoMethod(signatures_cycle, MUIM_Notify, MUIA_SignatureCycle_SignatureName, MUIV_EveryTime, signatures_cycle, 4, MUIM_CallHook, &hook_standard, compose_set_signature, data);
 				DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_def_signature, data);
-				if (f && (mystrcmp(f->def_signature, MUIV_SignatureCycle_Default) != 0))
+				if (args->action == COMPOSE_ACTION_EDIT)
 				{
-					set(data->signatures_cycle, MUIA_SignatureCycle_SignatureName, f->def_signature);
+					compose_set_old_signature(&data);
 				} else
 				{
-					compose_set_def_signature(&data);
+					if (f && (mystrcmp(f->def_signature, MUIV_SignatureCycle_Default) != 0))
+					{
+						set(data->signatures_cycle, MUIA_SignatureCycle_SignatureName, f->def_signature);
+					} else
+					{
+						compose_set_def_signature(&data);
+					}
 				}
 			}
 

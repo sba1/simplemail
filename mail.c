@@ -1587,12 +1587,10 @@ int mail_process_headers(struct mail *mail)
 			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
 		} else if (!mystricmp("from",header->name))
 		{
-			buf = mail_find_header_contents(mail,"from");
 			if (buf) mail->from = extract_name_from_address(buf,NULL);
 			else mail->from = NULL;
 		} else if (!mystricmp("to",header->name))
 		{
-			buf = mail_find_header_contents(mail,"to");
 			if (buf)
 			{
 				int more;

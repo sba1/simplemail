@@ -91,6 +91,7 @@ static void put_xml_element_string(FILE *fh, char *element, char *contents)
 	while ((c = *src++))
 	{
 		if (((unsigned char)c)>=128) fprintf(fh,"&#%d;",(unsigned char)c);
+		else if (c == '&') fputs("&amp;",fh);
 		else fputc(c,fh);
 	}
 	fprintf(fh,"</%s>",element);

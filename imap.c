@@ -197,11 +197,91 @@ int imap_dl_headers(struct list *imap_list)
 
 									if ((folder_add_imap(folder, buf)))
 									{
-										puts("Created ");puts(buf);puts("\n");
 									}
 								}
 							}
-							
+						}
+
+						{
+							int num_of_mails = 0;
+							int i;
+
+							struct folder *inbox = folder_find_by_imap(serv->name,"INBOX");
+							if (inbox)
+							{
+								sprintf(tag,"%04x",val++);
+								sprintf(send,"%s EXAMINE %s\r\n",tag,inbox->imap_path);
+								puts(send);
+								tcp_write(conn,send,strlen(send));
+								tcp_flush(conn);
+
+								while ((line = tcp_readln(conn)))
+								{
+									puts(line);
+									line = imap_get_result(line,buf,sizeof(buf));
+									if (!mystricmp(buf,tag))
+									{
+										line = imap_get_result(line,buf,sizeof(buf));
+										if (!mystricmp(buf,"OK"))
+										{
+											puts("Examine successful\n");
+											ok = 1;
+										}
+										break;
+									} else
+									{
+										/* untagged */
+										char first[200];
+										char second[200];
+
+										line = imap_get_result(line,first,sizeof(first));
+										line = imap_get_result(line,second,sizeof(second));
+
+										if (!mystricmp("EXISTS",second))
+										{
+											num_of_mails = atoi(first);
+										}
+									}
+								}
+
+								if (num_of_mails)
+								{
+									sprintf(tag,"%04x",val++);
+									sprintf(send,"%s FETCH %d:%d UID\r\n",tag,1,num_of_mails);
+//									sprintf(send,"%s FsmETCH %d BODY[]\r\n",tag,1,num_of_mails);
+									
+									puts(send);
+									tcp_write(conn,send,strlen(send));
+									tcp_flush(conn);
+	
+									while ((line = tcp_readln(conn)))
+									{
+										puts(line);
+										line = imap_get_result(line,buf,sizeof(buf));
+										if (!mystricmp(buf,tag))
+										{
+											line = imap_get_result(line,buf,sizeof(buf));
+											if (!mystricmp(buf,"OK"))
+											{
+												puts("Fetch successful\n");
+												ok = 1;
+											}
+											break;
+										} else
+										{
+											/* untagged */
+										}
+									}
+								}
+	
+
+
+
+
+
+
+
+							}
 						}
 					} else
 					{

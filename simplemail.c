@@ -270,7 +270,7 @@ void callback_change_mail(void)
 /* mails should be fetched */
 void callback_fetch_mails(void)
 {
-	mails_dl();
+	mails_dl(0);
 }
 
 /* mails should be sent */
@@ -598,7 +598,7 @@ void callback_timer(void)
 			/* nothing should happen when mails_dl() is called twice,
 			   this could happen if a mail downloading takes very long */
 			callback_autocheck_refresh();
-			mails_dl();
+			mails_dl(1);
 		}
 	}
 }

@@ -36,7 +36,7 @@ struct pop3_server
 	int active; /* is this pop server actove */
 };
 
-int pop3_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size);
+int pop3_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int called_by_auto);
 int pop3_login_only(struct pop3_server *);
 
 struct pop3_server *pop_malloc(void);

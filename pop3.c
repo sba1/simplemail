@@ -490,6 +490,7 @@ struct pop_entry_msg
 	char *dest_dir;
 	int receive_preselection;
 	int receive_size;
+	int called_by_auto;
 };
 
 /**************************************************************************
@@ -502,6 +503,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 	char *dest_dir;
 	int receive_preselection = msg->receive_preselection;
 	int receive_size = msg->receive_size;
+	int called_by_auto = msg->called_by_auto;
 
 	list_init(&pop_list);
 	pop = (struct pop3_server*)list_first(msg->pop_list);
@@ -518,7 +520,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_sync(dl_window_open,0);
+		thread_call_parent_function_sync(dl_window_open,1,!called_by_auto);
 		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}
@@ -529,13 +531,14 @@ static int pop3_entry(struct pop_entry_msg *msg)
  Fetch the mails. Starts a subthread.
 **************************************************************************/
 int pop3_dl(struct list *pop_list, char *dest_dir,
-            int receive_preselection, int receive_size)
+            int receive_preselection, int receive_size, int called_by_auto)
 {
 	struct pop_entry_msg msg;
 	msg.pop_list = pop_list;
 	msg.dest_dir = dest_dir;
 	msg.receive_preselection = receive_preselection;
 	msg.receive_size = receive_size;
+	msg.called_by_auto = called_by_auto;
 	return thread_start(&pop3_entry,&msg);
 }
 

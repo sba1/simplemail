@@ -23,7 +23,7 @@
 #ifndef SM__DLWND_H
 #define SM__DLWND_H
 
-int dl_window_open(void);
+int dl_window_open(int active);
 void dl_window_close(void);
 void dl_set_title(char *);
 void dl_set_status(char *);

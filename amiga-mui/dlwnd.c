@@ -81,7 +81,7 @@ void dl_abort(void)
 	thread_abort();
 }
 
-int dl_window_open(void)
+int dl_window_open(int active)
 {
 	int rc;
 	
@@ -91,6 +91,7 @@ int dl_window_open(void)
 	{
 		win_dl = transwndObject,
 			MUIA_Window_ID,	MAKE_ID('T','R','D','L'),
+			MUIA_Window_Activate, active,
 		End;
 
 		if (win_dl)
@@ -102,7 +103,10 @@ int dl_window_open(void)
 	
 	if(win_dl != NULL)
 	{
-		set(win_dl, MUIA_Window_Open, TRUE);
+		SetAttrs(win_dl,
+				MUIA_Window_Open, TRUE,
+				MUIA_Window_Activate, active,
+				TAG_DONE);
 		rc = TRUE;
 	}
 	
@@ -146,7 +150,7 @@ void dl_clear(void)
 
 int dl_wait(void)
 {
-	return DoMethod(win_dl, MUIM_transwnd_Wait);
+	return (int)DoMethod(win_dl, MUIM_transwnd_Wait);
 }
 
 void dl_freeze_list(void)

@@ -37,7 +37,7 @@
 #include "tcp.h"
 #include "upwnd.h"
 
-int mails_dl(void)
+int mails_dl(int called_by_auto)
 {
 	struct list pop_list;
 	struct account *account;
@@ -55,7 +55,9 @@ int mails_dl(void)
 		account = (struct account*)node_next(&account->node);
 	}
 
-	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size);
+	pop3_dl(&pop_list,folder_incoming()->path,
+	        user.config.receive_preselection, user.config.receive_size,
+	        called_by_auto);
 	return 0;
 }
 
@@ -66,7 +68,7 @@ int mails_dl_single_account(struct account *ac)
 	list_init(&pop_list);
 	
 	list_insert_tail(&pop_list,&ac->pop->node);
-	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size);
+	pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size,0);
 	return 0;
 }
 

@@ -61,6 +61,7 @@ struct AddressEntryList_Data
 	char realname_buf[64];
 	char description_buf[128];
 	char email_buf[128];
+	char group_buf[128];
 
 	char *pattern;
 
@@ -70,6 +71,7 @@ struct AddressEntryList_Data
 	Object *show_nickname_item;
 	Object *show_description_item;
 	Object *show_email_item;
+	Object *show_groups_item;
 };
 
 /********************************************
@@ -100,6 +102,8 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)msg->entry;
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)h->h_Data;
 
+	int i, count;
+
 	if (entry)
 	{
 		utf8tostr(entry->alias, data->alias_buf, sizeof(data->alias_buf), user.config.default_codeset);
@@ -113,10 +117,10 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 		if (entry->email_array) *array = entry->email_array[0];
 		else *array = NULL;
 
+		/* pattern */
 		if (data->pattern)
 		{
 			int pl = strlen(data->pattern);
-			int i;
 
 			if (!utf8stricmp_len(entry->alias, data->pattern, pl)) preparse[1] = "\033b";
 			if (!utf8stricmp_len(entry->realname, data->pattern, pl)) preparse[0] = "\033b";
@@ -128,20 +132,40 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 					/* Check if this email is displayed, if not append it */
 					if (i != 0)
 					{
-						sm_snprintf(data->email_buf, sizeof(data->email_buf), "%s,\033b%s", entry->email_array[0], entry->email_array[1]);
+						sm_snprintf(data->email_buf, sizeof(data->email_buf), "%s,\033b%s", entry->email_array[0], entry->email_array[i]);
 						*array = data->email_buf;
 					} else preparse[3] = "\033b";
 					break;
 				}
 			}
-
 		}
+
+		array++;
+
+		/* group */
+		count = 0;
+		data->group_buf[0] = 0;
+		for (i=0;i<array_length(entry->group_array);i++)
+		{
+			if (i)
+			{
+				if (count + 2 >= sizeof(data->group_buf)) break;
+				data->group_buf[count] = ',',
+				data->group_buf[++count] = ' ';
+				data->group_buf[++count] = 0;
+			}
+			count += utf8tostr(entry->group_array[i], &data->group_buf[count], sizeof(data->group_buf) - count, user.config.default_codeset);
+		}
+		*array++ = data->group_buf;
+
+
 	} else
 	{
 		*array++ = Q_("?people:Name");
 		*array++ = _("Alias");
 		*array++ = _("Description");
-		*array = _("Address");
+		*array++ = _("Address");
+		*array = _("Groups");
 	}
 }
 
@@ -170,6 +194,7 @@ STATIC VOID AddressEntryList_UpdateFormat(struct IClass *cl,Object *obj)
 	if (xget(data->show_nickname_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=1,");
 	if (xget(data->show_description_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=2,");
 	if (xget(data->show_email_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=3,");
+	if (xget(data->show_groups_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=4,");
 
 	if (strlen(buf)) buf[strlen(buf)-1] = 0;
 
@@ -206,7 +231,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 						MUIA_NList_DestructHook2, &data->destruct_hook,
 						MUIA_NList_DisplayHook2, &data->display_hook,
 						MUIA_NList_Title, TRUE,
-						MUIA_NList_Format, ",,,",
+						MUIA_NList_Format, ",,,,",
 						TAG_DONE);
 
 	if (data->type == MUIV_AddressEntryList_Type_Main)
@@ -217,6 +242,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 				Child, data->show_nickname_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','N'),MUIA_Menuitem_Title, _("Show Nickname?"), MUIA_UserData, 2, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 				Child, data->show_description_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','D'),MUIA_Menuitem_Title, _("Show Description?"), MUIA_UserData, 3, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 				Child, data->show_email_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','A'),MUIA_Menuitem_Title, _("Show E-Mail Address?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+				Child, data->show_groups_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','G'),MUIA_Menuitem_Title, _("Show Groups?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,

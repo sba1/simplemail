@@ -42,6 +42,7 @@ ARCHSRCS=\
 	addressbookwnd.c \
 	addressentrylistclass.c \
 	addressgrouplistclass.c \
+	addressmatchlistclass.c \
 	addressstringclass.c \
 	appicon.c \
 	amigasupport.c \

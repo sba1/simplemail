@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** gui_main.c
 */
 
 #include <stdio.h>
@@ -30,7 +30,7 @@
 #include <proto/muimaster.h>
 #include <proto/locale.h>
 
-#include "SimpleMail_rev.h"
+#include "version.h"
 
 /* nongui parts */
 #include "mail.h"
@@ -83,7 +83,7 @@ int app_init(void)
 
 	App = ApplicationObject,
 		MUIA_Application_Title,			"SimpleMail",
-		MUIA_Application_Version,		VERSTAG+1,
+		MUIA_Application_Version,		VERSTAG,
 		MUIA_Application_Copyright,		"Copyright (c) 2000 by Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Author,		"Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Description,	"A mailer.",

@@ -18,3 +18,4 @@ gen_makefile
 *.tmp
 sm
 sas_objects
+date.h

@@ -77,7 +77,7 @@ void SecondsToString( char *buf, unsigned int seconds)
 
 		date_hook.h_Data = buf;
 #if defined(__AMIGAOS4__)
-		if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+		if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 		{
 			date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
 		} else
@@ -121,7 +121,7 @@ void SecondsToStringLong( char *buf, unsigned int seconds)
 
 		date_hook.h_Data = buf;
 #if defined(__AMIGAOS4__)
-		if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+		if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 		{
 			date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
 		} else
@@ -163,7 +163,7 @@ void SecondsToDateString( char *buf, unsigned int seconds)
 	{
 		struct Hook date_hook;
 #if defined(__AMIGAOS4__)
-		if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+		if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 		{
 			date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
 		} else
@@ -199,7 +199,7 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 	{
 		struct Hook date_hook;
 #if defined(__AMIGAOS4__)
-		if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+		if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 		{
 			date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
 		} else

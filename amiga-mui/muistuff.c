@@ -110,7 +110,7 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 {
 	struct MUI_CustomClass *cl;
 
-	if (SysBase->lib_Version >= 51 && SysBase->lib_Revision >= 3)
+	if ((SysBase->lib_Version > 51) || (SysBase->lib_Version == 51 && SysBase->lib_Revision >= 3))
 	{
 		cl = MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
 	} else

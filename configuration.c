@@ -28,6 +28,7 @@
 #include "account.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "filter.h"
 #include "phrase.h"
 #include "pop3.h"
@@ -178,6 +179,8 @@ int load_config(void)
 					while (read_line(fh,buf))
 					{
 						char *result;
+
+						SM_DEBUGF(15,("Parsing config string: \"%s\"\n",buf));
 
 						if ((result = get_config_item(buf,"UTF8")))
 							utf8 = atoi(result);
@@ -617,8 +620,8 @@ void save_config(void)
 				i++;
 			}
 
-			fprintf(fh,"Spam.MarkMails=%d\n",user.config.spam_mark_moved);
-			fprintf(fh,"Spam.AddrBookIsWhite=%d\n",user.config.spam_addrbook_is_white);
+			fprintf(fh,"Spam.MarkMails=%s\n",user.config.spam_mark_moved?"Y":"N");
+			fprintf(fh,"Spam.AddrBookIsWhite=%s\n",user.config.spam_addrbook_is_white?"Y":"N");
 			if (user.config.spam_white_emails)
 			{
 				for (i=0;user.config.spam_white_emails[i];i++)

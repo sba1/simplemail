@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2001-09-30 14:43+0200\n"
+"POT-Creation-Date: 2001-09-30 22:44+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -486,9 +486,8 @@ msgid "Close"
 msgstr "Abschluss"
 
 #: amiga-mui/configwnd.c:1291
-#, fuzzy
 msgid "Reply"
-msgstr "Antw."
+msgstr "Antwort"
 
 #: amiga-mui/configwnd.c:1298
 msgid "Intro"
@@ -550,6 +549,11 @@ msgstr "Alle Nachrichten"
 #, c-format
 msgid "> %ld KB"
 msgstr "> %ld KB"
+
+#: amiga-mui/dlwnd.c:53
+#, c-format
+msgid "Connecting to server %s..."
+msgstr "Verbinde mit %s..."
 
 #: amiga-mui/folderwnd.c:88
 msgid "received"
@@ -645,9 +649,8 @@ msgid "*Ok"
 msgstr "*Ok"
 
 #: amiga-mui/mainwnd.c:151
-#, fuzzy
 msgid "Copyright ©"
-msgstr "Copyright © 2000-2001"
+msgstr "Copyright ©"
 
 #: amiga-mui/mainwnd.c:151
 msgid "and"
@@ -861,7 +864,6 @@ msgid "Download"
 msgstr "Laden"
 
 #: amiga-mui/transwndclass.c:158
-#, fuzzy
 msgid "Delete"
 msgstr "Löschen"
 
@@ -877,7 +879,11 @@ msgstr "_Beginnen"
 msgid "Ignore not listed mails"
 msgstr "Nicht aufgeführte Mails ignorieren"
 
-#: amiga-mui/transwndclass.c:178
+#: amiga-mui/transwndclass.c:170 amiga-mui/transwndclass.c:175
+msgid "Waiting..."
+msgstr "Warte..."
+
+#: amiga-mui/transwndclass.c:180
 msgid "_Abort"
 msgstr "Abbruch"
 
@@ -905,7 +911,10 @@ msgid ""
 "Decrypting failed! Eighter because the passphrase was incorrect\n"
 "or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x "
 "supported for now)!"
-msgstr "Entschlüsselung fehlgeschlagen! Entweder war das eingebebene Passwort inkorrekt\noder diese Verschlüsselung wird von SimpleMail noch nicht unterstützt!"
+msgstr ""
+"Entschlüsselung fehlgeschlagen! Entweder war das eingebebene Passwort "
+"inkorrekt\n"
+"oder diese Verschlüsselung wird von SimpleMail noch nicht unterstützt!"
 
 #: mail.c:1541
 msgid "Unsupported encryption"
@@ -935,4 +944,100 @@ msgstr "Datum"
 msgid "Replies To"
 msgstr "Antworten an"
 
+#: pop3.c:62
+msgid "Error receiving data from host!"
+msgstr "Es konnten keine Daten vom Host emfangen werden!"
+
+#: pop3.c:85
+msgid "Sending username..."
+msgstr "Sende Login (Benutzername)..."
+
+#: pop3.c:91 pop3.c:100
+msgid "Error while identifing the user"
+msgstr "Der Benutzer konnte nicht angemeldet werden (falsches Login oder Passwort)"
+
+#: pop3.c:95
+msgid "Sending password..."
+msgstr "Sende Passwort..."
+
+#: pop3.c:104
+msgid "Login successful!"
+msgstr "Einloggen war erfolgreich!"
+
+#: pop3.c:301
+msgid "Checking for mail duplicates..."
+msgstr "Überprüfe Mail Duplikate..."
+
+#: pop3.c:355
+msgid "Getting statistics..."
+msgstr "Abfragen der Statistik..."
+
+#: pop3.c:359
+msgid "Could not get server statistics"
+msgstr "Es war nicht möglich, die Server Statistik zu bekommen"
+
+#: pop3.c:391
+msgid "Getting mail sizes..."
+msgstr "Abfragem der Mailgrößen..."
+
+#. -ERR has been returned, what means that TOP is not supported
+#: pop3.c:452
+msgid "Couldn't receive more statistics"
+msgstr "Konnte nicht mehr Mailinformationen bekommen (TOP Kommando schlug fehl)"
+
+#: pop3.c:485
+msgid "Waiting for user interaction"
+msgstr "Warte auf Benutzereingaben"
+
+#: pop3.c:505
+msgid "Logging out..."
+msgstr "Logge aus..."
+
+#: pop3.c:526
+msgid "Can't get new filename!"
+msgstr "Konnte keinen Dateinamen erstellen (Speicherplatzmangel)"
+
+#: pop3.c:535
+msgid "Can't open mail file!"
+msgstr "Kann die Mail Datei nicht öffnen"
+
+#: pop3.c:542
+msgid "Couldn't receive the mail"
+msgstr "Konnte die Mail nicht emfangen"
+
+#: pop3.c:556
+msgid "Error while receiving the mail"
+msgstr "Fehler beim Emfangen der Mail"
+
+#: pop3.c:566
+msgid "Error while writing the mail onto disk"
+msgstr "Fehler beim Schreiben der Mail auf das Speichermedium"
+
+#: pop3.c:616
+msgid "Waiting for login..."
+msgstr "Warte auf Login..."
+
+#: pop3.c:638
+msgid "Can't access income-folder!"
+msgstr "Kann auf das Maileingangsverzeichnis nicht zugreifen!"
+
+#: pop3.c:647
+msgid "Receiving mail..."
+msgstr "Emfange Mail..."
+
+#: pop3.c:651
+msgid "Couldn't download the mail!\n"
+msgstr "Die Mail konnte nicht runtergeladen werden!\n"
+
+#: pop3.c:664
+msgid "Marking mail as deleted..."
+msgstr "Markiere Mail als gelöscht..."
+
+#: pop3.c:667
+msgid "Can't mark mail as deleted!"
+msgstr "Konnte Mail nicht als gelöscht markieren!"
+
+#: pop3.c:691
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Konnte die bsdsocket.library nicht öffnen! Bitte starten Sie einen TCP/IP Stack"
 

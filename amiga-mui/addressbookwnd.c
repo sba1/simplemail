@@ -70,6 +70,8 @@ static Object *address_menu;
 static Object *group_list;
 static Object *address_list;
 
+static Object *show_member_check;
+
 /**********************************************************************/
 
 #define MAX_PERSON_OPEN 10
@@ -1230,13 +1232,7 @@ void addressbookwnd_store(void)
 		addressbook_add_group_duplicate(grp);
 	}
 
-	for (i=0;i<xget(address_list,MUIA_NList_Entries);i++)
-	{
-		struct addressbook_entry_new *entry;
-
-		DoMethod(address_list, MUIM_NList_GetEntry, i, &entry);
-		addressbook_add_entry_duplicate(entry);
-	}
+	DoMethod(address_list, MUIM_AddressEntryList_Store);
 }
 
 /******************************************************************
@@ -1263,6 +1259,20 @@ static void addressbookwnd_add_person(void)
 static void addressbookwnd_add_group(void)
 {
 	group_window_open(NULL);
+}
+
+/******************************************************************
+
+*******************************************************************/
+static void addressbookwnd_refresh_persons(void)
+{
+	struct addressbook_group *group;
+
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+
+	if (xget(show_member_check,MUIA_Selected) && group)
+		set(address_list,MUIA_AddressEntryList_GroupName,group->name);
+	else set(address_list,MUIA_AddressEntryList_GroupName, NULL);
 }
 
 /******************************************************************
@@ -1417,6 +1427,11 @@ static void addressbookwnd_init(void)
 				Child, BalanceObject, End,
 				Child, VGroup,
 					Child, HorizLineTextObject(_("Contacts")),
+					Child, HGroup,
+						Child, HVSpace,
+						Child, MakeLabel(_("Show members of selected group")),
+						Child, show_member_check = MakeCheck(_("Show members of selected group"),FALSE),
+						End,
 					Child, NListviewObject,
 						MUIA_CycleChain, 1,
 						MUIA_NListview_NList, address_list = AddressEntryListObject, End,
@@ -1450,7 +1465,9 @@ static void addressbookwnd_init(void)
 	DoMethod(edit_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
 	DoMethod(rem_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_rem_group);
 	DoMethod(group_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
+	DoMethod(group_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard,  addressbookwnd_refresh_persons);
 
+	DoMethod(show_member_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_refresh_persons);
 	DoMethod(add_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_person);
 	DoMethod(edit_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_person);
 	DoMethod(rem_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard,  addressbookwnd_remove_person);

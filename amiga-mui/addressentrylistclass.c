@@ -38,6 +38,7 @@
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
+#include "lists.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
@@ -48,6 +49,12 @@
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 
+struct entry_node
+{
+	struct node node;
+	struct addressbook_entry_new *entry;
+};
+
 struct AddressEntryList_Data
 {
 	struct Hook construct_hook;
@@ -56,6 +63,9 @@ struct AddressEntryList_Data
 	struct Hook display_hook;
 
 	ULONG type;
+
+	char *visible_group; /* the group which is visible or NULL */
+	struct list unvisible_list; /* list containing elements which are not visible */
 
 	char alias_buf[64];
 	char realname_buf[64];
@@ -192,6 +202,8 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 
 	data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
 
+	list_init(&data->unvisible_list);
+
   data->type = GetTagData(MUIA_AddressEntryList_Type,MUIV_AddressEntryList_Type_Addressbook,msg->ops_AttrList);
 
 	init_hook(&data->construct_hook,(HOOKFUNC)addressentry_construct);
@@ -243,23 +255,96 @@ STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 }
 
 /********************************************
+ OM_SET
+*********************************************/
+STATIC ULONG AddressEntryList_Set(struct IClass *cl, Object *obj, struct opSet *msg)
+{
+	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
+	struct TagItem *tstate, *tag;
+
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
+	while ((tag = NextTagItem (&tstate)))
+	{
+		switch (tag->ti_Tag)
+		{
+			case	MUIA_AddressEntryList_GroupName:
+						if (mystrcmp(data->visible_group,(char*)tag->ti_Data))
+						{
+							free(data->visible_group);
+							data->visible_group = mystrdup((char*)tag->ti_Data);
+							DoMethod(obj, MUIM_AddressEntryList_Refresh);
+						}
+						break;
+		}
+	}
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+/********************************************
  MUIM_AddressEntryList_Refresh
 *********************************************/
 STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
 {
+	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
 	struct addressbook_entry_new *entry;
+	struct entry_node *node;
+
+	/* Cleanup unvisible entries */
+	while ((node = (struct entry_node*)list_remove_tail(&data->unvisible_list)))
+	{
+		addressbook_free_entry_new(node->entry);
+		free(node);
+	}
 
 	set(obj, MUIA_NList_Quiet, TRUE);
 	DoMethod(obj, MUIM_NList_Clear);
 
+	/* Add new elements. Elements which are not displayed are added to the
+	 * unvisible list */
 	entry = addressbook_first_entry();
 	while (entry)
 	{
-		DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
+		if (data->visible_group && !array_contains_utf8(entry->group_array,data->visible_group))
+		{
+			struct entry_node *node = malloc(sizeof(*node));
+			if (node)
+			{
+				if ((node->entry = addressbook_duplicate_entry_new(entry)))
+					list_insert_tail(&data->unvisible_list,&node->node);
+			}
+		} else DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
 		entry = addressbook_next_entry(entry);
 	}
 	set(obj, MUIA_NList_Quiet, FALSE);
 
+	return 0;
+}
+
+/********************************************
+ MUIM_AddressEntryList_Store
+*********************************************/
+STATIC ULONG AddressEntryList_Store(struct IClass *cl, Object *obj, Msg msg)
+{
+	int i;
+	struct entry_node *node;
+	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
+
+	node = (struct entry_node*)list_first(&data->unvisible_list);
+	while (node)
+	{
+		addressbook_add_entry_duplicate(node->entry);
+		node = (struct entry_node*)node_next(&node->node);
+	}
+
+	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
+	{
+		struct addressbook_entry_new *entry;
+
+		DoMethod(obj, MUIM_NList_GetEntry, i, &entry);
+		addressbook_add_entry_duplicate(entry);
+	}
 	return 0;
 }
 
@@ -326,11 +411,13 @@ STATIC BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
 	{
 		case	OM_NEW: return AddressEntryList_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE: return AddressEntryList_Dispose(cl,obj,msg);
+		case	OM_SET: return AddressEntryList_Set(cl,obj,(struct opSet*)msg);
 		case	MUIM_ContextMenuChoice: return AddressEntryList_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		case	MUIM_NList_ContextMenuBuild: return AddressEntryList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 		case	MUIM_DragQuery: return AddressEntryList_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_DragDrop:  return AddressEntryList_DragDrop(cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_AddressEntryList_Refresh: return AddressEntryList_Refresh(cl,obj,(struct MUIP_AddressEntryList_Refresh *)msg);
+		case	MUIM_AddressEntryList_Store: return AddressEntryList_Store(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

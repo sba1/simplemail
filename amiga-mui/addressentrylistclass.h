@@ -28,8 +28,10 @@ IMPORT struct MUI_CustomClass *CL_AddressEntryList;
 #define AddressEntryListObject (Object*)MyNewObject(CL_AddressEntryList->mcc_Class, NULL
 
 #define MUIA_AddressEntryList_Type				(TAG_USER | 0x30160000) /* i.. ULONG */
+#define MUIA_AddressEntryList_GroupName		(TAG_USER | 0x30160001) /* .sg STRPTR */
 
 #define MUIM_AddressEntryList_Refresh			(TAG_USER | 0x30160101)
+#define MUIM_AddressEntryList_Store				(TAG_USER | 0x30160102)
 
 struct MUIP_AddressEntryList_Refresh {ULONG MethodID;};
 

@@ -663,7 +663,7 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, MUIX_B "%s"  MUIX_N "%s " MUIX_B "%s"  MUIX_N "%ld " MUIX_B "%s"  MUIX_N "%ld: " MUIX_B "%s"  MUIX_N "%ld",
+			sprintf(buf, MUIX_B "%s"  MUIX_N " %s  " MUIX_B "%s"  MUIX_N " %ld  " MUIX_B "%s"  MUIX_N " %ld  " MUIX_B "%s"  MUIX_N " %ld  ",
 			        _("Folder:"),f->name,_("Total:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}

@@ -316,8 +316,23 @@ char *sm_request_file(char *title, char *path, int save)
 *******************************************************************/
 int sm_request(char *title, char *text, char *gadgets, ...)
 {
-	if (!title) title = "SimpleMail";
-	return MUI_RequestA(App, NULL, 0, title, gadgets, text, (&(gadgets))+1);
+	int rc;
+	char *text_buf;
+	va_list ap;
+
+  extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
+
+	if (!(text_buf = malloc(2048)))
+		return 0;
+
+  va_start(ap, gadgets);
+  vsnprintf(text_buf, 2048, text, ap);
+  va_end(ap);
+
+	rc = MUI_RequestA(App, NULL, 0, title, gadgets, text_buf, NULL);
+
+	free(text_buf);
+	return rc;
 }
 
 /******************************************************************

@@ -1668,22 +1668,29 @@ int mail_process_headers(struct mail *mail)
 									if (!(subtype = parse_parameter(subtype, &dest)))
 										break;
 
-									if (!mystricmp(dest.attribute,"name"))
+									if (!mystricmp(dest.attribute,"charset"))
 									{
 										if (dest.attribute) free(dest.attribute);
-										if (!mail->filename) mail->filename = dest.value;
-										else
-										{
-											if (dest.value) free(dest.value);
-										}
+										mail->content_charset = dest.value;
 									} else
 									{
-										if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+										if (!mystricmp(dest.attribute,"name"))
 										{
-											new_param->attribute = dest.attribute;
-											new_param->value = dest.value;
-											list_insert_tail(&mail->content_parameter_list,&new_param->node);
-										} else break;
+											if (dest.attribute) free(dest.attribute);
+											if (!mail->filename) mail->filename = dest.value;
+											else
+											{
+												if (dest.value) free(dest.value);
+											}
+										} else
+										{
+											if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+											{
+												new_param->attribute = dest.attribute;
+												new_param->value = dest.value;
+												list_insert_tail(&mail->content_parameter_list,&new_param->node);
+											} else break;
+										}
 									}
 								} else break;
 							}
@@ -2150,6 +2157,7 @@ void mail_free(struct mail *mail)
 
 	if (mail->message_id) free(mail->message_id);
 	if (mail->message_reply_id) free(mail->message_reply_id);
+	if (mail->content_charset) free(mail->content_charset);
 	if (mail->content_type) free(mail->content_type);
 	if (mail->content_subtype) free(mail->content_subtype);
 	if (mail->content_id) free(mail->content_id);

@@ -27,6 +27,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct header
 {
 	struct node node; /* embedded node structure */
@@ -65,6 +69,7 @@ struct mail
 	int mime; /* 0 means is not a mime mail */
 	char *content_type;
 	char *content_subtype; /* the types of the whole mail */
+	char *content_charset; /* the contents charset (usually for text parts only) */
 	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;
 	char *content_id; /* id of the content */

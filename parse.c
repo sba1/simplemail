@@ -120,6 +120,19 @@ static int isespecial(char c)
 }
 
 /**************************************************************************
+ Needs the string quotation marks?
+**************************************************************************/
+int needs_quotation(char *str)
+{
+	char c;
+	while ((c = *str++))
+	{
+		if (isspecial(c)) return 1;
+	}
+	return 0;
+}
+
+/**************************************************************************
  Skip spaces (also comments)
 **************************************************************************/
 static char *skip_spaces(const char *buf)

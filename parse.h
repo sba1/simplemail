@@ -27,9 +27,12 @@
 #include "lists.h"
 #endif
 
+/* some string functions, should be in strings.c or simliar */
 char *strdupcat(const char *string1, const char *string2);
 char *strndup(const char *str1, int n);
 char *stradd(char *src, const char *str1);
+
+int needs_quotation(char *str);
 
 char *parse_addr_spec(char *addr_spec, char **pbuf);
 

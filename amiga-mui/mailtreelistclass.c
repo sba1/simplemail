@@ -1063,6 +1063,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 			if (mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
 			{
 				set(obj,MUIA_NList_Active,i);
+				DoMethod(obj, MUIM_NList_Jump, MUIV_NList_Jump_Active);
 				break;
 			}
 		}

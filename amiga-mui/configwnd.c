@@ -32,7 +32,6 @@
 #include <mui/texteditor_mcc.h>
 #include <mui/betterstring_mcc.h>
 #include <mui/nlistview_mcc.h>
-#include <mui/nlisttree_mcc.h>
 #include <mui/popplaceholder_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
@@ -55,7 +54,6 @@
 #include "audioselectgroupclass.h"
 #include "compiler.h"
 #include "composeeditorclass.h"
-#include "configtreelistclass.h"
 #include "configwnd.h"
 #include "muistuff.h"
 #include "multistringclass.h"
@@ -104,6 +102,7 @@ static Object *write_replyciteemptyl_check;
 
 static Object *readhtml_mail_editor;
 
+static Object *account_account_list;
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
@@ -128,10 +127,12 @@ static Object *account_send_secure_check;
 static Object *account_add_button;
 static Object *account_remove_button;
 
-static Object *signatures_use_checkbox;
+static Object *signature_use_checkbox;
+static Object *signature_signature_list;
 static Object *signature_texteditor;
 static Object *signature_name_string;
 
+static Object *phrase_phrase_list;
 static Object *phrase_addresses_string;
 static Object *phrase_write_welcome_string;
 static Object *phrase_write_welcomeaddr_popph;
@@ -143,56 +144,30 @@ static Object *phrase_forward_initial_popph;
 static Object *phrase_forward_terminating_popph;
 
 static Object *config_group;
-static Object *config_tree;
-static struct Hook config_construct_hook, config_destruct_hook, config_display_hook;
+static Object *config_list;
 
-static APTR accounts_treenode;
-static struct list account_list; /* nodes are struct account * */
 static struct account *account_last_selected;
-
-static APTR phrases_treenode;
-static struct list phrase_list; /* not utf8 encoded */
 static struct phrase *phrase_last_selected;
-
-static APTR signatures_treenode;
-static struct list signature_list;
 static struct signature *signature_last_selected;
 
-static APTR mails_readhtml_treenode;
+#define GROUPS_USER			0
+#define GROUPS_ACCOUNT		1
+#define GROUPS_RECEIVE 	2
+#define GROUPS_WRITE			3
+#define GROUPS_READMISC	4
+#define GROUPS_READ			5
+#define GROUPS_READHTML	6
+#define GROUPS_PHRASE		7
+#define GROUPS_SIGNATURE	8
+#define GROUPS_MAX				9
 
-static Object *user_group;
-static Object *tcpip_receive_group;
-static Object *accounts_group;
-static Object *account_group;
-static Object *write_group;
-static Object *mails_readmisc_group;
-static Object *mails_read_group;
-static Object *mails_readhtml_group;
-static Object *signatures_group;
-static Object *signature_group;
-static Object *phrases_group;
-static Object *phrase_group;
-
+static Object *groups[GROUPS_MAX];
 static Object *config_last_visisble_group;
 
 /******************************************************************
- Gets the Account which was last selected
+ Stores the current setting into the last selected account
 *******************************************************************/
-struct account *configwnd_get_account(APTR tn)
-{
-	int account_num = 0;
-
-	/* Find out the position of the new selected account in the list */
-	while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
-		account_num++;
-
-	return (struct account*)list_find(&account_list,account_num);
-}
-
-/******************************************************************
- Gets the Account which was last selected
-*******************************************************************/
-static void get_account(void)
+static void account_store(void)
 {
 	if (account_last_selected)
 	{
@@ -228,14 +203,52 @@ static void get_account(void)
 		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
 		account_last_selected->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
 		account_last_selected->smtp->auth_password = mystrdup((char*)xget(account_send_password_string, MUIA_String_Contents));
-		account_last_selected = NULL;
+	}
+}
+
+/******************************************************************
+ Loads the current selected account
+*******************************************************************/
+static void account_load(void)
+{
+	struct account *account = account_last_selected;
+	if (account)
+	{
+		setutf8string(account_name_string,account->name);
+		setstring(account_email_string,account->email);
+		setstring(account_reply_string,account->reply);
+		setstring(account_recv_server_string,account->pop->name);
+		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
+		setstring(account_recv_login_string,account->pop->login);
+		SetAttrs(account_recv_password_string,
+							MUIA_String_Contents,account->pop->passwd,
+							MUIA_Disabled,account->pop->ask,
+							TAG_DONE);
+		nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
+		setcheckmark(account_recv_active_check,account->pop->active);
+		setcheckmark(account_recv_delete_check,account->pop->del);
+		nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
+		nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
+		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
+		setcheckmark(account_recv_avoid_check,account->pop->nodupl);
+		setstring(account_send_server_string,account->smtp->name);
+		set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
+		setstring(account_send_login_string,account->smtp->auth_login);
+		setstring(account_send_password_string,account->smtp->auth_password);
+		/* To avoid the activation we set this with no notify and disable the gadgets ourself */
+		nnset(account_send_auth_check, MUIA_Selected, account->smtp->auth);
+		set(account_send_login_string, MUIA_Disabled, !account->smtp->auth);
+		set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
+		setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
+		setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
+		setcheckmark(account_send_secure_check, account->smtp->secure);
 	}
 }
 
 /******************************************************************
  Gets the Signature which was last selected
 *******************************************************************/
-static void get_signature(void)
+static void signature_store(void)
 {
 	if (signature_last_selected)
 	{
@@ -248,15 +261,28 @@ static void get_signature(void)
 		signature_last_selected->name = mystrdup(getutf8string(signature_name_string));
 		signature_last_selected->signature = utf8create(text_buf,user.config.default_codeset?user.config.default_codeset->name:NULL);
 		if (text_buf) FreeVec(text_buf);
-		signature_last_selected = NULL;
 	}
 }
 
+/******************************************************************
+ Loads the current selected signature
+*******************************************************************/
+static void signature_load(void)
+{
+	struct signature *signature = signature_last_selected;
+	if (signature)
+	{
+		char *sign = utf8tostrcreate(signature->signature?signature->signature:"",user.config.default_codeset);
+		setutf8string(signature_name_string,signature->name);
+		set(signature_texteditor,MUIA_TextEditor_Contents, sign);
+		free(sign);
+	}
+}
 
 /******************************************************************
  Gets the phrase which was last selected
 *******************************************************************/
-static void get_phrase(void)
+static void phrase_store(void)
 {
 	if (phrase_last_selected)
 	{
@@ -270,17 +296,55 @@ static void get_phrase(void)
 		free(phrase_last_selected->forward_initial);
 		free(phrase_last_selected->forward_finish);
 
-		phrase_last_selected->addresses = mystrdup((char*)xget(phrase_addresses_string,MUIA_String_Contents));
-		phrase_last_selected->write_welcome = mystrdup((char*)xget(phrase_write_welcome_string,MUIA_String_Contents));
-		phrase_last_selected->write_welcome_repicient = mystrdup((char*)xget(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents));
-		phrase_last_selected->write_closing = mystrdup((char*)xget(phrase_write_close_string,MUIA_String_Contents));
-		phrase_last_selected->reply_welcome = mystrdup((char*)xget(phrase_reply_welcome_popph,MUIA_Popph_Contents));
-		phrase_last_selected->reply_intro = mystrdup((char*)xget(phrase_reply_intro_popph,MUIA_Popph_Contents));
-		phrase_last_selected->reply_close = mystrdup((char*)xget(phrase_reply_close_popph,MUIA_Popph_Contents));
-		phrase_last_selected->forward_initial = mystrdup((char*)xget(phrase_forward_initial_popph,MUIA_Popph_Contents));
-		phrase_last_selected->forward_finish = mystrdup((char*)xget(phrase_forward_terminating_popph,MUIA_Popph_Contents));
+#define UTF8(x) utf8create(x,user.config.default_codeset?user.config.default_codeset->name:"")
+		phrase_last_selected->addresses = UTF8((char*)xget(phrase_addresses_string,MUIA_String_Contents));
+		phrase_last_selected->write_welcome = UTF8((char*)xget(phrase_write_welcome_string,MUIA_String_Contents));
+		phrase_last_selected->write_welcome_repicient = UTF8((char*)xget(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents));
+		phrase_last_selected->write_closing = UTF8((char*)xget(phrase_write_close_string,MUIA_String_Contents));
+		phrase_last_selected->reply_welcome = UTF8((char*)xget(phrase_reply_welcome_popph,MUIA_Popph_Contents));
+		phrase_last_selected->reply_intro = UTF8((char*)xget(phrase_reply_intro_popph,MUIA_Popph_Contents));
+		phrase_last_selected->reply_close = UTF8((char*)xget(phrase_reply_close_popph,MUIA_Popph_Contents));
+		phrase_last_selected->forward_initial = UTF8((char*)xget(phrase_forward_initial_popph,MUIA_Popph_Contents));
+		phrase_last_selected->forward_finish = UTF8((char*)xget(phrase_forward_terminating_popph,MUIA_Popph_Contents));
+#undef UTF8
+	}
+}
 
-		phrase_last_selected = NULL;
+/******************************************************************
+ Loads the current selected phrase
+*******************************************************************/
+static void phrase_load(void)
+{
+	struct phrase *phrase = phrase_last_selected;
+	if (phrase)
+	{
+		char buf[320];
+		utf8tostr(phrase->addresses, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_addresses_string,MUIA_String_Contents, buf);
+
+		utf8tostr(phrase->write_welcome, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_write_welcome_string,MUIA_String_Contents, buf);
+
+		utf8tostr(phrase->write_welcome_repicient, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents, buf);
+
+		utf8tostr(phrase->write_closing, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_write_close_string,MUIA_String_Contents, buf);
+
+		utf8tostr(phrase->reply_welcome, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_reply_welcome_popph,MUIA_Popph_Contents, buf);
+
+		utf8tostr(phrase->reply_intro, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_reply_intro_popph,MUIA_Popph_Contents, buf);
+
+		utf8tostr(phrase->reply_close, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_reply_close_popph,MUIA_Popph_Contents, buf);
+
+		utf8tostr(phrase->forward_initial, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_forward_initial_popph,MUIA_Popph_Contents, buf);
+
+		utf8tostr(phrase->forward_finish, buf, sizeof(buf), user.config.default_codeset);
+		set(phrase_forward_terminating_popph,MUIA_Popph_Contents, buf);
 	}
 }
 
@@ -289,9 +353,6 @@ static void get_phrase(void)
 *******************************************************************/
 static void config_use(void)
 {
-	struct account *account;
-	struct signature *signature;
-	struct phrase *phrase;
 	int i;
 
 	/* this is principle the same like in addressbookwnd.c but uses parse_mailbox */
@@ -319,7 +380,7 @@ static void config_use(void)
 				}
 				if (!buf)
 				{
-					set(config_tree, MUIA_NListtree_Active, mails_readhtml_treenode);
+					set(config_list, MUIA_NList_Active, 6);
 					set(config_wnd,MUIA_Window_ActiveObject,readhtml_mail_editor);
 					DisplayBeep(NULL);
 					FreeVec(addresses);
@@ -377,7 +438,7 @@ static void config_use(void)
 	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
 	user.config.receive_arexx = xget(receive_arexx_check,MUIA_Selected);
 	user.config.receive_arexx_file = mystrdup((char*)xget(receive_arexx_string, MUIA_String_Contents));
-	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
+	user.config.signatures_use = xget(signature_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
@@ -396,70 +457,38 @@ static void config_use(void)
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
 
-  get_account();
-  get_signature();
-  get_phrase();
-
 	/* Copy the accounts */
+	account_store();
 	clear_config_accounts();
-	account = (struct account *)list_first(&account_list);
-	while (account)
+	for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
 	{
-		insert_config_account(account);
-		account = (struct account *)node_next(&account->node);
+		struct account *ac;
+		DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
+		insert_config_account(ac);
 	}
+	set(account_account_list,MUIA_NList_Active,0);
 
 	/* Copy the phrase */
+	phrase_store();
 	clear_config_phrases();
-	phrase = (struct phrase*)list_first(&phrase_list);
-	while (phrase)
+	for (i=0;i<xget(phrase_phrase_list,MUIA_NList_Entries);i++)
 	{
-		char *str;
-
-		str = utf8create(phrase->write_welcome,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->write_welcome);
-		phrase->write_welcome = str;
-
-		str = utf8create(phrase->write_welcome_repicient,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->write_welcome_repicient);
-		phrase->write_welcome_repicient = str;
-
-		str = utf8create(phrase->write_closing,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->write_closing);
-		phrase->write_closing = str;
-
-		str = utf8create(phrase->reply_welcome,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->reply_welcome);
-		phrase->reply_welcome = str;
-
-		str = utf8create(phrase->reply_intro,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->reply_intro);
-		phrase->reply_intro = str;
-
-		str = utf8create(phrase->reply_close,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->reply_close);
-		phrase->reply_close = str;
-
-		str = utf8create(phrase->forward_initial,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->forward_initial);
-		phrase->forward_initial = str;
-
-		str = utf8create(phrase->forward_finish,user.config.default_codeset?user.config.default_codeset->name:"");
-		free(phrase->forward_finish);
-		phrase->forward_finish = str;
-
-		insert_config_phrase(phrase);
-		phrase = (struct phrase*)node_next(&phrase->node);
+		struct phrase *phr;
+		DoMethod(phrase_phrase_list,MUIM_NList_GetEntry, i, &phr);
+		insert_config_phrase(phr);
 	}
+	set(phrase_phrase_list,MUIA_NList_Active,0);
 
 	/* Copy the signature */
+	signature_store();
 	clear_config_signatures();
-	signature = (struct signature*)list_first(&signature_list);
-	while (signature)
+	for (i=0;i<xget(signature_signature_list,MUIA_NList_Entries);i++)
 	{
-		insert_config_signature(signature);
-		signature = (struct signature*)node_next(&signature->node);
+		struct signature *sign;
+		DoMethod(signature_signature_list,MUIM_NList_GetEntry, i, &sign);
+		insert_config_signature(sign);
 	}
+	set(signature_signature_list,MUIA_NList_Active,0);
 
 	close_config();
 	callback_config_changed();
@@ -477,120 +506,22 @@ static void config_save(void)
 /******************************************************************
  A new entry in the config listtree has been selected
 *******************************************************************/
-static void config_tree_active(void)
+static void config_selected(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
-	if (treenode)
+	LONG active = xget(config_list,MUIA_NList_Active);
+	if (active >= 0 && active < GROUPS_MAX)
 	{
-		Object *group = (Object*)treenode->tn_User;
-		if (group)
+		Object *group = groups[active];
+
+		if (group != config_last_visisble_group)
 		{
-			int init_change;
+			DoMethod(config_group,MUIM_Group_InitChange);
 
-			if (group != config_last_visisble_group)
-			{
-				DoMethod(config_group,MUIM_Group_InitChange);
-				if (config_last_visisble_group) set(config_last_visisble_group,MUIA_ShowMe,FALSE);
-				config_last_visisble_group = group;
-				set(group,MUIA_ShowMe,TRUE);
-				init_change = 1;
-			} else init_change = 0;
+			if (config_last_visisble_group) set(config_last_visisble_group,MUIA_ShowMe,FALSE);
+			config_last_visisble_group = group;
+			set(group,MUIA_ShowMe,TRUE);
 
-			get_account();
-			get_signature();
-			get_phrase();
-
-			if (list_treenode == accounts_treenode)
-			{
-				int account_num = 0;
-				struct account *account;
-				APTR tn = treenode;
-
-				/* Find out the position of the new selected account in the list */
-				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
-					account_num++;
-
-				if ((account = (struct account*)list_find(&account_list,account_num)))
-				{
-					setutf8string(account_name_string,account->name);
-					setstring(account_email_string,account->email);
-					setstring(account_reply_string,account->reply);
-					setstring(account_recv_server_string,account->pop->name);
-					set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
-					setstring(account_recv_login_string,account->pop->login);
-					SetAttrs(account_recv_password_string,
-							MUIA_String_Contents,account->pop->passwd,
-							MUIA_Disabled,account->pop->ask,
-							TAG_DONE);
-					nnset(account_recv_ask_checkbox, MUIA_Selected, account->pop->ask);
-					setcheckmark(account_recv_active_check,account->pop->active);
-					setcheckmark(account_recv_delete_check,account->pop->del);
-					nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
-					nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
-					set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
-					setcheckmark(account_recv_avoid_check,account->pop->nodupl);
-					setstring(account_send_server_string,account->smtp->name);
-					set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
-					setstring(account_send_login_string,account->smtp->auth_login);
-					setstring(account_send_password_string,account->smtp->auth_password);
-					/* To avoid the activation we set this with no notify and disable the gadgets ourself */
-					nnset(account_send_auth_check, MUIA_Selected, account->smtp->auth);
-					set(account_send_login_string, MUIA_Disabled, !account->smtp->auth);
-					set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
-					setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
-					setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
-					setcheckmark(account_send_secure_check, account->smtp->secure);
-				}
-				account_last_selected = account;
-			}
-
-			if (list_treenode == signatures_treenode)
-			{
-				int signature_num = 0;
-				struct signature *signature;
-				APTR tn = treenode;
-
-				/* Find out the position of the new selected account in the list */
-				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
-					signature_num++;
-
-				if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
-				{
-					char *sign = utf8tostrcreate(signature->signature?signature->signature:"",user.config.default_codeset);
-					setutf8string(signature_name_string,signature->name);
-					set(signature_texteditor,MUIA_TextEditor_Contents, sign);
-					free(sign);
-				}
-				signature_last_selected = signature;
-			}
-
-			if (list_treenode == phrases_treenode)
-			{
-				int phrase_num = 0;
-				struct phrase *phrase;
-				APTR tn = treenode;
-
-				/* Find out the position of the new selected account in the list */
-				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
-					phrase_num++;
-
-				if ((phrase = (struct phrase*)list_find(&phrase_list,phrase_num)))
-				{
-					set(phrase_addresses_string,MUIA_String_Contents, phrase->addresses);
-					set(phrase_write_welcome_string,MUIA_String_Contents, phrase->write_welcome);
-					set(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents, phrase->write_welcome_repicient);
-					set(phrase_write_close_string,MUIA_String_Contents, phrase->write_closing);
-					set(phrase_reply_welcome_popph,MUIA_Popph_Contents, phrase->reply_welcome);
-					set(phrase_reply_intro_popph,MUIA_Popph_Contents, phrase->reply_intro);
-					set(phrase_reply_close_popph,MUIA_Popph_Contents, phrase->reply_close);
-					set(phrase_forward_initial_popph,MUIA_Popph_Contents, phrase->forward_initial);
-					set(phrase_forward_terminating_popph,MUIA_Popph_Contents, phrase->forward_finish);
-				}
-				phrase_last_selected = phrase;
-			}
-
-			if (init_change) DoMethod(config_group,MUIM_Group_ExitChange);
+			DoMethod(config_group,MUIM_Group_ExitChange);
 		}
 	}
 }
@@ -600,7 +531,7 @@ static void config_tree_active(void)
 *******************************************************************/
 static int init_user_group(void)
 {
-	user_group = VGroup,
+	groups[GROUPS_USER] = VGroup,
 		MUIA_ShowMe, FALSE,
 		Child, HGroup,
 			Child, MakeLabel(_("Add adjustment for daylight saving time")),
@@ -630,7 +561,7 @@ static int init_user_group(void)
 				End,
 			End,
 		End;
-	if (!user_group) return 0;
+	if (!groups[GROUPS_USER]) return 0;
 	return 1;
 }
 
@@ -650,7 +581,7 @@ static int init_tcpip_receive_group(void)
 		preselection_translated = 1;
 	};
 
-	tcpip_receive_group = VGroup,
+	groups[GROUPS_RECEIVE] = VGroup,
 		MUIA_ShowMe, FALSE,
 		Child, HorizLineTextObject(_("Preselection")),
 		Child, HGroup,
@@ -707,7 +638,7 @@ static int init_tcpip_receive_group(void)
 			End,
 		End;
 
-	if (!tcpip_receive_group) return 0;
+	if (!groups[GROUPS_RECEIVE]) return 0;
 
 	set(receive_sound_string,MUIA_String_Contents,user.config.receive_sound_file);
 
@@ -725,8 +656,8 @@ static void account_add(void)
 	struct account *account = account_malloc();
 	if (account)
 	{
-		list_insert_tail(&account_list, &account->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, accounts_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(account_account_list, MUIM_NList_InsertSingle, account, MUIV_NList_Insert_Bottom);
+		set(account_account_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
 	}
 }
 
@@ -735,44 +666,24 @@ static void account_add(void)
 *******************************************************************/
 static void account_remove(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	struct account *ac;
+	DoMethod(account_account_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &ac);
+	if (ac)
 	{
-		struct account *account;
-		APTR tn = treenode;
-		int account_num = 0;
-
-		/* Find out the position of the new selected server in the list */
-		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
-			account_num++;
-
-		if ((account = (struct account*)list_find(&account_list,account_num)))
-		{
-			account_last_selected = NULL;
-			node_remove(&account->node);
-			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
-			account_free(account);
-		}
+		account_last_selected = NULL;
+		DoMethod(account_account_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+		account_free(ac);
 	}
 }
-
 
 /******************************************************************
  
 *******************************************************************/
-static int init_accounts_group(void)
+static void account_selected(void)
 {
-	Object *add;
-	accounts_group = HGroup,
-		MUIA_ShowMe, FALSE,
-		Child, add = MakeButton(_("Add new account")),
-		End;
-
-	if (!accounts_group) return 0;
-
-	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
-
-	return 1;
+	account_store();
+	DoMethod(account_account_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &account_last_selected);
+	account_load();
 }
 
 /******************************************************************
@@ -791,20 +702,50 @@ void account_recv_port_update(void)
 	set(account_recv_stls_check, MUIA_Disabled, !ssl);
 }
 
+STATIC ASM VOID account_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct account *ent)
+{
+	if (ent)
+	{
+		*array++ = ent->account_name;
+		*array++ = ent->email?ent->email:"-";
+		*array++ = ent->pop->name;
+		*array++ = ent->smtp->name;
+	} else
+	{
+		*array++ = _("Name");
+		*array++ = _("EMail");
+		*array++ = _("Receive");
+		*array++ = _("Send");
+	}
+}
+
 /******************************************************************
  Initalize the account group
 *******************************************************************/
 static int init_account_group(void)
 {
-	account_group = VGroup,
+	static struct Hook account_display_hook;
+	init_hook(&account_display_hook,(HOOKFUNC)account_display);
+
+	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
-		MUIA_Weight, 10000,
-		MUIA_UserData, 1,
-
-		Child, VGroupV,
-		MUIA_Weight, 10000,
-
-		VirtualFrame,
+		Child, HGroup,
+			Child, NListviewObject,
+				MUIA_NListview_NList, account_account_list = NListObject,
+					MUIA_NList_Title, TRUE,
+					MUIA_NList_Format, ",,,",
+					MUIA_NList_DisplayHook, &account_display_hook,
+					End,
+				End,
+			Child, VGroup,
+				MUIA_Weight,0,
+				Child, HVSpace,
+				Child, account_add_button = MakeButton(_("_Add Account")),
+				Child, HVSpace,
+				Child, account_remove_button = MakeButton(_("_Remove Account")),
+				Child, HVSpace,
+				End,
+			End,
 		Child, HorizLineTextObject(_("User")),
 		Child, ColGroup(2),
 			Child, MakeLabel(Q_("?people:Name")),
@@ -917,12 +858,11 @@ static int init_account_group(void)
 						MUIA_String_AdvanceOnCR, TRUE,
 						MUIA_String_Secret, TRUE,
 						End,
+					Child, MakeLabel(_("Use SMTP AUTH")),
+					Child, account_send_auth_check = MakeCheck(_("Use SMTP AUTH"), FALSE),
 					End,
 				End,
 			Child, HGroup,
-				Child, MakeLabel(_("Use SMTP AUTH")),
-				Child, account_send_auth_check = MakeCheck(_("Use SMTP AUTH"), FALSE),
-				Child, HVSpace,
 				Child, MakeLabel(_("Secure")),
 				Child, account_send_secure_check = MakeCheck(_("Secure"),FALSE),
 				Child, HVSpace,
@@ -935,15 +875,11 @@ static int init_account_group(void)
 
 				End,
 			End,
-		End,
-
-		Child, HGroup,
-			Child, account_add_button = MakeButton(_("Add new account")),
-			Child, account_remove_button = MakeButton(_("Remove account")),
-			End,
 		End;
 
-	if (!account_group) return 0;
+	if (!groups[GROUPS_ACCOUNT]) return 0;
+
+	DoMethod(account_account_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_selected);
 
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_login_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
@@ -997,7 +933,7 @@ static int init_write_group(void)
 		wordwrap_entries_translated = 1;
 	}
 
-	write_group = VGroup,
+	groups[GROUPS_WRITE] = VGroup,
 		MUIA_ShowMe, FALSE,
 		Child, HorizLineTextObject(_("Editor")),
 		Child, HGroup,
@@ -1023,7 +959,7 @@ static int init_write_group(void)
 			End,	
 		End;
 
-	if (!write_group) return 0;
+	if (!groups[GROUPS_WRITE]) return 0;
 
 	set(write_wordwrap_cycle,MUIA_Cycle_Active, user.config.write_wrap_type);
 	return 1;
@@ -1036,7 +972,7 @@ static int init_mails_readmisc_group(void)
 {
 	int i;
 
-	mails_readmisc_group =  VGroup,
+	groups[GROUPS_READMISC] =  VGroup,
 		MUIA_ShowMe, FALSE,
 
 		Child, HorizLineTextObject(_("Header Configuration")),
@@ -1086,7 +1022,7 @@ static int init_mails_readmisc_group(void)
 			End,
 		End;
 
-	if (!mails_readmisc_group) return 0;
+	if (!groups[GROUPS_READMISC]) return 0;
 
 	DoMethod(mails_readmisc_all_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, mails_readmisc_check_group, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 	if (user.config.header_flags & SHOW_HEADER_ALL) set(mails_readmisc_all_check, MUIA_Selected, TRUE);
@@ -1157,7 +1093,7 @@ static int init_mails_read_group(void)
 	read_palette_entries[6].mpe_Blue = 0;
 	read_palette_entries[6].mpe_Group = 0;
 
-	mails_read_group =  VGroup,
+	groups[GROUPS_READ] =  VGroup,
 		MUIA_ShowMe, FALSE,
 
 		Child, HorizLineTextObject(_("Fonts")),
@@ -1198,7 +1134,7 @@ static int init_mails_read_group(void)
 			End,
 		End;
 
-	if (!mails_read_group) return 0;
+	if (!groups[GROUPS_READ]) return 0;
 	return 1;
 }
 
@@ -1208,7 +1144,7 @@ static int init_mails_read_group(void)
 *******************************************************************/
 static int init_mails_readhtml_group(void)
 {
-	mails_readhtml_group =  VGroup,
+	groups[GROUPS_READHTML] =  VGroup,
 		MUIA_ShowMe, FALSE,
 
 		Child, HGroup,
@@ -1223,7 +1159,7 @@ static int init_mails_readhtml_group(void)
 			End,
 		End;
 
-	if (!mails_readhtml_group) return 0;
+	if (!groups[GROUPS_READHTML]) return 0;
 	set(readhtml_mail_editor,MUIA_ComposeEditor_Array,user.config.internet_emails);
 	return 1;
 }
@@ -1236,8 +1172,8 @@ static void signature_add(void)
 	struct signature *s = signature_malloc();
 	if (s)
 	{
-		list_insert_tail(&signature_list, &s->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Signature"), signature_group, signatures_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(signature_signature_list,MUIM_NList_InsertSingle,s,MUIV_NList_Insert_Bottom);
+		set(signature_signature_list,MUIA_NList_Active,MUIV_NList_Active_Bottom);
 	}
 }
 
@@ -1246,52 +1182,35 @@ static void signature_add(void)
 *******************************************************************/
 static void signature_remove(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	struct signature *sign;
+	DoMethod(signature_signature_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &sign);
+	if (sign)
 	{
-		struct signature *signature;
-		APTR tn = treenode;
-		int signature_num = 0;
-
-		/* Find out the position of the new selected server in the list */
-		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
-			signature_num++;
-
-		if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
-		{
-			node_remove(&signature->node);
-			signature_last_selected = NULL;
-			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
-			signature_free(signature);
-		}
+		signature_last_selected = NULL;
+		DoMethod(signature_signature_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+		signature_free(sign);
 	}
 }
 
 /******************************************************************
- Init the signatures group
+ 
 *******************************************************************/
-static int init_signatures_group(void)
+static void signature_selected(void)
 {
-	Object *add_button;
-	signatures_group =  VGroup,
-		MUIA_ShowMe, FALSE,
-		MUIA_Weight,300,
-  	Child, VGroup,
-  		Child, HGroup,
-  			Child, MakeLabel(_("Us_e signatures")),
-  			Child, signatures_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
-  			Child, HSpace(0),
-	  		End,
-	  	Child, HorizLineObject,
-			Child, add_button = MakeButton(_("_Add new signature")),
-			End,
-		End;
+	signature_store();
+	DoMethod(signature_signature_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &signature_last_selected);
+	signature_load();
+}
 
-	if (!signatures_group) return 0;
-
-	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
-
-	return 1;
+STATIC ASM VOID signature_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct signature *ent)
+{
+	if (ent)
+	{
+		*array = ent->name;
+	} else
+	{
+		*array = _("Name");
+	}
 }
 
 /******************************************************************
@@ -1299,6 +1218,8 @@ static int init_signatures_group(void)
 *******************************************************************/
 static int init_signature_group(void)
 {
+	static struct Hook signature_display_hook;
+
 /*	Object *edit_button;*/
 	Object *slider = ScrollbarObject, End;
 	Object *tagline_button;
@@ -1306,9 +1227,35 @@ static int init_signature_group(void)
 
 	Object *add_button, *rem_button;
 
-	signature_group =  VGroup,
+	init_hook(&signature_display_hook,(HOOKFUNC)signature_display);
+
+	groups[GROUPS_SIGNATURE] =  VGroup,
 		MUIA_ShowMe, FALSE,
-		MUIA_Weight,300,
+
+		Child, HGroup,
+  			Child, MakeLabel(_("Us_e signatures")),
+  			Child, signature_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
+  			Child, HVSpace,
+				End,
+
+		Child, HGroup,
+			Child, NListviewObject,
+				MUIA_NListview_NList, signature_signature_list = NListObject,
+					MUIA_NList_Title, TRUE,
+					MUIA_NList_DisplayHook, &signature_display_hook,
+					End,
+				End,
+			Child, VGroup,
+				MUIA_Weight,0,
+				Child, HVSpace,
+				Child, add_button = MakeButton(_("_Add")),
+				Child, HVSpace,
+				Child, rem_button = MakeButton(_("_Remove")),
+				Child, HVSpace,
+				End,
+			End,
+
+
 		Child, HGroup,
 			Child, MakeLabel(_("Name")),
 			Child, signature_name_string = UTF8StringObject, StringFrame, End,
@@ -1328,20 +1275,17 @@ static int init_signature_group(void)
   		Child, tagline_button = MakeButton(_("Insert random tagline")),
   		Child, env_button = MakeButton(_("Insert ENV:Signature")),
   		End,
-  	Child, HorizLineObject,
-  	Child, HGroup,
-			Child, add_button = MakeButton(_("Add new signature")),
-			Child, rem_button = MakeButton(_("Remove signature")),
-			End,
 		End;
 
-	if (!signature_group) return 0;
+	if (!groups[GROUPS_SIGNATURE]) return 0;
 /*	set(edit_button, MUIA_Weight,0);*/
 
 	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t\n",MUIV_TextEditor_InsertText_Cursor);
 	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
+
 	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
 	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_remove);
+	DoMethod(signature_signature_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, signature_selected);
 	return 1;
 }
 
@@ -1353,8 +1297,23 @@ static void phrase_add(void)
 	struct phrase *p = phrase_malloc();
 	if (p)
 	{
-		list_insert_tail(&phrase_list, &p->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrase"), phrase_group, phrases_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(phrase_phrase_list, MUIM_NList_InsertSingle, p, MUIV_NList_Insert_Bottom);
+		set(phrase_phrase_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
+	}
+}
+
+/******************************************************************
+ Duplicate the current phrase
+*******************************************************************/
+static void phrase_dup(void)
+{
+	struct phrase *phr;
+	DoMethod(phrase_phrase_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &phr);
+	phr = phrase_duplicate(phr);
+	if (phr)
+	{
+		DoMethod(phrase_phrase_list, MUIM_NList_InsertSingle, phr, MUIV_NList_Insert_Bottom);
+		set(phrase_phrase_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
 	}
 }
 
@@ -1363,54 +1322,47 @@ static void phrase_add(void)
 *******************************************************************/
 static void phrase_remove(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	struct phrase *phr;
+	DoMethod(phrase_phrase_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &phr);
+	if (phr)
 	{
-		struct phrase *phrase;
-		APTR tn = treenode;
-		int phrase_num = 0;
-
-		/* Find out the position of the new selected server in the list */
-		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
-			phrase_num++;
-
-		if ((phrase = (struct phrase*)list_find(&phrase_list,phrase_num)))
-		{
-			node_remove(&phrase->node);
-			phrase_last_selected = NULL;
-			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
-			phrase_free(phrase);
-		}
+		phrase_last_selected = NULL;
+		DoMethod(phrase_phrase_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+		phrase_free(phr);
 	}
 }
 
 /******************************************************************
- Init the phrase group
+ 
 *******************************************************************/
-static int init_phrases_group(void)
+static void phrase_selected(void)
 {
-	Object *add_button;
-	phrases_group =  VGroup,
-		MUIA_ShowMe, FALSE,
-		MUIA_Weight,300,
-  	Child, VGroup,
-			Child, add_button = MakeButton(_("_Add new phrase")),
-			End,
-		End;
-
-	if (!phrases_group) return 0;
-
-	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
-
-	return 1;
+	phrase_store();
+	DoMethod(phrase_phrase_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &phrase_last_selected);
+	phrase_load();
 }
+
+STATIC ASM VOID phrase_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct phrase *ent)
+{
+	if (ent)
+	{
+		*array++ = ent->addresses?((*ent->addresses)?ent->addresses:_("All")):_("All");
+	} else
+	{
+		*array++ = _("On addresses");
+	}
+}
+
 
 /******************************************************************
  Init the signature group
 *******************************************************************/
 static int init_phrase_group(void)
 {
-	Object *add_button, *rem_button;
+	Object *add_button, *dup_button, *rem_button;
+
+	static struct Hook phrase_display_hook;
+
 	static const char *write_popph_array[] =
 	{
 		"\\n|Line break",
@@ -1437,9 +1389,28 @@ static int init_phrase_group(void)
 		NULL
 	};
 
-	phrase_group =  VGroup,
+	init_hook(&phrase_display_hook,(HOOKFUNC)phrase_display);
+
+	groups[GROUPS_PHRASE] =  VGroup,
 		MUIA_ShowMe, FALSE,
-		MUIA_Weight,300,
+		Child, HGroup,
+			Child, NListviewObject,
+				MUIA_NListview_NList, phrase_phrase_list = NListObject,
+					MUIA_NList_Title, TRUE,
+					MUIA_NList_DisplayHook, &phrase_display_hook,
+					End,
+				End,
+			Child, VGroup,
+				MUIA_Weight,0,
+				Child, HVSpace,
+				Child, add_button = MakeButton(_("_Add")),
+				Child, HVSpace,
+				Child, dup_button = MakeButton(_("_Duplicate")),
+				Child, HVSpace,
+				Child, rem_button = MakeButton(_("_Remove")),
+				Child, HVSpace,
+				End,
+			End,
 		Child, HGroup,
 			Child, MakeLabel(_("Use on addresses which contain")),
 			Child, phrase_addresses_string = BetterStringObject,
@@ -1496,15 +1467,13 @@ static int init_phrase_group(void)
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 			End,
-  	Child, HGroup,
-			Child, add_button = MakeButton(_("Add new phrase")),
-			Child, rem_button = MakeButton(_("Remove phrase")),
-			End,
 		End;
 
-	if (!phrase_group) return 0;
-	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
-	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_remove);
+	if (!groups[GROUPS_PHRASE]) return 0;
+	DoMethod(add_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
+	DoMethod(dup_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_dup);
+	DoMethod(rem_button, MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_remove);
+	DoMethod(phrase_phrase_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, phrase_selected);
 	return 1;
 }
 
@@ -1518,7 +1487,6 @@ static void init_config(void)
 
 	if (!create_sizes_class()) return;
 
-	init_accounts_group();
 	init_account_group();
 	init_user_group();
 	init_tcpip_receive_group();
@@ -1526,9 +1494,7 @@ static void init_config(void)
 	init_mails_readmisc_group();
 	init_mails_read_group();
 	init_mails_readhtml_group();
-	init_signatures_group();
 	init_signature_group();
-	init_phrases_group();
 	init_phrase_group();
 
 	config_wnd = WindowObject,
@@ -1539,24 +1505,21 @@ static void init_config(void)
 	 	Child, HGroup,
 	 		Child, NListviewObject,
 	 			MUIA_HorizWeight, 33,
-	 			MUIA_NListview_NList, config_tree = ConfigTreelistObject,
+	 			MUIA_NListview_NList, config_list = NListObject,
 	 				End,
 	 			End,
 	 		Child, BalanceObject, End,
 	 		Child, VGroup,
 	    		Child, config_group = VGroup,
-  	  			Child, user_group,
-  	  			Child, accounts_group,
-  	  			Child, account_group,
-	 				Child, tcpip_receive_group,
-	 				Child, write_group,
-	 				Child, mails_readmisc_group,
-	 				Child, mails_read_group,
-	 				Child, mails_readhtml_group,
-	 				Child, signatures_group,
-	 				Child, signature_group,
-	 				Child, phrase_group,
-	 				Child, phrases_group,
+  	  			Child, groups[GROUPS_USER],
+  	  			Child, groups[GROUPS_ACCOUNT],
+	 				Child, groups[GROUPS_RECEIVE],
+	 				Child, groups[GROUPS_WRITE],
+	 				Child, groups[GROUPS_READMISC],
+	 				Child, groups[GROUPS_READ],
+	 				Child, groups[GROUPS_READHTML],
+	 				Child, groups[GROUPS_SIGNATURE],
+	 				Child, groups[GROUPS_PHRASE],
 	 				Child, RectangleObject,
 	   				MUIA_Weight, 1,
   						End,
@@ -1574,11 +1537,19 @@ static void init_config(void)
 
 	if (config_wnd)
 	{
-		APTR treenode;
+		static char *texts[GROUPS_MAX];
 
-		list_init(&account_list);
-		list_init(&signature_list);
-		list_init(&phrase_list);
+		texts[GROUPS_USER] = _("General");
+		texts[GROUPS_ACCOUNT] = _("Accounts");
+		texts[GROUPS_RECEIVE] = _("Receive mail");
+		texts[GROUPS_WRITE] = _("Write");
+		texts[GROUPS_READMISC] = _("Reading");
+		texts[GROUPS_READ] = _("Reading plain");
+		texts[GROUPS_READHTML] = _("Reading HTML");
+		texts[GROUPS_PHRASE] = _("Phrases");
+		texts[GROUPS_SIGNATURE] = _("Signatures");
+
+
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
 		phrase_last_selected = NULL;
@@ -1592,62 +1563,43 @@ static void init_config(void)
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
 		DoMethod(use_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_use);
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_save);
-		DoMethod(config_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard,config_tree_active);
+		DoMethod(config_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, config_selected);
 
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("User"), user_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_list, MUIM_NList_Insert, texts, GROUPS_MAX, MUIV_NList_Insert_Bottom);
+		set(config_list,MUIA_NList_Active,0);
 
-		if ((treenode = accounts_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Accounts"), accounts_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct account *account;
-			account = (struct account*)list_first(&user.config.account_list);
 
+			account = (struct account*)list_first(&user.config.account_list);
 			while (account)
 			{
 				struct account *new_account = account_duplicate(account);
 				if (new_account)
 				{
-					list_insert_tail(&account_list,&new_account->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(account_account_list,MUIM_NList_InsertSingle,new_account,MUIV_NList_Insert_Bottom);
 				}
 				account = (struct account*)node_next(&account->node);
 			}
+			set(account_account_list, MUIA_NList_Active, 0);
 		}
 
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Receive mail"), tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Write"), write_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading"), mails_readmisc_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading plain"), mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading HTML"), mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-
-		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrases"), phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct phrase *phrase;
 			phrase = (struct phrase*)list_first(&user.config.phrase_list);
 
 			while (phrase)
 			{
-				struct phrase *new_phrase = malloc(sizeof(struct phrase));
+				struct phrase *new_phrase = phrase_duplicate(phrase);
 				if (new_phrase)
 				{
-					/* duplicate by hand because we hold the string in the internal phrase list not utf8 coded */
-					new_phrase->addresses = mystrdup(phrase->addresses);
-					new_phrase->write_welcome = utf8tostrcreate(phrase->write_welcome,user.config.default_codeset);
-					new_phrase->write_welcome_repicient = utf8tostrcreate(phrase->write_welcome_repicient,user.config.default_codeset);
-					new_phrase->write_closing = utf8tostrcreate(phrase->write_closing,user.config.default_codeset);
-					new_phrase->reply_welcome = utf8tostrcreate(phrase->reply_welcome,user.config.default_codeset);
-					new_phrase->reply_intro = utf8tostrcreate(phrase->reply_intro,user.config.default_codeset);
-					new_phrase->reply_close = utf8tostrcreate(phrase->reply_close,user.config.default_codeset);
-					new_phrase->forward_initial = utf8tostrcreate(phrase->forward_initial,user.config.default_codeset);
-					new_phrase->forward_finish = utf8tostrcreate(phrase->forward_finish,user.config.default_codeset);
-
-					list_insert_tail(&phrase_list,&new_phrase->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrase"), phrase_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(phrase_phrase_list,MUIM_NList_InsertSingle,new_phrase,MUIV_NList_Insert_Bottom);
 				}
 				phrase = (struct phrase*)node_next(&phrase->node);
 			}
+			set(phrase_phrase_list, MUIA_NList_Active, 0);
 		}
 
-		if ((treenode = signatures_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Signatures"), signatures_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct signature *signature;
 			signature = (struct signature*)list_first(&user.config.signature_list);
@@ -1657,8 +1609,7 @@ static void init_config(void)
 				struct signature *new_signature = signature_duplicate(signature);
 				if (new_signature)
 				{
-					list_insert_tail(&signature_list,&new_signature->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, _("Signature"), signature_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(signature_signature_list,MUIM_NList_InsertSingle,new_signature,MUIV_NList_Insert_Bottom);
 				}
 				signature = (struct signature*)node_next(&signature->node);
 			}
@@ -1683,18 +1634,24 @@ void open_config(void)
 *******************************************************************/
 void close_config(void)
 {
-	struct account *account;
-
 	if (config_wnd)
 	{
+		int i;
+
 		set(config_wnd, MUIA_Window_Open, FALSE);
 		DoMethod(App, OM_REMMEMBER, config_wnd);
+
+		/* Free all accounts */
+		for (i=0;i<xget(account_account_list,MUIA_NList_Entries);i++)
+		{
+			struct account *ac;
+			DoMethod(account_account_list,MUIM_NList_GetEntry, i, &ac);
+			account_free(ac);
+		}
+
 		MUI_DisposeObject(config_wnd);
 		config_wnd = NULL;
 		config_last_visisble_group = NULL;
-
-		while ((account = (struct account*)list_remove_tail(&account_list)))
-			account_free(account);
 	}
 	delete_sizes_class();
 }

@@ -56,7 +56,6 @@
 #include "audioselectgroupclass.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
-#include "configtreelistclass.h"
 #include "datatypescache.h"
 #include "datatypesclass.h"
 #include "filterruleclass.h"
@@ -261,7 +260,6 @@ void all_del(void)
 			delete_addresstreelist_class();
 			delete_multistring_class();
 			delete_filterrule_class();
-			delete_configtreelist_class();
 			delete_icon_class();
 			delete_popupmenu_class();
 			delete_picturebutton_class();
@@ -315,7 +313,7 @@ int all_init(void)
 							create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
 							create_simplehtml_class() && create_picturebutton_class() &&
 							create_popupmenu_class() && create_icon_class() && 
-							create_configtreelist_class() && create_filterrule_class() &&
+							create_filterrule_class() &&
 							create_multistring_class() && create_addresstreelist_class() &&
 							create_pgplist_class() && create_audioselectgroup_class())
 					{

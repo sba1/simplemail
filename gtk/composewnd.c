@@ -704,6 +704,11 @@ int compose_window_open(struct compose_args *args)
 	struct Compose_Data *data;
 	GtkWidget *vbox, *page1, *page2, *but_box, *send_now_button, *send_later_button, *hold_button, *cancel_button;
 	GtkWidget *fields_table, *t, *label1, *label2;
+	GtkWidget *scrolledwindow1;
+	GtkWidget *attach_treeview;
+	GtkWidget *hbuttonbox1;
+	GtkWidget *attach_add_button;
+	GtkWidget *attach_remove_button;
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
@@ -806,6 +811,25 @@ int compose_window_open(struct compose_args *args)
 
 		label2 = gtk_label_new(_("Attachments"));
 		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),1), label2);
+
+		scrolledwindow1 = gtk_scrolled_window_new (NULL, NULL);
+		gtk_box_pack_start (GTK_BOX (page2), scrolledwindow1, TRUE, TRUE, 0);
+
+		attach_treeview = gtk_tree_view_new ();
+		gtk_container_add (GTK_CONTAINER (scrolledwindow1), attach_treeview);
+
+		hbuttonbox1 = gtk_hbutton_box_new ();
+		gtk_box_pack_start (GTK_BOX (page2), hbuttonbox1, FALSE, TRUE, 0);
+		gtk_button_box_set_layout (GTK_BUTTON_BOX (hbuttonbox1), GTK_BUTTONBOX_SPREAD);
+		gtk_button_box_set_spacing (GTK_BUTTON_BOX (hbuttonbox1), 0);
+
+		attach_add_button = gtk_button_new_from_stock ("gtk-add");
+		gtk_container_add (GTK_CONTAINER (hbuttonbox1), attach_add_button);
+		GTK_WIDGET_SET_FLAGS (attach_add_button, GTK_CAN_DEFAULT);
+
+		attach_remove_button = gtk_button_new_from_stock ("gtk-remove");
+		gtk_container_add (GTK_CONTAINER (hbuttonbox1), attach_remove_button);
+		GTK_WIDGET_SET_FLAGS (attach_remove_button, GTK_CAN_DEFAULT);
 
 		/* Below the pages */
 		but_box = gtk_hbox_new(0,4);

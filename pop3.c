@@ -39,6 +39,7 @@
 #endif
 
 #include "configuration.h"
+#include "debug.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -230,6 +231,8 @@ static int uidl_test(struct uidl *uidl, char *to_check)
 **************************************************************************/
 void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
 {
+	SM_ENTER;
+
 	if (uidl->entries)
 	{
 		int i,amm=mail_array[0].flags;
@@ -253,6 +256,8 @@ void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
 				memset(uidl_entry,0,sizeof(uidl->entries[i].uidl));
 		}
 	}
+
+	SM_LEAVE;
 }
 
 /**************************************************************************
@@ -321,7 +326,9 @@ static int uidllen(char *buf)
 static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 											struct dl_mail *mail_array, struct uidl *uidl)
 {
-	if (!server->nodupl) return 0;
+	SM_ENTER;
+
+	if (!server->nodupl) SM_RETURN(0,"%ld");
 
 	thread_call_parent_function_async(status_set_status,1,_("Checking for mail duplicates..."));
 
@@ -360,18 +367,20 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 					}
 				}
 			}
+
 			if (!answer)
 			{
 				if (tcp_error_code() == TCP_INTERRUPTED)
-					return 0;
+					SM_RETURN(0,"%ld");
 			}
 
-			sprintf(status_buf,_("Found %d mail duplicates"),num_duplicates);
+			sm_snprintf(status_buf,sizeof(status_buf),_("Found %d mail duplicates"),num_duplicates);
 			thread_call_parent_function_async_string(status_set_status,1,status_buf);
-			return 1;
+
+			SM_RETURN(1,"%ld");
 		}
 	}
-	return 0;
+	SM_RETURN(0,"%ld");
 }
 
 /**************************************************************************
@@ -449,6 +458,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
   }
 
+	SM_DEBUGF(18,("Getting mail sizes..."));
 	thread_call_parent_function_async(status_set_status,1,_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
@@ -591,7 +601,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 		thread_call_parent_function_async(status_set_status,1,_("Waiting for user interaction"));
 
-		if (!(start = thread_call_parent_function_sync_timer_callback( (void(*)(void*))pop3_noop, conn, 5000, status_wait,0)))
+		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_noop, conn, 5000, status_wait,0)))
 			return NULL;
 
 		for (i=1;i<=amm;i++)

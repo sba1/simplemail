@@ -185,8 +185,6 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	char **preparse = msg->Preparse;
 	struct mail *mail;
 
-	SM_ENTER;
-
 	if (msg->TreeNode)
 	{
 		mail = (struct mail*)msg->TreeNode->tn_User;
@@ -197,8 +195,6 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
 	struct mail *mail;
-
-	SM_ENTER;
 
 	mail = (struct mail*)msg->entry;
 #endif
@@ -322,7 +318,6 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 			*array = data->received_text;
 		}	
 	}
-	SM_LEAVE;
 }
 
 STATIC VOID MailTreelist_SetNotified(void **msg)

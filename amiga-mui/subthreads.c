@@ -654,7 +654,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 }
 
 /* Call the function synchron, calls timer_callback on the calling process context */
-int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
 	va_list argptr;

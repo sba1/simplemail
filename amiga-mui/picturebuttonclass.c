@@ -232,8 +232,6 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 
 		data->label_height = _font(obj)->tf_YSize;
 
-		SM_DEBUGF(18,("0x%08lx has label \"%s\" which is %ld pixels high\n",obj,str,data->label_height));
-
 		minheight += data->label_height + (!!data->dt);
 		InitRastPort(&rp);
 		SetFont(&rp,_font(obj));
@@ -257,8 +255,7 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	mi->DefWidth += minwidth;
 	mi->MaxWidth = MUI_MAXMAX;
 
-	SM_LEAVE;
-	return 0;
+	SM_RETURN(0,"%ld");
 }
 
 STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)

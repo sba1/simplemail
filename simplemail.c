@@ -1292,6 +1292,9 @@ void callback_remove_folder(void)
 			main_refresh_folders();
 			search_refresh_folders();
 			filter_update_folder_list();
+
+			f = main_get_folder();
+			main_set_folder_mails(f);
 		}
 	}
 }

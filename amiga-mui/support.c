@@ -20,6 +20,7 @@
 ** support.c
 */
 
+#include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -628,6 +629,23 @@ int sm_file_is_in_drawer(char *filename, char *path)
 		UnLock(dir);
 	}
 	return rc;
+}
+
+/******************************************************************
+ Like sprintf() but buffer overrun safe
+*******************************************************************/
+int sm_snprintf(char *buf, int n, const char *fmt, ...)
+{
+  int r;
+
+  extern int vsnprintf(char *buffer, int buffersize, const char *fmt0, va_list ap);
+
+  va_list ap;
+  
+  va_start(ap, fmt);
+  r = vsnprintf(buf, n, fmt, ap);
+  va_end(ap);
+  return r;
 }
 
 /******************************************************************

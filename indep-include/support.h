@@ -50,6 +50,8 @@ char *sm_get_date_long_str_utf8(unsigned int seconds);
 char *sm_get_date_str(unsigned int seconds);
 char *sm_get_time_str(unsigned int seconds);
 
+int sm_snprintf(char *buf, int n, const char *fmt, ...);
+
 void tell_str(char *str);
 void tell_from_subtask(char *str);
 

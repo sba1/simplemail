@@ -2,7 +2,7 @@
 # Makefile for SimpleMail
 #
 
-# If Kickstart is defined, we don't run on AmigaOS
+# If Kickstart isn't defined, we don't run on AmigaOS
 ifndef Kickstart
 
 CROSS_COMPILE = ppc-amigaos-
@@ -29,22 +29,11 @@ STRIP  = $(CROSS_COMPILE)strip
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = #-ggdb # -g -DDEBUG
-
-
-ifndef Kickstart
-INC = -I"$(AMISSL_INCLUDE)" -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-else
-INC = -I$(AMISSL_INCLUDE) -I$(SDK_INCLUDE) -I$(NET_INCLUDE) -I$(EXPAT_INCLUDE) -I. -I./indep-include -I./amiga-mui
-endif
-
+INC = -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
 CFLAGS = $(DATE) -DHAVE_OPENURL -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
-ifndef Kickstart
-LINK = -nostartfiles -L"$(EXPAT_LIB)"
-else
-LINK = -nostartfiles -L$(EXPAT_LIB)
-endif
+LINK = -nostartfiles -L "$(EXPAT_LIB)"
 
 # Name of the "thing" to build
 TARGET = SimpleMail
@@ -155,8 +144,24 @@ SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
 OBJS = $(SRCS:%.c=ppc-amigaos-objs/%.o)
 AOBJS = $(ASRCS:%.S=ppc-amigaos-objs/%.o)
 
-all: dirs $(TARGET)
+all: envs dirs $(TARGET)
 
+.PHONY: envs
+envs:
+ifndef AMISSL_INCLUDE
+	$(error Please create a AMISSL_INCLUDE environment variable)
+endif
+ifndef NET_INCLUDE
+	$(error Please create a NET_INCLUDE environment variable)
+endif
+ifndef EXPAT_INCLUDE
+	$(error Please create a EXPAT_INCLUDE environment variable)
+endif
+ifndef EXPAT_LIB
+	$(error Please create a EXPAT_LIB environment variable)
+endif
+
+.PHONY: dirs
 dirs:
 	-$(MKDIR) ppc-amigaos-objs ppc-amigaos-objs/amiga-mui
 

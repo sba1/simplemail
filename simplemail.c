@@ -21,6 +21,7 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "addressbookwnd.h"
 #include "composewnd.h"
@@ -66,7 +67,31 @@ void callback_delete_mails(void)
 /* a new mail should be composed */
 void callback_new_mail(void)
 {
-	compose_window_open(NULL);
+	compose_window_open(NULL,NULL);
+}
+
+/* the currently selected mail should be changed */
+void callback_change_mail(void)
+{
+	char *filename;
+
+	if ((filename = main_get_mail_filename()))
+	{
+		struct mail *mail;
+		char buf[256];
+
+		getcwd(buf, sizeof(buf));
+		chdir(main_get_folder_drawer());
+
+		if ((mail = mail_create_from_file(filename)))
+		{
+			mail_read_contents("",mail);
+			compose_window_open(NULL,mail);
+			mail_free(mail);
+		}
+
+		chdir(buf);
+	}
 }
 
 /* mails should be fetched */
@@ -143,7 +168,7 @@ void callback_maildrop(struct folder *dest_folder)
 void callback_write_mail_to(struct addressbook_entry *address)
 {
 	char *to = addressbook_get_address_str(address);
-	compose_window_open(to);
+	compose_window_open(to,NULL);
 	if (to) free(to);
 }
 

@@ -19,6 +19,6 @@
 #ifndef COMPOSEWND_H
 #define COMPOSEWND_H
 
-void compose_window_open(char *to_str);
+void compose_window_open(char *to_str, struct mail *tochange);
 
 #endif

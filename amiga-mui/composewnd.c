@@ -39,6 +39,7 @@
 
 #include "addressbook.h"
 #include "mail.h"
+#include "parse.h"
 #include "simplemail.h"
 #include "support.h"
 
@@ -60,6 +61,8 @@ struct Compose_Data /* should be a customclass */
 	Object *wnd;
 	Object *to_string;
 	Object *subject_string;
+	Object *x_text;
+	Object *y_text;
 	Object *text_texteditor;
 	Object *attach_tree;
 	Object *contents_page;
@@ -256,7 +259,6 @@ static void compose_attach_active(struct Compose_Data **pdata)
 				data->last_attachment->contents = mystrdup(text_buf);
 				data->last_attachment->lastxcursor = xget(data->text_texteditor, MUIA_TextEditor_CursorX);
 				data->last_attachment->lastycursor = xget(data->text_texteditor, MUIA_TextEditor_CursorY);
-				set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
 				FreeVec(text_buf);
 			}
 		}
@@ -275,7 +277,13 @@ static void compose_attach_active(struct Compose_Data **pdata)
 					MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
 					MUIA_TextEditor_CursorX,attach->lastxcursor,
 					MUIA_TextEditor_CursorY,attach->lastycursor,
+					MUIA_NoNotify, TRUE,
 					TAG_DONE);
+
+			DoMethod(data->x_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorX));
+			DoMethod(data->y_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorY));
+
+			set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
 		}
 
 		SetAttrs(data->contents_page,
@@ -363,9 +371,58 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 }
 
 /******************************************************************
+ inserts a mail into the listtree (uses recursion)
+*******************************************************************/
+static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
+{
+	/* Note, the following two datas are static although the function is recursive
+	 * It minimalizes the possible stack overflow
+   */
+	static char buf[128];
+	static struct attachment attach;
+	struct MUI_NListtree_TreeNode *treenode;
+	int i,num_multiparts = mail->num_multiparts;
+
+	memset(&attach,0,sizeof(attach));
+	sprintf(buf,"%s/%s",mail->content_type,mail->content_subtype);
+	attach.content_type = buf;
+
+	if (!num_multiparts)
+	{
+		/* decode the mail */
+		mail_decode(mail);
+
+		/* if the content type is a text it can be edited */
+		if (!mystricmp(buf,"text/plain"))
+		{
+			if (mail->decoded_data)
+			{
+				attach.contents = mystrndup(mail->decoded_data,mail->decoded_len);
+			} else
+			{
+				attach.contents = mystrndup(mail->text + mail->text_begin,mail->text_len);
+			}
+			attach.editable = 1;
+			attach.lastxcursor = 0x7fff;
+			attach.lastycursor = 0x7fff;
+		}
+	}
+
+	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,MUIM_NListtree_Insert,"",&attach,listnode,MUIV_NListtree_Insert_PrevNode_Tail,num_multiparts?(TNF_LIST|TNF_OPEN):0);
+	if (!treenode) return;
+
+	if (attach.contents) free(attach.contents);
+
+	for (i=0;i<num_multiparts; i++)
+	{
+		compose_add_mail(data,mail->multipart_array[i],treenode);
+	}
+}
+
+/******************************************************************
  Opens a compose window
 *******************************************************************/
-void compose_window_open(char *to_str)
+void compose_window_open(char *to_str, struct mail *tochange)
 {
 	Object *wnd, *send_later_button, *cancel_button;
 	Object *to_string, *subject_string;
@@ -476,6 +533,8 @@ void compose_window_open(char *to_str)
 			data->to_string = to_string;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
+			data->x_text = xcursor_text;
+			data->y_text = ycursor_text;
 			data->attach_tree = attach_tree;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
@@ -498,7 +557,8 @@ void compose_window_open(char *to_str)
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
-			compose_add_text(&data);
+			if (!tochange)
+				compose_add_text(&data);
 
 			if (to_str)
 			{
@@ -509,6 +569,43 @@ void compose_window_open(char *to_str)
 			{
 				/* activate the "To" field */
 				set(wnd,MUIA_Window_ActiveObject,data->to_string);
+			}
+
+			if (tochange)
+			{
+				/* A mail should be changed */
+				int entries;
+				char *to;
+				char *decoded_to = NULL;
+
+				compose_add_mail(data,tochange,NULL);
+
+				entries = xget(attach_tree,MUIA_NList_Entries);
+
+				if (entries==0)
+				{
+					compose_add_text(&data);
+				} else
+				{
+					/* Active the first entry if there is only one entry */
+					if (entries==1) set(attach_tree,MUIA_NList_Active,0);
+					else
+					{
+						set(attach_tree,MUIA_NList_Active,1);
+					}
+				}
+
+				if ((to = mail_find_header_contents(tochange,"To")))
+				{
+					/* set the To string */
+					parse_text_string(to,&decoded_to);
+				}
+
+				set(subject_string,MUIA_String_Contents,tochange->subject);
+				set(to_string,MUIA_String_Contents,decoded_to);
+
+				set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);
+				if (decoded_to) free(decoded_to);
 			}
 
 			set(wnd,MUIA_Window_Open,TRUE);

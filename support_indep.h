@@ -46,4 +46,6 @@ void array_free(char **string_array);
 
 char *mycombinepath(char *drawer, char *file);
 
+#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+
 #endif

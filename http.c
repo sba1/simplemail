@@ -84,3 +84,87 @@ int http_download_photo(char *path, char *email)
 	return rc;
 }
 
+int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
+{
+	int rc = 0;
+
+	if (!strnicmp(uri,"http://",7))
+	{
+		int port;
+		char *path_buf;
+		char *port_buf;
+		struct connection *conn;
+		char *server;
+
+		uri += 7;
+
+		if (!(server = mystrdup(uri))) return 0;
+		if (!(path_buf = strchr(server,'/')))
+		{
+			free(server);
+			return 0;
+		}
+		port_buf = strchr(uri,':');
+
+		if (port_buf > path_buf) port_buf = NULL;
+		if (port_buf)
+		{
+			*port_buf = 0;
+			port = atoi(port_buf+1);
+		} else
+		{
+			*path_buf = 0;
+			port = 80;
+		}
+
+		if (open_socket_lib())
+		{
+			if ((conn = tcp_connect(server,port,0)))
+			{
+				FILE *fh;
+
+				if ((fh = tmpfile()))
+				{
+					int download = 1;
+					char *line;
+
+					tcp_write(conn,"GET /", sizeof("GET /")-1);
+					tcp_write(conn,path_buf+1,strlen(path_buf+1));
+					tcp_write(conn," HTTP/1.0\r\nhost: ", sizeof(" HTTP/1.0\r\nhost: ")-1);
+					tcp_write(conn,server,strlen(server));
+					tcp_write(conn,"\r\n\r\n",sizeof("\r\n\r\n")-1);
+
+					while ((line = tcp_readln(conn)))
+					{
+						if (line[0] == 10 && line[1] == 0) break;
+					}
+
+					if (download)
+					{
+						int got;
+						int len = 0;
+						char buf[1024];
+						while ((got = tcp_read(conn,buf,1024))>0)
+						{
+							fwrite(buf,1,got,fh);
+							len += got;
+						}
+
+						if (*buf_ptr = malloc(len))
+						{
+							fseek(fh,0,SEEK_SET);
+							fread(*buf_ptr,1,len,fh);
+							*buf_len_ptr = len;
+							rc = 1;
+						}
+					}
+					fclose(fh);
+				}
+				tcp_disconnect(conn);
+			}
+			close_socket_lib();
+		}
+		free(server);
+	}
+	return rc;
+}

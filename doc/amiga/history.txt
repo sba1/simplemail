@@ -1,3 +1,12 @@
+Version 0.14 (fourtheenth alpha) - released on ?
+  - ARexx: The following commands have been added:
+    · FOLDERINFO
+    · REQUEST
+    · REQUESTSTRING
+  - Signatures can be stripped before quoting now.
+  - The number of mails of folders is rendered boldly when containing
+    new mails.
+
 Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!
   - SMTP over SSL.

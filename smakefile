@@ -1,0 +1,66 @@
+#
+# smakefile for SimpleMail, to be used with SAS C
+#
+# enter "smake generate" to regenerate the makefile
+#
+
+# Configure the compilation of SimpleMail
+GSTFILE = all.gst
+OBJSDIR1 = sas_objects
+DESTDIR = sm
+INCDIRS = IDIR=netinclude: IDIR=amiga-mui
+CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi
+LFLAGS = nover smallcode smalldata noicons
+
+# do not change the following lines, expect for improvements!
+MAKEGENERATOR=gen_makefile
+OBJSDIR = $(OBJSDIR1)/
+
+start: $(GSTFILE) smakefile.compile
+  execute <<
+    if not exists $(OBJSDIR1)
+      makedir $(OBJSDIR1)
+    endif
+    if not exists $(OBJSDIR)amiga-mui
+      makedir $(OBJSDIR)amiga-mui
+    endif
+    if not exists $(DESTDIR)
+      makedir $(DESTDIR)
+    endif
+<
+  smake -f smakefile.compile
+
+smakefile.compile: $(MAKEGENERATOR) smakefile
+  list ~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="%s" sort=name >t:objectlist
+  list amiga-mui/~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
+  echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
+  echo "OBJSDIR=$(OBJSDIR)" >> $@
+  echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
+  echo "LFLAGS=$(LFLAGS)" >>$@
+  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui
+  delete t:objectlist
+
+$(MAKEGENERATOR): $(MAKEGENERATOR).c
+  sc nover link $(MAKEGENERATOR)
+
+$(GSTFILE): headers.c
+  sc nover noobjname headers.c makegst=$@ idlen=40 $(INCDIRS)
+
+# some fake targets
+generate:
+  -delete smakefile.compile
+  smake smakefile.compile
+
+pack:
+  -delete ram:simplemail_src.l?? quiet
+  makedir T:SimpleMail
+  copy ((\#?.(asm|c|h))|smakefile|diff_ignore|.cvsignore) clone T:SimpleMail
+  copy amiga-mui/((\#?.(asm|c|h))|.cvsignore) clone T:SimpleMail/amiga-mui
+#  lha -r a ram:simplemail_src T:SimpleMail
+  lzx -9 -r a ram:simplemail_src T:SimpleMail
+  delete T:SimpleMail quiet all
+
+clean:
+  -delete $(OBJSDIR)\#? all
+  -delete smakefile.compile
+

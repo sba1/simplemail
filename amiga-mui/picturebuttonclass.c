@@ -84,6 +84,7 @@ struct PictureButton_Data
 	STRPTR name;
 	STRPTR label;
 	int free_vert;
+	int show_label;
 	struct dt_node *dt;
 	int setup;
 
@@ -121,6 +122,7 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->name = mystrdup((char *)GetTagData(MUIA_PictureButton_Filename,NULL,msg->ops_AttrList));
 	data->label = (char *)GetTagData(MUIA_PictureButton_Label,NULL,msg->ops_AttrList);
 	data->free_vert = (int)GetTagData(MUIA_PictureButton_FreeVert,1,msg->ops_AttrList);
+	data->show_label = (int)GetTagData(MUIA_PictureButton_ShowLabel,1,msg->ops_AttrList);
 
 	/* tell MUI not to care about filling our background during MUIM_Draw */
 /*	set(obj,MUIA_FillArea,FALSE);*/
@@ -131,28 +133,44 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
-	struct TagItem *ti = FindTagItem(MUIA_PictureButton_Filename,msg->ops_AttrList);
-	if (ti)
+	int relayout = 0;
+	struct TagItem *ti;
+
+	if ((ti = FindTagItem(MUIA_PictureButton_ShowLabel,msg->ops_AttrList)))
+	{
+		if (data->show_label != ti->ti_Data)
+		{
+			data->show_label = ti->ti_Data;
+			relayout = 1;
+		}
+	}
+
+	if ((ti = FindTagItem(MUIA_PictureButton_Filename,msg->ops_AttrList)))
 	{
 		if (data->name) free(data->name);
 		data->name = mystrdup((char*)ti->ti_Data);
+		relayout = 1;
 
 		if (data->setup)
 		{
-			Object *parent;
-
 			PictureButton_Unload(data);
 			PictureButton_Load(data,obj);
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
-
-			if ((parent = (Object*)xget(obj,MUIA_Parent)))
-			{
-				/* New size if needed */
-				DoMethod(parent,MUIM_Group_InitChange);
-				DoMethod(parent,MUIM_Group_ExitChange);
-			}
 		}
 	}
+
+	if (relayout && data->setup)
+	{
+		Object *parent;
+
+		if ((parent = (Object*)xget(obj,MUIA_Parent)))
+		{
+			/* New size if needed */
+			DoMethod(parent,MUIM_Group_InitChange);
+			DoMethod(parent,MUIM_Group_ExitChange);
+		}
+	}
+
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -199,7 +217,7 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	}
 	data->label_height = 0;
 
-	if (data->label)
+	if (data->label && data->show_label)
 	{
 		struct RastPort rp;
 		int width;
@@ -249,7 +267,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 			rel_y += dt_height(data->dt);
 		}
 
-		if (data->label)
+		if (data->label && data->show_label)
 		{
 			STRPTR ufreestr = StrNoUnderscoreCopy(data->label);
 			struct TextExtent te;

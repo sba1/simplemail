@@ -28,6 +28,7 @@
 #define MUIA_PictureButton_Filename			(TAG_USER+0x182b000) /* STRPTR */
 #define MUIA_PictureButton_Label					(TAG_USER+0x182b001) /* STRPTR */
 #define MUIA_PictureButton_FreeVert			(TAG_USER+0x182b002) /* BOOL */
+#define MUIA_PictureButton_ShowLabel			(TAG_USER+0x182b003) /* BOOL */
 
 extern struct MUI_CustomClass *CL_PictureButton;
 

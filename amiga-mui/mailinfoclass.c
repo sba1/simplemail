@@ -66,6 +66,8 @@ struct text_node
 
 	int x_start;
 	int x_end;
+	int y_start;
+	int y_end;
 };
 
 struct field
@@ -323,26 +325,23 @@ static void field_find(struct list *field_list, int x, int y, int fonty, struct 
 	*field_ptr = NULL;
 	*text_ptr = NULL;
 
-	/* "find" correct line */
+	/* "find" correct text field */
 	f = (struct field *)list_first(field_list);
-	while (f && y >= fonty)
+	while (f)
 	{
-		y -= fonty;
-		f = (struct field*)node_next(&f->node);
-	}
-
-	if (!f) return;
-
-	text = (struct text_node*)list_first(&f->text_list);
-	while (text)
-	{
-		if (x >= text->x_start && x <= text->x_end)
+		text = (struct text_node*)list_first(&f->text_list);
+		while (text)
 		{
-			*field_ptr = f;
-			*text_ptr = text;
-			return;
+			if (y >= text->y_start && y <= text->y_end && 
+			    x >= text->x_start && x <= text->x_end)
+			{
+				*field_ptr = f;
+				*text_ptr = text;
+				return;
+			}
+			text = (struct text_node*)node_next(&text->node);
 		}
-		text = (struct text_node*)node_next(&text->node);
+		f = (struct field*)node_next(&f->node);
 	}
 }
 
@@ -355,7 +354,6 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	struct field *f;
 	struct RastPort rp;
 
-	int x,comma_width;
 	int field_width = 0;
 
 	SM_DEBUGF(20,("Enter\n"));
@@ -365,8 +363,6 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 
 	InitRastPort(&rp);
 	SetFont(&rp,_font(obj));
-
-	comma_width = TextLength(&rp,",",1);
 
 	/* 1st pass, determine sizes of the field name column */
 	SetSoftStyle(&rp,FSF_BOLD,AskSoftStyle(&rp));
@@ -380,28 +376,7 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 	}
 	data->fieldname_width = field_width + CONTENTS_OFFSET;
 
-	/* 2nd pass, determine the link positions */
-	SetSoftStyle(&rp,FS_NORMAL,AskSoftStyle(&rp));
-	f = (struct field *)list_first(&data->field_list);
-	while (f)
-	{
-		struct text_node *text;
-
-		x = BORDER + data->fieldname_left + data->fieldname_width;
-		text = (struct text_node*)list_first(&f->text_list);
-		while (text)
-		{
-			if (text->text)
-			{
-				text->x_start = x;
-				x += TextLength(&rp,text->text,strlen(text->text));
-				text->x_end = x - 1;
-				x += comma_width;
-			}
-			text = (struct text_node*)node_next(&text->node);
-		}
-		f = (struct field*)node_next(&f->node);
-	}
+	/* determine the link positions is now done in MailInfoArea_DrawField() */
 
 	SM_DEBUGF(20,("Leave\n"));
 }
@@ -411,6 +386,7 @@ STATIC VOID MailInfoArea_DetermineSizes(Object *obj, struct MailInfoArea_Data *d
 *********************************************************************/
 VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struct mail_info *mi)
 {
+	struct field *f;
 	int entries;
 
 	SM_DEBUGF(20,("Enter\n"));
@@ -419,15 +395,14 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 	data->selected_text = NULL;
 
 	if (data->mail) mail_dereference(data->mail);
+	while ((f = (struct field*)list_remove_tail(&data->field_list)))
+		field_free(f);
+
 	if ((data->mail = mi))
 	{
-		struct field *f;
 		char buf[300];
 
 		mail_reference(data->mail);
-
-		while ((f = (struct field*)list_remove_tail(&data->field_list)))
-			field_free(f);
 
 		if (user.config.header_flags & (SHOW_HEADER_SUBJECT))
 			field_add_text(&data->field_list,_("Subject"),mi->subject);
@@ -460,7 +435,7 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 			field_add_addresses(&data->field_list, _("Copies to"), mi->cc_list);
 
 		if (user.config.header_flags & (SHOW_HEADER_DATE))
-			field_add_text(&data->field_list,_("Date"),sm_get_date_long_str(mi->seconds));
+			field_add_text(&data->field_list,_("Date"),sm_get_date_long_str_utf8(mi->seconds));
 	}
 
 	entries = list_length(&data->field_list);
@@ -491,25 +466,28 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
                                    struct field *f, int y, int update)
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
-	struct text_node *text;
+	struct field *second_f;
+	struct text_node *text, *second_text;
 	int cnt;
 
 	struct TextExtent te;
 
-	int space_left;
-	int comma_width;
+	int space_left, real_space_left;
+	int comma_width, space_width, second_width;
 
 	int fieldname_width, fieldname_width2;
 
+	SetAPen(_rp(obj), data->text_pen);
+	SetFont(_rp(obj), _font(obj));
+	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
 	comma_width = TextLength(_rp(obj),",",1);
+	space_width = TextLength(_rp(obj)," ",1);
 
 	/* display the field name, which is right aligned */
 	fieldname_width = data->fieldname_width;
 	fieldname_width2 = _mwidth(obj) - 2 * BORDER - data->fieldname_left;
 	if (fieldname_width > fieldname_width2) fieldname_width = fieldname_width2;
 
-	SetAPen(_rp(obj), data->text_pen);
-	SetFont(_rp(obj), _font(obj));
 	Move(_rp(obj), _mleft(obj) + BORDER + data->fieldname_left + data->fieldname_width - f->name_width - CONTENTS_OFFSET, ytext);
 	SetSoftStyle(_rp(obj),FSF_BOLD,AskSoftStyle(_rp(obj)));
 
@@ -520,11 +498,29 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	if (!update) Text(_rp(obj),f->name,cnt);
 
 	/* display the rest */
-	space_left = _mwidth(obj) - data->fieldname_left - data->fieldname_width - 2 * BORDER;
-	if (space_left <= 0) return;
+	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
+	space_left = _mwidth(obj) - data->fieldname_left - 2 * BORDER;
+	real_space_left = _mwidth(obj) - data->fieldname_left - 2 * BORDER;
+	if (data->compact &&
+		  (second_f = (struct field*)node_next(&f->node)) &&
+			(second_text = (struct text_node*)list_first(&second_f->text_list)))
+	{
+		/* if we are in compact mode, show two fields. Display space is half/half except
+		   when the second fieldlength (only the first text) is smaller as the half than
+		   the second one will be shown full and as much as possible for the first field.
+		   Otherwise the first field will be shown full and as much as possible of the
+		   second field (all text), understand? :)
+		*/
+		space_left /= 2;
+		second_width = CONTENTS_OFFSET + second_f->name_width + space_width + TextLength(_rp(obj), second_text->text, strlen(second_text->text));
+		if (second_width < space_left)
+			space_left = real_space_left - second_width;
+	}
+	space_left -= data->fieldname_width;
+	real_space_left -= data->fieldname_width;
+	if (real_space_left <= 0) return;
 
 	Move(_rp(obj),_mleft(obj) + data->fieldname_left + data->fieldname_width + BORDER, ytext);
-	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
 	{
@@ -537,12 +533,18 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 			int draw_text;
 
 			cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
+			/* calculate linkfield */
+			text->x_start = _rp(obj)->cp_x - _mleft(obj);
+			text->x_end   = text->x_start + te.te_Width - 1;
+			text->y_start = y;
+			text->y_end   = text->y_start + _font(obj)->tf_YSize - 1;
+
 			if (!cnt) break;
 
 			if (update && text == data->redraw_text)
 			{
-				DoMethod(obj, MUIM_DrawBackground, _mleft(obj) + text->x_start, _mtop(obj) + y,
-													 text->x_end - text->x_start + 1, _font(obj)->tf_YSize,0,0,0);
+				DoMethod(obj, MUIM_DrawBackground, _rp(obj)->cp_x, _mtop(obj) + y,
+													 te.te_Width, _font(obj)->tf_YSize,0,0,0);
 				draw_text = 1;
 			} else draw_text = !update;
 
@@ -557,20 +559,94 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 			else Move(_rp(obj),_rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
 
 			space_left -= te.te_Width;
+			real_space_left -= te.te_Width;
 			if (next_text)
 			{
-				if (space_left >= comma_width)
+				if (space_left >= comma_width && strlen(text->text) == cnt)
 				{
 					if (f->clickable) SetAPen(_rp(obj),data->text_pen);
 					if (!update) Text(_rp(obj),",",1);
 					else Move(_rp(obj),_rp(obj)->cp_x + comma_width, _rp(obj)->cp_y);
 
 					space_left -= comma_width;
+					real_space_left -= comma_width;
 				} else break;
 			}
 		}
 
 		text = next_text;
+	}
+
+	if (data->compact)
+	{
+		/* draw the second field in the same line */
+		struct text_node *next_text;
+		int draw_text;
+
+		if (!second_f) return;
+		if (!second_text) return;
+		if (real_space_left < CONTENTS_OFFSET) return;
+
+		Move(_rp(obj),_rp(obj)->cp_x + CONTENTS_OFFSET, _rp(obj)->cp_y);
+		real_space_left -= CONTENTS_OFFSET;
+
+		SetAPen(_rp(obj), data->text_pen);
+		SetSoftStyle(_rp(obj),FSF_BOLD,AskSoftStyle(_rp(obj)));
+		cnt = TextFit(_rp(obj),second_f->name,strlen(second_f->name),&te,NULL,1,real_space_left,_font(obj)->tf_YSize);
+		if (!cnt) return;
+		if (!update) Text(_rp(obj),second_f->name,cnt);
+		else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
+		real_space_left -= te.te_Width;
+		if (real_space_left <= 0) return;
+
+		SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
+		if (!update) Text(_rp(obj)," ",1);
+		else Move(_rp(obj), _rp(obj)->cp_x + space_width, _rp(obj)->cp_y);
+		real_space_left -= space_width;
+		if (real_space_left <= 0) return;
+
+		while (second_text)
+		{
+			next_text = (struct text_node*)node_next(&second_text->node);
+
+			cnt = TextFit(_rp(obj),second_text->text,strlen(second_text->text),&te,NULL,1,real_space_left,_font(obj)->tf_YSize);
+			/* calculate linkfield */
+			second_text->x_start = _rp(obj)->cp_x - _mleft(obj);
+			second_text->x_end   = second_text->x_start + te.te_Width - 1;
+			second_text->y_start = y;
+			second_text->y_end   = second_text->y_start + _font(obj)->tf_YSize - 1;
+			if (!cnt) return;
+
+			if (update && second_text == data->redraw_text)
+			{
+				DoMethod(obj, MUIM_DrawBackground, _rp(obj)->cp_x, _mtop(obj) + y,
+													 te.te_Width, _font(obj)->tf_YSize,0,0,0);
+				draw_text = 1;
+			} else draw_text = !update;
+
+			if (second_f->clickable)
+			{
+				if (second_f == data->selected_field && data->selected_mouse_over)
+					SetAPen(_rp(obj),_dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN]);
+				else SetAPen(_rp(obj),data->link_pen);
+			}
+			if (draw_text) Text(_rp(obj),second_text->text,cnt);
+			else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
+			real_space_left -= te.te_Width;
+
+			if (next_text)
+			{
+				if (space_left >= comma_width && strlen(second_text->text) == cnt)
+				{
+					if (second_f->clickable) SetAPen(_rp(obj),data->text_pen);
+					if (!update) Text(_rp(obj),",",1);
+					else Move(_rp(obj), _rp(obj)->cp_x + comma_width, _rp(obj)->cp_y);
+
+					real_space_left -= comma_width;
+				} else break;
+			}
+			second_text = next_text;
+		}
 	}
 }
 
@@ -693,7 +769,7 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	data->mv_handler.ehn_Class    = cl;
 	data->mv_handler.ehn_Events   = IDCMP_MOUSEMOVE;
 
-	DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, obj, 2, MUIM_MailInfo_CompactChanged);
+	DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, obj, 1, MUIM_MailInfo_CompactChanged);
 
 	return (ULONG)obj;
 }

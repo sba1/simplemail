@@ -155,9 +155,9 @@ int sm_get_gmt_offset(void)
 	extern struct Locale *DefaultLocale;
 	if (DefaultLocale)
 	{
-		return -DefaultLocale->loc_GMTOffset;
+		return -DefaultLocale->loc_GMTOffset + (user.config.dst * 60);
 	}
-	return 0;
+	return (user.config.dst * 60);
 }
 
 /******************************************************************

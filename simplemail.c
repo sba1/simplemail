@@ -167,7 +167,8 @@ void callback_write_mail_to_str(char *str, char *subject)
 /* a new mail should be composed */
 void callback_new_mail(void)
 {
-	callback_write_mail_to_str(NULL,NULL);
+	struct folder *f = main_get_folder();
+	callback_write_mail_to_str(strlen(f->def_to)?f->def_to:NULL,NULL);
 }
 
 /* reply this mail */

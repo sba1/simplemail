@@ -564,7 +564,7 @@ static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				free(login);
 			}*/
 
-			if ((conn = tcp_connect(server->name, server->port, 0)))
+			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
 				thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
 				if (imap_wait_login(conn,server))
@@ -693,6 +693,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 		new_imap->passwd = mystrdup(imap->passwd);
 		new_imap->port = imap->port;
 		new_imap->active = imap->active;
+		new_imap->ssl = imap->ssl;
 	}
 	return new_imap;
 }

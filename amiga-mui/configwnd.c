@@ -708,7 +708,11 @@ void account_recv_port_update(void)
 	int imap = xget(account_recv_type_radio,MUIA_Radio_Active);
 	int port;
 
-	if (imap) port = 143;
+	if (imap)
+	{
+		if (ssl) port = 993;
+		else port = 143;
+	}
 	else
 	{
 		if (ssl & !stls) port = 995;

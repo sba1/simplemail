@@ -37,6 +37,7 @@ struct imap_server
 	char *passwd;
 
 	int active;
+	int ssl;
 };
 
 int imap_synchronize(struct list *imap_list, int called_by_auto);

@@ -56,7 +56,7 @@ struct string_desc
 
 struct loaded_domain
 {
-  const char *data;
+	char *data;
   int must_swap;
   nls_uint32 nstrings;
   struct string_desc *orig_tab;
@@ -96,13 +96,61 @@ static long openmo(char *dir, char *loc)
             {
               if((data->magic == _MAGIC || data->magic == _MAGIC_SWAPPED) && !data->revision) /* no need to swap! */
               {
-                domain.data = (const char *) data;
+                domain.data = (char*)data;
                 domain.must_swap = data->magic != _MAGIC;
                 domain.nstrings = GET(data->nstrings);
                 domain.orig_tab = (struct string_desc *) ((char *) data + GET(data->orig_tab_offset));
                 domain.trans_tab = (struct string_desc *) ((char *) data + GET(data->trans_tab_offset));
                 domain.hash_size = GET(data->hash_tab_size);
                 domain.hash_tab = (nls_uint32 *) ((char *) data + GET(data->hash_tab_offset));
+
+								if (!strcmp("pl",loc))
+								{
+									int i,j;
+
+									/* convert the charset...if OS4 is installed this is will be not necessary */
+
+								  for (i=0;i<domain.nstrings;i++)
+								  {
+								    int j;
+								    int off = GET(domain.trans_tab[i].offset);
+								    char *trans_string = domain.data + off;
+
+								    /* Now convert every char in size the string */
+								    for (j=0;j<GET(domain.trans_tab[i].length) && j+off<size;j++)
+								    {
+								    	unsigned char c = trans_string[j];
+								    	if (c > 127)
+								    	{
+								    		/* yes a table would be better, but I'm too lazy */
+								    		switch (c)
+								    		{
+													case	0xb1: c=0xe2; break;
+													case	0xe6: c=0xea; break;
+													case	0xea: c=0xeb; break;
+													case	0xb3: c=0xee; break;
+													case	0xf1: c=0xef; break;
+													case	0xf3: c=0xf3; break;
+													case	0xb6: c=0xf4; break;
+													case	0xbc: c=0xfa; break;
+													case	0xbf: c=0xfb; break;
+													case	0xa1: c=0xc2; break;
+													case	0xc6: c=0xca; break;
+													case	0xca: c=0xcb; break;
+													case	0xa3: c=0xce; break;
+													case	0xd1: c=0xcf; break;
+													case	0xd3: c=0xd3; break;
+													case	0xa6: c=0xd4; break;
+													case	0xac: c=0xda; break;
+													case	0xaf: c=0xdb; break;
+								    		}
+												trans_string[j] = c;
+								    	}
+								    }
+								  }
+
+
+								}
               }
               else
                 free(data);

@@ -211,7 +211,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 	SM_DEBUGF(15,("Trying plain text method\n"));
 	thread_call_parent_function_async(status_set_status,1,_("Sending username..."));
 
-	sprintf(buf, "USER %s\r\n",server->login);
+	sm_snprintf(buf, sizeof(buf), "USER %s\r\n",server->login);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn,!!timestamp)) /* be silent if timestamp has given */
 	{
@@ -222,7 +222,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 	}
 
 	thread_call_parent_function_async(status_set_status,1,_("Sending password..."));
-	sprintf(buf,"PASS %s\r\n",server->passwd);
+	sm_spnrintf(buf,sizeof(buf),"PASS %s\r\n",server->passwd);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn,0))
 	{

@@ -36,15 +36,24 @@
 
 #include "tcp.h"
 
-long tcp_connect(char *server, unsigned int port)
+/******************************************************************
+ Establish the connection to the given server.
+ Return NULL on error.
+ (TODO: Remove the error code handling)
+*******************************************************************/
+struct connection *tcp_connect(char *server, unsigned int port)
 {
-	long sd, rc;
+	long sd;
 	struct sockaddr_in sockaddr;
 	struct hostent *hostent;
 	static char err[256];
 	static long id;
-	
-	rc = SMTP_NO_SOCKET;
+	struct connection *conn;
+
+	if (!(conn = malloc(sizeof(struct connection))))
+		return NULL;
+
+	memset(conn,0,sizeof(struct connection));
 
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
@@ -60,7 +69,8 @@ long tcp_connect(char *server, unsigned int port)
 		{
 			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 			{
-				rc = sd;
+				conn->socket = sd;
+				return conn;
 			}
 			else
 			{
@@ -129,62 +139,123 @@ long tcp_connect(char *server, unsigned int port)
 		tell_from_subtask(err);
 	}  
 
-	return rc;
+	free(conn);
+	return NULL;
 }
-
-void tcp_disconnect(long sd)
-{
-	if(sd != SMTP_NO_SOCKET)
-	{
-		shutdown(sd, 2);
-	}
-}
-
-long tcp_read(long sd, void *buf, long nbytes)
-{
-	return recv(sd, buf, nbytes, 0);
-}
-
-long tcp_write(long sd, void *buf, long nbytes)
-{
-	return send(sd, buf, nbytes, 0);
-}
-
-#define TCP_READLN_BUFSIZE 1500
 
 /******************************************************************
- Read a complete line from the given socket. Not very well
- implemented (big overhead) but it works for now. Line will
- end with a '\n'. A '\r' is removed. The returned buffer is
- allocated with malloc(). Returns NULL if if an error occured
+ Disconnect from the server
 *******************************************************************/
-char *tcp_readln(long sd)
+void tcp_disconnect(struct connection *conn)
 {
-	char *rc;
-	static char readbuf[TCP_READLN_BUFSIZE + 2];
-	int i=0;
+	tcp_flush(conn); /* flush the write buffer */
+	shutdown(conn->socket, 2);
+	if (conn->line) free(conn->line);
+	free(conn);
+}
 
-	while (i<TCP_READLN_BUFSIZE)
+/******************************************************************
+ Read a given amount of bytes from the connection.
+*******************************************************************/
+long tcp_read(struct connection *conn, void *buf, long nbytes)
+{
+	tcp_flush(conn); /* flush the write buffer */
+	return recv(conn->socket,buf,nbytes,0);
+}
+
+/******************************************************************
+ Read's a single char from the connection. Buffered.
+*******************************************************************/
+static int tcp_read_char(struct connection *conn)
+{
+	if (conn->read_pos >= conn->read_size)
 	{
-		if (tcp_read(sd, &readbuf[i],1)<=0)
-			return NULL;
+		/* we must read a new chunk of bytes */
+		int didget;
+		conn->read_pos = 0;
 
-		if (readbuf[i]=='\n')
+		didget = recv(conn->socket,conn->read_buf,sizeof(conn->read_buf),0);
+		if (didget < 0)
 		{
-			if (i && readbuf[i-1] == '\r')
-			{
-				readbuf[i-1] = '\n';
-			} else i++;
-			break;
+			conn->read_size = 0;
+			return -1;
 		}
-		i++;
+		conn->read_size = didget;
+	}
+	return conn->read_buf[conn->read_pos++];
+}
+
+/******************************************************************
+ Writes a given amount of bytes to the connection. Buffered.
+ (Not buffered yet)
+*******************************************************************/
+int tcp_write(struct connection *conn, void *buf, long nbytes)
+{
+	conn->read_pos = conn->read_size = 0;
+	return send(conn->socket, buf, nbytes, 0);
+}
+
+/******************************************************************
+ Flushes the write buffer. Not working yet.
+*******************************************************************/
+int tcp_flush(struct connection *conn)
+{
+	return 1;
+}
+
+/******************************************************************
+ Writes a given amount of bytes to the connection. Unbuffered.
+*******************************************************************/
+int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
+{
+	conn->read_pos = conn->read_size = 0;
+	tcp_flush(conn); /* flush the write buffer */
+	return send(conn->socket, buf, nbytes, 0);
+}
+
+/******************************************************************
+ Read a complete line from the given connection. Line will end
+ with a '\n'. A '\r' is removed. The returned buffer is allocated
+ per connection so it is only valid as long as the connection
+ exists and only until the next tcp_readln().
+ Returns NULL for an error.
+*******************************************************************/
+char *tcp_readln(struct connection *conn)
+{
+	int line_pos = 0;
+
+	while (1)
+	{
+		int c = tcp_read_char(conn);
+		if (c < 0) return NULL;
+
+		if (line_pos + 8 > conn->line_allocated)
+		{
+			conn->line_allocated += 1024;
+			conn->line = realloc(conn->line,conn->line_allocated);
+		}
+
+		if (!conn->line)
+		{
+			conn->line_allocated = 0;
+			return NULL;
+		}
+
+		conn->line[line_pos++] = c;
+
+		if (c=='\n') break;
 	}
 
-	/* add a nullbyte at the end */
-	readbuf[i] = 0;
+	conn->line[line_pos]=0;
 
-	if ((rc = malloc(strlen(readbuf) + 1)))
-		strcpy(rc, readbuf);
+	if (line_pos > 1)
+	{
+		if (conn->line[line_pos-2]=='\r')
+		{
+			conn->line[line_pos-2]='\n';
+			conn->line[line_pos-1]=0;
+		}
+	}
 
-	return rc;
+	return conn->line;
 }

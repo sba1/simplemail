@@ -45,7 +45,6 @@ int mails_dl(void)
 	server.port = user.config.pop_port;
 	server.login = user.config.pop_login;
 	server.passwd = user.config.pop_password;
-	server.socket = SMTP_NO_SOCKET;
 	server.del = user.config.pop_delete;
 	server.destdir = folder_incoming()->path;
 
@@ -88,7 +87,6 @@ int mails_upload(void)
 	server.name 		         = user.config.smtp_server;
 	server.domain 					= user.config.smtp_domain;
 	server.port         		 	= user.config.smtp_port;
-	server.socket        		= SMTP_NO_SOCKET;
 	server.esmtp.auth          = user.config.smtp_auth;
 	server.esmtp.auth_login    = user.config.smtp_login;
 	server.esmtp.auth_password = user.config.smtp_password;

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** smtp.h
 */
 
 #ifndef SM__SMTP_H
@@ -57,7 +57,6 @@ struct smtp_server
 {
 	char 					*name;
 	unsigned int		port;
-	long 					socket;
 	char					*domain;
 	int 					ip_as_domain;
 

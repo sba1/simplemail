@@ -17,17 +17,34 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** tcp.h
 */
 
 #ifndef SM__TCP_H
 #define SM__TCP_H
 
-long tcp_connect(char *server, unsigned int port);
-void tcp_disconnect(long);
-long tcp_read(long, void *, long);
-long tcp_write(long, void *, long);
-char *tcp_readln(long);
+#define CONN_BUF_READ_SIZE 1024
+#define CONN_BUF_WRITE_SIZE 1024
+
+struct connection
+{
+	long socket;
+
+	/* for tcp_readln() */
+	char read_buf[CONN_BUF_READ_SIZE];
+	int read_pos;
+	int read_size;
+	char *line; /* dynamically allocated, it's hold the line returned in tcp_readln() */
+	int line_allocated; /* number of bytes which were allocated (including 0 byte) */
+};
+
+struct connection *tcp_connect(char *server, unsigned int port);
+void tcp_disconnect(struct connection *conn);
+long tcp_read(struct connection *conn, void *, long);
+int tcp_write(struct connection *conn, void *, long);
+int tcp_write_unbuffered(struct connection *conn, void *,long);
+int tcp_flush(struct connection *conn);
+char *tcp_readln(struct connection *conn);
 
 
 #define SMTP_NO_SOCKET        -1

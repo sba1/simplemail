@@ -89,11 +89,12 @@ struct phrase *phrase_find_best(char *addr)
 {
 	struct phrase *phrase;
 	struct phrase *phrase_best;
-	if (!addr) return NULL;
+
+	phrase = (struct phrase*)list_first(&user.config.phrase_list);
+	if (!addr) return phrase;
 
 	phrase_best = NULL;
 
-	phrase = (struct phrase*)list_first(&user.config.phrase_list);
 	while (phrase)
 	{
 		if (!phrase->addresses && !phrase_best) phrase_best = phrase;

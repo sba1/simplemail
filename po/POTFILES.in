@@ -21,6 +21,7 @@ Charsets/iso8859-10.txt
 codesets.c
 imap.c
 mail.c
+mbox.c
 pop3.c
 print.c
 simplemail.c

@@ -537,11 +537,30 @@ int string_append(string *string, char *appstr)
 		newstr = realloc(string->str,alloclen);
 		if (!newstr) return 0;
 		string->allocated = alloclen;
+		string->str = newstr;
 	}
 
-	strcpy(&string->str[string->len],string->str);
+	strcpy(&string->str[string->len],appstr);
 	string->len += applen;
 	return 1;
+}
+
+/**************************************************************************
+ Crops a given string
+**************************************************************************/
+void string_crop(string *string, int startpos, int endpos)
+{
+	if (startpos == 0)
+	{
+		string->len = endpos;
+		string->str[endpos] = 0;
+	} else
+	{
+		int newlen = endpos - startpos + 1;
+		memmove(string->str, &string->str[startpos], newlen);
+		string->len = newlen;
+		string->str[newlen] = 0;
+	}
 }
 
 

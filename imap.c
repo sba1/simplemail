@@ -38,6 +38,12 @@
 
 #include "imap.h"
 
+#ifdef _AMIGA
+#undef printf
+#endif
+
+#define MIN(a,b) ((a)<(b)?(a):(b))
+
 static int val;
 
 /**************************************************************************
@@ -128,7 +134,6 @@ int imap_dl_headers(struct list *imap_list)
 							ok = 1;
 							break;
 						} else break;
-	
 					}
 
 					if (ok)
@@ -205,10 +210,18 @@ int imap_dl_headers(struct list *imap_list)
 
 						{
 							int num_of_mails = 0;
-
 							struct folder *inbox = folder_find_by_imap(serv->name,"INBOX");
 							if (inbox)
 							{
+								char path[380];
+								getcwd(path, sizeof(path));
+
+								printf("Change path to %s\n",inbox->path);
+								if (chdir(inbox->path) == -1)
+								{
+									printf("Path change to %s has failed\n",inbox->path);
+								}
+
 								sprintf(tag,"%04x",val++);
 								sprintf(send,"%s EXAMINE %s\r\n",tag,inbox->imap_path);
 								puts(send);
@@ -246,12 +259,15 @@ int imap_dl_headers(struct list *imap_list)
 
 								if (num_of_mails)
 								{
-									int *uid_array = malloc(sizeof(int)*num_of_mails);
+									struct {
+										unsigned int uid;
+										unsigned int size;
+									} *mail_array;
 
-									if (uid_array)
+									if ((mail_array = malloc(sizeof(*mail_array)*num_of_mails)))
 									{
 										sprintf(tag,"%04x",val++);
-										sprintf(send,"%s FETCH %d:%d UID\r\n",tag,1,num_of_mails);
+										sprintf(send,"%s FETCH %d:%d (UID RFC822.SIZE)\r\n",tag,1,num_of_mails);
 								
 										puts(send);
 										tcp_write(conn,send,strlen(send));
@@ -274,70 +290,123 @@ int imap_dl_headers(struct list *imap_list)
 											{
 												/* untagged */
 												unsigned int msgno;
-												unsigned int uid;
+												unsigned int uid = 0;
+												unsigned int size = 0;
 												char msgno_buf[100];
 												char cmd_buf[100];
-												char uid_buf[100];
+												char stuff_buf[100];
+												char *temp;
+												int i;
 		
 												line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
 												line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
-												line = imap_get_result(line,uid_buf,sizeof(uid_buf));
+												line = imap_get_result(line,stuff_buf,sizeof(stuff_buf));
 	
 												msgno = (unsigned int)atoi(msgno_buf);
-												uid = (unsigned int)atoi(uid_buf);
+												temp = stuff_buf;
+
+												for (i=0;i<2;i++)
+												{
+													temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+													if (!mystricmp(cmd_buf,"UID"))
+													{
+														temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+														uid = atoi(cmd_buf);
+													}
+													else if (!mystricmp(cmd_buf,"RFC822.SIZE"))
+													{
+														temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+														size = atoi(cmd_buf);
+													}
+												}
 
 												if (msgno <= num_of_mails)
-													uid_array[msgno-1] = uid;
+												{
+													mail_array[msgno-1].uid = uid;
+													mail_array[msgno-1].size = size;
+												}
 											}
 										}
 
-										sprintf(tag,"%04x",val++);
-										sprintf(send,"%s FETCH %d body[]\r\n",tag,1);
-								
-										puts(send);
-										tcp_write(conn,send,strlen(send));
-										tcp_flush(conn);
-		
-										while ((line = tcp_readln(conn)))
 										{
-											puts(line);
-											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,tag))
+											int msgtodl;
+											for (msgtodl=1;msgtodl <= num_of_mails;msgtodl++)
 											{
-												line = imap_get_result(line,buf,sizeof(buf));
-												if (!mystricmp(buf,"OK"))
+												/* check if the mail already exists */
+												if (folder_imap_find_mail_by_uid(inbox,mail_array[msgtodl-1].uid)) continue;
+
+												sprintf(tag,"%04x",val++);
+												sprintf(send,"%s FETCH %d RFC822\r\n",tag,msgtodl);
+								
+												puts(send);
+												tcp_write(conn,send,strlen(send));
+												tcp_flush(conn);
+
+												while ((line = tcp_readln(conn)))
 												{
-													puts("Fetch successful\n");
-													ok = 1;
-												}
-												break;
-											} else
-											{
-												/* untagged */
-												if (*line == '*')
-												{
-													char c;
-													int j = 0;
-													char msgno_buf[200];
-													line++;
-													while (isspace((unsigned char)(*line))) line++;
-													while (!isspace((unsigned char)(c = *line)))
+													puts(line);
+													line = imap_get_result(line,buf,sizeof(buf));
+													if (!mystricmp(buf,tag))
 													{
-														msgno_buf[j++] = c;
-														line++;
+														line = imap_get_result(line,buf,sizeof(buf));
+														if (!mystricmp(buf,"OK"))
+														{
+															puts("Fetch successful\n");
+															ok = 1;
+														}
+														break;
+													} else
+													{
+														/* untagged */
+														if (buf[0] == '*')
+														{
+															char msgno_buf[200];
+															char *temp_ptr;
+															int msgno;
+															int todownload;
+															line++;
+
+															line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+															msgno = atoi(msgno_buf); /* ignored */
+
+															/* skip the fetch command */
+															line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+															if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+															{
+																temp_ptr++;
+																todownload = atoi(temp_ptr);
+															} else todownload = 0;
+
+															if (todownload)
+															{
+																FILE *fh;
+																char filename_buf[60];
+																sprintf(filename_buf,"%d",mail_array[msgtodl-1].uid);
+
+																if ((fh = fopen(filename_buf,"w")))
+																{
+																	while (todownload)
+																	{
+																		char buf[200];
+																		int dl = tcp_read(conn,buf,MIN(sizeof(buf),todownload));
+																		if (dl == -1 || !dl) break;
+																		fwrite(buf,1,dl,fh);
+																		todownload -= dl;
+																	}
+																	fclose(fh);
+																	callback_new_imap_mail_arrived(filename_buf, inbox->imap_server, inbox->imap_path);
+																}
+															}
+														}
 													}
-
-													puts(line);puts(" ");puts(msgno_buf);puts("\n");
-
 												}
 											}
 										}
 
-
-
-										free(uid_array);
+										free(mail_array);
 									}
 								}
+								chdir(path);
 							}
 						}
 					} else

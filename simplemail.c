@@ -561,19 +561,20 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 }
 
 /* a new mail has arrived */
-static void callback_new_mail_arrived(struct mail *mail)
+static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 {
 	struct filter *f;
 	int pos;
 
-	pos = folder_add_mail_incoming(mail);
-	if (main_get_folder() == folder_incoming() && pos != -1)
+	mail->flags |= MAIL_FLAGS_NEW;
+	pos = folder_add_mail(folder,mail,1);
+	if (main_get_folder() == folder && pos != -1)
 	{
 		main_insert_mail_pos(mail,pos-1);
 	}
 
 	/* This has to be optmized! */
-	if ((f = folder_mail_can_be_filtered(folder_incoming(), mail, 1)))
+	if ((f = folder_mail_can_be_filtered(folder, mail, 1)))
 	{
 		if (f->use_dest_folder && f->dest_folder)
 		{
@@ -581,7 +582,7 @@ static void callback_new_mail_arrived(struct mail *mail)
 			if (dest_folder)
 			{
 				/* very slow, because the sorted array is rebuilded in the both folders! */
-				callback_move_mail(mail, folder_incoming(), dest_folder);
+				callback_move_mail(mail, folder, dest_folder);
 			}
 		}
 	}
@@ -726,7 +727,26 @@ void callback_new_mail_arrived_filename(char *filename)
 	chdir(folder_incoming()->path);
 
 	if ((mail = mail_create_from_file(filename)))
-		callback_new_mail_arrived(mail);
+		callback_new_mail_arrived(mail,folder_incoming());
+
+	chdir(buf);
+}
+
+/* a new mail has been arrived into an imap folder */
+void callback_new_imap_mail_arrived(char *filename, char *server, char *path)
+{
+	struct mail *mail;
+	struct folder *f;
+	char buf[256];
+
+	f = folder_find_by_imap(server,path);
+	if (!f) return;
+
+	getcwd(buf, sizeof(buf));
+	chdir(f->path);
+
+	if ((mail = mail_create_from_file(filename)))
+		callback_new_mail_arrived(mail,f);
 
 	chdir(buf);
 }
@@ -784,8 +804,6 @@ void callback_mail_has_been_sent(char *filename)
 				}
 			}
 		}
-
-
 	}
 }
 

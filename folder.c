@@ -774,7 +774,7 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
  Find a mail with a given uid (which maps to a filename) in the
  given imap folder
 *******************************************************************/
-struct mail *folder_imap_find_mail_by_uid(struct folder *folder, int uid)
+struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid)
 {
 	int i,l;
 	char buf[20];
@@ -782,7 +782,7 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, int uid)
 	if (!folder) return NULL;
 	if (!folder->is_imap) return NULL;
 
-	sprintf(buf,"%d",uid);
+	sprintf(buf,"%u",uid);
 	l = strlen(buf);
 
 	for (i=0; i < folder->num_mails; i++)
@@ -793,6 +793,7 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, int uid)
 				return folder->mail_array[i];
 		}
 	}
+	return NULL;
 }
 
 /******************************************************************

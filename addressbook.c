@@ -726,15 +726,12 @@ static int yam_import_entries(FILE *fp)
 		if (strncmp(line, "@USER", 5) == 0)
 		{
 			struct addressbook_entry_new *newperson;
-
-			if ((newperson = (struct addressbook_entry_new*)malloc(sizeof(*newperson))))
+			if ((newperson = addressbook_add_entry(NULL)))
 			{
-				memset(newperson,0,sizeof(*newperson));
-
 				newperson->alias = utf8create(striplr(line) + 6, charset);
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
-				newperson->email_array = array_add_string(newperson->email_array, utf8create(striplr(line), charset));
+				newperson->email_array = array_add_string(newperson->email_array, striplr(line));
 
 				if (!fgets(line,sizeof(line),fp)) return 0;
 				newperson->realname = utf8create(striplr(line), charset);
@@ -773,7 +770,11 @@ static int yam_import_entries(FILE *fp)
 					if (!strncmp(line, "@ENDUSER", 8)) break;
 				}
 
-				newperson->group_array = array_add_string(newperson->group_array,"YAM Imports");
+				newperson->group_array = array_add_string(newperson->group_array,Q_("?addressbook:YAM Imports"));
+
+				/* Add YAM imports group if not already done */
+				if (!addressbook_find_group_by_name(Q_("?addressbook:YAM Imports")))
+					addressbook_add_group(Q_("?addressbook:YAM Imports"));
 			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{

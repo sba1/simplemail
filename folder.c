@@ -2923,6 +2923,8 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 											  struct filter *filter)
 {
 	struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
+	struct mail_complete *mc = mail_complete_create();
+	if (mc) mc->info = m;
 
 	while (rule)
 	{
@@ -2991,10 +2993,12 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 
 			case	RULE_HEADER_MATCH:
 						{
-							struct mail_complete *mc = mail_complete_create_from_file(m->filename);
 							if (mc)
 							{
 								struct header *header;
+
+								mail_read_header_list_if_empty(mc);
+
 								if ((header = mail_find_header(mc,rule->u.header.name)))
 								{
 									if (header->contents)
@@ -3011,7 +3015,6 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 										}
 									}
 								}
-								mail_complete_free(mc);
 							}
 						}
 						break;
@@ -3034,11 +3037,24 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 						break;
 		}
 
-		if (!take && !filter->mode) return 0;
-		if (take && filter->mode) return 1;
+		if (!take && !filter->mode)
+		{
+			if (mc) mc->info = NULL; /* don't free the mail_info! */
+			mail_complete_free(mc);
+			return 0;
+		}
+		if (take && filter->mode)
+		{
+			if (mc) mc->info = NULL; /* don't free the mail_info! */
+			mail_complete_free(mc);
+			return 1;
+		}
 
 		rule = (struct filter_rule*)node_next(&rule->node);
 	}
+
+	if (mc) mc->info = NULL; /* don't free the mail_info! */
+	mail_complete_free(mc);
 
 	if (!filter->mode) return 1;
 	return 0;

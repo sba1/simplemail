@@ -93,20 +93,10 @@ int appicon_init(void)
 	appicon_last_mode = -1;
 	appicon = NULL;
 
+	HideIcon = GetDiskObject("PROGDIR:SimpleMail");
+
 	appicon_config.position_X = NO_ICON_POSITION;
 	appicon_config.position_Y = NO_ICON_POSITION;
-
-	HideIcon = GetDiskObject("PROGDIR:SimpleMail");
-	/* first, try to get the position from the tooltypes */
-	if (HideIcon)
-	{
-		char *c_pos;
-		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSX");
-		if (c_pos) appicon_config.position_X = atoi(c_pos);
-		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSY");
-		if (c_pos) appicon_config.position_Y = atoi(c_pos);
-	}
-	/* now, try to load the position from the appicon config file */
 	appicon_load_position();
 
 	for(i=0;i<SM_APPICON_MAX;i++)
@@ -314,6 +304,17 @@ static void appicon_load_position(void)
 {
 	char *buf;
 
+	/* first, try to get the position from the tooltypes */
+	if (HideIcon)
+	{
+		char *c_pos;
+		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSX");
+		if (c_pos) appicon_config.position_X = atoi(c_pos);
+		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSY");
+		if (c_pos) appicon_config.position_Y = atoi(c_pos);
+	}
+
+	/* now, try to load the position from the appicon config file */
 	if (buf = malloc(512))
 	{
 		FILE *fh;

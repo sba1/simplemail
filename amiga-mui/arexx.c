@@ -290,7 +290,6 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-
 /****************************************************************
  SHOW Arexx Command
 *****************************************************************/
@@ -871,6 +870,95 @@ static void arexx_readclose(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ READINFO ARexx Command
+*****************************************************************/
+static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+	} readinfo_arg;
+	memset(&readinfo_arg,0,sizeof(readinfo_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K",args,&readinfo_arg)))
+	{
+		int num = 0;
+		char num_buf[20];
+		struct mail *mail;
+
+		if ((mail = read_window_get_displayed_mail(read_active_window)))
+		{
+			mail = mail_get_root(mail);
+
+			if (readinfo_arg.stem)
+			{
+				int stem_len = strlen(readinfo_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					int i, count = 0;
+					struct mail *t = mail;
+
+					while (t)
+					{
+						mail_decode(t);
+						t = mail_get_next(t);
+						count++;
+					}
+
+					strcpy(stem_buf,readinfo_arg.stem);
+					strcpy(&stem_buf[stem_len],"FILENAME.COUNT");
+					sprintf(num_buf,"%d",count);
+					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+					strcpy(&stem_buf[stem_len],"FILETYPE.COUNT");
+					sprintf(num_buf,"%d",count);
+					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+					strcpy(&stem_buf[stem_len],"FILESIZE.COUNT");
+					sprintf(num_buf,"%d",count);
+					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+					i = 0;
+
+					while (mail)
+					{
+						char *type_buf;
+						int mail_size;
+
+						if (mail->decoded_data) mail_size = mail->decoded_len;
+						else mail_size = mail->text_len;
+
+						sprintf(&stem_buf[stem_len],"FILENAME.%d",i);
+						sprintf(num_buf,"%d",count);
+						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+						sprintf(&stem_buf[stem_len],"FILETYPE.%d",i);
+						type_buf = mystrdup(mail->content_type);
+						type_buf = stradd(type_buf,"/");
+						type_buf = stradd(type_buf,mail->content_subtype);
+						if (type_buf)
+							SetRexxVar(rxmsg,stem_buf,type_buf,strlen(type_buf));
+						free(type_buf);
+
+						sprintf(&stem_buf[stem_len],"FILESIZE.%d",i);
+						sprintf(num_buf,"%d",mail_size);
+						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+						mail = mail_get_next(mail);
+						i++;
+					}
+					free(stem_buf);
+				}
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  READSAVE ARexx Command
 *****************************************************************/
 static void arexx_readsave(struct RexxMsg *rxmsg, STRPTR args)
@@ -1056,6 +1144,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);
 		else if (!Stricmp("READCLOSE",command.command)) arexx_readclose(rxmsg,command.args);
+		else if (!Stricmp("READINFO",command.command)) arexx_readinfo(rxmsg,command.args);
 		else if (!Stricmp("READSAVE",command.command)) arexx_readsave(rxmsg,command.args);
 		else if (!Stricmp("SCREENTOBACK",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToBack(scr);}
 		else if (!Stricmp("SCREENTOFRONT",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}

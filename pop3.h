@@ -39,8 +39,7 @@ struct pop3_server
 	int ask; /* ask for login/password */
 };
 
-int pop3_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int called_by_auto);
-int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory);
+int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black);
 int pop3_login_only(struct pop3_server *);
 
 struct pop3_server *pop_malloc(void);

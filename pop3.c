@@ -38,7 +38,6 @@
 #include <netinet/tcp.h>
 #endif
 
-#include "configuration.h"
 #include "debug.h"
 #include "filter.h"
 #include "mail.h"
@@ -46,6 +45,7 @@
 #include "tcp.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "spam.h"
 #include "status.h"
 #include "support_indep.h"
 
@@ -425,8 +425,6 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if ((amm = strtol(answer,&answer,10))<=0) return NULL;
 	if ((size = strtol(answer,NULL,10))<=0) return NULL;
 
-//	thread_call_parent_function_async(dl_init_gauge_mail,1,amm);
-
 	if (!(mail_array = malloc((amm+2)*sizeof(struct dl_mail)))) return NULL;
 	mail_array[0].flags = amm;
 	mail_array[0].size = size;
@@ -660,7 +658,7 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
  Retrieve mail.
 **************************************************************************/
 static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
-												 int nr, int size, int already_dl)
+												 int nr, int size, int already_dl, int auto_spam, char **white, char **black)
 {
 	char *fn,*answer;
 	char buf[256];
@@ -668,9 +666,6 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	int bytes_written;
 	int delete_mail = 0;
 	int headers = 1;
-	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
-
-//	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
 	if (!(fn = mail_get_new_name(MAIL_STATUS_UNREAD)))
 	{
@@ -728,10 +723,6 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 			break;
 		}
 		bytes_written += strlen(answer) + 1; /* tcp_readln() removes the \r */
-
-//  	thread_call_parent_function_async(dl_set_mail_size_sum,1,already_dl + bytes_written);
-//		thread_call_parent_function_async(dl_set_gauge_byte,1,bytes_written);
-
 		thread_call_parent_function_async(status_set_gauge, 1, already_dl + bytes_written);
 	}
 
@@ -741,7 +732,21 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	if (delete_mail) remove(fn);
 	else
 	{
-		thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, fn);
+		int is_spam = 0;
+
+		if (auto_spam)
+		{
+			struct mail *mail = mail_create();
+			if (mail)
+			{
+				mail->filename = fn;
+				is_spam = spam_is_mail_spam(NULL,mail,white,black);
+				mail->filename = NULL;
+				mail_free(mail);
+			}
+		}
+
+		thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, fn, is_spam);
 	}
 	free(fn);
 
@@ -764,7 +769,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory)
+int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black)
 {
 	int rc = 0;
 
@@ -877,7 +882,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 									if (dl)
 									{
-										if (!pop3_get_mail(conn, server, i, mail_array[i].size, mail_size_sum))
+										if (!pop3_get_mail(conn, server, i, mail_array[i].size, mail_size_sum, auto_spam, white, black))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
 											success = 0;
@@ -971,79 +976,6 @@ int pop3_login_only(struct pop3_server *server)
 	thread_call_parent_function_sync(callback_autocheck_refresh,0);
 	return rc;
 }
-
-
-struct pop_entry_msg
-{
-	struct list *pop_list;
-	char *dest_dir;
-	int receive_preselection;
-	int receive_size;
-	int called_by_auto;
-	int has_remote_filter;
-	char *folder_directory;
-};
-
-/**************************************************************************
- Entrypoint for the fetch mail process
-**************************************************************************/
-static int pop3_entry(struct pop_entry_msg *msg)
-{
-	struct list pop_list;
-	struct pop3_server *pop;
-	char *dest_dir, *folder_directory;
-	int receive_preselection = msg->receive_preselection;
-	int receive_size = msg->receive_size;
-	int called_by_auto = msg->called_by_auto;
-	int has_remote_filter = msg->has_remote_filter;
-
-	list_init(&pop_list);
-	pop = (struct pop3_server*)list_first(msg->pop_list);
-
-	while (pop)
-	{
-		if (pop->name)
-		{
-			struct pop3_server *new_pop = pop_duplicate(pop);
-			if (new_pop)
-				list_insert_tail(&pop_list,&new_pop->node);
-		}
-		pop = (struct pop3_server*)node_next(&pop->node);
-	}
-
-	dest_dir = mystrdup(msg->dest_dir);
-	folder_directory = mystrdup(msg->folder_directory);
-
-	if (thread_parent_task_can_contiue())
-	{
-		thread_call_parent_function_async(status_init,1,0);
-
-		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
-		else thread_call_parent_function_async(status_open,0);
-
-		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size,has_remote_filter,folder_directory);
-		thread_call_parent_function_async(status_close,0);
-	}
-	return 0;
-}
-
-/**************************************************************************
- Fetch the mails. Starts a subthread.
-**************************************************************************/
-int pop3_dl(struct list *pop_list, char *dest_dir,
-            int receive_preselection, int receive_size, int called_by_auto)
-{
-	struct pop_entry_msg msg;
-	msg.pop_list = pop_list;
-	msg.dest_dir = dest_dir;
-	msg.receive_preselection = receive_preselection;
-	msg.receive_size = receive_size;
-	msg.called_by_auto = called_by_auto;
-	msg.folder_directory = user.folder_directory;
-	msg.has_remote_filter = filter_list_has_remote();
-	return thread_start(THREAD_FUNCTION(&pop3_entry),&msg);
-}
-
 
 #else
 

@@ -742,6 +742,7 @@ void callback_check_selected_folder_for_spam(void)
 	struct folder *folder = main_get_folder();
 	void *handle = NULL;
 	struct mail *m;
+	char **white;
 
 	int spams = spam_num_of_spam_classified_mails();
 	int hams = spam_num_of_ham_classified_mails();
@@ -766,12 +767,17 @@ void callback_check_selected_folder_for_spam(void)
 
 	app_busy();
 
+	/* build the white list */
+	if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+	else white = NULL;
+	white = array_add_array(white,user.config.spam_white_emails);
+
 	while ((m = folder_next_mail(folder, &handle)))
 	{
 		if (m->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,m);
 
-		if (spam_is_mail_spam(folder,m))
+		if (spam_is_mail_spam(folder->path,m,white,user.config.spam_black_emails))
 		{
 			folder_set_mail_flags(folder, m, m->flags | MAIL_FLAGS_AUTOSPAM);
 			if (m->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
@@ -779,6 +785,8 @@ void callback_check_selected_folder_for_spam(void)
 			main_refresh_mail(m);
 		}
 	}
+
+	array_free(white);
 
 	app_unbusy();
 }
@@ -1045,19 +1053,8 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	struct filter *f;
 	int pos;
 
-	int spams = spam_num_of_spam_classified_mails();
-	int hams = spam_num_of_ham_classified_mails();
-
 	mail->flags |= MAIL_FLAGS_NEW;
 	pos = folder_add_mail(folder,mail,1);
-
-	if (user.config.spam_auto_check && (spams >= 500 && hams >= 500))
-	{
-		if (spam_is_mail_spam(folder,mail))
-		{
-			folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
-		}
-	}
 
 	if (main_get_folder() == folder && pos != -1)
 	{
@@ -1136,7 +1133,7 @@ void callback_export(void)
 }
 
 /* a new mail has been arrived, only the filename is given */
-void callback_new_mail_arrived_filename(char *filename)
+void callback_new_mail_arrived_filename(char *filename, int is_spam)
 {
 	struct mail *mail;
 	char buf[256];
@@ -1145,7 +1142,10 @@ void callback_new_mail_arrived_filename(char *filename)
 	chdir(folder_incoming()->path);
 
 	if ((mail = mail_create_from_file(filename)))
+	{
+		if (is_spam) mail->flags |= MAIL_FLAGS_AUTOSPAM;
 		callback_new_mail_arrived(mail,folder_incoming());
+	}
 
 	chdir(buf);
 }
@@ -1387,10 +1387,16 @@ void callback_check_selected_mails_if_spam(void)
 {
 	struct folder *folder = main_get_folder();
 	struct mail *mail;
+	char **white;
 	void *handle;
 	if (!folder) return;
-	mail = main_get_mail_first_selected(&handle);
 
+	/* build the white list */
+	if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+	else white = NULL;
+	white = array_add_array(white,user.config.spam_white_emails);
+
+	mail = main_get_mail_first_selected(&handle);
 	while (mail)
 	{
 		if (mail->flags & MAIL_FLAGS_PARTIAL)
@@ -1398,7 +1404,7 @@ void callback_check_selected_mails_if_spam(void)
 
 		if (!mail_is_spam(mail))
 		{
-			if (spam_is_mail_spam(folder,mail))
+			if (spam_is_mail_spam(folder->path,mail,white,user.config.spam_black_emails))
 			{
 				folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
 				if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
@@ -1408,6 +1414,7 @@ void callback_check_selected_mails_if_spam(void)
 		}
 		mail = main_get_mail_next_selected(&handle);
 	}
+	array_free(white);
 }
 
 /* import a addressbook into SimpleMail, return 1 for success */

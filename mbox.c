@@ -245,7 +245,7 @@ static int import_entry(struct import_data *data)
 									if (mailfh)
 									{
 										fclose(mailfh);
-										thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, mailfilename);
+										thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
 									}
 
 									if (!(mailfilename = mail_get_new_name(MAIL_STATUS_UNREAD))) break;
@@ -267,7 +267,7 @@ static int import_entry(struct import_data *data)
 							{
 								if (empty_line) fputs("\n",mailfh);
 								fclose(mailfh);
-								thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, mailfilename);
+								thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
 							}
 							
 							free(line_buf);

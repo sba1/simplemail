@@ -914,60 +914,6 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 	
 }
 
-struct imap_entry_msg
-{
-	struct list *imap_list;
-	int called_by_auto;
-};
-
-/**************************************************************************
- Entrypoint for the fetch mail process
-**************************************************************************/
-static int imap_entry(struct imap_entry_msg *msg)
-{
-	struct list imap_list;
-	struct imap_server *imap;
-	int called_by_auto = msg->called_by_auto;
-
-	list_init(&imap_list);
-	imap = (struct imap_server*)list_first(msg->imap_list);
-
-	while (imap)
-	{
-		if (imap->name)
-		{
-			struct imap_server *new_imap = imap_duplicate(imap);
-			if (new_imap)
-				list_insert_tail(&imap_list,&new_imap->node);
-		}
-		imap = (struct imap_server*)node_next(&imap->node);
-	}
-
-	if (thread_parent_task_can_contiue())
-	{
-		thread_call_parent_function_async(status_init,1,0);
-		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
-		else thread_call_parent_function_async(status_open,0);
-
-		imap_synchronize_really(&imap_list, called_by_auto);
-
-		thread_call_parent_function_async(status_close,0);
-	}
-	return 0;
-
-}
-
-/**************************************************************************
- Synchronizes the given imap servers
-**************************************************************************/
-int imap_synchronize(struct list *imap_list, int called_by_auto)
-{
-	struct imap_entry_msg msg;
-	msg.imap_list = imap_list;
-	msg.called_by_auto = called_by_auto;
-	return thread_start(THREAD_FUNCTION(&imap_entry),&msg);
-}
-
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;

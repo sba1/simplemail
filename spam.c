@@ -26,7 +26,6 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "addressbook.h"
 #include "configuration.h"
 #include "hash.h"
 #include "mail.h"
@@ -434,9 +433,10 @@ static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct
 }
 
 /**************************************************************************
- Determines wheater a mail is spam or not via statistics
+ Determines wheater a mail is spam or not via statistics.
+ folder_path maybe NULL.
 **************************************************************************/
-static int spam_is_mail_spam_using_statistics(struct folder *folder, struct mail *to_check_mail)
+static int spam_is_mail_spam_using_statistics(char *folder_path, struct mail *to_check_mail)
 {
 	char path[380];
 	struct mail *mail;
@@ -454,8 +454,12 @@ static int spam_is_mail_spam_using_statistics(struct folder *folder, struct mail
 		hash_table_clear(&spam_prob_table);
 */
 
-	if (getcwd(path, sizeof(path)) == NULL) return 0;
-	chdir(folder->path);
+	/* change the path */
+	if (folder_path)
+	{
+		if (getcwd(path, sizeof(path)) == NULL) return 0;
+		chdir(folder_path);
+	}
 
 	if ((mail = mail_create_from_file(to_check_mail->filename)))
 	{
@@ -494,17 +498,22 @@ static int spam_is_mail_spam_using_statistics(struct folder *folder, struct mail
 		if (p > 0.9) rc = 1;
 		mail_free(mail);
 	}
-	chdir(path);
+
+	/* change the path back */
+	if (folder_path)
+	{
+		chdir(path);
+	}
+
 	return rc;
 }
 
 /**************************************************************************
- Determines wheater a mail is spam or not.
-
- TODO: Because of the address book usage and config values this
- is not yet thread safe.
+ Determines wheater a mail is spam or not. white and black are string
+ arrays (created via the array_xxx() functions) and stand for white
+ and black lists.
 **************************************************************************/
-int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
+int spam_is_mail_spam(char *folder_path, struct mail *to_check_mail, char **white, char **black)
 {
 	char *from_addr;
 	int rc;
@@ -512,22 +521,17 @@ int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
 	thread_lock_semaphore(sem);
 	if ((from_addr = to_check_mail->from_addr))
 	{
-		if (array_contains(user.config.spam_white_emails,from_addr))
+		if (array_contains(white,from_addr))
 			return 0;
 
-		if (user.config.spam_addrbook_is_white)
-		{
-			if (addressbook_find_entry_by_address(from_addr))
-				return 0;
-		}
-
-		if (array_contains(user.config.spam_black_emails,from_addr))
+		if (array_contains(black,from_addr))
 			return 1;
 	}
 
-
-	rc = spam_is_mail_spam_using_statistics(folder,to_check_mail);
+	rc = spam_is_mail_spam_using_statistics(folder_path,to_check_mail);
 	thread_unlock_semaphore(sem);
+
+	return rc;
 }
 
 /**************************************************************************

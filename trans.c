@@ -25,12 +25,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "subthreads.h"
-#include "status.h"
-
 #include "account.h"
+#include "addressbook.h"
 #include "configuration.h"
-#include "dlwnd.h"
+#include "debug.h"
 #include "filter.h"
 #include "folder.h"
 #include "imap.h"
@@ -38,12 +36,25 @@
 #include "pop3.h"
 #include "simplemail.h"
 #include "smtp.h"
-#include "support.h"
+#include "spam.h"
 #include "support_indep.h"
+#include "status.h"
+#include "trans.h"
 #include "tcp.h"
+
+#include "dlwnd.h"
+#include "subthreads.h"
+#include "support.h"
 #include "upwnd.h"
 
-static int mails_dl_entry(int called_by_auto)
+struct mails_dl_msg
+{
+	int called_by_auto;
+	struct account *single_account;
+};
+
+/* Entry point of the mail download process */
+static int mails_dl_entry(struct mails_dl_msg *msg)
 {
 	struct account *account;
 
@@ -51,11 +62,19 @@ static int mails_dl_entry(int called_by_auto)
 	struct list imap_list;
 	char *incoming_path;
 	char *folder_directory;
+	char **white = NULL, **black = NULL;
 	int receive_preselection = user.config.receive_preselection;
 	int receive_size = user.config.receive_size;
 	int has_remote_filter = filter_list_has_remote();
+	int called_by_auto;
+	int auto_spam;
+	int single_account;
 	struct pop3_server *pop;
 	struct imap_server *imap;
+
+	called_by_auto = msg->called_by_auto;
+
+	/* We can access configuration data here because the parent task is still waiting */
 
 	if (!(incoming_path = mystrdup(folder_incoming()->path)))
 		return 0;
@@ -68,25 +87,65 @@ static int mails_dl_entry(int called_by_auto)
 	list_init(&pop_list);
 	list_init(&imap_list);
 
-	account = (struct account*)list_first(&user.config.account_list);
-	while (account)
+	if (msg->single_account)
 	{
+		single_account = 1;
+
+		account = msg->single_account;
 		if (!account->recv_type)
 		{
-			if (account->pop && account->pop->active && account->pop->name)
+			if (account->pop && account->pop->name)
 			{
-				struct pop3_server *pop3 = pop_duplicate(account->pop);
-				if (pop3) list_insert_tail(&pop_list,&pop3->node);
+					struct pop3_server *pop3 = pop_duplicate(account->pop);
+					if (pop3) list_insert_tail(&pop_list,&pop3->node);
 			}
 		} else
 		{
-			if (account->imap && account->imap->active && account->imap->name)
-			{
-				struct imap_server *imap = imap_duplicate(account->imap);
-				if (imap) list_insert_tail(&imap_list,&imap->node);
-			}
+				if (account->imap && account->imap->name)
+				{
+					struct imap_server *imap = imap_duplicate(account->imap);
+					if (imap) list_insert_tail(&imap_list,&imap->node);
+				}
 		}
-		account = (struct account*)node_next(&account->node);
+	} else
+	{
+		single_account = 0;
+		account = (struct account*)list_first(&user.config.account_list);
+		while (account)
+		{
+			if (!account->recv_type)
+			{
+				if (account->pop && account->pop->active && account->pop->name)
+				{
+					struct pop3_server *pop3 = pop_duplicate(account->pop);
+					if (pop3) list_insert_tail(&pop_list,&pop3->node);
+				}
+			} else
+			{
+				if (account->imap && account->imap->active && account->imap->name)
+				{
+					struct imap_server *imap = imap_duplicate(account->imap);
+					if (imap) list_insert_tail(&imap_list,&imap->node);
+				}
+			}
+			account = (struct account*)node_next(&account->node);
+		}
+	}
+
+	SM_DEBUGF(10,("Checking %ld pop and %ld imap accounts\n",list_length(&pop_list),list_length(&imap_list)));
+
+	if ((auto_spam = user.config.spam_auto_check))
+	{
+		int spams = spam_num_of_spam_classified_mails();
+		int hams = spam_num_of_ham_classified_mails();
+
+		if (spams < 500 | hams < 500) auto_spam = 0;
+		else
+		{
+			black = array_duplicate(user.config.spam_black_emails);
+			if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+			white = array_add_array(white,user.config.spam_white_emails);
+		}
 	}
 
 	if (thread_parent_task_can_contiue())
@@ -95,13 +154,19 @@ static int mails_dl_entry(int called_by_auto)
 		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
 		else thread_call_parent_function_async(status_open,0);
 
-		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, has_remote_filter, folder_directory))
+		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, has_remote_filter, folder_directory, auto_spam, white, black))
+		{
+			imap_synchronize_really(&imap_list, called_by_auto);
+		} else if (single_account)
 		{
 			imap_synchronize_really(&imap_list, called_by_auto);
 		}
 
 		thread_call_parent_function_async(status_close,0);
 	}
+
+	array_free(black);
+	array_free(white);
 
 	free(incoming_path);
 	free(folder_directory);
@@ -116,26 +181,18 @@ static int mails_dl_entry(int called_by_auto)
 
 int mails_dl(int called_by_auto)
 {
-	return thread_start(THREAD_FUNCTION(&mails_dl_entry),(void*)called_by_auto);
+	struct mails_dl_msg msg;
+	msg.called_by_auto = called_by_auto;
+	msg.single_account = NULL;
+	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
 
 int mails_dl_single_account(struct account *ac)
 {
-	struct list pop_list;
-	if (!ac) return 0;
-
-	list_init(&pop_list);
-
-	if (!ac->recv_type)
-	{
-		list_insert_tail(&pop_list,&ac->pop->node);
-		pop3_dl(&pop_list,folder_incoming()->path,user.config.receive_preselection,user.config.receive_size,0);
-	} else
-	{
-		list_insert_tail(&pop_list,&ac->imap->node);
-		imap_synchronize(&pop_list,0);
-	}
-	return 0;
+	struct mails_dl_msg msg;
+	msg.called_by_auto = 0;
+	msg.single_account = ac;
+	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
 
 int mails_upload(void)

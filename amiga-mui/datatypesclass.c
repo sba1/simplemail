@@ -36,6 +36,7 @@
 #include <proto/exec.h>
 #include <proto/muimaster.h>
 #include <proto/datatypes.h>
+#include <proto/intuition.h>
 
 #include "support_indep.h"
 
@@ -50,6 +51,9 @@ struct DataTypes_Data
 	char *filename; /* Cache the filename */
 	int del; /* 1 if filename should be deleted */
 	int show; /* 1 if between show / hide */
+
+	Object *horiz_scrollbar;
+  Object *vert_scrollbar;
 
 	union printerIO *pio;
 
@@ -146,6 +150,16 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 			case	MUIA_DataTypes_BufferLen:
 						newbufferlen = tidata;
 						break;
+
+			case  MUIA_DataTypes_HorizScrollbar:
+					  data->horiz_scrollbar = (Object*)tidata;
+					  DoMethod(data->horiz_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, obj, 1, MUIM_Datatypes_HorizUpdate);
+					  break;
+
+			case  MUIA_DataTypes_VertScrollbar:
+					  data->vert_scrollbar = (Object*)tidata;
+					  DoMethod(data->vert_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, obj, 1, MUIM_Datatypes_VertUpdate);
+					  break;
 		}
 	}
 
@@ -323,6 +337,8 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 	if (msg->imsg && msg->imsg->Class == IDCMP_IDCMPUPDATE)
 	{
 		struct TagItem *tstate, *tag;
+		struct TagItem vert_tl[4], horiz_tl[4];
+		int vert_pos = 0, horiz_pos = 0;
 
 		tstate = (struct TagItem *)msg->imsg->IAddress;
 
@@ -347,7 +363,49 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 				case	DTA_PrinterStatus:
 							DataTypes_PrintCompleted(cl, obj);
 							break;
+
+				case  DTA_TopVert:
+							vert_tl[vert_pos].ti_Tag = MUIA_Prop_First;
+							vert_tl[vert_pos++].ti_Data = tidata;
+							break;
+
+				case  DTA_TotalVert:
+							vert_tl[vert_pos].ti_Tag = MUIA_Prop_Entries;
+							vert_tl[vert_pos++].ti_Data = tidata;
+							break;
+
+				case  DTA_VisibleVert:
+							vert_tl[vert_pos].ti_Tag = MUIA_Prop_Visible;
+							vert_tl[vert_pos++].ti_Data = tidata;
+							break;
+
+				case  DTA_TopHoriz:
+							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_First;
+							horiz_tl[horiz_pos++].ti_Data = tidata;
+							break;
+
+				case  DTA_TotalHoriz:
+							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_Entries;
+							horiz_tl[horiz_pos++].ti_Data = tidata;
+							break;
+
+				case  DTA_VisibleHoriz:
+							horiz_tl[horiz_pos].ti_Tag = MUIA_Prop_Visible;
+							horiz_tl[horiz_pos++].ti_Data = tidata;
+							break;
 			}
+		}
+
+		if (vert_pos && data->vert_scrollbar)
+		{
+			vert_tl[vert_pos].ti_Tag = TAG_DONE;
+			SetAttrsA(data->vert_scrollbar,vert_tl);
+		}
+
+		if (horiz_pos && data->horiz_scrollbar)
+		{
+			horiz_tl[horiz_pos].ti_Tag = TAG_DONE;
+			SetAttrsA(data->horiz_scrollbar,horiz_tl);
 		}
 	}
 	return 0;
@@ -398,6 +456,23 @@ STATIC ULONG DataTypes_PrintCompleted(struct IClass *cl, Object *obj)
 		DeletePrtReq(data->pio);
 		data->pio = NULL;
 	}
+	return 0;
+}
+
+STATIC ULONG DataTypes_VertUpdate(struct IClass *cl, Object *obj)
+{
+	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
+	if (!data->dt_obj) return 0;
+	SetGadgetAttrs((struct Gadget*)data->dt_obj, _window(obj), NULL, DTA_TopVert, xget(data->vert_scrollbar,MUIA_Prop_First));
+	return 0;
+}
+
+STATIC ULONG DataTypes_HorizUpdate(struct IClass *cl, Object *obj)
+{
+	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
+	if (!data->dt_obj) return 0;
+	SetGadgetAttrs((struct Gadget*)data->dt_obj, _window(obj), NULL, DTA_TopHoriz, xget(data->horiz_scrollbar,MUIA_Prop_First));
+	return 0;
 }
 
 STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
@@ -418,6 +493,9 @@ STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register 
 		case	MUIM_HandleEvent: return DataTypes_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
 		case	MUIM_DataTypes_Print: return DataTypes_Print(cl,obj,msg);
 		case	MUIM_DataTypes_PrintCompleted: return DataTypes_PrintCompleted(cl,obj);
+		case	MUIM_Datatypes_VertUpdate: return DataTypes_VertUpdate(cl,obj);
+		case	MUIM_Datatypes_HorizUpdate: return DataTypes_HorizUpdate(cl,obj);
+
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

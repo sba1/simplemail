@@ -71,9 +71,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
 #define MAX_READ_OPEN 10
 static struct Read_Data *read_open[MAX_READ_OPEN];
 
-#define PAGE_TEXT			0
-#define PAGE_HTML			1
-#define PAGE_DATATYPE	2
+#define PAGE_HTML			0
+#define PAGE_DATATYPE	1
 
 struct Read_Data /* should be a customclass */
 {
@@ -81,10 +80,12 @@ struct Read_Data /* should be a customclass */
 	Object *prev_button;
 	Object *next_button;
 	Object *print_button;
+
 	Object *contents_page;
+
 	Object *datatype_datatypes;
-	Object *text_list;
 	Object *html_simplehtml;
+
 	Object *attachments_group;
 
 	Object *attachments_last_selected;
@@ -870,10 +871,10 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 *******************************************************************/
 int read_window_open(char *folder, struct mail *mail)
 {
-	Object *wnd,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
+	Object *wnd, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
+	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
 	Object *attachments_group;
 	Object *datatype_datatypes;
-	Object *text_listview;
 	Object *prev_button, *next_button, *print_button, *save_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
 	Object *read_menu;
@@ -960,14 +961,8 @@ int read_window_open(char *folder, struct mail *mail)
 					End,
 				End,
 			Child, contents_page = PageGroup,
-				MUIA_Group_ActivePage, PAGE_TEXT,
-				Child, VGroup,
-					Child, text_listview = NListviewObject,
-						MUIA_CycleChain, 1,
-						MUIA_NListview_NList, text_list = ReadListObject,
-							End,
-						End,
-					End,
+				MUIA_Group_ActivePage, PAGE_HTML,
+
 				Child, VGroup,
 					MUIA_Group_Spacing, 0,
 					Child, HGroup,
@@ -978,7 +973,13 @@ int read_window_open(char *folder, struct mail *mail)
 					Child, html_horiz_scrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
 					End,
 				Child, VGroup,
-					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
+					MUIA_Group_Spacing, 0,
+					Child, HGroup,
+						MUIA_Group_Spacing, 0,
+						Child, datatype_datatypes = DataTypesObject, TextFrame, End,
+						Child, datatype_vert_scrollbar = ScrollbarObject,End,
+						End,
+					Child, datatype_horiz_scrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
 					End,
 				End,
 			Child, HGroup,
@@ -1036,7 +1037,6 @@ int read_window_open(char *folder, struct mail *mail)
 
 			data->wnd = wnd;
 			data->folder_path = mystrdup(folder);
-			data->text_list = text_list;
 			data->prev_button = prev_button;
 			data->next_button = next_button;
 			data->print_button = print_button;
@@ -1056,10 +1056,12 @@ int read_window_open(char *folder, struct mail *mail)
 					MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
 					TAG_DONE);
 
-			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, uri_clicked, data, MUIV_TriggerValue);
+			SetAttrs(data->datatype_datatypes,
+					MUIA_DataTypes_HorizScrollbar, datatype_horiz_scrollbar,
+					MUIA_DataTypes_VertScrollbar, datatype_vert_scrollbar,
+					TAG_DONE);
 
-			set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
-			DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);
+			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, uri_clicked, data, MUIV_TriggerValue);
 
 			DoMethod(prev_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
 			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);

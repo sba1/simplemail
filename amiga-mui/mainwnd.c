@@ -211,11 +211,17 @@ static void foldertreelist_orderchanged(void)
 
 	for (i=0;i<count;i++)
 	{
-		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
-			DoMethod(folder_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
-		struct MUI_NListtree_TreeNode *parent = (struct MUI_NListtree_TreeNode*)
-			DoMethod(folder_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Parent,0);
-		struct folder *f = (struct folder*)tn->tn_User;
+		struct MUI_NListtree_TreeNode *tn;
+		struct MUI_NListtree_TreeNode *parent;
+		struct folder *f;
+
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(folder_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+		if (!tn) return;
+
+		parent = (struct MUI_NListtree_TreeNode*)DoMethod(folder_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Parent,0);
+		if (!parent) return;
+
+		f = (struct folder*)tn->tn_User;
 
 		folder_add_to_tree(f,parent?(struct folder*)parent->tn_User:NULL);
 	}

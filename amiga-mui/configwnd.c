@@ -747,10 +747,10 @@ static void account_remove(void)
 
 		if ((account = (struct account*)list_find(&account_list,account_num)))
 		{
+			account_last_selected = NULL;
 			node_remove(&account->node);
-			account_free(account);
-
 			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+			account_free(account);
 		}
 	}
 }
@@ -1252,9 +1252,9 @@ static void signature_remove(void)
 		if ((signature = (struct signature*)list_find(&signature_list,signature_num)))
 		{
 			node_remove(&signature->node);
-			signature_free(signature);
-
+			signature_last_selected = NULL;
 			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+			signature_free(signature);
 		}
 	}
 }
@@ -1369,9 +1369,9 @@ static void phrase_remove(void)
 		if ((phrase = (struct phrase*)list_find(&phrase_list,phrase_num)))
 		{
 			node_remove(&phrase->node);
-			phrase_free(phrase);
-
+			phrase_last_selected = NULL;
 			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+			phrase_free(phrase);
 		}
 	}
 }

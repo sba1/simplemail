@@ -41,6 +41,7 @@ struct DataTypes_Data
 {
 	Object *dt_obj;
 	char *filename; /* Cache the filename */
+	int del; /* 1 if filename should be deleted */
 	int show; /* 1 if between show / hide */
 
 	struct MUI_EventHandlerNode ehnode;
@@ -72,7 +73,11 @@ STATIC VOID DataTypes_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 	if (data->dt_obj) DisposeDTObject(data->dt_obj);
-	if (data->filename) FreeVec(data->filename);
+	if (data->filename)
+	{
+		if (data->del) DeleteFile(data->filename);
+		FreeVec(data->filename);
+	}
 
 	DoSuperMethodA(cl,obj,msg);
 }
@@ -111,7 +116,27 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if (newfilename || newbuffer)
 	{
-		if (data->filename) FreeVec(data->filename);
+		char tmpname[L_tmpnam];
+
+		if (data->filename)
+		{
+			if (data->del) DeleteFile(data->filename);
+			FreeVec(data->filename);
+		}
+
+		if (newbuffer)
+		{
+			BPTR out;
+			tmpnam(tmpname);
+
+			if ((out = Open(tmpname,MODE_NEWFILE)))
+			{
+				Write(out,newbuffer,newbufferlen);
+				Close(out);
+			}
+
+			newfilename = tmpname;
+		}
 		data->filename = StrCopy(newfilename);
 
 		if (data->dt_obj)
@@ -127,12 +152,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 			}
 		}
 
-		/* DTST_MEMORY is new for version 44 of the datatypes.library */
-		data->dt_obj = NewDTObject(newfilename,
-				DTA_SourceType, newfilename?DTST_FILE:DTST_MEMORY,
-				newbuffer?DTA_SourceAddress:TAG_IGNORE, newbuffer,
-				newbuffer?DTA_SourceSize:TAG_IGNORE, newbufferlen,
-				TAG_DONE);
+		data->dt_obj = NewDTObjectA(newfilename,NULL);
 
 		if (data->dt_obj)
 		{

@@ -123,8 +123,8 @@ amigamui:
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 
 $(OUT): $(OBJS)
-	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).db
-	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).db
+	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).debug
+	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	protect $(OUT) +e
 
 # prepare the release archives
@@ -157,10 +157,10 @@ bump:
 
 
 dump:
-	ppc-morphos-objdump --reloc --disassemble-all $(OUT).db >$(OUT).dump
+	ppc-morphos-objdump --reloc --disassemble-all $(OUT).debug >$(OUT).dump
 
 clean:
-	-rm   *.o $(OUT) *.db *.dump ./amiga-mui/*.o ./amiga-mui/*.a
+	-rm   *.o $(OUT) *.debug *.dump ./amiga-mui/*.o ./amiga-mui/*.a
 
 pack: clean
 	-@rm ram:simplemail.lha

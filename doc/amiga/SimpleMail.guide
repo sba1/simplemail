@@ -1,15 +1,15 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.3 (05.12.2001)
+@$VER: SimpleMail.guide 0.4 (08.12.2001)
 @AUTHOR David Rey <david@saug.org>
 @INDEX "Index"
 
 @NODE "Main" "Welcome to SimpleMail!"
 
-                               SimpleMail 0.13 (public ALPHA)
+                         SimpleMail 0.13 (public ALPHA)
 
-                      © 2000-2001 by Hynek Schlawack & Sebastian Bauer
+                © 2000-2001 by Hynek Schlawack & Sebastian Bauer
  
-                           Released under the GNU Public License
+                     Released under the GNU Public License
 
 
      @{" Introduction     " LINK "INTR" 0} - About SimpleMail
@@ -190,7 +190,7 @@ Provider:
 
 As an example, we'll explain how to setup a single account for an user
 called "Ralf Schumacher", living in Germany. His e-mail address is
-"ralf@provider.de" and the address of his mail server is "mail.provider.de".
+"ralf\@provider.de" and the address of his mail server is "mail.provider.de".
 His password is "formula1".
 
 2. Start SimpleMail by double clicking its icon. After a short time, the
@@ -213,7 +213,7 @@ for you to be able to send and receive email. Following our example, we
 enter this under "User":
 
                     Name:           Ralf Schumacher
-                    E-Mail Address: ralf@provider.de
+                    E-Mail Address: ralf\@provider.de
 
 then this under "Receive":
 
@@ -235,7 +235,7 @@ enough data to allow you to send and receive email.
 8. After saving the settings, you're back in the main window. Click the
 [New] button (fifth button from the left) - the Compose Message window
 will open. As a quick test, type your own address into the "To" text field
-(like "ralf@provider.de"), and then something to indicate the subject of
+(like "ralf\@provider.de"), and then something to indicate the subject of
 your message into the "Subject" text field. As you press <Return> in this
 field, you're brought to the large blank area where you can type the actual
 message.
@@ -268,8 +268,8 @@ the upper part of the message have been inserted by SimpleMail and
 contain data needed for mail transfer (the so-called "headers").
 
 13. Since you've written the mail to yourself, it's time to check your
-account for new mail. Close the Read Message and then click the "Fetch"
-button at the top of the main window.
+account for new mail. Close the Read Message window and then click the
+"Fetch" button at the top of the main window.
 
 14. The transfer status window you saw before opens again and you can
 watch how SimpleMail downloads your mail from the mail server. Provided
@@ -355,8 +355,8 @@ unread messages in the currently selected folder. There is also a button
 at the right side of this status bar, allowing you to switch to & from
 the "alternative" view of the main window: the folder list will disappear,
 and this status bar will jump to the top. Also, an additional pop-up gadget
-will appear now at the right side of the status bar, allowing you to select
-another folder easily and see some stats.
+will appear now at the right side of the status bar, allowing you to easily
+select another folder and see some stats.
 
 @ENDNODE
 @NODE "MA01" "Main window - Message list"
@@ -831,7 +831,11 @@ Password
 
 The password which is asked by your mail server. This password is possibly
 but not necessarily identical to the password you use to log into your ISP
-(e.g. using PPP).
+(e.g. using PPP). If your computer is used by other people or for any other
+reason saving your password in the configuration file without any encryption
+at all is an issue, you might want to leave this field empty and select "Ask"
+instead - this way SimpleMail will ask you for your password when it is
+needed, instead of saving it on disk permanently.
 
   Example:  codingismylife
 
@@ -972,11 +976,22 @@ messages".
 ---- Automatic operation -------------------------------------------------
 
 Check for new mail every [xx] minutes
+
 Here you can specify a time interval after which SimpleMail will
 automatically recheck your mail server for new mail. To deactivate
 this option, just enter zero.
 
   Example:  15 minutes
+
+
+---- New mails -----------------------------------------------------------
+
+[ ] Sound
+
+Here you can select a sound file that will be played any time you get
+new email. You can use any sound format supported by the datatypes
+currently in use. Click the pop-up gadget to select a file, and the
+PLAY symbol to test the sound.
 
 @ENDNODE
 @NODE "CO03" "Configuration - Write"
@@ -1046,7 +1061,7 @@ fixed-width font, if that's what you really want. :)
 Fixed Font
 
 If you select one, this font will be used to display the message body in
-the Read message window. Fixed-width fonts are usually better suited for
+the Read Message window. Fixed-width fonts are usually better suited for
 this task, as proportional fonts will break about any fancy ASCII signature
 or table you will read. :)
 
@@ -1063,8 +1078,8 @@ wheel.
 [ ] Wordwrap plain text
 
 If this option is activated, very long lines going beyond the right border
-of the Read window will be wordwrapped. This is irrelevant for headers,
-which are always wordwrapped if needed.
+of the Read Message window will be wordwrapped. This is irrelevant for
+headers, which are always wordwrapped if needed.
 
 
 [ ] Underline links
@@ -1214,12 +1229,9 @@ Tick this box if you really want to use signatures.
 Use taglines
 
 Tick this box is you want SimpleMail to automatically add a random
-tagline to every email you write. Simply insert a %t in the signature
-and it will be replaced by a random tagline found in .taglines when
-composing a mail.
-
-The supplied taglines are courtesy of Andreas Neumann 
-(http://www.andreasneumann.de/).
+tagline to every email you write - just insert a %t in the signature
+and it will be replaced by a random tagline taken from the /.taglines
+file when you compose a mail.
 
 
 Add new signature
@@ -1818,8 +1830,10 @@ is currently being displayed.
 
 Delete
 
-Deletes the current message and loads the next one into the Read window.
-BEWARE: whilst both the "Delete" gadget and the "Message/Delete" menu item
+Deletes the current message and loads the next one into the Read Message
+window.
+
+BEWARE: Whilst both the "Delete" gadget and the "Message/Delete" menu item
 in the main window move the message to the "Deleted" folder, this gadget
 removes the message IMMEDIATELY, i.e. the message can not be recovered.
 
@@ -1996,7 +2010,7 @@ AREXX INTERFACE
 
 SimpleMail sports an ARexx interface supporting a growing number of
 @{" commands " LINK "REX2" 0} which can be called through the ARexx port "SIMPLEMAIL.1".
-With the help of ARexx scripts, you can, for instance, let it do things
+With the help of ARexx scripts you can, for instance, let it do things
 automatically.
 
 Explanation for the syntax templates of the ARexx commands:
@@ -2010,11 +2024,11 @@ Explanation for the syntax templates of the ARexx commands:
 Be careful when passing arguments containing spaces. For instance,
 
   subj = 'Just testing'
-  MAILWRITE MAILTO ralf@provider.de SUBJECT subj
+  MAILWRITE MAILTO ralf\@provider.de SUBJECT subj
 
 won't work, as there is a space in the variable. Better use this instead:
 
-  MAILWRITE MAILTO ralf@provider.de SUBJECT "'subj'"
+  MAILWRITE MAILTO ralf\@provider.de SUBJECT "'subj'"
 
 @ENDNODE
 @NODE "REX2" "Supported ARexx commands"
@@ -2035,9 +2049,9 @@ Switches SimpleMail to iconified state.
 
 MAILWRITE        MAILTO/K,SUBJECT/K
 
-Opens a new Write Message window using the recipient and subject
+Opens a new Compose Message window using the recipient and subject
 provided, if any. MAILTO can be either an email address or an alias
-(or even group name) that can be found in the addressbook - SimpleMail
+(or even group name) that may be found in the addressbook - SimpleMail
 will resolve aliases and group names as appropriate.
 
 
@@ -2110,7 +2124,7 @@ We think that the source code of SimpleMail is quite portable, so it
 should be no problem to get it ported to other platforms. However, we
 cannot do everything, so once SimpleMail leaves the alpha/beta stages
 behind, feel free to contact us if you want to port it to your favourite
-platform. 
+platform.
 
 
 - Where can I download the sources?
@@ -2211,6 +2225,7 @@ In the program directory the following files and directories can be found:
    <folder>.index    Index of this folder's messages
  .addressbook.xml  The @{" address book " LINK "AB_W" 0}, in XML format
  .signatures       Your personal @{" signatures " LINK "CO08" 0}
+ .taglines         Your favourite collection of @{" taglines " LINK "CO08" 0}.
 
 Each message is saved as a separate file of which the filename is
 constructed by joining the date the file was saved and a running
@@ -2219,13 +2234,16 @@ folder there exists an index which contains the headers of every message
 in the directory. There is also a configuration file which holds the
 settings for that particular folder.
 
+The .taglines file contains your favourite collection of taglines, separated
+by the mandatory "%%" string.
+
 @ENDNODE
 @NODE "INFO" "Further Information about SimpleMail"
 
 FURTHER INFORMATION ABOUT SIMPLEMAIL
 
 
-@{B}SimpleMail sources@{UB} are available on request from the authors:
+@{B}SimpleMail sources @{UB}are available on request from the authors:
 
                Sebastian Bauer <sebauer\@t-online.de>
              Hynek Schlawack <hynek\@rz.uni-potsdam.de>
@@ -2233,7 +2251,7 @@ FURTHER INFORMATION ABOUT SIMPLEMAIL
 Developers wanting to join the effort are welcome!
 
 
-The @{B}latest version@{UB} is always available at
+The @{B}latest public version @{UB}is always available at
 
                    http:\//www.simplemail.de.vu
 
@@ -2248,7 +2266,7 @@ with "subscribe" (without the quotes) as the subject. Your subscription
 request will be processed ASAP.
 
 
-@{B}Bug reports@{UB} can be entered from here:
+@{B}Bug reports @{UB}can be entered from here:
 
       http:\//sourceforge.net/tracker/?group_id=15322&atid=115322
 
@@ -2262,7 +2280,7 @@ Please take some time to browse the bugs already reported to avoid
 duplicated reports. Ditto for feature requests! :)
 
 
-The @{B}SimpleMail User Gallery@{UB} is located at
+The @{B}SimpleMail User Gallery @{UB}is located at
 
        http:\//simplemail.sourceforge.net/index.php?body=gallery
 
@@ -2272,34 +2290,39 @@ The @{B}SimpleMail User Gallery@{UB} is located at
 
 Authors
 
-@{b}Sebastian Bauer@{ub} <sebauer\@t-online.de>
-@{b}Hynek Schlawack@{ub} <hynek\@rz.uni-potsdam.de>
+@{b}Sebastian Bauer @{ub}<sebauer\@t-online.de>
+@{b}Hynek Schlawack @{ub}<hynek\@rz.uni-potsdam.de>
 
 
 Additional programming advice
 
-@{b}Jörg Strohmayer@{ub}
+@{b}Jörg Strohmayer @{ub}
+
+
+Programmers
+
+@{b}Stefan Stuntz @{ub}(MUI)
+@{b}Allan Odgaard @{ub}(TextEditor.mcc, BetterString.mcc)
+@{b}Carsten Scholling @{ub}(NList.mcc, NListtree.mcc)
+@{b}Marcin Orlowski @{ub}(Popplaceholder.mcc)
 
 
 Icon Artists
 
-Homepage banners provided by @{b}Richard "zeg" Wagenführer@{ub}
-Toolbar icons & additional banners provided by @{b}Martin Merz@{ub}
-Smiley gfx courtesy of @{b}Richard Kapp@{ub}
+Homepage banners provided by @{b}Richard "zeg" Wagenführer @{ub}
+Toolbar icons & additional banners provided by @{b}Martin Merz @{ub}
+Smiley gfx courtesy of @{b}Richard Kapp @{ub}
 
 
 SimpleMail.guide
 
 @{b}David Rey @{ub}<david\@saug.org>
-based upon the YAM 2.2 guide by @{b}Marcel Beck@{ub}
+based upon the YAM 2.2 guide by @{b}Marcel Beck @{ub}
 
 
-Programmers
+Taglines
 
-@{b}Stefan Stuntz@{ub} (MUI)
-@{b}Allan Odgaard@{ub} (TextEditor.mcc, BetterString.mcc)
-@{b}Carsten Scholling@{ub} (NList.mcc, NListtree.mcc)
-@{b}Marcin Orlowski@{ub} (Popplaceholder.mcc)
+@{b}Andreas Neumann @{ub}- http://www.andreasneumann.de/
 
 
 And all the people who keep submitting bug reports!
@@ -2390,7 +2413,7 @@ And all the people who keep submitting bug reports!
    @{" SimpleMail - English documentation " LINK MAIN}
    @{" Sources, how to get them " LINK INFO}
    @{" Startup options " LINK OPTI}
-   @{" Status Icons " LINK MA0S}
+   @{" Status icons " LINK MA0S}
 
    T...
 
@@ -2406,13 +2429,13 @@ HISTORY
 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!
   - SMTP over SSL.
-  - POP3 connections can be made secure with the STLS
-    command now. (RFC 2595) 
-  - Primitive ARexx-port.
+  - POP3 connections can now be made secure with the STLS command.
+    (RFC 2595) 
+  - (A rather primitive) ARexx port.
   - Support for playing sounds.
   - Taglines.
-  - Folders holding unread mails are hilighted now.
-  - Localisation.
+  - Folders holding unread mails appear highlighted now.
+  - Localization.
 
 
 0.12 (twelfth alpha) - released on 2001/11/11
@@ -2439,7 +2462,7 @@ HISTORY
 
 
 0.10 (tenth alpha) - released on 2001/09/10
-  - Configurable headers for the Read window
+  - Configurable headers for the Read Message window
   - Can read message/rfc822 content type properly
   - Can decrypt encrypted PGP messages using PGP 2.6.x
   - Minor improvements

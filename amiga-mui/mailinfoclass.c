@@ -496,6 +496,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 	if (!cnt) return;
 	if (!update) Text(_rp(obj),f->name,cnt);
+	if (cnt < strlen(f->name)) return;
 
 	/* display the rest */
 	SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
@@ -518,6 +519,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 	}
 	space_left -= data->fieldname_width;
 	real_space_left -= data->fieldname_width;
+	if (space_left <= 0) space_left = real_space_left;
 	if (real_space_left <= 0) return;
 
 	Move(_rp(obj),_mleft(obj) + data->fieldname_left + data->fieldname_width + BORDER, ytext);
@@ -572,8 +574,8 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 					real_space_left -= comma_width;
 				} else break;
 			}
+			if (space_left <= 0) break;
 		}
-
 		text = next_text;
 	}
 
@@ -589,6 +591,7 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 
 		Move(_rp(obj),_rp(obj)->cp_x + CONTENTS_OFFSET, _rp(obj)->cp_y);
 		real_space_left -= CONTENTS_OFFSET;
+		if (real_space_left <= 0) return;
 
 		SetAPen(_rp(obj), data->text_pen);
 		SetSoftStyle(_rp(obj),FSF_BOLD,AskSoftStyle(_rp(obj)));
@@ -596,8 +599,10 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 		if (!cnt) return;
 		if (!update) Text(_rp(obj),second_f->name,cnt);
 		else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
+		if (cnt < strlen(second_f->name)) return;
+
 		real_space_left -= te.te_Width;
-		if (real_space_left <= 0) return;
+		if (real_space_left < space_width) return;
 
 		SetSoftStyle(_rp(obj),FS_NORMAL,AskSoftStyle(_rp(obj)));
 		if (!update) Text(_rp(obj)," ",1);
@@ -608,42 +613,45 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
 		while (second_text)
 		{
 			next_text = (struct text_node*)node_next(&second_text->node);
-
-			cnt = TextFit(_rp(obj),second_text->text,strlen(second_text->text),&te,NULL,1,real_space_left,_font(obj)->tf_YSize);
-			/* calculate linkfield */
-			second_text->x_start = _rp(obj)->cp_x - _mleft(obj);
-			second_text->x_end   = second_text->x_start + te.te_Width - 1;
-			second_text->y_start = y;
-			second_text->y_end   = second_text->y_start + _font(obj)->tf_YSize - 1;
-			if (!cnt) return;
-
-			if (update && second_text == data->redraw_text)
+			if (second_text->text)
 			{
-				DoMethod(obj, MUIM_DrawBackground, _rp(obj)->cp_x, _mtop(obj) + y,
-													 te.te_Width, _font(obj)->tf_YSize,0,0,0);
-				draw_text = 1;
-			} else draw_text = !update;
+				cnt = TextFit(_rp(obj),second_text->text,strlen(second_text->text),&te,NULL,1,real_space_left,_font(obj)->tf_YSize);
+				/* calculate linkfield */
+				second_text->x_start = _rp(obj)->cp_x - _mleft(obj);
+				second_text->x_end   = second_text->x_start + te.te_Width - 1;
+				second_text->y_start = y;
+				second_text->y_end   = second_text->y_start + _font(obj)->tf_YSize - 1;
+				if (!cnt) return;
 
-			if (second_f->clickable)
-			{
-				if (second_f == data->selected_field && data->selected_mouse_over)
-					SetAPen(_rp(obj),_dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN]);
-				else SetAPen(_rp(obj),data->link_pen);
-			}
-			if (draw_text) Text(_rp(obj),second_text->text,cnt);
-			else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
-			real_space_left -= te.te_Width;
-
-			if (next_text)
-			{
-				if (space_left >= comma_width && strlen(second_text->text) == cnt)
+				if (update && second_text == data->redraw_text)
 				{
-					if (second_f->clickable) SetAPen(_rp(obj),data->text_pen);
-					if (!update) Text(_rp(obj),",",1);
-					else Move(_rp(obj), _rp(obj)->cp_x + comma_width, _rp(obj)->cp_y);
+					DoMethod(obj, MUIM_DrawBackground, _rp(obj)->cp_x, _mtop(obj) + y,
+													 te.te_Width, _font(obj)->tf_YSize,0,0,0);
+					draw_text = 1;
+				} else draw_text = !update;
 
-					real_space_left -= comma_width;
-				} else break;
+				if (second_f->clickable)
+				{
+					if (second_f == data->selected_field && data->selected_mouse_over)
+						SetAPen(_rp(obj),_dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN]);
+					else SetAPen(_rp(obj),data->link_pen);
+				}
+				if (draw_text) Text(_rp(obj),second_text->text,cnt);
+				else Move(_rp(obj), _rp(obj)->cp_x + te.te_Width, _rp(obj)->cp_y);
+				real_space_left -= te.te_Width;
+
+				if (next_text)
+				{
+					if (space_left >= comma_width && strlen(second_text->text) == cnt)
+					{
+						if (second_f->clickable) SetAPen(_rp(obj),data->text_pen);
+						if (!update) Text(_rp(obj),",",1);
+						else Move(_rp(obj), _rp(obj)->cp_x + comma_width, _rp(obj)->cp_y);
+
+						real_space_left -= comma_width;
+					} else return;
+				}
+				if (real_space_left <= 0) return;
 			}
 			second_text = next_text;
 		}

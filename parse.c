@@ -25,10 +25,11 @@
 #include <ctype.h>
 
 #include "codecs.h"
+#include "codesets.h"
 #include "parse.h"
 #include "support_indep.h"
 
-static char *parse_encoded_word(char *encoded_word, char **pbuf);
+static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset);
 
 /**************************************************************************
  Support function: Appends a string to another, the result string is
@@ -258,12 +259,14 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
-static char *parse_word(char *word, char **pbuf)
+static char *parse_word(char *word, char **pbuf, char **pcharset)
 {
 	char *ret;
 
-	ret = parse_encoded_word(word,pbuf);
-	if (!ret) ret = parse_quoted_string(word,pbuf);
+	if ((ret = parse_encoded_word(word,pbuf,pcharset))) return ret;
+	*pcharset = NULL;
+
+	ret = parse_quoted_string(word,pbuf);
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
 }
@@ -271,16 +274,17 @@ static char *parse_word(char *word, char **pbuf)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
-static char *parse_word_new(char *word, char **pbuf, int *quoted)
+static char *parse_word_new(char *word, char **pbuf, char **pcharset, int *quoted)
 {
 	char *ret;
 
-	if ((ret = parse_encoded_word(word,pbuf)))
+	if ((ret = parse_encoded_word(word,pbuf,pcharset)))
 	{
 		*quoted = 1;
 		return ret;
 	}
 	*quoted = 0;
+	*pcharset = NULL;
 	if (!ret) ret = parse_quoted_string(word,pbuf);
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
@@ -753,8 +757,9 @@ char *parse_etoken(char *token, char **pbuf)
 
 /**************************************************************************
  encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
+ charset might be set to NULL
 **************************************************************************/
-static char *parse_encoded_word(char *encoded_word, char **pbuf)
+static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset)
 {
 	char *ret,*encoding_start;
 	char *charset;
@@ -810,9 +815,10 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 		}
 	}
 
-	free(charset);
+	*pcharset = charset;
 	free(encoding);
 
+	/* filter out the Escape sequence as this is not allowed anywhy */
 	if (*pbuf)
 	{
 		int i;

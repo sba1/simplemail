@@ -110,6 +110,7 @@ locale: ${LOCALEOBJS}
 
 ${LOCALEDIR}de.mo: po/de.po
 ${LOCALEDIR}ma.mo: po/ma.po
+${LOCALEDIR}pl.mo: po/pl.po
 
 de.pox:
   execute CreatePOX de

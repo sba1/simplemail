@@ -837,6 +837,17 @@ static int autocheck_minutes_start; /* to compare with this */
 /* initializes the autocheck function */
 void callback_autocheck_refresh(void)
 {
+	static int called;
+
+	if (user.config.receive_autoonstartup && !called)
+	{
+		autocheck_minutes_start = 0;
+		called = 1;
+		callback_timer();
+	}
+
+	
+
 	autocheck_minutes_start = sm_get_current_seconds();
 }
 

@@ -78,6 +78,7 @@ static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
 static Object *receive_autocheckifonline_check;
+static Object *receive_autocheckonstartup_check;
 static Object *receive_sound_check;
 static Object *receive_sound_string;
 static Object *receive_arexx_check;
@@ -371,6 +372,7 @@ static void config_use(void)
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
 	user.config.receive_autoifonline = xget(receive_autocheckifonline_check,MUIA_Selected);
+	user.config.receive_autoonstartup = xget(receive_autocheckonstartup_check,MUIA_Selected);
 	user.config.receive_sound = xget(receive_sound_check,MUIA_Selected);
 	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
 	user.config.receive_arexx = xget(receive_arexx_check,MUIA_Selected);
@@ -678,6 +680,8 @@ static int init_tcpip_receive_group(void)
 				MUIA_String_Integer, user.config.receive_autocheck,
 				End,
 			Child, TextObject, MUIA_Text_Contents, _("minutes"), End,
+			Child, MakeLabel(_("On startup")),
+			Child, receive_autocheckonstartup_check = MakeCheck(_("On startup"),user.config.receive_autoonstartup),
 			Child, MakeLabel(_("If online")),
 			Child, receive_autocheckifonline_check = MakeCheck(_("If online"),user.config.receive_autoifonline),
 			End,

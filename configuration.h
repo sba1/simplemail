@@ -58,6 +58,7 @@ struct config
 	int receive_size; /* the size in kb */
 	int receive_autocheck; /* 0 no auto check */
 	int receive_autoifonline; /* before auto check, check if online */
+	int receive_autoonstartup; /* check mails at startup */
 
 	int receive_sound;
 	char *receive_sound_file;

@@ -320,7 +320,7 @@ int mbox_import_to_folder(struct folder *folder, char *filename)
 
 	data.filename = filename;
 	data.destdir = folder?folder->path:folder_incoming()->path;
-	data.in_folder = folder?TRUE:FALSE;
+	data.in_folder = folder?1:0;
 
 	return thread_start(THREAD_FUNCTION(import_entry),&data);
 }

@@ -510,8 +510,39 @@ void callback_forward_selected_mails(void)
    a mail from a folder to another with support for IMAP */
 static int move_mail_helper(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
 {
-	int same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
+	int same_server;
 	int success = 0;
+
+	/* At first check if the dest folder is the spam folder */
+	if (dest_folder == folder_spam())
+	{
+		/* Into a spam folder only mails marked as spam can be moved unless the option
+		 * to change the mails to spam mails if moved to the spam folder is selected */
+		if (!mail_is_spam(mail) && !(mail->flags & MAIL_FLAGS_AUTOSPAM) && !user.config.spam_mark_moved)
+			return 0;
+
+		if (!mail_is_spam(mail))
+		{
+			/* If we are here then because the mail has an autospam flag or user has configured that
+			 * all mails which goes to the spam folder get the status changes.
+			 * In both cases we change the mail status to spam and add it into the spam statistics */
+			if (mail->flags & MAIL_FLAGS_PARTIAL)
+			{
+				if (!(imap_download_mail(from_folder,mail)))
+					return 0;
+			}
+
+			if (!spam_feed_mail_as_spam(from_folder,mail))
+				return 0;
+
+			folder_set_mail_status(from_folder,mail,MAIL_STATUS_SPAM);
+		}
+
+		/* Reset the autoflag since the mail now is really marked as spam */
+		folder_set_mail_flags(from_folder,mail,mail->flags & (~MAIL_FLAGS_AUTOSPAM));
+	}
+
+	same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
 
 	if (!same_server)
 	{
@@ -566,18 +597,19 @@ void callback_move_mail(struct mail *mail, struct folder *from_folder, struct fo
 {
 	if (from_folder != dest_folder)
 	{
-		folder_move_mail(from_folder,dest_folder,mail);
+		if (move_mail_helper(mail,from_folder,dest_folder))
+		{
+			/* If outgoing folder is visible remove the mail */
+			if (main_get_folder() == from_folder)
+				main_remove_mail(mail);
 
-		/* If outgoing folder is visible remove the mail */
-		if (main_get_folder() == from_folder)
-			main_remove_mail(mail);
+			/* If sent folder is visible insert the mail */
+			if (main_get_folder() == dest_folder)
+				main_insert_mail_pos(mail,folder_get_index_of_mail(dest_folder, mail)-1);
 
-		/* If sent folder is visible insert the mail */
-		if (main_get_folder() == dest_folder)
-			main_insert_mail_pos(mail,folder_get_index_of_mail(dest_folder, mail)-1);
-
-		main_refresh_folder(from_folder);
-		main_refresh_folder(dest_folder);
+			main_refresh_folder(from_folder);
+			main_refresh_folder(dest_folder);
+		}
 	}
 }
 
@@ -589,17 +621,43 @@ void callback_maildrop(struct folder *dest_folder)
 	{
 		void *handle;
 		struct mail *mail;
+		struct mail **mail_array;
+		int num,moved_num;
 
+		/* find out the number of selected mails */
+		num = 0;
 		mail = main_get_mail_first_selected(&handle);
-
 		while (mail)
 		{
-			move_mail_helper(mail,from_folder,dest_folder);
+			num++;
 			mail = main_get_mail_next_selected(&handle);
 		}
+
+		if (!num) return;
+		if (!(mail_array = (struct mail**)malloc(num*sizeof(struct mail*)))) return;
+
+		/* move mail per mail, store all success full moves into the array */
+		moved_num = 0;
+		mail = main_get_mail_first_selected(&handle);
+		while (mail)
+		{
+			if (move_mail_helper(mail,from_folder,dest_folder))
+				mail_array[moved_num++] = mail;
+			mail = main_get_mail_next_selected(&handle);
+		}
+
 		main_refresh_folder(from_folder);
 		main_refresh_folder(dest_folder);
-		main_remove_mails_selected();
+
+		/* remove all successful removed mails within the main window */
+		main_freeze_mail_list();
+		while (moved_num)
+		{
+			moved_num--;
+			main_remove_mail(mail_array[moved_num]);
+		}
+		free(mail_array);
+		main_thaw_mail_list();
 	}
 }
 
@@ -682,8 +740,7 @@ void callback_check_selected_folder_for_spam(void)
 
 		if (spam_is_mail_spam(folder,m))
 		{
-			folder_set_mail_status(folder,m,MAIL_STATUS_SPAM);
-			m->flags &= ~MAIL_FLAGS_NEW;
+			folder_set_mail_flags(folder, m, (m->flags & (~MAIL_FLAGS_NEW)) | MAIL_FLAGS_AUTOSPAM);
 			main_refresh_mail(m);
 		}
 	}

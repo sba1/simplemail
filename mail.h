@@ -110,6 +110,7 @@ struct composed_mail
 	char *subject; /* maybe NULL */
 
 	char *filename; /* filename, maybe NULL */
+	char *temporary_filename; /* maybe NULL */
 	char *text; /* maybe NULL */
 	char *content_type; /* maybe NULL */
 	struct list list; /* more entries */

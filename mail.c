@@ -1193,7 +1193,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 
-				if ((fh = fopen(new_mail->filename, "rb")))
+				if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
 				{
 					int size;
 					unsigned char *buf;

@@ -343,6 +343,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 		cmail->content_type = mystrdup(attach->content_type);
 		cmail->text = mystrdup(attach->contents);
 		cmail->filename = mystrdup(attach->filename);
+		cmail->temporary_filename = mystrdup(attach->temporary_filename);
 	}
 }
 

@@ -45,531 +45,213 @@
 
 #define REC_BUFFER_SIZE 512
 
+
+/**************************************************************************
+ Recieves a single line answer. Returns the line if this is positive
+ (without the +OK) else 0
+**************************************************************************/
+static char *pop3_receive_answer(struct connection *conn)
+{
+	char *answer;
+	if (!(answer = tcp_readln(conn)))
+	{
+		tell_from_subtask("Error receiving data from host!");
+		return NULL;
+	}
+	if (!strncmp(answer,"+OK",3)) return answer+3;
+	tell_from_subtask(answer);
+	return NULL;
+}
+
 /**************************************************************************
  Wait for the welcome message. Must be rewritten using tcp_readln()
 **************************************************************************/
 static int pop3_wait_login(struct connection *conn, struct pop3_server *server)
 {
-	char *buf;
-	int got;
-	
-	if (!(buf = malloc(1024))) 
-	{
-		tell_from_subtask("Not enough memory!");
-		return 0;
-	}
-
-	got = tcp_read(conn,buf,1023);
-	if (got <= 0)
-	{
-		free(buf);
-		tell_from_subtask("Error receiving data from host!");
-		return 0;
-	}
-
-	buf[got] = 0;
-	if (strncmp(buf,"+OK",3) != 0)
-	{
-		free(buf);
-		tell_from_subtask(buf);
-		return 0;
-	}
-
-	/* Get rid of a eventually longer welcome message  */ 
-	while(strstr(buf, "\r\n") == NULL)
-	{
-		tcp_read(conn, buf, 1023);
-	}
-
-	free(buf);
-	return 1;
+	return pop3_receive_answer(conn)?1:0;
 }
 
 /**************************************************************************
- Log into the pop3 server. Must be rewritten using tcp_readln()
+ Log into the pop3 server.
 **************************************************************************/
 static int pop3_login(struct connection *conn, struct pop3_server *server)
 {
-	int rc;
-	char *buf;
-	int got;
-	long len;
-	
-	rc = 0;
-	
-	len = 4096;
-	buf = malloc(len);   
-	if(buf != NULL)
+	char buf[256];
+
+	thread_call_parent_function_sync(dl_set_status,1,"Sending username...");
+
+	sprintf(buf, "USER %s\r\n",server->login);
+	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
+	if (!pop3_receive_answer(conn))
 	{
-		thread_call_parent_function_sync(dl_set_status,1,"Sending username...");
-	
-		sprintf(buf, "USER %s\r\n", server->login);
-		if(tcp_write(conn, buf, strlen(buf)) != -1)
-		{
-			got = tcp_read(conn, buf, 4095);
-			if(got != 0)
-			{
-				buf[got] = 0;
-				
-				if(strncmp(buf, "+OK", 3) == 0)
-				{
-					thread_call_parent_function_sync(dl_set_status,1,"Sending password...");
-					
-					sprintf(buf, "PASS %s\r\n", server->passwd);
-					if(tcp_write(conn, buf, strlen(buf)) != -1)
-					{
-						got = tcp_read(conn, buf, 4095);
-						if(got != 0)
-						{
-							buf[got] = 0;
-				
-							if(strncmp(buf, "+OK", 3) == 0)
-							{
-								thread_call_parent_function_sync(dl_set_status,1,"Login successful!");
-								rc = 1;
-							}
-							else
-							{
-								tell_from_subtask(buf);
-							}
-						}  
-						else
-						{
-							tell_from_subtask("Reveiving failed.");
-						}
-					}  
-					else
-					{
-						tell_from_subtask("Sending failed.");
-					}
-				}
-				else
-				{
-					tell_from_subtask(buf);
-				}
-			}
-			else
-			{
-				tell_from_subtask("Receiving failed!");
-			}
-		}  
-		else
-		{
-			tell_from_subtask("Sending failed!");
-		}
-		
-		free(buf);
+		tell_from_subtask("Error while identifing the user");
+		return 0;
 	}
-	else
+
+	thread_call_parent_function_sync(dl_set_status,1,"Sending password...");
+	sprintf(buf,"PASS %s\r\n",server->passwd);
+	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
+	if (!pop3_receive_answer(conn))
 	{
-		tell_from_subtask("Not enough memory!");
+		tell_from_subtask("Error while identifing the user");
+		return 0;
 	}
+
+	thread_call_parent_function_sync(dl_set_status,1,"Login successful!");
 	
-	
-	return rc;
+	return 1;
 }
 
 
 /**************************************************************************
- Get statistics about pop3-folder contents. Must be rewritten using
- tcp_readln()
+ Get statistics about pop3-folder contents (returns the number of mails
+ inside the pop3 server)
 **************************************************************************/
 static int pop3_stat(struct connection *conn, struct pop3_server *server)
 {
-	int rc;
-	char *buf;
-	int got;
+	char *answer;
 
-	rc = 0;
-	
-	buf = malloc(1024);
-	if(buf != NULL)
+	thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
+	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
+	if (!(answer = pop3_receive_answer(conn)))
 	{
-		thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
-		if(tcp_write(conn, "STAT\r\n", 6) != -1)
-		{
-			got = tcp_read(conn, buf, 1023);
-			if(got != 0)
-			{
-				buf[got] = 0;
-				
-				if(strncmp("+OK ", buf, 4) == 0)
-				{
-					char *str;
-					
-					str = buf;
-					str += 4;
-					rc = atol(str);
-				}
-				else
-				{
-					tell_from_subtask(buf);
-				}
-			}
-			else
-			{
-				tell_from_subtask("Receiving failed!");
-			}
-		}
-		else
-		{
-			tell_from_subtask("Sending failed!");
-		}
-		free(buf);
+		tell_from_subtask("Could not server statistics");
+		return 0;
 	}
-	else
-	{
-		tell_from_subtask("Not enough memory!");
-	}
-	
-	return rc;
+
+	if ((*answer++) != ' ') return 0;
+	return atoi(answer);
 }
 
 /**************************************************************************
- Regulary quit server. Must be rewritten using tcp_readln()
+ Regulary quit server.
 **************************************************************************/
 static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
-	int rc;
-	int got;
-	char *buf;
-	rc = 0;
-	
-	buf = malloc(1024);
-	if(buf != NULL)
-	{
-		thread_call_parent_function_sync(dl_set_status,1,"Logging out...");
-		if(tcp_write(conn, "QUIT\r\n", 6) != -1)
-		{
-			got = tcp_read(conn, buf, 1023);
-			if(got != 0)
-			{
-				buf[got] = 0;
-				if(strncmp(buf, "+OK", 3) == 0)
-				{
-					rc = 1;
-				}
-				else
-				{
-					tell_from_subtask(buf);
-				}
-			}
-			else
-			{
-				tell_from_subtask("Receiving failed!");
-			}
-		}
-		else
-		{
-			tell_from_subtask("Sending failed!");
-		}
-		free(buf);
-	}
-	else
-	{
-		tell_from_subtask("Not enough memory!");
-	}
-	
-	return rc;
+	thread_call_parent_function_sync(dl_set_status,1,"Logging out...");
+	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
+	return pop3_receive_answer(conn)?1:0;
 }
 
 /**************************************************************************
- Retrieve mail. Must be rewritten using tcp_readln()
+ Retrieve mail.
 **************************************************************************/
-static int pop3_get_mail(struct connection *conn, struct pop3_server *server, unsigned long nr)
+static int pop3_get_mail(struct connection *conn, struct pop3_server *server, int nr)
 {
-	int rc = 0;
-	char *buf, *fn;
-	int got;
+	unsigned char c;
+	char *fn,*answer;
+	char buf[256];
 	FILE *fp;
-
-	if (!(fn = mail_get_new_name()))
-	{
-	 tell_from_subtask("Can\'t get new filename!");
-	 return 0;
-	}
-
-	if (!(buf = malloc(REC_BUFFER_SIZE+5)))
-	{
-		tell_from_subtask("Not enough memory!");
-		free(fn);
-		return 0;
-	}
-
-	if (!(fp = fopen(fn, "w")))
-	{
-		tell_from_subtask("Can\'t open mail file!");
-		free(buf);
-		free(fn);
-		return 0;
-	}
+	int size; /* size of the mail */
+	int bytes_written;
+	int delete_mail = 0;
 
 	sprintf(buf, "LIST %ld\r\n", nr);
 	tcp_write(conn, buf, strlen(buf));
 
-	if ((got = tcp_read(conn, buf, REC_BUFFER_SIZE)) > 0)
+	if (!(answer = pop3_receive_answer(conn)))
 	{
-		if(buf[0] == '+')
-		{
-			unsigned char *str = buf + 4;
-			int size;
-
-			while(isdigit(*str++)); /* skip the mail number */
-						
-			size = atoi(str); /* the size of the mail */
-			thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
-
-			/* Now retrieve the mail data */
-			sprintf(buf, "RETR %ld\r\n", nr);
-
-			tcp_write(conn, buf, strlen(buf));
-			if ((got = tcp_read(conn, buf, REC_BUFFER_SIZE))>0)
-			{
-				if (buf[0] == '+')
-				{
-					char *buf2,*str;
-					int running = 1;
-
-					buf[got] = 0;
-
-					if ((buf2 = strstr(buf,"\r\n")))
-					{
-						int bytes_written = 0;
-
-						buf2 += 2;
-						got = strlen(buf2);
-
-						rc = 1;
-
-						while (running)
-						{
-							/* Check if the downloading should be aborted */
-							if(thread_call_parent_function_sync(dl_checkabort,0))
-							{
-								rc = 0;
-								break;
-							}
-
-							/* possible problem: the following strstr could fail if the 5 chars are splitted */
-							if ((str = strstr(buf, "\r\n.\r\n")))
-							{
-								str[2] = 0;
-								running = 0;
-							}
-
-							fwrite(buf2, strlen(buf2), 1, fp);
-							bytes_written += strlen(buf2);
-							thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
-
-							if (running)
-							{
-								/* copy the last 4 characters to catch the end */
-								buf[0] = buf2[got-4];
-								buf[1] = buf2[got-3];
-								buf[2] = buf2[got-2];
-								buf[3] = buf2[got-1];
-
-								got = tcp_read(conn, buf+4, REC_BUFFER_SIZE);
-								if (got > 0)
-								{
-									/* now use the buf from beginning of the new data */
-									buf2 = buf + 4;
-									buf2[got] = 0;
-								}
-								else running = 0;
-							}
-						}
-					}
-
-					if (rc)
-					{
-						if (Errno())
-						{
-							tell_from_subtask("Error retrieving mail!");
-							rc = 0;
-						}
-
-						thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
-						fclose(fp);
-						fp = NULL;
-
-						thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
-					}  
-				} else tell_from_subtask(buf);
-			} else tell_from_subtask("Receiving failed!");
-		} else tell_from_subtask(buf);
-	} else tell_from_subtask("Receiving failed!");
-
-	if (fp) fclose(fp);
-	free(buf);
-	free(fn);
-
-	return rc;
-}
-
-/**************************************************************************
- Output some infos (just a test)
-**************************************************************************/
-static void pop3_output_infos(struct mail *mail)
-{
-	printf("From: %s\n", mail_find_header_contents(mail, "from"));
-	printf("To: %s\n", mail_find_header_contents(mail, "to"));
-	printf("Date: %s\n", mail_find_header_contents(mail, "date"));
-	printf("X-Mailer: %s\n", mail_find_header_contents(mail, "x-mailer"));
-}
-
-/**************************************************************************
- Get the headers of the specified file.
-**************************************************************************/
-static int pop3_get_top(struct connection *conn, struct pop3_server *server, unsigned long nr)
-{
-	char *buf;
-	int rc;
-
-	rc = FALSE;
-
-	if ((buf = malloc(REC_BUFFER_SIZE + 1)))
-	{
-		struct mail *mail;
-
-		if ((mail = mail_create()))
-		{
-			int got;
-			struct mail_scan ms;
-
-			mail_scan_buffer_start(&ms, mail);
-
-			sprintf(buf, "TOP %ld 1\r\n", nr); /* a 0 sends the whole mail :( */
-			tcp_write(conn, buf, strlen(buf));
-
-			got = tcp_read(conn, buf, REC_BUFFER_SIZE);
-			if(got > 0)
-			{
-				buf[got] = 0;
-
-				if(strncmp(buf, "+OK", 3) == 0)
-				{
-					int running = TRUE, more = TRUE;
-					char *str,*buf2;
-
-					/* set buf2 to the last line */
-					if ((buf2 = strstr(buf,"\r\n")))
-					{
-						buf2 += 2;
-						while (running)
-						{
-							if ((str = strstr(buf2, "\r\n.\r\n")))
-							{
-								str[2] = 0;
-								running = FALSE;
-							}
-
-							if (more)   
-							{
-								/* scan the mail */
-								more = mail_scan_buffer(&ms, buf2, strlen(buf2));
-							}  
-
-							if (running) got = tcp_read(conn, buf, REC_BUFFER_SIZE);
-							if (got > 0) buf[got] = 0;
-							else running = FALSE;
-
-							/* now use the buf from beginning */
-							buf2 = buf;
-						}
-					}
-						
-					if(Errno() == 0)
-					{
-						rc = TRUE;
-					}  
-					else
-					{
-						tell_from_subtask("Error receiving!");
-						
-						mail_free(mail);
-					}
-				}
-				else
-				{
-					tell(buf);
-				}
-			}
-			else
-			{
-				tell_from_subtask("Receiving failed!");
-			}
-			pop3_output_infos(mail);
-			mail_scan_buffer_end(&ms);
-			mail_free(mail); /* never acces ms.mail, this structure is private! */
-		}
-		
-		free(buf);
+		tell_from_subtask("Couldn't get the mails size!");
+		return 0;
 	}
+
+	answer++; /* the space char */
+
+	/* skip the mail number */
+	while(1)
+	{
+		c = *answer++;
+		if (!c) return 0;
+		if (!isdigit(c)) break;
+	}
+
+	size = atoi(answer);
+	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
+
+	if (!(fn = mail_get_new_name()))
+	{
+		tell_from_subtask("Can\'t get new filename!");
+		return 0;
+	}
+
+	sprintf(buf, "RETR %ld\r\n", nr);
+	tcp_write(conn, buf, strlen(buf));
+
+	if (!(fp = fopen(fn, "w")))
+	{
+		tell_from_subtask("Can\'t open mail file!");
+		free(fn);
+		return 0;
+	}
+
+	if (!(answer = pop3_receive_answer(conn)))
+	{
+		tell_from_subtask("Couldn't receive the mail");
+		fclose(fp);
+		free(fn);
+		return 0;
+	}
+
+	bytes_written = 0;
+	thread_call_parent_function_sync(dl_set_gauge_byte,1,0);
+
+	/* read the mail in now */
+	while (1)
+	{
+		if (!(answer = tcp_readln(conn)))
+		{
+			tell_from_subtask("Error while receiving the mail");
+			delete_mail = 1;
+			break;
+		}
+
+		if (answer[0] == '.' && answer[1] == '\n')
+			break;
+
+		if (fputs(answer,fp) == EOF)
+		{
+			tell_from_subtask("Error while writing the mail onto disk");
+			delete_mail = 1;
+			break;
+		}
+		bytes_written += strlen(answer);
+		thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
+	}
+
+	fclose(fp);
+	if (delete_mail) remove(fn);
 	else
 	{
-		tell_from_subtask("Not enough memory!");
+		thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
 	}
-	
-	return rc;
+	free(fn);
+
+	return !delete_mail;
 }
 
-/*
-**
-*/
-void pop3_get_tops(struct connection *conn, struct pop3_server *server, unsigned long amm)
+/**************************************************************************
+ Mark the mail as deleted
+**************************************************************************/
+int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 {
-	unsigned long i;
-	
-	for(i = 1; i <= amm; i++)
-	{
-		pop3_get_top(conn, server, i);
-	}
+	char buf[256];
+	char *answer;
+	sprintf(buf, "DELE %ld\r\n",nr);
+	if (tcp_write(conn,buf,strlen(buf))<=0) return 0;
+	if (!(answer = pop3_receive_answer(conn))) return 0;
+	return 1;
 }
 
-/*
-** Mark mail as deleted.
-*/
-int pop3_del_mail(struct connection *conn, struct pop3_server *server, unsigned long nr)
-{
-	int rc;
-	char *buf;
-	unsigned long got;
-	
-	/* DELE nr */
-
-	rc = FALSE;
-	
-		buf = malloc(REC_BUFFER_SIZE);
-		
-		if(buf != NULL)
-		{
-		sprintf(buf, "DELE %ld\r\n", nr);
-		tcp_write(conn, buf, strlen(buf));
-		got = tcp_read(conn, buf, REC_BUFFER_SIZE);
-	
-		if(got != 0)
-		{
-			if(buf[0] == '+')
-			{
-				rc = TRUE;
-			}
-		}
-		
-		free(buf);
-	}
-	
-	return rc;
-}
-
+/**************************************************************************
+ Download the mails
+**************************************************************************/
 static int pop3_really_dl(struct pop3_server *server)
 {
 	int rc;
-	int mail_amm;
 	
 	rc = 0;
-	
-	if(open_socket_lib())
+
+	if (open_socket_lib())
 	{
 		struct connection *conn;
 		thread_call_parent_function_sync(dl_set_status,1,"Connecting to server...");
@@ -577,15 +259,15 @@ static int pop3_really_dl(struct pop3_server *server)
 		if ((conn = tcp_connect(server->name, server->port)))
 		{
 			thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
-			if(pop3_wait_login(conn,server))
+			if (pop3_wait_login(conn,server))
 			{
-				if(pop3_login(conn,server))
+				if (pop3_login(conn,server))
 				{
-					mail_amm = pop3_stat(conn,server);
-					if(mail_amm != 0)
+					int mail_amm = pop3_stat(conn,server);
+					if (mail_amm != 0)
 					{
-						unsigned long i;
-						char path[2048];
+						int i;
+						char path[256];
 						
 						thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
 						thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
@@ -595,26 +277,21 @@ static int pop3_really_dl(struct pop3_server *server)
 						if(chdir(server->destdir) == -1)
 						{
 							tell_from_subtask("Can\'t access income-folder!");
-							return(FALSE);
-						}
-						else
+						} else
 						{
-/*                     pop3_get_tops(server, mail_amm);*/
-						
 							for(i = 1; i <= mail_amm; i++)
 							{
 								thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
 								if(pop3_get_mail(conn,server, i))
 								{
-									
-									if(server->del)
+									if (server->del)
 									{
 										thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
-											if(!pop3_del_mail(conn,server, i))
-											{
-												tell_from_subtask("Can\'t mark mail as deleted!");
-											}
-										}  
+										if (!pop3_del_mail(conn,server, i))
+										{
+											tell_from_subtask("Can\'t mark mail as deleted!");
+										}
+									}  
 								}
 								else
 								{
@@ -642,6 +319,9 @@ static int pop3_really_dl(struct pop3_server *server)
 	return rc;
 }
 
+/**************************************************************************
+ Entrypoint for the fetch mail process
+**************************************************************************/
 static int pop3_entry(struct pop3_server *server)
 {
 	struct pop3_server copy_server;
@@ -661,9 +341,9 @@ static int pop3_entry(struct pop3_server *server)
 	return 0;
 }
 
-/*
-** Download mails.
-*/
+/**************************************************************************
+ Fetch the mails. Starts a subthread.
+**************************************************************************/
 int pop3_dl(struct pop3_server *server)
 {
 	return thread_start(pop3_entry,server);

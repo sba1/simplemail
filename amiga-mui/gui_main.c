@@ -114,8 +114,6 @@ static struct MsgPort *timer_port;
 static struct timerequest *timer_req;
 static ULONG timer_outstanding;
 
-static struct DiskObject *HideIcon;
-
 /* New since MUI V20 */
 static STRPTR UsedClasses[] =
 {
@@ -281,7 +279,7 @@ int app_init(void)
 		/* MUI V20, no includes right now, but found it in YAM :) */
 		MUIA_Application_UsedClasses, UsedClasses,
 #endif
-		MUIA_Application_DiskObject, HideIcon = GetDiskObject("PROGDIR:SimpleMail"),
+		HideIcon ? MUIA_Application_DiskObject : TAG_IGNORE, HideIcon,
 	End;
 
 	SM_LEAVE;
@@ -298,8 +296,6 @@ void app_del(void)
 		MUI_DisposeObject(App);
 		App = NULL;
 	}
-	if (HideIcon) FreeDiskObject(HideIcon);
-
 }
 
 /****************************************************************

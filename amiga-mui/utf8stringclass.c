@@ -70,7 +70,7 @@ STATIC ULONG UTF8String_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
 	free(data->utf8_string);
-	return 0;
+	return DoSuperMethodA(cl,obj,msg);
 }
 
 STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)

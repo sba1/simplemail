@@ -263,6 +263,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
+	if (data->title_menu) MUI_DisposeObject(data->title_menu);
 	free(data->pattern);
 	return DoSuperMethodA(cl,obj,msg);
 }

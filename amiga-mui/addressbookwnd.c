@@ -893,7 +893,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 				End,
 			End,
 		End;
-	
+
 	if (wnd)
 	{
 		struct Person_Data *data = (struct Person_Data*)malloc(sizeof(struct Person_Data));
@@ -923,7 +923,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 			/* mark the window as opened */
 			person_open[num] = 1;
 
-			if (entry->group_array)
+			if (entry && entry->group_array)
 			{
 				char *group_name;
 				int i = 0;

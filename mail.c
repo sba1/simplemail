@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "addressbook.h"
 #include "codecs.h"
 #include "folder.h" /* for mail_compose_new() */
 #include "mail.h"
@@ -425,7 +426,16 @@ int mail_process_headers(struct mail *mail)
 			if (first_addr)
 			{
 				if (first_addr->phrase) mail->author = strdup(first_addr->phrase);
-				else if (first_addr->addr_spec) mail->author = strdup(first_addr->addr_spec);
+				else
+				{
+					if (first_addr->addr_spec)
+					{
+						if (!(mail->author = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
+						{
+							mail->author = strdup(first_addr->addr_spec);
+						}
+					}
+				}
 			}
 			free_address(&paddr);
 		}

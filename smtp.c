@@ -662,12 +662,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 {
 	if (!smtp_service_ready(conn)) return 0;
 
-	thread_call_parent_function_async(status_set_status,1,N_("Sending EHLO..."));
+	thread_call_parent_function_async(status_set_status,1,_("Sending EHLO..."));
 	if (!esmtp_ehlo(conn,account))
 	{
 		if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending HELO..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending HELO..."));
 		if (!smtp_helo(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -683,7 +683,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending STARTTLS..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending STARTTLS..."));
 		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
@@ -696,12 +696,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending secured EHLO..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending secured EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-			thread_call_parent_function_async(status_set_status,1,N_("Sending secured HELO..."));
+			thread_call_parent_function_async(status_set_status,1,_("Sending secured HELO..."));
 			if (!smtp_helo(conn,account))
 			{
 				if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -712,7 +712,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 
 	if (account->smtp->auth)
 	{
-		thread_call_parent_function_async(status_set_status,1,N_("Sending AUTH..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
@@ -777,21 +777,21 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		j++;
 		thread_call_parent_function_async(status_set_mail,2,j,om[i]->size); /* starts from 1 */
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending FROM..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending FROM..."));
 		if (!smtp_from(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("FROM failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending RCPT..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending RCPT..."));
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("RCPT failed."));
 			return 0;
 		}
 
-		thread_call_parent_function_async(status_set_status,1,N_("Sending DATA..."));
+		thread_call_parent_function_async(status_set_status,1,_("Sending DATA..."));
 
 		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum))
 		{
@@ -844,7 +844,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 				sprintf(head_buf,_("Sending mails to %s, connecting to %s first"),account->smtp->name,account->pop->name);
 				thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 
-				thread_call_parent_function_async(status_set_status,1,N_("Log into POP3 Server...."));
+				thread_call_parent_function_async(status_set_status,1,_("Log into POP3 Server...."));
 				pop3_login_only(account->pop);
 			}
 
@@ -862,25 +862,25 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 					if (thread_aborted())
 					{
-						thread_call_parent_function_async(status_set_status,1,N_("Aborted - Sending QUIT..."));
+						thread_call_parent_function_async(status_set_status,1,_("Aborted - Sending QUIT..."));
 						smtp_quit(&conn);
-						thread_call_parent_function_async(status_set_status,1,N_("Aborted - Disconnecting..."));
+						thread_call_parent_function_async(status_set_status,1,_("Aborted - Disconnecting..."));
 						tcp_disconnect(conn.conn);
 						break;
 					}
 
-					thread_call_parent_function_async(status_set_status,1,N_("Sending QUIT..."));
+					thread_call_parent_function_async(status_set_status,1,_("Sending QUIT..."));
 					smtp_quit(&conn);
 				}
 
 				if (thread_aborted())
 				{
-					thread_call_parent_function_async(status_set_status,1,N_("Aborted - Disconnecting..."));
+					thread_call_parent_function_async(status_set_status,1,_("Aborted - Disconnecting..."));
 					tcp_disconnect(conn.conn);
 					break;
 				}
 
-				thread_call_parent_function_async(status_set_status,1,N_("Disconnecting..."));
+				thread_call_parent_function_async(status_set_status,1,_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			} else
 			{

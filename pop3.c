@@ -103,7 +103,7 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 {
 	char buf[256];
 
-	thread_call_parent_function_async(status_set_status,1,N_("Sending username..."));
+	thread_call_parent_function_async(status_set_status,1,_("Sending username..."));
 
 	sprintf(buf, "USER %s\r\n",server->login);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
@@ -114,7 +114,7 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 		return 0;
 	}
 
-	thread_call_parent_function_async(status_set_status,1,N_("Sending password..."));
+	thread_call_parent_function_async(status_set_status,1,_("Sending password..."));
 	sprintf(buf,"PASS %s\r\n",server->passwd);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn))
@@ -124,7 +124,7 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 		return 0;
 	}
 
-	thread_call_parent_function_async(status_set_status,1,N_("Login successful!"));
+	thread_call_parent_function_async(status_set_status,1,_("Login successful!"));
 	return 1;
 }
 
@@ -323,7 +323,7 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 {
 	if (!server->nodupl) return 0;
 
-	thread_call_parent_function_async(status_set_status,1,N_("Checking for mail duplicates..."));
+	thread_call_parent_function_async(status_set_status,1,_("Checking for mail duplicates..."));
 
 	if (tcp_write(conn,"UIDL\r\n",6) == 6)
 	{
@@ -401,7 +401,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	int i,amm,size,mails_add = 0,cont = 0;
 	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
 
-	thread_call_parent_function_async(status_set_status,1,N_("Getting statistics..."));
+	thread_call_parent_function_async(status_set_status,1,_("Getting statistics..."));
 
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
 	if (!(answer = pop3_receive_answer(conn)))
@@ -449,7 +449,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
   }
 
-	thread_call_parent_function_async(status_set_status,1,N_("Getting mail sizes..."));
+	thread_call_parent_function_async(status_set_status,1,_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
 	if (tcp_write(conn,"LIST\r\n",6) != 6)
@@ -509,7 +509,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (cont && mails_add && receive_preselection == 2)
 	{
 		/* no errors and the user wants a more informative preselection */
-		thread_call_parent_function_async(status_set_status,1,N_("Getting mail infos..."));
+		thread_call_parent_function_async(status_set_status,1,_("Getting mail infos..."));
 		for (i=1;i<=amm;i++)
 		{
 			int has_added = ((int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i)==-1)?0:1;
@@ -534,7 +534,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 					}
 
 					/* -ERR has been returned and nobody breaked the connection, what means that TOP is not supported */
-					thread_call_parent_function_async(status_set_status,1,N_("Couldn't receive more statistics"));
+					thread_call_parent_function_async(status_set_status,1,_("Couldn't receive more statistics"));
 					break;
 				}
 
@@ -589,7 +589,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		/* let the user select which mails (s)he wants */
 		int start;
 
-		thread_call_parent_function_async(status_set_status,1,N_("Waiting for user interaction"));
+		thread_call_parent_function_async(status_set_status,1,_("Waiting for user interaction"));
 
 		if (!(start = thread_call_parent_function_sync_timer_callback( (void(*)(void*))pop3_noop, conn, 5000, status_wait,0)))
 			return NULL;
@@ -610,7 +610,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 **************************************************************************/
 static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
-	thread_call_parent_function_sync(status_set_status,1,N_("Logging out..."));
+	thread_call_parent_function_sync(status_set_status,1,_("Logging out..."));
 	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
 	return pop3_receive_answer(conn)?1:0;
 }
@@ -773,7 +773,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
 			{
-				thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
 				if (pop3_wait_login(conn,server))
 				{
 					if (pop3_login(conn,server))
@@ -854,7 +854,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 									
 									if (del)
 									{
-										thread_call_parent_function_async(status_set_status,1,N_("Marking mail as deleted..."));
+										thread_call_parent_function_async(status_set_status,1,_("Marking mail as deleted..."));
 										if (!pop3_del_mail(conn,server, i))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));

@@ -729,7 +729,8 @@ struct mail *main_get_mail_first_selected(void *handle)
 	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
 	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
-	return (struct mail*)treenode->tn_User;
+	if (treenode) return (struct mail*)treenode->tn_User;
+	return NULL;
 }
 
 /******************************************************************
@@ -759,8 +760,6 @@ void main_remove_mails_selected(void)
 	int j = 0, i = 0;
 	struct MUI_NListtree_TreeNode **array;
 
-	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
-
 	treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_Start;
 
 	for (;;)
@@ -768,8 +767,12 @@ void main_remove_mails_selected(void)
 		DoMethod(mail_tree, MUIM_NListtree_PrevSelected, &treenode);
 		if (treenode==(struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_End)
 			break;
+		if (!treenode) break;
 		i++;
 	}
+
+	if (!i) return; /* no emails selected */
+	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
 	if ((array = (struct MUI_NListtree_TreeNode **)AllocVec(sizeof(struct MUI_NListtree_TreeNode *)*i,0)))
 	{

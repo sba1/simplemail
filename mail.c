@@ -1771,7 +1771,7 @@ int mail_create_html_header(struct mail *mail)
 		{
 			struct mailbox addr;
 			parse_mailbox(replyto, &addr);
-			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\">");
+			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\">",addr.addr_spec);
 
 			if (addr.phrase)
 			{

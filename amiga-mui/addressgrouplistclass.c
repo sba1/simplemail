@@ -35,6 +35,7 @@
 #include <proto/intuition.h>
 
 #include "addressbook.h"
+#include "configuration.h"
 #include "debug.h"
 #include "smintl.h"
 
@@ -42,19 +43,13 @@
 #include "compiler.h"
 #include "muistuff.h"
 
-/*
-STATIC ASM SAVEDS LONG address_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct MUIP_NListtree_CompareMessage *msg))
-{
-	struct addressbook_entry *entry1 = (struct addressbook_entry *)msg->TreeNode1->tn_User;
-	struct addressbook_entry *entry2 = (struct addressbook_entry *)msg->TreeNode2->tn_User;
-
-	return mystricmp(entry1->u.person.realname,entry2->u.person.realname);
-}
-*/
-
 struct AddressGroupList_Data
 {
+	char name_buf[64];
+	char description_buf[128];
+
 	struct Hook construct_hook;
+	struct Hook compare_hook;
 	struct Hook destruct_hook;
 	struct Hook display_hook;
 };
@@ -85,11 +80,29 @@ STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
 	struct addressbook_group *grp = (struct addressbook_group*)msg->entry;
+	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)h->h_Data;
 
 	if (grp)
-		*array = grp->name;
-	else *array = _("Name");
+	{
+		utf8tostr(grp->name, data->name_buf, sizeof(data->name_buf), user.config.default_codeset);
+		*array = data->name_buf;
+	} else
+	{
+	 *array = _("Name");
+	}
 }
+
+/********************************************
+ Compare functon
+*********************************************/
+STATIC ASM SAVEDS LONG addressgroup_compare(REG(a0, struct Hook *h), REG(a2, Object *obj), REG(a1,struct NList_CompareMessage *msg))
+{
+	struct addressbook_group *entry1 = (struct addressbook_group *)msg->entry1;
+	struct addressbook_group *entry2 = (struct addressbook_group *)msg->entry2;
+
+	return utf8stricmp(entry1->name,entry2->name);
+}
+
 
 /********************************************
  OM_NEW
@@ -106,11 +119,13 @@ STATIC ULONG AddressGroupList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	data = (struct AddressGroupList_Data*)INST_DATA(cl,obj);
 
 	init_hook(&data->construct_hook,(HOOKFUNC)addressgroup_construct);
+	init_hook(&data->compare_hook,(HOOKFUNC)addressgroup_compare);
 	init_hook(&data->destruct_hook,(HOOKFUNC)addressgroup_destruct);
-	init_hook(&data->display_hook,(HOOKFUNC)addressgroup_display);
+	init_hook_with_data(&data->display_hook,(HOOKFUNC)addressgroup_display, data);
 
 	SetAttrs(obj,
 						MUIA_NList_ConstructHook2, &data->construct_hook,
+						MUIA_NList_CompareHook2, &data->compare_hook,
 						MUIA_NList_DestructHook2, &data->destruct_hook,
 						MUIA_NList_DisplayHook2, &data->display_hook,
 						MUIA_NList_Title, TRUE,

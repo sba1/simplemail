@@ -36,6 +36,9 @@
 #include "support.h"
 #include "textinterpreter.h"
 
+/* porototypes */
+static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
+
 /* the mime preample used in mime multipart messages */
 const static char mime_preample[] = 
 {
@@ -347,6 +350,44 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 	}
 
 	return 1;
+}
+
+/**************************************************************************
+ Find an compound object of a multipart/related mail (RFC2387)
+ (eighter by Content-ID or Content-Location). NULL if object. m is a mail
+ in the multipart/related mail.
+**************************************************************************/
+struct mail *mail_find_compound_object(struct mail *m, char *id)
+{
+	int content_id = !mystrnicmp("cid:",id,4);
+	if (content_id)
+	{
+		char c;
+		id += 4;
+		while ((c=*id))
+		{
+			if (!isspace(c)) break;
+			id++;
+		}
+	}
+
+	while ((m = m->parent_mail))
+	{
+		if (!mystricmp(m->content_type,"multipart") && !mystricmp(m->content_subtype,"related"))
+		{
+			int i;
+			for (i=0;i<m->num_multiparts;i++)
+			{
+				if (content_id)
+				{
+					if (!mystricmp(id,m->multipart_array[i]->content_id)) return m->multipart_array[i];
+				}
+			}
+			return NULL;
+		}
+	}
+
+	return NULL;
 }
 
 /**************************************************************************
@@ -777,6 +818,27 @@ int mail_process_headers(struct mail *mail)
 		}
 	}
 
+	/* Content-ID */
+	if ((buf = mail_find_header_contents(mail, "Content-ID")))
+	{
+		if (*buf++ == '<')
+		{
+			if (!(parse_addr_spec(buf,&mail->content_id)))
+			{
+				/* for the non rfc conform content-id's */
+				char *buf2 = strrchr(buf,'>');
+				if (buf2)
+				{
+					if ((mail->content_id = malloc(buf2-buf+1)))
+					{
+						strncpy(mail->content_id,buf,buf2-buf);
+						mail->content_id[buf2-buf]=0;
+					}
+				}
+			}
+		}
+	}
+
 	if (!mail->content_type || !mail->content_subtype)
 	{
 		mail->content_type = strdup("text");
@@ -792,6 +854,14 @@ int mail_process_headers(struct mail *mail)
 	{
 		mail->content_transfer_encoding = strdup("7bit");
 	}
+
+/*
+	if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))
+	{
+		mail->multipart_related_type = mail_find_content_parameter_value(mail, "type");
+		printf("%s\n",mail->multipart_related_type);
+	}
+*/
 
 	return 1;
 }
@@ -830,8 +900,12 @@ static int mail_read_structure(struct mail *mail)
 
 				if ((buf = strstr(buf,search_str) + strlen(search_str)))
 				{
+/*					int related;*/ /* if is a related content subtype */
+
 					if (*buf == 13) buf++;
 					if (*buf == 10) buf++;
+
+/*					related = !mystricmp(content_subtype, "related");*/
 
 					while (1)
 					{
@@ -865,12 +939,20 @@ static int mail_read_structure(struct mail *mail)
 								mail->multipart_array[mail->num_multiparts++] = new_mail;
 							}
 							mail_read_structure(new_mail); /* the recursion */
+							new_mail->parent_mail = mail;
 						}
 
 						buf = end_part + strlen(search_str);
 						if (*buf == 13) buf++;
 						if (*buf == 10) buf++;
 					}
+
+/*
+					if (mail->num_multiparts)
+					{
+						mail->multipart_related_root = mail->multipart_array[0];
+					}
+*/
 				}
 			}
 		}
@@ -962,6 +1044,10 @@ void mail_free(struct mail *mail)
 	{
 		mail_free(mail->multipart_array[i]); /* recursion */
 	}
+
+	if (mail->content_type) free(mail->content_type);
+	if (mail->content_subtype) free(mail->content_subtype);
+	if (mail->content_id) free(mail->content_id);
 
 	if (mail->decoded_data) free(mail->decoded_data);
 	if (mail->filename && mail->text) free(mail->text);

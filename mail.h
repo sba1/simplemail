@@ -57,16 +57,28 @@ struct mail
 	int mime; /* 0 means is not a mime mail */
 	char *content_type;
 	char *content_subtype; /* the types of the whole mail */
-	struct list content_parameter_list;
+	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;
+	char *content_id; /* id of the content */
+
+/*	char *multipart_related_type;*/ /* the type of a multipart/related type, need not to be freed */
 
 	unsigned int text_begin; /* the beginning of the mail's text */
 	unsigned int text_len; /* the length of the mails text */
 	char *text; /* the mails text, allocated only for mails with filename */
 
-	struct mail **multipart_array; /* only used in multipart messages */
+	/* the following is valiad after mail_read_structure */
+
+  /* only used in multipart messages */
+	struct mail **multipart_array;
 	int multipart_allocated;
 	int num_multiparts;
+
+	/* only used in multipart/related messages */
+/*	struct mail *multipart_related_root;*/ /* the root/start of the related messages */
+
+
+	struct mail *parent_mail;
 
 	char *decoded_data; /* the decoded data */
 	unsigned int decoded_len;
@@ -74,6 +86,7 @@ struct mail
 	char *filename; /* the email filename on disk, NULL if e-mail is not from disk */
 };
 
+struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
 struct mail *mail_create(void);
 struct mail *mail_create_from_file(char *filename);

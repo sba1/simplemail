@@ -34,14 +34,14 @@ struct filter_rule
 	union
 	{
 		struct {
-			char *from;
+			char **from; /* NULL terminated array */
 		} from;
 		struct {
-			char *subject;
+			char **subject; /* NULL terminated array */
 		} subject;
 		struct {
 			char *name;
-			char *contents;
+			char **contents; /* NULL terminated array */
 		} header;
 	} u;
 };

@@ -158,19 +158,16 @@ static void rules_ok(void)
 					/* free all strings of the rule */
 					switch (fr->type)
 					{
-						case	RULE_FROM_MATCH:
-									if (fr->u.from.from) free(fr->u.from.from);
-									break;
-						case	RULE_SUBJECT_MATCH:
-									if (fr->u.subject.subject) free(fr->u.subject.subject);
-									break;
+						case	RULE_FROM_MATCH: array_free(fr->u.from.from); break;
+						case	RULE_SUBJECT_MATCH: array_free(fr->u.subject.subject); break;
 						case	RULE_HEADER_MATCH:
 									if (fr->u.header.name) free(fr->u.header.name);
-									if (fr->u.header.contents) free(fr->u.header.contents);
+									array_free(fr->u.header.contents);
 									break;
 					}
 
-					/* clear all the memory. the node it self should not be cleared */
+					/* clear all the memory. the node it self should not be cleared, so it stays
+					   on the same position */
 					memset(((char*)fr)+sizeof(struct node),0,sizeof(struct filter_rule)-sizeof(struct node));
 
 					/* now copy over the new settings */
@@ -178,14 +175,14 @@ static void rules_ok(void)
 					switch (new_fr->type)
 					{
 						case	RULE_FROM_MATCH:
-									fr->u.from.from = mystrdup(new_fr->u.from.from);
+									fr->u.from.from = array_duplicate(new_fr->u.from.from);
 									break;
 						case	RULE_SUBJECT_MATCH:
-									fr->u.subject.subject = mystrdup(new_fr->u.subject.subject);
+									fr->u.subject.subject = array_duplicate(new_fr->u.subject.subject);
 									break;
 						case	RULE_HEADER_MATCH:
 									fr->u.header.name = mystrdup(new_fr->u.header.name);
-									fr->u.header.contents = mystrdup(new_fr->u.header.contents);
+									fr->u.header.contents = array_duplicate(new_fr->u.header.contents);
 									break;
 					}
 		  	}

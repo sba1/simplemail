@@ -37,6 +37,7 @@
 
 #include "compiler.h"
 #include "muistuff.h"
+#include "multistringclass.h"
 #include "filterruleclass.h"
 
 struct FilterRule_Data
@@ -81,16 +82,16 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 	if (data->type == RULE_FROM_MATCH)
 	{
 		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
-		data->object2 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
+		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_SUBJECT_MATCH)
 	{
 		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
-		data->object2 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
+		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_HEADER_MATCH)
 	{
 		data->object1 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
 		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, "contains",End;
-		data->object3 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
+		data->object3 = MultiStringObject, StringFrame, End;
 	}
 
 	if (data->object1) DoMethod(data->group,OM_ADDMEMBER,data->object1);
@@ -114,14 +115,14 @@ STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *
 	switch(data->type)
 	{
 		case	RULE_FROM_MATCH:
-					set(data->object2,MUIA_String_Contents,fr->u.from.from);
+					set(data->object2,MUIA_MultiString_ContentsArray,fr->u.from.from);
 					break;
 		case	RULE_SUBJECT_MATCH:
-					set(data->object2,MUIA_String_Contents,fr->u.subject.subject);
+					set(data->object2,MUIA_MultiString_ContentsArray,fr->u.subject.subject);
 					break;
 		case	RULE_HEADER_MATCH:
 					set(data->object1,MUIA_String_Contents,fr->u.header.name);
-					set(data->object3,MUIA_String_Contents,fr->u.header.contents);
+					set(data->object3,MUIA_MultiString_ContentsArray,fr->u.header.contents);
 					break;
 		case	RULE_ATTACHMENT_MATCH:
 					break;
@@ -189,14 +190,14 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 					switch (data->get_rule.type)
 					{
 						case	RULE_FROM_MATCH:
-									data->get_rule.u.from.from = (char*)xget(data->object2,MUIA_String_Contents);
+									data->get_rule.u.from.from = (char**)xget(data->object2,MUIA_MultiString_ContentsArray);
 									break;
 						case	RULE_SUBJECT_MATCH:
-									data->get_rule.u.subject.subject = (char*)xget(data->object2,MUIA_String_Contents);
+									data->get_rule.u.subject.subject = (char**)xget(data->object2,MUIA_MultiString_ContentsArray);
 									break;
 						case	RULE_HEADER_MATCH:
 									data->get_rule.u.header.name = (char*)xget(data->object1,MUIA_String_Contents);
-									data->get_rule.u.header.contents = (char*)xget(data->object3,MUIA_String_Contents);
+									data->get_rule.u.header.contents = (char**)xget(data->object3,MUIA_MultiString_ContentsArray);
 									break;
 					}
 					*msg->opg_Storage = (ULONG)&data->get_rule;

@@ -79,16 +79,16 @@ struct filter *filter_duplicate(struct filter *filter)
 				switch (new_rule->type)
 				{
 					case	RULE_FROM_MATCH:
-								new_rule->u.from.from = mystrdup(rule->u.from.from);
+								new_rule->u.from.from = array_duplicate(rule->u.from.from);
 								break;
 
 					case	RULE_SUBJECT_MATCH:
-								new_rule->u.subject.subject = mystrdup(rule->u.subject.subject);
+								new_rule->u.subject.subject = array_duplicate(rule->u.subject.subject);
 								break;
 
 					case	RULE_HEADER_MATCH:
 								new_rule->u.header.name = mystrdup(rule->u.header.name);
-								new_rule->u.header.contents = mystrdup(rule->u.header.contents);
+								new_rule->u.header.contents = array_duplicate(rule->u.header.contents);
 								break;
 				}
 
@@ -156,17 +156,17 @@ char *filter_get_rule_string(struct filter_rule *rule)
 	switch(rule->type)
 	{
 		case	RULE_FROM_MATCH:
-					if (rule->u.from.from) sprintf(buf,"From contains \"%s\"",rule->u.from.from);
+					if (rule->u.from.from && *rule->u.from.from) sprintf(buf,"From contains \"%s\"",*rule->u.from.from);
 					else strcpy(buf,"From match");
 					break;
 
 		case	RULE_SUBJECT_MATCH:
-					if (rule->u.subject.subject) sprintf(buf,"Subject contains \"%s\"",rule->u.subject.subject);
+					if (rule->u.subject.subject && *rule->u.subject.subject) sprintf(buf,"Subject contains \"%s\"",*rule->u.subject.subject);
 					else strcpy(buf,"Subject match");
 					break;
 
 		case	RULE_HEADER_MATCH:
-					if (rule->u.header.name && rule->u.header.contents) sprintf(buf,"\"%s\"-field contains \"%s\"",rule->u.header.name,rule->u.header.contents);
+					if (rule->u.header.name && rule->u.header.contents && *rule->u.header.contents) sprintf(buf,"\"%s\"-field contains \"%s\"",rule->u.header.name,*rule->u.header.contents);
 					else strcpy(buf,"Header match");
 					break;
 
@@ -308,13 +308,13 @@ void filter_list_load(FILE *fh)
 								}
 
 								if ((result = get_config_item(rule_buf,"From.Address")))
-									fr->u.from.from = mystrdup(result);
+									fr->u.from.from = array_add_string(fr->u.from.from,result);
 								if ((result = get_config_item(rule_buf,"Subject.Subject")))
-									fr->u.subject.subject = mystrdup(result);
+									fr->u.subject.subject = array_add_string(fr->u.subject.subject,result);
 								if ((result = get_config_item(rule_buf,"Header.Name")))
 									fr->u.header.name = mystrdup(result);
 								if ((result = get_config_item(rule_buf,"Header.Contents")))
-									fr->u.header.contents = mystrdup(result);
+									fr->u.header.contents = array_add_string(fr->u.header.contents,result);
 							}
 						}
 					}
@@ -354,16 +354,43 @@ void filter_list_save(FILE *fh)
 			{
 				case	RULE_FROM_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=From\n",i,j);
-							fprintf(fh,"FILTER%d.RULE%d.From.Address=%s\n",i,j,MAKESTR(rule->u.from.from));
+							if (rule->u.from.from)
+							{
+								char *str;
+								int k = 0;
+								while ((str = rule->u.from.from[k]))
+								{
+									fprintf(fh,"FILTER%d.RULE%d.From.Address=%s\n",i,j,rule->u.from.from[k]);
+									k++;
+								}
+							}
 							break;
 				case	RULE_SUBJECT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Subject\n",i,j);
-							fprintf(fh,"FILTER%d.RULE%d.Subject.Subject=%s\n",i,j,MAKESTR(rule->u.subject.subject));
+							if (rule->u.subject.subject)
+							{
+								char *str;
+								int k = 0;
+								while ((str = rule->u.subject.subject[k]))
+								{
+									fprintf(fh,"FILTER%d.RULE%d.Subject.Subject=%s\n",i,j,rule->u.subject.subject[k]);
+									k++;
+								}
+							}
 							break;
 				case	RULE_HEADER_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Header\n",i,j);
 							fprintf(fh,"FILTER%d.RULE%d.Header.Name=%s\n",i,j,MAKESTR(rule->u.header.name));
-							fprintf(fh,"FILTER%d.RULE%d.Header.Contents=%s\n",i,j,MAKESTR(rule->u.header.contents));
+							if (rule->u.header.contents)
+							{
+								char *str;
+								int k = 0;
+								while ((str = rule->u.header.contents[k]))
+								{
+									fprintf(fh,"FILTER%d.RULE%d.Header.Contents=%s\n",i,j,rule->u.header.contents[k]);
+									k++;
+								}
+							}
 							break;
 				case	RULE_ATTACHMENT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Attachment\n",i,j);

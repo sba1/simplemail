@@ -1547,19 +1547,33 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 			switch (rule->type)
 			{
 				case	RULE_FROM_MATCH:
-							if (!(take = !!mystristr(m->from, rule->u.from.from)))
+							if (rule->u.from.from)
 							{
-								struct header *header = mail_find_header(m, "From");
-								if (header)
+								int i = 0;
+								while (!take && rule->u.from.from[i])
+									take = !!mystristr(m->from,rule->u.from.from[i++]);
+
+								if (!take)
 								{
-									/* Should be decoded first! */
-									take = !!mystristr(header->contents, rule->u.from.from);
+									struct header *header = mail_find_header(m, "From");
+									if (header)
+									{
+										/* Should be decoded first! */
+										i = 0;
+										while (!take && rule->u.from.from[i])
+											take = !!mystristr(header->contents,rule->u.from.from[i++]);
+									}
 								}
 							}
 							break;
 
 				case	RULE_SUBJECT_MATCH:
-							take = !!mystristr(m->subject,rule->u.subject.subject);
+							if (rule->u.subject.subject)
+							{
+								int i = 0;
+								while (!take && rule->u.subject.subject[i])
+									take = !!mystristr(m->from,rule->u.subject.subject[i++]);
+							}
 							break;
 
 				case	RULE_HEADER_MATCH:
@@ -1567,7 +1581,12 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 								struct header *header = mail_find_header(m,rule->u.header.name);
 								if (header)
 								{
-									take = !!mystristr(header->contents, rule->u.header.contents);
+									if (rule->u.header.contents)
+									{
+										int i = 0;
+										while (!take && rule->u.header.contents[i])
+											take = !!mystristr(m->from,rule->u.header.contents[i++]);
+									}
 								}
 							}
 							break;

@@ -2,13 +2,38 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-13  Bernd Gollesch <bgollesch@sime.com>
+
+	* doc/amiga/SimpleMail.guide: Added short description of AppIcon Label.
+	* amiga-mui/binaries/(check|empty|new|old).info: New AppIcon Icons.
+	* amiga-mui/appicon.(c|h): Added the code for appicon display. Now
+	  Simplemail will display an AppIcon on the Workbench which will show
+	  the current state of it. The Label can be changed in the configuration.
+	  The position can be (Un)Snapshot with:
+	  	workbenchlib < 3.5: Settings->(Un)Snapshot AppIcon
+	  	workbenchlib >= 3.5: -- " -- and "Icon" menu from workbench.
+	* amiga-mui/configwnd.c:  Small Layout/Code changes. Added the HelpNode
+	  to each group, so the HELP Button will take you to the correct node
+	  in the guide. Moved the SizeClass to configwnd_stuff.(c|h) so we can
+	  compile without code=far. Added the AppIconLabel to the General group.
+	* amiga-mui/configwnd_stuff.(c|h): Added the custom SizeClass.
+	* amiga-mui/gui-main.c: Added the AppIcon stuff.
+	* amiga-mui/mainwnd.c: Added the AppIcon menus.
+	* amiga-mui/shutdownwnd.c: New checks if the text fits into the window.
+	* amiga-mui/statuswnd.c, indep-include/statuswnd.h: New Function for
+	  AppIcon statuscheck.
+	* configuration.(c|h): Added the AppIconLabel to the configuration.
+	* smakefile: Added the AppIcon Icons. Ignore the startup code for MorphOS.
+
 2004-01-06  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/muistuff.c: Found the #define MUIA_Application_UsedClasses in
 	  the YAM Source. Now only really used external classes are shown in the
-	  MUI-Prefs (>= 3.8).
+	  MUI-Prefs (> 3.8).
 	* amiga-mui/gui_main.c: SimpleMail now uses its own Icon as AppIcon on the
 	  Workbench when it is iconified.
+
+2004-01-02  Release Version 0.22
 
 2004-01-01  Bernd Gollesch <bgollesch@sime.com>
 

@@ -40,9 +40,9 @@ problem.
 
 Changes
 ~~~~~~~
-Version 0.3 (third alpha) - released on 05.02.2001
+Version 0.3 (third alpha) - released on 2001/02/05
   - added a forward button
-  - main window has two differnt views, which are changeable within
+  - main window has two different views, which are changeable within
 	 the main window
   - improved the compose window (got some images)
   - to button in the addressbook works now correctly
@@ -51,11 +51,11 @@ Version 0.3 (third alpha) - released on 05.02.2001
   - added a small context menu for the mailtreelist, mails can now
 	 be marked and hold
   - added the possibility to use your IP-addresss as you domain in
-	 the HELO/EHLO dialo. (no X-Authentification-Warning headers anymore)
+	 the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore)
   - added smtp-auth according to rfc2554
   - other smaller improvements and bug fixes.
 
-Version 0.2 (second alpha) - released on 14.01.2001
+Version 0.2 (second alpha) - released on 2001/01/14
   - buttons have now images
   - now can display HTML mails (uses SimpleHTML engine)
   - indexfiles for folders
@@ -64,7 +64,7 @@ Version 0.2 (second alpha) - released on 14.01.2001
   - addressbook is now more complete
   - bugfixes and smaller enhancements
 
-Version 0.1 (first alpha) - released on 24.12.2000
+Version 0.1 (first alpha) - released on 2000/12/24
   - initial alpha
 
 Contact

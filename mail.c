@@ -1659,13 +1659,27 @@ static int mail_read_structure(struct mail *mail)
 		mail->multipart_allocated = mail->num_multiparts = 1;
 		new_mail->size = mail->text_len;
 
+		mail_decode(mail);
+
 		mail_scan_buffer_start(&ms,new_mail,0);
-		mail_scan_buffer(&ms, mail->text+mail->text_begin, mail->text_len);
+
+		if (mail->decoded_data)
+			mail_scan_buffer(&ms, mail->decoded_data, mail->decoded_len);
+		else
+			mail_scan_buffer(&ms, mail->text + mail->text_begin, mail->text_len);
+
 		mail_scan_buffer_end(&ms);
 		mail_process_headers(new_mail);
 
-		new_mail->text = mail->text;
-		new_mail->text_begin += mail->text_begin; /* skip headers */
+		if (mail->decoded_data)
+		{
+			new_mail->text = mail->decoded_data;
+/*			new_mail->text_begin += mail->text_begin; */ /* not needed to be set */
+		} else
+		{
+			new_mail->text = mail->text;
+			new_mail->text_begin += mail->text_begin; /* skip headers */
+		}
 		mail_read_structure(new_mail);
 		new_mail->parent_mail = mail;
 	}

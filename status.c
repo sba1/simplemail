@@ -38,6 +38,7 @@ static int gauge_maximal;
 static int gauge_value;
 static int mail_maximal;
 static int mail_current; /* starts at 1 */
+static int mail_current_size; /* size of current mail */
 static char *status_text;
 
 /******************************************************************
@@ -57,6 +58,16 @@ static char *status_get_status(void)
 	return buf;
 }
 
+static char *status_get_time_str(void)
+{
+	static char time_buf[64];
+	int time = estimate_calc_remaining(&gauge_est,gauge_value/1024);
+
+	if (time < 60) sprintf(time_buf,_("%d s"),time);
+	else sprintf(time_buf,_("%d min %d s"),time/60,time%60);
+
+	return time_buf;
+}
 
 /******************************************************************
  Initialize the window with as the given type
@@ -96,9 +107,9 @@ void status_set_title(char *title)
 *******************************************************************/
 void status_set_connect_to_server(char *server)
 {
-	static char buf[400];
+	static char buf[300];
 	sprintf(buf,_("Connecting to server %s..."),server);
-	statuswnd_set_status(buf);
+	statuswnd_set_head(buf);
 }
 
 /******************************************************************
@@ -118,6 +129,8 @@ void status_init_gauge_as_bytes(int maximal)
 *******************************************************************/
 void status_set_gauge(int value)
 {
+	static char status_buf[100];
+	static char gauge_buf[256];
 	static int last_seconds;
 	int seconds = sm_get_current_seconds();
 
@@ -125,8 +138,14 @@ void status_set_gauge(int value)
 
 	if (last_seconds == seconds) return;
 
+	sprintf(gauge_buf,_("%d KB / %d KB (time left: %s)"), gauge_value / 1024, gauge_maximal / 1024, status_get_time_str());
+
 	statuswnd_set_gauge(value);
-	statuswnd_set_status(status_get_status());
+	statuswnd_set_gauge_text(gauge_buf);
+
+	sprintf(status_buf,_("Processing mail %d (%d KB) of %d"),mail_current,mail_current_size / 1024, mail_maximal);
+	statuswnd_set_status(status_buf);
+
 	last_seconds = seconds;
 }
 
@@ -138,6 +157,25 @@ void status_set_line(char *str)
 	if (status_text) free(status_text);
 	status_text = mystrdup(str);
 	statuswnd_set_status(status_get_status());
+}
+
+void status_set_status(char *str)
+{
+	static char *status_text;
+	free(status_text);
+	status_text = mystrdup(str);
+	statuswnd_set_status(status_text);
+}
+
+/******************************************************************
+ Set the head of the status window
+*******************************************************************/
+void status_set_head(char *head)
+{
+	static char *status_head;
+	free(status_head);
+	status_head = mystrdup(head);
+	statuswnd_set_head(status_head);
 }
 
 /******************************************************************
@@ -152,13 +190,14 @@ void status_init_mail(int maximal)
 /******************************************************************
  Set the current mail
 *******************************************************************/
-void status_set_mail(int current)
+void status_set_mail(int current, int current_size)
 {
-	static char buf[100];
+//	static char buf[100];
 	mail_current = current;
+	mail_current_size = current_size;
 
-	sprintf(buf,_("%d mails to go"), mail_maximal - mail_current + 1);
-	statuswnd_set_gauge_text(buf);
+//	sprintf(buf,_("%d mails to go"), mail_maximal - mail_current + 1);
+//	statuswnd_set_gauge_text(buf);
 }
 
 /******************************************************************

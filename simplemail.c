@@ -608,17 +608,17 @@ static int export_entry(struct export_data *data)
 				if (f)
 				{
 					FILE *fh;
-					char status_buf[300];
+					char head_buf[300];
 
 					/* now lock the folder */
 					folder_lock(f);
 					/* unlock the folder list */
 					folders_unlock();
 
-					sprintf(status_buf, _("Exporting folder %s to %s"),f->name,filename);
+					sprintf(head_buf, _("Exporting folder %s to %s"),f->name,filename);
 					thread_call_parent_function_async(status_init,1,0);
 					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
-					thread_call_parent_function_async_string(status_set_line,1,status_buf);
+					thread_call_parent_function_async_string(status_set_head,1,head_buf);
 					thread_call_parent_function_async(status_open,0);
 
 					if ((fh = fopen(filename,"w")))
@@ -647,7 +647,7 @@ static int export_entry(struct export_data *data)
 							{
 								FILE *in;
 
-								thread_call_parent_function_async(status_set_mail, 1, mail_no);
+								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->size);
 
 								fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
 			

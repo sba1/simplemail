@@ -40,6 +40,7 @@ void delete_transwnd_class(void);
 #define MUIA_transwnd_Aborted      (TAG_USER | (116456070 << 16) | 0x0009) /* N */
 #define MUIA_transwnd_QuietList    (TAG_USER | (116456070 << 16) | 0x000A)
 #define MUIA_transwnd_StartPressed (TAG_USER | (116456070 << 16) | 0x000B)
+#define MUIA_transwnd_Head				 (TAG_USER | (116456070 << 16) | 0x000C)
 
 #define MUIM_transwnd_InsertMailSize  0x4545454
 #define MUIM_transwnd_InsertMailInfo  0x4545455

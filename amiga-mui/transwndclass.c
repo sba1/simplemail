@@ -49,7 +49,7 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 
 struct transwnd_Data
 {
-	Object *gauge1, *gauge2, *status, *abort;
+	Object *gauge1, /* *gauge2 ,*/ *status, *abort, *head;
 	Object *mail_listview, *mail_list, *mail_group;
 	Object *start;
 	Object *ignore_check;
@@ -145,10 +145,12 @@ STATIC void transwnd_set_mail_flags(void **args)
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check,*all,*none;
-	
+	Object *gauge1,/* *gauge2,*/*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check,*all,*none;
+	Object *head;
+
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
+					Child, head = TextObject,End,
 					Child, mail_group = VGroup,
 						MUIA_ShowMe, FALSE,
 						Child, mail_listview = NListviewObject,
@@ -177,13 +179,13 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						MUIA_Gauge_InfoText, _("Waiting..."),
 						MUIA_Gauge_Horiz,			TRUE,
 						End,
-					Child, gauge2 = GaugeObject,
+/*					Child, gauge2 = GaugeObject,
 						GaugeFrame,
 						MUIA_Gauge_InfoText, _("Waiting..."),
 						MUIA_Gauge_Horiz,			TRUE,
-						End,
+						End,*/
 					Child, HGroup,
-						Child, status = TextObject, TextFrame, MUIA_Text_Contents, "\n", MUIA_Background, MUII_TextBack, End,
+						Child, status = TextObject, TextFrame, MUIA_Text_Contents, "", MUIA_Background, MUII_TextBack, End,
 						Child, abort = MakeButton(_("_Abort")),
 						End,
 					End,	
@@ -193,9 +195,10 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	{
 		struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
 		data->gauge1 = gauge1;
-		data->gauge2 = gauge2;
+//		data->gauge2 = gauge2;
 		data->status = status;
 		data->abort  = abort;
+		data->head = head;
 		data->mail_listview = mail_listview;
 		data->mail_list = mail_list;
 		data->mail_group = mail_group;
@@ -266,17 +269,21 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 			case MUIA_transwnd_Gauge1_Val:	
 				gauge1_val = tag->ti_Data;
 				break;
+
+			case MUIA_transwnd_Head:
+				set(data->head,MUIA_Text_Contents, tag->ti_Data);
+				break;
 				
 			case MUIA_transwnd_Gauge2_Str:	
-				set(data->gauge2, MUIA_Gauge_InfoText, tag->ti_Data);
+//				set(data->gauge2, MUIA_Gauge_InfoText, tag->ti_Data);
 				break;
 				
 			case MUIA_transwnd_Gauge2_Max:
-				set(data->gauge2, MUIA_Gauge_Max, tag->ti_Data);
+//				set(data->gauge2, MUIA_Gauge_Max, tag->ti_Data);
 				break;
 				
 			case MUIA_transwnd_Gauge2_Val:	
-				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data);
+//				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data);
 				break;
 
 			case MUIA_transwnd_QuietList:

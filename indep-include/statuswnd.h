@@ -30,6 +30,7 @@ void statuswnd_init_gauge(int maximal);
 void statuswnd_set_gauge(int value);
 void statuswnd_set_gauge_text(char *text);
 void statuswnd_set_status(char *text);
+void statuswnd_set_head(char *text);
 
 /*
 int dl_window_open(int active);

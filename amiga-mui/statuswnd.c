@@ -61,6 +61,8 @@ int statuswnd_open(int active)
 		{
 //			DoMethod(win_up, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, win_up, 3, MUIM_CallHook, &hook_standard, up_abort);
 			DoMethod(App, OM_ADDMEMBER, status_wnd);
+
+			statuswnd_set_head(NULL);
 		}
 	}
 	
@@ -130,3 +132,13 @@ void statuswnd_set_status(char *text)
 	set(status_wnd, MUIA_transwnd_Status, text);
 }
 
+/**************************************************************************
+ Set the head of the status window
+**************************************************************************/
+void statuswnd_set_head(char *text)
+{
+	static char *head_text;
+	if (text != NULL) head_text = text;
+	if (!status_wnd) return;
+	set(status_wnd, MUIA_transwnd_Head, head_text);
+}

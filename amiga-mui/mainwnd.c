@@ -863,8 +863,14 @@ void main_insert_mail_pos(struct mail *mail, int after)
 		list = (struct MUI_NListtree_TreeNode*)DoMethod(mail_tree,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
 	} else list = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_Insert_ListNode_Root;
 
+
+	/* Indeed this is a lot of faster with current NListtree */
+	main_freeze_mail_list();
+
 	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
 					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+
+	main_thaw_mail_list();
 }
 
 

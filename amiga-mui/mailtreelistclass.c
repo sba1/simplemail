@@ -691,6 +691,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 #define MENU_SETSTATUS_WAITSEND  14
 #define MENU_SETSTATUS_SPAM 15
 #define MENU_SETSTATUS_HAM 16
+#define MENU_SPAMCHECK 17
 
 STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
@@ -707,13 +708,17 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 
 	context_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail")),
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Spam Check"), MUIA_UserData, MENU_SPAMCHECK, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Set status"),
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Mark"), MUIA_UserData, MENU_SETSTATUS_MARK, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unmark"), MUIA_UserData, MENU_SETSTATUS_UNMARK, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, ~0, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Hold"), MUIA_UserData, MENU_SETSTATUS_HOLD, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Pending"), MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, ~0, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Read"), MUIA_UserData, MENU_SETSTATUS_READ, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Unread"), MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, ~0, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Spam"), MUIA_UserData, MENU_SETSTATUS_SPAM, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, _("Is Ham"), MUIA_UserData, MENU_SETSTATUS_HAM, End,
 				End,
@@ -746,6 +751,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_WAITSEND: callback_mails_set_status(MAIL_STATUS_WAITSEND); break;
 		case  MENU_SETSTATUS_SPAM: callback_selected_mails_are_spam();break;
 		case  MENU_SETSTATUS_HAM: callback_selected_mails_are_ham();break;
+		case  MENU_SPAMCHECK: callback_check_selected_mails_if_spam();break;
 		default: 
 		{
 			return DoSuperMethodA(cl,obj,(Msg)msg);

@@ -1871,6 +1871,7 @@ static void init_config(void)
 		WindowContents, VGroup,
 	 	Child, HGroup,
 	 		Child, NListviewObject,
+				MUIA_CycleChain, 1,
 	 			MUIA_HorizWeight, 33,
 	 			MUIA_NListview_NList, config_list = NListObject,
 	 				End,
@@ -1878,8 +1879,8 @@ static void init_config(void)
 	 		Child, BalanceObject, End,
 	 		Child, VGroup,
 	    		Child, config_group = VGroup,
-  	  			Child, groups[GROUPS_USER],
-  	  			Child, groups[GROUPS_ACCOUNT],
+  	  				Child, groups[GROUPS_USER],
+  		  			Child, groups[GROUPS_ACCOUNT],
 	 				Child, groups[GROUPS_RECEIVE],
 	 				Child, groups[GROUPS_WRITE],
 	 				Child, groups[GROUPS_READMISC],
@@ -2008,11 +2009,17 @@ static void init_config(void)
 *******************************************************************/
 void open_config(void)
 {
+	SM_ENTER;
+
 	if (!config_wnd) init_config();
 	if (config_wnd)
 	{
 		set(config_wnd, MUIA_Window_Open, TRUE);
+	} else
+	{
+		SM_DEBUGF(5,("Condig window not initialized!\n"));
 	}
+	SM_LEAVE;
 }
 
 /******************************************************************

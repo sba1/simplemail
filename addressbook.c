@@ -38,6 +38,9 @@
 #include "support.h"
 #include "support_indep.h"
 
+
+static char *uft8toucs(char *chr, unsigned int *code);
+
 static struct addressbook_entry root_entry;
 
 /**************************************************************************
@@ -88,11 +91,18 @@ static void put_xml_element_string(FILE *fh, char *element, char *contents)
 	src = contents;
 
 	fprintf(fh,"<%s>",element);
-	while ((c = *src++))
+	while ((c = *src))
 	{
-		if (((unsigned char)c)>=128) fprintf(fh,"&#%d;",(unsigned char)c);
+		if (((unsigned char)c)>=128)
+		{
+			unsigned int code;
+			src = uft8toucs(src, &code);
+			fprintf(fh,"&#x%04X;",code);
+			continue;
+		}
 		else if (c == '&') fputs("&amp;",fh);
 		else fputc(c,fh);
+		src++;
 	}
 	fprintf(fh,"</%s>",element);
 }

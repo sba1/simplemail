@@ -365,7 +365,7 @@ select another folder and see some stats.
 Main window - MESSAGE LIST
 
 
-The message list has seven columns:
+The message list has nine columns:
 
 Message status:  An icon showing the @{" status " LINK "MA0S" 0} of the message (new, unread,
 read, etc.)
@@ -382,11 +382,18 @@ header is missing, this field will be blank.
 
 Date:  The date and time that the message was posted, calculated according
 to the local time (for you). For this to work, both you and the sender must
-have set your correct @{" timezone " LINK "CO00" 0}.
+have set the correct @{" timezone " LINK "CO00" 0}.
 
 Size:  Size of the message, in bytes.
 
 Filename:  Name of the file containing this message.
+
+POP3 Server:  The POP3 Server from this message was downloaded. It is blank
+if this information is not available.
+
+Received:  The date and time that the message has been arrived on your pop3
+server. Its calculated according to the local time (for you). For this to
+work, both you and the sender must have set your correct @{" timezone " LINK "CO00" 0}.
 
 
 The column widths can be adjusted by using the mouse to drag the thin
@@ -778,6 +785,13 @@ Folder directory
 
 Here you can select the directory where your folders will be stored by
 default when they are created.
+
+
+Charset used to display text
+
+Here you should select the charset in which the fonts are designed you use
+to display the text. Default is IS0-8859-1 with Euro, which are the fonts
+of the euro update. E.g. Polish Amiga Users should use AmigaPL.
 
 @ENDNODE
 @NODE "CO01" "Configuration - Accounts"

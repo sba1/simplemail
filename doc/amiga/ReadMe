@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), sebauer@t-online.de (Sebast
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
-Version:   0.14
+Version:   0.15
 
 Introduction
 ~~~~~~~~~~~~
@@ -28,20 +28,17 @@ It also needs some additional MUI Custom Classes:
 
 Make sure that you always have the latest versions installed!
 
-Changes since 0.13
+Changes since 0.14
 ~~~~~~~~~~~~~~~~~~
-- ARexx: added lots of commands
-- Signatures can now be stripped when replying
-- Total number of emails in the folder list is now highlighted when
-  containing new mail
-- Improved the wordwrap while quoting
-- Option to not quote empty lines
-- Your address is filtered out when replying a multiple recipient email
-- Modified the STARTTLS code following the suggestions from Jörg Strohmayer
-- Every folder can now have a default recipient address
-- Can now import address books from YAM
-- Implemented CC support in the Compose Message window
-- Added (partial) hungarian translation by Márton Dósa
+- internally most strings are utf8 now. Note: Maybe I missed
+  some utf8 to iso conversion and you will see some text bugs
+- user can select the charset now which he uses on his system
+- some new translations
+- two new columns in the maillist: "POP3 Server", "Received"
+  (Pop3 Server only has values on new mails)
+- slight layout change of the compose window
+- supports "Content-Description:" field
+- bug fixes as usual
 		    
 Contact
 ~~~~~~~
@@ -67,12 +64,15 @@ SimpleMail is (originally) developed by
   Hynek Schlawack <hynek@hys.in-berlin.de> - http://hynek.in-berlin.de/
   Sebastian Bauer <sebauer@t-online.de>    - http://home.t-online.de/home/sebauer/
 
-Translations done by:
-  Hungarian by Márton Dósa
-
 You can also contact them if you have any questions regarding SimpleMail,
 but please use the mailing list if possible.
 
+Translations done by:
+  Hungarian by Márton Dósa
+  Polish by Jacek Piszczek
+  Finish by Joni Halme
+
+Great thanks to them!
          __
         / /
    __  / /   Only Amiga makes it possible...

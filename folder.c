@@ -67,21 +67,25 @@ static int mail_compare(const void *arg1, const void *arg2)
 *******************************************************************/
 static int mail_compare_status(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) return -1;
-	if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) return 1;
-	return (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
+	int rc;
+
+	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) rc = -1;
+	else if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) rc = 1;
+	else rc = (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_from(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = mystricmp(mail_get_from(arg1),mail_get_from(arg2));
+	int rc = utf8stricmp(mail_get_from(arg1),mail_get_from(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
 
 static int mail_compare_to(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	int rc = mystricmp(mail_get_to(arg1),mail_get_to(arg2));
+	int rc = utf8stricmp(mail_get_to(arg1),mail_get_to(arg2));
 	if (reverse) rc *= -1;
 	return rc;
 }
@@ -95,7 +99,9 @@ static int mail_compare_subject(const struct mail *arg1, const struct mail *arg2
 
 static int mail_compare_reply(const struct mail *arg1, const struct mail *arg2, int reverse)
 {
-	return 0;
+	int rc = utf8stricmp(arg1->reply_addr,arg2->reply_addr);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_date(const struct mail *arg1, const struct mail *arg2, int reverse)
@@ -117,6 +123,18 @@ static int mail_compare_filename(const struct mail *arg1, const struct mail *arg
 	return mystricmp(arg1->filename, arg2->filename);
 }
 
+static int mail_compare_pop3(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	return mystricmp(arg1->pop3_server, arg2->pop3_server);
+}
+
+static int mail_compare_recv(const struct mail *arg1, const struct mail *arg2, int reverse)
+{
+	if (arg1->received > arg2->received) return reverse?(-1):1;
+	else if (arg1->received == arg2->received) return 0;
+	return reverse?1:(-1);
+}
+
 /******************************************************************
  Returns the correct sorting function and fills the reverse pointer
 *******************************************************************/
@@ -134,6 +152,8 @@ static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 		case	FOLDER_SORT_DATE: return mail_compare_date;
 		case	FOLDER_SORT_SIZE: return mail_compare_size;
 		case	FOLDER_SORT_FILENAME: return mail_compare_filename;
+		case	FOLDER_SORT_POP3: return mail_compare_pop3;
+		case	FOLDER_SORT_RECV: return mail_compare_recv;
 	}
 	return NULL; /* thread */
 }

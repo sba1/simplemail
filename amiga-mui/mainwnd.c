@@ -159,7 +159,7 @@ void display_about(void)
 static ULONG sortmode2titlemark(int sortmode, int type)
 {
 	int col = 0;
-	if (sortmode == FOLDER_SORT_THREAD) return 0;
+/*	if (sortmode == FOLDER_SORT_THREAD) return 0;*/
 	col = sortmode & FOLDER_SORT_MODEMASK;
 	return (col | ((sortmode & FOLDER_SORT_REVERSE)?MUIV_NList_TitleMark_Up:MUIV_NList_TitleMark_Down));
 }
@@ -170,7 +170,7 @@ static ULONG sortmode2titlemark(int sortmode, int type)
 static int titlemark2sortmode(int titlemark)
 {
 	int col = titlemark & MUIV_NList_TitleMark_ColMask;
-	if (titlemark == 0) return FOLDER_SORT_THREAD;
+/*	if (titlemark == 0) return FOLDER_SORT_THREAD;*/
 	return col|((titlemark & MUIV_NList_TitleMark_Up)?FOLDER_SORT_REVERSE:0);
 }
 
@@ -936,8 +936,8 @@ void main_set_folder_mails(struct folder *folder)
 
 				if (lm)
 				{
-					if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = mystricmp(m_to, mail_get_to(lm));
-					else res = mystricmp(m_from, mail_get_from(lm));
+					if (folder_get_type(folder) == FOLDER_TYPE_SEND) res = utf8stricmp(m_to, mail_get_to(lm));
+					else res = utf8stricmp(m_from, mail_get_from(lm));
 				}
 
 				if (!lm || res)

@@ -1,6 +1,39 @@
 <?xml version='1.0' ?>
 
 <news>
+
+
+  <entry date="2002/02/05">
+	<text lang="en">
+	  Version 0.15 of SimpleMail released!
+
+	  The changes are:
+	  <list>
+    <item>Internally most strings are utf8 now. Note: Maybe I missed some utf8 to iso conversion and you will see some text bugs</item>
+		<item>User can/should select the charset now which he uses on his system</item>
+		<item>Some new translations</item>
+		<item>Two new columns in the maillist: "POP3 Server", "Received"</item>
+		<item>Slight layout change of the compose window</item>
+		<item>Supports "Content-Description:" field</item>
+		<item>Bug fixes as usual</item>
+		</list>
+	</text>
+	<text lang="de">
+	  SimpleMail Version 0.15 veröffentlicht!
+
+	  Die Änderungen sind:
+	  <list>
+    <item>SimpleMail wurde intern auf Unicode umgestellt</item>
+		<item>Man kann bzw. sollte nun die Zeichentabelle wählen, die auf dem System benutzt wird/item>
+		<item>Neue Übersetzungen hinzugefügt</item>
+		<item>Zwei neue Spalten in der Nachrichtenliste: "POP3 Server" und "Emfangen"</item>
+		<item>Kleine Layoutänderungen im Nachrrichtenschreibfenster</item>
+		<item>"Content-Description:" Feld wird unterstützt</item>
+		<item>Einige Fehler wurden beseitigt</item>
+		</list>
+	</text>
+  </entry>
+
   <entry date="2001/12/24">
 	<text lang="en">
 	  If you have problems with opening the prefs window and have downloaded the
@@ -13,6 +46,7 @@
 	  Optimizer von SAS/C anscheinend fehlerhaft arbeitet. :(
 	</text>
   </entry>
+
   <entry date="2001/12/24">
 	<text lang="en">
 

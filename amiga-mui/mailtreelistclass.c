@@ -278,10 +278,10 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
 			}
 
-			if (m->reply_addr)
+			if (replyto)
 			{
 				*buf++ = '\n';
-				buf = mystpcpy(buf,data->to_text);
+				buf = mystpcpy(buf,data->reply_text);
 				*buf++ = ':';
 				*buf++ = ' ';
 				buf = mystpcpy(buf,replyto);

@@ -1,3 +1,14 @@
+Version 0.15 (second beta) - released on 2002/02/05
+  - internally most strings are utf8 now. Note: Maybe I missed
+    some utf8 to iso conversion and you will see some text bugs
+  - user can select the charset now which he uses on his system
+  - some new translations
+  - two new columns in the maillist: "POP3 Server", "Received"
+    (Pop3 Server only has values on new mails)
+  - slight layout change of the compose window
+  - supports "Content-Description:" field
+  - bug fixes as usual
+
 Version 0.14 (first beta) - released on 2001/12/24
   - ARexx: added lots of commands.
   - Signatures can now be stripped when replying.

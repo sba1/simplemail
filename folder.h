@@ -96,6 +96,7 @@ int folder_add_mail_incoming(struct mail *mail);
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
 int folder_number_of_mails(struct folder *folder);
 int folder_number_of_unread_mails(struct folder *folder);
+int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 

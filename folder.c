@@ -612,6 +612,33 @@ int folder_number_of_unread_mails(struct folder *folder)
 }
 
 /******************************************************************
+ Returns the number of new mails. For groups it counts the whole
+ number of unread mails. -1 for an error
+*******************************************************************/
+int folder_number_of_new_mails(struct folder *folder)
+{
+	if (folder->special == FOLDER_SPECIAL_GROUP)
+	{
+		int num_mails = 0;
+		struct folder *iter = folder_next(folder);
+		struct folder *parent = folder->parent_folder;
+		
+		while (iter)
+		{
+			if (iter->parent_folder == parent) break;
+			if (iter->special != FOLDER_SPECIAL_GROUP)
+			{
+				if (iter->unread_mails == -1) return -1;
+				num_mails += iter->new_mails;
+			}
+			iter = folder_next(iter);
+		}
+
+		return num_mails;
+	} else return folder->new_mails;
+}
+
+/******************************************************************
  Sets a new status of a mail which is inside the given folder.
  It also renames the file, to match the
  status. (on the Amiga this will be done by setting a new comment later)

@@ -30,33 +30,31 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 /* Special User Data field */
 #define MUIV_MailTreelist_UserData_Name (-1)
 
-#define MUIA_MailTreelist_FolderType 	(TAG_USER+0x34567891)
-#define MUIA_MailTree_Active						(TAG_USER+0x34567892)
-#define MUIA_MailTree_DoubleClick			(TAG_USER+0x34567893)
+#define MUIA_MailTree_Active           (TAG_USER | 0x300F0001)
+#define MUIA_MailTree_DoubleClick      (TAG_USER | 0x300F0002)
+#define MUIA_MailTreelist_FolderType   (TAG_USER | 0x300F0003)
 
-#define MUIM_MailTree_Clear  					(TAG_USER+0x892892)
-#define MUIM_MailTree_SetFolderMails 	(TAG_USER+0x892893)
-#define MUIM_MailTree_Freeze						(TAG_USER+0x892894)
-#define MUIM_MailTree_Thaw							(TAG_USER+0x892895)
-#define MUIM_MailTree_RemoveSelected		(TAG_USER+0x892896)
-#define MUIM_MailTree_GetFirstSelected	(TAG_USER+0x892897)
-#define MUIM_MailTree_GetNextSelected	(TAG_USER+0x892898)
-#define MUIM_MailTree_RefreshMail			(TAG_USER+0x892899)
-#define MUIM_MailTree_InsertMail				(TAG_USER+0x89289a)
-#define MUIM_MailTree_RemoveMail				(TAG_USER+0x89289b)
-#define MUIM_MailTree_ReplaceMail			(TAG_USER+0x89289c)
-#define MUIM_MailTree_RefreshSelected	(TAG_USER+0x89288d)
-
-struct MUIP_MailTree_SetFolderMails { ULONG MethodID; struct folder *f;};
-struct MUIP_MailTree_GetFirstSelected { ULONG MethodID; void *handle;};
-struct MUIP_MailTree_GetNextSelected { ULONG MethodID; void *handle;};
-struct MUIP_MailTree_RefreshMail { ULONG MethodID; struct mail *m;};
-struct MUIP_MailTree_InsertMail { ULONG MethodID; struct mail *m; int after;};
-struct MUIP_MailTree_RemoveMail { ULONG MethodID; struct mail *m;};
-struct MUIP_MailTree_ReplaceMail { ULONG MethodID; struct mail *oldmail; struct mail *newmail;};
+#define MUIM_MailTree_Clear            (TAG_USER | 0x300F0101)
+#define MUIM_MailTree_Freeze           (TAG_USER | 0x300F0102)
+#define MUIM_MailTree_GetFirstSelected (TAG_USER | 0x300F0103)
+#define MUIM_MailTree_GetNextSelected  (TAG_USER | 0x300F0104)
+#define MUIM_MailTree_InsertMail       (TAG_USER | 0x300F0105)
+#define MUIM_MailTree_RefreshMail      (TAG_USER | 0x300F0106)
+#define MUIM_MailTree_RefreshSelected  (TAG_USER | 0x300F0107)
+#define MUIM_MailTree_RemoveMail       (TAG_USER | 0x300F0108)
+#define MUIM_MailTree_RemoveSelected   (TAG_USER | 0x300F0109)
+#define MUIM_MailTree_ReplaceMail      (TAG_USER | 0x300F010A)
+#define MUIM_MailTree_SetFolderMails   (TAG_USER | 0x300F010B)
+#define MUIM_MailTree_Thaw             (TAG_USER | 0x300F010C)
+struct  MUIP_MailTree_GetFirstSelected { ULONG MethodID; void *handle;};
+struct  MUIP_MailTree_GetNextSelected  { ULONG MethodID; void *handle;};
+struct  MUIP_MailTree_InsertMail       { ULONG MethodID; struct mail *m; int after;};
+struct  MUIP_MailTree_RefreshMail      { ULONG MethodID; struct mail *m;};
+struct  MUIP_MailTree_RemoveMail       { ULONG MethodID; struct mail *m;};
+struct  MUIP_MailTree_ReplaceMail      { ULONG MethodID; struct mail *oldmail; struct mail *newmail;};
+struct  MUIP_MailTree_SetFolderMails   { ULONG MethodID; struct folder *f;};
 
 int create_mailtreelist_class(void);
 void delete_mailtreelist_class(void);
-
 
 #endif

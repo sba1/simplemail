@@ -26,15 +26,13 @@
 IMPORT struct MUI_CustomClass *CL_AddressTreelist;
 #define AddressTreelistObject (Object*)MyNewObject(CL_AddressTreelist->mcc_Class, NULL
 
-#define MUIA_AddressTreelist_InAddressbook	(TAG_USER+0x27878) /* BOOL */
-#define MUIA_AddressTreelist_AsMatchList		(TAG_USER+0x27879) /* BOOL */
+#define MUIA_AddressTreelist_AsMatchList   (TAG_USER | 0x30070001) /* BOOL */
+#define MUIA_AddressTreelist_InAddressbook (TAG_USER | 0x30070002) /* BOOL */
 
-#define MUIM_AddressTreelist_Refresh (TAG_USER+0x267762)
-
-struct MUIP_AddressTreelist_Refresh { ULONG MethodID; char *str ;};
+#define MUIM_AddressTreelist_Refresh       (TAG_USER | 0x30070101)
+struct  MUIP_AddressTreelist_Refresh       { ULONG MethodID; char *str ;};
 
 int create_addresstreelist_class(void);
 void delete_addresstreelist_class(void);
-
 
 #endif

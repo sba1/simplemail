@@ -75,13 +75,22 @@ void init_hook(struct Hook *h, unsigned long (*func)());
 #define HorizLineObject  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,End
 #define HorizLineTextObject(text)  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,MUIA_Rectangle_BarTitle,text,End
 
-/* undocumented */
+/* start undocumented */
 #define MUIM_GoActive                0x8042491a
 #define MUIM_GoInactive              0x80422c0c
 
+/* #define MUIC_Dtpic "Dtpic.mui", */
 #define MUIA_Dtpic_Name 0x80423d72
-/*#define MUIC_Dtpic "Dtpic.mui",*/
 #define DtpicObject MUI_NewObject("Dtpic.mui"
+
+#define MUIM_DeleteDragImage 0x80423037
+
+#define MUIM_DoDrag 0x804216bb /* private */ /* V18 */
+struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; /* private */
+
+#define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */
+
+/* end undocumented */
 
 #define MAKECOLOR32(x) (((x)<<24)|((x)<<16)|((x)<<8)|(x))
 

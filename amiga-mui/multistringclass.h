@@ -23,15 +23,26 @@
 #ifndef SM__MULTISTRINGCLASS_H
 #define SM__MULTISTRINGCLASS_H
 
+/* MultiStringClass */
+IMPORT struct MUI_CustomClass *CL_MultiString;
 #define MultiStringObject (Object*)MyNewObject(CL_MultiString->mcc_Class, NULL
 
-#define MUIA_MultiString_ContentsArray		(TAG_USER+0x182c000) /* STRPTR * */
+#define MUIA_MultiString_ContentsArray  (TAG_USER | 0x30080001) /* STRPTR * */
 
-#define MUIM_MultiString_AddStringField (TAG_USER+0x677)
+#define MUIM_MultiString_AddStringField (TAG_USER | 0x30080101)
+struct  MUIP_MultiString_AddStringField { ULONG MethodID; const char *contents;};
 
-struct MUIP_MultiString_AddStringField { ULONG MethodID; const char *contents;};
+/* SingeStringClass */
+IMPORT struct MUI_CustomClass *CL_SingleString;
+#define SingleStringObject (Object*)MyNewObject(CL_SingleString->mcc_Class, NULL
 
-extern struct MUI_CustomClass *CL_MultiString;
+#define MUIA_SingleString_Event (TAG_USER | 0x30090001)
+
+#define MUIV_SingleString_Event_CursorUp            1
+#define MUIV_SingleString_Event_CursorDown          2
+#define MUIV_SingleString_Event_CursorToPrevLine    3
+#define MUIV_SingleString_Event_CursorToNextLine    4
+#define MUIV_SingleString_Event_ContentsToPrevLine  5
 
 int create_multistring_class(void);
 void delete_multistring_class(void);

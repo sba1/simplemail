@@ -27,10 +27,10 @@
 IMPORT struct MUI_CustomClass *CL_AttachmentList;
 #define AttachmentListObject (Object*)MyNewObject(CL_AttachmentList->mcc_Class, NULL
 
-#define MUIA_AttachmentList_Quick (TAG_USER+0x92733) /* (ULONG) */
+#define MUIA_AttachmentList_Quick        (TAG_USER | 0x30060001) /* (ULONG) */
 
-#define MUIM_AttachmentList_FindUniqueID 0x98989
-struct MUIP_AttachmentList_FindUniqueID {ULONG MethodID; int unique_id;};
+#define MUIM_AttachmentList_FindUniqueID (TAG_USER | 0x30060101)
+struct  MUIP_AttachmentList_FindUniqueID {ULONG MethodID; int unique_id;};
 
 int create_attachmentlist_class(void);
 void delete_attachmentlist_class(void);

@@ -23,13 +23,22 @@
 #ifndef SM__ADDRESSSTRING_HPP
 #define SM__ADDRESSSTRING_HPP
 
+/* AddressStringClass */
 IMPORT struct MUI_CustomClass *CL_AddressString;
 #define AddressStringObject (Object*)MyNewObject(CL_AddressString->mcc_Class, NULL
 
-#define MUIM_AddressString_Complete 0x676767
-#define MUIM_AddressString_UpdateList   0x676768
-struct MUIP_AddressString_Complete {ULONG MethodID; char *text;};
-struct MUIP_AddressString_UpdateList {ULONG MethodID;};
+#define MUIM_AddressString_Complete   (TAG_USER | 0x30010101)
+#define MUIM_AddressString_UpdateList (TAG_USER | 0x30010102)
+struct  MUIP_AddressString_Complete   {ULONG MethodID; char *text;};
+struct  MUIP_AddressString_UpdateList {ULONG MethodID;};
+
+/* MatchWindowClass */
+#define MUIA_MatchWindow_Entries (TAG_USER | 0x30020001)
+#define MUIA_MatchWindow_String  (TAG_USER | 0x30020002)
+
+#define MUIM_MatchWindow_Up      (TAG_USER | 0x30020101)
+#define MUIM_MatchWindow_Down    (TAG_USER | 0x30020102)
+
 
 int create_addressstring_class(void);
 void delete_addressstring_class(void);

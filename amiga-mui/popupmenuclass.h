@@ -24,13 +24,12 @@ IMPORT struct MUI_CustomClass *CL_Popupmenu;
 int create_popupmenu_class(void);
 void delete_popupmenu_class(void);
 
-#define MUIA_Popupmenu_Selected (TAG_USER + 0x10101100) /* Notify */
-#define MUIA_Popupmenu_SelectedData (TAG_USER + 0x10101101)
+#define MUIA_Popupmenu_Selected     (TAG_USER | 0x300C0001) /* Notify */
+#define MUIA_Popupmenu_SelectedData (TAG_USER | 0x300C0002)
 
-#define MUIM_Popupmenu_Clear				(0x3456111)
-#define MUIM_Popupmenu_AddEntry		(0x3456112)
-
-struct MUIP_Popupmenu_Clear { ULONG MethodID;};
-struct MUIP_Popupmenu_AddEntry {ULONG MethodID; STRPTR Entry; APTR UData;};
+#define MUIM_Popupmenu_AddEntry     (TAG_USER | 0x300C0101)
+#define MUIM_Popupmenu_Clear        (TAG_USER | 0x300C0102)
+struct  MUIP_Popupmenu_AddEntry     { ULONG MethodID; STRPTR Entry; APTR UData;};
+struct  MUIP_Popupmenu_Clear        { ULONG MethodID;};
 
 #endif

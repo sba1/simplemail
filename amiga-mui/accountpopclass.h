@@ -27,11 +27,11 @@
 IMPORT struct MUI_CustomClass *CL_AccountPop;
 #define AccountPopObject (Object*)MyNewObject(CL_AccountPop->mcc_Class, NULL
 
-#define MUIA_AccountPop_Account         (TAG_USER+0x5625626) /* struct account * */
-#define MUIA_AccountPop_HasDefaultEntry (TAG_USER+0x5625627)
+#define MUIA_AccountPop_Account         (TAG_USER | 0x30030001) /* struct account * */
+#define MUIA_AccountPop_HasDefaultEntry (TAG_USER | 0x30030002)
 
-#define MUIM_AccountPop_Refresh (0x7878274)
-struct  MUIP_AccountPop_Refresh {ULONG MethodID;};
+#define MUIM_AccountPop_Refresh         (TAG_USER | 0x30030101)
+struct  MUIP_AccountPop_Refresh         {ULONG MethodID;};
 
 int create_accountpop_class(void);
 void delete_accountpop_class(void);

@@ -37,8 +37,6 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
-#define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */
-
 #include "SimpleMail_rev.h"
 
 #include "account.h"

@@ -46,14 +46,6 @@
 #include "multistringclass.h"
 #include "utf8stringclass.h"
 
-#define MUIA_SingleString_Event (TAG_USER+0x13456)
-
-#define MUIV_SingleString_Event_CursorUp							1
-#define MUIV_SingleString_Event_CursorDown						2
-#define MUIV_SingleString_Event_CursorToPrevLine			3
-#define MUIV_SingleString_Event_CursorToNextLine			4
-#define MUIV_SingleString_Event_ContentsToPrevLine		5
-
 /* This class is used privatly */
 struct SingleString_Data
 {
@@ -156,8 +148,6 @@ STATIC BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
 }
 
 struct MUI_CustomClass *CL_SingleString;
-#define SingleStringObject (Object*)MyNewObject(CL_SingleString->mcc_Class, NULL
-
 
 /* This is the multistring class */
 

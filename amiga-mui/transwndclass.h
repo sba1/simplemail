@@ -23,30 +23,29 @@
 #ifndef SM__TRANSWNDCLASS_H
 #define SM__TRANSWNDCLASS_H
 
-extern struct MUI_CustomClass *CL_transwnd;
-
+IMPORT struct MUI_CustomClass *CL_transwnd;
 #define transwndObject (Object *)MyNewObject(CL_transwnd->mcc_Class, NULL
 
 int create_transwnd_class(void);
 void delete_transwnd_class(void);
 
-#define MUIA_transwnd_Status       (TAG_USER | (116456070 << 16) | 0x0002)
-#define MUIA_transwnd_Gauge1_Str   (TAG_USER | (116456070 << 16) | 0x0003)
-#define MUIA_transwnd_Gauge1_Max   (TAG_USER | (116456070 << 16) | 0x0004)
-#define MUIA_transwnd_Gauge1_Val   (TAG_USER | (116456070 << 16) | 0x0005)
-#define MUIA_transwnd_Gauge2_Str   (TAG_USER | (116456070 << 16) | 0x0006)
-#define MUIA_transwnd_Gauge2_Max   (TAG_USER | (116456070 << 16) | 0x0007)
-#define MUIA_transwnd_Gauge2_Val   (TAG_USER | (116456070 << 16) | 0x0008)
-#define MUIA_transwnd_Aborted      (TAG_USER | (116456070 << 16) | 0x0009) /* N */
-#define MUIA_transwnd_QuietList    (TAG_USER | (116456070 << 16) | 0x000A)
-#define MUIA_transwnd_StartPressed (TAG_USER | (116456070 << 16) | 0x000B)
-#define MUIA_transwnd_Head				 (TAG_USER | (116456070 << 16) | 0x000C)
+#define MUIA_transwnd_Aborted        (TAG_USER | 0x300B0001) /* N */
+#define MUIA_transwnd_Gauge1_Max     (TAG_USER | 0x300B0002)
+#define MUIA_transwnd_Gauge2_Max     (TAG_USER | 0x300B0003)
+#define MUIA_transwnd_Gauge1_Str     (TAG_USER | 0x300B0004)
+#define MUIA_transwnd_Gauge2_Str     (TAG_USER | 0x300B0005)
+#define MUIA_transwnd_Gauge1_Val     (TAG_USER | 0x300B0006)
+#define MUIA_transwnd_Gauge2_Val     (TAG_USER | 0x300B0007)
+#define MUIA_transwnd_Head           (TAG_USER | 0x300B0008)
+#define MUIA_transwnd_StartPressed   (TAG_USER | 0x300B0009)
+#define MUIA_transwnd_Status         (TAG_USER | 0x300B000A)
+#define MUIA_transwnd_QuietList      (TAG_USER | 0x300B000B)
 
-#define MUIM_transwnd_InsertMailSize  0x4545454
-#define MUIM_transwnd_InsertMailInfo  0x4545455
-#define MUIM_transwnd_GetMailFlags    0x4545456
-#define MUIM_transwnd_Clear           0x4545457
-#define MUIM_transwnd_Wait            0x4545458
+#define MUIM_transwnd_Clear          (TAG_USER | 0x300B0101)
+#define MUIM_transwnd_GetMailFlags   (TAG_USER | 0x300B0102)
+#define MUIM_transwnd_InsertMailInfo (TAG_USER | 0x300B0103)
+#define MUIM_transwnd_InsertMailSize (TAG_USER | 0x300B0104)
+#define MUIM_transwnd_Wait           (TAG_USER | 0x300B0105)
 
 struct MUIP_transwnd_InsertMailSize {
 	ULONG MethodId;

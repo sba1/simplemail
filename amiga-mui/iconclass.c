@@ -47,11 +47,6 @@
 #include "iconclass.h"
 #include "muistuff.h"
 
-#define MUIM_DeleteDragImage 0x80423037
-
-#define MUIM_DoDrag 0x804216bb /* private */ /* V18 */
-struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; /* private */
-
 struct Icon_Data
 {
 	char *type;

@@ -27,19 +27,17 @@
 IMPORT struct MUI_CustomClass *CL_DataTypes;
 #define DataTypesObject (Object*)MyNewObject(CL_DataTypes->mcc_Class, NULL
 
-#define MUIA_DataTypes_FileName  (TAG_USER+0x45678) /* (char*) .S. */
-#define MUIA_DataTypes_Buffer    (TAG_USER+0x45679) /* (void *) .S. */
-#define MUIA_DataTypes_BufferLen (TAG_USER+0x4567a) /* (ULONG) .S. */
-#define MUIA_DataTypes_SupportsPrint (TAG_USER+0x4567b) /* (BOOL) */
+#define MUIA_DataTypes_Buffer         (TAG_USER | 0x30040001) /* (void *) .S. */
+#define MUIA_DataTypes_BufferLen      (TAG_USER | 0x30040002) /* (ULONG) .S. */
+#define MUIA_DataTypes_FileName       (TAG_USER | 0x30040003) /* (char*) .S. */
+#define MUIA_DataTypes_HorizScrollbar (TAG_USER | 0x30040004) /* (Object*) .S. */
+#define MUIA_DataTypes_SupportsPrint  (TAG_USER | 0x30040005) /* (BOOL) */
+#define MUIA_DataTypes_VertScrollbar  (TAG_USER | 0x30040006) /* (Object*) .S. */
 
-#define MUIA_DataTypes_HorizScrollbar (TAG_USER+0x4567c) /* (Object*) .S. */
-#define MUIA_DataTypes_VertScrollbar (TAG_USER+0x4567d) /* (Object*) .S. */
-
-
-#define MUIM_DataTypes_Print (0x787878)
-#define MUIM_DataTypes_PrintCompleted (0x787879)
-#define MUIM_Datatypes_VertUpdate (0x78787a)
-#define MUIM_Datatypes_HorizUpdate (0x78787b)
+#define MUIM_Datatypes_HorizUpdate    (TAG_USER | 0x30040101)
+#define MUIM_DataTypes_Print          (TAG_USER | 0x30040102)
+#define MUIM_DataTypes_PrintCompleted (TAG_USER | 0x30040103)
+#define MUIM_Datatypes_VertUpdate     (TAG_USER | 0x30040104)
 
 int create_datatypes_class(void);
 void delete_datatypes_class(void);

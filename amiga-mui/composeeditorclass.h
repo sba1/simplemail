@@ -23,11 +23,11 @@
 #ifndef SM__COMPOSEEDITORCLASS_H
 #define SM__COMPOSEEDITORCLASS_H
 
-extern struct MUI_CustomClass *CL_ComposeEditor;
+IMPORT struct MUI_CustomClass *CL_ComposeEditor;
 #define ComposeEditorObject (Object*)MyNewObject(CL_ComposeEditor->mcc_Class, NULL
 
-#define MUIA_ComposeEditor_Array					(TAG_USER+0x467767)
-#define MUIA_ComposeEditor_UTF8Contents	(TAG_USER+0x467768)
+#define MUIA_ComposeEditor_Array        (TAG_USER | 0x30050001)
+#define MUIA_ComposeEditor_UTF8Contents (TAG_USER | 0x30050002)
 
 int create_composeeditor_class(void);
 void delete_composeeditor_class(void);

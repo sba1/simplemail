@@ -79,12 +79,7 @@ static char *get_address_start(char *contents, int pos)
 	return buf;
 }
 
-#define MUIA_MatchWindow_String  (TAG_USER+0x123457)
-#define MUIA_MatchWindow_Entries (TAG_USER+0x123456)
-
-#define MUIM_MatchWindow_Up   0x6778
-#define MUIM_MatchWindow_Down 0x6779
-
+/* --------------------------------- */
 
 struct MatchWindow_Data
 {

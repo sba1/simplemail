@@ -23,14 +23,13 @@
 #ifndef SM__PICTUREBUTTONCLASS_H
 #define SM__PICTUREBUTTONCLASS_H
 
+IMPORT struct MUI_CustomClass *CL_PictureButton;
 #define PictureButtonObject (Object*)MyNewObject(CL_PictureButton->mcc_Class, NULL
 
-#define MUIA_PictureButton_Filename			(TAG_USER+0x182b000) /* STRPTR */
-#define MUIA_PictureButton_Label					(TAG_USER+0x182b001) /* STRPTR */
-#define MUIA_PictureButton_FreeVert			(TAG_USER+0x182b002) /* BOOL */
-#define MUIA_PictureButton_ShowLabel			(TAG_USER+0x182b003) /* BOOL */
-
-extern struct MUI_CustomClass *CL_PictureButton;
+#define MUIA_PictureButton_Filename  (TAG_USER | 0x300D0001) /* STRPTR */
+#define MUIA_PictureButton_FreeVert  (TAG_USER | 0x300D0002) /* BOOL */
+#define MUIA_PictureButton_Label     (TAG_USER | 0x300D0003) /* STRPTR */
+#define MUIA_PictureButton_ShowLabel (TAG_USER | 0x300D0004) /* BOOL */
 
 int create_picturebutton_class(void);
 void delete_picturebutton_class(void);

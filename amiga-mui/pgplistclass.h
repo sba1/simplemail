@@ -27,8 +27,8 @@
 IMPORT struct MUI_CustomClass *CL_PGPList;
 #define PGPListObject (Object*)MyNewObject(CL_PGPList->mcc_Class, NULL
 
-#define MUIM_PGPList_Refresh (0x627637)
-struct MUIP_PGPList_Refresh { ULONG MethodID;};
+#define MUIM_PGPList_Refresh (TAG_USER | 0x300E0101)
+struct  MUIP_PGPList_Refresh { ULONG MethodID;};
 
 int create_pgplist_class(void);
 void delete_pgplist_class(void);

@@ -15,18 +15,21 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+
+/*
+** filterruleclass.h
+*/
+
 #ifndef SM__FILTERRULECLASS_H
 #define SM__FILTERRULECLASS_H
 
+IMPORT struct MUI_CustomClass *CL_FilterRule;
 #define FilterRuleObject (Object*)MyNewObject(CL_FilterRule->mcc_Class, NULL
 
-extern struct MUI_CustomClass *CL_FilterRule;
-
-#define MUIA_FilterRule_Type			   (TAG_USER+0x3000101) /* I.. LONG */
-#define MUIA_FilterRule_Data				 (TAG_USER+0x3000102) /* I.. struct filter_rule * */
+#define MUIA_FilterRule_Data (TAG_USER | 0x30120001) /* I.. struct filter_rule * */
+#define MUIA_FilterRule_Type (TAG_USER | 0x30120002) /* I.. LONG */
 
 int create_filterrule_class(void);
 void delete_filterrule_class(void);
 
-#endif  /* FC__AUTOGROUPCLASS_H */
-
+#endif  /* SM__FILTERRULECLASS_H */

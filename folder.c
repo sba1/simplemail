@@ -165,11 +165,6 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 		return 0;
 	}
 
-	folder->mail_array[folder->num_mails++] = mail;
-	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
-	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
-
-
 	if (mail->message_id)
 	{
 		/* check if there is already an mail with the same message id, this would cause
@@ -179,11 +174,18 @@ int folder_add_mail(struct folder *folder, struct mail *mail)
 			struct mail *fm = folder->mail_array[i];
 			if (!(mystricmp(mail->message_id,fm->message_id)))
 			{
-				free(mail->message_id);
-				mail->message_id = NULL;
+				if (mail->message_id)
+				{
+					free(mail->message_id);
+					mail->message_id = NULL;
+				}
 			}
 		}
 	}
+
+	folder->mail_array[folder->num_mails++] = mail;
+	if (mail_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
+	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
 
 	/* sort the mails for threads */
 	if (mail->message_id)
@@ -443,7 +445,7 @@ int folder_read_mail_infos(struct folder *folder)
 		{
 			int ver;
 			fread(&ver,1,4,fh);
-			if (ver == 1)
+			if (ver == 2)
 			{
 				int num_mails;
 				fread(&num_mails,1,4,fh);
@@ -477,6 +479,18 @@ int folder_read_mail_infos(struct folder *folder)
 						if ((buf = fread_str(fh)))
 						{
 							mail_add_header(m,"Reply-To",8,buf,strlen(buf));
+							free(buf);
+						}
+
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"Message-ID",10,buf,strlen(buf));
+							free(buf);
+						}
+
+						if ((buf = fread_str(fh)))
+						{
+							mail_add_header(m,"In-Reply-To",11,buf,strlen(buf));
 							free(buf);
 						}
 
@@ -707,6 +721,10 @@ static void folder_config_save(struct folder *f)
 *******************************************************************/
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype)
 {
+	/* Currentry we need never to reload the mails because the message id and
+     in reply to field are always read and hold in the index file */
+	return 0;
+#if 0
 	int rescan = 0;
 
 	/* Check if the path name has changed */
@@ -720,6 +738,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
 	}	
 
 	return rescan;
+#endif
 }
 
 /******************************************************************
@@ -1143,7 +1162,8 @@ int folder_save_index(struct folder *f)
 	if (fh)
 	{
 		int i;
-		int ver = 1;
+		int ver = 2;
+
 		fwrite("SMFI",1,4,fh);
 		fwrite(&ver,1,4,fh);
 		fwrite(&f->num_mails,1,4,fh);
@@ -1153,6 +1173,8 @@ int folder_save_index(struct folder *f)
 			char *from = mail_find_header_contents(f->mail_array[i],"from");
 			char *to = mail_find_header_contents(f->mail_array[i],"to");
 			char *reply_to = mail_find_header_contents(f->mail_array[i],"reply-to");
+			char *message_id = mail_find_header_contents(f->mail_array[i],"message-id");
+			char *in_reply_to = mail_find_header_contents(f->mail_array[i],"in-reply-to");
 			int len = 0;
 			int len_add;
 
@@ -1165,6 +1187,10 @@ int folder_save_index(struct folder *f)
 			if (!(len_add = fwrite_str(fh, to))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, reply_to))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, message_id))) break;
+			len += len_add;
+			if (!(len_add = fwrite_str(fh, in_reply_to))) break;
 			len += len_add;
 
 			/* so that integervars are aligned */

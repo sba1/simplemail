@@ -21,15 +21,64 @@
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "print.h"
 #include "mail.h"
+#include "configuration.h"
+#include "support.h"
+#include "smintl.h"
 
 #include "sysprint.h"
 
 #define ANSI_NORMAL     "[0m"
 #define ANSI_BOLD       "[1m"
 #define ANSI_UNDER      "[4m"
+
+static int create_ansi_header(FILE *fp, struct mail *m)
+{
+	char rc = 0;
+	char *from = mail_find_header_contents(m,"from");
+	char *to = mail_find_header_contents(m,"to");
+	char *cc = mail_find_header_contents(m, "cc");
+	char *replyto = mail_find_header_contents(m, "reply-to");
+
+	if(from && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("From"), from);
+	}
+
+	if(to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("To"), to);
+	}
+
+	if(cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("CC"), cc);
+	}
+
+	if(m->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL" %s\n", _("Subject"), m->subject);
+	}
+
+	if((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Date"),sm_get_date_long_str(m->seconds));
+	}
+
+	if(replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
+	{
+		fprintf(fp, ANSI_BOLD "%s" ANSI_NORMAL "%s\n", _("ReplyTo"), replyto);
+	}
+
+	fputs("\n", fp);
+
+	rc = 1;
+
+	return rc;
+}
 
 /*
 ** print_mail - prints a given mail.
@@ -39,32 +88,71 @@
 int print_mail(struct mail *m)
 {
 	int rc = 0;
-	char *text;
+	char *text, *buf;
 	PrintHandle *ph;
-	unsigned long len;
+	unsigned long txtlen, len;
+	FILE *fp;
 
 	mail_decode(m);
 
 	if(m->decoded_data)
 	{
 		text = m->decoded_data;
-		len = m->decoded_len;
+		txtlen = m->decoded_len;
 	}
 	else
 	{
 		text = m->text+m->text_begin;
-		len = m->text_len;
+		txtlen = m->text_len;
 	}
 
-	/* Just a very simple and basic routine so far. */
-	ph = sysprint_prepare();
-	if(ph != NULL)
+	fp = tmpfile();
+	if(fp != NULL)
 	{
-		if(sysprint_print(ph, text, len))
+		if(create_ansi_header(fp, m))
 		{
-			rc = 1; /* Mark success. */
+			fwrite(text, txtlen, 1, fp);
+
+			len = ftell(fp);
+			if(len != 0)
+			{
+				fseek(fp, 0, SEEK_SET);
+				buf = malloc(len + 1);
+				if(buf != NULL)
+				{
+					if(fread(buf, len, 1, fp) == 1)
+					{
+						ph = sysprint_prepare();
+						if(ph != NULL)
+						{
+							if(sysprint_print(ph, buf, len))
+							{
+								rc = 1; /* Mark success. */
+							}
+							sysprint_cleanup(ph);
+						}
+					}
+					else
+					{
+						sm_request(NULL, _("I/O-Error."), _("Okay"));
+					}
+					free(buf);
+				}
+				else
+				{
+					sm_request(NULL, _("Not enough memory."), _("Okay"));
+				}
+			}
+			else
+			{
+				sm_request(NULL, _("Internal error."), _("Okay"));
+			}
 		}
-		sysprint_cleanup(ph);
+		fclose(fp);
+	}
+	else
+	{
+		sm_request(NULL, _("Can\'t create temporary file."), _("Okay"));
 	}
 
 	return rc;

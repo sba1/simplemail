@@ -1,6 +1,6 @@
 Standard=CP1252
 Name=Windows
-Characterization=_("Windows (Western)")
+Characterization=_("West European (Windows)")
 ReadOnly=1
 #
 #    Name:     cp1252 to Unicode table

@@ -56,3 +56,4 @@
 
 #include <proto/keymap.h>
 #include <proto/icon.h>
+#include <proto/openurl.h>

@@ -35,6 +35,7 @@
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+#include <proto/openurl.h>
 
 #include "configuration.h"
 #include "folder.h"
@@ -414,6 +415,15 @@ static void uri_clicked(void **msg)
 	if (!mystrnicmp(uri,"mailto:",7))
 	{
 		callback_write_mail_to_str(uri+7);
+	} else
+	{
+		struct Library *OpenURLBase;
+
+		if ((OpenURLBase = OpenLibrary("openurl.library",0)))
+		{
+			URL_OpenA(uri,NULL);
+			CloseLibrary(OpenURLBase);
+		}
 	}
 }
 

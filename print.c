@@ -128,7 +128,7 @@ static int create_ansi_header(FILE *fp, struct mail *mail)
 	{
 		struct mailbox addr;
 		parse_mailbox(replyto, &addr);
-		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL,_("Replies To"),addr.addr_spec);
+		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL " %s\n",_("Replies To"),addr.addr_spec);
 
 		if (addr.phrase)
 		{

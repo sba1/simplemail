@@ -118,7 +118,7 @@ $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover link $(MAKEGENERATOR)
 
 $(GSTFILE): amiga-mui/headers.c
-  sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
+  sc nover ign=79,110 noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
 LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo $(LOCALEDIR)fr.mo

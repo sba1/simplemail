@@ -1556,6 +1556,90 @@ char *mail_get_replyto_address(struct mail *mail)
 	return mystrdup(mail->reply_addr);
 }
 
+
+/**************************************************************************
+ Does RFC 2184 stuff
+**************************************************************************/
+void rebuild_parameter_list(struct list *list)
+{
+	struct content_parameter *param;
+
+	/* pass one - decode the values into utf8 */
+	param = (struct content_parameter*)list_first(list);
+	while (param)
+	{
+		int attribute_len = strlen(param->attribute);
+		if (param->attribute[attribute_len-1] == '*')
+		{
+			char *tcharset = param->value;
+			char *tlang;
+			char *tencoded;
+
+			if ((tlang = strchr(tcharset,'\'')))
+			{
+				char *charset;
+				if ((charset = (char*)malloc(tlang - tcharset + 1)))
+				{
+					strncpy(charset, tcharset, tlang - tcharset);
+					charset[tlang - tcharset] = 0;
+
+					tlang++;
+					if ((tencoded = strchr(tlang,'\'')))
+					{
+						char *newval;
+						tencoded++;
+						if ((newval = (char*)malloc(strlen(tencoded)+1)))
+						{
+							char c;
+							char *dest = newval;
+
+							/* decode characters */
+							while ((c = *tencoded++))
+							{
+								if (c != '%') *dest++ = c;
+								else
+								{
+									char num[3];
+									num[0] = *tencoded++;
+									num[1] = *tencoded++;
+									num[2] = 0;
+									*dest++ = strtoul(num,NULL,16);
+								}
+							}
+							*dest = 0;
+
+							/* now convert into utf-8 */
+							if (!mystricmp(charset,"utf-8"))
+							{
+								free(param->value);
+								param->value = newval;
+							} else
+							{
+								char *utf8 = utf8create(newval,charset);
+								if (utf8)
+								{
+									free(param->value);
+									free(newval);
+									param->value = utf8;
+								}
+							}
+						}
+					}
+					free(charset);
+				}
+			}
+			param->attribute[attribute_len-1] =  0;
+		}
+
+//#undef printf
+//		printf("%s: %s\n",param->attribute,param->value);
+
+		param = (struct content_parameter*)node_next(&param->node);
+	}
+
+	/* a second pass should follow which merges the lines */
+}
+
 /**************************************************************************
  Interprets the the already read headers. A return value of 0 means error
  TODO: Must use functions better since this function is really too big
@@ -1628,12 +1712,61 @@ int mail_process_headers(struct mail *mail)
 			/* Check the Content-Disposition of the whole mail */
 			if (!mail->content_name)
 			{
+				struct list parameter_list;
+				char *param;
+
 				char *fn = mystristr(buf,"filename=");
 				if (fn)
 				{
 					fn += sizeof("filename=")-1;
 					parse_value(fn,&mail->content_name);
 				}
+
+				list_init(&parameter_list);
+				if ((param = mystristr(buf,";")))
+				{
+					while (1)
+					{
+						if (*param++ == ';')
+						{
+							struct content_parameter *new_param;
+							struct parse_parameter dest;
+							unsigned char c;
+
+							/* Skip spaces */
+							while ((c = *param))
+							{
+								if (!isspace(c)) break;
+								param++;
+							}
+
+							if (!(param = parse_parameter(param, &dest)))
+								break;
+
+							if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+							{
+								new_param->attribute = dest.attribute;
+								new_param->value = dest.value;
+								list_insert_tail(&parameter_list,&new_param->node);
+							} else break;
+						} else break;
+					}
+				}
+				rebuild_parameter_list(&parameter_list);
+
+				{
+					struct content_parameter *param = (struct content_parameter*)list_first(&parameter_list);
+					while (param)
+					{
+						if (!mystricmp("filename",param->attribute))
+						{
+							mail->content_name = mystrdup(param->value);
+							break;
+						}
+						param = (struct content_parameter *)node_next(&param->node);
+					}
+				}
+
 			}
 		} else if (!mystricmp("content-type",header->name))
 		{
@@ -2744,7 +2877,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 						unsigned char *buf = new_mail->content_filename;
 						static const char *pspecials = "'%* ()<>@,;:\\\"[]?=";
 	
-						fprintf(ofh,"; filename*=utf8''");
+						fprintf(ofh,"; filename*=utf-8''");
 	
 						while((c = *buf++))
 						{

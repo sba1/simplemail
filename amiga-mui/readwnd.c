@@ -391,6 +391,11 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		Object *group, *icon, *context_menu;
 		void *buffer = NULL;
 		unsigned int buffer_len = 488;
+		char content_name[256];
+
+		utf8tostr(mail->content_name, content_name, sizeof(content_name), user.config.default_codeset);
+//#undef printf
+//		printf("%s\n",mail->content_name);
 
 		buffer = mail_decode_bytes(mail,&buffer_len);
 
@@ -411,7 +416,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 			Child, TextObject,
 					MUIA_Background, MUII_TextBack,
 					MUIA_Font, MUIV_Font_Tiny,
-					MUIA_Text_Contents, mail->content_name,
+					MUIA_Text_Contents, content_name,
 					MUIA_Text_PreParse, "\33c",
 					End,
 			End;

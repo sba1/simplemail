@@ -124,7 +124,7 @@ static int start(struct WBStartup *wbs)
 	int rc = 20;
 	struct Process *pr = (struct Process*)IExec->FindTask(NULL);
 
-	if ((DOSBase = OpenLibraryInterface("dos.library",37,&IDOS)))
+	if ((DOSBase = OpenLibraryInterface("dos.library",50,&IDOS)))
 	{
 		BPTR out = ZERO;
 		BPTR oldout = ZERO;
@@ -189,7 +189,7 @@ static int open_libs(void)
 							{
 								if ((DiskfontBase = OpenLibraryInterface("diskfont.library",50,&IDiskfont)))
 								{
-									if ((WorkbenchBase = OpenLibraryInterface("workbench.library",37,&IWorkbench)))
+									if ((WorkbenchBase = OpenLibraryInterface("workbench.library",50,&IWorkbench)))
 									{
 										if ((AslBase = OpenLibraryInterface("asl.library",38,&IAsl)))
 										{

@@ -477,6 +477,16 @@ static void settings_show_changed(void)
 	DoMethod(right_group, MUIM_Group_ExitChange);
 	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
 	DoMethod(main_group, MUIM_Group_ExitChange);
+
+	/* FIXME: This is necessary only because the mail is not displayed
+	 * if the object is not in the Show state. Must be fixed within
+	 * MessageView */
+	if (messageview)
+	{
+		struct mail_info *m = main_get_active_mail();
+		char *f = main_get_folder_drawer();
+		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
+	}
 }
 
 /******************************************************************

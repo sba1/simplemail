@@ -117,12 +117,22 @@ void init_config(void)
 
 	user.config.header_flags = SHOW_HEADER_FROM | SHOW_HEADER_TO | SHOW_HEADER_CC | SHOW_HEADER_SUBJECT | SHOW_HEADER_DATE | SHOW_HEADER_REPLYTO;
 
+#ifdef _AMIGA
 	user.config.read_background = user.config.read_header_background = 0xb0b0b0;
 	user.config.read_text = 0;
 	user.config.read_quoted = 0xffffff;
 	user.config.read_old_quoted = 0xffff00;
 	user.config.read_link = 0x000098;
 	user.config.read_link_underlined = 0;
+#else
+	user.config.read_background = 0xfffff4;
+	user.config.read_header_background = 0xf0f0e0;
+	user.config.read_text = 0;
+	user.config.read_quoted = 0xff0000;
+	user.config.read_old_quoted = 0xdd2222;
+	user.config.read_link = 0x000098;
+	user.config.read_link_underlined = 0;
+#endif
 
 	user.config.write_wrap = 76;
 	user.config.write_wrap_type = 2;
@@ -210,7 +220,7 @@ int load_config(void)
 						if ((result = get_config_item(buf,"Write.ReplyStripSig")))
 							user.config.write_reply_stripsig = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.ReplyCiteEmptyL")))
-							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);	
+							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
 						{
 							/* until 0.17 SimpleMail forgot the 0x for this field to write out */

@@ -71,15 +71,15 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 			    		switch (tag->ti_Data)
 			    		{
 			    			case	MUIV_SignatureCycle_Active_Next:
-			    			    	set(data->sign_cycle, MUIA_Cycle_Active, MUIV_Cycle_Active_Next);
+			    			    	nnset(data->sign_cycle, MUIA_Cycle_Active, MUIV_Cycle_Active_Next);
 			    			    	break;
 
 			    			case	MUIV_SignatureCycle_Active_Prev:
-			    			    	set(data->sign_cycle, MUIA_Cycle_Active, MUIV_Cycle_Active_Prev);
+			    			    	nnset(data->sign_cycle, MUIA_Cycle_Active, MUIV_Cycle_Active_Prev);
 			    			    	break;
 
 			    			default:
-			    			    	set(data->sign_cycle, MUIA_Cycle_Active, tag->ti_Data);
+			    			    	nnset(data->sign_cycle, MUIA_Cycle_Active, tag->ti_Data);
 			    		}
 			    	}
 			    	break;
@@ -89,11 +89,11 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 			    	{
 			    		if (mystrcmp((char*)tag->ti_Data, MUIV_SignatureCycle_NoSignature) == 0)
 			    		{
-			    			set(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_utf8count);
+			    			nnset(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_utf8count);
 			    		}
 			    		else if (mystrcmp((char*)tag->ti_Data, MUIV_SignatureCycle_Default) == 0)
 			    		{
-			    			set(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_default);
+			    			nnset(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_default);
 			    		}
 			    		else
 			    		{
@@ -105,7 +105,7 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 			    				{
 			    					if (mystrcmp((char*)tag->ti_Data, data->utf8_sign_array[i]) == 0)
 			    					{
-			    						set(data->sign_cycle, MUIA_Cycle_Active, i);
+			    						nnset(data->sign_cycle, MUIA_Cycle_Active, i);
 			    						status_found = TRUE;
 			    						break;
 			    					}
@@ -114,7 +114,7 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 			    			if (!status_found)
 			    			{
 			    				/* in case we don't find it in the Array, set to Default */
-			    				set(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_default);
+			    				nnset(data->sign_cycle, MUIA_Cycle_Active, data->sign_array_default);
 			    			}
 			    		}
 			    	}

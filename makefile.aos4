@@ -64,6 +64,7 @@ ARCHSRCS=\
 	gettext.c \
 	gui_main.c \
 	iconclass.c \
+	mailinfoclass.c \
 	mailtreelistclass.c \
 	mainwnd.c \
 	messageviewclass.c \

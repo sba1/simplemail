@@ -71,6 +71,7 @@
 #include "foldertreelistclass.h"
 #include "iconclass.h"
 #include "mainwnd.h"
+#include "mailinfoclass.h"
 #include "mailtreelistclass.h"
 #include "messageviewclass.h"
 #include "muistuff.h"
@@ -240,6 +241,7 @@ void all_del(void)
 		{
 			app_del();
 
+			delete_mailinfo_class();
 			delete_addressmatchlist_class();
 			delete_pgplist_class();
 			delete_addressentrylist_class();
@@ -325,7 +327,8 @@ int all_init(void)
 						    create_audioselectgroup_class() && create_accountpop_class() &&
 						    create_signaturecycle_class() && create_messageview_class() &&
 								create_addressgrouplist_class() && create_addressentrylist_class() &&
-								create_pgplist_class() && create_addressmatchlist_class())
+								create_pgplist_class() && create_addressmatchlist_class() &&
+								create_mailinfo_class())
 						{
 							if (app_init())
 							{

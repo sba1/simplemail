@@ -338,6 +338,7 @@ void read_window_open(char *folder, char *filename)
 			Child, HGroup,
 				MUIA_VertWeight,33,
 				Child, NListviewObject,
+					MUIA_CycleChain, 1,
 					MUIA_HorizWeight,300,
 					MUIA_NListview_NList, header_list = NListObject,
 						MUIA_NList_DisplayHook, &header_display_hook,
@@ -346,6 +347,7 @@ void read_window_open(char *folder, char *filename)
 					End,
 				Child, BalanceObject, End,
 				Child, NListviewObject,
+					MUIA_CycleChain, 1,
 					MUIA_NListview_NList, mime_tree = NListtreeObject,
 						MUIA_NListtree_ConstructHook, &mime_construct_hook,
 						MUIA_NListtree_DestructHook, &mime_destruct_hook,
@@ -360,11 +362,13 @@ void read_window_open(char *folder, char *filename)
 				MUIA_Group_ActivePage, 0,
 				Child, VGroup,
 					Child, NListviewObject,
+						MUIA_CycleChain, 1,
 						MUIA_NListview_NList, text_list = NListObject,
 							MUIA_Font, MUIV_Font_Fixed,
 							MUIA_NList_TypeSelect, MUIV_NList_TypeSelect_Char,
 							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
 							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+							MUIA_NList_KeepActive, TRUE,
 							End,
 						End,
 					End,
@@ -407,6 +411,7 @@ void read_window_open(char *folder, char *filename)
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);
 					set(mime_tree,MUIA_NListtree_Active,MUIV_NListtree_Active_First);
+					set(wnd,MUIA_Window_DefaultObject, data->text_list);
 					set(wnd,MUIA_Window_Open,TRUE);
 					CurrentDir(old_dir);
 					return;

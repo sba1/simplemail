@@ -57,3 +57,22 @@ int uft8len(const uft8 *str)
 	return len;
 }
 
+/**************************************************************************
+ Copies a number of characters from "from" to "to". 
+**************************************************************************/
+uft8 *uft8ncpy(uft8 *to, const uft8 *from, int n)
+{
+	uft8 *saved_to = to;
+	for (;n;n--)
+	{
+		unsigned char c = *from++;
+		int len = trailingBytesForUTF8[c];
+
+		*to++ = c;
+		for (;len;len--)
+		{
+			*to++ = *from++;
+		}
+	}
+	return saved_to;
+}

@@ -22,9 +22,10 @@
 typedef unsigned char	uft8;
 
 #define uft8size(s) (s)?(strlen(s):0)
-#define uft8cpy(dest,src) ((uft*)strcpy(dest,src))
-#define uft8cat(dest,src) ((uft*)strcat(dest,src))
+#define uft8cpy(dest,src) ((uft8*)strcpy(dest,src))
+#define uft8cat(dest,src) ((uft8*)strcat(dest,src))
 
 int uft8len(const uft8 *str);
+uft8 *uft8ncpy(uft8 *to, const uft8 *from, int n);
 
 #endif

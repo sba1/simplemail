@@ -36,6 +36,7 @@ struct codeset
 {
 	struct node node;
 	char *name;
+	char *alt_name; /* alternative name */
 	char *characterization;
 	int read_only; /* 1 if this charset should never be used to write */
 	struct single_convert table[256];

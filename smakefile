@@ -183,7 +183,7 @@ prepare-release:
   copy sm/images TO ram:SimpleMail/Images
   copy sm/ARexx TO ram:SimpleMail/ARexx
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale
-  copy sm/Charsets/\#? To ram:SimpleMail/Charsets
+  copy sm/Charsets/\#?.txt To ram:SimpleMail/Charsets
   copy sm/.taglines TO ram:SimpleMail/.taglines
   copy `which libs:expat.library` ram:SimpleMail/Libs
   -delete ram:simplemail.lzx

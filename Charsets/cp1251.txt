@@ -1,4 +1,5 @@
 Standard=CP1251
+AltStandard=Windows-1251
 Name=CP1251
 Characterization=_("Cyrillic (Windows)")
 ReadOnly=1

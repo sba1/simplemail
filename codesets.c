@@ -742,6 +742,7 @@ static int codesets_read_table(char *name)
 			{
 				char *result;
 				if ((result = get_config_item(buf,"Standard"))) codeset->name = mystrdup(result);
+				else if ((result = get_config_item(buf,"AltStandard"))) codeset->alt_name = mystrdup(result);
 				else if ((result = get_config_item(buf,"ReadOnly"))) codeset->read_only = !!atoi(result);
 				else if ((result = get_config_item(buf,"Characterization")))
 				{
@@ -812,6 +813,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
 	codeset->name = mystrdup("ISO-8859-1 + Euro");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European (with EURO)"));
 	codeset->read_only = 1;
 	for (i=0;i<256;i++)
@@ -833,6 +835,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1;
 	codeset->name = mystrdup("ISO-8859-1");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -853,6 +856,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-2");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Central/East European"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -874,6 +878,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-3");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("South European"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -895,6 +900,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-4");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("North European"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -916,6 +922,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("KOI8-R");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Russian"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -937,6 +944,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-5");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Slavic languages"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -958,6 +966,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-9");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Turkish"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -979,6 +988,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-15");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European II"));
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
@@ -1000,6 +1010,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("AmigaPL");
+	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup("AmigaPL");
 	codeset->read_only = 1;
 	for (i=0;i<256;i++)
@@ -1069,7 +1080,7 @@ struct codeset *codesets_find(char *name)
 
 	while (codeset)
 	{
-		if (!mystricmp(name,codeset->name)) return codeset;
+		if (!mystricmp(name,codeset->name) || !mystricmp(name,codeset->alt_name)) return codeset;
 		codeset = (struct codeset*)node_next(&codeset->node);
 	}
 	return NULL;
@@ -1225,7 +1236,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	int len;
 	struct codeset *codeset = codesets_find(charset);
 
-  if (!from) return NULL;
+	if (!from) return NULL;
 
 	if (!codeset)
 	{

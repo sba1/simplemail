@@ -92,6 +92,7 @@ static Object *write_wordwrap_string;
 static Object *write_wordwrap_cycle;
 static Object *write_replywrap_check;
 static Object *write_replystripsig_check;
+static Object *write_replyciteemptyl_check;
 
 static Object *readhtml_mail_editor;
 
@@ -371,6 +372,7 @@ static void config_use(void)
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
 	user.config.write_reply_stripsig = xget(write_replystripsig_check,MUIA_Selected);
+	user.config.write_reply_citeemptyl = xget(write_replyciteemptyl_check,MUIA_Selected);
 
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
@@ -920,8 +922,13 @@ static int init_write_group(void)
 			Child, HVSpace,
 			End,
 		Child, HGroup,
-			Child, MakeLabel(_("Strip signature before quoting.")),
-			Child, write_replystripsig_check = MakeCheck(_("Strip signature before quoting."),user.config.write_reply_stripsig),
+			Child, MakeLabel(_("Strip signature before quoting")),
+			Child, write_replystripsig_check = MakeCheck(_("Strip signature before quoting"),user.config.write_reply_stripsig),
+			Child, HVSpace,
+			End,
+		Child, HGroup,
+			Child, MakeLabel(_("Cite empty lines")),
+			Child, write_replyciteemptyl_check = MakeCheck(_("Cite empty lines"),user.config.write_reply_citeemptyl),
 			Child, HVSpace,
 			End,	
 		End;

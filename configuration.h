@@ -77,6 +77,7 @@ struct config
 	int write_wrap_type;
 	int write_reply_quote;
 	int write_reply_stripsig;
+	int write_reply_citeemptyl;
 
 	char *read_fixedfont;
 	char *read_propfont;

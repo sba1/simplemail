@@ -127,6 +127,7 @@ void init_config(void)
 	user.config.write_wrap_type = 2;
 	user.config.write_reply_quote = 1;
 	user.config.write_reply_stripsig = 1;
+	user.config.write_reply_citeemptyl = 0;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -187,7 +188,9 @@ int load_config(void)
 						if ((result = get_config_item(buf,"Write.ReplyQuote")))
 							user.config.write_reply_quote = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.ReplyStripSig")))
-							user.config.write_reply_stripsig = CONFIG_BOOL_VAL(result);	
+							user.config.write_reply_stripsig = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Write.ReplyCiteEmptyL")))
+							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);	
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
 							sscanf(result,"%x",&user.config.header_flags);
 						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
@@ -473,6 +476,7 @@ void save_config(void)
 			fprintf(fh,"Write.WrapType=%d\n",user.config.write_wrap_type);
 			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");
 			fprintf(fh,"Write.ReplyStripSig=%s\n",user.config.write_reply_stripsig?"Y":"N");
+			fprintf(fh,"Write.ReplyCiteEmptyL=%s\n",user.config.write_reply_citeemptyl?"Y":"N");
 
 			fprintf(fh,"ReadHeader.Flags=%x\n",user.config.header_flags);
 			if (user.config.header_array)

@@ -27,6 +27,3 @@
 int open_socket_lib(void);
 void close_socket_lib(void);
 long my_h_errno(void);
-long read(long, void *, long);
-long write(long, void *, long);
-void close(long);

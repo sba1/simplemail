@@ -28,7 +28,7 @@ $version = "0.19";
 //  echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.19.lha?download">'.$filename.'</A></td>';
   echo '<td align="center">'.$version.'</td>';
-  echo '<td align="center">2002/12/24</td>';
+  echo '<td align="center">2003/02/05</td>';
 
 //  echo '<td align="center">'.date("Y/m/d", filemtime("files/".$filename)).'</td>';
 //  echo '<td align="center">'.get_filesize("files/".$filename).'</td>';

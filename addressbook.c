@@ -499,7 +499,9 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 							new_entry->person.street = mystrdup(entry->person.street);
 							new_entry->person.city = mystrdup(entry->person.city);
 							new_entry->person.country = mystrdup(entry->person.country);
-							new_entry->person.phone = mystrdup(entry->person.phone);
+							new_entry->person.phone1 = mystrdup(entry->person.phone1);
+							new_entry->person.phone2 = mystrdup(entry->person.phone2);
+							new_entry->person.notepad = mystrdup(entry->person.notepad);
 							new_entry->person.description = mystrdup(entry->person.description);
 
 							if ((new_entry->person.emails = (char**)malloc(entry->person.num_emails*sizeof(char*))))
@@ -555,7 +557,9 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 						if (entry->person.street) free(entry->person.street);
 						if (entry->person.city) free(entry->person.city);
 						if (entry->person.country) free(entry->person.country);
-						if (entry->person.phone) free(entry->person.alias);
+						if (entry->person.phone1) free(entry->person.phone1);
+						if (entry->person.phone2) free(entry->person.phone2);
+						if (entry->person.notepad) free(entry->person.notepad);
 						if (entry->person.description) free(entry->person.description);
 
 						for (i=0;i<entry->person.num_emails;i++)

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** addressbook.h
 */
 
 #ifndef SM__ADDRESSBOOK_H
@@ -56,8 +56,10 @@ struct addressbook_entry
 			char *street;
 			char *city;
 			char *country;
-			char *phone;
+			char *phone1;
+			char *phone2;
 			char *description;
+			char *notepad;
 			unsigned int dob; /* days since 1900 */
 			int num_emails; /* number of email addresses */
 			char **emails; /* array of email addresses */

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** addressbookwnd.c
 */
 
 #include <string.h>
@@ -29,6 +29,7 @@
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
 #include <mui/betterstring_mcc.h>
+#include <mui/texteditor_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
@@ -40,6 +41,7 @@
 #include "compiler.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "support.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
@@ -66,7 +68,13 @@ struct Person_Data /* should be a customclass */
 	Object *email_string;
 	Object *alias_string;
 	Object *realname_string;
+	Object *homepage_string;
 	Object *description_string;
+	Object *street_string;
+	Object *city_string;
+	Object *country_string;
+	Object *phone1_string;
+	Object *phone2_string;
 
 	struct addressbook_entry *person; /* NULL if new person */
 
@@ -110,6 +118,20 @@ static void person_window_ok(struct Person_Data **pdata)
 		alias = (char*)xget(data->alias_string,MUIA_String_Contents);
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
 		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
+
+		if (new_entry->person.phone1) free(new_entry->person.phone1);
+		new_entry->person.phone1 = mystrdup((char *)xget(data->phone1_string,MUIA_String_Contents));
+		if (new_entry->person.phone2) free(new_entry->person.phone2);
+		new_entry->person.phone2 = mystrdup((char *)xget(data->phone2_string,MUIA_String_Contents));
+
+		if (new_entry->person.street) free(new_entry->person.street);
+		new_entry->person.street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
+		if (new_entry->person.city) free(new_entry->person.city);
+		new_entry->person.city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
+		if (new_entry->person.country) free(new_entry->person.country);
+		new_entry->person.country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
+		if (new_entry->person.homepage) free(new_entry->person.homepage);
+		new_entry->person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
 
 		for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
 		{
@@ -199,6 +221,7 @@ void person_window_open(struct addressbook_entry *entry)
 {
 	Object *wnd, *add_button, *rem_button, *email_list, *email_string;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
+	Object *homepage_string, *street_string, *city_string, *country_string, *phone1_string, *phone2_string;
 	Object *description_string;
 	int num;
 
@@ -219,21 +242,25 @@ void person_window_open(struct addressbook_entry *entry)
 							Child, alias_string = BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							Child, MakeLabel("Real Name"),
 							Child, realname_string = BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							Child, MakeLabel("PGP Key-ID"),
 							Child, BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							Child, MakeLabel("Homepage"),
-							Child, BetterStringObject,
+							Child, homepage_string = BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 							End,
 						Child, HVSpace,
@@ -242,18 +269,21 @@ void person_window_open(struct addressbook_entry *entry)
 						Child, NListviewObject,
 							MUIA_CycleChain, 1,
 							MUIA_NListview_NList, email_list = NListObject,
+								MUIA_NList_DragSortable, TRUE,
 								MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
 								MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
 								End,
 							End,
 						Child, HGroup,
-							MUIA_Group_Spacing, 0,
 							Child, email_string = BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
 								End,
-							Child, add_button = MakeButton("Add"),
-							Child, rem_button = MakeButton("Rem"),
+							Child, HGroup,
+								MUIA_Group_Spacing, 0,
+								Child, add_button = MakeButton("Add"),
+								Child, rem_button = MakeButton("Rem"),
+								End,
 							End,
 						End,
 					End,
@@ -267,47 +297,70 @@ void person_window_open(struct addressbook_entry *entry)
 	
 					Child, ColGroup(2),
 						Child, MakeLabel("Street"),
-						Child, BetterStringObject,
+						Child, street_string = BetterStringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel("City/ZIP"),
-						Child, BetterStringObject,
+						Child, city_string = BetterStringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel("State/Country"),
-						Child, BetterStringObject,
+						Child, country_string = BetterStringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						Child, MakeLabel("Phone numbers"),
-						Child, BetterStringObject,
+						Child, phone1_string = BetterStringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, HSpace(0),
+						Child, phone2_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						End,
 
-					Child, ColGroup(2),
-						Child, MakeLabel("Description"),
-						Child, description_string = BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
+					Child, VGroup,
+						Child, ColGroup(2),
+							Child, MakeLabel("Description"),
+							Child, description_string = BetterStringObject,
+								StringFrame,
+								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,
+							Child, MakeLabel("Date of birth"),
+							Child, BetterStringObject,
+								StringFrame,
+								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,
 							End,
-						Child, MakeLabel("Date of birth"),
-						Child, BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
+						Child, HGroup,
+							Child, VGroup,
+								Child, MakeLabel("Notepad"),
+								Child, VSpace(0),
+								End,
+							Child, TextEditorObject,
+								InputListFrame,
+								MUIA_CycleChain,1,
+								End,
 							End,
 						End,
-/*					Child, HVSpace,*/ /* portrait */
 					End,
 				End,
 
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, ok_button = MakeButton("Ok"),
-				Child, cancel_button = MakeButton("Cancel"),
+				Child, ok_button = MakeButton("_Ok"),
+				Child, cancel_button = MakeButton("_Cancel"),
 				End,
 			End,
 		End;
@@ -324,6 +377,12 @@ void person_window_open(struct addressbook_entry *entry)
 			data->email_string = email_string;
 			data->realname_string = realname_string;
 			data->description_string = description_string;
+			data->homepage_string = homepage_string;
+			data->street_string = street_string;
+			data->city_string = city_string;
+			data->country_string = country_string;
+			data->phone1_string = phone1_string;
+			data->phone2_string = phone2_string;
 			data->person = entry;
 			data->num = num;
 
@@ -354,6 +413,12 @@ void person_window_open(struct addressbook_entry *entry)
 				set(realname_string, MUIA_String_Contents, entry->person.realname);
 				set(description_string, MUIA_String_Contents, entry->person.description);
 				set(alias_string, MUIA_String_Contents, entry->person.alias);
+				set(phone1_string, MUIA_String_Contents, entry->person.phone1);
+				set(phone2_string, MUIA_String_Contents, entry->person.phone2);
+				set(street_string, MUIA_String_Contents, entry->person.street);
+				set(city_string, MUIA_String_Contents, entry->person.city);
+				set(country_string, MUIA_String_Contents, entry->person.country);
+				set(homepage_string, MUIA_String_Contents, entry->person.homepage);
 			}
 
 			person_email_list_active(&data);

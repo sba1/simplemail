@@ -298,7 +298,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 				if(rc == 1)
 				{
 					buf_flush(conn, buf, strlen(buf));
-					if(smtp_send_cmd(conn, "\r\n.\r\n", NULL) != SMTP_OK)
+					if(smtp_send_cmd(conn, "\r\n.", NULL) != SMTP_OK) /* \r\n is done by the function */
 					{
 						rc = 0;
 					}
@@ -318,98 +318,8 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 	return rc;
 }
 
-static int smtp_quit(struct connection *conn)
-{
-	int rc;
-
-	rc = (smtp_send_cmd(conn, "QUIT", NULL) == SMTP_OK);
-
-	return rc;
-}
-
-static long get_amm(struct out_mail **array)
-{
-	long rc;
-	
-	for(rc = 0; array[rc] != NULL; rc++);
-	
-	return rc;
-}
-
-int smtp_send_mail(struct connection *conn, struct smtp_server *server, struct out_mail **om)
-{
-	int rc;
-	
-	rc = 0;
-
-	thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
-	if(smtp_helo(conn,server))
-	{
-		long i,amm;
-		
-		rc = 1;
-		amm = get_amm(om);
-		thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
-		
-		for(i = 0; i < amm; i++)   
-		{
-			thread_call_parent_function_sync(up_set_gauge_mail,1,i+1);
-			
-			thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
-			if(smtp_from(conn,server, om[i]->from))
-			{
-				thread_call_parent_function_sync(up_set_status,1,"Sending RCP...");
-				if(smtp_rcpt(conn,server, om[i]))
-				{
-					thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
-					if(!smtp_data(conn,server, om[i]->mailfile))
-					{
-						tell_from_subtask("DATA failed.");
-						rc = 0;
-						break;
-					}
-				}
-				else
-				{
-					tell_from_subtask("RCPT failed.");
-					rc = 0;
-					break;
-				}
-			}
-			else
-			{
-				tell_from_subtask("FROM failed.");
-				rc = 0;
-				break;
-			}
-
-			if (rc)
-			{
-				/* no error while mail sending, so it can be moved to the
-				 * "Sent" folder now */
-				thread_call_parent_function_sync(callback_mail_has_been_sent,1,om[i]->mailfile);
-			}
-		}
-		
-		if(rc == 1)
-		{
-			thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
-			if(smtp_quit(conn))
-			{
-				rc = 1;
-			}
-		}  
-	}
-	else
-	{
-		tell_from_subtask("HELO failed.");
-	}
-
-	return rc;
-}
-
 /**************************************************************************
- Send the EHLO command
+ Send the EHLO command (for ESMTP servers)
 **************************************************************************/
 int esmtp_ehlo(struct connection *conn, struct smtp_server *server)
 {
@@ -610,91 +520,96 @@ int esmtp_auth(struct connection *conn, struct smtp_server *server)
 	return rc;
 }
 
-int esmtp_send_mail(struct connection *conn, struct smtp_server *server, struct out_mail **om)
+/**************************************************************************
+ Login into the (e)smtp server. After a succesfull call you
+ can send the mails.
+**************************************************************************/
+static int smtp_login(struct connection *conn, struct smtp_server *server)
 {
-	int rc;
-	
-	rc = 0;
-
-	thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
-	if(esmtp_ehlo(conn,server))
+	if (server->esmtp.auth)
 	{
-		long i,amm;
-
+		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
+		if (!esmtp_ehlo(conn,server))
+		{
+			tell_from_subtask("EHLO failed");
+			return 0;
+		}
 		thread_call_parent_function_sync(up_set_status,1,"Sending AUTH...");
-		if(esmtp_auth(conn,server))
+		if (!esmtp_auth(conn,server))
 		{
-			rc = 1;
-			amm = get_amm(om);
-			thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
-				
-			for(i = 0; i < amm; i++)
-			{
-				thread_call_parent_function_sync(up_set_gauge_mail,1,i+1);
-
-				thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
-				if(smtp_from(conn,server, om[i]->from))
-				{
-					thread_call_parent_function_sync(up_set_status,1,"Sending RCP...");
-					if(smtp_rcpt(conn,server, om[i]))
-					{
-						thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
-						if(!smtp_data(conn,server, om[i]->mailfile))
-						{
-							tell_from_subtask("DATA failed");
-							rc = 0;
-							break;
-						}
-					}
-					else
-					{
-						tell_from_subtask("RCPT failed");
-						rc = 0;
-						break;
-					}
-				}
-				else
-				{
-					tell_from_subtask("FROM failed.");
-					rc = 0;
-					break;
-				}
-
-				if (rc)
-				{
-					/* no error while mail sending, so it can be moved to the
-					 * "Sent" folder now */
-					thread_call_parent_function_sync(callback_mail_has_been_sent,1,om[i]->mailfile);
-				}
-			}
-
-			if(rc == 1)
-			{
-				thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
-				if (smtp_quit(conn))
-				{
-					rc = 1;
-				}
-			}
+			tell_from_subtask("AUTH failed");
+			return 0;
 		}
-		else
-		{
-			tell_from_subtask("AUTH failed.");
-		}
-	}
-	else
+	} else
 	{
-		tell_from_subtask("EHLO failed.");
+		thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
+		if (!smtp_helo(conn,server))
+		{
+			tell_from_subtask("HELO failed");
+			return 0;
+		}
 	}
-
-	return rc;
+	return 1;
 }
 
+/**************************************************************************
+ Send all the mails in now
+**************************************************************************/
+static int smtp_send_mails(struct connection *conn, struct smtp_server *server)
+{
+	struct out_mail **om = server->out_mail;
+	int i,amm=0;
 
+	/* Count the number of mails */
+	while (om[amm]) amm++;
+
+	thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
+		
+	for (i = 0; i < amm; i++)   
+	{
+		thread_call_parent_function_sync(up_set_gauge_mail,1,i+1);
+
+		thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
+		if (!smtp_from(conn,server, om[i]->from))
+		{
+			tell_from_subtask("FROM failed.");
+			return 0;
+		}
+
+		thread_call_parent_function_sync(up_set_status,1,"Sending RCPT...");
+		if (!smtp_rcpt(conn,server, om[i]))
+		{
+			tell_from_subtask("RCPT failed.");
+			return 0;
+		}
+
+		thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
+		if (!smtp_data(conn,server, om[i]->mailfile))
+		{
+			tell_from_subtask("DATA failed.");
+			return 0;
+		}
+
+		/* no error while mail sending, so it can be moved to the "Sent" folder now */
+		thread_call_parent_function_sync(callback_mail_has_been_sent,1,om[i]->mailfile);
+	}
+	return 1;
+}
+
+/**************************************************************************
+ Send the QUIT command
+**************************************************************************/
+static int smtp_quit(struct connection *conn)
+{
+	return (smtp_send_cmd(conn, "QUIT", NULL) == SMTP_OK);
+}
+
+/**************************************************************************
+ Send the mails now.
+**************************************************************************/
 static int smtp_send_really(struct smtp_server *server)
 {
 	int rc = 0;
-	struct out_mail **om = server->out_mail;
 
 	if (open_socket_lib())
 	{
@@ -703,15 +618,20 @@ static int smtp_send_really(struct smtp_server *server)
 
 		if ((conn = tcp_connect(server->name, server->port)))
 		{
-			if(server->esmtp.auth) rc = esmtp_send_mail(conn,server, om);
-			else rc = smtp_send_mail(conn,server, om);
+			if (smtp_login(conn,server))
+			{
+				if (smtp_send_mails(conn,server))
+				{
+					thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
+					rc = smtp_quit(conn);
+				}
+			}
 
 			thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
 			tcp_disconnect(conn);
-		} else
-		{
-			close_socket_lib();
 		}
+
+		close_socket_lib();
 	}
 	else
 	{
@@ -760,9 +680,12 @@ struct out_mail **create_outmail_array(int amm)
 
 struct out_mail **duplicate_outmail_array(struct out_mail **om)
 {
-	int amm = get_amm(om);
-	struct out_mail **newom = create_outmail_array(amm);
-	if (newom)
+	int amm = 0;
+	struct out_mail **newom;
+
+	while (om[amm]) amm++;
+
+	if ((newom = create_outmail_array(amm)))
 	{
 		int i;
 
@@ -776,6 +699,9 @@ struct out_mail **duplicate_outmail_array(struct out_mail **om)
 	return newom;
 }
 
+/**************************************************************************
+ Entrypoint for the send mail process
+**************************************************************************/
 static int smtp_entry(struct smtp_server *server)
 {
 	struct smtp_server copy_server;
@@ -799,6 +725,9 @@ static int smtp_entry(struct smtp_server *server)
 	return 0;
 }
 
+/**************************************************************************
+ Send the mails. Starts a subthread.
+**************************************************************************/
 int smtp_send(struct smtp_server *server)
 {
 	return thread_start(smtp_entry,server);

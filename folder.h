@@ -45,6 +45,11 @@ struct folder
 	int mail_array_allocated; /* how many entries could be in the array */
 	int num_mails; /* number of mails in the mail_array. Might be 0 if index is not loaded! */
 
+	/* the array of pending added mails. This is used if you add mails but mail infos has been not read */
+	struct mail **pending_mail_array;
+	int pending_mail_array_allocated;
+	int num_pending_mails;
+
 	int primary_sort;
 	int secondary_sort;
 	
@@ -65,7 +70,7 @@ struct folder
 
 	int new_mails; /* number of new mails */
 	int unread_mails; /* number of unread mails */
-	int num_index_mails; /* number of mails, might be -1 for being unknown  */
+	int num_index_mails; /* real number of mails, might be -1 for being unknown  */
 
 	struct folder *parent_folder; /* pointer to the parent folder */
 

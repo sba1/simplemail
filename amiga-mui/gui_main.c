@@ -182,9 +182,9 @@ static int timer_init(void)
 		{
 			return 1;
 		}
-		timer_free();
 	}
-  return 0;
+	timer_free();
+	return 0;
 }
 
 /****************************************************************

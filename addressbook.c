@@ -213,9 +213,9 @@ void init_addressbook(void)
 
 	if (!addressbook_load())
 	{
-		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@schlawack.net");
+		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@rz.uni-potsdam.de");
 		addressbook_set_description(entry, "Original author of SimpleMail");
-		addressbook_person_add_email(entry, "Hynek.Schlawack@t-online.de");
+		addressbook_person_add_email(entry, "hynek@hys.in-berlin.de");
 
 		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
 		addressbook_set_description(entry, "Original author of SimpleMail");

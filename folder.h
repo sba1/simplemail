@@ -133,7 +133,9 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode);
 
 #define folder_get_type(f) ((f)->type)
 
+struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m, int action);
 int folder_filter(struct folder *fold);
+int folder_apply_filter(struct folder *folder, struct filter *filter);
 void folder_load_order(void);
 void folder_save_order(void);
 

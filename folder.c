@@ -52,7 +52,6 @@ struct folder_node
 static struct folder_node *find_folder_node_by_folder(struct folder *f)
 {
 	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
-	int rc = 0;
 
 	while (node)
 	{
@@ -1529,98 +1528,149 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 
 
 /******************************************************************
+ Checks if the given filter matches the mail.
+ folder is the folder where the mail is located
+*******************************************************************/
+int mail_matches_filter(struct folder *folder, struct mail *m,
+											  struct filter *filter)
+{
+	struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
+
+	while (rule)
+	{
+		int take = 0;
+
+		switch (rule->type)
+		{
+			case	RULE_FROM_MATCH:
+						if (rule->u.from.from)
+						{
+							int i = 0;
+							while (!take && rule->u.from.from[i])
+								take = !!mystristr(m->from,rule->u.from.from[i++]);
+
+							if (!take)
+							{
+								struct header *header = mail_find_header(m, "From");
+								if (header)
+								{
+									/* Should be decoded first! */
+									i = 0;
+									while (!take && rule->u.from.from[i])
+										take = !!mystristr(header->contents,rule->u.from.from[i++]);
+								}
+							}
+						}
+						break;
+
+			case	RULE_SUBJECT_MATCH:
+						if (rule->u.subject.subject)
+						{
+							int i = 0;
+							while (!take && rule->u.subject.subject[i])
+								take = !!mystristr(m->subject,rule->u.subject.subject[i++]);
+						}
+						break;
+
+			case	RULE_HEADER_MATCH:
+						{
+							struct header *header = mail_find_header(m,rule->u.header.name);
+							if (header)
+							{
+								if (rule->u.header.contents)
+								{
+									int i = 0;
+									while (!take && rule->u.header.contents[i])
+										take = !!mystristr(header->contents,rule->u.header.contents[i++]);
+								}
+							}
+						}
+						break;
+
+			case	RULE_ATTACHMENT_MATCH:
+						take = !!(m->flags & MAIL_FLAGS_ATTACH);
+						break;
+
+			case	RULE_STATUS_MATCH:
+						if (rule->u.status.status == RULE_STATUS_NEW && (m->flags & MAIL_FLAGS_NEW)) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_READ && mail_get_status_type(m)==MAIL_STATUS_READ) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_UNREAD && mail_get_status_type(m)==MAIL_STATUS_UNREAD) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_REPLIED && (mail_get_status_type(m)==MAIL_STATUS_REPLIED || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_FORWARDED && (mail_get_status_type(m)==MAIL_STATUS_FORWARD || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_PENDING && mail_get_status_type(m)==MAIL_STATUS_WAITSEND) take = 1;
+						else if (rule->u.status.status == RULE_STATUS_SENT && mail_get_status_type(m)==MAIL_STATUS_SENT) take = 1;
+						break;
+
+			default:
+						break;
+		}
+
+		if (!take && !filter->mode) return 0;
+		if (take && filter->mode) return 1;
+
+		rule = (struct filter_rule*)node_next(&rule->node);
+	}
+
+	if (!filter->mode) return 1;
+	return 0;
+}
+
+/******************************************************************
  Checks if a mail should be filtered (returns the filter which
  actions should performed or NULL)
 *******************************************************************/
-struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
+struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m, int action)
 {
 	struct filter *filter = filter_list_first();
 
 	while (filter)
 	{
-		struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
-
-		while (rule)
+		if ((action == 0 && (filter->flags & FILTER_FLAG_REQUEST)) ||
+				(action == 1 && (filter->flags & FILTER_FLAG_NEW)) ||
+				(action == 2 && (filter->flags & FILTER_FLAG_SENT)))
 		{
-			int take = 0;
-
-			switch (rule->type)
-			{
-				case	RULE_FROM_MATCH:
-							if (rule->u.from.from)
-							{
-								int i = 0;
-								while (!take && rule->u.from.from[i])
-									take = !!mystristr(m->from,rule->u.from.from[i++]);
-
-								if (!take)
-								{
-									struct header *header = mail_find_header(m, "From");
-									if (header)
-									{
-										/* Should be decoded first! */
-										i = 0;
-										while (!take && rule->u.from.from[i])
-											take = !!mystristr(header->contents,rule->u.from.from[i++]);
-									}
-								}
-							}
-							break;
-
-				case	RULE_SUBJECT_MATCH:
-							if (rule->u.subject.subject)
-							{
-								int i = 0;
-								while (!take && rule->u.subject.subject[i])
-									take = !!mystristr(m->subject,rule->u.subject.subject[i++]);
-							}
-							break;
-
-				case	RULE_HEADER_MATCH:
-							{
-								struct header *header = mail_find_header(m,rule->u.header.name);
-								if (header)
-								{
-									if (rule->u.header.contents)
-									{
-										int i = 0;
-										while (!take && rule->u.header.contents[i])
-											take = !!mystristr(header->contents,rule->u.header.contents[i++]);
-									}
-								}
-							}
-							break;
-
-				case	RULE_ATTACHMENT_MATCH:
-							take = !!(m->flags & MAIL_FLAGS_ATTACH);
-							break;
-
-				case	RULE_STATUS_MATCH:
-							if (rule->u.status.status == RULE_STATUS_NEW && (m->flags & MAIL_FLAGS_NEW)) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_READ && mail_get_status_type(m)==MAIL_STATUS_READ) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_UNREAD && mail_get_status_type(m)==MAIL_STATUS_UNREAD) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_REPLIED && (mail_get_status_type(m)==MAIL_STATUS_REPLIED || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_FORWARDED && (mail_get_status_type(m)==MAIL_STATUS_FORWARD || mail_get_status_type(m)==MAIL_STATUS_REPLFORW)) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_PENDING && mail_get_status_type(m)==MAIL_STATUS_WAITSEND) take = 1;
-							else if (rule->u.status.status == RULE_STATUS_SENT && mail_get_status_type(m)==MAIL_STATUS_SENT) take = 1;
-							break;
-
-				default:
-							break;
-			}
-
-			if (!take && !filter->mode) break;
-			if (take && filter->mode) return filter;
-
-			rule = (struct filter_rule*)node_next(&rule->node);
+			if (mail_matches_filter(folder,m,filter))
+				return filter;
 		}
-
-		if (!rule) return filter;
 
 		filter = filter_list_next(filter);
 	}
 
 	return 0;
+}
+
+/******************************************************************
+ Filter all mails in the given folder using a single filter
+*******************************************************************/
+int folder_apply_filter(struct folder *folder, struct filter *filter)
+{
+	void *handle = NULL;
+	struct mail *nm = folder_next_mail(folder,&handle);
+
+	if (!nm) return 1;
+
+	do
+	{
+		struct mail *m;
+
+		m = nm;
+		nm = folder_next_mail(folder,&handle);
+
+		if (mail_matches_filter(folder,m,filter))
+		{
+			if (filter->use_dest_folder && filter->dest_folder)
+			{
+				struct folder *dest_folder = folder_find_by_name(filter->dest_folder);
+				if (dest_folder && dest_folder != folder)
+				{
+					/* very slow, because the sorted array is rebuilded in the both folders! */
+					callback_move_mail(m, folder, dest_folder);
+					handle = NULL; /* start from the beginning, this really should be improved */
+				}
+			}
+		}
+	} while (nm);
+
 }
 
 /******************************************************************
@@ -1641,12 +1691,12 @@ int folder_filter(struct folder *folder)
 		m = nm;
 		nm = folder_next_mail(folder,&handle);
 
-		if ((f = folder_mail_filter(folder,m)))
+		if ((f = folder_mail_can_be_filtered(folder,m,0)))
 		{
 			if (f->use_dest_folder && f->dest_folder)
 			{
 				struct folder *dest_folder = folder_find_by_name(f->dest_folder);
-				if (dest_folder)
+				if (dest_folder && dest_folder != folder)
 				{
 					/* very slow, because the sorted array is rebuilded in the both folders! */
 					callback_move_mail(m, folder, dest_folder);

@@ -259,6 +259,7 @@ void filter_list_load(FILE *fh)
 					memset(f,0,sizeof(struct filter));
 					list_init(&f->rules_list);
 					list_insert_tail(&user.config.filter_list, &f->node);
+					f->flags = FILTER_FLAG_REQUEST;
 					f = (struct filter*)list_find(&user.config.filter_list,filter_no);
 				}
 			}
@@ -272,8 +273,8 @@ void filter_list_load(FILE *fh)
 				{
 					if ((result = get_config_item(filter_buf,"Name")))
 						f->name = mystrdup(result);
-					if ((result = get_config_item(filter_buf,"Active")))
-						f->active = atoi(result);
+					if ((result = get_config_item(filter_buf,"Flags")))
+						f->flags = atoi(result);
 					if ((result = get_config_item(filter_buf,"Mode")))
 						f->mode = atoi(result);
 					if ((result = get_config_item(filter_buf,"DestFolder")))
@@ -350,7 +351,7 @@ void filter_list_save(FILE *fh)
 		int j=0;
 
 		fprintf(fh,"FILTER%d.Name=%s\n",i,MAKESTR(f->name));
-		fprintf(fh,"FILTER%d.Active=%d\n",i,f->active);
+		fprintf(fh,"FILTER%d.Flags=%d\n",i,f->flags);
 		fprintf(fh,"FILTER%d.Mode=%d\n",i,f->mode);
 		fprintf(fh,"FILTER%d.DestFolder=%s\n",i,MAKESTR(f->dest_folder));
 		fprintf(fh,"FILTER%d.UseDestFolder=%s\n",i,f->use_dest_folder?"Y":"N");

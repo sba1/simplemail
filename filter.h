@@ -64,11 +64,15 @@ struct filter_action
 	int type; /* type of that action */
 };
 
+#define FILTER_FLAG_REQUEST	(1<<0)
+#define FILTER_FLAG_NEW			(1<<1)
+#define FILTER_FLAG_SENT			(1<<2)
+
 struct filter
 {
 	struct node node; /* embedded node structure */
 	char *name; /* name of the filter */
-	int active; /* filter is active */
+	int flags; /* filter is active */
 	int mode; /* 0=and  -  1=or */
 	struct list rules_list; /* list of rules */
 

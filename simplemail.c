@@ -39,6 +39,7 @@
 #include "addressbook.h"
 #include "configuration.h"
 #include "trans.h"
+#include "filter.h"
 #include "folder.h"
 #include "simplemail.h"
 #include "support.h"
@@ -327,12 +328,28 @@ void callback_folder_active(void)
 }
 
 /* a new mail has arrived */
-void callback_new_mail_arrived(struct mail *mail)
+static void callback_new_mail_arrived(struct mail *mail)
 {
+	struct filter *f;
+
 	folder_add_mail_incoming(mail);
 	if (main_get_folder() == folder_incoming())
 	{
 		main_insert_mail(mail);
+	}
+
+	/* This has to be optmized! */
+	if ((f = folder_mail_can_be_filtered(folder_incoming(), mail, 1)))
+	{
+		if (f->use_dest_folder && f->dest_folder)
+		{
+			struct folder *dest_folder = folder_find_by_name(f->dest_folder);
+			if (dest_folder)
+			{
+				/* very slow, because the sorted array is rebuilded in the both folders! */
+				callback_move_mail(mail, folder_incoming(), dest_folder);
+			}
+		}
 	}
 
 	main_refresh_folder(folder_incoming());
@@ -367,6 +384,7 @@ void callback_new_mail_written(struct mail *mail)
 /* a mail has been send so it can be moved to the "Sent" drawer now */
 void callback_mail_has_been_sent(char *filename)
 {
+	struct filter *f;
 	struct folder *out = folder_outgoing();
 	struct folder *sent = folder_sent();
 	struct mail *m;
@@ -377,6 +395,22 @@ void callback_mail_has_been_sent(char *filename)
 		/* set the new mail status */
 		folder_set_mail_status(out,m,MAIL_STATUS_SENT);
 		callback_move_mail(m,out,sent);
+
+		/* This has to be optmized! */
+		if ((f = folder_mail_can_be_filtered(folder_sent(), m, 2)))
+		{
+			if (f->use_dest_folder && f->dest_folder)
+			{
+				struct folder *dest_folder = folder_find_by_name(f->dest_folder);
+				if (dest_folder)
+				{
+					/* very slow, because the sorted array is rebuilded in the both folders! */
+					callback_move_mail(m, folder_sent(), dest_folder);
+				}
+			}
+		}
+
+
 	}
 }
 
@@ -490,6 +524,14 @@ void callback_mails_set_status(int status)
 
 		mail = main_get_mail_next_selected(&handle);
 	}	
+}
+
+/* apply a single filter in the active folder */
+void callback_apply_folder(struct filter *filter)
+{
+	struct folder *folder = main_get_folder();
+	if (folder)
+		folder_apply_filter(folder,filter);
 }
 
 /* create a new folder */

@@ -62,7 +62,8 @@ void callback_maildrop(struct folder *dest_folder);
 void callback_mails_mark(int mark);
 void callback_mails_set_status(int status);
 
-void callback_new_mail_arrived(struct mail *mail);
+void callback_apply_folder(struct filter *filter);
+
 void callback_new_mail_arrived_filename(char *filename);
 void callback_new_mail_written(struct mail *mail);
 void callback_mail_has_been_sent(char *filename);

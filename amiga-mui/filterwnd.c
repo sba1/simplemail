@@ -35,6 +35,7 @@
 #include "configuration.h"
 #include "filter.h"
 #include "folder.h"
+#include "simplemail.h"
 #include "support_indep.h"
 
 #include "compiler.h"
@@ -50,6 +51,9 @@ static Object *filter_list;
 static struct filter *filter_last_selected;
 static Object *filter_new_button;
 static Object *filter_remove_button;
+static Object *filter_request_check;
+static Object *filter_new_check;
+static Object *filter_sent_check;
 static Object *filter_rule_group;
 static Object *filter_move_check;
 static Object *filter_move_text;
@@ -132,6 +136,13 @@ static void filter_accept_rule(void)
 		free(filter_last_selected->dest_folder); /* Safe to call with NULL */
 		filter_last_selected->dest_folder = mystrdup((char*)xget(filter_move_text,MUIA_Text_Contents));
 		filter_last_selected->use_dest_folder = xget(filter_move_check,MUIA_Selected);
+
+		/* Store the flags */
+		filter_last_selected->flags = 0;
+
+		if (xget(filter_request_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REQUEST;
+		if (xget(filter_new_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_NEW;
+		if (xget(filter_sent_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_SENT;
 
 		/* Go though all objects of the rule_rule_group and build a new
        rule list from it */
@@ -278,6 +289,18 @@ static void filter_remove_rule_gui(Object **objs)
 }
 
 /**************************************************************************
+ Apply the filter
+**************************************************************************/
+static void filter_apply(void)
+{
+	if (filter_last_selected)
+	{
+		filter_accept_rule();
+		callback_apply_folder(filter_last_selected);
+	}
+}
+
+/**************************************************************************
  Create a new filter
 **************************************************************************/
 static void filter_new(void)
@@ -347,6 +370,11 @@ static void filter_active(void)
 		filter_refresh_rules();
 		set(filter_move_check, MUIA_Selected, f->use_dest_folder);
 		set(filter_move_text, MUIA_Text_Contents, f->dest_folder);
+
+		set(filter_request_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_REQUEST));
+		set(filter_new_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_NEW));
+		set(filter_sent_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_SENT));
+
 	} else filter_refresh_rules();
 	filter_last_selected = f;
 }
@@ -376,7 +404,7 @@ static void init_filter(void)
 	static struct Hook filter_display_hook;
 	static struct Hook move_objstr_hook, move_strobj_hook;
 	Object *ok_button, *cancel_button, *save_button;
-	Object *filter_add_rule_button, *filter_move_popobject;
+	Object *filter_add_rule_button, *filter_apply_now_button, *filter_move_popobject;
 
 	init_hook(&filter_construct_hook,(HOOKFUNC)filter_construct);
 	init_hook(&filter_destruct_hook,(HOOKFUNC)filter_destruct);
@@ -414,14 +442,26 @@ static void init_filter(void)
 						End,
 					Child, BalanceObject, End,
 					Child, VGroup,
+						Child, HGroup,
+							Child, MakeLabel("Apply on request"),
+							Child, filter_request_check = MakeCheck(NULL,FALSE),
+							Child, MakeLabel("Apply to new mails"),
+							Child, filter_new_check = MakeCheck(NULL,FALSE),
+							Child, MakeLabel("Apply to sent mails"),
+							Child, filter_sent_check = MakeCheck(NULL,FALSE),
+							Child, HVSpace,
+							End,
+						Child, HorizLineObject,
 						Child, VGroupV,
-							VirtualFrame,
 							Child, filter_rule_group = ColGroup(2),
 								Child, HVSpace,
 								Child, HVSpace,
 								End,
 							End,
-						Child, filter_add_rule_button = MakeButton("Add new rule"),
+						Child, HGroup,
+							Child, filter_add_rule_button = MakeButton("Add new rule"),
+							Child, filter_apply_now_button = MakeButton("Apply now"),
+							End,
 						Child, HorizLineObject,
 						Child, VGroup,
 							Child, ColGroup(3),
@@ -471,6 +511,7 @@ static void init_filter(void)
 		DoMethod(filter_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_name);
 
 		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_add_rule);
+		DoMethod(filter_apply_now_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_apply);
 		DoMethod(filter_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 		DoMethod(filter_folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, filter_move_popobject, 2, MUIM_Popstring_Close, 1);
 

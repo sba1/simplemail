@@ -813,77 +813,70 @@ char *encode_address_field(char *field_name, struct list *address_list)
 **************************************************************************/
 char *encode_address_field_utf8(char *field_name, struct list *address_list)
 {
+	struct address *address;
+
 	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
-	int header_len;
 	int line_len;
-	char *header = NULL;
+	
+	string str;
+	
+	if (!string_initialize(&str,200))
+		return NULL;
 
-	FILE *fh;
+	string_append(&str,field_name);
+	string_append(&str,": ");
 
-	if ((fh = tmpfile()))
+	line_len = field_len;
+
+	address = (struct address*)list_first(address_list);
+	while (address)
 	{
-		struct address *address;
-
-		fprintf(fh, "%s: ",field_name);
-		line_len = field_len;
-
-		address = (struct address*)list_first(address_list);
-		while (address)
+		struct address *next_address = (struct address*)node_next(&address->node);
+		char *text = encode_header_str_utf8(address->realname, &line_len, 1);
+		if (text)
 		{
-			struct address *next_address = (struct address*)node_next(&address->node);
-			char *text = encode_header_str_utf8(address->realname, &line_len, 1);
-			if (text)
+			string_append(&str,text);
+
+			if (address->email)
 			{
-				fputs(text,fh);
+				int email_len = strlen(address->email) + 2;
 
-				if (address->email)
-				{
-					int email_len = strlen(address->email) + 2;
-
-					if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
-					{
-						line_len = 1;
-						fprintf(fh,"\n ");
-					} else
-					{
-						fputc(' ',fh);
-						line_len++;
-					}
-
-					fprintf(fh,"<%s>%s",address->email,next_address?",":"");
-					line_len += email_len;
-				}
-				free(text);
-			} else
-			{
-				int email_len = strlen(address->email);
-
-				if (line_len + email_len + (next_address?1:0) > 72) /* <> and space */
+				if (line_len + email_len + 1 + (next_address?1:0) > 72) /* <>, space and possible comma */
 				{
 					line_len = 1;
-					fprintf(fh,"\n ");
+					string_append(&str,"\n ");
+				} else
+				{
+					string_append(&str," ");
+					line_len++;
 				}
 
-				fprintf(fh,"%s%s",address->email,next_address?",":"");
+				string_append(&str,"<");
+				string_append(&str,address->email);
+				string_append(&str,">");
+				if (next_address) string_append(&str,",");
 				line_len += email_len;
 			}
-
-			address = next_address;
-		}
-
-		if ((header_len = ftell(fh)))
+			free(text);
+		} else
 		{
-	    fseek(fh,0,SEEK_SET);
-			if ((header = (char*)malloc(header_len+1)))
+			int email_len = strlen(address->email);
+
+			if (line_len + email_len + (next_address?1:0) > 72) /* <> and space */
 			{
-				fread(header,1,header_len,fh);
-				header[header_len]=0;
+				line_len = 1;
+				string_append(&str,"\n ");
 			}
+
+			string_append(&str,address->email);
+			if (next_address) string_append(&str,",");
+			line_len += email_len;
 		}
 
-		fclose(fh);
+		address = next_address;
 	}
-	return header;
+
+	return str.str;
 }
 
 /**************************************************************************

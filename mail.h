@@ -116,6 +116,8 @@ struct mail
 
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
+struct mail *mail_find_initial(struct mail *m);
+
 void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
 struct mail *mail_create_from_file(char *filename);

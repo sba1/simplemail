@@ -411,6 +411,44 @@ struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype)
 }
 
 /**************************************************************************
+ Finds the initial mail which should be displayed. This is always the
+ first non multipart mail. For multipart/alternative mails it returns the
+ prefered one (depending on what the GUI prefers and how SimpleMail is
+ configured).
+**************************************************************************/
+struct mail *mail_find_initial(struct mail *m)
+{
+	struct mail *pref = NULL;
+	int alter = 0;
+	int i = 0;
+
+	while(m)
+	{
+		if (!mystricmp(m->content_type, "multipart"))
+		{
+			if (!mystricmp(m->content_subtype, "alternative"))
+				alter = 1;
+			i = 0;
+			m = m->multipart_array[0];
+		} else
+		{
+			if (!alter) return m;
+			if (!pref) pref = m;
+			else
+			{
+				/* Currently we prefer always text/plain which is on the beginning anywhy */
+				if (!mystricmp(m->content_type, "text") && !mystricmp(m->content_subtype, "plain"))
+					return m;
+			}
+			i++;
+			if (i >= m->parent_mail->num_multiparts) return pref;
+			m = m->parent_mail->multipart_array[i];
+		}
+	}
+	return NULL;
+}
+
+/**************************************************************************
  Converts a number to base 18 character sign
 **************************************************************************/
 static char get_char_18(int val)

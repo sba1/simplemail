@@ -157,6 +157,20 @@ static Object *config_last_visisble_group;
 /******************************************************************
  Gets the Account which was last selected
 *******************************************************************/
+struct account *configwnd_get_account(APTR tn)
+{
+	int account_num = 0;
+
+	/* Find out the position of the new selected account in the list */
+	while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
+		account_num++;
+
+	return (struct account*)list_find(&account_list,account_num);
+}
+
+/******************************************************************
+ Gets the Account which was last selected
+*******************************************************************/
 static void get_account(void)
 {
 	if (account_last_selected)
@@ -627,6 +641,7 @@ static int init_account_group(void)
 	account_group = VGroup,
 		MUIA_ShowMe, FALSE,
 		MUIA_Weight, 10000,
+		MUIA_UserData, 1,
 
 		Child, VGroupV,
 		MUIA_Weight, 10000,

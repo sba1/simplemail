@@ -34,8 +34,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
-#include "folder.h"
-#include "simplemail.h"
+#include "account.h"
 
 #include "compiler.h"
 #include "configtreelistclass.h"
@@ -43,8 +42,53 @@
 
 struct ConfigTreelist_Data
 {
-	int dummy;
+	struct Hook display_hook;
 };
+
+struct account *configwnd_get_account(APTR tn);
+
+STATIC ASM VOID config_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
+{
+	if (msg->TreeNode)
+	{
+		Object *group = (Object*)msg->TreeNode->tn_User;
+		if (group)
+		{
+			static char buf[300];
+			if (xget(group,MUIA_UserData))
+			{
+				/* Must be an account */
+				struct account *account = configwnd_get_account(msg->TreeNode);
+				if (account)
+				{
+					sprintf(buf,"%s/%s",account->pop->name?account->pop->name:"-",
+															account->smtp->name?account->smtp->name:"-");
+					*msg->Array = buf;
+					return;
+				}
+			}
+		}
+		*msg->Array = NULL;
+	}
+}
+
+STATIC ULONG ConfigTreelist_New(struct IClass *cl, Object * obj,struct opSet *msg)
+{
+	struct ConfigTreelist_Data *data;
+
+	if (!(obj=(Object *)DoSuperNew(cl,obj, TAG_MORE,msg->ops_AttrList)))
+		return 0;
+
+	data = (struct ConfigTreelist_Data*)INST_DATA(cl,obj);
+	init_hook(&data->display_hook,(HOOKFUNC)config_display);
+
+	SetAttrs(obj,
+						MUIA_NListtree_DisplayHook, &data->display_hook,
+						TAG_DONE);
+
+	return (ULONG)obj;
+
+}
 
 STATIC ULONG ConfigTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
@@ -72,6 +116,7 @@ STATIC ASM ULONG ConfigTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
+		case	OM_NEW: return ConfigTreelist_New(cl,obj,(struct opSet *)msg);
     case  MUIM_DragQuery: return ConfigTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
     case  MUIM_DragDrop:  return ConfigTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
     case	MUIM_NList_DropType: return ConfigTreelist_DropType(cl,obj,(struct MUIP_NList_DropType*)msg);

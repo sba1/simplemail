@@ -43,7 +43,7 @@
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
-#include "support.h"
+#include "support_indep.h"
 
 #include "addressstringclass.h"
 #include "amigasupport.h"

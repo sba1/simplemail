@@ -39,7 +39,7 @@
 #include "configuration.h"
 #include "mail.h"
 #include "simplemail.h"
-#include "support.h"
+#include "support_indep.h"
 
 #include "compiler.h"
 #include "datatypesclass.h"

@@ -20,7 +20,7 @@
 ** tcpip.h
 */
 
-#ifdef AMIGA
+#ifdef _AMIGA
 #include <proto/socket.h>
 /*#include <proto/amissl.h>*/
 #endif

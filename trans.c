@@ -42,7 +42,7 @@ int mails_dl(void)
 
 	if (!pop || !pop->name)
 	{
-		tell("Please configure a pop3 server!");
+		tell_str("Please configure a pop3 server!");
 		return 0;
 	}
 
@@ -76,13 +76,13 @@ int mails_upload(void)
 
 	if (!server.name)
 	{
-		tell("Please specify a smtp server!");
+		tell_str("Please specify a smtp server!");
 		return 0;
 	}
 
 	if (!server.domain && !server.ip_as_domain)
 	{
-		tell("Please configure a domain!");
+		tell_str("Please configure a domain!");
 		return 0;
 	}
 
@@ -122,7 +122,7 @@ int mails_upload(void)
 		}
 		if (!parse_mailbox(from,&mb))
 		{
-			tell("No valid sender address!");
+			tell_str("No valid sender address!");
 			free_outmail_array(out_array);
 			return 0;
 		}

@@ -41,7 +41,7 @@
 #include "compiler.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
-#include "support.h"
+#include "support_indep.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 

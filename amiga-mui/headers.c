@@ -23,10 +23,12 @@
 #include <clib/alib_protos.h>
 #include <exec/types.h>
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #include <exec/exec.h>
 #include <proto/exec.h>

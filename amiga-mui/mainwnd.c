@@ -39,7 +39,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
-#include "support.h"
+#include "support_indep.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -379,9 +379,6 @@ int main_window_init(void)
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
 		rc = TRUE;
-	} else
-	{
-		tell("Can\'t create window!");
 	}
 	
 	return(rc);

@@ -35,7 +35,7 @@
 #include <proto/intuition.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 
-#include "support.h"
+#include "support_indep.h"
 
 #include "compiler.h"
 #include "muistuff.h"

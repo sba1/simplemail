@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** datatypesclass.c
 */
 
 #include <dos.h>
@@ -36,7 +36,7 @@
 #include <proto/muimaster.h>
 #include <proto/datatypes.h>
 
-#include "support.h"
+#include "support_indep.h"
 
 #include "amigasupport.h"
 #include "compiler.h"

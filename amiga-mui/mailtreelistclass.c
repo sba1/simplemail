@@ -42,7 +42,7 @@
 #include "compiler.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
-#include "support.h"
+#include "support_indep.h"
 
 struct MailTreelist_Data
 {

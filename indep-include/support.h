@@ -31,7 +31,7 @@ char *sm_file_part(char *filename);
 char *sm_path_part(char *filename);
 int sm_request(char *title, char *text, char *gadgets, ...);
 
-void tell(char *str);
+void tell_str(char *str);
 void tell_from_subtask(char *str);
 
 #endif

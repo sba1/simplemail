@@ -502,7 +502,7 @@ int folder_read_mail_infos(struct folder *folder)
 		getcwd(path, sizeof(path));
 		if(chdir(folder->path) == -1) return 0;
 
-#ifdef AMIGA
+#ifdef _AMIGA
 		if ((dfd = opendir("")))
 #else
 		if ((dfd = opendir("./")))
@@ -1201,7 +1201,7 @@ int init_folders(void)
 	}
 */
 
-#ifdef AMIGA
+#ifdef _AMIGA
 	#define FOLDER_PATH "PROGDIR:.folders"
 	char *folder_path = "PROGDIR:.folders";
 #else

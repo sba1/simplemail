@@ -42,7 +42,7 @@
 #include "compiler.h"
 #include "configwnd.h"
 #include "muistuff.h"
-#include "support.h"
+#include "support_indep.h"
 
 static struct MUI_CustomClass *CL_Sizes;
 static int create_sizes_class(void);

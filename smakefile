@@ -26,8 +26,8 @@
 GSTFILE = all.gst
 OBJSDIR1 = sas_objects
 DESTDIR = sm
-INCDIRS = IDIR=netinclude: IDIR=amiga-mui
-CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi
+INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
+CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63
 LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib
 
 # do not change the following lines, expect for improvements!
@@ -71,7 +71,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
   echo "All: \$(PROGRAMMNAME) images*n" >>$@
-  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui
+  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
   delete t:objectlist
   echo "*nimages:" >>$@ noline
   list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
@@ -94,6 +94,7 @@ pack:
   -delete ram:simplemail_src.l?? quiet
   makedir T:SimpleMail
   copy ((\#?.(asm|c|h|rev))|smakefile|diff_ignore|.cvsignore) clone T:SimpleMail
+  copy indep-include/(\#?.h|.cvsignore) clone T:SimpleMail/amiga-mui
   copy amiga-mui/((\#?.(asm|c|h))|.cvsignore) clone T:SimpleMail/amiga-mui
   copy amiga-mui/binaries clone T:SimpleMail/amiga-mui/binaries
   lzx -9 -r a ram:simplemail_src T:SimpleMail

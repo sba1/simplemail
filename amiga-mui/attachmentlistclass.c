@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** attachmentlistclass.c
 */
 
 #include <dos.h>
@@ -37,7 +37,7 @@
 #include <proto/intuition.h>
 
 #include "mail.h"
-#include "support.h"
+#include "support_indep.h"
 
 #include "amigasupport.h"
 #include "compiler.h"

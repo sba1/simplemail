@@ -31,7 +31,7 @@
 #include <sys/errno.h>
 #include <netinet/tcp.h>
 
-#ifdef AMIGA /* ugly '/
+#ifdef _AMIGA /* ugly */
 #include <proto/amissl.h> /* not portable */
 #else
 #include <openssl/ssl.h>
@@ -81,7 +81,7 @@ struct connection *tcp_connect(char *server, unsigned int port)
 	hostent = gethostbyname(server);
 	if(hostent != NULL)
 	{
-#ifdef AMIGA /* ugly */
+#ifdef _AMIGA /* ugly */
 		sockaddr.sin_len = sizeof(struct sockaddr_in);
 #endif
 		sockaddr.sin_family = AF_INET;

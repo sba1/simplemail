@@ -178,7 +178,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 /******************************************************************
  Tells an error message
 *******************************************************************/
-void tell(char *str)
+void tell_str(char *str)
 {
 	error_add_message(str);
 }
@@ -188,116 +188,6 @@ void tell(char *str)
 *******************************************************************/
 void tell_from_subtask(char *str)
 {
-	thread_call_parent_function_sync(tell,1,str);
-}
-
-/******************************************************************
- Compares a string case insensitive. Accepts NULL pointers
-*******************************************************************/
-int mystricmp(const char *str1, const char *str2)
-{
-	if (!str1)
-	{
-		if (str2) return -1;
-		return 0;
-	}
-
-	if (!str2) return 1;
-
-	return Stricmp(str1,str2);
-}
-
-/******************************************************************
- Compares a string case insensitive and n characters.
- Accepts NULL pointers
-*******************************************************************/
-int mystrnicmp(const char *str1, const char *str2, int n)
-{
-	if (!str1)
-	{
-		if (str2) return -1;
-		return 0;
-	}
-
-	if (!str2) return 1;
-
-	return Strnicmp(str1,str2,n);
-}
-
-/**************************************************************************
- Checks if a string is inside a string (not case sensitive)
-**************************************************************************/
-char *mystristr(const char *str1, const char *str2)
-{
-	char c;
-	int str2_len = strlen(str2);
-
-	while (*str1)
-	{
-		if (!Strnicmp(str1,str2,str2_len))
-			return str1;
-		str1++;
-	}
-	return NULL;
-}
-
-/******************************************************************
- returns the length of a string. Accepts NULL pointer (returns 0
- then)
-*******************************************************************/
-unsigned int mystrlen(const char *str)
-{
-	if (!str) return 0;
-	return strlen(str);
-}
-
-/******************************************************************
- Duplicates a string. NULL is accepted (will return NULL).
- A null byte string will also return NULL.
-*******************************************************************/
-char *mystrdup(const char *str)
-{
-	char *new_str;
-	int len;
-
-	if (!str) return NULL;
-	len = strlen(str);
-	if (!len) return NULL;
-
-	if ((new_str = (char*)malloc(len+1)))
-		strcpy(new_str,str);
-
-	return new_str;
-}
-
-/**************************************************************************
- Like mystrdup() but you can limit the chars. A 0 byte is guaranted.
- The string is allocated via malloc().
-**************************************************************************/
-char *mystrndup(const char *str1, int n)
-{
-	char *dest;
-
-	if ((dest = (char*)malloc(n+1)))
-	{
-		if (str1) strncpy(dest,str1,n);
-		else dest[0] = 0;
-
-		dest[n]=0;
-	}
-	return dest;
-}
-
-/**************************************************************************
- Like strncpy() but ensures that the string is always 0 terminted
-**************************************************************************/
-size_t mystrlcpy(char *dest, const char *src, size_t n)
-{
-	size_t len = strlen(src);
-	size_t num_to_copy = (len >= n) ? n-1 : len;
-	if (num_to_copy>0)
-		memcpy(dest, src, num_to_copy);
-	dest[num_to_copy] = '\0';
-	return len;
+	thread_call_parent_function_sync(tell_str,1,str);
 }
 

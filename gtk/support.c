@@ -193,7 +193,7 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 /******************************************************************
  Tells an error message
 *******************************************************************/
-void tell(char *str)
+void tell_str(char *str)
 {
 	printf("%s\n",str);
 	error_add_message(str);
@@ -204,7 +204,7 @@ void tell(char *str)
 *******************************************************************/
 void tell_from_subtask(char *str)
 {
-	thread_call_parent_function_sync(tell,1,str);
+	thread_call_parent_function_sync(tell_str,1,str);
 }
 
 

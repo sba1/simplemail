@@ -119,6 +119,7 @@ static STRPTR UsedClasses[] =
 {
 	"NList.mcc",
 	"NListview.mcc",
+	"NListviews.mcc",                /* Because the NList prefs are called NListviews.mcp */
 	"NListtree.mcc",
 	"TextEditor.mcc",
 	"BetterString.mcc",

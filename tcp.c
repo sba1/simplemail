@@ -53,6 +53,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 /*#define DEBUG_OUTPUT*/
+#undef printf
 
 static int error_code;
 
@@ -375,7 +376,11 @@ int tcp_flush(struct connection *conn)
 	{
 #ifdef DEBUG_OUTPUT
 		printf("C: ");
-		fwrite(conn->write_buf,1,conn->write_size,stdout);
+		{
+			static char buf[5000];
+			memcpy(buf,conn->write_buf,MIN(5000-1,conn->write_size));
+			printf("%s\n",buf);
+		}
 
 		if (conn->write_buf[conn->write_size-1]!='\n')
 			printf("\n");

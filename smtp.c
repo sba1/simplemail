@@ -101,8 +101,6 @@ static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
 	
 	while (!ready && (buf = tcp_readln(conn->conn)))
 	{
-/*		  puts(buf);*/
-
 		if(buf[3] == ' ')
 		{
 			ready = 1;

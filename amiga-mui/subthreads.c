@@ -32,6 +32,7 @@
 #include <proto/timer.h>
 
 #include "subthreads.h"
+#include "lists.h"
 
 //#define MYDEBUG
 #include "debug.h"
@@ -53,12 +54,24 @@ static struct MsgPort *thread_port;
 /* the thread, we currently allow only a single one */
 static struct Process *thread;
 
-//static struct AmiProcMsg *subthread;
+
+struct list thread_list;
+struct thread_node
+{
+	struct node node;
+	thread_t thread;
+};
+
+struct thread_s
+{
+	struct Process *process;
+};
 
 int init_threads(void)
 {
 	if ((thread_port = CreateMsgPort()))
 	{
+		list_init(&thread_list);
 		return 1;
 	}
 	return 0;
@@ -183,6 +196,93 @@ int thread_parent_task_can_contiue(void)
 #else
 	return 1;
 #endif
+}
+
+thread_t thread_start_new(int (*entry)(void*), void *eudata)
+{
+#ifndef DONT_USE_THREADS
+	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
+	if (thread)
+	{
+		struct ThreadMessage *msg;
+
+		if ((msg = (struct ThreadMessage *)AllocVec(sizeof(*msg),MEMF_PUBLIC|MEMF_CLEAR)))
+		{
+			BPTR in,out;
+			msg->msg.mn_Node.ln_Type = NT_MESSAGE;
+			msg->msg.mn_ReplyPort = thread_port;
+			msg->msg.mn_Length = sizeof(*msg);
+			msg->startup = 1;
+			msg->function = (int (*)(void))entry;
+			msg->arg1 = eudata;
+	
+			in = Open("CONSOLE:",MODE_NEWFILE);
+			if (!in) in = Open("NIL:",MODE_NEWFILE);
+			out = Open("CONSOLE:",MODE_NEWFILE);
+			if (!out) out = Open("NIL:",MODE_NEWFILE);
+	
+			if (in && out)
+			{
+				thread->process = CreateNewProcTags(
+							NP_Entry,      thread_entry,
+							NP_StackSize,  16384,
+							NP_Name,       "SimpleMail - Subthread",
+							NP_Priority,   -1,
+							NP_Input,      in,
+							NP_Output,     out,
+							TAG_END);
+	
+				if (thread->process)
+				{
+					struct ThreadMessage *thread_msg;
+					D(bug("Thread started at 0x%lx\n",thread));
+					PutMsg(&thread->process->pr_MsgPort,(struct Message*)msg);
+					WaitPort(thread_port);
+					thread_msg = (struct ThreadMessage *)GetMsg(thread_port);
+					if (thread_msg == msg)
+					{
+						/* This was the startup message, so something has failed */
+						D(bug("Got startup message back. Something went wrong\n"));
+						FreeVec(thread_msg);
+						FreeVec(thread);
+						return NULL;
+					} else
+					{
+						/* This was the "parent task can continue message", we don't reply it
+						 * but we free it here (although it wasn't allocated by this task) */
+						D(bug("Got \"parent can continue\"\n"));
+						FreeVec(thread_msg);
+						return thread;
+					}
+				}
+			}
+			if (in) Close(in);
+			if (out) Close(out);
+			FreeVec(msg);
+		}
+	}
+	return NULL;
+#else
+	entry(eudata);
+	return NULL;
+#endif
+}
+
+thread_t thread_add(int (*entry)(void *), void *eudata)
+{
+	struct thread_node *thread_node = (struct thread_node*)AllocVec(sizeof(struct thread_node),MEMF_PUBLIC|MEMF_CLEAR);
+	if (thread_node)
+	{
+		thread_t thread = thread_start_new(entry, eudata);
+		if (thread)
+		{
+			thread_node->thread = thread;
+			list_insert_tail(&thread_list,&thread_node->node);
+			return thread;
+		}
+		FreeVec(thread_node);
+	}
+	return NULL;
 }
 
 int thread_start(int (*entry)(void*), void *eudata)

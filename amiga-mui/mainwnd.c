@@ -1036,7 +1036,10 @@ void main_build_accounts(void)
 			char buf[200];
 			Object *entry;
 
-			if (account->pop->login)
+			if (account->account_name)
+			{
+				utf8tostr(account->account_name, buf, sizeof(buf), user.config.default_codeset);
+			} else if (account->pop->login)
 			{
 				sprintf(buf,"%s@%s",account->pop->login,account->pop->name);
 			} else strcpy(buf,account->pop->name);

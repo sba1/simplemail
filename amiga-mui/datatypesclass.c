@@ -215,15 +215,18 @@ STATIC ULONG DataTypes_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 	if (msg->opg_AttrID == MUIA_DataTypes_SupportsPrint)
 	{
-		ULONG *m = GetDTMethods(data->dt_obj);
+		ULONG *m;
 		int print = 0;
 
-		for (m = GetDTMethods(data->dt_obj);(*m) != ~0;m++)
+		if (data->dt_obj)
 		{
-			if ((*m) == DTM_PRINT)
+			for (m = GetDTMethods(data->dt_obj);(*m) != ~0;m++)
 			{
-				print = 1;
-				break;
+				if ((*m) == DTM_PRINT)
+				{
+					print = 1;
+					break;
+				}
 			}
 		}
 

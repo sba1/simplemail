@@ -284,7 +284,7 @@ int main_window_init(void)
 					MUIA_Group_Spacing, 0,
 					MUIA_Weight, 200,
 					Child, button_read = MakePictureButton("R_ead","PROGDIR:Images/MailRead"),
-					Child, button_change = MakePictureButton("_Modify","PROGDIR:Images/MailModify"),
+					Child, button_change = MakePictureButton("Edi_t","PROGDIR:Images/MailModify"),
 					Child, button_delete = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
 					Child, button_getadd = MakePictureButton("_GetAdd","PROGDIR:Images/MailGetAddress"),
 					End,
@@ -314,7 +314,7 @@ int main_window_init(void)
 
 			Child, folder_group = HGroup,
 				MUIA_Group_Spacing,0,
-				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
+				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, MUIA_Background, MUII_TextBack, End,
 				Child, folder_popupmenu = PopupmenuObject,
 					ImageButtonFrame,
 					MUIA_CycleChain,1,
@@ -337,7 +337,7 @@ int main_window_init(void)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,End,
+						Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,MUIA_Background, MUII_TextBack, End,
 						Child, switch2_button = PopButton(MUII_ArrowRight),
 						End,
 					End,
@@ -523,7 +523,7 @@ void main_remove_mail(struct mail *mail)
 	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(mail_tree, mail);
 	if (treenode)
 	{
-		DoMethod(mail_tree, MUIM_NListtree_Remove, NULL, treenode,0);
+		DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
 	}
 }
 

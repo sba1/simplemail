@@ -246,6 +246,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 					MUIA_ContextMenu, context_menu,
 					End,
 			Child, TextObject,
+					MUIA_Background, MUII_TextBack, 
 					MUIA_Font, MUIV_Font_Tiny,
 					MUIA_Text_Contents, mail->filename,
 					MUIA_Text_PreParse, "\33c",

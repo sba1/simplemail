@@ -218,7 +218,7 @@ void init_new_folder(void)
 				End,
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, create_button = MakeButton("_Create"),
+				Child, create_button = MakeButton("_OK"),
 				Child, cancel_button = MakeButton("_Cancel"),
 				End,
 			End,

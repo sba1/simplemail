@@ -178,7 +178,7 @@ prepare-release:
   copy sm/images TO ram:SimpleMail/Images
   copy sm/ARexx TO ram:SimpleMail/ARexx
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale
-  copy sm/Charsets/#? To ram:SimpleMail/Charsets
+  copy sm/Charsets/\#? To ram:SimpleMail/Charsets
   copy sm/.taglines TO ram:SimpleMail/.taglines
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha

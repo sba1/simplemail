@@ -1172,6 +1172,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	char *dest;
 	char *src = (char*)from;
 	unsigned char c;
+	int len;
 	struct codeset *codeset = codesets_find(charset);
 
 	if (!codeset)
@@ -1183,14 +1184,16 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 		return NULL;
 	}
 
-	while ((c = *src++))
+	len = from_len;
+
+	while (((c = *src++) && (len--)))
 		dest_size += codeset->table[c].utf8[0];
 
 	if ((dest = malloc(dest_size+1)))
 	{
 		char *dest_ptr = dest;
 
-		for (src = (char*)from;from_len,c = *src;src++,from_len--)
+		for (src = (char*)from;from_len && (c = *src);src++,from_len--)
 		{
 			unsigned char *utf8_seq;
 
@@ -1228,10 +1231,9 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 		unsigned char c = *str++;
 		if (c)
 		{
-			int len;
-
-			if ((len = trailingBytesForUTF8[c]))
+			if (c > 127)
 			{
+				int len = trailingBytesForUTF8[c];
 				conv.utf8[1] = c;
 				strncpy(&conv.utf8[2],str,len);
 				conv.utf8[2+len] = 0;

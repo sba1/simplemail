@@ -803,9 +803,6 @@ STATIC ULONG MessageView_Show(struct IClass *cl, Object *obj, struct MUIP_Show *
 	if ((rc = DoSuperMethodA(cl,obj,(Msg)msg)))
 		data->show = 1;
 
-	if (data->folder_path && !data->mail)
-		messageview_setup(data,data->ref_mail,data->folder_path);
-
 	return rc;
 }
 

@@ -13,6 +13,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/locale.h>
+#include <proto/utility.h>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
@@ -43,7 +44,7 @@ struct Library *LayersBase;
 
 struct ExecIFace *IExec;
 struct DOSIFace *IDOS;
-struct Interface *IUtility;
+struct UtilityIFace *IUtility;
 struct Interface *IIntuition;
 struct LocaleIFace *ILocale;
 struct Interface *IDataTypes;
@@ -860,3 +861,15 @@ int iscntrl(int c)
 {
 	return (('\0' <= c && c < ' ') || (c == 127));
 }
+
+int strcasecmp(const char *str1, const char *str2)
+{
+	return IUtility->Stricmp(str1,str2);
+}
+
+int strncasecmp(const char *str1, const char *str2, size_t size)
+{
+	return IUtility->Strnicmp(str1,str2,size);
+}
+
+int __random_seed = 1;

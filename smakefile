@@ -127,6 +127,7 @@ ${LOCALEDIR}ma.mo: po/ma.po
 ${LOCALEDIR}pl.mo: po/pl.po
 ${LOCALEDIR}fi.mo: po/fi.po
 ${LOCALEDIR}es.mo: po/es.po
+${LOCALEDIR}fr.mo: po/fr.po
 
 de.pox:
   execute CreatePOX de
@@ -138,6 +139,8 @@ fi.pox:
   execute CreatePOX fi
 es.pox:
   execute CreatePOX es
+fr.pox:
+  execute CreatePIX fr
 
 # some fake targets
 generate:

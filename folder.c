@@ -3542,8 +3542,6 @@ void folder_create_imap(void)
 				f = folder_next(f);
 			}
 
-printf("found %d\n\n",found);
-
 			if (!found)
 			{
 				char buf[128];
@@ -3580,8 +3578,6 @@ printf("found %d\n\n",found);
 			     * might be not considered as a group so we change it manually */
 					f->special = FOLDER_SPECIAL_GROUP;
 					f->is_imap = 1;
-					
-					printf("%s %s\n\n",f->name,f->imap_server);
 				}
 			}
 

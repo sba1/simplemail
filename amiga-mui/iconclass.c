@@ -408,6 +408,7 @@ struct Selection_Msg
 	int finish;
 };
 
+#ifndef __AMIGAOS4__
 /***********************************************************
  The selection hook functions. It checks whether the
  mouse is placed on an icon
@@ -439,6 +440,7 @@ STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *o
 
 	return ISMACTION_Ignore;
 }
+#endif
 
 /***********************************************************
  MUIM_DeleteDragImage
@@ -450,6 +452,57 @@ STATIC ASM SAVEDS ULONG selection_func(REG(a0,struct Hook *h), REG(a2, Object *o
 STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
+#ifdef __AMIGAOS4__
+	ULONG which;
+	char *buf;
+
+	if (data->drop_path)
+	{
+		FreeVec(data->drop_path);
+		data->drop_path = NULL;
+	}
+
+	if ((buf = (STRPTR)AllocVec(2048,MEMF_SHARED)))
+	{
+		char name[256];
+		ULONG type = ~0;
+
+		struct TagItem ti[6] =
+		{
+				{WBOBJA_DrawerPath, (ULONG)buf},
+				{WBOBJA_DrawerPathSize, 2048},
+				{WBOBJA_Name, (ULONG)name},
+				{WBOBJA_NameSize, (ULONG)sizeof(name)},
+				{WBOBJA_Type, (ULONG)&type},
+				{TAG_DONE}
+		};
+
+		buf[0] = 0;
+
+		/* Note that we use WhichWorkbenchObjectA() and not WhichWorkbenchObject()
+		 * because the latter wasn't implemented in workbench.library < 51.9 */
+		which = WhichWorkbenchObjectA(NULL, _screen(obj)->MouseX,_screen(obj)->MouseY,ti);
+
+		if (which == WBO_ICON)
+		{
+			if (type == WBDRAWER) AddPart(buf,name,2048);
+			else if (type == WBDISK)
+			{
+				mystrlcpy(buf,name,2047);
+				strcat(buf,":");
+			}
+			which = WBO_DRAWER;
+		}
+		if (which == WBO_DRAWER && buf[0])
+		{
+			if ((data->drop_path = StrCopy(buf)))
+			{
+				DoMethod(_app(obj),MUIM_Application_PushMethod, obj, 3, MUIM_Set, MUIA_Icon_DropPath, data->drop_path);
+			}
+		}
+		FreeVec(buf);
+	}
+#else
 	if (WorkbenchBase->lib_Version >= 45)
 	{
 		struct Layer *l = WhichLayer(&_screen(obj)->LayerInfo,_screen(obj)->MouseX,_screen(obj)->MouseY);
@@ -521,6 +574,7 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 			}
 		}
 	}
+#endif
 
 	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
 	data->ehnode.ehn_Events &= ~IDCMP_MOUSEMOVE;

@@ -38,6 +38,7 @@
 #include "filter.h"
 #include "mail.h"
 #include "smintl.h"
+#include "support.h"
 #include "support_indep.h"
 #include "text2html.h"
 
@@ -159,6 +160,47 @@ static int messageview_cleanup_temporary_files(struct MessageView_Data *data)
 }
 
 /******************************************************************
+ String support
+*******************************************************************/
+static void messageview_append_mail(struct MessageView_Data *data, struct mail *mail, string *str)
+{
+	struct mail *initial_mail;
+	int i;
+	int separator = 0;
+
+	static char temp_buf[512]; /* Ok to use a static buffer although this is a recursive call */
+	static char content_name[256];
+
+	void *decoded_data;
+	int decoded_data_len;
+
+	/* Find out the mail part which is displayed on default */
+	if (!(initial_mail = mail_find_initial(data->mail)))
+		return;
+
+	for (i=0;i<mail->num_multiparts;i++)
+	{
+		struct mail *m = mail->multipart_array[i];
+		if (m == initial_mail) continue;
+
+		if (!separator)
+		{
+			string_append(str,"<hr>");
+			separator = 1;
+		}
+
+		if (m->content_name) utf8tostr(m->content_name, content_name, sizeof(content_name), user.config.default_codeset);
+		else mystrlcpy(content_name,_("Unnamed"),sizeof(content_name));
+
+		mail_decoded_data(mail, &decoded_data, &decoded_data_len);
+
+		sm_snprintf(temp_buf,sizeof(temp_buf),"<A HREF=\"internal:%08lx\">%s</A> (%ld bytes %s/%s)",m,content_name,decoded_data_len,m->content_type,m->content_subtype);
+		string_append(str,temp_buf);
+		string_append(str,"<br>");
+	}
+}
+
+/******************************************************************
  Show the given mail, which should be a root mail
 *******************************************************************/
 static void messageview_show_mail(struct MessageView_Data *data)
@@ -200,10 +242,10 @@ static void messageview_show_mail(struct MessageView_Data *data)
 		char *html_mail;
 		char *font_buf;
 
-		SetAttrs(data->simplehtml,
-				MUIA_SimpleHTML_Buffer,data->mail->html_header,
-				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
-				TAG_DONE);
+		string str;
+
+		if (!string_initialize(&str,2048))
+			return;
 
 		/* substituate the fixed font */
 		if ((font_buf = mystrdup(user.config.read_fixedfont)))
@@ -235,11 +277,22 @@ static void messageview_show_mail(struct MessageView_Data *data)
 			free(font_buf);
 		}
 
+		SetAttrs(data->simplehtml,
+				MUIA_SimpleHTML_Buffer,data->mail->html_header,
+				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
+				TAG_DONE);
 
-		html_mail = text2html(buf, buf_end - buf,
-													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 
-		DoMethod(data->simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
+		html_mail = text2html(buf, buf_end - buf, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+		string_append(&str,html_mail);
+		free(html_mail);
+
+		messageview_append_mail(data,data->mail,&str);
+
+		string_append(&str,"</BODY>");
+
+		DoMethod(data->simplehtml, MUIM_SimpleHTML_AppendBuffer, str.str, str.len);
+		free(str.str);
 	}
 }
 
@@ -315,6 +368,10 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 *******************************************************************/
 STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
+	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
+
+	messageview_cleanup_temporary_files(data);
+	mail_free(data->mail); /* NULL safe */	
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -352,7 +409,7 @@ STATIC ULONG MessageView_Show(struct IClass *cl, Object *obj, struct MUIP_Show *
 	if ((rc = DoSuperMethodA(cl,obj,(Msg)msg)))
 		data->show = 1;
 
-	if (data->ref_mail && data->folder_path)
+	if (data->ref_mail && data->folder_path && !data->mail)
 		messageview_setup(data,data->ref_mail,data->folder_path);
 
 	return rc;
@@ -364,10 +421,6 @@ STATIC ULONG MessageView_Show(struct IClass *cl, Object *obj, struct MUIP_Show *
 STATIC ULONG MessageView_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide *msg)
 {
 	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
-
-	messageview_cleanup_temporary_files(data);
-	mail_free(data->mail); /* NULL safe */	
-	data->mail = NULL;
 
 	data->show = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);

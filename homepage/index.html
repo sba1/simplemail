@@ -1,76 +1,143 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<?php require("evalcookies.php"); ?>
 
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
-  <head>
-    <meta name="description" content="Supportpage for SimpleMail">
-    <meta name="keywords" content=
-    "SimpleMail,Amiga,Sebastian Bauer,Hynek,Schlawack,MUA,Mailer">
-    <meta name="author" content=
-    "sebauer@t-online.de,hynek@schlawack.net">
-    <meta name="date" content="2000-12-11">
-    <meta name="DC.Title" content="SimpleMail">
-    <meta name="DC.Creator" content=
-    "Sebastian Bauer,Hynek Schlawack">
-    <meta name="DC.Subject" content="SimpleMail">
-    <meta name="DC.Description" content="Support for SimpleMail">
-    <meta name="DC.Publisher" content=
-    "Sebastian Bauer,Hynek Schlawack">
-    <meta name="DC.Date" content="2000-12-11">
-    <meta name="DC.Language" content="en">
-    <meta name="DC.Rights" content=
-    "Copyright (c) 2000 by Hynek Schlawack &amp; Sebastian Bauer, All Rights Reserved">
-    <meta name="robots" content="index">
 
-    <title>SimpleMail</title>
-  </head>
+<HEAD>
+<TITLE>SimpleMail's Supportpage</TITLE>
+<META name="description" content="A Supportpage for SimpleMail.">
+<META name="author" content="Hynek Schlawack">
+<META name="keywords" content="SimpleMail, Amiga, Mailer, MUA, Sebastian, Bauer, Hynek, Schlawack">
+</HEAD>
 
-  <body bgcolor="#ffffff" text="#000000" link="#0000a0" vlink= 
-  "#b00000">
-    <h1>SimpleMail</h1>
+<body bgcolor="white">
+    <center>
+        <IMG src="sm_logo.png" alt="sm_logo.png (954 bytes)" width=277 height=48>
+    </center>
 
-    <p> Hello dear Amiga users! There is a new mailer for the Amiga in
-    development  as   we   thought  that  YAM  is  not  enough.  This  is
-    just  a alpha-version so far and so it as more a teaser of what  you  can
-    expect   in  the  new  year.  Anyway,  SimpleMail  is  already  a
-    fully-featured mailer but still far away from YAM. But with your
-    support, SimpleMail can overgrow YAM very soon!</p>
+    <TABLE border=0 cellspacing=3 cellpadding=3 align="center" width="100%" summary="Main">
+        <TR>
+            <TD bgcolor="black" align="center">
+                <FONT COLOR="white">
+                    <strong>
+                        Menu
+                    </strong>
+                </FONT>
+            </TD>
 
-    Download: <a href="simplemail.lzx">simplemail.lzx</A> (Release 0.2 - 2000/01/14) (81797 Bytes)<br>
-    Screenshot: <a href="simplemail_main.png">simplemail_main.png</A><br>
+            <TD bgcolor="black" align="center">
+                <FONT COLOR="white">
+                    <strong>
+                        <?php
+                            switch($part)
+                            {
+                                case "":
+                                    echo("Welcome");
+                                    break;
 
-    <p> If you have any wishes concerning features, then send a  mail
-    to     <a    href="mailto:sebauer@t-online.de">Sebastian    Bauer
-    &lt;sebauer@t-online.de&gt;</a>        or        <a         href=
-    "mailto:hynek@schlawack.net">Hynek                      Schlawack
-    &lt;hynek@schlawack.net&gt;</a>  and  we  will  consider  it   in
-    further development.</p>
+                                case "screenshots":
+                                    echo("Screenshots");
+                                    break;
 
-<!--
-    <h2>Some links:</h2>
-    <a href= 
-    "http://sourceforge.net/project/filelist.php?group_id=15322">Filearea</a><br>
--->
-    <p>
-    We have also created two mailing lists for SimpleMail. Feel free
-    to subscribe to them and ask your questions concerning SimpleMail
-    here<br>
-    <a href= "http://lists.sourceforge.net/lists/listinfo/simplemail-user">
-    The mailing list for users</a><br>
-    <a href= "http://lists.sourceforge.net/lists/listinfo/simplemail-dev">
-    The mailing list for developers</a><br>
-    </p>
+                                case "downloads":
+                                    echo("Downloads");
+                                    break;
 
-     <p> Sorry for this rather simple page  so  far  but  we  use  our
-    energy for developing and not for webdesign. If you would like to
-    be our webmaster you'll be welcome! Note that this is only a
-    temporay place of the homepage. The real place will be
-    <A HREF="http://simplemail.sourceforge.net/">http://simplemail.sourceforge.net/</A>.
-    SimpleMail's project page can be found at
-    <a href="http://sourceforge.net/projects/simplemail/">
-    http://sourceforge.net/projects/simplemail/</a>.
-    <p>
+                                case "faq":
+                                    echo("FAQ");
+                                    break;
 
-    <hr>
-    Last modification: $Id$
-  </body>
+                                case "links":
+                                    echo("Links");
+                                    break;
+
+                                case "contact":
+                                    echo("Contact");
+                                    break;
+                            }
+
+                        ?>
+                    </strong>
+                </FONT>
+            </TD>
+        </TR>
+        <TR>
+            <TD>
+                <TABLE border=0 cellspacing=3 cellpadding=3 align="center" summary="Menu">
+                    <TR>
+                        <TD><A href="index.html">Welcome</A></TD>
+                    </TR>
+                    <TR>
+                        <TD><A href="index.html?part=screenshots">Screenshots</A></TD>
+                    </TR>
+                    <TR>
+                        <TD><A href="index.html?part=downloads">Downloads</A></TD>
+                    </TR>
+                    <TR>
+                        <TD><A href="index.html?part=faq">FAQ</A></TD>
+                    </TR>
+                    <TR>
+                        <TD><A href="index.html?part=links">Links</A></TD>
+                    </TR>
+                    <TR>
+                        <TD><A href="index.html?part=contact">Contact</A></TD>
+                    </TR>
+                </TABLE>
+            </TD>
+            <TD>
+                <TABLE border=0 cellspacing=3 cellpadding=3 align="left" summary="Body">
+                    <TR>
+                        <TD>
+                            <?php
+                                switch($part)
+                                {
+                                    case "":
+                                        readfile("welcome.html");
+                                        break;
+
+                                    case "screenshots":
+                                        readfile("screenshots.html");
+                                        break;
+
+                                    case "downloads":
+                                        readfile("downloads.html");
+                                        break;
+
+                                    case "faq":
+                                        readfile("faq.html");
+                                        break;
+
+                                    case "links":
+                                        readfile("links.html");
+                                        break;
+
+                                    case "contact":
+                                        readfile("contact.html");
+                                        break;
+                                }
+                            ?>
+                        </TD>
+                    </TR>
+                </TABLE>
+            </TD>
+        </TR>
+    </TABLE>
+    <TABLE border=0 cellspacing=3 cellpadding=3 align="center" width="100%" summary="Foot">
+        <TR>
+            <TD bgcolor="black" align="center">
+                <font color="white">
+                    <B>Last Modification:</B> 2000/01/23 <?php require("counter.php"); ?>
+                </font>
+            </TD>
+        </TR>
+        <TR>
+            <TD align="center">
+                <A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=15322" width="88" height="31" border="0" alt="SourceForge Logo"></A>
+                <A href="http://www.php.net/"><IMG src="php-small-purple.gif" alt="Powered by PHP" width=88 height=31></A>
+                <a href="http://validator.w3.org/check/referer"> <img border="0" src="http://www.w3.org/Icons/valid-html40" alt="Valid HTML 4.0!" height="31" width="88"></a>
+            </TD>
+        </TR>
+    </TABLE>
+</body>
+
 </html>

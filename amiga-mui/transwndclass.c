@@ -115,7 +115,7 @@ STATIC ASM VOID mail_display(register __a0 struct Hook *h, register __a2 char **
 	{
 		*array++ = "Mail No";
 		*array++ = "Size";
-		*array++ = "Author";
+		*array++ = "From";
 		*array++ = "Subject";
 	}
 }
@@ -166,12 +166,10 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						End,
 					Child, gauge1 = GaugeObject,
 						GaugeFrame,
-						MUIA_Gauge_InfoText,		"Mail 0/0",
 						MUIA_Gauge_Horiz,			TRUE,
 						End,
 					Child, gauge2 = GaugeObject,
 						GaugeFrame,
-						MUIA_Gauge_InfoText,		"0/0 bytes",
 						MUIA_Gauge_Horiz,			TRUE,
 						End,
 					Child, HGroup,
@@ -276,7 +274,26 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	}
 	
 	rc = DoSuperMethodA(cl, obj, (Msg)msg);
-	if (close) DoMethod(data->mail_list, MUIM_NList_Clear);
+	if (close)
+	{
+		if (data->mail_group_shown)
+		{
+			set(data->mail_group, MUIA_ShowMe, FALSE);
+			data->mail_group_shown = 0;
+		}
+		
+		DoMethod(data->mail_list, MUIM_NList_Clear);
+		SetAttrs(obj,
+			MUIA_Window_Title,"SimpleMail",
+			MUIA_transwnd_Status, "",
+			MUIA_transwnd_Gauge1_Str, "",
+			MUIA_transwnd_Gauge1_Max, 1,
+			MUIA_transwnd_Gauge1_Val, 0,
+			MUIA_transwnd_Gauge2_Str, "",
+			MUIA_transwnd_Gauge2_Max, 1,
+			MUIA_transwnd_Gauge2_Val, 0,
+			TAG_DONE);
+	}
 	return rc;
 }
 
@@ -314,6 +331,7 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 
 	if (!data->mail_group_shown)
 	{
+		DoMethod(data->mail_list, MUIM_NList_UseImage,NULL, -1, 0);
 		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End, 1, 0);
 		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 2, 0);
 		set(data->mail_group, MUIA_ShowMe, TRUE);

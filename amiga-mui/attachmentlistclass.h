@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** attachmentlistclass.h
 */
 
 #ifndef SM__ATTACHMENTLISTCLASS_H
@@ -27,12 +27,16 @@
 IMPORT struct MUI_CustomClass *CL_AttachmentList;
 #define AttachmentListObject (Object*)NewObject(CL_AttachmentList->mcc_Class, NULL
 
+#define MUIM_AttachmentList_FindUniqueID 0x98989
+struct MUIP_AttachmentList_FindUniqueID {ULONG MethodID; int unique_id;};
+
 int create_attachmentlist_class(void);
 void delete_attachmentlist_class(void);
 
 /* structure of a entry of this list */
 struct attachment
 {
+	int unique_id; /* a unique id */
 	char *filename;
 	char *temporary_filename; /* path to the temporary file, it gets deleted if the entry is destructed */
 	char *description;

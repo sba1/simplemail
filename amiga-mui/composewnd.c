@@ -84,13 +84,10 @@ struct Compose_Data /* should be a customclass */
 	Object *x_text;
 	Object *y_text;
 	Object *text_texteditor;
+	Object *quick_attach_tree;
 	Object *attach_tree;
 	Object *contents_page;
 	Object *datatype_datatypes;
-	Object *attach_group;
-	Object *vertical_balance;
-	Object *main_group;
-	Object *show_attach_button;
 	Object *encrypt_button;
 	Object *sign_button;
 
@@ -111,6 +108,8 @@ struct Compose_Data /* should be a customclass */
 	struct Hook from_strobj_hook;
 
 	char **sign_array; /* The array which contains the signature names */
+
+	int attachment_unique_id;
 };
 
 STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *str)
@@ -250,6 +249,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 
 			memset(&multipart, 0, sizeof(multipart));
 			multipart.content_type = "multipart/mixed";
+			multipart.unique_id = data->attachment_unique_id++;
 
 			quiet = 1;
 			set(data->attach_tree, MUIA_NListtree_Quiet, TRUE);
@@ -270,7 +270,15 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 	}
 
 	DoMethod(data->attach_tree, MUIM_NListtree_Insert, "" /*name*/, attach, /* udata */
-					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?TNF_OPEN|TNF_LIST:0)|MUIV_NListtree_Insert_Flag_Active);
+					 insertlist,MUIV_NListtree_Insert_PrevNode_Tail, (list?TNF_OPEN|TNF_LIST:0));
+
+	/* for the quick attachments list */
+	if (!list)
+	{
+		DoMethod(data->quick_attach_tree, MUIM_NListtree_Insert, "", attach, /* udata */
+					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+	}
+					
 
 	if (quiet)
 	{
@@ -290,6 +298,7 @@ static void compose_add_text(struct Compose_Data **pdata)
 	memset(&attach, 0, sizeof(attach));
 	attach.content_type = "text/plain";
 	attach.editable = 1;
+	attach.unique_id = data->attachment_unique_id++;
 
 	compose_add_attachment(data,&attach,0);
 }
@@ -305,6 +314,7 @@ static void compose_add_multipart(struct Compose_Data **pdata)
 	memset(&attach, 0, sizeof(attach));
 	attach.content_type = "multipart/mixed";
 	attach.editable = 0;
+	attach.unique_id = data->attachment_unique_id++;
 
 	compose_add_attachment(data,&attach,1);
 }
@@ -338,12 +348,10 @@ static void compose_add_files(struct Compose_Data **pdata)
 						attach.content_type = identify_file(buf);
 						attach.editable = 0;
 						attach.filename = buf;
+						attach.unique_id = data->attachment_unique_id++;
 
 						compose_add_attachment(data,&attach,0);
 						FreeVec(buf);
-
-						if (!xget(data->show_attach_button,MUIA_Selected))
-							set(data->show_attach_button,MUIA_Selected,TRUE);
 					}
 					FreeVec(drawer);
 				}
@@ -374,6 +382,25 @@ static void compose_remove_file(struct Compose_Data **pdata)
 		DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode, 0); 
 		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First); 
 		set(data->attach_tree, MUIA_NListtree_Quiet,FALSE);
+	}
+}
+
+/******************************************************************
+ A new attachment has been clicked
+*******************************************************************/
+static void compose_quick_attach_active(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	struct MUI_NListtree_TreeNode *activenode = (struct MUI_NListtree_TreeNode *)xget(data->quick_attach_tree, MUIA_NListtree_Active);
+
+	if (activenode && activenode->tn_User)
+	{
+		if ((activenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_AttachmentList_FindUniqueID, ((struct attachment *)activenode->tn_User)->unique_id)))
+		{
+			SetAttrs(data->attach_tree,
+					MUIA_NListtree_Active, activenode,
+					TAG_DONE);
+		}
 	}
 }
 
@@ -441,6 +468,14 @@ static void compose_attach_active(struct Compose_Data **pdata)
 					TAG_DONE);
 
 			set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->temporary_filename?attach->temporary_filename:attach->filename);
+		}
+
+		if ((activenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->quick_attach_tree, MUIM_AttachmentList_FindUniqueID, attach->unique_id)))
+		{
+			SetAttrs(data->quick_attach_tree,
+					MUIA_NoNotify, TRUE,
+					MUIA_NListtree_Active,activenode,
+					TAG_DONE);
 		}
 	} else
 	{
@@ -583,26 +618,6 @@ static void compose_window_hold(struct Compose_Data **pdata)
 }
 
 /******************************************************************
- The switch button's selected state has changed
-*******************************************************************/
-static void compose_switch_view(struct Compose_Data **pdata)
-{
-	struct Compose_Data *data = *pdata;
-
-	DoMethod(data->main_group, MUIM_Group_InitChange);
-	if (xget(data->show_attach_button, MUIA_Selected))
-	{
-		set(data->attach_group, MUIA_ShowMe, TRUE);
-		set(data->vertical_balance, MUIA_ShowMe, TRUE);
-	} else
-	{
-		set(data->attach_group, MUIA_ShowMe, FALSE);
-		set(data->vertical_balance, MUIA_ShowMe, FALSE);
-	}
-	DoMethod(data->main_group, MUIM_Group_ExitChange);
-}
-
-/******************************************************************
  inserts a mail into the listtree (uses recursion)
 *******************************************************************/
 static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
@@ -629,6 +644,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 	}
 
 	attach.content_type = buf;
+	attach.unique_id = data->attachment_unique_id++;
 
 	if (!num_multiparts)
 	{
@@ -649,7 +665,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 			if (cont_dup)
 			{
 				if ((isobuf = (char*)malloc(cont_len+1)))
-					utf8tostr(cont_dup, isobuf, cont_len+1, NULL);
+					utf8tostr(cont_dup, isobuf, cont_len+1, user.config.default_codeset);
 				free(cont_dup);
 			}
 
@@ -671,6 +687,13 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 			attach.filename = mail->filename?mail->filename:tmpname;
 			attach.temporary_filename = tmpname;
 		}
+	}
+
+	if (!num_multiparts)
+	{
+		DoMethod(data->quick_attach_tree,MUIM_NListtree_Insert,"",&attach,
+						 MUIV_NListtree_Insert_ListNode_Root,
+						 MUIV_NListtree_Insert_PrevNode_Tail,0);
 	}
 
 	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,MUIM_NListtree_Insert,"",&attach,listnode,MUIV_NListtree_Insert_PrevNode_Tail,num_multiparts?(TNF_LIST|TNF_OPEN):0);
@@ -814,13 +837,12 @@ int compose_window_open(struct compose_args *args)
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
 	Object *expand_to_button, *expand_cc_button;
+	Object *quick_attach_tree;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
-	Object *main_group, *attach_group, *vertical_balance;
 	Object *from_popobject;
 	Object *signatures_group;
 	Object *signatures_cycle;
-	Object *show_attach_button;
 	Object *add_attach_button;
 	Object *encrypt_button;
 	Object *sign_button;
@@ -830,18 +852,23 @@ int compose_window_open(struct compose_args *args)
 	int num;
 	int i;
 
+	static char *register_titles[3];
+	static int register_titles_are_translated;
+
+	if (!register_titles_are_translated)
+	{
+		register_titles[0] = _("Mail");
+		register_titles[1] = _("Attachments");
+		register_titles_are_translated = 1;
+	};
+
+
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
 
 	if (num == MAX_COMPOSE_OPEN) return -1;
 
-	i = 0;
-	sign = (struct signature*)list_first(&user.config.signature_list);
-	while(sign)
-	{
-		i++;
-		sign = (struct signature*)node_next(&sign->node);
-	}
+	i = list_length(&user.config.signature_list);
 
 	if (user.config.signatures_use && i)
 	{
@@ -877,142 +904,148 @@ int compose_window_open(struct compose_args *args)
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
 		MUIA_Window_Title, _("SimpleMail - Compose Message"),
 		  
-		WindowContents, main_group = VGroup,
-			Child, reply_string = StringObject, MUIA_ShowMe, FALSE, End,
-
-			Child, ColGroup(2),
-				Child, MakeLabel(_("_From")),
-				Child, from_popobject = PopobjectObject,
-					MUIA_Popstring_Button, PopButton(MUII_PopUp),
-					MUIA_Popstring_String, from_text = TextObject, TextFrame, MUIA_Background, MUII_TextBack, End,
-					MUIA_Popobject_Object, NListviewObject,
-						MUIA_NListview_NList, from_list = NListObject,
-							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
-							End,
-						End,
-					End,
-				Child, MakeLabel(_("_To")),
-				Child, HGroup,
-					MUIA_Group_Spacing,0,
-					Child, to_string = AddressStringObject,
-						StringFrame,
-						MUIA_CycleChain, 1,
-						MUIA_ControlChar, GetControlChar(_("_To")),
-						MUIA_String_AdvanceOnCR, TRUE,
-						End,
-					Child, expand_to_button = PopButton(MUII_ArrowLeft),
-					End,
-				Child, MakeLabel(_("Copies To")),
-				Child, HGroup,
-					MUIA_Group_Spacing,0,
-					Child, cc_string = AddressStringObject,
-						StringFrame,
-						MUIA_CycleChain, 1,
-						MUIA_ControlChar, GetControlChar(_("Copies To")),
-						MUIA_String_AdvanceOnCR, TRUE,
-						End,
-					Child, expand_cc_button = PopButton(MUII_ArrowLeft),
-					End,
-				Child, MakeLabel(_("S_ubject")),
-				Child, subject_string = UTF8StringObject,
-					StringFrame,
-					MUIA_CycleChain, 1,
-					MUIA_ControlChar, GetControlChar(_("S_ubject")),
-					End,
-				End,
-			Child, contents_page = PageGroup,
-				MUIA_Group_ActivePage, 0,
+		WindowContents, VGroup,
+			Child, RegisterGroup(register_titles),
+				/* First register */
 				Child, VGroup,
 					Child, HGroup,
-						MUIA_VertWeight,0,
-						Child, HGroup,
-							MUIA_Group_Spacing,0,
-							Child, copy_button = MakePictureButton(_("Copy"),"PROGDIR:Images/Copy"),
-							Child, cut_button = MakePictureButton(_("Cut"),"PROGDIR:Images/Cut"),
-							Child, paste_button = MakePictureButton(_("Paste"),"PROGDIR:Images/Paste"),
+						Child, reply_string = StringObject, MUIA_ShowMe, FALSE, End,
+						Child, ColGroup(2),
+							Child, MakeLabel(_("_From")),
+							Child, from_popobject = PopobjectObject,
+								MUIA_Popstring_Button, PopButton(MUII_PopUp),
+								MUIA_Popstring_String, from_text = TextObject, TextFrame, MUIA_Background, MUII_TextBack, End,
+								MUIA_Popobject_Object, NListviewObject,
+									MUIA_NListview_NList, from_list = NListObject,
+										MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+										MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+										End,
+									End,
+								End,
+							Child, MakeLabel(_("_To")),
+							Child, HGroup,
+								MUIA_Group_Spacing,0,
+								Child, to_string = AddressStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_ControlChar, GetControlChar(_("_To")),
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								Child, expand_to_button = PopButton(MUII_ArrowLeft),
+								End,
+							Child, MakeLabel(_("Copies To")),
+							Child, HGroup,
+								MUIA_Group_Spacing,0,
+								Child, cc_string = AddressStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_ControlChar, GetControlChar(_("Copies To")),
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								Child, expand_cc_button = PopButton(MUII_ArrowLeft),
+								End,
+							Child, MakeLabel(_("S_ubject")),
+							Child, subject_string = UTF8StringObject,
+								StringFrame,
+								MUIA_CycleChain, 1,
+								MUIA_ControlChar, GetControlChar(_("S_ubject")),
+								End,
 							End,
-						Child, HGroup,
-							MUIA_Weight, 66,
-							MUIA_Group_Spacing,0,
-							Child, undo_button = MakePictureButton(_("Undo"),"PROGDIR:Images/Undo"),
-							Child, redo_button = MakePictureButton(_("Redo"),"PROGDIR:Images/Redo"),
+						Child, BalanceObject, End,
+						Child, NListviewObject,
+							MUIA_Weight, 50,
+							MUIA_CycleChain, 1,
+							MUIA_NListview_NList, quick_attach_tree = AttachmentListObject,
+								End,
 							End,
-						Child, HGroup,
-							MUIA_Weight, 66,
-							MUIA_Group_Spacing,0,
-							Child, add_attach_button = MakePictureButton(_("_Attach"),"PROGDIR:Images/AddAttachment"),
-							Child, show_attach_button = MakePictureButton(_("Sho_w At."),"PROGDIR:Images/AttachmentList"),
-							End,
-						Child, HGroup,
-							MUIA_Weight, 33,
-							MUIA_Group_Spacing,0,
-							Child, encrypt_button = MakePictureButton(_("_Encrypt"),"PROGDIR:Images/Encrypt"),
-							Child, sign_button = MakePictureButton(_("Si_gn"),"PROGDIR:Images/Sign"),
-							End,
-						Child, RectangleObject,
-							MUIA_FixHeight,1,
-							MUIA_HorizWeight,signatures_group?33:100,
-							End,
-						signatures_group?Child:TAG_IGNORE,signatures_group,
-						signatures_group?Child:TAG_IGNORE,RectangleObject,
-							MUIA_FixHeight,1,
-							MUIA_HorizWeight,signatures_group?33:100,
+						End,
+					Child, contents_page = PageGroup,
+						MUIA_Group_ActivePage, 0,
+						Child, VGroup,
+							Child, HGroup,
+								MUIA_VertWeight,0,
+								Child, HGroup,
+									MUIA_Group_Spacing,0,
+									Child, copy_button = MakePictureButton(_("Copy"),"PROGDIR:Images/Copy"),
+									Child, cut_button = MakePictureButton(_("Cut"),"PROGDIR:Images/Cut"),
+									Child, paste_button = MakePictureButton(_("Paste"),"PROGDIR:Images/Paste"),
+									End,
+								Child, HGroup,
+									MUIA_Weight, 66,
+									MUIA_Group_Spacing,0,
+									Child, undo_button = MakePictureButton(_("Undo"),"PROGDIR:Images/Undo"),
+									Child, redo_button = MakePictureButton(_("Redo"),"PROGDIR:Images/Redo"),
+									End,
+								Child, HGroup,
+									MUIA_Weight, 33,
+									MUIA_Group_Spacing,0,
+									Child, add_attach_button = MakePictureButton(_("_Attach"),"PROGDIR:Images/AddAttachment"),
+									End,
+								Child, HGroup,
+									MUIA_Weight, 33,
+									MUIA_Group_Spacing,0,
+									Child, encrypt_button = MakePictureButton(_("_Encrypt"),"PROGDIR:Images/Encrypt"),
+									Child, sign_button = MakePictureButton(_("Si_gn"),"PROGDIR:Images/Sign"),
+									End,
+								Child, RectangleObject,
+									MUIA_FixHeight,1,
+									MUIA_HorizWeight,signatures_group?33:100,
+									End,
+								signatures_group?Child:TAG_IGNORE,signatures_group,
+								signatures_group?Child:TAG_IGNORE,RectangleObject,
+									MUIA_FixHeight,1,
+									MUIA_HorizWeight,signatures_group?33:100,
+									End,
+								Child, VGroup,
+									TextFrame,
+									MUIA_Background, MUII_TextBack,
+									MUIA_Group_Spacing, 0,
+									Child, xcursor_text = TextObject,
+										MUIA_Font, MUIV_Font_Fixed,
+										MUIA_Text_Contents, "0000",
+										MUIA_Text_SetMax, TRUE,
+										MUIA_Text_SetMin, TRUE,
+										End,
+									Child, ycursor_text = TextObject,
+										MUIA_Font, MUIV_Font_Fixed,
+										MUIA_Text_Contents, "0000",
+										MUIA_Text_SetMax, TRUE,
+										MUIA_Text_SetMin, TRUE,
+										End,
+									End,
+								End,
+							Child, HGroup,
+								MUIA_Group_Spacing, 0,
+								Child, text_texteditor = (Object*)ComposeEditorObject,
+									InputListFrame,
+									MUIA_CycleChain, 1,
+									MUIA_TextEditor_Slider, slider,
+									MUIA_TextEditor_FixedFont, TRUE,
+									MUIA_TextEditor_WrapBorder, user.config.write_wrap_type == 1 ? user.config.write_wrap : 0,
+									End,
+								Child, slider,
+								End,
 							End,
 						Child, VGroup,
-							TextFrame,
-							MUIA_Background, MUII_TextBack,
-							MUIA_Group_Spacing, 0,
-							Child, xcursor_text = TextObject,
-								MUIA_Font, MUIV_Font_Fixed,
-								MUIA_Text_Contents, "0000",
-								MUIA_Text_SetMax, TRUE,
-								MUIA_Text_SetMin, TRUE,
-								End,
-							Child, ycursor_text = TextObject,
-								MUIA_Font, MUIV_Font_Fixed,
-								MUIA_Text_Contents, "0000",
-								MUIA_Text_SetMax, TRUE,
-								MUIA_Text_SetMin, TRUE,
-								End,
+							Child, datatype_datatypes = DataTypesObject, TextFrame, End,
+							End,
+						End,
+					End,
+
+				/* New register page */
+				Child, VGroup,
+					Child, NListviewObject,
+						MUIA_CycleChain, 1,
+						MUIA_NListview_NList, attach_tree = AttachmentListObject,
 							End,
 						End,
 					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						Child, text_texteditor = (Object*)ComposeEditorObject,
-							InputListFrame,
-							MUIA_CycleChain, 1,
-							MUIA_TextEditor_Slider, slider,
-							MUIA_TextEditor_FixedFont, TRUE,
-							MUIA_TextEditor_WrapBorder, user.config.write_wrap_type == 1 ? user.config.write_wrap : 0,
-							End,
-						Child, slider,
+						Child, add_text_button = MakeButton(_("Add text")),
+						Child, add_multipart_button = MakeButton(_("Add multipart")),
+						Child, add_files_button = MakeButton(_("Add file(s)")),
+						Child, remove_button = MakeButton(_("Remove")),
 						End,
 					End,
-				Child, VGroup,
-/*					Child, HVSpace,*/
-					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
-/*					Child, MakeButton("Test"),
-					Child, HVSpace,*/
-					End,
-				End,
-			Child, vertical_balance = BalanceObject, MUIA_ShowMe, FALSE,End,
-			Child, attach_group = VGroup,
-				MUIA_Weight, 33,
-				MUIA_ShowMe, FALSE,
-				Child, NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, attach_tree = AttachmentListObject,
-						End,
-					End,
-				Child, HGroup,
-					Child, add_text_button = MakeButton(_("Add text")),
-					Child, add_multipart_button = MakeButton(_("Add multipart")),
-					Child, add_files_button = MakeButton(_("Add file(s)")),
-/*					Child, MakeButton("Pack & add"),*/
-					Child, remove_button = MakeButton(_("Remove")),
-					End,
-				Child, HorizLineObject,
 				End,
 			Child, HGroup,
 				Child, send_now_button = MakeButton(_("_Send now")),
@@ -1044,12 +1077,9 @@ int compose_window_open(struct compose_args *args)
 			data->x_text = xcursor_text;
 			data->y_text = ycursor_text;
 			data->attach_tree = attach_tree;
+			data->quick_attach_tree = quick_attach_tree;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
-			data->attach_group = attach_group;
-			data->vertical_balance = vertical_balance;
-			data->main_group = main_group;
-			data->show_attach_button = show_attach_button;
 			data->encrypt_button = encrypt_button;
 			data->sign_button = sign_button;
 			data->copy_button = copy_button;
@@ -1066,7 +1096,6 @@ int compose_window_open(struct compose_args *args)
 					MUIA_Popobject_StrObjHook, &data->from_strobj_hook,
 					TAG_DONE);
 
-			set(show_attach_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(from_text, MUIA_UserData, reply_string);
@@ -1117,7 +1146,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(add_attach_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_remove_file, data);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
-			DoMethod(show_attach_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, show_attach_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
+			DoMethod(quick_attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, quick_attach_tree, 4, MUIM_CallHook, &hook_standard, compose_quick_attach_active, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(send_now_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_now, data);

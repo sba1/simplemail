@@ -37,11 +37,12 @@
 #include <proto/intuition.h>
 
 #include "mail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
+#include "attachmentlistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
-#include "attachmentlistclass.h"
 #include "muistuff.h"
 
 struct AttachmentList_Data
@@ -96,10 +97,10 @@ STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMe
 		*msg->Array++ = attach->description;
 	} else
 	{
-		*msg->Array++ = "File name";
-		*msg->Array++ = "Size";
-		*msg->Array++ = "Contents";
-		*msg->Array = "Description";
+		*msg->Array++ = _("File Name");
+		*msg->Array++ = _("Size");
+		*msg->Array++ = _("Contents");
+		*msg->Array = _("Description");
 	}
 }
 
@@ -163,6 +164,20 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	return rv;
 }
 
+STATIC ULONG AttachmentList_FindUniqueID(struct IClass *cl, Object *obj, struct MUIP_AttachmentList_FindUniqueID *msg)
+{
+	int i;
+	int count = DoMethod(obj,MUIM_NListtree_GetNr, MUIV_NListtree_GetNr_TreeNode_Active,MUIV_NListtree_GetNr_Flag_CountAll);
+
+	for (i=0;i<count;i++)
+	{
+		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
+			DoMethod(obj,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+		if (tn->tn_User && ((((struct attachment*)(tn->tn_User))->unique_id) == msg->unique_id)) return (ULONG)tn;
+	}
+	return NULL;
+}
+
 STATIC ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -171,6 +186,7 @@ STATIC ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, regi
 		case	OM_NEW:				return AttachmentList_New(cl,obj,(struct opSet*)msg);
 		case	MUIM_AskMinMax: return AttachmentList_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
     case	MUIM_NList_DropType: return AttachmentList_DropType(cl,obj,(struct MUIP_NList_DropType*)msg); 
+    case	MUIM_AttachmentList_FindUniqueID: return AttachmentList_FindUniqueID(cl,obj,(struct MUIP_AttachmentList_FindUniqueID*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

@@ -4,6 +4,18 @@
 
   <shot>
     <description>
+      The main window on plain AmigaOS4.
+    </description>
+    <version>
+      0.25
+    </version>
+    <filename>
+      simplemail-main-0.25.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
       The account configuration.
     </description>
     <version>

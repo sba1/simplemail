@@ -61,3 +61,6 @@
 #include <proto/keymap.h>
 #include <proto/icon.h>
 #include <proto/openurl.h>
+
+#include <expat/expat.h>
+#include <proto/expat.h>

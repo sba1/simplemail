@@ -252,7 +252,7 @@ static void addresstreelist_doubleclick(void)
 
 
 /******************************************************************
- The Mailtree's title has been clicked, so change the sort
+ The Mailtree's title has been clicked, so change the primary sort
  mode if necessary
 *******************************************************************/
 static void mailtreelist_title_click(void)
@@ -288,6 +288,43 @@ static void mailtreelist_title_click(void)
 	}
 }
 
+
+/******************************************************************
+ The Mailtree's title has been shift-clicked, so change the secondary
+ sort  mode if necessary
+*******************************************************************/
+static void mailtreelist_title_click2(void)
+{
+	LONG title_mark = xget(mail_tree, MUIA_NList_TitleMark2);
+	LONG title_click = xget(mail_tree, MUIA_NList_TitleClick2);
+	struct folder *folder = main_get_folder();
+
+	if ((title_mark & MUIV_NList_TitleMark2_ColMask) == title_click)
+	{
+		switch (title_mark & MUIV_NList_TitleMark2_TypeMask)
+		{
+			case	MUIV_NList_TitleMark2_Down:
+						title_mark = title_click | MUIV_NList_TitleMark2_Up;
+						break;
+
+			case	MUIV_NList_TitleMark2_Up:
+						title_mark = title_click | MUIV_NList_TitleMark2_Down;
+						break;
+		}
+	} else
+	{
+		title_mark = title_click | MUIV_NList_TitleMark2_Down;
+	}
+
+	set(mail_tree, MUIA_NList_TitleMark2, title_mark);
+
+	if (folder)
+	{
+		folder_set_secondary_sort(folder, titlemark2sortmode(title_mark));
+		folder_config_save(folder);
+		main_set_folder_mails(folder);
+	}
+}
 
 /******************************************************************
  Switch the view of the folders
@@ -717,6 +754,7 @@ int main_window_init(void)
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick2, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click2);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);

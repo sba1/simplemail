@@ -1547,12 +1547,14 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 	{
 		folder_set_primary_sort(f,prim_sort);
 		changed = 1;
+		refresh = 1;
 	}
 
 	if (second_sort != folder_get_secondary_sort(f))
 	{
 		folder_set_secondary_sort(f,second_sort);
 		changed = 1;
+		refresh = 1;
 	}
 	
 	if (mystrcmp(newdefto,f->def_to) != 0)
@@ -2277,6 +2279,7 @@ struct mail **folder_get_mail_array(struct folder *folder)
 	if (folder->sorted_mail_array) return folder->sorted_mail_array;
 	return folder->mail_array;
 }
+
 
 /******************************************************************
  Returns the primary sort mode

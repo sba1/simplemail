@@ -64,8 +64,12 @@ static Object *server_label;
 static Object *server_string;
 static Object *prim_label;
 static Object *prim_cycle;
+static Object *prim_reverse_check;
+static Object *prim_reverse_label;
 static Object *second_label;
 static Object *second_cycle;
+static Object *second_reverse_check;
+static Object *second_reverse_label;
 static Object *imap_folders_group;
 static Object *imap_folders_list;
 static Object *imap_folders_listview;
@@ -208,12 +212,12 @@ char *folder_get_changed_defto(void)
 
 int folder_get_changed_primary_sort(void)
 {
-	return xget(prim_cycle, MUIA_Cycle_Active);
+	return xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
 int folder_get_changed_secondary_sort(void)
 {
-	return xget(second_cycle, MUIA_Cycle_Active);
+	return xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
 static void init_folder(void)
@@ -280,10 +284,18 @@ static void init_folder(void)
 				Child, type_cycle = MakeCycle(_("_Type"),type_array),
 
 				Child, prim_label = MakeLabel(_("_Primary sort")),
-				Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
+                                Child, HGroup,
+					Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
+					Child, prim_reverse_check = MakeCheck(_("Reverse"), 0),
+					Child, prim_reverse_label = MakeLabel(_("Reverse")),
+				End,
 
 				Child, second_label = MakeLabel(_("_Secondary sort")),
-				Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
+				Child, HGroup,
+					Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
+					Child, second_reverse_check = MakeCheck(_("Reverse"), 0),
+					Child, second_reverse_label = MakeLabel(_("Reverse")),
+				End,
 				
 				Child, defto_label = MakeLabel(_("Def. To")),
 				Child, defto_string = AddressStringObject,
@@ -365,8 +377,12 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
 			DoMethod(folder_group, OM_REMMEMBER, prim_label);
 			DoMethod(folder_group, OM_REMMEMBER, prim_cycle);
+			DoMethod(folder_group, OM_REMMEMBER, prim_reverse_check);
+			DoMethod(folder_group, OM_REMMEMBER, prim_reverse_label);
 			DoMethod(folder_group, OM_REMMEMBER, second_label);
 			DoMethod(folder_group, OM_REMMEMBER, second_cycle);
+			DoMethod(folder_group, OM_REMMEMBER, second_reverse_check);
+			DoMethod(folder_group, OM_REMMEMBER, second_reverse_label);
 			if (imap_mode)
 			{
 				DoMethod(folder_group, OM_REMMEMBER, server_label);
@@ -403,8 +419,12 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
 			DoMethod(folder_group, OM_ADDMEMBER, prim_label);
 			DoMethod(folder_group, OM_ADDMEMBER, prim_cycle);
+			DoMethod(folder_group, OM_ADDMEMBER, prim_reverse_check);
+			DoMethod(folder_group, OM_ADDMEMBER, prim_reverse_label);
 			DoMethod(folder_group, OM_ADDMEMBER, second_label);
 			DoMethod(folder_group, OM_ADDMEMBER, second_cycle);
+			DoMethod(folder_group, OM_ADDMEMBER, second_reverse_check);
+			DoMethod(folder_group, OM_ADDMEMBER, second_reverse_label);
 
 			group_mode = 0;
 			DoMethod(folder_group,MUIM_Group_ExitChange);
@@ -422,7 +442,9 @@ void folder_edit(struct folder *f)
 						server_label, server_string,
 						type_label, type_cycle,
 						prim_label, prim_cycle,
+						prim_reverse_check, prim_reverse_label,
 						second_label, second_cycle,
+						second_reverse_check, second_reverse_label,
 						defto_label, defto_string,
 						NULL);
 				imap_mode = 1;
@@ -442,8 +464,10 @@ void folder_edit(struct folder *f)
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
-	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f));
-	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f));
+	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & ~FOLDER_SORT_REVERSE);
+	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);
+	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & ~FOLDER_SORT_REVERSE);
+	set(second_reverse_check, MUIA_Selected, folder_get_secondary_sort(f) & FOLDER_SORT_REVERSE);
 	set(server_string, MUIA_String_Contents, f->imap_server);
 	changed_folder = f;
 

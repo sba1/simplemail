@@ -1100,7 +1100,11 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 		{
 			if (sm_makedir(node->folder.path))
 			{
-				folder_config_save(&node->folder);
+				if (!folder_config_load(&node->folder))
+				{
+					folder_config_save(&node->folder);
+				}
+
 				list_insert(&folder_list, &node->node, &parent_node->node);
 				return &node->folder;
 			}
@@ -1263,7 +1267,7 @@ static int folder_config_load(struct folder *f)
 				else if (!mystrnicmp("IMapServer=",buf,11))
 				{
 					free(f->imap_server);
-					f->imap_path = mystrdup(&buf[11]);
+					f->imap_server = mystrdup(&buf[11]);
 				}
 			}
 		}
@@ -2811,6 +2815,45 @@ void folder_create_imap(void)
 					f->imap_server = mystrdup(ac->imap->name);
 					f->imap_user = mystrdup(ac->imap->login);
 				}
+			}
+
+			/* Now look into the directory for more folders */
+			if (f)
+			{
+				char path[512];
+				struct stat *st;
+				DIR *dfd;
+
+				getcwd(path, sizeof(path));
+
+				if ((st = malloc(sizeof(struct stat))))
+				{
+					if ((dfd = opendir(f->path)))
+					{
+						struct dirent *dptr; /* dir entry */
+
+						while ((dptr = readdir(dfd)) != NULL)
+						{
+							char buf[320];
+
+							if (!strcmp(dptr->d_name,".") || !strcmp(dptr->d_name,"..")) continue;
+							strncpy(buf,f->path,sizeof(buf));
+							buf[sizeof(buf)-1] = 0;
+							sm_add_part(buf,dptr->d_name,sizeof(buf));
+
+							if (!stat(buf,st))
+							{
+								if (st->st_mode & S_IFDIR)
+								{
+									folder_add_imap(f,sm_file_part(buf));
+								}
+							}
+						}
+					}
+					free(st);
+				}
+
+				closedir(dfd);
 			}
 
 			folders_unlock();

@@ -51,6 +51,8 @@ static struct AppIcon_Stat appicon_stat;
 static struct AppIcon_Config appicon_config;
 static int appicon_last_mode;
 
+struct DiskObject *HideIcon;
+
 static STRPTR appicon_names[SM_APPICON_MAX] =
 {
 	"PROGDIR:Images/check",
@@ -75,6 +77,18 @@ int appicon_init(void)
 
 	appicon_config.position_X = NO_ICON_POSITION;
 	appicon_config.position_Y = NO_ICON_POSITION;
+
+	HideIcon = GetDiskObject("PROGDIR:SimpleMail");
+	/* first, try to get the position from the tooltypes */
+	if (HideIcon)
+	{
+		char *c_pos;
+		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSX");
+		if (c_pos) appicon_config.position_X = atoi(c_pos);
+		c_pos = FindToolType(HideIcon->do_ToolTypes, "APPICON_POSY");
+		if (c_pos) appicon_config.position_Y = atoi(c_pos);
+	}
+	/* now, try to load the position from the appicon config file */
 	appicon_load_position();
 
 	for(i=0;i<SM_APPICON_MAX;i++)
@@ -98,6 +112,7 @@ void appicon_free(void)
 	int i;
 
 	if (appicon) RemoveAppIcon(appicon);
+	if (HideIcon) FreeDiskObject(HideIcon);
   if (appicon_port) DeleteMsgPort(appicon_port);
 	for (i=0;i<SM_APPICON_MAX;i++)
 	{
@@ -355,7 +370,18 @@ void appicon_snapshot(void)
 *******************************************************************/
 void appicon_unsnapshot(void)
 {
+	int i;
+
 	appicon_config.position_X = NO_ICON_POSITION;
 	appicon_config.position_Y = NO_ICON_POSITION;
 	if (appicon_config.filename) remove(appicon_config.filename);
+	for(i=0;i<SM_APPICON_MAX;i++)
+	{
+		if (appicon_diskobject[i])
+		{
+			appicon_diskobject[i]->do_CurrentX = appicon_config.position_X;
+			appicon_diskobject[i]->do_CurrentY = appicon_config.position_Y;
+		}
+	}
+	appicon_refresh(1);
 }

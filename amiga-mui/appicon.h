@@ -29,6 +29,9 @@
 #define SM_APPICON_OLD   3
 #define SM_APPICON_MAX   4
 
+/* global defined in appicon.c */
+extern struct DiskObject *HideIcon;
+
 struct AppIcon_Stat
 {
 	int total_msg;

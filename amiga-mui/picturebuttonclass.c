@@ -250,6 +250,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	mi->MinWidth += minwidth;
 	mi->DefWidth += minwidth;
 	mi->MaxWidth = MUI_MAXMAX;
+
+	return 0;
 }
 
 STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *msg)
@@ -350,9 +352,7 @@ void delete_picturebutton_class(void)
 
 Object *MakePictureButton(char *label, char *filename)
 {
-
 	int control_char = GetControlChar(label);
-	struct TagItem tags[7];
 
 	return PictureButtonObject,
 		ButtonFrame,

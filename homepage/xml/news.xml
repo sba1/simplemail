@@ -23,7 +23,7 @@
    	<list>
    	 <item> RFC 3490 wird nun für Domänen von eMail Adressen unterstützt.</item>
    	 <item> Informationen der Nachrichten werden nun separat in der Vorschauanzeige dargestellt.
-   	        Dies kann auf eine kompakte Form umgeschalten werden um Platz zu sparen.</item>
+   	        Dies kann auf eine kompakte Form umgeschalten werden, um Platz zu sparen.</item>
 	 <item> Mehrere IMAP Konten mit unterschiedlichen Logins pro IMAP server sind nun möglich.</item>
      <item> Falls verfügbar, wird die "TheBar.mcc" für die Toolbar des Hauptfensters benutzt.</item>
      <item> Fehlerbereinigungen und andere kleinere Verbesserungen.</item>

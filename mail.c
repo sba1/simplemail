@@ -907,7 +907,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			char *boundary = (char*)malloc(128);
 			if (boundary)
 			{
-				sprintf(boundary, "--==bound%lx----",boundary);
+				sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
 				fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
 				fprintf(fp, "\n");
 				fprintf(fp, mime_preample);

@@ -42,6 +42,8 @@ struct hash_table
 };
 
 int hash_table_init(struct hash_table *ht, int bits, const char *filename);
+void hash_table_clean(struct hash_table *ht);
+
 void hash_table_store(struct hash_table *ht);
 void hash_table_clear(struct hash_table *ht);
 

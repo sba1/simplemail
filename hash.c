@@ -118,10 +118,40 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 }
 
 /**************************************************************************
+ "Makes" the hash table empty
+**************************************************************************/
+void hash_table_clear(struct hash_table *ht)
+{
+	unsigned int i, size, mem_size;
+
+	if (ht->table)
+	{
+		for (i=0;i<ht->size;i++)
+		{
+			struct hash_bucket *hb = &ht->table[i];
+			if (hb->entry.string) free((void*)hb->entry.string);
+			hb = hb->next;
+			while (hb)
+			{
+				struct hash_bucket *thb = hb->next;
+				free((void*)hb->entry.string);
+				free(hb);
+				hb = thb;
+			}
+		}
+		ht->data = 0;
+
+		size = ht->size;
+		mem_size = size*sizeof(struct hash_bucket);
+		memset(ht->table,0,mem_size);
+	}
+}
+
+/**************************************************************************
  Cleanup all memory allocated by the hash table (exluding the hash table
  itself)
 **************************************************************************/
-void hash_table_clear(struct hash_table *ht)
+void hash_table_clean(struct hash_table *ht)
 {
 	unsigned int i;
 
@@ -145,6 +175,7 @@ void hash_table_clear(struct hash_table *ht)
 		ht->data = 0;
 	}
 }
+
 
 /**************************************************************************
  Insert a new entry into the hash table

@@ -11,6 +11,7 @@
 
 #include "muistuff.h"
 
+#include "subthreads.h"
 #include "transwndclass.h"
 
 static Object *win_dl;
@@ -69,6 +70,11 @@ void dl_set_gauge_byte(int current)
 	set(win_dl, MUIA_transwnd_Gauge2_Val, current);
 }
 
+void dl_abort(void)
+{
+	thread_abort();
+}
+
 int dl_window_open(void)
 {
 	int rc;
@@ -83,6 +89,7 @@ int dl_window_open(void)
 
 		if (win_dl)
 		{
+			DoMethod(win_dl, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, win_dl, 3, MUIM_CallHook, &hook_standard, dl_abort);
 			DoMethod(App, OM_ADDMEMBER, win_dl);
 		}
 	}
@@ -106,6 +113,8 @@ void dl_window_close(void)
 
 int dl_checkabort(void)
 {
+	return 0; /* unneccessary in the amiga client, because it supports subthreading */
+/*
 	int rc;
 	
 	if(GetAttr(MUIA_transwnd_Aborted, win_dl, (ULONG *) &rc) == FALSE)
@@ -114,4 +123,5 @@ int dl_checkabort(void)
 	}
 	
 	return(rc);
+*/
 }

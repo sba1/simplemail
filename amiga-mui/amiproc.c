@@ -289,3 +289,7 @@ int AmiProc_Check(struct AmiProcMsg *start_msg)
 	return finished;
 }
 
+void AmiProc_Abort(struct AmiProcMsg *start_msg)
+{
+	Signal(&start_msg->child->pr_Task, SIGBREAKF_CTRL_C);
+}

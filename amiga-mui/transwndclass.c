@@ -20,8 +20,6 @@
 
 #include "transwndclass.h"
 
-#define MUIV_transwnd_Aborted 2
-
 struct transwnd_Data
 {
 	Object *gauge1, *gauge2, *status, *abort;
@@ -34,22 +32,21 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
 					Child, gauge1 = GaugeObject,
-	        			GaugeFrame,
-		        		MUIA_Gauge_InfoText,		"Mail 0/0",
-       			 		MUIA_Gauge_Horiz,			TRUE,
-	        		End,
-    			    Child, gauge2 = GaugeObject,
-	        			GaugeFrame,
-			        	MUIA_Gauge_InfoText,		"0/0 bytes",
-		        		MUIA_Gauge_Horiz,			TRUE,
-	        		End,
-    			    Child, status = TextObject,
-						TextFrame,
-   	    			End,
-   	    			Child, abort = MakeButton("_Abort"),
-				End,	
-				TAG_MORE, msg->ops_AttrList,
-				TAG_DONE);
+						GaugeFrame,
+						MUIA_Gauge_InfoText,		"Mail 0/0",
+						MUIA_Gauge_Horiz,			TRUE,
+						End,
+					Child, gauge2 = GaugeObject,
+						GaugeFrame,
+						MUIA_Gauge_InfoText,		"0/0 bytes",
+						MUIA_Gauge_Horiz,			TRUE,
+						End,
+					Child, HGroup,
+						Child, status = TextObject, TextFrame,End,
+						Child, abort = MakeButton("_Abort"),
+						End,
+					End,	
+				TAG_MORE, msg->ops_AttrList);
 
 	if (obj != NULL)
 	{
@@ -58,7 +55,10 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->gauge2 = gauge2;
 		data->status = status;
 		data->abort  = abort;
-		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_transwnd_Aborted);
+
+		set(abort, MUIA_Weight, 0);
+
+		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 	}
 
 	return((ULONG) obj);
@@ -117,6 +117,7 @@ STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	ULONG *store = ((struct opGet *)msg)->opg_Storage;
 	
+/*
 	switch (msg->opg_AttrID)
 	{
 		case MUIA_transwnd_Aborted:
@@ -124,7 +125,7 @@ STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 			return(TRUE);
 		break;
 	}
-
+*/
 	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 

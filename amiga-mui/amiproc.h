@@ -26,5 +26,6 @@
 struct AmiProcMsg *AmiProc_Start(int (*FuncPtr)(void *), void *UserData);
 int AmiProc_Wait(struct AmiProcMsg *);
 int AmiProc_Check(struct AmiProcMsg *start_msg);
+void AmiProc_Abort(struct AmiProcMsg *start_msg);
 
 #endif

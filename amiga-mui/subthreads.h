@@ -22,6 +22,7 @@ int init_threads(void);
 void cleanup_threads(void);
 int thread_parent_task_can_contiue(void);
 int thread_start(int (*entry)(void*), void *udata);
+void thread_abort(void);
 int thread_call_parent_function_sync(void *function, int argcount, ...);
 
 void thread_handle(void);

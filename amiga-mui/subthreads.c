@@ -152,6 +152,22 @@ int thread_start(int (*entry)(void*), void *eudata)
 	return 0;
 }
 
+void thread_abort(void)
+{
+	if (subthread)
+	{
+		/* a design lack, should be really improved */
+		Forbid();
+
+		if (!AmiProc_Check(subthread))
+		{
+			AmiProc_Abort(subthread);
+		} else subthread = NULL;
+
+		Permit();
+	}
+}
+
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
 	int rc = 0;

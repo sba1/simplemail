@@ -23,8 +23,9 @@
 #include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
 /*#include <proto/amissl.h>*/
 
-typedef struct ssl_st SSL;
-typedef struct ssl_ctx_st SSL_CTX;
+#ifndef SM__TCP_H
+#include "tcp.h"
+#endif
 
 int open_socket_lib(void);
 void close_socket_lib(void);

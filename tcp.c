@@ -214,6 +214,7 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 
 /******************************************************************
  Read's a single char from the connection. Buffered.
+ Returns -1 for an error.
 *******************************************************************/
 static int tcp_read_char(struct connection *conn)
 {
@@ -224,7 +225,7 @@ static int tcp_read_char(struct connection *conn)
 		conn->read_pos = 0;
 
 		didget = tcp_read(conn,conn->read_buf,sizeof(conn->read_buf));
-		if (didget < 0)
+		if (didget <= 0)
 		{
 			conn->read_size = 0;
 			return -1;

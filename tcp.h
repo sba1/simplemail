@@ -26,9 +26,11 @@
 #define CONN_BUF_READ_SIZE 1024
 #define CONN_BUF_WRITE_SIZE 1024
 
+#ifndef AMISSL_AMISSL_H
 typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;
 typedef struct x509_st X509;
+#endif
 
 struct connection
 {
@@ -39,7 +41,7 @@ struct connection
 	X509 *server_cert;
 
 	/* for tcp_readln() */
-	char read_buf[CONN_BUF_READ_SIZE];
+	unsigned char read_buf[CONN_BUF_READ_SIZE];
 	int read_pos;
 	int read_size;
 	char *line; /* dynamically allocated, it's hold the line returned in tcp_readln() */

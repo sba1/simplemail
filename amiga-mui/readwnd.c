@@ -216,11 +216,14 @@ static void save_contents(struct Read_Data *data, struct MUI_NListtree_TreeNode 
 {
 	if (!(treenode->tn_Flags & TNF_LIST))
 	{
-		if (MUI_AslRequest(data->file_req, NULL))
+		struct mail *mail = ((struct mime_entry*)treenode->tn_User)->mail;
+
+		if (MUI_AslRequestTags(data->file_req,
+					mail->filename?ASLFR_InitialFile:TAG_IGNORE,mail->filename,
+					TAG_DONE))
 		{
 			BPTR dlock;
 			STRPTR drawer = data->file_req->fr_Drawer;
-			struct mail *mail = ((struct mime_entry*)treenode->tn_User)->mail;
 
 			mail_decode(mail);
 

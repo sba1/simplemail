@@ -515,6 +515,20 @@ int mail_process_headers(struct mail *mail)
 		}
 	}
 
+	/* Check the Content-Disposition of the whole mail*/
+	if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
+	{
+		if (!mail->filename)
+		{
+			char *fn = strstr(buf,"filename=");
+			if (fn)
+			{
+				fn += sizeof("filename=");
+				parse_value(fn,&mail->filename);
+			}
+		}
+	}
+
 	if (!mail->content_type || !mail->content_subtype)
 	{
 		mail->content_type = strdup("text");
@@ -952,8 +966,11 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
 			if (new_mail->filename)
 			{
-				FILE *fh = fopen(new_mail->filename, "rb");
-				if (fh)
+				FILE *fh;
+
+				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
+
+				if ((fh = fopen(new_mail->filename, "rb")))
 				{
 					int size;
 					unsigned char *buf;
@@ -992,6 +1009,7 @@ void mail_compose_new(struct composed_mail *new_mail)
 
 	if (new_mail->mail_folder)
 		outgoing = folder_find_by_name(new_mail->mail_folder);
+	else outgoing = NULL;
 
 	if (!outgoing) outgoing = folder_outgoing();
 	if (!outgoing) return;

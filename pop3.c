@@ -193,7 +193,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 				tell_from_subtask(_("Failed to authentificate via APOP"));
 				return 0;
 			}
-			SM_DEBUGF(15,("APOP authentification failed. Trying plain text method\n"));
+			SM_DEBUGF(15,("APOP authentification failed\n"));
 		} else
 		{
 			thread_call_parent_function_async(status_set_status,1,_("Login successful!"));
@@ -201,6 +201,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		}
 	}
 
+	SM_DEBUGF(15,("Trying plain text method\n"));
 	thread_call_parent_function_async(status_set_status,1,_("Sending username..."));
 
 	sprintf(buf, "USER %s\r\n",server->login);
@@ -209,6 +210,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED && !timestamp)
 			tell_from_subtask(N_("Error while identifing the user"));
+		SM_DEBUGF(15,("Sending the USER command failed\n"));
 		return 0;
 	}
 

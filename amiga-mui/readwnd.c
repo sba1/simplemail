@@ -478,35 +478,58 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
 		{
 			if (!mystricmp(mail->content_type,"text") && mystricmp(mail->content_subtype, "html"))
 			{
+				void *cont; /* mails content */
+				int cont_len;
+
 				char *charset;
 				char *user_charset;
-				int charset_sel;
 
 				if (!(charset = mail->content_charset)) charset = "ISO-8859-1";
 				user_charset = user.config.default_codeset?user.config.default_codeset->name:"ISO-8858-1";
+
+				/* Get the contents */
+				mail_decoded_data(mail,&cont,&cont_len);
 					
-				if (mystrcmp(user_charset,charset))
+				if (mystricmp(user_charset,charset))
 				{
-					char gadgets[512];
-					sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
-					charset_sel = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),
-												gadgets);
+					/* The character sets differ so now we create the two strings to see if they differ */
+					char *str; /* That's the string encoded in the mails charset */
+					char *user_str; /* That's the string encoded in the users charset */
 
-					if (charset_sel == 1 || charset_sel == 2)
+					/* encode now */
+					str = utf8tostrcreate((utf8 *)cont, codesets_find(charset));
+					user_str = utf8tostrcreate((utf8 *)cont, codesets_find(user_charset));
+
+					if (str && user_str)
 					{
-						char *str;
-						void *cont;
-						int cont_len;
+						char *towrite;
 
-						if (charset_sel == 2) charset = user_charset;
-
-						mail_decoded_data(mail,&cont,&cont_len);
-						if ((str = utf8tostrcreate((utf8 *)cont, codesets_find(charset))))
+						/* Let's see if they are different */
+						if (strcmp(str,user_str))
 						{
+							/* Yes, so inform the user */
+							char gadgets[320];
+							int selection;
+
+							sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
+							selection = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),gadgets);
+
+							switch (selection)
+							{
+								case 1: towrite = str; break;
+								case 2: towrite = user_str; break;
+								case 3: towrite = NULL; goon = 1; break; /* will be writeout as utf8 */
+								default: towrite = NULL; goon = 0; break; /* cancel */
+							}
+						} else towrite = user_str;
+
+						if (towrite)
+						{
+							/* Now write out the stuff */
 							if ((fh = Open(file, MODE_NEWFILE)))
 							{
 								char *comment = mail_get_from_address(mail_get_root(mail));
-								Write(fh,str,strlen(str));
+								Write(fh,towrite,strlen(towrite));
 								Close(fh);
 
 								if (comment)
@@ -514,15 +537,9 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
 									SetComment(file,comment);
 									free(comment);
 								}
+								goon = 0;
 							}
-							free(str);
 						}
-
-						goon = 0;
-					} else
-					{
-						if (!charset_sel) goon = 0;
-						/* else it is 3 and goon is still 1 so it get written as utf8 */
 					}
 				}
 			}

@@ -486,6 +486,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (cont && mails_add && receive_preselection == 2)
 	{
 		/* no errors and the user wants a more informative preselection */
+		thread_call_parent_function_async(status_set_status,1,N_("Getting mail infos..."));
 		for (i=1;i<=amm;i++)
 		{
 			int has_added = ((int)thread_call_parent_function_sync(status_mail_list_get_flags,1,i)==-1)?0:1;

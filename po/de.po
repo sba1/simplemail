@@ -1037,7 +1037,7 @@ msgstr "Einzelnes Konto überprüfen"
 
 #: amiga-mui/mainwnd.c:405
 msgid "Message"
-msgstr "Nachrricht"
+msgstr "Nachricht"
 
 #: amiga-mui/mainwnd.c:406
 msgid "D:Read"

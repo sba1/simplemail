@@ -285,7 +285,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 
 				if (c==10 || c==13)
 				{
-					mail->text_begin = ms->position+1;
+					mail->text_begin = ms->position+((c==13)?2:1);
 					mail->text_len = mail->size - mail->text_begin;
 					return 0; /* all headers have been read */
 				}

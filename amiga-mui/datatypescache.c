@@ -27,6 +27,8 @@
 
 #include <datatypes/pictureclass.h>
 
+#include <clib/alib_protos.h>
+
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/datatypes.h>

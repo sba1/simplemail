@@ -39,11 +39,6 @@ GLOBAL  =
 %.o: %.c $(GLOBAL)
 	ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
 
-amiga-mui/libgui.a:
-	@rx >t:smdate.h "say '\#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
-	@rx "open('file1','T:smdate.h');open('file2','date.h');line1=readln('file1');line2=readln('file2');close('file2');close('file1');if line1 ~== line2 then address command 'copy T:smdate.h date.h'"
-	$(MAKE) -C amiga-mui -f Makefile.MorphOS
-
 %.c : %.h $(GLOBAL)
 
 OBJS    = 	account.o \
@@ -85,7 +80,8 @@ OBJS    = 	account.o \
 date.h:
 	@echo >date.h
  
-$(OUT): amiga-mui/libgui.a $(OBJS)
+$(OUT): $(OBJS)
+	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lc -labox -laboxstubs -lamissl -lexpat -ldebug -o $(OUT).db
 	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).db
 	protect $(OUT) +e

@@ -122,7 +122,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 #endif
 			memset(&sockaddr,0,sizeof(struct sockaddr_in));
 
-#ifdef _AMIGA /* ugly */
+#if defined(_AMIGA) || defined(__MORPHOS__) /* ugly */
 			sockaddr.sin_len = sizeof(struct sockaddr_in);
 #endif
 			sockaddr.sin_family = AF_INET;

@@ -23,7 +23,7 @@
 #ifdef __AMIGAOS4__
 #include <proto/bsdsocket.h>
 #else
-#ifdef _AMIGA
+#if defined(_AMIGA) || defined(__MORPHOS)
 #ifndef _AROS
 #include <proto/socket.h>
 #endif
@@ -49,8 +49,9 @@ long tcp_errno(void);
 
 void myclosesocket(int fd);
 
-#if defined(_AMIGA) || defined(__AMIGAOS4__)
+#if defined(_AMIGA) || defined(__AMIGAOS4__) || defined(__MORPHOS__)
 
+#include <exec/execbase.h>
 #include <proto/exec.h>
 #include "subthreads_amiga.h"
 

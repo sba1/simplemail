@@ -165,7 +165,7 @@ STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 		}
 	} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
 	{
-		struct mail *mail = (struct mail*)xget(msg->obj,MUIA_MailTree_Active);
+		struct mail *mail = (struct mail*)xget(msg->obj,MUIA_MailTreelist_Active);
 		if (mail)
 		{
 			char *from = mail_get_from_address(mail);

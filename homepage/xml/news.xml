@@ -1,6 +1,18 @@
 <?xml version='1.0' ?>
 
 <news>
+
+  <entry date="2001/10/21">
+   <text lang="en">
+     Our user-mailinglist moves to http://freelist.org/ due to extensive spam.
+   </text>
+
+    <text lang="de">
+     Unsere Usermailingliste wurde wegen übermässigen Spam nach http://freelist.org/
+     verlegt.
+    </text>
+  </entry>
+
   <entry date="2001/09/23">
    <text lang="en">
       Version 0.11 of SimpleMail has been released! Changes since last release were:

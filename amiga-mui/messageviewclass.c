@@ -37,10 +37,7 @@
 #include <proto/wb.h>
 #include <proto/icon.h>
 
-#ifdef HAVE_OPENURL
-#include <proto/openurl.h>
-#endif
-
+#include "amigasupport.h"
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
@@ -400,15 +397,7 @@ static void messageview_uri_clicked(void **msg)
 				}
 			} else
 			{
-#ifdef HAVE_OPENURL
-				struct Library *OpenURLBase;
-
-				if ((OpenURLBase = OpenLibrary("openurl.library",0)))
-				{
-					URL_OpenA(uri,NULL);
-					CloseLibrary(OpenURLBase);
-				}
-#endif
+				OpenURL(uri);
 			}
 		}
 	}

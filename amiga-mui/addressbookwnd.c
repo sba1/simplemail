@@ -36,10 +36,6 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
-#ifdef HAVE_OPENURL
-#include <proto/openurl.h>
-#endif
-
 #include "addressbook.h"
 #include "configuration.h"
 #include "parse.h"
@@ -483,15 +479,7 @@ static void person_homepage(struct Person_Data **pdata)
 
 	if (uri)
 	{
-#ifdef HAVE_OPENURL
-		struct Library *OpenURLBase;
-
-		if ((OpenURLBase = OpenLibrary("openurl.library",0)))
-		{
-			URL_OpenA(uri,NULL);
-			CloseLibrary(OpenURLBase);
-		}
-#endif
+		OpenURL(uri);
 	}
 }
 

@@ -27,6 +27,7 @@ void SecondsToString( char *buf, unsigned int seconds);
 void SecondsToStringLong( char *buf, unsigned int seconds);
 void SecondsToDateString( char *buf, unsigned int seconds);
 void SecondsToTimeString( char *buf, unsigned int seconds);
+VOID OpenURL(STRPTR uri);
 STRPTR StrCopy(const STRPTR str);
 ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );

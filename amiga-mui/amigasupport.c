@@ -21,6 +21,10 @@
 */
 
 #include <string.h>
+
+#ifdef __AMIGAOS4__
+#include <exec/emulation.h>
+#endif
 #include <intuition/intuition.h>
 #include <dos/dos.h>
 #include <clib/alib_protos.h>
@@ -32,6 +36,9 @@
 #include <proto/layers.h>
 #include <proto/utility.h>
 #include <proto/rexxsyslib.h>
+#ifdef HAVE_OPENURL
+#include <proto/openurl.h>
+#endif
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -215,6 +222,38 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 	}
 }
 
+/* Opens URL */
+VOID OpenURL(STRPTR uri)
+{
+#ifdef HAVE_OPENURL
+	struct Library *OpenURLBase;
+
+	if ((OpenURLBase = OpenLibrary("openurl.library",0)))
+	{
+#ifdef __AMIGAOS4__
+		struct OpenURLIFace *IOpenURL = (struct OpenURLIFace *)GetInterface(OpenURLBase,"main",1,NULL);
+		if (IOpenURL)
+		{
+			URL_OpenA(uri,NULL);
+			DropInterface((struct Interface*)IOpenURL);
+		} else
+		{
+			/* No interface, so call it manualy */
+			EmulateTags(OpenURLBase,
+					ET_Offset, -30,
+					ET_RegisterA0, uri,
+					ET_RegisterA1, NULL,
+					ET_RegisterA6, OpenURLBase,
+					ET_SaveRegs, TRUE,
+					TAG_DONE);
+		}
+#else
+		URL_OpenA(uri,NULL);
+#endif
+		CloseLibrary(OpenURLBase);
+	}
+#endif
+}
 
 /* duplicates the string, allocated with AllocVec() */
 STRPTR StrCopy(const STRPTR str)

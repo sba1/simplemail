@@ -114,6 +114,7 @@ struct account *account_find_by_from(char *from)
 
 	struct parse_address addr;
 
+	if (!from) return NULL;
 	if (!(parse_address(from, &addr))) return NULL;
 
 	while (ac)

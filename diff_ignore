@@ -1,3 +1,4 @@
+CVS
 *po
 *.o
 *.a
@@ -12,5 +13,8 @@ SCOPTIONS
 *.gst
 gen_makefile
 *.lnk
+*.map
+*.info
+*.tmp
 sm
 sas_objects

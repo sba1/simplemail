@@ -41,6 +41,7 @@
 #include "account.h"
 #include "configuration.h"
 #include "lists.h"
+#include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
 #include "simplemail.h"
@@ -70,9 +71,6 @@ static Object *read_smilies_checkbox;
 static Object *read_palette;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
-static Object *write_welcome_popph;
-static Object *write_close_string;
-
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
@@ -94,9 +92,18 @@ static Object *account_add_button;
 static Object *account_remove_button;
 
 static Object *signatures_use_checkbox;
-
 static Object *signature_texteditor;
 static Object *signature_name_string;
+
+static Object *phrase_addresses_string;
+static Object *phrase_write_welcome_string;
+static Object *phrase_write_welcomeaddr_popph;
+static Object *phrase_write_close_string;
+static Object *phrase_reply_welcome_popph;
+static Object *phrase_reply_intro_popph;
+static Object *phrase_reply_close_popph;
+static Object *phrase_forward_initial_popph;
+static Object *phrase_forward_terminating_popph;
 
 static Object *config_group;
 static Object *config_tree;
@@ -106,18 +113,23 @@ static APTR accounts_treenode;
 static struct list account_list; /* nodes are struct account * */
 static struct account *account_last_selected;
 
+static APTR phrases_treenode;
+static struct list phrase_list;
+static struct phrase *phrase_last_selected;
+
 static APTR signatures_treenode;
 static struct list signature_list;
 static struct signature *signature_last_selected;
 
 static Object *user_group;
 static Object *tcpip_receive_group;
-static Object *write_group;
 static Object *accounts_group;
 static Object *account_group;
 static Object *mails_read_group;
 static Object *signatures_group;
 static Object *signature_group;
+static Object *phrases_group;
+static Object *phrase_group;
 
 static Object *config_last_visisble_group;
 
@@ -182,12 +194,44 @@ static void get_signature(void)
 
 
 /******************************************************************
+ Gets the phrase which was last selected
+*******************************************************************/
+static void get_phrase(void)
+{
+	if (phrase_last_selected)
+	{
+		free(phrase_last_selected->addresses);
+		free(phrase_last_selected->write_welcome);
+		free(phrase_last_selected->write_welcome_repicient);
+		free(phrase_last_selected->write_closing);
+		free(phrase_last_selected->reply_welcome);
+		free(phrase_last_selected->reply_intro);
+		free(phrase_last_selected->reply_close);
+		free(phrase_last_selected->forward_initial);
+		free(phrase_last_selected->forward_finish);
+
+		phrase_last_selected->addresses = mystrdup((char*)xget(phrase_addresses_string,MUIA_String_Contents));
+		phrase_last_selected->write_welcome = mystrdup((char*)xget(phrase_write_welcome_string,MUIA_String_Contents));
+		phrase_last_selected->write_welcome_repicient = mystrdup((char*)xget(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents));
+		phrase_last_selected->write_closing = mystrdup((char*)xget(phrase_write_close_string,MUIA_String_Contents));
+		phrase_last_selected->reply_welcome = mystrdup((char*)xget(phrase_reply_welcome_popph,MUIA_Popph_Contents));
+		phrase_last_selected->reply_intro = mystrdup((char*)xget(phrase_reply_intro_popph,MUIA_Popph_Contents));
+		phrase_last_selected->reply_close = mystrdup((char*)xget(phrase_reply_close_popph,MUIA_Popph_Contents));
+		phrase_last_selected->forward_initial = mystrdup((char*)xget(phrase_forward_initial_popph,MUIA_Popph_Contents));
+		phrase_last_selected->forward_finish = mystrdup((char*)xget(phrase_forward_terminating_popph,MUIA_Popph_Contents));
+
+		phrase_last_selected = NULL;
+	}
+}
+
+/******************************************************************
  Use the config
 *******************************************************************/
 static void config_use(void)
 {
 	struct account *account;
 	struct signature *signature;
+	struct phrase *phrase;
 
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
@@ -206,11 +250,10 @@ static void config_use(void)
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
-	user.config.write_welcome = mystrdup((char*)xget(write_welcome_popph,MUIA_Popph_Contents));
-	user.config.write_close = mystrdup((char*)xget(write_close_string,MUIA_String_Contents));
 
   get_account();
   get_signature();
+  get_phrase();
 
 	/* Copy the accounts */
 	clear_config_accounts();
@@ -219,6 +262,15 @@ static void config_use(void)
 	{
 		insert_config_account(account);
 		account = (struct account *)node_next(&account->node);
+	}
+
+	/* Copy the phrase */
+	clear_config_phrases();
+	phrase = (struct phrase*)list_first(&phrase_list);
+	while (phrase)
+	{
+		insert_config_phrase(phrase);
+		phrase = (struct phrase*)node_next(&phrase->node);
 	}
 
 	/* Copy the signature */
@@ -268,6 +320,7 @@ static void config_tree_active(void)
 
 			get_account();
 			get_signature();
+			get_phrase();
 
 			if (list_treenode == accounts_treenode)
 			{
@@ -295,7 +348,10 @@ static void config_tree_active(void)
 					set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
 					setstring(account_send_login_string,account->smtp->auth_login);
 					setstring(account_send_password_string,account->smtp->auth_password);
-					setcheckmark(account_send_auth_check,account->smtp->auth);
+					/* To avoid the activation we set this with no notify and disable the gadgets ourself */
+					nnset(account_send_auth_check, MUIA_Selected, account->smtp->auth);
+					set(account_send_login_string, MUIA_Disabled, !account->smtp->auth);
+					set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
 					setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
 					setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
 				}
@@ -318,7 +374,31 @@ static void config_tree_active(void)
 					set(signature_texteditor,MUIA_TextEditor_Contents, signature->signature?signature->signature:"");
 				}
 				signature_last_selected = signature;
-				
+			}
+
+			if (list_treenode == phrases_treenode)
+			{
+				int phrase_num = 0;
+				struct phrase *phrase;
+				APTR tn = treenode;
+
+				/* Find out the position of the new selected account in the list */
+				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
+					phrase_num++;
+
+				if ((phrase = (struct phrase*)list_find(&phrase_list,phrase_num)))
+				{
+					set(phrase_addresses_string,MUIA_String_Contents, phrase->addresses);
+					set(phrase_write_welcome_string,MUIA_String_Contents, phrase->write_welcome);
+					set(phrase_write_welcomeaddr_popph,MUIA_Popph_Contents, phrase->write_welcome_repicient);
+					set(phrase_write_close_string,MUIA_String_Contents, phrase->write_closing);
+					set(phrase_reply_welcome_popph,MUIA_Popph_Contents, phrase->reply_welcome);
+					set(phrase_reply_intro_popph,MUIA_Popph_Contents, phrase->reply_intro);
+					set(phrase_reply_close_popph,MUIA_Popph_Contents, phrase->reply_close);
+					set(phrase_forward_initial_popph,MUIA_Popph_Contents, phrase->forward_initial);
+					set(phrase_forward_terminating_popph,MUIA_Popph_Contents, phrase->forward_finish);
+				}
+				phrase_last_selected = phrase;
 			}
 
 			if (init_change) DoMethod(config_group,MUIM_Group_ExitChange);
@@ -378,40 +458,6 @@ static int init_tcpip_receive_group(void)
 
 	if (!tcpip_receive_group) return 0;
 
-	return 1;
-}
-
-/******************************************************************
- Initialize the write group
-*******************************************************************/
-static int init_write_group(void)
-{
-	static const char *write_popph_array[] =
-	{
-		"\\n|Line break",
-		"%r|Recipient: Name",
-		"%f|Recipient: First Name",
-		"%a|Recipient: Address",
-		NULL
-	};
-	write_group = ColGroup(2),
-		MUIA_ShowMe, FALSE,
-		Child, MakeLabel("Welcome phrase"),
-		Child, write_welcome_popph = PopphObject,
-			MUIA_Popph_Contents, user.config.write_welcome,
-			MUIA_Popph_Array, write_popph_array,
-			End,
-
-/*		Child, MakeLabel("Welcome phrase with address"),
-		Child, BetterStringObject,StringFrame,End,
-*/
-		Child, MakeLabel("Closing phrase"),
-		Child, write_close_string = BetterStringObject,
-			StringFrame,
-			MUIA_String_Contents, user.config.write_close,
-			End,
-		End;
-	if (!write_group) return 0;
 	return 1;
 }
 
@@ -775,7 +821,6 @@ static void signature_remove(void)
 			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
 		}
 	}
-
 }
 
 /******************************************************************
@@ -859,6 +904,170 @@ static int init_signature_group(void)
 }
 
 /******************************************************************
+ Add a new signature
+*******************************************************************/
+static void phrase_add(void)
+{
+	struct phrase *p = phrase_malloc();
+	if (p)
+	{
+		list_insert_tail(&phrase_list, &p->node);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Phrase", phrase_group, phrases_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+	}
+}
+
+/******************************************************************
+ Remove a signature
+*******************************************************************/
+static void phrase_remove(void)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
+	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	{
+		struct phrase *phrase;
+		APTR tn = treenode;
+		int phrase_num = 0;
+
+		/* Find out the position of the new selected server in the list */
+		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
+			phrase_num++;
+
+		if ((phrase = (struct phrase*)list_find(&phrase_list,phrase_num)))
+		{
+			node_remove(&phrase->node);
+			phrase_free(phrase);
+
+			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+		}
+	}
+}
+
+/******************************************************************
+ Init the phrase group
+*******************************************************************/
+static int init_phrases_group(void)
+{
+	Object *add_button;
+	phrases_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+		MUIA_Weight,300,
+  	Child, VGroup,
+			Child, add_button = MakeButton("_Add new phrase"),
+			End,
+		End;
+
+	if (!phrases_group) return 0;
+
+	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
+
+	return 1;
+}
+
+/******************************************************************
+ Init the signature group
+*******************************************************************/
+static int init_phrase_group(void)
+{
+	Object *add_button, *rem_button;
+	static const char *write_popph_array[] =
+	{
+		"\\n|Line break",
+		"%r|Recipient: Name",
+		"%v|Recipient: First Name",
+		"%a|Recipient: Address",
+		NULL
+	};
+
+	static const char *reply_popph_array[] =
+	{
+		"\\n|Line break",
+		"%r|Recipient: Name",
+		"%v|Recipient: First Name",
+		"%a|Recipient: Address",
+		"%n|Original sender: Name",
+		"%f|Original sender: First Name",
+		"%e|Original sender: Address",
+		"%s|Original message: Subject",
+		"%d|Original message: Date",
+		"%t|Original message: Time",
+		"%w|Original message: Day of week",
+		"%m|Original message: Message ID",
+		NULL
+	};
+
+	phrase_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+		MUIA_Weight,300,
+		Child, HGroup,
+			Child, MakeLabel("Use on addresses which contain"),
+			Child, phrase_addresses_string = BetterStringObject,
+				StringFrame,
+				MUIA_String_AdvanceOnCR, TRUE,
+				MUIA_CycleChain,1,
+				End,
+			End,
+		Child, HorizLineTextObject("Write"),
+		Child, ColGroup(2),
+			Child, MakeLabel("Welcome"),
+			Child, phrase_write_welcome_string = BetterStringObject,
+				StringFrame,
+				MUIA_String_AdvanceOnCR, TRUE,
+				MUIA_CycleChain,1,
+				End,
+			Child, MakeLabel("Welcome with address"),
+			Child, phrase_write_welcomeaddr_popph = PopphObject,
+				MUIA_Popph_Array, write_popph_array,
+				End,
+			Child, MakeLabel("Close"),
+			Child, phrase_write_close_string = BetterStringObject,
+				StringFrame,
+				MUIA_String_AdvanceOnCR, TRUE,
+				MUIA_CycleChain,1,
+				End,		
+			End,
+		Child, HorizLineTextObject("Reply"),
+		Child, ColGroup(2),
+			Child, MakeLabel("Welcome"),
+			Child, phrase_reply_welcome_popph = PopphObject,
+				MUIA_Popph_Array, reply_popph_array,
+				End,
+
+			Child, MakeLabel("Intro"),
+			Child, phrase_reply_intro_popph = PopphObject,
+				MUIA_Popph_Array, reply_popph_array,
+				End,
+
+			Child, MakeLabel("Close"),
+			Child, phrase_reply_intro_popph = PopphObject,
+				MUIA_Popph_Array, reply_popph_array,
+				End,
+			End,
+		Child, HorizLineTextObject("Forward"),
+		Child, ColGroup(2),
+			Child, MakeLabel("Initial"),
+			Child, phrase_forward_initial_popph = PopphObject,
+				MUIA_Popph_Array, reply_popph_array,
+				End,
+
+			Child, MakeLabel("Finish"),
+			Child, phrase_forward_terminating_popph = PopphObject,
+				MUIA_Popph_Array, reply_popph_array,
+				End,
+			End,
+  	Child, HGroup,
+			Child, add_button = MakeButton("Add new phrase"),
+			Child, rem_button = MakeButton("Remove phrase"),
+			End,
+		End;
+
+	if (!phrase_group) return 0;
+	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_add);
+	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, phrase_remove);
+	return 1;
+}
+
+
+/******************************************************************
  Init the config window
 *******************************************************************/
 static void init_config(void)
@@ -874,7 +1083,8 @@ static void init_config(void)
 	init_mails_read_group();
 	init_signatures_group();
 	init_signature_group();
-	init_write_group();
+	init_phrases_group();
+	init_phrase_group();
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
@@ -896,7 +1106,8 @@ static void init_config(void)
     				Child, mails_read_group,
     				Child, signatures_group,
     				Child, signature_group,
-    				Child, write_group,
+    				Child, phrase_group,
+    				Child, phrases_group,
     				Child, RectangleObject,
 	   				MUIA_Weight, 1,
   						End,
@@ -918,8 +1129,10 @@ static void init_config(void)
 
 		list_init(&account_list);
 		list_init(&signature_list);
+		list_init(&phrase_list);
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
+		phrase_last_selected = NULL;
 
 		DoMethod(App, OM_ADDMEMBER, config_wnd);
 		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
@@ -948,13 +1161,23 @@ static void init_config(void)
 		}
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Read", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 
-		if ((treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Mails", NULL, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Phrases", phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Read", mails_read_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Write", write_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Reply", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Forward", NULL, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+			struct phrase *phrase;
+			phrase = (struct phrase*)list_first(&user.config.phrase_list);
+
+			while (phrase)
+			{
+				struct phrase *new_phrase = phrase_duplicate(phrase);
+				if (new_phrase)
+				{
+					list_insert_tail(&phrase_list,&new_phrase->node);
+					DoMethod(config_tree, MUIM_NListtree_Insert, "Phrase", phrase_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+				}
+				phrase = (struct phrase*)node_next(&phrase->node);
+			}
 		}
 
 		if ((treenode = signatures_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Signatures", signatures_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))

@@ -46,6 +46,9 @@ struct config
 	/* list of all signatures */
 	struct list signature_list;
 
+	/* list of all phrases */
+	struct list phrase_list;
+
 	int signatures_use;
 
 	char *write_welcome;
@@ -94,9 +97,10 @@ struct signature *find_config_signature_by_name(char *name);
 void clear_config_signatures(void);
 void insert_config_signature(struct signature *signature);
 
+void clear_config_phrases(void);
+void insert_config_phrase(struct phrase *phrase);
+
 extern struct user user; /* the current user */
 
 #endif
-
-
 

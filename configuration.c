@@ -28,6 +28,7 @@
 #include "account.h"
 #include "configuration.h"
 #include "filter.h"
+#include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
 #include "support_indep.h"
@@ -61,6 +62,7 @@ struct user user;
 void init_config(void)
 {
 	struct account *account;
+	struct phrase *phrase;
 
 	memset(&user,0,sizeof(struct user));
 
@@ -70,11 +72,18 @@ void init_config(void)
 	user.directory = strdup(".");
 #endif
 	list_init(&user.config.account_list);
+	list_init(&user.config.signature_list);
+	list_init(&user.config.phrase_list);
 	list_init(&user.config.filter_list);
 
 	if ((account = account_malloc()))
 	{
 		list_insert_tail(&user.config.account_list,&account->node);
+	}
+
+	if ((phrase = phrase_malloc()))
+	{
+		list_insert_tail(&user.config.phrase_list,&phrase->node);
 	}
 
 	user.config.read_background = 0xb0b0b0;
@@ -205,6 +214,48 @@ int load_config(void)
 								}
 							}
 						}
+
+						if (!mystrnicmp(buf, "Phrase",6))
+						{
+							/* it's a POP Server config line */
+							unsigned char *phrase_buf = buf + 6;
+							int phrase_no = atoi(phrase_buf);
+							struct phrase *phrase;
+
+							phrase = (struct phrase*)list_find(&user.config.phrase_list,phrase_no);
+							if (!phrase)
+							{
+								if ((phrase = phrase_malloc()))
+									list_insert_tail(&user.config.phrase_list,&phrase->node);
+								phrase = (struct phrase*)list_find(&user.config.phrase_list,phrase_no);
+							}
+
+							if (phrase)
+							{
+								while (isdigit(*phrase_buf)) phrase_buf++;
+								if (*phrase_buf++ == '.')
+								{
+									if ((result = get_config_item(phrase_buf,"Addresses")))
+										phrase->addresses = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Write.Welcome")))
+										phrase->write_welcome = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Write.WelcomeRcp")))
+										phrase->write_welcome_repicient = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Write.Close")))
+										phrase->write_closing = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Reply.Welcome")))
+										phrase->reply_welcome = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Reply.Intro")))
+										phrase->reply_intro = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Reply.Close")))
+										phrase->reply_close = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Forward.Initial")))
+										phrase->forward_initial = mystrdup(result);
+									if ((result = get_config_item(phrase_buf,"Forward.Finish")))
+										phrase->forward_finish = mystrdup(result);
+								}
+							}
+						}
 					}
 				}
 
@@ -295,6 +346,7 @@ void save_config(void)
 		if (fh)
 		{
 			struct account *account;
+			struct phrase *phrase;
 			int i;
 
 			fputs("SMCO\n\n",fh);
@@ -344,9 +396,24 @@ void save_config(void)
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
 			fprintf(fh,"Read.Smilies=%s\n",user.config.read_smilies?"Y":"N");
-			fprintf(fh,"Write.Welcome=%s\n",MAKESTR(user.config.write_welcome));
-			fprintf(fh,"Write.WelcomeAddress=%s\n",MAKESTR(user.config.write_welcome_address));
-			fprintf(fh,"Write.Close=%s\n",MAKESTR(user.config.write_close));
+
+
+			i = 0;
+			phrase = (struct phrase*)list_first(&user.config.phrase_list);
+			while (phrase)
+			{
+				fprintf(fh,"Phrase%d.Addresses=%s\n",i,MAKESTR(phrase->addresses));
+				fprintf(fh,"Phrase%d.Write.Welcome=%s\n",i,MAKESTR(phrase->write_welcome));
+				fprintf(fh,"Phrase%d.Write.WelcomeRcp=%s\n",i,MAKESTR(phrase->write_welcome_repicient));
+				fprintf(fh,"Phrase%d.Write.Close=%s\n",i,MAKESTR(phrase->write_closing));
+				fprintf(fh,"Phrase%d.Reply.Welcome=%s\n",i,MAKESTR(phrase->reply_welcome));
+				fprintf(fh,"Phrase%d.Reply.Intro=%s\n",i,MAKESTR(phrase->reply_intro));
+				fprintf(fh,"Phrase%d.Reply.Close=%s\n",i,MAKESTR(phrase->reply_close));
+				fprintf(fh,"Phrase%d.Forward.Initial=%s\n",i,MAKESTR(phrase->forward_initial));
+				fprintf(fh,"Phrase%d.Forward.Finish=%s\n",i,MAKESTR(phrase->forward_finish));
+				phrase = (struct phrase*)node_next(&phrase->node);
+				i++;
+			}
 			fclose(fh);
 		}
 	}
@@ -410,7 +477,7 @@ void clear_config_accounts(void)
 		account_free(a);
 }
 
-/* Insert a mew account into the configuration list */
+/* Insert a new account into the configuration list */
 void insert_config_account(struct account *account)
 {
 	struct account *new_account = account_duplicate(account);
@@ -427,7 +494,7 @@ void clear_config_signatures(void)
 		signature_free(s);
 }
 
-/* Insert a mew account into the configuration list */
+/* Insert a new signature into the configuration list */
 void insert_config_signature(struct signature *signature)
 {
 	struct signature *new_signature = signature_duplicate(signature);
@@ -448,8 +515,18 @@ struct signature *find_config_signature_by_name(char *name)
 	return NULL;
 }
 
+/* Clear all the phrases */
+void clear_config_phrases(void)
+{
+	struct phrase *p;
+	while ((p = (struct phrase*)list_remove_tail(&user.config.phrase_list)))
+		phrase_free(p);
+}
 
-
-
-
-
+/* Insert a new phrase into the configuration list */
+void insert_config_phrase(struct phrase *phrase)
+{
+	struct phrase *new_phrase = phrase_duplicate(phrase);
+	if (new_phrase)
+		list_insert_tail(&user.config.phrase_list,&new_phrase->node);
+}

@@ -41,6 +41,10 @@ struct content_parameter
 	char *value;
 };
 
+/* TODO: Create a "struct short_mail" or simliar because
+   struct mail contains some stuff which isn't used for only
+   displaying */
+
 struct mail
 {
 	int status; /* see below */
@@ -68,6 +72,8 @@ struct mail
 	unsigned int text_begin; /* the beginning of the mail's text */
 	unsigned int text_len; /* the length of the mails text */
 	char *text; /* the mails text, allocated only for mails with filename */
+	char *extra_text; /* this is extra allocated text, e.g. for decrypted */
+										/* e-Mails, will always be freed if set */
 
 	/* after mail_read_structure() */
 	/* only used in multipart messages */
@@ -133,7 +139,8 @@ void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
 int mail_create_html_header(struct mail *mail);
 
-int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len);
+int mail_add_header(struct mail *mail, char *name, int name_len,
+									  char *contents, int contents_len, int avoid_duplicates);
 char *mail_find_header_contents(struct mail *mail, char *name);
 char *mail_get_new_name(void);
 char *mail_get_status_filename(char *oldfilename, int status_new);
@@ -146,6 +153,7 @@ struct header *mail_find_header(struct mail *mail, char *name);
 struct mail_scan /* don't not access this */
 {
 	struct mail *mail; /* the mail */
+	int avoid_duplicates;
 
 	int position; /* the current position inside the mail */
 
@@ -155,7 +163,7 @@ struct mail_scan /* don't not access this */
 	int mode;
 };
 
-void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail);
+void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail, int avoid_duplicates);
 void mail_scan_buffer_end(struct mail_scan *ms);
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size);
 

@@ -478,7 +478,7 @@ int folder_read_mail_infos(struct folder *folder)
 						char *buf;
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"Subject",7,buf,strlen(buf));
+							mail_add_header(m,"Subject",7,buf,strlen(buf),0);
 							free(buf);
 						}
 
@@ -486,31 +486,31 @@ int folder_read_mail_infos(struct folder *folder)
 
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"From",4,buf,strlen(buf));
+							mail_add_header(m,"From",4,buf,strlen(buf),0);
 							free(buf);
 						}
 
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"To",2,buf,strlen(buf));
+							mail_add_header(m,"To",2,buf,strlen(buf),0);
 							free(buf);
 						}
 
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"Reply-To",8,buf,strlen(buf));
+							mail_add_header(m,"Reply-To",8,buf,strlen(buf),0);
 							free(buf);
 						}
 
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"Message-ID",10,buf,strlen(buf));
+							mail_add_header(m,"Message-ID",10,buf,strlen(buf),0);
 							free(buf);
 						}
 
 						if ((buf = fread_str(fh)))
 						{
-							mail_add_header(m,"In-Reply-To",11,buf,strlen(buf));
+							mail_add_header(m,"In-Reply-To",11,buf,strlen(buf),0);
 							free(buf);
 						}
 

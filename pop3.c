@@ -199,7 +199,7 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 					break;
 				}
 
-				mail_scan_buffer_start(&ms, m);
+				mail_scan_buffer_start(&ms, m,0);
 
 				/* Read out the important infos */
 				while ((answer = tcp_readln(conn)))

@@ -45,6 +45,7 @@
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
 /*static struct header *mail_find_header(struct mail *mail, char *name);*/
+static int mail_read_structure(struct mail *mail);
 
 /* the mime preample used in mime multipart messages */
 const static char mime_preample[] = 
@@ -237,13 +238,40 @@ static char *quote_text(char *src, int len)
 }
 
 /**************************************************************************
- Allocate an header and insert it into the header list
+ Allocate an header and insert it into the header list. If
+ Avoid_duplicates is set to one only one header with the same
+ name will exists
 **************************************************************************/
-int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len)
+int mail_add_header(struct mail *mail, char *name, int name_len,
+									  char *contents, int contents_len, int avoid_duplicates)
 {
 	struct header *header;
 
-	if ((header = (struct header*)malloc(sizeof(struct header))))
+	if (avoid_duplicates)
+	{
+		/* Look for an existing header with this name */
+		header = (struct header*)list_first(&mail->header_list);
+		while (header)
+		{
+			if (!mystrnicmp(header->name, name, name_len))
+			{
+				if (!header->name[name_len])
+					break;
+			}
+			header = (struct header*)node_next(&header->node);
+		}
+	} else header = NULL;
+
+	if (!header)
+	{
+		header = (struct header*)malloc(sizeof(struct header));
+	} else
+	{
+		free(header->contents);
+		free(header->name);
+	}
+
+	if (header)
 	{
 		char *new_name = (char*)malloc(name_len+1);
 		char *new_contents = (char*)malloc(contents_len+1);
@@ -269,10 +297,11 @@ int mail_add_header(struct mail *mail, char *name, int name_len, char *contents,
 /**************************************************************************
  Prepares the mail scanning
 **************************************************************************/
-void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail)
+void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail, int avoid_duplicates)
 {
 	memset(ms,0,sizeof(struct mail_scan));
 	ms->mail = mail;
+	ms->avoid_duplicates = avoid_duplicates;
 }
 
 /**************************************************************************
@@ -369,7 +398,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 						if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
 							return 0;
 
-						mail_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size);
+						mail_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size,ms->avoid_duplicates);
 
 						/* a previous call to this function saved a line */
 						free(ms->line);
@@ -378,7 +407,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 					} else
 					{
 						/* no line has saved */
-						mail_add_header(mail,name_start,name_size,contents_start,contents_size);
+						mail_add_header(mail,name_start,name_size,contents_start,contents_size,ms->avoid_duplicates);
 					}
 
 					name_start = contents_start = NULL;
@@ -520,7 +549,7 @@ struct mail *mail_find_initial(struct mail *m)
 
 	while(m)
 	{
-		if (!mystricmp(m->content_type, "multipart"))
+		if (!mystricmp(m->content_type, "multipart") && m->multipart_array)
 		{
 			if (!mystricmp(m->content_subtype, "alternative"))
 				alter = 1;
@@ -716,7 +745,7 @@ struct mail *mail_create_from_file(char *filename)
 
 					m->size = size;
 
-					mail_scan_buffer_start(&ms,m);
+					mail_scan_buffer_start(&ms,m,0);
 
 					while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
 					{
@@ -784,7 +813,7 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 
 				if (to_header)
 				{
-					mail_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4);
+					mail_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4,0);
 					free(to_header);
 				}
 			}
@@ -796,7 +825,7 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 			char *subject_header;
 			if ((subject_header = encode_header_field("Subject",subject)))
 			{
-				mail_add_header(mail, "Subject", 7, subject_header+9, strlen(subject_header)-9);
+				mail_add_header(mail, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
 				free(subject_header);
 			}
 		}
@@ -908,7 +937,7 @@ struct mail *mail_create_reply(struct mail *mail)
 
 				if (to_header)
 				{
-					mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
+					mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4,0);
 					free(to_header);
 				}
 			}
@@ -919,7 +948,7 @@ struct mail *mail_create_reply(struct mail *mail)
 			struct account *ac = account_find_by_from(to);
 			if (ac)
 			{
-				mail_add_header(m,"From", 4, ac->email,strlen(ac->email));
+				mail_add_header(m,"From", 4, ac->email,strlen(ac->email),0);
 			}
 		}
 
@@ -980,7 +1009,7 @@ struct mail *mail_create_reply(struct mail *mail)
 
 				if ((subject_header = encode_header_field("Subject",new_subject)))
 				{
-					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9);
+					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
 					free(subject_header);
 				}
 
@@ -1370,6 +1399,135 @@ static char *mail_find_content_parameter_value(struct mail *mail, char *attribut
 }
 
 /**************************************************************************
+ Decrypts a mail if it is encrypted
+**************************************************************************/
+static void mail_decrypt(struct mail *mail)
+{
+	if (!mystricmp(mail->content_subtype,"encrypted"))
+	{
+		if (mail->num_multiparts==2 &&
+				!mystricmp(mail_find_content_parameter_value(mail,"protocol"),"application/pgp-encrypted") && 
+			  !mystricmp(mail->multipart_array[0]->content_type,"application") &&
+			  !mystricmp(mail->multipart_array[0]->content_subtype,"pgp-encrypted"))
+		{
+			static char *saved_passphrase;
+			char *env_passphrase = sm_getenv("PGPPASS");
+			int keep_env = 0;
+
+			struct mail *encrypt_mail = mail->multipart_array[1];
+
+			if (env_passphrase)
+			{
+				free(saved_passphrase);
+				saved_passphrase = mystrdup(env_passphrase);
+				keep_env = 1;
+			}
+
+			if (!saved_passphrase)
+				saved_passphrase = sm_request_string(NULL,"This mail is encrypted. Please enter your passphrase now", "", 1);
+
+			if (saved_passphrase)
+			{
+				FILE *fh;
+				char tmpname[L_tmpnam+10];
+
+				tmpnam(tmpname);
+				strcat(tmpname,".asc");
+
+				if (!keep_env)
+					sm_setenv("PGPPASS",saved_passphrase);
+
+				if ((fh=fopen(tmpname,"wb")))
+				{
+					char cmd_buf[256];
+					int rc;
+					fwrite(&encrypt_mail->text[encrypt_mail->text_begin],1,encrypt_mail->text_len,fh);
+					fclose(fh);
+					sprintf(cmd_buf,"pgp %s +bat +f",tmpname);
+
+					rc = sm_system(cmd_buf, NULL);
+					remove(tmpname);
+
+					if (!rc || rc==1)
+					{
+						tmpname[strlen(tmpname)-4]=0;
+						if ((fh = fopen(tmpname,"rb")))
+						{
+							char *newtext;
+							int size;
+							fseek(fh,0,SEEK_END);
+							size = ftell(fh);
+							fseek(fh,0,SEEK_SET);
+
+							if ((newtext = (char*)malloc(size)))
+							{
+								struct mail *new_mail;
+								int i;
+
+								/* Read the decrypted data */
+								fread(newtext,1,size,fh);
+
+								/* There must be at least two mails allocated */
+								for (i=0;i<mail->num_multiparts;i++)
+									mail_free(mail->multipart_array[i]);
+
+								if ((new_mail = mail->multipart_array[0] = mail_create()))
+								{
+									struct mail_scan ms;
+
+									mail->num_multiparts = 1;
+									mail->multipart_array[0] = new_mail;
+
+									new_mail->size = size;
+
+									mail_scan_buffer_start(&ms,new_mail,0);
+									mail_scan_buffer(&ms, newtext, size);
+									mail_scan_buffer_end(&ms);
+									mail_process_headers(new_mail);
+
+									new_mail->text = new_mail->extra_text = newtext;
+									/* text_len and text_begin is set by mail_scan_buffer */
+
+									mail_read_structure(new_mail); /* the recursion */
+									new_mail->parent_mail = mail;
+								} else
+								{
+									free(mail->multipart_array);
+									mail->multipart_array = NULL;
+									mail->num_multiparts = 0;
+								}
+							}
+							fclose(fh);
+						} else
+						{
+							free(saved_passphrase);
+							saved_passphrase = NULL;
+						}
+						
+						remove(tmpname);
+					}
+				}
+
+				if (!keep_env)
+					sm_unsetenv("PGPPASS");
+			}
+		} else
+		{
+			mail->decoded_data = mystrdup("Unsupported encryption");
+			mail->decoded_len = strlen(mail->decoded_data);
+			if (mail->multipart_array)
+			{
+				mail_free(mail->multipart_array[1]);
+				mail_free(mail->multipart_array[0]);
+				free(mail->multipart_array);
+				mail->multipart_array = NULL;
+			}
+			mail->num_multiparts = 0;
+		}
+	}
+}
+
+/**************************************************************************
  Reads the structrutre of a mail (uses ugly recursion)
 **************************************************************************/
 static int mail_read_structure(struct mail *mail)
@@ -1415,7 +1573,7 @@ static int mail_read_structure(struct mail *mail)
 
 							new_mail->size = end_part - buf;
 
-							mail_scan_buffer_start(&ms,new_mail);
+							mail_scan_buffer_start(&ms,new_mail,0);
 							mail_scan_buffer(&ms, buf, end_part - buf);
 							mail_scan_buffer_end(&ms);
 							mail_process_headers(new_mail);
@@ -1444,6 +1602,8 @@ static int mail_read_structure(struct mail *mail)
 					}
 				}
 			}
+
+			mail_decrypt(mail);
 		}
 	}
 	return 1;
@@ -1535,6 +1695,8 @@ void mail_free(struct mail *mail)
 	{
 		mail_free(mail->multipart_array[i]); /* recursion */
 	}
+
+	if (mail->extra_text) free(mail->extra_text);
 
 	if (mail->message_id) free(mail->message_id);
 	if (mail->message_reply_id) free(mail->message_reply_id);

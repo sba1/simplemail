@@ -36,6 +36,7 @@
 #include "simplemail.h"
 #include "support.h"
 #include "support_indep.h"
+#include "text2html.h"
 
 #include "readwnd.h"
 
@@ -163,19 +164,51 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
 	} else
 	{
-		set(data->text_list, MUIA_NList_Quiet, TRUE);
-		DoMethod(data->text_list,MUIM_NList_Clear);
+		char *html_mail;
+		char *font_buf;
 
-		while (buf < buf_end)
+		SetAttrs(data->html_simplehtml,
+				MUIA_SimpleHTML_Buffer,data->mail->html_header,
+				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
+				TAG_DONE);
+
+		if (font_buf = mystrdup(user.config.read_fixedfont))
 		{
-			if (user.config.read_wordwrap)  DoMethod(data->text_list,MUIM_NList_InsertSingleWrap, buf, MUIV_NList_Insert_Bottom,WRAPCOL0,ALIGN_LEFT);
-			else DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+			char *end = strchr(font_buf,'/');
+			if (end)
+			{
+				int size = atoi(end+1);
+				*end = 0;
 
-			if ((buf = strchr(buf,10))) buf++;
-			else break;
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"fixedmail",3,font_buf,size);
+			}
+			free(font_buf);
 		}
-		set(data->text_list, MUIA_NList_Quiet, FALSE);
-		set(data->contents_page, MUIA_Group_ActivePage, PAGE_TEXT);
+
+		if (font_buf = mystrdup(user.config.read_propfont))
+		{
+			char *end = strchr(font_buf,'/');
+			if (end)
+			{
+				int size = atoi(end+1);
+				*end = 0;
+
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",2,font_buf,size);
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",3,font_buf,size);
+				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",4,font_buf,size);
+			}
+			free(font_buf);
+		}
+
+
+		html_mail = text2html(buf, buf_end - buf,
+													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+
+		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
+		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
+
+		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
+		set(data->print_button, MUIA_Disabled, FALSE);
 	}
 }
 
@@ -329,7 +362,19 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 
 	gtk_text_buffer_get_iter_at_line(buffer,&iter,0);
 
-	gtk_text_buffer_insert(buffer,&iter,buf,buf_len);
+	if (!mystricmp(m->content_type,"text") && !mystricmp(m->content_subtype,"plain"))
+	{
+		char *html_mail;
+
+		html_mail = text2html(buf, buf_len,TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"");//<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+
+		gtk_text_buffer_insert(buffer,&iter,m->html_header,strlen(m->html_header));
+		gtk_text_buffer_insert(buffer,&iter,html_mail,strlen(html_mail));
+
+	} else
+	{
+		gtk_text_buffer_insert(buffer,&iter,buf,buf_len);
+	}
 
 #if 0
 	if (!data->attachments_group)

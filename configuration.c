@@ -156,7 +156,7 @@ int load_config(void)
 										account->pop->port = atoi(result);
 									if ((result = get_config_item(account_buf,"POP3.Login")))
 										account->pop->login = mystrdup(result);
-									if ((result = get_config_item(account_buf,"POP3.Port")))
+									if ((result = get_config_item(account_buf,"POP3.Password")))
 										account->pop->passwd = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Delete")))
 										account->pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;

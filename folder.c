@@ -554,7 +554,7 @@ int folder_number_of_mails(struct folder *folder)
 			if (iter->parent_folder == parent) break;
 			if (iter->special != FOLDER_SPECIAL_GROUP)
 			{
-				if (folder->num_index_mails == -1) return -1;
+				if (iter->num_index_mails == -1) return -1;
 				num_mails += iter->num_index_mails;
 			}
 			iter = folder_next(iter);
@@ -744,6 +744,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 #endif
 		{
 			folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
+			folder->num_index_mails = 0;
 
 			while ((dptr = readdir(dfd)) != NULL)
 			{
@@ -1351,20 +1352,21 @@ struct mail *folder_find_best_mail_to_select(struct folder *folder)
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail)
 {
 	char *buf;
+	int rc = 0;
 
 	if (!from_folder || !dest_folder) return 0;
 	if (from_folder == dest_folder) return 1;
 	if (from_folder->special == FOLDER_SPECIAL_GROUP || 
 			dest_folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
-	if ((buf = (char*)malloc(512)))
+	if ((buf = (char*)malloc(1024)))
 	{
 		char *src_buf = buf;
-		char *dest_buf = buf + 256;
+		char *dest_buf = buf + 512;
 
 		strcpy(src_buf,from_folder->path);
 		strcpy(dest_buf,dest_folder->path);
-		sm_add_part(src_buf,mail->filename,256);
+		sm_add_part(src_buf,mail->filename,512);
 
 		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_get_status_type(mail) == MAIL_STATUS_SENT)
 		{
@@ -1378,15 +1380,39 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 				mail->filename = newfilename;
 			}
 		}
-		sm_add_part(dest_buf,mail->filename,256);
+		sm_add_part(dest_buf,mail->filename,512);
 
-		folder_remove_mail(from_folder,mail);
-		folder_add_mail(dest_folder,mail,1);
-
-		if (!rename(src_buf,dest_buf)) return 1;
+		if (!rename(src_buf,dest_buf)) rc = 1;
+		else
+		{
+			/* Renaming failed so we need a new name */
+			char path[512];
+			getcwd(path,sizeof(path));
+			if (chdir(dest_folder->path) != -1)
+			{
+				char *new_name = mail_get_new_name();
+				if (new_name)
+				{
+					char *new_name_status = mail_get_status_filename(new_name, mail->status);
+					if (new_name_status)
+					{
+						if (!rename(src_buf,new_name_status)) rc = 1;
+						free(new_name_status);
+					}
+					free(new_name);
+				}
+				chdir(path);
+			}
+		}
 		free(buf);
+
+		if (rc)
+		{
+			folder_remove_mail(from_folder,mail);
+			folder_add_mail(dest_folder,mail,1);
+		}
 	}
-	return 0;
+	return rc;
 }
 
 /******************************************************************

@@ -95,7 +95,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "*n$(DESTDIR)/.taglines: .taglines" >>$@
   echo "  copy .taglines $(DESTDIR)/.taglines*n" >>$@
   echo "*nimages:" >>$@ noline
-  list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
+  list amiga-mui/binaries/~(morphos)\#?img lformat="  sm/Images/%m\\" >>$@
   list amiga-mui/binaries/(check|empty|new|old).info lformat="  sm/Images/%n\\" >>$@
   echo "  sm/Images/images.list" >>$@
   echo "*n" >>$@
@@ -201,7 +201,8 @@ prepare-release:
   copy `which libs:expat.library` ram:SimpleMail/Libs
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha
-  lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
+  -delete ram:simplemail-os3.lha
+  lha -r  a ram:simplemail-os3 ram:SimpleMail ram:SimpleMail.info
 #  lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
 
 # bump the revison

@@ -925,6 +925,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 					if (!pop3_login(conn,server,timestamp))
 					{
+						SM_DEBUGF(15,("Loggin in failed\n"));
 						goon = 0;
 						if (timestamp)
 						{
@@ -932,13 +933,15 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 							   In such cases a reconnect should help. */
 							pop3_quit(conn,server);
 							tcp_disconnect(conn);
+							SM_DEBUGF(15,("Trying to connect again to the server\n"));
 							if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
 							{
 								if (pop3_wait_login(conn,server,NULL))
 								{
 									goon = pop3_login(conn,server,NULL);
-								}
-							}
+									if (!goon) SM_DEBUGF(15,("Login failed\n"));
+								} else SM_DEBUGF(15,("Couldn't recevie a welcome message from the server\n"));
+							} else SM_DEBUGF(15,("Couldn't connect again to the server\n"));
 						}
 					}
 
@@ -946,6 +949,8 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 					{
 						struct uidl uidl;
 						struct dl_mail *mail_array;
+
+						SM_DEBUGF(15,("Logged in successful\n"));
 
 						uidl_init(&uidl,server,folder_directory);
 

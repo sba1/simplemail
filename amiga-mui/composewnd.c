@@ -127,49 +127,6 @@ struct Compose_Data /* should be a customclass */
 };
 
 /******************************************************************
- Convert the contents of the from popup to the text field
-*******************************************************************/
-STATIC ASM SAVEDS VOID from_objstr(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,Object *str))
-{
-	struct account *ac;
-	char buf[256];
-
-	DoMethod(list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&ac);
-	if (!ac) return;
-
-	if (ac->name)
-	{
-		if (needs_quotation(ac->name))
-			sprintf(buf, "\"%s\"",ac->name);
-		else strcpy(buf,ac->name);
-	}
-
-	sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
-
-	set(str,MUIA_Text_Contents,buf);
-	set(str,MUIA_UserData,ac);
-}
-
-STATIC ASM SAVEDS struct account *from_construct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1, struct account *ent))
-{
-	return account_duplicate(ent);
-}
-
-STATIC ASM SAVEDS VOID from_destruct(REG(a0,struct Hook *h),REG(a2,APTR pool), REG(a1,struct account *ent))
-{
-	account_free(ent);
-}
-
-STATIC ASM SAVEDS VOID from_display(REG(a0,struct Hook *h), REG(a2, char **array), REG(a1,struct account *account))
-{
-	if (account)
-	{
-			*array++ = account->email;
-			*array++ = account->smtp->name;
-	}
-}
-
-/******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
  this function))!

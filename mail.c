@@ -2686,7 +2686,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		time(&t);
 		d = localtime(&t);
 
-		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60+user.config.dst,offset%60);
+		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
 	}
 
 	if (new_mail->reply_message_id)

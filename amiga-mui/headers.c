@@ -53,3 +53,4 @@
 #include <proto/socket.h>
 
 #include <proto/keymap.h>
+#include <proto/icon.h>

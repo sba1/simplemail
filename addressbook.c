@@ -1218,6 +1218,7 @@ bailout:
 char *addressbook_get_expanded(char *unexpand)
 {
 	struct addressbook_entry_new *entry;
+	struct addressbook_group *group;
 	char *unexpand_end = unexpand + strlen(unexpand);
 	char *buf = unexpand;
 	char *tolook; /* used in the unexpanded branch */
@@ -1292,19 +1293,47 @@ char *addressbook_get_expanded(char *unexpand)
 
 			if (!(tolook = strndup(buf,ret - buf))) goto bailout;
 
-			if (!(entry = addressbook_find_entry_by_alias(tolook)))
-				entry = addressbook_find_entry_by_realname(tolook);
-
-			/* Not found, so bail out as the input is invalid */
-			if (!entry) goto bailout;
-
-			if (!(addr = addressbook_get_expanded_email_from_entry_indexed(entry,0)))
-				goto bailout;
-
-			if (!string_append(&expanded, addr))
+			/* try if string is a groups */
+			if ((group = addressbook_find_group_by_name(tolook)))
 			{
-				free(addr);
-				goto bailout;
+				/* yes, then extract all email addresses belonging to this group */
+				int first = 1;
+
+				entry = addressbook_first_entry();
+				while (entry)
+				{
+					if (array_contains(entry->group_array,group->name))
+					{
+						if (!(addr = addressbook_get_expanded_email_from_entry_indexed(entry,0)))
+							goto bailout;
+
+						if (!first) string_append(&expanded, ",");
+
+						if (!string_append(&expanded, addr))
+						{
+							free(addr);
+							goto bailout;
+						}
+						first = 0;
+					}
+					entry = addressbook_next_entry(entry);
+				}
+			}	else
+			{
+				if (!(entry = addressbook_find_entry_by_alias(tolook)))
+					entry = addressbook_find_entry_by_realname(tolook);
+
+				/* Not found, so bail out as the input is invalid */
+				if (!entry) goto bailout;
+
+				if (!(addr = addressbook_get_expanded_email_from_entry_indexed(entry,0)))
+					goto bailout;
+
+				if (!string_append(&expanded, addr))
+				{
+					free(addr);
+					goto bailout;
+				}
 			}
 
 			free(tolook);tolook=NULL;
@@ -1358,30 +1387,48 @@ char *addressbook_complete_address(char *address)
 	struct addressbook_entry_new *entry;
 	struct addressbook_group *group;
 
-	/* groups */
+	char *group_name = NULL, *real_name = NULL;
+
+	/* find matching group */
 	group = addressbook_first_group();
 	while (group)
 	{
 		if (!utf8stricmp_len(group->name,address,al))
-			return group->name + al;
+		{
+			group_name = group->name;
+			break;
+		}
 		group = addressbook_next_group(group);
 	}
 
-	/* alias */
+	/* find matching realname  */
+	entry = addressbook_first_entry();
+	while (entry)
+	{
+		if (!utf8stricmp_len(entry->realname,address,al))
+		{
+			real_name = entry->realname;
+			break;
+		}
+		entry = addressbook_next_entry(entry);
+	}
+
+	/* if two matches have been found, choose the lexicographical smaller string */
+	if (real_name && group_name)
+	{
+		if (utf8stricmp(real_name,group_name) < 0) return real_name + al;
+		return group_name + al;
+	}
+
+	if (real_name) return real_name + al;
+	if (group_name) return group_name + al;
+
+	/* try if there exists a matching alias */
 	entry = addressbook_first_entry();
 	while (entry)
 	{
 		if (!utf8stricmp_len(entry->alias,address,al))
 			return entry->alias + al;
-		entry = addressbook_next_entry(entry);
-	}
-
-	/* realname */
-	entry = addressbook_first_entry();
-	while (entry)
-	{
-		if (!utf8stricmp_len(entry->realname,address,al))
-			return entry->realname + al;
 		entry = addressbook_next_entry(entry);
 	}
 

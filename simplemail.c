@@ -28,6 +28,7 @@
 #include "addressbookwnd.h"
 #include "composewnd.h"
 #include "configwnd.h"
+#include "filterwnd.h"
 #include "folderwnd.h"
 #include "gui_main.h"
 #include "mainwnd.h"
@@ -230,6 +231,12 @@ void callback_fetch_mails(void)
 void callback_send_mails(void)
 {
 	mails_upload();
+}
+
+/* the filters should be edited */
+void callback_edit_filter(void)
+{
+	filter_open();
 }
 
 /* addressbook should be opened */

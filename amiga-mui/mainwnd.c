@@ -62,6 +62,9 @@ static Object *button_change;
 static Object *button_new;
 static Object *button_reply;
 static Object *button_forward;
+static Object *button_filter;
+static Object *button_efilter;
+
 static Object *button_abook;
 static Object *button_config;
 static Object *switch1_button; /* switch button for the two views */
@@ -298,6 +301,11 @@ int main_window_init(void)
 					End,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
+					Child, button_filter = MakePictureButton("Filter","PROGDIR:Images/Filter"),
+					Child, button_efilter = MakePictureButton("Edit Filter","PROGDIR:Images/FilterEdit"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
 					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
 					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
 					End,
@@ -366,6 +374,7 @@ int main_window_init(void)
 		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
 		DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_mail);
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
+		DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);

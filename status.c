@@ -33,7 +33,6 @@
 #include "mainwnd.h"
 #include "statuswnd.h"
 
-static int is_open;
 static struct estimate gauge_est;
 static int gauge_maximal;
 static int gauge_value;

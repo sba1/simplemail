@@ -667,7 +667,7 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 		{
 			if (tree_node->tn_User && tree_node->tn_User != (void*)MUIV_MailTreelist_UserData_Name)
 			{
-				*msg->opg_Storage = (struct mail*)tree_node->tn_User;
+				*msg->opg_Storage = (ULONG)tree_node->tn_User;
 				return 1;
 			}
 		}
@@ -954,7 +954,7 @@ static void main_insert_mail_threaded(Object *obj, struct mail *mail, void *pare
 
 STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_SetFolderMails *msg)
 {
-#ifdef MAILTREE_IS_TREE
+#ifdef MAILLIST_IS_TREE
 	struct mail *m;
 	void *handle = NULL;
 #endif

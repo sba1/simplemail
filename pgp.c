@@ -138,7 +138,7 @@ int pgp_operate(char *options, char *output)
 	char *buf = malloc(len);
 	FILE *fh;
 
-	if (!buf) return NULL;
+	if (!buf) return 0;
 
 	if (path) strcpy(buf,path);
 	else buf[0] = 0;

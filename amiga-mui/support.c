@@ -254,7 +254,7 @@ void sm_convert_seconds(unsigned int seconds, struct tm *tm)
 *******************************************************************/
 int sm_add_part(char *drawer, const char *filename, int buf_size)
 {
-	AddPart(drawer,filename,buf_size);
+	AddPart(drawer,(char*)filename,buf_size);
 	return 1;
 }
 
@@ -506,7 +506,7 @@ char *sm_request_pgp_id(char *text)
 			if (key)
 			{
 				ret = malloc(16);
-				sprintf(ret,"0x%08lX",key->keyid);
+				sprintf(ret,"0x%08X",key->keyid);
 			}
 		}
 		DoMethod(App, OM_REMMEMBER, wnd);

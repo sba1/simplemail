@@ -60,3 +60,4 @@ void myclosesocket(int fd);
 #define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif
 #endif
+

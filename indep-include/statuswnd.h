@@ -43,28 +43,4 @@ int statuswnd_wait(void);
 int statuswnd_more_statistics(void);
 int statuswnd_is_opened(void);
 
-
-
-/*
-int dl_window_open(int active);
-void dl_window_close(void);
-void dl_set_status(char *);
-void dl_connect_to_server(char *server);
-void dl_init_gauge_mail(int);
-void dl_set_gauge_mail(int);
-void dl_init_mail_size_sum(int sum);
-void dl_set_mail_size_sum(int sum);
-void dl_init_gauge_byte(int);
-void dl_set_gauge_byte(int);
-int dl_checkabort(void);
-void dl_insert_mail(int mno, int mflags, int msize);
-void dl_insert_mail_info(int mno, char *from, char *subject, char *date);
-int dl_get_mail_flags(int mno);
-void dl_clear(void);
-int dl_wait(void);
-void dl_freeze_list(void);
-void dl_thaw_list(void);
-int dl_more_statistics(void);
-*/
-
 #endif

@@ -384,7 +384,7 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 	}
 	DoMethod(data->mail_list, MUIM_NList_InsertSingle, &ent,  MUIV_NList_Insert_Bottom);
 
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUIP_transwnd_InsertMailInfo *msg)
@@ -425,7 +425,7 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 		}
 	}
 
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG transwnd_GetMailFlags (struct IClass *cl, Object *obj, struct MUIP_transwnd_GetMailFlags *msg)

@@ -728,9 +728,9 @@ char **codesets_supported(void)
 /**************************************************************************
  The compare function
 **************************************************************************/
-static int codesets_cmp_unicode(const struct single_convert *arg1, const struct single_convert *arg2)
+static int codesets_cmp_unicode(const void *arg1, const void *arg2)
 {
-	return (int)(strcmp(arg1->utf8+1,arg2->utf8+1));
+	return (int)(strcmp(((struct single_convert*)arg1)->utf8 + 1, ((struct single_convert*)arg2)->utf8+1));
 }
 
 /**************************************************************************

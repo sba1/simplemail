@@ -73,10 +73,20 @@ static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
 struct Compose_Data /* should be a customclass */
 {
 	Object *wnd;
+	Object *headers_group;
+	Object *from_label;
+	Object *from_group;
 	Object *from_accountpop;
+	Object *reply_label;
+	Object *reply_button;
 	Object *reply_string;
+	Object *to_label;
+	Object *to_group;
 	Object *to_string;
+	Object *cc_label;
+	Object *cc_group;
 	Object *cc_string;
+	Object *subject_label;
 	Object *subject_string;
 	Object *copy_button;
 	Object *cut_button;
@@ -93,6 +103,8 @@ struct Compose_Data /* should be a customclass */
 	Object *datatype_datatypes;
 	Object *encrypt_button;
 	Object *sign_button;
+
+	int reply_stuff_attached;
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
@@ -902,7 +914,45 @@ static void compose_set_replyto(void **msg)
 {
 	struct Compose_Data *data = (struct Compose_Data*)msg[0];
 	struct account *ac = (struct account*)xget(data->from_accountpop, MUIA_AccountPop_Account);
-	if (ac) set(data->reply_string, MUIA_UTF8String_Contents, ac->reply);
+	if (ac)
+	{
+		set(data->reply_string, MUIA_UTF8String_Contents, ac->reply);
+		if (ac->reply && *ac->reply) set(data->reply_button,MUIA_Selected,TRUE);
+	}
+}
+
+/******************************************************************
+ Called when the reply button is clicked
+*******************************************************************/
+static void compose_reply_button(void **msg)
+{
+	struct Compose_Data *data = (struct Compose_Data*)msg[0];
+	int reply_selected;
+	Object *group = data->headers_group;
+	if (!group) return;
+	reply_selected = xget(data->reply_button,MUIA_Selected);
+
+	DoMethod(group,MUIM_Group_InitChange);
+	if (data->reply_stuff_attached && !reply_selected)
+	{
+		DoMethod(group,OM_REMMEMBER,data->reply_label);
+		DoMethod(group,OM_REMMEMBER,data->reply_string);
+		data->reply_stuff_attached = 0;
+	} else
+	{
+		if (!data->reply_stuff_attached && reply_selected)
+		{
+			DoMethod(group,OM_ADDMEMBER,data->reply_label);
+			DoMethod(group,OM_ADDMEMBER,data->reply_string);
+			DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
+																		 data->reply_label,data->reply_string,
+																		 data->to_label,data->to_group,
+																		 data->cc_label,data->cc_group,
+																		 data->subject_label,data->subject_string,NULL);
+			data->reply_stuff_attached = 1;
+		}
+	}
+	DoMethod(group,MUIM_Group_ExitChange);
 }
 
 /******************************************************************
@@ -925,8 +975,8 @@ static void compose_new_active(void **msg)
 *******************************************************************/
 int compose_window_open(struct compose_args *args)
 {
-	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
-	Object *from_accountpop, *reply_string, *to_string, *cc_string, *subject_string;
+	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button, *headers_group;
+	Object *from_label, *from_group, *from_accountpop, *reply_button, *reply_label, *reply_string, *to_label, *to_group, *to_string, *cc_label, *cc_group, *cc_string, *subject_label, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
@@ -1020,12 +1070,24 @@ int compose_window_open(struct compose_args *args)
 				/* First register */
 				Child, VGroup,
 					Child, HGroup,
-						Child, ColGroup(2),
-							Child, MakeLabel(_("_From")),
-							Child, from_accountpop = AccountPopObject, End,
+						Child, headers_group = ColGroup(2),
+							Child, from_label = MakeLabel(_("_From")),
+							Child, from_group = HGroup,
+								MUIA_Group_Spacing,0,
+								Child, from_accountpop = AccountPopObject, End,
+								Child, reply_button = TextObject, ButtonFrame, MUIA_Selected,1, MUIA_InputMode, MUIV_InputMode_Toggle,MUIA_Text_PreParse, "\033c",MUIA_Text_Contents,_("R"), MUIA_Text_SetMax, TRUE, End,
+								End,
 
-							Child, MakeLabel(_("_To")),
-							Child, HGroup,
+							Child, reply_label = MakeLabel(_("_Replies To")),
+							Child, reply_string = AddressStringObject,
+								StringFrame,
+								MUIA_CycleChain,1,
+								MUIA_ControlChar, GetControlChar(_("_To")),
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,
+
+							Child, to_label = MakeLabel(_("_To")),
+							Child, to_group = HGroup,
 								MUIA_Group_Spacing,0,
 								Child, to_string = AddressStringObject,
 									StringFrame,
@@ -1036,8 +1098,8 @@ int compose_window_open(struct compose_args *args)
 								Child, expand_to_button = PopButton(MUII_ArrowLeft),
 								End,
 
-							Child, MakeLabel(_("C_opies To")),
-							Child, HGroup,
+							Child, cc_label = MakeLabel(_("C_opies To")),
+							Child, cc_group = HGroup,
 								MUIA_Group_Spacing,0,
 								Child, cc_string = AddressStringObject,
 									StringFrame,
@@ -1048,15 +1110,7 @@ int compose_window_open(struct compose_args *args)
 								Child, expand_cc_button = PopButton(MUII_ArrowLeft),
 								End,
 
-							Child, MakeLabel(_("_Replies To")),
-							Child, reply_string = AddressStringObject,
-								StringFrame,
-								MUIA_CycleChain,1,
-								MUIA_ControlChar, GetControlChar(_("_To")),
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,
-
-							Child, MakeLabel(_("S_ubject")),
+							Child, subject_label = MakeLabel(_("S_ubject")),
 							Child, subject_string = UTF8StringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
@@ -1186,10 +1240,20 @@ int compose_window_open(struct compose_args *args)
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
+			data->headers_group = headers_group;
+			data->from_label = from_label;
+			data->from_group = from_group;
 			data->from_accountpop = from_accountpop;
+			data->to_label = to_label;
+			data->to_group = to_group;
 			data->to_string = to_string;
+			data->cc_label = cc_label;
+			data->cc_group = cc_group;
 			data->cc_string = cc_string;
 			data->reply_string = reply_string;
+			data->reply_label = reply_label;
+			data->reply_button = reply_button;
+			data->subject_label = subject_label;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
 			data->x_text = xcursor_text;
@@ -1220,6 +1284,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(expand_cc_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
 			DoMethod(to_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(cc_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
+			DoMethod(reply_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_reply_button, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
@@ -1243,6 +1308,9 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 			DoMethod(from_accountpop, MUIM_Notify, MUIA_AccountPop_Account, MUIV_EveryTime, from_accountpop, 4, MUIM_CallHook, &hook_standard, compose_set_replyto, data);
+
+			data->reply_stuff_attached = 1;
+			set(data->reply_button,MUIA_Selected,FALSE);
 
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
@@ -1299,8 +1367,8 @@ int compose_window_open(struct compose_args *args)
 					parse_text_string(reply,&decoded_reply);
 					set(reply_string,MUIA_UTF8String_Contents,decoded_reply);
 					free(decoded_reply);
+					set(data->reply_button,MUIA_Selected,TRUE);
 				}
-
 
 				set(subject_string,MUIA_UTF8String_Contents,args->to_change->subject);
 

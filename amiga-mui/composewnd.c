@@ -111,6 +111,8 @@ STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *st
 	char *x;
 	Object *reply = (Object*)xget(str,MUIA_UserData);
 	DoMethod(list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&x);
+	if (!x) return;
+
 	set(str,MUIA_Text_Contents,x);
 	if (reply)
 	{
@@ -125,24 +127,24 @@ STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *st
 STATIC ASM LONG from_strobj(register __a2 Object *list, register __a1 Object *str)
 {
 	char *x,*s;
-	int i = 0;
+	int i,entries = xget(list,MUIA_NList_Entries);
+
 	get(str,MUIA_Text_Contents,&s);
 
-	while (1)
+	for (i=0;i<entries;i++)
 	{
 		DoMethod(list,MUIM_NList_GetEntry,i,&x);
-		if (!x)
+		if (x)
 		{
-			set(list,MUIA_NList_Active,MUIV_NList_Active_Off);
-			break;
+			if (!mystricmp(x,s))
+	  	{
+				set(list,MUIA_NList_Active,i);
+				return 1;
+			}
 		}
-		else if (!mystricmp(x,s))
-	  {
-			set(list,MUIA_NList_Active,i);
-			break;
-		}
-		i++;
 	}
+
+	set(list,MUIA_NList_Active,MUIV_NList_Active_Off);
 	return 1;
 }
 

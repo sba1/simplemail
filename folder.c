@@ -891,9 +891,10 @@ int folder_number_of_new_mails(struct folder *folder)
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new)
 {
 	int i, mail_found = FALSE;
-	for (i=0;i<folder->num_mails;i++)
+	/* first check the pending mail array */
+	for (i=0;i<folder->num_pending_mails;i++)
 	{
-		if (folder->mail_array[i]==mail)
+		if (folder->pending_mail_array[i]==mail)
 		{
 			mail_found = TRUE;
 			break;
@@ -901,9 +902,14 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 	}
 	if (!mail_found)
 	{
-		for (i=0;i<folder->num_pending_mails;i++)
+		/* If the mail is not found check the mail_array */
+		/* If mail infos are not read_yet, read them now */
+		if (!folder->mail_infos_loaded)
+			folder_read_mail_infos(folder,0);
+		
+		for (i=0;i<folder->num_mails;i++)
 		{
-			if (folder->pending_mail_array[i]==mail)
+			if (folder->mail_array[i]==mail)
 			{
 				mail_found = TRUE;
 				break;
@@ -1001,6 +1007,20 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 {
 	int i;
 
+	/* first check the pendig mail array */
+	for (i=0; i < folder->num_pending_mails; i++)
+	{
+		if (!mystricmp(folder->pending_mail_array[i]->filename,filename))
+		{
+			return folder->pending_mail_array[i];
+		}
+	}
+
+	/* If the mail is not found check the mail_array */
+	/* If mail infos are not read_yet, read them now */
+	if (!folder->mail_infos_loaded)
+		folder_read_mail_infos(folder,0);
+
 	for (i=0; i < folder->num_mails; i++)
 	{
 		if (!mystricmp(folder->mail_array[i]->filename,filename))
@@ -1009,14 +1029,6 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 		}
 	}
 
-	/* now check the pendig_mail_array */
-	for (i=0; i < folder->num_pending_mails; i++)
-	{
-		if (!mystricmp(folder->pending_mail_array[i]->filename,filename))
-		{
-			return folder->pending_mail_array[i];
-		}
-	}
 	return NULL;
 }
 

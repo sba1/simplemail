@@ -163,6 +163,7 @@ struct composed_mail
 	struct node node; /* embedded node structure */
 
 	char *from; /* the mail's from account */
+	char *replyto; /* reply address */
 	char *to; /* maybe NULL */
 	char *subject; /* maybe NULL */
 

@@ -24,6 +24,8 @@
 #include <string.h>
 
 #include "account.h"
+#include "configuration.h"
+#include "parse.h"
 #include "pop3.h"
 #include "smtp.h"
 #include "support_indep.h"
@@ -100,5 +102,33 @@ void account_free(struct account *a)
 	if (a->smtp) smtp_free(a->smtp);
 
 	free(a);
+}
+
+
+/**************************************************************************
+ Find an account by e-mail address
+**************************************************************************/
+struct account *account_find_by_from(char *from)
+{
+	struct account *ac = (struct account*)list_first(&user.config.account_list);
+
+	struct parse_address addr;
+
+	if (!(parse_address(from, &addr))) return NULL;
+
+	while (ac)
+	{
+		struct mailbox *mb = (struct mailbox*)list_first(&addr.mailbox_list);
+		while (mb)
+		{
+			if (!mystricmp(mb->addr_spec,ac->email)) return ac;
+			mb = (struct mailbox*)node_next(&mb->node);
+		}
+		ac = (struct account*)node_next(&ac->node);
+	}
+
+	free_address(&addr);
+
+	return NULL;
 }
 

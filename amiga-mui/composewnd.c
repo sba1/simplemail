@@ -69,6 +69,7 @@ struct Compose_Data /* should be a customclass */
 	Object *from_text;
 	Object *to_string;
 	Object *subject_string;
+	Object *reply_string;
 	Object *copy_button;
 	Object *cut_button;
 	Object *paste_button;
@@ -105,8 +106,17 @@ struct Compose_Data /* should be a customclass */
 STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *str)
 {
 	char *x;
+	Object *reply = (Object*)xget(str,MUIA_UserData);
 	DoMethod(list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&x);
 	set(str,MUIA_Text_Contents,x);
+	if (reply)
+	{
+		struct account *ac = (struct account*)list_find(&user.config.account_list,xget(list,MUIA_NList_Active));
+		if (ac)
+		{
+			set(reply,MUIA_String_Contents,ac->reply);
+		}
+	}
 }
 
 STATIC ASM LONG from_strobj(register __a2 Object *list, register __a1 Object *str)
@@ -425,6 +435,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char *from = (char*)xget(data->from_text, MUIA_Text_Contents);
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_String_Contents);
+		char *reply = (char*)xget(data->reply_string, MUIA_String_Contents);
 		struct composed_mail new_mail;
 
 		/* update the current attachment */
@@ -437,6 +448,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
 
 		new_mail.from = from;
+		new_mail.replyto = reply;
 		new_mail.to = to;
 		new_mail.subject = subject;
 		new_mail.mail_filename = data->filename;
@@ -591,7 +603,7 @@ void compose_window_open(struct compose_args *args)
 /*void compose_window_open(char *to_str, struct mail *tochange)*/
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button;
-	Object *from_text, *from_list, *to_string, *subject_string;
+	Object *from_text, *from_list, *reply_string, *to_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
@@ -614,6 +626,8 @@ void compose_window_open(struct compose_args *args)
     MUIA_Window_Title, "SimpleMail - Compose Message",
         
 		WindowContents, main_group = VGroup,
+			Child, reply_string = BetterStringObject, MUIA_ShowMe, FALSE, End,
+
 			Child, ColGroup(2),
 				Child, MakeLabel("_From"),
 				Child, from_popobject = PopobjectObject,
@@ -731,11 +745,14 @@ void compose_window_open(struct compose_args *args)
 		struct Compose_Data *data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data));
 		if (data)
 		{
+			char buf[512];
+
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
 			data->from_text = from_text;
 			data->to_string = to_string;
+			data->reply_string = reply_string;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
 			data->x_text = xcursor_text;
@@ -761,6 +778,8 @@ void compose_window_open(struct compose_args *args)
 					MUIA_Popobject_StrObjHook, &data->from_strobj_hook,
 					TAG_DONE);
 
+			set(from_text, MUIA_UserData, reply_string);
+
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
 			/* mark the window as opened */
@@ -772,7 +791,6 @@ void compose_window_open(struct compose_args *args)
 				int first = 1;
 				while ((account))
 				{
-					char buf[512];
 					if (account->smtp->name && *account->smtp->name && account->email)
 					{
 						if (account->name)
@@ -787,6 +805,7 @@ void compose_window_open(struct compose_args *args)
 						if (first)
 						{
 							set(from_text, MUIA_Text_Contents, buf);
+							set(reply_string, MUIA_String_Contents, account->reply);
 							first = 0;
 						}
 					}
@@ -836,6 +855,31 @@ void compose_window_open(struct compose_args *args)
 				int entries;
 				char *to;
 				char *decoded_to = NULL;
+
+				if (args->to_change)
+				{
+					char *from = mail_find_header_contents(args->to_change, "from");
+					if (from)
+					{
+						struct account *ac = account_find_by_from(from);
+						if (ac)
+						{
+							if (ac->smtp->name && *ac->smtp->name && ac->email)
+							{
+								if (ac->name)
+								{
+									if (needs_quotation(ac->name))
+										sprintf(buf, "\"%s\"",ac->name);
+									else strcpy(buf,ac->name);
+								}
+
+								sprintf(buf+strlen(buf)," <%s> (%s)",ac->email, ac->smtp->name);
+								set(from_text, MUIA_Text_Contents, buf);
+								set(reply_string, MUIA_String_Contents, ac->reply);
+							}	
+						}
+					}
+				}
 
 				compose_add_mail(data,args->to_change,NULL);
 

@@ -669,6 +669,7 @@ struct mail *mail_create_reply(struct mail *mail)
 	if (m)
 	{
 		char *from = mail_find_header_contents(mail,"from");
+		char *to;
 		struct mail *text_mail;
 
 		if (from)
@@ -716,6 +717,15 @@ struct mail *mail_create_reply(struct mail *mail)
 					mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
 					free(to_header);
 				}
+			}
+		}
+
+		if ((to = mail_find_header_contents(mail,"to")))
+		{
+			struct account *ac = account_find_by_from(to);
+			if (ac)
+			{
+				mail_add_header(m,"From", 4, ac->email,strlen(ac->email));
 			}
 		}
 
@@ -1466,6 +1476,27 @@ static int mail_compose_write_from(FILE *fp, char *from)
 }
 
 /**************************************************************************
+ Writes out the reply header field
+**************************************************************************/
+static int mail_compose_write_reply(FILE *fp, char *reply)
+{
+	int rc = 0;
+	struct list *list = create_address_list(reply);
+
+	if (list)
+	{
+		char *from = encode_address_field("Reply-To", list);
+		if (from)
+		{
+			if (fprintf(fp,"%s\n",from)>=0) rc = 1;
+			free(from);
+		}
+		free_address_list(list);
+	}
+	return rc;
+}
+
+/**************************************************************************
  Writes out the attachments into the body (uses recursion)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
@@ -1479,6 +1510,10 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 		if (!mail_compose_write_from(fp,new_mail->from))
 			return 0;
+
+		if (new_mail->replyto && *new_mail->replyto)
+			if (!mail_compose_write_reply(fp,new_mail->replyto))
+				return 0;
 
 		if ((alist = create_address_list(new_mail->to)))
 		{

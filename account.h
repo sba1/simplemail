@@ -52,5 +52,6 @@ struct account
 struct account *account_malloc(void);
 struct account *account_duplicate(struct account *a);
 void account_free(struct account *a);
+struct account *account_find_by_from(char *email);
 
 #endif

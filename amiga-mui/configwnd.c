@@ -599,7 +599,7 @@ static void init_config(void)
 				if (new_account)
 				{
 					list_insert_tail(&account_list,&new_account->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "Accounts", account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(config_tree, MUIM_NListtree_Insert, "Account", account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
 				account = (struct account*)node_next(&account->node);
 			}

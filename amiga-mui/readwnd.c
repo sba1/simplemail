@@ -510,6 +510,22 @@ struct mail *read_get_displayed_mail(struct Read_Data *data)
 }
 
 /******************************************************************
+ Print the visible mail
+*******************************************************************/
+static void menu_print(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	struct mail *mail = read_get_displayed_mail(data);
+
+	if (mail)
+	{
+		set(App, MUIA_Application_Sleep, TRUE);
+		print_mail(mail);
+		set(App, MUIA_Application_Sleep, FALSE);
+	}
+}
+
+/******************************************************************
  Shows a given mail (part)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
@@ -821,7 +837,8 @@ void read_window_open(char *folder, struct mail *mail)
 		MENU_PROJECT_ABOUT = 1,
 		MENU_PROJECT_ABOUTMUI,
 		MENU_PROJECT_QUIT,
-		MENU_MAIL_RAW
+		MENU_MAIL_RAW,
+		MENU_MAIL_PRINT
 	};
 
 	static const struct NewMenu nm_untranslated[] =
@@ -833,6 +850,8 @@ void read_window_open(char *folder, struct mail *mail)
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Mail"), NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Show raw format..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Print visible attachment"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
@@ -1001,7 +1020,8 @@ void read_window_open(char *folder, struct mail *mail)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, App, 4, MUIM_CallHook, &hook_standard, show_raw, data);
-			
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_PRINT, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
+
 			set(App, MUIA_Application_Sleep, TRUE);
 
 			if (read_window_display_mail(data,mail))

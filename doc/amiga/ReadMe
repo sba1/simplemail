@@ -3,7 +3,7 @@ Uploader:  sebauer@t-online.de (Sebastian Bauer)
 Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian Bauer)
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
-Requires:  OS 3.0, MUI 3.8, NList
+Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
 Version:   0.2
 
 Introduction
@@ -19,7 +19,7 @@ obtain it.
 
 Requirements
 ~~~~~~~~~~~~
-SimpleMail requires OS3.0 and MUI  3.8.
+SimpleMail requires OS3.0 and MUI 3.8.
 It also needs some additional MUI Custom Classes:
 
  BetterString - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
@@ -28,7 +28,7 @@ It also needs some additional MUI Custom Classes:
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
 Ensure  that  you  always  have  the  latest  versions  installed
-(especially from the NListtree).
+(especially from the NListtree, you really need at least beta5).
 
 Usage
 ~~~~~

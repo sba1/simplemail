@@ -155,10 +155,6 @@ static ULONG sortmode2titlemark(int sortmode, int type)
 	int col = 0;
 	if (sortmode == FOLDER_SORT_THREAD) return 0;
 	col = sortmode & FOLDER_SORT_MODEMASK;
-	if (col == 1) /* from/to */
-	{
-		if (type == FOLDER_TYPE_SEND) col = 2;
-	} else if (col > 1) col++;
 	return (col | ((sortmode & FOLDER_SORT_REVERSE)?MUIV_NList_TitleMark_Up:MUIV_NList_TitleMark_Down));
 }
 
@@ -169,8 +165,6 @@ static int titlemark2sortmode(int titlemark)
 {
 	int col = titlemark & MUIV_NList_TitleMark_ColMask;
 	if (titlemark == 0) return FOLDER_SORT_THREAD;
-	if (col == 2) col = 1; /* from/to column */
-	else if (col > 2) col--;
 	return col|((titlemark & MUIV_NList_TitleMark_Up)?FOLDER_SORT_REVERSE:0);
 }
 

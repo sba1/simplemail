@@ -121,19 +121,22 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			SecondsToString(date_buf,mail->seconds);
 
 			*msg->Array++ = status_buf; /* status */
-			if (mail->flags & MAIL_FLAGS_GROUP)
-			{
-				int from_len;
-				sprintf(from_buf,"\33O[%08lx]",data->status_group);
-				if (mail->from)
-				{
-					from_len = strlen(from_buf);
-					mystrlcpy(from_buf+from_len,mail->from,sizeof(from_buf)-from_len);
-				}
-				*msg->Array++ = from_buf;
-			} else *msg->Array++ = mail->from;
 
-			*msg->Array++ = mail->to;
+			if (data->folder_type != FOLDER_TYPE_SEND)
+			{
+				if (mail->flags & MAIL_FLAGS_GROUP)
+				{
+					int from_len;
+					sprintf(from_buf,"\33O[%08lx]",data->status_group);
+					if (mail->from)
+					{
+						from_len = strlen(from_buf);
+						mystrlcpy(from_buf+from_len,mail->from,sizeof(from_buf)-from_len);
+					}
+					*msg->Array++ = from_buf;
+				} else *msg->Array++ = mail->from;
+			} else *msg->Array++ = mail->to;
+
 			*msg->Array++ = mail->subject;
 			*msg->Array++ = mail->reply;
 			*msg->Array++ = date_buf;
@@ -143,8 +146,11 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 	} else
 	{
 		*msg->Array++ = "Status";
-		*msg->Array++ = "From";
-		*msg->Array++ = "To";
+
+		if (data->folder_type != FOLDER_TYPE_SEND)
+			*msg->Array++ = "From";
+		else *msg->Array++ = "To";
+
 		*msg->Array++ = "Subject";
 		*msg->Array++ = "Reply";
 		*msg->Array++ = "Date";
@@ -160,6 +166,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default/*|MUIV_NListtree_MultiSelect_Flag_AutoSelectChilds*/,
+					MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -169,7 +176,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, "BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6,COL=7",
+						MUIA_NListtree_Format, "BAR,BAR,BAR,BAR,BAR,BAR,",
 						TAG_DONE);
 
 	return (ULONG)obj;
@@ -199,13 +206,6 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 						if (data->folder_type != tag->ti_Data)
 						{
 							data->folder_type = tag->ti_Data;
-							if (data->folder_type == FOLDER_TYPE_SEND)
-							{
-								set(obj,MUIA_NListtree_Format,"BAR,BAR COL=2,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6,COL=7");
-							} else
-							{
-								set(obj,MUIA_NListtree_Format,"BAR,BAR,BAR COL=3,BAR COL=4,BAR COL=5,BAR COL=6,COL=7");
-							}
 						}
 						break;
 		}
@@ -275,12 +275,18 @@ STATIC ULONG MailTreelist_MultiTest(struct IClass *cl, Object *obj, struct MUIP_
 #define MENU_SETSTATUS_HOLD	5
 #define MENU_SETSTATUS_WAITSEND  6
 
-STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_ContextMenuBuild *msg)
+STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-  Object *context_menu = NULL;
+  Object *context_menu;
 
-  if (data->context_menu) MUI_DisposeObject(data->context_menu);
+  if (data->context_menu)
+  {
+  	MUI_DisposeObject(data->context_menu);
+  	data->context_menu = NULL;
+  }
+
+	if (msg->ontop) return NULL; /* The default NList Menu should be returned */
 
 	context_menu = MenustripObject,
 		Child, MenuObjectT("Mail"),
@@ -291,10 +297,6 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Pending", MUIA_UserData, MENU_SETSTATUS_WAITSEND, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
 				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
-/*
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Read", MUIA_UserData, MENU_SETSTATUS_READ, End,
-				Child, MenuitemObject, MUIA_Menuitem_Title, "Unread", MUIA_UserData, MENU_SETSTATUS_UNREAD, End,
-*/
 				End,
 			End,
 		End;
@@ -313,6 +315,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_UNREAD: callback_mails_set_status(MAIL_STATUS_UNREAD); break;
 		case	MENU_SETSTATUS_HOLD: callback_mails_set_status(MAIL_STATUS_HOLD); break;
 		case	MENU_SETSTATUS_WAITSEND: callback_mails_set_status(MAIL_STATUS_WAITSEND); break;
+		default: return DoSuperMethodA(cl,obj,(Msg)msg);
 	}
   return 0;
 }
@@ -331,8 +334,8 @@ STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, regist
 		case	MUIM_Cleanup:	return MailTreelist_Cleanup(cl,obj,msg);
 		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);
-		case	MUIM_ContextMenuBuild: return MailTreelist_ContextMenuBuild(cl, obj, (struct MUIP_ContextMenuBuild *)msg);
 		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
+		case  MUIM_NList_ContextMenuBuild: return MailTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

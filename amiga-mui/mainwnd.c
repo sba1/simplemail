@@ -700,7 +700,7 @@ void main_refresh_folders(void)
 		}
 	}
 	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
-	DoMethod(folder_tree,MUIM_FolderTreelist_Refresh);
+	DoMethod(folder_tree,MUIM_FolderTreelist_Refresh,NULL);
 	nnset(folder_tree,MUIA_NList_Active,act);
 	set(folder_tree,MUIA_NListtree_Quiet,FALSE);
 	main_refresh_folders_text();

@@ -445,7 +445,7 @@ struct folder *sm_request_folder(char *text, struct folder *exclude)
 	{
 		ULONG cancel=0;
 		DoMethod(App, OM_ADDMEMBER, wnd);
-		DoMethod(folder_tree, MUIM_FolderTreelist_Refresh);
+		DoMethod(folder_tree, MUIM_FolderTreelist_Refresh, exclude);
 
 		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 3, MUIM_WriteLong, 1, &cancel);

@@ -344,7 +344,7 @@ STATIC ULONG FolderTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * o
   return (ULONG) data->context_menu;
 }
 
-STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, Msg msg)
+STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_FolderTreelist_Refresh *msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	struct folder *f;
@@ -355,6 +355,10 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, Msg msg)
 	for (f = folder_first();f;f = folder_next(f))
 	{
 		APTR treenode = (APTR)MUIV_NListtree_Insert_ListNode_Root;
+
+		/* groups cannot be excluded at the moment */
+		if (msg->exclude == f && msg->exclude->special != FOLDER_SPECIAL_GROUP) continue;
+
 		if (f->parent_folder) treenode = FindListtreeUserData(obj, f->parent_folder);
 		if (f->special == FOLDER_SPECIAL_GROUP)
 		{
@@ -391,7 +395,7 @@ STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 		case	MUIM_NListtree_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);
     case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
 		case  MUIM_NList_ContextMenuBuild: return FolderTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
-		case	MUIM_FolderTreelist_Refresh: return FolderTreelist_Refresh(cl,obj,msg);
+		case	MUIM_FolderTreelist_Refresh: return FolderTreelist_Refresh(cl,obj,(struct MUIP_FolderTreelist_Refresh*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

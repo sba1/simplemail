@@ -31,6 +31,8 @@ IMPORT struct MUI_CustomClass *CL_FolderTreelist;
 
 #define MUIM_FolderTreelist_Refresh (0x7878787)
 
+struct MUIP_FolderTreelist_Refresh {ULONG MethodID; struct folder *exclude;};
+
 int create_foldertreelist_class(void);
 void delete_foldertreelist_class(void);
 

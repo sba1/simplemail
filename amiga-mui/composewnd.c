@@ -1317,7 +1317,7 @@ int compose_window_open(struct compose_args *args)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *from, *to, *cc, *reply;
+				char *from;
 
 				/* Find and set the correct account */
 				if ((from = mail_find_header_contents(args->to_change, "from")))
@@ -1339,31 +1339,29 @@ int compose_window_open(struct compose_args *args)
 					else set(attach_tree,MUIA_NList_Active,1);
 				}
 
-				if ((to = mail_find_header_contents(args->to_change,"to")))
+				if (args->to_change->info->to_list)
 				{
-					/* set the To string */
-					char *decoded_to;
-					parse_text_string(to,&decoded_to);
-					set(to_string,MUIA_UTF8String_Contents,decoded_to);
-					free(decoded_to);
+					utf8 *to_str = get_addresses_from_list(args->to_change->info->to_list);
+					if (to_str)
+					{
+						set(to_string,MUIA_UTF8String_Contents,to_str);
+						free(to_str);
+					}
 				}
 
-				if ((cc = mail_find_header_contents(args->to_change,"cc")))
+				if (args->to_change->info->cc_list)
 				{
-					/* set the CC string */
-					char *decoded_cc;
-					parse_text_string(cc,&decoded_cc);
-					set(cc_string,MUIA_UTF8String_Contents,decoded_cc);
-					free(decoded_cc);
+					utf8 *cc_str = get_addresses_from_list(args->to_change->info->cc_list);
+					if (cc_str)
+					{
+						set(to_string,MUIA_UTF8String_Contents,cc_str);
+						free(cc_str);
+					}
 				}
 
-				if ((reply = mail_find_header_contents(args->to_change,"replyto")))
+				if (args->to_change->info->reply_addr)
 				{
-					/* set the ReplyTo string */
-					char *decoded_reply;
-					parse_text_string(reply,&decoded_reply);
-					set(reply_string,MUIA_UTF8String_Contents,decoded_reply);
-					free(decoded_reply);
+					set(reply_string,MUIA_UTF8String_Contents,args->to_change->info->reply_addr);
 					set(data->reply_button,MUIA_Selected,TRUE);
 				}
 

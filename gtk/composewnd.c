@@ -34,6 +34,7 @@
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -49,10 +50,10 @@ struct Compose_Data
 	int num;
 
 	GtkWidget *wnd;
+	GtkWidget *notebook;
 	GtkWidget *toolbar;
 	GtkWidget *text_view;
 	GtkWidget *text_scrolled_window;
-
 	GtkWidget *from_combo;
 	GtkWidget *to_entry;
 	GtkWidget *cc_entry;
@@ -701,8 +702,8 @@ int compose_window_open(struct compose_args *args)
 {
 	int num;
 	struct Compose_Data *data;
-	GtkWidget *vbox, *but_box, *send_now_button, *send_later_button, *hold_button, *cancel_button;
-	GtkWidget *fields_table, *t;
+	GtkWidget *vbox, *page1, *page2, *but_box, *send_now_button, *send_later_button, *hold_button, *cancel_button;
+	GtkWidget *fields_table, *t, *label1, *label2;
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
@@ -723,6 +724,19 @@ int compose_window_open(struct compose_args *args)
 
 		vbox = gtk_vbox_new(0,4);
 		gtk_container_add(GTK_CONTAINER(data->wnd), vbox);
+
+		data->notebook = gtk_notebook_new();
+		gtk_container_add(GTK_CONTAINER(vbox), data->notebook);
+
+		label1 = gtk_label_new(_("Mail"));
+		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),0), label1);
+
+		label2 = gtk_label_new(_("Attachments"));
+		gtk_notebook_set_tab_label(GTK_NOTEBOOK(data->notebook), gtk_notebook_get_nth_page(GTK_NOTEBOOK(data->notebook),1), label2);
+
+		/* Page 1 */
+		page1 = gtk_vbox_new(0,4);
+		gtk_container_add(GTK_CONTAINER(data->notebook), page1);
 
 		fields_table = gtk_table_new(4,2,FALSE);
 		gtk_table_set_col_spacings(GTK_TABLE(fields_table),4);
@@ -765,10 +779,10 @@ int compose_window_open(struct compose_args *args)
 		gtk_table_attach(GTK_TABLE(fields_table),gtk_label_new("Subject"),0,1,3,4,0,0,0,0);
 		t = data->subject_entry = gtk_entry_new();
 		gtk_table_attach(GTK_TABLE(fields_table),t,1,2,3,4,GTK_FILL|GTK_EXPAND,0,0,0);
-		gtk_box_pack_start(GTK_BOX(vbox), fields_table, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
+		gtk_box_pack_start(GTK_BOX(page1), fields_table, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
 		data->toolbar = gtk_toolbar_new();
-		gtk_box_pack_start(GTK_BOX(vbox), data->toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
+		gtk_box_pack_start(GTK_BOX(page1), data->toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Copy", "", NULL /* private TT */, create_pixmap(data->wnd,"Copy.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
 		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Cut", "", NULL /* private TT */, create_pixmap(data->wnd,"Cut.xpm"), NULL/* CALLBACK */, NULL /* UDATA */);
 		gtk_toolbar_append_item(GTK_TOOLBAR(data->toolbar), "Paste", "", NULL /* private TT */, create_pixmap(data->wnd,"Paste.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
@@ -787,7 +801,10 @@ int compose_window_open(struct compose_args *args)
 		data->text_view = gtk_text_view_new();
 		g_object_set(data->text_view, "editable", TRUE, NULL);
 		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
-		gtk_box_pack_start(GTK_BOX(vbox), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+		gtk_box_pack_start(GTK_BOX(page1), data->text_scrolled_window, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		page2 = gtk_vbox_new(0,4);
+		gtk_container_add(GTK_CONTAINER(data->notebook), page2);
 
 		but_box = gtk_hbox_new(0,4);
 		gtk_box_pack_start(GTK_BOX(vbox), but_box, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
@@ -807,6 +824,45 @@ int compose_window_open(struct compose_args *args)
 		cancel_button = gtk_button_new_with_label("Cancel");
 		gtk_signal_connect_after(GTK_OBJECT(cancel_button),"clicked",GTK_SIGNAL_FUNC (compose_cancel),data);
 		gtk_box_pack_start(GTK_BOX(but_box), cancel_button, TRUE, TRUE, 0 /* Padding */); /* only use minimal height */
+
+		if (args->to_change)
+		{
+			char *to;
+			char *cc;
+			char *subject;
+
+			if ((to = mail_find_header_contents(args->to_change,"to")))
+			{
+				/* set the To string */
+				char *decoded_to;
+				parse_text_string(to,&decoded_to);
+
+				if (decoded_to)
+				{
+					gtk_entry_set_text(GTK_ENTRY(data->to_entry),decoded_to);
+					free(decoded_to);
+				}
+			}
+
+			if ((cc = mail_find_header_contents(args->to_change,"cc")))
+			{
+				/* set the CC string */
+				char *decoded_cc;
+				parse_text_string(cc,&decoded_cc);
+
+				if (decoded_cc)
+				{
+					gtk_entry_set_text(GTK_ENTRY(data->cc_entry),decoded_cc);
+					free(decoded_cc);
+				}
+			}
+
+			if (args->to_change->subject)
+			{
+				gtk_entry_set_text(GTK_ENTRY(data->subject_entry),args->to_change->subject);
+			}
+		}
+
 
 		gtk_widget_show_all(data->wnd);
 	}

@@ -1,0 +1,32 @@
+#! /bin/sh
+#
+# This shell script creates form the ilbm images found in amiga-mui/binaries the
+# xpm images
+#
+
+rm -R xpm
+mkdir xpm
+
+for name in amiga-mui/binaries/*.img; do
+ ilbmtoppm $name | ppmtoxpm | sed -e 's/\#969696/None/' >$(echo $name | sed -e 's/.*\//xpm\//' -e 's/.img/.xpm/')
+done
+
+#
+# sed -e 's/.*\//xpm\//' - substitute the path components with xpm/
+# sed -e 's/.img/.xpm/' - replace .img width .xpm
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

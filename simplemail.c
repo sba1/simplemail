@@ -339,6 +339,17 @@ void callback_folder_active(void)
 	}
 }
 
+/* a new mail should be added to a given folder */
+struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
+{
+	if (!folder) return NULL;
+
+	if (!sm_file_is_in_drawer(filename,folder->path))
+	{
+	}
+	main_refresh_folder(folder);
+}
+
 /* a new mail has arrived */
 static void callback_new_mail_arrived(struct mail *mail)
 {

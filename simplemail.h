@@ -65,6 +65,7 @@ void callback_mails_set_status(int status);
 
 void callback_apply_folder(struct filter *filter);
 
+struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder);
 void callback_new_mail_arrived_filename(char *filename);
 void callback_new_mail_written(struct mail *mail);
 void callback_number_of_mails_downloaded(int num);

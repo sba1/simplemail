@@ -909,6 +909,35 @@ static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILADD Arexx Command
+
+ Adds a mail with FILENAME into the folder. If the mail
+ (FILENAME) is already in the folder it isn't copied. Otherwise
+ it is copied. Returns the filename of the mail.
+*****************************************************************/
+static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR filename;
+		STRPTR folder;
+	} mailadd_arg;
+	memset(&mailadd_arg,0,sizeof(mailadd_arg));
+
+	if ((arg_handle = ParseTemplate("FILENAME/A,FOLDER",args,&mailadd_arg)))
+	{
+		struct folder *folder;
+		struct mail *mail;
+		if (mailadd_arg.folder) folder = folder_find_by_name(mailadd_arg.folder);
+		else folder = main_get_folder();
+
+		mail = callback_new_mail_to_folder(mailadd_arg.filename,folder);
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -947,6 +976,9 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SCREENTOBACK",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToBack(scr);}
 		else if (!Stricmp("SCREENTOFRONT",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
 		else if (!Stricmp("REQUESTFOLDER",command.command)) arexx_requestfolder(rxmsg,command.args);
+		else if (!Stricmp("MAILADD",command.command)) arexx_mailadd(rxmsg,command.args);
+		else if (!Stricmp("MAILLISTFREEZE",command.command)) main_freeze_mail_list();
+		else if (!Stricmp("MAILLISTHAW",command.command)) main_thaw_mail_list();
 
 		FreeTemplate(command_handle);
 	}

@@ -42,6 +42,7 @@
 #include "http.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 #include "text2html.h"
 
@@ -217,6 +218,9 @@ void context_menu_trigger(int **pdata)
 						break;
 
 			case	2: /* save whole document */
+						break;
+
+			case	3: /* Open via workbench.library */
 						break;
 		}
 	}
@@ -633,7 +637,7 @@ void read_window_open(char *folder, struct mail *mail)
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
-    MUIA_Window_Title, "SimpleMail - Read Message",
+    MUIA_Window_Title, _("SimpleMail - Read Message"),
         
 		WindowContents, VGroup,
 			Child, HGroupV,
@@ -642,22 +646,22 @@ void read_window_open(char *folder, struct mail *mail)
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 100,
-						Child, prev_button = MakePictureButton("_Prev","PROGDIR:Images/MailPrev"),
-						Child, next_button = MakePictureButton("_Next","PROGDIR:Images/MailNext"),
+						Child, prev_button = MakePictureButton(_("_Prev"),"PROGDIR:Images/MailPrev"),
+						Child, next_button = MakePictureButton(_("_Next"),"PROGDIR:Images/MailNext"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 50,
 /*						Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),*/
-						Child, save_button = MakePictureButton("_Save","PROGDIR:Images/MailSave"),
+						Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/MailSave"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 150,
-						Child, delete_button = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
+						Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/MailDelete"),
 /*						Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),*/
-						Child, reply_button = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
-						Child, forward_button = MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
+						Child, reply_button = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
+						Child, forward_button = MakePictureButton(_("_Forward"),"PROGDIR:Images/MailForward"),
 						End,
 					Child, HVSpace,
 					End,
@@ -698,27 +702,32 @@ void read_window_open(char *folder, struct mail *mail)
 		struct Read_Data *data = (struct Read_Data*)malloc(sizeof(struct Read_Data));
 		if (data)
 		{
+			Object *open_contents_item;
 			Object *save_contents_item;
 			Object *save_contents2_item;
 			Object *save_document_item;
 
 			data->attachment_standard_menu = MenustripObject,
-				Child, MenuObjectT("Attachment"),
+				Child, MenuObjectT(_("Attachment")),
+					Child, open_contents_item = MenuitemObject,
+						MUIA_Menuitem_Title, _("Open"),
+						MUIA_UserData, 3,
+						End,
 					Child, save_contents_item = MenuitemObject,
-						MUIA_Menuitem_Title, "Save As...",
+						MUIA_Menuitem_Title, _("Save As..."),
 						MUIA_UserData, 1,
 						End,
 					End,
 				End;
 
 			data->attachment_html_menu = MenustripObject,
-				Child, MenuObjectT("Attachment"),
+				Child, MenuObjectT(_("Attachment")),
 					Child, save_contents2_item = MenuitemObject,
-						MUIA_Menuitem_Title, "Save as...",
+						MUIA_Menuitem_Title, _("Save as..."),
 						MUIA_UserData, 1,
 						End,
 					Child, save_document_item = MenuitemObject,
-						MUIA_Menuitem_Title, "Save whole document as...",
+						MUIA_Menuitem_Title, _("Save whole document as..."),
 						MUIA_UserData, 2,
 						End,
 					End,

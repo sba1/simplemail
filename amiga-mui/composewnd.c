@@ -46,6 +46,7 @@
 #include "parse.h"
 #include "signature.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "addressstringclass.h"
@@ -152,7 +153,7 @@ STATIC ASM LONG from_strobj(register __a2 Object *list, register __a1 Object *st
 /******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
- this function)!
+ this function))!
 *******************************************************************/
 static void compose_window_close(struct Compose_Data **pdata)
 {
@@ -786,8 +787,8 @@ void compose_window_open(struct compose_args *args)
 
 		signatures_group = HGroup,
 			MUIA_Weight, 33,
-			Child, MakeLabel("Use signature"),
-			Child, signatures_cycle = MakeCycle("Use signature",sign_array),
+			Child, MakeLabel(_("Use signature")),
+			Child, signatures_cycle = MakeCycle(_("Use signature"),sign_array),
 			End;
 	} else
 	{
@@ -799,13 +800,13 @@ void compose_window_open(struct compose_args *args)
 
 	wnd = WindowObject,
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
-    MUIA_Window_Title, "SimpleMail - Compose Message",
+    MUIA_Window_Title, _("SimpleMail - Compose Message"),
         
 		WindowContents, main_group = VGroup,
 			Child, reply_string = BetterStringObject, MUIA_ShowMe, FALSE, End,
 
 			Child, ColGroup(2),
-				Child, MakeLabel("_From"),
+				Child, MakeLabel(_("_From")),
 				Child, from_popobject = PopobjectObject,
 					MUIA_Popstring_Button, PopButton(MUII_PopUp),
 					MUIA_Popstring_String, from_text = TextObject, TextFrame, MUIA_Background, MUII_TextBack, End,
@@ -816,22 +817,22 @@ void compose_window_open(struct compose_args *args)
 							End,
 						End,
 					End,
-				Child, MakeLabel("_To"),
+				Child, MakeLabel(_("_To")),
 				Child, HGroup,
 					MUIA_Group_Spacing,0,
 					Child, to_string = AddressStringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
-						MUIA_ControlChar, 't',
+						MUIA_ControlChar, GetControlChar("_To"),
 						MUIA_String_AdvanceOnCR, TRUE,
 						End,
 					Child, expand_to_button = PopButton(MUII_ArrowLeft),
 					End,
-				Child, MakeLabel("_Subject"),
+				Child, MakeLabel(_("_Subject")),
 				Child, subject_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
-					MUIA_ControlChar, 's',
+					MUIA_ControlChar, GetControlChar("_Subject"),
 					End,
 				End,
 			Child, contents_page = PageGroup,
@@ -841,21 +842,21 @@ void compose_window_open(struct compose_args *args)
 						MUIA_VertWeight,0,
 						Child, HGroup,
 							MUIA_Group_Spacing,0,
-							Child, copy_button = MakePictureButton("_Copy","PROGDIR:Images/Copy"),
-							Child, cut_button = MakePictureButton("C_ut","PROGDIR:Images/Cut"),
-							Child, paste_button = MakePictureButton("_Paste","PROGDIR:Images/Paste"),
+							Child, copy_button = MakePictureButton(_("_Copy"),"PROGDIR:Images/Copy"),
+							Child, cut_button = MakePictureButton(_("C_ut"),"PROGDIR:Images/Cut"),
+							Child, paste_button = MakePictureButton(_("_Paste"),"PROGDIR:Images/Paste"),
 							End,
 						Child, HGroup,
 							MUIA_Weight, 66,
 							MUIA_Group_Spacing,0,
-							Child, undo_button = MakePictureButton("Un_do","PROGDIR:Images/Undo"),
-							Child, redo_button = MakePictureButton("_Redo","PROGDIR:Images/Redo"),
+							Child, undo_button = MakePictureButton(_("Un_do"),"PROGDIR:Images/Undo"),
+							Child, redo_button = MakePictureButton(_("_Redo"),"PROGDIR:Images/Redo"),
 							End,
 						Child, HGroup,
 							MUIA_Weight, 66,
 							MUIA_Group_Spacing,0,
-							Child, add_attach_button = MakePictureButton("Attach","PROGDIR:Images/AddAttachment"),
-							Child, show_attach_button = MakePictureButton("Show At.","PROGDIR:Images/AttachmentList"),
+							Child, add_attach_button = MakePictureButton(_("Attach"),"PROGDIR:Images/AddAttachment"),
+							Child, show_attach_button = MakePictureButton(_("Show At."),"PROGDIR:Images/AttachmentList"),
 							End,
 						Child, RectangleObject,
 							MUIA_FixHeight,1,
@@ -913,19 +914,19 @@ void compose_window_open(struct compose_args *args)
 						End,
 					End,
 				Child, HGroup,
-					Child, add_text_button = MakeButton("Add text"),
-					Child, add_multipart_button = MakeButton("Add multipart"),
-					Child, add_files_button = MakeButton("Add file(s)"),
+					Child, add_text_button = MakeButton(_("Add text")),
+					Child, add_multipart_button = MakeButton(_("Add multipart")),
+					Child, add_files_button = MakeButton(_("Add file(s)")),
 /*					Child, MakeButton("Pack & add"),*/
-					Child, remove_button = MakeButton("Remove"),
+					Child, remove_button = MakeButton(_("Remove")),
 					End,
 				Child, HorizLineObject,
 				End,
 			Child, HGroup,
-				Child, send_now_button = MakeButton("Send now"),
-				Child, send_later_button = MakeButton("Send later"),
-				Child, hold_button = MakeButton("Hold"),
-				Child, cancel_button = MakeButton("Cancel"),
+				Child, send_now_button = MakeButton(_("Send now")),
+				Child, send_later_button = MakeButton(_("Send later")),
+				Child, hold_button = MakeButton(_("Hold")),
+				Child, cancel_button = MakeButton(_("Cancel")),
 				End,
 			End,
 		End;
@@ -1073,7 +1074,7 @@ void compose_window_open(struct compose_args *args)
 					else set(attach_tree,MUIA_NList_Active,1);
 				}
 
-				if ((to = mail_find_header_contents(args->to_change,"To")))
+				if ((to = mail_find_header_contents(args->to_change,"to")))
 				{
 					/* set the To string */
 					parse_text_string(to,&decoded_to);

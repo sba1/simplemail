@@ -35,6 +35,7 @@
 #include <proto/intuition.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "compiler.h"
@@ -113,10 +114,10 @@ STATIC ASM VOID mail_display(register __a0 struct Hook *h, register __a2 char **
 		*array++ = ent->subject;
 	} else
 	{
-		*array++ = "Mail No";
-		*array++ = "Size";
-		*array++ = "From";
-		*array++ = "Subject";
+		*array++ = _("Mail No");
+		*array++ = _("Size");
+		*array++ = _("From");
+		*array++ = _("Subject");
 	}
 }
 
@@ -152,15 +153,15 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 								End,
 							End,
 						Child, HGroup,
-							Child, ignore = MakeButton("Ignore"),
-							Child, down = MakeButton("Download"),
-							Child, del = MakeButton("Delete"),
-							Child, downdel = MakeButton("Download & Delete"),
-							Child, start = MakeButton("_Start"),
+							Child, ignore = MakeButton(_("Ignore")),
+							Child, down = MakeButton(_("Download")),
+							Child, del = MakeButton(_("Delete")),
+							Child, downdel = MakeButton(_("Download & Delete")),
+							Child, start = MakeButton(_("_Start")),
 							End,
 						Child, HGroup,
-							Child, MakeLabel("Ignore not listed mails"),
-							Child, ignore_check = MakeCheck("Ignore not listed mails",FALSE),
+							Child, MakeLabel(_("Ignore not listed mails")),
+							Child, ignore_check = MakeCheck(_("Ignore not listed mails"),FALSE),
 							Child, HVSpace,
 							End,
 						End,
@@ -174,7 +175,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						End,
 					Child, HGroup,
 						Child, status = TextObject, TextFrame,MUIA_Background, MUII_TextBack, End,
-						Child, abort = MakeButton("_Abort"),
+						Child, abort = MakeButton(_("_Abort")),
 						End,
 					End,	
 				TAG_MORE, msg->ops_AttrList);

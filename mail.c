@@ -38,6 +38,7 @@
 #include "signature.h"
 #include "simplemail.h" /* for the callbacks() */
 #include "SimpleMail_rev.h"
+#include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 #include "trans.h" /* for mail_upload_single() */
@@ -918,9 +919,10 @@ struct mail *mail_create_reply(struct mail *mail)
 				if (mystricmp(from_addr.addr_spec,replyto_addr.addr_spec))
 				{
 					which_address = sm_request(NULL,
-												"Sender address (From) is <%s>, but\n"
+												_("Sender address (From) is <%s>, but\n"
 												"return address (Reply-To) is <%s>.\n"
-												"Which address do you want to use?","_From|*_Reply-To|_Both|_Cancel",
+												"Which address do you want to use?"),
+												_("_From|*_Reply-To|_Both|_Cancel"),
 												from_addr.addr_spec,replyto_addr.addr_spec);
 
 					if (from_addr.phrase)  free(from_addr.phrase);
@@ -2069,8 +2071,8 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 
 	if (!new_mail->from)
 	{
-		sm_request(NULL, "No valid from field specified. You must configure some Accounts\n"
-										 "before creating new mails","Ok");
+		sm_request(NULL, _("No valid from field specified. You must configure some Accounts\n"
+										 "before creating new mails"),_("Ok"));
 		return 0;
 	}
 
@@ -2161,7 +2163,7 @@ int mail_create_html_header(struct mail *mail)
 				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
 			}
 
-			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\"%s>",mb.addr_spec,style_text);
+			fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("From"),mb.addr_spec,style_text);
 
 			if (mb.phrase)
 			{
@@ -2180,7 +2182,7 @@ int mail_create_html_header(struct mail *mail)
 		if (to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 		{
 			struct parse_address p_addr;
-			fputs("<STRONG>To:</STRONG> ",fh);
+			fprintf(fh,"<STRONG>%s:</STRONG> ",_("To"));
 			if ((parse_address(to,&p_addr)))
 			{
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
@@ -2203,7 +2205,7 @@ int mail_create_html_header(struct mail *mail)
 		if (cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 		{
 			struct parse_address p_addr;
-			fputs("<STRONG>Copies to:</STRONG> ",fh);
+			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Copies to"),fh);
 			if ((parse_address(cc,&p_addr)))
 			{
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
@@ -2224,14 +2226,14 @@ int mail_create_html_header(struct mail *mail)
 		}
 
 
-		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>Subject:</STRONG> %s<BR>",mail->subject);
-		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_long_str(mail->seconds));
+		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>",_("Subject"),mail->subject);
+		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>",_("Date"),sm_get_date_long_str(mail->seconds));
 
 		if (replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
 		{
 			struct mailbox addr;
 			parse_mailbox(replyto, &addr);
-			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\"%s>",addr.addr_spec,style_text);
+			fprintf(fh,"<STRONG>%s:</STRONG> <A HREF=\"mailto:%s\"%s>",_("Replies To"),addr.addr_spec,style_text);
 
 			if (addr.phrase)
 			{

@@ -47,6 +47,7 @@
 #include "pop3.h"
 #include "signature.h"
 #include "simplemail.h"
+#include "smintl.h"
 
 #include "compiler.h"
 #include "composeeditorclass.h"
@@ -323,7 +324,7 @@ static void config_use(void)
 
 	if (user.new_folder_directory && mystricmp(user.new_folder_directory,user.folder_directory))
 	{
-		sm_request(NULL,"You have changed the folder direcory! You must quit and restart SimpleMail now.","Ok");
+		sm_request(NULL,_("You have changed the folder direcory! You must quit and restart SimpleMail now."),_("Ok"));
 	}
 
 	user.config.header_flags = 0;
@@ -527,12 +528,12 @@ static int init_user_group(void)
 	user_group = VGroup,
 		MUIA_ShowMe, FALSE,
 		Child, HGroup,
-			Child, MakeLabel("Add adjustment for daylight saving time"),
-			Child, user_dst_check = MakeCheck("Add adjustment for daylight saving time",user.config.dst),
+			Child, MakeLabel(_("Add adjustment for daylight saving time")),
+			Child, user_dst_check = MakeCheck(_("Add adjustment for daylight saving time"),user.config.dst),
 			Child, HSpace(0),
 			End,
 		Child, HGroup,
-			Child, MakeLabel("Folder diretory"),
+			Child, MakeLabel(_("Folder diretory")),
 			Child, PopaslObject,
 				MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 				MUIA_Popstring_String, user_folder_string = BetterStringObject,
@@ -559,7 +560,7 @@ static int init_tcpip_receive_group(void)
 
 	tcpip_receive_group = VGroup,
 		MUIA_ShowMe, FALSE,
-		Child, HorizLineTextObject("Preselection"),
+		Child, HorizLineTextObject(_("Preselection")),
 		Child, HGroup,
 			Child, receive_preselection_radio = RadioObject,
 				MUIA_Radio_Entries, preselection,
@@ -578,16 +579,16 @@ static int init_tcpip_receive_group(void)
 				End,
 			Child, RectangleObject, MUIA_Weight, 33, End,
 			End,
-		Child, HorizLineTextObject("Automatic operation"),
+		Child, HorizLineTextObject(_("Automatic operation")),
 		Child, HGroup,
-			Child, MakeLabel("Check for new mail every"),
+			Child, MakeLabel(_("Check for new mail every")),
 			Child, receive_autocheck_string = BetterStringObject,
 				StringFrame,
 				MUIA_CycleChain,1,
 				MUIA_String_Acknowledge, TRUE,
 				MUIA_String_Integer, user.config.receive_autocheck,
 				End,
-			Child, TextObject, MUIA_Text_Contents, "minutes", End,
+			Child, TextObject, MUIA_Text_Contents, _("minutes"), End,
 			End,
 		End;
 
@@ -605,7 +606,7 @@ static void account_add(void)
 	if (account)
 	{
 		list_insert_tail(&account_list, &account->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Account", account_group, accounts_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, accounts_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 	}
 }
 
@@ -644,7 +645,7 @@ static int init_accounts_group(void)
 	Object *add;
 	accounts_group = HGroup,
 		MUIA_ShowMe, FALSE,
-		Child, add = MakeButton("Add new account"),
+		Child, add = MakeButton(_("Add new account")),
 		End;
 
 	if (!accounts_group) return 0;
@@ -668,23 +669,23 @@ static int init_account_group(void)
 		MUIA_Weight, 10000,
 
 		VirtualFrame,
-		Child, HorizLineTextObject("User"),
+		Child, HorizLineTextObject(_("User")),
 		Child, ColGroup(2),
-			Child, MakeLabel("Name"),
+			Child, MakeLabel(_("Name")),
 			Child, account_name_string = BetterStringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_Contents, NULL,
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
-			Child, MakeLabel("E-Mail Address"),
+			Child, MakeLabel(_("E-Mail Address")),
 			Child, account_email_string = BetterStringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
 				MUIA_String_Contents, NULL,
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
-			Child, MakeLabel("Reply Address"),
+			Child, MakeLabel(_("Reply Address")),
 			Child, account_reply_string = BetterStringObject,
 				StringFrame,
 				MUIA_CycleChain, 1,
@@ -692,16 +693,16 @@ static int init_account_group(void)
 				MUIA_String_AdvanceOnCR, TRUE,
 				End,
 			End,
-		Child, HorizLineTextObject("Receive"),
+		Child, HorizLineTextObject(_("Receive")),
 		Child, ColGroup(2),
-			Child, MakeLabel("POP3 Server"),
+			Child, MakeLabel(_("POP3 Server")),
 			Child, HGroup,
 				Child, account_recv_server_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
 				End,
-				Child, MakeLabel("Port"),
+				Child, MakeLabel(_("Port")),
 				Child, account_recv_port_string = BetterStringObject,
 					StringFrame,
 					MUIA_Weight, 33,
@@ -710,14 +711,14 @@ static int init_account_group(void)
 					MUIA_String_Accept, "0123456789",
 					End,
 				End,
-			Child, MakeLabel("Login"),
+			Child, MakeLabel(_("Login")),
 			Child,  HGroup,
 				Child, account_recv_login_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
-				Child, MakeLabel("Password"),
+				Child, MakeLabel(_("Password")),
 				Child, account_recv_password_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
@@ -727,18 +728,18 @@ static int init_account_group(void)
 				End,
 			End,
 		Child, HGroup,
-			Child, MakeLabel("Active"),
-			Child, HGroup, Child, account_recv_active_check = MakeCheck("Active", FALSE), Child, HSpace(0), End,
-			Child, MakeLabel("_Delete mails"),
-			Child, HGroup, Child, account_recv_delete_check = MakeCheck("_Delete mails", FALSE), Child, HSpace(0), End,
-			Child, MakeLabel("Avoid duplicates"),
-			Child, HGroup, Child, account_recv_avoid_check = MakeCheck("Avoid duplicates", FALSE), Child, HSpace(0), End,
-			Child, MakeLabel("Use SSL"),
-			Child, HGroup, Child, account_recv_ssl_check = MakeCheck("Use SSL", FALSE), Child, HSpace(0), End,
+			Child, MakeLabel(_("Active")),
+			Child, HGroup, Child, account_recv_active_check = MakeCheck(_("Active"), FALSE), Child, HSpace(0), End,
+			Child, MakeLabel(_("_Delete mails")),
+			Child, HGroup, Child, account_recv_delete_check = MakeCheck(_("_Delete mails"), FALSE), Child, HSpace(0), End,
+			Child, MakeLabel(_("Avoid duplicates")),
+			Child, HGroup, Child, account_recv_avoid_check = MakeCheck(_("Avoid duplicates"), FALSE), Child, HSpace(0), End,
+			Child, MakeLabel(_("Use SSL")),
+			Child, HGroup, Child, account_recv_ssl_check = MakeCheck(_("Use SSL"), FALSE), Child, HSpace(0), End,
 			Child, HVSpace,
 			End,
 
-		Child, HorizLineTextObject("Send"),
+		Child, HorizLineTextObject(_("Send")),
 		Child, VGroup,
 			Child, ColGroup(2),
 
@@ -756,14 +757,14 @@ static int init_account_group(void)
 					Child, MakeCheck("Use IP as domain",user.config.smtp_ip_as_domain),
 					End,
 */
-				Child, MakeLabel("SMTP Server"),
+				Child, MakeLabel(_("SMTP Server")),
 				Child, HGroup,
 					Child, account_send_server_string = BetterStringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
 						MUIA_String_AdvanceOnCR, TRUE,
 						End,
-					Child, MakeLabel("Port"),
+					Child, MakeLabel(_("Port")),
 					Child, account_send_port_string = BetterStringObject,
 						StringFrame,
 						MUIA_Weight, 33,
@@ -772,7 +773,7 @@ static int init_account_group(void)
 						MUIA_String_Accept,"0123456789",
 						End,
 					End,
-				Child, MakeLabel("Login"),
+				Child, MakeLabel(_("Login")),
 				Child, HGroup,
 					Child, account_send_login_string = BetterStringObject,
 						StringFrame,
@@ -780,7 +781,7 @@ static int init_account_group(void)
 						MUIA_CycleChain, 1,
 						MUIA_String_AdvanceOnCR, TRUE,
 						End,
-					Child, MakeLabel("Password"),
+					Child, MakeLabel(_("Password")),
 					Child, account_send_password_string = BetterStringObject,
 						StringFrame,
 						MUIA_Disabled, TRUE,
@@ -791,14 +792,14 @@ static int init_account_group(void)
 					End,
 				End,
 			Child, HGroup,
-				Child, MakeLabel("Use SMTP AUTH"),
-				Child, account_send_auth_check = MakeCheck("Use SMTP AUTH", FALSE),
+				Child, MakeLabel(_("Use SMTP AUTH")),
+				Child, account_send_auth_check = MakeCheck(_("Use SMTP AUTH"), FALSE),
 				Child, HVSpace,
-				Child, MakeLabel("Log into pop3 server first"),
-				Child, account_send_pop3_check = MakeCheck("Log into pop3 server first",FALSE),
+				Child, MakeLabel(_("Log into pop3 server first")),
+				Child, account_send_pop3_check = MakeCheck(_("Log into pop3 server first"),FALSE),
 				Child, HVSpace,
-				Child, MakeLabel("Use IP as domain"),
-				Child, account_send_ip_check = MakeCheck("Use IP as domain", FALSE),
+				Child, MakeLabel(_("Use IP as domain")),
+				Child, account_send_ip_check = MakeCheck(_("Use IP as domain"), FALSE),
 				Child, HVSpace,
 
 				End,
@@ -806,8 +807,8 @@ static int init_account_group(void)
 		End,
 
 		Child, HGroup,
-			Child, account_add_button = MakeButton("Add new account"),
-			Child, account_remove_button = MakeButton("Remove account"),
+			Child, account_add_button = MakeButton(_("Add new account")),
+			Child, account_remove_button = MakeButton(_("Remove account")),
 			End,
 		End;
 
@@ -836,16 +837,16 @@ static int init_write_group(void)
 
 	write_group = VGroup,
 		MUIA_ShowMe, FALSE,
-		Child, HorizLineTextObject("Editor"),
+		Child, HorizLineTextObject(_("Editor")),
 		Child, HGroup,
-			Child, MakeLabel("Word wrap"),
+			Child, MakeLabel(_("Word wrap")),
 			Child, write_wordwrap_string = BetterStringObject, StringFrame, MUIA_CycleChain, 1, MUIA_String_Accept, "0123456789", MUIA_String_Integer, user.config.write_wrap, End,
 			Child, write_wordwrap_cycle = MakeCycle(NULL,wordwrap_entries),
 			End,
-		Child, HorizLineTextObject("Replying"),
+		Child, HorizLineTextObject(_("Replying")),
 		Child, HGroup,
-			Child, MakeLabel("Wrap before quoting"),
-			Child, write_replywrap_check = MakeCheck("Wrap before quoting",user.config.write_reply_quote),
+			Child, MakeLabel(_("Wrap before quoting")),
+			Child, write_replywrap_check = MakeCheck(_("Wrap before quoting"),user.config.write_reply_quote),
 			Child, HVSpace,
 			End,
 		End;
@@ -866,11 +867,11 @@ static int init_mails_readmisc_group(void)
 	mails_readmisc_group =  VGroup,
 		MUIA_ShowMe, FALSE,
 
-		Child, HorizLineTextObject("Header Configuration"),
+		Child, HorizLineTextObject(_("Header Configuration")),
 		Child, VGroupV,
 			Child, HGroup,
-				Child, MakeLabel("Show all headers"),
-				Child, mails_readmisc_all_check = MakeCheck("Show all headers",FALSE),
+				Child, MakeLabel(_("Show all headers")),
+				Child, mails_readmisc_all_check = MakeCheck(_("Show all headers"),FALSE),
 				Child, HVSpace,
 				End,
 			Child, RectangleObject, MUIA_FixHeight, 6, End,
@@ -900,7 +901,7 @@ static int init_mails_readmisc_group(void)
 				Child, VGroup,
 					Child, HGroup,
 						Child, HVSpace,
-						Child, TextObject, MUIA_Text_Contents, "Additional headers", End,
+						Child, TextObject, MUIA_Text_Contents, _("Additional headers"), End,
 						Child, HVSpace,
 						End,
 					Child, mails_readmisc_additional_string = MultiStringObject,
@@ -978,16 +979,16 @@ static int init_mails_read_group(void)
 	mails_read_group =  VGroup,
 		MUIA_ShowMe, FALSE,
 
-		Child, HorizLineTextObject("Fonts"),
+		Child, HorizLineTextObject(_("Fonts")),
 		Child, ColGroup(2),
-			Child, MakeLabel("Proportional Font"),
+			Child, MakeLabel(_("Proportional Font")),
 			Child, PopaslObject,
 				MUIA_Popasl_Type, ASL_FontRequest,
 				MUIA_Popstring_String, read_propfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_propfont,End,
 				MUIA_Popstring_Button, PopButton(MUII_PopUp),
 				End,
 
-			Child, MakeLabel("Fixed Font"),
+			Child, MakeLabel(_("Fixed Font")),
 			Child, PopaslObject,
 				MUIA_Popasl_Type, ASL_FontRequest,
 				MUIA_Popstring_String, read_fixedfont_string = BetterStringObject, StringFrame, MUIA_String_Contents, user.config.read_fixedfont, End,
@@ -996,7 +997,7 @@ static int init_mails_read_group(void)
 				End,
 			End,
 
-		Child, HorizLineTextObject("Colors"),
+		Child, HorizLineTextObject(_("Colors")),
 		Child, read_palette = PaletteObject,
 			MUIA_Palette_Entries, read_palette_entries,
 			MUIA_Palette_Names  , read_palette_names,
@@ -1006,12 +1007,12 @@ static int init_mails_read_group(void)
 		Child, HorizLineObject,
 
 		Child, HGroup,
-			Child, MakeLabel("Wordwrap plain text"),
-			Child, read_wrap_checkbox = MakeCheck("Wordwrap plain text",user.config.read_wordwrap),
-			Child, MakeLabel("Underline links"),
-			Child, read_linkunderlined_checkbox = MakeCheck("Underline links",user.config.read_link_underlined),
-			Child, MakeLabel("Use graphical smilies"),
-			Child, read_smilies_checkbox = MakeCheck("Use graphical smilies",user.config.read_smilies),
+			Child, MakeLabel(_("Wordwrap plain text")),
+			Child, read_wrap_checkbox = MakeCheck(_("Wordwrap plain text"),user.config.read_wordwrap),
+			Child, MakeLabel(_("Underline links")),
+			Child, read_linkunderlined_checkbox = MakeCheck(_("Underline links"),user.config.read_link_underlined),
+			Child, MakeLabel(_("Use graphical smilies")),
+			Child, read_smilies_checkbox = MakeCheck(_("Use graphical smilies"),user.config.read_smilies),
 			Child, HVSpace,
 			End,
 		End;
@@ -1031,7 +1032,7 @@ static int init_mails_readhtml_group(void)
 
 		Child, HGroup,
 			Child, HVSpace,
-			Child, MakeLabel("Allow to download images from the internet from"),
+			Child, MakeLabel(_("Allow to download images from the internet from")),
 			Child, HVSpace,
 			End,
 		Child, readhtml_mail_editor = ComposeEditorObject,
@@ -1055,7 +1056,7 @@ static void signature_add(void)
 	if (s)
 	{
 		list_insert_tail(&signature_list, &s->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", signature_group, signatures_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Signature"), signature_group, signatures_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 	}
 }
 
@@ -1096,12 +1097,12 @@ static int init_signatures_group(void)
 		MUIA_Weight,300,
   	Child, VGroup,
   		Child, HGroup,
-  			Child, MakeLabel("Us_e signatures"),
-  			Child, signatures_use_checkbox = MakeCheck("_Use signatures",user.config.signatures_use),
+  			Child, MakeLabel(_("Us_e signatures")),
+  			Child, signatures_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
   			Child, HSpace(0),
 	  		End,
 	  	Child, HorizLineObject,
-			Child, add_button = MakeButton("_Add new signature"),
+			Child, add_button = MakeButton(_("_Add new signature")),
 			End,
 		End;
 
@@ -1129,7 +1130,7 @@ static int init_signature_group(void)
 		MUIA_ShowMe, FALSE,
 		MUIA_Weight,300,
 		Child, HGroup,
-			Child, MakeLabel("Name"),
+			Child, MakeLabel(_("Name")),
 			Child, signature_name_string = BetterStringObject, StringFrame, End,
 /*			Child, edit_button = MakeButton("Edit in external editor"),*/
 			End,
@@ -1149,8 +1150,8 @@ static int init_signature_group(void)
   		End,*/
   	Child, HorizLineObject,
   	Child, HGroup,
-			Child, add_button = MakeButton("Add new signature"),
-			Child, rem_button = MakeButton("Remove signature"),
+			Child, add_button = MakeButton(_("Add new signature")),
+			Child, rem_button = MakeButton(_("Remove signature")),
 			End,
 		End;
 
@@ -1174,7 +1175,7 @@ static void phrase_add(void)
 	if (p)
 	{
 		list_insert_tail(&phrase_list, &p->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Phrase", phrase_group, phrases_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrase"), phrase_group, phrases_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 	}
 }
 
@@ -1214,7 +1215,7 @@ static int init_phrases_group(void)
 		MUIA_ShowMe, FALSE,
 		MUIA_Weight,300,
   	Child, VGroup,
-			Child, add_button = MakeButton("_Add new phrase"),
+			Child, add_button = MakeButton(_("_Add new phrase")),
 			End,
 		End;
 
@@ -1261,64 +1262,64 @@ static int init_phrase_group(void)
 		MUIA_ShowMe, FALSE,
 		MUIA_Weight,300,
 		Child, HGroup,
-			Child, MakeLabel("Use on addresses which contain"),
+			Child, MakeLabel(_("Use on addresses which contain")),
 			Child, phrase_addresses_string = BetterStringObject,
 				StringFrame,
 				MUIA_String_AdvanceOnCR, TRUE,
 				MUIA_CycleChain,1,
 				End,
 			End,
-		Child, HorizLineTextObject("Write"),
+		Child, HorizLineTextObject(_("Write")),
 		Child, ColGroup(2),
-			Child, MakeLabel("Welcome"),
+			Child, MakeLabel(_("Welcome")),
 			Child, phrase_write_welcome_string = BetterStringObject,
 				StringFrame,
 				MUIA_String_AdvanceOnCR, TRUE,
 				MUIA_CycleChain,1,
 				End,
-			Child, MakeLabel("Welcome with address"),
+			Child, MakeLabel(_("Welcome with address")),
 			Child, phrase_write_welcomeaddr_popph = PopphObject,
 				MUIA_Popph_Array, write_popph_array,
 				End,
-			Child, MakeLabel("Close"),
+			Child, MakeLabel(_("Close")),
 			Child, phrase_write_close_string = BetterStringObject,
 				StringFrame,
 				MUIA_String_AdvanceOnCR, TRUE,
 				MUIA_CycleChain,1,
 				End,		
 			End,
-		Child, HorizLineTextObject("Reply"),
+		Child, HorizLineTextObject(_("Reply")),
 		Child, ColGroup(2),
-			Child, MakeLabel("Welcome"),
+			Child, MakeLabel(_("Welcome")),
 			Child, phrase_reply_welcome_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 
-			Child, MakeLabel("Intro"),
+			Child, MakeLabel(_("Intro")),
 			Child, phrase_reply_intro_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 
-			Child, MakeLabel("Close"),
+			Child, MakeLabel(_("Close")),
 			Child, phrase_reply_close_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 			End,
-		Child, HorizLineTextObject("Forward"),
+		Child, HorizLineTextObject(_("Forward")),
 		Child, ColGroup(2),
-			Child, MakeLabel("Initial"),
+			Child, MakeLabel(_("Initial")),
 			Child, phrase_forward_initial_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 
-			Child, MakeLabel("Finish"),
+			Child, MakeLabel(_("Finish")),
 			Child, phrase_forward_terminating_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
 			End,
   	Child, HGroup,
-			Child, add_button = MakeButton("Add new phrase"),
-			Child, rem_button = MakeButton("Remove phrase"),
+			Child, add_button = MakeButton(_("Add new phrase")),
+			Child, rem_button = MakeButton(_("Remove phrase")),
 			End,
 		End;
 
@@ -1353,7 +1354,7 @@ static void init_config(void)
 
 	config_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
-    MUIA_Window_Title, "SimpleMail - Configure",
+    MUIA_Window_Title, _("SimpleMail - Configuration"),
     WindowContents, VGroup,
     	Child, HGroup,
     		Child, NListviewObject,
@@ -1384,9 +1385,9 @@ static void init_config(void)
     		End,
     	Child, HorizLineObject,
     	Child, HGroup,
-    		Child, save_button = MakeButton("_Save"),
-    		Child, use_button = MakeButton("_Use"),
-    		Child, cancel_button = MakeButton("_Cancel"),
+    		Child, save_button = MakeButton(_("_Save")),
+    		Child, use_button = MakeButton(_("_Use")),
+    		Child, cancel_button = MakeButton(_("_Cancel")),
     		End,
 			End,
 		End;
@@ -1409,7 +1410,7 @@ static void init_config(void)
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, config_save);
 		DoMethod(config_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard,config_tree_active);
 
-		DoMethod(config_tree, MUIM_NListtree_Insert, "User", user_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("User"), user_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 
 		if ((treenode = accounts_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Accounts", accounts_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
@@ -1422,19 +1423,19 @@ static void init_config(void)
 				if (new_account)
 				{
 					list_insert_tail(&account_list,&new_account->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "Account", account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
 				account = (struct account*)node_next(&account->node);
 			}
 		}
 
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Write", write_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading", mails_readmisc_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading plain", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Reading HTML", mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Receive mail"), tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Write"), write_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading"), mails_readmisc_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading plain"), mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Reading HTML"), mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 
-		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Phrases", phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrases"), phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
 			struct phrase *phrase;
 			phrase = (struct phrase*)list_first(&user.config.phrase_list);
@@ -1445,7 +1446,7 @@ static void init_config(void)
 				if (new_phrase)
 				{
 					list_insert_tail(&phrase_list,&new_phrase->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "Phrase", phrase_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(config_tree, MUIM_NListtree_Insert, _("Phrase"), phrase_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
 				phrase = (struct phrase*)node_next(&phrase->node);
 			}
@@ -1462,7 +1463,7 @@ static void init_config(void)
 				if (new_signature)
 				{
 					list_insert_tail(&signature_list,&new_signature->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "Signature", signature_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					DoMethod(config_tree, MUIM_NListtree_Insert, _("Signature"), signature_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
 				signature = (struct signature*)node_next(&signature->node);
 			}
@@ -1515,9 +1516,9 @@ STATIC ASM ULONG Sizes_Dispatcher(register __a0 struct IClass *cl, register __a2
 					{
 						static char buf[64];
 						LONG val = ((struct MUIP_Numeric_Stringify*)msg)->value;
-						if (!val) return (ULONG)"All messages";
+						if (!val) return (ULONG)_("All messages");
 						val = value2size(val);
-						sprintf(buf, "> %ld KB",val);
+						sprintf(buf, _("> %ld KB"),val);
 						return (ULONG)buf;
 					}
 					break;

@@ -1,6 +1,6 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Free Software Foundation, Inc.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright (C) 2001 Free Software Foundation, Inc.
+# Sebastian Bauer <sebauer@t-online.de>,2001.
 #
 #, fuzzy
 msgid ""
@@ -28,11 +28,11 @@ msgstr "Copyright © 2000-2001"
 
 #: amiga-mui/mainwnd.c:151
 msgid "and"
-msgstr ""
+msgstr "und"
 
 #: amiga-mui/mainwnd.c:151
 msgid "Released under the terms of the GNU Public License"
-msgstr "Veröffentlichter unter den Bedingungen der GNU Public Lizenz"
+msgstr "Veröffentlicht unter den Bedingungen der GNU Public Lizenz"
 
 #: amiga-mui/mainwnd.c:468
 msgid "R_ead"
@@ -91,5 +91,6 @@ msgstr "Konfig"
 msgid ""
 "SimpleMail needs at least version 1.8 of the NListtree mui subclass!\n"
 "It's available at %s"
-msgstr ""
+msgstr "SimpleMail benötigt mindestens Version 1.8 der NListtree MUI Unterklasse!\n"
+"Sie ist auf %s auffindbar""
 

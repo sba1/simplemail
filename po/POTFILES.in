@@ -1,3 +1,11 @@
 # List of source files containing translatable strings.
 # (Filenames relative to top-level directory.)
+amiga-mui/addressbookwnd.c
+amiga-mui/composewnd.c
+amiga-mui/configwnd.c
+amiga-mui/readwnd.c
 amiga-mui/mainwnd.c
+amiga-mui/transwndclass.c
+mail.c
+
+

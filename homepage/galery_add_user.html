@@ -35,7 +35,7 @@
           $timeofday = gettimeofday();
           $pic_name = sprintf("%08lx%08lx.picture",$timeofday["sec"],$timeofday["usec"]);
         } while (file_exists("galery/" . $pic_name));
-        rename($userfile,"galery/" . $pic_name);
+        copy($userfile,"galery/" . $pic_name);
         fputs($fh,sprintf("%s,%s,%s\n",$email,$name,$pic_name));
         echo("<center>Your photo has been succesfully added into SimpleMail's galery.</center><br>");
         galery_picture($pic_name, $name, $email);
@@ -48,4 +48,5 @@
     echo("No username or email address given<br>");
   }
 ?>
+
 

@@ -5,12 +5,16 @@ SUBDIRS=	gtk
 
 EXTRA_DIST=	diff_ignore
 
-simplemail_SOURCES = addressbook.c \
+simplemail_SOURCES = account.c \
+                     account.h \
+                     addressbook.c \
                      addressbook.h \
                      codecs.c \
                      codecs.h \
                      configuration.c \
                      configuration.h \
+                     filter.c \
+                     filter.h \
                      folder.c \
                      folder.h \
                      hmac_md5.c \
@@ -42,6 +46,8 @@ simplemail_SOURCES = addressbook.c \
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
 simplemail_LDADD        = ./gtk/libgui.a @GUI_LIBS@
+
+
 
 
 

@@ -151,3 +151,7 @@ void folder_edit(struct folder *f)
 }
 
 
+
+void folder_edit_new_path(char *init_path)
+{
+}

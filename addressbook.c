@@ -323,12 +323,12 @@ void init_addressbook(void)
 	if (!addressbook_load())
 	{
 		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@rz.uni-potsdam.de");
-		addressbook_set_description(entry, "Original author of SimpleMail");
+		addressbook_set_description(entry, _("Original author of SimpleMail"));
 		addressbook_person_add_email(entry, "hynek@hys.in-berlin.de");
 		entry->u.person.sex = 2;
 
 		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
-		addressbook_set_description(entry, "Original author of SimpleMail");
+		addressbook_set_description(entry, _("Original author of SimpleMail"));
 		addressbook_person_add_email(entry, "Sebastian.Bauer@in.stud.tu-ilmenau.de");
 		entry->u.person.sex = 2;
 	}
@@ -1456,3 +1456,40 @@ struct addressbook_entry *addressbook_next(struct addressbook_entry *entry)
 	return new_entry;
 }
 
+/**************************************************************************
+ Private function which is used for recursion.
+**************************************************************************/
+static char **addressbook_priv_obtain_array_of_email_addresses(struct addressbook_entry *entry, char **array)
+{
+	struct addressbook_entry *ae;
+
+	ae = addressbook_first(entry);
+	while (ae)
+	{
+		if (ae->type == ADDRESSBOOK_ENTRY_GROUP)
+		{
+			array = addressbook_priv_obtain_array_of_email_addresses(ae, array);
+		} else
+		{
+			if (ae->type == ADDRESSBOOK_ENTRY_PERSON)
+			{
+				int i;
+				for (i=0;i<ae->u.person.num_emails;i++)
+				{
+					array = array_add_string(array,ae->u.person.emails[i]);
+				}
+			}
+		}
+		ae = addressbook_next(ae);
+	}
+	return array;
+}
+
+/**************************************************************************
+ Returns a string array of all addresses within the addressbook.
+ array must be free'd with array_free() when no longer used.
+**************************************************************************/
+char **addressbook_obtain_array_of_email_addresses(void)
+{
+	return addressbook_priv_obtain_array_of_email_addresses(NULL,NULL);
+}

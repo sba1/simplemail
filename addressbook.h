@@ -122,6 +122,7 @@ struct addressbook_entry *addressbook_find_entry_by_address(char *addr);
 struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m, int to);
 char *addressbook_completed_by_entry(char *part, struct addressbook_entry *entry, int *type_ptr);
 char *addressbook_complete_address(char *address);
+char **addressbook_obtain_array_of_email_addresses(void);
 
 struct addressbook_entry *addressbook_first(struct addressbook_entry *group);
 struct addressbook_entry *addressbook_next(struct addressbook_entry *entry);

@@ -46,6 +46,26 @@ struct folder_node
 	struct folder folder; /* this must follow! */
 };
 
+/******************************************************************
+ Returns the node of the folder, for list handling
+*******************************************************************/
+static struct folder_node *find_folder_node_by_folder(struct folder *f)
+{
+	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+	int rc = 0;
+
+	while (node)
+	{
+		if (&node->folder == f)
+		{
+			return node;
+		}
+		node = (struct folder_node*)node_next(&node->node);
+	}
+	return NULL;
+}
+
+
 static char *fread_str(FILE *fh);
 static void folder_config_save(struct folder *f);
 static int folder_config_load(struct folder *f);
@@ -657,7 +677,6 @@ int folder_remove(struct folder *f)
 	if (f->special == FOLDER_SPECIAL_NO)
 	{
 		struct folder_node *node = (struct folder_node*)list_first(&folder_list);
-
 		while (node)
 		{
 			if (&node->folder == f)
@@ -675,6 +694,41 @@ int folder_remove(struct folder *f)
 			}
 			node = (struct folder_node*)node_next(&node->node);
 		}
+	} else if (f->special == FOLDER_SPECIAL_GROUP)
+	{
+		struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+		struct folder *parent = f->parent_folder;
+		int rc = 0;
+
+		while (node)
+		{
+			if (&node->folder == f)
+			{
+				if (sm_request(NULL,
+					"Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group","_Yes|_No"))
+				{
+					node_remove(&node->node);
+					free(node);
+					rc = 1;
+				}
+			}
+			node = (struct folder_node*)node_next(&node->node);
+		}
+
+		if (rc)
+		{
+			/* Set a new parent to all the folders */
+			node = (struct folder_node*)list_first(&folder_list);
+			while (node)
+			{
+				if (node->folder.parent_folder == f)
+				{
+					node->folder.parent_folder = parent;
+				}
+				node = (struct folder_node*)node_next(&node->node);
+			}
+		}
+		return rc;
 	}
 	return 0;
 }
@@ -966,6 +1020,20 @@ struct folder *folder_find_by_name(char *name)
 	while (node)
 	{
 		if (!mystricmp(name, node->folder.name)) return &node->folder;
+		node = (struct folder_node *)node_next(&node->node);
+	}
+	return NULL;
+}
+
+/******************************************************************
+ Finds a group folder by name. Returns NULL if folder hasn't found
+*******************************************************************/
+static struct folder *folder_find_group_by_name(char *name)
+{
+	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
+	while (node)
+	{
+		if (!mystricmp(name, node->folder.name) && node->folder.special == FOLDER_SPECIAL_GROUP) return &node->folder;
 		node = (struct folder_node *)node_next(&node->node);
 	}
 	return NULL;
@@ -1573,6 +1641,71 @@ char *default_folder_path(void)
 #endif
 
 	return folder_path;
+}
+
+/******************************************************************
+ Loades the order of the folders
+*******************************************************************/
+void folder_load_order(void)
+{
+	FILE *fh;
+	if ((fh = fopen(FOLDER_PATH "/.order","r")))
+	{
+		struct list new_order_list;
+		char *buf = (char*)malloc(1024);
+		if (buf)
+		{
+			list_init(&new_order_list);
+
+			/* Move all nodes to the new order list in the right order */
+			while ((fgets(buf,1024,fh)))
+			{
+				char *path;
+				char *temp_buf;
+				int special, parent;
+
+				if ((path = strchr(buf,'\t')))
+				{
+					*path++ = 0;
+
+					if ((temp_buf = strchr(path,'\t')))
+					{
+						*temp_buf++ = 0;
+						special = atoi(temp_buf);
+						if ((temp_buf = strchr(temp_buf,'\t')))
+						{
+							struct folder *new_folder;
+							struct folder_node *new_folder_node;
+							temp_buf++;
+							parent = atoi(temp_buf);
+
+							if (special == FOLDER_SPECIAL_GROUP) new_folder = folder_find_group_by_name(buf);
+							else new_folder = folder_find_by_path(path);
+
+							if (new_folder)
+							{
+								if (parent != -1)
+									new_folder->parent_folder = &((struct folder_node*)list_find(&new_order_list,parent))->folder;
+								new_folder_node = find_folder_node_by_folder(new_folder);
+								node_remove(&new_folder_node->node);
+								list_insert_tail(&new_order_list,&new_folder_node->node);
+							}
+						}
+					}
+				}
+			}
+			free(buf);
+
+			/* Move the nodes into the main folder list again */
+			{
+				struct folder_node *folder_node;
+				while ((folder_node = (struct folder_node*)list_remove_tail(&new_order_list)))
+					list_insert(&folder_list, &folder_node->node, NULL);
+			}
+		}
+		fclose(fh);
+	}
+
 }
 
 /******************************************************************

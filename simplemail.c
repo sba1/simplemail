@@ -522,6 +522,13 @@ void callback_change_folder_attrs(void)
 	main_refresh_folder(f);
 }
 
+/* reload the folders order */
+void callback_reload_folder_order(void)
+{
+	folder_load_order();
+	main_refresh_folders();
+}
+
 int main(int argc, char *argv[])
 {
 	load_config();
@@ -534,7 +541,7 @@ int main(int argc, char *argv[])
 			folder_delete_deleted();
 			cleanup_threads();
 		}
-		folder_save_order();
+/*		folder_save_order();*/
 		del_folders();
 	}
 	cleanup_addressbook();

@@ -305,6 +305,7 @@ int main_window_init(void)
 		MENU_FOLDER_NEWGROUP,
 		MENU_FOLDER_NEWFOLDER,
 		MENU_FOLDER_DELETE,
+		MENU_FOLDER_OPTIONS,
 		MENU_FOLDER_ORDER,
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
@@ -329,12 +330,13 @@ int main_window_init(void)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Q\0Quit", NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, "Folder", NULL, 0, 0, NULL},
-		{NM_ITEM, "New Group...", NULL, 0, 0, NULL},
-		{NM_ITEM, "New Folder...", NULL, 0, 0, NULL},
-		{NM_ITEM, "Delete", NULL, 0, 0, NULL},
+		{NM_ITEM, "New Group...", NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
+		{NM_ITEM, "New Folder...", NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
+		{NM_ITEM, "Delete...", NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
+		{NM_ITEM, "Options...", NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, "Order", NULL, 0, 0, NULL},
-		{NM_SUB, "Save", NULL, 0, 0, NULL},
-		{NM_SUB, "Reset", NULL, 0, 0, NULL},
+		{NM_SUB, "Save", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
+		{NM_SUB, "Reset", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
 		{NM_TITLE, "Message", NULL, 0, 0, NULL},
 		{NM_ITEM, "D\0Read", NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, "E\0Edit", NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
@@ -462,11 +464,20 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWGROUP, App, 3, MUIM_CallHook, &hook_standard, callback_new_group);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWFOLDER, App, 3, MUIM_CallHook, &hook_standard, callback_new_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_remove_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, App, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
+
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-/*		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+/*
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
-*/		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+*/
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, App, 2, MUIM_Application_OpenConfigWindow, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);

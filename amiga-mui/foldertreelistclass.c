@@ -146,7 +146,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		Child, MenuObjectT("Folders"),
 			Child, MenuitemObject, MUIA_Menuitem_Title, "New Folder...", MUIA_UserData, MENU_FOLDER_NEW, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, "New Group...", MUIA_UserData, MENU_FOLDER_GROUP, End,
-			Child, MenuitemObject, MUIA_Menuitem_Title, "Remove Folder...", MUIA_UserData, MENU_FOLDER_REM, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, "Remove...", MUIA_UserData, MENU_FOLDER_REM, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, (STRPTR)-1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, "Settings...", MUIA_UserData, MENU_FOLDER_SETTINGS, End,
 			End,

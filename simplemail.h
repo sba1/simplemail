@@ -54,6 +54,7 @@ void callback_write_mail_to_str(char *str);
 
 void callback_edit_folder(void);
 void callback_change_folder_attrs(void);
+void callback_reload_folder_order(void);
 
 void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder);
 void callback_maildrop(struct folder *dest_folder);

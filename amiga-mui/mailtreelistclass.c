@@ -63,6 +63,7 @@ struct MailTreelist_Data
 	APTR status_attach;
 	APTR status_group;
 	APTR status_new;
+	APTR status_crypt;
 
 	Object *context_menu;
 };
@@ -113,7 +114,8 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 
 			if (mail->status & MAIL_STATUS_FLAG_MARKED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_mark);
 			if (mail->flags & MAIL_FLAGS_IMPORTANT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_important);
-			if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
+			if (mail->flags & MAIL_FLAGS_CRYPT) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_crypt);
+			else if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
 
 			sprintf(size_buf,"%ld",mail->size);
 			SecondsToString(date_buf,mail->seconds);
@@ -230,6 +232,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End, 0);
 	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End, 0);
 	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End, 0);
+	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End, 0);
 	
 	return 1;
 }
@@ -237,6 +240,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
 	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
 	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
 	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);

@@ -313,8 +313,8 @@ Within the @{" Main Window " link "MA_W"} such mails contains a special status i
 Mails which are valualbe for you and hence you actually want to read are called @{i}Ham@{ui} mails.
 
 
-@{b}Statstical Spam identification@{ub}@{LINE}
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@{LINE}
+@{b}Statistical Spam identification@{ub}@{LINE}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~@{LINE}
 This kind of filtering is the center and the most powerful spam identification
 feature of SimpleMail. However to work properly you have to setup it correctly.
 
@@ -826,6 +826,13 @@ main recipient of your email whenever you start writing a new mail while
 this is the current folder. This makes sense especially with folders
 containing email coming from a certain mailing list.
 
+
+Signature
+
+Here you can select a signature which will be used by default
+whenever you start writing a new mail while this is the current folder.
+Selecting <Default> will use the signature of the default from account.
+
 @ENDNODE
 @NODE "CO_W" "Configuration"
 
@@ -835,7 +842,7 @@ SimpleMail a good number of options which can be set up in the configuration
 window. The program options are initially divided into 9 sheets which can be
 selected at the left part of the configuration window.
 
-  @{" User           " LINK "CO00" 0}   - Basic information: folder directory and
+  @{" General        " LINK "CO00" 0}   - Basic information: folder directory and
                        timezone
   @{" Accounts       " LINK "CO01" 0}   - SMTP and POP3 settings for mail transfer
   @{" Receive mail   " LINK "CO02" 0}   - Controlling the way mail is downloaded
@@ -845,6 +852,7 @@ selected at the left part of the configuration window.
   @{" Reading HTML   " LINK "CO06" 0}   - Image download filter for HTML mail
   @{" Phrases        " LINK "CO07" 0}   - Options related to message quoting
   @{" Signatures     " LINK "CO08" 0}   - Signature and tagline settings
+  @{" Spam           " LINK "CO09" 0}   - Spam settings
 
 
 The same three buttons appear on each sheet:
@@ -864,10 +872,10 @@ closed.
 Discard any changes.
 
 @ENDNODE
-@NODE "CO00" "Configuration - User"
+@NODE "CO00" "Configuration - General"
 @TOC "CO_W"
 
-Configuration - USER (Essential information needed for SimpleMail to work)
+Configuration - GENERAL (Essential information needed for SimpleMail to work)
 
 
 The time and date displayed by SimpleMail in the message list is always
@@ -937,6 +945,14 @@ Reply Address
 Usually this field should remain empty. The default Reply-To address is
 your e-mail address. ONLY if you want to use a different address you
 should enter that here.
+
+
+Signature
+
+If you have defined different @{" signatures " LINK "CO08"} you can select
+the default signature for this account. The signature will than be used if
+this account is selected in the Compose Message window. Selecting <Default>
+will use the first signature of the list.
 
 
 ---- Receive -------------------------------------------------------------
@@ -1397,7 +1413,7 @@ and it will be replaced by a random tagline taken from the /.taglines
 file when you compose a mail.
 
 
-Add new signature
+[Add new signature]
 
 Click here to define a new signature and then enter a name and the text
 for it.
@@ -1408,10 +1424,74 @@ for it.
 Obviously, this gadget allows you to remove a signature already defined.
 
 
-If more than one signature is defined and the use of signatures is
-activated, a pop-up button will appear in the Compose Message window
-to let you select which one you would like to use in the message that
-is being written.
+If the use of signatures is activated, a cycle button will appear in the
+Compose Message window to let you select which one you would like to use in
+the message that is being written.
+
+@ENDNODE
+@NODE "CO09" "Configuration - Spam"
+@TOC "CO_W"
+
+Configuration - SPAM  (Definition of Spam handling)
+
+For detailed information see @{" Spam " LINK "SPAM"}.
+
+
+---- General spam settings -----------------------------------------------
+
+[ ] Mark mails as spam before moved to the spam folder
+
+The spam folder allowes only mails marked as spam to be moved into.  This
+option will set the status of all mails to spam before they are moved
+to the spam folder. The option is on by default.
+
+
+[ ] Check new mails for spam content
+
+If this option is on all new mails will be checked automatically.
+
+
+---- White list ----------------------------------------------------------
+
+Mails originated from one of these addresses are never marked as spam.
+
+[ ] Also all addresses within the addressbook
+
+This option handle all addresses within your address book as if they were
+in white list.
+
+
+---- Black list ----------------------------------------------------------
+
+Here you can add known spaming email addresses. As soon as an email is
+originated from such a mail address its contents is completly ignored and
+the mail is marked as spam.
+
+
+---- Statistics ----------------------------------------------------------
+
+Number of mails classified as ham
+
+This is the number of mails you have classified as ham so far.
+
+[Reset statistics...]
+
+This will reset the classified mails to zero.  After reseting the ham
+statistics the spam filter won't work reliable until you have classified
+some mails as ham.
+
+
+Number of mails classified as spam
+
+This is the number of mails you have classified as spam so far.
+
+[Reset statistics...]
+
+This will reset the classified mails to zero.  After reseting the spam
+statistics the spam filter won't work reliable until you have classified
+some mails as spam.  However, if requested the statistics can be built from
+the mails inside the spam folder.
+
 
 @ENDNODE
 @NODE "CO_F" "Editing filters"

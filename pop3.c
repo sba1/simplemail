@@ -41,6 +41,7 @@
 #include "debug.h"
 #include "filter.h"
 #include "mail.h"
+#include "md5.h"
 #include "pop3.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -77,32 +78,123 @@ static char *pop3_receive_answer(struct connection *conn)
 }
 
 /**************************************************************************
- Wait for the welcome message. Must be rewritten using tcp_readln()
+ Wait for the welcome message. If server delivers a timestamp it is placed
+ into the timestamp_ptr argument (string must be freed when no longer used).
+ timestamp is not touched if this call fails.
 **************************************************************************/
-static int pop3_wait_login(struct connection *conn, struct pop3_server *server)
+static int pop3_wait_login(struct connection *conn, struct pop3_server *server, char **timestamp_ptr)
 {
-	if (pop3_receive_answer(conn))
+	char *answer;
+
+	if ((answer = pop3_receive_answer(conn)))
 	{
+		char *ptr,*startptr,*endptr,*timestamp = NULL;
+		char c;
+
+		SM_DEBUGF(15,("POP3 Server answered: %s",answer));
+
+		/* If server supports APOP it places a timestamp within its welcome message. Extracting it */
+		ptr = answer;
+		startptr = endptr = NULL;
+		while ((c = *ptr))
+		{
+			if (c=='<') startptr = ptr;
+			else if (c=='>') 
+			{
+				endptr = ptr;
+				break;
+			}
+			ptr++;
+		}
+		if (startptr && endptr && startptr<endptr)
+		{
+			if ((timestamp = (char*)malloc(endptr-startptr+3)))
+			{
+				strncpy(timestamp,startptr,endptr-startptr+1);
+				timestamp[endptr-startptr+1] = 0;
+				SM_DEBUGF(15,("Found timestamp: %s\n",timestamp));
+			}
+		}
+
 		/* Make the connection secure if requested */
 		if (server->ssl && server->stls)
 		{
 			if (tcp_write(conn,"STLS\r\n",6) <= 0) return 0;
 
+			/* TODO: check if this call delivers a new timestamp */
 			if (pop3_receive_answer(conn))
 			{
-				return tcp_make_secure(conn);
+				if (tcp_make_secure(conn))
+				{
+					*timestamp_ptr = timestamp;
+					return 1;
+				}
 			}
-		} else return 1;
+		} else
+		{
+			*timestamp_ptr = timestamp;
+			return 1;
+		}
+		free(timestamp);
+	} else
+	{
+		SM_DEBUGF(5,("POP3 Server did not answer!\n"));
 	}
 	return 0;
 }
 
 /**************************************************************************
- Log into the pop3 server.
+ Log into the pop3 server. timestamp is 
 **************************************************************************/
-int pop3_login(struct connection *conn, struct pop3_server *server)
+static int pop3_login(struct connection *conn, struct pop3_server *server, char *timestamp)
 {
 	char buf[256];
+
+	if (!timestamp && server->apop)
+	{
+		SM_DEBUGF(5,("Server did not deliver timestamp but APOP authentfication was requested\n"));
+		return 0;
+	}
+
+	if (timestamp && !server->ssl)
+	{
+     SM_MD5_CTX context;
+		unsigned char digest[16];
+		char *ptr;
+		int i;
+
+		thread_call_parent_function_async(status_set_status,1,_("Authentificate via APOP..."));
+
+		MD5Init(&context);
+		MD5Update(&context, timestamp, strlen(timestamp));
+		MD5Update(&context, server->passwd,strlen(server->passwd));
+		MD5Final(digest, &context);
+
+		sm_snprintf(buf,sizeof(buf)-64,"APOP %s ",server->login);
+		ptr = buf + strlen(buf);
+				
+		for (i=0;i<16;i++)
+		{
+			sprintf(ptr,"%02x",digest[i]);
+			ptr = ptr + strlen(ptr);
+		}
+		*ptr++ = '\r';
+		*ptr++ = '\n';
+		*ptr = 0;
+
+		SM_DEBUGF(15,("Sending %s",buf));
+				
+		if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
+		if (!pop3_receive_answer(conn))
+		{
+			if (server->apop) return 0;
+			SM_DEBUGF(15,("APOP authentification failed. Trying plain text method\n"));
+		} else
+		{
+			thread_call_parent_function_async(status_set_status,1,_("Login successful!"));
+			return 1;
+		}
+	}
 
 	thread_call_parent_function_async(status_set_status,1,_("Sending username..."));
 
@@ -819,10 +911,12 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
 			{
+				char *timestamp;
 				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
-				if (pop3_wait_login(conn,server))
+
+				if (pop3_wait_login(conn,server,&timestamp))
 				{
-					if (pop3_login(conn,server))
+					if (pop3_login(conn,server,timestamp))
 					{
 						struct uidl uidl;
 						struct dl_mail *mail_array;
@@ -919,6 +1013,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 						}
 						pop3_quit(conn,server);
 					}
+					free(timestamp);
 				}
 				tcp_disconnect(conn);
 
@@ -959,9 +1054,11 @@ int pop3_login_only(struct pop3_server *server)
 
 		if ((conn = tcp_connect(server->name, server->port,server->ssl && (!server->stls))))
 		{
-			if (pop3_wait_login(conn,server))
+			char *timestamp;
+
+			if (pop3_wait_login(conn,server,&timestamp))
 			{
-				if (pop3_login(conn,server))
+				if (pop3_login(conn,server,timestamp))
 				{
 					pop3_quit(conn,server);
 					rc = 1;
@@ -1030,6 +1127,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->passwd = mystrdup(pop->passwd);
 		new_pop->del = pop->del;
 		new_pop->port = pop->port;
+		new_pop->apop = pop->apop;
 		new_pop->ssl = pop->ssl;
 		new_pop->stls = pop->stls;
 		new_pop->active = pop->active;

@@ -31,6 +31,7 @@ struct pop3_server
 	unsigned int port;
 	int ssl; /* use ssl to connect */
 	int stls; /* with STLS command */
+	int apop; /* use APOP and fail if APOP is not available */
 	char *login;
 	char *passwd;
 	int del; /* 1 if downloaded mails should be deleted */

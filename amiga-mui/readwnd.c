@@ -694,6 +694,37 @@ static void show_all_headers(void **pdata)
 }
 
 /******************************************************************
+ Refresh the Prev/Next Button
+*******************************************************************/
+void read_refresh_prevnext_button(struct folder *f)
+{
+	int num;
+	struct Read_Data *data;
+
+	if (!f) return;
+
+	for (num=0; num < MAX_READ_OPEN; num++)
+	{
+		if (read_open[num])
+		{
+			data = read_open[num];
+			if (!mystrcmp(f->path, data->folder_path))
+			{
+				if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename))
+					set(data->next_button, MUIA_Disabled, FALSE);
+				else
+					set(data->next_button, MUIA_Disabled, TRUE);
+
+				if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename))
+					set(data->prev_button, MUIA_Disabled, FALSE);
+				else
+					set(data->prev_button, MUIA_Disabled, TRUE);
+			}
+		}
+	}
+}
+
+/******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
  this function)!
@@ -956,10 +987,12 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 				set(data->prev_button, MUIA_Disabled, TRUE);
 
 			CurrentDir(old_dir);
+			UnLock(lock);
 			set(App, MUIA_Application_Sleep, FALSE);
 			return 1;
 		}
 		CurrentDir(old_dir);
+		UnLock(lock);
 	}
 
 	DoMethod(data->attachments_group, MUIM_Group_InitChange);

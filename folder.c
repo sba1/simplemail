@@ -771,6 +771,31 @@ struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
 }
 
 /******************************************************************
+ Find a mail with a given uid (which maps to a filename) in the
+ given imap folder
+*******************************************************************/
+struct mail *folder_imap_find_mail_by_uid(struct folder *folder, int uid)
+{
+	int i,l;
+	char buf[20];
+
+	if (!folder) return NULL;
+	if (!folder->is_imap) return NULL;
+
+	sprintf(buf,"%d",uid);
+	l = strlen(buf);
+
+	for (i=0; i < folder->num_mails; i++)
+	{
+		if (!mystrnicmp(buf,folder->mail_array[i]->filename,l))
+		{
+			if (folder->mail_array[i]->filename[l] == '.' || folder->mail_array[i]->filename[l] == 0)
+				return folder->mail_array[i];
+		}
+	}
+}
+
+/******************************************************************
  Reads the all mail infos in the given folder.
  TODO: Speed up this by using indexfiles (also get rid of readdir
  ans friends)

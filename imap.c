@@ -29,6 +29,7 @@
 
 #include "folder.h"
 #include "lists.h"
+#include "simplemail.h"
 #include "support_indep.h"
 #include "tcp.h"
 
@@ -204,7 +205,6 @@ int imap_dl_headers(struct list *imap_list)
 
 						{
 							int num_of_mails = 0;
-							int i;
 
 							struct folder *inbox = folder_find_by_imap(serv->name,"INBOX");
 							if (inbox)
@@ -246,41 +246,98 @@ int imap_dl_headers(struct list *imap_list)
 
 								if (num_of_mails)
 								{
-									sprintf(tag,"%04x",val++);
-									sprintf(send,"%s FETCH %d:%d UID\r\n",tag,1,num_of_mails);
-//									sprintf(send,"%s FsmETCH %d BODY[]\r\n",tag,1,num_of_mails);
-									
-									puts(send);
-									tcp_write(conn,send,strlen(send));
-									tcp_flush(conn);
-	
-									while ((line = tcp_readln(conn)))
+									int *uid_array = malloc(sizeof(int)*num_of_mails);
+
+									if (uid_array)
 									{
-										puts(line);
-										line = imap_get_result(line,buf,sizeof(buf));
-										if (!mystricmp(buf,tag))
+										sprintf(tag,"%04x",val++);
+										sprintf(send,"%s FETCH %d:%d UID\r\n",tag,1,num_of_mails);
+								
+										puts(send);
+										tcp_write(conn,send,strlen(send));
+										tcp_flush(conn);
+		
+										while ((line = tcp_readln(conn)))
 										{
+											puts(line);
 											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,"OK"))
+											if (!mystricmp(buf,tag))
 											{
-												puts("Fetch successful\n");
-												ok = 1;
+												line = imap_get_result(line,buf,sizeof(buf));
+												if (!mystricmp(buf,"OK"))
+												{
+													puts("Fetch successful\n");
+													ok = 1;
+												}
+												break;
+											} else
+											{
+												/* untagged */
+												unsigned int msgno;
+												unsigned int uid;
+												char msgno_buf[100];
+												char cmd_buf[100];
+												char uid_buf[100];
+		
+												line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+												line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
+												line = imap_get_result(line,uid_buf,sizeof(uid_buf));
+	
+												msgno = (unsigned int)atoi(msgno_buf);
+												uid = (unsigned int)atoi(uid_buf);
+
+												if (msgno <= num_of_mails)
+													uid_array[msgno-1] = uid;
 											}
-											break;
-										} else
-										{
-											/* untagged */
 										}
+
+										sprintf(tag,"%04x",val++);
+										sprintf(send,"%s FETCH %d body[]\r\n",tag,1);
+								
+										puts(send);
+										tcp_write(conn,send,strlen(send));
+										tcp_flush(conn);
+		
+										while ((line = tcp_readln(conn)))
+										{
+											puts(line);
+											line = imap_get_result(line,buf,sizeof(buf));
+											if (!mystricmp(buf,tag))
+											{
+												line = imap_get_result(line,buf,sizeof(buf));
+												if (!mystricmp(buf,"OK"))
+												{
+													puts("Fetch successful\n");
+													ok = 1;
+												}
+												break;
+											} else
+											{
+												/* untagged */
+												if (*line == '*')
+												{
+													char c;
+													int j = 0;
+													char msgno_buf[200];
+													line++;
+													while (isspace((unsigned char)(*line))) line++;
+													while (!isspace((unsigned char)(c = *line)))
+													{
+														msgno_buf[j++] = c;
+														line++;
+													}
+
+													puts(line);puts(" ");puts(msgno_buf);puts("\n");
+
+												}
+											}
+										}
+
+
+
+										free(uid_array);
 									}
 								}
-	
-
-
-
-
-
-
-
 							}
 						}
 					} else

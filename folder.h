@@ -116,6 +116,7 @@ int folder_number_of_unread_mails(struct folder *folder);
 int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
+struct mail *folder_imap_find_mail_by_uid(struct folder *folder, int uid);
 
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);

@@ -77,4 +77,8 @@ void init_hook(struct Hook *h, unsigned long (*func)());
 
 #define MAKECOLOR32(x) (((x)<<24)|((x)<<16)|((x)<<8)|(x))
 
+#ifndef BOOPSI_DISPATHCER
+#define BOOPSI_DISPATCHER(rettype,name,cl,obj,msg)  ASM SAVEDS rettype name(REG(a0,struct IClass *cl),REG(a2,Object *obj), REG(a1, Msg msg))
+#endif
+
 #endif

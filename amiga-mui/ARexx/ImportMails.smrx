@@ -24,7 +24,7 @@ do
   maillistfreeze
 
   do i = 0 to filelist.path.count-1 by 1
-    mailadd filelist.path.i
+    mailadd 'filename=' || '"' || filelist.path.i || '"'
   end
 
   maillistthaw

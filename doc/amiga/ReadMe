@@ -10,7 +10,7 @@ Introduction
 ~~~~~~~~~~~~
 Welcome to SimpleMail, an email client for your Amiga. The GUI and
 the usage are very similar to YAM's (although YAM is currently much
-more powerful), but it has (or should  get) some features which YAM
+more powerful), but it has (or should get) some features which YAM
 doesn't offer. Please note this is BETA software. SimpleMail is
 Open Source and released under the GNU Public License. Look at the
 bottom of this file to see how to obtain the sources or get CVS access.
@@ -21,12 +21,13 @@ SimpleMail requires OS3.0 and MUI 3.8.
 It also needs some additional MUI Custom Classes:
 
  BetterString - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
- NList - http://home.t-online/home/sebauer/MCC_NList.lha
- NListtree - http://home.t-online/home/sebauer/MCC_NListtree.lha
+ NList, NListtree - http://www.sf.net/projects/nlist-classes
  PopPlaceholder - ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
-Make sure that you always have the latest versions installed!
+Make sure that you always have the latest versions installed! Especially
+having the latest NList classes (at least 0.96 of the package) is very
+important.
 
 Contact
 ~~~~~~~
@@ -58,6 +59,9 @@ but please use the mailing list if possible.
 Code contributions done by:
   Jörg Strohmayer
   Bernd Gollesch
+
+MorphOS port done by:
+  Nicolas Sallin
 
 Initial guide done by:
   David Rey

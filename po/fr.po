@@ -1581,7 +1581,7 @@ msgstr "Rép. & Réexp."
 
 #: amiga-mui/mainwnd.c:141
 msgid "SimpleMail - About"
-msgstr "SimpleMail - A propos"
+msgstr "SimpleMail - À propos"
 
 #: amiga-mui/mainwnd.c:142
 msgid "*Ok"
@@ -1605,11 +1605,11 @@ msgstr "Projet"
 
 #: amiga-mui/mainwnd.c:532 amiga-mui/readwnd.c:1000
 msgid "?:About..."
-msgstr "?:A propos..."
+msgstr "?:À propos..."
 
 #: amiga-mui/mainwnd.c:533 amiga-mui/readwnd.c:1001
 msgid "About MUI..."
-msgstr "A propos de MUI..."
+msgstr "À propos de MUI..."
 
 #: amiga-mui/mainwnd.c:535
 msgid "Delete all indexfiles"

@@ -30,7 +30,7 @@ OBJSDIR1 = sas_objects
 DESTDIR = sm
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui
 CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi
-LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib
+LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib
 
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile
@@ -77,6 +77,7 @@ pack:
   makedir T:SimpleMail
   copy ((\#?.(asm|c|h|rev))|smakefile|diff_ignore|.cvsignore) clone T:SimpleMail
   copy amiga-mui/((\#?.(asm|c|h))|.cvsignore) clone T:SimpleMail/amiga-mui
+  copy amiga-mui/binaries clone T:SimpleMail/amiga-mui/binaries
   lzx -9 -r a ram:simplemail_src T:SimpleMail
   delete T:SimpleMail quiet all
 

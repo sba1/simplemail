@@ -1385,7 +1385,7 @@ int mail_process_headers(struct mail *mail)
 
 	/* if no filename is given set one */
 	if (!mail->filename)
-		mail->filename = mystrdup("unnamed");
+		mail->filename = mystrdup(mail->content_type);
 
 
 

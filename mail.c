@@ -2693,6 +2693,16 @@ void free_address_list(struct list *list)
 **************************************************************************/
 utf8 *get_addresses_from_list(struct list *list)
 {
+	return get_addresses_from_list_safe(list,NULL);
+}
+
+/**************************************************************************
+ Returns a string of all addresses but codeset safe (means that punycode
+ is used for addresses which contains different char then the given
+ codeset provides)
+**************************************************************************/
+utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
+{
 	struct address *address = (struct address*)list_first(list);
 	string str;
 
@@ -2702,17 +2712,27 @@ utf8 *get_addresses_from_list(struct list *list)
 	while (address)
 	{
 		struct address *nextaddress = (struct address*)node_next(&address->node);
+		char *email_allocated = NULL;
+		char *email;
+
+		if (codeset && !codesets_unconvertable_chars(codeset,address->email,strlen(address->email)))
+			email = address->email;
+		else
+		{
+			email = email_allocated = encode_address_puny(address->email);
+		}
 
 		if (address->realname)
 		{
 			string_append(&str,address->realname);
 			string_append(&str," <");
-			string_append(&str,address->email);
+			string_append(&str,email);
 			string_append(&str,">");
-		} else string_append(&str,address->email);
+		} else string_append(&str,email);
 
 		if (nextaddress) string_append(&str,",");
 
+		free(email_allocated);
 		address = nextaddress;
 	}
 	return str.str;

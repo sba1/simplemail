@@ -55,7 +55,7 @@ void myclosesocket(int fd);
 #include <proto/exec.h>
 #include "subthreads_amiga.h"
 
-#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
+#define SocketBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->socketlib
 #ifdef __AMIGAOS4__
 #define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif

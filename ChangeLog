@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-08-20  Bernd Gollesch <bgollesch@sime.at>
+
+	* amiga-mui/arexx.c: Added GETMAILSTAT command. Small bugfix in the
+	  MAILINFO FLAGS field.
+	* amiga-mui/mailtreelistclass.c: The Maillist did not show the active
+	  entry, fixed.
+	* doc/amiga/SimpleMail.guide: Added the GETMAILSTAT description.
+
 2004-02-20  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/arexx.c: Added folder_type 8 for spamfolder.

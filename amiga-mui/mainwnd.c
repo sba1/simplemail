@@ -272,6 +272,17 @@ static void foldertreelist_doubleclick(void)
 }
 
 /******************************************************************
+ A mail has been doubleclicked
+*******************************************************************/
+static void mailtreelist_doubleclick(void)
+{
+	if (main_get_folder() == folder_outgoing())
+		callback_change_mail();
+	else
+		callback_read_active_mail();
+}
+
+/******************************************************************
  An addressbook entry has been doubleclicked
 *******************************************************************/
 static void addressentrylist_doubleclick(void)
@@ -1007,7 +1018,7 @@ int main_window_init(void)
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_mail_within_main_selected);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_active_mail);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, mailtreelist_doubleclick);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick2, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click2);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);

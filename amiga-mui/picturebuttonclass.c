@@ -362,7 +362,7 @@ Object *MakePictureButton(char *label, char *filename)
 	return PictureButtonObject,
 		ButtonFrame,
 		MUIA_Background, MUII_ButtonBack,
-		MUIA_CycleChain, 1,
+/*		  MUIA_CycleChain, 1,*/
 		control_char?MUIA_ControlChar:TAG_IGNORE, control_char,
 		MUIA_InputMode, MUIV_InputMode_RelVerify,
 		MUIA_PictureButton_Label,label,

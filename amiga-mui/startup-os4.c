@@ -432,6 +432,7 @@ FILE *fopen(const char *filename, const char *mode)
 	if (amiga_mode == MODE_READWRITE)
 	{
 		internal_seek(files[_file],0,OFFSET_END);
+		file->_rcnt = internal_seek(files[_file],0,OFFSET_CURRENT);
 	}
 
 	IExec->ReleaseSemaphore(&files_sem);

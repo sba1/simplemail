@@ -50,6 +50,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "accountpopclass.h"
 #include "addressstringclass.h"
@@ -179,6 +180,11 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	set(data->datatype_datatypes, MUIA_DataTypes_FileName, NULL);
+	if (data->reply_stuff_attached == 0)
+	{
+		MUI_DisposeObject(data->reply_label);
+		MUI_DisposeObject(data->reply_string);
+	}
 	MUI_DisposeObject(data->wnd);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->filename) free(data->filename);
@@ -1092,7 +1098,7 @@ int compose_window_open(struct compose_args *args)
 							Child, reply_string = AddressStringObject,
 								StringFrame,
 								MUIA_CycleChain,1,
-								MUIA_ControlChar, GetControlChar(_("_To")),
+								MUIA_ControlChar, GetControlChar(_("_Replies To")),
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
 

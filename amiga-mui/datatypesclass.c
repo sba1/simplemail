@@ -168,20 +168,6 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 	{
 		char tmpname[L_tmpnam];
 
-		if (newbuffer)
-		{
-			BPTR out;
-			tmpnam(tmpname);
-
-			if ((out = Open(tmpname,MODE_NEWFILE)))
-			{
-				Write(out,newbuffer,newbufferlen);
-				Close(out);
-			}
-
-			newfilename = tmpname;
-		}
-
 		if (data->dt_obj)
 		{
 			/* Remove the datatype object if it is shown */
@@ -199,6 +185,20 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 		{
 			if (data->del) DeleteFile(data->filename);
 			FreeVec(data->filename);
+		}
+
+		if (newbuffer)
+		{
+			BPTR out;
+			tmpnam(tmpname);
+
+			if ((out = Open(tmpname,MODE_NEWFILE)))
+			{
+				Write(out,newbuffer,newbufferlen);
+				Close(out);
+			}
+
+			newfilename = tmpname;
 		}
 		data->filename = StrCopy(newfilename);
 

@@ -894,7 +894,7 @@ msgstr ""
 
 #: mail.c:925
 msgid "_From|*_Reply-To|_Both|_Cancel"
-msgstr "_Ab_sender|*Ant_wort|_Beide|_Abbruch"
+msgstr "Ab_sender|*Ant_wort|_Beide|_Abbruch"
 
 #: mail.c:1443
 msgid "This mail is encrypted. Please enter your passphrase now"

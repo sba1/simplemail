@@ -106,13 +106,13 @@ static const struct SimpleMail_Button simplemail_buttons[] =
     {PIC(2,5),  8, N_("_Fetch"),NULL,"MailsFetch",callback_fetch_mails},
     {PIC(2,7),  9, N_("_Send"),NULL,"MailsSend",callback_send_mails},
     {-1},
-    {PIC(3,5), 10, N_("Searc_h"),NULL,"Search",callback_search},
-    {PIC(0,9), 11, N_("F_ilter"),NULL,"Filter",callback_filter},
-    {PIC(3,6), 12, N_("S_pam"),NULL,"SpamCheck",callback_check_selected_folder_for_spam},
-    {PIC(3,7), 13, N_("Is_olate"),NULL,"SpamIsolate",callback_move_spam_marked_mails},
+    {PIC(3,5), 10, N_("Searc_h"),N_("Opens a window where you can search through your mail folder."),"Search",callback_search},
+    {PIC(0,9), 11, N_("F_ilter"),N_("Process every mail within the current selected folder via the filters."),"Filter",callback_filter},
+    {PIC(3,6), 12, N_("S_pam"),N_("Checks the current selected folder for spam.\nIf a potential spam mail has been found it will be marked."),"SpamCheck",callback_check_selected_folder_for_spam},
+    {PIC(3,7), 13, N_("Is_olate"),N_("Isolates all spam marked mails within the current selected folder."),"SpamIsolate",callback_move_spam_marked_mails},
     {-1},
     {PIC(0,1), 14, N_("_Abook"),NULL,"Addressbook",callback_addressbook},
-    {PIC(1,0), 15, N_("Fi_lters"),NULL,"FilterEdit",callback_edit_filter},
+    {PIC(1,0), 15, N_("Fi_lters"),N_("Opens a window where the filters can be edited."),"FilterEdit",callback_edit_filter},
     {PIC(0,3), 16, N_("_Config"),NULL,"Config",callback_config},
 };
 

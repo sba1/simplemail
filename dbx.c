@@ -387,7 +387,7 @@ static int dbx_import_entry(struct import_data *data)
 								{
 									int number_of_mails = GetLong(fileheader_buf,0xc4);
 									int read_mails = 0;
-									uint32 root_node = GetLong(fileheader_buf,0x00e4);
+									unsigned int root_node = GetLong(fileheader_buf,0x00e4);
 
 									thread_call_parent_function_async(status_init_mail, 1, number_of_mails);
 									thread_call_parent_function_async(status_init_gauge_as_bytes,1,number_of_mails); /* not really true */

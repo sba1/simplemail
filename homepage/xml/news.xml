@@ -3,6 +3,18 @@
 <news>
   <entry date="2001/06/05">
     <text lang="en">
+      There was a problem with the last alpha of SimpleMail. It was compiled under WinUAE which seems not to be a good idea.
+      The results were crashed when starting an e-mail download. Please download the archive again. Sorry for this inconvenience.
+    </text>
+
+    <text lang="de">
+      Es gab ein Problem bei der letzten Alpha von SimpleMail. Es wurde unter WinUAE kompiliert, was scheinbar keine so gute Idee war.
+      Es entstanden Abstürze beim Herunterladen von e-Mails. Das neue Archiv enthält eine hoffentlich fehlerfreiere Version.
+    </text>
+  </entry>
+
+  <entry date="2001/06/05">
+    <text lang="en">
       Again the homepage has been redesigned (mainly internal). 
       There exists now also a german version of the homepage. Some passages are still in english. Additionally a new SimpleMail alpha has been released. Changes since last version:
        <list>

@@ -58,13 +58,37 @@ static Object *tree_folder, *tree_mail;
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
-	struct MUI_NListtree_TreeNode *tree_node = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry,
-					MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
+	struct MUI_NListtree_TreeNode *listnode = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_GetEntry_ListNode_Root;
 
-	while (tree_node)
+	while (1)
 	{
-		if (tree_node->tn_User == udata) return tree_node;
-		tree_node = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry, tree_node,MUIV_NListtree_GetEntry_Position_Next,0);
+		struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree,
+				MUIM_NListtree_GetEntry, listnode, MUIV_NListtree_GetEntry_Position_Head, 0);
+
+		while (treenode)
+		{
+			struct MUI_NListtree_TreeNode *newtreenode;
+			if (treenode->tn_User == udata) return treenode;
+			if (treenode->tn_Flags & TNF_LIST)
+			{
+				listnode = treenode;
+				break;
+			}
+
+			if (!(newtreenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0)))
+			{
+				do
+				{
+					newtreenode = (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_GetEntry, treenode,MUIV_NListtree_GetEntry_Position_Parent,0);
+					if (!newtreenode) break;
+					treenode = newtreenode;
+					newtreenode = (struct MUI_NListtree_TreeNode*)DoMethod(tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0);
+				} while (!newtreenode);
+			}
+			treenode = newtreenode;
+		}
+
+		if (!treenode) break;
 	}
 	return NULL;
 }

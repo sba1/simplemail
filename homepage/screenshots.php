@@ -71,6 +71,8 @@
     echo("<td valign=\"top\" align=\"center\">");
     $ver = $v->version;
     $preview_name = str_replace(".png","_preview.png", $v->filename);
+    if (!file_exists($preview_name))
+    	$preview_name = str_replace(".png","-preview.png", $v->filename);
     $preview_size = GetImageSize ($preview_name);
     $filesize = filesize($v->filename);
     printf("<A HREF=\"%s\"><IMG SRC=\"%s\" %s ALT=\"(%ld bytes)\"></A>",$v->filename,$preview_name,$preview_size[3],$filesize);

@@ -913,7 +913,7 @@ struct mail *mail_create_reply(struct mail *mail)
 	if (m)
 	{
 		char *from = mail_find_header_contents(mail,"from");
-		char *to;
+		char *to = mail_find_header_contents(mail,"to");
 		struct mail *text_mail;
 		struct phrase *phrase = phrase_find_best(from);
 
@@ -921,6 +921,7 @@ struct mail *mail_create_reply(struct mail *mail)
 		{
 			struct list *alist;
 			char *replyto = mail_find_header_contents(mail, "reply-to");
+			char *cc = mail_find_header_contents(mail, "cc");
 			struct mailbox from_addr;
 			struct mailbox replyto_addr;
 			int which_address = 1;
@@ -958,6 +959,48 @@ struct mail *mail_create_reply(struct mail *mail)
 				if (which_address == 3)
 					append_to_address_list(alist, replyto);
 
+				if (to || cc)
+				{
+					int i;
+					int take_mult = 0;
+
+					for (i=0;i<2;i++)
+					{
+						struct parse_address addrs;
+						char *str = i==0?cc:to;
+						if (str)
+						{
+							if (parse_address(str,&addrs))
+							{
+								/* i == 0 means cc, so if the list is not empty it had multiple recipients
+									 i == 1 means to, so it contains at least one single entry */
+
+								if (list_length(&addrs.mailbox_list) > 1 - i)
+								{
+									if (!take_mult)
+									{
+										take_mult = sm_request(NULL,_
+													("This e-mail has multiple recipients. Should it be answered to all recipients?"),
+													_("*_Yes|_No"));
+									}
+
+									if (take_mult)
+									{
+										struct mailbox *mb = (struct mailbox*)list_first(&addrs.mailbox_list);
+										while (mb)
+										{
+											append_mailbox_to_address_list(alist,mb);
+											mb = (struct mailbox*)node_next(&mb->node);
+										}
+									}
+								}
+								free_address(&addrs);
+								if (!take_mult) break;
+							}
+						}
+					}
+				}
+
 				to_header = encode_address_field("To",alist);
 				free_address_list(alist);
 
@@ -969,7 +1012,7 @@ struct mail *mail_create_reply(struct mail *mail)
 			}
 		}
 
-		if ((to = mail_find_header_contents(mail,"to")))
+		if (to)
 		{
 			struct account *ac = account_find_by_from(to);
 			if (ac)
@@ -1875,20 +1918,62 @@ struct list *create_address_list(char *str)
 }
 
 /**************************************************************************
- Appends a address from a given address string to the list
+ Checks if the address list already constits of a entry with the given
+ addr_spec
+**************************************************************************/
+struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec)
+{
+	struct mailbox *mb;
+
+	mb = (struct mailbox *)list_first(list);
+	while (mb)
+	{
+		if (!mystricmp(mb->addr_spec,addr_spec))
+			return mb;
+		mb = (struct mailbox*)node_next(&mb->node);
+	}
+	return NULL;
+}
+
+/**************************************************************************
+ Appends a address from a given address string to the list. Avoids
+ duplicates.
 **************************************************************************/
 void append_to_address_list(struct list *list, char *str)
 {
 	struct list *append_list = create_address_list(str);
 	if (append_list)
 	{
-		struct mailbox *mb;
+		struct mailbox *new_mb;
 
-		while ((mb = (struct mailbox*)list_remove_tail(append_list)))
+		while ((new_mb = (struct mailbox*)list_remove_tail(append_list)))
 		{
-			list_insert_tail(list,&mb->node);
+			int add_it = !find_addr_spec_in_address_list(list,new_mb->addr_spec);
+			if (add_it) list_insert_tail(list,&new_mb->node);
+			else
+			{
+				free(new_mb->phrase);
+				free(new_mb->addr_spec);
+				free(new_mb);
+			}
 		}
 		free(append_list);
+	}
+}
+
+/**************************************************************************
+ Appends a mailbox (which is duplicated) into the list. Avoids duplicates
+**************************************************************************/
+void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
+{
+	struct mailbox *new_mb;
+	if (find_addr_spec_in_address_list(list,mb->addr_spec)) return;
+	new_mb = (struct mailbox*)malloc(sizeof(struct mailbox));
+	if (new_mb)
+	{
+		new_mb->phrase = mystrdup(mb->phrase);
+		new_mb->addr_spec = mystrdup(mb->addr_spec);
+		list_insert_tail(list,&new_mb->node);
 	}
 }
 

@@ -96,6 +96,7 @@ struct MailInfoArea_Data
 	int background_pen;
 	int text_pen;
 	int link_pen;
+	struct text_node *redraw_text;
 
 	int fieldname_width;
 	int entries;
@@ -361,8 +362,10 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 
 /********************************************************************
  Draw a given field at the given y position (relativ to the object)
+ Setting update to 1 means, that only data->redraw_text is rendered
 *********************************************************************/
-STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, struct field *f, int y)
+STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data,
+                                   struct field *f, int y, int update)
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
 	struct text_node *text;
@@ -377,16 +380,16 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 
 	SetAPen(_rp(obj), data->text_pen);
 	SetFont(_rp(obj), _font(obj));
-	Move(_rp(obj),_mleft(obj)+2,ytext);
+	Move(_rp(obj),_mleft(obj)+BORDER,ytext);
 
 	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,_mwidth(obj),_font(obj)->tf_YSize);
 	if (!cnt) return;
-	Text(_rp(obj),f->name,cnt);
+	if (!update) Text(_rp(obj),f->name,cnt);
 
 	space_left = _mwidth(obj) - data->fieldname_width - 2 * BORDER;
 	if (space_left <= 0) return;
 
-	Move(_rp(obj),_mleft(obj) + data->fieldname_width, ytext);
+	Move(_rp(obj),_mleft(obj) + data->fieldname_width + BORDER, ytext);
 
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
@@ -397,8 +400,18 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 
 		if (text->text)
 		{
+			int draw_text;
+
 			cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 			if (!cnt) break;
+
+			if (update && text == data->redraw_text)
+			{
+				SetAPen(_rp(obj), data->background_pen);
+				RectFill(_rp(obj), _mleft(obj) + text->x_start, _mtop(obj) + y,
+													 _mleft(obj) + text->x_end, _mtop(obj) + y + _font(obj)->tf_YSize);
+				draw_text = 1;
+			} else draw_text = !update;
 
 			if (f->clickable)
 			{
@@ -406,14 +419,16 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 					SetAPen(_rp(obj),_dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN]);
 				else SetAPen(_rp(obj),data->link_pen);
 			}
-			Text(_rp(obj),text->text,cnt);
+
+			if (draw_text) Text(_rp(obj),text->text,cnt);
+
 			space_left -= te.te_Width;
 			if (next_text)
 			{
 				if (space_left >= comma_width)
 				{
 					if (f->clickable) SetAPen(_rp(obj),data->text_pen);
-					Text(_rp(obj),",",1);
+					if (!update) Text(_rp(obj),",",1);
 					space_left -= comma_width;
 				} else break;
 			}
@@ -576,18 +591,24 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 	struct field *f;
 	struct MailInfoArea_Data *data;
 	int y = 2;
+	int update;
 
 	data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
-	SetAPen(_rp(obj), data->background_pen);
-	SetDrMd(_rp(obj), JAM1);
-	RectFill(_rp(obj), _mleft(obj), _mtop(obj), _mright(obj), _mbottom(obj));
+	update = !!(msg->flags & MADF_DRAWUPDATE);
+
+	if (!update)
+	{
+		SetAPen(_rp(obj), data->background_pen);
+		SetDrMd(_rp(obj), JAM1);
+		RectFill(_rp(obj), _mleft(obj), _mtop(obj), _mright(obj), _mbottom(obj));
+	}
 
 	f = (struct field *)list_first(&data->field_list);
 	while (f)
 	{
-		MailInfoArea_DrawField(obj, data, f, y);
+		MailInfoArea_DrawField(obj, data, f, y, update);
 
 		y += _font(obj)->tf_YSize;
 		f = (struct field*)node_next(&f->node);
@@ -614,31 +635,34 @@ STATIC LONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP
 		struct field *f;
 		struct text_node *t;
 
+		/* normalize positions */
+		x -= _mleft(obj);
+		y -= _mtop(obj);
+
 		if (imsg->Class == IDCMP_MOUSEBUTTONS)
 		{
-			if (x < _mleft(obj) || x > _mright(obj) || y < _mtop(obj) || y > _mbottom(obj))
-				return 0;
-
-			/* normalize positions */
-			x -= _mleft(obj);
-			y -= _mtop(obj);
-
 			if (imsg->Code == SELECTDOWN)
 			{
+				if (x < 0 || x >= _mwidth(obj) || y < 0 || y >= _height(obj))
+					return 0;
+
 				field_find(&data->field_list, x, y, _font(obj)->tf_YSize, &f, &t);
 
-				if (f && t)
+				if (f && t && f->clickable)
 				{
 					DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mv_handler);
 
 					data->selected_field = f;
 					data->selected_text = t;
 					data->selected_mouse_over = 1;
-					MUI_Redraw(obj, MADF_DRAWOBJECT);
+
+					data->redraw_text = data->selected_text;
+					MUI_Redraw(obj, MADF_DRAWUPDATE);
 					return MUI_EventHandlerRC_Eat;
 				}
 				return 0;
 			}
+
 			if (imsg->Code == SELECTUP)
 			{
 				if (data->selected_text)
@@ -650,28 +674,28 @@ STATIC LONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP
 
 					DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mv_handler);
 
+					data->redraw_text = data->selected_text; /* for update operation */
+
 					data->selected_field = NULL;
 					data->selected_text = NULL;
 					data->selected_mouse_over = 0;
-					MUI_Redraw(obj, MADF_DRAWOBJECT);
+
+					MUI_Redraw(obj, MADF_DRAWUPDATE);
 					return MUI_EventHandlerRC_Eat;
 				}
 			}
 		} else if (imsg->Class == IDCMP_MOUSEMOVE)
 		{
-			if (x < _mleft(obj) || x > _mright(obj) || y < _mtop(obj) || y > _mbottom(obj))
+			if (x < 0 || x >= _mwidth(obj) || y < 0 || y >= _height(obj))
 			{
 				if (data->selected_mouse_over)
 				{
 					data->selected_mouse_over = 0;
-					MUI_Redraw(obj, MADF_DRAWOBJECT);
+					data->redraw_text = data->selected_text;
+					MUI_Redraw(obj, MADF_DRAWUPDATE);
 				}
 				return MUI_EventHandlerRC_Eat;
 			}
-
-			/* normalize positions */
-			x -= _mleft(obj);
-			y -= _mtop(obj);
 
 			field_find(&data->field_list, x, y, _font(obj)->tf_YSize, &f, &t);
 
@@ -680,14 +704,16 @@ STATIC LONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP
 				if (!data->selected_mouse_over)
 				{
 					data->selected_mouse_over = 1;
-					MUI_Redraw(obj, MADF_DRAWOBJECT);
+					data->redraw_text = data->selected_text;
+					MUI_Redraw(obj, MADF_DRAWUPDATE);
 				}
 			} else
 			{
 				if (data->selected_mouse_over)
 				{
 					data->selected_mouse_over = 0;
-					MUI_Redraw(obj, MADF_DRAWOBJECT);				
+					data->redraw_text = data->selected_text;
+					MUI_Redraw(obj, MADF_DRAWUPDATE);				
 				}
 			}
 		}

@@ -1280,6 +1280,22 @@ struct folder *folder_find(int pos)
 }
 
 /******************************************************************
+ Returns the position of the folder. -1 if not in the list.
+*******************************************************************/
+int folder_position(struct folder *f)
+{
+	struct folder *lf = folder_first();
+	int pos = 0;
+	while (lf)
+	{
+		if (lf == f) return pos;
+		lf = folder_next(lf);
+		pos++;
+	}
+	return -1;
+}
+
+/******************************************************************
  Finds a folder by name. Returns NULL if folder hasn't found
 *******************************************************************/
 struct folder *folder_find_by_name(char *name)
@@ -1429,6 +1445,22 @@ int folder_get_index_of_mail(struct folder *f, struct mail *mail)
 		index ++;
 	}
 	return -1;
+}
+
+/******************************************************************
+ Returns the size of the mails in this folder
+*******************************************************************/
+int folder_size_of_mails(struct folder *f)
+{
+	int size = 0;
+	void *handle = NULL;
+	struct mail *m;
+
+	if (!f) return NULL;
+
+	while ((m = folder_next_mail(f, &handle)))
+		size += m->size;
+	return size;
 }
 
 /******************************************************************

@@ -108,6 +108,7 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
 /* Like a linear list */
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
+int folder_position(struct folder *f);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
 struct folder *folder_find_by_mail(struct mail *mail);
@@ -115,6 +116,7 @@ struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_fil
 struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename);
 struct mail *folder_find_best_mail_to_select(struct folder *folder);
 int folder_get_index_of_mail(struct folder *f, struct mail *mail);
+int folder_size_of_mails(struct folder *f);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);

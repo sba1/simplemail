@@ -112,7 +112,7 @@ static char * __ultoa(register unsigned long val, char *endp, int base, int octz
     } while (val);
     break;
 
-  default:      /* oops */
+//  default:      /* oops */
 //    abort();
   }
   return (cp);
@@ -187,7 +187,7 @@ int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap)
  * built, use it to get the argument.  If its not, get the next
  * argument (and arguments must be gotten sequentially).
  */
-#define GETARG(type) ((argtable != NULL) ? *((type*)(argtable[nextarg++])) : (nextarg++, va_arg(ap, type)))
+#define GETARG(type) ((argtable != NULL) ? ((type)(argtable[nextarg++])) : (nextarg++, va_arg(ap, type)))
 
 /*
  * To extend shorts properly, we need both signed and unsigned
@@ -704,15 +704,22 @@ done:
   (*argtable) [0] = NULL;
   for (n = 1; n <= tablemax; n++)
   {
-#ifdef __VBCC__
-    /* VBCC cannot build address of va_arg, thus we need to do the va_arg
-       ourself (assuming all types are 4 byte). */
-    (*argtable)[n] = (void *) ap;
-    ap += 4;
-#else
+  	/* Note: This assumes that all supported types are not wider than a pointer */
     switch (typetable [n])
     {
-    case T_UNUSED:  (*argtable) [n] = (void *) &va_arg (ap, int); break;
+    case T_UNUSED:  (*argtable) [n] = (void *) va_arg (ap, int); break;
+    case T_SHORT:   (*argtable) [n] = (void *) va_arg (ap, int); break;
+    case T_U_SHORT: (*argtable) [n] = (void *) va_arg (ap, int); break;
+    case TP_SHORT:  (*argtable) [n] = (void *) va_arg (ap, short *); break;
+    case T_INT:     (*argtable) [n] = (void *) va_arg (ap, int); break;
+    case T_U_INT:   (*argtable) [n] = (void *) va_arg (ap, unsigned int); break;
+    case TP_INT:    (*argtable) [n] = (void *) va_arg (ap, int *); break;
+    case T_LONG:    (*argtable) [n] = (void *) va_arg (ap, long); break;
+    case T_U_LONG:  (*argtable) [n] = (void *) va_arg (ap, unsigned long); break;
+    case TP_LONG:   (*argtable) [n] = (void *) va_arg (ap, long *); break;
+    case TP_CHAR:   (*argtable) [n] = (void *) va_arg (ap, char *); break;
+    case TP_VOID:   (*argtable) [n] = (void *) va_arg (ap, void *); break;
+/*    case T_UNUSED:  (*argtable) [n] = (void *) &va_arg (ap, int); break;
     case T_SHORT:   (*argtable) [n] = (void *) &va_arg (ap, int); break;
     case T_U_SHORT: (*argtable) [n] = (void *) &va_arg (ap, int); break;
     case TP_SHORT:  (*argtable) [n] = (void *) &va_arg (ap, short *); break;
@@ -723,9 +730,8 @@ done:
     case T_U_LONG:  (*argtable) [n] = (void *) &va_arg (ap, unsigned long); break;
     case TP_LONG:   (*argtable) [n] = (void *) &va_arg (ap, long *); break;
     case TP_CHAR:   (*argtable) [n] = (void *) &va_arg (ap, char *); break;
-    case TP_VOID:   (*argtable) [n] = (void *) &va_arg (ap, void *); break;
+    case TP_VOID:   (*argtable) [n] = (void *) &va_arg (ap, void *); break;*/
     }
-#endif
   }
 
   if ((typetable != NULL) && (typetable != stattypetable))

@@ -210,6 +210,7 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	{
 		minwidth  = dt_width(data->dt);
 		minheight = dt_height(data->dt);
+//		Printf("%s
 	} else
 	{
 		minwidth = 0;

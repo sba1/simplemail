@@ -121,12 +121,14 @@ struct mail
 #define MAIL_STATUS_REPLFORW 6 /* mail has been replied and forwarded */
 #define MAIL_STATUS_HOLD		 7 /* mail should not be send */
 #define MAIL_STATUS_ERROR    8 /* mail has an error */
-#define MAIL_STATUS_MAX 	 15
+#define MAIL_STATUS_SPAM     9 /* mail is spam */
+#define MAIL_STATUS_MAX     15
 #define MAIL_STATUS_MASK		 (0xf) /* the mask for the status types */
 #define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
 
 /* A macro to easly get the mails status type */
 #define mail_get_status_type(x) ((x->status) & (MAIL_STATUS_MASK))
+#define mail_is_spam(x) (mail_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /* Additional mail flags, they don't need to be stored within the filename */
 #define MAIL_FLAGS_NEW	     (1L << 0) /* it's a new mail */

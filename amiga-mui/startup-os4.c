@@ -366,6 +366,7 @@ int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
 
 static struct SignalSemaphore files_sem;
 static BPTR files[MAX_FILES];
+static char file_is_temp[MAX_FILES];
 static char filesbuf[4096];
 static unsigned long tmpno;
 
@@ -419,6 +420,9 @@ FILE *fopen(const char *filename, const char *mode)
 	for (_file=0;_file < MAX_FILES && files[_file];_file++);
 	if (_file == MAX_FILES) goto fail;
 
+	/* erase tempfile indication (is erased by fclose, but it's better to this twice) */
+	file_is_temp[_file] = 0;
+
 	file = malloc(sizeof(struct myfile));
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
@@ -452,11 +456,21 @@ int fclose(FILE *f)
 	struct myfile *file = (struct myfile*)f;
 	int error;
 
+	char tempname[200];
+
 	D(bug("fclose: close 0x%lx(%ld)\n",file,file->_file));
 
 	if (!file) return 0;
 	IExec->ObtainSemaphore(&files_sem);
-	
+
+	/* tempfile handling */
+	if (file_is_temp[file->_file])
+	{
+		if (!IDOS->NameFromFH(files[file->_file],tempname,sizeof(tempname)))
+			tempname[0] = 0;
+	} else tempname[0] = 0;
+	file_is_temp[file->_file] = 0;
+
 	if (DOSBase->lib_Version < 51) 	error = !(IDOS->Close(files[file->_file]));
 	else error = !(IDOS->FClose(files[file->_file]));
 
@@ -464,6 +478,7 @@ int fclose(FILE *f)
 	{
 		files[file->_file] = ZERO;
 		free(file);
+		if (tempname[0]) IDOS->DeleteFile(tempname);
 	} else D(bug("Failed closeing 0x%lx",file));
 	IExec->ReleaseSemaphore(&files_sem);
 	return error;
@@ -623,6 +638,11 @@ FILE *tmpfile(void)
 	IExec->ObtainSemaphore(&files_sem);
 	sprintf(buf,"T:%p%lx.tmp",IExec->FindTask(NULL),tmpno++);
 	file = fopen(buf,"w");
+	if (file)
+	{
+		struct myfile *f = (struct myfile*)file;
+		file_is_temp[f->_file] = 1;
+	}
 	IExec->ReleaseSemaphore(&files_sem);
 	return file;
 }

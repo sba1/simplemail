@@ -7,7 +7,7 @@ Version 0.18 (fifth beta) - realesed on 2002/12/24
   - now uses the shared version of the expat XML engine
   - rejected NListtree support for the mail view. This can be reverted
     by defining a special compiler variable
-  - very simple IMAP support
+  - very simple IMAP support (fetches complete mail, no move support)
 
 Version 0.17 (fourth beta) - released on 2002/09/07
   - speed up the insert of new mails if the folder is selected

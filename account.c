@@ -25,6 +25,7 @@
 
 #include "account.h"
 #include "configuration.h"
+#include "folder.h"
 #include "parse.h"
 #include "imap.h"
 #include "pop3.h"
@@ -145,5 +146,25 @@ struct account *account_find_by_from(char *from)
 	free_address(&addr);
 
 	return NULL;
+}
+
+/**************************************************************************
+ 
+**************************************************************************/
+struct imap_server *account_find_imap_server_by_folder(struct folder *f)
+{
+	struct account *account = (struct account*)list_first(&user.config.account_list);
+	while (account)
+	{
+		if (account->recv_type && account->imap) /* imap */
+		{
+			if (!mystricmp(f->imap_server,account->imap->name) && !mystricmp(f->imap_user,account->imap->login))
+			{
+				return account->imap;
+			}
+		}
+		account = (struct account*)node_next(&account->node);
+	}
+	return 0;
 }
 

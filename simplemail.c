@@ -1060,12 +1060,32 @@ void callback_remove_folder(void)
 	}
 }
 
+/* called when imap folders has been received */
+static void callback_received_imap_folders(struct list *list)
+{
+	struct string_node *node;
+	node = (struct string_node*)list_first(list);
+	while (node)
+	{
+		node = (struct string_node*)node_next(&node->node);
+	}
+}
+
 /* edit folder settings */
 void callback_edit_folder(void)
 {
 	struct folder *from_folder = main_get_folder();
 	if (from_folder)
 	{
+		if (from_folder->is_imap && from_folder->special == FOLDER_SPECIAL_GROUP)
+		{
+			struct imap_server *server = account_find_imap_server_by_folder(from_folder);
+			if (server)
+			{
+				imap_get_folder_list(server,callback_received_imap_folders);
+				return;
+			}
+		}
 		folder_edit(from_folder);
 	}
 }

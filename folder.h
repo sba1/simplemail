@@ -70,6 +70,7 @@ struct folder
 	char *imap_server;
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
+	int imap_popup_edit; /* state variable */
 
 	/* more will follow */
 };

@@ -34,7 +34,9 @@
 #include <proto/dos.h>
 #include <proto/utility.h>
 
+#include "account.h"
 #include "folder.h"
+#include "imap.h"
 #include "simplemail.h"
 #include "smintl.h"
 
@@ -210,7 +212,9 @@ void folder_edit(struct folder *f)
 
 	if (f->special == FOLDER_SPECIAL_GROUP)
 	{
-		set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
+		if (f->is_imap) set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
+		else set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
+
 		if (!group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);

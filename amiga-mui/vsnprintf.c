@@ -113,7 +113,7 @@ static char * __ultoa(register unsigned long val, char *endp, int base, int octz
     break;
 
   default:      /* oops */
-    abort();
+//    abort();
   }
   return (cp);
 }

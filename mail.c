@@ -1698,7 +1698,7 @@ int mail_process_headers(struct mail *mail)
 			parse_addr_spec(buf,&mail->message_reply_id);
 		} else if (!mystricmp("content-transfer-encoding",header->name))
 		{
-			mail->content_transfer_encoding = strdup(buf);
+			mail->content_transfer_encoding = mystrdup(buf);
 		} else if (!mystricmp("content-description",header->name))
 		{
 			parse_text_string(buf,&mail->content_description);
@@ -1717,12 +1717,12 @@ int mail_process_headers(struct mail *mail)
 
 	if (!mail->content_type || !mail->content_subtype)
 	{
-		mail->content_type = strdup("text");
-		mail->content_subtype = strdup("plain");
+		mail->content_type = mystrdup("text");
+		mail->content_subtype = mystrdup("plain");
 	}
 
 	if (!mail->content_transfer_encoding)
-		mail->content_transfer_encoding = strdup("7bit");
+		mail->content_transfer_encoding = mystrdup("7bit");
 
 	if (!mystricmp(mail->content_type, "multipart"))
 	{

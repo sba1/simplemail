@@ -4,6 +4,9 @@ Version 0.18 (fifth beta) - realesed on ???
   - Folder/Export... menu entry added to export a complete mail
     folder
   - Added Recpient filter rule type (which matches To and CC)
+  - Internal multithreading changes (no longer relies on SAS C CRES
+    startup code)
+  - now uses the shared version of the expat XML engine
 
 Version 0.17 (fourth beta) - released on 2002/09/07
   - speed up the insert of new mails if the folder is selected

@@ -29,7 +29,7 @@ DESTDIR = sm
 LOCALEDIR = ${DESTDIR}/locale/
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
 CFLAGS = nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck
-LFLAGS = nover smallcode smalldata noicons startup=cres lib:debug.lib amiga-mui/binaries/expat.lib amiga-mui/binaries/simplehtml_mcc.lib
+LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib
 
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile
@@ -75,12 +75,17 @@ date.h:
 
 smakefile.compile: $(MAKEGENERATOR) smakefile
   list ~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="%s" sort=name >t:objectlist
-  list amiga-mui/~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
+  list amiga-mui/~($(MAKEGENERATOR)|headers|startup).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
   echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(PROGRAMMNAME) $(DESTDIR)/.taglines images scripts charsets*n" >>$@
+  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) $(DESTDIR)/.taglines images scripts charsets*n" >>$@
+
+  echo "\$(OBJSDIR)amiga-mui/startup.o: amiga-mui/startup.c" >>$@
+  echo "  sc amiga-mui/startup.c $(CFLAGS) parm=b OBJNAME=\$@" >>$@
+  echo "" >>$@
+
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
   delete t:objectlist
   echo "*n$(DESTDIR)/.taglines: .taglines" >>$@

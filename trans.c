@@ -243,7 +243,7 @@ int mails_upload_signle(struct mail *m)
 				int i=0;
 				while (addr)
 				{
-					if (!(out_array[0]->rcp[i++] = strdup(addr->email))) /* not freed */
+					if (!(out_array[0]->rcp[i++] = mystrdup(addr->email))) /* not freed */
 						break;
 					addr = (struct address*)node_next(&addr->node);
 				}

@@ -933,7 +933,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				}
 			}
 			closedir(dfd);
-		} else printf("%s\n",strerror(errno));
+		}// else printf("%s\n",strerror(errno));
 
 		chdir(path);
 	}

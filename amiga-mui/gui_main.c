@@ -292,6 +292,8 @@ void all_del(void)
 	if (DefaultLocale) CloseLocale(DefaultLocale);
 }
 
+#undef printf
+
 /****************************************************************
  Initialize everything
 *****************************************************************/
@@ -324,10 +326,10 @@ int all_init(void)
 								DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
 								return 1;
 							}
-						} else printf(_("Failed to create the application\n"));
-					} else printf(_("Could not create mui custom classes\n"));
-				} else printf(_("Couldn't create arexx port\n"));
-			} else printf(_("Couldn't initialize timer\n"));
+						} else puts(_("Failed to create the application\n"));
+					} else puts(_("Could not create mui custom classes\n"));
+				} else puts(_("Couldn't create arexx port\n"));
+			} else puts(_("Couldn't initialize timer\n"));
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 

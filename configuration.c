@@ -69,11 +69,11 @@ void init_config(void)
 	memset(&user,0,sizeof(struct user));
 
 #ifdef _AMIGA
-	user.directory = strdup("PROGDIR:");
-	user.folder_directory = strdup("PROGDIR:.folders");
+	user.directory = mystrdup("PROGDIR:");
+	user.folder_directory = mystrdup("PROGDIR:.folders");
 #else
-	user.directory = strdup(".");
-	user.folder_directory = strdup("./.folders");
+	user.directory = mystrdup(".");
+	user.folder_directory = mystrdup("./.folders");
 #endif
 	list_init(&user.config.account_list);
 	list_init(&user.config.signature_list);
@@ -212,19 +212,23 @@ int load_config(void)
 						if ((result = get_config_item(buf,"Write.ReplyCiteEmptyL")))
 							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);	
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
-							sscanf(result,"%x",&user.config.header_flags);
+						{
+							/* until 0.17 SimpleMail forgot the 0x for this field to write out */
+							if (result[0] != '0') user.config.header_flags = strtoul(result,NULL,16);
+							else user.config.header_flags = strtoul(result,NULL,0);
+						}
 						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
 							user.config.header_array = array_add_string(user.config.header_array,result);
 						if ((result = get_config_item(buf,"Read.BackgroundColor")))
-							sscanf(result,"%x",&user.config.read_background);
+							user.config.read_background = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.TextColor")))
-							sscanf(result,"%x",&user.config.read_text);
+							user.config.read_text = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.QuotedColor")))
-							sscanf(result,"%x",&user.config.read_quoted);
+							user.config.read_quoted = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.OldQuotedColor")))
-							sscanf(result,"%x",&user.config.read_old_quoted);
+							user.config.read_old_quoted = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.LinkColor")))
-							sscanf(result,"%x",&user.config.read_link);
+							user.config.read_link = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
@@ -519,7 +523,7 @@ void save_config(void)
 			fprintf(fh,"Write.ReplyStripSig=%s\n",user.config.write_reply_stripsig?"Y":"N");
 			fprintf(fh,"Write.ReplyCiteEmptyL=%s\n",user.config.write_reply_citeemptyl?"Y":"N");
 
-			fprintf(fh,"ReadHeader.Flags=%x\n",user.config.header_flags);
+			fprintf(fh,"ReadHeader.Flags=0x%x\n",user.config.header_flags);
 			if (user.config.header_array)
 			{
 				for (i=0;user.config.header_array[i];i++)

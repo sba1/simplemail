@@ -106,6 +106,14 @@ static void put_xml_element_string(FILE *fh, char *element, char *contents)
 	fprintf(fh,"</%s>",element);
 }
 
+#ifndef SAVEDS
+#ifdef __SASC
+#define SAVEDS __saveds
+#else
+#define SAVEDS
+#endif
+#endif
+
 static int addressbook_tag;
 static int contact_tag;
 static int group_tag;
@@ -116,7 +124,7 @@ static char *data_buf;
 /**************************************************************************
  Start Tag
 **************************************************************************/
-void xml_start_tag(void *data, const char *el, const char **attr)
+SAVEDS void xml_start_tag(void *data, const char *el, const char **attr)
 {
 	struct addressbook_entry *entry;
 	XML_Parser p = (XML_Parser)data;
@@ -156,7 +164,7 @@ void xml_start_tag(void *data, const char *el, const char **attr)
 /**************************************************************************
  End Tag
 **************************************************************************/
-void xml_end_tag(void *data, const char *el)
+SAVEDS void xml_end_tag(void *data, const char *el)
 {
 	struct addressbook_entry *entry;
 	struct address_snail_phone *asp = NULL;
@@ -268,7 +276,7 @@ static char *uft8toiso(char *chr, char *code)
 /**************************************************************************
  Read the characters
 **************************************************************************/
-void xml_char_data(void *data, const XML_Char *s, int len)
+SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 {
 	if (contact_tag || group_tag)
 	{

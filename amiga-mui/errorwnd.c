@@ -33,6 +33,7 @@
 #include <proto/muimaster.h>
 
 #include "lists.h"
+#include "support_indep.h"
 
 #include "muistuff.h"
 
@@ -142,7 +143,7 @@ void error_add_message(char *msg)
 		struct error_node *enode = (struct error_node*)malloc(sizeof(struct error_node));
 		if (enode)
 		{
-			if ((enode->text = strdup(msg)))
+			if ((enode->text = mystrdup(msg)))
 			{
 				static char error_label[32];
 

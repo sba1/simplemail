@@ -26,19 +26,19 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dos/dostags.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 
 #include "subthreads.h"
 
-#include "amiproc.h"
-
-/*#define MYDEBUG*/
+//#define MYDEBUG
 #include "debug.h"
 
 struct ThreadMessage
 {
 	struct Message msg;
+	int startup; /* message is startup message */
 	int (*function)(void);
 	int async;
 	int argcount;
@@ -46,16 +46,13 @@ struct ThreadMessage
 	int result;
 };
 
-struct ThreadUData
-{
-	struct MsgPort *server_port;
-	int (*entry)(void*);
-	void *udata;
-};
+/* the port allocated by the main task */
+static struct MsgPort *thread_port;
 
-struct MsgPort *thread_port;
+/* the thread, we currently allow only a single one */
+static struct Process *thread;
 
-static struct AmiProcMsg *subthread;
+//static struct AmiProcMsg *subthread;
 
 int init_threads(void)
 {
@@ -68,8 +65,26 @@ int init_threads(void)
 
 void cleanup_threads(void)
 {
-	if (subthread)
-		AmiProc_Wait(subthread);
+	/* It's safe to call this if no thread is actually running */
+	thread_abort();
+
+	if (thread)
+	{
+		int ready = 0;
+		while (!ready)
+		{
+			struct ThreadMessage *tmsg;
+
+			WaitPort(thread_port);
+
+			while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
+			{
+				if (tmsg->startup)
+					ready = 1;
+			}
+		}
+		thread = NULL;
+	}
 
 	if (thread_port)
 	{
@@ -89,6 +104,13 @@ void thread_handle(void)
 
 	while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
 	{
+		if (tmsg->startup)
+		{
+			D(bug("Got startup message back\n"));
+			FreeVec(tmsg);
+			thread = NULL;
+			continue;
+		}
 		if (tmsg->function)
 		{
 			switch(tmsg->argcount)
@@ -109,33 +131,51 @@ void thread_handle(void)
 	}
 }
 
-static int thread_entry(struct ThreadUData *udata)
+/* the entry point for the subthread */
+static __saveds void thread_entry(void)
 {
-	int retval;
+	struct Process *proc;
+	struct ThreadMessage *msg;
+	int (*entry)(void *);
 
-	thread_port = udata->server_port;
+	BPTR dirlock;
 
-	retval = udata->entry(udata->udata);
+	D(bug("Waiting for startup message\n"));
 
-	FreeVec(udata);
-	return retval;
+	proc = (struct Process*)FindTask(NULL);	
+	WaitPort(&proc->pr_MsgPort);
+	msg = (struct ThreadMessage *)GetMsg(&proc->pr_MsgPort);
+
+	entry = (int(*)(void*))msg->function;
+
+
+	dirlock = DupLock(proc->pr_CurrentDir);
+	if (dirlock)
+	{
+		BPTR odir = CurrentDir(dirlock);
+		entry(msg->arg1);
+		UnLock(CurrentDir(odir));
+	}
+
+	Forbid();
+	D(bug("Replying startup message\n"));
+	ReplyMsg((struct Message*)msg);
 }
+
 
 int thread_parent_task_can_contiue(void)
 {
 #ifndef DONT_USE_THREADS
-	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
-	if (tmsg)
+	struct ThreadMessage *msg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
+	D(bug("Thread can continue\n"));
+	if (msg)
 	{
 		struct Process *p = (struct Process*)FindTask(NULL);
-		tmsg->msg.mn_ReplyPort = &p->pr_MsgPort;
-		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+		msg->msg.mn_ReplyPort = &p->pr_MsgPort;
+		msg->msg.mn_Length = sizeof(struct ThreadMessage);
 
-		PutMsg(thread_port,&tmsg->msg);
-		WaitPort(&p->pr_MsgPort);
-		GetMsg(&p->pr_MsgPort);
-
-		FreeVec(tmsg);
+		PutMsg(thread_port,&msg->msg);
+		/* Message is freed by parent task */
 		return 1;
 	}
 	return 0;
@@ -147,26 +187,61 @@ int thread_parent_task_can_contiue(void)
 int thread_start(int (*entry)(void*), void *eudata)
 {
 #ifndef DONT_USE_THREADS
-	struct ThreadUData *udata;
+	struct ThreadMessage *msg;
 
-	if (subthread)
+	/* We allow only one subtask for the moment */
+	if (thread) return 0;
+
+	if ((msg = (struct ThreadMessage *)AllocVec(sizeof(*msg),MEMF_PUBLIC|MEMF_CLEAR)))
 	{
-		if (!AmiProc_Check(subthread)) return 0;
-		subthread = NULL;
-	}
+		BPTR in,out;
+		msg->msg.mn_Node.ln_Type = NT_MESSAGE;
+		msg->msg.mn_ReplyPort = thread_port;
+		msg->msg.mn_Length = sizeof(*msg);
+		msg->startup = 1;
+		msg->function = (int (*)(void))entry;
+		msg->arg1 = eudata;
 
-	if ((udata = (struct ThreadUData *)AllocVec(sizeof(*udata),MEMF_PUBLIC|MEMF_CLEAR))); /* Will be free'd in the subtask */
-	{
-		udata->server_port = thread_port;
-		udata->entry = entry;
-		udata->udata = eudata;
+		in = Open("NIL:",MODE_NEWFILE);
+		out = Open("NIL:",MODE_NEWFILE);
 
-		if ((subthread = AmiProc_Start( (int (*)(void *))thread_entry, udata)))
+		if (in && out)
 		{
-			WaitPort(thread_port); /* Should also wait for the startup message in case something fails */
-			ReplyMsg(GetMsg(thread_port));
-			return 1;
+			thread = CreateNewProcTags(
+						NP_Entry,      thread_entry,
+						NP_StackSize,  16384,
+						NP_Name,       "SimpleMail - Subthread",
+						NP_Priority,   -1,
+						NP_Input,      in,
+						NP_Output,     out,
+						TAG_END);
+
+			if (thread)
+			{
+				struct ThreadMessage *thread_msg;
+				D(bug("Thread started at 0x%lx\n",thread));
+				PutMsg(&thread->pr_MsgPort,(struct Message*)msg);
+				WaitPort(thread_port);
+				thread_msg = (struct ThreadMessage *)GetMsg(thread_port);
+				if (thread_msg == msg)
+				{
+					/* This was the startup message, so something has failed */
+					D(bug("Got startup message back. Something went wrong\n"));
+					FreeVec(thread_msg);
+					return 0;
+				} else
+				{
+					/* This was the "parent task can continue message", we don't reply it
+					 * but we free it here (although it wasn't allocated by this task) */
+					D(bug("Got \"parent can continue\"\n"));
+					FreeVec(thread_msg);
+					return 1;
+				}
+			}
 		}
+		if (in) Close(in);
+		if (out) Close(out);
+		FreeVec(msg);
 	}
 	return 0;
 #else
@@ -177,18 +252,12 @@ int thread_start(int (*entry)(void*), void *eudata)
 
 void thread_abort(void)
 {
-	if (subthread)
+	Forbid();
+	if (thread)
 	{
-		/* a design lack, should be really improved */
-		Forbid();
-
-		if (!AmiProc_Check(subthread))
-		{
-			AmiProc_Abort(subthread);
-		} else subthread = NULL;
-
-		Permit();
+		Signal(&thread->pr_Task, SIGBREAKF_CTRL_C);
 	}
+	Permit();
 }
 
 /* Call the function synchron */

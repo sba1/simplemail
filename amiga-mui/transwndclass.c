@@ -152,6 +152,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
 					Child, head = TextObject,End,
+					Child, RectangleObject, MUIA_Weight, 1, End,
 					Child, mail_group = VGroup,
 						MUIA_ShowMe, FALSE,
 						Child, mail_listview = NListviewObject,

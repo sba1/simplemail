@@ -914,8 +914,19 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		set(obj, MUIA_NListtree_Active, FindListtreeUserData(obj, m));
 #else
 	{
+		int i;
 		struct mail **array = folder_get_mail_array(folder);
+
 		DoMethod(obj, MUIM_NList_Insert, array, folder->num_mails, MUIV_NList_Insert_Bottom);
+
+		for (i=0;i<folder->num_mails;i++)
+		{
+			if (mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
+			{
+				set(obj,MUIA_NList_Active,i);
+				break;
+			}
+		}
 	}
 
 /*

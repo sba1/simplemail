@@ -42,6 +42,7 @@ void free_outmail_array(struct outmail **om_array);
 #define ESMTP_XUSR                (1<<4)
 #define ESMTP_AUTH                (1<<5)
 #define ESMTP_PIPELINING          (1<<6)
+#define ESMTP_STARTTLS						(1<<7)
 
 #define AUTH_PLAIN							 1
 #define AUTH_LOGIN							 2
@@ -63,6 +64,7 @@ struct smtp_server
 
 	int ip_as_domain;
 	int pop3_first;
+	int secure;
 
 	int auth;
 	char *auth_login;

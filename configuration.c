@@ -245,6 +245,8 @@ int load_config(void)
 										account->smtp->ip_as_domain = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"SMTP.POP3first")))
 										account->smtp->pop3_first = CONFIG_BOOL_VAL(result);
+									if ((result = get_config_item(account_buf,"SMTP.Secure")))
+										account->smtp->secure = CONFIG_BOOL_VAL(result);
 
 									if ((result = get_config_item(account_buf,"POP3.Server")))
 										account->pop->name = mystrdup(result);
@@ -477,6 +479,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.SMTP.Auth=%s\n",i,account->smtp->auth?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.SMTP.IPasDomain=%s\n",i,account->smtp->ip_as_domain?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.SMTP.POP3first=%s\n",i,account->smtp->pop3_first?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.SMTP.Secure=%s\n",i,account->smtp->secure?"Y":"N");
 
 				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));
 				fprintf(fh,"ACCOUNT%d.POP3.Port=%d\n",i,account->pop->port);

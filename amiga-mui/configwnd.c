@@ -107,6 +107,7 @@ static Object *account_send_password_string;
 static Object *account_send_auth_check;
 static Object *account_send_pop3_check;
 static Object *account_send_ip_check;
+static Object *account_send_secure_check;
 static Object *account_add_button;
 static Object *account_remove_button;
 
@@ -205,6 +206,7 @@ static void get_account(void)
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
+		account_last_selected->smtp->secure = xget(account_send_secure_check, MUIA_Selected);
 		account_last_selected->smtp->name = mystrdup((char*)xget(account_send_server_string, MUIA_String_Contents));
 		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
 		account_last_selected->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
@@ -471,6 +473,7 @@ static void config_tree_active(void)
 					set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
 					setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
 					setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
+					setcheckmark(account_send_secure_check, account->smtp->secure);
 				}
 				account_last_selected = account;
 			}
@@ -797,6 +800,9 @@ static int init_account_group(void)
 			Child, HGroup,
 				Child, MakeLabel(_("Use SMTP AUTH")),
 				Child, account_send_auth_check = MakeCheck(_("Use SMTP AUTH"), FALSE),
+				Child, HVSpace,
+				Child, MakeLabel(_("Secure")),
+				Child, account_send_secure_check = MakeCheck(_("Secure"),FALSE),
 				Child, HVSpace,
 				Child, MakeLabel(_("Log into POP3 server first")),
 				Child, account_send_pop3_check = MakeCheck(_("Log into POP3 server first"),FALSE),

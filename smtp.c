@@ -476,6 +476,7 @@ int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 		else if (strstr(answer, "ETRN")) conn->flags |= ESMTP_ETRN;
 		else if (strstr(answer, "XUSR")) conn->flags |= ESMTP_XUSR;
 		else if (strstr(answer, "PIPELINING")) conn->flags |= ESMTP_PIPELINING;
+		else if (strstr(answer, "STARTTLS")) conn->flags |= ESMTP_STARTTLS;
 		else if (strstr(answer, "AUTH"))
 		{
 			conn->flags |= ESMTP_AUTH;
@@ -656,33 +657,49 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 {
 	if (!smtp_service_ready(conn)) return 0;
 
-	if (account->smtp->auth)
+	thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
+	if (!esmtp_ehlo(conn,account))
 	{
-		thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
-		if (!esmtp_ehlo(conn,account))
+		thread_call_parent_function_async(up_set_status,1,N_("Sending HELO..."));
+		if (!smtp_helo(conn,account))
 		{
-			tell_from_subtask(N_("EHLO failed"));
+			tell_from_subtask(N_("HELO failed"));
 			return 0;
 		}
+	}
+
+	if (account->smtp->secure)
+	{
+		if (!(conn->flags & ESMTP_STARTTLS))
+		{
+			tell_from_subtask(N_("Connection could not be made secure because the SMTP server doesn't seem to support it!"));
+			return 0;
+		}
+
+		thread_call_parent_function_async(up_set_status,1,N_("Sending STARTTLS..."));
+		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
+		{
+			tell_from_subtask(N_("STARTTLS failed"));
+			return 0;
+		}
+
+		if (!(tcp_make_secure(conn->conn)))
+		{
+			tell_from_subtask(N_("Connection could not be made secure"));
+			return 0;
+		}
+	}
+
+	if (account->smtp->auth)
+	{
 		thread_call_parent_function_async(up_set_status,1,N_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
 			tell_from_subtask(N_("AUTH failed"));
 			return 0;
 		}
-	} else
-	{
-		thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
-		if (!esmtp_ehlo(conn,account))
-		{
-			thread_call_parent_function_async(up_set_status,1,N_("Sending HELO..."));
-			if (!smtp_helo(conn,account))
-			{
-				tell_from_subtask(N_("HELO failed"));
-				return 0;
-			}
-		}
 	}
+
 	return 1;
 }
 

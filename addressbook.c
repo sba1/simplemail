@@ -1243,6 +1243,41 @@ struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m)
 }
 
 /**************************************************************************
+ Returns the rest of the completed string. NULL if this cannot be done.
+ type_ptr will be filled with 0 if the alias has been completed, 1 for the
+ realname and all greater than 1 the email
+**************************************************************************/
+char *addressbook_completed_by_entry(char *part, struct addressbook_entry *entry, int *type_ptr)
+{
+	int pl;
+	int i;
+
+	pl = mystrlen(part);
+
+	if (entry->type != ADDRESSBOOK_ENTRY_PERSON) return NULL;
+	if (!mystrnicmp(part,entry->u.person.alias,pl))
+	{
+		if (type_ptr) *type_ptr = 0;
+		return entry->u.person.alias + pl;
+	}
+	if (!mystrnicmp(part,entry->u.person.realname,pl))
+	{
+		if (type_ptr) *type_ptr = 1;
+		return entry->u.person.realname + pl;
+	}
+
+	for (i=0;i<entry->u.person.num_emails;i++)
+	{
+		if (!mystrnicmp(part,entry->u.person.emails[i],pl))
+		{
+			if (type_ptr) *type_ptr = i + 2;
+			return entry->u.person.emails[i] + pl;
+		}
+	}
+	return NULL;
+}
+
+/**************************************************************************
  Completes an alias/realname/e-mail address of the addressbook
 **************************************************************************/
 char *addressbook_complete_address(char *address)

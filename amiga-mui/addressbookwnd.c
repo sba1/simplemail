@@ -39,6 +39,7 @@
 #include "addressbookwnd.h"
 #include "compiler.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
@@ -746,13 +747,13 @@ static void addressbook_init(void)
 					Child, MakeButton("_BCC:"),
 					End,
 				Child, HGroup,
-					Child, save_button = MakeButton("_Save"),
-					Child, MakeButton("Search"),
-					Child, new_person_button = MakeButton("New Person"),
-					Child, MakeButton("New List"),
-					Child, new_group_button = MakeButton("New Group"),
-					Child, change_button = MakeButton("Change"),
-					Child, delete_button = MakeButton("Delete"),
+					Child, save_button = MakePictureButton("_Save","PROGDIR:Images/Save"),
+/*					Child, MakeButton("Search"),*/
+					Child, new_person_button = MakePictureButton("_Person","PROGDIR:Images/User"),
+/*					Child, MakeButton("New List"),*/
+					Child, new_group_button = MakePictureButton("_Group","PROGDIR:Images/Group"),
+					Child, change_button = MakePictureButton("_Edit","PROGDIR:Images/Edit"),
+					Child, delete_button = MakePictureButton("_Delete","PROGDIR:Images/Delete"),
 					End,
 				End,
 			Child, HGroup,

@@ -69,7 +69,6 @@
 #include "pgplistclass.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
-#include "readlistclass.h"
 #include "subthreads.h"
 #include "transwndclass.h"
 #include "utf8stringclass.h"
@@ -268,7 +267,6 @@ void all_del(void)
 			delete_picturebutton_class();
 			delete_simplehtml_class();
 			delete_composeeditor_class();
-			delete_readlist_class();
 			delete_transwnd_class();
 			delete_datatypes_class();
 			delete_attachmentlist_class();
@@ -312,8 +310,7 @@ int all_init(void)
 				{
 					if (create_utf8string_class() && create_foldertreelist_class() && create_mailtreelist_class() &&
 							create_addressstring_class() && create_attachmentlist_class() &&
-							create_datatypes_class() && create_transwnd_class() &&
-							create_readlist_class() && create_composeeditor_class() &&
+							create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
 							create_simplehtml_class() && create_picturebutton_class() &&
 							create_popupmenu_class() && create_icon_class() && 
 							create_configtreelist_class() && create_filterrule_class() &&

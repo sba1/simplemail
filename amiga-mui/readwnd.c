@@ -58,7 +58,6 @@
 #include "mainwnd.h" /* remove this */
 #include "muistuff.h"
 #include "picturebuttonclass.h"
-#include "readlistclass.h"
 #include "readwnd.h"
 #include "support.h"
 #include "print.h"

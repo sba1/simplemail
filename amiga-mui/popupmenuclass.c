@@ -45,7 +45,6 @@
 #include "compiler.h"
 #include "muistuff.h"
 #include "popupmenuclass.h"
-#include "readlistclass.h"
 
 struct popup_node
 {

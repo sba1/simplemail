@@ -37,6 +37,8 @@
 #include <proto/muimaster.h>
 #include <proto/asl.h>
 
+#include "codesets.h"
+#include "configuration.h"
 #include "folder.h"
 
 #include "amigasupport.h"
@@ -175,6 +177,26 @@ char *sm_get_date_long_str(unsigned int seconds)
 {
 	static char buf[128];
 	SecondsToStringLong(buf,seconds);
+	return buf;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a long form string.
+ The returned string is static and in utf8.
+*******************************************************************/
+char *sm_get_date_long_str_utf8(unsigned int seconds)
+{
+	static char buf[128];
+  char *utf8;
+
+	SecondsToStringLong(buf,seconds);
+	
+	if ((utf8 = utf8create(buf, user.config.default_codeset?user.config.default_codeset->name:NULL)))
+	{
+		strcpy(buf,utf8);
+		free(utf8);
+	}
+
 	return buf;
 }
 

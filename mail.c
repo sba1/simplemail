@@ -2970,7 +2970,7 @@ int mail_create_html_header(struct mail *mail)
 		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
 		{
 			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Date"));
-			fputhtmlstr(sm_get_date_long_str(mail->seconds),fh);
+			fputhtmlstr(sm_get_date_long_str_utf8(mail->seconds),fh);
 			fputs("<BR>",fh);
 		}
 

@@ -45,6 +45,7 @@ int sm_system(char *command, char *output);
 int sm_file_is_in_drawer(char *filename, char *path);
 
 char *sm_get_date_long_str(unsigned int seconds);
+char *sm_get_date_long_str_utf8(unsigned int seconds);
 char *sm_get_date_str(unsigned int seconds);
 char *sm_get_time_str(unsigned int seconds);
 

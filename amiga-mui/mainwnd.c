@@ -61,12 +61,15 @@ static Object *button_new;
 static Object *button_reply;
 static Object *button_abook;
 static Object *button_config;
-static Object *button_switch; /* switch button for the two views */
+static Object *switch1_button; /* switch button for the two views */
+static Object *switch2_button; /* switch button for the two views */
 static Object *mail_tree;
 static Object *mail_tree_group;
 static Object *mail_listview;
+static Object *folder_listview_group;
 static Object *folder_listview;
 static Object *folder_tree;
+static Object *folder2_text; /* the text field below the folder list tree */
 static Object *folder_balance;
 static Object *folder_group;
 static Object *folder_text;
@@ -243,12 +246,12 @@ static int init_folder_placement(void)
 	{
 		set(folder_group, MUIA_ShowMe, TRUE);
 		set(folder_balance, MUIA_ShowMe, FALSE);
-		set(folder_listview, MUIA_ShowMe, FALSE);
+		set(folder_listview_group, MUIA_ShowMe, FALSE);
 	} else
 	{
 		set(folder_group, MUIA_ShowMe, FALSE);
 		set(folder_balance, MUIA_ShowMe, TRUE);
-		set(folder_listview, MUIA_ShowMe, TRUE);
+		set(folder_listview_group, MUIA_ShowMe, TRUE);
 	}
 
 	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
@@ -292,7 +295,6 @@ int main_window_init(void)
 					MUIA_Group_Spacing, 0,
 					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
 					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
-					Child, button_switch = MakePictureButton("S_witch", "PROGDIR:Images/Switch"),
 					End,
 				End,
 
@@ -301,18 +303,28 @@ int main_window_init(void)
 				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
 				Child, folder_popupmenu = PopupmenuObject,
 					ImageButtonFrame,
+					MUIA_CycleChain,1,
 					MUIA_Image_Spec, MUII_PopUp,
 					MUIA_Image_FreeVert, TRUE,
 					End,
+				Child, switch1_button = PopButton(MUII_ArrowLeft),
 				End,
+
 			Child, mail_tree_group = HGroup,
-				Child, folder_listview = NListviewObject,
-					MUIA_CycleChain, 1,
+				Child, folder_listview_group = VGroup,
 					MUIA_HorizWeight, 33,
-					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+					Child, folder_listview = NListviewObject,
+						MUIA_CycleChain, 1,
+						MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+							MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+							End,
+						End,
+					Child, HGroup,
+						MUIA_Group_Spacing, 0,
+						Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,End,
+						Child, switch2_button = PopButton(MUII_ArrowRight),
 						End,
 					End,
 				Child, folder_balance = BalanceObject, End,
@@ -345,7 +357,8 @@ int main_window_init(void)
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
-		DoMethod(button_switch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
+		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
+		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
@@ -385,15 +398,33 @@ int main_window_open(void)
 *******************************************************************/
 static void main_refresh_folders_text(void)
 {
+	char buf[256];
+
 	if (folder_text)
 	{
-		char buf[256];
 		struct folder *f = main_get_folder();
 		if (f)
 		{
 			sprintf(buf, MUIX_B "Folder:"  MUIX_N "%s " MUIX_B "Messages:"  MUIX_N "%ld " MUIX_B "New:"  MUIX_N "%ld: " MUIX_B "Unread:"  MUIX_N "%ld",f->name,f->num_mails,f->new_mails,f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
+	}
+
+	if (folder2_text)
+	{
+		struct folder *f = folder_first();
+		int total_msg = 0;
+		int total_unread = 0;
+		int total_new = 0;
+		while (f)
+		{
+			total_msg += f->num_mails;
+			total_unread += f->unread_mails;
+			total_new += f->new_mails;
+			f = folder_next(f);
+		}
+		sprintf(buf, "Total:%ld New:%ld Unread:%ld",total_msg,total_new,total_unread);
+		set(folder2_text,MUIA_Text_Contents,buf);
 	}
 }
 
@@ -403,6 +434,7 @@ static void main_refresh_folders_text(void)
 void main_refresh_folders(void)
 {
 	struct folder *f = folder_first();
+	char buf[256];
 
 	int act = xget(folder_tree, MUIA_NList_Active);
 
@@ -415,7 +447,11 @@ void main_refresh_folders(void)
 		DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
 						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 
-		if (folder_popupmenu) DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, f->name);
+		if (folder_popupmenu)
+		{
+			sprintf(buf,"%s (T:%ld N:%ld U:%ld)",f->name,f->num_mails,f->new_mails,f->unread_mails);
+			DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf);
+		}
 		f = folder_next(f);
 	}
 	nnset(folder_tree,MUIA_NList_Active,act);

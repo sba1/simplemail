@@ -1350,12 +1350,22 @@ char **addressbook_get_array_of_email_addresses(void)
 }
 
 /**************************************************************************
- Completes an alias/realname/e-mail address of the addressbook
+ Completes an groupname/alias/realname/e-mail address of the addressbook
 **************************************************************************/
 char *addressbook_complete_address(char *address)
 {
 	int al = strlen(address);
 	struct addressbook_entry_new *entry;
+	struct addressbook_group *group;
+
+	/* groups */
+	group = addressbook_first_group();
+	while (group)
+	{
+		if (!utf8stricmp_len(group->name,address,al))
+			return group->name + al;
+		group = addressbook_next_group(group);
+	}
 
 	/* alias */
 	entry = addressbook_first_entry();

@@ -5,6 +5,7 @@ amiga-mui/accountpopclass.c
 amiga-mui/addressbookwnd.c
 amiga-mui/addressgrouplistclass.c
 amiga-mui/addressentrylistclass.c
+amiga-mui/addressmatchlistclass.c
 amiga-mui/attachmentlistclass.c
 amiga-mui/composewnd.c
 amiga-mui/configwnd.c
@@ -31,6 +32,7 @@ Charsets/cp1252.txt
 Charsets/iso8859-10.txt
 Charsets/iso8859-7.txt
 codesets.c
+dbx.c
 folder.c
 imap.c
 mail.c

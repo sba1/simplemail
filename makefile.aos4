@@ -87,6 +87,7 @@ ARCHSRCS=\
 	readwnd.c \
 	searchwnd.c \
 	shutdownwnd.c \
+	smtoolbarclass.c \
 	startup-os4.c \
 	signaturecycleclass.c \
 	startupwnd.c \

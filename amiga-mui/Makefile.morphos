@@ -48,6 +48,7 @@ OBJS = vsnprintf.o \
 	statuswnd.o \
 	startupwnd.o \
 	startup-morphos.o \
+	smtoolbarclass.o \
 	signaturecycleclass.o \
 	shutdownwnd.o \
 	searchwnd.o \

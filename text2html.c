@@ -104,7 +104,8 @@ char *text2html(char *buffer, int buffer_len, int flags)
 					if (new_color == 1) fputs("<FONT COLOR=\"white\">",fh);
 					else if (new_color == 2) fputs("<FONT COLOR=\"yellow\">",fh);
 					last_color = new_color;
-					initial_color = 0;
+					if (new_color) initial_color = 0;
+					else initial_color = 1;
 				}
 
 				eval_color = 0;
@@ -163,7 +164,7 @@ char *text2html(char *buffer, int buffer_len, int flags)
 				else if (c == 10)
 				{
 					eval_color = 1;
-					fputs("<BR>",fh);
+					fputs("<BR>\n",fh);
 				} else
 				{
 					if (c == 32) {
@@ -188,6 +189,11 @@ char *text2html(char *buffer, int buffer_len, int flags)
 			}
 		}
 		fclose(fh);
+/*
+		fh = fopen("ram:test.html","wb");
+		fputs(html_buf,fh);
+		fclose(fh);
+*/
 	}
 	return html_buf;
 }

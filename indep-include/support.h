@@ -41,6 +41,7 @@ char *sm_getenv(char *name);
 void sm_setenv(char *name, char *value);
 void sm_unsetenv(char *name);
 int sm_system(char *command, char *output);
+int sm_file_is_in_drawer(char *filename, char *path);
 
 char *sm_get_date_long_str(unsigned int seconds);
 char *sm_get_date_str(unsigned int seconds);

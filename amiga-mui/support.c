@@ -537,6 +537,32 @@ int sm_system(char *command, char *output)
 }
 
 /******************************************************************
+ Checks weather a file is in the given drawer. Returns 1 for
+ success.
+*******************************************************************/
+int sm_file_is_in_drawer(char *filename, char *path)
+{
+	BPTR dir = Lock(path,ACCESS_READ);
+	int rc = 0;
+	if (dir)
+	{
+		BPTR file = Lock(filename,ACCESS_READ);
+		if (file)
+		{
+			BPTR parent;
+			if ((parent = ParentDir(file)))
+			{
+				if (SameLock(parent,dir)==LOCK_SAME) rc = 1;
+				UnLock(parent);
+			}
+			UnLock(file);
+		}
+		UnLock(dir);
+	}
+	return rc;
+}
+
+/******************************************************************
  Tells an error message
 *******************************************************************/
 void tell_str(char *str)

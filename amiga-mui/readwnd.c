@@ -851,7 +851,7 @@ void read_window_open(char *folder, struct mail *mail)
 		{NM_TITLE, N_("Mail"), NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Show raw format..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Print visible attachment"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
+		{NM_ITEM, N_("Print visible mailpart"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 

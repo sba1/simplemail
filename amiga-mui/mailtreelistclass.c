@@ -80,6 +80,7 @@ struct MailTreelist_Data
 	APTR status_new;
 	APTR status_crypt;
 	APTR status_signed;
+	APTR status_trashcan;
 
 	Object *context_menu;
 	Object *title_menu;
@@ -256,6 +257,7 @@ STATIC ASM VOID mails_display(register __a1 struct NList_DisplayMessage *msg, re
 					if (mail->flags & MAIL_FLAGS_SIGNED) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_signed);
 					else if (mail->flags & MAIL_FLAGS_ATTACH) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_attach);
 				}
+				if (mail_is_marked_as_deleted(mail)) sprintf(status_buf+strlen(status_buf),"\33O[%08lx]",data->status_trashcan);
 
 				sprintf(size_buf,"%ld",mail->size);
 				SecondsToString(date_buf,mail->seconds);
@@ -585,6 +587,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End, 0);
 	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End, 0);
 	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End, 0);
+	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 0);
 
 	return 1;
 }
@@ -592,6 +595,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->status_trashcan) DoMethod(obj, MUIM_NList_DeleteImage, data->status_trashcan);
 	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, data->status_signed);
 	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
 	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
@@ -1002,7 +1006,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 	}
 	*((LONG*)handle) = pos;
 	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);
-	return m;
+	return (ULONG)m;
 #endif
 }
 
@@ -1140,6 +1144,21 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
+STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg msg)
+{
+#ifdef MAILLIST_IS_TREE
+#else
+	LONG pos = MUIV_NList_NextSelected_Start;
+	while (1)
+	{
+		DoMethod(obj, MUIM_NList_NextSelected, &pos);
+		if (pos == MUIV_NList_NextSelected_End) break;
+		DoMethod(obj, MUIM_NList_Redraw, pos);
+	}
+#endif
+	return 0;
+}
+
 STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -1173,6 +1192,7 @@ STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, regist
 		case	MUIM_MailTree_InsertMail: return MailTreelist_InsertMail(cl,obj,(APTR)msg);
 		case	MUIM_MailTree_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
 		case	MUIM_MailTree_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTree_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

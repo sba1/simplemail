@@ -563,6 +563,68 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 }
 
 /******************************************************************
+ Mark the mail as deleted (only imap folders)
+*******************************************************************/
+void folder_mark_deleted(struct folder *folder, struct mail *mail)
+{
+	char *newfilename = mystrdup(mail->filename);
+	char buf[256];
+	int renamed = 0;
+
+	if (!folder->is_imap) return;
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder->path);
+
+	if ((*newfilename == 'u') || (*newfilename == 'U')) *newfilename = 'd';
+	if (!rename(mail->filename,newfilename))
+	{
+		free(mail->filename);
+		mail->filename = newfilename;
+
+		/* delete the indexfile if not already done */
+		if (folder->index_uptodate)
+		{
+			folder_delete_indexfile(folder);
+			folder->index_uptodate = 0;
+		}
+	}
+
+	chdir(buf);
+}
+
+/******************************************************************
+ Mark the mail as undeleted (only imap folders)
+*******************************************************************/
+void folder_mark_undeleted(struct folder *folder, struct mail *mail)
+{
+	char *newfilename = mystrdup(mail->filename);
+	char buf[256];
+	int renamed = 0;
+
+	if (!folder->is_imap) return;
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder->path);
+
+	if ((*newfilename == 'd') || (*newfilename == 'D')) *newfilename = 'u';
+	if (!rename(mail->filename,newfilename))
+	{
+		free(mail->filename);
+		mail->filename = newfilename;
+
+		/* delete the indexfile if not already done */
+		if (folder->index_uptodate)
+		{
+			folder_delete_indexfile(folder);
+			folder->index_uptodate = 0;
+		}
+	}
+
+	chdir(buf);
+}
+
+/******************************************************************
  Replaces a mail with a new one (the replaced mail isn't freed)
  in the given folder
 *******************************************************************/

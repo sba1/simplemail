@@ -45,6 +45,7 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIM_MailTree_InsertMail				(TAG_USER+0x89289a)
 #define MUIM_MailTree_RemoveMail				(TAG_USER+0x89289b)
 #define MUIM_MailTree_ReplaceMail			(TAG_USER+0x89289c)
+#define MUIM_MailTree_RefreshSelected	(TAG_USER+0x89288d)
 
 struct MUIP_MailTree_SetFolderMails { ULONG MethodID; struct folder *f;};
 struct MUIP_MailTree_GetFirstSelected { ULONG MethodID; void *handle;};

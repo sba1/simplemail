@@ -155,6 +155,7 @@ char *mail_get_from_address(struct mail *mail);
 char *mail_get_to_address(struct mail *mail);
 char *mail_get_replyto_address(struct mail *mail);
 
+int mail_is_marked_as_deleted(struct mail *mail);
 void mail_identify_status(struct mail *m);
 struct mail *mail_create(void);
 struct mail *mail_create_for(char *to, char *subject);

@@ -974,6 +974,14 @@ void main_remove_mails_selected(void)
 }
 
 /******************************************************************
+ Refresh all selected mails
+*******************************************************************/
+void main_refresh_mails_selected(void)
+{
+	DoMethod(mail_tree, MUIM_MailTree_RefreshSelected);
+}
+
+/******************************************************************
  Build the check singe account menu
 *******************************************************************/
 void main_build_accounts(void)

@@ -110,6 +110,8 @@ void del_folders(void);
 
 int folder_add_mail(struct folder *folder, struct mail *mail, int sort);
 int folder_add_mail_incoming(struct mail *mail);
+void folder_mark_deleted(struct folder *folder, struct mail *mail);
+void folder_mark_undeleted(struct folder *folder, struct mail *mail);
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail);
 int folder_number_of_mails(struct folder *folder);
 int folder_number_of_unread_mails(struct folder *folder);

@@ -739,6 +739,14 @@ char *mail_get_new_name(int status)
 }
 
 /**************************************************************************
+ Returns wheather a mail is marked as deleted (on IMAP folders)
+**************************************************************************/
+int 	mail_is_marked_as_deleted(struct mail *mail)
+{
+	return (*mail->filename == 'd') || (*mail->filename == 'D');
+}
+
+/**************************************************************************
  Returns a new filename for the mail which matches the given status.
  String is allocated with malloc
 **************************************************************************/

@@ -128,20 +128,33 @@ void callback_delete_mails(void)
 			permanent = 1;
 		} else permanent = 0;
 
-		search_has = search_has_mails();
-
-		mail = main_get_mail_first_selected(&handle);
-		while (mail)
+		if (from_folder->is_imap)
 		{
-			if (search_has) search_remove_mail(mail);
-			if (permanent) folder_delete_mail(from_folder,mail);
-			else folder_move_mail(from_folder,folder_deleted(),mail);
-			mail = main_get_mail_next_selected(&handle);
-		}
-		main_refresh_folder(from_folder);
-		if (!permanent) main_refresh_folder(folder_deleted());
+			mail = main_get_mail_first_selected(&handle);
+			while (mail)
+			{
+				if (mail_is_marked_as_deleted(mail)) folder_mark_undeleted(from_folder,mail);
+				else folder_mark_deleted(from_folder,mail);
+				mail = main_get_mail_next_selected(&handle);
+			}
+			main_refresh_mails_selected();
+		} else
+		{
+			search_has = search_has_mails();
 
-		main_remove_mails_selected();
+			mail = main_get_mail_first_selected(&handle);
+			while (mail)
+			{
+				if (search_has) search_remove_mail(mail);
+				if (permanent) folder_delete_mail(from_folder,mail);
+				else folder_move_mail(from_folder,folder_deleted(),mail);
+				mail = main_get_mail_next_selected(&handle);
+			}
+			main_refresh_folder(from_folder);
+			if (!permanent) main_refresh_folder(folder_deleted());
+
+			main_remove_mails_selected();
+		}
 
 		folder_unlock(from_folder);
 	}

@@ -1067,7 +1067,7 @@ static void group_window_ok(struct Group_Data **pdata)
 		if (group == data->group) continue;
 		if (!utf8stricmp(group->name,getutf8string(data->alias_string)))
 		{
-			sm_request(NULL,_("Group with the given name %s %s already exists"),_("OK"),getutf8string(data->alias_string),group->name);
+			sm_request(NULL,_("Group with the given name \"%s\" already exists"),_("OK"),group->name);
 			set(data->wnd, MUIA_Window_ActiveObject, data->alias_string);
 			return;
 		}

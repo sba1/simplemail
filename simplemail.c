@@ -505,6 +505,100 @@ void callback_forward_selected_mails(void)
 	}
 }
 
+/* This is a helper function used by several other move functions. Its purpose is to move
+   a mail from a folder to another with support for IMAP */
+static int move_mail_helper(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
+{
+	int same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
+	int success = 0;
+
+	if (!same_server)
+	{
+		if (mail->flags & MAIL_FLAGS_PARTIAL)
+		{
+			imap_download_mail(from_folder,mail);
+			main_refresh_mail(mail);
+		}
+
+		if (dest_folder->is_imap)
+		{
+			if (imap_append_mail(mail, from_folder->path, dest_folder->imap_path))
+			{
+				folder_delete_mail(from_folder,mail);
+				success = 1;
+			}
+		} else
+		if (from_folder->is_imap)
+		{
+			char *filename = mystrdup(mail->filename);
+			if (filename)
+			{
+				/* folder_move_mail() might change the filename */
+				if (folder_move_mail(from_folder,dest_folder,mail))
+				{
+					imap_delete_mail_by_filename(filename,from_folder);
+					success = 1;
+				}
+				free(filename);
+			}
+		} else
+		{
+			success = folder_move_mail(from_folder,dest_folder,mail);
+		}
+	} else
+	{
+		/* EMail should be moved on the same imap server */
+		if (imap_move_mail(mail,from_folder,dest_folder))
+		{
+			folder_delete_mail(from_folder,mail);
+			success = 1;
+		}
+	}
+	return success;
+}
+
+/* a single mail should be moved from a folder to another folder */
+void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
+{
+	if (from_folder != dest_folder)
+	{
+		folder_move_mail(from_folder,dest_folder,mail);
+
+		/* If outgoing folder is visible remove the mail */
+		if (main_get_folder() == from_folder)
+			main_remove_mail(mail);
+
+		/* If sent folder is visible insert the mail */
+		if (main_get_folder() == dest_folder)
+			main_insert_mail_pos(mail,folder_get_index_of_mail(dest_folder, mail)-1);
+
+		main_refresh_folder(from_folder);
+		main_refresh_folder(dest_folder);
+	}
+}
+
+/* mails has been droped onto the folder */
+void callback_maildrop(struct folder *dest_folder)
+{
+	struct folder *from_folder = main_get_folder();
+	if (from_folder != dest_folder)
+	{
+		void *handle;
+		struct mail *mail;
+
+		mail = main_get_mail_first_selected(&handle);
+
+		while (mail)
+		{
+			move_mail_helper(mail,from_folder,dest_folder);
+			mail = main_get_mail_next_selected(&handle);
+		}
+		main_refresh_folder(from_folder);
+		main_refresh_folder(dest_folder);
+		main_remove_mails_selected();
+	}
+}
+
 /* a single mail should be moved */
 int callback_move_mail_request(char *folder_path, struct mail *mail)
 {
@@ -515,7 +609,7 @@ int callback_move_mail_request(char *folder_path, struct mail *mail)
 
 	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mails"),src_folder)))
 	{
-		if (folder_move_mail(src_folder,dest_folder,mail))
+		if (move_mail_helper(mail,src_folder,dest_folder))
 		{
 			main_remove_mail(mail);
 			main_refresh_folder(src_folder);
@@ -560,7 +654,7 @@ void callback_move_selected_mails(void)
 			handle = NULL;
 			while (mail)
 			{
-				folder_move_mail(src_folder,dest_folder,mail);
+				move_mail_helper(mail,src_folder,dest_folder);
 				mail = main_get_mail_next_selected(&handle);
 			}
 			main_refresh_folder(src_folder);
@@ -991,92 +1085,6 @@ void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct m
 	{
 		if (search_has_mails()) search_remove_mail(oldmail);
 		main_replace_mail(oldmail, newmail);
-	}
-}
-
-/* a single mail should be moved from a folder to another folder */
-void callback_move_mail(struct mail *mail, struct folder *from_folder, struct folder *dest_folder)
-{
-	if (from_folder != dest_folder)
-	{
-		folder_move_mail(from_folder,dest_folder,mail);
-
-		/* If outgoing folder is visible remove the mail */
-		if (main_get_folder() == from_folder)
-			main_remove_mail(mail);
-
-		/* If sent folder is visible insert the mail */
-		if (main_get_folder() == dest_folder)
-			main_insert_mail_pos(mail,folder_get_index_of_mail(dest_folder, mail)-1);
-
-		main_refresh_folder(from_folder);
-		main_refresh_folder(dest_folder);
-	}
-}
-
-/* mails has been droped onto the folder */
-void callback_maildrop(struct folder *dest_folder)
-{
-	struct folder *from_folder = main_get_folder();
-	if (from_folder != dest_folder)
-	{
-		void *handle;
-		struct mail *mail;
-		int same_server = folder_on_same_imap_server(from_folder,dest_folder); /* is 0 if local only */
-/*		int local_only = !(from_folder->is_imap || dest_folder->is_imap);*/
-
-		mail = main_get_mail_first_selected(&handle);
-
-		while (mail)
-		{
-			int was_partial;
-
-			if (!same_server)
-			{
-				if (mail->flags & MAIL_FLAGS_PARTIAL)
-				{
-					imap_download_mail(from_folder,mail);
-					main_refresh_mail(mail);
-					was_partial = 1;
-				} else was_partial = 0;
-
-				if (dest_folder->is_imap)
-				{
-					if (imap_append_mail(mail, from_folder->path, dest_folder->imap_path))
-					{
-						folder_delete_mail(from_folder,mail);
-					}
-				} else
-				if (from_folder->is_imap)
-				{
-					char *filename = mystrdup(mail->filename);
-					if (filename)
-					{
-						/* folder_move_mail() might change the filename */
-						if (folder_move_mail(from_folder,dest_folder,mail))
-						{
-							imap_delete_mail_by_filename(filename,from_folder);
-						}
-						free(filename);
-					}
-				} else
-				{
-					folder_move_mail(from_folder,dest_folder,mail);
-				}
-			} else
-			{
-				/* EMail should be moved on the same imap server */
-				if (imap_move_mail(mail,from_folder,dest_folder))
-				{
-					folder_delete_mail(from_folder,mail);
-				}
-			}
-
-			mail = main_get_mail_next_selected(&handle);
-		}
-		main_refresh_folder(from_folder);
-		main_refresh_folder(dest_folder);
-		main_remove_mails_selected();
 	}
 }
 

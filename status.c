@@ -30,6 +30,7 @@
 #include "support.h"
 #include "support_indep.h"
 
+#include "mainwnd.h"
 #include "statuswnd.h"
 
 static int is_open;
@@ -175,6 +176,7 @@ void status_set_status(char *str)
 	free(status_text);
 	status_text = mystrdup(str);
 	statuswnd_set_status(status_text);
+	main_set_status_text(status_text);
 }
 
 /******************************************************************

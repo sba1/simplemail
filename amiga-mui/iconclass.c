@@ -327,7 +327,11 @@ STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 		int sel = xget(obj,MUIA_Selected);
 		if (IconBase->lib_Version >= 44)
 		{
-			DrawIconStateA(_rp(obj),data->obj, NULL, _mleft(obj), _mtop(obj), sel?IDS_SELECTED:IDS_NORMAL, NULL);
+			DrawIconState(_rp(obj),data->obj, NULL, _mleft(obj), _mtop(obj), sel?IDS_SELECTED:IDS_NORMAL,
+#ifdef ICONDRAWA_Transparency
+					ICONDRAWA_Transparency, 255,
+#endif
+					TAG_DONE);
 		} else
 		{
 			if (sel && data->obj->do_Gadget.Flags & GFLG_GADGHIMAGE)

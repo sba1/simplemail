@@ -484,6 +484,9 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 	int i;
 	struct mail *submail;
 
+	/* lock the folder, because we are going to remove something */
+	folder_lock(folder);
+
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
 		folder_read_mail_infos(folder,0);
@@ -554,6 +557,8 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 	folder->num_index_mails--;
 	if ((mail_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
 	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+
+	folder_unlock(folder);
 }
 
 /******************************************************************
@@ -563,6 +568,8 @@ static void folder_remove_mail(struct folder *folder, struct mail *mail)
 void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct mail *newmail)
 {
 	int i;
+
+  folder_lock(folder);
 
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
@@ -597,6 +604,8 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 
 	if (mail_get_status_type(newmail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (newmail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+
+  folder_unlock(folder);
 }
 
 /******************************************************************
@@ -1690,7 +1699,11 @@ static void folder_delete_mails(struct folder *folder)
 *******************************************************************/
 void folder_delete_deleted(void)
 {
-	folder_delete_mails(folder_deleted());
+	struct folder *f = folder_deleted();
+	if (!f) return;
+	if (!folder_attempt_lock(f)) return;
+	folder_delete_mails(f);
+	folder_unlock(f);
 }
 
 /******************************************************************

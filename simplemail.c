@@ -90,6 +90,13 @@ void callback_delete_mails(void)
 
 	if (from_folder)
 	{
+		/* Check if folder is not used */
+		if (!folder_attempt_lock(from_folder))
+		{
+			sm_request(NULL,_("Cannot delete mails, because folder is in use.\n"),_("Ok"));
+			return;
+		}
+
 		/* Count the number of selected mails first */
 		mail = main_get_mail_first_selected(&handle);
 		num = 0;
@@ -120,6 +127,8 @@ void callback_delete_mails(void)
 		if (!permanent) main_refresh_folder(folder_deleted());
 
 		main_remove_mails_selected();
+
+		folder_unlock(from_folder);
 	}
 }
 
@@ -129,10 +138,17 @@ int callback_delete_mail(struct mail *mail)
 	struct folder *f = folder_find_by_mail(mail);
 	if (f && f != folder_deleted())
 	{
+		if (!folder_attempt_lock(f))
+		{
+			sm_request(NULL,_("Cannot delete mails, because folder is in use.\n"),_("Ok"));
+			return 0;
+		}
+
 		folder_delete_mail(f,mail);
 		main_refresh_folder(f);
 		main_refresh_folder(folder_deleted());
 		if (main_get_folder() == f) main_remove_mail(mail);
+		folder_unlock(f);
 		return 1;
 	}
 	return 0;

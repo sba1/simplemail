@@ -61,6 +61,7 @@ struct connection
 struct connection *tcp_connect(char *server, unsigned int port, int use_ssl);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn);
+int tcp_secure(struct connection *conn);
 long tcp_read(struct connection *conn, void *, long);
 int tcp_write(struct connection *conn, void *, long);
 int tcp_write_unbuffered(struct connection *conn, void *,long);

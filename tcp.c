@@ -226,6 +226,18 @@ int tcp_make_secure(struct connection *conn)
 }
 
 /******************************************************************
+ Returns whether connection is secure
+*******************************************************************/
+int tcp_secure(struct connection *conn)
+{
+#ifndef NO_SSL
+	return !!conn->ssl;
+#else
+	return 0;
+#endif
+}
+
+/******************************************************************
  Disconnect from the server
 *******************************************************************/
 void tcp_disconnect(struct connection *conn)

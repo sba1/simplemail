@@ -67,22 +67,24 @@ extern struct Library *SimpleHTMLBase;
 #define MUIA_SimpleHTML_VertScrollbar    (TAG_USER+0x31200003) /* IS. */
 #define MUIA_SimpleHTML_TopHoriz         (TAG_USER+0x31200004) /* ISGN */
 #define MUIA_SimpleHTML_TopVert          (TAG_USER+0x31200005) /* ISGN */
-#define MUIA_SimpleHTML_VisibleHoriz     (TAG_USER+0x31200006) /* ..GN */
-#define MUIA_SimpleHTML_VisibleVert      (TAG_USER+0x31200007) /* ..GN */
-#define MUIA_SimpleHTML_TotalHoriz       (TAG_USER+0x31200008) /* ..GN */
-#define MUIA_SimpleHTML_TotalVert        (TAG_USER+0x31200009) /* ..GN */
-#define MUIA_SimpleHTML_ProvideScrollers (TAG_USER+0x3120000a) /* I... */
 
 /* The Hook is called with the hook itself in A0,
  * the object in register A2 and a struct MUIP_SimpleHTML_LoadHook * in A1
  * The hook should return 0 if the loading failed (e.g. unsupported transfer protocol)
  * else another value. In this case the data should be in buffer and buffer_len
  */
-#define MUIA_SimpleHTML_LoadHook				(TAG_USER+0x31200006)
+#define MUIA_SimpleHTML_LoadHook         (TAG_USER+0x31200006)
 
 /* The URI which was clicked */
-#define MUIA_SimpleHTML_URIClicked			(TAG_USER+0x31230007) /* ..GN */
+#define MUIA_SimpleHTML_URIClicked       (TAG_USER+0x31200007) /* ..GN */
 
+#define MUIA_SimpleHTML_VisibleHoriz     (TAG_USER+0x31200008) /* ..GN */
+#define MUIA_SimpleHTML_VisibleVert      (TAG_USER+0x31200009) /* ..GN */
+#define MUIA_SimpleHTML_TotalHoriz       (TAG_USER+0x3120000a) /* ..GN */
+#define MUIA_SimpleHTML_TotalVert        (TAG_USER+0x3120000b) /* ..GN */
+#define MUIA_SimpleHTML_ProvideScrollers (TAG_USER+0x3120000c) /* I... */ /* not yet implemented */
+
+/* Methods */
 #define MUIM_SimpleHTML_AllocateMem		(0x456789)
 #define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
 #define MUIM_SimpleHTML_FontSubst			(0x45678b)

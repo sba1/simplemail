@@ -19,7 +19,7 @@ G_OPTFLAGS  = -O3 \
 
 ##############################################################################
 
-all:  $(OUT)
+all: amigamui $(OUT)
 
 ##############################################################################
 
@@ -121,7 +121,7 @@ fr.pox:
 amigamui:
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 
-$(OUT): $(OBJS) amigamui
+$(OUT): $(OBJS)
 	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -ldebug -o $(OUT).db
 	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).db
 	protect $(OUT) +e

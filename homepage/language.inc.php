@@ -9,7 +9,12 @@ function get_filename($fn)
 
   foreach($accepted_langs as $lang)
   {
-    $new_fn = $fn . "." . trim($lang);
+    $lang = trim($lang);
+    $pos = strpos($lang,";");
+    if ($pos !== FALSE && $pos > 0)
+    	$lang = substr($lang,0,$pos);
+
+    $new_fn = $fn . "." . $lang;
     if (file_exists($new_fn)) return $new_fn;
   }
   return $fn;
@@ -28,6 +33,10 @@ function get_string($text_array)
   foreach($accepted_langs as $lang)
   {
     $lang = trim($lang);
+    $pos = strpos($lang,";");
+    if ($pos !== FALSE && $pos > 0)
+    	$lang = substr($lang,0,$pos);
+
     if (in_array($lang,$supported_langs))
     {
       $used_lang = $lang;

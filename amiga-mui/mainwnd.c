@@ -1162,3 +1162,20 @@ void main_build_addressbook(void)
 {
 	DoMethod(address_tree, MUIM_AddressTreelist_Refresh);
 }
+
+/******************************************************************
+ Freeze the mail list
+*******************************************************************/
+void main_freeze_mail_list(void)
+{
+	set(mail_tree,MUIA_NListtree_Quiet,TRUE);
+}
+
+/******************************************************************
+ Thaws the mail list
+*******************************************************************/
+void main_thaw_mail_list(void)
+{
+	set(mail_tree,MUIA_NListtree_Quiet,FALSE);
+}
+

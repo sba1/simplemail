@@ -599,7 +599,7 @@ static int esmtp_auth_digest_md5(struct smtp_server *server)
 	}
 
 	strcpy(buf,challenge);
-	strcpy(buf+challenge_len,server->esmtp.auth_login);
+	strcpy(buf+challenge_len,server->esmtp.auth_password);
 
 	free(line);
 	free(challenge);

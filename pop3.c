@@ -27,8 +27,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifndef _AROS
-
 #ifdef __WIN32__
 #include <windows.h>
 #else
@@ -144,7 +142,9 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 }
 
 /**************************************************************************
- Log into the pop3 server. timestamp is 
+ Log into the pop3 server. timestamp is the thing the server sends
+ within its welcome message. timestamp maybe NULL which means that
+ no APOP is tried.
 **************************************************************************/
 static int pop3_login(struct connection *conn, struct pop3_server *server, char *timestamp)
 {
@@ -158,7 +158,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 	if (timestamp && !server->ssl)
 	{
-     SM_MD5_CTX context;
+		SM_MD5_CTX context;
 		unsigned char digest[16];
 		char *ptr;
 		int i;
@@ -167,7 +167,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 		MD5Init(&context);
 		MD5Update(&context, timestamp, strlen(timestamp));
-		MD5Update(&context, server->passwd,strlen(server->passwd));
+		MD5Update(&context, server->passwd,mystrlen(server->passwd));
 		MD5Final(digest, &context);
 
 		sm_snprintf(buf,sizeof(buf)-64,"APOP %s ",server->login);
@@ -916,7 +916,28 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 				if (pop3_wait_login(conn,server,&timestamp))
 				{
-					if (pop3_login(conn,server,timestamp))
+					int goon = 1;
+
+					if (!pop3_login(conn,server,timestamp))
+					{
+						goon = 0;
+						if (timestamp)
+						{
+							/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
+							   In such cases a reconnect should help. */
+							pop3_quit(conn,server);
+							tcp_disconnect(conn);
+							if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
+							{
+								if (pop3_wait_login(conn,server,NULL))
+								{
+									goon = pop3_login(conn,server,NULL);
+								}
+							}
+						}
+					}
+
+					if (goon)
 					{
 						struct uidl uidl;
 						struct dl_mail *mail_array;
@@ -1015,8 +1036,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 					}
 					free(timestamp);
 				}
-				tcp_disconnect(conn);
-
+				tcp_disconnect(conn); /* NULL safe */
 				if (thread_aborted()) break;
 			} else
 			{
@@ -1058,13 +1078,34 @@ int pop3_login_only(struct pop3_server *server)
 
 			if (pop3_wait_login(conn,server,&timestamp))
 			{
-				if (pop3_login(conn,server,timestamp))
+				int goon = 1;
+
+				if (!pop3_login(conn,server,timestamp))
+				{
+					goon = 0;
+					if (timestamp)
+					{
+						/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
+						   In such cases a reconnect should help. */
+						pop3_quit(conn,server);
+						tcp_disconnect(conn);
+						if ((conn = tcp_connect(server->name, server->port, server->ssl && (!server->stls))))
+						{
+							if (pop3_wait_login(conn,server,NULL))
+							{
+								goon = pop3_login(conn,server,NULL);
+							}
+						}
+					}
+				}
+
+				if (goon)
 				{
 					pop3_quit(conn,server);
 					rc = 1;
 				}
 			}  
-			tcp_disconnect(conn);
+			tcp_disconnect(conn); /* accepts NULL */
 		}
 		close_socket_lib();
 	}
@@ -1073,29 +1114,6 @@ int pop3_login_only(struct pop3_server *server)
 	thread_call_parent_function_sync(callback_autocheck_refresh,0);
 	return rc;
 }
-
-#else
-
-#include "configuration.h"
-#include "mail.h"
-#include "tcp.h"
-#include "simplemail.h"
-#include "smintl.h"
-#include "status.h"
-#include "support.h"
-#include "support_indep.h"
-
-int pop3_login_only(struct pop3_server *server)
-{
-	return 1;
-}
-
-int pop3_dl(struct list *pop_list, char *dest_dir,
-            int receive_preselection, int receive_size, int called_by_auto)
-{
-	return 1;
-}
-#endif
 
 /**************************************************************************
  malloc() a pop3_server and initializes it with default values.

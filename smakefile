@@ -101,7 +101,7 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo
+LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}hu.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:
@@ -109,6 +109,7 @@ locale: ${LOCALEOBJS}
 # msgfmt $? -o $@     # this is the Amiga style variant of msgfmt
 
 ${LOCALEDIR}de.mo: ${FREECIV_DIR}po/de.po
+${LOCALEDIR}hu.mo: ${FREECIV_DIR}po/hu.po
 
 # some fake targets
 generate:

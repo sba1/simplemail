@@ -5,9 +5,10 @@
 
 @NODE "Main" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.14 (public BETA)
+                         SimpleMail 0.16 (public BETA)
+                          (describes SimpleMail 0.14)
 
-                © 2000-2001 by Hynek Schlawack & Sebastian Bauer
+                © 2000-2002 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 

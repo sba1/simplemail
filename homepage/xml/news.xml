@@ -2,6 +2,40 @@
 
 <news>
 
+  <entry date="2002/05/25">
+	<text lang="en">
+	  Version 0.16 of SimpleMail released!
+
+	  The changes are:
+	  <list>
+    <item>requires version 18.12 of NListtree</item>
+    <item>speed up within the mail list</item>
+    <item>scrollbars in readwindow for datatypes</item>
+    <item>you can drag attachments from the readwindow and drop them on to the workbench now (requires OS3.9)</item>
+    <item>New Config option: Possibilty that SimpleMail only auto downloads if Miami is online</item>
+    <item>New Config option: Execute an ARexx script if new mails has been arrived</item>
+    <item>New Config option: Download at startup</item>
+    <item>New Filter actions: Play sound and execute an arexx script</item>
+    <item>No longer popups the error window if aborting</item>
+    <item>bug fixes</item>
+		</list>
+	</text>
+	<text lang="de">
+	  SimpleMail Version 0.16 veröffentlicht!
+
+	  Die Änderungen sind:
+	  <list>
+    <item>benötigt die Version 18.12 des NListtree</item>
+    <item>schnellere Maillist</item>
+    <item>Scrollbars im Lesefenster für Datatypes</item>
+    <item>Drag und Drop vom Lesefenster in die Workbench (benötigt OS3.9)</item>
+    <item>Ein paar neue Konfig Optionen auf der Mailemfangeseite</item>
+    <item>Zwei neue Filteraktionen</item>
+    <item>Besserer Abbruch beim Mailladen/emfangen</item>
+    <item>Bug Fixes</item>
+		</list>
+	</text>
+  </entry>
 
   <entry date="2002/02/05">
 	<text lang="en">

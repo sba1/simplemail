@@ -15,8 +15,8 @@
 <UL>
 	<LI><A href="http://www.p2p-it.dk/duff/MCC_BetterString.LZX">The BetterString MCC from Allan Odgaard.</A></LI>
 	<LI><A href="http://wuarchive.wustl.edu/pub/aminet/dev/mui/MCC_TextEditor.lha">The TextEditor MCC from Allan Odgaard.</A></LI>
-	<LI><A href="http://www.aphaso.de/download/MCC_NList0_90.lha">The NList MCC from Gilles Masson.</A></LI>
-	<LI><A href="http://www.aphaso.de/download/MCC_NListtree18.7.lha">The NListtree MCC from Carsten Scholling.</A></LI>
+	<LI><A href="http://home.t-online.de/home/sebauer/MCC_NList.lha">The NList MCC from Gilles Masson and the NList Open Source Team (maintained by Sebastian Bauer).</A></LI>
+	<LI><A href="http://home.t-online.de/home/sebauer/MCC_NListtree.lha">The NListtree MCC from Carsten Scholling (maintained by Sebastian Bauer).</A></LI>
 	<LI><A href="ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha">The Pop Placeholder MCC by Marcin Orlowski.</A></LI>
 </UL>
 <br>

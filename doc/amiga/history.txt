@@ -1,13 +1,15 @@
-Version 0.16 (third beta) - 
-  - bug fixes
+Version 0.16 (third beta) - released on 2002/05/25
+  - requires version 18.12 of NListtree
   - speed up within the mail list
   - scrollbars in readwindow for datatypes
   - you can drag attachments from the readwindow and drop them on
     to the workbench now (requires OS3.9)
   - New Config option: Possibilty that SimpleMail only auto downloads if Miami is online
   - New Config option: Execute an ARexx script if new mails has been arrived
+  - New Config option: Download at startup
   - New Filter actions: Play sound and execute an arexx script
   - No longer popups the error window if aborting
+  - bug fixes
 
 Version 0.15 (second beta) - released on 2002/02/05
   - internally most strings are utf8 now. Note: Maybe I missed

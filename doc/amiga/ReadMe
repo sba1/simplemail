@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), sebauer@t-online.de (Sebast
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
-Version:   0.15
+Version:   0.16
 
 Introduction
 ~~~~~~~~~~~~
@@ -21,24 +21,26 @@ SimpleMail requires OS3.0 and MUI 3.8.
 It also needs some additional MUI Custom Classes:
 
  BetterString - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
- NList - http://www.aphaso.de/download/MCC_NList0_90.lha
- NListtree - http://www.aphaso.de/download/MCC_NListtree18.8.lha
+ NList - http://home.t-online/home/sebauer/MCC_NList.lha
+ NListtree - http://home.t-online/home/sebauer/MCC_NListtree.lha
  PopPlaceholder - ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
  TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
 
 Make sure that you always have the latest versions installed!
 
-Changes since 0.14
+Changes since 0.15
 ~~~~~~~~~~~~~~~~~~
-- internally most strings are utf8 now. Note: Maybe I missed
-  some utf8 to iso conversion and you will see some text bugs
-- user can select the charset now which he uses on his system
-- some new translations
-- two new columns in the maillist: "POP3 Server", "Received"
-  (Pop3 Server only has values on new mails)
-- slight layout change of the compose window
-- supports "Content-Description:" field
-- bug fixes as usual
+- requires version 18.12 of NListtree
+- speed up within the mail list
+- scrollbars in readwindow for datatypes
+- you can drag attachments from the readwindow and drop them on
+  to the workbench now (requires OS3.9)
+- New Config option: Possibilty that SimpleMail only auto downloads if Miami is online
+- New Config option: Execute an ARexx script if new mails has been arrived
+- New Config option: Download at startup
+- New Filter actions: Play sound and execute an arexx script
+- No longer popups the error window if aborting
+- bug fixes
 		    
 Contact
 ~~~~~~~

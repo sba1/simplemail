@@ -35,6 +35,7 @@
 #include <proto/utility.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+#include <proto/asl.h>
 
 #include "folder.h"
 
@@ -222,6 +223,42 @@ char *sm_file_part(char *filename)
 char *sm_path_part(char *filename)
 {
 	return (char*)PathPart(filename);
+}
+
+/******************************************************************
+ Returns the full path of a selected file.
+******************************************************************/
+char *sm_request_file(char *title, char *path)
+{
+	char *rc = NULL;
+	struct FileRequester *fr;
+	
+	fr = AllocAslRequestTags(ASL_FileRequest,
+	TAG_DONE);
+	if(fr != NULL)
+	{
+		if(AslRequestTags(fr,
+			ASLFR_InitialDrawer, path,
+		TAG_DONE))
+		{
+			int len = strlen(fr->fr_File) + strlen(fr->fr_Drawer) + 5;
+
+			rc = malloc(len);
+			if(rc != NULL)
+			{
+				strcpy(rc, fr->fr_Drawer);
+				if(!AddPart(rc, fr->fr_File, len) || !strlen(fr->fr_File))
+				{
+					free(rc);
+					rc = NULL;
+				}
+			}
+		}
+		
+		FreeAslRequest(fr);
+	}
+	
+	return rc;
 }
 
 /******************************************************************

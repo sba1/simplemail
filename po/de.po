@@ -1387,7 +1387,7 @@ msgstr "Es war nicht möglich, die Server Statistik zu bekommen"
 
 #: pop3.c:410
 msgid "Getting mail sizes..."
-msgstr "Abfragem der Mailgrößen..."
+msgstr "Abfragen der Mailgrößen..."
 
 #. -ERR has been returned, what means that TOP is not supported
 #: pop3.c:471

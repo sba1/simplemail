@@ -139,7 +139,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		int spams = spam_num_of_spam_classified_mails();
 		int hams = spam_num_of_ham_classified_mails();
 
-		if (spams < user.config.min_classified_mails | hams < user.config.min_classified_mails) auto_spam = 0;
+		if ((spams < user.config.min_classified_mails) || (hams < user.config.min_classified_mails)) auto_spam = 0;
 		else
 		{
 			black = array_duplicate(user.config.spam_black_emails);

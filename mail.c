@@ -206,6 +206,9 @@ static char *quote_text(char *src, int len)
 
 				line_len = 0;
 
+				if (len >= 3 && user.config.write_reply_stripsig && !strncmp(src,"-- ",3))
+					break;
+
 				continue;
 			}
 
@@ -901,22 +904,6 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 	return mail;
 }
 
-char *strip_sig(char *buf)
-{
-	char *ptr;	
-	
-	for(ptr = buf + strlen(buf); ptr != buf; ptr--)
-	{
-		if(!strncmp(ptr, "\n-- ", 4))
-		{
-			*ptr=0;
-			break;
-		}
-	}
-	
-	return buf;
-}
-
 /**************************************************************************
  Creates a Reply to a given mail. That means change the contents of
  "From:" to "To:", change the subject, quote the first text passage
@@ -1135,23 +1122,8 @@ struct mail *mail_create_reply(struct mail *mail)
 			/* city the text and assign it to the mail, it's enough to set decoded_data */
 			mail_decode(text_mail);
 
-			if(text_mail->decoded_data)
-			{
-				replied_text = text_mail->decoded_data;
-				replied_text[text_mail->decoded_len] = 0;
-			}
-			else
-			{
-				replied_text = text_mail->text + text_mail->text_begin;
-				replied_text[text_mail->text_len] = 0;
-			}
-
-			if(user.config.write_reply_stripsig)
-			{
-				replied_text = strip_sig(replied_text);
-			}
-
-			replied_text = quote_text(replied_text, strlen(replied_text));
+			if (text_mail->decoded_data) replied_text = quote_text(text_mail->decoded_data,text_mail->decoded_len);
+			else replied_text = quote_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
 
 			if (replied_text)
 			{

@@ -79,6 +79,28 @@ char *stradd(char *src, const char *str1)
 }
 
 /**************************************************************************
+ Adds a string (str1) to a given string src but only n bytes of str1. The first
+ string is deallocated (maybe NULL). (A real string library would be better)
+ The string is allocated via malloc(). Should be placed otherwhere
+**************************************************************************/
+char *strnadd(char *src, const char *str1, int n)
+{
+	int len = mystrlen(src);
+	char *dest;
+
+	if ((dest = (char*)realloc(src,len+n+1)))
+	{
+		if (str1)
+		{
+			strncpy(&dest[len],str1,n);
+			dest[len+n]=0;
+		}
+		else dest[len]=0;
+	}
+	return dest;
+}
+
+/**************************************************************************
  is the char a rfc822 special
 **************************************************************************/
 static int isspecial(char c)

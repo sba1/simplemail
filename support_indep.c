@@ -599,7 +599,7 @@ int string_append_part(string *string, char *appstr, int bytes)
 
 	strncpy(&string->str[string->len],appstr,bytes);
 	string->len += bytes;
-	string->str[string->len +  bytes] = 0;
+	string->str[string->len] = 0;
 	return 1;
 
 }

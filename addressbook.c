@@ -1221,6 +1221,16 @@ char *addressbook_get_expand_str(char *unexpand)
 }
 
 /**************************************************************************
+ Walks through the addressbook to look for an e-mail addy. Returns this
+ entry or NULL if not found
+**************************************************************************/
+struct addressbook_entry *addressbook_find_entry_by_address(char *addr)
+{
+	return addressbook_find_entry(NULL, addr, 1, NULL, ADDRESSBOOK_FIND_ENTRY_EMAIL);
+
+}
+
+/**************************************************************************
  Completes an alias/realname/e-mail address of the addressbook
 **************************************************************************/
 struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m)

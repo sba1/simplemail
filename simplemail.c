@@ -251,16 +251,16 @@ void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply
 			}
 		}
 
-		chdir(buf);
-
 		if (!err)
 		{
 			for (i=0;i<num;i++)
 			{
-				/* mail_read_contents() will perform an own chdir() */
-				mail_read_contents("",mail_array[i]);
+				/* we are already changed into the directory */
+				mail_read_contents(NULL,mail_array[i]);
 			}
 		}
+
+		chdir(buf);
 
 		if (!err)
 		{

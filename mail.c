@@ -2044,8 +2044,11 @@ void mail_read_contents(char *folder, struct mail *mail)
 	char path[256];
 	FILE *fp;
 
-	getcwd(path, sizeof(path));
-	if(chdir(folder) == -1) return;
+	if (folder)
+	{
+		getcwd(path, sizeof(path));
+		if(chdir(folder) == -1) return;
+	}
 
 	if ((fp = fopen(mail->filename,"rb")))
 	{
@@ -2060,7 +2063,7 @@ void mail_read_contents(char *folder, struct mail *mail)
 		fclose(fp);
 	}
 
-	chdir(path);
+	if (folder) chdir(path);
 }
 
 /**************************************************************************

@@ -32,7 +32,7 @@ $version = "0.24";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.24-os4.lha?download">'."simplemail-0.24-os3.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.24-os4.lha?download">'."simplemail-0.24-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">2004/12/24</td>';
 ?>

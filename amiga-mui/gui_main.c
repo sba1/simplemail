@@ -55,6 +55,7 @@
 #include "addresstreelistclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
+#include "appicon.h"
 #include "arexx.h"
 #include "attachmentlistclass.h"
 #include "audioselectgroupclass.h"
@@ -202,6 +203,7 @@ static void timer_handle(void)
 	}
 
 	callback_timer();
+	appicon_refresh(0);
 
 	if (!timer_outstanding) timer_send(1, 0);
 }
@@ -242,16 +244,18 @@ void loop(void)
 	ULONG thread_m = thread_mask();
 	ULONG timer_m = 1UL << timer_port->mp_SigBit;
 	ULONG arexx_m = arexx_mask();
+	ULONG appicon_m = appicon_mask();
 
 	while((LONG) DoMethod(App, MUIM_Application_NewInput, &sigs) != MUIV_Application_ReturnID_Quit)
 	{
 		if (sigs)
 		{
-			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m | arexx_m);
+			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m | arexx_m | appicon_m);
 			if (sigs & SIGBREAKF_CTRL_C) break;
 			if (sigs & thread_m) thread_handle();
 			if (sigs & timer_m) timer_handle();
 			if (sigs & arexx_m) arexx_handle();
+			if (sigs & appicon_m) appicon_handle();
 		}
 	}
 }
@@ -331,6 +335,7 @@ void all_del(void)
 
 			arexx_cleanup();
 			timer_free();
+			appicon_free();
 
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
@@ -373,26 +378,29 @@ int all_init(void)
 				{
 					if (arexx_init())
 					{
-						if (create_utf8string_class() && create_foldertreelist_class() &&
-						    create_mailtreelist_class() && create_addressstring_class() &&
-						    create_attachmentlist_class() && create_datatypes_class() &&
-						    create_transwnd_class() && create_composeeditor_class() &&
-						    create_picturebutton_class() && create_popupmenu_class() &&
-						    create_icon_class() && create_filterlist_class() &&
-						    create_filterrule_class() && create_multistring_class() &&
-						    create_addresstreelist_class() && create_pgplist_class() &&
-						    create_audioselectgroup_class() && create_accountpop_class() &&
-						    create_signaturecycle_class())
+						if (appicon_init())
 						{
-							if (app_init())
+							if (create_utf8string_class() && create_foldertreelist_class() &&
+							    create_mailtreelist_class() && create_addressstring_class() &&
+							    create_attachmentlist_class() && create_datatypes_class() &&
+							    create_transwnd_class() && create_composeeditor_class() &&
+							    create_picturebutton_class() && create_popupmenu_class() &&
+							    create_icon_class() && create_filterlist_class() &&
+							    create_filterrule_class() && create_multistring_class() &&
+							    create_addresstreelist_class() && create_pgplist_class() &&
+							    create_audioselectgroup_class() && create_accountpop_class() &&
+							    create_signaturecycle_class())
 							{
-								if (main_window_init())
+								if (app_init())
 								{
-									SM_LEAVE;
-									return 1;
-								}
-							} else puts(_("Failed to create the application\n"));
-						} else puts(_("Could not create mui custom classes\n"));
+									if (main_window_init())
+									{
+										SM_LEAVE;
+										return 1;
+									}
+								} else puts(_("Failed to create the application\n"));
+							} else puts(_("Could not create mui custom classes\n"));
+						} else puts(_("Couldn't create appicon port\n"));
 					} else puts(_("Couldn't create arexx port\n"));
 				} else puts(_("Couldn't initialize timer\n"));
 			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);

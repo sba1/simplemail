@@ -270,6 +270,8 @@ int load_config(void)
 								while (isdigit(*account_buf)) account_buf++;
 								if (*account_buf++ == '.')
 								{
+									if ((result = get_config_item(account_buf,"User.AccountName")))
+										account->account_name = dupconfigstr(result,utf8);
 									if ((result = get_config_item(account_buf,"User.Name")))
 										account->name = dupconfigstr(result,utf8);
 									if ((result = get_config_item(account_buf,"User.EMail")))
@@ -517,6 +519,7 @@ void save_config(void)
 			account = (struct account*)list_first(&user.config.account_list);
 			while (account)
 			{
+				fprintf(fh,"ACCOUNT%d.User.AccountName=%s\n",i,MAKESTR(account->account_name));
 				fprintf(fh,"ACCOUNT%d.User.Name=%s\n",i,MAKESTR(account->name));
 				fprintf(fh,"ACCOUNT%d.User.EMail=%s\n",i,MAKESTR(account->email));
 				fprintf(fh,"ACCOUNT%d.User.Reply=%s\n",i,MAKESTR(account->reply));

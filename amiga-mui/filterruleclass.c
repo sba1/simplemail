@@ -39,6 +39,7 @@
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "filterruleclass.h"
+#include "picturebuttonclass.h"
 
 struct FilterRule_Data
 {
@@ -67,6 +68,18 @@ const static char *status_labels[] =
 	"New","Read","Unread","Replied","Forwarded","Pending","Sent",NULL
 };
 
+const static char *status_filenames[] =
+{
+	"PROGDIR:Images/status_new",
+	"PROGDIR:Images/status_old",
+	"PROGDIR:Images/status_unread",
+	"PROGDIR:Images/status_reply",
+	"PROGDIR:Images/status_forward",
+	"PROGDIR:Images/status_waitsend",
+	"PROGDIR:Images/status_sent",
+	NULL
+};
+
 static struct rule rules[] = {
 	{"Sender", RULE_FROM_MATCH},
 	{"Subject", RULE_SUBJECT_MATCH},
@@ -77,6 +90,12 @@ static struct rule rules[] = {
 };
 static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
 
+
+void status_cycle_active(Object **objs)
+{
+	int active = xget(objs[0],MUIA_Cycle_Active);
+	set(objs[1],MUIA_PictureButton_Filename,status_filenames[active]);
+}
 
 STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 {
@@ -101,6 +120,8 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 	} else if (data->type == RULE_STATUS_MATCH)
 	{
 		data->object1 = MakeCycle(NULL,status_labels);
+		data->object2 = PictureButtonObject, End;
+		DoMethod(data->object1, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, status_cycle_active, data->object1, data->object2);
 	}
 
 	if (data->object1) DoMethod(data->group,OM_ADDMEMBER,data->object1);

@@ -40,6 +40,7 @@
 #include "mail.h"
 #include "support.h"
 #include "debug.h"
+#include "configuration.h"
 
 #include "addressbook.h"
 #include "addresstreelistclass.h"
@@ -124,7 +125,7 @@ STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Set
 
 	if (retval)
 	{
-		data->cmap[7] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0x80000000,NULL);
+		data->cmap[7] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,MAKECOLOR32((user.config.read_old_quoted&0x00ff0000)>>16),MAKECOLOR32((user.config.read_old_quoted&0x0000ff00)>>8),MAKECOLOR32((user.config.read_old_quoted&0x000000ff)),NULL);
 	} else
 	{
 		DoSuperMethod(cl,obj,MUIM_Cleanup);

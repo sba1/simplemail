@@ -147,8 +147,8 @@ static void display_about(void)
 	MUI_Request(App, NULL, 0, 
 		_("SimpleMail - About"),
 		_("*Ok"),
-		"SimpleMail version %ld.%ld\n\n%s\nHynek Schlawack %s Sebastian Bauer\n%s.",
-		VERSION,REVISION,_("Copyright © 2000-2001"),_("and"),_("Released under the terms of the GNU Public License"));
+		"SimpleMail version %ld.%ld\n\n%s 2000-2001\nHynek Schlawack %s Sebastian Bauer\n%s.",
+		VERSION,REVISION,_("Copyright ©"),_("and"),_("Released under the terms of the GNU Public License"));
 }
 
 /******************************************************************
@@ -387,30 +387,30 @@ int main_window_init(void)
 		MENU_SETTINGS_SAVEPREFS
 	};
 
-	static const struct NewMenu nm[] =
+	static const struct NewMenu nm_untranslated[] =
 	{
-		{NM_TITLE, "Project", NULL, 0, 0, NULL},
-		{NM_ITEM, "?\0About...", NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
-		{NM_ITEM, "About MUI...", NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
+		{NM_TITLE, N_("Project"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("?:About..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
+		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, "Q\0Quit", NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
-		{NM_TITLE, "Folder", NULL, 0, 0, NULL},
-		{NM_ITEM, "New Group...", NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
-		{NM_ITEM, "New Folder...", NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
-		{NM_ITEM, "Delete...", NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
-		{NM_ITEM, "Options...", NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
-		{NM_ITEM, "Order", NULL, 0, 0, NULL},
-		{NM_SUB, "Save", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
-		{NM_SUB, "Reset", NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
+		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
+		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("New Group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
+		{NM_ITEM, N_("New Folder..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
+		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
+		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
+		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
+		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
+		{NM_SUB, N_("Reset"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_RESET},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, "Check single account", NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
+		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
 
-		{NM_TITLE, "Message", NULL, 0, 0, NULL},
-		{NM_ITEM, "D\0Read", NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
-		{NM_ITEM, "E\0Edit", NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
-		{NM_ITEM, "M\0Move...", NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_MOVE},
-		{NM_ITEM, "Copy...", NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
-		{NM_ITEM, "Delete...", "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
+		{NM_TITLE, N_("Message"), NULL, 0, 0, NULL},
+		{NM_ITEM, N_("D:Read"), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
+		{NM_ITEM, N_("E:Edit"), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
+		{NM_ITEM, N_("M:Move..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_MOVE},
+		{NM_ITEM, N_("Copy..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
+		{NM_ITEM, N_("Delete..."), "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
 /*
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
@@ -419,25 +419,34 @@ int main_window_init(void)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 */
-		{NM_TITLE, "Settings", NULL, 0, 0, (APTR)MENU_SETTINGS},
-		{NM_ITEM, "Show folders?", NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
-		{NM_ITEM, "Show addressbook?", NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_TITLE, N_("Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS},
+		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
+		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, "Addressbook", NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
-		{NM_ITEM, "Configuration...", NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
-		{NM_ITEM, "Filter...", NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
-		{NM_ITEM, "MUI...", NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
+		{NM_ITEM, N_("Addressbook"), NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
+		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
+		{NM_ITEM, N_("Filter..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
+		{NM_ITEM, N_("MUI..."), NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, "Save Settings", NULL, 0, 0, (APTR)MENU_SETTINGS_SAVEPREFS},
+		{NM_ITEM, N_("Save Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS_SAVEPREFS},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
-	/* load the images */
-/*
-	for (i=0;i<sizeof(image_files)/sizeof(char*);i++)
-	  brushes[i] = LoadBrush(image_files[i]);
-	atexit(main_free_brushes);
-*/
+	struct NewMenu *nm;
+	int i;
+
+	/* translate the menu entries */
+	if (!(nm = malloc(sizeof(nm_untranslated)))) return 0;
+	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
+
+	for (i=0;i<sizeof(nm_untranslated)/sizeof(struct NewMenu);i++)
+	{
+		if (nm[i].nm_Label != NM_BARLABEL)
+		{
+			nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
+			if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
+		}
+	}
 
 	rc = FALSE;
 
@@ -450,15 +459,6 @@ int main_window_init(void)
 		MUIA_Window_Menustrip,main_menu,
 
 		WindowContents, main_group = VGroup,
-/*			Child, HGroupV,
-				Child, speedbar = SpeedBarObject,
-					MUIA_Group_Horiz, TRUE,
-					MUIA_SpeedBar_Images, brushes,
-					MUIA_SpeedBar_StripUnderscore, TRUE,
-					MUIA_SpeedBar_SpacerIndex, -1,
-					End,
-				End,*/
-
 			Child, HGroupV,
 				Child, HGroup,
 					MUIA_VertWeight,0,
@@ -564,27 +564,6 @@ int main_window_init(void)
     	printf(_("SimpleMail needs at least version 1.8 of the NListtree mui subclass!\nIt's available at %s"),"http://www.aphaso.de\n");
     	return 0;
     }
-
-		/* Add the buttons to the speedbar now */
-/*
-		AddButtonToSpeedBar(speedbar, 0, "R_ead", "Read the selected message");
-		AddButtonToSpeedBar(speedbar, 1, "Edi_t", "Edit the selected message");
-		AddButtonToSpeedBar(speedbar, 2, "_Delete", "Deletes the selected messages");
-		AddButtonToSpeedBar(speedbar, 3, "_GetAdd", "Does add the address of the sender in the addressbook");
-		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
-		AddButtonToSpeedBar(speedbar, 4, "_New", "Create a new message");
-		AddButtonToSpeedBar(speedbar, 5, "_Reply", "Reply to the selected message");
-		AddButtonToSpeedBar(speedbar, 6, "F_orward", "Forward the selected message");
-		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
-		AddButtonToSpeedBar(speedbar, 7, "_Fetch", "Fetch new mails from all active pop3 servers");
-		AddButtonToSpeedBar(speedbar, 8, "_Send", "Send all ready messages");
-		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
-		AddButtonToSpeedBar(speedbar, 9, "Filter", "Starts the manual filter");
-		AddButtonToSpeedBar(speedbar, 10, "FilterEdit", "Change the filter");
-		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
-		AddButtonToSpeedBar(speedbar, 11, "_Abook", "SimpleMail's Addressbook");
-		AddButtonToSpeedBar(speedbar, 12, "_Config", "Configure SimpleMail");
-*/
 
 		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 
@@ -739,7 +718,7 @@ void main_refresh_folders(void)
 
 			if (folder_popupmenu)
 			{
-				sprintf(buf,"%s (T:%ld N:%ld U:%ld)",f->name,f->num_mails,f->new_mails,f->unread_mails);
+				sprintf(buf,_("%s (T:%ld N:%ld U:%ld)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
 				DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
 			}
 		}

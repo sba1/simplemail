@@ -1706,7 +1706,7 @@ int mail_create_html_header(struct mail *mail)
 				fprintf(fh,"<IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT>",portrait);
 			}
 
-			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\">",mb.addr_spec);
+			fprintf(fh,"<STRONG>From:</STRONG> <A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb.addr_spec);
 
 			if (mb.phrase)
 			{
@@ -1731,7 +1731,7 @@ int mail_create_html_header(struct mail *mail)
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
 				while (mb)
 				{
-					fprintf(fh,"<A HREF=\"mailto:%s\">",mb->addr_spec);
+					fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb->addr_spec);
 					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
 					else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
@@ -1754,7 +1754,7 @@ int mail_create_html_header(struct mail *mail)
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
 				while (mb)
 				{
-					fprintf(fh,"<A HREF=\"mailto:%s\">",mb->addr_spec);
+					fprintf(fh,"<A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",mb->addr_spec);
 					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
 					else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
@@ -1776,7 +1776,7 @@ int mail_create_html_header(struct mail *mail)
 		{
 			struct mailbox addr;
 			parse_mailbox(replyto, &addr);
-			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\">",addr.addr_spec);
+			fprintf(fh,"<STRONG>Replies To:</STRONG> <A HREF=\"mailto:%s\" STYLE=\"TEXT-DECORATION: none\">",addr.addr_spec);
 
 			if (addr.phrase)
 			{

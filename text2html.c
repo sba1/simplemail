@@ -51,7 +51,7 @@ static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 
 	if (i)
 	{
-		fprintf(fh,"<A HREF=\"%s\">%s</A>",uri,uri);
+		fprintf(fh,"<A HREF=\"%s\" STYLE=\"TEXT-DECORATION: none\">%s</A>",uri,uri);
 	}
 
 	*buffer_ptr = buffer;

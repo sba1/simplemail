@@ -83,6 +83,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		static char mails_buf[32];
 		int num = folder_number_of_mails(folder);
 		int unread = folder_number_of_unread_mails(folder);
+		int newm = folder_number_of_new_mails(folder);
 		APTR image;
 
 		switch (folder->special)
@@ -99,7 +100,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		{
 			if(unread > 0)
 			{
-				sprintf(mails_buf,folder_number_of_new_mails(folder)?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
+				sprintf(mails_buf,newm?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
 			}
 			else
 			{
@@ -108,7 +109,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		}	
 		else mails_buf[0] = 0;
 
-		sprintf(data->name_buf,"\33O[%08lx]",image);
+		sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
 		if (folder->name) strcat(data->name_buf,folder->name);
 
 		*msg->Array++ = data->name_buf;

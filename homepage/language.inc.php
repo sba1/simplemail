@@ -62,6 +62,8 @@ $BannersText["en"]="Here are some banners you might want to put on your homepage
 $BannersText["de"]="Hier sind noch einige Banner, die auf der eigenen Homepage gezeigt werden können";
 $BannersCreatorText["en"]="They are made by Richard \"zeg\" Wagenführer, thank you very much for it!";
 $BannersCreatorText["de"]="Sie wurden von Richard \"zeg\" Wagenführer erstellt.";
+$BannersCreator2Text["en"]="The following banner was created by Richard Kapp, also thanks to him!";
+$BannersCreator2Text["de"]="Das folgende Bannner wurde von Richard Kapp erstellt:";
 $GalleryUsersText["en"]="There are %d users in this database";
 $GalleryUsersText["de"]="Es befinden sich %d Benutzer in der Datenbank.";
 $GalleryNoUsersText["en"]="No users are in the database.";
@@ -83,6 +85,7 @@ $LinksIntroText["de"]="Einige nützliche Links für SimpleMail";
 $LinksMCCText["en"]="Some needed MUI Custom Classes (MCC)";
 $LinksMCCText["de"]="MUI Custom Classes (MCC), die von SimpleMail benötigt werden";
 ?>
+
 
 
 

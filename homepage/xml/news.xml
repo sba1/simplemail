@@ -1,6 +1,34 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/08/01">
+    <text lang="en">
+      Version 0.8 of SimpleMail has been released! Changes since last release were:
+      <list>
+       <item>SSL support for POP3 Servers. Needs AmiSSL</item>
+       <item>POP3 servers can be individually deactivated and they are ignored</item>
+       <item>Menubar in the main window; needs to grow though</item>
+       <item>A new read setting, so that smilies can be replaced with images (images created by Richard Kapp)</item>
+       <item>Groups can be deleted now</item>
+      </list>
+      To report bugs please use now the <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> and
+      if you want special new featutes the <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> should be used.
+    </text>
+
+    <text lang="de">
+      Version 0.8 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+      <list>
+       <item>SSL Unterstüzung für POP3 Server. AmiSSL wird dazu benötigt!</item>
+       <item>POP3 Server können individuell deaktiviert werden</item>
+       <item>Menüleiste im Hauptfenster.</item>
+       <item>Ein neue Lesefenstereinstellung, die es ermöglicht Smilies durch Bildchen ersetzen zu lassen (Bilder erstellt von Richard Kapp)</item>
+       <item>Gruppen können nun ebenfalls gelöscht werden</item>
+      </list>
+      Für Bug Reports sollte jetzt das <A HREF="http://sourceforge.net/tracker/?atid=115322&amp;group_id=15322&amp;func=browse">Bug Tracking System</A> und
+      Wünsche das <A HREF="http://sourceforge.net/tracker/?atid=365322&amp;group_id=15322&amp;func=browse">Feature Request Tracking System</A> benutzt werden.
+    </text>
+  </entry>
+
   <entry date="2001/06/29">
     <text lang="en">
       Version 0.7 of SimpleMail has been released! Changes since last release were:
@@ -176,3 +204,4 @@
   </entry>
 
 </news>
+

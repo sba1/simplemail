@@ -24,11 +24,13 @@
 <p>
   If you have any questions or bugs then send them to the
   user-mailinglist please, whose URL you'll find in the <a
-  href="index.php?body=link">links</a>. But if you have any
-  encouragements so send them to one of the main developers. You
+  href="index.php?body=link">links</a>. Bug reports should submitted to the 
+  <a href="http://sourceforge.net/tracker/?atid=115322&group_id=15322&func=browse">
+  Bug Tracking system</A>. But if you have encouragements so send them to one of the main developers. You
   can find our e-mail addresses in <a href="index.php?body=contact">contact</a>.
 </p>
 
 <center>
   <?php require("news.php"); ?>
 </center
+

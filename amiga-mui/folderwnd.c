@@ -464,9 +464,9 @@ void folder_edit(struct folder *f)
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
-	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & ~FOLDER_SORT_REVERSE);
+	set(prim_cycle, MUIA_Cycle_Active, folder_get_primary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);
-	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & ~FOLDER_SORT_REVERSE);
+	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(second_reverse_check, MUIA_Selected, folder_get_secondary_sort(f) & FOLDER_SORT_REVERSE);
 	set(server_string, MUIA_String_Contents, f->imap_server);
 	changed_folder = f;

@@ -32,6 +32,7 @@ IMPORT struct MUI_CustomClass *CL_UTF8String;
 #define MUIA_UTF8String_Charset  (TAG_USER+0x12322) /* (STRPTR) */
 
 #define setutf8string(o,str) set(o,MUIA_UTF8String_Contents,str)
+#define nnsetutf8string(o,str) nnset(o,MUIA_UTF8String_Contents,str)
 #define getutf8string(o) (char*)xget(o,MUIA_UTF8String_Contents)
 
 int create_utf8string_class(void);

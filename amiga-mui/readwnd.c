@@ -925,6 +925,17 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 
 			show_mail(data,mail_find_initial(data->mail));
 
+			/* set the prev/next button to disabled if last mail is reached */
+			if (folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename))
+				set(data->next_button, MUIA_Disabled, FALSE);
+			else
+				set(data->next_button, MUIA_Disabled, TRUE);
+
+			if (folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename))
+				set(data->prev_button, MUIA_Disabled, FALSE);
+			else
+				set(data->prev_button, MUIA_Disabled, TRUE);
+
 			CurrentDir(old_dir);
 			set(App, MUIA_Application_Sleep, FALSE);
 			return 1;

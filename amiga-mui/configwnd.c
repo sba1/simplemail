@@ -227,10 +227,10 @@ static void account_load(void)
 	if (account)
 	{
 		setutf8string(account_name_string,account->name);
-		setstring(account_email_string,account->email);
+		nnset(account_email_string, MUIA_String_Contents, account->email);
 		setstring(account_reply_string,account->reply);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
-		setstring(account_recv_server_string,account->pop->name);
+		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
 		setstring(account_recv_login_string,account->pop->login);
 		SetAttrs(account_recv_password_string,
@@ -244,7 +244,7 @@ static void account_load(void)
 		nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
 		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
 		setcheckmark(account_recv_avoid_check,account->pop->nodupl);
-		setstring(account_send_server_string,account->smtp->name);
+		nnset(account_send_server_string, MUIA_String_Contents, account->smtp->name);
 		set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
 		setstring(account_send_login_string,account->smtp->auth_login);
 		setstring(account_send_password_string,account->smtp->auth_password);
@@ -286,7 +286,7 @@ static void signature_load(void)
 	if (signature)
 	{
 		char *sign = utf8tostrcreate(signature->signature?signature->signature:"",user.config.default_codeset);
-		setutf8string(signature_name_string,signature->name);
+		nnsetutf8string(signature_name_string,signature->name);
 		set(signature_texteditor,MUIA_TextEditor_Contents, sign);
 		free(sign);
 	}
@@ -700,6 +700,15 @@ static void account_selected(void)
 }
 
 /******************************************************************
+ Redraw the List content if there is an input in the Stringgadget
+*******************************************************************/
+static void account_update(void)
+{
+	account_store();
+	DoMethod(account_account_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
+}
+
+/******************************************************************
  Set the correct port
 *******************************************************************/
 void account_recv_port_update(void)
@@ -915,6 +924,12 @@ static int init_account_group(void)
 	if (!groups[GROUPS_ACCOUNT]) return 0;
 
 	DoMethod(account_account_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_selected);
+
+	/* Update the account_list if one of the displayd fields are changed */
+  /* This fields must be set without notification in the account_load() function! */
+	DoMethod(account_email_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
+	DoMethod(account_recv_server_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
+	DoMethod(account_send_server_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, account_update);
 
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_login_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
@@ -1210,8 +1225,12 @@ static void signature_add(void)
 	struct signature *s = signature_malloc();
 	if (s)
 	{
+		s->name = mystrdup(_("-- New Signature --"));
 		DoMethod(signature_signature_list,MUIM_NList_InsertSingle,s,MUIV_NList_Insert_Bottom);
 		set(signature_signature_list,MUIA_NList_Active,MUIV_NList_Active_Bottom);
+		setutf8string(signature_name_string,s->name);
+		set(signature_name_string, MUIA_BetterString_SelectSize, -mystrlen(s->name));
+		set(config_wnd, MUIA_Window_ActiveObject, signature_name_string);
 	}
 }
 
@@ -1238,6 +1257,15 @@ static void signature_selected(void)
 	signature_store();
 	DoMethod(signature_signature_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &signature_last_selected);
 	signature_load();
+}
+
+/******************************************************************
+ Redraw the List content if there is an input in the Stringgadget
+*******************************************************************/
+static void signature_update(void)
+{
+	signature_store();
+	DoMethod(signature_signature_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
 }
 
 STATIC ASM VOID signature_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct signature *ent)
@@ -1296,7 +1324,11 @@ static int init_signature_group(void)
 
 		Child, HGroup,
 			Child, MakeLabel(_("Name")),
-			Child, signature_name_string = UTF8StringObject, StringFrame, End,
+			Child, signature_name_string = UTF8StringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_AdvanceOnCR, TRUE,
+				End,
 /*			Child, edit_button = MakeButton("Edit in external editor"),*/
 			End,
 		Child, HGroup,
@@ -1317,6 +1349,13 @@ static int init_signature_group(void)
 
 	if (!groups[GROUPS_SIGNATURE]) return 0;
 /*	set(edit_button, MUIA_Weight,0);*/
+
+	/* connect the up/down keys to the List */
+	set(signature_name_string, MUIA_String_AttachedList, signature_signature_list);
+
+	/* Keep the list in sync with the field. */
+	/* This field must be set without notification in the signature_load() function! */
+	DoMethod(signature_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, signature_update);
 
 	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t\n",MUIV_TextEditor_InsertText_Cursor);
 	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
@@ -1666,6 +1705,7 @@ static void init_config(void)
 				}
 				signature = (struct signature*)node_next(&signature->node);
 			}
+			set(signature_signature_list, MUIA_NList_Active, 0);
 		}
 	}
 }

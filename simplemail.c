@@ -164,7 +164,8 @@ void callback_delete_mails(void)
 int callback_delete_mail(struct mail *mail)
 {
 	struct folder *f = folder_find_by_mail(mail);
-	if (f && f != folder_deleted())
+	struct folder *fd = folder_deleted();
+	if (f)
 	{
 		if (!folder_attempt_lock(f))
 		{
@@ -172,9 +173,12 @@ int callback_delete_mail(struct mail *mail)
 			return 0;
 		}
 
-		folder_delete_mail(f,mail);
-		main_refresh_folder(f);
-		main_refresh_folder(folder_deleted());
+		if (f != fd)
+		{
+			folder_move_mail(f,fd,mail);
+			main_refresh_folder(f);
+		} else folder_delete_mail(f,mail);
+		main_refresh_folder(fd);
 		if (main_get_folder() == f) main_remove_mail(mail);
 		if (search_has_mails()) search_remove_mail(mail);
 		folder_unlock(f);

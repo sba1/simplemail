@@ -127,7 +127,10 @@ static void searchwnd_start(void)
 	MAKE_NULL(so.subject);
 	MAKE_NULL(so.body);
 
+
+	set(App, MUIA_Application_Sleep, TRUE);
 	callback_start_search(&so);
+	set(App, MUIA_Application_Sleep, FALSE);
 }
 
 /**************************************************************************

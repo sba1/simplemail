@@ -72,6 +72,7 @@
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 #include "startupwnd.h"
+#include "shutdownwnd.h"
 #include "subthreads.h"
 #include "transwndclass.h"
 #include "utf8stringclass.h"
@@ -456,7 +457,7 @@ int gui_main(void)
 			rc = 1;
 			close_config();
 
-			startupwnd_open();
+			shutdownwnd_open();
 		}
 	}
 

@@ -52,6 +52,7 @@
 #include "readwnd.h"
 #include "searchwnd.h"
 #include "startupwnd.h"
+#include "shutdownwnd.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
@@ -1596,5 +1597,6 @@ int simplemail_main(void)
 	cleanup_addressbook();
 	cleanup_threads();
 	startupwnd_close();
+	shutdownwnd_close();
 	return 0;
 }

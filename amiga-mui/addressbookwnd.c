@@ -61,7 +61,7 @@
 #include "picturebuttonclass.h"
 #include "utf8stringclass.h"
 
-static void addressbookwnd_store(void);
+void addressbookwnd_store(void);
 
 /* for the address window */
 static Object *address_wnd;
@@ -1218,7 +1218,7 @@ static void group_window_open(struct addressbook_group *group)
 /******************************************************************
  Updates the internal address book
 *******************************************************************/
-static void addressbookwnd_store(void)
+void addressbookwnd_store(void)
 {
 	int i;
 

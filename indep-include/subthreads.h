@@ -35,6 +35,17 @@ int thread_call_parent_function_sync(void *function, int argcount, ...);
 int thread_call_parent_function_async(void *function, int argcount, ...);
 int thread_call_parent_function_async_string(void *function, int argcount, ...);
 
+/* semaphore handling */
+
+struct semaphore_s;
+typedef struct semaphore_s * semaphore_t; /* opaque type */
+
+semaphore_t thread_create_semaphore(void);
+void thread_dispose_semaphore(semaphore_t sem);
+void thread_lock_semaphore(semaphore_t sem);
+void thread_unlock_semaphore(semaphore_t sem);
+
+/* Only releavant in AmigaOS so this should be moved to somewhere else */
 void thread_handle(void);
 unsigned long thread_mask(void);
 

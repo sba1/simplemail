@@ -25,8 +25,11 @@
 
 #include <stdarg.h>
 #include <string.h>
+#include <stdlib.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
+
+#include "subthreads.h"
 
 #include "amiproc.h"
 
@@ -372,3 +375,34 @@ int thread_aborted(void)
 {
 	return !!CheckSignal(SIGBREAKF_CTRL_C);
 }
+
+struct semaphore_s
+{
+	struct SignalSemaphore sem;
+};
+
+semaphore_t thread_create_semaphore(void)
+{
+	semaphore_t sem = malloc(sizeof(struct semaphore_s));
+	if (sem)
+	{
+		InitSemaphore(&sem->sem);
+	}
+	return sem;
+}
+
+void thread_dispose_semaphore(semaphore_t sem)
+{
+	free(sem);
+}
+
+void thread_lock_semaphore(semaphore_t sem)
+{
+	ObtainSemaphore(&sem->sem);
+}
+
+void thread_unlock_semaphore(semaphore_t sem)
+{
+	ReleaseSemaphore(&sem->sem);
+}
+

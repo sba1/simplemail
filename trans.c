@@ -62,16 +62,12 @@ int mails_upload(void)
 {
 	char *server, *domain;
 	struct folder *out_folder = folder_outgoing();
-	struct folder *sent_folder = folder_sent();
 	void *handle = NULL;
 	int i;
 	struct out_mail **out_array;
 	struct out_mail *out;
-
-	/* the following three fields should be obsolette */
-	int num_mails;
-	struct mail **mail_array;
 	struct mail *m;
+	int num_mails;
 
 	char path[256];
 
@@ -102,24 +98,16 @@ int mails_upload(void)
 	while ((m = folder_next_mail(out_folder, &handle))) num_mails++;
 	if (!num_mails) return 0;
 
-	mail_array = (struct mail**)malloc(sizeof(struct mail*)*num_mails);
-	if (!mail_array) return 0;
-
 	/* only one malloc() */
 	i = sizeof(struct out_mail*)*(num_mails+1) + sizeof(struct out_mail)*num_mails;
 	out_array = (struct out_mail**)malloc(i);
-	if (!out_array)
-	{
-		free(mail_array);
-		return 0;
-	}
+	if (!out_array) return 0;
 
 	/* change into the outgoing folder directory */
 	getcwd(path, sizeof(path));
 	if(chdir(out_folder->path) == -1)
 	{
 		free(out_array);
-		free(mail_array);
 		return 0;
 	}
 
@@ -138,8 +126,7 @@ int mails_upload(void)
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
 
-		out_array[i] = out;
-		mail_array[i++] = m; /* store the mail in the array, this should be obsoletted */
+		out_array[i++] = out;
 
 		to = mail_find_header_contents(m,"To");
 		from = mail_find_header_contents(m,"From");
@@ -183,19 +170,9 @@ int mails_upload(void)
 	/* now send all mails */
 	smtp_send(server, out_array);
 
-	/* this should be done in smtp_send() but we need some new functions
-   * for that, until this the obsoletted marked stuff if necessary */
-	if (sent_folder)
-	{
-		for (i=0;i<num_mails;i++)
-		{
-			callback_move_mail(mail_array[i],out_folder,sent_folder);
-		}
-	}
 
 	chdir(path);
 	free(out_array);
-	free(mail_array);
 
 	/* NOTE: A lot of memory leaks!! */
 }

@@ -251,7 +251,7 @@ int smtp_data(long hsocket, char *mailfile)
 		if(fp)
 		{
 			fseek(fp, 0L, SEEK_END);
-			size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */
+			size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */ /* now it's ok :-) */
 			up_init_gauge_byte(size);
 			fseek(fp, 0L, SEEK_SET);
 			
@@ -361,6 +361,13 @@ int smtp_send_mail(long hsocket, struct out_mail **om)
 				rc = FALSE;
 				break;
 			}
+
+			if (rc)
+			{
+				/* no error while mail sending, so it can be moved to the
+				 * "Sent" folder now */
+				callback_mail_has_been_sent(om[i]->mailfile);
+			}
 		}
 		
 		if(rc = TRUE)
@@ -399,7 +406,7 @@ int smtp_send(char *server, struct out_mail **om)
 		{
 			rc = smtp_send_mail(hsocket, om);
          
-         	up_set_status("Disconnecting...");
+			up_set_status("Disconnecting...");
 			CloseSocket(hsocket);
 		}
 		else

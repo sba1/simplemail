@@ -175,6 +175,20 @@ void callback_new_mail_written(struct mail *mail)
 	main_refresh_folder(folder_outgoing());
 }
 
+/* a mail has been send so it can be moved to the "Sent" drawer now */
+void callback_mail_has_been_sent(char *filename)
+{
+	struct folder *out = folder_outgoing();
+	struct folder *sent = folder_sent();
+	struct mail *m;
+	if (!out || !sent) return;
+
+	if ((m = folder_find_mail_by_filename(out,filename)))
+	{
+		callback_move_mail(m,out,sent);
+	}
+}
+
 /* a mail has been changed/replaced by the user */
 void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct mail *newmail)
 {

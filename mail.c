@@ -1326,6 +1326,8 @@ int mail_process_headers(struct mail *mail)
 	if (!mystricmp(mail->content_type, "multipart"))
 	{
 		mail->flags |= MAIL_FLAGS_ATTACH;
+		if (!mystricmp(mail->content_subtype,"encrypted"))
+			mail->flags |= MAIL_FLAGS_CRYPT;
 	}
 
   if ((buf = mail_find_header_contents(mail, "Importance")))
@@ -1383,14 +1385,23 @@ static int mail_read_structure(struct mail *mail)
 			{
 				char *buf = mail->text + mail->text_begin;
 
-				if ((buf = strstr(buf,search_str) + strlen(search_str)))
+				/* This is for e-Mailers which boundary start soon after the header
+           so there couldn't be any LF before */
+				if (!strncmp(buf,search_str+1,strlen(search_str+1)))
 				{
-/*					int related;*/ /* if is a related content subtype */
+					buf += strlen(search_str+1);
+				} else
+				{
+					if ((buf = strstr(buf,search_str)))
+					{
+						buf += strlen(search_str);
+					}
+				}
 
+				if (buf)
+				{
 					if (*buf == 13) buf++;
 					if (*buf == 10) buf++;
-
-/*					related = !mystricmp(content_subtype, "related");*/
 
 					while (1)
 					{
@@ -1431,13 +1442,6 @@ static int mail_read_structure(struct mail *mail)
 						if (*buf == 13) buf++;
 						if (*buf == 10) buf++;
 					}
-
-/*
-					if (mail->num_multiparts)
-					{
-						mail->multipart_related_root = mail->multipart_array[0];
-					}
-*/
 				}
 			}
 		}

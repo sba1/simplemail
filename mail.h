@@ -114,6 +114,7 @@ struct mail
 #define MAIL_FLAGS_GROUP     (1L << 1) /* it has been sent to more persons */
 #define MAIL_FLAGS_ATTACH    (1L << 2) /* it has attachments */
 #define MAIL_FLAGS_IMPORTANT (1L << 3) /* mail is important */
+#define MAIL_FLAGS_CRYPT     (1L << 4) /* mail is crypted */
 
 struct mail *mail_find_compound_object(struct mail *m, char *id);
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);

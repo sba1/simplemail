@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** muistuff.c
 */
 
 #include <dos.h>
@@ -79,6 +79,19 @@ Object *MakeCycle(STRPTR label, STRPTR * array)
 VOID DisposeAllChilds(Object *o)
 {
   struct List *child_list = (struct List*)xget(o,MUIA_Group_ChildList);
+  Object *cstate = (Object *)child_list->lh_Head;
+  Object *child;
+
+  while ((child = (Object*)NextObject(&cstate)))
+  {
+    DoMethod(o,OM_REMMEMBER,child);
+    MUI_DisposeObject(child);
+  }
+}
+
+VOID DisposeAllFamilyChilds(Object *o)
+{
+  struct List *child_list = (struct List*)xget(o,MUIA_Family_List);
   Object *cstate = (Object *)child_list->lh_Head;
   Object *child;
 

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** addressstringclass.c
 */
 
 #include <dos.h>
@@ -90,6 +90,20 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	if (msg->imsg && msg->imsg->Class == IDCMP_RAWKEY)
 	{
     UWORD code = ConvertKey(msg->imsg);
+    if (code == ',')
+    {
+    	LONG bufferpos = xget(obj,MUIA_String_BufferPos);
+    	char *contents = (char*)xget(obj,MUIA_String_Contents);
+    	LONG selectsize = xget(obj,MUIA_BetterString_SelectSize);
+
+			if (selectsize && selectsize == strlen(contents+bufferpos))
+			{
+				SetAttrs(obj,MUIA_String_BufferPos, strlen(contents),
+										 MUIA_BetterString_SelectSize, 0,
+										 TAG_DONE);
+			}
+    }
+
 		if (((code >= 32 && code <= 126) || code >= 160) && !(msg->imsg->Qualifier & IEQUALIFIER_RCOMMAND))
 		{
 			char *contents;

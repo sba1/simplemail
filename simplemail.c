@@ -49,7 +49,7 @@
 #include "tcpip.h"
 
 /* the current mail should be viewed, returns the number of the window
-   which the function has opened or -1 for an error */
+	which the function has opened or -1 for an error */
 int callback_read_mail(void)
 {
 	char *filename;
@@ -624,7 +624,7 @@ void callback_move_mail(struct mail *mail, struct folder *from_folder, struct fo
 
 		/* If sent folder is visible insert the mail */
 		if (main_get_folder() == dest_folder)
-			main_insert_mail(mail);
+			main_insert_mail_pos(mail,folder_get_index_of_mail(dest_folder, mail)-1);
 
 		main_refresh_folder(from_folder);
 		main_refresh_folder(dest_folder);

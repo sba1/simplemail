@@ -26,6 +26,10 @@
 
 #include "simplemail.h"
 
+/* This needs to be fixed within simplemail,c */
+static int initial_argc;
+static char *initial_argv;
+
 int gui_parseargs(int argc, char *argv[])
 {
 	return 1;
@@ -41,6 +45,8 @@ int gui_execute_arexx(char *filename)
 
 int gui_main(int argc, char *argv[])
 {
+	argc = initial_argc;
+	argv = initial_argv;
 	gtk_init(&argc, &argv);
 	main_window_init();
 	main_refresh_folders();
@@ -229,14 +235,16 @@ int gui_main(void)
 	}
 
 	all_del();
-	
+
 	return rc;
 }
 
 #endif
 
-int main(void)
+int main(int argc, char *argv[])
 {
-		simplemail_main();
-		return 0;
+	initial_argc = argc;
+	initial_argv = argv;
+	simplemail_main();
+	return 0;
 }

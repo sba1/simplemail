@@ -22,6 +22,7 @@
 */
 
 #include <string.h>
+#include <stdlib.h>
 
 #include <exec/memory.h>
 #include <proto/dos.h>
@@ -182,3 +183,22 @@ char *mystrdup(const char *str)
 	if (!str) return NULL;
 	return strdup(str);
 }
+
+/**************************************************************************
+ Like mystrdup() but you can limit the chars. A 0 byte is guaranted.
+ The string is allocated via malloc().
+**************************************************************************/
+char *mystrndup(const char *str1, int n)
+{
+	char *dest;
+
+	if ((dest = (char*)malloc(n+1)))
+	{
+		if (str1) strncpy(dest,str1,n);
+		else dest[0] = 0;
+
+		dest[n]=0;
+	}
+	return dest;
+}
+

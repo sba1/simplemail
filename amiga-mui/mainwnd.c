@@ -59,6 +59,7 @@ static Object *button_delete;
 static Object *button_change;
 static Object *button_new;
 static Object *button_reply;
+static Object *button_forward;
 static Object *button_abook;
 static Object *button_config;
 static Object *switch1_button; /* switch button for the two views */
@@ -283,8 +284,10 @@ int main_window_init(void)
 					End,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
+					MUIA_Weight, 150,
 					Child, button_new = MakePictureButton("_New","PROGDIR:Images/MailNew"),
 					Child, button_reply = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
+					Child, button_forward = MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
 					End,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
@@ -354,6 +357,7 @@ int main_window_init(void)
 		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
 		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
+		DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_mail);
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);

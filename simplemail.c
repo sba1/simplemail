@@ -125,6 +125,33 @@ void callback_reply_mail(void)
 	}
 }
 
+/* a mail should be forwarded */
+void callback_forward_mail(void)
+{
+	char *filename;
+
+	if ((filename = main_get_mail_filename()))
+	{
+		struct mail *mail;
+		char buf[256];
+
+		getcwd(buf, sizeof(buf));
+		chdir(main_get_folder_drawer());
+
+		if ((mail = mail_create_from_file(filename)))
+		{
+			mail_read_contents("",mail);
+			if (mail_forward(mail))
+			{
+				compose_window_open(NULL,mail);
+			}
+			mail_free(mail);
+		}
+
+		chdir(buf);
+	}
+}
+
 /* the currently selected mail should be changed */
 void callback_change_mail(void)
 {

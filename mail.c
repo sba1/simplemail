@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** mail.c
 */
 
 #include <ctype.h>
@@ -38,6 +38,7 @@
 
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
+static struct header *mail_find_header(struct mail *mail, char *name);
 
 /* the mime preample used in mime multipart messages */
 const static char mime_preample[] = 
@@ -745,6 +746,48 @@ struct mail *mail_create_reply(struct mail *mail)
 	}
 	return m;
 }
+
+/**************************************************************************
+ Modifies the mail to a forwared one
+**************************************************************************/
+int mail_forward(struct mail *mail)
+{
+	char *subject = mail->subject;
+
+	struct header *header = mail_find_header(mail,"to");
+
+	if (header)
+	{
+		/* remove the to header */
+		node_remove(&header->node);
+		if (header->name) free(header->name);
+		if (header->contents) free(header->contents);
+		free(header);
+	}
+
+	if (mail->to) free(mail->to);
+	mail->to = NULL;
+	if (mail->message_id) free(mail->message_id);
+	mail->message_id = NULL;
+	if (mail->message_reply_id) free(mail->message_reply_id);
+	mail->message_reply_id = NULL;
+
+	if (subject)
+	{
+		char *new_subject;
+		int len = strlen(subject);
+
+		if ((new_subject = (char*)malloc(len+10)))
+		{
+			strcpy(new_subject,subject);
+			strcat(new_subject," (fwd)");
+			mail->subject = new_subject;
+			free(subject);
+		}
+	}
+	return 1;
+}
+
 
 /**************************************************************************
  Extract the name of a given address (and looks for matches in the

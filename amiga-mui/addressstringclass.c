@@ -27,6 +27,7 @@
 
 #include <libraries/mui.h>
 #include <mui/Betterstring_MCC.h>
+#include <mui/NListtree_MCC.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -144,6 +145,61 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 	return 0;
 }
 
+STATIC ULONG AddressString_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
+{
+	if (xget(msg->obj,MUIA_UserData) == 1) return MUIV_DragQuery_Accept;
+	return MUIV_DragQuery_Refuse;
+}
+
+STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
+	if (treenode)
+	{
+		struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
+		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
+		{
+			char *append;
+			append = entry->person.alias;
+			if (!append || !*append)
+			{
+				append = entry->person.realname;
+				if (!append || !*append)
+				{
+					if (entry->person.num_emails)
+					{
+						append = entry->person.emails[0];
+					} else append = NULL;
+				}
+			}
+
+			if (append)
+			{
+				char *text = (char*)xget(obj,MUIA_String_Contents);
+				char *newtext;
+				int len;
+
+				if (!text) text = "";
+				len = strlen(text);
+
+				if ((newtext = (char*)malloc(strlen(text)+strlen(append)+8)))
+				{
+					strcpy(newtext,text);
+					if (len && text[len-1] != ',')
+					{
+						newtext[len++]=',';
+						newtext[len]=0;
+					}
+					strcat(newtext,append);
+					set(obj,MUIA_String_Contents,newtext);
+					free(newtext);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 STATIC ASM ULONG AddressString_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -154,6 +210,8 @@ STATIC ASM ULONG AddressString_Dispatcher(register __a0 struct IClass *cl, regis
 		case	MUIM_GoActive: return AddressString_GoActive(cl,obj,msg);
 		case	MUIM_GoInactive: return AddressString_GoInactive(cl,obj,msg);
 		case	MUIM_HandleEvent: return AddressString_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
+		case	MUIM_DragQuery: return AddressString_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
+		case	MUIM_DragDrop: return AddressString_DragDrop(cl,obj,(struct MUIP_DragDrop*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

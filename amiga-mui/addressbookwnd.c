@@ -847,6 +847,9 @@ static void addressbook_init(void)
 	DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_delete);
 	DoMethod(to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_to);
 	DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);
+
+	set(address_tree, MUIA_UserData, 1); /* used in addresstringclass.c */
+
 }
 
 /******************************************************************

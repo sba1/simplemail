@@ -18,6 +18,15 @@
 #ifndef POP3_H
 #define POP3_H
 
-int pop3_dl(char *server, unsigned int port, char *user, char *pass);
+struct pop3_server
+{
+	char *name;
+	unsigned int port;
+	char *login;
+	char *passwd;
+	long socket;
+};
+
+int pop3_dl(struct pop3_server *server);
 
 #endif

@@ -36,27 +36,43 @@
 
 int mails_dl(void)
 {
-	char *server, *login, *passwd;
+	struct pop3_server *server;
 
-	server = user.config.pop_server;
-	login = user.config.pop_login;
-	passwd = user.config.pop_password;
+	server = malloc(sizeof(struct pop3_server));
 
-	if (!server)
+	server->name = malloc(strlen(user.config.pop_server) + 1);
+	strcpy(server->name, user.config.pop_server);
+	
+	server->port = 110;
+	
+	server->login = malloc(strlen(user.config.pop_login) + 1);
+	strcpy(server->login, user.config.pop_login);
+	
+	server->passwd = malloc(strlen(user.config.pop_password) + 1);
+	strcpy(server->passwd, user.config.pop_password);
+
+	server->socket = SMTP_NO_SOCKET;
+
+	if (!server->name)
 	{
 		tell("Please configure a pop3 server!");
-		return 0;
+		return(0);
 	}
 
-	dl_set_title(server);
+	dl_set_title(server->name);
 	dl_window_open();
 
 	/* Here we must create a new task which then downloads the mails */
-	pop3_dl(server, 110, login, passwd);
+	pop3_dl(server);
 
 	dl_window_close();
 
-	return 0;
+	free(server->name);
+	free(server->login);
+	free(server->passwd);
+	free(server);
+
+	return(0);
 }
 
 int mails_upload(void)

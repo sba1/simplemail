@@ -42,24 +42,26 @@
 #include "dlwnd.h"
 #include "mainwnd.h"
 
+#include "pop3.h"
+
 #define REC_BUFFER_SIZE 512
 
 /*
 ** Wait for the welcome message.
 */
-int pop3_wait_login(long hsocket)
+int pop3_wait_login(struct pop3_server *server)
 {
 	int rc;
 	char *buf;
 	int got;
 	
 	rc = 0;
-	if(hsocket != SMTP_NO_SOCKET)
+	if(server->socket != SMTP_NO_SOCKET)
 	{
 		buf = malloc(1024);
 		if(buf != NULL)
 		{
-			got = recv(hsocket, buf, 1023, 0);
+			got = recv(server->socket, buf, 1023, 0);
 			if(got != 0)
 			{
 				buf[got] = 0;
@@ -69,7 +71,7 @@ int pop3_wait_login(long hsocket)
 					/* Get rid of a eventually longer welcome message  */	
 					while(strstr(buf, "\r\n") == NULL)
 					{
-						recv(hsocket, buf, 1023, 0);
+						recv(server->socket, buf, 1023, 0);
 					}
 					
 					rc = 1;
@@ -100,7 +102,7 @@ int pop3_wait_login(long hsocket)
 /*
 ** Log into the pop3 server.
 */
-int pop3_login(long hsocket, char *user, char *pass)
+int pop3_login(struct pop3_server *server)
 {
 	int rc;
 	char *buf;
@@ -115,10 +117,10 @@ int pop3_login(long hsocket, char *user, char *pass)
 	{
 		dl_set_status("Sending username...");
 	
-		sprintf(buf, "USER %s\r\n", user);
-		if(send(hsocket, buf, strlen(buf), 0) != -1)
+		sprintf(buf, "USER %s\r\n", server->login);
+		if(send(server->socket, buf, strlen(buf), 0) != -1)
 		{
-			got = recv(hsocket, buf, 4095, 0);
+			got = recv(server->socket, buf, 4095, 0);
 			if(got != 0)
 			{
 				buf[got] = 0;
@@ -127,10 +129,10 @@ int pop3_login(long hsocket, char *user, char *pass)
 				{
 					dl_set_status("Sending password...");
 					
-					sprintf(buf, "PASS %s\r\n", pass);
-					if(send(hsocket, buf, strlen(buf), 0) != -1)
+					sprintf(buf, "PASS %s\r\n", server->passwd);
+					if(send(server->socket, buf, strlen(buf), 0) != -1)
 					{
-						got = recv(hsocket, buf, 4095, 0);
+						got = recv(server->socket, buf, 4095, 0);
 						if(got != 0)
 						{
 							buf[got] = 0;
@@ -184,7 +186,7 @@ int pop3_login(long hsocket, char *user, char *pass)
 /*
 ** Get statistics about pop3-folder contents.
 */
-int pop3_stat(long hsocket)
+int pop3_stat(struct pop3_server *server)
 {
 	int rc;
 	char *buf;
@@ -196,9 +198,9 @@ int pop3_stat(long hsocket)
 	if(buf != NULL)
 	{
 		dl_set_status("Getting statistics...");
-		if(send(hsocket, "STAT\r\n", 6, 0) != -1)
+		if(send(server->socket, "STAT\r\n", 6, 0) != -1)
 		{
-			got = recv(hsocket, buf, 1023, 0);
+			got = recv(server->socket, buf, 1023, 0);
 			if(got != 0)
 			{
 				buf[got] = 0;
@@ -238,7 +240,7 @@ int pop3_stat(long hsocket)
 /*
 ** Regulary quit server.
 */
-int pop3_quit(long hsocket)
+int pop3_quit(struct pop3_server *server)
 {
 	int rc;
 	int got;
@@ -249,9 +251,9 @@ int pop3_quit(long hsocket)
 	if(buf != NULL)
 	{
 		dl_set_status("Logging out...");
-		if(send(hsocket, "QUIT\r\n", 6, 0) != -1)
+		if(send(server->socket, "QUIT\r\n", 6, 0) != -1)
 		{
-			got = recv(hsocket, buf, 1023, 0);
+			got = recv(server->socket, buf, 1023, 0);
 			if(got != 0)
 			{
 				buf[got] = 0;
@@ -286,7 +288,7 @@ int pop3_quit(long hsocket)
 /*
 ** Retrieve mail.
 */
-int pop3_get_mail(long hsocket, unsigned long nr)
+int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 {
 	int rc;
 	char *buf, *fn;
@@ -307,8 +309,8 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 			if(buf != NULL)
 			{
 				sprintf(buf, "LIST %ld\r\n", nr);
-				send(hsocket, buf, strlen(buf), 0);
-				got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+				send(server->socket, buf, strlen(buf), 0);
+				got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
 				if(got != 0)
 				{
 					if(buf[0] == '+')
@@ -324,8 +326,8 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 						dl_init_gauge_byte(size);
 
 						sprintf(buf, "RETR %ld\r\n", nr);
-						send(hsocket, buf, strlen(buf), 0);
-						got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+						send(server->socket, buf, strlen(buf), 0);
+						got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
 						if(got != 0)
 						{
 							if(buf[0] == '+')
@@ -365,7 +367,7 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 												break;
 											}
 											
-											got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+											got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
 											if(got != 0)
 											{
 												i += got;
@@ -478,7 +480,7 @@ static void pop3_output_infos(struct mail *mail)
 /*
 ** Get the headers of the specified file.
 */
-int pop3_get_top(long hsocket, unsigned long nr)
+int pop3_get_top(struct pop3_server *server, unsigned long nr)
 {
 	char *buf;
 	int rc;
@@ -497,9 +499,9 @@ int pop3_get_top(long hsocket, unsigned long nr)
 			mail_scan_buffer_start(&ms, mail);
 
 			sprintf(buf, "TOP %ld 1\r\n", nr); /* a 0 sends the whole mail :( */
-			send(hsocket, buf, strlen(buf), 0);
+			send(server->socket, buf, strlen(buf), 0);
 
-			got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+			got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
 			if(got > 0)
 			{
 				buf[got] = 0;
@@ -527,7 +529,7 @@ int pop3_get_top(long hsocket, unsigned long nr)
 								more = mail_scan_buffer(&ms, buf2, strlen(buf2));
 							}	
 
-							if (running) got = recv(hsocket, buf, REC_BUFFER_SIZE, 0);
+							if (running) got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
 							if (got > 0) buf[got] = 0;
 							else running = FALSE;
 
@@ -574,20 +576,20 @@ int pop3_get_top(long hsocket, unsigned long nr)
 /*
 **
 */
-void pop3_get_tops(long hsocket, unsigned long amm)
+void pop3_get_tops(struct pop3_server *server, unsigned long amm)
 {
 	unsigned long i;
 	
 	for(i = 1; i <= amm; i++)
 	{
-		pop3_get_top(hsocket, i);
+		pop3_get_top(server, i);
 	}
 }
 
 /*
 ** Mark mail as deleted.
 */
-int pop3_del_mail(long hsocket, unsigned long nr)
+int pop3_del_mail(struct pop3_server *server, unsigned long nr)
 {
 	int rc;
 	
@@ -601,10 +603,9 @@ int pop3_del_mail(long hsocket, unsigned long nr)
 /*
 ** Download mails.
 */
-int pop3_dl(char *server, unsigned int port, char *user, char *pass)
+int pop3_dl(struct pop3_server *server)
 {
 	int rc;
-	long hsocket;
 	int mail_amm;
 	
 	rc = 0;
@@ -613,15 +614,15 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 	if(SocketBase != NULL)	
 	{
 		dl_set_status("Connecting to server...");	
-		hsocket = tcp_connect(server, port);
-		if(hsocket != SMTP_NO_SOCKET)
+		server->socket = tcp_connect(server->name, server->port);
+		if(server->socket != SMTP_NO_SOCKET)
 		{
 			dl_set_status("Waiting for login...");
-			if(pop3_wait_login(hsocket))
+			if(pop3_wait_login(server))
 			{
-				if(pop3_login(hsocket, user, pass))
+				if(pop3_login(server))
 				{
-					mail_amm = pop3_stat(hsocket);
+					mail_amm = pop3_stat(server);
 					if(mail_amm != 0)
 					{
 						unsigned long i;
@@ -640,14 +641,14 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 						}
 						else
 						{
-							pop3_get_tops(hsocket, mail_amm);
+							pop3_get_tops(server, mail_amm);
 						
 							for(i = 1; i <= mail_amm; i++)
 							{
 								dl_set_gauge_mail(i);
-								if(pop3_get_mail(hsocket, i))
+								if(pop3_get_mail(server, i))
 								{
-									if(!pop3_del_mail(hsocket, i))
+									if(!pop3_del_mail(server, i))
 									{
 										tell("Can\'t mark mail as deleted!");
 									}	
@@ -663,7 +664,7 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 						}
 					}
 				
-					pop3_quit(hsocket);
+					pop3_quit(server);
 				}
 			}	
 		}
@@ -676,4 +677,3 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 	
 	return(rc);
 }
-

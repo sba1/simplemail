@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <sys/dir.h> /* unix dir stuff */
 #include <sys/stat.h> /* state() */
 
@@ -499,7 +500,7 @@ int folder_add_mail_incoming(struct mail *mail)
 /******************************************************************
  Adds a folder to the internal folder list
 *******************************************************************/
-struct folder *folder_add(char *name, char *path)
+static struct folder *folder_add(char *path)
 {
 	struct folder_node *node = (struct folder_node*)malloc(sizeof(struct folder_node));
 	if (node)
@@ -509,23 +510,38 @@ struct folder *folder_add(char *name, char *path)
 		/* create the directory if it doesn't exists */
 		if (sm_makedir(path))
 		{
-			if ((node->folder.name = strdup(name)))
+			if ((node->folder.path = strdup(path)))
 			{
-				if ((node->folder.path = strdup(path)))
-				{
-					node->folder.primary_sort = FOLDER_SORT_DATE;
-					node->folder.secondary_sort = FOLDER_SORT_FROMTO;
-/*
-					node->folder.mail_array = NULL;
-					node->folder.mail_array_allocated = node->folder.num_mails = 0;
-*/
-					/* for test reasons, later this will only be done if the folder gets activated
-					   (in folder_next_mail()) */
-					folder_read_mail_infos(&node->folder);
+				FILE *fh;
+				char buf[256];
 
-					list_insert_tail(&folder_list,&node->node);
-					return &node->folder;
+				node->folder.primary_sort = FOLDER_SORT_DATE;
+				node->folder.secondary_sort = FOLDER_SORT_FROMTO;
+
+				sprintf(buf,"%s.config",path);
+
+				if ((fh = fopen(buf,"r")))
+				{
+					fclose(fh);
+				} else
+				{
+					char *folder_name = sm_file_part(path);
+					if ((node->folder.name = strdup(folder_name)))
+					{
+						node->folder.name[0] = toupper(node->folder.name[0]);
+					}
+					if (!stricmp(folder_name,"Income") || !stricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
+					if (!stricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
+					if (!stricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
+					if (!stricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
 				}
+
+				/* for test reasons, later this will only be done if the folder gets activated
+				   (in folder_next_mail()) */
+				folder_read_mail_infos(&node->folder);
+
+				list_insert_tail(&folder_list,&node->node);
+				return &node->folder;
 			}
 		}
 	}
@@ -639,35 +655,49 @@ struct folder *folder_next(struct folder *f)
 }
 
 /******************************************************************
- Returns the incoming folder (currently always the first folder)
+ Finds a special folder
+*******************************************************************/
+struct folder *folder_find_special(int sp)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (f->special == sp) return f;
+		f = folder_next(f);
+	}
+	return NULL;
+}
+
+/******************************************************************
+ Returns the incoming folder
 *******************************************************************/
 struct folder *folder_incoming(void)
 {
-	return folder_first();
+	return folder_find_special(FOLDER_SPECIAL_INCOMING);
 }
 
 /******************************************************************
- Returns the outgoing folder (currently always the 2nd folder)
+ Returns the outgoing folder
 *******************************************************************/
 struct folder *folder_outgoing(void)
 {
-	return folder_find(1);
+	return folder_find_special(FOLDER_SPECIAL_OUTGOING);
 }
 
 /******************************************************************
- Returns the sent folder (currently always the 3rd folder)
+ Returns the sent folder
 *******************************************************************/
 struct folder *folder_sent(void)
 {
-	return folder_find(2);
+	return folder_find_special(FOLDER_SPECIAL_SENT);
 }
 
 /******************************************************************
- Returns the deleleted folder (currently always the 5th folder)
+ Returns the deleleted folder
 *******************************************************************/
 struct folder *folder_deleted(void)
 {
-	return folder_find(4);
+	return folder_find_special(FOLDER_SPECIAL_DELETED);
 }
 
 /******************************************************************
@@ -1063,26 +1093,54 @@ int init_folders(void)
 	}
 */
 
+	char *folder_path = "PROGDIR:.folders";
+	DIR *dfd;
+	struct dirent *dptr; /* dir entry */
+	struct stat *st;
+
 	list_init(&folder_list);
-	if (folder_add("Incoming","PROGDIR:.folders/income"))
+
+	if (!(st = malloc(sizeof(struct stat))))
+		return 0;
+
+	if ((dfd = opendir(folder_path)))
 	{
-		if (folder_add("Outgoing","PROGDIR:.folders/outgoing"))
+		while ((dptr = readdir(dfd)) != NULL)
 		{
-			if (folder_add("Sent","PROGDIR:.folders/sent"))
+			char buf[256];
+			strcpy(buf,folder_path);
+			sm_add_part(buf,dptr->d_name,sizeof(buf));
+			if (!stat(buf,st))
 			{
-				if (folder_add("Archived","PROGDIR:.folders/archived"))
+				if (st->st_mode & S_IFDIR)
 				{
-					if (folder_add("Deleted", "PROGDIR:.folders/deleted"))
-					{
-						folder_outgoing()->type = FOLDER_TYPE_SEND;
-						folder_sent()->type = FOLDER_TYPE_SEND;
-						return 1;
-					}
+					folder_add(buf);
 				}
 			}
 		}
+
+		closedir(dfd);
 	}
-	return 0;
+
+	if (!folder_incoming())
+		folder_add("PROGDIR:.folders/incoming");
+
+	if (!folder_outgoing())
+		folder_add("PROGDIR:.folders/outgoing");
+
+	if (!folder_sent())
+		folder_add("PROGDIR:.folders/sent");
+
+	if (!folder_deleted())
+		folder_add("PROGDIR:.folders/deleted");
+
+	if (!folder_incoming() || !folder_outgoing() || !folder_deleted() || !folder_sent())
+		return 0;
+
+	folder_outgoing()->type = FOLDER_TYPE_SEND;
+	folder_sent()->type = FOLDER_TYPE_SEND;
+
+	return 1;
 }
 
 /******************************************************************

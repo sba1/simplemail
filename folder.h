@@ -47,6 +47,7 @@ struct folder
 	int index_uptodate; /* 1 if the indexfile is uptodate */
 
 	int type; /* see below */
+	int special; /* see below */
 	/* more will follow */
 };
 
@@ -67,6 +68,12 @@ struct folder
 #define FOLDER_TYPE_SENDRECV	2 /* both */
 #define FOLDER_TYPE_MAILINGLIST 3 /* it's a mailing list */
 
+#define FOLDER_SPECIAL_NO 0
+#define FOLDER_SPECIAL_INCOMING 1
+#define FOLDER_SPECIAL_OUTGOING 2
+#define FOLDER_SPECIAL_SENT 3
+#define FOLDER_SPECIAL_DELETED 4
+
 int init_folders(void);
 void del_folders(void);
 
@@ -77,7 +84,6 @@ void folder_replace_mail(struct folder *folder, struct mail *toreplace, struct m
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
-struct folder *folder_add(char *name, char *path);
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
 struct folder *folder_first(void);
 struct folder *folder_next(struct folder *f);

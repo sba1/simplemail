@@ -30,3 +30,6 @@ xpm
 *.csv
 hits.txt
 .config
+po2tbl.sed
+POTFILES
+*.pox

@@ -89,10 +89,6 @@ int open_ssl_lib(void)
 
 				if (ctx = SSL_CTX_new(SSLv23_client_method()))
 				{
-/*
-					SSL_CTX_set_default_verify_paths(ctx);
-					SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL/*SSL_verify_callback*/);
-*/
 					/* Everything is ok */
 					ssl_in_use++;
 					return 1;
@@ -100,6 +96,7 @@ int open_ssl_lib(void)
 				CleanupAmiSSL(TAG_DONE);
 			}
 			CloseLibrary(AmiSSLBase);
+			AmiSSLBase = NULL;
 		}
 	} else
 	{

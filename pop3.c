@@ -534,6 +534,7 @@ struct pop3_server *pop_malloc(void)
 	{
 		memset(pop3,0,sizeof(struct pop3_server));
 		pop3->port = 110;
+		pop3->active = 1;
 	}
 	return pop3;
 }
@@ -552,6 +553,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->del = pop->del;
 		new_pop->port = pop->port;
 		new_pop->ssl = pop->ssl;
+		new_pop->active = pop->active;
 	}
 	return new_pop;
 }
@@ -566,5 +568,4 @@ void pop_free(struct pop3_server *pop)
 	if (pop->passwd) free(pop->passwd);
 	free(pop);
 }
-
 

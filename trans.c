@@ -50,7 +50,7 @@ int mails_dl(void)
 	account = (struct account*)list_first(&user.config.account_list);
 	while (account)
 	{
-		if (account->pop)
+		if (account->pop && account->pop->active)
 			list_insert_tail(&pop_list,&account->pop->node);
 		account = (struct account*)node_next(&account->node);
 	}

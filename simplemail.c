@@ -1064,6 +1064,8 @@ void callback_config_changed(void)
 {
 	/* Build the check single account menu */
 	main_build_accounts();
+	folder_create_imap();
+	callback_refresh_folders();
 }
 
 static int autocheck_minutes_start; /* to compare with this */

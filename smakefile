@@ -171,7 +171,7 @@ create-latest:
 # prepare the release archives
 prepare-release:
   -delete ram:SimpleMail all
-  makedir ram:SimpleMail
+  makedir ram:SimpleMail ram:SimpleMail/Libs
   slink sm/simplemail nd TO ram:SimpleMail/SimpleMail
   copy doc/amiga/ReadMe ram:SimpleMail
   copy doc/amiga/SimpleMail.guide ram:SimpleMail
@@ -185,6 +185,7 @@ prepare-release:
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale
   copy sm/Charsets/\#? To ram:SimpleMail/Charsets
   copy sm/.taglines TO ram:SimpleMail/.taglines
+  copy `which libs:expat.library` ram:SimpleMail/Libs
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha
   lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info

@@ -39,6 +39,7 @@
 #include "smintl.h"
 
 #include "addressgrouplistclass.h"
+#include "compiler.h"
 #include "muistuff.h"
 
 /*

@@ -39,6 +39,7 @@
 #include "smintl.h"
 
 #include "addressentrylistclass.h"
+#include "compiler.h"
 #include "muistuff.h"
 
 struct AddressEntryList_Data

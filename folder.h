@@ -23,8 +23,12 @@
 #ifndef SM__FOLDER_H
 #define SM__FOLDER_H
 
-#ifndef MAIL_H
+#ifndef SM__MAIL_H
 #include "mail.h"
+#endif
+
+#ifndef SM__SUBTHREADS_H
+#include "subthreads.h"
 #endif
 
 struct folder
@@ -59,6 +63,8 @@ struct folder
 	int num_index_mails; /* number of mails, might be -1 for being unknown  */
 
 	struct folder *parent_folder; /* pointer to the parent folder */
+
+  semaphore_t sem; /* use folder_lock()/folder_unlock() */
 
 	/* more will follow */
 };
@@ -153,6 +159,11 @@ struct filter *folder_mail_can_be_filtered(struct folder *folder, struct mail *m
 int folder_filter(struct folder *fold);
 int folder_apply_filter(struct folder *folder, struct filter *filter);
 void folder_start_search(struct search_options *sopt);
+
+void folder_lock(struct folder *f);
+void folder_unlock(struct folder *f);
+void folders_lock(void);
+void folders_lock(void);
 
 void folder_load_order(void);
 void folder_save_order(void);

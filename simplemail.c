@@ -435,10 +435,10 @@ void callback_start_search(struct search_options *so)
 	folder_start_search(so);
 }
 
-/* a mail has been found */
-void callback_search_found(struct mail *mail)
+/* Stop the search process */
+void callback_stop_search(void)
 {
-	search_add_result(mail);
+	thread_abort();
 }
 
 /* filter the mails */

@@ -41,6 +41,7 @@
 #include "support_indep.h"
 
 #include "gui_main.h" /* gui_execute_arexx() */
+#include "searchwnd.h"
 
 #define FOLDER_INDEX_VERSION 5
 
@@ -52,6 +53,9 @@ static int compare_primary_reverse;
 static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
 static int compare_secondary_reverse;
 static int (*compare_secondary)(const struct mail *arg1, const struct mail *arg2, int reverse);
+
+/* the global folder lock semaphore */
+static semaphore_t folders_semaphore;
 
 /******************************************************************
  The general sorting function
@@ -905,33 +909,38 @@ static struct folder *folder_add(char *path)
 		/* create the directory if it doesn't exists */
 		if (sm_makedir(path))
 		{
-			if ((node->folder.path = mystrdup(path)))
+			if ((node->folder.sem = thread_create_semaphore()))
 			{
-				char buf[256];
-
-				node->folder.primary_sort = FOLDER_SORT_DATE;
-				node->folder.secondary_sort = FOLDER_SORT_FROMTO;
-
-				sprintf(buf,"%s.config",path);
-
-				if (!folder_config_load(&node->folder))
+				if ((node->folder.path = mystrdup(path)))
 				{
-					char *folder_name = sm_file_part(path);
-					if ((node->folder.name = mystrdup(folder_name)))
+					char buf[256];
+
+					node->folder.primary_sort = FOLDER_SORT_DATE;
+					node->folder.secondary_sort = FOLDER_SORT_FROMTO;
+
+					sprintf(buf,"%s.config",path);
+
+					if (!folder_config_load(&node->folder))
 					{
-						node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
+						char *folder_name = sm_file_part(path);
+						if ((node->folder.name = mystrdup(folder_name)))
+						{
+							node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
+						}
+						if (!mystricmp(folder_name,"Income") || !mystricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
+						if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
+						if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
+						if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
+						folder_config_save(&node->folder);
 					}
-					if (!mystricmp(folder_name,"Income") || !mystricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
-					if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
-					if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
-					if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
-					folder_config_save(&node->folder);
+					folder_read_mail_infos(&node->folder,1);
+					list_insert_tail(&folder_list,&node->node);
+					return &node->folder;
 				}
-				folder_read_mail_infos(&node->folder,1);
-				list_insert_tail(&folder_list,&node->node);
-				return &node->folder;
+				thread_dispose_semaphore(node->folder.sem);
 			}
 		}
+		free(node);
 	}
 	return NULL;
 }
@@ -995,6 +1004,7 @@ int folder_remove(struct folder *f)
 					sprintf(buf,"%s.config",f->path);
 					remove(buf);
 					remove(f->path);
+					thread_dispose_semaphore(node->folder.sem);
 					free(node);
 					return 1;
 				}
@@ -1970,6 +1980,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						break;
 
 			case	RULE_HEADER_MATCH:
+						/* NOTE: This doesn't work in subthreads but is actually not used anywhy */
 						{
 							struct header *header;
 
@@ -2092,7 +2103,6 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 			if (filter->search_filter)
 			{
 				/* It's a search filter so inform simplemail about a new found mail */
-				callback_search_found(m);
 			}
 		}
 	}
@@ -2151,51 +2161,131 @@ int folder_filter(struct folder *folder)
 	return 1;
 }
 
+struct search_msg
+{
+	struct folder *f;
+	struct search_options *sopt;
+};
+
 /**************************************************************************
- Start the search with the given options
+ The thread entry for the search
+**************************************************************************/
+static void folder_start_search_entry(struct search_msg *msg)
+{
+	struct folder *f;
+	struct filter *filter = NULL;
+	struct filter_rule *rule;
+	struct search_options *sopt;
+#define NUM_FOUND 100
+	struct mail *found_array[NUM_FOUND];
+	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
+
+	sopt = search_options_duplicate(msg->sopt);
+	f = msg->f;
+
+	/* Prevent folder changes */
+	folder_lock(f);
+
+  if (thread_parent_task_can_contiue())
+	{
+		if (!sopt) goto fail;
+
+		/* We currently cannot load the mail info when beeing in a subthread */
+		if (!f->mail_infos_loaded) goto fail;
+
+		filter = filter_create();
+		if (!filter) goto fail;
+	
+		if (sopt->from)
+		{
+			if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
+				rule->u.from.from = array_add_string(NULL,sopt->from);
+		}
+	
+		if (sopt->subject)
+		{
+			if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
+				rule->u.subject.subject = array_add_string(NULL,sopt->subject);
+		}
+	
+		if (sopt->body)
+		{
+			if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
+				rule->u.body.body = mystrdup(sopt->body);
+		}
+	
+		if (sopt->to)
+		{
+			if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
+				rule->u.rcpt.rcpt = array_add_string(NULL,sopt->to);
+		}
+	
+		filter->search_filter = 1;
+	
+		/* folder_apply_filter(f,filter); */ /* Not safe currently to be called from subthreads */
+		{
+			int i;
+			int found_num = 0;
+			struct mail *m;
+			char path[512];
+
+			getcwd(path, sizeof(path));
+			if(chdir(f->path) == -1) goto fail;
+
+			thread_call_parent_function_sync(search_enable_search, 0);
+	
+			for (i=0;i<f->num_mails;i++)
+			{
+				if (!(m = f->mail_array[i]))
+					break;
+
+				/* mail_matches_filter() is thread safe as long as no header search is used, like here */
+				if (mail_matches_filter(f,m,filter))
+				{
+					unsigned int new_secs = sm_get_current_seconds();
+
+					found_array[found_num++] = m;
+
+					if (found_num == NUM_FOUND || new_secs != secs)
+					{
+						thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
+						found_num = 0;
+					}
+				}
+
+				if (thread_aborted()) break;
+			}
+			chdir(path);
+
+			if (found_num)
+				thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
+
+			thread_call_parent_function_sync(search_disable_search, 0);
+		}
+	}
+
+fail:
+	if (filter) filter_dispose(filter);
+	folder_unlock(f);
+	if (sopt) search_options_free(sopt);
+}
+
+/**************************************************************************
+ Start the search with the given options. It starts a separate thread for
+ doing so.
 **************************************************************************/
 void folder_start_search(struct search_options *sopt)
 {
-	struct folder *f = folder_find_by_name(sopt->folder);
-	struct filter *filter;
-	struct filter_rule *rule;
+	struct search_msg msg;
+	void *handle;
+	msg.f = folder_find_by_name(sopt->folder);
+	msg.sopt = sopt;
 
-	if (!f) return;
+  if (!msg.f) return;
+  folder_next_mail(msg.f,&handle);
 
-	filter = filter_create();
-	if (!filter) return;
-
-	if (sopt->from)
-	{
-		if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
-			rule->u.from.from = array_add_string(NULL,sopt->from);
-	}
-
-	if (sopt->subject)
-	{
-		if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
-			rule->u.subject.subject = array_add_string(NULL,sopt->subject);
-	}
-
-	if (sopt->body)
-	{
-		if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
-			rule->u.body.body = mystrdup(sopt->body);
-	}
-
-	if (sopt->to)
-	{
-		if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
-			rule->u.rcpt.rcpt = array_add_string(NULL,sopt->to);
-	}
-
-	filter->search_filter = 1;
-
-	folder_apply_filter(f,filter);
-
-	filter_dispose(filter);
+	thread_start(THREAD_FUNCTION(&folder_start_search_entry),&msg);
 }
-
 
 /******************************************************************
  Opens the order file and returns the FILE *
@@ -2347,6 +2437,9 @@ int init_folders(void)
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
 
+	if (!(folders_semaphore = thread_create_semaphore()))
+		return 0;
+
 	list_init(&folder_list);
 
 	/* Read in the .orders file at first */
@@ -2485,4 +2578,38 @@ void del_folders(void)
 		if (!f->index_uptodate) folder_save_index(f);
 		f = folder_next(f);
 	}
+
+	thread_dispose_semaphore(folders_semaphore);
+}
+
+/******************************************************************
+ Lock the folder, to prevent any change to it
+*******************************************************************/
+void folder_lock(struct folder *f)
+{
+	thread_lock_semaphore(f->sem);
+}
+
+/******************************************************************
+ Unlock the folder
+*******************************************************************/
+void folder_unlock(struct folder *f)
+{
+	thread_unlock_semaphore(f->sem);
+}
+
+/******************************************************************
+ Lock the global folder semaphore
+*******************************************************************/
+void folders_lock(void)
+{
+	thread_lock_semaphore(folders_semaphore);
+}
+
+/******************************************************************
+ Unlock the global folder semaphore
+*******************************************************************/
+void folders_unlock(void)
+{
+	thread_unlock_semaphore(folders_semaphore);
 }

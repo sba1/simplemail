@@ -192,10 +192,12 @@ static void init_search(void)
 
 	if (search_wnd)
 	{
+		set(search_stop_button, MUIA_Disabled, TRUE);
 		DoMethod(App, OM_ADDMEMBER, search_wnd);
 		DoMethod(search_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, search_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(search_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, search_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
 		DoMethod(search_start_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, searchwnd_start);
+		DoMethod(search_stop_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, callback_stop_search);
 		search_refresh_folders();
 	}
 }
@@ -233,9 +235,40 @@ void search_clear_results(void)
 /**************************************************************************
  Opens the search window
 **************************************************************************/
-void search_add_result(struct mail *mail)
+void search_add_result(struct mail **array, int size)
 {
-	DoMethod(search_mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+	int i;
+
+	if (!size) return;
+
+	if (size > 1)
+		set(search_mail_tree, MUIA_NListtree_Quiet, TRUE);
+
+	for (i=0;i<size;i++)
+	{
+		DoMethod(search_mail_tree,MUIM_NListtree_Insert,"" /*name*/, array[i], /*udata */
 					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+	}
+
+	if (size > 1)
+		set(search_mail_tree, MUIA_NListtree_Quiet, FALSE);
+}
+
+/**************************************************************************
+ 
+**************************************************************************/
+void search_enable_search(void)
+{
+	set(search_start_button,MUIA_Disabled,TRUE);
+	set(search_stop_button,MUIA_Disabled,FALSE);
+}
+
+/**************************************************************************
+ 
+**************************************************************************/
+void search_disable_search(void)
+{
+	set(search_start_button,MUIA_Disabled,FALSE);
+	set(search_stop_button,MUIA_Disabled,TRUE);
 }
 

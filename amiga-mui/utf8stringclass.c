@@ -20,7 +20,6 @@
 ** utf8stringclass.c
 */
 
-#include <dos.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,9 +171,8 @@ STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_Bette
 	return rc;
 }
 
-STATIC ASM ULONG UTF8String_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return UTF8String_New(cl,obj,(struct opSet*)msg);
@@ -190,10 +188,7 @@ struct MUI_CustomClass *CL_UTF8String;
 int create_utf8string_class(void)
 {
 	if ((CL_UTF8String = MUI_CreateCustomClass(NULL,MUIC_BetterString,NULL,sizeof(struct UTF8String_Data),UTF8String_Dispatcher)))
-	{
-		CL_UTF8String->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
-	}
 	return 0;
 }
 

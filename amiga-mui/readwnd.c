@@ -843,7 +843,7 @@ static void uri_clicked(void **msg)
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
  otherwise 0. -1 means reject this object totaly
 *******************************************************************/
-__asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struct MUIP_SimpleHTML_LoadHook *msg)
+STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a1,struct MUIP_SimpleHTML_LoadHook *msg))
 {
 	struct Read_Data *data = (struct Read_Data*)h->h_Data;
 	char *uri = msg->uri;

@@ -23,7 +23,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dos.h>
 
 #include <intuition/intuitionbase.h>
 #include <libraries/mui.h>
@@ -74,7 +73,7 @@ static const UWORD GhostPattern[] =
 STATIC VOID Ghost(struct RastPort *rp, UWORD pen, UWORD x0, UWORD y0, UWORD x1, UWORD y1)
 {
 	SetABPenDrMd(rp,pen,0,JAM1);
-	SetAfPt(rp,GhostPattern,1);
+	SetAfPt(rp,(UWORD*)GhostPattern,1);
 	RectFill(rp,x0,y0,x1,y1);
 	SetAfPt(rp,NULL,0);
 }
@@ -210,7 +209,6 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 	{
 		minwidth  = dt_width(data->dt);
 		minheight = dt_height(data->dt);
-//		Printf("%s
 	} else
 	{
 		minwidth = 0;
@@ -255,84 +253,78 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
   LONG disabled = xget(obj,MUIA_Disabled);
+  LONG rel_y = 0;
   struct RastPort *rp = _rp(obj);
 
 	DoSuperMethodA(cl,obj,(Msg)msg);
  
-//	if (msg->flags & MADF_DRAWOBJECT)
+	if (data->dt)
 	{
-		LONG rel_y=0;
-		if (data->dt)
-		{
-			dt_put_on_rastport(data->dt,rp, _mleft(obj)+(_mwidth(obj) - dt_width(data->dt))/2, _mtop(obj) + (_mheight(obj) - data->label_height - dt_height(data->dt))/2);
-			rel_y += dt_height(data->dt);
-		}
-
-		if (data->label && data->show_label)
-		{
-			STRPTR ufreestr = StrNoUnderscoreCopy(data->label);
-			struct TextExtent te;
-			LONG ufreelen;
-
-			if (ufreestr)
-			{
-				LONG len = ufreelen = strlen(ufreestr);
-				SetFont(rp,_font(obj));
-
-				len = TextFit(rp,ufreestr,ufreelen, &te, NULL, 1, _mwidth(obj), _font(obj)->tf_YSize);
-				if (len>0)
-				{
-					LONG left = _mleft(obj);
-					left += (_mwidth(obj) - te.te_Width)/2;
-					Move(rp,left,_mbottom(obj)+_font(obj)->tf_Baseline - data->label_height);
-					SetAPen(rp,_dri(obj)->dri_Pens[TEXTPEN]);
-
-					{
-						char *str = data->label;
-						char *uptr;
-
-						if (!(uptr = strchr(str,'_')))
-						{
-							Text(rp,str,strlen(str));
-						} else
-						{
-							Text(rp,str,uptr - str);
-							if (uptr[1])
-							{
-								SetSoftStyle(rp,FSF_UNDERLINED,AskSoftStyle(rp));
-								Text(rp,uptr+1,1);
-								SetSoftStyle(rp,FS_NORMAL,0xffff);
-								Text(rp,uptr+2,strlen(uptr+2));
-							}
-						}
-					}
-
-				}
-				FreeVec(ufreestr);
-			}
-
-			if (disabled) Ghost(rp, _dri(obj)->dri_Pens[TEXTPEN], _left(obj), _top(obj), _right(obj), _bottom(obj));
-		}
-
+		dt_put_on_rastport(data->dt,rp, _mleft(obj)+(_mwidth(obj) - dt_width(data->dt))/2, _mtop(obj) + (_mheight(obj) - data->label_height - dt_height(data->dt))/2);
+		rel_y += dt_height(data->dt);
 	}
 
+	if (data->label && data->show_label)
+	{
+		STRPTR ufreestr = StrNoUnderscoreCopy(data->label);
+		struct TextExtent te;
+		LONG ufreelen;
+
+		if (ufreestr)
+		{
+			LONG len = ufreelen = strlen(ufreestr);
+			SetFont(rp,_font(obj));
+
+			len = TextFit(rp,ufreestr,ufreelen, &te, NULL, 1, _mwidth(obj), _font(obj)->tf_YSize);
+			if (len>0)
+			{
+				LONG left = _mleft(obj);
+				left += (_mwidth(obj) - te.te_Width)/2;
+				Move(rp,left,_mbottom(obj)+_font(obj)->tf_Baseline - data->label_height);
+				SetAPen(rp,_dri(obj)->dri_Pens[TEXTPEN]);
+
+				{
+					char *str = data->label;
+					char *uptr;
+
+					if (!(uptr = strchr(str,'_')))
+					{
+						Text(rp,str,strlen(str));
+					} else
+					{
+						Text(rp,str,uptr - str);
+						if (uptr[1])
+						{
+							SetSoftStyle(rp,FSF_UNDERLINED,AskSoftStyle(rp));
+							Text(rp,uptr+1,1);
+							SetSoftStyle(rp,FS_NORMAL,0xffff);
+							Text(rp,uptr+2,strlen(uptr+2));
+						}
+					}
+				}
+
+			}
+			FreeVec(ufreestr);
+		}
+
+		if (disabled) Ghost(rp, _dri(obj)->dri_Pens[TEXTPEN], _left(obj), _top(obj), _right(obj), _bottom(obj));
+	}
 	return 0;
 }
 
-ASM STATIC ULONG PictureButton_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, PictureButton_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch (msg->MethodID)
 	{
-		case OM_NEW        : return(PictureButton_New      (cl,obj,(struct opSet*)msg));
-		case OM_SET        : return(PictureButton_Set      (cl,obj,(struct opSet*)msg));
-		case MUIM_Setup    : return(PictureButton_Setup    (cl,obj,msg));
-		case MUIM_Cleanup  : return(PictureButton_Cleanup  (cl,obj,msg));
-		case MUIM_AskMinMax: return(PictureButton_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg));
-		case MUIM_Draw     : return(PictureButton_Draw     (cl,obj,(struct MUIP_Draw*)msg));
+		case OM_NEW        : return PictureButton_New      (cl,obj,(struct opSet*)msg);
+		case OM_SET        : return PictureButton_Set      (cl,obj,(struct opSet*)msg);
+		case MUIM_Setup    : return PictureButton_Setup    (cl,obj,msg);
+		case MUIM_Cleanup  : return PictureButton_Cleanup  (cl,obj,msg);
+		case MUIM_AskMinMax: return PictureButton_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
+		case MUIM_Draw     : return PictureButton_Draw     (cl,obj,(struct MUIP_Draw*)msg);
 	}
 	
-	return(DoSuperMethodA(cl,obj,msg));
+	return DoSuperMethodA(cl,obj,msg);
 }
 
 struct MUI_CustomClass *CL_PictureButton;
@@ -340,10 +332,7 @@ struct MUI_CustomClass *CL_PictureButton;
 int create_picturebutton_class(void)
 {
 	if ((CL_PictureButton = MUI_CreateCustomClass(NULL, MUIC_Area, NULL, sizeof(struct PictureButton_Data), PictureButton_Dispatcher)))
-	{
-		CL_PictureButton->mcc_Class->cl_UserData = getreg(REG_A4);
 		return TRUE;
-	}
 	return FALSE;
 }
 

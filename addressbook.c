@@ -570,40 +570,50 @@ void init_addressbook(void)
 	list_init(&group_list);
 	list_init(&address_list);
 
-	/* FIXME; strings returned by Q_ are not in UTF8 */
-	if (!addressbook_load())
-		addressbook_add_group(Q_("?addressgroup:General"));
+	addressbook_load();
 
 	/* Add the very important email addresses, in case they are not yet within the
    * addressbook */
-	if (!addressbook_find_group_by_name(Q_("?addressgroup:SimpleMail Team")))
-		addressbook_add_group(Q_("?addressgroup:SimpleMail Team"));
+	if (!addressbook_find_group_by_name("SimpleMail Team"))
+		addressbook_add_group("SimpleMail Team");
 
-	if (!addressbook_find_entry_by_address("hynek@rz.uni-potsdam.de"))
+	if (!(entry = addressbook_find_entry_by_address("hynek@rz.uni-potsdam.de")))
 	{
 		if ((entry = addressbook_add_entry("Hynek Schlawack")))
 		{
 			entry->email_array = array_add_string(entry->email_array,"hynek@rz.uni-potsdam.de");
 			entry->email_array = array_add_string(entry->email_array,"hynek@hys.in-berlin.de");
 			entry->description = mystrdup(_("Original author of SimpleMail"));
-			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
+		}
+	} else
+	{
+		if (addressbook_find_group_by_name("SimpleMail Team") && 
+		    !array_contains(entry->group_array,"SimpleMail Team"))
+		{
+			char **newarray = array_add_string(entry->group_array,"SimpleMail Team");
+			if (newarray) entry->group_array = newarray;
 		}
 	}
-
 
 	if (!addressbook_find_entry_by_address("mail@sebastianbauer.info"))
 	{
 		if ((entry = addressbook_find_entry_by_address("sebauer@t-online.de")))
 		{
+			char **newarray;
+
 			array_free(entry->email_array);
 			entry->email_array = array_add_string(NULL,"mail@sebastianbauer.info");
+
+			newarray = array_add_string(entry->group_array,"SimpleMail Team");
+			if (newarray) entry->group_array = newarray;
 		} else
 		{
 			if ((entry = addressbook_add_entry("Sebastian Bauer")))
 			{
 				entry->email_array = array_add_string(entry->email_array,"mail@sebastianbauer.info");
 				entry->description = mystrdup(_("Original author of SimpleMail"));
-				entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+				entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
 			}
 		}
 	}
@@ -620,7 +630,7 @@ void init_addressbook(void)
 			{
 				entry->email_array = array_add_string(entry->email_array,"bgollesch@sime.at");
 				entry->description = mystrdup(_("Contributor of SimpleMail"));
-				entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+				entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
 			}
 		}
 	}
@@ -631,7 +641,7 @@ void init_addressbook(void)
 		{
 			entry->email_array = array_add_string(entry->email_array,"henes@biclodon.com");
 			entry->description = mystrdup(_("MorphOS maintainer of SimpleMail"));
-			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
 		}
 	}
 }

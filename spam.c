@@ -26,6 +26,8 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "addressbook.h"
+#include "configuration.h"
 #include "hash.h"
 #include "mail.h"
 #include "folder.h"
@@ -420,9 +422,9 @@ static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct
 }
 
 /**************************************************************************
- Determines wheater a mail is spam or not.
+ Determines wheater a mail is spam or not via statistics
 **************************************************************************/
-int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
+static int spam_is_mail_spam_using_statistics(struct folder *folder, struct mail *to_check_mail)
 {
 	char path[380];
 	struct mail *mail;
@@ -482,6 +484,30 @@ int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
 	}
 	chdir(path);
 	return rc;
+}
+
+/**************************************************************************
+ Determines wheater a mail is spam or not.
+**************************************************************************/
+int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
+{
+	char *from_addr = to_check_mail->from_addr;
+	if (from_addr)
+	{
+		if (array_contains(user.config.spam_white_emails,from_addr))
+			return 0;
+
+		if (user.config.spam_addrbook_is_white)
+		{
+			if (addressbook_find_entry_by_address(from_addr))
+				return 0;
+		}
+
+		if (array_contains(user.config.spam_black_emails,from_addr))
+			return 1;
+	}
+
+	return spam_is_mail_spam_using_statistics(folder,to_check_mail);
 }
 
 /**************************************************************************

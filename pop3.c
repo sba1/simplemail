@@ -60,7 +60,7 @@ int pop3_wait_login(struct pop3_server *server)
       buf = malloc(1024);
       if(buf != NULL)
       {
-         got = recv(server->socket, buf, 1023, 0);
+         got = tcp_read(server->socket, buf, 1023);
          if(got != 0)
          {
             buf[got] = 0;
@@ -70,7 +70,7 @@ int pop3_wait_login(struct pop3_server *server)
                /* Get rid of a eventually longer welcome message  */ 
                while(strstr(buf, "\r\n") == NULL)
                {
-                  recv(server->socket, buf, 1023, 0);
+                  tcp_read(server->socket, buf, 1023);
                }
                
                rc = 1;
@@ -95,7 +95,7 @@ int pop3_wait_login(struct pop3_server *server)
       tell_from_subtask("Not connected!");
    }
    
-   return(rc);
+   return rc;
 }
 
 /*
@@ -117,9 +117,9 @@ int pop3_login(struct pop3_server *server)
       thread_call_parent_function_sync(dl_set_status,1,"Sending username...");
    
       sprintf(buf, "USER %s\r\n", server->login);
-      if(send(server->socket, buf, strlen(buf), 0) != -1)
+      if(tcp_write(server->socket, buf, strlen(buf)) != -1)
       {
-         got = recv(server->socket, buf, 4095, 0);
+         got = tcp_read(server->socket, buf, 4095);
          if(got != 0)
          {
             buf[got] = 0;
@@ -129,9 +129,9 @@ int pop3_login(struct pop3_server *server)
                thread_call_parent_function_sync(dl_set_status,1,"Sending password...");
                
                sprintf(buf, "PASS %s\r\n", server->passwd);
-               if(send(server->socket, buf, strlen(buf), 0) != -1)
+               if(tcp_write(server->socket, buf, strlen(buf)) != -1)
                {
-                  got = recv(server->socket, buf, 4095, 0);
+                  got = tcp_read(server->socket, buf, 4095);
                   if(got != 0)
                   {
                      buf[got] = 0;
@@ -179,7 +179,7 @@ int pop3_login(struct pop3_server *server)
    }
    
    
-   return(rc);
+   return rc;
 }
 
 /*
@@ -197,9 +197,9 @@ int pop3_stat(struct pop3_server *server)
    if(buf != NULL)
    {
       thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
-      if(send(server->socket, "STAT\r\n", 6, 0) != -1)
+      if(tcp_write(server->socket, "STAT\r\n", 6) != -1)
       {
-         got = recv(server->socket, buf, 1023, 0);
+         got = tcp_read(server->socket, buf, 1023);
          if(got != 0)
          {
             buf[got] = 0;
@@ -233,7 +233,7 @@ int pop3_stat(struct pop3_server *server)
       tell_from_subtask("Not enough memory!");
    }
    
-   return(rc);
+   return rc;
 }
 
 /*
@@ -250,9 +250,9 @@ int pop3_quit(struct pop3_server *server)
    if(buf != NULL)
    {
       thread_call_parent_function_sync(dl_set_status,1,"Logging out...");
-      if(send(server->socket, "QUIT\r\n", 6, 0) != -1)
+      if(tcp_write(server->socket, "QUIT\r\n", 6) != -1)
       {
-         got = recv(server->socket, buf, 1023, 0);
+         got = tcp_read(server->socket, buf, 1023);
          if(got != 0)
          {
             buf[got] = 0;
@@ -281,7 +281,7 @@ int pop3_quit(struct pop3_server *server)
       tell_from_subtask("Not enough memory!");
    }
    
-   return(rc);
+   return rc;
 }
 
 /*
@@ -289,133 +289,133 @@ int pop3_quit(struct pop3_server *server)
 */
 int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 {
-	int rc = 0;
-	char *buf, *fn;
-	int got;
-	FILE *fp;
+   int rc = 0;
+   char *buf, *fn;
+   int got;
+   FILE *fp;
 
-	if (!(fn = mail_get_new_name()))
-	{
+   if (!(fn = mail_get_new_name()))
+   {
     tell_from_subtask("Can\'t get new filename!");
     return 0;
-	}
+   }
 
-	if (!(buf = malloc(REC_BUFFER_SIZE+5)))
-	{
-		tell_from_subtask("Not enough memory!");
-		free(fn);
-		return 0;
-	}
+   if (!(buf = malloc(REC_BUFFER_SIZE+5)))
+   {
+      tell_from_subtask("Not enough memory!");
+      free(fn);
+      return 0;
+   }
 
-	if (!(fp = fopen(fn, "w")))
-	{
-		tell_from_subtask("Can\'t open mail file!");
-		free(buf);
-		free(fn);
-		return 0;
-	}
+   if (!(fp = fopen(fn, "w")))
+   {
+      tell_from_subtask("Can\'t open mail file!");
+      free(buf);
+      free(fn);
+      return 0;
+   }
 
-	sprintf(buf, "LIST %ld\r\n", nr);
-	send(server->socket, buf, strlen(buf), 0);
+   sprintf(buf, "LIST %ld\r\n", nr);
+   tcp_write(server->socket, buf, strlen(buf));
 
-	if ((got = recv(server->socket, buf, REC_BUFFER_SIZE, 0)) > 0)
-	{
-		if(buf[0] == '+')
-		{
-			char *str = buf + 4;
-			int size;
+   if ((got = tcp_read(server->socket, buf, REC_BUFFER_SIZE)) > 0)
+   {
+      if(buf[0] == '+')
+      {
+         char *str = buf + 4;
+         int size;
 
-			while(isdigit(*str++)); /* skip the mail number */
+         while(isdigit(*str++)); /* skip the mail number */
                   
-			size = atoi(str); /* the size of the mail */
-			thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
+         size = atoi(str); /* the size of the mail */
+         thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
-			/* Now retrieve the mail data */
-			sprintf(buf, "RETR %ld\r\n", nr);
+         /* Now retrieve the mail data */
+         sprintf(buf, "RETR %ld\r\n", nr);
 
-			send(server->socket, buf, strlen(buf), 0);
-			if ((got = recv(server->socket, buf, REC_BUFFER_SIZE, 0))>0)
-			{
-				if (buf[0] == '+')
-				{
-					char *buf2,*str;
-					int running = 1;
+         tcp_write(server->socket, buf, strlen(buf));
+         if ((got = tcp_read(server->socket, buf, REC_BUFFER_SIZE))>0)
+         {
+            if (buf[0] == '+')
+            {
+               char *buf2,*str;
+               int running = 1;
 
-					buf[got] = 0;
+               buf[got] = 0;
 
-					if ((buf2 = strstr(buf,"\r\n")))
-					{
-						int bytes_written = 0;
+               if ((buf2 = strstr(buf,"\r\n")))
+               {
+                  int bytes_written = 0;
 
-						buf2 += 2;
-						got = strlen(buf2);
+                  buf2 += 2;
+                  got = strlen(buf2);
 
-						rc = 1;
+                  rc = 1;
 
-						while (running)
-						{
-							/* Check if the downloading should be aborted */
-							if(thread_call_parent_function_sync(dl_checkabort,0))
-							{
-								rc = 0;
-								break;
-							}
+                  while (running)
+                  {
+                     /* Check if the downloading should be aborted */
+                     if(thread_call_parent_function_sync(dl_checkabort,0))
+                     {
+                        rc = 0;
+                        break;
+                     }
 
-							/* possible problem: the following strstr could fail if the 5 chars are splitted */
-							if ((str = strstr(buf, "\r\n.\r\n")))
-							{
-								str[2] = 0;
-								running = 0;
-							}
+                     /* possible problem: the following strstr could fail if the 5 chars are splitted */
+                     if ((str = strstr(buf, "\r\n.\r\n")))
+                     {
+                        str[2] = 0;
+                        running = 0;
+                     }
 
-							fwrite(buf2, strlen(buf2), 1, fp);
-							bytes_written += strlen(buf2);
-							thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
+                     fwrite(buf2, strlen(buf2), 1, fp);
+                     bytes_written += strlen(buf2);
+                     thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
 
-							if (running)
-							{
-								/* copy the last 4 characters to catch the end */
-								buf[0] = buf2[got-4];
-								buf[1] = buf2[got-3];
-								buf[2] = buf2[got-2];
-								buf[3] = buf2[got-1];
+                     if (running)
+                     {
+                        /* copy the last 4 characters to catch the end */
+                        buf[0] = buf2[got-4];
+                        buf[1] = buf2[got-3];
+                        buf[2] = buf2[got-2];
+                        buf[3] = buf2[got-1];
 
-								got = recv(server->socket, buf+4, REC_BUFFER_SIZE, 0);
-								if (got > 0)
-								{
-									/* now use the buf from beginning of the new data */
-									buf2 = buf + 4;
-									buf2[got] = 0;
-								}
+                        got = tcp_read(server->socket, buf+4, REC_BUFFER_SIZE);
+                        if (got > 0)
+                        {
+                           /* now use the buf from beginning of the new data */
+                           buf2 = buf + 4;
+                           buf2[got] = 0;
+                        }
                 else running = 0;
-							}
-						}
-					}
+                     }
+                  }
+               }
 
-					if (rc)
-					{
-						if (Errno())
-						{
-							tell_from_subtask("Error retrieving mail!");
-							rc = 0;
-						}
+               if (rc)
+               {
+                  if (Errno())
+                  {
+                     tell_from_subtask("Error retrieving mail!");
+                     rc = 0;
+                  }
 
-						thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
-						fclose(fp);
-						fp = NULL;
+                  thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
+                  fclose(fp);
+                  fp = NULL;
 
-						thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
-					}  
-				} else tell_from_subtask(buf);
-			} else tell_from_subtask("Receiving failed!");
-		} else tell_from_subtask(buf);
-	} else tell_from_subtask("Receiving failed!");
+                  thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
+               }  
+            } else tell_from_subtask(buf);
+         } else tell_from_subtask("Receiving failed!");
+      } else tell_from_subtask(buf);
+   } else tell_from_subtask("Receiving failed!");
 
-	if (fp) fclose(fp);
-	free(buf);
-	free(fn);
+   if (fp) fclose(fp);
+   free(buf);
+   free(fn);
 
-	return rc;
+   return rc;
 }
 
 /*
@@ -451,9 +451,9 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
          mail_scan_buffer_start(&ms, mail);
 
          sprintf(buf, "TOP %ld 1\r\n", nr); /* a 0 sends the whole mail :( */
-         send(server->socket, buf, strlen(buf), 0);
+         tcp_write(server->socket, buf, strlen(buf));
 
-         got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
+         got = tcp_read(server->socket, buf, REC_BUFFER_SIZE);
          if(got > 0)
          {
             buf[got] = 0;
@@ -481,7 +481,7 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
                         more = mail_scan_buffer(&ms, buf2, strlen(buf2));
                      }  
 
-                     if (running) got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
+                     if (running) got = tcp_read(server->socket, buf, REC_BUFFER_SIZE);
                      if (got > 0) buf[got] = 0;
                      else running = FALSE;
 
@@ -522,7 +522,7 @@ int pop3_get_top(struct pop3_server *server, unsigned long nr)
       tell_from_subtask("Not enough memory!");
    }
    
-   return(rc);
+   return rc;
 }
 
 /*
@@ -543,34 +543,34 @@ void pop3_get_tops(struct pop3_server *server, unsigned long amm)
 */
 int pop3_del_mail(struct pop3_server *server, unsigned long nr)
 {
-	int rc;
-	char *buf;
-	unsigned long got;
+   int rc;
+   char *buf;
+   unsigned long got;
    
-	/* DELE nr */
+   /* DELE nr */
 
-	rc = FALSE;
+   rc = FALSE;
    
-   	buf = malloc(REC_BUFFER_SIZE);
-   	
-   	if(buf != NULL)
-   	{
-		sprintf(buf, "DELE %ld\r\n", nr);
-		send(server->socket, buf, strlen(buf), 0);
-		got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
-	
-		if(got != 0)
-		{
-			if(buf[0] == '+')
-			{
-				rc = TRUE;
-			}
-		}
-		
-		free(buf);
-	}
+      buf = malloc(REC_BUFFER_SIZE);
+      
+      if(buf != NULL)
+      {
+      sprintf(buf, "DELE %ld\r\n", nr);
+      tcp_write(server->socket, buf, strlen(buf));
+      got = tcp_read(server->socket, buf, REC_BUFFER_SIZE);
    
-	return(rc);
+      if(got != 0)
+      {
+         if(buf[0] == '+')
+         {
+            rc = TRUE;
+         }
+      }
+      
+      free(buf);
+   }
+   
+   return rc;
 }
 
 static int pop3_really_dl(struct pop3_server *server)
@@ -582,7 +582,7 @@ static int pop3_really_dl(struct pop3_server *server)
    
    if(open_socket_lib())
    {
-			thread_call_parent_function_sync(dl_set_status,1,"Connecting to server...");
+         thread_call_parent_function_sync(dl_set_status,1,"Connecting to server...");
 
       server->socket = tcp_connect(server->name, server->port);
       if(server->socket != SMTP_NO_SOCKET)
@@ -617,15 +617,15 @@ static int pop3_really_dl(struct pop3_server *server)
                         thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
                         if(pop3_get_mail(server, i))
                         {
-                        	
-                        	if(server->del)
-                        	{
-                        		thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
-                           		if(!pop3_del_mail(server, i))
-                           		{
-                              		tell_from_subtask("Can\'t mark mail as deleted!");
-                           		}
-                           	}	
+                           
+                           if(server->del)
+                           {
+                              thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
+                                 if(!pop3_del_mail(server, i))
+                                 {
+                                    tell_from_subtask("Can\'t mark mail as deleted!");
+                                 }
+                              }  
                         }
                         else
                         {
@@ -646,30 +646,30 @@ static int pop3_really_dl(struct pop3_server *server)
    }
    else
    {
-      tell_from_subtask("You need a bsd-stack to download e-mails!");
+      tell_from_subtask("Cannot open the bsdsocket.library!");
    }
    
-   return(rc);
+   return rc;
 }
 
 static int pop3_entry(struct pop3_server *server)
 {
-	struct pop3_server copy_server;
+   struct pop3_server copy_server;
 
-	copy_server.name = mystrdup(server->name);
-	copy_server.port = server->port;
-	copy_server.login = mystrdup(server->login);
-	copy_server.passwd = mystrdup(server->passwd);
-	copy_server.destdir = mystrdup(server->destdir);
-	copy_server.socket = server->socket;
-	copy_server.del = server->del;
+   copy_server.name = mystrdup(server->name);
+   copy_server.port = server->port;
+   copy_server.login = mystrdup(server->login);
+   copy_server.passwd = mystrdup(server->passwd);
+   copy_server.destdir = mystrdup(server->destdir);
+   copy_server.socket = server->socket;
+   copy_server.del = server->del;
 
-	if (thread_parent_task_can_contiue())
-	{
-		pop3_really_dl(&copy_server);
-		thread_call_parent_function_sync(dl_window_close,0);
-	}
-	return 0;
+   if (thread_parent_task_can_contiue())
+   {
+      pop3_really_dl(&copy_server);
+      thread_call_parent_function_sync(dl_window_close,0);
+   }
+   return 0;
 }
 
 /*
@@ -677,5 +677,5 @@ static int pop3_entry(struct pop3_server *server)
 */
 int pop3_dl(struct pop3_server *server)
 {
-	return thread_start(pop3_entry,server);
+   return thread_start(pop3_entry,server);
 }

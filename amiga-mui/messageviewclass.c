@@ -586,6 +586,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 	} else
 	{
 		char *font_buf;
+		char buf[300];
 
 		string str;
 
@@ -622,10 +623,8 @@ static void messageview_show_mail(struct MessageView_Data *data)
 			free(font_buf);
 		}
 
-		SetAttrs(data->simplehtml,
-				MUIA_SimpleHTML_Buffer,data->mail->html_header,
-				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
-				TAG_DONE);
+		sm_snprintf(buf,sizeof(buf),"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
+		string_append(&str,buf);
 
 		messageview_append_as_mail(data,data->mail,&str);
 
@@ -635,7 +634,11 @@ static void messageview_show_mail(struct MessageView_Data *data)
 
 		string_append(&str,"</BODY>");
 
-		DoMethod(data->simplehtml, MUIM_SimpleHTML_AppendBuffer, str.str, str.len);
+		SetAttrs(data->simplehtml,
+				MUIA_SimpleHTML_Buffer, str.str,
+				MUIA_SimpleHTML_BufferLen, strlen(str.str),
+				TAG_DONE);
+
 		free(str.str);
 	}
 }

@@ -1000,6 +1000,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 		*((LONG*)handle) = 0;
 		return NULL;
 	}
+	*((LONG*)handle) = pos;
 	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);
 	return m;
 #endif
@@ -1012,7 +1013,7 @@ ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailT
 	if (treenode)
 		DoMethod(obj, MUIM_NListtree_Redraw, treenode, 0);
 #else
-	DoMethod(obj, MUIM_NList_RedrawEntry, msg->m);
+  DoMethod(obj, MUIM_NList_RedrawEntry, msg->m);
 #endif
 	return 0;
 }

@@ -1043,7 +1043,8 @@ static struct folder_node *folder_create_group(char *name)
 		{
 			return node;
 		}
-		/* leaks */
+		free(node->folder.name);
+		free(node);
 	}
 	return NULL;
 }
@@ -1060,6 +1061,47 @@ struct folder *folder_add_group(char *name)
 		return &node->folder;
 	}
 	return NULL;
+}
+
+/******************************************************************
+ 
+*******************************************************************/
+struct folder *folder_add_imap(struct folder *parent, char *imap_path)
+{
+	struct folder_node *node;
+	struct folder_node *parent_node = (struct folder_node*)(((char*)parent)-sizeof(struct node));
+
+	if (!parent->is_imap) return NULL;
+
+	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+	{
+		char *name;
+
+		/* Initialize everything with 0 */
+		memset(node,0,sizeof(struct folder_node));
+
+		name = sm_file_part(imap_path);
+		node->folder.name = mystrdup(name);
+		node->folder.path =  mycombinepath(user.folder_directory,name);
+		node->folder.special = FOLDER_SPECIAL_NO;
+		node->folder.is_imap = 1;
+		node->folder.imap_server = mystrdup(parent->imap_server);
+		node->folder.imap_user = mystrdup(parent->imap_user);
+		node->folder.imap_path = mystrdup(imap_path);
+
+		/* TODO: check for success */
+
+		if ((node->folder.sem = thread_create_semaphore()))
+		{
+			if (sm_makedir(node->folder.path))
+			{
+				folder_config_save(&node->folder);
+				return node;
+			}
+		}
+		/* leaks */
+	}
+	
 }
 
 /******************************************************************
@@ -1201,6 +1243,22 @@ static int folder_config_load(struct folder *f)
 					free(f->def_to);
 					f->def_to = mystrdup(&buf[10]);
 				}
+				else if (!mystrnicmp("IsIMap=",buf,7)) f->is_imap = atoi(&buf[7]);
+				else if (!mystrnicmp("IMapUser=",buf,9))
+				{
+					free(f->imap_user);
+					f->imap_user = mystrdup(&buf[9]);
+				}
+				else if (!mystrnicmp("IMapPath=",buf,9))
+				{
+					free(f->imap_path);
+					f->imap_path = mystrdup(&buf[9]);
+				}
+				else if (!mystrnicmp("IMapServer=",buf,11))
+				{
+					free(f->imap_server);
+					f->imap_path = mystrdup(&buf[11]);
+				}
 			}
 		}
 		fclose(fh);
@@ -1229,6 +1287,10 @@ static void folder_config_save(struct folder *f)
 		fprintf(fh,"Special=%d\n",f->special);
 		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
 		fprintf(fh,"DefaultTo=%s\n", f->def_to?f->def_to:"");
+		fprintf(fh,"IsIMap=%d\n",f->is_imap);
+		fprintf(fh,"IMapUser=%s\n",f->imap_user);
+		fprintf(fh,"IMapPath=%s\n",f->imap_path);
+		fprintf(fh,"IMapServer=%s\n",f->imap_server);
 		fclose(fh);
 	}
 }

@@ -69,6 +69,7 @@ struct folder
 	int is_imap; /* true if folder is imap folder */
 	char *imap_server;
 	char *imap_user;
+	char *imap_path; /* the imap path on the server */
 
 	/* more will follow */
 };
@@ -147,6 +148,7 @@ int folder_save_index(struct folder *f);
 void folder_delete_all_indexfiles(void);
 struct folder *folder_add_with_name(char *path, char *name);
 struct folder *folder_add_group(char *name);
+struct folder *folder_add_imap(struct folder *parent, char *imap_path);
 int folder_remove(struct folder *f);
 
 void folder_unlink_all(void);

@@ -766,10 +766,17 @@ static int codesets_read_table(char *name)
 						i = strtol(p,&p,16);
 						if (i > 0 && i < 256)
 						{
-							if ((p = mystristr(p,"U+")))
+							while (isspace((unsigned char)*p)) p++;
+
+							if (!mystrnicmp(p,"U+",2))
 							{
 								p += 2;
 								codeset->table[i].ucs4 = strtol(p,&p,16);
+							} else
+							{
+								int val;
+
+								if (*p!='#') codeset->table[i].ucs4 = strtol(p,&p,0);
 							}
 						}
 					}

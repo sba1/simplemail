@@ -21,6 +21,7 @@
 void callback_read_mail(void);
 void callback_delete_mails(void);
 void callback_new_mail(void);
+void callback_reply_mail(void);
 void callback_change_mail(void);
 void callback_fetch_mails(void);
 void callback_send_mails(void);

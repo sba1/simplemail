@@ -54,6 +54,7 @@ static Object *button_read;
 static Object *button_delete;
 static Object *button_change;
 static Object *button_new;
+static Object *button_reply;
 static Object *button_abook;
 static Object *tree_folder, *tree_mail;
 
@@ -193,6 +194,7 @@ int main_window_init(void)
 				Child, button_change = MakeButton("_Change"),
 				Child, button_delete = MakeButton("_Delete"),
 				Child, button_new = MakeButton("_New"),
+				Child, button_reply = MakeButton("_Reply"),
 				Child, button_fetch = MakeButton("_Fetch Mails"),
 				Child, button_send = MakeButton("_Send Mails"),
 				Child, button_abook = MakeButton("_Addressbook"),
@@ -228,6 +230,7 @@ int main_window_init(void)
 		DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
+		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(tree_mail, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);

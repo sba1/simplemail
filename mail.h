@@ -70,6 +70,7 @@ struct mail
 
 struct mail *mail_create(void);
 struct mail *mail_create_from_file(char *filename);
+struct mail *mail_create_reply(struct mail *mail);
 void mail_free(struct mail *mail);
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
 int mail_process_headers(struct mail *mail);

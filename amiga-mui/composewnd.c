@@ -394,7 +394,17 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 	int i,num_multiparts = mail->num_multiparts;
 
 	memset(&attach,0,sizeof(attach));
-	sprintf(buf,"%s/%s",mail->content_type,mail->content_subtype);
+
+	if (mail->content_type)
+	{
+		/* If the mail has a content type */
+		sprintf(buf,"%s/%s",mail->content_type,mail->content_subtype);
+	} else
+	{
+		/* Use text/plain as the default content type */
+		strcpy(buf,"text/plain");
+	}
+
 	attach.content_type = buf;
 
 	if (!num_multiparts)

@@ -70,6 +70,35 @@ void callback_new_mail(void)
 	compose_window_open(NULL,NULL);
 }
 
+/* a mail should be replied */
+void callback_reply_mail(void)
+{
+	char *filename;
+
+	if ((filename = main_get_mail_filename()))
+	{
+		struct mail *mail;
+		char buf[256];
+
+		getcwd(buf, sizeof(buf));
+		chdir(main_get_folder_drawer());
+
+		if ((mail = mail_create_from_file(filename)))
+		{
+			struct mail *reply;
+			mail_read_contents("",mail);
+			if ((reply = mail_create_reply(mail)))
+			{
+				compose_window_open(NULL,reply);
+				mail_free(reply);
+			}
+			mail_free(mail);
+		}
+
+		chdir(buf);
+	}
+}
+
 /* the currently selected mail should be changed */
 void callback_change_mail(void)
 {

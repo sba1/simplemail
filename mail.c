@@ -79,6 +79,65 @@ static int mailncpy(char *dest, const char *src, int n)
 }
 
 /**************************************************************************
+ Cites a text
+**************************************************************************/
+static char *cite_text(char *src, int len)
+{
+	FILE *fh = tmpfile();
+	char *cited_buf = NULL;
+
+	if (fh)
+	{
+		int cited_len;
+		int newline = 1;
+
+		while (len)
+		{
+			char c = *src;
+
+			if (c==13)
+			{
+				src++;
+				len--;
+				continue;
+			}
+
+			if (c==10)
+			{
+				fputc(10,fh);
+				newline = 1;
+				src++;
+				len--;
+				continue;
+			}
+
+			if (newline)
+			{
+				if (c=='>') fputc('>',fh);
+				else fputs("> ",fh);
+				newline = 0;
+			}
+
+			fputc(c,fh);
+
+			src++;
+			len--;
+		}
+
+		cited_len = ftell(fh);
+	  fseek(fh,0,SEEK_SET);
+		if ((cited_buf = (char*)malloc(cited_len+1)))
+		{
+			fread(cited_buf,1,cited_len,fh);
+			cited_buf[cited_len] = 0;
+		}
+		fclose(fh);
+	}
+
+	return cited_buf;
+}
+
+/**************************************************************************
  Allocate an header and insert it into the header list
 **************************************************************************/
 static int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len)
@@ -285,6 +344,25 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 }
 
 /**************************************************************************
+ returns the first mail with the given mime type/subtype
+ (recursive). Return NULL if it doesn't exists.
+**************************************************************************/
+static struct mail *mail_find_type(struct mail *m, char *type, char *subtype)
+{
+	int i;
+	if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))
+		return m;
+
+	for (i=0;i < m->num_multiparts; i++)
+	{
+		struct mail *rm = mail_find_type(m->multipart_array[i],type,subtype);
+		if (rm) return rm;
+	}
+
+	return NULL;
+}
+
+/**************************************************************************
  creates a mail, initialize it to deault values
 **************************************************************************/
 struct mail *mail_create(void)
@@ -349,6 +427,128 @@ struct mail *mail_create_from_file(char *filename)
 			free(m);
 			return NULL;
 		}
+	}
+	return m;
+}
+
+/**************************************************************************
+ Creates a Reply to a given mail. That means change the contents of
+ "From:" to "To:", change the subject, cite the first text passage
+ and remove the attachments. The mail is proccessed. The given mail should
+ be processed to.
+
+ Should use mail_compose_mail() to create the temporary mail
+**************************************************************************/
+struct mail *mail_create_reply(struct mail *mail)
+{
+	struct mail *m = mail_create();
+	if (m)
+	{
+		char *from = mail_find_header_contents(mail,"from");
+		struct mail *text_mail;
+
+		if (from)
+		{
+			struct list *alist = create_address_list(from);
+			if (alist)
+			{
+				char *to_header = encode_address_field("To",alist);
+				free_address_list(alist);
+
+				if (to_header)
+				{
+					mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
+					free(to_header);
+				}
+			}
+		}
+
+		if (mail->subject)
+		{
+			char *new_subject = (char*)malloc(strlen(mail->subject)+8);
+			if (new_subject)
+			{
+				char *subject_header;
+
+				char *src = mail->subject;
+				char *dest = new_subject;
+				char c;
+				int brackets = 0;
+				int skip_spaces = 0;
+
+				/* Add a Re: before the new subject */
+				strcpy(dest,"Re: ");
+				dest += 4;
+
+				/* Copy the subject into a new buffer and filter all []'s and Re's */
+				while (c = *src)
+				{
+					if (c == '[')
+					{
+						brackets++;
+						src++;
+						continue;
+					} else
+					{
+						if (c == ']')
+						{
+							brackets--;
+							skip_spaces = 1;
+							src++;
+							continue;
+						}
+					}
+
+					if (!brackets)
+					{
+						if (!mystrnicmp("Re:",src,3))
+						{
+							src += 3;
+							skip_spaces = 1;
+							continue;
+						}
+
+						if (c != ' ' || !skip_spaces)
+						{
+							*dest++= c;
+							skip_spaces=0;
+						}
+					}
+					src++;
+				}
+				*dest = 0;
+
+				if ((subject_header = encode_header_field("Subject",new_subject)))
+				{
+					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9);
+					free(subject_header);
+				}
+
+				free(new_subject);
+			}
+		}
+
+		if ((text_mail = mail_find_type(mail, "text", "plain")))
+		{
+			char *replied_text;
+
+			/* city the text and assign it to the mail, it's enough to set
+         decoded_data */
+
+			mail_decode(text_mail);
+
+			if (mail->decoded_data) replied_text = cite_text(mail->decoded_data,mail->decoded_len);
+			else replied_text = cite_text(mail->text + mail->text_begin, mail->text_len);
+
+			if (replied_text)
+			{
+				m->decoded_data = replied_text;
+				m->decoded_len = strlen(replied_text);
+/*				free(replied_text);*/
+			}
+		}
+
+		mail_process_headers(m);
 	}
 	return m;
 }
@@ -663,7 +863,11 @@ void mail_read_contents(char *folder, struct mail *mail)
 **************************************************************************/
 void mail_decode(struct mail *mail)
 {
+	/* If mail is already decoded do nothing */
 	if (mail->decoded_data) return;
+
+	/* If no text is available return */
+	if (!mail->text) return;
 
 	if (!stricmp(mail->content_transfer_encoding,"base64"))
 	{
@@ -895,14 +1099,22 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		if (alist)
 		{
 			char *from = encode_address_field("From", alist);
-			if (from) fprintf(fp,"%s\n",from);
+			if (from)
+			{
+				fprintf(fp,"%s\n",from);
+				free(from);
+			}
 			free_address_list(alist);
 		}
 
 		if ((alist = create_address_list(new_mail->to)))
 		{
 			char *to = encode_address_field("To", alist);
-			if (to) fprintf(fp,"%s\n",to);
+			if (to)
+			{
+				fprintf(fp,"%s\n",to);
+				free(to);
+			}
 			free_address_list(alist);
 		}
 

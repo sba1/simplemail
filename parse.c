@@ -472,10 +472,10 @@ static char *parse_group(char *group, struct parse_address *dest)
 }
 
 /**************************************************************************
- Parses an address field....I wish I had a real bnf parser... :-((
+ Parses an address
  Returns the name or the first e-mail address
-
  address     =  mailbox / group
+ (actually 1#mailbox / group which is not correct)
 **************************************************************************/
 char *parse_address(char *address, struct parse_address *dest)
 {
@@ -487,16 +487,31 @@ char *parse_address(char *address, struct parse_address *dest)
 	if (!retval)
 	{
 		struct mailbox mb;
-		struct mailbox *nmb;
+		char c;
 
-		retval = parse_mailbox(address, &mb);
+		retval = address;
 
-		if ((nmb = (struct mailbox*)malloc(sizeof(struct mailbox))))
+		while ((retval = parse_mailbox(retval, &mb)))
 		{
-			dest->group_name = NULL;
-			*nmb = mb;
-			list_insert_tail(&dest->mailbox_list,&nmb->node);
-		} else return NULL;
+			struct mailbox *nmb;
+			if ((nmb = (struct mailbox*)malloc(sizeof(struct mailbox))))
+			{
+				dest->group_name = NULL;
+				*nmb = mb;
+				list_insert_tail(&dest->mailbox_list,&nmb->node);
+			} else return NULL;
+
+			while ((c = *retval))
+			{
+				if (!isspace(c)) break;
+				c++;
+			}
+
+			if (*retval == ',')
+			{
+				retval++;
+			} else break;
+		}
 	}
 	return retval;
 }

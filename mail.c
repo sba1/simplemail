@@ -1028,6 +1028,15 @@ struct mail *mail_create_reply(struct mail *mail)
 							}
 						}
 					}
+
+					if (take_mult)
+					{
+						struct account *ac = account_find_by_from(to);
+						if (ac)
+						{
+							remove_from_address_list(alist,ac->email);
+						}
+					}
 				}
 
 				to_header = encode_address_field("To",alist);
@@ -2053,6 +2062,21 @@ void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
 		new_mb->phrase = mystrdup(mb->phrase);
 		new_mb->addr_spec = mystrdup(mb->addr_spec);
 		list_insert_tail(list,&new_mb->node);
+	}
+}
+
+/**************************************************************************
+ Removes a address from an address list
+**************************************************************************/
+void remove_from_address_list(struct list *list, char *email)
+{
+	struct mailbox *mb = find_addr_spec_in_address_list(list, email);
+	if (mb)
+	{
+		node_remove(&mb->node);
+		free(mb->phrase);
+		free(mb->addr_spec);
+		free(mb);
 	}
 }
 

@@ -215,6 +215,7 @@ struct list *create_address_list(char *str);
 struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec);
 void append_to_address_list(struct list *list, char *str);
 void append_mailbox_to_address_list(struct list *list, struct mailbox *mb);
+void remove_from_address_list(struct list *list, char *email);
 void free_address_list(struct list *list);
 
 char *mail_create_string(char *format, struct mail *mail, char *realname,

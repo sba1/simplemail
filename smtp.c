@@ -290,22 +290,28 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 				if(1 == rc) for(;;) /* body */
 				{
+					int len = 0;
+					char *buf2;
+					unsigned char c;
+
 					if(!fgets(buf,998,fp)) /* read error or EOF */
 					{
 						if(!feof(fp)) rc = 0;
 						break;
 					}
-					if(!strchr(buf,'\n')) /* line too long? */
+
+					/* the last line could be have a missing newline character */
+					for (buf2 = buf;c = *buf2;buf2++)
 					{
-						rc = 0;
-						break;
+						if (c == '\n' || c == '\r') break;
+						len++;
 					}
 
 					if(convert8bit)
 					{
 						long count;
 						char qp[4];
-						int pos = 0, linepos, len = strlen(buf)-1;
+						int pos = 0, linepos;
 
 						if(!mystrnicmp(buf,"From ",5))
 						{
@@ -385,7 +391,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 							rc = 0;
 							break;
 						}
-						if(strlen(buf)-1 != tcp_write(conn->conn, buf, strlen(buf)-1))
+						if (len != tcp_write(conn->conn, buf, len))
 						{
 							rc = 0;
 							break;

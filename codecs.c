@@ -310,7 +310,7 @@ static int get_encode_str(unsigned char *buf)
 				word_start = buf;
 				space = 0;
 			}
-			if (c > 127 || c == '=' || c == '?')
+			if (c<32 || c >= 127 || (c == '=' && *(buf+1)=='?'))
 			{
 				toencode = 1;
 			}

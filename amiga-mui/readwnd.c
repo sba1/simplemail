@@ -986,6 +986,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_ExitChange);
 			}
 
+			SM_DEBUGF(15,("Initial Mail = %p\n",mail_find_initial(data->mail)));
+
 			show_mail(data,mail_find_initial(data->mail));
 
 			/* set the prev/next button to disabled if last mail is reached */
@@ -1004,7 +1006,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 			CurrentDir(old_dir);
 			UnLock(lock);
 			set(App, MUIA_Application_Sleep, FALSE);
-			return 1;
+
+			SM_RETURN(1,"%d");
 		}
 		SM_DEBUGF(15,("Not displayed\n"));
 
@@ -1018,7 +1021,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 	DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
 	DoMethod(data->attachments_group, MUIM_Group_ExitChange);
 	set(App, MUIA_Application_Sleep, FALSE);
-	return 0;
+
+	SM_RETURN(0,"%d");
 }
 
 /******************************************************************
@@ -1066,6 +1070,8 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	struct NewMenu *nm;
 	int i;
 
+	SM_DEBUGF(20, ("Entered function (folder = %s, mail = %p, window = %d)\n",folder,mail,window));
+
 	if (window != -1 && window < MAX_READ_OPEN)
 	{
 		/* Check if the window is already open and if so use this window
@@ -1077,10 +1083,13 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 			if (read_window_display_mail(read_open[window],mail))
 			{
 				set(App, MUIA_Application_Sleep, FALSE);
-				return window;
+
+				SM_RETURN(window,"%d");
+//				return window;
 			}
 			set(App, MUIA_Application_Sleep, FALSE);
-			return -1;
+			SM_RETURN(-1,"%d");
+//			return -1;
 		}
 		num = window;
 	} else
@@ -1271,6 +1280,8 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 				DoMethod(App,OM_ADDMEMBER,wnd);
 				set(wnd,MUIA_Window_Open,TRUE);
 				set(App, MUIA_Application_Sleep, FALSE);
+
+				SM_RETURN(num,"%d");
 				return num;
 			}
 
@@ -1279,7 +1290,9 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		}
 		MUI_DisposeObject(wnd);
 	}
-	return -1;
+
+	SM_RETURN(-1,"%d");
+//	return -1;
 }
 
 /******************************************************************

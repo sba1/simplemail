@@ -46,6 +46,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
+#include "readwnd.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
@@ -278,6 +279,7 @@ static void mailtreelist_title_click(void)
 		folder_set_primary_sort(folder, titlemark2sortmode(title_mark));
 		folder_config_save(folder);
 		main_set_folder_mails(folder);
+		read_refresh_prevnext_button(folder);
 	}
 }
 
@@ -316,6 +318,7 @@ static void mailtreelist_title_click2(void)
 		folder_set_secondary_sort(folder, titlemark2sortmode(title_mark));
 		folder_config_save(folder);
 		main_set_folder_mails(folder);
+		read_refresh_prevnext_button(folder);
 	}
 }
 

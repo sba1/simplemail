@@ -534,6 +534,7 @@ int main(int argc, char *argv[])
 			folder_delete_deleted();
 			cleanup_threads();
 		}
+		folder_save_order();
 		del_folders();
 	}
 	cleanup_addressbook();

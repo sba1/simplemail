@@ -54,6 +54,8 @@ struct FolderTreelist_Data
 	struct folder *folder_maildrop;
 
 	Object *context_menu;
+
+	int mails_drag;
 };
 
 /*
@@ -167,6 +169,10 @@ STATIC ULONG FolderTreelist_Get(struct IClass *cl, Object *obj, struct opGet *ms
 					*msg->opg_Storage = (LONG)data->folder_maildrop;
 					return 1;
 
+		case	MUIA_FolderTreelist_OrderChanged:
+					*msg->opg_Storage = (LONG)1;
+					return 1;
+
 		default:
 					return DoSuperMethodA(cl,obj,(Msg)msg);
 	}
@@ -174,16 +180,26 @@ STATIC ULONG FolderTreelist_Get(struct IClass *cl, Object *obj, struct opGet *ms
 
 STATIC ULONG FolderTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
   if (msg->obj == (Object *)muiUserData(obj))
   {
+  	data->mails_drag = 1;
   	return MUIV_DragQuery_Accept;
   }
+	data->mails_drag = 0;
+  if (msg->obj == obj) 
+  	return MUIV_DragQuery_Accept;
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
-	if (msg->obj == obj) return DoSuperMethodA(cl,obj,(Msg)msg);
+	if (msg->obj == obj)
+	{
+		ULONG rc = DoSuperMethodA(cl,obj,(Msg)msg);
+		set(obj,MUIA_FolderTreelist_OrderChanged,TRUE);
+		return rc;
+	}
 
   if (msg->obj == (Object *)muiUserData(obj))
   {
@@ -211,15 +227,31 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_NList_DropType *msg)
+STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_NListtree_DropType *msg)
 {
-	DoSuperMethodA(cl,obj,(Msg)msg);
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	struct MUI_NListtree_TreeNode *node;
+	struct folder *f;
+
+//	DoSuperMethodA(cl,obj,(Msg)msg);
 
 //	kprintf("before: %ld\n",*msg->type);
 
-	if (*msg->pos == xget(obj,MUIA_NList_Active))
-		*msg->type = MUIV_NListtree_DropType_None;
-	else *msg->type = MUIV_NListtree_DropType_Onto;
+	node = (struct MUI_NListtree_TreeNode *)
+		DoMethod(obj,MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, *msg->Pos, 0);
+
+	f = (struct folder*)node->tn_User;
+
+  if (data->mails_drag)
+  {
+		if (*msg->Pos == xget(obj,MUIA_NList_Active) || (f->special == FOLDER_SPECIAL_GROUP))
+			*msg->Type = MUIV_NListtree_DropType_None;
+		else *msg->Type = MUIV_NListtree_DropType_Onto;
+	} else
+	{
+		if (*msg->Type == MUIV_NListtree_DropType_Onto && !(node->tn_Flags & TNF_LIST))
+			*msg->Type = MUIV_NListtree_DropType_Above;
+	}
 
 //	kprintf("after: %ld\n",*msg->type);
 
@@ -249,7 +281,7 @@ STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 		case	OM_GET:				return FolderTreelist_Get(cl,obj,(struct opGet*)msg);
     case  MUIM_DragQuery: return FolderTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
     case  MUIM_DragDrop:  return FolderTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
-    case	MUIM_NList_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NList_DropType*)msg);
+		case	MUIM_NListtree_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);
     case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

@@ -145,6 +145,28 @@ static void foldertreelist_maildrop(void)
 }
 
 /******************************************************************
+ The order of the folders has been changed.
+*******************************************************************/
+static void foldertreelist_orderchanged(void)
+{
+	int i;
+	int count = DoMethod(folder_tree,MUIM_NListtree_GetNr, MUIV_NListtree_GetNr_TreeNode_Active,MUIV_NListtree_GetNr_Flag_CountAll);
+
+	folder_unlink_all();
+
+	for (i=0;i<count;i++)
+	{
+		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
+			DoMethod(folder_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
+		struct MUI_NListtree_TreeNode *parent = (struct MUI_NListtree_TreeNode*)
+			DoMethod(folder_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Parent,0);
+		struct folder *f = (struct folder*)tn->tn_User;
+
+		folder_add_to_tree((struct folder*)tn->tn_User,parent?(struct folder*)parent->tn_User:NULL);
+	}
+}
+
+/******************************************************************
  The Mailtree's title has been clicked, so change the sort
  mode if necessary
 *******************************************************************/
@@ -354,6 +376,7 @@ int main_window_init(void)
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_OrderChanged, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_orderchanged);
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
@@ -435,14 +458,16 @@ void main_refresh_folders(void)
 
 	while (f)
 	{
+		APTR treenode = (APTR)MUIV_NListtree_Insert_ListNode_Root;
+		if (f->parent_folder) treenode = FindListtreeUserData(folder_tree, f->parent_folder);
 		if (f->special == FOLDER_SPECIAL_GROUP)
 		{
 			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
+						treenode,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
 		} else
 		{
 			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+						treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 
 			if (folder_popupmenu)
 			{

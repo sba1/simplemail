@@ -679,6 +679,27 @@ int folder_remove(struct folder *f)
 	return 0;
 }
 
+/******************************************************************
+ Unlink all folders from the list
+*******************************************************************/
+void folder_unlink_all(void)
+{
+	struct folder_node *node;
+	while ((node = (struct folder_node*)list_remove_tail(&folder_list)));
+}
+
+/******************************************************************
+ Adds a folder to the tree
+*******************************************************************/
+void folder_add_to_tree(struct folder *f,struct folder *parent)
+{
+	struct folder_node *fnode = (struct folder_node*)(((char*)f)-sizeof(struct node));
+
+	f->parent_folder = parent;
+	list_insert_tail(&folder_list,&fnode->node);
+}
+
+
 int read_line(FILE *fh, char *buf);
 
 /******************************************************************
@@ -722,6 +743,10 @@ static void folder_config_save(struct folder *f)
 {
 	char buf[256];
 	FILE *fh;
+
+	if (!f->path) return;
+	if (f->special == FOLDER_SPECIAL_GROUP) return;
+
 	sprintf(buf,"%s.config",f->path);
 
 	if ((fh = fopen(buf,"w")))
@@ -1516,6 +1541,28 @@ char *default_folder_path(void)
 }
 
 /******************************************************************
+ Saves the order of the folders
+*******************************************************************/
+void folder_save_order(void)
+{
+	struct folder *f = folder_first();
+	FILE *fh = fopen(FOLDER_PATH "/.order","w");
+	if (!fh) return;
+
+	while (f)
+	{
+		struct folder_node *fnode;
+
+		if (f->parent_folder) fnode = (struct folder_node*)(((char*)f->parent_folder)-sizeof(struct node));
+		else fnode = NULL;
+
+		fprintf(fh,"%s\t%s\t%d\t%d\n",f->name?f->name:"",f->path?f->path:"",f->special,node_index(&fnode->node));
+		f = folder_next(f);
+	}
+	fclose(fh);
+}
+
+/******************************************************************
  Returns a possible path for new folders (in a static buffer)
 *******************************************************************/
 char *new_folder_path(void)
@@ -1550,20 +1597,60 @@ char *new_folder_path(void)
 *******************************************************************/
 int init_folders(void)
 {
-/*
-	stat()
-
-	if (st.st_mode & S_IFDIR)
-	{
-	}
-*/
-
 	DIR *dfd;
+	FILE *fh;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
 	char *folder_path = default_folder_path();
 
 	list_init(&folder_list);
+
+	/* Read in the .orders file at first */
+	if ((fh = fopen(FOLDER_PATH "/.order","r")))
+	{
+		char *buf = (char*)malloc(1024);
+		if (buf)
+		{
+			while ((fgets(buf,1024,fh)))
+			{
+				char *path;
+				char *temp_buf;
+				int special, parent;
+
+				if ((path = strchr(buf,'\t')))
+				{
+					*path++ = 0;
+
+					if ((temp_buf = strchr(path,'\t')))
+					{
+						*temp_buf++ = 0;
+						special = atoi(temp_buf);
+						if ((temp_buf = strchr(temp_buf,'\t')))
+						{
+							struct folder *new_folder;
+							temp_buf++;
+							parent = atoi(temp_buf);
+
+							if (special == FOLDER_SPECIAL_GROUP)
+							{
+								new_folder = folder_add_group(buf);
+							} else
+							{
+								new_folder = folder_add(path);
+							}
+							if (new_folder && parent != -1)
+							{
+								new_folder->parent_folder = folder_find(parent);
+							}
+						}
+					}
+				}
+				
+			}
+			free(buf);
+		}
+		fclose(fh);
+	}
 
 	if (!(st = malloc(sizeof(struct stat))))
 		return 0;
@@ -1610,7 +1697,7 @@ int init_folders(void)
 }
 
 /******************************************************************
- Removes all folders (before quit)
+ Removes all folders (before quit).
 *******************************************************************/
 void del_folders(void)
 {

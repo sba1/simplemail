@@ -51,6 +51,9 @@ struct folder
 
 	int new_mails; /* number of new mails */
 	int unread_mails; /* number of unread mails */
+
+	struct folder *parent_folder; /* pointer to the parent folder */
+
 	/* more will follow */
 };
 
@@ -95,6 +98,8 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype);
 
 struct folder *folder_first(void);
+
+/* Like a linear list */
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);
 struct folder *folder_find_by_name(char *name);
@@ -114,6 +119,9 @@ struct folder *folder_add_with_name(char *path, char *name);
 struct folder *folder_add_group(char *name);
 int folder_remove(struct folder *f);
 
+void folder_unlink_all(void);
+void folder_add_to_tree(struct folder *fold,struct folder *parent);
+
 /* This was a macro, but now is a function. Handle must point to NULL to get the first mail */
 struct mail *folder_next_mail(struct folder *folder, void **handle);
 
@@ -125,5 +133,6 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode);
 #define folder_get_type(f) ((f)->type)
 
 int folder_filter(struct folder *fold);
+void folder_save_order(void);
 
 #endif

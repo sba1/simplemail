@@ -1756,7 +1756,7 @@ int init_spam_group(void)
 		Child, VGroup,
 			Child, HorizLineTextObject(_("General spam settings")),
 			Child, ColGroup(2),
-				Child, MakeLabel(_("Mark mails as spam when moved to the spam folder")),
+				Child, MakeLabel(_("Mark mails as spam before moved to the spam folder")),
 				Child, HGroup, Child, spam_mark_before_check = MakeCheck(_("Mark mails as spam before moved to the spam folder"),user.config.spam_mark_moved), Child, HVSpace, End,
 				MUIA_ShortHelp, _("If you activate this option any mail you move to the spam folder\n"
 													"is marked as spam before the operation. Note that only mails\n"
@@ -1778,7 +1778,7 @@ int init_spam_group(void)
 						MUIA_ShortHelp, _("If enabled all addresses within you addressbook are also\n"
 														  "considered to be safe."),
 						Child, MakeLabel(_("Also all addresses within the addressbook")),
-						Child, spam_addr_book_is_white_check = MakeCheck(_("Additional all addresses within the addressbook"),user.config.spam_addrbook_is_white),
+						Child, spam_addr_book_is_white_check = MakeCheck(_("Also all addresses within the addressbook"),user.config.spam_addrbook_is_white),
 						End,
 					End,
 

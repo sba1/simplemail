@@ -1044,7 +1044,7 @@ int compose_window_open(struct compose_args *args)
 	Object *signatures_cycle;
 	Object *toolbar;
 
-	int i, num;
+	int num;
 
 	static char *register_titles[3];
 	static int register_titles_are_translated;
@@ -1365,7 +1365,6 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->to_list)
 				{
-					
 					utf8 *to_str = get_addresses_from_list_safe(args->to_change->info->to_list,user.config.default_codeset);
 					if (to_str)
 					{

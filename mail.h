@@ -55,6 +55,7 @@ struct mail
 	unsigned int seconds; /* seconds since 1.1.1978 */
 
 	struct list header_list; /* the mail's headers */
+	char *html_header; /* the header in html format, created by mail_create_html_header */
 
 	/* following things are only relevant when reading the mail */
 	int mime; /* 0 means is not a mime mail */
@@ -128,6 +129,7 @@ int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
 int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
+int mail_create_html_header(struct mail *mail);
 
 int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len);
 char *mail_find_header_contents(struct mail *mail, char *name);

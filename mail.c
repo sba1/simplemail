@@ -37,7 +37,6 @@
 #include "SimpleMail_rev.h"
 #include "support.h"
 #include "support_indep.h"
-#include "textinterpreter.h"
 
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
@@ -1313,6 +1312,8 @@ void mail_free(struct mail *mail)
 
 	if (!mail) return;
 
+	if (mail->html_header) free(mail->html_header);
+
 	while ((hdr = (struct header *)list_remove_tail(&mail->header_list)))
 	{
 		if (hdr->name) free(hdr->name);
@@ -1668,14 +1669,39 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 	return rc;
 }
 
+/**************************************************************************
+ Creates an HTML File from a header. Currently only the most important
+ headers were created.
+**************************************************************************/
+int mail_create_html_header(struct mail *mail)
+{
+	int rc = 0;
+	FILE *fh;
 
+	if (mail->html_header) return 1;
 
+	if ((fh = tmpfile()))
+	{
+		int len;
+		fputs("<HTML><BODY>",fh);
+		fputs("<IMG SRC=\"SimpleMailPicture:\" WIDTH=30 HEIGHT=40 ALIGN=LEFT>",fh);
+		if (mail->from) fprintf(fh,"<STRONG>From: </STRONG>%s<BR>",mail->from);
+		if (mail->subject) fprintf(fh,"<STRONG>Subject: </STRONG>%s<BR>",mail->subject);
+		fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_str(mail->seconds));
+		fputs("<BR CLEAR=ALL><HR>",fh);
+		fputs("</BODY></HTML>",fh);
 
-
-
-
-
-
-
-
-
+		if ((len = ftell(fh)))
+		{
+			fseek(fh,0,SEEK_SET);
+			if ((mail->html_header = (char*)malloc(len+1)))
+			{
+				fread(mail->html_header,1,len,fh);
+				mail->html_header[len]=0;
+				rc = 1;
+			}
+		}
+		fclose(fh);
+	}
+	return rc;
+}

@@ -1087,7 +1087,44 @@ void imap_free(struct imap_server *imap)
 static thread_t imap_thread;
 static struct connection *imap_connection;
 static int imap_socket_lib_open;
+static struct imap_server *imap_server;
 
+static void imap_thread_really_connect_to_server(void)
+{
+	if (imap_server)
+	{
+		if (!imap_socket_lib_open)
+		 imap_socket_lib_open = open_socket_lib();
+		if (!imap_socket_lib_open) return;
+
+		if (imap_connection)
+			tcp_disconnect(imap_connection);
+
+		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, imap_server->ssl)))
+		{
+			if (imap_wait_login(imap_connection,imap_server))
+			{
+				if (imap_login(imap_connection,imap_server))
+				{
+				}
+			}
+		}
+	}
+}
+
+static int imap_thread_connect_to_server(struct imap_server *server)
+{
+	if (imap_server) imap_free(imap_server);
+	if ((imap_server = imap_duplicate(server)))
+	{
+		return thread_push_function(imap_thread_really_connect_to_server, 0);
+	}
+}
+
+/**************************************************************************
+ The entry point for the imap thread. It just go into the wait state and
+ then frees all resources when finished
+**************************************************************************/
 static void imap_thread_entry(void *test)
 {
 	if (thread_parent_task_can_contiue())
@@ -1108,25 +1145,9 @@ static void imap_thread_entry(void *test)
 	}
 }
 
-static int imap_thread_connect_to_server(struct imap_server *server)
-{
-	if (!imap_socket_lib_open)
-	{
-		 imap_socket_lib_open = open_socket_lib();
-	}
-
-	if (!imap_socket_lib_open) return 0;
-
-	if (imap_connection)
-		tcp_disconnect(imap_connection);
-
-	if ((imap_connection = tcp_connect(server->name, server->port, server->ssl)))
-	{
-		return 1;
-	}
-	return 0;
-}
-
+/**************************************************************************
+ Let the imap thread connect to the imap server represented by the folder.
+**************************************************************************/
 void imap_thread_connect(struct folder *folder)
 {
 	struct imap_server *server = account_find_imap_server_by_folder(folder);

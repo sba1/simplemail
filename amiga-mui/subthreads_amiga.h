@@ -19,6 +19,10 @@
 #ifndef SM__SUBTHREADS_AMIGA_H
 #define SM__SUBTHREADS_AMIGA_H
 
+#ifndef EXEC_LISTS_H
+#include <exec/lists.h>
+#endif
+
 struct thread_s
 {
 	struct Process *process;
@@ -29,6 +33,8 @@ struct thread_s
 
 	struct Library *socketlib;
 	int socketlib_opencnt;
+
+	struct List push_list;
 };
 
 #endif

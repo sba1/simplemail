@@ -139,7 +139,9 @@ prepare-release:
   makedir ram:SimpleMail
   slink sm/simplemail nd TO ram:SimpleMail/SimpleMail
   copy doc/amiga/ReadMe ram:SimpleMail
+  copy doc/amiga/SimpleMail.guide ram:SimpleMail
   copy amiga-mui/binaries/ReadMe.info ram:SimpleMail
+  copy amiga-mui/binaries/SimpleMail.guide.info ram:SimpleMail
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
   copy sm/images TO ram:SimpleMail/Images

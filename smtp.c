@@ -39,6 +39,8 @@
 #include "simplemail.h"
 #include "support.h"
 
+#include "upwnd.h"
+
 #include "smtp.h"
 
 int buf_flush(long hsocket, char *buf, long len)
@@ -56,6 +58,7 @@ int buf_flush(long hsocket, char *buf, long len)
 		{
 			puts("flushing failed");
 		}
+		
 	}
    
 	return(rc);
@@ -237,15 +240,20 @@ int smtp_data(long hsocket, char *mailfile)
 	char *buf;
 	FILE *fp;
 	int c;
+	long size;
 
 	rc = FALSE;
-
+	
 	buf = buf_init();
 	if(buf != NULL)
 	{
 		fp = fopen(mailfile, "r");
 		if(fp)
 		{
+			
+			fseek(fp, 0L, SEEK_END);
+			size = ftell(fp);
+			
 			ret = smtp_send_cmd(hsocket, "DATA", NULL);
 			if((ret == SMTP_OK) || (ret == SMTP_SEND_MAIL))
 			{
@@ -330,7 +338,7 @@ int smtp_send_mail(long hsocket, struct out_mail *om)
 	return(rc);
 }
 
-int smtp_send(char *server, struct out_mail *om)
+int smtp_send(char *server, struct out_mail **om)
 {
 	int rc;
 	long hsocket;
@@ -343,7 +351,14 @@ int smtp_send(char *server, struct out_mail *om)
 		hsocket = tcp_connect(server, 25);
 		if(hsocket != SMTP_NO_SOCKET)
 		{
-			smtp_send_mail(hsocket, om);
+			long i;
+			
+			for(i = 0; om[i] != NULL; i++)
+			{
+				smtp_send_mail(hsocket, om[i]);
+			}
+			
+			rc = TRUE;
          
 			CloseSocket(hsocket);
 		}

@@ -13,4 +13,6 @@ struct out_mail
    char *mailfile;
 };
 
+int smtp_send(char *server, struct out_mail **om);
+
 #endif

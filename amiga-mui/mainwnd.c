@@ -198,7 +198,7 @@ int main_window_init(void)
         
 		WindowContents, VGroup,
 			Child, HGroup,
-				Child, button_read = MakeButton("Rea_d"),
+				Child, button_read = MakeButton("R_ead"),
 				Child, button_change = MakeButton("_Modify"),
 				Child, button_delete = MakeButton("_Delete"),
 				Child, button_getadd = MakeButton("_GetAdd"),

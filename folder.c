@@ -38,6 +38,7 @@
 #include "support.h"
 #include "support_indep.h"
 
+static void folder_remove_mail(struct folder *folder, struct mail *mail);
 
 /* folder sort stuff
    to control the compare functions */
@@ -285,7 +286,23 @@ int folder_add_mail(struct folder *folder, struct mail *mail, int sort)
 
 	/* If mails info is not read_yet, read it now */
 	if (!folder->mail_infos_loaded)
+	{
 		folder_read_mail_infos(folder,0);
+		
+		/* check if the mail is already inside, this happens if you want to add a new mail and the mail infos
+		   must have been loaded */
+		for (i=0;i<folder->num_mails;i++)
+		{
+			struct mail *checkm = folder->mail_array[i];
+			if (!mystricmp(mail->filename,checkm->filename))
+			{
+				/* we found the mail, now the easiest way is to remove it, but's not the fastest */
+				folder_remove_mail(folder,checkm);
+				mail_free(checkm);
+				break;
+			}
+		}
+	}
 
 	/* free the sorted mail array */
 	if (folder->sorted_mail_array && !sort)

@@ -1098,7 +1098,6 @@ char *addressbook_get_address_str_expanded(struct addressbook_entry *entry)
 **************************************************************************/
 char *addressbook_get_expand_str(char *unexpand)
 {
-	struct parse_address paddr;
 	char *unexpand_end = unexpand + strlen(unexpand);
 	char *buf = unexpand;
 	char *expand = NULL;
@@ -1106,64 +1105,57 @@ char *addressbook_get_expand_str(char *unexpand)
 	while (buf < unexpand_end)
 	{
 		char *ret;
+		struct mailbox mb;
 
-		memset(&paddr, 0, sizeof(paddr));
-		if ((ret = parse_address(buf,&paddr)))
+		if ((ret = parse_mailbox(buf,&mb)))
 		{
-			struct mailbox *mb = (struct mailbox *)list_first(&paddr.mailbox_list);
-			while (mb)
+			if (mb.phrase)
 			{
-				if (mb->phrase)
+				/* note "'s must be setted in special cases */
+				if (needs_quotation(mb.phrase))
 				{
-					/* note "'s must be setted in special cases */
-					if (needs_quotation(mb->phrase))
-					{
-						expand = stradd(expand,"\"");
-						expand = stradd(expand,mb->phrase);
-						expand = stradd(expand,"\"");
-					} else
-					{
-						expand = stradd(expand,mb->phrase);
-					}
-
-					expand = stradd(expand," <");
-					expand = stradd(expand,mb->addr_spec);
-					expand = stradd(expand,">");
+					expand = stradd(expand,"\"");
+					expand = stradd(expand,mb.phrase);
+					expand = stradd(expand,"\"");
 				} else
 				{
-					/* first check if the address is in the address book */
-					int email = 0;
-					struct addressbook_entry *entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_ALIAS);
-					if (!entry) entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_REALNAME);
-					if (!entry)
-					{
-						entry = addressbook_find_entry(NULL,mb->addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
-						email = 1;
-					}
-
-					if (entry)
-					{
-						char *new_str = email?addressbook_get_address_str_expanded_email(entry,mb->addr_spec):addressbook_get_address_str_expanded(entry);
-						if (!new_str)
-						{
-							if (expand) free(expand);
-							break;
-						}
-						expand = stradd(expand,new_str);
-						free(new_str);
-					} else
-					{
-						/* No, so take the lonly address */
-						expand = stradd(expand,mb->addr_spec);
-					}
+					expand = stradd(expand,mb.phrase);
+				}
+				expand = stradd(expand," <");
+				expand = stradd(expand,mb.addr_spec);
+				expand = stradd(expand,">");
+			} else
+			{
+				/* first check if the address is in the address book */
+				int email = 0;
+				struct addressbook_entry *entry = addressbook_find_entry(NULL,mb.addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_ALIAS);
+				if (!entry) entry = addressbook_find_entry(NULL,mb.addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_REALNAME);
+				if (!entry)
+				{
+					entry = addressbook_find_entry(NULL,mb.addr_spec,1,NULL,ADDRESSBOOK_FIND_ENTRY_EMAIL);
+					email = 1;
 				}
 
-				mb = (struct mailbox *)node_next(&mb->node);
-				/* add a comma if another entry follows */
-				if (mb) expand = stradd(expand,",");
+				if (entry)
+				{
+					char *new_str = email?addressbook_get_address_str_expanded_email(entry,mb.addr_spec):addressbook_get_address_str_expanded(entry);
+					if (!new_str)
+					{
+						if (expand) free(expand);
+						break;
+					}
+					expand = stradd(expand,new_str);
+					free(new_str);
+				} else
+				{
+					/* No, so take the lonly address */
+					expand = stradd(expand,mb.addr_spec);
+				}
 			}
 			buf = ret;
-			free_address(&paddr);
+
+			free(mb.phrase);
+			free(mb.addr_spec);
 		} else
 		{
 			char *tolook;

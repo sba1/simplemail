@@ -38,6 +38,7 @@
 
 #include "dlwnd.h"
 #include "mainwnd.h"
+#include "subthreads.h"
 #include "tcpip.h"
 
 #include "pop3.h"
@@ -113,7 +114,7 @@ int pop3_login(struct pop3_server *server)
    buf = malloc(len);   
    if(buf != NULL)
    {
-      dl_set_status("Sending username...");
+      thread_call_parent_function_sync(dl_set_status,1,"Sending username...");
    
       sprintf(buf, "USER %s\r\n", server->login);
       if(send(server->socket, buf, strlen(buf), 0) != -1)
@@ -125,7 +126,7 @@ int pop3_login(struct pop3_server *server)
             
             if(strncmp(buf, "+OK", 3) == 0)
             {
-               dl_set_status("Sending password...");
+               thread_call_parent_function_sync(dl_set_status,1,"Sending password...");
                
                sprintf(buf, "PASS %s\r\n", server->passwd);
                if(send(server->socket, buf, strlen(buf), 0) != -1)
@@ -137,7 +138,7 @@ int pop3_login(struct pop3_server *server)
             
                      if(strncmp(buf, "+OK", 3) == 0)
                      {
-                        dl_set_status("Login successful!");
+                        thread_call_parent_function_sync(dl_set_status,1,"Login successful!");
                         rc = 1;
                      }
                      else
@@ -195,7 +196,7 @@ int pop3_stat(struct pop3_server *server)
    buf = malloc(1024);
    if(buf != NULL)
    {
-      dl_set_status("Getting statistics...");
+      thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
       if(send(server->socket, "STAT\r\n", 6, 0) != -1)
       {
          got = recv(server->socket, buf, 1023, 0);
@@ -248,7 +249,7 @@ int pop3_quit(struct pop3_server *server)
    buf = malloc(1024);
    if(buf != NULL)
    {
-      dl_set_status("Logging out...");
+      thread_call_parent_function_sync(dl_set_status,1,"Logging out...");
       if(send(server->socket, "QUIT\r\n", 6, 0) != -1)
       {
          got = recv(server->socket, buf, 1023, 0);
@@ -321,7 +322,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                   while(isdigit(*str++));
                   
                   size = atol(str);
-                  dl_init_gauge_byte(size);
+                  thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
                   sprintf(buf, "RETR %ld\r\n", nr);
                   send(server->socket, buf, strlen(buf), 0);
@@ -332,7 +333,9 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                      {
                         unsigned long i=0;
                         int running = TRUE;
-                        struct mail *mail = mail_create();
+
+/* The scanning while downloading is currently disabled */
+/*                        struct mail *mail = mail_create();
 
                         if (mail)
                         {
@@ -341,7 +344,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                               struct mail_scan ms;
                               int scan_more = 1;
 
-                              mail_scan_buffer_start(&ms,mail);
+                              mail_scan_buffer_start(&ms,mail);*/
                               buf[got] = 0;
                         
                               str = strstr(buf, "\r\n");
@@ -351,14 +354,14 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                                  fwrite(str, strlen(str), 1, fp);
 
                                  /* scan the headers */
-                                 scan_more = mail_scan_buffer(&ms,buf,strlen(buf));
+/*                                 scan_more = mail_scan_buffer(&ms,buf,strlen(buf));*/
                               }  
                                  
                               rc = TRUE;
 
                               do
                               {
-                                 if(dl_checkabort())
+                                 if(thread_call_parent_function_sync(dl_checkabort,0))
                                  {
                                     tell("Aborted");
                                     rc = FALSE;
@@ -369,7 +372,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                                  if(got != 0)
                                  {
                                     i += got;
-                                    dl_set_gauge_byte(i);
+                                    thread_call_parent_function_sync(dl_set_gauge_byte,1,i);
 
                                     buf[got] = 0;
                                     str = strstr(buf, "\r\n.\r\n");
@@ -382,10 +385,10 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                                     fwrite(buf, strlen(buf), 1, fp);
 
                                     /* scan the headers now */
-                                    if (scan_more)
+/*                                    if (scan_more)
                                     {
                                        scan_more = mail_scan_buffer(&ms,buf,strlen(buf));
-                                    }
+                                    }*/
                                  }
                                  else
                                  {
@@ -394,21 +397,23 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
                               }
                               while(running);
                               
-                              if(rc != FALSE)
+/*                              if(rc != FALSE)
                               {
                                  mail_scan_buffer_end(&ms);
                                  mail_process_headers(mail);
                                  callback_new_mail_arrived(mail);
                               }  
                            }
-                        }
+                        }*/
                         
                         if(rc != FALSE)
                         {
-                           dl_set_gauge_byte(size);
+                           thread_call_parent_function_sync(dl_set_gauge_byte,1,size);
                            fclose(fp);
                            fp = NULL;
-                           
+
+                           thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
+
                            if(Errno())
                            {
                               tell("Error retrieving mail!");
@@ -598,10 +603,7 @@ int pop3_del_mail(struct pop3_server *server, unsigned long nr)
    return(rc);
 }
 
-/*
-** Download mails.
-*/
-int pop3_dl(struct pop3_server *server)
+static int pop3_really_dl(struct pop3_server *server)
 {
    int rc;
    int mail_amm;
@@ -610,11 +612,12 @@ int pop3_dl(struct pop3_server *server)
    
    if(open_socket_lib())
    {
-      dl_set_status("Connecting to server..."); 
+			thread_call_parent_function_sync(dl_set_status,1,"Connecting to server...");
+
       server->socket = tcp_connect(server->name, server->port);
       if(server->socket != SMTP_NO_SOCKET)
       {
-         dl_set_status("Waiting for login...");
+         thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
          if(pop3_wait_login(server))
          {
             if(pop3_login(server))
@@ -625,9 +628,8 @@ int pop3_dl(struct pop3_server *server)
                   unsigned long i;
                   char path[2048];
                   
-                  dl_init_gauge_mail(mail_amm);
-                  
-                  dl_set_status("Receiving mails...");
+                  thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
+                  thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
 
                   getcwd(path, 255);
                   sm_makedir("PROGDIR:.folders/income");
@@ -642,7 +644,7 @@ int pop3_dl(struct pop3_server *server)
                   
                      for(i = 1; i <= mail_amm; i++)
                      {
-                        dl_set_gauge_mail(i);
+                        thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
                         if(pop3_get_mail(server, i))
                         {
                            if(!pop3_del_mail(server, i))
@@ -673,4 +675,30 @@ int pop3_dl(struct pop3_server *server)
    }
    
    return(rc);
+}
+
+static int pop3_entry(struct pop3_server *server)
+{
+	struct pop3_server copy_server;
+
+	copy_server.name = mystrdup(server->name);
+	copy_server.port = server->port;
+	copy_server.login = mystrdup(server->login);
+	copy_server.passwd = mystrdup(server->passwd);
+	copy_server.socket = server->socket;
+
+	if (thread_parent_task_can_contiue())
+	{
+		pop3_really_dl(&copy_server);
+		thread_call_parent_function_sync(dl_window_close,0);
+	}
+	return 0;
+}
+
+/*
+** Download mails.
+*/
+int pop3_dl(struct pop3_server *server)
+{
+	return thread_start(pop3_entry,server);
 }

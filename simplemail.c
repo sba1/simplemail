@@ -28,6 +28,7 @@
 #include "gui_main.h"
 #include "mainwnd.h"
 #include "readwnd.h"
+#include "subthreads.h"
 
 #include "addressbook.h"
 #include "configuration.h"
@@ -165,6 +166,21 @@ void callback_new_mail_arrived(struct mail *mail)
 	main_refresh_folder(folder_incoming());
 }
 
+/* a new mail has been arrived, only the filename is given */
+void callback_new_mail_arrived_filename(char *filename)
+{
+	struct mail *mail;
+	char buf[256];
+
+	getcwd(buf, sizeof(buf));
+	chdir(folder_incoming()->path);
+
+	if ((mail = mail_create_from_file(filename)))
+		callback_new_mail_arrived(mail);
+
+	chdir(buf);
+}
+
 /* a new mail has been written */
 void callback_new_mail_written(struct mail *mail)
 {
@@ -252,9 +268,13 @@ int main(void)
 	init_addressbook();
 	if (init_folders())
 	{
-		init_socket_lib();
-		gui_main();
-		folder_delete_deleted();
+		if (init_threads())
+		{
+			init_socket_lib();
+			gui_main();
+			folder_delete_deleted();
+			cleanup_threads();
+		}
 	}
 	cleanup_addressbook();
 	return 0;

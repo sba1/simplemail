@@ -25,6 +25,7 @@
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "subthreads.h"
 
 __near long __stack = 30000;
 
@@ -36,13 +37,18 @@ Object *App;
 void loop(void)
 {
 	ULONG sigs = 0;
+	ULONG thread_m = thread_mask();
 
 	while((LONG) DoMethod(App, MUIM_Application_NewInput, &sigs) != MUIV_Application_ReturnID_Quit)
 	{
 		if (sigs)
 		{
-			sigs = Wait(sigs | SIGBREAKF_CTRL_C);
+			sigs = Wait(sigs | SIGBREAKF_CTRL_C | thread_m);
 			if (sigs & SIGBREAKF_CTRL_C) break;
+			if (sigs & thread_m)
+			{
+				thread_handle();
+			}
 		}
 	}
 }

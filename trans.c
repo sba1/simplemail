@@ -30,49 +30,38 @@
 #include "pop3.h"
 #include "simplemail.h"
 #include "smtp.h"
+#include "support.h"
 #include "tcp.h"
 
 #include "io.h" /* io.c should be removed after stuff has been moved to support.h */
 
 int mails_dl(void)
 {
-	struct pop3_server *server;
+	struct pop3_server server;
 
-	server = malloc(sizeof(struct pop3_server));
+	memset(&server,0,sizeof(server));
 
-	server->name = malloc(strlen(user.config.pop_server) + 1);
-	strcpy(server->name, user.config.pop_server);
-	
-	server->port = 110;
-	
-	server->login = malloc(strlen(user.config.pop_login) + 1);
-	strcpy(server->login, user.config.pop_login);
-	
-	server->passwd = malloc(strlen(user.config.pop_password) + 1);
-	strcpy(server->passwd, user.config.pop_password);
+	server.name = user.config.pop_server;
+	server.port = 110;
+	server.login = user.config.pop_login;
+	server.passwd = user.config.pop_password;
+	server.socket = SMTP_NO_SOCKET;
 
-	server->socket = SMTP_NO_SOCKET;
-
-	if (!server->name)
+	if (!server.name)
 	{
 		tell("Please configure a pop3 server!");
 		return(0);
 	}
 
-	dl_set_title(server->name);
+	dl_set_title(server.name);
 	dl_window_open();
 
-	/* Here we must create a new task which then downloads the mails */
-	pop3_dl(server);
+	if (!pop3_dl(&server))
+	{
+		dl_window_close();
+	}
 
-	dl_window_close();
-
-	free(server->name);
-	free(server->login);
-	free(server->passwd);
-	free(server);
-
-	return(0);
+	return 0;
 }
 
 int mails_upload(void)

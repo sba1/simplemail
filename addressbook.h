@@ -82,6 +82,7 @@ struct addressbook_entry *addressbook_create_group(void);
 struct addressbook_entry *addressbook_new_group(struct addressbook_entry *list);
 struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *entry);
 void addressbook_free_entry(struct addressbook_entry *entry);
+char *addressbook_get_realname(char *email);
 char *addressbook_get_address_str(struct addressbook_entry *entry);
 char *addressbook_get_expand_str(char *unexpand);
 char *addressbook_complete_address(char *address);

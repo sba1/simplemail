@@ -282,6 +282,17 @@ static struct addressbook_entry *addressbook_find_entry(struct addressbook_entry
 }
 
 /**************************************************************************
+ Returns the realname of the given e-Mail address. NULL if e-mail is
+ not in the addressbook
+**************************************************************************/
+char *addressbook_get_realname(char *email)
+{
+	struct addressbook_entry *entry = addressbook_find_entry(NULL, email, 1, NULL, ADDRESSBOOK_FIND_ENTRY_EMAIL);
+	if (entry) return entry->person.realname;
+	return NULL;
+}
+
+/**************************************************************************
  Duplicates a given entry. If it is a group, the group members are not
  duplicated!
 **************************************************************************/

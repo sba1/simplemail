@@ -1414,6 +1414,24 @@ struct mail *folder_find_best_mail_to_select(struct folder *folder)
 }
 
 /******************************************************************
+ Returns the index (starting with 0) of the mail in this folder.
+ -1 if mail is not found.
+*******************************************************************/
+int folder_get_index_of_mail(struct folder *f, struct mail *mail)
+{
+	int index = 0;
+	void *handle = 0;
+	struct mail *m;
+
+	while ((m = folder_next_mail(f, &handle)))
+	{
+		if (m == mail) return index;
+		index ++;
+	}
+	return -1;
+}
+
+/******************************************************************
  Move a mail from source folder to a destination folder. 0 if the
  moving has failed.
  If mail has sent status and moved to a outgoing drawer it get's

@@ -52,6 +52,12 @@ static GtkWidget *config_account_receive_stls_checkbox;
 static GtkObject *config_account_send_port_spin_adj;
 static GtkWidget *config_account_send_port_spin;
 static GtkWidget *config_account_send_server_text;
+static GtkWidget *config_account_send_login_text;
+static GtkWidget *config_account_send_password_text;
+static GtkWidget *config_account_send_auth_checkbox;
+static GtkWidget *config_account_send_ip_checkbox;
+static GtkWidget *config_account_send_secure_checkbox;
+static GtkWidget *config_account_send_login_checkbox;
 
 
 #if 0
@@ -512,17 +518,10 @@ static void init_account_group(void)
   GtkWidget *label14;
   GtkWidget *label15;
   GtkWidget *hbox13;
-  GtkWidget *config_account_send_login_text;
   GtkWidget *label17;
-  GtkWidget *config_account_send_password_text;
-  GtkWidget *config_account_send_auth_checkbox;
   GtkWidget *hbox10;
-  GtkWidget *config_account_send_ip_checkbox;
-  GtkWidget *config_account_send_secure_checkbox;
-  GtkWidget *config_account_send_login_checkbox;
   GtkWidget *hbox11;
   GtkWidget *label16;
-  GtkWidget *config_account_send_port_text;
   GtkWidget *label5;
 
   config_account_box = gtk_vbox_new (FALSE, 0);
@@ -892,17 +891,16 @@ static void on_config_apply_button_clicked(GtkButton *button, gpointer user_data
 	account->pop->nodupl = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_avoid_checkbox));
 	account->pop->port = gtk_spin_button_get_value_as_int(GTK_WIDGET(config_account_receive_port_spin));
 
-/*	account->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
-	account->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
-	account->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
-	account->smtp->secure = xget(account_send_secure_check, MUIA_Selected);*/
+	account->smtp->port = gtk_spin_button_get_value_as_int(GTK_WIDGET(config_account_send_port_spin));
+	account->smtp->ip_as_domain = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_ip_checkbox));
+	account->smtp->pop3_first = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_login_checkbox));
+	account->smtp->secure = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_secure_checkbox));
 	account->smtp->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_server_text)));
-/*	account->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
-	account->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
-	account->smtp->auth_password = mystrdup((char*)xget(account_send_password_string, MUIA_String_Contents));
-*/
-	insert_config_account(account);
+	account->smtp->auth = gtk_toggle_button_get_active(GTK_WIDGET(config_account_send_auth_checkbox));
+	account->smtp->auth_login = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_login_text)));
+	account->smtp->auth_password = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_password_text)));
 
+	insert_config_account(account);
 
 	account_free(account);
 
@@ -932,7 +930,15 @@ static void set_account_group(struct account *account)
 	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_stls_checkbox),account->pop->stls);
 	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_avoid_checkbox),account->pop->nodupl);
 	gtk_spin_button_set_value(GTK_WIDGET(config_account_receive_port_spin),account->pop->port);
+	
 	gtk_entry_set_text(GTK_WIDGET(config_account_send_server_text),SAFESTR(account->smtp->name));
+	gtk_spin_button_set_value(GTK_WIDGET(config_account_send_port_spin),account->smtp->port);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_ip_checkbox),account->smtp->ip_as_domain);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_login_checkbox),account->smtp->pop3_first);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_secure_checkbox),account->smtp->secure);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_send_auth_checkbox),account->smtp->auth);
+	gtk_entry_set_text(GTK_WIDGET(config_account_send_login_text),SAFESTR(account->smtp->auth_login));
+	gtk_entry_set_text(GTK_WIDGET(config_account_send_password_text),SAFESTR(account->smtp->auth_password));
 }
 
 /******************************************************************

@@ -15,7 +15,7 @@
 .bra {
 .ket }
 
-xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --add-comments -o po/simplemail.pot
+xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
 if not exists po/{LANG}.po
   copy po/simplemail.pot po/{LANG}.pox
 else

@@ -500,7 +500,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char *to = (char*)xget(data->to_string, MUIA_UTF8String_Contents);
 		char *cc = (char*)xget(data->cc_string, MUIA_UTF8String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
-		char *reply = (char*)xget(data->reply_string, MUIA_UTF8String_Contents);
+		char *reply = (char*)xget(data->reply_string, MUIA_String_Contents);
 		struct composed_mail new_mail;
 
 		/* update the current attachment */
@@ -867,7 +867,7 @@ int compose_window_open(struct compose_args *args)
 		MUIA_Window_Title, _("SimpleMail - Compose Message"),
 		  
 		WindowContents, main_group = VGroup,
-			Child, reply_string = BetterStringObject, MUIA_ShowMe, FALSE, End,
+			Child, reply_string = StringObject, MUIA_ShowMe, FALSE, End,
 
 			Child, ColGroup(2),
 				Child, MakeLabel(_("_From")),

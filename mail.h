@@ -78,6 +78,7 @@ struct mail
 	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;
 	char *content_id; /* id of the content */
+	char *content_name;
 
 	unsigned int text_begin; /* the beginning of the mail's text */
 	unsigned int text_len; /* the length of the mails text */

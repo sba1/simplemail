@@ -1335,9 +1335,9 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 				char *fwd_text;
 				char *from = mail_find_header_contents(mail_array[i],"from");
 				struct phrase *phrase;
-				
+
 				phrase = phrase_find_best(from);
-				
+
 				if (phrase)
 				{
 					/* add the welcome phrase */
@@ -1364,7 +1364,7 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 					} else modified_text = stradd(modified_text,fwd_text);
 					free(fwd_text);
 				}
-				
+
 				if (phrase)
 				{
 					/* add the closing phrase */
@@ -1393,7 +1393,7 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 						{
 							memcpy(new_part->decoded_data,attach_data,attach_len);
 							new_part->decoded_len = attach_len;
-							new_part->filename = mystrdup(mail_iter->filename);
+							new_part->content_name = mystrdup(mail_iter->content_name);
 							new_part->content_type = mystrdup(mail_iter->content_type);
 							new_part->content_subtype = mystrdup(mail_iter->content_subtype);
 							new_part->parent_mail = m;
@@ -1622,13 +1622,13 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("content-disposition",header->name))
 		{
 			/* Check the Content-Disposition of the whole mail */
-			if (!mail->filename)
+			if (!mail->content_name)
 			{
 				char *fn = mystristr(buf,"filename=");
 				if (fn)
 				{
 					fn += sizeof("filename=")-1;
-					parse_value(fn,&mail->filename);
+					parse_value(fn,&mail->content_name);
 				}
 			}
 		} else if (!mystricmp("content-type",header->name))
@@ -1677,7 +1677,7 @@ int mail_process_headers(struct mail *mail)
 										if (!mystricmp(dest.attribute,"name"))
 										{
 											if (dest.attribute) free(dest.attribute);
-											if (!mail->filename) mail->filename = dest.value;
+											if (!mail->content_name) mail->content_name = dest.value;
 											else
 											{
 												if (dest.value) free(dest.value);
@@ -1763,8 +1763,10 @@ int mail_process_headers(struct mail *mail)
 	}
 
 	/* if no filename is given set one */
-	if (!mail->filename)
-		mail->filename = mystrdup(mail->content_type);
+	if (!mail->content_name)
+	{
+		mail->content_name = mystrdup(mail->content_type);
+	}
 
 
 
@@ -2212,6 +2214,7 @@ void mail_free(struct mail *mail)
 		mail_free(mail->multipart_array[i]); /* recursion */
 	}
 
+
 	if (mail->extra_text) free(mail->extra_text);
 
 	if (mail->message_id) free(mail->message_id);
@@ -2220,10 +2223,12 @@ void mail_free(struct mail *mail)
 	if (mail->content_type) free(mail->content_type);
 	if (mail->content_subtype) free(mail->content_subtype);
 	if (mail->content_id) free(mail->content_id);
+	if (mail->content_name) free(mail->content_name);
 
 	if (mail->decoded_data) free(mail->decoded_data);
 	if (mail->filename && mail->text) free(mail->text);
 	if (mail->filename) free(mail->filename);
+
 	free(mail);
 }
 

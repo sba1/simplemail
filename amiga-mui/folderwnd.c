@@ -36,6 +36,7 @@
 
 #include "folder.h"
 #include "simplemail.h"
+#include "smintl.h"
 
 #include "folderwnd.h"
 #include "muistuff.h"
@@ -84,10 +85,10 @@ static void init_folder(void)
 	Object *ok_button, *cancel_button;
 	static char *type_array[5];
 
-	type_array[0] = "received";
-	type_array[1] = "sent";
-	type_array[2] = "received and sent";
-	type_array[3] = "mailinglist";
+	type_array[0] = _("received");
+	type_array[1] = _("sent");
+	type_array[2] = _("received and sent");
+	type_array[3] = _("mailinglist");
 
 	folder_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('F','O','L','D'),
@@ -101,20 +102,20 @@ static void init_folder(void)
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 
-				Child, path_label = MakeLabel("Path"),
+				Child, path_label = MakeLabel(_("Path")),
 				Child, path_string = BetterStringObject,
 					TextFrame,
 					MUIA_BetterString_NoInput, TRUE,
 					End,
 
-				Child, type_label = MakeLabel("_Type"),
-				Child, type_cycle = MakeCycle("_Type",type_array),
+				Child, type_label = MakeLabel(_("_Type")),
+				Child, type_cycle = MakeCycle(_("_Type"),type_array),
 				End,
 
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, ok_button = MakeButton("_Ok"),
-				Child, cancel_button = MakeButton("_Cancel"),
+				Child, ok_button = MakeButton(_("_Ok")),
+				Child, cancel_button = MakeButton(_("_Cancel")),
 				End,
 			End,
 		End;
@@ -140,7 +141,7 @@ void folder_edit(struct folder *f)
 
 	if (f->special == FOLDER_SPECIAL_GROUP)
 	{
-		set(folder_wnd,MUIA_Window_Title,"SimpleMail - Edit folder group");
+		set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
 		if (!group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);
@@ -153,7 +154,7 @@ void folder_edit(struct folder *f)
 		}
 	} else
 	{
-		set(folder_wnd,MUIA_Window_Title, "SimpleMail - Edit folder");
+		set(folder_wnd,MUIA_Window_Title, _("SimpleMail - Edit folder"));
 		if (group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);
@@ -198,14 +199,14 @@ void init_new_folder(void)
 		MUIA_Window_Title, "SimpleMail - New folder",
 		WindowContents, VGroup,
 			Child, ColGroup(2),
-				Child, MakeLabel("Name"),
+				Child, MakeLabel(_("Name")),
 				Child, new_folder_name_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 
-				Child, MakeLabel("Path"),
+				Child, MakeLabel(_("Path")),
 				Child, PopaslObject,
 					ASLFR_DrawersOnly, TRUE,
 					MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
@@ -218,8 +219,8 @@ void init_new_folder(void)
 				End,
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, create_button = MakeButton("_OK"),
-				Child, cancel_button = MakeButton("_Cancel"),
+				Child, create_button = MakeButton(_("_OK")),
+				Child, cancel_button = MakeButton(_("_Cancel")),
 				End,
 			End,
 		End;

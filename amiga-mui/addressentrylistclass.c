@@ -35,9 +35,13 @@
 #include <proto/intuition.h>
 
 #include "addressbook.h"
+#include "codesets.h"
+#include "configuration.h"
 #include "debug.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support.h"
+#include "support_indep.h"
 
 #include "addressentrylistclass.h"
 #include "compiler.h"
@@ -52,6 +56,13 @@ struct AddressEntryList_Data
 	struct Hook display_hook;
 
 	ULONG type;
+
+	char alias_buf[64];
+	char realname_buf[64];
+	char description_buf[128];
+	char email_buf[128];
+
+	char *pattern;
 
 	/* Menu */
 	Object *title_menu;
@@ -87,13 +98,44 @@ STATIC ASM SAVEDS VOID addressentry_display(REG(a0,struct Hook *h),REG(a2,Object
 	char **array = msg->strings;
 	char **preparse = msg->preparses;
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)msg->entry;
+	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)h->h_Data;
 
 	if (entry)
 	{
-		*array++ = entry->realname;
-		*array++ = entry->alias;
-		*array++ = entry->description;
+		utf8tostr(entry->alias, data->alias_buf, sizeof(data->alias_buf), user.config.default_codeset);
+		utf8tostr(entry->realname, data->realname_buf, sizeof(data->realname_buf), user.config.default_codeset);
+		utf8tostr(entry->description, data->description_buf, sizeof(data->description_buf), user.config.default_codeset);
+
+		*array++ = data->realname_buf;
+		*array++ = data->alias_buf;
+		*array++ = data->description_buf;
+
 		if (entry->email_array) *array = entry->email_array[0];
+		else *array = NULL;
+
+		if (data->pattern)
+		{
+			int pl = strlen(data->pattern);
+			int i;
+
+			if (!utf8stricmp_len(entry->alias, data->pattern, pl)) preparse[1] = "\033b";
+			if (!utf8stricmp_len(entry->realname, data->pattern, pl)) preparse[0] = "\033b";
+
+			for (i=0;i<array_length(entry->email_array);i++)
+			{
+				if (!utf8stricmp_len(entry->email_array[i],data->pattern, pl))
+				{
+					/* Check if this email is displayed, if not append it */
+					if (i != 0)
+					{
+						sm_snprintf(data->email_buf, sizeof(data->email_buf), "%s,\033b%s", entry->email_array[0], entry->email_array[1]);
+						*array = data->email_buf;
+					} else preparse[3] = "\033b";
+					break;
+				}
+			}
+
+		}
 	} else
 	{
 		*array++ = Q_("?people:Name");
@@ -143,7 +185,6 @@ STATIC VOID AddressEntryList_UpdateFormat(struct IClass *cl,Object *obj)
 STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressEntryList_Data *data;
-	ULONG type;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Draggable, TRUE,
@@ -157,7 +198,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 	init_hook(&data->construct_hook,(HOOKFUNC)addressentry_construct);
 	init_hook(&data->compare_hook,(HOOKFUNC)addressentry_compare);
 	init_hook(&data->destruct_hook,(HOOKFUNC)addressentry_destruct);
-	init_hook(&data->display_hook,(HOOKFUNC)addressentry_display);
+	init_hook_with_data(&data->display_hook,(HOOKFUNC)addressentry_display,data);
 
 	SetAttrs(obj,
 						MUIA_NList_ConstructHook2, &data->construct_hook,
@@ -196,6 +237,7 @@ STATIC ULONG AddressEntryList_New(struct IClass *cl,Object *obj,struct opSet *ms
 STATIC ULONG AddressEntryList_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressEntryList_Data *data = (struct AddressEntryList_Data*)INST_DATA(cl,obj);
+	free(data->pattern);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -211,6 +253,9 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
 	if (data->type == MUIV_AddressEntryList_Type_Match)
 		pattern = msg->pattern;
 	else pattern = NULL;
+
+	free(data->pattern);
+	data->pattern = mystrdup(pattern);
 
 	set(obj, MUIA_NList_Quiet, TRUE);
 	DoMethod(obj, MUIM_NList_Clear);

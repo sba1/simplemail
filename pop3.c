@@ -36,6 +36,7 @@
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -58,7 +59,7 @@ static char *pop3_receive_answer(struct connection *conn)
 	char *answer;
 	if (!(answer = tcp_readln(conn)))
 	{
-		tell_from_subtask("Error receiving data from host!");
+		tell_from_subtask(N_("Error receiving data from host!"));
 		return NULL;
 	}
 	if (!strncmp(answer,"+OK",3)) return answer+3;
@@ -81,26 +82,26 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 {
 	char buf[256];
 
-	thread_call_parent_function_sync(dl_set_status,1,"Sending username...");
+	thread_call_parent_function_async(dl_set_status,1,N_("Sending username..."));
 
 	sprintf(buf, "USER %s\r\n",server->login);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn))
 	{
-		tell_from_subtask("Error while identifing the user");
+		tell_from_subtask(N_("Error while identifing the user"));
 		return 0;
 	}
 
-	thread_call_parent_function_sync(dl_set_status,1,"Sending password...");
+	thread_call_parent_function_async(dl_set_status,1,N_("Sending password..."));
 	sprintf(buf,"PASS %s\r\n",server->passwd);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn))
 	{
-		tell_from_subtask("Error while identifing the user");
+		tell_from_subtask(N_("Error while identifing the user"));
 		return 0;
 	}
 
-	thread_call_parent_function_sync(dl_set_status,1,"Login successful!");
+	thread_call_parent_function_async(dl_set_status,1,N_("Login successful!"));
 	
 	return 1;
 }
@@ -297,7 +298,7 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 {
 	if (!server->nodupl) return 0;
 
-	thread_call_parent_function_sync(dl_set_status,1,"Checking for mail duplicates...");
+	thread_call_parent_function_async(dl_set_status,1,N_("Checking for mail duplicates..."));
 	if (tcp_write(conn,"UIDL\r\n",6) == 6)
 	{
 		char *answer;
@@ -351,11 +352,11 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	int i,amm,size,mails_add = 0,cont = 0;
 	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
 
-	thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
+	thread_call_parent_function_async(dl_set_status,1,N_("Getting statistics..."));
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
 	if (!(answer = pop3_receive_answer(conn)))
 	{
-		tell_from_subtask("Could not server statistics");
+		tell_from_subtask(N_("Could not get server statistics"));
 		return 0;
 	}
 
@@ -387,7 +388,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
     uidl_remove_unused(uidl,mail_array);
   }
 
-	thread_call_parent_function_sync(dl_set_status,1,"Getting mail sizes...");
+	thread_call_parent_function_async(dl_set_status,1,N_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
 	if (tcp_write(conn,"LIST\r\n",6) != 6) return mail_array;
@@ -396,7 +397,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (!(answer = pop3_receive_answer(conn))) return mail_array;
 
 	/* Freeze the list which displays the e-Mails */
-	thread_call_parent_function_sync(dl_freeze_list,0);
+	thread_call_parent_function_async(dl_freeze_list,0);
 
   /* Encounter the sizes of the mails, if we find a mail *
    * with a bigger size notify the transfer window       */
@@ -417,13 +418,13 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if ((receive_preselection != 0) && (msize > receive_size * 1024))
 		{
 			/* add this mail to the transfer window */
-			thread_call_parent_function_sync(dl_insert_mail,3,mno,mail_array[mno].flags,msize);
+			thread_call_parent_function_async(dl_insert_mail,3,mno,mail_array[mno].flags,msize);
 			mails_add = 1;
 		}
 	}
 
 	/* Thaw the list which displays the e-Mails */
-	thread_call_parent_function_sync(dl_thaw_list,0);
+	thread_call_parent_function_async(dl_thaw_list,0);
 
 	/* No user interaction wanted */
 	if (receive_preselection == 0) return mail_array;
@@ -448,7 +449,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				if (!(answer = pop3_receive_answer(conn)))
 				{
 					/* -ERR has been returned, what means that TOP is not supported */
-					thread_call_parent_function_sync(dl_set_status,1,"Couldn't receive more statistics");
+					thread_call_parent_function_async(dl_set_status,1,N_("Couldn't receive more statistics"));
 					break;
 				}
 
@@ -465,10 +466,10 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				mail_scan_buffer_end(&ms);
 				mail_process_headers(m);
 
-				/* Tell the gui about the mail info */
+				/* Tell the gui about the mail info (not asynchron!)*/
 				thread_call_parent_function_sync(dl_insert_mail_info, 4, i, m->from, m->subject, m->seconds);
 
-				/* Check if we should receive more statitics */
+				/* Check if we should receive more statitics (also not asynchron)*/
 				if (!(int)thread_call_parent_function_sync(dl_more_statistics,0)) break;
 
 				mail_free(m);
@@ -481,7 +482,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		/* let the user select which mails (s)he wants */
 		int start;
 
-		thread_call_parent_function_sync(dl_set_status,1,"Waiting for user interaction");
+		thread_call_parent_function_async(dl_set_status,1,N_("Waiting for user interaction"));
 		if (!(start = thread_call_parent_function_sync(dl_wait,0)))
 			return NULL;
 
@@ -501,7 +502,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 **************************************************************************/
 static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
-	thread_call_parent_function_sync(dl_set_status,1,"Logging out...");
+	thread_call_parent_function_sync(dl_set_status,1,N_("Logging out..."));
 	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
 	return pop3_receive_answer(conn)?1:0;
 }
@@ -522,7 +523,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 	if (!(fn = mail_get_new_name()))
 	{
-		tell_from_subtask("Can\'t get new filename!");
+		tell_from_subtask(N_("Can\'t get new filename!"));
 		return 0;
 	}
 
@@ -531,28 +532,28 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 	if (!(fp = fopen(fn, "w")))
 	{
-		tell_from_subtask("Can\'t open mail file!");
+		tell_from_subtask(N_("Can\'t open mail file!"));
 		free(fn);
 		return 0;
 	}
 
 	if (!(answer = pop3_receive_answer(conn)))
 	{
-		tell_from_subtask("Couldn't receive the mail");
+		tell_from_subtask(N_("Couldn't receive the mail"));
 		fclose(fp);
 		free(fn);
 		return 0;
 	}
 
 	bytes_written = 0;
-	thread_call_parent_function_sync(dl_set_gauge_byte,1,0);
+	thread_call_parent_function_async(dl_set_gauge_byte,1,0);
 
 	/* read the mail in now */
 	while (1)
 	{
 		if (!(answer = tcp_readln(conn)))
 		{
-			tell_from_subtask("Error while receiving the mail");
+			tell_from_subtask(N_("Error while receiving the mail"));
 			delete_mail = 1;
 			break;
 		}
@@ -562,19 +563,19 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 
 		if (fputs(answer,fp) == EOF)
 		{
-			tell_from_subtask("Error while writing the mail onto disk");
+			tell_from_subtask(N_("Error while writing the mail onto disk"));
 			delete_mail = 1;
 			break;
 		}
 		bytes_written += strlen(answer);
-		thread_call_parent_function_sync(dl_set_gauge_byte,1,bytes_written);
+		thread_call_parent_function_async(dl_set_gauge_byte,1,bytes_written);
 	}
 
 	fclose(fp);
 	if (delete_mail) remove(fn);
 	else
 	{
-		thread_call_parent_function_sync(callback_new_mail_arrived_filename, 1, fn);
+		thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 1, fn);
 	}
 	free(fn);
 
@@ -607,15 +608,12 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 		while (server)
 		{
 			struct connection *conn;
-			char buf[512];
 
-			sprintf(buf,"Connecting to server %s...",server->name);
-			thread_call_parent_function_sync(dl_set_title,1,server->name);
-			thread_call_parent_function_sync(dl_set_status,1,buf);
+			thread_call_parent_function_async_string(dl_connect_to_server,1,server->name);
 
 			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
-				thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
+				thread_call_parent_function_async(dl_set_status,1,N_("Waiting for login..."));
 				if (pop3_wait_login(conn,server))
 				{
 					if (pop3_login(conn,server))
@@ -631,26 +629,26 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 							int mail_amm = mail_array[0].flags;
 							char path[256];
 						
-							thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
+							thread_call_parent_function_async(dl_init_gauge_mail,1,mail_amm);
 
 							getcwd(path, 255);
 
 							if(chdir(dest_dir) == -1)
 							{
-								tell_from_subtask("Can\'t access income-folder!");
+								tell_from_subtask(N_("Can\'t access income-folder!"));
 							} else
 							{
 								for(i = 1; i <= mail_amm; i++)
 								{
-									thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
+									thread_call_parent_function_async(dl_set_gauge_mail,1,i);
 
 									if (mail_array[i].flags & MAILF_DOWNLOAD)
 									{
-										thread_call_parent_function_sync(dl_set_status,1,"Receiving mail...");
+										thread_call_parent_function_async(dl_set_status,1,N_("Receiving mail..."));
 
 										if (!pop3_get_mail(conn,server, i, mail_array[i].size))
 										{
-											tell_from_subtask("Couldn't download the mail!\n");
+											tell_from_subtask(N_("Couldn't download the mail!\n"));
 											break;
 										}
 
@@ -663,10 +661,10 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 									
 									if (mail_array[i].flags & MAILF_DELETE)
 									{
-										thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
+										thread_call_parent_function_async(dl_set_status,1,N_("Marking mail as deleted..."));
 										if (!pop3_del_mail(conn,server, i))
 										{
-											tell_from_subtask("Can\'t mark mail as deleted!");
+											tell_from_subtask(N_("Can\'t mark mail as deleted!"));
 										}
 									}
 								}
@@ -690,7 +688,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	}
 	else
 	{
-		tell_from_subtask("Cannot open the bsdsocket.library!");
+		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
 	}
 	
 	return rc;
@@ -765,7 +763,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_sync(dl_window_open,1,!called_by_auto);
+		thread_call_parent_function_async(dl_window_open,1,!called_by_auto);
 		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size,folder_directory);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}

@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-01  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/ARexx/CopySelectedMails.smrx: Small ARexx script to copy
+	  selected mails to another folder (as requested by Bifford :).
+
 2003-12-30  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/signaturecycleclass.h: Renamed MUIA_SignatureCycle_Signature

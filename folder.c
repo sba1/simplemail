@@ -973,9 +973,13 @@ struct folder *folder_add_group(char *name)
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.name = mystrdup(name);
 		node->folder.special = FOLDER_SPECIAL_GROUP;
-		
-		list_insert_tail(&folder_list,&node->node);
-		return &node->folder;
+
+		if ((node->folder.sem = thread_create_semaphore()))
+		{
+			list_insert_tail(&folder_list,&node->node);
+			return &node->folder;
+		}
+		/* leaks */
 	}
 	return NULL;
 }

@@ -31,6 +31,16 @@ void statuswnd_set_gauge(int value);
 void statuswnd_set_gauge_text(char *text);
 void statuswnd_set_status(char *text);
 void statuswnd_set_head(char *text);
+void statuswnd_mail_list_clear(void);
+void statuswnd_mail_list_freeze(void);
+void statuswnd_mail_list_thaw(void);
+void statuswnd_mail_list_insert(int mno, int mflags, int msize);
+void statuswnd_mail_list_set_info(int mno, char *from, char *subject, char *date);
+int statuswnd_mail_list_get_flags(int mno);
+int statuswnd_wait(void);
+int statuswnd_more_statistics(void);
+
+
 
 /*
 int dl_window_open(int active);

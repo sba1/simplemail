@@ -24,6 +24,7 @@ int status_open(void);
 void status_close(void);
 void status_set_title(char *title);
 void status_set_line(char *str);
+void status_set_status(char *str);
 void status_set_head(char *head);
 void status_set_connect_to_server(char *server);
 void status_init_gauge_as_bytes(int maximal);
@@ -37,7 +38,7 @@ void status_mail_list_clear(void);
 void status_mail_list_freeze(void);
 void status_mail_list_thaw(void);
 int status_wait(void);
-int status_more_statitics(void);
+int status_more_statistics(void);
 int status_check_abort(void);
 
 #endif

@@ -109,7 +109,7 @@ void status_set_connect_to_server(char *server)
 {
 	static char buf[300];
 	sprintf(buf,_("Connecting to server %s..."),server);
-	statuswnd_set_head(buf);
+	statuswnd_set_status(buf);
 }
 
 /******************************************************************
@@ -159,6 +159,9 @@ void status_set_line(char *str)
 	statuswnd_set_status(status_get_status());
 }
 
+/******************************************************************
+ Set the status text
+*******************************************************************/
 void status_set_status(char *str)
 {
 	static char *status_text;
@@ -192,12 +195,8 @@ void status_init_mail(int maximal)
 *******************************************************************/
 void status_set_mail(int current, int current_size)
 {
-//	static char buf[100];
 	mail_current = current;
 	mail_current_size = current_size;
-
-//	sprintf(buf,_("%d mails to go"), mail_maximal - mail_current + 1);
-//	statuswnd_set_gauge_text(buf);
 }
 
 /******************************************************************
@@ -206,6 +205,7 @@ void status_set_mail(int current, int current_size)
 *******************************************************************/
 void status_mail_list_insert(int mno, int mflags, int msize)
 {
+	statuswnd_mail_list_insert(mno,mflags,msize);
 }
 
 /******************************************************************
@@ -214,6 +214,7 @@ void status_mail_list_insert(int mno, int mflags, int msize)
 *******************************************************************/
 void status_mail_list_set_info(int mno, char *from, char *subject, char *date)
 {
+	statuswnd_mail_list_set_info(mno,from,subject,date);
 }
 
 /******************************************************************
@@ -222,7 +223,7 @@ void status_mail_list_set_info(int mno, char *from, char *subject, char *date)
 *******************************************************************/
 int status_mail_list_get_flags(int mno)
 {
-	return -1;
+	return statuswnd_mail_list_get_flags(mno);
 }
 
 /******************************************************************
@@ -230,6 +231,7 @@ int status_mail_list_get_flags(int mno)
 *******************************************************************/
 void status_mail_list_clear(void)
 {
+	statuswnd_mail_list_clear();
 }
 
 /******************************************************************
@@ -237,6 +239,7 @@ void status_mail_list_clear(void)
 *******************************************************************/
 void status_mail_list_freeze(void)
 {
+	statuswnd_mail_list_clear();
 }
 
 /******************************************************************
@@ -244,6 +247,7 @@ void status_mail_list_freeze(void)
 *******************************************************************/
 void status_mail_list_thaw(void)
 {
+	statuswnd_mail_list_thaw();
 }
 
 /******************************************************************
@@ -252,15 +256,15 @@ void status_mail_list_thaw(void)
 *******************************************************************/
 int status_wait(void)
 {
-	return 0;
+	return statuswnd_wait();
 }
 
 /******************************************************************
  Returns 0 if user has aborted the statistic listing
 *******************************************************************/
-int status_more_statitics(void)
+int status_more_statistics(void)
 {
-	return 0;
+	return statuswnd_more_statistics();
 }
 
 /******************************************************************

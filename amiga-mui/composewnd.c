@@ -38,6 +38,7 @@
 #include <proto/muimaster.h>
 
 #include "addressbook.h"
+#include "codecs.h"
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
@@ -228,7 +229,7 @@ static void compose_add_files(struct Compose_Data **pdata)
 					{
 						strcpy(buf,drawer);
 						AddPart(buf,data->file_req->fr_ArgList[i].wa_Name,len);
-						attach.content_type = "application/octet-stream";
+						attach.content_type = identify_file(buf);
 						attach.editable = 0;
 						attach.filename = buf;
 

@@ -449,9 +449,9 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 		{
 			if (mode == 2)
 			{
+				contents_start = buf;
 				if (!isspace(c))
 				{
-					contents_start = buf;
 					mode = 3;
 				} else
 				{

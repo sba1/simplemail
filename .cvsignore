@@ -35,3 +35,5 @@ SimpleMail.debug
 ppc-amigaos-objs
 SimpleMail.map
 project.index
+SimpleMail_rev.i
+SimpleMail_rev.s

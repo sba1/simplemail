@@ -1,0 +1,60 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(SimpleMail_rev.h)
+
+dnl Automake stuff
+AM_INIT_AUTOMAKE(SimpleMail,0.4)
+AM_CONFIG_HEADER(config.h)
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_RANLIB
+
+dnl Checks for libraries.
+AC_HAVE_LIBRARY(ssl)
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_DIRENT
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AM_PATH_GTK
+AC_FUNC_MEMCMP
+AC_CHECK_FUNCS(getcwd gethostname socket strdup strstr strtol strcasecmp strncasecmp)
+
+CFLAGS="$CFLAGS -Wall"
+GUI_CFLAGS="$GTK_CFLAGS"
+GUI_LIBS="$GTK_LIBS"
+AC_SUBST(GUI_CFLAGS)
+AC_SUBST(GUI_LIBS)
+
+AC_OUTPUT(Makefile
+          gtk/Makefile)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

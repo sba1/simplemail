@@ -68,7 +68,7 @@ static void save_contents(struct Read_Data *data, struct mail *mail);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
 
 #define MAX_READ_OPEN 10
-static int read_open[MAX_READ_OPEN];
+static struct Read_Data *read_open[MAX_READ_OPEN];
 
 #define PAGE_TEXT			0
 #define PAGE_HTML			1
@@ -571,7 +571,7 @@ static void read_window_close(struct Read_Data **pdata)
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->folder_path) free(data->folder_path);
 	mail_free(data->mail);
-	if (data->num < MAX_READ_OPEN) read_open[data->num] = 0;
+	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
 }
 
@@ -868,6 +868,11 @@ void read_window_open(char *folder, struct mail *mail)
 	struct NewMenu *nm;
 	int i;
 
+	for (num=0; num < MAX_READ_OPEN; num++)
+		if (!read_open[num]) break;
+
+	if (num == MAX_READ_OPEN) return;
+
 	/* translate the menu entries */
 	if (!(nm = malloc(sizeof(nm_untranslated)))) return;
 	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
@@ -880,9 +885,6 @@ void read_window_open(char *folder, struct mail *mail)
 			if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
 		}
 	}
-
-	for (num=0; num < MAX_READ_OPEN; num++)
-		if (!read_open[num]) break;
 
 	read_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
 
@@ -1007,7 +1009,7 @@ void read_window_open(char *folder, struct mail *mail)
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 			data->attachments_group = attachments_group;
 			data->num = num;
-			read_open[num] = 1;
+			read_open[num] = data;
 
 			init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
 

@@ -18,13 +18,11 @@
 
 /*
 ** codesets.c
-**
-** To get the tables compile this with:
-**  sc link codesets.c def=BUILD_TABLES
 */
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "codesets.h"
 #include "codesets_table.h"
@@ -136,7 +134,8 @@ typedef enum {
 	conversionOK, 		/* conversion successful */
 	sourceExhausted,	/* partial character in source, but hit end */
 	targetExhausted,	/* insuff. room in target for conversion */
-	sourceIllegal		/* source sequence is illegal/malformed */
+	sourceIllegal,		/* source sequence is illegal/malformed */
+  sourceCorrupt,    /* source contains invalid UTF-7 */ /* addded */
 } ConversionResult;
 
 typedef enum {
@@ -642,6 +641,44 @@ ConversionResult ConvertUTF8toUTF32 (
 
    --------------------------------------------------------------------- */
 
+/* Some code has been taken from the ConvertUTF7.c file (the utf7 stuff below),
+   this is the copyright notice */
+
+/* ================================================================ */
+/*
+File:   ConvertUTF7.c
+Author: David B. Goldsmith
+Copyright (C) 1994, 1996 IBM Corporation All rights reserved.
+Revisions: Header update only July, 2001.
+
+This code is copyrighted. Under the copyright laws, this code may not
+be copied, in whole or part, without prior written consent of IBM Corporation. 
+
+IBM Corporation grants the right to use this code as long as this ENTIRE
+copyright notice is reproduced in the code.  The code is provided
+AS-IS, AND IBM CORPORATION DISCLAIMS ALL WARRANTIES, EITHER EXPRESS OR
+IMPLIED, INCLUDING, BUT NOT LIMITED TO IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  IN NO EVENT
+WILL IBM CORPORATION BE LIABLE FOR ANY DAMAGES WHATSOEVER (INCLUDING,
+WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS
+INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR OTHER PECUNIARY
+LOSS) ARISING OUT OF THE USE OR INABILITY TO USE THIS CODE, EVEN
+IF IBM CORPORATION HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+BECAUSE SOME STATES DO NOT ALLOW THE EXCLUSION OR LIMITATION OF
+LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, THE ABOVE
+LIMITATION MAY NOT APPLY TO YOU.
+
+RESTRICTED RIGHTS LEGEND: Use, duplication, or disclosure by the
+government is subject to restrictions as set forth in subparagraph
+(c)(l)(ii) of the Rights in Technical Data and Computer Software
+clause at DFARS 252.227-7013 and FAR 52.227-19.
+
+This code may be protected by one or more U.S. and International
+Patents.
+
+*/
+
+
 /* ------------------------------------- */
 
 struct list codesets_list;
@@ -863,33 +900,8 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
 **************************************************************************/
 utf8 *utf8create(void *from, char *charset)
 {
-	int dest_size = 0;
-	char *dest;
-	char *src = (char*)from;
-	unsigned char c;
-	struct codeset *codeset = codesets_find(charset);
-
-	if (!codeset) return NULL;
-
-	while ((c = *src++))
-		dest_size += codeset->table[c].utf8[0];
-
-	if ((dest = malloc(dest_size+1)))
-	{
-		char *dest_ptr = dest;
-
-		for (src = (char*)from;c = *src;src++)
-		{
-			unsigned char *utf8_seq;
-
-			for(utf8_seq = &codeset->table[c].utf8[1];c = *utf8_seq;utf8_seq++)
-				*dest_ptr++ = c;
-		}
-
-		*dest_ptr = 0;
-		return dest;
-	}
-	return NULL;
+  /* utf8create_len() will stop on a null byte */
+	return utf8create_len(from,charset,0x7fffffff);
 }
 
 /**************************************************************************
@@ -904,7 +916,14 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	unsigned char c;
 	struct codeset *codeset = codesets_find(charset);
 
-	if (!codeset) return NULL;
+	if (!codeset)
+	{
+		if (!mystricmp(charset,"utf-7"))
+		{
+			return utf7ntoutf8((char *)from,from_len);
+		}
+		return NULL;
+	}
 
 	while ((c = *src++))
 		dest_size += codeset->table[c].utf8[0];
@@ -1048,3 +1067,148 @@ char *uft8toucs(char *chr, unsigned int *code)
 	return chr;
 }
 
+static char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static short invbase64[128];
+
+static char direct[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'(),-./:?";
+static char optional[] = "!\"#$%&*;<=>@[]^_`{|}";
+static char spaces[] = " \011\015\012";		/* space, tab, return, line feed */
+static char mustshiftsafe[128];
+static char mustshiftopt[128];
+
+static int needtables = 1;
+
+static void tabinit(void)
+{
+	int i, limit;
+
+	for (i = 0; i < 128; ++i)
+	{
+		mustshiftopt[i] = mustshiftsafe[i] = 1;
+		invbase64[i] = -1;
+	}
+	limit = strlen(direct);
+	for (i = 0; i < limit; ++i)
+		mustshiftopt[direct[i]] = mustshiftsafe[direct[i]] = 0;
+	limit = strlen(spaces);
+	for (i = 0; i < limit; ++i)
+		mustshiftopt[spaces[i]] = mustshiftsafe[spaces[i]] = 0;
+	limit = strlen(optional);
+	for (i = 0; i < limit; ++i)
+		mustshiftopt[optional[i]] = 0;
+	limit = strlen(base64);
+	for (i = 0; i < limit; ++i)
+		invbase64[base64[i]] = i;
+
+	needtables = 0;
+}
+
+#define DECLARE_BIT_BUFFER register unsigned long BITbuffer = 0, buffertemp = 0; int bufferbits = 0
+#define BITS_IN_BUFFER bufferbits
+#define WRITE_N_BITS(x, n) ((BITbuffer |= ( ((x) & ~(-1L<<(n))) << (32-(n)-bufferbits) ) ), bufferbits += (n) )
+#define READ_N_BITS(n) ((buffertemp = (BITbuffer >> (32-(n)))), (BITbuffer <<= (n)), (bufferbits -= (n)), buffertemp)
+
+/**************************************************************************
+ Converts a UTF7 string into UTF8
+**************************************************************************/
+char *utf7ntoutf8(char *source, int sourcelen)
+{
+	FILE *fh;
+	int base64value,base64EOF,first=0;
+	int shifted = 0;
+	char *dest = NULL;
+	DECLARE_BIT_BUFFER;
+
+	if (needtables) tabinit();
+
+	if ((fh = tmpfile()))
+	{
+		int dest_len;
+
+		while (sourcelen)
+		{
+			unsigned char c = *source++;
+			sourcelen--;
+
+			if (shifted)
+			{
+				if ((base64EOF = (!sourcelen) || (c > 0x7f) || (base64value = invbase64[c]) < 0))
+				{
+					shifted = 0;
+					/* If the character causing us to drop out was SHIFT_IN or
+					   SHIFT_OUT, it may be a special escape for SHIFT_IN. The
+					   test for SHIFT_IN is not necessary, but allows an alternate
+					   form of UTF-7 where SHIFT_IN is escaped by SHIFT_IN. This
+					   only works for some values of SHIFT_IN.
+					 */
+					if (c && sourcelen && (c == '+' || c == '-'))
+					{
+						/* get another character c */
+						unsigned char prevc = c;
+
+						c = *source++;
+
+						/* If no base64 characters were encountered, and the
+							 character terminating the shift sequence was
+							 SHIFT_OUT, then it's a special escape for SHIFT_IN.
+						*/
+						if (first && prevc == '-')
+						{
+							fputc('+',fh);
+						}
+					}
+				} else
+				{
+					/* Add another 6 bits of base64 to the bit buffer. */
+					WRITE_N_BITS(base64value, 6);
+					first = 0;
+				}
+			}
+
+			/* Extract as many full 16 bit characters as possible from the
+			   bit buffer.
+			 */
+			while (BITS_IN_BUFFER >= 16)
+			{
+				UTF32 src_utf32 = READ_N_BITS(16);
+				UTF32 *src_utf32_ptr = &src_utf32;
+				UTF8 target_utf8[10];
+				UTF8 *target_utf8_ptr = target_utf8;
+
+				ConvertUTF32toUTF8(&src_utf32_ptr,src_utf32_ptr+1,&target_utf8_ptr,target_utf8+10, strictConversion);
+
+				fwrite(target_utf8,1,target_utf8_ptr - target_utf8,fh);
+			}
+
+			if (!c) break;
+
+			if (base64EOF) BITS_IN_BUFFER = 0;
+
+			if (!shifted)
+			{
+				if (c == '+')
+				{
+					shifted = first = 1;
+				} else
+				{
+					if (c <= 0x7f)
+					{
+						fputc(c,fh);
+					} /* else the source is invalid, so we ignore this */
+				}
+			}
+		}
+
+		if ((dest_len = ftell(fh)))
+		{
+	    fseek(fh,0,SEEK_SET);
+			if ((dest = (char*)malloc(dest_len+1)))
+			{
+				fread(dest,1,dest_len,fh);
+				dest[dest_len]=0;
+			}
+		}
+	}
+
+	return dest;
+}

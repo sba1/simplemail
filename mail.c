@@ -3245,10 +3245,12 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 			if (mail->info->from_phrase)
 			{
 				fputhtmlstr(mail->info->from_phrase,fh);
-				fprintf(fh," &lt;%s&gt;",mail->info->from_addr);
+				fputs(" &lt;",fh);
+				fputhtmlstr(mail->info->from_addr,fh);
+				fputs("&gt;",fh);
 			} else
 			{
-				fputs(mail->info->from_addr,fh);
+				fputhtmlstr(mail->info->from_addr,fh);
 			}
 
 			fputs("</A></TD>",fh);
@@ -3275,8 +3277,10 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 				if (addr->realname)
 				{
 					fputhtmlstr(addr->realname,fh);
-					fprintf(fh," &lt;%s&gt;",addr->email);
-				} else fputs(addr->email,fh);
+					fputs(" &lt;",fh);
+					fputhtmlstr(addr->email,fh);
+					fputs("&gt;",fh);
+				} else fputhtmlstr(addr->email,fh);
 				fputs("</A>",fh);
 
 				if ((addr = (struct address*)node_next(&addr->node)))
@@ -3303,8 +3307,10 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 				if (addr->realname)
 				{
 					fputhtmlstr(addr->realname,fh);
-					fprintf(fh," &lt;%s&gt;",addr->email);
-				} else fputs(addr->email,fh);
+					fputs(" &lt;",fh);
+					fputhtmlstr(addr->email,fh);
+					fputs("&gt;",fh);
+				} else fputhtmlstr(addr->email,fh);
 				fputs("</A>",fh);
 
 				if ((addr = (struct address*)node_next(&addr->node)))
@@ -3354,11 +3360,10 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 				if (addr.phrase)
 				{
 					fputhtmlstr(addr.phrase,fh);
-					fprintf(fh," &lt;%s&gt;",addr.addr_spec);
-				} else
-				{
-					fputs(addr.addr_spec,fh);
-				}
+					fputs(" &lt;",fh);
+					fputhtmlstr(addr.addr_spec,fh);
+					fputs("&gt;",fh);
+				} else fputhtmlstr(addr.addr_spec,fh);
 
 				if (addr.phrase)  free(addr.phrase);
 				if (addr.addr_spec) free(addr.addr_spec);

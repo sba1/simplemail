@@ -37,7 +37,6 @@
 #include "trans.h"
 #include "folder.h"
 #include "simplemail.h"
-#include "tcpip.h"
 
 /* the current mail should be viewed */
 void callback_read_mail(void)

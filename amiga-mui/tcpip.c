@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** tcpip.c
 */
 
 #include <proto/exec.h>
@@ -27,42 +27,86 @@
 #include <amitcp/socketbasetags.h>
 #endif
 
+#include <proto/amissl.h>
+
 #include "tcpip.h"
 
 struct Library *SocketBase;
-
-static long bsd_in_use;
+static int bsd_in_use;
 
 int open_socket_lib(void)
 {
-	int rc;
-
-	rc = FALSE;
-
-	bsd_in_use++;
-	if(SocketBase == NULL)
+	if (!SocketBase)
 	{
-		SocketBase = OpenLibrary("bsdsocket.library", 4);
-		if(SocketBase != NULL)
+		if ((SocketBase = OpenLibrary("bsdsocket.library", 4)))
 		{
-		 rc = TRUE;
+			bsd_in_use++;
+			return 1;
 		}
+	} else
+	{
+		bsd_in_use++;
+		return 1;
 	}
 
-	return rc;
+	return 0;
 }
 
 void close_socket_lib(void)
 {
-	bsd_in_use--;
-
-	if(bsd_in_use == 0)
+	if (!bsd_in_use) return;
+	if (!bsd_in_use--)
 	{
-		if(SocketBase != NULL)
+		if (SocketBase)
 		{
 			CloseLibrary(SocketBase);
 			SocketBase = NULL;
 		}
+	}
+}
+
+struct Library *AmiSSLBase;
+static int ssl_in_use;
+
+int open_ssl_lib(void)
+{
+	if (!open_socket_lib()) return 0;
+
+	if (!AmiSSLBase)
+	{
+		if ((AmiSSLBase = OpenLibrary("amissl.library",1)))
+		{
+			if (!InitAmiSSL(AmiSSL_Version,
+					AmiSSL_CurrentVersion,
+					AmiSSL_Revision, AmiSSL_CurrentRevision,
+					AmiSSL_SocketBase, SocketBase,
+					/*	AmiSSL_VersionOverride, TRUE,*/ /* If you insist */
+					TAG_DONE))
+			{
+				/* Everything is ok */
+				ssl_in_use++;
+				return 1;
+			}
+			CloseLibrary(AmiSSLBase);
+		}
+	} else
+	{
+		ssl_in_use++;
+		return 1;
+	}
+
+	close_socket_lib();
+	return 0;
+}
+
+void close_ssl_lib(void)
+{
+	if (!ssl_in_use) return;
+	if (!ssl_in_use--)
+	{
+		CleanupAmiSSL(TAG_DONE);
+		CloseLibrary(AmiSSLBase);
+		close_socket_lib();
 	}
 }
 

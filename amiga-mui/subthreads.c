@@ -17,16 +17,15 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** subthreads.c
 */
 
 #include <stdarg.h>
 #include <proto/exec.h>
 
 #include "amiproc.h"
-#include "tcpip.h"
 
-#define MYDEBUG
+/*#define MYDEBUG*/
 #include "debug.h"
 
 struct ThreadMessage

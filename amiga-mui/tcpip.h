@@ -17,12 +17,16 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** tcpip.h
 */
 
 #include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
+/*#include <proto/amissl.h>*/
 
 int open_socket_lib(void);
 void close_socket_lib(void);
+int open_ssl_lib(void);
+void close_ssl_lib(void);
+
 long tcp_herrno(void);
 long tcp_errno(void);

@@ -51,6 +51,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "accountpopclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "attachmentlistclass.h"
@@ -72,8 +73,7 @@ static struct Compose_Data *compose_open[MAX_COMPOSE_OPEN];
 struct Compose_Data /* should be a customclass */
 {
 	Object *wnd;
-	Object *from_list;
-	Object *from_text;
+	Object *from_accountpop;
 	Object *to_string;
 	Object *cc_string;
 	Object *subject_string;
@@ -106,11 +106,6 @@ struct Compose_Data /* should be a customclass */
 
 	int num; /* the number of the window */
 	/* more to add */
-
-	struct Hook from_objstr_hook;
-	struct Hook from_construct_hook;
-	struct Hook from_destruct_hook;
-	struct Hook from_display_hook;
 
 	char **sign_array; /* The array which contains the signature names */
 	int sign_array_utf8count; /* The count of the array to free the memory */
@@ -596,7 +591,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
 		struct composed_mail new_mail;
 
-		DoMethod(data->from_list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&account);
+		account = (struct account*)xget(data->from_accountpop,MUIA_AccountPop_Account);
 		if (account)
 		{
 			char *fmt;
@@ -921,7 +916,7 @@ static void compose_new_active(void **msg)
 int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button;
-	Object *from_text, *from_list, *reply_string, *to_string, *cc_string, *subject_string;
+	Object *from_accountpop, *reply_string, *to_string, *cc_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
@@ -929,7 +924,6 @@ int compose_window_open(struct compose_args *args)
 	Object *quick_attach_tree;
 	Object *attach_tree, *attach_desc_string, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
-	Object *from_popobject;
 	Object *signatures_group;
 	Object *signatures_cycle;
 	Object *add_attach_button;
@@ -1019,15 +1013,7 @@ int compose_window_open(struct compose_args *args)
 /*						Child, reply_string = StringObject, MUIA_ShowMe, FALSE, End,*/
 						Child, ColGroup(2),
 							Child, MakeLabel(_("_From")),
-							Child, from_popobject = PopobjectObject,
-								MUIA_Popstring_Button, PopButton(MUII_PopUp),
-								MUIA_Popstring_String, from_text = TextObject, TextFrame, MUIA_Background, MUII_TextBack, End,
-								MUIA_Popobject_Object, NListviewObject,
-									MUIA_NListview_NList, from_list = NListObject,
-										MUIA_NList_Format, ",",
-										End,
-									End,
-								End,
+							Child, from_accountpop = AccountPopObject, End,
 							Child, MakeLabel(_("_To")),
 							Child, HGroup,
 								MUIA_Group_Spacing,0,
@@ -1180,8 +1166,7 @@ int compose_window_open(struct compose_args *args)
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
-			data->from_list = from_list;
-			data->from_text = from_text;
+			data->from_accountpop = from_accountpop;
 			data->to_string = to_string;
 			data->cc_string = cc_string;
 /*			data->reply_string = reply_string;*/
@@ -1201,22 +1186,6 @@ int compose_window_open(struct compose_args *args)
 			data->paste_button = paste_button;
 			data->undo_button = undo_button;
 			data->redo_button = redo_button;
-
-			init_hook(&data->from_construct_hook, (HOOKFUNC)from_construct);
-			init_hook(&data->from_destruct_hook, (HOOKFUNC)from_destruct);
-			init_hook(&data->from_display_hook, (HOOKFUNC)from_display);
-
-			SetAttrs(from_list,
-					MUIA_NList_ConstructHook, &data->from_construct_hook,
-					MUIA_NList_DestructHook, &data->from_destruct_hook,
-					MUIA_NList_DisplayHook, &data->from_display_hook,
-					TAG_DONE);
-
-			init_hook(&data->from_objstr_hook, (HOOKFUNC)from_objstr);
-
-			SetAttrs(from_popobject,
-					MUIA_Popobject_ObjStrHook, &data->from_objstr_hook,
-					TAG_DONE);
 
 			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
@@ -1253,24 +1222,11 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_ActiveObject, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, compose_new_active, data, MUIV_TriggerValue);
-			DoMethod(from_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, from_popobject, 2, MUIM_Popstring_Close, 1);
 			DoMethod(signatures_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, signatures_cycle, 5, MUIM_CallHook, &hook_standard, compose_set_signature, data, MUIV_TriggerValue);
 
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
-			/* Insert all from addresss */
-			{
-				struct account *account = (struct account*)list_first(&user.config.account_list);
-				while ((account))
-				{
-					if (account->smtp->name && *account->smtp->name && account->email)
-					{
-						DoMethod(from_list,MUIM_NList_InsertSingle,account,MUIV_NList_Insert_Bottom);
-					}
-					account = (struct account*)node_next(&account->node);
-				}
-				set(from_list, MUIA_NList_Active, 0);
-			}
+			DoMethod(from_accountpop, MUIM_AccountPop_Refresh);
 
 			if (args->to_change)
 			{
@@ -1282,22 +1238,7 @@ int compose_window_open(struct compose_args *args)
 				if ((from = mail_find_header_contents(args->to_change, "from")))
 				{
 					struct account *ac = account_find_by_from(from);
-					if (ac)
-					{
-						int i;
-						for (i=0;i<xget(from_list,MUIA_NList_Entries);i++)
-						{
-							struct account *ac2;
-							DoMethod(from_list,MUIM_NList_GetEntry,i,&ac2);
-							if (!ac2) continue;
-
-							if (!strcmp(ac->name,ac2->name) && !strcmp(ac->email,ac2->email))
-							{
-								set(from_list,MUIA_NList_Active,i);
-								break;
-							}
-						}
-					}
+					set(from_accountpop, MUIA_AccountPop_Account, ac);
 				}
 
 				compose_add_mail(data,args->to_change,NULL);
@@ -1360,9 +1301,6 @@ int compose_window_open(struct compose_args *args)
 
 			data->compose_action = args->action;
 			data->ref_mail = args->ref_mail;
-
-			/* Display correct from text inside the text field */
-			from_objstr(from_list, from_text);
 
 			set(wnd,MUIA_Window_Open,TRUE);
 

@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-02-26  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/smtoolbarclass.(c|h): New Method "MUIM_SMToolbar_DoMethod".
+	* amiga-mui/composewnd.c,mainwnd.c,readwnd.c: Changed notification system for
+	  the toolbarbuttons.
+
 2005-02-25  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/composewnd.c,mainwnd.c,readwnd.c: Changed Toolbar to new SMToolbar.
 	* amiga-mui/gui_main.c: Added new smtoolbarclass().

@@ -1173,166 +1173,157 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 **************************************************************************/
 int mail_process_headers(struct mail *mail)
 {
-	char *buf;
+	struct header *header = (struct header*)list_first(&mail->header_list);
 
-	/* find out the date of the mail */
-	if ((buf = mail_find_header_contents(mail,"date")))
+	while (header)
 	{
-		/* syntax should be checked before! */
-		int day,month,year,hour,min,sec;
-		parse_date(buf,&day,&month,&year,&hour,&min,&sec);
-
-		/* Time zone is missing */
-		mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;
-	}
-
-	buf = mail_find_header_contents(mail,"from");
-	if (buf) mail->from = extract_name_from_address(buf,NULL);
-	else mail->from = NULL;
-
-	buf = mail_find_header_contents(mail,"to");
-	if (buf)
-	{
-		int more;
-		mail->to = extract_name_from_address(buf,&more);
-		if (more) mail->flags |= MAIL_FLAGS_GROUP;
-	} else mail->to = NULL;
-
-	if ((buf = mail_find_header_contents(mail, "cc")))
-	{
-		mail->flags |= MAIL_FLAGS_GROUP;
-	}
-
-	if ((buf = mail_find_header_contents(mail,"subject")))
-	{
-		parse_text_string(buf,&mail->subject);
-	}
-
-	/* Check if mail is a mime mail */
-	if ((buf = mail_find_header_contents(mail, "mime-version")))
-	{
-		int version;
-		int revision;
-
-		version = atoi(buf);
-		while (isdigit(*buf)) buf++;
-		revision = atoi(buf);
-
-		mail->mime = (version << 16) | revision;
-	} else mail->mime = 0;
-
-
-	/* Check the Content-Disposition of the whole mail*/
-	if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
-	{
-		if (!mail->filename)
+		char *buf = header->contents;
+		if (!mystricmp("date",header->name))
 		{
-			char *fn = mystristr(buf,"filename=");
-			if (fn)
-			{
-				fn += sizeof("filename=")-1;
-				parse_value(fn,&mail->filename);
-			}
-		}
-	}
+			/* syntax should be checked before! */
+			int day,month,year,hour,min,sec;
+			parse_date(buf,&day,&month,&year,&hour,&min,&sec);
 
-	/* Check the content-type of the whole mail */
-	if ((buf = mail_find_header_contents(mail, "content-type")))
-	{
-		/* content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter) */
-
-		char *subtype = strchr(buf,'/');
-		if (subtype)
+			/* Time zone is missing */
+			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;
+		} else if (!mystricmp("from",header->name))
 		{
-			int len = subtype - buf;
-			if (len)
+			buf = mail_find_header_contents(mail,"from");
+			if (buf) mail->from = extract_name_from_address(buf,NULL);
+			else mail->from = NULL;
+		} else if (!mystricmp("to",header->name))
+		{
+			buf = mail_find_header_contents(mail,"to");
+			if (buf)
 			{
-				if ((mail->content_type = malloc(len+1)))
+				int more;
+				mail->to = extract_name_from_address(buf,&more);
+				if (more) mail->flags |= MAIL_FLAGS_GROUP;
+			} else mail->to = NULL;
+		} else if (!mystricmp("cc",header->name))
+		{
+			mail->flags |= MAIL_FLAGS_GROUP;
+		} else if (!mystricmp("subject",header->name))
+		{
+			parse_text_string(buf,&mail->subject);
+		} else if (!mystricmp("mime-version",header->name))
+		{
+			int version;
+			int revision;
+
+			version = atoi(buf);
+			while (isdigit(*buf)) buf++;
+			revision = atoi(buf);
+
+			mail->mime = (version << 16) | revision;
+		} else if (!mystricmp("content-disposition",header->name))
+		{
+			/* Check the Content-Disposition of the whole mail */
+			if (!mail->filename)
+			{
+				char *fn = mystristr(buf,"filename=");
+				if (fn)
 				{
-					subtype++;
+					fn += sizeof("filename=")-1;
+					parse_value(fn,&mail->filename);
+				}
+			}
+		} else if (!mystricmp("content-type",header->name))
+		{
+			/* content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter) */
 
-					strncpy(mail->content_type,buf,len);
-					mail->content_type[len]=0;
-
-					if ((subtype = parse_token(subtype,&mail->content_subtype)))
+			char *subtype = strchr(buf,'/');
+			if (subtype)
+			{
+				int len = subtype - buf;
+				if (len)
+				{
+					if ((mail->content_type = malloc(len+1)))
 					{
-						while (1)
+						subtype++;
+	
+						strncpy(mail->content_type,buf,len);
+						mail->content_type[len]=0;
+	
+						if ((subtype = parse_token(subtype,&mail->content_subtype)))
 						{
-							if (*subtype++ == ';')
+							while (1)
 							{
-								struct content_parameter *new_param;
-								struct parse_parameter dest;
-								unsigned char c;
-
-								/* Skip spaces */
-								while ((c = *subtype))
+								if (*subtype++ == ';')
 								{
-									if (!isspace(c)) break;
-									subtype++;
-								}
-
-								if (!(subtype = parse_parameter(subtype, &dest)))
-									break;
-
-								if (!mystricmp(dest.attribute,"name"))
-								{
-									if (dest.attribute) free(dest.attribute);
-									if (!mail->filename) mail->filename = dest.value;
-									else
+									struct content_parameter *new_param;
+									struct parse_parameter dest;
+									unsigned char c;
+	
+									/* Skip spaces */
+									while ((c = *subtype))
 									{
-										if (dest.value) free(dest.value);
+										if (!isspace(c)) break;
+										subtype++;
 									}
-								} else
-								{
-									if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+	
+									if (!(subtype = parse_parameter(subtype, &dest)))
+										break;
+	
+									if (!mystricmp(dest.attribute,"name"))
 									{
-										new_param->attribute = dest.attribute;
-										new_param->value = dest.value;
-										list_insert_tail(&mail->content_parameter_list,&new_param->node);
-									} else break;
-								}
-							} else break;
+										if (dest.attribute) free(dest.attribute);
+										if (!mail->filename) mail->filename = dest.value;
+										else
+										{
+											if (dest.value) free(dest.value);
+										}
+									} else
+									{
+										if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+										{
+											new_param->attribute = dest.attribute;
+											new_param->value = dest.value;
+											list_insert_tail(&mail->content_parameter_list,&new_param->node);
+										} else break;
+									}
+								} else break;
+							}
 						}
 					}
 				}
 			}
-		}
-	}
-
-	/* Content-ID */
-	if ((buf = mail_find_header_contents(mail, "Content-ID")))
-	{
-		if (*buf++ == '<')
+		} else if (!mystricmp("content-id",header->name))
 		{
-			if (!(parse_addr_spec(buf,&mail->content_id)))
+			if (*buf++ == '<')
 			{
-				/* for the non rfc conform content-id's */
-				char *buf2 = strrchr(buf,'>');
-				if (buf2)
+				if (!(parse_addr_spec(buf,&mail->content_id)))
 				{
-					if ((mail->content_id = malloc(buf2-buf+1)))
+					/* for the non rfc conform content-id's */
+					char *buf2 = strrchr(buf,'>');
+					if (buf2)
 					{
-						strncpy(mail->content_id,buf,buf2-buf);
-						mail->content_id[buf2-buf]=0;
+						if ((mail->content_id = malloc(buf2-buf+1)))
+						{
+							strncpy(mail->content_id,buf,buf2-buf);
+							mail->content_id[buf2-buf]=0;
+						}
 					}
 				}
 			}
+		} else if (!mystricmp("message-id",header->name))
+		{
+	  	if (*buf++ == '<')
+		  	parse_addr_spec(buf,&mail->message_id);
+		} else if (!mystricmp("in-reply-to",header->name))
+		{
+	  	if (*buf++ == '<')
+		  	parse_addr_spec(buf,&mail->message_reply_id);
+		} else if (!mystricmp("content-transfer-encoding",header->name))
+		{
+			mail->content_transfer_encoding = strdup(buf);
+		} else if (!mystricmp("Importance",header->name))
+		{
+			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;		
 		}
+
+		header = (struct header*)node_next(&header->node);
 	}
-
-  /* Message ID's */
-  if ((buf = mail_find_header_contents(mail, "Message-ID")))
-  {
-  	if (*buf++ == '<')
-	  	parse_addr_spec(buf,&mail->message_id);
-  }
-
-	/* In-Reply To */
-  if ((buf = mail_find_header_contents(mail, "In-Reply-To")))
-  {
-  	if (*buf++ == '<')
-	  	parse_addr_spec(buf,&mail->message_reply_id);
-  }
 
 	if (!mail->content_type || !mail->content_subtype)
 	{
@@ -1340,15 +1331,8 @@ int mail_process_headers(struct mail *mail)
 		mail->content_subtype = strdup("plain");
 	}
 
-	if ((buf = mail_find_header_contents(mail, "Content-transfer-encoding")))
-	{
-		mail->content_transfer_encoding = strdup(buf);
-	}
-
 	if (!mail->content_transfer_encoding)
-	{
 		mail->content_transfer_encoding = strdup("7bit");
-	}
 
 	if (!mystricmp(mail->content_type, "multipart"))
 	{
@@ -1357,16 +1341,10 @@ int mail_process_headers(struct mail *mail)
 			mail->flags |= MAIL_FLAGS_CRYPT;
 	}
 
-  if ((buf = mail_find_header_contents(mail, "Importance")))
-  {
-		if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
-  }
-
 	/* if no filename is given set one */
 	if (!mail->filename)
-	{
-		mail->filename = strdup("unnamed");
-	}
+		mail->filename = mystrdup("unnamed");
+
 
 
 /*

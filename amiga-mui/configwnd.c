@@ -928,10 +928,17 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
 	if (ent)
 	{
 		static char buf[320];
+		static char email[100];
+
 		utf8tostr(ent->account_name, buf, sizeof(buf), user.config.default_codeset);
 
+		if (ent->email)
+			utf8tostr(ent->email, email, sizeof(email), user.config.default_codeset);
+		else
+			strcpy(email,"-");
+
 		*array++ = buf;
-		*array++ = ent->email?ent->email:"-";
+		*array++ = email;
 		*array++ = ent->pop->name;
 		*array++ = ent->smtp->name;
 	} else

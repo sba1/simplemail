@@ -28,6 +28,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "dbx.h"
 #include "estimate.h"
 #include "filter.h"
 #include "folder.h"
@@ -1154,10 +1155,14 @@ int callback_remote_filter_mail(struct mail *mail)
 	return 0;
 }
 
-/* Import mails */
+/**
+ * Import mails from a mbox file
+ * 
+ * in_folder_ptr might be NULL.
+ */
 void callback_import_mbox(int *in_folder_ptr)
 {
-	int in_folder = *in_folder_ptr;
+	int in_folder = in_folder_ptr?*in_folder_ptr:0;
 	struct folder *f=NULL;
 	char *filename;
 
@@ -1170,6 +1175,31 @@ void callback_import_mbox(int *in_folder_ptr)
 	if (filename && *filename)
 	{
 		if (!mbox_import_to_folder(f,filename))
+		{
+			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
+		}
+	}
+	free(filename);
+}
+
+/**
+ * Import dbx mailes (outlook express)
+ */
+void callback_import_dbx(int *in_folder_ptr)
+{
+	int in_folder = in_folder_ptr?*in_folder_ptr:0;
+	struct folder *f=NULL;
+	char *filename;
+
+	if (in_folder)
+	{
+		if (!(f = main_get_folder())) return;
+	}
+
+	filename = sm_request_file(_("Choose the file which you like to import"),"",0);
+	if (filename && *filename)
+	{
+		if (!dbx_import_to_folder(f,filename))
 		{
 			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
 		}

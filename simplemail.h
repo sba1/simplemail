@@ -67,6 +67,7 @@ void callback_config(void);
 void callback_folder_active(void);
 int callback_folder_count_signatures(char *def_signature);
 void callback_import_mbox(int *in_folder_ptr);
+void callback_import_dbx(int *in_folder_ptr);
 void callback_export(void);
 
 void callback_write_mail_to(struct addressbook_entry_new *address);

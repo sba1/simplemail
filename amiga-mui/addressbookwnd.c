@@ -352,6 +352,7 @@ void person_window_open(struct addressbook_entry *entry)
 				}
 				set(realname_string, MUIA_String_Contents, entry->person.realname);
 				set(description_string, MUIA_String_Contents, entry->person.description);
+				set(alias_string, MUIA_String_Contents, entry->person.alias);
 			}
 
 			person_email_list_active(&data);

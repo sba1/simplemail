@@ -91,6 +91,7 @@ static struct MUI_Palette_Entry read_palette_entries[7];
 static Object *write_wordwrap_string;
 static Object *write_wordwrap_cycle;
 static Object *write_replywrap_check;
+static Object *write_replystripsig_check;
 
 static Object *readhtml_mail_editor;
 
@@ -369,6 +370,7 @@ static void config_use(void)
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
+	user.config.write_reply_stripsig = xget(write_replystripsig_check,MUIA_Selected);
 
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
@@ -917,6 +919,11 @@ static int init_write_group(void)
 			Child, write_replywrap_check = MakeCheck(_("Wrap before quoting"),user.config.write_reply_quote),
 			Child, HVSpace,
 			End,
+		Child, HGroup,
+			Child, MakeLabel(_("Strip signature before quoting.")),
+			Child, write_replystripsig_check = MakeCheck(_("Strip signature before quoting."),user.config.write_reply_stripsig),
+			Child, HVSpace,
+			End,	
 		End;
 
 	if (!write_group) return 0;

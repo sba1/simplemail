@@ -358,6 +358,8 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	struct mail *m;
 
+	struct TagItem tags[2];
+
 #ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(obj, MUIA_NListtree_Active);
 
@@ -366,6 +368,13 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 #else
 	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &m);
 #endif
+
+	tags[0].ti_Tag = MUIA_MailTreelist_Active;
+	tags[0].ti_Data = (ULONG)m;
+	tags[1].ti_Tag = TAG_DONE;
+
+	/* issue a notify */
+	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
 
 	if (m)
 	{

@@ -59,7 +59,7 @@
 	  Die Änderungen sind:
     <list>
      <item>Importieren vom mbox Dateien ist nun möglich</item>
-     <item>Verschiedene Speichlecks behoben (bgol) </item>
+     <item>Verschiedene Speicherlecks behoben (bgol) </item>
      <item>Das Layout wichtiger Listelmente kann nun mittels "Einstellungen/Einstellungen speichern" gesichert werden (bgol)</item>
      <item>Einfacher Remote Filter: Bestimmte Nachrichten können auf dem Server gelassen werden</item>
      <item>SimpleHTML Unterstützung ist nun in einer Shared Library</item>

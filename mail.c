@@ -1746,8 +1746,8 @@ int mail_process_headers(struct mail *mail)
 	if (!mystricmp(mail->content_type, "multipart"))
 	{
 		mail->flags |= MAIL_FLAGS_ATTACH;
-		if (!mystricmp(mail->content_subtype,"encrypted"))
-			mail->flags |= MAIL_FLAGS_CRYPT;
+		if (!mystricmp(mail->content_subtype,"encrypted")) mail->flags |= MAIL_FLAGS_CRYPT;
+		else if (!mystricmp(mail->content_subtype,"signed")) mail->flags |= MAIL_FLAGS_SIGNED;
 	}
 
 	/* if no filename is given set one */

@@ -108,6 +108,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 	{
 		struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 		static char mails_buf[32];
+		int num = folder_number_of_mails(folder);
 		APTR image;
 
 		switch (folder->special)
@@ -120,7 +121,8 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 			default: image = data->image_other; break;
 		}
 
-		sprintf(mails_buf,"%ld",folder_number_of_mails(folder));
+		if (num != -1) sprintf(mails_buf,"%ld",num);
+		else mails_buf[0] = 0;
 
 		sprintf(data->name_buf,"\33O[%08lx]",image);
 		if (folder->name) strcat(data->name_buf,folder->name);

@@ -690,17 +690,8 @@ static void main_refresh_folders_text(void)
 
 	if (folder2_text)
 	{
-		struct folder *f = folder_first();
-		int total_msg = 0;
-		int total_unread = 0;
-		int total_new = 0;
-		while (f)
-		{
-			total_msg += f->num_mails;
-			total_unread += f->unread_mails;
-			total_new += f->new_mails;
-			f = folder_next(f);
-		}
+		int total_msg,total_unread,total_new;
+		folder_get_stats(&total_msg,&total_unread,&total_new);
 		sprintf(buf, "Total:%ld New:%ld Unread:%ld",total_msg,total_new,total_unread);
 		set(folder2_text,MUIA_Text_Contents,buf);
 	}

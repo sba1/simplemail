@@ -400,6 +400,7 @@ static void prev_button_pressed(struct Read_Data **pdata)
 				folder_set_mail_status(f,prev,MAIL_STATUS_READ | (prev->status & (~MAIL_STATUS_MASK)));
 				if (prev->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
 				prev->flags &= ~MAIL_FLAGS_NEW;
+				main_refresh_folder(f);
 			}
 		}
 
@@ -430,6 +431,7 @@ static void next_button_pressed(struct Read_Data **pdata)
 				folder_set_mail_status(f,next,MAIL_STATUS_READ | (next->status & (~MAIL_STATUS_MASK)));
 				if (next->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
 				next->flags &= ~MAIL_FLAGS_NEW;
+				main_refresh_folder(f);
 			}
 		}
 

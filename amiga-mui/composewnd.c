@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
@@ -42,6 +43,7 @@
 #include "support.h"
 
 #include "addressstringclass.h"
+#include "amigasupport.h"
 #include "attachmentlistclass.h"
 #include "compiler.h"
 #include "muistuff.h"
@@ -61,6 +63,8 @@ struct Compose_Data /* should be a customclass */
 	Object *attach_tree;
 	Object *contents_page;
 
+	struct FileRequester *file_req;
+
 	struct attachment *last_attachment;
 
 	int num; /* the number of the window */
@@ -78,6 +82,7 @@ static void compose_window_close(struct Compose_Data **pdata)
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	MUI_DisposeObject(data->wnd);
+	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
 	free(data);
 }
@@ -184,6 +189,46 @@ static void compose_add_multipart(struct Compose_Data **pdata)
 	attach.editable = 0;
 
 	compose_add_attachment(data,&attach,1);
+}
+
+/******************************************************************
+ Add files to the list
+*******************************************************************/
+static void compose_add_files(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	struct attachment attach;
+
+	if (data->file_req)
+	{
+		if (MUI_AslRequestTags(data->file_req,ASLFR_DoMultiSelect, TRUE, TAG_DONE))
+		{
+			int i;
+			memset(&attach, 0, sizeof(attach));
+
+			for (i=0; i<data->file_req->fr_NumArgs;i++)
+			{
+				STRPTR drawer = NameOfLock(data->file_req->fr_ArgList[i].wa_Lock);
+				if (drawer)
+				{
+					int len = strlen(drawer)+strlen(data->file_req->fr_ArgList[i].wa_Name + 4);
+					STRPTR buf = (STRPTR)AllocVec(len,MEMF_PUBLIC);
+					if (buf)
+					{
+						strcpy(buf,drawer);
+						AddPart(buf,data->file_req->fr_ArgList[i].wa_Name,len);
+						attach.content_type = "application/octet-stream";
+						attach.editable = 0;
+						attach.filename = buf;
+
+						compose_add_attachment(data,&attach,0);
+						FreeVec(buf);
+					}
+					FreeVec(drawer);
+				}
+			}
+		}
+	}
 }
 
 /******************************************************************
@@ -314,7 +359,7 @@ void compose_window_open(char *to_str)
 	Object *to_string, *subject_string;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *expand_to_button;
-	Object *attach_tree, *add_text_button, *add_multipart_button, *remove_button;
+	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
 
 	int num;
@@ -394,7 +439,7 @@ void compose_window_open(char *to_str)
 				Child, HGroup,
 					Child, add_text_button = MakeButton("Add text"),
 					Child, add_multipart_button = MakeButton("Add multipart"),
-					Child, MakeButton("Add file(s)"),
+					Child, add_files_button = MakeButton("Add file(s)"),
 					Child, MakeButton("Pack & add"),
 					Child, remove_button = MakeButton("Remove"),
 					End,
@@ -420,6 +465,8 @@ void compose_window_open(char *to_str)
 			data->attach_tree = attach_tree;
 			data->contents_page = contents_page;
 
+			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
+
 			/* mark the window as opened */
 			compose_open[num] = 1;
 
@@ -429,6 +476,7 @@ void compose_window_open(char *to_str)
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
 			DoMethod(add_multipart_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_multipart, data);
+			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, attach_tree, 4, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);

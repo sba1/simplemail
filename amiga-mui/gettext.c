@@ -172,9 +172,12 @@ struct LocaleConv {
   char *gmostr;
 } LocaleConvTab[] = {
 {"deutsch", "de"},
+{"german", "de"},
 /*{"", "en_GB"}, does not exist on Amiga */
 {"español", "es"},
+{"spanish", "es"},
 {"français", "fr"},
+{"french", "fr"},
 {"hrvatski", "hu"},
 {"italiano", "it"},
 {"nihongo", "ja"},

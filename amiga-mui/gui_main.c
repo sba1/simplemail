@@ -59,6 +59,7 @@
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "multistringclass.h"
+#include "pgplistclass.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 #include "readlistclass.h"
@@ -222,6 +223,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_pgplist_class();
 		delete_addresstreelist_class();
 		delete_multistring_class();
 		delete_filterrule_class();
@@ -272,7 +274,8 @@ int all_init(void)
 					create_simplehtml_class() && create_picturebutton_class() &&
 					create_popupmenu_class() && create_icon_class() && 
 					create_configtreelist_class() && create_filterrule_class() &&
-					create_multistring_class() && create_addresstreelist_class())
+					create_multistring_class() && create_addresstreelist_class() &&
+					create_pgplist_class())
 			{
 				if (app_init())
 				{

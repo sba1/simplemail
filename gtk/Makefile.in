@@ -115,6 +115,7 @@ libgui_a_SOURCES = \
             readwnd.c \
             subthreads.c \
             support.c \
+	    sysprint.c \
             tcpip.c \
             upwnd.c
 
@@ -130,8 +131,8 @@ am_libgui_a_OBJECTS = addressbookwnd.$(OBJEXT) composewnd.$(OBJEXT) \
 	configwnd.$(OBJEXT) dlwnd.$(OBJEXT) errorwnd.$(OBJEXT) \
 	filterwnd.$(OBJEXT) folderwnd.$(OBJEXT) gtksupport.$(OBJEXT) \
 	gui_main.$(OBJEXT) mainwnd.$(OBJEXT) readwnd.$(OBJEXT) \
-	subthreads.$(OBJEXT) support.$(OBJEXT) tcpip.$(OBJEXT) \
-	upwnd.$(OBJEXT)
+	subthreads.$(OBJEXT) support.$(OBJEXT) sysprint.$(OBJEXT) \
+	tcpip.$(OBJEXT) upwnd.$(OBJEXT)
 libgui_a_OBJECTS = $(am_libgui_a_OBJECTS)
 
 DEFS = @DEFS@
@@ -147,7 +148,8 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/gtksupport.Po $(DEPDIR)/gui_main.Po \
 @AMDEP_TRUE@	$(DEPDIR)/mainwnd.Po $(DEPDIR)/readwnd.Po \
 @AMDEP_TRUE@	$(DEPDIR)/subthreads.Po $(DEPDIR)/support.Po \
-@AMDEP_TRUE@	$(DEPDIR)/tcpip.Po $(DEPDIR)/upwnd.Po
+@AMDEP_TRUE@	$(DEPDIR)/sysprint.Po $(DEPDIR)/tcpip.Po \
+@AMDEP_TRUE@	$(DEPDIR)/upwnd.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
@@ -197,6 +199,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/readwnd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/subthreads.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/support.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/sysprint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/tcpip.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/upwnd.Po@am__quote@
 

@@ -20,6 +20,8 @@
  ** sysprint.c
  */
 
+#include <stdio.h>
+
 #include "sysprint.h"
 #include "smintl.h"
 #include "support.h"

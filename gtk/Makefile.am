@@ -18,6 +18,7 @@ libgui_a_SOURCES = \
             readwnd.c \
             subthreads.c \
             support.c \
+	    sysprint.c \
             tcpip.c \
             upwnd.c
 

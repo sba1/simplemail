@@ -22,17 +22,24 @@
 
 #include <stdio.h>
 
-void up_set_title(char *str)
-{
-#if 0
-	set(win_up, MUIA_Window_Title, str);
-#endif
-}
-
 void up_set_status(char *str)
 {
 #if 0
 	set(win_up, MUIA_transwnd_Status, str);
+#endif
+}
+
+void up_connect_to_server(char *server)
+{
+#if 0
+	static char buf[400];
+	static char *title; /* this is not really perfect but it works */
+	free(title);
+	title = mystrdup(server);
+	set(win_up, MUIA_Window_Title, title);
+
+	sprintf(buf,_("Connecting to server %s..."),server);
+	set(win_up, MUIA_transwnd_Status, buf);
 #endif
 }
 

@@ -889,5 +889,33 @@ void main_build_accounts(void)
 }
 
 
+/******************************************************************
+ Build the addressbook
+*******************************************************************/
+void main_build_addressbook(void)
+{
+}
 
+/******************************************************************
+ Freeze the mail list
+*******************************************************************/
+void main_freeze_mail_list(void)
+{
+//	set(mail_tree,MUIA_NListtree_Quiet,TRUE);
+}
 
+/******************************************************************
+ Thaws the mail list
+*******************************************************************/
+void main_thaw_mail_list(void)
+{
+//	set(mail_tree,MUIA_NListtree_Quiet,FALSE);
+}
+
+/******************************************************************
+ Select a mail, specified by number
+*******************************************************************/
+void main_select_mail(int mail)
+{
+//	set(mail_tree,MUIA_NList_Active, mail);
+}

@@ -876,3 +876,30 @@ void addressbook_open_with_new_address(struct mail *m)
 	}
 #endif
 }
+
+/******************************************************************
+ Opens the addressbook with a new person taken from the mail
+ To is 1 if address should be taken from the To: field
+*******************************************************************/
+void addressbook_open_with_new_address_from_mail(struct mail *m, int to)
+{
+#if 0
+	struct addressbook_entry *entry = addressbook_get_entry_from_mail(m,to);
+	if (entry)
+	{
+		addressbook_open();
+		person_window_open(entry);
+		addressbook_free_entry(entry);
+	}
+#endif
+}
+
+/******************************************************************
+ Refreshs the addressbook
+*******************************************************************/
+void addressbookwnd_refresh(void)
+{
+#if 0
+	DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
+#endif
+}

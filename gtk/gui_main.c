@@ -31,6 +31,13 @@ int gui_parseargs(int argc, char *argv[])
 	return 1;
 }
 
+/****************************************************************
+ Execute an ARexx script
+*****************************************************************/
+int gui_execute_arexx(char *filename)
+{
+	return NULL;
+}
 
 int gui_main(int argc, char *argv[])
 {
@@ -43,6 +50,12 @@ int gui_main(int argc, char *argv[])
 	return 1;
 }
 
+/****************************************************************
+ Play a sound (from support.c)
+*****************************************************************/
+void sm_play_sound(char *filename)
+{
+}
 
 
 #if 0

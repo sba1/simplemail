@@ -93,3 +93,7 @@ void myclosesocket(int fd)
 	close(fd);
 }
 
+int is_online(char *interface)
+{
+    return 1;
+}

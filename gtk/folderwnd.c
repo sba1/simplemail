@@ -81,6 +81,13 @@ int folder_get_changed_type(void)
 #endif
 }
 
+char *folder_get_changed_defto(void)
+{
+#if 0
+	return (char *)xget(defto_string,MUIA_String_Contents);
+#endif
+}
+
 #if 0
 
 static void init_folder(void)

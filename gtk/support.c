@@ -158,6 +158,15 @@ char *sm_get_date_long_str(unsigned int seconds)
 }
 
 /******************************************************************
+ Convert seconds from 1978 to a long form string.
+ The returned string is static and in utf8.
+*******************************************************************/
+char *sm_get_date_long_str_utf8(unsigned int seconds)
+{
+	return sm_get_date_long_str(seconds);
+}
+
+/******************************************************************
  Convert seconds from 1978 to a date string.
  The returned string is static.
 *******************************************************************/
@@ -224,6 +233,14 @@ char *sm_path_part(char *filename)
 }
 
 /******************************************************************
+ Returns the full path of a selected file.
+******************************************************************/
+char *sm_request_file(char *title, char *path)
+{
+	return NULL;
+}
+
+/******************************************************************
  Opens a requester. Returns 0 if the rightmost gadgets is pressed
  otherwise the position of the gadget from left to right
 *******************************************************************/
@@ -241,6 +258,25 @@ char *sm_request_string(char *title, char *text, char *contents, int secret)
 {
 	printf("sm_request_string()\n");
 	return NULL;
+}
+
+/******************************************************************
+ Opens a requester to enter a user id and a passwort. Returns 1 on
+ success, else 0. The strings are filled in a previously alloced
+ login and password buffer but not more than len bytes
+*******************************************************************/
+int sm_request_login(char *text, char *login, char *password, int len)
+{
+	return 0;
+}
+
+/******************************************************************
+ Returns a malloc()ed string of a selected pgp. NULL for cancel
+ or an error
+*******************************************************************/
+char *sm_request_pgp_id(char *text)
+{
+	return 0;
 }
 
 /******************************************************************
@@ -271,6 +307,15 @@ void sm_unsetenv(char *name)
 int sm_system(char *command, char *output)
 {
   return 20;
+}
+
+/******************************************************************
+ Checks weather a file is in the given drawer. Returns 1 for
+ success.
+*******************************************************************/
+int sm_file_is_in_drawer(char *filename, char *path)
+{
+	return 0;
 }
 
 /******************************************************************

@@ -11,3 +11,8 @@ gen_makefile.lnk
 gen_makefile
 date.h
 xpm
+config.h
+autoscan.log
+Makefile
+configure.scan
+stamp-h1

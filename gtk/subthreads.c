@@ -67,4 +67,60 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 	return 0;
 }
 
+int thread_call_parent_function_async(void *function, int argcount, ...)
+{
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+}
+
+/* Call the function asynchron and duplicate the first argument which us threaded at a string */
+int thread_call_parent_function_async_string(void *function, int argcount, ...)
+{
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+}
+
+int thread_aborted(void)
+{
+	return 0;
+}
+
 

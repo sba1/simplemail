@@ -67,20 +67,14 @@ char *strndup(const char *str1, int n)
 **************************************************************************/
 char *stradd(char *src, const char *str1)
 {
-	int len;
+	int len = mystrlen(src);
 	char *dest;
-	if (src) len = strlen(src);
-	else len = 0;
 
-	if (str1) len += strlen(str1);
-
-	if ((dest = (char*)malloc(len+1)))
+	if ((dest = (char*)realloc(src,len+mystrlen(str1)+1)))
 	{
-		if (src) strcpy(dest,src);
-		else dest[0] = 0;
-		if (str1) strcat(dest,str1);
+		if (str1) strcpy(&dest[len],str1);
+		else dest[len]=0;
 	}
-	if (src) free(src);
 	return dest;
 }
 

@@ -297,6 +297,7 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 
 				if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
 				{
+					char *comment = mail_get_from_address(mail_get_root(mail));
 					if (!mail->decoded_data)
 					{
 						Write(fh,mail->text + mail->text_begin,mail->text_len);
@@ -305,6 +306,12 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 						Write(fh,mail->decoded_data,mail->decoded_len);
 					}
 					Close(fh);
+
+					if (comment)
+					{
+						SetComment(data->file_req->fr_File,comment);
+						free(comment);
+					}
 				}
 
 				CurrentDir(olock);

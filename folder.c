@@ -2124,30 +2124,43 @@ int folder_size_of_mails(struct folder *f)
 }
 
 /******************************************************************
- Move a mail from source folder to a destination folder. 0 if the
- moving has failed.
+ Move num_mail mails from source folder to a destination folder.
+ Returns the number of successfully moved mails.
+
  If mail has sent status and moved to a outgoing drawer it get's
  the waitsend status.
 *******************************************************************/
-int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail)
+int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail **mail_array, int num_mails)
 {
-	char *buf;
-	int rc = 0;
+	char *buf, *src_buf, *src_path_end_buf, *dest_buf, *dest_path_end_buf;
+	char path[512];
+	int path_changed = 0;
+	int i = 0;
 
 	if (!from_folder || !dest_folder) return 0;
 	if (from_folder == dest_folder) return 1;
 	if (from_folder->special == FOLDER_SPECIAL_GROUP || 
 			dest_folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
-	if ((buf = (char*)malloc(1024)))
-	{
-		char *src_buf = buf;
-		char *dest_buf = buf + 512;
+	if (!(buf = (char*)malloc(1024)))
+		return 0;
 
-		strcpy(src_buf,from_folder->path);
-		strcpy(dest_buf,dest_folder->path);
+	src_buf = buf;
+	dest_buf = buf + 512;
+
+	strcpy(src_buf,from_folder->path);
+	strcpy(dest_buf,dest_folder->path);
+
+	src_path_end_buf = src_buf + strlen(src_buf);
+	dest_path_end_buf = dest_buf + strlen(dest_buf);
+
+	for (i=0;i<num_mails;i++)
+	{
+		struct mail *mail = mail_array[i];
+
 		sm_add_part(src_buf,mail->filename,512);
 
+		/* Change the status of mails if moved to outgoing and had formerly a sent flag set */
 		if (dest_folder->special == FOLDER_SPECIAL_OUTGOING && mail_get_status_type(mail) == MAIL_STATUS_SENT)
 		{
 			char *newfilename;
@@ -2160,38 +2173,61 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 				mail->filename = newfilename;
 			}
 		}
+
 		sm_add_part(dest_buf,mail->filename,512);
 
-		if (!rename(src_buf,dest_buf)) rc = 1;
-		else
+		if (rename(src_buf,dest_buf) != 0)
 		{
-			/* Renaming failed so we need a new name */
-			char path[512];
-			getcwd(path,sizeof(path));
-			if (chdir(dest_folder->path) != -1)
+			char *new_name;
+
+			/* Renaming failed (probably because the name already existed in the dest dir.
+			 * We need a new name, at first change to the dest dir if not already done */
+			if (!path_changed)
 			{
-				char *new_name = mail_get_new_name(mail->status);
-				if (new_name)
+				getcwd(path,sizeof(path));
+				if (chdir(dest_folder->path) == -1)
+					break;
+				path_changed = 1;
+			}
+
+			if ((new_name = mail_get_new_name(mail->status)))
+			{
+				if (rename(src_buf,new_name) == 0)
 				{
-					if (!rename(src_buf,new_name))
-					{
-						free(mail->filename);
-						mail->filename = new_name;
-						rc = 1;
-					} else free(new_name);
+					/* renaming was successfully */
+					free(mail->filename);
+					mail->filename = new_name;
+				} else
+				{
+					free(new_name);
+					break;
 				}
-				chdir(path);
 			}
 		}
-		free(buf);
 
-		if (rc)
-		{
-			folder_remove_mail(from_folder,mail);
-			folder_add_mail(dest_folder,mail,1);
-		}
+		folder_remove_mail(from_folder,mail);
+		folder_add_mail(dest_folder,mail,1);
+
+		/* reset the path buffers */
+		*src_path_end_buf = 0;
+		*dest_path_end_buf = 0;
 	}
-	return rc;
+
+	if (path_changed) chdir(path);
+
+	free(buf);
+	return i;
+}
+
+/******************************************************************
+ Move a mail from source folder to a destination folder. 0 if the
+ moving has failed.
+ If mail has sent status and moved to a outgoing drawer it get's
+ the waitsend status.
+*******************************************************************/
+int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail *mail)
+{
+	return folder_move_mail_array(from_folder,dest_folder,&mail,1);
 }
 
 /******************************************************************

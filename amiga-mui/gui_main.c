@@ -72,6 +72,7 @@
 #include "readlistclass.h"
 #include "subthreads.h"
 #include "transwndclass.h"
+#include "utf8stringclass.h"
 
 __near long __stack = 30000;
 
@@ -274,6 +275,7 @@ void all_del(void)
 			delete_addressstring_class();
 			delete_foldertreelist_class();
 			delete_mailtreelist_class();
+			delete_utf8string_class();
 
 			arexx_cleanup();
 			timer_free();
@@ -308,7 +310,7 @@ int all_init(void)
 			{
 				if (arexx_init())
 				{
-					if (create_foldertreelist_class() && create_mailtreelist_class() &&
+					if (create_utf8string_class() && create_foldertreelist_class() && create_mailtreelist_class() &&
 							create_addressstring_class() && create_attachmentlist_class() &&
 							create_datatypes_class() && create_transwnd_class() &&
 							create_readlist_class() && create_composeeditor_class() &&

@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
+#include <mui/nlisttree_mcc.h>
 #include <mui/texteditor_mcc.h>
 
 #include <clib/alib_protos.h>
@@ -39,10 +40,14 @@
 #include "mail.h"
 #include "support.h"
 
+#include "addressbook.h"
+#include "addresstreelistclass.h"
 #include "amigasupport.h"
 #include "composeeditorclass.h"
 #include "compiler.h"
+#include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "parse.h"
 
 struct ComposeEditor_Data
 {
@@ -155,6 +160,53 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }*/
 
+
+STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
+{
+	if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class) return MUIV_DragQuery_Accept;
+	if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class) return MUIV_DragQuery_Accept;
+	return MUIV_DragQuery_Refuse;
+}
+
+STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
+	if (treenode)
+	{
+		if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class)
+		{
+			struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
+			if (entry->u.person.emails && entry->u.person.emails[0])
+			{
+				DoMethod(obj,MUIM_TextEditor_InsertText,entry->u.person.emails[0],MUIV_TextEditor_InsertText_Cursor);
+			}
+		} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
+		{
+			struct mail *mail = (struct mail*)treenode->tn_User;
+			char *from = mail_find_header_contents(mail,"from");
+			if (from)
+			{
+				struct mailbox mb;
+				if (parse_mailbox(from,&mb))
+				{
+					if (mb.phrase)
+					{
+						DoMethod(obj,MUIM_TextEditor_InsertText,mb.phrase,MUIV_TextEditor_InsertText_Cursor);
+						DoMethod(obj,MUIM_TextEditor_InsertText," <",MUIV_TextEditor_InsertText_Cursor);
+					}
+					DoMethod(obj,MUIM_TextEditor_InsertText,mb.addr_spec,MUIV_TextEditor_InsertText_Cursor);
+					if (mb.phrase) DoMethod(obj,MUIM_TextEditor_InsertText,">",MUIV_TextEditor_InsertText_Cursor);
+
+					free(mb.phrase);
+					free(mb.addr_spec);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
 STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -168,6 +220,10 @@ STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, regis
 */
 		case	MUIM_Setup: return ComposeEditor_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return ComposeEditor_Cleanup(cl,obj,msg);
+
+		case	MUIM_DragQuery: return ComposeEditor_DragQuery(cl, obj, (struct MUIP_DragQuery *)msg);
+		case	MUIM_DragDrop: return ComposeEditor_DragDrop(cl, obj, (struct MUIP_DragDrop *)msg);
+
 /*		case	MUIM_TextEditor_InsertText: return ComposeEditor_InsertText(cl,obj,(struct MUIP_TextEditor_InsertText*)msg);*/
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

@@ -88,7 +88,7 @@ STATIC ASM LONG folder_strobj(register __a2 Object *list, register __a1 Object *
   f = folder_find_by_name(s);
   if (f)
   {
-		set(list,MUIA_NListtree_Active, FindListtreeUserData(list,f));
+		set(list,MUIA_NListtree_Active, FindListtreeUserData(search_folder_tree,f));
   }
 	return 1;
 }
@@ -222,6 +222,7 @@ void search_open(char *foldername)
 	}
 
 	set(search_wnd, MUIA_Window_Open, TRUE);
+	set(search_folder_text, MUIA_Text_Contents, foldername);
 }
 
 /**************************************************************************

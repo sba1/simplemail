@@ -52,6 +52,9 @@ start: date.h $(GSTFILE) smakefile.compile
     if not exists $(DESTDIR)/Images
       makedir $(DESTDIR)/Images
     endif
+    if not exists $(DESTDIR)ARexx
+      makedir $(DESTDIR)/ARexx
+    endif
 
     rx >t:smdate.h "say '\#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
     if not warn
@@ -74,7 +77,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(PROGRAMMNAME) $(DESTDIR)/.taglines images*n" >>$@
+  echo "All: \$(PROGRAMMNAME) $(DESTDIR)/.taglines images scripts*n" >>$@
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
   delete t:objectlist
   echo "*n$(DESTDIR)/.taglines: .taglines" >>$@
@@ -84,7 +87,11 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "  sm/Images/images.list" >>$@
   echo "*n" >>$@
   list amiga-mui/binaries/\#?img lformat="sm/Images/%m: %p%n*n  copy %p%n sm/Images/%m*n" >>$@
-  echo "sm/Images/images.list: amiga-mui/binaries/images.list*n  copy amiga-mui/binaries/images.list sm/Images" >>$@
+  echo "sm/Images/images.list: amiga-mui/binaries/images.list*n  copy amiga-mui/binaries/images.list sm/Images*n" >>$@
+  echo "scripts:" >>$@ noline
+  list amiga-mui/ARexx/\#?.smrx lformat="  sm/ARexx/%n\\" >>$@
+  echo "*n" >>$@
+  list amiga-mui/ARexx/\#?.smrx lformat="sm/ARexx/%n: %p%n*n  copy %p%n sm/ARexx/%n*n" >>$@
 
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
@@ -147,6 +154,7 @@ prepare-release:
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
   copy sm/images TO ram:SimpleMail/Images
+  copy sm/ARexx TO ram:SimpleMail/ARexx
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale
   copy sm/.taglines TO ram:SimpleMail/.taglines
   -delete ram:simplemail.lzx

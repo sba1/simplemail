@@ -42,7 +42,7 @@ struct imap_server
 
 int imap_synchronize(struct list *imap_list, int called_by_auto);
 
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *list));
+int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *));
 
 struct imap_server *imap_malloc(void);
 struct imap_server *imap_duplicate(struct imap_server *imap);

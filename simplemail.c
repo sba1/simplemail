@@ -1061,11 +1061,11 @@ void callback_remove_folder(void)
 }
 
 /* called when imap folders has been received */
-static void callback_received_imap_folders(struct imap_server *server, struct list *list)
+static void callback_received_imap_folders(struct imap_server *server, struct list *all_folder_list, struct list *sub_folder_list)
 {
 	struct folder *f = folder_find_by_imap(server->name,"");
 	if (!f) return;
-	folder_edit_with_folder_list(f, list);
+	folder_edit_with_folder_list(f, all_folder_list, sub_folder_list);
 }
 
 /* edit folder settings */
@@ -1151,9 +1151,6 @@ void callback_autocheck_refresh(void)
 		called = 1;
 		callback_timer();
 	}
-
-	
-
 	autocheck_minutes_start = sm_get_current_seconds();
 }
 

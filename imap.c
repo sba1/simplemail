@@ -665,7 +665,7 @@ static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 						thread_call_parent_function_async(status_set_status,1,N_("Login successful"));
 						thread_call_parent_function_async(status_set_status,1,N_("Checking for folders"));
 
-						if ((folder_list = imap_get_folders(conn,server,1)))
+						if ((folder_list = imap_get_folders(conn,server,0)))
 						{
 							struct string_node *node;
 
@@ -771,48 +771,49 @@ int imap_synchronize(struct list *imap_list, int called_by_auto)
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
-	void (*callback)(struct imap_server *server, struct list *list);
+	void (*callback)(struct imap_server *, struct list *, struct list *);
 };
 
 /**************************************************************************
  
 **************************************************************************/
-static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *list))
+static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
 {
 	struct list *folder_list;
 	if (open_socket_lib())
 	{
-		if ((folder_list = (struct list*)malloc(sizeof(struct list))))
+		struct connection *conn;
+		char head_buf[100];
+
+		sprintf(head_buf,_("Reading folders of %s"),server->name);
+		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+
+		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 		{
-			struct connection *conn;
-			char head_buf[100];
-
-			list_init(folder_list);
-
-			sprintf(head_buf,_("Reading folders of %s"),server->name);
-			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-			thread_call_parent_function_async_string(status_set_title, 1, server->name);
-			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
-
-			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+			thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+			if (imap_wait_login(conn,server))
 			{
-				thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
-				if (imap_wait_login(conn,server))
+				thread_call_parent_function_async(status_set_status,1,N_("Login..."));
+				if (imap_login(conn,server))
 				{
-					thread_call_parent_function_async(status_set_status,1,N_("Login..."));
-					if (imap_login(conn,server))
+					struct list *all_folder_list;
+					if ((all_folder_list = imap_get_folders(conn,server,1)))
 					{
-						if ((folder_list = imap_get_folders(conn,server,1)))
+						struct list *sub_folder_list;
+						if ((sub_folder_list = imap_get_folders(conn,server,0)))
 						{
-							thread_call_parent_function_sync(callback,2,server,folder_list);
+							thread_call_parent_function_sync(callback,3,server,all_folder_list,sub_folder_list);
+							imap_free_name_list(sub_folder_list);
 						}
+						imap_free_name_list(all_folder_list);
 					}
 				}
-				tcp_disconnect(conn);
 			}
-
-			free(folder_list);
+			tcp_disconnect(conn);
 		}
+
 		close_socket_lib();
 	}
 }
@@ -823,7 +824,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	void (*callback)(struct imap_server *server, struct list *list) = msg->callback;
+	void (*callback)(struct imap_server *, struct list *, struct list *) = msg->callback;
 
 	if (thread_parent_task_can_contiue())
 	{
@@ -840,7 +841,7 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 /**************************************************************************
  Returns the list of all folders of the imap server
 **************************************************************************/
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *list))
+int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;

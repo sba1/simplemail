@@ -328,7 +328,7 @@ void folder_edit(struct folder *f)
 	set(folder_wnd, MUIA_Window_Open, TRUE);
 }
 
-void folder_edit_with_folder_list(struct folder *f, struct list *list)
+void folder_edit_with_folder_list(struct folder *f, struct list *list, struct list *sub_folder_list)
 {
 	if (imap_folders_list) DoMethod(imap_folders_list,MUIM_NList_Clear);
 	folder_edit(f);

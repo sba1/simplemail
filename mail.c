@@ -917,49 +917,7 @@ int mail_process_headers(struct mail *mail)
 	{
 		/* syntax should be checked before! */
 		int day,month,year,hour,min,sec;
-		unsigned char *date = strstr(buf,",");
-		if (!date) date = buf;
-		else date++;
-
-		while (isspace(*date)) date++;
-		day = atoi(date);
-		while (isdigit(*date)) date++;
-		while (isspace(*date)) date++;
-		if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
-		else if (!mystrnicmp(date,"feb",3)) month = 2;
-		else if (!mystrnicmp(date,"mar",3)) month = 3;
-		else if (!mystrnicmp(date,"apr",3)) month = 4;
-		else if (!mystrnicmp(date,"may",3)) month = 5;
-		else if (!mystrnicmp(date,"jun",3)) month = 6;
-		else if (!mystrnicmp(date,"jul",3)) month = 7;
-		else if (!mystrnicmp(date,"aug",3)) month = 8;
-		else if (!mystrnicmp(date,"sep",3)) month = 9;
-		else if (!mystrnicmp(date,"oct",3)) month = 10;
-		else if (!mystrnicmp(date,"nov",3)) month = 11;
-		else month = 12;
-		date += 3;
-		while (isspace(*date)) date++;
-		year = atoi(date);
-		if (year < 78) year += 2000;
-		else if (year < 200) year += 1900;
-
-		while (isdigit(*date)) date++;
-		while (isspace(*date)) date++;
-		hour = atoi(date);
-		if (hour < 100)
-		{
-			while (isdigit(*date)) date++;
-			while (!isdigit(*date)) date++;
-			min = atoi(date);
-			while (isdigit(*date)) date++;
-			while (!isdigit(*date)) date++;
-			sec = atoi(date);
-		} else /* like examples in rfc 822 */
-		{
-			min = hour % 100;
-			hour = hour / 100;
-			sec = 0;
-		}
+		parse_date(buf,&day,&month,&year,&hour,&min,&sec);
 
 		/* Time zone is missing */
 		mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;

@@ -156,6 +156,8 @@ int load_config(void)
 					{
 						char *result;
 
+						if ((result = get_config_item(buf,"FolderDirectory")))
+							user.folder_directory = mystrdup(result);
 						if ((result = get_config_item(buf,"DST")))
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf, "Receive.Preselection")))
@@ -397,6 +399,9 @@ void save_config(void)
 			int i;
 
 			fputs("SMCO\n\n",fh);
+
+			if (user.new_folder_directory) fprintf(fh,"FolderDirectory=%s\n",user.new_folder_directory);
+			else fprintf(fh,"FolderDirectory=%s\n",user.folder_directory);
 
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 

@@ -100,6 +100,7 @@ struct user
 	char *name; /* name of the user */
 	char *directory; /* the directory where all data is saved */
 	char *folder_directory; /* the directory where the folders should be saved */
+	char *new_folder_directory; /* the new folder directory */
 
 	char *config_filename; /* path to the the configuration */
 	char *filter_filename; /* path to the separate filter config file */

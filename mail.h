@@ -204,17 +204,19 @@ struct composed_mail
 {
 	struct node node; /* embedded node structure */
 
-	char *from; /* the mail's from account */
-	char *replyto; /* reply address */
-	char *to; /* maybe NULL */
-	char *cc; /* maybe NULL */
-	char *subject; /* maybe NULL */
+	char *from; /* the mail's from account, utf8 */
+	char *replyto; /* reply address, utf8 */
+	char *to; /* maybe NULL, utf8 */
+	char *cc; /* maybe NULL, utf8 */
+	char *subject; /* maybe NULL, utf8 */
 
-	char *filename; /* filename, maybe NULL */
+	char *filename; /* filename, maybe NULL, used with fopen() */
 	char *temporary_filename; /* maybe NULL */
 	char *text; /* maybe NULL */
 	char *content_type; /* maybe NULL */
 	char *content_description; /* maybe NULL */
+	char *content_filename; /* maybe NULL, utf8, used in content disposition */
+
 	struct list list; /* more entries */
 
 	char *mail_filename; /* The name of the mail (mainly used for changeing) */

@@ -2709,7 +2709,29 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 				if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
 				fprintf(ofh,"Content-Type: %s\n",new_mail->content_type);
-				fprintf(ofh,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
+				fprintf(ofh,"Content-Disposition: attachment");
+
+				if (new_mail->content_filename)
+				{
+					if (isascii7(new_mail->content_filename))
+					{
+						fprintf(ofh,"; filename=%s",new_mail->content_filename);
+					} else
+					{
+						unsigned char c;
+						unsigned char *buf = new_mail->content_filename;
+						static const char *pspecials = "'%* ()<>@,;:\\\"[]?=";
+	
+						fprintf(ofh,"; filename*=utf8''");
+	
+						while((c = *buf++))
+						{
+							if (c > 127 || strchr(pspecials,c)) fprintf(ofh,"%%%02X",c);
+							else fputc(c,ofh);
+						}
+					}
+				}
+				fprintf(ofh,"\n");
 
 				/* Write the Content Description out */
 				if (new_mail->content_description && *new_mail->content_description)

@@ -32,7 +32,7 @@
 /**************************************************************************
  Creates a new filter instance with default values
 **************************************************************************/
-struct filter *filter_create(struct filter *filter)
+struct filter *filter_create(void)
 {
 	struct filter *f = malloc(sizeof(struct filter));
 	if (f)

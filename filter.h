@@ -18,6 +18,10 @@
 #ifndef SM__FILTER_H
 #define SM__FILTER_H
 
+#ifndef SM__LISTS_H
+#include "lists.h"
+#endif
+
 struct filter_rule
 {
 	struct node node; /* embedded node structure */
@@ -40,7 +44,7 @@ struct filter
 	struct list action_list; /* list of actions */
 };
 
-struct filter *filter_create(struct filter *filter);
+struct filter *filter_create(void);
 struct filter *filter_duplicate(struct filter *filter);
 void filter_dispose(struct filter *filter);
 

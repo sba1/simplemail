@@ -1,28 +1,72 @@
-<?xml version='1.0' ?>
+<?xml version='1.0' encoding="iso-8859-1"?>
 
 <news>
+
+  <entry date="2004/12/24">
+   <text lang="en">
+	  Version 0.24 of SimpleMail released!
+
+	  The changes are:
+    <list>
+    <item>Mail preview in main window</item>
+    <item>Outlook Express mail folder import (.dbx files)</item>
+    <item>New addressbook with separated groups and contacts</item>
+    <item>More application icon configuration possibilities (bgol)</item>
+    <item>ARexx Port improvements: GETMAILSTAT, FOLDERINFO (bgol)</item>
+    <item>Bug fixes and minor other improvements (bgol, henes and me)</item>
+    <item>First official OS4 release</item>
+    </list>
+
+    The SimpleMail Team wishes you all a merry christmas and a happy new year! We hope you have fun with
+    the new release!
+
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.24 veröffentlicht!
+
+	  Die Änderungen sind:
+
+    <list>
+    <item>Nachrichtenvorschau im Hauptfenster</item>
+    <item>Importieren von Outlook Express Nachrichtdateien (.dbx Dateien)</item>
+    <item>Neues Adressbuch mit separierter Gruppen- und Kontakteverwaltung</item>
+    <item>Mehr Möglichkeiten, das Applikationsicon zu konfigurieren (bgol)</item>
+    <item>ARexx-Port Verbesserungen: GETMAILSTAT, FOLDERINFO (bgol)</item>
+    <item>Bug Fixes und andere kleine Verbesserungen (bgol, henes, sba)</item>
+    <item>Erste offizielle OS4 Version</item>
+    </list>
+   </text>
+
+   Das SimpleMail Team wünscht allen ein frohes und besinnliches Weihnachtsfest und einen guten Rutsch ins neue Jahr! Viel Spaß mit der neuen Version.
+
+  </entry>
+
   <entry date="2004/02/05">
    <text lang="en">
 	  Version 0.23 of SimpleMail released!
 
 	  The changes are:
 
+    <list>
     <item>AppIcon support (bgol)</item>
     <item>mbox files can be imported to selected folders directly (bgol)</item>
     <item>APOP support</item>
     <item>Ported to MorphOS (henes)</item>
     <item>Bug fixes</item>
+    </list>
    </text>
    <text lang="de">
     SimpleMail Version 0.23 veröffentlicht!
 
 	  Die Änderungen sind:
 
+    <list>
     <item>AppIcon Unterstützung (bgol)</item>
     <item>mbox Dateien können in direkt in einen selektierten Ordner importiert werden (bgol)</item>
     <item>APOP Unterstützung</item>
     <item>Nach MorphOS portiert(henes)</item>
     <item>Bug Fixes</item>
+    </list>
    </text>
   </entry>
 

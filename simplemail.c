@@ -741,11 +741,23 @@ void callback_move_selected_mails(void)
 	app_unbusy();
 }
 
+static void display_mail(struct mail *m)
+{
+	/* Only display mail if it is still the active one because
+	   another mail might be selected during the delay */
+	if (main_get_active_mail() == m)
+	{
+		main_display_active_mail();
+	}
+}
+
 /* a new mail within the main window has been selected */
 void callback_mail_within_main_selected(void)
 {
-	/* TODO: This should issue a short timer, before the message is displayed */
-	main_display_active_mail();
+	/* delay the displaying, so it is still possible to select multiple mails
+     without problems */
+	thread_push_function_delayed(500, display_mail, 1, main_get_active_mail());
+
 }
 
 /* Process the current selected folder and mark all mails which are identified as spam */

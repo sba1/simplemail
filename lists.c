@@ -255,4 +255,17 @@ void string_list_clear(struct list *list)
 	}
 }
 
-
+/******************************************************************
+ Looks for a given string node in the list and returns it.
+ Search is caseinsensitive
+*******************************************************************/
+struct string_node *string_list_find(struct list *list, const char *str)
+{
+	struct string_node *node = (struct string_node*)list_first(list);
+	while (node)
+	{
+		if (!mystricmp(str,node->string)) return node;
+		node = (struct string_node*)node_next(&node->node);
+	}
+	return NULL;
+}

@@ -56,6 +56,7 @@ void node_remove(struct node *node);
 /* String lists */
 struct string_node *string_list_insert_tail(struct list *list, char *string);
 void string_list_clear(struct list *list);
+struct string_node *string_list_find(struct list *list, const char *str);
 
 #ifdef INLINEING
 #define list_first(x) ((x)->first)

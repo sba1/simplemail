@@ -69,6 +69,7 @@ void init_myhook(struct MyHook *h, unsigned long (*func)(void),void *data);
 
 /* Use this function if the data field of the hook structure is not needed */
 void init_hook(struct Hook *h, unsigned long (*func)(void));
+void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data);
 
 /* Some macros to be used in custom classes */
 #define _between(a,x,b) ((x)>=(a) && (x)<=(b))

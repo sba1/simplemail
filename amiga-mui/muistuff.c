@@ -289,3 +289,16 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 #endif
 }
 
+void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data)
+{
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+	h->h_Entry = (HOOKFUNC)hookEntry;
+	h->h_SubEntry = (HOOKFUNC)func;
+	h->h_Data = data;
+#else
+	h->h_Entry = (HOOKFUNC)hook_func;
+	h->h_SubEntry = func;
+	h->h_Data = data;
+#endif
+}
+

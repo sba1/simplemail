@@ -465,24 +465,24 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 	}
 
 	ret = parse_phrase(mailbox,&mb->phrase);
-	if (!ret) return NULL;
+	if (!ret) ret = mailbox; /* for empty phrases */
 
 	ret = skip_spaces(ret);
 
 	if (*(ret++) != '<')
 	{
-		free(mb->phrase);
+		if (mb->phrase) free(mb->phrase);
 		return NULL;
 	}
 	ret = parse_addr_spec(ret, &mb->addr_spec);
 	if (!ret)
 	{
-		free(mb->phrase);
+		if (mb->phrase) free(mb->phrase);
 		return NULL;
 	}
 	if (*(ret++) != '>')
 	{
-		free(mb->phrase);
+		if (mb->phrase) free(mb->phrase);
 		free(mb->addr_spec);
 		return NULL;
 	}

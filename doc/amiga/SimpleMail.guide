@@ -2425,13 +2425,13 @@ if no filename is specified.
 FOLDERINFO      VAR/K,STEM/K,FOLDER => NUMBER/N,NAME,PATH,TOTAL/N,NEW/N,
                 UNREAD/N,SIZE/N,TYPE/N
 		
-Returns information about the specified FOLDER, or the current folder if
-no folder is specified. NUMBER selects a folder by its position in the
-folder list (0 = top folder), PATH is the directory and SIZE is the total
-size in bytes. TOTAL, NEW and UNREAD are the number of total, new and
-unread messages, respectively. TYPE is the type of folder, possible
-values are 0 (normal), 1 (incoming), 2 (outgoing), 3 (sent, this is the
-default), 4 (deleted), 5 (sent and received) and 6 (sent).
+Returns information about the specified FOLDER, or the current folder if no
+folder is specified. NUMBER selects a folder by its position in the folder
+list (0 = top folder), PATH is the directory and SIZE is the total size in
+bytes. TOTAL, NEW and UNREAD are the number of total, new and unread
+messages, respectively. TYPE is the type of folder, possible values are
+0 (normal), 1 (incoming), 2 (outgoing), 3 (sent, this is the default),
+4 (deleted), 5 (sent), 6 (sent and received), 7 (group) and 8 (spam).
 
 
 GETSELECTED     VAR/K,STEM/K => NUM/N/M

@@ -21,14 +21,42 @@
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "estimate.h"
 #include "smintl.h"
 #include "status.h"
+#include "support.h"
+#include "support_indep.h"
 
 #include "statuswnd.h"
 
 static int is_open;
+static struct estimate gauge_est;
+static int gauge_maximal;
+static int gauge_value;
+static int mail_maximal;
+static int mail_current; /* starts at 1 */
+static char *status_text;
+
+/******************************************************************
+ Returns the status text
+*******************************************************************/
+static char *status_get_status(void)
+{
+	static char buf[512];
+	static char time_buf[256];
+
+	int time = estimate_calc_remaining(&gauge_est,gauge_value/1024);
+	if (time < 60) sprintf(time_buf,_("%d s"),time);
+	else sprintf(time_buf,_("%d min %d s"),time/60,time%60);
+
+	if (status_text) sprintf(buf,"%s\n%s %s",status_text,_("Time remaining:"),time_buf);
+	else return time_buf;
+	return buf;
+}
+
 
 /******************************************************************
  Initialize the window with as the given type
@@ -64,25 +92,14 @@ void status_set_title(char *title)
 }
 
 /******************************************************************
- Set the status line
-*******************************************************************/
-void status_set_line(char *str)
-{
-}
-
-/******************************************************************
  Set the status line for connecting to a server
 *******************************************************************/
 void status_set_connect_to_server(char *server)
 {
 	static char buf[400];
 	sprintf(buf,_("Connecting to server %s..."),server);
-	status_set_line(buf);
+	statuswnd_set_status(buf);
 }
-
-static struct estimate gauge_est;
-static int gauge_maximal;
-static int gauge_value;
 
 /******************************************************************
  Sets the gauge to a maximal value and tell that it's a bytes
@@ -90,9 +107,10 @@ static int gauge_value;
 *******************************************************************/
 void status_init_gauge_as_bytes(int maximal)
 {
-	estimate_init(&gauge_est,gauge_maximal/1024);
+	estimate_init(&gauge_est,maximal/1024);
 	gauge_maximal = maximal;
 	gauge_value = 0;
+	statuswnd_init_gauge(maximal);
 }
 
 /******************************************************************
@@ -100,12 +118,27 @@ void status_init_gauge_as_bytes(int maximal)
 *******************************************************************/
 void status_set_gauge(int value)
 {
+	static int last_seconds;
+	int seconds = sm_get_current_seconds();
+
 	gauge_value = value;
-	estimate_calc_remaining(&gauge_est,value/1024);
+
+	if (last_seconds == seconds) return;
+
+	statuswnd_set_gauge(value);
+	statuswnd_set_status(status_get_status());
+	last_seconds = seconds;
 }
 
-static int mail_maximal;
-static int mail_current; /* starts at 1 */
+/******************************************************************
+ Set the status line
+*******************************************************************/
+void status_set_line(char *str)
+{
+	if (status_text) free(status_text);
+	status_text = mystrdup(str);
+	statuswnd_set_status(status_get_status());
+}
 
 /******************************************************************
  Initialize the number of mails to download
@@ -121,7 +154,11 @@ void status_init_mail(int maximal)
 *******************************************************************/
 void status_set_mail(int current)
 {
+	static char buf[100];
 	mail_current = current;
+
+	sprintf(buf,_("%d mails to go"), mail_maximal - mail_current + 1);
+	statuswnd_set_gauge_text(buf);
 }
 
 /******************************************************************

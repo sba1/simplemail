@@ -183,7 +183,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						MUIA_Gauge_Horiz,			TRUE,
 						End,
 					Child, HGroup,
-						Child, status = TextObject, TextFrame,MUIA_Background, MUII_TextBack, End,
+						Child, status = TextObject, TextFrame, MUIA_Text_Contents, "\n", MUIA_Background, MUII_TextBack, End,
 						Child, abort = MakeButton(_("_Abort")),
 						End,
 					End,	

@@ -615,14 +615,11 @@ static int export_entry(struct export_data *data)
 					/* unlock the folder list */
 					folders_unlock();
 
-					sprintf(status_buf, _("Exporting folder %s to %s"),f->name,data->filename);
+					sprintf(status_buf, _("Exporting folder %s to %s"),f->name,filename);
 					thread_call_parent_function_async(status_init,1,0);
 					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
 					thread_call_parent_function_async_string(status_set_line,1,status_buf);
 					thread_call_parent_function_async(status_open,0);
-
-//					thread_call_parent_function_async(up_window_open,0);
-//					thread_call_parent_function_async_string(up_set_status,1,N_("Exporting folder"));
 
 					if ((fh = fopen(filename,"w")))
 					{
@@ -632,16 +629,13 @@ static int export_entry(struct export_data *data)
 						char *file_buf;
 						int max_size = 0;
 						int size = 0;
-//						struct estimate est;
+						int mail_no = 1;
 
 						while ((m = folder_next_mail(f, &handle)))
 							max_size += m->size;
 
-//						thread_call_parent_function_async(up_init_gauge_byte,1,max_size);
 						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_size);
-						thread_call_parent_function_async(status_init_mail, f->num_mails);
-
-//						estimate_init(&est,max_size/1024);
+						thread_call_parent_function_async(status_init_mail, 1, f->num_mails);
 
 						if ((file_buf = malloc(8192)))
 						{
@@ -652,7 +646,9 @@ static int export_entry(struct export_data *data)
 							while ((m = folder_next_mail(f, &handle)))
 							{
 								FILE *in;
-			
+
+								thread_call_parent_function_async(status_set_mail, 1, mail_no);
+
 								fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
 			
 								in = fopen(m->filename,"r");
@@ -668,6 +664,7 @@ static int export_entry(struct export_data *data)
 									fclose(in);
 								}
 								fputs("\n",fh);
+								mail_no++;
 							}
 							free(file_buf);
 						}

@@ -94,3 +94,39 @@ void statuswnd_set_title(char *title)
 	if (!status_wnd) return;
 	set(status_wnd, MUIA_Window_Title,status_title);
 }
+
+/**************************************************************************
+ Initialize the gauge bar with the given maximum value
+**************************************************************************/
+void statuswnd_init_gauge(int maximal)
+{
+	if (!status_wnd) return;
+	set(status_wnd, MUIA_transwnd_Gauge1_Max, maximal);
+}
+
+/**************************************************************************
+ Set the current gauge value
+**************************************************************************/
+void statuswnd_set_gauge(int value)
+{
+	if (!status_wnd) return;
+	set(status_wnd, MUIA_transwnd_Gauge1_Val, value);
+}
+
+/**************************************************************************
+ Set the current gauge text
+**************************************************************************/
+void statuswnd_set_gauge_text(char *text)
+{
+	set(status_wnd, MUIA_transwnd_Gauge1_Str, text);
+}
+
+/**************************************************************************
+ Set the status line
+**************************************************************************/
+void statuswnd_set_status(char *text)
+{
+	if (!status_wnd) return;
+	set(status_wnd, MUIA_transwnd_Status, text);
+}
+

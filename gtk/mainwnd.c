@@ -87,6 +87,17 @@ static void mail_row_activated(void)//GtkTreeView *treeview, GtkTypeTreePath *ar
 	callback_read_mail();
 }
 
+/******************************************************************
+ Callback when an menu item of the check single account menu
+ has been activated
+*******************************************************************/
+void on_check_single_account_entry_menuitem_activate(GtkMenuItem *menuitem, gpointer user_data)
+{
+	int num =(int)user_data;
+	callback_check_single_account(num);
+}
+
+
 static void main_date_cell_data_func(GtkTreeViewColumn *tree_column, GtkCellRenderer *cell, GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
 	unsigned int seconds;
@@ -848,7 +859,11 @@ void main_build_accounts(void)
 
 			entry = gtk_menu_item_new_with_mnemonic(buf);
 			gtk_container_add(GTK_CONTAINER(check_single_accounts_menu_menu), entry);
+			gtk_signal_connect(GTK_OBJECT(entry), "activate",
+				GTK_SIGNAL_FUNC (on_check_single_account_entry_menuitem_activate),
+				i);
 		}
+
 		account = (struct account*)node_next(&account->node);
 		i++;
 	}

@@ -34,6 +34,7 @@
 #include <proto/exec.h>
 #include <proto/muimaster.h>
 #include <proto/icon.h>
+#include <proto/intuition.h>
 
 #include "support_indep.h"
 
@@ -107,7 +108,7 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 	char *def;
 
 	if (!mystricmp(data->type, "image")) def = "picture";
-	else if (!mystricmp(data->type, "audio")) def = "aufio";
+	else if (!mystricmp(data->type, "audio")) def = "audio";
 	else
 	{
 		if (!mystricmp(data->type, "text"))
@@ -156,13 +157,20 @@ STATIC ULONG Icon_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskMinMax
 
 	if (data->obj)
 	{
-		struct Rectangle rect;
-		GetIconRectangle(NULL, data->obj, NULL, &rect,
-					ICONDRAWA_Borderless, TRUE,
-					TAG_DONE);
+		if (IconBase->lib_Version >= 44)
+		{
+			struct Rectangle rect;
+			GetIconRectangle(NULL, data->obj, NULL, &rect,
+						ICONDRAWA_Borderless, TRUE,
+						TAG_DONE);
 
-		w = rect.MaxX - rect.MinX + 1;
-		h = rect.MaxY - rect.MinY + 1;
+			w = rect.MaxX - rect.MinX + 1;
+			h = rect.MaxY - rect.MinY + 1;
+		} else
+		{
+			w = ((struct Image*)data->obj->do_Gadget.GadgetRender)->Width;
+			h = ((struct Image*)data->obj->do_Gadget.GadgetRender)->Height;
+		}
 	} else
 	{
 		w = 30;
@@ -186,7 +194,17 @@ STATIC ULONG Icon_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
 
 	if (data->obj)
 	{
-		DrawIconStateA(_rp(obj),data->obj, NULL, _mleft(obj), _mtop(obj), xget(obj,MUIA_Selected)?IDS_SELECTED:IDS_NORMAL, NULL);
+		int sel = xget(obj,MUIA_Selected);
+		if (IconBase->lib_Version >= 44)
+		{
+			DrawIconStateA(_rp(obj),data->obj, NULL, _mleft(obj), _mtop(obj), sel?IDS_SELECTED:IDS_NORMAL, NULL);
+		} else
+		{
+			if (sel && data->obj->do_Gadget.Flags & GFLG_GADGHIMAGE)
+				DrawImage(_rp(obj),((struct Image*)data->obj->do_Gadget.SelectRender),_mleft(obj),_mtop(obj));
+			else
+				DrawImage(_rp(obj),((struct Image*)data->obj->do_Gadget.GadgetRender),_mleft(obj),_mtop(obj));
+		}
 	}
 
 	return 1;

@@ -212,6 +212,8 @@ static char *encode_header_str(char *toencode, int *line_len_ptr)
 	int max_line_len = 72; /* RFC 2047 says it can be 76 */
 	FILE *fh;
 
+	if (!toencode) return NULL;
+
 	if ((fh = tmpfile()))
 	{
 		int quote_encoding = 0;

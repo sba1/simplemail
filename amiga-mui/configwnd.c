@@ -421,7 +421,7 @@ static char **array_of_addresses_from_texteditor(Object *editor, int page, int *
 			{
 				set(config_list, MUIA_NList_Active, page);
 				set(config_wnd,MUIA_Window_ActiveObject,editor);
-				sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),buf);
+				sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),NULL);
 				FreeVec(addresses);
 				array_free(new_array);
 				*error_ptr = 1;

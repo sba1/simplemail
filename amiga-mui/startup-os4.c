@@ -71,7 +71,7 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-static const char stack[] = "$STACK: 60000";
+static const char __attribute((__used__)) stack[] = "$STACK: 60000";
 
 int _start(void)
 {

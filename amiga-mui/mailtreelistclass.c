@@ -413,16 +413,16 @@ STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	char buf[256];
 
-	strcpy(buf,"COL=0");
+	strcpy(buf,"COL=0 BAR");
 
-	if (xget(data->show_from_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=1");
-	if (xget(data->show_subject_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=2");
-	if (xget(data->show_reply_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=3");
-	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=4");
-	if (xget(data->show_size_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=5");
-	if (xget(data->show_filename_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=6");
-	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=7");
-	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=8");
+	if (xget(data->show_from_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=1 BAR");
+	if (xget(data->show_subject_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=2 BAR");
+	if (xget(data->show_reply_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=3 BAR");
+	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=4 BAR");
+	if (xget(data->show_size_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=5 P=\33r BAR");
+	if (xget(data->show_filename_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=6 BAR");
+	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=7 BAR");
+	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=8 BAR");
 
 #ifdef MAILLIST_IS_TREE
 	set(obj, MUIA_NListtree_Format, buf);

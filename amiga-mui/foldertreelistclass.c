@@ -190,11 +190,11 @@ STATIC VOID FolderTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	char buf[256];
 
-	strcpy(buf,"COL=0");
+	strcpy(buf,"COL=0 BAR");
 
-	if (xget(data->show_mails_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=1");
-	if (xget(data->show_unread_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=2");
-	if (xget(data->show_new_item,MUIA_Menuitem_Checked)) strcat(buf," BAR,COL=3");
+	if (xget(data->show_mails_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=1 P=\33r BAR");
+	if (xget(data->show_unread_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=2 P=\33r BAR");
+	if (xget(data->show_new_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=3 P=\33r BAR");
 
 	set(obj, MUIA_NListtree_Format, buf);
 }

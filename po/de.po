@@ -665,7 +665,7 @@ msgstr ""
 #: amiga-mui/mainwnd.c:699
 #, c-format
 msgid "Total:%d New:%d Unread:%d"
-msgstr "Insgesamt:%d Neu:%s Ungelesen:%d"
+msgstr "Insgesamt:%d Neu:%d Ungelesen:%d"
 
 #: amiga-mui/mainwnd.c:1175
 msgid "No POP3 Server specified"

@@ -106,52 +106,63 @@ SUBDIRS = gtk intl po
 
 EXTRA_DIST = diff_ignore
 
+simplemail_SOURCES = acconfig.h \
+						account.c \
+						account.h \
+						aclocal.m4 \
+						addressbook.c \
+						addressbook.h \
+						codecs.c \
+						codecs.h \
+						codesets.c \
+						codesets.h \
+						codesets_table.h \
+						configuration.c \
+						configuration.h \
+						filter.c \
+						filter.h \
+						folder.c \
+						folder.h \
+						hmac_md5.c \
+						hmac_md5.h \
+						http.c \
+						http.h \
+						lists.c \
+						lists.h \
+						mail.c \
+						mail.h \
+						md5.c \
+						md5.h \
+						parse.c \
+						parse.h \
+						pgp.c \
+						pgp.h \
+						phrase.c \
+						phrase.h \
+						pop3.c \
+						pop3.h \
+						print.c \
+						print.h \
+						signature.c \
+						signature.h \
+						simplemail.c \
+						simplemail.h \
+						smintl.c \
+						smintl.h \
+						smtp.c \
+						smtp.h \
+						support_indep.c \
+						support_indep.h \
+						taglines.c \
+						taglines.h \
+						tcp.c \
+						tcp.h \
+						text2html.c \
+						text2html.h \
+						trans.c \
+						trans.h \
+						version.h
 
-#simplemail_SOURCES = account.c \
-#                     account.h \
-#                     addressbook.c \
-#                     addressbook.h \
-#                     codecs.c \
-#                     codecs.h \
-#                     configuration.c \
-#                     configuration.h \
-#                     filter.c \
-#                     filter.h \
-#                     folder.c \
-#                     folder.h \
-#                     hmac_md5.c \
-#                     hmac_md5.h \
-#		     http.h \
-#		     http.c \
-#                     lists.c \
-#                     lists.h \
-#                     mail.c \
-#                     mail.h \
-#                     md5.c \
-#                     md5.h \
-#                     parse.c \
-#                     parse.h \
-#                     phrase.c \
-#                     phrase.h \
-#                     pop3.c \
-#                     pop3.h \
-#                     signature.c \
-#                     signature.h \
-#                     simplemail.c \
-#                     simplemail.h \
-#                     support_indep.c \
-#                     support_indep.h \
-#                     smintl.c \
-#                     smintl.h \
-#                     smtp.c \
-#                     smtp.h \
-#                     tcp.c \
-#                     tcp.h \
-#                     text2html.c \
-#                     text2html.h \
-#                     trans.c \
-#                     trans.h
-simplemail_SOURCES = 
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
 simplemail_LDADD = ./gtk/libgui.a @GUI_LIBS@
@@ -163,7 +174,15 @@ CONFIG_CLEAN_FILES = intl/Makefile
 bin_PROGRAMS = simplemail$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
-am_simplemail_OBJECTS =
+am_simplemail_OBJECTS = account.$(OBJEXT) addressbook.$(OBJEXT) \
+	codecs.$(OBJEXT) codesets.$(OBJEXT) configuration.$(OBJEXT) \
+	filter.$(OBJEXT) folder.$(OBJEXT) hmac_md5.$(OBJEXT) \
+	http.$(OBJEXT) lists.$(OBJEXT) mail.$(OBJEXT) md5.$(OBJEXT) \
+	parse.$(OBJEXT) pgp.$(OBJEXT) phrase.$(OBJEXT) pop3.$(OBJEXT) \
+	print.$(OBJEXT) signature.$(OBJEXT) simplemail.$(OBJEXT) \
+	smintl.$(OBJEXT) smtp.$(OBJEXT) support_indep.$(OBJEXT) \
+	taglines.$(OBJEXT) tcp.$(OBJEXT) text2html.$(OBJEXT) \
+	trans.$(OBJEXT)
 simplemail_OBJECTS = $(am_simplemail_OBJECTS)
 simplemail_LDFLAGS =
 
@@ -172,11 +191,25 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I.
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-CFLAGS = @CFLAGS@
+depcomp = $(SHELL) $(top_srcdir)/depcomp
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/account.Po $(DEPDIR)/addressbook.Po \
+@AMDEP_TRUE@	$(DEPDIR)/codecs.Po $(DEPDIR)/codesets.Po \
+@AMDEP_TRUE@	$(DEPDIR)/configuration.Po $(DEPDIR)/filter.Po \
+@AMDEP_TRUE@	$(DEPDIR)/folder.Po $(DEPDIR)/hmac_md5.Po \
+@AMDEP_TRUE@	$(DEPDIR)/http.Po $(DEPDIR)/lists.Po \
+@AMDEP_TRUE@	$(DEPDIR)/mail.Po $(DEPDIR)/md5.Po \
+@AMDEP_TRUE@	$(DEPDIR)/parse.Po $(DEPDIR)/pgp.Po \
+@AMDEP_TRUE@	$(DEPDIR)/phrase.Po $(DEPDIR)/pop3.Po \
+@AMDEP_TRUE@	$(DEPDIR)/print.Po $(DEPDIR)/signature.Po \
+@AMDEP_TRUE@	$(DEPDIR)/simplemail.Po $(DEPDIR)/smintl.Po \
+@AMDEP_TRUE@	$(DEPDIR)/smtp.Po $(DEPDIR)/support_indep.Po \
+@AMDEP_TRUE@	$(DEPDIR)/taglines.Po $(DEPDIR)/tcp.Po \
+@AMDEP_TRUE@	$(DEPDIR)/text2html.Po $(DEPDIR)/trans.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
 DIST_SOURCES = $(simplemail_SOURCES)
 
 RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
@@ -194,6 +227,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
+.SUFFIXES: .c .o .obj
 $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  Makefile
@@ -268,6 +302,49 @@ mostlyclean-compile:
 
 distclean-compile:
 	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/account.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/addressbook.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/codecs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/codesets.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/configuration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/filter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/folder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/hmac_md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/http.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/lists.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/mail.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/parse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pgp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/phrase.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/pop3.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/print.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/signature.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/simplemail.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/smintl.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/smtp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/support_indep.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/taglines.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/tcp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/text2html.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/trans.Po@am__quote@
+
+distclean-depend:
+	-rm -rf $(DEPDIR)
+
+.c.o:
+@AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(COMPILE) -c `test -f $< || echo '$(srcdir)/'`$<
+
+.c.obj:
+@AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(COMPILE) -c `cygpath -w $<`
+CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -482,8 +559,8 @@ dist-all: distdir
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 distclean: distclean-recursive
 	-rm -f config.status config.cache config.log
-distclean-am: clean-am distclean-compile distclean-generic distclean-hdr \
-	distclean-tags
+distclean-am: clean-am distclean-compile distclean-depend \
+	distclean-generic distclean-hdr distclean-tags
 
 dvi: dvi-recursive
 
@@ -517,79 +594,21 @@ uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) GTAGS all all-am check check-am clean \
 	clean-binPROGRAMS clean-generic clean-recursive dist dist-all \
-	distcheck distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-recursive distclean-tags distdir dvi \
-	dvi-am dvi-recursive info info-am info-recursive install \
-	install-am install-binPROGRAMS install-data install-data-am \
-	install-data-recursive install-exec install-exec-am \
-	install-exec-recursive install-info install-info-am \
-	install-info-recursive install-man install-recursive \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am installdirs-recursive maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-recursive \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-info-am \
+	distcheck distclean distclean-compile distclean-depend \
+	distclean-generic distclean-hdr distclean-recursive \
+	distclean-tags distdir dvi dvi-am dvi-recursive info info-am \
+	info-recursive install install-am install-binPROGRAMS \
+	install-data install-data-am install-data-recursive \
+	install-exec install-exec-am install-exec-recursive \
+	install-info install-info-am install-info-recursive install-man \
+	install-recursive install-strip installcheck installcheck-am \
+	installdirs installdirs-am installdirs-recursive \
+	maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-recursive tags tags-recursive \
+	uninstall uninstall-am uninstall-binPROGRAMS uninstall-info-am \
 	uninstall-info-recursive uninstall-recursive
 
-	acconfig.h \
-	account.c \
-	account.h \
-	aclocal.m4 \
-	addressbook.c \
-	addressbook.h \
-	codecs.c \
-	codecs.h \
-	codesets.c \
-	codesets.h \
-	codesets_table.h \
-	configuration.c \
-	configuration.h \
-	filter.c \
-	filter.h \
-	folder.c \
-	folder.h \
-	gen_makefile.c \
-	gen_makefile.h \
-	hmac_md5.c \
-	hmac_md5.h \
-	http.c \
-	http.h \
-	lists.c \
-	lists.h \
-	mail.c \
-	mail.h \
-	md5.c \
-	md5.h \
-	parse.c \
-	parse.h \
-	pgp.c \
-	pgp.h \
-	phrase.c \
-	phrase.h \
-	pop3.c \
-	pop3.h \
-	print.c \
-	print.h \
-	signature.c \
-	signature.h \
-	simplemail.c \
-	simplemail.h \
-	smintl.c \
-	smintl.h \
-	smtp.c \
-	smtp.h \
-	support_indep.c \
-	support_indep.h \
-	taglines.c \
-	taglines.h \
-	tcp.c \
-	tcp.h \
-	text2html.c \
-	text2html.h \
-	trans.c \
-	trans.h \
-	version.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

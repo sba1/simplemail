@@ -22,6 +22,7 @@
 
 #include <ctype.h>
 #include <dirent.h> /* dir stuff */
+#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,7 +37,7 @@
 
 /*
  * Copyright 2001 Unicode, Inc.
- * 
+ *
  * Disclaimer
  * 
  * This source code is provided as is by Unicode, Inc. No claims are
@@ -165,7 +166,7 @@ ConversionResult ConvertUTF8toUTF16 (
 ConversionResult ConvertUTF32toUTF8 (
 		UTF32** sourceStart, const UTF32* sourceEnd, 
 		UTF8** targetStart, const UTF8* targetEnd, ConversionFlags flags);
-		
+
 ConversionResult ConvertUTF8toUTF32 (
 		UTF8** sourceStart, UTF8* sourceEnd, 
 		UTF32** targetStart, const UTF32* targetEnd, ConversionFlags flags);
@@ -466,7 +467,7 @@ Boolean isLegalUTF8Sequence(UTF8 *source, UTF8 *sourceEnd) {
 /* --------------------------------------------------------------------- */
 
 ConversionResult ConvertUTF8toUTF16 (
-		UTF8** sourceStart, UTF8* sourceEnd, 
+		UTF8** sourceStart, UTF8* sourceEnd,
 		UTF16** targetStart, const UTF16* targetEnd, const ConversionFlags flags) {
 	ConversionResult result = conversionOK;
 	UTF8* source = *sourceStart;
@@ -782,7 +783,7 @@ static int codesets_read_table(char *name)
 				UTF8 *dest_ptr = &codeset->table[i].utf8[1];
 				ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 				*dest_ptr = 0;
-				codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+				codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 			}
 			memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 			qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -819,7 +820,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -839,7 +840,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -860,7 +861,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -881,7 +882,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -902,7 +903,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -923,7 +924,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -944,7 +945,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -965,7 +966,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -986,7 +987,7 @@ int codesets_init(void)
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
 		*dest_ptr = 0;
-		codeset->table[i].utf8[0] = dest_ptr - &codeset->table[i].utf8[1];
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 	}
 	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
@@ -1381,7 +1382,7 @@ int utf8stricmp(char *str1, char *str2)
 				if ((d = *str1++ - *str2++)) return d;
 				bytes1--;
 			}
-		} else
+		} else
 		{
 
 			unsigned char ch1[4],ch2[4];
@@ -1487,7 +1488,7 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 				if ((d = *str1++ - *str2++)) return d;
 				bytes1--;
 			}
-		} else
+		} else
 		{
 
 			unsigned char ch1[4],ch2[4];

@@ -8,7 +8,7 @@
 
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
-3 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
@@ -17,17 +17,14 @@
 ***************************************************************************/
 
 /*
-** print.h
+** sysprint.h
 */
 
+typedef void *PrintHandle; /* Opaque */
 
-#ifndef SM__PRINT_H
-#define SM__PRINT_H
+/* Open and Close */
+PrintHandle *sysprint_prepare(void);
+void sysprint_cleanup(PrintHandle *);
 
-#ifdef __GNUC__
-struct mail;
-#endif
-
-int print_mail(struct mail *, int);
-
-#endif
+/* print */
+int sysprint_print(PrintHandle *, char *, unsigned long);

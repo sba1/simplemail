@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <dos/exall.h>
+#include <workbench/icon.h>
 #include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
@@ -36,6 +38,8 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 #include <proto/openurl.h>
+#include <proto/wb.h>
+#include <proto/icon.h>
 
 #include "configuration.h"
 #include "folder.h"
@@ -91,6 +95,57 @@ struct Read_Data /* should be a customclass */
 	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
 	/* more to add */
 };
+
+/******************************************************************
+ Cleanups temporary files created for the mail. Returns 1 if can
+ continue.
+*******************************************************************/
+static int read_cleanup(struct Read_Data *data)
+{
+	struct ExAllControl *eac;
+	BPTR dirlock;
+	char filename[100];
+	int rc = 1;
+	struct mail *mail = data->mail;
+
+	if (!data->mail) return 1;
+	strcpy(filename,"T:");
+	strcat(filename,mail->filename);
+	dirlock = Lock(filename,ACCESS_READ);
+	if (!dirlock) return 1;
+
+	if ((eac = (struct ExAllControl *)AllocDosObject(DOS_EXALLCONTROL,NULL)))
+	{
+		APTR EAData = AllocVec(1024,0);
+		if (EAData)
+		{
+			int more;
+			BPTR olddir = CurrentDir(dirlock);
+
+			eac->eac_LastKey = 0;
+			do
+			{
+				struct ExAllData *ead;
+				more = ExAll(dirlock, EAData, 1024, ED_NAME, eac);
+				if ((!more) && (IoErr() != ERROR_NO_MORE_ENTRIES)) break;
+				if (eac->eac_Entries == 0) continue;
+
+	      ead = (struct ExAllData *)EAData;
+	      do
+	      {
+	      	DeleteFile(ead->ed_Name); /* TODO: Check the result */
+					ead = ead->ed_Next;
+				} while (ead);
+			} while (more);
+			CurrentDir(olddir);
+			FreeVec(EAData);
+		}
+		FreeDosObject(DOS_EXALLCONTROL,eac);
+	}
+	UnLock(dirlock);
+	DeleteFile(filename);
+	return rc;
+}
 
 /******************************************************************
  inserts the text of the mail into the given nlist object
@@ -182,7 +237,7 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 /******************************************************************
  An Icon has selected
 *******************************************************************/
-void icon_selected(int **pdata)
+static void icon_selected(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
 	Object *icon = (Object*)(pdata[1]);
@@ -203,7 +258,7 @@ void icon_selected(int **pdata)
 /******************************************************************
  A context menu item has been selected
 *******************************************************************/
-void context_menu_trigger(int **pdata)
+static void context_menu_trigger(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
 	struct mail *mail = (struct mail *)(pdata[1]);
@@ -221,6 +276,47 @@ void context_menu_trigger(int **pdata)
 						break;
 
 			case	3: /* Open via workbench.library */
+						{
+							if (WorkbenchBase->lib_Version >= 44 && IconBase->lib_Version >= 44)
+							{
+								BPTR fh;
+								BPTR newdir;
+								BPTR olddir;
+								char filename[100];
+
+								/* Write out the file, create an icon, start it via wb.library */
+								if (mail->filename)
+								{
+									strcpy(filename,"T:");
+									strcat(filename,mail_get_root(mail)->filename);
+									if ((newdir = CreateDir(filename))) UnLock(newdir);
+
+									if ((newdir = Lock(filename, ACCESS_READ)))
+									{
+										olddir = CurrentDir(newdir);
+
+										if ((fh = Open(mail->filename,MODE_NEWFILE)))
+										{
+											struct DiskObject *dobj;
+											mail_decode(mail);
+											if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
+											else Write(fh,mail->decoded_data,mail->decoded_len);
+											Close(fh);
+
+											if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+											{
+												PutIconTagList(mail->filename,dobj,NULL);
+												FreeDiskObject(dobj);
+												OpenWorkbenchObjectA(mail->filename,NULL);
+											}
+										}
+
+										CurrentDir(olddir);
+										UnLock(newdir);
+									}
+								}
+							}
+						}
 						break;
 		}
 	}
@@ -350,6 +446,7 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 static void read_window_close(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
+	read_cleanup(data);
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	MUI_DisposeObject(data->wnd);
@@ -391,6 +488,7 @@ static void prev_button_pressed(struct Read_Data **pdata)
 	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->ref_mail->filename);
 	if (prev)
 	{
+		read_cleanup(data);
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 		read_window_display_mail(data, prev);
@@ -422,6 +520,7 @@ static void next_button_pressed(struct Read_Data **pdata)
 	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->ref_mail->filename);
 	if (next)
 	{
+		read_cleanup(data);
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 		read_window_display_mail(data, next);
@@ -460,6 +559,7 @@ static void delete_button_pressed(struct Read_Data **pdata)
 			set(data->wnd, MUIA_Window_Open, FALSE);
 			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 		}
+		read_cleanup(data);
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 

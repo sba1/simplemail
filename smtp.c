@@ -43,6 +43,10 @@
 
 #include "configuration.h"
 
+#include "md5.h"
+#include "codecs.h"
+
+
 int buf_flush(struct smtp_server *server, char *buf, long len)
 {
 	int rc;
@@ -156,6 +160,8 @@ int smtp_send_cmd(struct smtp_server *server, char *cmd, char *args)
 	
 	while(!ready && (buf = tcp_readln(server->socket)))
 	{
+/*		  puts(buf);*/
+
 		if(buf[3] == ' ')
 		{
 			ready = 1;
@@ -494,14 +500,15 @@ int esmtp_ehlo(struct smtp_server *server)
 				}
 
 				running = (rbuf[3] != ' ');
+
+				if(running == 0)
+				{
+					rc = (atol(rbuf) == SMTP_OK);
+				}
+
 				free(rbuf);
 			}
 			while(running);
-
-			if(atol(buf) == SMTP_OK)
-			{
-				rc = 1;
-			}
 		}
 		else
 		{
@@ -509,14 +516,56 @@ int esmtp_ehlo(struct smtp_server *server)
 		}
 	}
 
-	return /*rc;*/ 0;
+	return rc;
 }
 
 int esmtp_auth(struct smtp_server *server)
 {
 	int rc;
+	long len;
+	char *buf, prep[1024];
 
 	rc = 0;
+
+/*	  if(server->esmtp.auth_flags & AUTH_CRAM_MD5)
+	{
+		if(smtp_send_cmd(server, "AUTH", "CRAM-MD5") == 334)
+		{
+
+		}
+	}
+	else if(server->esmtp.auth_flags & AUTH_DIGEST_MD5)
+	{
+		if(smtp_send_cmd(server, "AUTH", "DIGEST-MD5") == 334)
+		{
+
+		}
+	}
+	else if(server->esmtp.auth_flags & AUTH_LOGIN)
+	{
+		if(smtp_send_cmd(server, "AUTH", "LOGIN") == 334)
+		{
+
+		}
+	}
+	else if(server->esmtp.auth_flags & AUTH_PLAIN)
+	{*/
+		if(smtp_send_cmd(server, "AUTH", "PLAIN") == 334)
+		{
+			prep[0]=0;
+			strcpy(prep + 1, server->esmtp.auth_login);
+			strcpy(prep + 1 + strlen(server->esmtp.auth_login) + 1, server->esmtp.auth_password);
+
+			len = 1 + strlen(server->esmtp.auth_login) + 1 + strlen(server->esmtp.auth_password);
+			buf = encode_base64(prep, len);
+			buf[strlen(buf) - 1] = 0;
+			if(smtp_send_cmd(server, buf, NULL) == 235)
+			{
+				rc = 1;
+			}
+			free(buf);
+		}
+//	  }
 
 	return rc;
 }

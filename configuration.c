@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** configuration.c
 */
 
 #include <string.h>
@@ -106,6 +106,8 @@ int load_config(void)
 							user.config.smtp_port = atoi(result);
 						if ((result = get_config_item(buf,"SMTP00.Domain")))
 							user.config.smtp_domain = strdup(result);
+						if ((result = get_config_item(buf,"SMTP00.IPAsDomain")))
+							user.config.smtp_ip_as_domain = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"SMTP00.Auth")))
 							user.config.smtp_auth = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"SMTP00.Login")))
@@ -147,6 +149,7 @@ void save_config(void)
 			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
 			fprintf(fh,"SMTP00.Port=%ld\n",user.config.smtp_port);
 			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
+			fprintf(fh,"SMTP00.IPAsDomain=%s\n",user.config.smtp_ip_as_domain?"Y":"N");
 			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
 			fprintf(fh,"SMTP00.Login=%s\n",MAKESTR(user.config.smtp_login));
 			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));

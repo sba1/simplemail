@@ -49,6 +49,7 @@ static Object *pop3_port_string;
 static Object *pop3_password_string;
 static Object *pop3_delete_check;
 static Object *smtp_domain_string;
+static Object *smtp_ip_check;
 static Object *smtp_server_string;
 static Object *smtp_port_string;
 static Object *smtp_auth_check;
@@ -85,6 +86,7 @@ static void config_use(void)
 	user.config.realname = mystrdup((char*)xget(user_realname_string, MUIA_String_Contents));
 	user.config.email = mystrdup((char*)xget(user_email_string, MUIA_String_Contents));
 	user.config.smtp_domain = mystrdup((char*)xget(smtp_domain_string, MUIA_String_Contents));
+	user.config.smtp_ip_as_domain = xget(smtp_ip_check, MUIA_Selected);
 	user.config.smtp_server = mystrdup((char*)xget(smtp_server_string, MUIA_String_Contents));
 	user.config.smtp_login = mystrdup((char*)xget(smtp_login_string, MUIA_String_Contents));
 	user.config.smtp_password = mystrdup((char*)xget(smtp_password_string, MUIA_String_Contents));
@@ -192,11 +194,16 @@ static int init_tcpip_send_group(void)
 	tcpip_send_group =  ColGroup(2),
 		MUIA_ShowMe, FALSE,
 		Child, MakeLabel("Domain"),
-		Child, smtp_domain_string = BetterStringObject,
-			StringFrame,
-			MUIA_CycleChain, 1,
-			MUIA_String_Contents, user.config.smtp_domain,
-			MUIA_String_AdvanceOnCR, TRUE,
+		Child, HGroup,
+			Child, smtp_domain_string = BetterStringObject,
+				StringFrame,
+				MUIA_Disabled, user.config.smtp_ip_as_domain,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, user.config.smtp_domain,
+				MUIA_String_AdvanceOnCR, TRUE,
+				End,
+			Child, MakeLabel("Use IP as domain"),
+			Child, smtp_ip_check = MakeCheck("Use IP as domain",user.config.smtp_ip_as_domain),
 			End,
 		Child, MakeLabel("SMTP Server"),
 		Child, HGroup,
@@ -224,7 +231,7 @@ static int init_tcpip_send_group(void)
 		Child, MakeLabel("Login/User ID"),
 		Child, smtp_login_string = BetterStringObject,
 			StringFrame,
-			MUIA_Disabled, TRUE,
+			MUIA_Disabled, !user.config.smtp_auth,
 			MUIA_CycleChain, 1,
 			MUIA_String_Contents, user.config.smtp_login,
 			MUIA_String_AdvanceOnCR, TRUE,
@@ -233,7 +240,7 @@ static int init_tcpip_send_group(void)
 		Child, smtp_password_string = BetterStringObject,
 			StringFrame,
 			MUIA_CycleChain, 1,
-			MUIA_Disabled, TRUE,
+			MUIA_Disabled, !user.config.smtp_auth,
 			MUIA_String_Contents, user.config.smtp_password,
 			MUIA_String_AdvanceOnCR, TRUE,
 			MUIA_String_Secret, TRUE,
@@ -245,6 +252,8 @@ static int init_tcpip_send_group(void)
 	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_login_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, TRUE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, smtp_login_string);
+	DoMethod(smtp_ip_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_domain_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+	DoMethod(smtp_ip_check, MUIM_Notify, MUIA_Selected, FALSE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, smtp_domain_string);
 
 	return 1;
 }

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** configuration.h
 */
 
 #ifndef SM__CONFIGURATION_H
@@ -31,6 +31,7 @@ struct config
 	char *smtp_server;
 	int smtp_port;
 	char *smtp_domain;
+	int smtp_ip_as_domain;
 	int smtp_auth; /* 1 if SMTP Auth should be used */
 	char *smtp_login;
 	char *smtp_password;

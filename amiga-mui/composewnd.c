@@ -86,6 +86,7 @@ struct Compose_Data /* should be a customclass */
 	Object *text_texteditor;
 	Object *quick_attach_tree;
 	Object *attach_tree;
+	Object *attach_desc_string;
 	Object *contents_page;
 	Object *datatype_datatypes;
 	Object *encrypt_button;
@@ -468,6 +469,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 					TAG_DONE);
 
 			set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->temporary_filename?attach->temporary_filename:attach->filename);
+			set(data->attach_desc_string, MUIA_String_Contents, attach->description);
 		}
 
 		if ((activenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->quick_attach_tree, MUIM_AttachmentList_FindUniqueID, attach->unique_id)))
@@ -486,6 +488,26 @@ static void compose_attach_active(struct Compose_Data **pdata)
 
 /******************************************************************
  Attach the mail given in the treenode to the current mail
+*******************************************************************/
+static void compose_attach_desc(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	struct MUI_NListtree_TreeNode *activenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_Active);
+	struct attachment *attach = NULL;
+
+	if (activenode)
+	{
+		if ((attach = (struct attachment *)activenode->tn_User))
+		{
+			free(attach->description);
+			attach->description = mystrdup((char*)xget(data->attach_desc_string,MUIA_String_Contents));
+			DoMethod(data->attach_tree, MUIM_NListtree_Redraw, MUIV_NListtree_Redraw_Active, 0);
+		}
+	}
+}
+
+/******************************************************************
+ Attach the mail given in the treenode to the current mail
  (recursive)
 *******************************************************************/
 static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NListtree_TreeNode *treenode, struct composed_mail *cmail)
@@ -498,12 +520,14 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 	if (!treenode) return;
 	if (!(attach = (struct attachment *)treenode->tn_User)) return;
 
+	cmail->content_type = mystrdup(attach->content_type);
+	cmail->content_description = utf8create(attach->description,user.config.default_codeset?user.config.default_codeset->name:NULL);
+
 	if (treenode->tn_Flags & TNF_LIST)
 	{
 		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,
 				MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Head, 0);
 
-		cmail->content_type = mystrdup(attach->content_type);
 
 		while (tn)
 		{
@@ -518,7 +542,6 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 		}
 	} else
 	{
-		cmail->content_type = mystrdup(attach->content_type);
 		cmail->text = (attach->contents)?utf8create(attach->contents,user.config.default_codeset?user.config.default_codeset->name:NULL):NULL;
 		cmail->filename = mystrdup(attach->filename);
 		cmail->temporary_filename = mystrdup(attach->temporary_filename);
@@ -547,6 +570,8 @@ static void compose_mail(struct Compose_Data *data, int hold)
 
 		/* Attach the mails recursivly */
 		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
+
+		/* TODO: free this stuff!! */
 
 		new_mail.from = from;
 		new_mail.replyto = reply;
@@ -646,6 +671,15 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 	attach.content_type = buf;
 	attach.unique_id = data->attachment_unique_id++;
 
+	if (mail->content_description && *mail->content_description)
+	{
+		int len = strlen(mail->content_description)+1;
+		if ((attach.description = malloc(len)))
+		{
+			utf8tostr(mail->content_description, attach.description, len, user.config.default_codeset);
+		}
+	}
+
 	if (!num_multiparts)
 	{
 		void *cont;
@@ -697,9 +731,11 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 	}
 
 	treenode = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,MUIM_NListtree_Insert,"",&attach,listnode,MUIV_NListtree_Insert_PrevNode_Tail,num_multiparts?(TNF_LIST|TNF_OPEN):0);
-	if (!treenode) return;
 
-	if (attach.contents) free(attach.contents);
+	free(attach.contents);
+	free(attach.description);
+
+	if (!treenode) return;
 
 	for (i=0;i<num_multiparts; i++)
 	{
@@ -838,7 +874,7 @@ int compose_window_open(struct compose_args *args)
 	Object *datatype_datatypes;
 	Object *expand_to_button, *expand_cc_button;
 	Object *quick_attach_tree;
-	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
+	Object *attach_tree, *attach_desc_string, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
 	Object *from_popobject;
 	Object *signatures_group;
@@ -1041,6 +1077,13 @@ int compose_window_open(struct compose_args *args)
 							End,
 						End,
 					Child, HGroup,
+						Child, MakeLabel(_("Description")),
+						Child, attach_desc_string = BetterStringObject,
+							StringFrame,
+							MUIA_ControlChar, GetControlChar(_("Description")),
+							End,
+						End,
+					Child, HGroup,
 						Child, add_text_button = MakeButton(_("Add text")),
 						Child, add_multipart_button = MakeButton(_("Add multipart")),
 						Child, add_files_button = MakeButton(_("Add file(s)")),
@@ -1078,6 +1121,7 @@ int compose_window_open(struct compose_args *args)
 			data->x_text = xcursor_text;
 			data->y_text = ycursor_text;
 			data->attach_tree = attach_tree;
+			data->attach_desc_string = attach_desc_string;
 			data->quick_attach_tree = quick_attach_tree;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
@@ -1147,6 +1191,7 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(add_attach_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_remove_file, data);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
+			DoMethod(attach_desc_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_attach_desc, data);
 			DoMethod(quick_attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, quick_attach_tree, 4, MUIM_CallHook, &hook_standard, compose_quick_attach_active, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
 			DoMethod(hold_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);

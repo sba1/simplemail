@@ -72,6 +72,7 @@ struct mail
 	char *content_type;
 	char *content_subtype; /* the types of the whole mail */
 	char *content_charset; /* the contents charset (usually for text parts only) */
+	char *content_description; /* the description field */
 	struct list content_parameter_list; /* additional parameters */
 	char *content_transfer_encoding;
 	char *content_id; /* id of the content */
@@ -200,6 +201,7 @@ struct composed_mail
 	char *temporary_filename; /* maybe NULL */
 	char *text; /* maybe NULL */
 	char *content_type; /* maybe NULL */
+	char *content_description; /* maybe NULL */
 	struct list list; /* more entries */
 
 	char *mail_filename; /* The name of the mail (mainly used for changeing) */

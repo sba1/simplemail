@@ -1691,11 +1691,13 @@ int mail_process_headers(struct mail *mail)
 		} else if (!mystricmp("content-transfer-encoding",header->name))
 		{
 			mail->content_transfer_encoding = strdup(buf);
+		} else if (!mystricmp("content-description",header->name))
+		{
+			parse_text_string(buf,&mail->content_description);
 		} else if (!mystricmp("Importance",header->name))
 		{
 			if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
 		}
-
 		header = (struct header*)node_next(&header->node);
 	}
 
@@ -2383,7 +2385,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 			"Jul","Aug","Sep","Oct","Nov","Dec"
 		};
 
-		fprintf(fp,"%s", subject);
+		fputs(subject,fp);
 		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2002 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,"AmigaOS");
 
 		time(&t);
@@ -2555,6 +2557,18 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 			fprintf(ofh,"MIME-Version: 1.0\n");
 			fprintf(ofh, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
+
+			/* Write the Content Description out */
+			if (new_mail->content_description)
+			{
+				char *cd;
+				if ((cd = encode_header_field_utf8("Content-Description",new_mail->content_description)))
+				{
+					fputs(cd,fp);
+					free(cd);
+				}
+			}
+
 			fprintf(ofh, "\n");
 			if (new_mail->to) fputs(mime_preample,ofh);
 
@@ -2597,10 +2611,21 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			if (convtext)
 			{
 				body = encode_body(convtext, strlen(convtext), new_mail->content_type, &body_len, &body_encoding);
-				if (body_encoding && mystricmp(body_encoding,"7bit"))
+				if (body_encoding && mystricmp(body_encoding,"7bit") || new_mail->content_description)
 				{
 					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
 				  fprintf(ofh,"Content-Type: text/plain; charset=%s\n",best_codeset->name);
+
+					/* Write the Content Description out */
+					if (new_mail->content_description)
+					{
+						char *cd;
+						if ((cd = encode_header_field_utf8("Content-Description",new_mail->content_description)))
+						{
+							fputs(cd,fp);
+							free(cd);
+						}
+					}
 				}
 
 				free(convtext);
@@ -2614,6 +2639,17 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
 				fprintf(ofh,"Content-Type: %s\n",new_mail->content_type);
 				fprintf(ofh,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
+
+				/* Write the Content Description out */
+				if (new_mail->content_description)
+				{
+					char *cd;
+					if ((cd = encode_header_field_utf8("Content-Description",new_mail->content_description)))
+					{
+						fputs(cd,fp);
+						free(cd);
+					}
+				}
 
 				if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
 				{

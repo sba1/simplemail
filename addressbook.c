@@ -1197,10 +1197,10 @@ struct addressbook_entry *addressbook_find_entry_by_address(char *addr)
 /**************************************************************************
  Completes an alias/realname/e-mail address of the addressbook
 **************************************************************************/
-struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m)
+struct addressbook_entry *addressbook_get_entry_from_mail_header(struct mail *m, char *header)
 {
 	struct addressbook_entry *e = NULL;
-	char *from = mail_find_header_contents(m, "from");
+	char *from = mail_find_header_contents(m, header);
 	if (from)
 	{
 		struct parse_address addr;

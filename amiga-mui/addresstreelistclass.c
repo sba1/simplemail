@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 
 #include "addressbook.h"
+#include "folder.h"
 #include "mail.h"
 #include "parse.h"
 #include "simplemail.h"
@@ -47,6 +48,7 @@
 #include "addresstreelistclass.h"
 #include "compiler.h"
 #include "mailtreelistclass.h"
+#include "mainwnd.h"
 #include "muistuff.h"
 
 #define TYPE_MAIN 0
@@ -278,25 +280,7 @@ STATIC ULONG AddressTreelist_DragDrop(struct IClass *cl, Object *obj, struct MUI
 
 	if (OCLASS(msg->obj) != CL_MailTreelist->mcc_Class) return DoSuperMethodA(cl,obj,(Msg)msg);
 
-	if ((treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active)))
-	{
-		struct mail *mail = (struct mail*)treenode->tn_User;
-		if (mail && (ULONG)mail != (ULONG)MUIV_MailTreelist_UserData_Name)
-		{
-			char *from = mail_find_header_contents(mail,"from");
-			if (from)
-			{
-				struct mailbox mb;
-				if (parse_mailbox(from,&mb))
-				{
-					if (!addressbook_get_realname(mb.addr_spec))
-					{
-						addressbook_open_with_new_address(mail);
-					}
-				}
-			}
-		}
-	}
+	callback_get_address();
 	return 0;
 }
 

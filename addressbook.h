@@ -117,7 +117,7 @@ char *addressbook_download_portrait(char *email);
 char *addressbook_get_address_str(struct addressbook_entry *entry);
 char *addressbook_get_expand_str(char *unexpand);
 struct addressbook_entry *addressbook_find_entry_by_address(char *addr);
-struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m);
+struct addressbook_entry *addressbook_get_entry_from_mail_header(struct mail *m, char *header);
 char *addressbook_completed_by_entry(char *part, struct addressbook_entry *entry, int *type_ptr);
 char *addressbook_complete_address(char *address);
 

@@ -42,6 +42,7 @@
 #include "folderwnd.h"
 #include "gui_main.h"
 #include "mainwnd.h"
+#include "parse.h"
 #include "readwnd.h"
 #include "subthreads.h"
 #include "support.h"
@@ -137,10 +138,31 @@ int callback_delete_mail(struct mail *mail)
 /* get the address */
 void callback_get_address(void)
 {
-	struct mail *m = main_get_active_mail();
-	if (m)
+	struct mail *mail = main_get_active_mail();
+	if (mail)
 	{
-		addressbook_open_with_new_address(m);
+		char *addr;
+		struct folder *f;
+		char *header;
+
+		f = main_get_folder();
+
+		if (folder_get_type(f) == FOLDER_TYPE_SEND) header = "to";
+		else header = "from";
+
+		addr = mail_find_header_contents(mail,header);
+
+		if (addr)
+		{
+			struct mailbox mb;
+			if (parse_mailbox(addr,&mb))
+			{
+				if (!addressbook_get_realname(mb.addr_spec))
+				{
+					addressbook_open_with_new_address_from_mail_header(mail,header);
+				}
+			}
+		}
 	}
 }
 

@@ -622,7 +622,6 @@ void callback_config_changed(void)
 	main_build_accounts();
 }
 
-
 static int autocheck_minutes_start; /* to compare with this */
 
 /* initializes the autocheck function */

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** simplemail.c
 */
 
 #include <stdlib.h>
@@ -229,6 +229,8 @@ void callback_mail_has_been_sent(char *filename)
 
 	if ((m = folder_find_mail_by_filename(out,filename)))
 	{
+		/* set the new mail status */
+		folder_set_mail_status(out,m,MAIL_STATUS_SENT);
 		callback_move_mail(m,out,sent);
 	}
 }

@@ -7,6 +7,7 @@
 #include <libraries/mui.h>
 #include <clib/alib_protos.h>
 #include <proto/muimaster.h>
+#include <proto/intuition.h>
 
 #include "muistuff.h"
 

@@ -29,6 +29,7 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/muimaster.h>
+#include <proto/intuition.h>
 
 #include "mail.h"
 #include "support.h"

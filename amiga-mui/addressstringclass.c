@@ -27,6 +27,7 @@
 #include <proto/utility.h>
 #include <proto/exec.h>
 #include <proto/muimaster.h>
+#include <proto/intuition.h>
 
 #include "addressbook.h"
 

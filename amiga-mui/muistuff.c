@@ -25,6 +25,7 @@
 #include <intuition/classusr.h> /* Object * */
 #include <libraries/mui.h>
 #include <proto/muimaster.h>
+#include <proto/intuition.h>
 
 #include "compiler.h"
 #include "muistuff.h"

@@ -385,8 +385,8 @@ int main_window_init(void)
 		MENU_SETTINGS_ADDRESSBOOK,
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
-		MENU_SETTINGS_MUI
-
+		MENU_SETTINGS_MUI,
+		MENU_SETTINGS_SAVEPREFS
 	};
 
 	static const struct NewMenu nm[] =
@@ -428,8 +428,9 @@ int main_window_init(void)
 		{NM_ITEM, "Addressbook", NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
 		{NM_ITEM, "Configuration...", NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, "Filter...", NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
-		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "MUI...", NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, "Save Settings", NULL, 0, 0, (APTR)MENU_SETTINGS_SAVEPREFS},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
@@ -552,6 +553,9 @@ int main_window_init(void)
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
 
+		set(main_settings_folder_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','F'));
+		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
+
 		settings_show_changed();
 
 		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<7))
@@ -612,6 +616,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENV);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
 
 		/* Key notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
@@ -658,16 +664,14 @@ int main_window_init(void)
 *******************************************************************/
 int main_window_open(void)
 {
-	int rc;
-	rc = FALSE;
-	
-	if(win_main != NULL)
+	if (win_main)
 	{
+		/* The settings could have been loaded */
+		settings_show_changed();
 		set(win_main, MUIA_Window_Open, TRUE);
-		rc = TRUE;
-	}	
-	
-	return(rc);
+		return 1;
+	}
+	return 0;
 }
 
 /******************************************************************

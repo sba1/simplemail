@@ -278,6 +278,7 @@ int all_init(void)
 				{
 					if (main_window_init())
 					{
+						DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
 						rc = TRUE;
 					}
 				}

@@ -32,6 +32,7 @@
 #include <mui/nlisttree_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/asl.h>
+#include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
@@ -108,7 +109,7 @@ static Object *status_text;
 
 /* For the Balance Snapshot */
 static Object *balance_text;
-static LONG Weights[4];
+static LONG Weights[4] = {33, 100, 100, 100};
 
 static int folders_in_popup;
 
@@ -434,14 +435,24 @@ static void settings_show_changed(void)
 *******************************************************************/
 void main_load_environment(void)
 {
-   char *ls;
-   DoMethod(App, MUIM_Application_Load, MUIV_Application_Load_ENV);
-   if (!*(ls = (STRPTR)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100";
-   sscanf(ls, "%ld %ld %ld %ld", &Weights[0], &Weights[1], &Weights[2], &Weights[3]);
-   set(left_listview_group, MUIA_HorizWeight, Weights[0]);
-   set(mail_listview, MUIA_HorizWeight, Weights[1]);
-   set(folder_listview_group, MUIA_VertWeight, Weights[2]);
-   set(address_listview_group, MUIA_VertWeight, Weights[3]);
+	char *ls;
+	int i=0;
+	LONG count, weight;
+
+	DoMethod(App, MUIM_Application_Load, MUIV_Application_Load_ENV);
+	if (!*(ls = (STRPTR)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100";
+	/* I'm not allowed to use sscanf() */
+	count = StrToLong(ls, &weight);
+	while (count != -1)
+	{
+		if (i<4) Weights[i++] = weight;
+		ls += count;
+		count = StrToLong(ls, &weight);
+	}
+	set(left_listview_group, MUIA_HorizWeight, Weights[0]);
+	set(mail_listview, MUIA_HorizWeight, Weights[1]);
+	set(folder_listview_group, MUIA_VertWeight, Weights[2]);
+	set(address_listview_group, MUIA_VertWeight, Weights[3]);
 }
 
 /******************************************************************
@@ -449,15 +460,18 @@ void main_load_environment(void)
 *******************************************************************/
 void main_save_environment(void)
 {
-   char buf[80];
-   Weights[0] = xget(left_listview_group, MUIA_HorizWeight);
-   Weights[1] = xget(mail_listview, MUIA_HorizWeight);
-   Weights[2] = xget(folder_listview_group, MUIA_VertWeight);
-   Weights[3] = xget(address_listview_group, MUIA_VertWeight);
-   sprintf(buf, "%ld %ld %ld %ld", Weights[0], Weights[1], Weights[2], Weights[3]);
-   setstring(balance_text, buf);
-   DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENV);
-   DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
+	char buf[80];
+
+	Weights[0] = xget(left_listview_group, MUIA_HorizWeight);
+	Weights[1] = xget(mail_listview, MUIA_HorizWeight);
+	Weights[2] = xget(folder_listview_group, MUIA_VertWeight);
+	Weights[3] = xget(address_listview_group, MUIA_VertWeight);
+
+	sprintf(buf, "%ld %ld %ld %ld", Weights[0], Weights[1], Weights[2], Weights[3]);
+	setstring(balance_text, buf);
+
+	DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENV);
+	DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
 }
 
 /******************************************************************
@@ -841,6 +855,10 @@ int main_window_init(void)
 		main_build_accounts();
 		main_build_scripts();
 		main_build_addressbook();
+
+		SM_DEBUGF(15,("Going to load environment\n"));
+		main_load_environment();
+		SM_DEBUGF(15,("Environment loaded\n"));
 
 		rc = TRUE;
 	}

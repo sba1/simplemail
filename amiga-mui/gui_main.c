@@ -81,8 +81,6 @@ struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
 struct Library *SimpleHTMLBase;
 
-void main_load_environment(void);
-
 #ifdef __AMIGAOS4__
 struct MUIMasterIFace *IMUIMaster;
 struct Interface *IRexxSys;
@@ -364,10 +362,6 @@ int all_init(void)
 							{
 								if (main_window_init())
 								{
-									SM_DEBUGF(15,("Going to load environment\n"));
-/*									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV); */
-									main_load_environment();
-									SM_DEBUGF(15,("Environment loaded\n"));
 									SM_LEAVE;
 									return 1;
 								}

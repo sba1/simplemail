@@ -87,6 +87,7 @@ typedef struct
 
 int string_initialize(string *string, unsigned int size);
 int string_append(string *string, char *appstr);
+int string_append_part(string *string, char *appstr, int bytes);
 void string_crop(string *string, int startpos, int endpos);
 
 #endif

@@ -575,16 +575,15 @@ int string_initialize(string *string, unsigned int size)
  Append the string given by appstr
  addstr maybe NULL (nothing is done in this case).
 **************************************************************************/
-int string_append(string *string, char *appstr)
+int string_append_part(string *string, char *appstr, int bytes)
 {
-	int applen,alloclen;
+	int alloclen;
 
-	if (!appstr) return 1;
+	if (!appstr || !bytes) return 1;
 
-	applen = strlen(appstr);
 	alloclen = string->allocated;
 
-	while (applen + string->len >= alloclen) /* >= because of the ending 0 byte */
+	while (bytes + string->len >= alloclen) /* >= because of the ending 0 byte */
 		alloclen *= 2;
 
 	if (alloclen != string->allocated)
@@ -598,9 +597,21 @@ int string_append(string *string, char *appstr)
 		string->str = newstr;
 	}
 
-	strcpy(&string->str[string->len],appstr);
-	string->len += applen;
+	strncpy(&string->str[string->len],appstr,bytes);
+	string->len += bytes;
+	string->str[string->len +  bytes] = 0;
 	return 1;
+
+}
+
+/**************************************************************************
+ Append the string given by appstr
+ addstr maybe NULL (nothing is done in this case).
+**************************************************************************/
+int string_append(string *string, char *appstr)
+{
+	if (!appstr) return 1;
+	return string_append_part(string,appstr,strlen(appstr));
 }
 
 /**************************************************************************

@@ -554,6 +554,7 @@ struct pop3_server *pop_malloc(void)
 		memset(pop3,0,sizeof(struct pop3_server));
 		pop3->port = 110;
 		pop3->active = 1;
+		pop3->nodupl = 1;
 	}
 	return pop3;
 }
@@ -573,6 +574,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->port = pop->port;
 		new_pop->ssl = pop->ssl;
 		new_pop->active = pop->active;
+		new_pop->nodupl = pop->nodupl;
 	}
 	return new_pop;
 }

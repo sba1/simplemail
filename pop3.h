@@ -33,6 +33,7 @@ struct pop3_server
 	char *login;
 	char *passwd;
 	int del; /* 1 if downloaded mails should be deleted */
+	int nodupl; /* 1 if duplicates should be avoided */
 	int active; /* is this pop server actove */
 };
 

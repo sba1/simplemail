@@ -125,6 +125,8 @@ void init_config(void)
 	user.config.write_reply_quote = 1;
 }
 
+#define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
+
 int load_config(void)
 {
 	char *buf;
@@ -165,13 +167,13 @@ int load_config(void)
 						if ((result = get_config_item(buf,"Read.FixedFont")))
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
-							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
+							user.config.signatures_use = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.Wrap")))
 							user.config.write_wrap = atoi(result);
 						if ((result = get_config_item(buf,"Write.WrapType")))
 							user.config.write_wrap_type = atoi(result);
 						if ((result = get_config_item(buf,"Write.ReplyQuote")))
-							user.config.write_reply_quote = ((*result == 'Y') || (*result == 'y'))?1:0;
+							user.config.write_reply_quote = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
 							sscanf(result,"%x",&user.config.header_flags);
 						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
@@ -187,11 +189,11 @@ int load_config(void)
 						if ((result = get_config_item(buf,"Read.LinkColor")))
 							sscanf(result,"%x",&user.config.read_link);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
-							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
+							user.config.read_wordwrap = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
-							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
+							user.config.read_link_underlined = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.Smilies")))
-							user.config.read_smilies = ((*result == 'Y') || (*result == 'y'))?1:0;
+							user.config.read_smilies = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
 							user.config.internet_emails = array_add_string(user.config.internet_emails,result);
 
@@ -231,11 +233,11 @@ int load_config(void)
 									if ((result = get_config_item(account_buf,"SMTP.Password")))
 										account->smtp->auth_password = mystrdup(result);
 									if ((result = get_config_item(account_buf,"SMTP.Auth")))
-										account->smtp->auth = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->smtp->auth = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"SMTP.IPasDomain")))
-										account->smtp->ip_as_domain = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->smtp->ip_as_domain = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"SMTP.POP3first")))
-										account->smtp->pop3_first = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->smtp->pop3_first = CONFIG_BOOL_VAL(result);
 
 									if ((result = get_config_item(account_buf,"POP3.Server")))
 										account->pop->name = mystrdup(result);
@@ -246,11 +248,13 @@ int load_config(void)
 									if ((result = get_config_item(account_buf,"POP3.Password")))
 										account->pop->passwd = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Delete")))
-										account->pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->pop->del = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.SSL")))
-										account->pop->ssl = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->pop->ssl = CONFIG_BOOL_VAL(result);
 									if ((result = get_config_item(account_buf,"POP3.Active")))
-										account->pop->active = ((*result == 'Y') || (*result == 'y'))?1:0;
+										account->pop->active = CONFIG_BOOL_VAL(result);
+									if ((result = get_config_item(account_buf,"POP3.AvoidDupl")))
+										account->pop->nodupl = CONFIG_BOOL_VAL(result);
 								}
 							}
 						}
@@ -422,6 +426,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.SSL=%s\n",i,account->pop->ssl?"Y":"N");
 				fprintf(fh,"ACCOUNT%d.POP3.Active=%s\n",i,account->pop->active?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.POP3.AvoidDupl=%s\n",i,account->pop->nodupl?"Y":"N");
 				account = (struct account*)node_next(&account->node);
 				i++;
 			}

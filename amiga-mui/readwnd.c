@@ -453,6 +453,22 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 }
 
 /******************************************************************
+ Returns the currently displayed mail
+*******************************************************************/
+struct mail *read_get_displayed_mail(struct Read_Data *data)
+{
+	struct mail *mail;
+	if (data->attachments_last_selected)
+	{
+		mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData);
+	} else {
+		if (!data->mail->num_multiparts) mail = data->mail;
+		else mail = NULL;
+	}
+	return mail;
+}
+
+/******************************************************************
  Shows a given mail (part)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
@@ -499,13 +515,9 @@ static void save_button_pressed(struct Read_Data **pdata)
 {
 	struct mail *mail;
 	struct Read_Data *data = *pdata;
-	if (data->attachments_last_selected)
-	{
-		mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData);
-	} else {
-		if (!data->mail->num_multiparts) mail = data->mail;
-		else mail = NULL;
-	}
+
+	if (!(mail = read_get_displayed_mail(data))) return;
+
 	save_contents(data,mail);
 }
 
@@ -653,8 +665,7 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 	char *uri = msg->uri;
 	struct mail *mail;
 
-	if (!data->attachments_last_selected) return 0;
-	if (!(mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData))) return 0;
+	if (!(mail = read_get_displayed_mail(data))) return 0;
 
 	if (!mystrnicmp("http://",uri,7) && mail_allowed_to_download(data->mail))
 	{

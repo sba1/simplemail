@@ -30,6 +30,7 @@
 
 #include "addressbook.h"
 #include "codesets.h"
+#include "configuration.h"
 #include "http.h"
 #include "lists.h"
 #include "mail.h"
@@ -403,84 +404,82 @@ int addressbook_import_sm(char *filename)
 }
 
 /**************************************************************************
- Returns a line
-**************************************************************************/
-static char *getln(FILE *fp)
-{
-	char *rc;
-
-	rc = malloc(1024);
-	if(rc) fgets(rc, 1024, fp);
-	rc[strlen(rc)-1]=0;
-
-	return rc;
-}
-
-/**************************************************************************
  Import addressbook entries from YAM
 **************************************************************************/
 static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 {
 	int rc = 1;
-	char *line;
+	static char line[1024];
+	char *charset = user.config.default_codeset?user.config.default_codeset->name:NULL;
 
-	line = getln(fp);
+	if (!fgets(line,sizeof(line),fp)) return 0;
 	while ((!feof(fp)) && (strncmp(line, "@ENDGROUP",9) != 0))
 	{
-		if(strncmp(line, "@USER", 5) == 0)
+		if (strncmp(line, "@USER", 5) == 0)
 		{
 			struct addressbook_entry *newperson;
 			char *alias, *name, *email;
 
-			alias = mystrdup(line + 6);
-			free(line);
-			email = getln(fp);
-			name = getln(fp);
+			alias = utf8create(line + 6, charset);
 
-			newperson = addressbook_new_person(group, name, email);
-			newperson->alias = alias;
+			if (!fgets(line,sizeof(line),fp)) return 0;
+			email = utf8create(line, charset);
 
-			newperson->description = getln(fp);
-			newperson->u.person.priv.phone1 = getln(fp);
-			newperson->u.person.priv.street = getln(fp);
-			newperson->u.person.priv.zip	= getln(fp);
-			newperson->u.person.priv.country= getln(fp);
-			newperson->u.person.pgpid	= getln(fp);
+			if (!fgets(line,sizeof(line),fp)) return 0;
+			name = utf8create(line, charset);
 
-			line = getln(fp);
-			newperson->u.person.dob_day   = 10*(line[0]-'0') + (line[1]-'0');
-			newperson->u.person.dob_month = 10*(line[2]-'0') + (line[3]-'0');
-			newperson->u.person.dob_year  = 1000*(line[4]-'0') + 100*(line[5]-'0') + 10*(line[6]-'0') + (line[7]-'0');
-			free(line);
-
-			newperson->u.person.portrait	= getln(fp);
-			newperson->u.person.homepage	= getln(fp);
-
-			line = getln(fp); free(line);  /* Whether sign etc. */
-
-			line = getln(fp); free(line);
-			if(strncmp(line, "@ENDUSER", 8) != 0)
+			if ((newperson = addressbook_new_person(group, name, email)))
 			{
-				rc = 0;
-				break;
-			}
+				newperson->alias = alias;
 
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->description = utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.priv.phone1 = utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.priv.street = utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.priv.zip	= utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.priv.country = utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.pgpid = utf8create(line, charset);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.dob_day   = 10*(line[0]-'0') + (line[1]-'0');
+				newperson->u.person.dob_month = 10*(line[2]-'0') + (line[3]-'0');
+				newperson->u.person.dob_year  = 1000*(line[4]-'0') + 100*(line[5]-'0') + 10*(line[6]-'0') + (line[7]-'0');
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.portrait = mystrdup(line);
+
+				if (!fgets(line,sizeof(line),fp)) return 0;
+				newperson->u.person.homepage = mystrdup(line);
+
+				while (fgets(line,sizeof(line),fp))
+				{
+					if (!strncmp(line, "@ENDUSER", 8)) break;
+				}
+
+			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{
 			struct addressbook_entry *newgroup = addressbook_new_group(group);
 
-			newgroup->alias = mystrdup(line + 7);
-			free(line);
-			newgroup->description = getln(fp);
+			newgroup->alias = utf8create(line + 7, charset);
+
+			if (!fgets(line,sizeof(line),fp)) return 0;
+			newgroup->description = utf8create(line, charset);
 
 			rc = yam_import_entries(newgroup, fp);
-		} else
-		{
-			sm_request(NULL, _("Corrupt YAM-Addressbook!"), _("_Okay"));
-
-			rc = 0;
 		}
-		line = getln(fp);
+
+		if (!fgets(line,sizeof(line),fp)) return 0;
 	}
 
 	return rc;
@@ -493,15 +492,11 @@ int addressbook_import_yam(char *filename)
 {
 	int rc = 0;
 	FILE *fp;
-	char *line;
 
 	fp = fopen(filename, "r");
-	if(fp != NULL)
+	if (fp != NULL)
 	{
-		line = getln(fp);
-		free(line);
 		rc = yam_import_entries(&root_entry, fp);
-
 		fclose(fp);
 	}
 

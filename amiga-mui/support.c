@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include <exec/memory.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
@@ -229,6 +230,22 @@ char *sm_get_time_str(unsigned int seconds)
 	static char buf[128];
 	SecondsToTimeString(buf,seconds);
 	return buf;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a tm
+*******************************************************************/
+void sm_convert_seconds(unsigned int seconds, struct tm *tm)
+{
+	struct ClockData cd;
+	Amiga2Date(seconds,&cd);
+	tm->tm_sec = cd.sec;
+	tm->tm_min = cd.min;
+	tm->tm_hour = cd.hour;
+	tm->tm_mday = cd.mday;
+	tm->tm_mon = cd.month;
+	tm->tm_year = cd.year - 1900;
+	tm->tm_wday = cd.wday;
 }
 
 /******************************************************************

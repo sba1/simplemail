@@ -58,146 +58,182 @@ static int get_hexadigit(char c, int *pval)
 /**************************************************************************
  Decoding a given buffer using the base64 algorithm
 **************************************************************************/
-char *decode_base64(unsigned char *buf, unsigned int len, unsigned int *ret_len)
+char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 {
-	char *decoded_buf = NULL;
-	FILE *fh = tmpfile();
+   static const signed char decoding_table[128] = {
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,
+      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,
+      52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-2,-1,-1,
+      -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,
+      15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,
+      -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
+      41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1
+   };
 
-	if (fh)
-	{
-		unsigned char *buf_end;
-		int decoded_len = 0;
+   unsigned char *srcmax=src+len,*dest,*deststart;
 
-		char decoding_table[256];
+   *ret_len=0;
 
-		unsigned int decode_buf[4];
-		int i,decode_pos;
+   if(!(dest=malloc(len*3/4+1))) return NULL;
+   deststart=dest;
 
-		memset(decoding_table,-1,sizeof(decoding_table));
+   while (src + 3 < srcmax)
+   {
+      if(src[0] > 127) {src++; continue;};
+      if(-1 == decoding_table[src[0]])
+      {
+         src++;
+         continue;
+      } else {
+         unsigned char c1,c2,c3,c4;
 
-		for (i=0;i<64;i++)
-			decoding_table[(unsigned char)encoding_table[i]] = i;
+         c1=decoding_table[src[0] & 0x7f];
+         c2=decoding_table[src[1] & 0x7f];
+         c3=decoding_table[src[2] & 0x7f];
+         c4=decoding_table[src[3] & 0x7f];
 
-		decode_pos = 0;
+         *dest++ = (c1 << 2) | (c2 >> 4);
 
-		buf_end = buf + len;
-		while(buf < buf_end)
-		{
-			if (decoding_table[*buf] != -1)
-			{
-				decode_buf[decode_pos++] = decoding_table[*buf];
+         if (src[2] == '=') break;
+         *dest++ = (c2 << 4) | (c3 >> 2);
 
-				if (decode_pos == 4)
-				{
-					unsigned int decoded;
-					decoded = (decode_buf[0] << 26) | (decode_buf[1] << 20) | (decode_buf[2] << 14) | (decode_buf[3] << 8);
-					fwrite(&decoded,1,3,fh);
-					decoded_len+=3;
-					decode_pos = 0;
-				}
-			} else
-			{
-				if (*buf == '=')
-				{
-					/* fill the rest with zeros */
-					int output_len;
-					unsigned int decoded;
+         if (src[3] == '=') break;
+         *dest++ = (c3 << 6) | c4;
+         src += 4;
+      }
+   }
+   *dest=0;
 
-					for (i=decode_pos;i<4;i++) decode_buf[i]=0;
-					if ((*(buf+1))=='=') output_len = 1;
-					else output_len = 2;
-					decoded = (decode_buf[0] << 26) | (decode_buf[1] << 20) | (decode_buf[2] << 14) | (decode_buf[3] << 8);
-					fwrite(&decoded,1,output_len,fh);
-					decoded_len+=output_len;
-					break;
-				}
-			}
-			buf++;
-		}
-
-		if (decoded_len)
-		{
-	    fseek(fh,0,SEEK_SET);
-			if ((decoded_buf = (char*)malloc(decoded_len+1)))
-			{
-				fread(decoded_buf,1,decoded_len,fh);
-				decoded_buf[decoded_len]=0;
-				*ret_len = decoded_len;
-			}
-		}
-
-		fclose(fh);
-	}
-	return decoded_buf;
+   *ret_len=dest-deststart;
+   return realloc(deststart,*ret_len+1);
 }
 
 /**************************************************************************
  Decoding a given buffer using the quoted_printable algorithm.
  Set header to 1 if you want header decoding (underscore = space)
 **************************************************************************/
+#define IS_HEX(c)   ((((c) >= '0') && ((c) <= '9')) || \
+                     (((c) >= 'A') && ((c) <= 'F')) || \
+                     (((c) >= 'a') && ((c) <= 'f')))
+#define FROM_HEX(c) ((c) - (((c) > '9') ? \
+                           (((c) > 'F') ? 'a' - 10 : 'A' - 10 ) : '0'))
 char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int *ret_len, int header)
 {
-	char *decoded_buf = NULL;
+   unsigned char *dest,*deststart;
 
-	FILE *fh = tmpfile();
+   *ret_len=0;
+   if(!len) return NULL;
+   if(!(dest=malloc(len+1))) return NULL;
+   deststart=dest;
 
-	if (fh)
-	{
-		unsigned char *buf_end;
-		int decoded_len = 0;
+   if(header)
+   {
+      while(len--)
+      {
+         unsigned char c=*buf++;
 
-		buf_end = buf + len;
-		while(buf < buf_end)
-		{
-			char c = *buf;
-			if (c==13)
-			{
-				buf++;
-				continue;
-			}
+         if('=' == c)
+         {
+            unsigned char c2;
 
-			if (c=='=')
-			{
-				int new_c;
+            c=buf[0];
+            c2=buf[1];
+            if (IS_HEX(c) && IS_HEX(c2))
+            {
+               c = (FROM_HEX(c) << 4) | FROM_HEX(c2);
+               if(len) len--;
+               if(len) len--;
+               buf += 2;
+            } else c = '='; /* should never happen */
+         } else if('_' == c) c=' ';
+         *dest++ = c;
+      }
+      *dest = 0;
 
-				buf++;
+      *ret_len=dest-deststart;
+      return realloc(deststart,*ret_len+1);
+   } else { /* body */
+      unsigned char *text,*textstart;
 
-				if (get_hexadigit(*buf, &new_c))
-				{
-					new_c = new_c << 4;
-					buf++;
-					if (get_hexadigit(*buf, &new_c))
-					{
-						c = new_c;
-					}
-				} else
-				{
-					/* a soft line break (rule 5) */
-					if (!(buf = strchr(buf,10))) break;
-					buf++;
-					continue;
-				}
-			} else if (c=='_' && header) c = ' ';
+      if(!(text=malloc(len+1))) {free(dest); return NULL;}
+      memcpy(text,buf,len);
+      text[len]=0;
+      textstart=text;
 
-			fputc(c,fh);
-			decoded_len++;
-			buf++;
-		}
+      while(text)
+      {
+         unsigned char  c;
+         unsigned char *lp = text;
 
-		if (decoded_len)
-		{
-	    fseek(fh,0,SEEK_SET);
-			if ((decoded_buf = (char*)malloc(decoded_len+1)))
-			{
-				fread(decoded_buf,1,decoded_len,fh);
-				decoded_buf[decoded_len]=0;
-				*ret_len = decoded_len;
-			}
-		}
+         /* Remove trailing white space from end of line */
+         {
+            unsigned char *ep;
 
-		fclose(fh);
-	}
-	return decoded_buf;
+            /* Look for end of line */
+            if (ep = strchr(lp, '\n'))
+            {
+               text = ep + 1;
+               ep--;
+               if('\r' == *ep) ep--;
+            } else {
+               ep   = lp + strlen(lp) - 1;
+               text = NULL;   /* End of text reached */
+            }
+
+            /* Remove trailing white space */
+            while ((ep >= lp) && (((c = *ep) == ' ') || (c == '\t'))) ep--;
+
+            /* Set string terminator */
+            *(ep + 1) = '\0';
+         }
+
+         /* Scan line */
+         do
+         {
+            switch (c = *lp++)
+            {
+               case '\0': /* Line end reached. Add line end (only while in text) */
+                  if (text) *dest++ = '\n';
+                  break;
+
+               case '=':  /* Encoded character */
+                  /* End of line reached? (-> soft line break!) */
+                  if (c = *lp)
+                  {
+                     unsigned char d = *(lp + 1);
+
+                     /* Sanity check */
+                     if (IS_HEX(c) && IS_HEX(d))
+                     {
+                        /* Decode two hex digit to 8-Bit characters */
+                        *dest++ = (FROM_HEX(c) << 4) | FROM_HEX(d);
+
+                        /* Move line pointer */
+                        lp += 2;
+                     } else {
+                        /* The '=' was not followed by two hex digits. This is actually */
+                        /* a violation of the standard. We put the '=' into the decoded */
+                        /* text and continue decoding after the '»' character.          */
+                        *dest++ = '=';
+                     }
+                  }
+                  break;
+
+               default:   /* Normal character */
+                  *dest++ = c;
+                  break;
+            }
+         } while (c);
+      }
+      /* Add string terminator */
+      *dest=0;
+
+      free(textstart);
+
+      *ret_len=dest-deststart;
+      return realloc(deststart,*ret_len+1);
+   }
 }
 
 /**************************************************************************

@@ -364,6 +364,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if ((amm = strtol(answer,&answer,10))<=0) return NULL;
 	if ((size = strtol(answer,NULL,10))<=0) return NULL;
 
+	thread_call_parent_function_async(dl_init_gauge_mail,1,amm);
+
 	if (!(mail_array = malloc((amm+2)*sizeof(struct dl_mail)))) return NULL;
 	mail_array[0].flags = amm;
 	mail_array[0].size = size;
@@ -629,8 +631,6 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 							int mail_amm = mail_array[0].flags;
 							char path[256];
 						
-							thread_call_parent_function_async(dl_init_gauge_mail,1,mail_amm);
-
 							getcwd(path, 255);
 
 							if(chdir(dest_dir) == -1)

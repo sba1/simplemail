@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** folder.h
 */
 
 #ifndef SM__FOLDER_H
@@ -78,6 +78,7 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
 struct folder *folder_add(char *name, char *path);
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
 struct folder *folder_first(void);
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);

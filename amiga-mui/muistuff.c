@@ -68,6 +68,14 @@ Object *MakeCheck(STRPTR label, ULONG check)
 	return (obj);
 }
 
+Object *MakeCycle(STRPTR label, STRPTR * array)
+{
+  Object *obj = MUI_MakeObject(MUIO_Cycle, label, array);
+  if (obj)
+    set(obj, MUIA_CycleChain, 1);
+  return (obj);
+}
+
 struct Hook hook_standard;
 
 STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)

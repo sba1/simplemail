@@ -16,29 +16,15 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mainwnd.h
-*/
+#ifndef SM__FOLDERWND_H
+#define SM__FOLDERWND_H
 
-#ifndef SM__MAINWND_H
-#define SM__MAINWND_H
+void folder_edit(struct folder *f);
 
-int main_window_init(void);
-int main_window_open(void);
-void main_refresh_folders(void);
-void main_refresh_folder(struct folder *folder);
-void main_insert_mail(struct mail *mail);
-void main_remove_mail(struct mail *mail);
-void main_replace_mail(struct mail *oldmail, struct mail *newmail);
-void main_refresh_mail(struct mail *m);
-void main_set_folder_mails(struct folder *folder);
-struct folder *main_get_folder(void);
-char *main_get_folder_drawer(void);
-struct mail *main_get_active_mail(void);
-char *main_get_mail_filename(void);
+struct folder *folder_get_changed_folder(void);
+char *folder_get_changed_name(void);
+char *folder_get_changed_path(void);
+int folder_get_changed_type(void);
 
-struct mail *main_get_mail_first_selected(void *handle);
-struct mail *main_get_mail_next_selected(void *handle);
-void main_remove_mails_selected(void);
 
 #endif

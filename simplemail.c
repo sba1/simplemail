@@ -26,6 +26,7 @@
 #include "addressbookwnd.h"
 #include "composewnd.h"
 #include "configwnd.h"
+#include "folderwnd.h"
 #include "gui_main.h"
 #include "mainwnd.h"
 #include "readwnd.h"
@@ -286,6 +287,33 @@ void callback_write_mail_to(struct addressbook_entry *address)
 	char *to = addressbook_get_address_str(address);
 	compose_window_open(to,NULL);
 	if (to) free(to);
+}
+
+/* edit folder settings */
+void callback_edit_folder(void)
+{
+	struct folder *from_folder = main_get_folder();
+	if (from_folder)
+	{
+		folder_edit(from_folder);
+	}
+}
+
+/* set the attributes of a folder like in the folder window */
+void callback_change_folder_attrs(void)
+{
+	struct folder *f = folder_get_changed_folder();
+	if (!f) return;
+
+	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type()))
+	{
+		if (main_get_folder() == f)
+		{
+			main_set_folder_mails(f);
+		}
+	}
+
+	main_refresh_folder(f);
 }
 
 int main(void)

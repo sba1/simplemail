@@ -1171,6 +1171,8 @@ void mail_free(struct mail *mail)
 		mail_free(mail->multipart_array[i]); /* recursion */
 	}
 
+	if (mail->message_id) free(mail->message_id);
+	if (mail->message_reply_id) free(mail->message_reply_id);
 	if (mail->content_type) free(mail->content_type);
 	if (mail->content_subtype) free(mail->content_subtype);
 	if (mail->content_id) free(mail->content_id);

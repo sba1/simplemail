@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** mainwnd.c
 */
 
 #include <string.h>
@@ -269,6 +269,7 @@ int main_window_init(void)
 		DoMethod(tree_mail, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 		DoMethod(tree_folder, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
 		DoMethod(tree_folder, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
+		DoMethod(tree_folder, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
 
 		rc = TRUE;
 		
@@ -475,6 +476,11 @@ void main_set_folder_mails(struct folder *folder)
 			}
 		} else
 		{
+			SetAttrs(tree_mail,
+					MUIA_NListtree_TreeColumn, 0,
+					MUIA_NListtree_ShowTree, TRUE,
+					TAG_DONE);
+
 			while ((m = folder_next_mail(folder,&handle)))
 			{
 				if (!m->child_mail)

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** folder.c
 */
 
 #include <string.h>
@@ -494,6 +494,86 @@ struct folder *folder_add(char *name, char *path)
 }
 
 /******************************************************************
+ Set some folder attributes. Returns 1 if the folder must be
+ refreshed in the gui.
+*******************************************************************/
+int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
+{
+	int refresh = 0;
+	int rescan = 0;
+	if (newname && strcmp(f->name,newname))
+	{
+		if ((newname = strdup(newname)))
+		{
+			free(f->name);
+			f->name = newname;
+		}
+	}
+
+	if (newpath && strcmp(f->path,newpath))
+	{
+		if ((newpath = strdup(newpath)))
+		{
+			refresh = !!mystricmp(newpath,f->path);
+
+			if (f->index_uptodate && refresh)
+			{
+				folder_delete_indexfile(f);
+				f->index_uptodate = 0;
+			}
+
+			free(f->path);
+			f->path = newpath;
+			rescan = refresh;
+		}
+	}
+
+	if (newtype != f->type)
+	{
+		refresh = 1;
+		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
+		{
+			if (f->index_uptodate)
+			{
+				folder_delete_indexfile(f);
+				f->index_uptodate = 0;
+			}
+			rescan = 1;
+		}
+		f->type = newtype;
+	}
+
+	if (rescan)
+	{
+		int i;
+
+		/* free all kind of data */
+
+		/* free the sorted mail array */
+		if (f->sorted_mail_array)
+		{
+			free(f->sorted_mail_array);
+			f->sorted_mail_array = NULL;
+		}
+
+		for (i=0;i < f->num_mails; i++)
+			mail_free(f->mail_array[i]);
+
+		if (f->mail_array)
+		{
+			free(f->mail_array);
+			f->mail_array = NULL;
+		}
+		f->num_mails = 0;
+		f->mail_array_allocated = 0;
+
+		folder_read_mail_infos(f);
+	}
+
+	return refresh;
+}
+
+/******************************************************************
  Gets the first folder
 *******************************************************************/
 struct folder *folder_first(void)
@@ -658,6 +738,7 @@ void folder_delete_deleted(void)
 	}
 
 	folder->num_mails = 0;
+	folder->mail_array_allocated = 0;
 
 	if (folder->mail_array)
 	{

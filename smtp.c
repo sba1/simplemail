@@ -684,19 +684,26 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 	if (flags & AUTH_PLAIN)
 	{
+		int ll = strlen(account->smtp->auth_login);
+		int pl = strlen(account->smtp->auth_password);
+
 		SM_DEBUGF(10,("Trying AUTH PLAIN\n"));
 
-		if (smtp_send_cmd(conn, "AUTH", "PLAIN") == 334)
+		if (ll + pl < sizeof(prep)-3);
 		{
-			prep[0]=0;
-			strcpy(prep + 1, account->smtp->auth_login);
-			strcpy(prep + 1 + strlen(account->smtp->auth_login) + 1, account->smtp->auth_password);
-			
-			buf = encode_base64(prep, strlen(account->smtp->auth_login) + strlen(account->smtp->auth_password) + 2);
-			buf[strlen(buf) - 1] = 0;
-			success = smtp_send_cmd(conn, buf, NULL) == 235;
-			free(buf);
-			return success;
+			prep[0] = 0;
+			strcpy(&prep[1], account->smtp->auth_login);
+			strcpy(&prep[2 + ll], account->smtp->auth_password);
+
+			if ((buf = encode_base64(prep, ll + pl + 2)))
+			{
+				if (smtp_send_cmd(conn, "AUTH PLAIN", buf) == 235)
+				{
+					free(buf);
+					return 1;
+				}
+				free(buf);
+			}
 		}
 	}
 
@@ -734,7 +741,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		}
 
 		thread_call_parent_function_async(status_set_status,1,_("Sending STARTTLS..."));
-		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
+		if ((smtp_send_cmd(conn,"STARTTLS",NULL)!=SMTP_SERVICE_READY))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
 			return 0;

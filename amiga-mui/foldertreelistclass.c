@@ -216,6 +216,14 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	data->show_root = show_root;
 
+	data->image_incoming_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End;
+	data->image_outgoing_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End;
+	data->image_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End;
+	data->image_deleted_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End;
+	data->image_other_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End;
+	data->image_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End;
+	data->image_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End;
+
 	init_hook(&data->close_hook, (HOOKFUNC)folder_close);
 	init_hook(&data->display_hook,(HOOKFUNC)folder_display);
 	init_hook(&data->open_hook, (HOOKFUNC)folder_open);
@@ -292,14 +300,6 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
-
-	data->image_incoming_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End;
-	data->image_outgoing_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End;
-	data->image_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End;
-	data->image_deleted_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End;
-	data->image_other_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End;
-	data->image_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End;
-	data->image_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End;
 
 	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_incoming_obj, 0);
 	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_outgoing_obj, 0);

@@ -483,6 +483,30 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->pop3_text = _("POP3 Server");
 	data->received_text = _("Received");
 
+	data->status_unread_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End;
+	data->status_unread_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End;
+	data->status_read_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old_partial", End;
+	data->status_reply_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply_partial", End;
+	data->status_read_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End;
+	data->status_waitsend_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End;
+	data->status_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End;
+	data->status_mark_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_mark", End;
+	data->status_hold_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End;
+	data->status_reply_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End;
+	data->status_forward_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End;
+	data->status_norcpt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_norcpt", End;
+	data->status_new_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_partial", End;
+	data->status_new_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_spam", End;
+	data->status_unread_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_spam", End;
+
+	data->status_important_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End;
+	data->status_attach_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End;
+	data->status_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End;
+	data->status_new_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End;
+	data->status_crypt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End;
+	data->status_signed_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End;
+	data->status_trashcan_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
+
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
 #ifdef MAILLIST_IS_TREE
@@ -520,10 +544,10 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 #ifdef MAILLIST_IS_TREE
 	DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
-	DoMethod(obj, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTree_DoubleClick, TRUE);
+	DoMethod(obj, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
 #else
 	DoMethod(obj, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
-	DoMethod(obj, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTree_DoubleClick, TRUE);
+	DoMethod(obj, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
 #endif
 
 	return (ULONG)obj;
@@ -575,7 +599,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 		switch (tag->ti_Tag)
 		{
-			case	MUIA_MailTree_DoubleClick:
+			case	MUIA_MailTreelist_DoubleClick:
 						break;
 
 			case	MUIA_MailTreelist_FolderType:
@@ -585,7 +609,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 						}
 						break;
 
-			case	MUIA_MailTree_Active:
+			case	MUIA_MailTreelist_Active:
 						{
 							struct mail *m = (struct mail*)tag->ti_Data;
 
@@ -615,7 +639,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
-	if (msg->opg_AttrID == MUIA_MailTree_Active)
+	if (msg->opg_AttrID == MUIA_MailTreelist_Active)
 	{
 #ifdef MAILLIST_IS_TREE
 		struct MUI_NListtree_TreeNode *tree_node;
@@ -636,7 +660,7 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 		return 1;
 	}
 
-	if (msg->opg_AttrID == MUIA_MailTree_DoubleClick)
+	if (msg->opg_AttrID == MUIA_MailTreelist_DoubleClick)
 	{
 		*msg->opg_Storage = 0;
 		return 1;
@@ -656,30 +680,6 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 		SM_LEAVE;
 		return 0;
 	}
-
-	data->status_unread_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End;
-	data->status_unread_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End;
-	data->status_read_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old_partial", End;
-	data->status_reply_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply_partial", End;
-	data->status_read_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End;
-	data->status_waitsend_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End;
-	data->status_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End;
-	data->status_mark_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_mark", End;
-	data->status_hold_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_hold", End;
-	data->status_reply_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply", End;
-	data->status_forward_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_forward", End;
-	data->status_norcpt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_norcpt", End;
-	data->status_new_partial_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_partial", End;
-	data->status_new_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new_spam", End;
-	data->status_unread_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_spam", End;
-
-	data->status_important_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_urgent", End;
-	data->status_attach_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_attach", End;
-	data->status_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End;
-	data->status_new_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_new", End;
-	data->status_crypt_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_crypt", End;
-	data->status_signed_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_signed", End;
-	data->status_trashcan_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
 
 	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_obj, 0);
 	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_partial_obj, 0);
@@ -901,7 +901,7 @@ static void main_insert_mail_threaded(Object *obj, struct mail *mail, void *pare
 }
 #endif
 
-STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct MUIP_MailTree_SetFolderMails *msg)
+STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_SetFolderMails *msg)
 {
 #ifdef MAILTREE_IS_TREE
 	struct mail *m;
@@ -912,15 +912,15 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	if (!folder)
 	{
-		DoMethod(obj, MUIM_MailTree_Clear);
+		DoMethod(obj, MUIM_MailTreelist_Clear);
 		return NULL;
 	}
 
 	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
   threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
-	DoMethod(obj, MUIM_MailTree_Freeze);
-	DoMethod(obj, MUIM_MailTree_Clear);
+	DoMethod(obj, MUIM_MailTreelist_Freeze);
+	DoMethod(obj, MUIM_MailTreelist_Clear);
 	set(obj, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 
 #ifdef MAILLIST_IS_TREE
@@ -1025,7 +1025,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 */
 #endif
 
-	DoMethod(obj, MUIM_MailTree_Thaw);
+	DoMethod(obj, MUIM_MailTreelist_Thaw);
 	return NULL;
 }
 
@@ -1114,7 +1114,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	return 0;
 }
 
-ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTree_GetFirstSelected *msg)
+ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
 {
 	void *handle = msg->handle;
 
@@ -1123,7 +1123,7 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 	DoMethod(obj, MUIM_NListtree_NextSelected, &treenode);
 	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
-	if ((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name) return DoMethod(obj, MUIM_MailTree_GetNextSelected, msg->handle);
+	if ((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name) return DoMethod(obj, MUIM_MailTreelist_GetNextSelected, msg->handle);
 	if (treenode) return (ULONG)treenode->tn_User;
 	return NULL;
 #else
@@ -1141,7 +1141,7 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 #endif
 }
 
-ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTree_GetNextSelected *msg)
+ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
 {
 	void *handle = msg->handle;
 
@@ -1170,7 +1170,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 #endif
 }
 
-ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_RefreshMail *msg)
+ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RefreshMail *msg)
 {
 #ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->m);
@@ -1206,7 +1206,7 @@ static struct MUI_NListtree_TreeNode *main_find_insert_node(Object *obj, struct 
 }
 #endif
 
-ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_InsertMail *msg)
+ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
 {
 	int after = msg->after;
 	struct mail *mail = msg->m;
@@ -1249,7 +1249,7 @@ ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTr
 	return 0;
 }
 
-STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_RemoveMail *msg)
+STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RemoveMail *msg)
 {
 #ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->m);
@@ -1273,7 +1273,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 	return 0;
 }
 
-STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTree_ReplaceMail *msg)
+STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_ReplaceMail *msg)
 {
 #ifdef MAILLIST_IS_TREE
 	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(obj, msg->oldmail);
@@ -1282,7 +1282,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 /*		DoMethod(mail_tree, MUIM_NListtree_Rename, treenode, newmail, MUIV_NListtree_Rename_Flag_User);*/
 		set(obj, MUIA_NListtree_Quiet, TRUE);
 		DoMethod(obj, MUIM_NListtree_Remove, NULL, treenode,0);
-		DoMethod(obj, MUIM_MailTree_InsertMail, msg->newmail, -2);
+		DoMethod(obj, MUIM_MailTreelist_InsertMail, msg->newmail, -2);
 		set(obj, MUIA_NListtree_Active, FindListtreeUserData(obj, msg->newmail));
 		set(obj, MUIA_NListtree_Quiet, FALSE);
 	}
@@ -1340,18 +1340,18 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_ContextMenuChoice: return MailTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
 		case  MUIM_NList_ContextMenuBuild: return MailTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 
-		case	MUIM_MailTree_Clear: return MailTreelist_Clear(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_Freeze: return MailTreelist_Freeze(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_Thaw: return MailTreelist_Thaw(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
-		case	MUIM_MailTree_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTree_InsertMail: return MailTreelist_InsertMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTree_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTree_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(APTR)msg);
-		case	MUIM_MailTree_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_Clear: return MailTreelist_Clear(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_InsertMail: return MailTreelist_InsertMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

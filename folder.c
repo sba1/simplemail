@@ -2414,6 +2414,19 @@ int folder_save_index(struct folder *f)
 }
 
 /******************************************************************
+ Save all the index files
+*******************************************************************/
+void folder_save_all_indexfiles(void)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (!f->index_uptodate) folder_save_index(f);
+		f = folder_next(f);
+	}
+}
+
+/******************************************************************
  Get informations about the folder stats
 *******************************************************************/
 void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr)

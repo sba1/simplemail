@@ -159,6 +159,7 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 int folder_delete_mail(struct folder *from_folder, struct mail *mail);
 void folder_delete_deleted(void);
 int folder_save_index(struct folder *f);
+void folder_save_all_indexfiles(void);
 void folder_delete_all_indexfiles(void);
 int folder_rescan(struct folder *folder);
 struct folder *folder_add_with_name(char *path, char *name);

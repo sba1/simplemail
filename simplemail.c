@@ -1543,6 +1543,12 @@ void callback_delete_all_indexfiles(void)
 	folder_delete_all_indexfiles();
 }
 
+/* save all indexfiles */
+void callback_save_all_indexfiles(void)
+{
+	folder_save_all_indexfiles();
+}
+
 /* rescan the current selected folder */
 void callback_rescan_folder(void)
 {

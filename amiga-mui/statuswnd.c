@@ -227,3 +227,12 @@ int statuswnd_more_statistics(void)
   return !start_pressed;
 }
 
+/***************************************************************************
+ Returns 1 if the statuswnd is opend
+**************************************************************************/
+int statuswnd_is_opened(void)
+{
+	if (status_wnd) return (int)xget(status_wnd,MUIA_Window_Open);
+	return 0;
+}
+

@@ -121,7 +121,7 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo
+LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo $(LOCALEDIR)fr.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:

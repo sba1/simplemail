@@ -28,8 +28,8 @@ OBJSDIR1 = sas_objects
 DESTDIR = sm
 LOCALEDIR = ${DESTDIR}/locale/
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
-CFLAGS = strmerge nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck math=s
-LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib amiga-mui/binaries/simplehtml_mcc.lib math=s
+CFLAGS = strmerge nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck math=s DEF=HAVE_OPENURL
+LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib math=s
 
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile
@@ -75,15 +75,19 @@ date.h:
 
 smakefile.compile: $(MAKEGENERATOR) smakefile
   list ~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="%s" sort=name >t:objectlist
-  list amiga-mui/~($(MAKEGENERATOR)|headers|startup).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
+  list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
   echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) $(DESTDIR)/.taglines images scripts charsets*n" >>$@
+  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
 
   echo "\$(OBJSDIR)amiga-mui/startup.o: amiga-mui/startup.c" >>$@
   echo "  sc amiga-mui/startup.c $(CFLAGS) parm=b OBJNAME=\$@" >>$@
+  echo "" >>$@
+
+  echo "simplehtml.library:" >>$@
+  echo "  copy amiga-mui/binaries/simplehtml.library sm" >>$@
   echo "" >>$@
 
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
@@ -186,6 +190,7 @@ prepare-release:
   copy amiga-mui/binaries/SimpleMail.guide.info ram:SimpleMail
   copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
+  copy amiga-mui/binaries/simplehtml.library ram:SimpleMail/Libs
   copy sm/images TO ram:SimpleMail/Images
   copy sm/ARexx TO ram:SimpleMail/ARexx
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale

@@ -68,7 +68,7 @@ unsigned int estimate_calc_remaining(struct estimate *est,unsigned int value)
 	return seconds * est->max_value / value - seconds;
 }
 
-
+#if 0
 void add64(unsigned int *hi1, unsigned int *low1, unsigned int hi2, unsigned int low2)
 {
 	unsigned int lowadd = *low1 + low2;
@@ -85,16 +85,16 @@ void mult64(unsigned int *hi, unsigned int *low, unsigned int fac1, unsigned int
 	unsigned int c = (fac1 & 0xffff) * (fac2 >> 16);
 	unsigned int d = (fac1 >> 16) * (fac2 >> 16);
 }
-
+#endif
 /*
->For example: 
+>For example:
 >  multiplicand A[31:0] = FFFF FFFF
->    multiplier X[31:0] = FFFF FFFF 
+>    multiplier X[31:0] = FFFF FFFF
 >   A[15:0]  * X[15:0]  = FFFE 0001 (unsigned multiplication)
 >   A[31:16] * X[15:0]  = 0000 0001 (signed multiplication)
 >   A[15:0]  * X[31:16] = 0000 0001 (signed multiplication)
->   A[31:16] * X[31:16] = 0000 0001 (signed multiplication) 
->Aligning these 4 partial products and then adding them, I get: 
+>   A[31:16] * X[31:16] = 0000 0001 (signed multiplication)
+>Aligning these 4 partial products and then adding them, I get:
 >           FFFE0001
 >       00000001
 >       00000001

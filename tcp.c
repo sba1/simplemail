@@ -119,8 +119,9 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		sd = socket(PF_INET, SOCK_STREAM, 0);
 		if (sd != -1)
 		{
+#ifndef NO_SSL
 			int security_error = 0;
-
+#endif
 			memset(&sockaddr,0,sizeof(struct sockaddr_in));
 
 #ifdef _AMIGA /* ugly */

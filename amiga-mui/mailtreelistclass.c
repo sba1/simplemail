@@ -460,16 +460,18 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
-	SetAttrs(obj,
 #ifdef MAILLIST_IS_TREE
+	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
+						TAG_DONE);
 #else
+	SetAttrs(obj,
 						MUIA_NList_DisplayHook2, &data->display_hook,
 						MUIA_NList_Title, TRUE,
 						MUIA_NList_DragType, MUIV_NList_DragType_Default,
-#endif
 						TAG_DONE);
+#endif
 
 	data->title_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail Settings")),

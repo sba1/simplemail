@@ -1539,6 +1539,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 
 			return thread_push_function(imap_thread_really_connect_to_server, 0);
 		}
+		return 0;
 	} else
 	{
 		if (imap_folder) free(imap_folder);

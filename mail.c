@@ -2919,7 +2919,8 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			if (convtext)
 			{
 				body = encode_body(convtext, strlen(convtext), new_mail->content_type, &body_len, &body_encoding);
-				if (body_encoding && mystricmp(body_encoding,"7bit") || new_mail->content_description)
+				/* encode as mime only if body encoding is not 7bit or a content description was given */
+				if ((body_encoding && mystricmp(body_encoding,"7bit")) || new_mail->content_description)
 				{
 					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
 					fprintf(ofh,"Content-Type: text/plain; charset=%s\n",unicode?"utf-8":best_codeset->name);

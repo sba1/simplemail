@@ -63,7 +63,7 @@ static Object *search_mail_tree;
 
 static int has_mails;
 
-STATIC ASM VOID folder_objstr(register __a2 Object *list, register __a1 Object *str)
+STATIC ASM VOID folder_objstr(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
 {
 	struct MUI_NListtree_TreeNode *tree_node;
 	tree_node = (struct MUI_NListtree_TreeNode *)xget(list,MUIA_NListtree_Active);
@@ -88,13 +88,13 @@ STATIC ASM VOID folder_objstr(register __a2 Object *list, register __a1 Object *
 	}
 }
 
-STATIC ASM LONG folder_strobj(register __a2 Object *list, register __a1 Object *str)
+STATIC ASM LONG folder_strobj(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
 {
 	char *s;
 	struct folder *f;
 
 	get(str,MUIA_Text_Contents,&s);
-	
+
 	search_refresh_folders();
 
   f = folder_find_by_name(s);

@@ -655,7 +655,7 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 {
   int r;
 
-  extern int vsnprintf(char *buffer, int buffersize, const char *fmt0, va_list ap);
+  extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
 
   va_list ap;
   
@@ -684,6 +684,7 @@ void tell_from_subtask(char *str)
 
 #undef _
 
+#ifndef NO_SSL
 #include <proto/amissl.h>
 
 static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase)
@@ -698,12 +699,13 @@ static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase)
 	}
 	return NULL;
 }
-
+#endif
 /******************************************************************
  Decodes an pkcs7...API is unfinished! This is a temp solution.
 *******************************************************************/
 int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
+#ifndef NO_SSL
 	struct Library *AmiSSLBase;
 	int rc = 0;
 
@@ -740,4 +742,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 		CloseLibrary(AmiSSLBase);
 	}
 	return rc;
+#else
+	return 0;
+#endif
 }

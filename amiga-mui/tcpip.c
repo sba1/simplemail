@@ -25,12 +25,19 @@
 #ifdef AMITCP_SDK
 #include <amitcp/socketbasetags.h>
 #else
+#ifdef ROADSHOW_SDK
+#include <libraries/bsdsocket.h>
+#include <proto/bsdsocket.h>
+#else
 #include <bsdsocket/socketbasetags.h>
 #include <clib/miami_protos.h>
 #include <pragmas/miami_pragmas.h>
 #endif
+#endif
 
+#ifndef NO_SSL
 #include <proto/amissl.h>
+#endif
 
 #include "tcpip.h"
 #include "subthreads_amiga.h"
@@ -77,7 +84,7 @@ void close_socket_lib(void)
    we will return 1 */
 int is_online(char *iface)
 {
-#ifdef AMITCP_SDK
+#if defined(AMITCP_SDK) || defined(ROADSHOW_SDK)
 	return 1;
 #else
 	struct Library *MiamiBase = OpenLibrary("miami.library",10); /* required by MiamiIsOnline() */
@@ -91,12 +98,17 @@ int is_online(char *iface)
 #endif
 }
 
+#ifndef NO_SSL
 struct Library *AmiSSLBase;
 static int ssl_in_use;
 static SSL_CTX *ctx;
+#endif
 
 int open_ssl_lib(void)
 {
+#ifdef NO_SSL
+	return 0;
+#else
 	if (!open_socket_lib()) return 0;
 
 	if (!AmiSSLBase)
@@ -118,7 +130,7 @@ int open_ssl_lib(void)
 					/* Everything is ok */
 					ssl_in_use++;
 
-					
+
 
 					return 1;
 				}
@@ -135,10 +147,12 @@ int open_ssl_lib(void)
 
 	close_socket_lib();
 	return 0;
+#endif
 }
 
 void close_ssl_lib(void)
 {
+#ifndef NO_SSL
 	if (!ssl_in_use) return;
 	if (!(--ssl_in_use))
 	{
@@ -149,12 +163,15 @@ void close_ssl_lib(void)
 		AmiSSLBase = NULL;
 		close_socket_lib();
 	}
+#endif
 }
 
+#ifndef NO_SSL
 SSL_CTX *ssl_context(void)
 {
 	return ctx;
 }
+#endif
 
 long tcp_herrno(void)
 {

@@ -36,7 +36,7 @@
 #include "compiler.h"
 #include "support_indep.h"
 
-static ASM void Hookfunc_Date_Write( register __a0 struct Hook *j, register __a1 ULONG c )
+static ASM void Hookfunc_Date_Write(REG(a0,struct Hook *j), REG(a2, void *object), REG(a1, ULONG c))
 {
 	char *data = (char*)j->h_Data;
 	*data++ = c;
@@ -356,13 +356,13 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 	{
 		Forbid();
 
-		if (RexxPort = FindPort(port))
+		if ((RexxPort = FindPort(port)))
 		{
 			struct RexxMsg *rexxMsg, *Answer;
 	
-			if (rexxMsg = CreateRexxMsg(ReplyPort, NULL, NULL))
+			if ((rexxMsg = CreateRexxMsg(ReplyPort, NULL, NULL)))
 			{
-				if (rexxMsg->rm_Args[0] = CreateArgstring(Cmd, strlen(Cmd)))
+				if ((rexxMsg->rm_Args[0] = CreateArgstring(Cmd, strlen(Cmd))))
 				{
 					rexxMsg->rm_Action = RXCOMM | RXFF_RESULT;
 

@@ -6,12 +6,17 @@
 #ifndef MUI_SIMPLEHTML_MCC_H
 #define MUI_SIMPLEHTML_MCC_H
 
-extern struct MUI_CustomClass *CL_SimpleHTML;
+#ifndef __AMIGSOS4__
+extern struct Library *SimpleHTMLBase;
+struct MUI_CustomClass *ObtainSimpleHTMLMCC(void);
+#ifdef __SASC
+#pragma libcall SimpleHTMLBase ObtainSimpleHTMLMCC 1e 00
+#endif
 
-__stdargs int create_simplehtml_class(void);
-__stdargs void delete_simplehtml_class(void);
+#else
+#endif
 
-#define SimpleHTMLObject (Object*)NewObject(CL_SimpleHTML->mcc_Class, NULL
+#define SimpleHTMLObject (Object*)(NewObject)(ObtainSimpleHTMLMCC()->mcc_Class, NULL
 
 #define MUIA_SimpleHTML_Buffer					(TAG_USER+0x31200000) /* NS. */
 #define MUIA_SimpleHTML_BufferLen			(TAG_USER+0x31200001) /* NS. */

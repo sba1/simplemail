@@ -68,7 +68,7 @@ static void timer_cleanup(struct timer *timer)
 	}
 	if (timer->new_timer_req) FreeVec(timer->new_timer_req);
 	if (timer->open) CloseDevice((struct IORequest *)timer->timer_req);
-	if (timer->timer_req) DeleteIORequest(timer->timer_req);
+	if (timer->timer_req) DeleteIORequest((struct IORequest*)timer->timer_req);
 	if (timer->timer_port) DeleteMsgPort(timer->timer_port);
 }
 
@@ -256,7 +256,7 @@ void thread_handle(void)
 }
 
 /* the entry point for the subthread */
-static __saveds void thread_entry(void)
+static SAVEDS void thread_entry(void)
 {
 	struct Process *proc;
 	struct ThreadMessage *msg;

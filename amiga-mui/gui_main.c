@@ -75,10 +75,13 @@
 #include "transwndclass.h"
 #include "utf8stringclass.h"
 
+#ifndef __AMIGAOS4__
 __near long __stack = 30000;
+#endif
 
 struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
+struct Library *SimpleHTMLBase;
 struct Locale *DefaultLocale;
 Object *App;
 
@@ -268,7 +271,6 @@ void all_del(void)
 			delete_icon_class();
 			delete_popupmenu_class();
 			delete_picturebutton_class();
-			delete_simplehtml_class();
 			delete_composeeditor_class();
 			delete_transwnd_class();
 			delete_datatypes_class();
@@ -284,6 +286,7 @@ void all_del(void)
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
 
+			CloseLibrary(SimpleHTMLBase); /* accepts NULL */
 			CloseLibrary(RexxSysBase);
 			RexxSysBase = NULL;
 		}
@@ -306,33 +309,40 @@ int all_init(void)
 	{
 		if ((RexxSysBase = OpenLibrary("rexxsyslib.library",0)))
 		{
-			DefaultLocale = OpenLocale(NULL);
-			init_hook_standard();
+			SimpleHTMLBase = OpenLibrary("PROGDIR:Libs/simplehtml.library",1);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("PROGDIR:simplehtml.library",1);
+			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("simplehtml.library",1);
 
-			if (timer_init())
+			if (SimpleHTMLBase)
 			{
-				if (arexx_init())
+				DefaultLocale = OpenLocale(NULL);
+				init_hook_standard();
+
+				if (timer_init())
 				{
-					if (create_utf8string_class() && create_foldertreelist_class() && create_mailtreelist_class() &&
-							create_addressstring_class() && create_attachmentlist_class() &&
-							create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
-							create_simplehtml_class() && create_picturebutton_class() &&
-							create_popupmenu_class() && create_icon_class() && 
-							create_filterlist_class() && create_filterrule_class() &&
-							create_multistring_class() && create_addresstreelist_class() &&
-							create_pgplist_class() && create_audioselectgroup_class() && create_accountpop_class())
+					if (arexx_init())
 					{
-						if (app_init())
+						if (create_utf8string_class() && create_foldertreelist_class() && create_mailtreelist_class() &&
+								create_addressstring_class() && create_attachmentlist_class() &&
+								create_datatypes_class() && create_transwnd_class() && create_composeeditor_class() &&
+								create_picturebutton_class() &&
+								create_popupmenu_class() && create_icon_class() && 
+								create_filterlist_class() && create_filterrule_class() &&
+								create_multistring_class() && create_addresstreelist_class() &&
+								create_pgplist_class() && create_audioselectgroup_class() && create_accountpop_class())
 						{
-							if (main_window_init())
+							if (app_init())
 							{
-								DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
-								return 1;
-							}
-						} else puts(_("Failed to create the application\n"));
-					} else puts(_("Could not create mui custom classes\n"));
-				} else puts(_("Couldn't create arexx port\n"));
-			} else puts(_("Couldn't initialize timer\n"));
+								if (main_window_init())
+								{
+									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
+									return 1;
+								}
+							} else puts(_("Failed to create the application\n"));
+						} else puts(_("Could not create mui custom classes\n"));
+					} else puts(_("Couldn't create arexx port\n"));
+				} else puts(_("Couldn't initialize timer\n"));
+			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",1);
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 

@@ -20,9 +20,14 @@
 ** tcpip.h
 */
 
+#ifdef __AMIGAOS4__
+#define __USE_INLINE__
+#include <proto/bsdsocket.h>
+#else
 #ifdef _AMIGA
 #ifndef _AROS
 #include <proto/socket.h>
+#endif
 #endif
 #endif
 

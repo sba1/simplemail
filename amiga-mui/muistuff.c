@@ -23,7 +23,7 @@
 #include <utility/hooks.h>
 #include <intuition/classusr.h> /* Object * */
 #include <libraries/mui.h>
-/*#include <mui/speedbar_mcc.h>*/
+
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
@@ -116,6 +116,10 @@ VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help
 }
 */
 
+#ifdef __AMIGAOS4__
+extern void hookEntry(void);
+#endif
+
 struct Hook hook_standard;
 
 STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1, ULONG * funcptr))
@@ -129,9 +133,15 @@ STATIC ASM SAVEDS VOID hook_func_standard(REG(a0,struct Hook *h), REG(a2, Object
 /* Must be called before the hook_standard is used */
 void init_hook_standard(void)
 {
+#ifdef __AMIGAOS4__
+	hook_standard.h_Entry = (HOOKFUNC)hookEntry;
+	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
+#else
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
+#endif
 }
 
+#ifndef __AMIGAOS4__
 /* the hook function, it loads the a4 register and call the subentry */
 STATIC ASM SAVEDS VOID myhook_func(REG(a0,struct MyHook *h), REG(a2, ULONG obj), REG(a1,ULONG msg))
 {
@@ -144,17 +154,8 @@ STATIC ASM SAVEDS VOID myhook_func(REG(a0,struct MyHook *h), REG(a2, ULONG obj),
 	}
 }
 
-/* initializes a hook (in the past, the a4 register was stored within the myhook, this has been replaced now
- * so that we would need only one type of hook now */
-void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
-{
-	h->hook.h_Entry = (HOOKFUNC)myhook_func;
-	h->hook.h_SubEntry = func;
-	h->hook.h_Data = data;
-}
-
 /* the hook function */
-STATIC ASM SAVEDS VOID hook_func(register __a0 struct Hook *h, register __a1 ULONG msg, register __a2 ULONG obj)
+STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG(a1, ULONG msg))
 {
 	ASM VOID (*func) (REG(a0, struct Hook *), REG(a2, ULONG), REG(a1, ULONG)) =
 		(ASM  VOID (*) (REG(a0,struct Hook *), REG(a2, ULONG), REG(a1, ULONG)))h->h_SubEntry;
@@ -164,10 +165,29 @@ STATIC ASM SAVEDS VOID hook_func(register __a0 struct Hook *h, register __a1 ULO
 		func(h,obj,msg);
 	}
 }
+#endif
+
+/* initializes a hook (in the past, the a4 register was stored within the myhook, this has been replaced now
+ * so that we would need only one type of hook now */
+void init_myhook(struct MyHook *h, unsigned long (*func)(),void *data)
+{
+#ifdef __AMIGAOS4__
+	h->hook.h_Entry = (HOOKFUNC)hookEntry;
+	h->hook.h_SubEntry = (HOOKFUNC)func;
+#else
+	h->hook.h_Entry = (HOOKFUNC)myhook_func;
+	h->hook.h_SubEntry = func;
+#endif
+	h->hook.h_Data = data;
+}
 
 void init_hook(struct Hook *h, unsigned long (*func)())
 {
+#ifdef __AMIGAOS4__
+	h->h_Entry = (HOOKFUNC)hookEntry;
+	h->h_SubEntry = (HOOKFUNC)func;
+#else
 	h->h_Entry = (HOOKFUNC)hook_func;
 	h->h_SubEntry = func;
+#endif
 }
-

@@ -31,6 +31,8 @@
 #include "subthreads.h"
 #endif
 
+struct search_options;
+
 struct folder
 {
 	char *name; /* the name like it is displayed */

@@ -28,6 +28,7 @@
 #endif
 
 struct folder;
+struct mail;
 
 struct imap_server
 {

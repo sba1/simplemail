@@ -66,7 +66,7 @@ static int create_sizes_class(void);
 static void delete_sizes_class(void);
 static int value2size(int val);
 static int size2value(int val);
-#define SizesObject (Object*)NewObject(CL_Sizes->mcc_Class, NULL
+#define SizesObject (Object*)(NewObject)(CL_Sizes->mcc_Class, NULL
 
 void account_recv_port_update(void);
 
@@ -1155,23 +1155,23 @@ static int init_mails_readmisc_group(void)
 			Child, mails_readmisc_check_group = HGroup,
 				Child, VGroup,
 					Child, ColGroup(2),
-						Child, MakeLabel("From"),
-						Child, mails_readmisc_check[0] = MakeCheck("From",FALSE),
+						Child, MakeLabel(_("From")),
+						Child, mails_readmisc_check[0] = MakeCheck(_("From"),FALSE),
 
-						Child, MakeLabel("To"),
-						Child, mails_readmisc_check[1] = MakeCheck("To",FALSE),
+						Child, MakeLabel(_("To")),
+						Child, mails_readmisc_check[1] = MakeCheck(_("To"),FALSE),
 
-						Child, MakeLabel("CC"),
-						Child, mails_readmisc_check[2] = MakeCheck("CC",FALSE),
+						Child, MakeLabel(_("CC")),
+						Child, mails_readmisc_check[2] = MakeCheck(_("CC"),FALSE),
 
-						Child, MakeLabel("Subject"),
-						Child, mails_readmisc_check[3] = MakeCheck("Subject",FALSE),
+						Child, MakeLabel(_("Subject")),
+						Child, mails_readmisc_check[3] = MakeCheck(_("Subject"),FALSE),
 
-						Child, MakeLabel("Date"),
-						Child, mails_readmisc_check[4] = MakeCheck("Date",FALSE),
+						Child, MakeLabel(_("Date")),
+						Child, mails_readmisc_check[4] = MakeCheck(_("Date"),FALSE),
 
-						Child, MakeLabel("Reply-To"),
-						Child, mails_readmisc_check[5] = MakeCheck("Reply-To",FALSE),
+						Child, MakeLabel(_("Reply-To")),
+						Child, mails_readmisc_check[5] = MakeCheck(_("Reply-To"),FALSE),
 						End,
 					Child, HVSpace,
 					End,

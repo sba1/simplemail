@@ -153,7 +153,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
 }
 
 struct MUI_CustomClass *CL_SingleString;
-#define SingleStringObject (Object*)NewObject(CL_SingleString->mcc_Class, NULL
+#define SingleStringObject (Object*)(NewObject)(CL_SingleString->mcc_Class, NULL
 
 
 /* This is the multistring class */

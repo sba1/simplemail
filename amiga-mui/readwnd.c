@@ -38,7 +38,9 @@
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+#ifdef HAVE_OPENURL
 #include <proto/openurl.h>
+#endif
 #include <proto/wb.h>
 #include <proto/icon.h>
 
@@ -61,6 +63,8 @@
 #include "readwnd.h"
 #include "support.h"
 #include "print.h"
+
+struct Read_Data;
 
 void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail *mail);
@@ -829,6 +833,7 @@ static void uri_clicked(void **msg)
 		callback_write_mail_to_str(uri+7,NULL);
 	} else
 	{
+#ifdef HAVE_OPENURL
 		struct Library *OpenURLBase;
 
 		if ((OpenURLBase = OpenLibrary("openurl.library",0)))
@@ -836,6 +841,7 @@ static void uri_clicked(void **msg)
 			URL_OpenA(uri,NULL);
 			CloseLibrary(OpenURLBase);
 		}
+#endif
 	}
 }
 

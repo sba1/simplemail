@@ -23,6 +23,8 @@
 #ifndef SM__SUPPORT_H
 #define SM__SUPPORT_H
 
+struct tm;
+
 int sm_makedir(char *path);
 unsigned int sm_get_seconds(int day, int month, int year);
 int sm_get_gmt_offset(void);

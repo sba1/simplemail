@@ -79,7 +79,7 @@ struct mail_entry
 	char *from;
 };
 
-STATIC ASM APTR mail_construct(register __a2 APTR pool, register __a1 struct mail_entry *ent)
+STATIC ASM APTR mail_construct(REG(a0, struct Hook *hook), REG(a2, APTR pool), REG(a1, struct mail_entry *ent))
 {
 	struct mail_entry *new_ent = (struct mail_entry*)malloc(sizeof(*new_ent));
 	if (new_ent)
@@ -94,7 +94,7 @@ STATIC ASM APTR mail_construct(register __a2 APTR pool, register __a1 struct mai
 	return new_ent;
 }
 
-STATIC ASM VOID mail_destruct( register __a2 APTR pool, register __a1 struct mail_entry *ent)
+STATIC ASM VOID mail_destruct(REG(a0, struct Hook *hook), REG(a2, APTR pool), REG(a1, struct mail_entry *ent))
 {
 	if (ent)
 	{
@@ -104,7 +104,7 @@ STATIC ASM VOID mail_destruct( register __a2 APTR pool, register __a1 struct mai
 	}
 }
 
-STATIC ASM VOID mail_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct mail_entry *ent)
+STATIC ASM VOID mail_display(REG(a0, struct Hook *h), REG(a2, char **array), REG(a1, struct mail_entry *ent))
 {
 	if (ent)
 	{
@@ -469,9 +469,8 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	return start;
 }
 
-STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 {
-	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case OM_NEW: return(transwnd_New		(cl, obj, (struct opSet*) msg));
@@ -492,24 +491,15 @@ struct MUI_CustomClass *CL_transwnd;
 
 int create_transwnd_class(VOID)
 {
-	int rc;
-	
-	rc = FALSE;
-	
-	CL_transwnd = MUI_CreateCustomClass(NULL, MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher);
-	if(CL_transwnd != NULL)
-	{
-		CL_transwnd->mcc_Class->cl_UserData = getreg(REG_A4);
-		rc = TRUE;
-	}
-	
-	return(rc);
+	if ((CL_transwnd = MUI_CreateCustomClass(NULL, MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher)))
+		return 1;
+	return 0;
 }
 
 VOID delete_transwnd_class(VOID)
 {
-	if(CL_transwnd != NULL)
+	if (CL_transwnd)
 	{
 		MUI_DeleteCustomClass(CL_transwnd);
-	}	
+	}
 }

@@ -21,6 +21,7 @@
 */
 
 #include <ctype.h>
+#include <sys/types.h>
 #include <dirent.h> /* dir stuff */
 #include <unistd.h>
 #include <string.h>
@@ -1166,7 +1167,7 @@ int utf8realpos(const utf8 *str, int pos)
 	const utf8 *str_save = str;
 	unsigned char c;
 
-	if (!str) return NULL;
+	if (!str) return 0;
 
 	while (pos && (c = *str))
 	{
@@ -1260,7 +1261,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 		{
 			unsigned char *utf8_seq;
 
-			for(utf8_seq = &codeset->table[c].utf8[1];c = *utf8_seq;utf8_seq++)
+			for(utf8_seq = &codeset->table[c].utf8[1];(c = *utf8_seq);utf8_seq++)
 				*dest_ptr++ = c;
 		}
 
@@ -1378,7 +1379,6 @@ int utf8stricmp(char *str1, char *str2)
 	{
 		int d;
 		char bytes1,bytes2;
-		struct uniconv *res;
 
 		c1 = *str1++;
 		c2 = *str2++;
@@ -1482,7 +1482,6 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 	{
 		int d;
 		char bytes1,bytes2;
-		struct uniconv *res;
 
 		c1 = *str1++;
 		c2 = *str2++;
@@ -1532,7 +1531,6 @@ int utf8stricmp_len(const char *str1, const char *str2, int len)
 			struct uniconv *uc2;
 			int ch1l;
 			int ch2l;
-			int i = 3 - bytes1;
 
 			*((unsigned int *)ch1) = 0;
 			*((unsigned int *)ch2) = 0;
@@ -1638,15 +1636,15 @@ char *uft8toucs(char *chr, unsigned int *code)
 	return chr;
 }
 
-static char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static unsigned char base64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static short invbase64[128];
 
-static char ibase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
+static unsigned char ibase64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,";
 static short iinvbase64[128];
 
-static char direct[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'(),-./:?";
-static char optional[] = "!\"#$%&*;<=>@[]^_`{|}";
-static char spaces[] = " \011\015\012";		/* space, tab, return, line feed */
+static unsigned char direct[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'(),-./:?";
+static unsigned char optional[] = "!\"#$%&*;<=>@[]^_`{|}";
+static unsigned char spaces[] = " \011\015\012";		/* space, tab, return, line feed */
 static char mustshiftsafe[128];
 static char mustshiftopt[128];
 
@@ -1804,7 +1802,6 @@ char *utf8toiutf7(char *utf8, int sourcelen)
 
 	if ((fh = tmpfile()))
 	{
-		int i;
 		int dest_len;
 		int shifted = 0;
 		DECLARE_BIT_BUFFER;

@@ -35,7 +35,10 @@
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+
+#ifdef HAVE_OPENURL
 #include <proto/openurl.h>
+#endif
 
 #include "addressbook.h"
 #include "configuration.h"
@@ -301,6 +304,7 @@ static void person_homepage(struct Person_Data **pdata)
 
 	if (uri)
 	{
+#ifdef HAVE_OPENURL
 		struct Library *OpenURLBase;
 
 		if ((OpenURLBase = OpenLibrary("openurl.library",0)))
@@ -308,6 +312,7 @@ static void person_homepage(struct Person_Data **pdata)
 			URL_OpenA(uri,NULL);
 			CloseLibrary(OpenURLBase);
 		}
+#endif
 	}
 }
 

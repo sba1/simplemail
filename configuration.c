@@ -480,7 +480,7 @@ int load_config(void)
 		else buf[0] = 0;
 		sm_add_part(buf,".taglines",512);
 
-		if (user.taglines_filename = mystrdup(buf))
+		if ((user.taglines_filename = mystrdup(buf)))
 			taglines_init(user.taglines_filename);
 
 		free(buf);

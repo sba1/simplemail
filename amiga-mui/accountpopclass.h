@@ -25,7 +25,7 @@
 
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_AccountPop;
-#define AccountPopObject (Object*)NewObject(CL_AccountPop->mcc_Class, NULL
+#define AccountPopObject (Object*)(NewObject)(CL_AccountPop->mcc_Class, NULL
 
 #define MUIA_AccountPop_Account         (TAG_USER+0x5625626) /* struct account * */
 #define MUIA_AccountPop_HasDefaultEntry (TAG_USER+0x5625627)

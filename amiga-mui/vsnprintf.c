@@ -130,7 +130,7 @@ static char * __ultoa(register unsigned long val, char *endp, int base, int octz
 #define SHORTINT  0x040   /* short integer */
 #define ZEROPAD   0x080   /* zero (as opposed to blank) pad */
 
-int vsnprintf(char *buffer, int buffersize, const char *fmt0, va_list ap)
+int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap)
 {
   register char *fmt;   /* format string */
   register int ch;      /* character from fmt */
@@ -225,7 +225,11 @@ int vsnprintf(char *buffer, int buffersize, const char *fmt0, va_list ap)
   fmt = (char *)fmt0;
   argtable = NULL;
   nextarg = 1;
+#ifdef __AMIGAOS4__
+  __va_copy(orgap,ap);
+#else
   orgap = ap;
+#endif
   ret = 0;
 
   /*

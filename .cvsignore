@@ -1,4 +1,5 @@
 sas_objects
+amigaos68k-gcc-objects
 smakefile.compile
 sm
 *.info

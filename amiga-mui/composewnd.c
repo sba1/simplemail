@@ -1428,7 +1428,7 @@ void compose_window_close(int num, int action)
 	{
 		switch (action)
 		{
-			case COMPOSE_CLOSE_CANCEL: compose_window_dispose(&compose_open[num]); break;
+			case COMPOSE_CLOSE_CANCEL: compose_window_dispose(&compose_open[num]); break;
 			case COMPOSE_CLOSE_SEND:  compose_mail(compose_open[num],2);
 			case COMPOSE_CLOSE_LATER: compose_mail(compose_open[num],0);
 			case COMPOSE_CLOSE_HOLD: compose_mail(compose_open[num],1);

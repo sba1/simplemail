@@ -160,6 +160,8 @@ STATIC ULONG MatchWindow_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	struct TagItem *tstate, *tag;
 
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
 	while (tag = NextTagItem (&tstate))
 	{
 		ULONG tidata = tag->ti_Data;

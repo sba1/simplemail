@@ -32,6 +32,8 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */
+
 #include "SimpleMail_rev.h"
 
 #include "folder.h"
@@ -445,7 +447,9 @@ void main_refresh_folders(void)
 	if (folder_popupmenu) DoMethod(folder_popupmenu,MUIM_Popupmenu_Clear);
 
 	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
-	DoMethod(folder_tree,MUIM_NList_Clear);
+
+	DoMethod(folder_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
+
 	while (f)
 	{
 		DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
@@ -562,8 +566,8 @@ void main_set_folder_mails(struct folder *folder)
 
 	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
-/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);*/
-	DoMethod(mail_tree, MUIM_NList_Clear);
+	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
+/*	DoMethod(mail_tree, MUIM_NList_Clear);*/
 
 	set(mail_tree, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 

@@ -33,3 +33,4 @@ hits.txt
 po2tbl.sed
 POTFILES
 *.pox
+.#*

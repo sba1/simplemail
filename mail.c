@@ -946,7 +946,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				cmail = (struct composed_mail*)node_next(&cmail->node);
 			}
 
-			fprintf(fp, "--%s\n",boundary);
+			fprintf(fp, "--%s--\n",boundary);
 
 			free(boundary);
 		}

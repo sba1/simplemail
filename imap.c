@@ -53,9 +53,14 @@
 
 static int val;
 
+#define RM_FLAG_SEEN      (1L<<0)
+#define RM_FLAG_ANSWERED  (1L<<1)
+#define RM_FLAG_FLAGGED	(1L<<2)
+
 struct remote_mail
 {
 	unsigned int uid;
+	unsigned int flags;
 	unsigned int size;
 
 	/* only if headers are requested  */
@@ -382,7 +387,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
 			
@@ -402,6 +407,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					unsigned int msgno;
 					int is_mail = 0;
 					unsigned int uid = 0;
+					unsigned int flags = 0;
 					unsigned int size = 0;
 					char *headers = NULL;
 					char msgno_buf[100];
@@ -417,7 +423,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					msgno = (unsigned int)atoi(msgno_buf);
 					temp = stuff_buf;
 
-					for (i=0;i<3;i++)
+					for (i=0;i<4;i++)
 					{
 						temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 						if (!mystricmp(cmd_buf,"UID"))
@@ -425,6 +431,13 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 							uid = atoi(cmd_buf);
 							is_mail = 1;
+						}
+						else if (!mystricmp(cmd_buf,"FLAGS"))
+						{
+							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
+							if (strstr(cmd_buf,"\\Seen")) flags |= RM_FLAG_SEEN;
+							if (strstr(cmd_buf,"\\Answered")) flags |= RM_FLAG_ANSWERED;
+							if (strstr(cmd_buf,"\\Flagged")) flags |= RM_FLAG_FLAGGED;
 						}
 						else if (!mystricmp(cmd_buf,"RFC822.SIZE"))
 						{
@@ -464,6 +477,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					if (msgno <= num_of_remote_mails && msgno > 0 && is_mail)
 					{
 						remote_mail_array[msgno-1].uid = uid;
+						remote_mail_array[msgno-1].flags = flags;
 						remote_mail_array[msgno-1].size = size;
 						remote_mail_array[msgno-1].headers = headers;
 					}
@@ -1358,9 +1372,11 @@ static void imap_thread_really_download_mails(void)
 				for (i=0;i<num_remote_mails;i++)
 				{
 					char filename_buf[60];
+					char *filename;
 					FILE *fh;
-
 					int does_exist = 0;
+					int status = 0;
+
 					for (j=0; j < num_of_local_mails;j++)
 					{
 						if (local_mail_array[j].uid == remote_mail_array[i].uid)
@@ -1371,17 +1387,25 @@ static void imap_thread_really_download_mails(void)
 					}
 					if (does_exist) continue;
 
+					if (remote_mail_array[i].flags & RM_FLAG_ANSWERED) status = MAIL_STATUS_REPLIED;
+					else if (remote_mail_array[i].flags & RM_FLAG_SEEN) status = MAIL_STATUS_READ;
+
+					if (remote_mail_array[i].flags & RM_FLAG_FLAGGED) status |= MAIL_STATUS_FLAG_MARKED;
+
 					sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
-
-					/* Store as a partial mail */
-					if ((fh = fopen(filename_buf,"w")))
+					if ((filename = mail_get_status_filename(filename_buf, status)))
 					{
-						fprintf(fh,"X-SimpleMail-Partial: yes\n");
-						fprintf(fh,"X-SimpleMail-Size: %d\n",remote_mail_array[i].size);
-						if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
-						fclose(fh);
+						/* Store as a partial mail */
+						if ((fh = fopen(filename,"w")))
+						{
+							fprintf(fh,"X-SimpleMail-Partial: yes\n");
+							fprintf(fh,"X-SimpleMail-Size: %d\n",remote_mail_array[i].size);
+							if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
+							fclose(fh);
 
-						thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename_buf, imap_server->name, imap_folder);
+							thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename, imap_server->name, imap_folder);
+						}
+						free(filename);
 					}
 				}
 			} else folders_unlock();

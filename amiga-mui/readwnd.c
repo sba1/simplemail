@@ -37,20 +37,22 @@
 #include <proto/muimaster.h>
 
 #include "configuration.h"
+#include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
 #include "support_indep.h"
+#include "text2html.h"
 
 #include "compiler.h"
 #include "datatypesclass.h"
 #include "iconclass.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 #include "readlistclass.h"
 #include "readwnd.h"
 
-static struct Hook header_display_hook;
-
 static void save_contents(struct Read_Data *data, struct mail *mail);
+static int read_window_display_mail(struct Read_Data *data, char *filename);
 
 #define MAX_READ_OPEN 10
 static int read_open[MAX_READ_OPEN];
@@ -62,6 +64,8 @@ static int read_open[MAX_READ_OPEN];
 struct Read_Data /* should be a customclass */
 {
 	Object *wnd;
+	Object *prev_button;
+	Object *next_button;
 	Object *contents_page;
 	Object *datatype_datatypes;
 	Object *text_list;
@@ -71,36 +75,16 @@ struct Read_Data /* should be a customclass */
 	Object *attachments_last_selected;
 	Object *attachment_standard_menu; /* standard context menu */
 	Object *attachment_html_menu; /* for html files */
+	int attachment_show_me;
 
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
+	char *folder_path; /* the path of the folder */
 
 	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
 	/* more to add */
 };
-
-STATIC ASM VOID header_display(register __a2 char **array, register __a1 struct header *header)
-{
-	if (header)
-	{
-		*array++ = header->name;
-		*array = header->contents;
-	}
-}
-
-/******************************************************************
- inserts the headers of the mail into the given nlist object
-*******************************************************************/
-static void insert_headers(Object *header_list, struct mail *mail)
-{
-	struct header *header = (struct header*)list_first(&mail->header_list);
-	while (header)
-	{
-		DoMethod(header_list,MUIM_NList_InsertSingle, header, MUIV_NList_Insert_Bottom);
-		header = (struct header*)node_next(&header->node);
-	}
-}
 
 /******************************************************************
  inserts the text of the mail into the given nlist object
@@ -142,19 +126,20 @@ static void insert_text(struct Read_Data *data, struct mail *mail)
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
 	} else
 	{
-		set(data->text_list, MUIA_NList_Quiet, TRUE);
-		DoMethod(data->text_list,MUIM_NList_Clear);
+		char *html_mail;
 
-		while (buf < buf_end)
-		{
-			if (user.config.read_wordwrap)  DoMethod(data->text_list,MUIM_NList_InsertSingleWrap, buf, MUIV_NList_Insert_Bottom,WRAPCOL0,ALIGN_LEFT);
-			else DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+		SetAttrs(data->html_simplehtml,
+				MUIA_SimpleHTML_Buffer,data->mail->html_header,
+				MUIA_SimpleHTML_BufferLen,strstr(data->mail->html_header,"</BODY></HTML>") - data->mail->html_header,
+				TAG_DONE);
 
-			if ((buf = strchr(buf,10))) buf++;
-			else break;
-		}
-		set(data->text_list, MUIA_NList_Quiet, FALSE);
-		set(data->contents_page, MUIA_Group_ActivePage, PAGE_TEXT);
+		html_mail = text2html(buf, buf_end - buf,
+													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT);
+
+		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
+		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
+
+		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
 	}
 }
 
@@ -255,6 +240,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 *******************************************************************/
 static void save_contents(struct Read_Data *data, struct mail *mail)
 {
+	if (!mail) return;
 	if (!mail->num_multiparts)
 	{
 		if (MUI_AslRequestTags(data->file_req,
@@ -291,7 +277,7 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
 {
-	if (!data->attachments_group)
+	if (!data->attachments_group || !data->mail->num_multiparts)
 	{
 		mail_decode(m);
 		insert_text(data, m);
@@ -317,6 +303,7 @@ static void read_window_close(struct Read_Data **pdata)
 	if (data->attachment_standard_menu) MUI_DisposeObject(data->attachment_standard_menu);
 
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
+	if (data->folder_path) free(data->folder_path);
 	mail_free(data->mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = 0;
 	free(data);
@@ -329,9 +316,44 @@ static void save_button_pressed(struct Read_Data **pdata)
 {
 	struct mail *mail;
 	struct Read_Data *data = *pdata;
-	if (!data->attachments_last_selected) return;
-	if (!(mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData))) return;
+	if (data->attachments_last_selected)
+	{
+		mail = (struct mail*)xget(data->attachments_last_selected,MUIA_UserData);
+	} else {
+		if (!data->mail->num_multiparts) mail = data->mail;
+		else mail = NULL;
+	}
 	save_contents(data,mail);
+}
+
+/******************************************************************
+ The prev button has been pressed
+*******************************************************************/
+static void prev_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	struct mail *prev = folder_find_prev_mail_by_filename(data->folder_path, data->mail->filename);
+	if (prev)
+	{
+		if (data->mail) mail_free(data->mail);
+		data->mail = NULL;
+		read_window_display_mail(data, prev->filename);
+	}
+}
+
+/******************************************************************
+ The next button has been pressed
+*******************************************************************/
+static void next_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	struct mail *next = folder_find_next_mail_by_filename(data->folder_path, data->mail->filename);
+	if (next)
+	{
+		if (data->mail) mail_free(data->mail);
+		data->mail = NULL;
+		read_window_display_mail(data, next->filename);
+	}
 }
 
 /******************************************************************
@@ -356,39 +378,109 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 	return 1;
 }
 
+
+/******************************************************************
+ Display the mail
+*******************************************************************/
+static int read_window_display_mail(struct Read_Data *data, char *filename)
+{
+	BPTR lock;
+
+	if (!data->folder_path) return 0;
+
+	set(App, MUIA_Application_Sleep, TRUE);
+
+	if ((lock = Lock(data->folder_path,ACCESS_READ))) /* maybe it's better to use an absoulte path here */
+	{
+		BPTR old_dir = CurrentDir(lock);
+
+		if ((data->mail = mail_create_from_file(filename)))
+		{
+			mail_read_contents(data->folder_path,data->mail);
+			mail_create_html_header(data->mail);
+
+			if (!data->mail->num_multiparts)
+			{
+				/* mail has only one part */
+				set(data->attachments_group, MUIA_ShowMe, FALSE);
+			} else
+			{
+				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_InitChange);
+			}
+
+			DoMethod(data->attachments_group, MUIM_Group_InitChange);
+			DisposeAllChilds(data->attachments_group);
+			data->attachments_last_selected = NULL;
+			insert_mail(data,data->mail);
+			DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+			DoMethod(data->attachments_group, MUIM_Group_ExitChange);
+			if (data->mail->num_multiparts)
+			{
+				set(data->attachments_group, MUIA_ShowMe, TRUE);
+				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_ExitChange);
+			}
+
+			show_mail(data,mail_find_initial(data->mail));
+
+			CurrentDir(old_dir);
+			set(App, MUIA_Application_Sleep, FALSE);
+			return 1;
+		}
+		CurrentDir(old_dir);
+	}
+
+	DoMethod(data->attachments_group, MUIM_Group_InitChange);
+	DisposeAllChilds(data->attachments_group);
+	data->attachments_last_selected = NULL;
+	DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+	DoMethod(data->attachments_group, MUIM_Group_ExitChange);
+	set(App, MUIA_Application_Sleep, FALSE);
+	return 0;
+}
+
 /******************************************************************
  Opens a read window
 *******************************************************************/
 void read_window_open(char *folder, char *filename)
 {
-	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page, *save_button;
+	Object *wnd,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
 	Object *attachments_group;
 	Object *datatype_datatypes;
 	Object *text_listview;
+	Object *prev_button, *next_button, *save_button;
+	Object *space;
 	int num;
 
 	for (num=0; num < MAX_READ_OPEN; num++)
 		if (!read_open[num]) break;
-
-	init_hook(&header_display_hook,(HOOKFUNC)header_display);
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
     MUIA_Window_Title, "SimpleMail - Read Message",
         
 		WindowContents, VGroup,
-			Child, HGroup,
-				MUIA_VertWeight,33,
-				Child, NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_HorizWeight,300,
-					MUIA_NListview_NList, header_list = NListObject,
-						MUIA_NList_DisplayHook, &header_display_hook,
-						MUIA_NList_Format, "P=" MUIX_R MUIX_PH ",",
-						End,
+			Child, HGroupV,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					MUIA_Weight, 100,
+					Child, prev_button = MakePictureButton("_Prev","PROGDIR:Images/MailPrev"),
+					Child, next_button = MakePictureButton("_Next","PROGDIR:Images/MailNext"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					MUIA_Weight, 50,
+/*					Child, MakePictureButton("Show","PROGDIR:Images/MailShow"),*/
+					Child, save_button = MakePictureButton("_Save","PROGDIR:Images/MailSave"),
+					End,
+				Child, HGroup,
+					MUIA_Group_Spacing, 0,
+					MUIA_Weight, 200,
+					Child, MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
+					Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),
+					Child, MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
+					Child, MakePictureButton("_Forward","PROGDIR:Images/MailForward"),
 					End,
 				End,
-			Child, BalanceObject,End,
 			Child, contents_page = PageGroup,
 				MUIA_Group_ActivePage, PAGE_TEXT,
 				Child, VGroup,
@@ -409,10 +501,13 @@ void read_window_open(char *folder, char *filename)
 					End,
 				Child, VGroup,
 					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
-					Child, save_button = MakeButton("Save"),
 					End,
 				End,
-			Child, attachments_group = HGroupV,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+				Child, attachments_group = HGroupV,
+					End,
+				Child, space = HSpace(0),
 				End,
 			End,
 		End;
@@ -422,91 +517,73 @@ void read_window_open(char *folder, char *filename)
 		struct Read_Data *data = (struct Read_Data*)malloc(sizeof(struct Read_Data));
 		if (data)
 		{
-			BPTR lock = Lock(folder,ACCESS_READ); /* maybe it's better to use an absoulte path here */
-			if (lock)
+			Object *save_contents_item;
+			Object *save_contents2_item;
+			Object *save_document_item;
+
+			data->attachment_standard_menu = MenustripObject,
+				Child, MenuObjectT("Attachment"),
+					Child, save_contents_item = MenuitemObject,
+						MUIA_Menuitem_Title, "Save As...",
+						MUIA_UserData, 1,
+						End,
+					End,
+				End;
+
+			data->attachment_html_menu = MenustripObject,
+				Child, MenuObjectT("Attachment"),
+					Child, save_contents2_item = MenuitemObject,
+						MUIA_Menuitem_Title, "Save as...",
+						MUIA_UserData, 1,
+						End,
+					Child, save_document_item = MenuitemObject,
+						MUIA_Menuitem_Title, "Save whole document as...",
+						MUIA_UserData, 2,
+						End,
+					End,
+				End;
+
+			set(space, MUIA_HorizWeight, 1);
+
+			data->wnd = wnd;
+			data->folder_path = mystrdup(folder);
+			data->text_list = text_list;
+			data->contents_page = contents_page;
+			data->datatype_datatypes = datatype_datatypes;
+			data->html_simplehtml = html_simplehtml;
+			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
+			data->attachments_group = attachments_group;
+			data->num = num;
+			read_open[num] = 1;
+
+			init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
+
+			SetAttrs(data->html_simplehtml,
+					MUIA_SimpleHTML_HorizScrollbar, html_horiz_scrollbar,
+					MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
+					MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
+					TAG_DONE);
+
+			set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
+			DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);
+
+			DoMethod(prev_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
+			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
+			DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
+
+			set(App, MUIA_Application_Sleep, TRUE);
+
+			if (read_window_display_mail(data,filename))
 			{
-				BPTR old_dir = CurrentDir(lock);
-				data->wnd = wnd;
-				
-				if ((data->mail = mail_create_from_file(filename)))
-				{
-					Object *save_contents_item;
-					Object *save_contents2_item;
-					Object *save_document_item;
-
-					mail_read_contents(folder,data->mail);
-
-					data->attachment_standard_menu = MenustripObject,
-						Child, MenuObjectT("Attachment"),
-							Child, save_contents_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save As...",
-								MUIA_UserData, 1,
-								End,
-							End,
-						End;
-
-					data->attachment_html_menu = MenustripObject,
-						Child, MenuObjectT("Attachment"),
-							Child, save_contents2_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save as...",
-								MUIA_UserData, 1,
-								End,
-							Child, save_document_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save whole document as...",
-								MUIA_UserData, 2,
-								End,
-							End,
-						End;
-
-					if (!data->mail->num_multiparts)
-					{
-						/* mail has only one part */
-						set(attachments_group, MUIA_ShowMe, FALSE);
-						attachments_group = NULL;
-					}
-
-					data->text_list = text_list;
-					data->contents_page = contents_page;
-					data->datatype_datatypes = datatype_datatypes;
-					data->html_simplehtml = html_simplehtml;
-					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
-					data->attachments_group = attachments_group;
-					data->num = num;
-					data->attachments_last_selected = NULL;
-					read_open[num] = 1;
-
-					init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
-
-					SetAttrs(data->html_simplehtml,
-							MUIA_SimpleHTML_HorizScrollbar, html_horiz_scrollbar,
-							MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
-							MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
-							TAG_DONE);
-
-					set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
-					DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);
-
-					insert_headers(header_list,data->mail);
-					insert_mail(data,data->mail);
-
-					if (attachments_group)
-					{
-						DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
-					}
-
-					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
-					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
-					DoMethod(App,OM_ADDMEMBER,wnd);
-
-					show_mail(data,mail_find_initial(data->mail));
-					set(wnd,MUIA_Window_DefaultObject, data->text_list);
-					set(wnd,MUIA_Window_Open,TRUE);
-					CurrentDir(old_dir);
-					return;
-				}
-				CurrentDir(old_dir);
+				DoMethod(App,OM_ADDMEMBER,wnd);
+				set(wnd,MUIA_Window_Open,TRUE);
+				set(App, MUIA_Application_Sleep, FALSE);
+				return;
 			}
+
 			free(data);
+			set(App, MUIA_Application_Sleep, FALSE);
 		}
 		MUI_DisposeObject(wnd);
 	}

@@ -420,7 +420,7 @@ SAVEDS void xml_end_tag(void *data, const char *el)
 			struct addressbook_entry_new *entry;
 
 			xml_context.newcontact_tag = 0;
-printf("name=%s\n\n",xml_context.current_entry.realname);
+
 			if ((entry = (struct addressbook_entry_new*)malloc(sizeof(struct addressbook_entry_new))))
 			{
 				/* Add the group to the entry, if it is a classical address book */

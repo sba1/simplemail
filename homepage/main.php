@@ -1,13 +1,14 @@
 <p>
   SimpleMail is a new mailer for the <a
-  href="http://www.amiga.com/">Amiga</a> classic platform but it is
-  intended to be as portable as possible so there speaks nothing
-  against a <a href="http://www.morphos.de/">MorphOS</a> or even <a
-  href="http://www.microsoft.com/">Windows</a> version.
+  href="http://www.amiga.com/">Amiga</a> platform (both classic and OS4) and compatible systems
+  (<a href="http://www.morphos.de/">MorphOS</a>). 
+  It is intended to be as portable as possible so there speaks nothing
+  against a version for other systems, like for example <A
+  href="http://www.microsoft.com/">Windows</a>.
 </p>
 
 <p>
-  In the current state, SimpleMail is an alpha version but it is
+  In the current state, SimpleMail is an beta version but it is
   very stable however as we try to implement every feature so that
   it works and go then on to the next one. However, SimpleMail
   grows very fast and with your help it can overgrow <a

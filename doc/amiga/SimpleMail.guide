@@ -2440,6 +2440,11 @@ Get positions of selected messages in the current folder. The message on
 top of the list gets position 0.
 
 
+GETMAILSTAT     VAR/K,STEM/K => TOTAL/N,NEW/N,UNREAD/N
+
+Returns the number of total, new and unread mails.
+
+
 GETURL          URL/A,FILENAME/A
 
 Downloads a file from the web using the HTTP protocol and saves it to

@@ -90,6 +90,8 @@ void callback_delete_mails(void)
 
 	if (from_folder)
 	{
+		int search_has;
+
 		/* Check if folder is not used */
 		if (!folder_attempt_lock(from_folder))
 		{
@@ -116,9 +118,12 @@ void callback_delete_mails(void)
 			permanent = 1;
 		} else permanent = 0;
 
+		search_has = search_has_mails();
+
 		mail = main_get_mail_first_selected(&handle);
 		while (mail)
 		{
+			if (search_has) search_remove_mail(mail);
 			if (permanent) folder_delete_mail(from_folder,mail);
 			else folder_move_mail(from_folder,folder_deleted(),mail);
 			mail = main_get_mail_next_selected(&handle);
@@ -148,6 +153,7 @@ int callback_delete_mail(struct mail *mail)
 		main_refresh_folder(f);
 		main_refresh_folder(folder_deleted());
 		if (main_get_folder() == f) main_remove_mail(mail);
+		if (search_has_mails()) search_remove_mail(mail);
 		folder_unlock(f);
 		return 1;
 	}
@@ -644,6 +650,7 @@ void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct m
 {
 	if (main_get_folder() == folder)
 	{
+		if (search_has_mails()) search_remove_mail(oldmail);
 		main_replace_mail(oldmail, newmail);
 	}
 }

@@ -61,6 +61,8 @@ static Object *search_start_button;
 static Object *search_stop_button;
 static Object *search_mail_tree;
 
+static int has_mails;
+
 STATIC ASM VOID folder_objstr(register __a2 Object *list, register __a1 Object *str)
 {
 	struct MUI_NListtree_TreeNode *tree_node;
@@ -231,6 +233,7 @@ void search_open(char *foldername)
 void search_clear_results(void)
 {
 	DoMethod(search_mail_tree, MUIM_NListtree_Clear, NULL, 0);
+	has_mails = 0;
 }
 
 /**************************************************************************
@@ -253,6 +256,8 @@ void search_add_result(struct mail **array, int size)
 
 	if (size > 1)
 		set(search_mail_tree, MUIA_NListtree_Quiet, FALSE);
+
+  has_mails = 1;
 }
 
 /**************************************************************************
@@ -273,3 +278,20 @@ void search_disable_search(void)
 	set(search_stop_button,MUIA_Disabled,TRUE);
 }
 
+/**************************************************************************
+ Returns wheather there are any mails or not
+**************************************************************************/
+int search_has_mails(void)
+{
+	return has_mails;
+}
+
+/**************************************************************************
+ Remove the given mail
+**************************************************************************/
+void search_remove_mail(struct mail *m)
+{
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(search_mail_tree, m);
+	if (treenode)
+		DoMethod(search_mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
+}

@@ -69,10 +69,8 @@ int init_threads(void)
 void cleanup_threads(void)
 {
 	if (subthread)
-	{
-		thread_abort();
 		AmiProc_Wait(subthread);
-	}
+
 	if (thread_port)
 	{
 		DeleteMsgPort(thread_port);

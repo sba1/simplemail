@@ -723,18 +723,19 @@ static char status_extensions[] =
 char *mail_get_new_name(int status)
 {
 	long t;
-	struct tm *d, tm;
+	struct tm tm;
 	unsigned short day_secs;
+	unsigned int secs;
 	short i;
 	char dummy[8];
 	char status_buf[4];
 	char *buf;
 
 	buf = malloc(20);
+	if (!buf) return NULL;
 
-	time(&t);
-	d = localtime(&t);
-	tm = *d;
+	secs = sm_get_current_seconds();
+	sm_convert_seconds(secs, &tm);
 
 	day_secs = (tm.tm_min * 60) + tm.tm_sec;
 	dummy[4] = 0;

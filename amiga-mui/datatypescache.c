@@ -187,6 +187,7 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 		}
 		free(node);
 	}
+	return NULL;
 }
 
 void dt_dispose_picture(struct dt_node *node)

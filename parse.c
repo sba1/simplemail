@@ -451,6 +451,8 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 
 	memset(mb,0,sizeof(struct mailbox));
 
+	if (!mailbox) return NULL;
+
 	if ((ret = parse_addr_spec(mailbox,&mb->addr_spec)))
 	{
 		/* the phrase can now be placed in the brackets */

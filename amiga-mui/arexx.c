@@ -403,6 +403,53 @@ static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ GETMAILSTAT Arexx Command
+*****************************************************************/
+static void arexx_getmailstat(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+	} getmailstat_arg;
+	memset(&getmailstat_arg,0,sizeof(getmailstat_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K",args,&getmailstat_arg)))
+	{
+		int total_msg,total_unread,total_new;
+
+		folder_get_stats(&total_msg,&total_unread,&total_new);
+
+		if (getmailstat_arg.stem)
+		{
+			int stem_len = strlen(getmailstat_arg.stem);
+			char *stem_buf = malloc(stem_len+20);
+			if (stem_buf)
+			{
+				strcpy(stem_buf,getmailstat_arg.stem);
+
+				strcpy(&stem_buf[stem_len],"TOTAL");
+				arexx_set_var_int(rxmsg,stem_buf,total_msg);
+				strcpy(&stem_buf[stem_len],"NEW");
+				arexx_set_var_int(rxmsg,stem_buf,total_new);
+				strcpy(&stem_buf[stem_len],"UNREAD");
+				arexx_set_var_int(rxmsg,stem_buf,total_unread);
+
+				free(stem_buf);
+			}
+		} else
+		{
+			char num_buf[36];
+			sprintf(num_buf,"%d %d %d",total_msg,total_new,total_unread);
+			if (getmailstat_arg.var) SetRexxVar(rxmsg,getmailstat_arg.var,num_buf,strlen(num_buf));
+			else arexx_set_result(rxmsg,num_buf);
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  SHOW Arexx Command
 *****************************************************************/
 static void arexx_show(struct RexxMsg *rxmsg, STRPTR args)
@@ -821,7 +868,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 			if (mail->flags & MAIL_FLAGS_GROUP) mail_flags[0] = 'M';
 			if (mail->flags & MAIL_FLAGS_ATTACH) mail_flags[1] = 'A';
 			if (mail->flags & MAIL_FLAGS_CRYPT) mail_flags[3] = 'C';
-			if (mail->flags & MAIL_FLAGS_SIGNED) mail_flags[3] = 'S';
+			if (mail->flags & MAIL_FLAGS_SIGNED) mail_flags[4] = 'S';
 
 			if (mailinfo_arg.stem)
 			{
@@ -867,7 +914,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
- MAILINFO Arexx Command
+ SETFOLDER Arexx Command
 *****************************************************************/
 static void arexx_setfolder(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -1446,6 +1493,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
 		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);
+		else if (!Stricmp("GETMAILSTAT",command.command)) arexx_getmailstat(rxmsg,command.args);
 		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);
 		else if (!Stricmp("REQUEST",command.command)) arexx_request(rxmsg,command.args);
 		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);

@@ -37,7 +37,7 @@ AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(getcwd gethostname socket strdup strstr strtol strcasecmp strncasecmp)
 
 dnl I18n support
-ALL_LINGUAS="de hu"
+ALL_LINGUAS="de ma"
 AM_GNU_GETTEXT
 
 
@@ -51,32 +51,4 @@ AC_OUTPUT(Makefile
           gtk/Makefile
           intl/Makefile
           po/Makefile.in)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

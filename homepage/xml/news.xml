@@ -1,6 +1,18 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/12/13">
+	<text lang="en">
+	  Added a link to a tutorial how to combine SimpleMail with
+	  OpenURL or IBrowse by Stefan Martens. You find it in the links.
+	</text>
+	<text lang="de">
+	  Ein Link zu einem Tutorial von Stefan Martens wie man SimpleMail
+	  mit OpenURL oder IBrowse kombinieren kann hinzugefügt. Er kann
+	  in den Links gefunden werden.
+	</text>
+
+  </entry>
   <entry date="2001/12/07">
 	<text lang="en">
 	  Version 0.13 of SimpleMail released!
@@ -19,17 +31,17 @@
 	  </list>
 	  
 	  Please note: if you downloaded your archive before 2001/12/08, 0:30am, there were 
-      informations
+	  informations
 	  about the taglines missing in the guide so the guide has been replaced just
 	  now. If you don't want to download the whole archive again, here is the changeg
 	  paragraph:
 
-      Tick this box is you want SimpleMail to automatically add a random
-      tagline to every email you write. Simply insert a %t in the signature
-      and it will be replaced by a random tagline found in .taglines when
-      composing a mail.
-      
-      Sorry for the inconvience.
+	  Tick this box is you want SimpleMail to automatically add a random
+	  tagline to every email you write. Simply insert a %t in the signature
+	  and it will be replaced by a random tagline found in .taglines when
+	  composing a mail.
+	  
+	  Sorry for the inconvience.
 	  
 	</text>
 

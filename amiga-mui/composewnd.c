@@ -615,27 +615,38 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 static void compose_add_signature(struct Compose_Data *data)
 {
 	struct signature *sign = (struct signature*)list_first(&user.config.signature_list);
-	if (user.config.signatures_use && sign)
+	if (user.config.signatures_use && sign && sign->signature)
 	{
 		char *text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
 		int add_sign = 0;
 
 		if (text)
 		{
-			add_sign = strstr(text,"-- \n")?0:1;
-			FreeVec(text);
+			add_sign = strstr(text,"\n-- \n")?(0):(!!strncmp("-- \n",text,4));
 		}
 		if (add_sign)
 		{
-			DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"-- \n", MUIV_TextEditor_InsertText_Bottom);
-			DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
+			char *new_text = (char*)malloc(strlen(text) + strlen(sign->signature) + 50);
+			if (new_text)
+			{
+				strcpy(new_text,text);
+				strcat(new_text,"\n-- \n");
+				strcat(new_text,sign->signature);
+/*
+				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
+				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
+*/
+				SetAttrs(data->text_texteditor,
+						MUIA_TextEditor_CursorX,0,
+						MUIA_TextEditor_CursorY,0,
+						MUIA_TextEditor_Contents,new_text,
+						TAG_DONE);
 
-			SetAttrs(data->text_texteditor,
-					MUIA_TextEditor_CursorX,0,
-					MUIA_TextEditor_CursorY,0,
-					TAG_DONE);
-
+				free(new_text);
+			}
 		}
+
+		if (text) FreeVec(text);
 	}
 }
 
@@ -656,14 +667,15 @@ static void compose_set_signature(void **msg)
 
 	if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
 	{
-		char *sign_text = strstr(text,"-- \n");
+		char *sign_text = strstr(text,"\n-- \n");
 		char *new_text;
+
 		if (sign_text) *sign_text = 0;
 
 		if ((new_text = (char*)malloc(strlen(text)+strlen(sign->signature)+8)))
 		{
 			strcpy(new_text,text);
-			strcat(new_text,"-- \n");
+			strcat(new_text,"\n-- \n");
 			strcat(new_text,sign->signature);
 
 			SetAttrs(data->text_texteditor,
@@ -1044,6 +1056,29 @@ void compose_window_open(struct compose_args *args)
 				if (args->to_change->filename) data->filename = strdup(args->to_change->filename);
 				data->folder = strdup("Outgoing");
 				data->reply_id = mystrdup(args->to_change->message_reply_id);
+			} else
+			{
+				/* Add the predefined text */
+				char *welcome = mail_create_string(user.config.write_welcome,NULL);
+				char *close = mail_create_string(user.config.write_close,NULL);
+				char *new_text = malloc((welcome?strlen(welcome):0) + (close?strlen(close):0) + 40);
+
+				if (new_text)
+				{
+					if (welcome)
+					{
+						strcpy(new_text,welcome);
+						strcat(new_text,"\n");
+					} else new_text[0] = 0;
+
+					if (close)
+						strcat(new_text,close);
+
+					set(text_texteditor,MUIA_TextEditor_Contents,new_text);
+					free(new_text);
+				}
+				if (welcome) free(welcome);
+				if (close) free(close);
 			}
 
 			compose_add_signature(data);

@@ -4,7 +4,7 @@ Author:    hynek@schlawack.net (Hynek Schlawack), sebauer@t-online.de (Sebastian
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (alpha Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListree, BetterString, TextEditor
-Version:   0.6
+Version:   0.7
 
 Introduction
 ~~~~~~~~~~~~
@@ -39,6 +39,13 @@ problem.
 
 Changes
 ~~~~~~~
+Version 0.7 (seventh alpha) - released on 2001/06/29
+  - the attachment icons weren't displayed on OSes with version below 3.5
+  - signatures support
+  - configurable greetings text when writing new mails
+  - the fonts and colors for reading a mail can be configured
+  - hierachical folders and folder images
+
 Version 0.6 (sixth alpha) - released on 2001/06/05
   - improved e-mail account configuration (multiple smtp servers)
   - can log into pop3 servers before sending e-mails

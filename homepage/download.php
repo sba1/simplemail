@@ -2,7 +2,7 @@
 
   $path = "files/".$filename;
 
-  if ($filename != "simplemail.lzx") die("Unknown file requested!");
+  if ($filename != "simplemail.lha") die("Unknown file requested!");
  
   $fp = fopen("downloads.txt","r");
   if ($fp==0) $downs=0;

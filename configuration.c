@@ -133,6 +133,12 @@ int load_config(void)
 							sscanf(result,"%x",&user.config.read_link);
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
 							user.config.read_link_underlined = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Write.Welcome")))
+							user.config.write_welcome = mystrdup(result);
+						if ((result = get_config_item(buf,"Write.WelcomeAddress")))
+							user.config.write_welcome_address = mystrdup(result);
+						if ((result = get_config_item(buf,"Write.Close")))
+							user.config.write_close = mystrdup(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -325,7 +331,9 @@ void save_config(void)
 			fprintf(fh,"Read.OldQuotedColor=0x%lx\n",user.config.read_old_quoted);
 			fprintf(fh,"Read.LinkColor=0x%lx\n",user.config.read_link);
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
-
+			fprintf(fh,"Write.Welcome=%s\n",MAKESTR(user.config.write_welcome));
+			fprintf(fh,"Write.WelcomeAddress=%s\n",MAKESTR(user.config.write_welcome_address));
+			fprintf(fh,"Write.Close=%s\n",MAKESTR(user.config.write_close));
 			fclose(fh);
 		}
 	}

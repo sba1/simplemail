@@ -67,6 +67,9 @@ static Object *read_linkunderlined_checkbox;
 static Object *read_palette;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
+static Object *write_welcome_string;
+static Object *write_close_string;
+
 static Object *account_name_string;
 static Object *account_email_string;
 static Object *account_reply_string;
@@ -195,6 +198,8 @@ static void config_use(void)
 	user.config.read_old_quoted = ((read_palette_entries[3].mpe_Red >> 24)<<16) | ((read_palette_entries[3].mpe_Green>>24)<<8) | (read_palette_entries[3].mpe_Blue>>24);
 	user.config.read_link = ((read_palette_entries[4].mpe_Red >> 24)<<16)       | ((read_palette_entries[4].mpe_Green>>24)<<8) | (read_palette_entries[4].mpe_Blue>>24);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
+	user.config.write_welcome = mystrdup((char*)xget(write_welcome_string,MUIA_String_Contents));
+	user.config.write_close = mystrdup((char*)xget(write_close_string,MUIA_String_Contents));
 
   get_account();
   get_signature();
@@ -373,13 +378,19 @@ static int init_write_group(void)
 	write_group = ColGroup(2),
 		MUIA_ShowMe, FALSE,
 		Child, MakeLabel("Welcome phrase"),
-		Child, BetterStringObject,StringFrame,End,
+		Child, write_welcome_string = BetterStringObject,
+			StringFrame,
+			MUIA_String_Contents, user.config.write_welcome,
+			End,
 
-		Child, MakeLabel("Welcome phrase with address"),
+/*		Child, MakeLabel("Welcome phrase with address"),
 		Child, BetterStringObject,StringFrame,End,
-
+*/
 		Child, MakeLabel("Closing phrase"),
-		Child, BetterStringObject,StringFrame,End,
+		Child, write_close_string = BetterStringObject,
+			StringFrame,
+			MUIA_String_Contents, user.config.write_close,
+			End,
 		End;
 	if (!write_group) return 0;
 	return 1;
@@ -772,8 +783,10 @@ static int init_signature_group(void)
 {
 /*	Object *edit_button;*/
 	Object *slider = ScrollbarObject, End;
+/*
 	Object *tagline_button;
 	Object *env_button;
+*/
 	Object *add_button, *rem_button;
 
 	signature_group =  VGroup,
@@ -794,10 +807,10 @@ static int init_signature_group(void)
 				End,
 			Child, slider,
 			End,
-		Child, HGroup,
+/*		Child, HGroup,
   		Child, tagline_button = MakeButton("Insert random tagline"),
   		Child, env_button = MakeButton("Insert ENV:Signature"),
-  		End,
+  		End,*/
   	Child, HorizLineObject,
   	Child, HGroup,
 			Child, add_button = MakeButton("Add new signature"),
@@ -808,8 +821,9 @@ static int init_signature_group(void)
 	if (!signature_group) return 0;
 /*	set(edit_button, MUIA_Weight,0);*/
 
-	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t",MUIV_TextEditor_InsertText_Cursor);
+/*	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t",MUIV_TextEditor_InsertText_Cursor);
 	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
+*/
 	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
 	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_remove);
 	return 1;

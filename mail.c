@@ -1848,3 +1848,33 @@ int mail_create_html_header(struct mail *mail)
 	}
 	return rc;
 }
+
+/**************************************************************************
+ Creates a string for a greeting/closing phrase. Mail maybe NULL
+**************************************************************************/
+char *mail_create_string(char *format, struct mail *mail)
+{
+	char *str;
+
+	if (!format) return NULL;
+	if ((str = (char*)malloc(1024)))
+	{
+		char *src = format;
+		char *dest = str;
+		char c;
+
+		while ((c = *src++))
+		{
+			if (c=='\\')
+			{
+				if (*src == '\\') { c = '\\';src++;}
+				else if (*src == 'n') { c = '\n';src++;}
+				else if (*src == 't') { c = '\t';src++;}
+			}
+			*dest++ = c;
+		}
+		*dest = 0;
+	}
+	return str;
+}
+

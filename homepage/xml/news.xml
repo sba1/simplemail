@@ -1,6 +1,26 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/06/29">
+    <text lang="en">
+      Version 0.7 of SimpleMail has been released! Changes since last release were:
+       <item>the attachment icons weren't displayed on OSes with version below 3.5</item>
+       <item>signatures support</item>
+       <item>configurable greetings text when writing new mails</item>
+       <item>the fonts and colors for reading a mail can be configured</item>
+       <item>hierachical folders and folder images</item>
+    </text>
+
+    <text lang="de">
+      Version 0.7 von SimpleMail wurde veröffentlicht! Änderungen seit der letzten Version:
+       <item>Die Icons der Anhänge wurden auf Betriebssytemversionen kleiner als 3.5 nicht dargestellt</item>
+       <item>Signaturen werden unterstützt</item>
+       <item>Konfigurierbare Begrüßungs- und Schlußtext beim Erstellen einer neuen E-Mail</item>
+       <item>Zeichensätze und Farben im Lesefenster einstellbar<item>
+       <item>Hierachische Ordner mit kleinen Bildchen</item>
+    </text>
+  </entry>
+
   <entry date="2001/06/05">
     <text lang="en">
       There was a problem with the last alpha of SimpleMail. It was compiled under WinUAE which seems not to be a good idea.

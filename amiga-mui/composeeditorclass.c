@@ -91,10 +91,10 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG ComposeEditor_InsertText(struct IClass *cl, Object *obj, struct MUIP_TextEditor_InsertText *msg)
+/*STATIC ULONG ComposeEditor_InsertText(struct IClass *cl, Object *obj, struct MUIP_TextEditor_InsertText *msg)
 {
 	return DoSuperMethodA(cl,obj,(Msg)msg);
-}
+}*/
 
 STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
@@ -104,7 +104,7 @@ STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, regis
 		case	OM_NEW: return ComposeEditor_New(cl,obj,(struct opSet*)msg);
 		case	MUIM_Setup: return ComposeEditor_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return ComposeEditor_Cleanup(cl,obj,msg);
-		case	MUIM_TextEditor_InsertText: return ComposeEditor_InsertText(cl,obj,(struct MUIP_TextEditor_InsertText*)msg);
+/*		case	MUIM_TextEditor_InsertText: return ComposeEditor_InsertText(cl,obj,(struct MUIP_TextEditor_InsertText*)msg);*/
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

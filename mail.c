@@ -967,13 +967,13 @@ struct mail *mail_create_reply(struct mail *mail)
 					for (i=0;i<2;i++)
 					{
 						struct parse_address addrs;
-						char *str = i==0?cc:to;
+						char *str = i==0?to:cc;
 						if (str)
 						{
 							if (parse_address(str,&addrs))
 							{
-								/* i == 0 means cc, so if the list is not empty it had multiple recipients
-									 i == 1 means to, so it contains at least one single entry */
+								/* i == 0 means to, so if the list is not empty it had multiple recipients
+									 i == 1 means cc, so it contains at least one single entry */
 
 								if (list_length(&addrs.mailbox_list) > 1 - i)
 								{
@@ -982,6 +982,11 @@ struct mail *mail_create_reply(struct mail *mail)
 										take_mult = sm_request(NULL,_
 													("This e-mail has multiple recipients. Should it be answered to all recipients?"),
 													_("*_Yes|_No"));
+										if (!take_mult)
+										{
+											free_address(&addrs);
+											break;
+										}
 									}
 
 									if (take_mult)
@@ -995,7 +1000,6 @@ struct mail *mail_create_reply(struct mail *mail)
 									}
 								}
 								free_address(&addrs);
-								if (!take_mult) break;
 							}
 						}
 					}

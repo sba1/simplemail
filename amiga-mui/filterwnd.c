@@ -348,6 +348,15 @@ static void filter_new(void)
 }
 
 /**************************************************************************
+ Delete the current selected filter
+**************************************************************************/
+static void filter_remove(void)
+{
+	filter_last_selected = NULL;
+	DoMethod(filter_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+}
+
+/**************************************************************************
  Ok, callback and close the filterwindow
 **************************************************************************/
 static void filter_ok(void)
@@ -557,7 +566,7 @@ static void init_filter(void)
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
 		
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
-		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_remove);
 
 		set(filter_name_string,MUIA_String_AttachedList,filter_list);
 		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_active);

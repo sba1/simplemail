@@ -63,13 +63,7 @@
 #include "utf8stringclass.h"
 #include "signaturecycleclass.h"
 #include "configwnd_stuff.h"
-
-static struct MUI_CustomClass *CL_Sizes;
-static int create_sizes_class(void);
-static void delete_sizes_class(void);
-static int value2size(int val);
-static int size2value(int val);
-#define SizesObject (Object*)MyNewObject(CL_Sizes->mcc_Class, NULL
+#include "appicon.h"
 
 void account_recv_port_update(void);
 static void account_refresh_signature_cycle(void);
@@ -78,6 +72,7 @@ static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
 static Object *user_charset_string;
+static Object *appicon_label_popph;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
 static Object *receive_autocheck_string;
@@ -531,6 +526,7 @@ static int config_use(void)
 	array_free(user.config.header_array);
 	user.config.header_array = array_duplicate((char**)xget(mails_readmisc_additional_string,MUIA_MultiString_ContentsArray));
 
+	if (user.config.appicon_label) free(user.config.appicon_label);
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
 	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
@@ -538,6 +534,7 @@ static int config_use(void)
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
+	user.config.appicon_label = mystrdup((char*)xget(appicon_label_popph, MUIA_Popph_Contents));
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
@@ -601,6 +598,7 @@ static int config_use(void)
 
 	close_config();
 	callback_config_changed();
+	appicon_refresh(1); /* this is amiga specific */
 	return 1;
 }
 
@@ -641,8 +639,7 @@ static void config_selected(void)
 			{
 				set(config_last_visisble_group,MUIA_ShowMe,FALSE);
 				/* if we come from the signature group, we rebuild the SignatureCycle to reflect
-				   the current done settings. We have to recreate the object because Cycle does
-				   not allow Refresh */
+				   the current done settings. */
 				if (config_last_visisble_group == groups[GROUPS_SIGNATURE])
 				{
 					account_refresh_signature_cycle();
@@ -661,8 +658,21 @@ static void config_selected(void)
 *******************************************************************/
 static int init_user_group(void)
 {
+
+	static const char *appicon_popph_array[] =
+	{
+		"%t|Total messages",
+		"%n|New messages",
+		"%u|Unread messages",
+		"%s|Sent messages",
+		"%o|Outgoing messages",
+		"%d|Deleted messages",
+		NULL
+	};
+
 	groups[GROUPS_USER] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO00",
 		Child, HGroup,
 			Child, MakeLabel(_("Add adjustment for daylight saving time")),
 			Child, user_dst_check = MakeCheck(_("Add adjustment for daylight saving time"),user.config.dst),
@@ -690,6 +700,13 @@ static int init_user_group(void)
 				MUIA_Poplist_Array, codesets_supported(),
 				End,
 			End,
+		Child, HGroup,
+			Child, MakeLabel(_("AppIcon Label")),
+			Child, appicon_label_popph = PopphObject,
+				MUIA_Popph_Array, appicon_popph_array,
+				MUIA_Popph_Contents, user.config.appicon_label,
+				End,
+			End,
 		End;
 	if (!groups[GROUPS_USER]) return 0;
 	return 1;
@@ -713,6 +730,7 @@ static int init_tcpip_receive_group(void)
 
 	groups[GROUPS_RECEIVE] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO02",
 		Child, HorizLineTextObject(_("Preselection")),
 		Child, HGroup,
 			Child, receive_preselection_radio = RadioObject,
@@ -927,6 +945,7 @@ static int init_account_group(void)
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO01",
 		Child, HGroup,
 			Child, NListviewObject,
 				MUIA_NListview_NList, account_account_list = NListObject,
@@ -1170,6 +1189,7 @@ static int init_write_group(void)
 
 	groups[GROUPS_WRITE] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO03",
 		Child, HorizLineTextObject(_("Editor")),
 		Child, HGroup,
 			Child, MakeLabel(_("Word wrap")),
@@ -1207,9 +1227,9 @@ static int init_mails_readmisc_group(void)
 
 	SM_ENTER;
 
-	groups[GROUPS_READMISC] =  VGroup,
+	groups[GROUPS_READMISC] = VGroup,
 		MUIA_ShowMe, FALSE,
-
+		MUIA_HelpNode, "CO04",
 		Child, HorizLineTextObject(_("Header Configuration")),
 		Child, VGroupV,
 			Child, HGroup,
@@ -1330,9 +1350,9 @@ static int init_mails_read_group(void)
 	read_palette_entries[6].mpe_Blue = 0;
 	read_palette_entries[6].mpe_Group = 0;
 
-	groups[GROUPS_READ] =  VGroup,
+	groups[GROUPS_READ] = VGroup,
 		MUIA_ShowMe, FALSE,
-
+		MUIA_HelpNode, "CO05",
 		Child, HorizLineTextObject(_("Fonts")),
 		Child, ColGroup(2),
 			Child, MakeLabel(_("Proportional Font")),
@@ -1383,9 +1403,9 @@ static int init_mails_readhtml_group(void)
 {
 	SM_ENTER;
 
-	groups[GROUPS_READHTML] =  VGroup,
+	groups[GROUPS_READHTML] = VGroup,
 		MUIA_ShowMe, FALSE,
-
+		MUIA_HelpNode, "CO06",
 		Child, HGroup,
 			Child, HVSpace,
 			Child, MakeLabel(_("Allow to download images from the internet from")),
@@ -1534,9 +1554,9 @@ static int init_signature_group(void)
 
 	init_hook(&signature_display_hook,(HOOKFUNC)signature_display);
 
-	groups[GROUPS_SIGNATURE] =  VGroup,
+	groups[GROUPS_SIGNATURE] = VGroup,
 		MUIA_ShowMe, FALSE,
-
+		MUIA_HelpNode, "CO08",
 		Child, HGroup,
   			Child, MakeLabel(_("Us_e signatures")),
   			Child, signature_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
@@ -1725,8 +1745,9 @@ static int init_phrase_group(void)
 
 	init_hook(&phrase_display_hook,(HOOKFUNC)phrase_display);
 
-	groups[GROUPS_PHRASE] =  VGroup,
+	groups[GROUPS_PHRASE] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO07",
 		Child, HGroup,
 			Child, NListviewObject,
 				MUIA_NListview_NList, phrase_phrase_list = NListObject,
@@ -1874,8 +1895,9 @@ int init_spam_group(void)
 	sprintf(spam_buf,"%d",spam_num_of_spam_classified_mails());
 	sprintf(ham_buf,"%d",spam_num_of_ham_classified_mails());
 
-	groups[GROUPS_SPAM] =  VGroup,
+	groups[GROUPS_SPAM] = VGroup,
 		MUIA_ShowMe, FALSE,
+		MUIA_HelpNode, "CO09",
 		Child, VGroup,
 			Child, HorizLineTextObject(_("General spam settings")),
 
@@ -1984,38 +2006,41 @@ static void init_config(void)
 		MUIA_Window_ID, MAKE_ID('C','O','N','F'),
 		MUIA_Window_Title, _("SimpleMail - Configuration"),
 		WindowContents, VGroup,
-	 	Child, HGroup,
-	 		Child, NListviewObject,
-				MUIA_CycleChain, 1,
-	 			MUIA_HorizWeight, 33,
-	 			MUIA_NListview_NList, config_list = NListObject,
-	 				End,
-	 			End,
-	 		Child, BalanceObject, End,
-	 		Child, VGroup,
-	    		Child, config_group = VGroup,
-  	  				Child, groups[GROUPS_USER],
-  		  			Child, groups[GROUPS_ACCOUNT],
-	 				Child, groups[GROUPS_RECEIVE],
-	 				Child, groups[GROUPS_WRITE],
-	 				Child, groups[GROUPS_READMISC],
-	 				Child, groups[GROUPS_READ],
-	 				Child, groups[GROUPS_READHTML],
-	 				Child, groups[GROUPS_SIGNATURE],
-	 				Child, groups[GROUPS_PHRASE],
-	 				Child, groups[GROUPS_SPAM],
-	 				Child, RectangleObject,
-	   				MUIA_Weight, 1,
-  						End,
-	 				End,
-	 			End,
-	 		End,
-	 	Child, HorizLineObject,
-	 	Child, HGroup,
-	 		Child, save_button = MakeButton(Q_("?config:_Save")),
-	 		Child, use_button = MakeButton(_("_Use")),
-	 		Child, cancel_button = MakeButton(_("_Cancel")),
-	 		End,
+			Child, HGroup,
+				Child, NListviewObject,
+					MUIA_CycleChain, 1,
+					MUIA_HorizWeight, 33,
+					MUIA_NListview_NList, config_list = NListObject,
+						End,
+					End,
+				Child, BalanceObject, End,
+				Child, VGroup,
+					ReadListFrame,
+					InnerSpacing(6,6),
+					MUIA_Background, MUII_PageBack,
+					Child, config_group = VGroup,
+						Child, groups[GROUPS_USER],
+						Child, groups[GROUPS_ACCOUNT],
+						Child, groups[GROUPS_RECEIVE],
+						Child, groups[GROUPS_WRITE],
+						Child, groups[GROUPS_READMISC],
+						Child, groups[GROUPS_READ],
+						Child, groups[GROUPS_READHTML],
+						Child, groups[GROUPS_PHRASE],
+						Child, groups[GROUPS_SIGNATURE],
+						Child, groups[GROUPS_SPAM],
+						Child, RectangleObject,
+							MUIA_Weight, 1,
+							End,
+						End,
+					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, save_button = MakeButton(Q_("?config:_Save")),
+				Child, use_button = MakeButton(_("_Use")),
+				Child, cancel_button = MakeButton(_("_Cancel")),
+				End,
 			End,
 		End;
 
@@ -2035,27 +2060,27 @@ static void init_config(void)
 		image_prefs_phrase_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End;
 		image_prefs_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_spam", End;
 
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_main_obj, 1, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_account_obj, 2, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_receive_obj, 3, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_write_obj, 4, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_read_obj, 5, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readplain_obj, 6, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readhtml_obj, 7, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_signature_obj, 8, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_phrase_obj, 9, 0);
-		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_spam_obj, 10, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_main_obj,      GROUPS_USER, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_account_obj,   GROUPS_ACCOUNT, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_receive_obj,   GROUPS_RECEIVE, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_write_obj,     GROUPS_WRITE, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_read_obj,      GROUPS_READMISC, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readplain_obj, GROUPS_READ, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_readhtml_obj,  GROUPS_READHTML, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_signature_obj, GROUPS_SIGNATURE, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_phrase_obj,    GROUPS_PHRASE, 0);
+		DoMethod(config_list, MUIM_NList_UseImage, image_prefs_spam_obj,      GROUPS_SPAM, 0);
 
-		sprintf(texts[GROUPS_USER],     "\033o[1] %s", _("General"));
-		sprintf(texts[GROUPS_ACCOUNT],  "\033o[2] %s", _("Accounts"));
-		sprintf(texts[GROUPS_RECEIVE],  "\033o[3] %s", _("Receive mail"));
-		sprintf(texts[GROUPS_WRITE],    "\033o[4] %s", _("Write"));
-		sprintf(texts[GROUPS_READMISC], "\033o[5] %s", _("Reading"));
-		sprintf(texts[GROUPS_READ],     "\033o[6] %s", _("Reading plain"));
-		sprintf(texts[GROUPS_READHTML], "\033o[7] %s", _("Reading HTML"));
-		sprintf(texts[GROUPS_PHRASE],   "\033o[8] %s", _("Phrases"));
-		sprintf(texts[GROUPS_SIGNATURE],"\033o[9] %s", _("Signatures"));
-		sprintf(texts[GROUPS_SPAM],		"\033o[10] %s", _("Spam"));
+		sprintf(texts[GROUPS_USER],     "\033o[%d] %s", GROUPS_USER,     _("General"));
+		sprintf(texts[GROUPS_ACCOUNT],  "\033o[%d] %s", GROUPS_ACCOUNT,  _("Accounts"));
+		sprintf(texts[GROUPS_RECEIVE],  "\033o[%d] %s", GROUPS_RECEIVE,  _("Receive mail"));
+		sprintf(texts[GROUPS_WRITE],    "\033o[%d] %s", GROUPS_WRITE,    _("Write"));
+		sprintf(texts[GROUPS_READMISC], "\033o[%d] %s", GROUPS_READMISC, _("Reading"));
+		sprintf(texts[GROUPS_READ],     "\033o[%d] %s", GROUPS_READ,     _("Reading plain"));
+		sprintf(texts[GROUPS_READHTML], "\033o[%d] %s", GROUPS_READHTML, _("Reading HTML"));
+		sprintf(texts[GROUPS_PHRASE],   "\033o[%d] %s", GROUPS_PHRASE,   _("Phrases"));
+		sprintf(texts[GROUPS_SIGNATURE],"\033o[%d] %s", GROUPS_SIGNATURE,_("Signatures"));
+		sprintf(texts[GROUPS_SPAM],     "\033o[%d] %s", GROUPS_SPAM,     _("Spam"));
 
 		account_last_selected = NULL;
 		signature_last_selected = NULL;
@@ -2189,69 +2214,4 @@ void close_config(void)
 		config_last_visisble_group = NULL;
 	}
 	delete_sizes_class();
-}
-
-/******************************************************************
- The size custom class. Only used in this file.
-*******************************************************************/
-STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
-{
-	switch(msg->MethodID)
-	{
-		case	MUIM_Numeric_Stringify:
-					{
-						static char buf[64];
-						LONG val = ((struct MUIP_Numeric_Stringify*)msg)->value;
-						if (!val) return (ULONG)_("All messages");
-						val = value2size(val);
-						sprintf(buf, _("> %ld KB"),val);
-						return (ULONG)buf;
-					}
-					break;
-		default: return DoSuperMethodA(cl,obj,msg);
-	}
-}
-
-static int create_sizes_class(void)
-{
-	SM_ENTER;
-	if ((CL_Sizes = CreateMCC(MUIC_Slider,NULL,4,Sizes_Dispatcher)))
-	{
-		SM_DEBUGF(15,("Create CL_Sizes: 0x%lx\n",CL_Sizes));
-		SM_RETURN(1,"%ld");
-	}
-	SM_DEBUGF(5,("FAILED! Create CL_Sizes\n"));
-	SM_RETURN(0,"%ld");
-}
-
-static void delete_sizes_class(void)
-{
-	SM_ENTER;
-	if (CL_Sizes)
-	{
-		if (MUI_DeleteCustomClass(CL_Sizes))
-		{
-			SM_DEBUGF(15,("Deleted CL_Sizes: 0x%lx\n",CL_Sizes));
-			CL_Sizes = NULL;
-		} else
-		{
-			SM_DEBUGF(5,("Delete CL_Sizes: 0x%lx\n",CL_Sizes));
-		}
-	}
-	SM_LEAVE;
-}
-
-static int value2size(int val)
-{
-	if (val > 35) val = (val - 33)*100;
-	else if (val > 16) val = (val - 15)*10;
-	return val;
-}
-
-static int size2value(int val)
-{
-	if (val >= 300) return (val/100)+33;
-	if (val >= 20) return (val/10)+15;
-	if (val >= 16) return 16;
-	return val;
 }

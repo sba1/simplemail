@@ -66,6 +66,10 @@ struct thread_node
 struct thread_s
 {
 	struct Process *process;
+	int is_main;
+	int is_default;
+
+	struct MsgPort *thread_port;
 };
 
 static void thread_remove(struct ThreadMessage *tmsg)
@@ -94,8 +98,14 @@ static void thread_remove(struct ThreadMessage *tmsg)
 
 int init_threads(void)
 {
+	static struct thread_s main_thread;
 	if ((thread_port = CreateMsgPort()))
 	{
+		main_thread.process = (struct Process*)FindTask(NULL);
+		main_thread.is_main = 1;
+		main_thread.thread_port = thread_port;
+		FindTask(NULL)->tc_UserData = &main_thread;
+
 		list_init(&thread_list);
 		return 1;
 	}
@@ -177,6 +187,7 @@ static __saveds void thread_entry(void)
 	struct Process *proc;
 	struct ThreadMessage *msg;
 	int (*entry)(void *);
+	thread_t thread;
 
 	BPTR dirlock;
 
@@ -186,15 +197,22 @@ static __saveds void thread_entry(void)
 	WaitPort(&proc->pr_MsgPort);
 	msg = (struct ThreadMessage *)GetMsg(&proc->pr_MsgPort);
 
-	entry = (int(*)(void*))msg->function;
-
-
-	dirlock = DupLock(proc->pr_CurrentDir);
-	if (dirlock)
+	/* Set the task's UserData field to strore per thread data */
+	thread = msg->thread;
+	if (thread->thread_port = CreateMsgPort())
 	{
-		BPTR odir = CurrentDir(dirlock);
-		entry(msg->arg1);
-		UnLock(CurrentDir(odir));
+		proc->pr_Task.tc_UserData = thread;
+		entry = (int(*)(void*))msg->function;
+
+		dirlock = DupLock(proc->pr_CurrentDir);
+		if (dirlock)
+		{
+			BPTR odir = CurrentDir(dirlock);
+			entry(msg->arg1);
+			UnLock(CurrentDir(odir));
+		}
+		DeleteMsgPort(thread->thread_port);
+		thread->thread_port = NULL;
 	}
 
 	Forbid();
@@ -525,66 +543,62 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
-		struct MsgPort *subthread_port;
-	
-		if ((subthread_port = CreateMsgPort()))
+		struct MsgPort *subthread_port = ((struct thread_s*)(FindTask(NULL)->tc_UserData))->thread_port;
+		struct timer timer;
+
+		if (timer_init(&timer))
 		{
-			struct timer timer;
-			if (timer_init(&timer))
+			va_list argptr;
+	
+			/* we only accept positive values */
+			if (millis < 1) millis = 1;
+	
+			va_start(argptr,argcount);
+
+			tmsg->msg.mn_ReplyPort = subthread_port;
+			tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+			tmsg->function = (int (*)(void))function;
+			tmsg->argcount = argcount;
+			tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
+			tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
+			tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
+			tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+			tmsg->async = 0;
+	
+			va_end (arg_ptr);
+	
+			/* now send the message */
+			PutMsg(thread_port,&tmsg->msg);
+	
+			/* while the parent task should execute the message
+			 * we regualiy call the given callback function */
+			while (1)
 			{
-				struct Process *p = (struct Process*)FindTask(NULL);
-				va_list argptr;
+				ULONG timer_m = timer_mask(&timer);
+				ULONG proc_m = 1UL << subthread_port->mp_SigBit;
+				ULONG mask;
+
+				timer_send_if_not_sent(&timer,millis);
 	
-				/* we only accept positive values */
-				if (millis < 1) millis = 1;
-	
-				va_start(argptr,argcount);
-	
-				tmsg->msg.mn_ReplyPort = subthread_port;
-				tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
-				tmsg->function = (int (*)(void))function;
-				tmsg->argcount = argcount;
-				tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-				tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-				tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-				tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
-				tmsg->async = 0;
-	
-				va_end (arg_ptr);
-	
-				/* now send the message */
-				PutMsg(thread_port,&tmsg->msg);
-	
-				/* while the parent task should execute the message
-				 * we regualiy call the given callback function */
-				while (1)
+				mask = Wait(timer_m|proc_m);
+				if (mask & timer_m)
 				{
-					ULONG timer_m = timer_mask(&timer);
-					ULONG proc_m = 1UL << subthread_port->mp_SigBit;
-					ULONG mask;
-
-					timer_send_if_not_sent(&timer,millis);
-	
-					mask = Wait(timer_m|proc_m);
-					if (mask & timer_m)
-					{
-						if (timer_callback)
-							timer_callback(timer_data);
-						timer.timer_send = 0;
-					}
-	
-					if (mask & proc_m)
-					{
-						/* the parent task has finished */
-						break;
-					}
+					if (timer_callback)
+						timer_callback(timer_data);
+					timer.timer_send = 0;
 				}
-
-				/* Remove msg from port */
-				GetMsg(subthread_port);
-				rc = tmsg->result;
+	
+				if (mask & proc_m)
+				{
+					/* the parent task has finished */
+					break;
+				}
 			}
-			DeleteMsgPort(subthread_port);
+
+			/* Remove msg from port */
+			GetMsg(subthread_port);
+			rc = tmsg->result;
+			timer_cleanup(&timer);
 		}
 		FreeVec(tmsg);
 	}

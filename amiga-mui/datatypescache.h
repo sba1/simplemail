@@ -18,6 +18,8 @@
 #ifndef SM__DATATYPESCACHE_H
 #define SM__DATATYPESCACHE_H
 
+/* This is more a function belonging to amigasupport.c */
+Object *LoadPicture(char *filename, struct Screen *scr);
 /* struct dt_node; */
 
 void dt_init(void);

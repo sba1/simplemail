@@ -52,7 +52,7 @@ struct dt_node
 	int x1,x2,y1,y2;
 };
 
-static Object *LoadPicture(char *filename, struct Screen *scr)
+Object *LoadPicture(char *filename, struct Screen *scr)
 {
 	Object *o;
 

@@ -159,4 +159,4 @@ clean:
   -delete $(OBJSDIR)\#? all
   -delete smakefile.compile
   -delete \#?.tmp
-
+  -delete all.gst

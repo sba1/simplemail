@@ -1,6 +1,6 @@
 <?php
 
-$filename = "simplemail.lha";
+$filename = "simplemail-0.18.lha";
 $version = "0.18";
 
   require_once("language.inc.php");
@@ -19,16 +19,19 @@ $version = "0.18";
 <th><font color="white">Archive</font></th>
 <th><font color="white">Version</font></th>
 <th><font color="white">Date</font></th>
-<th><font color="white">Size</font></th>
+<?php //<th><font color="white">Size</font></th>
+?>
 </tr>
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
+//  echo '<td align="center"><A HREF="download.php?filename='.$filename.'">'.$filename.'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-0.18.lha?download">'.$filename.'</A></td>';
   echo '<td align="center">'.$version.'</td>';
-  echo '<td align="center">'.date("Y/m/d", filemtime("files/".$filename)).'</td>';
-  echo '<td align="center">'.get_filesize("files/".$filename).'</td>';
+  echo '<td align="center">2002/12/24</td>';
 
+//  echo '<td align="center">'.date("Y/m/d", filemtime("files/".$filename)).'</td>';
+//  echo '<td align="center">'.get_filesize("files/".$filename).'</td>';
 ?>
 </tr>
 

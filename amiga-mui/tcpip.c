@@ -156,3 +156,8 @@ long tcp_errno(void)
 {
 	return Errno();
 }
+
+void myclosesocket(int fd)
+{
+	CloseSocket(fd);
+}

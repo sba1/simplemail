@@ -27,6 +27,7 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <mui/betterstring_mcc.h>
 #include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <libraries/locale.h>
 #include <dos/dostags.h>
 #include <proto/dos.h>
@@ -35,8 +36,11 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "folder.h"
+
 #include "amigasupport.h"
 #include "errorwnd.h"
+#include "foldertreelistclass.h"
 #include "muistuff.h"
 #include "pgp.h"
 #include "pgplistclass.h"
@@ -407,6 +411,69 @@ char *sm_request_pgp_id(char *text)
 		MUI_DisposeObject(wnd);
 	}
 	return ret;
+}
+
+/******************************************************************
+ Returns a selected folder,
+*******************************************************************/
+struct folder *sm_request_folder(char *text, struct folder *exclude)
+{
+	struct folder *selected_folder = NULL;
+	Object *folder_tree;
+	Object *wnd;
+	Object *ok_button, *cancel_button;
+
+	wnd = WindowObject,
+		MUIA_Window_Title, _("SimpleMail - Select a Folder"),
+		MUIA_Window_ID, MAKE_ID('S','R','F','O'),
+		WindowContents, VGroup,
+			Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
+			Child, NListviewObject,
+				MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, ok_button = MakeButton(_("_Ok")),
+				Child, HVSpace,
+				Child, cancel_button = MakeButton(_("_Cancel")),
+				End,
+			End,
+		End;
+
+	if (wnd)
+	{
+		ULONG cancel=0;
+		DoMethod(App, OM_ADDMEMBER, wnd);
+		DoMethod(folder_tree, MUIM_FolderTreelist_Refresh);
+
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 3, MUIM_WriteLong, 1, &cancel);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &cancel);
+
+		set(wnd,MUIA_Window_Open,TRUE);
+		loop();
+
+		if (!cancel)
+		{
+			struct MUI_NListtree_TreeNode *tree_node;
+			tree_node = (struct MUI_NListtree_TreeNode *)xget(folder_tree,MUIA_NListtree_Active);
+
+			if (tree_node)
+			{
+				if (tree_node->tn_User)
+				{
+					selected_folder = (struct folder*)tree_node->tn_User;
+				}
+			}
+		}
+		DoMethod(App, OM_REMMEMBER, wnd);
+		MUI_DisposeObject(wnd);
+	}
+	return selected_folder;
 }
 
 /******************************************************************

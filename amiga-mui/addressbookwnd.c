@@ -1051,12 +1051,27 @@ static void group_window_close(struct Group_Data **pdata)
  This close and disposed the window (note: this must not be called
  within a normal callback hook, because the object is disposed in
  this function)!
- The group is added to the list (currently only at the end)
+ The group is added to the list.
 *******************************************************************/
 static void group_window_ok(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
-	struct addressbook_group *new_group;
+	struct addressbook_group *group, *new_group;
+	int i, group_entries;
+
+	/* Check if choosen group name already exists */
+	group_entries = xget(group_list, MUIA_NList_Entries);
+	for (i=0;i<group_entries;i++)
+	{
+		DoMethod(group_list, MUIM_NList_GetEntry, i, &group);
+		if (group == data->group) continue;
+		if (!utf8stricmp(group->name,getutf8string(data->alias_string)))
+		{
+			sm_request(NULL,_("Group with the given name %s %s already exists"),_("OK"),getutf8string(data->alias_string),group->name);
+			set(data->wnd, MUIA_Window_ActiveObject, data->alias_string);
+			return;
+		}
+	}
 
 	set(data->wnd, MUIA_Window_Open, FALSE);
 
@@ -1076,6 +1091,9 @@ static void group_window_ok(struct Group_Data **pdata)
 		}
 
 		DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
+
+		/* Activate the element inserted above */
+		set(group_list,MUIA_NList_Active,xget(group_list,MUIA_NList_InsertPosition));
 
 		addressbook_free_group(new_group);
 	}

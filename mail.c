@@ -1685,13 +1685,26 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 		if (new_mail->text)
 		{
+			char *text;
+
 			/* mail text */
 			if (new_mail->to) body_encoding = "8bit"; /* mail has only one part which is a text, so it can be encoded in 8bit */
-			body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
-			if (body_encoding && mystricmp(body_encoding,"7bit"))
+
+			if (user.config.write_wrap_type == 2)
 			{
-				if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
-			  fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+				text = mystrdup(new_mail->text);
+				wrap_text(text,user.config.write_wrap);
+			} else text = new_mail->text;
+
+			if (text)
+			{
+				body = encode_body(text, strlen(text), new_mail->content_type, &body_len, &body_encoding);
+				if (body_encoding && mystricmp(body_encoding,"7bit"))
+				{
+					if (new_mail->to) fprintf(fp,"MIME-Version: 1.0\n");
+				  fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+				}
+				if (user.config.write_wrap_type == 2) free(text);
 			}
 		} else
 		{

@@ -29,7 +29,7 @@
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
-#include <mui/betterstring_mcc.h>
+#include <mui/betterstring_mcc.h> /* there also exists new newer version of this class */
 #include <mui/texteditor_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
@@ -856,6 +856,7 @@ void compose_window_open(struct compose_args *args)
 							MUIA_CycleChain, 1,
 							MUIA_TextEditor_Slider, slider,
 							MUIA_TextEditor_FixedFont, TRUE,
+							MUIA_TextEditor_WrapBorder, user.config.write_wrap_type == 1 ? user.config.write_wrap : 0,
 							End,
 						Child, slider,
 						End,

@@ -65,6 +65,10 @@ struct config
 	unsigned int header_flags;
 	char **header_array;
 
+	int write_wrap;
+	int write_wrap_type;
+	int write_reply_quote;
+
 	char *read_fixedfont;
 	char *read_propfont;
 

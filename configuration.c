@@ -119,6 +119,10 @@ void init_config(void)
 	user.config.read_old_quoted = 0xffff00;
 	user.config.read_link = 0x000098;
 	user.config.read_link_underlined = 0;
+
+	user.config.write_wrap = 76;
+	user.config.write_wrap_type = 2;
+	user.config.write_reply_quote = 1;
 }
 
 int load_config(void)
@@ -162,6 +166,12 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"Write.Wrap")))
+							user.config.write_wrap = atoi(result);
+						if ((result = get_config_item(buf,"Write.WrapType")))
+							user.config.write_wrap_type = atoi(result);
+						if ((result = get_config_item(buf,"Write.ReplyQuote")))
+							user.config.write_reply_quote = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
 							sscanf(result,"%x",&user.config.header_flags);
 						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
@@ -417,6 +427,10 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
+			fprintf(fh,"Write.Wrap=%d\n",user.config.write_wrap);
+			fprintf(fh,"Write.WrapType=%d\n",user.config.write_wrap_type);
+			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");
+
 			fprintf(fh,"ReadHeader.Flags=%x\n",user.config.header_flags);
 			if (user.config.header_array)
 			{

@@ -80,6 +80,10 @@ static Object *mails_readmisc_all_check;
 static Object *mails_readmisc_additional_string;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
+static Object *write_wordwrap_string;
+static Object *write_wordwrap_cycle;
+static Object *write_replywrap_check;
+
 static Object *readhtml_mail_editor;
 
 static Object *account_name_string;
@@ -138,6 +142,7 @@ static Object *user_group;
 static Object *tcpip_receive_group;
 static Object *accounts_group;
 static Object *account_group;
+static Object *write_group;
 static Object *mails_readmisc_group;
 static Object *mails_read_group;
 static Object *mails_readhtml_group;
@@ -317,6 +322,10 @@ static void config_use(void)
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
+	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
+	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
+	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
+
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
 	user.config.read_background = ((read_palette_entries[0].mpe_Red >> 24)<<16) | ((read_palette_entries[0].mpe_Green>>24)<<8) | (read_palette_entries[0].mpe_Blue>>24);
@@ -773,6 +782,36 @@ static int init_account_group(void)
 	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
 	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_remove);
 
+	return 1;
+}
+
+/******************************************************************
+ Init the readmisc group
+*******************************************************************/
+static int init_write_group(void)
+{
+	static char *wordwrap_entries[] =
+		{"off","as you type", "before storing"/*,"before sending"*/,NULL};
+
+	write_group = VGroup,
+		MUIA_ShowMe, FALSE,
+		Child, HorizLineTextObject("Editor"),
+		Child, HGroup,
+			Child, MakeLabel("Word wrap"),
+			Child, write_wordwrap_string = BetterStringObject, StringFrame, MUIA_CycleChain, 1, MUIA_String_Accept, "0123456789", MUIA_String_Integer, user.config.write_wrap, End,
+			Child, write_wordwrap_cycle = MakeCycle(NULL,wordwrap_entries),
+			End,
+		Child, HorizLineTextObject("Replying"),
+		Child, HGroup,
+			Child, MakeLabel("Wrap before quoting"),
+			Child, write_replywrap_check = MakeCheck("Wrap before quoting",user.config.write_reply_quote),
+			Child, HVSpace,
+			End,
+		End;
+
+	if (!write_group) return 0;
+
+	set(write_wordwrap_cycle,MUIA_Cycle_Active, user.config.write_wrap_type);
 	return 1;
 }
 
@@ -1262,6 +1301,7 @@ static void init_config(void)
 	init_account_group();
 	init_user_group();
 	init_tcpip_receive_group();
+	init_write_group();
 	init_mails_readmisc_group();
 	init_mails_read_group();
 	init_mails_readhtml_group();
@@ -1287,6 +1327,7 @@ static void init_config(void)
   	  			Child, accounts_group,
   	  			Child, account_group,
     				Child, tcpip_receive_group,
+    				Child, write_group,
     				Child, mails_readmisc_group,
     				Child, mails_read_group,
     				Child, mails_readhtml_group,
@@ -1347,6 +1388,7 @@ static void init_config(void)
 		}
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Write", write_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading", mails_readmisc_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading plain", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Reading HTML", mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);

@@ -19,7 +19,7 @@
 #ifndef SM__SMINTL_H
 #define SM__SMINTL_H
 
-#if defined(_AMIGA) || (__MORPHOS__)
+#if defined(_AMIGA) || defined(__MORPHOS__) || defined(__AMIGAOS4__)
 #define ENABLE_NLS
 #define PACKAGE ""
 #define LOCALEDIR "PROGDIR:locale"

@@ -36,33 +36,46 @@
 #define ANSI_BOLD       "[1m"
 #define ANSI_UNDER      "[4m"
 
-static int create_ansi_header(FILE *fp, struct mail *m)
+static int create_ansi_header(FILE *fp, struct mail *mail)
 {
 	char rc = 0;
+	struct mail *m = mail_get_root(mail);
 	char *from = mail_find_header_contents(m,"from");
 	char *to = mail_find_header_contents(m,"to");
 	char *cc = mail_find_header_contents(m, "cc");
 	char *replyto = mail_find_header_contents(m, "reply-to");
 
+
 	if(from && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 	{
 		struct mailbox mb;
 		parse_mailbox(from, &mb);
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("From"), mb.addr_spec);
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " ", _("From"));
+
+		if (mb.phrase)
+		{
+			fprintf(fp,"%s <%s>",mb.phrase,mb.addr_spec);
+		} else
+		{
+			fprintf(fp, mb.addr_spec);
+		}
+		fprintf(fp, "\n");
+
+		if (mb.phrase)  free(mb.phrase);
+		if (mb.addr_spec) free(mb.addr_spec);
 	}
 
 	if(to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 	{
 		struct parse_address p_addr;
-		fprintf(fp,ANSI_BOLD "%s:" ANSI_NORMAL,_("To"));
+		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL,_("To"));
 
 		if ((parse_address(to,&p_addr)))
 		{
 			struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
 			while (mb)
 				{
-					fprintf(fp," %s",mb->addr_spec);
-					if (mb->phrase) fprintf(fp,"%s <%s&>",mb->phrase,mb->addr_spec);
+					if (mb->phrase) fprintf(fp,"%s <%s>",mb->phrase,mb->addr_spec);
 					else fputs(mb->addr_spec,fp);
 					if ((mb = (struct mailbox*) node_next(&mb->node)))
 					{
@@ -76,7 +89,29 @@ static int create_ansi_header(FILE *fp, struct mail *m)
 
 	if(cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("CC"), cc);
+		struct parse_address p_addr;
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL, _("Carbon Copy"));
+		if ((parse_address(cc,&p_addr)))
+		{
+			struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
+			while (mb)
+			{
+				if (mb->phrase)
+				{
+					fprintf(fp,"%s <%s>",mb->phrase,mb->addr_spec);
+				}
+				else
+				{
+					fputs(mb->addr_spec,fp);
+				}
+				if ((mb = (struct mailbox*)node_next(&mb->node)))
+				{
+					fputs(", ",fp);
+				}
+			}
+			free_address(&p_addr);
+		}
+		fprintf(fp, "\n");
 	}
 
 	if(m->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
@@ -91,7 +126,23 @@ static int create_ansi_header(FILE *fp, struct mail *m)
 
 	if(replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s" ANSI_NORMAL "%s\n", _("ReplyTo"), replyto);
+		struct mailbox addr;
+		parse_mailbox(replyto, &addr);
+		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL,_("Replies To"),addr.addr_spec);
+
+		if (addr.phrase)
+		{
+			fprintf(fp,"%s <%s>",addr.phrase,addr.addr_spec);
+		} else
+		{
+			fputs(addr.addr_spec,fp);
+		}
+
+		if (addr.phrase)  free(addr.phrase);
+		if (addr.addr_spec) free(addr.addr_spec);
+
+		fputs("\n",fp);
+
 	}
 
 	fputs("\n", fp);

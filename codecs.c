@@ -448,12 +448,20 @@ static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
 		if (line_len + next_len > 75)
 		{
 			if (c != 10) fprintf(fh,"=\n");
-			else fprintf(fh,"\n");
+			else
+			{
+				/* don't soft break */
+				fprintf(fh,"\n");
+				next_len = 0;
+			}
 			line_len = 0;
 		}
 
-		fwrite(next_str,1,next_len,fh);
-		line_len += next_len;
+		if (next_len)
+		{
+			fwrite(next_str,1,next_len,fh);
+			line_len += next_len;
+		}
 
 		buf++;
 		len--;

@@ -203,7 +203,7 @@ static void get_account(void)
 		if (account_last_selected->pop->name) free(account_last_selected->pop->name);
 		if (account_last_selected->pop->login) free(account_last_selected->pop->login);
 		if (account_last_selected->pop->passwd) free(account_last_selected->pop->passwd);
-		if (account_last_selected->smtp->name) free(account_last_selected->pop->name);
+		if (account_last_selected->smtp->name) free(account_last_selected->smtp->name);
 		if (account_last_selected->smtp->auth_login) free(account_last_selected->smtp->auth_login);
 		if (account_last_selected->smtp->auth_password) free(account_last_selected->smtp->auth_password);
 

@@ -627,10 +627,11 @@ FILE *tmpfile(void)
 
 char *tmpnam(char *name)
 {
-	static char default_buf[200];
+	static char default_buf[L_tmpnam];
 	IExec->ObtainSemaphore(&files_sem);
 	if (!name) name = default_buf;
-	sprintf(name,"T:%p%lx.tmp",IExec->FindTask(NULL),tmpno++);
+	vsnprintf(name,sizeof(default_buf),"T:sm%05lx",(void*)&tmpno);
+	tmpno++;
 	IExec->ReleaseSemaphore(&files_sem);
 	return name;
 }

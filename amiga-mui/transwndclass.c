@@ -309,7 +309,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		
 		DoMethod(data->mail_list, MUIM_NList_Clear);
 		SetAttrs(obj,
-			MUIA_Window_Title,"SimpleMail",
+//			MUIA_Window_Title,"SimpleMail",
 			MUIA_transwnd_Status, _("Waiting..."),
 			MUIA_transwnd_Gauge1_Str, _("Waiting..."),
 			MUIA_transwnd_Gauge1_Max, 1,

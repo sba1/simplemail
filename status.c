@@ -26,6 +26,8 @@
 #include "smintl.h"
 #include "status.h"
 
+#include "statuswnd.h"
+
 static int is_open;
 
 /******************************************************************
@@ -42,7 +44,7 @@ void status_init(int type)
 *******************************************************************/
 int status_open(void)
 {
-	return 0;
+	return statuswnd_open(1);
 }
 
 /******************************************************************
@@ -50,6 +52,7 @@ int status_open(void)
 *******************************************************************/
 void status_close(void)
 {
+	statuswnd_close();
 }
 
 /******************************************************************
@@ -57,6 +60,7 @@ void status_close(void)
 *******************************************************************/
 void status_set_title(char *title)
 {
+	statuswnd_set_title(title);
 }
 
 /******************************************************************
@@ -86,7 +90,7 @@ static int gauge_value;
 *******************************************************************/
 void status_init_gauge_as_bytes(int maximal)
 {
-	estimate_init(&gauge_est,gauge_maximal);
+	estimate_init(&gauge_est,gauge_maximal/1024);
 	gauge_maximal = maximal;
 	gauge_value = 0;
 }
@@ -97,6 +101,7 @@ void status_init_gauge_as_bytes(int maximal)
 void status_set_gauge(int value)
 {
 	gauge_value = value;
+	estimate_calc_remaining(&gauge_est,value/1024);
 }
 
 static int mail_maximal;

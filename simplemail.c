@@ -35,6 +35,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "status.h"
 #include "trans.h"
 
 #include "addressbookwnd.h"
@@ -614,8 +615,14 @@ static int export_entry(struct export_data *data)
 					/* unlock the folder list */
 					folders_unlock();
 
-					thread_call_parent_function_async(up_window_open,0);
-					thread_call_parent_function_async_string(up_set_status,1,N_("Exporting folder"));
+					sprintf(status_buf, _("Exporting folder %s to %s"),f->name,data->filename);
+					thread_call_parent_function_async(status_init,1,0);
+					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
+					thread_call_parent_function_async_string(status_set_line,1,status_buf);
+					thread_call_parent_function_async(status_open,0);
+
+//					thread_call_parent_function_async(up_window_open,0);
+//					thread_call_parent_function_async_string(up_set_status,1,N_("Exporting folder"));
 
 					if ((fh = fopen(filename,"w")))
 					{
@@ -625,13 +632,16 @@ static int export_entry(struct export_data *data)
 						char *file_buf;
 						int max_size = 0;
 						int size = 0;
-						struct estimate est;
+//						struct estimate est;
 
 						while ((m = folder_next_mail(f, &handle)))
 							max_size += m->size;
 
-						thread_call_parent_function_async(up_init_gauge_byte,1,max_size);
-						estimate_init(&est,max_size/1024);
+//						thread_call_parent_function_async(up_init_gauge_byte,1,max_size);
+						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_size);
+						thread_call_parent_function_async(status_init_mail, f->num_mails);
+
+//						estimate_init(&est,max_size/1024);
 
 						if ((file_buf = malloc(8192)))
 						{
@@ -652,10 +662,8 @@ static int export_entry(struct export_data *data)
 									{
 										int blocks = fread(file_buf,1,8192,in);
 										size += fwrite(file_buf,1,blocks,fh);
-										thread_call_parent_function_async(up_set_gauge_byte,1,size);
-										
-										sprintf(status_buf, "Exporting folder %d",estimate_calc_remaining(&est,size/1024));
-										thread_call_parent_function_async_string(up_set_status,1,status_buf);
+
+										thread_call_parent_function_async(status_set_gauge,1,size);
 									}
 									fclose(in);
 								}
@@ -668,8 +676,7 @@ static int export_entry(struct export_data *data)
 			
 						fclose(fh);
 					}
-
-					thread_call_parent_function_async(up_window_close,0);
+					thread_call_parent_function_async(status_close,0);
 
 					folder_unlock(f);
 				} else folders_unlock();

@@ -33,6 +33,7 @@ char *strndup(const char *str1, int n);
 char *stradd(char *src, const char *str1);
 
 int needs_quotation(char *str);
+int needs_quotation_len(char *str, int len);
 
 char *parse_addr_spec(char *addr_spec, char **pbuf);
 

@@ -133,6 +133,20 @@ int needs_quotation(char *str)
 }
 
 /**************************************************************************
+ Needs the string quotation marks?
+**************************************************************************/
+int needs_quotation_len(char *str, int len)
+{
+	char c;
+	while ((c = *str++) && len)
+	{
+		if (isspecial(c)) return 1;
+		len--;
+	}
+	return 0;
+}
+
+/**************************************************************************
  Skip spaces (also comments)
 **************************************************************************/
 static char *skip_spaces(const char *buf)
@@ -232,6 +246,24 @@ static char *parse_word(char *word, char **pbuf)
 	char *ret;
 
 	ret = parse_encoded_word(word,pbuf);
+	if (!ret) ret = parse_quoted_string(word,pbuf);
+	if (!ret) ret = parse_atom(word,pbuf);
+	return ret;
+}
+
+/**************************************************************************
+ word        =  atom / quoted-string (encoded_word)
+**************************************************************************/
+static char *parse_word_new(char *word, char **pbuf, int *quoted)
+{
+	char *ret;
+
+	if ((ret = parse_encoded_word(word,pbuf)))
+	{
+		*quoted = 1;
+		return ret;
+	}
+	*quoted = 0;
 	if (!ret) ret = parse_quoted_string(word,pbuf);
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
@@ -359,8 +391,9 @@ char *parse_addr_spec(char *addr_spec, char **pbuf)
 **************************************************************************/
 static char *parse_phrase(char *phrase, char **pbuf)
 {
+	int q;
 	char *buf;
-	char *ret = parse_word(phrase,&buf);
+	char *ret = parse_word_new(phrase,&buf,&q);
 	char *ret_save;
 	if (!ret) return NULL;
 
@@ -368,10 +401,11 @@ static char *parse_phrase(char *phrase, char **pbuf)
 	while (ret)
 	{
 		char *buf2;
-		ret = parse_word(ret_save,&buf2);
+		int q2;
+		ret = parse_word_new(ret_save,&buf2,&q2);
 		if (ret)
 		{
-			char *buf3 = strdupcat(buf," ");
+			char *buf3 = strdupcat(buf,(q && q2)?"":" ");
 			free(buf);
 			if (!buf3)
 			{
@@ -382,6 +416,7 @@ static char *parse_phrase(char *phrase, char **pbuf)
 			free(buf3);
 			free(buf2);
 			if (!buf) return NULL;
+			q = q2;
 			ret_save = ret;
 		}
 	}
@@ -702,7 +737,7 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf)
 	char *charset;
 	char *encoding;
 
-	ret = encoded_word;
+	ret = skip_spaces(encoded_word);
 	if (*ret != '=') return NULL;
 	if (*(++ret) != '?') return NULL;
 

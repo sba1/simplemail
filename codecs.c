@@ -20,6 +20,7 @@
 ** codecs.c
 */
 
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -237,6 +238,91 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
    }
 }
 
+/*
+unsigned char *strencoded(unsigned char *str)
+{
+	unsigned char c;
+	while ((c=*str))
+	{
+		if (c > 127 || c == '=' || c == '?')
+			return 
+	}
+}
+*/
+
+static int get_noencode_str(unsigned char *buf)
+{
+	int space = 0;
+	unsigned char *buf_start = buf;
+	unsigned char *word_start = buf;
+	unsigned char c;
+
+	while ((c=*buf))
+	{
+		if (isspace(c)) space = 1;
+		else
+		{
+			if (space)
+			{
+				word_start = buf; /* a new word starts */
+				space = 0;
+			}
+			if (c > 127 || c == '=' || c == '?')
+			{
+				return word_start - buf_start;
+			}
+		}
+		buf++;
+	}
+
+	return buf - buf_start;
+}
+
+static int get_encode_str(unsigned char *buf)
+{
+	int space = 0;
+	unsigned char *buf_start = buf;
+	unsigned char *word_start = buf;
+	unsigned char *word_end = NULL;
+	unsigned char c;
+	int toencode = 0;
+
+	while ((c=*buf))
+	{
+		if (isspace(c))
+		{
+			if (!space)
+			{
+				if (!toencode) break;
+				word_end = buf;
+				toencode = 0;
+			}
+			space = 1;
+		}
+		else
+		{
+			if (space)
+			{
+				word_start = buf;
+				space = 0;
+			}
+			if (c > 127 || c == '=' || c == '?')
+			{
+				toencode = 1;
+			}
+		}
+		buf++;
+	}
+
+	if (!toencode)
+	{
+		if (!word_end) return 0;
+		return word_end - buf_start;
+	}
+
+	return buf - buf_start;
+}
+
 /**************************************************************************
  Encodes a given header string (changed after 1.7)
  If structured is one the resulting string also may contains quotation
@@ -255,112 +341,117 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 
 	if ((fh = tmpfile()))
 	{
-		int quote_encoding = 0;
-		int needs_quotes = 0;
-		char *test = toencode;
-		unsigned char c;
-
-		/* check if we have any characters which need to be encoded */
-		while ((c = *test++))
+		while (toencode_len)
 		{
-			if (c > 127 || c == '=' || c == '?')
+			int l;
+			if ((l = get_noencode_str(toencode)))
 			{
-				quote_encoding = 1;
-				break;
-			}
-		}
-
-		if (quote_encoding)
-		{
-			int line_start = 1;
-
-			max_line_len = 70;
-
-			while (toencode_len > 0)
-			{
-				int buf_len; /* current len of the buffer */
-				char buf[32];
-
-				if (line_start)
+				int quotes = structured && needs_quotation_len(toencode,l);
+				int space_add;
+				if ((line_len + l + (quotes?2:0)) > max_line_len && line_len > 1)
 				{
-					max_line_len = 70;
-					strcpy(buf,"=?iso-8859-1?q?");
-					buf_len = sizeof("=?iso-8859-1?q?")-1;
-					line_start = 0;
-				} else buf_len = 0;
-
-				c = *toencode;
-
-				if (c > 127 || c == '_' || c == '?' || c == '=')
-				{
-					sprintf(&buf[buf_len],"=%02lX",c);
-					buf_len += 3;
-				} else
-				{
-					if (c==' ') c = '_';
-					buf[buf_len++] = c;
-/*					buf[buf_len] = 0;*/ /* Nullbyte not neccessary since we have buf_len */
-				}
-
-				if (line_len + buf_len > max_line_len)
-				{
-					fprintf(fh, "?=\n ");
-					encoded_len += 4;
-					line_len = 1;
-					line_start = 1;
-					continue;
-				}
-
-				fwrite(buf,1,buf_len,fh);
-				encoded_len += buf_len;
-				line_len += buf_len;
-
-				toencode_len--;
-				toencode++;
-			}
-
-			/* finish the encoding */
-			fputs("?=",fh);
-			encoded_len += 2;
-		} else
-		{
-			max_line_len = 70;
-
-			if ((needs_quotation(toencode) && structured))
-			{
-				char *new_toencode = (char*)malloc(toencode_len+3);
-				if (new_toencode)
-				{
-					needs_quotes = 1;
-					new_toencode[0] = '"';
-					strcpy(new_toencode+1,toencode);
-					strcat(new_toencode,"\"");
-					toencode = new_toencode;
-					toencode_len = toencode_len+2;
-				} else toencode_len = 0;
-			}
-
-			while (toencode_len > 0)
-			{
-				if (line_len + 1 > max_line_len)
-				{
-					fprintf(fh, "\n ");
+					fputs("\n ",fh);
 					encoded_len += 2;
 					line_len = 1;
-					continue;
 				}
 
-				fwrite(toencode,1,1,fh);
-				encoded_len += 1;
-				line_len += 1;
+				if (toencode[l-1] == ' ' && quotes)
+				{
+					/* the last space should split the quoted string from the encoded word */
+					l--;
+					space_add = 1;
+				} else space_add = 0;
 
-				toencode_len--;
-				toencode++;
+				if (quotes) fputc('"',fh);
+				fwrite(toencode,1,l,fh);
+				toencode += l;
+				toencode_len -= l;
+				if (quotes) fputc('"',fh);
+				if (space_add)
+				{
+					fputc(' ',fh);
+					l++;
+					toencode++;
+					toencode_len--;
+				}
+
+				line_len += l + (quotes?2:0);
+				encoded_len += l + (quotes?2:0);
+				
+/*				while (l)
+				{
+					if (line_len >= max_line_len)
+					{
+						fputs("\n ",fh);
+						encoded_len += 2;
+						line_len = 1;
+					}
+					fputc(*toencode,fh);
+					l--;
+					toencode_len--;
+					toencode++;
+					line_len++;
+					encoded_len++;
+				}*/
 			}
-
-			if (needs_quotes)
+			if ((l = get_encode_str(toencode)))
 			{
-				if (toencode) free(toencode);
+				char buf[32];
+				int buf_len;
+				int line_start = 1;
+				int have_written = 0;
+
+				while (l)
+				{
+					unsigned char c = *toencode;
+
+					if (line_start)
+					{
+						strcpy(buf,"=?iso-8859-1?q?");
+						buf_len = sizeof("=?iso-8859-1?q?")-1;
+						line_start = 0;
+					} else buf_len = 0;
+
+					if (c > 127 || c == '_' || c == '?' || c == '=')
+					{
+						sprintf(&buf[buf_len],"=%02lX",c);
+						buf_len += 3;
+					} else
+					{
+						if (c==' ') c = '_';
+						buf[buf_len++] = c;
+					}
+
+					if (buf_len + line_len > 70)
+					{
+						line_start = 1;
+						line_len = 1;
+						if (have_written)
+						{
+							fputs("?=\n ",fh);
+							encoded_len += 4;
+						} else
+						{
+							fputs("\n ",fh);
+							encoded_len += 2;
+						}
+						continue;
+					}
+
+					have_written = 1;
+					fwrite(buf,1,buf_len,fh);
+					encoded_len += buf_len;
+					line_len += buf_len;
+
+					l--;
+					toencode_len--;
+					toencode++;
+				}
+				if (have_written)
+				{
+					fputs("?=",fh);
+					encoded_len += 2;
+				}
 			}
 		}
 

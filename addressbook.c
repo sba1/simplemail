@@ -672,8 +672,16 @@ char *addressbook_get_address_str_expanded(struct addressbook_entry *entry)
 		{
 			if (entry->u.person.realname && strlen(entry->u.person.realname))
 			{
-				/* note "'s must be setted in special cases */
-				str = stradd(str,entry->u.person.realname);
+				if (needs_quotation(entry->u.person.realname))
+				{
+					str = stradd(str,"\"");
+					str = stradd(str,entry->u.person.realname);
+					str = stradd(str,"\"");
+				} else
+				{
+					str = stradd(str,entry->u.person.realname);
+				}
+				
 				str = stradd(str," <");
 				str = stradd(str,entry->u.person.emails[0]);
 				return stradd(str,">");
@@ -713,7 +721,16 @@ char *addressbook_get_expand_str(char *unexpand)
 				if (mb->phrase)
 				{
 					/* note "'s must be setted in special cases */
-					expand = stradd(expand,mb->phrase);
+					if (needs_quotation(mb->phrase))
+					{
+						expand = stradd(expand,"\"");
+						expand = stradd(expand,mb->phrase);
+						expand = stradd(expand,"\"");
+					} else
+					{
+						expand = stradd(expand,mb->phrase);
+					}
+
 					expand = stradd(expand," <");
 					expand = stradd(expand,mb->addr_spec);
 					expand = stradd(expand,">");

@@ -84,14 +84,13 @@ int mails_upload(void)
 		return 0;
 	}
 
-	server.name 		         = user.config.smtp_server;
-	server.domain 					= user.config.smtp_domain;
-	server.port         		 	= user.config.smtp_port;
-	server.esmtp.auth          = user.config.smtp_auth;
-	server.esmtp.auth_login    = user.config.smtp_login;
+	server.name = user.config.smtp_server;
+	server.domain = user.config.smtp_domain;
+	server.port = user.config.smtp_port;
+	server.esmtp.auth = user.config.smtp_auth;
+	server.esmtp.auth_login = user.config.smtp_login;
 	server.esmtp.auth_password = user.config.smtp_password;
-	server.ip_as_domain  		= user.config.smtp_ip_as_domain;
-	
+	server.ip_as_domain = user.config.smtp_ip_as_domain;
 
 	if (!server.name)
 	{
@@ -152,8 +151,19 @@ int mails_upload(void)
 
 		memset(&mb,0,sizeof(struct mailbox));
 
-		if (!to || !from ) break;
-		if (!parse_mailbox(from,&mb)) break;
+		if (!to || !from)
+		{
+			chdir(path);
+			free(out_array); /* this is not enough */
+			return 0;
+		}
+		if (!parse_mailbox(from,&mb))
+		{
+			tell("No valid sender address!");
+			chdir(path);
+			free(out_array); /* this is not enough */
+			return 0;
+		}
 
 		out->mailfile = m->filename;
 		out->from = mb.addr_spec; /* must be not freed here */

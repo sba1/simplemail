@@ -27,6 +27,7 @@
 #include "codecs.h"
 #include "lists.h"
 #include "mail.h"
+#include "parse.h"
 #include "support.h"
 
 /* encoding table for the base64 coding */
@@ -238,8 +239,10 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 
 /**************************************************************************
  Encodes a given header string (changed after 1.7)
+ If structured is one the resulting string also may contains quotation
+ marks
 **************************************************************************/
-static char *encode_header_str(char *toencode, int *line_len_ptr)
+static char *encode_header_str(char *toencode, int *line_len_ptr, int structured)
 {
 	int line_len = *line_len_ptr;
 	int encoded_len = 0;
@@ -253,6 +256,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr)
 	if ((fh = tmpfile()))
 	{
 		int quote_encoding = 0;
+		int needs_quotes = 0;
 		char *test = toencode;
 		unsigned char c;
 
@@ -322,6 +326,20 @@ static char *encode_header_str(char *toencode, int *line_len_ptr)
 		{
 			max_line_len = 70;
 
+			if ((needs_quotation(toencode) && structured))
+			{
+				char *new_toencode = (char*)malloc(toencode_len+3);
+				if (new_toencode)
+				{
+					needs_quotes = 1;
+					new_toencode[0] = '"';
+					strcpy(new_toencode+1,toencode);
+					strcat(new_toencode,"\"");
+					toencode = new_toencode;
+					toencode_len = toencode_len+2;
+				} else toencode_len = 0;
+			}
+
 			while (toencode_len > 0)
 			{
 				if (line_len + 1 > max_line_len)
@@ -338,6 +356,11 @@ static char *encode_header_str(char *toencode, int *line_len_ptr)
 
 				toencode_len--;
 				toencode++;
+			}
+
+			if (needs_quotes)
+			{
+				if (toencode) free(toencode);
 			}
 		}
 
@@ -362,7 +385,6 @@ static char *encode_header_str(char *toencode, int *line_len_ptr)
  Creates a unstructured encoded header field (includes all rules of the
  RFC 821 and RFC 2047)
  The string is allocated with malloc()
- TODO: Use encode_header_str()
 **************************************************************************/
 char *encode_header_field(char *field_name, char *field_contents)
 {
@@ -378,7 +400,7 @@ char *encode_header_field(char *field_name, char *field_contents)
 		fprintf(fh, "%s: ",field_name);
 		line_len = strlen(field_name) + 2;
 
-		if ((encoded = encode_header_str(field_contents, &line_len)))
+		if ((encoded = encode_header_str(field_contents, &line_len,0)))
 		{
 			fprintf(fh, "%s", encoded);
 			free(encoded);
@@ -427,7 +449,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 		while (address)
 		{
 			struct address *next_address = (struct address*)node_next(&address->node);
-			char *text = encode_header_str(address->realname, &line_len);
+			char *text = encode_header_str(address->realname, &line_len,1);
 			if (text)
 			{
 				fputs(text,fh);
@@ -712,7 +734,7 @@ char *identify_file(char *fname)
 
 	if (fh = fopen(fname, "r"))
 	{
-		int i, len;
+		int len;
 		static char buffer[1024], *ext;
 
 		len = fread(buffer, 1, 1023, fh);

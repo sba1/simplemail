@@ -137,7 +137,7 @@ dirs:
 
 # Rules for building
 $(TARGET): $(OBJS) $(AOBJS)
-	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS)
+	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	ppc-amigaos-strip --strip-all -o $@ $@.debug
 	cp SimpleMail.debug "/cygdrive/c/Dokumente und Einstellungen/sba/Eigene Dateien/AmigaOne/SimpleMail/SimpleMail"
 

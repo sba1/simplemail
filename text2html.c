@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "codesets.h"
 #include "configuration.h"
 #include "parse.h"
 #include "support_indep.h"
@@ -157,6 +158,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 			else
 			{
 				unsigned char c;
+
 				c = *buffer;
 
 				if (c == '@')
@@ -233,30 +235,40 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					continue;
 				}
 
-				buffer++;
-				buffer_len--;
-				if (c== '<') fputs("&lt;",fh);
-				else if (c== '>') fputs("&gt;",fh);
-				else if (c == 10)
+				if (c < 128)
 				{
-					eval_color = 1;
-					fputs("<BR>\n",fh);
-					if (line)
+					buffer++;
+					buffer_len--;
+					if (c== '<') fputs("&lt;",fh);
+					else if (c== '>') fputs("&gt;",fh);
+					else if (c == 10)
 					{
-						fputs("</TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>",fh);
-						line = 0;
+						eval_color = 1;
+						fputs("<BR>\n",fh);
+						if (line)
+						{
+							fputs("</TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>",fh);
+							line = 0;
+						}
+					} else
+					{
+						if (c == 32) {
+							if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) fputs("&nbsp;",fh);
+							else fputc(32,fh);
+						} else {
+						  if (c)
+						  {
+						  	fputc(c,fh);
+						  }
+						}
 					}
 				} else
 				{
-					if (c == 32) {
-						if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) fputs("&nbsp;",fh);
-						else fputc(32,fh);
-					} else {
-					  if (c)
-					  {
-					  	fputc(c,fh);
-					  }
-					}
+					unsigned int unicode;
+					int len =  utf8tochar(buffer, &unicode, NULL);
+					buffer_len -= len,
+					buffer += len;
+					fprintf(fh,"&#%ld;",unicode);
 				}
 			}
 		}

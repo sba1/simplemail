@@ -2085,7 +2085,7 @@ void mail_decoded_data(struct mail *mail, void **decoded_data_ptr, int *decoded_
 }
 
 /**************************************************************************
- Decodes the given mail
+ Decodes the given mail. A text mail is always converted to UTF8
 **************************************************************************/
 void mail_decode(struct mail *mail)
 {
@@ -2105,6 +2105,25 @@ void mail_decode(struct mail *mail)
 		unsigned int decoded_len = (unsigned int)-1;
 		if ((mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&decoded_len,0)))
 			mail->decoded_len = decoded_len;
+	}
+
+	if (!mystricmp(mail->content_type,"text") && mystricmp(mail->content_subtype, "html"))
+	{
+		/* It's a text mail so convert it to utf-8 expect if it is already utf8 */
+		if (mystricmp(mail->content_charset,"utf-8"))
+		{
+			if (mail->decoded_data)
+			{
+				char *new_data = utf8create_len(mail->decoded_data,mail->content_charset,mail->decoded_len);
+				free(mail->decoded_data);
+				mail->decoded_data = new_data;
+				mail->decoded_len = mystrlen(new_data);
+			} else
+			{
+				mail->decoded_data = utf8create_len(mail->text + mail->text_begin,mail->content_charset,mail->text_len);
+				mail->decoded_len = mystrlen(mail->decoded_data);
+			}
+		}
 	}
 }
 

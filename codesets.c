@@ -893,6 +893,41 @@ utf8 *utf8create(void *from, char *charset)
 }
 
 /**************************************************************************
+ Creates a uf8 string from a different one. from is the iso string and
+ charset the charset of from
+**************************************************************************/
+utf8 *utf8create_len(void *from, char *charset, int from_len)
+{
+	int dest_size = 0;
+	char *dest;
+	char *src = (char*)from;
+	unsigned char c;
+	struct codeset *codeset = codesets_find(charset);
+
+	if (!codeset) return NULL;
+
+	while ((c = *src++))
+		dest_size += codeset->table[c].utf8[0];
+
+	if ((dest = malloc(dest_size+1)))
+	{
+		char *dest_ptr = dest;
+
+		for (src = (char*)from;from_len,c = *src;src++,from_len--)
+		{
+			unsigned char *utf8_seq;
+
+			for(utf8_seq = &codeset->table[c].utf8[1];c = *utf8_seq;utf8_seq++)
+				*dest_ptr++ = c;
+		}
+
+		*dest_ptr = 0;
+		return dest;
+	}
+	return NULL;
+}
+
+/**************************************************************************
  Converts a UTF8 string to a given charset. Return the number of bytes
  written to dest excluding the NULL byte (which is always ensured by this
  function).

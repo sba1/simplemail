@@ -702,19 +702,35 @@ void parse_text_string(char *text, utf8 **pbuf)
 		} else
 		{
 			int old_pos = buf_ptr - buf;
-			if (old_pos + 1 + 1 >= buf_allocated)
+			unsigned char c = *text;
+
+			if (old_pos + 2 + 1 >= buf_allocated)
 			{
-				if ((buf = realloc(buf,old_pos + 1 + 1 + 8)))
+				if ((buf = realloc(buf,old_pos + 2 + 1 + 8)))
 				{
 					buf_ptr = buf + old_pos;
-					buf_allocated = old_pos + 1 + 1 + 8;
+					buf_allocated = old_pos + 2 + 1 + 8;
 				} else
 				{
 					*pbuf = NULL;
 					return;
 				}
 			}
-			*buf_ptr++ = *text++;
+
+			if (c < 128)
+			{
+				*buf_ptr++ = c;
+			} else
+			{
+				char *temp = utf8create_len(text,NULL,1);
+				if (temp)
+				{
+					*buf_ptr++ = temp[0];
+					*buf_ptr++ = temp[1];
+				}
+				free(temp);
+			}
+			text++;
 			enc = 0;
 		}
 	}

@@ -956,11 +956,14 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 		SM_DEBUGF(15,("Got lock at %p\n",lock));
 		
 		old_dir = CurrentDir(lock);
+		SM_DEBUGF(15,("Old dir at %p\n",old_dir));
 
 		if ((data->mail = mail_complete_create_from_file(mail->filename)))
 		{
 			int dont_show = 0;
-			mail_read_contents(data->folder_path,data->mail);
+			struct mail_complete *initial;
+
+			mail_read_contents(NULL,data->mail); /* already cd'ed in correct dir */
 			mail_create_html_header(data->mail,0);
 
 			if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
@@ -986,28 +989,33 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_ExitChange);
 			}
 
-			SM_DEBUGF(15,("Initial Mail = %p\n",mail_find_initial(data->mail)));
+			initial = mail_find_initial(data->mail);
+			SM_DEBUGF(15,("Initial Mail = %p\n",initial));
 
-			show_mail(data,mail_find_initial(data->mail));
+			if (initial) show_mail(data,initial);
+
+			SM_DEBUGF(15,("Setting buttons\n"));
 
 			/* set the prev/next button to disabled if last mail is reached */
-			if (folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
+			if (data->ref_mail && folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 				set(data->next_button, MUIA_Disabled, FALSE);
 			else
 				set(data->next_button, MUIA_Disabled, TRUE);
 
-			if (folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
+			if (data->ref_mail && folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename))
 				set(data->prev_button, MUIA_Disabled, FALSE);
 			else
 				set(data->prev_button, MUIA_Disabled, TRUE);
 
-			SM_DEBUGF(15,("Displayed\n"));
-
-			CurrentDir(old_dir);
-			UnLock(lock);
 			set(App, MUIA_Application_Sleep, FALSE);
 
+			SM_DEBUGF(15,("Change back to old dir\n",lock));
+			old_dir = CurrentDir(old_dir);
+			SM_DEBUGF(15,("old_dir = %p\n",old_dir));
+			UnLock(lock);
+
 			SM_RETURN(1,"%d");
+/*		return 1; */
 		}
 		SM_DEBUGF(15,("Not displayed\n"));
 

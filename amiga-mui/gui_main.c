@@ -41,6 +41,7 @@
 #include "version.h"
 
 /* nongui parts */
+#include "debug.h"
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
@@ -458,16 +459,18 @@ int gui_parseargs(int argc, char *argv[])
 	struct command_args {
 	  char *mailto;
 	  char *subject;
+	  LONG *debuglevel;
 	} shell_args;
 
 	struct RDArgs *rdargs;
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MAILTO/K,SUBJECT/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
+		if (shell_args.debuglevel) set_debug_level(*shell_args.debuglevel);
 		FreeArgs(rdargs);
 	}
 
@@ -504,7 +507,7 @@ int gui_execute_arexx(char *filename)
 
 
 /****************************************************************
- The main entry point
+ The main entry point.
 *****************************************************************/
 void main(int argc, char *argv[])
 {

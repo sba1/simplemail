@@ -13,6 +13,8 @@ SimpleMail Open Source - ChangeLog
 	* configuration.(c|h): Added "AppIcon Show" and "Don't show shutdown text" option.
 	* mail.c: Removed DST handling because it's in sm_get_gmt_offset() now.
 	* simplemail.c: Remove New-Flag from automatic Spam mails after moving.
+	* doc/amiga/SimpleMail.guide: Added description of the "AppIcon Show"
+	  option in the configuration.
 
 2004-02-05  Release Version 0.23
 

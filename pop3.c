@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** pop3.c
 */
 
 #include <stdio.h>
@@ -300,7 +300,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
     return 0;
 	}
 
-	if (!(buf = malloc(REC_BUFFER_SIZE+1)))
+	if (!(buf = malloc(REC_BUFFER_SIZE+5)))
 	{
 		tell_from_subtask("Not enough memory!");
 		free(fn);
@@ -347,6 +347,8 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 					{
 						int bytes_written = 0;
 
+						got = strlen(buf2);
+
 						rc = 1;
 						buf2 += 2;
 						while (running)
@@ -359,7 +361,7 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 							}
 
 							/* possible problem: the following strstr could fail if the 5 chars are splitted */
-							if ((str = strstr(buf2, "\r\n.\r\n")))
+							if ((str = strstr(buf, "\r\n.\r\n")))
 							{
 								str[2] = 0;
 								running = 0;
@@ -371,13 +373,21 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 
 							if (running)
 							{
-								got = recv(server->socket, buf, REC_BUFFER_SIZE, 0);
-								if (got > 0) buf[got] = 0;
+								/* copy the last 4 characters to catch the end */
+								buf[0] = buf2[got-4];
+								buf[1] = buf2[got-3];
+								buf[2] = buf2[got-2];
+								buf[3] = buf2[got-1];
+
+								got = recv(server->socket, buf+4, REC_BUFFER_SIZE, 0);
+								if (got > 0)
+								{
+									/* now use the buf from beginning of the new data */
+									buf2 = buf + 4;
+									buf2[got] = 0;
+								}
                 else running = 0;
 							}
-
-							/* now use the buf from beginning */
-							buf2 = buf;
 						}
 					}
 

@@ -136,6 +136,8 @@ pl.pox:
   execute CreatePOX pl
 fi.pox:
   execute CreatePOX fi
+es.pox:
+  execute CreatePOX es
 
 # some fake targets
 generate:

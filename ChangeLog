@@ -2,6 +2,20 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-02-14  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/appicon.c: Added "AppIcon Show" config handling.
+	* amiga-mui/configwnd.c: Added "AppIcon Show" config.
+	* amiga-mui/gui_main.c: Added "AppIcon Show" handling for "Iconified" option.
+	* amiga-mui/mailtreelistclass.c: Added missing array initialization.
+	* amiga-mui/shutdownwnd.c: Added config option "Don't show shutdown text".
+	* amiga-mui/support.c: Added DST handling to sm_get_gmt_offset().
+	* configuration.(c|h): Added "AppIcon Show" and "Don't show shutdown text" option.
+	* mail.c: Removed DST handling because it's in sm_get_gmt_offset() now.
+	* simplemail.c: Remove New-Flag from automatic Spam mails after moving.
+
+2004-02-05  Release Version 0.23
+
 2004-01-17  Bernd Gollesch <bgollesch@sime.com>
 
 	* folder.(c|h): New function to find a folder by a given file.

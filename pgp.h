@@ -29,4 +29,7 @@ int pgp_update_key_list(void);
 struct pgp_key *pgp_first(void);
 struct pgp_key *pgp_next(struct pgp_key *);
 
+struct pgp_key *pgp_duplicate(struct pgp_key *key);
+void pgp_dispose(struct pgp_key *key);
+
 #endif

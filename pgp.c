@@ -55,7 +55,7 @@ int pgp_update_key_list(void)
 	pgp_free_list();
 
 	tmpname = tmpnam(NULL);
-	if (sm_system("pgp -kv",tmpname))
+	if (!sm_system("pgp -kv",tmpname))
 	{
 		FILE *fh = fopen(tmpname,"rb");
 		if (fh)
@@ -69,7 +69,7 @@ int pgp_update_key_list(void)
 					if (key)
 					{
 						key->userids = NULL;
-						key->keyid = strtol(&buf[10],NULL,16);
+						key->keyid = strtoul(&buf[10],NULL,16);
 						key->userids = array_add_string(key->userids,&buf[29]);
 						list_insert_tail(&pgp_list,&key->node);
 					}
@@ -97,4 +97,34 @@ struct pgp_key *pgp_next(struct pgp_key *next)
 {
 	return (struct pgp_key *)node_next(&next->node);
 }
+
+/******************************************************************
+ Returns a list with struct key_node entries
+*******************************************************************/
+struct pgp_key *pgp_duplicate(struct pgp_key *key)
+{
+	struct pgp_key *new_key;
+
+	if (!key) return NULL;
+
+	if ((new_key = (struct pgp_key*)malloc(sizeof(struct pgp_key))))
+	{
+		*new_key = *key;
+		new_key->userids = array_duplicate(key->userids);
+	}
+	return new_key;
+}
+
+/******************************************************************
+ Returns a list with struct key_node entries
+*******************************************************************/
+void pgp_dispose(struct pgp_key *key)
+{
+	if (key)
+	{
+		array_free(key->userids);
+		free(key);
+	}
+}
+
 

@@ -503,6 +503,7 @@ void callback_new_group(void)
 {
 	folder_add_group("New Group");
 	main_refresh_folders();
+	filter_update_folder_list();
 }
 
 /* create a new folder */
@@ -510,6 +511,7 @@ void callback_new_folder_path(char *path, char *name)
 {
 	folder_add_with_name(path, name);
 	main_refresh_folders();
+	filter_update_folder_list();
 }
 
 /* Remove the selected folder */
@@ -519,7 +521,10 @@ void callback_remove_folder(void)
 	if (f)
 	{
 		if (folder_remove(f))
+		{
 			main_refresh_folders();
+			filter_update_folder_list();
+		}
 	}
 }
 
@@ -557,6 +562,7 @@ void callback_change_folder_attrs(void)
 	}
 
 	main_refresh_folder(f);
+	filter_update_folder_list();
 }
 
 /* reload the folders order */
@@ -564,6 +570,7 @@ void callback_reload_folder_order(void)
 {
 	folder_load_order();
 	main_refresh_folders();
+	filter_update_folder_list();
 }
 
 /* the configuration has been changed */

@@ -122,13 +122,14 @@ static Object *rules_wnd;
 static Object *rules_rule_group;
 static Object *rules_move_check;
 static Object *rules_move_text;
+static Object *rules_folder_list;
 
 static struct filter_rule *rules_active_rule;
 
 static struct filter *rules_filter;
 
 /**************************************************************************
- Ok the rule 
+ Accept the rule 
 **************************************************************************/
 static void rules_ok(void)
 {
@@ -284,9 +285,8 @@ static void rules_refresh(void)
 **************************************************************************/
 static void init_rules(void)
 {
-	Object *ok_button, *rule_add_button, *folder_list, *move_popobject;
+	Object *ok_button, *rule_add_button, *move_popobject;
 	static struct Hook move_objstr_hook, move_strobj_hook;
-	struct folder *f;
 
 	init_hook(&move_objstr_hook, (HOOKFUNC)move_objstr);
 	init_hook(&move_strobj_hook, (HOOKFUNC)move_strobj);
@@ -316,7 +316,7 @@ static void init_rules(void)
 							MUIA_Popobject_ObjStrHook, &move_objstr_hook,
 							MUIA_Popobject_StrObjHook, &move_strobj_hook,
 							MUIA_Popobject_Object, NListviewObject,
-								MUIA_NListview_NList, folder_list = NListObject,
+								MUIA_NListview_NList, rules_folder_list = NListObject,
 									MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
 									MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
 									End,
@@ -337,21 +337,34 @@ static void init_rules(void)
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_ok);
 		DoMethod(rule_add_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_new);
 		DoMethod(rules_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-		DoMethod(folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, move_popobject, 2, MUIM_Popstring_Close, 1);
-	}
+		DoMethod(rules_folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, move_popobject, 2, MUIM_Popstring_Close, 1);
 
+		filter_update_folder_list();
+	}
+}
+
+/**************************************************************************
+ This function is called whenever the folder list has changed
+**************************************************************************/
+void filter_update_folder_list(void)
+{
+	struct folder *f;
+	if (!rules_folder_list) return;	
+	set(rules_folder_list,MUIA_NList_Quiet,TRUE);
+	DoMethod(rules_folder_list,MUIM_NList_Clear);
 	/* Insert the folder names into the folder list for the move action */
 	f = folder_first();
 	while (f)
 	{
 		if (f->special != FOLDER_SPECIAL_GROUP)
-			DoMethod(folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
+			DoMethod(rules_folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
 		f = folder_next(f);
 	}
+	set(rules_folder_list,MUIA_NList_Quiet,FALSE);
 }
 
 /**************************************************************************
- Set the rules
+ Set the currently edit rule
 **************************************************************************/
 static void set_rules(struct filter *f)
 {

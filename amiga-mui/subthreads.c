@@ -35,6 +35,7 @@ struct ThreadMessage
 {
 	struct Message msg;
 	int (*function)(void);
+	int async;
 	int argcount;
 	void *arg1,*arg2,*arg3,*arg4;
 	int result;
@@ -92,7 +93,8 @@ void thread_handle(void)
 				case	4: tmsg->result = ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
 			}
 		}
-		ReplyMsg(&tmsg->msg);
+		if (tmsg->async) FreeVec(tmsg);
+		else ReplyMsg(&tmsg->msg);
 	}
 }
 
@@ -199,6 +201,7 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
 		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
 		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+		tmsg->async = 0;
 
 		va_end (arg_ptr);
 
@@ -210,6 +213,59 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 	}
 
 	return rc;
+#else
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+#endif
+}
+
+int thread_call_parent_function_async(void *function, int argcount, ...)
+{
+#ifndef DONT_USE_THREADS
+	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
+	if (tmsg)
+	{
+		struct Process *p = (struct Process*)FindTask(NULL);
+		va_list argptr;
+
+		va_start(argptr,argcount);
+
+		tmsg->msg.mn_ReplyPort = &p->pr_MsgPort;
+		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+		tmsg->function = (int (*)(void))function;
+		tmsg->argcount = argcount;
+		tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
+		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
+		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
+		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+		tmsg->async = 1;
+
+		va_end (arg_ptr);
+
+		PutMsg(thread_port,&tmsg->msg);
+		return 1;
+	}
+
+	return 0;
 #else
 	int rc;
 	void *arg1,*arg2,*arg3,*arg4;

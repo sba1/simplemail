@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** subthreads.h
 */
 
 #ifndef SM__SUBTHREADS_H
@@ -29,6 +29,7 @@ int thread_parent_task_can_contiue(void);
 int thread_start(int (*entry)(void*), void *udata);
 void thread_abort(void);
 int thread_call_parent_function_sync(void *function, int argcount, ...);
+int thread_call_parent_function_async(void *function, int argcount, ...);
 
 void thread_handle(void);
 unsigned long thread_mask(void);

@@ -84,7 +84,6 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			*msg->Array++ = NULL; /* status */
 			*msg->Array++ = NULL; /* status */
 			*msg->Array++ = NULL; /* status */
-			*msg->Array++ = NULL; /* status */
 			*msg->Array = NULL; /* status */
 		} else
 		{
@@ -95,8 +94,18 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			static char status_buf[128];
 			static char from_buf[256];
 
-			if (mail->flags & MAIL_FLAGS_NEW) sprintf(status_buf,"\33O[%08lx]",data->status_new);
-			else
+			if (mail->flags & MAIL_FLAGS_NEW)
+			{
+				sprintf(status_buf,"\33O[%08lx]",data->status_new);
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse++ = "\33b";
+				*msg->Preparse = "\33b";
+
+			} else
 			{
 				switch(mail_get_status_type(mail))
 				{

@@ -30,7 +30,7 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
-#include <proto/socket.h> /* not nice */ /* blabla :) */ /* nicht blabla! :-) */ /* doch blabla, sonst müsste ich die pragmas nehmen, vom Regen in die Traufe :) */ /* ja, der comment war aber für die Zunkunft gedacht (für mich), irgendwann muß es weg, momentan ist es aber ok (sonst hätte ich es irgendwie weggemacht) ;-) */ /* Wie willst Du es denn umgehen? amiga.h? */ /* config.h */ /* achso, und wann kommt es? */ /* wenn die Zeit reif ist ;-) */ /* Wann ist sie denn reif? :) */ /* Ich denke nicht vor der ersten Veröffentlichung */
+#include <proto/socket.h> /* not nice */ /* blabla :) */ /* nicht blabla! :-) */ /* doch blabla, sonst müsste ich die pragmas nehmen, vom Regen in die Traufe :) */ /* ja, der comment war aber für die Zunkunft gedacht (für mich), irgendwann muß es weg, momentan ist es aber ok (sonst hätte ich es irgendwie weggemacht) ;-) */ /* Wie willst Du es denn umgehen? amiga.h? */ /* config.h */ /* achso, und wann kommt es? */ /* wenn die Zeit reif ist ;-) */ /* Wann ist sie denn reif? :) */ /* Ich denke nicht vor der ersten Veröffentlichung */ /* noch ist ja "niceheit" nicht das wichtigste, gell? :) */
 #include <proto/exec.h>
 
 #include "io.h"
@@ -113,7 +113,7 @@ int pop3_login(long hsocket, char *user, char *pass)
 	buf = malloc(len);	
 	if(buf != NULL)
 	{
-		set_dl_status("Sending username...");
+		dl_set_status("Sending username...");
 	
 		sprintf(buf, "USER %s\r\n", user);
 		if(send(hsocket, buf, strlen(buf), 0) != -1)
@@ -125,7 +125,7 @@ int pop3_login(long hsocket, char *user, char *pass)
 				
 				if(strncmp(buf, "+OK", 3) == 0)
 				{
-					set_dl_status("Sending password...");
+					dl_set_status("Sending password...");
 					
 					sprintf(buf, "PASS %s\r\n", pass);
 					if(send(hsocket, buf, strlen(buf), 0) != -1)
@@ -137,7 +137,7 @@ int pop3_login(long hsocket, char *user, char *pass)
 				
 							if(strncmp(buf, "+OK", 3) == 0)
 							{
-								set_dl_status("Login successful!");
+								dl_set_status("Login successful!");
 								rc = 1;
 							}
 							else
@@ -195,7 +195,7 @@ int pop3_stat(long hsocket)
 	buf = malloc(1024);
 	if(buf != NULL)
 	{
-		set_dl_status("Getting statistics...");
+		dl_set_status("Getting statistics...");
 		if(send(hsocket, "STAT\r\n", 6, 0) != -1)
 		{
 			got = recv(hsocket, buf, 1023, 0);
@@ -248,7 +248,7 @@ int pop3_quit(long hsocket)
 	buf = malloc(1024);
 	if(buf != NULL)
 	{
-		set_dl_status("Logging out...");
+		dl_set_status("Logging out...");
 		if(send(hsocket, "QUIT\r\n", 6, 0) != -1)
 		{
 			got = recv(hsocket, buf, 1023, 0);
@@ -321,7 +321,7 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 						while(isdigit(*str++));
 						
 						size = atol(str);
-						init_dl_gauge_byte(size);
+						dl_init_gauge_byte(size);
 
 						sprintf(buf, "RETR %ld\r\n", nr);
 						send(hsocket, buf, strlen(buf), 0);
@@ -360,7 +360,7 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 											if(got != 0)
 											{
 												i += got;
-												set_dl_gauge_byte(i);
+												dl_set_gauge_byte(i);
 
 												buf[got] = 0;
 												str = strstr(buf, "\r\n.\r\n");
@@ -391,7 +391,7 @@ int pop3_get_mail(long hsocket, unsigned long nr)
 									}
 								}
 								
-								set_dl_gauge_byte(size);
+								dl_set_gauge_byte(size);
 								fclose(fp);
 								fp = NULL;
 								
@@ -601,11 +601,11 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 	SocketBase = OpenLibrary("bsdsocket.library", 4);	
 	if(SocketBase != NULL)	
 	{
-		set_dl_status("Connecting to server...");	
+		dl_set_status("Connecting to server...");	
 		hsocket = tcp_connect(server, port);
 		if(hsocket != SMTP_NO_SOCKET)
 		{
-			set_dl_status("Waiting for login...");
+			dl_set_status("Waiting for login...");
 			if(pop3_wait_login(hsocket))
 			{
 				if(pop3_login(hsocket, user, pass))
@@ -616,9 +616,9 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 						unsigned long i;
 						char path[2048];
 						
-						init_dl_gauge_mail(mail_amm);
+						dl_init_gauge_mail(mail_amm);
 						
-						set_dl_status("Receiving mails...");
+						dl_set_status("Receiving mails...");
 
 						getcwd(path, 255);
 						sm_makedir("PROGDIR:.folders/income");
@@ -633,7 +633,7 @@ int pop3_dl(char *server, unsigned int port, char *user, char *pass)
 						
 							for(i = 1; i <= mail_amm; i++)
 							{
-								set_dl_gauge_mail(i);
+								dl_set_gauge_mail(i);
 								if(pop3_get_mail(hsocket, i))
 								{
 									if(!pop3_del_mail(hsocket, i))

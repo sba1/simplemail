@@ -911,6 +911,12 @@ Here you should select the charset in which the fonts are designed you use
 to display the text. Default is IS0-8859-1 with Euro, which are the fonts
 of the euro update. E.g. Polish Amiga Users should use AmigaPL.
 
+
+AppIcon Label
+
+SimpleMail will use this text to be shown under the AppIcon. Click on the
+pop-up button to select a variable from the list.
+
 @ENDNODE
 @NODE "CO01" "Configuration - Accounts"
 @TOC "CO_W"

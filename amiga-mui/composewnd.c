@@ -49,9 +49,10 @@
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
 #include "compiler.h"
+#include "composewnd.h"
 #include "datatypesclass.h"
 #include "muistuff.h"
-#include "composewnd.h"
+#include "picturebuttonclass.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
@@ -63,6 +64,11 @@ struct Compose_Data /* should be a customclass */
 	Object *wnd;
 	Object *to_string;
 	Object *subject_string;
+	Object *copy_button;
+	Object *cut_button;
+	Object *paste_button;
+	Object *undo_button;
+	Object *redo_button;
 	Object *x_text;
 	Object *y_text;
 	Object *text_texteditor;
@@ -498,6 +504,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 {
 	Object *wnd, *send_later_button, *cancel_button;
 	Object *to_string, *subject_string;
+	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
 	Object *expand_to_button;
@@ -542,6 +549,18 @@ void compose_window_open(char *to_str, struct mail *tochange)
 				MUIA_Group_ActivePage, 0,
 				Child, VGroup,
 					Child, HGroup,
+						Child, HGroup,
+							MUIA_Group_Spacing,0,
+							Child, copy_button = MakePictureButton("_Copy","PROGDIR:Images/Copy"),
+							Child, cut_button = MakePictureButton("_Cut","PROGDIR:Images/Cut"),
+							Child, paste_button = MakePictureButton("_Paste","PROGDIR:Images/Paste"),
+							End,
+						Child, HGroup,
+							MUIA_Weight, 66,
+							MUIA_Group_Spacing,0,
+							Child, undo_button = MakePictureButton("_Undo","PROGDIR:Images/Undo"),
+							Child, redo_button = MakePictureButton("_Redo","PROGDIR:Images/Redo"),
+							End,
 						Child, HVSpace,
 						Child, VGroup,
 							TextFrame,
@@ -627,6 +646,11 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			data->vertical_balance = vertical_balance;
 			data->main_group = main_group;
 			data->switch_button = switch_button;
+			data->copy_button = copy_button;
+			data->cut_button = cut_button;
+			data->paste_button = paste_button;
+			data->undo_button = undo_button;
+			data->redo_button = redo_button;
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
@@ -645,6 +669,11 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, switch_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
+			DoMethod(copy_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Copy");
+			DoMethod(cut_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Cut");
+			DoMethod(paste_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Paste");
+			DoMethod(undo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Undo");
+			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			if (!tochange)

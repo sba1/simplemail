@@ -25,10 +25,10 @@
 
 struct out_mail
 {
-   char *domain;
-   char *from;
-   char **rcp;
-   char *mailfile;
+	char *domain;
+	char *from;
+	char **rcp;
+	char *mailfile;
 };
 
 struct smtp_server
@@ -36,6 +36,10 @@ struct smtp_server
 	char *name;
 	unsigned int port;
 	long socket;
+	int ip_as_domain;
+	int auth;
+	char *auth_login;
+	char *auth_password;
 
 	struct out_mail **out_mail;
 };

@@ -123,7 +123,6 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			static char size_buf[32];
 			static char date_buf[64];
 			static char status_buf[128];
-			static char field_buf[256];
 
 			if (mail->flags & MAIL_FLAGS_NEW)
 			{

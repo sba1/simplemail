@@ -988,6 +988,69 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 }
 
 /**************************************************************************
+ Creates the replied subect line
+**************************************************************************/
+static char *mail_create_replied_subject_line(int num, struct mail **mail_array)
+{
+	struct mail *mail = mail_array[0];
+	char *new_subject = (char*)malloc(mystrlen(mail->subject)+8);
+	if (new_subject)
+	{
+		char *src = mail->subject;
+		char *dest = new_subject;
+		char c;
+		int brackets = 0;
+		int skip_spaces = 0;
+
+		/* Add a Re: before the new subject */
+		strcpy(dest,"Re: ");
+		dest += 4;
+
+		/* Copy the subject into a new buffer and filter all []'s and Re's */
+		if (src)
+		{
+			while ((c = *src))
+			{
+				if (c == '[')
+				{
+					brackets++;
+					src++;
+					continue;
+				} else
+				{
+					if (c == ']')
+					{
+						brackets--;
+						skip_spaces = 1;
+						src++;
+						continue;
+					}
+				}
+
+				if (!brackets)
+				{
+					if (!mystrnicmp("Re:",src,3))
+					{
+						src += 3;
+						skip_spaces = 1;
+						continue;
+					}
+
+					if (c != ' ' || !skip_spaces)
+					{
+						*dest++= c;
+						skip_spaces=0;
+					}
+				}
+				src++;
+			}
+		}
+		*dest = 0;
+	}
+	return new_subject;
+}
+
+/**************************************************************************
  Creates a Reply to a given mail. That means change the contents of
  "From:" to "To:", change the subject, quote the first text passage
  and remove the attachments. The mail is proccessed. The given mail should
@@ -1123,70 +1186,7 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 			}
 		}
 
-		if (mail->subject)
-		{
-			char *new_subject = (char*)malloc(strlen(mail->subject)+8);
-			if (new_subject)
-			{
-				char *subject_header;
-
-				char *src = mail->subject;
-				char *dest = new_subject;
-				char c;
-				int brackets = 0;
-				int skip_spaces = 0;
-
-				/* Add a Re: before the new subject */
-				strcpy(dest,"Re: ");
-				dest += 4;
-
-				/* Copy the subject into a new buffer and filter all []'s and Re's */
-				while ((c = *src))
-				{
-					if (c == '[')
-					{
-						brackets++;
-						src++;
-						continue;
-					} else
-					{
-						if (c == ']')
-						{
-							brackets--;
-							skip_spaces = 1;
-							src++;
-							continue;
-						}
-					}
-
-					if (!brackets)
-					{
-						if (!mystrnicmp("Re:",src,3))
-						{
-							src += 3;
-							skip_spaces = 1;
-							continue;
-						}
-
-						if (c != ' ' || !skip_spaces)
-						{
-							*dest++= c;
-							skip_spaces=0;
-						}
-					}
-					src++;
-				}
-				*dest = 0;
-
-				if ((subject_header = encode_header_field("Subject",new_subject)))
-				{
-					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
-					free(subject_header);
-				}
-
-				free(new_subject);
-			}
-		}
+		m->subject = mail_create_replied_subject_line(num,mail_array);
 
 		if (phrase)
 		{

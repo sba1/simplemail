@@ -60,6 +60,7 @@
 #include "mainwnd.h" /* main_refresh_mail() */
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "utf8stringclass.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
@@ -904,7 +905,7 @@ int compose_window_open(struct compose_args *args)
 					Child, expand_cc_button = PopButton(MUII_ArrowLeft),
 					End,
 				Child, MakeLabel(_("S_ubject")),
-				Child, subject_string = BetterStringObject,
+				Child, subject_string = UTF8StringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_ControlChar, GetControlChar(_("S_ubject")),
@@ -1181,7 +1182,7 @@ int compose_window_open(struct compose_args *args)
 					free(decoded_cc);
 				}
 
-				set(subject_string,MUIA_String_Contents,args->to_change->subject);
+				set(subject_string,MUIA_UTF8String_Contents,args->to_change->subject);
 
 				if (args->action == COMPOSE_ACTION_REPLY)
 					set(wnd,MUIA_Window_ActiveObject, data->text_texteditor);

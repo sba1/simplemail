@@ -185,6 +185,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_DragDropSort, FALSE, /* tempoarary disabled */
 						MUIA_NListtree_MultiSelect, MUIV_NListtree_MultiSelect_None,
+						MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
 						read_only?TAG_IGNORE:MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
 						TAG_DONE);
 
@@ -268,8 +269,21 @@ STATIC ULONG FolderTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUI
   	return MUIV_DragQuery_Accept;
   }
 	data->mails_drag = 0;
-  if (msg->obj == obj) 
+  if (msg->obj == obj)
+  {
+		LONG dest = xget(obj,MUIA_NList_DropMark);
+		struct folder *src_folder, *dest_folder;
+		DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &src_folder);
+		DoMethod(obj, MUIM_NList_GetEntry, dest, &dest_folder);
+
+//		if (src_folder && dest_folder)
+//		{
+//			if (!src_folder->is_imap && dest_folder->is_imap)
+//		  	return MUIV_DragQuery_Refuse;
+//		}
+
   	return MUIV_DragQuery_Accept;
+  }
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 

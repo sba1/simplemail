@@ -53,7 +53,10 @@ static Object *type_label;
 static Object *type_cycle;
 static Object *defto_label;
 static Object *defto_string;
+static Object *server_label;
+static Object *server_string;
 static int group_mode;
+static int imap_mode;
 
 struct folder *changed_folder;
 
@@ -111,6 +114,12 @@ static void init_folder(void)
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 
+				Child, server_label = MakeLabel(_("IMAP Server")),
+				Child, server_string = BetterStringObject,
+					TextFrame,
+					MUIA_BetterString_NoInput, TRUE,
+					End,
+
 				Child, path_label = MakeLabel(_("Path")),
 				Child, path_string = BetterStringObject,
 					TextFrame,
@@ -142,6 +151,8 @@ static void init_folder(void)
 		DoMethod(folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, folder_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+
+		imap_mode = 1;
 	}
 }
 
@@ -161,10 +172,17 @@ void folder_edit(struct folder *f)
 		if (!group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);
+
 			DoMethod(folder_group, OM_REMMEMBER, path_label);
 			DoMethod(folder_group, OM_REMMEMBER, path_string);
 			DoMethod(folder_group, OM_REMMEMBER, type_label);
 			DoMethod(folder_group, OM_REMMEMBER, type_cycle);
+			if (imap_mode)
+			{
+				DoMethod(folder_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				imap_mode = 0;
+			}
 			group_mode = 1;
 			DoMethod(folder_group,MUIM_Group_ExitChange);
 		}
@@ -176,9 +194,42 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_group,MUIM_Group_InitChange);
 			DoMethod(folder_group, OM_ADDMEMBER, path_label);
 			DoMethod(folder_group, OM_ADDMEMBER, path_string);
+
+			if (f->is_imap && !imap_mode)
+			{
+				DoMethod(folder_group, OM_ADDMEMBER, server_label);
+				DoMethod(folder_group, OM_ADDMEMBER, server_string);
+				imap_mode = 1;
+			} else
+			if (!f->is_imap && imap_mode)
+			{
+				DoMethod(folder_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				imap_mode = 0;
+			}
+
 			DoMethod(folder_group, OM_ADDMEMBER, type_label);
 			DoMethod(folder_group, OM_ADDMEMBER, type_cycle);
 			group_mode = 0;
+			DoMethod(folder_group,MUIM_Group_ExitChange);
+		} else
+		{
+			DoMethod(folder_group,MUIM_Group_InitChange);
+
+			if (f->is_imap && !imap_mode)
+			{
+				DoMethod(folder_group, OM_ADDMEMBER, server_label);
+				DoMethod(folder_group, OM_ADDMEMBER, server_string);
+				DoMethod(folder_group, MUIM_Group_Sort, path_label, path_string, server_label, server_string, type_label, type_cycle, NULL);
+				imap_mode = 1;
+			} else
+			if (!f->is_imap && imap_mode)
+			{
+				DoMethod(folder_group, OM_REMMEMBER, server_label);
+				DoMethod(folder_group, OM_REMMEMBER, server_string);
+				imap_mode = 0;
+			}
+
 			DoMethod(folder_group,MUIM_Group_ExitChange);
 		}
 	}
@@ -187,6 +238,7 @@ void folder_edit(struct folder *f)
 	set(path_string, MUIA_String_Contents, f->path);
 	set(type_cycle, MUIA_Cycle_Active, f->type);
 	set(defto_string, MUIA_String_Contents, f->def_to);
+	set(server_string, MUIA_String_Contents, f->imap_server);
 	changed_folder = f;
 	set(folder_wnd, MUIA_Window_ActiveObject, name_string);
 	set(folder_wnd, MUIA_Window_Open, TRUE);

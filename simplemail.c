@@ -33,6 +33,7 @@
 #include "folder.h"
 #include "imap.h" /* imap_thread_xxx() */
 #include "mail.h"
+#include "mbox.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "spam.h"
@@ -223,7 +224,6 @@ void callback_delete_mail_by_uid(char *server, char *path, unsigned int uid)
 		return;
 	}
 
-//  folder_delete_mail(f,mail);
 	folder_move_mail(f,folder_deleted(),mail);
   main_refresh_folder(f);
   main_refresh_folder(folder_deleted());
@@ -1012,108 +1012,6 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 	main_refresh_folder(folder);
 }
 
-struct export_data
-{
-	char *filename;
-	char *foldername;
-};
-
-/* Entry point for export thread */
-static int export_entry(struct export_data *data)
-{
-	char *filename;
-	char *foldername;
-
-	if ((filename = mystrdup(data->filename)))
-	{
-		if ((foldername = mystrdup(data->foldername)))
-		{
-			if (thread_parent_task_can_contiue())
-			{
-				struct folder *f;
-
-				/* lock folder list */
-				folders_lock();
-				f = folder_find_by_name(foldername);
-				if (f)
-				{
-					FILE *fh;
-					char head_buf[300];
-
-					/* now lock the folder */
-					folder_lock(f);
-					/* unlock the folder list */
-					folders_unlock();
-
-					sprintf(head_buf, _("Exporting folder %s to %s"),f->name,filename);
-					thread_call_parent_function_async(status_init,1,0);
-					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
-					thread_call_parent_function_async_string(status_set_head,1,head_buf);
-					thread_call_parent_function_async(status_open,0);
-
-					if ((fh = fopen(filename,"w")))
-					{
-						void *handle = NULL;
-						char buf[384];
-						struct mail *m;
-						char *file_buf;
-						int max_size = 0;
-						int size = 0;
-						int mail_no = 1;
-
-						while ((m = folder_next_mail(f, &handle)))
-							max_size += m->size;
-
-						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_size);
-						thread_call_parent_function_async(status_init_mail, 1, f->num_mails);
-
-						if ((file_buf = malloc(8192)))
-						{
-							getcwd(buf, sizeof(buf));
-							chdir(f->path);
-
-							handle = NULL;
-							while ((m = folder_next_mail(f, &handle)))
-							{
-								FILE *in;
-
-								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->size);
-
-								fprintf(fh, "From %s\n",m->from_addr?m->from_addr:"");
-			
-								in = fopen(m->filename,"r");
-								if (in)
-								{
-									while (!feof(in))
-									{
-										int blocks = fread(file_buf,1,8192,in);
-										size += fwrite(file_buf,1,blocks,fh);
-
-										thread_call_parent_function_async(status_set_gauge,1,size);
-									}
-									fclose(in);
-								}
-								fputs("\n",fh);
-								mail_no++;
-							}
-							free(file_buf);
-						}
-			
-						chdir(buf);
-			
-						fclose(fh);
-					}
-					thread_call_parent_function_async(status_close,0);
-
-					folder_unlock(f);
-				} else folders_unlock();
-			}
-			free(foldername);
-		}
-		free(filename);
-	}
-	return 0;
-}
 
 /* Export mails */
 void callback_export(void)
@@ -1126,17 +1024,12 @@ void callback_export(void)
 	filename = sm_request_file(_("Choose export filename"), "",1);
 	if (filename && *filename)
 	{
-		struct export_data data;
-
-		data.filename = filename;
-		data.foldername = f->name;
-
-		if (!(thread_start(THREAD_FUNCTION(export_entry),&data)))
+		if (!(mbox_export_folder(f,filename)))
 		{
-			sm_request(NULL,_("Couldn't start process for exporting.\n"),_("Ok"));
+			sm_request(NULL,_("Couldn't start process for exporting.\n"),_("Ok"));			
 		}
 	}
-	free(filename);
+	free(filename); /* accepts NULL pointer */
 }
 
 /* a new mail has been arrived, only the filename is given */

@@ -829,9 +829,10 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 }
 
 /******************************************************************
- Opens a read window
+ Opens a read window. Returns the number of the readwindow or -1
+ for an error
 *******************************************************************/
-void read_window_open(char *folder, struct mail *mail)
+int read_window_open(char *folder, struct mail *mail)
 {
 	Object *wnd,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
 	Object *attachments_group;
@@ -871,10 +872,10 @@ void read_window_open(char *folder, struct mail *mail)
 	for (num=0; num < MAX_READ_OPEN; num++)
 		if (!read_open[num]) break;
 
-	if (num == MAX_READ_OPEN) return;
+	if (num == MAX_READ_OPEN) return -1;
 
 	/* translate the menu entries */
-	if (!(nm = malloc(sizeof(nm_untranslated)))) return;
+	if (!(nm = malloc(sizeof(nm_untranslated)))) return -1;
 	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
 
 	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
@@ -1047,7 +1048,7 @@ void read_window_open(char *folder, struct mail *mail)
 				DoMethod(App,OM_ADDMEMBER,wnd);
 				set(wnd,MUIA_Window_Open,TRUE);
 				set(App, MUIA_Application_Sleep, FALSE);
-				return;
+				return num;
 			}
 
 			free(data);
@@ -1055,4 +1056,14 @@ void read_window_open(char *folder, struct mail *mail)
 		}
 		MUI_DisposeObject(wnd);
 	}
+	return -1;
+}
+
+/******************************************************************
+ Activate a read window
+*******************************************************************/
+void read_window_activate(int num)
+{
+	if (num < 0 || num >= MAX_READ_OPEN) return;
+	if (read_open[num] && read_open[num]->wnd) set(read_open[num]->wnd,MUIA_Window_Open,TRUE);
 }

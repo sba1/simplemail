@@ -28,7 +28,7 @@ struct folder;
 struct mail;
 struct addressbook_entry;
 
-void callback_read_mail(void);
+int callback_read_mail(void);
 void callback_delete_mails(void);
 int callback_delete_mail(struct mail *mail);
 void callback_get_address(void);

@@ -45,26 +45,32 @@
 #include "subthreads.h"
 #include "tcpip.h"
 
-/* the current mail should be viewed */
-void callback_read_mail(void)
+/* the current mail should be viewed, returns the number of the window
+   which the function has opened or -1 for an error */
+int callback_read_mail(void)
 {
 	char *filename;
 	struct mail *m;
 	struct folder *f;
+	int num;
 
-	if (!(f = main_get_folder())) return;
-	if (!(filename = main_get_mail_filename())) return;
-	if (!(m = main_get_active_mail())) return;
+	if (!(f = main_get_folder())) return -1;
+	if (!(filename = main_get_mail_filename())) return -1;
+	if (!(m = main_get_active_mail())) return -1;
 
-	read_window_open(main_get_folder_drawer(), m);
+	num = read_window_open(main_get_folder_drawer(), m);
 
-	if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
+	if (num >= 0)
 	{
-		folder_set_mail_status(f,m,MAIL_STATUS_READ | (m->status & (~MAIL_STATUS_MASK)));
-		if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
-		m->flags &= ~MAIL_FLAGS_NEW;
-		main_refresh_mail(m);
+		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD)
+		{
+			folder_set_mail_status(f,m,MAIL_STATUS_READ | (m->status & (~MAIL_STATUS_MASK)));
+			if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+			m->flags &= ~MAIL_FLAGS_NEW;
+			main_refresh_mail(m);
+		}
 	}
+	return num;
 }
 
 /* the selected mails should be deleted */

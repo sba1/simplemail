@@ -23,6 +23,7 @@
 #ifndef SM__READWND_H
 #define SM__READWND_H
 
-void read_window_open(char *folder, struct mail *mail);
+int read_window_open(char *folder, struct mail *mail);
+void read_window_activate(int num);
 
 #endif

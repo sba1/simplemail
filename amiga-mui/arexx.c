@@ -43,6 +43,7 @@
 #include "amigasupport.h"
 #include "arexx.h"
 #include "mainwnd.h"
+#include "readwnd.h"
 #include "simplemail.h"
 #include "support.h"
 
@@ -806,6 +807,56 @@ static void arexx_newmailfile(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILREAD ARexx Command
+*****************************************************************/
+static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		LONG *window;
+		LONG quiet;
+	} mailread_arg;
+	memset(&mailread_arg,0,sizeof(mailread_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S",args,&mailread_arg)))
+	{
+		if (mailread_arg.window)
+		{
+			read_window_activate(*mailread_arg.window);
+		} else
+		{
+			int window;
+
+			window = callback_read_mail();
+
+			if (mailread_arg.stem)
+			{
+				int stem_len = strlen(mailread_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,mailread_arg.stem);
+					strcat(stem_buf,"WINDOW");
+					arexx_set_var_int(rxmsg,stem_buf,window);
+					free(stem_buf);
+				}
+			} else
+			{
+				char num_buf[24];
+				sprintf(num_buf,"%d",window);
+				if (mailread_arg.var) SetRexxVar(rxmsg,mailread_arg.var,num_buf,strlen(num_buf));
+				else arexx_set_result(rxmsg,num_buf);
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -840,6 +891,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("ADDRSAVE",command.command)) arexx_addrsave(rxmsg,command.args);
 		else if (!Stricmp("GETURL",command.command)) arexx_geturl(rxmsg,command.args);
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
+		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

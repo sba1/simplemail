@@ -3,6 +3,7 @@ Version 0.17 (fourth beta) - released on ...
   - shows user@popserver in the check single account sub menu
   - added possibility to add the recpient of an e-mail later
   - closing the compose window will not discard the current edited mail
+  - search function added
 
 Version 0.16 (third beta) - released on 2002/05/25
   - requires version 18.12 of NListtree

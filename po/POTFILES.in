@@ -14,6 +14,7 @@ amiga-mui/gui_main.c
 amiga-mui/mailtreelistclass.c
 amiga-mui/mainwnd.c
 amiga-mui/pgplistclass.c
+amiga-mui/searchwnd.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
 amiga-mui/upwnd.c

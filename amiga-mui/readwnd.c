@@ -167,17 +167,17 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 		char filename[100];
 
 		/* Write out the file, create an icon, start it via wb.library */
-		if (mail->filename)
+		if (mail->content_name)
 		{
 			strcpy(filename,"T:");
-			strcat(filename,mail_get_root(mail)->filename);
+			strcat(filename,data->mail->filename);
 			if ((newdir = CreateDir(filename))) UnLock(newdir);
 
 			if ((newdir = Lock(filename, ACCESS_READ)))
 			{
 				olddir = CurrentDir(newdir);
 
-				if ((fh = Open(mail->filename,MODE_NEWFILE)))
+				if ((fh = Open(mail->content_name,MODE_NEWFILE)))
 				{
 					struct DiskObject *dobj;
 					void *cont;
@@ -189,7 +189,7 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 					Write(fh,cont,cont_len);
 					Close(fh);
 
-					if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
+					if ((dobj = GetIconTags(mail->content_name,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
 					{
 						int ok_to_open = 1;
 						if (dobj->do_Type == WBTOOL)
@@ -197,11 +197,11 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 							ok_to_open = sm_request(NULL,_("Are you sure that you want to start this executable?"),_("*_Yes|_Cancel"));
 						}
 
-						if (ok_to_open) PutIconTagList(mail->filename,dobj,NULL);
+						if (ok_to_open) PutIconTagList(mail->content_name,dobj,NULL);
 						FreeDiskObject(dobj);
 
 						if (ok_to_open)
-							OpenWorkbenchObjectA(mail->filename,NULL);
+							OpenWorkbenchObjectA(mail->content_name,NULL);
 					}
 				}
 
@@ -344,7 +344,7 @@ static void icon_drop(int **pdata)
 	Object *icon = (Object*)(pdata[2]);
 	char *path = (char*)xget(icon,MUIA_Icon_DropPath);
 
-	save_contents_to(data, mail, path, mail->filename);
+	save_contents_to(data, mail, path, mail->content_name);
 }
 
 /******************************************************************
@@ -411,7 +411,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 			Child, TextObject,
 					MUIA_Background, MUII_TextBack,
 					MUIA_Font, MUIV_Font_Tiny,
-					MUIA_Text_Contents, mail->filename,
+					MUIA_Text_Contents, mail->content_name,
 					MUIA_Text_PreParse, "\33c",
 					End,
 			End;
@@ -441,7 +441,7 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 	if (!mail->num_multiparts)
 	{
 		if (MUI_AslRequestTags(data->file_req,
-					mail->filename?ASLFR_InitialFile:TAG_IGNORE,mail->filename,
+					mail->content_name?ASLFR_InitialFile:TAG_IGNORE,mail->content_name,
 					TAG_DONE))
 		{
 			save_contents_to(data,mail,data->file_req->fr_Drawer,data->file_req->fr_File);

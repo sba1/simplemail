@@ -732,7 +732,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 				Write(fh,cont,cont_len);
 				Close(fh);
 			}
-			attach.filename = mail->filename?mail->filename:tmpname;
+			attach.filename = mail->content_name?mail->content_name:tmpname;
 			attach.temporary_filename = tmpname;
 		}
 	}

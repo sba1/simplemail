@@ -787,9 +787,9 @@ struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int ui
 
 	for (i=0; i < folder->num_mails; i++)
 	{
-		if (!mystrnicmp(buf,folder->mail_array[i]->filename,l))
+		if (!mystrnicmp(buf,folder->mail_array[i]->filename + 1,l))
 		{
-			if (folder->mail_array[i]->filename[l] == '.' || folder->mail_array[i]->filename[l] == 0)
+			if (folder->mail_array[i]->filename[l+1] == '.' || folder->mail_array[i]->filename[l+1] == 0)
 				return folder->mail_array[i];
 		}
 	}

@@ -260,7 +260,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			for (i=0;i < num_of_local_mails;i++)
 			{
 				if (folder->mail_array[i])
-					local_uid_array[i] = atoi(folder->mail_array[i]->filename);
+					local_uid_array[i] = atoi(folder->mail_array[i]->filename + 1);
 				else
 					local_uid_array[i] = 0;
 			}
@@ -392,6 +392,10 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 						/* now check for mails which are local but not on the imap */
 						int i,j;
 						int msgtodl;
+						unsigned int max_todl_bytes = 0;
+						unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
+						unsigned int todl_bytes = 0;
+
 						for (i = 0 ; i < num_of_local_mails; i++)
 						{
 							unsigned int local_uid = local_uid_array[i];
@@ -411,7 +415,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							}
 						}
 
-						for (msgtodl=1;msgtodl <= num_of_remote_mails;msgtodl++)
+						for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
 						{
 							/* check if the mail already exists */
 							int does_exist = 0;
@@ -421,6 +425,24 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 									does_exist = 1;
 							}
 							if (does_exist) continue;
+
+							max_todl_bytes += remote_mail_array[msgtodl-1].size;
+						}
+
+						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_todl_bytes);
+
+						for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
+						{
+							/* check if the mail already exists */
+							int does_exist = 0;
+							for (i=0; i < num_of_local_mails;i++)
+							{
+								if (local_uid_array[i] == remote_mail_array[msgtodl-1].uid)
+									does_exist = 1;
+							}
+							if (does_exist) continue;
+
+							accu_todl_bytes += remote_mail_array[msgtodl-1].size;
 
 							sprintf(status_buf,_("Fetching mail %d from server"),msgtodl);
 							thread_call_parent_function_sync(status_set_status,1,status_buf);
@@ -466,7 +488,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 										{
 											FILE *fh;
 											char filename_buf[60];
-											sprintf(filename_buf,"%d",remote_mail_array[msgtodl-1].uid);
+											sprintf(filename_buf,"u%d",remote_mail_array[msgtodl-1].uid); /* u means unchanged */
 
 											if ((fh = fopen(filename_buf,"w")))
 											{
@@ -475,6 +497,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 													char buf[200];
 													int dl = tcp_read(conn,buf,MIN(sizeof(buf),todownload));
 													if (dl == -1 || !dl) break;
+													todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
+													thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
 													fwrite(buf,1,dl,fh);
 													todownload -= dl;
 												}
@@ -485,6 +509,10 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 									}
 								}
 							}
+							if (!success) break;
+							todl_bytes = accu_todl_bytes;
+							/* TODO: should be enforced */
+							thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
 						}
 					}
 				}

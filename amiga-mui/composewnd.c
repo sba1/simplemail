@@ -616,7 +616,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 			char *fmt;
 			if (account->email)
 			{
-				if (!account->name || !account->name[0])
+				if (account->name && account->name[0])
 				{
 					if (needs_quotation(account->name)) fmt = "\"%s\" <%s>";
 					else fmt = "%s <%s>";

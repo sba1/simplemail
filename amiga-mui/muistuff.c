@@ -19,6 +19,8 @@
 ** muistuff.c
 */
 
+#include <dos.h>
+
 #include <utility/hooks.h>
 #include <intuition/classusr.h> /* Object * */
 #include <libraries/mui.h>
@@ -56,16 +58,18 @@ Object *MakeButton(STRPTR str)
 
 struct Hook hook_standard;
 
-STATIC ASM SAVEDS void hook_func_standard(register __a1 ULONG * funcptr)
+STATIC ASM /*SAVEDS*/ void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)
 {
 	void (*func) (ULONG *) = (void (*)(ULONG *)) (*funcptr);
+	putreg(REG_A4,(long)h->h_Data);
 
-  	if (func)
-    	func(funcptr + 1);
+	if (func)
+		func(funcptr + 1);
 }
 
 /* Must be called before the hook_standard is used */
 void init_hook_standard(void)
 {
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
+	hook_standard.h_Data = (void*)getreg(REG_A4);
 }

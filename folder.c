@@ -1093,7 +1093,11 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							fread(&m->received,1,sizeof(m->received),fh);
 							fread(&m->flags,1,sizeof(m->flags),fh);
 							mail_identify_status(m);
+
+							/* TODO: I think it's not necessary to call this function here, however
+							 * I let it in because I there might occur strange side effects */
 							mail_process_headers(m);
+
 							m->flags &= ~MAIL_FLAGS_NEW;
 							folder_add_mail(folder,m,0);
 						}

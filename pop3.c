@@ -32,6 +32,7 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
+#include "configuration.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -104,21 +105,250 @@ int pop3_login(struct connection *conn, struct pop3_server *server)
 	return 1;
 }
 
+struct dl_mail
+{
+	unsigned int flags; /* the download flags of this mail */
+	int size;					/* the mails size */
+	char *uidl;				/* the uidl string, might be NULL */
+};
+
 #define MAILF_DELETE   (1<<0) /* mail should be deleted */
 #define MAILF_DOWNLOAD (1<<1) /* mail should be downloaded */
+#define MAILF_DUPLICATE (1<<2) /* mail is duplicated */
+
+
+struct uidl_entry /* stored on the harddisk */
+{
+	int size; /* size of the mail, unused yet, so it is -1 for now */
+	char uidl[72]; /* null terminated, 70 are enough according to RFC 1939 */
+};
+
+struct uidl
+{
+	char *filename; /* the filename of the uidl file */
+	int num_entries; /* number of entries */
+	struct uidl_entry *entries; /* this are the entries */
+};
 
 /**************************************************************************
- Get statistics about pop3-folder contents. It returns an array of mail
- numbers which should be downloaded. The first (0) index gives the total
- amount of messages. It is followed by some flags which belong to the
- mail with the same index. See above for the flags.
+ Init the uidl,
 **************************************************************************/
-static int *pop3_stat(struct connection *conn, struct pop3_server *server,
-                      int receive_preselection, int receive_size)
+static void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory)
+{
+	char c;
+	char *server_name = server->name;
+	char *buf;
+	int len = strlen(folder_directory)+strlen(server_name)+20;
+
+	memset(uidl,0,sizeof(*uidl));
+	if (!(buf = uidl->filename = malloc(len)))
+		return;
+
+	strcpy(uidl->filename,folder_directory);
+	sm_add_part(uidl->filename,".uidl.",len);
+
+	buf += strlen(buf);
+	while ((c=*server_name))
+	{
+		if (c!='.') *buf++=c;
+		server_name++;
+	}
+	*buf = 0;
+}
+
+/**************************************************************************
+ Opens the uidl if if it exists
+**************************************************************************/
+static int uidl_open(struct uidl *uidl, struct pop3_server *server)
+{
+	FILE *fh;
+	int rc = 0;
+
+	if (!uidl->filename) return 0;
+
+	if ((fh = fopen(uidl->filename,"rb")))
+	{
+		unsigned char id[4];
+		int fsize = myfsize(fh);
+		fread(id,1,4,fh);
+
+		if (id[0] == 'S' && id[1] == 'M' && id[2] == 'U' && id[3] == 0 && ((fsize - 4)%sizeof(struct uidl_entry))==0)
+		{
+			uidl->num_entries = (fsize - 4)/sizeof(struct uidl_entry);
+			if ((uidl->entries = malloc(fsize - 4)))
+			{
+				fread(uidl->entries,1,fsize - 4,fh);
+				rc = 1;
+			}
+		}
+
+		fclose(fh);
+	}
+	return rc;
+}
+
+/**************************************************************************
+ Tests if a uidl is inside the uidl file
+**************************************************************************/
+static int uidl_test(struct uidl *uidl, char *to_check)
+{
+	int i;
+	if (!uidl->entries) return 0;
+	for (i=0;i<uidl->num_entries;i++)
+	{
+		if (!strcmp(to_check,uidl->entries[i].uidl)) return 1;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Remove no longer used uidls in the uidl file (that means uidls which are
+ not on the server)
+**************************************************************************/
+void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
+{
+	if (uidl->entries)
+	{
+		int i,amm=mail_array[0].flags;
+		for (i=0; i<uidl->num_entries; i++)
+		{
+			int j,found=0;
+			char *uidl_entry = uidl->entries[i].uidl;
+			for (j=1;j<=amm;j++)
+			{
+				if (!strcmp(uidl_entry,mail_array[j].uidl))
+				{
+					found = 1;
+					break;
+				}
+			}
+
+			if (!found)
+				memset(uidl_entry,0,sizeof(uidl->entries[i].uidl));
+		}
+	}
+}
+
+/**************************************************************************
+ Add the uidl to the uidl file. Writes this into the file. Its directly
+ written to the correct place. uidl->entries is not expanded.
+**************************************************************************/
+void uidl_add(struct uidl *uidl, struct dl_mail *m)
+{
+	int i=0;
+	FILE *fh;
+
+	if (!m->uidl || m->uidl[0] == 0) return;
+	for (i=0;i<uidl->num_entries;i++)
+	{
+		if (!uidl->entries[i].uidl[0])
+		{
+			strcpy(uidl->entries[i].uidl,m->uidl);
+			if ((fh = fopen(uidl->filename,"rb+")))
+			{
+				fseek(fh,4+i*sizeof(struct uidl_entry),SEEK_SET);
+				uidl->entries[i].size = -1;
+				fwrite(&uidl->entries[i],1,sizeof(uidl->entries[i]),fh);
+				fclose(fh);
+				return;
+			}
+		}
+	}
+	if ((fh = fopen(uidl->filename,"ab")))
+	{
+		struct uidl_entry entry;
+		if (ftell(fh)==0)
+		{
+			/* we must have newly created the file */
+			fwrite("SMU",1,4,fh);
+		}
+		entry.size = -1;
+		strncpy(entry.uidl,m->uidl,sizeof(entry.uidl));
+		fwrite(&entry,1,sizeof(entry),fh);
+		fclose(fh);
+	}
+}
+
+/**************************************************************************
+ Returns the len of the uidl
+**************************************************************************/
+static int uidllen(char *buf)
+{
+	int len = 0;
+	char c;
+
+	for (;;)
+	{
+		c = *buf;
+		if (c <= 0x20 || c >= 0x7f) /* signed anywhy */
+			return len;
+		len++;
+		buf++;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ The uidl command. Sets the MAILF_DUPLICATE flag for mails which
+ should not be downloaded because they have been downloaded already.
+**************************************************************************/
+static int pop3_uidl(struct connection *conn, struct pop3_server *server,
+											struct dl_mail *mail_array, struct uidl *uidl)
+{
+	if (!server->nodupl) return 0;
+
+	thread_call_parent_function_sync(dl_set_status,1,"Checking for mail duplicates...");
+	if (tcp_write(conn,"UIDL\r\n",6) == 6)
+	{
+		char *answer;
+		if ((answer = pop3_receive_answer(conn)))
+		{
+			while ((answer = tcp_readln(conn)))
+			{
+				int mno;
+
+				if (answer[0] == '.' && answer[1] == '\n')
+					break;
+
+				mno = strtol(answer,&answer,10);
+				if (mno >= 1 && mno <= mail_array[0].flags)
+				{
+					int len;
+					answer++;
+					len = uidllen(answer);
+					if ((mail_array[mno].uidl = malloc(len+1)))
+					{
+						strncpy(mail_array[mno].uidl,answer,len);
+						mail_array[mno].uidl[len] = 0;
+
+						if (uidl_test(uidl,mail_array[mno].uidl))
+						{
+							mail_array[mno].flags |= MAILF_DUPLICATE;
+							mail_array[mno].flags &= ~MAILF_DOWNLOAD;
+						}
+					}
+				}
+			}
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Get statistics about pop3-folder contents. It returns the an array of
+ dl_mail instances. The first (0) index gives the total amount of messages
+ stored in the flags field.
+ It is followed by the instances of the mail with the same index. See
+ above for the dl_mail structure.
+**************************************************************************/
+static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *server,
+																 struct uidl *uidl,
+                                 int receive_preselection, int receive_size)
 {
 	char *answer;
-	int *mail_array;
-	int i,amm,mails_add = 0,cont = 0;
+	struct dl_mail *mail_array;
+	int i,amm,size,mails_add = 0,cont = 0;
 	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
 
 	thread_call_parent_function_sync(dl_set_status,1,"Getting statistics...");
@@ -130,19 +360,36 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 	}
 
 	if ((*answer++) != ' ') return NULL;
-	if ((amm = atoi(answer))<=0) return NULL;
+	if ((amm = strtol(answer,&answer,10))<=0) return NULL;
+	if ((size = strtol(answer,NULL,10))<=0) return NULL;
 
-	if (!(mail_array = malloc((amm+2)*sizeof(int)))) return NULL;
-	mail_array[0] = amm;
+	if (!(mail_array = malloc((amm+2)*sizeof(struct dl_mail)))) return NULL;
+	mail_array[0].flags = amm;
+	mail_array[0].size = size;
 
 	/* Initial all mails should be downloaded */
 	for (i=1;i<=amm;i++)
-		mail_array[i] = initial_mflags;
+	{
+		mail_array[i].flags = initial_mflags;
+		mail_array[i].size = -1;
+		mail_array[i].uidl = NULL;
+	}
 
-	/* Test if the user wished preselection at all */
-	if (receive_preselection == 0) return mail_array;
+	if (server->nodupl)
+	{
+		/* open the uidl file and read in the string */
+		uidl_open(uidl,server);
 
-  /* List all mails with sizes */
+		/* call the POP3 UIDL command */
+		pop3_uidl(conn,server,mail_array,uidl);
+
+		/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
+    uidl_remove_unused(uidl,mail_array);
+  }
+
+	thread_call_parent_function_sync(dl_set_status,1,"Getting mail sizes...");
+
+	/* List all mails with sizes */
 	if (tcp_write(conn,"LIST\r\n",6) != 6) return mail_array;
 
   /* Was the command succesful? */
@@ -164,16 +411,22 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 		mno = strtol(answer,&answer,10);
 		msize = strtol(answer, NULL, 10);
 
-		if (msize > receive_size * 1024)
+		if (mno >= 1 && mno <= amm)
+			mail_array[mno].size = msize;
+
+		if ((receive_preselection != 0) && (msize > receive_size * 1024))
 		{
 			/* add this mail to the transfer window */
-			thread_call_parent_function_sync(dl_insert_mail,3,mno,initial_mflags,msize);
+			thread_call_parent_function_sync(dl_insert_mail,3,mno,mail_array[mno].flags,msize);
 			mails_add = 1;
 		}
 	}
 
 	/* Thaw the list which displays the e-Mails */
 	thread_call_parent_function_sync(dl_thaw_list,0);
+
+	/* No user interaction wanted */
+	if (receive_preselection == 0) return mail_array;
 
 	if (cont && mails_add && receive_preselection == 2)
 	{
@@ -235,8 +488,8 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 		for (i=1;i<=amm;i++)
 		{
 			int fl = (int)thread_call_parent_function_sync(dl_get_mail_flags,1,i);
-			if (fl != -1) mail_array[i] = fl;
-			else if (start & (1<<1)) mail_array[i] = 0; /* not listed mails should be ignored */
+			if (fl != -1) mail_array[i].flags = fl;
+			else if (start & (1<<1)) mail_array[i].flags = 0; /* not listed mails should be ignored */
 		}
 	}
 
@@ -256,36 +509,15 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
 /**************************************************************************
  Retrieve mail.
 **************************************************************************/
-static int pop3_get_mail(struct connection *conn, struct pop3_server *server, int nr)
+static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
+												 int nr, int size)
 {
-	unsigned char c;
 	char *fn,*answer;
 	char buf[256];
 	FILE *fp;
-	int size; /* size of the mail */
 	int bytes_written;
 	int delete_mail = 0;
 
-	sprintf(buf, "LIST %d\r\n", nr);
-	tcp_write(conn, buf, strlen(buf));
-
-	if (!(answer = pop3_receive_answer(conn)))
-	{
-		tell_from_subtask("Couldn't get the mails size!");
-		return 0;
-	}
-
-	answer++; /* the space char */
-
-	/* skip the mail number */
-	while(1)
-	{
-		c = *answer++;
-		if (!c) return 0;
-		if (!isdigit(c)) break;
-	}
-
-	size = atoi(answer);
 	thread_call_parent_function_sync(dl_init_gauge_byte,1,size);
 
 	if (!(fn = mail_get_new_name()))
@@ -365,7 +597,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size)
+static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, char *folder_directory)
 {
 	int rc = 0;
 
@@ -388,15 +620,18 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 				{
 					if (pop3_login(conn,server))
 					{
-						int *mail_array = pop3_stat(conn,server,receive_preselection,receive_size);
-						if (mail_array)
+						struct uidl uidl;
+						struct dl_mail *mail_array;
+
+						uidl_init(&uidl,server,folder_directory);
+
+						if ((mail_array = pop3_stat(conn,server,&uidl,receive_preselection,receive_size)))
 						{
 							int i;
-							int mail_amm = mail_array[0];
+							int mail_amm = mail_array[0].flags;
 							char path[256];
 						
 							thread_call_parent_function_sync(dl_init_gauge_mail,1,mail_amm);
-							thread_call_parent_function_sync(dl_set_status,1,"Receiving mails...");
 
 							getcwd(path, 255);
 
@@ -409,16 +644,24 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 								{
 									thread_call_parent_function_sync(dl_set_gauge_mail,1,i);
 
-									if (mail_array[i] & MAILF_DOWNLOAD)
+									if (mail_array[i].flags & MAILF_DOWNLOAD)
 									{
-										if (!pop3_get_mail(conn,server, i))
+										thread_call_parent_function_sync(dl_set_status,1,"Receiving mail...");
+
+										if (!pop3_get_mail(conn,server, i, mail_array[i].size))
 										{
 											tell_from_subtask("Couldn't download the mail!\n");
 											break;
 										}
+
+										/* add the mail to the uidl file if enabled */
+										if (server->nodupl && mail_array[i].uidl)
+										{
+											uidl_add(&uidl,&mail_array[i]);
+										}
 									}
 									
-									if (mail_array[i] & MAILF_DELETE)
+									if (mail_array[i].flags & MAILF_DELETE)
 									{
 										thread_call_parent_function_sync(dl_set_status,1,"Marking mail as deleted...");
 										if (!pop3_del_mail(conn,server, i))
@@ -491,6 +734,7 @@ struct pop_entry_msg
 	int receive_preselection;
 	int receive_size;
 	int called_by_auto;
+	char *folder_directory;
 };
 
 /**************************************************************************
@@ -500,7 +744,7 @@ static int pop3_entry(struct pop_entry_msg *msg)
 {
 	struct list pop_list;
 	struct pop3_server *pop;
-	char *dest_dir;
+	char *dest_dir, *folder_directory;
 	int receive_preselection = msg->receive_preselection;
 	int receive_size = msg->receive_size;
 	int called_by_auto = msg->called_by_auto;
@@ -517,11 +761,12 @@ static int pop3_entry(struct pop_entry_msg *msg)
 	}
 
 	dest_dir = mystrdup(msg->dest_dir);
+	folder_directory = mystrdup(msg->folder_directory);
 
 	if (thread_parent_task_can_contiue())
 	{
 		thread_call_parent_function_sync(dl_window_open,1,!called_by_auto);
-		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size);
+		pop3_really_dl(&pop_list,dest_dir,receive_preselection,receive_size,folder_directory);
 		thread_call_parent_function_sync(dl_window_close,0);
 	}
 	return 0;
@@ -539,6 +784,7 @@ int pop3_dl(struct list *pop_list, char *dest_dir,
 	msg.receive_preselection = receive_preselection;
 	msg.receive_size = receive_size;
 	msg.called_by_auto = called_by_auto;
+	msg.folder_directory = user.folder_directory;
 	return thread_start(&pop3_entry,&msg);
 }
 

@@ -606,6 +606,26 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILINFO Arexx Command
+*****************************************************************/
+static void arexx_setfolder(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR folder;
+	} setfolder_arg;
+	memset(&setfolder_arg,0,sizeof(setfolder_arg));
+
+	if ((arg_handle = ParseTemplate("FOLDER/A",args,&setfolder_arg)))
+	{
+		struct folder *f = folder_find_by_name(setfolder_arg.folder);
+		if (f) main_set_folder_active(f);
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -634,6 +654,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("REQUEST",command.command)) arexx_request(rxmsg,command.args);
 		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);
 		else if (!Stricmp("MAILINFO",command.command)) arexx_mailinfo(rxmsg,command.args);
+		else if (!Stricmp("SETFOLDER",command.command)) arexx_setfolder(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

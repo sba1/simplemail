@@ -670,6 +670,7 @@ static int messageview_setup(struct MessageView_Data *data, struct mail *mail, c
 			rc = 1;
 		}
 		CurrentDir(old_dir);
+		UnLock(lock);
 	}
 
 	set(App, MUIA_Application_Sleep, FALSE);

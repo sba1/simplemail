@@ -336,19 +336,23 @@ int mails_upload(void)
 	return 1;
 }
 
-/* Note: the mail must contain all headers in the header list */
-int mails_upload_signle(struct mail_info *m)
+/* Note: Assumes that the chdir is the dir where m->filename is located */
+int mails_upload_signle(struct mail_info *mi)
 {
-#pragma TODO: implement me
-#if 0
 	char *from, *to, *cc;
 	struct outmail **out_array;
+	struct mail_complete *m;
 	struct mailbox mb;
 	struct list *list; /* "To" address list */
 	struct folder *out_folder = folder_outgoing();
 
-	if (!m) return 0;
+	if (!mi) return 0;
 	if (!(out_array = create_outmail_array(1))) return 0;
+	if (!(m = mail_complete_create_from_file(mi->filename)))
+	{
+		free_outmail_array(out_array);
+		return 0;
+	}
 
 	to = mail_find_header_contents(m,"To");
 	cc = mail_find_header_contents(m,"CC");
@@ -417,10 +421,8 @@ int mails_upload_signle(struct mail_info *m)
 	smtp_send(&user.config.account_list,out_array,out_folder->path);
 
 	free_outmail_array(out_array);
+	mail_complete_free(m);
 	return 1;
-#else
-	return 0;
-#endif
 }
 
 

@@ -20,11 +20,13 @@
 ** amigasupport.h
 */
 
-#ifndef AMIGASUPPORT_H
-#define AMIGASUPPORT_H
+#ifndef SM__AMIGASUPPORT_H
+#define SM__AMIGASUPPORT_H
 
 void SecondsToString( char *buf, unsigned int seconds);
 void SecondsToStringLong( char *buf, unsigned int seconds);
+void SecondsToDateString( char *buf, unsigned int seconds);
+void SecondsToTimeString( char *buf, unsigned int seconds);
 STRPTR StrCopy(const STRPTR str);
 ULONG ConvertKey(struct IntuiMessage *imsg);
 STRPTR NameOfLock( BPTR lock );

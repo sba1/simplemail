@@ -100,6 +100,53 @@ void SecondsToStringLong( char *buf, unsigned int seconds)
 	}
 }
 
+void SecondsToDateString( char *buf, unsigned int seconds)
+{
+	struct DateStamp ds;
+	extern struct Locale *DefaultLocale;
+
+	ds.ds_Days = seconds / 60 / 60 / 24;
+	ds.ds_Minute = (seconds / 60) % (60 * 24);
+	ds.ds_Tick = (seconds % 60) * 50;
+
+	if (LocaleBase && DefaultLocale)
+	{
+		struct Hook date_hook;
+
+		date_hook.h_Data = buf;
+		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+		FormatDate(DefaultLocale, DefaultLocale->loc_ShortDateFormat, &ds, &date_hook);
+	} else
+	{
+		/* dos stuff should follow here */
+		*buf = 0;
+	}
+}
+
+void SecondsToTimeString( char *buf, unsigned int seconds)
+{
+	struct DateStamp ds;
+	extern struct Locale *DefaultLocale;
+
+	ds.ds_Days = seconds / 60 / 60 / 24;
+	ds.ds_Minute = (seconds / 60) % (60 * 24);
+	ds.ds_Tick = (seconds % 60) * 50;
+
+	if (LocaleBase && DefaultLocale)
+	{
+		struct Hook date_hook;
+
+		date_hook.h_Data = buf;
+		date_hook.h_Entry = (HOOKFUNC)Hookfunc_Date_Write;
+		FormatDate(DefaultLocale, DefaultLocale->loc_TimeFormat, &ds, &date_hook);
+	} else
+	{
+		/* dos stuff should follow here */
+		*buf = 0;
+	}
+}
+
+
 /* duplicates the string, allocated with AllocVec() */
 STRPTR StrCopy(const STRPTR str)
 {

@@ -153,13 +153,35 @@ unsigned int sm_get_current_seconds(void)
 }
 
 /******************************************************************
- Convert seconds from 1978 to a string.
+ Convert seconds from 1978 to a long form string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_date_long_str(unsigned int seconds)
+{
+	static char buf[128];
+	SecondsToStringLong(buf,seconds);
+	return buf;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a date string.
  The returned string is static.
 *******************************************************************/
 char *sm_get_date_str(unsigned int seconds)
 {
 	static char buf[128];
-	SecondsToStringLong(buf,seconds);
+	SecondsToDateString(buf,seconds);
+	return buf;
+}
+
+/******************************************************************
+ Convert seconds from 1978 to a string.
+ The returned string is static.
+*******************************************************************/
+char *sm_get_time_str(unsigned int seconds)
+{
+	static char buf[128];
+	SecondsToTimeString(buf,seconds);
 	return buf;
 }
 

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** picturebuttonclass.c
 */
 
 #include <string.h>
@@ -37,6 +37,7 @@
 #include <proto/datatypes.h>
 #include <proto/muimaster.h>
 
+#include "amigasupport.h"
 #include "compiler.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
@@ -247,7 +248,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 			GetDTAttrs(data->dto,PDTA_MaskPlane,&mask,TAG_DONE);
 			if(mask)
 			{
-				BltMaskBitMapRastPort(data->bitmap,0,0,rp,_mleft(obj)+(_mwidth(obj) - data->bmhd->bmh_Width)/2,_mtop(obj),data->bmhd->bmh_Width,data->bmhd->bmh_Height,0xe2,(PLANEPTR)mask);
+				MyBltMaskBitMapRastPort(data->bitmap,0,0,rp,_mleft(obj)+(_mwidth(obj) - data->bmhd->bmh_Width)/2,_mtop(obj),data->bmhd->bmh_Width,data->bmhd->bmh_Height,0xe2,(PLANEPTR)mask);
 			} else BltBitMapRastPort(data->bitmap,0,0,rp,_mleft(obj)+(_mwidth(obj) - data->bmhd->bmh_Width)/2,_mtop(obj),data->bmhd->bmh_Width,data->bmhd->bmh_Height,0xc0);
 			rel_y += data->bmhd->bmh_Height;
 		}

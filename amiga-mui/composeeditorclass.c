@@ -187,23 +187,11 @@ STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 		} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
 		{
 			struct mail *mail = (struct mail*)treenode->tn_User;
-			char *from = mail_find_header_contents(mail,"from");
+			char *from = mail_get_from_address(mail);
 			if (from)
 			{
-				struct mailbox mb;
-				if (parse_mailbox(from,&mb))
-				{
-					if (mb.phrase)
-					{
-						DoMethod(obj,MUIM_TextEditor_InsertText,mb.phrase,MUIV_TextEditor_InsertText_Cursor);
-						DoMethod(obj,MUIM_TextEditor_InsertText," <",MUIV_TextEditor_InsertText_Cursor);
-					}
-					DoMethod(obj,MUIM_TextEditor_InsertText,mb.addr_spec,MUIV_TextEditor_InsertText_Cursor);
-					if (mb.phrase) DoMethod(obj,MUIM_TextEditor_InsertText,">",MUIV_TextEditor_InsertText_Cursor);
-
-					free(mb.phrase);
-					free(mb.addr_spec);
-				}
+				DoMethod(obj,MUIM_TextEditor_InsertText,from,MUIV_TextEditor_InsertText_Cursor);
+				free(from);
 			}
 		}
 	}

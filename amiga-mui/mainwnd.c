@@ -730,8 +730,13 @@ void main_refresh_folders(void)
 		if (f->parent_folder) treenode = FindListtreeUserData(folder_tree, f->parent_folder);
 		if (f->special == FOLDER_SPECIAL_GROUP)
 		{
+			int flags;
+
+			if (f->closed) flags = TNF_LIST;
+			else flags = TNF_OPEN|TNF_LIST;
+
 			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						treenode,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
+						treenode,MUIV_NListtree_Insert_PrevNode_Tail,flags);
 		} else
 		{
 			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */

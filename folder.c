@@ -1836,8 +1836,12 @@ void folder_load_order(void)
 						{
 							struct folder *new_folder;
 							struct folder_node *new_folder_node;
+							int closed = 0;
 							temp_buf++;
 							parent = atoi(temp_buf);
+
+							temp_buf = strchr(temp_buf,'\t');
+							if (temp_buf) closed = atoi(temp_buf+1);
 
 							if (special == FOLDER_SPECIAL_GROUP) new_folder = folder_find_group_by_name(buf);
 							else new_folder = folder_find_by_path(path);
@@ -1849,6 +1853,7 @@ void folder_load_order(void)
 								new_folder_node = find_folder_node_by_folder(new_folder);
 								node_remove(&new_folder_node->node);
 								list_insert_tail(&new_order_list,&new_folder_node->node);
+								new_folder->closed = closed;
 							}
 						}
 					}
@@ -1884,7 +1889,7 @@ void folder_save_order(void)
 		if (f->parent_folder) fnode = (struct folder_node*)(((char*)f->parent_folder)-sizeof(struct node));
 		else fnode = NULL;
 
-		fprintf(fh,"%s\t%s\t%d\t%d\n",f->name?f->name:"",f->path?f->path:"",f->special,node_index(&fnode->node));
+		fprintf(fh,"%s\t%s\t%d\t%d\t%d\n",f->name?f->name:"",f->path?f->path:"",f->special,node_index(&fnode->node),f->closed);
 		f = folder_next(f);
 	}
 	fclose(fh);
@@ -1956,12 +1961,18 @@ int init_folders(void)
 						if ((temp_buf = strchr(temp_buf,'\t')))
 						{
 							struct folder *new_folder;
+							int closed = 0;
 							temp_buf++;
 							parent = atoi(temp_buf);
+
+							temp_buf = strchr(temp_buf,'\t');
+							if (temp_buf) closed = atoi(temp_buf+1);
+
 
 							if (special == FOLDER_SPECIAL_GROUP)
 							{
 								new_folder = folder_add_group(buf);
+								new_folder->closed = closed;
 							} else
 							{
 								new_folder = folder_add(path);

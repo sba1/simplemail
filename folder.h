@@ -49,6 +49,7 @@ struct folder
 
 	int type; /* see below */
 	int special; /* see below */
+	int closed; /* node is closed */
 
 	int new_mails; /* number of new mails */
 	int unread_mails; /* number of unread mails */

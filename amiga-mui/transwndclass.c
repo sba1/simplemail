@@ -39,6 +39,7 @@
 
 #include "compiler.h"
 #include "muistuff.h"
+#include "picturebuttonclass.h"
 #include "transwndclass.h"
 
 struct transwnd_Data
@@ -313,8 +314,8 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 
 	if (!data->mail_group_shown)
 	{
-		DoMethod(data->mail_list, MUIM_NList_UseImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_download", End, 1, 0);
-		DoMethod(data->mail_list, MUIM_NList_UseImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/status_trashcan", End, 2, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End, 1, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End, 2, 0);
 		set(data->mail_group, MUIA_ShowMe, TRUE);
 		data->mail_group_shown = 1;
 	}

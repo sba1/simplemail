@@ -25,8 +25,8 @@
 
 int dl_window_open(int active);
 void dl_window_close(void);
-void dl_set_title(char *);
 void dl_set_status(char *);
+void dl_connect_to_server(char *server);
 void dl_init_gauge_mail(int);
 void dl_set_gauge_mail(int);
 void dl_init_gauge_byte(int);

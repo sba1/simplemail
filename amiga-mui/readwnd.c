@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
@@ -52,6 +53,8 @@ struct Read_Data /* should be a customclass */
 	Object *wnd;
 	Object *mime_tree;
 	Object *text_list;
+	Object *contents_page;
+	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
 	/* more to add */
@@ -98,24 +101,25 @@ static void insert_headers(Object *header_list, struct mail *mail)
 /******************************************************************
  inserts the text of the mail into the given nlist object
 *******************************************************************/
-static void insert_text(Object *text_list, struct mail *mail)
+static void insert_text(struct Read_Data *data, struct mail *mail)
 {
 	char *buf;
 	char *buf_end;
 
 	if (!mail->text) return;
 
-	set(text_list, MUIA_NList_Quiet, TRUE);
-	DoMethod(text_list,MUIM_NList_Clear);
+	set(data->text_list, MUIA_NList_Quiet, TRUE);
+	DoMethod(data->text_list,MUIM_NList_Clear);
 
 	if (mail->decoded_data)
 	{
 		if (stricmp(mail->content_type,"text"))
 		{
 			char buf[256];
+			set(data->contents_page, MUIA_Group_ActivePage, 1);
 			sprintf(buf,"Base64 encoded data (size %ld)",mail->decoded_len);
-			DoMethod(text_list,MUIM_NList_InsertSingle,buf,MUIV_NList_Insert_Bottom);
-			set(text_list, MUIA_NList_Quiet, FALSE);
+			DoMethod(data->text_list,MUIM_NList_InsertSingle,buf,MUIV_NList_Insert_Bottom);
+			set(data->text_list, MUIA_NList_Quiet, FALSE);
 			return;
 		}
 		buf = mail->decoded_data;
@@ -128,12 +132,14 @@ static void insert_text(Object *text_list, struct mail *mail)
 
 	while (buf < buf_end)
 	{
-		DoMethod(text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
+		DoMethod(data->text_list,MUIM_NList_InsertSingle, buf, MUIV_NList_Insert_Bottom);
 		if ((buf = strchr(buf,10))) buf++;
 		else break;
 	}
 
-	set(text_list, MUIA_NList_Quiet, FALSE);
+	set(data->text_list, MUIA_NList_Quiet, FALSE);
+
+	set(data->contents_page, MUIA_Group_ActivePage, 0);
 }
 
 /******************************************************************
@@ -164,6 +170,7 @@ static void read_window_close(struct Read_Data **pdata)
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	MUI_DisposeObject(data->wnd);
+	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	mail_free(data->mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = 0;
 	free(data);
@@ -181,7 +188,47 @@ static void mime_tree_active(struct Read_Data **pdata)
 		if (!(treenode->tn_Flags & TNF_LIST))
 		{
 			mail_decode((struct mail*)treenode->tn_User);
-			insert_text(data->text_list,(struct mail*)treenode->tn_User);
+			insert_text(data,(struct mail*)treenode->tn_User);
+		}
+	}
+}
+
+/******************************************************************
+ The save button has been clicked
+*******************************************************************/
+static void save_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
+	if (treenode)
+	{
+		if (!(treenode->tn_Flags & TNF_LIST))
+		{
+			if (MUI_AslRequest(data->file_req, NULL))
+			{
+				BPTR dlock;
+				STRPTR drawer = data->file_req->fr_Drawer;
+				struct mail *mail = (struct mail*)treenode->tn_User;
+
+				mail_decode(mail);
+
+				if ((dlock = Lock(drawer,ACCESS_READ)))
+				{
+					BPTR olock;
+					BPTR fh;
+
+					olock = CurrentDir(dlock);
+
+					if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
+					{
+						Write(fh,mail->decoded_data,mail->decoded_len);
+						Close(fh);
+					}
+
+					CurrentDir(olock);
+					UnLock(dlock);
+				}
+			}
 		}
 	}
 }
@@ -191,7 +238,7 @@ static void mime_tree_active(struct Read_Data **pdata)
 *******************************************************************/
 void read_window_open(char *folder, char *filename)
 {
-	Object *wnd,*header_list,*text_list, *mime_tree;
+	Object *wnd,*header_list,*text_list, *mime_tree, *contents_page, *save_button;
 	int num;
 
 	for (num=0; num < MAX_READ_OPEN; num++)
@@ -224,10 +271,20 @@ void read_window_open(char *folder, char *filename)
 					End,
 				End,
 			Child, BalanceObject,End,
-			Child, NListviewObject,
-				MUIA_NListview_NList, text_list = NListObject,
-					MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-					MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+			Child, contents_page = PageGroup,
+				MUIA_Group_ActivePage, 0,
+				Child, VGroup,
+					Child, NListviewObject,
+						MUIA_NListview_NList, text_list = NListObject,
+							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+							End,
+						End,
+					End,
+				Child, VGroup,
+					Child, HVSpace,
+					Child, save_button = MakeButton("Save"),
+					Child, HVSpace,
 					End,
 				End,
 			End,
@@ -250,12 +307,15 @@ void read_window_open(char *folder, char *filename)
 
 					data->text_list = text_list;
 					data->mime_tree = mime_tree;
+					data->contents_page = contents_page;
+					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 					data->num = num;
 					read_open[num] = 1;
 
 					insert_headers(header_list,data->mail);
 					insert_mime(mime_tree,data->mail,MUIV_NListtree_Insert_ListNode_Root);
 					DoMethod(mime_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, mime_tree_active, data);
+					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
 					DoMethod(App,OM_ADDMEMBER,wnd);
 					set(mime_tree,MUIA_NListtree_Active,MUIV_NListtree_Active_First);

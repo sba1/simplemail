@@ -2029,11 +2029,20 @@ int init_spam_group(void)
 *******************************************************************/
 static void init_config_window(void)
 {
-	Object *save_button, *use_button, *cancel_button;
+	Object *save_button, *use_button, *cancel_button, *test_popph;
 
 	SM_ENTER;
 
 	if (!create_sizes_class()) return;
+
+	if (!(test_popph = PopphObject, End))
+	{
+		sm_request(NULL, "Couldn't create config window, because\n"
+										 "the Popplaceholder custom class is missing.","Ok");
+		return;
+	}
+	
+	MUI_DisposeObject(test_popph);
 
 	init_account_group();
 	init_user_group();

@@ -2011,7 +2011,6 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 					{
 						strcpy(dest,addr_spec);
 						dest += strlen(addr_spec);
-						continue;
 					}
 					if (*src == 'r' && realname)
 					{
@@ -2021,9 +2020,13 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 					}
 					if (*src == 'v' && realname)
 					{
-						char *last_name = get_last_name(realname,addr_spec); /* returns a static buffer and never fails */
+						strcpy(dest,realname);
+						dest += strlen(realname);
+/*
+						char *last_name = get_last_name(realname,addr_spec);
 						strcpy(dest,last_name);
 						dest += strlen(last_name);
+*/
 					}
 
 					if (orig_mail)
@@ -2034,11 +2037,15 @@ char *mail_create_string(char *format, struct mail *orig_mail, char *realname,
 							struct mailbox mb;
 							if (parse_mailbox(from,&mb))
 							{
-								if (*src == 'n')
+								if (*src == 'n' && mb.phrase)
 								{
+/*
 									char *last_name = get_last_name(mb.phrase,mb.addr_spec);
 									strcpy(dest,last_name);
 									dest += strlen(last_name);
+*/
+									strcpy(dest,mb.phrase);
+									dest += strlen(mb.phrase);
 								}
 
 								if (*src == 'f')

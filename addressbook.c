@@ -77,7 +77,7 @@ int read_line(FILE *fh, char *buf)
 /**************************************************************************
  Put a xml elelemt into a file (if string exists)
 **************************************************************************/
-void put_xml_element_string(FILE *fh, char *element, char *contents)
+static void put_xml_element_string(FILE *fh, char *element, char *contents)
 {
 	if (!contents) return;
 	fprintf(fh,"<%s>%s</%s>\n",element,contents,element);
@@ -86,6 +86,8 @@ void put_xml_element_string(FILE *fh, char *element, char *contents)
 static int addressbook_tag;
 static int contact_tag;
 static int group_tag;
+static int private_tag;
+static int work_tag;
 static char *data_buf;
 
 /**************************************************************************
@@ -116,6 +118,16 @@ void xml_start_tag(void *data, const char *el, const char **attr)
 			XML_SetUserData(p,entry);
 		}
 	}
+	else if (!mystricmp("private",el))
+	{
+		if (!private_tag)
+			private_tag = 1;
+	}
+	else if (!mystricmp("work",el))
+	{
+		if (!work_tag)
+			work_tag = 1;
+	}
 }  /* End of start handler */
 
 /**************************************************************************
@@ -124,9 +136,23 @@ void xml_start_tag(void *data, const char *el, const char **attr)
 void xml_end_tag(void *data, const char *el)
 {
 	struct addressbook_entry *entry;
+	struct address_snail_phone *asp;
 	XML_Parser p = (XML_Parser)data;
 
 	if (!(entry = (struct addressbook_entry*)XML_GetUserData(data))) return;
+	if (private_tag) asp = &entry->u.person.priv;
+	else if (work_tag) asp = &entry->u.person.work;
+
+
+	/* Remove ending spaces */
+	{
+		int len = strlen(data_buf);
+		while (len && isspace((unsigned char)data_buf[len-1]))
+		{
+			if (isspace((unsigned char)data_buf[len-1]))
+				len--;
+		}
+	}
 
 	if (!mystricmp("addressbook",el)) addressbook_tag = 0;
 	else if (!mystricmp("contact",el))
@@ -146,19 +172,14 @@ void xml_end_tag(void *data, const char *el)
 			group_tag--;
 		}
 	}
+	else if (!mystricmp("private",el)) private_tag = 0;
+	else if (!mystricmp("work",el)) work_tag = 0;
+
 	else if (!mystricmp("alias",el)) addressbook_set_alias(entry,data_buf);
 	else if (!mystricmp("name",el)) entry->u.person.realname = mystrdup(data_buf);
 	else if (!mystricmp("email",el)) addressbook_person_add_email(entry,data_buf);
-	else if (!mystricmp("street",el)) entry->u.person.street = mystrdup(data_buf);
 	else if (!mystricmp("description",el)) addressbook_set_description(entry,data_buf);
-	else if (!mystricmp("city",el)) entry->u.person.city = mystrdup(data_buf);
-	else if (!mystricmp("country",el)) entry->u.person.country = mystrdup(data_buf);
 	else if (!mystricmp("homepage",el)) entry->u.person.homepage = mystrdup(data_buf);
-	else if (!mystricmp("phone",el))
-	{
-		if (!entry->u.person.phone1) entry->u.person.phone1 = mystrdup(data_buf);
-		else if (!entry->u.person.phone2) entry->u.person.phone2 = mystrdup(data_buf);
-	}
 	else if (!mystricmp("portrait",el)) entry->u.person.portrait = mystrdup(data_buf);
 	else if (!mystricmp("note",el)) entry->u.person.notepad = mystrdup(data_buf);
 	else if (!mystricmp("sex",el))
@@ -180,6 +201,25 @@ void xml_end_tag(void *data, const char *el)
 			if ((buf = strchr(buf,'/'))) buf++;
 			if (buf) entry->u.person.dob_year = atoi(buf);
 		}
+	} else
+	{
+		if (asp)
+		{
+			if (!mystricmp("title",el)) asp->title = mystrdup(data_buf);
+			else if (!mystricmp("organization",el)) asp->organization = mystrdup(data_buf);
+			else if (!mystricmp("street",el)) asp->street = mystrdup(data_buf);
+			else if (!mystricmp("city",el)) asp->city = mystrdup(data_buf);
+			else if (!mystricmp("zip",el)) asp->zip = mystrdup(data_buf);
+			else if (!mystricmp("state",el)) asp->state = mystrdup(data_buf);
+			else if (!mystricmp("country",el)) asp->country = mystrdup(data_buf);
+			else if (!mystricmp("mobil",el)) asp->mobil = mystrdup(data_buf);
+			else if (!mystricmp("fax",el)) asp->fax = mystrdup(data_buf);
+			else if (!mystricmp("phone",el))
+			{
+				if (!asp->phone1) asp->phone1 = mystrdup(data_buf);
+				else if (!asp->phone2) asp->phone2 = mystrdup(data_buf);
+			}
+		}
 	}
 
 	if (data_buf)
@@ -196,28 +236,26 @@ void xml_char_data(void *data, const XML_Char *s, int len)
 {
 	if (contact_tag || group_tag)
 	{
-		if (data_buf) free(data_buf);
-		if ((data_buf = (char*)malloc(len+1)))
+		int old_len = 0;
+		if (data_buf)
+			old_len = strlen(data_buf);
+
+		if ((data_buf = (char*)realloc(data_buf,old_len+len+1)))
 		{
 			unsigned char *src = (char*)s;
-			unsigned char *dest = (char*)data_buf;
+			unsigned char *dest = (char*)data_buf + old_len;
 
-			/* Skip trailing spaces */
-			while ((isspace(*src) && len))
+			if (!old_len)
 			{
-				src++;
-				len--;
+				/* Skip trailing spaces */
+				while ((isspace(*src) && len))
+				{
+					src++;
+					len--;
+				}
 			}
 			strncpy(dest,src,len);
-
-			/* Remove ending spaces */
-			while (len && isspace(dest[len-1]))
-			{
-				if (isspace(dest[len-1]))
-				len--;
-			}
-
-			dest[len]=0;
+			dest[old_len+len]=0;
 		}
 	}
 }
@@ -259,65 +297,6 @@ void cleanup_addressbook(void)
 
 	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
 	list_init(&root_entry.u.group.list);
-}
-
-/**************************************************************************
- Load the entries in the current group. (recursive).
- Has to be removed somewhen (format has been used in earlier alpha's)
-**************************************************************************/
-static void addressbook_load_entries_old(struct addressbook_entry *group, FILE *fh, char *buf)
-{
-	struct addressbook_entry *entry;
-
-	while (read_line(fh,buf))
-	{
-		if (!mystrnicmp(buf,"@USER ",6))
-		{
-			if ((entry = addressbook_new_person(group,NULL,NULL)))
-			{
-				addressbook_set_alias(entry,&buf[6]);
-				while (read_line(fh,buf))
-				{
-					if (!mystrnicmp(buf,"RealName=",9))
-					{
-						if (entry->u.person.realname) free(entry->u.person.realname);
-						entry->u.person.realname = mystrdup(&buf[9]);
-					}
-
-					if (!mystrnicmp(buf,"EMail=",6)) addressbook_person_add_email(entry,&buf[6]);
-					if (!mystrnicmp(buf,"Description=",12)) addressbook_set_description(entry,&buf[12]);
-					if (!mystrnicmp(buf,"Street=",7)) entry->u.person.street = mystrdup(&buf[7]);
-					if (!mystrnicmp(buf,"City=",5)) entry->u.person.city = mystrdup(&buf[5]);
-					if (!mystrnicmp(buf,"Country=",8)) entry->u.person.country = mystrdup(&buf[8]);
-					if (!mystrnicmp(buf,"Homepage=",9)) entry->u.person.homepage = mystrdup(&buf[9]);
-					if (!mystrnicmp(buf,"Phone1=",7)) entry->u.person.phone1 = mystrdup(&buf[7]);
-					if (!mystrnicmp(buf,"Phone2=",7)) entry->u.person.phone2 = mystrdup(&buf[7]);
-					if (!mystrnicmp(buf,"Portrait=",9)) entry->u.person.portrait = mystrdup(&buf[9]);
-
-					if (!mystricmp(buf,"@ENDUSER"))
-					{
-						/* User has been read */
-						break;
-					}
-				}
-			}
-		}
-
-		if (!mystricmp(buf,"@ENDGROUP"))
-		{
-			/* the group has been read */
-			break;
-		}
-
-		if (!mystrnicmp(buf,"@GROUP ", 7))
-		{
-			if ((entry = addressbook_new_group(group)))
-			{
-				addressbook_set_alias(entry, &buf[7]);
-				addressbook_load_entries_old(entry,fh,buf);
-			}
-		}
-	}
 }
 
 /**************************************************************************
@@ -369,26 +348,30 @@ int addressbook_load(void)
 		addressbook_load_entries(&root_entry,fh);
 		fclose(fh);
 		retval = 1;
-	} else
-	if ((fh = fopen("PROGDIR:.addressbook","r")))
-	{
-		char *buf = (char*)malloc(512);
-		if (buf)
-		{
-			if (fgets(buf,512,fh))
-			{
-				if (!strncmp(buf,"SMAB",4))
-				{
-					buf[0] = 0;
-					addressbook_load_entries_old(&root_entry,fh,buf);
-					retval = 1;
-				}
-			}
-			free(buf);
-		}
-		fclose(fh);
 	}
 	return retval;
+}
+
+/**************************************************************************
+ Saves the address_snail_phone structure as xml
+**************************************************************************/
+static void addressbook_save_snail_phone(char *container, struct address_snail_phone *asp, FILE *fh)
+{
+	fprintf(fh,"<%s>\n",container);
+
+	put_xml_element_string(fh,"title", asp->title);
+	put_xml_element_string(fh,"organization", asp->organization);
+	put_xml_element_string(fh,"street", asp->street);
+	put_xml_element_string(fh,"city", asp->city);
+	put_xml_element_string(fh,"zip", asp->zip);
+	put_xml_element_string(fh,"state", asp->state);
+	put_xml_element_string(fh,"country", asp->country);
+	put_xml_element_string(fh,"mobil", asp->mobil);
+	put_xml_element_string(fh,"fax", asp->fax);
+	put_xml_element_string(fh,"phone", asp->phone1);
+	put_xml_element_string(fh,"phone", asp->phone2);
+
+	fprintf(fh,"</%s>\n",container);
 }
 
 /**************************************************************************
@@ -411,12 +394,7 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 			put_xml_element_string(fh,"description",entry->u.person.description);
 			for (i=0;i<entry->u.person.num_emails;i++)
 				put_xml_element_string(fh,"email",entry->u.person.emails[i]);
-			put_xml_element_string(fh,"street",entry->u.person.street);
-			put_xml_element_string(fh,"city",entry->u.person.city);
-			put_xml_element_string(fh,"country",entry->u.person.country);
 			put_xml_element_string(fh,"homepage",entry->u.person.homepage);
-			put_xml_element_string(fh,"phone",entry->u.person.phone1);
-			put_xml_element_string(fh,"phone",entry->u.person.phone2);
 			put_xml_element_string(fh,"portrait",entry->u.person.portrait);
 			put_xml_element_string(fh,"note",entry->u.person.notepad);
 			if (entry->u.person.sex)
@@ -427,7 +405,8 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 				sprintf(buf,"%d/%d/%d",entry->u.person.dob_month,entry->u.person.dob_day,entry->u.person.dob_year);
 				put_xml_element_string(fh,"birthday",buf);
 			}
-			
+			addressbook_save_snail_phone("private",&entry->u.person.priv,fh);
+			addressbook_save_snail_phone("work",&entry->u.person.work,fh);
 			fputs("</contact>\n",fh);
 		} else
 		{
@@ -763,6 +742,24 @@ char *addressbook_download_portrait(char *email)
 }
 
 /**************************************************************************
+ Copies the contents of a struct address_snail_phone to another one
+**************************************************************************/
+static void snailphonecpy(struct address_snail_phone *dest, struct address_snail_phone *src)
+{
+	dest->title = mystrdup(src->title);
+	dest->organization = mystrdup(src->organization);
+	dest->street = mystrdup(src->street);
+	dest->city = mystrdup(src->city);
+	dest->zip = mystrdup(src->zip);
+	dest->state = mystrdup(src->state);
+	dest->country = mystrdup(src->country);
+	dest->phone1 = mystrdup(src->phone1);
+	dest->phone2 = mystrdup(src->phone2);
+	dest->mobil = mystrdup(src->mobil);
+	dest->fax = mystrdup(src->fax);
+}
+
+/**************************************************************************
  Duplicates a given entry. If it is a group, the group members are not
  duplicated!
 **************************************************************************/
@@ -790,11 +787,6 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 							new_entry->u.person.realname = mystrdup(entry->u.person.realname);
 							new_entry->u.person.pgpid = mystrdup(entry->u.person.pgpid);
 							new_entry->u.person.homepage = mystrdup(entry->u.person.homepage);
-							new_entry->u.person.street = mystrdup(entry->u.person.street);
-							new_entry->u.person.city = mystrdup(entry->u.person.city);
-							new_entry->u.person.country = mystrdup(entry->u.person.country);
-							new_entry->u.person.phone1 = mystrdup(entry->u.person.phone1);
-							new_entry->u.person.phone2 = mystrdup(entry->u.person.phone2);
 							new_entry->u.person.notepad = mystrdup(entry->u.person.notepad);
 							new_entry->u.person.description = mystrdup(entry->u.person.description);
 							new_entry->u.person.portrait = mystrdup(entry->u.person.portrait);
@@ -806,6 +798,10 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 									new_entry->u.person.emails[i] = mystrdup(entry->u.person.emails[i]);
 								new_entry->u.person.num_emails = entry->u.person.num_emails;
 							}
+
+							snailphonecpy(&new_entry->u.person.priv,&entry->u.person.priv);
+							snailphonecpy(&new_entry->u.person.work,&entry->u.person.work);
+
 							new_entry->u.person.dob_month = entry->u.person.dob_month;
 							new_entry->u.person.dob_day = entry->u.person.dob_day;
 							new_entry->u.person.dob_year = entry->u.person.dob_year;
@@ -820,6 +816,26 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 		}
 	}
 	return new_entry;
+}
+
+/**************************************************************************
+ Frees all strings associated with dest (only the contents! not the
+ struct itself)
+**************************************************************************/
+static void freesnailphone(struct address_snail_phone *dest)
+{
+	/* Its safe to call free() with NULL! */
+	free(dest->title);
+	free(dest->organization);
+	free(dest->street);
+	free(dest->city);
+	free(dest->zip);
+	free(dest->state);
+	free(dest->country);
+	free(dest->phone1);
+	free(dest->phone2);
+	free(dest->mobil);
+	free(dest->fax);
 }
 
 /**************************************************************************
@@ -852,11 +868,6 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 						if (entry->u.person.realname) free(entry->u.person.realname);
 						if (entry->u.person.pgpid) free(entry->u.person.pgpid);
 						if (entry->u.person.homepage) free(entry->u.person.homepage);
-						if (entry->u.person.street) free(entry->u.person.street);
-						if (entry->u.person.city) free(entry->u.person.city);
-						if (entry->u.person.country) free(entry->u.person.country);
-						if (entry->u.person.phone1) free(entry->u.person.phone1);
-						if (entry->u.person.phone2) free(entry->u.person.phone2);
 						if (entry->u.person.notepad) free(entry->u.person.notepad);
 						if (entry->u.person.description) free(entry->u.person.description);
 						if (entry->u.person.portrait) free(entry->u.person.portrait);
@@ -866,6 +877,9 @@ void addressbook_free_entry(struct addressbook_entry *entry)
 							if (entry->u.person.emails[i]) free(entry->u.person.emails[i]);
 						}
 						if (entry->u.person.emails) free(entry->u.person.emails);
+
+						freesnailphone(&entry->u.person.priv);
+						freesnailphone(&entry->u.person.work);
 					}
 					break;
 

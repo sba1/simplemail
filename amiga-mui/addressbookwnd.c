@@ -64,6 +64,21 @@ static struct Hook address_display_hook;
 #define MAX_PERSON_OPEN 10
 static int person_open[MAX_PERSON_OPEN];
 
+struct Snail_Data
+{
+	Object *title_string;
+	Object *organization_string;
+	Object *street_string;
+	Object *city_string;
+	Object *zip_string;
+	Object *state_string;
+	Object *country_string;
+	Object *phone1_string;
+	Object *phone2_string;
+	Object *mobil_string;
+	Object *fax_string;
+};
+
 struct Person_Data /* should be a customclass */
 {
 	Object *wnd;
@@ -76,18 +91,65 @@ struct Person_Data /* should be a customclass */
 	Object *birthday_string;
 	Object *portrait_button;
 	Object *email_texteditor;
-	Object *street_string;
-	Object *city_string;
-	Object *country_string;
-	Object *phone1_string;
-	Object *phone2_string;
 	Object *portrait_string;
+
+	struct Snail_Data priv;
+	struct Snail_Data work;
 
 	struct addressbook_entry *person; /* NULL if new person */
 
 	int num; /* the number of the window */
 	/* more to add */
 };
+
+/******************************************************************
+ Set the contents of this group
+*******************************************************************/
+static void setsnail(struct Snail_Data *data, struct address_snail_phone *asp)
+{
+	if (data->title_string) setstring(data->title_string,asp->title);
+	if (data->organization_string) setstring(data->organization_string,asp->organization);
+	if (data->street_string) setstring(data->street_string,asp->street);
+	if (data->city_string) setstring(data->city_string,asp->city);
+	if (data->zip_string) setstring(data->zip_string,asp->zip);
+	if (data->state_string) setstring(data->state_string,asp->state);
+	if (data->country_string) setstring(data->country_string,asp->country);
+	if (data->phone1_string) setstring(data->phone1_string,asp->phone1);
+	if (data->phone2_string) setstring(data->phone2_string,asp->phone2);
+	if (data->mobil_string) setstring(data->mobil_string,asp->mobil);
+	if (data->fax_string) setstring(data->fax_string,asp->fax);
+}
+
+/******************************************************************
+ Addopt the Snail Phone changes
+*******************************************************************/
+static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
+{
+	/* Safe to call free() with NULL */
+	free(asp->title);asp->title = NULL;
+	free(asp->organization);asp->organization = NULL;
+	free(asp->street);
+	free(asp->city);
+	free(asp->zip);
+	free(asp->state);
+	free(asp->country);
+	free(asp->phone1);
+	free(asp->phone2);
+	free(asp->mobil);
+	free(asp->fax);
+
+	if (data->title_string) asp->title = mystrdup((char*)xget(data->title_string,MUIA_String_Contents));
+	if (data->organization_string) asp->organization = mystrdup((char*)xget(data->organization_string,MUIA_String_Contents));
+	if (data->street_string) asp->street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
+	if (data->city_string) asp->city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
+	if (data->zip_string) asp->zip = mystrdup((char*)xget(data->zip_string,MUIA_String_Contents));
+	if (data->state_string) asp->state = mystrdup((char*)xget(data->state_string,MUIA_String_Contents));
+	if (data->country_string) asp->country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
+	if (data->phone1_string) asp->phone1 = mystrdup((char*)xget(data->phone1_string,MUIA_String_Contents));
+	if (data->phone2_string) asp->phone2 = mystrdup((char*)xget(data->phone2_string,MUIA_String_Contents));
+	if (data->mobil_string) asp->mobil = mystrdup((char*)xget(data->mobil_string,MUIA_String_Contents));
+	if (data->fax_string) asp->fax = mystrdup((char*)xget(data->fax_string,MUIA_String_Contents));
+}
 
 /******************************************************************
  This close and disposed the window (note: this must not be called
@@ -150,17 +212,9 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (alias && *alias) addressbook_set_alias(new_entry, alias);
 		addressbook_set_description(new_entry, (char *)xget(data->description_string,MUIA_String_Contents));
 
-		if (new_entry->u.person.phone1) free(new_entry->u.person.phone1);
-		new_entry->u.person.phone1 = mystrdup((char *)xget(data->phone1_string,MUIA_String_Contents));
-		if (new_entry->u.person.phone2) free(new_entry->u.person.phone2);
-		new_entry->u.person.phone2 = mystrdup((char *)xget(data->phone2_string,MUIA_String_Contents));
-
-		if (new_entry->u.person.street) free(new_entry->u.person.street);
-		new_entry->u.person.street = mystrdup((char*)xget(data->street_string,MUIA_String_Contents));
-		if (new_entry->u.person.city) free(new_entry->u.person.city);
-		new_entry->u.person.city = mystrdup((char*)xget(data->city_string,MUIA_String_Contents));
-		if (new_entry->u.person.country) free(new_entry->u.person.country);
-		new_entry->u.person.country = mystrdup((char*)xget(data->country_string,MUIA_String_Contents));
+		adoptsnail(&new_entry->u.person.priv,&data->priv);
+		adoptsnail(&new_entry->u.person.work,&data->work);
+		
 		if (new_entry->u.person.homepage) free(new_entry->u.person.homepage);
 		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
 		if (new_entry->u.person.portrait) free(new_entry->u.person.portrait);
@@ -196,7 +250,7 @@ static void person_window_ok(struct Person_Data **pdata)
 			if ((treenode = FindListtreeUserData(address_tree, data->person)))
 			{
 /*				DoMethod(address_tree, MUIM_NListtree_Remove, */
-				APTR parent = DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
+				APTR parent = (APTR)DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
 
 				DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
 							   parent,treenode,0);
@@ -287,8 +341,9 @@ void person_window_open(struct addressbook_entry *entry)
 {
 	Object *wnd, *email_texteditor;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
-	Object *female_button, *male_button, *birthday_string, *homepage_string, *homepage_button, *street_string, *city_string, *country_string, *phone1_string, *phone2_string;
+	Object *female_button, *male_button, *birthday_string, *homepage_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
+	struct Snail_Data priv, work;
 	static const char *register_titles[] = {
 		"Personal","Private","Work","Notes",NULL
 	};
@@ -296,6 +351,9 @@ void person_window_open(struct addressbook_entry *entry)
 
 	for (num=0; num < MAX_PERSON_OPEN; num++)
 		if (!person_open[num]) break;
+
+	priv.title_string = NULL;
+	priv.organization_string = NULL;
 
 	wnd = WindowObject,
 		(num < MAX_PERSON_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('P','E','R',num),
@@ -407,41 +465,160 @@ void person_window_open(struct addressbook_entry *entry)
 					End,
 
 				Child, VGroup,
-					Child, ColGroup(2),
+					Child, HVSpace,
+					Child, HGroup,
 						Child, MakeLabel("Street"),
-						Child, street_string = BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
-							MUIA_String_AdvanceOnCR, TRUE,
-							End,
-						Child, MakeLabel("City/ZIP"),
-						Child, city_string = BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
-							MUIA_String_AdvanceOnCR, TRUE,
-							End,
-						Child, MakeLabel("State/Country"),
-						Child, country_string = BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
-							MUIA_String_AdvanceOnCR, TRUE,
-							End,
-						Child, MakeLabel("Phone numbers"),
-						Child, phone1_string = BetterStringObject,
-							StringFrame,
-							MUIA_CycleChain, 1,
-							MUIA_String_AdvanceOnCR, TRUE,
-							End,
-						Child, HSpace(0),
-						Child, phone2_string = BetterStringObject,
+						Child, priv.street_string = BetterStringObject,
 							StringFrame,
 							MUIA_CycleChain, 1,
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						End,
+					Child, ColGroup(4),
+						Child, MakeLabel("City"),
+						Child, priv.city_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("ZIP/Postal Code"),
+						Child, priv.zip_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("State/Province"),
+						Child, priv.state_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Country"),
+						Child, priv.country_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+
+					Child, HVSpace,
+					Child, HorizLineObject,
+					Child, HVSpace,
+
+					Child, ColGroup(4),
+						Child, MakeLabel("Phone numbers"),
+						Child, priv.phone1_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Mobile"),
+						Child, priv.mobil_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, HSpace(0),
+						Child, priv.phone2_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Fax"),
+						Child, priv.fax_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+					Child, HVSpace,
 					End,
 
 				Child, VGroup,
+					Child, HVSpace,
+					Child, HGroup,
+						Child, MakeLabel("Title"),
+						Child, work.title_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Organization"),
+						Child, work.organization_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+					Child, HVSpace,
+					Child, HorizLineObject,
+					Child, HVSpace,
+					Child, HGroup,
+						Child, MakeLabel("Street"),
+						Child, work.street_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+					Child, ColGroup(4),
+						Child, MakeLabel("City"),
+						Child, work.city_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("ZIP/Postal Code"),
+						Child, work.zip_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("State/Province"),
+						Child, work.state_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Country"),
+						Child, work.country_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+
+					Child, HVSpace,
+					Child, HorizLineObject,
+					Child, HVSpace,
+
+					Child, ColGroup(4),
+						Child, MakeLabel("Phone numbers"),
+						Child, work.phone1_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Mobile"),
+						Child, work.mobil_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, HSpace(0),
+						Child, work.phone2_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						Child, MakeLabel("Fax"),
+						Child, work.fax_string = BetterStringObject,
+							StringFrame,
+							MUIA_CycleChain, 1,
+							MUIA_String_AdvanceOnCR, TRUE,
+							End,
+						End,
+					Child, HVSpace,
 					End,
 
 				Child, VGroup,
@@ -474,13 +651,10 @@ void person_window_open(struct addressbook_entry *entry)
 			data->realname_string = realname_string;
 			data->description_string = description_string;
 			data->homepage_string = homepage_string;
-			data->street_string = street_string;
 			data->portrait_button = portrait_button;
-			data->city_string = city_string;
-			data->country_string = country_string;
-			data->phone1_string = phone1_string;
-			data->phone2_string = phone2_string;
 			data->portrait_string = portrait_string;
+			data->priv = priv;
+			data->work = work;
 			data->person = entry;
 			data->num = num;
 
@@ -507,16 +681,11 @@ void person_window_open(struct addressbook_entry *entry)
 					DoMethod(email_texteditor,MUIM_TextEditor_InsertText,"\n",MUIV_TextEditor_InsertText_Bottom);
 				}
 
-				set(realname_string, MUIA_String_Contents, entry->u.person.realname);
-				set(description_string, MUIA_String_Contents, entry->u.person.description);
-				set(alias_string, MUIA_String_Contents, entry->u.person.alias);
-				set(phone1_string, MUIA_String_Contents, entry->u.person.phone1);
-				set(phone2_string, MUIA_String_Contents, entry->u.person.phone2);
-				set(street_string, MUIA_String_Contents, entry->u.person.street);
-				set(city_string, MUIA_String_Contents, entry->u.person.city);
-				set(country_string, MUIA_String_Contents, entry->u.person.country);
-				set(homepage_string, MUIA_String_Contents, entry->u.person.homepage);
-				set(portrait_string, MUIA_String_Contents, entry->u.person.portrait);
+				setstring(realname_string, entry->u.person.realname);
+				setstring(description_string, entry->u.person.description);
+				setstring(alias_string, entry->u.person.alias);
+				setstring(homepage_string, entry->u.person.homepage);
+				setstring(portrait_string, entry->u.person.portrait);
 
 				if (entry->u.person.sex == 1) set(data->female_button,MUIA_Selected,TRUE);
 				else if (entry->u.person.sex == 2) set(data->male_button,MUIA_Selected,TRUE);
@@ -530,6 +699,9 @@ void person_window_open(struct addressbook_entry *entry)
 				}
 
 				if (entry->u.person.portrait) set(portrait_button,MUIA_PictureButton_Filename,entry->u.person.portrait);
+
+				setsnail(&priv,&entry->u.person.priv);
+				setsnail(&work,&entry->u.person.work);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);

@@ -33,6 +33,21 @@ struct mail;
 #define ADDRESSBOOK_ENTRY_PERSON 1
 #define ADDRESSBOOK_ENTRY_LIST 2
 
+struct address_snail_phone
+{
+	char *title;
+	char *organization;
+	char *street;
+	char *city;
+	char *zip;
+	char *state;
+	char *country;
+	char *phone1;
+	char *phone2;
+	char *mobil;
+	char *fax;
+};
+
 /* the addressbook structure (read only outside from addressbook.c! */
 struct addressbook_entry
 {
@@ -55,14 +70,12 @@ struct addressbook_entry
 			char *realname;
 			char *pgpid;
 			char *homepage;
-			char *street;
-			char *city;
-			char *country;
-			char *phone1;
-			char *phone2;
 			char *description;
 			char *notepad;
 			char *portrait; /* filename to a picture of this person */
+
+			struct address_snail_phone priv;
+			struct address_snail_phone work;
 
 			int dob_day; /* day of birth */
 			int dob_month; /* month of birth */

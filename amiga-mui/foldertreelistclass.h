@@ -29,6 +29,8 @@ IMPORT struct MUI_CustomClass *CL_FolderTreelist;
 #define MUIA_FolderTreelist_MailDrop (TAG_USER+0x31000001) /* (struct folder *) */
 #define MUIA_FolderTreelist_OrderChanged (TAG_USER+0x31000002) /* BOOL */
 
+#define MUIM_FolderTreelist_Refresh (0x7878787)
+
 int create_foldertreelist_class(void);
 void delete_foldertreelist_class(void);
 

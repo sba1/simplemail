@@ -683,46 +683,24 @@ static void main_refresh_folders_text(void)
 *******************************************************************/
 void main_refresh_folders(void)
 {
-	struct folder *f = folder_first();
-	char buf[256];
-	int i=0;
-
 	int act = xget(folder_tree, MUIA_NList_Active);
 
 	if (folder_popupmenu) DoMethod(folder_popupmenu,MUIM_Popupmenu_Clear);
 
-	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
-
-	DoMethod(folder_tree, MUIM_NListtree_Clear, NULL, 0);
-/*	DoMethod(folder_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);*/
-
-	while (f)
+	if (folder_popupmenu)
 	{
-		APTR treenode = (APTR)MUIV_NListtree_Insert_ListNode_Root;
-		if (f->parent_folder) treenode = FindListtreeUserData(folder_tree, f->parent_folder);
-		if (f->special == FOLDER_SPECIAL_GROUP)
+		struct folder *f;
+		char buf[256];
+		int i=0;
+
+		for (f=folder_first();f;f=folder_next(f),i++)
 		{
-			int flags;
-
-			if (f->closed) flags = TNF_LIST;
-			else flags = TNF_OPEN|TNF_LIST;
-
-			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						treenode,MUIV_NListtree_Insert_PrevNode_Tail,flags);
-		} else
-		{
-			DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
-
-			if (folder_popupmenu)
-			{
-				sprintf(buf,_("%s (T:%ld N:%ld U:%ld)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
-				DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
-			}
+			sprintf(buf,_("%s (T:%ld N:%ld U:%ld)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
+			DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
 		}
-		f = folder_next(f);
-		i++;
 	}
+	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
+	DoMethod(folder_tree,MUIM_FolderTreelist_Refresh);
 	nnset(folder_tree,MUIA_NList_Active,act);
 	set(folder_tree,MUIA_NListtree_Quiet,FALSE);
 	main_refresh_folders_text();

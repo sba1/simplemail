@@ -43,14 +43,10 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
+struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
+
 struct FolderTreelist_Data
 {
-/*
-	struct Hook construct_hook;
-	struct Hook destruct_hook;
-*/
-  /* Constructor and Destructor no longer needed */
-
 	struct Hook close_hook;
 	struct Hook display_hook;
 	struct Hook open_hook;
@@ -70,30 +66,6 @@ struct FolderTreelist_Data
 
 	char name_buf[300];
 };
-
-/*
-STATIC ASM SAVEDS struct folder *folder_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
-{
-	struct folder *new_folder = (struct folder*)msg->UserData;
-	struct folder *folder = (struct folder*)AllocVec(sizeof(struct folder),0);
-
-	if (folder)
-	{
-		folder->name = StrCopy(new_folder->name);
-		folder->path = StrCopy(new_folder->path);
-		folder->num_mails = new_folder->num_mails;
-	}
-	return folder;
-}
-
-STATIC ASM SAVEDS VOID folder_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
-{
-	struct folder *folder = (struct folder*)msg->UserData;
-	if (folder->name) FreeVec(folder->name);
-	if (folder->path) FreeVec(folder->path);
-	FreeVec(folder);
-}
-*/
 
 STATIC ASM void folder_close(register __a1 struct MUIP_NListtree_CloseMessage *msg)
 {
@@ -127,7 +99,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 		{
 			if(unread > 0)
 			{
-				sprintf(mails_buf,MUIX_PH"%ld",num);
+				sprintf(mails_buf,folder_number_of_new_mails(folder)?(MUIX_PH "\33b%ld"):(MUIX_PH "%ld"),num);
 			}
 			else
 			{
@@ -326,10 +298,6 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_
 	struct MUI_NListtree_TreeNode *node;
 	struct folder *f;
 
-//	DoSuperMethodA(cl,obj,(Msg)msg);
-
-//	kprintf("before: %ld\n",*msg->type);
-
 	node = (struct MUI_NListtree_TreeNode *)
 		DoMethod(obj,MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, *msg->Pos, 0);
 
@@ -345,8 +313,6 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl, Object *obj,struct MUIP_
 		if (*msg->Type == MUIV_NListtree_DropType_Onto && !(node->tn_Flags & TNF_LIST))
 			*msg->Type = MUIV_NListtree_DropType_Above;
 	}
-
-//	kprintf("after: %ld\n",*msg->type);
 
 	return 0;
 }
@@ -377,6 +343,36 @@ STATIC ULONG FolderTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * o
   return (ULONG) data->context_menu;
 }
 
+STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	struct folder *f;
+
+	set(obj,MUIA_NListtree_Quiet,TRUE);
+	DoMethod(obj, MUIM_NListtree_Clear, NULL, 0);
+
+	for (f = folder_first();f;f = folder_next(f))
+	{
+		APTR treenode = (APTR)MUIV_NListtree_Insert_ListNode_Root;
+		if (f->parent_folder) treenode = FindListtreeUserData(obj, f->parent_folder);
+		if (f->special == FOLDER_SPECIAL_GROUP)
+		{
+			int flags;
+
+			if (f->closed) flags = TNF_LIST;
+			else flags = TNF_OPEN|TNF_LIST;
+
+			DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
+						treenode,MUIV_NListtree_Insert_PrevNode_Tail,flags);
+		} else
+		{
+			DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
+						treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+		}
+	}
+	set(obj,MUIA_NListtree_Quiet,FALSE);
+	return 0;
+}
 
 STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
@@ -394,6 +390,7 @@ STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 		case	MUIM_NListtree_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);
     case	MUIM_ContextMenuChoice: return FolderTreelist_ContextMenuChoice(cl,obj,(struct MUIP_ContextMenuChoice*)msg);
 		case  MUIM_NList_ContextMenuBuild: return FolderTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
+		case	MUIM_FolderTreelist_Refresh: return FolderTreelist_Refresh(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

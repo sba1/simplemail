@@ -52,6 +52,7 @@ int array_length(char **strings);
 char **array_duplicate(char **rcp);
 void array_free(char **string_array);
 char **array_replace_idx(char **strings, int idx, char *str);
+char **array_remove_idx(char **strings, int idx);
 
 char *mycombinepath(char *drawer, char *file);
 

@@ -429,6 +429,17 @@ char **array_replace_idx(char **strings, int idx, char *str)
 }
 
 /**************************************************************************
+ Remove the given index
+**************************************************************************/
+char **array_remove_idx(char **strings, int idx)
+{
+	int len = array_length(strings);
+	free(strings[idx]);
+	memmove(&strings[idx],&strings[idx+1],(len - idx)*sizeof(char*));
+	return strings;
+}
+
+/**************************************************************************
  Add the string str to an array. Returns the new array which must be used
  then. Use only rarly because its slow! Indented for easier creation of
  small arrays. strings might be NULL.

@@ -33,6 +33,15 @@
 
 struct pop3_server;
 
+#define SHOW_HEADER_NONE			0
+#define SHOW_HEADER_FROM			(1<<0)
+#define SHOW_HEADER_TO				(1<<1)
+#define SHOW_HEADER_CC				(1<<2)
+#define SHOW_HEADER_SUBJECT	(1<<3)
+#define SHOW_HEADER_DATE			(1<<4)
+#define SHOW_HEADER_REPLYTO	(1<<5)
+#define SHOW_HEADER_ALL			(1<<31)
+
 struct config
 {
 	int dst;
@@ -51,6 +60,10 @@ struct config
 	struct list phrase_list;
 
 	int signatures_use;
+
+	/* headers */
+	unsigned int header_flags;
+	char **header_array;
 
 	char *read_fixedfont;
 	char *read_propfont;

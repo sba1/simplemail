@@ -1832,10 +1832,11 @@ int mail_create_html_header(struct mail *mail)
 		char *cc = mail_find_header_contents(mail, "cc");
 		char *portrait;
 		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
+		struct header *header;
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 
-		if (from)
+		if (from && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 		{
 			struct mailbox mb;
 			parse_mailbox(from, &mb);
@@ -1861,7 +1862,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("</A><BR>",fh);
 		}
 
-		if (to)
+		if (to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 		{
 			struct parse_address p_addr;
 			fputs("<STRONG>To:</STRONG> ",fh);
@@ -1884,7 +1885,7 @@ int mail_create_html_header(struct mail *mail)
 			fputs("<BR>",fh);
 		}
 
-		if (cc)
+		if (cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 		{
 			struct parse_address p_addr;
 			fputs("<STRONG>Copies to:</STRONG> ",fh);
@@ -1908,10 +1909,10 @@ int mail_create_html_header(struct mail *mail)
 		}
 
 
-		if (mail->subject) fprintf(fh,"<STRONG>Subject:</STRONG> %s<BR>",mail->subject);
-		fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_long_str(mail->seconds));
+		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>Subject:</STRONG> %s<BR>",mail->subject);
+		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>Date: </STRONG>%s<BR>",sm_get_date_long_str(mail->seconds));
 
-		if (replyto)
+		if (replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
 		{
 			struct mailbox addr;
 			parse_mailbox(replyto, &addr);
@@ -1929,6 +1930,21 @@ int mail_create_html_header(struct mail *mail)
 			if (addr.addr_spec) free(addr.addr_spec);
 
 			fputs("</A><BR>",fh);
+		}
+
+		header = (struct header*)list_first(&mail->header_list);
+		while (header)
+		{
+			if ((user.config.header_flags & SHOW_HEADER_ALL) || array_contains(user.config.header_array,header->name))
+			{
+				if (mystricmp(header->contents,"from") && mystricmp(header->contents,"to") &&
+					  mystricmp(header->contents,"cc") && mystricmp(header->contents,"reply-to") &&
+					  mystricmp(header->contents,"date") && mystricmp(header->contents,"subject"))
+				{
+					fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>\n",header->name,header->contents);
+				}
+			}
+			header = (struct header*)node_next(&header->node);
 		}
 		
 		fputs("<BR CLEAR=ALL><HR>",fh);

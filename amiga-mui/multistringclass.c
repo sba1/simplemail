@@ -317,7 +317,7 @@ STATIC ULONG MultiString_Get(struct IClass *cl,Object *obj, struct opGet *msg)
 	if (msg->opg_AttrID == MUIA_MultiString_ContentsArray)
 	{
 		free(data->contents_array);
-		if ((data->contents_array = (char**)malloc(list_length(&data->object_list)+1)))
+		if ((data->contents_array = (char**)malloc(sizeof(char*)*(list_length(&data->object_list)+1))))
 		{
 			struct object_node *obj_node;
 			int i = 0;

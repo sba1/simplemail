@@ -168,6 +168,19 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 	return len;
 }
 
+/**************************************************************************
+ Returns 1 if a given array contains a givem string (case insensitive)
+**************************************************************************/
+int array_contains(char **strings, char *str)
+{
+	int i;
+	if (!strings) return 0;
+	for (i=0;strings[i];i++)
+	{
+		if (!mystricmp(strings[i],str)) return 1;
+	}
+	return 0;
+}
 
 /**************************************************************************
  Add the string str to an array. Returns the new array which must be used

@@ -53,6 +53,7 @@
 #include "configtreelistclass.h"
 #include "configwnd.h"
 #include "muistuff.h"
+#include "multistringclass.h"
 #include "support_indep.h"
 
 static struct MUI_CustomClass *CL_Sizes;
@@ -73,6 +74,10 @@ static Object *read_wrap_checkbox;
 static Object *read_linkunderlined_checkbox;
 static Object *read_smilies_checkbox;
 static Object *read_palette;
+static Object *mails_readmisc_check[6];
+static Object *mails_readmisc_check_group;
+static Object *mails_readmisc_all_check;
+static Object *mails_readmisc_additional_string;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
 static Object *readhtml_mail_editor;
@@ -133,6 +138,7 @@ static Object *user_group;
 static Object *tcpip_receive_group;
 static Object *accounts_group;
 static Object *account_group;
+static Object *mails_readmisc_group;
 static Object *mails_read_group;
 static Object *mails_readhtml_group;
 static Object *signatures_group;
@@ -241,6 +247,7 @@ static void config_use(void)
 	struct account *account;
 	struct signature *signature;
 	struct phrase *phrase;
+	int i;
 
 	/* this is principle the same like in addressbookwnd.c but uses parse_mailbox */
 	{
@@ -287,6 +294,19 @@ static void config_use(void)
 		array_free(user.config.internet_emails);
 		user.config.internet_emails = new_array;
 	}
+
+	user.config.header_flags = 0;
+
+	if (xget(mails_readmisc_all_check,MUIA_Selected))
+		user.config.header_flags |= SHOW_HEADER_ALL;
+
+	for (i=0;i<sizeof(mails_readmisc_check)/sizeof(Object*);i++)
+	{
+		if (xget(mails_readmisc_check[i],MUIA_Selected)) user.config.header_flags |= (1<<i);
+	}
+
+	array_free(user.config.header_array);
+	user.config.header_array = array_duplicate((char**)xget(mails_readmisc_additional_string,MUIA_MultiString_ContentsArray));
 
 
 	if (user.config.read_propfont) free(user.config.read_propfont);
@@ -757,6 +777,74 @@ static int init_account_group(void)
 }
 
 /******************************************************************
+ Init the readmisc group
+*******************************************************************/
+static int init_mails_readmisc_group(void)
+{
+	int i;
+
+	mails_readmisc_group =  VGroup,
+		MUIA_ShowMe, FALSE,
+
+		Child, HorizLineTextObject("Header Configuration"),
+		Child, VGroupV,
+			Child, HGroup,
+				Child, MakeLabel("Show all headers"),
+				Child, mails_readmisc_all_check = MakeCheck("Show all headers",FALSE),
+				Child, HVSpace,
+				End,
+			Child, RectangleObject, MUIA_FixHeight, 6, End,
+			Child, mails_readmisc_check_group = HGroup,
+				Child, VGroup,
+					Child, ColGroup(2),
+						Child, MakeLabel("From"),
+						Child, mails_readmisc_check[0] = MakeCheck("From",FALSE),
+
+						Child, MakeLabel("To"),
+						Child, mails_readmisc_check[1] = MakeCheck("To",FALSE),
+
+						Child, MakeLabel("CC"),
+						Child, mails_readmisc_check[2] = MakeCheck("CC",FALSE),
+
+						Child, MakeLabel("Subject"),
+						Child, mails_readmisc_check[3] = MakeCheck("Subject",FALSE),
+
+						Child, MakeLabel("Date"),
+						Child, mails_readmisc_check[4] = MakeCheck("Date",FALSE),
+
+						Child, MakeLabel("Reply-To"),
+						Child, mails_readmisc_check[5] = MakeCheck("Reply-To",FALSE),
+						End,
+					Child, HVSpace,
+					End,
+				Child, VGroup,
+					Child, HGroup,
+						Child, HVSpace,
+						Child, TextObject, MUIA_Text_Contents, "Additional headers", End,
+						Child, HVSpace,
+						End,
+					Child, mails_readmisc_additional_string = MultiStringObject,
+						StringFrame,
+						MUIA_MultiString_ContentsArray,user.config.header_array,
+						End,
+					Child, RectangleObject, End,
+					End,
+				End,
+			End,
+		End;
+
+	if (!mails_readmisc_group) return 0;
+
+	DoMethod(mails_readmisc_all_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, mails_readmisc_check_group, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
+	if (user.config.header_flags & SHOW_HEADER_ALL) set(mails_readmisc_all_check, MUIA_Selected, TRUE);
+	for (i=0;i<sizeof(mails_readmisc_check)/sizeof(Object*);i++)
+	{
+		if (user.config.header_flags & (1<<i)) set(mails_readmisc_check[i],MUIA_Selected,TRUE);
+	}
+	return 1;
+}
+
+/******************************************************************
  Init the read group
 *******************************************************************/
 static int init_mails_read_group(void)
@@ -1174,6 +1262,7 @@ static void init_config(void)
 	init_account_group();
 	init_user_group();
 	init_tcpip_receive_group();
+	init_mails_readmisc_group();
 	init_mails_read_group();
 	init_mails_readhtml_group();
 	init_signatures_group();
@@ -1198,6 +1287,7 @@ static void init_config(void)
   	  			Child, accounts_group,
   	  			Child, account_group,
     				Child, tcpip_receive_group,
+    				Child, mails_readmisc_group,
     				Child, mails_read_group,
     				Child, mails_readhtml_group,
     				Child, signatures_group,
@@ -1257,8 +1347,9 @@ static void init_config(void)
 		}
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Reading HTML Mails", mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading", mails_readmisc_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Reading plain", mails_read_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
+		mails_readhtml_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Reading HTML", mails_readhtml_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 
 		if ((treenode = phrases_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Phrases", phrases_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{

@@ -111,6 +111,8 @@ void init_config(void)
 		phrase->forward_finish = mystrdup("*** Ende der weitergeleiteten Nachricht ***\\n");
 	}
 
+	user.config.header_flags = SHOW_HEADER_FROM | SHOW_HEADER_TO | SHOW_HEADER_CC | SHOW_HEADER_SUBJECT | SHOW_HEADER_DATE | SHOW_HEADER_REPLYTO;
+
 	user.config.read_background = 0xb0b0b0;
 	user.config.read_text = 0;
 	user.config.read_quoted = 0xffffff;
@@ -160,6 +162,10 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = ((*result == 'Y') || (*result == 'y'))?1:0;
+						if ((result = get_config_item(buf,"ReadHeader.Flags")))
+							sscanf(result,"%x",&user.config.header_flags);
+						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
+							user.config.header_array = array_add_string(user.config.header_array,result);
 						if ((result = get_config_item(buf,"Read.BackgroundColor")))
 							sscanf(result,"%x",&user.config.read_background);
 						if ((result = get_config_item(buf,"Read.TextColor")))
@@ -178,6 +184,7 @@ int load_config(void)
 							user.config.read_smilies = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
 							user.config.internet_emails = array_add_string(user.config.internet_emails,result);
+
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
 							/* it's a POP Server config line */
@@ -410,6 +417,14 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
+			fprintf(fh,"ReadHeader.Flags=%x\n",user.config.header_flags);
+			if (user.config.header_array)
+			{
+				for (i=0;user.config.header_array[i];i++)
+				{
+					fprintf(fh,"ReadHeader.HeaderName=%s\n",user.config.header_array[i]);
+				}
+			}
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
 			fprintf(fh,"Read.BackgroundColor=0x%x\n",user.config.read_background);

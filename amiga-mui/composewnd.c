@@ -631,19 +631,18 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 
 	if (!num_multiparts)
 	{
+		void *cont;
+		int cont_len;
+
 		/* decode the mail */
 		mail_decode(mail);
+
+		mail_decoded_data(mail,&cont,&cont_len);
 
 		/* if the content type is a text it can be edited */
 		if (!mystricmp(buf,"text/plain"))
 		{
-			if (mail->decoded_data)
-			{
-				attach.contents = mystrndup(mail->decoded_data,mail->decoded_len);
-			} else
-			{
-				attach.contents = mystrndup(mail->text + mail->text_begin,mail->text_len);
-			}
+			attach.contents = mystrndup((char*)cont,cont_len);
 			attach.editable = 1;
 			attach.lastxcursor = 0;
 			attach.lastycursor = 0;
@@ -655,7 +654,7 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 
 			if ((fh = Open(tmpname,MODE_NEWFILE)))
 			{
-				Write(fh,mail->decoded_data,mail->decoded_len);
+				Write(fh,cont,cont_len);
 				Close(fh);
 			}
 			attach.filename = mail->filename?mail->filename:tmpname;

@@ -162,21 +162,11 @@ int print_mail(struct mail *m, int printhdr)
 	int rc = 0;
 	char *text, *buf;
 	PrintHandle *ph;
-	unsigned long txtlen, len;
+	int txtlen, len;
 	FILE *fp;
 
 	mail_decode(m);
-
-	if(m->decoded_data)
-	{
-		text = m->decoded_data;
-		txtlen = m->decoded_len;
-	}
-	else
-	{
-		text = m->text+m->text_begin;
-		txtlen = m->text_len;
-	}
+	mail_decoded_data(m,(void**)&text,(int*)&txtlen);
 
 	fp = tmpfile();
 	if(fp != NULL)

@@ -1201,6 +1201,8 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 			if ((text_mail = mail_find_content_type(mail_array[i], "text", "plain")))
 			{
 				char *replied_text;
+				void *data;
+				int data_len;
 
 				m->decoded_data = stradd(m->decoded_data,"\n");
 
@@ -1215,11 +1217,9 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 				/* decode the text */
 				mail_decode(text_mail);
 
-				/* quote the text */
-				if (text_mail->decoded_data) replied_text = quote_text(text_mail->decoded_data,text_mail->decoded_len);
-				else replied_text = quote_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
+				mail_decoded_data(text_mail,&data,&data_len);
 
-				if (replied_text)
+				if ((replied_text = quote_text((char*)data,data_len)))
 				{
 					m->decoded_data = stradd(m->decoded_data,replied_text);
 					free(replied_text);
@@ -1295,6 +1295,9 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 			struct mail *mail_iter = mail_array[i];
 			if ((text_mail = mail_find_content_type(mail_array[i], "text", "plain")))
 			{
+				void *data;
+				int data_len;
+
 				char *fwd_text;
 				char *from = mail_find_header_contents(mail_array[i],"from");
 				struct phrase *phrase;
@@ -1315,16 +1318,9 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 
 				/* decode the text */
 				mail_decode(text_mail);
+				mail_decoded_data(text_mail,&data,&data_len);
 
-				if (text_mail->decoded_data)
-				{
-					fwd_text = mystrndup(text_mail->decoded_data,text_mail->decoded_len);
-				} else
-				{
-					fwd_text = mystrndup(text_mail->text + text_mail->text_begin, text_mail->text_len);
-				}
-
-				if (fwd_text)
+				if ((fwd_text = mystrndup((char*)data,data_len)))
 				{
 					char *sig;
 					if ((sig = strstr(fwd_text,"\n-- \n")))
@@ -1353,20 +1349,11 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 					struct mail *new_part = mail_create();
 					if (new_part)
 					{
-						unsigned int attach_len;
+						int attach_len;
 						void *attach_data;
 
 						mail_decode(mail_iter);
-
-						if (mail_iter->decoded_data)
-						{
-							attach_data = mail_iter->decoded_data;
-							attach_len = mail_iter->decoded_len;
-						} else
-						{
-							attach_data = mail_iter->text + mail_iter->text_begin;
-							attach_len = mail_iter->text_len;
-						}
+						mail_decoded_data(mail_iter,&attach_data,&attach_len);
 
 						if ((new_part->decoded_data = malloc(attach_len)))
 						{
@@ -2008,6 +1995,9 @@ static int mail_read_structure(struct mail *mail)
 		}
 	} else if (!mystricmp(mail->content_type,"message") && !mystricmp(mail->content_subtype,"rfc822"))
 	{
+		void *data;
+		int data_len;
+
 		struct mail *new_mail;
 		struct mail_scan ms;
 
@@ -2017,27 +2007,32 @@ static int mail_read_structure(struct mail *mail)
 		new_mail->size = mail->text_len;
 
 		mail_decode(mail);
+		mail_decoded_data(mail,&data,&data_len);
 
 		mail_scan_buffer_start(&ms,new_mail,0);
-
-		if (mail->decoded_data)
-			mail_scan_buffer(&ms, mail->decoded_data, mail->decoded_len);
-		else
-			mail_scan_buffer(&ms, mail->text + mail->text_begin, mail->text_len);
-
+		mail_scan_buffer(&ms, (char*)data,data_len);
 		mail_scan_buffer_end(&ms);
 		mail_process_headers(new_mail);
 
+		new_mail->text = (char*)data;
+
+#if 0
+		/* Set the mail text */
 		if (mail->decoded_data)
 		{
 			new_mail->text = mail->decoded_data;
+			/* new_mail->text is already set */
 /*			new_mail->text_begin += mail->text_begin; */ /* not needed to be set */
 		} else
 		{
 			new_mail->text = mail->text;
 			new_mail->text_begin += mail->text_begin; /* skip headers */
 		}
+#endif
+
 		mail_read_structure(new_mail);
+
+		/* so new_mail->text will not be freed */
 		new_mail->parent_mail = mail;
 	}
 	return 1;
@@ -2069,6 +2064,24 @@ void mail_read_contents(char *folder, struct mail *mail)
 	}
 
 	chdir(path);
+}
+
+/**************************************************************************
+ Decodes the given mail
+**************************************************************************/
+void mail_decoded_data(struct mail *mail, void **decoded_data_ptr, int *decoded_data_len_ptr)
+{
+	mail_decode(mail);
+
+	if (mail->decoded_data)
+	{
+		*decoded_data_ptr = mail->decoded_data;
+		*decoded_data_len_ptr = mail->decoded_len;
+	} else
+	{
+		*decoded_data_ptr = mail->text + mail->text_begin;
+		*decoded_data_len_ptr = mail->text_len;
+	}
 }
 
 /**************************************************************************

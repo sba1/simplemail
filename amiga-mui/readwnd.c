@@ -179,9 +179,13 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 				if ((fh = Open(mail->filename,MODE_NEWFILE)))
 				{
 					struct DiskObject *dobj;
+					void *cont;
+					int cont_len;
+
 					mail_decode(mail);
-					if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
-					else Write(fh,mail->decoded_data,mail->decoded_len);
+					mail_decoded_data(mail,&cont,&cont_len);
+
+					Write(fh,cont,cont_len);
 					Close(fh);
 
 					if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
@@ -440,13 +444,11 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 				if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
 				{
 					char *comment = mail_get_from_address(mail_get_root(mail));
-					if (!mail->decoded_data)
-					{
-						Write(fh,mail->text + mail->text_begin,mail->text_len);
-					} else
-					{
-						Write(fh,mail->decoded_data,mail->decoded_len);
-					}
+					void *cont;
+					int cont_len;
+
+					mail_decoded_data(mail,&cont,&cont_len);
+					Write(fh,cont,cont_len);
 					Close(fh);
 
 					if (comment)

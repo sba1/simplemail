@@ -150,6 +150,7 @@ int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);
 void *mail_decode_bytes(struct mail *mail, unsigned int *len_ptr);
+void mail_decoded_data(struct mail *mail, void **decoded_data_ptr, int *decoded_data_len_ptr);
 int mail_create_html_header(struct mail *mail);
 
 int mail_add_header(struct mail *mail, char *name, int name_len,

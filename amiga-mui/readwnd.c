@@ -47,6 +47,7 @@
 #include "compiler.h"
 #include "datatypesclass.h"
 #include "iconclass.h"
+#include "mainwnd.h" /* remove this */
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "readlistclass.h"
@@ -80,9 +81,9 @@ struct Read_Data /* should be a customclass */
 
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
-	struct mail *mail; /* the mail which is displayed */
+	struct mail *mail; /* the mail which is displayed, a copy of the ref_mail */
 
-	struct mail *ref_mail; /* The reference to the original mail */
+	struct mail *ref_mail; /* The reference to the original mail which is in the folder */
 	char *folder_path; /* the path of the folder */
 
 	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
@@ -367,7 +368,8 @@ static void save_button_pressed(struct Read_Data **pdata)
 }
 
 /******************************************************************
- The prev button has been pressed
+ The prev button has been pressed. This should be made somehow
+ gui independend later
 *******************************************************************/
 static void prev_button_pressed(struct Read_Data **pdata)
 {
@@ -378,11 +380,26 @@ static void prev_button_pressed(struct Read_Data **pdata)
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 		read_window_display_mail(data, prev);
+
+		/* Update flags if needed */
+		if (mail_get_status_type(prev) == MAIL_STATUS_UNREAD)
+		{
+			struct folder *f = folder_find_by_path(data->folder_path);
+			if (f)
+			{
+				folder_set_mail_status(f,prev,MAIL_STATUS_READ | (prev->status & (~MAIL_STATUS_MASK)));
+				if (prev->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+				prev->flags &= ~MAIL_FLAGS_NEW;
+			}
+		}
+
+		main_set_active_mail(prev);
 	}
 }
 
 /******************************************************************
- The next button has been pressed
+ The next button has been pressed This should be made somehow
+ gui independend later
 *******************************************************************/
 static void next_button_pressed(struct Read_Data **pdata)
 {
@@ -393,6 +410,21 @@ static void next_button_pressed(struct Read_Data **pdata)
 		if (data->mail) mail_free(data->mail);
 		data->mail = NULL;
 		read_window_display_mail(data, next);
+
+		/* Update flags if needed */
+		if (mail_get_status_type(next) == MAIL_STATUS_UNREAD)
+		{
+			struct folder *f = folder_find_by_path(data->folder_path);
+			if (f)
+			{
+				folder_set_mail_status(f,next,MAIL_STATUS_READ | (next->status & (~MAIL_STATUS_MASK)));
+				if (next->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
+				next->flags &= ~MAIL_FLAGS_NEW;
+			}
+		}
+
+    /* will also refresh the mail, in case of updated flags */
+		main_set_active_mail(next);
 	}
 }
 

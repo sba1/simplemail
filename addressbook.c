@@ -420,6 +420,9 @@ static void addressbook_load_entries(struct addressbook_entry *group, FILE *fh)
 	free(buf);
 }
 
+/**************************************************************************
+ Loads the Addressbook as the xml format
+**************************************************************************/
 int addressbook_import_sm(char *filename)
 {
 	int retval = 0;
@@ -434,6 +437,9 @@ int addressbook_import_sm(char *filename)
 	return retval;
 }
 
+/**************************************************************************
+ Returns a line
+**************************************************************************/
 static char *getln(FILE *fp)
 {
 	char *rc;
@@ -445,6 +451,9 @@ static char *getln(FILE *fp)
 	return rc;
 }
 
+/**************************************************************************
+ Import addressbook entries from YAM
+**************************************************************************/
 static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 {
 	int rc = 1;
@@ -512,6 +521,9 @@ static int yam_import_entries(struct addressbook_entry *group, FILE *fp)
 	return rc;
 }
 
+/**************************************************************************
+ Import addressbook entries from YAM
+**************************************************************************/
 int addressbook_import_yam(char *filename)
 {
 	int rc = 0;
@@ -543,7 +555,10 @@ int addressbook_load(void)
 #define BOOK_YAM 1
 #define BOOK_SM  2
 
-int addressbook_get_type(char *filename)
+/**************************************************************************
+ Returns the type of an addressbook file
+**************************************************************************/
+static int addressbook_get_type(char *filename)
 {
 	int rc = BOOK_UNKNOWN;
 	FILE *fp;
@@ -575,11 +590,18 @@ int addressbook_get_type(char *filename)
 }
 
 /**************************************************************************
- Add entries from a specified file.
+ Add entries from a specified file. Set append to 1 if the addressbook
+ should be appended. filename mybe NULL which means that the default
+ filename is used. Returns 1 for success.
+ TODO: replace addressbook_load().
 **************************************************************************/
-int addressbook_import_file(char *filename)
+int addressbook_import_file(char *filename, int append)
 {
 	int rc = 0;
+
+	if (!filename) filename = "PROGDIR:.addressbook.xml";
+
+	if (!append) cleanup_addressbook();
 
 	switch (addressbook_get_type(filename))
 	{
@@ -596,9 +618,6 @@ int addressbook_import_file(char *filename)
 			sm_request(NULL, _("Unsupported type of addressbook."), _("Okay"));
 			break;
 	}
-
-	addressbookwnd_refresh();
-
 	return rc;
 }
 

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** picturebuttonclass.h
 */
 
 #ifndef SM__PICTUREBUTTONCLASS_H
@@ -27,6 +27,7 @@
 
 #define MUIA_PictureButton_Filename			(TAG_USER+0x182b000) /* STRPTR */
 #define MUIA_PictureButton_Label					(TAG_USER+0x182b001) /* STRPTR */
+#define MUIA_PictureButton_FreeVert			(TAG_USER+0x182b002) /* BOOL */
 
 extern struct MUI_CustomClass *CL_PictureButton;
 

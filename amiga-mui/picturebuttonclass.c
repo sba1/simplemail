@@ -37,6 +37,8 @@
 #include <proto/datatypes.h>
 #include <proto/muimaster.h>
 
+#include "support_indep.h"
+
 #include "amigasupport.h"
 #include "compiler.h"
 #include "datatypescache.h"
@@ -81,39 +83,15 @@ struct PictureButton_Data
 {
 	STRPTR name;
 	STRPTR label;
+	int free_vert;
 	Object *dto;
 	struct BitMap *bitmap;
 	struct BitMapHeader *bmhd;
+	int setup;
 };
 
-
-STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
+STATIC VOID PictureButton_Load(struct PictureButton_Data *data, Object *obj)
 {
-	struct PictureButton_Data *data;
-
-	if (!(obj=(Object *)DoSuperNew(cl,obj,
-					MUIA_Font, MUIV_Font_Tiny,
-					TAG_MORE, msg->ops_AttrList)))
-	        return 0;
-
-	data = (struct PictureButton_Data*)INST_DATA(cl,obj);
-
-	data->name = (char *)GetTagData(MUIA_PictureButton_Filename,NULL,msg->ops_AttrList);
-	data->label = (char *)GetTagData(MUIA_PictureButton_Label,NULL,msg->ops_AttrList);
-
-	/* tell MUI not to care about filling our background during MUIM_Draw */
-/*	set(obj,MUIA_FillArea,FALSE);*/
-
-	return((ULONG)obj);
-}
-
-STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
-{
-	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
-	
-	if (!DoSuperMethodA(cl,obj,msg))
-		return(FALSE);
-	
 	if (data->name)
 	{
 		if (data->dto = dt_load_picture(data->name, _screen(obj)))
@@ -127,12 +105,10 @@ STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
 			}
 		}
 	}
-	return 1;
 }
 
-STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
+STATIC VOID PictureButton_Unload(struct PictureButton_Data *data)
 {
-	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
 	data->bitmap = NULL;
 	data->bmhd = NULL;
  
@@ -141,8 +117,76 @@ STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 		dt_dispose_object(data->dto);
 		data->dto = NULL;
 	}
- 
-	return 0;
+}
+
+STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
+{
+	struct PictureButton_Data *data;
+
+	if (!(obj=(Object *)DoSuperNew(cl,obj,
+					MUIA_Font, MUIV_Font_Tiny,
+					TAG_MORE, msg->ops_AttrList)))
+	        return 0;
+
+	data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+
+	data->name = mystrdup((char *)GetTagData(MUIA_PictureButton_Filename,NULL,msg->ops_AttrList));
+	data->label = (char *)GetTagData(MUIA_PictureButton_Label,NULL,msg->ops_AttrList);
+	data->free_vert = (int)GetTagData(MUIA_PictureButton_FreeVert,NULL,msg->ops_AttrList);
+
+	/* tell MUI not to care about filling our background during MUIM_Draw */
+/*	set(obj,MUIA_FillArea,FALSE);*/
+
+	return((ULONG)obj);
+}
+
+STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
+{
+	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+	struct TagItem *ti = FindTagItem(MUIA_PictureButton_Filename,msg->ops_AttrList);
+	if (ti)
+	{
+		if (data->name) free(data->name);
+		data->name = mystrdup((char*)ti->ti_Data);
+
+		if (data->setup)
+		{
+			Object *parent;
+
+			PictureButton_Unload(data);
+			PictureButton_Load(data,obj);
+			MUI_Redraw(obj,MADF_DRAWOBJECT);
+
+			if ((parent = (Object*)xget(obj,MUIA_Parent)))
+			{
+				/* New size if needed */
+				DoMethod(parent,MUIM_Group_InitChange);
+				DoMethod(parent,MUIM_Group_ExitChange);
+			}
+		}
+	}
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG PictureButton_Setup(struct IClass *cl,Object *obj,Msg msg)
+{
+	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+
+	if (!DoSuperMethodA(cl,obj,msg))
+		return(FALSE);
+
+	PictureButton_Load(data,obj);
+
+	data->setup = 1;
+	return 1;
+}
+
+STATIC ULONG PictureButton_Cleanup(struct IClass *cl,Object *obj,Msg msg)
+{
+	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+	PictureButton_Unload(data);
+	data->setup = 0;
+	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_AskMinMax *msg)
@@ -190,7 +234,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 
 	mi->MinHeight += minheight;
 	mi->DefHeight += minheight;
-	mi->MaxHeight += minheight;
+	if (data->free_vert) mi->MaxHeight = MUI_MAXMAX;
+	else mi->MaxHeight += minheight;
 	mi->MinWidth += minwidth;
 	mi->DefWidth += minwidth;
 	mi->MaxWidth = MUI_MAXMAX;
@@ -277,6 +322,7 @@ ASM STATIC ULONG PictureButton_Dispatcher(register __a0 struct IClass *cl, regis
 	switch (msg->MethodID)
 	{
 		case OM_NEW        : return(PictureButton_New      (cl,obj,(struct opSet*)msg));
+		case OM_SET        : return(PictureButton_Set      (cl,obj,(struct opSet*)msg));
 		case MUIM_Setup    : return(PictureButton_Setup    (cl,obj,msg));
 		case MUIM_Cleanup  : return(PictureButton_Cleanup  (cl,obj,msg));
 		case MUIM_AskMinMax: return(PictureButton_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg));

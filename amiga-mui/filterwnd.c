@@ -39,6 +39,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "audioselectgroupclass.h"
 #include "compiler.h"
 #include "filterruleclass.h"
 #include "filterwnd.h"
@@ -59,6 +60,12 @@ static Object *filter_sent_check;
 static Object *filter_rule_group;
 static Object *filter_move_check;
 static Object *filter_move_text;
+static Object *filter_arexx_check;
+static Object *filter_arexx_popasl;
+static Object *filter_arexx_string;
+static Object *filter_sound_check;
+static Object *filter_sound_string;
+
 static Object *filter_folder_list;
 
 STATIC ASM APTR filter_construct(register __a2 APTR pool, register __a1 struct filter *ent)
@@ -138,6 +145,16 @@ static void filter_accept_rule(void)
 		free(filter_last_selected->dest_folder); /* Safe to call with NULL */
 		filter_last_selected->dest_folder = mystrdup((char*)xget(filter_move_text,MUIA_Text_Contents));
 		filter_last_selected->use_dest_folder = xget(filter_move_check,MUIA_Selected);
+
+		/* Store the ARexxfile */
+		free(filter_last_selected->arexx_file);
+		filter_last_selected->arexx_file = mystrdup((char*)xget(filter_arexx_string,MUIA_String_Contents));
+		filter_last_selected->use_arexx_file = xget(filter_arexx_check,MUIA_Selected);
+
+		/* Store the Soundfile */
+		free(filter_last_selected->sound_file);
+		filter_last_selected->sound_file = mystrdup((char*)xget(filter_sound_string,MUIA_String_Contents));
+		filter_last_selected->use_sound_file = xget(filter_sound_check,MUIA_Selected);
 
 		/* Store the flags */
 		filter_last_selected->flags = 0;
@@ -370,8 +387,12 @@ static void filter_active(void)
 		filter_accept_rule();
 		nnset(filter_name_string,MUIA_UTF8String_Contents, f->name);
 		filter_refresh_rules();
-		set(filter_move_check, MUIA_Selected, f->use_dest_folder);
 		set(filter_move_text, MUIA_Text_Contents, f->dest_folder);
+		set(filter_move_check, MUIA_Selected, f->use_dest_folder);
+		set(filter_sound_string, MUIA_String_Contents, f->sound_file);
+		set(filter_sound_check, MUIA_Selected, f->use_sound_file);
+		set(filter_arexx_string, MUIA_String_Contents, f->arexx_file);
+		set(filter_arexx_check, MUIA_Selected, f->use_arexx_file);
 
 		set(filter_request_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_REQUEST));
 		set(filter_new_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_NEW));
@@ -482,6 +503,23 @@ static void init_filter(void)
 											End,
 										End,
 									End,
+
+								Child, MakeLabel(_("Execute ARexx Script")),
+								Child, filter_arexx_check = MakeCheck(_("Execute ARexx Script"),FALSE),
+								Child, filter_arexx_popasl = PopaslObject,
+									MUIA_Disabled, TRUE,
+									MUIA_Popstring_Button, PopButton(MUII_PopFile),
+									MUIA_Popstring_String, filter_arexx_string = BetterStringObject,
+										StringFrame,
+										MUIA_CycleChain,1,
+										MUIA_String_Acknowledge, TRUE,
+										End,
+									End,
+
+								Child, MakeLabel(_("Play Sound")),
+								Child, filter_sound_check = MakeCheck(_("Play Sound"),FALSE),
+								Child, filter_sound_string = AudioSelectGroupObject, MUIA_Disabled, TRUE, End,
+
 								End,
 							End,
 						End,
@@ -515,6 +553,8 @@ static void init_filter(void)
 		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_add_rule);
 		DoMethod(filter_apply_now_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_apply);
 		DoMethod(filter_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(filter_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(filter_arexx_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_arexx_popasl, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 		DoMethod(filter_folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, filter_move_popobject, 2, MUIM_Popstring_Close, 1);
 
 		filter_update_folder_list();

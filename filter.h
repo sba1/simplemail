@@ -79,6 +79,12 @@ struct filter
 	char *dest_folder; /* Move the mail into the given folder */
 	int use_dest_folder; /* If set to 1 */
 
+	char *sound_file; /* Play a sound file */
+	int use_sound_file; /* If set to 1 */
+
+	char *arexx_file; /* Execute ARexx Script */
+	int use_arexx_file; /* If set to 1 */
+
 	struct list action_list; /* list of actions */
 };
 

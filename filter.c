@@ -286,6 +286,14 @@ void filter_list_load(FILE *fh)
 						f->dest_folder = dupconfigstr(result,utf8);
 					if ((result = get_config_item(filter_buf,"UseDestFolder")))
 						f->use_dest_folder = ((*result == 'Y') || (*result == 'y'))?1:0;
+					if ((result = get_config_item(filter_buf,"SoundFile")))
+						f->sound_file = dupconfigstr(result,utf8);
+					if ((result = get_config_item(filter_buf,"UseSoundFile")))
+						f->use_sound_file = ((*result == 'Y') || (*result == 'y'))?1:0;
+					if ((result = get_config_item(filter_buf,"ARexxFile")))
+						f->arexx_file = dupconfigstr(result,utf8);
+					if ((result = get_config_item(filter_buf,"UseARexxFile")))
+						f->use_arexx_file = ((*result == 'Y') || (*result == 'y'))?1:0;
 
 					if (!mystrnicmp(filter_buf, "RULE",4))
 					{
@@ -362,6 +370,10 @@ void filter_list_save(FILE *fh)
 		fprintf(fh,"FILTER%d.Mode=%d\n",i,f->mode);
 		fprintf(fh,"FILTER%d.DestFolder=%s\n",i,MAKESTR(f->dest_folder));
 		fprintf(fh,"FILTER%d.UseDestFolder=%s\n",i,f->use_dest_folder?"Y":"N");
+		fprintf(fh,"FILTER%d.SoundFile=%s\n",i,MAKESTR(f->sound_file));
+		fprintf(fh,"FILTER%d.UseSoundFile=%s\n",i,f->use_sound_file?"Y":"N");
+		fprintf(fh,"FILTER%d.ARexxFile=%s\n",i,MAKESTR(f->arexx_file));
+		fprintf(fh,"FILTER%d.UseARexxFile=%s\n",i,f->use_arexx_file?"Y":"N");
 
 		rule = (struct filter_rule*)list_first(&f->rules_list);
 		while (rule)

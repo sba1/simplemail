@@ -40,6 +40,8 @@
 #include "support.h"
 #include "support_indep.h"
 
+#include "gui_main.h" /* gui_execute_arexx() */
+
 #define FOLDER_INDEX_VERSION 5
 
 static void folder_remove_mail(struct folder *folder, struct mail *mail);
@@ -2049,6 +2051,20 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 
 					handle = old_handle;
 				}
+
+				if (filter->sound_file && filter->use_sound_file)
+				{
+					chdir(path);
+					sm_play_sound(filter->sound_file);
+					if(chdir(folder->path) == -1) return 0;
+				}
+
+				if (filter->arexx_file && filter->use_arexx_file)
+				{
+					chdir(path);
+					gui_execute_arexx(filter->arexx_file);
+					if(chdir(folder->path) == -1) return 0;
+				}
 			}
 		}
 	}
@@ -2085,6 +2101,20 @@ int folder_filter(struct folder *folder)
 					/* very slow, because the sorted array is rebuilded in the both folders! */
 					callback_move_mail(m, folder, dest_folder);
 					handle = old_handle;
+				}
+
+				if (f->sound_file && f->use_sound_file)
+				{
+					chdir(path);
+					sm_play_sound(f->sound_file);
+					if(chdir(folder->path) == -1) return 0;
+				}
+
+				if (f->arexx_file && f->use_arexx_file)
+				{
+					chdir(path);
+					gui_execute_arexx(f->arexx_file);
+					if(chdir(folder->path) == -1) return 0;
 				}
 			}
 		}

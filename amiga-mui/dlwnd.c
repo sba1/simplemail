@@ -76,7 +76,9 @@ int dl_window_open(void)
 
 	if (!win_dl)
 	{
-		win_dl = transwndObject,End;
+		win_dl = transwndObject,
+			MUIA_Window_ID,	MAKE_ID('T','R','D','L'),
+		End;
 
 		if (win_dl)
 		{

@@ -93,7 +93,9 @@ int up_window_open(void)
 
 	if (!win_up)
 	{
-		win_up = transwndObject,End;
+		win_up = transwndObject,
+			MUIA_Window_ID,	MAKE_ID('T','R','U','P'),
+		End;
 
 		if (win_up)
 		{

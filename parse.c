@@ -849,7 +849,7 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	while (isdigit(*date)) date++;
 	while (isspace(*date)) date++;
 	gmt = atoi(date);
-	gmt = (gmt % 60) + (gmt / 100)*60;
+	gmt = (gmt % 100) + (gmt / 100)*60;
 	while (isdigit(*date)) date++;
 
 	if (pday) *pday = day;

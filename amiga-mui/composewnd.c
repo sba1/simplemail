@@ -956,6 +956,7 @@ int compose_window_open(struct compose_args *args)
 							MUIA_Weight, 50,
 							MUIA_CycleChain, 1,
 							MUIA_NListview_NList, quick_attach_tree = AttachmentListObject,
+								MUIA_AttachmentList_Quick, TRUE,
 								End,
 							End,
 						End,

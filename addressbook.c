@@ -1340,24 +1340,24 @@ struct addressbook_entry *addressbook_find_entry_by_address(char *addr)
 /**************************************************************************
  Completes an alias/realname/e-mail address of the addressbook
 **************************************************************************/
-struct addressbook_entry *addressbook_get_entry_from_mail_header(struct mail *m, char *header)
+struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m, int to)
 {
 	struct addressbook_entry *e = NULL;
-	char *from = mail_find_header_contents(m, header);
-	if (from)
-	{
-		struct parse_address addr;
-		if (parse_address(from,&addr))
-		{
-			struct mailbox *mb = (struct mailbox *)list_first(&addr.mailbox_list);
-			if (mb)
-			{
-				e = addressbook_create_person(mb->phrase, mb->addr_spec);
-			}
+	char *phrase;
+	char *addr;
 
-			free_address(&addr);
-		}
+	if (to)
+	{
+		phrase = m->to_phrase;
+		addr = m->to_addr;
+	} else
+	{
+		phrase = m->from_phrase;
+		addr = m->from_addr;
 	}
+
+	if (addr)
+		e = addressbook_create_person(phrase, addr);
 	return e;
 }
 

@@ -1124,10 +1124,11 @@ void addressbook_open(void)
 
 /******************************************************************
  Opens the addressbook with a new person taken from the mail
+ To is 1 if address should be taken from the To: field
 *******************************************************************/
-void addressbook_open_with_new_address_from_mail_header(struct mail *m, char *header)
+void addressbook_open_with_new_address_from_mail(struct mail *m, int to)
 {
-	struct addressbook_entry *entry = addressbook_get_entry_from_mail_header(m,header);
+	struct addressbook_entry *entry = addressbook_get_entry_from_mail(m,to);
 	if (entry)
 	{
 		addressbook_open();

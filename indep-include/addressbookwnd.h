@@ -26,7 +26,7 @@
 struct mail;
 
 void addressbook_open(void);
-void addressbook_open_with_new_address_from_mail_header(struct mail *m, char *header);
+void addressbook_open_with_new_address_from_mail(struct mail *m, int to);
 int addressbook_set_active(char *alias);
 
 void addressbookwnd_refresh(void);

@@ -145,24 +145,17 @@ void callback_get_address(void)
 	{
 		char *addr;
 		struct folder *f;
-		char *header;
 
 		f = main_get_folder();
 
-		if (folder_get_type(f) == FOLDER_TYPE_SEND) header = "to";
-		else header = "from";
-
-		addr = mail_find_header_contents(mail,header);
+		if (folder_get_type(f) == FOLDER_TYPE_SEND) addr = mail->to_addr;
+		else addr = mail->from_addr;
 
 		if (addr)
 		{
-			struct mailbox mb;
-			if (parse_mailbox(addr,&mb))
+			if (!addressbook_get_realname(addr))
 			{
-				if (!addressbook_get_realname(mb.addr_spec))
-				{
-					addressbook_open_with_new_address_from_mail_header(mail,header);
-				}
+				addressbook_open_with_new_address_from_mail(mail,folder_get_type(f) == FOLDER_TYPE_SEND);
 			}
 		}
 	}
@@ -755,7 +748,7 @@ void callback_new_folder(void)
 /* create a new group */
 void callback_new_group(void)
 {
-	folder_add_group("New Group");
+	folder_add_group(_("New Group"));
 	main_refresh_folders();
 	filter_update_folder_list();
 }

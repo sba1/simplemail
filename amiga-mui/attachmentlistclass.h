@@ -27,6 +27,8 @@
 IMPORT struct MUI_CustomClass *CL_AttachmentList;
 #define AttachmentListObject (Object*)NewObject(CL_AttachmentList->mcc_Class, NULL
 
+#define MUIA_AttachmentList_Quick (TAG_USER+0x92733) /* (ULONG) */
+
 #define MUIM_AttachmentList_FindUniqueID 0x98989
 struct MUIP_AttachmentList_FindUniqueID {ULONG MethodID; int unique_id;};
 

@@ -50,6 +50,7 @@ struct AttachmentList_Data
 	struct Hook construct_hook;
 	struct Hook destruct_hook;
 	struct Hook display_hook;
+	int quick;
 };
 
 STATIC ASM struct attachment *attachment_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
@@ -86,15 +87,29 @@ STATIC ASM VOID attachment_destruct(register __a1 struct MUIP_NListtree_Destruct
 	}
 }
 
-STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
+	struct AttachmentList_Data *data = (struct AttachmentList_Data*)INST_DATA(CL_AttachmentList->mcc_Class,obj);
+
 	if (msg->TreeNode)
 	{
 		struct attachment *attach = (struct attachment *)msg->TreeNode->tn_User;
-		*msg->Array++ = attach->filename?(char*)FilePart(attach->filename):"";
-		*msg->Array++ = NULL;
-		*msg->Array++ = attach->content_type;
-		*msg->Array++ = attach->description;
+		if (data->quick)
+		{
+			if (attach->filename) *msg->Array = attach->filename;
+			else
+			{
+				if (!mystricmp(attach->content_type,"text/plain") && attach->editable)
+					*msg->Array = _("Editable Mailtext");
+				else *msg->Array = attach->content_type;
+			}
+		} else
+		{
+			*msg->Array++ = attach->filename?(char*)FilePart(attach->filename):"";
+			*msg->Array++ = NULL;
+			*msg->Array++ = attach->content_type;
+			*msg->Array++ = attach->description;
+		}
 	} else
 	{
 		*msg->Array++ = _("File Name");
@@ -107,6 +122,7 @@ STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMe
 STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AttachmentList_Data *data;
+	struct TagItem *ti;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					TAG_MORE,msg->ops_AttrList)))
@@ -117,14 +133,19 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook(&data->destruct_hook,(HOOKFUNC)attachment_destruct);
 	init_hook(&data->display_hook,(HOOKFUNC)attachment_display);
 
+	if ((ti = FindTagItem(MUIA_AttachmentList_Quick, msg->ops_AttrList)))
+		data->quick = !!ti->ti_Data;
+
 	SetAttrs(obj,
 						MUIA_NListtree_ConstructHook, &data->construct_hook,
 						MUIA_NListtree_DestructHook, &data->destruct_hook,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
-						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, ",,,",
-						MUIA_NListtree_TreeColumn, 2,
+						MUIA_NListtree_Title, !data->quick,
+						data->quick?TAG_IGNORE:MUIA_NListtree_Format, ",,,",
+						data->quick?TAG_IGNORE:MUIA_NListtree_TreeColumn, 2,
+						MUIA_NListtree_ShowTree, !data->quick,
 						TAG_DONE);
+
 
 	return (ULONG)obj;
 }

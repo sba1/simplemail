@@ -378,6 +378,7 @@ int tcp_flush(struct connection *conn)
 		printf("C: ");
 		{
 			static char buf[5000];
+			memset(buf,0,sizeof(buf));
 			memcpy(buf,conn->write_buf,MIN(5000-1,conn->write_size));
 			printf("%s\n",buf);
 		}

@@ -24,6 +24,7 @@
 */
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "codesets.h"
 #include "codesets_table.h"
@@ -80,6 +81,47 @@ utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n)
 		}
 	}
 	return saved_to;
+}
+
+/**************************************************************************
+ Creates a uf8 string from a different one. from is the iso string and
+ charset the charset of from
+**************************************************************************/
+utf8 *utf8create(void *from, int charset)
+{
+	if (charset >= 0 && charset < CHARSET_MAX)
+	{
+		int dest_size = 0;
+		char *dest;
+		char *src = (char*)from;
+		unsigned char c;
+		const utf8 **table = iso2utf8[charset];
+
+		while ((c = *src++))
+			dest_size += (table[c])[0];
+
+		if ((dest = malloc(dest_size+1)))
+		{
+			char *dest_ptr = dest;
+			src = (char*)from;
+
+			while ((c = *src))
+			{
+				const unsigned char *utf8_seq = table[c]+1;
+
+				while ((c = *utf8_seq))
+				{
+					*dest_ptr++ = c;
+					utf8_seq++;
+				}
+				src++;
+			}
+
+			*dest_ptr = 0;
+			return dest;
+		}
+	}
+	return NULL;
 }
 
 #ifdef BUILD_TABLES
@@ -711,7 +753,7 @@ void main(void)
 		UTF8 *dest_ptr = dest;
 		int j;
 
-/*		src = i; */
+/*		src = i;*/
 		if (i < 128) src = i;
 		else src = iso_8859_2_to_ucs4[i-128];
 
@@ -722,7 +764,7 @@ void main(void)
 		printf("  \"\\0%03lo",strlen(dest));
 		for (j=0;dest[j];j++)
 		{
-			printf("\\0%03lo",(int)dest[j]);
+			printf("\\%03lo",(int)dest[j]);
 
 		}
 		printf("\", /* 0x%04lx */\n",src);

@@ -23,16 +23,110 @@
 #ifndef SM__COMPILER_H
 #define SM__COMPILER_H
 
-/* Some compiler depend stuff */
-
-#if defined(__MAXON__) || defined(__STORM__) || defined(_DCC)
-#define ASM
-#define SAVEDS
-#define FAR
-#else
-#define FAR __far
-#define ASM __asm
-#define SAVEDS __saveds
+#ifndef EXEC_TYPES_H
+#include <exec/types.h>
 #endif
+
+#if INCLUDE_VERSION < 50
+
+#ifdef __SASC
+
+#ifndef ASM
+#define ASM __asm
+#endif /* ASM */
+
+#ifndef INLINE
+#define INLINE __inline
+#endif /* INLINE */
+
+#ifndef REG
+#define REG(reg,arg) register __##reg arg
+#endif /* REG */
+
+#ifndef REGARGS
+#define REGARGS __regargs
+#endif /* REGARGS */
+
+#ifndef STDARGS
+#define STDARGS __stdargs
+#endif /* STDARGS */
+
+#ifndef SAVEDS
+#define SAVEDS __saveds
+#endif /* SAVEDS */
+
+#define __attribute__(dummy)
+
+#endif /* __SASC */
+
+/****************************************************************************/
+
+#ifdef __GNUC__
+
+#ifndef ASM
+#define ASM
+#endif /* ASM */
+
+#ifndef INLINE
+#define INLINE __inline__
+#endif /* INLINE */
+
+#ifndef FAR
+#define FAR
+#endif /* FAR */
+
+#ifdef mc68000
+
+#ifndef REG
+#define REG(reg,arg) arg __asm(#reg)
+#endif /* REG */
+
+#ifndef REGARGS
+#define REGARGS __regargs
+#endif /* REGARGS */
+
+#ifndef STDARGS
+#define STDARGS __stdargs
+#endif /* STDARGS */
+
+#ifndef INTERRUPT
+#define INTERRUPT __interrupt
+#endif /* INTERRUPT */
+
+#ifndef SAVEDS
+#define SAVEDS __saveds
+#endif /* SAVEDS */
+
+#else /* PPC */
+
+#ifndef REG
+#define REG(reg,arg) arg
+#endif /* REG */
+
+#ifndef REGARGS
+#define REGARGS
+#endif /* REGARGS */
+
+#ifndef STDARGS
+#define STDARGS
+#endif /* STDARGS */
+
+#ifndef INTERRUPT
+#define INTERRUPT
+#endif /* INTERRUPT */
+
+#ifndef SAVEDS
+#define SAVEDS
+#endif /* SAVEDS */
+
+#endif /* neither 68k nor PPC */
+
+#endif /* __GNUC__ */
+
+/****************************************************************************/
+
+
+#endif
+
 
 #endif

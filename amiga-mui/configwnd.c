@@ -80,6 +80,9 @@ static Object *receive_autocheck_string;
 static Object *receive_autocheckifonline_check;
 static Object *receive_sound_check;
 static Object *receive_sound_string;
+static Object *receive_arexx_check;
+static Object *receive_arexx_popasl;
+static Object *receive_arexx_string;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
 static Object *read_wrap_checkbox;
@@ -360,6 +363,7 @@ static void config_use(void)
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
 	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
+	if (user.config.receive_arexx_file) free(user.config.receive_arexx_file);
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
@@ -369,6 +373,8 @@ static void config_use(void)
 	user.config.receive_autoifonline = xget(receive_autocheckifonline_check,MUIA_Selected);
 	user.config.receive_sound = xget(receive_sound_check,MUIA_Selected);
 	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
+	user.config.receive_arexx = xget(receive_arexx_check,MUIA_Selected);
+	user.config.receive_arexx_file = mystrdup((char*)xget(receive_arexx_string, MUIA_String_Contents));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
@@ -677,6 +683,19 @@ static int init_tcpip_receive_group(void)
 			End,
 		Child, HorizLineTextObject(_("New mails")),
 		Child, ColGroup(3),
+			Child, MakeLabel(_("ARexx")),
+			Child, receive_arexx_check = MakeCheck(_("ARexx"),user.config.receive_arexx),
+			Child, receive_arexx_popasl = PopaslObject,
+				MUIA_Disabled, !user.config.receive_arexx,
+				MUIA_Popstring_Button, PopButton(MUII_PopFile),
+				MUIA_Popstring_String, receive_arexx_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain,1,
+					MUIA_String_Acknowledge, TRUE,
+					MUIA_String_Contents, user.config.receive_arexx_file,
+					End,
+				End,
+
 			Child, MakeLabel(_("Sound")),
 			Child, receive_sound_check = MakeCheck(_("Sound"),user.config.receive_sound),
 			Child, receive_sound_string = AudioSelectGroupObject, MUIA_Disabled, !user.config.receive_sound, End,
@@ -687,6 +706,7 @@ static int init_tcpip_receive_group(void)
 
 	set(receive_sound_string,MUIA_String_Contents,user.config.receive_sound_file);
 
+	DoMethod(receive_arexx_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, receive_arexx_popasl, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(receive_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, receive_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 
 	return 1;

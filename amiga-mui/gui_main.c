@@ -442,6 +442,15 @@ int gui_parseargs(int argc, char *argv[])
 }
 
 /****************************************************************
+ Execute an ARexx script
+*****************************************************************/
+int gui_execute_arexx(char *filename)
+{
+	return arexx_execute_script(filename);
+}
+
+
+/****************************************************************
  The main entry point
 *****************************************************************/
 void main(int argc, char *argv[])

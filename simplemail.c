@@ -551,6 +551,11 @@ void callback_number_of_mails_downloaded(int num)
 	{
 		sm_play_sound(user.config.receive_sound_file);
 	}
+
+  if (num && user.config.receive_arexx)
+  {
+  	gui_execute_arexx(user.config.receive_arexx_file);
+  }
 }
 
 /* a new mail has been written */

@@ -189,6 +189,10 @@ int load_config(void)
 							user.config.receive_sound = atoi(result);
 						if ((result = get_config_item(buf,"Receive.SoundFile")))
 							user.config.receive_sound_file = mystrdup(result);
+						if ((result = get_config_item(buf,"Receive.ARexxExecute")))
+							user.config.receive_arexx = atoi(result);
+						if ((result = get_config_item(buf,"Receive.ARexxFile")))
+							user.config.receive_arexx_file = mystrdup(result);
 						if ((result = get_config_item(buf,"Read.PropFont")))
 							user.config.read_propfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Read.FixedFont")))
@@ -470,6 +474,8 @@ void save_config(void)
 			fprintf(fh,"Receive.AutocheckIfOnline=%s\n",user.config.receive_autoifonline?"Y":"N");
 			fprintf(fh,"Receive.SoundPlay=%d\n",user.config.receive_sound);
 			fprintf(fh,"Receive.SoundFile=%s\n",MAKESTR(user.config.receive_sound_file));
+			fprintf(fh,"Receive.ARexxExecute=%d\n",user.config.receive_arexx);
+			fprintf(fh,"Receive.ARexxFile=%s\n",MAKESTR(user.config.receive_arexx_file));
 
 			/* Write the pop3 servers */
 			i = 0;

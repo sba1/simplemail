@@ -62,6 +62,8 @@ struct config
 	int receive_sound;
 	char *receive_sound_file;
 
+  int receive_arexx;
+  char *receive_arexx_file;
 	/* list of all accounts */
 	struct list account_list;
 

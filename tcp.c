@@ -37,64 +37,105 @@
 
 long tcp_connect(char *server, unsigned int port)
 {
-   long hsocket, rc;
-   struct sockaddr_in sockaddr;
-   struct hostent *hostent;
-   
-   rc = SMTP_NO_SOCKET;
+	long sd, rc;
+	struct sockaddr_in sockaddr;
+	struct hostent *hostent;
+	static char err[256];
+	static long id;
+	
+	rc = SMTP_NO_SOCKET;
 
-   hostent = gethostbyname(server);
-   if(hostent != NULL)
-   {
-      sockaddr.sin_len = sizeof(struct sockaddr_in);
-      sockaddr.sin_family = AF_INET;
-      sockaddr.sin_port = port;
-      sockaddr.sin_addr.s_addr = 0;
+	hostent = gethostbyname(server);
+	if(hostent != NULL)
+	{
+		sockaddr.sin_len = sizeof(struct sockaddr_in);
+		sockaddr.sin_family = AF_INET;
+		sockaddr.sin_port = htons(port);
+		sockaddr.sin_addr = *(struct in_addr *) hostent->h_addr;
+		bzero(&(sockaddr.sin_zero), 8);
 
-      memcpy(&sockaddr.sin_addr, hostent->h_addr, hostent->h_length);
-      
-      hsocket = socket(hostent->h_addrtype, SOCK_STREAM, 0);
-      if(hsocket != -1)
-      {
-         if(connect(hsocket, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr_in)) != -1)
-         {
-            rc = hsocket;
-         }
-         else
-         {
-            tell_from_subtask("Connect() failed!");
-         }
-      }
-      else
-      {
-         tell_from_subtask("Socket() failed!");
-      }
-   }
-   else
-   {
-      static char err[256];
-      
-      if(Errno() == TRY_AGAIN)
-      {
-         sprintf(err, "Can'\t locate %s. Try again later!", server);
-      }
-      else
-      {
-         sprintf(err, "%s is not a valid server!", server);
-      }
-      
-      tell_from_subtask(err);
-   }  
+		sd = socket(PF_INET, SOCK_STREAM, 0);
+		if(sd != -1)
+		{
+			if(connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
+			{
+				rc = sd;
+			}
+			else
+			{
+				switch(id=Errno())
+				{
+					case EADDRNOTAVAIL:
+						strcpy(err, "The specified address is not avaible on this machine.");
+						break;
 
-   return(rc);
+					case ETIMEDOUT:
+						strcpy(err, "Connecting timed out.");
+						break;
+
+					case ECONNREFUSED:
+						strcpy(err, "Connection refused.");
+						break;
+
+					case ENETUNREACH:
+						strcpy(err, "Network unreachable.");
+						break;
+
+					default: /* Everything else seems too much low-level for the user to me. */
+						strcpy(err, "Failed to connect to the server.");
+						break;
+				}
+
+				tell_from_subtask(err);
+			}
+		}
+		else
+		{
+			strcpy(err, "Failed to create a socketdescriptor.");
+
+			tell_from_subtask(err);
+		}
+	}
+	else
+	{
+		switch(id = h_errno)
+		{
+			case HOST_NOT_FOUND:
+				sprintf(err, "Host \"%s\" not found.", server);
+				break;
+
+			case TRY_AGAIN:
+				sprintf(err, "Cannot locate %s. Try again later!", server);
+				break;
+
+			case NO_RECOVERY:
+				strcpy(err, "Unexpected server failure.");
+				break;
+
+			case NO_DATA:
+				sprintf(err, "No IP associated with %s!", server);
+				break;
+
+			case -1:
+				strcpy(err, "Could not determinate a valid error code!");
+				break;
+
+			default:
+				sprintf(err, "Unknown error %ld!", id);
+				break;
+		}
+		
+		tell_from_subtask(err);
+	}  
+
+	return rc;
 }
 
-void tcp_disconnect(long hsocket)
+void tcp_disconnect(long sd)
 {
-   if(hsocket != SMTP_NO_SOCKET)
-   {
-      CloseSocket(hsocket);
-      shutdown(hsocket, 2);
-   }
+	if(sd != SMTP_NO_SOCKET)
+	{
+		close(sd);
+	}
 }
 

@@ -20,13 +20,13 @@
 ** taglines.h
 */
 
+#ifndef SM__TAGLINES_H
+#define SM__TAGLINES_H
+
 #include "lists.h"
 
-struct tagline {
-	struct node n;
-	char *txt;
-};
-
 char *taglines_add_tagline(char *);
-struct tagline *taglines_create_tagline(char *);
-void taglines_free_tagline(struct tagline *);
+void taglines_cleanup(void);
+void taglines_init(char *filename);
+
+#endif

@@ -66,9 +66,6 @@ struct config
 	/* list of all phrases */
 	struct list phrase_list;
 
-	/* list of all taglines */
-	struct list tagline_list;
-
 	int signatures_use;
 	int taglines_use;
 

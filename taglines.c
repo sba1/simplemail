@@ -36,8 +36,12 @@ int read_line(FILE *fh, char *buf); /* in addressbook.c */
 static int taglines_num;
 static int *taglines_positions;
 static char *taglines_filename;
+static char *taglines_indexname;
 
-int random(int max)
+/******************************************************************
+ Returns a random number
+*******************************************************************/
+static int random(int max)
 {
 	static int x=0;
 
@@ -50,32 +54,39 @@ int random(int max)
 	return (rand() % max);
 }
 
-char *get_tagline(void)
+/******************************************************************
+ Returns a random tagline which is allocated with malloc().
+*******************************************************************/
+static char *get_tagline(void)
 {
-	char *rc;
-	struct tagline *t;
-	int nr, len = list_length(&user.config.tagline_list);
-	struct node *n;
+	FILE *fh;
+	int nr;
+	char *tagline = NULL;
+	
+	if (!taglines_filename || !taglines_indexname || !taglines_num) return NULL;
 
-	if(!len) return NULL;
+	nr = random(taglines_num);
 
-	n=list_first(&user.config.tagline_list);
-
-	nr = random(len);
-
-	t = (struct tagline *) list_find(&user.config.tagline_list, nr);
-
-
-	rc = malloc(strlen(t->txt) + 1);
-	if(rc != NULL)
+	if ((fh = fopen(taglines_filename, "rb")))
 	{
-		strcpy(rc, t->txt);
+		int len = taglines_positions[nr+1] - taglines_positions[nr];
+
+		if ((tagline = malloc(len+1)))
+		{
+			fseek(fh,taglines_positions[nr],SEEK_SET);
+			fread(tagline,1,len,fh);
+			tagline[len-4]=0;
+		}
+		fclose(fh);
 	}
 
-	return rc;
+	return tagline;
 }
 
-char * taglines_add_tagline(char *buf)
+/******************************************************************
+ Adds a tagline to a buffer which is freed
+*******************************************************************/
+char *taglines_add_tagline(char *buf)
 {
 	char *rc = buf;
 	char *tagline;
@@ -104,40 +115,6 @@ char * taglines_add_tagline(char *buf)
 	return rc;
 }
 
-struct tagline *taglines_create_tagline(char *txt)
-{
-	struct tagline *rc;
-
-	rc = malloc(sizeof(struct tagline));
-	if(rc != NULL)
-	{
-		rc->txt = malloc(strlen(txt) + 1);
-		if(rc->txt != NULL)
-		{
-			strcpy(rc->txt, txt);
-		}
-		else
-		{
-			free(rc);
-			rc = NULL;
-		}
-	}
-
-	return rc;
-}
-
-void taglines_free_tagline(struct tagline *t)
-{
-	if(t != NULL)
-	{
-		if(t->txt != NULL)
-		{
-			free(t->txt);
-		}
-		free(t);
-	}
-}
-
 /******************************************************************
  Creates a tagline index file for the given tagline file
 *******************************************************************/
@@ -163,7 +140,7 @@ static void taglines_create_index(char *filename, char *indexname)
 				if (strcmp(buf, "%%") == 0)
 				{
 					fwrite(&pos,1,4,indexfh);
-					pos = ftell(indexfh);
+					pos = ftell(tagfh);
 				}
 			}
 
@@ -182,26 +159,31 @@ static void taglines_create_index(char *filename, char *indexname)
 void taglines_cleanup(void)
 {
 	free(taglines_filename);
+	free(taglines_indexname);
 	free(taglines_positions);
-	taglines_filename = NULL;
+	taglines_filename = taglines_indexname = NULL;
 	taglines_positions = NULL;
 	taglines_num = 0;
 }
 
 /******************************************************************
  Loads the tagline information (and creates the index if
- neccessary)
+ neccessary). taglines_positions contains taglines_num + 1 entry
+ describing the start positions of the taglines. The last entry
+ is the size of the taglines file
 *******************************************************************/
 void taglines_init(char *filename)
 {
 	FILE *fh;
 	char *indexname;
 	unsigned int fh_size;
+
 	taglines_cleanup();
 
 	if (!(indexname = malloc(mystrlen(filename)+10)))
 		return;
 
+	strcpy(indexname,filename);
 	strcat(indexname,".index");
 
 	if (myfiledatecmp(filename,indexname)>0)
@@ -225,11 +207,12 @@ void taglines_init(char *filename)
 					fread(taglines_positions,1,fh_size - 8,fh);
 					taglines_num = (fh_size - 8) / sizeof(int);
 					taglines_positions[taglines_num] = fh_size;
+					taglines_indexname = indexname;
+					taglines_filename = filename;
 				}
 			}
 		}
 
 		fclose(fh);
 	}
-	free(indexname);
 }

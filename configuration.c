@@ -392,50 +392,9 @@ int load_config(void)
 		if (user.directory) strcpy(buf,user.directory);
 		else buf[0] = 0;
 		sm_add_part(buf,".taglines",512);
-		list_init(&user.config.tagline_list);
 
-		if(user.taglines_filename = mystrdup(buf))
-		{
-			if ((fh = fopen(user.taglines_filename,"r")))
-			{
-				char *txt = NULL;
-				char lf[]="\n";
-
-				while (read_line(fh,buf))
-				{
-					if(txt)
-					{
-						if(strcmp(buf, "%%") == 0)
-						{
-							struct tagline *c;
-
-							txt[strlen(txt) - 1] = '\0';
-
-							c = taglines_create_tagline(txt);
-							if(c != NULL)
-							{
-								list_insert_tail(&user.config.tagline_list, (struct node *) c);
-							}
-
-							free(txt);
-							txt = NULL;
-						}
-						else
-						{
-							txt = mystrcat(txt, buf);
-							txt = mystrcat(txt, lf);
-						}
-					}
-					else
-					{
-						txt = malloc(strlen(buf) + 2);
-						strcpy(txt, buf);
-						txt = strcat(txt, lf);
-					}
-				}
-				fclose(fh);
-			}
-		}
+		if (user.taglines_filename = mystrdup(buf))
+			taglines_init(user.taglines_filename);
 
 		free(buf);
 	}

@@ -74,9 +74,11 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(PROGRAMMNAME) images*n" >>$@
+  echo "All: \$(PROGRAMMNAME) $(DESTDIR)/.taglines images*n" >>$@
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
   delete t:objectlist
+  echo "*n$(DESTDIR)/.taglines: .taglines" >>$@
+  echo "  copy .taglines $(DESTDIR)/.taglines*n" >>$@
   echo "*nimages:" >>$@ noline
   list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
   echo "  sm/Images/images.list" >>$@
@@ -146,6 +148,7 @@ prepare-release:
   copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
   copy sm/images TO ram:SimpleMail/Images
   copy sm/locale/\#?.mo To ram:SimpleMail/Locale
+  copy sm/.taglines TO ram:SimpleMail/.taglines
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha
   lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info

@@ -723,6 +723,9 @@ static void compose_set_signature(void **msg)
 			strcat(new_text,"\n-- \n");
 			strcat(new_text,sign->signature);
 
+			if (user.config.taglines_use)
+				new_text = taglines_add_tagline(new_text);
+
 			SetAttrs(data->text_texteditor,
 					MUIA_TextEditor_Contents,new_text,
 					MUIA_TextEditor_CursorX,x,

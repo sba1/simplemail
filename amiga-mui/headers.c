@@ -22,6 +22,7 @@
 
 #include <clib/alib_protos.h>
 #include <exec/types.h>
+#include <sys/param.h>
 
 #include <errno.h>
 #include <stdlib.h>

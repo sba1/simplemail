@@ -21,14 +21,15 @@
 */
 
 #include <proto/exec.h>
-#ifdef __SASC
-#include <bsdsocket/socketbasetags.h>
-#else
-#include <amitcp/socketbasetags.h>
-#endif
 
+#ifdef AMITCP_SDK
+#include <amitcp/socketbasetags.h>
+#else
+#include <bsdsocket/socketbasetags.h>
 #include <clib/miami_protos.h>
 #include <pragmas/miami_pragmas.h>
+#endif
+
 #include <proto/amissl.h>
 
 #include "tcpip.h"
@@ -71,6 +72,9 @@ void close_socket_lib(void)
    we will return 1 */
 int is_online(char *iface)
 {
+#ifdef AMITCP_SDK
+	return 1;
+#else
 	struct Library *MiamiBase = OpenLibrary("miami.library",10); /* required by MiamiIsOnline() */
 	int rc = 1;
 	if (MiamiBase)
@@ -79,6 +83,7 @@ int is_online(char *iface)
 		CloseLibrary(MiamiBase);
 	}
 	return rc;
+#endif
 }
 
 struct Library *AmiSSLBase;

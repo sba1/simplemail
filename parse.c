@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** parse.c
 */
 
 #include <string.h>
@@ -120,21 +120,34 @@ static int isespecial(char c)
 }
 
 /**************************************************************************
+ Skip spaces (also comments)
+**************************************************************************/
+static char *skip_spaces(const char *buf)
+{
+	char c;
+	int brackets = 0;
+	while ((c = *buf))
+	{
+		if (!c) break;
+		if (c=='(') brackets++;
+		else if (c == ')' && brackets) brackets--;
+		else if (!isspace(c) && !brackets) break;
+		buf++;
+	}
+	return buf;
+}
+
+/**************************************************************************
  atom        =  1*<any CHAR except specials, SPACE and CTLs> 
 **************************************************************************/
 static char *parse_atom(const char *atom, char **pbuf)
 {
-	const char *atom_start = atom;
+	const char *atom_start;
 	char *buf;
 	char c;
 	int len;
 
-	/* skip spaces */
-	while ((c = *atom))
-	{
-		if (!isspace(c)) break;
-		atom++;
-	}
+	atom_start = atom = skip_spaces(atom); /* skip spaces */
 
 	while ((c = *atom))
 	{
@@ -149,12 +162,6 @@ static char *parse_atom(const char *atom, char **pbuf)
 	{
 		strncpy(buf,atom_start,len);
 		buf[len] = 0;
-	}
-
-	while ((c = *atom))
-	{
-		if (!isspace(c)) break;
-		atom++;
 	}
 
 	*pbuf = buf;
@@ -185,13 +192,6 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 				buf[len]=0;
 				*pbuf = buf;
 				quoted_string++;
-
-				/* Skip spaces */
-				while ((c = *quoted_string))
-				{
-					if (!isspace(c)) break;
-					quoted_string++;
-				}
 
 				return quoted_string; /* the '"' sign */
 			}
@@ -306,14 +306,14 @@ char *parse_addr_spec(char *addr_spec, char **pbuf)
 	char *ret = parse_local_part(addr_spec,&local_part);
 
 	if (!ret) return NULL;
-	/* probably spaces can follow */
+
+	ret = skip_spaces(ret); /* not needed according rfc */
+
 	if (!(*ret++ == '@'))
 	{
 		free(local_part);
 		return NULL;
 	}
-
-	while (isspace(*ret)) ret++;
 
 	ret = parse_domain(ret,&domain);
 	if (!ret)
@@ -416,13 +416,13 @@ char *parse_mailbox(char *mailbox, struct mailbox *mb)
 	ret = parse_phrase(mailbox,&mb->phrase);
 	if (!ret) return NULL;
 
-	while (isspace(*ret)) ret++;
+	ret = skip_spaces(ret);
+
 	if (*(ret++) != '<')
 	{
 		free(mb->phrase);
 		return NULL;
 	}
-	while (isspace(*ret)) ret++;
 	ret = parse_addr_spec(ret, &mb->addr_spec);
 	if (!ret)
 	{
@@ -445,7 +445,7 @@ static char *parse_group(char *group, struct parse_address *dest)
 {
 	char *ret = parse_phrase(group,&dest->group_name);
 	if (!ret) return NULL;
-	while (isspace(*ret)) ret++;
+	ret = skip_spaces(ret);
 
 	if (*(ret++) != ':')
 	{
@@ -494,7 +494,6 @@ char *parse_address(char *address, struct parse_address *dest)
 	if (!retval)
 	{
 		struct mailbox mb;
-		char c;
 
 		retval = address;
 
@@ -508,11 +507,7 @@ char *parse_address(char *address, struct parse_address *dest)
 				list_insert_tail(&dest->mailbox_list,&nmb->node);
 			} else return NULL;
 
-			while ((c = *retval))
-			{
-				if (!isspace(c)) break;
-				c++;
-			}
+			retval = skip_spaces(retval);
 
 			if (*retval == ',')
 			{

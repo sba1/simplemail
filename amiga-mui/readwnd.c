@@ -79,6 +79,7 @@ struct Read_Data /* should be a customclass */
 	Object *prev_button;
 	Object *next_button;
 	Object *print_button;
+	Object *move_button;
 
 	Object *contents_page;
 
@@ -780,6 +781,21 @@ static void delete_button_pressed(struct Read_Data **pdata)
 }
 
 /******************************************************************
+ The move button has been pressed
+*******************************************************************/
+static void move_button_pressed(struct Read_Data **pdata)
+{
+	struct Read_Data *data = *pdata;
+
+	if (callback_move_mail_request(data->folder_path, data->ref_mail))
+	{
+		set(data->move_button,MUIA_Disabled,TRUE);
+		set(data->next_button,MUIA_Disabled,TRUE);
+		set(data->prev_button,MUIA_Disabled,TRUE);
+	}
+}
+
+/******************************************************************
  The reply button has been pressed
 *******************************************************************/
 static void reply_button_pressed(struct Read_Data **pdata)
@@ -806,7 +822,6 @@ static void forward_button_pressed(struct Read_Data **pdata)
 *******************************************************************/
 static void uri_clicked(void **msg)
 {
-	struct Read_Data *data = (struct Read_Data*)msg[0];
 	char *uri = (char*)msg[1];
 
 	if (!mystrnicmp(uri,"mailto:",7))
@@ -883,6 +898,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 	set(App, MUIA_Application_Sleep, TRUE);
 	data->ref_mail = mail;
 
+	set(data->move_button, MUIA_Disabled, FALSE);
+
 	if ((lock = Lock(data->folder_path,ACCESS_READ))) /* maybe it's better to use an absoulte path here */
 	{
 		BPTR old_dir = CurrentDir(lock);
@@ -956,7 +973,7 @@ int read_window_open(char *folder, struct mail *mail, int window)
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
 	Object *attachments_group;
 	Object *datatype_datatypes;
-	Object *prev_button, *next_button, *print_button, *save_button, *delete_button, *reply_button, *forward_button;
+	Object *prev_button, *next_button, *print_button, *save_button, *move_button, *delete_button, *reply_button, *forward_button;
 	Object *space;
 	Object *read_menu;
 	int num;
@@ -1056,8 +1073,8 @@ int read_window_open(char *folder, struct mail *mail, int window)
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						MUIA_Weight, 150,
+						Child, move_button = MakePictureButton(_("_Move"),"PROGDIR:Images/MailMove"),
 						Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/MailDelete"),
-/*						Child, MakePictureButton("_Move","PROGDIR:Images/MailMove"),*/
 						Child, reply_button = MakePictureButton(_("_Reply"),"PROGDIR:Images/MailReply"),
 						Child, forward_button = MakePictureButton(_("_Forward"),"PROGDIR:Images/MailForward"),
 						End,
@@ -1104,7 +1121,6 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			Object *save_contents_item;
 			Object *save_contents2_item;
 			Object *save_document_item;
-			Object *printtxt_contents_item;
 
 			memset(data,0,sizeof(struct Read_Data));
 
@@ -1145,6 +1161,7 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			data->prev_button = prev_button;
 			data->next_button = next_button;
 			data->print_button = print_button;
+			data->move_button = move_button;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
 			data->html_simplehtml = html_simplehtml;
@@ -1172,9 +1189,11 @@ int read_window_open(char *folder, struct mail *mail, int window)
 			DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
 			DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 			DoMethod(print_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
+			DoMethod(move_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
 			DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
 			DoMethod(reply_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(forward_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
+
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
 
 			/* Menu notifies */

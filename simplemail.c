@@ -61,7 +61,6 @@ int callback_read_active_mail(void)
 	char *filename;
 	struct mail *m;
 	struct folder *f;
-	int num;
 
 	if (!(f = main_get_folder())) return -1;
 	if (!(filename = main_get_mail_filename())) return -1;
@@ -501,6 +500,32 @@ void callback_forward_selected_mails(void)
 	}
 }
 
+/* a single mail should be moved */
+int callback_move_mail_request(char *folder_path, struct mail *mail)
+{
+	struct folder *src_folder = folder_find_by_path(folder_path);
+	struct folder *dest_folder;
+
+	if (!src_folder) return 0;
+
+	if ((dest_folder = sm_request_folder(_("Please select the folder where to move the mails"),src_folder)))
+	{
+		if (folder_move_mail(src_folder,dest_folder,mail))
+		{
+			main_remove_mail(mail);
+			main_refresh_folder(src_folder);
+			main_refresh_folder(dest_folder);
+
+			if (main_get_folder() == dest_folder)
+				main_insert_mail(mail);
+
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/* all selected mails should be moved */
 void callback_move_selected_mails(void)
 {
 	struct mail *mail;

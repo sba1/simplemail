@@ -791,7 +791,7 @@ void callback_mail_within_main_selected(void)
 {
 	/* delay the displaying, so it is still possible to select multiple mails
      without problems */
-	thread_push_function_delayed(500, display_mail, 1, main_get_active_mail());
+	thread_push_function_delayed(250, display_mail, 1, main_get_active_mail());
 
 }
 

@@ -84,38 +84,26 @@ struct PictureButton_Data
 	STRPTR name;
 	STRPTR label;
 	int free_vert;
-	Object *dto;
-	struct BitMap *bitmap;
-	struct BitMapHeader *bmhd;
+	struct dt_node *dt;
 	int setup;
+
+	int label_height;
 };
 
 STATIC VOID PictureButton_Load(struct PictureButton_Data *data, Object *obj)
 {
 	if (data->name)
 	{
-		if (data->dto = dt_load_picture(data->name, _screen(obj)))
-		{
-			GetDTAttrs(data->dto,PDTA_BitMapHeader,&data->bmhd,TAG_DONE);
-			if (data->bmhd)
-			{
-				GetDTAttrs(data->dto,PDTA_DestBitMap,&data->bitmap,TAG_DONE);
-				if (!data->bitmap)
-					GetDTAttrs(data->dto,PDTA_BitMap,&data->bitmap,TAG_DONE);
-			}
-		}
+		data->dt = dt_load_picture(data->name, _screen(obj));
 	}
 }
 
 STATIC VOID PictureButton_Unload(struct PictureButton_Data *data)
 {
-	data->bitmap = NULL;
-	data->bmhd = NULL;
- 
-	if (data->dto)
+	if (data->dt)
 	{
-		dt_dispose_object(data->dto);
-		data->dto = NULL;
+		dt_dispose_picture(data->dt);
+		data->dt = NULL;
 	}
 }
 
@@ -132,7 +120,7 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data->name = mystrdup((char *)GetTagData(MUIA_PictureButton_Filename,NULL,msg->ops_AttrList));
 	data->label = (char *)GetTagData(MUIA_PictureButton_Label,NULL,msg->ops_AttrList);
-	data->free_vert = (int)GetTagData(MUIA_PictureButton_FreeVert,NULL,msg->ops_AttrList);
+	data->free_vert = (int)GetTagData(MUIA_PictureButton_FreeVert,1,msg->ops_AttrList);
 
 	/* tell MUI not to care about filling our background during MUIM_Draw */
 /*	set(obj,MUIA_FillArea,FALSE);*/
@@ -200,15 +188,16 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 
 	mi = msg->MinMaxInfo;
 
-	if (data->bitmap)
+	if (data->dt)
 	{
-		minwidth  = data->bmhd->bmh_Width;
-		minheight = data->bmhd->bmh_Height;
+		minwidth  = dt_width(data->dt);
+		minheight = dt_height(data->dt);
 	} else
 	{
 		minwidth = 0;
 		minheight = 0;
 	}
+	data->label_height = 0;
 
 	if (data->label)
 	{
@@ -217,7 +206,8 @@ STATIC ULONG PictureButton_AskMinMax(struct IClass *cl,Object *obj,struct MUIP_A
 		char *str = data->label;
 		char *uptr;
 
-		minheight += _font(obj)->tf_YSize + (!!data->bitmap);
+		data->label_height = _font(obj)->tf_YSize;
+		minheight += data->label_height + (!!data->dt);
 		InitRastPort(&rp);
 		SetFont(&rp,_font(obj));
 
@@ -253,16 +243,10 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 //	if (msg->flags & MADF_DRAWOBJECT)
 	{
 		LONG rel_y=0;
-		if (data->bitmap)
+		if (data->dt)
 		{
-			APTR mask=NULL;
-
-			GetDTAttrs(data->dto,PDTA_MaskPlane,&mask,TAG_DONE);
-			if(mask)
-			{
-				MyBltMaskBitMapRastPort(data->bitmap,0,0,rp,_mleft(obj)+(_mwidth(obj) - data->bmhd->bmh_Width)/2,_mtop(obj),data->bmhd->bmh_Width,data->bmhd->bmh_Height,0xe2,(PLANEPTR)mask);
-			} else BltBitMapRastPort(data->bitmap,0,0,rp,_mleft(obj)+(_mwidth(obj) - data->bmhd->bmh_Width)/2,_mtop(obj),data->bmhd->bmh_Width,data->bmhd->bmh_Height,0xc0);
-			rel_y += data->bmhd->bmh_Height;
+			dt_put_on_rastport(data->dt,rp, _mleft(obj)+(_mwidth(obj) - dt_width(data->dt))/2, _mtop(obj) + (_mheight(obj) - data->label_height - dt_height(data->dt))/2);
+			rel_y += dt_height(data->dt);
 		}
 
 		if (data->label)
@@ -281,7 +265,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 				{
 					LONG left = _mleft(obj);
 					left += (_mwidth(obj) - te.te_Width)/2;
-					Move(rp,left,_mtop(obj)+_font(obj)->tf_Baseline+rel_y);
+					Move(rp,left,_mbottom(obj)+_font(obj)->tf_Baseline - data->label_height);
 					SetAPen(rp,_dri(obj)->dri_Pens[TEXTPEN]);
 
 					{

@@ -18,9 +18,16 @@
 #ifndef SM__DATATYPESCACHE_H
 #define SM__DATATYPESCACHE_H
 
+/* struct dt_node; */
+
 void dt_init(void);
 void dt_cleanup(void);
-Object *dt_load_picture(char *filename, struct Screen *scr);
-void dt_dispose_object(Object *o);
+struct dt_node *dt_load_picture(char *filename, struct Screen *scr);
+void dt_dispose_picture(struct dt_node *node);
+
+int dt_width(struct dt_node *node);
+int dt_height(struct dt_node *node);
+void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y);
+
 
 #endif

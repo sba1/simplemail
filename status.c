@@ -111,6 +111,14 @@ void status_set_title(char *title)
 }
 
 /******************************************************************
+ Set the title of the status window
+*******************************************************************/
+void status_set_title_utf8(char *title)
+{
+	statuswnd_set_title_utf8(title);
+}
+
+/******************************************************************
  Set the status line for connecting to a server
 *******************************************************************/
 void status_set_connect_to_server(char *server)

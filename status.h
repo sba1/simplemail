@@ -24,6 +24,7 @@ int status_open(void);
 int status_open_notactivated(void);
 void status_close(void);
 void status_set_title(char *title);
+void status_set_title_utf8(char *title);
 void status_set_line(char *str);
 void status_set_status(char *str);
 void status_set_head(char *head);

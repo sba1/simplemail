@@ -138,17 +138,9 @@ static void searchwnd_start(void)
 **************************************************************************/
 static void searchwnd_read(void)
 {
-	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(search_mail_tree,MUIA_NListtree_Active);
-
-	if (tree_node)
-	{
-		struct mail *m = (struct mail*)tree_node->tn_User;
-		if (m)
-		{
-			callback_read_this_mail(m);
-		}
-	}
+	struct mail *mail;
+	mail = (struct mail*)xget(search_mail_tree, MUIA_MailTree_Active);
+	if (mail) callback_read_this_mail(mail);
 }
 
 /**************************************************************************
@@ -234,7 +226,7 @@ static void init_search(void)
 		DoMethod(search_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, search_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
 		DoMethod(search_start_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, searchwnd_start);
 		DoMethod(search_stop_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, callback_stop_search);
-		DoMethod(search_mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, searchwnd_read);
+		DoMethod(search_mail_tree, MUIM_Notify, MUIA_MailTree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, searchwnd_read);
 
 		search_refresh_folders();
 	}
@@ -268,7 +260,7 @@ void search_open(char *foldername)
 **************************************************************************/
 void search_clear_results(void)
 {
-	DoMethod(search_mail_tree, MUIM_NListtree_Clear, NULL, 0);
+	DoMethod(search_mail_tree, MUIM_MailTree_Clear);
 	has_mails = 0;
 }
 
@@ -282,16 +274,15 @@ void search_add_result(struct mail **array, int size)
 	if (!size) return;
 
 	if (size > 1)
-		set(search_mail_tree, MUIA_NListtree_Quiet, TRUE);
+		DoMethod(search_mail_tree, MUIM_MailTree_Freeze);
 
 	for (i=0;i<size;i++)
 	{
-		DoMethod(search_mail_tree,MUIM_NListtree_Insert,"" /*name*/, array[i], /*udata */
-					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+		DoMethod(search_mail_tree, MUIM_MailTree_InsertMail, array[i], -2);
 	}
 
 	if (size > 1)
-		set(search_mail_tree, MUIA_NListtree_Quiet, FALSE);
+		DoMethod(search_mail_tree, MUIM_MailTree_Thaw);
 
   has_mails = 1;
 }
@@ -327,7 +318,5 @@ int search_has_mails(void)
 **************************************************************************/
 void search_remove_mail(struct mail *m)
 {
-	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(search_mail_tree, m);
-	if (treenode)
-		DoMethod(search_mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode,0);
+	DoMethod(search_mail_tree, MUIM_MailTree_RemoveMail, m);
 }

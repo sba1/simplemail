@@ -27,6 +27,8 @@ Modification history;
 #include <proto/exec.h>
 #include <proto/locale.h>
 
+char *sm_getenv(char *name);
+
 /* The magic number of the GNU message catalog format.  */
 #define _MAGIC 0x950412de
 #define _MAGIC_SWAPPED 0xde120495
@@ -106,50 +108,56 @@ static long openmo(char *dir, char *loc)
 
 								if (!strcmp("pl",loc))
 								{
-									int i;
+	              	char *conv_pl;
 
-									/* convert the charset...if OS4 is installed this is will be not necessary */
+									/* convert iso charset into amigapl but only if the env variable is set
+									 * On AmigaOS4 and MorphOS the iso code is used, this is only for compatiblity
+									 * on systems which still use AmigaPL */
 
-								  for (i=0;i<domain.nstrings;i++)
-								  {
-								    int j;
-								    int off = GET(domain.trans_tab[i].offset);
-								    char *trans_string = domain.data + off;
+									conv_pl = sm_getenv("AmigaPLSimpleMail");
 
-								    /* Now convert every char in size the string */
-								    for (j=0;j<GET(domain.trans_tab[i].length) && j+off<size;j++)
-								    {
-								    	unsigned char c = trans_string[j];
-								    	if (c > 127)
-								    	{
-								    		/* yes a table would be better, but I'm too lazy */
-								    		switch (c)
-								    		{
-													case	0xb1: c=0xe2; break;
-													case	0xe6: c=0xea; break;
-													case	0xea: c=0xeb; break;
-													case	0xb3: c=0xee; break;
-													case	0xf1: c=0xef; break;
-													case	0xf3: c=0xf3; break;
-													case	0xb6: c=0xf4; break;
-													case	0xbc: c=0xfa; break;
-													case	0xbf: c=0xfb; break;
-													case	0xa1: c=0xc2; break;
-													case	0xc6: c=0xca; break;
-													case	0xca: c=0xcb; break;
-													case	0xa3: c=0xce; break;
-													case	0xd1: c=0xcf; break;
-													case	0xd3: c=0xd3; break;
-													case	0xa6: c=0xd4; break;
-													case	0xac: c=0xda; break;
-													case	0xaf: c=0xdb; break;
-								    		}
-												trans_string[j] = c;
-								    	}
-								    }
-								  }
-
-
+									if (conv_pl && (*conv_pl == 'y' || *conv_pl == '1'))
+									{
+										int i;
+									  for (i=0;i<domain.nstrings;i++)
+									  {
+									    int j;
+									    int off = GET(domain.trans_tab[i].offset);
+									    char *trans_string = domain.data + off;
+	
+									    /* Now convert every char in size the string */
+									    for (j=0;j<GET(domain.trans_tab[i].length) && j+off<size;j++)
+									    {
+									    	unsigned char c = trans_string[j];
+									    	if (c > 127)
+									    	{
+									    		/* yes a table would be better, but I'm too lazy */
+									    		switch (c)
+									    		{
+														case	0xb1: c=0xe2; break;
+														case	0xe6: c=0xea; break;
+														case	0xea: c=0xeb; break;
+														case	0xb3: c=0xee; break;
+														case	0xf1: c=0xef; break;
+														case	0xf3: c=0xf3; break;
+														case	0xb6: c=0xf4; break;
+														case	0xbc: c=0xfa; break;
+														case	0xbf: c=0xfb; break;
+														case	0xa1: c=0xc2; break;
+														case	0xc6: c=0xca; break;
+														case	0xca: c=0xcb; break;
+														case	0xa3: c=0xce; break;
+														case	0xd1: c=0xcf; break;
+														case	0xd3: c=0xd3; break;
+														case	0xa6: c=0xd4; break;
+														case	0xac: c=0xda; break;
+														case	0xaf: c=0xdb; break;
+									    		}
+													trans_string[j] = c;
+									    	}
+									    }
+									  }
+									}
 								}
               }
               else
@@ -211,10 +219,10 @@ void bindtextdomain(char * pack, char * dir)
 	struct Locale *l;
   int i;
 
-  if(openmo(dir, getenv("LANG")))
+  if(openmo(dir, sm_getenv("LANG")))
     return;
 
-  if(openmo(dir, getenv("LANGUAGE")))
+  if(openmo(dir, sm_getenv("LANGUAGE")))
     return;
 
 	if((l = OpenLocale(0)))

@@ -154,7 +154,8 @@ static Object *spam_white_list_editor;
 static Object *spam_black_list_editor;
 static Object *spam_reset_ham_stat_button;
 static Object *spam_reset_spam_stat_button;
-static Object *spam_clean_spam_folder_button;
+static Object *spam_spam_text;
+static Object *spam_ham_text;
 
 static Object *config_group;
 static Object *config_list;
@@ -1697,6 +1698,49 @@ static int init_phrase_group(void)
 }
 
 /******************************************************************
+ Resets the ham statistics
+*******************************************************************/
+static void spam_cfg_reset_ham(void)
+{
+	if (!sm_request(NULL,
+		_("After reseting the ham statistics the spam filter won't work reliable\n"
+		  "until you have classified some mails as ham.\n"
+		  "Are you sure to continue?"),
+		_("Reset the statistics|Cancel"))) return;
+
+	spam_reset_ham();
+	DoMethod(spam_ham_text,MUIM_SetAsString, MUIA_Text_Contents, "%ld",
+				spam_num_of_ham_classified_mails());
+}
+
+/******************************************************************
+ Resets the ham statistics
+*******************************************************************/
+static void spam_cfg_reset_spam(void)
+{
+	int res;
+
+	res = sm_request(NULL,
+		_("After reseting the spam statistics the spam filter won't work reliable\n"
+		  "until you have classified some mails as spam. However, if requested the\n"
+		  "statistics can be built from the mails inside the spam folder.\n"
+		  "How to proceed?"),
+		_("Reset the statistics|Reset and rebuild|Cancel"));
+
+	if (!res) return;
+
+	spam_reset_spam();
+
+	if (res == 2)
+	{
+		callback_add_spam_folder_to_statistics();
+	}
+
+	DoMethod(spam_spam_text,MUIM_SetAsString, MUIA_Text_Contents, "%ld",
+				spam_num_of_spam_classified_mails());
+}
+
+/******************************************************************
  Init the signature group
 *******************************************************************/
 int init_spam_group(void)
@@ -1752,17 +1796,15 @@ int init_spam_group(void)
 
 			Child, HorizLineTextObject(_("Statistics")),
 			Child, VGroup,
-				Child, ColGroup(5),
+				Child, ColGroup(4),
 					Child, MakeLabel(_("Number of mails classified as ham")),
-					Child, TextObject, TextFrame, MUIA_Text_Contents, ham_buf, End,
-					Child, spam_reset_ham_stat_button = MakeButton(_("Reset statistics")),
-					Child, HVSpace,
+					Child, spam_ham_text = TextObject, TextFrame, MUIA_Text_Contents, ham_buf, End,
+					Child, spam_reset_ham_stat_button = MakeButton(_("Reset statistics...")),
 					Child, HVSpace,
 
 					Child, MakeLabel(_("Number of mails classified as spam")),
-					Child, TextObject, TextFrame, MUIA_Text_Contents, spam_buf, End,
-					Child, spam_reset_spam_stat_button = MakeButton(_("Reset statistics")),
-					Child, spam_clean_spam_folder_button = MakeButton(_("Clean spam folder")),
+					Child, spam_spam_text = TextObject, TextFrame, MUIA_Text_Contents, spam_buf, End,
+					Child, spam_reset_spam_stat_button = MakeButton(_("Reset statistics...")),
 					Child, HVSpace,
 					End,
 				End,
@@ -1773,6 +1815,12 @@ int init_spam_group(void)
 
 	set(spam_white_list_editor,MUIA_ComposeEditor_Array,user.config.spam_white_emails);
 	set(spam_black_list_editor,MUIA_ComposeEditor_Array,user.config.spam_black_emails);
+
+	set(spam_reset_ham_stat_button, MUIA_ShortHelp, _("Resets all ham statistics."));
+	set(spam_reset_spam_stat_button, MUIA_ShortHelp, _("Resets all spam statistics."));
+
+	DoMethod(spam_reset_ham_stat_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, spam_cfg_reset_ham);
+	DoMethod(spam_reset_spam_stat_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, spam_cfg_reset_spam);
 
   return 1;
 }

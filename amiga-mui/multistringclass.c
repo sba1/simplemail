@@ -91,6 +91,8 @@ STATIC ULONG SingleString_Setup(struct IClass *cl, Object *obj,struct MUIP_Setup
 	data->ehnode.ehn_Object   = obj;
 	data->ehnode.ehn_Class    = cl;
 	data->ehnode.ehn_Events   = IDCMP_RAWKEY;
+
+	return 1;
 }
 
 STATIC ULONG SingleString_GoActive(struct IClass *cl, Object *obj,Msg msg)
@@ -393,8 +395,8 @@ STATIC BOOPSI_DISPATCHER(ULONG, MultiString_Dispatcher, cl, obj, msg)
 		case  MUIM_MultiString_AddStringField:
 					{
 						struct MultiString_Data *data = (struct MultiString_Data*)INST_DATA(cl,obj);
-				 	MultiString_AddStringField(cl,obj,(struct MUIP_MultiString_AddStringField*)msg,(struct object_node*)list_last(&data->object_list));
-				 	return 0; /* return value is private */
+						MultiString_AddStringField(cl,obj,(struct MUIP_MultiString_AddStringField*)msg,(struct object_node*)list_last(&data->object_list));
+						return 0; /* return value is private */
 					}
 	}
 

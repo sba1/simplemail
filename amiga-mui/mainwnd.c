@@ -48,6 +48,8 @@
 #include "picturebuttonclass.h"
 
 static Object *win_main;
+static Object *main_group;
+static Object *buttons_group;
 static Object *button_fetch;
 static Object *button_send;
 static Object *button_read;
@@ -58,7 +60,20 @@ static Object *button_new;
 static Object *button_reply;
 static Object *button_abook;
 static Object *button_config;
-static Object *tree_folder, *tree_mail;
+static Object *button_switch; /* switch button for the two views */
+static Object *mail_tree;
+static Object *mail_tree_group;
+static Object *mail_listview;
+static Object *folder_tree;
+static Object *folder_text;
+static Object *folder_listview;
+static Object *folder_balance;
+static Object *folder_popobject;
+
+static int folders_in_popup;
+
+static void main_refresh_folders_text(void);
+static int init_folder_placement(void);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
@@ -133,8 +148,8 @@ static void mailtreelist_update_title_markers(void)
 	struct folder *folder = main_get_folder();
 	if (!folder) return;
 
-	nnset(tree_mail, MUIA_NList_TitleMark, sortmode2titlemark(folder_get_primary_sort(folder),folder_get_type(folder)));
-	nnset(tree_mail, MUIA_NList_TitleMark2, sortmode2titlemark(folder_get_secondary_sort(folder),folder_get_type(folder)));
+	nnset(mail_tree, MUIA_NList_TitleMark, sortmode2titlemark(folder_get_primary_sort(folder),folder_get_type(folder)));
+	nnset(mail_tree, MUIA_NList_TitleMark2, sortmode2titlemark(folder_get_secondary_sort(folder),folder_get_type(folder)));
 }
 
 /******************************************************************
@@ -142,7 +157,7 @@ static void mailtreelist_update_title_markers(void)
 *******************************************************************/
 static void foldertreelist_maildrop(void)
 {
-	struct folder *folder = (struct folder*)xget(tree_folder, MUIA_FolderTreelist_MailDrop);
+	struct folder *folder = (struct folder*)xget(folder_tree, MUIA_FolderTreelist_MailDrop);
 	if (folder)
 	{
 		callback_maildrop(folder);
@@ -155,8 +170,8 @@ static void foldertreelist_maildrop(void)
 *******************************************************************/
 static void mailtreelist_title_click(void)
 {
-	LONG title_mark = xget(tree_mail, MUIA_NList_TitleMark);
-	LONG title_click = xget(tree_mail, MUIA_NList_TitleClick);
+	LONG title_mark = xget(mail_tree, MUIA_NList_TitleMark);
+	LONG title_click = xget(mail_tree, MUIA_NList_TitleClick);
 	struct folder *folder = main_get_folder();
 
 	if ((title_mark & MUIV_NList_TitleMark_ColMask) == title_click)
@@ -176,13 +191,131 @@ static void mailtreelist_title_click(void)
 		title_mark = title_click | MUIV_NList_TitleMark_Down;
 	}
 
-	set(tree_mail, MUIA_NList_TitleMark, title_mark);
+	set(mail_tree, MUIA_NList_TitleMark, title_mark);
 
 	if (folder)
 	{
 		folder_set_primary_sort(folder, titlemark2sortmode(title_mark));
 		main_set_folder_mails(folder);
 	}
+}
+
+/******************************************************************
+ Switch the view of the folders
+*******************************************************************/
+static void switch_folder_view(void)
+{
+	folders_in_popup = !folders_in_popup;
+	init_folder_placement();
+}
+
+/******************************************************************
+ This hook is called after the popup has succesfully closed
+*******************************************************************/
+static void folder_popup_objstrfunc(void)
+{
+	DoMethod(App, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
+	DoMethod(App, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
+}
+
+/******************************************************************
+ Initialize the main window
+*******************************************************************/
+static int init_folder_placement(void)
+{
+	void *act;
+	if (folder_tree) act = (void*)xget(folder_tree,MUIA_NListtree_Active);
+	else act = NULL;
+
+	{
+		DoMethod(main_group, MUIM_Group_InitChange);
+		DoMethod(mail_tree_group, MUIM_Group_InitChange);
+
+		if (folder_popobject)
+		{
+			DoMethod(main_group, OM_REMMEMBER, folder_popobject);
+
+			MUI_DisposeObject(folder_popobject);
+			folder_popobject = NULL;
+			folder_text = NULL;
+			folder_listview = NULL;
+			folder_tree = NULL;
+		}
+		else
+		{
+			if (folder_listview)
+			{
+				DoMethod(mail_tree_group, OM_REMMEMBER, folder_listview);
+
+				MUI_DisposeObject(folder_listview);
+				folder_listview = NULL;
+				folder_tree = NULL;
+			}
+			if (folder_balance)
+			{
+				DoMethod(mail_tree_group, OM_REMMEMBER, folder_balance);
+				MUI_DisposeObject(folder_balance);
+				folder_balance = NULL;
+			}
+		}
+
+		if (folders_in_popup)
+		{
+			static struct Hook folder_popup_objstrhook;
+
+			folder_popobject = PopobjectObject,
+				MUIA_Popstring_Button, PopButton(MUII_PopUp),
+				MUIA_Popstring_String, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
+				MUIA_Popobject_ObjStrHook, &folder_popup_objstrhook,
+				MUIA_Popobject_Object, folder_listview = NListviewObject,
+					MUIA_CycleChain, 1,
+					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+						End,
+					End,
+				End;
+
+			init_hook(&folder_popup_objstrhook,(HOOKFUNC)folder_popup_objstrfunc);
+
+			DoMethod(main_group, OM_ADDMEMBER, folder_popobject);
+			DoMethod(main_group, MUIM_Group_Sort, buttons_group, folder_popobject, mail_tree_group,0);
+
+			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, folder_popobject, 2, MUIM_Popstring_Close, 1);
+		} else
+		{
+			folder_listview = folder_listview = NListviewObject,
+					MUIA_CycleChain, 1,
+					MUIA_HorizWeight, 33,
+					MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
+						End,
+					End,
+
+			folder_balance = BalanceObject, End;
+
+			DoMethod(mail_tree_group, OM_ADDMEMBER, folder_listview);
+			DoMethod(mail_tree_group, OM_ADDMEMBER, folder_balance);
+			DoMethod(mail_tree_group, MUIM_Group_Sort, folder_listview, folder_balance, mail_listview, 0);
+
+			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
+			DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
+			DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
+		}
+
+		main_refresh_folders();
+		nnset(folder_tree,MUIA_NListtree_Active,act);
+		main_refresh_folders_text();
+
+		DoMethod(mail_tree_group, MUIM_Group_ExitChange);
+		DoMethod(main_group, MUIM_Group_ExitChange);
+	}
+
+	set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
+	return 1;
 }
 
 /******************************************************************
@@ -197,8 +330,8 @@ int main_window_init(void)
 		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
     MUIA_Window_Title, VERS,
         
-		WindowContents, VGroup,
-			Child, HGroupV,
+		WindowContents, main_group = VGroup,
+			Child, buttons_group = HGroupV,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
 					MUIA_Weight, 200,
@@ -221,38 +354,28 @@ int main_window_init(void)
 					MUIA_Group_Spacing, 0,
 					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
 					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
+					Child, button_switch = MakePictureButton("_Switch", "PROGDIR:Images/Switch"),
 					End,
 				End,
-			Child, HGroup,
-				Child, NListviewObject,
-					MUIA_HorizWeight, 33,
-					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, tree_folder = FolderTreelistObject,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','F','T'),
-						End,
-					End,
-				Child, BalanceObject, End,
-				Child, NListviewObject,
+
+			Child, mail_tree_group = HGroup,
+				Child, mail_listview = NListviewObject,
 					MUIA_CycleChain,1,
-					MUIA_NListview_NList, tree_mail = MailTreelistObject,
+					MUIA_NListview_NList, mail_tree = MailTreelistObject,
 						MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4,
 						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
 						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
 						MUIA_ObjectID, MAKE_ID('M','W','M','T'),
 						End,
 					End,
-			End,
-			Child, TextObject,
-				TextFrame,
 				End,
 			End,
 		End;
 	
 	if(win_main != NULL)
 	{
-		set(tree_folder,MUIA_UserData,tree_mail); /* for the drag'n'drop support */
+		if (!init_folder_placement()) return 0;
+
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
@@ -265,11 +388,9 @@ int main_window_init(void)
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
-		DoMethod(tree_mail, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
-		DoMethod(tree_mail, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
-		DoMethod(tree_folder, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
-		DoMethod(tree_folder, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
-		DoMethod(tree_folder, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
+		DoMethod(button_switch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 
 		rc = TRUE;
 		
@@ -300,24 +421,42 @@ int main_window_open(void)
 }
 
 /******************************************************************
+ Refreshs the folder text line
+*******************************************************************/
+static void main_refresh_folders_text(void)
+{
+	if (folder_text)
+	{
+		char buf[256];
+		struct folder *f = main_get_folder();
+		if (f)
+		{
+			sprintf(buf, "Folder:"  MUIX_PH "%s " MUIX_PT "Messages:"  MUIX_PH "%ld " MUIX_PT "New:"  MUIX_PH "%ld: " MUIX_PT "Unread:"  MUIX_PH "%ld",f->name,f->num_mails,0,0);
+			set(folder_text, MUIA_Text_Contents,buf);
+		}
+	}
+}
+
+/******************************************************************
  Refreshs the folder list
 *******************************************************************/
 void main_refresh_folders(void)
 {
 	struct folder *f = folder_first();
 
-	int act = xget(tree_folder, MUIA_NList_Active);
+	int act = xget(folder_tree, MUIA_NList_Active);
 
-	set(tree_folder,MUIA_NListtree_Quiet,TRUE);
-	DoMethod(tree_folder,MUIM_NList_Clear);
+	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
+	DoMethod(folder_tree,MUIM_NList_Clear);
 	while (f)
 	{
-		DoMethod(tree_folder,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
+		DoMethod(folder_tree,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
 						 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 		f = folder_next(f);
 	}
-	nnset(tree_folder,MUIA_NList_Active,act);
-	set(tree_folder,MUIA_NListtree_Quiet,FALSE);
+	nnset(folder_tree,MUIA_NList_Active,act);
+	set(folder_tree,MUIA_NListtree_Quiet,FALSE);
+	main_refresh_folders_text();
 }
 
 /******************************************************************
@@ -325,11 +464,12 @@ void main_refresh_folders(void)
 *******************************************************************/
 void main_refresh_folder(struct folder *folder)
 {
-	struct MUI_NListtree_TreeNode *tree_node = FindListtreeUserData(tree_folder, folder);
+	struct MUI_NListtree_TreeNode *tree_node = FindListtreeUserData(folder_tree, folder);
 	if (tree_node)
 	{
-		DoMethod(tree_folder,MUIM_NListtree_Redraw,tree_node,0);
+		DoMethod(folder_tree,MUIM_NListtree_Redraw,tree_node,0);
 	}
+	main_refresh_folders_text();
 }
 
 /******************************************************************
@@ -337,7 +477,7 @@ void main_refresh_folder(struct folder *folder)
 *******************************************************************/
 void main_insert_mail(struct mail *mail)
 {
-	DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+	DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
 					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 }
 
@@ -346,10 +486,10 @@ void main_insert_mail(struct mail *mail)
 *******************************************************************/
 void main_remove_mail(struct mail *mail)
 {
-	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, mail);
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(mail_tree, mail);
 	if (treenode)
 	{
-		DoMethod(tree_mail, MUIM_NListtree_Remove, NULL, treenode,0);
+		DoMethod(mail_tree, MUIM_NListtree_Remove, NULL, treenode,0);
 	}
 }
 
@@ -358,14 +498,14 @@ void main_remove_mail(struct mail *mail)
 *******************************************************************/
 void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 {
-	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, oldmail);
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(mail_tree, oldmail);
 	if (treenode)
 	{
-/*		DoMethod(tree_mail, MUIM_NListtree_Rename, treenode, newmail, MUIV_NListtree_Rename_Flag_User);*/
-		set(tree_mail, MUIA_NListtree_Quiet, TRUE);
-		DoMethod(tree_mail, MUIM_NListtree_Remove, NULL, treenode,0);
+/*		DoMethod(mail_tree, MUIM_NListtree_Rename, treenode, newmail, MUIV_NListtree_Rename_Flag_User);*/
+		set(mail_tree, MUIA_NListtree_Quiet, TRUE);
+		DoMethod(mail_tree, MUIM_NListtree_Remove, NULL, treenode,0);
 		main_insert_mail(newmail);
-		set(tree_mail, MUIA_NListtree_Quiet, FALSE);
+		set(mail_tree, MUIA_NListtree_Quiet, FALSE);
 	}
 }
 
@@ -374,10 +514,10 @@ void main_replace_mail(struct mail *oldmail, struct mail *newmail)
 *******************************************************************/
 void main_refresh_mail(struct mail *m)
 {
-	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(tree_mail, m);
+	struct MUI_NListtree_TreeNode *treenode = FindListtreeUserData(mail_tree, m);
 	if (treenode)
 	{
-		DoMethod(tree_mail, MUIM_NListtree_Redraw, treenode, 0);
+		DoMethod(mail_tree, MUIM_NListtree_Redraw, treenode, 0);
 	}
 }
 
@@ -395,7 +535,7 @@ static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, 
 		mail_flags = TNF_LIST|TNF_OPEN;
 	}
 
-	newnode = (APTR)DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
+	newnode = (APTR)DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
 				 parentnode,MUIV_NListtree_Insert_PrevNode_Tail,mail_flags);
 
 	while (submail)
@@ -415,19 +555,19 @@ void main_set_folder_mails(struct folder *folder)
 	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
 	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
-	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
+	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
-/*	DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);*/
-	DoMethod(tree_mail, MUIM_NList_Clear);
+/*	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);*/
+	DoMethod(mail_tree, MUIM_NList_Clear);
 
-	set(tree_mail, MUIA_MailTreelist_FolderType, folder_get_type(folder));
+	set(mail_tree, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 
 	if ((primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT) && !threaded)
 	{
 		struct mail *lm = NULL; /* last mail */
 		APTR treenode = NULL;
 
-		SetAttrs(tree_mail,
+		SetAttrs(mail_tree,
 				MUIA_NListtree_TreeColumn, (primary_sort==2)?3:(folder_get_type(folder)==FOLDER_TYPE_SEND?2:1),
 				MUIA_NListtree_ShowTree, TRUE,
 				TAG_DONE);
@@ -443,21 +583,21 @@ void main_set_folder_mails(struct folder *folder)
 
 				if (!lm || res)
 				{
-					treenode = (APTR)DoMethod(tree_mail, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?m->to:m->from, MUIV_MailTreelist_UserData_Name, /* special hint */
+					treenode = (APTR)DoMethod(mail_tree, MUIM_NListtree_Insert, (folder_get_type(folder) == FOLDER_TYPE_SEND)?m->to:m->from, MUIV_MailTreelist_UserData_Name, /* special hint */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST|TNF_OPEN);
 				}
 			} else
 			{
 				if (!lm || mystricmp(m->subject,lm->subject))
 				{
-					treenode = (APTR)DoMethod(tree_mail, MUIM_NListtree_Insert, m->subject, MUIV_MailTreelist_UserData_Name, /* special hint */
+					treenode = (APTR)DoMethod(mail_tree, MUIM_NListtree_Insert, m->subject, MUIV_MailTreelist_UserData_Name, /* special hint */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST|TNF_OPEN);
 				}
 			}
 
 			if (!treenode) break;
 
-			DoMethod(tree_mail, MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
+			DoMethod(mail_tree, MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
 						 treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 
 			lm = m;
@@ -466,19 +606,19 @@ void main_set_folder_mails(struct folder *folder)
 	{
 		if (!threaded)
 		{
-			SetAttrs(tree_mail,
+			SetAttrs(mail_tree,
 					MUIA_NListtree_TreeColumn, 0,
 					MUIA_NListtree_ShowTree, FALSE,
 					TAG_DONE);
 
 			while ((m = folder_next_mail(folder,&handle)))
 			{
-				DoMethod(tree_mail,MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
+				DoMethod(mail_tree,MUIM_NListtree_Insert,"" /*name*/, m, /*udata */
 							 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
 			}
 		} else
 		{
-			SetAttrs(tree_mail,
+			SetAttrs(mail_tree,
 					MUIA_NListtree_TreeColumn, 0,
 					MUIA_NListtree_ShowTree, TRUE,
 					TAG_DONE);
@@ -491,7 +631,7 @@ void main_set_folder_mails(struct folder *folder)
 		}
 	}
 
-	SetAttrs(tree_mail,
+	SetAttrs(mail_tree,
 				MUIA_NListtree_Quiet, FALSE,
 				TAG_DONE);
 
@@ -506,7 +646,7 @@ void main_set_folder_mails(struct folder *folder)
 struct folder *main_get_folder(void)
 {
 	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(tree_folder,MUIA_NListtree_Active);
+	tree_node = (struct MUI_NListtree_TreeNode *)xget(folder_tree,MUIA_NListtree_Active);
 
 	if (tree_node)
 	{
@@ -536,7 +676,7 @@ char *main_get_folder_drawer(void)
 struct mail *main_get_active_mail(void)
 {
 	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(tree_mail,MUIA_NListtree_Active);
+	tree_node = (struct MUI_NListtree_TreeNode *)xget(mail_tree,MUIA_NListtree_Active);
 
 	if (tree_node)
 	{
@@ -565,7 +705,7 @@ char *main_get_mail_filename(void)
 struct mail *main_get_mail_first_selected(void *handle)
 {
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_Start;
-	DoMethod(tree_mail, MUIM_NListtree_NextSelected, &treenode);
+	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
 	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
 	return (struct mail*)treenode->tn_User;
@@ -578,7 +718,7 @@ struct mail *main_get_mail_first_selected(void *handle)
 struct mail *main_get_mail_next_selected(void *handle)
 {
 	struct MUI_NListtree_TreeNode *treenode = *((struct MUI_NListtree_TreeNode **)handle);
-	DoMethod(tree_mail, MUIM_NListtree_NextSelected, &treenode);
+	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
 	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
 	return (struct mail*)treenode->tn_User;
@@ -590,7 +730,7 @@ struct mail *main_get_mail_next_selected(void *handle)
 void main_remove_mails_selected(void)
 {
 /*
-	DoMethod(tree_mail, MUIM_NListtree_Remove,
+	DoMethod(mail_tree, MUIM_NListtree_Remove,
 			MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_Selected, 0);
 */
 
@@ -598,13 +738,13 @@ void main_remove_mails_selected(void)
 	int j = 0, i = 0;
 	struct MUI_NListtree_TreeNode **array;
 
-	set(tree_mail, MUIA_NListtree_Quiet, TRUE);
+	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
 
 	treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_Start;
 
 	for (;;)
 	{
-		DoMethod(tree_mail, MUIM_NListtree_PrevSelected, &treenode);
+		DoMethod(mail_tree, MUIM_NListtree_PrevSelected, &treenode);
 		if (treenode==(struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_End)
 			break;
 		i++;
@@ -616,7 +756,7 @@ void main_remove_mails_selected(void)
 
 		for (;;)
 		{
-			DoMethod(tree_mail, MUIM_NListtree_PrevSelected, &treenode);
+			DoMethod(mail_tree, MUIM_NListtree_PrevSelected, &treenode);
 			if (treenode==(struct MUI_NListtree_TreeNode *)MUIV_NListtree_PrevSelected_End)
 				break;
 			array[j++] = treenode;
@@ -627,23 +767,23 @@ void main_remove_mails_selected(void)
 			if (array[i]->tn_Flags & TNF_LIST)
 			{
 				struct MUI_NListtree_TreeNode *node = (struct MUI_NListtree_TreeNode *)
-					DoMethod(tree_mail, MUIM_NListtree_GetEntry, array[i], MUIV_NListtree_GetEntry_Position_Head, 0);
+					DoMethod(mail_tree, MUIM_NListtree_GetEntry, array[i], MUIV_NListtree_GetEntry_Position_Head, 0);
 
 				while (node)
 				{
 					struct MUI_NListtree_TreeNode *nextnode = (struct MUI_NListtree_TreeNode *)
-						DoMethod(tree_mail, MUIM_NListtree_GetEntry, node, MUIV_NListtree_GetEntry_Position_Next, 0);
+						DoMethod(mail_tree, MUIM_NListtree_GetEntry, node, MUIV_NListtree_GetEntry_Position_Next, 0);
 
-					DoMethod(tree_mail, MUIM_NListtree_Move, array[i], node, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Tail);
+					DoMethod(mail_tree, MUIM_NListtree_Move, array[i], node, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Tail);
 					node = nextnode;
 				}
 			}
 
-			DoMethod(tree_mail, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
+			DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
 		}		
 
 		FreeVec(array);
 	}
 
-	set(tree_mail, MUIA_NListtree_Quiet, FALSE);
+	set(mail_tree, MUIA_NListtree_Quiet, FALSE);
 }

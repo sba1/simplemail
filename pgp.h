@@ -36,4 +36,6 @@ struct pgp_key *pgp_next(struct pgp_key *);
 struct pgp_key *pgp_duplicate(struct pgp_key *key);
 void pgp_dispose(struct pgp_key *key);
 
+int pgp_operate(char *options, char *output);
+
 #endif

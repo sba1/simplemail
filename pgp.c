@@ -55,7 +55,7 @@ int pgp_update_key_list(void)
 	pgp_free_list();
 
 	tmpname = tmpnam(NULL);
-	if (!sm_system("pgp -kv",tmpname))
+	if (!pgp_operate("-kv",tmpname))
 	{
 		FILE *fh = fopen(tmpname,"rb");
 		if (fh)
@@ -127,4 +127,32 @@ void pgp_dispose(struct pgp_key *key)
 	}
 }
 
+/******************************************************************
+ Starts a pgp operation. Needs to be generalized
+*******************************************************************/
+int pgp_operate(char *options, char *output)
+{
+	char *path = sm_getenv("PGPPATH");
+	int len = mystrlen(path)+10+mystrlen(options);
+	int rc;
+	char *buf = malloc(len);
+	FILE *fh;
 
+	if (!buf) return NULL;
+
+	if (path) strcpy(buf,path);
+	else buf[0] = 0;
+
+	sm_add_part(buf,"pgp",len);
+
+	if ((fh = fopen(buf,"rb")))
+	{
+		fclose(fh);
+		strcat(buf," ");
+	} else strcpy(buf,"pgp ");
+
+	strcat(buf,options);
+	rc = sm_system(buf,output);
+	free(buf);
+	return rc;
+}

@@ -34,6 +34,7 @@
 #include "folder.h" /* for mail_compose_new() */
 #include "mail.h"
 #include "parse.h"
+#include "pgp.h"
 #include "phrase.h"
 #include "signature.h"
 #include "simplemail.h" /* for the callbacks() */
@@ -1478,9 +1479,9 @@ static void mail_decrypt(struct mail *mail)
 					int rc;
 					fwrite(&encrypt_mail->text[encrypt_mail->text_begin],1,encrypt_mail->text_len,fh);
 					fclose(fh);
-					sprintf(cmd_buf,"pgp %s +bat +f",tmpname);
+					sprintf(cmd_buf,"%s +bat +f",tmpname);
 
-					rc = sm_system(cmd_buf, NULL);
+					rc = pgp_operate(cmd_buf, NULL);
 					remove(tmpname);
 
 					if (!rc || rc==1)
@@ -2087,9 +2088,9 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 				fprintf(fp, "--%s\n",boundary);
 				fputs(pgp_text,fp);
 				fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
-				sprintf(cmd, "pgp -ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
+				sprintf(cmd, "-ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
 
-				sys_rc = sm_system(cmd,NULL);
+				sys_rc = pgp_operate(cmd,NULL);
 
 				if (!sys_rc)
 				{

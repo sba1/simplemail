@@ -1059,7 +1059,10 @@ int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, str
 {
 	char *buf;
 
+	if (!from_folder || !dest_folder) return 0;
 	if (from_folder == dest_folder) return 1;
+	if (from_folder->special == FOLDER_SPECIAL_GROUP || 
+			dest_folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
 	if ((buf = (char*)malloc(512)))
 	{

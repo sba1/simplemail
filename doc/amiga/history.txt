@@ -1,3 +1,10 @@
+Version 0.16 (third beta) - 
+  - bug fixes
+  - speed up within the mail list
+  - scrollbars in readwindow for datatypes
+  - you can drag attachments from the readwindow and drop them on
+    to the workbench now (required OS3.9)
+
 Version 0.15 (second beta) - released on 2002/02/05
   - internally most strings are utf8 now. Note: Maybe I missed
     some utf8 to iso conversion and you will see some text bugs

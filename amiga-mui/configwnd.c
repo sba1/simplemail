@@ -533,7 +533,7 @@ static int init_user_group(void)
 			Child, HSpace(0),
 			End,
 		Child, HGroup,
-			Child, MakeLabel(_("Folder diretory")),
+			Child, MakeLabel(_("Folder directory")),
 			Child, PopaslObject,
 				MUIA_Popstring_Button, PopButton(MUII_PopDrawer),
 				MUIA_Popstring_String, user_folder_string = BetterStringObject,

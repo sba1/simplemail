@@ -1029,6 +1029,29 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("ISO-8859-16");
+	codeset->alt_name = NULL;
+	codeset->characterization = mystrdup(_("South-Eastern European"));
+
+	codeset->read_only = 0;
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = iso_8859_16_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("AmigaPL");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup("AmigaPL");
@@ -1040,6 +1063,28 @@ int codesets_init(void)
 
 		if (i < 0xa0) src = i;
 		else src = amigapl_to_ucs4[i-0xa0];
+		codeset->table[i].code = i;
+		codeset->table[i].ucs4 = src;
+		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);
+		*dest_ptr = 0;
+		codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
+	}
+	memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
+	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
+	list_insert_tail(&codesets_list,&codeset->node);
+
+	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	codeset->name = mystrdup("Amiga-1251");
+	codeset->alt_name = NULL;
+	codeset->characterization = mystrdup("Amiga-1251");
+	codeset->read_only = 1;
+	for (i=0;i<256;i++)
+	{
+		UTF32 *src_ptr = &src;
+		UTF8 *dest_ptr = &codeset->table[i].utf8[1];
+
+		if (i < 0xa0) src = i;
+		else src = amiga1251_to_ucs4[i-0xa0];
 		codeset->table[i].code = i;
 		codeset->table[i].ucs4 = src;
 		ConvertUTF32toUTF8(&src_ptr, src_ptr + 1, &dest_ptr, dest_ptr + 6, strictConversion);

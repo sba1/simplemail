@@ -667,10 +667,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 	thread_call_parent_function_async(up_set_status,1,N_("Sending EHLO..."));
 	if (!esmtp_ehlo(conn,account))
 	{
+		if (tcp_error_code() == TCP_INTERRUPTED) return 0;
+
 		thread_call_parent_function_async(up_set_status,1,N_("Sending HELO..."));
 		if (!smtp_helo(conn,account))
 		{
-			tell_from_subtask(N_("HELO failed"));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
 			return 0;
 		}
 	}
@@ -686,7 +688,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		thread_call_parent_function_async(up_set_status,1,N_("Sending STARTTLS..."));
 		if ((smtp_send_cmd(conn,"STARTTLS\r\n",NULL)!=SMTP_SERVICE_READY))
 		{
-			tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
 			return 0;
 		}
 
@@ -699,10 +701,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		thread_call_parent_function_async(up_set_status,1,N_("Sending secured EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
+			if (tcp_error_code() == TCP_INTERRUPTED) return 0;
+
 			thread_call_parent_function_async(up_set_status,1,N_("Sending secured HELO..."));
 			if (!smtp_helo(conn,account))
 			{
-				tell_from_subtask(N_("HELO failed"));
+				if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
 				return 0;
 			}
 		}
@@ -713,7 +717,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 		thread_call_parent_function_async(up_set_status,1,N_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
-			tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
 			return 0;
 		}
 	}
@@ -759,21 +763,21 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		thread_call_parent_function_async(up_set_status,1,N_("Sending FROM..."));
 		if (!smtp_from(conn,account))
 		{
-			tell_from_subtask(N_("FROM failed."));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("FROM failed."));
 			return 0;
 		}
 
 		thread_call_parent_function_async(up_set_status,1,N_("Sending RCPT..."));
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
-			tell_from_subtask(N_("RCPT failed."));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("RCPT failed."));
 			return 0;
 		}
 
 		thread_call_parent_function_async(up_set_status,1,N_("Sending DATA..."));
 		if (!smtp_data(conn,account, om[i]->mailfile))
 		{
-			tell_from_subtask(N_("DATA failed."));
+			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("DATA failed."));
 			return 0;
 		}
 
@@ -824,13 +828,28 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 			{
 				if (smtp_login(&conn,account))
 				{
-					if (smtp_send_mails(&conn,account,outmail))
+					rc = smtp_send_mails(&conn,account,outmail);
+
+					if (thread_aborted())
 					{
-						thread_call_parent_function_async(up_set_status,1,N_("Sending QUIT..."));
-						rc = smtp_quit(&conn);
+						thread_call_parent_function_async(up_set_status,1,N_("Aborted - Sending QUIT..."));
+						smtp_quit(&conn);
+						thread_call_parent_function_async(up_set_status,1,N_("Aborted - Disconnecting..."));
+						tcp_disconnect(conn.conn);
+						break;
 					}
+
+					thread_call_parent_function_async(up_set_status,1,N_("Sending QUIT..."));
+					smtp_quit(&conn);
 				}
-	
+
+				if (thread_aborted())
+				{
+					thread_call_parent_function_async(up_set_status,1,N_("Aborted - Disconnecting..."));
+					tcp_disconnect(conn.conn);
+					break;
+				}
+
 				thread_call_parent_function_async(up_set_status,1,N_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			} else tell_from_subtask(tcp_strerror(tcp_error_code()));

@@ -182,6 +182,7 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 			}
 			node->scr = scr;
 
+			list_insert_tail(&dt_list,&node->node);
 			return node;
 		}
 		free(node);

@@ -917,6 +917,17 @@ AppIcon Label
 SimpleMail will use this text to be shown under the AppIcon. Click on the
 pop-up button to select a variable from the list.
 
+
+AppIcon Position
+
+workbench.library < V44 (< OS3.5):
+  The position of the AppIcon can be set with the ToolTypes APPICON_POSX
+  and APPICON_POSY.
+workbench.library >= V44 (>= OS3.5):
+  Use the (Un)Snapshot menuitems from the Workbench->Icon menu. Of course
+  you can also use the ToolTypes if you want but the Snapshot function of
+  the workbench does have the higher priority if you have used both.
+
 @ENDNODE
 @NODE "CO01" "Configuration - Accounts"
 @TOC "CO_W"
@@ -2645,11 +2656,12 @@ In the program directory the following files and directories can be found:
    outgoing/         The Outgoing folder directory
    sent/             The directory for sent mail
    deleted/          The directory for mail marked for deletion
-   folderX/         The @{" user-defined archive folders " LINK "FO_W" 0} (X is a number)
+   folderX/          The @{" user-defined archive folders " LINK "FO_W" 0} (X is a number)
    .uidl.<account>   Used to @{" avoid duplicates " LINK "CO01" 0}
    <folder>.config   Configuration of this folder
    <folder>.index    Index of this folder's messages
  .addressbook.xml  The @{" address book " LINK "AB_W" 0}, in XML format
+ .appicon          The position of the AppIcon (>= OS3.5)
  .signatures       Your personal @{" signatures " LINK "CO08" 0}
  .taglines         Your favourite collection of @{" taglines " LINK "CO08" 0}.
 
@@ -2778,13 +2790,14 @@ And all the people who keep submitting bug reports!
    @{" Compose Message window " LINK WR_W}
    @{" Configuration " LINK CO_W}
    @{" Configuration - Accounts " LINK CO01}
+   @{" Configuration - General " LINK CO00}
    @{" Configuration - Phrases " LINK CO07}
    @{" Configuration - Reading " LINK CO04}
    @{" Configuration - Reading HTML " LINK CO06}
    @{" Configuration - Reading plain " LINK CO05}
    @{" Configuration - Receive mail  " LINK CO02}
    @{" Configuration - Signatures " LINK CO08}
-   @{" Configuration - User " LINK CO00}
+   @{" Configuration - Spam " LINK CO09}
    @{" Configuration - Write " LINK CO03}
    @{" Credits " LINK CRED}
 
@@ -2846,6 +2859,7 @@ And all the people who keep submitting bug reports!
 
    @{" SimpleMail - English documentation " LINK MAIN}
    @{" Sources, how to get them " LINK INFO}
+   @{" Spam " LINK SPAM}
    @{" Startup options " LINK OPTI}
    @{" Status icons " LINK MA0S}
 
@@ -2856,7 +2870,7 @@ And all the people who keep submitting bug reports!
 @{BODY}
 @ENDNODE
 
-@NODE "SimpleHTML"
+@NODE "SimpleHTML" "SimpleHTML"
 
 SimpleHTML is a tool by Sebastian Bauer that allows you to browse HTML
 documents offline. SimpleHTML supports only a little subset of the HTML

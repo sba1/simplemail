@@ -3537,7 +3537,7 @@ void folder_create_imap(void)
 	struct account *ac = (struct account*)list_first(&user.config.account_list);
 	while (ac)
 	{
-		if (ac->recv_type)
+		if (ac->recv_type && ac->imap && ac->imap->name)
 		{
 			struct folder *f;
 			int found = 0;

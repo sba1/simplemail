@@ -88,6 +88,21 @@ char *folder_get_changed_defto(void)
 #endif
 }
 
+int folder_get_changed_primary_sort(void)
+{
+
+//	return xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
+	return 0;
+}
+
+int folder_get_changed_secondary_sort(void)
+{
+
+//	return xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
+	return 0;
+}
+
+
 #if 0
 
 static void init_folder(void)
@@ -167,4 +182,24 @@ void folder_edit_new_path(char *init_path)
 {
 }
 
+void folder_fill_lists(struct list *list, struct list *sub_folder_list)
+{
+#if 0
+	if (imap_folders_list)
+	{
+		struct string_node *node;
+		DoMethod(imap_folders_list,MUIM_NList_Clear);
+		node = (struct string_node*)list_first(list);
+		while (node)
+		{
+			struct imap_folder_entry entry;
+			entry.name = node->string;
+			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
+
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, &entry, MUIV_NList_Insert_Bottom);
+			node = (struct string_node*)node_next(&node->node);
+		}
+	}
+#endif
+}
 

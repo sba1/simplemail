@@ -839,9 +839,9 @@ void main_build_accounts(void)
 	
 	gtk_widget_hide_all(check_single_accounts_menu_menu);
 	gtk_menu_item_remove_submenu(GTK_MENU_ITEM (check_single_accounts_menu));
-	printf("%p\n",check_single_accounts_menu_menu);
-	gtk_widget_destroy(GTK_WIDGET(check_single_accounts_menu_menu));
-	printf("%p\n",check_single_accounts_menu_menu);
+//	printf("hi: %p\n",check_single_accounts_menu_menu);
+//	gtk_widget_destroy(GTK_WIDGET(check_single_accounts_menu_menu));
+//	printf("%p\n",check_single_accounts_menu_menu);
 	check_single_accounts_menu_menu = gtk_menu_new();
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM (check_single_accounts_menu), check_single_accounts_menu_menu);
 
@@ -906,4 +906,26 @@ void main_thaw_mail_list(void)
 void main_select_mail(int mail)
 {
 //	set(mail_tree,MUIA_NList_Active, mail);
+}
+
+/******************************************************************
+ Return the iconified status of the Application
+*******************************************************************/
+void main_refresh_mails_selected(void)
+{
+}
+
+/******************************************************************
+ Return the iconified status of the Application
+*******************************************************************/
+int main_is_iconified(void)
+{
+	return 0;
+}
+
+/******************************************************************
+ Sets an UTF formated status text
+*******************************************************************/
+void main_set_status_text(char *txt)
+{
 }

@@ -111,7 +111,17 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 	}
 }
 
-int thread_start(int (*entry)(void*), void *eudata)
+
+/**************************************************************************
+ Runs a given function in a newly created thread under the given name which
+ in linked into a internal list.
+**************************************************************************/
+thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
+{
+	return NULL;
+}
+
+int thread_start(int (*entry)(void*), void *udata)
 {
 	if (!input_added)
 	{
@@ -119,7 +129,7 @@ int thread_start(int (*entry)(void*), void *eudata)
 		input_added = 1;
 	}
 
-	if ((g_thread_create(entry,eudata,TRUE,NULL)))
+	if ((g_thread_create(entry,udata,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);
@@ -129,9 +139,63 @@ int thread_start(int (*entry)(void*), void *eudata)
 	return 0;
 }
 
-void thread_abort(void)
+void thread_abort(thread_t thread)
 {
 }
+
+/* Call the function synchron, calls timer_callback on the calling process context */
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
+{
+}
+
+/**************************************************************************
+ Call a function in the context of the given thread synchron
+
+ NOTE: Should call thread_handle()
+**************************************************************************/
+int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+{
+/*	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+*/
+	return 0;
+}
+
+/**************************************************************************
+ Waits until aborted and calls timer_callback periodically. It's possible
+ to execute functions on the threads context while in this function.
+**************************************************************************/
+void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+{
+}
+
+/**************************************************************************
+ Pusges an function call in the function queue of the callers task context.
+ Return 1 for success else 0.
+**************************************************************************/
+int thread_push_function(void *function, int argcount, ...)
+{
+	int rc = 0;
+	return rc;
+}
+
 
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {

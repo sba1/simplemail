@@ -40,6 +40,9 @@
 #include "imap.h"
 #endif
 
+struct folder;
+struct imap_server;
+
 struct account
 {
 	struct node node;

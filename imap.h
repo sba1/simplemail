@@ -27,6 +27,8 @@
 #include "lists.h"
 #endif
 
+struct folder;
+
 struct imap_server
 {
 	struct node node;

@@ -30,6 +30,7 @@
 #include <time.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <openssl/ssl.h>
 
 #include "errorwnd.h"
 #include "subthreads.h"
@@ -422,23 +423,45 @@ void tell_from_subtask(char *str)
 }
 
 
+static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7)
+{
+	if (PKCS7_type_is_signed(pkcs7))
+	{
+		return pkcs7_get_data(pkcs7->d.sign->contents);
+	}
+	if (PKCS7_type_is_data(pkcs7))
+	{
+		return pkcs7;
+	}
+	return NULL;
+}
 
+/******************************************************************
+ Decodes an pkcs7...API is unfinished! This is a temp solution.
+*******************************************************************/
+int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
+{
+	int rc = 0;
 
+	char *p = buf;
+	PKCS7 *pkcs7;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))
+	{
+		PKCS7 *pkcs7_data = pkcs7_get_data(pkcs7);
+		if (pkcs7_data)
+		{
+			char *mem = malloc(pkcs7_data->d.data->length+1);
+			if (*dest_ptr)
+			{
+				memcpy(mem,pkcs7_data->d.data->data,pkcs7_data->d.data->length);
+				mem[pkcs7_data->d.data->length]=0;
+				*dest_ptr = mem;
+				*len_ptr = pkcs7_data->d.data->length;
+				rc = 1;
+			}
+		}
+		PKCS7_free(pkcs7);
+	}
+	return rc;
+}

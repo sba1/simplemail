@@ -174,6 +174,29 @@ static void arexx_setmail(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ SETMAILFILE Arexx Command
+*****************************************************************/
+static void arexx_setmailfile(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR mailfile;
+	} setmailfile_arg;
+	memset(&setmailfile_arg,0,sizeof(setmailfile_arg));
+
+	if ((arg_handle = ParseTemplate("MAILFILE/A",args,&setmailfile_arg)))
+	{
+		struct mail *m = folder_find_mail_by_filename(main_get_folder(),setmailfile_arg.mailfile);
+		if (m)
+		{
+			callback_select_mail(folder_get_index_of_mail(main_get_folder(),m));
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  GETSELECTED Arexx Command
 *****************************************************************/
 static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
@@ -603,6 +626,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		if (!Stricmp("MAINTOFRONT",command.command)) arexx_maintofront(rxmsg,command.args);
 		else if (!Stricmp("MAILWRITE",command.command)) arexx_mailwrite(rxmsg,command.args);
 		else if (!Stricmp("SETMAIL",command.command)) arexx_setmail(rxmsg,command.args);
+		else if (!Stricmp("SETMAILFILE",command.command)) arexx_setmailfile(rxmsg,command.args);
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
 		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);

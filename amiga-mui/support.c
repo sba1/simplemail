@@ -24,7 +24,10 @@
 #include <stdlib.h>
 
 #include <exec/memory.h>
+#include <libraries/iffparse.h> /* MAKE_ID */
+#include <mui/betterstring_mcc.h>
 #include <libraries/locale.h>
+#include <dos/dostags.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/utility.h>
@@ -36,6 +39,9 @@
 #include "muistuff.h"
 #include "subthreads.h"
 #include "support.h"
+#include "support_indep.h"
+
+void loop(void); /* gui_main.c */
 
 /******************************************************************
  Creates a directory including all necessaries parent directories.
@@ -218,6 +224,102 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 {
 	if (!title) title = "SimpleMail";
 	return MUI_RequestA(App, NULL, 0, title, gadgets, text, (&(gadgets))+1);
+}
+
+/******************************************************************
+ Opens a requester to enter a string. Returns NULL on error.
+ Otherwise the malloc()ed string
+*******************************************************************/
+char *sm_request_string(char *title, char *text, char *contents, int secret)
+{
+	char *ret = NULL;
+	Object *string;
+	Object *wnd;
+
+	wnd = WindowObject,
+		MUIA_Window_Title, title?title:"SimpleMail",
+		MUIA_Window_ID, MAKE_ID('S','R','E','Q'),
+		WindowContents, VGroup,
+			Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
+			Child, string = BetterStringObject,
+				StringFrame,
+				MUIA_String_Secret, secret,
+				MUIA_String_Contents, contents,
+				End,
+			End,
+		End;
+
+	if (wnd)
+	{
+		ULONG cancel=0;
+		DoMethod(App, OM_ADDMEMBER, wnd);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 3, MUIM_WriteLong, 1, &cancel);
+		DoMethod(string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		
+		set(wnd,MUIA_Window_Open,TRUE);
+		set(wnd,MUIA_Window_ActiveObject,string);
+		loop();
+
+		if (!cancel)
+		{
+			ret = mystrdup((char*)xget(string,MUIA_String_Contents));
+		}
+		DoMethod(App, OM_REMMEMBER, wnd);
+		MUI_DisposeObject(wnd);
+	}
+	return ret;
+}
+
+/******************************************************************
+ Get environment variables
+*******************************************************************/
+char *sm_getenv(char *name)
+{
+	static char buf[2048];
+	if (GetVar(name,buf,sizeof(buf),0) < 0) return NULL;
+	return buf;
+}
+
+/******************************************************************
+ Set environment variables
+*******************************************************************/
+void sm_setenv(char *name, char *value)
+{
+	SetVar(name,value,strlen(value),0);
+}
+
+/******************************************************************
+ Unset environment variables
+*******************************************************************/
+void sm_unsetenv(char *name)
+{
+	DeleteVar(name,GVF_LOCAL_ONLY);
+}
+
+/******************************************************************
+ An system() replacement
+*******************************************************************/
+int sm_system(char *command, char *output)
+{
+	BPTR fhi,fho;
+	int error = -1;
+
+	if ((fhi = Open("NIL:", MODE_OLDFILE)))
+	{
+		if ((fho = Open(output?output:"NIL:", MODE_NEWFILE)))
+		{
+			error = SystemTags(command, 
+						SYS_Input, fhi,
+						SYS_Output, fho,
+						NP_StackSize, 50000,
+						TAG_DONE);
+
+			Close(fho);
+		}
+		Close(fhi);
+	}
+	return error;
 }
 
 /******************************************************************

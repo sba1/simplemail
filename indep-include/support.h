@@ -31,6 +31,12 @@ int sm_add_part(char *drawer, const char *filename, int buf_size);
 char *sm_file_part(char *filename);
 char *sm_path_part(char *filename);
 int sm_request(char *title, char *text, char *gadgets, ...);
+char *sm_request_string(char *title, char *text, char *contents, int secret);
+
+char *sm_getenv(char *name);
+void sm_setenv(char *name, char *value);
+void sm_unsetenv(char *name);
+int sm_system(char *command, char *output);
 
 char *sm_get_date_long_str(unsigned int seconds);
 char *sm_get_date_str(unsigned int seconds);

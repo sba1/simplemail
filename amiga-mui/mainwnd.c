@@ -47,6 +47,7 @@
 #include "mail.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support.h"
 #include "support_indep.h"
 
 #include "addresstreelistclass.h"
@@ -58,25 +59,6 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
-
-static const char *image_files[] = {
-		"PROGDIR:Images/MailRead",
-		"PROGDIR:Images/MailModify",
-		"PROGDIR:Images/MailDelete",
-		"PROGDIR:Images/MailGetAddress",
-		"PROGDIR:Images/MailNew",
-		"PROGDIR:Images/MailReply",
-		"PROGDIR:Images/MailForward",
-		"PROGDIR:Images/MailsFetch",
-		"PROGDIR:Images/MailsSend",
-		"PROGDIR:Images/Search",
-		"PROGDIR:Images/Filter",
-		"PROGDIR:Images/FilterEdit",
-		"PROGDIR:Images/Addressbook",
-		"PROGDIR:Images/Config",
-		NULL
-};
-/*struct MyBrush *brushes[sizeof(image_files)/sizeof(char*)];*/
 
 static Object *win_main;
 static Object *main_menu;
@@ -98,6 +80,8 @@ static Object *button_forward;
 static Object *button_search;
 static Object *button_filter;
 static Object *button_efilter;
+static Object *button_spamcheck;
+static Object *button_isolate;
 static Object *button_abook;
 static Object *button_config;
 static Object *switch1_button; /* switch button for the two views */
@@ -118,7 +102,7 @@ static Object *address_listview;
 static Object *address_tree;
 static Object *left_listview_group;
 static Object *left_listview_balance;
-static Object *folder_checksingleaccount_menuitem;
+static Object *project_checksingleaccount_menuitem;
 static Object *status_text;
 
 static int folders_in_popup;
@@ -443,18 +427,6 @@ static void settings_show_changed(void)
 }
 
 /******************************************************************
- Frees the brushes
-*******************************************************************/
-/*
-static void main_free_brushes(void)
-{
-	int i;
-	for (i=0;i<sizeof(image_files)/sizeof(char*);i++)
-	  if (brushes[i]) FreeBrush(brushes[i]);
-}
-*/
-
-/******************************************************************
  Initialize the main window
 *******************************************************************/
 int main_window_init(void)
@@ -464,7 +436,11 @@ int main_window_init(void)
 		MENU_PROJECT,
 		MENU_PROJECT_ABOUT = 1,
 		MENU_PROJECT_ABOUTMUI,
+		MENU_PROJECT_FETCH,
+		MENU_PROJECT_CHECKSINGLEACCOUNT,
+		MENU_PROJECT_SEND,
 		MENU_PROJECT_QUIT,
+
 		MENU_FOLDER,
 		MENU_FOLDER_NEWGROUP,
 		MENU_FOLDER_NEWFOLDER,
@@ -475,12 +451,11 @@ int main_window_init(void)
 		MENU_FOLDER_ORDER_SAVE,
 		MENU_FOLDER_ORDER_RESET,
 		MENU_FOLDER_DELALLINDEX,
-		MENU_FOLDER_SEND,
-		MENU_FOLDER_FETCH,
 		MENU_FOLDER_EXPORT,
-		MENU_FOLDER_CHECKSINGLEACCOUNT,
 		MENU_FOLDER_SPAMCHECK,
 		MENU_FOLDER_MOVESPAM,
+		MENU_FOLDER_HAM,
+
 		MENU_MESSAGE_NEW,
 		MENU_MESSAGE_REPLY,
 		MENU_MESSAGE_FORWARD,
@@ -489,6 +464,7 @@ int main_window_init(void)
 		MENU_MESSAGE_MOVE,
 		MENU_MESSAGE_COPY,
 		MENU_MESSAGE_DELETE,
+
 		MENU_SETTINGS,
 		MENU_SETTINGS_SHOW_FOLDERS,
 		MENU_SETTINGS_SHOW_ADDRESSBOOK,
@@ -508,9 +484,9 @@ int main_window_init(void)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
-		{NM_ITEM, N_("F:Check all active accounts..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
-		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
+		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_PROJECT_SEND},
+		{NM_ITEM, N_("F:Check all active accounts..."), NULL, 0, 0, (APTR)MENU_PROJECT_FETCH},
+		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
@@ -522,8 +498,9 @@ int main_window_init(void)
 		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
-		{NM_ITEM, N_("Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
+		{NM_ITEM, N_("P:Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
+		{NM_ITEM, N_("O:Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
+		{NM_ITEM, N_("H:Classify all mails as ham"), NULL, 0, 0, (APTR)MENU_FOLDER_HAM},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
@@ -609,19 +586,22 @@ int main_window_init(void)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, button_fetch = MakePictureButton(_("Fetc_h"),"PROGDIR:Images/MailsFetch"),
+						Child, button_fetch = MakePictureButton(_("_Fetch"),"PROGDIR:Images/MailsFetch"),
 						Child, button_send = MakePictureButton(_("_Send"),"PROGDIR:Images/MailsSend"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						MUIA_Weight, 150,
-						Child, button_search = MakePictureButton(_("S_earch"),"PROGDIR:Images/Search"),
+						MUIA_Weight, 200,
+						Child, button_search = MakePictureButton(_("Searc_h"),"PROGDIR:Images/Search"),
 						Child, button_filter = MakePictureButton(_("F_ilter"),"PROGDIR:Images/Filter"),
-						Child, button_efilter = MakePictureButton(_("_Filters"),"PROGDIR:Images/FilterEdit"),
+						Child, button_spamcheck = MakePictureButton(_("S_pam"),"PROGDIR:Images/SpamCheck"),
+						Child, button_isolate = MakePictureButton(_("Is_olate"),"PROGDIR:Images/SpamIsolate"),
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
+						MUIA_Weight, 150,
 						Child, button_abook = MakePictureButton(_("_Abook"),"PROGDIR:Images/Addressbook"),
+						Child, button_efilter = MakePictureButton(_("Fi_lters"),"PROGDIR:Images/FilterEdit"),
 						Child, button_config = MakePictureButton(_("_Config"),"PROGDIR:Images/Config"),
 						End,
 					End,
@@ -702,6 +682,13 @@ int main_window_init(void)
 	 	return 0;
 		}
 
+		/* Short Help */
+		set(button_search, MUIA_ShortHelp, _("Opens a window where you can search through your mail folder."));
+		set(button_filter, MUIA_ShortHelp, _("Process every mail within the current selected folder via the filters."));
+		set(button_efilter, MUIA_ShortHelp, _("Opens a window where the filters can be edited."));
+		set(button_spamcheck, MUIA_ShortHelp, _("Checks the current selected folder for spam.\nIf a potential spam mail has been found it will be marked."));
+		set(button_isolate, MUIA_ShortHelp, _("Isolates all spam marked mails within the current selected folder."));
+
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
 		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
@@ -712,7 +699,7 @@ int main_window_init(void)
 
 		settings_show_changed();
 
-		folder_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
+		project_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_PROJECT_CHECKSINGLEACCOUNT);
 
 		DoMethod(App, OM_ADDMEMBER, win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
@@ -720,6 +707,8 @@ int main_window_init(void)
 		/* Menu notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWGROUP, App, 3, MUIM_CallHook, &hook_standard, callback_new_group);
@@ -731,10 +720,9 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, App, 3, MUIM_CallHook, &hook_standard, callback_rescan_folder);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_HAM, App, 3, MUIM_CallHook, &hook_standard, callback_classify_selected_folder_as_ham);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
@@ -775,6 +763,9 @@ int main_window_init(void)
 		DoMethod(button_search, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_search);
 		DoMethod(button_filter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_filter);
 		DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
+		DoMethod(button_spamcheck, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
+		DoMethod(button_isolate, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
+
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
 
@@ -1057,7 +1048,7 @@ void main_build_accounts(void)
 	struct account *account = (struct account*)list_first(&user.config.account_list);
 	int i=0;
 
-	DisposeAllFamilyChilds(folder_checksingleaccount_menuitem);
+	DisposeAllFamilyChilds(project_checksingleaccount_menuitem);
 
 	while (account)
 	{
@@ -1069,6 +1060,7 @@ void main_build_accounts(void)
 			if (account->account_name)
 			{
 				utf8tostr(account->account_name, buf, sizeof(buf), user.config.default_codeset);
+				strcat(buf,"...");
 			} else if (account->pop->login)
 			{
 				sm_snprintf(buf,sizeof(buf),"%s@%s...",account->pop->login,account->pop->name);
@@ -1078,7 +1070,7 @@ void main_build_accounts(void)
 				MUIA_Menuitem_Title, mystrdup(buf), /* leakes */
 				End;
 
-			DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 			DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_check_single_account,i);
 		}
 		account = (struct account*)node_next(&account->node);
@@ -1088,7 +1080,7 @@ void main_build_accounts(void)
 	if (!i)
 	{
 		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No fetchable account specified"),	End;
-		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+		DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 	}
 }
 

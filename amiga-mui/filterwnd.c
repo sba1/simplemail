@@ -57,11 +57,13 @@ static struct Hook filter_destruct_hook;
 static struct Hook filter_display_hook;
 
 static int rules_create_from(struct rule *rule);
+static int rules_create_subject(struct rule *rule);
+static int rules_create_header(struct rule *rule);
 
 struct rule rules[] = {
 	{"From match",NULL,rules_create_from,RULE_FROM_MATCH},
-	{"Subject macth",NULL,NULL,RULE_SUBJECT_MATCH},
-	{"Header match",NULL,NULL,RULE_HEADER_MATCH},
+	{"Subject macth",NULL,rules_create_subject,RULE_SUBJECT_MATCH},
+	{"Header match",NULL,rules_create_header,RULE_HEADER_MATCH},
 	{NULL,NULL,NULL,NULL},
 };
 char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
@@ -109,12 +111,55 @@ static int rules_create_from(struct rule *rule)
 {
 	rule->page = HGroup,
 		MUIA_ShowMe, FALSE,
+		Child, MakeLabel("Address"),
 		Child, BetterStringObject,
+			StringFrame,
 			End,
 		End;
 
 	return rule->page?1:0;
 }
+
+/**************************************************************************
+ Create the subject match object
+**************************************************************************/
+static int rules_create_subject(struct rule *rule)
+{
+	rule->page = HGroup,
+		MUIA_ShowMe, FALSE,
+		Child, MakeLabel("Subject"),
+		Child, BetterStringObject,
+			StringFrame,
+			End,
+		End;
+
+	return rule->page?1:0;
+}
+
+/**************************************************************************
+ Create the header match object
+**************************************************************************/
+static int rules_create_header(struct rule *rule)
+{
+	rule->page = VGroup,
+		MUIA_ShowMe, FALSE,
+		Child, HGroup,
+			Child, MakeLabel("Name"),
+			Child, BetterStringObject,
+				StringFrame,
+				End,
+			End,
+		Child, HGroup,
+			Child, MakeLabel("Contents"),
+			Child, BetterStringObject,
+				StringFrame,
+				End,
+			End,
+		End;
+
+	return rule->page?1:0;
+}
+
 
 /**************************************************************************
  Ok the rule 
@@ -137,6 +182,30 @@ static void rules_new(void)
 
 		fr = filter_create_and_add_rule(f, xget(rules_page_cycle, MUIA_Cycle_Active));
 		DoMethod(rules_page_listview,MUIM_NList_InsertSingle, fr, MUIV_NList_Insert_Bottom);
+		set(rules_page_listview, MUIA_NList_Active, MUIV_NList_Active_Bottom);
+	}
+}
+
+/**************************************************************************
+ A new rule is active
+**************************************************************************/
+static void rules_active(void)
+{
+	struct filter_rule *fr;
+	DoMethod(rules_page_listview, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &fr);
+	if (fr)
+	{
+		int i;
+		for (i=0;rules[i].name;i++)
+		{
+			if (rules[i].type == fr->type)
+			{
+				set(rules[i].page,MUIA_ShowMe, TRUE);
+			} else
+			{
+				set(rules[i].page,MUIA_ShowMe, FALSE);
+			}
+		}
 	}
 }
 
@@ -174,7 +243,7 @@ static void init_rules(void)
 						Child, MakeButton("Remove"),
 						End,
 					End,
-				Child, rules_page_group = HGroup,
+				Child, rules_page_group = VGroup,
 					Child, rules_page_space = HVSpace,
 					End,
 				End,
@@ -189,13 +258,17 @@ static void init_rules(void)
 	if (rules_wnd)
 	{
 		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
-			DoMethod(App, OM_ADDMEMBER, rules[i].page);
+		{
+			if (rules[i].page) DoMethod(rules_page_group, OM_ADDMEMBER, rules[i].page);
+		}
 
+		DoMethod(rules_page_group, OM_ADDMEMBER, HVSpace);
 		DoMethod(App, OM_ADDMEMBER, rules_wnd);
 		DoMethod(rules_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(rule_add_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_new);
+		DoMethod(rules_page_listview, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_active);
 	}
 }
 

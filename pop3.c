@@ -347,10 +347,11 @@ int pop3_get_mail(struct pop3_server *server, unsigned long nr)
 					{
 						int bytes_written = 0;
 
+						buf2 += 2;
 						got = strlen(buf2);
 
 						rc = 1;
-						buf2 += 2;
+
 						while (running)
 						{
 							/* Check if the downloading should be aborted */

@@ -793,6 +793,8 @@ static struct folder *folder_add(char *path)
 	{
 		/* Initialize everything with 0 */
 		memset(node,0,sizeof(struct folder_node));
+		node->folder.num_index_mails = -1;
+
 		/* create the directory if it doesn't exists */
 		if (sm_makedir(path))
 		{
@@ -1116,7 +1118,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype)
 		f->mail_array_allocated = 0;
 		f->new_mails = 0;
 		f->unread_mails = 0;
-		f->num_index_mails = 0;
+		f->num_index_mails = -1;
 
 		folder_read_mail_infos(f,0);
 	}
@@ -1547,6 +1549,29 @@ int folder_save_index(struct folder *f)
 
 	return 1;
 }
+
+/******************************************************************
+ Get informations about the folder stats
+*******************************************************************/
+void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr)
+{
+	struct folder *f = folder_first();
+	int total_msg = 0;
+	int total_unread = 0;
+	int total_new = 0;
+	while (f)
+	{
+		if (f->num_index_mails != -1) total_msg += f->num_index_mails;
+		total_unread += f->unread_mails;
+		total_new += f->new_mails;
+		f = folder_next(f);
+	}
+
+	*total_msg_ptr = total_msg;
+	*total_unread_ptr = total_unread;
+	*total_new_ptr = total_new;
+}
+
 
 /******************************************************************
  The mail iterating function. To get the first mail let handle

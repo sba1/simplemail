@@ -102,6 +102,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype);
 
 struct folder *folder_first(void);
+void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr);
 
 /* Like a linear list */
 struct folder *folder_next(struct folder *f);

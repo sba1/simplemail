@@ -29,6 +29,7 @@
 #include <dos/dostags.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/timer.h>
 
 #include "subthreads.h"
 
@@ -320,6 +321,133 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 	return 0;
 #endif
 }
+
+/* Call the function synchron, calls timer_callback on the calling process context */
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
+{
+#ifndef DONT_USE_THREADS
+	int rc = 0;
+
+	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
+	if (tmsg)
+	{
+		struct MsgPort *timer_port;
+		struct timerequest *timer_req;
+
+		if (timer_port = CreateMsgPort())
+		{
+			if (timer_req = (struct timerequest *) CreateIORequest(timer_port, sizeof(struct timerequest)))
+			{
+				if (!OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *) timer_req, 0))
+				{
+					struct timerequest *new_timer_req = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_PUBLIC);
+					if (new_timer_req)
+					{
+						int timer_send = 0;
+						struct Process *p = (struct Process*)FindTask(NULL);
+						va_list argptr;
+
+						/* we only accept positive values */
+						if (millis < 1) millis = 1;
+
+						va_start(argptr,argcount);
+
+						tmsg->msg.mn_ReplyPort = &p->pr_MsgPort;
+						tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+						tmsg->function = (int (*)(void))function;
+						tmsg->argcount = argcount;
+						tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
+						tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
+						tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
+						tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+						tmsg->async = 0;
+
+						va_end (arg_ptr);
+
+						/* now send the message */
+						PutMsg(thread_port,&tmsg->msg);
+
+						/* while the parent task should execute the message
+						 * we regualiy call the given callback function */
+						while (1)
+						{
+							ULONG timer_mask = 1UL << timer_port->mp_SigBit;
+							ULONG proc_mask = 1UL << p->pr_MsgPort.mp_SigBit;
+							ULONG mask;
+
+							if (!timer_send)
+							{
+						    *new_timer_req = *timer_req;
+						    new_timer_req->tr_node.io_Command = TR_ADDREQUEST;
+						    new_timer_req->tr_time.tv_secs = millis/1000;
+						    new_timer_req->tr_time.tv_micro = millis%1000;
+					  	  SendIO((struct IORequest *)new_timer_req);
+					  	  timer_send = 1;
+						  }
+
+							mask = Wait(timer_mask|proc_mask);
+							if (mask & timer_mask)
+							{
+								if (timer_callback)
+								{
+									timer_callback(timer_data);
+								}
+								timer_send = 0;
+							}
+
+							if (mask & proc_mask)
+							{
+								/* the parent task has finished */
+								break;
+							}
+						}
+		
+						GetMsg(&p->pr_MsgPort);
+						rc = tmsg->result;
+									
+						if (timer_send)
+						{
+							AbortIO((struct IORequest*)new_timer_req);
+							WaitIO((struct IORequest*)new_timer_req);
+						}
+						FreeVec(new_timer_req);
+					}
+		      CloseDevice((struct IORequest *) timer_req);
+				}
+		    DeleteIORequest(timer_req);
+			}
+	    DeleteMsgPort(timer_port);
+		}
+		FreeVec(tmsg);
+	}
+	return rc;
+#else
+
+	int rc;
+	void *arg1,*arg2,*arg3,*arg4;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	arg1 = va_arg(argptr, void *);
+	arg2 = va_arg(argptr, void *);
+	arg3 = va_arg(argptr, void *);
+	arg4 = va_arg(argptr, void *);
+
+	switch (argcount)
+	{
+		case	0: return ((int (*)(void))function)();break;
+		case	1: return ((int (*)(void*))function)(arg1);break;
+		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
+		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
+		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
+	}
+
+	return 0;
+#endif
+}
+
+
 
 /* Call the function asynchron */
 int thread_call_parent_function_async(void *function, int argcount, ...)

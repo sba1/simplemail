@@ -27,6 +27,11 @@
 
 int init_threads(void);
 void cleanup_threads(void);
+
+/* thread handling */
+struct thread_s;
+typedef struct thread_s * thread_t; /* opaque type */
+
 int thread_parent_task_can_contiue(void);
 int thread_start(int (*entry)(void*), void *udata);
 void thread_abort(void);
@@ -34,9 +39,9 @@ int thread_aborted(void);
 int thread_call_parent_function_sync(void *function, int argcount, ...);
 int thread_call_parent_function_async(void *function, int argcount, ...);
 int thread_call_parent_function_async_string(void *function, int argcount, ...);
+int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...);
 
 /* semaphore handling */
-
 struct semaphore_s;
 typedef struct semaphore_s * semaphore_t; /* opaque type */
 

@@ -362,7 +362,7 @@ int all_init(void)
 								if (main_window_init())
 								{
 									SM_DEBUGF(15,("Going to load environment\n"));
-//									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
+									DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
 									SM_DEBUGF(15,("Environment loaded\n"));
 									SM_LEAVE;
 									return 1;

@@ -18,6 +18,7 @@
 /* gui parts */
 #include "addressstringclass.h"
 #include "attachmentlistclass.h"
+#include "composeeditorclass.h"
 #include "datatypesclass.h"
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
@@ -90,6 +91,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_composeeditor_class();
 		delete_readlist_class();
 		delete_transwnd_class();
 		delete_datatypes_class();
@@ -119,7 +121,7 @@ int all_init(void)
 		if (create_foldertreelist_class() && create_mailtreelist_class() &&
 				create_addressstring_class() && create_attachmentlist_class() &&
 				create_datatypes_class() && create_transwnd_class() &&
-				create_readlist_class())
+				create_readlist_class() && create_composeeditor_class())
 		{
 			if (app_init())
 			{

@@ -760,9 +760,12 @@ static int pop3_entry(struct pop_entry_msg *msg)
 
 	while (pop)
 	{
-		struct pop3_server *new_pop = pop_duplicate(pop);
-		if (new_pop)
-			list_insert_tail(&pop_list,&new_pop->node);
+		if (pop->name)
+		{
+			struct pop3_server *new_pop = pop_duplicate(pop);
+			if (new_pop)
+				list_insert_tail(&pop_list,&new_pop->node);
+		}
 		pop = (struct pop3_server*)node_next(&pop->node);
 	}
 

@@ -844,12 +844,13 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 	struct outmail **outmail;
 	list_init(&copy_list);
 
-	account = (struct account*)list_first(msg->account_list);
-	while (account)
+	for (account = (struct account*)list_first(msg->account_list);account;account = (struct account*)node_next(&account->node))
 	{
-		struct account *new_account = account_duplicate(account);
+		struct account *new_account;
+		if (!account->smtp || !account->smtp->name) continue;
+
+		new_account = account_duplicate(account);
 		if (new_account) list_insert_tail(&copy_list,&new_account->node);
-		account = (struct account*)node_next(&account->node);
 	}
 
 	outmail = duplicate_outmail_array(msg->outmail);

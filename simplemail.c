@@ -34,6 +34,7 @@
 #include "trans.h"
 #include "folder.h"
 #include "simplemail.h"
+#include "tcpip.h"
 
 /* the current mail should be viewed */
 void callback_read_mail(void)
@@ -251,6 +252,7 @@ int main(void)
 	init_addressbook();
 	if (init_folders())
 	{
+		init_socket_lib();
 		gui_main();
 		folder_delete_deleted();
 	}

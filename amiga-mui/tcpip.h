@@ -19,8 +19,9 @@
 ** tcpip.h
 */
 
-#include <proto/socket.h> /* Now it actually _is_ nice!!! :) */
+#include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
 
-int init_socket_lib(void);
+void init_socket_lib(void);
+int open_socket_lib(void);
 void close_socket_lib(void);
 

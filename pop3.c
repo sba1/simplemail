@@ -608,7 +608,7 @@ int pop3_dl(struct pop3_server *server)
    
    rc = 0;
    
-   if(init_socket_lib())
+   if(open_socket_lib())
    {
       dl_set_status("Connecting to server..."); 
       server->socket = tcp_connect(server->name, server->port);

@@ -401,7 +401,7 @@ int smtp_send(struct smtp_server *server, struct out_mail **om)
    
    rc = FALSE;
    
-   if(init_socket_lib())
+   if(open_socket_lib())
    {
       up_window_open();
       up_set_title(server->name);

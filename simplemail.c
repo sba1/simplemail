@@ -56,7 +56,7 @@
 
 /* the current mail should be viewed, returns the number of the window
 	which the function has opened or -1 for an error */
-int callback_read_mail(void)
+int callback_read_active_mail(void)
 {
 	char *filename;
 	struct mail *m;
@@ -73,7 +73,7 @@ int callback_read_mail(void)
 		main_refresh_mail(m);
 	}
 
-	num = read_window_open(main_get_folder_drawer(), m);
+	num = read_window_open(main_get_folder_drawer(), m, -1);
 
 	if (num >= 0)
 	{
@@ -93,7 +93,7 @@ int callback_read_this_mail(struct mail *m)
 {
 	struct folder *f = folder_find_by_mail(m);
 	int num;
-	num = read_window_open(f->path, m);
+	num = read_window_open(f->path, m, -1);
 	return num;
 }
 

@@ -972,9 +972,10 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 
 /******************************************************************
  Opens a read window. Returns the number of the readwindow or -1
- for an error
+ for an error. You can specify the number of the window which to
+ use or -1 for a random one.
 *******************************************************************/
-int read_window_open(char *folder, struct mail *mail)
+int read_window_open(char *folder, struct mail *mail, int window)
 {
 	Object *wnd, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;

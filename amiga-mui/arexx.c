@@ -1113,7 +1113,7 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 		{
 			int window;
 
-			read_active_window = window = callback_read_mail();
+			read_active_window = window = callback_read_active_mail();
 
 			if (mailread_arg.stem)
 			{

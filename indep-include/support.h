@@ -32,6 +32,7 @@ char *sm_file_part(char *filename);
 char *sm_path_part(char *filename);
 int sm_request(char *title, char *text, char *gadgets, ...);
 char *sm_request_string(char *title, char *text, char *contents, int secret);
+int sm_request_login(char *text, char *login, char *password, int len);
 char *sm_request_pgp_id(char *text);
 
 char *sm_getenv(char *name);

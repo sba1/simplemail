@@ -276,6 +276,79 @@ char *sm_request_string(char *title, char *text, char *contents, int secret)
 }
 
 /******************************************************************
+ Opens a requester to enter a user id and a passwort. Returns 1 on
+ success, else 0. The strings are filled in a previously alloced
+ login and password buffer but not more than len bytes
+*******************************************************************/
+int sm_request_login(char *text, char *login, char *password, int len)
+{
+	int ret = 0;
+	Object *login_string;
+	Object *pass_string;
+	Object *wnd;
+	Object *ok_button, *cancel_button;
+
+	char buf[256];
+	sprintf(buf,_("Please enter the login for %s"),text);
+
+	wnd = WindowObject,
+		MUIA_Window_Title, "SimpleMail - Login",
+		MUIA_Window_ID, MAKE_ID('S','L','O','G'),
+		WindowContents, VGroup,
+			Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, buf, End,
+			Child, HGroup,
+				Child, MakeLabel(_("Login/UserID")),
+				Child, login_string = BetterStringObject,
+					StringFrame,
+					MUIA_String_Contents, login,
+					MUIA_String_AdvanceOnCR, TRUE,
+					MUIA_CycleChain, 1,
+					End,
+				End,
+			Child, HGroup,
+				Child, MakeLabel(_("Password")),
+				Child, pass_string = BetterStringObject,
+					StringFrame,
+					MUIA_String_Secret, 1,
+					MUIA_CycleChain, 1,
+					End,
+				End,
+			Child, HorizLineObject,
+			Child, HGroup,
+				Child, ok_button = MakeButton(_("_Ok")),
+				Child, cancel_button = MakeButton(_("_Cancel")),
+				End,
+			End,
+		End;
+
+	if (wnd)
+	{
+		ULONG cancel=0;
+		DoMethod(App, OM_ADDMEMBER, wnd);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 3, MUIM_WriteLong, 1, &cancel);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &cancel);
+		DoMethod(pass_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+
+		set(wnd,MUIA_Window_Open,TRUE);
+		set(wnd,MUIA_Window_ActiveObject,(*login)?pass_string:login_string);
+		loop();
+
+		if (!cancel)
+		{
+			mystrlcpy(login, (char*)xget(login_string,MUIA_String_Contents), len);
+			mystrlcpy(password, (char*)xget(pass_string,MUIA_String_Contents), len);
+			ret = 1;
+		}
+		DoMethod(App, OM_REMMEMBER, wnd);
+		MUI_DisposeObject(wnd);
+	}
+	return ret;
+}
+
+/******************************************************************
  Returns a malloc()ed string of a selected pgp. NULL for cancel
  or an error
 *******************************************************************/

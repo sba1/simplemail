@@ -32,18 +32,6 @@
 
 static Object *win_up;
 
-int up_window_init(void)
-{
-	int rc;
-	
-	if(create_transwnd_class())
-	{
-		rc = TRUE;
-	}
-	
-	return(rc);
-}
-
 void up_set_title(char *str)
 {
 	set(win_up, MUIA_Window_Title, str);
@@ -123,12 +111,6 @@ void up_window_close(void)
 
 int up_checkabort(void)
 {
-	int rc;
-	
-	if(GetAttr(MUIA_transwnd_Aborted, win_up, (ULONG *) &rc) == FALSE)
-	{
-		rc = FALSE;
-	}
-	
-	return(rc);
+	/* unneccessary in the amiga client, because it supports subthreading */
+	return 0;
 }

@@ -19,13 +19,12 @@
 #include "addressstringclass.h"
 #include "attachmentlistclass.h"
 #include "datatypesclass.h"
-#include "dlwnd.h"
-#include "upwnd.h"
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "subthreads.h"
+#include "transwndclass.h"
 
 __near long __stack = 30000;
 
@@ -90,6 +89,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_transwnd_class();
 		delete_datatypes_class();
 		delete_attachmentlist_class();
 		delete_addressstring_class();
@@ -116,19 +116,13 @@ int all_init(void)
 		init_hook_standard();
 		if (create_foldertreelist_class() && create_mailtreelist_class() &&
 				create_addressstring_class() && create_attachmentlist_class() &&
-				create_datatypes_class())
+				create_datatypes_class() && create_transwnd_class())
 		{
 			if (app_init())
 			{
 				if (main_window_init())
 				{
-					if (dl_window_init())
-					{
-						if (up_window_init())
-						{
-							rc = TRUE;
-						}	
-					}	
+					rc = TRUE;
 				}
 			}	
 		}	

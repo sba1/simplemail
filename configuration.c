@@ -139,6 +139,7 @@ static void init_config(void)
 	user.config.set_all_stati = 0;
 	user.config.min_classified_mails = 500;
 	user.config.dont_show_shutdown_text = 0;
+	user.config.dont_use_thebar_mcc = 0;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -279,6 +280,8 @@ int load_config(void)
 							user.config.min_classified_mails = atoi(result);
 						if ((result = get_config_item(buf,"Hidden.DontShowShutdownText")))
 							user.config.dont_show_shutdown_text = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.DontUseTheBarMCC")))
+							user.config.dont_use_thebar_mcc = CONFIG_BOOL_VAL(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -679,6 +682,10 @@ void save_config(void)
 			if (user.config.dont_show_shutdown_text)
 			{
 				fprintf(fh,"Hidden.DontShowShutdownText=Y\n");
+			}
+			if (user.config.dont_use_thebar_mcc)
+			{
+				fprintf(fh,"Hidden.DontUseTheBarMCC=Y\n");
 			}
 
 			fclose(fh);

@@ -63,8 +63,12 @@ void init_config(void)
 	struct account *account;
 
 	memset(&user,0,sizeof(struct user));
-	user.directory = strdup("PROGDIR:");
 
+#ifdef _AMIGA
+	user.directory = strdup("PROGDIR:");
+#else
+	user.directory = strdup(".");
+#endif
 	list_init(&user.config.account_list);
 	list_init(&user.config.filter_list);
 
@@ -194,6 +198,8 @@ int load_config(void)
 										account->pop->passwd = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Delete")))
 										account->pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;
+									if ((result = get_config_item(account_buf,"POP3.SSL")))
+										account->pop->ssl = ((*result == 'Y') || (*result == 'y'))?1:0;
 								}
 							}
 						}
@@ -319,11 +325,12 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
 				fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.POP3.SSL=%s\n",i,account->pop->ssl?"Y":"N");
 				account = (struct account*)node_next(&account->node);
 				i++;
 			}
 
-			fprintf(fh,"Signatures.Use=%s",user.config.signatures_use?"Y":"N");
+			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
 			fprintf(fh,"Read.BackgroundColor=0x%x\n",user.config.read_background);
@@ -437,6 +444,9 @@ struct signature *find_config_signature_by_name(char *name)
 	}
 	return NULL;
 }
+
+
+
 
 
 

@@ -34,6 +34,8 @@ int gui_main(int argc, char *argv[])
 	return 1;
 }
 
+
+
 #if 0
 
 #include <dos/dos.h>
@@ -210,6 +212,12 @@ int gui_main(void)
 }
 
 #endif
+
+
+
+
+
+
 
 
 

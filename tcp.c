@@ -179,7 +179,8 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 				break;
 
 			default:
-				sprintf(err, "Unknown error %ld!", id);
+				strncpy(err,strerror(id),sizeof(err)-1);
+/*				sprintf(err, "Unknown error %ld!", id);*/
 				break;
 		}
 		
@@ -358,5 +359,6 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
+
 
 

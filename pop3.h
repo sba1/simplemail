@@ -29,6 +29,7 @@ struct pop3_server
 
 	char *name;
 	unsigned int port;
+	int ssl; /* use ssl to connect */
 	char *login;
 	char *passwd;
 	int del; /* 1 if downloaded mails should be deleted */

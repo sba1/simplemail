@@ -29,6 +29,7 @@ void dl_set_title(char *str)
 #if 0
 	set(win_dl, MUIA_Window_Title, str);
 #endif
+	printf("Titlebar: %s\n",str);
 }
 
 void dl_set_status(char *str)
@@ -36,6 +37,7 @@ void dl_set_status(char *str)
 #if 0
 	set(win_dl, MUIA_transwnd_Status, str);
 #endif
+	printf("%s\n",str);
 }
 
 void dl_init_gauge_mail(int amm)
@@ -49,6 +51,7 @@ void dl_init_gauge_mail(int amm)
 	set(win_dl, MUIA_transwnd_Gauge1_Max, amm);
 	set(win_dl, MUIA_transwnd_Gauge1_Val, 0);
 #endif
+	printf("%d mails\n",amm);
 }
 
 void dl_set_gauge_mail(int current)
@@ -164,6 +167,7 @@ void dl_clear(void)
 void dl_wait(void)
 {
 }
+
 
 
 

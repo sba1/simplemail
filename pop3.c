@@ -368,7 +368,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 			thread_call_parent_function_sync(dl_set_title,1,server->name);
 			thread_call_parent_function_sync(dl_set_status,1,buf);
 
-			if ((conn = tcp_connect(server->name, server->port,0)))
+			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
 				thread_call_parent_function_sync(dl_set_status,1,"Waiting for login...");
 				if (pop3_wait_login(conn,server))
@@ -451,7 +451,7 @@ int pop3_login_only(struct pop3_server *server)
 	{
 		struct connection *conn;
 
-		if ((conn = tcp_connect(server->name, server->port,0)))
+		if ((conn = tcp_connect(server->name, server->port,server->ssl)))
 		{
 			if (pop3_wait_login(conn,server))
 			{
@@ -551,6 +551,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->passwd = mystrdup(pop->passwd);
 		new_pop->del = pop->del;
 		new_pop->port = pop->port;
+		new_pop->ssl = pop->ssl;
 	}
 	return new_pop;
 }
@@ -565,7 +566,5 @@ void pop_free(struct pop3_server *pop)
 	if (pop->passwd) free(pop->passwd);
 	free(pop);
 }
-
-
 
 

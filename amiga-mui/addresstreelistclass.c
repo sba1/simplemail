@@ -25,6 +25,7 @@
 #include <stdlib.h>
 
 #include <dos.h>
+#include <libraries/iffparse.h>
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
 #include <mui/NListtree_Mcc.h>
@@ -61,6 +62,12 @@ struct AddressTreelist_Data
 
 	int type;
 	char *filter; /* the filter string */
+
+	Object *title_menu;
+	Object *show_realname_item;
+	Object *show_nickname_item;
+	Object *show_description_item;
+	Object *show_email_item;
 };
 
 STATIC ASM int address_compare(register __a1 struct MUIP_NListtree_CompareMessage *msg)
@@ -133,6 +140,23 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 	}
 }
 
+STATIC VOID AddressTreelist_UpdateFormat(struct IClass *cl,Object *obj)
+{
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+	char buf[256];
+
+	buf[0] = 0;
+
+	if (xget(data->show_realname_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=0,");
+	if (xget(data->show_nickname_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=1,");
+	if (xget(data->show_description_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=2,");
+	if (xget(data->show_email_item,MUIA_Menuitem_Checked)) strcat(buf,"COL=3,");
+
+	if (strlen(buf)) buf[strlen(buf)-1] = 0;
+
+	set(obj, MUIA_NListtree_Format, buf);
+}
+
 STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct AddressTreelist_Data *data;
@@ -151,7 +175,7 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 /*					in_addressbook?TAG_IGNORE:MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default, */
 					MUIA_NListtree_Title, type != TYPE_MATCHLIST,
-					MUIA_NListtree_Format, type == TYPE_MATCHLIST?"COL=0,COL=1,COL=3":",,,",
+					MUIA_NListtree_Format, ",,,",
 					MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
 					MUIA_NListtree_ShowTree, type == TYPE_ADDRESSBOOK,
 					MUIA_NList_ShowDropMarks, type == TYPE_ADDRESSBOOK,
@@ -173,17 +197,63 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 						MUIA_UserData, 1, /* used in addresstringclass.c */
 						TAG_DONE);
 
+	if (data->type == TYPE_MAIN)
+	{
+		data->title_menu = MenustripObject,
+			Child, MenuObjectT(_("Addresslist Settings")),
+				Child, data->show_realname_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','R'),MUIA_Menuitem_Title, _("Show Realname?"), MUIA_UserData, 1, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+				Child, data->show_nickname_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','N'),MUIA_Menuitem_Title, _("Show Nickname?"), MUIA_UserData, 2, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+				Child, data->show_description_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','D'),MUIA_Menuitem_Title, _("Show Description?"), MUIA_UserData, 3, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+				Child, data->show_email_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('A','L','S','A'),MUIA_Menuitem_Title, _("Show E-Mail Address?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: this"), MUIA_UserData, MUIV_NList_Menu_DefOrder_This, End,
+				Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: all"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
+				End,
+			End;
+	}
+
 	return (ULONG)obj;
 }
 
 STATIC ULONG AddressTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
-//	if (data->context_menu) MUI_DisposeObject(data->context_menu);
+	if (data->title_menu) MUI_DisposeObject(data->title_menu);
 	if (data->filter) free(data->filter);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
+STATIC ULONG AddressTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)
+{
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+
+	if (data->type == TYPE_MAIN)
+	{
+		DoMethodA(data->show_realname_item, (Msg)msg);
+		DoMethodA(data->show_nickname_item, (Msg)msg);
+		DoMethodA(data->show_description_item, (Msg)msg);
+		DoMethodA(data->show_email_item, (Msg)msg);
+	}
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG AddressTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Import *msg)
+{
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+
+	if (data->type == TYPE_MAIN)
+	{
+		DoMethodA(data->show_realname_item, (Msg)msg);
+		DoMethodA(data->show_nickname_item, (Msg)msg);
+		DoMethodA(data->show_description_item, (Msg)msg);
+		DoMethodA(data->show_email_item, (Msg)msg);
+		AddressTreelist_UpdateFormat(cl,obj);
+	}
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
 
 STATIC ULONG AddressTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
@@ -283,6 +353,35 @@ STATIC ULONG AddressTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP
 	return NULL;
 }
 
+STATIC ULONG AddressTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_NList_ContextMenuBuild *msg)
+{
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+
+	if (data->type != TYPE_MAIN) return DoSuperMethodA(cl,obj,(Msg)msg);
+
+	if (msg->ontop) return (ULONG)data->title_menu;
+	return NULL;
+}
+
+STATIC ULONG AddressTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)
+{
+	switch (xget(msg->item,MUIA_UserData))
+	{
+		case	1:
+		case  2:
+		case  3:
+		case  4:
+				  AddressTreelist_UpdateFormat(cl,obj);
+				  break;
+		default: 
+		{
+			return DoSuperMethodA(cl,obj,(Msg)msg);
+		}
+	}
+  return 0;
+}
+
+
 STATIC ASM ULONG AddressTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
 	putreg(REG_A4,cl->cl_UserData);
@@ -290,10 +389,14 @@ STATIC ASM ULONG AddressTreelist_Dispatcher(register __a0 struct IClass *cl, reg
 	{
 		case	OM_NEW: return AddressTreelist_New(cl,obj,(struct opSet*)msg);
 		case	OM_DISPOSE: return AddressTreelist_Dispose(cl,obj,msg);
+		case	MUIM_Export: return AddressTreelist_Export(cl,obj,(struct MUIP_Export*)msg);
+		case	MUIM_Import: return AddressTreelist_Import(cl,obj,(struct MUIP_Import*)msg);
 		case	MUIM_AddressTreelist_Refresh: return AddressTreelist_Refresh(cl,obj,(struct MUIP_AddressTreelist_Refresh*)msg);
     case  MUIM_DragQuery: return AddressTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
     case  MUIM_DragDrop:  return AddressTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
     case	MUIM_NListtree_DropType: return AddressTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);
+		case	MUIM_ContextMenuChoice: return AddressTreelist_ContextMenuChoice(cl, obj, (struct MUIP_ContextMenuChoice *)msg);
+		case  MUIM_NList_ContextMenuBuild: return AddressTreelist_NList_ContextMenuBuild(cl,obj,(struct MUIP_NList_ContextMenuBuild *)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

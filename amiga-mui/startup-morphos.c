@@ -12,6 +12,7 @@
 #include <sys/dir.h>
 #include <sys/stat.h>
 
+#include <dos/stdio.h>
 #include <workbench/startup.h>
 
 #include <proto/exec.h>
@@ -19,6 +20,9 @@
 
 //#define MYDEBUG
 #include "amigadebug.h"
+
+#define FAST_SEEK
+#define BIG_BUFFER
 
 #include "simplemail.h"
 
@@ -168,6 +172,7 @@ static void close_libs(void)
 	if (IntuitionBase) CloseLibrary(IntuitionBase);
 }
 
+
 /*****************************************
  Memory stuff (thread safe)
 ******************************************/
@@ -249,7 +254,7 @@ void *realloc(void *om, size_t size)
 static struct SignalSemaphore files_sem;
 static BPTR files[MAX_FILES];
 static char filesbuf[4096];
-static int tmpno;
+static unsigned long tmpno;
 
 static int init_io(void)
 {
@@ -284,12 +289,27 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!file) goto fail;
 	memset(file,0,sizeof(*file));
 
+#ifdef BIG_BUFFER
+	file->_bf._size = 16*1024;
+	file->_bf._base = malloc(file->_bf._size);
+	if(!file->_bf._base) goto fail;
+#endif
+
 	if (!(files[_file] = Open(filename,amiga_mode))) goto fail;
 	file->_file = _file;
+
+#ifdef BIG_BUFFER
+	if(SetVBuf(files[_file], file->_bf._base, BUF_FULL, file->_bf._size) != 0)
+	{
+		Close(files[_file]);
+		goto fail;
+	}
+#endif
 
 	if (amiga_mode == MODE_READWRITE)
 	{
 		Seek(files[_file],0,OFFSET_END);
+		file->_offset = Seek(files[_file],0,OFFSET_CURRENT);
 	}
 
 	ReleaseSemaphore(&files_sem);
@@ -298,6 +318,12 @@ FILE *fopen(const char *filename, const char *mode)
 
 fail:
 	if (_file < MAX_FILES) files[_file] = NULL;
+#ifdef BIG_BUFFER
+	if(file)
+	{
+		free(file->_bf._base);
+	}
+#endif
 	free(file);
 	ReleaseSemaphore(&files_sem);
 	return NULL;
@@ -312,6 +338,12 @@ int fclose(FILE *file)
 	if (!error)
 	{
 		files[file->_file] = NULL;
+#ifdef BIG_BUFFER
+		if(file)
+		{
+			free(file->_bf._base);
+		}
+#endif
 		free(file);
 	}
 	ReleaseSemaphore(&files_sem);
@@ -321,7 +353,9 @@ int fclose(FILE *file)
 size_t fwrite(const void *buffer, size_t size, size_t count, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return (size_t)FWrite(fh,(void*)buffer,size,count);
+	size_t rc = (size_t)FWrite(fh,(void*)buffer,size,count);
+	file->_offset += rc * size;
+	return rc;
 }
 
 size_t fread(void *buffer, size_t size, size_t count, FILE *file)
@@ -331,19 +365,25 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *file)
 	len = (size_t)FRead(fh,buffer,size,count);
 	if (!len && size && count) file->_flags |= __SEOF;
 	D(bug("0x%lx reading %ld bytes\n",file,len * size));
+	file->_offset += len * size;
 	return len;
 }
 
 int fputs(const char *string, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FPuts(fh,(char*)string);
+	int rc = FPuts(fh,(char*)string);
+	if (!rc) /* DOSFALSE is true here */
+		file->_offset += strlen(string);
+	return rc;
 }
 
 int fputc(int character, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FPutC(fh,character);
+	int rc = FPutC(fh,character);
+	if (rc != -1) file->_offset++;
+	return rc;
 }
 
 int fseek(FILE *file, long offset, int origin)
@@ -352,11 +392,24 @@ int fseek(FILE *file, long offset, int origin)
 	ULONG amiga_seek;
 
 	if (origin == SEEK_SET) amiga_seek = OFFSET_BEGINNING;
-	else if (origin == SEEK_CUR) amiga_seek = OFFSET_CURRENT;
+	else if (origin == SEEK_CUR)
+	{
+		/* Optimize trival cases (used heavily when loading indexfiles) */
+		amiga_seek = OFFSET_CURRENT;
+#ifdef FAST_SEEK
+		if (!offset) return 0;
+		if (offset == 1)
+		{
+			fgetc(file);
+			return 0;
+		}
+#endif
+	}
 	else amiga_seek = OFFSET_END;
 
 	if (!Flush(fh)) return -1;
 	if (Seek(fh,offset,amiga_seek)==-1) return -1;
+	file->_offset = Seek(fh,0,OFFSET_CURRENT);
 	return 0;
 }
 
@@ -364,7 +417,11 @@ long ftell(FILE *file)
 {
 	BPTR fh = files[file->_file];
 	D(bug("0x%lx ftell() = %ld\n",file,Seek(fh,0,OFFSET_CURRENT)));
+#ifdef FAST_SEEK
+	return file->_offset;
+#else
 	return Seek(fh,0,OFFSET_CURRENT);
+#endif
 }
 
 int fflush(FILE *file)
@@ -380,32 +437,36 @@ char *fgets(char *string, int n, FILE *file)
 	BPTR fh = files[file->_file];
 	char *rc =  (char*)FGets(fh,string,n);
 	if (!rc && !IoErr()) file->_flags |= __SEOF;
+	else if (rc) file->_offset += strlen(rc);
 	return rc;
 }
 
 int fgetc(FILE *file)
 {
 	BPTR fh = files[file->_file];
-	return FGetC(fh);
+	int rc = FGetC(fh);
+	if (rc != -1) file->_offset++;
+	return rc;
 }
 
-static FILE *tmpfile(void)
+FILE *tmpfile(void)
 {
 	char buf[40];
 	FILE *file;
 	ObtainSemaphore(&files_sem);
-	sprintf(buf,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
+	sprintf(buf,"T:%p%lx.tmp",FindTask(NULL),tmpno++);
 	file = fopen(buf,"w");
 	ReleaseSemaphore(&files_sem);
 	return file;
 }
 
-static char *tmpnam(char *name)
+char *tmpnam(char *name)
 {
-	static char default_buf[200];
+	static char default_buf[L_tmpnam];
 	ObtainSemaphore(&files_sem);
 	if (!name) name = default_buf;
-	sprintf(name,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
+	vsnprintf(name,sizeof(default_buf),"T:sm%05lx",(void*)&tmpno);
+	tmpno++;
 	ReleaseSemaphore(&files_sem);
 	return name;
 }

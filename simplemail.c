@@ -1061,14 +1061,11 @@ void callback_remove_folder(void)
 }
 
 /* called when imap folders has been received */
-static void callback_received_imap_folders(struct list *list)
+static void callback_received_imap_folders(struct imap_server *server, struct list *list)
 {
-	struct string_node *node;
-	node = (struct string_node*)list_first(list);
-	while (node)
-	{
-		node = (struct string_node*)node_next(&node->node);
-	}
+	struct folder *f = folder_find_by_imap(server->name,"");
+	if (!f) return;
+	folder_edit_with_folder_list(f, list);
 }
 
 /* edit folder settings */

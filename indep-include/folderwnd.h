@@ -22,6 +22,7 @@
 struct folder;
 
 void folder_edit(struct folder *f);
+void folder_edit_with_folder_list(struct folder *f, struct list *list);
 
 struct folder *folder_get_changed_folder(void);
 char *folder_get_changed_name(void);

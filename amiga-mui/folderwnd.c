@@ -28,6 +28,7 @@
 #include <libraries/mui.h>
 #include <libraries/asl.h>
 #include <mui/betterstring_mcc.h>
+#include <mui/NListview_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
@@ -61,6 +62,8 @@ static Object *prim_label;
 static Object *prim_cycle;
 static Object *second_label;
 static Object *second_cycle;
+static Object *imap_folders_list;
+static Object *imap_folders_listview;
 static int group_mode;
 static int imap_mode;
 
@@ -181,6 +184,13 @@ static void init_folder(void)
 					End,
 				End,
 
+			Child, imap_folders_listview = NListviewObject,
+				MUIA_NListview_NList, imap_folders_list = NListObject,
+					MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+					MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+					End,
+				End,
+
 			Child, HorizLineObject,
 			Child, HGroup,
 				Child, ok_button = MakeButton(_("_Ok")),
@@ -212,8 +222,16 @@ void folder_edit(struct folder *f)
 
 	if (f->special == FOLDER_SPECIAL_GROUP)
 	{
-		if (f->is_imap) set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
-		else set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
+		if (f->is_imap)
+		{
+			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
+			set(imap_folders_listview,MUIA_ShowMe, TRUE);
+		} else
+		{
+			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
+			set(imap_folders_listview,MUIA_ShowMe, FALSE);
+		}
+
 
 		if (!group_mode)
 		{
@@ -239,6 +257,7 @@ void folder_edit(struct folder *f)
 	} else
 	{
 		set(folder_wnd,MUIA_Window_Title, _("SimpleMail - Edit folder"));
+		set(imap_folders_listview,MUIA_ShowMe, FALSE);
 		if (group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);
@@ -307,6 +326,21 @@ void folder_edit(struct folder *f)
 	changed_folder = f;
 	set(folder_wnd, MUIA_Window_ActiveObject, name_string);
 	set(folder_wnd, MUIA_Window_Open, TRUE);
+}
+
+void folder_edit_with_folder_list(struct folder *f, struct list *list)
+{
+	if (imap_folders_list) DoMethod(imap_folders_list,MUIM_NList_Clear);
+	folder_edit(f);
+	if (imap_folders_list)
+	{
+		struct string_node *node = (struct string_node*)list_first(list);
+		while (node)
+		{
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, node->string, MUIV_NList_Insert_Bottom);
+			node = (struct string_node*)node_next(&node->node);
+		}
+	}
 }
 
 /*************************************************************/

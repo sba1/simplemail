@@ -771,13 +771,13 @@ int imap_synchronize(struct list *imap_list, int called_by_auto)
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
-	void (*callback)(struct list *list);
+	void (*callback)(struct imap_server *server, struct list *list);
 };
 
 /**************************************************************************
  
 **************************************************************************/
-static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct list *list))
+static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *list))
 {
 	struct list *folder_list;
 	if (open_socket_lib())
@@ -804,7 +804,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 					{
 						if ((folder_list = imap_get_folders(conn,server)))
 						{
-							thread_call_parent_function_sync(callback,1,folder_list);
+							thread_call_parent_function_sync(callback,2,server,folder_list);
 						}
 					}
 				}
@@ -823,7 +823,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	void (*callback)(struct list *list) = msg->callback;
+	void (*callback)(struct imap_server *server, struct list *list) = msg->callback;
 
 	if (thread_parent_task_can_contiue())
 	{
@@ -840,7 +840,7 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 /**************************************************************************
  Returns the list of all folders of the imap server
 **************************************************************************/
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct list *list))
+int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *list))
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;

@@ -23,6 +23,7 @@ function get_string($text_array)
   else $accepted_langs = array("en");
 
   $supported_langs = array_keys($text_array);
+
   $used_lang = "en";
   foreach($accepted_langs as $lang)
   {
@@ -77,7 +78,10 @@ $GalleryAlreadyText["en"]="Your photo is already inside SimpleMail's gallery";
 $GalleryAlreadyText["de"]="Ihr Foto ist bereits in SimpleMail's Galery";
 $GalleryMailSent["en"]="The mail with the picture has been successfully sent. It's get added as soon as possible.";
 $GalleryMailSent["de"]="Die e-Mail mit dem Foto wurde erfolgreich versandt. Es wird sobald wie möglich in die Datenbank aufgenommen.";
-
+$LinksIntroText["en"]="Some useful links concerning SimpleMail";
+$LinksIntroText["de"]="Einige nützliche Links für SimpleMail";
+$LinksMCCText["en"]="Some needed MUI Custom Classes (MCC)";
+$LinksMCCText["de"]="MUI Custom Classes (MCC), die von SimpleMail benötigt werden";
 ?>
 
 

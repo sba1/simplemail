@@ -4,6 +4,43 @@
 
   <shot>
     <description>
+      The account configuration.
+    </description>
+    <version>
+      0.6
+    </version>
+    <filename>
+      sm_account_0_6.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
+      Configuration for a rule.
+    </description>
+    <version>
+      0.6
+    </version>
+    <filename>
+      sm_rule_0_6.png
+    </filename>
+  </shot>
+
+  <shot>
+    <description>
+      The read window.
+    </description>
+    <version>
+      0.6
+    </version>
+    <filename>
+      sm_read_0_6.png
+    </filename>
+  </shot>
+
+
+  <shot>
+    <description>
       The main window.
     </description>
     <version>

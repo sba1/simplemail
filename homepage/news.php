@@ -37,6 +37,7 @@
         if (isset($attrs[LANG])) $lang = $attrs[LANG];
         else $lang = "en";
         unset($text[$lang]);
+	unset($text[0]); /* get_string() has problems else */
         $inside_text = 1;
         break;
 
@@ -134,8 +135,8 @@
     if ($news_count == $maxnews) break;
   }  
 
-  echo "</table>"; 
 
+  echo "</table>"; 
 
 ?>
 

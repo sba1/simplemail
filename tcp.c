@@ -353,7 +353,7 @@ int tcp_write(struct connection *conn, void *buf, long nbytes)
 		int size = sizeof(conn->write_buf) - conn->write_size;
 		memcpy(&conn->write_buf[conn->write_size],buf,size);
 		conn->write_size = sizeof(conn->write_buf);
-		tcp_flush(conn);
+		if (!tcp_flush(conn)) return -1;
 		buf = ((char*)buf) + size;
 		nbytes -= size;
 	}
@@ -365,10 +365,13 @@ int tcp_write(struct connection *conn, void *buf, long nbytes)
 }
 
 /******************************************************************
- Flushes the write buffer.
+ Flushes the write buffer. Returns 1 on success, else 0
 *******************************************************************/
 int tcp_flush(struct connection *conn)
 {
+	int bytes;
+	int rc = 1;
+
 	if (conn->write_size)
 	{
 #ifdef DEBUG_OUTPUT
@@ -384,15 +387,21 @@ int tcp_flush(struct connection *conn)
 #endif
 
 #ifndef NO_SSL
-		if (conn->ssl) SSL_write(conn->ssl, conn->write_buf, conn->write_size);
-		else send(conn->socket, conn->write_buf, conn->write_size, 0);
+		if (conn->ssl) bytes = SSL_write(conn->ssl, conn->write_buf, conn->write_size);
+		else bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
 #else
-		send(conn->socket, conn->write_buf, conn->write_size, 0);
+		bytes = send(conn->socket, conn->write_buf, conn->write_size, 0);
 #endif
 
+		if (bytes < 0)
+		{
+			if (tcp_errno() == EINTR) error_code = TCP_INTERRUPTED;
+			else error_code = TCP_ERRNO;
+			rc = 0;
+		}
 		conn->write_size = 0;
 	}
-	return 1;
+	return rc;
 }
 
 /******************************************************************

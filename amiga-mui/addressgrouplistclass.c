@@ -82,7 +82,6 @@ STATIC ASM SAVEDS VOID addressgroup_destruct(REG(a0, struct Hook *h), REG(a2, Ob
 STATIC ASM SAVEDS VOID addressgroup_display(REG(a0,struct Hook *h),REG(a2,Object *obj), REG(a1,struct NList_DisplayMessage *msg))
 {
 	char **array = msg->strings;
-	char **preparse = msg->preparses;
 	struct addressbook_group *grp = (struct addressbook_group*)msg->entry;
 	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)h->h_Data;
 

@@ -22,7 +22,7 @@ G_OPTFLAGS  = -O3 \
 
 ##############################################################################
 
-all: date.h amigamui $(OUT) locale
+all: amigamui $(OUT) locale
 	@echo All done!
 
 ##############################################################################
@@ -34,7 +34,7 @@ all: date.h amigamui $(OUT) locale
 
 LIBS    = -L./amiga-mui
 
-GLOBAL  = date.h version.h
+GLOBAL  = SimpleMail_rev.h
 
 %.o: %.c $(GLOBAL)
 	@echo "Making $@..."
@@ -80,7 +80,7 @@ OBJS    = 	account.o \
 
 #####################################################################
 
-start: date.h
+start:
 	@echo Creating the sm/ tree.
 	@mkdir -p $(DESTDIR)
 	@mkdir -p $(DESTDIR)/ARexx
@@ -88,11 +88,6 @@ start: date.h
 	@mkdir -p $(DESTDIR)/Images
 	@mkdir -p $(DESTDIR)/Libs
 	@mkdir -p $(DESTDIR)/Locale
-
-date.h:
-	@echo Creating date.h
-	@rx >t:smdate.h "say '#define' SIMPLEMAIL_DATE '22'x || right(date(S),2)**1'.'substr(date(S),5,2)**1'.'left(date(S),4) || '22'x"
-	@cp /t/smdate.h date.h
 
 #locale
 LOCALEOBJS = $(LOCALEDIR)de.mo $(LOCALEDIR)fi.mo $(LOCALEDIR)ma.mo $(LOCALEDIR)pl.mo $(LOCALEDIR)es.mo $(LOCALEDIR)fr.mo

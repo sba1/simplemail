@@ -32,4 +32,10 @@ char *mystrdup(const char *str);
 char *mystrndup(const char *str, int len);
 size_t mystrlcpy(char *dest, const char *src, size_t n);
 
+
+char **array_add_string(char **strings, char *str);
+int array_length(char **strings);
+char **array_duplicate(char **rcp);
+void array_free(char **string_array);
+
 #endif

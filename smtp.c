@@ -871,39 +871,6 @@ int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_
 }
 
 /**************************************************************************
- Duplicates an array of strings
-**************************************************************************/
-static char **duplicate_string_array(char **rcp)
-{
-	char **newrcp;
-	int rcps=0;
-	while (rcp[rcps]) rcps++;
-
-	if ((newrcp = (char**)malloc((rcps+1)*sizeof(char*))))
-	{
-		int i;
-		for (i=0;i<rcps;i++)
-		{
-			newrcp[i] = mystrdup(rcp[i]);
-		}
-		newrcp[i] = NULL;
-	}
-	return newrcp;
-}
-
-/**************************************************************************
- Frees an array of strings
-**************************************************************************/
-static void free_string_array(char **string_array)
-{
-	char *string;
-	int i = 0;
-	while ((string = string_array[i++]))
-		free(string);
-	free(string_array);
-}
-
-/**************************************************************************
  Creates a array of outmails with amm entries.
  The array entries point already to the struct outmail *.
  Use free() only on the result of this call not on the entries,
@@ -946,7 +913,7 @@ struct outmail **duplicate_outmail_array(struct outmail **om_array)
 		{
 			newom_array[i]->from = mystrdup(om_array[i]->from);
 			newom_array[i]->mailfile = mystrdup(om_array[i]->mailfile);
-			newom_array[i]->rcp = duplicate_string_array(om_array[i]->rcp);
+			newom_array[i]->rcp = array_duplicate(om_array[i]->rcp);
 		}
 	}
 	return newom_array;
@@ -962,7 +929,7 @@ void free_outmail_array(struct outmail **om_array)
 	while ((om = om_array[i++]))
 	{
 		if (om->from) free(om->from);
-		if (om->rcp) free_string_array(om->rcp);
+		if (om->rcp) array_free(om->rcp);
 		if (om->mailfile) free(om->mailfile);
 	}
 	free(om_array);

@@ -27,6 +27,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "support_indep.h"
+
 /******************************************************************
  Compares a string case sensitive. Accepts NULL pointers
 *******************************************************************/
@@ -165,6 +167,71 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 }
 
 
+/**************************************************************************
+ Add the string str to an array. Returns the new array which must be used
+ then. Use only rarly because its slow! Indented for easier creation of
+ small arrays. strings might be NULL.
+**************************************************************************/
+char **array_add_string(char **strings, char *str)
+{
+	int length = array_length(strings);
+	char **new_strings;
 
+	if ((new_strings = (char**)realloc(strings,(length+2)*sizeof(char*))))
+	{
+		new_strings[length]=mystrdup(str);
+		new_strings[length+1]=NULL;
+	}
+	return new_strings;
+}
 
+/**************************************************************************
+ Returns the length of a string array (safe to call with NULL pointer)
+**************************************************************************/
+int array_length(char **strings)
+{
+	int i;
+	if (!strings) return 0;
+	i = 0;
+	for (;strings[i];i++);
+	return i;
+}
+
+/**************************************************************************
+ Duplicates an array of strings. Safe to call it with a NULL pointer
+ (returns NULL then)
+**************************************************************************/
+char **array_duplicate(char **rcp)
+{
+	char **newrcp;
+	int rcps=0;
+	if (!rcp) return NULL;
+	while (rcp[rcps]) rcps++;
+
+	if ((newrcp = (char**)malloc((rcps+1)*sizeof(char*))))
+	{
+		int i;
+		for (i=0;i<rcps;i++)
+		{
+			newrcp[i] = mystrdup(rcp[i]);
+		}
+		newrcp[i] = NULL;
+	}
+	return newrcp;
+}
+
+/**************************************************************************
+ Frees an array of strings. Safe to call this with NULL pointer.
+**************************************************************************/
+void array_free(char **string_array)
+{
+	char *string;
+	int i = 0;
+
+	if (!string_array) return;
+
+	while ((string = string_array[i++]))
+		free(string);
+	free(string_array);
+}
 

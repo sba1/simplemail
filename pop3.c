@@ -68,7 +68,10 @@ static char *pop3_receive_answer(struct connection *conn, int silent)
 	{
 		/* Don't put any message when only interrupted */
 		if (tcp_error_code() != TCP_INTERRUPTED)
-			tell_from_subtask(N_("Error receiving data from host!"));
+		{
+			SM_DEBUGF(20,("Error receiving data from host!\n"));
+			if (!silent) tell_from_subtask(N_("Error receiving data from host!"));
+		}
 		return NULL;
 	}
 	if (!strncmp(answer,"+OK",3)) return answer+3;
@@ -1051,6 +1054,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 							}
 						}
 						pop3_quit(conn,server);
+						thread_call_parent_function_async(status_set_status,1,"");
 					}
 					free(timestamp);
 				}

@@ -1,0 +1,64 @@
+@database SimpleMail.guide
+@author Hynek Schlawack
+@smartwrap
+@tab 4
+
+@node MAIN "SimpleMail"
+   @{line}
+   @{fg shine}@{b}SimpleMail@{ub}@{fg text} @{line}
+   Written by Sebastian Bauer & Hynek Schlawack @{line}
+   Released under @{i}GPL@{ui}.@{line}
+   @{line}
+   @{b}Misc:@{ub}@{line}
+      @{" Introduction        " link intro}@{line}
+      @{" Copyright           " link copy}@{line}
+      @{" Disclaimer          " link disc}@{line}
+      @{" Contact             " link contact}@{line}
+      @{" Requirements        " link req}@{line}
+      @{" Installation        " link install}@{line}
+   @{line}
+   @{b}User's Guide:@{ub}@{line}
+      @{" Configuration       " link config}@{line}
+      @{" Useage              " link useage}@{line}
+   @{line}
+   @{b}Appendix:@{ub}@{line}
+      @{" How to participate? " link part}@{line}
+      @{" Bugs                " link bugs}@{line}
+      @{" Credits             " link credits}@{line}
+   @{line}
+   @{line}
+   @{i}$Id$@{ui}
+@endnode
+
+@node intro "SimpleMail - Introduction"
+@endnode
+
+@node copy "SimpleMail - Copyright"
+@endnode
+
+@node disc "SimpleMail - Disclaimer"
+@endnode
+
+@node contact "SimpleMail - Conatact"
+@endnode
+
+@node req "SimpleMail - Requirements"
+@endnode
+
+@node install "SimpleMail - Installation"
+@endnode
+
+@node config "SimpleMail - Configuration"
+@endnode
+
+@node useage "SimpleMail - Useage"
+@endnode
+
+@node part "SimpleMail - How to participate?"
+@endnode
+
+@node bugs "SimpleMail - Bugs"
+@endnode
+
+@node credits "SimpleMail - Credits"
+@endnode

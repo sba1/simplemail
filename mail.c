@@ -2756,6 +2756,27 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 }
 
 /**************************************************************************
+ Put a utf8string correctly for HTML
+**************************************************************************/
+void fputhtmlstr(char *str, FILE *fh)
+{
+	unsigned char c;
+	while ((c = *str))
+	{
+		if (c < 128)
+		{
+			fputc(c,fh);
+			str++;
+		} else
+		{
+			unsigned int unicode;
+			str = uft8toucs(str,&unicode);
+			fprintf(fh,"&#%u;",unicode);
+		}
+	}
+}
+
+/**************************************************************************
  Creates an HTML File from a header. Currently only the most important
  headers were created.
 **************************************************************************/
@@ -2793,7 +2814,8 @@ int mail_create_html_header(struct mail *mail)
 
 			if (mb.phrase)
 			{
-				fprintf(fh,"%s &lt;%s&gt;",mb.phrase,mb.addr_spec);
+				fputhtmlstr(mb.phrase,fh);
+				fprintf(fh," &lt;%s&gt;",mb.addr_spec);
 			} else
 			{
 				fputs(mb.addr_spec,fh);
@@ -2815,8 +2837,11 @@ int mail_create_html_header(struct mail *mail)
 				while (mb)
 				{
 					fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mb->addr_spec,style_text);
-					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
-					else fputs(mb->addr_spec,fh);
+					if (mb->phrase)
+					{
+						fputhtmlstr(mb->phrase,fh);
+						fprintf(fh," &lt;%s&gt;",mb->addr_spec);
+					} else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
 					if ((mb = (struct mailbox*)node_next(&mb->node)))
 					{
@@ -2838,7 +2863,11 @@ int mail_create_html_header(struct mail *mail)
 				while (mb)
 				{
 					fprintf(fh,"<A HREF=\"mailto:%s\"%s>",mb->addr_spec,style_text);
-					if (mb->phrase) fprintf(fh,"%s &lt;%s&gt;",mb->phrase,mb->addr_spec);
+					if (mb->phrase)
+					{
+						fputhtmlstr(mb->phrase,fh);
+						fprintf(fh," &lt;%s&gt;",mb->addr_spec);
+					}
 					else fputs(mb->addr_spec,fh);
 					fputs("</A>",fh);
 					if ((mb = (struct mailbox*)node_next(&mb->node)))
@@ -2852,8 +2881,18 @@ int mail_create_html_header(struct mail *mail)
 		}
 
 
-		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>",_("Subject"),mail->subject);
-		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL))) fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>",_("Date"),sm_get_date_long_str(mail->seconds));
+		if (mail->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
+		{
+			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Subject"));
+			fputhtmlstr(mail->subject,fh);
+			fputs("<BR>",fh);
+		}
+		if ((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
+		{
+			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Date"));
+			fputhtmlstr(sm_get_date_long_str(mail->seconds),fh);
+			fputs("<BR>",fh);
+		}
 
 		if (replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
 		{
@@ -2863,7 +2902,8 @@ int mail_create_html_header(struct mail *mail)
 
 			if (addr.phrase)
 			{
-				fprintf(fh,"%s &lt;%s&gt;",addr.phrase,addr.addr_spec);
+				fputhtmlstr(addr.phrase,fh);
+				fprintf(fh," &lt;%s&gt;",addr.addr_spec);
 			} else
 			{
 				fputs(addr.addr_spec,fh);
@@ -2884,7 +2924,9 @@ int mail_create_html_header(struct mail *mail)
 					  mystricmp(header->contents,"cc") && mystricmp(header->contents,"reply-to") &&
 					  mystricmp(header->contents,"date") && mystricmp(header->contents,"subject"))
 				{
-					fprintf(fh,"<STRONG>%s:</STRONG> %s<BR>\n",header->name,header->contents);
+					fprintf(fh,"<STRONG>%s:</STRONG> ",header->name);
+					fputhtmlstr(header->contents,fh);
+					fputs("<BR>\n",fh);
 				}
 			}
 			header = (struct header*)node_next(&header->node);

@@ -29,7 +29,7 @@
 #include <expat.h>
 
 #include "addressbook.h"
-#include "addressbookwnd.h"
+#include "codesets.h"
 #include "http.h"
 #include "lists.h"
 #include "mail.h"
@@ -38,8 +38,7 @@
 #include "support.h"
 #include "support_indep.h"
 
-
-static char *uft8toucs(char *chr, unsigned int *code);
+#include "addressbookwnd.h"
 
 static struct addressbook_entry root_entry;
 
@@ -91,7 +90,7 @@ static void put_xml_element_string(FILE *fh, char *element, char *contents)
 	src = contents;
 
 	fprintf(fh,"<%s>",element);
-	while ((c = *src))
+	while (src && (c = *src))
 	{
 		if (((unsigned char)c)>=128)
 		{
@@ -253,55 +252,6 @@ void xml_end_tag(void *data, const char *el)
 		data_buf = NULL;
 	}
 }
-
-/**************************************************************************
- Converts a single UFT-8 Chracter to a Unicode character very very
- incomplete. Should return NULL if invalid (actualy not implemented)
-**************************************************************************/
-static char *uft8toucs(char *chr, unsigned int *code)
-{
-	unsigned char c = *chr++;
-	unsigned int ucs = 0;
-	int i,bytes;
-	if (!(c & 0x80))
-	{
-		*code = c;
-		return chr;
-	} else
-	{
-		if (!(c & 0x20))
-		{
-			bytes = 2;
-			ucs = c & 0x1f;
-		}
-		else if (!(c & 0x10))
-		{
-			bytes = 3;
-			ucs = c & 0xf;
-		}
-		else if (!(c & 0x08))
-		{
-			bytes = 4;
-			ucs = c & 0x7;
-		}
-		else if (!(c & 0x04))
-		{
-			bytes = 5;
-			ucs = c & 0x3;
-		}
-		else /* if (!(c & 0x02)) */
-		{
-			bytes = 6;
-			ucs = c & 0x1;
-		}
-
-		for (i=1;i<bytes;i++)
-			ucs = (ucs << 6) | ((*chr++)&0x3f);
-	}
-	*code = ucs;
-	return chr;
-}
-
 
 /**************************************************************************
  Converts a single UFT-8 Chracter to ISO-Latin 1 one, very very

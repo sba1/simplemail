@@ -977,7 +977,6 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 **************************************************************************/
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 {
-	int i;
 	struct single_convert conv;
 	struct single_convert *f;
 	unsigned char c;
@@ -999,5 +998,53 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 		} else *chr = 0;
 	} else *chr = 0;
 	return len+1;
+}
+
+/**************************************************************************
+ Converts a single UFT-8 Chracter to a Unicode character very very
+ incomplete. Should return NULL if invalid (actualy not implemented)
+**************************************************************************/
+char *uft8toucs(char *chr, unsigned int *code)
+{
+	unsigned char c = *chr++;
+	unsigned int ucs = 0;
+	int i,bytes;
+	if (!(c & 0x80))
+	{
+		*code = c;
+		return chr;
+	} else
+	{
+		if (!(c & 0x20))
+		{
+			bytes = 2;
+			ucs = c & 0x1f;
+		}
+		else if (!(c & 0x10))
+		{
+			bytes = 3;
+			ucs = c & 0xf;
+		}
+		else if (!(c & 0x08))
+		{
+			bytes = 4;
+			ucs = c & 0x7;
+		}
+		else if (!(c & 0x04))
+		{
+			bytes = 5;
+			ucs = c & 0x3;
+		}
+		else /* if (!(c & 0x02)) */
+		{
+			bytes = 6;
+			ucs = c & 0x1;
+		}
+
+		for (i=1;i<bytes;i++)
+			ucs = (ucs << 6) | ((*chr++)&0x3f);
+	}
+	*code = ucs;
+	return chr;
 }
 

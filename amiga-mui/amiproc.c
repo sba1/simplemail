@@ -176,7 +176,9 @@ static void process_starter(void)
    __fpterm();
    
    /* Free the recently-allocated data section */
+#ifndef _DCC
    _FreeData();
+#endif
    
    /* Forbid so the child can finish completely, before */
    /* the parent cleans up.                             */

@@ -6,17 +6,10 @@
 #ifndef MUI_SIMPLEHTML_MCC_H
 #define MUI_SIMPLEHTML_MCC_H
 
-#ifdef _DCC
-struct MUI_CustomClass *CL_SimpleHTML;
-
-int create_simplehtml_class(void) {return TRUE;};
-void delete_simplehtml_class(void) {};
-#else
 extern struct MUI_CustomClass *CL_SimpleHTML;
 
 __regargs int create_simplehtml_class(void);
 __regargs void delete_simplehtml_class(void);
-#endif
 
 #define SimpleHTMLObject (Object*)NewObject(CL_SimpleHTML->mcc_Class, NULL
 

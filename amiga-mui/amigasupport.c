@@ -149,12 +149,14 @@ struct BltMaskHook
   LONG destx,desty;
 };
 
+#ifndef _DCC
 VOID MyBltMaskBitMap( CONST struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct BitMap *destBitMap, LONG xDest, LONG yDest, LONG xSize, LONG ySize, struct BitMap *maskBitMap )
 {
   BltBitMap(srcBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0x99,~0,NULL);
   BltBitMap(maskBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0xe2,~0,NULL);
   BltBitMap(srcBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0x99,~0,NULL);
 }
+#endif
 
 __asm void HookFunc_BltMask(register __a0 struct Hook *hook, register __a1 struct LayerHookMsg *msg, register __a2 struct RastPort *rp )
 {

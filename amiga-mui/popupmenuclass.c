@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 
+#include "lists.h"
 #include "mail.h"
 #include "support.h"
 
@@ -46,6 +47,13 @@
 #include "popupmenuclass.h"
 #include "readlistclass.h"
 
+struct popup_node
+{
+	struct node node;
+	char *name;
+	void *udata;
+};
+
 struct Popupmenu_Data
 {
 	LONG show;
@@ -53,9 +61,8 @@ struct Popupmenu_Data
 	struct MUI_EventHandlerNode mv_handler;
 
 	struct Window *popup_window;
-	char **popup_array;
-	int popup_entries;
 	int selected;
+	struct list popup_list;
 };
 
 STATIC VOID Popupmenu_DrawEntry(struct IClass *cl, Object *obj, LONG entry, LONG selected)
@@ -64,6 +71,7 @@ STATIC VOID Popupmenu_DrawEntry(struct IClass *cl, Object *obj, LONG entry, LONG
 	struct RastPort *rp;
 	LONG y = entry * _font(obj)->tf_YSize + 2;
 	LONG pen1,pen2;
+	struct popup_node *node;
 
 	if (entry < 0) return;
 	if (!data->popup_window) return;
@@ -80,12 +88,15 @@ STATIC VOID Popupmenu_DrawEntry(struct IClass *cl, Object *obj, LONG entry, LONG
 		pen1 = _dri(obj)->dri_Pens[BARDETAILPEN];
 	}
 
+
+	node = (struct popup_node *)list_find(&data->popup_list,entry);
+
 	SetDrMd(rp,JAM1);
 	SetAPen(rp,pen1);
 	RectFill(rp,2,y,data->popup_window->Width-3,y+_font(obj)->tf_YSize-1);
 	SetAPen(rp,pen2);
 	Move(rp, 3, y + _font(obj)->tf_Baseline);
-	Text(rp, data->popup_array[entry], strlen(data->popup_array[entry]));
+	Text(rp, node->name, strlen(node->name));
 }
 
 STATIC VOID Popupmenu_OpenWindow(struct IClass *cl,Object *obj)
@@ -95,25 +106,23 @@ STATIC VOID Popupmenu_OpenWindow(struct IClass *cl,Object *obj)
 	struct Window *wnd;
 	struct RastPort rp;
 	int i;
+	struct popup_node *node = (struct popup_node*)list_first(&data->popup_list);
 
 	if (data->popup_window) CloseWindow(data->popup_window);
-	if (!data->popup_entries)
-	{
-		data->popup_window = NULL;
-		return;
-	}
 
 	x = _left(obj) + _window(obj)->LeftEdge + _width(obj)/2;
 	y = _top(obj) + _window(obj)->TopEdge;
-	height = _font(obj)->tf_YSize * data->popup_entries + 4;
+	height = _font(obj)->tf_YSize * list_length(&data->popup_list) + 4;
 	width = 0;
 
 	InitRastPort(&rp);
 	SetFont(&rp,_font(obj));
-	for (i=0;i<data->popup_entries;i++)
+
+	while (node)
 	{
-		LONG nw = TextLength(&rp,data->popup_array[i],strlen(data->popup_array[i]));
+		LONG nw = TextLength(&rp,node->name,strlen(node->name));
 		if (width < nw) width = nw;
+		node = (struct popup_node*)node_next(&node->node);
 	}
 
 	width += 8;
@@ -141,7 +150,7 @@ STATIC VOID Popupmenu_OpenWindow(struct IClass *cl,Object *obj)
 		Draw(wnd->RPort,0,1);
 		SetFont(wnd->RPort,_font(obj));
 
-		for (i=0;i<data->popup_entries;i++)
+		for (i=0;i<list_length(&data->popup_list);i++)
 		{
 			Popupmenu_DrawEntry(cl,obj,i,0);
 		}
@@ -181,6 +190,8 @@ STATIC ULONG Popupmenu_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->mv_handler.ehn_Class    = cl;
 	data->mv_handler.ehn_Events   = IDCMP_MOUSEMOVE|IDCMP_MENUVERIFY;
 
+	list_init(&data->popup_list);
+
 	return (ULONG)obj;
 }
 
@@ -197,6 +208,12 @@ STATIC ULONG Popupmenu_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	if (msg->opg_AttrID == MUIA_Popupmenu_Selected)
 	{
 		*msg->opg_Storage = data->selected;
+		return 1;
+	} else if (msg->opg_AttrID == MUIA_Popupmenu_SelectedData)
+	{
+		struct popup_node *node = (struct popup_node*)list_find(&data->popup_list,data->selected);
+		if (node) *msg->opg_Storage = (ULONG)node->udata;
+		else *msg->opg_Storage = NULL;
 		return 1;
 	}
 	return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -289,7 +306,9 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 			if (xget(obj,MUIA_Selected))
 			{
 				LONG newselected = (data->popup_window->MouseY - 2)/_font(obj)->tf_YSize;
-				if (newselected >= data->popup_entries) newselected = -1;
+				int max_entries = list_length(&data->popup_list);
+
+				if (newselected >= max_entries) newselected = -1;
 				if (newselected < 0) newselected = -1;
 				if (data->popup_window->MouseX < 0) newselected = -1;
 				if (data->popup_window->MouseX >= data->popup_window->Width) newselected = -1;
@@ -309,15 +328,13 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 STATIC ULONG Popupmenu_Clear(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
-	int i;
-	for (i=0;i<data->popup_entries;i++)
-		if (data->popup_array[i]) FreeVec(data->popup_array[i]);
-	if (data->popup_array)
+	struct popup_node *node;
+
+	while ((node = (struct popup_node*)list_remove_tail(&data->popup_list)))
 	{
-		FreeVec(data->popup_array);
-		data->popup_array = NULL;
+		if (node->name) FreeVec(node->name);
+		FreeVec(node);
 	}
-	data->popup_entries = 0;
 
 	return 1;
 }
@@ -325,26 +342,22 @@ STATIC ULONG Popupmenu_Clear(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG Popupmenu_AddEntry(struct IClass *cl, Object *obj,struct MUIP_Popupmenu_AddEntry *msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
-	char **popup_array;
+	struct popup_node *node;
 
 	if (!msg->Entry) return 0;
 
-	if ((popup_array = (char**)AllocVec(sizeof(char*)*(data->popup_entries+1),0)))
+	if ((node = (struct popup_node*)AllocVec(sizeof(struct popup_node),0)))
 	{
-		int i;
-		for (i=0;i<data->popup_entries;i++)
-			popup_array[i] = data->popup_array[i];
-
-		if ((popup_array[i] = (char*)AllocVec(strlen(msg->Entry)+1,0)))
+		char *name = (char*)AllocVec(strlen(msg->Entry)+1,0);
+		if (name)
 		{
-			strcpy(popup_array[i],msg->Entry);
-			if (data->popup_array) FreeVec(data->popup_array);
-			data->popup_array = popup_array;
-			data->popup_entries++;
+			strcpy(name,msg->Entry);
+			node->name = name;
+			node->udata = msg->UData;
+			list_insert_tail(&data->popup_list,&node->node);
 			return 1;
 		}
-
-		FreeVec(popup_array);
+		FreeVec(node);
 	}
 	return 0;
 }

@@ -67,7 +67,6 @@ struct config
 	struct list phrase_list;
 
 	int signatures_use;
-	int taglines_use;
 
 	/* headers */
 	unsigned int header_flags;

@@ -124,8 +124,6 @@ static Object *signatures_use_checkbox;
 static Object *signature_texteditor;
 static Object *signature_name_string;
 
-static Object *taglines_use_checkbox;
-
 static Object *phrase_addresses_string;
 static Object *phrase_write_welcome_string;
 static Object *phrase_write_welcomeaddr_popph;
@@ -367,7 +365,6 @@ static void config_use(void)
 	user.config.receive_sound = xget(receive_sound_check,MUIA_Selected);
 	user.config.receive_sound_file = mystrdup((char*)xget(receive_sound_string, MUIA_String_Contents));
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
-	user.config.taglines_use = xget(taglines_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
@@ -1182,9 +1179,6 @@ static int init_signatures_group(void)
   			Child, MakeLabel(_("Us_e signatures")),
   			Child, signatures_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
   			Child, HSpace(0),
-			Child, MakeLabel(_("Use _taglines")),
-			Child, taglines_use_checkbox = MakeCheck(_("Use _taglines"),user.config.taglines_use),
-			Child, HSpace(0),
 	  		End,
 	  	Child, HorizLineObject,
 			Child, add_button = MakeButton(_("_Add new signature")),
@@ -1205,10 +1199,9 @@ static int init_signature_group(void)
 {
 /*	Object *edit_button;*/
 	Object *slider = ScrollbarObject, End;
-/*
 	Object *tagline_button;
 	Object *env_button;
-*/
+
 	Object *add_button, *rem_button;
 
 	signature_group =  VGroup,
@@ -1229,10 +1222,10 @@ static int init_signature_group(void)
 				End,
 			Child, slider,
 			End,
-/*		Child, HGroup,
-  		Child, tagline_button = MakeButton("Insert random tagline"),
-  		Child, env_button = MakeButton("Insert ENV:Signature"),
-  		End,*/
+		Child, HGroup,
+  		Child, tagline_button = MakeButton(_("Insert random tagline")),
+  		Child, env_button = MakeButton(_("Insert ENV:Signature")),
+  		End,
   	Child, HorizLineObject,
   	Child, HGroup,
 			Child, add_button = MakeButton(_("Add new signature")),
@@ -1243,9 +1236,8 @@ static int init_signature_group(void)
 	if (!signature_group) return 0;
 /*	set(edit_button, MUIA_Weight,0);*/
 
-/*	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t",MUIV_TextEditor_InsertText_Cursor);
+	DoMethod(tagline_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%t\n",MUIV_TextEditor_InsertText_Cursor);
 	DoMethod(env_button,MUIM_Notify,MUIA_Pressed,FALSE,signature_texteditor,3,MUIM_TextEditor_InsertText,"%e",MUIV_TextEditor_InsertText_Cursor);
-*/
 	DoMethod(add_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_add);
 	DoMethod(rem_button,MUIM_Notify, MUIA_Pressed,FALSE,App,6,MUIM_Application_PushMethod,App,3,MUIM_CallHook,&hook_standard, signature_remove);
 	return 1;

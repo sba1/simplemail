@@ -88,58 +88,60 @@ static char *get_tagline(void)
 *******************************************************************/
 char *taglines_add_tagline(char *buf)
 {
-	char *rc = buf;
-	char *tagline;
 	long len;
+	char *fmt;
 
-	if(strstr(buf,"%t"))
+	if ((fmt = strstr(buf,"%t")))
 	{
-		tagline = get_tagline();
+		char *tagline;
 
-		if(tagline != NULL)
+		if ((tagline = get_tagline()))
 		{
+			char *new_buf;
 			len = strlen(buf) + strlen(tagline) - 2;
-
-			rc = malloc(len+1);
-			if(rc != NULL)
+			if ((new_buf = malloc(len+1)))
 			{
-				char *ptr;
-
-				for(ptr = buf+strlen(buf); ptr != buf; ptr--) // Search from the end.
-				{
-					if(strstr(ptr,"%t"))	// tagline-placeholder found.
-					{
-						strcpy(rc, buf);
-						rc[ptr-buf] = 0;
-						strcat(rc, tagline);
-						strcat(rc, ptr+2);
-
-						break;
-					}
-				}
-
-				if(ptr!=buf && rc && rc[0])
-				{
-					free(tagline);
-					free(buf);
-				}
-				else
-				{
-					if(rc)
-					{
-						free(rc);
-					}
-					rc = buf;
-				}
+				strncpy(new_buf,buf,fmt-buf);
+				new_buf[fmt-buf]=0;
+				strcat(new_buf,tagline);
+				strcat(new_buf,buf + (fmt-buf) + 2);				
+				free(buf);
+				buf = new_buf;
 			}
-		}
-		else
-		{
-			rc = buf;
+			free(tagline);
 		}
 	}
 
-	return rc;
+	if ((fmt = strstr(buf,"%e")))
+	{
+		FILE *fh;
+		if ((fh = fopen("ENV:Signature","rb")))
+		{
+			char *new_text = malloc(len+1);
+			unsigned int len = myfsize(fh);
+
+			if ((new_text = malloc(len+1)))
+			{
+				char *new_buf;
+				fread(new_text,len,1,fh);
+				len = strlen(buf) + strlen(new_text) - 2;
+				if ((new_buf = malloc(len+1)))
+				{
+					strncpy(new_buf,buf,fmt-buf);
+					new_buf[fmt-buf]=0;
+					strcat(new_buf,new_text);
+					strcat(new_buf,buf + (fmt-buf) + 2);				
+					free(buf);
+					buf = new_buf;
+				}
+
+				free(new_text);
+			}
+			fclose(fh);
+		}
+	}
+
+	return buf;
 }
 
 /******************************************************************

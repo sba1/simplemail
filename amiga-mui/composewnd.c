@@ -672,10 +672,7 @@ static void compose_add_signature(struct Compose_Data *data)
 				strcat(new_text,"\n-- \n");
 				strcat(new_text,sign->signature);
 
-				if(user.config.taglines_use)
-				{
-					new_text = taglines_add_tagline(new_text);
-				}
+				new_text = taglines_add_tagline(new_text);
 				
 /*
 				DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"\n-- \n", MUIV_TextEditor_InsertText_Bottom);
@@ -723,8 +720,7 @@ static void compose_set_signature(void **msg)
 			strcat(new_text,"\n-- \n");
 			strcat(new_text,sign->signature);
 
-			if (user.config.taglines_use)
-				new_text = taglines_add_tagline(new_text);
+			new_text = taglines_add_tagline(new_text);
 
 			SetAttrs(data->text_texteditor,
 					MUIA_TextEditor_Contents,new_text,
@@ -845,7 +841,7 @@ void compose_window_open(struct compose_args *args)
 					Child, to_string = AddressStringObject,
 						StringFrame,
 						MUIA_CycleChain, 1,
-						MUIA_ControlChar, GetControlChar("_To"),
+						MUIA_ControlChar, GetControlChar(_("_To")),
 						MUIA_String_AdvanceOnCR, TRUE,
 						End,
 					Child, expand_to_button = PopButton(MUII_ArrowLeft),
@@ -854,7 +850,7 @@ void compose_window_open(struct compose_args *args)
 				Child, subject_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
-					MUIA_ControlChar, GetControlChar("_Subject"),
+					MUIA_ControlChar, GetControlChar(_("S_ubject")),
 					End,
 				End,
 			Child, contents_page = PageGroup,

@@ -895,8 +895,6 @@ static struct folder *folder_add(char *path)
 
 				node->folder.primary_sort = FOLDER_SORT_DATE;
 				node->folder.secondary_sort = FOLDER_SORT_FROMTO;
-				node->folder.def_to = malloc(1);
-				node->folder.def_to[0] = 0;
 
 				sprintf(buf,"%s.config",path);
 
@@ -1077,7 +1075,11 @@ static int folder_config_load(struct folder *f)
 				else if (!mystrnicmp("Type=",buf,5)) f->type = atoi(&buf[5]);
 				else if (!mystrnicmp("Special=",buf,8)) f->special = atoi(&buf[8]);
 				else if (!mystrnicmp("PrimarySort=",buf,12)) f->primary_sort = atoi(&buf[12]);
-				else if (!mystrnicmp("DefaultTo=",buf,10)) f->def_to = mystrdup(&buf[10]);
+				else if (!mystrnicmp("DefaultTo=",buf,10))
+				{
+					free(f->def_to);
+					f->def_to = mystrdup(&buf[10]);
+				}
 			}
 		}
 		fclose(fh);
@@ -1105,7 +1107,7 @@ static void folder_config_save(struct folder *f)
 		fprintf(fh,"Type=%d\n",f->type);
 		fprintf(fh,"Special=%d\n",f->special);
 		fprintf(fh,"PrimarySort=%d\n",f->primary_sort);
-		fprintf(fh,"DefaultTo=%s\n", f->def_to);
+		fprintf(fh,"DefaultTo=%s\n", f->def_to?f->def_to:"");
 		fclose(fh);
 	}
 }
@@ -1192,13 +1194,10 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		changed = 1;
 	}
 	
-	if (strcmp(newdefto,f->def_to) != 0)
+	if (mystrcmp(newdefto,f->def_to) != 0)
 	{
-		if (newdefto = mystrdup(newdefto))
-		{
-			if(f->def_to) free(f->def_to);
-			f->def_to = newdefto;
-		}
+		free(f->def_to);
+		f->def_to = mystrdup(newdefto);
 		changed = 1;
 	}
 

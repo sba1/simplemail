@@ -38,6 +38,8 @@
 #include "simplemail.h"
 #include "smintl.h"
 
+#include "addressstringclass.h"
+#include "amigasupport.h"
 #include "folderwnd.h"
 #include "muistuff.h"
 
@@ -118,14 +120,12 @@ static void init_folder(void)
 				Child, type_label = MakeLabel(_("_Type")),
 				Child, type_cycle = MakeCycle(_("_Type"),type_array),
 				
-				Child, defto_label = MakeLabel("Def. _to"),
-				Child, defto_string = BetterStringObject,
+				Child, defto_label = MakeLabel(_("Def. To")),
+				Child, defto_string = AddressStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
-					MUIA_ControlChar, 't',
-					MUIA_String_AdvanceOnCR, TRUE,
+					MUIA_ControlChar, GetControlChar(_("Def. To")),
 					End,
-				
 				End,
 
 			Child, HorizLineObject,

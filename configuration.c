@@ -179,8 +179,6 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"taglines.Use")))
-							user.config.taglines_use = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.Wrap")))
 							user.config.write_wrap = atoi(result);
 						if ((result = get_config_item(buf,"Write.WrapType")))
@@ -471,7 +469,6 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
-			fprintf(fh,"Taglines.Use=%s\n",user.config.taglines_use?"Y":"N");
 			fprintf(fh,"Write.Wrap=%d\n",user.config.write_wrap);
 			fprintf(fh,"Write.WrapType=%d\n",user.config.write_wrap_type);
 			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");

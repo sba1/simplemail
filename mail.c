@@ -2258,8 +2258,10 @@ char *mail_find_header_contents(struct mail *mail, char *name)
 **************************************************************************/
 struct list *create_address_list(char *str)
 {
-	struct list *list = (struct list*)malloc(sizeof(struct list));
-	if (list)
+	struct list *list;
+	if (!str) return NULL;
+
+	if ((list = (struct list*)malloc(sizeof(struct list))))
 	{
 		struct parse_address addr;
 		char *ret;

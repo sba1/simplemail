@@ -58,10 +58,8 @@ struct remote_mail
 	unsigned int uid;
 	unsigned int size;
 
-	/* only if envelope is requested  */
-	char *from;
-  char *subject;
-  char *date;
+	/* only if headers are requested  */
+  char *headers;
 };
 
 struct local_mail
@@ -187,6 +185,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 /**************************************************************************
  Create back a RFC822 Adress Field from an Address part of an envelope
 **************************************************************************/
+#if 0
 static char *imap_build_address_header(char *str)
 {
 	char buf[360];
@@ -228,7 +227,7 @@ static char *imap_build_address_header(char *str)
 	}
 	return NULL;
 }
-
+#endif
 
 /**************************************************************************
  
@@ -286,7 +285,7 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 
  Path must be is UTF8 encoded
 **************************************************************************/
-static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, int envelope, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
+static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
 {
 	/* get number of remote mails */
 	char *line;
@@ -344,7 +343,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,envelope?" ENVELOPE":"");
+			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
 			
@@ -364,18 +363,16 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					unsigned int msgno;
 					unsigned int uid = 0;
 					unsigned int size = 0;
-					char *from = NULL;
-					char *subject = NULL;
-					char *date = NULL;
+					char *headers = NULL;
 					char msgno_buf[100];
 					char stuff_buf[1024];
 					char cmd_buf[1024];
-					char *temp;
+					char *temp, *line_save;
 					int i;
 
 					line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
 					line = imap_get_result(line,cmd_buf,sizeof(cmd_buf));
-					line = imap_get_result(line,stuff_buf,sizeof(stuff_buf));
+					imap_get_result(line,stuff_buf,sizeof(stuff_buf)); /* don't update the line because BODY[HEADER.FIELDS] would be skipped and because it is parsed diffently */
 
 					msgno = (unsigned int)atoi(msgno_buf);
 					temp = stuff_buf;
@@ -393,25 +390,33 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
 							size = atoi(cmd_buf);
 						}
-						else if (!mystricmp(cmd_buf,"ENVELOPE"))
+						else if (!mystrnicmp(cmd_buf,"BODY",4))
 						{
-							char *env;
-							char env_buf[200];
+							char *temp_ptr;
+							int todownload;
 
-							temp = imap_get_result(temp,cmd_buf,sizeof(cmd_buf));
-							env = cmd_buf;
-							
-							/* Date */
-							env = imap_get_result(env,env_buf,sizeof(env_buf));
-							subject = mystrdup(env_buf);
+							if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+							{
+								temp_ptr++;
+								todownload = atoi(temp_ptr);
+							} else todownload = 0;
 
-							/* Subject */
-							env = imap_get_result(env,env_buf,sizeof(env_buf));
-							subject = mystrdup(env_buf);
+							if (todownload)
+							{
+								int pos = 0;
 
-							/* From */
-							env = imap_get_result(env,env_buf,sizeof(env_buf));
-							from = imap_build_address_header(env_buf);
+								headers = malloc(todownload+1);
+								headers[todownload]=0;
+
+								while (todownload)
+								{
+									int dl;
+									dl = tcp_read(conn,headers + pos,todownload);
+									if (dl == -1 || !dl) break;
+									todownload -= dl;
+									pos += dl;
+								}
+							}
 						}
 					}
 
@@ -419,9 +424,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					{
 						remote_mail_array[msgno-1].uid = uid;
 						remote_mail_array[msgno-1].size = size;
-						remote_mail_array[msgno-1].from = from;
-						remote_mail_array[msgno-1].subject = subject;
-						remote_mail_array[msgno-1].date = date;
+						remote_mail_array[msgno-1].headers = headers;
 					}
 				}
 			}
@@ -1295,11 +1298,9 @@ static void imap_thread_really_download_mails(void)
 					/* Store as a partial mail */
 					if ((fh = fopen(filename_buf,"w")))
 					{
-						if (remote_mail_array[i].from) fprintf(fh,"From: %s\n",remote_mail_array[i].from);
-						fprintf(fh,"Date: %s\n",remote_mail_array[i].date);
-						fprintf(fh,"Subject: %s\n",remote_mail_array[i].subject);
 						fprintf(fh,"X-SimpleMail-Partial: yes\n");
-						fprintf(fh,"X-SimpleMail-Size: %d",remote_mail_array[i].size);
+						fprintf(fh,"X-SimpleMail-Size: %d\n",remote_mail_array[i].size);
+						if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
 						fclose(fh);
 
 						thread_call_parent_function_sync(callback_new_imap_mail_arrived, 3, filename_buf, imap_server->name, imap_folder);
@@ -1409,6 +1410,85 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 	}
 }
 
+static int imap_thread_download_mail(struct folder *f, struct mail *m)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int uid;
+	int success;
+
+	if (!imap_server) return 0;
+	if (!imap_connection) return 0;
+
+	uid = atoi(m->filename + 1);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	success = 0;
+	while ((line = tcp_readln(imap_connection)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			if (buf[0] == '*')
+			{
+				char msgno_buf[200];
+				char *temp_ptr;
+				int msgno;
+				int todownload;
+				line++;
+
+				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+				msgno = atoi(msgno_buf); /* ignored */
+
+				/* skip the fetch command */
+				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+				if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+				{
+					temp_ptr++;
+					todownload = atoi(temp_ptr);
+				} else todownload = 0;
+
+				if (todownload)
+				{
+					FILE *fh;
+
+					mystrlcpy(buf,f->path,sizeof(buf));
+					sm_add_part(buf,m->filename,sizeof(buf));
+
+					if ((fh = fopen(buf,"w")))
+					{
+						while (todownload)
+						{
+							int dl;
+							dl = tcp_read(imap_connection,buf,MIN((sizeof(buf)-4),todownload));
+
+							if (dl == -1 || !dl) break;
+							fwrite(buf,1,dl,fh);
+							todownload -= dl;
+						}
+						fclose(fh);
+					}
+				}
+			}
+		}
+	}
+
+	return success;
+}
+
 /**************************************************************************
  The entry point for the imap thread. It just go into the wait state and
  then frees all resources when finished
@@ -1452,3 +1532,18 @@ void imap_thread_connect(struct folder *folder)
 	}
 }
 
+/**************************************************************************
+ Download the given mail from the imap server using 
+***************************************************************************/
+int imap_download_mail(struct folder *f, struct mail *m)
+{
+	if (!imap_thread) return 0;
+	if (!(m->flags & MAIL_FLAGS_PARTIAL)) return 0;
+
+	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 2, f, m))
+	{
+		folder_set_mail_flags(f,m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
+		return 1;
+	}
+	return 0;
+}

@@ -53,5 +53,6 @@ struct imap_server *imap_duplicate(struct imap_server *imap);
 void imap_free(struct imap_server *imap);
 
 void imap_thread_connect(struct folder *folder);
+int imap_download_mail(struct folder *f, struct mail *m);
 
 #endif

@@ -61,8 +61,8 @@ STATIC ASM VOID config_display(register __a1 struct MUIP_NListtree_DisplayMessag
 				struct account *account = configwnd_get_account(msg->TreeNode);
 				if (account)
 				{
-					sprintf(buf,"%s/%s",account->pop->name?account->pop->name:"-",
-															account->smtp->name?account->smtp->name:"-");
+					sprintf(buf,"%s/%s/%s",account->email?account->email:"-",account->pop->name?account->pop->name:"-",
+															   account->smtp->name?account->smtp->name:"-");
 					*msg->Array = buf;
 					return;
 				}

@@ -1,14 +1,15 @@
 Version 0.14 (first beta) - released on 2001/12/24
-  - ARexx: added lots of commands.
-  - Signatures can now be stripped when replying.
-  - Folder names are now rendered in bold when containing new mail.
-  - Improved the wordwrap while quoting.
-  - Option to not quote empty lines.
-  - Your address is filtered out when replying a multiple recipient email.
-  - Modified the STARTTLS code following the suggestions from Jörg Strohmayer.
-  - Every folder can now have a default recipient address.
-  - Can now import address books from YAM.
-  - Implemented CC support in the Compose Message window:
+  - ARexx: added lots of commands
+  - Signatures can now be stripped when replying
+  - Total number of emails in the folder list is now highlighted when
+    containing new mail
+  - Improved the wordwrap while quoting
+  - Option to not quote empty lines
+  - Your address is filtered out when replying a multiple recipient email
+  - Modified the STARTTLS code following the suggestions from Jörg Strohmayer
+  - Every folder can now have a default recipient address
+  - Can now import address books from YAM
+  - Implemented CC support in the Compose Message window
 
 Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!

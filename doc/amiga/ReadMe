@@ -32,7 +32,8 @@ Changes since 0.13
 ~~~~~~~~~~~~~~~~~~
 - ARexx: added lots of commands
 - Signatures can now be stripped when replying
-- Folder names are now rendered in bold when containing new mail
+- Total number of emails in the folder list is now highlighted when
+  containing new mail
 - Improved the wordwrap while quoting
 - Option to not quote empty lines
 - Your address is filtered out when replying a multiple recipient email

@@ -23,9 +23,12 @@
 #include <proto/exec.h>
 
 #ifdef __MORPHOS__
+#define USE_INLINE_STDARG
 #include <sys/socket.h>
 #include <net/socketbasetags.h>
-#include <proto/socket.h>
+#include <clib/socket_protos.h>
+#include <ppcinline/socket.h>
+#undef USE_INLINE_STDARG
 #else
 #ifdef AMITCP_SDK
 #include <amitcp/socketbasetags.h>

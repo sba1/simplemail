@@ -1059,6 +1059,9 @@ static struct folder *folder_add(char *path)
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.num_index_mails = -1;
 
+		list_init(&node->folder.imap_all_folder_list);
+		list_init(&node->folder.imap_sub_folder_list);
+
 		/* create the directory if it doesn't exists */
 		if (sm_makedir(path))
 		{
@@ -1126,6 +1129,8 @@ static struct folder_node *folder_create_group(char *name)
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.name = mystrdup(name);
 		node->folder.special = FOLDER_SPECIAL_GROUP;
+		list_init(&node->folder.imap_all_folder_list);
+		list_init(&node->folder.imap_sub_folder_list);
 
 		if ((node->folder.sem = thread_create_semaphore()))
 		{
@@ -1181,6 +1186,8 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 		node->folder.imap_server = mystrdup(parent->imap_server);
 		node->folder.imap_user = mystrdup(parent->imap_user);
 		node->folder.imap_path = mystrdup(imap_path);
+		list_init(&node->folder.imap_all_folder_list);
+		list_init(&node->folder.imap_sub_folder_list);
 
 		/* TODO: check for success */
 
@@ -1320,6 +1327,9 @@ static int folder_config_load(struct folder *f)
 
 	sprintf(buf,"%s.config",f->path);
 
+	string_list_clear(&f->imap_all_folder_list);
+	string_list_clear(&f->imap_sub_folder_list);
+
 	if ((fh = fopen(buf,"r")))
 	{
 		read_line(fh,buf);
@@ -1358,6 +1368,14 @@ static int folder_config_load(struct folder *f)
 					free(f->imap_server);
 					f->imap_server = mystrdup(&buf[11]);
 				}
+				else if (!mystrnicmp("IMapFolder=",buf,11))
+				{
+					string_list_insert_tail(&f->imap_all_folder_list,&buf[11]);
+				}
+				else if (!mystrnicmp("IMapSubFolder=",buf,14))
+				{
+					string_list_insert_tail(&f->imap_sub_folder_list,&buf[14]);
+				}
 			}
 		}
 		fclose(fh);
@@ -1374,12 +1392,13 @@ void folder_config_save(struct folder *f)
 	FILE *fh;
 
 	if (!f->path) return;
-	if (f->special == FOLDER_SPECIAL_GROUP) return;
+	if (f->special == FOLDER_SPECIAL_GROUP && !f->is_imap) return;
 
 	sprintf(buf,"%s.config",f->path);
 
 	if ((fh = fopen(buf,"w")))
 	{
+		struct string_node *node;
 		fputs("FICO\n",fh);
 		fprintf(fh,"Name=%s\n",f->name);
 		fprintf(fh,"Type=%d\n",f->type);
@@ -1390,7 +1409,53 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
 		fprintf(fh,"IMapServer=%s\n",f->imap_server?f->imap_server:"");
+
+		node = (struct string_node*)list_first(&f->imap_all_folder_list);
+		while (node)
+		{
+			fprintf(fh,"IMapFolder=%s\n",node->string);
+			node = (struct string_node*)node_next(&node->node);
+		}
+
+		node = (struct string_node*)list_first(&f->imap_sub_folder_list);
+		while (node)
+		{
+			fprintf(fh,"IMapSubFolder=%s\n",node->string);
+			node = (struct string_node*)node_next(&node->node);
+		}
+
 		fclose(fh);
+	}
+}
+
+/******************************************************************
+ Sets the imap folder lists of a given folders. The list elements
+ are copied.
+*******************************************************************/
+void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list)
+{
+	struct string_node *node;
+
+	if (all_folders_list)
+	{
+		string_list_clear(&folder->imap_all_folder_list);
+		node = (struct string_node*)list_first(all_folders_list);
+		while (node)
+		{
+			string_list_insert_tail(&folder->imap_all_folder_list,node->string);
+			node = (struct string_node*)node_next(&node->node);
+		}
+	}
+
+	if (sub_folders_list)
+	{
+		string_list_clear(&folder->imap_sub_folder_list);
+		node = (struct string_node*)list_first(sub_folders_list);
+		while (node)
+		{
+			string_list_insert_tail(&folder->imap_sub_folder_list,node->string);
+			node = (struct string_node*)node_next(&node->node);
+		}
 	}
 }
 

@@ -65,8 +65,13 @@ static Object *prim_label;
 static Object *prim_cycle;
 static Object *second_label;
 static Object *second_cycle;
+static Object *imap_folders_group;
 static Object *imap_folders_list;
 static Object *imap_folders_listview;
+static Object *imap_folders_subscribe;
+static Object *imap_folders_unsubscribe;
+static Object *imap_folders_check;
+static Object *imap_folders_submit;
 static int group_mode;
 static int imap_mode;
 
@@ -82,7 +87,7 @@ struct imap_folder_entry
 
 STATIC ASM APTR imap_folders_construct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
 {
-	struct imap_folder_entry *new_entry = AllocVec(sizeof(*entry),0);
+	struct imap_folder_entry *new_entry = malloc(sizeof(*entry));
 	if (new_entry)
 	{
 		new_entry->name = mystrdup(entry->name);
@@ -93,8 +98,11 @@ STATIC ASM APTR imap_folders_construct(register __a2 APTR pool, register __a1 st
 
 STATIC ASM VOID imap_folders_destruct(register __a2 APTR pool, register __a1 struct imap_folder_entry *entry)
 {
-	if (entry->name) FreeVec(entry->name);
-	if (entry) FreeVec(entry);
+	if (entry)
+	{
+		free(entry->name);
+		free(entry);
+	}
 }
 
 STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 struct imap_folder_entry *entry)
@@ -113,7 +121,55 @@ STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 s
 	}
 }
 
-struct folder *changed_folder;
+static struct folder *changed_folder;
+
+static void imap_folders_check_pressed(void)
+{
+	if (changed_folder)
+		callback_imap_get_folders(changed_folder);
+}
+
+static void imap_folders_submit_pressed(void)
+{
+	if (changed_folder)
+	{
+		struct list list;
+		int i;
+
+		list_init(&list);
+		for (i=0;i<xget(imap_folders_list,MUIA_NList_Entries);i++)
+		{
+			struct imap_folder_entry *entry;
+			DoMethod(imap_folders_list, MUIM_NList_GetEntry, i, &entry);
+			if (entry && entry->subscribed)
+				string_list_insert_tail(&list,entry->name);
+		}
+		callback_imap_submit_folders(changed_folder,&list);
+		string_list_clear(&list);
+	}
+}
+
+static void imap_folders_subscribe_pressed(void)
+{
+	struct imap_folder_entry *entry;
+	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	if (entry)
+	{
+		entry->subscribed = 1;
+		DoMethod(imap_folders_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
+	}
+}
+
+static void imap_folders_unsubscribe_pressed(void)
+{
+	struct imap_folder_entry *entry;
+	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	if (entry)
+	{
+		entry->subscribed = 0;
+		DoMethod(imap_folders_list, MUIM_NList_Redraw, MUIV_NList_Redraw_Active);
+	}
+}
 
 static void folder_ok(void)
 {
@@ -234,11 +290,19 @@ static void init_folder(void)
 					End,
 				End,
 
-			Child, imap_folders_listview = NListviewObject,
-				MUIA_NListview_NList, imap_folders_list = NListObject,
-					MUIA_NList_ConstructHook, &imap_folders_construct_hook,
-					MUIA_NList_DestructHook, &imap_folders_destruct_hook,
-					MUIA_NList_DisplayHook, &imap_folders_display_hook,
+			Child, imap_folders_group = VGroup,
+				Child, imap_folders_listview = NListviewObject,
+					MUIA_NListview_NList, imap_folders_list = NListObject,
+						MUIA_NList_ConstructHook, &imap_folders_construct_hook,
+						MUIA_NList_DestructHook, &imap_folders_destruct_hook,
+						MUIA_NList_DisplayHook, &imap_folders_display_hook,
+						End,
+					End,
+				Child, HGroup,
+					Child, imap_folders_subscribe = MakeButton(_("Subscribe")),
+					Child, imap_folders_unsubscribe = MakeButton(_("Unsubscribe")),
+					Child, imap_folders_check = MakeButton(_("Reload from server")),
+					Child, imap_folders_submit = MakeButton(_("Submit to server")),
 					End,
 				End,
 
@@ -257,6 +321,10 @@ static void init_folder(void)
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, folder_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 
+		DoMethod(imap_folders_check, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_check_pressed);
+		DoMethod(imap_folders_submit, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_submit_pressed);
+		DoMethod(imap_folders_subscribe, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_subscribe_pressed);
+		DoMethod(imap_folders_unsubscribe, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_unsubscribe_pressed);
 		imap_mode = 1;
 	}
 }
@@ -276,11 +344,11 @@ void folder_edit(struct folder *f)
 		if (f->is_imap)
 		{
 			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
-			set(imap_folders_listview,MUIA_ShowMe, TRUE);
+			set(imap_folders_group,MUIA_ShowMe, TRUE);
 		} else
 		{
 			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit folder group"));
-			set(imap_folders_listview,MUIA_ShowMe, FALSE);
+			set(imap_folders_group,MUIA_ShowMe, FALSE);
 		}
 
 
@@ -308,7 +376,7 @@ void folder_edit(struct folder *f)
 	} else
 	{
 		set(folder_wnd,MUIA_Window_Title, _("SimpleMail - Edit folder"));
-		set(imap_folders_listview,MUIA_ShowMe, FALSE);
+		set(imap_folders_group,MUIA_ShowMe, FALSE);
 		if (group_mode)
 		{
 			DoMethod(folder_group,MUIM_Group_InitChange);
@@ -375,17 +443,34 @@ void folder_edit(struct folder *f)
 	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f));
 	set(server_string, MUIA_String_Contents, f->imap_server);
 	changed_folder = f;
+
+	if (f->is_imap)
+	{
+		struct string_node *node;
+		DoMethod(imap_folders_list,MUIM_NList_Clear);
+		node = (struct string_node*)list_first(&f->imap_all_folder_list);
+		while (node)
+		{
+			struct imap_folder_entry entry;
+			entry.name = node->string;
+			entry.subscribed = !!string_list_find(&f->imap_sub_folder_list,node->string);
+
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, &entry, MUIV_NList_Insert_Bottom);
+			node = (struct string_node*)node_next(&node->node);
+		}
+	}
+
 	set(folder_wnd, MUIA_Window_ActiveObject, name_string);
 	set(folder_wnd, MUIA_Window_Open, TRUE);
 }
 
-void folder_edit_with_folder_list(struct folder *f, struct list *list, struct list *sub_folder_list)
+void folder_fill_lists(struct list *list, struct list *sub_folder_list)
 {
-	if (imap_folders_list) DoMethod(imap_folders_list,MUIM_NList_Clear);
-	folder_edit(f);
 	if (imap_folders_list)
 	{
-		struct string_node *node = (struct string_node*)list_first(list);
+		struct string_node *node;
+		DoMethod(imap_folders_list,MUIM_NList_Clear);
+		node = (struct string_node*)list_first(list);
 		while (node)
 		{
 			struct imap_folder_entry entry;

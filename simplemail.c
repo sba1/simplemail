@@ -1065,7 +1065,38 @@ static void callback_received_imap_folders(struct imap_server *server, struct li
 {
 	struct folder *f = folder_find_by_imap(server->name,"");
 	if (!f) return;
-	folder_edit_with_folder_list(f, all_folder_list, sub_folder_list);
+	folder_imap_set_folders(f, all_folder_list, sub_folder_list);
+	folder_fill_lists(all_folder_list, sub_folder_list);
+	folder_config_save(f);
+}
+
+/*  */
+void callback_imap_get_folders(struct folder *f)
+{
+	if (f->is_imap && f->special == FOLDER_SPECIAL_GROUP)
+	{
+		struct imap_server *server = account_find_imap_server_by_folder(f);
+		if (server)
+		{
+			imap_get_folder_list(server,callback_received_imap_folders);
+			return;
+		}
+	}
+}
+
+/* */
+void callback_imap_submit_folders(struct folder *f, struct list *list)
+{
+	if (f->is_imap && f->special == FOLDER_SPECIAL_GROUP)
+	{
+		struct imap_server *server = account_find_imap_server_by_folder(f);
+		if (server)
+		{
+			imap_submit_folder_list(server,list);
+			return;
+		}
+
+	}
 }
 
 /* edit folder settings */
@@ -1074,15 +1105,6 @@ void callback_edit_folder(void)
 	struct folder *from_folder = main_get_folder();
 	if (from_folder)
 	{
-		if (from_folder->is_imap && from_folder->special == FOLDER_SPECIAL_GROUP)
-		{
-			struct imap_server *server = account_find_imap_server_by_folder(from_folder);
-			if (server)
-			{
-				imap_get_folder_list(server,callback_received_imap_folders);
-				return;
-			}
-		}
 		folder_edit(from_folder);
 	}
 }

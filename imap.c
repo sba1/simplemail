@@ -184,7 +184,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	thread_call_parent_function_sync(status_set_status,1,status_buf);
 
 	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s %s %s\r\n",tag,writemode?"SELECT":"EXAMINE",path);
+	sprintf(send,"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
@@ -801,6 +801,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 				if (imap_login(conn,server))
 				{
 					struct list *all_folder_list;
+					thread_call_parent_function_async(status_set_status,1,N_("Reading folders..."));
 					if ((all_folder_list = imap_get_folders(conn,server,1)))
 					{
 						struct list *sub_folder_list;
@@ -849,6 +850,172 @@ int imap_get_folder_list(struct imap_server *server, void (*callback)(struct ima
 	msg.server = server;
 	msg.callback = callback;
 	return thread_start(THREAD_FUNCTION(&imap_get_folder_list_entry),&msg);
+}
+
+/**************************************************************************
+ NOTE: list elements are removed!
+**************************************************************************/
+static void imap_submit_folder_list_really(struct imap_server *server, struct list *list)
+{
+	struct list *folder_list;
+	if (open_socket_lib())
+	{
+		struct connection *conn;
+		char head_buf[100];
+
+		sprintf(head_buf,_("Submitting subscribed folders to %s"),server->name);
+		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+
+		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+		{
+			thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+			if (imap_wait_login(conn,server))
+			{
+				thread_call_parent_function_async(status_set_status,1,N_("Login..."));
+				if (imap_login(conn,server))
+				{
+					struct list *all_folder_list;
+					thread_call_parent_function_async(status_set_status,1,N_("Reading folders..."));
+					if ((all_folder_list = imap_get_folders(conn,server,1)))
+					{
+						struct list *sub_folder_list;
+						thread_call_parent_function_async(status_set_status,1,N_("Reading subscribed folders..."));
+						if ((sub_folder_list = imap_get_folders(conn,server,0)))
+						{
+							char *line;
+							char tag[20];
+							char send[200];
+							char buf[100];
+							struct string_node *node;
+
+							node = (struct string_node*)list_first(list);
+							while (node)
+							{
+								if (!string_list_find(sub_folder_list,node->string))
+								{
+									int success = 0;
+
+									/* subscribe this folder */
+									sprintf(tag,"%04x",val++);
+									sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,node->string);
+									tcp_write(conn,send,strlen(send));
+									tcp_flush(conn);
+
+									while ((line = tcp_readln(conn)))
+									{
+										line = imap_get_result(line,buf,sizeof(buf));
+										if (!mystricmp(buf,tag))
+										{
+											line = imap_get_result(line,buf,sizeof(buf));
+											if (!mystricmp(buf,"OK"))
+											{
+												success = 1;
+											} else
+											{
+												tell_from_subtask(N_("Subscribing folders failed!"));
+											}
+											break;
+										}
+									}
+								}
+								node = (struct string_node*)node_next(&node->node);
+							}
+
+							node = (struct string_node*)list_first(sub_folder_list);
+							while (node)
+							{
+								if (!string_list_find(list,node->string))
+								{
+									int success = 0;
+
+									/* subscribe this folder */
+									sprintf(tag,"%04x",val++);
+									sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,node->string);
+									tcp_write(conn,send,strlen(send));
+									tcp_flush(conn);
+
+									while ((line = tcp_readln(conn)))
+									{
+										line = imap_get_result(line,buf,sizeof(buf));
+										if (!mystricmp(buf,tag))
+										{
+											line = imap_get_result(line,buf,sizeof(buf));
+											if (!mystricmp(buf,"OK"))
+											{
+												success = 1;
+											} else
+											{
+												tell_from_subtask(N_("Unsubscribing folders failed!"));
+											}
+											break;
+										}
+									}
+								}
+								node = (struct string_node*)node_next(&node->node);
+							}
+							
+							imap_free_name_list(sub_folder_list);
+						}
+						imap_free_name_list(all_folder_list);
+					}
+				}
+			}
+			tcp_disconnect(conn);
+		}
+
+		close_socket_lib();
+	}
+}
+
+struct imap_submit_folder_list_entry_msg
+{
+	struct imap_server *server;
+	struct list *list;
+};
+
+
+/**************************************************************************
+ Entrypoint for the get folder list mail process
+**************************************************************************/
+static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_msg *msg)
+{
+	struct imap_server *server = imap_duplicate(msg->server);
+	struct list list;
+	struct string_node *node;
+	
+	list_init(&list);
+	node = (struct string_node*)list_first(msg->list);
+	while (node)
+	{
+		string_list_insert_tail(&list,node->string);
+		node = (struct string_node*)node_next(&node->node);
+	}
+	
+
+	if (thread_parent_task_can_contiue())
+	{
+		thread_call_parent_function_async(status_init,1,0);
+		thread_call_parent_function_async(status_open,0);
+
+		imap_submit_folder_list_really(server,&list);
+
+		thread_call_parent_function_async(status_close,0);
+	}
+	string_list_clear(&list);
+	return 0;
+}
+
+/**************************************************************************
+ Submit the given list as subscribed to the server
+**************************************************************************/
+int imap_submit_folder_list(struct imap_server *server, struct list *list)
+{
+	struct imap_submit_folder_list_entry_msg msg;
+	msg.server = server;
+	msg.list = list;
+	return thread_start(THREAD_FUNCTION(&imap_submit_folder_list_entry),&msg);
 }
 
 /**************************************************************************

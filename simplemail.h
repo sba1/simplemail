@@ -60,6 +60,8 @@ void callback_export(void);
 void callback_write_mail_to(struct addressbook_entry *address);
 int callback_write_mail_to_str(char *str, char *subject);
 
+void callback_imap_submit_folders(struct folder *f, struct list *list);
+void callback_imap_get_folders(struct folder *f);
 void callback_edit_folder(void);
 void callback_change_folder_attrs(void);
 void callback_reload_folder_order(void);

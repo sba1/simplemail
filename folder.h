@@ -71,6 +71,8 @@ struct folder
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
 	int imap_popup_edit; /* state variable */
+	struct list imap_all_folder_list; /* string_node * */
+	struct list imap_sub_folder_list; /* string_node * */
 
 	/* more will follow */
 };
@@ -120,6 +122,7 @@ int folder_number_of_new_mails(struct folder *folder);
 void folder_set_mail_status(struct folder *folder, struct mail *mail, int status_new);
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 struct mail *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
+void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);
 
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, int prim_sort, int second_sort);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);

@@ -58,6 +58,7 @@
 #include "picturebuttonclass.h"
 #include "readlistclass.h"
 #include "readwnd.h"
+#include "support.h"
 
 static void save_contents(struct Read_Data *data, struct mail *mail);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
@@ -359,6 +360,10 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 	if (mail->num_multiparts == 0)
 	{
 		Object *group, *icon, *context_menu;
+		void *buffer = NULL;
+		unsigned int buffer_len = 488;
+
+		buffer = mail_decode_bytes(mail,&buffer_len);
 
 		context_menu = data->attachment_standard_menu;
 		if (!mystricmp(mail->content_subtype,"html"))
@@ -369,6 +374,8 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 					MUIA_InputMode, MUIV_InputMode_Immediate,
 					MUIA_Icon_MimeType, mail->content_type,
 					MUIA_Icon_MimeSubType, mail->content_subtype,
+					MUIA_Icon_Buffer, buffer,
+					MUIA_Icon_BufferLen, buffer_len,
 					MUIA_UserData, mail,
 					MUIA_ContextMenu, context_menu,
 					End,

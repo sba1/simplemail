@@ -667,6 +667,22 @@ void init_addressbook(void)
 
 	if (!addressbook_find_entry_by_address("henes@biclodon.com"))
 	{
+		if ((entry = addressbook_find_entry_by_address("henes@morphos.de")))
+		{
+			int idx;
+			char **newarray;
+
+			/* idx must exist, so no check for -1 is needed */
+			idx = array_index(entry->email_array,"henes@morphos.de");
+			newarray = array_replace_idx(entry->email_array,idx,"henes@biclodon.com");
+			if (newarray) entry->email_array = newarray;
+
+			if (!array_contains(entry->group_array,"SimpleMail Team"))
+			{
+				newarray = array_add_string(entry->group_array,"SimpleMail Team");
+				if (newarray) entry->group_array = newarray;
+			}
+		} else
 		if ((entry = addressbook_add_entry("Nicolas Sallin")))
 		{
 			entry->email_array = array_add_string(entry->email_array,"henes@biclodon.com");

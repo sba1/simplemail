@@ -38,6 +38,7 @@ struct pop3_server
 	int nodupl; /* 1 if duplicates should be avoided */
 	int active; /* is this pop server actove */
 	int ask; /* ask for login/password */
+	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
 int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black);

@@ -898,7 +898,10 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 			sprintf(head_buf,_("Fetching mails from %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-			thread_call_parent_function_async_string(status_set_title, 1, server->name);
+			if (server->title)
+				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+			else
+				thread_call_parent_function_async_string(status_set_title, 1, server->name);
 			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 			/* Ask for the login/password */
@@ -1165,6 +1168,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 		new_pop->name = mystrdup(pop->name);
 		new_pop->login = mystrdup(pop->login);
 		new_pop->passwd = mystrdup(pop->passwd);
+		new_pop->title = mystrdup(pop->title);
 		new_pop->del = pop->del;
 		new_pop->port = pop->port;
 		new_pop->apop = pop->apop;
@@ -1185,5 +1189,6 @@ void pop_free(struct pop3_server *pop)
 	if (pop->name) free(pop->name);
 	if (pop->login) free(pop->login);
 	if (pop->passwd) free(pop->passwd);
+	if (pop->title) free(pop->title);
 	free(pop);
 }

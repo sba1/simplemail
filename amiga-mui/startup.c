@@ -432,7 +432,7 @@ FILE *tmpfile(void)
 	char buf[40];
 	FILE *file;
 	ObtainSemaphore(&files_sem);
-	sprintf(buf,"T:%lx%lx",FindTask(NULL),tmpno++);
+	sprintf(buf,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
 	file = fopen(buf,"w");
 	ReleaseSemaphore(&files_sem);
 	return file;
@@ -441,7 +441,7 @@ FILE *tmpfile(void)
 char *tmpnam(char *name)
 {
 	ObtainSemaphore(&files_sem);
-	sprintf(name,"T:%lx%lx",FindTask(NULL),tmpno++);
+	sprintf(name,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
 	ReleaseSemaphore(&files_sem);
 	return name;
 }

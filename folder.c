@@ -139,7 +139,7 @@ static char *mail_get_compare_subject(char *subj)
 				** check for ':' in the next 10 chars because it could be "Re:", "AW:", "fwd:",
   	    ** "Re[12]:", and so on
 				*/
-				if (p = strchr(subj, ':'))
+				if ((p = strchr(subj, ':')))
 				{
 					if ((p-subj) < 10)
 					{
@@ -1301,10 +1301,16 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 				list_insert(&folder_list, &node->node, &parent_node->node);
 				return &node->folder;
 			}
+			thread_dispose_semaphore(node->folder.sem);
 		}
-		/* leaks */
+		free(node->folder.name);
+		free(node->folder.path);
+		free(node->folder.imap_server);
+		free(node->folder.imap_user);
+		free(node->folder.imap_path);
+		free(node);
 	}
-	
+	return NULL;
 }
 
 /******************************************************************
@@ -2099,7 +2105,7 @@ int folder_size_of_mails(struct folder *f)
 	void *handle = NULL;
 	struct mail *m;
 
-	if (!f) return NULL;
+	if (!f) return 0;
 
 	while ((m = folder_next_mail(f, &handle)))
 		size += m->size;

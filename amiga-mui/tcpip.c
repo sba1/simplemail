@@ -33,37 +33,42 @@
 #include <proto/amissl.h>
 
 #include "tcpip.h"
+#include "subthreads_amiga.h"
 
-struct Library *SocketBase;
-static int bsd_in_use;
+/* calling FindTask(NULL) below makes problems when compiling */
+#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
 
 int open_socket_lib(void)
 {
-	if (!SocketBase)
+	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
+	if (!thread) return 0; /* assert */
+
+	if (!thread->socketlib)
 	{
-		if ((SocketBase = OpenLibrary("bsdsocket.library", 4)))
+		if ((thread->socketlib = OpenLibrary("bsdsocket.library", 4)))
 		{
-			bsd_in_use++;
+			thread->socketlib_opencnt++;
 			return 1;
 		}
 	} else
 	{
-		bsd_in_use++;
+		thread->socketlib_opencnt++;
 		return 1;
 	}
-
 	return 0;
 }
 
 void close_socket_lib(void)
 {
-	if (!bsd_in_use) return;
-	if (!(--bsd_in_use))
+	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
+	if (!thread) return; /* assert */
+
+	if (!(--thread->socketlib))
 	{
-		if (SocketBase)
+		if (thread->socketlib)
 		{
-			CloseLibrary(SocketBase);
-			SocketBase = NULL;
+			CloseLibrary(thread->socketlib);
+			thread->socketlib = NULL;
 		}
 	}
 }

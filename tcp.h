@@ -69,6 +69,7 @@ int tcp_write(struct connection *conn, void *, long);
 int tcp_write_unbuffered(struct connection *conn, void *,long);
 int tcp_flush(struct connection *conn);
 char *tcp_readln(struct connection *conn);
+int tcp_gethostname(char *buf, int buf_size);
 
 /*#define TCP_OK									  0*/
 #define TCP_UNKNOWN						 -1 /* Unspecified error */

@@ -27,15 +27,6 @@
 
 #include <errno.h>
 
-#ifdef __WIN32__
-#include <windows.h>
-#else
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-#endif
-
 #include "account.h"
 #include "codecs.h"
 #include "configuration.h"
@@ -133,7 +124,7 @@ static int smtp_service_ready(struct smtp_connection *conn)
 **************************************************************************/
 static int smtp_helo(struct smtp_connection *conn, struct account *account)
 {
-	char dom[513];
+	char dom[512];
 
 	if (!account->smtp->ip_as_domain)
 	{
@@ -145,7 +136,10 @@ static int smtp_helo(struct smtp_connection *conn, struct account *account)
 			mystrlcpy(dom,domain,sizeof(dom));
 		} else dom[0] = 0;
 	}
-	else if(gethostname(dom, 512) != 0);
+	else if(tcp_gethostname(dom, sizeof(dom)) != 0)
+	{
+		return 0;
+	}
 
 	if (smtp_send_cmd(conn,"HELO",dom) != SMTP_OK) return 0;
 
@@ -443,7 +437,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 **************************************************************************/
 int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 {
-	char dom[513];
+	char dom[512];
 	char *answer;
 
 	conn->flags = 0;
@@ -459,7 +453,10 @@ int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 			mystrlcpy(dom,domain,sizeof(dom));
 		} else dom[0] = 0;
 	}
-	else if(gethostname(dom, 512) != 0);
+	else if(tcp_gethostname(dom, sizeof(dom) != 0))
+	{
+		return 0;
+	}
 
 	tcp_write(conn->conn, "EHLO ",5);
 	if (account->smtp->secure && !tcp_secure(conn->conn))

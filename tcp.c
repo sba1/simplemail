@@ -40,6 +40,10 @@
 
 #ifdef _AMIGA /* ugly */
 #include <proto/amissl.h> /* not portable */
+#include <proto/exec.h>
+#include "subthreads_amiga.h"
+/* calling FindTask(NULL) below makes problems when compiling */
+#define SocketBase ((struct thread_s*)(SysBase->ThisTask)->tc_UserData)->socketlib
 #else
 #ifndef NO_SSL
 #include <openssl/ssl.h>
@@ -130,13 +134,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		    memcpy(&sockaddr.sin_addr, hostent->h_addr_list[i], hostent->h_length);
 				if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 				{
-//					char *send_str = "POST http://pop.btx.dtag.de:110/ HTTP/1.0\r\n\r\n";
-//													 "Host: pop.btx.dtag.de:110\r\n"
-//													 "User-Agent: SimpleMail\r\n\r\n\r\n";
 					conn->socket = sd;
-
-//					tcp_write(conn,send_str,strlen(send_str));
-//					while(tcp_readln(conn));
 
 #ifndef NO_SSL
 					if (use_ssl)
@@ -225,7 +223,7 @@ int tcp_make_secure(struct connection *conn)
 			/* Add some checks here */
 			X509_free(server_cert);
 #ifdef DEBUG_OUTPUT
-			printf("Connection is secure\n");
+			puts("Connection is secure\n");
 #endif
 			return 1;
 		}
@@ -237,7 +235,7 @@ int tcp_make_secure(struct connection *conn)
 	conn->ssl = NULL;
 
 #ifdef DEBUG_OUTPUT
-			printf("Connection couldn't be made secure\n");
+			puts("Connection couldn't be made secure\n");
 #endif
 
 #endif
@@ -463,6 +461,15 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
+
+/******************************************************************
+ Wrapper for gethostname
+*******************************************************************/
+int tcp_gethostname(char *buf, int buf_size)
+{
+	return gethostname(buf,buf_size);
+}
+
 
 #else
 

@@ -679,11 +679,12 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 
 		if ((data->mail = mail_complete_create_from_file(mail->filename)))
 		{
-			mail_read_contents(folder_path,data->mail);
+			mail_read_contents(NULL,data->mail); /* already cd'ed in */
 			mail_create_html_header(data->mail,0);
 			messageview_show_mail(data);
 			rc = 1;
 		}
+
 		CurrentDir(old_dir);
 		UnLock(lock);
 	}

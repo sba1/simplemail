@@ -55,8 +55,15 @@ $ContactText["en"]="Contact";
 $ContactText["de"]="Kontakt";
 $GalleryText["en"]="Gallery";
 $GalleryText["de"]="Galery";
+$DownloadsIntroText["en"]="The following downloads are currently available";
+$DownloadsIntroText["de"]="Follgende Dateien sind momentan verfügbar";
+$BannersText["en"]="Here are some banners you might want to put on your homepage";
+$BannersText["de"]="Hier sind noch einige Banner, die auf der eigenen Homepage gezeigt werden können";
+$BannersCreatorText["en"]="They are made by Richard \"zeg\" Wagenführer, thank you very much for it!";
+$BannersCreatorText["de"]="Sie wurden von Richard \"zeg\" Wagenführer erstellt.";
 
 ?>
+
 
 
 

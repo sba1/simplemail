@@ -395,7 +395,7 @@ msgstr "Der Signaturenname ist nicht erlaubt."
 
 #: amiga-mui/configwnd.c:482
 msgid "Signaturenames must be unique."
-msgstr "Signaturennamen müssen dürfen nicht doppelt vorhanden sein."
+msgstr "Signaturennamen dürfen nicht doppelt vorhanden sein."
 
 #: amiga-mui/configwnd.c:518
 msgid ""

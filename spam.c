@@ -31,6 +31,7 @@
 #include "hash.h"
 #include "mail.h"
 #include "folder.h"
+#include "subthreads.h"
 
 #include "support_indep.h"
 
@@ -39,19 +40,25 @@ static struct hash_table ham_table;
 /*static struct hash_table spam_prob_table;*/
 static int rebuild_spam_prob_hash_table;
 
+static semaphore_t sem;
+
 /**************************************************************************
  ...
 **************************************************************************/
 int spam_init(void)
 {
-	if (hash_table_init(&spam_table, 13, "PROGDIR:.spam.stat"))
+	if ((sem = thread_create_semaphore()))
 	{
-		if (hash_table_init(&ham_table, 13, "PROGDIR:.ham.stat"))
+		if (hash_table_init(&spam_table, 13, "PROGDIR:.spam.stat"))
 		{
-/*			if (hash_table_init(&spam_prob_table, 13, NULL))*/
+			if (hash_table_init(&ham_table, 13, "PROGDIR:.ham.stat"))
 			{
-				rebuild_spam_prob_hash_table = 1;
-				return 1;
+			
+/*				if (hash_table_init(&spam_prob_table, 13, NULL))*/
+				{
+					rebuild_spam_prob_hash_table = 1;
+					return 1;
+				}
 			}
 		}
 	}
@@ -65,6 +72,7 @@ void spam_cleanup(void)
 {
 	hash_table_store(&spam_table);
 	hash_table_store(&ham_table);
+	thread_dispose_semaphore(sem);
 }
 
 /**************************************************************************
@@ -293,12 +301,14 @@ static int spam_feed_mail(struct folder *folder, struct mail *to_parse_mail, str
 **************************************************************************/
 int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail)
 {
-	int rc = spam_feed_mail(folder,mail,&spam_table);
-	if (rc)
+	int rc;
+	thread_lock_semaphore(sem);
+	if ((rc = spam_feed_mail(folder,mail,&spam_table)))
 	{
 		spam_table.data++;
 		rebuild_spam_prob_hash_table = 1;
 	}
+	thread_unlock_semaphore(sem);
 	return rc;
 }
 
@@ -307,12 +317,17 @@ int spam_feed_mail_as_spam(struct folder *folder, struct mail *mail)
 **************************************************************************/
 int spam_feed_mail_as_ham(struct folder *folder, struct mail *mail)
 {
-	int rc = spam_feed_mail(folder,mail,&ham_table);
-	if (rc)
+	int rc;
+
+	thread_lock_semaphore(sem);
+
+	if ((rc = spam_feed_mail(folder,mail,&ham_table)))
 	{
 		ham_table.data++;
 		rebuild_spam_prob_hash_table = 1;
 	}
+
+	thread_unlock_semaphore(sem);
 	return rc;
 }
 
@@ -328,7 +343,7 @@ struct spam_token_probability
 /**************************************************************************
  
 **************************************************************************/
-int spam_extract_prob_callback(char *token, void *data)
+static int spam_extract_prob_callback(char *token, void *data)
 {
 	struct spam_token_probability *prob = (struct spam_token_probability*)data;
 	struct hash_entry *entry;
@@ -485,11 +500,17 @@ static int spam_is_mail_spam_using_statistics(struct folder *folder, struct mail
 
 /**************************************************************************
  Determines wheater a mail is spam or not.
+
+ TODO: Because of the address book usage and config values this
+ is not yet thread safe.
 **************************************************************************/
 int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
 {
-	char *from_addr = to_check_mail->from_addr;
-	if (from_addr)
+	char *from_addr;
+	int rc;
+
+	thread_lock_semaphore(sem);
+	if ((from_addr = to_check_mail->from_addr))
 	{
 		if (array_contains(user.config.spam_white_emails,from_addr))
 			return 0;
@@ -504,7 +525,9 @@ int spam_is_mail_spam(struct folder *folder, struct mail *to_check_mail)
 			return 1;
 	}
 
-	return spam_is_mail_spam_using_statistics(folder,to_check_mail);
+
+	rc = spam_is_mail_spam_using_statistics(folder,to_check_mail);
+	thread_unlock_semaphore(sem);
 }
 
 /**************************************************************************
@@ -528,7 +551,9 @@ unsigned int spam_num_of_ham_classified_mails(void)
 **************************************************************************/
 void spam_reset_ham(void)
 {
+	thread_lock_semaphore(sem);
 	hash_table_clear(&ham_table);
+	thread_unlock_semaphore(sem);
 }
 
 /**************************************************************************
@@ -536,6 +561,8 @@ void spam_reset_ham(void)
 **************************************************************************/
 void spam_reset_spam(void)
 {
+	thread_lock_semaphore(sem);
 	hash_table_clear(&spam_table);
+	thread_unlock_semaphore(sem);
 }
 

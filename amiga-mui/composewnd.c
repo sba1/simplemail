@@ -1066,37 +1066,6 @@ void compose_window_open(struct compose_args *args)
 				set(wnd,MUIA_Window_ActiveObject,data->to_string);
 			}
 
-#if 0
- else
-			{
-				/* Add the predefined text */
-				char *welcome;
-				char *close;
-				char *new_text;
-
-				welcome = mail_create_string(user.config.write_welcome,NULL);
-				close = mail_create_string(user.config.write_close,NULL);
-				new_text = malloc((welcome?strlen(welcome):0) + (close?strlen(close):0) + 40);
-
-				if (new_text)
-				{
-					if (welcome)
-					{
-						strcpy(new_text,welcome);
-						strcat(new_text,"\n");
-					} else new_text[0] = 0;
-
-					if (close)
-						strcat(new_text,close);
-
-					set(text_texteditor,MUIA_TextEditor_Contents,new_text);
-					free(new_text);
-				}
-				if (welcome) free(welcome);
-				if (close) free(close);
-			}
-#endif
-
 			compose_add_signature(data);
 			data->sign_array = sign_array;
 

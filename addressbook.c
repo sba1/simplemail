@@ -574,26 +574,25 @@ SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 **************************************************************************/
 void init_addressbook(void)
 {
-/*	struct addressbook_entry_new *entry;
-	root_entry.type = ADDRESSBOOK_ENTRY_GROUP;
-	list_init(&root_entry.u.group.list);
-*/
 	list_init(&group_list);
 	list_init(&address_list);
 
 	if (!addressbook_load())
 	{
-#if 0
-		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@rz.uni-potsdam.de");
-		addressbook_set_description(entry, _("Original author of SimpleMail"));
-		addressbook_person_add_email(entry, "hynek@hys.in-berlin.de");
-		entry->u.person.sex = 2;
+		struct addressbook_entry_new *entry;
 
-		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
-		addressbook_set_description(entry, _("Original author of SimpleMail"));
-		addressbook_person_add_email(entry, "Sebastian.Bauer@in.stud.tu-ilmenau.de");
-		entry->u.person.sex = 2;
-#endif
+		if ((entry = addressbook_add_entry("Hynek Schlawack")))
+		{
+			entry->email_array = array_add_string(entry->email_array,"hynek@rz.uni-potsdam.de");
+			entry->email_array = array_add_string(entry->email_array,"hynek@hys.in-berlin.de");
+			entry->description = mystrdup(_("Original author of SimpleMail"));
+		}
+
+		if ((entry = addressbook_add_entry("Sebastian Bauer")))
+		{
+			entry->email_array = array_add_string(entry->email_array,"mail@sebastianbauer.info");
+			entry->description = mystrdup(_("Original author of SimpleMail"));
+		}
 	}
 }
 

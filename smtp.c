@@ -61,36 +61,35 @@ static void buf_free(char *buf)
 	free(buf);
 }
 
+/***************************************************************************
+ Send a smtp command and evaluate the result. If cmd is NULL the send
+ phase is skipped, which means that the result phase is still evaluated.
+ If an error occurs -1 is returned, else the error code of the smtp
+ command.
+****************************************************************************/
 static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
 {
 	int rc;
-	char *buf;
 	long count;
 	int ready = 0;
+	char *buf;
+	char send_buf[300];
 	
 	rc  = -1;
-	buf = malloc(1024);
 
-	if(cmd != NULL)
+	if (cmd != NULL)
 	{
 		if(args != NULL)
-		{
-			sprintf(buf, "%s %s\r\n", cmd, args);
-		}
+			sm_snprintf(send_buf, sizeof(send_buf), "%s %s\r\n", cmd, args);
 		else
-		{
-			sprintf(buf, "%s\r\n", cmd);
-		}
-		count = tcp_write(conn->conn, buf, strlen(buf));
+			sm_snprintf(send_buf, sizeof(send_buf), "%s\r\n", cmd);
+
+		count = tcp_write(conn->conn, send_buf, strlen(send_buf));
 		
-		if(count != strlen(buf))
-		{
-			return(rc);
-		}
+		if (count != strlen(send_buf))
+			return -1;
 	}
 
-	free(buf);
-	
 	while (!ready && (buf = tcp_readln(conn->conn)))
 	{
 		if(buf[3] == ' ')
@@ -659,25 +658,30 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 		if (smtp_send_cmd(conn, "AUTH", "LOGIN") == 334)
 		{
-			strcpy(prep, account->smtp->auth_login);
+			mystrlcpy(prep, account->smtp->auth_login, sizeof(prep));
 
-			buf = encode_base64(prep, strlen(prep));
-			buf[strlen(buf) - 1] = 0;
-			
-			if (smtp_send_cmd(conn, buf, NULL) == 334)
+			if ((buf = encode_base64(prep, strlen(prep))))
 			{
-				free(buf);
-
-				strcpy(prep, account->smtp->auth_password);
-
-				buf = encode_base64(prep, strlen(prep));
 				buf[strlen(buf) - 1] = 0;
+			
+				if (smtp_send_cmd(conn, buf, NULL) == 334)
+				{
+					free(buf);
 
-				success = smtp_send_cmd(conn, buf, NULL) == 235;
+					mystrlcpy(prep,account->smtp->auth_password,sizeof(prep));
 
+					if ((buf = encode_base64(prep, strlen(prep))))
+					{
+						buf[strlen(buf) - 1] = 0;
+
+						success = smtp_send_cmd(conn, buf, NULL) == 235;
+
+						free(buf);
+
+						return success;
+					}
+				}
 				free(buf);
-
-				return success;
 			}
 		}
 	}

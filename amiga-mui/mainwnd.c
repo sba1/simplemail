@@ -59,6 +59,7 @@
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
+#include "appicon.h"
 
 static Object *win_main;
 static Object *main_menu;
@@ -520,6 +521,9 @@ int main_window_init(void)
 		MENU_SETTINGS_FILTER,
 		MENU_SETTINGS_MUI,
 		MENU_SETTINGS_SAVEPREFS,
+		MENU_SETTINGS_APPICON_SNAPSHOT,
+		MENU_SETTINGS_APPICON_UNSNAPSHOT,
+
 		MENU_SCRIPTS,
 		MENU_SCRIPTS_EXECUTESCRIPT
 	};
@@ -577,6 +581,9 @@ int main_window_init(void)
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS},
 		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
 		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("AppIcon Snapshot"), NULL, 0, 0, (APTR)MENU_SETTINGS_APPICON_SNAPSHOT},
+		{NM_ITEM, N_("AppIcon UnSnapshot"), NULL, 0, 0, (APTR)MENU_SETTINGS_APPICON_UNSNAPSHOT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
@@ -804,11 +811,9 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
-/*
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENV);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 2, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
-*/
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 3, MUIM_CallHook, &hook_standard, main_save_environment);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_APPICON_SNAPSHOT, App, 3, MUIM_CallHook, &hook_standard, appicon_snapshot);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_APPICON_UNSNAPSHOT, App, 3, MUIM_CallHook, &hook_standard, appicon_unsnapshot);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
 

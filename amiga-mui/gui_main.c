@@ -23,6 +23,7 @@
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "readlistclass.h"
 #include "subthreads.h"
 #include "transwndclass.h"
 
@@ -89,6 +90,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_readlist_class();
 		delete_transwnd_class();
 		delete_datatypes_class();
 		delete_attachmentlist_class();
@@ -116,7 +118,8 @@ int all_init(void)
 		init_hook_standard();
 		if (create_foldertreelist_class() && create_mailtreelist_class() &&
 				create_addressstring_class() && create_attachmentlist_class() &&
-				create_datatypes_class() && create_transwnd_class())
+				create_datatypes_class() && create_transwnd_class() &&
+				create_readlist_class())
 		{
 			if (app_init())
 			{

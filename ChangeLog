@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-17  Bernd Gollesch <bgollesch@sime.com>
+
+	* folder.(c|h): New function to find a folder by a given file.
+	* mbox.c: As usual, some master wishes :) The destination folder is not
+	  locked anymore, and a new function is called to import the mail.
+	* simplemail.(c|h): New function to add a mail to a folder only with the
+	  filename of the mail.
+
 2004-01-16  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/mainwnd.c: Added "Import mbox file..." menuitem to the folder menu.

@@ -35,6 +35,8 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "arch.h"
+
 /* from ConvertUTF.h */
 
 /*
@@ -1054,17 +1056,12 @@ int codesets_init(void)
 
 		DIR *dfd; /* directory descriptor */
 		struct dirent *dptr; /* dir entry */
-
 		char path[380];
 
 		getcwd(path, sizeof(path));
-		if(chdir("PROGDIR:Charsets") != -1)
+		if (chdir(SM_CHARSET_DIR) != -1)
 		{
-#if defined(_AMIGA) || defined(__AMIGAOS4__)
-			if ((dfd = opendir("")))
-#else
-			if ((dfd = opendir("./")))
-#endif
+			if ((dfd = opendir(SM_CURRENT_DIR)))
 			{
 				while ((dptr = readdir(dfd)) != NULL)
 				{

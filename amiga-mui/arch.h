@@ -27,6 +27,20 @@
 #include <proto/exec.h>
 #endif
 
+/* Paths */
+#define SM_DIR					"PROGDIR:"
+#define SM_CHARSET_DIR	"PROGDIR:Charsets"
+#define SM_FOLDER_DIR	"PROGDIR:.folders"
+#define SM_CURRENT_DIR	""
+
+/* Operation system */
+#ifdef __AMIGAOS4__
+#define SM_OPERATIONSYSTEM "AmigaOS4/MUI"
+#else
+#define SM_OPERATIONSYSTEM "AmigaOS/MUI"
+#endif
+
+/* Debug - defines ARCH_DEBUG */
 #if defined(__GNUC__) && defined(__AMIGAOS4__)
 #define ARCH_DEBUG(x) do { (IExec->Forbid)(); (IExec->DebugPrintF)("%s/%ld [%s()] Task \"%s\" => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,(IExec->FindTask)(NULL)->tc_Node.ln_Name); (IExec->DebugPrintF) x; (IExec->Permit)();} while (0)
 #undef NDEBUG

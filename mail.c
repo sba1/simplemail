@@ -44,6 +44,8 @@
 #include "support_indep.h"
 #include "trans.h" /* for mail_upload_single() */
 
+#include "arch.h"
+
 char *stradd(char *src, const char *str1);
 char *strnadd(char *src, const char *str1, int n);
 
@@ -97,12 +99,6 @@ static const char trailingBytesForUTF8[256] = {
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
-
-#ifdef __GNUC__
-#define SM_OPERATIONSYSTEM "Linux/GTK"
-#else
-#define SM_OPERATIONSYSTEM "AmigaOS/MUI"
-#endif
 
 /**************************************************************************
  like strncpy() but for mail headers, returns the length of the string

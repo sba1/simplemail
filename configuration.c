@@ -35,6 +35,7 @@
 #include "taglines.h"
 #include "support_indep.h"
 
+#include "arch.h"
 #include "support.h"
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
@@ -68,13 +69,9 @@ void init_config(void)
 
 	memset(&user,0,sizeof(struct user));
 
-#if defined(_AMIGA) || defined(__AMIGAOS4__)
-	user.directory = mystrdup("PROGDIR:");
-	user.folder_directory = mystrdup("PROGDIR:.folders");
-#else
-	user.directory = mystrdup("./");
-	user.folder_directory = mystrdup("./.folders");
-#endif
+	user.directory = mystrdup(SM_DIR);
+	user.folder_directory = mystrdup(SM_FOLDER_DIR);
+
 	list_init(&user.config.account_list);
 	list_init(&user.config.signature_list);
 	list_init(&user.config.phrase_list);

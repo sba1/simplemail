@@ -1080,6 +1080,13 @@ int mail_process_headers(struct mail *mail)
 		if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
   }
 
+	/* if no filename is given set one */
+	if (!mail->filename)
+	{
+		mail->filename = strdup("unnamed");
+	}
+
+
 /*
 	if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))
 	{

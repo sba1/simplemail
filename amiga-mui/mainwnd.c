@@ -855,6 +855,8 @@ void main_refresh_folder(struct folder *folder)
 		DoMethod(folder_tree,MUIM_NListtree_Redraw,tree_node,0);
 	}
 	main_refresh_folders_text();
+
+	if (folder->parent_folder) main_refresh_folder(folder->parent_folder);
 }
 
 /******************************************************************

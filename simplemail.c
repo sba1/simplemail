@@ -77,6 +77,7 @@ int callback_read_mail(void)
 			if (m->flags & MAIL_FLAGS_NEW && f->new_mails) f->new_mails--;
 			m->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(m);
+			main_refresh_folder(f);
 		}
 	}
 	return num;
@@ -994,6 +995,7 @@ void callback_mails_set_status(int status)
 		{
 			folder_set_mail_status(folder,mail,new_status);
 			main_refresh_mail(mail);
+			main_refresh_folder(folder);
 		}
 
 		mail = main_get_mail_next_selected(&handle);

@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-01-06  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/muistuff.c: Found the #define MUIA_Application_UsedClasses in
+	  the YAM Source. Now only really used external classes are shown in the
+	  MUI-Prefs (>= 3.8).
+	* amiga-mui/gui_main.c: SimpleMail now uses its own Icon as AppIcon on the
+	  Workbench when it is iconified.
+
 2004-01-01  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/ARexx/CopySelectedMails.smrx: Small ARexx script to copy

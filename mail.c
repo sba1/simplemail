@@ -43,19 +43,19 @@ static struct header *mail_find_header(struct mail *mail, char *name);
 /* the mime preample used in mime multipart messages */
 const static char mime_preample[] = 
 {
-   "Warning: This is a message in MIME format. Your mail reader does not\n"
-   "support MIME. Some parts of this message will be readable as plain text.\n"
-   "To see the rest, you will need to upgrade your mail reader. Following are\n"
-   "some URLs where you can find MIME-capable mail programs for common\n"
-   "platforms:\n"
-   "\n"
-   "  Amiga............: SimpleMail   http://simplemail.sourceforge.net/\n"
-   "  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/\n"
-   "  Windows/Macintosh: Eudora       http://www.qualcomm.com/\n"
-   "\n"
-   "General info about MIME can be found at:\n"
-   "\n"
-   "http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html\n"
+	"Warning: This is a message in MIME format. Your mail reader does not\n"
+	"support MIME. Some parts of this message will be readable as plain text.\n"
+	"To see the rest, you will need to upgrade your mail reader. Following are\n"
+	"some URLs where you can find MIME-capable mail programs for common\n"
+	"platforms:\n"
+	"\n"
+	"  Amiga............: SimpleMail   http://simplemail.sourceforge.net/\n"
+	"  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/\n"
+	"  Windows/Macintosh: Eudora       http://www.qualcomm.com/\n"
+	"\n"
+	"General info about MIME can be found at:\n"
+	"\n"
+	"http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html\n"
 };
 
 
@@ -69,12 +69,12 @@ static int mailncpy(char *dest, const char *src, int n)
   char c;
   char *dest_ptr = dest;
 
-   /* skip spaces */
-   while(n && isspace(*src))
-   {
-      src++;
-      n--;
-   }
+	/* skip spaces */
+	while(n && isspace(*src))
+	{
+		src++;
+		n--;
+	}
 
   for (i=0;i<n;i++)
   {
@@ -93,58 +93,58 @@ static int mailncpy(char *dest, const char *src, int n)
 **************************************************************************/
 static char *cite_text(char *src, int len)
 {
-   FILE *fh = tmpfile();
-   char *cited_buf = NULL;
+	FILE *fh = tmpfile();
+	char *cited_buf = NULL;
 
-   if (fh)
-   {
-      int cited_len;
-      int newline = 1;
+	if (fh)
+	{
+		int cited_len;
+		int newline = 1;
 
-      while (len)
-      {
-         char c = *src;
+		while (len)
+		{
+			char c = *src;
 
-         if (c==13)
-         {
-            src++;
-            len--;
-            continue;
-         }
+			if (c==13)
+			{
+				src++;
+				len--;
+				continue;
+			}
 
-         if (c==10)
-         {
-            fputc(10,fh);
-            newline = 1;
-            src++;
-            len--;
-            continue;
-         }
+			if (c==10)
+			{
+				fputc(10,fh);
+				newline = 1;
+				src++;
+				len--;
+				continue;
+			}
 
-         if (newline)
-         {
-            if (c=='>') fputc('>',fh);
-            else fputs("> ",fh);
-            newline = 0;
-         }
+			if (newline)
+			{
+				if (c=='>') fputc('>',fh);
+				else fputs("> ",fh);
+				newline = 0;
+			}
 
-         fputc(c,fh);
+			fputc(c,fh);
 
-         src++;
-         len--;
-      }
+			src++;
+			len--;
+		}
 
-      cited_len = ftell(fh);
-     fseek(fh,0,SEEK_SET);
-      if ((cited_buf = (char*)malloc(cited_len+1)))
-      {
-         fread(cited_buf,1,cited_len,fh);
-         cited_buf[cited_len] = 0;
-      }
-      fclose(fh);
-   }
+		cited_len = ftell(fh);
+	  fseek(fh,0,SEEK_SET);
+		if ((cited_buf = (char*)malloc(cited_len+1)))
+		{
+			fread(cited_buf,1,cited_len,fh);
+			cited_buf[cited_len] = 0;
+		}
+		fclose(fh);
+	}
 
-   return cited_buf;
+	return cited_buf;
 }
 
 /**************************************************************************
@@ -152,28 +152,28 @@ static char *cite_text(char *src, int len)
 **************************************************************************/
 int mail_add_header(struct mail *mail, char *name, int name_len, char *contents, int contents_len)
 {
-   struct header *header;
+	struct header *header;
 
-   if ((header = (struct header*)malloc(sizeof(struct header))))
-   {
-      char *new_name = (char*)malloc(name_len+1);
-      char *new_contents = (char*)malloc(contents_len+1);
+	if ((header = (struct header*)malloc(sizeof(struct header))))
+	{
+		char *new_name = (char*)malloc(name_len+1);
+		char *new_contents = (char*)malloc(contents_len+1);
 
-      if (new_name && new_contents)
-      {
-         new_name[mailncpy(new_name,name,name_len)] = 0;
-         new_contents[mailncpy(new_contents,contents,contents_len)] = 0;
+		if (new_name && new_contents)
+		{
+			new_name[mailncpy(new_name,name,name_len)] = 0;
+			new_contents[mailncpy(new_contents,contents,contents_len)] = 0;
 
-         header->name = new_name;
-         header->contents = new_contents;
-         list_insert_tail(&mail->header_list,&header->node);
+			header->name = new_name;
+			header->contents = new_contents;
+			list_insert_tail(&mail->header_list,&header->node);
 
-         return 1;
-      }
-      if (name) free(name);
-      if (contents) free(contents);
-      free(header);
-   }
+			return 1;
+		}
+		if (name) free(name);
+		if (contents) free(contents);
+		free(header);
+	}
 }
 
 /**************************************************************************
@@ -181,8 +181,8 @@ int mail_add_header(struct mail *mail, char *name, int name_len, char *contents,
 **************************************************************************/
 void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail)
 {
-   memset(ms,0,sizeof(struct mail_scan));
-   ms->mail = mail;
+	memset(ms,0,sizeof(struct mail_scan));
+	ms->mail = mail;
 }
 
 /**************************************************************************
@@ -190,7 +190,7 @@ void mail_scan_buffer_start(struct mail_scan *ms, struct mail *mail)
 **************************************************************************/
 void mail_scan_buffer_end(struct mail_scan *ms)
 {
-   if (ms->line) free(ms->line);
+	if (ms->line) free(ms->line);
 }
 
 /**************************************************************************
@@ -199,34 +199,34 @@ void mail_scan_buffer_end(struct mail_scan *ms)
 **************************************************************************/
 static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, int name_size, char *contents_start, int contents_size)
 {
-   if (name_size + contents_size) /* else nothing has changed */
-   {
-      char *line;
-      if ((line = (char*)malloc(ms->name_size + ms->contents_size + name_size + contents_size)))
-      {
-         int pos = 0;
-         if (ms->line)
-         {
-            /* restore the old line */
-            pos = ms->name_size + ms->contents_size;
-            strncpy(line,ms->line,pos);
-            free(ms->line);
-         }
-         if (name_start)
-         {
-            strncpy(&line[pos],name_start,name_size);
-            pos += name_size;
-         }
-         if (contents_start)
-         {
-            strncpy(&line[pos],contents_start,contents_size);
-         }
-         ms->line = line;
-         ms->name_size += name_size;
-         ms->contents_size += contents_size;
-      } else return 0;
-   }
-   return 1;
+	if (name_size + contents_size) /* else nothing has changed */
+	{
+		char *line;
+		if ((line = (char*)malloc(ms->name_size + ms->contents_size + name_size + contents_size)))
+		{
+			int pos = 0;
+			if (ms->line)
+			{
+				/* restore the old line */
+				pos = ms->name_size + ms->contents_size;
+				strncpy(line,ms->line,pos);
+				free(ms->line);
+			}
+			if (name_start)
+			{
+				strncpy(&line[pos],name_start,name_size);
+				pos += name_size;
+			}
+			if (contents_start)
+			{
+				strncpy(&line[pos],contents_start,contents_size);
+			}
+			ms->line = line;
+			ms->name_size += name_size;
+			ms->contents_size += contents_size;
+		} else return 0;
+	}
+	return 1;
 }
 
 /**************************************************************************
@@ -235,122 +235,122 @@ static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, in
 **************************************************************************/
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 {
-   char c;
-   char *name_start = NULL; /* start of the header */
-   int name_size = 0; /* size of the header's name (without colon) */
-   char *contents_start = NULL; /* start of the headers's contents */
-   int contents_size = 0; /* size of the contents */
-   int mode = ms->mode; /* 0 search name, 1 read name, 2 search contents, 3 read contents, 4 a LF is expected */
-   char *buf = mail_buf;
-   char *mail_buf_end = mail_buf + size; /* the end of the buffer */
-   struct mail *mail = ms->mail;
+	char c;
+	char *name_start = NULL; /* start of the header */
+	int name_size = 0; /* size of the header's name (without colon) */
+	char *contents_start = NULL; /* start of the headers's contents */
+	int contents_size = 0; /* size of the contents */
+	int mode = ms->mode; /* 0 search name, 1 read name, 2 search contents, 3 read contents, 4 a LF is expected */
+	char *buf = mail_buf;
+	char *mail_buf_end = mail_buf + size; /* the end of the buffer */
+	struct mail *mail = ms->mail;
 
-   if (mode == 1) name_start = mail_buf;
-   else if (mode == 3 || mode == 4) contents_start = mail_buf;
+	if (mode == 1) name_start = mail_buf;
+	else if (mode == 3 || mode == 4) contents_start = mail_buf;
 
-   while (buf < mail_buf_end)
-   {
-      c = *buf;
-      if (mode == 4)
-      {
-         if (c != 10) return 0; /* the expected LF weren't there, so it's an error */
-         else
-         {
-            mode = 0;
-            ms->position++;
-            buf++;
-            continue;
-         }
-      }
+	while (buf < mail_buf_end)
+	{
+		c = *buf;
+		if (mode == 4)
+		{
+			if (c != 10) return 0; /* the expected LF weren't there, so it's an error */
+			else
+			{
+				mode = 0;
+				ms->position++;
+				buf++;
+				continue;
+			}
+		}
 
-      if (mode == 0)
-      {
-         if (c != '\t' && c != ' ')
-         {
-            if (name_size || ms->name_size)
-            {
-               if (contents_start && !contents_size) contents_size = buf - contents_start - 1;
+		if (mode == 0)
+		{
+			if (c != '\t' && c != ' ')
+			{
+				if (name_size || ms->name_size)
+				{
+					if (contents_start && !contents_size) contents_size = buf - contents_start - 1;
 
-               if (ms->line)
-               {
-                  if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
-                     return 0;
+					if (ms->line)
+					{
+						if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
+							return 0;
 
-                  mail_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size);
+						mail_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size);
 
-                  /* a previous call to this function saved a line */
-                  free(ms->line);
-                  ms->line = NULL;
-                  ms->name_size = ms->contents_size = 0;
-               } else
-               {
-                  /* no line has saved */
-                  mail_add_header(mail,name_start,name_size,contents_start,contents_size);
-               }
+						/* a previous call to this function saved a line */
+						free(ms->line);
+						ms->line = NULL;
+						ms->name_size = ms->contents_size = 0;
+					} else
+					{
+						/* no line has saved */
+						mail_add_header(mail,name_start,name_size,contents_start,contents_size);
+					}
 
-               name_start = contents_start = NULL;
-               name_size = contents_size = 0;
-            }
+					name_start = contents_start = NULL;
+					name_size = contents_size = 0;
+				}
 
-            if (c==10 || c==13)
-            {
-               mail->text_begin = ms->position+((c==13)?2:1);
-               mail->text_len = mail->size - mail->text_begin;
-               return 0; /* all headers have been read */
-            }
+				if (c==10 || c==13)
+				{
+					mail->text_begin = ms->position+((c==13)?2:1);
+					mail->text_len = mail->size - mail->text_begin;
+					return 0; /* all headers have been read */
+				}
 
-            name_start = buf;
-            mode = 1;
-         } else
-         {
-            mode = 3; /* the header continues on the next line */
-         }
-      }
+				name_start = buf;
+				mode = 1;
+			} else
+			{
+				mode = 3; /* the header continues on the next line */
+			}
+		}
 
-      if (mode == 1 && c == ':')
-      {
-         name_size = buf - name_start;
-         mode = 2;
-      } else
-      {
-         if (mode == 2)
-         {
-            if (!isspace(c))
-            {
-               contents_start = buf;
-               mode = 3;
-            } else
-            {
-               if (c==10 || c == 13) /* the headers contents was empty */
-               {
-                  mode = 3;
-               }
-            }
-         }
+		if (mode == 1 && c == ':')
+		{
+			name_size = buf - name_start;
+			mode = 2;
+		} else
+		{
+			if (mode == 2)
+			{
+				if (!isspace(c))
+				{
+					contents_start = buf;
+					mode = 3;
+				} else
+				{
+					if (c==10 || c == 13) /* the headers contents was empty */
+					{
+						mode = 3;
+					}
+				}
+			}
 
-         if (mode == 3 && (c == 10 || c == 13))
-         {
-            if (c==13) mode = 4; /* a LF (10) should follow now */
-            else mode = 0;
-         }
-      }
+			if (mode == 3 && (c == 10 || c == 13))
+			{
+				if (c==13) mode = 4; /* a LF (10) should follow now */
+				else mode = 0;
+			}
+		}
 
-      buf++;
-      ms->position++;
-   }
+		buf++;
+		ms->position++;
+	}
 
-   /* if we are here the buffersize was too small */
-   {
-      if (/*name_start && !name_size &&*/mode == 1) name_size = buf - name_start;
-      if (contents_start && !contents_size && (mode == 3 || mode ==4)) contents_size = buf - contents_start;
+	/* if we are here the buffersize was too small */
+	{
+		if (/*name_start && !name_size &&*/mode == 1) name_size = buf - name_start;
+		if (contents_start && !contents_size && (mode == 3 || mode ==4)) contents_size = buf - contents_start;
 
-      if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
-         return 0;
+		if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
+			return 0;
 
-      ms->mode = mode;
-   }
+		ms->mode = mode;
+	}
 
-   return 1;
+	return 1;
 }
 
 /**************************************************************************
@@ -360,35 +360,35 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 **************************************************************************/
 struct mail *mail_find_compound_object(struct mail *m, char *id)
 {
-   int content_id = !mystrnicmp("cid:",id,4);
-   if (content_id)
-   {
-      char c;
-      id += 4;
-      while ((c=*id))
-      {
-         if (!isspace(c)) break;
-         id++;
-      }
-   }
+	int content_id = !mystrnicmp("cid:",id,4);
+	if (content_id)
+	{
+		char c;
+		id += 4;
+		while ((c=*id))
+		{
+			if (!isspace(c)) break;
+			id++;
+		}
+	}
 
-   while ((m = m->parent_mail))
-   {
-      if (!mystricmp(m->content_type,"multipart") && !mystricmp(m->content_subtype,"related"))
-      {
-         int i;
-         for (i=0;i<m->num_multiparts;i++)
-         {
-            if (content_id)
-            {
-               if (!mystricmp(id,m->multipart_array[i]->content_id)) return m->multipart_array[i];
-            }
-         }
-         return NULL;
-      }
-   }
+	while ((m = m->parent_mail))
+	{
+		if (!mystricmp(m->content_type,"multipart") && !mystricmp(m->content_subtype,"related"))
+		{
+			int i;
+			for (i=0;i<m->num_multiparts;i++)
+			{
+				if (content_id)
+				{
+					if (!mystricmp(id,m->multipart_array[i]->content_id)) return m->multipart_array[i];
+				}
+			}
+			return NULL;
+		}
+	}
 
-   return NULL;
+	return NULL;
 }
 
 /**************************************************************************
@@ -397,17 +397,17 @@ struct mail *mail_find_compound_object(struct mail *m, char *id)
 **************************************************************************/
 struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype)
 {
-   int i;
-   if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))
-      return m;
+	int i;
+	if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))
+		return m;
 
-   for (i=0;i < m->num_multiparts; i++)
-   {
-      struct mail *rm = mail_find_content_type(m->multipart_array[i],type,subtype);
-      if (rm) return rm;
-   }
+	for (i=0;i < m->num_multiparts; i++)
+	{
+		struct mail *rm = mail_find_content_type(m->multipart_array[i],type,subtype);
+		if (rm) return rm;
+	}
 
-   return NULL;
+	return NULL;
 }
 
 /**************************************************************************
@@ -415,8 +415,8 @@ struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype)
 **************************************************************************/
 static char get_char_18(int val)
 {
-   if (val >= 0 && val <= 9) return (char)('0' + val);
-   return (char)('a' + val-10);
+	if (val >= 0 && val <= 9) return (char)('0' + val);
+	return (char)('a' + val-10);
 }
 
 /**************************************************************************
@@ -424,51 +424,51 @@ static char get_char_18(int val)
 **************************************************************************/
 char *mail_get_new_name(void)
 {
-   char *rc;
-   long t;
-   struct tm *d, tm;
-   unsigned short day_secs;
-   short i;
-   char dummy[8]; 
-   char *buf;
-   
-   buf = malloc(17);
-   
-   time(&t);
-   d = localtime(&t);
-   tm = *d;
-   
-   day_secs = (tm.tm_min * 60) + tm.tm_sec;
-   dummy[4] = 0;
-   dummy[3] = get_char_18(day_secs % 18);
-   dummy[2] = get_char_18((day_secs / 18)%18);
-   dummy[1] = get_char_18((day_secs / 18 / 18)%18);
-   dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
-   
-   for (i=0;;i++)
-   {
-      FILE *fp;
-      
-      sprintf(buf,"%02ld%02ld%04ld%s.%03lx",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
+	char *rc;
+	long t;
+	struct tm *d, tm;
+	unsigned short day_secs;
+	short i;
+	char dummy[8]; 
+	char *buf;
+	
+	buf = malloc(17);
+	
+	time(&t);
+	d = localtime(&t);
+	tm = *d;
+	
+	day_secs = (tm.tm_min * 60) + tm.tm_sec;
+	dummy[4] = 0;
+	dummy[3] = get_char_18(day_secs % 18);
+	dummy[2] = get_char_18((day_secs / 18)%18);
+	dummy[1] = get_char_18((day_secs / 18 / 18)%18);
+	dummy[0] = get_char_18(day_secs / 18 / 18 / 18);
+	
+	for (i=0;;i++)
+	{
+		FILE *fp;
+		
+		sprintf(buf,"%02ld%02ld%04ld%s.%03lx",tm.tm_mday,tm.tm_mon,tm.tm_year,dummy,i);
 
-      fp = fopen(buf, "r");
-      if(fp != NULL)
-      {
-         fclose(fp);
-      } else break;
-   }
-   
-   rc = buf;
-   
-   return(rc);
+		fp = fopen(buf, "r");
+		if(fp != NULL)
+		{
+			fclose(fp);
+		} else break;
+	}
+	
+	rc = buf;
+	
+	return(rc);
 }
 
 /* a table with all filename extensions */
 /* they are mapped 1 to 1 */
 static char status_extensions[] =
 {
-   0,'0','1','2','3','4','5','6','7','8','9',
-   'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','!','$','-'
+	0,'0','1','2','3','4','5','6','7','8','9',
+	'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','!','$','-'
 };
 
 /**************************************************************************
@@ -477,41 +477,41 @@ static char status_extensions[] =
 **************************************************************************/
 char *mail_get_status_filename(char *oldfilename, int status_new)
 {
-   int len = strlen(oldfilename);
-   char *filename = (char*)malloc(len+6);
-   if (filename)
-   {
-      char *suffix;
-      int new_suffix;
+	int len = strlen(oldfilename);
+	char *filename = (char*)malloc(len+6);
+	if (filename)
+	{
+		char *suffix;
+		int new_suffix;
 
-      strcpy(filename,oldfilename);
-      suffix = strrchr(filename,'.');
-      if (!suffix) suffix = filename + len;
-      else
-      {
-         if (suffix[2])
-         {
-            /* the point is not the status point, so it must be added */
-            suffix = filename + len;
-         }
-      }
+		strcpy(filename,oldfilename);
+		suffix = strrchr(filename,'.');
+		if (!suffix) suffix = filename + len;
+		else
+		{
+			if (suffix[2])
+			{
+				/* the point is not the status point, so it must be added */
+				suffix = filename + len;
+			}
+		}
 
-      if (status_new < 0 | status_new >= 32)
-      {
-         *suffix = 0;
-         return filename;
-      }
+		if (status_new < 0 | status_new >= 32)
+		{
+			*suffix = 0;
+			return filename;
+		}
 
-      new_suffix = status_extensions[status_new];
-      if (!new_suffix) *suffix = 0;
-      else
-      {
-         *suffix++ = '.';
-         *suffix++ = new_suffix;
-         *suffix = 0;
-      }
-   }
-   return filename;
+		new_suffix = status_extensions[status_new];
+		if (!new_suffix) *suffix = 0;
+		else
+		{
+			*suffix++ = '.';
+			*suffix++ = new_suffix;
+			*suffix = 0;
+		}
+	}
+	return filename;
 }
 
 /**************************************************************************
@@ -519,22 +519,22 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 **************************************************************************/
 void mail_identify_status(struct mail *m)
 {
-   char *suffix;
-   int i;
-   if (!m->filename) return;
-   suffix = strrchr(m->filename,'.');
-   if (!suffix || suffix[2])
-   {
-      m->status = MAIL_STATUS_UNREAD;
-      return;
-   }
+	char *suffix;
+	int i;
+	if (!m->filename) return;
+	suffix = strrchr(m->filename,'.');
+	if (!suffix || suffix[2])
+	{
+		m->status = MAIL_STATUS_UNREAD;
+		return;
+	}
 
   /* decode the status information */
-   for (i=0;i<sizeof(status_extensions);i++)
-   {
-     if (suffix[1] == status_extensions[i])
-      m->status = i;
-   }
+	for (i=0;i<sizeof(status_extensions);i++)
+	{
+	  if (suffix[1] == status_extensions[i])
+	  	m->status = i;
+	}
 }
 
 /**************************************************************************
@@ -542,15 +542,15 @@ void mail_identify_status(struct mail *m)
 **************************************************************************/
 struct mail *mail_create(void)
 {
-   struct mail *m;
+	struct mail *m;
 
-   if ((m = (struct mail*)malloc(sizeof(struct mail))))
-   {
-      memset(m,0,sizeof(struct mail));
-      list_init(&m->content_parameter_list);
-      list_init(&m->header_list); /* initialze the header_list */
-   }
-   return m;
+	if ((m = (struct mail*)malloc(sizeof(struct mail))))
+	{
+		memset(m,0,sizeof(struct mail));
+		list_init(&m->content_parameter_list);
+		list_init(&m->header_list); /* initialze the header_list */
+	}
+	return m;
 }
 
 /**************************************************************************
@@ -559,52 +559,52 @@ struct mail *mail_create(void)
 **************************************************************************/
 struct mail *mail_create_from_file(char *filename)
 {
-   struct mail *m;
-   FILE *fh;
+	struct mail *m;
+	FILE *fh;
 
-   if ((m = mail_create()))
-   {
-      if ((fh = fopen(filename,"rb")))
-      {
-         unsigned int size;
-         char *buf;
+	if ((m = mail_create()))
+	{
+		if ((fh = fopen(filename,"rb")))
+		{
+			unsigned int size;
+			char *buf;
 
-         fseek(fh,0,SEEK_END);
-         size = ftell(fh); /* get the size of the file */
-         fseek(fh,0,SEEK_SET); /* seek to the beginning */
-   
-         if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
-         {
-            if ((m->filename = strdup(filename))) /* Not ANSI C */
-            {
-               struct mail_scan ms;
-               unsigned int bytes_read = 0;
+			fseek(fh,0,SEEK_END);
+			size = ftell(fh); /* get the size of the file */
+			fseek(fh,0,SEEK_SET); /* seek to the beginning */
+	
+			if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
+			{
+				if ((m->filename = strdup(filename))) /* Not ANSI C */
+				{
+					struct mail_scan ms;
+					unsigned int bytes_read = 0;
 
-               m->size = size;
+					m->size = size;
 
-               mail_scan_buffer_start(&ms,m);
+					mail_scan_buffer_start(&ms,m);
 
-               while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
-               {
-                  if (!mail_scan_buffer(&ms,buf,bytes_read))
-                     break; /* we have enough */
-               }
+					while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
+					{
+						if (!mail_scan_buffer(&ms,buf,bytes_read))
+							break; /* we have enough */
+					}
 
-               mail_scan_buffer_end(&ms);
-               mail_process_headers(m);
-               mail_identify_status(m);
-            }
-            free(buf);
-         }
-   
-         fclose(fh);
-      } else
-      {
-         free(m);
-         return NULL;
-      }
-   }
-   return m;
+					mail_scan_buffer_end(&ms);
+					mail_process_headers(m);
+					mail_identify_status(m);
+				}
+				free(buf);
+			}
+	
+			fclose(fh);
+		} else
+		{
+			free(m);
+			return NULL;
+		}
+	}
+	return m;
 }
 
 /**************************************************************************
@@ -617,150 +617,150 @@ struct mail *mail_create_from_file(char *filename)
 **************************************************************************/
 struct mail *mail_create_reply(struct mail *mail)
 {
-   struct mail *m = mail_create();
-   if (m)
-   {
-      char *from = mail_find_header_contents(mail,"from");
-      struct mail *text_mail;
+	struct mail *m = mail_create();
+	if (m)
+	{
+		char *from = mail_find_header_contents(mail,"from");
+		struct mail *text_mail;
 
-      if (from)
-      {
-         struct list *alist;
-         char *replyto = mail_find_header_contents(mail, "reply-to");
-         struct mailbox from_addr;
-         struct mailbox replyto_addr;
-         int which_address = 1;
+		if (from)
+		{
+			struct list *alist;
+			char *replyto = mail_find_header_contents(mail, "reply-to");
+			struct mailbox from_addr;
+			struct mailbox replyto_addr;
+			int which_address = 1;
 
-         if (replyto)
-         {
-            parse_mailbox(from, &from_addr);
-            parse_mailbox(replyto,&replyto_addr);
+			if (replyto)
+			{
+				parse_mailbox(from, &from_addr);
+				parse_mailbox(replyto,&replyto_addr);
 
-            which_address = sm_request(NULL,
-                                    "Sender address (From) is <%s>, but\n"
-                                    "return address (Reply-To) is <%s>.\n"
-                                    "Which address do you want to use?","_From|*_Reply-To|_Both|_Cancel",
-                                    from_addr.addr_spec,replyto_addr.addr_spec);
+				which_address = sm_request(NULL,
+												"Sender address (From) is <%s>, but\n"
+												"return address (Reply-To) is <%s>.\n"
+												"Which address do you want to use?","_From|*_Reply-To|_Both|_Cancel",
+												from_addr.addr_spec,replyto_addr.addr_spec);
 
-            if (from_addr.phrase)  free(from_addr.phrase);
-            if (from_addr.addr_spec) free(from_addr.addr_spec);
-            if (replyto_addr.phrase)  free(replyto_addr.phrase);
-            if (replyto_addr.addr_spec) free(replyto_addr.addr_spec);
+				if (from_addr.phrase)  free(from_addr.phrase);
+				if (from_addr.addr_spec) free(from_addr.addr_spec);
+				if (replyto_addr.phrase)  free(replyto_addr.phrase);
+				if (replyto_addr.addr_spec) free(replyto_addr.addr_spec);
 
-            if (!which_address) return NULL;
-         }
+				if (!which_address) return NULL;
+			}
 
-         if (which_address == 2) from = replyto;
+			if (which_address == 2) from = replyto;
 
-         alist = create_address_list(from);
-         if (alist)
-         {
-            char *to_header;
+			alist = create_address_list(from);
+			if (alist)
+			{
+				char *to_header;
 
-            if (which_address == 3)
-               append_to_address_list(alist, replyto);
+				if (which_address == 3)
+					append_to_address_list(alist, replyto);
 
-            to_header = encode_address_field("To",alist);
-            free_address_list(alist);
+				to_header = encode_address_field("To",alist);
+				free_address_list(alist);
 
-            if (to_header)
-            {
-               mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
-               free(to_header);
-            }
-         }
-      }
+				if (to_header)
+				{
+					mail_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
+					free(to_header);
+				}
+			}
+		}
 
-      if (mail->subject)
-      {
-         char *new_subject = (char*)malloc(strlen(mail->subject)+8);
-         if (new_subject)
-         {
-            char *subject_header;
+		if (mail->subject)
+		{
+			char *new_subject = (char*)malloc(strlen(mail->subject)+8);
+			if (new_subject)
+			{
+				char *subject_header;
 
-            char *src = mail->subject;
-            char *dest = new_subject;
-            char c;
-            int brackets = 0;
-            int skip_spaces = 0;
+				char *src = mail->subject;
+				char *dest = new_subject;
+				char c;
+				int brackets = 0;
+				int skip_spaces = 0;
 
-            /* Add a Re: before the new subject */
-            strcpy(dest,"Re: ");
-            dest += 4;
+				/* Add a Re: before the new subject */
+				strcpy(dest,"Re: ");
+				dest += 4;
 
-            /* Copy the subject into a new buffer and filter all []'s and Re's */
-            while (c = *src)
-            {
-               if (c == '[')
-               {
-                  brackets++;
-                  src++;
-                  continue;
-               } else
-               {
-                  if (c == ']')
-                  {
-                     brackets--;
-                     skip_spaces = 1;
-                     src++;
-                     continue;
-                  }
-               }
+				/* Copy the subject into a new buffer and filter all []'s and Re's */
+				while (c = *src)
+				{
+					if (c == '[')
+					{
+						brackets++;
+						src++;
+						continue;
+					} else
+					{
+						if (c == ']')
+						{
+							brackets--;
+							skip_spaces = 1;
+							src++;
+							continue;
+						}
+					}
 
-               if (!brackets)
-               {
-                  if (!mystrnicmp("Re:",src,3))
-                  {
-                     src += 3;
-                     skip_spaces = 1;
-                     continue;
-                  }
+					if (!brackets)
+					{
+						if (!mystrnicmp("Re:",src,3))
+						{
+							src += 3;
+							skip_spaces = 1;
+							continue;
+						}
 
-                  if (c != ' ' || !skip_spaces)
-                  {
-                     *dest++= c;
-                     skip_spaces=0;
-                  }
-               }
-               src++;
-            }
-            *dest = 0;
+						if (c != ' ' || !skip_spaces)
+						{
+							*dest++= c;
+							skip_spaces=0;
+						}
+					}
+					src++;
+				}
+				*dest = 0;
 
-            if ((subject_header = encode_header_field("Subject",new_subject)))
-            {
-               mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9);
-               free(subject_header);
-            }
+				if ((subject_header = encode_header_field("Subject",new_subject)))
+				{
+					mail_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9);
+					free(subject_header);
+				}
 
-            free(new_subject);
-         }
-      }
+				free(new_subject);
+			}
+		}
 
-      if ((text_mail = mail_find_content_type(mail, "text", "plain")))
-      {
-         char *replied_text;
+		if ((text_mail = mail_find_content_type(mail, "text", "plain")))
+		{
+			char *replied_text;
 
-         /* city the text and assign it to the mail, it's enough to set
+			/* city the text and assign it to the mail, it's enough to set
          decoded_data */
 
-         mail_decode(text_mail);
+			mail_decode(text_mail);
 
-         if (text_mail->decoded_data) replied_text = cite_text(text_mail->decoded_data,text_mail->decoded_len);
-         else replied_text = cite_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
+			if (text_mail->decoded_data) replied_text = cite_text(text_mail->decoded_data,text_mail->decoded_len);
+			else replied_text = cite_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
 
-         if (replied_text)
-         {
-            m->decoded_data = replied_text;
-            m->decoded_len = strlen(replied_text);
-/*          free(replied_text);*/
-         }
-      }
+			if (replied_text)
+			{
+				m->decoded_data = replied_text;
+				m->decoded_len = strlen(replied_text);
+/*				free(replied_text);*/
+			}
+		}
 
-      if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
+		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
 
-      mail_process_headers(m);
-   }
-   return m;
+		mail_process_headers(m);
+	}
+	return m;
 }
 
 /**************************************************************************
@@ -768,40 +768,40 @@ struct mail *mail_create_reply(struct mail *mail)
 **************************************************************************/
 int mail_forward(struct mail *mail)
 {
-   char *subject = mail->subject;
+	char *subject = mail->subject;
 
-   struct header *header = mail_find_header(mail,"to");
+	struct header *header = mail_find_header(mail,"to");
 
-   if (header)
-   {
-      /* remove the to header */
-      node_remove(&header->node);
-      if (header->name) free(header->name);
-      if (header->contents) free(header->contents);
-      free(header);
-   }
+	if (header)
+	{
+		/* remove the to header */
+		node_remove(&header->node);
+		if (header->name) free(header->name);
+		if (header->contents) free(header->contents);
+		free(header);
+	}
 
-   if (mail->to) free(mail->to);
-   mail->to = NULL;
-   if (mail->message_id) free(mail->message_id);
-   mail->message_id = NULL;
-   if (mail->message_reply_id) free(mail->message_reply_id);
-   mail->message_reply_id = NULL;
+	if (mail->to) free(mail->to);
+	mail->to = NULL;
+	if (mail->message_id) free(mail->message_id);
+	mail->message_id = NULL;
+	if (mail->message_reply_id) free(mail->message_reply_id);
+	mail->message_reply_id = NULL;
 
-   if (subject)
-   {
-      char *new_subject;
-      int len = strlen(subject);
+	if (subject)
+	{
+		char *new_subject;
+		int len = strlen(subject);
 
-      if ((new_subject = (char*)malloc(len+10)))
-      {
-         strcpy(new_subject,subject);
-         strcat(new_subject," (fwd)");
-         mail->subject = new_subject;
-         free(subject);
-      }
-   }
-   return 1;
+		if ((new_subject = (char*)malloc(len+10)))
+		{
+			strcpy(new_subject,subject);
+			strcat(new_subject," (fwd)");
+			mail->subject = new_subject;
+			free(subject);
+		}
+	}
+	return 1;
 }
 
 
@@ -812,37 +812,37 @@ int mail_forward(struct mail *mail)
 **************************************************************************/
 static char *extract_name_from_address(char *addr, int *more_ptr)
 {
-   char *name = NULL;
-   struct parse_address paddr;
+	char *name = NULL;
+	struct parse_address paddr;
 
-   if (more_ptr) *more_ptr = 0;
+	if (more_ptr) *more_ptr = 0;
 
-   if ((name = parse_address(addr,&paddr)))
-   {
-      struct mailbox *first_addr = (struct mailbox*)list_first(&paddr.mailbox_list);
-      if (first_addr)
-      {
-         if (first_addr->phrase) name = strdup(first_addr->phrase);
-         else
-         {
-            if (first_addr->addr_spec)
-            {
-               if (!(name = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
-               {
-                  name = mystrdup(first_addr->addr_spec);
-               }
-            }
-         }
-         if (node_next(&first_addr->node))
-         {
-            if (more_ptr) *more_ptr = 1;
-         }
-      }
-      free_address(&paddr);
-   }
+	if ((name = parse_address(addr,&paddr)))
+	{
+		struct mailbox *first_addr = (struct mailbox*)list_first(&paddr.mailbox_list);
+		if (first_addr)
+		{
+			if (first_addr->phrase) name = strdup(first_addr->phrase);
+			else
+			{
+				if (first_addr->addr_spec)
+				{
+					if (!(name = mystrdup(addressbook_get_realname(first_addr->addr_spec))))
+					{
+						name = mystrdup(first_addr->addr_spec);
+					}
+				}
+			}
+			if (node_next(&first_addr->node))
+			{
+				if (more_ptr) *more_ptr = 1;
+			}
+		}
+		free_address(&paddr);
+	}
 
-   if (!name) name = mystrdup(addr);
-   return name;
+	if (!name) name = mystrdup(addr);
+	return name;
 }
 
 /**************************************************************************
@@ -851,243 +851,243 @@ static char *extract_name_from_address(char *addr, int *more_ptr)
 **************************************************************************/
 int mail_process_headers(struct mail *mail)
 {
-   char *buf;
+	char *buf;
 
-   /* find out the date of the mail */
-   if ((buf = mail_find_header_contents(mail,"date")))
-   {
-      /* syntax should be checked before! */
-      int day,month,year,hour,min,sec;
-      char *date = strstr(buf,",");
-      if (!date) date = buf;
-      else date++;
+	/* find out the date of the mail */
+	if ((buf = mail_find_header_contents(mail,"date")))
+	{
+		/* syntax should be checked before! */
+		int day,month,year,hour,min,sec;
+		char *date = strstr(buf,",");
+		if (!date) date = buf;
+		else date++;
 
-      while (isspace(*date)) date++;
-      day = atoi(date);
-      while (isdigit(*date)) date++;
-      while (isspace(*date)) date++;
-      if (!strnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
-      else if (!strnicmp(date,"feb",3)) month = 2;
-      else if (!strnicmp(date,"mar",3)) month = 3;
-      else if (!strnicmp(date,"apr",3)) month = 4;
-      else if (!strnicmp(date,"may",3)) month = 5;
-      else if (!strnicmp(date,"jun",3)) month = 6;
-      else if (!strnicmp(date,"jul",3)) month = 7;
-      else if (!strnicmp(date,"aug",3)) month = 8;
-      else if (!strnicmp(date,"sep",3)) month = 9;
-      else if (!strnicmp(date,"oct",3)) month = 10;
-      else if (!strnicmp(date,"nov",3)) month = 11;
-      else month = 12;
-      date += 3;
-      while (isspace(*date)) date++;
-      year = atoi(date);
-      if (year < 200) year += 1900;
+		while (isspace(*date)) date++;
+		day = atoi(date);
+		while (isdigit(*date)) date++;
+		while (isspace(*date)) date++;
+		if (!strnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
+		else if (!strnicmp(date,"feb",3)) month = 2;
+		else if (!strnicmp(date,"mar",3)) month = 3;
+		else if (!strnicmp(date,"apr",3)) month = 4;
+		else if (!strnicmp(date,"may",3)) month = 5;
+		else if (!strnicmp(date,"jun",3)) month = 6;
+		else if (!strnicmp(date,"jul",3)) month = 7;
+		else if (!strnicmp(date,"aug",3)) month = 8;
+		else if (!strnicmp(date,"sep",3)) month = 9;
+		else if (!strnicmp(date,"oct",3)) month = 10;
+		else if (!strnicmp(date,"nov",3)) month = 11;
+		else month = 12;
+		date += 3;
+		while (isspace(*date)) date++;
+		year = atoi(date);
+		if (year < 200) year += 1900;
 
-      while (isdigit(*date)) date++;
-      while (isspace(*date)) date++;
-      hour = atoi(date);
-      if (hour < 100)
-      {
-         while (isdigit(*date)) date++;
-         while (!isdigit(*date)) date++;
-         min = atoi(date);
-         while (isdigit(*date)) date++;
-         while (!isdigit(*date)) date++;
-         sec = atoi(date);
-      } else /* like examples in rfc 822 */
-      {
-         min = hour % 100;
-         hour = hour / 100;
-         sec = 0;
-      }
+		while (isdigit(*date)) date++;
+		while (isspace(*date)) date++;
+		hour = atoi(date);
+		if (hour < 100)
+		{
+			while (isdigit(*date)) date++;
+			while (!isdigit(*date)) date++;
+			min = atoi(date);
+			while (isdigit(*date)) date++;
+			while (!isdigit(*date)) date++;
+			sec = atoi(date);
+		} else /* like examples in rfc 822 */
+		{
+			min = hour % 100;
+			hour = hour / 100;
+			sec = 0;
+		}
 
-      /* Time zone is missing */
-      mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;
-   }
+		/* Time zone is missing */
+		mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec;
+	}
 
-   buf = mail_find_header_contents(mail,"from");
-   if (buf) mail->from = extract_name_from_address(buf,NULL);
-   else mail->from = NULL;
+	buf = mail_find_header_contents(mail,"from");
+	if (buf) mail->from = extract_name_from_address(buf,NULL);
+	else mail->from = NULL;
 
-   buf = mail_find_header_contents(mail,"to");
-   if (buf)
-   {
-      int more;
-      mail->to = extract_name_from_address(buf,&more);
-      if (more) mail->flags |= MAIL_FLAGS_GROUP;
-   } else mail->to = NULL;
+	buf = mail_find_header_contents(mail,"to");
+	if (buf)
+	{
+		int more;
+		mail->to = extract_name_from_address(buf,&more);
+		if (more) mail->flags |= MAIL_FLAGS_GROUP;
+	} else mail->to = NULL;
 
-   if ((buf = mail_find_header_contents(mail, "cc")))
-   {
-      mail->flags |= MAIL_FLAGS_GROUP;
-   }
+	if ((buf = mail_find_header_contents(mail, "cc")))
+	{
+		mail->flags |= MAIL_FLAGS_GROUP;
+	}
 
-   if ((buf = mail_find_header_contents(mail,"subject")))
-   {
-      parse_text_string(buf,&mail->subject);
-   }
+	if ((buf = mail_find_header_contents(mail,"subject")))
+	{
+		parse_text_string(buf,&mail->subject);
+	}
 
-   /* Check if mail is a mime mail */
-   if ((buf = mail_find_header_contents(mail, "mime-version")))
-   {
-      int version;
-      int revision;
+	/* Check if mail is a mime mail */
+	if ((buf = mail_find_header_contents(mail, "mime-version")))
+	{
+		int version;
+		int revision;
 
-      version = atoi(buf);
-      while (isdigit(*buf)) buf++;
-      revision = atoi(buf);
+		version = atoi(buf);
+		while (isdigit(*buf)) buf++;
+		revision = atoi(buf);
 
-      mail->mime = (version << 16) | revision;
-   } else mail->mime = 0;
+		mail->mime = (version << 16) | revision;
+	} else mail->mime = 0;
 
 
-   /* Check the Content-Disposition of the whole mail*/
-   if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
-   {
-      if (!mail->filename)
-      {
-         char *fn = mystristr(buf,"filename=");
-         if (fn)
-         {
-            fn += sizeof("filename=")-1;
-            parse_value(fn,&mail->filename);
-         }
-      }
-   }
+	/* Check the Content-Disposition of the whole mail*/
+	if ((buf = mail_find_header_contents(mail, "Content-Disposition")))
+	{
+		if (!mail->filename)
+		{
+			char *fn = mystristr(buf,"filename=");
+			if (fn)
+			{
+				fn += sizeof("filename=")-1;
+				parse_value(fn,&mail->filename);
+			}
+		}
+	}
 
-   /* Check the content-type of the whole mail */
-   if ((buf = mail_find_header_contents(mail, "content-type")))
-   {
-      /* content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter) */
+	/* Check the content-type of the whole mail */
+	if ((buf = mail_find_header_contents(mail, "content-type")))
+	{
+		/* content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter) */
 
-      char *subtype = strchr(buf,'/');
-      if (subtype)
-      {
-         int len = subtype - buf;
-         if (len)
-         {
-            if ((mail->content_type = malloc(len+1)))
-            {
-               subtype++;
+		char *subtype = strchr(buf,'/');
+		if (subtype)
+		{
+			int len = subtype - buf;
+			if (len)
+			{
+				if ((mail->content_type = malloc(len+1)))
+				{
+					subtype++;
 
-               strncpy(mail->content_type,buf,len);
-               mail->content_type[len]=0;
+					strncpy(mail->content_type,buf,len);
+					mail->content_type[len]=0;
 
-               if ((subtype = parse_token(subtype,&mail->content_subtype)))
-               {
-                  while (1)
-                  {
-                     if (*subtype++ == ';')
-                     {
-                        struct content_parameter *new_param;
-                        struct parse_parameter dest;
-                        char c;
+					if ((subtype = parse_token(subtype,&mail->content_subtype)))
+					{
+						while (1)
+						{
+							if (*subtype++ == ';')
+							{
+								struct content_parameter *new_param;
+								struct parse_parameter dest;
+								char c;
 
-                        /* Skip spaces */
-                        while ((c = *subtype))
-                        {
-                           if (!isspace(c)) break;
-                           subtype++;
-                        }
+								/* Skip spaces */
+								while ((c = *subtype))
+								{
+									if (!isspace(c)) break;
+									subtype++;
+								}
 
-                        if (!(subtype = parse_parameter(subtype, &dest)))
-                           break;
+								if (!(subtype = parse_parameter(subtype, &dest)))
+									break;
 
-                        if (!mystricmp(dest.attribute,"name"))
-                        {
-                           if (dest.attribute) free(dest.attribute);
-                           if (!mail->filename) mail->filename = dest.value;
-                           else
-                           {
-                              if (dest.value) free(dest.value);
-                           }
-                        } else
-                        {
-                           if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
-                           {
-                              new_param->attribute = dest.attribute;
-                              new_param->value = dest.value;
-                              list_insert_tail(&mail->content_parameter_list,&new_param->node);
-                           } else break;
-                        }
-                     } else break;
-                  }
-               }
-            }
-         }
-      }
-   }
+								if (!mystricmp(dest.attribute,"name"))
+								{
+									if (dest.attribute) free(dest.attribute);
+									if (!mail->filename) mail->filename = dest.value;
+									else
+									{
+										if (dest.value) free(dest.value);
+									}
+								} else
+								{
+									if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+									{
+										new_param->attribute = dest.attribute;
+										new_param->value = dest.value;
+										list_insert_tail(&mail->content_parameter_list,&new_param->node);
+									} else break;
+								}
+							} else break;
+						}
+					}
+				}
+			}
+		}
+	}
 
-   /* Content-ID */
-   if ((buf = mail_find_header_contents(mail, "Content-ID")))
-   {
-      if (*buf++ == '<')
-      {
-         if (!(parse_addr_spec(buf,&mail->content_id)))
-         {
-            /* for the non rfc conform content-id's */
-            char *buf2 = strrchr(buf,'>');
-            if (buf2)
-            {
-               if ((mail->content_id = malloc(buf2-buf+1)))
-               {
-                  strncpy(mail->content_id,buf,buf2-buf);
-                  mail->content_id[buf2-buf]=0;
-               }
-            }
-         }
-      }
-   }
+	/* Content-ID */
+	if ((buf = mail_find_header_contents(mail, "Content-ID")))
+	{
+		if (*buf++ == '<')
+		{
+			if (!(parse_addr_spec(buf,&mail->content_id)))
+			{
+				/* for the non rfc conform content-id's */
+				char *buf2 = strrchr(buf,'>');
+				if (buf2)
+				{
+					if ((mail->content_id = malloc(buf2-buf+1)))
+					{
+						strncpy(mail->content_id,buf,buf2-buf);
+						mail->content_id[buf2-buf]=0;
+					}
+				}
+			}
+		}
+	}
 
   /* Message ID's */
   if ((buf = mail_find_header_contents(mail, "Message-ID")))
   {
-   if (*buf++ == '<')
-      parse_addr_spec(buf,&mail->message_id);
+  	if (*buf++ == '<')
+	  	parse_addr_spec(buf,&mail->message_id);
   }
 
-   /* In-Reply To */
+	/* In-Reply To */
   if ((buf = mail_find_header_contents(mail, "In-Reply-To")))
   {
-   if (*buf++ == '<')
-      parse_addr_spec(buf,&mail->message_reply_id);
+  	if (*buf++ == '<')
+	  	parse_addr_spec(buf,&mail->message_reply_id);
   }
 
-   if (!mail->content_type || !mail->content_subtype)
-   {
-      mail->content_type = strdup("text");
-      mail->content_subtype = strdup("plain");
-   }
+	if (!mail->content_type || !mail->content_subtype)
+	{
+		mail->content_type = strdup("text");
+		mail->content_subtype = strdup("plain");
+	}
 
-   if ((buf = mail_find_header_contents(mail, "Content-transfer-encoding")))
-   {
-      mail->content_transfer_encoding = strdup(buf);
-   }
+	if ((buf = mail_find_header_contents(mail, "Content-transfer-encoding")))
+	{
+		mail->content_transfer_encoding = strdup(buf);
+	}
 
-   if (!mail->content_transfer_encoding)
-   {
-      mail->content_transfer_encoding = strdup("7bit");
-   }
+	if (!mail->content_transfer_encoding)
+	{
+		mail->content_transfer_encoding = strdup("7bit");
+	}
 
-   if (!mystricmp(mail->content_type, "multipart"))
-   {
-      mail->flags |= MAIL_FLAGS_ATTACH;
-   }
+	if (!mystricmp(mail->content_type, "multipart"))
+	{
+		mail->flags |= MAIL_FLAGS_ATTACH;
+	}
 
   if ((buf = mail_find_header_contents(mail, "Importance")))
   {
-      if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
+		if (!mystricmp(buf,"high")) mail->flags |= MAIL_FLAGS_IMPORTANT;
   }
 
 /*
-   if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))
-   {
-      mail->multipart_related_type = mail_find_content_parameter_value(mail, "type");
-      printf("%s\n",mail->multipart_related_type);
-   }
+	if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))
+	{
+		mail->multipart_related_type = mail_find_content_parameter_value(mail, "type");
+		printf("%s\n",mail->multipart_related_type);
+	}
 */
 
-   return 1;
+	return 1;
 }
 
 /**************************************************************************
@@ -1095,15 +1095,15 @@ int mail_process_headers(struct mail *mail)
 **************************************************************************/
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute)
 {
-   struct content_parameter *param = (struct content_parameter*)list_first(&mail->content_parameter_list);
+	struct content_parameter *param = (struct content_parameter*)list_first(&mail->content_parameter_list);
 
-   while (param)
-   {
-      if (!stricmp(attribute,param->attribute)) return param->value;
-      param = (struct content_parameter *)node_next(&param->node);
-   }
+	while (param)
+	{
+		if (!stricmp(attribute,param->attribute)) return param->value;
+		param = (struct content_parameter *)node_next(&param->node);
+	}
 
-   return NULL;
+	return NULL;
 }
 
 /**************************************************************************
@@ -1111,77 +1111,77 @@ static char *mail_find_content_parameter_value(struct mail *mail, char *attribut
 **************************************************************************/
 static int mail_read_structure(struct mail *mail)
 {
-   if (!stricmp(mail->content_type,"multipart"))
-   {
-      /* message is a multipart message */
-      char *boundary = mail_find_content_parameter_value(mail,"boundary");
-      if (boundary)
-      {
-         char *search_str = strdupcat("\n--"/*or "--"*/,boundary);
-         if (search_str)
-         {
-            char *buf = mail->text + mail->text_begin;
+	if (!stricmp(mail->content_type,"multipart"))
+	{
+		/* message is a multipart message */
+		char *boundary = mail_find_content_parameter_value(mail,"boundary");
+		if (boundary)
+		{
+			char *search_str = strdupcat("\n--"/*or "--"*/,boundary);
+			if (search_str)
+			{
+				char *buf = mail->text + mail->text_begin;
 
-            if ((buf = strstr(buf,search_str) + strlen(search_str)))
-            {
-/*             int related;*/ /* if is a related content subtype */
+				if ((buf = strstr(buf,search_str) + strlen(search_str)))
+				{
+/*					int related;*/ /* if is a related content subtype */
 
-               if (*buf == 13) buf++;
-               if (*buf == 10) buf++;
+					if (*buf == 13) buf++;
+					if (*buf == 10) buf++;
 
-/*             related = !mystricmp(content_subtype, "related");*/
+/*					related = !mystricmp(content_subtype, "related");*/
 
-               while (1)
-               {
-                  struct mail *new_mail;
-                  char *end_part = strstr(buf,search_str);
-                  if (!end_part) break;
+					while (1)
+					{
+						struct mail *new_mail;
+						char *end_part = strstr(buf,search_str);
+						if (!end_part) break;
 
-                  if ((new_mail = mail_create()))
-                  {
-                     struct mail_scan ms;
+						if ((new_mail = mail_create()))
+						{
+							struct mail_scan ms;
 
-                     new_mail->size = end_part - buf;
+							new_mail->size = end_part - buf;
 
-                     mail_scan_buffer_start(&ms,new_mail);
-                     mail_scan_buffer(&ms, buf, end_part - buf);
-                     mail_scan_buffer_end(&ms);
-                     mail_process_headers(new_mail);
+							mail_scan_buffer_start(&ms,new_mail);
+							mail_scan_buffer(&ms, buf, end_part - buf);
+							mail_scan_buffer_end(&ms);
+							mail_process_headers(new_mail);
 
-                     new_mail->text = mail->text;
-                     new_mail->text_begin += buf - mail->text;
-                     /* text_len is set by mail_scan_buffer */
+							new_mail->text = mail->text;
+							new_mail->text_begin += buf - mail->text;
+							/* text_len is set by mail_scan_buffer */
 
-                     if (mail->num_multiparts == mail->multipart_allocated)
-                     {
-                        mail->multipart_allocated += 5;
-                        mail->multipart_array = realloc(mail->multipart_array,sizeof(struct mail*)*mail->multipart_allocated);
-                     }
+							if (mail->num_multiparts == mail->multipart_allocated)
+							{
+								mail->multipart_allocated += 5;
+								mail->multipart_array = realloc(mail->multipart_array,sizeof(struct mail*)*mail->multipart_allocated);
+							}
 
-                     if (mail->multipart_array)
-                     {
-                        mail->multipart_array[mail->num_multiparts++] = new_mail;
-                     }
-                     mail_read_structure(new_mail); /* the recursion */
-                     new_mail->parent_mail = mail;
-                  }
+							if (mail->multipart_array)
+							{
+								mail->multipart_array[mail->num_multiparts++] = new_mail;
+							}
+							mail_read_structure(new_mail); /* the recursion */
+							new_mail->parent_mail = mail;
+						}
 
-                  buf = end_part + strlen(search_str);
-                  if (*buf == 13) buf++;
-                  if (*buf == 10) buf++;
-               }
+						buf = end_part + strlen(search_str);
+						if (*buf == 13) buf++;
+						if (*buf == 10) buf++;
+					}
 
 /*
-               if (mail->num_multiparts)
-               {
-                  mail->multipart_related_root = mail->multipart_array[0];
-               }
+					if (mail->num_multiparts)
+					{
+						mail->multipart_related_root = mail->multipart_array[0];
+					}
 */
-            }
-         }
-      }
-   }
-   return 1;
+				}
+			}
+		}
+	}
+	return 1;
 }
 
 
@@ -1190,26 +1190,26 @@ static int mail_read_structure(struct mail *mail)
 **************************************************************************/
 void mail_read_contents(char *folder, struct mail *mail)
 {
-   char path[256];
-   FILE *fp;
+	char path[256];
+	FILE *fp;
 
-   getcwd(path, sizeof(path));
-   if(chdir(folder) == -1) return;
+	getcwd(path, sizeof(path));
+	if(chdir(folder) == -1) return;
 
-   if ((fp = fopen(mail->filename,"rb")))
-   {
-      if ((mail->text = malloc(mail->size+1)))
-      {
-         fread(mail->text,1,mail->size,fp);
-         mail->text[mail->size]=0;
-      }
+	if ((fp = fopen(mail->filename,"rb")))
+	{
+		if ((mail->text = malloc(mail->size+1)))
+		{
+			fread(mail->text,1,mail->size,fp);
+			mail->text[mail->size]=0;
+		}
 
-      mail_read_structure(mail);
+		mail_read_structure(mail);
 
-      fclose(fp);
-   }
+		fclose(fp);
+	}
 
-   chdir(path);
+	chdir(path);
 }
 
 /**************************************************************************
@@ -1217,19 +1217,19 @@ void mail_read_contents(char *folder, struct mail *mail)
 **************************************************************************/
 void mail_decode(struct mail *mail)
 {
-   /* If mail is already decoded do nothing */
-   if (mail->decoded_data) return;
+	/* If mail is already decoded do nothing */
+	if (mail->decoded_data) return;
 
-   /* If no text is available return */
-   if (!mail->text) return;
+	/* If no text is available return */
+	if (!mail->text) return;
 
-   if (!stricmp(mail->content_transfer_encoding,"base64"))
-   {
-      mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
-   } else if (!stricmp(mail->content_transfer_encoding,"quoted-printable"))
-   {
-      mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0);
-   }
+	if (!stricmp(mail->content_transfer_encoding,"base64"))
+	{
+		mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len);
+	} else if (!stricmp(mail->content_transfer_encoding,"quoted-printable"))
+	{
+		mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&mail->decoded_len,0);
+	}
 }
 
 /**************************************************************************
@@ -1238,13 +1238,13 @@ void mail_decode(struct mail *mail)
 **************************************************************************/
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size)
 {
-   if (mail->filename) free(mail->filename);
-   if ((mail->filename = strdup(filename)))
-   {
-      mail->size = size;
-      return 1;
-   }
-   return 0;
+	if (mail->filename) free(mail->filename);
+	if ((mail->filename = strdup(filename)))
+	{
+		mail->size = size;
+		return 1;
+	}
+	return 0;
 }
 
 /**************************************************************************
@@ -1252,33 +1252,33 @@ int mail_set_stuff(struct mail *mail, char *filename, unsigned int size)
 **************************************************************************/
 void mail_free(struct mail *mail)
 {
-   struct header *hdr;
-   int i;
+	struct header *hdr;
+	int i;
 
-   if (!mail) return;
+	if (!mail) return;
 
-   while ((hdr = (struct header *)list_remove_tail(&mail->header_list)))
-   {
-      if (hdr->name) free(hdr->name);
-      if (hdr->contents) free(hdr->contents);
-      free(hdr);
-   }
+	while ((hdr = (struct header *)list_remove_tail(&mail->header_list)))
+	{
+		if (hdr->name) free(hdr->name);
+		if (hdr->contents) free(hdr->contents);
+		free(hdr);
+	}
 
-   for (i=0;i<mail->num_multiparts;i++)
-   {
-      mail_free(mail->multipart_array[i]); /* recursion */
-   }
+	for (i=0;i<mail->num_multiparts;i++)
+	{
+		mail_free(mail->multipart_array[i]); /* recursion */
+	}
 
-   if (mail->message_id) free(mail->message_id);
-   if (mail->message_reply_id) free(mail->message_reply_id);
-   if (mail->content_type) free(mail->content_type);
-   if (mail->content_subtype) free(mail->content_subtype);
-   if (mail->content_id) free(mail->content_id);
+	if (mail->message_id) free(mail->message_id);
+	if (mail->message_reply_id) free(mail->message_reply_id);
+	if (mail->content_type) free(mail->content_type);
+	if (mail->content_subtype) free(mail->content_subtype);
+	if (mail->content_id) free(mail->content_id);
 
-   if (mail->decoded_data) free(mail->decoded_data);
-   if (mail->filename && mail->text) free(mail->text);
-   if (mail->filename) free(mail->filename);
-   free(mail);
+	if (mail->decoded_data) free(mail->decoded_data);
+	if (mail->filename && mail->text) free(mail->text);
+	if (mail->filename) free(mail->filename);
+	free(mail);
 }
 
 /**************************************************************************
@@ -1286,14 +1286,14 @@ void mail_free(struct mail *mail)
 **************************************************************************/
 static struct header *mail_find_header(struct mail *mail, char *name)
 {
-   struct header *header = (struct header*)list_first(&mail->header_list);
+	struct header *header = (struct header*)list_first(&mail->header_list);
 
-   while (header)
-   {
-      if (!stricmp(header->name, name)) return header;
-      header = (struct header*)node_next(&header->node);
-   }
-   return NULL;
+	while (header)
+	{
+		if (!stricmp(header->name, name)) return header;
+		header = (struct header*)node_next(&header->node);
+	}
+	return NULL;
 }
 
 /**************************************************************************
@@ -1301,9 +1301,9 @@ static struct header *mail_find_header(struct mail *mail, char *name)
 **************************************************************************/
 char *mail_find_header_contents(struct mail *mail, char *name)
 {
-   struct header *header = mail_find_header(mail,name);
-   if (header) return header->contents;
-   return NULL;
+	struct header *header = mail_find_header(mail,name);
+	if (header) return header->contents;
+	return NULL;
 }
 
 /**************************************************************************
@@ -1312,36 +1312,36 @@ char *mail_find_header_contents(struct mail *mail, char *name)
 **************************************************************************/
 struct list *create_address_list(char *str)
 {
-   struct list *list = (struct list*)malloc(sizeof(struct list));
-   if (list)
-   {
-      struct parse_address addr;
-      char *ret;
+	struct list *list = (struct list*)malloc(sizeof(struct list));
+	if (list)
+	{
+		struct parse_address addr;
+		char *ret;
 
-      list_init(list);
+		list_init(list);
 
-      if ((ret = parse_address(str,&addr)))
-      {
-         /* note mailbox is simliar to address, probably one is enough */
-         struct mailbox *mb = (struct mailbox*)list_first(&addr.mailbox_list);
-         while (mb)
-         {
-            struct address *new_addr = (struct address*)malloc(sizeof(struct address));
-            if (new_addr)
-            {
-               if (mb->phrase) new_addr->realname = strdup(mb->phrase);
-               else new_addr->realname = NULL;
-               if (mb->addr_spec) new_addr->email = strdup(mb->addr_spec);
-               else new_addr->email = NULL;
+		if ((ret = parse_address(str,&addr)))
+		{
+			/* note mailbox is simliar to address, probably one is enough */
+			struct mailbox *mb = (struct mailbox*)list_first(&addr.mailbox_list);
+			while (mb)
+			{
+				struct address *new_addr = (struct address*)malloc(sizeof(struct address));
+				if (new_addr)
+				{
+					if (mb->phrase) new_addr->realname = strdup(mb->phrase);
+					else new_addr->realname = NULL;
+					if (mb->addr_spec) new_addr->email = strdup(mb->addr_spec);
+					else new_addr->email = NULL;
 
-               list_insert_tail(list,&new_addr->node);
-            }
-            mb = (struct mailbox*)node_next(&mb->node);
-         }
-         free_address(&addr);
-      }
-   }
-   return list;
+					list_insert_tail(list,&new_addr->node);
+				}
+				mb = (struct mailbox*)node_next(&mb->node);
+			}
+			free_address(&addr);
+		}
+	}
+	return list;
 }
 
 /**************************************************************************
@@ -1349,17 +1349,17 @@ struct list *create_address_list(char *str)
 **************************************************************************/
 void append_to_address_list(struct list *list, char *str)
 {
-   struct list *append_list = create_address_list(str);
-   if (append_list)
-   {
-      struct mailbox *mb;
+	struct list *append_list = create_address_list(str);
+	if (append_list)
+	{
+		struct mailbox *mb;
 
-      while ((mb = (struct mailbox*)list_remove_tail(append_list)))
-      {
-         list_insert_tail(list,&mb->node);
-      }
-      free(append_list);
-   }
+		while ((mb = (struct mailbox*)list_remove_tail(append_list)))
+		{
+			list_insert_tail(list,&mb->node);
+		}
+		free(append_list);
+	}
 }
 
 /**************************************************************************
@@ -1367,13 +1367,13 @@ void append_to_address_list(struct list *list, char *str)
 **************************************************************************/
 void free_address_list(struct list *list)
 {
-   struct address *address;
-   while ((address = (struct address*)list_remove_tail(list)))
-   {
-      if (address->realname) free(address->realname);
-      if (address->email) free(address->email);
-   }
-   free(list);
+	struct address *address;
+	while ((address = (struct address*)list_remove_tail(list)))
+	{
+		if (address->realname) free(address->realname);
+		if (address->email) free(address->email);
+	}
+	free(list);
 }
 
 /**************************************************************************
@@ -1381,8 +1381,8 @@ void free_address_list(struct list *list)
 **************************************************************************/
 void composed_mail_init(struct composed_mail *mail)
 {
-   memset(mail, 0, sizeof(struct composed_mail));
-   list_init(&mail->list);
+	memset(mail, 0, sizeof(struct composed_mail));
+	list_init(&mail->list);
 }
 
 /**************************************************************************
@@ -1391,25 +1391,25 @@ void composed_mail_init(struct composed_mail *mail)
 **************************************************************************/
 int mail_compose_write_from(FILE *fp)
 {
-   struct list list;
-   struct address address;
-   char *from;
-   int rc = 0;
+	struct list list;
+	struct address address;
+	char *from;
+	int rc = 0;
 
-   list_init(&list);
-   memset(&address,0,sizeof(struct address));
+	list_init(&list);
+	memset(&address,0,sizeof(struct address));
 
-   address.realname = user.config.realname;
-   address.email = user.config.email;
-   list_insert_tail(&list,&address.node);
+	address.realname = user.config.realname;
+	address.email = user.config.email;
+	list_insert_tail(&list,&address.node);
 
-   if ((from = encode_address_field("From", &list)))
-   {
-      if (fprintf(fp,"%s\n",from)>=0) rc = 1;
-      free(from);
-   }
+	if ((from = encode_address_field("From", &list)))
+	{
+		if (fprintf(fp,"%s\n",from)>=0) rc = 1;
+		free(from);
+	}
 
-   return rc;
+	return rc;
 }
 
 /**************************************************************************
@@ -1417,124 +1417,124 @@ int mail_compose_write_from(FILE *fp)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 {
-   struct composed_mail *cmail;
+	struct composed_mail *cmail;
 
-   if (new_mail->to)
-   {
-      char *subject;
-      struct list *alist;
+	if (new_mail->to)
+	{
+		char *subject;
+		struct list *alist;
 
-      if (!mail_compose_write_from(fp))
-         return 0;
+		if (!mail_compose_write_from(fp))
+			return 0;
 
-      if ((alist = create_address_list(new_mail->to)))
-      {
-         char *to = encode_address_field("To", alist);
-         if (to)
-         {
-            fprintf(fp,"%s\n",to);
-            free(to);
-         }
-         free_address_list(alist);
-      }
+		if ((alist = create_address_list(new_mail->to)))
+		{
+			char *to = encode_address_field("To", alist);
+			if (to)
+			{
+				fprintf(fp,"%s\n",to);
+				free(to);
+			}
+			free_address_list(alist);
+		}
 
-      if ((subject = encode_header_field("Subject",new_mail->subject)))
-      {
-         time_t t;
-         struct tm *d;
-         int offset = sm_get_gmt_offset();
+		if ((subject = encode_header_field("Subject",new_mail->subject)))
+		{
+			time_t t;
+			struct tm *d;
+			int offset = sm_get_gmt_offset();
 
-         const char *mon_str[] = 
-         {
-            "Jan","Feb","Mar","Apr","May","Jun",
-            "Jul","Aug","Sep","Oct","Nov","Dec"
-         };
+			const char *mon_str[] = 
+			{
+				"Jan","Feb","Mar","Apr","May","Jun",
+				"Jul","Aug","Sep","Oct","Nov","Dec"
+			};
 
-         fprintf(fp,"%s", subject);
-         fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
-         fprintf(fp,"MIME-Version: 1.0\n");
+			fprintf(fp,"%s", subject);
+			fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
+			fprintf(fp,"MIME-Version: 1.0\n");
 
-         time(&t);
-         d = localtime(&t);
+			time(&t);
+			d = localtime(&t);
 
-         fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld %+03ld%02ld\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
-      }
+			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld %+03ld%02ld\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
+		}
 
-      if (new_mail->reply_message_id)
-      {
-         fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
-      }
-   }
+		if (new_mail->reply_message_id)
+		{
+			fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
+		}
+	}
 
-   if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))
-   {
-      /* mail is a multipart message */
-      char *boundary = (char*)malloc(128);
-      if (boundary)
-      {
-         sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
-         fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
-         fprintf(fp, "\n");
-         fprintf(fp, mime_preample);
+	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))
+	{
+		/* mail is a multipart message */
+		char *boundary = (char*)malloc(128);
+		if (boundary)
+		{
+			sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
+			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
+			fprintf(fp, "\n");
+			fprintf(fp, mime_preample);
 
-         while (cmail)
-         {
-            fprintf(fp, "--%s\n",boundary);
-            mail_compose_write(fp,cmail);
-            cmail = (struct composed_mail*)node_next(&cmail->node);
-         }
+			while (cmail)
+			{
+				fprintf(fp, "--%s\n",boundary);
+				mail_compose_write(fp,cmail);
+				cmail = (struct composed_mail*)node_next(&cmail->node);
+			}
 
-         fprintf(fp, "--%s--\n",boundary);
+			fprintf(fp, "--%s--\n",boundary);
 
-         free(boundary);
-      }
-   } else
-   {
-      unsigned int body_len;
-      char *body_encoding;
-      char *body = NULL;
+			free(boundary);
+		}
+	} else
+	{
+		unsigned int body_len;
+		char *body_encoding;
+		char *body = NULL;
 
-      if (new_mail->text)
-      {
-         /* mail text */
-         body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
-         fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
-      } else
-      {
-         fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
-         if (new_mail->filename)
-         {
-            FILE *fh;
+		if (new_mail->text)
+		{
+			/* mail text */
+			body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
+			fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+		} else
+		{
+			fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
+			if (new_mail->filename)
+			{
+				FILE *fh;
 
-            fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
+				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 
-            if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
-            {
-               int size;
-               unsigned char *buf;
+				if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
+				{
+					int size;
+					unsigned char *buf;
 
-               fseek(fh,0,SEEK_END);
-               size = ftell(fh);
-               fseek(fh,0,SEEK_SET);
+					fseek(fh,0,SEEK_END);
+					size = ftell(fh);
+					fseek(fh,0,SEEK_SET);
 
-               if ((buf = (char*)malloc(size)))
-               {
-                  fread(buf,1,size,fh);
-                  body = encode_body(buf, size, new_mail->content_type, &body_len, &body_encoding);
-                  free(buf);
-               }
-               fclose(fh);
-            }
-         }
-      }
+					if ((buf = (char*)malloc(size)))
+					{
+						fread(buf,1,size,fh);
+						body = encode_body(buf, size, new_mail->content_type, &body_len, &body_encoding);
+						free(buf);
+					}
+					fclose(fh);
+				}
+			}
+		}
 
-      fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
-      fprintf(fp,"\n");
-      fprintf(fp,"%s\n",body?body:"");
+		fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+		fprintf(fp,"\n");
+		fprintf(fp,"%s\n",body?body:"");
 
-      if (body) free(body);
-   }
-   return 1;
+		if (body) free(body);
+	}
+	return 1;
 }
 
 /**************************************************************************
@@ -1542,57 +1542,57 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 **************************************************************************/
 void mail_compose_new(struct composed_mail *new_mail)
 {
-   struct folder *outgoing;
-   char path[256];
-   char *new_name;
+	struct folder *outgoing;
+	char path[256];
+	char *new_name;
 
-   if (new_mail->mail_folder)
-      outgoing = folder_find_by_name(new_mail->mail_folder);
-   else outgoing = NULL;
+	if (new_mail->mail_folder)
+		outgoing = folder_find_by_name(new_mail->mail_folder);
+	else outgoing = NULL;
 
-   if (!outgoing) outgoing = folder_outgoing();
-   if (!outgoing) return;
+	if (!outgoing) outgoing = folder_outgoing();
+	if (!outgoing) return;
 
-   getcwd(path, sizeof(path));
-   if (chdir(outgoing->path) == -1) return;
+	getcwd(path, sizeof(path));
+	if (chdir(outgoing->path) == -1) return;
 
-   if ((new_name = mail_get_new_name()))
-   {
-      FILE *fp;
-      struct mail *mail; /* the mail after it has scanned */
-      char *status_name; /* the prober status name */
+	if ((new_name = mail_get_new_name()))
+	{
+		FILE *fp;
+		struct mail *mail; /* the mail after it has scanned */
+		char *status_name; /* the prober status name */
 
-      if ((status_name = mail_get_status_filename(new_name,MAIL_STATUS_WAITSEND)))
-      {
-         free(new_name);
-         new_name = status_name;
-      }
+		if ((status_name = mail_get_status_filename(new_name,MAIL_STATUS_WAITSEND)))
+		{
+			free(new_name);
+			new_name = status_name;
+		}
 
-      if ((fp = fopen(new_name,"wb")))
-      {
-         mail_compose_write(fp, new_mail);
-         fclose(fp);
-      }
+		if ((fp = fopen(new_name,"wb")))
+		{
+			mail_compose_write(fp, new_mail);
+			fclose(fp);
+		}
 
-      if ((mail = mail_create_from_file(new_name)))
-      {
-         struct mail *old_mail;
+		if ((mail = mail_create_from_file(new_name)))
+		{
+			struct mail *old_mail;
 
-         if (new_mail->mail_filename) old_mail = folder_find_mail_by_filename(outgoing,new_mail->mail_filename);
-         else old_mail = NULL;
+			if (new_mail->mail_filename) old_mail = folder_find_mail_by_filename(outgoing,new_mail->mail_filename);
+			else old_mail = NULL;
 
-         if (old_mail)
-         {
-            folder_replace_mail(outgoing, old_mail, mail);
-            callback_mail_changed(outgoing, old_mail, mail);
-            remove(old_mail->filename);
-            free(old_mail);
-         } else
-         {
-            callback_new_mail_written(mail);
-         }
-      }
-   }
+			if (old_mail)
+			{
+				folder_replace_mail(outgoing, old_mail, mail);
+				callback_mail_changed(outgoing, old_mail, mail);
+				remove(old_mail->filename);
+				free(old_mail);
+			} else
+			{
+				callback_new_mail_written(mail);
+			}
+		}
+	}
 
-   chdir(path);
+	chdir(path);
 }

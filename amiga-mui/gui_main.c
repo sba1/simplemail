@@ -17,6 +17,7 @@
 
 /* gui parts */
 #include "addressstringclass.h"
+#include "attachmentlistclass.h"
 #include "dlwnd.h"
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
@@ -79,6 +80,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_attachmentlist_class();
 		delete_addressstring_class();
 		delete_foldertreelist_class();
 		delete_mailtreelist_class();
@@ -101,7 +103,8 @@ int all_init(void)
 		DefaultLocale = OpenLocale(NULL);
 
 		init_hook_standard();
-		if (create_foldertreelist_class() && create_mailtreelist_class() && create_addressstring_class())
+		if (create_foldertreelist_class() && create_mailtreelist_class() &&
+				create_addressstring_class() && create_attachmentlist_class())
 		{
 			if (app_init())
 			{

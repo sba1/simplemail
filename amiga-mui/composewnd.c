@@ -42,75 +42,12 @@
 #include "support.h"
 
 #include "addressstringclass.h"
+#include "attachmentlistclass.h"
 #include "compiler.h"
 #include "muistuff.h"
 #include "composewnd.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
-
-struct attachment
-{
-	char *filename;
-	char *description;
-	char *mime;
-
-	int size; /* size of the file */
-	int editable; /* 1 text is editable */
-
-	char *contents; /* text contents */
-};
-
-static struct Hook attach_construct_hook;
-static struct Hook attach_destruct_hook;
-static struct Hook attach_display_hook;
-
-/* the address window functions */
-STATIC ASM SAVEDS struct attachment *attach_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
-{
-	struct attachment *attach = (struct attachment *)msg->UserData;
-	struct attachment *new_attach = (struct attachment *)malloc(sizeof(struct attachment));
-	if (new_attach)
-	{
-		*new_attach = *attach;
-		new_attach->filename = mystrdup(attach->filename);
-		new_attach->description = mystrdup(attach->description);
-		new_attach->mime = mystrdup(attach->mime);
-		new_attach->contents = mystrdup(attach->contents);
-	}
-	return new_attach;
-}
-
-STATIC ASM SAVEDS VOID attach_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
-{
-	struct attachment *attach = (struct attachment *)msg->UserData;
-	if (attach)
-	{
-		if (attach->filename) free(attach->filename);
-		if (attach->description) free(attach->description);
-		if (attach->mime) free(attach->mime);
-		if (attach->contents) free(attach->contents);
-		free(attach);
-	}
-}
-
-STATIC ASM SAVEDS VOID attach_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
-{
-	if (msg->TreeNode)
-	{
-		struct attachment *attach = (struct attachment *)msg->TreeNode->tn_User;
-		*msg->Array++ = attach->filename;
-		*msg->Array++ = NULL;
-		*msg->Array++ = attach->mime;
-		*msg->Array++ = attach->description;
-	} else
-	{
-		*msg->Array++ = "File name";
-		*msg->Array++ = "Size";
-		*msg->Array++ = "Contents";
-		*msg->Array = "Description";
-	}
-}
-
 
 #define MAX_COMPOSE_OPEN 10
 static int compose_open[MAX_COMPOSE_OPEN];
@@ -193,7 +130,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 			struct attachment multipart;
 
 			memset(&multipart, 0, sizeof(multipart));
-			multipart.mime = "multipart/mixed";
+			multipart.content_type = "multipart/mixed";
 
 			quiet = 1;
 			set(data->attach_tree, MUIA_NListtree_Quiet, TRUE);
@@ -228,7 +165,7 @@ static void compose_add_text(struct Compose_Data **pdata)
 	struct attachment attach;
 
 	memset(&attach, 0, sizeof(attach));
-	attach.mime = "text/plain";
+	attach.content_type = "text/plain";
 	attach.editable = 1;
 
 	compose_add_attachment(data,&attach,0);
@@ -243,7 +180,7 @@ static void compose_add_multipart(struct Compose_Data **pdata)
 	struct attachment attach;
 
 	memset(&attach, 0, sizeof(attach));
-	attach.mime = "multipart/mixed";
+	attach.content_type = "multipart/mixed";
 	attach.editable = 0;
 
 	compose_add_attachment(data,&attach,1);
@@ -317,7 +254,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 		struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)DoMethod(data->attach_tree,
 				MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Head, 0);
 
-		cmail->content_type = mystrdup(attach->mime);
+		cmail->content_type = mystrdup(attach->content_type);
 
 		while (tn)
 		{
@@ -332,7 +269,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 		}
 	} else
 	{
-		cmail->content_type = mystrdup(attach->mime);
+		cmail->content_type = mystrdup(attach->content_type);
 		cmail->text = mystrdup(attach->contents);
 	}
 }
@@ -381,10 +318,6 @@ void compose_window_open(char *to_str)
 	Object *contents_page;
 
 	int num;
-
-	attach_construct_hook.h_Entry = (HOOKFUNC)attach_construct;
-	attach_destruct_hook.h_Entry = (HOOKFUNC)attach_destruct;
-	attach_display_hook.h_Entry = (HOOKFUNC)attach_display;
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;
@@ -455,13 +388,7 @@ void compose_window_open(char *to_str)
 				MUIA_Weight, 33,
 				Child, NListviewObject,
 					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, attach_tree = NListtreeObject,
-						MUIA_NListtree_ConstructHook, &attach_construct_hook,
-						MUIA_NListtree_DestructHook, &attach_construct_hook,
-						MUIA_NListtree_DisplayHook, &attach_display_hook,
-						MUIA_NListtree_Title, TRUE,
-						MUIA_NListtree_Format, ",,,",
-						MUIA_NListtree_TreeColumn, 2,
+					MUIA_NListview_NList, attach_tree = AttachmentListObject,
 						End,
 					End,
 				Child, HGroup,

@@ -92,7 +92,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 			static char size_buf[32];
 			static char date_buf[64];
 			static char status_buf[128];
-			static char from_buf[256];
+			static char field_buf[256];
 
 			if (mail->flags & MAIL_FLAGS_NEW)
 			{
@@ -131,20 +131,24 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 
 			*msg->Array++ = status_buf; /* status */
 
-			if (data->folder_type != FOLDER_TYPE_SEND)
 			{
+				char *field;
+
+				if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to;
+				else field = mail->from;
+
 				if (mail->flags & MAIL_FLAGS_GROUP)
 				{
-					int from_len;
-					sprintf(from_buf,"\33O[%08lx]",data->status_group);
+					int field_len;
+					sprintf(field_buf,"\33O[%08lx]",data->status_group);
 					if (mail->from)
 					{
-						from_len = strlen(from_buf);
-						mystrlcpy(from_buf+from_len,mail->from,sizeof(from_buf)-from_len);
+						field_len = strlen(field_buf);
+						mystrlcpy(field_buf+field_len,mail->from,sizeof(field_buf)-field_len);
 					}
-					*msg->Array++ = from_buf;
-				} else *msg->Array++ = mail->from;
-			} else *msg->Array++ = mail->to;
+					*msg->Array++ = field_buf;
+				} else *msg->Array++ = field;
+			}
 
 			*msg->Array++ = mail->subject;
 			*msg->Array++ = mail->reply;

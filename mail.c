@@ -1655,6 +1655,8 @@ int mail_process_headers(struct mail *mail)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
 
+	mail->received = 0;
+
 	while (header)
 	{
 		char *buf = header->contents;
@@ -1663,10 +1665,10 @@ int mail_process_headers(struct mail *mail)
 		{
 			/* syntax should be checked before! */
 			int day,month,year,hour,min,sec,gmt;
-			parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt);
-
-			/* Time zone is missing */
-			mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+			if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
+			{
+				mail->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+			} else mail->seconds = 0;
 		} else if (!mystricmp("from",header->name))
 		{
 			extract_name_from_address(buf,&mail->from_phrase,&mail->from_addr,NULL);
@@ -1700,9 +1702,11 @@ int mail_process_headers(struct mail *mail)
 				int day,month,year,hour,min,sec,gmt;
 				unsigned int new_recv;
 				buf++;
-				parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt);
-				new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
-				if (new_recv > mail->received) mail->received = new_recv;
+				if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
+				{
+					new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+					if (new_recv > mail->received) mail->received = new_recv;
+				}
 			}
 		} else if (!mystricmp("mime-version",header->name))
 		{

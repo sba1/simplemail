@@ -43,6 +43,7 @@
 #include "pgp.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support.h"
 #include "support_indep.h"
 
 #include "addressbookwnd.h"
@@ -84,6 +85,7 @@ struct Snail_Data
 struct Person_Data /* should be a customclass */
 {
 	Object *wnd;
+	Object *reg_group;
 	Object *alias_string;
 	Object *realname_string;
 	Object *pgp_string;
@@ -179,7 +181,8 @@ static void person_window_ok(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
 	struct addressbook_entry *new_entry;
-	char *addresses;
+	char *addresses,*dob;
+	int day = 0, month = 0, year = 0;
 
 	/* Check the validity of the e-mail addresses first */
 	if ((addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
@@ -195,6 +198,7 @@ static void person_window_ok(struct Person_Data **pdata)
 		}
 		if (!buf)
 		{
+			set(data->reg_group,MUIA_Group_ActivePage,0);
 			set(data->wnd,MUIA_Window_ActiveObject,data->email_texteditor);
 			DisplayBeep(NULL);
 			FreeVec(addresses);
@@ -203,6 +207,22 @@ static void person_window_ok(struct Person_Data **pdata)
 
 		/* addresses will be freed below because it is needed again */
 	}
+
+	/* check the validiy of the date */
+	dob = (char*)xget(data->birthday_string,MUIA_String_Contents);
+	if (dob && *dob)
+	{
+		if (!(parse_date(dob,&day,&month,&year,NULL,NULL,NULL,NULL)))
+		{
+			set(data->reg_group,MUIA_Group_ActivePage,0);
+			set(data->birthday_string,MUIA_Window_ActiveObject,data->email_texteditor);
+			sm_request(NULL,_("The date of birth is given in a invalid format.\n"
+                        "Please use dd mon yyyy or dd mm yyyy."),_("Ok"));
+			DisplayBeep(NULL);
+			return;
+		}
+	}
+	
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
@@ -239,31 +259,15 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (xget(data->female_button,MUIA_Selected)) new_entry->u.person.sex = 1;
 		else if (xget(data->male_button,MUIA_Selected)) new_entry->u.person.sex = 2;
 
-    {
-    	char *buf = (char*)xget(data->birthday_string,MUIA_String_Contents);
-    	int day=0,month=0,year=0;
-    	if ((parse_date(buf,&day,&month,&year,NULL,NULL,NULL,NULL)))
-    	{
-    		new_entry->u.person.dob_month = month;
-    		new_entry->u.person.dob_day = day;
-    		new_entry->u.person.dob_year = year;
-    	}
-    }
+		new_entry->u.person.dob_month = month;
+		new_entry->u.person.dob_day = day;
+		new_entry->u.person.dob_year = year;
 
 		if (data->person)
 		{
 			if ((treenode = FindListtreeUserData(address_tree, data->person)))
 			{
 				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
-#if 0
-				/* Prior versions of NListree had problems with MUIM_NListtree_Rename, this code was used
-				   as a workaround */
-				APTR parent = (APTR)DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
-
-				DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
-							   parent,treenode,0);
-				DoMethod(address_tree, MUIM_NListtree_Remove, parent,treenode,0);
-#endif
 			}
 		}
 
@@ -372,7 +376,7 @@ static __asm void person_pgp_objstr(register __a1 Object *str, register __a2 Obj
 *******************************************************************/
 void person_window_open(struct addressbook_entry *entry)
 {
-	Object *wnd, *email_texteditor;
+	Object *wnd, *reg_group, *email_texteditor;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
 	Object *female_button, *male_button, *birthday_string, *homepage_string, *pgp_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
@@ -409,7 +413,7 @@ void person_window_open(struct addressbook_entry *entry)
     MUIA_Window_Title, _("SimpleMail - Edit Person"),
         
 		WindowContents, VGroup,
-			Child, RegisterGroup(register_titles),
+			Child, reg_group = RegisterGroup(register_titles),
 				Child, VGroup,
 					Child, HGroup,
 						Child, ColGroup(2),
@@ -733,6 +737,7 @@ void person_window_open(struct addressbook_entry *entry)
 			data->homepage_string = homepage_string;
 			data->portrait_button = portrait_button;
 			data->portrait_string = portrait_string;
+			data->reg_group = reg_group;
 			data->priv = priv;
 			data->work = work;
 			data->person = entry;

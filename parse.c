@@ -967,7 +967,15 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	else if (!mystrnicmp(date,"sep",3)) month = 9;
 	else if (!mystrnicmp(date,"oct",3)) month = 10;
 	else if (!mystrnicmp(date,"nov",3)) month = 11;
-	else month = 12;
+	else if (!mystrnicmp(date,"dec",3)) month = 12;
+	else
+	{
+		if (!isdigit(*date)) return NULL;
+		month = atoi(date);
+		if (month < 1 || month > 12) return NULL;
+		while (isdigit(*date)) date++;
+	}
+
 	date += 3;
 	while (isspace(*date)) date++;
 	year = atoi(date);
@@ -1005,7 +1013,7 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	if (psec) *psec = sec;
 	if (pgmt) *pgmt = gmt;
 
-	return date;
+	return (char*)date;
 }
 
 

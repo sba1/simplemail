@@ -40,6 +40,7 @@ Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Support for playing sounds.
   - Taglines.
   - Folders holding unread mails are hilighted now.
+  - Localisation.
 
 Version 0.12 (twelfth alpha) - released on 2001/11/10
   - Fix for the MUI exploit.

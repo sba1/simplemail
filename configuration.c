@@ -253,6 +253,15 @@ int load_config(void)
 						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
 							user.config.internet_emails = array_add_string(user.config.internet_emails,result);
 
+						if ((result = get_config_item(buf,"Spam.MarkMails")))
+							user.config.spam_mark_moved = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Spam.AddrBookIsWhite")))
+							user.config.spam_addrbook_is_white = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Spam.WhiteAddress")))
+							user.config.spam_white_emails = array_add_string(user.config.spam_white_emails,result);
+						if ((result = get_config_item(buf,"Spam.BlackAddress")))
+							user.config.spam_black_emails = array_add_string(user.config.spam_black_emails,result);
+
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
 							/* it's a POP Server config line */
@@ -610,6 +619,24 @@ void save_config(void)
 				phrase = (struct phrase*)node_next(&phrase->node);
 				i++;
 			}
+
+			fprintf(fh,"Spam.MarkMails=%d\n",user.config.spam_mark_moved);
+			fprintf(fh,"Spam.AddrBookIsWhite=%d\n",user.config.spam_addrbook_is_white);
+			if (user.config.spam_white_emails)
+			{
+				for (i=0;user.config.spam_white_emails[i];i++)
+				{
+					fprintf(fh,"Spam.WhiteAddress=%s\n",user.config.spam_white_emails[i]);
+				}
+			}
+			if (user.config.spam_white_emails)
+			{
+				for (i=0;user.config.spam_black_emails[i];i++)
+				{
+					fprintf(fh,"Spam.BlackAddress=%s\n",user.config.spam_black_emails[i]);
+				}
+			}
+
 			fclose(fh);
 		}
 	}

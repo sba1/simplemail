@@ -375,12 +375,67 @@ static void phrase_load(void)
 	}
 }
 
+
+/******************************************************************
+ Convert addresses from a texteditor object to an array.
+ this is principle the same like in addressbookwnd.c but uses
+ parse_mailbox
+*******************************************************************/
+static char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_ptr)
+{
+	char *addresses;
+	char **new_array = NULL;
+
+	/* Check the validity of the e-mail addresses first */
+	if ((addresses = (char*)DoMethod(editor, MUIM_TextEditor_ExportText)))
+	{
+		struct mailbox mb;
+		char *buf = addresses;
+
+		while (isspace((unsigned char)*buf) && *buf) buf++;
+
+		if (*buf)
+		{
+			while ((buf = parse_mailbox(buf,&mb)))
+			{
+				/* ensures that buf != NULL if no error */
+				while (isspace((unsigned char)*buf)) buf++;
+				if (*buf == 0) break;
+				free(mb.addr_spec);
+				free(mb.phrase);
+			}
+			if (!buf)
+			{
+				set(config_list, MUIA_NList_Active, page);
+				set(config_wnd,MUIA_Window_ActiveObject,editor);
+				sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),buf);
+				FreeVec(addresses);
+				array_free(new_array);
+				*error_ptr = 1;
+				return NULL;
+			}
+
+			buf = addresses;
+			while ((buf = parse_mailbox(buf,&mb)))
+			{
+				new_array = array_add_string(new_array,mb.addr_spec);
+				free(mb.addr_spec);
+				free(mb.phrase);
+			}
+		}
+		FreeVec(addresses);		
+	}
+	*error_ptr = 0;
+	return new_array;
+}
+
 /******************************************************************
  Use the config
 *******************************************************************/
 static int config_use(void)
 {
-	int i,j;
+	int i,j,err;
+	char **internet_emails, **spam_white_emails, **spam_black_emails;
 
 	/* check if there are any duplicate addresses */
 	account_store();
@@ -430,52 +485,30 @@ static int config_use(void)
 		}
 	}
 
+	internet_emails = array_of_addresses_from_texteditor(readhtml_mail_editor,6,&err);
+	if (err) return 0;
 
-	/* this is principle the same like in addressbookwnd.c but uses parse_mailbox */
+	spam_white_emails = array_of_addresses_from_texteditor(spam_white_list_editor,9,&err);
+	if (err)
 	{
-		char *addresses;
-		char **new_array = NULL;
-
-		/* Check the validity of the e-mail addresses first */
-		if ((addresses = (char*)DoMethod(readhtml_mail_editor, MUIM_TextEditor_ExportText)))
-		{
-			struct mailbox mb;
-			char *buf = addresses;
-
-			while (isspace((unsigned char)*buf) && *buf) buf++;
-
-			if (*buf)
-			{
-				while ((buf = parse_mailbox(buf,&mb)))
-				{
-					/* ensures that buf != NULL if no error */
-					while (isspace((unsigned char)*buf)) buf++;
-					if (*buf == 0) break;
-					free(mb.addr_spec);
-					free(mb.phrase);
-				}
-				if (!buf)
-				{
-					set(config_list, MUIA_NList_Active, 6);
-					set(config_wnd,MUIA_Window_ActiveObject,readhtml_mail_editor);
-					sm_request(NULL,_("You have entered an invalid email address. Please correct it."),_("Ok"),buf);
-					FreeVec(addresses);
-					return 0;
-				}
-
-				buf = addresses;
-				while ((buf = parse_mailbox(buf,&mb)))
-				{
-					new_array = array_add_string(new_array,mb.addr_spec);
-					free(mb.addr_spec);
-					free(mb.phrase);
-				}
-			}
-			FreeVec(addresses);		
-		}
-		array_free(user.config.internet_emails);
-		user.config.internet_emails = new_array;
+		array_free(internet_emails);
+		return 0;
 	}
+
+	spam_black_emails = array_of_addresses_from_texteditor(spam_black_list_editor,9,&err);
+	if (err)
+	{
+		array_free(internet_emails);
+		array_free(spam_white_emails);
+		return 0;
+	}
+
+	array_free(user.config.internet_emails);
+	user.config.internet_emails = internet_emails;
+	array_free(user.config.spam_white_emails);
+	user.config.spam_white_emails = spam_white_emails;
+	array_free(user.config.spam_black_emails);
+	user.config.spam_black_emails = spam_black_emails;
 
 	free(user.new_folder_directory);
 	user.new_folder_directory = mystrdup((char*)xget(user_folder_string,MUIA_String_Contents));
@@ -532,6 +565,8 @@ static int config_use(void)
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
+	user.config.spam_mark_moved = xget(spam_mark_before_check,MUIA_Selected);
+	user.config.spam_addrbook_is_white = xget(spam_addr_book_is_white_check,MUIA_Selected);
 
 	/* Copy the accounts */
 	account_store();
@@ -1735,6 +1770,9 @@ int init_spam_group(void)
 		End;
 
   if (!groups[GROUPS_SPAM]) return 0;
+
+	set(spam_white_list_editor,MUIA_ComposeEditor_Array,user.config.spam_white_emails);
+	set(spam_black_list_editor,MUIA_ComposeEditor_Array,user.config.spam_black_emails);
 
   return 1;
 }

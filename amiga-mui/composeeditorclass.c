@@ -174,19 +174,22 @@ STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP
 
 STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
-	if (treenode)
+	if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class)
 	{
-		if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class)
+		struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
+		if (treenode)
 		{
 			struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
 			if (entry->u.person.emails && entry->u.person.emails[0])
 			{
 				DoMethod(obj,MUIM_TextEditor_InsertText,entry->u.person.emails[0],MUIV_TextEditor_InsertText_Cursor);
 			}
-		} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
+		}
+	} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
+	{
+		struct mail *mail = (struct mail*)xget(msg->obj,MUIA_MailTree_Active);
+		if (mail)
 		{
-			struct mail *mail = (struct mail*)treenode->tn_User;
 			char *from = mail_get_from_address(mail);
 			if (from)
 			{

@@ -1857,6 +1857,9 @@ int mail_process_headers(struct mail *mail)
 					}
 				}
 			}
+		} else if (!mystricmp("content-disposition",header->name))
+		{
+			mail->content_disposition = mystrdup(header->contents);
 		} else if (!mystricmp("content-id",header->name))
 		{
 			if (*buf == '<')
@@ -2457,6 +2460,7 @@ void mail_free(struct mail *mail)
 	if (mail->content_subtype) free(mail->content_subtype);
 	if (mail->content_id) free(mail->content_id);
 	if (mail->content_name) free(mail->content_name);
+	free(mail->content_disposition);
 
 	if (mail->decoded_data) free(mail->decoded_data);
 	if (mail->filename && mail->text) free(mail->text);

@@ -63,7 +63,7 @@ OBJS = vsnprintf.o \
 	messageviewclass.o \
 	mainwnd.o \
 	mailtreelistclass.o \
-	muistuff.o \
+	mailinfoclass.o \
 	iconclass.o \
 	headers.o \
 	gui_main.o \

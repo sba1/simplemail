@@ -5,7 +5,7 @@
 #include <config.h>
 #endif
 
-#ifdef AMIGA
+#if defined(AMIGA) || defined(_AMIGA)
  #define HIGHFIRST
 #else
  #ifdef WORDS_BIGENDIAN /* by configure */

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 
 #include <exec/memory.h>
+#include <libraries/locale.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/utility.h>
@@ -121,6 +122,19 @@ unsigned int sm_get_seconds(int day, int month, int year)
 	cd.month = month;
 	cd.year = year;
 	return Date2Amiga(&cd);
+}
+
+/******************************************************************
+ Returns the GMT offset in minutes
+*******************************************************************/
+int sm_get_gmt_offset(void)
+{
+	extern struct Locale *DefaultLocale;
+	if (DefaultLocale)
+	{
+		return -DefaultLocale->loc_GMTOffset;
+	}
+	return 0;
 }
 
 /******************************************************************

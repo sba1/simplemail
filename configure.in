@@ -5,6 +5,14 @@ dnl Automake stuff
 AM_INIT_AUTOMAKE(SimpleMail,0.4)
 AM_CONFIG_HEADER(config.h)
 
+dnl nls
+PACKAGE=simplemail
+VERSION=0.11
+AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
+AC_SUBST(PACKAGE)
+AC_SUBST(VERSION)
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
@@ -28,6 +36,11 @@ AM_PATH_GTK
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(getcwd gethostname socket strdup strstr strtol strcasecmp strncasecmp)
 
+dnl I18n support
+ALL_LINGUAS="de"
+AM_GNU_GETTEXT
+
+
 CFLAGS="$CFLAGS -Wall"
 GUI_CFLAGS="$GTK_CFLAGS"
 GUI_LIBS="$GTK_LIBS"
@@ -35,7 +48,13 @@ AC_SUBST(GUI_CFLAGS)
 AC_SUBST(GUI_LIBS)
 
 AC_OUTPUT(Makefile
-          gtk/Makefile)
+          gtk/Makefile
+          intl/Makefile
+          po/Makefile.in)
+
+
+
+
 
 
 

@@ -511,6 +511,16 @@ void main_insert_mail(struct mail *mail)
 }
 
 /******************************************************************
+ Inserts a new mail into the listview after a given position
+*******************************************************************/
+void main_insert_mail_pos(struct mail *mail, int after)
+{
+	printf("main_insert_mail_pos() not implemented");
+}
+
+
+
+/******************************************************************
  Remove a given mail from the listview
 *******************************************************************/
 void main_remove_mail(struct mail *mail)
@@ -877,6 +887,7 @@ void main_remove_mails_selected(void)
 void main_build_accounts(void)
 {
 }
+
 
 
 

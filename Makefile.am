@@ -1,7 +1,7 @@
 bin_PROGRAMS = simplemail
 INCLUDES = -I$(srcdir)/indep-include
 
-SUBDIRS=	gtk
+SUBDIRS=	gtk intl po
 
 EXTRA_DIST=	diff_ignore
 
@@ -39,6 +39,8 @@ simplemail_SOURCES = account.c \
                      simplemail.h \
                      support_indep.c \
                      support_indep.h \
+                     smintl.c \
+                     smintl.h \
                      smtp.c \
                      smtp.h \
                      tcp.c \
@@ -50,6 +52,8 @@ simplemail_SOURCES = account.c \
 
 simplemail_DEPENDENCIES = ./gtk/libgui.a
 simplemail_LDADD        = ./gtk/libgui.a @GUI_LIBS@
+
+
 
 
 

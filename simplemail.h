@@ -76,6 +76,10 @@ void callback_config_changed(void);
 void callback_autocheck_refresh(void);
 void callback_timer(void);
 
+/* the main entry point */
+int simplemail_main(void);
+
+
 #endif
 
 

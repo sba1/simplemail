@@ -663,16 +663,15 @@ void callback_timer(void)
 	}
 }
 
-int main(int argc, char *argv[])
+int simplemail_main(void)
 {
-
 #ifdef ENABLE_NLS
   setlocale(LC_ALL, "");
   bindtextdomain(PACKAGE, LOCALEDIR);
   textdomain(PACKAGE);
 #endif
 
-	if (!gui_parseargs(argc,argv)) return 0;
+	if (!gui_parseargs(0,NULL)) return 0;
 
 	load_config();
 	init_addressbook();
@@ -680,7 +679,7 @@ int main(int argc, char *argv[])
 	{
 		if (init_threads())
 		{
-			gui_main(argc,argv);
+			gui_main(0,NULL);
 			folder_delete_deleted();
 			cleanup_threads();
 		}

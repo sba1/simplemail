@@ -668,6 +668,51 @@ void callback_move_selected_mails(void)
 	}
 }
 
+/* Process the current selected folder and mark all mails which are identified as spam */
+void callback_check_selected_folder_for_spam(void)
+{
+	struct folder *folder = main_get_folder();
+	void *handle = NULL;
+	struct mail *m;
+
+	while ((m = folder_next_mail(folder, &handle)))
+	{
+		if (m->flags & MAIL_FLAGS_PARTIAL)
+			imap_download_mail(folder,m);
+
+		if (spam_is_mail_spam(folder,m))
+		{
+			folder_set_mail_status(folder,m,MAIL_STATUS_SPAM);
+			m->flags &= ~MAIL_FLAGS_NEW;
+			main_refresh_mail(m);
+		}
+	}
+}
+
+/* Move all mails marked as spam into the spam folder */
+void callback_move_spam_marked_mails(void)
+{
+	struct folder *folder = main_get_folder();
+	struct folder *spam_folder = folder_spam();
+	struct mail **mail_array;
+	struct mail *m;
+	int i;
+
+	if (folder == spam_folder) return;
+	if (!spam_folder) return;
+
+	if ((mail_array = folder_query_mails(folder, FOLDER_QUERY_MAILS_PROP_SPAM)))
+	{
+		i = 0;
+		while ((m = mail_array[i]))
+		{
+			callback_move_mail(m, folder, spam_folder);
+			i++;
+		}
+		free(mail_array);
+	}
+}
+
 /* the currently selected mail should be changed */
 void callback_change_mail(void)
 {
@@ -804,7 +849,7 @@ struct mail *callback_new_mail_to_folder(char *filename, struct folder *folder)
 			mail = mail_create_from_file(newname);
 			free(newname);
 		}
-	}else
+	} else
 	{
 		mail = mail_create_from_file(filename);
 	}
@@ -1179,6 +1224,7 @@ void callback_selected_mails_are_spam(void)
 		if (spam_feed_mail_as_spam(folder,mail))
 		{
 			folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+			mail->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(mail);
 		}
 		mail = main_get_mail_next_selected(&handle);
@@ -1201,8 +1247,11 @@ void callback_selected_mails_are_ham(void)
 
 		if (spam_feed_mail_as_ham(folder,mail))
 		{
-			if (mail_is_spam(mail)) folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);
-			main_refresh_mail(mail);
+			if (mail_is_spam(mail))
+			{
+				folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);
+				main_refresh_mail(mail);
+			}
 		}
 		mail = main_get_mail_next_selected(&handle);
 	}	
@@ -1222,7 +1271,15 @@ void callback_check_selected_mails_if_spam(void)
 		if (mail->flags & MAIL_FLAGS_PARTIAL)
 			imap_download_mail(folder,mail);
 
-		spam_is_mail_spam(folder,mail);
+		if (!mail_is_spam(mail))
+		{
+			if (spam_is_mail_spam(folder,mail))
+			{
+				folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+				mail->flags &= ~MAIL_FLAGS_NEW;
+				main_refresh_mail(mail);
+			}
+		}
 		mail = main_get_mail_next_selected(&handle);
 	}
 }

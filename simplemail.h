@@ -41,6 +41,9 @@ void callback_forward_selected_mails(void);
 void callback_change_mail(void);
 int callback_move_mail_request(char *folder_path, struct mail *mail);
 void callback_move_selected_mails(void);
+void callback_check_selected_folder_for_spam(void);
+void callback_move_spam_marked_mails(void);
+
 void callback_fetch_mails(void);
 void callback_check_single_account(int account_num);
 void callback_send_mails(void);

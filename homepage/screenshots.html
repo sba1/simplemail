@@ -1,41 +1,25 @@
-The following screenshots are currently avaible:
-<br>
-<br>
-<TABLE border=0 cellspacing=3 cellpadding=3 align="center" summary="Screenshots">
-    <TR>
-        <TH bgcolor="black"><FONT COLOR="white">Description</FONT></TH>
-        <TH bgcolor="black"><FONT COLOR="white">Version</FONT></TH>
-        <TH bgcolor="black"><FONT COLOR="white">Size</FONT></TH>
-        <TH bgcolor="black"></TH>
-    </TR>
-    <TR>
-        <TD align="center" bgcolor="gray">The main window.</TD>
-        <TD align="center" bgcolor="gray">0.3</TD>
-        <TD align="center" bgcolor="gray">13,956 bytes</TD>
-        <TD align="center" bgcolor="gray"><A href="screenshots/sm_main_0_3.png">View</A></TD>
-    </TR>
-    <TR>
-        <TD align="center" bgcolor="gray">The alternative main window.</TD>
-        <TD align="center" bgcolor="gray">0.3</TD>
-        <TD align="center" bgcolor="gray">13,385 bytes</TD>
-        <TD align="center" bgcolor="gray"><A href="screenshots/sm_alter_main_0_3.png">View</A></TD>
-    </TR>
-    <TR>
-        <TD align="center" bgcolor="gray">The configuration window.</TD>
-        <TD align="center" bgcolor="gray">0.3</TD>
-        <TD align="center" bgcolor="gray">4,247 bytes</TD>
-        <TD align="center" bgcolor="gray"><A href="screenshots/sm_config_0_3.png">View</A></TD>
-    </TR>
-    <TR>
-        <TD align="center" bgcolor="gray">The compose window.</TD>
-        <TD align="center" bgcolor="gray">0.3</TD>
-        <TD align="center" bgcolor="gray">9,587 bytes</TD>
-        <TD align="center" bgcolor="gray"><A href="screenshots/sm_compose_0_3.png">View</A></TD>
-    </TR>
-    <TR>
-        <TD align="center" bgcolor="gray">The main window.</TD>
-        <TD align="center" bgcolor="gray">0.2</TD>
-        <TD align="center" bgcolor="gray">9,961 bytes</TD>
-        <TD align="center" bgcolor="gray"><A href="screenshots/sm_main_0_2.png">View</A></TD>
-    </TR>
-</TABLE>
+<?php
+  include("screenshots.php");
+?>
+
+The following screenshots are currently avaible:<br><br>
+
+<strong>Version 0.3</strong><br>
+<table summary="Screenshots of 0.3 alpha"><tr>
+<?php
+  echo("<td>");screenshot_preview("screenshots/sm_main_0_3.png","The main window");echo("</td>");
+  echo("<td>");screenshot_preview("screenshots/sm_alter_main_0_3.png","The alternative window");echo("</td>");
+  echo("</tr><tr>");
+  echo("<td>");screenshot_preview("screenshots/sm_config_0_3.png","The configuration window");echo("</td>");
+  echo("<td>");screenshot_preview("screenshots/sm_compose_0_3.png","The compose window");echo("</td>");
+?>
+</tr></table>
+<br><br>
+
+<strong>Version 0.2</strong><br>
+<table summary="Screenshots of 0.2 alpha"><tr>
+<?php
+  echo("<td>");screenshot_preview("screenshots/sm_main_0_2.png","The main window");echo("</td>");
+?>
+</tr></table>
+

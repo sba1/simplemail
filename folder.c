@@ -2207,7 +2207,8 @@ int folder_filter(struct folder *folder)
 
 struct search_msg
 {
-	struct folder *f;
+	int f_array_len;
+	struct folder **f_array;
 	struct search_options *sopt;
 };
 
@@ -2216,7 +2217,8 @@ struct search_msg
 **************************************************************************/
 static void folder_start_search_entry(struct search_msg *msg)
 {
-	struct folder *f;
+	struct folder **f_array = NULL;
+	int f_array_len;
 	struct filter *filter = NULL;
 	struct filter_rule *rule;
 	struct search_options *sopt;
@@ -2225,17 +2227,21 @@ static void folder_start_search_entry(struct search_msg *msg)
 	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
 
 	sopt = search_options_duplicate(msg->sopt);
-	f = msg->f;
-
-	/* Prevent folder changes */
-	folder_lock(f);
+	f_array_len = msg->f_array_len;
+	if ((f_array = malloc((f_array_len+1)*sizeof(struct folder*))))
+	{
+		int i;
+		for (i=0;i<f_array_len;i++)
+		{
+			f_array[i] = msg->f_array[i];
+			/* Prevent folder changes */
+			folder_lock(f_array[i]);
+		}
+	}
 
   if (thread_parent_task_can_contiue())
 	{
-		if (!sopt) goto fail;
-
-		/* We currently cannot load the mail info when beeing in a subthread */
-		if (!f->mail_infos_loaded) goto fail;
+		if (!sopt || !f_array) goto fail;
 
 		filter = filter_create();
 		if (!filter) goto fail;
@@ -2268,37 +2274,45 @@ static void folder_start_search_entry(struct search_msg *msg)
 	
 		/* folder_apply_filter(f,filter); */ /* Not safe currently to be called from subthreads */
 		{
-			int i;
+			int folder_num = 0;
 			int found_num = 0;
 			struct mail *m;
+			struct folder *f;
 			char path[512];
 
 			getcwd(path, sizeof(path));
-			if(chdir(f->path) == -1) goto fail;
 
 			thread_call_parent_function_sync(search_enable_search, 0);
 	
-			for (i=0;i<f->num_mails;i++)
+			while ((f = f_array[folder_num++]))
 			{
-				if (!(m = f->mail_array[i]))
-					break;
+				int i;
 
-				/* mail_matches_filter() is thread safe as long as no header search is used, like here */
-				if (mail_matches_filter(f,m,filter))
+				if (chdir(f->path) == -1) break;
+
+				for (i=0;i<f->num_mails;i++)
 				{
-					unsigned int new_secs = sm_get_current_seconds();
+					if (!(m = f->mail_array[i]))
+						break;
 
-					found_array[found_num++] = m;
-
-					if (found_num == NUM_FOUND || new_secs != secs)
+					/* mail_matches_filter() is thread safe as long as no header search is used, like here */
+					if (mail_matches_filter(f,m,filter))
 					{
-						thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
-						found_num = 0;
-					}
-				}
+						unsigned int new_secs = sm_get_current_seconds();
 
-				if (thread_aborted()) break;
+						found_array[found_num++] = m;
+
+						if (found_num == NUM_FOUND || new_secs != secs)
+						{
+							thread_call_parent_function_sync(search_add_result, 2, found_array, found_num);
+							found_num = 0;
+						}
+					}
+
+					if (thread_aborted()) goto cancel;
+				}
 			}
+cancel:
 			chdir(path);
 
 			if (found_num)
@@ -2310,7 +2324,13 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 fail:
 	if (filter) filter_dispose(filter);
-	folder_unlock(f);
+	if (f_array)
+	{
+		int i;
+		for (i=0;i<f_array_len;i++)
+			folder_unlock(f_array[i]);
+		free(f_array);
+	}
 	if (sopt) search_options_free(sopt);
 }
 
@@ -2321,14 +2341,65 @@ fail:
 void folder_start_search(struct search_options *sopt)
 {
 	struct search_msg msg;
-	void *handle;
-	msg.f = folder_find_by_name(sopt->folder);
-	msg.sopt = sopt;
+	struct folder *f;
+	struct folder *start;
+	struct folder *end;
+	struct folder **array;
+	int num;
 
-  if (!msg.f) return;
-  folder_next_mail(msg.f,&handle);
+	if (sopt->folder)
+	{
+		start = folder_find_by_name(sopt->folder);
+		if (start->special != FOLDER_SPECIAL_GROUP) end = folder_next(start);
+		else
+		{
+			struct folder *parent;
+			parent = start->parent_folder;
+			f = folder_next(start);
+			while (f->parent_folder != parent)
+				f = folder_next(f);
+			end = f;
+		}
+	} else
+	{
+		start = folder_first();
+		end = NULL;
+	}
 
-	thread_start(THREAD_FUNCTION(&folder_start_search_entry),&msg);
+	num = 0;
+	f = start;
+	while (f && f != end)
+	{
+		if (f->special != FOLDER_SPECIAL_GROUP) num++;
+		f = folder_next(f);
+	}
+
+	array = malloc((num+1)*sizeof(struct folder*));
+	if (array)
+	{
+		int i = 0;
+
+		f = start;
+
+		while (f && f != end)
+		{
+			if (f->special != FOLDER_SPECIAL_GROUP)
+			{
+				void *handle = NULL;
+			  folder_next_mail(f,&handle);
+				array[i++]  = f;
+			}
+			f = folder_next(f);
+		}
+		array[i] = NULL;
+
+		msg.sopt = sopt;
+		msg.f_array = array;
+		msg.f_array_len = num;
+
+		thread_start(THREAD_FUNCTION(&folder_start_search_entry),&msg);
+		free(array);
+	}
 }
 
 /******************************************************************
@@ -2631,6 +2702,7 @@ void del_folders(void)
 *******************************************************************/
 void folder_lock(struct folder *f)
 {
+	if (!f) return;
 	thread_lock_semaphore(f->sem);
 }
 
@@ -2639,6 +2711,7 @@ void folder_lock(struct folder *f)
 *******************************************************************/
 int folder_attempt_lock(struct folder *f)
 {
+	if (!f) return 0;
 	return thread_attempt_lock_semaphore(f->sem);
 }
 
@@ -2647,6 +2720,7 @@ int folder_attempt_lock(struct folder *f)
 *******************************************************************/
 void folder_unlock(struct folder *f)
 {
+	if (!f) return;
 	thread_unlock_semaphore(f->sem);
 }
 

@@ -729,7 +729,25 @@ static void compose_set_signature(void **msg)
 	int x = xget(data->text_texteditor,MUIA_TextEditor_CursorX);
 	int y = xget(data->text_texteditor,MUIA_TextEditor_CursorY);
 
-	if (!sign) return;
+	if (!sign)
+	{
+		if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
+		{
+			char *sign_text = strstr(text,"\n-- \n");
+			if (sign_text)
+			{
+				*sign_text = 0;
+
+				SetAttrs(data->text_texteditor,
+						MUIA_TextEditor_Contents,text,
+						MUIA_TextEditor_CursorX,x,
+						MUIA_TextEditor_CursorY,y,
+						TAG_DONE);
+			}
+			FreeVec(text);
+		}
+		return;
+	}
 	if (!sign->signature) return;
 
 	if ((text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText)))
@@ -816,7 +834,7 @@ int compose_window_open(struct compose_args *args)
 
 	if (user.config.signatures_use && i)
 	{
-		if ((sign_array = (char**)malloc((i+1)*sizeof(char*))))
+		if ((sign_array = (char**)malloc((i+2)*sizeof(char*))))
 		{
 			int j=0;
 			sign = (struct signature*)list_first(&user.config.signature_list);
@@ -826,7 +844,8 @@ int compose_window_open(struct compose_args *args)
 				sign = (struct signature*)node_next(&sign->node);
 				j++;
 			}
-			sign_array[j]=NULL;
+			sign_array[j] = _("No Signature");
+			sign_array[j+1] = NULL;
 		}
 
 		signatures_group = HGroup,

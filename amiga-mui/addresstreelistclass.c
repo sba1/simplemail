@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <dos.h>
 #include <libraries/mui.h>
@@ -59,6 +60,7 @@ struct AddressTreelist_Data
 	struct Hook display_hook;
 
 	int type;
+	char *filter; /* the filter string */
 };
 
 STATIC ASM int address_compare(register __a1 struct MUIP_NListtree_CompareMessage *msg)
@@ -81,8 +83,9 @@ STATIC ASM VOID address_destruct(register __a1 struct MUIP_NListtree_DestructMes
 	addressbook_free_entry(entry);
 }
 
-STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(CL_AddressTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
 	{
 		struct addressbook_entry *entry = (struct addressbook_entry *)msg->TreeNode->tn_User;
@@ -102,6 +105,16 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 						*msg->Array++ = entry->u.person.description;
 						if (entry->u.person.num_emails)
 							*msg->Array = entry->u.person.emails[0];
+						if (data->type == TYPE_MATCHLIST && data->filter)
+						{
+							int match_type;
+							if (addressbook_completed_by_entry(data->filter, entry, &match_type))
+							{
+								if (match_type == 1) msg->Preparse[0] = "\033b";
+								else if (match_type == 0) msg->Preparse[1] = "\033b";
+								else if (match_type > 1) msg->Preparse[3] = "\033b";
+							}
+						}
 						break;
 
 			case	ADDRESSBOOK_ENTRY_LIST:
@@ -138,7 +151,7 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 /*					in_addressbook?TAG_IGNORE:MUIA_NListtree_MultiSelect,MUIV_NListtree_MultiSelect_Default, */
 					MUIA_NListtree_Title, type != TYPE_MATCHLIST,
-					MUIA_NListtree_Format,",,,",
+					MUIA_NListtree_Format, type == TYPE_MATCHLIST?"COL=0,COL=1,COL=3":",,,",
 					MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
 					MUIA_NListtree_ShowTree, type == TYPE_ADDRESSBOOK,
 					MUIA_NList_ShowDropMarks, type == TYPE_ADDRESSBOOK,
@@ -165,8 +178,9 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 
 STATIC ULONG AddressTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
-//	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
 //	if (data->context_menu) MUI_DisposeObject(data->context_menu);
+	if (data->filter) free(data->filter);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -249,11 +263,7 @@ STATIC VOID AddressTreelist_Add(struct IClass *cl, Object *obj, struct addressbo
 			{
 				if (pat)
 				{
-					int len = strlen(pat);
-					if (mystrnicmp(entry->u.person.alias,pat,len) && mystrnicmp(entry->u.person.realname,pat,len))
-					{
-						continue;
-					}
+					if (!addressbook_completed_by_entry(pat,entry,NULL)) continue;
 				}
 				DoMethod(obj, MUIM_NListtree_Insert, "" /*name*/, entry, /*udata */ NULL,MUIV_NListtree_Insert_PrevNode_Sorted,0);
 			}
@@ -263,6 +273,9 @@ STATIC VOID AddressTreelist_Add(struct IClass *cl, Object *obj, struct addressbo
 
 STATIC ULONG AddressTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressTreelist_Refresh *msg)
 {
+	struct AddressTreelist_Data *data = (struct AddressTreelist_Data*)INST_DATA(cl,obj);
+	if (data->filter) free(data->filter);
+	data->filter = mystrdup(msg->str);
 	set(obj, MUIA_NListtree_Quiet, TRUE);
 	DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, 0);
 	AddressTreelist_Add(cl,obj,NULL, MUIV_NListtree_Insert_ListNode_Root,msg->str);

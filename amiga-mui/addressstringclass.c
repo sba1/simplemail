@@ -44,6 +44,35 @@
 #include "compiler.h"
 #include "muistuff.h"
 
+/******************************************************************
+ Returns a malloced() sting for the address start (this what should
+ be completed)
+*******************************************************************/
+static char *get_address_start(char *contents, int pos, int select_size)
+{
+	char *buf;
+	int start_pos = pos;
+
+	while (start_pos)
+	{
+		if (contents[start_pos] == ',')
+		{
+			start_pos++;
+			break;
+		}
+		start_pos--;
+	}
+
+	if (select_size)
+	{
+		buf = malloc(pos - start_pos + 1);
+		if (!buf) return NULL;
+		strncpy(buf,&contents[start_pos],pos - start_pos);
+		buf[pos-start_pos]=0;
+	} else buf = NULL;
+	return buf;
+}
+
 #define MUIA_MatchWindow_String  (TAG_USER+0x123457)
 #define MUIA_MatchWindow_Entries (TAG_USER+0x123456)
 
@@ -69,7 +98,16 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 		struct addressbook_entry *entry = (struct addressbook_entry *)node->tn_User;
 		if (entry)
 		{
-			DoMethod(data->str, MUIM_AddressString_Complete, entry->u.person.realname);
+			char *contents = (char*)xget(data->str,MUIA_String_Contents);
+			int buf_pos =  xget(data->str,MUIA_String_BufferPos);
+			int select_size = xget(data->str,MUIA_BetterString_SelectSize);
+			char *addr_start;
+			char *complete;
+
+			addr_start = get_address_start(contents, buf_pos, select_size);
+			complete = addressbook_completed_by_entry(addr_start, entry, NULL);
+
+			DoMethod(data->str, MUIM_AddressString_Complete, complete);
 		}
 	}
 }
@@ -429,35 +467,17 @@ STATIC VOID AddressString_CloseList(struct IClass *cl, Object *obj)
 STATIC VOID AddressString_UpdateList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	char *str = (char*)xget(obj,MUIA_String_Contents);
-	int pos,buf_pos =  xget(obj,MUIA_String_BufferPos);
-	int len = xget(obj,MUIA_BetterString_SelectSize);
-	char *buf;
+	char *contents = (char*)xget(obj,MUIA_String_Contents);
+	int buf_pos =  xget(obj,MUIA_String_BufferPos);
+	int select_size = xget(obj,MUIA_BetterString_SelectSize);
+	char *addr_start;
 
-	pos = buf_pos;
-
-	while (pos)
-	{
-		if (str[pos] == ',')
-		{
-			pos++;
-			break;
-		}
-		pos--;
-	}
-
-	if (len)
-	{
-		buf = malloc(buf_pos - pos + 1);
-		if (!buf) return;
-		strncpy(buf,&str[pos],buf_pos - pos);
-		buf[buf_pos-pos]=0;
-	} else buf = NULL;
+	addr_start = get_address_start(contents, buf_pos, select_size);
 
 	if (data->match_wnd)
 	{
 		int entries;
-		DoMethod(data->match_wnd, MUIM_AddressTreelist_Refresh, buf);
+		DoMethod(data->match_wnd, MUIM_AddressTreelist_Refresh, addr_start);
 		entries = xget(data->match_wnd, MUIA_MatchWindow_Entries);
 
 		if (entries > 1)
@@ -466,6 +486,7 @@ STATIC VOID AddressString_UpdateList(struct IClass *cl, Object *obj)
 				set(data->match_wnd, MUIA_Window_Open, TRUE);
 		} else set(data->match_wnd, MUIA_Window_Open, FALSE);
 	}
+	free(addr_start);
 }
 
 

@@ -417,3 +417,15 @@ void insert_config_signature(struct signature *signature)
 		list_insert_tail(&user.config.signature_list,&new_signature->node);
 }
 
+/* Find a signature by name */
+struct signature *find_config_signature_by_name(char *name)
+{
+	struct signature *s = (struct signature*)list_first(&user.config.signature_list);
+
+	while (s)
+	{
+		if (!mystricmp(name,s->name)) return s;
+		s = (struct signature*)node_next(&s->node);
+	}
+	return NULL;
+}

@@ -81,6 +81,7 @@ void save_filter(void);
 void clear_config_accounts(void);
 void insert_config_account(struct account *account);
 
+struct signature *find_config_signature_by_name(char *name);
 void clear_config_signatures(void);
 void insert_config_signature(struct signature *signature);
 

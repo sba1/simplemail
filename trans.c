@@ -58,22 +58,12 @@ int mails_dl(void)
 
 int mails_upload(void)
 {
+	void *handle = NULL; /* folder_next_mail() */
 	struct folder *out_folder = folder_outgoing();
-	void *handle = NULL;
-	int i;
-	struct out_mail **out_array;
-	struct out_mail *out;
+	struct outmail **out_array;
 	struct mail *m;
-	int num_mails;
+	int i,num_mails;
 	struct smtp_server server;
-
-	char path[256];
-
-	if (!out_folder)
-	{
-		tell("Couldn't find an outgoing folder!");
-		return 0;
-	}
 
 	server.name = user.config.smtp_server;
 	server.domain = user.config.smtp_domain;
@@ -95,36 +85,18 @@ int mails_upload(void)
 		return 0;
 	}
 
-  /* folder_next_mail() is a little bit limited (not usable when mails are removed
-	* from the folder, so we build an array of all mails first */
+  /* count the number of mails which could be be sent */
 	num_mails = 0;
 	while ((m = folder_next_mail(out_folder, &handle)))
 	{
-		/* Only waitsend mails */
+		/* Only waitsend mails should be counted */
 		if (mail_get_status_type(m) == MAIL_STATUS_WAITSEND) num_mails++;
 	}
 	if (!num_mails) return 0;
+  if (!(out_array = create_outmail_array(num_mails))) return 0;
 
-	/* only one malloc() */
-	i = sizeof(struct out_mail*)*(num_mails+1) + sizeof(struct out_mail)*num_mails;
-	out_array = (struct out_mail**)malloc(i);
-	if (!out_array) return 0;
-
-	/* change into the outgoing folder directory */
-	getcwd(path, sizeof(path));
-	if(chdir(out_folder->path) == -1)
-	{
-		free(out_array);
-		return 0;
-	}
-
-	/* clear the memory */
-	memset(out_array,0,i);
-
-	/* set the first out */
-	out = (struct out_mail*)(((char*)out_array)+sizeof(struct out_mail*)*(num_mails+1));
-	handle = NULL;
-	i=0;
+	handle = NULL; /* for folder_next_mail() */
+	i=0; /* the current mail no */
 
 	/* initialize the arrays */
 	while ((m = folder_next_mail(out_folder, &handle)))
@@ -132,11 +104,11 @@ int mails_upload(void)
 		char *from, *to;
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
+		struct outmail *out;
 
 		if (mail_get_status_type(m) != MAIL_STATUS_WAITSEND) continue;
 
-		out_array[i++] = out;
-
+		out = out_array[i++];
 		to = mail_find_header_contents(m,"To");
 		from = mail_find_header_contents(m,"From");
 
@@ -144,19 +116,17 @@ int mails_upload(void)
 
 		if (!to || !from)
 		{
-			chdir(path);
-			free(out_array); /* this is not enough */
+			free_outmail_array(out_array);
 			return 0;
 		}
 		if (!parse_mailbox(from,&mb))
 		{
 			tell("No valid sender address!");
-			chdir(path);
-			free(out_array); /* this is not enough */
+			free_outmail_array(out_array);
 			return 0;
 		}
 
-		out->mailfile = m->filename;
+		out->mailfile = mystrdup(m->filename); /* will be freed in free_outmail_array() */
 		out->from = mb.addr_spec; /* must be not freed here */
 
 		/* fill in the recipients */
@@ -183,23 +153,19 @@ int mails_upload(void)
 
 		if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
 /*		if (mb.addr_spec) free(mb.addr_spec); */
-		out++;
 	}
 
-	server.out_mail = out_array;
+	server.outmail = out_array;
 
 	up_set_title(server.name);
 	up_window_open();
 
 	/* now send all mails */
-	if (!(smtp_send(&server)))
+	if (!(smtp_send(&server,out_folder->path)))
 	{
 		up_window_close();
 	}
 
-	chdir(path);
-	free(out_array);
-
-	/* NOTE: A lot of memory leaks!! */
+	free_outmail_array(out_array);
 }
 

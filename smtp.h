@@ -23,13 +23,17 @@
 #ifndef SM__SMTP_H
 #define SM__SMTP_H
 
-
-struct out_mail
+struct outmail
 {
-	char *from;
-	char **rcp;
-	char *mailfile;
+	char *from; /* the from address */
+	char **rcp; /* an array of all recipients (e-mails) */
+	char *mailfile; /* the name of the file */
 };
+
+/* functions for outmail */
+struct outmail **create_outmail_array(int amm);
+struct outmail **duplicate_outmail_array(struct outmail **om);
+void free_outmail_array(struct outmail **om_array);
 
 #define ESMTP_ENHACEDSTATUSCODES  (1<<0)
 #define ESMTP_8BITMIME            (1<<1)
@@ -63,9 +67,9 @@ struct smtp_server
 
 	struct esmtp 		esmtp;
 
-	struct out_mail	**out_mail;
+	struct outmail	**outmail; /* all the mails which should be sent, ends with NULL */
 };
 
-int smtp_send(struct smtp_server *server);
+int smtp_send(struct smtp_server *server, char *folder_path);
 
 #endif

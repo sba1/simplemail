@@ -40,6 +40,10 @@ struct connection
 	SSL *ssl;
 	X509 *server_cert;
 
+	/* for tcp_write() */
+	unsigned char write_buf[CONN_BUF_WRITE_SIZE];
+	int write_size;
+
 	/* for tcp_readln() */
 	unsigned char read_buf[CONN_BUF_READ_SIZE];
 	int read_pos;

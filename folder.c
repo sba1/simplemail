@@ -1650,7 +1650,7 @@ struct mail *folder_next_mail(struct folder *folder, void **handle)
 		folder_read_mail_infos(folder,0);
 
 	mail_array = folder->mail_array;
-	if (!folder->sorted_mail_array && *((int**)handle) == 0 && folder->num_mails && folder->mail_array_allocated)
+	if (!folder->sorted_mail_array && /* *((int**)handle) == 0 && */ folder->num_mails && folder->mail_array_allocated)
 	{
 		/* the array is not sorted, so sort it now */
 		folder->sorted_mail_array = (struct mail**)malloc(sizeof(struct mail*)*folder->mail_array_allocated);

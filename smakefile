@@ -65,6 +65,15 @@ create-patch:
   -execute <<
     cd /
     diff -Nur -X simplemail-mod/diff_ignore simplemail-cvs simplemail-mod >ram:simplemail.diff
+    multiview ram:simplemail.diff
+<
+
+# create a patch between cvs and mod
+create-latest:
+  -execute <<
+    cd /
+    diff -Nur -X simplemail-mod/diff_ignore simplemail-mod simplemail-cvs >ram:simplemail_latest.diff
+    multiview ram:simplemail_latest.diff
 <
 
 # clean the source tree

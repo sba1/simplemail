@@ -575,8 +575,8 @@ struct mail *mail_create_reply(struct mail *mail)
 
 			mail_decode(text_mail);
 
-			if (mail->decoded_data) replied_text = cite_text(mail->decoded_data,mail->decoded_len);
-			else replied_text = cite_text(mail->text + mail->text_begin, mail->text_len);
+			if (text_mail->decoded_data) replied_text = cite_text(text_mail->decoded_data,text_mail->decoded_len);
+			else replied_text = cite_text(text_mail->text + text_mail->text_begin, text_mail->text_len);
 
 			if (replied_text)
 			{

@@ -324,7 +324,7 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
 STATIC ULONG AddressString_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
-	if (xget(msg->obj,MUIA_UserData) == 1) return MUIV_DragQuery_Accept;
+	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;
 	return MUIV_DragQuery_Refuse;
 }
 
@@ -332,7 +332,7 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 {
 	struct addressbook_entry_new *entry;
 
-	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	DoMethod(msg->obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
 
 	if (entry)
 	{

@@ -24,6 +24,7 @@
 #include <config.h>
 #endif
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -169,7 +170,50 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 }
 
 /**************************************************************************
- Returns 1 if a given array contains a givem string (case insensitive)
+ Wraps a text. Overwrites the argument!!
+**************************************************************************/
+void wrap_text(char *text, int border)
+{
+	unsigned char *buf = text;
+	unsigned char c;
+	int pos = 0;
+
+	unsigned char *last_space_buf = NULL;
+	int last_space_pos = 0;
+
+	border--;
+
+	while ((c = *buf))
+	{
+		if (isspace(c))
+		{
+			if (c == '\n')
+			{
+				pos = 0;
+				buf++;
+				last_space_buf = NULL;
+				continue;
+			}
+			last_space_buf = buf;
+			last_space_pos = pos;
+		}
+
+		if (pos >= border && last_space_buf)
+		{
+			*last_space_buf = '\n';
+			last_space_buf = NULL;
+			pos = pos - last_space_pos;
+			buf++;
+			continue;
+		}
+
+		pos++;
+		buf++;
+	}
+}
+
+/**************************************************************************
+ Returns 1 if a given array contains a given string (case insensitive)
 **************************************************************************/
 int array_contains(char **strings, char *str)
 {

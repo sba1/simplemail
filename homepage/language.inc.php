@@ -3,13 +3,13 @@
 /* Function returns correct filename (localized) */
 function get_filename($fn)
 {
-  global $HTTP_ACCEPT_LANGUAGE;
-  if (isset($HTTP_ACCEPT_LANGUAGE)) $accepted_langs = explode(" ",$HTTP_ACCEPT_LANGUAGE);
+  $HTTP_ACCEPT_LANGUAGE=getenv("HTTP_ACCEPT_LANGUAGE");
+  if (isset($HTTP_ACCEPT_LANGUAGE)) $accepted_langs = explode(",",$HTTP_ACCEPT_LANGUAGE);
   else $accepted_langs = array("en");
 
   foreach($accepted_langs as $lang)
   {
-    $new_fn = $fn . ".".$lang;
+    $new_fn = $fn . "." . trim($lang);
     if (file_exists($new_fn)) return $new_fn;
   }
   return $fn;
@@ -18,8 +18,8 @@ function get_filename($fn)
 /* Function returns the correct translated string of a string array */
 function get_string($text_array)
 {
-  global $HTTP_ACCEPT_LANGUAGE;
-  if (isset($HTTP_ACCEPT_LANGUAGE)) $accepted_langs = explode(" ",$HTTP_ACCEPT_LANGUAGE);
+  $HTTP_ACCEPT_LANGUAGE=getenv("HTTP_ACCEPT_LANGUAGE");
+  if (isset($HTTP_ACCEPT_LANGUAGE)) $accepted_langs = explode(",",$HTTP_ACCEPT_LANGUAGE);
   else $accepted_langs = array("en");
 
   $supported_langs = array_keys($text_array);
@@ -27,6 +27,7 @@ function get_string($text_array)
   $used_lang = "en";
   foreach($accepted_langs as $lang)
   {
+    $lang = trim($lang);
     if (in_array($lang,$supported_langs))
     {
       $used_lang = $lang;

@@ -33,8 +33,8 @@ simplemail_SOURCES = addressbook.c \
                      smtp.h \
                      tcp.c \
                      tcp.h \
-                     textinterpreter.c \
-                     textinterpreter.h \
+                     text2html.c \
+                     text2html.h \
                      trans.c \
                      trans.h
 

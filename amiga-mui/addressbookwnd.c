@@ -106,6 +106,10 @@ struct Person_Data /* should be a customclass */
 	Object *portrait_button;
 	Object *email_texteditor;
 	Object *portrait_string;
+	Object *person_group_list;
+
+	Object *group_wnd;
+	Object *group_wnd_list;
 
 	struct Snail_Data priv;
 	struct Snail_Data work;
@@ -166,6 +170,133 @@ static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
 }
 
 /******************************************************************
+ Close group window
+*******************************************************************/
+static void person_group_window_close(struct Person_Data **pdata)
+{
+	struct Person_Data *data = *pdata;
+
+	if (data->group_wnd)
+	{
+		set(data->group_wnd, MUIA_Window_Open, FALSE);
+		DoMethod(App, OM_REMMEMBER, data->group_wnd);
+		MUI_DisposeObject(data->group_wnd);
+		data->group_wnd = NULL;
+		data->group_wnd_list = NULL;
+	}
+}
+
+
+/******************************************************************
+ Opens a window with available groups
+*******************************************************************/
+static void person_group_added(struct Person_Data **pdata)
+{
+	struct Person_Data *data = *pdata;
+
+	char *new_group_name;
+
+	DoMethod(data->group_wnd_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &new_group_name);
+	if (new_group_name)
+	{
+		int found = 0, i;
+
+		/* check if already belonging to the group */
+
+		for (i=0;i<xget(data->person_group_list, MUIA_NList_Entries);i++)
+		{
+			char *group_name;
+
+			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, &group_name);
+			if (!mystrcmp(group_name,new_group_name))
+			{
+				found = 1;
+				break;
+			}
+		}
+
+		if (!found) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, new_group_name, MUIV_NList_Insert_Sorted);
+	}
+
+	person_group_window_close(pdata);
+}
+
+/******************************************************************
+ Opens a window with available groups
+*******************************************************************/
+static void person_add_group(struct Person_Data **pdata)
+{
+	struct Person_Data *data = *pdata;
+
+	if (!data->group_wnd)
+	{
+		static char text[256];
+		char *name;
+		Object *ok_button, *cancel_button;
+
+		name = getutf8string(data->realname_string);
+		if (!name || !strlen(name)) name = getutf8string(data->alias_string);
+
+		if (name)
+		{
+			static char iso_name[64];
+
+			utf8tostr(name, iso_name,sizeof(iso_name), user.config.default_codeset);
+
+			sm_snprintf(text,sizeof(text),_("Add \"%s\" to following groups"), iso_name);
+		} else
+		{
+			sm_snprintf(text,sizeof(text),_("Add contact to following groups"));
+		}
+
+		data->group_wnd = WindowObject,
+			MUIA_Window_Title, _("SimpleMail - Add Groups"),
+			MUIA_Window_ID, MAKE_ID('S','A','G','R'),
+			WindowContents, VGroup,
+				Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
+				Child, NListviewObject,
+					MUIA_NListview_NList, data->group_wnd_list = NListObject,
+						End,
+					End,
+				Child, HorizLineObject,
+				Child, HGroup,
+					Child, ok_button = MakeButton(_("_Ok")),
+					Child, HVSpace,
+					Child, cancel_button = MakeButton(_("_Cancel")),
+					End,
+				End,
+			End;
+
+		if (data->group_wnd)
+		{
+			int i;
+
+			for (i=0;i<xget(group_list, MUIA_NList_Entries);i++)
+			{
+				struct addressbook_group *grp;
+				DoMethod(group_list, MUIM_NList_GetEntry,i,&grp);
+				if (grp)
+				{
+					DoMethod(data->group_wnd_list, MUIM_NList_InsertSingle, grp->name, MUIV_NList_Insert_Sorted);
+				}
+			}
+
+			DoMethod(App, OM_ADDMEMBER, data->group_wnd);
+
+			DoMethod(data->group_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_window_close, data);
+			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_window_close, data);
+			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_added, data);
+			DoMethod(data->group_wnd_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_added, data);
+		}
+	}
+
+	if (data->group_wnd)
+	{
+		set(data->group_wnd, MUIA_Window_Open, TRUE);
+	}
+}
+
+/******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook, because the object is disposed in
  this function)!
@@ -173,6 +304,9 @@ static void adoptsnail(struct address_snail_phone *asp, struct Snail_Data *data)
 static void person_window_close(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
+
+	person_group_window_close(pdata);
+
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
 	MUI_DisposeObject(data->wnd);
@@ -238,6 +372,7 @@ static void person_window_ok(struct Person_Data **pdata)
 	if ((new_entry = malloc(sizeof(*new_entry))))
 	{
 		LONG pos;
+		int i;
 
 		memset(new_entry,0,sizeof(*new_entry));
 
@@ -261,6 +396,13 @@ static void person_window_ok(struct Person_Data **pdata)
 				new_entry->email_array = array_add_string(new_entry->email_array, single_address);
 				free(single_address);
 			}
+		}
+
+		for (i=0;i<xget(data->person_group_list, MUIA_NList_Entries);i++)
+		{
+			char *group_name;
+			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, &group_name);
+			if (group_name) new_entry->group_array = array_add_string(new_entry->group_array,group_name);
 		}
 
 		if (xget(data->female_button,MUIA_Selected)) new_entry->sex = 1;
@@ -392,7 +534,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	Object *female_button, *male_button, *birthday_string, *homepage_string, *pgp_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
 	Object *pgp_popobject, *pgp_list;
-	Object *group_list, *add_to_group_button, *rem_from_group_button;
+	Object *person_group_list, *add_to_group_button, *rem_from_group_button;
 	struct Snail_Data priv, work;
 	int num;
 
@@ -545,7 +687,9 @@ static void person_window_open(struct addressbook_entry_new *entry)
 								MUIA_Weight, 50,
 								Child, HorizLineTextObject(_("Belonging groups")),
 								Child, NListviewObject,
-									MUIA_NListview_NList, group_list = NListObject,
+									MUIA_NListview_NList, person_group_list = NListObject,
+										MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+										MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
 										End,
 									End,
 								Child, HGroup,
@@ -767,18 +911,35 @@ static void person_window_open(struct addressbook_entry_new *entry)
 			data->homepage_string = homepage_string;
 			data->portrait_button = portrait_button;
 			data->portrait_string = portrait_string;
+			data->person_group_list = person_group_list;
 			data->reg_group = reg_group;
 			data->priv = priv;
 			data->work = work;
 			data->person = entry;
 			data->num = num;
+			data->group_wnd = NULL;
+			data->group_wnd_list = NULL;
 
 			/* mark the window as opened */
 			person_open[num] = 1;
 
+			if (entry->group_array)
+			{
+				char *group_name;
+				int i = 0;
+
+				while ((group_name = entry->group_array[i]))
+				{
+					DoMethod(data->person_group_list, MUIM_NList_InsertSingle, group_name, MUIV_NList_Insert_Sorted);
+					i++;
+				}
+			}
+
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
 			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_ok, data);
+			DoMethod(add_to_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_add_group, data);
+			DoMethod(rem_from_group_button, MUIM_Notify, MUIA_Pressed, FALSE, person_group_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 			DoMethod(download_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_download_portrait, data);
 			DoMethod(homepage_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_homepage, data);
 			DoMethod(female_button, MUIM_Notify, MUIA_Selected, TRUE, male_button, 3, MUIM_Set, MUIA_Selected, FALSE);

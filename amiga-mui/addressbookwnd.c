@@ -472,6 +472,7 @@ void person_window_open(struct addressbook_entry *entry)
 									StringFrame,
 									MUIA_CycleChain, 1,
 									MUIA_String_AdvanceOnCR, TRUE,
+									MUIA_ShortHelp,_("The date of the birth of the person.\nThe format is dd mon yyyy or dd mm yyyy."),
 									End,
 								Child, MakeLabel(_("Sex")),
 

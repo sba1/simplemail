@@ -63,11 +63,11 @@ struct config
 	/* list of all phrases */
 	struct list phrase_list;
 
-	/* list of all cookies */
-	struct list cookie_list;
+	/* list of all taglines */
+	struct list tagline_list;
 
 	int signatures_use;
-	int cookies_use;
+	int taglines_use;
 
 	/* headers */
 	unsigned int header_flags;
@@ -110,7 +110,7 @@ struct user
 	char *config_filename; /* path to the the configuration */
 	char *filter_filename; /* path to the separate filter config file */
 	char *signature_filename; /* path to the sparate signature config file */
-	char *cookies_filename; /* path to the cookies */
+	char *taglines_filename; /* path to the taglines */
 
 	struct config config;
 };

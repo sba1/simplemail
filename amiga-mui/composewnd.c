@@ -41,7 +41,7 @@
 #include "addressbook.h"
 #include "codecs.h"
 #include "configuration.h"
-#include "cookies.h"
+#include "taglines.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
@@ -672,9 +672,9 @@ static void compose_add_signature(struct Compose_Data *data)
 				strcat(new_text,"\n-- \n");
 				strcat(new_text,sign->signature);
 
-				if(user.config.cookies_use)
+				if(user.config.taglines_use)
 				{
-					new_text = cookies_add_cookie(new_text);
+					new_text = taglines_add_tagline(new_text);
 				}
 				
 /*

@@ -31,7 +31,7 @@
 #include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
-#include "cookies.h"
+#include "taglines.h"
 #include "support_indep.h"
 
 #include "support.h"
@@ -173,8 +173,8 @@ int load_config(void)
 							user.config.read_fixedfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Signatures.Use")))
 							user.config.signatures_use = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Cookies.Use")))
-							user.config.cookies_use = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"taglines.Use")))
+							user.config.taglines_use = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.Wrap")))
 							user.config.write_wrap = atoi(result);
 						if ((result = get_config_item(buf,"Write.WrapType")))
@@ -385,12 +385,12 @@ int load_config(void)
 		
 		if (user.directory) strcpy(buf,user.directory);
 		else buf[0] = 0;
-		sm_add_part(buf,".cookies",512);
-		list_init(&user.config.cookie_list);
+		sm_add_part(buf,".taglines",512);
+		list_init(&user.config.tagline_list);
 
-		if(user.cookies_filename = mystrdup(buf))
+		if(user.taglines_filename = mystrdup(buf))
 		{
-			if ((fh = fopen(user.cookies_filename,"r")))
+			if ((fh = fopen(user.taglines_filename,"r")))
 			{
 				char *txt = NULL;
 				char lf[]="\n";
@@ -401,14 +401,14 @@ int load_config(void)
 					{
 						if(strcmp(buf, "%%") == 0)
 						{
-							struct cookie *c;
+							struct tagline *c;
 
 							txt[strlen(txt) - 1] = '\0';
 
-							c = cookies_create_cookie(txt);
+							c = taglines_create_tagline(txt);
 							if(c != NULL)
 							{
-								list_insert_tail(&user.config.cookie_list, (struct node *) c);
+								list_insert_tail(&user.config.tagline_list, (struct node *) c);
 							}
 
 							free(txt);
@@ -497,7 +497,7 @@ void save_config(void)
 			}
 
 			fprintf(fh,"Signatures.Use=%s\n",user.config.signatures_use?"Y":"N");
-			fprintf(fh,"Cookies.Use=%s\n",user.config.cookies_use?"Y":"N");
+			fprintf(fh,"Taglines.Use=%s\n",user.config.taglines_use?"Y":"N");
 			fprintf(fh,"Write.Wrap=%d\n",user.config.write_wrap);
 			fprintf(fh,"Write.WrapType=%d\n",user.config.write_wrap_type);
 			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");

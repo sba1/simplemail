@@ -116,7 +116,7 @@ static Object *signatures_use_checkbox;
 static Object *signature_texteditor;
 static Object *signature_name_string;
 
-static Object *cookies_use_checkbox;
+static Object *taglines_use_checkbox;
 
 static Object *phrase_addresses_string;
 static Object *phrase_write_welcome_string;
@@ -355,7 +355,7 @@ static void config_use(void)
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
-	user.config.cookies_use = xget(cookies_use_checkbox, MUIA_Selected);
+	user.config.taglines_use = xget(taglines_use_checkbox, MUIA_Selected);
 	user.config.write_wrap = xget(write_wordwrap_string,MUIA_String_Integer);
 	user.config.write_wrap_type = xget(write_wordwrap_cycle,MUIA_Cycle_Active);
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
@@ -1125,8 +1125,8 @@ static int init_signatures_group(void)
   			Child, MakeLabel(_("Us_e signatures")),
   			Child, signatures_use_checkbox = MakeCheck(_("Us_e signatures"),user.config.signatures_use),
   			Child, HSpace(0),
-			Child, MakeLabel(_("Us_e cookies")),
-			Child, cookies_use_checkbox = MakeCheck(_("Us_e cookies"),user.config.cookies_use),
+			Child, MakeLabel(_("Use _taglines")),
+			Child, taglines_use_checkbox = MakeCheck(_("Use _taglines"),user.config.taglines_use),
 			Child, HSpace(0),
 	  		End,
 	  	Child, HorizLineObject,

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** cookies.c
+** taglines.c
 */
 
 #include <stdlib.h>
@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "cookies.h"
+#include "taglines.h"
 #include "configuration.h"
 
 int random(int max)
@@ -41,49 +41,49 @@ int random(int max)
 	return (rand() % max);
 }
 
-char *get_cookie(void)
+char *get_tagline(void)
 {
 	char *rc;
-	struct cookie *c;
-	int nr, len = list_length(&user.config.cookie_list);
+	struct tagline *t;
+	int nr, len = list_length(&user.config.tagline_list);
 	struct node *n;
 
 	if(!len) return NULL;
 
-	n=list_first(&user.config.cookie_list);
+	n=list_first(&user.config.tagline_list);
 
 	nr = random(len);
 
-	c = (struct cookie *) list_find(&user.config.cookie_list, nr);
+	t = (struct tagline *) list_find(&user.config.tagline_list, nr);
 
 
-	rc = malloc(strlen(c->txt) + 1);
+	rc = malloc(strlen(t->txt) + 1);
 	if(rc != NULL)
 	{
-		strcpy(rc, c->txt);
+		strcpy(rc, t->txt);
 	}
 
 	return rc;
 }
 
-char * cookies_add_cookie(char *buf)
+char * taglines_add_tagline(char *buf)
 {
 	char *rc = buf;
-	char *cookie;
+	char *tagline;
 	long len;
 
-	cookie = get_cookie();
+	tagline = get_tagline();
 
-	if(cookie != NULL)
+	if(tagline != NULL)
 	{
-		len = strlen(buf) + strlen(cookie);
+		len = strlen(buf) + strlen(tagline);
 
 		rc = malloc(len+1);
 		if(rc != NULL)
 		{
 			strcpy(rc, buf);
-			strcat(rc, cookie);
-			free(cookie);
+			strcat(rc, tagline);
+			free(tagline);
 			free(buf);
 		}
 	}
@@ -95,11 +95,11 @@ char * cookies_add_cookie(char *buf)
 	return rc;
 }
 
-struct cookie *cookies_create_cookie(char *txt)
+struct tagline *taglines_create_tagline(char *txt)
 {
-	struct cookie *rc;
+	struct tagline *rc;
 
-	rc = malloc(sizeof(struct cookie));
+	rc = malloc(sizeof(struct tagline));
 	if(rc != NULL)
 	{
 		rc->txt = malloc(strlen(txt) + 1);
@@ -117,14 +117,14 @@ struct cookie *cookies_create_cookie(char *txt)
 	return rc;
 }
 
-void cookies_free_cookie(struct cookie *c)
+void taglines_free_tagline(struct tagline *t)
 {
-	if(c != NULL)
+	if(t != NULL)
 	{
-		if(c->txt != NULL)
+		if(t->txt != NULL)
 		{
-			free(c->txt);
+			free(t->txt);
 		}
-		free(c);
+		free(t);
 	}
 }

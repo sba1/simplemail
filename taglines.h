@@ -17,16 +17,16 @@
 ***************************************************************************/
 
 /*
-** cookies.h
+** taglines.h
 */
 
 #include "lists.h"
 
-struct cookie {
+struct tagline {
 	struct node n;
 	char *txt;
 };
 
-char *cookies_add_cookie(char *);
-struct cookie *cookies_create_cookie(char *);
-void cookies_free_cookie(struct cookie *);
+char *taglines_add_tagline(char *);
+struct tagline *taglines_create_tagline(char *);
+void taglines_free_tagline(struct tagline *);

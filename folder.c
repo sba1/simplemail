@@ -32,6 +32,7 @@
 #include "lists.h"
 #include "filter.h"
 #include "folder.h"
+#include "simplemail.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -1241,11 +1242,78 @@ void folder_set_secondary_sort(struct folder *folder, int sort_mode)
 	}
 }
 
+
+/******************************************************************
+ Checks if a mail should be filtered (returns the filter which
+ actions should performed or NULL)
+*******************************************************************/
+struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
+{
+	struct filter *filter = filter_list_first();
+
+	while (filter)
+	{
+		struct filter_rule *rule = (struct filter_rule*)list_first(&filter->rules_list);
+
+		while (rule)
+		{
+			int take = 0;
+
+			switch (rule->type)
+			{
+				case	RULE_FROM_MATCH:
+							break;
+
+				case	RULE_SUBJECT_MATCH:
+							take = !mystristr(m->subject,rule->u.subject.subject);
+							break;
+
+				case	RULE_HEADER_MATCH:
+							break;
+
+				default:
+							break;
+			}
+
+			if (!take && !filter->mode) break;
+			if (take && filter->mode) return filter;
+
+			rule = (struct filter_rule*)node_next(&rule->node);
+		}
+
+		if (!rule) return filter;
+
+		filter = filter_list_next(filter);
+	}
+
+	return 0;
+}
+
 /******************************************************************
  Filter all mails in the given folder
 *******************************************************************/
 int folder_filter(struct folder *folder)
 {
+	void *handle = NULL;
+	struct mail *m;
+
+	while ((m = folder_next_mail(folder,&handle)))
+	{
+		struct filter *f = folder_mail_filter(folder,m);
+
+		if (f)
+		{
+			if (f->use_dest_folder && f->dest_folder)
+			{
+				struct folder *dest_folder = folder_find_by_name(f->dest_folder);
+				if (dest_folder)
+				{
+					/* very slow, because the sorted array is rebuilded in the both folders! */
+					callback_move_mail(m, folder, dest_folder);
+				}
+			}
+		}
+	}
 	return 1;
 }
 

@@ -58,6 +58,10 @@ struct filter
 	int active; /* filter is active */
 	int mode; /* 0=and  -  1=or */
 	struct list rules_list; /* list of rules */
+
+	char *dest_folder; /* Move the mail into the given folder */
+	int use_dest_folder; /* If set to 1 */
+
 	struct list action_list; /* list of actions */
 };
 

@@ -39,7 +39,7 @@ struct filter *filter_create(void)
 	if (f)
 	{
 		memset(f,0,sizeof(struct filter));
-		f->name = mystrdup("Unnamed");
+		f->name = mystrdup("Unnamed filter");
 		list_init(&f->rules_list);
 		list_init(&f->action_list);
 	}
@@ -54,8 +54,43 @@ struct filter *filter_duplicate(struct filter *filter)
 	struct filter *f = malloc(sizeof(struct filter));
 	if (f)
 	{
+		struct filter_rule *rule;
+
 		*f = *filter;
 		f->name = mystrdup(f->name);
+		f->dest_folder = mystrdup(f->dest_folder);
+
+		list_init(&f->rules_list);
+
+		rule = (struct filter_rule*)list_first(&filter->rules_list);
+		while (rule)
+		{
+			struct filter_rule *new_rule = (struct filter_rule*)malloc(sizeof(struct filter_rule));
+			if (new_rule)
+			{
+				new_rule->type = rule->type;
+
+				switch (new_rule->type)
+				{
+					case	RULE_FROM_MATCH:
+								new_rule->u.from.from = mystrdup(rule->u.from.from);
+								break;
+
+					case	RULE_SUBJECT_MATCH:
+								new_rule->u.subject.subject = mystrdup(rule->u.subject.subject);
+								break;
+
+					case	RULE_HEADER_MATCH:
+								new_rule->u.header.name = mystrdup(rule->u.header.name);
+								new_rule->u.header.contents = mystrdup(rule->u.header.contents);
+								break;
+				}
+
+				list_insert_tail(&f->rules_list, &new_rule->node);
+			}
+
+			rule = (struct filter_rule*)node_next(&rule->node);
+		}
 	}
 	return f;
 }
@@ -65,7 +100,9 @@ struct filter *filter_duplicate(struct filter *filter)
 **************************************************************************/
 void filter_dispose(struct filter *f)
 {
+	/* The rules must be freed */
 	if (f->name) free(f->name);
+	if (f->dest_folder) free(f->dest_folder);
 	free(f);
 }
 

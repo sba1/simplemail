@@ -113,6 +113,7 @@ int folder_position(struct folder *f);
 struct folder *folder_find_by_name(char *name);
 struct folder *folder_find_by_path(char *name);
 struct folder *folder_find_by_mail(struct mail *mail);
+struct mail *folder_find_mail(struct folder *f,int position);
 struct mail *folder_find_next_mail_by_filename(char *folder_path, char *mail_filename);
 struct mail *folder_find_prev_mail_by_filename(char *folder_path, char *mail_filename);
 struct mail *folder_find_best_mail_to_select(struct folder *folder);

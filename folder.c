@@ -1385,6 +1385,19 @@ struct folder *folder_find_by_mail(struct mail *mail)
 }
 
 /******************************************************************
+ Returns the mail at the given position
+*******************************************************************/
+struct mail *folder_find_mail(struct folder *f, int position)
+{
+	void *handle = NULL;
+	if (!f->sorted_mail_array) return NULL;
+	if (position >= f->num_mails) return NULL;
+	folder_next_mail(f,&handle); /* sort the stuff */
+	if (f->sorted_mail_array) return f->sorted_mail_array[position];
+	return f->mail_array[position];
+}
+
+/******************************************************************
  Finds from a folder (which is given by its path) the mail's
  successor (which is given by the filename)
 *******************************************************************/

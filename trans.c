@@ -75,7 +75,7 @@ int mails_upload(void)
 	struct out_mail *out;
 	struct mail *m;
 	int num_mails;
-	struct smtp_server *server;
+	struct smtp_server server;
 
 	char path[256];
 
@@ -85,15 +85,13 @@ int mails_upload(void)
 		return 0;
 	}
 
-	server = malloc(sizeof(struct smtp_server));
-	server->name   = malloc(256);
-	strcpy(server->name, user.config.smtp_server);
-	server->port   = 25;
-	server->socket = SMTP_NO_SOCKET;
+	server.name   = user.config.smtp_server;
+	server.port   = 25;
+	server.socket = SMTP_NO_SOCKET;
 	
 	domain = user.config.smtp_domain;
 
-	if (!server->name)
+	if (!server.name)
 	{
 		tell("Please specify a smtp server!");
 		return 0;
@@ -180,22 +178,19 @@ int mails_upload(void)
 		out++;
 	}
 
-	server->out_mail = out_array;
+	server.out_mail = out_array;
 
-	up_set_title(server->name);
+	up_set_title(server.name);
 	up_window_open();
 
 	/* now send all mails */
-	if (!(smtp_send(server)))
+	if (!(smtp_send(&server)))
 	{
 		up_window_close();
 	}
 
 	chdir(path);
 	free(out_array);
-	
-	free(server->name);
-	free(server);
 
 	/* NOTE: A lot of memory leaks!! */
 }

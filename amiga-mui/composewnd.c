@@ -1341,7 +1341,8 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->to_list)
 				{
-					utf8 *to_str = get_addresses_from_list(args->to_change->info->to_list);
+					
+					utf8 *to_str = get_addresses_from_list_safe(args->to_change->info->to_list,user.config.default_codeset);
 					if (to_str)
 					{
 						set(to_string,MUIA_UTF8String_Contents,to_str);
@@ -1351,7 +1352,7 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->cc_list)
 				{
-					utf8 *cc_str = get_addresses_from_list(args->to_change->info->cc_list);
+					utf8 *cc_str = get_addresses_from_list_safe(args->to_change->info->cc_list,user.config.default_codeset);
 					if (cc_str)
 					{
 						set(to_string,MUIA_UTF8String_Contents,cc_str);
@@ -1361,7 +1362,15 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->reply_addr)
 				{
-					set(reply_string,MUIA_UTF8String_Contents,args->to_change->info->reply_addr);
+					char *reply_addr = args->to_change->info->reply_addr;
+					if (!codesets_unconvertable_chars(user.config.default_codeset,reply_addr,strlen(reply_addr)))
+						set(reply_string,MUIA_UTF8String_Contents,reply_addr);
+					else
+					{
+						char *puny = encode_address_puny(reply_addr);
+						set(reply_string,MUIA_UTF8String_Contents,puny);
+						free(puny);
+					}
 					set(data->reply_button,MUIA_Selected,TRUE);
 				}
 

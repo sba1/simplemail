@@ -68,8 +68,10 @@ void init_config(void)
 
 #ifdef _AMIGA
 	user.directory = strdup("PROGDIR:");
+	user.folder_directory = strdup("PROGDIR:.folders");
 #else
 	user.directory = strdup(".");
+	user.folder_directory = strdup("./.folders");
 #endif
 	list_init(&user.config.account_list);
 	list_init(&user.config.signature_list);
@@ -371,6 +373,7 @@ int load_config(void)
 				fclose(fh);
 			}
 		}
+
 		free(buf);
 	}
 

@@ -29,6 +29,7 @@
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 
+#include "configuration.h"
 #include "lists.h"
 #include "filter.h"
 #include "folder.h"
@@ -1788,19 +1789,19 @@ int folder_filter(struct folder *folder)
 }
 
 /******************************************************************
- Returns the default folder path
+ Opens the order file and returns the FILE *
 *******************************************************************/
-char *default_folder_path(void)
+static FILE *folder_open_order_file(char *mode)
 {
-#ifdef _AMIGA
-	#define FOLDER_PATH "PROGDIR:.folders"
-	char *folder_path = "PROGDIR:.folders";
-#else
-	#define FOLDER_PATH ".folders"
-	char *folder_path = ".folders";
-#endif
+	FILE *fh;
+	char *order_path;
 
-	return folder_path;
+	order_path = mycombinepath(user.folder_directory,".order");
+	if (!order_path) return NULL;
+
+	fh = fopen(order_path,mode);
+	free(order_path);
+	return fh;
 }
 
 /******************************************************************
@@ -1809,7 +1810,8 @@ char *default_folder_path(void)
 void folder_load_order(void)
 {
 	FILE *fh;
-	if ((fh = fopen(FOLDER_PATH "/.order","r")))
+
+	if ((fh = folder_open_order_file("r")))
 	{
 		struct list new_order_list;
 		char *buf = (char*)malloc(1024);
@@ -1870,7 +1872,6 @@ void folder_load_order(void)
 		}
 		fclose(fh);
 	}
-
 }
 
 /******************************************************************
@@ -1879,8 +1880,10 @@ void folder_load_order(void)
 void folder_save_order(void)
 {
 	struct folder *f = folder_first();
-	FILE *fh = fopen(FOLDER_PATH "/.order","w");
-	if (!fh) return;
+	FILE *fh;
+
+	if (!(fh = folder_open_order_file("w")))
+		return;
 
 	while (f)
 	{
@@ -1900,11 +1903,11 @@ void folder_save_order(void)
 *******************************************************************/
 char *new_folder_path(void)
 {
-	static char buf[256];
+	static char buf[512];
 	char *buf2;
 	int i=0;
 
-	strcpy(buf,default_folder_path());
+	strcpy(buf,user.folder_directory);
 	sm_add_part(buf,"folder",256);
 	buf2 = buf + strlen(buf);
 
@@ -1934,12 +1937,11 @@ int init_folders(void)
 	FILE *fh;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
-	char *folder_path = default_folder_path();
 
 	list_init(&folder_list);
 
 	/* Read in the .orders file at first */
-	if ((fh = fopen(FOLDER_PATH "/.order","r")))
+	if ((fh = folder_open_order_file("r")))
 	{
 		char *buf = (char*)malloc(1024);
 		if (buf)
@@ -1994,13 +1996,13 @@ int init_folders(void)
 	if (!(st = malloc(sizeof(struct stat))))
 		return 0;
 
-	if ((dfd = opendir(folder_path)))
+	if ((dfd = opendir(user.folder_directory)))
 	{
 		while ((dptr = readdir(dfd)) != NULL)
 		{
 			char buf[256];
 			if (!strcmp(dptr->d_name,".") || !strcmp(dptr->d_name,"..")) continue;
-			strcpy(buf,folder_path);
+			strcpy(buf,user.folder_directory);
 			sm_add_part(buf,dptr->d_name,sizeof(buf));
 			if (!stat(buf,st))
 			{
@@ -2015,16 +2017,44 @@ int init_folders(void)
 	}
 
 	if (!folder_incoming())
-		folder_add(FOLDER_PATH "/incoming");
+	{
+		char *new_folder = mycombinepath(user.folder_directory,"incoming");
+		if (new_folder)
+		{
+			folder_add(new_folder);
+			free(new_folder);
+		}
+	}
 
 	if (!folder_outgoing())
-		folder_add(FOLDER_PATH "/outgoing");
+	{
+		char *new_folder = mycombinepath(user.folder_directory,"outgoing");
+		if (new_folder)
+		{
+			folder_add(new_folder);
+			free(new_folder);
+		}
+	}
 
 	if (!folder_sent())
-		folder_add(FOLDER_PATH "/sent");
+	{
+		char *new_folder = mycombinepath(user.folder_directory,"sent");
+		if (new_folder)
+		{
+			folder_add(new_folder);
+			free(new_folder);
+		}
+	}
 
 	if (!folder_deleted())
-		folder_add(FOLDER_PATH "/deleted");
+	{
+		char *new_folder = mycombinepath(user.folder_directory,"deleted");
+		if (new_folder)
+		{
+			folder_add(new_folder);
+			free(new_folder);
+		}
+	}
 
 	if (!folder_incoming() || !folder_outgoing() || !folder_deleted() || !folder_sent())
 		return 0;

@@ -12,11 +12,14 @@
 
 #include <proto/exec.h>
 #include <proto/dos.h>
+#include <proto/locale.h>
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 #define MEMWALL_FRONT_SIZE 1024  /* multiple of 4 */
 #define MEMWALL_BACK_SIZE  1024  /* multiple of 4 */
+
+#define FAST_SEEK
 
 /*#define MEMWALL*/
 /*#define MYDEBUG*/
@@ -42,7 +45,7 @@ struct ExecIFace *IExec;
 struct DOSIFace *IDOS;
 struct Interface *IUtility;
 struct Interface *IIntuition;
-struct Interface *ILocale;
+struct LocaleIFace *ILocale;
 struct Interface *IDataTypes;
 struct Interface *IKeymap;
 struct Interface *IIFFParse;
@@ -53,6 +56,8 @@ struct Interface *IAsl;
 struct Interface *IGraphics;
 struct Interface *ILayers;
 struct Interface *IExpat;
+
+struct Locale *DefaultLocale;
 
 int main(int argc, char *argv[]);
 
@@ -65,7 +70,7 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-static const char stack[] = "$STACK: 50000";
+static const char stack[] = "$STACK: 60000";
 
 int _start(void)
 {
@@ -131,6 +136,8 @@ static int start(struct WBStartup *wbs)
 
 		if (open_libs())
 		{
+			DefaultLocale = ILocale->OpenLocale(NULL);
+
 			if (init_mem())
 			{
 				BPTR dirlock = IDOS->DupLock(pr->pr_CurrentDir);
@@ -147,6 +154,7 @@ static int start(struct WBStartup *wbs)
 					IDOS->UnLock(IDOS->CurrentDir(odir));
 				}
 			}
+			if (DefaultLocale) ILocale->CloseLocale(DefaultLocale);
 			close_libs();
 		}
 
@@ -379,7 +387,20 @@ struct myfile
 {
 	int _file;
 	int _eof;
+#ifdef FAST_SEEK
+	int _rcnt;
+#endif
 };
+
+static LONG internal_seek(BPTR fh, LONG pos, LONG mode)
+{
+	LONG rc;
+
+	if (DOSBase->lib_Version < 51) rc = IDOS->Seek(fh,0,OFFSET_END);
+	else rc = IDOS->FSeek(fh,0,OFFSET_END);
+
+	return rc;
+}
 
 FILE *fopen(const char *filename, const char *mode)
 {
@@ -401,12 +422,19 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
 
-	if (!(files[_file] = IDOS->Open((STRPTR)filename,amiga_mode))) goto fail;
+	if (DOSBase->lib_Version < 51)
+	{
+		if (!(files[_file] = IDOS->Open((STRPTR)filename,amiga_mode))) goto fail;
+	} else
+	{
+		if (!(files[_file] = IDOS->FOpen((STRPTR)filename,amiga_mode,8192))) goto fail;
+	}
+
 	file->_file = _file;
 
 	if (amiga_mode == MODE_READWRITE)
 	{
-		IDOS->Seek(files[_file],0,OFFSET_END);
+		internal_seek(files[_file],0,OFFSET_END);
 	}
 
 	IExec->ReleaseSemaphore(&files_sem);
@@ -443,32 +471,60 @@ size_t fwrite(const void *buffer, size_t size, size_t count, FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
 	BPTR fh = files[file->_file];
-	return (size_t)IDOS->FWrite(fh,(void*)buffer,size,count);
+	size_t bytes = (size_t)IDOS->FWrite(fh,(void*)buffer,size,count);
+#ifdef FAST_SEEK
+	file->_rcnt += bytes;
+#endif
+	return bytes;
 }
 
 size_t fread(void *buffer, size_t size, size_t count, FILE *f)
 {
-	struct myfile *file = (struct myfile*)f;
+	struct myfile *file;
 	size_t len;
-	BPTR fh = files[file->_file];
+	BPTR fh;
+
+	file = (struct myfile*)f;
+	fh = files[file->_file];
 	len = (size_t)IDOS->FRead(fh,buffer,size,count);
 	if (!len && size && count) file->_eof = 1;
-	D(bug("0x%lx reading %ld bytes\n",file,len * size));
+#ifdef FAST_SEEK
+	file->_rcnt += len;
+#endif
 	return len;
 }
 
 int fputs(const char *string, FILE *f)
 {
-	struct myfile *file = (struct myfile*)f;
-	BPTR fh = files[file->_file];
-	return IDOS->FPuts(fh,(char*)string);
+	struct myfile *file;
+	BPTR fh;
+	int rc;
+
+	file = (struct myfile*)f;
+	fh = files[file->_file];
+	rc = IDOS->FPuts(fh,(char*)string);
+
+#ifdef FAST_SEEK
+	if (!rc) /* DOSFALSE is true here */
+		file->_rcnt += strlen(string);
+#endif
+
+	return rc;
 }
 
 int fputc(int character, FILE *f)
 {
-	struct myfile *file = (struct myfile*)f;
-	BPTR fh = files[file->_file];
-	return IDOS->FPutC(fh,character);
+	struct myfile *file;
+	BPTR fh;
+	int rc;
+
+	file = (struct myfile*)f;
+	fh = files[file->_file];
+	rc = IDOS->FPutC(fh,character);
+#ifdef FAST_SEEK
+	if (rc != -1) file->_rcnt++;
+#endif
+	return rc;
 }
 
 int fseek(FILE *f, long offset, int origin)
@@ -478,20 +534,36 @@ int fseek(FILE *f, long offset, int origin)
 	ULONG amiga_seek;
 
 	if (origin == SEEK_SET) amiga_seek = OFFSET_BEGINNING;
-	else if (origin == SEEK_CUR) amiga_seek = OFFSET_CURRENT;
+	else if (origin == SEEK_CUR)
+	{
+		amiga_seek = OFFSET_CURRENT;
+		if (!offset) return 0;
+		if (offset == 1)
+		{
+			fgetc(f);
+			return 0;
+		}
+	}
 	else amiga_seek = OFFSET_END;
 
 	if (!IDOS->FFlush(fh)) return -1;
-	if (IDOS->Seek(fh,offset,amiga_seek)==-1) return -1;
+	if (internal_seek(fh,offset,amiga_seek)==-1) return -1;
+#ifdef FAST_SEEK
+	file->_rcnt = internal_seek(fh,0,OFFSET_CURRENT);
+#endif
 	return 0;
 }
 
 long ftell(FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
+	D(bug("0x%lx ftell() = %ld\n",file,internal_seek(fh,0,OFFSET_CURRENT)));
+#ifdef FAST_SEEK
+	return file->_rcnt;
+#else
 	BPTR fh = files[file->_file];
-	D(bug("0x%lx ftell() = %ld\n",file,IDOS->Seek(fh,0,OFFSET_CURRENT)));
-	return IDOS->Seek(fh,0,OFFSET_CURRENT);
+	return internal_seek(fh,0,OFFSET_CURRENT);
+#endif
 }
 
 int fflush(FILE *f)
@@ -504,18 +576,35 @@ int fflush(FILE *f)
 
 char *fgets(char *string, int n, FILE *f)
 {
-	struct myfile *file = (struct myfile*)f;
-	BPTR fh = files[file->_file];
-	char *rc =  (char*)IDOS->FGets(fh,string,n);
+	struct myfile *file;
+	BPTR fh;
+	char *rc;
+
+	file = (struct myfile*)f;
+	fh = files[file->_file];
+
+	rc =  (char*)IDOS->FGets(fh,string,n);
 	if (!rc && !IDOS->IoErr()) file->_eof = 1;
+#ifdef FAST_SEEK
+	else file->_rcnt += strlen(rc);
+#endif
 	return rc;
 }
 
 int fgetc(FILE *f)
 {
-	struct myfile *file = (struct myfile*)f;
-	BPTR fh = files[file->_file];
-	return IDOS->FGetC(fh);
+	struct myfile *file;
+	BPTR fh;
+	int rc;
+
+	file = (struct myfile*)f;
+	fh = files[file->_file];
+
+	rc = IDOS->FGetC(fh);
+#ifdef FAST_SEEK
+	if (rc != -1) file->_rcnt++;
+#endif
+	return rc;
 }
 
 int feof(FILE *f)
@@ -529,7 +618,7 @@ FILE *tmpfile(void)
 	char buf[40];
 	FILE *file;
 	IExec->ObtainSemaphore(&files_sem);
-	sprintf(buf,"T:%lx%lx.tmp",IExec->FindTask(NULL),tmpno++);
+	sprintf(buf,"T:%p%lx.tmp",IExec->FindTask(NULL),tmpno++);
 	file = fopen(buf,"w");
 	IExec->ReleaseSemaphore(&files_sem);
 	return file;
@@ -737,4 +826,34 @@ int rename(const char *oldname, const char *newname)
 	if (!(IDOS->Rename((STRPTR)oldname,(STRPTR)newname)))
 		return -1;
 	return 0;
+}
+
+int isspace(int c)
+{
+	return (c == '\t' || c == '\r' || c == '\n' || c == '\v' || c == '\f' || c == ' ');
+}
+
+int isalpha(int c)
+{
+	return (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z'));
+}
+
+int isdigit(int c)
+{
+	return ('0' <= c && c <= '9');
+}
+
+int tolower(int c)
+{
+	return ('A' <= c && c <= 'Z') ? (c + ('a' - 'A')) : c;
+}
+
+int toupper(int c)
+{
+	return ('a' <= c && c <= 'z') ? (c - ('a' - 'A')) : c;
+}
+
+int iscntrl(int c)
+{
+	return (('\0' <= c && c < ' ') || (c == 127));
 }

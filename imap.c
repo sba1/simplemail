@@ -265,6 +265,10 @@ int imap_dl_headers(struct list *imap_list)
 							if (inbox)
 							{
 								char path[380];
+
+								void *handle = NULL;
+								folder_next_mail(inbox, &handle);
+
 								getcwd(path, sizeof(path));
 
 								printf("Change path to %s\n",inbox->path);
@@ -318,10 +322,12 @@ int imap_dl_headers(struct list *imap_list)
 									if ((mail_array = malloc(sizeof(*mail_array)*num_of_mails)))
 									{
 										unsigned int *local_mail_array;
-										if ((local_mail_array = malloc(sizeof(unsigned int)*inbox->num_index_mails)))
+										if ((local_mail_array = malloc(sizeof(unsigned int)*inbox->num_mails)))
 										{
 											int i;
-											/* fill in the oids of the mails */
+											memset(local_mail_array,0,sizeof(unsigned int)*inbox->num_mails);
+
+											/* fill in the uids of the mails */
 											for (i=0;i < inbox->num_mails;i++)
 											{
 												if (inbox->mail_array[i])
@@ -339,7 +345,6 @@ int imap_dl_headers(struct list *imap_list)
 			
 											while ((line = tcp_readln(conn)))
 											{
-												puts(line);
 												line = imap_get_result(line,buf,sizeof(buf));
 												if (!mystricmp(buf,tag))
 												{
@@ -479,7 +484,7 @@ int imap_dl_headers(struct list *imap_list)
 													}
 													if (local_uid)
 													{
-														printf("not on server\n");
+														printf("%x not on server\n",local_uid);
 													}
 												}
 											}

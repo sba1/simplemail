@@ -216,12 +216,11 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 		if(( fp = fopen(mailfile, "r") ))
 		{
-			long size;
+			unsigned int size;
 
-			fseek(fp, 0L, SEEK_END);
-			size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */ /* now it's ok :-) */
+			size = myfsize(fp);
 			thread_call_parent_function_sync(up_init_gauge_byte,1,size);
-			fseek(fp, 0L, SEEK_SET);
+
 
 			if(SMTP_SEND_MAIL == smtp_send_cmd(conn, "DATA", NULL))
 			{

@@ -732,9 +732,7 @@ struct mail *mail_create_from_file(char *filename)
 			unsigned int size;
 			char *buf;
 
-			fseek(fh,0,SEEK_END);
-			size = ftell(fh); /* get the size of the file */
-			fseek(fh,0,SEEK_SET); /* seek to the beginning */
+			size = myfsize(fh); /* get the size of the file */
 	
 			if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
 			{

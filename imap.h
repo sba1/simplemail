@@ -41,6 +41,7 @@ struct imap_server
 };
 
 int imap_synchronize(struct list *imap_list, int called_by_auto);
+void imap_synchronize_really(struct list *imap_list, int called_by_auto);
 
 int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *));
 int imap_submit_folder_list(struct imap_server *server, struct list *list);

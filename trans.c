@@ -25,6 +25,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include "subthreads.h"
+#include "status.h"
+
 #include "account.h"
 #include "configuration.h"
 #include "dlwnd.h"
@@ -39,29 +42,79 @@
 #include "tcp.h"
 #include "upwnd.h"
 
-int mails_dl(int called_by_auto)
+static int mails_dl_entry(int called_by_auto)
 {
-	struct list pop_list;
 	struct account *account;
 
-	/* build up the pop list, we take the pop nodes it self,		*
-	 * they are not used anywhere else (the pop function should *
-   * be modified to use the account list 										*/
+	struct list pop_list;
+	struct list imap_list;
+	char *incoming_path;
+	char *folder_directory;
+	int receive_preselection = user.config.receive_preselection;
+	int receive_size = user.config.receive_size;
+	struct pop3_server *pop;
+	struct imap_server *imap;
+
+	if (!(incoming_path = mystrdup(folder_incoming()->path)))
+		return 0;
+	if (!(folder_directory = mystrdup(user.folder_directory)))
+	{
+		free(incoming_path);
+		return 0;
+	}
+
 	list_init(&pop_list);
+	list_init(&imap_list);
 
 	account = (struct account*)list_first(&user.config.account_list);
 	while (account)
 	{
-		if (account->pop && account->pop->active && !account->recv_type)
-			list_insert_tail(&pop_list,&account->pop->node);
+		if (!account->recv_type)
+		{
+			if (account->pop && account->pop->active && account->pop->name)
+			{
+				struct pop3_server *pop3 = pop_duplicate(account->pop);
+				if (pop3) list_insert_tail(&pop_list,&pop3->node);
+			}
+		} else
+		{
+			if (account->imap && account->imap->active && account->imap->name)
+			{
+				struct imap_server *imap = imap_duplicate(account->imap);
+				if (imap) list_insert_tail(&imap_list,&imap->node);
+			}
+		}
 		account = (struct account*)node_next(&account->node);
 	}
 
-	pop3_dl(&pop_list,folder_incoming()->path,
-	        user.config.receive_preselection, user.config.receive_size,
-	        called_by_auto);
+	if (thread_parent_task_can_contiue())
+	{
+		thread_call_parent_function_async(status_init,1,0);
+		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
+		else thread_call_parent_function_async(status_open,0);
 
-	return 0;
+		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, folder_directory))
+		{
+			imap_synchronize_really(&imap_list, called_by_auto);
+		}
+
+		thread_call_parent_function_async(status_close,0);
+	}
+
+	free(incoming_path);
+	free(folder_directory);
+
+	while ((pop = (struct pop3_server*)list_remove_tail(&pop_list)))
+		pop_free(pop);
+	while ((imap = (struct imap_server*)list_remove_tail(&imap_list)))
+		imap_free(imap);
+
+	return 1;
+}
+
+int mails_dl(int called_by_auto)
+{
+	return thread_start(THREAD_FUNCTION(&mails_dl_entry),(void*)called_by_auto);
 }
 
 int mails_dl_single_account(struct account *ac)

@@ -627,7 +627,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 /**************************************************************************
  
 **************************************************************************/
-static void imap_synchronize_really(struct list *imap_list, int called_by_auto)
+void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 {
 	if (open_socket_lib())
 	{

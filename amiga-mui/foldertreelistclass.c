@@ -123,7 +123,7 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 				/* IMAP folders are UTF8 */
 				if (folder->is_imap)
 				{
-					utf8tostr(folder->name, data->name_buf, sizeof(data->name_buf), user.config.default_codeset);
+					utf8tostr(folder->name, data->name_buf + strlen(data->name_buf), sizeof(data->name_buf) - strlen(data->name_buf), user.config.default_codeset);
 				} else strcat(data->name_buf,folder->name);
 			}
 	

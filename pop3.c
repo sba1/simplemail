@@ -683,7 +683,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 /**************************************************************************
  Download the mails
 **************************************************************************/
-static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, char *folder_directory)
+int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, char *folder_directory)
 {
 	int rc = 0;
 
@@ -757,6 +757,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 								int max_dl_mails = 0;
 								int cur_dl_mail = 0;
 
+								int success = 1;
+
 								/* determine the size of the mails which should be downloaded */
 								for (i=1; i<=mail_amm; i++)
 								{
@@ -792,6 +794,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										if (!pop3_get_mail(conn, server, i, mail_array[i].size, mail_size_sum))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
+											success = 0;
 											break;
 										}
 
@@ -810,11 +813,16 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										if (!pop3_del_mail(conn,server, i))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
-											else break;
+											else
+											{
+												success = 0;
+												break;
+											}
 										}
 									}
 								}
 
+								rc = success;
 								chdir(path);
 							}
 						}
@@ -828,6 +836,8 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 			{
 				if (thread_aborted()) break;
 				else tell_from_subtask(tcp_strerror(tcp_error_code()));
+				rc = 0;
+				break;
 			}
 
 			/* Clear the preselection entries */

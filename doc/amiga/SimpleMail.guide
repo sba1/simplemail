@@ -1,12 +1,12 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.5 (24.12.2001)
-@AUTHOR David Rey <david@saug.org>
+@$VER: SimpleMail.guide 0.6 (24.12.2002)
+@AUTHOR David Rey <david@saug.org>, Sebastian Bauer <sebauer@t-online.de>
 @INDEX "Index"
 
 @NODE "Main" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.17 (public BETA)
-                          (describes SimpleMail 0.14)
+                         SimpleMail 0.18 (public BETA)
+                          (not completly finished yet)
 
                 © 2000-2002 by Hynek Schlawack & Sebastian Bauer
  
@@ -72,6 +72,10 @@ Current features of SimpleMail:
   mail servers in one connection, preselect messages for download and
   (optionally) use SSL/TLS based encryption for added security.
 
+- A simple IMAP client
+
+- Unicode support
+
 - Automatic message handling, using @{" filters " LINK "CO_F" 0}.
 
 - Built-in support for UUencode and MIME for sending and receiving binary
@@ -115,7 +119,7 @@ Software
 
 LEGAL STUFF
 
-SimpleMail is Copyright © 2000-2001 by Hynek Schlawack & Sebastian Bauer
+SimpleMail is Copyright © 2000-2002 by Hynek Schlawack & Sebastian Bauer
 and released under the GNU Public License.
 
 See @{" here " LINK INFO} if you are a developer and want to join the effort, get access
@@ -202,11 +206,16 @@ of buttons.
 "Configuration..." from the "Settings" menu or just click the "Config"
 button at the top-right corner to open the Configuration window.
 
-4. The sheet which then appears is called "User". Here you can select
+4. The sheet which then appears is called "General". Here you can select
 your folder directory and set the adjustment for daylight saving time.
 If daylight saving time applies to you at the time of installation, turn
-it on here. Leave the folder directory as it is for now, and select the
-"-/-" entry under "Accounts" in the left list to create a new account.
+it on here. Leave the folder directory as it is for now. It's also very
+important to tell SimpleMail about the charset your font supports. For our
+example the default charset should fit.
+Then select the "Accounts" page on the lefthand side listview. Now the
+accounts page appears with another list into it. The contents of the list
+represents all your accounts. At the start there is only one empty account.
+Select it.
 
 5. Here is where you must enter the absolutely vital information needed
 for you to be able to send and receive email. Following our example, we
@@ -217,7 +226,8 @@ enter this under "User":
 
 then this under "Receive":
 
-                    POP3 server:    mail.provider.de
+                    Type:           POP3
+                    Server:         mail.provider.de
                     Login:          ralf
                     Password:       formula1
 
@@ -479,9 +489,9 @@ Main window - TOOLBAR
 
 The toolbar gives you easy access to the most frequently used functions.
 
-    .---.---.---.---. .---.---.---.  .---.---.  .---.---. .---.---.
-    | 1 | 2 | 3 | 4 | | 5 | 6 | 7 |  | 8 | 9 |  |10 |11 | |12 |13 |
-    `---^---^---^---' `---^---^---'  `---^---'  `---^---' `---^---'
+    .---.---.---.---. .---.---.---.  .---.---.  .---.---.---. .---.---.
+    | 1 | 2 | 3 | 4 | | 5 | 6 | 7 |  | 8 | 9 |  |10 |11 |12 | |13 |14 |
+    `---^---^---^---' `---^---^---'  `---^---'  `---^---^---' `---^---'
 
 The following table shows the equivalences between buttons (position
 and label), keyboard shortcuts and menu items.
@@ -500,11 +510,12 @@ and label), keyboard shortcuts and menu items.
   8   [Fetch]       H
   9   [Send]        S
 
- 10   [Filter]      I
- 11   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
+ 10   [Search]      E
+ 11   [Filter]      I
+ 12   [Filters]     F           @{" Settings/Filters... " LINK "CO_F" 0}
 
- 12   [Abook]       A
- 13   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
+ 13   [Abook]       A
+ 14   [Config]      C           @{" Settings/Configuration... " LINK "MAM4" 0}
 
 @ENDNODE
 @NODE "MAM1" "Main window - Project Menu"

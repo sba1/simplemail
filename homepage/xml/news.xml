@@ -1,6 +1,52 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2002/12/24">
+	<text lang="en">
+    Accurately two years, after SimpleMail saw the light of the world we can present
+    again a XMas release of SimpleMail with some hopfully great new featues. Again we
+    have to thank you for your continuos support and encouragement very much.
+    
+    The SimpleMail Team wishes a merry christmas and a happy new year! Enjoy
+    the new version
+
+    The changes are:
+    <list>
+    <item>Folder/Export... menu entry added to export a complete mail folder</item>
+    <item>Added recpient filter rule type (which matches To and CC)</item>
+		<item>Internal multithreading changes (no longer relies on SAS C CRES startup code></item>
+    <item>now uses the shared version of the expat XML engine (included)</item>
+		<item>(temporary) rejected NListtree support for the mail view because it slowed down everything</item>
+    <item>very simple IMAP support (fetches complete mail, no move support, no status update)</item>
+    <item>bug fixes as usual</item>
+    </list>
+
+    Please also install the latest NList and NListtree MUI classes. Older versions than current may cause
+    too much problems. Get them from <A HREF="http://home.t-online.de/home/sebauer">http://home.t-online.de/home/sebauer</A>
+	</text>
+	<text lang="de">
+		Heute sind es exakt zwei Jahre seit dem SimpleMail das Licht der Welt erblickt hat. Wieder
+		können wir ein XMas Release von SimpleMail bescheren die einige hoffentlich interesante neue
+		Features zu bieten hat. Wir möchten uns an der Stelle ebenfalls für den vielen Zuspruch den
+		wir erfahren haben bedanken und wünschen allen ein frohes Weihnachtsfest und einen guten Rutsch
+		ins neue Jahr.
+
+		Die Änderungen:
+    <list>
+    <item>Folder/Exportieren... Menü Eintag zum Exportieren eines Mailverzeichnisses</item>
+    <item>Empfänger Filter Regeltyp hinzugefügt (steht für TO oder CC)</item>
+		<item>Interne Änderuung des Multithreading</item>
+    <item>Die Shared Version der expat.library wird benutzt (im Archiv enthalten)</item>
+		<item>NListtree Unterstützung der Nachrichtenliste (vorerst) entfernt (verlangsamte alles)</item>
+    <item>Ganz einfache IMAP Unterstützung (nur komplette Nachricht, kein Bewegen, keien Statusänderungen)</item>
+    <item>Wie immer einen Haufen Bugfixes</item>
+    </list>
+
+		Zu beachten ist, dass immer die neuesten NList bzw. NListtree Klassen installiert sind, andernfalls kann 
+		es zu vermehrten Problemen bei der Darstellung führen. Die MUI Klassen gibts auf <A HREF="http://home.t-online.de/home/sebauer">http://home.t-online.de/home/sebauer</A>
+	</text>
+  </entry>
+
   <entry date="2002/09/07">
 	<text lang="en">
 	  Version 0.17 of SimpleMail released!

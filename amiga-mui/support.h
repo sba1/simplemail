@@ -28,6 +28,8 @@ unsigned int sm_get_seconds(int day, int month, int year);
 int sm_get_gmt_offset(void);
 int sm_add_part(char *drawer, const char *filename, int buf_size);
 char *sm_file_part(char *filename);
+int sm_request(char *title, char *text, char *gadgets, ...);
+
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
 char *mystristr(const char *str1, const char *str2);

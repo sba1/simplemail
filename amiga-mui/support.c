@@ -28,7 +28,9 @@
 #include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/utility.h>
+#include <proto/muimaster.h>
 
+#include "muistuff.h"
 #include "support.h"
 
 /******************************************************************
@@ -151,6 +153,16 @@ int sm_add_part(char *drawer, const char *filename, int buf_size)
 char *sm_file_part(char *filename)
 {
 	return (char*)FilePart(filename);
+}
+
+/******************************************************************
+ Opens a requester. Returns 0 if the rightmost gadgets is pressed
+ otherwise the position of the gadget from left to right
+*******************************************************************/
+int sm_request(char *title, char *text, char *gadgets, ...)
+{
+	if (!title) title = "SimpleMail";
+	return MUI_RequestA(App, NULL, 0, title, gadgets, text, (&(gadgets))+1);
 }
 
 /******************************************************************

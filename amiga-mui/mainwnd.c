@@ -395,7 +395,7 @@ int main_window_init(void)
 		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
 		{NM_ITEM, N_("New Group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
 		{NM_ITEM, N_("New Folder..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
-		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
+		{NM_ITEM, N_("Delete"), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
@@ -421,9 +421,9 @@ int main_window_init(void)
 		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
 		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Addressbook"), NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
+		{NM_ITEM, N_("Addressbook..."), NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
-		{NM_ITEM, N_("Filter..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
+		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
 		{NM_ITEM, N_("MUI..."), NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Save Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS_SAVEPREFS},
@@ -666,7 +666,7 @@ static void main_refresh_folders_text(void)
 		if (f)
 		{
 			sprintf(buf, MUIX_B "%s"  MUIX_N "%s " MUIX_B "%s"  MUIX_N "%ld " MUIX_B "%s"  MUIX_N "%ld: " MUIX_B "%s"  MUIX_N "%ld",
-			        _("Folder:"),f->name,_("Messages:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
+			        _("Folder:"),f->name,_("Total:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
 	}

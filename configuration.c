@@ -90,7 +90,7 @@ void init_config(void)
 		phrase->addresses = NULL;
 		phrase->write_welcome = mystrdup("Hello,\\n");
 		phrase->write_welcome_repicient = mystrdup("Hello %v\\n");
-		phrase->write_closing = mystrdup("Gruss,");
+		phrase->write_closing = mystrdup("Regards,");
 		phrase->reply_welcome = mystrdup("Hello %f,\\n");
 		phrase->reply_intro = mystrdup("On %d, you wrote:");
 		phrase->reply_close = mystrdup("Regards");

@@ -1905,7 +1905,13 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						{
 							int i = 0;
 							while (!take && rule->u.from.from[i])
-								take = !!mystristr(mail_get_from(m),rule->u.from.from[i++]);
+								take = !!utf8stristr(m->from_addr,rule->u.from.from[i++]);
+
+							if (!take)
+							{
+								while (!take && rule->u.from.from[i])
+									take = !!utf8stristr(m->from_phrase,rule->u.from.from[i++]);
+							}
 
 							if (!take)
 							{
@@ -1915,7 +1921,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 									/* Should be decoded first! */
 									i = 0;
 									while (!take && rule->u.from.from[i])
-										take = !!mystristr(header->contents,rule->u.from.from[i++]);
+										take = !!utf8stristr(header->contents,rule->u.from.from[i++]);
 								}
 							}
 						}
@@ -1926,7 +1932,7 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 						{
 							int i = 0;
 							while (!take && rule->u.subject.subject[i])
-								take = !!mystristr(m->subject,rule->u.subject.subject[i++]);
+								take = !!utf8stristr(m->subject,rule->u.subject.subject[i++]);
 						}
 						break;
 

@@ -557,7 +557,7 @@ static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int struc
 				int have_written = 0;
 
 				/* Find the best encoding for the given text part */
-				best_codeset = codesets_find_best(toencode,l);
+				best_codeset = codesets_find_best(toencode,l,NULL);
 
 				while (l>0)
 				{

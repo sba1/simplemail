@@ -33,6 +33,8 @@
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* configuration.c */
+/* Duplicates a config string and converts it to utf8 if not already done */
+char *dupconfigstr(char *str, int utf8);
 
 /**************************************************************************
  Creates a new filter instance with default values
@@ -242,10 +244,13 @@ struct filter *filter_list_next(struct filter *f)
 void filter_list_load(FILE *fh)
 {
 	char *buf = (char*)malloc(512);
+	int utf8 = 0;
 	if (!buf) return;
 
 	while (read_line(fh,buf))
 	{
+		if (!mystrnicmp(buf, "UTF8=1",6)) utf8 = 1;
+
 		if (!mystrnicmp(buf, "FILTER",6))
 		{
 			unsigned char *filter_buf = buf + 6;
@@ -272,13 +277,13 @@ void filter_list_load(FILE *fh)
 				if (*filter_buf++ == '.')
 				{
 					if ((result = get_config_item(filter_buf,"Name")))
-						f->name = mystrdup(result);
+						f->name = dupconfigstr(result,utf8);
 					if ((result = get_config_item(filter_buf,"Flags")))
 						f->flags = atoi(result);
 					if ((result = get_config_item(filter_buf,"Mode")))
 						f->mode = atoi(result);
 					if ((result = get_config_item(filter_buf,"DestFolder")))
-						f->dest_folder = mystrdup(result);
+						f->dest_folder = dupconfigstr(result,utf8);
 					if ((result = get_config_item(filter_buf,"UseDestFolder")))
 						f->use_dest_folder = ((*result == 'Y') || (*result == 'y'))?1:0;
 
@@ -344,6 +349,8 @@ void filter_list_save(FILE *fh)
 {
 	struct filter *f = filter_list_first();
 	int i=0;
+
+	fputs("UTF8=1\n",fh);
 
 	while (f)
 	{

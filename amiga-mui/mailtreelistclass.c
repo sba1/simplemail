@@ -290,7 +290,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 							data->date_text, date_buf,
 							data->received_text, recv_buf,
 							data->size_text, m->size,
-							data->pop3_text, m->pop3_server,
+							data->pop3_text, m->pop3_server?m->pop3_server:"",
 							data->filename_text, m->filename);
 
 			set(obj,MUIA_ShortHelp,data->bubblehelp_buf);

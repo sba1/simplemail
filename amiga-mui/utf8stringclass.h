@@ -26,6 +26,8 @@
 IMPORT struct MUI_CustomClass *CL_UTF8String;
 #define UTF8StringObject (Object*)NewObject(CL_UTF8String->mcc_Class, NULL
 
+#define MUIM_UTF8String_Insert (0x7878782)
+
 #define MUIA_UTF8String_Contents (TAG_USER+0x12321)
 #define MUIA_UTF8String_Charset  (TAG_USER+0x12322) /* (STRPTR) */
 

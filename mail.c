@@ -2607,11 +2607,23 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		if (new_mail->text)
 		{
 			char *convtext;
+			int converrors,unicode=0;
 			int unconvtext_len = strlen(new_mail->text);
-			struct codeset *best_codeset = codesets_find_best(new_mail->text, strlen(new_mail->text));
+			struct codeset *best_codeset = codesets_find_best(new_mail->text, strlen(new_mail->text),&converrors);
 
-			if ((convtext = malloc(unconvtext_len+1)))
-				utf8tostr(new_mail->text, convtext, unconvtext_len+1, best_codeset);
+			if (converrors)
+			{
+				int rc = sm_request(NULL, _("Converting this e-mail will cause the loss of some characters.\n"
+																		"SimpleMail can store the mail as Unicode so this doesn't happen."),
+																		_("Use Unicode|No Unicode"));
+				unicode = rc;
+			}
+
+			if (!unicode)
+			{
+				if ((convtext = malloc(unconvtext_len+1)))
+					utf8tostr(new_mail->text, convtext, unconvtext_len+1, best_codeset);
+			} else convtext = mystrndup(new_mail->text,unconvtext_len);
 
 			/* mail text */
 			if (new_mail->to) body_encoding = "8bit"; /* mail has only one part which is a text, so it can be encoded in 8bit */
@@ -2625,10 +2637,10 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				if (body_encoding && mystricmp(body_encoding,"7bit") || new_mail->content_description)
 				{
 					if (new_mail->to) fprintf(ofh,"MIME-Version: 1.0\n");
-				  fprintf(ofh,"Content-Type: text/plain; charset=%s\n",best_codeset->name);
+				  fprintf(ofh,"Content-Type: text/plain; charset=%s\n",unicode?"utf-8":best_codeset->name);
 
 					/* Write the Content Description out */
-					if (new_mail->content_description)
+					if (new_mail->content_description && *new_mail->content_description)
 					{
 						char *cd;
 						if ((cd = encode_header_field_utf8("Content-Description",new_mail->content_description)))
@@ -2652,7 +2664,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				fprintf(ofh,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 
 				/* Write the Content Description out */
-				if (new_mail->content_description)
+				if (new_mail->content_description && *new_mail->content_description)
 				{
 					char *cd;
 					if ((cd = encode_header_field_utf8("Content-Description",new_mail->content_description)))

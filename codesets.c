@@ -1051,7 +1051,7 @@ struct codeset *codesets_find(char *name)
 /**************************************************************************
  Returns the best codeset for the given text
 **************************************************************************/
-struct codeset *codesets_find_best(char *text, int text_len)
+struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr)
 {
 	struct codeset *codeset = (struct codeset*)list_first(&codesets_list);
 	struct codeset *best_codeset = NULL;
@@ -1093,6 +1093,7 @@ struct codeset *codesets_find_best(char *text, int text_len)
 	}
 
 	if (!best_codeset) best_codeset = (struct codeset*)list_first(&codesets_list);
+	if (error_ptr) *error_ptr = best_errors;
 
 	return best_codeset;
 }
@@ -1135,6 +1136,23 @@ int utf8realpos(const utf8 *str, int pos)
 		str += trailingBytesForUTF8[c] + 1;
 	}
 	return str - str_save;
+}
+
+/**************************************************************************
+ ...
+**************************************************************************/
+int utf8charpos(const utf8 *str, int pos)
+{
+	int cp = 0;
+	unsigned char c;
+
+	while (pos > 0 && (c = *str))
+	{
+		str += trailingBytesForUTF8[c] + 1;
+		pos -= trailingBytesForUTF8[c] + 1;
+		cp++;
+	}
+	return cp;
 }
 
 /**************************************************************************
@@ -1403,6 +1421,135 @@ int utf8stricmp(char *str1, char *str2)
 	}
 	return 0;
 }
+
+/**************************************************************************
+ Compares two utf8 string case-insensitive (the args might be NULL).
+ Note: Changes for little endian
+**************************************************************************/
+int utf8stricmp_len(const char *str1, const char *str2, int len)
+{
+	unsigned char c1;
+	unsigned char c2;
+
+	if (!str1)
+	{
+		if (!str2) return 0;
+		return -1;
+	}
+
+	if (!str2) return 1;
+
+	while (len>0)
+	{
+		int d;
+		char bytes1,bytes2;
+		struct uniconv *res;
+
+		c1 = *str1++;
+		c2 = *str2++;
+		len--;
+
+		if (!c1)
+		{
+			if (!c2) return 0;
+			return -1;
+		}
+		if (!c2) return 0;
+
+		if (c1 < 0x80)
+		{
+			if (c2 < 0x80)
+			{
+				d = tolower(c1) - tolower(c2);
+				if (d) return d;
+				continue;
+			} else
+			{
+				/* TODO: must use locale sensitive sorting */
+				return -1;
+			}
+		}
+		if (c2 < 0x80) return 1; /* TODO: must use locale sensitive sorting */
+
+		bytes1 = trailingBytesForUTF8[c1];
+		bytes2 = trailingBytesForUTF8[c2];
+
+		/* case mapping only happens within same number of bytes (currently) */
+		if ((d = bytes1 - bytes2)) return d;
+
+		if (bytes1 > 3)
+		{
+			/* case mapping relevant characters are only withing 4 bytes */
+			while (bytes1)
+			{
+				if ((d = *str1++ - *str2++)) return d;
+				bytes1--;
+			}
+		} else
+		{
+
+			unsigned char ch1[4],ch2[4];
+			struct uniconv *uc1;
+			struct uniconv *uc2;
+			int ch1l;
+			int ch2l;
+			int i = 3 - bytes1;
+
+			*((unsigned int *)ch1) = 0;
+			*((unsigned int *)ch2) = 0;
+
+			ch1[3-bytes1] = c1;
+			ch2[3-bytes1] = c2;
+
+			while (bytes1)
+			{
+				bytes1--;
+				ch1[3 - bytes1] = *str1++;
+				ch2[3 - bytes1] = *str2++;
+
+				len--;
+			}
+
+
+			BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch1)),uc1);
+			BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch2)),uc2);
+
+			if (uc1) ch1l = *((unsigned int *)uc1->to);
+			else ch1l = *((unsigned int *)ch1);
+
+			if (uc2) ch2l = *((unsigned int *)uc2->to);
+			else ch2l = *((unsigned int *)ch2);
+
+			if (ch1l != ch2l)
+			{
+				if (ch1l < ch2l) return -1;
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Returns the pointer where the given string starts or NULL
+**************************************************************************/
+char *utf8stristr(const char *str1, const char *str2)
+{
+	int str2_len;
+
+	if (!str1 || !str2) return NULL;
+
+	str2_len = strlen(str2);
+
+	while (*str1)
+	{
+		if (!utf8stricmp_len(str1,str2,str2_len))
+			return (char*)str1;
+		str1++;
+	}
+	return NULL;
+}
+
 
 /**************************************************************************
  Converts a single UFT-8 Chracter to a Unicode character very very

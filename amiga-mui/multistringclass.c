@@ -40,11 +40,13 @@
 #include "support_indep.h"
 
 #include "amigasupport.h"
+#include "configuration.h"
 #include "compiler.h"
 #include "muistuff.h"
 #include "multistringclass.h"
+#include "utf8stringclass.h"
 
-#define MUIA_SingleString_Event (TAG_USER+0x123456)
+#define MUIA_SingleString_Event (TAG_USER+0x13456)
 
 #define MUIV_SingleString_Event_CursorUp							1
 #define MUIV_SingleString_Event_CursorDown						2
@@ -209,10 +211,10 @@ STATIC VOID MultiString_Event(void **msg)
 	if (event == MUIV_SingleString_Event_ContentsToPrevLine && node_prev(&obj_node->node))
 	{
 		struct object_node *prev_node = (struct object_node*)node_prev(&obj_node->node);
-		char *contents = (char*)xget(obj_node->obj,MUIA_String_Contents);
-		int new_cursor_pos = strlen((char*)xget(prev_node->obj,MUIA_String_Contents));
+		char *contents = (char*)xget(obj_node->obj,MUIA_UTF8String_Contents);
+		int new_cursor_pos = strlen((char*)xget(prev_node->obj,MUIA_String_Contents)); /* is Okay */
 		
-		DoMethod(prev_node->obj,MUIM_BetterString_Insert, contents, MUIV_BetterString_Insert_EndOfString);
+		DoMethod(prev_node->obj,MUIM_UTF8String_Insert, contents, MUIV_BetterString_Insert_EndOfString);
 		set(prev_node->obj,MUIA_String_BufferPos, new_cursor_pos);
 		set(window, MUIA_Window_ActiveObject, prev_node->obj);
 
@@ -268,7 +270,7 @@ STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg,
 			struct object_node *next_obj = (struct object_node*)node_next(&obj->node);
 			if (array[i])
 			{
-				set(obj->obj,MUIA_String_Contents,array[i]);
+				set(obj->obj,MUIA_UTF8String_Contents,array[i]);
 				i++;
 			} else
 			{
@@ -324,7 +326,7 @@ STATIC ULONG MultiString_Get(struct IClass *cl,Object *obj, struct opGet *msg)
 			obj_node = (struct object_node*)list_first(&data->object_list);
 			while (obj_node)
 			{
-				data->contents_array[i++] = (char*)xget(obj_node->obj,MUIA_String_Contents);
+				data->contents_array[i++] = (char*)xget(obj_node->obj,MUIA_UTF8String_Contents);
 				obj_node = (struct object_node*)node_next(&obj_node->node);
 			}
 			data->contents_array[i] = NULL;
@@ -343,7 +345,8 @@ STATIC Object *MultiString_AddStringField(struct IClass *cl,Object *obj, struct 
 	{
 		obj_node->obj = SingleStringObject,
 			MUIA_CycleChain, 1,
-			MUIA_String_Contents, msg->contents,
+			MUIA_UTF8String_Contents, msg->contents,
+			MUIA_UTF8String_Charset, user.config.default_codeset,
 			End;
 
 		if (obj_node->obj)
@@ -405,7 +408,7 @@ struct MUI_CustomClass *CL_MultiString;
 
 int create_multistring_class(void)
 {
-	if ((CL_SingleString = MUI_CreateCustomClass(NULL, MUIC_BetterString, NULL, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
+	if ((CL_SingleString = MUI_CreateCustomClass(NULL, NULL, CL_UTF8String, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
 	{
 		CL_SingleString->mcc_Class->cl_UserData = getreg(REG_A4);
 		if ((CL_MultiString = MUI_CreateCustomClass(NULL, MUIC_Group, NULL, sizeof(struct MultiString_Data), MultiString_Dispatcher)))

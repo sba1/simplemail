@@ -43,6 +43,7 @@
 #include "filterruleclass.h"
 #include "filterwnd.h"
 #include "muistuff.h"
+#include "utf8stringclass.h"
 
 static void filter_remove_rule_gui(Object **objs);
 
@@ -367,7 +368,7 @@ static void filter_active(void)
 	if (f)
 	{
 		filter_accept_rule();
-		nnset(filter_name_string,MUIA_String_Contents, f->name);
+		nnset(filter_name_string,MUIA_UTF8String_Contents, f->name);
 		filter_refresh_rules();
 		set(filter_move_check, MUIA_Selected, f->use_dest_folder);
 		set(filter_move_text, MUIA_Text_Contents, f->dest_folder);
@@ -390,7 +391,7 @@ static void filter_name(void)
 	if (f)
 	{
 		if (f->name) free(f->name);
-		f->name = mystrdup((char*)xget(filter_name_string, MUIA_String_Contents));
+		f->name = mystrdup((char*)xget(filter_name_string, MUIA_UTF8String_Contents));
 		DoMethod(filter_list,MUIM_NList_Redraw,MUIV_NList_Redraw_Active);
 	}
 }
@@ -431,7 +432,7 @@ static void init_filter(void)
 									End,
 								End,
 							Child, HGroup,
-								Child, filter_name_string = BetterStringObject,
+								Child, filter_name_string = UTF8StringObject,
 									StringFrame,
 									End,
 								End,

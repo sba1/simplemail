@@ -116,7 +116,9 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 			tag->ti_Data = (ULONG)newcont;
 		}
 
-		rc = DoSuperMethod(cl,obj,msg->MethodID,newtags,NULL);
+		if (msg->MethodID != OM_NEW)
+			rc = DoSuperMethod(cl,obj,msg->MethodID,newtags,NULL);
+		else set(obj,MUIA_String_Contents,newcont);
 
 		free(newcont);
 		FreeTagItems(newtags);
@@ -148,6 +150,27 @@ STATIC ULONG UTF8String_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_BetterString_Insert *msg)
+{
+	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
+	char *text;
+	ULONG rc;
+	LONG pos;
+
+	if (msg->pos != MUIV_BetterString_Insert_StartOfString && msg->pos != MUIV_BetterString_Insert_EndOfString && msg->pos != MUIV_BetterString_Insert_BufferPos)
+	{
+		char *utf8text = (char*)xget(obj,MUIA_UTF8String_Contents);
+		if (utf8text)
+		{
+			pos = utf8charpos(utf8text,msg->pos);
+		} else pos = 0;
+	} else pos = msg->pos;
+
+	text = utf8tostrcreate(msg->text, data->codeset);
+	rc = DoSuperMethod(cl, obj, MUIM_BetterString_Insert, text, pos);
+	free(text);
+	return rc;
+}
 
 STATIC ASM ULONG UTF8String_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
@@ -157,6 +180,7 @@ STATIC ASM ULONG UTF8String_Dispatcher(register __a0 struct IClass *cl, register
 		case	OM_NEW: return UTF8String_New(cl,obj,(struct opSet*)msg);
 		case	OM_SET: return UTF8String_Set(cl,obj,(struct opSet*)msg);
 		case  OM_GET: return UTF8String_Get(cl,obj,(struct opGet*)msg);
+		case	MUIM_UTF8String_Insert: return UTF8String_Insert(cl,obj,(struct MUIP_BetterString_Insert*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

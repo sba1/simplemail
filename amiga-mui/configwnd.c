@@ -32,6 +32,7 @@
 #include <mui/betterstring_mcc.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
+#include <mui/popplaceholder_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
@@ -69,7 +70,7 @@ static Object *read_smilies_checkbox;
 static Object *read_palette;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
-static Object *write_welcome_string;
+static Object *write_welcome_popph;
 static Object *write_close_string;
 
 static Object *account_name_string;
@@ -205,7 +206,7 @@ static void config_use(void)
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
-	user.config.write_welcome = mystrdup((char*)xget(write_welcome_string,MUIA_String_Contents));
+	user.config.write_welcome = mystrdup((char*)xget(write_welcome_popph,MUIA_Popph_Contents));
 	user.config.write_close = mystrdup((char*)xget(write_close_string,MUIA_String_Contents));
 
   get_account();
@@ -385,12 +386,20 @@ static int init_tcpip_receive_group(void)
 *******************************************************************/
 static int init_write_group(void)
 {
+	static const char *write_popph_array[] =
+	{
+		"\\n|Line break",
+		"%r|Recipient: Name",
+		"%f|Recipient: First Name",
+		"%a|Recipient: Address",
+		NULL
+	};
 	write_group = ColGroup(2),
 		MUIA_ShowMe, FALSE,
 		Child, MakeLabel("Welcome phrase"),
-		Child, write_welcome_string = BetterStringObject,
-			StringFrame,
-			MUIA_String_Contents, user.config.write_welcome,
+		Child, write_welcome_popph = PopphObject,
+			MUIA_Popph_Contents, user.config.write_welcome,
+			MUIA_Popph_Array, write_popph_array,
 			End,
 
 /*		Child, MakeLabel("Welcome phrase with address"),
@@ -428,7 +437,6 @@ static void account_remove(void)
 	if (treenode && !(treenode->tn_Flags & TNF_LIST))
 	{
 		struct account *account;
-		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
 		APTR tn = treenode;
 		int account_num = 0;
 
@@ -752,7 +760,6 @@ static void signature_remove(void)
 	if (treenode && !(treenode->tn_Flags & TNF_LIST))
 	{
 		struct signature *signature;
-		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
 		APTR tn = treenode;
 		int signature_num = 0;
 

@@ -1313,6 +1313,8 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(reply_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_reply_button, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
+			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_UndoAvailable, MUIV_EveryTime, undo_button, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_RedoAvailable, MUIV_EveryTime, redo_button, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 			DoMethod(add_text_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_text, data);
 			DoMethod(add_multipart_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_multipart, data);
 			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);

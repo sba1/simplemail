@@ -376,6 +376,31 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	/* issue a notify */
 	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
 
+}
+
+STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct MUIP_CreateShortHelp *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	struct mail *m = NULL;
+#ifdef MAILLIST_IS_TREE
+	struct MUI_NListtree_TestPos_Result tpres;
+
+	DoMethod(obj, MUIM_NListtree_TestPos, msg->mx, msg->my, &tpres);
+	if (tpres.tpr_TreeNode && tpres.tpr_TreeNode->tn_User)
+	{
+		m = (struct mail*)tpres.tpr_TreeNode->tn_User;
+	}
+#else
+	struct MUI_NList_TestPos_Result tpres;
+
+	tpres.char_number = -2; /* no need for char_number or char_xoffset */
+	DoMethod(obj, MUIM_NList_TestPos, msg->mx, msg->my, &tpres);
+	if (tpres.entry >= 0)
+	{
+		DoMethod(obj, MUIM_NList_GetEntry, tpres.entry, &m);
+	}
+#endif
+
 	if (m)
 	{
 		if (m != (struct mail*)MUIV_MailTreelist_UserData_Name)
@@ -391,7 +416,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 			SecondsToString(recv_buf,m->received);
 
 			/* Help bubble text */
-			sprintf(buf,"\33b%s\33n",_("Current Message"));
+			sprintf(buf,"\33b%s\33n",_("Message"));
 			buf += strlen(buf);
 			if (m->subject)
 			{
@@ -436,16 +461,14 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 							data->pop3_text, m->pop3_server?m->pop3_server:"",
 							data->filename_text, m->filename);
 
-			set(obj,MUIA_ShortHelp,data->bubblehelp_buf);
-
 			free(replyto);
 			free(to);
 			free(from);
-		} else
-		{
-			set(obj,MUIA_ShortHelp,NULL);
+
+			return (ULONG)data->bubblehelp_buf;
 		}
 	}	
+	return NULL;
 }
 
 STATIC VOID MailTreelist_UpdateFormat(struct IClass *cl,Object *obj)
@@ -483,6 +506,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					MUIA_NList_MultiSelect, MUIV_NList_MultiSelect_Default,
 #endif
 					MUIA_ContextMenu, MUIV_NList_ContextMenu_Always,
+					MUIA_ShortHelp, TRUE,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -1384,6 +1408,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_Export:		return MailTreelist_Export(cl,obj,(struct MUIP_Export *)msg);
 		case	MUIM_Import:		return MailTreelist_Import(cl,obj,(struct MUIP_Import *)msg);
+		case	MUIM_CreateShortHelp: return MailTreelist_CreateShortHelp(cl,obj,(struct MUIP_CreateShortHelp *)msg);
 
 #ifdef MAILLIST_IS_TREE
 		case	MUIM_NListtree_MultiTest: return MailTreelist_MultiTest(cl,obj,(struct MUIP_NListtree_MultiTest*)msg);

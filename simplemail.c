@@ -1558,12 +1558,6 @@ void callback_refresh_folders(void)
 	filter_update_folder_list();
 }
 
-void callback_refresh_signatures(void)
-{
-	compose_refresh_signature_cycle();
-	folder_refresh_signature_cycle();
-}
-
 /* the configuration has been changed */
 void callback_config_changed(void)
 {
@@ -1571,7 +1565,8 @@ void callback_config_changed(void)
 	main_build_accounts();
 	folder_create_imap();
 	callback_refresh_folders();
-	callback_refresh_signatures();
+	compose_refresh_signature_cycle();
+	folder_refresh_signature_cycle();
 }
 
 static int autocheck_minutes_start; /* to compare with this */

@@ -2,6 +2,24 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2004-02-20  Bernd Gollesch <bgollesch@sime.com>
+
+	* amiga-mui/arexx.c: Added folder_type 8 for spamfolder.
+	* doc/amiga/SimpleMail.guide: Updated guide for FOLDERINFO.
+	* amiga-mui/statuswnd.c, indep-include/statuswnd.h:
+	  Added statuswnd_set_title_utf8() for setting the title with an UTF8 string.
+	* imap.(c|h): Added "char *title" to imap_server structure. This will hold
+	  a copy of account->account_name to be displayed as windowtitle while
+	  fetching mails.
+	* pop3.(c|h): Added "char *title" to pop_server structure. This will hold
+	  a copy of account->account_name to be displayed as windowtitle while
+	  fetching mails.
+	* smtp.c: Display account->account_name as windowtitle while sending mails.
+	* status.(c|h): Added status_set_title_utf8() for setting the title with an
+	  UTF8 string.
+	* trans.c: Copy the account->account_name into (pop|imap)->title to be
+	  displayed as windowtitle while fetching mails.
+
 2004-02-15  Bernd Gollesch <bgollesch@sime.com>
 
 	* amiga-mui/composewnd.c: Added function to set the correct signature

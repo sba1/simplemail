@@ -816,6 +816,40 @@ struct mail *mail_create(void)
 }
 
 /**************************************************************************
+ This function fills in the header list if it is empty.
+ Return 1 on success
+**************************************************************************/
+int mail_read_header_list_if_empty(struct mail *m)
+{
+	char *buf;
+	FILE *fh;
+
+	if (list_first(&m->header_list)) return 1;
+	if (!m->filename) return 0;
+	if (!(fh = fopen(m->filename,"rb"))) return 0;
+
+	if ((buf = (char*)malloc(2048)))
+	{
+		struct mail_scan ms;
+		unsigned int bytes_read = 0;
+
+		mail_scan_buffer_start(&ms,m,0);
+
+		while ((bytes_read = fread(buf, 1, 2048, fh)))
+		{
+			if (!mail_scan_buffer(&ms,buf,bytes_read))
+					break; /* we have enough */
+		}
+
+		mail_scan_buffer_end(&ms);
+	}
+	free(buf);
+	fclose(fh);
+	return 1;
+}
+
+
+/**************************************************************************
  scans a mail file and returns a filled (malloced) mail instance, NULL
  if an error happened.
 **************************************************************************/
@@ -2130,6 +2164,7 @@ void *mail_decode_bytes(struct mail *mail, unsigned int *len_ptr)
 	return decoded;
 }
 
+#if 0
 /**************************************************************************
  Set some stuff of the mail (only useful if mail not created with
  mail_create_from_file())
@@ -2144,6 +2179,7 @@ int mail_set_stuff(struct mail *mail, char *filename, unsigned int size)
 	}
 	return 0;
 }
+#endif
 
 /**************************************************************************
  frees all memory associated with a mail

@@ -158,7 +158,7 @@ struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(int num, struct mail **mail_array);
 struct mail *mail_create_forward(int num, struct mail **mail_array);
 void mail_free(struct mail *mail);
-int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);
+int mail_read_header_list_if_empty(struct mail *m);
 int mail_process_headers(struct mail *mail);
 void mail_read_contents(char *folder, struct mail *mail);
 void mail_decode(struct mail *mail);

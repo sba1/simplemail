@@ -28,6 +28,7 @@
 #include <proto/datatypes.h>
 #include <proto/graphics.h>
 
+#include "configuration.h"
 #include "smintl.h"
 
 #include "datatypescache.h"
@@ -77,21 +78,24 @@ void shutdownwnd_open(void)
 					WA_BackFill, LAYERS_NOBACKFILL,
 					TAG_DONE)))
 				{
-					struct TextExtent te;
-					char *txt = _("Shutting down...");
-
 					BltBitMapRastPort(bitmap,0,0,
 													  shutdown_wnd->RPort, 0, 0, width, height,
 													  0xc0);
 
-					SetDrMd(shutdown_wnd->RPort,JAM1);
-					SetAPen(shutdown_wnd->RPort,pen);
-					TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
-					if ((te.te_Width < width) && (te.te_Height < height))
+					if (!user.config.dont_show_shutdown_text)
 					{
-						/* only draw the text if there is enought space for it */
-						Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
-						Text(shutdown_wnd->RPort,txt,strlen(txt));
+						struct TextExtent te;
+						char *txt = _("Shutting down...");
+
+						SetDrMd(shutdown_wnd->RPort,JAM1);
+						SetAPen(shutdown_wnd->RPort,pen);
+						TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
+						if ((te.te_Width < width) && (te.te_Height < height))
+						{
+							/* only draw the text if there is enought space for it */
+							Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
+							Text(shutdown_wnd->RPort,txt,strlen(txt));
+						}
 					}
 				}
 			}

@@ -1003,17 +1003,16 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 	if (to_str) parse_mailbox(to_str,&mb);
 	if ((mail = mail_complete_create()))
 	{
-		char *mail_contents;
+		string contents_str;
 		struct phrase *phrase;
 
-		/* this makes some things simpler */
-		if (!(mail_contents = malloc(1)))
+		if (!(string_initialize(&contents_str,100)))
 		{
 			mail_complete_free(mail);
 			free(to_str);
 			return NULL;
 		}
-		*mail_contents = 0;
+
 		phrase = phrase_find_best(to_str);
 
 		if (from)
@@ -1070,8 +1069,8 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 				char *str = mail_create_string(phrase->write_welcome_repicient, NULL, mb.phrase, mb.addr_spec);
 				if (str)
 				{
-					mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(str)+1+1);
-					if (mail_contents) { strcat(mail_contents,str); strcat(mail_contents,"\n");}
+					string_append(&contents_str,str);
+					string_append(&contents_str,"\n");
 					free(str);
 				}
 			}
@@ -1082,8 +1081,8 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 				char *str = mail_create_string(phrase->write_welcome, NULL, NULL, NULL);
 				if (str)
 				{
-					mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(str)+1+1);
-					if (mail_contents) { strcat(mail_contents,str); strcat(mail_contents,"\n");}
+					string_append(&contents_str,str);
+					string_append(&contents_str,"\n");
 					free(str);
 				}
 			}
@@ -1092,20 +1091,11 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 		if (phrase && phrase->write_closing)
 		{
 			char *str = mail_create_string(phrase->write_closing, NULL, NULL, NULL);
-			if (str)
-			{
-				int mail_contents_len = mystrlen(mail_contents);
-				if (mail_contents)
-				{
-					mail_contents = realloc(mail_contents,mail_contents_len+strlen(str)+1);
-					if (mail_contents) strcat(mail_contents,str);
-					free(str);
-				} else mail_contents = str;
-			}
+			if (str) string_append(&contents_str,str);
 		}
 
-		mail->decoded_data = mail_contents;
-		mail->decoded_len = mail_contents?strlen(mail_contents):0;
+		mail->decoded_data = contents_str.str;
+		mail->decoded_len = contents_str.len;
 		mail_process_headers(mail);
 	}
 	free(to_str);

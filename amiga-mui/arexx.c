@@ -50,6 +50,9 @@
 
 static struct MsgPort *arexx_port;
 
+static struct MsgPort *arexx_execute_port;
+static int arexx_execute_out; /* number of arexx messages standing out */
+
 /* from gui_main.c */
 void app_hide(void);
 void app_show(void);
@@ -77,11 +80,14 @@ int arexx_init(void)
 	Forbid();
 	if (!arexx_find())
 	{
-		if ((arexx_port = CreateMsgPort()))
+		if ((arexx_execute_port = CreateMsgPort()))
 		{
-			arexx_port->mp_Node.ln_Name = "SIMPLEMAIL.1";
-			AddPort(arexx_port);
-			rc = 1;
+			if ((arexx_port = CreateMsgPort()))
+			{
+				arexx_port->mp_Node.ln_Name = "SIMPLEMAIL.1";
+				AddPort(arexx_port);
+				rc = 1;
+			}
 		}
 	}
 	Permit();
@@ -99,6 +105,20 @@ void arexx_cleanup(void)
 		RemPort(arexx_port);
 		DeleteMsgPort(arexx_port);
 	}
+
+	while (arexx_execute_out)
+	{
+		struct RexxMsg *rxmsg;
+
+		WaitPort(arexx_execute_port);
+		while ((rxmsg = (struct RexxMsg *)GetMsg(arexx_execute_port)))
+		{
+			arexx_execute_out--;
+			ClearRexxMsg(rxmsg,1);
+			DeleteRexxMsg(rxmsg);
+		}
+	}
+	if (arexx_execute_port) DeleteMsgPort(arexx_execute_port);
 }
 
 /****************************************************************
@@ -108,6 +128,52 @@ ULONG arexx_mask(void)
 {
 	if (!arexx_port) return NULL;
 	return 1UL << arexx_port->mp_SigBit;
+}
+
+/****************************************************************
+ Returns the mask of the arexx port
+*****************************************************************/
+int arexx_execute_script(char *command)
+{
+	struct RexxMsg *rxmsg;
+	BPTR lock;
+	int rc = 0;
+
+	if (!(lock = Lock(command,ACCESS_READ))) return 0;
+	if (!(command = NameOfLock(lock)))
+	{
+		UnLock(lock);
+		return 0;
+	}
+
+	UnLock(lock);
+
+	if ((rxmsg = CreateRexxMsg(arexx_execute_port, "SMRX", "SIMPLEMAIL.1")))
+	{
+		rxmsg->rm_Args[0] = command;
+
+		if (FillRexxMsg(rxmsg,1,0))
+		{
+			struct MsgPort *ap; /* Port of ARexx resident process */
+
+			/* Init Rexx message */
+			rxmsg->rm_Action = RXCOMM;/*|RXFF_NOIO;*/
+
+			/* Find port and send message */
+			Forbid();
+			ap = FindPort("REXX");
+			if (ap)
+			{
+				PutMsg(ap,(struct Message *)rxmsg);
+				arexx_execute_out++;
+			}
+			Permit();
+
+			return 1;
+		}
+		DeleteRexxMsg(rxmsg);
+	}
+	return 0;
 }
 
 /****************************************************************

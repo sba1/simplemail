@@ -409,3 +409,4 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 	
 	return 0;
 }
+

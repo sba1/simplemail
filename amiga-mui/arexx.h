@@ -30,6 +30,7 @@
 struct MsgPort *arexx_find(void);
 int arexx_init(void);
 void arexx_cleanup(void);
+int arexx_execute_script(char *command);
 ULONG arexx_mask(void);
 int arexx_handle(void);
 

@@ -50,6 +50,7 @@ void main_remove_mails_selected(void);
 
 void main_build_accounts(void);
 void main_build_addressbook(void);
+void main_build_scripts(void);
 
 void main_freeze_mail_list(void);
 void main_thaw_mail_list(void);

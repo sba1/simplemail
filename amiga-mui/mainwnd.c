@@ -27,9 +27,11 @@
 #include <libraries/gadtools.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
+#include <libraries/asl.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
 #include <clib/alib_protos.h>
+#include <proto/asl.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
@@ -39,6 +41,7 @@
 #include "SimpleMail_rev.h"
 
 #include "account.h"
+#include "arexx.h"
 #include "configuration.h"
 #include "folder.h"
 #include "mail.h"
@@ -72,14 +75,14 @@ static const char *image_files[] = {
 		"PROGDIR:Images/Config",
 		NULL
 };
-struct MyBrush *brushes[sizeof(image_files)/sizeof(char*)];
+/*struct MyBrush *brushes[sizeof(image_files)/sizeof(char*)];*/
 
 static Object *win_main;
 static Object *main_menu;
 static Object *main_settings_folder_menuitem;
 static Object *main_settings_addressbook_menuitem;
+static Object *main_scripts_menu; /* dynamic */
 static Object *main_group;
-/*static Object *speedbar;*/
 static Object *button_fetch;
 static Object *button_send;
 static Object *button_read;
@@ -283,6 +286,59 @@ static void mailtreelist_title_click(void)
 static void menu_check_single_account(int *val)
 {
 	callback_check_single_account(*val);
+}
+
+/******************************************************************
+ Switch the view of the folders
+*******************************************************************/
+static void menu_execute_script(int *val_ptr)
+{
+	int val = *val_ptr;
+	if (val == -1)
+	{
+		struct FileRequester *file_req = AllocAslRequest(ASL_FileRequest, NULL);
+		if (file_req)
+		{
+			static char *initial_drawer;
+			static char *initial_file;
+			static char *initial_pattern;
+			static int initial_call;
+
+			if (!initial_call)
+			{
+				initial_pattern = mystrdup("#?.smrx");
+				initial_drawer = mystrdup("PROGDIR:ARexx");
+				initial_call = 1;
+			}
+
+			if (AslRequestTags(file_req,
+					ASLFR_Screen, xget(win_main,MUIA_Window_Screen),
+					ASLFR_InitialDrawer, initial_drawer,
+					ASLFR_InitialFile, initial_file,
+					ASLFR_InitialPattern, initial_pattern,
+					ASLFR_DoPatterns, TRUE,
+					ASLFR_RejectIcons, TRUE,
+					TAG_DONE))
+			{
+				char *full_path;
+
+				free(initial_drawer);
+				free(initial_file);
+				free(initial_pattern);
+
+				initial_drawer = mystrdup(file_req->fr_Drawer);
+				initial_file = mystrdup(file_req->fr_File);
+				initial_pattern = mystrdup(file_req->fr_Pattern);
+
+				if ((full_path = mycombinepath(initial_drawer, initial_file)))
+				{
+					arexx_execute_script(full_path);
+					free(full_path);
+				}
+			}
+			FreeAslRequest(file_req);
+		}
+	}
 }
 
 /******************************************************************
@@ -628,6 +684,7 @@ int main_window_init(void)
 		DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, addresstreelist_doubleclick);
 
 		main_build_accounts();
+		main_build_scripts();
 		main_build_addressbook();
 
 		rc = TRUE;
@@ -1131,6 +1188,33 @@ void main_build_accounts(void)
 		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No POP3 Server specified"),	End;
 		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 	}
+}
+
+/******************************************************************
+ Build the scripts menu
+*******************************************************************/
+void main_build_scripts(void)
+{
+	Object *entry;
+
+	if (!main_scripts_menu) 
+	{
+		main_scripts_menu = MenuObject,
+			MUIA_Menu_Title, "Scripts",
+			End;
+		DoMethod(main_menu,OM_ADDMEMBER,main_scripts_menu);
+	} else
+	{
+		DisposeAllFamilyChilds(main_scripts_menu);
+	}
+
+	entry = MenuitemObject,
+		MUIA_Menuitem_Title, _("Execute script..."),
+		End;
+
+	DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
+
+	DoMethod(main_scripts_menu, OM_ADDMEMBER, entry);
 }
 
 /******************************************************************

@@ -67,6 +67,12 @@ int callback_read_mail(void)
 	if (!(filename = main_get_mail_filename())) return -1;
 	if (!(m = main_get_active_mail())) return -1;
 
+	if (m->flags & MAIL_FLAGS_PARTIAL)
+	{
+		imap_download_mail(f,m);
+		main_refresh_mail(m);
+	}
+
 	num = read_window_open(main_get_folder_drawer(), m);
 
 	if (num >= 0)

@@ -72,6 +72,8 @@ struct MailInfoArea_Data
 	struct list field_list;
 
 	int background_pen;
+	int text_pen;
+	int link_pen;
 
 	int fieldname_width;
 	int entries;
@@ -241,20 +243,27 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 {
 	int ytext = y + _mtop(obj) + _font(obj)->tf_Baseline;
 	struct text_node *text;
+	int cnt;
+
+	struct TextExtent te;
 
 	int space_left;
 	int comma_width;
 
 	comma_width = TextLength(_rp(obj),",",1);
 
-	SetAPen(_rp(obj), _dri(obj)->dri_Pens[TEXTPEN]);
+	SetAPen(_rp(obj), data->text_pen);
 	SetFont(_rp(obj), _font(obj));
 	Move(_rp(obj),_mleft(obj)+2,ytext);
-	Text(_rp(obj),f->name,strlen(f->name));
 
-	Move(_rp(obj),_mleft(obj) + data->fieldname_width, ytext);
+	cnt = TextFit(_rp(obj),f->name,strlen(f->name),&te,NULL,1,_mwidth(obj),_font(obj)->tf_YSize);
+	if (!cnt) return;
+	Text(_rp(obj),f->name,cnt);
 
 	space_left = _mwidth(obj) - data->fieldname_width - 4;
+	if (space_left <= 0) return;
+
+	Move(_rp(obj),_mleft(obj) + data->fieldname_width, ytext);
 
 	text = (struct text_node*)list_first(&f->text_list);
 	while (text)
@@ -265,9 +274,6 @@ STATIC VOID MailInfoArea_DrawField(Object *obj, struct MailInfoArea_Data *data, 
 
 		if (text->text)
 		{
-			int cnt;
-			struct TextExtent te;
-
 			cnt = TextFit(_rp(obj),text->text,strlen(text->text),&te,NULL,1,space_left,_font(obj)->tf_YSize);
 			if (!cnt) break;
 
@@ -361,6 +367,16 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 				MAKECOLOR32((user.config.read_header_background & 0xff00) >> 8),
 				MAKECOLOR32((user.config.read_header_background & 0xff)), NULL);
 
+	data->link_pen  = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,
+				MAKECOLOR32((user.config.read_link & 0xff0000) >> 16),
+				MAKECOLOR32((user.config.read_link & 0xff00) >> 8),
+				MAKECOLOR32((user.config.read_link & 0xff)), NULL);
+
+	data->text_pen  = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,
+				MAKECOLOR32((user.config.read_text & 0xff0000) >> 16),
+				MAKECOLOR32((user.config.read_text & 0xff00) >> 8),
+				MAKECOLOR32((user.config.read_text & 0xff)), NULL);
+
 	return rc;
 }
 
@@ -370,6 +386,8 @@ STATIC LONG MailInfoArea_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup
 STATIC LONG MailInfoArea_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
+	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->text_pen);
+	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->link_pen);
 	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->background_pen);
 	data->setup = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
@@ -411,6 +429,7 @@ STATIC LONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
 	SetAPen(_rp(obj), data->background_pen);
+	SetDrMd(_rp(obj), JAM1);
 	RectFill(_rp(obj), _mleft(obj), _mtop(obj), _mright(obj), _mbottom(obj));
 
 	f = (struct field *)list_first(&data->field_list);

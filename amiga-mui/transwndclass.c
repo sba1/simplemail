@@ -36,6 +36,7 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 
 #include "parse.h"
+#include "configuration.h"
 #include "smintl.h"
 #include "support_indep.h"
 
@@ -195,7 +196,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	{
 		struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
 		data->gauge1 = gauge1;
-//		data->gauge2 = gauge2;
+/*		data->gauge2 = gauge2; */
 		data->status = status;
 		data->abort  = abort;
 		data->head = head;
@@ -275,15 +276,15 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				break;
 				
 			case MUIA_transwnd_Gauge2_Str:	
-//				set(data->gauge2, MUIA_Gauge_InfoText, tag->ti_Data);
+/*				set(data->gauge2, MUIA_Gauge_InfoText, tag->ti_Data); */
 				break;
 				
 			case MUIA_transwnd_Gauge2_Max:
-//				set(data->gauge2, MUIA_Gauge_Max, tag->ti_Data);
+/*				set(data->gauge2, MUIA_Gauge_Max, tag->ti_Data); */
 				break;
 				
 			case MUIA_transwnd_Gauge2_Val:	
-//				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data);
+/*				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data); */
 				break;
 
 			case MUIA_transwnd_QuietList:
@@ -316,7 +317,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		
 		DoMethod(data->mail_list, MUIM_NList_Clear);
 		SetAttrs(obj,
-//			MUIA_Window_Title,"SimpleMail",
+/*			MUIA_Window_Title,"SimpleMail", */
 			MUIA_transwnd_Status, _("Waiting..."),
 			MUIA_transwnd_Gauge1_Str, _("Waiting..."),
 			MUIA_transwnd_Gauge1_Max, 1,
@@ -359,7 +360,6 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 	ent.size = msg->Size;
 	ent.subject = NULL;
 	ent.from = NULL;
-	DoMethod(data->mail_list, MUIM_NList_InsertSingle, &ent,  MUIV_NList_Insert_Bottom);
 
 	if (!data->mail_group_shown)
 	{
@@ -369,6 +369,7 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 		set(data->mail_group, MUIA_ShowMe, TRUE);
 		data->mail_group_shown = 1;
 	}
+	DoMethod(data->mail_list, MUIM_NList_InsertSingle, &ent,  MUIV_NList_Insert_Bottom);
 
 	return NULL;
 }
@@ -383,21 +384,25 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
 		if (entry->no == msg->Num)
 		{
-			char *phrase, *addr;
+			char *utf8phrase, *utf8subject, *phrase, *addr;
 			int day,month,year,hour,min,sec,gmt;
 			int more;
 
-			extract_name_from_address(msg->From, &phrase, &addr, &more);
+			extract_name_from_address(msg->From, &utf8phrase, &addr, &more);
+			phrase = utf8tostrcreate(utf8phrase,user.config.default_codeset);
 			if (phrase)
 			{
 				entry->from = phrase;
 				free(addr);
 			} else entry->from = addr;
+			free(utf8phrase);
 
 			parse_date(msg->Date,&day,&month,&year,&hour,&min,&sec,&gmt);
 			entry->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
 
-			parse_text_string(msg->Subject, &entry->subject);
+			parse_text_string(msg->Subject, &utf8subject);
+			entry->subject = utf8tostrcreate(utf8subject,user.config.default_codeset);
+			free(utf8subject);
 
 			DoMethod(data->mail_list,MUIM_NList_Redraw,i);
 			return NULL;

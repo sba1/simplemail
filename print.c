@@ -28,6 +28,7 @@
 #include "configuration.h"
 #include "support.h"
 #include "smintl.h"
+#include "parse.h"
 
 #include "sysprint.h"
 
@@ -45,12 +46,32 @@ static int create_ansi_header(FILE *fp, struct mail *m)
 
 	if(from && (user.config.header_flags & (SHOW_HEADER_FROM | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("From"), from);
+		struct mailbox mb;
+		parse_mailbox(from, &mb);
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("From"), mb.addr_spec);
 	}
 
 	if(to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("To"), to);
+		struct parse_address p_addr;
+		fprintf(fp,ANSI_BOLD "%s:" ANSI_NORMAL,_("To"));
+
+		if ((parse_address(to,&p_addr)))
+		{
+			struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
+			while (mb)
+				{
+					fprintf(fp," %s",mb->addr_spec);
+					if (mb->phrase) fprintf(fp,"%s <%s&>",mb->phrase,mb->addr_spec);
+					else fputs(mb->addr_spec,fp);
+					if ((mb = (struct mailbox*) node_next(&mb->node)))
+					{
+						fputs(", ",fp);
+					}
+				}
+				free_address(&p_addr);
+			}
+			fputs("\n",fp);
 	}
 
 	if(cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
@@ -85,7 +106,7 @@ static int create_ansi_header(FILE *fp, struct mail *m)
 **
 ** These are the system-independent routines.
 */
-int print_mail(struct mail *m)
+int print_mail(struct mail *m, int printhdr)
 {
 	int rc = 0;
 	char *text, *buf;
@@ -109,7 +130,7 @@ int print_mail(struct mail *m)
 	fp = tmpfile();
 	if(fp != NULL)
 	{
-		if(create_ansi_header(fp, m))
+		if(!printhdr || create_ansi_header(fp, m)) /* nasty, I know ;) */
 		{
 			fwrite(text, txtlen, 1, fp);
 

@@ -24,6 +24,6 @@
 #ifndef SM__PRINT_H
 #define SM__PRINT_H
 
-int print_mail(struct mail *);
+int print_mail(struct mail *, int);
 
 #endif

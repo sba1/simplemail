@@ -349,7 +349,7 @@ static void context_menu_trigger(int **pdata)
 						open_contents(data,mail);
 						break;
 			case 	4: /* print as text */
-				print_mail(mail);
+				print_mail(mail, FALSE);
 				break;
 		}
 	}
@@ -520,7 +520,7 @@ static void menu_print(int **pdata)
 	if (mail)
 	{
 		set(App, MUIA_Application_Sleep, TRUE);
-		print_mail(mail);
+		print_mail(mail, TRUE);
 		set(App, MUIA_Application_Sleep, FALSE);
 	}
 }

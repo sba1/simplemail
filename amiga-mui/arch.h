@@ -23,12 +23,16 @@
 #ifndef SM__ARCH_H
 #define SM__ARCH_H
 
-void kprintf(char *string, ...);
-
 #ifndef PROTO_EXEC_H
 #include <proto/exec.h>
 #endif
 
+#if defined(__GNUC__) && defined(__AMIGAOS4__)
+#define ARCH_DEBUG(x) do { (IExec->Forbid)(); (IExec->DebugPrintF)("%s/%ld [%s()] Task \"%s\" => ",__FILE__,__LINE__,__PRETTY_FUNCTION__,(IExec->FindTask)(NULL)->tc_Node.ln_Name); (IExec->DebugPrintF) x; (IExec->Permit)();} while (0)
+#undef NDEBUG
+#else
+void kprintf(char *string, ...);
 #define ARCH_DEBUG(x) do { Forbid(); kprintf("%s/%ld Task \"%s\" => ",__FILE__,__LINE__,FindTask(NULL)->tc_Node.ln_Name); kprintf x; Permit();} while (0)
+#endif
 
 #endif

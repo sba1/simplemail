@@ -31,17 +31,18 @@ struct out_mail
 	char *mailfile;
 };
 
-#define ESMTP_ENHACEDSTATUSCODES 1
-#define ESMTP_8BITMIME           2
-#define ESMTP_ONEX               4
-#define ESMTP_ETRN               8
-#define ESMTP_XUSR               16
-#define ESMTP_AUTH               32
+#define ESMTP_ENHACEDSTATUSCODES  (1<<0)
+#define ESMTP_8BITMIME            (1<<1)
+#define ESMTP_ONEX                (1<<2)
+#define ESMTP_ETRN                (1<<3)
+#define ESMTP_XUSR                (1<<4)
+#define ESMTP_AUTH                (1<<5)
+#define ESMTP_PIPELINING          (1<<6)
 
-#define AUTH_PLAIN					1
-#define AUTH_LOGIN					2
-#define AUTH_DIGEST_MD5				4
-#define AUTH_CRAM_MD5            8
+#define AUTH_PLAIN							 1
+#define AUTH_LOGIN							 2
+#define AUTH_DIGEST_MD5				 4
+#define AUTH_CRAM_MD5					 8
 
 struct esmtp
 {

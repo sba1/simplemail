@@ -456,27 +456,13 @@ int esmtp_ehlo(struct connection *conn, struct smtp_server *server)
 			{
 				rbuf = tcp_readln(conn);
 
-				if(strstr(rbuf, "ENHANCEDSTATUSCODES"))
-				{
-					server->esmtp.flags |= ESMTP_ENHACEDSTATUSCODES;
-				}
-				else if(strstr(rbuf, "8BITMIME"))
-				{
-					server->esmtp.flags |= ESMTP_8BITMIME;
-				}
-				else if(strstr(rbuf, "ONEX"))
-				{
-					server->esmtp.flags |= ESMTP_ONEX;
-				}
-				else if(strstr(rbuf, "ETRN"))
-				{
-					server->esmtp.flags |= ESMTP_ETRN;
-				}
-				else if(strstr(rbuf, "XUSR"))
-				{
-					server->esmtp.flags |= ESMTP_XUSR;
-				}
-				else if(strstr(rbuf, "AUTH"))
+				if (strstr(rbuf, "ENHANCEDSTATUSCODES")) server->esmtp.flags |= ESMTP_ENHACEDSTATUSCODES;
+				else if(strstr(rbuf, "8BITMIME")) server->esmtp.flags |= ESMTP_8BITMIME;
+				else if (strstr(rbuf, "ONEX")) server->esmtp.flags |= ESMTP_ONEX;
+				else if (strstr(rbuf, "ETRN")) server->esmtp.flags |= ESMTP_ETRN;
+				else if (strstr(rbuf, "XUSR")) server->esmtp.flags |= ESMTP_XUSR;
+				else if (strstr(rbuf, "PIPELINING")) server->esmtp.flags |= ESMTP_PIPELINING;
+				else if (strstr(rbuf, "AUTH"))
 				{
 					server->esmtp.flags |= ESMTP_AUTH;
 

@@ -1,0 +1,24 @@
+;!. Execute
+;
+; This shell script creates the .pox files in the po directory.
+; Edit this file and if you have completed coyy/rename it to .po
+; Then use msgfmt to create the compiled .mo file which can be used
+; by SimpleMail
+;
+; Example:
+;  execute CreatePOX de
+; ...translating is your job...
+;  copy po/de.pox po/de.po
+;  msgfmt po/de.po -o de.mo
+;
+.key LANG/A
+.bra {
+.ket }
+
+xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --add-comments -o po/simplemail.pot
+if not exists po/{LANG}.po
+  copy po/simplemail.pot po/{LANG}.pox
+else
+  msgmerge po/{LANG}.po po/simplemail.pot -o po/{LANG}.pox --verbose
+endif
+delete po/simplemail.pot

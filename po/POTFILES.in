@@ -1,12 +1,14 @@
 # List of source files containing translatable strings.
 # (Filenames relative to top-level directory.)
 addressbook.c
+amiga-mui/accountpopclass.c
 amiga-mui/addressbookwnd.c
 amiga-mui/addressgrouplistclass.c
 amiga-mui/addressentrylistclass.c
 amiga-mui/attachmentlistclass.c
 amiga-mui/composewnd.c
 amiga-mui/configwnd.c
+amiga-mui/configwnd_stuff.c
 amiga-mui/filterruleclass.c
 amiga-mui/filterwnd.c
 amiga-mui/folderwnd.c
@@ -14,15 +16,22 @@ amiga-mui/foldertreelistclass.c
 amiga-mui/gui_main.c
 amiga-mui/mailtreelistclass.c
 amiga-mui/mainwnd.c
+amiga-mui/messageviewclass.c
 amiga-mui/pgplistclass.c
 amiga-mui/searchwnd.c
 amiga-mui/shutdownwnd.c
 amiga-mui/readwnd.c
 amiga-mui/transwndclass.c
 amiga-mui/signaturecycleclass.c
+amiga-mui/support.c
+amiga-mui/sysprint.c
+Charsets/cp1250.txt
+Charsets/cp1251.txt
 Charsets/cp1252.txt
 Charsets/iso8859-10.txt
+Charsets/iso8859-7.txt
 codesets.c
+folder.c
 imap.c
 mail.c
 mbox.c

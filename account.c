@@ -153,7 +153,11 @@ struct account *account_find_by_from(char *from)
 **************************************************************************/
 struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 {
-	struct account *account = (struct account*)list_first(&user.config.account_list);
+	struct account *account;
+
+	if (!f->is_imap) return NULL;
+
+	account = (struct account*)list_first(&user.config.account_list);
 	while (account)
 	{
 		if (account->recv_type && account->imap) /* imap */
@@ -165,6 +169,6 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 		}
 		account = (struct account*)node_next(&account->node);
 	}
-	return 0;
+	return NULL;
 }
 

@@ -23,6 +23,7 @@
 #include <string.h>
 #include <intuition/intuition.h>
 #include <proto/exec.h>
+#include <proto/dos.h>
 #include <proto/locale.h>
 #include <proto/keymap.h>
 
@@ -95,5 +96,34 @@ ULONG ConvertKey(struct IntuiMessage *imsg)
    event.ie_EventAddress = (APTR *) *((ULONG *)imsg->IAddress);
    MapRawKey(&event, &code, 1, NULL);
    return code;
+}
+
+/* Returns the lock of a name (Allocated with AllocVec()) */
+STRPTR NameOfLock( BPTR lock )
+{
+	STRPTR n;
+	BOOL again;
+	ULONG bufSize = 127;
+	if( !lock ) return NULL;
+
+	do
+	{
+		again = FALSE;
+		if((n = (STRPTR)AllocVec(bufSize, 0x10000 )))
+		{
+			if( NameFromLock( lock, n, bufSize-1 ) == DOSFALSE )
+			{
+				if( IoErr() == ERROR_LINE_TOO_LONG )
+				{
+					bufSize += 127;
+					again = TRUE;
+				}
+				FreeVec(n);
+				n = NULL;
+			}
+		}
+	}	while(again);
+
+	return n;
 }
 

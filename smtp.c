@@ -186,39 +186,74 @@ out:
 	return rc;
 }
 
+/**************************************************************************
+ Send RCPT command
+**************************************************************************/
 static int smtp_rcpt(struct smtp_connection *conn, struct account *account, struct outmail *om)
 {
-	int rc;
-	long i;
-	char *buf;
+	int i,rc;
+	string send_str;
 
-	rc = 0;
+	if (!string_initialize(&send_str, 200))
+		return 0;
 
-	buf = malloc(1024);
-	if(buf != NULL)
+	rc = 1;
+
+	for (i = 0; om->rcp[i] != NULL; i++)
 	{
-		rc = 1;
+		int res;
 
-		for(i = 0; om->rcp[i] != NULL; i++)
+		string_crop(&send_str,0,0);
+		if (!(string_append(&send_str,"TO:<")))
 		{
-			int res;
-
-			sprintf(buf, "TO:<%s>", om->rcp[i]);
-
-			res = smtp_send_cmd(conn, "RCPT", buf);
-
-			if (res != SMTP_OK && res != SMTP_OK_FORWARD)
-			{
-				rc = 0;
-				break;
-			}
+			rc = 0;
+			goto out;
 		}
 
-		free(buf);
+		if (isascii7(om->rcp[i]))
+		{
+			if (!string_append(&send_str,om->rcp[i]))
+			{
+				rc = 0;
+				goto out;
+			}
+		} else
+		{
+			utf8 *puny;
+
+			if (!(puny = encode_address_puny(om->rcp[i])))
+			{
+				rc = 0;
+				goto out;
+			}
+
+			if (!(string_append(&send_str,puny)))
+			{
+				rc = 0;
+				free(puny);
+				goto out;
+			}
+
+			free(puny);
+		}
+
+		if (!string_append(&send_str,">"))
+		{
+			rc = 0;
+			goto out;
+		}
+
+		res = smtp_send_cmd(conn, "RCPT", send_str.str);
+
+		if (res != SMTP_OK && res != SMTP_OK_FORWARD)
+		{
+			rc = 0;
+			break;
+		}
 	}
-
+out:
+	free(send_str.str);
 	return rc;
-
 }
 
 static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile, int cur_mail_size)

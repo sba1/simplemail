@@ -23,6 +23,8 @@
 #ifndef SM__SUPPORT_INDEP_H
 #define SM__SUPPORT_INDEP_H
 
+#include <stdio.h>
+
 int mystrcmp(const char *str1, const char *str2);
 int mystricmp(const char *str1, const char *str2);
 int mystrnicmp(const char *str1, const char *str2, int n);
@@ -31,6 +33,8 @@ char *mystristr(const char *str1, const char *str2);
 char *mystrdup(const char *str);
 char *mystrndup(const char *str, int len);
 size_t mystrlcpy(char *dest, const char *src, size_t n);
+
+unsigned int myfsize(FILE *file);
 
 void wrap_text(char *text, int border);
 

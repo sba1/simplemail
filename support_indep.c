@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "support_indep.h"
 
@@ -170,6 +171,18 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 }
 
 /**************************************************************************
+ Returns the size of a given previously opened file
+**************************************************************************/
+unsigned int myfsize(FILE *file)
+{
+	unsigned int size;
+	fseek(file, 0L, SEEK_END);
+	size = ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	return size;
+}
+
+/**************************************************************************
  Wraps a text. Overwrites the argument!!
 **************************************************************************/
 void wrap_text(char *text, int border)
@@ -293,4 +306,3 @@ void array_free(char **string_array)
 		free(string);
 	free(string_array);
 }
-

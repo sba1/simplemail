@@ -31,47 +31,52 @@ static long bsd_in_use;
 
 int open_socket_lib(void)
 {
-   int rc;
+	int rc;
 
-   rc = FALSE;
+	rc = FALSE;
 
-   bsd_in_use++;
-   if(SocketBase == NULL)
-   {
-      SocketBase = OpenLibrary("bsdsocket.library", 4);
-      if(SocketBase != NULL)
-      {
-       rc = TRUE;
-      }
-   }
+	bsd_in_use++;
+	if(SocketBase == NULL)
+	{
+		SocketBase = OpenLibrary("bsdsocket.library", 4);
+		if(SocketBase != NULL)
+		{
+		 rc = TRUE;
+		}
+	}
 
-   return rc;
+	return rc;
 }
 
 void close_socket_lib(void)
 {
-   bsd_in_use--;
+	bsd_in_use--;
 
-   if(bsd_in_use == 0)
-   {
-      if(SocketBase != NULL)
-      {
-         CloseLibrary(SocketBase);
-         SocketBase = NULL;
-      }
-   }
+	if(bsd_in_use == 0)
+	{
+		if(SocketBase != NULL)
+		{
+			CloseLibrary(SocketBase);
+			SocketBase = NULL;
+		}
+	}
 }
 
-long my_h_errno(void)
+long tcp_herrno(void)
 {
-   long id;
+	long id;
 
-   if(SocketBaseTags(
-      SBTM_GETREF(SBTC_HERRNO), &id,
-   TAG_DONE) != 0)
-   {
-      id = -1;
-   }
+	if(SocketBaseTags(
+		SBTM_GETREF(SBTC_HERRNO), &id,
+	TAG_DONE) != 0)
+	{
+		id = -1;
+	}
 
-   return id;
+	return id;
+}
+
+long tcp_errno(void)
+{
+	return Errno();
 }

@@ -894,9 +894,23 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 		if ((subject = encode_header_field("Subject",new_mail->subject)))
 		{
+			time_t t;
+			struct tm *d;
+
+			const char *mon_str[] = 
+			{
+				"Jan","Feb","Mar","Apr","May","Jun",
+				"Jul","Aug","Sep","Oct","Nov","Dec"
+			};
+
 			fprintf(fp,"%s", subject);
 			fprintf(fp,"X-Mailer: %s\n", "SimpleMail - Mailer by Hynek Schlawack and Sebastian Bauer");
 			fprintf(fp,"MIME-Version: 1.0\n");
+
+			time(&t);
+			d = localtime(&t);
+
+			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld +0100\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec);
 		}
 	}
 

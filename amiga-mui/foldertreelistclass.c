@@ -126,14 +126,14 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 				{
 					sprintf(mails_buf,"%ld",num);
 				}
-				sprintf(unread_buf,"%ld",unread);
 				sprintf(new_buf,"%ld",newm);
+				sprintf(unread_buf,"%ld",unread);
 			}
 			else
 			{
 				mails_buf[0] = 0;
-				unread_buf[0] = 0;
 				new_buf[0] = 0;
+				unread_buf[0] = 0;
 			}
 
 			sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
@@ -148,15 +148,15 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 
 			*msg->Array++ = data->name_buf;
 			*msg->Array++ = mails_buf;
-			*msg->Array++ = unread_buf;
-			*msg->Array = new_buf;
+			*msg->Array++ = new_buf;
+			*msg->Array = unread_buf;
 		}
 	} else
 	{
 		*msg->Array++ = _("Name");
 		*msg->Array++ = _("Mails");
-		*msg->Array++ = _("Unread");
-		*msg->Array = _("New");
+		*msg->Array++ = _("New");
+		*msg->Array = _("Unread");
 	}
 }
 
@@ -189,8 +189,8 @@ STATIC VOID FolderTreelist_UpdateFormat(struct IClass *cl,Object *obj)
 	strcpy(buf,"COL=0 BAR");
 
 	if (xget(data->show_mails_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=1 P=\33r BAR");
-	if (xget(data->show_unread_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=2 P=\33r BAR");
-	if (xget(data->show_new_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=3 P=\33r BAR");
+	if (xget(data->show_new_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=2 P=\33r BAR");
+	if (xget(data->show_unread_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=3 P=\33r BAR");
 
 	set(obj, MUIA_NListtree_Format, buf);
 }
@@ -243,8 +243,8 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->title_menu = MenustripObject,
 		Child, MenuObjectT(_("Folder Settings")),
 			Child, data->show_mails_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','M','A'),MUIA_Menuitem_Title, _("Show Mail?"), MUIA_UserData, MENU_SHOW_MAILS, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_unread_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','U','R'),MUIA_Menuitem_Title, _("Show Unread?"), MUIA_UserData, MENU_SHOW_UNREAD, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_new_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','N','W'),MUIA_Menuitem_Title, _("Show New?"), MUIA_UserData, MENU_SHOW_NEW, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_unread_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('F','S','U','R'),MUIA_Menuitem_Title, _("Show Unread?"), MUIA_UserData, MENU_SHOW_UNREAD, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,

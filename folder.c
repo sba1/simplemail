@@ -888,6 +888,104 @@ void folder_set_mail_flags(struct folder *folder, struct mail *mail, int flags_n
 }
 
 /******************************************************************
+ Count the signatures. 
+*******************************************************************/
+int folder_count_signatures(int def_signature)
+{
+	struct folder *f = folder_first();
+	int use_count = 0;
+	while (f)
+	{
+		if (f->def_signature == def_signature)
+		{
+			use_count++;
+		}
+		f = folder_next(f);
+	}
+	return use_count;
+}
+
+/******************************************************************
+ Update the signatures. 
+*******************************************************************/
+int folder_update_signatures(int def_signature)
+{
+	struct folder *f = folder_first();
+	int update_count = 0;
+	while (f)
+	{
+		/* remember the old sig bit only the first time! */
+		if (!f->update_signature) f->old_def_signature = f->def_signature;
+		if (f->def_signature == def_signature)
+		{
+			f->def_signature = FOLDER_SIGNATURE_DEFAULT;
+		}
+		if (f->def_signature > def_signature)
+		{
+			f->def_signature--;
+		}
+		if (f->old_def_signature != f->def_signature)
+		{
+			update_count++;
+			f->update_signature = TRUE;
+		}
+		f = folder_next(f);
+	}
+	return update_count;
+}
+
+/******************************************************************
+ Use the signatures. 
+*******************************************************************/
+void folder_use_updated_signatures(void)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (f->update_signature)
+		{
+			f->old_def_signature = f->def_signature;
+		}
+		f = folder_next(f);
+	}
+}
+
+/******************************************************************
+ Save folder configs with updated signatures. 
+*******************************************************************/
+void folder_save_updated_signatures(void)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (f->update_signature)
+		{
+			f->update_signature = FALSE;
+			f->old_def_signature = f->def_signature;
+			folder_config_save(f);
+		}
+		f = folder_next(f);
+	}
+}
+
+/******************************************************************
+ Undo folder configs changed signatures. 
+*******************************************************************/
+void folder_undo_updated_signatures(void)
+{
+	struct folder *f = folder_first();
+	while (f)
+	{
+		if (f->update_signature)
+		{
+			f->update_signature = FALSE;
+			f->def_signature = f->old_def_signature;
+		}
+		f = folder_next(f);
+	}
+}
+
+/******************************************************************
  Finds a mail with a given filename in the given folder
 *******************************************************************/
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename)
@@ -959,6 +1057,8 @@ int folder_rescan(struct folder *folder)
 		folder->mail_array = folder->sorted_mail_array = NULL;
 		folder->mail_array_allocated = 0;
 		folder->num_mails = 0;
+		folder->new_mails = 0;
+		folder->unread_mails = 0;
 
 		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 		folder->num_index_mails = 0;
@@ -1154,7 +1254,7 @@ static struct folder *folder_add(char *path)
 		/* Initialize everything with 0 */
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.num_index_mails = -1;
-		node->folder.def_signature = -10; /* -10 is the defaultsignature from the account */
+		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);
@@ -1227,7 +1327,7 @@ static struct folder_node *folder_create_group(char *name)
 		memset(node,0,sizeof(struct folder_node));
 		node->folder.name = mystrdup(name);
 		node->folder.special = FOLDER_SPECIAL_GROUP;
-		node->folder.def_signature = -10;
+		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);
 
@@ -1278,7 +1378,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 
 		name = sm_file_part(imap_path);
 		node->folder.name = mystrdup(name);
-		node->folder.def_signature = -10;
+		node->folder.def_signature = FOLDER_SIGNATURE_DEFAULT;
 		node->folder.parent_folder = parent;
 		node->folder.path =  mycombinepath(parent->path,name);
 		node->folder.special = FOLDER_SPECIAL_NO;

@@ -32,6 +32,8 @@ typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;
 typedef struct x509_st X509;
 #endif
+#else
+#include <openssl/ssl.h>
 #endif
 
 struct connection
@@ -84,3 +86,4 @@ char *tcp_readln(struct connection *conn);
 #define SMTP_TX_FAILURE       554
 
 #endif
+

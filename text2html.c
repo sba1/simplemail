@@ -68,7 +68,7 @@ const static struct smily smily[] =
 };
 
 
-static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
+static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 {
 	char uri[SIZE_URI];
 	char *buffer = *buffer_ptr;
@@ -98,7 +98,7 @@ static int write_uri(char **buffer_ptr, int *buffer_len_ptr, FILE *fh)
 
 char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 {
-	char *html_buf;
+	char *html_buf = NULL;
 	FILE *fh;
 
 	if ((fh = tmpfile()))
@@ -109,7 +109,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		int initial_color = 1;
 		int line = 0; /* the type of the line */
 
-		if (flags & TEXT2HTML_BODY_TAG) fprintf(fh,"<BODY BGCOLOR=\"#%06lx\" TEXT=\"#%06lx\" LINK=\"#%06lx\">",user.config.read_background,user.config.read_text,user.config.read_link);
+		if (flags & TEXT2HTML_BODY_TAG) fprintf(fh,"<BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		if (fonttag) fputs(fonttag,fh);
 
 		while (buffer_len)
@@ -139,8 +139,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				if (last_color != new_color)
 				{
 					if (!initial_color) fputs("</FONT>",fh);
-					if (new_color == 1) fprintf(fh,"<FONT COLOR=\"#%lx\">",user.config.read_quoted);
-					else if (new_color == 2) fprintf(fh,"<FONT COLOR=\"#%lx\">",user.config.read_old_quoted);
+					if (new_color == 1) fprintf(fh,"<FONT COLOR=\"#%x\">",user.config.read_quoted);
+					else if (new_color == 2) fprintf(fh,"<FONT COLOR=\"#%x\">",user.config.read_old_quoted);
 					last_color = new_color;
 					if (new_color) initial_color = 0;
 					else initial_color = 1;
@@ -282,3 +282,5 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 	}
 	return html_buf;
 }
+
+

@@ -47,7 +47,7 @@ int http_download_photo(char *path, char *email)
 
   rc = 0;
 
-	if ((conn = tcp_connect("simplemail.sourceforge.net",80)))
+	if ((conn = tcp_connect("simplemail.sourceforge.net",80,0)))
 	{
 		char *line;
 		int download = 0;
@@ -83,3 +83,4 @@ int http_download_photo(char *path, char *email)
 	close_socket_lib();
 	return rc;
 }
+

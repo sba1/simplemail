@@ -9,7 +9,7 @@ void hmac_md5(unsigned char * text, int text_len, unsigned char *key, int key_le
 /* key_len  length of authentication key */
 /* digest   caller digest to be filled in */
 {
-        MD5_CTX context;
+        SM_MD5_CTX context;
         unsigned char k_ipad[65];    /* inner padding -
                                       * key XORd with ipad
                                       */
@@ -21,7 +21,7 @@ void hmac_md5(unsigned char * text, int text_len, unsigned char *key, int key_le
         /* if key is longer than 64 bytes reset it to key=MD5(key) */
         if (key_len > 64) {
 
-                MD5_CTX      tctx;
+                SM_MD5_CTX      tctx;
 
                 MD5Init(&tctx);
                 MD5Update(&tctx, key, key_len);
@@ -71,3 +71,5 @@ void hmac_md5(unsigned char * text, int text_len, unsigned char *key, int key_le
                                               * hash */
         MD5Final(digest, &context);          /* finish up 2nd pass */
 }
+
+

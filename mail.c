@@ -1733,7 +1733,7 @@ int mail_create_html_header(struct mail *mail)
 		char *portrait;
 		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 
-		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06lx\" TEXT=\"#%06lx\" LINK=\"#%06lx\">",user.config.read_background,user.config.read_text,user.config.read_link);
+		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 
 		if (from)
 		{
@@ -1877,4 +1877,5 @@ char *mail_create_string(char *format, struct mail *mail)
 	}
 	return str;
 }
+
 

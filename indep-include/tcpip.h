@@ -22,7 +22,6 @@
 
 #ifdef _AMIGA
 #include <proto/socket.h>
-/*#include <proto/amissl.h>*/
 #endif
 
 #ifndef SM__TCP_H
@@ -39,3 +38,4 @@ long tcp_herrno(void);
 long tcp_errno(void);
 
 void myclosesocket(int fd);
+

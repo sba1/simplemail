@@ -150,11 +150,10 @@ int mails_upload_signle(struct mail *m)
 	struct outmail **out_array;
 	struct mailbox mb;
 	struct list *list; /* "To" address list */
-	int i;
 	struct folder *out_folder = folder_outgoing();
 
 	if (!m) return 0;
-  if (!(out_array = create_outmail_array(1))) return 0;
+	if (!(out_array = create_outmail_array(1))) return 0;
 
 	to = mail_find_header_contents(m,"To");
 	from = mail_find_header_contents(m,"From");
@@ -207,4 +206,5 @@ int mails_upload_signle(struct mail *m)
 	free_outmail_array(out_array);
 	return 1;
 }
+
 

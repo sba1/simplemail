@@ -32,6 +32,8 @@
 #include "simplemail.h"
 #include "support.h"
 
+#include "composewnd.h"
+
 #if 0
 
 #include "addressstringclass.h"
@@ -783,5 +785,6 @@ void compose_window_open(struct compose_args *args)
 	}
 #endif
 }
+
 
 

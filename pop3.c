@@ -184,7 +184,7 @@ static int *pop3_stat(struct connection *conn, struct pop3_server *server,
 
 				if (!(m = mail_create())) break;
 
-				sprintf(buf, "TOP %ld 1\r\n",i);
+				sprintf(buf, "TOP %d 1\r\n",i);
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
 				if (!(answer = pop3_receive_answer(conn)))
 				{
@@ -253,7 +253,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server, in
 	int bytes_written;
 	int delete_mail = 0;
 
-	sprintf(buf, "LIST %ld\r\n", nr);
+	sprintf(buf, "LIST %d\r\n", nr);
 	tcp_write(conn, buf, strlen(buf));
 
 	if (!(answer = pop3_receive_answer(conn)))
@@ -281,7 +281,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server, in
 		return 0;
 	}
 
-	sprintf(buf, "RETR %ld\r\n", nr);
+	sprintf(buf, "RETR %d\r\n", nr);
 	tcp_write(conn, buf, strlen(buf));
 
 	if (!(fp = fopen(fn, "w")))
@@ -343,7 +343,7 @@ int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
 {
 	char buf[256];
 	char *answer;
-	sprintf(buf, "DELE %ld\r\n",nr);
+	sprintf(buf, "DELE %d\r\n",nr);
 	if (tcp_write(conn,buf,strlen(buf))<=0) return 0;
 	if (!(answer = pop3_receive_answer(conn))) return 0;
 	return 1;
@@ -565,6 +565,7 @@ void pop_free(struct pop3_server *pop)
 	if (pop->passwd) free(pop->passwd);
 	free(pop);
 }
+
 
 
 

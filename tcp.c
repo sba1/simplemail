@@ -109,7 +109,7 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 						if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
 						{
 							/* Add some checks here */
-							X509_free(conn->server_cert);
+							X509_free(server_cert);
 							return conn;
 						}
 					}
@@ -358,4 +358,5 @@ char *tcp_readln(struct connection *conn)
 
 	return conn->line;
 }
+
 

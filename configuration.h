@@ -27,6 +27,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__ACOUNT_H
+#include "account.h"
+#endif
+
 struct pop3_server;
 
 struct config
@@ -93,5 +97,6 @@ void insert_config_signature(struct signature *signature);
 extern struct user user; /* the current user */
 
 #endif
+
 
 

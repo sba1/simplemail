@@ -234,7 +234,7 @@ int load_config(void)
 			{
 				while ((read_line(fh,buf)))
 				{
-					if (!stricmp(buf,"begin signature"))
+					if (!mystricmp(buf,"begin signature"))
 					{
 						if (read_line(fh,buf))
 						{
@@ -244,7 +244,7 @@ int load_config(void)
 							while (read_line(fh,buf))
 							{
 								int sign_len = sign?strlen(sign):0;
-								if (!stricmp(buf,"end signature"))
+								if (!mystricmp(buf,"end signature"))
 									break;
 
 								if ((sign = realloc(sign,sign_len + strlen(buf) + 2)))
@@ -326,11 +326,11 @@ void save_config(void)
 			fprintf(fh,"Signatures.Use=%s",user.config.signatures_use?"Y":"N");
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
-			fprintf(fh,"Read.BackgroundColor=0x%lx\n",user.config.read_background);
-			fprintf(fh,"Read.TextColor=0x%lx\n",user.config.read_text);
-			fprintf(fh,"Read.QuotedColor=0x%lx\n",user.config.read_quoted);
-			fprintf(fh,"Read.OldQuotedColor=0x%lx\n",user.config.read_old_quoted);
-			fprintf(fh,"Read.LinkColor=0x%lx\n",user.config.read_link);
+			fprintf(fh,"Read.BackgroundColor=0x%x\n",user.config.read_background);
+			fprintf(fh,"Read.TextColor=0x%x\n",user.config.read_text);
+			fprintf(fh,"Read.QuotedColor=0x%x\n",user.config.read_quoted);
+			fprintf(fh,"Read.OldQuotedColor=0x%x\n",user.config.read_old_quoted);
+			fprintf(fh,"Read.LinkColor=0x%x\n",user.config.read_link);
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
 			fprintf(fh,"Read.Smilies=%s\n",user.config.read_smilies?"Y":"N");
@@ -343,7 +343,6 @@ void save_config(void)
 
 	if (user.signature_filename)
 	{
-		int i;
 		FILE *fh = fopen(user.signature_filename, "w");
 		if (fh)
 		{
@@ -383,8 +382,6 @@ void save_filter(void)
 		FILE *fh = fopen(user.filter_filename, "w");
 		if (fh)
 		{
-			int i;
-
 			fputs("SMFI\n\n",fh);
 
 			filter_list_save(fh);
@@ -440,3 +437,6 @@ struct signature *find_config_signature_by_name(char *name)
 	}
 	return NULL;
 }
+
+
+

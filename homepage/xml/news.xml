@@ -2,6 +2,35 @@
 
 <news>
 
+  <entry date="2005/02/05">
+   <text lang="en">
+	  Version 0.25 of SimpleMail released!
+
+	  The changes are:
+   	<list>
+   	 <item> RFC 3490 support for domains of email addresses.</item>
+   	 <item> The mail preview no longer embeds the mail header but displays them
+   	 		separatly. This can be switched to a compact form to save space.</item>
+	 <item> Multiple imap accounts (with different logins) per imap server are now possible.</item>
+     <item> If available "TheBar.mcc" is now used (for the main toolbar only)</item>
+     <item> Bug fixes and other improvements</item>
+   	</list>
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.24 veröffentlicht!
+
+	  Die Änderungen sind:
+   	<list>
+   	 <item> RFC 3490 wird nun für Domänen von eMail Adressen unterstützt.</item>
+   	 <item> Informationen der Nachrichten werden nun separat in der Vorschauanzeige dargestellt.
+   	        Dies kann auf eine kompakte Form umgeschalten werden um Platz zu sparen.</item>
+	 <item> Mehrere IMAP Konten mit unterschiedlichen Logins pro IMAP server sind nun möglich.</item>
+     <item> Falls verfügbar, wird die "TheBar.mcc" für die Toolbar des Hauptfensters benutzt.</item>
+     <item> Fehlerbereinigungen und andere kleinere Verbesserungen.</item>
+   	</list>
+   </text>
+  </entry>
+
   <entry date="2004/12/24">
    <text lang="en">
 	  Version 0.24 of SimpleMail released!

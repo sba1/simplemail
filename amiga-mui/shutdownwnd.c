@@ -87,8 +87,12 @@ void shutdownwnd_open(void)
 					SetDrMd(shutdown_wnd->RPort,JAM1);
 					SetAPen(shutdown_wnd->RPort,pen);
 					TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
-					Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
-					Text(shutdown_wnd->RPort,txt,strlen(txt));
+					if ((te.te_Width < width) && (te.te_Height < height))
+					{
+						/* only draw the text if there is enought space for it */
+						Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
+						Text(shutdown_wnd->RPort,txt,strlen(txt));
+					}
 				}
 			}
 			DisposeDTObject(obj);

@@ -194,7 +194,13 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
             {
                text = ep + 1;
                ep--;
-               if('\r' == *ep) ep--;
+
+						   /* If this check is omitted we could write in the last line of this scope
+							  * before the mallocation, if the first line has only a \n character */
+							 if (ep >= lp)
+							 {
+               	if('\r' == *ep) ep--;
+               }
             } else {
                ep   = lp + strlen(lp) - 1;
                text = NULL;   /* End of text reached */

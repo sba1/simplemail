@@ -148,10 +148,10 @@ static void save_contents_to(struct MessageView_Data *data, struct mail *mail, c
 						if (strcmp(str,user_str))
 						{
 							/* Yes, so inform the user */
-							char gadgets[320];
+							char gadgets[200];
 							int selection;
 
-							sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
+							sm_snprintf(gadgets,sizeof(gadgets),_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
 							selection = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),gadgets);
 
 							switch (selection)
@@ -649,7 +649,8 @@ static void messageview_show_mail(struct MessageView_Data *data)
 }
 
 /******************************************************************
- Argument mail can be NULL 
+ Argument mail and folder_path can be NULL. In eighter case
+ a empty text is displayed.
 *******************************************************************/
 static int messageview_setup(struct MessageView_Data *data, struct mail *mail, char *folder_path)
 {
@@ -657,7 +658,17 @@ static int messageview_setup(struct MessageView_Data *data, struct mail *mail, c
 	BPTR lock;
 
 	/* not specifing a mail is accepted */
-	if (!mail) return 1;
+	if (!mail || !folder_path)
+	{
+		char text[256];
+		sm_snprintf(text,sizeof(text),"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\"></BODY></HTML>",user.config.read_background,user.config.read_text,user.config.read_link);
+
+		SetAttrs(data->simplehtml,
+			MUIA_SimpleHTML_Buffer, text,
+			MUIA_SimpleHTML_BufferLen, strlen(text),
+			TAG_DONE);
+		return 1;
+	}
 
 	set(App, MUIA_Application_Sleep, TRUE);
 
@@ -807,8 +818,7 @@ STATIC ULONG MessageView_DisplayMail(struct IClass *cl, Object *obj, struct MUIP
 	free(data->folder_path);
 
 	/* create resources */
-	if (!(data->folder_path = mystrdup(msg->folder_path)))
-		return 0;
+	data->folder_path = mystrdup(msg->folder_path);
 	data->ref_mail = msg->mail;
 
 	if (data->show)

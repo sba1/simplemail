@@ -97,14 +97,22 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 			if (account->pop && account->pop->name)
 			{
 					struct pop3_server *pop3 = pop_duplicate(account->pop);
-					if (pop3) list_insert_tail(&pop_list,&pop3->node);
+					if (pop3)
+					{
+						if (!pop3->title) pop3->title = mystrdup(account->account_name);
+						list_insert_tail(&pop_list,&pop3->node);
+					}
 			}
 		} else
 		{
 				if (account->imap && account->imap->name)
 				{
 					struct imap_server *imap = imap_duplicate(account->imap);
-					if (imap) list_insert_tail(&imap_list,&imap->node);
+					if (imap)
+					{
+						if (!imap->title) imap->title = mystrdup(account->account_name);
+						list_insert_tail(&imap_list,&imap->node);
+					}
 				}
 		}
 	} else
@@ -118,14 +126,22 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 				if (account->pop && account->pop->active && account->pop->name)
 				{
 					struct pop3_server *pop3 = pop_duplicate(account->pop);
-					if (pop3) list_insert_tail(&pop_list,&pop3->node);
+					if (pop3)
+					{
+						if (!pop3->title) pop3->title = mystrdup(account->account_name);
+						list_insert_tail(&pop_list,&pop3->node);
+					}
 				}
 			} else
 			{
 				if (account->imap && account->imap->active && account->imap->name)
 				{
 					struct imap_server *imap = imap_duplicate(account->imap);
-					if (imap) list_insert_tail(&imap_list,&imap->node);
+					if (imap)
+					{
+						if (!imap->title) imap->title = mystrdup(account->account_name);
+						list_insert_tail(&imap_list,&imap->node);
+					}
 				}
 			}
 			account = (struct account*)node_next(&account->node);

@@ -8,11 +8,11 @@
 int up_window_init(void);
 int up_window_open(void);
 void up_window_close(void);
-void set_up_title(char *);
-void set_up_status(char *);
-void init_up_gauge_mail(int);
-void set_up_gauge_mail(int);
-void init_up_gauge_byte(int);
-void set_up_gauge_byte(int);
+void up_set_title(char *);
+void up_set_status(char *);
+void up_init_gauge_mail(int);
+void up_set_gauge_mail(int);
+void up_init_gauge_byte(int);
+void up_set_gauge_byte(int);
 
 #endif

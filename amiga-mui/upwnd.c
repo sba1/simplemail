@@ -43,17 +43,17 @@ int up_window_init(void)
 	return(rc);
 }
 
-void set_up_title(char *str)
+void up_set_title(char *str)
 {
 	set(win_up, MUIA_Window_Title, str);
 }
 
-void set_up_status(char *str)
+void up_set_status(char *str)
 {
 	set(win_up, MUIA_transwnd_Status, str);
 }
 
-void init_up_gauge_mail(int amm)
+void up_init_gauge_mail(int amm)
 {
 	static char str[256];
 	
@@ -64,12 +64,12 @@ void init_up_gauge_mail(int amm)
 	set(win_up, MUIA_transwnd_Gauge1_Val, 0);
 }
 
-void set_up_gauge_mail(int current)
+void up_set_gauge_mail(int current)
 {
 	set(win_up, MUIA_transwnd_Gauge1_Val, current);
 }
 
-void init_up_gauge_byte(int size)
+void up_init_gauge_byte(int size)
 {
 	static char str[256];
 	
@@ -80,7 +80,7 @@ void init_up_gauge_byte(int size)
 	set(win_up, MUIA_transwnd_Gauge2_Val, 0);
 }
 
-void set_up_gauge_byte(int current)
+void up_set_gauge_byte(int current)
 {
 	set(win_up, MUIA_transwnd_Gauge2_Val, current);
 }

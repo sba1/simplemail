@@ -237,20 +237,39 @@ static int tcp_read_char(struct connection *conn)
 
 /******************************************************************
  Writes a given amount of bytes to the connection. Buffered.
- (Not buffered yet)
 *******************************************************************/
 int tcp_write(struct connection *conn, void *buf, long nbytes)
 {
+	int rc = nbytes;
+
 	conn->read_pos = conn->read_size = 0;
-	if (conn->ssl) return SSL_write(conn->ssl,buf,nbytes);
-	return send(conn->socket, buf, nbytes, 0);
+
+	while (conn->write_size + nbytes >= sizeof(conn->write_buf))
+	{
+		int size = sizeof(conn->write_buf) - conn->write_size;
+		memcpy(&conn->write_buf[conn->write_size],buf,size);
+		tcp_flush(conn);
+		buf = ((char*)buf) + size;
+		nbytes -= size;
+	}
+
+	memcpy(&conn->write_buf[conn->write_size],buf,nbytes);
+  conn->write_size += nbytes;
+
+	return rc;
 }
 
 /******************************************************************
- Flushes the write buffer. Not working yet.
+ Flushes the write buffer.
 *******************************************************************/
 int tcp_flush(struct connection *conn)
 {
+	if (conn->write_size)
+	{
+		if (conn->ssl) SSL_write(conn->ssl, conn->write_buf, conn->write_size);
+		else send(conn->socket, conn->write_buf, conn->write_size, 0);
+		conn->write_size = 0;
+	}
 	return 1;
 }
 
@@ -276,6 +295,7 @@ char *tcp_readln(struct connection *conn)
 {
 	int line_pos = 0;
 
+	tcp_flush(conn); /* flush the write buffer */
 	while (1)
 	{
 		int c = tcp_read_char(conn);

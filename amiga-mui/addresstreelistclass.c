@@ -180,12 +180,9 @@ STATIC ULONG AddressTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg
 	if (ti && ti->ti_Data) type = TYPE_ADDRESSBOOK;
 	else
 	{
-		type = TYPE_MATCHLIST;
-		/* TODO: Cleanup the type definition */
-#if 0
 		ti = FindTagItem(MUIA_AddressTreelist_AsMatchList,msg->ops_AttrList);
 		if (ti && ti->ti_Data) type = TYPE_MATCHLIST;
-#endif
+		else type = TYPE_MAIN;
 	}
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,

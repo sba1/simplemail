@@ -3222,6 +3222,8 @@ int init_folders(void)
 							{
 								new_folder = folder_add_group(buf);
 								new_folder->closed = closed;
+								if (*path)
+									new_folder->path = mystrdup(path);
 							} else
 							{
 								new_folder = folder_add(path);

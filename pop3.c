@@ -640,9 +640,13 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 							{
 								for(i = 1; i <= mail_amm; i++)
 								{
-									thread_call_parent_function_async(dl_set_gauge_mail,1,i);
+									int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
+									int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
 
-									if (mail_array[i].flags & MAILF_DOWNLOAD)
+									if (dl && del)
+										thread_call_parent_function_async(dl_set_gauge_mail,1,i);
+
+									if (dl)
 									{
 										thread_call_parent_function_async(dl_set_status,1,N_("Receiving mail..."));
 
@@ -659,7 +663,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 										}
 									}
 									
-									if (mail_array[i].flags & MAILF_DELETE)
+									if (del)
 									{
 										thread_call_parent_function_async(dl_set_status,1,N_("Marking mail as deleted..."));
 										if (!pop3_del_mail(conn,server, i))

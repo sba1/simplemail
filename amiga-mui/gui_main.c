@@ -534,7 +534,7 @@ int gui_execute_arexx(char *filename)
 *****************************************************************/
 int main(int argc, char *argv[])
 {
-#if __MORPHOS__
+#ifdef __MORPHOS__
 	#include <workbench/startup.h>
 	extern int _start(struct WBStartup *);
 

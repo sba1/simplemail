@@ -61,6 +61,7 @@
 #include "mainwnd.h" /* main_refresh_mail() */
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "support.h"
 #include "utf8stringclass.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
@@ -927,8 +928,24 @@ int compose_window_open(struct compose_args *args)
 		register_titles[0] = _("Mail");
 		register_titles[1] = _("Attachments");
 		register_titles_are_translated = 1;
-	};
+	}
 
+	/* Find out if window is already open */
+	if (args->to_change)
+	{
+		for (num=0; num < MAX_COMPOSE_OPEN; num++)
+		{
+			if (compose_open[num])
+			{
+				if (!mystricmp(args->to_change->filename, compose_open[num]->filename))
+				{
+					DoMethod(compose_open[num]->wnd, MUIM_Window_ToFront);
+					set(compose_open[num]->wnd, MUIA_Window_Activate, TRUE);
+					return num;
+				}
+			}
+		}
+	}
 
 	for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		if (!compose_open[num]) break;

@@ -15,6 +15,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+#include <dos.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -40,7 +41,7 @@ struct MailTreelist_Data
 	struct Hook display_hook;
 };
 
-STATIC ASM SAVEDS VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
@@ -95,7 +96,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 
 	data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	data->display_hook.h_Entry = (HOOKFUNC)mails_display;
+	init_hook(&data->display_hook,(HOOKFUNC)mails_display);
 
 	SetAttrs(obj,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
@@ -114,13 +115,13 @@ STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_
 
 STATIC ULONG MailTreelist_MultiTest(struct IClass *cl, Object *obj, struct MUIP_NListtree_MultiTest *msg)
 {
-//	DoSuperMethod(cl,obj,
 	if (msg->TreeNode->tn_User == (APTR)MUIV_MailTreelist_UserData_Name) return FALSE;
 	return TRUE;
 }
 
-STATIC SAVEDS ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC ASM ULONG MailTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
+	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return MailTreelist_New(cl,obj,(struct opSet*)msg);
@@ -135,7 +136,10 @@ struct MUI_CustomClass *CL_MailTreelist;
 int create_mailtreelist_class(void)
 {
 	if ((CL_MailTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
+	{
+		CL_MailTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
+	}
 	return 0;
 }
 

@@ -15,6 +15,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -287,8 +288,9 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 	return 0;
 }
 
-STATIC SAVEDS ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC ASM ULONG DataTypes_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
+	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return DataTypes_New(cl,obj,(struct opSet*)msg);
@@ -310,7 +312,10 @@ struct MUI_CustomClass *CL_DataTypes;
 int create_datatypes_class(void)
 {
 	if ((CL_DataTypes = MUI_CreateCustomClass(NULL,MUIC_Area,NULL,sizeof(struct DataTypes_Data),DataTypes_Dispatcher)))
+	{
+		CL_DataTypes->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
+	}
 	return 0;
 }
 

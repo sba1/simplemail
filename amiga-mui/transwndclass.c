@@ -2,6 +2,7 @@
 ** transwndclass.c
 */
 
+#include <dos.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -67,7 +68,7 @@ STATIC VOID transwnd_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	DoSuperMethodA(cl, obj, msg);
 }
 
-STATIC ASM SAVEDS ULONG transwnd_Set(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 struct opSet *msg)
+STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct transwnd_Data *data;
 	struct TagItem *tags, *tag;
@@ -111,7 +112,7 @@ STATIC ASM SAVEDS ULONG transwnd_Set(register __a0 struct IClass *cl, register _
 	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 
-STATIC ULONG ASM SAVEDS transwnd_Get(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 struct opGet *msg)
+STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	ULONG *store = ((struct opGet *)msg)->opg_Storage;
 	
@@ -126,8 +127,9 @@ STATIC ULONG ASM SAVEDS transwnd_Get(register __a0 struct IClass *cl, register _
 	return(DoSuperMethodA(cl, obj, (Msg)msg));
 }
 
-STATIC ASM SAVEDS ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC ASM ULONG transwnd_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
+	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case OM_NEW: return(transwnd_New		(cl, obj, (struct opSet*) msg));
@@ -150,6 +152,7 @@ int create_transwnd_class(VOID)
 	CL_transwnd = MUI_CreateCustomClass(NULL, MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher);
 	if(CL_transwnd != NULL)
 	{
+		CL_transwnd->mcc_Class->cl_UserData = getreg(REG_A4);
 		rc = TRUE;
 	}
 	

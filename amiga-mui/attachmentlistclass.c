@@ -15,6 +15,7 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
+#include <dos.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,7 +45,7 @@ struct AttachmentList_Data
 	struct Hook display_hook;
 };
 
-STATIC ASM SAVEDS struct attachment *attachment_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+STATIC ASM struct attachment *attachment_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	struct attachment *new_attach = (struct attachment *)malloc(sizeof(struct attachment));
@@ -60,7 +61,7 @@ STATIC ASM SAVEDS struct attachment *attachment_construct(register __a1 struct M
 	return new_attach;
 }
 
-STATIC ASM SAVEDS VOID attachment_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+STATIC ASM VOID attachment_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
 {
 	struct attachment *attach = (struct attachment *)msg->UserData;
 	if (attach)
@@ -78,7 +79,7 @@ STATIC ASM SAVEDS VOID attachment_destruct(register __a1 struct MUIP_NListtree_D
 	}
 }
 
-STATIC ASM SAVEDS VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID attachment_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
@@ -105,9 +106,9 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 
 	data = (struct AttachmentList_Data*)INST_DATA(cl,obj);
-	data->construct_hook.h_Entry = (HOOKFUNC)attachment_construct;
-	data->destruct_hook.h_Entry = (HOOKFUNC)attachment_destruct;
-	data->display_hook.h_Entry = (HOOKFUNC)attachment_display;
+	init_hook(&data->construct_hook,(HOOKFUNC)attachment_construct);
+	init_hook(&data->destruct_hook,(HOOKFUNC)attachment_destruct);
+	init_hook(&data->display_hook,(HOOKFUNC)attachment_display);
 
 	SetAttrs(obj,
 						MUIA_NListtree_ConstructHook, &data->construct_hook,
@@ -156,8 +157,9 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	return rv;
 }
 
-STATIC SAVEDS ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC ASM ULONG AttachmentList_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
+	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return AttachmentList_New(cl,obj,(struct opSet*)msg);
@@ -172,7 +174,10 @@ struct MUI_CustomClass *CL_AttachmentList;
 int create_attachmentlist_class(void)
 {
 	if ((CL_AttachmentList = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct AttachmentList_Data),AttachmentList_Dispatcher)))
+	{
+		CL_AttachmentList->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
+	}
 	return 0;
 }
 

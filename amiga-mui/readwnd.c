@@ -64,7 +64,7 @@ struct Read_Data /* should be a customclass */
 	/* more to add */
 };
 
-STATIC ASM SAVEDS VOID header_display(register __a2 char **array, register __a1 struct header *header)
+STATIC ASM VOID header_display(register __a2 char **array, register __a1 struct header *header)
 {
 	if (header)
 	{
@@ -79,7 +79,7 @@ struct mime_entry
 	int save_button_no;
 };
 
-STATIC ASM SAVEDS struct mime_entry *mime_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+STATIC ASM struct mime_entry *mime_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
 {
 	struct mime_entry *new_mime_entry = (struct mime_entry*)malloc(sizeof(struct mime_entry));
 	if (new_mime_entry)
@@ -91,13 +91,13 @@ STATIC ASM SAVEDS struct mime_entry *mime_construct(register __a1 struct MUIP_NL
 	return new_mime_entry;
 }
 
-STATIC ASM SAVEDS VOID mime_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+STATIC ASM VOID mime_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
 {
 	struct mime_entry *mime_entry = (struct mime_entry*)msg->UserData;
 	free(mime_entry);
 }
 
-STATIC ASM SAVEDS VOID mime_display(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID mime_display(register __a0 struct Hook *h, register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
@@ -325,10 +325,10 @@ void read_window_open(char *folder, char *filename)
 	for (num=0; num < MAX_READ_OPEN; num++)
 		if (!read_open[num]) break;
 
-	header_display_hook.h_Entry = (HOOKFUNC)header_display;
-	mime_construct_hook.h_Entry = (HOOKFUNC)mime_construct;
-	mime_destruct_hook.h_Entry = (HOOKFUNC)mime_destruct;
-	mime_display_hook.h_Entry = (HOOKFUNC)mime_display;
+	init_hook(&header_display_hook,(HOOKFUNC)header_display);
+	init_hook(&mime_construct_hook,(HOOKFUNC)mime_construct);
+	init_hook(&mime_destruct_hook,(HOOKFUNC)mime_destruct);
+	init_hook(&mime_display_hook,(HOOKFUNC)mime_display);
 
 	wnd = WindowObject,
 		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),

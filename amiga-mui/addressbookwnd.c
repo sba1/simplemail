@@ -517,19 +517,19 @@ static void group_window_open(struct addressbook_entry *entry)
 
 
 /* the address window functions */
-STATIC ASM SAVEDS struct addressbook_entry *address_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
+STATIC ASM struct addressbook_entry *address_construct(register __a1 struct MUIP_NListtree_ConstructMessage *msg)
 {
 	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
 	return addressbook_duplicate_entry(entry);
 }
 
-STATIC ASM SAVEDS VOID address_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
+STATIC ASM VOID address_destruct(register __a1 struct MUIP_NListtree_DestructMessage *msg)
 {
 	struct addressbook_entry *entry = (struct addressbook_entry *)msg->UserData;
 	addressbook_free_entry(entry);
 }
 
-STATIC ASM SAVEDS VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
@@ -728,9 +728,9 @@ static void addressbook_init(void)
 	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button;
 	Object *to_button;
 
-	address_construct_hook.h_Entry = (HOOKFUNC)address_construct;
-	address_destruct_hook.h_Entry = (HOOKFUNC)address_destruct;
-	address_display_hook.h_Entry = (HOOKFUNC)address_display;
+	init_hook(&address_construct_hook, (HOOKFUNC)address_construct);
+	init_hook(&address_destruct_hook, (HOOKFUNC)address_destruct);
+	init_hook(&address_display_hook, (HOOKFUNC)address_display);
 
 	address_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('A','D','B','K'),

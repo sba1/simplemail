@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <dos.h>
 #include <libraries/mui.h>
 #include <mui/NListview_MCC.h>
 #include <mui/NListtree_Mcc.h>
@@ -53,7 +54,7 @@ STATIC ASM SAVEDS VOID folder_destruct(register __a1 struct MUIP_NListtree_Destr
 }
 */
 
-STATIC ASM SAVEDS VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
 {
 	if (msg->TreeNode)
 	{
@@ -85,7 +86,7 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->construct_hook.h_Entry = (HOOKFUNC)folder_construct;
 	data->destruct_hook.h_Entry = (HOOKFUNC)folder_destruct;
 */
-	data->display_hook.h_Entry = (HOOKFUNC)folder_display;
+	init_hook(&data->display_hook,(HOOKFUNC)folder_display);
 
 	SetAttrs(obj,
 /*						MUIA_NListtree_ConstructHook, &data->construct_hook,
@@ -177,8 +178,9 @@ STATIC ULONG FolderTreelist_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	return rv;
 }
 
-STATIC SAVEDS ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
+STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
 {
+	putreg(REG_A4,cl->cl_UserData);
 	switch(msg->MethodID)
 	{
 		case	OM_NEW:				return FolderTreelist_New(cl,obj,(struct opSet*)msg);
@@ -196,7 +198,10 @@ struct MUI_CustomClass *CL_FolderTreelist;
 int create_foldertreelist_class(void)
 {
 	if ((CL_FolderTreelist = MUI_CreateCustomClass(NULL,MUIC_NListtree,NULL,sizeof(struct FolderTreelist_Data),FolderTreelist_Dispatcher)))
+	{
+		CL_FolderTreelist->mcc_Class->cl_UserData = getreg(REG_A4);
 		return 1;
+	}
 	return 0;
 }
 

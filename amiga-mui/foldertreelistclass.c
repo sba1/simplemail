@@ -117,7 +117,11 @@ STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessag
 			else mails_buf[0] = 0;
 	
 			sprintf(data->name_buf,"\33O[%08lx]%s",image,newm?"\33b":"");
-			if (folder->name) strcat(data->name_buf,folder->name);
+			if (folder->name)
+			{
+				/* IMAP folders are UTF8 */
+				strcat(data->name_buf,folder->name);
+			}
 	
 			*msg->Array++ = data->name_buf;
 			*msg->Array = mails_buf;

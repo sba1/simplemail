@@ -19,6 +19,7 @@ amiga-mui/transwndclass.c
 Charsets/cp1252.txt
 Charsets/iso8859-10.txt
 codesets.c
+imap.c
 mail.c
 pop3.c
 print.c

@@ -668,6 +668,10 @@ static void compose_mail(struct Compose_Data *data, int hold)
 			}
 			/* Close (and dispose) the compose window (data) */
 			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_dispose, data);
+		} else
+		{
+			if (!new_mail.subject || !new_mail.subject[0])
+				set(data->wnd,MUIA_Window_ActiveObject,data->subject_string);
 		}
 	}
 }

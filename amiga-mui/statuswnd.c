@@ -191,7 +191,7 @@ void statuswnd_mail_list_clear(void)
 **************************************************************************/
 void statuswnd_mail_list_freeze(void)
 {
-	set(status_wnd,MUIA_transwnd_QuietList,TRUE);
+	set(status_wnd, MUIA_transwnd_QuietList, TRUE);
 }
 
 /**************************************************************************

@@ -151,6 +151,7 @@ static int imap_entry(struct imap_entry_msg *msg)
 **************************************************************************/
 int imap_dl_headers(struct list *imap_list)
 {
+#ifndef _AROS
 	struct imap_server *serv;
 
 	serv = (struct imap_server*)list_first(imap_list);
@@ -196,7 +197,7 @@ int imap_dl_headers(struct list *imap_list)
 						puts(send);
 						tcp_write(conn,send,strlen(send));
 						tcp_flush(conn);
-	
+
 						ok = 0;
 	
 						while ((line = tcp_readln(conn)))
@@ -478,6 +479,7 @@ int imap_dl_headers(struct list *imap_list)
 		serv = (struct imap_server*)node_next(&serv->node);
 	}
 	callback_refresh_folders();
+#endif
 	return 1;
 }
 

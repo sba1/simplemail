@@ -4,6 +4,46 @@
 
 include $(TOP)/config/make.cfg
 
+AMIGAMUI := \
+	addressbookwnd \
+	composewnd \
+	folderwnd \
+	multistringclass \
+	subthreads \
+	addressstringclass \
+	configwnd \
+	gettext \
+	pgplistclass \
+	support \
+	addresstreelistclass \
+	datatypescache \
+	gui_main \
+	picturebuttonclass \
+	sysprint \
+	amigasupport \
+	datatypesclass \
+	popupmenuclass \
+	tcpip \
+	arexx \
+	errorwnd \
+	iconclass \
+	readwnd \
+	transwndclass \
+	attachmentlistclass \
+	filterruleclass \
+	mailtreelistclass \
+	searchwnd \
+	utf8stringclass \
+	audioselectgroupclass \
+	filterwnd \
+	mainwnd \
+	composeeditorclass \
+	foldertreelistclass \
+	muistuff \
+	statuswnd
+
+AMIGAMUIFILES := $(foreach f, $(AMIGAMUI), amiga-mui/$(f))
+
 FILES   := \
 	account \
 	addressbook \
@@ -24,11 +64,15 @@ FILES   := \
 	phrase \
 	pop3 \
 	print \
+	signature \
+	simplemail \
 	support_indep \
+	status \
 	taglines \
 	tcp \
 	text2html \
-	trans
+	trans \
+	$(AMIGAMUIFILES)
 
 EXEDIR := $(CONTRIBDIR)/SimpleMail
 EXE := $(EXEDIR)/SimpleMail
@@ -37,8 +81,10 @@ USE_CLIB_SHARED := yes
 USE_AMIGALIB    := yes
 USE_MUILIB      := yes
 USE_AROSLIB     := yes
+USE_EXPATLIB    := yes
 
-USER_INCLUDES := -I./indep-include -I./amiga-mui
+USER_INCLUDES := -I./indep-include -I./amiga-mui -I.
+USER_CFLAGS := -DNO_SSL
 
 #MM contrib-mui-simplemail : includes linklibs
 

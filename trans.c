@@ -23,11 +23,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include "account.h"
 #include "configuration.h"
 #include "dlwnd.h"
 #include "folder.h"
+#include "imap.h"
 #include "parse.h"
 #include "pop3.h"
 #include "simplemail.h"

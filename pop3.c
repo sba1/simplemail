@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifndef _AROS
+
 #ifdef __WIN32__
 #include <windows.h>
 #else
@@ -942,6 +944,30 @@ int pop3_dl(struct list *pop_list, char *dest_dir,
 	return thread_start(THREAD_FUNCTION(&pop3_entry),&msg);
 }
 
+
+#else
+
+#include "configuration.h"
+#include "mail.h"
+#include "tcp.h"
+#include "simplemail.h"
+#include "smintl.h"
+#include "status.h"
+#include "support.h"
+#include "support_indep.h"
+
+int pop3_login_only(struct pop3_server *server)
+{
+	return 1;
+}
+
+int pop3_dl(struct list *pop_list, char *dest_dir,
+            int receive_preselection, int receive_size, int called_by_auto)
+{
+	return 1;
+}
+#endif
+
 /**************************************************************************
  malloc() a pop3_server and initializes it with default values.
  TODO: rename all pop3 identifiers to pop
@@ -991,4 +1017,3 @@ void pop_free(struct pop3_server *pop)
 	if (pop->passwd) free(pop->passwd);
 	free(pop);
 }
-

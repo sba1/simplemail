@@ -38,7 +38,7 @@ void delete_transwnd_class(void);
 #define MUIA_transwnd_Gauge2_Max   (TAG_USER | (116456070 << 16) | 0x0007)
 #define MUIA_transwnd_Gauge2_Val   (TAG_USER | (116456070 << 16) | 0x0008)
 #define MUIA_transwnd_Aborted      (TAG_USER | (116456070 << 16) | 0x0009) /* N */
-#define MUIA_transwnd_QuietList    (TAG_USER | (116456070 << 16) | 0x000A)
+#define MUIA_transwnd_QuietList    (TAG_USER | (116456070 << 16) | 0x000A)
 #define MUIA_transwnd_StartPressed (TAG_USER | (116456070 << 16) | 0x000B)
 #define MUIA_transwnd_Head				 (TAG_USER | (116456070 << 16) | 0x000C)
 

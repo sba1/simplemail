@@ -21,7 +21,9 @@
 */
 
 #ifdef _AMIGA
+#ifndef _AROS
 #include <proto/socket.h>
+#endif
 #endif
 
 #ifndef SM__TCP_H

@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** pop3.c
+** http.c
 */
 
 #include <stdio.h>
@@ -26,6 +26,8 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <errno.h>
+
+#ifndef _AROS
 
 #ifdef __WIN32__
 #include <windows.h>
@@ -173,3 +175,16 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 	return rc;
 }
 
+#else
+
+int http_download_photo(char *path, char *email)
+{
+	return 0;
+}
+
+int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
+{
+	return 0;
+}
+
+#endif

@@ -3,6 +3,18 @@
 <news>
   <entry date="2001/12/24">
 	<text lang="en">
+	  If you have problems with opening the prefs window and have downloaded the
+	  archive before 4:00pm CET, please download it again, the optimizer of SAS/C
+	  seems to be broken. :(
+	</text>
+	<text lang="de">
+	  Falls Sie Probleme haben, das Prefs-Fenster zu öffnen und das Archiv vor 16:00
+	  Uhr MEZ heruntergeladen haben, dann laden Sie es bitte nochmal herunter, da der
+	  Optimizer von SAS/C anscheinend fehlerhaft arbeitet. :(
+	</text>
+  </entry>
+  <entry date="2001/12/24">
+	<text lang="en">
 
 	  Merry x-mas dear users! It's exactly one year since the release of the first
 	  alpha version of SimpleMail and we made a big step in that time. We would like

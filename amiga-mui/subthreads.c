@@ -442,7 +442,7 @@ void thread_abort(thread_t thread_to_abort)
 	if (!thread_to_abort)
 	{
 		if (default_thread)
-			Signal(&thread_to_abort->process->pr_Task, SIGBREAKF_CTRL_C);
+			Signal(&default_thread->process->pr_Task, SIGBREAKF_CTRL_C);
 	} else
 	{
 		/* FIXME: This could cause a possible race condition if the task is already removed

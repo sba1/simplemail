@@ -28,7 +28,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "configuration.h"
-#include "smintl.h"
+#include "estimate.h"
 #include "filter.h"
 #include "folder.h"
 #include "mail.h"
@@ -600,12 +600,14 @@ static int export_entry(struct export_data *data)
 			if (thread_parent_task_can_contiue())
 			{
 				struct folder *f;
+
 				/* lock folder list */
 				folders_lock();
 				f = folder_find_by_name(foldername);
 				if (f)
 				{
 					FILE *fh;
+					char status_buf[300];
 
 					/* now lock the folder */
 					folder_lock(f);
@@ -623,11 +625,13 @@ static int export_entry(struct export_data *data)
 						char *file_buf;
 						int max_size = 0;
 						int size = 0;
+						struct estimate est;
 
 						while ((m = folder_next_mail(f, &handle)))
 							max_size += m->size;
 
 						thread_call_parent_function_async(up_init_gauge_byte,1,max_size);
+						estimate_init(&est,max_size/1024);
 
 						if ((file_buf = malloc(8192)))
 						{
@@ -649,6 +653,9 @@ static int export_entry(struct export_data *data)
 										int blocks = fread(file_buf,1,8192,in);
 										size += fwrite(file_buf,1,blocks,fh);
 										thread_call_parent_function_async(up_set_gauge_byte,1,size);
+										
+										sprintf(status_buf, "Exporting folder %d",estimate_calc_remaining(&est,size/1024));
+										thread_call_parent_function_async_string(up_set_status,1,status_buf);
 									}
 									fclose(in);
 								}

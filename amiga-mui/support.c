@@ -158,13 +158,23 @@ int sm_get_gmt_offset(void)
 }
 
 /******************************************************************
- Returns the current current seconds (since 1.1.1978)
+ Returns the current seconds (since 1.1.1978)
 *******************************************************************/
 unsigned int sm_get_current_seconds(void)
 {
 	ULONG mics,secs;
 	CurrentTime(&secs,&mics);
 	return secs;
+}
+
+/******************************************************************
+ Returns the current micros
+*******************************************************************/
+unsigned int sm_get_current_micros(void)
+{
+	ULONG mics,secs;
+	CurrentTime(&secs,&mics);
+	return mics;
 }
 
 /******************************************************************

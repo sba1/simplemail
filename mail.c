@@ -457,7 +457,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 		c = *buf;
 		if (mode == 4)
 		{
-			if (c != 10) return 0; /* the expected LF weren't there, so it's an error */
+			if (c != 10) mode = 3; /* the expected LF weren't there, so it's an error, once we returned here, but now we ignore it */
 			else
 			{
 				mode = 0;

@@ -42,7 +42,8 @@
 #define MAIL_FROM_COLUMN 1
 #define MAIL_SUBJECT_COLUMN 2
 #define MAIL_DATE_COLUMN 3
-#define MAIL_PTR_COLUMN 4
+#define MAIL_FILENAME_COLUMN 4
+#define MAIL_PTR_COLUMN 5
 
 static GtkWidget *main_wnd;
 static GtkWidget *toolbar;
@@ -91,6 +92,8 @@ int main_window_init(void)
 	/* Create the window */
 	main_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(main_wnd), "SimpleMail");
+	gtk_window_set_default_size(GTK_WINDOW(main_wnd),640,400);
+	gtk_window_set_position(GTK_WINDOW(main_wnd),GTK_WIN_POS_CENTER);
 	gtk_signal_connect(GTK_OBJECT(main_wnd), "destroy",GTK_SIGNAL_FUNC (main_quit), NULL);
 
         /* Create the vertical box */
@@ -122,6 +125,7 @@ int main_window_init(void)
 
 	/* Create the horizobtal paned between folders and mails */
 	hpaned = gtk_hpaned_new();
+	gtk_paned_set_position(GTK_PANED(hpaned),150);
 	gtk_container_add(GTK_CONTAINER(hbox), hpaned);
 
         /* Create the folder tree */
@@ -157,7 +161,7 @@ int main_window_init(void)
 
 		mail_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
 		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(mail_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-		mail_treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+		mail_treestore = gtk_tree_store_new(6, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 
 		mail_treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mail_treestore));
 
@@ -182,6 +186,12 @@ int main_window_init(void)
 		renderer = gtk_cell_renderer_text_new();
 		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Date", renderer,
 						"text", MAIL_DATE_COLUMN, NULL);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Filename", renderer,
+						"text", MAIL_FILENAME_COLUMN, NULL);
 		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
 		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
 
@@ -337,6 +347,7 @@ void main_insert_mail(struct mail *mail)
 	gtk_tree_store_set(mail_treestore, &iter,
 			MAIL_SUBJECT_COLUMN, mail->subject,
 			MAIL_FROM_COLUMN, mail->from_phrase?mail->from_phrase:mail->from_addr,
+			MAIL_FILENAME_COLUMN, mail->filename,
 			MAIL_PTR_COLUMN, buf,
 			-1);
 }

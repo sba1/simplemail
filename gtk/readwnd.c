@@ -31,6 +31,7 @@
 
 
 #include "configuration.h"
+#include "lists.h"
 #include "mail.h"
 #include "simplemail.h"
 #include "support.h"
@@ -45,12 +46,16 @@ struct Read_Data
 {
 	GtkWidget *wnd;
 	GtkWidget *text_view;
+	GtkWidget *text_scrolled_window;
 
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed, a copy of the ref_mail */
 
 	struct mail *ref_mail; /* The reference to the original mail which is in the folder */
 	char *folder_path; /* the path of the folder */
+
+
+	GSList *mail_list; /* linear list of all mails */
 };
 
 
@@ -216,6 +221,7 @@ void context_menu_trigger(int **pdata)
 		}
 	}
 }
+#endif
 
 /******************************************************************
  inserts the mime informations (uses ugly recursion)
@@ -224,10 +230,10 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 {
 	int i;
 
-	if (!data->attachments_group) return;
-
 	if (mail->num_multiparts == 0)
 	{
+		g_slist_append(data->mail_list,mail);
+#if 0
 		Object *group, *icon, *context_menu;
 
 		context_menu = data->attachment_standard_menu;
@@ -257,6 +263,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 
 
 		DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
+#endif
 	}
 
 	for (i=0;i<mail->num_multiparts;i++)
@@ -264,6 +271,8 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 		insert_mail(data,mail->multipart_array[i]);
 	}
 }
+
+#if 0
 
 /******************************************************************
  Save the contents of a given mail
@@ -300,12 +309,28 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 		}
 	}
 }
+#endif
 
 /******************************************************************
  Shows a given mail (part)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail *m)
 {
+	char *buf;
+	int buf_len;
+	GtkTextBuffer *buffer;
+	GtkTextIter iter;
+
+	mail_decode(m);
+	mail_decoded_data(m,(void**)&buf,&buf_len);
+
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(data->text_view));
+
+	gtk_text_buffer_get_iter_at_line(buffer,&iter,0);
+
+	gtk_text_buffer_insert(buffer,&iter,buf,buf_len);
+
+#if 0
 	if (!data->attachments_group)
 	{
 		mail_decode(m);
@@ -314,8 +339,10 @@ static void show_mail(struct Read_Data *data, struct mail *m)
 	{
 		DoMethod(data->attachments_group, MUIM_SetUDataOnce, m, MUIA_Selected, 1);
 	}
+#endif
 }
 
+#if 0
 /******************************************************************
  This close and disposed the window (note: this must not be called
  within a normal callback hook (because the object is disposed in
@@ -382,6 +409,7 @@ void read_window_dispose(GtkObject *object, gpointer user_data)
 
 	if (data->folder_path) free(data->folder_path);
 	mail_free(data->mail);
+
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
 	gtk_widget_hide_all(GTK_WIDGET(object));
@@ -390,24 +418,38 @@ void read_window_dispose(GtkObject *object, gpointer user_data)
 /******************************************************************
  Display the mail
 *******************************************************************/
-static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
+static int read_window_display_mail(struct Read_Data *data, struct mail *m)
 {
 	char path[512];
 
 	if (!data->folder_path) return 0;
 
-	data->ref_mail = mail;
+	data->ref_mail = m;
 
 	getcwd(path,sizeof(path));
 	if (chdir(data->folder_path)==-1) return 0;
 
-	if ((data->mail = mail_create_from_file(mail->filename)))
+	if ((data->mail = mail_create_from_file(m->filename)))
 	{
+		int dont_show = 0; /* attachments */
+		chdir(path); /* should be a absolute path */
 		mail_read_contents(data->folder_path,data->mail);
 		mail_create_html_header(data->mail);
-	}
 
-	chdir(path);
+		if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
+		{
+			/* mail has only one part */
+			dont_show = 1;
+		} else
+		{
+		}
+
+		if (data->mail_list) g_slist_free(data->mail_list);
+		data->mail_list = g_slist_alloc();
+
+		insert_mail(data,data->mail);
+		show_mail(data,mail_find_initial(data->mail));
+	} else chdir(path);
 
 	return 1;
 
@@ -488,10 +530,17 @@ int read_window_open(char *folder, struct mail *mail)
 
 		data->wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title(GTK_WINDOW(data->wnd), "SimpleMail - Read mail");
+		gtk_window_set_default_size(GTK_WINDOW(data->wnd),640,400);
+		gtk_window_set_position(GTK_WINDOW(data->wnd),GTK_WIN_POS_CENTER);
 		gtk_signal_connect(GTK_OBJECT(data->wnd), "destroy",GTK_SIGNAL_FUNC (read_window_dispose), data);
 
+		data->text_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(data->text_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+
 		data->text_view = gtk_text_view_new();
-		gtk_container_add(GTK_CONTAINER(data->wnd), data->text_view);
+		g_object_set(data->text_view, "editable", FALSE, NULL);
+		gtk_container_add(GTK_CONTAINER(data->text_scrolled_window), data->text_view);
+		gtk_container_add(GTK_CONTAINER(data->wnd), data->text_scrolled_window);
 
 
 		read_window_display_mail(data,mail);

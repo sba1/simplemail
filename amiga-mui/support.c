@@ -60,6 +60,10 @@ void loop(void); /* gui_main.c */
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 
+#ifndef __AMIGAOS4__
+void kprintf(char *, ...);
+#endif
+
 /******************************************************************
  Creates a directory including all necessaries parent directories.
  Nothing will happen if the directory already exists

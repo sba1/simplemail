@@ -63,6 +63,7 @@ OBJS    = 	account.o \
             pgp.o \
             phrase.o \
             pop3.o \
+			punycode.o \
             print.o \
             signature.o \
             simplemail.o \

@@ -422,13 +422,10 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
 
-	if (DOSBase->lib_Version < 51)
-	{
-		if (!(files[_file] = IDOS->Open((STRPTR)filename,amiga_mode))) goto fail;
-	} else
-	{
-		if (!(files[_file] = IDOS->FOpen((STRPTR)filename,amiga_mode,8192))) goto fail;
-	}
+	if (DOSBase->lib_Version < 51) files[_file] = IDOS->Open((STRPTR)filename,amiga_mode);
+	else files[_file] = IDOS->FOpen((STRPTR)filename,amiga_mode,8192);
+
+	if (!files[_file]) goto fail;
 
 	file->_file = _file;
 
@@ -457,7 +454,10 @@ int fclose(FILE *f)
 
 	if (!file) return 0;
 	IExec->ObtainSemaphore(&files_sem);
-	error = !(IDOS->Close(files[file->_file]));
+	
+	if (DOSBase->lib_Version < 51) 	error = !(IDOS->Close(files[file->_file]));
+	else error = !(IDOS->FClose(files[file->_file]));
+
 	if (!error)
 	{
 		files[file->_file] = ZERO;

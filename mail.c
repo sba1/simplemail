@@ -722,7 +722,6 @@ static char status_extensions[] =
 **************************************************************************/
 char *mail_get_new_name(int status)
 {
-	long t;
 	struct tm tm;
 	unsigned short day_secs;
 	unsigned int secs;
@@ -2671,8 +2670,8 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 
 	if ((subject = encode_header_field_utf8("Subject",new_mail->subject)))
 	{
-		time_t t;
-		struct tm *d;
+		unsigned secs;
+		struct tm d;
 		int offset = sm_get_gmt_offset();
 
 		static const char *mon_str[] =
@@ -2684,10 +2683,10 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		fputs(subject,fp);
 		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2004 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATIONSYSTEM);
 
-		time(&t);
-		d = localtime(&t);
+		secs = sm_get_current_seconds();
+		sm_convert_seconds(secs,&d);
 
-		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
+		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d.tm_mday,mon_str[d.tm_mon],d.tm_year + 1900,d.tm_hour,d.tm_min,d.tm_sec,offset/60,offset%60);
 	}
 
 	if (new_mail->reply_message_id)

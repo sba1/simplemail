@@ -53,9 +53,11 @@ APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 	tags = va_getlinearva(args,void*);
 
-	SM_DEBUGF(25,("tag=%p [0]=%p [1]=%p [2]=%p id=%p\n",tags,tags[0],tags[1],tags[2],id));
-
-	o = NewObjectA(cl,id,va_getlinearva(args,ULONG));
+	o = NewObjectA(cl,id,(struct TagItem*)va_getlinearva(args,ULONG));
+	if (o == NULL)
+	{
+		SM_DEBUGF(5,("FAILED!! cl=0x%lx id=%s\n",cl,id?id:(CONST_STRPTR)""));
+	}
 	va_end(args);
 	return o;
 }

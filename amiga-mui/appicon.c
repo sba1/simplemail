@@ -101,7 +101,7 @@ int appicon_init(void)
 
 	for(i=0;i<SM_APPICON_MAX;i++)
 	{
-		if (appicon_diskobject[i]=GetDiskObject(appicon_names[i]))
+		if ((appicon_diskobject[i]=GetDiskObject(appicon_names[i])))
 		{
 			appicon_diskobject[i]->do_CurrentX = appicon_config.position_X;
 			appicon_diskobject[i]->do_CurrentY = appicon_config.position_Y;
@@ -134,7 +134,7 @@ void appicon_free(void)
 *****************************************************************/
 ULONG appicon_mask(void)
 {
-	if (!appicon_port) return NULL;
+	if (!appicon_port) return 0UL;
 	return 1UL << appicon_port->mp_SigBit;
 }
 
@@ -147,7 +147,7 @@ void appicon_handle(void)
 
 	while ((appicon_msg = (struct AppMessage *)GetMsg(appicon_port)))
 	{
-		if (appicon_msg->am_Type = AMTYPE_APPICON)
+		if (appicon_msg->am_Type == AMTYPE_APPICON)
 		{
 			switch (appicon_msg->am_Class)
 			{
@@ -203,9 +203,14 @@ void appicon_refresh(int force)
 	struct folder *f;
 
 	folder_get_stats(&total_msg,&total_unread,&total_new);
-	if (f = folder_sent()) total_sent = f->num_index_mails;
-	if (f = folder_outgoing()) total_outgoing = f->num_index_mails;
-	if (f = folder_deleted()) total_deleted = f->num_index_mails;
+
+	/* The notcase indead should never happen, an assert would be appropriate */
+	if ((f = folder_sent())) total_sent = f->num_index_mails;
+	else total_sent = 0;
+	if ((f = folder_outgoing())) total_outgoing = f->num_index_mails;
+	else total_outgoing = 0;
+	if ((f = folder_deleted())) total_deleted = f->num_index_mails;
+	else total_deleted = 0;
 
 	if (statuswnd_is_opened())
 	{
@@ -281,12 +286,12 @@ void appicon_refresh(int force)
 
 		if (WorkbenchBase->lib_Version < 44)
 		{
-			appicon = AddAppIcon(0, 0, (char *)appicon_label, appicon_port, NULL, appicon_diskobject[appicon_mode],
-				NULL);
+			appicon = AddAppIcon(0, 0, (char *)appicon_label, appicon_port, 0, appicon_diskobject[appicon_mode],
+				TAG_DONE);
 		} else
 		{
 			/* Only V44+ of wb supports this tags */
-			appicon = AddAppIcon(0, 0, (char *)appicon_label, appicon_port, NULL, appicon_diskobject[appicon_mode],
+			appicon = AddAppIcon(0, 0, (char *)appicon_label, appicon_port, 0, appicon_diskobject[appicon_mode],
 				WBAPPICONA_SupportsOpen, TRUE,
 				WBAPPICONA_PropagatePosition, TRUE,
 				WBAPPICONA_SupportsSnapshot, TRUE,
@@ -315,7 +320,7 @@ static void appicon_load_position(void)
 	}
 
 	/* now, try to load the position from the appicon config file */
-	if (buf = malloc(512))
+	if ((buf = malloc(512)))
 	{
 		FILE *fh;
 

@@ -160,7 +160,11 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 			{
 				DoMethod(data->attach_tree, MUIM_NListtree_Move, MUIV_NListtree_Move_OldListNode_Active, MUIV_NListtree_Move_OldTreeNode_Active,
 								insertlist, MUIV_NListtree_Move_NewTreeNode_Tail);
-			} else return;
+			} else
+			{
+				set(data->attach_tree, MUIA_NListtree_Quiet, FALSE);
+				return;
+			}
 		}
 	}
 
@@ -281,34 +285,37 @@ static void compose_attach_active(struct Compose_Data **pdata)
 		attach = (struct attachment *)activenode->tn_User;
 	}
 
-	if (attach != data->last_attachment)
+	if (attach)
 	{
-		if (attach->editable)
+		if (attach != data->last_attachment)
 		{
-			set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_MIME);
-			SetAttrs(data->text_texteditor,
-					MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
-					MUIA_TextEditor_CursorX,attach->lastxcursor,
-					MUIA_TextEditor_CursorY,attach->lastycursor,
-					MUIA_NoNotify, TRUE,
+			if (attach->editable)
+			{
+				set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_MIME);
+				SetAttrs(data->text_texteditor,
+						MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
+						MUIA_TextEditor_CursorX,attach->lastxcursor,
+						MUIA_TextEditor_CursorY,attach->lastycursor,
+						MUIA_NoNotify, TRUE,
+						TAG_DONE);
+				set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_Plain);
+
+				DoMethod(data->x_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorX));
+				DoMethod(data->y_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorY));
+
+				set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
+			}
+
+			SetAttrs(data->contents_page,
+					MUIA_Disabled, FALSE,
+					MUIA_Group_ActivePage, attach->editable?0:1,
 					TAG_DONE);
-			set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_Plain);
 
-			DoMethod(data->x_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorX));
-			DoMethod(data->y_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorY));
-
-			set(data->wnd, MUIA_Window_ActiveObject, data->text_texteditor);
+			set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->temporary_filename?attach->temporary_filename:attach->filename);
 		}
-
-		SetAttrs(data->contents_page,
-				MUIA_Disabled, FALSE,
-				MUIA_Group_ActivePage, attach->editable?0:1,
-				TAG_DONE);
-
-		set(data->datatype_datatypes, MUIA_DataTypes_FileName, attach->temporary_filename?attach->temporary_filename:attach->filename);
 	} else
 	{
-/*		set(data->contents_page, MUIA_Disabled, TRUE); */
+/*		set(data->contents_page, MUIA_Disabled, TRUE);*/
 	}
 	data->last_attachment = attach;
 }

@@ -253,8 +253,11 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 				}
 				*dest = 0;
 
+				*pbuf = buf;
+#if 0 /* removed, because it makes trouble with the expand function */
 				*pbuf = utf8create(buf,NULL);
 				free(buf);
+#endif
 				quoted_string++;
 
 				return quoted_string; /* the '"' sign */

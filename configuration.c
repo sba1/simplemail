@@ -63,7 +63,7 @@ char *get_config_item(char *buf, char *item)
 
 struct user user;
 
-void init_config(void)
+static void init_config(void)
 {
 	struct account *account;
 	struct phrase *phrase;

@@ -45,6 +45,7 @@ int thread_call_parent_function_async(void *function, int argcount, ...);
 int thread_call_parent_function_async_string(void *function, int argcount, ...);
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...);
 int thread_push_function(void *function, int argcount, ...);
+int thread_push_function_delayed(int millis, void *function, int argcount, ...);
 
 /* semaphore handling */
 struct semaphore_s;
@@ -55,9 +56,5 @@ void thread_dispose_semaphore(semaphore_t sem);
 int thread_attempt_lock_semaphore(semaphore_t sem);
 void thread_lock_semaphore(semaphore_t sem);
 void thread_unlock_semaphore(semaphore_t sem);
-
-/* Only releavant in AmigaOS so this should be moved to somewhere else */
-void thread_handle(void);
-unsigned long thread_mask(void);
 
 #endif

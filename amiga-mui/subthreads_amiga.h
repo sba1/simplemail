@@ -27,6 +27,8 @@
 struct SocketIFace;
 #endif
 
+struct timerequest;
+
 struct thread_s
 {
 	struct Process *process;
@@ -41,7 +43,16 @@ struct thread_s
 #endif
 	int socketlib_opencnt;
 
-	struct List push_list;
+	/* List of pushed functions */
+	struct MinList push_list;
+
+	/* Timer support */
+	struct MsgPort *timer_port;
+	struct timerequest *timer_req;
+	struct MinList timer_request_list;
 };
+
+void thread_handle(ULONG);
+ULONG thread_mask(void);
 
 #endif

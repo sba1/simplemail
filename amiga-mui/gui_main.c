@@ -253,7 +253,7 @@ void loop(void)
 		{
 			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m | arexx_m | appicon_m);
 			if (sigs & SIGBREAKF_CTRL_C) break;
-			if (sigs & thread_m) thread_handle();
+			if (sigs & thread_m) thread_handle(thread_m);
 			if (sigs & timer_m) timer_handle();
 			if (sigs & arexx_m) arexx_handle();
 			if (sigs & appicon_m) appicon_handle();

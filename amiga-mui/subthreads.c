@@ -48,6 +48,14 @@
 
 /*** Timer ***/
 
+struct time_node
+{
+	struct MinNode node;
+	struct timerequest *time_req;
+	int (*callback)(void *arg);
+	void *arg;
+};
+
 struct timer
 {
 	struct MsgPort *timer_port;
@@ -120,6 +128,28 @@ static void timer_send_if_not_sent(struct timer *timer, int millis)
 	}
 }
 
+/**************************************************************************
+ Sends a new timer with given callback and arg
+**************************************************************************/
+#if 0
+static int timer_send(struct timer *timer, int millis, int *(callback)(void *arg), void *arg)
+{
+	struct time_node *tn = (struct time_node*)AllocVec(sizeof(struct time_node),MEMF_CLEAR);
+	if (!tn) return 0;
+	if (!(tn->time_req = (struct timerequest*)AllocVec(sizeof(struct timerequest),MEMF_PUBLIC)))
+	{
+		FreeVec(tn);
+		return 0;
+	}
+	*tn->time_req = *timer->timer_req;
+	tn->time_req->tr_node.io_Command = TR_ADDREQUEST;
+	tn->time_req->tr_time.tv_secs = millis / 1000;
+	tn->time_req->tr_time.tv_micro = millis % 1000;
+	AddTail((struct List*)&timer->time_list,(struct Node*)tn);
+	SendIO((struct IORequest*)tn->time_req);
+}
+#endif
+
 /*** ThreadMessage ***/
 
 struct ThreadMessage
@@ -132,6 +162,14 @@ struct ThreadMessage
 	int argcount;
 	void *arg1,*arg2,*arg3,*arg4;
 	int result;
+};
+
+/*** TimerMessage ***/
+struct TimerMessage
+{
+	struct timerequest time_req;
+	struct ThreadMessage *thread_msg;
+	struct MinNode node;
 };
 
 /* the port allocated by the main task */
@@ -172,7 +210,53 @@ static void thread_remove(struct ThreadMessage *tmsg)
 }
 
 /**************************************************************************
- Iniitalize the thread system
+ Initialize the timer
+**************************************************************************/
+static int thread_init_timer(struct thread_s *thread)
+{
+	if ((thread->timer_port = CreateMsgPort()))
+	{
+		if ((thread->timer_req = (struct timerequest *) CreateIORequest(thread->timer_port, sizeof(struct timerequest))))
+		{
+			if (!OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *)thread->timer_req, 0))
+			{
+				NewList((struct List*)&thread->timer_request_list);
+				return 1;
+			}
+			DeleteIORequest(thread->timer_req);
+			thread->timer_req = NULL;
+		}
+		DeleteMsgPort(thread->timer_port);
+		thread->timer_port = NULL;
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Cleanup the timer
+**************************************************************************/
+static void thread_cleanup_timer(struct thread_s *thread)
+{
+	struct MinNode *node;
+	while ((node = (struct MinNode*)RemTail((struct List*)&thread->timer_request_list)))
+	{
+		struct TimerMessage *dummy = NULL;
+		struct TimerMessage *timer_msg = (struct TimerMessage*)((UBYTE*)node - ((UBYTE*)&dummy->node - (UBYTE*)dummy));
+
+		AbortIO((struct IORequest*)&timer_msg->time_req);
+		WaitIO((struct IORequest*)&timer_msg->time_req);
+
+		if (timer_msg->thread_msg) FreeVec(timer_msg->thread_msg);
+		FreeVec(timer_msg);
+	}
+
+	CloseDevice((struct IORequest*)thread->timer_req);
+	DeleteIORequest((struct IORequest*)thread->timer_req);
+	DeleteMsgPort(thread->timer_port);
+}
+
+/**************************************************************************
+ Initialize the thread system
 **************************************************************************/
 int init_threads(void)
 {
@@ -182,7 +266,10 @@ int init_threads(void)
 		main_thread.process = (struct Process*)FindTask(NULL);
 		main_thread.is_main = 1;
 		main_thread.thread_port = thread_port;
-		NewList(&main_thread.push_list);
+		
+		thread_init_timer(&main_thread);
+
+		NewList((struct List*)&main_thread.push_list);
 		FindTask(NULL)->tc_UserData = &main_thread;
 
 		list_init(&thread_list);
@@ -220,6 +307,8 @@ void cleanup_threads(void)
 		}
 	}
 
+	thread_cleanup_timer((struct thread_s*)(FindTask(NULL)->tc_UserData));
+
 	if (thread_port)
 	{
 		DeleteMsgPort(thread_port);
@@ -230,33 +319,67 @@ void cleanup_threads(void)
 /**************************************************************************
  Returns the mask of the thread port of the current process
 **************************************************************************/
-unsigned long thread_mask(void)
+ULONG thread_mask(void)
 {
-	return (1UL << thread_port->mp_SigBit);
+	struct thread_s *thread = (struct thread_s*)(FindTask(NULL)->tc_UserData);
+
+	return (1UL << thread->thread_port->mp_SigBit) | (1UL << thread->timer_port->mp_SigBit);
 }
 
 /**************************************************************************
  Handle a new message in the send to the current process
 **************************************************************************/
-void thread_handle(void)
+void thread_handle(ULONG mask)
 {
-	struct ThreadMessage *tmsg;
+	struct thread_s *thread = (struct thread_s*)(FindTask(NULL)->tc_UserData);
 
-	while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
+	if (mask & (1UL << thread->thread_port->mp_SigBit))
 	{
-		D(bug("Received Message: 0x%lx\n",tmsg));
-
-		if (tmsg->startup)
+		struct ThreadMessage *tmsg;
+		while ((tmsg = (struct ThreadMessage *)GetMsg(thread->thread_port)))
 		{
-			thread_remove(tmsg);
-			continue;
-		}
+			D(bug("Received Message: 0x%lx\n",tmsg));
 
-		thread_handle_execute_function_message(tmsg);
+			if (tmsg->startup)
+			{
+				thread_remove(tmsg);
+				continue;
+			}
+
+			thread_handle_execute_function_message(tmsg);
+		}
+	}
+
+	if (mask & (1UL << thread->timer_port->mp_SigBit))
+	{
+		struct TimerMessage *timer_msg;
+
+		while ((timer_msg = (struct TimerMessage*)GetMsg(thread->timer_port)))
+		{
+			struct ThreadMessage *tmsg = timer_msg->thread_msg;
+
+			/* Now execute the thread message */
+			if (tmsg->function)
+			{
+				switch(tmsg->argcount)
+				{
+					case	0: tmsg->function();break;
+					case	1: ((int (*)(void*))tmsg->function)(tmsg->arg1);break;
+					case	2: ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
+					case	3: ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
+					case	4: ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
+				}
+			}
+			Remove((struct Node*)&timer_msg->node);
+			FreeVec(tmsg);
+			FreeVec(timer_msg);
+		}
 	}
 }
 
-/* the entry point for the subthread */
+/**************************************************************************
+ Entrypoint for a new thread
+**************************************************************************/
 static SAVEDS void thread_entry(void)
 {
 	struct Process *proc;
@@ -278,17 +401,20 @@ static SAVEDS void thread_entry(void)
 	{
 		D(bug("Subthreaded created port at 0x%lx\n",thread->thread_port));
 
-		NewList(&thread->push_list);
-
-		proc->pr_Task.tc_UserData = thread;
-		entry = (int(*)(void*))msg->function;
-
-		dirlock = DupLock(proc->pr_CurrentDir);
-		if (dirlock)
+		NewList((struct List*)&thread->push_list);
+		if (thread_init_timer(thread))
 		{
-			BPTR odir = CurrentDir(dirlock);
-			entry(msg->arg1);
-			UnLock(CurrentDir(odir));
+			proc->pr_Task.tc_UserData = thread;
+			entry = (int(*)(void*))msg->function;
+
+			dirlock = DupLock(proc->pr_CurrentDir);
+			if (dirlock)
+			{
+				BPTR odir = CurrentDir(dirlock);
+				entry(msg->arg1);
+				UnLock(CurrentDir(odir));
+			}
+			thread_cleanup_timer(thread);
 		}
 		DeleteMsgPort(thread->thread_port);
 		thread->thread_port = NULL;
@@ -534,7 +660,7 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 }
 
 /**************************************************************************
- Call a function in context of the parent task synchron
+ Call a function in context of the parent task synchronly
 **************************************************************************/
 int thread_call_parent_function_sync(void *function, int argcount, ...)
 {
@@ -665,7 +791,10 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 #endif
 }
 
-/* Call the function synchron, calls timer_callback on the calling process context */
+/**************************************************************************
+ Call the function synchron, calls timer_callback on the calling process
+ context
+**************************************************************************/
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
@@ -792,7 +921,7 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 			}
 
 			/* Now perform any pending push calls */
-			while ((tmsg = (struct ThreadMessage*)RemHead(&this_thread->push_list)))
+			while ((tmsg = (struct ThreadMessage*)RemHead((struct List*)&this_thread->push_list)))
 			{
 				if (tmsg->function)
 				{
@@ -815,7 +944,7 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 }
 
 /**************************************************************************
- Pusges an function call in the function queue of the callers task context.
+ Pushes a function call in the function queue of the callers task context.
  Return 1 for success else 0.
 **************************************************************************/
 int thread_push_function(void *function, int argcount, ...)
@@ -829,14 +958,54 @@ int thread_push_function(void *function, int argcount, ...)
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
 		thread_t this_thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
-		AddTail(&this_thread->push_list,&tmsg->msg.mn_Node);
+		AddTail((struct List*)&this_thread->push_list,&tmsg->msg.mn_Node);
+		rc = 1;
 	}
 
 	va_end (arg_ptr);
 	return rc;
 }
 
-/* Call the function asynchron */
+/**************************************************************************
+ Pushes a function call in the function queue of the callers task context
+ but only after a given amount of time.
+ Return 1 for success else 0.
+**************************************************************************/
+int thread_push_function_delayed(int millis, void *function, int argcount, ...)
+{
+	int rc = 0;
+	struct ThreadMessage *tmsg;
+	va_list argptr;
+
+	va_start(argptr,argcount);
+
+	if ((tmsg = thread_create_message(function, argcount, argptr)))
+	{
+		thread_t thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
+		struct TimerMessage *timer_msg = AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
+		if (timer_msg)
+		{
+			timer_msg->time_req = *thread->timer_req;
+			timer_msg->time_req.tr_node.io_Command = TR_ADDREQUEST;
+			timer_msg->time_req.tr_time.tv_secs = millis / 1000;
+			timer_msg->time_req.tr_time.tv_micro = (millis % 1000)*1000;
+			timer_msg->thread_msg = tmsg;
+			SendIO((struct IORequest*)timer_msg);
+
+			/* Enqueue the timer_msg in our request list */
+			AddTail((struct List*)&thread->timer_request_list,(struct Node*)&timer_msg->node);
+
+			rc = 1;
+		} else FreeVec(tmsg);
+	}
+
+	va_end (arg_ptr);
+	return rc;
+}
+
+/**************************************************************************
+ Call the function asynchron
+**************************************************************************/
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
@@ -890,7 +1059,10 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 #endif
 }
 
-/* Call the function asynchron and duplicate the first argument which us threaded at a string */
+/**************************************************************************
+ Call the function asynchron and duplicate the first argument which us
+ threaded at a string
+**************************************************************************/
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS

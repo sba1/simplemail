@@ -1,6 +1,7 @@
 Standard=ISO-8859-10
 Name=Latin6
 Characterization=_("Nordic")
+ReadOnly=0
 
 # Format
 # =II	U+UUUU NAME

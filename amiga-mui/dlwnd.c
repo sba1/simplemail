@@ -49,7 +49,7 @@ void dl_init_gauge_mail(int amm)
 	static char str[256];
 	
 	sprintf(str, "Mail %%ld/%d", amm);
-	
+
 	set(win_dl, MUIA_transwnd_Gauge1_Str, str);
 	set(win_dl, MUIA_transwnd_Gauge1_Max, amm);
 	set(win_dl, MUIA_transwnd_Gauge1_Val, 0);

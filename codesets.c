@@ -740,19 +740,33 @@ static int codesets_read_table(char *name)
 			{
 				char *result;
 				if ((result = get_config_item(buf,"Standard"))) codeset->name = mystrdup(result);
-				else if (result = get_config_item(buf,"Characterization"))
+				else if ((result = get_config_item(buf,"ReadOnly"))) codeset->read_only = !!atoi(result);
+				else if ((result = get_config_item(buf,"Characterization")))
 				{
 					if ((result[0] == '_') && (result[1] == '(') && (result[2] == '"'))
 					{
 						char *end = strchr(result+3,'"');
 						if (end)
 						{
-							codeset->characterization = _(mystrndup(result+3,end-result+3));
+							codeset->characterization = _(mystrndup(result+3,end-(result+3)));
 						}
 					}
 				} else
 				{
-					
+					char *p = buf;
+
+					if (*p++ == '=')
+					{
+						i = strtol(p,&p,16);
+						if (i > 0 && i < 256)
+						{
+							if ((p = mystristr(p,"U+")))
+							{
+								p += 2;
+								codeset->table[i].ucs4 = strtol(p,&p,16);
+							}
+						}
+					}
 				}
 			}
 

@@ -2025,6 +2025,105 @@ static char *get_boundary_id(FILE *fp)
 }
 
 /**************************************************************************
+ Writes a contents of a file encrypted to fp
+**************************************************************************/
+static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *ofh_name)
+{
+	char *boundary;
+	int rc = 1;
+
+	if ((boundary = get_boundary_id(fp)))
+	{
+		struct list *tolist = create_address_list(new_mail->to);
+		char *encrypted_name = malloc(L_tmpnam+1);
+		char *id_name = malloc(L_tmpnam+1);
+		char *cmd = malloc(2*L_tmpnam+300);
+
+		if (cmd && encrypted_name && id_name && tolist)
+		{
+			struct address *addr;
+			int sys_rc;
+			FILE *id_fh;
+
+			tmpnam(id_name);
+			tmpnam(encrypted_name);
+
+			if ((id_fh = fopen(id_name,"wb")))
+			{
+				addr = (struct address*)list_first(tolist);
+				while (addr)
+				{
+					struct addressbook_entry *entry = addressbook_find_entry_by_address(addr->email);
+					if (!entry || !entry->u.person.pgpid || !*entry->u.person.pgpid)
+					{
+						char *pgpid;
+						char *text = malloc(512);
+						if (text)
+						{
+							sprintf(text,_("Please select a key for %s <%s>"),addr->realname,addr->email);
+						}
+						pgpid = sm_request_pgp_id(text);
+						free(text);
+						if (pgpid)
+						{
+							fprintf(id_fh,"%s\n",pgpid);
+							free(pgpid);
+						} else
+						{
+							rc = 0;
+							break;
+						}
+					}  else fprintf(id_fh,"%s\n",entry->u.person.pgpid);
+					addr = (struct address*)node_next(&addr->node);
+				}
+				fclose(id_fh);
+			}
+
+			if (rc)
+			{
+				fprintf(fp,"MIME-Version: 1.0\n");
+				fprintf(fp,"Content-Type: multipart/encrypted; boundary=\"%s\";\n protocol=\"application/pgp-encrypted\"\n", boundary);
+				fprintf(fp,"\n");
+				fprintf(fp, "--%s\n",boundary);
+				fputs(pgp_text,fp);
+				fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
+				sprintf(cmd, "pgp -ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
+
+				sys_rc = sm_system(cmd,NULL);
+
+				if (!sys_rc)
+				{
+					char *buf = malloc(512);
+					if (buf)
+					{
+						FILE *encrypted_fh = fopen(encrypted_name,"rb");
+						if (encrypted_fh)
+						{
+							while (fgets(buf,512,encrypted_fh))
+							{
+								fputs(buf,fp);
+							}
+							fclose(encrypted_fh);
+						}
+						free(buf);
+					}
+				} else rc = 0;
+				
+				fprintf(fp, "\n--%s--\n",boundary);
+			}
+			remove(encrypted_name);
+			remove(id_name);
+		} else rc = 0;
+		free(cmd);
+		free(encrypted_name);
+		free(id_name);
+		if (tolist) free_address_list(tolist);
+		free(boundary);
+	} else rc = 0;
+	return rc;
+}
+
+/**************************************************************************
  Writes out the attachments into the body (uses recursion)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
@@ -2032,27 +2131,53 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	struct composed_mail *cmail;
 	int rc = 1;
 
+	FILE *ofh;
+	char *ofh_name;
+
 	if (new_mail->to)
 	{
 		if (!(mail_compose_write_headers(fp,new_mail)))
 			return 0;
 	}
 
+	if (new_mail->encrypt)
+	{
+		if ((ofh_name = malloc(L_tmpnam + 1)))
+		{
+			tmpnam(ofh_name);
+			ofh = fopen(ofh_name,"wb");
+		}
+	} else
+	{
+		ofh_name = NULL;
+		ofh = fp;
+	}
+
 	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))
 	{
 		/* mail is a multipart message */
-		char *boundary = get_boundary_id(fp);
-		if (boundary)
+		char *boundary;
+
+		if ((boundary = get_boundary_id(fp)))
 		{
-			fprintf(fp,"MIME-Version: 1.0\n");
-			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
-			fprintf(fp, "\n");
-			if (new_mail->to) fputs(mime_preample,fp);
+			if (new_mail->encrypt)
+			{
+				fprintf(ofh,"MIME-Version: 1.0\n");
+				fprintf(ofh,"Content-Type: message/rfc822\n\n");
+
+				/* Only one header is required */
+				rc = mail_compose_write_from(ofh,new_mail->from);
+			}
+
+			fprintf(ofh,"MIME-Version: 1.0\n");
+			fprintf(ofh, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
+			fprintf(ofh, "\n");
+			if (new_mail->to) fputs(mime_preample,ofh);
 
 			while (cmail)
 			{
-				fprintf(fp, "\n--%s\n",boundary);
-				if (!(mail_compose_write(fp,cmail)))
+				fprintf(ofh, "\n--%s\n",boundary);
+				if (!(mail_compose_write(ofh,cmail)))
 				{
 					rc = 0;
 					break;
@@ -2060,7 +2185,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				cmail = (struct composed_mail*)node_next(&cmail->node);
 			}
 
-			fprintf(fp, "\n--%s--\n",boundary);
+			fprintf(ofh, "\n--%s--\n",boundary);
 
 			free(boundary);
 		}
@@ -2069,22 +2194,6 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		unsigned int body_len;
 		char *body_encoding = NULL;
 		char *body = NULL;
-
-		FILE *ofh;
-		char *ofh_name;
-
-		if (new_mail->encrypt)
-		{
-			if ((ofh_name = malloc(L_tmpnam + 1)))
-			{
-				tmpnam(ofh_name);
-				ofh = fopen(ofh_name,"wb");
-			}
-		} else
-		{
-			ofh_name = NULL;
-			ofh = fp;
-		}
 
 		if (new_mail->text)
 		{
@@ -2148,104 +2257,15 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			fputs(body,ofh);
 			free(body);
 		}
-
-		if (new_mail->encrypt)
-		{
-			char *boundary;
-
-			fclose(ofh);
-
-			if ((boundary = get_boundary_id(fp)))
-			{
-				struct list *tolist = create_address_list(new_mail->to);
-				char *encrypted_name = malloc(L_tmpnam+1);
-				char *id_name = malloc(L_tmpnam+1);
-				char *cmd = malloc(2*L_tmpnam+300);
-
-				if (cmd && encrypted_name && id_name && tolist)
-				{
-					struct address *addr;
-					int sys_rc;
-					FILE *id_fh;
-
-					tmpnam(id_name);
-					tmpnam(encrypted_name);
-
-					if ((id_fh = fopen(id_name,"wb")))
-					{
-						addr = (struct address*)list_first(tolist);
-						while (addr)
-						{
-							struct addressbook_entry *entry = addressbook_find_entry_by_address(addr->email);
-							if (!entry || !entry->u.person.pgpid || !*entry->u.person.pgpid)
-							{
-								char *pgpid;
-								char *text = malloc(512);
-								if (text)
-								{
-									sprintf(text,_("Please select a key for %s <%s>"),addr->realname,addr->email);
-								}
-								pgpid = sm_request_pgp_id(text);
-								free(text);
-								if (pgpid)
-								{
-									fprintf(id_fh,"%s\n",pgpid);
-									free(pgpid);
-								} else
-								{
-									rc = 0;
-									break;
-								}
-							}  else fprintf(id_fh,"%s\n",entry->u.person.pgpid);
-							addr = (struct address*)node_next(&addr->node);
-						}
-						fclose(id_fh);
-					}
-
-					if (rc)
-					{
-						fprintf(fp,"MIME-Version: 1.0\n");
-						fprintf(fp,"Content-Type: multipart/encrypted; boundary=\"%s\";\n protocol=\"application/pgp-encrypted\"\n", boundary);
-						fprintf(fp,"\n");
-						fprintf(fp, "--%s\n",boundary);
-						fputs(pgp_text,fp);
-						fprintf(fp, "\n--%s\nContent-Type: application/octet-stream\n\n",boundary);
-						sprintf(cmd, "pgp -ea \"%s\" -@ \"%s\" -o \"%s\" +bat", ofh_name, id_name, encrypted_name);
-
-						sys_rc = sm_system(cmd,NULL);
-
-						if (!sys_rc)
-						{
-							char *buf = malloc(512);
-							if (buf)
-							{
-								FILE *encrypted_fh = fopen(encrypted_name,"rb");
-								if (encrypted_fh)
-								{
-									while (fgets(buf,512,encrypted_fh))
-									{
-										fputs(buf,fp);
-									}
-									fclose(encrypted_fh);
-								}
-								free(buf);
-							}
-						} else rc = 0;
-						
-						fprintf(fp, "\n--%s--\n",boundary);
-					}
-					remove(encrypted_name);
-					remove(id_name);
-				} else rc = 0;
-				free(cmd);
-				free(encrypted_name);
-				free(id_name);
-				if (tolist) free_address_list(tolist);
-				free(boundary);
-			} else rc = 0;
-			remove(ofh_name);
-		}
 	}
+
+	if (new_mail->encrypt)
+	{
+		fclose(ofh);
+		rc = mail_write_encrypted(fp, new_mail, ofh_name);
+		remove(ofh_name);
+	}
+
 	return rc;
 }
 

@@ -22,6 +22,11 @@
 
 #include <proto/socket.h> /* Now it actually _is_ nice!!! :) */ /* Yes :-) */
 
+#define h_errno my_h_errno()
+
 int open_socket_lib(void);
 void close_socket_lib(void);
-
+long my_h_errno(void);
+long read(long, void *, long);
+long write(long, void *, long);
+void close(long);

@@ -299,7 +299,7 @@ static char *parse_domain(char *domain, char **pbuf)
 /**************************************************************************
  addr-spec   =  local-part "@" domain 
 **************************************************************************/
-static char *parse_addr_spec(char *addr_spec, char **pbuf)
+char *parse_addr_spec(char *addr_spec, char **pbuf)
 {
 	char *buf,*buf2;
 	char *local_part, *domain;

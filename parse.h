@@ -31,6 +31,8 @@ char *strdupcat(const char *string1, const char *string2);
 char *strndup(const char *str1, int n);
 char *stradd(char *src, const char *str1);
 
+char *parse_addr_spec(char *addr_spec, char **pbuf);
+
 /* the argument for parse_address */
 struct parse_address
 {

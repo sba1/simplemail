@@ -47,6 +47,7 @@
 struct ComposeEditor_Data
 {
 	LONG cmap[8];
+	char **array;
 };
 
 STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
@@ -63,6 +64,64 @@ STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	return (ULONG)obj;
 }
+
+STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg)
+{
+	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
+	struct TagItem *tstate, *tag;
+
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
+	while (tag = NextTagItem(&tstate))
+	{
+		switch (tag->ti_Tag)
+		{
+			case	MUIA_ComposeEditor_Array:
+						{
+							char **array = (char**)tag->ti_Data;
+							char *buf;
+							int i,cnt = 0, len = 0;
+
+							if (!array) set(obj,MUIA_TextEditor_Contents,"");
+							else
+							{
+								while (array[cnt])
+								{
+									len += strlen(array[cnt]);
+									cnt++;
+								}
+								if ((buf = AllocVec(len+1,0)))
+								{
+									buf[0] = 0;
+									for (i=0;i<cnt;i++)
+									{
+										strcat(buf,array[i]);
+										strcat(buf,"\n");
+									}
+									set(obj,MUIA_TextEditor_Contents,buf);
+									FreeVec(buf);
+								}
+							}
+						}
+						break;
+		}
+	}
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+/*
+STATIC ULONG ComposeEditor_Get(struct IClass *cl, Object *obj, struct opGet *msg)
+{
+	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
+
+	if (msg->opg_AttrID == MUIA_ComposeEditor_EMailArray)
+	{
+		return 1;
+	}
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+*/
 
 STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
@@ -102,6 +161,11 @@ STATIC ASM ULONG ComposeEditor_Dispatcher(register __a0 struct IClass *cl, regis
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return ComposeEditor_New(cl,obj,(struct opSet*)msg);
+		case	OM_SET: return ComposeEditor_Set(cl,obj,(struct opSet*)msg);
+
+/*
+		case	OM_GET: return ComposeEditor_Get(cl,obj,(struct opGet*)msg);
+*/
 		case	MUIM_Setup: return ComposeEditor_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup: return ComposeEditor_Cleanup(cl,obj,msg);
 /*		case	MUIM_TextEditor_InsertText: return ComposeEditor_InsertText(cl,obj,(struct MUIP_TextEditor_InsertText*)msg);*/

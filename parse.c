@@ -591,7 +591,7 @@ char *parse_token(char *token, char **pbuf)
 {
 	const char *token_start = token;
 	char *buf;
-	char c;
+	unsigned char c;
 	int len;
 
 	while ((c = *token))
@@ -662,7 +662,7 @@ char *parse_etoken(char *token, char **pbuf)
 {
 	const char *token_start = token;
 	char *buf;
-	char c;
+	unsigned char c;
 	int len;
 
 	while ((c = *token))

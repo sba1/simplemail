@@ -981,7 +981,7 @@ int mail_process_headers(struct mail *mail)
 							{
 								struct content_parameter *new_param;
 								struct parse_parameter dest;
-								char c;
+								unsigned char c;
 
 								/* Skip spaces */
 								while ((c = *subtype))

@@ -63,6 +63,7 @@ static Object *config_wnd;
 static Object *user_dst_check;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
+static Object *receive_autocheck_string;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
 static Object *read_wrap_checkbox;
@@ -239,6 +240,7 @@ static void config_use(void)
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
+	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
 	user.config.signatures_use = xget(signatures_use_checkbox, MUIA_Selected);
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
@@ -453,6 +455,17 @@ static int init_tcpip_receive_group(void)
 				Child, HVSpace,
 				End,
 			Child, RectangleObject, MUIA_Weight, 33, End,
+			End,
+		Child, HorizLineTextObject("Automatic operation"),
+		Child, HGroup,
+			Child, MakeLabel("Check for new mail every"),
+			Child, receive_autocheck_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain,1,
+				MUIA_String_Acknowledge, TRUE,
+				MUIA_String_Integer, user.config.receive_autocheck,
+				End,
+			Child, TextObject, MUIA_Text_Contents, "minutes", End,
 			End,
 		End;
 

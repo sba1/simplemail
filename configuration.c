@@ -126,6 +126,8 @@ int load_config(void)
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
 							user.config.receive_size = atoi(result);
+						if ((result = get_config_item(buf, "Receive.Autocheck")))
+							user.config.receive_autocheck = atoi(result);
 						if ((result = get_config_item(buf,"Read.PropFont")))
 							user.config.read_propfont = mystrdup(result);
 						if ((result = get_config_item(buf,"Read.FixedFont")))
@@ -356,6 +358,7 @@ void save_config(void)
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);
 			fprintf(fh,"Receive.Size=%d\n",user.config.receive_size);
+			fprintf(fh,"Receive.Autocheck=%d\n",user.config.receive_autocheck);
 
 			/* Write the pop3 servers */
 			i = 0;

@@ -71,6 +71,8 @@ void callback_mail_changed(struct folder *folder, struct mail *oldmail, struct m
 
 void callback_config_changed(void);
 
+void callback_autocheck_refresh(void);
+void callback_timer(void);
 
 #endif
 

@@ -580,6 +580,30 @@ void callback_config_changed(void)
 	main_build_accounts();
 }
 
+
+static int autocheck_minutes_start; /* to compare with this */
+
+/* initializes the autocheck function */
+void callback_autocheck_refresh(void)
+{
+	autocheck_minutes_start = sm_get_current_seconds();
+}
+
+/* called every second */
+void callback_timer(void)
+{
+	if (user.config.receive_autocheck)
+	{
+		if (sm_get_current_seconds() - autocheck_minutes_start > user.config.receive_autocheck * 60)
+		{
+			/* nothing should happen when mails_dl() is called twice,
+			   this could happen if a mail downloading takes very long */
+			callback_autocheck_refresh();
+			mails_dl();
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	load_config();

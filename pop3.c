@@ -464,6 +464,9 @@ int pop3_login_only(struct pop3_server *server)
 		}
 		close_socket_lib();
 	}
+
+	/* Refresh the autocheck */
+	thread_call_parent_function_sync(callback_autocheck_refresh,0);
 	return rc;
 }
 

@@ -476,6 +476,60 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
 
 		if (goon)
 		{
+			if (!mystricmp(mail->content_type,"text") && mystricmp(mail->content_subtype, "html"))
+			{
+				char *charset;
+				char *user_charset;
+				int charset_sel;
+
+				if (!(charset = mail->content_charset)) charset = "ISO-8859-1";
+				user_charset = user.config.default_codeset?user.config.default_codeset->name:"ISO-8858-1";
+					
+				if (mystrcmp(user_charset,charset))
+				{
+					char gadgets[512];
+					sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
+					charset_sel = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),
+												gadgets);
+
+					if (charset_sel == 1 || charset_sel == 2)
+					{
+						char *str;
+						void *cont;
+						int cont_len;
+
+						if (charset_sel == 2) charset = user_charset;
+
+						mail_decoded_data(mail,&cont,&cont_len);
+						if ((str = utf8tostrcreate((utf8 *)cont, codesets_find(charset))))
+						{
+							if ((fh = Open(file, MODE_NEWFILE)))
+							{
+								char *comment = mail_get_from_address(mail_get_root(mail));
+								Write(fh,str,strlen(str));
+								Close(fh);
+
+								if (comment)
+								{
+									SetComment(file,comment);
+									free(comment);
+								}
+							}
+							free(str);
+						}
+
+						goon = 0;
+					} else
+					{
+						if (!charset_sel) goon = 0;
+						/* else it is 3 and goon is still 1 so it get written as utf8 */
+					}
+				}
+			}
+		}
+		
+    if (goon)
+    {
 			if ((fh = Open(file, MODE_NEWFILE)))
 			{
 				char *comment = mail_get_from_address(mail_get_root(mail));
@@ -483,6 +537,7 @@ static void save_contents_to(struct Read_Data *data, struct mail *mail, char *dr
 				int cont_len;
 
 				mail_decoded_data(mail,&cont,&cont_len);
+
 				Write(fh,cont,cont_len);
 				Close(fh);
 

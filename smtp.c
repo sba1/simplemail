@@ -839,7 +839,10 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 			if (count_mails(account,outmail)==0) continue;
 
-			thread_call_parent_function_async_string(status_set_title, 1, account->smtp->name);
+			if (account->account_name)
+				thread_call_parent_function_async_string(status_set_title_utf8, 1, account->account_name);
+			else
+				thread_call_parent_function_async_string(status_set_title, 1, account->smtp->name);
 
 			if (account->smtp->pop3_first)
 			{

@@ -44,6 +44,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
+#include "signature.h"
 #include "simplemail.h"
 #include "support_indep.h"
 
@@ -597,6 +598,37 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 }
 
 /******************************************************************
+ Add a signature if neccesary
+*******************************************************************/
+static void compose_add_signature(struct Compose_Data *data)
+{
+	struct signature *sign = (struct signature*)list_first(&user.config.signature_list);
+	if (user.config.signatures_use)
+	{
+		char *text = (char*)DoMethod(data->text_texteditor, MUIM_TextEditor_ExportText);
+		int add_sign = 0;
+
+		if (text)
+		{
+			add_sign = strstr(text,"-- \n")?0:1;
+			FreeVec(text);
+		}
+		if (add_sign)
+		{
+			DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,"-- \n", MUIV_TextEditor_InsertText_Bottom);
+			DoMethod(data->text_texteditor,MUIM_TextEditor_InsertText,sign->signature, MUIV_TextEditor_InsertText_Bottom);
+
+			SetAttrs(data->text_texteditor,
+					MUIA_TextEditor_CursorX,0,
+					MUIA_TextEditor_CursorY,0,
+					TAG_DONE);
+
+		}
+	}
+}
+
+
+/******************************************************************
  Opens a compose window
 *******************************************************************/
 void compose_window_open(struct compose_args *args)
@@ -914,6 +946,8 @@ void compose_window_open(struct compose_args *args)
 				data->folder = strdup("Outgoing");
 				data->reply_id = mystrdup(args->to_change->message_reply_id);
 			}
+
+			compose_add_signature(data);
 
 			data->compose_action = args->action;
 			data->ref_mail = args->ref_mail;

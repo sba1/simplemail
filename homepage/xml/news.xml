@@ -1,6 +1,43 @@
 <?xml version='1.0' ?>
 
 <news>
+  <entry date="2001/12/24">
+	<text lang="en">
+	  First public beta (SimpleMail 0.14) released!
+
+	  The changes are:
+	  <list>
+		<item>ARexx: added lots of commands.</item>
+		<item>Signatures can now be stripped when replying.</item>
+		<item>Folder names are now rendered in bold when containing new mail.</item>
+		<item>Improved the wordwrap while quoting.</item>
+		<item>Option to not quote empty lines.</item>
+		<item>Your address is filtered out when replying a multiple recipient email.</item>
+		<item>Modified the STARTTLS code following the suggestions from Jörg Strohmayer.</item>
+		<item>Every folder can now have a default recipient address.</item>
+		<item>Can now import address books from YAM.</item>
+		<item>Implemented CC support in the Compose Message window.</item>
+	  </list>
+	</text>
+	<text lang="de">
+	  Erste	öffentliche Beta (SimpleMail 0.14) veröffentlicht!
+
+	  Die Änderungen sind:
+	  <list>
+		<item>ARexx: Viele neue Befehle hinzugefügt.</item>
+		<item>Signaturen können vor dem Antworten entfernt werden.</item>
+		<item>Folder-Namen werden fett gezeichnet wenn sie neue Mails enthalten.</item>
+		<item>Wordwrap beim Quoten verbessert.</item>
+		<item>Option nicht leere Zeilen zu zitieren.</item>
+		<item>Die eigene Adresse wird beim Antworten an mehrere Empfänger entfernt.</item>
+		<item>STARTTTLS wurde entsprechend den Hinweisen von  Jörg Strohmayer verändert.</item>
+		<item>Jeder Folder kann einen voreingestellten Empfänger haben..</item>
+		<item>Import von YAM-Adressbüchern ist nun möglich.</item>
+		<item>Unterstützung für CC im Composefenster hinzugefügt.</item>
+	  </list>
+
+	</text>
+  </entry>
   <entry date="2001/12/13">
 	<text lang="en">
 	  Added a link to a tutorial how to combine SimpleMail with

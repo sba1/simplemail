@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include <datatypes/datatypesclass.h>
+#include <datatypes/pictureclass.h>
 #include <devices/printer.h>
 #include <intuition/icclass.h>
 #include <libraries/mui.h>
@@ -214,6 +215,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 					GA_Width,	_mwidth(obj),
 					GA_Height,	_mheight(obj),
 					ICA_TARGET,	ICTARGET_IDCMP,
+					PDTA_DestMode, PMODE_V43,
 					TAG_DONE);
 
 				AddDTObject(_window(obj), NULL, data->dt_obj, -1);
@@ -295,6 +297,7 @@ STATIC ULONG DataTypes_Show(struct IClass *cl, Object *obj, Msg msg)
 				GA_Width,	_mwidth(obj),
 				GA_Height,	_mheight(obj),
 				ICA_TARGET,	ICTARGET_IDCMP,
+				PDTA_DestMode, PMODE_V43,
 				TAG_DONE);
 
 		AddDTObject(_window(obj), NULL, data->dt_obj, -1);

@@ -250,10 +250,25 @@ static void tcpip_receive_add_pop3(void)
 *******************************************************************/
 static void tcpip_receive_rem_pop3(void)
 {
-	struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	if (tn && !(tn->tn_Flags & TNF_LIST))
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
+	if (treenode && !(treenode->tn_Flags & TNF_LIST))
 	{
-		DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active);
+		struct pop3_server *pop3;
+		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
+		APTR tn = treenode;
+		int pop3_num = 0;
+
+		/* Find out the position of the new selected server in the list */
+		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
+			pop3_num++;
+
+		if ((pop3 = (struct pop3_server*)list_find(&receive_list,pop3_num)))
+		{
+			node_remove(&pop3->node);
+			pop_free(pop3);
+
+			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+		}
 	}
 }
 
@@ -307,8 +322,8 @@ static int init_tcpip_receive_group(void)
 
 	if (!tcpip_receive_group) return 0;
 
-	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_add_pop3);
-	DoMethod(rem, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_rem_pop3);
+	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_add_pop3);
+	DoMethod(rem, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_rem_pop3);
 	return 1;
 }
 

@@ -65,7 +65,7 @@ void callback_read_mail(void)
 void callback_delete_mails(void)
 {
 	struct folder *from_folder = main_get_folder();
-	if (from_folder != folder_deleted())
+	if (from_folder && from_folder != folder_deleted())
 	{
 		void *handle;
 		struct mail *mail = main_get_mail_first_selected(&handle);

@@ -25,6 +25,7 @@
 
 #include "addressbookwnd.h"
 #include "composewnd.h"
+#include "configwnd.h"
 #include "gui_main.h"
 #include "mainwnd.h"
 #include "readwnd.h"
@@ -142,6 +143,12 @@ void callback_send_mails(void)
 void callback_addressbook(void)
 {
 	addressbook_open();
+}
+
+/* Open the configuration window */
+void callback_config(void)
+{
+	open_config();
 }
 
 /* a new folder has been activated */

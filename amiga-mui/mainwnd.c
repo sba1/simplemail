@@ -55,6 +55,7 @@ static Object *button_change;
 static Object *button_new;
 static Object *button_reply;
 static Object *button_abook;
+static Object *button_config;
 static Object *tree_folder, *tree_mail;
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
@@ -197,6 +198,7 @@ int main_window_init(void)
 				Child, button_fetch = MakeButton("_Fetch Mails"),
 				Child, button_send = MakeButton("_Send Mails"),
 				Child, button_abook = MakeButton("_Addressbook"),
+				Child, button_config = MakeButton("_Config"),
 				End,
 			Child, HGroup,
 				Child, NListviewObject,
@@ -232,6 +234,7 @@ int main_window_init(void)
 		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
 		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
+		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
 		DoMethod(tree_mail, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
 		DoMethod(tree_mail, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
 		DoMethod(tree_folder, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);

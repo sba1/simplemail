@@ -34,6 +34,7 @@
 #include "lists.h"
 #include "filter.h"
 #include "folder.h"
+#include "parse.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support.h"
@@ -1932,18 +1933,6 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 								while (!take && rule->u.from.from[i])
 									take = !!utf8stristr(m->from_phrase,rule->u.from.from[i++]);
 							}
-
-							if (!take)
-							{
-								struct header *header = mail_find_header(m, "From");
-								if (header)
-								{
-									/* Should be decoded first! */
-									i = 0;
-									while (!take && rule->u.from.from[i])
-										take = !!utf8stristr(header->contents,rule->u.from.from[i++]);
-								}
-							}
 						}
 						break;
 
@@ -1958,14 +1947,21 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 			case	RULE_HEADER_MATCH:
 						{
-							struct header *header = mail_find_header(m,rule->u.header.name);
-							if (header)
+							struct header *header;
+
+							mail_read_header_list_if_empty(m);
+
+							if ((header = mail_find_header(m,rule->u.header.name)))
 							{
-								if (rule->u.header.contents)
+								char *cont = NULL;
+								parse_text_string(header->contents, &cont);
+
+								if (cont)
 								{
 									int i = 0;
 									while (!take && rule->u.header.contents[i])
-										take = !!mystristr(header->contents,rule->u.header.contents[i++]);
+										take = !!mystristr(cont,rule->u.header.contents[i++]);
+									free(cont);
 								}
 							}
 						}
@@ -2030,6 +2026,10 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 {
 	void *handle = NULL;
 	struct mail *m;
+	char path[512];
+
+	getcwd(path, sizeof(path));
+	if(chdir(folder->path) == -1) return 0;
 
 	for (;;)
 	{
@@ -2052,6 +2052,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 			}
 		}
 	}
+	chdir(path);
 	return 1;
 }
 
@@ -2062,6 +2063,10 @@ int folder_filter(struct folder *folder)
 {
 	void *handle = NULL;
 	struct mail *m;
+	char path[512];
+
+	getcwd(path, sizeof(path));
+	if(chdir(folder->path) == -1) return 0;
 
 	for (;;)
 	{
@@ -2084,6 +2089,7 @@ int folder_filter(struct folder *folder)
 			}
 		}
 	}
+	chdir(path);
 	return 1;
 }
 

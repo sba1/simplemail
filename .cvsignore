@@ -30,3 +30,6 @@ aclocal.m4
 autom4te.cache
 config.h.in
 simplemail
+SimpleMail
+SimpleMail.debug
+ppc-amigaos-objs

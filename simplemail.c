@@ -743,6 +743,27 @@ void callback_check_selected_folder_for_spam(void)
 	void *handle = NULL;
 	struct mail *m;
 
+	int spams = spam_num_of_spam_classified_mails();
+	int hams = spam_num_of_ham_classified_mails();
+
+	if (spams < 500 || hams < 500)
+	{
+		char *which_txt;
+
+		if (spams < 500)
+		{
+			if (hams < 500) which_txt = _("spam and ham");
+			else which_txt = _("spam");
+		} else which_txt = _("ham");
+		
+		if (!(sm_request(NULL,_("Currently there are too few mails classified as %s.\nStatistical spam identification works only reliable if you classify\n"
+											"enough mails before.\n"
+											"500 mails for both classes are considered enough, but the more\nyou classify the better it works.\n\n"
+											"Number of mails classified as spam (bad mails): %d\n"
+											"Number of mails classified as ham (good mails): %d\n\nContinue to try to look for spam mails?"),
+										_("_Look for spam mails|_Cancel"),which_txt,spams,hams))) return;
+	}
+
 	app_busy();
 
 	while ((m = folder_next_mail(folder, &handle)))
@@ -825,7 +846,10 @@ void callback_classify_selected_folder_as_ham(void)
 
 	while ((m = folder_next_mail(folder,&handle)))
 	{
-		spam_feed_mail_as_ham(folder,m);
+		if (!(mail_is_spam(m) || (m->flags & MAIL_FLAGS_AUTOSPAM)))
+		{
+			spam_feed_mail_as_ham(folder,m);
+		}
 	}
 
 	app_unbusy();

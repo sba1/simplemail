@@ -39,7 +39,6 @@ struct imap_server
 	int active;
 };
 
-int imap_dl_headers(struct list *imap_list);
 int imap_synchronize(struct list *imap_list, int called_by_auto);
 
 struct imap_server *imap_malloc(void);

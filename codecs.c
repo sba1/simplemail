@@ -271,7 +271,7 @@ static int get_noencode_str(unsigned char *buf)
 				word_start = buf; /* a new word starts */
 				space = 0;
 			}
-			if (c > 127 || c == '=' || c == '?')
+			if (c < 32 || c > 127 || (c == '=' && *(buf+1) == '?'))
 			{
 				return word_start - buf_start;
 			}

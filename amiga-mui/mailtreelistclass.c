@@ -523,7 +523,11 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							{
 								struct mail *m2;
 								DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
-								if (m == m2) break;
+								if (m == m2)
+								{
+									set(obj,MUIA_NList_Active,i);
+									break;
+								}
 							}
 #endif
 						}

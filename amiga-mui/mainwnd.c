@@ -479,6 +479,8 @@ int main_window_init(void)
 		MENU_FOLDER_FETCH,
 		MENU_FOLDER_EXPORT,
 		MENU_FOLDER_CHECKSINGLEACCOUNT,
+		MENU_FOLDER_SPAMCHECK,
+		MENU_FOLDER_MOVESPAM,
 		MENU_MESSAGE_NEW,
 		MENU_MESSAGE_REPLY,
 		MENU_MESSAGE_FORWARD,
@@ -507,7 +509,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_SEND},
-			{NM_ITEM, N_("F:Fetch mails..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
+		{NM_ITEM, N_("F:Check all active accounts..."), NULL, 0, 0, (APTR)MENU_FOLDER_FETCH},
 		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_FOLDER_CHECKSINGLEACCOUNT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
@@ -519,6 +521,9 @@ int main_window_init(void)
 		{NM_ITEM, N_("Export..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
 		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
+		{NM_ITEM, N_("Move spam marked mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
@@ -691,7 +696,7 @@ int main_window_init(void)
 			es.es_TextFormat = _("SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\nIt's available from %s");
 			es.es_GadgetFormat = _("Ok");
 			
-	 	EasyRequest(NULL,&es,NULL,18,12,"http://home.t-online.de/home/sebauer/");
+	 	EasyRequest(NULL,&es,NULL,18,12,"http://www.sebastianbauer.info/");
 	 	MUI_DisposeObject(win_main);
 	 	win_main = NULL;
 	 	return 0;
@@ -728,6 +733,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
@@ -1064,7 +1071,7 @@ void main_build_accounts(void)
 				utf8tostr(account->account_name, buf, sizeof(buf), user.config.default_codeset);
 			} else if (account->pop->login)
 			{
-				sprintf(buf,"%s@%s",account->pop->login,account->pop->name);
+				sm_snprintf(buf,sizeof(buf),"%s@%s...",account->pop->login,account->pop->name);
 			} else strcpy(buf,account->pop->name);
 
 			entry = MenuitemObject,
@@ -1080,7 +1087,7 @@ void main_build_accounts(void)
 
 	if (!i)
 	{
-		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No POP3 Server specified"),	End;
+		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No fetchable account specified"),	End;
 		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 	}
 }

@@ -689,7 +689,7 @@ void init_addressbook(void)
 			entry->email_array = array_add_string(entry->email_array,"henes@biclodon.com");
 			entry->description = mystrdup(_("MorphOS maintainer of SimpleMail"));
 			entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
-			entry->alias = mystrdup(_("Henes"));
+			entry->alias = mystrdup("Henes");
 		}
 	}
 }

@@ -1581,7 +1581,7 @@ char *mail_get_replyto_address(struct mail *mail)
 /**************************************************************************
  Does RFC 2184 stuff
 **************************************************************************/
-void rebuild_parameter_list(struct list *list)
+static void rebuild_parameter_list(struct list *list)
 {
 	struct content_parameter *param;
 
@@ -3114,7 +3114,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 /**************************************************************************
  Put a utf8string correctly for HTML
 **************************************************************************/
-void fputhtmlstr(char *str, FILE *fh)
+static void fputhtmlstr(char *str, FILE *fh)
 {
 	unsigned char c;
 	while ((c = *str))

@@ -23,11 +23,9 @@
 #include <proto/exec.h>
 
 #ifdef __MORPHOS__
-#define USE_INLINE_STDARG
 #include <sys/socket.h>
 #include <net/socketbasetags.h>
 #include <proto/socket.h>
-#undef USE_INLINE_STDARG
 #else
 #ifdef AMITCP_SDK
 #include <amitcp/socketbasetags.h>
@@ -51,6 +49,9 @@
 #include "subthreads_amiga.h"
 
 #ifdef __MORPHOS__
+#ifdef SocketBase
+#undef SocketBase
+#endif
 #define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
 #else
 /* calling FindTask(NULL) below makes problems when compiling */
@@ -157,7 +158,7 @@ int open_ssl_lib(void)
 			if (!InitAmiSSL(AmiSSL_Version,
 					AmiSSL_CurrentVersion,
 					AmiSSL_Revision, AmiSSL_CurrentRevision,
-					AmiSSL_SocketBase, SocketBase,
+					AmiSSL_SocketBase, (ULONG)SocketBase,
 					/*	AmiSSL_VersionOverride, TRUE,*/ /* If you insist */
 					TAG_DONE))
 			{
@@ -221,7 +222,7 @@ long tcp_herrno(void)
 	if(SocketBaseTagList(tags) != 0)
 #else
 	if(SocketBaseTags(
-		SBTM_GETREF(SBTC_HERRNO), &id,
+		SBTM_GETREF(SBTC_HERRNO), (ULONG)&id,
 	TAG_DONE) != 0)
 #endif
 	{

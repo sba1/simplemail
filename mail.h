@@ -156,6 +156,7 @@ struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
 struct mail *mail_find_initial(struct mail *m);
 struct mail *mail_get_root(struct mail *m);
 struct mail *mail_get_next(struct mail *m);
+int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
 char *mail_get_from_address(struct mail *mail);
 char *mail_get_to_address(struct mail *mail);
 char *mail_get_replyto_address(struct mail *mail);

@@ -122,7 +122,7 @@ amigamui:
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS
 
 $(OUT): $(OBJS) amigamui
-	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lc -labox -laboxstubs -lamissl -lexpat -ldebug -o $(OUT).db
+	ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -ldebug -o $(OUT).db
 	ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).db
 	protect $(OUT) +e
 

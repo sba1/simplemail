@@ -47,6 +47,7 @@ char **codesets_supported(void);
 int codesets_init(void);
 void codesets_cleanup(void);
 struct codeset *codesets_find(char *name);
+int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len);
 struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))

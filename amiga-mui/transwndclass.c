@@ -140,7 +140,7 @@ STATIC void transwnd_set_mail_flags(void **args)
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check;
+	Object *gauge1,*gauge2,*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check,*all,*none;
 	
 	obj = (Object *) DoSuperNew(cl, obj,
 				WindowContents, VGroup,
@@ -160,6 +160,8 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 							Child, start = MakeButton(_("_Start")),
 							End,
 						Child, HGroup,
+							Child, all = MakeButton(_("Select All")),
+							Child, none = MakeButton(_("Select None")),
 							Child, MakeLabel(_("Ignore not listed mails")),
 							Child, ignore_check = MakeCheck(_("Ignore not listed mails"),FALSE),
 							Child, HVSpace,
@@ -215,6 +217,8 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD);
 		DoMethod(del, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DELETE);
 		DoMethod(downdel, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD|MAILF_DELETE);
+		DoMethod(all,MUIM_Notify,MUIA_Pressed, FALSE, mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_On, NULL);
+		DoMethod(none,MUIM_Notify,MUIA_Pressed, FALSE, mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_Off, NULL);
 	}
 
 	return((ULONG) obj);
@@ -231,6 +235,10 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	ULONG rc;
 	struct transwnd_Data *data;
 	struct TagItem *tags, *tag;
+
+	char *gauge1_str = NULL;
+	int gauge1_max = -1;
+	int gauge1_val = -1;
 	
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
 		
@@ -243,15 +251,15 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				break;
 				
 			case MUIA_transwnd_Gauge1_Str:	
-				set(data->gauge1, MUIA_Gauge_InfoText, tag->ti_Data);
+				gauge1_str = (char*)tag->ti_Data;
 				break;
 				
 			case MUIA_transwnd_Gauge1_Max:
-				set(data->gauge1, MUIA_Gauge_Max, tag->ti_Data);
+				gauge1_max = tag->ti_Data;
 				break;
 				
 			case MUIA_transwnd_Gauge1_Val:	
-				set(data->gauge1, MUIA_Gauge_Current, tag->ti_Data);
+				gauge1_val = tag->ti_Data;
 				break;
 				
 			case MUIA_transwnd_Gauge2_Str:	
@@ -275,7 +283,16 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				break;
 		}
 	}
-	
+
+	if (gauge1_str || gauge1_max != -1 || gauge1_val != -1)
+	{
+		SetAttrs(data->gauge1,
+					gauge1_str==NULL?TAG_IGNORE:MUIA_Gauge_InfoText, gauge1_str,
+					gauge1_max==-1?TAG_IGNORE:MUIA_Gauge_Max, gauge1_max,
+					gauge1_val==-1?TAG_IGNORE:MUIA_Gauge_Current, gauge1_val,
+					TAG_DONE);
+	}
+
 	rc = DoSuperMethodA(cl, obj, (Msg)msg);
 	if (close)
 	{

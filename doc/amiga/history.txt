@@ -1,3 +1,15 @@
+Version 0.24 (eleventh beta) - releases on 2004/12/24
+   - Mail preview in main window
+   - Outlook Express mail folder import (.dbx files)
+   - New Addressbook with separated groups and contacts
+   - More application icon configuration possibilities (bgol)
+   - ARexx Port improvements:
+      - new command: GETMAILSTAT (bgol)
+      - improved commands: FOLDERINFO (bgol)
+   - Bug fixes and minor other improvements (bgol, henes and me)
+   - First official OS4 release
+   - Merry christmas :)
+
 Version 0.23 (tenth beta) - released on 2004/02/05
   - AppIcon support (bgol)
   - mbox files can be imported to selected folders directly (bgol)

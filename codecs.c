@@ -25,6 +25,15 @@
 #include "mail.h"
 #include "support.h"
 
+/* encoding table for the base64 coding */
+static const char encoding_table[] =
+{
+	'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+	'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+	'0','1','2','3','4','5','6','7','8','9','+','/'
+};
+
+
 /**************************************************************************
  Gets the hexa digit if any (if not it returns 0). Otherwise
  the digit is in *val (only the lower 4 bits get overwritten)
@@ -55,12 +64,6 @@ char *decode_base64(unsigned char *buf, unsigned int len, unsigned int *ret_len)
 		unsigned char *buf_end;
 		int decoded_len = 0;
 
-		static const char encoding_table[] =
-		{
-			'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-			'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-			'0','1','2','3','4','5','6','7','8','9','+','/'
-		};
 		char decoding_table[256];
 
 		unsigned int decode_buf[4];
@@ -336,101 +339,6 @@ char *encode_header_field(char *field_name, char *field_contents)
 	}
 
 	return header;
-
-/*
-	int contents_len;
-	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
-	char *header = NULL;
-	int header_len; /* the length of the whole line */
-	int line_len ; /* the length of the current line */
-	int max_line_len = 72; /* RFC 2047 says it can be 76 */
-
-	int quoted_encoding = 0; /* 1 if current line is encoded */
-	FILE *fh;
-
-	if (!field_contents) field_contents = "";
-	contents_len = strlen(field_contents);
-
-	if ((fh = tmpfile()))
-	{
-		char buf[32]; /* buffer for the encoded chars */
-
-		fprintf(fh, "%s: ",field_name);
-		header_len = line_len = field_len;
-
-		while (contents_len > 0)
-		{
-			int next_len = 1;
-			char *next_str = field_contents;
-			unsigned char c = *field_contents;
-
-			if (c > 127 && !quoted_encoding)
-			{
-				/* put the encoded beginning */
-				max_line_len = 70; /* so that "?=" can be put on the line */
-				sprintf(buf,"=?iso-8859-1?q?=%02lX",c);
-				next_str = buf;
-				next_len = strlen(next_str);
-			}
-
-			if (quoted_encoding && (c > 127 || c == '_' || c == '?' || c == '=' || c == ' '))
-			{
-				sprintf(buf,"=%02lX",c);
-				next_str = buf;
-				next_len = strlen(next_str);
-			}
-
-			if (line_len + next_len > max_line_len)
-			{
-				if (quoted_encoding)
-				{
-					fprintf(fh, "?=\n ");
-					header_len += 4;
-				} else
-				{
-					fprintf(fh, "\n ");
-					header_len += 2;
-				}
-				line_len = 1;
-				quoted_encoding = 0;
-				max_line_len = 72;
-				continue;
-			}
-
-			if (c > 127 && !quoted_encoding)
-			{
-				/* set the flag now so it doesn't conflict with a line end */
-				quoted_encoding = 1;
-			}
-
-			fwrite(next_str,1,next_len,fh);
-
-			header_len += next_len;
-			line_len += next_len;
-
-			contents_len--;
-			field_contents++;
-		}
-
-		if (quoted_encoding)
-		{
-			/* finish the encoding */
-			fprintf(fh, "?=");
-			header_len += 2;
-		}
-
-		if (header_len)
-		{
-	    fseek(fh,0,SEEK_SET);
-			if ((header = (char*)malloc(header_len+1)))
-			{
-				fread(header,1,header_len,fh);
-				header[header_len]=0;
-			}
-		}
-		fclose(fh);
-	}
-	return header;*/
 }
 
 /**************************************************************************
@@ -513,11 +421,173 @@ char *encode_address_field(char *field_name, struct list *address_list)
 }
 
 /**************************************************************************
+ Encodes the given body quoted printable and writes it into fh
+**************************************************************************/
+static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
+{
+	int line_len = 0;
+	while (len > 0)
+	{
+		unsigned char *next_str = buf;
+		unsigned char c = *next_str;
+		char digit_buf[16];
+		int next_len = 1;
+
+		if (c < 33 || c == 61 || c > 126)
+		{
+			sprintf(digit_buf,"=%02lX",c);
+			next_str = digit_buf;
+			next_len = 3;
+		}
+
+		if (line_len + next_len > 75)
+		{
+			if (c != 10) fprintf(fh,"=\n");
+			else fprintf(fh,"\n");
+			line_len = 0;
+		}
+
+		fwrite(next_str,1,next_len,fh);
+		line_len += next_len;
+
+		buf++;
+		len--;
+	}
+}
+
+/**************************************************************************
+ Encodes the given body base64 and writes it into fh
+**************************************************************************/
+static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
+{
+	int line_len = 0;
+	char line_buf[100];
+	while (len > 0)
+	{
+		if (len > 11)
+		{
+			/* could make problems with little endian */
+			unsigned long todecode1 = *((unsigned long*)buf);
+			unsigned long todecode2 = *(((unsigned long*)buf)+1);
+			unsigned long todecode3 = *(((unsigned long*)buf)+2);
+			buf += 12;
+			len -= 12;
+
+			if (line_len >= 76)
+			{
+				line_buf[line_len] = 0;
+				fprintf(fh,"%s\n",line_buf);
+				line_len = 0;
+			}
+
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000)) >> 26];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 6)) >> 20];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 12)) >> 14];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 18)) >> 8];
+
+			todecode1 = (todecode1 << 24)|((todecode2 & 0xffff0000) >> 8);
+
+			if (line_len >= 76)
+			{
+				line_buf[line_len] = 0;
+				fprintf(fh,"%s\n",line_buf);
+				line_len = 0;
+			}
+
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000)) >> 26];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 6)) >> 20];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 12)) >> 14];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 18)) >> 8];
+
+			todecode1 = ((todecode2 & 0x0000ffff) << 16) | ((todecode3 & 0xff000000)>>24);
+
+			if (line_len >= 76)
+			{
+				line_buf[line_len] = 0;
+				fprintf(fh,"%s\n",line_buf);
+				line_len = 0;
+			}
+
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000)) >> 26];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 6)) >> 20];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 12)) >> 14];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 18)) >> 8];
+
+			todecode1 = todecode3 << 8;
+
+			if (line_len >= 76)
+			{
+				line_buf[line_len] = 0;
+				fprintf(fh,"%s\n",line_buf);
+				line_len = 0;
+			}
+
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000)) >> 26];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 6)) >> 20];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 12)) >> 14];
+			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 18)) >> 8];
+		} else
+		{
+			int c1,c2,c3;
+
+			while (len > 0)
+			{
+				c1 = *buf++;
+				len--;
+
+				if (len) c2 = *buf++, len--;
+				else c2 = -1;
+
+				if (len) c3 = *buf++, len--;
+				else c3 = -1;
+
+				if (line_len >= 76)
+				{
+					line_buf[line_len] = 0;
+					fprintf(fh,"%s\n",line_buf);
+					line_len = 0;
+				}
+
+				if (c2 == -1)
+				{
+					line_buf[line_len++] = encoding_table[c1 >> 2];
+					line_buf[line_len++] = encoding_table[((c1 & 0x3) << 4)];
+					line_buf[line_len++] = '=';
+					line_buf[line_len++] = '=';
+				} else
+				{
+					if (c3 == -1)
+					{
+						line_buf[line_len++] = encoding_table[c1 >> 2];
+						line_buf[line_len++] = encoding_table[((c1 & 0x3) << 4) | ((c2 & 0xf0)>>4)];
+						line_buf[line_len++] = encoding_table[((c2 & 0xf) << 2)];
+						line_buf[line_len++] = '=';
+					} else
+					{
+						line_buf[line_len++] = encoding_table[c1 >> 2];
+						line_buf[line_len++] = encoding_table[((c1 & 0x3) << 4) | ((c2 & 0xf0)>>4)];
+						line_buf[line_len++] = encoding_table[((c2 & 0xf) << 2) | ((c3 & 0xc0)>>6)];
+						line_buf[line_len++] = encoding_table[c3 & 0x3F];
+					}
+				}
+			}
+		}
+	}
+
+	if (line_len)
+	{
+		line_buf[line_len] = 0;
+		fprintf(fh,"%s\n",line_buf);
+		line_len = 0;
+	}
+}
+
+/**************************************************************************
  Encodes the given body. The encoded buffer is allocated with malloc(),
  the length is stored in *ret_len and the used transfer encoding in
  *encoding (MIME Content-Transfer-Encoding)
 **************************************************************************/
-char *encode_body(unsigned char *buf, unsigned int len, unsigned int *ret_len, char **encoding)
+char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, char **encoding)
 {
 	char *body = NULL;
 	FILE *fh;
@@ -525,45 +595,24 @@ char *encode_body(unsigned char *buf, unsigned int len, unsigned int *ret_len, c
 	if ((fh = tmpfile()))
 	{
 		int body_len;
-		int line_len = 0;
-		while (len > 0)
+
+		if (!mystricmp(content_type,"text/plain"))
 		{
-			unsigned char *next_str = buf;
-			unsigned char c = *next_str;
-			char digit_buf[16];
-			int next_len = 1;
-
-			if (c < 33 || c == 61 || c > 126)
-			{
-				sprintf(digit_buf,"=%02lX",c);
-				next_str = digit_buf;
-				next_len = 3;
-			}
-
-			if (line_len + next_len > 75)
-			{
-				if (c != 10) fprintf(fh,"=\n");
-				else fprintf(fh,"\n");
-				line_len = 0;
-			}
-
-			fwrite(next_str,1,next_len,fh);
-			line_len += next_len;
-
-			buf++;
-			len--;
+			encode_body_quoted(fh,buf,len);
+			*encoding = "quoted-printable";
+		} else
+		{
+			encode_body_base64(fh,buf,len);
+			*encoding = "base64";
 		}
 
-		if ((body_len = ftell(fh)))
+		body_len = ftell(fh);
+	  fseek(fh,0,SEEK_SET);
+		if ((body = (char*)malloc(body_len+1)))
 		{
-	    fseek(fh,0,SEEK_SET);
-			if ((body = (char*)malloc(body_len+1)))
-			{
-				fread(body,1,body_len,fh);
-				body[body_len] = 0;
-				*ret_len = body_len;
-				*encoding = "quoted-printable";
-			}
+			fread(body,1,body_len,fh);
+			body[body_len] = 0;
+			*ret_len = body_len;
 		}
 		fclose(fh);
 	}

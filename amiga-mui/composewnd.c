@@ -211,7 +211,7 @@ static void compose_add_files(struct Compose_Data **pdata)
 				STRPTR drawer = NameOfLock(data->file_req->fr_ArgList[i].wa_Lock);
 				if (drawer)
 				{
-					int len = strlen(drawer)+strlen(data->file_req->fr_ArgList[i].wa_Name + 4);
+					int len = strlen(drawer)+strlen(data->file_req->fr_ArgList[i].wa_Name)+4;
 					STRPTR buf = (STRPTR)AllocVec(len,MEMF_PUBLIC);
 					if (buf)
 					{
@@ -240,7 +240,7 @@ static void compose_attach_active(struct Compose_Data **pdata)
 	struct MUI_NListtree_TreeNode *activenode = (struct MUI_NListtree_TreeNode *)xget(data->attach_tree, MUIA_NListtree_Active);
 	struct attachment *attach = NULL;
 
-	if (data->last_attachment)
+	if (data->last_attachment && data->last_attachment->editable)
 	{
 		/* Try if the attachment is still in the list (could be not the case if removed) */
 		struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(data->attach_tree, data->last_attachment);
@@ -316,6 +316,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 	{
 		cmail->content_type = mystrdup(attach->content_type);
 		cmail->text = mystrdup(attach->contents);
+		cmail->filename = mystrdup(attach->filename);
 	}
 }
 

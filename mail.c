@@ -36,7 +36,8 @@ const static char mime_preample[] =
 	"Warning: This is a message in MIME format. Your mail reader does not\n"
 	"support MIME. Some parts of this message will be readable as plain text.\n"
 	"To see the rest, you will need to upgrade your mail reader. Following are\n"
-	"some URLs where you can find MIME-capable mail programs for common platforms:\n"
+	"some URLs where you can find MIME-capable mail programs for common\n"
+	"platforms:\n"
 	"\n"
 	"  Amiga............: SimpleMail   http://www.simplemail.sourceforge.net/\n"
 	"  Unix.............: Metamail     ftp://ftp.bellcore.com/nsb/\n"
@@ -870,6 +871,8 @@ void composed_mail_init(struct composed_mail *mail)
 **************************************************************************/
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 {
+	struct composed_mail *cmail;
+
 	if (new_mail->to)
 	{
 		char *subject;
@@ -897,43 +900,70 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		}
 	}
 
-	if (new_mail->text)
+	if ((cmail = (struct composed_mail *)list_first(&new_mail->list)))
 	{
-		/* mail text */
-		unsigned int body_len;
-		char *body_encoding;
-		char *body = encode_body(new_mail->text, strlen(new_mail->text), &body_len, &body_encoding);
+		/* mail is a multipart message */
+		char *boundary = (char*)malloc(128);
+		if (boundary)
+		{
+			sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
+			fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
+			fprintf(fp, "\n");
+			fprintf(fp, mime_preample);
 
-		fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
-		fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
-		fprintf(fp,"\n");
-		fprintf(fp,"%s\n",body);
+			while (cmail)
+			{
+				fprintf(fp, "--%s\n",boundary);
+				mail_compose_write(fp,cmail);
+				cmail = (struct composed_mail*)node_next(&cmail->node);
+			}
+
+			fprintf(fp, "--%s\n",boundary);
+
+			free(boundary);
+		}
 	} else
 	{
-		struct composed_mail *cmail = (struct composed_mail *)list_first(&new_mail->list);
-		if (cmail)
+		unsigned int body_len;
+		char *body_encoding;
+		char *body = NULL;
+
+		if (new_mail->text)
 		{
-			/* mail is a multipart message */
-			char *boundary = (char*)malloc(128);
-			if (boundary)
+			/* mail text */
+			body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
+			fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
+		} else
+		{
+			fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
+			if (new_mail->filename)
 			{
-				sprintf(boundary, "--==bound%lx%lx----",boundary,ftell(fp));
-				fprintf(fp, "Content-Type: %s; boundary=\"%s\"\n", new_mail->content_type,boundary);
-				fprintf(fp, "\n");
-				fprintf(fp, mime_preample);
-
-				while (cmail)
+				FILE *fh = fopen(new_mail->filename, "rb");
+				if (fh)
 				{
-					fprintf(fp, "--%s\n",boundary);
-					mail_compose_write(fp,cmail);
-					cmail = (struct composed_mail*)node_next(&cmail->node);
+					int size;
+					unsigned char *buf;
+
+					fseek(fh,0,SEEK_END);
+					size = ftell(fh);
+					fseek(fh,0,SEEK_SET);
+
+					if ((buf = (char*)malloc(size)))
+					{
+						fread(buf,1,size,fh);
+						body = encode_body(buf, size, new_mail->content_type, &body_len, &body_encoding);
+						free(buf);
+					}
+					fclose(fh);
 				}
-
-				fprintf(fp, "--%s\n",boundary);
-
-				free(boundary);
 			}
 		}
+
+		fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+		fprintf(fp,"\n");
+		fprintf(fp,"%s\n",body?body:"");
+
+		if (body) free(body);
 	}
 }
 

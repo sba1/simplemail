@@ -50,5 +50,5 @@
         $visited = 0;
     } else $visited = 1;
 
-	$hits = counterWrite("hits.txt", $visited == 0);
+	$hits = counterWrite("hits/hits.txt", $visited == 0);
 ?>

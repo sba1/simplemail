@@ -640,7 +640,7 @@ static void callback_new_mail_arrived(struct mail *mail, struct folder *folder)
 		}
 	}
 
-	main_refresh_folder(folder_incoming());
+	main_refresh_folder(folder);
 }
 
 struct export_data

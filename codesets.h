@@ -36,6 +36,7 @@ struct codeset
 {
 	struct node node;
 	char *name;
+	char *characterization;
 	struct single_convert table[256];
 	struct single_convert table_sorted[256];
 };

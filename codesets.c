@@ -27,6 +27,7 @@
 #include "codesets.h"
 #include "codesets_table.h"
 #include "lists.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 /* from ConvertUTF.h */
@@ -725,6 +726,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
 	codeset->name = mystrdup("ISO-8859-1");
+	codeset->characterization = mystrdup(_("West European"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -743,6 +745,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-2");
+	codeset->characterization = mystrdup(_("Central/East European"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -762,6 +765,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-3");
+	codeset->characterization = mystrdup(_("South European"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -781,6 +785,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-4");
+	codeset->characterization = mystrdup(_("North European"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -800,6 +805,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-5");
+	codeset->characterization = mystrdup(_("Slavic languages"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -819,6 +825,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("ISO-8859-15");
+	codeset->characterization = mystrdup(_("West European (with EURO)"));
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -838,6 +845,7 @@ int codesets_init(void)
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
 	codeset->name = mystrdup("AmigaPL");
+	codeset->characterization = mystrdup("AmigaPL");
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;

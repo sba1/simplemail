@@ -40,6 +40,7 @@ char *mystrcat(char *str1, char *str2);
 unsigned int myfsize(FILE *file);
 int myfiledatecmp(char *file1, char *file2);
 int myfilecopy(const char *sourcename, const char *destname);
+int mydeletedir(const char *path);
 
 void wrap_text(char *text, int border);
 

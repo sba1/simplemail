@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <dirent.h> /* dir stuff */
 #if 0   /* FIXME */
 #include <stat.h>
 #endif
@@ -301,9 +302,52 @@ int myfilecopy(const char *sourcename, const char *destname)
 }
 
 /******************************************************************
- 
+ Delete a given directory and all its contents
 *******************************************************************/
+int mydeletedir(const char *path)
+{
+	DIR *dfd; /* directory descriptor */
+	struct dirent *dptr; /* dir entry */
+	struct stat *st;
+	char *buf;
 
+	if (!(buf = malloc(512))) return 0;
+	if (!(st = malloc(sizeof(struct stat))))
+	{
+		free(buf);
+		return 0;
+	}
+
+	if ((dfd = opendir(path)))
+	{
+		while ((dptr = readdir(dfd)) != NULL)
+		{
+			if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+
+			strncpy(buf,path,511);
+			buf[511]=0;
+			sm_add_part(buf,dptr->d_name,512);
+
+			if (!stat(buf,st))
+			{
+				if (st->st_mode & S_IFDIR)
+				{
+					mydeletedir(buf);
+				} else
+				{
+					remove(buf);
+				}
+			}
+		}
+		closedir(dfd);
+	}
+
+	free(st);
+	free(buf);
+
+	remove(path);
+	return 1;
+}
 
 /**************************************************************************
  Wraps a text. Overwrites the argument!!

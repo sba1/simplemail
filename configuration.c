@@ -188,7 +188,10 @@ int load_config(void)
 					{
 						char *result;
 
-						SM_DEBUGF(15,("Parsing config string: \"%s\"\n",buf));
+						if (!strstr(buf,"Password"))
+						{
+							SM_DEBUGF(15,("Parsing config string: \"%s\"\n",buf));
+						}
 
 						if ((result = get_config_item(buf,"UTF8")))
 							utf8 = atoi(result);

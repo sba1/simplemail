@@ -49,3 +49,6 @@ status_signed,669,0,683,0
 status_crypt,685,0,700,7
 status_download,685,9,697,19
 status_mark,702,0,710,10
+status_trashcan,699,12,709,22
+AddAttachment,711,0,731,21
+AttachmentList,733,0,753,19

@@ -35,6 +35,7 @@
 
 #include "amigasupport.h"
 #include "compiler.h"
+#include "support_indep.h"
 
 static ASM void Hookfunc_Date_Write( register __a0 struct Hook *j, register __a1 ULONG c )
 {
@@ -295,6 +296,57 @@ LONG GetControlChar(char *label)
 	if (buf) control_char = ToLower(*(buf+1));
 	else control_char = 0;
 	return control_char;
+}
+
+/* Free all resources allocated in ParseTemplate */
+VOID FreeTemplate(APTR m)
+{
+	ULONG *mem = (ULONG*)m;
+	if(mem)
+	{
+		if(mem[2]) FreeArgs((struct RDArgs*)mem[2]);
+		if(mem[1]) FreeVec((APTR)mem[1]);
+		if(mem[0]) FreeDosObject(DOS_RDARGS,(APTR)mem[0]);
+	}
+	FreeVec(mem);
+}
+
+/* Parse a line for a template. Result should be freed via
+   FreeTemplate() */
+APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
+{
+	ULONG *mem = (ULONG*)AllocVec(12,0);
+	if(mem)
+	{
+		struct RDArgs *rdargs = (struct RDArgs*)AllocDosObject(DOS_RDARGS,NULL);
+		if((mem[0] = (ULONG)rdargs))
+		{
+			LONG len = mystrlen(line)+2;
+			STRPTR buf = (STRPTR)AllocVec(len,0);
+
+			if((mem[1] = (ULONG)buf))
+			{
+				struct RDArgs *rd;
+
+				if (line) strcpy(buf,line);
+				buf[len-2]=10;
+				buf[len-1]=0;
+	
+				rdargs->RDA_Buffer = NULL;
+				rdargs->RDA_Source.CS_Buffer = buf;
+				rdargs->RDA_Source.CS_Length = strlen(buf);
+				rdargs->RDA_Source.CS_CurChr = 0;
+		
+				rd = ReadArgs(temp,(LONG*)results, rdargs );
+				if((mem[2] = (ULONG)rd))
+				{
+					return mem;
+				}
+			}
+		}
+	}
+	FreeTemplate(mem);
+	return NULL;
 }
 
 LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)

@@ -43,6 +43,8 @@
 static struct list group_list;
 static struct list address_list;
 
+static struct list yamimport_group_list;
+
 static void snailphonecpy(struct address_snail_phone *dest, struct address_snail_phone *src);
 static void freesnailphone(struct address_snail_phone *dest);
 
@@ -74,7 +76,10 @@ struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *
 
 	memset(grp,0,sizeof(struct addressbook_group));
 	if ((grp->name = mystrdup(srcgrp->name)))
+	{
+		grp->description = mystrdup(srcgrp->description);
 		return grp;
+	}
 	free(grp);
 	return NULL;
 }
@@ -86,6 +91,7 @@ void addressbook_free_group(struct addressbook_group *grp)
 {
 	if (!grp) return;
 	free(grp->name);
+	free(grp->description);
 	free(grp);
 }
 
@@ -602,13 +608,20 @@ void init_addressbook(void)
 		}
 	}
 
-	if (!addressbook_find_entry_by_address("bgollesch@sime.com"))
+	if (!addressbook_find_entry_by_address("bgollesch@sime.at"))
 	{
-		if ((entry = addressbook_add_entry("Bernd Gollesch")))
+		if (entry = addressbook_find_entry_by_address("bgollesch@sime.com"))
 		{
-			entry->email_array = array_add_string(entry->email_array,"bgollesch@sime.com");
-			entry->description = mystrdup(_("Contributor of SimpleMail"));
-			entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			array_free(entry->email_array);
+			entry->email_array = array_add_string(NULL,"bgollesch@sime.at");
+		} else
+		{
+			if ((entry = addressbook_add_entry("Bernd Gollesch")))
+			{
+				entry->email_array = array_add_string(entry->email_array,"bgollesch@sime.at");
+				entry->description = mystrdup(_("Contributor of SimpleMail"));
+				entry->group_array = array_add_string(entry->group_array, "SimpleMail Developer");
+			}
 		}
 	}
 
@@ -725,6 +738,7 @@ static int yam_import_entries(FILE *fp)
 	{
 		if (strncmp(line, "@USER", 5) == 0)
 		{
+			struct addressbook_group *grp;
 			struct addressbook_entry_new *newperson;
 			if ((newperson = addressbook_add_entry(NULL)))
 			{
@@ -770,23 +784,40 @@ static int yam_import_entries(FILE *fp)
 					if (!strncmp(line, "@ENDUSER", 8)) break;
 				}
 
-				newperson->group_array = array_add_string(newperson->group_array,Q_("?addressbook:YAM Imports"));
+				/* Add YAM import groups to the person */
+				grp = (struct addressbook_group*)list_first(&yamimport_group_list);
+				while (grp)
+				{
+					/* Add YAM import group to the addressbook, if not already done */
+					if (!addressbook_find_group_by_name(grp->name))
+						addressbook_add_group_duplicate(grp);
+					newperson->group_array = array_add_string(newperson->group_array,grp->name);
+					grp = (struct addressbook_group*)node_next(&grp->node);
+				}
 
-				/* Add YAM imports group if not already done */
-				if (!addressbook_find_group_by_name(Q_("?addressbook:YAM Imports")))
-					addressbook_add_group(Q_("?addressbook:YAM Imports"));
 			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{
-/*			struct addressbook_entry *newgroup = addressbook_new_group(group);
+			struct addressbook_group *newgroup = malloc(sizeof(struct addressbook_group));
 
-			newgroup->alias = striplr(utf8create(line + 7, charset));
+			/* Add the group to the YAM import group list */
+			memset(newgroup,0,sizeof(struct addressbook_group));
+			if (newgroup)
+			{
+				newgroup->name = striplr(utf8create(line + 7, charset));
 
-			if (!fgets(line,sizeof(line),fp)) return 0;
-			newgroup->description = striplr(utf8create(line, charset));*/
+				if (fgets(line,sizeof(line),fp))
+					newgroup->description = striplr(utf8create(line, charset));
 
-			/* call recursivly, loading groups is not supported as the addressbooks differ to much */
+				list_insert_tail(&yamimport_group_list,&newgroup->node);
+			}
 			rc = yam_import_entries(fp);
+			if (newgroup)
+			{
+				/* remove the group from the YAM import group list */
+				list_remove_tail(&yamimport_group_list);
+				addressbook_free_group(newgroup);
+			}
 		}
 
 		if (!fgets(line,sizeof(line),fp)) return 0;
@@ -806,8 +837,33 @@ int addressbook_import_yam(char *filename)
 	fp = fopen(filename, "r");
 	if (fp != NULL)
 	{
+		struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
+
+		/* build a temporary YAM Import group list */
+		list_init(&yamimport_group_list);
+		if (grp)
+		{
+			memset(grp,0,sizeof(struct addressbook_group));
+			if ((grp->name = mystrdup(Q_("?addressbook:YAM Imports"))))
+			{
+				list_insert_tail(&yamimport_group_list,&grp->node);
+			} else
+			{
+				free(grp);
+			}
+		}
+
 		rc = yam_import_entries(fp);
 		fclose(fp);
+
+		/* Free the temporary YAM Import group list */
+		grp = (struct addressbook_group*)list_first(&yamimport_group_list);
+		while (grp)
+		{
+			addressbook_free_group(grp);
+			grp = (struct addressbook_group*)node_next(&grp->node);
+		}
+
 	}
 
 	return rc;

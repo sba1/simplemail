@@ -413,9 +413,12 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 			parse_date(msg->Date,&day,&month,&year,&hour,&min,&sec,&gmt);
 			entry->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
 
-			parse_text_string(msg->Subject, &utf8subject);
-			entry->subject = utf8tostrcreate(utf8subject,user.config.default_codeset);
-			free(utf8subject);
+			if (msg->Subject)
+			{
+				parse_text_string(msg->Subject, &utf8subject);
+				entry->subject = utf8tostrcreate(utf8subject,user.config.default_codeset);
+				free(utf8subject);
+			}
 
 			DoMethod(data->mail_list,MUIM_NList_Redraw,i);
 			return NULL;

@@ -1496,7 +1496,7 @@ struct mail *mail_create_forward(int num, struct mail **mail_array)
 /**************************************************************************
  Extract the name of a given address (and looks for matches in the
  addressbook). If more than one e-mail address is specified, *more_prt
- will be set to 1.
+ will be set to 1. addr maybe NULL.
 **************************************************************************/
 int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
 {
@@ -1701,9 +1701,11 @@ int mail_process_headers(struct mail *mail)
 			mail->flags |= MAIL_FLAGS_GROUP;
 		} else if (!mystricmp("subject",header->name))
 		{
-			parse_text_string(buf,&mail->subject);
+			if (buf) parse_text_string(buf,&mail->subject);
+			else mail->subject = mystrdup("");
+
 			/* for display optimization */
-			if (isascii7(mail->subject)) mail->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
+			if (mail->subject && isascii7(mail->subject)) mail->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
 		} else if (!mystricmp("received",header->name))
 		{
 			if (buf = strchr(buf,';'))

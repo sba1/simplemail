@@ -3004,15 +3004,18 @@ int mail_matches_filter(struct folder *folder, struct mail *m,
 
 							if ((header = mail_find_header(m,rule->u.header.name)))
 							{
-								char *cont = NULL;
-								parse_text_string(header->contents, &cont);
-
-								if (cont)
+								if (header->contents)
 								{
-									int i = 0;
-									while (!take && rule->u.header.contents[i])
-										take = !!mystristr(cont,rule->u.header.contents[i++]);
-									free(cont);
+									char *cont = NULL;
+									parse_text_string(header->contents, &cont);
+
+									if (cont)
+									{
+										int i = 0;
+										while (!take && rule->u.header.contents[i])
+											take = !!mystristr(cont,rule->u.header.contents[i++]);
+										free(cont);
+									}
 								}
 							}
 						}

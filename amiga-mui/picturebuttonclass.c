@@ -253,7 +253,7 @@ STATIC ULONG PictureButton_Draw(struct IClass *cl,Object *obj,struct MUIP_Draw *
 							{
 								SetSoftStyle(rp,FSF_UNDERLINED,AskSoftStyle(rp));
 								Text(rp,uptr+1,1);
-								SetSoftStyle(rp,FS_NORMAL,AskSoftStyle(rp));
+								SetSoftStyle(rp,FS_NORMAL,0xffff);
 								Text(rp,uptr+2,strlen(uptr+2));
 							}
 						}

@@ -776,35 +776,38 @@ struct mail *mail_create_from_file(char *filename)
 
 	if ((m = mail_create()))
 	{
+		unsigned int size = ~0;
+
 		if ((fh = fopen(filename,"rb")))
 		{
-			unsigned int size;
 			char *buf;
 
 			size = myfsize(fh); /* get the size of the file */
 	
-			if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
+			if (size) /* empty mails are no mails */
 			{
-				if ((m->filename = strdup(filename))) /* Not ANSI C */
+				if ((buf = (char*)malloc(2048))) /* a small buffer to test the the new functions */
 				{
-					struct mail_scan ms;
-					unsigned int bytes_read = 0;
-
-					m->size = size;
-
-					mail_scan_buffer_start(&ms,m,0);
-
-					while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
+					if ((m->filename = mystrdup(filename))) /* Not ANSI C */
 					{
-						if (!mail_scan_buffer(&ms,buf,bytes_read))
-							break; /* we have enough */
-					}
+						struct mail_scan ms;
+						unsigned int bytes_read = 0;
 
-					mail_scan_buffer_end(&ms);
-					mail_process_headers(m);
-					mail_identify_status(m);
+						m->size = size;
+						mail_scan_buffer_start(&ms,m,0);
+
+						while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
+						{
+							if (!mail_scan_buffer(&ms,buf,bytes_read))
+								break; /* we have enough */
+						}
+
+						mail_scan_buffer_end(&ms);
+						mail_process_headers(m);
+						mail_identify_status(m);
+					}
+					free(buf);
 				}
-				free(buf);
 			}
 	
 			fclose(fh);
@@ -812,6 +815,12 @@ struct mail *mail_create_from_file(char *filename)
 		{
 			free(m);
 			return NULL;
+		}
+
+		if (!size)
+		{
+			/* we remove files with a size of 0 */
+			remove(filename);
 		}
 	}
 	return m;

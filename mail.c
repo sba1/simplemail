@@ -2441,10 +2441,12 @@ void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr)
 }
 
 /**************************************************************************
- frees all memory associated with a mail info
+ frees all memory associated with a mail info. Accepts NULL
 **************************************************************************/
 void mail_info_free(struct mail_info *info)
 {
+	if (!info) return;
+
 	free(info->from_phrase);
 	free(info->from_addr);
 	free(info->to_phrase);
@@ -2453,9 +2455,9 @@ void mail_info_free(struct mail_info *info)
 	if (info->cc_list) free_address_list(info->cc_list);
 	free(info->reply_addr);
 	free(info->pop3_server);
-	if (info->message_id) free(info->message_id);
-	if (info->message_reply_id) free(info->message_reply_id);
-	if (info->filename) free(info->filename);
+	free(info->message_id);
+	free(info->message_reply_id);
+	free(info->filename);
 }
 
 /**************************************************************************
@@ -2482,7 +2484,6 @@ void mail_complete_free(struct mail_complete *mail)
 		mail_complete_free(mail->multipart_array[i]); /* recursion */
 	}
 
-
 	if (mail->extra_text) free(mail->extra_text);
 
 	if (mail->content_charset) free(mail->content_charset);
@@ -2493,7 +2494,8 @@ void mail_complete_free(struct mail_complete *mail)
 
 	if (mail->decoded_data) free(mail->decoded_data);
 
-	if (mail->info->filename && mail->text) free(mail->text);
+	/* TODO: Check if mail->text must be freed even if mail->info == NULL */
+	if (mail->info && mail->info->filename && mail->text) free(mail->text);
 
 	mail_info_free(mail->info);
 	free(mail);

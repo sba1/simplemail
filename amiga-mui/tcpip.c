@@ -19,7 +19,8 @@
 ** tcpip.c
 */
 
-#include "proto/exec.h"
+#include <proto/exec.h>
+
 #include "tcpip.h"
 
 struct Library *SocketBase;

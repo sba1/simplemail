@@ -768,6 +768,7 @@ struct mail *main_get_mail_first_selected(void *handle)
 	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
 	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
+	if ((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name) return main_get_mail_next_selected(handle);
 	if (treenode) return (struct mail*)treenode->tn_User;
 	return NULL;
 }
@@ -778,10 +779,14 @@ struct mail *main_get_mail_first_selected(void *handle)
 *******************************************************************/
 struct mail *main_get_mail_next_selected(void *handle)
 {
-	struct MUI_NListtree_TreeNode *treenode = *((struct MUI_NListtree_TreeNode **)handle);
-	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
-	if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
-	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
+	struct MUI_NListtree_TreeNode *treenode;
+	do
+	{
+		treenode = *((struct MUI_NListtree_TreeNode **)handle);
+		DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
+		if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
+		*((struct MUI_NListtree_TreeNode **)handle) = treenode;
+	} while((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name);
 	return (struct mail*)treenode->tn_User;
 }
 
@@ -827,6 +832,8 @@ void main_remove_mails_selected(void)
 
 		for (i=0;i<j;i++)
 		{
+			if ((ULONG)array[i]->tn_User == MUIV_MailTreelist_UserData_Name) continue;
+
 			if (array[i]->tn_Flags & TNF_LIST)
 			{
 				struct MUI_NListtree_TreeNode *node = (struct MUI_NListtree_TreeNode *)

@@ -45,6 +45,7 @@
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "popupmenuclass.h"
 #include "readlistclass.h"
 #include "subthreads.h"
 #include "transwndclass.h"
@@ -112,6 +113,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_popupmenu_class();
 		delete_picturebutton_class();
 		delete_simplehtml_class();
 		delete_composeeditor_class();
@@ -145,7 +147,8 @@ int all_init(void)
 				create_addressstring_class() && create_attachmentlist_class() &&
 				create_datatypes_class() && create_transwnd_class() &&
 				create_readlist_class() && create_composeeditor_class() &&
-				create_simplehtml_class() && create_picturebutton_class())
+				create_simplehtml_class() && create_picturebutton_class() &&
+				create_popupmenu_class())
 		{
 			if (app_init())
 			{

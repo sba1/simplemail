@@ -1491,7 +1491,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	} else
 	{
 		unsigned int body_len;
-		char *body_encoding;
+		char *body_encoding = NULL;
 		char *body = NULL;
 
 		if (new_mail->text)
@@ -1501,11 +1501,11 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
 		} else
 		{
-			fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
 			if (new_mail->filename)
 			{
 				FILE *fh;
 
+				fprintf(fp,"Content-Type: %s\n",new_mail->content_type);
 				fprintf(fp,"Content-Disposition: attachment; filename=%s\n",sm_file_part(new_mail->filename));
 
 				if ((fh = fopen(new_mail->temporary_filename?new_mail->temporary_filename:new_mail->filename, "rb")))
@@ -1528,7 +1528,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			}
 		}
 
-		fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+		if (body_encoding) fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
 		fprintf(fp,"\n");
 		fprintf(fp,"%s\n",body?body:"");
 

@@ -29,8 +29,8 @@ It also needs some additional MUI Custom Classes:
 
 Make sure that you always have the latest versions installed!
 
-History
-~~~~~~~
+Changes since 0.1x
+~~~~~~~~~~~~~~~~~~
 
 Contact
 ~~~~~~~
@@ -47,7 +47,7 @@ Developers are encouraged to take a look at
 if they want to join the project. Also, from here they can submit
 patches, subscribe to the mailing lists or get CVS access.
 
-There is also a mailinglist for users:
+There is also a support mailing list:
 
     http://www.freelists.org/list/simplemail-usr
 
@@ -57,15 +57,7 @@ SimpleMail is (originally) developed by
   Sebastian Bauer <sebauer@t-online.de>    - http://home.t-online.de/home/sebauer/
 
 You can also contact them if you have any questions regarding SimpleMail,
-*but* please use the mailing list(s) if possible.
-
-All the images including the icons were created by
-  Martin Merz <mason.home@t-online.de>
-
-The smiley gfx was created by
-  Richard Kapp <narr.cybersdorf@gmx.net>
-
-Tagline compilation courtesy of Andreas Neumann
+but please use the mailing list if possible.
 
          __
         / /

@@ -3,6 +3,7 @@
 amiga-mui/addressbookwnd.c
 amiga-mui/composewnd.c
 amiga-mui/configwnd.c
+amiga-mui/folderwnd.c
 amiga-mui/readwnd.c
 amiga-mui/mainwnd.c
 amiga-mui/transwndclass.c

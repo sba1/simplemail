@@ -469,11 +469,11 @@ msgstr "Schreiben"
 
 #: amiga-mui/configwnd.c:1274 amiga-mui/configwnd.c:1293
 msgid "Welcome"
-msgstr "Willkommen"
+msgstr "Begrüßung"
 
 #: amiga-mui/configwnd.c:1280
 msgid "Welcome with address"
-msgstr "Willkomen (mit Adresse)"
+msgstr "Begrüßung (mit Anrede)"
 
 #: amiga-mui/configwnd.c:1284 amiga-mui/configwnd.c:1303
 msgid "Close"

@@ -730,7 +730,7 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 				if ((body = malloc(len+1)))
 				{
 					memcpy(body,buf,len); /* faster then strncpy() */
-					buf[len]=0; /* not really necessary */
+					body[len]=0;
 					*ret_len = len;
 				}
 				return body;

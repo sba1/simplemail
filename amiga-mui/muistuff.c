@@ -76,6 +76,19 @@ Object *MakeCycle(STRPTR label, STRPTR * array)
   return (obj);
 }
 
+VOID DisposeAllChilds(Object *o)
+{
+  struct List *child_list = (struct List*)xget(o,MUIA_Group_ChildList);
+  Object *cstate = (Object *)child_list->lh_Head;
+  Object *child;
+
+  while ((child = (Object*)NextObject(&cstate)))
+  {
+    DoMethod(o,OM_REMMEMBER,child);
+    MUI_DisposeObject(child);
+  }
+}
+
 struct Hook hook_standard;
 
 STATIC ASM void hook_func_standard(register __a0 struct Hook *h, register __a1 ULONG * funcptr)

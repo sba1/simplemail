@@ -30,6 +30,7 @@ Object *MakeLabel(STRPTR str);
 Object *MakeButton(STRPTR str);
 Object *MakeCheck(STRPTR label, ULONG check);
 Object *MakeCycle(STRPTR label, STRPTR * array);
+VOID DisposeAllChilds(Object *o);
 
 /* global application object, defined in gui_main.c */
 extern Object *App;

@@ -17,7 +17,7 @@ MKDIR  = mkdir -p
 
 # Change these as required
 OPTIMIZE = -O3
-DEBUG = # -g -DDEBUG
+DEBUG = #-ggdb # -g -DDEBUG
 INC = -I"$(AMISSL_INCLUDE)" -I"$(SDK_INCLUDE)" -I"$(NET_INCLUDE)" -I"$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
 CFLAGS = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\" -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -DCoerceMethod=ICoerceMethod -DDoMethod=IDoMethod -DDoMethodA=IDoMethod -DDoSuperMethod=IDoSuperMethod -DDoSuperMethodA=IDoSuperMethodA -Wall $(OPTIMIZE) $(DEBUG) $(INC)
 
@@ -111,6 +111,7 @@ NONARCHSRCS=\
 	phrase.c \
 	pop3.c \
 	print.c \
+	punycode.c \
 	signature.c \
 	simplemail.c \
 	smintl.c \

@@ -50,4 +50,6 @@ struct imap_server *imap_malloc(void);
 struct imap_server *imap_duplicate(struct imap_server *imap);
 void imap_free(struct imap_server *imap);
 
+void imap_thread_connect(struct folder *folder);
+
 #endif

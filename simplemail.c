@@ -31,6 +31,7 @@
 #include "estimate.h"
 #include "filter.h"
 #include "folder.h"
+#include "imap.h" /* imap_thread_xxx() */
 #include "mail.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -573,6 +574,10 @@ void callback_folder_active(void)
 	struct folder *folder = main_get_folder();
 	if (folder)
 	{
+		if (folder->is_imap)
+		{
+			imap_thread_connect(folder);
+		}
 		main_set_folder_mails(folder);
 	}
 }

@@ -1080,3 +1080,28 @@ void imap_free(struct imap_server *imap)
 	free(imap);
 }
 
+
+/***** IMAP Thread *****/
+
+static thread_t imap_thread;
+
+static void imap_thread_entry(void *test)
+{
+	if (thread_parent_task_can_contiue())
+	{
+		thread_wait(NULL,NULL,0);
+	}
+}
+
+void imap_thread_connect(struct folder *folder)
+{
+	if (!imap_thread)
+	{
+		imap_thread = thread_add("SimpleMail - IMAP thread", THREAD_FUNCTION(&imap_thread_entry),NULL);
+	}
+
+	if (imap_thread)
+	{
+	}
+}
+

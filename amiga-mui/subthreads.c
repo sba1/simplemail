@@ -34,7 +34,7 @@
 #include "subthreads.h"
 #include "lists.h"
 
-//#define MYDEBUG
+/*#define MYDEBUG*/
 #include "debug.h"
 
 struct ThreadMessage
@@ -75,10 +75,11 @@ static void thread_remove(struct ThreadMessage *tmsg)
 	{
 		if (node->thread == tmsg->thread)
 		{
-			D(bug("Got startup message of %0xlx back\n",node->thread));
+			D(bug("Got startup message of 0x%lx back\n",node->thread));
 			node_remove(&node->node);
 			FreeVec(tmsg);
 			FreeVec(node);
+			return;
 		}
 		node = (struct thread_node*)node_next(&node->node);
 	}
@@ -455,6 +456,66 @@ int thread_call_parent_function_sync(void *function, int argcount, ...)
 #endif
 }
 
+struct timer
+{
+	struct MsgPort *timer_port;
+	struct timerequest *timer_req;
+	struct timerequest *new_timer_req;
+	int timer_send;
+	int open;
+};
+
+static void timer_cleanup(struct timer *timer)
+{
+	if (timer->timer_send)
+	{
+		AbortIO((struct IORequest*)timer->new_timer_req);
+		WaitIO((struct IORequest*)timer->new_timer_req);
+	}
+	if (timer->new_timer_req) FreeVec(timer->new_timer_req);
+	if (timer->open) CloseDevice((struct IORequest *)timer->timer_req);
+	if (timer->timer_req) DeleteIORequest(timer->timer_req);
+	if (timer->timer_port) DeleteMsgPort(timer->timer_port);
+}
+
+static int timer_init(struct timer *timer)
+{
+	memset(timer,0,sizeof(*timer));
+	if ((timer->timer_port = CreateMsgPort()))
+	{
+		if ((timer->timer_req = (struct timerequest *) CreateIORequest(timer->timer_port, sizeof(struct timerequest))))
+		{
+			if (!OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *)timer->timer_req, 0))
+			{
+				timer->open = 1;
+				timer->new_timer_req = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_PUBLIC);
+				if (timer->new_timer_req) return 1;
+			}
+		}
+	}
+	timer_cleanup(timer);
+	return 0;
+}
+
+static ULONG timer_mask(struct timer *timer)
+{
+	return 1UL << timer->timer_port->mp_SigBit;
+}
+
+
+static void timer_send_if_not_sent(struct timer *timer, int millis)
+{
+	if (!timer->timer_send)
+	{
+	    *timer->new_timer_req = *timer->timer_req;
+			timer->new_timer_req->tr_node.io_Command = TR_ADDREQUEST;
+	    timer->new_timer_req->tr_time.tv_secs = millis/1000;
+	    timer->new_timer_req->tr_time.tv_micro = millis%1000;
+		  SendIO((struct IORequest *)timer->new_timer_req);
+			timer->timer_send = 1;
+	}
+}
+
 /* Call the function synchron, calls timer_callback on the calling process context */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
 {
@@ -464,95 +525,64 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
-		struct MsgPort *timer_port;
 		struct MsgPort *subthread_port;
-		struct timerequest *timer_req;
-
-		if (subthread_port = CreateMsgPort())
+	
+		if ((subthread_port = CreateMsgPort()))
 		{
-			if (timer_port = CreateMsgPort())
+			struct timer timer;
+			if (timer_init(&timer))
 			{
-				if (timer_req = (struct timerequest *) CreateIORequest(timer_port, sizeof(struct timerequest)))
+				struct Process *p = (struct Process*)FindTask(NULL);
+				va_list argptr;
+	
+				/* we only accept positive values */
+				if (millis < 1) millis = 1;
+	
+				va_start(argptr,argcount);
+	
+				tmsg->msg.mn_ReplyPort = subthread_port;
+				tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
+				tmsg->function = (int (*)(void))function;
+				tmsg->argcount = argcount;
+				tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
+				tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
+				tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
+				tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+				tmsg->async = 0;
+	
+				va_end (arg_ptr);
+	
+				/* now send the message */
+				PutMsg(thread_port,&tmsg->msg);
+	
+				/* while the parent task should execute the message
+				 * we regualiy call the given callback function */
+				while (1)
 				{
-					if (!OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *) timer_req, 0))
+					ULONG timer_m = timer_mask(&timer);
+					ULONG proc_m = 1UL << subthread_port->mp_SigBit;
+					ULONG mask;
+
+					timer_send_if_not_sent(&timer,millis);
+	
+					mask = Wait(timer_m|proc_m);
+					if (mask & timer_m)
 					{
-						struct timerequest *new_timer_req = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_PUBLIC);
-						if (new_timer_req)
-						{
-							int timer_send = 0;
-							struct Process *p = (struct Process*)FindTask(NULL);
-							va_list argptr;
-	
-							/* we only accept positive values */
-							if (millis < 1) millis = 1;
-	
-							va_start(argptr,argcount);
-	
-							tmsg->msg.mn_ReplyPort = subthread_port;
-							tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
-							tmsg->function = (int (*)(void))function;
-							tmsg->argcount = argcount;
-							tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-							tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-							tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-							tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
-							tmsg->async = 0;
-	
-							va_end (arg_ptr);
-	
-							/* now send the message */
-							PutMsg(thread_port,&tmsg->msg);
-	
-							/* while the parent task should execute the message
-							 * we regualiy call the given callback function */
-							while (1)
-							{
-								ULONG timer_mask = 1UL << timer_port->mp_SigBit;
-								ULONG proc_mask = 1UL << subthread_port->mp_SigBit;
-								ULONG mask;
-	
-								if (!timer_send)
-								{
-							    *new_timer_req = *timer_req;
-							    new_timer_req->tr_node.io_Command = TR_ADDREQUEST;
-							    new_timer_req->tr_time.tv_secs = millis/1000;
-							    new_timer_req->tr_time.tv_micro = millis%1000;
-						  	  SendIO((struct IORequest *)new_timer_req);
-						  	  timer_send = 1;
-							  }
-	
-								mask = Wait(timer_mask|proc_mask);
-								if (mask & timer_mask)
-								{
-									if (timer_callback)
-									{
-										timer_callback(timer_data);
-									}
-									timer_send = 0;
-								}
-	
-								if (mask & proc_mask)
-								{
-									/* the parent task has finished */
-									break;
-								}
-							}
-			
-							GetMsg(&p->pr_MsgPort);
-							rc = tmsg->result;
-										
-							if (timer_send)
-							{
-								AbortIO((struct IORequest*)new_timer_req);
-								WaitIO((struct IORequest*)new_timer_req);
-							}
-							FreeVec(new_timer_req);
-						}
-			      CloseDevice((struct IORequest *) timer_req);
+						if (timer_callback)
+							timer_callback(timer_data);
+						timer.timer_send = 0;
 					}
-			    DeleteIORequest(timer_req);
+	
+					if (mask & proc_m)
+					{
+						/* the parent task has finished */
+						break;
+					}
 				}
-		    DeleteMsgPort(timer_port);
+
+				/* Remove msg from port */
+				GetMsg(subthread_port);
+				rc = tmsg->result;
 			}
 			DeleteMsgPort(subthread_port);
 		}
@@ -585,6 +615,33 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)
 #endif
 }
 
+
+/* waits until aborted and calls timer_callback periodically */
+void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+{
+	struct timer timer;
+	if (timer_init(&timer))
+	{
+		while (1)
+		{
+			ULONG timer_m = timer_mask(&timer);
+			ULONG mask;
+
+			timer_send_if_not_sent(&timer,millis);
+	
+			mask = Wait(timer_m|SIGBREAKF_CTRL_C);
+			if (mask & timer_m)
+			{
+				if (timer_callback)
+					timer_callback(timer_data);
+				timer.timer_send = 0;
+			}
+
+			if (mask & SIGBREAKF_CTRL_C) break;
+		}
+		timer_cleanup(&timer);
+	}
+}
 
 
 /* Call the function asynchron */

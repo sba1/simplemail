@@ -52,6 +52,7 @@ STATIC ASM SAVEDS struct attachment *attachment_construct(register __a1 struct M
 	{
 		*new_attach = *attach;
 		new_attach->filename = mystrdup(attach->filename);
+		new_attach->temporary_filename = mystrdup(attach->temporary_filename);
 		new_attach->description = mystrdup(attach->description);
 		new_attach->content_type = mystrdup(attach->content_type);
 		new_attach->contents = mystrdup(attach->contents);
@@ -65,6 +66,11 @@ STATIC ASM SAVEDS VOID attachment_destruct(register __a1 struct MUIP_NListtree_D
 	if (attach)
 	{
 		if (attach->filename) free(attach->filename);
+		if (attach->temporary_filename)
+		{
+			DeleteFile(attach->temporary_filename);
+			free(attach->temporary_filename);
+		}
 		if (attach->description) free(attach->description);
 		if (attach->content_type) free(attach->content_type);
 		if (attach->contents) free(attach->contents);
@@ -105,7 +111,7 @@ STATIC ULONG AttachmentList_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	SetAttrs(obj,
 						MUIA_NListtree_ConstructHook, &data->construct_hook,
-						MUIA_NListtree_DestructHook, &data->construct_hook,
+						MUIA_NListtree_DestructHook, &data->destruct_hook,
 						MUIA_NListtree_DisplayHook, &data->display_hook,
 						MUIA_NListtree_Title, TRUE,
 						MUIA_NListtree_Format, ",,,",

@@ -29,6 +29,7 @@ void delete_attachmentlist_class(void);
 struct attachment
 {
 	char *filename;
+	char *temporary_filename; /* path to the temporary file, it gets deleted if the entry is destructed */
 	char *description;
 	char *content_type;
 

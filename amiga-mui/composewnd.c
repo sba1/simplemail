@@ -86,6 +86,7 @@ static void compose_window_close(struct Compose_Data **pdata)
 	struct Compose_Data *data = *pdata;
 	set(data->wnd,MUIA_Window_Open,FALSE);
 	DoMethod(App,OM_REMMEMBER,data->wnd);
+	set(data->datatype_datatypes, MUIA_DataTypes_FileName, NULL);
 	MUI_DisposeObject(data->wnd);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
@@ -375,10 +376,11 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 *******************************************************************/
 static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
 {
-	/* Note, the following two datas are static although the function is recursive
+	/* Note, the following three datas are static although the function is recursive
 	 * It minimalizes the possible stack overflow
    */
 	static char buf[128];
+	static char tmpname[L_tmpnam+1];
 	static struct attachment attach;
 	struct MUI_NListtree_TreeNode *treenode;
 	int i,num_multiparts = mail->num_multiparts;
@@ -405,6 +407,19 @@ static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struc
 			attach.editable = 1;
 			attach.lastxcursor = 0x7fff;
 			attach.lastycursor = 0x7fff;
+		} else
+		{
+			BPTR fh;
+
+			tmpnam(tmpname);
+
+			if ((fh = Open(tmpname,MODE_NEWFILE)))
+			{
+				Write(fh,mail->decoded_data,mail->decoded_len);
+				Close(fh);
+			}
+			attach.filename = tmpname;
+			attach.temporary_filename = tmpname;
 		}
 	}
 

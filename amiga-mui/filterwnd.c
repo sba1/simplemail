@@ -265,19 +265,21 @@ static void rules_get_header(struct filter_rule *rule)
 	rule->u.header.contents = mystrdup((char*)xget(rules_header_contents_string,MUIA_String_Contents));
 }
 
+static void rules_active(void);
 
 /**************************************************************************
  Ok the rule 
 **************************************************************************/
 static void rules_ok(void)
 {
+	set(rules_wnd, MUIA_Window_Open, FALSE);
 	if (rules_filter)
 	{
 		if (rules_filter) free(rules_filter->dest_folder);
 		rules_filter->dest_folder = mystrdup((char*)xget(rules_move_text,MUIA_Text_Contents));
 		rules_filter->use_dest_folder = xget(rules_move_check,MUIA_Selected);
+		rules_active();
 	}
-	set(rules_wnd, MUIA_Window_Open, FALSE);
 }
 
 /**************************************************************************

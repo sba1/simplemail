@@ -527,7 +527,7 @@ static void group_window_ok(struct Group_Data **pdata)
 	struct addressbook_entry *new_entry;
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
-	if ((new_entry = addressbook_new_group(NULL)))
+	if ((new_entry = addressbook_create_group()))
 	{
 		struct MUI_NListtree_TreeNode *treenode = NULL;
 		char *alias = (char*)xget(data->alias_string,MUIA_String_Contents);

@@ -415,17 +415,18 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 									}
 								}
 
-								/* Clear the preselection entries */
-								thread_call_parent_function_sync(dl_clear,0);
 								chdir(path);
 							}
 						}
-				
+
 						pop3_quit(conn,server);
 					}
-				}  
+				}
 				tcp_disconnect(conn);
 			}
+
+			/* Clear the preselection entries */
+			thread_call_parent_function_sync(dl_clear,0);
 
 			server = (struct pop3_server*)node_next(&server->node);
 		}

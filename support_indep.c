@@ -73,7 +73,11 @@ int mystrnicmp(const char *str1, const char *str2, int n)
 **************************************************************************/
 char *mystristr(const char *str1, const char *str2)
 {
-	int str2_len = strlen(str2);
+	int str2_len;
+
+	if (!str1 || !str2) return NULL;
+
+	str2_len = strlen(str2);
 
 	while (*str1)
 	{

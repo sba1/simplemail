@@ -286,6 +286,7 @@ int tcp_write(struct connection *conn, void *buf, long nbytes)
 	{
 		int size = sizeof(conn->write_buf) - conn->write_size;
 		memcpy(&conn->write_buf[conn->write_size],buf,size);
+		conn->write_size = sizeof(conn->write_buf);
 		tcp_flush(conn);
 		buf = ((char*)buf) + size;
 		nbytes -= size;

@@ -35,14 +35,18 @@
 
 #include "amigasupport.h"
 #include "arexx.h"
+#include "folder.h"
 #include "mainwnd.h"
 #include "simplemail.h"
+#include "support_indep.h"
 
 static struct MsgPort *arexx_port;
 
 /* from gui_main.c */
 void app_hide(void);
 void app_show(void);
+
+char *stradd(char *src, const char *str1);
 
 /****************************************************************
  Returns the arexx message port if it already exists. Should
@@ -96,6 +100,19 @@ ULONG arexx_mask(void)
 }
 
 /****************************************************************
+ Sets the RESULT variable
+*****************************************************************/
+static void arexx_set_result(struct RexxMsg *rxmsg, STRPTR string)
+{
+	if (!string) string = "";
+	if (rxmsg->rm_Action & (1L << RXFB_RESULT))
+	{
+		if (rxmsg->rm_Result2) DeleteArgstring((STRPTR)rxmsg->rm_Result2);
+		rxmsg->rm_Result2 = (LONG)CreateArgstring( string,strlen(string));
+	}
+}
+
+/****************************************************************
  MAINTOFRONT Arexx Command
 *****************************************************************/
 static void arexx_maintofront(struct RexxMsg *rxmsg, STRPTR args)
@@ -143,6 +160,93 @@ static void arexx_setmail(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ GETSELECTED Arexx Command
+*****************************************************************/
+static void arexx_getselected(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+	} getselected_arg;
+	memset(&getselected_arg,0,sizeof(getselected_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K",args,&getselected_arg)))
+	{
+		int num = 0;
+		struct mail *mail;
+		void *handle = NULL;
+		struct folder *folder;
+
+		folder = main_get_folder();
+		mail = main_get_mail_first_selected(&handle);
+		num = 0;
+
+		/* Count the number of mails */
+		while (mail)
+		{
+			num++;
+			mail = main_get_mail_next_selected(&handle);
+		}
+
+		if (folder)
+		{
+			char num_buf[20];
+
+			if (getselected_arg.stem)
+			{
+				int stem_len = strlen(getselected_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					int i = 0;
+
+					strcpy(stem_buf,getselected_arg.stem);
+					strcpy(&stem_buf[stem_len],"NUM.COUNT");
+					sprintf(num_buf,"%d",num);
+					SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+
+					mail = main_get_mail_first_selected(&handle);
+					while (mail)
+					{
+						sprintf(&stem_buf[stem_len],"NUM.%d",i);
+						sprintf(num_buf,"%d",folder_get_index_of_mail(folder,mail));
+						SetRexxVar(rxmsg,stem_buf,num_buf,strlen(num_buf));
+						i++;
+						mail = main_get_mail_next_selected(&handle);
+					}
+					free(stem_buf);
+				}
+			} else
+			{
+				char *str;
+
+				sprintf(num_buf,"%d",num);
+				str = mystrdup(num_buf);
+
+				mail = main_get_mail_first_selected(&handle);
+
+				/* Count the number of mails */
+				while (mail)
+				{
+					sprintf(num_buf, " %d", folder_get_index_of_mail(folder,mail));
+					str = stradd(str,num_buf);
+					mail = main_get_mail_next_selected(&handle);
+				}
+
+				if (getselected_arg.var) SetRexxVar(rxmsg,getselected_arg.var,str,strlen(str));
+				else arexx_set_result(rxmsg,str);
+
+				free(str);
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+
+/****************************************************************
  SHOW Arexx Command
 *****************************************************************/
 static void arexx_show(struct RexxMsg *rxmsg, STRPTR args)
@@ -181,6 +285,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SETMAIL",command.command)) arexx_setmail(rxmsg,command.args);
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
+		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

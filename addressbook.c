@@ -577,6 +577,31 @@ int addressbook_get_type(char *filename)
 /**************************************************************************
  Add entries from a specified file.
 **************************************************************************/
+int addressbook_import_file(char *filename)
+{
+	int rc = 0;
+	
+	switch (addressbook_get_type(filename))
+	{
+		case BOOK_YAM:
+			rc = addressbook_import_yam(filename);
+			break;
+			
+		case BOOK_SM:
+			rc = addressbook_import_sm(filename);
+			break;
+		
+		case BOOK_UNKNOWN:
+		default:
+			sm_request(NULL, _("Unsupported type of addressbook."), _("Okay"));
+			break;
+	}
+		
+	addressbookwnd_refresh();
+	
+	return rc;
+}
+
 int addressbook_import(void)
 {
 	int rc = 0;
@@ -585,23 +610,8 @@ int addressbook_import(void)
 	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:");
 	if(filename && *filename)
 	{
-		switch (addressbook_get_type(filename))
-		{
-			case BOOK_YAM:
-				rc = addressbook_import_yam(filename);
-				break;
-				
-			case BOOK_SM:
-				rc = addressbook_import_sm(filename);
-				break;
-			
-			case BOOK_UNKNOWN:
-			default:
-				sm_request(NULL, _("Unsupported type of addressbook."), _("Okay"));
-				break;
-		}
 		
-		addressbookwnd_refresh();
+		addressbook_import_file(filename);
 		
 		free(filename);
 	}

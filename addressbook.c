@@ -161,6 +161,26 @@ void xml_end_tag(void *data, const char *el)
 	}
 	else if (!mystricmp("portrait",el)) entry->u.person.portrait = mystrdup(data_buf);
 	else if (!mystricmp("note",el)) entry->u.person.notepad = mystrdup(data_buf);
+	else if (!mystricmp("sex",el))
+	{
+		if (!mystricmp(data_buf,"female")) entry->u.person.sex = 1;
+		else if (!mystricmp(data_buf,"male")) entry->u.person.sex = 2;
+	}
+	else if (!mystricmp("birthday",el))
+	{
+		char *buf = data_buf;
+		int i;
+
+		i = atoi(buf);
+		if (i >= 1 && i <= 12)
+		{
+			entry->u.person.dob_month = i;
+			if ((buf = strchr(buf,'/'))) buf++;
+			if (buf) entry->u.person.dob_day = atoi(buf);
+			if ((buf = strchr(buf,'/'))) buf++;
+			if (buf) entry->u.person.dob_year = atoi(buf);
+		}
+	}
 
 	if (data_buf)
 	{
@@ -216,10 +236,12 @@ void init_addressbook(void)
 		entry = addressbook_new_person(NULL, "Hynek Schlawack", "hynek@rz.uni-potsdam.de");
 		addressbook_set_description(entry, "Original author of SimpleMail");
 		addressbook_person_add_email(entry, "hynek@hys.in-berlin.de");
+		entry->u.person.sex = 2;
 
 		entry = addressbook_new_person(NULL, "Sebastian Bauer", "sebauer@t-online.de");
 		addressbook_set_description(entry, "Original author of SimpleMail");
 		addressbook_person_add_email(entry, "Sebastian.Bauer@in.stud.tu-ilmenau.de");
+		entry->u.person.sex = 2;
 	}
 }
 
@@ -397,9 +419,16 @@ static void addressbook_save_group(struct addressbook_entry *group, FILE *fh)
 			put_xml_element_string(fh,"phone",entry->u.person.phone2);
 			put_xml_element_string(fh,"portrait",entry->u.person.portrait);
 			put_xml_element_string(fh,"note",entry->u.person.notepad);
+			if (entry->u.person.sex)
+				put_xml_element_string(fh,"sex",entry->u.person.sex==1?"female":"male");
+			if (entry->u.person.dob_year)
+			{
+				char buf[128];
+				sprintf(buf,"%d/%d/%d",entry->u.person.dob_month,entry->u.person.dob_day,entry->u.person.dob_year);
+				put_xml_element_string(fh,"birthday",buf);
+			}
 			
 			fputs("</contact>\n",fh);
-
 		} else
 		{
 			if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
@@ -777,7 +806,10 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 									new_entry->u.person.emails[i] = mystrdup(entry->u.person.emails[i]);
 								new_entry->u.person.num_emails = entry->u.person.num_emails;
 							}
-							new_entry->u.person.dob = entry->u.person.dob;
+							new_entry->u.person.dob_month = entry->u.person.dob_month;
+							new_entry->u.person.dob_day = entry->u.person.dob_day;
+							new_entry->u.person.dob_year = entry->u.person.dob_year;
+							new_entry->u.person.sex = entry->u.person.sex;
 						}
 						break;
 

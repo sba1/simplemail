@@ -20,6 +20,7 @@
 ** addressbookwnd.c
 */
 
+#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,10 +32,13 @@
 #include <mui/betterstring_mcc.h>
 #include <mui/texteditor_mcc.h>
 #include <clib/alib_protos.h>
+#include <proto/exec.h>
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
+#include <proto/openurl.h>
 
 #include "addressbook.h"
+#include "parse.h"
 #include "simplemail.h"
 
 #include "addressbookwnd.h"
@@ -63,19 +67,21 @@ static int person_open[MAX_PERSON_OPEN];
 struct Person_Data /* should be a customclass */
 {
 	Object *wnd;
-	Object *rem_button;
-	Object *email_list;
-	Object *email_string;
 	Object *alias_string;
 	Object *realname_string;
 	Object *homepage_string;
 	Object *description_string;
+	Object *female_button;
+	Object *male_button;
+	Object *birthday_string;
+	Object *portrait_button;
+	Object *email_texteditor;
 	Object *street_string;
 	Object *city_string;
 	Object *country_string;
 	Object *phone1_string;
 	Object *phone2_string;
-	Object *download_string;
+	Object *portrait_string;
 
 	struct addressbook_entry *person; /* NULL if new person */
 
@@ -108,11 +114,35 @@ static void person_window_ok(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
 	struct addressbook_entry *new_entry;
+	char *addresses;
+
+	/* Check the validity of the e-mail addresses first */
+	if ((addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
+	{
+		char *single_address;
+		char *buf = addresses;
+		while ((buf = parse_addr_spec(buf,&single_address)))
+		{
+			/* ensures that buf != NULL if no error */
+			while (isspace((unsigned char)*buf)) buf++;
+			if (*buf == 0) break;
+			free(single_address);
+		}
+		if (!buf)
+		{
+			set(data->wnd,MUIA_Window_ActiveObject,data->email_texteditor);
+			DisplayBeep(NULL);
+			FreeVec(addresses);
+			return;
+		}
+
+		/* addresses will be freed below because it is needed again */
+	}
+
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
 	if ((new_entry = addressbook_create_person((char*)xget(data->realname_string,MUIA_String_Contents), NULL)))
 	{
-		int i;
 		char *alias;
 		struct MUI_NListtree_TreeNode *treenode = NULL;
 
@@ -134,14 +164,32 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (new_entry->u.person.homepage) free(new_entry->u.person.homepage);
 		new_entry->u.person.homepage = mystrdup((char*)xget(data->homepage_string,MUIA_String_Contents));
 		if (new_entry->u.person.portrait) free(new_entry->u.person.portrait);
-		new_entry->u.person.portrait = mystrdup((char*)xget(data->download_string, MUIA_String_Contents));
+		new_entry->u.person.portrait = mystrdup((char*)xget(data->portrait_string, MUIA_String_Contents));
 
-		for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
+		if (addresses)
 		{
-			char *email;
-			DoMethod(data->email_list, MUIM_NList_GetEntry, i, &email);
-			addressbook_person_add_email(new_entry,email);
+			char *single_address;
+			char *buf = addresses;
+			while ((buf = parse_addr_spec(buf,&single_address)))
+			{
+				addressbook_person_add_email(new_entry,single_address);
+				free(single_address);
+			}
 		}
+
+		if (xget(data->female_button,MUIA_Selected)) new_entry->u.person.sex = 1;
+		else if (xget(data->male_button,MUIA_Selected)) new_entry->u.person.sex = 2;
+
+    {
+    	char *buf = (char*)xget(data->birthday_string,MUIA_String_Contents);
+    	int day=0,month=0,year=0;
+    	if ((parse_date(buf,&day,&month,&year,NULL,NULL,NULL)))
+    	{
+    		new_entry->u.person.dob_month = month;
+    		new_entry->u.person.dob_day = day;
+    		new_entry->u.person.dob_year = year;
+    	}
+    }
 
 		if (data->person)
 		{
@@ -170,59 +218,37 @@ static void person_window_ok(struct Person_Data **pdata)
 	}
 
 	person_window_close(pdata);
+
+	/* free the the addresses memory */
+	if (addresses) FreeVec(addresses);
 }
 
 /******************************************************************
- Add a new e-mail address
+ Try to open the homepage
 *******************************************************************/
-static void person_add_email(struct Person_Data **pdata)
+static void person_homepage(struct Person_Data **pdata)
 {
-	struct Person_Data *data = *pdata;
-	DoMethod(data->email_list, MUIM_NList_InsertSingle, "»New e-mail address«", MUIV_NList_Insert_Bottom);
-	set(data->email_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
-}
+	char *uri = (char*)xget((*pdata)->homepage_string,MUIA_String_Contents);
 
-/******************************************************************
- The email list view has a new active element
-*******************************************************************/
-static void person_email_list_active(struct Person_Data **pdata)
-{
-	struct Person_Data *data = *pdata;
-	char *email;
-	DoMethod(data->email_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &email);
-	if (email)
+	if (uri)
 	{
-		set(data->rem_button, MUIA_Disabled, FALSE);
+		struct Library *OpenURLBase;
 
-		SetAttrs(data->email_string,
-			MUIA_Disabled, FALSE,
-			MUIA_String_Contents, email,
-			MUIA_NoNotify, TRUE,
-			TAG_DONE);
-
-		set(data->wnd, MUIA_Window_ActiveObject, data->email_string);
-	} else
-	{
-		set(data->rem_button, MUIA_Disabled, TRUE);
-		SetAttrs(data->email_string,
-			MUIA_Disabled, TRUE,
-			MUIA_String_Contents, "",
-			MUIA_NoNotify, TRUE,
-			TAG_DONE);
+		if ((OpenURLBase = OpenLibrary("openurl.library",0)))
+		{
+			URL_OpenA(uri,NULL);
+			CloseLibrary(OpenURLBase);
+		}
 	}
 }
 
 /******************************************************************
- Contents of the email string has been changed
+ Portrait has changed
 *******************************************************************/
-static void person_email_string_contents(struct Person_Data **pdata)
+static void person_portrait(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
-	LONG active = xget(data->email_list, MUIA_NList_Active);
-	if (active >= 0)
-	{
-		DoMethod(data->email_list,MUIM_NList_ReplaceSingle, xget(data->email_string, MUIA_String_Contents), active, NOWRAP, ALIGN_LEFT);
-	}
+	set(data->portrait_button, MUIA_PictureButton_Filename, (char*)xget(data->portrait_string,MUIA_String_Contents));
 }
 
 /******************************************************************
@@ -231,25 +257,26 @@ static void person_email_string_contents(struct Person_Data **pdata)
 static void person_download_portrait(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
-	int i;
+	char *addresses;
 
 	set(App, MUIA_Application_Sleep, TRUE);
 
-	for (i=0;i<xget(data->email_list,MUIA_NList_Entries);i++)
+	if ((addresses = (char*)DoMethod(data->email_texteditor, MUIM_TextEditor_ExportText)))
 	{
-		char *email;
-		char *filename;
-
-		DoMethod(data->email_list, MUIM_NList_GetEntry, i, &email);
-
-		filename = addressbook_download_portrait(email);
-		if (filename)
+		char *single_address;
+		char *buf = addresses;
+		while ((buf = parse_addr_spec(buf,&single_address)))
 		{
-			set(data->download_string, MUIA_String_Contents, filename);
-			free(filename);
+			char *filename;
+			if ((filename = addressbook_download_portrait(single_address)))
+			{
+				set(data->portrait_string, MUIA_String_Contents, filename);
+				free(filename);
+			}
+			free(single_address);
 		}
+		FreeVec(addresses);
 	}
-	
 	set(App, MUIA_Application_Sleep, FALSE);
 }
 
@@ -258,10 +285,13 @@ static void person_download_portrait(struct Person_Data **pdata)
 *******************************************************************/
 void person_window_open(struct addressbook_entry *entry)
 {
-	Object *wnd, *add_button, *rem_button, *email_list, *email_string;
+	Object *wnd, *email_texteditor;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
-	Object *homepage_string, *street_string, *city_string, *country_string, *phone1_string, *phone2_string;
-	Object *description_string, *download_button, *download_string;
+	Object *female_button, *male_button, *birthday_string, *homepage_string, *homepage_button, *street_string, *city_string, *country_string, *phone1_string, *phone2_string;
+	Object *description_string, *download_button, *portrait_string, *portrait_button;
+	static const char *register_titles[] = {
+		"Personal","Private","Work","Notes",NULL
+	};
 	int num;
 
 	for (num=0; num < MAX_PERSON_OPEN; num++)
@@ -272,11 +302,11 @@ void person_window_open(struct addressbook_entry *entry)
     MUIA_Window_Title, "SimpleMail - Edit Person",
         
 		WindowContents, VGroup,
-			Child, VGroup,
-				Child, HorizLineTextObject("Electronic mail"),
-				Child, HGroup,
-					Child, VGroup,
+			Child, RegisterGroup(register_titles),
+				Child, VGroup,
+					Child, HGroup,
 						Child, ColGroup(2),
+							MUIA_HorizWeight,170,
 							Child, MakeLabel("Alias"),
 							Child, alias_string = BetterStringObject,
 								StringFrame,
@@ -289,51 +319,94 @@ void person_window_open(struct addressbook_entry *entry)
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
-							Child, MakeLabel("PGP Key-ID"),
+							Child, MakeLabel("Description"),
+							Child, description_string = BetterStringObject,
+								StringFrame,
+								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,
+/*							Child, MakeLabel("PGP Key-ID"),
+							Child, BetterStringObject,
+								StringFrame,
+								MUIA_CycleChain, 1,
+								MUIA_String_AdvanceOnCR, TRUE,
+								End,*/
+							Child, MakeLabel("Homepage"),
+							Child, HGroup,
+								MUIA_Group_Spacing, 0,
+								Child, homepage_string = BetterStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								Child, homepage_button = PopButton(MUII_TapeRecord),
+								End,
+							Child, MakeLabel("Date of birth"),
+							Child, HGroup,
+								Child, birthday_string = BetterStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								Child, MakeLabel("Sex"),
+
+								Child, HGroup,
+									MUIA_Group_Spacing,1,
+									Child, female_button = ImageObject,
+										MUIA_CycleChain,1,
+										MUIA_InputMode, MUIV_InputMode_Toggle,
+										MUIA_Image_Spec, MUII_RadioButton,
+										MUIA_ShowSelState, FALSE,
+										End,
+									Child, MakeLabel("Female"),
+									End,
+								Child, HGroup,
+									MUIA_Group_Spacing,1,
+									Child, male_button = ImageObject,
+										MUIA_CycleChain,1,
+										MUIA_InputMode, MUIV_InputMode_Toggle,
+										MUIA_Image_Spec, MUII_RadioButton,
+										MUIA_ShowSelState, FALSE,
+										End,
+									Child, MakeLabel("Male"),
+									End,
+								End,
+							End,
+						Child, VGroup,
+							Child, HGroup,
+								Child, MakeLabel("Portrait"),
+								Child, HGroup,
+									MUIA_Group_Spacing, 0,
+									Child, PopaslObject,
+										MUIA_Popstring_String, portrait_string = BetterStringObject,MUIA_CycleChain,1,StringFrame, End,
+										MUIA_Popstring_Button, PopButton(MUII_PopFile),
+										End,
+									Child, download_button = PopButton(MUII_Disk),
+									End,
+								End,
+							Child, portrait_button = PictureButtonObject,
+								MUIA_PictureButton_FreeVert, TRUE,
+								End,
+							End,
+						End,
+					Child, VGroup,
+						Child, HorizLineTextObject("E-Mail addresses"),
+						Child, email_texteditor = TextEditorObject,
+							InputListFrame,
+							MUIA_CycleChain,1,
+							End,
+						End,
+
+/*							Child, MakeLabel("Date of birth"),
 							Child, BetterStringObject,
 								StringFrame,
 								MUIA_CycleChain, 1,
 								MUIA_String_AdvanceOnCR, TRUE,
 								End,
-							Child, MakeLabel("Homepage"),
-							Child, homepage_string = BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,
-							End,
-						Child, HVSpace,
-						End,
-					Child, VGroup,
-						Child, NListviewObject,
-							MUIA_CycleChain, 1,
-							MUIA_NListview_NList, email_list = NListObject,
-								MUIA_NList_DragSortable, TRUE,
-								MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-								MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
-								End,
-							End,
-						Child, HGroup,
-							Child, email_string = BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								End,
-							Child, HGroup,
-								MUIA_Group_Spacing, 0,
-								Child, add_button = MakeButton("Add"),
-								Child, rem_button = MakeButton("Rem"),
-								End,
-							End,
-						End,
+							End,*/
 					End,
-				End,
 
-			Child, HGroup,
-				Child, ColGroup(3),
-					Child, HorizLineTextObject("Snail mail"),
-					Child, HorizLineTextObject("Miscellanous"),
-					Child, HorizLineTextObject("Portrait"),
-	
+				Child, VGroup,
 					Child, ColGroup(2),
 						Child, MakeLabel("Street"),
 						Child, street_string = BetterStringObject,
@@ -366,39 +439,15 @@ void person_window_open(struct addressbook_entry *entry)
 							MUIA_String_AdvanceOnCR, TRUE,
 							End,
 						End,
+					End,
 
-					Child, VGroup,
-						Child, ColGroup(2),
-							Child, MakeLabel("Description"),
-							Child, description_string = BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,
-							Child, MakeLabel("Date of birth"),
-							Child, BetterStringObject,
-								StringFrame,
-								MUIA_CycleChain, 1,
-								MUIA_String_AdvanceOnCR, TRUE,
-								End,
-							End,
-						Child, HGroup,
-							Child, VGroup,
-								Child, MakeLabel("Notepad"),
-								Child, VSpace(0),
-								End,
-							Child, TextEditorObject,
-								InputListFrame,
-								MUIA_CycleChain,1,
-								End,
-							End,
-						End,
-					Child, VGroup,
-						Child, download_button = MakeButton("Download"),
-						Child, PopaslObject,
-							MUIA_Popstring_String, download_string = BetterStringObject, StringFrame, End,
-							MUIA_Popstring_Button, PopButton(MUII_PopFile),
-							End,
+				Child, VGroup,
+					End,
+
+				Child, VGroup,
+					Child, TextEditorObject,
+						InputListFrame,
+						MUIA_CycleChain,1,
 						End,
 					End,
 				End,
@@ -417,37 +466,35 @@ void person_window_open(struct addressbook_entry *entry)
 		if (data)
 		{
 			data->wnd = wnd;
-			data->rem_button = rem_button;
 			data->alias_string = alias_string;
-			data->email_list = email_list;
-			data->email_string = email_string;
+			data->email_texteditor = email_texteditor;
+			data->female_button = female_button;
+			data->male_button = male_button;
+			data->birthday_string = birthday_string;
 			data->realname_string = realname_string;
 			data->description_string = description_string;
 			data->homepage_string = homepage_string;
 			data->street_string = street_string;
+			data->portrait_button = portrait_button;
 			data->city_string = city_string;
 			data->country_string = country_string;
 			data->phone1_string = phone1_string;
 			data->phone2_string = phone2_string;
-			data->download_string = download_string;
+			data->portrait_string = portrait_string;
 			data->person = entry;
 			data->num = num;
 
 			/* mark the window as opened */
 			person_open[num] = 1;
 
-			set(email_string, MUIA_String_AttachedList, email_list);
-			set(add_button, MUIA_Weight,0);
-			set(rem_button, MUIA_Weight,0);
-
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
 			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_ok, data);
-			DoMethod(add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_add_email, data);
-			DoMethod(rem_button, MUIM_Notify, MUIA_Pressed, FALSE, email_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 			DoMethod(download_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_download_portrait, data);
-			DoMethod(email_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_email_list_active, data);
-			DoMethod(email_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_email_string_contents, data);
+			DoMethod(homepage_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_homepage, data);
+			DoMethod(female_button, MUIM_Notify, MUIA_Selected, TRUE, male_button, 3, MUIM_Set, MUIA_Selected, FALSE);
+			DoMethod(male_button, MUIM_Notify, MUIA_Selected, TRUE, female_button, 3, MUIM_Set, MUIA_Selected, FALSE);
+			DoMethod(portrait_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_portrait, data);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			/* A person must be changed */
@@ -456,8 +503,10 @@ void person_window_open(struct addressbook_entry *entry)
 				int i;
 				for (i=0;i<entry->u.person.num_emails;i++)
 				{
-					DoMethod(email_list, MUIM_NList_InsertSingle, entry->u.person.emails[i], MUIV_NList_Insert_Bottom);
+					DoMethod(email_texteditor,MUIM_TextEditor_InsertText,entry->u.person.emails[i],MUIV_TextEditor_InsertText_Bottom);
+					DoMethod(email_texteditor,MUIM_TextEditor_InsertText,"\n",MUIV_TextEditor_InsertText_Bottom);
 				}
+
 				set(realname_string, MUIA_String_Contents, entry->u.person.realname);
 				set(description_string, MUIA_String_Contents, entry->u.person.description);
 				set(alias_string, MUIA_String_Contents, entry->u.person.alias);
@@ -467,10 +516,22 @@ void person_window_open(struct addressbook_entry *entry)
 				set(city_string, MUIA_String_Contents, entry->u.person.city);
 				set(country_string, MUIA_String_Contents, entry->u.person.country);
 				set(homepage_string, MUIA_String_Contents, entry->u.person.homepage);
-				set(download_string, MUIA_String_Contents, entry->u.person.portrait);
+				set(portrait_string, MUIA_String_Contents, entry->u.person.portrait);
+
+				if (entry->u.person.sex == 1) set(data->female_button,MUIA_Selected,TRUE);
+				else if (entry->u.person.sex == 2) set(data->male_button,MUIA_Selected,TRUE);
+
+				if (entry->u.person.dob_day && ((unsigned int)(entry->u.person.dob_month-1)) < 12)
+				{
+					char buf[64];
+					static const char *month_names[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+					sprintf(buf,"%d %s %d",entry->u.person.dob_day,month_names[entry->u.person.dob_month-1],entry->u.person.dob_year);
+					set(birthday_string,MUIA_String_Contents,buf);
+				}
+
+				if (entry->u.person.portrait) set(portrait_button,MUIA_PictureButton_Filename,entry->u.person.portrait);
 			}
 
-			person_email_list_active(&data);
 			set(wnd,MUIA_Window_ActiveObject,alias_string);
 			set(wnd,MUIA_Window_Open,TRUE);
 

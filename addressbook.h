@@ -63,7 +63,12 @@ struct addressbook_entry
 			char *description;
 			char *notepad;
 			char *portrait; /* filename to a picture of this person */
-			unsigned int dob; /* days since 1900 */
+
+			int dob_day; /* day of birth */
+			int dob_month; /* month of birth */
+			int dob_year; /* year of birth */
+
+			int sex; /* 0 unspecifed, 1 female, 2 male */
 			int num_emails; /* number of email addresses */
 			char **emails; /* array of email addresses */
 		} person;

@@ -35,6 +35,7 @@
 #include "mail.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "spam.h"
 #include "support_indep.h"
 #include "status.h"
 #include "trans.h"
@@ -1161,6 +1162,46 @@ void callback_mails_set_status(int status)
 	}	
 }
 
+/* Selected mails are spam */
+void callback_selected_mails_are_spam(void)
+{
+	struct folder *folder = main_get_folder();
+	struct mail *mail;
+	void *handle;
+	if (!folder) return;
+	mail = main_get_mail_first_selected(&handle);
+
+	while (mail)
+	{
+		if (spam_feed_mail_as_spam(folder,mail))
+		{
+			folder_set_mail_status(folder,mail,MAIL_STATUS_SPAM);
+			main_refresh_mail(mail);
+		}
+		mail = main_get_mail_next_selected(&handle);
+	}	
+}
+
+/* Selected mails are ham */
+void callback_selected_mails_are_ham(void)
+{
+	struct folder *folder = main_get_folder();
+	struct mail *mail;
+	void *handle;
+	if (!folder) return;
+	mail = main_get_mail_first_selected(&handle);
+
+	while (mail)
+	{
+		if (spam_feed_mail_as_ham(folder,mail))
+		{
+			if (mail_is_spam(mail)) folder_set_mail_status(folder,mail,MAIL_STATUS_UNREAD);
+			main_refresh_mail(mail);
+		}
+		mail = main_get_mail_next_selected(&handle);
+	}	
+}
+
 /* import a addressbook into SimpleMail, return 1 for success */
 int callback_import_addressbook(void)
 {
@@ -1417,9 +1458,13 @@ int simplemail_main(void)
 		init_addressbook();
 		if (init_folders())
 		{
-			gui_main(0,NULL);
-			folder_delete_deleted();
-/*		folder_save_order();*/
+			if (spam_init())
+			{
+				gui_main(0,NULL);
+				folder_delete_deleted();
+/*			folder_save_order();*/
+				spam_cleanup();
+			}
 			del_folders();
 		}
 		codesets_cleanup();

@@ -38,6 +38,7 @@
 #include "folder.h"
 #include "mainwnd.h"
 #include "simplemail.h"
+#include "support.h"
 #include "support_indep.h"
 
 static struct MsgPort *arexx_port;
@@ -373,6 +374,94 @@ static void arexx_folderinfo(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ REQUEST Arexx Command
+*****************************************************************/
+static void arexx_request(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		STRPTR body;
+		STRPTR gadgets;
+	} request_arg;
+	memset(&request_arg,0,sizeof(request_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,BODY/A,GADGETS/A",args,&request_arg)))
+	{
+		int result;
+		result = sm_request(NULL,request_arg.body,request_arg.gadgets,NULL);
+		if (request_arg.stem)
+		{
+			int stem_len = strlen(request_arg.stem);
+			char *stem_buf = malloc(stem_len+20);
+			if (stem_buf)
+			{
+				strcpy(stem_buf,request_arg.stem);
+				strcat(stem_buf,"RESULT");
+				arexx_set_var_int(rxmsg,stem_buf,result);
+				free(stem_buf);
+			}
+		} else
+		{
+			char num_buf[24];
+			sprintf(num_buf,"%d",result);
+			if (request_arg.var) SetRexxVar(rxmsg,request_arg.var,num_buf,strlen(num_buf));
+			else arexx_set_result(rxmsg,num_buf);
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
+ REQUESTSTRING Arexx Command
+*****************************************************************/
+static void arexx_requeststring(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		STRPTR body;
+		STRPTR string;
+		ULONG secret;
+	} requeststring_arg;
+	memset(&requeststring_arg,0,sizeof(requeststring_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,BODY/A,STRING/K,SECRET/S",args,&requeststring_arg)))
+	{
+		char *result;
+		if ((result = sm_request_string(NULL,requeststring_arg.body,requeststring_arg.string,requeststring_arg.secret)))
+		{
+			if (requeststring_arg.stem)
+			{
+				int stem_len = strlen(requeststring_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,requeststring_arg.stem);
+					strcat(stem_buf,"STRING");
+					SetRexxVar(rxmsg,stem_buf,result,strlen(result));
+					free(stem_buf);
+				}
+			} else
+			{
+				if (requeststring_arg.var) SetRexxVar(rxmsg,requeststring_arg.var,result,strlen(result));
+				else arexx_set_result(rxmsg,result);
+			}
+			free(result);
+		} else
+		{
+			/* error so set the RC val to 1 */
+			rxmsg->rm_Result1 = 1;
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -397,6 +486,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
 		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);
 		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);
+		else if (!Stricmp("REQUEST",command.command)) arexx_request(rxmsg,command.args);
+		else if (!Stricmp("REQUESTSTRING",command.command)) arexx_requeststring(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

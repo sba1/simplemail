@@ -159,7 +159,6 @@ STATIC ULONG FolderTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUI
 
 STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
-	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (msg->obj == obj) return DoSuperMethodA(cl,obj,(Msg)msg);
 
   if (msg->obj == (Object *)muiUserData(obj))
@@ -190,8 +189,6 @@ STATIC ULONG FolderTreelist_DragDrop(struct IClass *cl,Object *obj,struct MUIP_D
 
 STATIC ULONG FolderTreelist_DropType(struct IClass *cl,Object *obj,struct MUIP_NList_DropType *msg)
 {
-	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
-
 	ULONG rv = DoSuperMethodA(cl,obj,(Msg)msg);
 
 	if (*msg->pos == xget(obj,MUIA_NList_Active))

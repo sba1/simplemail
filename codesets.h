@@ -50,7 +50,8 @@ struct codeset *codesets_find_best(char *text, int text_len);
 #define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
 #define utf8cat(dest,src) ((utf8*)strcat(dest,src))
 
-int uft8len(const utf8 *str);
+int utf8len(const utf8 *str);
+int utf8realpos(const utf8 *str, int pos);
 utf8 *uft8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);

@@ -333,12 +333,8 @@ void xml_char_data(void *data, const XML_Char *s, int len)
 
 			while (src && len)
 			{
-				char code;
-				char *oldsrc = src;
-				src = uft8toiso(src,&code);
-				if (!code) break; /* null byte will be added below */
-				*dest++ = code;
-				len -= (char*)src - oldsrc;
+				*dest++ = *src++;
+				len--;
 			}
 
 			*dest = 0;

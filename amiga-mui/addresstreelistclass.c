@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 
 #include "addressbook.h"
+#include "codesets.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
@@ -70,6 +71,10 @@ struct AddressTreelist_Data
 	Object *show_nickname_item;
 	Object *show_description_item;
 	Object *show_email_item;
+
+	char alias_buf[64];
+	char realname_buf[128];
+	char description_buf[256];
 };
 
 STATIC ASM int address_compare(register __a1 struct MUIP_NListtree_CompareMessage *msg)
@@ -99,19 +104,24 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 	{
 		struct addressbook_entry *entry = (struct addressbook_entry *)msg->TreeNode->tn_User;
 
+		utf8tostr(entry->alias, data->alias_buf, sizeof(data->alias_buf), NULL);
+		utf8tostr(entry->description, data->description_buf, sizeof(data->description_buf), NULL);
+
 		switch (entry->type)
 		{
 			case	ADDRESSBOOK_ENTRY_GROUP:
-						*msg->Array++ = entry->alias;
+						*msg->Array++ = data->alias_buf;
 						*msg->Array++ = NULL;
-						*msg->Array++ = entry->description;
+						*msg->Array++ = data->description_buf;
 						*msg->Array = NULL;
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
-						*msg->Array++ = entry->u.person.realname;
-						*msg->Array++ = entry->alias;
-						*msg->Array++ = entry->description;
+						utf8tostr(entry->u.person.realname, data->realname_buf, sizeof(data->realname_buf), NULL);
+
+						*msg->Array++ = data->realname_buf;
+						*msg->Array++ = data->alias_buf;
+						*msg->Array++ = data->description_buf;
 						if (entry->u.person.num_emails)
 							*msg->Array = entry->u.person.emails[0];
 						if (data->type == TYPE_MATCHLIST && data->filter)
@@ -128,8 +138,8 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 
 			case	ADDRESSBOOK_ENTRY_LIST:
 						*msg->Array++ = entry->u.list.nameofml;
-						*msg->Array++ = entry->alias;
-						*msg->Array++ = entry->description;
+						*msg->Array++ = data->alias_buf;
+						*msg->Array++ = data->description_buf;
 						*msg->Array = NULL;
 						break;
 		}

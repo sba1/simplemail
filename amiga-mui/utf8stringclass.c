@@ -47,19 +47,29 @@
 struct UTF8String_Data
 {
 	struct codeset *codeset;
+	char *utf8_string;
 };
+
+
+STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg);
 
 STATIC ULONG UTF8String_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
-	struct UTF8String_Data *data;
+/*	struct UTF8String_Data *data;*/
 
 	if (!(obj=(Object *)DoSuperMethodA(cl,obj,(Msg)msg)))
 		return 0;
 
-	
-
-	data = (struct UTF8String_Data*)INST_DATA(cl,obj);
+/*	data = (struct UTF8String_Data*)INST_DATA(cl,obj);*/
+	UTF8String_Set(cl,obj,msg);
 	return (ULONG)obj;
+}
+
+STATIC ULONG UTF8String_Dispose(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct UTF8String_Data *data = (struct UTF8String_Data*)INST_DATA(cl,obj);
+	if (data->utf8_string) FreeVec(data->utf8_string);
+	return NULL;
 }
 
 STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
@@ -89,14 +99,28 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	if (contents_setted)
 	{
+		struct TagItem *newtags = CloneTagItems(msg->ops_AttrList);
 		int len = mystrlen(new_contents);
-		if (len)
+		char *newcont = malloc(len+1);
+		ULONG rc;
+
+		if (newcont)
 		{
-			char *new_cont = (char*)malloc(len+1);
-			if (new_cont) utf8tostr(new_contents,new_cont,len+1,data->codeset);
-			set(obj,MUIA_String_Contents,new_cont);
-			free(new_cont);
-		} else set(obj,MUIA_String_Contents,NULL);
+			utf8tostr(new_contents,newcont,len+1,data->codeset);
+		}
+
+		if ((tag = FindTagItem(MUIA_UTF8String_Contents,newtags)))
+		{
+			tag->ti_Tag = MUIA_String_Contents;
+			tag->ti_Data = (ULONG)newcont;
+		}
+
+		rc = DoSuperMethod(cl,obj,msg->MethodID,newtags,NULL);
+
+		free(newcont);
+		FreeTagItems(newtags);
+
+		return rc;
 	}
 
 	if (msg->MethodID != OM_NEW)
@@ -112,6 +136,12 @@ STATIC ULONG UTF8String_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	switch (msg->opg_AttrID)
 	{
 		case	MUIA_UTF8String_Contents:
+					{
+						char *contents = (char*)xget(obj,MUIA_String_Contents);
+						free(data->utf8_string);
+						data->utf8_string = utf8create(contents, NULL);
+						*msg->opg_Storage = (ULONG)data->utf8_string;
+					}
 					break;
 	}
 	return DoSuperMethodA(cl,obj,(Msg)msg);

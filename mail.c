@@ -916,7 +916,7 @@ struct mail *mail_create_for(char *to_str_unexpanded, char *subject)
 			{
 				char *to_header;
 
-				to_header = encode_address_field("To",list);
+				to_header = encode_address_field_utf8("To",list);
 				free_address_list(list);
 
 				if (to_header)

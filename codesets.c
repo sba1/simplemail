@@ -794,9 +794,9 @@ struct codeset *codesets_find_best(char *text, int text_len)
 }
 
 /**************************************************************************
- Returns the number of characters a uft8 string has. This is not
+ Returns the number of characters a utf8 string has. This is not
  identically with the size of memory is required to hold the string.
- Please use uftsize() for this.
+ Please use utfsize() for this.
 **************************************************************************/
 int utf8len(const utf8 *str)
 {
@@ -813,6 +813,24 @@ int utf8len(const utf8 *str)
 	}
 
 	return len;
+}
+
+/**************************************************************************
+ Transforms a character position to the position in the char array
+**************************************************************************/
+int utf8realpos(const utf8 *str, int pos)
+{
+	const utf8 *str_save = str;
+	unsigned char c;
+
+	if (!str) return NULL;
+
+	while (pos && (c = *str))
+	{
+		pos--;
+		str += trailingBytesForUTF8[c] + 1;
+	}
+	return str - str_save;
 }
 
 /**************************************************************************
@@ -883,23 +901,31 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 	char *dest_iter = dest;
 
 	if (!codeset) codeset = (struct codeset*)list_first(&codesets_list);
-	if (!codeset) return 0;
+	if (!codeset || !str)
+	{
+		if (dest_size) *dest = 0;
+		return 0;
+	}
 
 	for (i=0;i < dest_size-1;i++)
 	{
 		unsigned char c = *str++;
 		if (c)
 		{
-			int len = trailingBytesForUTF8[c];
-			conv.utf8[1] = c;
-			strncpy(&conv.utf8[2],str,len);
-			conv.utf8[2+len] = 0;
-			str += len;
+			int len;
 
-			if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
+			if ((len = trailingBytesForUTF8[c]))
 			{
-				*dest_iter++ = f->code;
-			} else *dest_iter = ' ';
+				conv.utf8[1] = c;
+				strncpy(&conv.utf8[2],str,len);
+				conv.utf8[2+len] = 0;
+				str += len;
+
+				if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))
+				{
+					*dest_iter++ = f->code;
+				} else *dest_iter = ' ';
+			} else *dest_iter++ = c;
 		} else break;
 	}
 	*dest_iter = 0;

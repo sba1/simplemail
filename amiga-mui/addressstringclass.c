@@ -37,6 +37,7 @@
 #include <proto/intuition.h>
 
 #include "addressbook.h"
+#include "codesets.h"
 
 #include "addressstringclass.h"
 #include "addresstreelistclass.h"
@@ -49,7 +50,7 @@
  Returns a malloced() sting for the address start (this what should
  be completed)
 *******************************************************************/
-static char *get_address_start(char *contents, int pos, int select_size)
+static char *get_address_start(char *contents, int pos)
 {
 	char *buf;
 	int start_pos = pos;
@@ -97,13 +98,12 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 		struct addressbook_entry *entry = (struct addressbook_entry *)node->tn_User;
 		if (entry)
 		{
-			char *contents = (char*)xget(data->str,MUIA_String_Contents);
-			int buf_pos =  xget(data->str,MUIA_String_BufferPos);
-			int select_size = xget(data->str,MUIA_BetterString_SelectSize);
+			char *contents = (char*)xget(data->str,MUIA_UTF8String_Contents);
+			int buf_pos =  utf8realpos(contents,xget(data->str,MUIA_String_BufferPos));
 			char *addr_start;
 			char *complete;
 
-			addr_start = get_address_start(contents, buf_pos, select_size);
+			addr_start = get_address_start(contents, buf_pos);
 			complete = addressbook_completed_by_entry(addr_start, entry, NULL);
 
 			DoMethod(data->str, MUIM_AddressString_Complete, complete);
@@ -156,35 +156,6 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG MatchWindow_Set(struct IClass *cl, Object *obj, struct opSet *msg)
-{
-	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
-	struct TagItem *tstate, *tag;
-
-	tstate = (struct TagItem *)msg->ops_AttrList;
-
-	while (tag = NextTagItem (&tstate))
-	{
-		ULONG tidata = tag->ti_Data;
-
-/*		switch (tag->ti_Tag)
-		{
-			case	MUIA_Window_Open:
-						if (tidata)
-						{
-							struct Window *wnd = (struct Window*)xget(obj,MUIA_Window_Window);
-							SetAttrs(obj,
-								MUIA_Window_LeftEdge, wnd->LeftEdge + xget(data->str, MUIA_LeftEdge),
-								MUIA_Window_TopEdge, wnd->TopEdge + _top(obj) + _height(obj),
-								MUIA_Window_Width, xget(data->str, MUIA_Width),
-								TAG_DONE);
-						}
-						break;
-		}*/
-	}
-	return DoSuperMethodA(cl,obj,(Msg)msg);
-}
-
 STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressTreelist_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
@@ -212,7 +183,6 @@ STATIC ASM ULONG MatchWindow_Dispatcher(register __a0 struct IClass *cl, registe
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
-		case	OM_SET: return MatchWindow_Set(cl,obj,(struct opSet*)msg);
 		case  MUIM_AddressTreelist_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressTreelist_Refresh*)msg);
 		case  MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
 		case	MUIM_MatchWindow_Down: return MatchWindow_Down(cl,obj,msg);
@@ -303,11 +273,11 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 
     if (code == ',')
     {
-    	LONG bufferpos = xget(obj,MUIA_String_BufferPos);
-    	char *contents = (char*)xget(obj,MUIA_String_Contents);
-    	LONG selectsize = xget(obj,MUIA_BetterString_SelectSize);
+			char *contents = (char*)xget(obj,MUIA_UTF8String_Contents);
+			int buf_pos =  utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
+    	int selectsize = utf8realpos(contents+buf_pos,xget(obj,MUIA_BetterString_SelectSize));
 
-			if (selectsize && selectsize == strlen(contents+bufferpos))
+			if (selectsize && selectsize == strlen(contents + buf_pos))
 			{
 				SetAttrs(obj,MUIA_String_BufferPos, strlen(contents),
 										 MUIA_BetterString_SelectSize, 0,
@@ -318,11 +288,10 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 		if (((code >= 32 && code <= 126) || code >= 160) && !(msg->imsg->Qualifier & IEQUALIFIER_RCOMMAND))
 		{
 			char *contents;
-			LONG bufferpos;
+
 			DoSuperMethodA(cl, obj, (Msg)msg);
 
-			contents = (char*)xget(obj, MUIA_String_Contents);
-			bufferpos = xget(obj, MUIA_String_BufferPos);
+			contents = (char*)xget(obj, MUIA_UTF8String_Contents);
 
 			if (strlen(contents))
 			{
@@ -340,9 +309,6 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 					DoMethod(obj, MUIM_AddressString_Complete, completed);
 				}
 			}
-
-/*			AddressString_UpdateList(cl,obj);*/
-
 			return MUI_EventHandlerRC_Eat;
 		}
 	} else if (msg->imsg && msg->imsg->Class == IDCMP_CHANGEWINDOW)
@@ -406,7 +372,7 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 						newtext[len]=0;
 					}
 					strcat(newtext,append);
-					set(obj,MUIA_String_Contents,newtext);
+					set(obj,MUIA_UTF8String_Contents,newtext);
 					free(newtext);
 				}
 			}
@@ -418,19 +384,20 @@ STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 STATIC ULONG AddressString_Complete(struct IClass *cl, Object *obj, struct MUIP_AddressString_Complete *msg)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	char *contents = (char*)xget(obj, MUIA_String_Contents);
-	LONG bufferpos = xget(obj, MUIA_String_BufferPos);
+	char *contents = (char*)xget(obj, MUIA_UTF8String_Contents);
+	int buf_pos_unreal = xget(obj, MUIA_String_BufferPos);
+	int buf_pos = utf8realpos(contents,buf_pos_unreal);
 	char *completed = msg->text;
-	char *newcontents = (char*)malloc(strlen(contents)+strlen(completed)+1);
+	char *newcontents;
 
-	if (newcontents)
+	if ((newcontents = (char*)malloc(strlen(contents)+strlen(completed)+1)))
 	{
 		strcpy(newcontents, contents);
-		strcpy(&newcontents[bufferpos], completed);
+		strcpy(&newcontents[buf_pos], completed);
 		SetAttrs(obj,
-					MUIA_String_Contents,newcontents,
-					MUIA_String_BufferPos,bufferpos,
-					MUIA_BetterString_SelectSize, strlen(newcontents) - bufferpos,
+					MUIA_UTF8String_Contents, newcontents,
+					MUIA_String_BufferPos, buf_pos,
+					MUIA_BetterString_SelectSize, utf8len(newcontents) - buf_pos,
 					MUIA_NoNotify, TRUE,
 					TAG_DONE);
 		free(newcontents);
@@ -480,12 +447,11 @@ STATIC VOID AddressString_OpenList(struct IClass *cl, Object *obj)
 STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 {
 	struct AddressString_Data *data = (struct AddressString_Data*)INST_DATA(cl,obj);
-	char *contents = (char*)xget(obj,MUIA_String_Contents);
-	int buf_pos =  xget(obj,MUIA_String_BufferPos);
-	int select_size = xget(obj,MUIA_BetterString_SelectSize);
+	char *contents = (char*)xget(obj,MUIA_UTF8String_Contents);
+	int buf_pos =  utf8realpos(contents,xget(obj,MUIA_String_BufferPos));
 	char *addr_start;
 
-	addr_start = get_address_start(contents, buf_pos, select_size);
+	addr_start = get_address_start(contents, buf_pos);
 
 	if (data->match_wnd)
 	{

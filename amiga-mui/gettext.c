@@ -204,7 +204,7 @@ static char *find_msg(const char * msgid)
 {
   long top, act, bottom;
 
-  if(!domain.data)
+  if(!domain.data || !msgid)
     return NULL;
 
   /* Locate the MSGID and its translation.  */

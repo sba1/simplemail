@@ -421,7 +421,7 @@ static char *parse_sub_domain(char *sub_domain, char **pbuf)
 		/* IDN support */
 		if (!strncmp(ref,"xn--",4))
 		{
-			utf8 *utf8 = punycodetoutf8(ref+4,strlen(ref)-4);
+			utf8 *utf8 = punycodetoutf8(ref+4,strlen(ref+4));
 			free(ref);
 			*pbuf = utf8;
 		} else *pbuf = ref;

@@ -1,5 +1,12 @@
-Version 0.25 (twelth beta) - released on 2005/02/05
+Version 0.25 (twelfth beta) - released on 2005/02/05
    - RFC 3490 support for domains of email addresses
+   - On mail preview the mail header are no longer embedded, but
+     are displayed separatly. This can be switched to a compact form
+     to save space.
+   - Multiple imap accounts (with different logins) per imap
+     server are now possible
+   - If available "TheBar.mcc" is now used for the main toolbar
+   - Bug fixes
 
 Version 0.24 (eleventh beta) - released on 2004/12/24
    - Mail preview in main window

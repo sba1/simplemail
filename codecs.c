@@ -499,7 +499,7 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
 			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 12)) >> 14];
 			line_buf[line_len++] = encoding_table[(todecode1 & (0xfc000000 >> 18)) >> 8];
 
-			todecode1 = ((todecode2 & 0x0000ffff) << 16) | ((todecode3 & 0xff000000)>>24);
+			todecode1 = (todecode2 << 16) | ((todecode3 & 0xff000000)>>16);
 
 			if (line_len >= 76)
 			{

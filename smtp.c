@@ -541,23 +541,40 @@ int esmtp_auth(struct smtp_server *server)
 
 		}
 	}
-	else if(server->esmtp.auth_flags & AUTH_LOGIN)
+	else*/ if(server->esmtp.auth_flags & AUTH_LOGIN)
 	{
 		if(smtp_send_cmd(server, "AUTH", "LOGIN") == 334)
 		{
+			strcpy(prep, server->esmtp.auth_login);
 
+			buf = encode_base64(prep, strlen(prep));
+			buf[strlen(buf) - 1] = 0;
+			
+			if(smtp_send_cmd(server, buf, NULL) == 334)
+			{
+				free(buf);
+
+				strcpy(prep, server->esmtp.auth_password);
+
+				buf = encode_base64(prep, strlen(prep));
+				buf[strlen(buf) - 1] = 0;
+
+				if(smtp_send_cmd(server, buf, NULL) == 235)
+				{
+					rc = 1;
+				}
+			}
 		}
 	}
 	else if(server->esmtp.auth_flags & AUTH_PLAIN)
-	{*/
+	{
 		if(smtp_send_cmd(server, "AUTH", "PLAIN") == 334)
 		{
 			prep[0]=0;
 			strcpy(prep + 1, server->esmtp.auth_login);
 			strcpy(prep + 1 + strlen(server->esmtp.auth_login) + 1, server->esmtp.auth_password);
-
-			len = 1 + strlen(server->esmtp.auth_login) + 1 + strlen(server->esmtp.auth_password);
-			buf = encode_base64(prep, len);
+			
+			buf = encode_base64(prep, strlen(server->esmtp.auth_login) + strlen(server->esmtp.auth_password) + 2);
 			buf[strlen(buf) - 1] = 0;
 			if(smtp_send_cmd(server, buf, NULL) == 235)
 			{
@@ -565,7 +582,7 @@ int esmtp_auth(struct smtp_server *server)
 			}
 			free(buf);
 		}
-//	  }
+	}
 
 	return rc;
 }

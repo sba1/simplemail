@@ -315,7 +315,7 @@ static void menu_execute_script(int *val_ptr)
 			if (AslRequestTags(file_req,
 					ASLFR_Screen, xget(win_main,MUIA_Window_Screen),
 					ASLFR_InitialDrawer, initial_drawer,
-					ASLFR_InitialFile, initial_file,
+					initial_file?ASLFR_InitialFile:TAG_IGNORE, initial_file,
 					ASLFR_InitialPattern, initial_pattern,
 					ASLFR_DoPatterns, TRUE,
 					ASLFR_RejectIcons, TRUE,

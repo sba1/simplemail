@@ -1198,6 +1198,8 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	int len;
 	struct codeset *codeset = codesets_find(charset);
 
+  if (!from) return NULL;
+
 	if (!codeset)
 	{
 		if (!mystricmp(charset,"utf-7"))

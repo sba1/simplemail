@@ -335,14 +335,19 @@ static void compose_remove_file(struct Compose_Data **pdata)
 
 	rem = DoMethod(data->attach_tree, MUIM_NListtree_GetNr, treenode, MUIV_NListtree_GetNr_Flag_CountLevel) == 2;
 
-	treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Parent,0);
+	treenode = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
 
+	if (treenode && rem) set(data->attach_tree, MUIA_NListtree_Quiet,TRUE);
 	DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
 
 	if (treenode && rem)
 	{
 		struct MUI_NListtree_TreeNode *newtreelist = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Parent,0);
-		DoMethod(data->attach_tree, MUIM_NListtree_Move, treenode, MUIV_NListtree_Move_OldTreeNode_Head, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Head);
+
+		DoMethod(data->attach_tree, MUIM_NListtree_Move, treenode, MUIV_NListtree_Move_OldTreeNode_Head, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Head, 0); 
+		DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, treenode, 0); 
+		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First); 
+		set(data->attach_tree, MUIA_NListtree_Quiet,FALSE);
 	}
 }
 

@@ -63,11 +63,7 @@ void callback_edit_filter(void);
 void callback_addressbook(void);
 void callback_config(void);
 void callback_folder_active(void);
-int callback_folder_count_signatures(int def_signature);
-int callback_folder_update_signatures(int def_signature);
-void callback_folder_use_updated_signatures(void);
-void callback_folder_save_updated_signatures(void);
-void callback_folder_undo_updated_signatures(void);
+int callback_folder_count_signatures(char *def_signature);
 void callback_import_mbox(void);
 void callback_export(void);
 

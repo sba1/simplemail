@@ -978,33 +978,9 @@ void callback_folder_active(void)
 }
 
 /* count the signatures used in folders */
-int callback_folder_count_signatures(int def_signature)
+int callback_folder_count_signatures(char *def_signature)
 {
 	return folder_count_signatures(def_signature);
-}
-
-/* update the signatures used in folders */
-int callback_folder_update_signatures(int def_signature)
-{
-	return folder_update_signatures(def_signature);
-}
-
-/* update the signatures used in folders */
-void callback_folder_use_updated_signatures(void)
-{
-	folder_use_updated_signatures();
-}
-
-/* update the signatures used in folders */
-void callback_folder_save_updated_signatures(void)
-{
-	folder_save_updated_signatures();
-}
-
-/* undo the update of signatures used in folders */
-void callback_folder_undo_updated_signatures(void)
-{
-	folder_undo_updated_signatures();
 }
 
 /* a new mail should be added to a given folder */
@@ -1582,6 +1558,12 @@ void callback_refresh_folders(void)
 	filter_update_folder_list();
 }
 
+void callback_refresh_signatures(void)
+{
+	compose_refresh_signature_cycle();
+	folder_refresh_signature_cycle();
+}
+
 /* the configuration has been changed */
 void callback_config_changed(void)
 {
@@ -1589,6 +1571,7 @@ void callback_config_changed(void)
 	main_build_accounts();
 	folder_create_imap();
 	callback_refresh_folders();
+	callback_refresh_signatures();
 }
 
 static int autocheck_minutes_start; /* to compare with this */

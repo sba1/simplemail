@@ -21,7 +21,7 @@
 */
 
 /* Define DONT_USE_THREADS to disable the multithreading */
-/* #define DONT_USE_THREADS */
+/*#define DONT_USE_THREADS*/
 
 #include <stdarg.h>
 #include <string.h>
@@ -36,7 +36,7 @@
 
 #include "subthreads_amiga.h" /* struct thread_s */
 
-/*#define MYDEBUG*/
+/* #define MYDEBUG */
 #include "debug.h"
 
 struct ThreadMessage
@@ -54,17 +54,18 @@ struct ThreadMessage
 /* the port allocated by the main task */
 static struct MsgPort *thread_port;
 
-/* the thread, we currently allow only a single one */
-//static struct Process *thread;
+/* the default thread */
 static thread_t default_thread;
 
-
+/* list of all subthreads */
 struct list thread_list;
 struct thread_node
 {
 	struct node node;
 	thread_t thread;
 };
+
+static void thread_handle_execute_function_message(struct ThreadMessage *tmsg);
 
 /**************************************************************************
  Remove the thread which has replied tis given tmsg
@@ -159,28 +160,15 @@ void thread_handle(void)
 
 	while ((tmsg = (struct ThreadMessage *)GetMsg(thread_port)))
 	{
+		D(bug("Received Message: 0x%lx\n",tmsg));
+
 		if (tmsg->startup)
 		{
 			thread_remove(tmsg);
 			continue;
 		}
-		if (tmsg->function)
-		{
-			switch(tmsg->argcount)
-			{
-				case	0: tmsg->result = tmsg->function();break;
-				case	1: tmsg->result = ((int (*)(void*))tmsg->function)(tmsg->arg1);break;
-				case	2: tmsg->result = ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
-				case	3: tmsg->result = ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
-				case	4: tmsg->result = ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
-			}
-		}
-		if (tmsg->async)
-		{
-			if (tmsg->async == 2 && tmsg->argcount >= 1 && tmsg->arg1) FreeVec(tmsg->arg1);
-			FreeVec(tmsg);
-		}
-		else ReplyMsg(&tmsg->msg);
+
+		thread_handle_execute_function_message(tmsg);
 	}
 }
 
@@ -204,6 +192,7 @@ static __saveds void thread_entry(void)
 	thread = msg->thread;
 	if (thread->thread_port = CreateMsgPort())
 	{
+		D(bug("Subthreaded created port at 0x%lx\n",thread->thread_port));
 		proc->pr_Task.tc_UserData = thread;
 		entry = (int(*)(void*))msg->function;
 
@@ -376,39 +365,110 @@ void thread_abort(thread_t thread_to_abort)
 	}
 }
 
-/* Call the function synchron */
-int thread_call_parent_function_sync(void *function, int argcount, ...)
-{
-#ifndef DONT_USE_THREADS
-	int rc = 0;
 
+/**************************************************************************
+ Returns ThreadMessage filled with the given parameters. You can manipulate
+ the returned message to be async or something else
+**************************************************************************/
+static struct ThreadMessage *thread_create_message(void *function, int argcount, va_list argptr)
+{
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
-		struct Process *p = (struct Process*)FindTask(NULL);
-		va_list argptr;
+		struct MsgPort *subthread_port = ((struct thread_s*)(FindTask(NULL)->tc_UserData))->thread_port;
 
-		va_start(argptr,argcount);
-
-		tmsg->msg.mn_ReplyPort = &p->pr_MsgPort;
+		tmsg->msg.mn_ReplyPort = subthread_port;
 		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
 		tmsg->function = (int (*)(void))function;
 		tmsg->argcount = argcount;
-		tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
-		tmsg->async = 0;
 
-		va_end (arg_ptr);
+		if (argcount--)
+		{
+			tmsg->arg1 = va_arg(argptr, void *);
+			if (argcount--)
+			{
+				tmsg->arg2 = va_arg(argptr, void *);
+				if (argcount--)
+				{
+					tmsg->arg3 = va_arg(argptr, void *);
+					if (argcount--)
+					{
+						tmsg->arg4 = va_arg(argptr, void *);
+					}
+				}
+			}
+		}
+		tmsg->async = 0;
+	}
+	return tmsg;
+}
+
+/**************************************************************************
+ This will handle the execute function message
+**************************************************************************/
+static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
+{
+	if (tmsg->startup) return;
+
+	if (tmsg->function)
+	{
+		switch(tmsg->argcount)
+		{
+			case	0: tmsg->result = tmsg->function();break;
+			case	1: tmsg->result = ((int (*)(void*))tmsg->function)(tmsg->arg1);break;
+			case	2: tmsg->result = ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
+			case	3: tmsg->result = ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
+			case	4: tmsg->result = ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
+		}
+	}
+	if (tmsg->async)
+	{
+		D(bug("Freeing Message at 0x%lx\n",tmsg));
+		if (tmsg->async == 2 && tmsg->argcount >= 1 && tmsg->arg1) FreeVec(tmsg->arg1);
+		FreeVec(tmsg);
+	}
+	else
+	{
+		D(bug("Repling Message at 0x%lx\n",tmsg));
+		ReplyMsg(&tmsg->msg);
+	}
+}
+
+/**************************************************************************
+ Call a function in context of the parent task synchron
+**************************************************************************/
+int thread_call_parent_function_sync(void *function, int argcount, ...)
+{
+#ifndef DONT_USE_THREADS
+	va_list argptr;
+	int rc = 0;
+	struct ThreadMessage *tmsg;
+
+	va_start(argptr,argcount);
+
+	if ((tmsg = thread_create_message(function, argcount, argptr)))
+	{
+		struct MsgPort *subthread_port = tmsg->msg.mn_ReplyPort;
+		int ready = 0;
 
 		PutMsg(thread_port,&tmsg->msg);
-		WaitPort(&p->pr_MsgPort);
-		GetMsg(&p->pr_MsgPort);
+
+		while (!ready)
+		{
+			struct Message *msg;
+			WaitPort(subthread_port);
+
+			while ((msg = GetMsg(subthread_port)))
+			{
+				if (msg == &tmsg->msg) ready = 1;
+			}
+		}
+
 		rc = tmsg->result;
 		FreeVec(tmsg);
 	}
 
+	va_end (arg_ptr);
 	return rc;
 #else
 	int rc;
@@ -499,47 +559,37 @@ static void timer_send_if_not_sent(struct timer *timer, int millis)
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)), void *timer_data, int millis, void *function, int argcount, ...)
 {
 #ifndef DONT_USE_THREADS
+	va_list argptr;
 	int rc = 0;
+	struct ThreadMessage *tmsg;
 
-	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
-	if (tmsg)
+	va_start(argptr,argcount);
+
+	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
-		struct MsgPort *subthread_port = ((struct thread_s*)(FindTask(NULL)->tc_UserData))->thread_port;
+		struct MsgPort *subthread_port = tmsg->msg.mn_ReplyPort;
 		struct timer timer;
 
 		if (timer_init(&timer))
 		{
-			va_list argptr;
-	
-			/* we only accept positive values */
-			if (millis < 1) millis = 1;
-	
-			va_start(argptr,argcount);
+			int ready = 0;
 
-			tmsg->msg.mn_ReplyPort = subthread_port;
-			tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
-			tmsg->function = (int (*)(void))function;
-			tmsg->argcount = argcount;
-			tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-			tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-			tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-			tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
-			tmsg->async = 0;
-	
-			va_end (arg_ptr);
-	
+			/* we only accept positive values */
+			if (millis < 0) millis = 0;
+
 			/* now send the message */
 			PutMsg(thread_port,&tmsg->msg);
 	
 			/* while the parent task should execute the message
 			 * we regualiy call the given callback function */
-			while (1)
+			while (!ready)
 			{
 				ULONG timer_m = timer_mask(&timer);
 				ULONG proc_m = 1UL << subthread_port->mp_SigBit;
 				ULONG mask;
 
-				timer_send_if_not_sent(&timer,millis);
+				if (millis)
+					timer_send_if_not_sent(&timer,millis);
 	
 				mask = Wait(timer_m|proc_m);
 				if (mask & timer_m)
@@ -551,18 +601,19 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)
 	
 				if (mask & proc_m)
 				{
-					/* the parent task has finished */
-					break;
+					struct Message *msg;
+					while ((msg = GetMsg(subthread_port)))
+					{
+						if (msg == &tmsg->msg) ready = 1;
+					}
 				}
 			}
-
-			/* Remove msg from port */
-			GetMsg(subthread_port);
 			rc = tmsg->result;
 			timer_cleanup(&timer);
 		}
 		FreeVec(tmsg);
 	}
+	va_end (arg_ptr);
 	return rc;
 #else
 
@@ -591,25 +642,41 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback(void*)
 }
 
 
-/* waits until aborted and calls timer_callback periodically */
+/**************************************************************************
+ Waits until aborted and calls timer_callback periodically. It's possible
+ to execute functions on the threads context while in this function
+**************************************************************************/
 void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct timer timer;
 	if (timer_init(&timer))
 	{
+		struct MsgPort *subthread_port = ((struct thread_s*)(FindTask(NULL)->tc_UserData))->thread_port;
+		if (millis < 0) millis = 0;
+
 		while (1)
 		{
+			ULONG proc_m = 1UL << subthread_port->mp_SigBit;
 			ULONG timer_m = timer_mask(&timer);
 			ULONG mask;
 
-			timer_send_if_not_sent(&timer,millis);
+			if (millis) timer_send_if_not_sent(&timer,millis);
 	
-			mask = Wait(timer_m|SIGBREAKF_CTRL_C);
+			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C);
 			if (mask & timer_m)
 			{
 				if (timer_callback)
 					timer_callback(timer_data);
 				timer.timer_send = 0;
+			}
+
+			if (mask & proc_m)
+			{
+				struct ThreadMessage *tmsg;
+				while ((tmsg = (struct ThreadMessage*)GetMsg(subthread_port)))
+				{
+					 thread_handle_execute_function_message(tmsg);
+				}
 			}
 
 			if (mask & SIGBREAKF_CTRL_C) break;

@@ -643,7 +643,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 									int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
 									int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
 
-									if (dl && del)
+									if (dl || del)
 										thread_call_parent_function_async(dl_set_gauge_mail,1,i);
 
 									if (dl)

@@ -98,11 +98,11 @@ static int mailncpy(char *dest, const char *src, int n)
 
   for (i=0;i<n;i++)
   {
-    c = *src++;
-    if (c==10 || c == 13 || c == 27) continue;
-    if (c=='\t') c=' ';
-    len++;
-    *dest_ptr++ = c;
+	 c = *src++;
+	 if (c==10 || c == 13) continue;
+	 if (c=='\t') c=' ';
+	 len++;
+	 *dest_ptr++ = c;
   }
 
   return len;
@@ -1589,7 +1589,7 @@ static int mail_read_structure(struct mail *mail)
 				char *buf = mail->text + mail->text_begin;
 
 				/* This is for e-Mailers which boundary start soon after the header
-           so there couldn't be any LF before */
+			  so there couldn't be any LF before */
 				if (!strncmp(buf,search_str+1,strlen(search_str+1)))
 				{
 					buf += strlen(search_str+1);
@@ -2419,7 +2419,7 @@ int mail_create_html_header(struct mail *mail)
 		if (cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 		{
 			struct parse_address p_addr;
-			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Copies to"),fh);
+			fprintf(fh,"<STRONG>%s:</STRONG> ",_("Copies to"));
 			if ((parse_address(cc,&p_addr)))
 			{
 				struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);

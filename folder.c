@@ -1131,6 +1131,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 					folder_config_save(&node->folder);
 				}
 
+				folder_read_mail_infos(&node->folder,1);
 				list_insert(&folder_list, &node->node, &parent_node->node);
 				return &node->folder;
 			}

@@ -184,6 +184,7 @@ struct LocaleConv {
 {"nederlands", "nl"},
 {"norsk", "no"},
 {"polski", "pl"},
+{"polish","pl"},
 {"português" , "pt"},
 {"português-brasil", "pt_BR"},
 {"russian", "ru"},

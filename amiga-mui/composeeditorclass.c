@@ -46,7 +46,7 @@
 
 struct ComposeEditor_Data
 {
-	LONG cmap[2];
+	LONG cmap[8];
 };
 
 STATIC ULONG ComposeEditor_New(struct IClass *cl,Object *obj,struct opSet *msg)
@@ -71,8 +71,8 @@ STATIC ULONG ComposeEditor_Setup(struct IClass *cl, Object *obj, struct MUIP_Set
 
 	if (retval)
 	{
-		data->cmap[0] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);
-		data->cmap[1] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0x80000000,NULL);
+/*		data->cmap[0] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);*/
+		data->cmap[7] = ObtainBestPenA(_screen(obj)->ViewPort.ColorMap,0xffffffff,0xffffffff,0x80000000,NULL);
 	} else
 	{
 		DoSuperMethod(cl,obj,MUIM_Cleanup);
@@ -85,8 +85,8 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct ComposeEditor_Data *data = (struct ComposeEditor_Data*)INST_DATA(cl,obj);
 
-	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[0]);
-	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[1]);
+/*	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[0]);*/
+	ReleasePen(_screen(obj)->ViewPort.ColorMap,data->cmap[7]);
 
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }

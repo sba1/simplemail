@@ -65,6 +65,7 @@
 
 void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail *mail);
+static void save_contents_to(struct Read_Data *data, struct mail *mail, char *drawer, char *file);
 static int read_window_display_mail(struct Read_Data *data, struct mail *mail);
 
 #define MAX_READ_OPEN 10
@@ -334,6 +335,19 @@ static void icon_open(int **pdata)
 }
 
 /******************************************************************
+ The icon has been dropped on a wb drawer
+*******************************************************************/
+static void icon_drop(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+	struct mail *mail = (struct mail *)(pdata[1]);
+	Object *icon = (Object*)(pdata[2]);
+	char *path = (char*)xget(icon,MUIA_Icon_DropPath);
+
+	save_contents_to(data, mail, path, mail->filename);
+}
+
+/******************************************************************
  A context menu item has been selected
 *******************************************************************/
 static void context_menu_trigger(int **pdata)
@@ -386,7 +400,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 
 		group = VGroup,
 			Child, icon = IconObject,
-					MUIA_InputMode, MUIV_InputMode_Immediate,
+					MUIA_Draggable, TRUE,
 					MUIA_Icon_MimeType, mail->content_type,
 					MUIA_Icon_MimeSubType, mail->content_subtype,
 					MUIA_Icon_Buffer, buffer,
@@ -408,6 +422,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, mail, MUIV_TriggerValue);
 			DoMethod(icon, MUIM_Notify, MUIA_Icon_DoubleClick, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_open, data, mail);
 			DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
+			DoMethod(icon, MUIM_Notify, MUIA_Icon_DropPath, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, icon_drop, data, mail, icon);
 		}
 	}
 
@@ -429,39 +444,58 @@ static void save_contents(struct Read_Data *data, struct mail *mail)
 					mail->filename?ASLFR_InitialFile:TAG_IGNORE,mail->filename,
 					TAG_DONE))
 		{
-			BPTR dlock;
-			STRPTR drawer = data->file_req->fr_Drawer;
+			save_contents_to(data,mail,data->file_req->fr_Drawer,data->file_req->fr_File);
+		}
+	}
+}
 
-			mail_decode(mail);
+/******************************************************************
+ Save the contents of a given mail to a given dest
+*******************************************************************/
+static void save_contents_to(struct Read_Data *data, struct mail *mail, char *drawer, char *file)
+{
+	BPTR dlock;
+	mail_decode(mail);
 
-			if ((dlock = Lock(drawer,ACCESS_READ)))
+	if (!file) file = "Unnamed";
+
+	if ((dlock = Lock(drawer,ACCESS_READ)))
+	{
+		BPTR olock;
+		BPTR flock;
+		BPTR fh;
+		int goon = 1;
+
+		olock = CurrentDir(dlock);
+
+		if ((flock = Lock(file,ACCESS_READ)))
+		{
+			UnLock(flock);
+			goon = sm_request(NULL,_("File %s already exists in %s.\nDo you really want to replace it?"),("_Yes|_No"),file,drawer);
+		}
+
+		if (goon)
+		{
+			if ((fh = Open(file, MODE_NEWFILE)))
 			{
-				BPTR olock;
-				BPTR fh;
+				char *comment = mail_get_from_address(mail_get_root(mail));
+				void *cont;
+				int cont_len;
 
-				olock = CurrentDir(dlock);
+				mail_decoded_data(mail,&cont,&cont_len);
+				Write(fh,cont,cont_len);
+				Close(fh);
 
-				if ((fh = Open(data->file_req->fr_File, MODE_NEWFILE)))
+				if (comment)
 				{
-					char *comment = mail_get_from_address(mail_get_root(mail));
-					void *cont;
-					int cont_len;
-
-					mail_decoded_data(mail,&cont,&cont_len);
-					Write(fh,cont,cont_len);
-					Close(fh);
-
-					if (comment)
-					{
-						SetComment(data->file_req->fr_File,comment);
-						free(comment);
-					}
+					SetComment(file,comment);
+					free(comment);
 				}
-
-				CurrentDir(olock);
-				UnLock(dlock);
 			}
 		}
+
+		CurrentDir(olock);
+		UnLock(dlock);
 	}
 }
 

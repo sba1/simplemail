@@ -32,6 +32,7 @@ IMPORT struct MUI_CustomClass *CL_Icon;
 #define MUIA_Icon_DoubleClick (TAG_USER+0x45687c) /* (BOOL) ...N */
 #define MUIA_Icon_Buffer (TAG_USER+0x35687d)      /* (void*) I... */
 #define MUIA_Icon_BufferLen (TAG_USER+0x35687e)   /* (ULONG) I... */
+#define MUIA_Icon_DropPath (TAG_USER+0x3568f) /* (STRPTR) ..G */
 
 int create_icon_class(void);
 void delete_icon_class(void);

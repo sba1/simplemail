@@ -26,6 +26,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
+#include <workbench/workbench.h>
 #include <workbench/icon.h>
 
 #include <clib/alib_protos.h>
@@ -35,6 +36,8 @@
 #include <proto/muimaster.h>
 #include <proto/icon.h>
 #include <proto/intuition.h>
+#include <proto/wb.h>
+#include <proto/layers.h>
 
 #include "support_indep.h"
 
@@ -43,6 +46,11 @@
 #include "datatypesclass.h"
 #include "iconclass.h"
 #include "muistuff.h"
+
+#define MUIM_DeleteDragImage 0x80423037
+
+#define MUIM_DoDrag 0x804216bb /* private */ /* V18 */
+struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; /* private */
 
 struct Icon_Data
 {
@@ -56,6 +64,8 @@ struct Icon_Data
 
 	struct MUI_EventHandlerNode ehnode;
 	ULONG select_secs,select_mics;
+
+  char *drop_path;
 };
 
 STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg);
@@ -65,6 +75,7 @@ STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct Icon_Data *data;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
+//					MUIA_Draggable, WorkbenchBase->lib_Version >= 45,
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -79,6 +90,7 @@ STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	if (data->type) FreeVec(data->type);
 	if (data->subtype) FreeVec(data->subtype);
+	if (data->drop_path) FreeVec(data->drop_path);
 
 	DoSuperMethodA(cl,obj,msg);
 }
@@ -136,11 +148,17 @@ STATIC ULONG Icon_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 STATIC ULONG Icon_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
+	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	if (msg->opg_AttrID == MUIA_Icon_DoubleClick)
 	{
 		*msg->opg_Storage = 1;
 		return 1;
 	}
+  if (msg->opg_AttrID == MUIA_Icon_DropPath)
+  {
+		*msg->opg_Storage = (ULONG)data->drop_path;
+		return 1;
+  }
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
@@ -303,20 +321,170 @@ STATIC ULONG Icon_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_Handle
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
 	if (msg->imsg && msg->imsg->Class == IDCMP_MOUSEBUTTONS)
 	{
-		if (msg->imsg->Code == SELECTUP && _isinobject(obj,msg->imsg->MouseX,msg->imsg->MouseY))
+		if (!(_isinobject(obj,msg->imsg->MouseX,msg->imsg->MouseY))) return 0;
+
+		if (msg->imsg->Code == SELECTDOWN)
 		{
 			ULONG secs, mics;
 			CurrentTime(&secs,&mics);
+
+			set(obj,MUIA_Selected, TRUE);
 
 			if (DoubleClick(data->select_secs,data->select_mics, secs, mics))
 			{
 				set(obj,MUIA_Icon_DoubleClick, TRUE);
 			}
 			data->select_secs = secs;
-			data->select_mics = mics;	
+			data->select_mics = mics;
+
+			if (WorkbenchBase->lib_Version >= 45)
+			{
+				DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
+				data->ehnode.ehn_Events |= IDCMP_MOUSEMOVE;
+				DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
+			}
+
+			return MUI_EventHandlerRC_Eat;
 		}
+
+		if (msg->imsg->Code == SELECTUP)
+		{
+			if (WorkbenchBase->lib_Version >= 45)
+			{
+				DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
+				data->ehnode.ehn_Events &= ~IDCMP_MOUSEMOVE;
+				DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
+			}
+			return MUI_EventHandlerRC_Eat;
+		}
+
+	}
+
+	if (msg->imsg->Class == IDCMP_MOUSEMOVE)
+	{
+		DoMethod(obj, MUIM_DoDrag, msg->imsg->MouseX - _mleft(obj), msg->imsg->MouseY - _mtop(obj));
 	}
 	return 0;
+}
+
+struct Selection_Msg
+{
+	struct Layer *l;
+	LONG mx,my;
+
+  char *drawer;
+	char *dest_name;
+	int finish;
+};
+
+STATIC __asm ULONG selection_func(register __a0 struct Hook *h, register __a1 struct IconSelectMsg *ism)
+{
+	struct Selection_Msg *msg = (struct Selection_Msg *)h->h_Data;
+	struct Window *wnd = ism->ism_ParentWindow;
+	if (!wnd) return ISMACTION_Stop;
+	if (wnd->WLayer != msg->l) return ISMACTION_Stop;
+  msg->finish = 1;
+
+  if ((ism->ism_Left + wnd->LeftEdge <= msg->mx) && (msg->mx <= wnd->LeftEdge + ism->ism_Left + ism->ism_Width - 1) &&
+      (ism->ism_Top + wnd->TopEdge <= msg->my) && (msg->my <= wnd->TopEdge + ism->ism_Top + ism->ism_Height - 1))
+	{
+		if (ism->ism_Type == WBDRAWER)
+		{
+			msg->dest_name = StrCopy(ism->ism_Name);
+		} else if (ism->ism_Type == WBDISK)
+		{
+			if ((msg->dest_name = AllocVec(strlen(ism->ism_Name)+2,0)))
+			{
+				strcpy(msg->dest_name,ism->ism_Name);
+				strcat(msg->dest_name,":");
+			}
+		}
+		return ISMACTION_Stop;
+	}
+
+	return ISMACTION_Ignore;
+}
+
+STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_DeleteDragImage *msg)
+{
+	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
+	if (WorkbenchBase->lib_Version >= 45)
+	{
+		struct Layer *l = WhichLayer(&_screen(obj)->LayerInfo,_screen(obj)->MouseX,_screen(obj)->MouseY);
+		if (l)
+		{
+			struct List *path_list;
+			if (WorkbenchControl(NULL,WBCTRLA_GetOpenDrawerList, &path_list, TAG_DONE))
+			{
+				struct MyHook hook;
+				struct Selection_Msg sel_msg;
+		    struct Node *n;
+
+        sel_msg.l = l;
+        sel_msg.mx = _screen(obj)->MouseX;
+        sel_msg.my = _screen(obj)->MouseY;
+        sel_msg.dest_name = NULL;
+        sel_msg.finish = 0;
+
+				init_myhook(&hook, (HOOKFUNC)selection_func, &sel_msg);
+
+				if (data->drop_path)
+				{
+					FreeVec(data->drop_path);
+					data->drop_path = NULL;
+				}
+
+		    for (n = path_list->lh_Head; n->ln_Succ; n = n->ln_Succ)
+		    {
+					if ((sel_msg.drawer = (char*)StrCopy(n->ln_Name)))
+					{
+						ChangeWorkbenchSelectionA(n->ln_Name, (struct Hook*)&hook, NULL);
+						if (sel_msg.finish)
+						{
+							if (!sel_msg.dest_name)
+							{
+								data->drop_path = sel_msg.drawer;
+								sel_msg.drawer = NULL;
+							} else
+							{
+								int len = strlen(sel_msg.dest_name) + strlen(sel_msg.drawer) + 10;
+
+								if ((data->drop_path = (char*)AllocVec(len,0)))
+								{
+									strcpy(data->drop_path,sel_msg.drawer);
+									AddPart(data->drop_path,sel_msg.dest_name,len);
+								}
+								FreeVec(sel_msg.dest_name);
+							}
+						}
+						if (sel_msg.drawer) FreeVec(sel_msg.drawer);
+						if (sel_msg.finish) break;					
+					}
+		    }
+
+				WorkbenchControl(NULL,WBCTRLA_FreeOpenDrawerList, path_list, TAG_DONE);
+
+				if (!sel_msg.finish)
+				{
+					sel_msg.drawer = NULL;
+					ChangeWorkbenchSelectionA(NULL, (struct Hook*)&hook, NULL);
+					if (sel_msg.finish && sel_msg.dest_name)
+						data->drop_path = sel_msg.dest_name;
+				}
+
+				if (data->drop_path)
+				{
+					DoMethod(_app(obj),MUIM_Application_PushMethod, obj, 3, MUIM_Set, MUIA_Icon_DropPath, data->drop_path);
+				}
+			}
+		}
+	}
+
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
+	data->ehnode.ehn_Events &= ~IDCMP_MOUSEMOVE;
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ASM ULONG Icon_Dispatcher(register __a0 struct IClass *cl, register __a2 Object *obj, register __a1 Msg msg)
@@ -327,12 +495,13 @@ STATIC ASM ULONG Icon_Dispatcher(register __a0 struct IClass *cl, register __a2 
 		case	OM_NEW:				return Icon_New(cl,obj,(struct opSet*)msg);
 		case  OM_DISPOSE:		Icon_Dispose(cl,obj,msg); return 0;
 		case  OM_SET:				return Icon_Set(cl,obj,(struct opSet*)msg);
-//		case	OM_GET:				return Icon_Get(cl,obj,(struct opGet*)msg);
+		case	OM_GET:				return Icon_Get(cl,obj,(struct opGet*)msg);
 		case  MUIM_AskMinMax: return Icon_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
 		case	MUIM_Setup:		return Icon_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return Icon_Cleanup(cl,obj,msg);
 		case	MUIM_Draw:			return Icon_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return Icon_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
+		case  MUIM_DeleteDragImage: return Icon_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage*)msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

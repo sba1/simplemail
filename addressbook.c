@@ -231,8 +231,7 @@ void addressbook_set_alias(struct addressbook_entry *entry, char *alias)
 	if (string)
 	{
 		if (*string) free(*string);
-		if (alias) *string = strdup(alias);
-		else *string = NULL;
+		*string = mystrdup(alias);
 	}
 }
 
@@ -253,7 +252,7 @@ void addressbook_set_description(struct addressbook_entry *entry, char *desc)
 	if (string)
 	{
 		if (*string) free(*string);
-		*string = strdup(desc);
+		*string = mystrdup(desc);
 	}
 }
 
@@ -311,7 +310,7 @@ struct addressbook_entry *addressbook_create_person(char *realname, char *email)
 	{
 		memset(entry,0,sizeof(struct addressbook_entry));
 		entry->type = ADDRESSBOOK_ENTRY_PERSON;
-		entry->person.realname = strdup(realname);
+		entry->person.realname = mystrdup(realname);
 		addressbook_person_add_email(entry,email);
 	}
 	return entry;
@@ -484,29 +483,29 @@ struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *
 		{
 			case	ADDRESSBOOK_ENTRY_GROUP:
 						{
-							if (entry->group.alias) new_entry->group.alias = strdup(entry->group.alias);
-							if (entry->group.description) new_entry->group.description = strdup(entry->group.description);
+							new_entry->group.alias = mystrdup(entry->group.alias);
+							new_entry->group.description = mystrdup(entry->group.description);
 							list_init(&new_entry->group.list);
 						}
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
 						{
-							if (entry->person.alias) new_entry->person.alias = strdup(entry->person.alias);
-							if (entry->person.realname) new_entry->person.realname = strdup(entry->person.realname);
-							if (entry->person.pgpid) new_entry->person.pgpid = strdup(entry->person.pgpid);
-							if (entry->person.homepage) new_entry->person.homepage = strdup(entry->person.homepage);
-							if (entry->person.street) new_entry->person.street = strdup(entry->person.street);
-							if (entry->person.city) new_entry->person.city = strdup(entry->person.city);
-							if (entry->person.country) new_entry->person.country = strdup(entry->person.country);
-							if (entry->person.phone) new_entry->person.phone = strdup(entry->person.phone);
-							if (entry->person.description) new_entry->person.description = strdup(entry->person.description);
+							new_entry->person.alias = mystrdup(entry->person.alias);
+							new_entry->person.realname = mystrdup(entry->person.realname);
+							new_entry->person.pgpid = mystrdup(entry->person.pgpid);
+							new_entry->person.homepage = mystrdup(entry->person.homepage);
+							new_entry->person.street = mystrdup(entry->person.street);
+							new_entry->person.city = mystrdup(entry->person.city);
+							new_entry->person.country = mystrdup(entry->person.country);
+							new_entry->person.phone = mystrdup(entry->person.phone);
+							new_entry->person.description = mystrdup(entry->person.description);
 
 							if ((new_entry->person.emails = (char**)malloc(entry->person.num_emails*sizeof(char*))))
 							{
 								int i;
 								for (i=0;i<entry->person.num_emails;i++)
-									if (entry->person.emails[i]) new_entry->person.emails[i] = strdup(entry->person.emails[i]);
+									new_entry->person.emails[i] = mystrdup(entry->person.emails[i]);
 								new_entry->person.num_emails = entry->person.num_emails;
 							}
 							new_entry->person.dob = entry->person.dob;

@@ -561,13 +561,15 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 
 		if ((data->mail = mail_create_from_file(mail->filename)))
 		{
+			int dont_show = 0;
 			mail_read_contents(data->folder_path,data->mail);
 			mail_create_html_header(data->mail);
 
-			if (!data->mail->num_multiparts)
+			if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
 			{
 				/* mail has only one part */
 				set(data->attachments_group, MUIA_ShowMe, FALSE);
+				dont_show = 1;
 			} else
 			{
 				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_InitChange);
@@ -579,7 +581,8 @@ static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
 			insert_mail(data,data->mail);
 			DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
 			DoMethod(data->attachments_group, MUIM_Group_ExitChange);
-			if (data->mail->num_multiparts)
+
+			if (!dont_show)
 			{
 				set(data->attachments_group, MUIA_ShowMe, TRUE);
 				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_ExitChange);

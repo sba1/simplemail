@@ -185,6 +185,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 		{
 			if (data->del) DeleteFile(data->filename);
 			FreeVec(data->filename);
+			data->del = 0;
 		}
 
 		if (newbuffer)
@@ -196,6 +197,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 			{
 				Write(out,newbuffer,newbufferlen);
 				Close(out);
+				data->del = 1;
 			}
 
 			newfilename = tmpname;
@@ -286,7 +288,6 @@ STATIC ULONG DataTypes_Show(struct IClass *cl, Object *obj, Msg msg)
 
 	DoSuperMethodA(cl,obj,msg);
 
-	data->del = 1;
 	data->show = 1;
 
 	if (data->dt_obj)
@@ -310,7 +311,6 @@ STATIC VOID DataTypes_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
 
-	data->del = 1;
 	data->show = 0;
 
 	if (data->dt_obj)

@@ -859,6 +859,54 @@ static void arexx_mailread(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
+/****************************************************************
+ REQUESTFOLDER Arexx Command
+*****************************************************************/
+static void arexx_requestfolder(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct	{
+		STRPTR var;
+		STRPTR stem;
+		STRPTR body;
+		ULONG excludeactive;
+	} requestfolder_arg;
+	memset(&requestfolder_arg,0,sizeof(requestfolder_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,BODY/A,EXCLUDEACTIVE/S",args,&requestfolder_arg)))
+	{
+		struct folder *exclude;
+		struct folder *folder;
+		if (requestfolder_arg.excludeactive) exclude = main_get_folder();
+		else exclude = NULL;
+
+		if ((folder = sm_request_folder(requestfolder_arg.body,exclude)))
+		{
+			if (requestfolder_arg.stem)
+			{
+				int stem_len = strlen(requestfolder_arg.stem);
+				char *stem_buf = malloc(stem_len+20);
+				if (stem_buf)
+				{
+					strcpy(stem_buf,requestfolder_arg.stem);
+					strcat(stem_buf,"FOLDER");
+					SetRexxVar(rxmsg,stem_buf,folder->name,strlen(folder->name));
+					free(stem_buf);
+				}
+			} else
+			{
+				if (requestfolder_arg.var) SetRexxVar(rxmsg,requestfolder_arg.var,folder->name,strlen(folder->name));
+				else arexx_set_result(rxmsg,folder->name);
+			}
+		} else
+		{
+			/* error so set the RC val to 1 */
+			rxmsg->rm_Result1 = 1;
+		}
+		FreeTemplate(arg_handle);
+	}
+}
 
 /****************************************************************
  Handle this single arexx message
@@ -897,7 +945,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("NEWMAILFILE",command.command)) arexx_newmailfile(rxmsg,command.args);
 		else if (!Stricmp("MAILREAD",command.command)) arexx_mailread(rxmsg,command.args);
 		else if (!Stricmp("SCREENTOBACK",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToBack(scr);}
-		else if (!Stricmp("SCREENTOFRONT",command.command))  {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
+		else if (!Stricmp("SCREENTOFRONT",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
+		else if (!Stricmp("REQUESTFOLDER",command.command)) arexx_requestfolder(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

@@ -14,31 +14,30 @@ $Id$
                      Released under the GNU Public License
 
 
-     @{" Introduction     " LINK "INTR" 0} - About SimpleMail
-     @{" Requirements     " LINK "REQS" 0} - System requirements and software needed
-     @{" Copyright        " LINK "COPY" 0} - Legal stuff
+     @{" Introduction    " LINK "INTR" 0} - About SimpleMail
+     @{" Requirements    " LINK "REQS" 0} - System requirements and software needed
+     @{" Copyright       " LINK "COPY" 0} - Legal stuff
 
-     @{" Installation     " LINK "INST" 0} - Installing SimpleMail on your hard drive
-     @{" Quickstart       " LINK "TUTO" 0} - Getting SimpleMail started in 5 minutes
+     @{" Installation    " LINK "INST" 0} - Installing SimpleMail on your hard drive
+     @{" Quickstart      " LINK "TUTO" 0} - Getting SimpleMail started in 5 minutes
 
-     @{" Main Window      " LINK "MA_W" 0} - How to receive and send mail, copy it, etc.
-     @{" Configuration    " LINK "CO_W" 0} - Configuring SimpleMail to your tastes
-     @{" Address book     " LINK "AB_W" 0} - Saving useful addresses
-     @{" Write            " LINK "WR_W" 0} - Writing e-mail messages
-     @{" Editor           " LINK "EDIT" 0} - About the internal editor
-     @{" Read             " LINK "RE_W" 0} - Reading e-mail messages
-     @{" Mail transfers   " LINK "TR_W" 0} - Downloading and sending messages
+     @{" Main Window     " LINK "MA_W" 0} - How to receive and send mail, copy it, etc.
+     @{" Configuration   " LINK "CO_W" 0} - Configuring SimpleMail to your tastes
+     @{" Address book    " LINK "AB_W" 0} - Saving useful addresses
+     @{" Write           " LINK "WR_W" 0} - Writing e-mail messages
+     @{" Editor          " LINK "EDIT" 0} - About the internal editor
+     @{" Read            " LINK "RE_W" 0} - Reading e-mail messages
+     @{" Mail transfers  " LINK "TR_W" 0} - Downloading and sending messages
 
-     @{" Startup options  " LINK "OPTI" 0} - Shell options
-     @{" ARexx interface  " LINK "AREX" 0} - The ARexx interface
-     @{" Contributions    " LINK "CONT" 0} - Some contribution by other authors
-     @{" FAQ              " LINK "TIPS" 0} - Read this!
-     @{" Technical stuff  " LINK "TECH" 0} - How SimpleMail is archiving your messages
+     @{" Startup options " LINK "OPTI" 0} - Shell options
+     @{" ARexx interface " LINK "AREX" 0} - The ARexx interface
+     @{" FAQ             " LINK "TIPS" 0} - Read this!
+     @{" Technical stuff " LINK "TECH" 0} - How SimpleMail is archiving your messages
 
-     @{" Authors          " LINK "INFO" 0} - How to contact the Authors, useful links
-     @{" Thanks to        " LINK "CRED" 0} - Those who keep supporting the developers
+     @{" Authors         " LINK "INFO" 0} - How to contact the Authors, useful links
+     @{" Thanks to       " LINK "CRED" 0} - Those who keep supporting the developers
 
-     @{" History          " LINK "history.txt/main" 0} - The story so far...
+     @{" History         " LINK "history.txt/main" 0} - The story so far...
 
 @ENDNODE
 @NODE "INTR" "Introduction"
@@ -82,7 +81,7 @@ Current features of SimpleMail:
 - HTML mail compatible, thanks to the built-in HTML client based on the
   @{" SimpleHTML " LINK SimpleHTML} engine.
 
-- Quite powerful ARexx port
+- Quite powerful @{" ARexx port " LINK "AREX" 0}
 
 @ENDNODE
 @NODE "REQS" "Requirements"
@@ -276,7 +275,8 @@ account for new mail. Close the Read Message window and then click the
 14. The transfer status window you saw before opens again and you can
 watch how SimpleMail downloads your mail from the mail server. Provided
 that everything runs as it should, you will now be able to read your email
-in the "Incoming" folder.
+in the "Incoming" folder, which now shows a highlighted number "1" to let
+you know that there is new mail there.
 
 If you've made it this far without any major problem, you should now
 know the basic operation of SimpleMail. Keep reading the following chapters
@@ -291,7 +291,7 @@ SimpleMail's main window is laid out like thus:
 
     Menu bar:
 
-    @{" Project " LINK "MAM1" 0} @{" Folder " LINK "MAM2" 0} @{" Message " LINK "MAM3" 0} @{" Settings " LINK "MAM4" 0}
+    @{" Project " LINK "MAM1" 0} @{" Folder " LINK "MAM2" 0} @{" Message " LINK "MAM3" 0} @{" Settings " LINK "MAM4" 0} @{" Scripts " LINK "MAM5" 0}
 
    .--------------------------------------------------------.
    |              @{" Toolbar " LINK "MA02" 0}                                 |
@@ -658,6 +658,16 @@ PopPlaceHolder: items using pop-up placeholders under Config/Phrases
        Options: font, palette, cursor.
 
 @ENDNODE
+@NODE "MAM5" "Main window - Scripts Menu"
+
+Main window - SCRIPTS MENU
+
+
+Scripts/Execute script...
+
+Lets you load & execute an @{" ARexx " LINK "AREX" 0} script.
+
+@ENDNODE
 @NODE "FO_W" "Edit Folder"
 @TOC "MA00"
 
@@ -692,6 +702,14 @@ Here you choose if the folder is for received and/or sent mail. This
 influences the column titles and whose address is displayed in the message
 list. If you select "mailing list", the message list for this folder will
 be threaded by default.
+
+
+Default to
+
+Here you can enter an email address which will be used by default as the
+main recipient of your email whenever you start writing a new mail while
+this is the current folder. This makes sense especially with folders
+containing email coming from a certain mailing list.
 
 @ENDNODE
 @NODE "CO_W" "Configuration"
@@ -1028,6 +1046,21 @@ By default, wordwrapping is disabled.
 
 If this option is activated, SimpleMail will wordwrap the message you are
 replying to, according to the wordwrap setting entered above.
+
+
+[ ] Strip signature before quoting
+
+If this option is enabled, SimpleMail will search for the standard "-- "
+(two dashes and a space) signature separator in the message you are
+replying to, stripping all the text coming next. Since not quoting
+signatures is obviously a good idea anyway, usually this option should
+be left activated.
+
+
+[ ] Cite empty lines
+
+Usually SimpleMail won't quote empty lines when replying to a message.
+If for some reason you don't like this, just activate this option.
 
 @ENDNODE
 @NODE "CO04" "Configuration - Reading"
@@ -1613,6 +1646,12 @@ button to the right.
   Example:  jdoe, boss\@work.whyme.com
 
 
+Copies To
+
+Insert here the secondary recipient(s) you wish to send this message to.
+They will also get a copy of the current message.
+
+
 Subject
 
 What the mail is all about. As the mail is answered there will be a "Re:"
@@ -2118,12 +2157,14 @@ a compressed 32 bit representation of the Message-ID.
 
 MAILLISTFREEZE
 
-Freezes the Maillist. Useful if many MAILADDs have to be done.
+Freezes the refresh of the message list. Useful if many MAILADDs have to
+be done.
 
       
 MAILLISTTHAW
 
-Thaws the Maillist. Used in conjunction with MAILLISTFREEZE
+Re-enables the refresh of the message list. Used in conjunction with
+MAILLISTFREEZE
 
 	
 MAILREAD        VAR/K,STEM/K,WINDOW/N,QUIET/S => WINDOW/N
@@ -2339,6 +2380,12 @@ of Stefan Martens):
  4. Click [Ok] and save the configuration.
 
 
+- What about importing my old email from YAM?
+
+You can do it easily, too, starting from SimpleMail 0.14. Take a look at the
+@{" Scripts menu " LINK "MAM5" 0} and the supplied ImportMails.smrx script.
+
+
 - How about implementing this and this and...?
 
 (David) Please bear with the developers. SimpleMail is only a hobby, and
@@ -2381,6 +2428,7 @@ In the program directory the following files and directories can be found:
  .config           The @{" configuration " LINK "CO_W" 0} file
  Images/           Icons used in the folder and message lists, the toolbars
                    and the graphical smilies, all of them in IFF/ILBM format
+ ARexx/            ARexx macros for SimpleMail
 
  .portraits/       Pictures of people mentioned in the address book
 
@@ -2566,6 +2614,7 @@ And all the people who keep submitting bug reports!
    @{" Main window - Message Menu " LINK MAM3}
    @{" Main window - Project Menu " LINK MAM1}
    @{" Main window - Settings Menu " LINK MAM4}
+   @{" Main window - Scripts Menu " LINK MAM5}
    @{" Main window - toolbar " LINK MA02}
    @{" MUI " LINK MUI}
 

@@ -108,15 +108,15 @@ struct mail
 #define MAIL_STATUS_REPLFORW 6 /* mail has been replied and forwarded */
 #define MAIL_STATUS_HOLD		 7 /* mail should not be send */
 #define MAIL_STATUS_ERROR    8 /* mail has an error */
-#define MAIL_STATUS_MAX		 15
+#define MAIL_STATUS_MAX 	 15
 #define MAIL_STATUS_MASK		 (0xf) /* the mask for the status types */
-#define MAIL_STATUS_FLAG_MARKED	(1 << 4) /* the mail is marked */
+#define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
 
 /* A macro to easly get the mails status type */
 #define mail_get_status_type(x) ((x->status) & (MAIL_STATUS_MASK))
 
 /* Additional mail flags, they don't need to be stored within the filename */
-#define MAIL_FLAGS_NEW       (1L << 0) /* it's a new mail */
+#define MAIL_FLAGS_NEW	     (1L << 0) /* it's a new mail */
 #define MAIL_FLAGS_GROUP     (1L << 1) /* it has been sent to more persons */
 #define MAIL_FLAGS_ATTACH    (1L << 2) /* it has attachments */
 #define MAIL_FLAGS_IMPORTANT (1L << 3) /* mail is important */
@@ -137,6 +137,7 @@ struct mail *mail_create(void);
 struct mail *mail_create_for(char *to, char *subject);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(int num, struct mail **mail_array);
+struct mail *mail_create_forward(int num, struct mail **mail_array);
 int mail_forward(struct mail *mail);
 void mail_free(struct mail *mail);
 int mail_set_stuff(struct mail *mail, char *filename, unsigned int size);

@@ -139,7 +139,7 @@ static int read_cleanup(struct Read_Data *data)
 	      ead = (struct ExAllData *)EAData;
 	      do
 	      {
-	      	DeleteFile(ead->ed_Name); /* TODO: Check the result */
+		DeleteFile(ead->ed_Name); /* TODO: Check the result */
 					ead = ead->ed_Next;
 				} while (ead);
 			} while (more);
@@ -164,18 +164,18 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 		BPTR newdir;
 		BPTR olddir;
 		char filename[100];
-	
+
 		/* Write out the file, create an icon, start it via wb.library */
 		if (mail->filename)
 		{
 			strcpy(filename,"T:");
 			strcat(filename,mail_get_root(mail)->filename);
 			if ((newdir = CreateDir(filename))) UnLock(newdir);
-	
+
 			if ((newdir = Lock(filename, ACCESS_READ)))
 			{
 				olddir = CurrentDir(newdir);
-	
+
 				if ((fh = Open(mail->filename,MODE_NEWFILE)))
 				{
 					struct DiskObject *dobj;
@@ -183,7 +183,7 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 					if (!mail->decoded_data) Write(fh,mail->text + mail->text_begin,mail->text_len);
 					else Write(fh,mail->decoded_data,mail->decoded_len);
 					Close(fh);
-	
+
 					if ((dobj = GetIconTags(mail->filename,ICONGETA_FailIfUnavailable,FALSE,TAG_DONE)))
 					{
 						int ok_to_open = 1;
@@ -199,7 +199,7 @@ static void open_contents(struct Read_Data *data, struct mail *mail)
 							OpenWorkbenchObjectA(mail->filename,NULL);
 					}
 				}
-	
+
 				CurrentDir(olddir);
 				UnLock(newdir);
 			}
@@ -352,7 +352,7 @@ static void context_menu_trigger(int **pdata)
 			case	3: /* Open via workbench.library */
 						open_contents(data,mail);
 						break;
-			case 	4: /* print as text */
+			case	4: /* print as text */
 				print_mail(mail, FALSE);
 				break;
 		}
@@ -391,7 +391,7 @@ static void insert_mail(struct Read_Data *data, struct mail *mail)
 					MUIA_ContextMenu, context_menu,
 					End,
 			Child, TextObject,
-					MUIA_Background, MUII_TextBack, 
+					MUIA_Background, MUII_TextBack,
 					MUIA_Font, MUIV_Font_Tiny,
 					MUIA_Text_Contents, mail->filename,
 					MUIA_Text_PreParse, "\33c",
@@ -696,7 +696,7 @@ static void forward_button_pressed(struct Read_Data **pdata)
 	struct Read_Data *data = *pdata;
 	if (!data->ref_mail) return;
 
-	callback_forward_this_mail(data->folder_path, data->ref_mail);
+	callback_forward_this_mail(data->folder_path, 1, &data->ref_mail);
 }
 
 /******************************************************************
@@ -748,7 +748,7 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 				CopyMem(buf,msg->buffer,buf_len);
 				rc = 1;
 			}
-			
+
 			free(buf);
 		}
 		return rc;
@@ -953,7 +953,7 @@ int read_window_open(char *folder, struct mail *mail)
 				End,
 			End,
 		End;
-	
+
 	if (wnd)
 	{
 		struct Read_Data *data = (struct Read_Data*)malloc(sizeof(struct Read_Data));
@@ -980,7 +980,7 @@ int read_window_open(char *folder, struct mail *mail)
 						MUIA_Menuitem_Title, _("Print as text"),
 						MUIA_UserData, 4,
 						End,
-					End,	
+					End,
 				End;
 
 			data->attachment_html_menu = MenustripObject,
@@ -1087,5 +1087,5 @@ struct mail *read_window_get_displayed_mail(int num)
 	if (read_open[num])
 		return read_get_displayed_mail(read_open[num]);
 
-	return NULL;	
+	return NULL;
 }

@@ -38,6 +38,7 @@
 #include <proto/intuition.h>
 
 #include "codesets.h"
+#include "configuration.h"
 #include "mail.h"
 #include "folder.h"
 #include "simplemail.h"
@@ -186,7 +187,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 
 				if (field)
 				{
-					utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),NULL);
+					utf8tostr(field,dest,sizeof(data->fromto_buf) - (dest - data->fromto_buf),user.config.default_codeset);
 				} else
 				{
 					if (data->folder_type == FOLDER_TYPE_SEND) field = mail->to_addr;
@@ -194,7 +195,7 @@ STATIC ASM VOID mails_display(register __a1 struct MUIP_NListtree_DisplayMessage
 					if (field) strcpy(dest,field); /* Could be optimized */
 				}
 			}
-			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),NULL);
+			utf8tostr(mail->subject,data->subject_buf,sizeof(data->subject_buf),user.config.default_codeset);
 
 			*msg->Array++ = status_buf; /* status */
 			*msg->Array++ = data->fromto_buf;
@@ -256,7 +257,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf = mystpcpy(buf,data->subject_text);
 				*buf++ = ':';
 				*buf++ = ' ';
-				buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+				buf += utf8tostr(m->subject,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
 			}
 
 			if (from)
@@ -265,7 +266,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf = mystpcpy(buf,data->from_text);
 				*buf++ = ':';
 				*buf++ = ' ';
-				buf += utf8tostr(from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+				buf += utf8tostr(from,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
 			}
 
 			if (to)
@@ -274,7 +275,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 				buf = mystpcpy(buf,data->to_text);
 				*buf++ = ':';
 				*buf++ = ' ';
-				buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),NULL);
+				buf += utf8tostr(to,buf,sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf),user.config.default_codeset);
 			}
 
 			if (m->reply_addr)

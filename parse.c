@@ -235,9 +235,26 @@ static char *parse_quoted_string(char *quoted_string, char **pbuf)
 			char *buf = (char*)malloc(len+1);
 			if (buf)
 			{
-				strncpy(buf,quoted_string_start,len); /* the escapes should be removed */
-				buf[len]=0;
-				*pbuf = buf;
+				char *src = quoted_string_start;
+				char *dest = buf;
+				int i = 0;
+
+				/* filter the escape character */
+				for (i=0;i<len;i++)
+				{
+					unsigned char c = *src;
+
+					if (c == '\\' && !escape) escape = 1;
+					else escape = 0;
+
+					if (!escape) *dest++ = c;
+
+					src++;
+				}
+				*dest = 0;
+
+				*pbuf = utf8create(buf,NULL);
+				free(buf);
 				quoted_string++;
 
 				return quoted_string; /* the '"' sign */

@@ -38,6 +38,7 @@
 
 #include "addressbook.h"
 #include "codesets.h"
+#include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
@@ -104,8 +105,8 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 	{
 		struct addressbook_entry *entry = (struct addressbook_entry *)msg->TreeNode->tn_User;
 
-		utf8tostr(entry->alias, data->alias_buf, sizeof(data->alias_buf), NULL);
-		utf8tostr(entry->description, data->description_buf, sizeof(data->description_buf), NULL);
+		utf8tostr(entry->alias, data->alias_buf, sizeof(data->alias_buf), user.config.default_codeset);
+		utf8tostr(entry->description, data->description_buf, sizeof(data->description_buf), user.config.default_codeset);
 
 		switch (entry->type)
 		{
@@ -117,7 +118,7 @@ STATIC ASM VOID address_display(register __a1 struct MUIP_NListtree_DisplayMessa
 						break;
 
 			case	ADDRESSBOOK_ENTRY_PERSON:
-						utf8tostr(entry->u.person.realname, data->realname_buf, sizeof(data->realname_buf), NULL);
+						utf8tostr(entry->u.person.realname, data->realname_buf, sizeof(data->realname_buf), user.config.default_codeset);
 
 						*msg->Array++ = data->realname_buf;
 						*msg->Array++ = data->alias_buf;

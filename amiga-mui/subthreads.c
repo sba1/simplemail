@@ -31,8 +31,10 @@
 #include <proto/dos.h>
 #include <proto/timer.h>
 
-#include "subthreads.h"
 #include "lists.h"
+#include "subthreads.h"
+
+#include "subthreads_amiga.h" /* struct thread_s */
 
 /*#define MYDEBUG*/
 #include "debug.h"
@@ -53,7 +55,8 @@ struct ThreadMessage
 static struct MsgPort *thread_port;
 
 /* the thread, we currently allow only a single one */
-static struct Process *thread;
+//static struct Process *thread;
+static thread_t default_thread;
 
 
 struct list thread_list;
@@ -63,15 +66,9 @@ struct thread_node
 	thread_t thread;
 };
 
-struct thread_s
-{
-	struct Process *process;
-	int is_main;
-	int is_default;
-
-	struct MsgPort *thread_port;
-};
-
+/**************************************************************************
+ Remove the thread which has replied tis given tmsg
+**************************************************************************/
 static void thread_remove(struct ThreadMessage *tmsg)
 {
 	struct thread_node *node = (struct thread_node*)list_first(&thread_list);
@@ -79,6 +76,7 @@ static void thread_remove(struct ThreadMessage *tmsg)
 	{
 		if (node->thread == tmsg->thread)
 		{
+			if (node->thread->is_default) default_thread = NULL;
 			D(bug("Got startup message of 0x%lx back\n",node->thread));
 			node_remove(&node->node);
 			FreeVec(tmsg);
@@ -87,15 +85,11 @@ static void thread_remove(struct ThreadMessage *tmsg)
 		}
 		node = (struct thread_node*)node_next(&node->node);
 	}
-
-	if (!node)
-	{
-		D(bug("Got startup message of default task back\n"));
-		FreeVec(tmsg);
-		thread = NULL;
-	}
 }
 
+/**************************************************************************
+ Iniitalize the thread system
+**************************************************************************/
 int init_threads(void)
 {
 	static struct thread_s main_thread;
@@ -112,6 +106,9 @@ int init_threads(void)
 	return 0;
 }
 
+/**************************************************************************
+ Cleanup the thread system. Will abort every thread
+**************************************************************************/
 void cleanup_threads(void)
 {
 	/* It's safe to call this if no thread is actually running */
@@ -126,7 +123,7 @@ void cleanup_threads(void)
 	thread_abort(NULL);
 
 	/* wait until every task has been removed */
-	while (thread || list_first(&thread_list))
+	while (list_first(&thread_list))
 	{
 		struct ThreadMessage *tmsg;
 
@@ -145,11 +142,17 @@ void cleanup_threads(void)
 	}
 }
 
+/**************************************************************************
+ Returns the mask of the thread port of the current process
+**************************************************************************/
 unsigned long thread_mask(void)
 {
 	return (1UL << thread_port->mp_SigBit);
 }
 
+/**************************************************************************
+ Handle a new message in the send to the current process
+**************************************************************************/
 void thread_handle(void)
 {
 	struct ThreadMessage *tmsg;
@@ -220,8 +223,9 @@ static __saveds void thread_entry(void)
 	ReplyMsg((struct Message*)msg);
 }
 
-
-/* informs the parent task that it can continue */
+/**************************************************************************
+ Informs the parent task that it can continue
+**************************************************************************/
 int thread_parent_task_can_contiue(void)
 {
 #ifndef DONT_USE_THREADS
@@ -243,6 +247,9 @@ int thread_parent_task_can_contiue(void)
 #endif
 }
 
+/**************************************************************************
+ Runs the given function in a newly created thread under the given name
+**************************************************************************/
 static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
 {
 #ifndef DONT_USE_THREADS
@@ -314,6 +321,10 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 #endif
 }
 
+/**************************************************************************
+ Runs a given function in a newly created thread under the given name which
+ in linked into a internal list.
+**************************************************************************/
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_node *thread_node = (struct thread_node*)AllocVec(sizeof(struct thread_node),MEMF_PUBLIC|MEMF_CLEAR);
@@ -331,82 +342,32 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	return NULL;
 }
 
+
+/**************************************************************************
+ Start a thread as a default sub thread. This function will be removed
+ in the future.
+**************************************************************************/
 int thread_start(int (*entry)(void*), void *eudata)
 {
-#ifndef DONT_USE_THREADS
-	struct ThreadMessage *msg;
-
 	/* We allow only one subtask for the moment */
-	if (thread) return 0;
-
-	if ((msg = (struct ThreadMessage *)AllocVec(sizeof(*msg),MEMF_PUBLIC|MEMF_CLEAR)))
+	if (default_thread) return 0;
+	if ((default_thread = thread_add("SimpleMail - Default subthread", entry, eudata)))
 	{
-		BPTR in,out;
-		msg->msg.mn_Node.ln_Type = NT_MESSAGE;
-		msg->msg.mn_ReplyPort = thread_port;
-		msg->msg.mn_Length = sizeof(*msg);
-		msg->startup = 1;
-		msg->function = (int (*)(void))entry;
-		msg->arg1 = eudata;
-
-		in = Open("CONSOLE:",MODE_NEWFILE);
-		if (!in) in = Open("NIL:",MODE_NEWFILE);
-		out = Open("CONSOLE:",MODE_NEWFILE);
-		if (!out) out = Open("NIL:",MODE_NEWFILE);
-
-		if (in && out)
-		{
-			thread = CreateNewProcTags(
-						NP_Entry,      thread_entry,
-						NP_StackSize,  16384,
-						NP_Name,       "SimpleMail - Subthread",
-						NP_Priority,   -1,
-						NP_Input,      in,
-						NP_Output,     out,
-						TAG_END);
-
-			if (thread)
-			{
-				struct ThreadMessage *thread_msg;
-				D(bug("Thread started at 0x%lx\n",thread));
-				PutMsg(&thread->pr_MsgPort,(struct Message*)msg);
-				WaitPort(thread_port);
-				thread_msg = (struct ThreadMessage *)GetMsg(thread_port);
-				if (thread_msg == msg)
-				{
-					/* This was the startup message, so something has failed */
-					D(bug("Got startup message back. Something went wrong\n"));
-					FreeVec(thread_msg);
-					return 0;
-				} else
-				{
-					/* This was the "parent task can continue message", we don't reply it
-					 * but we free it here (although it wasn't allocated by this task) */
-					D(bug("Got \"parent can continue\"\n"));
-					FreeVec(thread_msg);
-					return 1;
-				}
-			}
-		}
-		if (in) Close(in);
-		if (out) Close(out);
-		FreeVec(msg);
+		default_thread->is_default = 1;
+		return 1;
 	}
 	return 0;
-#else
-	entry(eudata);
-	return 1;
-#endif
 }
 
+/**************************************************************************
+ Abort the given thread or if NULL is given the default subthread.
+**************************************************************************/
 void thread_abort(thread_t thread_to_abort)
 {
 	if (!thread_to_abort)
 	{
-		if (thread)
-		{
-			Signal(&thread->pr_Task, SIGBREAKF_CTRL_C);
-		}
+		if (default_thread)
+			Signal(&thread_to_abort->process->pr_Task, SIGBREAKF_CTRL_C);
 	} else
 	{
 		/* FIXME: This could cause a possible race condition if the task is already removed

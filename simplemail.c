@@ -398,11 +398,20 @@ void callback_edit_folder(void)
 void callback_change_folder_attrs(void)
 {
 	struct folder *f = folder_get_changed_folder();
+	int refresh;
+
 	if (!f) return;
+
+	if (folder_set_would_need_reload(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type()))
+	{
+		/* Remove the mails, as they get's geloaded */
+		main_clear_folder_mails();
+		refresh = 1;
+	} else refresh = 0;
 
 	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type()))
 	{
-		if (main_get_folder() == f)
+		if (main_get_folder() == f || refresh)
 		{
 			main_set_folder_mails(f);
 		}

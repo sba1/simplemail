@@ -88,6 +88,8 @@ void folder_set_mail_status(struct folder *folder, struct mail *mail, int status
 struct mail *folder_find_mail_by_filename(struct folder *folder, char *filename);
 
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype);
+int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype);
+
 struct folder *folder_first(void);
 struct folder *folder_next(struct folder *f);
 struct folder *folder_find(int pos);

@@ -570,6 +570,27 @@ static struct folder *folder_add(char *path)
 }
 
 /******************************************************************
+ Test if the setting the foldersetting would require a reload
+ (the mails would get disposed and reloaded)
+*******************************************************************/
+int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype)
+{
+	int rescan = 0;
+
+	/* Check if the path name has changed */
+	if (newpath && mystricmp(f->path,newpath)) rescan = 1;
+
+	/* Check if the type change require a reload */
+	if (newtype != f->type)
+	{
+		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
+			rescan = 1;
+	}
+
+	return rescan;
+}
+
+/******************************************************************
  Set some folder attributes. Returns 1 if the folder must be
  refreshed in the gui.
 *******************************************************************/

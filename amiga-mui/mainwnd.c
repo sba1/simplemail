@@ -555,6 +555,14 @@ static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, 
 }
 
 /******************************************************************
+ Clears the folder list
+*******************************************************************/
+void main_clear_folder_mails(void)
+{
+	DoMethod(mail_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, MUIV_NListtree_Remove_TreeNode_All, MUIV_NListtree_Remove_Flag_NoActive);
+}
+
+/******************************************************************
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)

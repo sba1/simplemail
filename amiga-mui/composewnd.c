@@ -82,6 +82,7 @@ struct Compose_Data /* should be a customclass */
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
+	char *reply_id; /* the emails reply-id if changed */
 
 	struct FileRequester *file_req;
 
@@ -106,6 +107,7 @@ static void compose_window_close(struct Compose_Data **pdata)
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->filename) free(data->filename);
 	if (data->folder) free(data->folder);
+	if (data->reply_id) free(data->reply_id);
 	if (data->num < MAX_COMPOSE_OPEN) compose_open[data->num] = 0;
 	free(data);
 }
@@ -396,6 +398,7 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 		new_mail.subject = subject;
 		new_mail.mail_filename = data->filename;
 		new_mail.mail_folder = data->folder;
+		new_mail.reply_message_id = data->reply_id;
 
 		mail_compose_new(&new_mail);
 
@@ -728,6 +731,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 
 				if (tochange->filename) data->filename = strdup(tochange->filename);
 				data->folder = strdup("Outgoing");
+				data->reply_id = mystrdup(tochange->message_reply_id);
 			}
 
 			set(wnd,MUIA_Window_Open,TRUE);

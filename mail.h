@@ -152,6 +152,8 @@ struct composed_mail
 	char *mail_filename; /* The name of the mail (mainly used for changeing) */
 	char *mail_folder; /* the folder of the mail ( -- " -- ) */
 
+	char *reply_message_id; /* only for the root mail */
+
 	/* more will follow */
 };
 

@@ -592,7 +592,7 @@ struct mail *mail_create_from_file(char *filename)
 
 /**************************************************************************
  Creates a Reply to a given mail. That means change the contents of
- "From:" to "To:", change the subject, cite the first text passage
+ "From:" to "To:", change the subject, quote the first text passage
  and remove the attachments. The mail is proccessed. The given mail should
  be processed to.
 
@@ -738,6 +738,8 @@ struct mail *mail_create_reply(struct mail *mail)
 /*				free(replied_text);*/
 			}
 		}
+
+		if (mail->message_id) m->message_reply_id = mystrdup(mail->message_id);
 
 		mail_process_headers(m);
 	}
@@ -1371,6 +1373,11 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			d = localtime(&t);
 
 			fprintf(fp,"Date: %02ld %s %4ld %02ld:%02ld:%02ld %+03ld%02ld\n",d->tm_mday,mon_str[d->tm_mon],d->tm_year + 1900,d->tm_hour,d->tm_min,d->tm_sec,offset/60,offset%60);
+		}
+
+		if (new_mail->reply_message_id)
+		{
+			fprintf(fp,"In-Reply-To: <%s>\n",new_mail->reply_message_id);
 		}
 	}
 

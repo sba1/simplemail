@@ -57,8 +57,13 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
+  echo "All: \$(PROGRAMMNAME) images*n" >>$@
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui
   delete t:objectlist
+  echo "*nimages:" >>$@ noline
+  list amiga-mui/binaries/\#?img lformat="  sm/Images/%m\\" >>$@
+  echo "*n" >>$@
+  list amiga-mui/binaries/\#?img lformat="sm/Images/%m: %p%n*n  copy %p%n sm/Images/%m*n" >>$@
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover link $(MAKEGENERATOR)

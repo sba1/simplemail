@@ -184,8 +184,13 @@ static int smtp_rcpt(struct smtp_connection *conn, struct account *account, stru
 		
 		for(i = 0; om->rcp[i] != NULL; i++)
 		{
+			int res;
+
 			sprintf(buf, "TO:<%s>", om->rcp[i]);
-			if(smtp_send_cmd(conn, "RCPT", buf) != SMTP_OK)
+
+			res = smtp_send_cmd(conn, "RCPT", buf);
+			
+			if (res != SMTP_OK && res != SMTP_OK_FORWARD)
 			{
 				rc = 0;
 				break;

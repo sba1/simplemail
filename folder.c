@@ -1058,11 +1058,19 @@ struct mail *folder_find_best_mail_to_select(struct folder *folder)
 	void *handle = NULL;
 	struct mail *m;
 
+	int relevant_types;
+
+	if (folder->special == FOLDER_SPECIAL_OUTGOING) relevant_types = MAIL_STATUS_HOLD;
+	else relevant_types = MAIL_STATUS_UNREAD;
+
 	while ((m = folder_next_mail(folder, &handle)))
 	{
-		if (mail_get_status_type(m)==MAIL_STATUS_UNREAD) return m;
+		if (mail_get_status_type(m) == relevant_types) return m;
 	}
 
+	/* take the first mail */
+	handle = NULL;
+	m = folder_next_mail(folder, &handle);
 	return m;
 }
 

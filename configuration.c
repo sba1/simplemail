@@ -293,7 +293,7 @@ int load_config(void)
 									if ((result = get_config_item(account_buf,"User.Reply")))
 										account->reply = mystrdup(result);
 									if ((result = get_config_item(account_buf,"User.Signature")))
-										account->def_signature = atoi(result);
+										account->def_signature = dupconfigstr(result,utf8);
 
 									if ((result = get_config_item(account_buf,"SMTP.Server")))
 										account->smtp->name = mystrdup(result);
@@ -539,7 +539,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.User.Name=%s\n",i,MAKESTR(account->name));
 				fprintf(fh,"ACCOUNT%d.User.EMail=%s\n",i,MAKESTR(account->email));
 				fprintf(fh,"ACCOUNT%d.User.Reply=%s\n",i,MAKESTR(account->reply));
-				fprintf(fh,"ACCOUNT%d.User.Signature=%d\n",i,account->def_signature);
+				fprintf(fh,"ACCOUNT%d.User.Signature=%s\n",i,MAKESTR(account->def_signature));
 
 				fprintf(fh,"ACCOUNT%d.SMTP.Server=%s\n",i,MAKESTR(account->smtp->name));
 				fprintf(fh,"ACCOUNT%d.SMTP.Port=%d\n",i,account->smtp->port);

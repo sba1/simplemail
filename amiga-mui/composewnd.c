@@ -87,6 +87,8 @@ struct Compose_Data /* should be a customclass */
 	Object *vertical_balance;
 	Object *main_group;
 	Object *show_attach_button;
+	Object *encrypt_button;
+	Object *sign_button;
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
@@ -486,6 +488,8 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.mail_filename = data->filename;
 		new_mail.mail_folder = data->folder;
 		new_mail.reply_message_id = data->reply_id;
+		new_mail.encrypt = xget(data->encrypt_button,MUIA_Selected);
+		new_mail.sign = xget(data->sign_button,MUIA_Selected);
 
 		/* Move this out */
 		if ((mail_compose_new(&new_mail,hold)))
@@ -753,6 +757,8 @@ void compose_window_open(struct compose_args *args)
 	Object *signatures_cycle;
 	Object *show_attach_button;
 	Object *add_attach_button;
+	Object *encrypt_button;
+	Object *sign_button;
 
 	struct signature *sign;
 	char **sign_array = NULL;
@@ -858,6 +864,12 @@ void compose_window_open(struct compose_args *args)
 							Child, add_attach_button = MakePictureButton(_("Attach"),"PROGDIR:Images/AddAttachment"),
 							Child, show_attach_button = MakePictureButton(_("Show At."),"PROGDIR:Images/AttachmentList"),
 							End,
+						Child, HGroup,
+							MUIA_Weight, 66,
+							MUIA_Group_Spacing,0,
+							Child, encrypt_button = MakePictureButton(_("Encrypt"),"PROGDIR:Images/Encrypt"),
+							Child, sign_button = MakePictureButton(_("Sign"),"PROGDIR:Images/Sign"),
+							End,
 						Child, RectangleObject,
 							MUIA_FixHeight,1,
 							MUIA_HorizWeight,signatures_group?33:100,
@@ -955,6 +967,8 @@ void compose_window_open(struct compose_args *args)
 			data->vertical_balance = vertical_balance;
 			data->main_group = main_group;
 			data->show_attach_button = show_attach_button;
+			data->encrypt_button = encrypt_button;
+			data->sign_button = sign_button;
 			data->copy_button = copy_button;
 			data->cut_button = cut_button;
 			data->paste_button = paste_button;
@@ -970,6 +984,8 @@ void compose_window_open(struct compose_args *args)
 					TAG_DONE);
 
 			set(show_attach_button, MUIA_InputMode, MUIV_InputMode_Toggle);
+			set(encrypt_button, MUIA_InputMode, MUIV_InputMode_Toggle);
+			set(sign_button, MUIA_InputMode, MUIV_InputMode_Toggle);
 			set(from_text, MUIA_UserData, reply_string);
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);

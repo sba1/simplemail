@@ -696,7 +696,7 @@ static void main_refresh_folders_text(void)
 	{
 		int total_msg,total_unread,total_new;
 		folder_get_stats(&total_msg,&total_unread,&total_new);
-		sprintf(buf, "Total:%ld New:%ld Unread:%ld",total_msg,total_new,total_unread);
+		sprintf(buf, _("Total:%d New:%d Unread:%d"),total_msg,total_new,total_unread);
 		set(folder2_text,MUIA_Text_Contents,buf);
 	}
 }
@@ -1172,7 +1172,7 @@ void main_build_accounts(void)
 
 	if (!i)
 	{
-		Object *entry = MenuitemObject, MUIA_Menuitem_Title, "No POP3 Server specified",	End;
+		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No POP3 Server specified"),	End;
 		DoMethod(folder_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
 	}
 }

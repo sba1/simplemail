@@ -1,3 +1,5 @@
+#if 0
+
 /***************************************************************************
  SimpleMail - Copyright (C) 2000 Hynek Schlawack and Sebastian Bauer
 
@@ -434,3 +436,5 @@ void delete_addresstreelist_class(void)
 	}
 	SM_LEAVE;
 }
+
+#endif

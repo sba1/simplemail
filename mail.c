@@ -962,7 +962,7 @@ struct mail *mail_create_for(char *from, char *to_str_unexpanded, char *replyto,
 	struct mailbox mb;
 	memset(&mb,0,sizeof(mb));
 
-	to_str = to_str_unexpanded?addressbook_get_expand_str(to_str_unexpanded):NULL;
+	to_str = to_str_unexpanded?addressbook_get_expanded(to_str_unexpanded):NULL;
 
 	if (to_str) parse_mailbox(to_str,&mb);
 	if ((mail = mail_create()))
@@ -1520,7 +1520,11 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 			{
 				if (first_addr->addr_spec)
 				{
-					if (dest_phrase) *dest_phrase = mystrdup(addressbook_get_realname(first_addr->addr_spec));
+					if (dest_phrase)
+					{
+						struct addressbook_entry_new *entry = addressbook_find_entry_by_address(first_addr->addr_spec);
+						if (entry) *dest_phrase = mystrdup(entry->realname);
+					}
 					if (dest_addr) *dest_addr = mystrdup(first_addr->addr_spec);
 				}
 			}
@@ -2742,14 +2746,14 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 				addr = (struct address*)list_first(tolist);
 				while (addr)
 				{
-					struct addressbook_entry *entry = addressbook_find_entry_by_address(addr->email);
-					if (!entry || !entry->u.person.pgpid || !*entry->u.person.pgpid)
+					struct addressbook_entry_new *entry = addressbook_find_entry_by_address(addr->email);
+					if (!entry || !entry->pgpid || !(*entry->pgpid))
 					{
 						char *pgpid;
 						char *text = malloc(512);
 						if (text)
 						{
-							sprintf(text,_("Please select a key for %s <%s>"),addr->realname,addr->email);
+							sm_snprintf(text,512,_("Please select a key for %s <%s>"),addr->realname,addr->email);
 						}
 						pgpid = sm_request_pgp_id(text);
 						free(text);
@@ -2762,7 +2766,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 							rc = 0;
 							break;
 						}
-					}  else fprintf(id_fh,"%s\n",entry->u.person.pgpid);
+					}  else fprintf(id_fh,"%s\n",entry->pgpid);
 					addr = (struct address*)node_next(&addr->node);
 				}
 				fclose(id_fh);
@@ -3150,9 +3154,9 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 	{
 		int len;
 		char *replyto = mail_find_header_contents(mail, "reply-to");
-		char *portrait;
 		char *style_text = user.config.read_link_underlined?"":" STYLE=\"TEXT-DECORATION: none\"";
 		struct header *header;
+		struct addressbook_entry_new *entry = addressbook_find_entry_by_address(mail->from_addr);
 
 		fprintf(fh,"<HTML><BODY BGCOLOR=\"#%06x\" TEXT=\"#%06x\" LINK=\"#%06x\">",user.config.read_background,user.config.read_text,user.config.read_link);
 		fprintf(fh,"<TABLE WIDTH=\"100%%\" BORDER=\"1\" CELLPADDING=\"0\" BGCOLOR=\"#%06x\"><TR><TD><TABLE>",user.config.read_header_background);
@@ -3180,8 +3184,8 @@ int mail_create_html_header(struct mail *mail, int all_headers)
 
 			fputs("</A></TD>",fh);
 
-			if ((portrait = addressbook_get_portrait(mail->from_addr)))
-				fprintf(fh,"<TD><IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT></TD>",portrait);
+			if (entry && entry->portrait)
+				fprintf(fh,"<TD><IMG SRC=\"file://localhost/%s\" ALIGN=RIGHT></TD>",entry->portrait);
 			fputs("</TR>",fh);
 		}
 

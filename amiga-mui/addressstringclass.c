@@ -27,7 +27,6 @@
 #include <libraries/mui.h>
 #include <mui/Betterstring_MCC.h>
 #include <mui/NListview_MCC.h>
-#include <mui/NListtree_MCC.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -40,7 +39,7 @@
 #include "debug.h"
 
 #include "addressstringclass.h"
-#include "addresstreelistclass.h"
+#include "addressentrylistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "muistuff.h"
@@ -93,22 +92,21 @@ struct MUI_CustomClass *CL_MatchWindow;
 STATIC VOID MatchWindow_NewActive(void **msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data *)msg[0];
-	struct MUI_NListtree_TreeNode *node = (struct MUI_NListtree_TreeNode *)xget(data->list, MUIA_NListtree_Active);
-	if (node)
+	struct addressbook_entry_new *entry;
+
+	DoMethod(data->list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+
+	if (entry)
 	{
-		struct addressbook_entry *entry = (struct addressbook_entry *)node->tn_User;
-		if (entry)
-		{
-			char *contents = (char*)xget(data->str,MUIA_UTF8String_Contents);
-			int buf_pos =  utf8realpos(contents,xget(data->str,MUIA_String_BufferPos));
-			char *addr_start;
-			char *complete;
+		char *contents = (char*)xget(data->str,MUIA_UTF8String_Contents);
+		int buf_pos =  utf8realpos(contents,xget(data->str,MUIA_String_BufferPos));
+		char *addr_start;
+		char *complete;
 
-			addr_start = get_address_start(contents, buf_pos);
-			complete = addressbook_completed_by_entry(addr_start, entry, NULL);
+		addr_start = get_address_start(contents, buf_pos);
+		complete = addressbook_get_entry_completing_part(entry, addr_start, NULL);
 
-			DoMethod(data->str, MUIM_AddressString_Complete, complete);
-		}
+		DoMethod(data->str, MUIM_AddressString_Complete, complete);
 	}
 }
 
@@ -130,8 +128,8 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					WindowContents, VGroup,
 						InnerSpacing(0,0),
 						Child, NListviewObject,
-							MUIA_NListview_NList, list = AddressTreelistObject,
-								MUIA_AddressTreelist_AsMatchList, TRUE,
+							MUIA_NListview_NList, list = AddressEntryListObject,
+								MUIA_AddressEntryList_Type, MUIV_AddressEntryList_Type_Match,
 								End,
 							End,
 						End,
@@ -142,7 +140,7 @@ STATIC ULONG MatchWindow_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->str = str;
 	data->list = list;
 
-	DoMethod(data->list, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, MatchWindow_NewActive, data);
+	DoMethod(data->list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, MatchWindow_NewActive, data);
 	return (ULONG)obj;
 }
 
@@ -157,7 +155,7 @@ STATIC ULONG MatchWindow_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressTreelist_Refresh *msg)
+STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_AddressEntryList_Refresh *msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
 	return DoMethodA(data->list, (Msg)msg);
@@ -183,7 +181,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
-		case  MUIM_AddressTreelist_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressTreelist_Refresh*)msg);
+		case  MUIM_AddressEntryList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressEntryList_Refresh*)msg);
 		case  MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
 		case	MUIM_MatchWindow_Down: return MatchWindow_Down(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
@@ -332,47 +330,46 @@ STATIC ULONG AddressString_DragQuery(struct IClass *cl, Object *obj, struct MUIP
 
 STATIC ULONG AddressString_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
-	if (treenode)
+	struct addressbook_entry_new *entry;
+
+	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+
+	if (entry)
 	{
-		struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
-		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
+		char *append;
+		append = entry->alias;
+		if (!append || !*append)
 		{
-			char *append;
-			append = entry->alias;
+			append = entry->realname;
 			if (!append || !*append)
 			{
-				append = entry->u.person.realname;
-				if (!append || !*append)
+				if (entry->email_array)
 				{
-					if (entry->u.person.num_emails)
-					{
-						append = entry->u.person.emails[0];
-					} else append = NULL;
-				}
+						append = entry->email_array[0];
+				} else append = NULL;
 			}
+		}
 
-			if (append)
+		if (append)
+		{
+			char *text = (char*)xget(obj,MUIA_String_Contents);
+			char *newtext;
+			int len;
+
+			if (!text) text = "";
+			len = strlen(text);
+
+			if ((newtext = (char*)malloc(strlen(text)+strlen(append)+8)))
 			{
-				char *text = (char*)xget(obj,MUIA_String_Contents);
-				char *newtext;
-				int len;
-
-				if (!text) text = "";
-				len = strlen(text);
-
-				if ((newtext = (char*)malloc(strlen(text)+strlen(append)+8)))
+				strcpy(newtext,text);
+				if (len && text[len-1] != ',')
 				{
-					strcpy(newtext,text);
-					if (len && text[len-1] != ',')
-					{
-						newtext[len++]=',';
-						newtext[len]=0;
-					}
-					strcat(newtext,append);
-					set(obj,MUIA_UTF8String_Contents,newtext);
-					free(newtext);
+					newtext[len++]=',';
+					newtext[len]=0;
 				}
+				strcat(newtext,append);
+				set(obj,MUIA_UTF8String_Contents,newtext);
+				free(newtext);
 			}
 		}
 	}
@@ -461,7 +458,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 	if (data->match_wnd)
 	{
 		int entries;
-		DoMethod(data->match_wnd, MUIM_AddressTreelist_Refresh, addr_start);
+		DoMethod(data->match_wnd, MUIM_AddressEntryList_Refresh, addr_start);
 		entries = xget(data->match_wnd, MUIA_MatchWindow_Entries);
 
 		if (entries > 1)

@@ -27,11 +27,11 @@
 #include "lists.h"
 #endif
 
-struct mail;
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
 
-#define ADDRESSBOOK_ENTRY_GROUP 0
-#define ADDRESSBOOK_ENTRY_PERSON 1
-#define ADDRESSBOOK_ENTRY_LIST 2
+struct mail;
 
 struct address_snail_phone
 {
@@ -48,84 +48,72 @@ struct address_snail_phone
 	char *fax;
 };
 
-/* the addressbook structure (read-only outside from addressbook.c)! */
-struct addressbook_entry
+struct addressbook_group
 {
-	struct node node; /* embedded node structure */
-	int type; /* see above */
+	struct node node;
+	utf8 *name;
+	utf8 *description;
+};
+
+struct addressbook_entry_new
+{
+	struct node node;
 
 	char *alias;
 	char *description;
 
-	union
-	{
-		struct
-		{
-			struct list list; /* more addressbook entries */
-		} group;
+	char *realname;
+	char *notepad;
+	char *pgpid;
+	char *homepage;
+	char *portrait; /* filename to a picture of this person */
 
-		struct
-		{
-			char *realname;
-			char *pgpid;
-			char *homepage;
-			char *notepad;
-			char *portrait; /* filename to a picture of this person */
+	struct address_snail_phone priv;
+	struct address_snail_phone work;
 
-			struct address_snail_phone priv;
-			struct address_snail_phone work;
+	int dob_day; /* day of birth */
+	int dob_month; /* month of birth */
+	int dob_year; /* year of birth */
 
-			int dob_day; /* day of birth */
-			int dob_month; /* month of birth */
-			int dob_year; /* year of birth */
+	int sex; /* 0 unspecifed, 1 female, 2 male */
 
-			int sex; /* 0 unspecifed, 1 female, 2 male */
-			int num_emails; /* number of email addresses */
-			char **emails; /* array of email addresses */
-		} person;
-
-		struct
-		{
-			char *replyaddress;
-			char *nameofml;
-			int num_members;
-			char **members;
-		} list;
-	} u;
+	char **email_array; /* NULL terminated array of emails (use array_xxx() functions) */
+	char **group_array; /* NULL terminated array of names of groups (use array_xxx() functions) */
 };
 
+/* Entry functions */
+struct addressbook_entry_new *addressbook_first_entry(void);
+struct addressbook_entry_new *addressbook_next_entry(struct addressbook_entry_new *entry);
+struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook_entry_new *entry);
+void addressbook_free_entry_new(struct addressbook_entry_new *entry);
+char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry, char *part, int *type_ptr);
+struct addressbook_entry_new *addressbook_add_entry(char *realname);
+struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook_entry_new *entry);
 
-void addressbook_set_description(struct addressbook_entry *entry, char *desc);
-void addressbook_set_alias(struct addressbook_entry *entry, char *alias);
-int addressbook_person_add_email(struct addressbook_entry *entry, char *email);
+/* Group functions */
+struct addressbook_group *addressbook_first_group(void);
+struct addressbook_group *addressbook_next_group(struct addressbook_group *grp);
+struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *srcgrp);
+void addressbook_free_group(struct addressbook_group *grp);
+struct addressbook_group *addressbook_find_group_by_name(utf8 *name);
+struct addressbook_group *addressbook_add_group(utf8 *name);
+struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_group *group);
 
+/* init and io */
 void init_addressbook(void);
 void cleanup_addressbook(void);
 int addressbook_load(void);
 void addressbook_save(void);
-
 int addressbook_import_file(char *filename, int append);
 
-void addressbook_insert_tail(struct addressbook_entry *entry, struct addressbook_entry *new_entry);
-struct addressbook_entry *addressbook_create_person(char *realname, char *email);
-struct addressbook_entry *addressbook_new_person(struct addressbook_entry *list, char *realname, char *email);
-struct addressbook_entry *addressbook_create_group(void);
-struct addressbook_entry *addressbook_new_group(struct addressbook_entry *list);
-struct addressbook_entry *addressbook_duplicate_entry(struct addressbook_entry *entry);
-void addressbook_free_entry(struct addressbook_entry *entry);
-char *addressbook_get_realname(char *email);
-char *addressbook_get_portrait(char *email);
+/* general */
+char *addressbook_get_expanded(char *unexpand);
+struct addressbook_entry_new *addressbook_find_entry_by_address(char *email);
+struct addressbook_entry_new *addressbook_find_entry_by_alias(char *alias);
+struct addressbook_entry_new *addressbook_find_entry_by_realname(char *realname);
+char **addressbook_get_array_of_email_addresses(void);
 char *addressbook_download_portrait(char *email);
-char *addressbook_get_address_str(struct addressbook_entry *entry);
-char *addressbook_get_expand_str(char *unexpand);
-struct addressbook_entry *addressbook_find_entry_by_address(char *addr);
-struct addressbook_entry *addressbook_get_entry_from_mail(struct mail *m, int to);
-char *addressbook_completed_by_entry(char *part, struct addressbook_entry *entry, int *type_ptr);
 char *addressbook_complete_address(char *address);
-char **addressbook_obtain_array_of_email_addresses(void);
-
-struct addressbook_entry *addressbook_first(struct addressbook_entry *group);
-struct addressbook_entry *addressbook_next(struct addressbook_entry *entry);
 
 #endif
 

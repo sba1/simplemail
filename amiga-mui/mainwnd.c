@@ -40,6 +40,7 @@
 #include "SimpleMail_rev.h"
 
 #include "account.h"
+#include "addressbook.h"
 #include "arexx.h"
 #include "configuration.h"
 #include "debug.h"
@@ -50,7 +51,7 @@
 #include "support.h"
 #include "support_indep.h"
 
-#include "addresstreelistclass.h"
+#include "addressentrylistclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "foldertreelistclass.h"
@@ -102,7 +103,7 @@ static Object *folder_text;
 static Object *folder_popupmenu;
 static Object *address_listview_group;
 static Object *address_listview;
-static Object *address_tree;
+static Object *address_list;
 static Object *left_listview_group;
 static Object *left_listview_balance;
 static Object *right_group;
@@ -234,15 +235,14 @@ static void foldertreelist_doubleclick(void)
 /******************************************************************
  An addressbook entry has been doubleclicked
 *******************************************************************/
-static void addresstreelist_doubleclick(void)
+static void addressentrylist_doubleclick(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(address_tree, MUIA_NListtree_Active);
-	if (treenode && treenode->tn_User)
-	{
-		callback_write_mail_to((struct addressbook_entry *)treenode->tn_User);
-	}
-}
+	struct addressbook_entry_new *entry;
 
+	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	if (entry && entry->email_array)
+		callback_write_mail_to_str(entry->email_array[0],NULL);
+}
 
 /******************************************************************
  The Mailtree's title has been clicked, so change the primary sort
@@ -714,8 +714,8 @@ int main_window_init(void)
 					Child, address_listview_group = VGroup,
 						Child, address_listview = NListviewObject,
 							MUIA_CycleChain, 1,
-							MUIA_NListview_NList, address_tree = AddressTreelistObject,
-								MUIA_AddressTreelist_InAddressbook, 0,
+							MUIA_NListview_NList, address_list = AddressEntryListObject,
+								MUIA_AddressEntryList_Type, MUIV_AddressEntryList_Type_Main,
 								MUIA_ObjectID, MAKE_ID('M','W','A','L'),
 								End,
 							End,
@@ -872,7 +872,7 @@ int main_window_init(void)
 		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard,  foldertreelist_doubleclick);
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
-		DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, addresstreelist_doubleclick);
+		DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, addressentrylist_doubleclick);
 
 		main_build_accounts();
 		main_build_scripts();
@@ -1195,7 +1195,7 @@ void main_build_scripts(void)
 *******************************************************************/
 void main_build_addressbook(void)
 {
-	DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
+	DoMethod(address_list, MUIM_AddressEntryList_Refresh,NULL);
 }
 
 /******************************************************************

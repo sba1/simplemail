@@ -53,7 +53,8 @@
 /* gui parts */
 #include "accountpopclass.h"
 #include "signaturecycleclass.h"
-#include "addresstreelistclass.h"
+#include "addressentrylistclass.h"
+#include "addressgrouplistclass.h"
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "appicon.h"
@@ -238,12 +239,13 @@ void all_del(void)
 		{
 			app_del();
 
+			delete_pgplist_class();
+			delete_addressentrylist_class();
+			delete_addressgrouplist_class();
 			delete_messageview_class();
 			delete_accountpop_class();
 			delete_signaturecycle_class();
 			delete_audioselectgroup_class();
-			delete_pgplist_class();
-			delete_addresstreelist_class();
 			delete_multistring_class();
 			delete_filterrule_class();
 			delete_filterlist_class();
@@ -310,9 +312,10 @@ int all_init(void)
 						    create_picturebutton_class() && create_popupmenu_class() &&
 						    create_icon_class() && create_filterlist_class() &&
 						    create_filterrule_class() && create_multistring_class() &&
-						    create_addresstreelist_class() && create_pgplist_class() &&
 						    create_audioselectgroup_class() && create_accountpop_class() &&
-						    create_signaturecycle_class() && create_messageview_class())
+						    create_signaturecycle_class() && create_messageview_class() &&
+								create_addressgrouplist_class() && create_addressentrylist_class() &&
+								create_pgplist_class())
 						{
 							if (app_init())
 							{

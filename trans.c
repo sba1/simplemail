@@ -159,7 +159,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		else
 		{
 			black = array_duplicate(user.config.spam_black_emails);
-			if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+			if (user.config.spam_addrbook_is_white) white = addressbook_get_array_of_email_addresses();
 			white = array_add_array(white,user.config.spam_white_emails);
 		}
 	}

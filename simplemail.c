@@ -243,20 +243,32 @@ void callback_get_address(void)
 	struct mail *mail = main_get_active_mail();
 	if (mail)
 	{
-		char *addr;
+		char *addr,*phrase;
 		struct folder *f;
 
 		f = main_get_folder();
 
-		if (folder_get_type(f) == FOLDER_TYPE_SEND) addr = mail->to_addr;
-		else addr = mail->from_addr;
-
-		if (addr)
+		if (folder_get_type(f) == FOLDER_TYPE_SEND)
 		{
-			if (!addressbook_get_realname(addr))
-			{
-				addressbook_open_with_new_address_from_mail(mail,folder_get_type(f) == FOLDER_TYPE_SEND);
-			}
+			phrase = mail->to_phrase;
+			addr = mail->to_addr;
+		} else
+		{
+			phrase = mail->from_phrase;
+			addr = mail->from_addr;
+		}
+
+		if (addr && !addressbook_find_entry_by_address(addr))
+		{
+			struct addressbook_entry_new entry;
+			memset(&entry,0,sizeof(entry));
+
+			entry.realname = phrase;
+			entry.email_array = array_add_string(NULL,addr);
+
+			addressbookwnd_create_entry(&entry);
+
+			array_free(entry.email_array);
 		}
 	}
 }
@@ -277,11 +289,10 @@ int callback_write_mail(char *from, char *to, char *replyto, char *subject)
 }
 
 /* a new mail should be written to the given address */
-void callback_write_mail_to(struct addressbook_entry *address)
+void callback_write_mail_to(struct addressbook_entry_new *address)
 {
-	char *to_str = addressbook_get_address_str(address);
-	callback_write_mail_to_str(to_str,NULL);
-	free(to_str);
+	char *addr = address->email_array?address->email_array[0]:NULL;
+	callback_write_mail_to_str(addr,NULL);
 }
 
 /* a new mail should be written to a given address string */
@@ -792,7 +803,7 @@ void callback_check_selected_folder_for_spam(void)
 	app_busy();
 
 	/* build the white list */
-	if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+	if (user.config.spam_addrbook_is_white) white = addressbook_get_array_of_email_addresses();
 	else white = NULL;
 	white = array_add_array(white,user.config.spam_white_emails);
 
@@ -978,7 +989,7 @@ void callback_edit_filter(void)
 /* addressbook should be opened */
 void callback_addressbook(void)
 {
-	addressbook_open();
+	addressbookwnd_open();
 }
 
 /* Open the configuration window */
@@ -1446,7 +1457,7 @@ void callback_check_selected_mails_if_spam(void)
 	if (!folder) return;
 
 	/* build the white list */
-	if (user.config.spam_addrbook_is_white) white = addressbook_obtain_array_of_email_addresses();
+	if (user.config.spam_addrbook_is_white) white = addressbook_get_array_of_email_addresses();
 	else white = NULL;
 	white = array_add_array(white,user.config.spam_white_emails);
 

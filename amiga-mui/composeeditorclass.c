@@ -25,6 +25,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
+#include <mui/NListview_mcc.h>
 #include <mui/nlisttree_mcc.h>
 #include <mui/texteditor_mcc.h>
 
@@ -43,7 +44,7 @@
 #include "configuration.h"
 
 #include "addressbook.h"
-#include "addresstreelistclass.h"
+#include "addressentrylistclass.h"
 #include "amigasupport.h"
 #include "composeeditorclass.h"
 #include "compiler.h"
@@ -146,22 +147,21 @@ STATIC ULONG ComposeEditor_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG ComposeEditor_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
 	if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class) return MUIV_DragQuery_Accept;
-	if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class) return MUIV_DragQuery_Accept;
+	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class) return MUIV_DragQuery_Accept;
 	return MUIV_DragQuery_Refuse;
 }
 
 STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
 {
-	if (OCLASS(msg->obj) == CL_AddressTreelist->mcc_Class)
+	if (OCLASS(msg->obj) == CL_AddressEntryList->mcc_Class)
 	{
-		struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode*)xget(msg->obj,MUIA_NListtree_Active);
-		if (treenode)
+		struct addressbook_entry_new *entry;
+
+		DoMethod(msg->obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+
+		if (entry && entry->email_array && entry->email_array[0])
 		{
-			struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
-			if (entry->u.person.emails && entry->u.person.emails[0])
-			{
-				DoMethod(obj,MUIM_TextEditor_InsertText,entry->u.person.emails[0],MUIV_TextEditor_InsertText_Cursor);
-			}
+			DoMethod(obj, MUIM_TextEditor_InsertText, entry->email_array[0], MUIV_TextEditor_InsertText_Cursor);
 		}
 	} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
 	{

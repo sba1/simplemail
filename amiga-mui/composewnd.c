@@ -205,7 +205,7 @@ static int compose_expand_to(struct Compose_Data **pdata)
 	if (to_contents && *to_contents)
 	{
 		char *str;
-		if ((str = addressbook_get_expand_str(to_contents)))
+		if ((str = addressbook_get_expanded(to_contents)))
 		{
 			set(data->to_string, MUIA_UTF8String_Contents, str);
 			free(str);
@@ -229,7 +229,7 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 	if (cc_contents && *cc_contents)
 	{
 		char *str;
-		if ((str = addressbook_get_expand_str(cc_contents)))
+		if ((str = addressbook_get_expanded(cc_contents)))
 		{
 			set(data->cc_string, MUIA_UTF8String_Contents, str);
 			free(str);

@@ -17,20 +17,21 @@
 ***************************************************************************/
 
 /*
-** addressbookwnd.h
+** addressgrouplistclass.h
 */
 
-#ifndef SM__ADDRESSBOOKWND_H
-#define SM__ADDRESSBOOKWND_H
+#ifndef SM__ADDRESSGROUPLISTCLASS_H
+#define SM__ADDRESSGROUPLISTCLASS_H
 
-struct mail;
-struct addressbook_entry_new;
+/* AddressStringClass */
+IMPORT struct MUI_CustomClass *CL_AddressGroupList;
+#define AddressGroupListObject (Object*)MyNewObject(CL_AddressGroupList->mcc_Class, NULL
 
-void addressbookwnd_open(void);
-void addressbookwnd_create_entry(struct addressbook_entry_new *entry);
-int addressbookwnd_set_active_alias(char *alias);
+#define MUIM_AddressGroupList_Refresh  (TAG_USER | 0x30150101)
 
-void addressbookwnd_refresh(void);
+struct MUIP_AddressGroupList_Refresh {ULONG MethodID; };
+
+int create_addressgrouplist_class(void);
+void delete_addressgrouplist_class(void);
 
 #endif
-

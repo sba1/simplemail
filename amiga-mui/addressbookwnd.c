@@ -28,7 +28,6 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
-#include <mui/nlisttree_mcc.h>
 #include <mui/betterstring_mcc.h>
 #include <mui/texteditor_mcc.h>
 #include <clib/alib_protos.h>
@@ -50,6 +49,8 @@
 #include "support_indep.h"
 
 #include "addressbookwnd.h"
+#include "addressentrylistclass.h"
+#include "addressgrouplistclass.h"
 #include "addresstreelistclass.h"
 #include "compiler.h"
 #include "composeeditorclass.h"
@@ -59,12 +60,13 @@
 #include "picturebuttonclass.h"
 #include "utf8stringclass.h"
 
-static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group);
-struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
+static void addressbookwnd_store(void);
 
 /* for the address window */
 static Object *address_wnd;
-static Object *address_tree;
+
+static Object *group_list;
+static Object *address_list;
 
 /* the Person Window */
 #define MAX_PERSON_OPEN 10
@@ -104,7 +106,7 @@ struct Person_Data /* should be a customclass */
 	struct Snail_Data priv;
 	struct Snail_Data work;
 
-	struct addressbook_entry *person; /* NULL if new person */
+	struct addressbook_entry_new *person; /* NULL if new person */
 
 	int num; /* the number of the window */
 	/* more to add */
@@ -183,7 +185,7 @@ static void person_window_close(struct Person_Data **pdata)
 static void person_window_ok(struct Person_Data **pdata)
 {
 	struct Person_Data *data = *pdata;
-	struct addressbook_entry *new_entry;
+	struct addressbook_entry_new *new_entry;
 	char *addresses,*dob;
 	int day = 0, month = 0, year = 0;
 
@@ -229,24 +231,22 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
-	if ((new_entry = addressbook_create_person(getutf8string(data->realname_string), NULL)))
+	if ((new_entry = malloc(sizeof(*new_entry))))
 	{
-		char *alias;
-		struct MUI_NListtree_TreeNode *treenode = NULL;
+		LONG pos;
 
-		alias = getutf8string(data->alias_string);
-		if (alias && *alias) addressbook_set_alias(new_entry, alias);
-		addressbook_set_description(new_entry, getutf8string(data->description_string));
+		memset(new_entry,0,sizeof(*new_entry));
 
-		adoptsnail(&new_entry->u.person.priv,&data->priv);
-		adoptsnail(&new_entry->u.person.work,&data->work);
-		
-		free(new_entry->u.person.pgpid);
-		new_entry->u.person.pgpid = mystrdup(getutf8string(data->pgp_string));
-		free(new_entry->u.person.homepage);
-		new_entry->u.person.homepage = mystrdup(getutf8string(data->homepage_string));
-		free(new_entry->u.person.portrait);
-		new_entry->u.person.portrait = mystrdup(getutf8string(data->portrait_string));
+		new_entry->realname = mystrdup(getutf8string(data->realname_string));
+		new_entry->alias = mystrdup(getutf8string(data->alias_string));
+		new_entry->description = mystrdup(getutf8string(data->description_string));
+
+		adoptsnail(&new_entry->priv,&data->priv);
+		adoptsnail(&new_entry->work,&data->work);
+
+		new_entry->pgpid = mystrdup(getutf8string(data->pgp_string));
+		new_entry->homepage = mystrdup(getutf8string(data->homepage_string));
+		new_entry->portrait = mystrdup(getutf8string(data->portrait_string));
 
 		if (addresses)
 		{
@@ -254,34 +254,31 @@ static void person_window_ok(struct Person_Data **pdata)
 			char *buf = addresses;
 			while ((buf = parse_addr_spec(buf,&single_address)))
 			{
-				addressbook_person_add_email(new_entry,single_address);
+				new_entry->email_array = array_add_string(new_entry->email_array, single_address);
 				free(single_address);
 			}
 		}
 
-		if (xget(data->female_button,MUIA_Selected)) new_entry->u.person.sex = 1;
-		else if (xget(data->male_button,MUIA_Selected)) new_entry->u.person.sex = 2;
+		if (xget(data->female_button,MUIA_Selected)) new_entry->sex = 1;
+		else if (xget(data->male_button,MUIA_Selected)) new_entry->sex = 2;
 
-		new_entry->u.person.dob_month = month;
-		new_entry->u.person.dob_day = day;
-		new_entry->u.person.dob_year = year;
+		new_entry->dob_month = month;
+		new_entry->dob_day = day;
+		new_entry->dob_year = year;
 
 		if (data->person)
 		{
-			if ((treenode = FindListtreeUserData(address_tree, data->person)))
-			{
-				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
-			}
-		}
+			pos = MUIV_NList_GetPos_Start;
+			DoMethod(address_list, MUIM_NList_GetPos, data->person, &pos);
 
-		if (!treenode)
-		{
-			/* Now add it to the listview (in the active list) */
-			DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
-							   MUIV_NListtree_Insert_ListNode_ActiveFallback,MUIV_NListtree_Insert_PrevNode_Tail,0);
-		}
+			if (pos != MUIV_NList_GetPos_End) DoMethod(address_list, MUIM_NList_ReplaceSingle, new_entry, pos, NOWRAP, 0);
+			else pos = -1;
+		} else pos = -1;
 
-		addressbook_free_entry(new_entry);
+		if (pos == -1)
+			DoMethod(address_list, MUIM_NList_InsertSingle, new_entry, MUIV_NList_Insert_Sorted);
+
+		addressbook_free_entry_new(new_entry);
 	}
 
 	person_window_close(pdata);
@@ -291,7 +288,7 @@ static void person_window_ok(struct Person_Data **pdata)
 
 	/* update the internal addressbook */
 	cleanup_addressbook();
-	addressbook_update(NULL,NULL);	
+	addressbookwnd_store();
 	main_build_addressbook();
 }
 
@@ -379,7 +376,7 @@ STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a0,struct Hook *h),REG(a2,Object *l
 /******************************************************************
  Opens a person window
 *******************************************************************/
-void person_window_open(struct addressbook_entry *entry)
+static void person_window_open(struct addressbook_entry_new *entry)
 {
 	Object *wnd, *reg_group, *email_texteditor;
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
@@ -764,41 +761,33 @@ void person_window_open(struct addressbook_entry *entry)
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			/* A person must be changed */
-			if (entry && entry->type == ADDRESSBOOK_ENTRY_PERSON)
+			if (entry)
 			{
-				int i;
-				char **array = (char**)malloc(sizeof(char*)*(entry->u.person.num_emails+1));
-				if (array)
-				{
-					for (i=0;i<entry->u.person.num_emails;i++)
-						array[i] = entry->u.person.emails[i];
-					array[i] = NULL;
-					set(email_texteditor,MUIA_ComposeEditor_Array, array);
-					free(array);
-				}
+				if (entry->email_array)
+					set(email_texteditor,MUIA_ComposeEditor_Array, entry->email_array);
 
-				setutf8string(realname_string, entry->u.person.realname);
+				setutf8string(realname_string, entry->realname);
 				setutf8string(description_string, entry->description);
-				setutf8string(pgp_string, entry->u.person.pgpid);
+				setutf8string(pgp_string, entry->pgpid);
 				setutf8string(alias_string, entry->alias);
-				setutf8string(homepage_string, entry->u.person.homepage);
-				setutf8string(portrait_string, entry->u.person.portrait);
+				setutf8string(homepage_string, entry->homepage);
+				setutf8string(portrait_string, entry->portrait);
 
-				if (entry->u.person.sex == 1) set(data->female_button,MUIA_Selected,TRUE);
-				else if (entry->u.person.sex == 2) set(data->male_button,MUIA_Selected,TRUE);
+				if (entry->sex == 1) set(data->female_button,MUIA_Selected,TRUE);
+				else if (entry->sex == 2) set(data->male_button,MUIA_Selected,TRUE);
 
-				if (entry->u.person.dob_day && ((unsigned int)(entry->u.person.dob_month-1)) < 12)
+				if (entry->dob_day && ((unsigned int)(entry->dob_month-1)) < 12)
 				{
 					char buf[64];
 					static const char *month_names[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-					sprintf(buf,"%d %s %d",entry->u.person.dob_day,month_names[entry->u.person.dob_month-1],entry->u.person.dob_year);
+					sprintf(buf,"%d %s %d",entry->dob_day,month_names[entry->dob_month-1],entry->dob_year);
 					set(birthday_string,MUIA_String_Contents,buf);
 				}
 
-				if (entry->u.person.portrait) set(portrait_button,MUIA_PictureButton_Filename,entry->u.person.portrait);
+				if (entry->portrait) set(portrait_button, MUIA_PictureButton_Filename, entry->portrait);
 
-				setsnail(&priv,&entry->u.person.priv);
-				setsnail(&work,&entry->u.person.work);
+				setsnail(&priv,&entry->priv);
+				setsnail(&work,&entry->work);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);
@@ -824,7 +813,7 @@ struct Group_Data /* should be a customclass */
 	Object *alias_string;
 	Object *description_string;
 
-	struct addressbook_entry *group; /* NULL if new group */
+	struct addressbook_group *group; /* NULL if new group */
 
 	int num; /* the number of the window */
 	/* more to add */
@@ -854,46 +843,46 @@ static void group_window_close(struct Group_Data **pdata)
 static void group_window_ok(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
-	struct addressbook_entry *new_entry;
-	set(data->wnd,MUIA_Window_Open,FALSE);
+	struct addressbook_group *new_group;
 
-	if ((new_entry = addressbook_create_group()))
+	set(data->wnd, MUIA_Window_Open, FALSE);
+
+	if ((new_group = malloc(sizeof(*new_group))))
 	{
-		struct MUI_NListtree_TreeNode *treenode = NULL;
-		char *alias = (char*)getutf8string(data->alias_string);
-		if (alias && *alias) addressbook_set_alias(new_entry, alias);
-		addressbook_set_description(new_entry, getutf8string(data->description_string));
+		LONG pos;
+
+		memset(new_group,0,sizeof(*new_group));
+
+		new_group->name = mystrdup(getutf8string(data->alias_string));
+		new_group->description = mystrdup(getutf8string(data->description_string));
 
 		if (data->group)
 		{
-			if ((treenode = FindListtreeUserData(address_tree, data->group)))
-			{
-				DoMethod(address_tree, MUIM_NListtree_Rename, treenode, new_entry, MUIV_NListtree_Rename_Flag_User);
-			}
-		}
+			pos = MUIV_NList_GetPos_Start;
+			DoMethod(group_list, MUIM_NList_GetPos, data->group, &pos);
 
-		if (!treenode)
-		{
-			/* Now add it to the listview (in the active list) */
-			DoMethod(address_tree, MUIM_NListtree_Insert, "" /*name*/, new_entry, /*udata */
-						   MUIV_NListtree_Insert_ListNode_ActiveFallback,MUIV_NListtree_Insert_PrevNode_Tail,TNF_LIST|TNF_OPEN);
-		}
+			if (pos != MUIV_NList_GetPos_End) DoMethod(group_list, MUIM_NList_ReplaceSingle, new_group, pos, NOWRAP, 0);
+			else pos = -1;
+		} else pos = -1;
 
-		addressbook_free_entry(new_entry);
+		if (pos == -1)
+			DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
+
+		addressbook_free_group(new_group);
 	}
 
 	group_window_close(pdata);
 
 	/* update the internal addressbook */
 	cleanup_addressbook();
-	addressbook_update(NULL,NULL);	
+	addressbookwnd_store();
 	main_build_addressbook();
 }
 
 /******************************************************************
  Opens a group window
 *******************************************************************/
-static void group_window_open(struct addressbook_entry *entry)
+static void group_window_open(struct addressbook_group *group)
 {
 	Object *wnd;
 	Object *alias_string, *ok_button, *cancel_button;
@@ -942,7 +931,7 @@ static void group_window_open(struct addressbook_entry *entry)
 			data->wnd = wnd;
 			data->alias_string = alias_string;
 			data->description_string = description_string;
-			data->group = entry;
+			data->group = group;
 			data->num = num;
 
 			/* mark the window as opened */
@@ -954,10 +943,10 @@ static void group_window_open(struct addressbook_entry *entry)
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			/* A group must be changed */
-			if (entry && entry->type == ADDRESSBOOK_ENTRY_GROUP)
+			if (group)
 			{
-				setutf8string(alias_string, entry->alias);
-				setutf8string(description_string, entry->description);
+				setutf8string(alias_string, group->name);
+				setutf8string(description_string, group->description);
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);
@@ -974,42 +963,24 @@ static void group_window_open(struct addressbook_entry *entry)
 /******************************************************************
  Updates the internal address book
 *******************************************************************/
-static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct addressbook_entry *group)
+static void addressbookwnd_store(void)
 {
-	struct addressbook_entry *entry;
+	int i;
 
-	if (!treenode) treenode = (struct MUI_NListtree_TreeNode *)DoMethod(address_tree,
-				MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
-
-	if (!treenode) return;
-
-	while (treenode)
+	for (i=0;i<xget(group_list,MUIA_NList_Entries);i++)
 	{
-		if ((entry = (struct addressbook_entry *)treenode->tn_User))
-		{
-			if (treenode->tn_Flags & TNF_LIST)
-			{
-				struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode *)DoMethod(address_tree,
-						MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Head, 0);
-				struct addressbook_entry *new_group = addressbook_duplicate_entry(entry);
-				
-				if (new_group)
-				{
-					addressbook_insert_tail(group,new_group);
-					if (tn) addressbook_update(tn,new_group);
-				}
-			} else
-			{
-				if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
-				{
-					struct addressbook_entry *new_person = addressbook_duplicate_entry(entry);
+		struct addressbook_group *grp;
 
-					if (new_person)
-						addressbook_insert_tail(group,new_person);
-				}
-			}
-		}
-		treenode = (struct MUI_NListtree_TreeNode*)DoMethod(address_tree, MUIM_NListtree_GetEntry, treenode, MUIV_NListtree_GetEntry_Position_Next,0);
+		DoMethod(group_list, MUIM_NList_GetEntry, i, &grp);
+		addressbook_add_group_duplicate(grp);
+	}
+
+	for (i=0;i<xget(address_list,MUIA_NList_Entries);i++)
+	{
+		struct addressbook_entry_new *entry;
+
+		DoMethod(address_list, MUIM_NList_GetEntry, i, &entry);
+		addressbook_add_entry_duplicate(entry);
 	}
 }
 
@@ -1019,7 +990,7 @@ static void addressbook_update(struct MUI_NListtree_TreeNode *treenode, struct a
 static void addressbook_save_pressed(void)
 {
 	cleanup_addressbook();
-	addressbook_update(NULL,NULL);
+	addressbookwnd_store();
 	addressbook_save();
 }
 
@@ -1034,7 +1005,7 @@ static void addressbook_add_person(void)
 /******************************************************************
  Adds a new group to the window
 *******************************************************************/
-static void addressbook_add_group(void)
+static void addressbookwnd_add_group(void)
 {
 	group_window_open(NULL);
 }
@@ -1042,37 +1013,23 @@ static void addressbook_add_group(void)
 /******************************************************************
  Change the current selected entry
 *******************************************************************/
-static void addressbook_change(void)
+static void addressbook_change_address(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)
-				DoMethod(address_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Active, 0);
+	struct addressbook_entry_new *entry;
 
-	if (treenode)
-	{
-		struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
-		if (entry->type == ADDRESSBOOK_ENTRY_PERSON)
-		{
-			person_window_open(entry);
-		} else if (entry->type == ADDRESSBOOK_ENTRY_GROUP)
-		{
-			group_window_open(entry);
-		}
-	}
+	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	if (entry) person_window_open(entry);
 }
 
 /******************************************************************
- The to button has been clicked
+ Change the current selected entry
 *******************************************************************/
-static void addressbook_to(void)
+static void addressbook_change_group(void)
 {
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)
-				DoMethod(address_tree, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Active, MUIV_NListtree_GetEntry_Position_Active, 0);
+	struct addressbook_group *group;
 
-	if (treenode)
-	{
-		struct addressbook_entry *entry = (struct addressbook_entry *)treenode->tn_User;
-		callback_write_mail_to(entry);
-	}
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+	if (group) group_window_open(group);
 }
 
 /******************************************************************
@@ -1080,11 +1037,11 @@ static void addressbook_to(void)
 *******************************************************************/
 static void addressbook_delete(void)
 {
-	DoMethod(address_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
+	DoMethod(address_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 
 	/* update the internal addressbook */
 	cleanup_addressbook();
-	addressbook_update(NULL,NULL);	
+	addressbookwnd_store();
 	main_build_addressbook();
 }
 
@@ -1094,7 +1051,6 @@ static void addressbook_delete(void)
 static void addressbook_init(void)
 {
 	Object *new_person_button, *change_button, *new_group_button, *save_button, *delete_button, *import_button;
-	Object *to_button;
 
 	address_wnd = WindowObject,
 		MUIA_HelpNode, "AB_W",
@@ -1103,35 +1059,34 @@ static void addressbook_init(void)
         
 		WindowContents, VGroup,
 			Child, HGroup,
-				Child, VGroup,
-					MUIA_Weight,0,
-					Child, to_button = MakeButton(_("_To:")),
-					Child, MakeButton(_("_CC:")),
-					Child, MakeButton(_("_BCC:")),
-					End,
-				Child, VGroup,
-					Child, HVSpace,
-					Child, HGroup,
-						MUIA_VertWeight,0,
-						Child, import_button = MakePictureButton(_("_Import"),"PROGDIR:Images/Save"),
-						Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/Save"),
-/*						Child, MakeButton("Search"),*/
-						Child, new_person_button = MakePictureButton(_("_Person"),"PROGDIR:Images/User"),
-/*						Child, MakeButton("New List"),*/
-						Child, new_group_button = MakePictureButton(_("_Group"),"PROGDIR:Images/Group"),
-						Child, change_button = MakePictureButton(_("_Edit"),"PROGDIR:Images/Edit"),
-						Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/Delete"),
-						Child, HVSpace,
-						End,
-					Child, HVSpace,
-					End,
+				MUIA_VertWeight,0,
+				Child, HVSpace,
+				Child, import_button = MakePictureButton(_("_Import"),"PROGDIR:Images/Save"),
+				Child, save_button = MakePictureButton(_("_Save"),"PROGDIR:Images/Save"),
+/*				Child, MakeButton("Search"),*/
+				Child, new_person_button = MakePictureButton(_("_Person"),"PROGDIR:Images/User"),
+/*				Child, MakeButton("New List"),*/
+				Child, new_group_button = MakePictureButton(_("_Group"),"PROGDIR:Images/Group"),
+				Child, change_button = MakePictureButton(_("_Edit"),"PROGDIR:Images/Edit"),
+				Child, delete_button = MakePictureButton(_("_Delete"),"PROGDIR:Images/Delete"),
+				Child, HVSpace,
+				Child, HVSpace,
 				End,
 			Child, HGroup,
+				Child, VGroup,
+					MUIA_Weight, 25,
+					Child, NListviewObject,
+						MUIA_CycleChain, 1,
+						MUIA_NListview_NList, group_list = AddressGroupListObject, End,
+						End,
+					Child, HGroup,
+						Child, MakeButton(_("Add...")),
+						Child, MakeButton(_("Remove...")),
+						End,
+					End,
 				Child, NListviewObject,
 					MUIA_CycleChain, 1,
-					MUIA_NListview_NList, address_tree = AddressTreelistObject, 
-						MUIA_AddressTreelist_InAddressbook, TRUE,
-						End,
+					MUIA_NListview_NList, address_list = AddressEntryListObject, End,
 					End,
 				End,
 			End,
@@ -1143,67 +1098,59 @@ static void addressbook_init(void)
 	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_save_pressed);
 	DoMethod(import_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_import_addressbook);
 	DoMethod(new_person_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_person);
-	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_add_group);
-	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);
+	DoMethod(new_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_group);
+	DoMethod(change_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_change_address);
 	DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_delete);
-	DoMethod(to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbook_to);
-	DoMethod(address_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbook_change);
+	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbook_change_address);
 }
 
 /******************************************************************
- Opens a addressbook
+ Opens the addressbook
 *******************************************************************/
-void addressbook_open(void)
+void addressbookwnd_open(void)
 {
 	if (!address_wnd) addressbook_init();
 	if (address_wnd)
 	{
 		if (!xget(address_wnd, MUIA_Window_Open))
-			DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
+		{
+			DoMethod(group_list, MUIM_AddressGroupList_Refresh, NULL);
+			DoMethod(address_list, MUIM_AddressEntryList_Refresh, NULL);
+		}
 		set(address_wnd, MUIA_Window_Open, TRUE);
 	}
 }
 
 /******************************************************************
- Opens the addressbook with a new person taken from the mail
- To is 1 if address should be taken from the To: field
+ Opens a addressbook and let the given entry be edited
 *******************************************************************/
-void addressbook_open_with_new_address_from_mail(struct mail *m, int to)
+void addressbookwnd_create_entry(struct addressbook_entry_new *entry)
 {
-	struct addressbook_entry *entry = addressbook_get_entry_from_mail(m,to);
-	if (entry)
-	{
-		addressbook_open();
-		person_window_open(entry);
-		addressbook_free_entry(entry);
-	}
+	addressbookwnd_open();
+	person_window_open(entry);
 }
 
 /******************************************************************
  Selects an address entry to the actual one
 *******************************************************************/
-int addressbook_set_active(char *alias)
+int addressbookwnd_set_active_alias(char *alias)
 {
 	if (!address_wnd) addressbook_init();
 	if (address_wnd)
 	{
 		int i;
-		int count = DoMethod(address_tree,MUIM_NListtree_GetNr, MUIV_NListtree_GetNr_TreeNode_Active,MUIV_NListtree_GetNr_Flag_CountAll);
+		int count = xget(address_list, MUIA_NList_Entries);
 
 		for (i=0;i<count;i++)
 		{
-			struct addressbook_entry *entry;
-			struct MUI_NListtree_TreeNode *tn = (struct MUI_NListtree_TreeNode*)
-				DoMethod(address_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
-			entry = (struct addressbook_entry*)tn->tn_User;
+			struct addressbook_entry_new *entry;
 
-			if (entry)
+			DoMethod(address_list, MUIM_NList_GetEntry, i, &entry);
+
+			if (!mystricmp(alias,entry->alias)) 
 			{
-				if (!mystricmp(alias,entry->alias)) /* alias should be moved out of the union */
-				{
-					set(address_tree,MUIA_NListtree_Active,tn);
-					return 1;
-				}
+				set(address_list,MUIA_NList_Active, i);
+				return 1;
 			}
 		}
 	}
@@ -1215,5 +1162,5 @@ int addressbook_set_active(char *alias)
 *******************************************************************/
 void addressbookwnd_refresh(void)
 {
-	DoMethod(address_tree, MUIM_AddressTreelist_Refresh,NULL);
+	DoMethod(address_list, MUIM_AddressTreelist_Refresh, NULL);
 }

@@ -36,6 +36,7 @@
 #include <proto/intuition.h> /* ScreenToXXX() */
 
 #include "addressbook.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "folder.h"
 #include "http.h"
@@ -141,7 +142,6 @@ int arexx_execute_script(char *command)
 {
 	struct RexxMsg *rxmsg;
 	BPTR lock;
-	int rc = 0;
 
 	if (!(lock = Lock(command,ACCESS_READ))) return 0;
 	if (!(command = NameOfLock(lock)))
@@ -900,7 +900,7 @@ static void arexx_addrgoto(struct RexxMsg *rxmsg, STRPTR args)
 
 	if ((arg_handle = ParseTemplate("ALIAS/A",args,&addrgoto_arg)))
 	{
-		addressbook_set_active(addrgoto_arg.alias);
+		addressbookwnd_set_active_alias(addrgoto_arg.alias);
 		FreeTemplate(arg_handle);
 	}
 }
@@ -922,16 +922,25 @@ static void arexx_addrnew(struct RexxMsg *rxmsg, STRPTR args)
 
 	if ((arg_handle = ParseTemplate("TYPE,ALIAS,NAME,EMAIL",args,&addrnew_arg)))
 	{
-		struct addressbook_entry *entry;
 		if (addrnew_arg.type && (toupper((unsigned char)(*addrnew_arg.type)) == 'G'))
 		{
-			entry = addressbook_new_group(NULL);
+			addressbook_add_group(addrnew_arg.alias);
 		} else
 		{
-			entry = addressbook_new_person(NULL,addrnew_arg.name,addrnew_arg.email);
+			struct addressbook_entry_new *entry;
+			char *name;
+
+			name = utf8create(addrnew_arg.name, user.config.default_codeset?user.config.default_codeset->name:NULL);
+
+			if ((entry = addressbook_add_entry(name)))
+			{
+				entry->alias = mystrdup(addrnew_arg.alias);
+				entry->email_array = array_add_string(entry->email_array,addrnew_arg.email);
+			}
+
+			free(name);
 		}
 
-		if (addrnew_arg.alias) addressbook_set_alias(entry,addrnew_arg.alias);
 		main_build_addressbook();
 		addressbookwnd_refresh();
 

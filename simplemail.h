@@ -69,7 +69,7 @@ int callback_folder_count_signatures(char *def_signature);
 void callback_import_mbox(int *in_folder_ptr);
 void callback_export(void);
 
-void callback_write_mail_to(struct addressbook_entry *address);
+void callback_write_mail_to(struct addressbook_entry_new *address);
 int callback_write_mail_to_str(char *str, char *subject);
 
 void callback_imap_submit_folders(struct folder *f, struct list *list);

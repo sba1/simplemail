@@ -17,20 +17,28 @@
 ***************************************************************************/
 
 /*
-** addressbookwnd.h
+** addressentrylistclass.h
 */
 
-#ifndef SM__ADDRESSBOOKWND_H
-#define SM__ADDRESSBOOKWND_H
+#ifndef SM__ADDRESSENTRYLISTCLASS_H
+#define SM__ADDRESSENTRYLISTCLASS_H
 
-struct mail;
-struct addressbook_entry_new;
+/* AddressEntryListClass */
+IMPORT struct MUI_CustomClass *CL_AddressEntryList;
+#define AddressEntryListObject (Object*)MyNewObject(CL_AddressEntryList->mcc_Class, NULL
 
-void addressbookwnd_open(void);
-void addressbookwnd_create_entry(struct addressbook_entry_new *entry);
-int addressbookwnd_set_active_alias(char *alias);
+#define MUIA_AddressEntryList_Type				(TAG_USER | 0x30160000) /* i.. ULONG */
 
-void addressbookwnd_refresh(void);
+#define MUIM_AddressEntryList_Refresh			(TAG_USER | 0x30160101)
+
+struct MUIP_AddressEntryList_Refresh {ULONG MethodID; char *pattern;};
+
+/* Data for MUIA_AddressEntryList_Type */
+#define MUIV_AddressEntryList_Type_Addressbook	0
+#define MUIV_AddressEntryList_Type_Match				1
+#define MUIV_AddressEntryList_Type_Main					2
+
+int create_addressentrylist_class(void);
+void delete_addressentrylist_class(void);
 
 #endif
-

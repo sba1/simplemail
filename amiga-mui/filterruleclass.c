@@ -34,6 +34,7 @@
 
 #include "filter.h"
 #include "smintl.h"
+#include "debug.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -271,6 +272,7 @@ struct MUI_CustomClass *CL_FilterRule;
 
 int create_filterrule_class(void)
 {
+	SM_ENTER;
 	if ((CL_FilterRule = CreateMCC(MUIC_Group,NULL,sizeof(struct FilterRule_Data),FilterRule_Dispatcher)))
 	{
 		int i;
@@ -281,13 +283,26 @@ int create_filterrule_class(void)
 		for (i=0;i<sizeof(status_labels_untranslated)/sizeof(char*);i++)
 			status_labels[i] = _(status_labels_untranslated[i]);
 
-		return 1;
+		SM_DEBUGF(15,("Create CL_FilterRule: 0x%lx\n",CL_FilterRule));
+		SM_RETURN(1,"%ld");
 	}
-	return 0;
+	SM_DEBUGF(5,("FAILED! Create CL_FilterRule\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_filterrule_class(void)
 {
-	if (CL_FilterRule) MUI_DeleteCustomClass(CL_FilterRule);
+	SM_ENTER;
+	if (CL_FilterRule)
+	{
+		if (MUI_DeleteCustomClass(CL_FilterRule))
+		{
+			SM_DEBUGF(15,("Deleted CL_FilterRule: 0x%lx\n",CL_FilterRule));
+			CL_FilterRule = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_FilterRule: 0x%lx\n",CL_FilterRule));
+		}
+	}
+	SM_LEAVE;
 }
-

@@ -39,6 +39,7 @@
 #include <proto/layers.h>
 
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -507,12 +508,29 @@ struct MUI_CustomClass *CL_Icon;
 
 int create_icon_class(void)
 {
+	SM_ENTER;
 	if ((CL_Icon = CreateMCC(MUIC_Area,NULL,sizeof(struct Icon_Data),Icon_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_Icon: 0x%lx\n",CL_Icon));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_Icon\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_icon_class(void)
 {
-	if (CL_Icon) MUI_DeleteCustomClass(CL_Icon);
+	SM_ENTER;
+	if (CL_Icon)
+	{
+		if (MUI_DeleteCustomClass(CL_Icon))
+		{
+			SM_DEBUGF(15,("Deleted CL_Icon: 0x%lx\n",CL_Icon));
+			CL_Icon = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_Icon: 0x%lx\n",CL_Icon));
+		}
+	}
+	SM_LEAVE;
 }

@@ -38,6 +38,7 @@
 #include "codesets.h"
 #include "configuration.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "utf8stringclass.h"
 #include "amigasupport.h"
@@ -187,12 +188,29 @@ struct MUI_CustomClass *CL_UTF8String;
 
 int create_utf8string_class(void)
 {
+	SM_ENTER;
 	if ((CL_UTF8String = CreateMCC(MUIC_BetterString,NULL,sizeof(struct UTF8String_Data),UTF8String_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_UTF8String: 0x%lx\n",CL_UTF8String));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_UTF8String\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_utf8string_class(void)
 {
-	if (CL_UTF8String) MUI_DeleteCustomClass(CL_UTF8String);
+	SM_ENTER;
+	if (CL_UTF8String)
+	{
+		if (MUI_DeleteCustomClass(CL_UTF8String))
+		{
+			SM_DEBUGF(15,("Deleted CL_UTF8String: 0x%lx\n",CL_UTF8String));
+			CL_UTF8String = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_UTF8String: 0x%lx\n",CL_UTF8String));
+		}
+	}
+	SM_LEAVE;
 }

@@ -37,6 +37,7 @@
 #include <proto/muimaster.h>
 
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -336,18 +337,31 @@ struct MUI_CustomClass *CL_PictureButton;
 
 int create_picturebutton_class(void)
 {
+	SM_ENTER;
 	if ((CL_PictureButton = CreateMCC(MUIC_Area, NULL, sizeof(struct PictureButton_Data), PictureButton_Dispatcher)))
-		return TRUE;
-	return FALSE;
+	{
+		SM_DEBUGF(15,("Create CL_PictureButton: 0x%lx\n",CL_PictureButton));
+		SM_RETURN(TRUE,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_PictureButton\n"));
+	SM_RETURN(FALSE,"%ld");
 }
 
 void delete_picturebutton_class(void)
 {
+	SM_ENTER;
 	if (CL_PictureButton)
 	{
-		MUI_DeleteCustomClass(CL_PictureButton);
-		CL_PictureButton = NULL;
+		if (MUI_DeleteCustomClass(CL_PictureButton))
+		{
+			SM_DEBUGF(15,("Deleted CL_PictureButton: 0x%lx\n",CL_PictureButton));
+			CL_PictureButton = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_PictureButton: 0x%lx\n",CL_PictureButton));
+		}
 	}
+	SM_LEAVE;
 }
 
 Object *MakePictureButton(char *label, char *filename)
@@ -363,4 +377,3 @@ Object *MakePictureButton(char *label, char *filename)
 		MUIA_PictureButton_Filename,filename,
 		End;
 }
-

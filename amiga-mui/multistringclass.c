@@ -37,6 +37,7 @@
 
 #include "lists.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "configuration.h"
@@ -407,28 +408,47 @@ struct MUI_CustomClass *CL_MultiString;
 
 int create_multistring_class(void)
 {
+	SM_ENTER;
 	if ((CL_SingleString = CreateMCC(NULL, CL_UTF8String, sizeof(struct SingleString_Data), SingleString_Dispatcher)))
 	{
+		SM_DEBUGF(15,("Create CL_SingleString: 0x%lx\n",CL_SingleString));
 		if ((CL_MultiString = CreateMCC(MUIC_Group, NULL, sizeof(struct MultiString_Data), MultiString_Dispatcher)))
 		{
-			return TRUE;
+			SM_DEBUGF(15,("Create CL_MultiString: 0x%lx\n",CL_MultiString));
+			SM_RETURN(TRUE,"%ld");
 		}
+		SM_DEBUGF(5,("FAILED! Create CL_MultiString\n"));
+		SM_RETURN(FALSE,"%ld");
 	}
-	return FALSE;
+	SM_DEBUGF(5,("FAILED! Create CL_SingleString\n"));
+	SM_RETURN(FALSE,"%ld");
 }
 
 void delete_multistring_class(void)
 {
+	SM_ENTER;
 	if (CL_MultiString)
 	{
-		MUI_DeleteCustomClass(CL_MultiString);
-		CL_MultiString = NULL;
+		if (MUI_DeleteCustomClass(CL_MultiString))
+		{
+			SM_DEBUGF(15,("Deleted CL_MultiString: 0x%lx\n",CL_MultiString));
+			CL_MultiString = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_MultiString: 0x%lx\n",CL_MultiString));
+		}
 	}
 
 	if (CL_SingleString)
 	{
-		MUI_DeleteCustomClass(CL_SingleString);
-		CL_SingleString = NULL;
+		if (MUI_DeleteCustomClass(CL_SingleString))
+		{
+			SM_DEBUGF(15,("Deleted CL_SingleString: 0x%lx\n",CL_SingleString));
+			CL_SingleString = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_SingleString: 0x%lx\n",CL_SingleString));
+		}
 	}
+	SM_LEAVE;
 }
-

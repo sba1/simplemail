@@ -39,6 +39,7 @@
 #include "configuration.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -491,15 +492,29 @@ struct MUI_CustomClass *CL_transwnd;
 
 int create_transwnd_class(VOID)
 {
+	SM_ENTER;
 	if ((CL_transwnd = CreateMCC(MUIC_Window, NULL, sizeof(struct transwnd_Data), transwnd_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_transwnd: 0x%lx\n",CL_transwnd));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_transwnd\n",CL_transwnd));
+	SM_RETURN(0,"%ld");
 }
 
 VOID delete_transwnd_class(VOID)
 {
+	SM_ENTER;
 	if (CL_transwnd)
 	{
-		MUI_DeleteCustomClass(CL_transwnd);
+		if (MUI_DeleteCustomClass(CL_transwnd))
+		{
+			SM_DEBUGF(15,("Deleted CL_transwnd: 0x%lx\n",CL_transwnd));
+			CL_transwnd = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_transwnd: 0x%lx\n",CL_transwnd));
+		}
 	}
+	SM_LEAVE;
 }

@@ -39,6 +39,7 @@
 #include <proto/intuition.h>
 
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -502,12 +503,29 @@ struct MUI_CustomClass *CL_DataTypes;
 
 int create_datatypes_class(void)
 {
+	SM_ENTER;
 	if ((CL_DataTypes = CreateMCC(MUIC_Area,NULL,sizeof(struct DataTypes_Data),DataTypes_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_DataTypes: 0x%lx\n",CL_DataTypes));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_DataTypes\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_datatypes_class(void)
 {
-	if (CL_DataTypes) MUI_DeleteCustomClass(CL_DataTypes);
+	SM_ENTER;
+	if (CL_DataTypes)
+	{
+		if (MUI_DeleteCustomClass(CL_DataTypes))
+		{
+			SM_DEBUGF(15,("Deleted CL_DataTypes: 0x%lx\n",CL_DataTypes));
+			CL_DataTypes = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_DataTypes: 0x%lx\n",CL_DataTypes));
+		}
+	}
+	SM_LEAVE;
 }

@@ -1294,12 +1294,29 @@ struct MUI_CustomClass *CL_MailTreelist;
 
 int create_mailtreelist_class(void)
 {
+	SM_ENTER;
 	if ((CL_MailTreelist = CreateMCC(MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_MailTreelist\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_mailtreelist_class(void)
 {
-	if (CL_MailTreelist) MUI_DeleteCustomClass(CL_MailTreelist);
+	SM_ENTER;
+	if (CL_MailTreelist)
+	{
+		if (MUI_DeleteCustomClass(CL_MailTreelist))
+		{
+			SM_DEBUGF(15,("Deleted CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
+			CL_MailTreelist = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
+		}
+	}
+	SM_LEAVE;
 }

@@ -38,6 +38,7 @@
 #include "pgp.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -137,12 +138,29 @@ struct MUI_CustomClass *CL_PGPList;
 
 int create_pgplist_class(void)
 {
+	SM_ENTER;
 	if ((CL_PGPList = CreateMCC(MUIC_NList,NULL,sizeof(struct PGPList_Data),PGPList_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_PGPList: 0x%lx\n",CL_PGPList));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_PGPList\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_pgplist_class(void)
 {
-	if (CL_PGPList) MUI_DeleteCustomClass(CL_PGPList);
+	SM_ENTER;
+	if (CL_PGPList)
+	{
+		if (MUI_DeleteCustomClass(CL_PGPList))
+		{
+			SM_DEBUGF(15,("Deleted CL_PGPList: 0x%lx\n",CL_PGPList));
+			CL_PGPList = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_PGPList: 0x%lx\n",CL_PGPList));
+		}
+	}
+	SM_LEAVE;
 }

@@ -2017,7 +2017,7 @@ void open_config(void)
 		set(config_wnd, MUIA_Window_Open, TRUE);
 	} else
 	{
-		SM_DEBUGF(5,("Condig window not initialized!\n"));
+		SM_DEBUGF(5,("Config window not initialized!\n"));
 	}
 	SM_LEAVE;
 }
@@ -2076,18 +2076,31 @@ STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 
 static int create_sizes_class(void)
 {
+	SM_ENTER;
 	if ((CL_Sizes = CreateMCC(MUIC_Slider,NULL,4,Sizes_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_Sizes: 0x%lx\n",CL_Sizes));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_Sizes\n"));
+	SM_RETURN(0,"%ld");
 }
 
 static void delete_sizes_class(void)
 {
+	SM_ENTER;
 	if (CL_Sizes)
 	{
-		MUI_DeleteCustomClass(CL_Sizes);
-		CL_Sizes = NULL;
+		if (MUI_DeleteCustomClass(CL_Sizes))
+		{
+			SM_DEBUGF(15,("Deleted CL_Sizes: 0x%lx\n",CL_Sizes));
+			CL_Sizes = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("Delete CL_Sizes: 0x%lx\n",CL_Sizes));
+		}
 	}
+	SM_LEAVE;
 }
 
 static int value2size(int val)

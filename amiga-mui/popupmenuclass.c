@@ -39,6 +39,7 @@
 #include "lists.h"
 #include "mail.h"
 #include "support.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -380,12 +381,29 @@ struct MUI_CustomClass *CL_Popupmenu;
 
 int create_popupmenu_class(void)
 {
+	SM_ENTER;
 	if ((CL_Popupmenu = CreateMCC(MUIC_Image,NULL,sizeof(struct Popupmenu_Data),Popupmenu_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_Popupmenu: 0x%lx\n",CL_Popupmenu));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_Popupmenu\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_popupmenu_class(void)
 {
-	if (CL_Popupmenu) MUI_DeleteCustomClass(CL_Popupmenu);
+	SM_ENTER;
+	if (CL_Popupmenu)
+	{
+		if (MUI_DeleteCustomClass(CL_Popupmenu))
+		{
+			SM_DEBUGF(15,("Deleted CL_Popupmenu: 0x%lx\n",CL_Popupmenu));
+			CL_Popupmenu = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_Popupmenu: 0x%lx\n",CL_Popupmenu));
+		}
+	}
+	SM_LEAVE;
 }

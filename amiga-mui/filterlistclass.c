@@ -32,6 +32,8 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "debug.h"
+
 #include "compiler.h"
 #include "muistuff.h"
 
@@ -77,12 +79,29 @@ struct MUI_CustomClass *CL_FilterList;
 
 int create_filterlist_class(void)
 {
+	SM_ENTER;
 	if ((CL_FilterList = CreateMCC(MUIC_NList,NULL,sizeof(struct FilterList_Data),FilterList_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_FilterList: 0x%lx\n",CL_FilterList));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_FilterList\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_filterlist_class(void)
 {
-	if (CL_FilterList) MUI_DeleteCustomClass(CL_FilterList);
+	SM_ENTER;
+	if (CL_FilterList)
+	{
+		if (MUI_DeleteCustomClass(CL_FilterList))
+		{
+			SM_DEBUGF(15,("Deleted CL_FilterList: 0x%lx\n",CL_FilterList));
+			CL_FilterList = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_FilterList: 0x%lx\n",CL_FilterList));
+		}
+	}
+	SM_LEAVE;
 }

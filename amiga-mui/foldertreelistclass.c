@@ -39,6 +39,7 @@
 #include "folder.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "debug.h"
 
 #include "compiler.h"
 #include "foldertreelistclass.h"
@@ -550,12 +551,29 @@ struct MUI_CustomClass *CL_FolderTreelist;
 
 int create_foldertreelist_class(void)
 {
+	SM_ENTER;
 	if ((CL_FolderTreelist = CreateMCC(MUIC_NListtree,NULL,sizeof(struct FolderTreelist_Data),FolderTreelist_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_FolterTreelist: 0x%lx\n",CL_FolderTreelist));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_FolterTreelist\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_foldertreelist_class(void)
 {
-	if (CL_FolderTreelist) MUI_DeleteCustomClass(CL_FolderTreelist);
+	SM_ENTER;
+	if (CL_FolderTreelist)
+	{
+		if (MUI_DeleteCustomClass(CL_FolderTreelist))
+		{
+			SM_DEBUGF(15,("Deleted CL_FolterTreelist: 0x%lx\n",CL_FolderTreelist));
+			CL_FolderTreelist = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_FolterTreelist: 0x%lx\n",CL_FolderTreelist));
+		}
+	}
+	SM_LEAVE;
 }

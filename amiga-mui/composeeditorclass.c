@@ -39,6 +39,7 @@
 #include "codesets.h"
 #include "mail.h"
 #include "support.h"
+#include "debug.h"
 
 #include "addressbook.h"
 #include "addresstreelistclass.h"
@@ -195,12 +196,29 @@ struct MUI_CustomClass *CL_ComposeEditor;
 
 int create_composeeditor_class(void)
 {
+	SM_ENTER;
 	if ((CL_ComposeEditor = CreateMCC(MUIC_TextEditor,NULL,sizeof(struct ComposeEditor_Data),ComposeEditor_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_ComposeEditor: 0x%lx\n",CL_ComposeEditor));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_ComposeEditor\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_composeeditor_class(void)
 {
-	if (CL_ComposeEditor) MUI_DeleteCustomClass(CL_ComposeEditor);
+	SM_ENTER;
+	if (CL_ComposeEditor)
+	{
+		if (MUI_DeleteCustomClass(CL_ComposeEditor))
+		{
+			SM_DEBUGF(15,("Deleted CL_ComposeEditor: 0x%lx\n",CL_ComposeEditor));
+			CL_ComposeEditor = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_ComposeEditor: 0x%lx\n",CL_ComposeEditor));
+		}
+	}
+	SM_LEAVE;
 }

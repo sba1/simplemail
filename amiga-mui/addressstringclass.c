@@ -37,6 +37,7 @@
 
 #include "addressbook.h"
 #include "codesets.h"
+#include "debug.h"
 
 #include "addressstringclass.h"
 #include "addresstreelistclass.h"
@@ -504,16 +505,47 @@ struct MUI_CustomClass *CL_AddressString;
 
 int create_addressstring_class(void)
 {
+	SM_ENTER;
 	if ((CL_MatchWindow = CreateMCC(MUIC_Window,NULL,sizeof(struct MatchWindow_Data),MatchWindow_Dispatcher)))
 	{
+		SM_DEBUGF(15,("Create CL_MatchWindow: 0x%lx\n",CL_MatchWindow));
 		if ((CL_AddressString = CreateMCC(NULL,CL_UTF8String,sizeof(struct AddressString_Data),AddressString_Dispatcher)))
-			return 1;
+		{
+			SM_DEBUGF(15,("Create CL_AddressString: 0x%lx\n",CL_AddressString));
+			SM_RETURN(1,"%ld");
+		}
+		SM_DEBUGF(5,("FAILED! Create CL_AddressString\n"));
+		SM_RETURN(0,"%ld");
 	}
-	return 0;
+	SM_DEBUGF(5,("FAILED! Create CL_MatchWindow\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_addressstring_class(void)
 {
-	if (CL_MatchWindow) MUI_DeleteCustomClass(CL_MatchWindow);
-	if (CL_AddressString) MUI_DeleteCustomClass(CL_AddressString);
+	SM_ENTER;
+	if (CL_MatchWindow)
+	{
+		if (MUI_DeleteCustomClass(CL_MatchWindow))
+		{
+			SM_DEBUGF(15,("Deleted CL_MatchWindow: 0x%lx\n",CL_MatchWindow));
+			CL_MatchWindow = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_MatchWindow: 0x%lx\n",CL_MatchWindow));
+		}
+	}
+
+	if (CL_AddressString)
+	{
+		if (MUI_DeleteCustomClass(CL_AddressString))
+		{
+			SM_DEBUGF(15,("Deleted CL_AddressString: 0x%lx\n",CL_AddressString));
+			CL_AddressString = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_AddressString: 0x%lx\n",CL_AddressString));
+		}
+	}
+	SM_LEAVE;
 }

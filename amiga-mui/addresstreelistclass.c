@@ -44,6 +44,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
+#include "debug.h"
 
 #include "addressbookwnd.h"
 #include "addresstreelistclass.h"
@@ -406,12 +407,29 @@ struct MUI_CustomClass *CL_AddressTreelist;
 
 int create_addresstreelist_class(void)
 {
+	SM_ENTER;
 	if ((CL_AddressTreelist = CreateMCC(MUIC_NListtree,NULL,sizeof(struct AddressTreelist_Data),AddressTreelist_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_AddressTreelist: 0x%lx\n",CL_AddressTreelist));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_AddressTreelist\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_addresstreelist_class(void)
 {
-	if (CL_AddressTreelist) MUI_DeleteCustomClass(CL_AddressTreelist);
+	SM_ENTER;
+	if (CL_AddressTreelist)
+	{
+		if (MUI_DeleteCustomClass(CL_AddressTreelist))
+		{
+			SM_DEBUGF(15,("Deleted CL_AddressTreelist: 0x%lx\n",CL_AddressTreelist));
+			CL_AddressTreelist = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_AddressTreelist: 0x%lx\n",CL_AddressTreelist));
+		}
+	}
+	SM_LEAVE;
 }

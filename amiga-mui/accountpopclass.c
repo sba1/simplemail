@@ -36,6 +36,7 @@
 
 #include "account.h"
 #include "configuration.h"
+#include "debug.h"
 #include "parse.h"
 #include "smintl.h"
 #include "support.h"
@@ -287,12 +288,29 @@ struct MUI_CustomClass *CL_AccountPop;
 
 int create_accountpop_class(void)
 {
+	SM_ENTER;
 	if ((CL_AccountPop = CreateMCC(MUIC_Popobject, NULL, sizeof(struct AccountPop_Data), AccountPop_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_AccountPop: 0x%lx\n",CL_AccountPop));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_AccountPop\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_accountpop_class(void)
 {
-	if (CL_AccountPop) MUI_DeleteCustomClass(CL_AccountPop);
+	SM_ENTER;
+	if (CL_AccountPop)
+	{
+		if (MUI_DeleteCustomClass(CL_AccountPop))
+		{
+			SM_DEBUGF(15,("Deleted CL_AccountPop: 0x%lx\n",CL_AccountPop));
+			CL_AccountPop = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_AccountPop: 0x%lx\n",CL_AccountPop));
+		}
+	}
+	SM_LEAVE;
 }

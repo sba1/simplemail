@@ -39,6 +39,7 @@
 #include <proto/muimaster.h>
 
 #include "support_indep.h"
+#include "debug.h"
 
 #include "amigasupport.h"
 #include "audioselectgroupclass.h"
@@ -131,16 +132,29 @@ void delete_audioselectgroup_class(void);
 
 int create_audioselectgroup_class(void)
 {
+	SM_ENTER;
 	if ((CL_AudioSelectGroup = CreateMCC( MUIC_Group, NULL, sizeof(struct AudioSelectGroup_Data), AudioSelectGroup_Dispatcher)))
-		return TRUE;
-	return FALSE;
+	{
+		SM_DEBUGF(15,("Create CL_AudioSelectGroup: 0x%lx\n",CL_AudioSelectGroup));
+		SM_RETURN(TRUE,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_AudioSelectGroup\n"));
+	SM_RETURN(FALSE,"%ld");
 }
 
 void delete_audioselectgroup_class(void)
 {
+	SM_ENTER;
 	if (CL_AudioSelectGroup)
 	{
-		MUI_DeleteCustomClass(CL_AudioSelectGroup);
-		CL_AudioSelectGroup = NULL;
+		if (MUI_DeleteCustomClass(CL_AudioSelectGroup))
+		{
+			SM_DEBUGF(15,("Deleted CL_AudioSelectGroup: 0x%lx\n",CL_AudioSelectGroup));
+			CL_AudioSelectGroup = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_AudioSelectGroup: 0x%lx\n",CL_AudioSelectGroup));
+		}
 	}
+	SM_LEAVE;
 }

@@ -37,6 +37,7 @@
 
 #include "mail.h"
 #include "smintl.h"
+#include "debug.h"
 #include "support_indep.h"
 
 #include "attachmentlistclass.h"
@@ -214,12 +215,29 @@ struct MUI_CustomClass *CL_AttachmentList;
 
 int create_attachmentlist_class(void)
 {
+	SM_ENTER;
 	if ((CL_AttachmentList = CreateMCC(MUIC_NListtree,NULL,sizeof(struct AttachmentList_Data),AttachmentList_Dispatcher)))
-		return 1;
-	return 0;
+	{
+		SM_DEBUGF(15,("Create CL_AttachmentList: 0x%lx\n",CL_AttachmentList));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_AttachmentList\n"));
+	SM_RETURN(0,"%ld");
 }
 
 void delete_attachmentlist_class(void)
 {
-	if (CL_AttachmentList) MUI_DeleteCustomClass(CL_AttachmentList);
+	SM_ENTER;
+	if (CL_AttachmentList)
+	{
+		if (MUI_DeleteCustomClass(CL_AttachmentList))
+		{
+			SM_DEBUGF(15,("Deleted CL_AttachmentList: 0x%lx\n",CL_AttachmentList));
+			CL_AttachmentList = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_AttachmentList: 0x%lx\n",CL_AttachmentList));
+		}
+	}
+	SM_LEAVE;
 }

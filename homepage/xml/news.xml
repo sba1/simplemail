@@ -9,7 +9,7 @@
 	  The changes are:
    	<list>
    	 <item> RFC 3490 support for domains of email addresses.</item>
-   	 <item> The mail preview no longer embeds the mail header but displays them
+   	 <item> The mail preview no longer embeds the mail header but displays it
    	 		separatly. This can be switched to a compact form to save space.</item>
 	 <item> Multiple imap accounts (with different logins) per imap server are now possible.</item>
      <item> If available "TheBar.mcc" is now used (for the main toolbar only)</item>

@@ -43,15 +43,15 @@ Changes
 Version 0.3 (third alpha) - released on 2001/02/05
   - added a forward button
   - main window has two different views, which are changeable within
-	 the main window
+    the main window
   - improved the compose window (got some images)
   - to button in the addressbook works now correctly
   - group mails (mails with multiple recipients), mails with
-	 attachments, important mails can now easily identified
+    attachments, important mails can now easily identified
   - added a small context menu for the mailtreelist, mails can now
-	 be marked and hold
+    be marked and hold
   - added the possibility to use your IP-addresss as you domain in
-	 the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore)
+    the HELO/EHLO dialog. (no X-Authentification-Warning headers anymore)
   - added smtp-auth according to rfc2554
   - other smaller improvements and bug fixes.
 
@@ -71,11 +71,11 @@ Contact
 ~~~~~~~
 More information about the SimpleMail  project  can  be  found at
 
-	 http://simplemail.sourceforge.net/
+    http://simplemail.sourceforge.net/
 
 Developers might take look at
 
-	 http://sourceforge.net/projects/simplemail/
+    http://sourceforge.net/projects/simplemail/
 
 if they want to participate to the project. Here they can  submit
 patches, subscribe to the mailing lists or get access to the cvs.
@@ -83,8 +83,8 @@ patches, subscribe to the mailing lists or get access to the cvs.
 There are also two mailing lists for SimpleMail. One for the developers
 and one for the user.
 
-	 http://lists.sourceforge.net/lists/listinfo/simplemail-dev
-	 http://lists.sourceforge.net/lists/listinfo/simplemail-user
+    http://lists.sourceforge.net/lists/listinfo/simplemail-dev
+    http://lists.sourceforge.net/lists/listinfo/simplemail-user
 
 SimpleMail is (orginally) developed by
   Hynek Schlawack <hynek@schlawack.net> http://www.schlawack.net/
@@ -94,10 +94,10 @@ You can also contact them if you have any questions regarding SimpleMail.
 
 All the images including the icons have been created by
   Martin Merz <mason.home@t-online.de>
-			__
-		  / /
-	__  / /   Only Amiga makes it possible...
-	\ \/ /
-	 \__/
+         __
+        / /
+   __  / /   Only Amiga makes it possible...
+   \ \/ /
+    \__/
 
 Amiga is a trademark from Amiga Inc.

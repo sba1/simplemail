@@ -46,71 +46,6 @@
 #include "hmac_md5.h"
 #include "codecs.h"
 
-static int buf_flush(struct connection *conn, char *buf, long len)
-{
-	int rc;
-	long sent;
-	
-	rc = 0;
-	
-	sent = tcp_write(conn, buf, len);
-	if(sent == len)
-	{
-		rc = 1;
-		if(!rc)
-		{
-			tell_from_subtask("Error while sending data.");
-		}
-		
-	}
-	
-	return rc;
-}
-
-__inline static int buf_cat(struct connection *conn, char *buf, char c)
-{
-	int rc;
-	static len = 0;
-	static CR = 0;
-	
-	rc = 0;
-	
-	if(c == '\n')
-	{
-		if(!CR)
-		{
-			buf[len++] = '\r';
-			CR = 0;
-		}  
-		buf[len++] = '\n';
-		rc  = buf_flush(conn, buf, len);
-		len = 0;
-		buf[0]=0;
-	}
-	else
-	{
-		if(c == '\r')
-		{
-			CR = 1;
-		}
-		
-		buf[len++] = c;
-		buf[len] = 0;
-		if(len == 1077)
-		{
-			len = 0;
-			buf[0] = 0;
-			tell_from_subtask("PANIC: Line with more than 1076 chars detected!");
-		}
-		else
-		{
-			rc = 1;
-		}  
-	}
-	
-	return rc;
-}
-
 static char *buf_init(void)
 {
 	char *rc;
@@ -215,7 +150,7 @@ static int smtp_from(struct connection *conn, struct smtp_server *server, char *
 	return rc;
 }
 
-static int smtp_rcpt(struct connection *conn, struct smtp_server *server, struct out_mail *om)
+static int smtp_rcpt(struct connection *conn, struct smtp_server *server, struct outmail *om)
 {
 	int rc;
 	long i;
@@ -247,72 +182,220 @@ static int smtp_rcpt(struct connection *conn, struct smtp_server *server, struct
 
 static int smtp_data(struct connection *conn, struct smtp_server *server, char *mailfile)
 {
-	int rc;
-	long ret;
-	char *buf;
-	FILE *fp;
-	int c;
-	long size;
+	int rc = 0;
+	unsigned char *buf;
 
-	rc = 0;
-	
 	buf = buf_init();
 	if(buf != NULL)
 	{
-		fp = fopen(mailfile, "r");
-		if(fp)
+		FILE *fp;
+
+		if(( fp = fopen(mailfile, "r") ))
 		{
+			long size;
+
 			fseek(fp, 0L, SEEK_END);
 			size = ftell(fp); /* what's that?? */ /* look into your ANSI-C manual :) */ /* now it's ok :-) */
 			thread_call_parent_function_sync(up_init_gauge_byte,1,size);
 			fseek(fp, 0L, SEEK_SET);
-			
-			ret = smtp_send_cmd(conn, "DATA", NULL);
-			if((ret == SMTP_OK) || (ret == SMTP_SEND_MAIL))
+
+			if(SMTP_SEND_MAIL == smtp_send_cmd(conn, "DATA", NULL))
 			{
-				long i;
-				long z;
-				
-				i = 0;
+				long z,bytes_send=0,last_bytes_send=0;
+				char convert8bit = 0;
+
 				rc = 1;
 				z = ((z = size / 100) >1)?z:1;
-				
-				while((c = fgetc(fp)) != EOF)
+
+				for(;;) /* header */
 				{
-					if(buf_cat(conn, buf, c) == 0)
+					long count;
+
+					if(!fgets(buf,999,fp)) /* read error or EOF in header */
 					{
 						rc = 0;
 						break;
 					}
-					if((i++%z) == 0)
-					{  
-						thread_call_parent_function_sync(up_set_gauge_byte,1,i);
+					if(!strchr(buf,'\n')) /* line too long? */
+					{
+						rc = 0;
+						break;
+					}
+					if(!stricmp(buf,"Content-Transfer-Encoding: 8bit\n"))
+					{
+						if(!(server->esmtp.flags & ESMTP_8BITMIME))
+						{
+							convert8bit = 1;
+							strcpy(buf,"Content-Transfer-Encoding: quoted-printable\n");
+						}
+					}
+
+					count = tcp_write(conn, buf, strlen(buf)-1);
+					if(count != strlen(buf)-1)
+					{
+						rc = 0;
+						break;
+					}
+					bytes_send += count+1;
+
+					if(2 != tcp_write(conn, "\r\n", 2))
+					{
+						rc = 0;
+						break;
+					}
+
+					if((last_bytes_send%z) != (bytes_send%z))
+					{
+						thread_call_parent_function_sync(up_set_gauge_byte,1,bytes_send);
 						if(thread_call_parent_function_sync(up_checkabort,0))
 						{
 							rc = 0;
 							break;
 						}
-					}  
+					}
+					last_bytes_send = bytes_send;
+
+					if(1 == strlen(buf)) break;
 				}
+
+				if(1 == rc) for(;;) /* body */
+				{
+					if(!fgets(buf,998,fp)) /* read error or EOF */
+					{
+						if(!feof(fp)) rc = 0;
+						break;
+					}
+					if(!strchr(buf,'\n')) /* line too long? */
+					{
+						rc = 0;
+						break;
+					}
+
+					if(convert8bit)
+					{
+						long count;
+						char qp[4];
+						int pos = 0, linepos, len = strlen(buf)-1;
+
+						if(!strnicmp(buf,"From ",5))
+						{
+							sprintf(qp,"=%02X",buf[0]);
+							if(3 != tcp_write(conn, qp, 3))
+							{
+								rc = 0;
+								break;
+							}
+							count = tcp_write(conn, buf+1, 4);
+							if(4 != count)
+							{
+								rc = 0;
+								break;
+							}
+							bytes_send = 5;
+							pos = 5;
+						} else if('.' == buf[0])
+						{
+							if(3 != tcp_write(conn, "=2E", 3))
+							{
+								rc = 0;
+								break;
+							}
+							bytes_send = 1;
+							pos = 1;
+						}
+
+						linepos = pos;
+						while(pos < len)
+						{
+							char useqp=('=' == buf[pos] || ' ' > buf[pos] || '~' < buf[pos]);
+
+							if((pos == len-1) && (' ' == buf[pos])) useqp=1;
+
+							if(linepos >= 75-2*useqp)
+							{
+								if(3 != tcp_write(conn, "=\r\n", 3))
+								{
+									rc = 0;
+									break;
+								}
+								linepos = 0;
+							}
+							if(useqp)
+							{
+								sprintf(qp,"=%02X",buf[pos]);
+								if(3 != tcp_write(conn, qp, 3))
+								{
+									rc = 0;
+									break;
+								}
+								pos++;
+								linepos += 3;
+								bytes_send++;
+							} else {
+								if(1 != tcp_write(conn, buf+pos, 1))
+								{
+									rc = 0;
+									break;
+								}
+								pos++;
+								linepos++;
+								bytes_send++;
+							}
+						}
+
+						if(2 != tcp_write(conn, "\r\n", 2))
+						{
+							rc = 0;
+							break;
+						}
+						bytes_send++;
+					} else {
+						if('.' == buf[0]) if(1 != tcp_write(conn, ".", 1))
+						{
+							rc = 0;
+							break;
+						}
+						if(strlen(buf)-1 != tcp_write(conn, buf, strlen(buf)-1))
+						{
+							rc = 0;
+							break;
+						}
+						bytes_send += strlen(buf);
+						if(2 != tcp_write(conn, "\r\n", 2))
+						{
+							rc = 0;
+							break;
+						}
+					}
+
+					if((last_bytes_send%z) != (bytes_send%z))
+					{
+						thread_call_parent_function_sync(up_set_gauge_byte,1,bytes_send);
+						if(thread_call_parent_function_sync(up_checkabort,0))
+						{
+							rc = 0;
+							break;
+						}
+					}
+					last_bytes_send = bytes_send;
+				}
+
 				if(rc == 1)
 				{
-					buf_flush(conn, buf, strlen(buf));
 					if(smtp_send_cmd(conn, "\r\n.", NULL) != SMTP_OK) /* \r\n is done by the function */
 					{
 						rc = 0;
 					}
-				}  
-			}
-			else
-			{
+				}
+			} else {
 				tell_from_subtask("DATA-Cmd failed.");
 			}
-			
+
 			fclose(fp);
 		}
 
 		buf_free(buf);
-	}  
+	}
 
 	return rc;
 }
@@ -541,11 +624,15 @@ static int smtp_login(struct connection *conn, struct smtp_server *server)
 		}
 	} else
 	{
-		thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
-		if (!smtp_helo(conn,server))
+		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
+		if (!esmtp_ehlo(conn,server))
 		{
-			tell_from_subtask("HELO failed");
-			return 0;
+			thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
+			if (!smtp_helo(conn,server))
+			{
+				tell_from_subtask("HELO failed");
+				return 0;
+			}
 		}
 	}
 	return 1;
@@ -556,7 +643,7 @@ static int smtp_login(struct connection *conn, struct smtp_server *server)
 **************************************************************************/
 static int smtp_send_mails(struct connection *conn, struct smtp_server *server)
 {
-	struct out_mail **om = server->out_mail;
+	struct outmail **om = server->outmail;
 	int i,amm=0;
 
 	/* Count the number of mails */
@@ -640,7 +727,53 @@ static int smtp_send_really(struct smtp_server *server)
 	return rc;
 }
 
-char **duplicate_string_array(char **rcp)
+/**************************************************************************
+ Entrypoint for the send mail process
+**************************************************************************/
+static int smtp_entry(struct smtp_server *server)
+{
+	struct smtp_server copy_server;
+
+	memset(&copy_server,0,sizeof(copy_server));
+
+	copy_server.name          			= mystrdup(server->name);
+	copy_server.domain					= mystrdup(server->domain);
+	copy_server.port          			= server->port;
+	copy_server.esmtp.auth          	= server->esmtp.auth;
+	copy_server.esmtp.auth_login    	= mystrdup(server->esmtp.auth_login);
+	copy_server.esmtp.auth_password 	= mystrdup(server->esmtp.auth_password);
+	copy_server.ip_as_domain  			= server->ip_as_domain;
+	copy_server.outmail      			= duplicate_outmail_array(server->outmail);
+
+	if (thread_parent_task_can_contiue())
+	{
+		smtp_send_really(&copy_server);
+		thread_call_parent_function_sync(up_window_close,0);
+	}
+	return 0;
+}
+
+/**************************************************************************
+ Send the mails. Starts a subthread.
+**************************************************************************/
+int smtp_send(struct smtp_server *server, char *folder_path)
+{
+	int rc;
+	char path[256];
+
+	getcwd(path, sizeof(path));
+	if (chdir(folder_path) == -1)
+		return 0;
+
+  rc = thread_start(smtp_entry,server);
+  chdir(path);
+  return rc;
+}
+
+/**************************************************************************
+ Duplicates an array of strings
+**************************************************************************/
+static char **duplicate_string_array(char **rcp)
 {
 	char **newrcp;
 	int rcps=0;
@@ -658,16 +791,34 @@ char **duplicate_string_array(char **rcp)
 	return newrcp;
 }
 
-struct out_mail **create_outmail_array(int amm)
+/**************************************************************************
+ Frees an array of strings
+**************************************************************************/
+static void free_string_array(char **string_array)
+{
+	char *string;
+	int i = 0;
+	while ((string = string_array[i++]))
+		free(string);
+	free(string_array);
+}
+
+/**************************************************************************
+ Creates a array of outmails with amm entries.
+ The array entries point already to the struct outmail *.
+ Use free() only on the result of this call not on the entries,
+ or better use only free_outmail_array().
+**************************************************************************/
+struct outmail **create_outmail_array(int amm)
 {
 	int memsize;
-	struct out_mail **newom;
+	struct outmail **newom;
 
-	memsize = (amm+1)*sizeof(struct out_mail*) + sizeof(struct out_mail)*amm;
-	if ((newom = (struct out_mail**)malloc(memsize)))
+	memsize = (amm+1)*sizeof(struct outmail*) + sizeof(struct outmail)*amm;
+	if ((newom = (struct outmail**)malloc(memsize)))
 	{
 		int i;
-		struct out_mail *out = (struct out_mail*)(((char*)newom)+sizeof(struct out_mail*)*(amm+1));
+		struct outmail *out = (struct outmail*)(((char*)newom)+sizeof(struct outmail*)*(amm+1));
 
 		memset(newom,0,memsize);
 
@@ -677,57 +828,42 @@ struct out_mail **create_outmail_array(int amm)
 	return newom;
 }
 
-struct out_mail **duplicate_outmail_array(struct out_mail **om)
+/**************************************************************************
+ Duplplicates an array of outmails.
+**************************************************************************/
+struct outmail **duplicate_outmail_array(struct outmail **om_array)
 {
 	int amm = 0;
-	struct out_mail **newom;
+	struct outmail **newom_array;
 
-	while (om[amm]) amm++;
+	while (om_array[amm]) amm++;
 
-	if ((newom = create_outmail_array(amm)))
+	if ((newom_array = create_outmail_array(amm)))
 	{
 		int i;
 
 		for (i=0;i<amm;i++)
 		{
-			newom[i]->from = mystrdup(om[i]->from);
-			newom[i]->mailfile = mystrdup(om[i]->mailfile);
-			newom[i]->rcp = duplicate_string_array(om[i]->rcp);
+			newom_array[i]->from = mystrdup(om_array[i]->from);
+			newom_array[i]->mailfile = mystrdup(om_array[i]->mailfile);
+			newom_array[i]->rcp = duplicate_string_array(om_array[i]->rcp);
 		}
 	}
-	return newom;
+	return newom_array;
 }
 
 /**************************************************************************
- Entrypoint for the send mail process
+ Frees an array ou outmails completly
 **************************************************************************/
-static int smtp_entry(struct smtp_server *server)
+void free_outmail_array(struct outmail **om_array)
 {
-	struct smtp_server copy_server;
-
-	memset(&copy_server,0,sizeof(copy_server));
-
-	copy_server.name          			= mystrdup(server->name);
-	copy_server.domain					= mystrdup(server->domain);
-	copy_server.port          			= server->port;
-	copy_server.esmtp.auth          	= server->esmtp.auth;
-	copy_server.esmtp.auth_login    	= mystrdup(server->esmtp.auth_login);
-	copy_server.esmtp.auth_password 	= mystrdup(server->esmtp.auth_password);
-	copy_server.ip_as_domain  			= server->ip_as_domain;
-	copy_server.out_mail      			= duplicate_outmail_array(server->out_mail);
-
-	if (thread_parent_task_can_contiue())
+	struct outmail *om;
+	int i = 0;
+	while ((om = om_array[i++]))
 	{
-		smtp_send_really(&copy_server);
-		thread_call_parent_function_sync(up_window_close,0);
+		if (om->from) free(om->from);
+		if (om->rcp) free_string_array(om->rcp);
+		if (om->mailfile) free(om->mailfile);
 	}
-	return 0;
-}
-
-/**************************************************************************
- Send the mails. Starts a subthread.
-**************************************************************************/
-int smtp_send(struct smtp_server *server)
-{
-	return thread_start(smtp_entry,server);
+	free(om_array);
 }

@@ -74,7 +74,9 @@ struct MailTreelist_Data
 	APTR status_forward;
 	APTR status_norcpt;
 	APTR status_new_partial;
+	APTR status_read_partial;
 	APTR status_unread_partial;
+	APTR status_reply_partial;
 	APTR status_new_spam;
 	APTR status_unread_spam;
 
@@ -238,20 +240,30 @@ STATIC ASM VOID mails_display(register __a1 struct NList_DisplayMessage *msg, re
 				} else
 				{
 					if (mail_is_spam(mail)) sprintf(status_buf,"\33O[%08lx]",data->status_unread_spam);
-					else if (mail->flags & MAIL_FLAGS_PARTIAL) sprintf(status_buf,"\33O[%08lx]",data->status_unread_partial);
-					else if (mail->flags & MAIL_FLAGS_NORCPT) sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
+					else if ((mail->flags & MAIL_FLAGS_NORCPT) && data->folder_type == FOLDER_TYPE_SEND) sprintf(status_buf,"\33O[%08lx]",data->status_norcpt);
 					else
 					{
-						switch(mail_get_status_type(mail))
+						if (mail->flags & MAIL_FLAGS_PARTIAL)
 						{
-							case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
-							case	MAIL_STATUS_READ:status = data->status_read;break;
-							case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
-							case	MAIL_STATUS_SENT:status = data->status_sent;break;
-							case	MAIL_STATUS_HOLD:status = data->status_hold;break;
-							case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
-							case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
-							default: status = NULL;
+							switch(mail_get_status_type(mail))
+							{
+								case MAIL_STATUS_READ: status = data->status_read_partial;break;
+								case MAIL_STATUS_REPLIED: status = data->status_reply_partial;break;
+								default: status = data->status_unread_partial;break;
+							}
+						} else
+						{
+							switch(mail_get_status_type(mail))
+							{
+								case	MAIL_STATUS_UNREAD:status = data->status_unread;break;
+								case	MAIL_STATUS_READ:status = data->status_read;break;
+								case	MAIL_STATUS_WAITSEND:status = data->status_waitsend;break;
+								case	MAIL_STATUS_SENT:status = data->status_sent;break;
+								case	MAIL_STATUS_HOLD:status = data->status_hold;break;
+								case	MAIL_STATUS_REPLIED:status = data->status_reply;break;
+								case	MAIL_STATUS_FORWARD:status = data->status_forward;break;
+								default: status = NULL;
+							}
 						}
 						sprintf(status_buf,"\33O[%08lx]",status);
 					}
@@ -585,6 +597,8 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
 	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread", End, 0);
 	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_unread_partial", End, 0);
+	data->status_read_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old_partial", End, 0);
+	data->status_reply_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_reply_partial", End, 0);
 	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_old", End, 0);
 	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_waitsend", End, 0);
 	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_sent", End, 0);
@@ -621,6 +635,8 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_spam);
 	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_spam);
 
+	if (data->status_reply_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply_partial);
+	if (data->status_read_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read_partial);
 	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_partial);
 	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_norcpt);
 	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);

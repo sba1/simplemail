@@ -2398,6 +2398,18 @@ And all the people who keep submitting bug reports!
 
 HISTORY
 
+0.13 (thirteenth alpha) - released on 2001/12/07
+  - Included a real manual at last. Thanks to David Rey!
+  - SMTP over SSL.
+  - POP3 connections can be made secure with the STLS
+    command now. (RFC 2595) 
+  - Primitive ARexx-port.
+  - Support for playing sounds.
+  - Taglines.
+  - Folders holding unread mails are hilighted now.
+  - Localisation.
+
+
 0.12 (twelfth alpha) - released on 2001/11/11
   - Fix for the MUI exploit where pipes could be used for malicious
     purposes combined with escape sequences

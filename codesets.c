@@ -30,6 +30,7 @@
 
 #include "codesets.h"
 #include "codesets_table.h"
+#include "debug.h"
 #include "lists.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -165,7 +166,7 @@ ConversionResult ConvertUTF8toUTF16 (
 		UTF16** targetStart, const UTF16* targetEnd, const ConversionFlags flags);
 
 ConversionResult ConvertUTF32toUTF8 (
-		UTF32** sourceStart, const UTF32* sourceEnd, 
+		UTF32** sourceStart, const UTF32* sourceEnd,
 		UTF8** targetStart, const UTF8* targetEnd, ConversionFlags flags);
 
 ConversionResult ConvertUTF8toUTF32 (
@@ -693,18 +694,27 @@ char *get_config_item(char *buf, char *item); /* configuration.c */
 struct list codesets_list;
 
 /**************************************************************************
- Returns the supported codesets as an null terminated array
+ Returns the supported codesets as an null terminated string array
 **************************************************************************/
 char **codesets_supported(void)
 {
 	static char **array;
+
 	if (array) return array;
+
 	if ((array = (char**)malloc(sizeof(char*)*(list_length(&codesets_list)+1))))
 	{
-		struct codeset *code = (struct codeset*)list_first(&codesets_list);
-		int i = 0;
+		struct codeset *code;
+		int i;
+
+		SM_DEBUGF(15,("%ld supported Codesets:\n",list_length(&codesets_list)));
+
+		code = (struct codeset*)list_first(&codesets_list);
+		i = 0;
+
 		while (code)
 		{
+			SM_DEBUGF(15,("  %p next=%p prev=%p list=%p name=%p %s alt=%p char=%p\n",code,code->node.next,code->node.prev,code->node.list,code->name,code->name,code->alt_name,code->characterization));
 			array[i++] = code->name;
 			code = (struct codeset*)node_next(&code->node);
 		}
@@ -727,7 +737,9 @@ static int codesets_cmp_unicode(const struct single_convert *arg1, const struct 
 static int codesets_read_table(char *name)
 {
 	char buf[512];
+
 	FILE *fh = fopen(name,"r");
+
 	if (fh)
 	{
 		struct codeset *codeset;
@@ -792,6 +804,7 @@ static int codesets_read_table(char *name)
 				*dest_ptr = 0;
 				codeset->table[i].utf8[0] = (char*)dest_ptr - (char*)&codeset->table[i].utf8[1];
 			}
+
 			memcpy(codeset->table_sorted,codeset->table,sizeof(codeset->table));
 			qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
 			list_insert_tail(&codesets_list,&codeset->node);
@@ -809,6 +822,8 @@ int codesets_init(void)
 	int i;
 	struct codeset *codeset;
 	UTF32 src;
+
+	SM_ENTER;
 
 	list_init(&codesets_list);
 
@@ -991,6 +1006,7 @@ int codesets_init(void)
 	codeset->name = mystrdup("ISO-8859-15");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European II"));
+
 	codeset->read_only = 0;
 	for (i=0;i<256;i++)
 	{
@@ -1031,6 +1047,7 @@ int codesets_init(void)
 	qsort(codeset->table_sorted,256,sizeof(codeset->table[0]),(int (*)(const void *arg1, const void *arg2))codesets_cmp_unicode);
 	list_insert_tail(&codesets_list,&codeset->node);
 
+	SM_DEBUGF(15,("%ld internal charsets\n",list_length(&codesets_list)));
 
 	{
 		/* dynamicaly loaded */
@@ -1038,12 +1055,12 @@ int codesets_init(void)
 		DIR *dfd; /* directory descriptor */
 		struct dirent *dptr; /* dir entry */
 
-		char path[256];
+		char path[380];
 
 		getcwd(path, sizeof(path));
 		if(chdir("PROGDIR:Charsets") != -1)
 		{
-#ifdef _AMIGA
+#if defined(_AMIGA) || defined(__AMIGAOS4__)
 			if ((dfd = opendir("")))
 #else
 			if ((dfd = opendir("./")))
@@ -1052,6 +1069,7 @@ int codesets_init(void)
 				while ((dptr = readdir(dfd)) != NULL)
 				{
 					if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+					SM_DEBUGF(15,("Loading \"%s\" charset\n",dptr->d_name,list_length(&codesets_list)));
 					codesets_read_table(dptr->d_name);
 				}
 				closedir(dfd);
@@ -1059,7 +1077,8 @@ int codesets_init(void)
 			chdir(path);
 		}
 	}
-	return 1;
+
+	SM_RETURN(1,"%ld");
 }
 
 /**************************************************************************

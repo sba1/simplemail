@@ -80,6 +80,97 @@ struct field
 
 /**************************************************************************/
 
+struct TinyButton_Data
+{
+	int dummy;
+};
+
+STATIC ULONG TinyButton_New(struct IClass *cl, Object *obj, struct opSet *msg)
+{
+	if (!(obj=(Object *)DoSuperNew(cl,obj,
+					MUIA_InputMode, MUIV_InputMode_Toggle,
+					MUIA_ShowSelState, FALSE,
+					TAG_MORE,msg->ops_AttrList)))
+		return 0;
+
+	set(obj,MUIA_FillArea,FALSE);
+
+	return (ULONG)obj;
+}
+
+STATIC ULONG TinyButton_AskMinMax(struct IClass *cl, Object *obj, struct MUIP_AskMinMax *msg)
+{
+	DoSuperMethodA(cl, obj, (Msg) msg);
+
+  msg->MinMaxInfo->MinWidth += (_font(obj)->tf_YSize - 2)/2*2 + 1;
+  msg->MinMaxInfo->DefWidth = msg->MinMaxInfo->MinWidth;
+  msg->MinMaxInfo->MaxWidth = msg->MinMaxInfo->MinWidth;
+
+  msg->MinMaxInfo->MinHeight += (_font(obj)->tf_YSize - 2)/2*2 + 1;
+  msg->MinMaxInfo->DefHeight = msg->MinMaxInfo->MinHeight;
+  msg->MinMaxInfo->MaxHeight = msg->MinMaxInfo->MinHeight;
+  return 0;
+}
+
+STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
+{
+	int x1,y1,x2,y2;
+
+	DoSuperMethodA(cl,obj,(Msg)msg);
+
+	x1 = _mleft(obj);
+	x2 = _mright(obj);
+	y1 = _mtop(obj);
+	y2 = _mbottom(obj);
+
+	DoMethod(obj, MUIM_DrawBackground, x1, y1, x2 - x1 + 1, y2 - y1 + 1,0,0,0);
+
+	SetAPen(_rp(obj),_dri(obj)->dri_Pens[SHADOWPEN]);
+	Move(_rp(obj),x1,y2);
+	Draw(_rp(obj),x1,y1);
+	Draw(_rp(obj),x2,y1);
+	Move(_rp(obj),x2-1,y1+1);
+	Draw(_rp(obj),x2-1,y2-1);
+	Draw(_rp(obj),x1+1,y2-1);
+
+	SetAPen(_rp(obj),_dri(obj)->dri_Pens[SHINEPEN]);
+	Move(_rp(obj),x1+1,y2-1);
+	Draw(_rp(obj),x1+1,y1+1);
+	Draw(_rp(obj),x2-1,y1+1);
+	Move(_rp(obj),x2,y1);
+	Draw(_rp(obj),x2,y2);
+	Draw(_rp(obj),x1,y2);
+
+	SetAPen(_rp(obj),_dri(obj)->dri_Pens[TEXTPEN]);
+
+	if (xget(obj, MUIA_Selected))
+	{
+		Move(_rp(obj), x1 + 3, y1 + (y2 - y1)/2);
+		Draw(_rp(obj), x2 - 3, y1 + (y2 - y1)/2);
+		Move(_rp(obj), x1 + (x2 - x1)/2, y1 + 3);
+		Draw(_rp(obj), x1 + (x2 - x1)/2, y2 - 3);
+	} else
+	{
+		Move(_rp(obj), x1 + 3, y1 + (y2 - y1)/2);
+		Draw(_rp(obj), x2 - 3, y1 + (y2 - y1)/2);
+	}
+
+	return 0;
+}
+
+STATIC BOOPSI_DISPATCHER(ULONG, TinyButton_Dispatcher, cl, obj, msg)
+{
+	switch (msg->MethodID)
+	{
+		case	OM_NEW: return TinyButton_New(cl,obj,(struct opSet*)msg);
+		case	MUIM_Draw: return TinyButton_Draw(cl,obj,(struct MUIP_Draw*)msg);
+		case	MUIM_AskMinMax: return TinyButton_AskMinMax(cl,obj,(struct MUIP_AskMinMax *)msg);
+		default: return DoSuperMethodA(cl,obj,msg);
+	}
+}
+
+/**************************************************************************/
+
 struct MailInfoArea_Data
 {
 	struct Hook *layout_hook;
@@ -512,18 +603,15 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	struct Hook *layout_hook;
 
+	extern struct MUI_CustomClass *CL_TinyButton;
+
 	if (!(layout_hook = (struct Hook*)AllocVec(sizeof(*layout_hook),MEMF_CLEAR)))
 		return 0;
 
 	init_hook(layout_hook, (HOOKFUNC)MailInfoArea_LayoutFunc);
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
-					MUIA_Group_Child, switch_button = TextObject,
-							ButtonFrame,
-							MUIA_Background, MUII_ButtonBack,
-							MUIA_InputMode, MUIV_InputMode_Toggle,
-							MUIA_Text_Contents, "+",
-							End,
+					MUIA_Group_Child, switch_button = MyNewObject(CL_TinyButton->mcc_Class, NULL, TAG_DONE),
 					MUIA_Group_LayoutHook, layout_hook,
 					TAG_MORE,msg->ops_AttrList)))
 	{
@@ -844,38 +932,52 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
 
 struct MUI_CustomClass *CL_MailInfo;
 struct MUI_CustomClass *CL_MailInfoArea;
-
+struct MUI_CustomClass *CL_TinyButton;
 
 int create_mailinfo_class(void)
 {
 	SM_ENTER;
-	if ((CL_MailInfoArea = CreateMCC(MUIC_Group, NULL, sizeof(struct MailInfoArea_Data), MailInfoArea_Dispatcher)))
+	
+	if ((CL_TinyButton = CreateMCC(MUIC_Area, NULL, sizeof(struct TinyButton_Data), TinyButton_Dispatcher)))
 	{
-		SM_DEBUGF(15,("Create CL_MailInfoArea: 0x%lx\n",CL_MailInfoArea));
+		SM_DEBUGF(15,("Created CL_TinyButton: 0x%lx\n",CL_TinyButton));
 
-		if ((CL_MailInfo = CreateMCC(MUIC_Group, NULL, sizeof(struct MailInfo_Data), MailInfo_Dispatcher)))
+		if ((CL_MailInfoArea = CreateMCC(MUIC_Group, NULL, sizeof(struct MailInfoArea_Data), MailInfoArea_Dispatcher)))
 		{
-			SM_RETURN(1,"%ld");
+			SM_DEBUGF(15,("Created CL_MailInfoArea: 0x%lx\n",CL_MailInfoArea));
+
+			if ((CL_MailInfo = CreateMCC(MUIC_Group, NULL, sizeof(struct MailInfo_Data), MailInfo_Dispatcher)))
+			{
+				SM_DEBUGF(15,("Created CL_MailInfo: 0x%lx\n",CL_MailInfoArea));
+
+				SM_RETURN(1,"%ld");
+			}
 		}
 	}
+
 	SM_DEBUGF(5,("FAILED! Create CL_MailInfoArea\n"));
+
+	delete_mailinfo_class();
+
 	SM_RETURN(0,"%ld");
 }
 
 void delete_mailinfo_class(void)
 {
 	SM_ENTER;
+
 	if (CL_MailInfo)
 	{
 		if (MUI_DeleteCustomClass(CL_MailInfo))
 		{
-			SM_DEBUGF(15,("Deleted CL_MailInfoArea: 0x%lx\n",CL_MailInfo));
+			SM_DEBUGF(15,("Deleted CL_MailInfo: 0x%lx\n",CL_MailInfo));
 			CL_MailInfo = NULL;
 		} else
 		{
-			SM_DEBUGF(5,("FAILED! Delete CL_MailInfoArea: 0x%lx\n",CL_MailInfo));
+			SM_DEBUGF(5,("FAILED! Delete CL_MailInfo: 0x%lx\n",CL_MailInfo));
 		}
 	}
+
 	if (CL_MailInfoArea)
 	{
 		if (MUI_DeleteCustomClass(CL_MailInfoArea))
@@ -885,6 +987,18 @@ void delete_mailinfo_class(void)
 		} else
 		{
 			SM_DEBUGF(5,("FAILED! Delete CL_MailInfoArea: 0x%lx\n",CL_MailInfoArea));
+		}
+	}
+
+	if (CL_TinyButton)
+	{
+		if (MUI_DeleteCustomClass(CL_TinyButton))
+		{
+			SM_DEBUGF(15,("Deleted CL_TinyButton: 0x%lx\n",CL_TinyButton));
+			CL_MailInfo = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("FAILED! Delete CL_TinyButton: 0x%lx\n",CL_TinyButton));
 		}
 	}
 	SM_LEAVE;

@@ -24,11 +24,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <gtk/gtk.h>
+
 
 #include "configuration.h"
 #include "mail.h"
 #include "simplemail.h"
 #include "support.h"
+#include "support_indep.h"
+
+#include "readwnd.h"
+
+#define MAX_READ_OPEN 10
+static struct Read_Data *read_open[MAX_READ_OPEN];
+
+struct Read_Data
+{
+	GtkWidget *wnd;
+	GtkWidget *text_view;
+
+	int num; /* the number of the window */
+	struct mail *mail; /* the mail which is displayed, a copy of the ref_mail */
+
+	struct mail *ref_mail; /* The reference to the original mail which is in the folder */
+	char *folder_path; /* the path of the folder */
+};
+
 
 #if 0
 
@@ -350,160 +374,130 @@ __asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struc
 #endif
 
 /******************************************************************
+ Read window dispose
+*******************************************************************/
+void read_window_dispose(GtkObject *object, gpointer user_data)
+{
+	struct Read_Data *data = (struct Read_Data*)user_data;
+
+	if (data->folder_path) free(data->folder_path);
+	mail_free(data->mail);
+	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
+	free(data);
+	gtk_widget_hide_all(GTK_WIDGET(object));
+}
+
+/******************************************************************
+ Display the mail
+*******************************************************************/
+static int read_window_display_mail(struct Read_Data *data, struct mail *mail)
+{
+	char path[512];
+
+	if (!data->folder_path) return 0;
+
+	data->ref_mail = mail;
+
+	getcwd(path,sizeof(path));
+	if (chdir(data->folder_path)==-1) return 0;
+
+	if ((data->mail = mail_create_from_file(mail->filename)))
+	{
+		mail_read_contents(data->folder_path,data->mail);
+		mail_create_html_header(data->mail);
+	}
+
+	chdir(path);
+
+	return 1;
+
+	#if 0
+
+	if ((lock = Lock(data->folder_path,ACCESS_READ))) /* maybe it's better to use an absoulte path here */
+	{
+		BPTR old_dir = CurrentDir(lock);
+
+		if ((data->mail = mail_create_from_file(mail->filename)))
+		{
+			int dont_show = 0;
+			mail_read_contents(data->folder_path,data->mail);
+			mail_create_html_header(data->mail);
+
+			if (!data->mail->num_multiparts || (data->mail->num_multiparts == 1 && !data->mail->multipart_array[0]->num_multiparts))
+			{
+				/* mail has only one part */
+				set(data->attachments_group, MUIA_ShowMe, FALSE);
+				dont_show = 1;
+			} else
+			{
+				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_InitChange);
+			}
+
+			DoMethod(data->attachments_group, MUIM_Group_InitChange);
+			DisposeAllChilds(data->attachments_group);
+			data->attachments_last_selected = NULL;
+			insert_mail(data,data->mail);
+			DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+			DoMethod(data->attachments_group, MUIM_Group_ExitChange);
+
+			if (!dont_show)
+			{
+				set(data->attachments_group, MUIA_ShowMe, TRUE);
+				DoMethod((Object*)xget(data->attachments_group,MUIA_Parent), MUIM_Group_ExitChange);
+			}
+
+			show_mail(data,mail_find_initial(data->mail));
+
+			CurrentDir(old_dir);
+			set(App, MUIA_Application_Sleep, FALSE);
+			return 1;
+		}
+		CurrentDir(old_dir);
+	}
+
+	DoMethod(data->attachments_group, MUIM_Group_InitChange);
+	DisposeAllChilds(data->attachments_group);
+	data->attachments_last_selected = NULL;
+	DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+	DoMethod(data->attachments_group, MUIM_Group_ExitChange);
+	set(App, MUIA_Application_Sleep, FALSE);
+	return 0;
+	#endif
+}
+
+/******************************************************************
  Opens a read window
 *******************************************************************/
-void read_window_open(char *folder, char *filename)
+int read_window_open(char *folder, struct mail *mail)
 {
-#if 0
-	Object *wnd,*header_list,*text_list, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page, *save_button;
-	Object *attachments_group;
-	Object *datatype_datatypes;
-	Object *text_listview;
 	int num;
+	struct Read_Data *data;
 
 	for (num=0; num < MAX_READ_OPEN; num++)
 		if (!read_open[num]) break;
 
-	init_hook(&header_display_hook,(HOOKFUNC)header_display);
+	if (num == MAX_READ_OPEN) return -1;
 
-	wnd = WindowObject,
-		(num < MAX_READ_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('R','E','A',num),
-    MUIA_Window_Title, "SimpleMail - Read Message",
-        
-		WindowContents, VGroup,
-			Child, HGroup,
-				MUIA_VertWeight,33,
-				Child, NListviewObject,
-					MUIA_CycleChain, 1,
-					MUIA_HorizWeight,300,
-					MUIA_NListview_NList, header_list = NListObject,
-						MUIA_NList_DisplayHook, &header_display_hook,
-						MUIA_NList_Format, "P=" MUIX_R MUIX_PH ",",
-						End,
-					End,
-				End,
-			Child, BalanceObject,End,
-			Child, contents_page = PageGroup,
-				MUIA_Group_ActivePage, PAGE_TEXT,
-				Child, VGroup,
-					Child, text_listview = NListviewObject,
-						MUIA_CycleChain, 1,
-						MUIA_NListview_NList, text_list = ReadListObject,
-							End,
-						End,
-					End,
-				Child, VGroup,
-					MUIA_Group_Spacing, 0,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						Child, html_simplehtml = SimpleHTMLObject,TextFrame,End,
-						Child, html_vert_scrollbar = ScrollbarObject,End,
-						End,
-					Child, html_horiz_scrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
-					End,
-				Child, VGroup,
-					Child, datatype_datatypes = DataTypesObject, TextFrame, End,
-					Child, save_button = MakeButton("Save"),
-					End,
-				End,
-			Child, attachments_group = HGroupV,
-				End,
-			End,
-		End;
-	
-	if (wnd)
+	if ((data = (struct Read_Data*)malloc(sizeof(struct Read_Data))))
 	{
-		struct Read_Data *data = (struct Read_Data*)malloc(sizeof(struct Read_Data));
-		if (data)
-		{
-			BPTR lock = Lock(folder,ACCESS_READ); /* maybe it's better to use an absoulte path here */
-			if (lock)
-			{
-				BPTR old_dir = CurrentDir(lock);
-				data->wnd = wnd;
-				
-				if ((data->mail = mail_create_from_file(filename)))
-				{
-					Object *save_contents_item;
-					Object *save_contents2_item;
-					Object *save_document_item;
+		memset(data,0,sizeof(struct Read_Data));
+		data->folder_path = mystrdup(folder);
 
-					mail_read_contents(folder,data->mail);
+		data->num = num;
+		read_open[num] = data;
 
-					data->attachment_standard_menu = MenustripObject,
-						Child, MenuObjectT("Attachment"),
-							Child, save_contents_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save As...",
-								MUIA_UserData, 1,
-								End,
-							End,
-						End;
+		data->wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(data->wnd), "SimpleMail - Read mail");
+		gtk_signal_connect(GTK_OBJECT(data->wnd), "destroy",GTK_SIGNAL_FUNC (read_window_dispose), data);
 
-					data->attachment_html_menu = MenustripObject,
-						Child, MenuObjectT("Attachment"),
-							Child, save_contents2_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save as...",
-								MUIA_UserData, 1,
-								End,
-							Child, save_document_item = MenuitemObject,
-								MUIA_Menuitem_Title, "Save whole document as...",
-								MUIA_UserData, 2,
-								End,
-							End,
-						End;
+		data->text_view = gtk_text_view_new();
+		gtk_container_add(GTK_CONTAINER(data->wnd), data->text_view);
 
-					if (!data->mail->num_multiparts)
-					{
-						/* mail has only one part */
-						set(attachments_group, MUIA_ShowMe, FALSE);
-						attachments_group = NULL;
-					}
 
-					data->text_list = text_list;
-					data->contents_page = contents_page;
-					data->datatype_datatypes = datatype_datatypes;
-					data->html_simplehtml = html_simplehtml;
-					data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
-					data->attachments_group = attachments_group;
-					data->num = num;
-					data->attachments_last_selected = NULL;
-					read_open[num] = 1;
+		read_window_display_mail(data,mail);
 
-					init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
-
-					SetAttrs(data->html_simplehtml,
-							MUIA_SimpleHTML_HorizScrollbar, html_horiz_scrollbar,
-							MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
-							MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
-							TAG_DONE);
-
-					set(text_list, MUIA_ContextMenu, data->attachment_standard_menu);
-					DoMethod(text_list, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, data->mail, MUIV_TriggerValue);
-
-					insert_headers(header_list,data->mail);
-					insert_mail(data,data->mail);
-
-					if (attachments_group)
-					{
-						DoMethod(attachments_group, OM_ADDMEMBER, HSpace(0));
-					}
-
-					DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
-					DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_close, data);
-					DoMethod(App,OM_ADDMEMBER,wnd);
-
-					show_mail(data,mail_find_initial(data->mail));
-					set(wnd,MUIA_Window_DefaultObject, data->text_list);
-					set(wnd,MUIA_Window_Open,TRUE);
-					CurrentDir(old_dir);
-					return;
-				}
-				CurrentDir(old_dir);
-			}
-			free(data);
-		}
-		MUI_DisposeObject(wnd);
+		gtk_widget_show_all(data->wnd);
 	}
-#endif
+	return num;
 }
 

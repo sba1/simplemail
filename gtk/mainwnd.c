@@ -35,128 +35,25 @@
 
 #include "gtksupport.h"
 
+#define FOLDER_NAME_COLUMN  0
+#define FOLDER_MAILS_COLUMN 1
+
+#define MAIL_STATUS_COLUMN  0
+#define MAIL_FROM_COLUMN 1
+#define MAIL_SUBJECT_COLUMN 2
+#define MAIL_DATE_COLUMN 3
+#define MAIL_PTR_COLUMN 4
+
 static GtkWidget *main_wnd;
 static GtkWidget *toolbar;
 
-static GtkWidget *mail_ctree;
-static GtkWidget *mail_ctree_scrolled_window;
-static struct list mail_ctree_string_list;
+static GtkTreeStore *folder_treestore;
+static GtkWidget *folder_treeview;
+static GtkWidget *folder_scrolled_window;
 
-static GtkWidget *folder_ctree; /* the folders */
-static GtkWidget *folder_ctree_scrolled_window;
-static GtkCTreeNode *folder_ctree_mailbox_node; /* the mailbox node */
-static struct list folder_ctree_string_list; /* the list of all strings the folder list contains */
-
-/******************************************************************
- Returns all selected entries
-*******************************************************************/
-GList *gtk_ctree_find_all_selected(GtkCTree *ctree, GtkCTreeNode *node)
-{
-	GList *list = NULL;
-
-	g_return_val_if_fail (ctree != NULL, NULL);
-	g_return_val_if_fail (GTK_IS_CTREE (ctree), NULL);
-
-	/* if node == NULL then look in the whole tree */
-	if (!node)
-		node = GTK_CTREE_NODE (GTK_CLIST (ctree)->row_list);
-
-	while (node)
-	{
-		if (GTK_CTREE_ROW(node)->row.state == GTK_STATE_SELECTED)
-		    list = g_list_append (list, node);
-
-		if (GTK_CTREE_ROW (node)->children)
-		{
-			GList *sub_list;
-
-			sub_list = gtk_ctree_find_all_selected (ctree, GTK_CTREE_ROW(node)->children);
-			list = g_list_concat (list, sub_list);
-		}
-		node = GTK_CTREE_ROW (node)->sibling;
-	}
-	return list;
-}
-
-/******************************************************************
- Clears the whole mail list
-*******************************************************************/
-static void mail_ctree_clear(void)
-{
-	gtk_clist_clear(GTK_CLIST(mail_ctree));
-	string_list_clear(&mail_ctree_string_list);
-}
-
-/******************************************************************
- Adds a new entry to the mail list
-*******************************************************************/
-static void mail_ctree_insert(struct mail *m)
-{
-	gchar *text[4];
-	text[0] = "";
-	text[1] = string_list_insert_tail(&folder_ctree_string_list, m->from_addr)->string;
-	text[2] = string_list_insert_tail(&folder_ctree_string_list, m->subject)->string;
-	text[3] = "";
-
-	gtk_ctree_insert_node(GTK_CTREE(mail_ctree), NULL, NULL, text, 0, NULL, NULL, NULL, NULL, TRUE, FALSE);
-	gtk_clist_set_column_width(GTK_CLIST(mail_ctree),0,gtk_clist_optimal_column_width(GTK_CLIST(mail_ctree),0));
-	gtk_clist_set_column_width(GTK_CLIST(mail_ctree),1,gtk_clist_optimal_column_width(GTK_CLIST(mail_ctree),1));
-	gtk_clist_set_column_width(GTK_CLIST(mail_ctree),2,gtk_clist_optimal_column_width(GTK_CLIST(mail_ctree),2));
-}
-
-
-/******************************************************************
- Freezes the mail list
-*******************************************************************/
-static void mail_ctree_freeze(void)
-{
-	gtk_clist_freeze(GTK_CLIST(mail_ctree));
-}
-
-/******************************************************************
- Thaw the mail list
-*******************************************************************/
-static void mail_ctree_thaw(void)
-{
-	gtk_clist_thaw(GTK_CLIST(mail_ctree));
-}
-
-/******************************************************************
- Clears the whole folder list
-*******************************************************************/
-static void folder_ctree_clear(void)
-{
-	gtk_clist_clear(GTK_CLIST(folder_ctree));
-        folder_ctree_mailbox_node = NULL;
-	string_list_clear(&folder_ctree_string_list);
-}
-
-/******************************************************************
- Adds a new entry to the folder list
-*******************************************************************/
-static void folder_ctree_insert(struct folder *f)
-{
-	gchar *text[2];
-	char buf[256];
-	char *name = f->name;
-	int mails = f->num_mails;
-
-	if (!folder_ctree_mailbox_node)
-        {
-		text[0] = string_list_insert_tail(&folder_ctree_string_list, "Mailboxes")->string;
-		text[1] = "";
-
-		folder_ctree_mailbox_node = gtk_ctree_insert_node(GTK_CTREE(folder_ctree), NULL, NULL, text, 0, NULL, NULL, NULL, NULL, FALSE, TRUE);
-		gtk_ctree_node_set_row_data(GTK_CTREE(folder_ctree),folder_ctree_mailbox_node,NULL);
-	}
-
-	sprintf(buf,"%d",mails);
-	text[0] = string_list_insert_tail(&folder_ctree_string_list, name)->string;
-	text[1] = string_list_insert_tail(&folder_ctree_string_list, buf)->string;
-
-	gtk_ctree_node_set_row_data(GTK_CTREE(folder_ctree),gtk_ctree_insert_node(GTK_CTREE(folder_ctree), folder_ctree_mailbox_node, NULL, text, 0, NULL, NULL, NULL, NULL, TRUE, FALSE),f);
-	gtk_clist_set_column_width(GTK_CLIST(folder_ctree),0,gtk_clist_optimal_column_width(GTK_CLIST(folder_ctree),0));
-}
+static GtkTreeStore *mail_treestore;
+static GtkWidget *mail_treeview;
+static GtkWidget *mail_scrolled_window;
 
 static void main_refresh_folders_text(void);
 
@@ -171,11 +68,17 @@ static void main_quit(void)
 /******************************************************************
  Callback when a new folder gets selected
 *******************************************************************/
-static void folder_select_row_callback(GtkCTree *ctree, GList *node, gint column, gpointer user_data)
+static void folder_cursor_changed(GtkTreeView *treeview, gpointer user_data)
 {
 	callback_folder_active();
+}
 
-	callback_change_folder_attrs(); /* test reasons */
+/******************************************************************
+ Callback when a mail has been activated
+*******************************************************************/
+static void mail_row_activated(void)//GtkTreeView *treeview, GtkTypeTreePath *arg1, GtkTreeViewColumn *arg2, gpointer user_data))
+{
+	callback_read_mail();
 }
 
 /******************************************************************
@@ -184,18 +87,6 @@ static void folder_select_row_callback(GtkCTree *ctree, GList *node, gint column
 int main_window_init(void)
 {
 	GtkWidget *vbox, *hbox, *hpaned;
-	static const gchar *mail_names[] = {
-		"Status",
-                "From",
-                "Subject",
-                "Date",
-                NULL
-	};
-        static const gchar *folder_names[] = {
-		"Name",
-		"Mails",
-		NULL
-	};
 
 	/* Create the window */
 	main_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -207,7 +98,7 @@ int main_window_init(void)
         gtk_container_add(GTK_CONTAINER(main_wnd), vbox);
 
         /* Create the toolbar */
-        toolbar = gtk_toolbar_new(GTK_ORIENTATION_HORIZONTAL,GTK_TOOLBAR_BOTH);
+        toolbar = gtk_toolbar_new();//GTK_ORIENTATION_HORIZONTAL,GTK_TOOLBAR_BOTH);
         gtk_box_pack_start(GTK_BOX(vbox), toolbar, FALSE, FALSE, 0 /* Padding */); /* only use minimal height */
 
         gtk_toolbar_append_item(GTK_TOOLBAR(toolbar), "Read", "Reads the selected mail", NULL /* private TT */, create_pixmap(main_wnd,"MailRead.xpm"), NULL /* CALLBACK */, NULL /* UDATA */);
@@ -234,152 +125,84 @@ int main_window_init(void)
 	gtk_container_add(GTK_CONTAINER(hbox), hpaned);
 
         /* Create the folder tree */
-        folder_ctree_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
-        gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(folder_ctree_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-        folder_ctree = gtk_ctree_new_with_titles(2,0,folder_names);
-	gtk_signal_connect(GTK_OBJECT(folder_ctree), "tree-select-row",GTK_SIGNAL_FUNC(folder_select_row_callback), NULL);
-	gtk_container_add(GTK_CONTAINER(folder_ctree_scrolled_window),folder_ctree);
+	{
+		gint col_offset;
+		GtkTreeViewColumn *column;
+		GtkCellRenderer *renderer;
+
+		folder_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(folder_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		folder_treestore = gtk_tree_store_new(2, G_TYPE_STRING, G_TYPE_INT);
+
+		folder_treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(folder_treestore));
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (folder_treeview), -1, "Name", renderer,
+						"text", FOLDER_NAME_COLUMN, NULL);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW (folder_treeview), -1, "Mails", renderer,
+						"text", FOLDER_MAILS_COLUMN, NULL);
+
+		gtk_container_add(GTK_CONTAINER(folder_scrolled_window),folder_treeview);
+
+		g_signal_connect(G_OBJECT(folder_treeview), "cursor-changed", G_CALLBACK(folder_cursor_changed), NULL);
+	}
 
         /* Create the mail tree */
-        mail_ctree_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
-        gtk_scrolled_window_set_policy( GTK_SCROLLED_WINDOW(mail_ctree_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
-	mail_ctree = gtk_ctree_new_with_titles(4,0,mail_names);
-	gtk_container_add(GTK_CONTAINER(mail_ctree_scrolled_window),mail_ctree);
+	{
+		gint col_offset;
+		GtkTreeViewColumn *column;
+		GtkCellRenderer *renderer;
+
+		mail_scrolled_window = gtk_scrolled_window_new(NULL,NULL);
+		gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(mail_scrolled_window),GTK_POLICY_AUTOMATIC,GTK_POLICY_AUTOMATIC);
+		mail_treestore = gtk_tree_store_new(5, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
+
+		mail_treeview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(mail_treestore));
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(mail_treeview), -1, "Status", renderer,
+						"text", MAIL_STATUS_COLUMN, NULL);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "From", renderer,
+						"text", MAIL_FROM_COLUMN, NULL);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Subject", renderer,
+						"text", MAIL_SUBJECT_COLUMN, NULL);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Date", renderer,
+						"text", MAIL_DATE_COLUMN, NULL);
+		column = gtk_tree_view_get_column(GTK_TREE_VIEW(mail_treeview), col_offset - 1);
+		gtk_tree_view_column_set_clickable(GTK_TREE_VIEW_COLUMN(column), TRUE);
+
+		renderer = gtk_cell_renderer_text_new();
+		col_offset = gtk_tree_view_insert_column_with_attributes (GTK_TREE_VIEW(mail_treeview), -1, "Ptr", renderer,
+//						"visible",FALSE,
+						"text", MAIL_PTR_COLUMN,
+						NULL);
+
+		gtk_container_add(GTK_CONTAINER(mail_scrolled_window),mail_treeview);
+
+		g_signal_connect(mail_treeview, "row_activated", G_CALLBACK(mail_row_activated), NULL);
+	}
 
 	/* Add them to the paned */
-	gtk_paned_add1(GTK_PANED(hpaned),folder_ctree_scrolled_window);
-	gtk_paned_add2(GTK_PANED(hpaned),mail_ctree_scrolled_window);
+	gtk_paned_add1(GTK_PANED(hpaned),folder_scrolled_window);
+	gtk_paned_add2(GTK_PANED(hpaned),mail_scrolled_window);
 
 	/* Show the window */
-	gtk_widget_show(folder_ctree);
-	gtk_widget_show(folder_ctree_scrolled_window);
-	gtk_widget_show(mail_ctree);
-	gtk_widget_show(mail_ctree_scrolled_window);
-	gtk_widget_show(hpaned);
-	gtk_widget_show(hbox);
-        gtk_widget_show(toolbar);
-	gtk_widget_show(vbox);
-	gtk_widget_show(main_wnd);
-#if 0
-	int rc;
-	rc = FALSE;
+	gtk_widget_show_all(main_wnd);
 
-	win_main = WindowObject,
-		MUIA_Window_ID, MAKE_ID('M','A','I','N'),
-    MUIA_Window_Title, VERS,
-
-		WindowContents, main_group = VGroup,
-			Child, buttons_group = HGroupV,
-				Child, HGroup,
-					MUIA_Group_Spacing, 0,
-					MUIA_Weight, 200,
-					Child, button_read = MakePictureButton("R_ead","PROGDIR:Images/MailRead"),
-					Child, button_change = MakePictureButton("_Modify","PROGDIR:Images/MailModify"),
-					Child, button_delete = MakePictureButton("_Delete","PROGDIR:Images/MailDelete"),
-					Child, button_getadd = MakePictureButton("_GetAdd","PROGDIR:Images/MailGetAddress"),
-					End,
-				Child, HGroup,
-					MUIA_Group_Spacing, 0,
-					MUIA_Weight, 150,
-					Child, button_new = MakePictureButton("_New","PROGDIR:Images/MailNew"),
-					Child, button_reply = MakePictureButton("_Reply","PROGDIR:Images/MailReply"),
-					Child, button_forward = MakePictureButton("F_orward","PROGDIR:Images/MailForward"),
-					End,
-				Child, HGroup,
-					MUIA_Group_Spacing, 0,
-					Child, button_fetch = MakePictureButton("_Fetch","PROGDIR:Images/MailsFetch"),
-					Child, button_send = MakePictureButton("_Send","PROGDIR:Images/MailsSend"),
-					End,
-				Child, HGroup,
-					MUIA_Group_Spacing, 0,
-					Child, button_abook = MakePictureButton("_Abook","PROGDIR:Images/Addressbook"),
-					Child, button_config = MakePictureButton("_Config","PROGDIR:Images/Config"),
-					End,
-				End,
-
-			Child, folder_group = HGroup,
-				MUIA_Group_Spacing,0,
-				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, End,
-				Child, folder_popupmenu = PopupmenuObject,
-					ImageButtonFrame,
-					MUIA_CycleChain,1,
-					MUIA_Image_Spec, MUII_PopUp,
-					MUIA_Image_FreeVert, TRUE,
-					End,
-				Child, switch1_button = PopButton(MUII_ArrowLeft),
-				End,
-
-			Child, mail_tree_group = HGroup,
-				Child, folder_listview_group = VGroup,
-					MUIA_HorizWeight, 33,
-					Child, folder_listview = NListviewObject,
-						MUIA_CycleChain, 1,
-						MUIA_NListview_NList, folder_tree = FolderTreelistObject,
-							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-							MUIA_ObjectID, MAKE_ID('M','W','F','T'),
-							End,
-						End,
-					Child, HGroup,
-						MUIA_Group_Spacing, 0,
-						Child, folder2_text = TextObject, TextFrame,MUIA_Text_SetMin,FALSE,End,
-						Child, switch2_button = PopButton(MUII_ArrowRight),
-						End,
-					End,
-				Child, folder_balance = BalanceObject, End,
-				Child, mail_listview = NListviewObject,
-					MUIA_CycleChain,1,
-					MUIA_NListview_NList, mail_tree = MailTreelistObject,
-						MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4,
-						MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
-						MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
-						MUIA_ObjectID, MAKE_ID('M','W','M','T'),
-						End,
-					End,
-				End,
-			End,
-		End;
-	
-	if(win_main != NULL)
-	{
-		if (!init_folder_placement()) return 0;
-		if (xget(folder_tree, MUIA_Version) < 1 || (xget(folder_tree, MUIA_Version) >= 1 && xget(folder_tree, MUIA_Revision)<7))
-    {
-    	printf("SimpleMail needs at least version 1.7 of the NListtree mui subclass!\nIt's available at http://www.aphaso.de\n");
-    	return 0;
-    }
-
-		DoMethod(App, OM_ADDMEMBER, win_main);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-		DoMethod(button_read, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_read_mail);
-		DoMethod(button_getadd, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_get_address);
-		DoMethod(button_delete, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
-		DoMethod(button_fetch, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
-		DoMethod(button_send, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-		DoMethod(button_new, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
-		DoMethod(button_reply, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_reply_mail);
-		DoMethod(button_forward, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_forward_mail);
-		DoMethod(button_change, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
-		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
-		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
-		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
-		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
-		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
-		rc = TRUE;
-	} else
-	{
-		tell("Can\'t create window!");
-	}
-	
-	return(rc);
-#endif
 	return 1;
 }
 
@@ -393,18 +216,6 @@ int main_window_open(void)
 	{
 	}
 	return 1;
-#if 0
-	int rc;
-	rc = FALSE;
-	
-	if(win_main != NULL)
-	{
-		set(win_main, MUIA_Window_Open, TRUE);
-		rc = TRUE;
-	}
-
-	return(rc);
-#endif
 }
 
 /******************************************************************
@@ -453,7 +264,14 @@ void main_refresh_folders(void)
 
 	while (f)
         {
-		folder_ctree_insert(f);
+		GtkTreeIter iter;
+
+		gtk_tree_store_append(folder_treestore, &iter, NULL);
+		gtk_tree_store_set(folder_treestore, &iter,
+			FOLDER_NAME_COLUMN, f->name,
+			FOLDER_MAILS_COLUMN, f->num_mails,
+			-1);
+
 		f = folder_next(f);
         }
 #if 0
@@ -507,7 +325,20 @@ void main_refresh_folder(struct folder *folder)
 *******************************************************************/
 void main_insert_mail(struct mail *mail)
 {
-	mail_ctree_insert(mail);
+	GtkTreeIter iter;
+	char buf[60];
+
+	/* This is ultra primitiv, we store the mail pointer as "text" in a separate column
+	 * but currently I really have no better idea
+	 */
+
+	sprintf(buf,"%x",mail);
+	gtk_tree_store_append(mail_treestore,&iter,NULL);
+	gtk_tree_store_set(mail_treestore, &iter,
+			MAIL_SUBJECT_COLUMN, mail->subject,
+			MAIL_FROM_COLUMN, mail->from_phrase?mail->from_phrase:mail->from_addr,
+			MAIL_PTR_COLUMN, buf,
+			-1);
 }
 
 /******************************************************************
@@ -598,21 +429,26 @@ static void main_insert_mail_threaded(struct folder *folder, struct mail *mail, 
 *******************************************************************/
 void main_clear_folder_mails(void)
 {
-#if 0
-	DoMethod(mail_tree, MUIM_NListtree_Clear, NULL, 0);
-#endif
+	gtk_tree_store_clear(mail_treestore);
 }
 
 /******************************************************************
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)
-{ 
+{
 	void *handle = NULL;
 	struct mail *m;
 	int primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
 	int threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
 
+	gtk_tree_store_clear(mail_treestore);
+
+	while ((m = folder_next_mail(folder,&handle)))
+	{
+		main_insert_mail(m);
+	}
+#if 0
 	mail_ctree_freeze();
 	mail_ctree_clear();
 
@@ -621,7 +457,7 @@ void main_set_folder_mails(struct folder *folder)
 		mail_ctree_insert(m);
 	}
 	mail_ctree_thaw();
-
+#endif
 
 #if 0
 	set(mail_tree, MUIA_NListtree_Quiet, TRUE);
@@ -715,12 +551,30 @@ void main_set_folder_mails(struct folder *folder)
 *******************************************************************/
 struct folder *main_get_folder(void)
 {
+	GtkTreeSelection *sel;
+
+	sel = gtk_tree_view_get_selection(folder_treeview);
+	if (sel)
+	{
+		GtkTreeModel *model;
+		GtkTreeIter iter;
+
+		if (gtk_tree_selection_get_selected(sel, &model, &iter))
+		{
+			gchar *name;
+			gtk_tree_model_get(model,&iter,FOLDER_NAME_COLUMN,&name,-1);
+			return folder_find_by_name(name);
+		}
+	}
+#if 0
 	GList *sel_list = gtk_ctree_find_all_selected(GTK_CTREE(folder_ctree),NULL);
 	if (sel_list)
 	{
 		GtkCTreeNode *node = GTK_CTREE_NODE(sel_list->data);
 		if (node) return (struct folder*)gtk_ctree_node_get_row_data(GTK_CTREE(folder_ctree),node);
 	}
+
+#endif
 
 #if 0
 	struct MUI_NListtree_TreeNode *tree_node;
@@ -734,21 +588,18 @@ struct folder *main_get_folder(void)
 		}
 	}
 	return NULL;
-#endif	
+#endif
 	return NULL;
 }
 
 /******************************************************************
  Returns the current selected folder drawer, NULL if no folder
- has been selected
+ has been selected. TODO: This is gui indep
 *******************************************************************/
 char *main_get_folder_drawer(void)
 {
-#if 0
 	struct folder *folder = main_get_folder();
 	if (folder) return folder->path;
-#endif
-	return NULL;
 }
 
 /******************************************************************
@@ -756,32 +607,37 @@ char *main_get_folder_drawer(void)
 *******************************************************************/
 struct mail *main_get_active_mail(void)
 {
-#if 0
-	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(mail_tree,MUIA_NListtree_Active);
+	GtkTreeSelection *sel;
 
-	if (tree_node)
+	sel = gtk_tree_view_get_selection(mail_treeview);
+	if (sel)
 	{
-		if (tree_node->tn_User && tree_node->tn_User != (void*)MUIV_MailTreelist_UserData_Name)
+		GtkTreeModel *model;
+		GtkTreeIter iter;
+
+		if (gtk_tree_selection_get_selected(sel, &model, &iter))
 		{
-			return (struct mail*)tree_node->tn_User;
+			gchar *buf;
+			struct mail *m;
+
+			gtk_tree_model_get(model,&iter,MAIL_PTR_COLUMN,&buf,-1);
+			m = (struct mail*)strtoul(buf,NULL,16);
+
+			return m;
 		}
 	}
-#endif
+
 	return NULL;
 }
 
 /******************************************************************
  Returns the filename of the active mail, NULL if no thing is
- selected
+ selected. TODO: This is gui indep
 *******************************************************************/
 char *main_get_mail_filename(void)
 {
-#if 0
 	struct mail *m = main_get_active_mail();
 	if (m) return m->filename;
-#endif
-	return NULL;
 }
 
 /******************************************************************

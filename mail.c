@@ -1669,8 +1669,6 @@ int mail_process_headers(struct mail *mail)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
 
-	mail->received = 0;
-
 	while (header)
 	{
 		char *buf = header->contents;

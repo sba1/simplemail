@@ -22,6 +22,10 @@
 #include "lists.h"
 #endif
 
+#define RULE_FROM_MATCH		0
+#define RULE_SUBJECT_MATCH	1
+#define RULE_HEADER_MATCH	2
+
 struct filter_rule
 {
 	struct node node; /* embedded node structure */
@@ -48,7 +52,10 @@ struct filter *filter_create(void);
 struct filter *filter_duplicate(struct filter *filter);
 void filter_dispose(struct filter *filter);
 
+struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
 struct filter_rule *filter_find_fule(struct filter *filter, int num);
+char *filter_get_rule_string(struct filter_rule *rule);
+
 struct filter_action *filter_find_action(struct filter *filter, int num);
 
 #endif

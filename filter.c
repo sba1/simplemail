@@ -69,7 +69,22 @@ void filter_dispose(struct filter *f)
 }
 
 /**************************************************************************
- Dispose the filter
+ 
+**************************************************************************/
+struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
+{
+	struct filter_rule *rule = (struct filter_rule*)malloc(sizeof(struct filter_rule));
+	if (rule)
+	{
+		memset(rule, 0, sizeof(struct filter_rule));
+		rule->type = type;
+		list_insert_tail(&filter->rules_list,&rule->node);
+	}
+	return rule;
+}
+
+/**************************************************************************
+ Find a rule of the filter
 **************************************************************************/
 struct filter_rule *filter_find_fule(struct filter *filter, int num)
 {
@@ -77,7 +92,35 @@ struct filter_rule *filter_find_fule(struct filter *filter, int num)
 }
 
 /**************************************************************************
- Dispose the filter
+ Returns a string from a rule
+**************************************************************************/
+char *filter_get_rule_string(struct filter_rule *rule)
+{
+	static char buf[256];
+	switch(rule->type)
+	{
+		case	RULE_FROM_MATCH:
+					strcpy(buf,"From match");
+					break;
+
+		case	RULE_SUBJECT_MATCH:
+					strcpy(buf,"Subject match");
+					break;
+
+		case	RULE_HEADER_MATCH:
+					strcpy(buf,"Header match");
+					break;
+
+		default:
+					strcpy(buf,"Unknown");
+					break;
+	}
+	return buf;
+}
+
+
+/**************************************************************************
+ Find a action of the filter
 **************************************************************************/
 struct filter_action *filter_find_action(struct filter *filter, int num)
 {

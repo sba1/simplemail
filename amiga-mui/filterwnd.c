@@ -38,6 +38,14 @@
 #include "filterwnd.h"
 #include "muistuff.h"
 
+struct rule
+{
+	char *name; /* Name of the rule */
+	Object *page;
+	int (*create)(struct rule*);
+	int type;
+};
+
 static Object *filter_wnd;
 static Object *filter_name_string;
 static Object *filter_listview;
@@ -47,6 +55,17 @@ static Object *filter_remove_button;
 static struct Hook filter_construct_hook;
 static struct Hook filter_destruct_hook;
 static struct Hook filter_display_hook;
+
+static int rules_create_from(struct rule *rule);
+
+struct rule rules[] = {
+	{"From match",NULL,rules_create_from,RULE_FROM_MATCH},
+	{"Subject macth",NULL,NULL,RULE_SUBJECT_MATCH},
+	{"Header match",NULL,NULL,RULE_HEADER_MATCH},
+	{NULL,NULL,NULL,NULL},
+};
+char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
+
 
 STATIC ASM APTR filter_construct(register __a2 APTR pool, register __a1 struct filter *ent)
 {
@@ -69,7 +88,33 @@ STATIC ASM VOID filter_display(register __a0 struct Hook *h, register __a2 char 
 	}
 }
 
+STATIC ASM VOID rules_display(register __a0 struct Hook *h, register __a2 char **array, register __a1 struct filter_rule *rule)
+{
+	if (rule)
+	{
+		*array = filter_get_rule_string(rule);
+	}
+}
+
 static Object *rules_wnd;
+static Object *rules_page_listview;
+static Object *rules_page_group;
+static Object *rules_page_space;
+static Object *rules_page_cycle;
+
+/**************************************************************************
+ Create the from match object
+**************************************************************************/
+static int rules_create_from(struct rule *rule)
+{
+	rule->page = HGroup,
+		MUIA_ShowMe, FALSE,
+		Child, BetterStringObject,
+			End,
+		End;
+
+	return rule->page?1:0;
+}
 
 /**************************************************************************
  Ok the rule 
@@ -80,16 +125,59 @@ static void rules_ok(void)
 }
 
 /**************************************************************************
+ Add a new rule
+**************************************************************************/
+static void rules_new(void)
+{
+	struct filter *f;
+	DoMethod(filter_listview, MUIM_NList_GetEntry, xget(filter_listview, MUIA_NList_Active),&f);
+	if (f)
+	{
+		struct filter_rule *fr;
+
+		fr = filter_create_and_add_rule(f, xget(rules_page_cycle, MUIA_Cycle_Active));
+		DoMethod(rules_page_listview,MUIM_NList_InsertSingle, fr, MUIV_NList_Insert_Bottom);
+	}
+}
+
+/**************************************************************************
  Init rules
 **************************************************************************/
 static void init_rules(void)
 {
-	Object *ok_button, *cancel_button;
+	Object *ok_button, *cancel_button, *rule_add_button;
+	static struct Hook rules_display_hook;
+	int i;
+
+	init_hook(&rules_display_hook,(HOOKFUNC)rules_display);
+
+	for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
+	{
+		rule_cycle_array[i] = rules[i].name;
+		if (rules[i].create) rules[i].create(&rules[i]);
+	}
 
 	rules_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('R','U','L','S'),
 		MUIA_Window_Title, "SimpleMail - Edit Rule",
 		WindowContents, VGroup,
+			Child, HGroup,
+				Child, VGroup,
+					Child, rules_page_listview = NListviewObject,
+						MUIA_NListview_NList, NListObject,
+							MUIA_NList_DisplayHook, &rules_display_hook,
+							End,
+						End,
+					Child, HGroup,
+						Child, rules_page_cycle = MakeCycle(NULL,rule_cycle_array),
+						Child, rule_add_button = MakeButton("Add"),
+						Child, MakeButton("Remove"),
+						End,
+					End,
+				Child, rules_page_group = HGroup,
+					Child, rules_page_space = HVSpace,
+					End,
+				End,
 			Child, HorizLineObject,
 			Child, HGroup,
 				Child, ok_button = MakeButton("_Ok"),
@@ -100,10 +188,14 @@ static void init_rules(void)
 
 	if (rules_wnd)
 	{
+		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
+			DoMethod(App, OM_ADDMEMBER, rules[i].page);
+
 		DoMethod(App, OM_ADDMEMBER, rules_wnd);
 		DoMethod(rules_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_ok);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(rule_add_button, MUIM_Notify, MUIA_Pressed, FALSE, rules_wnd, 3, MUIM_CallHook, &hook_standard, rules_new);
 	}
 }
 

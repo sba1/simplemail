@@ -27,6 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include "codesets.h"
 #include "mail.h"
 #include "folder.h"
 #include "lists.h"
@@ -167,6 +168,8 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 /**************************************************************************
  Returns wheather succesful.
  The given path stays in selected/examine state
+
+ Path must be is UTF8 encoded
 **************************************************************************/
 static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
 {
@@ -179,6 +182,9 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
+
+	path = utf8toiutf7(path,strlen(path));
+	if (!path) return 0;
 
 	sprintf(status_buf,_("Examining folder %s"),path);
 	thread_call_parent_function_sync(status_set_status,1,status_buf);
@@ -286,7 +292,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 		*remote_mail_array_ptr = remote_mail_array;
 		*num_ptr = num_of_remote_mails;
 	}
-
+	free(path);
 	return success;
 }
 
@@ -305,7 +311,7 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 	list_init(list);
 
 	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB",server->login,server->passwd);
+	sprintf(send,"%s %s \"\" *\r\n",tag,all?"LIST":"LSUB");
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
@@ -322,6 +328,8 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 			break;
 		} else
 		{
+			char *utf_name;
+
 			/* command */
 			line = imap_get_result(line,buf,sizeof(buf));
 
@@ -334,7 +342,11 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 			/* read name */
 			line = imap_get_result(line,buf,sizeof(buf));
 
-			string_list_insert_tail(list,buf);
+			if ((utf_name = iutf7ntoutf8(buf, strlen(buf))))
+			{
+				string_list_insert_tail(list,utf_name);
+				free(utf_name);
+			}
 		}
 	}
 
@@ -781,7 +793,6 @@ struct imap_get_folder_list_entry_msg
 **************************************************************************/
 static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
 {
-	struct list *folder_list;
 	if (open_socket_lib())
 	{
 		struct connection *conn;
@@ -857,7 +868,6 @@ int imap_get_folder_list(struct imap_server *server, void (*callback)(struct ima
 **************************************************************************/
 static void imap_submit_folder_list_really(struct imap_server *server, struct list *list)
 {
-	struct list *folder_list;
 	if (open_socket_lib())
 	{
 		struct connection *conn;
@@ -896,29 +906,33 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 								if (!string_list_find(sub_folder_list,node->string))
 								{
 									int success = 0;
-
-									/* subscribe this folder */
-									sprintf(tag,"%04x",val++);
-									sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,node->string);
-									tcp_write(conn,send,strlen(send));
-									tcp_flush(conn);
-
-									while ((line = tcp_readln(conn)))
+									char *path = utf8toiutf7(node->string,strlen(node->string));
+									if (path)
 									{
-										line = imap_get_result(line,buf,sizeof(buf));
-										if (!mystricmp(buf,tag))
+										/* subscribe this folder */
+										sprintf(tag,"%04x",val++);
+										sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,path);
+										tcp_write(conn,send,strlen(send));
+										tcp_flush(conn);
+	
+										while ((line = tcp_readln(conn)))
 										{
 											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,"OK"))
+											if (!mystricmp(buf,tag))
 											{
-												success = 1;
-											} else
-											{
-												tell_from_subtask(N_("Subscribing folders failed!"));
+												line = imap_get_result(line,buf,sizeof(buf));
+												if (!mystricmp(buf,"OK"))
+												{
+													success = 1;
+												} else
+												{
+													tell_from_subtask(N_("Subscribing folders failed!"));
+												}
+												break;
 											}
-											break;
 										}
 									}
+									free(path);
 								}
 								node = (struct string_node*)node_next(&node->node);
 							}
@@ -929,28 +943,32 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 								if (!string_list_find(list,node->string))
 								{
 									int success = 0;
-
-									/* subscribe this folder */
-									sprintf(tag,"%04x",val++);
-									sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,node->string);
-									tcp_write(conn,send,strlen(send));
-									tcp_flush(conn);
-
-									while ((line = tcp_readln(conn)))
+									char *path = utf8toiutf7(node->string,strlen(node->string));
+									if (path)
 									{
-										line = imap_get_result(line,buf,sizeof(buf));
-										if (!mystricmp(buf,tag))
+										/* subscribe this folder */
+										sprintf(tag,"%04x",val++);
+										sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,path);
+										tcp_write(conn,send,strlen(send));
+										tcp_flush(conn);
+
+										while ((line = tcp_readln(conn)))
 										{
 											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,"OK"))
+											if (!mystricmp(buf,tag))
 											{
-												success = 1;
-											} else
-											{
-												tell_from_subtask(N_("Unsubscribing folders failed!"));
+												line = imap_get_result(line,buf,sizeof(buf));
+												if (!mystricmp(buf,"OK"))
+												{
+													success = 1;
+												} else
+												{
+													tell_from_subtask(N_("Unsubscribing folders failed!"));
+												}
+												break;
 											}
-											break;
 										}
+										free(path);
 									}
 								}
 								node = (struct string_node*)node_next(&node->node);

@@ -362,7 +362,7 @@ int gui_main(void)
 	rc = 0;
 
 	dt_init();
-	
+
 	if(all_init())
 	{
 		main_refresh_folders();

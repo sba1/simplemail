@@ -37,6 +37,7 @@
 #include <proto/exec.h>
 
 #include "account.h"
+#include "configuration.h"
 #include "folder.h"
 #include "imap.h"
 #include "simplemail.h"
@@ -109,15 +110,17 @@ STATIC ASM VOID imap_folders_display(register __a2 char **array, register __a1 s
 {
 	if (entry)
 	{
+		static char buf[300];
 		if (entry->subscribed)
 		{
-			*array = entry->name;
+			utf8tostr(entry->name,buf,sizeof(buf),user.config.default_codeset);
 		} else
 		{
-			static char buf[300];
-			sprintf(buf,"(%s)",entry->name);
-			*array = buf;
+			buf[0] = '(';
+			utf8tostr(entry->name, &buf[1], sizeof(buf) - 1, user.config.default_codeset);
+			strcat(buf,")");
 		}
+		*array = buf;
 	}
 }
 

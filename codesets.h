@@ -67,5 +67,6 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
 char *uft8toucs(char *chr, unsigned int *code);
 char *utf7ntoutf8(char *source, int sourcelen);
 char *iutf7ntoutf8(char *source, int sourcelen);
+char *utf8toiutf7(char *utf8, int sourcelen);
 
 #endif

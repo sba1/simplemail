@@ -774,8 +774,6 @@ static int codesets_read_table(char *name)
 								codeset->table[i].ucs4 = strtol(p,&p,16);
 							} else
 							{
-								int val;
-
 								if (*p!='#') codeset->table[i].ucs4 = strtol(p,&p,0);
 							}
 						}
@@ -1418,7 +1416,6 @@ int utf8stricmp(char *str1, char *str2)
 			struct uniconv *uc2;
 			int ch1l;
 			int ch2l;
-			int i = 3 - bytes1;
 
 			*((unsigned int *)ch1) = 0;
 			*((unsigned int *)ch2) = 0;
@@ -1781,6 +1778,108 @@ char *utf7ntoutf8(char *source, int sourcelen)
 		}
 	}
 
+	return dest;
+}
+
+/**************************************************************************
+ UTF8 to UTF7 (IMAP modiefied)
+**************************************************************************/
+char *utf8toiutf7(char *utf8, int sourcelen)
+{
+	FILE *fh;
+	char *dest = NULL;
+
+	if (needtables) tabinit();
+
+	if ((fh = tmpfile()))
+	{
+		int i;
+		int dest_len;
+		int shifted = 0;
+		DECLARE_BIT_BUFFER;
+
+		while (1)
+		{
+			unsigned char c;
+			int noshift;
+
+			if (sourcelen)
+			{
+				c = *utf8;
+				noshift = (c >= 0x20 && c <= 0x7e) && (c != '&');
+			} else
+			{
+				c = 0;
+				noshift = 1;
+			}
+
+			if (shifted)
+			{
+				while (BITS_IN_BUFFER >= 6)
+				{
+					unsigned char bits = READ_N_BITS(6);
+					fputc(ibase64[bits],fh);
+				}
+
+				if (noshift)
+				{
+					int bits_in_buf = BITS_IN_BUFFER;
+
+					if (bits_in_buf)
+					{
+						unsigned char bits = READ_N_BITS(bits_in_buf);
+						bits <<= 6 - bits_in_buf;
+						fputc(ibase64[bits],fh);
+					}
+					shifted = 0;
+					fputc('-',fh);
+				}
+			}
+
+			if (!c) break;
+
+			if (noshift)
+			{
+				if (c == '&')
+				{
+					fputs("&-",fh);
+				} else fputc(c,fh);
+				utf8++;
+				sourcelen--;
+			} else
+			{
+				UTF8 *source = (UTF8*)utf8;
+				UTF16 dest = 0;
+				UTF16 *dest_ptr = &dest;
+				ConversionResult res;
+
+				res = ConvertUTF8toUTF16(&source, source + sourcelen, &dest_ptr, dest_ptr + 1, strictConversion);
+				if (res == conversionOK || res == targetExhausted)
+				{
+					sourcelen -= trailingBytesForUTF8[c] + 1;
+					utf8 += trailingBytesForUTF8[c] + 1;
+
+					if (!shifted)
+					{
+						fputc('&',fh);
+						shifted = 1;
+					}
+
+					WRITE_N_BITS(dest,16);
+				}
+			}
+		}
+
+		if ((dest_len = ftell(fh)))
+		{
+	    fseek(fh,0,SEEK_SET);
+			if ((dest = (char*)malloc(dest_len+1)))
+			{
+				fread(dest,1,dest_len,fh);
+				dest[dest_len]=0;
+			}
+		}
+	}
 	return dest;
 }
 

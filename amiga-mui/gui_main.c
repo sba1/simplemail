@@ -41,11 +41,14 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 /* gui parts */
 #include "addresstreelistclass.h"
 #include "addressstringclass.h"
+#include "amigasupport.h"
+#include "arexx.h"
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
@@ -69,6 +72,7 @@
 __near long __stack = 30000;
 
 struct Library *MUIMasterBase;
+struct Library *RexxSysBase;
 struct Locale *DefaultLocale;
 Object *App;
 
@@ -163,15 +167,17 @@ void loop(void)
 	ULONG sigs = 0;
 	ULONG thread_m = thread_mask();
 	ULONG timer_m = 1UL << timer_port->mp_SigBit;
+	ULONG arexx_m = arexx_mask();
 
 	while((LONG) DoMethod(App, MUIM_Application_NewInput, &sigs) != MUIV_Application_ReturnID_Quit)
 	{
 		if (sigs)
 		{
-			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m);
+			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m | arexx_m);
 			if (sigs & SIGBREAKF_CTRL_C) break;
 			if (sigs & thread_m) thread_handle();
 			if (sigs & timer_m) timer_handle();
+			if (sigs & arexx_m) arexx_handle();
 		}
 	}
 }
@@ -182,24 +188,17 @@ void loop(void)
 *****************************************************************/
 int app_init(void)
 {
-	int rc;
-	rc = FALSE;
-
 	App = ApplicationObject,
 		MUIA_Application_Title,			"SimpleMail",
 		MUIA_Application_Version,		VERSTAG,
-		MUIA_Application_Copyright,		"Copyright (c) 2000 by Sebastian Bauer & Hynek Schlawack",
+		MUIA_Application_Copyright,		"Copyright (c) 2000,2001 by Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Author,		"Sebastian Bauer & Hynek Schlawack",
 		MUIA_Application_Description,	"A mailer.",
 		MUIA_Application_Base,			"SIMPLEMAIL",
+		MUIA_Application_UseRexx, FALSE,
 	End;
 	
-	if(App != NULL)
-	{
-		rc = TRUE;
-	}
-	
-	return(rc);
+	return !!App;
 }
 
 /****************************************************************
@@ -207,7 +206,7 @@ int app_init(void)
 *****************************************************************/
 void app_del(void)
 {
-	if(App != NULL)
+	if (App)
 	{
 		MUI_DisposeObject(App);
 		App = NULL;
@@ -219,29 +218,36 @@ void app_del(void)
 *****************************************************************/
 void all_del(void)
 {
-	if(MUIMasterBase != NULL)	
+	if (MUIMasterBase)
 	{
-		app_del();
+		if (RexxSysBase)
+		{
+			app_del();
+	
+			delete_pgplist_class();
+			delete_addresstreelist_class();
+			delete_multistring_class();
+			delete_filterrule_class();
+			delete_configtreelist_class();
+			delete_icon_class();
+			delete_popupmenu_class();
+			delete_picturebutton_class();
+			delete_simplehtml_class();
+			delete_composeeditor_class();
+			delete_readlist_class();
+			delete_transwnd_class();
+			delete_datatypes_class();
+			delete_attachmentlist_class();
+			delete_addressstring_class();
+			delete_foldertreelist_class();
+			delete_mailtreelist_class();
 
-		delete_pgplist_class();
-		delete_addresstreelist_class();
-		delete_multistring_class();
-		delete_filterrule_class();
-		delete_configtreelist_class();
-		delete_icon_class();
-		delete_popupmenu_class();
-		delete_picturebutton_class();
-		delete_simplehtml_class();
-		delete_composeeditor_class();
-		delete_readlist_class();
-		delete_transwnd_class();
-		delete_datatypes_class();
-		delete_attachmentlist_class();
-		delete_addressstring_class();
-		delete_foldertreelist_class();
-		delete_mailtreelist_class();
+			arexx_cleanup();
+			timer_free();
 
-		timer_free();
+			CloseLibrary(RexxSysBase);
+			RexxSysBase = NULL;
+		}
 
 		CloseLibrary(MUIMasterBase);
 		MUIMasterBase = NULL;
@@ -255,45 +261,42 @@ void all_del(void)
 *****************************************************************/
 int all_init(void)
 {
-	int rc;
-	rc = FALSE;
-	
-	MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN);
-	if(MUIMasterBase != NULL)
+	if ((MUIMasterBase = OpenLibrary(MUIMASTER_NAME, MUIMASTER_VMIN)))
 	{
-		DefaultLocale = OpenLocale(NULL);
-
-		init_hook_standard();
-
-		if (timer_init())
+		if ((RexxSysBase = OpenLibrary("rexxsyslib.library",0)))
 		{
-			if (create_foldertreelist_class() && create_mailtreelist_class() &&
-					create_addressstring_class() && create_attachmentlist_class() &&
-					create_datatypes_class() && create_transwnd_class() &&
-					create_readlist_class() && create_composeeditor_class() &&
-					create_simplehtml_class() && create_picturebutton_class() &&
-					create_popupmenu_class() && create_icon_class() && 
-					create_configtreelist_class() && create_filterrule_class() &&
-					create_multistring_class() && create_addresstreelist_class() &&
-					create_pgplist_class())
-			{
-				if (app_init())
-				{
-					if (main_window_init())
-					{
-						DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
-						rc = TRUE;
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		printf("Couldn't open " MUIMASTER_NAME " version %ld!\n",MUIMASTER_VMIN);
-	}
+			DefaultLocale = OpenLocale(NULL);
+			init_hook_standard();
 
-	return(rc);
+			if (timer_init())
+			{
+				if (arexx_init())
+				{
+					if (create_foldertreelist_class() && create_mailtreelist_class() &&
+							create_addressstring_class() && create_attachmentlist_class() &&
+							create_datatypes_class() && create_transwnd_class() &&
+							create_readlist_class() && create_composeeditor_class() &&
+							create_simplehtml_class() && create_picturebutton_class() &&
+							create_popupmenu_class() && create_icon_class() && 
+							create_configtreelist_class() && create_filterrule_class() &&
+							create_multistring_class() && create_addresstreelist_class() &&
+							create_pgplist_class())
+					{
+						if (app_init())
+						{
+							if (main_window_init())
+							{
+								DoMethod(App,MUIM_Application_Load,MUIV_Application_Load_ENV);
+								return 1;
+							}
+						} else printf(_("Failed to create the application\n"));
+					} else printf(_("Could not create mui custom classes\n"));
+				} else printf(_("Couldn't create arexx port\n"));
+			} else printf(_("Couldn't initialize timer\n"));
+		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
+	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
+
+	return 1;
 }
 
 
@@ -364,6 +367,27 @@ int gui_parseargs(int argc, char *argv[])
 		initial_subject = mystrdup(shell_args.subject);
 		FreeArgs(rdargs);
 	}
+
+	if (arexx_find())
+	{
+		char result[40];
+		/* SimpleMail is already running */
+		if (initial_mailto || initial_subject)
+		{
+			char *buf = malloc(mystrlen(initial_mailto)+mystrlen(initial_subject)+100);
+			if (buf)
+			{
+				sprintf(buf,"MAILWRITE MAILTO=\"%s\" SUBJECT=\"%s\"",initial_mailto?initial_mailto:"",initial_subject?initial_subject:"");
+				SendRexxCommand("SIMPLEMAIL.1", buf, result, 40);
+				free(buf);
+			}
+		} else
+		{
+			SendRexxCommand("SIMPLEMAIL.1", "MAINTOFRONT", result, 40);
+		}
+		return 0;
+	}
+
 	return 1;
 }
 

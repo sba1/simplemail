@@ -643,14 +643,20 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	extern struct MUI_CustomClass *CL_TinyButton;
 
+	struct TagItem *oid_tag;
+
 	if (!(layout_hook = (struct Hook*)AllocVec(sizeof(*layout_hook),MEMF_CLEAR)))
 		return 0;
+
+	/* Filter out MUIA_ObjectID tag as this is used for the switch_button */
+	if ((oid_tag = FindTagItem(MUIA_ObjectID, msg->ops_AttrList)))
+		oid_tag->ti_Tag = TAG_IGNORE;
 
 	init_hook(layout_hook, (HOOKFUNC)MailInfoArea_LayoutFunc);
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Font, MUIV_Font_Tiny,
-					MUIA_Group_Child, switch_button = MyNewObject(CL_TinyButton->mcc_Class, NULL, TAG_DONE),
+					MUIA_Group_Child, switch_button = MyNewObject(CL_TinyButton->mcc_Class, NULL, oid_tag?MUIA_ObjectID:TAG_IGNORE, oid_tag?oid_tag->ti_Data:0, TAG_DONE),
 					MUIA_Group_LayoutHook, layout_hook,
 					TAG_MORE,msg->ops_AttrList)))
 	{
@@ -970,10 +976,17 @@ STATIC ULONG MailInfo_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MailInfo_Data *data;
 	Object *mailinfo;
+
 	extern struct MUI_CustomClass *CL_MailInfoArea;
-			
+
+	struct TagItem *oid_tag;
+
+	/* Filter out MUIA_ObjectID tag as this is used for the switch_button */
+	if ((oid_tag = FindTagItem(MUIA_ObjectID, msg->ops_AttrList)))
+		oid_tag->ti_Tag = TAG_IGNORE;
+
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
-					MUIA_Group_Child, mailinfo = MyNewObject(CL_MailInfoArea->mcc_Class, NULL, TAG_DONE),
+					MUIA_Group_Child, mailinfo = MyNewObject(CL_MailInfoArea->mcc_Class, NULL, oid_tag?MUIA_ObjectID:TAG_IGNORE, oid_tag?oid_tag->ti_Data:0, TAG_DONE),
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
 

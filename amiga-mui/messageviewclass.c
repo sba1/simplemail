@@ -703,6 +703,11 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MessageView_Data *data;
 	Object *simplehtml, *horiz, *vert, *mailinfo;
+	struct TagItem *oid_tag;
+
+	/* Filter out MUIA_ObjectID tag as this is used for the switch_button */
+	if ((oid_tag = FindTagItem(MUIA_ObjectID, msg->ops_AttrList)))
+		oid_tag->ti_Tag = TAG_IGNORE;
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_Group_Spacing, 0,
@@ -713,6 +718,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 					MUIA_InnerTop, 0,
 					MUIA_InnerRight, 0,
 					MUIA_InnerBottom, 0,
+					oid_tag?MUIA_ObjectID:TAG_IGNORE, oid_tag?oid_tag->ti_Tag:0,
 					End,
 		Child, HGroup,
 			MUIA_Group_Spacing, 0,

@@ -27,6 +27,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "account.h"
 #include "addressbook.h"
 #include "codecs.h"
 #include "configuration.h"
@@ -1446,26 +1447,21 @@ void composed_mail_init(struct composed_mail *mail)
  Writes out the from header field (it shouldn't be inlined because
  it uses some stack space
 **************************************************************************/
-int mail_compose_write_from(FILE *fp)
+static int mail_compose_write_from(FILE *fp, char *from)
 {
-	struct list list;
-	struct address address;
-	char *from;
 	int rc = 0;
+	struct list *list = create_address_list(from);
 
-	list_init(&list);
-	memset(&address,0,sizeof(struct address));
-
-	address.realname = user.config.realname;
-	address.email = user.config.email;
-	list_insert_tail(&list,&address.node);
-
-	if ((from = encode_address_field("From", &list)))
+	if (list)
 	{
-		if (fprintf(fp,"%s\n",from)>=0) rc = 1;
-		free(from);
+		char *from = encode_address_field("From", list);
+		if (from)
+		{
+			if (fprintf(fp,"%s\n",from)>=0) rc = 1;
+			free(from);
+		}
+		free_address_list(list);
 	}
-
 	return rc;
 }
 
@@ -1481,7 +1477,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		char *subject;
 		struct list *alist;
 
-		if (!mail_compose_write_from(fp))
+		if (!mail_compose_write_from(fp,new_mail->from))
 			return 0;
 
 		if ((alist = create_address_list(new_mail->to)))
@@ -1620,10 +1616,10 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 	if (!outgoing) outgoing = folder_outgoing();
 	if (!outgoing) return 0;
 
-	if (!user.config.email || !user.config.realname)
+	if (!new_mail->from)
 	{
-		sm_request(NULL, "You must configure your email address and\n"
-										 "your realname before creating a new mail","Ok");
+		sm_request(NULL, "No valid from field specified. You must configure some Accounts\n"
+										 "before creating new mails","Ok");
 		return 0;
 	}
 

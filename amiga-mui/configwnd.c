@@ -35,11 +35,13 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "account.h"
 #include "configuration.h"
 #include "lists.h"
 #include "pop3.h"
 
 #include "compiler.h"
+#include "configtreelistclass.h"
 #include "configwnd.h"
 #include "muistuff.h"
 #include "support_indep.h"
@@ -52,97 +54,103 @@ static int size2value(int val);
 #define SizesObject (Object*)NewObject(CL_Sizes->mcc_Class, NULL
 
 static Object *config_wnd;
-static Object *user_realname_string;
-static Object *user_email_string;
 static Object *user_dst_check;
 static Object *receive_preselection_radio;
 static Object *receive_sizes_sizes;
-static Object *pop3_login_string;
-static Object *pop3_server_string;
-static Object *pop3_port_string;
-static Object *pop3_password_string;
-static Object *pop3_delete_check;
-static Object *smtp_domain_string;
-static Object *smtp_ip_check;
-static Object *smtp_server_string;
-static Object *smtp_port_string;
-static Object *smtp_auth_check;
-static Object *smtp_login_string;
-static Object *smtp_password_string;
 static Object *read_wrap_checkbox;
+
+static Object *account_name_string;
+static Object *account_email_string;
+static Object *account_reply_string;
+static Object *account_recv_server_string;
+static Object *account_recv_port_string;
+static Object *account_recv_login_string;
+static Object *account_recv_password_string;
+static Object *account_recv_delete_check;
+static Object *account_send_server_string;
+static Object *account_send_port_string;
+static Object *account_send_login_string;
+static Object *account_send_password_string;
+static Object *account_send_auth_check;
+static Object *account_send_pop3_check;
+static Object *account_send_ip_check;
+static Object *account_add_button;
+static Object *account_remove_button;
 
 static Object *config_group;
 static Object *config_tree;
 static struct Hook config_construct_hook, config_destruct_hook, config_display_hook;
-static APTR receive_treenode;
-static struct list receive_list; /* nodes are struct pop3_server * */
-static struct pop3_server *receive_last_selected; /* last selected pop3_server */
+static APTR accounts_treenode;
+static struct list account_list; /* nodes are struct account * */
+static struct account *account_last_selected;
 
 static Object *user_group;
-static Object *tcpip_send_group;
 static Object *tcpip_receive_group;
-static Object *tcpip_pop3_group;
+static Object *accounts_group;
+static Object *account_group;
 static Object *mails_read_group;
 
 static Object *config_last_visisble_group;
 
 /******************************************************************
- Gets the current settings of the POP3 server
+ Gets the 
 *******************************************************************/
-static void get_pop3_server(void)
+static void get_account(void)
 {
-	if (receive_last_selected)
+	if (account_last_selected)
 	{
-		/* Save the pop3 server if a server was selected */
-		if (receive_last_selected->name) free(receive_last_selected->name);
-		if (receive_last_selected->login) free(receive_last_selected->login);
-		if (receive_last_selected->passwd) free(receive_last_selected->passwd);
-		receive_last_selected->name = mystrdup((char*)xget(pop3_server_string, MUIA_String_Contents));
-		receive_last_selected->login = mystrdup((char*)xget(pop3_login_string, MUIA_String_Contents));
-		receive_last_selected->passwd = mystrdup((char*)xget(pop3_password_string, MUIA_String_Contents));
-		receive_last_selected->del = xget(pop3_delete_check, MUIA_Selected);
-		receive_last_selected->port = xget(pop3_port_string, MUIA_String_Integer);
-		receive_last_selected = NULL;
+		/* Save the account if a server was selected */
+		if (account_last_selected->name) free(account_last_selected->name);
+		if (account_last_selected->email) free(account_last_selected->email);
+		if (account_last_selected->reply) free(account_last_selected->reply);
+		if (account_last_selected->pop->name) free(account_last_selected->pop->name);
+		if (account_last_selected->pop->login) free(account_last_selected->pop->login);
+		if (account_last_selected->pop->passwd) free(account_last_selected->pop->passwd);
+		if (account_last_selected->smtp->name) free(account_last_selected->pop->name);
+		if (account_last_selected->smtp->auth_login) free(account_last_selected->smtp->auth_login);
+		if (account_last_selected->smtp->auth_password) free(account_last_selected->smtp->auth_password);
+
+		account_last_selected->name = mystrdup((char*)xget(account_name_string, MUIA_String_Contents));
+		account_last_selected->email = mystrdup((char*)xget(account_email_string, MUIA_String_Contents));
+		account_last_selected->reply = mystrdup((char*)xget(account_reply_string, MUIA_String_Contents));
+		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
+		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
+		account_last_selected->pop->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
+		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
+		account_last_selected->pop->port = xget(account_recv_port_string, MUIA_String_Integer);
+		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
+		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_String_Integer);
+		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
+		account_last_selected->smtp->name = mystrdup((char*)xget(account_send_server_string, MUIA_String_Contents));
+		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
+		account_last_selected->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
+		account_last_selected->smtp->auth_password = mystrdup((char*)xget(account_send_password_string, MUIA_String_Contents));
+		account_last_selected = NULL;
 	}
 }
+
 
 /******************************************************************
  Use the config
 *******************************************************************/
 static void config_use(void)
 {
-	struct pop3_server *pop;
+	struct account *account;
 
-	if (user.config.realname) free(user.config.realname);
-	if (user.config.email) free(user.config.email);
-	if (user.config.smtp_server) free(user.config.smtp_server);
-	if (user.config.smtp_domain) free(user.config.smtp_domain);
-	if (user.config.smtp_login) free(user.config.smtp_login);
-	if (user.config.smtp_password) free(user.config.smtp_password);
-
-	user.config.realname = mystrdup((char*)xget(user_realname_string, MUIA_String_Contents));
-	user.config.email = mystrdup((char*)xget(user_email_string, MUIA_String_Contents));
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
-	user.config.smtp_domain = mystrdup((char*)xget(smtp_domain_string, MUIA_String_Contents));
-	user.config.smtp_ip_as_domain = xget(smtp_ip_check, MUIA_Selected);
-	user.config.smtp_server = mystrdup((char*)xget(smtp_server_string, MUIA_String_Contents));
-	user.config.smtp_login = mystrdup((char*)xget(smtp_login_string, MUIA_String_Contents));
-	user.config.smtp_password = mystrdup((char*)xget(smtp_password_string, MUIA_String_Contents));
-	user.config.smtp_auth = xget(smtp_auth_check, MUIA_Selected);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
-
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 
-  get_pop3_server();
+  get_account();
 
-	/* Copy the pop3 servers */
-	free_config_pop();
-	pop = (struct pop3_server *)list_first(&receive_list);
-	while (pop)
+	/* Copy the accounts */
+	clear_config_accounts();
+	account = (struct account *)list_first(&account_list);
+	while (account)
 	{
-		insert_config_pop(pop);
-		pop = (struct pop3_server *)node_next(&pop->node);
+		insert_config_account(account);
+		account = (struct account *)node_next(&account->node);
 	}
 
 	close_config();
@@ -180,28 +188,37 @@ static void config_tree_active(void)
 				init_change = 1;
 			} else init_change = 0;
 
-			get_pop3_server();
+			get_account();
 
-			if (list_treenode == receive_treenode)
+			if (list_treenode == accounts_treenode)
 			{
-				/* A POP3 Server has been selected */
-				int pop3_num = 0;
-				struct pop3_server *server;
+				int account_num = 0;
+				struct account *account;
 				APTR tn = treenode;
 
-				/* Find out the position of the new selected server in the list */
-				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
-					pop3_num++;
+				/* Find out the position of the new selected account in the list */
+				while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Previous,0)))
+					account_num++;
 
-				if ((server = (struct pop3_server*)list_find(&receive_list,pop3_num)))
+				if ((account = (struct account*)list_find(&account_list,account_num)))
 				{
-					setstring(pop3_server_string,server->name);
-					setstring(pop3_login_string,server->login);
-					setstring(pop3_password_string,server->passwd);
-					set(pop3_port_string, MUIA_String_Integer,server->port);
-					setcheckmark(pop3_delete_check, server->del);
+					setstring(account_name_string,account->name);
+					setstring(account_email_string,account->email);
+					setstring(account_reply_string,account->reply);
+					setstring(account_recv_server_string,account->pop->name);
+					set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
+					setstring(account_recv_login_string,account->pop->login);
+					setstring(account_recv_password_string,account->pop->passwd);
+					setcheckmark(account_recv_delete_check,account->pop->del);
+					setstring(account_send_server_string,account->smtp->name);
+					set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
+					setstring(account_send_login_string,account->smtp->auth_login);
+					setstring(account_send_password_string,account->smtp->auth_password);
+					setcheckmark(account_send_auth_check,account->smtp->auth);
+					setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
+					setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
 				}
-				receive_last_selected = server;
+				account_last_selected = account;
 			}
 
 			if (init_change) DoMethod(config_group,MUIM_Group_ExitChange);
@@ -216,20 +233,6 @@ static int init_user_group(void)
 {
 	user_group = VGroup,
 		MUIA_ShowMe, FALSE,
-		Child, ColGroup(2),
-			Child, MakeLabel("Real Name"),
-			Child, user_realname_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_Contents, user.config.realname,
-				End,
-			Child, MakeLabel("E-Mail Address"),
-			Child, user_email_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_Contents, user.config.email,
-				End,
-			End,
 		Child, HGroup,
 			Child, MakeLabel("Add adjustment for daylight saving time"),
 			Child, user_dst_check = MakeCheck("Add adjustment for daylight saving time",user.config.dst),
@@ -238,46 +241,6 @@ static int init_user_group(void)
 		End;
 	if (!user_group) return 0;
 	return 1;
-}
-
-/******************************************************************
- Add a new pop3 server
-*******************************************************************/
-static void tcpip_receive_add_pop3(void)
-{
-	struct pop3_server *pop3 = pop_malloc();
-	if (pop3)
-	{
-		list_insert_tail(&receive_list, &pop3->node);
-		DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_pop3_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
-	}
-}
-
-/******************************************************************
- Remove the current selected pop3 server
-*******************************************************************/
-static void tcpip_receive_rem_pop3(void)
-{
-	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
-	if (treenode && !(treenode->tn_Flags & TNF_LIST))
-	{
-		struct pop3_server *pop3;
-		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
-		APTR tn = treenode;
-		int pop3_num = 0;
-
-		/* Find out the position of the new selected server in the list */
-		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
-			pop3_num++;
-
-		if ((pop3 = (struct pop3_server*)list_find(&receive_list,pop3_num)))
-		{
-			node_remove(&pop3->node);
-			pop_free(pop3);
-
-			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
-		}
-	}
 }
 
 /******************************************************************
@@ -311,35 +274,122 @@ static int init_tcpip_receive_group(void)
 				End,
 			Child, RectangleObject, MUIA_Weight, 33, End,
 			End,
-		Child, HorizLineObject,
-		Child, add = MakeButton("Add new POP3 Server"),
 		End;
 
 	if (!tcpip_receive_group) return 0;
 
-	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_add_pop3);
 	return 1;
 }
 
 /******************************************************************
- Initialize the receive group
+ 
 *******************************************************************/
-static int init_tcpip_pop3_group(void)
+static void account_add(void)
 {
-	Object *add, *rem;
+	struct account *account = account_malloc();
+	if (account)
+	{
+		list_insert_tail(&account_list, &account->node);
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Account", account_group, accounts_treenode, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
+	}
 
-	tcpip_pop3_group = VGroup,
+}
+
+/******************************************************************
+ Remove the current account
+*******************************************************************/
+static void account_remove(void)
+{
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_Active);
+	if (treenode && !(treenode->tn_Flags & TNF_LIST))
+	{
+		struct account *account;
+		struct MUI_NListtree_TreeNode *list_treenode = (struct MUI_NListtree_TreeNode *)xget(config_tree, MUIA_NListtree_ActiveList);
+		APTR tn = treenode;
+		int account_num = 0;
+
+		/* Find out the position of the new selected server in the list */
+		while ((tn = (APTR) DoMethod(config_tree, MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Previous,0)))
+			account_num++;
+
+		if ((account = (struct account*)list_find(&account_list,account_num)))
+		{
+			node_remove(&account->node);
+			account_free(account);
+
+			DoMethod(config_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active,0);
+		}
+	}
+}
+
+
+/******************************************************************
+ 
+*******************************************************************/
+static int init_accounts_group(void)
+{
+	Object *add;
+	accounts_group = HGroup,
 		MUIA_ShowMe, FALSE,
+		Child, add = MakeButton("Add new account"),
+		End;
+
+	if (!accounts_group) return 0;
+
+	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
+
+	return 1;
+}
+
+
+/******************************************************************
+ Initalize the account group
+*******************************************************************/
+static int init_account_group(void)
+{
+	account_group = VGroup,
+		MUIA_ShowMe, FALSE,
+		MUIA_Weight, 10000,
+
+		Child, VGroupV,
+		MUIA_Weight, 10000,
+
+		VirtualFrame,
+		Child, HorizLineTextObject("User"),
+		Child, ColGroup(2),
+			Child, MakeLabel("Name"),
+			Child, account_name_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, NULL,
+				MUIA_String_AdvanceOnCR, TRUE,
+				End,
+			Child, MakeLabel("E-Mail Address"),
+			Child, account_email_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, NULL,
+				MUIA_String_AdvanceOnCR, TRUE,
+				End,
+			Child, MakeLabel("Reply Address"),
+			Child, account_reply_string = BetterStringObject,
+				StringFrame,
+				MUIA_CycleChain, 1,
+				MUIA_String_Contents, NULL,
+				MUIA_String_AdvanceOnCR, TRUE,
+				End,
+			End,
+		Child, HorizLineTextObject("Receive"),
 		Child, ColGroup(2),
 			Child, MakeLabel("POP3 Server"),
 			Child, HGroup,
-				Child, pop3_server_string = BetterStringObject,
+				Child, account_recv_server_string = BetterStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
-					End,
+				End,
 				Child, MakeLabel("Port"),
-				Child, pop3_port_string = BetterStringObject,
+				Child, account_recv_port_string = BetterStringObject,
 					StringFrame,
 					MUIA_Weight, 33,
 					MUIA_CycleChain,1,
@@ -347,103 +397,106 @@ static int init_tcpip_pop3_group(void)
 					MUIA_String_Accept, "0123456789",
 					End,
 				End,
-			Child, MakeLabel("Login/User ID"),
-			Child, pop3_login_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_AdvanceOnCR, TRUE,
-				End,
-			Child, MakeLabel("Password"),
-			Child, pop3_password_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_Secret, TRUE,
-				MUIA_String_AdvanceOnCR, TRUE,
+			Child, MakeLabel("Login"),
+			Child,  HGroup,
+				Child, account_recv_login_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_String_AdvanceOnCR, TRUE,
+					End,
+				Child, MakeLabel("Password"),
+				Child, account_recv_password_string = BetterStringObject,
+					StringFrame,
+					MUIA_CycleChain, 1,
+					MUIA_String_Secret, TRUE,
+					MUIA_String_AdvanceOnCR, TRUE,
+					End,
 				End,
 			Child, MakeLabel("_Delete mails"),
-			Child, HGroup, Child, pop3_delete_check = MakeCheck("_Delete mails", FALSE/*user.config.pop_delete*/), Child, HSpace(0), End,
+			Child, HGroup, Child, account_recv_delete_check = MakeCheck("_Delete mails", FALSE/*user.config.pop_delete*/), Child, HSpace(0), End,
 			End,
+
+		Child, HorizLineTextObject("Send"),
+		Child, VGroup,
+			Child, ColGroup(2),
+
+/*
+				Child, MakeLabel("Domain"),
+				Child, HGroup,
+					Child, BetterStringObject,
+						StringFrame,
+						MUIA_Disabled, user.config.smtp_ip_as_domain,
+						MUIA_CycleChain, 1,
+						MUIA_String_Contents, user.config.smtp_domain,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, MakeLabel("Use IP as domain"),
+					Child, MakeCheck("Use IP as domain",user.config.smtp_ip_as_domain),
+					End,
+*/
+				Child, MakeLabel("SMTP Server"),
+				Child, HGroup,
+					Child, account_send_server_string = BetterStringObject,
+						StringFrame,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, MakeLabel("Port"),
+					Child, account_send_port_string = BetterStringObject,
+						StringFrame,
+						MUIA_Weight, 33,
+						MUIA_CycleChain,1,
+						MUIA_String_AdvanceOnCR,TRUE,
+						MUIA_String_Accept,"0123456789",
+						End,
+					End,
+				Child, MakeLabel("Login"),
+				Child, HGroup,
+					Child, account_send_login_string = BetterStringObject,
+						StringFrame,
+						MUIA_Disabled, TRUE,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						End,
+					Child, MakeLabel("Password"),
+					Child, account_send_password_string = BetterStringObject,
+						StringFrame,
+						MUIA_Disabled, TRUE,
+						MUIA_CycleChain, 1,
+						MUIA_String_AdvanceOnCR, TRUE,
+						MUIA_String_Secret, TRUE,
+						End,
+					End,
+				End,
+			Child, HGroup,
+				Child, MakeLabel("Use SMTP AUTH"),
+				Child, account_send_auth_check = MakeCheck("Use SMTP AUTH", FALSE),
+				Child, HVSpace,
+				Child, MakeLabel("Log into pop3 server first"),
+				Child, account_send_pop3_check = MakeCheck("Log into pop3 server first",FALSE),
+				Child, HVSpace,
+				Child, MakeLabel("Use IP as domain"),
+				Child, account_send_ip_check = MakeCheck("Use IP as domain", FALSE),
+				Child, HVSpace,
+
+				End,
+			End,
+		End,
+
 		Child, HGroup,
-			Child, add = MakeButton("Add new POP3 Server"),
-			Child, rem = MakeButton("Remove POP3 Server"),
+			Child, account_add_button = MakeButton("Add new account"),
+			Child, account_remove_button = MakeButton("Remove account"),
 			End,
 		End;
 
-	if (!tcpip_receive_group) return 0;
+	if (!account_group) return 0;
 
-	DoMethod(add, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_add_pop3);
-	DoMethod(rem, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, tcpip_receive_rem_pop3);
-	return 1;
-}
+	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_login_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, account_send_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, TRUE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, account_send_login_string);
 
-/******************************************************************
- Initalize the send group
-*******************************************************************/
-static int init_tcpip_send_group(void)
-{
-	tcpip_send_group =  ColGroup(2),
-		MUIA_ShowMe, FALSE,
-		Child, MakeLabel("Domain"),
-		Child, HGroup,
-			Child, smtp_domain_string = BetterStringObject,
-				StringFrame,
-				MUIA_Disabled, user.config.smtp_ip_as_domain,
-				MUIA_CycleChain, 1,
-				MUIA_String_Contents, user.config.smtp_domain,
-				MUIA_String_AdvanceOnCR, TRUE,
-				End,
-			Child, MakeLabel("Use IP as domain"),
-			Child, smtp_ip_check = MakeCheck("Use IP as domain",user.config.smtp_ip_as_domain),
-			End,
-		Child, MakeLabel("SMTP Server"),
-		Child, HGroup,
-			Child, smtp_server_string = BetterStringObject,
-				StringFrame,
-				MUIA_CycleChain, 1,
-				MUIA_String_Contents, user.config.smtp_server,
-				MUIA_String_AdvanceOnCR, TRUE,
-				End,
-			Child, MakeLabel("Port"),
-			Child, smtp_port_string = BetterStringObject,
-				StringFrame,
-				MUIA_Weight, 33,
-				MUIA_CycleChain,1,
-				MUIA_String_Integer, user.config.smtp_port,
-				MUIA_String_AdvanceOnCR,TRUE,
-				MUIA_String_Accept,"0123456789",
-				End,
-			End,
-		Child, MakeLabel("Use SMTP AUTH"),
-		Child, HGroup,
-			Child, smtp_auth_check = MakeCheck("Use SMTP Auth", user.config.smtp_auth),
-			Child, HSpace(0),
-			End,
-		Child, MakeLabel("Login/User ID"),
-		Child, smtp_login_string = BetterStringObject,
-			StringFrame,
-			MUIA_Disabled, !user.config.smtp_auth,
-			MUIA_CycleChain, 1,
-			MUIA_String_Contents, user.config.smtp_login,
-			MUIA_String_AdvanceOnCR, TRUE,
-			End,
-		Child, MakeLabel("Password"),
-		Child, smtp_password_string = BetterStringObject,
-			StringFrame,
-			MUIA_CycleChain, 1,
-			MUIA_Disabled, !user.config.smtp_auth,
-			MUIA_String_Contents, user.config.smtp_password,
-			MUIA_String_AdvanceOnCR, TRUE,
-			MUIA_String_Secret, TRUE,
-			End,
-		End;
-
-	if (!tcpip_send_group) return 0;
-
-	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_login_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-	DoMethod(smtp_auth_check, MUIM_Notify, MUIA_Selected, TRUE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, smtp_login_string);
-	DoMethod(smtp_ip_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, smtp_domain_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
-	DoMethod(smtp_ip_check, MUIM_Notify, MUIA_Selected, FALSE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, smtp_domain_string);
+	DoMethod(account_add_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_add);
+	DoMethod(account_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, account_remove);
 
 	return 1;
 }
@@ -475,10 +528,11 @@ static void init_config(void)
 
 	if (!create_sizes_class()) return;
 
+	init_accounts_group();
+	init_account_group();
+
 	init_user_group();
-	init_tcpip_send_group();
 	init_tcpip_receive_group();
-	init_tcpip_pop3_group();
 	init_mails_read_group();
 
 	config_wnd = WindowObject,
@@ -488,21 +542,25 @@ static void init_config(void)
     	Child, HGroup,
     		Child, NListviewObject,
     			MUIA_HorizWeight, 33,
-    			MUIA_NListview_NList, config_tree = NListtreeObject,
+    			MUIA_NListview_NList, config_tree = ConfigTreelistObject,
     				End,
     			End,
     		Child, BalanceObject, End,
     		Child, VGroup,
-    			Child, HVSpace,
+    			Child, RectangleObject,
+    				MUIA_Weight,1,
+    				End,
 	    		Child, config_group = VGroup,
   	  			Child, user_group,
-    				Child, tcpip_send_group,
+  	  			Child, accounts_group,
+  	  			Child, account_group,
     				Child, tcpip_receive_group,
-    				Child, tcpip_pop3_group,
     				Child, mails_read_group,
     				Child, VSpace(0),
     				End,
-    			Child, HVSpace,
+    			Child, RectangleObject,
+    				MUIA_Weight, 1,
+    				End,
     			End,
     		End,
     	Child, HorizLineObject,
@@ -518,8 +576,8 @@ static void init_config(void)
 	{
 		APTR treenode;
 
-		list_init(&receive_list);
-		receive_last_selected = NULL;
+		list_init(&account_list);
+		account_last_selected = NULL;
 
 		DoMethod(App, OM_ADDMEMBER, config_wnd);
 		DoMethod(config_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, close_config);
@@ -530,25 +588,24 @@ static void init_config(void)
 
 		DoMethod(config_tree, MUIM_NListtree_Insert, "User", user_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, MUIV_NListtree_Insert_Flag_Active);
 
-		if ((treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "TCP/IP", NULL, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
+		if ((treenode = accounts_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Accounts", accounts_group, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
-			struct pop3_server *pop;
-			DoMethod(config_tree, MUIM_NListtree_Insert, "Send mail", tcpip_send_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0);
-			receive_treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN);
+			struct account *account;
+			account = (struct account*)list_first(&user.config.account_list);
 
-			/* Insert the pop3 servers */
-			pop = (struct pop3_server*)list_first(&user.config.receive_list);
-			while (pop)
+			while (account)
 			{
-				struct pop3_server *new_pop = pop_duplicate(pop);
-				if (new_pop)
+				struct account *new_account = account_duplicate(account);
+				if (new_account)
 				{
-					list_insert_tail(&receive_list,&new_pop->node);
-					DoMethod(config_tree, MUIM_NListtree_Insert, "POP3 Server", tcpip_pop3_group, receive_treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+					list_insert_tail(&account_list,&new_account->node);
+					DoMethod(config_tree, MUIM_NListtree_Insert, "Accounts", account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
 				}
-				pop = (struct pop3_server*)node_next(&pop->node);
+				account = (struct account*)node_next(&account->node);
 			}
 		}
+
+		DoMethod(config_tree, MUIM_NListtree_Insert, "Receive mail", tcpip_receive_group, NULL, MUIV_NListtree_Insert_PrevNode_Tail, 0);
 
 		if ((treenode = (APTR)DoMethod(config_tree, MUIM_NListtree_Insert, "Mails", NULL, MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_LIST|TNF_OPEN)))
 		{
@@ -578,7 +635,7 @@ void open_config(void)
 *******************************************************************/
 void close_config(void)
 {
-	struct pop3_server *pop;
+	struct account *account;
 
 	if (config_wnd)
 	{
@@ -588,8 +645,8 @@ void close_config(void)
 		config_wnd = NULL;
 		config_last_visisble_group = NULL;
 
-		while ((pop = (struct pop3_server*)list_remove_tail(&receive_list)))
-			pop_free(pop);
+		while ((account = (struct account*)list_remove_tail(&account_list)))
+			account_free(account);
 	}
 	delete_sizes_class();
 }

@@ -40,6 +40,7 @@
 #include "attachmentlistclass.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
+#include "configtreelistclass.h"
 #include "datatypescache.h"
 #include "datatypesclass.h"
 #include "foldertreelistclass.h"
@@ -119,6 +120,7 @@ void all_del(void)
 	{
 		app_del();
 
+		delete_configtreelist_class();
 		delete_icon_class();
 		delete_popupmenu_class();
 		delete_picturebutton_class();
@@ -155,7 +157,8 @@ int all_init(void)
 				create_datatypes_class() && create_transwnd_class() &&
 				create_readlist_class() && create_composeeditor_class() &&
 				create_simplehtml_class() && create_picturebutton_class() &&
-				create_popupmenu_class() && create_icon_class())
+				create_popupmenu_class() && create_icon_class() && 
+				create_configtreelist_class())
 		{
 			if (app_init())
 			{

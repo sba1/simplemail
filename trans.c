@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "account.h"
 #include "configuration.h"
 #include "dlwnd.h"
 #include "folder.h"
@@ -38,6 +39,7 @@
 
 int mails_dl(void)
 {
+/*
 	struct pop3_server *pop = (struct pop3_server*)list_first(&user.config.receive_list);
 
 	if (!pop || !pop->name)
@@ -54,6 +56,8 @@ int mails_dl(void)
 		dl_window_close();
 	}
 
+*/
+
 	return 0;
 }
 
@@ -64,6 +68,8 @@ int mails_upload(void)
 	struct outmail **out_array;
 	struct mail *m;
 	int i,num_mails;
+
+/*
 	struct smtp_server server;
 
 	server.name = user.config.smtp_server;
@@ -73,18 +79,7 @@ int mails_upload(void)
 	server.esmtp.auth_login = user.config.smtp_login;
 	server.esmtp.auth_password = user.config.smtp_password;
 	server.ip_as_domain = user.config.smtp_ip_as_domain;
-
-	if (!server.name)
-	{
-		tell_str("Please specify a smtp server!");
-		return 0;
-	}
-
-	if (!server.domain && !server.ip_as_domain)
-	{
-		tell_str("Please configure a domain!");
-		return 0;
-	}
+*/
 
   /* count the number of mails which could be be sent */
 	num_mails = 0;
@@ -156,13 +151,11 @@ int mails_upload(void)
 /*		if (mb.addr_spec) free(mb.addr_spec); */
 	}
 
-	server.outmail = out_array;
-
-	up_set_title(server.name);
+/*	up_set_title(server.name); */
 	up_window_open();
 
 	/* now send all mails */
-	if (!(smtp_send(&server,out_folder->path)))
+	if (!(smtp_send(&user.config.account_list,out_array,out_folder->path)))
 	{
 		up_window_close();
 	}
@@ -170,8 +163,4 @@ int mails_upload(void)
 	free_outmail_array(out_array);
 	return 1;
 }
-
-
-
-
 

@@ -60,6 +60,8 @@ struct connection *tcp_connect(char *server, unsigned int port)
 	static long id;
 	struct connection *conn;
 
+	if (!server) return NULL;
+
 	if (!(conn = malloc(sizeof(struct connection))))
 		return NULL;
 

@@ -76,7 +76,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server)
 /**************************************************************************
  Log into the pop3 server.
 **************************************************************************/
-static int pop3_login(struct connection *conn, struct pop3_server *server)
+int pop3_login(struct connection *conn, struct pop3_server *server)
 {
 	char buf[256];
 
@@ -438,6 +438,34 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 	
 	return rc;
 }
+
+/**************************************************************************
+ Only log in the server (for smtp servers which need this)
+**************************************************************************/
+int pop3_login_only(struct pop3_server *server)
+{
+	int rc = 0;
+
+	if (open_socket_lib())
+	{
+		struct connection *conn;
+
+		if ((conn = tcp_connect(server->name, server->port)))
+		{
+			if (pop3_wait_login(conn,server))
+			{
+				if (pop3_login(conn,server))
+				{
+					pop3_quit(conn,server);
+				}
+			}  
+			tcp_disconnect(conn);
+		}
+		close_socket_lib();
+	}
+	return rc;
+}
+
 
 struct pop_entry_msg
 {

@@ -37,8 +37,10 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "account.h"
 #include "addressbook.h"
 #include "codecs.h"
+#include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "parse.h"
@@ -64,6 +66,7 @@ static int compose_open[MAX_COMPOSE_OPEN];
 struct Compose_Data /* should be a customclass */
 {
 	Object *wnd;
+	Object *from_text;
 	Object *to_string;
 	Object *subject_string;
 	Object *copy_button;
@@ -94,7 +97,42 @@ struct Compose_Data /* should be a customclass */
 
 	int num; /* the number of the window */
 	/* more to add */
+
+	struct Hook from_objstr_hook;
+	struct Hook from_strobj_hook;
 };
+
+STATIC ASM VOID from_objstr(register __a2 Object *list, register __a1 Object *str)
+{
+	char *x;
+	DoMethod(list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&x);
+	set(str,MUIA_Text_Contents,x);
+}
+
+STATIC ASM LONG from_strobj(register __a2 Object *list, register __a1 Object *str)
+{
+	char *x,*s;
+	int i = 0;
+	get(str,MUIA_Text_Contents,&s);
+
+	while (1)
+	{
+		DoMethod(list,MUIM_NList_GetEntry,i,&x);
+		if (!x)
+		{
+			set(list,MUIA_NList_Active,MUIV_NList_Active_Off);
+			break;
+		}
+		else if (!mystricmp(x,s))
+	  {
+			set(list,MUIA_NList_Active,i);
+			break;
+		}
+		i++;
+	}
+	return 1;
+}
+
 
 /******************************************************************
  This close and disposed the window (note: this must not be called
@@ -384,6 +422,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 {
 	if (compose_expand_to(&data))
 	{
+		char *from = (char*)xget(data->from_text, MUIA_Text_Contents);
 		char *to = (char*)xget(data->to_string, MUIA_String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_String_Contents);
 		struct composed_mail new_mail;
@@ -397,6 +436,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		/* Attach the mails recursivly */
 		compose_window_attach_mail(data, NULL /*root*/, &new_mail);
 
+		new_mail.from = from;
 		new_mail.to = to;
 		new_mail.subject = subject;
 		new_mail.mail_filename = data->filename;
@@ -551,7 +591,7 @@ void compose_window_open(struct compose_args *args)
 /*void compose_window_open(char *to_str, struct mail *tochange)*/
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button;
-	Object *to_string, *subject_string;
+	Object *from_text, *from_list, *to_string, *subject_string;
 	Object *copy_button, *cut_button, *paste_button,*undo_button,*redo_button;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
@@ -560,6 +600,7 @@ void compose_window_open(struct compose_args *args)
 	Object *contents_page;
 	Object *switch_button;
 	Object *main_group, *attach_group, *vertical_balance;
+	Object *from_popobject;
 
 	int num;
 
@@ -574,6 +615,17 @@ void compose_window_open(struct compose_args *args)
         
 		WindowContents, main_group = VGroup,
 			Child, ColGroup(2),
+				Child, MakeLabel("_From"),
+				Child, from_popobject = PopobjectObject,
+					MUIA_Popstring_Button, PopButton(MUII_PopUp),
+					MUIA_Popstring_String, from_text = TextObject, TextFrame, End,
+					MUIA_Popobject_Object, NListviewObject,
+						MUIA_NListview_NList, from_list = NListObject,
+							MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
+							MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+							End,
+						End,
+					End,
 				Child, MakeLabel("_To"),
 				Child, HGroup,
 					MUIA_Group_Spacing,0,
@@ -682,6 +734,7 @@ void compose_window_open(struct compose_args *args)
 			memset(data,0,sizeof(struct Compose_Data));
 			data->wnd = wnd;
 			data->num = num;
+			data->from_text = from_text;
 			data->to_string = to_string;
 			data->subject_string = subject_string;
 			data->text_texteditor = text_texteditor;
@@ -700,10 +753,46 @@ void compose_window_open(struct compose_args *args)
 			data->undo_button = undo_button;
 			data->redo_button = redo_button;
 
+			init_hook(&data->from_objstr_hook, (HOOKFUNC)from_objstr);
+			init_hook(&data->from_strobj_hook, (HOOKFUNC)from_strobj);
+
+			SetAttrs(from_popobject,
+					MUIA_Popobject_ObjStrHook, &data->from_objstr_hook,
+					MUIA_Popobject_StrObjHook, &data->from_strobj_hook,
+					TAG_DONE);
+
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
 			/* mark the window as opened */
 			compose_open[num] = 1;
+
+			/* Insert all from addresss */
+			{
+				struct account *account = (struct account*)list_first(&user.config.account_list);
+				int first = 1;
+				while ((account))
+				{
+					char buf[512];
+					if (account->smtp->name && *account->smtp->name && account->email)
+					{
+						if (account->name)
+						{
+							if (needs_quotation(account->name))
+								sprintf(buf, "\"%s\"",account->name);
+							else strcpy(buf,account->name);
+						}
+
+						sprintf(buf+strlen(buf)," <%s> (%s)",account->email, account->smtp->name);
+						DoMethod(from_list,MUIM_NList_InsertSingle,buf,MUIV_NList_Insert_Bottom);
+						if (first)
+						{
+							set(from_text, MUIA_Text_Contents, buf);
+							first = 0;
+						}
+					}
+					account = (struct account*)node_next(&account->node);
+				}
+			}
 
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 			DoMethod(expand_to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
@@ -724,6 +813,7 @@ void compose_window_open(struct compose_args *args)
 			DoMethod(undo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2, MUIM_TextEditor_ARexxCmd,"Undo");
 			DoMethod(redo_button,MUIM_Notify, MUIA_Pressed, FALSE, text_texteditor, 2 ,MUIM_TextEditor_ARexxCmd,"Redo");
 			DoMethod(subject_string,MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, wnd, 3, MUIM_Set, MUIA_Window_ActiveObject, text_texteditor);
+			DoMethod(from_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, from_popobject, 2, MUIM_Popstring_Close, 1);
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
 			if (!args->to_change)

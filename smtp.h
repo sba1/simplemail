@@ -48,28 +48,31 @@ void free_outmail_array(struct outmail **om_array);
 #define AUTH_DIGEST_MD5				 4
 #define AUTH_CRAM_MD5					 8
 
-struct esmtp
+struct smtp_connection
 {
-	long 	flags;
-	long 	auth_flags;
-
-	int 	auth;
-	char 	*auth_login;
-	char 	*auth_password;
+	struct connection *conn;
+	int flags;			/* ESMTP flags */
+	int auth_flags; /* Supported AUTH methods */
 };
 
 struct smtp_server
 {
-	char 					*name;
-	unsigned int		port;
-	char					*domain;
-	int 					ip_as_domain;
+	char *name;
+	unsigned int 	port;
+	char *domain;
 
-	struct esmtp 		esmtp;
+	int ip_as_domain;
+	int pop3_first;
 
-	struct outmail	**outmail; /* all the mails which should be sent, ends with NULL */
+	int auth;
+	char *auth_login;
+	char *auth_password;
 };
 
-int smtp_send(struct smtp_server *server, char *folder_path);
+int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path);
+
+struct smtp_server *smtp_malloc(void);
+struct smtp_server *smtp_duplicate(struct smtp_server *smtp);
+void smtp_free(struct smtp_server *);
 
 #endif

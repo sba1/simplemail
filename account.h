@@ -17,54 +17,40 @@
 ***************************************************************************/
 
 /*
-** configuration.h
+** account.h
 */
 
-#ifndef SM__CONFIGURATION_H
-#define SM__CONFIGURATION_H
+
+#ifndef SM__ACCOUNT_H
+#define SM__ACCOUNT_H
 
 #ifndef SM__LISTS_H
 #include "lists.h"
 #endif
 
-struct pop3_server;
-
-struct config
-{
-	int dst;
-
-	int receive_preselection; /* 0 no selection, 1 size selection, 2 full selection */
-	int receive_size; /* the size in kb */
-
-	/* list of all accounts */
-	struct list account_list;
-
-	int read_wordwrap;
-
-	/* list of the filters */
-	struct list filter_list; 
-};
-
-struct user
-{
-	char *name; /* name of the user */
-	char *directory; /* the directory where all data is saved */
-
-	char *config_filename; /* path to the the configuration */
-	char *filter_filename; /* path to the separate filter config file */
-
-	struct config config;
-};
-
-int load_config(void);
-void save_config(void);
-void save_filter(void);
-
-void clear_config_accounts(void);
-void insert_config_account(struct account *account);
-
-extern struct user user; /* the current user */
-
+#ifndef SM__SMTP_H
+#include "smtp.h"
 #endif
 
+#ifndef SM__POP3_H
+#include "pop3.h"
+#endif
 
+struct account
+{
+	struct node node;
+
+	char *account_name;
+	char *name;
+	char *email;
+	char *reply;
+
+	struct pop3_server *pop;
+	struct smtp_server *smtp;
+};
+
+struct account *account_malloc(void);
+struct account *account_duplicate(struct account *a);
+void account_free(struct account *a);
+
+#endif

@@ -162,6 +162,7 @@ struct composed_mail
 {
 	struct node node; /* embedded node structure */
 
+	char *from; /* the mail's from account */
 	char *to; /* maybe NULL */
 	char *subject; /* maybe NULL */
 

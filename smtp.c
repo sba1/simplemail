@@ -31,6 +31,7 @@
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 
+#include "account.h"
 #include "mail.h"
 #include "tcp.h"
 #include "simplemail.h"
@@ -64,7 +65,7 @@ static void buf_free(char *buf)
 	free(buf);
 }
 
-static int smtp_send_cmd(struct connection *conn, char *cmd, char *args)
+static int smtp_send_cmd(struct smtp_connection *conn, char *cmd, char *args)
 {
 	int rc;
 	char *buf;
@@ -84,7 +85,7 @@ static int smtp_send_cmd(struct connection *conn, char *cmd, char *args)
 		{
 			sprintf(buf, "%s\r\n", cmd);
 		}
-		count = tcp_write(conn, buf, strlen(buf));
+		count = tcp_write(conn->conn, buf, strlen(buf));
 		
 		if(count != strlen(buf))
 		{
@@ -94,7 +95,7 @@ static int smtp_send_cmd(struct connection *conn, char *cmd, char *args)
 
 	free(buf);
 	
-	while (!ready && (buf = tcp_readln(conn)))
+	while (!ready && (buf = tcp_readln(conn->conn)))
 	{
 /*		  puts(buf);*/
 
@@ -111,11 +112,20 @@ static int smtp_send_cmd(struct connection *conn, char *cmd, char *args)
 /**************************************************************************
  Send the HELO command
 **************************************************************************/
-static int smtp_helo(struct connection *conn, struct smtp_server *server)
+static int smtp_helo(struct smtp_connection *conn, struct account *account)
 {
 	char dom[513];
 
-	if (!server->ip_as_domain) mystrlcpy(dom,server->domain,sizeof(dom));
+	if (!account->smtp->ip_as_domain)
+	{
+		/* TODO: use the parse functions for this */
+		char *domain = strchr(account->email,'@');
+		if (domain)
+		{
+			domain++;
+			mystrlcpy(dom,domain,sizeof(dom));
+		} else dom[0] = 0;
+	}
 	else if(gethostname(dom, 512) != 0);
 
 	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
@@ -129,7 +139,7 @@ static int smtp_helo(struct connection *conn, struct smtp_server *server)
 	return 1;
 }
 
-static int smtp_from(struct connection *conn, struct smtp_server *server, char *from)
+static int smtp_from(struct smtp_connection *conn, struct account *account)
 {
 	int rc;
 	char *buf;
@@ -139,7 +149,7 @@ static int smtp_from(struct connection *conn, struct smtp_server *server, char *
 
 	if(buf != NULL)
 	{
-		sprintf(buf, "FROM:<%s>", from);
+		sprintf(buf, "FROM:<%s>", account->email);
 
 		if(smtp_send_cmd(conn, "MAIL", buf) == SMTP_OK)
 		{
@@ -152,7 +162,7 @@ static int smtp_from(struct connection *conn, struct smtp_server *server, char *
 	return rc;
 }
 
-static int smtp_rcpt(struct connection *conn, struct smtp_server *server, struct outmail *om)
+static int smtp_rcpt(struct smtp_connection *conn, struct account *account, struct outmail *om)
 {
 	int rc;
 	long i;
@@ -182,7 +192,7 @@ static int smtp_rcpt(struct connection *conn, struct smtp_server *server, struct
 
 }
 
-static int smtp_data(struct connection *conn, struct smtp_server *server, char *mailfile)
+static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile)
 {
 	int rc = 0;
 	unsigned char *buf;
@@ -225,14 +235,14 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 					}
 					if(!mystricmp(buf,"Content-Transfer-Encoding: 8bit\n"))
 					{
-						if(!(server->esmtp.flags & ESMTP_8BITMIME))
+						if(!(conn->flags & ESMTP_8BITMIME))
 						{
 							convert8bit = 1;
 							strcpy(buf,"Content-Transfer-Encoding: quoted-printable\n");
 						}
 					}
 
-					count = tcp_write(conn, buf, strlen(buf)-1);
+					count = tcp_write(conn->conn, buf, strlen(buf)-1);
 					if(count != strlen(buf)-1)
 					{
 						rc = 0;
@@ -240,7 +250,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 					}
 					bytes_send += count+1;
 
-					if(2 != tcp_write(conn, "\r\n", 2))
+					if(2 != tcp_write(conn->conn, "\r\n", 2))
 					{
 						rc = 0;
 						break;
@@ -282,12 +292,12 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 						if(!mystrnicmp(buf,"From ",5))
 						{
 							sprintf(qp,"=%02X",buf[0]);
-							if(3 != tcp_write(conn, qp, 3))
+							if(3 != tcp_write(conn->conn, qp, 3))
 							{
 								rc = 0;
 								break;
 							}
-							count = tcp_write(conn, buf+1, 4);
+							count = tcp_write(conn->conn, buf+1, 4);
 							if(4 != count)
 							{
 								rc = 0;
@@ -297,7 +307,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 							pos = 5;
 						} else if('.' == buf[0])
 						{
-							if(3 != tcp_write(conn, "=2E", 3))
+							if(3 != tcp_write(conn->conn, "=2E", 3))
 							{
 								rc = 0;
 								break;
@@ -315,7 +325,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 
 							if(linepos >= 75-2*useqp)
 							{
-								if(3 != tcp_write(conn, "=\r\n", 3))
+								if(3 != tcp_write(conn->conn, "=\r\n", 3))
 								{
 									rc = 0;
 									break;
@@ -325,7 +335,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 							if(useqp)
 							{
 								sprintf(qp,"=%02X",buf[pos]);
-								if(3 != tcp_write(conn, qp, 3))
+								if(3 != tcp_write(conn->conn, qp, 3))
 								{
 									rc = 0;
 									break;
@@ -334,7 +344,7 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 								linepos += 3;
 								bytes_send++;
 							} else {
-								if(1 != tcp_write(conn, buf+pos, 1))
+								if(1 != tcp_write(conn->conn, buf+pos, 1))
 								{
 									rc = 0;
 									break;
@@ -345,25 +355,25 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 							}
 						}
 
-						if(2 != tcp_write(conn, "\r\n", 2))
+						if(2 != tcp_write(conn->conn, "\r\n", 2))
 						{
 							rc = 0;
 							break;
 						}
 						bytes_send++;
 					} else {
-						if('.' == buf[0]) if(1 != tcp_write(conn, ".", 1))
+						if('.' == buf[0]) if(1 != tcp_write(conn->conn, ".", 1))
 						{
 							rc = 0;
 							break;
 						}
-						if(strlen(buf)-1 != tcp_write(conn, buf, strlen(buf)-1))
+						if(strlen(buf)-1 != tcp_write(conn->conn, buf, strlen(buf)-1))
 						{
 							rc = 0;
 							break;
 						}
 						bytes_send += strlen(buf);
-						if(2 != tcp_write(conn, "\r\n", 2))
+						if(2 != tcp_write(conn->conn, "\r\n", 2))
 						{
 							rc = 0;
 							break;
@@ -405,15 +415,24 @@ static int smtp_data(struct connection *conn, struct smtp_server *server, char *
 /**************************************************************************
  Send the EHLO command (for ESMTP servers)
 **************************************************************************/
-int esmtp_ehlo(struct connection *conn, struct smtp_server *server)
+int esmtp_ehlo(struct smtp_connection *conn, struct account *account)
 {
 	char dom[513];
 	char *answer;
 
-	server->esmtp.flags = 0;
-	server->esmtp.auth_flags  = 0;
+	conn->flags = 0;
+	conn->auth_flags  = 0;
 
-	if (!server->ip_as_domain) mystrlcpy(dom,server->domain,sizeof(dom));
+	if (!account->smtp->ip_as_domain)
+	{
+		/* TODO: use the parse functions for this */
+		char *domain = strchr(account->email,'@');
+		if (domain)
+		{
+			domain++;
+			mystrlcpy(dom,domain,sizeof(dom));
+		} else dom[0] = 0;
+	}
 	else if(gethostname(dom, 512) != 0);
 
 	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
@@ -422,37 +441,37 @@ int esmtp_ehlo(struct connection *conn, struct smtp_server *server)
 		return 0;
 	}
 
-	tcp_write(conn, "EHLO ",5);
-	tcp_write(conn, dom, strlen(dom));
-	tcp_write(conn, "\r\n", 2);
-	tcp_flush(conn);
+	tcp_write(conn->conn, "EHLO ",5);
+	tcp_write(conn->conn, dom, strlen(dom));
+	tcp_write(conn->conn, "\r\n", 2);
+	tcp_flush(conn->conn);
 
 	do
 	{
-		answer = tcp_readln(conn);
+		answer = tcp_readln(conn->conn);
 		if (!answer) return 0;
 
-		if (strstr(answer, "ENHANCEDSTATUSCODES")) server->esmtp.flags |= ESMTP_ENHACEDSTATUSCODES;
-		else if (strstr(answer, "8BITMIME")) server->esmtp.flags |= ESMTP_8BITMIME;
-		else if (strstr(answer, "ONEX")) server->esmtp.flags |= ESMTP_ONEX;
-		else if (strstr(answer, "ETRN")) server->esmtp.flags |= ESMTP_ETRN;
-		else if (strstr(answer, "XUSR")) server->esmtp.flags |= ESMTP_XUSR;
-		else if (strstr(answer, "PIPELINING")) server->esmtp.flags |= ESMTP_PIPELINING;
+		if (strstr(answer, "ENHANCEDSTATUSCODES")) conn->flags |= ESMTP_ENHACEDSTATUSCODES;
+		else if (strstr(answer, "8BITMIME")) conn->flags |= ESMTP_8BITMIME;
+		else if (strstr(answer, "ONEX")) conn->flags |= ESMTP_ONEX;
+		else if (strstr(answer, "ETRN")) conn->flags |= ESMTP_ETRN;
+		else if (strstr(answer, "XUSR")) conn->flags |= ESMTP_XUSR;
+		else if (strstr(answer, "PIPELINING")) conn->flags |= ESMTP_PIPELINING;
 		else if (strstr(answer, "AUTH"))
 		{
-			server->esmtp.flags |= ESMTP_AUTH;
+			conn->flags |= ESMTP_AUTH;
 
-			if (strstr(answer, "PLAIN")) server->esmtp.auth_flags |= AUTH_PLAIN;
-			if (strstr(answer, "LOGIN")) server->esmtp.auth_flags |= AUTH_LOGIN;
-			if (strstr(answer, "DIGEST-MD5")) server->esmtp.auth_flags |= AUTH_DIGEST_MD5;
-			if (strstr(answer, "CRAM-MD5")) server->esmtp.auth_flags |= AUTH_CRAM_MD5;
+			if (strstr(answer, "PLAIN")) conn->auth_flags |= AUTH_PLAIN;
+			if (strstr(answer, "LOGIN")) conn->auth_flags |= AUTH_LOGIN;
+			if (strstr(answer, "DIGEST-MD5")) conn->auth_flags |= AUTH_DIGEST_MD5;
+			if (strstr(answer, "CRAM-MD5")) conn->auth_flags |= AUTH_CRAM_MD5;
 		}
 	} while (answer[3] != ' ');
 
 	return atoi(answer)==SMTP_OK;
 }
 
-static int esmtp_auth_cram(struct connection *conn, struct smtp_server *server)
+static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account)
 {
 	static char cram_str[] = "AUTH CRAM-MD5\r\n";
 	char *line;
@@ -463,27 +482,30 @@ static int esmtp_auth_cram(struct connection *conn, struct smtp_server *server)
 	char buf[512];
 	char *encoded_str;
 
-	tcp_write(conn, cram_str,sizeof(cram_str)-1);
+	char *login = account->smtp->auth_login;
+	char *password = account->smtp->auth_password;
 
-	if (!(line = tcp_readln(conn))) return 0;
+	tcp_write(conn->conn, cram_str,sizeof(cram_str)-1);
+
+	if (!(line = tcp_readln(conn->conn))) return 0;
 	rc = atoi(line);
 	if (rc != 334) return 0;
 
 	if (!(challenge = decode_base64(line+4,strlen(line+4),&challenge_len)))
 		return 0;
 
-	hmac_md5(challenge,strlen(challenge),server->esmtp.auth_password,strlen(server->esmtp.auth_password),(char*)digest);
+	hmac_md5(challenge,strlen(challenge),password,strlen(password),(char*)digest);
 	free(challenge);
-	sprintf(buf,"%s %08lx%08lx%08lx%08lx%c%c",server->esmtp.auth_login,
+	sprintf(buf,"%s %08lx%08lx%08lx%08lx%c%c",login,
 					digest[0],digest[1],digest[2],digest[3],0,0); /* I don't know if the two nullbytes should be counted as well */
 
 	encoded_str = encode_base64(buf,strlen(buf));
 	if (!encoded_str) return 0;
-	tcp_write(conn,encoded_str,strlen(encoded_str)-1); /* -1 because of the linefeed */
-	tcp_write(conn,"\r\n",2);
+	tcp_write(conn->conn,encoded_str,strlen(encoded_str)-1); /* -1 because of the linefeed */
+	tcp_write(conn->conn,"\r\n",2);
 	free(encoded_str);
 
-	if (!(line = tcp_readln(conn))) return 0;
+	if (!(line = tcp_readln(conn->conn))) return 0;
 	rc = atoi(line);
 
 	if (rc != 235)
@@ -546,26 +568,26 @@ static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *se
 
 #endif
 
-int esmtp_auth(struct connection *conn, struct smtp_server *server)
+int esmtp_auth(struct smtp_connection *conn, struct account *account)
 {
 	int rc;
 	char *buf, prep[1024];
 
 	rc = 0;
 
-  if(server->esmtp.auth_flags & AUTH_CRAM_MD5)
+  if (conn->auth_flags & AUTH_CRAM_MD5)
 	{
-		rc = esmtp_auth_cram(conn, server);
+		rc = esmtp_auth_cram(conn, account);
 	}
 /*	else if(server->esmtp.auth_flags & AUTH_DIGEST_MD5)
 	{
 		rc = esmtp_auth_digest_md5(conn, server);
 	}*/
-	else if(server->esmtp.auth_flags & AUTH_LOGIN)
+	else if(conn->auth_flags & AUTH_LOGIN)
 	{
 		if(smtp_send_cmd(conn, "AUTH", "LOGIN") == 334)
 		{
-			strcpy(prep, server->esmtp.auth_login);
+			strcpy(prep, account->smtp->auth_login);
 
 			buf = encode_base64(prep, strlen(prep));
 			buf[strlen(buf) - 1] = 0;
@@ -574,7 +596,7 @@ int esmtp_auth(struct connection *conn, struct smtp_server *server)
 			{
 				free(buf);
 
-				strcpy(prep, server->esmtp.auth_password);
+				strcpy(prep, account->smtp->auth_password);
 
 				buf = encode_base64(prep, strlen(prep));
 				buf[strlen(buf) - 1] = 0;
@@ -586,15 +608,15 @@ int esmtp_auth(struct connection *conn, struct smtp_server *server)
 			}
 		}
 	}
-	else if(server->esmtp.auth_flags & AUTH_PLAIN)
+	else if(conn->auth_flags & AUTH_PLAIN)
 	{
 		if(smtp_send_cmd(conn, "AUTH", "PLAIN") == 334)
 		{
 			prep[0]=0;
-			strcpy(prep + 1, server->esmtp.auth_login);
-			strcpy(prep + 1 + strlen(server->esmtp.auth_login) + 1, server->esmtp.auth_password);
+			strcpy(prep + 1, account->smtp->auth_login);
+			strcpy(prep + 1 + strlen(account->smtp->auth_login) + 1, account->smtp->auth_password);
 			
-			buf = encode_base64(prep, strlen(server->esmtp.auth_login) + strlen(server->esmtp.auth_password) + 2);
+			buf = encode_base64(prep, strlen(account->smtp->auth_login) + strlen(account->smtp->auth_password) + 2);
 			buf[strlen(buf) - 1] = 0;
 			if(smtp_send_cmd(conn, buf, NULL) == 235)
 			{
@@ -611,18 +633,18 @@ int esmtp_auth(struct connection *conn, struct smtp_server *server)
  Login into the (e)smtp server. After a succesfull call you
  can send the mails.
 **************************************************************************/
-static int smtp_login(struct connection *conn, struct smtp_server *server)
+static int smtp_login(struct smtp_connection *conn, struct account *account)
 {
-	if (server->esmtp.auth)
+	if (account->smtp->auth)
 	{
 		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
-		if (!esmtp_ehlo(conn,server))
+		if (!esmtp_ehlo(conn,account))
 		{
 			tell_from_subtask("EHLO failed");
 			return 0;
 		}
 		thread_call_parent_function_sync(up_set_status,1,"Sending AUTH...");
-		if (!esmtp_auth(conn,server))
+		if (!esmtp_auth(conn,account))
 		{
 			tell_from_subtask("AUTH failed");
 			return 0;
@@ -630,10 +652,10 @@ static int smtp_login(struct connection *conn, struct smtp_server *server)
 	} else
 	{
 		thread_call_parent_function_sync(up_set_status,1,"Sending EHLO...");
-		if (!esmtp_ehlo(conn,server))
+		if (!esmtp_ehlo(conn,account))
 		{
 			thread_call_parent_function_sync(up_set_status,1,"Sending HELO...");
-			if (!smtp_helo(conn,server))
+			if (!smtp_helo(conn,account))
 			{
 				tell_from_subtask("HELO failed");
 				return 0;
@@ -644,38 +666,53 @@ static int smtp_login(struct connection *conn, struct smtp_server *server)
 }
 
 /**************************************************************************
- Send all the mails in now
+ Count the number of mails which belongs to the given account
 **************************************************************************/
-static int smtp_send_mails(struct connection *conn, struct smtp_server *server)
+static int count_mails(struct account *account, struct outmail **om)
 {
-	struct outmail **om = server->outmail;
-	int i,amm=0;
+	int amm=0;
+	int i=0;
 
-	/* Count the number of mails */
-	while (om[amm]) amm++;
+	while (om[i])
+	{
+		if (!mystricmp(account->email,om[amm]->from))
+			amm++;
+		i++;
+	}
+	return amm;
+}
+
+/**************************************************************************
+ Send all the mails which belongs to the account now.
+**************************************************************************/
+static int smtp_send_mails(struct smtp_connection *conn, struct account *account, struct outmail **om)
+{
+	int i = 0,j = 0,amm = count_mails(account,om);
 
 	thread_call_parent_function_sync(up_init_gauge_mail,1,amm);
 		
-	for (i = 0; i < amm; i++)   
+	while (om[i++] && j < amm)
 	{
-		thread_call_parent_function_sync(up_set_gauge_mail,1,i+1);
+		if (mystricmp(account->email,om[i]->from)) continue;
+
+		thread_call_parent_function_sync(up_set_gauge_mail,1,j+1);
 
 		thread_call_parent_function_sync(up_set_status,1,"Sending FROM...");
-		if (!smtp_from(conn,server, om[i]->from))
+		if (!smtp_from(conn,account))
 		{
 			tell_from_subtask("FROM failed.");
 			return 0;
 		}
 
 		thread_call_parent_function_sync(up_set_status,1,"Sending RCPT...");
-		if (!smtp_rcpt(conn,server, om[i]))
+		if (!smtp_rcpt(conn,account, om[i]))
 		{
 			tell_from_subtask("RCPT failed.");
 			return 0;
 		}
 
 		thread_call_parent_function_sync(up_set_status,1,"Sending DATA...");
-		if (!smtp_data(conn,server, om[i]->mailfile))
+		if (!smtp_data(conn,account, om[i]->mailfile))
 		{
 			tell_from_subtask("DATA failed.");
 			return 0;
@@ -690,7 +727,7 @@ static int smtp_send_mails(struct connection *conn, struct smtp_server *server)
 /**************************************************************************
  Send the QUIT command
 **************************************************************************/
-static int smtp_quit(struct connection *conn)
+static int smtp_quit(struct smtp_connection *conn)
 {
 	return (smtp_send_cmd(conn, "QUIT", NULL) == SMTP_OK);
 }
@@ -698,28 +735,47 @@ static int smtp_quit(struct connection *conn)
 /**************************************************************************
  Send the mails now.
 **************************************************************************/
-static int smtp_send_really(struct smtp_server *server)
+static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 {
 	int rc = 0;
 
 	if (open_socket_lib())
 	{
-		struct connection *conn;
-		thread_call_parent_function_sync(up_set_status,1,"Connecting...");
+		struct account *account;
 
-		if ((conn = tcp_connect(server->name, server->port)))
+		
+		for (account = (struct account*)list_first(account_list);account;account = (struct account*)node_next(&account->node))
 		{
-			if (smtp_login(conn,server))
+			struct smtp_connection conn;
+			memset(&conn,0,sizeof(struct connection));
+
+			if (count_mails(account,outmail)==0) continue;
+			
+			thread_call_parent_function_sync(up_set_title,1,account->smtp->name);
+
+			if (account->smtp->pop3_first)
 			{
-				if (smtp_send_mails(conn,server))
-				{
-					thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
-					rc = smtp_quit(conn);
-				}
+				/* Connect to the pop3 server first */
+				thread_call_parent_function_sync(up_set_status,1,"Log into POP3 Server....");
+				pop3_login_only(account->pop);
 			}
 
-			thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
-			tcp_disconnect(conn);
+			thread_call_parent_function_sync(up_set_status,1,"Connecting...");
+
+			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port)))
+			{
+				if (smtp_login(&conn,account))
+				{
+					if (smtp_send_mails(&conn,account,outmail))
+					{
+						thread_call_parent_function_sync(up_set_status,1,"Sending QUIT...");
+						rc = smtp_quit(&conn);
+					}
+				}
+	
+				thread_call_parent_function_sync(up_set_status,1,"Disconnecting...");
+				tcp_disconnect(conn.conn);
+			}
 		}
 
 		close_socket_lib();
@@ -732,11 +788,39 @@ static int smtp_send_really(struct smtp_server *server)
 	return rc;
 }
 
+struct smtp_entry_msg
+{
+	struct list *account_list;
+	struct outmail **outmail;
+};
+
 /**************************************************************************
  Entrypoint for the send mail process
 **************************************************************************/
-static int smtp_entry(struct smtp_server *server)
+static int smtp_entry(struct smtp_entry_msg *msg)
 {
+	struct list copy_list;
+	struct account *account;
+	struct outmail **outmail;
+	list_init(&copy_list);
+
+	account = (struct account*)list_first(msg->account_list);
+	while (account)
+	{
+		struct account *new_account = account_duplicate(account);
+		if (new_account) list_insert_tail(&copy_list,&new_account->node);
+		account = (struct account*)node_next(&account->node);
+	}
+
+	outmail = duplicate_outmail_array(msg->outmail);
+
+	if (thread_parent_task_can_contiue())
+	{
+		smtp_send_really(&copy_list,outmail);
+		thread_call_parent_function_sync(up_window_close,0);
+	}
+
+/*
 	struct smtp_server copy_server;
 
 	memset(&copy_server,0,sizeof(copy_server));
@@ -755,22 +839,27 @@ static int smtp_entry(struct smtp_server *server)
 		smtp_send_really(&copy_server);
 		thread_call_parent_function_sync(up_window_close,0);
 	}
+*/
 	return 0;
 }
 
 /**************************************************************************
  Send the mails. Starts a subthread.
 **************************************************************************/
-int smtp_send(struct smtp_server *server, char *folder_path)
+int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path)
 {
 	int rc;
 	char path[256];
+	struct smtp_entry_msg msg; /* should be not onto stack */
+
+	msg.account_list = account_list;
+	msg.outmail = outmail;
 
 	getcwd(path, sizeof(path));
 	if (chdir(folder_path) == -1)
 		return 0;
 
-	rc = thread_start(smtp_entry,server);
+	rc = thread_start(smtp_entry,&msg);
  	chdir(path);
 	return rc;
 }
@@ -873,11 +962,42 @@ void free_outmail_array(struct outmail **om_array)
 	free(om_array);
 }
 
+/**************************************************************************
+ Creates a new smrp server
+**************************************************************************/
+struct smtp_server *smtp_malloc(void)
+{
+	struct smtp_server *smtp = (struct smtp_server*)malloc(sizeof(struct smtp_server));
+	if (smtp)
+	{
+		memset(smtp,0,sizeof(struct smtp_server));
+		smtp->port = 25;
+	}
+	return smtp;
+}
 
+/**************************************************************************
+ Duplocates an existing smtp server
+**************************************************************************/
+struct smtp_server *smtp_duplicate(struct smtp_server *smtp)
+{
+	struct smtp_server *new_smtp = smtp_malloc();
+	*new_smtp = *smtp;
+	new_smtp->name = mystrdup(new_smtp->name);
+	new_smtp->auth_login = mystrdup(new_smtp->auth_login);
+	new_smtp->auth_password = mystrdup(new_smtp->auth_password);
 
+	return new_smtp;
+}
 
-
-
-
-
+/**************************************************************************
+ Free's an smtp server
+**************************************************************************/
+void smtp_free(struct smtp_server *smtp)
+{
+	if (smtp->auth_password) free(smtp->auth_password);
+	if (smtp->auth_login) free(smtp->auth_login);
+	if (smtp->name) free(smtp->name);
+	free(smtp);
+}
 

@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#include "account.h"
 #include "configuration.h"
 #include "filter.h"
 #include "pop3.h"
@@ -58,18 +59,17 @@ struct user user;
 
 void init_config(void)
 {
-	struct pop3_server *pop3;
+	struct account *account;
 
 	memset(&user,0,sizeof(struct user));
 	user.directory = strdup("PROGDIR:");
-	user.config.smtp_port = 25;
 
-	list_init(&user.config.receive_list);
+	list_init(&user.config.account_list);
 	list_init(&user.config.filter_list);
 
-	if ((pop3 = pop_malloc()))
+	if ((account = account_malloc()))
 	{
-		list_insert_tail(&user.config.receive_list,&pop3->node);
+		list_insert_tail(&user.config.account_list,&account->node);
 	}
 }
 
@@ -99,63 +99,67 @@ int load_config(void)
 					{
 						char *result;
 
-						if ((result = get_config_item(buf,"EmailAddress")))
-							user.config.email = strdup(result);
-						if ((result = get_config_item(buf,"RealName")))
-							user.config.realname = strdup(result);
 						if ((result = get_config_item(buf,"DST")))
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
 							user.config.receive_size = atoi(result);
-						if ((result = get_config_item(buf,"SMTP00.Server")))
-							user.config.smtp_server = strdup(result);
-						if ((result = get_config_item(buf,"SMTP00.Port")))
-							user.config.smtp_port = atoi(result);
-						if ((result = get_config_item(buf,"SMTP00.Domain")))
-							user.config.smtp_domain = strdup(result);
-						if ((result = get_config_item(buf,"SMTP00.IPAsDomain")))
-							user.config.smtp_ip_as_domain = ((*result == 'Y') || (*result == 'y'))?1:0;
-						if ((result = get_config_item(buf,"SMTP00.Auth")))
-							user.config.smtp_auth = ((*result == 'Y') || (*result == 'y'))?1:0;
-						if ((result = get_config_item(buf,"SMTP00.Login")))
-							user.config.smtp_login = strdup(result);
-						if ((result = get_config_item(buf,"SMTP00.Password")))
-							user.config.smtp_password = strdup(result);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = ((*result == 'Y') || (*result == 'y'))?1:0;
 
-						if (!mystrnicmp(buf, "POP",3))
+						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
 							/* it's a POP Server config line */
-							unsigned char *pop_buf = buf + 3;
-							int pop_no = atoi(pop_buf);
-							struct pop3_server *pop;
+							unsigned char *account_buf = buf + 7;
+							int account_no = atoi(account_buf);
+							struct account *account;
 
-							pop = (struct pop3_server*)list_find(&user.config.receive_list,pop_no);
-							if (!pop)
+							account = (struct account*)list_find(&user.config.account_list,account_no);
+							if (!account)
 							{
-								if ((pop = pop_malloc()))
-									list_insert_tail(&user.config.receive_list,&pop->node);
-								pop = (struct pop3_server*)list_find(&user.config.receive_list,pop_no);
+								if ((account = account_malloc()))
+									list_insert_tail(&user.config.account_list,&account->node);
+								account = (struct account*)list_find(&user.config.account_list,account_no);
 							}
 
-							if (pop)
+							if (account)
 							{
-								while (isdigit(*pop_buf)) pop_buf++;
-								if (*pop_buf++ == '.')
+								while (isdigit(*account_buf)) account_buf++;
+								if (*account_buf++ == '.')
 								{
-									if ((result = get_config_item(pop_buf,"Login")))
-										pop->login = mystrdup(result);
-									if ((result = get_config_item(pop_buf,"Server")))
-										pop->name = mystrdup(result);
-									if ((result = get_config_item(pop_buf,"Port")))
-										pop->port = atoi(result);
-									if ((result = get_config_item(pop_buf,"Password")))
-										pop->passwd = mystrdup(result);
-									if ((result = get_config_item(pop_buf,"Delete")))
-										pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;
+									if ((result = get_config_item(account_buf,"User.Name")))
+										account->name = mystrdup(result);
+									if ((result = get_config_item(account_buf,"User.EMail")))
+										account->email = mystrdup(result);
+									if ((result = get_config_item(account_buf,"User.Reply")))
+										account->reply = mystrdup(result);
+
+									if ((result = get_config_item(account_buf,"SMTP.Server")))
+										account->smtp->name = mystrdup(result);
+									if ((result = get_config_item(account_buf,"SMTP.Port")))
+										account->smtp->port = atoi(result);
+									if ((result = get_config_item(account_buf,"SMTP.Login")))
+										account->smtp->auth_login = mystrdup(result);
+									if ((result = get_config_item(account_buf,"SMTP.Password")))
+										account->smtp->auth_password = mystrdup(result);
+									if ((result = get_config_item(account_buf,"SMTP.Auth")))
+										account->smtp->auth = ((*result == 'Y') || (*result == 'y'))?1:0;
+									if ((result = get_config_item(account_buf,"SMTP.IPasDomain")))
+										account->smtp->ip_as_domain = ((*result == 'Y') || (*result == 'y'))?1:0;
+									if ((result = get_config_item(account_buf,"SMTP.POP3first")))
+										account->smtp->pop3_first = ((*result == 'Y') || (*result == 'y'))?1:0;
+
+									if ((result = get_config_item(account_buf,"POP3.Server")))
+										account->pop->name = mystrdup(result);
+									if ((result = get_config_item(account_buf,"POP3.Port")))
+										account->pop->port = atoi(result);
+									if ((result = get_config_item(account_buf,"POP3.Login")))
+										account->pop->login = mystrdup(result);
+									if ((result = get_config_item(account_buf,"POP3.Port")))
+										account->pop->passwd = mystrdup(result);
+									if ((result = get_config_item(account_buf,"POP3.Delete")))
+										account->pop->del = ((*result == 'Y') || (*result == 'y'))?1:0;
 								}
 							}
 						}
@@ -187,8 +191,9 @@ int load_config(void)
 
 		free(buf);
 	}
-	if (!user.config.email) user.config.email = mystrdup("");
-	if (!user.config.realname) user.config.realname = mystrdup("");
+
+/*	if (!user.config.email) user.config.email = mystrdup("");
+	if (!user.config.realname) user.config.realname = mystrdup("");*/
 
 	return 1;
 }
@@ -202,13 +207,13 @@ void save_config(void)
 		FILE *fh = fopen(user.config_filename, "w");
 		if (fh)
 		{
-			struct pop3_server *pop;
+			struct account *account;
 			int i;
 
 			fputs("SMCO\n\n",fh);
 
-			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
-			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));
+/*			fprintf(fh,"EmailAddress=%s\n",MAKESTR(user.config.email));
+			fprintf(fh,"RealName=%s\n",MAKESTR(user.config.realname));*/
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
 
 			/* Write out receive stuff */
@@ -217,25 +222,37 @@ void save_config(void)
 
 			/* Write the pop3 servers */
 			i = 0;
-			pop = (struct pop3_server*)list_first(&user.config.receive_list);
-			while (pop)
+			account = (struct account*)list_first(&user.config.account_list);
+			while (account)
 			{
-				fprintf(fh,"POP%d.Login=%s\n",i,MAKESTR(pop->login));
-				fprintf(fh,"POP%d.Server=%s\n",i,MAKESTR(pop->name));
-				fprintf(fh,"POP%d.Port=%d\n",i,pop->port);
-				fprintf(fh,"POP%d.Password=%s\n",i,MAKESTR(pop->passwd));
-				fprintf(fh,"POP%d.Delete=%s\n",i,pop->del?"Y":"N");
-				pop = (struct pop3_server*)node_next(&pop->node);
+				fprintf(fh,"ACCOUNT%d.User.Name=%s\n",i,MAKESTR(account->name));
+				fprintf(fh,"ACCOUNT%d.User.EMail=%s\n",i,MAKESTR(account->email));
+				fprintf(fh,"ACCOUNT%d.User.Reply=%s\n",i,MAKESTR(account->reply));
+
+				fprintf(fh,"ACCOUNT%d.SMTP.Server=%s\n",i,MAKESTR(account->smtp->name));
+				fprintf(fh,"ACCOUNT%d.SMTP.Port=%d\n",i,account->smtp->port);
+				fprintf(fh,"ACCOUNT%d.SMTP.Login=%s\n",i,MAKESTR(account->smtp->auth_login));
+				fprintf(fh,"ACCOUNT%d.SMTP.Password=%s\n",i,MAKESTR(account->smtp->auth_password));
+				fprintf(fh,"ACCOUNT%d.SMTP.Auth=%s\n",i,account->smtp->auth?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.SMTP.IPasDomain=%s\n",i,account->smtp->ip_as_domain?"Y":"N");
+				fprintf(fh,"ACCOUNT%d.SMTP.POP3first=%s\n",i,account->smtp->pop3_first?"Y":"N");
+
+				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));
+				fprintf(fh,"ACCOUNT%d.POP3.Port=%d\n",i,account->pop->port);
+				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
+				fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
+				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
+				account = (struct account*)node_next(&account->node);
 				i++;
 			}
 
-			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
+/*			fprintf(fh,"SMTP00.Server=%s\n",MAKESTR(user.config.smtp_server));
 			fprintf(fh,"SMTP00.Port=%d\n",user.config.smtp_port);
 			fprintf(fh,"SMTP00.Domain=%s\n",MAKESTR(user.config.smtp_domain));
 			fprintf(fh,"SMTP00.IPAsDomain=%s\n",user.config.smtp_ip_as_domain?"Y":"N");
 			fprintf(fh,"SMTP00.Auth=%s\n",user.config.smtp_auth?"Y":"N");
 			fprintf(fh,"SMTP00.Login=%s\n",MAKESTR(user.config.smtp_login));
-			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));
+			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));*/
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			
 			fclose(fh);
@@ -261,23 +278,20 @@ void save_filter(void)
 	}
 }
 
-/* Empties the config list */
-void free_config_pop(void)
+/* Clear all the accounts */
+void clear_config_accounts(void)
 {
-	struct pop3_server *pop;
+	struct account *a;
 
-	while ((pop = (struct pop3_server*)list_remove_tail(&user.config.receive_list)))
-		pop_free(pop);
+	while ((a = (struct account*)list_remove_tail(&user.config.account_list)))
+		account_free(a);
 }
 
-/* Insert a new pop server */
-void insert_config_pop(struct pop3_server *pop)
+/* Insert a mew account into the configuration list */
+void insert_config_account(struct account *account)
 {
-	struct pop3_server *new_pop = pop_duplicate(pop);
-	if (new_pop)
-		list_insert_tail(&user.config.receive_list,&new_pop->node);
+	struct account *new_account = account_duplicate(account);
+	if (new_account)
+		list_insert_tail(&user.config.account_list,&new_account->node);
 }
-
-
-
 

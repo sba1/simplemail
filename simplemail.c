@@ -663,6 +663,12 @@ void callback_timer(void)
 	}
 }
 
+/* select an mail */
+void callback_select_mail(int num)
+{
+	main_select_mail(num);
+}
+
 int simplemail_main(void)
 {
 #ifdef ENABLE_NLS

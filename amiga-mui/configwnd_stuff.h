@@ -21,3 +21,11 @@
 */
 
 char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_ptr, Object *config_wnd, Object *config_list);
+
+IMPORT struct MUI_CustomClass *CL_Sizes;
+#define SizesObject (Object*)MyNewObject(CL_Sizes->mcc_Class, NULL
+
+int create_sizes_class(void);
+void delete_sizes_class(void);
+int value2size(int val);
+int size2value(int val);

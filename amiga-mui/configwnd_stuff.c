@@ -23,15 +23,21 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#include <libraries/mui.h>
+
 #include <mui/texteditor_mcc.h>
 #include <mui/nlistview_mcc.h>
 #include <proto/exec.h>
+#include <proto/muimaster.h>
 
 #include "parse.h"
+#include "debug.h"
 #include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
 
+#include "compiler.h"
+#include "muistuff.h"
 #include "configwnd_stuff.h"
 
 /******************************************************************
@@ -85,4 +91,71 @@ char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_p
 	}
 	*error_ptr = 0;
 	return new_array;
+}
+
+/******************************************************************
+ The size custom class. Only used in the configwnd.
+*******************************************************************/
+STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
+{
+	switch(msg->MethodID)
+	{
+		case	MUIM_Numeric_Stringify:
+					{
+						static char buf[64];
+						LONG val = ((struct MUIP_Numeric_Stringify*)msg)->value;
+						if (!val) return (ULONG)_("All messages");
+						val = value2size(val);
+						sprintf(buf, _("> %ld KB"),val);
+						return (ULONG)buf;
+					}
+					break;
+		default: return DoSuperMethodA(cl,obj,msg);
+	}
+}
+
+struct MUI_CustomClass *CL_Sizes;
+
+int create_sizes_class(void)
+{
+	SM_ENTER;
+	if ((CL_Sizes = CreateMCC(MUIC_Slider,NULL,4,Sizes_Dispatcher)))
+	{
+		SM_DEBUGF(15,("Create CL_Sizes: 0x%lx\n",CL_Sizes));
+		SM_RETURN(1,"%ld");
+	}
+	SM_DEBUGF(5,("FAILED! Create CL_Sizes\n"));
+	SM_RETURN(0,"%ld");
+}
+
+void delete_sizes_class(void)
+{
+	SM_ENTER;
+	if (CL_Sizes)
+	{
+		if (MUI_DeleteCustomClass(CL_Sizes))
+		{
+			SM_DEBUGF(15,("Deleted CL_Sizes: 0x%lx\n",CL_Sizes));
+			CL_Sizes = NULL;
+		} else
+		{
+			SM_DEBUGF(5,("Delete CL_Sizes: 0x%lx\n",CL_Sizes));
+		}
+	}
+	SM_LEAVE;
+}
+
+int value2size(int val)
+{
+	if (val > 35) val = (val - 33)*100;
+	else if (val > 16) val = (val - 15)*10;
+	return val;
+}
+
+int size2value(int val)
+{
+	if (val >= 300) return (val/100)+33;
+	if (val >= 20) return (val/10)+15;
+	if (val >= 16) return 16;
+	return val;
 }

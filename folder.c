@@ -2518,7 +2518,6 @@ static FILE *folder_open_order_file(char *mode)
 
 	order_path = mycombinepath(user.folder_directory,".order");
 	if (!order_path) return NULL;
-
 	fh = fopen(order_path,mode);
 	free(order_path);
 	return fh;
@@ -2657,6 +2656,7 @@ int init_folders(void)
 	FILE *fh;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
+	int write_order = 0;
 
 	if (!(folders_semaphore = thread_create_semaphore()))
 		return 0;
@@ -2709,7 +2709,7 @@ int init_folders(void)
 						}
 					}
 				}
-				
+
 			}
 			free(buf);
 		}
@@ -2746,6 +2746,7 @@ int init_folders(void)
 		{
 			folder_add(new_folder);
 			free(new_folder);
+			write_order = 1;
 		}
 	}
 
@@ -2756,6 +2757,7 @@ int init_folders(void)
 		{
 			folder_add(new_folder);
 			free(new_folder);
+			write_order = 1;
 		}
 	}
 
@@ -2766,6 +2768,7 @@ int init_folders(void)
 		{
 			folder_add(new_folder);
 			free(new_folder);
+			write_order = 1;
 		}
 	}
 
@@ -2776,6 +2779,7 @@ int init_folders(void)
 		{
 			folder_add(new_folder);
 			free(new_folder);
+			write_order = 1;
 		}
 	}
 
@@ -2784,6 +2788,11 @@ int init_folders(void)
 
 	folder_outgoing()->type = FOLDER_TYPE_SEND;
 	folder_sent()->type = FOLDER_TYPE_SEND;
+	
+	if (write_order)
+	{
+		folder_save_order();
+	}
 
 	return 1;
 }

@@ -46,6 +46,7 @@ void delete_transwnd_class(void);
 #define MUIM_transwnd_InsertMailInfo (TAG_USER | 0x300B0103)
 #define MUIM_transwnd_InsertMailSize (TAG_USER | 0x300B0104)
 #define MUIM_transwnd_Wait           (TAG_USER | 0x300B0105)
+#define MUIM_transwnd_SetMailFlags   (TAG_USER | 0x300B0106)
 
 struct MUIP_transwnd_InsertMailSize {
 	ULONG MethodId;
@@ -70,5 +71,12 @@ struct MUIP_transwnd_GetMailFlags {
 struct MUIP_transwnd_Wait {
 	ULONG MethodID;
 };
+
+struct MUIP_transwnd_SetMailFlags {
+	ULONG MethodId;
+	LONG Num;
+	LONG Flags;
+};
+
 
 #endif

@@ -217,6 +217,15 @@ void status_mail_list_insert(int mno, int mflags, int msize)
 	statuswnd_mail_list_insert(mno,mflags,msize);
 }
 
+
+/******************************************************************
+ Set the flags of the given mail number
+*******************************************************************/
+void status_mail_list_set_flags(int mno, int mflags)
+{
+	statuswnd_mail_list_set_flags(mno,mflags);
+}
+
 /******************************************************************
  Set some additional infos to the given mail. The mail has to be
  inserted before.

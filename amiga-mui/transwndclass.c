@@ -438,6 +438,24 @@ STATIC ULONG transwnd_GetMailFlags (struct IClass *cl, Object *obj, struct MUIP_
 	return (ULONG)-1;
 }
 
+STATIC ULONG transwnd_SetMailFlags (struct IClass *cl, Object *obj, struct MUIP_transwnd_SetMailFlags *msg)
+{
+	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
+	int i;
+	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
+	{
+		struct mail_entry *entry;
+		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
+		if (entry->no == msg->Num)
+		{
+			entry->flags = msg->Flags;
+			DoMethod(data->mail_list,MUIM_NList_Redraw,i);
+			break;
+		}
+	}
+	return 0;
+}
+
 STATIC ULONG transwnd_Clear (struct IClass *cl, Object *obj, Msg msg)
 {
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
@@ -492,6 +510,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 		case MUIM_transwnd_InsertMailSize: return transwnd_InsertMailSize (cl, obj, (struct MUIP_transwnd_InsertMailSize*)msg);
 		case MUIM_transwnd_InsertMailInfo: return transwnd_InsertMailInfo (cl, obj, (struct MUIP_transwnd_InsertMailInfo*)msg);
 		case MUIM_transwnd_GetMailFlags: return transwnd_GetMailFlags (cl, obj, (struct MUIP_transwnd_GetMailFlags*)msg);
+		case MUIM_transwnd_SetMailFlags: return transwnd_SetMailFlags (cl, obj, (struct MUIP_transwnd_SetMailFlags*)msg);
 		case MUIM_transwnd_Clear: return transwnd_Clear (cl, obj, msg);
 		case MUIM_transwnd_Wait: return transwnd_Wait (cl, obj, msg);
 	}

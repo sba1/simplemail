@@ -33,6 +33,7 @@ void status_set_gauge(int value);
 void status_init_mail(int maximal);
 void status_set_mail(int current, int current_size);
 void status_mail_list_insert(int mno, int mflags, int msize);
+void status_mail_list_set_flags(int mno, int mflags);
 void status_mail_list_set_info(int mno, char *from, char *subject, char *date);
 int status_mail_list_get_flags(int mno);
 void status_mail_list_clear(void);

@@ -35,6 +35,7 @@ void statuswnd_mail_list_clear(void);
 void statuswnd_mail_list_freeze(void);
 void statuswnd_mail_list_thaw(void);
 void statuswnd_mail_list_insert(int mno, int mflags, int msize);
+void statuswnd_mail_list_set_flags(int mno, int mflags);
 void statuswnd_mail_list_set_info(int mno, char *from, char *subject, char *date);
 int statuswnd_mail_list_get_flags(int mno);
 int statuswnd_wait(void);

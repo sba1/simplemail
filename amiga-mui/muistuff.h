@@ -32,6 +32,7 @@ Object *MakeCheck(STRPTR label, ULONG check);
 Object *MakeCycle(STRPTR label, STRPTR * array);
 VOID DisposeAllChilds(Object *o);
 VOID DisposeAllFamilyChilds(Object *o);
+VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help);
 
 /* global application object, defined in gui_main.c */
 extern Object *App;

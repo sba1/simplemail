@@ -25,6 +25,7 @@
 #include <utility/hooks.h>
 #include <intuition/classusr.h> /* Object * */
 #include <libraries/mui.h>
+/*#include <mui/speedbar_mcc.h>*/
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
@@ -101,6 +102,21 @@ VOID DisposeAllFamilyChilds(Object *o)
     MUI_DisposeObject(child);
   }
 }
+
+/*
+VOID AddButtonToSpeedBar(Object *speedbar, int image_idx, char *text, char *help)
+{
+	struct MUIS_SpeedBar_Button msb;
+	msb.Img = image_idx;
+	msb.Text = text;
+	msb.Help = help;
+	msb.Flags = 0;
+	msb.Class = NULL;
+	msb.Object = NULL;
+
+	DoMethod(speedbar, MUIM_SpeedBar_AddButton, &msb);
+}
+*/
 
 struct Hook hook_standard;
 

@@ -22,12 +22,14 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libraries/gadtools.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <mui/nlistview_mcc.h>
 #include <mui/nlisttree_mcc.h>
+/*#include <mui/speedbar_mcc.h>*/
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>
@@ -50,12 +52,31 @@
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "mybrush.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 
+static const char *image_files[] = {
+		"PROGDIR:Images/MailRead",
+		"PROGDIR:Images/MailModify",
+		"PROGDIR:Images/MailDelete",
+		"PROGDIR:Images/MailGetAddress",
+		"PROGDIR:Images/MailNew",
+		"PROGDIR:Images/MailReply",
+		"PROGDIR:Images/MailForward",
+		"PROGDIR:Images/MailsFetch",
+		"PROGDIR:Images/MailsSend",
+		"PROGDIR:Images/Filter",
+		"PROGDIR:Images/FilterEdit",
+		"PROGDIR:Images/Addressbook",
+		"PROGDIR:Images/Config",
+		NULL
+};
+struct MyBrush *brushes[sizeof(image_files)/sizeof(char*)];
+
 static Object *win_main;
 static Object *main_group;
-static Object *buttons_group;
+/*static Object *speedbar;*/
 static Object *button_fetch;
 static Object *button_send;
 static Object *button_read;
@@ -67,7 +88,6 @@ static Object *button_reply;
 static Object *button_forward;
 static Object *button_filter;
 static Object *button_efilter;
-
 static Object *button_abook;
 static Object *button_config;
 static Object *switch1_button; /* switch button for the two views */
@@ -189,7 +209,7 @@ static void foldertreelist_orderchanged(void)
 			DoMethod(folder_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Parent,0);
 		struct folder *f = (struct folder*)tn->tn_User;
 
-		folder_add_to_tree((struct folder*)tn->tn_User,parent?(struct folder*)parent->tn_User:NULL);
+		folder_add_to_tree(f,parent?(struct folder*)parent->tn_User:NULL);
 	}
 }
 
@@ -303,11 +323,23 @@ static int init_folder_placement(void)
 }
 
 /******************************************************************
+ Frees the brushes
+*******************************************************************/
+/*
+static void main_free_brushes(void)
+{
+	int i;
+	for (i=0;i<sizeof(image_files)/sizeof(char*);i++)
+	  if (brushes[i]) FreeBrush(brushes[i]);
+}
+*/
+
+/******************************************************************
  Initialize the main window
 *******************************************************************/
 int main_window_init(void)
 {
-	int rc;
+	int i, rc;
 	Object *menu;
 	enum {
 		MENU_PROJECT,
@@ -377,6 +409,13 @@ int main_window_init(void)
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
+	/* load the images */
+/*
+	for (i=0;i<sizeof(image_files)/sizeof(char*);i++)
+	  brushes[i] = LoadBrush(image_files[i]);
+	atexit(main_free_brushes);
+*/
+
 	rc = FALSE;
 
 	menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
@@ -388,7 +427,16 @@ int main_window_init(void)
 		MUIA_Window_Menustrip,menu,
 
 		WindowContents, main_group = VGroup,
-			Child, buttons_group = HGroupV,
+/*			Child, HGroupV,
+				Child, speedbar = SpeedBarObject,
+					MUIA_Group_Horiz, TRUE,
+					MUIA_SpeedBar_Images, brushes,
+					MUIA_SpeedBar_StripUnderscore, TRUE,
+					MUIA_SpeedBar_SpacerIndex, -1,
+					End,
+				End,*/
+
+			Child, HGroupV,
 				Child, HGroup,
 					MUIA_Group_Spacing, 0,
 					MUIA_Weight, 200,
@@ -473,6 +521,27 @@ int main_window_init(void)
     	return 0;
     }
 
+		/* Add the buttons to the speedbar now */
+/*
+		AddButtonToSpeedBar(speedbar, 0, "R_ead", "Read the selected message");
+		AddButtonToSpeedBar(speedbar, 1, "Edi_t", "Edit the selected message");
+		AddButtonToSpeedBar(speedbar, 2, "_Delete", "Deletes the selected messages");
+		AddButtonToSpeedBar(speedbar, 3, "_GetAdd", "Does add the address of the sender in the addressbook");
+		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
+		AddButtonToSpeedBar(speedbar, 4, "_New", "Create a new message");
+		AddButtonToSpeedBar(speedbar, 5, "_Reply", "Reply to the selected message");
+		AddButtonToSpeedBar(speedbar, 6, "F_orward", "Forward the selected message");
+		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
+		AddButtonToSpeedBar(speedbar, 7, "_Fetch", "Fetch new mails from all active pop3 servers");
+		AddButtonToSpeedBar(speedbar, 8, "_Send", "Send all ready messages");
+		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
+		AddButtonToSpeedBar(speedbar, 9, "Filter", "Starts the manual filter");
+		AddButtonToSpeedBar(speedbar, 10, "FilterEdit", "Change the filter");
+		DoMethod(speedbar, MUIM_SpeedBar_AddSpacer );
+		AddButtonToSpeedBar(speedbar, 11, "_Abook", "SimpleMail's Addressbook");
+		AddButtonToSpeedBar(speedbar, 12, "_Config", "Configure SimpleMail");
+*/
+
 		folder_checksingleaccount_menuitem = (Object*)DoMethod(menu, MUIM_FindUData, MENU_FOLDER_CHECKSINGLEACCOUNT);
 
 		DoMethod(App, OM_ADDMEMBER, win_main);
@@ -520,6 +589,7 @@ int main_window_init(void)
 		DoMethod(button_efilter, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
 		DoMethod(button_abook, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
 		DoMethod(button_config, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_config);
+
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
 		DoMethod(mail_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, callback_read_mail);

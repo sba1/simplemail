@@ -6,6 +6,11 @@ SimpleMail Open Source - ChangeLog
 
 	* amiga-mui/ARexx/CopySelectedMails.smrx: Small ARexx script to copy
 	  selected mails to another folder (as requested by Bifford :).
+	* amiga-mui/mailtreelistclass.c: Added display of mails with status Error.
+	* configuration.(c|h): Added some options.
+	* simplemail.(c|h): Mails which could not be send get the error status set now.
+	* smtp.c: Mails which could not be send get the error status set now.
+	* trans.c: Added some options.
 
 2003-12-30  Bernd Gollesch <bgollesch@sime.com>
 

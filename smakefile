@@ -111,6 +111,13 @@ locale: ${LOCALEOBJS}
 ${LOCALEDIR}de.mo: po/de.po
 ${LOCALEDIR}ma.mo: po/ma.po
 
+de.pox:
+  execute CreatePOX de
+ma.pox:
+  execute CreatePOX ma
+pl.pox:
+  execute CreatePOX pl
+
 # some fake targets
 generate:
   -delete smakefile.compile

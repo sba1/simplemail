@@ -733,7 +733,7 @@ static int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_pre
 					}
 				}
 				tcp_disconnect(conn);
-			}
+			} else tell_from_subtask(tcp_strerror(tcp_error_code()));
 
 			/* Clear the preselection entries */
 			thread_call_parent_function_sync(dl_clear,0);
@@ -768,6 +768,7 @@ int pop3_login_only(struct pop3_server *server)
 				if (pop3_login(conn,server))
 				{
 					pop3_quit(conn,server);
+					rc = 1;
 				}
 			}  
 			tcp_disconnect(conn);

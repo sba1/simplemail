@@ -44,7 +44,6 @@
 #endif
 #endif
 
-#include "support.h"
 #include "tcpip.h"
 
 #include "tcp.h"
@@ -53,6 +52,42 @@
 
 /* #define DEBUG_OUTPUT */
 
+static int error_code;
+
+/******************************************************************
+ Returns the error code of the last operation. Note that the
+ error code is only set on failure so you cannot use this function
+ to determine the success of a function
+*******************************************************************/
+int tcp_error_code(void)
+{
+	return error_code;
+}
+
+/******************************************************************
+ Returns the error string
+*******************************************************************/
+const char *tcp_strerror(int code)
+{
+	switch (code)
+	{
+		case	TCP_UNKNOWN:  return "Unknown error";
+		case	TCP_NOT_ENOUGH_MEMORY: return "Not enough memory";
+		case	TCP_NOT_SECURE: return "Connection couldn't be made secure";
+		case	TCP_ERRNO: return strerror(errno);
+		case	TCP_HOST_NOT_FOUND: return "Host wasn't found";
+		case	TCP_TRY_AGAIN: return "Cannot locate host. Try again later";
+		case	TCP_NO_RECOVERY: return "Unexpected server failure";
+		case	TCP_NO_DATA: return "No IP associated with name";
+		case	TCP_ADDR_NOT_AVAILABLE: return "The specified address is not avaible on this machine";
+		case	TCP_TIMEOUT: return "Connecting timed out";
+		case	TCP_REFUSED: return "Connection refused";
+		case	TCP_UNREACHABLE: return "Network unreachable";
+		case	TCP_FAILED_CONNECT:return "Failed to connect to the server";
+		default: return "Unknown error";
+	}
+}
+
 /******************************************************************
  Establish the connection to the given server.
  Return NULL on error.
@@ -60,11 +95,9 @@
 *******************************************************************/
 struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 {
-	long sd;
+	int i,sd;
 	struct sockaddr_in sockaddr;
 	struct hostent *hostent;
-	static char err[256];
-	static long id;
 	struct connection *conn;
 
 	if (!server) return NULL;
@@ -76,105 +109,82 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 	if ((hostent = gethostbyname(server)))
 	{
-#ifdef _AMIGA /* ugly */
-		sockaddr.sin_len = sizeof(struct sockaddr_in);
-#endif
-		sockaddr.sin_family = AF_INET;
-		sockaddr.sin_port = htons(port);
-		sockaddr.sin_addr = *(struct in_addr *) hostent->h_addr;
-		bzero(&(sockaddr.sin_zero), 8);
-
 		sd = socket(PF_INET, SOCK_STREAM, 0);
 		if (sd != -1)
 		{
-			if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
-			{
-				conn->socket = sd;
-#ifndef NO_SSL
-				if (use_ssl)
-				{
-					if (tcp_make_secure(conn)) return conn;
-					else
-					{
-						tcp_disconnect(conn);
-						return NULL;
-					}
-				}
+			int security_error = 0;
+
+			memset(&sockaddr,0,sizeof(struct sockaddr_in));
+
+#ifdef _AMIGA /* ugly */
+			sockaddr.sin_len = sizeof(struct sockaddr_in);
 #endif
-				return conn;
+			sockaddr.sin_family = AF_INET;
+			sockaddr.sin_port = htons(port);
+
+			for (i=0; hostent->h_addr_list[i]; i++)
+			{
+		    memcpy(&sockaddr.sin_addr, hostent->h_addr_list[i], hostent->h_length);
+				if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
+				{
+					conn->socket = sd;
+#ifndef NO_SSL
+					if (use_ssl)
+					{
+						if (tcp_make_secure(conn)) return conn;
+						else
+						{
+							security_error = 1;
+							myclosesocket(sd);
+							sd = socket(PF_INET, SOCK_STREAM, 0);
+							if (sd == -1)
+							{
+								error_code = TCP_ERRNO;
+								free(conn);
+								return NULL;
+							}
+							conn->socket = sd;
+						}
+					} else return conn;
+#else
+					return conn;
+#endif
+				}
 			}
+
+			if (!i) error_code = TCP_HOST_NOT_FOUND;
 			else
 			{
-#ifndef __WIN32__
-				switch(id=tcp_errno())
+				switch(tcp_errno())
 				{
-					case EADDRNOTAVAIL:
-						strcpy(err, "The specified address is not avaible on this machine.");
-						break;
-
-					case ETIMEDOUT:
-						strcpy(err, "Connecting timed out.");
-						break;
-
-					case ECONNREFUSED:
-						strcpy(err, "Connection refused.");
-						break;
-
-					case ENETUNREACH:
-						strcpy(err, "Network unreachable.");
-						break;
-
-					default: /* Everything else seems too much low-level for the user to me. */
-						strcpy(err, "Failed to connect to the server.");
-						break;
+					case EADDRNOTAVAIL: error_code = TCP_ADDR_NOT_AVAILABLE; break;
+					case ETIMEDOUT: error_code = TCP_TIMEOUT; break;
+					case ECONNREFUSED: error_code = TCP_REFUSED; break;
+					case ENETUNREACH: error_code = TCP_UNREACHABLE; break;
+					default: error_code = TCP_FAILED_CONNECT; break; /* Everything else seems too much low-level for the user to me. */
 				}
-
-				tell_from_subtask(err);
-#else
-                                tell_from_subtask("Couldn't connect to server!");
-#endif
 			}
+
 			myclosesocket(sd);
 		}
 		else
 		{
-			strcpy(err, "Failed to create a socketdescriptor.");
-
-			tell_from_subtask(err);
+			error_code = TCP_ERRNO;
+			free(conn);
+			return NULL;
 		}
 	}
 	else
 	{
-		switch(id = tcp_herrno())
+		switch(tcp_herrno())
 		{
-			case HOST_NOT_FOUND:
-				sprintf(err, "Host \"%s\" not found.", server);
-				break;
-
-			case TRY_AGAIN:
-				sprintf(err, "Cannot locate %s. Try again later!", server);
-				break;
-
-			case NO_RECOVERY:
-				strcpy(err, "Unexpected server failure.");
-				break;
-
-			case NO_DATA:
-				sprintf(err, "No IP associated with %s!", server);
-				break;
-
-			case -1:
-				strcpy(err, "Could not determinate a valid error code!");
-				break;
-
-			default:
-				strncpy(err,strerror(id),sizeof(err)-1);
-/*				sprintf(err, "Unknown error %ld!", id);*/
-				break;
+			case HOST_NOT_FOUND: error_code = TCP_HOST_NOT_FOUND; break;
+			case TRY_AGAIN: error_code = TCP_TRY_AGAIN; break;
+			case NO_RECOVERY: error_code = TCP_NO_RECOVERY; break;
+			case NO_DATA:error_code = TCP_NO_DATA; break;
+			default: error_code = TCP_UNKNOWN; break;
 		}
-		
-		tell_from_subtask(err);
-	}  
+	}
 
 	free(conn);
 	return NULL;

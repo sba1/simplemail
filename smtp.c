@@ -833,7 +833,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 	
 				thread_call_parent_function_async(up_set_status,1,N_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
-			}
+			} else tell_from_subtask(tcp_strerror(tcp_error_code()));
 		}
 
 		close_socket_lib();

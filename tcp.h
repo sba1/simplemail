@@ -58,6 +58,8 @@ struct connection
 	int line_allocated; /* number of bytes which were allocated (including 0 byte) */
 };
 
+int tcp_error_code(void);
+const char *tcp_strerror(int code);
 struct connection *tcp_connect(char *server, unsigned int port, int use_ssl);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn);
@@ -68,6 +70,20 @@ int tcp_write_unbuffered(struct connection *conn, void *,long);
 int tcp_flush(struct connection *conn);
 char *tcp_readln(struct connection *conn);
 
+/*#define TCP_OK									  0*/
+#define TCP_UNKNOWN						 -1 /* Unspecified error */
+#define TCP_NOT_ENOUGH_MEMORY	 -2 /* Not enough memory */
+#define TCP_NOT_SECURE					 -3 /* Connection couldn't made secure */
+#define TCP_ERRNO							 -4 /* There is another error (errno) value, use tcp_errno() to get it */
+#define TCP_HOST_NOT_FOUND			 -5 /* The host could not be found */
+#define TCP_TRY_AGAIN					 -6
+#define TCP_NO_RECOVERY				 -7
+#define TCP_NO_DATA						 -8
+#define TCP_ADDR_NOT_AVAILABLE	 -9
+#define TCP_TIMEOUT						-10
+#define TCP_REFUSED						-11
+#define TCP_UNREACHABLE				-12
+#define TCP_FAILED_CONNECT			-13
 
 #define SMTP_NO_SOCKET        -1
 #define SMTP_STATUS_REPLY     211

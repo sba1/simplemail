@@ -239,6 +239,8 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				*array++ = NULL;
 				*array++ = NULL;
 				*array++ = NULL;
+				*array++ = NULL;
+				*array++ = NULL;
 				*array = NULL;
 			} else
 			{
@@ -260,6 +262,8 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 					else if (mail->flags & MAIL_FLAGS_PARTIAL)	sprintf(status_buf,"\33O[%08lx]",data->status_new_partial);
 					else sprintf(status_buf,"\33O[%08lx]",data->status_new);
 
+					*preparse++ = "\33b";
+					*preparse++ = "\33b";
 					*preparse++ = "\33b";
 					*preparse++ = "\33b";
 					*preparse++ = "\33b";

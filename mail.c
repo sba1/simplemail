@@ -723,8 +723,13 @@ struct mail *mail_create_for(char *to_str_unexpanded)
 		{
 			if (phrase && phrase->write_welcome)
 			{
-				mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(phrase->write_welcome)+1+1);
-				if (mail_contents) { strcat(mail_contents,phrase->write_welcome); strcat(mail_contents,"\n");}
+				char *str = mail_create_string(phrase->write_welcome, NULL, NULL, NULL);
+				if (str)
+				{
+					mail_contents = realloc(mail_contents,mystrlen(mail_contents)+strlen(str)+1+1);
+					if (mail_contents) { strcat(mail_contents,str); strcat(mail_contents,"\n");}
+					free(str);
+				}
 			}
 		}
 

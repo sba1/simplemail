@@ -1543,6 +1543,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 		if (new_mail->text)
 		{
 			/* mail text */
+			if (new_mail->to) body_encoding = "8bit"; /* mail has only one part which is a text, so it can be encoded in 8bit */
 			body = encode_body(new_mail->text, strlen(new_mail->text), new_mail->content_type, &body_len, &body_encoding);
 			fprintf(fp,"Content-Type: text/plain; charset=ISO-8859-1\n");
 		} else
@@ -1574,7 +1575,9 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 			}
 		}
 
-		if (body_encoding) fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+		if (body_encoding && mystricmp(body_encoding,"7bit"))
+			fprintf(fp,"Content-transfer-encoding: %s\n",body_encoding);
+
 		fprintf(fp,"\n");
 		fprintf(fp,"%s\n",body?body:"");
 

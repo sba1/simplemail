@@ -677,6 +677,36 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
 }
 
 /**************************************************************************
+ Returns the best encoding of a given buffer. Should actually only be
+ used for text parts.
+**************************************************************************/
+static char *get_best_encoding(unsigned char *buf, int len, char *max)
+{
+	int i,line_len=0,eight_bit=0;
+	unsigned char c;
+
+	for (i=0;i<len;i++)
+	{
+		c = *buf++;
+		if (c=='\n')
+		{
+			/* if line is longer than 998 chars we must use qp */
+			if (line_len > 998) return "quoted-printable";
+			line_len = 0;
+		}
+		if (c > 127) eight_bit = 1;
+		line_len++;
+	}
+
+  /* if no 8 bit chars we can use 7bit */
+	if (!eight_bit) return "7bit";
+
+	/* we have 8 bit chars, use 8bit if possible */
+	if (!mystricmp(max,"8bit")) return "8bit";
+	return "quoted-printable";
+}
+
+/**************************************************************************
  Encodes the given body. The encoded buffer is allocated with malloc(),
  the length is stored in *ret_len and the used transfer encoding in
  *encoding (MIME Content-Transfer-Encoding). The retured buffer is 0 byte
@@ -693,8 +723,22 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 
 		if (!mystricmp(content_type,"text/plain"))
 		{
-			encode_body_quoted(fh,buf,len);
-			*encoding = "quoted-printable";
+			*encoding = get_best_encoding(buf,len,*encoding);
+			if (!(mystricmp(*encoding,"8bit")) || !(mystricmp(*encoding,"7bit")))
+			{
+				/* TODO: This is a overhead, it's better to decide this outside of encode_body() */
+				if ((body = malloc(len+1)))
+				{
+					memcpy(body,buf,len); /* faster then strncpy() */
+					buf[len]=0; /* not really necessary */
+					*ret_len = len;
+				}
+				return body;
+			} else
+			{
+				encode_body_quoted(fh,buf,len);
+				*encoding = "quoted-printable";
+			}
 		} else
 		{
 			encode_body_base64(fh,buf,len);

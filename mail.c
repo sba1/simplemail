@@ -1138,10 +1138,12 @@ struct mail *mail_create_reply(struct mail *mail)
 			if(text_mail->decoded_data)
 			{
 				replied_text = text_mail->decoded_data;
+				replied_text[text_mail->decoded_len] = 0;
 			}
 			else
 			{
 				replied_text = text_mail->text + text_mail->text_begin;
+				replied_text[text_mail->text_len] = 0;
 			}
 
 			if(user.config.write_reply_stripsig)

@@ -9,7 +9,7 @@
 #include <proto/exec.h>
 #include <proto/dos.h>
 
-//#define MYDEBUG
+/*#define MYDEBUG*/
 #include "amigadebug.h"
 
 #define FAST_SEEK
@@ -324,7 +324,7 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!file) goto fail;
 	memset(file,0,sizeof(*file));
 
-	if (!(files[_file] = Open(filename,amiga_mode))) goto fail;
+	if (!(files[_file] = Open((STRPTR)filename,amiga_mode))) goto fail;
 	file->_file = _file;
 
 	if (amiga_mode == MODE_READWRITE)
@@ -347,13 +347,23 @@ fail:
 int fclose(FILE *file)
 {
 	int error;
+	char tempname[200];
+
 	if (!file) return NULL;
 	ObtainSemaphore(&files_sem);
+
+	if (file->_flag & 0x10000)
+	{
+		if (!NameFromFH(files[file->_file],tempname,sizeof(tempname)))
+			tempname[0] = 0;
+	} else tempname[0] = 0;
+
 	error = !Close(files[file->_file]);
 	if (!error)
 	{
 		files[file->_file] = NULL;
 		free(file);
+		if (tempname[0]) DeleteFile(tempname);
 	}
 	ReleaseSemaphore(&files_sem);
 	return error;
@@ -465,6 +475,7 @@ FILE *tmpfile(void)
 	ObtainSemaphore(&files_sem);
 	sprintf(buf,"T:%lx%lx.tmp",FindTask(NULL),tmpno++);
 	file = fopen(buf,"w");
+	if (file) file->_flag |= 0x10000;
 	ReleaseSemaphore(&files_sem);
 	return file;
 }
@@ -491,7 +502,7 @@ int stat(const char *filename, struct stat *stat)
 	BPTR lock;
 	int rc = -1;
 
-	if ((lock = Lock(filename,ACCESS_READ)))
+	if ((lock = Lock((STRPTR)filename,ACCESS_READ)))
 	{
 		struct FileInfoBlock *fib = (struct FileInfoBlock*)AllocDosObject(DOS_FIB,NULL);
 		if (fib)
@@ -558,7 +569,7 @@ int printf(const char *fmt,...)
 
 int puts(const char *string)
 {
-	return PutStr(string);
+	return PutStr((STRPTR)string);
 }
 
 int sprintf(char *buf, const char *fmt, ...)
@@ -579,7 +590,7 @@ DIR *opendir(const char *name)
 	DIR *dir = malloc(sizeof(*dir) + sizeof(struct dirent));
 	if (!dir) return NULL;
 
-	if (!(dh = Lock(name,ACCESS_READ)))
+	if (!(dh = Lock((STRPTR)name,ACCESS_READ)))
 	{
 		free(dir);
 		return NULL;
@@ -633,7 +644,7 @@ struct dirent *readdir(DIR *dir)
 
 int chdir(const char *dir)
 {
-	BPTR lock = Lock(dir,ACCESS_READ);
+	BPTR lock = Lock((STRPTR)dir,ACCESS_READ);
 	BPTR odir;
 	if (!lock) return -1;
 	odir = CurrentDir(lock);
@@ -659,7 +670,7 @@ struct tm *localtime(const time_t *timeptr)
 */
 int rename(const char *oldname, const char *newname)
 {
-	if (!(Rename(oldname,newname)))
+	if (!(Rename((STRPTR)oldname,(STRPTR)newname)))
 		return -1;
 	return 0;
 }

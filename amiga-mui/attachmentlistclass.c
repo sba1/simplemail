@@ -25,6 +25,7 @@
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
+#include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/muimaster.h>
 
@@ -76,7 +77,7 @@ STATIC ASM SAVEDS VOID attachment_display(register __a1 struct MUIP_NListtree_Di
 	if (msg->TreeNode)
 	{
 		struct attachment *attach = (struct attachment *)msg->TreeNode->tn_User;
-		*msg->Array++ = attach->filename;
+		*msg->Array++ = attach->filename?(char*)FilePart(attach->filename):"";
 		*msg->Array++ = NULL;
 		*msg->Array++ = attach->content_type;
 		*msg->Array++ = attach->description;
@@ -126,7 +127,6 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	{
 		if (!(treenode->tn_Flags & TNF_LIST) && *msg->type == MUIV_NListtree_DropType_Onto)
 		{
-			struct attachment *attach = (struct attachment*)treenode->tn_User;
 			if (*msg->pos > active)
 			{
 				*msg->type = MUIV_NListtree_DropType_Above;

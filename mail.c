@@ -1091,7 +1091,11 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 		if (phrase && phrase->write_closing)
 		{
 			char *str = mail_create_string(phrase->write_closing, NULL, NULL, NULL);
-			if (str) string_append(&contents_str,str);
+			if (str)
+			{
+				string_append(&contents_str,str);
+				free(str);
+			}
 		}
 
 		mail->decoded_data = contents_str.str;

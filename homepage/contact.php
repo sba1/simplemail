@@ -15,13 +15,22 @@ SimpleMail is currently mainly developed by:
 </TABLE>
 <br>
 <br>
-Additional programming and advices:
+Additional work:
 <br>
 <TABLE border=0 cellspacing=3 cellpadding=3 align="center" summary="Contact">
 	<TR>
+		<td>Valuable advices</td>
 		<TD>Jörg Strohmayer</TD>
 		<TD><A href="http://home.wtal.de/js/">http://home.wtal.de/js/</A></TD>
 	</TR>
+	<tr>
+		<td>Manual</td>
+		<td>David Rey</td>
+		<td><a href="mailto:david@saug.org">david@saug.org</a></td>
+	</tr>
+	<tr>
+		<td>Taglines</td>
+		<td>Andreas Neumann</td>
+		<td><a href="http://www.andreasneumann.de/">http://www.andreasneumann.de/</a></td>
+	</tr>
 </TABLE>
-
-The taglines are from <A href="http://www.andreasneumann.de/" target="_blank">Andreas Neumann</A>.

@@ -30,10 +30,29 @@
 #include "lists.h"
 #include "pop3.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 static GtkWidget *config_wnd;
 
 static GtkWidget *config_account_box;
+static GtkWidget *config_account_user_name_text;
+static GtkWidget *config_account_user_email_text;
+static GtkWidget *config_account_user_reply_text;
+static GtkWidget *config_account_receive_server_text;
+static GtkWidget *config_account_receive_login_text;
+static GtkWidget *config_account_receive_password_text;
+static GtkWidget *config_account_receive_ask_checkbox;
+static GtkObject *config_account_receive_port_spin_adj;
+static GtkWidget *config_account_receive_port_spin;
+static GtkWidget *config_account_receive_active_checkbox;
+static GtkWidget *config_account_receive_remove_checkbox;
+static GtkWidget *config_account_receive_avoid_checkbox;
+static GtkWidget *config_account_receive_secure_checkbox;
+static GtkWidget *config_account_receive_stls_checkbox;
+static GtkObject *config_account_send_port_spin_adj;
+static GtkWidget *config_account_send_port_spin;
+static GtkWidget *config_account_send_server_text;
+
 
 #if 0
 
@@ -474,9 +493,6 @@ static void init_account_group(void)
   GtkWidget *label2;
   GtkWidget *frame5;
   GtkWidget *table1;
-  GtkWidget *config_account_user_name_text;
-  GtkWidget *config_account_user_email_text;
-  GtkWidget *config_account_user_reply_text;
   GtkWidget *label8;
   GtkWidget *label9;
   GtkWidget *label7;
@@ -486,20 +502,10 @@ static void init_account_group(void)
   GtkWidget *label10;
   GtkWidget *label11;
   GtkWidget *hbox7;
-  GtkWidget *config_account_receive_server_text;
   GtkWidget *label13;
-  GtkWidget *config_account_receive_port_text;
-  GtkWidget *config_account_receive_active_checkbox;
   GtkWidget *hbox8;
-  GtkWidget *config_account_receive_login_text;
   GtkWidget *label12;
-  GtkWidget *config_account_receive_password_text;
-  GtkWidget *checkbutton1;
   GtkWidget *hbox9;
-  GtkWidget *config_account_receive_remove_checkbox;
-  GtkWidget *config_account_receive_avoid_checkbox;
-  GtkWidget *config_account_receive_secure_checkbox;
-  GtkWidget *config_account_receive_stls_checkbox;
   GtkWidget *label4;
   GtkWidget *frame4;
   GtkWidget *table3;
@@ -515,7 +521,6 @@ static void init_account_group(void)
   GtkWidget *config_account_send_secure_checkbox;
   GtkWidget *config_account_send_login_checkbox;
   GtkWidget *hbox11;
-  GtkWidget *config_account_send_server_text;
   GtkWidget *label16;
   GtkWidget *config_account_send_port_text;
   GtkWidget *label5;
@@ -683,11 +688,10 @@ static void init_account_group(void)
   gtk_box_pack_start (GTK_BOX (hbox7), label13, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (label13), GTK_JUSTIFY_LEFT);
 
-  config_account_receive_port_text = gtk_entry_new ();
-  gtk_widget_show (config_account_receive_port_text);
-  gtk_box_pack_start (GTK_BOX (hbox7), config_account_receive_port_text, FALSE, TRUE, 0);
-  gtk_entry_set_text (GTK_ENTRY (config_account_receive_port_text), _("110"));
-  gtk_entry_set_width_chars (GTK_ENTRY (config_account_receive_port_text), 5);
+  config_account_receive_port_spin_adj = gtk_adjustment_new (110, 1, 65536, 1, 10, 10);
+  config_account_receive_port_spin = gtk_spin_button_new (GTK_ADJUSTMENT (config_account_receive_port_spin_adj), 1, 0);
+  gtk_widget_show (config_account_receive_port_spin);
+  gtk_box_pack_start (GTK_BOX (hbox7), config_account_receive_port_spin, FALSE, TRUE, 0);
 
   config_account_receive_active_checkbox = gtk_check_button_new_with_mnemonic (_("Active"));
   gtk_widget_show (config_account_receive_active_checkbox);
@@ -713,11 +717,12 @@ static void init_account_group(void)
   config_account_receive_password_text = gtk_entry_new ();
   gtk_widget_show (config_account_receive_password_text);
   gtk_box_pack_start (GTK_BOX (hbox8), config_account_receive_password_text, TRUE, TRUE, 0);
+  gtk_entry_set_visibility (GTK_ENTRY (config_account_receive_password_text), FALSE);
   gtk_entry_set_width_chars (GTK_ENTRY (config_account_receive_password_text), 10);
 
-  checkbutton1 = gtk_check_button_new_with_mnemonic (_("Ask"));
-  gtk_widget_show (checkbutton1);
-  gtk_box_pack_start (GTK_BOX (hbox8), checkbutton1, FALSE, FALSE, 0);
+  config_account_receive_ask_checkbox = gtk_check_button_new_with_mnemonic (_("Ask"));
+  gtk_widget_show (config_account_receive_ask_checkbox);
+  gtk_box_pack_start (GTK_BOX (hbox8), config_account_receive_ask_checkbox, FALSE, FALSE, 0);
 
   hbox9 = gtk_hbox_new (FALSE, 0);
   gtk_widget_show (hbox9);
@@ -791,6 +796,7 @@ static void init_account_group(void)
   config_account_send_password_text = gtk_entry_new ();
   gtk_widget_show (config_account_send_password_text);
   gtk_box_pack_start (GTK_BOX (hbox13), config_account_send_password_text, TRUE, TRUE, 0);
+  gtk_entry_set_visibility (GTK_ENTRY (config_account_send_password_text), FALSE);
   gtk_entry_set_width_chars (GTK_ENTRY (config_account_send_password_text), 10);
 
   config_account_send_auth_checkbox = gtk_check_button_new_with_mnemonic (_("Needs authentification"));
@@ -830,16 +836,103 @@ static void init_account_group(void)
   gtk_box_pack_start (GTK_BOX (hbox11), label16, FALSE, FALSE, 0);
   gtk_label_set_justify (GTK_LABEL (label16), GTK_JUSTIFY_LEFT);
 
-  config_account_send_port_text = gtk_entry_new ();
-  gtk_widget_show (config_account_send_port_text);
-  gtk_box_pack_start (GTK_BOX (hbox11), config_account_send_port_text, FALSE, TRUE, 0);
-  gtk_entry_set_text (GTK_ENTRY (config_account_send_port_text), _("25"));
-  gtk_entry_set_width_chars (GTK_ENTRY (config_account_send_port_text), 5);
+  config_account_send_port_spin_adj = gtk_adjustment_new (25, 0, 65536, 1, 10, 10);
+  config_account_send_port_spin = gtk_spin_button_new (GTK_ADJUSTMENT (config_account_send_port_spin_adj), 1, 0);
+  gtk_widget_show (config_account_send_port_spin);
+  gtk_box_pack_start (GTK_BOX (hbox11), config_account_send_port_spin, FALSE, TRUE, 0);
 
   label5 = gtk_label_new (_("Send"));
   gtk_widget_show (label5);
   gtk_frame_set_label_widget (GTK_FRAME (frame4), label5);
   gtk_label_set_justify (GTK_LABEL (label5), GTK_JUSTIFY_LEFT);
+}
+
+static void on_config_cancel_button_clicked(GtkButton *button, gpointer user_data)
+{
+	gtk_widget_destroy(config_wnd);
+	config_wnd = NULL;
+}
+
+static void on_config_apply_button_clicked(GtkButton *button, gpointer user_data)
+{
+	struct account *account;
+
+	/* Copy the accounts */
+	clear_config_accounts();
+
+/*account = (struct account *)list_first(&account_list);
+	while (account)
+	{
+		insert_config_account(account);
+		account = (struct account *)node_next(&account->node);
+	}
+*/
+
+	account = account_malloc();
+
+	account->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_name_text)));
+	account->email = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_email_text)));
+	account->reply = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_user_reply_text)));
+	account->pop->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_server_text)));
+	account->pop->login = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_login_text)));
+	account->pop->ask = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_ask_checkbox));
+	account->pop->passwd = account->pop->ask?NULL:mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_receive_password_text)));
+
+
+/*	{
+		gboolean val;
+		g_object_get(G_OBJECT(config_account_receive_active_checkbox),"active",&val,NULL);
+		printf("%d\n",val);
+	}*/
+
+	account->pop->active = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_active_checkbox));
+	account->pop->del = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_remove_checkbox));
+	account->pop->ssl = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_secure_checkbox));
+	account->pop->stls = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_stls_checkbox));
+	account->pop->nodupl = gtk_toggle_button_get_active(GTK_WIDGET(config_account_receive_avoid_checkbox));
+	account->pop->port = gtk_spin_button_get_value_as_int(GTK_WIDGET(config_account_receive_port_spin));
+
+/*	account->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
+	account->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
+	account->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
+	account->smtp->secure = xget(account_send_secure_check, MUIA_Selected);*/
+	account->smtp->name = mystrdup(gtk_entry_get_text(GTK_WIDGET(config_account_send_server_text)));
+/*	account->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
+	account->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
+	account->smtp->auth_password = mystrdup((char*)xget(account_send_password_string, MUIA_String_Contents));
+*/
+	insert_config_account(account);
+
+
+	account_free(account);
+
+	on_config_cancel_button_clicked(NULL,user_data);
+}
+
+
+static void on_config_save_button_clicked(GtkButton *button, gpointer user_data)
+{
+	on_config_apply_button_clicked(NULL,user_data);
+	save_config();
+}
+
+#define SAFESTR(x) ((x)?(x):"")
+
+static void set_account_group(struct account *account)
+{
+	gtk_entry_set_text(GTK_WIDGET(config_account_user_name_text),SAFESTR(account->name));
+	gtk_entry_set_text(GTK_WIDGET(config_account_user_email_text),SAFESTR(account->email));
+	gtk_entry_set_text(GTK_WIDGET(config_account_user_reply_text),SAFESTR(account->reply));
+	gtk_entry_set_text(GTK_WIDGET(config_account_receive_server_text),SAFESTR(account->pop->name));
+	gtk_entry_set_text(GTK_WIDGET(config_account_receive_login_text),SAFESTR(account->pop->login));
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_ask_checkbox),account->pop->ask);
+	gtk_entry_set_text(GTK_WIDGET(config_account_receive_password_text),SAFESTR(account->pop->passwd));
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_remove_checkbox),account->pop->del);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_secure_checkbox),account->pop->ssl);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_stls_checkbox),account->pop->stls);
+	gtk_toggle_button_set_active(GTK_WIDGET(config_account_receive_avoid_checkbox),account->pop->nodupl);
+	gtk_spin_button_set_value(GTK_WIDGET(config_account_receive_port_spin),account->pop->port);
+	gtk_entry_set_text(GTK_WIDGET(config_account_send_server_text),SAFESTR(account->smtp->name));
 }
 
 /******************************************************************
@@ -914,10 +1007,37 @@ static void init_config(void)
 	gtk_container_add (GTK_CONTAINER (hbuttonbox3), config_cancel_button);
 	GTK_WIDGET_SET_FLAGS (config_cancel_button, GTK_CAN_DEFAULT);
 
+	
+	gtk_signal_connect (GTK_OBJECT (config_save_button), "clicked",
+                      GTK_SIGNAL_FUNC (on_config_save_button_clicked),
+                      NULL);
+	gtk_signal_connect (GTK_OBJECT (config_apply_button), "clicked",
+                      GTK_SIGNAL_FUNC (on_config_apply_button_clicked),
+                      NULL);
+	gtk_signal_connect (GTK_OBJECT (config_cancel_button), "clicked",
+                      GTK_SIGNAL_FUNC (on_config_cancel_button_clicked),
+                      NULL);
+
+
 	//gtk_signal_connect(GTK_OBJECT(config_wnd), "destroy",GTK_SIGNAL_FUNC (config_quit), NULL);
 
 	init_account_group();
+	{
+		struct account *account;
+		account = (struct account*)list_first(&user.config.account_list);
 
+		while (account)
+		{
+//			struct account *new_account = account_duplicate(account);
+//			if (new_account)
+//			{
+//				list_insert_tail(&account_list,&new_account->node);
+//				DoMethod(config_tree, MUIM_NListtree_Insert, _("Account"), account_group, treenode, MUIV_NListtree_Insert_PrevNode_Tail,0);
+//			}
+			set_account_group(account);
+			account = (struct account*)node_next(&account->node);
+		}
+	}
 
 	gtk_scrolled_window_add_with_viewport(GTK_CONTAINER (config_scrolledwindow), config_account_box);
 

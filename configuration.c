@@ -72,7 +72,7 @@ void init_config(void)
 	user.directory = mystrdup("PROGDIR:");
 	user.folder_directory = mystrdup("PROGDIR:.folders");
 #else
-	user.directory = mystrdup(".");
+	user.directory = mystrdup("./");
 	user.folder_directory = mystrdup("./.folders");
 #endif
 	list_init(&user.config.account_list);

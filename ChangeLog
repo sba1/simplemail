@@ -2,6 +2,17 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-02-25  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/composewnd.c,mainwnd.c,readwnd.c: Changed Toolbar to new SMToolbar.
+	* amiga-mui/gui_main.c: Added new smtoolbarclass().
+	* amiga-mui/picturebuttonclass.c: Now uses MUIV_Font_Tiny for buttonlabels.
+	* amiga-mui/smtoolbarclass.(c|h): New class for creating a toolbar. The class
+	  will use TheBar for the toolbar if available.
+	* configuration.(c|h): Added config option "Don't use TheBar MCC".
+	* folder.c: Speeded up the Header-Filter rule a little bit.
+	* homepage/language.inc.php,links.php: Added TheBar.
+	* makefile.aos4, amiga-mui/Makefile.morphos: Added smtoolbarclass.o
+
 2005-02-06  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/amigadebug.h: Corrected wrong SASC #ifdef
 	* amiga-mui/composewnd.c: Added (En-|Dis-)abling of Undo/Redo button.

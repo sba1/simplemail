@@ -47,6 +47,7 @@
 #include "addressstringclass.h"
 #include "amigasupport.h"
 #include "attachmentlistclass.h"
+#include "composeeditorclass.h"
 #include "compiler.h"
 #include "datatypesclass.h"
 #include "muistuff.h"
@@ -280,12 +281,14 @@ static void compose_attach_active(struct Compose_Data **pdata)
 	{
 		if (attach->editable)
 		{
+			set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_MIME);
 			SetAttrs(data->text_texteditor,
 					MUIA_TextEditor_Contents, attach->contents?attach->contents:"",
 					MUIA_TextEditor_CursorX,attach->lastxcursor,
 					MUIA_TextEditor_CursorY,attach->lastycursor,
 					MUIA_NoNotify, TRUE,
 					TAG_DONE);
+			set(data->text_texteditor, MUIA_TextEditor_ImportHook, MUIV_TextEditor_ImportHook_Plain);
 
 			DoMethod(data->x_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorX));
 			DoMethod(data->y_text, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", xget(data->text_texteditor,MUIA_TextEditor_CursorY));
@@ -518,7 +521,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 						End,
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
-						Child, text_texteditor = (Object*)TextEditorObject,
+						Child, text_texteditor = (Object*)ComposeEditorObject,
 							InputListFrame,
 							MUIA_CycleChain, 1,
 							MUIA_TextEditor_Slider, slider,

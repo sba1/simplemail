@@ -497,5 +497,5 @@ unsigned int spam_num_of_spam_classified_mails(void)
 **************************************************************************/
 unsigned int spam_num_of_ham_classified_mails(void)
 {
-	return spam_table.data;
+	return ham_table.data;
 }

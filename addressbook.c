@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <expat.h>
+#include "expatinc.h"
 
 #include "addressbook.h"
 #include "codesets.h"

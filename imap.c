@@ -1093,6 +1093,9 @@ static void imap_thread_really_connect_to_server(void)
 {
 	if (imap_server)
 	{
+		char status_buf[256];
+		char temp_buf[200];
+
 		if (!imap_socket_lib_open)
 		 imap_socket_lib_open = open_socket_lib();
 		if (!imap_socket_lib_open) return;
@@ -1100,13 +1103,26 @@ static void imap_thread_really_connect_to_server(void)
 		if (imap_connection)
 			tcp_disconnect(imap_connection);
 
+		/* Display "Connecting" - status message */
+		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
+		thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
 		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, imap_server->ssl)))
 		{
 			if (imap_wait_login(imap_connection,imap_server))
 			{
+				/* Display "Loggin in" - status message */
+				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in..."));
+				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
 				if (imap_login(imap_connection,imap_server))
 				{
 					struct list *folder_list;
+
+					/* Display "Retrieving mail" - status message */
+					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
+					thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
 					/* We have now connected to the server, check for the folders at first */
 					folder_list = imap_get_folders(imap_connection, imap_server, 0);
 					if (folder_list)
@@ -1122,9 +1138,22 @@ static void imap_thread_really_connect_to_server(void)
 						thread_call_parent_function_sync(callback_refresh_folders,0);
 
 						imap_free_name_list(folder_list);
+
+						/* Display "Connected" - status message */
+						sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
+						thread_call_parent_function_async_string(status_set_status,1,status_buf);
 					}
+				} else
+				{
+					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
+					thread_call_parent_function_async_string(status_set_status,1,status_buf);
 				}
 			}
+		} else
+		{
+			/* Display "Failed to connect" - status message */
+			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting to the server failed"));
+			thread_call_parent_function_async_string(status_set_status,1,status_buf);
 		}
 	}
 }

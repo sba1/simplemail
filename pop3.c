@@ -69,7 +69,7 @@ static char *pop3_receive_answer(struct connection *conn, int silent)
 		/* Don't put any message when only interrupted */
 		if (tcp_error_code() != TCP_INTERRUPTED)
 		{
-			SM_DEBUGF(20,("Error receiving data from host!\n"));
+			SM_DEBUGF(5,("Error receiving data from host!\n"));
 			if (!silent) tell_from_subtask(N_("Error receiving data from host!"));
 		}
 		return NULL;
@@ -585,6 +585,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	/* List all mails with sizes */
 	if (tcp_write(conn,"LIST\r\n",6) != 6)
 	{
+		SM_DEBUGF(5,("LIST command failed\n"));
 		return mail_array;
 	}
 
@@ -592,7 +593,10 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (!(answer = pop3_receive_answer(conn,0)))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
+		{
+			SM_DEBUGF(5,("LIST command failed (%s)\n",answer));
 			return mail_array;
+		}
 		free(mail_array);
 		return NULL;
 	}
@@ -738,7 +742,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		{
 			if (mail_array[i].size > receive_size * 1024)
 			{
-				mail_array[i].flags &= ~MAILF_DOWNLOAD;
+				mail_array[i].flags &= ~(MAILF_DOWNLOAD | MAILF_DELETE);
 			}
 		}
 		return mail_array;

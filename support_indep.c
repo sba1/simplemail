@@ -1,0 +1,150 @@
+/***************************************************************************
+ SimpleMail - Copyright (C) 2000 Hynek Schlawack and Sebastian Bauer
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+***************************************************************************/
+
+/*
+** support_indep.c
+*/
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <string.h>
+
+/******************************************************************
+ Compares a string case insensitive. Accepts NULL pointers
+*******************************************************************/
+int mystricmp(const char *str1, const char *str2)
+{
+	if (!str1)
+	{
+		if (str2) return -1;
+		return 0;
+	}
+
+	if (!str2) return 1;
+
+#ifdef HAVE_STRCASECMP
+	return strcasecmp(str1,str2);
+#else
+	return stricmp(str1,str2);
+#endif
+}
+
+/******************************************************************
+ Compares a string case insensitive and n characters.
+ Accepts NULL pointers
+*******************************************************************/
+int mystrnicmp(const char *str1, const char *str2, int n)
+{
+	if (!str1)
+	{
+		if (str2) return -1;
+		return 0;
+	}
+
+	if (!str2) return 1;
+
+#ifdef HAVE_STRNCASECMP
+	return strncasecmp(str1,str2,n);
+#else
+	return strnicmp(str1,str2,n);
+#endif
+}
+
+/**************************************************************************
+ Checks if a string is inside a string (not case sensitive)
+**************************************************************************/
+char *mystristr(const char *str1, const char *str2)
+{
+	int str2_len = strlen(str2);
+
+	while (*str1)
+	{
+		if (!mystrnicmp(str1,str2,str2_len))
+			return (char*)str1;
+		str1++;
+	}
+	return NULL;
+}
+
+/******************************************************************
+ returns the length of a string. Accepts NULL pointer (returns 0
+ then)
+*******************************************************************/
+unsigned int mystrlen(const char *str)
+{
+	if (!str) return 0;
+	return strlen(str);
+}
+
+/******************************************************************
+ Duplicates a string. NULL is accepted (will return NULL).
+ A null byte string will also return NULL.
+*******************************************************************/
+char *mystrdup(const char *str)
+{
+	char *new_str;
+	int len;
+
+	if (!str) return NULL;
+	len = strlen(str);
+	if (!len) return NULL;
+
+	if ((new_str = (char*)malloc(len+1)))
+		strcpy(new_str,str);
+
+	return new_str;
+}
+
+/**************************************************************************
+ Like mystrdup() but you can limit the chars. A 0 byte is guaranted.
+ The string is allocated via malloc().
+**************************************************************************/
+char *mystrndup(const char *str1, int n)
+{
+	char *dest;
+
+	if ((dest = (char*)malloc(n+1)))
+	{
+		if (str1) strncpy(dest,str1,n);
+		else dest[0] = 0;
+
+		dest[n]=0;
+	}
+	return dest;
+}
+
+/**************************************************************************
+ Like strncpy() but ensures that the string is always 0 terminted
+**************************************************************************/
+size_t mystrlcpy(char *dest, const char *src, size_t n)
+{
+	size_t len = strlen(src);
+	size_t num_to_copy = (len >= n) ? n-1 : len;
+	if (num_to_copy>0)
+		memcpy(dest, src, num_to_copy);
+	dest[num_to_copy] = '\0';
+	return len;
+}
+
+
+
+
+

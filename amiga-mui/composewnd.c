@@ -69,6 +69,10 @@ struct Compose_Data /* should be a customclass */
 	Object *attach_tree;
 	Object *contents_page;
 	Object *datatype_datatypes;
+	Object *attach_group;
+	Object *vertical_balance;
+	Object *main_group;
+	Object *switch_button;
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
@@ -395,6 +399,26 @@ static void compose_window_send_later(struct Compose_Data **pdata)
 }
 
 /******************************************************************
+ The switch button's selected state has changed
+*******************************************************************/
+static void compose_switch_view(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+
+	DoMethod(data->main_group, MUIM_Group_InitChange);
+	if (xget(data->switch_button, MUIA_Selected))
+	{
+		set(data->attach_group, MUIA_ShowMe, TRUE);
+		set(data->vertical_balance, MUIA_ShowMe, TRUE);
+	} else
+	{
+		set(data->attach_group, MUIA_ShowMe, FALSE);
+		set(data->vertical_balance, MUIA_ShowMe, FALSE);
+	}
+	DoMethod(data->main_group, MUIM_Group_ExitChange);
+}
+
+/******************************************************************
  inserts a mail into the listtree (uses recursion)
 *******************************************************************/
 static void compose_add_mail(struct Compose_Data *data, struct mail *mail, struct MUI_NListtree_TreeNode *listnode)
@@ -479,6 +503,8 @@ void compose_window_open(char *to_str, struct mail *tochange)
 	Object *expand_to_button;
 	Object *attach_tree, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
+	Object *switch_button;
+	Object *main_group, *attach_group, *vertical_balance;
 
 	int num;
 
@@ -491,7 +517,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
     MUIA_Window_Title, "SimpleMail - Compose Message",
         
-		WindowContents, VGroup,
+		WindowContents, main_group = VGroup,
 			Child, ColGroup(2),
 				Child, MakeLabel("_To"),
 				Child, HGroup,
@@ -552,9 +578,10 @@ void compose_window_open(char *to_str, struct mail *tochange)
 					Child, HVSpace,*/
 					End,
 				End,
-			Child, BalanceObject, End,
-			Child, VGroup,
+			Child, vertical_balance = BalanceObject, MUIA_ShowMe, FALSE,End,
+			Child, attach_group = VGroup,
 				MUIA_Weight, 33,
+				MUIA_ShowMe, FALSE,
 				Child, NListviewObject,
 					MUIA_CycleChain, 1,
 					MUIA_NListview_NList, attach_tree = AttachmentListObject,
@@ -568,7 +595,11 @@ void compose_window_open(char *to_str, struct mail *tochange)
 					Child, remove_button = MakeButton("Remove"),
 					End,
 				End,
-			Child, HorizLineObject,
+			Child, switch_button = RectangleObject,
+				ButtonFrame,
+				MUIA_FixHeight,1,
+				MUIA_InputMode, MUIV_InputMode_Toggle,
+				End,
 			Child, HGroup,
 				Child, send_later_button = MakeButton("Send later"),
 				Child, cancel_button = MakeButton("Cancel"),
@@ -592,6 +623,10 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			data->attach_tree = attach_tree;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
+			data->attach_group = attach_group;
+			data->vertical_balance = vertical_balance;
+			data->main_group = main_group;
+			data->switch_button = switch_button;
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
@@ -607,6 +642,7 @@ void compose_window_open(char *to_str, struct mail *tochange)
 			DoMethod(add_files_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_add_files, data);
 			DoMethod(remove_button, MUIM_Notify, MUIA_Pressed, FALSE, attach_tree, 4, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Active, MUIV_NListtree_Remove_TreeNode_Active, 0);
 			DoMethod(attach_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, attach_tree, 4, MUIM_CallHook, &hook_standard, compose_attach_active, data);
+			DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, switch_button, 4, MUIM_CallHook, &hook_standard, compose_switch_view, data);
 			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_close, data);
 			DoMethod(send_later_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_window_send_later, data);
 			DoMethod(App,OM_ADDMEMBER,wnd);

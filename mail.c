@@ -1258,10 +1258,13 @@ struct mail *mail_create_reply(int num, struct mail **mail_array)
 
 				mail_decoded_data(text_mail,&data,&data_len);
 
-				if ((replied_text = quote_text((char*)data,data_len)))
+				if (data && data_len)
 				{
-					m->decoded_data = stradd(m->decoded_data,replied_text);
-					free(replied_text);
+					if ((replied_text = quote_text((char*)data,data_len)))
+					{
+						m->decoded_data = stradd(m->decoded_data,replied_text);
+						free(replied_text);
+					}
 				}
 			}
 		}
@@ -2073,8 +2076,15 @@ void mail_decoded_data(struct mail *mail, void **decoded_data_ptr, int *decoded_
 		*decoded_data_len_ptr = mail->decoded_len;
 	} else
 	{
-		*decoded_data_ptr = mail->text + mail->text_begin;
-		*decoded_data_len_ptr = mail->text_len;
+		if (mail->text)
+		{
+			*decoded_data_ptr = mail->text + mail->text_begin;
+			*decoded_data_len_ptr = mail->text_len;
+		} else
+		{
+			*decoded_data_ptr = 0;
+			*decoded_data_len_ptr = 0;
+		}
 	}
 }
 

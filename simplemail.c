@@ -233,23 +233,32 @@ void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply
 	char buf[256];
 	int i;
 
-	getcwd(buf, sizeof(buf));
-	chdir(folder_path);
+	if (getcwd(buf, sizeof(buf)) == NULL) return;
 
 	if ((mail_array = malloc(num*sizeof(struct mail *))))
 	{
 		struct mail *reply;
 		int err = 0;
 
+		chdir(folder_path);
+
 		for (i=0;i<num;i++)
 		{
-			if ((mail_array[i] = mail_create_from_file(to_reply_array[i]->filename)))
-			{
-				mail_read_contents("",mail_array[i]);
-			} else 
+			if (!(mail_array[i] = mail_create_from_file(to_reply_array[i]->filename)))
 			{
 				err = 1;
 				break;
+			}
+		}
+
+		chdir(buf);
+
+		if (!err)
+		{
+			for (i=0;i<num;i++)
+			{
+				/* mail_read_contents() will perform an own chdir() */
+				mail_read_contents("",mail_array[i]);
 			}
 		}
 
@@ -275,8 +284,6 @@ void callback_reply_this_mail(char *folder_path, int num, struct mail **to_reply
 		}
 		free(mail_array);
 	}
-
-	chdir(buf);
 }
 
 /* a mail should be replied */

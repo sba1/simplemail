@@ -650,6 +650,8 @@ char *main_get_mail_filename(void)
 *******************************************************************/
 struct mail *main_get_mail_first_selected(void *handle)
 {
+	printf("main_get_mail_first_selected() not correctly implemented\n");
+	return main_get_active_mail();
 #if 0
 	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_Start;
 	DoMethod(mail_tree, MUIM_NListtree_NextSelected, &treenode);
@@ -657,7 +659,6 @@ struct mail *main_get_mail_first_selected(void *handle)
 	*((struct MUI_NListtree_TreeNode **)handle) = treenode;
 	return (struct mail*)treenode->tn_User;
 #endif
-	return NULL;
 }
 
 /******************************************************************

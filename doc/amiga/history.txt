@@ -1,4 +1,7 @@
-Version 0.24 (eleventh beta) - releases on 2004/12/24
+Version 0.25 (twelth beta) - released on 2005/02/05
+   - RFC 3490 support for domains of email addresses
+
+Version 0.24 (eleventh beta) - released on 2004/12/24
    - Mail preview in main window
    - Outlook Express mail folder import (.dbx files)
    - New Addressbook with separated groups and contacts

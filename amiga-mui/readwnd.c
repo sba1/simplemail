@@ -69,6 +69,8 @@ struct Read_Data /* should be a customclass */
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
 	struct mail *mail; /* the mail which is displayed */
+
+	struct MyHook simplehtml_load_hook; /* load hook for the SimpleHTML Object */
 	/* more to add */
 };
 
@@ -346,6 +348,31 @@ static void save_button_pressed(struct Read_Data **pdata)
 }
 
 /******************************************************************
+ SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
+ otherwise 0.
+*******************************************************************/
+__asm int simplehtml_load_func(register __a0 struct Hook *h, register __a1 struct MUIP_SimpleHTML_LoadHook *msg)
+{
+	struct Read_Data *data = (struct Read_Data*)h->h_Data;
+	char *uri = msg->uri;
+	struct mail *mail;
+
+	struct MUI_NListtree_TreeNode *treenode = (struct MUI_NListtree_TreeNode *)xget(data->mime_tree,MUIA_NListtree_Active);
+	if (!treenode) return 0;
+	if (!treenode->tn_User) return 0;
+
+	if (!(mail = ((struct mime_entry*)treenode->tn_User)->mail)) return 0;
+	if (!(mail = mail_find_compound_object(mail,uri))) return 0;
+	mail_decode(mail);
+	if (!mail->decoded_data || !mail->decoded_len) return 0;
+	msg->buffer = (void*)DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AllocateMem, mail->decoded_len);
+	if (!msg->buffer) return 0;
+	CopyMem(mail->decoded_data,msg->buffer,mail->decoded_len);
+	msg->buffer_len = mail->decoded_len;
+	return 1;
+}
+
+/******************************************************************
  Opens a read window
 *******************************************************************/
 void read_window_open(char *folder, char *filename)
@@ -444,9 +471,12 @@ void read_window_open(char *folder, char *filename)
 					data->num = num;
 					read_open[num] = 1;
 
+					init_myhook(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
+
 					SetAttrs(data->html_simplehtml,
-							MUIA_SimpleHTML_HorizScrollbar,html_horiz_scrollbar,
-							MUIA_SimpleHTML_VertScrollbar,html_vert_scrollbar,
+							MUIA_SimpleHTML_HorizScrollbar, html_horiz_scrollbar,
+							MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
+							MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
 							TAG_DONE);
 
 					insert_headers(header_list,data->mail);

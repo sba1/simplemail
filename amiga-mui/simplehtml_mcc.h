@@ -8,8 +8,8 @@
 
 extern struct MUI_CustomClass *CL_SimpleHTML;
 
-__regargs int create_simplehtml_class(void);
-__regargs void delete_simplehtml_class(void);
+__stdargs int create_simplehtml_class(void);
+__stdargs void delete_simplehtml_class(void);
 
 #define SimpleHTMLObject (Object*)NewObject(CL_SimpleHTML->mcc_Class, NULL
 

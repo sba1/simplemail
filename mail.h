@@ -73,6 +73,7 @@ struct mail
 	char *filename; /* the email filename on disk, NULL if e-mail is not from disk */
 };
 
+struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype);
 struct mail *mail_create(void);
 struct mail *mail_create_from_file(char *filename);
 struct mail *mail_create_reply(struct mail *mail);

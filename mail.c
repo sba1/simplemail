@@ -353,7 +353,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
  returns the first mail with the given mime type/subtype
  (recursive). Return NULL if it doesn't exists.
 **************************************************************************/
-static struct mail *mail_find_type(struct mail *m, char *type, char *subtype)
+struct mail *mail_find_content_type(struct mail *m, char *type, char *subtype)
 {
 	int i;
 	if (!mystricmp(m->content_type, type) && !mystricmp(m->content_subtype,subtype))
@@ -361,7 +361,7 @@ static struct mail *mail_find_type(struct mail *m, char *type, char *subtype)
 
 	for (i=0;i < m->num_multiparts; i++)
 	{
-		struct mail *rm = mail_find_type(m->multipart_array[i],type,subtype);
+		struct mail *rm = mail_find_content_type(m->multipart_array[i],type,subtype);
 		if (rm) return rm;
 	}
 
@@ -566,7 +566,7 @@ struct mail *mail_create_reply(struct mail *mail)
 			}
 		}
 
-		if ((text_mail = mail_find_type(mail, "text", "plain")))
+		if ((text_mail = mail_find_content_type(mail, "text", "plain")))
 		{
 			char *replied_text;
 

@@ -1012,8 +1012,28 @@ int read_window_open(char *folder, struct mail *mail, int window)
 	struct NewMenu *nm;
 	int i;
 
-	for (num=0; num < MAX_READ_OPEN; num++)
-		if (!read_open[num]) break;
+	if (window != -1 && window < MAX_READ_OPEN)
+	{
+		/* Check if the window is already open and if so use this window
+		 * to display the mail */
+		if (read_open[window])
+		{
+			set(App, MUIA_Application_Sleep, TRUE);
+
+			if (read_window_display_mail(read_open[window],mail))
+			{
+				set(App, MUIA_Application_Sleep, FALSE);
+				return window;
+			}
+			set(App, MUIA_Application_Sleep, FALSE);
+			return -1;
+		}
+		num = window;
+	} else
+	{
+		for (num=0; num < MAX_READ_OPEN; num++)
+			if (!read_open[num]) break;
+	}
 
 	if (num == MAX_READ_OPEN) return -1;
 

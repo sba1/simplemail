@@ -153,7 +153,7 @@ STATIC ULONG Icon_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	if (IconBase->lib_Version >= 44 && data->buffer)
+	if (IconBase->lib_Version >= 44 && data->buffer && FindPort("DEFICONS"))
 	{
 		BPTR fh;
 		char command[40];

@@ -1136,7 +1136,7 @@ int pop3_login_only(struct pop3_server *server)
 	}
 
 	/* Refresh the autocheck */
-	thread_call_parent_function_sync(callback_autocheck_refresh,0);
+	thread_call_parent_function_sync(callback_autocheck_reset,0);
 	return rc;
 }
 

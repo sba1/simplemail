@@ -113,10 +113,6 @@ void CloseLibraryInterface(struct Library *lib, void *interface)
 struct Locale *DefaultLocale;
 Object *App;
 
-static struct MsgPort *timer_port;
-static struct timerequest *timer_req;
-static ULONG timer_outstanding;
-
 /* New since MUI V20 */
 static STRPTR UsedClasses[] =
 {
@@ -129,86 +125,6 @@ static STRPTR UsedClasses[] =
 	"Popplaceholder.mcc",
 	NULL
 };
-
-/****************************************************************
- Sends a timer
-*****************************************************************/
-static struct timerequest *timer_send(ULONG secs, ULONG mics)
-{
-	struct timerequest *treq = (struct timerequest *) AllocVec(sizeof(struct timerequest), MEMF_CLEAR | MEMF_PUBLIC);
-	if (treq)
-	{
-		*treq = *timer_req;
-		treq->tr_node.io_Command = TR_ADDREQUEST;
-		treq->tr_time.tv_secs = secs;
-		treq->tr_time.tv_micro = mics;
-		SendIO((struct IORequest *) treq);
-		timer_outstanding++;
-	}
-	return treq;
-}
-
-/****************************************************************
- Cleanup the timer initialisations
-*****************************************************************/
-static void timer_free(void)
-{
-	if (timer_req)
-	{
-		if (timer_req->tr_node.io_Device)
-		{
-			while (timer_outstanding)
-			{
-				if (Wait(1L << timer_port->mp_SigBit | 4096) & 4096)
-					break;
-				timer_outstanding--;
-			}
-
-			CloseDevice((struct IORequest *) timer_req);
-		}
-		DeleteIORequest(timer_req);
-	}
-
-	if (timer_port)
-		DeleteMsgPort(timer_port);
-}
-
-/****************************************************************
- Initialize the timer stuff
-*****************************************************************/
-static int timer_init(void)
-{
-	if (!(timer_port = CreateMsgPort())) return 0;
-	if (timer_req = (struct timerequest *) CreateIORequest(timer_port, sizeof(struct timerequest)))
-	{
-		if (!OpenDevice(TIMERNAME, UNIT_VBLANK, (struct IORequest *) timer_req, 0))
-		{
-			return 1;
-		}
-	}
-	timer_free();
-	return 0;
-}
-
-/****************************************************************
- Handle the timer events
-*****************************************************************/
-static void timer_handle(void)
-{
-	struct timerequest *tr;
-
-	/* Remove the timer from the port */
-	while ((tr = (struct timerequest *)GetMsg(timer_port)))
-	{
-	  FreeVec(tr);
-	  timer_outstanding--;
-	}
-
-	callback_timer();
-	appicon_refresh(0);
-
-	if (!timer_outstanding) timer_send(1, 0);
-}
 
 static Object *sound_obj;
 
@@ -244,7 +160,6 @@ void loop(void)
 {
 	ULONG sigs = 0;
 	ULONG thread_m = thread_mask();
-	ULONG timer_m = 1UL << timer_port->mp_SigBit;
 	ULONG arexx_m = arexx_mask();
 	ULONG appicon_m = appicon_mask();
 
@@ -252,10 +167,9 @@ void loop(void)
 	{
 		if (sigs)
 		{
-			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | timer_m | arexx_m | appicon_m);
+			sigs = Wait(sigs | SIGBREAKF_CTRL_C | SIGBREAKF_CTRL_D | thread_m | arexx_m | appicon_m);
 			if (sigs & SIGBREAKF_CTRL_C) break;
 			if (sigs & thread_m) thread_handle(thread_m);
-			if (sigs & timer_m) timer_handle();
 			if (sigs & arexx_m) arexx_handle();
 			if (sigs & appicon_m) appicon_handle();
 		}
@@ -346,7 +260,6 @@ void all_del(void)
 			delete_utf8string_class();
 
 			arexx_cleanup();
-			timer_free();
 			appicon_free();
 
 			/* free the sound object */
@@ -386,35 +299,32 @@ int all_init(void)
 				DefaultLocale = OpenLocale(NULL);
 				init_hook_standard();
 
-				if (timer_init())
+				if (arexx_init())
 				{
-					if (arexx_init())
+					if (appicon_init())
 					{
-						if (appicon_init())
+						if (create_utf8string_class() && create_foldertreelist_class() &&
+						    create_mailtreelist_class() && create_addressstring_class() &&
+						    create_attachmentlist_class() && create_datatypes_class() &&
+						    create_transwnd_class() && create_composeeditor_class() &&
+						    create_picturebutton_class() && create_popupmenu_class() &&
+						    create_icon_class() && create_filterlist_class() &&
+						    create_filterrule_class() && create_multistring_class() &&
+						    create_addresstreelist_class() && create_pgplist_class() &&
+						    create_audioselectgroup_class() && create_accountpop_class() &&
+						    create_signaturecycle_class() && create_messageview_class())
 						{
-							if (create_utf8string_class() && create_foldertreelist_class() &&
-							    create_mailtreelist_class() && create_addressstring_class() &&
-							    create_attachmentlist_class() && create_datatypes_class() &&
-							    create_transwnd_class() && create_composeeditor_class() &&
-							    create_picturebutton_class() && create_popupmenu_class() &&
-							    create_icon_class() && create_filterlist_class() &&
-							    create_filterrule_class() && create_multistring_class() &&
-							    create_addresstreelist_class() && create_pgplist_class() &&
-							    create_audioselectgroup_class() && create_accountpop_class() &&
-							    create_signaturecycle_class() && create_messageview_class())
+							if (app_init())
 							{
-								if (app_init())
+								if (main_window_init())
 								{
-									if (main_window_init())
-									{
-										SM_LEAVE;
-										return 1;
-									}
-								} else puts(_("Failed to create the application\n"));
-							} else puts(_("Could not create mui custom classes\n"));
-						} else puts(_("Couldn't create appicon port\n"));
-					} else puts(_("Couldn't create arexx port\n"));
-				} else puts(_("Couldn't initialize timer\n"));
+									SM_LEAVE;
+									return 1;
+								}
+							} else puts(_("Failed to create the application\n"));
+						} else puts(_("Could not create mui custom classes\n"));
+					} else puts(_("Couldn't create appicon port\n"));
+				} else puts(_("Couldn't create arexx port\n"));
 			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",0);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
@@ -458,10 +368,20 @@ void app_unbusy(void)
 char *initial_mailto;
 char *initial_subject;
 
+
 /****************************************************************
- Entry point for the GUI depend part
+ Called if the appicons needs to be refreshed
 *****************************************************************/
-int gui_main(void)
+static void refresh_appicon(void)
+{
+	appicon_refresh(0);
+	thread_push_function_delayed(2000,refresh_appicon,0);
+}
+
+/****************************************************************
+ Initialize the GUI
+*****************************************************************/
+int gui_init(void)
 {
 	int rc;
 
@@ -471,7 +391,7 @@ int gui_main(void)
 
 	dt_init();
 
-	if(all_init())
+	if (all_init())
 	{
 		main_refresh_folders();
 		main_set_folder_active(folder_incoming());
@@ -489,26 +409,34 @@ int gui_main(void)
 			initial_mailto = NULL;
 			initial_subject = NULL;
 
-			/* send the first timer */
-			timer_send(1,0);
-			callback_autocheck_refresh();
-
-			loop();
+			/* register appicon refresh function which is called every 2 seconds */
+			thread_push_function_delayed(2000,refresh_appicon,0);
 			rc = 1;
-			close_config();
-
-			shutdownwnd_open();
 		}
 	}
 
-	all_del();
 
+	SM_RETURN(rc,"%ld");
+}
+
+/****************************************************************
+ The GUI loop. Also cleans the gui.
+*****************************************************************/
+void gui_loop(void)
+{
+	SM_ENTER;
+
+	/* Now really loop */
+	loop();
+
+	/* Cleanup the stuff */
+	close_config();
+	shutdownwnd_open();
+	all_del();
 	dt_cleanup();
 
 	SM_LEAVE;
-	return rc;
 }
-
 
 /****************************************************************
  Parse the start arguments

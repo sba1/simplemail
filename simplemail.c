@@ -1647,48 +1647,6 @@ void callback_config_changed(void)
 	folder_refresh_signature_cycle();
 }
 
-static int autocheck_minutes_start; /* to compare with this */
-
-/* initializes the autocheck function */
-void callback_autocheck_refresh(void)
-{
-	static int called;
-
-	if (user.config.receive_autoonstartup && !called)
-	{
-		autocheck_minutes_start = 0;
-		called = 1;
-		callback_timer();
-	}
-	autocheck_minutes_start = sm_get_current_seconds();
-}
-
-/* called every second */
-void callback_timer(void)
-{
-	if (user.config.receive_autocheck)
-	{
-		if (sm_get_current_seconds() - autocheck_minutes_start > user.config.receive_autocheck * 60)
-		{
-			/* nothing should happen when mails_dl() is called twice,
-			   this could happen if a mail downloading takes very long */
-			callback_autocheck_refresh();
-
-			/* If socket library cannot be opened we also shouldn't try
-				 to download the mails */
-			if (open_socket_lib())
-			{
-				close_socket_lib();
-
-				if (!user.config.receive_autoifonline || is_online("mi0"))
-				{
-					mails_dl(1);
-				}
-			}
-		}
-	}
-}
-
 /* select an mail */
 void callback_select_mail(int num)
 {
@@ -1722,6 +1680,52 @@ void callback_rescan_folder(void)
 	}
 }
 
+/** Auto-Timer functions **/
+
+static unsigned int autocheck_seconds_start; /* to compare with this */
+
+/***************************************************
+ That's the function which is calleded every second
+****************************************************/
+static void callback_timer(void)
+{
+	if (user.config.receive_autocheck)
+	{
+		if (sm_get_current_seconds() - autocheck_seconds_start > user.config.receive_autocheck * 60)
+		{
+			/* nothing should happen when mails_dl() is called twice,
+			   this could happen if a mail downloading takes very long */
+			callback_autocheck_reset();
+
+			/* If socket library cannot be opened we also shouldn't try
+				 to download the mails */
+			if (open_socket_lib())
+			{
+				close_socket_lib();
+
+				if (!user.config.receive_autoifonline || is_online("mi0"))
+				{
+					mails_dl(1);
+				}
+			}
+		}
+	}
+
+	/* Register us again */
+	thread_push_function_delayed(1000, callback_timer, 0);
+}
+
+/**************************************************
+ Resets the auto timer
+***************************************************/
+void callback_autocheck_reset(void)
+{
+	autocheck_seconds_start = sm_get_current_seconds();
+}
+
+/**************************************************
+ The entry point
+***************************************************/
 int simplemail_main(void)
 {
 #ifdef ENABLE_NLS
@@ -1742,8 +1746,24 @@ int simplemail_main(void)
 		{
 			if (spam_init())
 			{
-				gui_main(0,NULL);
+				if (gui_init())
+				{
+					/* Perform an email check if requested by configuration */
+					if (user.config.receive_autoonstartup)
+					{
+						autocheck_seconds_start = 0;
+						callback_timer();
+					} else
+					{
+						/* callback_implicity starts the timer, so in case it is not called
+						 * we have to do this manually here */
+						thread_push_function_delayed(1000, callback_timer, 0);
+					}
+
+					gui_loop();
+				}
 				folder_delete_deleted();
+
 /*			folder_save_order();*/
 				spam_cleanup();
 			}

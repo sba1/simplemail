@@ -172,40 +172,25 @@ static int smtp_send_cmd(struct connection *conn, char *cmd, char *args)
 	return rc;
 }
 
+/**************************************************************************
+ Send the HELO command
+**************************************************************************/
 static int smtp_helo(struct connection *conn, struct smtp_server *server)
 {
-	int rc;
 	char dom[513];
-	int ok;
 
-	rc = 0;
+	if (!server->ip_as_domain) mystrlcpy(dom,server->domain,sizeof(dom));
+	else if(gethostname(dom, 512) != 0);
 
-	if(server->ip_as_domain)
+	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
 	{
-		ok = (gethostname(dom, 512) == 0);
-	}
-	else
-	{
-		strcpy(dom, server->domain);
-		ok = 1;
+		tell_from_subtask("Service not ready.");
+		return 0;
 	}
 
-	if(ok)
-	{
-		if(smtp_send_cmd(conn, NULL, NULL) == SMTP_SERVICE_READY)
-		{
-			if(smtp_send_cmd(conn, "HELO", dom) == SMTP_OK)
-			{
-				rc = 1;
-			}
-		}
-		else
-		{
-			tell_from_subtask("Service not ready.");
-		}
-	}
+	if (smtp_send_cmd(conn,"HELO",dom) != SMTP_OK) return 0;
 
-	return rc;
+	return 1;
 }
 
 static int smtp_from(struct connection *conn, struct smtp_server *server, char *from)
@@ -423,83 +408,54 @@ int smtp_send_mail(struct connection *conn, struct smtp_server *server, struct o
 	return rc;
 }
 
+/**************************************************************************
+ Send the EHLO command
+**************************************************************************/
 int esmtp_ehlo(struct connection *conn, struct smtp_server *server)
 {
-	int rc;
 	char dom[513];
-	int ok, running;
-	char buf[1025], *rbuf;
-
-	rc = 0;
+	char *answer;
 
 	server->esmtp.flags = 0;
 	server->esmtp.auth_flags  = 0;
 
-	if(server->ip_as_domain)
+	if (!server->ip_as_domain) mystrlcpy(dom,server->domain,sizeof(dom));
+	else if(gethostname(dom, 512) != 0);
+
+	if (smtp_send_cmd(conn, NULL, NULL) != SMTP_SERVICE_READY)
 	{
-		ok = (gethostname(dom, 512) == 0);
-	}
-	else
-	{
-		strcpy(dom, server->domain);
-		ok = 1;
+		tell_from_subtask("Service not ready.");
+		return 0;
 	}
 
-	if(ok)
+	tcp_write(conn, "EHLO ",5);
+	tcp_write(conn, dom, strlen(dom));
+	tcp_write(conn, "\r\n", 2);
+	tcp_flush(conn);
+
+	do
 	{
-		if(smtp_send_cmd(conn, NULL, NULL) == SMTP_SERVICE_READY)
+		answer = tcp_readln(conn);
+		if (!answer) return 0;
+
+		if (strstr(answer, "ENHANCEDSTATUSCODES")) server->esmtp.flags |= ESMTP_ENHACEDSTATUSCODES;
+		else if (strstr(answer, "8BITMIME")) server->esmtp.flags |= ESMTP_8BITMIME;
+		else if (strstr(answer, "ONEX")) server->esmtp.flags |= ESMTP_ONEX;
+		else if (strstr(answer, "ETRN")) server->esmtp.flags |= ESMTP_ETRN;
+		else if (strstr(answer, "XUSR")) server->esmtp.flags |= ESMTP_XUSR;
+		else if (strstr(answer, "PIPELINING")) server->esmtp.flags |= ESMTP_PIPELINING;
+		else if (strstr(answer, "AUTH"))
 		{
-			sprintf(buf, "EHLO %s\r\n", dom);
-			tcp_write(conn, buf, strlen(buf));
+			server->esmtp.flags |= ESMTP_AUTH;
 
-			do
-			{
-				rbuf = tcp_readln(conn);
-
-				if (strstr(rbuf, "ENHANCEDSTATUSCODES")) server->esmtp.flags |= ESMTP_ENHACEDSTATUSCODES;
-				else if(strstr(rbuf, "8BITMIME")) server->esmtp.flags |= ESMTP_8BITMIME;
-				else if (strstr(rbuf, "ONEX")) server->esmtp.flags |= ESMTP_ONEX;
-				else if (strstr(rbuf, "ETRN")) server->esmtp.flags |= ESMTP_ETRN;
-				else if (strstr(rbuf, "XUSR")) server->esmtp.flags |= ESMTP_XUSR;
-				else if (strstr(rbuf, "PIPELINING")) server->esmtp.flags |= ESMTP_PIPELINING;
-				else if (strstr(rbuf, "AUTH"))
-				{
-					server->esmtp.flags |= ESMTP_AUTH;
-
-					if(strstr(rbuf, "PLAIN"))
-					{
-						server->esmtp.auth_flags |= AUTH_PLAIN;
-					}
-					if(strstr(rbuf, "LOGIN"))
-					{
-						server->esmtp.auth_flags |= AUTH_LOGIN;
-					}
-					if(strstr(rbuf, "DIGEST-MD5"))
-					{
-						server->esmtp.auth_flags |= AUTH_DIGEST_MD5;
-					}
-					if(strstr(rbuf, "CRAM-MD5"))
-					{
-						server->esmtp.auth_flags |= AUTH_CRAM_MD5;
-					}
-				}
-
-				running = (rbuf[3] != ' ');
-
-				if(running == 0)
-				{
-					rc = (atol(rbuf) == SMTP_OK);
-				}
-			}
-			while(running);
+			if (strstr(answer, "PLAIN")) server->esmtp.auth_flags |= AUTH_PLAIN;
+			if (strstr(answer, "LOGIN")) server->esmtp.auth_flags |= AUTH_LOGIN;
+			if (strstr(answer, "DIGEST-MD5")) server->esmtp.auth_flags |= AUTH_DIGEST_MD5;
+			if (strstr(answer, "CRAM-MD5")) server->esmtp.auth_flags |= AUTH_CRAM_MD5;
 		}
-		else
-		{
-			tell_from_subtask("Service not ready.");
-		}
-	}
+	} while (answer[3] != ' ');
 
-	return rc;
+	return atoi(answer)==SMTP_OK;
 }
 
 static int esmtp_auth_cram(struct connection *conn, struct smtp_server *server)
@@ -823,6 +779,8 @@ struct out_mail **duplicate_outmail_array(struct out_mail **om)
 static int smtp_entry(struct smtp_server *server)
 {
 	struct smtp_server copy_server;
+
+	memset(&copy_server,0,sizeof(copy_server));
 
 	copy_server.name          			= mystrdup(server->name);
 	copy_server.domain					= mystrdup(server->domain);

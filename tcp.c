@@ -17,7 +17,7 @@
 ***************************************************************************/
 
 /*
-** $Id$
+** tcp.c
 */
 
 #include <stdio.h>
@@ -167,7 +167,7 @@ char *tcp_readln(long sd)
 
 	while (i<TCP_READLN_BUFSIZE)
 	{
-		if (tcp_read(sh, &readbuf[i],1)<=0)
+		if (tcp_read(sd, &readbuf[i],1)<=0)
 			return NULL;
 
 		if (readbuf[i]=='\n')

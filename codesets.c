@@ -1707,7 +1707,7 @@ static void tabinit(void)
 char *utf7ntoutf8(char *source, int sourcelen)
 {
 	FILE *fh;
-	int base64value,base64EOF,first=0;
+	int base64value,base64EOF=0,first=0;
 	int shifted = 0;
 	char *dest = NULL;
 	DECLARE_BIT_BUFFER;
@@ -1915,7 +1915,7 @@ char *utf8toiutf7(char *utf8, int sourcelen)
 char *iutf7ntoutf8(char *source, int sourcelen)
 {
 	FILE *fh;
-	int base64value,base64EOF,first=0;
+	int base64value,base64EOF=0,first=0;
 	int shifted = 0;
 	char *dest = NULL;
 	DECLARE_BIT_BUFFER;
@@ -2013,7 +2013,6 @@ char *iutf7ntoutf8(char *source, int sourcelen)
 
 	return dest;
 }
-
 
 /**************************************************************************
  Is string ASCII 7 bit only?

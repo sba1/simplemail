@@ -56,6 +56,15 @@ struct FolderTreelist_Data
 	Object *context_menu;
 
 	int mails_drag;
+
+	APTR image_incoming;
+	APTR image_outgoing;
+	APTR image_sent;
+	APTR image_deleted;
+	APTR image_other;
+	APTR image_group;
+
+	char name_buf[300];
 };
 
 /*
@@ -82,16 +91,31 @@ STATIC ASM SAVEDS VOID folder_destruct(register __a1 struct MUIP_NListtree_Destr
 }
 */
 
-STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg)
+STATIC ASM VOID folder_display(register __a1 struct MUIP_NListtree_DisplayMessage *msg, register __a2 Object *obj)
 {
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(CL_FolderTreelist->mcc_Class,obj);
 	if (msg->TreeNode)
 	{
 		struct folder *folder = (struct folder*)msg->TreeNode->tn_User;
 		static char mails_buf[32];
+		APTR image;
+
+		switch (folder->special)
+		{
+			case	FOLDER_SPECIAL_INCOMING: image = data->image_incoming; break;
+			case	FOLDER_SPECIAL_OUTGOING: image = data->image_outgoing; break;
+			case	FOLDER_SPECIAL_SENT: image = data->image_sent; break;
+			case	FOLDER_SPECIAL_DELETED: image = data->image_deleted; break;
+			case	FOLDER_SPECIAL_GROUP: image = data->image_group; break;
+			default: image = data->image_other; break;
+		}
 
 		sprintf(mails_buf,"%ld",folder->num_mails);
 
-		*msg->Array++ = folder->name;
+		sprintf(data->name_buf,"\33O[%08lx]",image);
+		if (folder->name) strcat(data->name_buf,folder->name);
+
+		*msg->Array++ = data->name_buf;
 		*msg->Array = mails_buf;
 	} else
 	{
@@ -148,6 +172,34 @@ STATIC ULONG FolderTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	}
 	return DoSuperMethodA(cl,obj,msg);
 }
+
+STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
+
+	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_incoming", End, 0);
+	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_outgoing", End, 0);
+	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_sent", End, 0);
+	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_deleted", End, 0);
+	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_other", End, 0);
+	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, DtpicObject, MUIA_Dtpic_Name, "PROGDIR:Images/folder_group", End, 0);
+
+	return 1;
+}
+
+STATIC ULONG FolderTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
+	if (data->image_group) DoMethod(obj, MUIM_NList_DeleteImage, data->image_group);
+	if (data->image_other) DoMethod(obj, MUIM_NList_DeleteImage, data->image_other);
+	if (data->image_deleted) DoMethod(obj, MUIM_NList_DeleteImage, data->image_deleted);
+	if (data->image_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->image_sent);
+	if (data->image_outgoing) DoMethod(obj, MUIM_NList_DeleteImage, data->image_outgoing);
+	if (data->image_incoming) DoMethod(obj, MUIM_NList_DeleteImage, data->image_incoming);
+	return DoSuperMethodA(cl,obj,msg);
+}
+
 
 STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
@@ -279,6 +331,8 @@ STATIC ASM ULONG FolderTreelist_Dispatcher(register __a0 struct IClass *cl, regi
 		case	OM_DISPOSE:		return FolderTreelist_Dispose(cl,obj,msg);
 		case	OM_SET:				return FolderTreelist_Set(cl,obj,(struct opSet*)msg);
 		case	OM_GET:				return FolderTreelist_Get(cl,obj,(struct opGet*)msg);
+		case	MUIM_Setup:		return FolderTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
+		case	MUIM_Cleanup:	return FolderTreelist_Cleanup(cl,obj,msg);
     case  MUIM_DragQuery: return FolderTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
     case  MUIM_DragDrop:  return FolderTreelist_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
 		case	MUIM_NListtree_DropType: return FolderTreelist_DropType(cl,obj,(struct MUIP_NListtree_DropType*)msg);

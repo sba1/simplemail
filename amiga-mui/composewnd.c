@@ -953,7 +953,7 @@ int compose_window_open(struct compose_args *args)
 	}
 
 	/* Find out if window is already open */
-	if (args->to_change)
+	if (args->to_change && args->to_change->filename)
 	{
 		for (num=0; num < MAX_COMPOSE_OPEN; num++)
 		{

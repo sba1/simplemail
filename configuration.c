@@ -26,13 +26,15 @@
 #include <ctype.h>
 
 #include "configuration.h"
+#include "filter.h"
 #include "pop3.h"
-#include "support.h"
 #include "support_indep.h"
+
+#include "support.h"
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
 
-static char *get_config_item(char *buf, char *item)
+char *get_config_item(char *buf, char *item)
 {
 	int len = strlen(item);
 	if (!mystrnicmp(buf,item,len))
@@ -86,9 +88,9 @@ int load_config(void)
 
 		sm_add_part(buf,".config",512);
 
-		if ((user.config_filename = strdup(buf)))
+		if ((user.config_filename = mystrdup(buf)))
 		{
-			if ((fh = fopen(buf,"r")))
+			if ((fh = fopen(user.config_filename,"r")))
 			{
 				read_line(fh,buf);
 				if (!strncmp("SMCO",buf,4))
@@ -163,6 +165,26 @@ int load_config(void)
 				fclose(fh);
 			}
 		}
+
+		if (user.directory) strcpy(buf,user.directory);
+		else buf[0] = 0;
+
+		sm_add_part(buf,".filters",512);
+
+		if ((user.filter_filename = mystrdup(buf)))
+		{
+			if ((fh = fopen(user.filter_filename,"r")))
+			{
+				read_line(fh,buf);
+				if (!strncmp("SMFI",buf,4))
+				{
+					filter_list_load(fh);
+				}
+
+				fclose(fh);
+			}
+		}
+
 		free(buf);
 	}
 	if (!user.config.email) user.config.email = mystrdup("");
@@ -216,6 +238,24 @@ void save_config(void)
 			fprintf(fh,"SMTP00.Password=%s\n",MAKESTR(user.config.smtp_password));
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			
+			fclose(fh);
+		}
+	}
+}
+
+void save_filter(void)
+{
+	if (user.filter_filename)
+	{
+		FILE *fh = fopen(user.filter_filename, "w");
+		if (fh)
+		{
+			int i;
+
+			fputs("SMFI\n\n",fh);
+
+			filter_list_save(fh);
+
 			fclose(fh);
 		}
 	}

@@ -348,7 +348,7 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 {
 	extern void loop(void);
 	struct transwnd_Data *data = (struct transwnd_Data *) INST_DATA(cl, obj);
-	LONG start = 0;
+	ULONG start = 0;
 
 	/* Kill the orginal notifies */
 	DoMethod(data->abort, MUIM_KillNotify, MUIA_Pressed);

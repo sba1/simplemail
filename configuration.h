@@ -60,12 +60,14 @@ struct user
 	char *directory; /* the directory where all data is saved */
 
 	char *config_filename; /* path to the the configuration */
+	char *filter_filename; /* path to the separate filter config file */
 
 	struct config config;
 };
 
 int load_config(void);
 void save_config(void);
+void save_filter(void);
 void free_config_pop(void);
 void insert_config_pop(struct pop3_server *pop);
 

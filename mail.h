@@ -136,6 +136,9 @@ char *mail_find_header_contents(struct mail *mail, char *name);
 char *mail_get_new_name(void);
 char *mail_get_status_filename(char *oldfilename, int status_new);
 
+/* was static */
+struct header *mail_find_header(struct mail *mail, char *name);
+
 /* mail scan functions */
 
 struct mail_scan /* don't not access this */

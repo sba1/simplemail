@@ -22,9 +22,10 @@
 #include "lists.h"
 #endif
 
-#define RULE_FROM_MATCH		0
-#define RULE_SUBJECT_MATCH	1
-#define RULE_HEADER_MATCH	2
+#define RULE_FROM_MATCH				0
+#define RULE_SUBJECT_MATCH			1
+#define RULE_HEADER_MATCH			2
+#define RULE_ATTACHMENT_MATCH	3
 
 struct filter_rule
 {
@@ -72,6 +73,7 @@ void filter_dispose(struct filter *filter);
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
 struct filter_rule *filter_find_fule(struct filter *filter, int num);
 char *filter_get_rule_string(struct filter_rule *rule);
+void filter_remove_rule(struct filter_rule *fr);
 
 struct filter_action *filter_find_action(struct filter *filter, int num);
 
@@ -79,5 +81,7 @@ void filter_list_clear(void);
 void filter_list_add_duplicate(struct filter *);
 struct filter *filter_list_first(void);
 struct filter *filter_list_next(struct filter *f);
+void filter_list_load(FILE *fh);
+void filter_list_save(FILE *fh);
 
 #endif

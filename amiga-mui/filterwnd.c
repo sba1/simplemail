@@ -32,6 +32,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "configuration.h"
 #include "filter.h"
 #include "folder.h"
 #include "support_indep.h"
@@ -77,6 +78,7 @@ struct rule rules[] = {
 	{"From match", NULL, rules_create_from, rules_set_from, rules_get_from, RULE_FROM_MATCH},
 	{"Subject macth", NULL, rules_create_subject, rules_set_subject, rules_get_subject, RULE_SUBJECT_MATCH},
 	{"Header match", NULL, rules_create_header, rules_set_header, rules_get_header, RULE_HEADER_MATCH},
+	{"Attachment", NULL, NULL, NULL, NULL, RULE_ATTACHMENT_MATCH},
 	{NULL,NULL,NULL,NULL},
 };
 char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
@@ -300,7 +302,11 @@ static void rules_new(void)
 **************************************************************************/
 static void rules_rem(void)
 {
+	struct filter_rule *fr;
+	rules_active_rule = NULL;
+	DoMethod(rules_page_listview, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &fr);
 	DoMethod(rules_page_listview, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+	filter_remove_rule(fr);
 }
 
 
@@ -385,7 +391,10 @@ static void rules_active(void)
 	if (rules_active_rule)
 	{
 		if (rules[rules_active_rule->type].get_page)
+		{
 			rules[rules_active_rule->type].get_page(rules_active_rule);
+			DoMethod(rules_page_listview, MUIM_NList_RedrawEntry, rules_active_rule);
+		}
 	}
 
 	DoMethod(rules_page_listview, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &fr);
@@ -609,7 +618,7 @@ static void filter_name(void)
 **************************************************************************/
 static void init_filter(void)
 {
-	Object *ok_button, *cancel_button;
+	Object *ok_button, *cancel_button, *save_button;
 
 	init_hook(&filter_construct_hook,(HOOKFUNC)filter_construct);
 	init_hook(&filter_destruct_hook,(HOOKFUNC)filter_destruct);
@@ -642,7 +651,8 @@ static void init_filter(void)
 				End,
 			Child, HorizLineObject,
 			Child, HGroup,
-				Child, ok_button = MakeButton("_Ok"),
+				Child, save_button = MakeButton("_Save"),
+				Child, ok_button = MakeButton("_Use"),
 				Child, cancel_button = MakeButton("_Cancel"),
 				End,
 			End,
@@ -653,6 +663,8 @@ static void init_filter(void)
 		DoMethod(App, OM_ADDMEMBER, filter_wnd);
 		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, filter_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
+		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
+		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, save_filter);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
 		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_listview, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);

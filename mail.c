@@ -40,7 +40,7 @@
 
 /* porototypes */
 static char *mail_find_content_parameter_value(struct mail *mail, char *attribute);
-static struct header *mail_find_header(struct mail *mail, char *name);
+/*static struct header *mail_find_header(struct mail *mail, char *name);*/
 
 /* the mime preample used in mime multipart messages */
 const static char mime_preample[] = 
@@ -1341,7 +1341,7 @@ void mail_free(struct mail *mail)
 /**************************************************************************
  Looks for an header and returns it, otherwise NULL
 **************************************************************************/
-static struct header *mail_find_header(struct mail *mail, char *name)
+struct header *mail_find_header(struct mail *mail, char *name)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
 

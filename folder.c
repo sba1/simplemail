@@ -1262,13 +1262,33 @@ struct filter *folder_mail_filter(struct folder *folder, struct mail *m)
 			switch (rule->type)
 			{
 				case	RULE_FROM_MATCH:
+							if (!(take = !!mystristr(m->from, rule->u.from.from)))
+							{
+								struct header *header = mail_find_header(m, "From");
+								if (header)
+								{
+									/* Should be decoded first! */
+									take = !!mystristr(header->contents, rule->u.from.from);
+								}
+							}
 							break;
 
 				case	RULE_SUBJECT_MATCH:
-							take = !mystristr(m->subject,rule->u.subject.subject);
+							take = !!mystristr(m->subject,rule->u.subject.subject);
 							break;
 
 				case	RULE_HEADER_MATCH:
+							{
+								struct header *header = mail_find_header(m,rule->u.header.name);
+								if (header)
+								{
+									take = !!mystristr(header->contents, rule->u.header.contents);
+								}
+							}
+							break;
+
+				case	RULE_ATTACHMENT_MATCH:
+							take = !!(m->flags & MAIL_FLAGS_ATTACH);
 							break;
 
 				default:

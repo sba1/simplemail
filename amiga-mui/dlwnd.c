@@ -29,7 +29,7 @@ int dl_window_init(void)
 void set_dl_title(char *str)
 {
 	/*set(win_dl, MUIA_Window_Title, str);*/
-	set(win_dl, MUIA_transwnd_WinTitle, str);
+	set(win_dl, MUIA_Window_Title, str);
 }
 
 void set_dl_status(char *str)
@@ -85,12 +85,20 @@ int dl_window_open(void)
 	int rc;
 	
 	rc = FALSE;
-	
-	win_dl = transwndObject,
-	End;
+
+	if (!win_dl)
+	{
+		win_dl = transwndObject,End;
+
+		if (win_dl)
+		{
+			DoMethod(App, OM_ADDMEMBER, win_dl);
+		}
+	}
 	
 	if(win_dl != NULL)
 	{
+		set(win_dl, MUIA_Window_Open, TRUE);
 		rc = TRUE;
 	}
 	
@@ -101,6 +109,6 @@ void dl_window_close(void)
 {
 	if(win_dl != NULL)
 	{
-		set(win_dl, MUIA_transwnd_Open, FALSE);
+		set(win_dl, MUIA_Window_Open, FALSE);
 	}
 }

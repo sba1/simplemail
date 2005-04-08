@@ -1021,7 +1021,7 @@ msgstr "-- Nouvelle signature --"
 #: amiga-mui/configwnd.c:1516
 #, c-format
 msgid "The signature is used in %d account(s)."
-msgstr "La signature est utilisée dans le(s) compte(s) %d."
+msgstr "La signature est utilisée dans %d compte(s)."
 
 #: amiga-mui/configwnd.c:1516 amiga-mui/configwnd.c:1521
 #: amiga-mui/configwnd.c:1524

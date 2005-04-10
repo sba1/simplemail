@@ -73,14 +73,15 @@ void shutdownwnd_open(void)
 					WA_Borderless, TRUE,
 					WA_Width, width,
 					WA_Height, height,
+					WA_PubScreen, scr,
 					WA_Left, wndleft,
 					WA_Top, wndtop,
 					WA_BackFill, LAYERS_NOBACKFILL,
 					TAG_DONE)))
 				{
 					BltBitMapRastPort(bitmap,0,0,
-													  shutdown_wnd->RPort, 0, 0, width, height,
-													  0xc0);
+					                  shutdown_wnd->RPort, 0, 0, width, height,
+					                  0xc0);
 
 					if (!user.config.dont_show_shutdown_text)
 					{

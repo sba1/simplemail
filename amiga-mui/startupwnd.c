@@ -63,14 +63,15 @@ void startupwnd_open(void)
 					WA_Borderless, TRUE,
 					WA_Width, width,
 					WA_Height, height,
+					WA_PubScreen, scr,
 					WA_Left, wndleft,
 					WA_Top, wndtop,
 					WA_BackFill, LAYERS_NOBACKFILL,
 					TAG_DONE)))
 				{
 					BltBitMapRastPort(bitmap,0,0,
-													  startup_wnd->RPort, 0, 0, width, height,
-													  0xc0);
+					                  startup_wnd->RPort, 0, 0, width, height,
+					                  0xc0);
 				}
 			}
 			DisposeDTObject(obj);

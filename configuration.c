@@ -377,7 +377,7 @@ int load_config(void)
 
 						if (!mystrnicmp(buf, "Phrase",6))
 						{
-							/* it's a POP Server config line */
+							/* it's a phrase config line */
 							unsigned char *phrase_buf = buf + 6;
 							int phrase_no = atoi(phrase_buf);
 							struct phrase *phrase;

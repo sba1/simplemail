@@ -141,6 +141,7 @@ struct ColumnInfo
 
 #define COLUMN_TYPE_FROMTO  1
 #define COLUMN_TYPE_SUBJECT 2
+#define COLUMN_TYPE_STATUS  3
 
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 
@@ -220,6 +221,63 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 
 	*ascii7_ptr = is_ascii7;
 	*txt_ptr = txt;
+}
+
+STATIC VOID GetStatusImages(struct mail_info *m, int *images, int *used_images_ptr)
+{
+	int used_images = *used_images_ptr;
+
+	if (m->flags & MAIL_FLAGS_AUTOSPAM)
+	{
+		images[used_images++] = IMAGE_NEW_SPAM;
+	} else
+	if (m->flags & MAIL_FLAGS_NEW)
+	{
+		if (mail_info_is_spam(m)) images[used_images++] = IMAGE_NEW_SPAM;
+		else if (m->flags & MAIL_FLAGS_PARTIAL)	images[used_images++] = IMAGE_NEW_PARTIAL;
+		else images[used_images++] = IMAGE_NEW;
+	} else
+	{
+		if (mail_is_spam(m)) images[used_images++] = IMAGE_UNREAD_SPAM;
+		else if ((m->flags & MAIL_FLAGS_NORCPT) /*&& data->folder_type == FOLDER_TYPE_SEND*/) images[used_images++] = IMAGE_NORCPT;
+		else
+		{
+			if (m->flags & MAIL_FLAGS_PARTIAL)
+			{
+				switch (mail_get_status_type(m))
+				{
+					case MAIL_STATUS_READ: images[used_images++] = IMAGE_READ_PARTIAL; break;
+					case MAIL_STATUS_REPLIED: images[used_images++] = IMAGE_REPLY_PARTIAL; break;
+					default: images[used_images++] = IMAGE_UNREAD_PARTIAL; break;
+				} 
+			} else
+			{
+				switch (mail_get_status_type(m))
+				{
+					case	MAIL_STATUS_UNREAD: images[used_images++] = IMAGE_UNREAD; break;
+					case	MAIL_STATUS_READ: images[used_images++] = IMAGE_READ; break;
+					case	MAIL_STATUS_WAITSEND: images[used_images++] = IMAGE_WAITSEND;break;
+					case	MAIL_STATUS_SENT: images[used_images++] = IMAGE_SENT;break;
+					case	MAIL_STATUS_HOLD: images[used_images++] = IMAGE_HOLD;break;
+					case	MAIL_STATUS_REPLIED: images[used_images++] = IMAGE_REPLY;break;
+					case	MAIL_STATUS_FORWARD: images[used_images++] = IMAGE_FORWARD;break;
+					case	MAIL_STATUS_ERROR: images[used_images++] = IMAGE_ERROR;break;
+				}
+			}
+		}
+	}
+
+
+	if (m->status & MAIL_STATUS_FLAG_MARKED) images[used_images++] = IMAGE_MARK;
+	if (m->flags & MAIL_FLAGS_IMPORTANT) images[used_images++] = IMAGE_IMPORTANT;
+	if (m->flags & MAIL_FLAGS_CRYPT) images[used_images++] = IMAGE_CRYPT;
+	else
+	{
+		if (m->flags & MAIL_FLAGS_SIGNED) images[used_images++] = IMAGE_SIGNED;
+		else if (m->flags & MAIL_FLAGS_ATTACH) images[used_images++] = IMAGE_ATTACH;
+		if (mail_is_marked_as_deleted(m)) images[used_images++] = IMAGE_TRASHCAN;
+	}
+	*used_images_ptr = used_images;
 }
 
 /**************************************************************************/
@@ -315,14 +373,17 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 		{
 			if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
 			{
-				int col_width = data->ci[col].width;
 				int is_ascii7 = 1;
 				char *txt = NULL;
 				int used_images = 0;
-				int images[4];
+				int images[10];
 		
 				switch (data->ci[col].type)
 				{
+					case	COLUMN_TYPE_STATUS:
+								GetStatusImages(m,images,&used_images);
+								break;
+
 					case	COLUMN_TYPE_FROMTO:
 								if (m)
 								{
@@ -362,8 +423,13 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 							txt = data->buf;
 						}
 						new_width += TextLength(&data->rp, txt, strlen(txt));
-						if (new_width > data->ci[col].width) data->ci[col].width = new_width;
+					} else
+					{
+						/* If new_width contains a non 0 integer, at least a image is available.
+						 * Because there is no text available, we subtract the last space */
+						if (new_width) new_width -= IMAGE_HORIZ_SPACE;
 					}
+					if (new_width > data->ci[col].width) data->ci[col].width = new_width;
 				}
 
 			}
@@ -418,10 +484,14 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		int is_ascii7 = 1;
 		char *txt = NULL;
 		int used_images = 0;
-		int images[4];
+		int images[10];
 
 		switch (data->ci[col].type)
 		{
+			case	COLUMN_TYPE_STATUS:
+						GetStatusImages(m,images,&used_images);
+						break;
+
 			case	COLUMN_TYPE_FROMTO:
 						if (m)
 						{
@@ -525,12 +595,15 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 	}
 
-	data->ci[0].type = COLUMN_TYPE_FROMTO;
+	data->ci[0].type = COLUMN_TYPE_STATUS;
 	data->ci[0].width = 150;
 	data->ci[0].flags = COLUMN_FLAG_AUTOWIDTH;
-	data->ci[1].type = COLUMN_TYPE_SUBJECT;
-	data->ci[1].width = 200;
+	data->ci[1].type = COLUMN_TYPE_FROMTO;
+	data->ci[1].width = 150;
 	data->ci[1].flags = COLUMN_FLAG_AUTOWIDTH;
+	data->ci[2].type = COLUMN_TYPE_SUBJECT;
+	data->ci[2].width = 200;
+	data->ci[2].flags = COLUMN_FLAG_AUTOWIDTH;
 
   data->ehn.ehn_Events   = IDCMP_MOUSEBUTTONS;
   data->ehn.ehn_Priority = 0;

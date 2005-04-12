@@ -176,6 +176,11 @@ struct MailTreelist_Data
 	int quiet; /* needed for rendering, if > 0, don't call super method */
 
 	struct RastPort rp; /* Rastport for font calculations */
+	
+	/* double click */
+	ULONG last_secs;
+	ULONG last_mics;
+	ULONG last_active;
 };
 
 /**************************************************************************/
@@ -190,6 +195,19 @@ static void IssueTreelistActiveNotify(struct IClass *cl, Object *obj, struct Mai
 		tags[0].ti_Data = (ULONG)(data->entries[data->entries_active]->mail_info);
 	else
 		tags[0].ti_Data = 0;
+
+	tags[1].ti_Tag = TAG_DONE;
+
+	/* issue the notify */
+	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
+}
+
+static void IssueTreelistDoubleClickNotify(struct IClass *cl, Object *obj, struct MailTreelist_Data *data)
+{
+	struct TagItem tags[2];
+
+	tags[0].ti_Tag = MUIA_MailTreelist_DoubleClick;
+	tags[0].ti_Data = TRUE;
 
 	tags[1].ti_Tag = TAG_DONE;
 
@@ -948,7 +966,20 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->entries_active = new_entry_active;
 										MUI_Redraw(obj,MADF_DRAWOBJECT);
 										IssueTreelistActiveNotify(cl,obj,data);
+									} else
+									{
+										if (data->entries_active != -1)
+										{
+											if (DoubleClick(data->last_secs,data->last_mics,msg->imsg->Seconds,msg->imsg->Micros))
+											{
+												IssueTreelistDoubleClickNotify(cl,obj,data);
+											}
+										}
 									}
+
+									data->last_mics = msg->imsg->Micros;
+									data->last_secs = msg->imsg->Seconds;
+									data->last_active = new_entry_active;
 	    					}
 	    				}
 	    				break;

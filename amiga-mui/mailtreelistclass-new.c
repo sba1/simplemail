@@ -857,9 +857,9 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 /**************************************************************************/
 
-Object *MakeMailTreelist(ULONG userid)
+Object *MakeMailTreelist(ULONG userid, Object **list)
 {
-	return MailTreelistObject,
+	return *list = MailTreelistObject,
 					InputListFrame,
 					MUIA_ObjectID, userid,
 					End;

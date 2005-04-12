@@ -162,9 +162,31 @@ struct MailTreelist_Data
 	struct ColumnInfo ci[MAX_COLUMNS];
 	
 	char buf[2048];
+
+	int quiet; /* needed for rendering, if > 0, don't call super method */
 };
 
 /**************************************************************************/
+
+static void IssueTreelistActiveNotify(struct IClass *cl, Object *obj, struct MailTreelist_Data *data)
+{
+	struct TagItem tags[2];
+
+	tags[0].ti_Tag = MUIA_MailTreelist_Active;
+
+	if (data->entries_active != -1)
+		tags[0].ti_Data = (ULONG)(data->entries[data->entries_active]->mail_info);
+	else
+		tags[0].ti_Data = 0;
+
+	tags[1].ti_Tag = TAG_DONE;
+
+	/* issue the notify */
+	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
+}
+
+/**************************************************************************/
+
 
 /**************************************************************************
  Allocate a single list entry, does not initialize it (except the pointer)
@@ -324,6 +346,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_InputMode, MUIV_InputMode_None,
 		MUIA_ShowSelState, FALSE,
+/*		MUIA_FillArea, FALSE,*/
 /*		MUIA_ShortHelp, TRUE,*/
 		TAG_MORE,msg->ops_AttrList)))
 		return 0;
@@ -520,7 +543,12 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	int start,cur,end;
 	int y;
 
+	if (data->quiet)
+		return 0;
+
 	DoSuperMethodA(cl,obj,(Msg)msg);
+
+	SetFont(_rp(obj),_font(obj));
 
 	start = 0;
 	end = MIN(start + data->entries_visible, data->entries_num);
@@ -528,7 +556,20 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	for (cur = start; cur < end; cur++)
 	{
+		if (cur == data->entries_active)
+		{
+			data->quiet++;
+			set(obj, MUIA_Background, MUII_ListCursor);
+			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
+		}
+
 		DrawEntry(data,obj,cur,y);
+
+		if (cur == data->entries_active)
+		{
+			set(obj, MUIA_Background, MUII_ListBack);
+			data->quiet--;
+		}
 		y += data->entry_maxheight;
 	}
 
@@ -633,6 +674,29 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
   {
 		LONG mx = msg->imsg->MouseX - _mleft(obj);
 		LONG my = msg->imsg->MouseY - _mtop(obj);
+
+		switch (msg->imsg->Class)
+		{
+	    case    IDCMP_MOUSEBUTTONS:
+	    				if (msg->imsg->Code == SELECTDOWN)
+	    				{
+	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
+	    					{
+	    						int new_entry_active = my / data->entry_maxheight;
+
+									if (new_entry_active < 0) new_entry_active = 0;
+									else if (new_entry_active >= data->entries_num) new_entry_active = data->entries_num - 1;
+
+									if (new_entry_active != data->entries_active)
+									{
+										data->entries_active = new_entry_active;
+										MUI_Redraw(obj,MADF_DRAWOBJECT);
+										IssueTreelistActiveNotify(cl,obj,data);
+									}
+	    					}
+	    				}
+	    				break;
+		}
   }
 
 	return 0;

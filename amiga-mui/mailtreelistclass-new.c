@@ -346,7 +346,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_InputMode, MUIV_InputMode_None,
 		MUIA_ShowSelState, FALSE,
-/*		MUIA_FillArea, FALSE,*/
+		MUIA_FillArea, FALSE,
+		MUIA_Background, MUII_ListBack,
 /*		MUIA_ShortHelp, TRUE,*/
 		TAG_MORE,msg->ops_AttrList)))
 		return 0;
@@ -563,6 +564,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
 		}
 
+		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
 		DrawEntry(data,obj,cur,y);
 
 		if (cur == data->entries_active)
@@ -570,7 +572,13 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			set(obj, MUIA_Background, MUII_ListBack);
 			data->quiet--;
 		}
+
 		y += data->entry_maxheight;
+	}
+
+	if (y <= _mbottom(obj))
+	{
+		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
 	}
 
 	return 0;

@@ -1454,11 +1454,11 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 /*****************************************************************************/
 
-Object *MakeMailTreelist(ULONG userid)
+Object *MakeMailTreelist(ULONG userid, Object **list)
 {
 	return NListviewObject,
 						MUIA_CycleChain,1,
-						MUIA_NListview_NList, MailTreelistObject,
+						MUIA_NListview_NList, *list = MailTreelistObject,
 							MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4, /* was default setting in main mail tree */
 							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
 							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,

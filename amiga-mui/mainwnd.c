@@ -699,6 +699,7 @@ int main_window_init(void)
 	rc = FALSE;
 
 	main_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+	mail_listview = MakeMailTreelist(MAKE_ID('M','W','M','T'),&mail_tree);
 
 	win_main = WindowObject,
 		MUIA_HelpNode, "MA_W",
@@ -758,7 +759,7 @@ int main_window_init(void)
 					End,
 				Child, folder_balance = BalanceObject, End,
 				Child, right_group = VGroup,
-					Child, mail_listview = mail_tree = MakeMailTreelist(MAKE_ID('M','W','M','T')),
+					Child, mail_listview,
 					Child, right_balance = BalanceObject, End,
 					Child, mail_messageview = MessageViewObject,
 						MUIA_CycleChain, 1,

@@ -33,6 +33,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "smintl.h"
@@ -161,6 +162,8 @@ struct MailTreelist_Data
 
 	struct ColumnInfo ci[MAX_COLUMNS];
 	
+	LONG threepoints_width; /* Width of ... */
+
 	char buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
@@ -183,6 +186,32 @@ static void IssueTreelistActiveNotify(struct IClass *cl, Object *obj, struct Mai
 
 	/* issue the notify */
 	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
+}
+
+/**************************************************************************/
+
+STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
+{
+	int is_ascii7 = 1;
+	char *txt;
+
+	if ((txt = m->from_phrase))
+		is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ASCII7);
+
+	if (!txt)
+	{
+		if ((txt = m->from_addr))
+			is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ADDR_ASCII7);
+	}
+
+	if (!txt)
+	{
+		txt = "";
+		is_ascii7 = 1;
+	}
+
+	*ascii7_ptr = is_ascii7;
+	*txt_ptr = txt;
 }
 
 /**************************************************************************/
@@ -250,7 +279,7 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 }
 
 /**************************************************************************
- Calc entry dimensions
+ Calc entries dimensions
 **************************************************************************/
 static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 {
@@ -289,6 +318,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 {
 	int col;
 	int x1;
+	int fonty;
 
 	struct ListEntry *entry;
 	struct mail_info *m;
@@ -299,37 +329,62 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		return;
 
 	m = entry->mail_info;
+	fonty = _font(obj)->tf_YSize;
 
-	Move(_rp(obj),x1,y + _font(obj)->tf_Baseline);
+	SetABPenDrMd(_rp(obj),_pens(obj)[MPEN_TEXT],0,JAM1);
 
 	for (col = 0;col < MAX_COLUMNS; col++)
 	{
+		int col_width = data->ci[col].width;
+		int is_ascii7 = 1;
+		char *txt = NULL;
+
 		switch (data->ci[col].type)
 		{
 			case	COLUMN_TYPE_FROMTO:
-						{
-							char *txt;
-							int txt_len;
-
-							if (m)
-							{
-								txt = m->from_phrase;
-								if (!txt) txt = m->from_addr;
-								if (!txt) txt = "";
-								txt_len = strlen(txt);
-							} else
-							{
-								txt = _("From");
-								txt_len = strlen(txt);
-							}
-							SetABPenDrMd(_rp(obj),_pens(obj)[MPEN_TEXT],0,JAM1);
-							Text(_rp(obj),txt,txt_len);
-						}
+						if (m) GetFromText(m,&txt,&is_ascii7);
+						else txt = _("From");
 						break;
 
 			case	COLUMN_TYPE_SUBJECT:
+						if (m)
+						{
+							txt = m->subject;
+							is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
+						}
+						else txt = _("Subject");
 						break;
 		}
+
+		/* Bring the text on screen */
+		if (txt)
+		{
+			int txt_len;
+			int fit;
+			struct TextExtent te;
+
+			if (!is_ascii7)
+			{
+				utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+				txt = data->buf;
+			}
+
+			txt_len = strlen(txt);
+			
+			fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,col_width,fonty);
+			if (fit < txt_len)
+			{
+				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,col_width - data->threepoints_width,fonty);
+			}
+
+			Move(_rp(obj),x1,y + _font(obj)->tf_Baseline);
+			Text(_rp(obj),txt,fit);
+
+			if (fit < txt_len)
+				Text(_rp(obj),"...",3);
+		}
+
+		x1 += col_width;
 	}
 }
 
@@ -361,7 +416,9 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	data->ci[0].type = COLUMN_TYPE_FROMTO;
+	data->ci[0].width = 150;
 	data->ci[1].type = COLUMN_TYPE_SUBJECT;
+	data->ci[1].width = 200;
 
   data->ehn.ehn_Events   = IDCMP_MOUSEBUTTONS;
   data->ehn.ehn_Priority = 0;
@@ -517,9 +574,16 @@ STATIC ULONG MailTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_A
 STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	struct RastPort rp;
+
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
   DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn);
+
+	InitRastPort(&rp);
+  SetFont(&rp,_font(obj));
+ 
+  data->threepoints_width = TextLength(&rp,"...",3);
 	return 1;
 }
 

@@ -132,11 +132,14 @@ struct ListEntry
 struct ColumnInfo
 {
 	LONG width;
-	LONG type;
+	WORD type;
+	WORD flags;
 };
 
 #define COLUMN_TYPE_FROMTO  1
 #define COLUMN_TYPE_SUBJECT 2
+
+#define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 
 struct MailTreelist_Data
 {
@@ -167,6 +170,8 @@ struct MailTreelist_Data
 	char buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
+
+	struct RastPort rp; /* Rastport for font calculations */
 };
 
 /**************************************************************************/
@@ -283,14 +288,66 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 **************************************************************************/
 static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 {
-	int i;
+	int i,col;
 	int maxheight = 0;
+
+	for (col=0;col<MAX_COLUMNS;col++)
+	{
+		/* Discard widths of auto width columns */
+		if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
+			data->ci[col].width = 0;
+	}
 
 	for (i=0;i<data->entries_num;i++)
 	{
-		/* If we are inbetween setup, we have to calculate the dimensions */
+		struct mail_info *m;
+
+		/* Entry height, very simple at the momement */
 		int entry_height = _font(obj)->tf_YSize;
 		if (entry_height > maxheight) maxheight = entry_height;
+
+		m = data->entries[i]->mail_info;
+
+		for (col=0;col<MAX_COLUMNS;col++)
+		{
+			if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
+			{
+				char *txt = NULL;
+				int is_ascii7 = 1;
+
+				switch (data->ci[col].type)
+				{
+					case	COLUMN_TYPE_FROMTO:
+								if (m) GetFromText(m,&txt,&is_ascii7);
+								else txt = _("From");
+								break;
+
+					case	COLUMN_TYPE_SUBJECT:
+								if (m)
+								{
+									txt = m->subject;
+									is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
+								}
+								else txt = _("Subject");
+								break;
+
+				}
+
+				if (txt)
+				{
+					LONG new_width;
+
+					if (!is_ascii7)
+					{
+						utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+						txt = data->buf;
+					}
+					new_width = TextLength(&data->rp, txt, strlen(txt));
+					if (new_width > data->ci[col].width) data->ci[col].width = new_width;
+				}
+
+			}
+		}
 	}
 	
 	data->entry_maxheight = maxheight;
@@ -419,6 +476,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[0].width = 150;
 	data->ci[1].type = COLUMN_TYPE_SUBJECT;
 	data->ci[1].width = 200;
+	data->ci[1].flags = COLUMN_FLAG_AUTOWIDTH;
 
   data->ehn.ehn_Events   = IDCMP_MOUSEBUTTONS;
   data->ehn.ehn_Priority = 0;
@@ -516,6 +574,10 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	if (!DoSuperMethodA(cl,obj,(Msg)msg))
 		return 0;
 
+	/* Setup rastport */
+	InitRastPort(&data->rp);
+  SetFont(&data->rp,_font(obj));
+
 	for (i=0;i<IMAGE_MAX;i++)
 	{
 		strcpy(filename,"PROGDIR:Images/");
@@ -574,16 +636,12 @@ STATIC ULONG MailTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_A
 STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	struct RastPort rp;
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
   DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn);
 
-	InitRastPort(&rp);
-  SetFont(&rp,_font(obj));
- 
-  data->threepoints_width = TextLength(&rp,"...",3);
+  data->threepoints_width = TextLength(&data->rp,"...",3);
 	return 1;
 }
 

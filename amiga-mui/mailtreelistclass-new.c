@@ -50,6 +50,9 @@
 
 /**************************************************************************/
 
+/* Horizontal space between images */
+#define IMAGE_HORIZ_SPACE 2
+
 enum
 {
 	IMAGE_UNREAD = 0,
@@ -312,16 +315,23 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 		{
 			if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
 			{
-				char *txt = NULL;
+				int col_width = data->ci[col].width;
 				int is_ascii7 = 1;
-
+				char *txt = NULL;
+				int used_images = 0;
+				int images[4];
+		
 				switch (data->ci[col].type)
 				{
 					case	COLUMN_TYPE_FROMTO:
-								if (m) GetFromText(m,&txt,&is_ascii7);
+								if (m)
+								{
+									if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
+									GetFromText(m,&txt,&is_ascii7);
+								}
 								else txt = _("From");
 								break;
-
+		
 					case	COLUMN_TYPE_SUBJECT:
 								if (m)
 								{
@@ -330,20 +340,30 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 								}
 								else txt = _("Subject");
 								break;
-
 				}
 
-				if (txt)
+				if (txt || used_images)
 				{
-					LONG new_width;
+					int new_width = 0;
+					int cur_image;
 
-					if (!is_ascii7)
+					/* put the images at first */
+					for (cur_image = 0; cur_image < used_images; cur_image++)
 					{
-						utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
-						txt = data->buf;
+						struct dt_node *dt = data->images[images[cur_image]];
+						if (dt) new_width += dt_width(dt) + IMAGE_HORIZ_SPACE;
 					}
-					new_width = TextLength(&data->rp, txt, strlen(txt));
-					if (new_width > data->ci[col].width) data->ci[col].width = new_width;
+
+					if (txt)
+					{
+						if (!is_ascii7)
+						{
+							utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+							txt = data->buf;
+						}
+						new_width += TextLength(&data->rp, txt, strlen(txt));
+						if (new_width > data->ci[col].width) data->ci[col].width = new_width;
+					}
 				}
 
 			}
@@ -376,6 +396,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	int col;
 	int x1;
 	int fonty;
+	int entry_height;
 
 	struct ListEntry *entry;
 	struct mail_info *m;
@@ -387,6 +408,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 	m = entry->mail_info;
 	fonty = _font(obj)->tf_YSize;
+	entry_height = data->entry_maxheight;
 
 	SetABPenDrMd(_rp(obj),_pens(obj)[MPEN_TEXT],0,JAM1);
 
@@ -395,11 +417,17 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		int col_width = data->ci[col].width;
 		int is_ascii7 = 1;
 		char *txt = NULL;
+		int used_images = 0;
+		int images[4];
 
 		switch (data->ci[col].type)
 		{
 			case	COLUMN_TYPE_FROMTO:
-						if (m) GetFromText(m,&txt,&is_ascii7);
+						if (m)
+						{
+							if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
+							GetFromText(m,&txt,&is_ascii7);
+						}
 						else txt = _("From");
 						break;
 
@@ -413,32 +441,57 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						break;
 		}
 
-		/* Bring the text on screen */
-		if (txt)
+		/* Bring the text or images on screen */
+		if (txt || used_images)
 		{
 			int txt_len;
 			int fit;
 			struct TextExtent te;
+			int cur_image;
+			int available_width = col_width;
+			int xstart = x1;
 
-			if (!is_ascii7)
+			/* put the images at first */
+			for (cur_image = 0; cur_image < used_images; cur_image++)
 			{
-				utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
-				txt = data->buf;
+				struct dt_node *dt = data->images[images[cur_image]];
+				if (dt)
+				{
+					if (dt_width(dt) <= available_width)
+					{
+						dt_put_on_rastport(dt,_rp(obj),xstart,y + (entry_height - dt_height(dt))/2);
+						available_width -= dt_width(dt) + IMAGE_HORIZ_SPACE;
+						xstart += dt_width(dt) + IMAGE_HORIZ_SPACE;
+					} else
+					{
+						available_width = 0;
+					}
+				}
 			}
 
-			txt_len = strlen(txt);
-			
-			fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,col_width,fonty);
-			if (fit < txt_len)
+			/* now put the text, but only if there is really space left */
+			if (available_width > 0 && txt)
 			{
-				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,col_width - data->threepoints_width,fonty);
+				if (!is_ascii7)
+				{
+					utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+					txt = data->buf;
+				}
+	
+				txt_len = strlen(txt);
+				
+				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_width,fonty);
+				if (fit < txt_len)
+				{
+					fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_width - data->threepoints_width,fonty);
+				}
+	
+				Move(_rp(obj),xstart,y + _font(obj)->tf_Baseline);
+				Text(_rp(obj),txt,fit);
+	
+				if (fit < txt_len)
+					Text(_rp(obj),"...",3);
 			}
-
-			Move(_rp(obj),x1,y + _font(obj)->tf_Baseline);
-			Text(_rp(obj),txt,fit);
-
-			if (fit < txt_len)
-				Text(_rp(obj),"...",3);
 		}
 
 		x1 += col_width;
@@ -474,6 +527,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data->ci[0].type = COLUMN_TYPE_FROMTO;
 	data->ci[0].width = 150;
+	data->ci[0].flags = COLUMN_FLAG_AUTOWIDTH;
 	data->ci[1].type = COLUMN_TYPE_SUBJECT;
 	data->ci[1].width = 200;
 	data->ci[1].flags = COLUMN_FLAG_AUTOWIDTH;

@@ -561,7 +561,6 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		{
 			data->quiet++;
 			set(obj, MUIA_Background, MUII_ListCursor);
-			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
 		}
 
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);

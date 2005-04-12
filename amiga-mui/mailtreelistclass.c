@@ -1411,6 +1411,8 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 	return 0;
 }
 
+/*****************************************************************************/
+
 STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -1449,6 +1451,23 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
+
+/*****************************************************************************/
+
+Object *MakeMailTreelist(ULONG userid)
+{
+	return NListviewObject,
+						MUIA_CycleChain,1,
+						MUIA_NListview_NList, MailTreelistObject,
+							MUIA_NList_TitleMark, MUIV_NList_TitleMark_Down | 4, /* was default setting in main mail tree */
+							MUIA_NList_Exports, MUIV_NList_Exports_ColWidth|MUIV_NList_Exports_ColOrder,
+							MUIA_NList_Imports, MUIV_NList_Imports_ColWidth|MUIV_NList_Imports_ColOrder,
+							MUIA_ObjectID, userid,
+							End,
+						End;
+}
+
+/*****************************************************************************/
 
 struct MUI_CustomClass *CL_MailTreelist;
 

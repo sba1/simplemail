@@ -536,8 +536,10 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			int fit;
 			struct TextExtent te;
 			int cur_image;
-			int available_width = col_width;
+			int available_col_width;		/* available width for the current column */
 			int xstart = x1;
+
+			available_col_width = col_width;
 
 			/* put the images at first */
 			for (cur_image = 0; cur_image < used_images; cur_image++)
@@ -545,20 +547,22 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 				struct dt_node *dt = data->images[images[cur_image]];
 				if (dt)
 				{
-					if (dt_width(dt) <= available_width)
+					int dtw = dt_width(dt);
+
+					if (dtw <= available_col_width)
 					{
 						dt_put_on_rastport(dt,_rp(obj),xstart,y + (entry_height - dt_height(dt))/2);
-						available_width -= dt_width(dt) + IMAGE_HORIZ_SPACE;
-						xstart += dt_width(dt) + IMAGE_HORIZ_SPACE;
+						available_col_width -= dtw + IMAGE_HORIZ_SPACE;
+						xstart += dtw + IMAGE_HORIZ_SPACE;
 					} else
 					{
-						available_width = 0;
+						available_col_width = 0;
 					}
 				}
 			}
 
 			/* now put the text, but only if there is really space left */
-			if (available_width > 0 && txt)
+			if (available_col_width > 0 && txt)
 			{
 				if (!is_ascii7)
 				{
@@ -568,10 +572,10 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	
 				txt_len = strlen(txt);
 				
-				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_width,fonty);
+				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_col_width,fonty);
 				if (fit < txt_len)
 				{
-					fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_width - data->threepoints_width,fonty);
+					fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 				}
 	
 				Move(_rp(obj),xstart,y + _font(obj)->tf_Baseline);

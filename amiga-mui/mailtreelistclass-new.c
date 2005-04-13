@@ -934,6 +934,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		}
 	}
 
+	IssueTreelistActiveNotify(cl, obj, data);
 	return 1;
 }
 

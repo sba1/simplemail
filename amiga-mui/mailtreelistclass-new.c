@@ -29,6 +29,7 @@
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
 #include <proto/exec.h>
+#include <proto/layers.h>
 #include <proto/graphics.h>
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
@@ -181,6 +182,12 @@ struct MailTreelist_Data
 	ULONG last_secs;
 	ULONG last_mics;
 	ULONG last_active;
+
+	/* buffering */
+	struct Layer *buffer_layer;
+	struct Layer_Info *buffer_li;
+	struct BitMap *buffer_bmap;
+	struct RastPort *buffer_rp;
 };
 
 /**************************************************************************/
@@ -368,7 +375,6 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 {
 	int i,col;
-	int maxheight = 0;
 
 	for (col=0;col<MAX_COLUMNS;col++)
 	{
@@ -380,10 +386,6 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 	for (i=0;i<data->entries_num;i++)
 	{
 		struct mail_info *m;
-
-		/* Entry height, very simple at the momement */
-		int entry_height = _font(obj)->tf_YSize;
-		if (entry_height > maxheight) maxheight = entry_height;
 
 		m = data->entries[i]->mail_info;
 
@@ -453,8 +455,6 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 			}
 		}
 	}
-	
-	data->entry_maxheight = maxheight;
 }
 
 /**************************************************************************
@@ -475,7 +475,7 @@ static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
  Draw an entry at entry_pos at the given y location. To draw the title,
  set pos to ENTRY_TITLE
 **************************************************************************/
-static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, int y)
+static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, struct RastPort *rp, int x, int y)
 {
 	int col;
 	int x1;
@@ -485,7 +485,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	struct ListEntry *entry;
 	struct mail_info *m;
 
-	x1 = _mleft(obj);
+	x1 = x;
 
 	if (!(entry = data->entries[entry_pos]))
 		return;
@@ -727,6 +727,8 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	InitRastPort(&data->rp);
   SetFont(&data->rp,_font(obj));
 
+	data->entry_maxheight = _font(obj)->tf_YSize;
+
 	for (i=0;i<IMAGE_MAX;i++)
 	{
 		strcpy(filename,"PROGDIR:Images/");
@@ -785,13 +787,30 @@ STATIC ULONG MailTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_A
 STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	ULONG depth;
+	ULONG rc;
+
+	rc = DoSuperMethodA(cl,obj,(Msg)msg);
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
   DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn);
 
   data->threepoints_width = TextLength(&data->rp,"...",3);
-	return 1;
+
+	/* Setup buffer for a single entry, double buffering is optional */
+	depth = GetBitMapAttr(_screen(obj)->RastPort.BitMap,BMA_DEPTH);
+	if ((data->buffer_bmap = AllocBitMap(_mwidth(obj),data->entry_maxheight,depth,BMF_MINPLANES,_screen(obj)->RastPort.BitMap)))
+	{
+		if ((data->buffer_li = NewLayerInfo()))
+		{
+			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj),_mheight(obj),LAYERSIMPLE,NULL)))
+			{
+				data->buffer_rp = data->buffer_layer->rp;
+			}
+		}
+	}
+	return rc;
 }
 
 /*************************************************************************
@@ -800,9 +819,30 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	
+	if (data->buffer_layer)
+	{
+		DeleteLayer(0,data->buffer_layer);
+		data->buffer_layer = NULL;
+		data->buffer_rp = NULL;
+	}
+
+	if (data->buffer_li)
+	{
+		DisposeLayerInfo(data->buffer_li);
+		data->buffer_li = NULL;
+	}
+
+	if (data->buffer_bmap)
+	{
+		WaitBlit();
+		FreeBitMap(data->buffer_bmap);
+		data->buffer_bmap = NULL;
+	}
+	
   DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn);
 	data->inbetween_show = 0;
-	return 1;
+	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 /*************************************************************************
@@ -812,6 +852,10 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
+	struct RastPort *old_rp;
+	struct RastPort *rp;
+	APTR cliphandle;
+
 	int start,cur,end;
 	int y;
 
@@ -820,7 +864,19 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	DoSuperMethodA(cl,obj,(Msg)msg);
 
-	SetFont(_rp(obj),_font(obj));
+	/* Render preparations */
+	old_rp = _rp(obj);
+	if (data->buffer_rp)
+	{
+		rp = data->buffer_rp;
+		_rp(obj) = rp;
+	} else
+	{
+		rp = _rp(obj);
+		cliphandle = MUI_AddClipping(muiRenderInfo(obj),_mleft(obj),_mtop(obj),_mwidth(obj),_mheight(obj));
+	}
+
+	SetFont(rp,_font(obj));
 
 	start = 0;
 	end = MIN(start + data->entries_visible, data->entries_num);
@@ -834,8 +890,17 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			set(obj, MUIA_Background, MUII_ListCursor);
 		}
 
-		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
-		DrawEntry(data,obj,cur,y);
+		if (data->buffer_rp)
+		{
+			DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
+			DrawEntry(data,obj,cur,rp,0,0);
+			BltBitMapRastPort(data->buffer_bmap, 0, 0,
+												old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
+		} else
+		{
+			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
+			DrawEntry(data,obj,cur,rp,_mleft(obj),y);
+		}
 
 		if (cur == data->entries_active)
 		{
@@ -844,6 +909,15 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		}
 
 		y += data->entry_maxheight;
+	}
+
+	/* Revert render preparations */
+	if (data->buffer_rp)
+	{
+		_rp(obj) = old_rp;
+	} else
+	{
+		MUI_RemoveClipping(muiRenderInfo(obj),cliphandle);
 	}
 
 	if (y <= _mbottom(obj))

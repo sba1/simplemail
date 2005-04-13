@@ -427,6 +427,7 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 
 				if (txt || used_images)
 				{
+					struct TextExtent te;
 					int new_width = 0;
 					int cur_image;
 
@@ -444,7 +445,9 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 							utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
 							txt = data->buf;
 						}
-						new_width += TextLength(&data->rp, txt, strlen(txt));
+
+						TextExtent(&data->rp, txt, strlen(txt), &te);
+						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
 					} else
 					{
 						/* If new_width contains a non 0 integer, at least a image is available.

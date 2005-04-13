@@ -175,6 +175,8 @@ struct MailTreelist_Data
 	char buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
+	int drawupdate;
+	int drawupdate_last_entries_active; /* for rendering optimizations, hold the number of the last active entry */
 
 	struct RastPort rp; /* Rastport for font calculations */
 	
@@ -494,7 +496,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	fonty = _font(obj)->tf_YSize;
 	entry_height = data->entry_maxheight;
 
-	SetABPenDrMd(_rp(obj),_pens(obj)[MPEN_TEXT],0,JAM1);
+	SetABPenDrMd(rp,_pens(obj)[MPEN_TEXT],0,JAM1);
 
 	for (col = 0;col < MAX_COLUMNS; col++)
 	{
@@ -551,7 +553,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 					if (dtw <= available_col_width)
 					{
-						dt_put_on_rastport(dt,_rp(obj),xstart,y + (entry_height - dt_height(dt))/2);
+						dt_put_on_rastport(dt,rp,xstart,y + (entry_height - dt_height(dt))/2);
 						available_col_width -= dtw + IMAGE_HORIZ_SPACE;
 						xstart += dtw + IMAGE_HORIZ_SPACE;
 					} else
@@ -571,18 +573,17 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 				}
 	
 				txt_len = strlen(txt);
-				
-				fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_col_width,fonty);
+				fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
 				if (fit < txt_len)
 				{
-					fit = TextFit(_rp(obj),txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 				}
 	
-				Move(_rp(obj),xstart,y + _font(obj)->tf_Baseline);
-				Text(_rp(obj),txt,fit);
+				Move(rp,xstart,y + _font(obj)->tf_Baseline);
+				Text(rp,txt,fit);
 	
 				if (fit < txt_len)
-					Text(_rp(obj),"...",3);
+					Text(rp,"...",3);
 			}
 		}
 
@@ -804,7 +805,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 	{
 		if ((data->buffer_li = NewLayerInfo()))
 		{
-			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj),_mheight(obj),LAYERSIMPLE,NULL)))
+			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj)-1,_mheight(obj)-1,LAYERSIMPLE,NULL)))
 			{
 				data->buffer_rp = data->buffer_layer->rp;
 			}
@@ -858,11 +859,15 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	int start,cur,end;
 	int y;
+	int drawupdate;
 
 	if (data->quiet)
 		return 0;
 
 	DoSuperMethodA(cl,obj,(Msg)msg);
+
+	if (msg->flags & MADF_DRAWUPDATE) drawupdate = data->drawupdate;
+	else drawupdate = 0;
 
 	/* Render preparations */
 	old_rp = _rp(obj);
@@ -884,28 +889,32 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	for (cur = start; cur < end; cur++)
 	{
-		if (cur == data->entries_active)
+		if (!drawupdate ||
+		    (drawupdate == 1 && (cur == data->entries_active || cur == data->drawupdate_last_entries_active)))
 		{
-			data->quiet++;
-			set(obj, MUIA_Background, MUII_ListCursor);
-		}
+			if (cur == data->entries_active)
+			{
+				data->quiet++;
+				set(obj, MUIA_Background, MUII_ListCursor);
+			}
+		
+			if (data->buffer_rp)
+			{
+				DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
+				DrawEntry(data,obj,cur,rp,0,0);
+				BltBitMapRastPort(data->buffer_bmap, 0, 0,
+													old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
+			} else
+			{
+				DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
+				DrawEntry(data,obj,cur,rp,_mleft(obj),y);
+			}
 
-		if (data->buffer_rp)
-		{
-			DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
-			DrawEntry(data,obj,cur,rp,0,0);
-			BltBitMapRastPort(data->buffer_bmap, 0, 0,
-												old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
-		} else
-		{
-			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
-			DrawEntry(data,obj,cur,rp,_mleft(obj),y);
-		}
-
-		if (cur == data->entries_active)
-		{
-			set(obj, MUIA_Background, MUII_ListBack);
-			data->quiet--;
+			if (cur == data->entries_active)
+			{
+				set(obj, MUIA_Background, MUII_ListBack);
+				data->quiet--;
+			}
 		}
 
 		y += data->entry_maxheight;
@@ -925,6 +934,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
 	}
 
+	data->drawupdate = 0;
 	return 0;
 }
 
@@ -1042,8 +1052,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 									if (new_entry_active != data->entries_active)
 									{
+										data->drawupdate = 1;
+										data->drawupdate_last_entries_active = data->entries_active;
 										data->entries_active = new_entry_active;
-										MUI_Redraw(obj,MADF_DRAWOBJECT);
+										MUI_Redraw(obj,MADF_DRAWUPDATE);
 										IssueTreelistActiveNotify(cl,obj,data);
 									} else
 									{

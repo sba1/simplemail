@@ -48,6 +48,7 @@
 /**************************************************************************/
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
+#define MAX(a,b) ((a)>(b)?(a):(b))
 
 /**************************************************************************/
 
@@ -154,7 +155,8 @@ struct MailTreelist_Data
 
 	int inbetween_setup;
 	int inbetween_show;
-  struct MUI_EventHandlerNode ehn;
+  struct MUI_EventHandlerNode ehn_mousebuttons;
+  struct MUI_EventHandlerNode ehn_mousemove;
 
 	struct dt_node *images[IMAGE_MAX];
 
@@ -166,6 +168,8 @@ struct MailTreelist_Data
 	LONG entries_first; /* first visible entry */
 	LONG entries_visible; /* number of visible entries */
 	LONG entries_active;
+	LONG entries_minselected;
+	LONG entries_maxselected;
 
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
@@ -632,11 +636,17 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[2].width = 200;
 	data->ci[2].flags = COLUMN_FLAG_AUTOWIDTH;
 
-  data->ehn.ehn_Events   = IDCMP_MOUSEBUTTONS;
-  data->ehn.ehn_Priority = 0;
-  data->ehn.ehn_Flags    = 0;
-  data->ehn.ehn_Object   = obj;
-  data->ehn.ehn_Class    = cl;
+  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
+  data->ehn_mousebuttons.ehn_Priority = 0;
+  data->ehn_mousebuttons.ehn_Flags    = 0;
+  data->ehn_mousebuttons.ehn_Object   = obj;
+  data->ehn_mousebuttons.ehn_Class    = cl;
+
+  data->ehn_mousemove.ehn_Events   = IDCMP_MOUSEMOVE;
+  data->ehn_mousemove.ehn_Priority = 0;
+  data->ehn_mousemove.ehn_Flags    = 0;
+  data->ehn_mousemove.ehn_Object   = obj;
+  data->ehn_mousemove.ehn_Class    = cl;
 
 	return (ULONG)obj;
 }
@@ -799,7 +809,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
-  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn);
+  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousebuttons);
 
   data->threepoints_width = TextLength(&data->rp,"...",3);
 
@@ -845,7 +855,7 @@ STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide 
 		data->buffer_bmap = NULL;
 	}
 	
-  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn);
+  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousebuttons);
 	data->inbetween_show = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
@@ -905,7 +915,8 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 		le = data->entries[cur];
 
-		if (cur == data->entries_active) new_background = MUII_ListCursor;
+		if (cur == data->entries_active) new_background = (le->flags & LE_FLAG_SELECTED)?MUII_ListSelCur:MUII_ListCursor;
+		else if (le->flags & LE_FLAG_SELECTED) new_background = MUII_ListSelect;
 		else new_background = MUII_ListBack;
 
 		if (drawupdate == 1 && le->drawn_background == new_background)
@@ -972,6 +983,8 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	SetListSize(data,0);
 	data->entries_num = 0;
 	data->entries_active = -1;
+	data->entries_minselected = 0;
+	data->entries_maxselected = -1;
 	return 1;
 }
 
@@ -1017,6 +1030,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 		le->mail_info = m;
 		le->parents = 0;
+		le->flags = 0;
 
 		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD) data->entries_active = i;
 		data->entries[i++] = le;
@@ -1062,12 +1076,26 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    				{
 	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
 	    					{
-	    						int new_entry_active = my / data->entry_maxheight;
+	    						int new_entry_active = my / data->entry_maxheight + data->entries_first;
+	    						int selected_changed;
+
+									/* Unselected entries if some have been selected */
+									if (data->entries_maxselected != -1)
+									{
+										int cur;
+										
+										for (cur = data->entries_minselected;cur <= data->entries_maxselected; cur++)
+											data->entries[cur]->flags &= ~LE_FLAG_SELECTED;
+
+										selected_changed = 1;			
+										data->entries_minselected = 0;
+										data->entries_maxselected = -1;
+									} else selected_changed = 0;
 
 									if (new_entry_active < 0) new_entry_active = 0;
 									else if (new_entry_active >= data->entries_num) new_entry_active = data->entries_num - 1;
 
-									if (new_entry_active != data->entries_active)
+									if (new_entry_active != data->entries_active || selected_changed)
 									{
 										data->drawupdate = 1;
 										data->entries_active = new_entry_active;
@@ -1087,9 +1115,58 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									data->last_mics = msg->imsg->Micros;
 									data->last_secs = msg->imsg->Seconds;
 									data->last_active = new_entry_active;
+
+									/* Enable mouse move notifies */
+								  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
 	    					}
+	    				} else if (msg->imsg->Code == SELECTUP)
+	    				{
+								/* Disable mouse move notifies */
+							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 	    				}
 	    				break;
+
+			case		IDCMP_MOUSEMOVE:
+    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
+    					{
+    						int new_entries_active, old_entries_active;
+
+    						old_entries_active = data->entries_active;
+
+								if (old_entries_active != -1)
+								{
+	    						new_entries_active = my / data->entry_maxheight + data->entries_first;
+									if (new_entries_active != old_entries_active)
+									{
+										int start,cur,end;
+										if (new_entries_active < old_entries_active)
+										{
+											start = new_entries_active;
+											end = old_entries_active;
+										} else
+										{
+											start = old_entries_active;
+											end = new_entries_active;
+										}
+
+										/* flag entries as being selected */
+										for (cur = start; cur <= end; cur++)
+											data->entries[cur]->flags |= LE_FLAG_SELECTED;
+
+										/* Update min/max selected and active element */
+										if (start < data->entries_minselected) data->entries_minselected = start;
+										if (end > data->entries_maxselected) data->entries_maxselected = end;
+										data->entries_active = new_entries_active;
+
+										/* Refresh */
+										data->drawupdate = 1;
+										MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+										IssueTreelistActiveNotify(cl,obj,data);
+									}
+								}
+    					}
+							break;
 		}
   }
 

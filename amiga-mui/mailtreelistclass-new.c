@@ -1184,6 +1184,8 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    						int selected_changed;
 
 									new_entries_active = my / data->entry_maxheight + data->entries_first;
+									if (new_entries_active < 0) new_entries_active = 0;
+									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 
 									/* Unselected entries if some have been selected */
 									if (data->entries_maxselected != -1)
@@ -1197,9 +1199,6 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->entries_minselected = 0;
 										data->entries_maxselected = -1;
 									} else selected_changed = 0;
-
-									if (new_entries_active < 0) new_entries_active = 0;
-									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 
 									if (new_entries_active != data->entries_active || selected_changed)
 									{
@@ -1236,7 +1235,6 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    				break;
 
 			case		IDCMP_MOUSEMOVE:
-    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
     					{
     						int new_entries_active, old_entries_active;
 
@@ -1244,7 +1242,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if (old_entries_active != -1)
 								{
-	    						new_entries_active = my / data->entry_maxheight + data->entries_first;
+									new_entries_active = my / data->entry_maxheight + data->entries_first;
+									if (new_entries_active < 0) new_entries_active = 0;
+									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
+	    						
 									if (new_entries_active != old_entries_active)
 									{
 										int start,cur,end;

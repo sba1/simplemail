@@ -1058,6 +1058,63 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 }
 
 /*************************************************************************
+ MUIM_MailTreelist_GetFirstSelected
+*************************************************************************/
+ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	struct mail_info *m;
+	int *handle_ptr = (int*)msg->handle;
+	int handle;
+
+	if (data->entries_maxselected == -1)
+	{
+		if (data->entries_active != -1)
+			handle = data->entries_active;
+		else handle = -1;
+	} else
+	{
+		handle = data->entries_minselected;
+	}
+
+	if (handle != -1) m = (struct mail_info*)data->entries[handle]->mail_info;
+	*handle_ptr = handle;
+	return (ULONG)m;
+}
+
+/*************************************************************************
+ MUIM_MailTreelist_GetNextSelected
+*************************************************************************/
+ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int *handle_ptr = (int*)msg->handle;
+	int handle = *handle_ptr;
+	struct mail_info *m;
+
+	if (data->entries_maxselected != -1 && handle != data->entries_maxselected)
+	{
+		int cur;
+
+		/* Find out next selected entry */
+		for (cur = handle+1; cur<=data->entries_maxselected; cur++)
+			if (data->entries[cur]->flags & LE_FLAG_SELECTED) break;
+		
+		/* cur never is > data->entries_maxselected here, because data->entries_maxselected
+		 * always is a selected entry and the above if condition would catch it */
+		m = data->entries[cur]->mail_info;
+		handle = cur;
+	} else
+	{
+		handle = 0;
+		m = NULL;
+	}
+
+	*handle_ptr = handle;
+	return (ULONG)m;
+}
+
+/*************************************************************************
  MUIM_MailTreelist_HandleEvent
 *************************************************************************/
 static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
@@ -1076,8 +1133,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    				{
 	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
 	    					{
-	    						int new_entry_active = my / data->entry_maxheight + data->entries_first;
+	    						int new_entries_active;
 	    						int selected_changed;
+
+									new_entries_active = my / data->entry_maxheight + data->entries_first;
 
 									/* Unselected entries if some have been selected */
 									if (data->entries_maxselected != -1)
@@ -1092,14 +1151,17 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->entries_maxselected = -1;
 									} else selected_changed = 0;
 
-									if (new_entry_active < 0) new_entry_active = 0;
-									else if (new_entry_active >= data->entries_num) new_entry_active = data->entries_num - 1;
+									if (new_entries_active < 0) new_entries_active = 0;
+									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 
-									if (new_entry_active != data->entries_active || selected_changed)
+									if (new_entries_active != data->entries_active || selected_changed)
 									{
+										data->entries_active = new_entries_active;
+
+										/* Refresh */
 										data->drawupdate = 1;
-										data->entries_active = new_entry_active;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
+
 										IssueTreelistActiveNotify(cl,obj,data);
 									} else
 									{
@@ -1114,7 +1176,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 									data->last_mics = msg->imsg->Micros;
 									data->last_secs = msg->imsg->Seconds;
-									data->last_active = new_entry_active;
+									data->last_active = new_entries_active;
 
 									/* Enable mouse move notifies */
 								  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
@@ -1193,6 +1255,9 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
+
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

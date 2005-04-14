@@ -125,6 +125,8 @@ struct ListEntry
 	LONG height;  /* Line height */
 	WORD flags;   /* see below */
 	WORD parents; /* number of entries parent's, used for the list tree stuff */
+
+	LONG drawn_background; /* the last drawn backround, a MUII_xxx value */
 };
 
 #define LE_FLAG_PARENT      (1<<0)  /* Entry is a parent, possibly containing children */
@@ -176,7 +178,6 @@ struct MailTreelist_Data
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
 	int drawupdate;
-	int drawupdate_last_entries_active; /* for rendering optimizations, hold the number of the last active entry */
 
 	struct RastPort rp; /* Rastport for font calculations */
 	
@@ -863,6 +864,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	int start,cur,end;
 	int y;
 	int drawupdate;
+	int background;
 
 	if (data->quiet)
 		return 0;
@@ -890,38 +892,50 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	end = MIN(start + data->entries_visible, data->entries_num);
 	y = _mtop(obj);
 
-	for (cur = start; cur < end; cur++)
-	{
-		if (!drawupdate ||
-		    (drawupdate == 1 && (cur == data->entries_active || cur == data->drawupdate_last_entries_active)))
-		{
-			if (cur == data->entries_active)
-			{
-				data->quiet++;
-				set(obj, MUIA_Background, MUII_ListCursor);
-			}
-		
-			if (data->buffer_rp)
-			{
-				DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
-				DrawEntry(data,obj,cur,rp,0,0);
-				BltBitMapRastPort(data->buffer_bmap, 0, 0,
-													old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
-			} else
-			{
-				DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
-				DrawEntry(data,obj,cur,rp,_mleft(obj),y);
-			}
+	background = MUII_ListBack;
+	data->quiet++;
 
-			if (cur == data->entries_active)
-			{
-				set(obj, MUIA_Background, MUII_ListBack);
-				data->quiet--;
-			}
+	/* Draw all entries between start and end, their current background
+	 * is stored
+	 */
+	for (cur = start; cur < end; cur++,y += data->entry_maxheight)
+	{
+		int new_background;
+		struct ListEntry *le;
+
+		le = data->entries[cur];
+
+		if (cur == data->entries_active) new_background = MUII_ListCursor;
+		else new_background = MUII_ListBack;
+
+		if (drawupdate == 1 && le->drawn_background == new_background)
+			continue;
+
+		if (background != new_background)
+		{
+			set(obj, MUIA_Background, new_background);
+			background = new_background;
 		}
 
-		y += data->entry_maxheight;
+		if (data->buffer_rp)
+		{
+			DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
+			DrawEntry(data,obj,cur,rp,0,0);
+			BltBitMapRastPort(data->buffer_bmap, 0, 0,
+												old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
+		} else
+		{
+			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
+			DrawEntry(data,obj,cur,rp,_mleft(obj),y);
+		}
+	
+		le->drawn_background = background;
 	}
+
+	/* Revert background if necessary */
+	if (background != MUII_ListBack)
+		set(obj, MUIA_Background, MUII_ListBack);
+	data->quiet--;
 
 	/* Revert render preparations */
 	if (data->buffer_rp)
@@ -1056,7 +1070,6 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									if (new_entry_active != data->entries_active)
 									{
 										data->drawupdate = 1;
-										data->drawupdate_last_entries_active = data->entries_active;
 										data->entries_active = new_entry_active;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 										IssueTreelistActiveNotify(cl,obj,data);

@@ -33,6 +33,8 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIA_MailTreelist_Active           (TAG_USER | 0x300F0001)
 #define MUIA_MailTreelist_DoubleClick      (TAG_USER | 0x300F0002)
 #define MUIA_MailTreelist_FolderType       (TAG_USER | 0x300F0003)
+#define MUIA_MailTreelist_Private		       (TAG_USER | 0x300F0004)
+#define MUIA_MailTreelist_First						 (TAG_USER | 0x300F0005)
 
 #define MUIM_MailTreelist_Clear            (TAG_USER | 0x300F0101)
 #define MUIM_MailTreelist_Freeze           (TAG_USER | 0x300F0102)

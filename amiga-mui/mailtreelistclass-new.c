@@ -186,7 +186,9 @@ struct MailTreelist_Data
 	char buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
-	int drawupdate;
+
+	int drawupdate; /* 1 - selection changed, 2 - first changed */
+	int drawupdate_old_first;
 
 	struct RastPort rp; /* Rastport for font calculations */
 	
@@ -716,8 +718,10 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 							if (data->entries_first != new_entries_first)
 							{
+								data->drawupdate = 2;
+								data->drawupdate_old_first = data->entries_first;
 								data->entries_first = new_entries_first;
-								MUI_Redraw(obj,MADF_DRAWOBJECT);
+								MUI_Redraw(obj,MADF_DRAWUPDATE);
 							}
 						}
 						break;
@@ -910,6 +914,62 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	if (msg->flags & MADF_DRAWUPDATE) drawupdate = data->drawupdate;
 	else drawupdate = 0;
 
+	data->drawupdate = 0;
+
+	start = data->entries_first;
+	end = start + data->entries_visible;
+	y = _mtop(obj);
+
+	/* If necessary, perform scrolling operations */
+	if (drawupdate == 2)
+	{
+		int diffy = data->entries_first - data->drawupdate_old_first;
+		int abs_diffy = abs(diffy);
+		
+		if (abs_diffy < data->entries_visible)
+		{
+			int scroll_caused_damage;
+
+			/* Instally nobackfill layer hook, while scrolling */
+			struct Hook *old_hook;
+
+			old_hook = InstallLayerHook(_rp(obj)->Layer, LAYERS_NOBACKFILL);
+
+	    scroll_caused_damage = (_rp(obj)->Layer->Flags & LAYERREFRESH) ? FALSE : TRUE;
+
+	    ScrollRasterBF(_rp(obj), 0, diffy * data->entry_maxheight,
+			 _mleft(obj), y,
+			 _mright(obj), y + data->entry_maxheight * data->entries_visible - 1);
+
+    	scroll_caused_damage = scroll_caused_damage && (_rp(obj)->Layer->Flags & LAYERREFRESH);
+
+			InstallLayerHook(_rp(obj)->Layer,old_hook);
+
+			if (scroll_caused_damage)
+			{
+				if (MUI_BeginRefresh(muiRenderInfo(obj), 0))
+				{
+					Object *o;
+			    get(_win(obj),MUIA_Window_RootObject, &o);	       
+	    		MUI_Redraw(o, MADF_DRAWOBJECT);
+	    		MUI_EndRefresh(muiRenderInfo(obj), 0);
+	    	}
+				return 0;
+			}
+
+			if (diffy > 0)
+	    {
+	    	start = end - diffy;
+	    	y += data->entry_maxheight * (data->entries_visible - diffy);
+	    }
+	    else end = start - diffy;
+		}
+	}
+
+	/* Ensure validness of start and end */
+	start = MAX(start, 0);
+	end = MIN(end, data->entries_num);
+
 	/* Render preparations */
 	old_rp = _rp(obj);
 	if (data->buffer_rp)
@@ -924,9 +984,6 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	SetFont(rp,_font(obj));
 
-	start = data->entries_first;
-	end = MIN(start + data->entries_visible, data->entries_num);
-	y = _mtop(obj);
 
 	background = MUII_ListBack;
 	data->quiet++;
@@ -983,12 +1040,12 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		MUI_RemoveClipping(muiRenderInfo(obj),cliphandle);
 	}
 
-	if (y <= _mbottom(obj))
+	/* erase stuff below only when rendering completly */
+	if (y <= _mbottom(obj) && drawupdate == 0)
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
 	}
 
-	data->drawupdate = 0;
 	return 0;
 }
 

@@ -490,6 +490,11 @@ static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
 	if (data->vert_scroller)
 	{
 		set(data->vert_scroller, MUIA_Prop_Visible, data->entries_visible);
+		if (data->entries_first + data->entries_visible > data->entries_num)
+		{
+			data->entries_first = data->entries_num - data->entries_visible;
+			if (data->entries_first < 0) data->entries_first = 0;
+		}
 	}
 }
 

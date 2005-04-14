@@ -157,6 +157,7 @@ struct MailTreelist_Data
 
 	int inbetween_setup;
 	int inbetween_show;
+	int mouse_pressed;
   struct MUI_EventHandlerNode ehn_mousebuttons;
   struct MUI_EventHandlerNode ehn_mousemove;
 
@@ -1011,7 +1012,7 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	data->entries_active = -1;
 	data->entries_minselected = 0;
 	data->entries_maxselected = -1;
-
+DebugPrintF("clear\n");
 	if (data->vert_scroller && !data->quiet)
 	{
 		set(data->vert_scroller,MUIA_Prop_Entries,0);
@@ -1225,12 +1226,14 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									data->last_active = new_entries_active;
 
 									/* Enable mouse move notifies */
-								  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+							  	data->mouse_pressed = 1;
+							    DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
 	    					}
-	    				} else if (msg->imsg->Code == SELECTUP)
+	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)
 	    				{
 								/* Disable mouse move notifies */
 							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+							  data->mouse_pressed = 0;
 	    				}
 	    				break;
 

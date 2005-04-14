@@ -1012,7 +1012,7 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	data->entries_active = -1;
 	data->entries_minselected = 0;
 	data->entries_maxselected = -1;
-DebugPrintF("clear\n");
+
 	if (data->vert_scroller && !data->quiet)
 	{
 		set(data->vert_scroller,MUIA_Prop_Entries,0);
@@ -1031,6 +1031,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	struct mail_info *m;
 	struct MailTreelist_Data *data;
 
+	data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
 	/* Clear previous contents */
 	data->quiet++;
 	MailTreelist_Clear(cl,obj,(Msg)msg);
@@ -1040,8 +1042,6 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,0);
 		return 1;
 	}
-
-	data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
 	/* Nobody else must access this folder now */
 	folder_lock(f);

@@ -1359,6 +1359,17 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->drawupdate = 1;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 
+										if (new_entries_active < data->entries_first)
+										{
+											set(data->vert_scroller,MUIA_Prop_First,new_entries_active);
+										} else
+										{
+											if (new_entries_active >= data->entries_first + data->entries_visible)
+											{
+												set(data->vert_scroller, MUIA_Prop_First, new_entries_active - data->entries_visible + 1);
+											}
+										}
+
 										IssueTreelistActiveNotify(cl,obj,data);
 									}
 								}

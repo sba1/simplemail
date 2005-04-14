@@ -50,6 +50,8 @@
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
+#define MUIA_MailTreelist_VertScrollbar	MUIA_MailTreelist_Private
+
 /**************************************************************************/
 
 /* Horizontal space between images */
@@ -127,7 +129,7 @@ struct ListEntry
 	WORD flags;   /* see below */
 	WORD parents; /* number of entries parent's, used for the list tree stuff */
 
-	LONG drawn_background; /* the last drawn backround, a MUII_xxx value */
+	LONG drawn_background; /* the last drawn backround for this entry, a MUII_xxx value */
 };
 
 #define LE_FLAG_PARENT      (1<<0)  /* Entry is a parent, possibly containing children */
@@ -157,6 +159,8 @@ struct MailTreelist_Data
 	int inbetween_show;
   struct MUI_EventHandlerNode ehn_mousebuttons;
   struct MUI_EventHandlerNode ehn_mousemove;
+
+	Object *vert_scroller; /* attached vertical scroller */
 
 	struct dt_node *images[IMAGE_MAX];
 
@@ -468,7 +472,7 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 }
 
 /**************************************************************************
- Calc number of visible entries
+ Calc number of visible entries informs the scroller gadgets about this
 **************************************************************************/
 static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
 {
@@ -478,6 +482,11 @@ static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
 	} else
 	{
 		data->entries_visible = 10;
+	}
+
+	if (data->vert_scroller)
+	{
+		set(data->vert_scroller, MUIA_Prop_Visible, data->entries_visible);
 	}
 }
 
@@ -648,6 +657,11 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
   data->ehn_mousemove.ehn_Object   = obj;
   data->ehn_mousemove.ehn_Class    = cl;
 
+	if ((data->vert_scroller = (Object*)GetTagData(MUIA_MailTreelist_VertScrollbar,0,msg->ops_AttrList)))
+	{
+		DoMethod(data->vert_scroller, MUIM_Notify,  MUIA_Prop_First, MUIV_EveryTime, (ULONG)obj, 3, MUIM_Set, MUIA_MailTreelist_First, MUIV_TriggerValue);
+	}
+
 	return (ULONG)obj;
 }
 
@@ -679,20 +693,31 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		switch (tag->ti_Tag)
 		{
 			case	MUIA_MailTreelist_Active:
+						data->entries_active = -1;
+						if (tidata)
 						{
-							data->entries_active = -1;
-							if (tidata)
+							int i;
+							for (i=0;i<data->entries_num;i++)
 							{
-								int i;
-								for (i=0;i<data->entries_num;i++)
+								if (tidata == (ULONG)data->entries[i]->mail_info)
 								{
-									if (tidata == (ULONG)data->entries[i]->mail_info)
-									{
-										data->entries_active = i;
-										break;
-									}
+									data->entries_active = i;
+									break;
 								}
 							} 
+						}
+						break;
+
+			case	MUIA_MailTreelist_First:
+						{
+							int new_entries_first = tidata;
+							if (new_entries_first < 0) new_entries_first = 0;
+
+							if (data->entries_first != new_entries_first)
+							{
+								data->entries_first = new_entries_first;
+								MUI_Redraw(obj,MADF_DRAWOBJECT);
+							}
 						}
 						break;
 		}
@@ -898,7 +923,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	SetFont(rp,_font(obj));
 
-	start = 0;
+	start = data->entries_first;
 	end = MIN(start + data->entries_visible, data->entries_num);
 	y = _mtop(obj);
 
@@ -981,10 +1006,16 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	}
 
 	SetListSize(data,0);
+	data->entries_first = 0;
 	data->entries_num = 0;
 	data->entries_active = -1;
 	data->entries_minselected = 0;
 	data->entries_maxselected = -1;
+
+	if (data->vert_scroller && !data->quiet)
+	{
+		set(data->vert_scroller,MUIA_Prop_Entries,0);
+	}
 	return 1;
 }
 
@@ -1000,8 +1031,14 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	struct MailTreelist_Data *data;
 
 	/* Clear previous contents */
+	data->quiet++;
 	MailTreelist_Clear(cl,obj,(Msg)msg);
-	if (!(f = msg->f)) return 1;
+	data->quiet--;
+	if (!(f = msg->f))
+	{
+		if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,0);
+		return 1;
+	}
 
 	data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
@@ -1014,7 +1051,13 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	num_mails = f->num_mails;
 
 	if (!(SetListSize(data,num_mails)))
+	{
+		folder_unlock(f);
 		return 0;
+	}
+
+	/* We find about the active entry within the loop */
+	data->entries_active = -1;
 
 	i = 0;	/* current entry number */
 	handle = NULL;
@@ -1032,7 +1075,9 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		le->parents = 0;
 		le->flags = 0;
 
-		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD) data->entries_active = i;
+		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD && data->entries_active == -1)
+			data->entries_active = i;
+
 		data->entries[i++] = le;
 	}
 
@@ -1042,6 +1087,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	/* i contains the number of sucessfully added mails */
 	SM_DEBUGF(10,("Added %ld mails into list\n",i));
 	data->entries_num = i;
+
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 
 	if (data->inbetween_setup)
 	{
@@ -1266,10 +1313,17 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 Object *MakeMailTreelist(ULONG userid, Object **list)
 {
-	return *list = MailTreelistObject,
-					InputListFrame,
-					MUIA_ObjectID, userid,
-					End;
+	Object *scrollbar = ScrollbarObject, End;
+
+	return HGroup,
+			MUIA_Group_Spacing, 0,
+			Child, *list = MailTreelistObject,
+				InputListFrame,
+				MUIA_ObjectID, userid,
+				MUIA_MailTreelist_VertScrollbar, scrollbar,
+				End,
+			Child, scrollbar,
+			End;
 }
 
 /**************************************************************************/

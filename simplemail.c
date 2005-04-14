@@ -770,7 +770,6 @@ void callback_move_selected_mails(void)
 		if (src_folder != dest_folder)
 		{
 			struct mail_info *mail = main_get_mail_first_selected(&handle);
-			handle = NULL;
 			while (mail)
 			{
 				move_mail_helper(mail,src_folder,dest_folder);

@@ -186,6 +186,7 @@ struct MailTreelist_Data
 	char buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
+	int make_visible;
 
 	int drawupdate; /* 1 - selection changed, 2 - first changed */
 	int drawupdate_old_first;
@@ -495,6 +496,20 @@ static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
 			data->entries_first = data->entries_num - data->entries_visible;
 			if (data->entries_first < 0) data->entries_first = 0;
 		}
+	}
+}
+
+/**************************************************************************
+ Ensure that active entry is visible
+**************************************************************************/
+static void EnsureActiveEntryVisibility(struct MailTreelist_Data *data)
+{
+	if (data->entries_active != -1 && data->make_visible)
+	{
+		if (data->entries_active < data->entries_first) data->entries_first = data->entries_active;
+		else if (data->entries_active >= data->entries_first + data->entries_visible) data->entries_first = data->entries_active - data->entries_visible + 1;
+		data->make_visible = 0;
+		nnset(data->vert_scroller, MUIA_Prop_First, data->entries_first);
 	}
 }
 
@@ -860,6 +875,9 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 			}
 		}
 	}
+	
+	EnsureActiveEntryVisibility(data);
+
 	return rc;
 }
 
@@ -1153,12 +1171,16 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 
+	data->make_visible = 1;
+
 	if (data->inbetween_setup)
 	{
 		CalcEntries(data,obj);
 		if (data->inbetween_show)
 		{
 			CalcVisible(data,obj);
+			EnsureActiveEntryVisibility(data);
+
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
 		}
 	}

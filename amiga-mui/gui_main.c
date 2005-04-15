@@ -97,11 +97,13 @@
 struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
 struct Library *SimpleHTMLBase;
+struct Library *TTEngineBase;
 
 #ifdef __AMIGAOS4__
 struct MUIMasterIFace *IMUIMaster;
 struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
+struct Interface *ITTEngine;
 
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
@@ -324,8 +326,12 @@ int all_init(void)
 			if (SimpleHTMLBase)
 			{
 #ifdef __AMIGAOS4__
+				/* The Interface of this library is optional. If not available on OS4,
+				 * the function are called via the emulator */
 				ISimpleHTML = (struct SimpleHTMLIFace*)GetInterface(SimpleHTMLBase, "main", 1, NULL);
 #endif
+
+				TTEngineBase = OpenLibraryInterface("ttengine.library",7,&ITTEngine);
 
 				DefaultLocale = OpenLocale(NULL);
 				init_hook_standard();

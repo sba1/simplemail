@@ -111,6 +111,7 @@ void CloseLibraryInterface(struct Library *lib, void *interface);
 void *IMUIMaster;
 void *IRexxSys;
 void *ISimpleHTML;
+void *ITTEngine;
 
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
 {

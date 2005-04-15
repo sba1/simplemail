@@ -23,7 +23,6 @@
 
 #define FAST_SEEK
 #define BIG_BUFFER
-#define DELETE_TMPFILE
 
 #include "simplemail.h"
 
@@ -56,6 +55,8 @@ static void deinit_io(void);
 
 #define MIN68KSTACK 8192 /* MUI requirement legacy */
 #define MINSTACK 60000
+
+ULONG __abox__ = 1;
 
 int __startup(void)
 {
@@ -112,7 +113,7 @@ static int __swap_and_start(void)
 	}
 	else
 	{
-		rc = main(0,NULL);
+		rc = main(0, NULL);
 	}
 
 	return rc;
@@ -130,7 +131,7 @@ static int start(struct WBStartup *wbs)
 
 		if (wbs)
 		{
-			if ((out = Open("CON:10/10/320/80/SimpleMail/AUTO/CLOSE/WAIT",MODE_OLDFILE)))
+			if ((out = Open("CON:10/10/320/80/SimpleMail/AUTO/CLOSE/WAIT", MODE_OLDFILE)))
 				oldout = SelectOutput(out);
 		}
 
@@ -139,7 +140,7 @@ static int start(struct WBStartup *wbs)
 			if (init_mem())
 			{
 				BPTR dirlock = DupLock(pr->pr_CurrentDir);
-				if (!dirlock) dirlock = Lock("PROGDIR:",ACCESS_READ);
+				if (!dirlock) dirlock = Lock("PROGDIR:", ACCESS_READ);
 				if (dirlock)
 				{
 					BPTR odir = CurrentDir(dirlock);
@@ -247,19 +248,19 @@ static int open_libs(void)
 
 static void close_libs(void)
 {
-	if (ExpatBase) CloseLibrary(ExpatBase);
-	if (LayersBase) CloseLibrary(LayersBase);
-	if (GfxBase) CloseLibrary(GfxBase);
-	if (AslBase) CloseLibrary(AslBase);
-	if (WorkbenchBase) CloseLibrary(WorkbenchBase);
-	if (DiskfontBase) CloseLibrary(DiskfontBase);
-	if (IconBase) CloseLibrary(IconBase);
-	if (IFFParseBase) CloseLibrary(IFFParseBase);
-	if (KeymapBase) CloseLibrary(KeymapBase);
-	if (DataTypesBase) CloseLibrary(DataTypesBase);
-	if (LocaleBase) CloseLibrary(LocaleBase);
-	if (UtilityBase) CloseLibrary(UtilityBase);
-	if (IntuitionBase) CloseLibrary(IntuitionBase);
+	CloseLibrary(ExpatBase);
+	CloseLibrary(LayersBase);
+	CloseLibrary(GfxBase);
+	CloseLibrary(AslBase);
+	CloseLibrary(WorkbenchBase);
+	CloseLibrary(DiskfontBase);
+	CloseLibrary(IconBase);
+	CloseLibrary(IFFParseBase);
+	CloseLibrary(KeymapBase);
+	CloseLibrary(DataTypesBase);
+	CloseLibrary(LocaleBase);
+	CloseLibrary(UtilityBase);
+	CloseLibrary(IntuitionBase);
 }
 
 
@@ -272,7 +273,7 @@ static APTR pool;
 static int init_mem(void)
 {
 	/* Stuff can be used by multiple tasks */
-	if ((pool = CreatePool(MEMF_PUBLIC|MEMF_SEM_PROTECTED,16384,8192)))
+	if ((pool = CreatePool(MEMF_PUBLIC | MEMF_SEM_PROTECTED, 16384, 8192)))
 	{
 		return 1;
 	}
@@ -434,13 +435,11 @@ int fclose(FILE *file)
 			free(file->_bf._base);
 		}
 #endif
-#ifdef DELETE_TMPFILE
 		if(file->_cookie)
 		{
 			DeleteFile(file->_cookie);
 			free(file->_cookie);
 		}
-#endif
 		free(file);
 	}
 	ReleaseSemaphore(&files_sem);
@@ -491,7 +490,7 @@ int fseek(FILE *file, long offset, int origin)
 	if (origin == SEEK_SET) amiga_seek = OFFSET_BEGINNING;
 	else if (origin == SEEK_CUR)
 	{
-		/* Optimize trival cases (used heavily when loading indexfiles) */
+		/* Optimize trivial cases (used heavily when loading indexfiles) */
 		amiga_seek = OFFSET_CURRENT;
 #ifdef FAST_SEEK
 		if (!offset) return 0;
@@ -548,7 +547,6 @@ int fgetc(FILE *file)
 
 FILE *tmpfile(void)
 {
-#ifdef DELETE_TMPFILE
 	char *buf;
 	FILE *file = NULL;
 	buf = malloc(40);
@@ -568,15 +566,6 @@ FILE *tmpfile(void)
 		}
 	}
 	return file;
-#else
-	char buf[40];
-	FILE *file;
-	ObtainSemaphore(&files_sem);
-	sprintf(buf,"T:%p%lx.tmp",FindTask(NULL),tmpno++);
-	file = fopen(buf,"w");
-	ReleaseSemaphore(&files_sem);
-	return file;
-#endif
 }
 
 char *tmpnam(char *name)

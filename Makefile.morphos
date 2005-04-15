@@ -6,7 +6,7 @@ DESTDIR = sm
 LOCALEDIR = ${DESTDIR}/Locale/
 
 G_IPATH     = -I./ -I./indep-include -I./amiga-mui
-G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
+G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP
 G_OPTFLAGS  = -O3 \
          -mcpu=750 \
          -mmultiple \

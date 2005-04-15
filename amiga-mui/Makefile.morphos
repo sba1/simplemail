@@ -3,7 +3,7 @@ SHELL =  /bin/sh
 OUT = libgui.a
 
 G_IPATH     = -I./ -I../ -I../indep-include/
-G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -Dmalloc=sm_malloc -Dfree=sm_free -Drealloc=sm_realloc
+G_DEFINES   = -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK
 G_OPTFLAGS  = -O3 \
 	-mcpu=750 \
 	-mmultiple \

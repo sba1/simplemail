@@ -45,7 +45,7 @@ struct Library *ExpatBase;
 
 int main(int argc, char *argv[]);
 
-int _start(struct WBStartup *wbs);
+static int start(struct WBStartup *wbs);
 
 static int open_libs(void);
 static void close_libs(void);
@@ -54,9 +54,71 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-unsigned long __stack = 30000*2;
+#define MIN68KSTACK 8192 /* MUI requirement legacy */
+#define MINSTACK 60000
 
-int _start(struct WBStartup *wbs)
+int __startup(void)
+{
+	struct Process *pr;
+	int rc;
+
+	SysBase = *((struct ExecBase**)4);
+	pr = (struct Process*)FindTask(NULL);
+
+	if (!pr->pr_CLI)
+	{
+		struct WBStartup *wbs;
+
+		WaitPort(&pr->pr_MsgPort);
+		wbs = (struct WBStartup*)GetMsg(&pr->pr_MsgPort);
+
+		rc = start(wbs);
+
+		Forbid();
+		ReplyMsg((struct Message *)wbs);
+	}	else rc = start(NULL);
+	return rc;
+}
+
+static int rc;
+
+static int __swap_and_start(void)
+{
+	ULONG MySize;
+	struct Task *MyTask = FindTask(NULL);
+
+	if (!NewGetTaskAttrsA(MyTask, &MySize, sizeof(MySize), TASKINFOTYPE_STACKSIZE, NULL))
+	{
+		MySize = (ULONG)MyTask->tc_ETask->PPCSPUpper - (ULONG)MyTask->tc_ETask->PPCSPLower;
+	}
+
+	if (MySize < MINSTACK)
+	{
+		struct StackSwapStruct MySSS;
+		struct PPCStackSwapArgs MyArgs;
+		UBYTE *MyStack;
+
+		MyStack = AllocVec(MINSTACK, MEMF_PUBLIC);
+		if (MyStack)
+		{
+			MySSS.stk_Lower   = (void *)MyStack;
+			MySSS.stk_Upper   = (ULONG) &MyStack[MINSTACK];
+			MySSS.stk_Pointer = (void *)MySSS.stk_Upper;
+			MyArgs.Args[0] = 0;
+			MyArgs.Args[1] = 0;
+			rc = NewPPCStackSwap(&MySSS, &main, &MyArgs);
+			FreeVec(MyStack);
+		}
+	}
+	else
+	{
+		rc = main(0,NULL);
+	}
+
+	return rc;
+}
+
+static int start(struct WBStartup *wbs)
 {
 	int rc = 20;
 	struct Process *pr = (struct Process*)FindTask(NULL);
@@ -84,7 +146,34 @@ int _start(struct WBStartup *wbs)
 
 					if (init_io())
 					{
-						rc = simplemail_main();
+						ULONG MySize;
+						struct Task *MyTask = &pr->pr_Task;
+
+						if (!NewGetTaskAttrsA(MyTask, &MySize, sizeof(MySize), TASKINFOTYPE_STACKSIZE_M68K, NULL))
+						{
+							MySize = (ULONG)MyTask->tc_SPUpper - (ULONG)MyTask->tc_SPLower;
+						}
+
+						if (MySize < MIN68KSTACK)
+						{
+							struct StackSwapStruct *sss;
+
+							sss = AllocMem(sizeof(*sss) + MIN68KSTACK, MEMF_PUBLIC);
+							if (sss)
+							{
+								sss->stk_Lower   = sss + 1;
+								sss->stk_Upper   = (ULONG) (((UBYTE *) (sss + 1)) + MIN68KSTACK);
+								sss->stk_Pointer = (APTR) sss->stk_Upper;
+								StackSwap(sss);
+								rc = __swap_and_start();
+								StackSwap(sss);
+								FreeMem(sss, sizeof(*sss) + MIN68KSTACK);
+							}
+						}
+						else
+						{
+							rc = __swap_and_start();
+						}
 
 						deinit_io();
 					}

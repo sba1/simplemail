@@ -811,7 +811,7 @@ int folder_number_of_mails(struct folder *folder)
 		int num_mails = 0;
 		struct folder *iter = folder_next(folder);
 		struct folder *parent = folder->parent_folder;
-		
+
 		while (iter)
 		{
 			if (iter->parent_folder == parent) break;

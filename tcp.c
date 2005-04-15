@@ -181,6 +181,11 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 	}
 	else
 	{
+{
+#warning FIXME
+void kprintf(char*,...);
+kprintf("SocketBase 0x%lx\n", SocketBase);
+}
 		switch(tcp_herrno())
 		{
 			case HOST_NOT_FOUND: error_code = TCP_HOST_NOT_FOUND; break;

@@ -127,7 +127,7 @@ amigamui:
 
 $(OUT): $(OBJS) amiga-mui/libgui.a
 	@echo Linking $@.db...
-	@ppc-morphos-gcc $(OBJS) -noixemul $(LIBS) -lgui -lamissl -lexpat -ldebug -o $(OUT).debug
+	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -labox -laboxstubs -lc -ldebug -o $(OUT).debug
 	@echo Striping $@...
 	@ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	@chmod a+x $(OUT)
@@ -157,10 +157,10 @@ prepare-release:
 	cp Charsets/*.txt /ram/SimpleMail/Charsets/
 	cp .taglines /ram/SimpleMail/
 	cp /Utils/Internet/SimpleMail/Libs/expat.library /ram/SimpleMail/Libs/
-	-rm /ram/simplemail.lzx
-	-rm /ram/simplemail.lha
-	lha -r -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
-#	 lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
+	-rm /ram/simplemail-morphos.lzx
+	-rm /ram/simplemail-morphos.lha
+	lha -r -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
+#	 lzx -9 -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
 
 bump:
 	bumprev2 VERSION=0 FILE=$SimpleMail_rev TAG=SimpleMail
@@ -173,7 +173,7 @@ dump:
 clean:
 	@echo Cleaning...
 	$(MAKE) -C amiga-mui -f Makefile.MorphOS clean
-	@-rm date.h *.o $(OUT) *.debug *.dump ./sm/locale/*.mo
+	@-rm -f date.h *.o $(OUT) *.debug *.dump ./sm/locale/*.mo
 
 pack: clean
 	@echo Packing...

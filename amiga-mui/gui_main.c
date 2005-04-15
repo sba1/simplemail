@@ -577,13 +577,6 @@ int gui_execute_arexx(char *filename)
 *****************************************************************/
 int main(int argc, char *argv[])
 {
-#ifdef __MORPHOS__
-	#include <workbench/startup.h>
-	extern int _start(struct WBStartup *);
-
-	return _start(NULL);
-#else
 	return simplemail_main();
-#endif
 }
 

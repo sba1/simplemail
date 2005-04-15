@@ -26,18 +26,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <diskfont/diskfonttag.h>
+
 #include <clib/alib_protos.h>
+#include <proto/dos.h>
 #include <proto/utility.h>
 #include <proto/exec.h>
 #include <proto/layers.h>
 #include <proto/graphics.h>
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
+#include <proto/ttengine.h>
 
 #include "configuration.h"
 #include "folder.h"
 #include "mail.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "compiler.h"
 #include "datatypescache.h"
@@ -50,7 +55,65 @@
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
-#define MUIA_MailTreelist_VertScrollbar	MUIA_MailTreelist_Private
+/**************************************************************************/
+
+/***********************************************************************
+ Open the given text font as a ttengine font. Returns NULL on failure
+ (e.g. if no ttengine has been opened, or if given font is no ttf font)
+************************************************************************/
+STATIC APTR OpenTTEngineFont(struct TextFont *font)
+{
+	char filename[256];
+	APTR ttengine_font = NULL;
+
+	if (!TTEngineBase) return NULL;
+
+	strcpy(filename,"FONTS:");
+	if (AddPart(filename,font->tf_Message.mn_Node.ln_Name,sizeof(filename)))
+	{
+		char *ending = strrchr(filename,'.');
+		if (strlen(ending) >= 5)
+		{
+			BPTR file;
+			struct FileInfoBlock *fib;
+			struct TagItem *otags;
+
+			strcpy(&ending[1],"otag");
+			if ((file = Open(filename,MODE_OLDFILE)))
+			{
+			  if ((fib = AllocDosObject(DOS_FIB, NULL)))
+  			{
+		      if (ExamineFH(file, fib))
+    		  {
+		        if ((otags = (struct TagItem *) AllocVec(fib->fib_Size, MEMF_CLEAR)))
+    		    {
+        		  if (Read(file, (UBYTE *) otags, fib->fib_Size))
+          		{
+		            if ((otags->ti_Tag == OT_FileIdent)               /* Test to see if */
+    		            && (otags->ti_Data == (ULONG) fib->fib_Size)) /* the OTAG file  */
+		            {                                                /* is valid.      */
+		            	char *fontname;
+									if ((fontname = (char*)GetTagData(OT_FontFile,0,otags)))
+									{
+										fontname += (ULONG)otags;
+										ttengine_font = TT_OpenFont(
+												TT_FontFile, fontname,
+												TT_FontSize, font->tf_YSize - 3,
+												TAG_DONE);
+									}
+		            }
+              }
+              FreeVec(otags);
+            }
+          }
+          FreeDosObject(DOS_FIB,fib);
+	      }
+  	    Close(file);
+			}
+    }
+  }
+  return ttengine_font;
+}
 
 /**************************************************************************/
 
@@ -115,6 +178,8 @@ static const char *image_names[] =
 };
 
 /**************************************************************************/
+
+#define MUIA_MailTreelist_VertScrollbar	MUIA_MailTreelist_Private
 
 #define MAX_COLUMNS 10
 
@@ -192,7 +257,10 @@ struct MailTreelist_Data
 	int drawupdate_old_first;
 
 	struct RastPort rp; /* Rastport for font calculations */
-	
+
+	APTR ttengine_font;
+	int ttengine_baseline;
+
 	/* double click */
 	ULONG last_secs;
 	ULONG last_mics;
@@ -453,14 +521,21 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 
 					if (txt)
 					{
-						if (!is_ascii7)
+						if (data->ttengine_font)
 						{
-							utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
-							txt = data->buf;
-						}
+							TT_TextExtent(&data->rp, txt, strlen(txt), &te);
+							new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+						} else
+						{
+							if (!is_ascii7)
+							{
+								utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+								txt = data->buf;
+							}
 
-						TextExtent(&data->rp, txt, strlen(txt), &te);
-						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+							TextExtent(&data->rp, txt, strlen(txt), &te);
+							new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+						}
 					} else
 					{
 						/* If new_width contains a non 0 integer, at least a image is available.
@@ -606,24 +681,45 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			/* now put the text, but only if there is really space left */
 			if (available_col_width > 0 && txt)
 			{
-				if (!is_ascii7)
+				if (data->ttengine_font)
 				{
-					utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
-					txt = data->buf;
-				}
-	
-				txt_len = strlen(txt);
-				fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
-				if (fit < txt_len)
+					Move(rp,xstart,y + data->ttengine_baseline);
+
+					/* use ttengine functions */
+					txt_len = strlen(txt);
+					fit = TT_TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
+					if (fit < txt_len)
+					{
+						fit = TT_TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+					}
+
+					TT_Text(rp,txt,fit);
+		
+					if (fit < txt_len)
+						TT_Text(rp,"...",3);
+				} else
 				{
-					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+					Move(rp,xstart,y + _font(obj)->tf_Baseline);
+
+					/* use amiga os text functions to bring up the text  */
+					if (!is_ascii7)
+					{
+						utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+						txt = data->buf;
+					}
+		
+					txt_len = strlen(txt);
+					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
+					if (fit < txt_len)
+					{
+						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+					}
+		
+					Text(rp,txt,fit);
+		
+					if (fit < txt_len)
+						Text(rp,"...",3);
 				}
-	
-				Move(rp,xstart,y + _font(obj)->tf_Baseline);
-				Text(rp,txt,fit);
-	
-				if (fit < txt_len)
-					Text(rp,"...",3);
 			}
 		}
 
@@ -792,9 +888,29 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	InitRastPort(&data->rp);
   SetFont(&data->rp,_font(obj));
 
-	data->entry_maxheight = _font(obj)->tf_YSize;
+	/* Find out, if the supplied font is a ttf font, and open it as a ttengine
+	 * font */
+	if ((data->ttengine_font = OpenTTEngineFont(_font(obj))))
+	{
+		ULONG val;
 
-	for (i=0;i<IMAGE_MAX;i++)
+		TT_SetFont(&data->rp, data->ttengine_font);
+		TT_SetAttrs(&data->rp,
+					TT_Screen, _screen(obj),
+					TT_Encoding, TT_Encoding_UTF8,
+/*					TT_Antialias, TT_Antialias_On,*/
+					TAG_DONE);
+		TT_GetAttrs(&data->rp, TT_FontMaxTop, &val);
+		data->ttengine_baseline = val;
+
+		TT_GetAttrs(&data->rp, TT_FontHeight, &val);
+		data->entry_maxheight = val;
+	} else
+	{
+		data->entry_maxheight = _font(obj)->tf_YSize;
+	}
+
+ 	for (i=0;i<IMAGE_MAX;i++)
 	{
 		strcpy(filename,"PROGDIR:Images/");
 		strcat(filename,image_names[i]);
@@ -824,6 +940,13 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 			dt_dispose_picture(data->images[i]);
 			data->images[i] = NULL;
 		}
+	}
+
+	if (data->ttengine_font)
+	{
+		TT_DoneRastPort(&data->rp);
+		TT_CloseFont(data->ttengine_font);
+		data->ttengine_font = NULL;
 	}
 
 	return DoSuperMethodA(cl,obj,msg);
@@ -872,8 +995,26 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj)-1,_mheight(obj)-1,LAYERSIMPLE,NULL)))
 			{
 				data->buffer_rp = data->buffer_layer->rp;
+				if (data->ttengine_font)
+				{
+					TT_SetFont(data->buffer_rp, data->ttengine_font);
+					TT_SetAttrs(data->buffer_rp, 
+							TT_Screen, _screen(obj),
+							TT_Encoding, TT_Encoding_UTF8,
+							TT_Antialias, TT_Antialias_On,
+							TAG_DONE);
+				}
 			}
 		}
+	}
+
+	if (data->ttengine_font)
+	{
+		TT_SetAttrs(_rp(obj),
+				TT_Screen, _screen(obj),
+				TT_Encoding, TT_Encoding_UTF8,
+				TT_Antialias, TT_Antialias_On,
+				TAG_DONE);
 	}
 	
 	EnsureActiveEntryVisibility(data);
@@ -888,8 +1029,11 @@ STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide 
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	
+	if (data->ttengine_font) TT_DoneRastPort(_rp(obj));
+
 	if (data->buffer_layer)
 	{
+		if (data->ttengine_font) TT_DoneRastPort(data->buffer_rp);
 		DeleteLayer(0,data->buffer_layer);
 		data->buffer_layer = NULL;
 		data->buffer_rp = NULL;
@@ -1006,6 +1150,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	}
 
 	SetFont(rp,_font(obj));
+	if (data->ttengine_font) TT_SetFont(rp,data->ttengine_font);
 
 
 	background = MUII_ListBack;
@@ -1068,7 +1213,6 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
 	}
-
 	return 0;
 }
 
@@ -1310,8 +1454,11 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									data->last_active = new_entries_active;
 
 									/* Enable mouse move notifies */
-							  	data->mouse_pressed = 1;
-							    DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+									if (!data->mouse_pressed)
+									{
+										DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+							  		data->mouse_pressed = 1;
+									}
 	    					}
 	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)
 	    				{

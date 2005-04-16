@@ -943,6 +943,7 @@ selected at the left part of the configuration window.
   @{" Signatures     " LINK "CO08" 0}   - Signature and tagline settings
   @{" Spam           " LINK "CO09" 0}   - Spam settings
 
+  @{" Hidden options " LINK "CO_H" 0}   - About hidden options
 
 The same three buttons appear on each sheet:
 
@@ -959,6 +960,7 @@ closed.
 [Cancel]
 
 Discard any changes.
+
 
 @ENDNODE
 @NODE "CO00" "Configuration - General"
@@ -1611,6 +1613,18 @@ the mails inside the spam folder.
 
 
 @ENDNODE
+@NODE "CO_H" "Configuration - Hidden options"
+
+SimpleMail also provides some so called hidden options. Hidden options have to
+be added manually to the Configuration file via a text editor. Following
+options are available:
+
+ Hidden.SetAllStati
+ Hidden.MinClassifiedMails
+ Hidden.DontShowShutdownText
+ Hidden.DontUseTheBarMCC
+@ENDNODE
+
 @NODE "CO_F" "Editing filters"
 
 EDITING YOUR FILTERS

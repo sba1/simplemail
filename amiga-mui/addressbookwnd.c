@@ -995,6 +995,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 				setutf8string(alias_string, entry->alias);
 				setutf8string(homepage_string, entry->homepage);
 				setutf8string(portrait_string, entry->portrait);
+				person_portrait(&data);
 
 				if (entry->sex == 1) set(data->female_button,MUIA_Selected,TRUE);
 				else if (entry->sex == 2) set(data->male_button,MUIA_Selected,TRUE);
@@ -1006,8 +1007,6 @@ static void person_window_open(struct addressbook_entry_new *entry)
 					sprintf(buf,"%d %s %d",entry->dob_day,month_names[entry->dob_month-1],entry->dob_year);
 					set(birthday_string,MUIA_String_Contents,buf);
 				}
-
-				if (entry->portrait) set(portrait_button, MUIA_PictureButton_Filename, entry->portrait);
 
 				setsnail(&priv,&entry->priv);
 				setsnail(&work,&entry->work);

@@ -465,7 +465,7 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 
 	*Result = '\0';
 
-	if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library", 44L, &IRexxSys)))
+	if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library", 36L, &IRexxSys)))
 	{
 		Forbid();
 

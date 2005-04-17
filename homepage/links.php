@@ -14,7 +14,7 @@
 
 <UL>
 	<LI><A href="http://www.p2p-it.dk/duff/MCC_BetterString.LZX">The BetterString MCC from Allan Odgaard.</A></LI>
-	<LI><A href="http://wuarchive.wustl.edu/pub/aminet/dev/mui/MCC_TextEditor.lha">The TextEditor MCC from Allan Odgaard.</A></LI>
+	<LI><A href="http://sourceforge.net/projects/texteditor-mcc">Sourceforge project page of the TextEditor MCC.</A></LI>
 	<LI><A href="http://sourceforge.net/projects/nlist-classes">Sourceforge project page of the NList MCCs (includes NListtree MCC).</A></LI>
 	<LI><A href="ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha">The Pop Placeholder MCC by Marcin Orlowski.</A></LI>
 </UL>

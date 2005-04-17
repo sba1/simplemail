@@ -1,4 +1,8 @@
-Version 0.26 (13th beta) - releases on 2005/03/13
+Version 0.27 (14th beta) - released on 2005/04/17
+   - fixed some problems in the morphos build (henes)
+   - a number of bugs fixes
+
+Version 0.26 (13th beta) - released on 2005/03/13
    - optional TheBar.mcc is now used for all toolbars (bgol)
    - compacted mailinfo shows now additional the from field (bgol)
    - simplehtml.library ported to OS4

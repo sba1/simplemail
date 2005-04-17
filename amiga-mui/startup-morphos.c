@@ -660,6 +660,17 @@ int puts(const char *string)
 	return PutStr(string);
 }
 
+int sprintf(char *buf, const char *fmt, ...)
+{
+	int r;
+	va_list ap;
+
+	va_start(ap, fmt);
+	r = vsnprintf(buf, 0x7fff, fmt, ap);
+	va_end(ap);
+	return r;
+}
+
 DIR *opendir(const char *name)
 {
 	BPTR dh;

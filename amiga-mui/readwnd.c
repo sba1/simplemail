@@ -1257,7 +1257,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
     	DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_NEXT,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_SAVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PRINT,   9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_SAVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_MOVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_DELETE,  9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_REPLY,   9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_FORWARD, 9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);

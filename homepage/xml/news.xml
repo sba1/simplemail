@@ -2,8 +2,30 @@
 
 <news>
 
-  <entry date="2005/03/13">
 
+  <entry date="2005/04/17">
+   <text lang="en">
+	  Version 0.27 of SimpleMail released!
+
+	  The changes are:
+   	<list>
+     <item>fixed some problems in the morphos build (henes)</item>
+     <item>a number of bugs fixes<item>
+    </list>
+   </text>
+
+   <text lang="de">
+    SimpleMail Version 0.27 veröffentlicht!
+
+	  Die Änderungen sind:
+   	<list>
+     <item>Einige Probleme innhalb der MorphOS Version wurden behoben (henes)</item>
+     <item>Weitere Fehlerbereinigungen</item>
+    </list>
+   </text>
+  </entry>
+
+  <entry date="2005/03/13">
    <text lang="en">
 	  Version 0.26 of SimpleMail released!
 

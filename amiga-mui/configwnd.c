@@ -239,6 +239,7 @@ static void account_store(void)
 		account_last_selected->imap->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
 		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
+		account_last_selected->imap->ssl = xget(account_recv_ssl_check, MUIA_Selected);
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);

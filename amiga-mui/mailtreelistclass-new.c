@@ -523,7 +523,7 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 					{
 						if (data->ttengine_font)
 						{
-							TT_TextExtent(&data->rp, txt, strlen(txt), &te);
+							TT_TextExtent(&data->rp, txt, utf8len(txt), &te);
 							new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
 						} else
 						{
@@ -686,7 +686,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					Move(rp,xstart,y + data->ttengine_baseline);
 
 					/* use ttengine functions */
-					txt_len = strlen(txt);
+					txt_len = utf8len(txt);
 					fit = TT_TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
 					if (fit < txt_len)
 					{
@@ -992,7 +992,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 	{
 		if ((data->buffer_li = NewLayerInfo()))
 		{
-			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj)-1,_mheight(obj)-1,LAYERSIMPLE,NULL)))
+			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj)-1,data->entry_maxheight-1,LAYERSIMPLE,NULL)))
 			{
 				data->buffer_rp = data->buffer_layer->rp;
 				if (data->ttengine_font)

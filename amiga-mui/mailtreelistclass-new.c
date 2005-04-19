@@ -1313,8 +1313,6 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	SM_DEBUGF(10,("Added %ld mails into list\n",i));
 	data->entries_num = i;
 
-	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
-
 	data->make_visible = 1;
 
 	if (data->inbetween_setup)
@@ -1328,6 +1326,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
 		}
 	}
+
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 
 	IssueTreelistActiveNotify(cl, obj, data);
 	return 1;

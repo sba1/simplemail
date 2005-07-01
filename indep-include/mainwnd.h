@@ -61,4 +61,6 @@ int main_is_iconified(void);
 void main_set_status_text(char *txt);
 void main_display_active_mail(void);
 
+void main_refresh_window_title(unsigned int autocheck_seconds_start);
+
 #endif

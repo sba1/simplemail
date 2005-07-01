@@ -2,6 +2,29 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-07-01  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mainwnd.c: Added ScreenToFront to bring the screen on which SM is
+	  running to the front when doubleclicking on the appicon.
+	  New function main_refresh_window_title() which will show the time for the
+	  next autocheck in the window title.
+	* amiga-mui/startup-os4.c: Fixed a bug in fwrite() and fread() where the blocks
+	  are counted as bytes which resulted in wrong printouts and maybe more.
+	* indep-include/mainwnd.h: New function main_refresh_window_title() which will
+	  show the time for the next autocheck in the window title.
+	* print.c: Corrected "Replies to:" header printout.
+	* simplemail.c: Added the display for the next autocheck time to be displayed
+	  in the mainwindowtitle.
+	  Corrected the handling for the autocheck function. The autocheck_seconds_start
+	  now will be correctly initialized and the handling of the "On Startup" checkbox
+	  does now what it should.
+	* text2html.c: Corrected a display error when email addresses get recognised.
+	  Corrected a bug in the <sb> and <tsb> table creation which could result in
+	  not closed table tags (Sebastian: simplehtml.library does render tables false!)
+
+2005-04-17  Release Version 0.27
+
+2005-03-13  Release Version 0.26
+
 2005-03-06  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/composewnd.c: The foldertree must also be updated (fixes bug #1117613).
 	* folder.c: If a mail get touched by a status change, remove the NEW flag of

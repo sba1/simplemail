@@ -951,6 +951,8 @@ int main_window_open(void)
 		/* The settings could have been loaded */
 		settings_show_changed();
 		set(win_main, MUIA_Window_Open, TRUE);
+		DoMethod(win_main, MUIM_Window_ScreenToFront);
+
 		return 1;
 	}
 	return 0;
@@ -1308,4 +1310,22 @@ void main_display_active_mail(void)
 	char *f = main_get_folder_drawer();
 
 	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
+}
+
+/******************************************************************
+ Refresh the title of the main window
+*******************************************************************/
+void main_refresh_window_title(unsigned int autocheck_seconds_start)
+{
+	static char win_main_title[128];
+
+	if (win_main)
+	{
+		if (user.config.receive_autocheck)
+			sprintf(win_main_title, _("%s (next autocheck at %s)"), VERS, sm_get_time_str(autocheck_seconds_start + user.config.receive_autocheck * 60));
+		else
+			sprintf(win_main_title, "%s", VERS);
+
+		set(win_main, MUIA_Window_Title, win_main_title);
+	}
 }

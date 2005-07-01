@@ -488,11 +488,11 @@ size_t fwrite(const void *buffer, size_t size, size_t count, FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
 	BPTR fh = files[file->_file];
-	size_t bytes = (size_t)IDOS->FWrite(fh,(void*)buffer,size,count);
+	size_t rc = (size_t)IDOS->FWrite(fh,(void*)buffer,size,count);
 #ifdef FAST_SEEK
-	file->_rcnt += bytes;
+	file->_rcnt += rc * size;
 #endif
-	return bytes;
+	return rc;
 }
 
 size_t fread(void *buffer, size_t size, size_t count, FILE *f)

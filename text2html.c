@@ -236,7 +236,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						buffer2--;
 					}
 
-					if ((buffer3 = parse_addr_spec(buffer2, &address)))
+					if ((buffer3 = parse_addr_spec(++buffer2, &address)))
 					{
 						int email_len;
 
@@ -280,6 +280,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 				if (!strncmp("\n<sb>",buffer,5))
 				{
+					if (line) string_append(&str,"<BR></TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>");
 					line = 1;
 					buffer += 5;
 					buffer_len -= 5;
@@ -290,6 +291,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 				if (!strncmp("\n<tsb>",buffer,6))
 				{
+					if (line) string_append(&str,"<BR></TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>");
 					line = 2;
 					buffer += 6;
 					buffer_len -= 6;

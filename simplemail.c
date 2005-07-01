@@ -60,6 +60,9 @@
 #include "tcpip.h"
 #include "upwnd.h"
 
+/** for the Auto-Timer functions **/
+static unsigned int autocheck_seconds_start; /* to compare with this */
+
 /* the current mail should be viewed, returns the number of the window
 	which the function has opened or -1 for an error */
 int callback_read_active_mail(void)
@@ -1721,6 +1724,7 @@ void callback_config_changed(void)
 {
 	/* Build the check single account menu */
 	main_build_accounts();
+	main_refresh_window_title(autocheck_seconds_start);
 	folder_create_imap();
 	callback_refresh_folders();
 	compose_refresh_signature_cycle();
@@ -1763,16 +1767,14 @@ void callback_rescan_folder(void)
 
 /** Auto-Timer functions **/
 
-static unsigned int autocheck_seconds_start; /* to compare with this */
-
 /***************************************************
  That's the function which is calleded every second
 ****************************************************/
 static void callback_timer(void)
 {
-	if (user.config.receive_autocheck)
+	if (user.config.receive_autocheck || (user.config.receive_autoonstartup && autocheck_seconds_start == 0))
 	{
-		if (sm_get_current_seconds() - autocheck_seconds_start > user.config.receive_autocheck * 60)
+		if (sm_get_current_seconds() - autocheck_seconds_start >= user.config.receive_autocheck * 60)
 		{
 			/* nothing should happen when mails_dl() is called twice,
 			   this could happen if a mail downloading takes very long */
@@ -1802,6 +1804,7 @@ static void callback_timer(void)
 void callback_autocheck_reset(void)
 {
 	autocheck_seconds_start = sm_get_current_seconds();
+	main_refresh_window_title(autocheck_seconds_start);
 }
 
 /**************************************************
@@ -1840,16 +1843,9 @@ int simplemail_main(void)
 				if (gui_init())
 				{
 					/* Perform an email check if requested by configuration */
-					if (user.config.receive_autoonstartup)
-					{
-						autocheck_seconds_start = 0;
-						callback_timer();
-					} else
-					{
-						/* callback_implicity starts the timer, so in case it is not called
-						 * we have to do this manually here */
-						thread_push_function_delayed(1000, callback_timer, 0);
-					}
+					if (user.config.receive_autoonstartup) autocheck_seconds_start = 0;
+					else callback_autocheck_reset();
+					callback_timer();
 
 					gui_loop();
 				}

@@ -507,7 +507,7 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *f)
 
 	if (!len && size && count) file->_eof = 1;
 #ifdef FAST_SEEK
-	file->_rcnt += len;
+	file->_rcnt += len * size;
 #endif
 	return len;
 }

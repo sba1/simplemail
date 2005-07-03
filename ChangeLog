@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-07-03  Henning Nielsen Lund <hnl_dk@stofanet.dk>
+	* po/da.po: First version of the Danish translation.
+
 2005-07-01  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mainwnd.c: Added ScreenToFront to bring the screen on which SM is
 	  running to the front when doubleclicking on the appicon.

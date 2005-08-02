@@ -1083,7 +1083,8 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 			} else
 			{
 				if (thread_aborted()) break;
-				else tell_from_subtask(tcp_strerror(tcp_error_code()));
+
+				tell_from_subtask(tcp_strerror(tcp_error_code()));
 				rc = 0;
 				break;
 			}

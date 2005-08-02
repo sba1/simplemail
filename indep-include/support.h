@@ -57,8 +57,8 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...);
 
 void sm_put_on_serial_line(char *txt);
 
-void tell_str(char *str);
-void tell_from_subtask(char *str);
+void tell_str(const char *str);
+void tell_from_subtask(const char *str);
 
 int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr);
 

@@ -992,6 +992,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	void *handle = NULL;
 #endif
 	struct folder *folder = msg->f;
+    struct mail_info *last_active_mail;
 	int primary_sort, threaded;
 
 	if (!folder)
@@ -999,6 +1000,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		DoMethod(obj, MUIM_MailTreelist_Clear);
 		return 0L;
 	}
+
+	last_active_mail = (struct mail_info*)xget(obj,MUIA_MailTreelist_Active);
 
 	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
   threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
@@ -1087,24 +1090,32 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 #else
 	{
 		int i;
+		int active = -1;
 		struct mail_info **array = folder_get_mail_info_array(folder);
 
 		DoMethod(obj, MUIM_NList_Insert, array, folder->num_mails, MUIV_NList_Insert_Bottom);
 
+		/* Set the first active mail. That is the mail which was active before
+         * or (if it can't be found) the first unread mail */
 		for (i=0;i<folder->num_mails;i++)
 		{
-			if (mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
+			if (active == -1 && mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
+				active = i;
+
+			if (array[i] == last_active_mail)
 			{
-				set(obj,MUIA_NList_Active,i);
-				DoMethod(obj, MUIM_NList_Jump, MUIV_NList_Jump_Active);
+				active = i;
 				break;
 			}
 		}
 
-		/* no mail has been selected */
-		if (i==folder->num_mails)
+		if (active != -1)
 		{
-			/* issue notify */
+			set(obj,MUIA_NList_Active,active);
+			DoMethod(obj, MUIM_NList_Jump, MUIV_NList_Jump_Active);
+		} else
+		{
+			/* no mail has been found, but issue a notify at least */
 			SetSuperAttrs(cl, obj, MUIA_MailTreelist_Active, NULL, TAG_DONE);
 		}
 	}

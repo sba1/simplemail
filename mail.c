@@ -1243,10 +1243,11 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 						{
 							if (parse_address(str,&addrs))
 							{
+								struct account *ac = account_find_by_from(str);
 								/* i == 0 means to, so if the list is not empty it had multiple recipients
 									 i == 1 means cc, so it contains at least one single entry */
-
-								if (list_length(&addrs.mailbox_list) > 1 - i)
+								/* the outgoing account could be in to or cc, not just in to! */
+								if (list_length(&addrs.mailbox_list) > 1 - !ac)
 								{
 									if (!take_mult)
 									{
@@ -1268,19 +1269,15 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 											append_mailbox_to_address_list(alist,mb);
 											mb = (struct mailbox*)node_next(&mb->node);
 										}
+										/* remove the account, if found above */
+										if (ac)
+										{
+											remove_from_address_list(alist,ac->email);
+										}
 									}
 								}
 								free_address(&addrs);
 							}
-						}
-					}
-
-					if (take_mult)
-					{
-						struct account *ac = account_find_by_from(to);
-						if (ac)
-						{
-							remove_from_address_list(alist,ac->email);
 						}
 					}
 				}

@@ -43,6 +43,7 @@
 int read_line(FILE *fh, char *buf);           /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* in configuration.c */
 void app_show(void);                          /* in gui_main.c */
+void app_quit(void);
 
 struct AppIcon_Stat
 {
@@ -161,6 +162,12 @@ void appicon_handle(void)
 					{
 						main_window_open();
 					}
+					break;
+
+				case AMCLASSICON_Delete:
+					/* The "Delete" menu item was invoked */
+					SM_DEBUGF(15,("Delete AppIcon (= Quit)\n"));
+					app_quit();
 					break;
 
 				case AMCLASSICON_Snapshot:
@@ -302,6 +309,7 @@ void appicon_refresh(int force)
 			/* Only V44+ of wb supports this tags */
 			appicon = AddAppIcon(0, 0, (char *)appicon_label, appicon_port, 0, appicon_diskobject[appicon_mode],
 				WBAPPICONA_SupportsOpen, TRUE,
+				WBAPPICONA_SupportsDelete, TRUE,
 				WBAPPICONA_PropagatePosition, TRUE,
 				WBAPPICONA_SupportsSnapshot, TRUE,
 				WBAPPICONA_SupportsUnSnapshot, TRUE,

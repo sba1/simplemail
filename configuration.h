@@ -103,6 +103,8 @@ struct config
 	int read_wordwrap;
 	int read_link_underlined;
 	int read_smilies;
+	int readwnd_close_after_last;
+	int readwnd_next_after_move;
 
 	/* list of the filters */
 	struct list filter_list; 
@@ -165,5 +167,3 @@ void insert_config_phrase(struct phrase *phrase);
 extern struct user user; /* the current user */
 
 #endif
-
-

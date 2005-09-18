@@ -94,6 +94,8 @@ static Object *mails_readmisc_check[6];
 static Object *mails_readmisc_check_group;
 static Object *mails_readmisc_all_check;
 static Object *mails_readmisc_additional_string;
+static Object *mails_readmisc_close_after_last;
+static Object *mails_readmisc_next_after_move;
 static struct MUI_Palette_Entry read_palette_entries[7];
 
 static Object *write_wordwrap_string;
@@ -531,6 +533,9 @@ static int config_use(void)
 
 	array_free(user.config.header_array);
 	user.config.header_array = array_duplicate((char**)xget(mails_readmisc_additional_string,MUIA_MultiString_ContentsArray));
+
+	user.config.readwnd_close_after_last = xget(mails_readmisc_close_after_last,MUIA_Selected);
+	user.config.readwnd_next_after_move = xget(mails_readmisc_next_after_move,MUIA_Selected);
 
 	if (user.config.appicon_label) free(user.config.appicon_label);
 	if (user.config.read_propfont) free(user.config.read_propfont);
@@ -1278,7 +1283,7 @@ static int init_mails_readmisc_group(void)
 		MUIA_ShowMe, FALSE,
 		MUIA_HelpNode, "CO04",
 		Child, HorizLineTextObject(_("Header Configuration")),
-		Child, VGroupV,
+		Child, VGroup,
 			Child, HGroup,
 				Child, MakeLabel(_("Show all headers")),
 				Child, mails_readmisc_all_check = MakeCheck(_("Show all headers"),FALSE),
@@ -1318,10 +1323,23 @@ static int init_mails_readmisc_group(void)
 						StringFrame,
 						MUIA_MultiString_ContentsArray,user.config.header_array,
 						End,
-					Child, RectangleObject, End,
 					End,
 				End,
 			End,
+		Child, HorizLineTextObject(_("Readwindow Configuration")),
+		Child, VGroup,
+			Child, HGroup,
+				Child, ColGroup(2),
+					Child, MakeLabel(_("Close readwindow when listend")),
+					Child, mails_readmisc_close_after_last = MakeCheck(_("Close readwindow when listend"),user.config.readwnd_close_after_last),
+
+					Child, MakeLabel(_("Show next mail after move")),
+					Child, mails_readmisc_next_after_move = MakeCheck(_("Show next mail after move"),user.config.readwnd_next_after_move),
+					End,
+				Child, HVSpace,
+				End,
+			End,
+		Child, HVSpace,
 		End;
 
 	if (!groups[GROUPS_READMISC]) SM_RETURN(0,"%ld");

@@ -242,6 +242,10 @@ int load_config(void)
 						}
 						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
 							user.config.header_array = array_add_string(user.config.header_array,result);
+						if ((result = get_config_item(buf,"ReadWindow.CloseAfterLast")))
+							user.config.readwnd_close_after_last = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"ReadWindow.NextAfterMove")))
+							user.config.readwnd_next_after_move = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.BackgroundColor")))
 							user.config.read_background = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.TextColor")))
@@ -615,6 +619,8 @@ void save_config(void)
 					fprintf(fh,"ReadHeader.HeaderName=%s\n",user.config.header_array[i]);
 				}
 			}
+			fprintf(fh,"ReadWindow.CloseAfterLast=%s\n",user.config.readwnd_close_after_last?"Y":"N");
+			fprintf(fh,"ReadWindow.NextAfterMove=%s\n",user.config.readwnd_next_after_move?"Y":"N");
 			fprintf(fh,"Read.PropFont=%s\n",MAKESTR(user.config.read_propfont));
 			fprintf(fh,"Read.FixedFont=%s\n",MAKESTR(user.config.read_fixedfont));
 			fprintf(fh,"Read.BackgroundColor=0x%x\n",user.config.read_background);

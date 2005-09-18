@@ -1029,6 +1029,8 @@ workbench.library >= V44 (>= OS3.5):
   Use the (Un)Snapshot menuitems from the Workbench->Icon menu. Of course
   you can also use the ToolTypes if you want but the Snapshot function of
   the workbench does have the higher priority if you have used both.
+  It's also possible to exit Simplemail by invoke the "Delete" item of
+  the Icons menu.
 
 @ENDNODE
 @NODE "CO01" "Configuration - Accounts"
@@ -1340,6 +1342,25 @@ under "Additional headers" one by one, pressing <Return> after each one.
 By default, all the "From", "To", "CC", "Subject", "Date" and "Reply-To"
 headers are displayed. In the Read Message window, the selected headers
 will be displayed in the order you set here.
+
+
+---- Readwindow Configuration --------------------------------------------
+
+[ ] Close readwindow when listend
+
+If this option is switched on simplemail will close the readwindow
+when an action delete or move*) is performed on the last mail of the
+current folder.
+
+*) by action move only when "next mail after move" option is enabled
+
+
+[ ] Show next mail after move
+
+Normaly the mail which is moved will still be displayed in the readwindow.
+When you enable this option and move a mail the readwindow will show you
+the next mail of the current folder as if you would have pressed the next
+button.
 
 @ENDNODE
 @NODE "CO05" "Configuration - Reading plain"
@@ -2597,6 +2618,11 @@ Selects the current message. MAILFILE is the filename of the message.
 SHOW
 
 Brings SimpleMail back from its iconified state into full view.
+
+
+QUIT
+
+Exit Simplemail.
 
 @ENDNODE
 @NODE "TIPS" "FAQ"

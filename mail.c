@@ -1233,52 +1233,46 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 				if (to || cc)
 				{
 					int i;
-					int take_mult = 0;
+					struct list *mult_list = NULL;
 
 					for (i=0;i<2;i++)
 					{
-						struct parse_address addrs;
 						char *str = i==0?to:cc;
 						if (str)
 						{
-							if (parse_address(str,&addrs))
-							{
-								struct account *ac = account_find_by_from(str);
-								/* i == 0 means to, so if the list is not empty it had multiple recipients
-									 i == 1 means cc, so it contains at least one single entry */
-								/* the outgoing account could be in to or cc, not just in to! */
-								if (list_length(&addrs.mailbox_list) > 1 - !ac)
-								{
-									if (!take_mult)
-									{
-										take_mult = sm_request(NULL,
-													_("This e-mail has multiple recipients. Should it be answered to all recipients?"),
-													_("*_Yes|_No"));
-										if (!take_mult)
-										{
-											free_address(&addrs);
-											break;
-										}
-									}
+							struct account *ac = account_find_by_from(str);
 
-									if (take_mult)
-									{
-										struct mailbox *mb = (struct mailbox*)list_first(&addrs.mailbox_list);
-										while (mb)
-										{
-											append_mailbox_to_address_list(alist,mb);
-											mb = (struct mailbox*)node_next(&mb->node);
-										}
-										/* remove the account, if found above */
-										if (ac)
-										{
-											remove_from_address_list(alist,ac->email);
-										}
-									}
+							if (mult_list) append_to_address_list(mult_list, str);
+							else mult_list = create_address_list(str);
+
+							/* remove the account, if found in to or cc */
+							if (ac) remove_from_address_list(mult_list,ac->email);
+						}
+					}
+					if (mult_list)
+					{
+						/* there could be multiple recipients */
+						/* first, remove the replyto (could be by mailinglist where To == ReplyTo */
+						if (replyto) remove_from_address_list(mult_list, replyto);
+
+						/* everything else are multiple recipients */
+						if (list_length(mult_list) > 0)
+						{
+							int take_mult = sm_request(NULL,
+							                          _("This e-mail has multiple recipients. Should it be answered to all recipients?"),
+							                          _("*_Yes|_No"));
+
+							if (take_mult)
+							{
+								struct mailbox *mb = (struct mailbox*)list_first(mult_list);
+								while (mb)
+								{
+									append_mailbox_to_address_list(alist,mb);
+									mb = (struct mailbox*)node_next(&mb->node);
 								}
-								free_address(&addrs);
 							}
 						}
+						free_address_list(mult_list);
 					}
 				}
 

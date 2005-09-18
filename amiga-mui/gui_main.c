@@ -243,6 +243,15 @@ void app_del(void)
 }
 
 /****************************************************************
+ Quit the Application
+*****************************************************************/
+void app_quit(void)
+{
+	if (App)
+		DoMethod(App, MUIM_Application_PushMethod, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+}
+
+/****************************************************************
  Delete the rest
 *****************************************************************/
 void all_del(void)

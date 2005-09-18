@@ -61,6 +61,7 @@ static int arexx_execute_out; /* number of arexx messages standing out */
 /* from gui_main.c */
 void app_hide(void);
 void app_show(void);
+void app_quit(void);
 
 /* from mainwnd.c */
 struct Screen *main_get_screen(void);
@@ -476,6 +477,14 @@ static void arexx_show(struct RexxMsg *rxmsg, STRPTR args)
 static void arexx_hide(struct RexxMsg *rxmsg, STRPTR args)
 {
 	app_hide();
+}
+
+/****************************************************************
+ QUIT Arexx Command
+*****************************************************************/
+static void arexx_quit(struct RexxMsg *rxmsg, STRPTR args)
+{
+	app_quit();
 }
 
 /****************************************************************
@@ -1505,6 +1514,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SETMAILFILE",command.command)) arexx_setmailfile(rxmsg,command.args);
 		else if (!Stricmp("SHOW",command.command)) arexx_show(rxmsg,command.args);
 		else if (!Stricmp("HIDE",command.command)) arexx_hide(rxmsg,command.args);
+		else if (!Stricmp("QUIT",command.command)) arexx_quit(rxmsg,command.args);
 		else if (!Stricmp("GETSELECTED",command.command)) arexx_getselected(rxmsg,command.args);
 		else if (!Stricmp("GETMAILSTAT",command.command)) arexx_getmailstat(rxmsg,command.args);
 		else if (!Stricmp("FOLDERINFO",command.command)) arexx_folderinfo(rxmsg,command.args);

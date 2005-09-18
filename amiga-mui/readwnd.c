@@ -126,6 +126,7 @@ struct Read_Data /* should be a customclass */
 
 	struct FileRequester *file_req;
 	int num; /* the number of the window */
+	int direction; /* Prev/next scrolling direction */
 	struct mail_complete *mail; /* the mail which is displayed, a copy of the ref_mail */
 
 	struct mail_info *ref_mail; /* The reference to the original mail which is in the folder */
@@ -794,6 +795,7 @@ static void prev_button_pressed(struct Read_Data **pdata)
 	struct Read_Data *data = *pdata;
 	struct mail_info *prev = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
+	data->direction = 0;
 	if (prev)
 	{
 		callback_read_mail(folder_find_by_path(data->folder_path),prev,data->num);
@@ -811,6 +813,7 @@ static void next_button_pressed(struct Read_Data **pdata)
 	struct Read_Data *data = *pdata;
 	struct mail_info *next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
+	data->direction = 1;
 	if (next)
 	{
 		callback_read_mail(folder_find_by_path(data->folder_path),next,data->num);
@@ -825,8 +828,14 @@ static void next_button_pressed(struct Read_Data **pdata)
 static void delete_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
-	struct mail_info *next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
-	if (!next) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+	struct mail_info *next;
+
+	if (data->direction) next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+	else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+
+	if (!next && !user.config.readwnd_close_after_last)
+		if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+		else next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 	if (callback_delete_mail(data->ref_mail))
 	{
@@ -849,12 +858,38 @@ static void delete_button_pressed(struct Read_Data **pdata)
 static void move_button_pressed(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
+	struct mail_info *next = NULL;
+
+	if (user.config.readwnd_next_after_move)
+	{
+		if (data->direction) next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+		else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+
+		if (!next && !user.config.readwnd_close_after_last)
+			if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+			else next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+	}
 
 	if (callback_move_mail_request(data->folder_path, data->ref_mail))
 	{
-		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, TRUE);
-		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
-		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
+		if (user.config.readwnd_next_after_move)
+		{
+			if (next)
+			{
+				callback_read_mail(folder_find_by_path(data->folder_path),next,data->num);
+				/* will also refresh the mail, in case of updated flags */
+				main_set_active_mail(next);
+			} else
+			{
+				set(data->wnd, MUIA_Window_Open, FALSE);
+				DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
+			}
+		} else
+		{
+			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, TRUE);
+			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
+			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
+		}
 	}
 }
 
@@ -1235,6 +1270,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 			data->attachments_group = attachments_group;
 			data->num = num;
+			data->direction = 1; /* next */
 			read_open[num] = data;
 
 			init_hook_with_data(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);

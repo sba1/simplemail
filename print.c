@@ -68,7 +68,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 	if(to && (user.config.header_flags & (SHOW_HEADER_TO | SHOW_HEADER_ALL)))
 	{
 		struct parse_address p_addr;
-		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL,_("To"));
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " ",_("To"));
 
 		if ((parse_address(to,&p_addr)))
 		{
@@ -90,7 +90,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 	if(cc && (user.config.header_flags & (SHOW_HEADER_CC | SHOW_HEADER_ALL)))
 	{
 		struct parse_address p_addr;
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL, _("Carbon Copy"));
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " ", _("Carbon Copy"));
 		if ((parse_address(cc,&p_addr)))
 		{
 			struct mailbox *mb = (struct mailbox*)list_first(&p_addr.mailbox_list);
@@ -116,7 +116,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 
 	if(m->info->subject && (user.config.header_flags & (SHOW_HEADER_SUBJECT|SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL" %s\n", _("Subject"), m->info->subject);
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Subject"), m->info->subject);
 	}
 
 	if((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
@@ -128,7 +128,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 	{
 		struct mailbox addr;
 		parse_mailbox(replyto, &addr);
-		fprintf(fp,ANSI_BOLD "%s: " ANSI_NORMAL,_("Replies To"));
+		fprintf(fp,ANSI_BOLD "%s:" ANSI_NORMAL " ",_("Replies To"));
 
 		if (addr.phrase)
 		{

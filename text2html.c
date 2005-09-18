@@ -231,12 +231,16 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						static const char noaliaschars[] = {
 							" ()<>@,;:\\\"[]\n\r"};
 
-						if (strchr(noaliaschars,c2)) break;
+						if (strchr(noaliaschars,c2))
+						{
+							buffer2++;
+							break;
+						}
 						buffer2_len++;
 						buffer2--;
 					}
 
-					if ((buffer3 = parse_addr_spec(++buffer2, &address)))
+					if ((buffer3 = parse_addr_spec(buffer2, &address)))
 					{
 						int email_len;
 

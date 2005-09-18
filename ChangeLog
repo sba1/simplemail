@@ -2,6 +2,23 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-09-18  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/appicon.c: Invoking the "Delete" menuitom of the workbench icons
+	  menu now exits simplemail.
+	* amiga-mui/arexx.c: Added "QUIT" command to exit simplemail.
+	* amiga-mui/configwnd.c: Added two new config options to the "Reading" group.
+	* amiga-mui/gui_main.c: Added app_quit() function to exit simplemail.
+	* amiga-mui/mainwnd.c: Added the compile date to the "About" requester.
+	* amiga-mui/readwnd.c: The window now remembers its scroll direction.
+	  Added support for the two new config options for the "Delete" and "Move"
+	  (Bug #1246263) behavior (see guide file for description).
+	* configuration.(c|h): Added two new config options.
+	* doc/amiga/SimpleMail.guide: Added the description of the new functions.
+	* mail.c: Fixed bug  #1258821 "Reply to all".
+	* print.c: Small correction for the printout.
+	* text2html.c: Corrected a display error when email addresses get recognised
+	  (last fix doesn't work correctly in all circumstances).
+
 2005-07-03  Henning Nielsen Lund <hnl_dk@stofanet.dk>
 	* po/da.po: First version of the Danish translation.
 

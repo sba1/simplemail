@@ -118,13 +118,14 @@ char *taglines_add_tagline(char *buf)
 		FILE *fh;
 		if ((fh = fopen("ENV:Signature","rb")))
 		{
-			char *new_text = malloc(len+1);
+			char *new_text;
 			unsigned int len = myfsize(fh);
 
 			if ((new_text = malloc(len+1)))
 			{
 				char *new_buf;
 				fread(new_text,len,1,fh);
+				new_text[len]=0;
 				len = strlen(buf) + strlen(new_text) - 2;
 				if ((new_buf = malloc(len+1)))
 				{

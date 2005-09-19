@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-09-19  Bernd Gollesch <bgollesch@sime.at>
+	* taglines.c: Fixed Bug #1289240 where random chars can appear after a
+	  signature which is imported from "ENV:Signature".
+
 2005-09-18  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/appicon.c: Invoking the "Delete" menuitom of the workbench icons
 	  menu now exits simplemail.

@@ -571,6 +571,7 @@ struct folder *sm_request_folder(char *text, struct folder *exclude)
 			Child, TextObject, MUIA_Text_PreParse, "\033c", MUIA_Text_Contents, text, End,
 			Child, NListviewObject,
 				MUIA_NListview_NList, folder_tree = FolderTreelistObject,
+					MUIA_CycleChain, 1,
 					End,
 				End,
 			Child, HorizLineObject,
@@ -596,6 +597,7 @@ struct folder *sm_request_folder(char *text, struct folder *exclude)
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, 1, &cancel);
 
 		set(wnd,MUIA_Window_Open,TRUE);
+		set(wnd,MUIA_Window_ActiveObject,folder_tree);
 		loop();
 
 		if (!cancel)

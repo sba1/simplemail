@@ -890,6 +890,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
 	/* Find out, if the supplied font is a ttf font, and open it as a ttengine
 	 * font */
+#if 0
 	if ((data->ttengine_font = OpenTTEngineFont(_font(obj))))
 	{
 		ULONG val;
@@ -906,6 +907,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 		TT_GetAttrs(&data->rp, TT_FontHeight, &val);
 		data->entry_maxheight = val;
 	} else
+#endif
 	{
 		data->entry_maxheight = _font(obj)->tf_YSize;
 	}
@@ -1339,7 +1341,6 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-	struct mail_info *m;
 	int *handle_ptr = (int*)msg->handle;
 	int handle;
 
@@ -1353,9 +1354,13 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 		handle = data->entries_minselected;
 	}
 
-	if (handle != -1) m = (struct mail_info*)data->entries[handle]->mail_info;
-	*handle_ptr = handle;
-	return (ULONG)m;
+	if (handle != -1)
+	{
+		*handle_ptr = handle;
+		return (ULONG)data->entries[handle]->mail_info;
+	}
+	
+	return 0;
 }
 
 /*************************************************************************

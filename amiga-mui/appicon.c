@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <clib/wb_protos.h>
 #include <proto/exec.h>
 #include <proto/icon.h>
 #include <proto/wb.h>

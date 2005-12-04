@@ -50,7 +50,7 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIM_MailTreelist_Thaw             (TAG_USER | 0x300F010C)
 struct  MUIP_MailTreelist_GetFirstSelected { ULONG MethodID; void *handle;};
 struct  MUIP_MailTreelist_GetNextSelected  { ULONG MethodID; void *handle;};
-struct  MUIP_MailTreelist_InsertMail       { ULONG MethodID; struct mail *m; int after;};
+struct  MUIP_MailTreelist_InsertMail       { ULONG MethodID; struct mail_info *m; int after;};
 struct  MUIP_MailTreelist_RefreshMail      { ULONG MethodID; struct mail *m;};
 struct  MUIP_MailTreelist_RemoveMail       { ULONG MethodID; struct mail *m;};
 struct  MUIP_MailTreelist_ReplaceMail      { ULONG MethodID; struct mail *oldmail; struct mail *newmail;};

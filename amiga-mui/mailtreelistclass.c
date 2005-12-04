@@ -1312,7 +1312,7 @@ static struct MUI_NListtree_TreeNode *main_find_insert_node(Object *obj, struct 
 ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
 {
 	int after = msg->after;
-	struct mail *mail = msg->m;
+	struct mail_info *mail = msg->m;
 
 #ifdef MAILLIST_IS_TREE
 	if (after == -2)

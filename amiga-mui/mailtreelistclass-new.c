@@ -392,20 +392,14 @@ STATIC VOID GetStatusImages(struct mail_info *m, int *images, int *used_images_p
 
 
 /**************************************************************************
- Allocate a single list entry, does not initialize it (except the pointer)
+ Allocate a single list entry and initialized it with default values
 **************************************************************************/
 static struct ListEntry *AllocListEntry(struct MailTreelist_Data *data)
 {
-    ULONG *mem;
-    struct ListEntry *le;
-    int size = sizeof(struct ListEntry) + 4; /* sizeinfo */
-
-    mem = (ULONG*)AllocPooled(data->pool, size);
-    if (!mem) return NULL;
-
-    mem[0] = size; /* Save the size */
-    le = (struct ListEntry*)(mem+1);
-    return le;
+	struct ListEntry *le = (struct ListEntry*)AllocPooled(data->pool, sizeof(struct ListEntry));
+ 	if (!le) return NULL;
+	memset(le,0,sizeof(*le));
+	return le;
 }
 
 /**************************************************************************
@@ -413,21 +407,21 @@ static struct ListEntry *AllocListEntry(struct MailTreelist_Data *data)
 **************************************************************************/
 static void FreeListEntry(struct MailTreelist_Data *data, struct ListEntry *entry)
 {
-    ULONG *mem = ((ULONG*)entry)-1;
-    FreePooled(data->pool, mem, mem[0]);
+	FreePooled(data->pool, entry, sizeof(*entry));
 }
 
 /**************************************************************************
- Ensures that we there can be at least the given amount of entries within
+ Ensures that there can be at least the given amount of entries within
  the list. Returns 0 if not. It also allocates the space for the title.
- It can be accesses with data->entries[ENTRY_TITLE]
+ It can be accesses with data->entries[ENTRY_TITLE]. Can be used to
+ increase the number of entries.
 **************************************************************************/
 static int SetListSize(struct MailTreelist_Data *data, LONG size)
 {
 	struct ListEntry **new_entries;
 	int new_entries_allocated;
 	
-	SM_DEBUGF(10,("%ld %ld\n",size + 1, data->entries_allocated));
+	SM_DEBUGF(10,("size=%ld allocated=%ld\n",size + 1, data->entries_allocated));
 	
 	if (size + 1 <= data->entries_allocated)
 		return 1;
@@ -452,8 +446,99 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
   return 1;
 }
 
+
 /**************************************************************************
- Calc entries dimensions
+ Calc dimensions of given mail info. Return whether a width of a column
+ has been changed.
+**************************************************************************/
+static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_info * m)
+{
+	int col;
+	int changed = 0;
+
+	for (col=0;col<MAX_COLUMNS;col++)
+	{
+		if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
+		{
+			int is_ascii7 = 1;
+			char *txt = NULL;
+			int used_images = 0;
+			int images[10];
+	
+			switch (data->ci[col].type)
+			{
+				case	COLUMN_TYPE_STATUS:
+							GetStatusImages(m,images,&used_images);
+							break;
+
+				case	COLUMN_TYPE_FROMTO:
+							if (m)
+							{
+								if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
+								GetFromText(m,&txt,&is_ascii7);
+							}
+							else txt = _("From");
+							break;
+	
+				case	COLUMN_TYPE_SUBJECT:
+							if (m)
+							{
+								txt = m->subject;
+								is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
+							}
+							else txt = _("Subject");
+							break;
+			}
+
+			if (txt || used_images)
+			{
+				struct TextExtent te;
+				int new_width = 0;
+				int cur_image;
+
+				/* put the images at first */
+				for (cur_image = 0; cur_image < used_images; cur_image++)
+				{
+					struct dt_node *dt = data->images[images[cur_image]];
+					if (dt) new_width += dt_width(dt) + IMAGE_HORIZ_SPACE;
+				}
+
+				if (txt)
+				{
+					if (data->ttengine_font)
+					{
+						TT_TextExtent(&data->rp, txt, utf8len(txt), &te);
+						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+					} else
+					{
+						if (!is_ascii7)
+						{
+							utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+							txt = data->buf;
+						}
+
+						TextExtent(&data->rp, txt, strlen(txt), &te);
+						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+					}
+				} else
+				{
+					/* If new_width contains a non 0 integer, at least a image is available.
+					 * Because there is no text available, we subtract the last space */
+					if (new_width) new_width -= IMAGE_HORIZ_SPACE;
+				}
+				if (new_width > data->ci[col].width)
+				{
+					data->ci[col].width = new_width;
+					changed = 1;
+				}
+			}
+		}
+	}
+	return changed;
+}
+
+/**************************************************************************
+ Calc entire entries dimensions
 **************************************************************************/
 static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 {
@@ -468,85 +553,7 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 
 	for (i=0;i<data->entries_num;i++)
 	{
-		struct mail_info *m;
-
-		m = data->entries[i]->mail_info;
-
-		for (col=0;col<MAX_COLUMNS;col++)
-		{
-			if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
-			{
-				int is_ascii7 = 1;
-				char *txt = NULL;
-				int used_images = 0;
-				int images[10];
-		
-				switch (data->ci[col].type)
-				{
-					case	COLUMN_TYPE_STATUS:
-								GetStatusImages(m,images,&used_images);
-								break;
-
-					case	COLUMN_TYPE_FROMTO:
-								if (m)
-								{
-									if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
-									GetFromText(m,&txt,&is_ascii7);
-								}
-								else txt = _("From");
-								break;
-		
-					case	COLUMN_TYPE_SUBJECT:
-								if (m)
-								{
-									txt = m->subject;
-									is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
-								}
-								else txt = _("Subject");
-								break;
-				}
-
-				if (txt || used_images)
-				{
-					struct TextExtent te;
-					int new_width = 0;
-					int cur_image;
-
-					/* put the images at first */
-					for (cur_image = 0; cur_image < used_images; cur_image++)
-					{
-						struct dt_node *dt = data->images[images[cur_image]];
-						if (dt) new_width += dt_width(dt) + IMAGE_HORIZ_SPACE;
-					}
-
-					if (txt)
-					{
-						if (data->ttengine_font)
-						{
-							TT_TextExtent(&data->rp, txt, utf8len(txt), &te);
-							new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
-						} else
-						{
-							if (!is_ascii7)
-							{
-								utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
-								txt = data->buf;
-							}
-
-							TextExtent(&data->rp, txt, strlen(txt), &te);
-							new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
-						}
-					} else
-					{
-						/* If new_width contains a non 0 integer, at least a image is available.
-						 * Because there is no text available, we subtract the last space */
-						if (new_width) new_width -= IMAGE_HORIZ_SPACE;
-					}
-					if (new_width > data->ci[col].width) data->ci[col].width = new_width;
-				}
-
-			}
-		}
+		CalcEntry(data, obj, data->entries[i]->mail_info);
 	}
 }
 
@@ -1299,8 +1306,6 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		}
 
 		le->mail_info = m;
-		le->parents = 0;
-		le->flags = 0;
 
 		if (mail_get_status_type(m) == MAIL_STATUS_UNREAD && data->entries_active == -1)
 			data->entries_active = i;
@@ -1317,6 +1322,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	data->make_visible = 1;
 
+	/* Recalc column dimensions and redraw if necessary */
 	if (data->inbetween_setup)
 	{
 		CalcEntries(data,obj);
@@ -1333,6 +1339,68 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	IssueTreelistActiveNotify(cl, obj, data);
 	return 1;
+}
+
+/*************************************************************************
+ MUIM_MailTreelist_InsertMail
+*************************************************************************/
+ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+
+	int after = msg->after;
+	struct mail_info *mail = msg->m;
+	struct ListEntry *entry;
+
+	SM_DEBUGF(10,("msg->after = %d\n",after));
+
+	/* Ensure vaild after. Note that if after == -2 we mean the last element */
+	if (after == -2 || after > data->entries_num) after = data->entries_num - 1;
+	else if (after < -2) after = -1;
+
+	/* Ensure that we can hold an additional entry */
+	if (!(SetListSize(data,data->entries_num + 1)))
+		return 0;
+
+	if (!(entry = AllocListEntry(data)))
+		return 0;
+
+	SM_DEBUGF(10,("after = %d, data->entries_num = %d\n",after,data->entries_num));
+
+	/* The new element is placed at position after + 1, hence we must
+	 * move all elements starting from this position one position below */
+	if (after + 1 != data->entries_num)
+	{
+		int entries_to_move = data->entries_num - after - 1;
+		SM_DEBUGF(10,("entries_to_move = %d\n",entries_to_move));
+		memmove(&data->entries[after+2],&data->entries[after+1], entries_to_move*sizeof(data->entries[0]));
+	}
+
+	entry->mail_info = mail;
+	data->entries[after+1] = entry;
+	data->entries_num++;
+
+	/* Update the active element if any and necessary */
+	if (data->entries_active >= after + 1)
+		data->entries_active++;
+	if (data->last_active >= after + 1)
+		data->last_active++;
+
+	/* Recalc column dimensions and redraw if necessary */
+	if (data->inbetween_setup)
+	{
+		CalcEntry(data,obj,mail); /* Calculate only the newly added entry */
+		if (data->inbetween_show)
+		{
+			CalcVisible(data,obj);
+
+			/* Redraw, if new element has been inserted above the visible bottom
+			 * (could be optimized better) */
+			if (after + 1 < data->entries_first + data->entries_visible)
+				MUI_Redraw(obj,MADF_DRAWOBJECT);
+		}
+	}
+	return 0;
 }
 
 /*************************************************************************
@@ -1557,6 +1625,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_InsertMail:	return MailTreelist_InsertMail(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
 

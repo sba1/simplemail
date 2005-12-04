@@ -1416,6 +1416,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    					{
 	    						int new_entries_active;
 	    						int selected_changed;
+	    						int double_click = 0;
 
 									new_entries_active = my / data->entry_maxheight + data->entries_first;
 									if (new_entries_active < 0) new_entries_active = 0;
@@ -1446,12 +1447,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									} else
 									{
 										if (data->entries_active != -1)
-										{
-											if (DoubleClick(data->last_secs,data->last_mics,msg->imsg->Seconds,msg->imsg->Micros))
-											{
-												IssueTreelistDoubleClickNotify(cl,obj,data);
-											}
-										}
+											double_click = DoubleClick(data->last_secs,data->last_mics,msg->imsg->Seconds,msg->imsg->Micros);
 									}
 
 									data->last_mics = msg->imsg->Micros;
@@ -1463,6 +1459,14 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									{
 										DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
 							  		data->mouse_pressed = 1;
+									}
+
+									/* On successful double click, issue the notify but also disable move move notifies */
+									if (double_click)
+									{
+										IssueTreelistDoubleClickNotify(cl,obj,data);
+										DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+										data->mouse_pressed = 0;
 									}
 	    					}
 	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)

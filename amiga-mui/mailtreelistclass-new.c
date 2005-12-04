@@ -1403,6 +1403,64 @@ ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTr
 	return 0;
 }
 
+
+/*************************************************************************
+ MUIM_MailTreelist_RemoveSelected
+*************************************************************************/
+STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int i = 0,from = -1, to = -1;
+
+	/* TODO: Implement the easy case (if entries_maxselected == -1) in an easier way */
+
+	while (1)
+	{
+		while (i < data->entries_num && ((!(data->entries[i]->flags & LE_FLAG_SELECTED)) && i != data->entries_active))
+ 			i++;
+
+		if (from != -1)
+		{
+			DebugPrintF("from=%ld to=%ld i=%ld i-to=%ld data->entries_num=%ld\n",from,to,i,i-to,data->entries_num);
+
+			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(i-to));
+
+			data->entries_num -= to - from;
+			i -= to - from;
+
+			if (data->entries_active >= to) data->entries_active -= to;
+			else if (data->entries_active >= from) data->entries_active = from;
+		}
+
+		/* If the last element was selected, i could be indead > data->entries_num */
+		if (i >= data->entries_num) break;
+		from = i;
+
+		while (i < data->entries_num && (data->entries[i]->flags & LE_FLAG_SELECTED || i == data->entries_active))
+			i++;
+
+		to = i;
+
+		i++;
+	}
+
+	/* Fix data->entries_active if not already done */
+	if (data->entries_active >= data->entries_num) data->entries_active = data->entries_num - 1;
+
+	data->entries_minselected = 0;
+	data->entries_maxselected = -1;
+
+	if (data->inbetween_show)
+	{
+		/* TODO: Inform also the scroller about the entries_num change */
+		CalcVisible(data,obj);
+		MUI_Redraw(obj,MADF_DRAWOBJECT);
+	}
+
+	return 0;
+}
+
+
 /*************************************************************************
  MUIM_MailTreelist_GetFirstSelected
 *************************************************************************/
@@ -1628,6 +1686,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_InsertMail:	return MailTreelist_InsertMail(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

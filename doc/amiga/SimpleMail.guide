@@ -1644,6 +1644,7 @@ options are available:
  Hidden.MinClassifiedMails
  Hidden.DontShowShutdownText
  Hidden.DontUseTheBarMCC
+ Hidden.DontAddDefaultAddresses
 @ENDNODE
 
 @NODE "CO_F" "Editing filters"

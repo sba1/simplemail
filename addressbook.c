@@ -604,6 +604,9 @@ void init_addressbook(void)
 
 	addressbook_load();
 
+	if (user.config.dont_add_default_addresses)
+		return;
+
 	/* Add the very important email addresses, in case they are not yet within the
    * addressbook */
 	if (!addressbook_find_group_by_name("SimpleMail Team"))

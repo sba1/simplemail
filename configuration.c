@@ -286,6 +286,8 @@ int load_config(void)
 							user.config.dont_show_shutdown_text = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Hidden.DontUseTheBarMCC")))
 							user.config.dont_use_thebar_mcc = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.DontAddDefaultAddresses")))
+							user.config.dont_add_default_addresses = CONFIG_BOOL_VAL(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -692,6 +694,10 @@ void save_config(void)
 			if (user.config.dont_use_thebar_mcc)
 			{
 				fprintf(fh,"Hidden.DontUseTheBarMCC=Y\n");
+			}
+			if (user.config.dont_add_default_addresses)
+			{
+				fprintf(fh,"Hidden.DontAddDefaultAddresses=Y\n");
 			}
 
 			fclose(fh);

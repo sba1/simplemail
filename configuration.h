@@ -131,6 +131,7 @@ struct config
 	int min_classified_mails;    /* number of minimum spam/ham classification to invoke the auto spamcheck */
 	int dont_show_shutdown_text; /* Do not show the text in the shutdown window */
 	int dont_use_thebar_mcc;     /* Do not use TheBar, also if it's available */
+	int dont_add_default_addresses; /* Do not add the default email addresses if they don't exist */
 };
 
 struct user

@@ -51,9 +51,9 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 struct  MUIP_MailTreelist_GetFirstSelected { ULONG MethodID; void *handle;};
 struct  MUIP_MailTreelist_GetNextSelected  { ULONG MethodID; void *handle;};
 struct  MUIP_MailTreelist_InsertMail       { ULONG MethodID; struct mail_info *m; int after;};
-struct  MUIP_MailTreelist_RefreshMail      { ULONG MethodID; struct mail *m;};
-struct  MUIP_MailTreelist_RemoveMail       { ULONG MethodID; struct mail *m;};
-struct  MUIP_MailTreelist_ReplaceMail      { ULONG MethodID; struct mail *oldmail; struct mail *newmail;};
+struct  MUIP_MailTreelist_RefreshMail      { ULONG MethodID; struct mail_info *m;};
+struct  MUIP_MailTreelist_RemoveMail       { ULONG MethodID; struct mail_info *m;};
+struct  MUIP_MailTreelist_ReplaceMail      { ULONG MethodID; struct mail_info *oldmail; struct mail_info *newmail;};
 struct  MUIP_MailTreelist_SetFolderMails   { ULONG MethodID; struct folder *f;};
 
 Object *MakeMailTreelist(ULONG userid, Object **list);

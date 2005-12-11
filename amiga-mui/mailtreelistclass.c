@@ -1364,7 +1364,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 	int i;
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
-		struct mail *m2;
+		struct mail_info *m2;
 		DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
 		if (m2 == msg->m)
 		{
@@ -1394,7 +1394,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 	int i;
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
-		struct mail *m2;
+		struct mail_info *m2;
 		DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
 		if (m2 == msg->oldmail)
 		{

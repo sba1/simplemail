@@ -1460,6 +1460,33 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	return 0;
 }
 
+/*************************************************************************
+ MUIM_MailTreelist_ReplaceMail
+*************************************************************************/
+STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_ReplaceMail *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+
+	int i;
+
+	for (i=0;i<data->entries_num;i++)
+	{
+		if (data->entries[i]->mail_info == msg->oldmail)
+		{
+			data->entries[i]->mail_info = msg->newmail;
+
+			if (data->inbetween_setup)
+			{
+				CalcEntry(data,obj, msg->newmail); /* Calculate only the newly added entry */
+				MUI_Redraw(obj,MADF_DRAWOBJECT);
+			}
+
+			break;
+		}
+	}
+
+	return 0;
+}
 
 /*************************************************************************
  MUIM_MailTreelist_GetFirstSelected
@@ -1687,6 +1714,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

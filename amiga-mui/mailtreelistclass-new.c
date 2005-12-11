@@ -1450,6 +1450,8 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	data->entries_minselected = 0;
 	data->entries_maxselected = -1;
 
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
+
 	if (data->inbetween_show)
 	{
 		/* TODO: Inform also the scroller about the entries_num change */

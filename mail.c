@@ -2278,31 +2278,20 @@ static int mail_read_structure(struct mail_complete *mail)
 		if (!(mail->multipart_array = malloc(sizeof(struct mail*)))) return 0;
 		if (!(new_mail = mail->multipart_array[0] = mail_complete_create())) return 0;
 		mail->multipart_allocated = mail->num_multiparts = 1;
-		new_mail->info->size = mail->text_len;
 
+		/* Decode the mail */
 		mail_decode(mail);
 		mail_decoded_data(mail,&data,&data_len);
+
+		/* Must be set befor buffer functions! */
+		new_mail->info->size = data_len;
+		new_mail->text = (char*)data;
+		/* text_begin and text_len will be set by buffer functions */
 
 		mail_scan_buffer_start(&ms,new_mail,0);
 		mail_scan_buffer(&ms, (char*)data,data_len);
 		mail_scan_buffer_end(&ms);
 		mail_process_headers(new_mail);
-
-		new_mail->text = (char*)data;
-
-#if 0
-		/* Set the mail text */
-		if (mail->decoded_data)
-		{
-			new_mail->text = mail->decoded_data;
-			/* new_mail->text is already set */
-/*			new_mail->text_begin += mail->text_begin; */ /* not needed to be set */
-		} else
-		{
-			new_mail->text = mail->text;
-			new_mail->text_begin += mail->text_begin; /* skip headers */
-		}
-#endif
 
 		mail_read_structure(new_mail);
 

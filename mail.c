@@ -3159,7 +3159,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 	{
 		if (sm_request(NULL,_("No subject was specified. It is not recommended to create mails\n"
 		                  "without any subject. Do you want to add a subject line?"),
-		                  _("Yes|No")))
+		                  _("Add|Don't add")))
 			return 0;
 	}
 

@@ -35,6 +35,7 @@ int callback_read_mail(struct folder *f, struct mail_info *mail, int window);
 void callback_delete_mails(void);
 int callback_delete_mail(struct mail_info *mail);
 void callback_get_address(void);
+void callback_open_message(void);
 void callback_new_mail(void);
 void callback_reply_mails(char *folder_path, int num, struct mail_info **to_reply_array);
 void callback_reply_selected_mails(void);

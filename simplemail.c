@@ -324,6 +324,47 @@ int callback_write_mail_to_str(char *str, char *subject)
 	return callback_write_mail(NULL,str,NULL,subject);
 }
 
+/* open a arbitrary message */
+void callback_open_message(void)
+{
+	char buf[380];
+	static char stored_dir[512];
+
+	char *path = sm_request_file("SimpleMail", stored_dir, 0, NULL);
+	if (path && *path)
+	{
+		struct mail_info *mail;
+		char *filename;
+		char *dir;
+
+		filename = sm_file_part(path);
+		dir = sm_path_part(path);
+		if (dir)
+		{
+			*dir = 0;
+			dir = path;
+		}
+		else dir = "";
+
+		mystrlcpy(stored_dir,dir,sizeof(stored_dir));
+
+		if (getcwd(buf, sizeof(buf)) == NULL) return;
+		chdir(dir);
+
+		if ((mail = mail_info_create_from_file(filename)))
+		{
+			chdir(buf);
+
+			read_window_open(dir, mail, -1);
+			mail_info_free(mail);
+		} else
+		{
+			chdir(buf);
+		}
+	}
+	free(path);
+}
+
 /* a new mail should be composed */
 void callback_new_mail(void)
 {

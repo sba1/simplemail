@@ -565,6 +565,7 @@ int main_window_init(void)
 		MENU_PROJECT,
 		MENU_PROJECT_ABOUT = 1,
 		MENU_PROJECT_ABOUTMUI,
+		MENU_PROJECT_OPEN,
 		MENU_PROJECT_IMPORTMBOX,
 		MENU_PROJECT_IMPORTDBX,
 		MENU_PROJECT_FETCH,
@@ -617,6 +618,8 @@ int main_window_init(void)
 		{NM_ITEM, N_("?:About..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
 		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("O:Open message..."), NULL, 0, 0, (APTR)MENU_PROJECT_OPEN},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
 		{NM_ITEM, N_("Save all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_SAVEALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
@@ -639,7 +642,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("P:Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
-		{NM_ITEM, N_("O:Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
+		{NM_ITEM, N_("I:Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
 		{NM_ITEM, N_("H:Classify all mails as ham"), NULL, 0, 0, (APTR)MENU_FOLDER_HAM},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
@@ -847,6 +850,7 @@ int main_window_init(void)
 		/* Menu notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, App, 3, MUIM_CallHook, &hook_standard, callback_open_message);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, App, 4, MUIM_CallHook, &hook_standard, callback_import_dbx, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);

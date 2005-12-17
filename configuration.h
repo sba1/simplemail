@@ -87,6 +87,7 @@ struct config
 	int write_reply_quote;
 	int write_reply_stripsig;
 	int write_reply_citeemptyl;
+	int write_forward_as_attachment;
 
 	char *read_fixedfont;
 	char *read_propfont;

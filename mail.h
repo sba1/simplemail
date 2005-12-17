@@ -186,7 +186,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 struct mail *mail_create_from_file(char *filename);
 struct mail_complete *mail_complete_create_from_file(char *filename);
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array);
-struct mail_complete *mail_create_forward(int num, struct mail_complete **mail_array);
+struct mail_complete *mail_create_forward(int num, char **filename_array);
 
 struct mail_info *mail_info_create_from_file(char *filename);
 

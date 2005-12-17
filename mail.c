@@ -1361,24 +1361,34 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
  Creates a Forwarded mail to the given mails. Note that the input mails
  can be changed! And should be be freeed with mail_free() afterwards.
 **************************************************************************/
-struct mail_complete *mail_create_forward(int num, struct mail_complete **mail_array)
+struct mail_complete *mail_create_forward(int num, char **filename_array)
 {
-	struct mail_complete *m = mail_complete_create();
-	if (m)
+	struct mail_complete *m;
+	int i;
+	
+	if (num < 1) return NULL;
+	
+	if ((m = mail_complete_create()))
 	{
-		struct mail_complete *mail = mail_array[0];
-		struct mail_complete *text_mail;
-		char *modified_text = NULL; /* This holds the modified mail text */
-		int i;
+		struct mail_complete *forward;
 
-		if (mail->info->subject)
+		if (!(forward = mail_complete_create_from_file(filename_array[0])))
 		{
-			char *new_subject = (char*)malloc(strlen(mail->info->subject)+8);
+			mail_complete_free(forward);
+			return NULL;
+		}
+
+		mail_read_contents("",forward);
+
+		/* Forward */
+		if (forward->info->subject)
+		{
+			char *new_subject = (char*)malloc(strlen(forward->info->subject)+8);
 			if (new_subject)
 			{
 				char *subject_header;
 
-				char *src = mail->info->subject;
+				char *src = forward->info->subject;
 				char *dest = new_subject;
 				char c;
 
@@ -1403,113 +1413,179 @@ struct mail_complete *mail_create_forward(int num, struct mail_complete **mail_a
 			}
 		}
 
-		for (i=0;i<num;i++)
+		if (user.config.write_forward_as_attachment)
 		{
-			struct mail_complete *mail_iter = mail_array[i];
-			if ((text_mail = mail_find_content_type(mail_array[i], "text", "plain")))
+			/* Mails should be forwarded as attachments */
+			mail_complete_free(forward);
+
+			for (i=0;i<num;i++)
 			{
-				void *data;
-				int data_len;
-
-				char *fwd_text;
-				char *from = mail_find_header_contents(mail_array[i],"from");
-				struct phrase *phrase;
-
-				phrase = phrase_find_best(from);
-
-				if (phrase)
+				char *filename = filename_array[i];
+				FILE *fh = fopen(filename,"r");
+				if (fh)
 				{
-					/* add the welcome phrase */
-					char *welcome_text = mail_create_string(phrase->forward_initial,mail_array[i]->info, NULL, NULL);
-					if (welcome_text && *welcome_text)
+					struct mail_complete *new_part;
+					int size;
+
+					size = myfsize(fh);
+					
+					if ((new_part = mail_complete_create()))
 					{
-						modified_text = stradd(modified_text,welcome_text);
-						modified_text = stradd(modified_text,"\n");
-					}
-					free(welcome_text);
-				}
-
-				/* decode the text */
-				mail_decode(text_mail);
-				mail_decoded_data(text_mail,&data,&data_len);
-
-				if ((fwd_text = mystrndup((char*)data,data_len)))
-				{
-					char *sig;
-					if ((sig = strstr(fwd_text,"\n-- \n")))
-					{
-						modified_text = strnadd(modified_text,fwd_text,sig - fwd_text + 3);
-						modified_text = stradd(modified_text,sig + 4);
-					} else modified_text = stradd(modified_text,fwd_text);
-					free(fwd_text);
-				}
-
-				if (phrase)
-				{
-					/* add the closing phrase */
-					char *closing_text = mail_create_string(phrase->forward_finish, mail_array[i]->info, NULL,NULL);
-					modified_text = stradd(modified_text,closing_text);
-					free(closing_text);
-				}
-			}
-
-			/* Attach all attachments into the new mail, note old MIME structure is destroyed */
-			do
-			{
-				/* Ignore multiparts parts and the above found part */
-				if (!mail_iter->num_multiparts && mail_iter != text_mail)
-				{
-					struct mail_complete *new_part = mail_complete_create();
-					if (new_part)
-					{
-						int attach_len;
-						void *attach_data;
-
-						mail_decode(mail_iter);
-						mail_decoded_data(mail_iter,&attach_data,&attach_len);
-
-						if ((new_part->decoded_data = malloc(attach_len)))
+						if ((new_part->decoded_data = malloc(size)))
 						{
-							memcpy(new_part->decoded_data,attach_data,attach_len);
-							new_part->decoded_len = attach_len;
-							new_part->content_name = mystrdup(mail_iter->content_name);
-							new_part->content_type = mystrdup(mail_iter->content_type);
-							new_part->content_subtype = mystrdup(mail_iter->content_subtype);
+							fread(new_part->decoded_data,1,size,fh); /* Ignore possibilities of failure for now */
+
+							new_part->decoded_len = size;
+							new_part->content_name = mystrdup("mail");
+							new_part->content_type = mystrdup("message");
+							new_part->content_subtype = mystrdup("rfc822");
 							new_part->parent_mail = m;
 
-							if (m->num_multiparts == m->multipart_allocated)
+							/* Skip the first part because it's reserved for the text part */
+							if (!m->num_multiparts) m->num_multiparts++;
+							if (m->num_multiparts >= m->multipart_allocated)
 							{
 								m->multipart_allocated += 5;
 								m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
 							}
-
-							/* Skip the first part because it's reserved for the text part */
-							if (!m->num_multiparts) m->num_multiparts++;
+		
 							m->multipart_array[m->num_multiparts] = new_part;
 							m->num_multiparts++;
 						}
 					}
 				}
-			} while ((mail_iter = mail_get_next(mail_iter)));
-		}
-
-		/* So we have not only a single part */
-		if (m->num_multiparts)
-		{
-			if ((m->multipart_array[0] = mail_complete_create()))
-			{
-				m->multipart_array[0]->decoded_data = modified_text;
-				m->multipart_array[0]->decoded_len = mystrlen(modified_text);
 			}
+
 			m->content_type = mystrdup("multipart");
 			m->content_subtype = mystrdup("mixed");
+
+			if ((m->multipart_array[0] = mail_complete_create()))
+			{
+				m->multipart_array[0]->decoded_data = mystrdup("");
+				m->multipart_array[0]->decoded_len = mystrlen(m->multipart_array[0]->decoded_data);
+				m->multipart_array[0]->parent_mail = m;
+			}
 		} else
 		{
-			m->decoded_data = modified_text;
-			m->decoded_len = mystrlen(modified_text);
-		}
+			int i = 0;
+			char *modified_text = NULL;
 
-		mail_process_headers(m);
+			/* Go through all mails */
+			while (1)
+			{
+				struct mail_complete *text_mail, *mail_iter;
+
+				if ((text_mail = mail_find_content_type(forward, "text", "plain")))
+				{
+					void *data;
+					int data_len;
+	
+					char *fwd_text;
+					char *from = mail_find_header_contents(forward,"from");
+					struct phrase *phrase;
+	
+					phrase = phrase_find_best(from);
+	
+					if (phrase)
+					{
+						/* add the welcome phrase */
+						char *welcome_text = mail_create_string(phrase->forward_initial,forward->info, NULL, NULL);
+						if (welcome_text && *welcome_text)
+						{
+							modified_text = stradd(modified_text,welcome_text);
+							modified_text = stradd(modified_text,"\n");
+						}
+						free(welcome_text);
+					}
+
+					/* decode the text */
+					mail_decode(text_mail);
+					mail_decoded_data(text_mail,&data,&data_len);
+
+					if ((fwd_text = mystrndup((char*)data,data_len)))
+					{
+						char *sig;
+						if ((sig = strstr(fwd_text,"\n-- \n")))
+						{
+							modified_text = strnadd(modified_text,fwd_text,sig - fwd_text + 3);
+							modified_text = stradd(modified_text,sig + 4);
+						} else modified_text = stradd(modified_text,fwd_text);
+						free(fwd_text);
+					}
+
+					if (phrase)
+					{
+						/* add the closing phrase */
+						char *closing_text = mail_create_string(phrase->forward_finish, forward->info, NULL,NULL);
+						modified_text = stradd(modified_text,closing_text);
+						free(closing_text);
+					}
+				}
+
+				/* Attach all attachments into the new mail, note old MIME structure is destroyed */
+				mail_iter = forward;
+				do
+				{
+					/* Ignore multiparts parts and the part which has been found above */
+					if (!mail_iter->num_multiparts && mail_iter != text_mail)
+					{
+						struct mail_complete *new_part = mail_complete_create();
+						if (new_part)
+						{
+							int attach_len;
+							void *attach_data;
+	
+							mail_decode(mail_iter);
+							mail_decoded_data(mail_iter,&attach_data,&attach_len);
+	
+							if ((new_part->decoded_data = malloc(attach_len)))
+							{
+								memcpy(new_part->decoded_data,attach_data,attach_len);
+								new_part->decoded_len = attach_len;
+								new_part->content_name = mystrdup(mail_iter->content_name);
+								new_part->content_type = mystrdup(mail_iter->content_type);
+								new_part->content_subtype = mystrdup(mail_iter->content_subtype);
+								new_part->parent_mail = m;
+	
+								if (m->num_multiparts == m->multipart_allocated)
+								{
+									m->multipart_allocated += 5;
+									m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
+								}
+	
+								/* Skip the first part because it's reserved for the text part */
+								if (!m->num_multiparts) m->num_multiparts++;
+								m->multipart_array[m->num_multiparts] = new_part;
+								m->num_multiparts++;
+							}
+						}
+					}
+				} while ((mail_iter = mail_get_next(mail_iter)));
+
+				mail_complete_free(forward);
+				i++;
+				if (i>=num) break;
+				if (!(forward = mail_complete_create_from_file(filename_array[i]))) break;
+				mail_read_contents("",forward);
+			} /* while (1) */
+
+			/* So we have not only a single part */
+			if (m->num_multiparts)
+			{
+				if ((m->multipart_array[0] = mail_complete_create()))
+				{
+					m->multipart_array[0]->decoded_data = modified_text;
+					m->multipart_array[0]->decoded_len = mystrlen(modified_text);
+				}
+				m->content_type = mystrdup("multipart");
+				m->content_subtype = mystrdup("mixed");
+			} else
+			{
+				m->decoded_data = modified_text;
+				m->decoded_len = mystrlen(modified_text);
+			}
+		} /* as attachments? */
+		mail_process_headers(m);		
 	}
 	return m;
 }

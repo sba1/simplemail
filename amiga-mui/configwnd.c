@@ -103,6 +103,7 @@ static Object *write_wordwrap_cycle;
 static Object *write_replywrap_check;
 static Object *write_replystripsig_check;
 static Object *write_replyciteemptyl_check;
+static Object *write_forward_as_attachment_check;
 
 static Object *readhtml_mail_editor;
 
@@ -562,6 +563,7 @@ static int config_use(void)
 	user.config.write_reply_quote = xget(write_replywrap_check,MUIA_Selected);
 	user.config.write_reply_stripsig = xget(write_replystripsig_check,MUIA_Selected);
 	user.config.write_reply_citeemptyl = xget(write_replyciteemptyl_check,MUIA_Selected);
+	user.config.write_forward_as_attachment = xget(write_forward_as_attachment_check,MUIA_Selected);
 
 	user.config.read_propfont = mystrdup((char*)xget(read_propfont_string,MUIA_String_Contents));
 	user.config.read_fixedfont = mystrdup((char*)xget(read_fixedfont_string,MUIA_String_Contents));
@@ -1259,6 +1261,14 @@ static int init_write_group(void)
 
 				Child, MakeLabel(_("Quote empty lines")),
 				Child, write_replyciteemptyl_check = MakeCheck(_("Quote empty lines"),user.config.write_reply_citeemptyl),
+				End,
+			Child, HVSpace,
+			End,
+		Child, HorizLineTextObject(_("Forwarding")),
+		Child, HGroup,
+			Child, ColGroup(2),
+				Child, MakeLabel(_("Forward mails as attachments")),
+				Child, write_forward_as_attachment_check = MakeCheck(_("Forward mails as attachments"),user.config.write_forward_as_attachment),
 				End,
 			Child, HVSpace,
 			End,

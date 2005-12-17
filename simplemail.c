@@ -444,7 +444,7 @@ void callback_reply_selected_mails(void)
 void callback_forward_mails(char *folder_path, int num, struct mail_info **to_forward_array)
 {
 	struct folder *f = folder_find_by_path(folder_path);
-	struct mail_complete **mail_array;
+	char **filename_array;
 	char buf[380];
 	int i;
 
@@ -465,44 +465,26 @@ void callback_forward_mails(char *folder_path, int num, struct mail_info **to_fo
 
 	chdir(folder_path);
 
-	if ((mail_array = malloc(num*sizeof(struct mail_complete *))))
+	if ((filename_array = malloc(num*sizeof(char *))))
 	{
 		struct mail_complete *forward;
-		int err = 0;
 
 		for (i=0;i<num;i++)
 		{
-			if ((mail_array[i] = mail_complete_create_from_file(to_forward_array[i]->filename)))
-			{
-				mail_read_contents("",mail_array[i]);
-			} else 
-			{
-				err = 1;
-				break;
-			}
+			filename_array[i] = to_forward_array[i]->filename;
 		}
 
-		if (!err)
+		if ((forward = mail_create_forward(num,filename_array)))
 		{
-			if ((forward = mail_create_forward(num,mail_array)))
-			{
-				struct compose_args ca;
-				memset(&ca,0,sizeof(ca));
-				ca.to_change = forward;
-				ca.action = COMPOSE_ACTION_FORWARD;
-				ca.ref_mail = to_forward_array[0];
-				compose_window_open(&ca);
+			struct compose_args ca;
+			memset(&ca,0,sizeof(ca));
+			ca.to_change = forward;
+			ca.action = COMPOSE_ACTION_FORWARD;
+			ca.ref_mail = to_forward_array[0];
+			compose_window_open(&ca);
 
-				mail_complete_free(forward);
-			}
+			mail_complete_free(forward);
 		}
-
-		for (i=0;i<num;i++)
-		{
-			if (mail_array[i]) mail_complete_free(mail_array[i]);
-			else break;
-		}
-		free(mail_array);
 	}
 
 	chdir(buf);

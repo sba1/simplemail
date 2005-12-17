@@ -234,6 +234,8 @@ int load_config(void)
 							user.config.write_reply_stripsig = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Write.ReplyCiteEmptyL")))
 							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Write.ForwardAsAttachments")))
+							user.config.write_forward_as_attachment = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"ReadHeader.Flags")))
 						{
 							/* until 0.17 SimpleMail forgot the 0x for this field to write out */
@@ -612,7 +614,7 @@ void save_config(void)
 			fprintf(fh,"Write.ReplyQuote=%s\n",user.config.write_reply_quote?"Y":"N");
 			fprintf(fh,"Write.ReplyStripSig=%s\n",user.config.write_reply_stripsig?"Y":"N");
 			fprintf(fh,"Write.ReplyCiteEmptyL=%s\n",user.config.write_reply_citeemptyl?"Y":"N");
-
+			fprintf(fh,"Write.ForwardAsAttachments=%s\n",user.config.write_forward_as_attachment?"Y":"N");
 			fprintf(fh,"ReadHeader.Flags=0x%x\n",user.config.header_flags);
 			if (user.config.header_array)
 			{

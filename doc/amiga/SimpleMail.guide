@@ -5,10 +5,10 @@
 
 @NODE "MAIN" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.22 (public BETA)
+                         SimpleMail 0.28 (public BETA)
                           (not completly finished yet)
 
-                © 2000-2003 by Hynek Schlawack & Sebastian Bauer
+               (C) 2000-2005 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 
@@ -2388,6 +2388,11 @@ SimpleMail supports a couple of startup options which can be used
 from the Shell:
 
 
+MESSAGE=messagefile
+
+Opens the given message file on startup.
+
+
 MAILTO=address
 
 Creates a new message for the specified recipient on startup. You
@@ -2550,6 +2555,12 @@ Brings the main window to the front.
 NEWMAILFILE      VAR/K,STEM/K,FOLDER => FILENAME
 
 Returns a valid, but unused message filename for the FOLDER.
+
+
+OPENMESSAGE      VAR/K,STEM/K,FILENAME/A,WINDOW/N => WINDOW/N
+
+Opens the mail specfied by the FILENAME argument. If WINDOW is
+specified, the given window should be used to display the message.
 
 
 READCLOSE

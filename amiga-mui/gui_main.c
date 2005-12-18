@@ -497,7 +497,7 @@ int gui_init(void)
 				callback_write_mail_to_str(initial_mailto, initial_subject);
 
 			if (initial_message)
-				callback_open_message(initial_message);
+				callback_open_message(initial_message,-1);
 
 			free(initial_message);
 			free(initial_mailto);
@@ -578,7 +578,19 @@ int gui_parseargs(int argc, char *argv[])
 			}
 		} else
 		{
-			SendRexxCommand("SIMPLEMAIL.1", "MAINTOFRONT", result, 40);
+			if (initial_message)
+			{
+				char *buf = malloc(mystrlen(initial_message)+100);
+				if (buf)
+				{
+					sprintf(buf,"OPENMESSAGE \"\"\"%s\"",initial_message); /* Don't ask me why the quotating marks have to be stated so strange...it only works that way */
+					SendRexxCommand("SIMPLEMAIL.1", buf, result, 40);
+					free(buf);
+				}
+			} else
+			{
+				SendRexxCommand("SIMPLEMAIL.1", "MAINTOFRONT", result, 40);
+			}
 		}
 		return 0;
 	}

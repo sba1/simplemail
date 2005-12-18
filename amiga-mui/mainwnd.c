@@ -200,7 +200,7 @@ void display_about(void)
 *******************************************************************/
 static void open_message(void)
 {
-	callback_open_message(NULL);
+	callback_open_message(NULL,-1);
 }
 
 /******************************************************************

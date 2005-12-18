@@ -325,7 +325,7 @@ int callback_write_mail_to_str(char *str, char *subject)
 }
 
 /* open a arbitrary message */
-void callback_open_message(char *message)
+void callback_open_message(char *message, int window)
 {
 	char buf[380];
 	static char stored_dir[512];
@@ -364,7 +364,7 @@ void callback_open_message(char *message)
 		{
 			chdir(buf);
 
-			read_window_open(dir, mail, -1);
+			read_window_open(dir, mail, window);
 			mail_info_free(mail);
 		} else
 		{

@@ -1490,6 +1490,52 @@ static void arexx_mailfetch(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ OPENMESSAGE Arexx Command
+*****************************************************************/
+static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct {
+		STRPTR var;
+		STRPTR stem;
+		STRPTR filename;
+		LONG *window;
+	} openmessage_arg;
+	memset(&openmessage_arg,0,sizeof(openmessage_arg));
+
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,FILENAME/A,WINDOW/N",args,&openmessage_arg)))
+	{
+		int window = -1;
+
+		if (openmessage_arg.window) window = *openmessage_arg.window;
+
+		read_active_window = window = callback_open_message(openmessage_arg.filename,window);
+
+		if (openmessage_arg.stem)
+		{
+			int stem_len = strlen(openmessage_arg.stem);
+			char *stem_buf = malloc(stem_len+20);
+			if (stem_buf)
+			{
+				strcpy(stem_buf,openmessage_arg.stem);
+				strcat(stem_buf,"WINDOW");
+				arexx_set_var_int(rxmsg,stem_buf,window);
+				free(stem_buf);
+			}
+		} else
+		{
+			char num_buf[24];
+			sprintf(num_buf,"%d",window);
+			if (openmessage_arg.var) MySetRexxVarFromMsg(openmessage_arg.var,num_buf,rxmsg);
+			else arexx_set_result(rxmsg,num_buf);
+		}
+		FreeTemplate(arg_handle);
+	}
+}
+
+
+/****************************************************************
  Handle this single arexx message
 *****************************************************************/
 static int arexx_message(struct RexxMsg *rxmsg)
@@ -1540,6 +1586,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("MAILLISTFREEZE",command.command)) main_freeze_mail_list();
 		else if (!Stricmp("MAILLISTTHAW",command.command)) main_thaw_mail_list();
 		else if (!Stricmp("MAILFETCH",command.command)) arexx_mailfetch(rxmsg,command.args);
+		else if (!Stricmp("OPENMESSAGE",command.command)) arexx_openmessage(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

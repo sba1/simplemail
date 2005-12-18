@@ -325,11 +325,12 @@ int callback_write_mail_to_str(char *str, char *subject)
 }
 
 /* open a arbitrary message */
-void callback_open_message(char *message, int window)
+int callback_open_message(char *message, int window)
 {
 	char buf[380];
 	static char stored_dir[512];
 	char *path;
+	int num = -1;
 
 	if (!message)
 	{
@@ -357,14 +358,14 @@ void callback_open_message(char *message, int window)
 		if (!message)
 			mystrlcpy(stored_dir,dir,sizeof(stored_dir));
 
-		if (getcwd(buf, sizeof(buf)) == NULL) return;
+		if (getcwd(buf, sizeof(buf)) == NULL) return -1;
 		chdir(dir);
 
 		if ((mail = mail_info_create_from_file(filename)))
 		{
 			chdir(buf);
 
-			read_window_open(dir, mail, window);
+			num = read_window_open(dir, mail, window);
 			mail_info_free(mail);
 		} else
 		{
@@ -373,6 +374,7 @@ void callback_open_message(char *message, int window)
 		free(filename);
 	}
 	free(path);
+	return num;
 }
 
 /* a new mail should be composed */

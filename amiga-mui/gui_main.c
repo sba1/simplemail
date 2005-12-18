@@ -416,7 +416,7 @@ void app_unbusy(void)
 
 char *initial_mailto;
 char *initial_subject;
-
+char *initial_message;
 
 /****************************************************************
  Called if the appicons needs to be refreshed
@@ -496,10 +496,15 @@ int gui_init(void)
 			if (initial_mailto)
 				callback_write_mail_to_str(initial_mailto, initial_subject);
 
+			if (initial_message)
+				callback_open_message(initial_message);
+
+			free(initial_message);
 			free(initial_mailto);
 			free(initial_subject);
 			initial_mailto = NULL;
 			initial_subject = NULL;
+			initial_message = NULL;
 
 			/* register appicon refresh function which is called every 2 seconds */
 			thread_push_function_delayed(2000,refresh_appicon,0);
@@ -537,6 +542,7 @@ void gui_loop(void)
 int gui_parseargs(int argc, char *argv[])
 {
 	struct command_args {
+		char *message;
 	  char *mailto;
 	  char *subject;
 	  LONG *debuglevel;
@@ -547,8 +553,9 @@ int gui_parseargs(int argc, char *argv[])
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K",(LONG*)&shell_args, NULL)))
 	{
+		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
 		if (shell_args.debugout) debug_set_out(shell_args.debugout);

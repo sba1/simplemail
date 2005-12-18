@@ -325,19 +325,27 @@ int callback_write_mail_to_str(char *str, char *subject)
 }
 
 /* open a arbitrary message */
-void callback_open_message(void)
+void callback_open_message(char *message)
 {
 	char buf[380];
 	static char stored_dir[512];
+	char *path;
 
-	char *path = sm_request_file("SimpleMail", stored_dir, 0, NULL);
+	if (!message)
+	{
+		path = sm_request_file("SimpleMail", stored_dir, 0, NULL);
+	} else
+	{
+		path = mystrdup(message);
+	}
+
 	if (path && *path)
 	{
 		struct mail_info *mail;
 		char *filename;
 		char *dir;
 
-		filename = sm_file_part(path);
+		filename = mystrdup(sm_file_part(path));
 		dir = sm_path_part(path);
 		if (dir)
 		{
@@ -346,7 +354,8 @@ void callback_open_message(void)
 		}
 		else dir = "";
 
-		mystrlcpy(stored_dir,dir,sizeof(stored_dir));
+		if (!message)
+			mystrlcpy(stored_dir,dir,sizeof(stored_dir));
 
 		if (getcwd(buf, sizeof(buf)) == NULL) return;
 		chdir(dir);
@@ -361,6 +370,7 @@ void callback_open_message(void)
 		{
 			chdir(buf);
 		}
+		free(filename);
 	}
 	free(path);
 }

@@ -196,6 +196,14 @@ void display_about(void)
 }
 
 /******************************************************************
+ Open an arbitrary message
+*******************************************************************/
+static void open_message(void)
+{
+	callback_open_message(NULL);
+}
+
+/******************************************************************
  Converts a given sort mode to a nlist title mark
 *******************************************************************/
 static ULONG sortmode2titlemark(int sortmode, int type)
@@ -850,7 +858,7 @@ int main_window_init(void)
 		/* Menu notifies */
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, App, 3, MUIM_CallHook, &hook_standard, callback_open_message);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, App, 3, MUIM_CallHook, &hook_standard, open_message);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, App, 4, MUIM_CallHook, &hook_standard, callback_import_dbx, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);

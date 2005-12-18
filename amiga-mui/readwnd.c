@@ -834,8 +834,10 @@ static void delete_button_pressed(struct Read_Data **pdata)
 	else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 	if (!next && !user.config.readwnd_close_after_last)
+	{
 		if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 		else next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+	}
 
 	if (callback_delete_mail(data->ref_mail))
 	{
@@ -866,8 +868,10 @@ static void move_button_pressed(struct Read_Data **pdata)
 		else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
 		if (!next && !user.config.readwnd_close_after_last)
+		{
 			if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 			else next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
+		}
 	}
 
 	if (callback_move_mail_request(data->folder_path, data->ref_mail))
@@ -1136,6 +1140,9 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		if (read_open[window])
 		{
 			set(App, MUIA_Application_Sleep, TRUE);
+
+			free(read_open[window]->folder_path);
+			read_open[window]->folder_path = mystrdup(folder);
 
 			if (read_window_display_mail(read_open[window],mail))
 			{

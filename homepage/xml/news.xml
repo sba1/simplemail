@@ -34,7 +34,7 @@
 
 	  <list>
 	   <item>Probleme beim Drucken behoben (bgol).</item>
-	   <item>Die Zeit bis zum nächsten (automatischen) Nachrichten wird im Fenstertitel angezeigt (bgol).</item>
+	   <item>Die Zeit bis zum nächsten (automatischen) Nachrichtendownload wird im Fenstertitel angezeigt (bgol).</item>
 	   <item>Einige Optionen für das Verhalten des Lesefensters hinzugefügt (bgol).</item>
 	   <item>Nachrichten können optional als Anhänge weitergeleitet werden.</item>
 	   <item>Extern abgelegte Nachrichten können mittels neuem Menüpunkt "Projekt/Nachricht öffnen..." dargestellt werden.

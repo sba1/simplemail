@@ -2,6 +2,50 @@
 
 <news>
 
+  <entry date="2005/12/24">
+   <text lang="en">
+
+    As it is already tradition, a new version of SimpleMail has been released
+    at XMas and it is also SimpleMail's 5th anniversary this time!
+
+	  The changes for version 0.28 were:
+
+	  <list>
+	   <item>Printing problems fixed (bgol).</item>
+	   <item>Time for the next autocheck is displayed within the window title (bgol).</item>
+	   <item>Added some more read window options (bgol).</item>
+	   <item>Mails can be optionally forwarded as attachments.</item>
+	   <item>Added "Project/Open message..." menu entry allowing the user to
+           view mails which are stored externally. Similar function is
+           provided by the command line and by the OPENMESSAGE ARexx
+          command.</item>
+     <item>bug fixes</item>
+    </list>
+
+    The SimpleMail Team wishes you all a merry christmas and a happy new year! 
+
+   </text>
+   <text lang="de">
+    Wie es schon Tradition ist, wurde auch dieses Jahr zu Weihnachten
+    eine neue SimpleMail Version veröffentlicht. Zeitgleich ist es
+    auch 5. Geburtstag des Programms!
+
+	  Die Änderungen seit der letzten Version sind:
+
+	  <list>
+	   <item>Probleme beim Drucken behoben (bgol).</item>
+	   <item>Die Zeit bis zum nächsten (automatischen) Nachrichten wird im Fenstertitel angezeigt (bgol).</item>
+	   <item>Einige Optionen für das Verhalten des Lesefensters hinzugefügt (bgol).</item>
+	   <item>Nachrichten können optional als Anhänge weitergeleitet werden.</item>
+	   <item>Extern abgelegte Nachrichten können mittels neuem Menüpunkt "Projekt/Nachricht öffnen..." dargestellt werden.
+           Die selbe Funktion gibt es bei der Kommandozeile und durch das ARexx-Kommando "OPENMESSAGE".</item>
+     <item>Fehlerbereinigungen</item>
+    </list>
+
+    Das SimpleMail Team wünscht allen ein frohes und besinnliches Weihnachtsfest und einen guten Rutsch ins neue Jahr!
+
+   </text>
+  </entry>
 
   <entry date="2005/04/17">
    <text lang="en">

@@ -1340,8 +1340,8 @@ static int init_mails_readmisc_group(void)
 		Child, VGroup,
 			Child, HGroup,
 				Child, ColGroup(2),
-					Child, MakeLabel(_("Close readwindow when listend")),
-					Child, mails_readmisc_close_after_last = MakeCheck(_("Close readwindow when listend"),user.config.readwnd_close_after_last),
+					Child, MakeLabel(_("Close read window on list end")),
+					Child, mails_readmisc_close_after_last = MakeCheck(_("Close read window on list end"),user.config.readwnd_close_after_last),
 
 					Child, MakeLabel(_("Show next mail after move")),
 					Child, mails_readmisc_next_after_move = MakeCheck(_("Show next mail after move"),user.config.readwnd_next_after_move),
@@ -1353,6 +1353,12 @@ static int init_mails_readmisc_group(void)
 		End;
 
 	if (!groups[GROUPS_READMISC]) SM_RETURN(0,"%ld");
+
+  set(mails_readmisc_close_after_last, MUIA_ShortHelp, _("If this option is enabled, SimpleMail will close the read window "
+                                                         "after all mails in the folder have been processed (e.g. deleted) by the user "
+                                                         "completly in the current direction. Otherwise SimpleMail tries to browse into "
+                                                         "the other direction and closes the window only if no other mail exists within "
+                                                         "the folder."));
 
 	DoMethod(mails_readmisc_all_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, mails_readmisc_check_group, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 	if (user.config.header_flags & SHOW_HEADER_ALL) set(mails_readmisc_all_check, MUIA_Selected, TRUE);

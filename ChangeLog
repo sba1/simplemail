@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-12-24  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/readwnd.c: Update the folder_path of the moved mail in the data instance.
+	* folder.c: Also check the pending mail array in folder_find_by_mail() function.
+
 2005-10-15  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/support.c: Added the foldertree to the cyclechain and make it the
 	  active object in sm_request_folder() (RFE #1304106).

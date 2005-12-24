@@ -1336,7 +1336,7 @@ static int init_mails_readmisc_group(void)
 					End,
 				End,
 			End,
-		Child, HorizLineTextObject(_("Readwindow Configuration")),
+		Child, HorizLineTextObject(_("Read window")),
 		Child, VGroup,
 			Child, HGroup,
 				Child, ColGroup(2),

@@ -181,6 +181,7 @@ struct LocaleConv {
 } LocaleConvTab[] = {
 {"deutsch", "de"},
 {"german", "de"},
+{"danish", "da"},
 /*{"", "en_GB"}, does not exist on Amiga */
 {"español", "es"},
 {"spanish", "es"},

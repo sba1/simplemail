@@ -894,9 +894,19 @@ static void move_button_pressed(struct Read_Data **pdata)
 			}
 		} else
 		{
-			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, TRUE);
-			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
-			DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
+			struct folder *f = folder_find_by_mail(data->ref_mail);
+			if (f)
+			{
+				/* update the folder_path */
+				free(data->folder_path);
+				data->folder_path = mystrdup(f->path);
+				read_refresh_prevnext_button(f);
+			} else
+			{
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_MOVE, MUIA_SMToolbar_Attr_Disabled, TRUE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_NEXT, MUIA_SMToolbar_Attr_Disabled, TRUE);
+				DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PREV, MUIA_SMToolbar_Attr_Disabled, TRUE);
+			}
 		}
 	}
 }

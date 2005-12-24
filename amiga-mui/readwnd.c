@@ -833,6 +833,8 @@ static void delete_button_pressed(struct Read_Data **pdata)
 	if (data->direction) next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 	else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
+	/* If we don't have found a suitable "next" mail look for a mail
+	 * at the other direction unless the user has disabled this option */
 	if (!next && !user.config.readwnd_close_after_last)
 	{
 		if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
@@ -867,6 +869,8 @@ static void move_button_pressed(struct Read_Data **pdata)
 		if (data->direction) next = folder_find_next_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 		else next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);
 
+		/* If we don't have found a suitable "next" mail look for a mail
+		 * at the other direction unless the user has disabled this option */
 		if (!next && !user.config.readwnd_close_after_last)
 		{
 			if (data->direction) next = folder_find_prev_mail_info_by_filename(data->folder_path, data->ref_mail->filename);

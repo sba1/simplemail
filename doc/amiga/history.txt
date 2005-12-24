@@ -1,3 +1,15 @@
+Version 0.28 (15th beta) - released on 2005/12/24
+   - Printing problems fixed (bgol)
+   - Time for the next autocheck is displayed within the window
+     title (bgol)
+   - Added some more read window options (bgol)
+   - Mails can be optionally forwarded as attachments
+   - Added "Project/Open message..." menu entry allowing the user to
+     view mails which are stored externally. Similar function is
+     provided by the command line and by the OPENMESSAGE ARexx
+     command.
+   - bug fixes
+
 Version 0.27 (14th beta) - released on 2005/04/17
    - fixed some problems in the morphos build (henes)
    - a number of bugs fixes

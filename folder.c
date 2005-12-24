@@ -2190,6 +2190,12 @@ struct folder *folder_find_by_mail(struct mail_info *mail)
 			if (folder->mail_info_array[i] == mail)
 				return folder;
 		}
+		/* also check the pending mail array */
+		for (i=0; i < folder->num_pending_mails; i++)
+		{
+			if (folder->pending_mail_info_array[i] == mail)
+				return folder;
+		}
 		node = (struct folder_node *)node_next(&node->node);
 	}
 	return NULL;

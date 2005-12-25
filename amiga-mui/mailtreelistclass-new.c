@@ -468,7 +468,10 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 			switch (data->ci[col].type)
 			{
 				case	COLUMN_TYPE_STATUS:
-							GetStatusImages(m,images,&used_images);
+							if (m)
+							{
+								GetStatusImages(m,images,&used_images);
+							} else txt = _("Status");
 							break;
 
 				case	COLUMN_TYPE_FROMTO:
@@ -564,7 +567,7 @@ static void CalcVisible(struct MailTreelist_Data *data, Object *obj)
 {
 	if (data->entry_maxheight)
 	{
-		data->entries_visible = _mheight(obj)/data->entry_maxheight;
+		data->entries_visible = (_mheight(obj) - data->title_height)/data->entry_maxheight;
 	} else
 	{
 		data->entries_visible = 10;
@@ -596,8 +599,7 @@ static void EnsureActiveEntryVisibility(struct MailTreelist_Data *data)
 }
 
 /**************************************************************************
- Draw an entry at entry_pos at the given y location. To draw the title,
- set pos to ENTRY_TITLE
+ Draw an entry at entry_pos at the given y location.
 **************************************************************************/
 static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, struct RastPort *rp, int x, int y)
 {
@@ -631,7 +633,10 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		switch (data->ci[col].type)
 		{
 			case	COLUMN_TYPE_STATUS:
-						GetStatusImages(m,images,&used_images);
+						if (m)
+						{
+							GetStatusImages(m,images,&used_images);
+						} else txt = _("Status");
 						break;
 
 			case	COLUMN_TYPE_FROMTO:
@@ -743,7 +748,6 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MailTreelist_Data *data;
 
-
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_InputMode, MUIV_InputMode_None,
 		MUIA_ShowSelState, FALSE,
@@ -757,7 +761,19 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if (!(data->pool = CreatePool(MEMF_ANY,16384,16384)))
 	{
-		CoerceMethodA(cl,obj,(Msg)msg);
+		CoerceMethod(cl,obj,OM_DISPOSE);
+		return 0;
+	}
+
+	/* Title preparations */
+	if (!(SetListSize(data, 0)))
+	{
+		CoerceMethod(cl,obj,OM_DISPOSE);
+		return 0;
+	}
+	if (!(data->entries[ENTRY_TITLE] = AllocListEntry(data)))
+	{
+		CoerceMethod(cl,obj,OM_DISPOSE);
 		return 0;
 	}
 
@@ -919,6 +935,8 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 		data->entry_maxheight = _font(obj)->tf_YSize;
 	}
 
+	data->title_height = data->entry_maxheight + 2;
+
  	for (i=0;i<IMAGE_MAX;i++)
 	{
 		strcpy(filename,"PROGDIR:Images/");
@@ -1067,6 +1085,27 @@ STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide 
 }
 
 /*************************************************************************
+ Note, if you draw buffered, you must have _rp(obj) set to the
+ buffer_rp before!
+*************************************************************************/
+static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
+	if (buffer_rp)
+	{
+		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
+		DrawEntry(data,obj,cur,buffer_rp,0,0);
+		BltBitMapRastPort(data->buffer_bmap, 0, 0,
+											window_rp, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0xc0);
+	} else
+	{
+		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0,0);
+		DrawEntry(data,obj,cur,window_rp,_mleft(obj),window_y);
+	}
+}
+
+/*************************************************************************
  MUIM_Draw
 *************************************************************************/
 STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
@@ -1094,7 +1133,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	start = data->entries_first;
 	end = start + data->entries_visible;
-	y = _mtop(obj);
+	y = _mtop(obj) + data->title_height;
 
 	/* If necessary, perform scrolling operations */
 	if (drawupdate == 2)
@@ -1161,13 +1200,26 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	SetFont(rp,_font(obj));
 	if (data->ttengine_font) TT_SetFont(rp,data->ttengine_font);
 
-
 	background = MUII_ListBack;
 	data->quiet++;
 
+	/* Draw title */
+	if (!drawupdate)
+	{
+		set(obj, MUIA_Background, MUII_HSHADOWBACK);
+		background = MUII_HSHADOWBACK;
+		DrawEntryAndBackgroundBuffered(cl, obj, ENTRY_TITLE, data->buffer_rp, old_rp, _mtop(obj));
+
+		SetAPen(old_rp,_pens(obj)[MPEN_SHADOW]);
+		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 2);
+		Draw(old_rp,_mright(obj),_mtop(obj) + data->title_height - 2);
+		SetAPen(old_rp,_pens(obj)[MPEN_SHINE]);
+		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 1);
+		Draw(old_rp,_mright(obj),_mtop(obj) + data->title_height - 1);
+	}
+
 	/* Draw all entries between start and end, their current background
-	 * is stored
-	 */
+	 * is stored */
 	for (cur = start; cur < end; cur++,y += data->entry_maxheight)
 	{
 		int new_background;
@@ -1188,17 +1240,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			background = new_background;
 		}
 
-		if (data->buffer_rp)
-		{
-			DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
-			DrawEntry(data,obj,cur,rp,0,0);
-			BltBitMapRastPort(data->buffer_bmap, 0, 0,
-												old_rp, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0xc0);
-		} else
-		{
-			DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), data->entry_maxheight, 0,0);
-			DrawEntry(data,obj,cur,rp,_mleft(obj),y);
-		}
+		DrawEntryAndBackgroundBuffered(cl, obj, cur, data->buffer_rp, old_rp, y);
 	
 		le->drawn_background = background;
 	}
@@ -1567,13 +1609,13 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    case    IDCMP_MOUSEBUTTONS:
 	    				if (msg->imsg->Code == SELECTDOWN)
 	    				{
-	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
+	    					if (mx >= 0 && my >= data->title_height && mx < _mwidth(obj) && my < _mheight(obj))
 	    					{
 	    						int new_entries_active;
 	    						int selected_changed;
 	    						int double_click = 0;
 
-									new_entries_active = my / data->entry_maxheight + data->entries_first;
+									new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
 									if (new_entries_active < 0) new_entries_active = 0;
 									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 
@@ -1640,7 +1682,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if (old_entries_active != -1)
 								{
-									new_entries_active = my / data->entry_maxheight + data->entries_first;
+									new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
 									if (new_entries_active < 0) new_entries_active = 0;
 									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 	    						

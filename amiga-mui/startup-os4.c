@@ -398,8 +398,12 @@ static LONG internal_seek(BPTR fh, LONG pos, LONG mode)
 {
 	LONG rc;
 
-	if (DOSBase->lib_Version < 51) rc = IDOS->Seek(fh,pos,mode);
-	else rc = IDOS->FSeek(fh,pos,mode);
+	if (DOSBase->lib_Version < 51 || (DOSBase->lib_Version == 51 && DOSBase->lib_Revision < 80)) rc = IDOS->Seek(fh,pos,mode);
+	else
+	{
+		IDOS->ChangeFilePosition(fh,pos,mode);
+		rc = IDOS->GetFilePosition(fh);
+	}
 
 	return rc;
 }
@@ -427,7 +431,7 @@ FILE *fopen(const char *filename, const char *mode)
 	if (!file) goto fail;
 	memset(file,0,sizeof(struct myfile));
 
-	if (DOSBase->lib_Version < 51) files[_file] = IDOS->Open((STRPTR)filename,amiga_mode);
+	if (DOSBase->lib_Version < 51 || (DOSBase->lib_Version == 51 && DOSBase->lib_Revision < 80)) files[_file] = IDOS->Open((STRPTR)filename,amiga_mode);
 	else files[_file] = IDOS->FOpen((STRPTR)filename,amiga_mode,8192);
 
 	if (!files[_file]) goto fail;
@@ -471,7 +475,7 @@ int fclose(FILE *f)
 	} else tempname[0] = 0;
 	file_is_temp[file->_file] = 0;
 
-	if (DOSBase->lib_Version < 51) 	error = !(IDOS->Close(files[file->_file]));
+	if (DOSBase->lib_Version < 51 || (DOSBase->lib_Version == 51 && DOSBase->lib_Revision < 80)) 	error = !(IDOS->Close(files[file->_file]));
 	else error = !(IDOS->FClose(files[file->_file]));
 
 	if (!error)

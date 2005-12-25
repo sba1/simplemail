@@ -2063,6 +2063,11 @@ to send this email, SimpleMail will list the PGP keys in your keyring to
 let you select the key that should be used.
 
 
+Importance
+
+Here you can choose the importance of a mail (low, normal or high).
+
+
 Also, if you have defined two or more signatures in the configuration
 and the signature usage is activated, an additional pop-up gadget will
 appear to let you select the signature you want to use with this message.

@@ -131,6 +131,7 @@ struct Compose_Data /* should be a customclass */
 	Object *datatype_datatypes;
 	Object *signatures_group;
 	Object *signatures_cycle;
+	Object *importance_cycle;
 
 	int reply_stuff_attached;
 
@@ -649,6 +650,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.reply_message_id = data->reply_id;
 		DoMethod(data->toolbar, MUIM_SMToolbar_GetAttr, SM_COMPOSEWND_BUTTON_ENCRYPT, MUIA_SMToolbar_Attr_Selected, &new_mail.encrypt);
 		DoMethod(data->toolbar, MUIM_SMToolbar_GetAttr, SM_COMPOSEWND_BUTTON_SIGN, MUIA_SMToolbar_Attr_Selected, &new_mail.sign);
+		new_mail.importance = xget(data->importance_cycle, MUIA_Cycle_Active);
 
 		/* Move this out */
 		if ((mail_compose_new(&new_mail,hold)))
@@ -1041,19 +1043,31 @@ int compose_window_open(struct compose_args *args)
 	Object *attach_tree, *attach_desc_string, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
 	Object *signatures_group;
-	Object *signatures_cycle;
+	Object *signatures_cycle, *importance_cycle;
 	Object *toolbar;
 
 	int num;
 
 	static char *register_titles[3];
-	static int register_titles_are_translated;
+	static int register_titles_are_translated = 0;
+	static char *importance_labels[4];
+	static int importance_labels_are_translated = 0;
 
 	if (!register_titles_are_translated)
 	{
 		register_titles[0] = _("Mail");
 		register_titles[1] = _("Attachments");
+		register_titles[2] = NULL;
 		register_titles_are_translated = 1;
+	}
+
+	if (!importance_labels_are_translated)
+	{
+		importance_labels[0] = _("Low");
+		importance_labels[1] = _("Normal");
+		importance_labels[2] = _("High");
+		importance_labels[3] = NULL;
+		importance_labels_are_translated = 1;
 	}
 
 	/* Find out if window is already open */
@@ -1088,8 +1102,10 @@ int compose_window_open(struct compose_args *args)
 			End;
 		if (signatures_cycle)
 		{
-			signatures_group = HGroup,
+			signatures_group = ColGroup(2),
 				MUIA_Weight, 33,
+				Child, MakeLabel(_("Importance")),
+				Child, importance_cycle = MakeCycle(_("Importance"), importance_labels),
 				Child, MakeLabel(_("Signature")),
 				Child, signatures_cycle,
 			End;
@@ -1102,6 +1118,14 @@ int compose_window_open(struct compose_args *args)
 	{
 		signatures_group = NULL;
 		signatures_cycle = NULL;
+	}
+	if (!signatures_group)
+	{
+		signatures_group = HGroup,
+			MUIA_Weight, 33,
+			Child, MakeLabel(_("Importance")),
+			Child, importance_cycle = MakeCycle(_("Importance"), importance_labels),
+			End;
 	}
 
 	slider = ScrollbarObject, End;
@@ -1291,6 +1315,7 @@ int compose_window_open(struct compose_args *args)
 			data->datatype_datatypes = datatype_datatypes;
 			data->signatures_group = signatures_group;
 			data->signatures_cycle = signatures_cycle;
+			data->importance_cycle = importance_cycle;
 
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, TAG_DONE);
 
@@ -1332,6 +1357,7 @@ int compose_window_open(struct compose_args *args)
 
 			data->reply_stuff_attached = 1;
 			set(data->reply_button,MUIA_Selected,FALSE);
+			set(data->importance_cycle, MUIA_Cycle_Active, 1);
 
 			DoMethod(App,OM_ADDMEMBER,wnd);
 
@@ -1341,13 +1367,20 @@ int compose_window_open(struct compose_args *args)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *from;
+				char *from, *importance;
 
 				/* Find and set the correct account */
 				if ((from = mail_find_header_contents(args->to_change, "from")))
 				{
 					struct account *ac = account_find_by_from(from);
 					set(from_accountpop, MUIA_AccountPop_Account, ac);
+				}
+
+				/* Find and set the correct importance (normal is default) */
+				if ((importance = mail_find_header_contents(args->to_change, "importance")))
+				{
+					if (!mystricmp(importance, "high")) set(data->importance_cycle, MUIA_Cycle_Active, 2);
+					else if (!mystricmp(importance, "low")) set(data->importance_cycle, MUIA_Cycle_Active, 0);
 				}
 
 				compose_add_mail(data,args->to_change,NULL);

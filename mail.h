@@ -256,6 +256,7 @@ struct composed_mail
 	char *reply_message_id; /* only for the root mail */
 	int encrypt;
 	int sign;
+	int importance; /* 0=low, 1=normal, 2=high */
 
 	/* more will follow */
 };

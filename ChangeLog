@@ -2,6 +2,13 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2005-12-25  Bernd Gollesch <bgollesch@sime.at>
+	* doc/amiga/SimpleMail.guide: Added importance for composed mail (RFE #1388866)
+	* amiga-mui/composewnd.c: Added importance for composed mail (RFE #1388866)
+	* mail.(c|h): Added importance for composed mail (RFE #1388866)
+
+2005-12-24  Release Version 0.28
+
 2005-12-24  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/readwnd.c: Update the folder_path of the moved mail in the data instance.
 	* folder.c: Also check the pending mail array in folder_find_by_mail() function.

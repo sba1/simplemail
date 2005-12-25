@@ -2792,6 +2792,7 @@ utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 void composed_mail_init(struct composed_mail *mail)
 {
 	memset(mail, 0, sizeof(struct composed_mail));
+	mail->importance = 1;  /* normal is default */
 	list_init(&mail->list);
 }
 
@@ -2857,6 +2858,14 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		sm_convert_seconds(secs,&d);
 
 		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d.tm_mday,mon_str[d.tm_mon],d.tm_year + 1900,d.tm_hour,d.tm_min,d.tm_sec,offset/60,offset%60);
+	}
+
+	fputs("Importance: ", fp);
+	switch (new_mail->importance)
+	{
+		case 0:  fputs("low\n", fp); break;
+		case 2:  fputs("high\n", fp); break;
+		default: fputs("normal\n", fp); break;
 	}
 
 	if (new_mail->reply_message_id)

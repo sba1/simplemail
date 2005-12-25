@@ -73,22 +73,26 @@ extern struct Library *SimpleHTMLBase;
  * The hook should return 0 if the loading failed (e.g. unsupported transfer protocol)
  * else another value. In this case the data should be in buffer and buffer_len
  */
-#define MUIA_SimpleHTML_LoadHook         (TAG_USER+0x31200006)
+#define MUIA_SimpleHTML_LoadHook         (TAG_USER+0x31200006) /* ISG. */
 
 /* The URI which was clicked */
 #define MUIA_SimpleHTML_URIClicked       (TAG_USER+0x31200007) /* ..GN */
 
-#define MUIA_SimpleHTML_VisibleHoriz     (TAG_USER+0x31200008) /* ..GN */
-#define MUIA_SimpleHTML_VisibleVert      (TAG_USER+0x31200009) /* ..GN */
-#define MUIA_SimpleHTML_TotalHoriz       (TAG_USER+0x3120000a) /* ..GN */
-#define MUIA_SimpleHTML_TotalVert        (TAG_USER+0x3120000b) /* ..GN */
-#define MUIA_SimpleHTML_ProvideScrollers (TAG_USER+0x3120000c) /* I... */ /* not yet implemented */
+#define MUIA_SimpleHTML_VisibleHoriz      (TAG_USER+0x31200008) /* ..GN */
+#define MUIA_SimpleHTML_VisibleVert       (TAG_USER+0x31200009) /* ..GN */
+#define MUIA_SimpleHTML_TotalHoriz        (TAG_USER+0x3120000a) /* ..GN */
+#define MUIA_SimpleHTML_TotalVert         (TAG_USER+0x3120000b) /* ..GN */
+#define MUIA_SimpleHTML_ProvideScrollers 	(TAG_USER+0x3120000c) /* I... */
+
+/* The URI on which is the mouse is over */
+#define MUIA_SimpleHTML_URIOver						(TAG_USER+0x3120000c) /* ..GN */
 
 /* Methods */
-#define MUIM_SimpleHTML_AllocateMem		(0x456789)
-#define MUIM_SimpleHTML_AppendBuffer    (0x45678a)
-#define MUIM_SimpleHTML_FontSubst			(0x45678b)
-#define MUIM_SimpleHTML_Private1			(0x45678c)
+#define MUIM_SimpleHTML_AllocateMem				(0x456789)
+#define MUIM_SimpleHTML_AppendBuffer			(0x45678a)
+#define MUIM_SimpleHTML_FontSubst					(0x45678b)
+#define MUIM_SimpleHTML_Private1					(0x45678c)
+#define MUIM_SimpleHTML_GetLinkOnPosition (0x45678d)
 
 #if defined(__GNUC__)
 # pragma pack(2)
@@ -124,6 +128,13 @@ struct MUIP_SimpleHTML_FontSubst
 	LONG size; /* 1 - 7 */
 	STRPTR newname; /* new font name (without .font) */
 	LONG newsize; /* the new size (in pixels) */
+};
+
+/* Returns the link (as string) on the given position */
+struct MUIP_SimpleHTML_GetLinkOnPosition
+{
+	ULONG MethodID;
+	LONG x,y; /* relative to the window */
 };
 
 #if defined(__GNUC__)

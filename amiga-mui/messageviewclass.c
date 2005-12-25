@@ -37,7 +37,7 @@
 #include <proto/wb.h>
 #include <proto/icon.h>
 
-#include "amigasupport.h"
+#include "addressbook.h"
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
@@ -48,6 +48,8 @@
 #include "support_indep.h"
 #include "text2html.h"
 
+#include "addressbookwnd.h"
+#include "amigasupport.h"
 #include "compiler.h"
 #include "mailinfoclass.h"
 #include "muistuff.h"
@@ -65,6 +67,7 @@ struct MessageView_Data
 	Object *horiz;
 	Object *vert;
 /*	Object *scroll_button;*/
+	Object *mailto_contextmenu;
 
 	int show;
 
@@ -78,6 +81,8 @@ struct MessageView_Data
 	struct FileRequester *file_req; /* Filerequester for saving files */
 
 	int horizbar_visible;
+
+	struct MUI_EventHandlerNode ehnode_mousemove;
 };
 
 /******************************************************************
@@ -366,6 +371,21 @@ STATIC ASM SAVEDS LONG simplehtml_load_function(REG(a0,struct Hook *h), REG(a2, 
 #endif
 }
 
+/******************************************************************
+ Mouse is over an uri
+*******************************************************************/
+static void messageview_uri_over(void **msg)
+{
+	struct MessageView_Data *data = (struct MessageView_Data*)msg[0];
+	char *uri = (char*)msg[1];
+	Object *obj = (Object*)msg[2];
+	Object *cm;
+
+	if (uri && !mystrnicmp(uri,"mailto:",7)) cm = data->mailto_contextmenu;
+	else cm = NULL;
+
+	set(obj, MUIA_ContextMenu, cm);
+}
 
 /******************************************************************
  A an uri has been clicked
@@ -410,6 +430,36 @@ static void messageview_uri_clicked(void **msg)
 			}
 		}
 	}
+}
+
+/******************************************************************
+ Issues a composing window opening with the initial to address
+ being the address where the mouse pointer is over
+*******************************************************************/
+static void messageview_writeto(struct MessageView_Data **pdata)
+{
+	struct MessageView_Data *data = *pdata;
+	char *uri = (char*)xget(data->simplehtml, MUIA_SimpleHTML_URIOver);
+	if (!uri || mystrnicmp(uri,"mailto:",7)) return;
+	callback_write_mail_to_str(uri+7,NULL);
+}
+
+/******************************************************************
+ Adds the address where the mouse pointer is over to the address
+ book
+*******************************************************************/
+static void messageview_add(struct MessageView_Data **pdata)
+{
+	struct MessageView_Data *data = *pdata;
+	char *uri = (char*)xget(data->simplehtml, MUIA_SimpleHTML_URIOver);
+	struct addressbook_entry_new entry;
+
+	if (!uri || mystrnicmp(uri,"mailto:",7)) return;
+
+	memset(&entry,0,sizeof(entry));
+	entry.email_array = array_add_string(NULL,uri+7);
+	addressbookwnd_create_entry(&entry);
+	array_free(entry.email_array);
 }
 
 /******************************************************************
@@ -709,6 +759,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct MessageView_Data *data;
 	Object *simplehtml, *horiz, *vert, *mailinfo, *display_group;/*, *scroll_button;*/
+	Object *addressbook_menuitem, *writeto_menuitem;
 	struct TagItem *oid_tag;
 
 	/* Filter out MUIA_ObjectID tag as this is used for the switch_button */
@@ -754,6 +805,16 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 	}
 
+	data->mailto_contextmenu = MenustripObject,
+		Child, MenuObjectT(_("Address")),
+			Child, writeto_menuitem = MenuitemObject, MUIA_Menuitem_Title, _("Write to..."), MUIA_UserData, 1, End,
+			Child, addressbook_menuitem = MenuitemObject, MUIA_Menuitem_Title, _("Add to addressbook..."), MUIA_UserData, 2, End,
+			End,
+		End;
+
+	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, writeto_menuitem, App, 4, MUIM_CallHook, &hook_standard, messageview_writeto, data);
+	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, addressbook_menuitem, App, 4, MUIM_CallHook, &hook_standard, messageview_add, data);
+
 	data->simplehtml = simplehtml;
 	data->display_group = display_group;
 	data->horiz = horiz;
@@ -770,6 +831,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			TAG_DONE);
 
 	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, messageview_uri_clicked, data, MUIV_TriggerValue);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIOver, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, messageview_uri_over, data, MUIV_TriggerValue, data->simplehtml);
 	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalHoriz, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
 	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalVert, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
 
@@ -787,6 +849,11 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	mail_complete_free(data->mail); /* NULL safe */	
 	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
+	if (data->mailto_contextmenu)
+	{
+		set(obj, MUIA_ContextMenu, NULL);
+		MUI_DisposeObject(data->mailto_contextmenu);
+	}
 
 	return DoSuperMethodA(cl,obj,msg);
 }
@@ -869,7 +936,7 @@ STATIC ULONG MessageView_DisplayMail(struct IClass *cl, Object *obj, struct MUIP
 }
 
 /******************************************************************
- MUIM_MessageView_DisplayMail
+ MUIM_MessageView_Changed
 *******************************************************************/
 STATIC ULONG MessageView_Changed(struct IClass *cl, Object *obj, Msg msg)
 {
@@ -896,6 +963,8 @@ STATIC ULONG MessageView_Changed(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
+/**************************************************************************/
+
 STATIC BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -911,6 +980,8 @@ STATIC BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }
+
+/**************************************************************************/
 
 struct MUI_CustomClass *CL_MessageView;
 

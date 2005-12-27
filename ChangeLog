@@ -3,6 +3,11 @@ SimpleMail Open Source - ChangeLog
 ----------------------------------
 
 2005-12-25  Bernd Gollesch <bgollesch@sime.at>
+	* mail.c: Added Thunderbird compatibility for X-Priority (High or Highest maps to
+	  Importance: high).
+	  The Importance header field will only be added if not set to normal.
+
+2005-12-25  Bernd Gollesch <bgollesch@sime.at>
 	* doc/amiga/SimpleMail.guide: Added importance for composed mail (RFE #1388866)
 	* amiga-mui/composewnd.c: Added importance for composed mail (RFE #1388866)
 	* mail.(c|h): Added importance for composed mail (RFE #1388866)

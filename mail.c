@@ -2007,6 +2007,10 @@ int mail_process_headers(struct mail_complete *mail)
 		} else if (!mystricmp("Importance",header->name))
 		{
 			if (!mystricmp(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
+		} else if (!mystricmp("X-Priority",header->name))
+		{
+			/* check for High or Highest (Thunderbird compatibility) */
+			if (mystristr(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
 		} else if (!mystricmp("X-SimpleMail-POP3",header->name))
 		{
 			mail->info->pop3_server = mystrdup(buf);
@@ -2860,12 +2864,12 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		fprintf(fp,"Date: %02d %s %4d %02d:%02d:%02d %+03d%02d\n",d.tm_mday,mon_str[d.tm_mon],d.tm_year + 1900,d.tm_hour,d.tm_min,d.tm_sec,offset/60,offset%60);
 	}
 
-	fputs("Importance: ", fp);
-	switch (new_mail->importance)
+	if (new_mail->importance != 1)
 	{
-		case 0:  fputs("low\n", fp); break;
-		case 2:  fputs("high\n", fp); break;
-		default: fputs("normal\n", fp); break;
+		/* only add importance if not set to normal */
+		fputs("Importance: ", fp);
+		if (new_mail->importance == 0) fputs("low\n", fp);
+		else fputs("high\n", fp);
 	}
 
 	if (new_mail->reply_message_id)

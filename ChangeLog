@@ -2,7 +2,7 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
-2005-12-25  Bernd Gollesch <bgollesch@sime.at>
+2005-12-27  Bernd Gollesch <bgollesch@sime.at>
 	* mail.c: Added Thunderbird compatibility for X-Priority (High or Highest maps to
 	  Importance: high).
 	  The Importance header field will only be added if not set to normal.

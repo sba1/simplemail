@@ -245,6 +245,7 @@ struct MailTreelist_Data
 	LONG title_height;
 
 	struct ColumnInfo ci[MAX_COLUMNS];
+	int column_spacing;
 	
 	LONG threepoints_width; /* Width of ... */
 
@@ -735,7 +736,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			}
 		}
 
-		x1 += col_width;
+		x1 += col_width + data->column_spacing;
 	}
 }
 
@@ -786,6 +787,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[2].type = COLUMN_TYPE_SUBJECT;
 	data->ci[2].width = 200;
 	data->ci[2].flags = COLUMN_FLAG_AUTOWIDTH;
+	data->column_spacing = 2;
 
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
   data->ehn_mousebuttons.ehn_Priority = 0;
@@ -1285,7 +1287,7 @@ STATIC ULONG MailTreelist_Clear(struct IClass *cl, Object *obj, Msg msg)
 	data->entries_first = 0;
 	data->entries_num = 0;
 	data->entries_active = -1;
-	data->entries_minselected = 0;
+	data->entries_minselected = 0x7fffffff;
 	data->entries_maxselected = -1;
 
 	if (data->vert_scroller && !data->quiet)
@@ -1489,7 +1491,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	/* Fix data->entries_active if not already done */
 	if (data->entries_active >= data->entries_num) data->entries_active = data->entries_num - 1;
 
-	data->entries_minselected = 0;
+	data->entries_minselected = 0x7fffffff;
 	data->entries_maxselected = -1;
 
 	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
@@ -1628,7 +1630,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 											data->entries[cur]->flags &= ~LE_FLAG_SELECTED;
 
 										selected_changed = 1;			
-										data->entries_minselected = 0;
+										data->entries_minselected = 0x7fffffff;
 										data->entries_maxselected = -1;
 									} else selected_changed = 0;
 

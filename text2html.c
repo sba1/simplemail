@@ -72,6 +72,10 @@ const static struct smily smily[] =
 	{":-e","smily_angry"}
 };
 
+/* from codesets.c */
+/* typedef unsigned char	Boolean; */
+unsigned char isLegalUTF8Sequence(utf8 *source, utf8 *sourceEnd);
+
 static int write_unicode(utf8 *src, string *str)
 {
 	int len;
@@ -160,7 +164,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		}
 		string_append(&str,fonttag); /* accepts NULL pointer */
 
-		while (buffer_len)
+		/* check for >0, otherwise we'll be in an endless loop if buffer_len becomes <0 */
+		while (buffer_len > 0)
 		{
 			if (eval_color)
 			{
@@ -334,9 +339,21 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				} else
 				{
 					unsigned int unicode;
-					int len =  utf8tochar(buffer, &unicode, user.config.default_codeset);
-					buffer_len -= len,
+					int len = 0;
+					/* check if it really could be a utf8 char */
+					if (isLegalUTF8Sequence(buffer, buffer+buffer_len))
+					{
+						len = utf8tochar(buffer, &unicode, user.config.default_codeset);
+					}
+					if ((len == 0) || (len > buffer_len))
+					{
+						/* something wrong with that utf8 sequence */
+						unicode = '?';
+						len = 1;
+					}
+					buffer_len -= len;
 					buffer += len;
+
 					if (unicode == 0) unicode = '_';
 					sm_snprintf(buf,sizeof(buf),"&#%d;",unicode);
 					string_append(&str,buf);

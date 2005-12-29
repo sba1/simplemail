@@ -1407,8 +1407,8 @@ char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
 
 /**************************************************************************
  Converts a single UTF8 char to a given charset. Returns the number of
- bytes to the next utf8 char. *chr might be 0 if it was not in the codeset
- or could not decoded for any other reasons.
+ bytes to the next utf8 char. The resulting *chr might be 0 if it was
+ not in the codeset or could not be decoded for any other reasons.
 **************************************************************************/
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 {

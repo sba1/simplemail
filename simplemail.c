@@ -78,6 +78,35 @@ int callback_read_active_mail(void)
 	return callback_read_mail(f,m,-1);
 }
 
+/* Save the currently activated mail */
+void callback_save_active_mail(void)
+{
+	char *dest;
+	char *mail_filename;
+	struct folder *f;
+
+	if (!(f = main_get_folder())) return;
+	if (!(f->path)) return;
+	if (!(mail_filename = main_get_mail_filename())) return;
+
+	if ((dest = sm_request_file("SimpleMail", "", 1, NULL)))
+	{
+		int src_len = strlen(f->path) + strlen(mail_filename) + 10;
+		char *src = malloc(src_len);
+		if (src)
+		{
+			strcpy(src,f->path);
+			sm_add_part(src,mail_filename,src_len);
+			
+			if (!myfilecopy(src, dest))
+				sm_request(NULL,_("Unable to save the active mail.\n"),_("Ok"));
+
+			free(src);
+		}
+		free(dest);
+	}
+}
+
 int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 {
 	int num;
@@ -1594,7 +1623,7 @@ int callback_import_addressbook(void)
 	int rc = 0;
 	char *filename;
 	
-	filename = sm_request_file(_("Select an addressbook-file."), "PROGDIR:",0,NULL);
+	filename = sm_request_file(_("Select an addressbook-file."), "",0,NULL);
 	if (filename && *filename)
 	{
 		addressbook_import_file(filename,1);

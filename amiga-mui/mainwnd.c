@@ -606,6 +606,7 @@ int main_window_init(void)
 		MENU_MESSAGE_MOVE,
 		MENU_MESSAGE_COPY,
 		MENU_MESSAGE_DELETE,
+		MENU_MESSAGE_SAVE,
 
 		MENU_SETTINGS,
 		MENU_SETTINGS_SHOW_FOLDERS,
@@ -660,6 +661,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("N:New..."), NULL, 0, 0, (APTR)MENU_MESSAGE_NEW},
 		{NM_ITEM, N_("D:Read..."), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, N_("E:Edit..."), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
+		{NM_ITEM, N_("Save..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_SAVE},
 		{NM_ITEM, N_("R:Reply..."), NULL, 0, 0, (APTR)MENU_MESSAGE_REPLY},
 		{NM_ITEM, N_("W:Forward..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FORWARD},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
@@ -882,6 +884,7 @@ int main_window_init(void)
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_SAVE, App, 3, MUIM_CallHook, &hook_standard, callback_save_active_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FORWARD, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);

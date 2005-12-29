@@ -1408,6 +1408,7 @@ char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
 /**************************************************************************
  Converts a single UTF8 char to a given charset. Returns the number of
  bytes to the next utf8 char. *chr might be 0 if it was not in the codeset
+ or could not decoded for any other reasons.
 **************************************************************************/
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 {
@@ -1421,9 +1422,22 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 
 	if ((c = *str++))
 	{
+		int i;
+
 		len = trailingBytesForUTF8[c];
 		conv.utf8[1] = c;
-		strncpy(&conv.utf8[2],str,len);
+
+		for (i=0;i<len;i++)
+		{
+			if (!(conv.utf8[i+2] = *str++))
+			{
+				/* We encountered a 0 byte although the trailing byte suggested
+				 * a different length. Hence the given utf8 sequence is not
+				 * considered as valid */
+				*chr = 0;
+				return i+1;
+			}
+		}
 		conv.utf8[2+len] = 0;
 
 		if ((f = (struct single_convert*)bsearch(&conv,codeset->table_sorted,256,sizeof(codeset->table_sorted[0]),codesets_cmp_unicode)))

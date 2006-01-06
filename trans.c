@@ -244,7 +244,7 @@ int mails_upload(void)
 	while ((m_iter = folder_next_mail(out_folder, &handle)))
 	{
 		struct mail_complete *m;
-		char *from, *to, *cc;
+		char *from, *to, *cc, *bcc;
 		struct mailbox mb;
 		struct list *list; /* "To" address list */
 		struct outmail *out;
@@ -261,6 +261,7 @@ int mails_upload(void)
 		out = out_array[i++];
 		to = mail_find_header_contents(m,"To");
 		cc = mail_find_header_contents(m,"CC");
+		bcc = mail_find_header_contents(m,"BCC");
 		from = mail_find_header_contents(m,"From");
 
 		memset(&mb,0,sizeof(struct mailbox));
@@ -292,7 +293,9 @@ int mails_upload(void)
 			if (length)
 			{
 				struct list *cc_list = create_address_list(cc);
+				struct list *bcc_list = create_address_list(bcc);
 				if (cc_list) length += list_length(cc_list);
+				if (bcc_list) length += list_length(bcc_list);
 
 				if ((out->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 				{
@@ -315,9 +318,21 @@ int mails_upload(void)
 							addr = (struct address*)node_next(&addr->node);
 						}
 					}
+
+					if (bcc_list)
+					{
+						addr = (struct address*)list_first(bcc_list);
+						while (addr)
+						{
+							if (!(out->rcp[i++] = mystrdup(addr->email))) /* not freed */
+								break;
+							addr = (struct address*)node_next(&addr->node);
+						}
+					}
 					out->rcp[i] = NULL;
 				}
 				if (cc_list) free_address_list(cc_list);
+				if (bcc_list) free_address_list(bcc_list);
 			}
 			free_address_list(list);
 		}
@@ -339,7 +354,7 @@ int mails_upload(void)
 /* Note: Assumes that the chdir is the dir where m->filename is located */
 int mails_upload_signle(struct mail_info *mi)
 {
-	char *from, *to, *cc;
+	char *from, *to, *cc, *bcc;
 	struct outmail **out_array;
 	struct mail_complete *m;
 	struct mailbox mb;
@@ -356,6 +371,7 @@ int mails_upload_signle(struct mail_info *mi)
 
 	to = mail_find_header_contents(m,"To");
 	cc = mail_find_header_contents(m,"CC");
+	bcc = mail_find_header_contents(m,"BCC");
 	from = mail_find_header_contents(m,"From");
 
 	memset(&mb,0,sizeof(struct mailbox));
@@ -383,7 +399,9 @@ int mails_upload_signle(struct mail_info *mi)
 		if (length)
 		{
 			struct list *cc_list = create_address_list(cc);
+			struct list *bcc_list = create_address_list(bcc);
 			if (cc_list) length += list_length(cc_list);
+			if (bcc_list) length += list_length(bcc_list);
 
 			if ((out_array[0]->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 			{
@@ -407,9 +425,21 @@ int mails_upload_signle(struct mail_info *mi)
 					}
 				}
 
+				if (bcc_list)
+				{
+					addr = (struct address*)list_first(bcc_list);
+					while (addr)
+					{
+						if (!(out_array[0]->rcp[i++] = mystrdup(addr->email))) /* not freed */
+							break;
+						addr = (struct address*)node_next(&addr->node);
+					}
+				}
+
 				out_array[0]->rcp[i] = NULL;
 			}
 			if (cc_list) free_address_list(cc_list);
+			if (bcc_list) free_address_list(bcc_list);
 		}
 		free_address_list(list);
 	}

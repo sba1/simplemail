@@ -23,26 +23,36 @@
 #include "sysprint.h"
 #include "smintl.h"
 #include "support.h"
+#include "configuration.h"
 
 #include <exec/types.h>
 #include <dos/dos.h>
 #include <proto/dos.h>
 #include <stdlib.h>
+#include <string.h>
 
 int sysprint_print(PrintHandle *ph, char *txt, unsigned long len)
 {
 	int rc = 0;
+	char *print_txt = utf8tostrcreate(txt, user.config.default_codeset);
 
 	/*txt[len]=0;
 	kprintf(txt);*/
 
-	rc = (Write(ph->printer, txt, len) == len);
+	if (print_txt)
+	{
+		unsigned long print_len = strlen(print_txt);
+		rc = (Write(ph->printer, print_txt, print_len) == print_len);
+		free(print_txt);
+	} else
+	{
+		rc = (Write(ph->printer, txt, len) == len);
+	}
 
 	if(rc == 0)
 	{
 		sm_request(NULL, _("Failed while sending data to printer!"), _("Okay"));
 	}
-
 
 	return rc;
 }

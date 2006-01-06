@@ -2843,6 +2843,10 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 		if (!mail_compose_write_addr_header(fp,"CC",new_mail->cc))
 			return 0;
 
+	if (new_mail->bcc && *new_mail->bcc)
+		if (!mail_compose_write_addr_header(fp,"Bcc",new_mail->bcc))
+			return 0;
+
 	if ((subject = encode_header_field_utf8("Subject",new_mail->subject)))
 	{
 		unsigned secs;

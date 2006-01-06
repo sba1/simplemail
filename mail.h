@@ -239,6 +239,7 @@ struct composed_mail
 	char *replyto; /* reply address, utf8 */
 	char *to; /* maybe NULL, utf8 */
 	char *cc; /* maybe NULL, utf8 */
+	char *bcc; /* maybe NULL, utf8 */
 	char *subject; /* maybe NULL, utf8 */
 
 	char *filename; /* filename, maybe NULL, used with fopen() */

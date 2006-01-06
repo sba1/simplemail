@@ -2005,6 +2005,14 @@ Copies To
 
 Insert here the secondary recipient(s) you wish to send this message to.
 They will also get a copy of the current message.
+The "B" button will unhide the "Blind  Copies To" input field (see below).
+
+
+Blind Copies To
+
+Insert here the recipient(s) you wish to send a "Bild Carbon Copy" of
+the message. The addresses of these recipient(s) will not be revealed
+to other recipients of the message.
 
 
 Subject

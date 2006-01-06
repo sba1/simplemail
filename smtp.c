@@ -295,6 +295,11 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 						rc = 0;
 						break;
 					}
+					if (!mystrnicmp(buf, "Bcc:", 4))
+					{
+						/* Do not send the Bcc Header field! */
+						continue;
+					}
 					if(!mystricmp(buf,"Content-Transfer-Encoding: 8bit\n"))
 					{
 						if(!(conn->flags & ESMTP_8BITMIME))

@@ -3,7 +3,7 @@ SimpleMail Open Source - ChangeLog
 ----------------------------------
 
 2006-01-06  Bernd Gollesch <bgollesch@sime.at>
-	* amiga-mui/composewnd.c: Added the input for "Bild Copies To" (BCC).
+	* amiga-mui/composewnd.c: Added the input for "Blind Copies To" (BCC).
 	* amiga-mui/transwndclass.c: The MUIA_Gauge_Max is checked against 65535 (see
 	  MUI_Gauge.doc) and if necessary diveded by 2 until <=65535 and the
 	  MUIA_Gauge_Divide will be set.

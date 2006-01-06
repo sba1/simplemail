@@ -3,6 +3,12 @@ SimpleMail Open Source - ChangeLog
 ----------------------------------
 
 2006-01-06  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/sysprint.c: The text is now converted to the display-charset before it
+	  is send to the printer.
+	* print.c: The date-field is now also in UTF8 (as the rest of the mail).
+	  Added a terminating 0-Byte to the buffer.
+
+2006-01-06  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/composewnd.c: Added the input for "Blind Copies To" (BCC).
 	* amiga-mui/transwndclass.c: The MUIA_Gauge_Max is checked against 65535 (see
 	  MUI_Gauge.doc) and if necessary diveded by 2 until <=65535 and the

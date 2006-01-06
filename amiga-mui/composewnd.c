@@ -118,6 +118,10 @@ struct Compose_Data /* should be a customclass */
 	Object *cc_label;
 	Object *cc_group;
 	Object *cc_string;
+	Object *bcc_button;
+	Object *bcc_label;
+	Object *bcc_group;
+	Object *bcc_string;
 	Object *subject_label;
 	Object *subject_string;
 	Object *toolbar;
@@ -134,6 +138,7 @@ struct Compose_Data /* should be a customclass */
 	Object *importance_cycle;
 
 	int reply_stuff_attached;
+	int bcc_stuff_attached;
 
 	char *filename; /* the emails filename if changed */
 	char *folder; /* the emails folder if changed */
@@ -166,6 +171,11 @@ static void compose_window_dispose(struct Compose_Data **pdata)
 	{
 		MUI_DisposeObject(data->reply_label);
 		MUI_DisposeObject(data->reply_string);
+	}
+	if (data->bcc_stuff_attached == 0)
+	{
+		MUI_DisposeObject(data->bcc_label);
+		MUI_DisposeObject(data->bcc_group);
 	}
 	MUI_DisposeObject(data->wnd);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
@@ -215,7 +225,7 @@ static int compose_expand_to(struct Compose_Data **pdata)
 }
 
 /******************************************************************
- Expand the to string. Returns 1 for a success else 0
+ Expand the CC string. Returns 1 for a success else 0
 *******************************************************************/
 static int compose_expand_cc(struct Compose_Data **pdata)
 {
@@ -247,7 +257,46 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 		}
 		DisplayBeep(NULL);
 		set(data->wnd, MUIA_Window_ActiveObject,data->cc_string);
-		return 1;
+		return 0;
+	}
+	return 1;
+}
+
+/******************************************************************
+ Expand the BCC string. Returns 1 for a success else 0
+*******************************************************************/
+static int compose_expand_bcc(struct Compose_Data **pdata)
+{
+	struct Compose_Data *data = *pdata;
+	char *bcc_contents = (char*)xget(data->bcc_string, MUIA_UTF8String_Contents);
+
+	if (bcc_contents && *bcc_contents)
+	{
+		char *str;
+		if ((str = addressbook_get_expanded(bcc_contents)))
+		{
+			/* We create now a list of addresses and recreate a string afterwards,
+			 * which may include puny code or not (depending on the charset) */
+			struct list *list = create_address_list(str);
+			if (list)
+			{
+				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				if (puny)
+				{
+					set(data->bcc_string, MUIA_UTF8String_Contents, puny);
+					free(puny);
+					free_address_list(list);
+					free(str);
+					return 1;
+				}
+				free_address_list(list);
+			}
+			free(str);
+		}
+		DisplayBeep(NULL);
+		set(data->bcc_button,MUIA_Selected,TRUE);
+		set(data->wnd, MUIA_Window_ActiveObject,data->bcc_string);
+		return 0;
 	}
 	return 1;
 }
@@ -600,12 +649,13 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 *******************************************************************/
 static void compose_mail(struct Compose_Data *data, int hold)
 {
-	if (compose_expand_to(&data) && compose_expand_cc(&data))
+	if (compose_expand_to(&data) && compose_expand_cc(&data) && compose_expand_bcc(&data))
 	{
 		struct account *account;
 		char from[200];
 		char *to = (char*)xget(data->to_string, MUIA_UTF8String_Contents);
 		char *cc = (char*)xget(data->cc_string, MUIA_UTF8String_Contents);
+		char *bcc = (char*)xget(data->bcc_string, MUIA_UTF8String_Contents);
 		char *replyto = (char*)xget(data->reply_string, MUIA_UTF8String_Contents);
 		char *subject = (char*)xget(data->subject_string, MUIA_UTF8String_Contents);
 		struct composed_mail new_mail;
@@ -644,6 +694,7 @@ static void compose_mail(struct Compose_Data *data, int hold)
 		new_mail.replyto = replyto;
 		new_mail.to = to;
 		new_mail.cc = cc;
+		new_mail.bcc = bcc;
 		new_mail.subject = subject;
 		new_mail.mail_filename = data->filename;
 		new_mail.mail_folder = data->folder;
@@ -1003,12 +1054,68 @@ static void compose_reply_button(void **msg)
 		{
 			DoMethod(group,OM_ADDMEMBER,data->reply_label);
 			DoMethod(group,OM_ADDMEMBER,data->reply_string);
-			DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
-																		 data->reply_label,data->reply_string,
-																		 data->to_label,data->to_group,
-																		 data->cc_label,data->cc_group,
-																		 data->subject_label,data->subject_string,NULL);
+			if (data->bcc_stuff_attached)
+			{
+				DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
+				                               data->reply_label,data->reply_string,
+				                               data->to_label,data->to_group,
+				                               data->cc_label,data->cc_group,
+				                               data->bcc_label,data->bcc_group,
+				                               data->subject_label,data->subject_string,NULL);
+			} else
+			{
+				DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
+				                               data->reply_label,data->reply_string,
+				                               data->to_label,data->to_group,
+				                               data->cc_label,data->cc_group,
+				                               data->subject_label,data->subject_string,NULL);
+			}
 			data->reply_stuff_attached = 1;
+		}
+	}
+	DoMethod(group,MUIM_Group_ExitChange);
+}
+
+/******************************************************************
+ Called when the bcc button is clicked
+*******************************************************************/
+static void compose_bcc_button(void **msg)
+{
+	struct Compose_Data *data = (struct Compose_Data*)msg[0];
+	int bcc_selected;
+	Object *group = data->headers_group;
+	if (!group) return;
+	bcc_selected = xget(data->bcc_button,MUIA_Selected);
+
+	DoMethod(group,MUIM_Group_InitChange);
+	if (data->bcc_stuff_attached && !bcc_selected)
+	{
+		DoMethod(group,OM_REMMEMBER,data->bcc_label);
+		DoMethod(group,OM_REMMEMBER,data->bcc_group);
+		data->bcc_stuff_attached = 0;
+	} else
+	{
+		if (!data->bcc_stuff_attached && bcc_selected)
+		{
+			DoMethod(group,OM_ADDMEMBER,data->bcc_label);
+			DoMethod(group,OM_ADDMEMBER,data->bcc_group);
+			if (data->reply_stuff_attached)
+			{
+				DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
+				                               data->reply_label,data->reply_string,
+				                               data->to_label,data->to_group,
+				                               data->cc_label,data->cc_group,
+				                               data->bcc_label,data->bcc_group,
+				                               data->subject_label,data->subject_string,NULL);
+			} else
+			{
+				DoMethod(group,MUIM_Group_Sort,data->from_label,data->from_group,
+				                               data->to_label,data->to_group,
+				                               data->cc_label,data->cc_group,
+				                               data->bcc_label,data->bcc_group,
+				                               data->subject_label,data->subject_string,NULL);
+			}
+			data->bcc_stuff_attached = 1;
 		}
 	}
 	DoMethod(group,MUIM_Group_ExitChange);
@@ -1036,9 +1143,10 @@ int compose_window_open(struct compose_args *args)
 {
 	Object *wnd, *send_later_button, *hold_button, *cancel_button, *send_now_button, *headers_group;
 	Object *from_label, *from_group, *from_accountpop, *reply_button, *reply_label, *reply_string, *to_label, *to_group, *to_string, *cc_label, *cc_group, *cc_string, *subject_label, *subject_string;
+	Object *bcc_button, *bcc_label, *bcc_group, *bcc_string;
 	Object *text_texteditor, *xcursor_text, *ycursor_text, *slider;
 	Object *datatype_datatypes;
-	Object *expand_to_button, *expand_cc_button;
+	Object *expand_to_button, *expand_cc_button, *expand_bcc_button;
 	Object *quick_attach_tree;
 	Object *attach_tree, *attach_desc_string, *add_text_button, *add_multipart_button, *add_files_button, *remove_button;
 	Object *contents_page;
@@ -1178,6 +1286,19 @@ int compose_window_open(struct compose_args *args)
 									MUIA_String_AdvanceOnCR, TRUE,
 									End,
 								Child, expand_cc_button = PopButton(MUII_ArrowLeft),
+								Child, bcc_button = TextObject, ButtonFrame, MUIA_Selected,1, MUIA_InputMode, MUIV_InputMode_Toggle,MUIA_Text_PreParse, "\033c",MUIA_Text_Contents,_("B"), MUIA_Text_SetMax, TRUE, End,
+								End,
+
+							Child, bcc_label = MakeLabel(_("_Blind Copies To")),
+							Child, bcc_group = HGroup,
+								MUIA_Group_Spacing,0,
+								Child, bcc_string = AddressStringObject,
+									StringFrame,
+									MUIA_CycleChain, 1,
+									MUIA_ControlChar, GetControlChar(_("_Blind Copies To")),
+									MUIA_String_AdvanceOnCR, TRUE,
+									End,
+								Child, expand_bcc_button = PopButton(MUII_ArrowLeft),
 								End,
 
 							Child, subject_label = MakeLabel(_("S_ubject")),
@@ -1299,6 +1420,10 @@ int compose_window_open(struct compose_args *args)
 			data->cc_label = cc_label;
 			data->cc_group = cc_group;
 			data->cc_string = cc_string;
+			data->bcc_button = bcc_button;
+			data->bcc_label = bcc_label;
+			data->bcc_group = bcc_group;
+			data->bcc_string = bcc_string;
 			data->reply_string = reply_string;
 			data->reply_label = reply_label;
 			data->reply_button = reply_button;
@@ -1325,8 +1450,11 @@ int compose_window_open(struct compose_args *args)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, compose_window_hold, data);
 			DoMethod(expand_to_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(expand_cc_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
+			DoMethod(expand_bcc_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, compose_expand_bcc, data);
 			DoMethod(to_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_to, data);
 			DoMethod(cc_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_cc, data);
+			DoMethod(bcc_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_expand_bcc, data);
+			DoMethod(bcc_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_bcc_button, data);
 			DoMethod(reply_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, compose_reply_button, data);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorX, MUIV_EveryTime, xcursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
 			DoMethod(text_texteditor, MUIM_Notify, MUIA_TextEditor_CursorY, MUIV_EveryTime, ycursor_text, 4, MUIM_SetAsString, MUIA_Text_Contents, "%04ld", MUIV_TriggerValue);
@@ -1357,6 +1485,8 @@ int compose_window_open(struct compose_args *args)
 
 			data->reply_stuff_attached = 1;
 			set(data->reply_button,MUIA_Selected,FALSE);
+			data->bcc_stuff_attached = 1;
+			set(data->bcc_button,MUIA_Selected,FALSE);
 			set(data->importance_cycle, MUIA_Cycle_Active, 1);
 
 			DoMethod(App,OM_ADDMEMBER,wnd);
@@ -1367,7 +1497,7 @@ int compose_window_open(struct compose_args *args)
 			{
 				/* A mail should be changed */
 				int entries;
-				char *from, *importance;
+				char *from, *importance, *bcc;
 
 				/* Find and set the correct account */
 				if ((from = mail_find_header_contents(args->to_change, "from")))
@@ -1381,6 +1511,23 @@ int compose_window_open(struct compose_args *args)
 				{
 					if (!mystricmp(importance, "high")) set(data->importance_cycle, MUIA_Cycle_Active, 2);
 					else if (!mystricmp(importance, "low")) set(data->importance_cycle, MUIA_Cycle_Active, 0);
+				}
+
+				/* Find and set the correct BCC */
+				if ((bcc = mail_find_header_contents(args->to_change, "bcc")))
+				{
+					struct list *bcc_list = create_address_list(bcc);
+					if (bcc_list)
+					{
+						utf8 *bcc_str = get_addresses_from_list_safe(bcc_list,user.config.default_codeset);
+						if (bcc_str)
+						{
+							set(bcc_string,MUIA_UTF8String_Contents,bcc_str);
+							free(bcc_str);
+							set(data->bcc_button,MUIA_Selected,TRUE);
+						}
+						free_address_list(bcc_list);
+					}
 				}
 
 				compose_add_mail(data,args->to_change,NULL);

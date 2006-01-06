@@ -121,7 +121,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 
 	if((user.config.header_flags & (SHOW_HEADER_DATE | SHOW_HEADER_ALL)))
 	{
-		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Date"),sm_get_date_long_str(m->info->seconds));
+		fprintf(fp, ANSI_BOLD "%s:" ANSI_NORMAL " %s\n", _("Date"),sm_get_date_long_str_utf8(m->info->seconds));
 	}
 
 	if(replyto && (user.config.header_flags & (SHOW_HEADER_REPLYTO | SHOW_HEADER_ALL)))
@@ -184,6 +184,7 @@ int print_mail(struct mail_complete *m, int printhdr)
 				{
 					if(fread(buf, len, 1, fp) == 1)
 					{
+						buf[len] = 0;
 						ph = sysprint_prepare();
 						if(ph != NULL)
 						{

@@ -261,7 +261,8 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	char *gauge1_str = NULL;
 	int gauge1_max = -1;
 	int gauge1_val = -1;
-	
+	int gauge1_div = 1;
+
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
 		
 	for (tags = msg->ops_AttrList; tag = NextTagItem(&tags);)
@@ -278,6 +279,13 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				
 			case MUIA_transwnd_Gauge1_Max:
 				gauge1_max = tag->ti_Data;
+				/* 16bit only */
+				while (gauge1_max > 65535)
+				{
+					gauge1_max >>= 1;
+					gauge1_div <<= 1;
+				}
+				SM_DEBUGF(20,("Gauge_Max: real=%ld mui=%ld div=%ld\n",tag->ti_Data, gauge1_max, gauge1_div));
 				break;
 				
 			case MUIA_transwnd_Gauge1_Val:	
@@ -315,6 +323,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		SetAttrs(data->gauge1,
 					gauge1_str==NULL?TAG_IGNORE:MUIA_Gauge_InfoText, gauge1_str,
 					gauge1_max==-1?TAG_IGNORE:MUIA_Gauge_Max, gauge1_max,
+					gauge1_max==-1?TAG_IGNORE:MUIA_Gauge_Divide, gauge1_div==1?0:gauge1_div,
 					gauge1_val==-1?TAG_IGNORE:MUIA_Gauge_Current, gauge1_val,
 					TAG_DONE);
 	}

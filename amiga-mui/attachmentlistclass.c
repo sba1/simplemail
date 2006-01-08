@@ -196,7 +196,7 @@ STATIC ULONG AttachmentList_FindUniqueID(struct IClass *cl, Object *obj, struct 
 			DoMethod(obj,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
 		if (tn->tn_User && ((((struct attachment*)(tn->tn_User))->unique_id) == msg->unique_id)) return (ULONG)tn;
 	}
-	return NULL;
+	return 0;
 }
 
 STATIC BOOPSI_DISPATCHER(ULONG,AttachmentList_Dispatcher, cl, obj, msg)

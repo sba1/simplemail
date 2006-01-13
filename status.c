@@ -285,6 +285,14 @@ int status_wait(void)
 }
 
 /******************************************************************
+ Returns wheather the current server should be skipped
+*******************************************************************/
+int status_skipped(void)
+{
+	return statuswnd_skipped();
+}
+
+/******************************************************************
  Returns 0 if user has aborted the statistic listing
 *******************************************************************/
 int status_more_statistics(void)

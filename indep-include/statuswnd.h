@@ -41,6 +41,7 @@ void statuswnd_mail_list_set_info(int mno, char *from, char *subject, char *date
 int statuswnd_mail_list_get_flags(int mno);
 int statuswnd_wait(void);
 int statuswnd_more_statistics(void);
+int statuswnd_skipped(void);
 int statuswnd_is_opened(void);
 
 #endif

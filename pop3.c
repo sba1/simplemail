@@ -1079,16 +1079,24 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 					free(timestamp);
 				}
 				tcp_disconnect(conn); /* NULL safe */
-				if (thread_aborted()) break;
+				if (thread_aborted())
+				{
+					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+						break;
+				}
 			} else
 			{
-				if (thread_aborted()) break;
-
-				tell_from_subtask(tcp_strerror(tcp_error_code()));
-				rc = 0;
-				break;
+				if (thread_aborted())
+				{
+					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+						break;
+				} else
+				{
+					tell_from_subtask(tcp_strerror(tcp_error_code()));
+					rc = 0;
+					break;
+				}
 			}
-
 			/* Clear the preselection entries */
 			thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
 		}

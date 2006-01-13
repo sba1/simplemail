@@ -51,7 +51,7 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 
 struct transwnd_Data
 {
-	Object *gauge1, /* *gauge2 ,*/ *status, *abort, *head;
+	Object *gauge1, /* *gauge2 ,*/ *status, *abort, *skip, *head;
 	Object *mail_listview, *mail_list, *mail_group;
 	Object *start;
 	Object *ignore_check;
@@ -150,7 +150,7 @@ STATIC void transwnd_set_mail_flags(void **args)
 
 STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 {
-	Object *gauge1,/* *gauge2,*/*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check,*all,*none;
+	Object *gauge1,/* *gauge2,*/*status,*abort,*mail_listview, *mail_list, *mail_group, *start, *ignore, *down, *del, *downdel, *ignore_check,*all,*none, *skip;
 	Object *head;
 
 	obj = (Object *) DoSuperNew(cl, obj,
@@ -192,6 +192,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						End,*/
 					Child, HGroup,
 						Child, status = TextObject, TextFrame, MUIA_Text_Contents, "", MUIA_Background, MUII_TextBack, End,
+						Child, skip = MakeButton(_("_Skip")),
 						Child, abort = MakeButton(_("_Abort")),
 						End,
 					End,	
@@ -204,6 +205,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 /*		data->gauge2 = gauge2; */
 		data->status = status;
 		data->abort  = abort;
+		data->skip = skip;
 		data->head = head;
 		data->mail_listview = mail_listview;
 		data->mail_list = mail_list;
@@ -224,9 +226,11 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 				MUIA_NList_MultiSelect, MUIV_NList_MultiSelect_Default,
 				TAG_DONE);
 
+		set(skip, MUIA_Weight, 0);
 		set(abort, MUIA_Weight, 0);
 
 		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+		DoMethod(skip, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Skipped, TRUE);
 		DoMethod(start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, (1<<0), &data->start_pressed);
 		DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, 0);

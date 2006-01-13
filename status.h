@@ -43,5 +43,6 @@ void status_mail_list_thaw(void);
 int status_wait(void);
 int status_more_statistics(void);
 int status_check_abort(void);
+int status_skipped(void);
 
 #endif

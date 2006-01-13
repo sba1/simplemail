@@ -40,6 +40,7 @@ void delete_transwnd_class(void);
 #define MUIA_transwnd_StartPressed   (TAG_USER | 0x300B0009)
 #define MUIA_transwnd_Status         (TAG_USER | 0x300B000A)
 #define MUIA_transwnd_QuietList      (TAG_USER | 0x300B000B)
+#define MUIA_transwnd_Skipped        (TAG_USER | 0x300B000C) /* N */
 
 #define MUIM_transwnd_Clear          (TAG_USER | 0x300B0101)
 #define MUIM_transwnd_GetMailFlags   (TAG_USER | 0x300B0102)

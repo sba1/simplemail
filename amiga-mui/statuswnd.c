@@ -46,12 +46,23 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 static Object *status_wnd;
 
 static char *status_title;
+static int skip; /* skip current server */
 
 /**************************************************************************
  Called when abort button presses
 **************************************************************************/
 static void statuswnd_abort(void)
 {
+	thread_abort(NULL);
+}
+
+
+/**************************************************************************
+ Called when abort button presses
+**************************************************************************/
+static void statuswnd_skip(void)
+{
+	skip = 1;
 	thread_abort(NULL);
 }
 
@@ -70,6 +81,7 @@ int statuswnd_open(int active)
 		if (status_wnd)
 		{
 			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, status_wnd, 3, MUIM_CallHook, &hook_standard, statuswnd_abort);
+			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Skipped, TRUE, status_wnd, 3, MUIM_CallHook, &hook_standard, statuswnd_skip);
 			DoMethod(App, OM_ADDMEMBER, status_wnd);
 
 			statuswnd_set_head(NULL);
@@ -230,6 +242,19 @@ void statuswnd_mail_list_thaw(void)
 int statuswnd_wait(void)
 {
 	return (int)DoMethod(status_wnd, MUIM_transwnd_Wait);
+}
+
+/**************************************************************************
+ Returns wheather the current server should be skipped
+**************************************************************************/
+int statuswnd_skipped(void)
+{
+	if (skip)
+	{
+		skip = 0;
+		return 1;
+	}
+	return 0;
 }
 
 /***************************************************************************

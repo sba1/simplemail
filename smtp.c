@@ -934,6 +934,10 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 						smtp_quit(&conn);
 						thread_call_parent_function_async(status_set_status,1,_("Aborted - Disconnecting..."));
 						tcp_disconnect(conn.conn);
+
+						if (thread_call_parent_function_sync(NULL,status_skipped,0))
+							continue;
+
 						break;
 					}
 
@@ -943,16 +947,19 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 				if (thread_aborted())
 				{
-					thread_call_parent_function_async(status_set_status,1,_("Aborted - Disconnecting..."));
-					tcp_disconnect(conn.conn);
-					break;
+					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+					{
+						thread_call_parent_function_async(status_set_status,1,_("Aborted - Disconnecting..."));
+						tcp_disconnect(conn.conn);
+						break;
+					}
 				}
 
 				thread_call_parent_function_async(status_set_status,1,_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			} else
 			{
-				if (thread_aborted()) break;
+				if (thread_aborted() && !thread_call_parent_function_sync(NULL,status_skipped,0)) break;
 				tell_from_subtask(tcp_strerror(tcp_error_code()));
 			}
 		}

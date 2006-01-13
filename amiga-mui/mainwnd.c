@@ -118,7 +118,7 @@ static const struct MUIS_SMToolbar_Button sm_mainwnd_buttons[] =
     {PIC(3,7), SM_MAINWND_BUTTON_ISOLATE, 0, N_("Is_olate"),N_("Isolates all spam marked mails within the current selected folder."),"SpamIsolate"},
     {MUIV_SMToolbar_Space},
     {PIC(0,1), SM_MAINWND_BUTTON_ADDRESSBOOK, 0, N_("_Abook"),NULL,"Addressbook"},
-    {PIC(1,0), SM_MAINWND_BUTTON_EDITFILTER,  0, N_("Fi_lters"),N_("Opens a window where the filters can be edited."),"FilterEdit"},
+    {PIC(1,0), SM_MAINWND_BUTTON_EDITFILTER,  0, N_("Filters"),N_("Opens a window where the filters can be edited."),"FilterEdit"},
     {PIC(0,3), SM_MAINWND_BUTTON_CONFIG,      0, N_("_Config"),NULL,"Config"},
     {MUIV_SMToolbar_End},
 };

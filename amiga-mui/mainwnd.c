@@ -191,7 +191,7 @@ void display_about(void)
 	MUI_Request(App, NULL, 0, 
 		_("SimpleMail - About"),
 		_("*Ok"),
-		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2005\nHynek Schlawack %s Sebastian Bauer\n%s.",
+		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2006\nHynek Schlawack %s Sebastian Bauer\n%s.",
 		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"));
 }
 

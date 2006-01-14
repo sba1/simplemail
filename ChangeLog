@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-01-14  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/addressbookwnd.c: Only show the contactname in the "add group to person"
+	  window if there really is one.
+	  Add the active group as default to a new person (RFE #1388873).
+
 2006-01-06  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/sysprint.c: The text is now converted to the display-charset before it
 	  is send to the printer (fixes Bug #532364).

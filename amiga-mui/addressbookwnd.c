@@ -256,7 +256,7 @@ static void person_add_group(struct Person_Data **pdata)
 		name = getutf8string(data->realname_string);
 		if (!name || !strlen(name)) name = getutf8string(data->alias_string);
 
-		if (name)
+		if (name && *name)
 		{
 			static char iso_name[64];
 
@@ -955,6 +955,14 @@ static void person_window_open(struct addressbook_entry_new *entry)
 					DoMethod(data->person_group_list, MUIM_NList_InsertSingle, group_name, MUIV_NList_Insert_Sorted);
 					i++;
 				}
+			}
+
+			/* For new Persons add the active group as default */
+			if (!entry)
+			{
+				struct addressbook_group *group;
+				DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+				if (group) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, group->name, MUIV_NList_Insert_Sorted);
 			}
 
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);

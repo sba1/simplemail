@@ -55,6 +55,8 @@ static Object *filter_list;
 static struct filter *filter_last_selected;
 static Object *filter_new_button;
 static Object *filter_remove_button;
+static Object *filter_moveup_button;
+static Object *filter_movedown_button;
 static Object *filter_remote_check;
 static Object *filter_request_check;
 static Object *filter_new_check;
@@ -471,6 +473,7 @@ static void init_filter(void)
 							MUIA_Group_Spacing, 0,
 							Child, NListviewObject,
 								MUIA_NListview_NList, filter_list = FilterListObject,
+									MUIA_NList_AutoVisible, 1, /* keep the active filter visible */
 									MUIA_NList_ConstructHook, &filter_construct_hook,
 									MUIA_NList_DestructHook, &filter_destruct_hook,
 									MUIA_NList_DisplayHook, &filter_display_hook,
@@ -482,9 +485,11 @@ static void init_filter(void)
 									End,
 								End,
 							End,
-						Child, HGroup,
+						Child, ColGroup(2),
 							Child, filter_new_button = MakeButton(_("_New")),
 							Child, filter_remove_button = MakeButton(_("_Remove")),
+							Child, filter_moveup_button = MakeButton(_("Move up")),
+							Child, filter_movedown_button = MakeButton(_("Move Down")),
 							End,
 						End,
 					Child, BalanceObject, End,
@@ -585,6 +590,8 @@ static void init_filter(void)
 		
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
 		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_remove);
+		DoMethod(filter_moveup_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Previous);
+		DoMethod(filter_movedown_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Next);
 
 		set(filter_name_string,MUIA_String_AttachedList,filter_list);
 		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_active);
@@ -628,4 +635,3 @@ void filter_open(void)
 	set(filter_list, MUIA_NList_Active,0);
 	set(filter_wnd, MUIA_Window_Open, TRUE);
 }
-

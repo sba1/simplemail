@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-01-15  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/addressbookwnd.c: In the Add/Edit group window <RETURN> will now jump
+	  to the next object.
+	* amiga-mui/filterwnd.c: Added Move up/down button for the filters (RFE #1388875).
+
 2006-01-14  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/addressbookwnd.c: Only show the contactname in the "add group to person"
 	  window if there really is one.

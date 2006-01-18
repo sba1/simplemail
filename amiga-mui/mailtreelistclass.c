@@ -992,7 +992,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	void *handle = NULL;
 #endif
 	struct folder *folder = msg->f;
-    struct mail_info *last_active_mail;
+	struct mail_info *last_active_mail, *active_mail = NULL;
 	int primary_sort, threaded;
 
 	if (!folder)
@@ -1085,12 +1085,14 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		}
 	}
 
+/*
 	if ((m = folder_find_best_mail_to_select(folder)))
 		set(obj, MUIA_NListtree_Active, FindListtreeUserData(obj, m));
+*/
+	active_mail = folder_find_best_mail_info_to_select(folder);
 #else
 	{
 		int i;
-		int active = -1;
 		struct mail_info **array = folder_get_mail_info_array(folder);
 
 		DoMethod(obj, MUIM_NList_Insert, array, folder->num_mails, MUIV_NList_Insert_Bottom);
@@ -1099,24 +1101,16 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
          * or (if it can't be found) the first unread mail */
 		for (i=0;i<folder->num_mails;i++)
 		{
-			if (active == -1 && mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
-				active = i;
+			if (!user.config.dont_jump_to_unread_mail && !active_mail && mail_get_status_type(array[i]) == MAIL_STATUS_UNREAD)
+			{
+				active_mail = array[i];
+			}
 
 			if (array[i] == last_active_mail)
 			{
-				active = i;
+				active_mail = array[i];
 				break;
 			}
-		}
-
-		if (active != -1)
-		{
-			set(obj,MUIA_NList_Active,active);
-			DoMethod(obj, MUIM_NList_Jump, MUIV_NList_Jump_Active);
-		} else
-		{
-			/* no mail has been found, but issue a notify at least */
-			SetSuperAttrs(cl, obj, MUIA_MailTreelist_Active, NULL, TAG_DONE);
 		}
 	}
 
@@ -1129,6 +1123,15 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 #endif
 
 	DoMethod(obj, MUIM_MailTreelist_Thaw);
+	/* Now set the active mail if there is one. */
+	if (active_mail)
+	{
+		set(obj, MUIA_MailTreelist_Active, active_mail);
+	} else
+	{
+		/* no mail has been found, but issue a notify at least */
+		SetSuperAttrs(cl, obj, MUIA_MailTreelist_Active, NULL, TAG_DONE);
+	}
 	return 0L;
 }
 

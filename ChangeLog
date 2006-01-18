@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-01-18  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass.c: Changed the method of setting the active mail which
+	  should fix Bug #1388864.
+	* configuration.(c|h): Added hidden config option "Don't jump to unread mail".
+
 2006-01-15  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/addressbookwnd.c: In the Add/Edit group window <RETURN> will now jump
 	  to the next object.

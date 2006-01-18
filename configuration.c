@@ -290,6 +290,8 @@ int load_config(void)
 							user.config.dont_use_thebar_mcc = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Hidden.DontAddDefaultAddresses")))
 							user.config.dont_add_default_addresses = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.DontJumpToUnreadMail")))
+							user.config.dont_jump_to_unread_mail= CONFIG_BOOL_VAL(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -700,6 +702,10 @@ void save_config(void)
 			if (user.config.dont_add_default_addresses)
 			{
 				fprintf(fh,"Hidden.DontAddDefaultAddresses=Y\n");
+			}
+			if (user.config.dont_jump_to_unread_mail)
+			{
+				fprintf(fh,"Hidden.DontJumpToUnreadMail=Y\n");
 			}
 
 			fclose(fh);

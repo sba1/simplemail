@@ -959,8 +959,12 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 				tcp_disconnect(conn.conn);
 			} else
 			{
+				char message[380];
+
 				if (thread_aborted() && !thread_call_parent_function_sync(NULL,status_skipped,0)) break;
-				tell_from_subtask(tcp_strerror(tcp_error_code()));
+
+				snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),account->smtp->name,tcp_strerror(tcp_error_code()));
+				tell_from_subtask(message);
 			}
 		}
 

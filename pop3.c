@@ -1094,7 +1094,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 				{
 					char message[380];
 
-					snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),server->name,tcp_strerror(tcp_error_code()));
+					sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),server->name,tcp_strerror(tcp_error_code()));
 					tell_from_subtask(message);
 					rc = 0;
 					break;

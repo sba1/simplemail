@@ -191,13 +191,28 @@ static void filter_accept_rule(void)
 					/* free all strings of the rule */
 					switch (fr->type)
 					{
-						case	RULE_FROM_MATCH: array_free(fr->u.from.from); break;
-						case	RULE_RCPT_MATCH: array_free(fr->u.rcpt.rcpt); break;
-						case	RULE_SUBJECT_MATCH: array_free(fr->u.subject.subject); break;
+						case	RULE_FROM_MATCH:
+						    	array_free(fr->u.from.from);
+						    	array_free(fr->u.from.from_pat);
+						    	break;
+						case	RULE_RCPT_MATCH:
+						    	array_free(fr->u.rcpt.rcpt);
+						    	array_free(fr->u.rcpt.rcpt_pat);
+						    	break;
+						case	RULE_SUBJECT_MATCH:
+						    	array_free(fr->u.subject.subject);
+						    	array_free(fr->u.subject.subject_pat);
+						    	break;
 						case	RULE_HEADER_MATCH:
-									if (fr->u.header.name) free(fr->u.header.name);
-									array_free(fr->u.header.contents);
-									break;
+						    	if (fr->u.header.name) free(fr->u.header.name);
+						    	if (fr->u.header.name_pat) free(fr->u.header.name_pat);
+						    	array_free(fr->u.header.contents);
+						    	array_free(fr->u.header.contents_pat);
+						    	break;
+						case	RULE_BODY_MATCH:
+						    	if (fr->u.body.body) free(fr->u.body.body);
+						    	if (fr->u.body.body_pat) free(fr->u.body.body_pat);
+						    	break;
 					}
 
 					/* clear all the memory. the node it self should not be cleared, so it stays
@@ -228,6 +243,7 @@ static void filter_accept_rule(void)
 		  	}
 		  }
 		}		
+		filter_parse_filter_rules(filter_last_selected);
 	}
 }
 

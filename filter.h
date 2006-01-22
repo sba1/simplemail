@@ -46,19 +46,25 @@ struct filter_rule
 	{
 		struct {
 			char **from; /* NULL terminated array */
+			char **from_pat; /* NULL terminated array, result from sm_parse_pattern() */
 		} from;
 		struct {
 		  char **rcpt; /* NULL terminated array */
+		  char **rcpt_pat; /* NULL terminated array, result from sm_parse_pattern() */
 		} rcpt;
 		struct {
 			char **subject; /* NULL terminated array */
+			char **subject_pat; /* NULL terminated array, result from sm_parse_pattern() */
 		} subject;
 		struct {
 			char *name;
+			char *name_pat; /* result from sm_parse_pattern() */
 			char **contents; /* NULL terminated array */
+			char **contents_pat; /* NULL terminated array, result from sm_parse_pattern() */
 		} header;
 		struct {
 			char *body; /* string */
+			char *body_pat; /* string, result from sm_parse_pattern() */
 		} body;
 		struct {
 			int status;
@@ -104,9 +110,11 @@ struct filter *filter_duplicate(struct filter *filter);
 void filter_dispose(struct filter *filter);
 
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
-struct filter_rule *filter_find_fule(struct filter *filter, int num);
+struct filter_rule *filter_find_rule(struct filter *filter, int num);
 char *filter_get_rule_string(struct filter_rule *rule);
 void filter_remove_rule(struct filter_rule *fr);
+void filter_parse_filter_rules(struct filter *f);
+void filter_parse_all_filters(void);
 
 struct filter_action *filter_find_action(struct filter *filter, int num);
 

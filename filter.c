@@ -29,6 +29,7 @@
 #include "configuration.h"
 #include "lists.h"
 #include "filter.h"
+#include "support.h"
 #include "support_indep.h"
 
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
@@ -50,6 +51,63 @@ struct filter *filter_create(void)
 		list_init(&f->action_list);
 	}
 	return f;
+}
+
+/**************************************************************************
+ Parse the pattern of all rules of an filter.
+**************************************************************************/
+void filter_parse_filter_rules(struct filter *f)
+{
+	if (f)
+	{
+		struct filter_rule *rule = (struct filter_rule*)list_first(&f->rules_list);
+		while (rule)
+		{
+			switch (rule->type)
+			{
+				case	RULE_FROM_MATCH:
+							if (rule->u.from.from_pat) array_free(rule->u.from.from_pat);
+							rule->u.from.from_pat = array_duplicate_parsed(rule->u.from.from, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							break;
+
+				case	RULE_SUBJECT_MATCH:
+							if (rule->u.subject.subject_pat) array_free(rule->u.subject.subject_pat);
+							rule->u.subject.subject_pat = array_duplicate_parsed(rule->u.subject.subject, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							break;
+
+				case	RULE_HEADER_MATCH:
+							if (rule->u.header.name_pat) free(rule->u.header.name_pat);
+							rule->u.header.name_pat = sm_parse_pattern(rule->u.header.name, SM_PATTERN_NOCASE);
+							if (rule->u.header.contents_pat) array_free(rule->u.header.contents_pat);
+							rule->u.header.contents_pat = array_duplicate_parsed(rule->u.header.contents, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							break;
+
+				case	RULE_RCPT_MATCH:
+							if (rule->u.rcpt.rcpt_pat) array_free(rule->u.rcpt.rcpt_pat);
+							rule->u.rcpt.rcpt_pat = array_duplicate_parsed(rule->u.rcpt.rcpt, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							break;
+
+				case	RULE_BODY_MATCH:
+							if (rule->u.body.body_pat) free(rule->u.body.body_pat);
+							rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							break;
+			}
+			rule = (struct filter_rule*)node_next(&rule->node);
+		}
+	}
+}
+
+/**************************************************************************
+ Parse the pattern of all filters.
+**************************************************************************/
+void filter_parse_all_filters(void)
+{
+	struct filter *f = filter_list_first();
+	while (f)
+	{
+		filter_parse_filter_rules(f);
+		f = filter_list_next(f);
+	}
 }
 
 /**************************************************************************
@@ -111,6 +169,7 @@ struct filter *filter_duplicate(struct filter *filter)
 
 			rule = (struct filter_rule*)node_next(&rule->node);
 		}
+		filter_parse_filter_rules(f);
 	}
 	return f;
 }
@@ -120,9 +179,14 @@ struct filter *filter_duplicate(struct filter *filter)
 **************************************************************************/
 void filter_dispose(struct filter *f)
 {
-	/* The rules must be freed */
+	struct filter_rule *rule;
+
 	if (f->name) free(f->name);
 	if (f->dest_folder) free(f->dest_folder);
+	while ((rule = (struct filter_rule*)list_last(&f->rules_list)))
+	{
+		filter_remove_rule(rule);
+	}
 	free(f);
 }
 
@@ -148,6 +212,35 @@ void filter_remove_rule(struct filter_rule *fr)
 {
 	if (fr)
 	{
+		switch (fr->type)
+		{
+			case	RULE_FROM_MATCH:
+						array_free(fr->u.from.from);
+						array_free(fr->u.from.from_pat);
+						break;
+
+			case	RULE_RCPT_MATCH:
+						array_free(fr->u.rcpt.rcpt);
+						array_free(fr->u.rcpt.rcpt_pat);
+						break;
+
+			case	RULE_SUBJECT_MATCH:
+						array_free(fr->u.subject.subject);
+						array_free(fr->u.subject.subject_pat);
+						break;
+
+			case	RULE_HEADER_MATCH:
+						free(fr->u.header.name);
+						free(fr->u.header.name_pat);
+						array_free(fr->u.header.contents);
+						array_free(fr->u.header.contents_pat);
+						break;
+
+			case	RULE_BODY_MATCH:
+						free(fr->u.body.body);
+						free(fr->u.body.body_pat);
+						break;
+		}
 		node_remove(&fr->node);
 		free(fr);
 	}
@@ -156,7 +249,7 @@ void filter_remove_rule(struct filter_rule *fr)
 /**************************************************************************
  Find a rule of the filter
 **************************************************************************/
-struct filter_rule *filter_find_fule(struct filter *filter, int num)
+struct filter_rule *filter_find_rule(struct filter *filter, int num)
 {
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
 }
@@ -372,8 +465,8 @@ void filter_list_load(FILE *fh)
 			}
 		}
 	}
-
 	free(buf);
+	filter_parse_all_filters();
 }
 
 #define MAKESTR(x) ((x)?(char*)(x):"")

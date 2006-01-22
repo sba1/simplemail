@@ -543,6 +543,29 @@ char **array_duplicate(char **rcp)
 }
 
 /**************************************************************************
+ Takes an array of strings and return an array of stringes parsed with
+ sm_parese_pattern(). Safe to call it with a NULL pointer (returns NULL then)
+**************************************************************************/
+char **array_duplicate_parsed(char **str, int flags)
+{
+	char **newpat;
+	int pats=0;
+	if (!str) return NULL;
+	while (str[pats]) pats++;
+
+	if ((newpat = (char**)malloc((pats+1)*sizeof(char*))))
+	{
+		int i;
+		for (i=0;i<pats;i++)
+		{
+			newpat[i] = sm_parse_pattern(str[i], flags);
+		}
+		newpat[i] = NULL;
+	}
+	return newpat;
+}
+
+/**************************************************************************
  Frees an array of strings. Safe to call this with NULL pointer.
 **************************************************************************/
 void array_free(char **string_array)

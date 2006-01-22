@@ -52,6 +52,7 @@ char **array_add_string(char **strings, char *str);
 char **array_add_array(char **dest, char **src);
 int array_length(char **strings);
 char **array_duplicate(char **rcp);
+char **array_duplicate_parsed(char **str, int flags);
 void array_free(char **string_array);
 char **array_replace_idx(char **strings, int idx, char *str);
 char **array_remove_idx(char **strings, int idx);

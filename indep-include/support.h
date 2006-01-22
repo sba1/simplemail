@@ -23,6 +23,8 @@
 #ifndef SM__SUPPORT_H
 #define SM__SUPPORT_H
 
+#include "codesets.h"
+
 struct tm;
 
 int sm_makedir(char *path);
@@ -52,6 +54,12 @@ char *sm_get_date_long_str(unsigned int seconds);
 char *sm_get_date_long_str_utf8(unsigned int seconds);
 char *sm_get_date_str(unsigned int seconds);
 char *sm_get_time_str(unsigned int seconds);
+
+char *sm_parse_pattern(utf8 *utf8_str, int flags);
+int sm_match_pattern(char *pat, utf8 *utf8_str, int flags);
+#define SM_PATTERN_NOCASE (1L << 0) /* not case sensitive */
+#define SM_PATTERN_SUBSTR (1L << 1) /* make it a substring search, only for sm_parse_pattern() */
+#define SM_PATTERN_ASCII7 (1L << 2) /* match string is ascii7, only for sm_match_pattern() */
 
 int sm_snprintf(char *buf, int n, const char *fmt, ...);
 

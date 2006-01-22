@@ -706,6 +706,90 @@ int sm_file_is_in_drawer(char *filename, char *path)
 }
 
 /******************************************************************
+ Parse a given Pattern to be used in sm_match_pattern()
+*******************************************************************/
+char *sm_parse_pattern(utf8 *utf8_str, int flags)
+{
+	char *source = utf8tostrcreate(utf8_str, user.config.default_codeset);
+	char *dest = NULL;
+
+	if ((flags & SM_PATTERN_SUBSTR))
+	{
+		int new_len = strlen(source)+5;
+		char *new_source = (char *)malloc(new_len);
+		if (new_source)
+		{
+			sm_snprintf(new_source, new_len, "#?%s#?", source);
+			free(source);
+			source = new_source;
+		}
+	}
+
+	if (source)
+	{
+		int dest_len = strlen(source)*2+2;
+		dest = (char *)malloc(dest_len);
+		if (dest)
+		{
+			if ((flags & SM_PATTERN_NOCASE))
+			{
+#ifndef __AMIGAOS4__
+				/* there is a bug in ParsePatternNoCase() until V39 */
+				if (DOSBase->dl_lib.lib_Version < 39)
+				{
+					char *conv;
+					for (conv=source; *conv != '0'; conv++)
+					{
+						*conv = ToUpper(*conv);
+					}
+				}
+#endif
+				if (ParsePatternNoCase(source, dest, dest_len) < 0)
+				{
+					free(dest);
+					dest = NULL;
+				}
+			} else
+			{
+				if (ParsePattern(source, dest, dest_len) < 0)
+				{
+					free(dest);
+					dest = NULL;
+				}
+			}
+		}
+		free(source);
+	}
+	return dest;
+}
+
+/******************************************************************
+ Matches a pattern (from sm_parse_pattern()) against an string.
+*******************************************************************/
+int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
+{
+	char *str;
+	int match = 0;
+
+	if (!(flags & SM_PATTERN_ASCII7))
+	{
+		str = utf8tostrcreate(utf8_str, user.config.default_codeset);
+	} else
+	{
+		str = utf8_str;
+	}
+
+	if (pat && str)
+	{
+		if ((flags & SM_PATTERN_NOCASE)) match = MatchPatternNoCase(pat, str);
+		else match = MatchPattern(pat, str);
+	}
+
+	if (!(flags & SM_PATTERN_ASCII7)) free(str);
+	return match;
+}
+
+/******************************************************************
  Like sprintf() but buffer overrun safe
 *******************************************************************/
 int sm_snprintf(char *buf, int n, const char *fmt, ...)

@@ -110,20 +110,20 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 
 	if (data->type == RULE_FROM_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_RCPT_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_SUBJECT_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_HEADER_MATCH)
 	{
 		data->object1 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
-		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, _("contains"),End;
+		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
 		data->object3 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_STATUS_MATCH)
 	{

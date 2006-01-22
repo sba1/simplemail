@@ -2,6 +2,25 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-01-22  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/filterruleclass.c: Changed "contains" into "matches" because we have
+	  patternmatching now.
+	* amiga-mui/filterwnd.c: Adjusted to pattern matching code.
+	* indep-include/support.h, amiga-mui/support.c: Tow new function for pattern matching
+	  and some FLAGS for the functions.
+	* filter.(c|h): Added pattern matching (fixes bug #783885). For now all pattern
+	  are surrounded with #? to keep the filters working (wee need a new option for
+	  every rule). Only exception is the Header-Field-Name.
+	  Rules are now freed when filter gets disposed.
+	  filter_remove_rule() doese now really free all allocations of the rule.
+	  Corrected functionname typo.
+	* folder.c: Adjusted to pattern matching code.
+	* support_indep.(c|h): New function for pattern matching.
+	* doc/amiga/SimpleMail.guide: Added the "Move up" and "Move down" button to the
+	  description.
+	  The pattern matching is allready described, that's why it was an bug-fix instead
+	  of an RFE :)
+
 2006-01-18  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass.c: Changed the method of setting the active mail which
 	  should fix Bug #1388864.

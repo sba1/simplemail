@@ -1664,6 +1664,7 @@ The list on the left shows the names of the filters defined so far.
 Click on a name to bring up its details on the right, on [New] to create
 a new filter, or use [Remove] to delete one of them. Please note that
 filters are executed in top-to-bottom order.
+You can change the order with the [Move up] or [Move down] button.
 
 
 [Add new rule] allows you to define a new rule, selecting what part of
@@ -1695,9 +1696,9 @@ provided the mailing list sets this header correctly.
 
   Examples:
 
-   Sender      contains    sebauer
-   Subject     contains    simplemail-usr
-   Header      Reply-To    contains    plemail-usr
+   Sender      matches     sebauer
+   Subject     matches     simplemail-usr
+   Header      Reply-To    matches    plemail-usr
    Status is   Replied
 
 Remember, case is not important here!

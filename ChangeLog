@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-01-25  Bernd Gollesch <bgollesch@sime.at>
+	* configuration.c: Corrected wrong check for the spam black list (fixes bug #1414643)
+
 2006-01-22  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/filterruleclass.c: Changed "contains" into "matches" because we have
 	  patternmatching now.

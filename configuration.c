@@ -674,7 +674,7 @@ void save_config(void)
 					fprintf(fh,"Spam.WhiteAddress=%s\n",user.config.spam_white_emails[i]);
 				}
 			}
-			if (user.config.spam_white_emails)
+			if (user.config.spam_black_emails)
 			{
 				for (i=0;user.config.spam_black_emails[i];i++)
 				{

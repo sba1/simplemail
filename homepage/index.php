@@ -97,7 +97,7 @@
 
 	<table align="center" width="100%" summary="Footer containing infos and banners.">
 	  <tr bgcolor="black">
-		<td>
+		<td colspan="2">
 		  <center>
 		  <font color="white"
 			<tt>
@@ -117,6 +117,10 @@
 	  <tr>
 		<td>
 			Hosted by: <A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=15322" width="88" height="31" border="0" alt="SourceForge Logo"></A>
+		</td>
+		<td align="right">
+			<A href="http://sourceforge.net/project/project_donations.php?group_id=15322"><img src="pictures/paypal.gif" width="62" height="31" border="0" alt="Donate to SimpleMail!">
+			</A>
 		</td>
 	  </tr>
 	</table>

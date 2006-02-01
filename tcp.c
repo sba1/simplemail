@@ -48,6 +48,7 @@
 
 #include "tcpip.h"
 
+#include "smintl.h"
 #include "tcp.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -74,20 +75,19 @@ const char *tcp_strerror(int code)
 {
 	switch (code)
 	{
-		case	TCP_UNKNOWN:  return "Unknown error";
-		case	TCP_NOT_ENOUGH_MEMORY: return "Not enough memory";
-		case	TCP_NOT_SECURE: return "Connection couldn't be made secure";
+		case	TCP_NOT_ENOUGH_MEMORY: return _("Not enough memory");
+		case	TCP_NOT_SECURE: return _("Connection couldn't be made secure");
 		case	TCP_ERRNO: return strerror(errno);
-		case	TCP_HOST_NOT_FOUND: return "Host wasn't found";
-		case	TCP_TRY_AGAIN: return "Cannot locate host. Try again later";
-		case	TCP_NO_RECOVERY: return "Unexpected server failure";
-		case	TCP_NO_DATA: return "No IP associated with name";
-		case	TCP_ADDR_NOT_AVAILABLE: return "The specified address is not avaible on this machine";
-		case	TCP_TIMEOUT: return "Connecting timed out";
-		case	TCP_REFUSED: return "Connection refused";
-		case	TCP_UNREACHABLE: return "Network unreachable";
-		case	TCP_FAILED_CONNECT:return "Failed to connect to the server";
-		default: return "Unknown error";
+		case	TCP_HOST_NOT_FOUND: return _("Host wasn't found");
+		case	TCP_TRY_AGAIN: return _("Cannot locate host. Try again later");
+		case	TCP_NO_RECOVERY: return _("Unexpected server failure");
+		case	TCP_NO_DATA: return _("No IP associated with name");
+		case	TCP_ADDR_NOT_AVAILABLE: return _("The specified address is not available on this machine");
+		case	TCP_TIMEOUT: return _("Connecting timed out");
+		case	TCP_REFUSED: return _("Connection refused");
+		case	TCP_UNREACHABLE: return _("Network unreachable");
+		case	TCP_FAILED_CONNECT:return _("Failed to connect to the server");
+		default: return _("Unknown error");
 	}
 }
 

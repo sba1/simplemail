@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), mail@sebastianbauer.info (S
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
-Version:   0.28
+Version:   0.29
 
 Introduction
 ~~~~~~~~~~~~

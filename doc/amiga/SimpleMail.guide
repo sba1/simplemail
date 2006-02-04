@@ -1,14 +1,14 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.9 (24.12.2005)
+@$VER: SimpleMail.guide 0.10 (05.02.2006)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <mail@sebastianbauer.info>
 @INDEX "Index"
 
 @NODE "MAIN" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.28 (public BETA)
+                         SimpleMail 0.29 (public BETA)
                           (not completly finished yet)
 
-               (C) 2000-2005 by Hynek Schlawack & Sebastian Bauer
+               (C) 2000-2006 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 

@@ -2,6 +2,39 @@
 
 <news>
 
+  <entry date="2006/02/05">
+   <text lang="en">
+
+	  Version 0.29 of SimpleMail released!
+
+	  The changes are:
+
+	  <list>
+ 		<item>E-mail addresses within the mails can be added to the addressbook now (only within mail preview). </item>
+ 		<item>Added support of AmigaOS patterns to the filter rules. (bgol)</item>
+ 		<item>Added possibility to skip the server which is currently being processed.</item>
+		<item>Finally added BCC support and email importance setting (bgol)</item>
+		<item>Bug fixes (printing and other stuff)</item>
+	  </list>
+
+   </text>
+   <text lang="de">
+    SimpleMail Version 0.29 veröffentlicht!
+
+	  Die Änderungen sind:
+
+	  <list>
+ 		<item>E-Mail Adressen innerhalb von Nachrichten können nun ins Adressbuch hinzugefügt werden (nur im Vorschaufenster). </item>
+ 		<item>Filter unterstürzen nun AmigaOS Muster. (bgol)</item>
+ 		<item>Server können beim Runter- bzw. Hochladen übersprungen werden.</item>
+		<item>BCC und Wichtigkeit hinzufügt. (bgol)</item>
+		<item>Fehlerbereinigungen (u.a. das Umlautproblem beim Drucken).</item>
+      </list>
+
+   </text>
+  </entry>
+
+
   <entry date="2005/12/24">
    <text lang="en">
 

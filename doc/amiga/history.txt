@@ -1,3 +1,12 @@
+Version 0.29 (16th beta) - released on 2006/02/05
+   - Addresses within the mails be added to the addressbook now
+     (only within mail preview)
+   - Added support of AmigaOS patterns to the filter rules (bgol)
+   - Added possibility to skip the server which is currently being
+     processed.
+   - Finally BCC support and email importance setting (bgol)
+   - Bug fixes (printing and other stuff)
+
 Version 0.28 (15th beta) - released on 2005/12/24
    - Printing problems fixed (bgol)
    - Time for the next autocheck is displayed within the window

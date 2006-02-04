@@ -661,7 +661,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("N:New..."), NULL, 0, 0, (APTR)MENU_MESSAGE_NEW},
 		{NM_ITEM, N_("D:Read..."), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, N_("E:Edit..."), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
-		{NM_ITEM, N_("Save..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_SAVE},
+		{NM_ITEM, N_("Save As..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_SAVE},
 		{NM_ITEM, N_("R:Reply..."), NULL, 0, 0, (APTR)MENU_MESSAGE_REPLY},
 		{NM_ITEM, N_("W:Forward..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FORWARD},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},

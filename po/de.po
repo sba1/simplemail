@@ -1426,7 +1426,7 @@ msgstr "Status ist"
 #: amiga-mui/filterruleclass.c:113 amiga-mui/filterruleclass.c:117
 #: amiga-mui/filterruleclass.c:121 amiga-mui/filterruleclass.c:126
 msgid "matches"
-msgstr "stimmt überein"
+msgstr "passt auf"
 
 #: amiga-mui/filterwnd.c:482
 msgid "SimpleMail - Edit Filter"

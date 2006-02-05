@@ -39,5 +39,5 @@
 
 <center>
   <?php require("news.php"); ?>
-</center
+</center>
 

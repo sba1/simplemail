@@ -1,5 +1,5 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR 
+# :Copyright (C) YEAR 
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
@@ -391,6 +391,10 @@ msgstr "Taille"
 msgid "Contents"
 msgstr "Contenus"
 
+#: amiga-mui/composewnd.c:568
+msgid "Encrypt"
+msgstr "Crypter"
+
 #: amiga-mui/composewnd.c:1032 amiga-mui/mailtreelistclass.c:872
 #: amiga-mui/readwnd.c:1058
 msgid "Mail"
@@ -460,6 +464,18 @@ msgstr "Refaire"
 msgid "_Attach"
 msgstr "_Joindre"
 
+#: amiga-mui/composewnd.c:1174
+msgid "Low"
+msgstr "Basse"
+
+#: amiga-mui/composewnd.c:1175
+msgid "Normal"
+msgstr "Normale"
+
+#: amiga-mui/composewnd.c:1176
+msgid "High"
+msgstr "Haute"
+
 #: amiga-mui/composewnd.c:1178
 msgid "_Encrypt"
 msgstr "Crypter"
@@ -490,7 +506,7 @@ msgstr "Envoyer _plus tard"
 
 #: amiga-mui/composewnd.c:1251
 msgid "_Hold"
-msgstr "_Suspendre"
+msgstr "_Suspendre l'envoi"
 
 #: amiga-mui/configwnd.c:433
 msgid ""
@@ -557,7 +573,7 @@ msgstr "Nom de l'appicon"
 
 #: amiga-mui/configwnd.c:741
 msgid "Disabled"
-msgstr "Désactivé"
+msgstr "Désactivée"
 
 #: amiga-mui/configwnd.c:742
 msgid "Only Sizes"
@@ -565,7 +581,7 @@ msgstr "Tailles uniquement"
 
 #: amiga-mui/configwnd.c:743
 msgid "Enabled"
-msgstr "Activé"
+msgstr "Activée"
 
 #: amiga-mui/configwnd.c:750
 msgid "Preselection"
@@ -896,7 +912,7 @@ msgstr "Césure"
 
 #: amiga-mui/configwnd.c:1245
 msgid "Replying"
-msgstr "Répond"
+msgstr "Réponse"
 
 #: amiga-mui/configwnd.c:1248 amiga-mui/configwnd.c:1249
 msgid "Wrap before quoting"
@@ -909,6 +925,14 @@ msgstr "Raccourcir la signature avant de citer"
 #: amiga-mui/configwnd.c:1254 amiga-mui/configwnd.c:1255
 msgid "Quote empty lines"
 msgstr "Citer les lignes vides"
+
+#: amiga-mui/configwnd.c:1256
+msgid "Forwarding"
+msgstr "Faire suivre"
+
+#: amiga-mui/configwnd.c:1259 amiga-mui/configwnd.c:1260
+msgid "Forward mails as attachments"
+msgstr "Faire suivre les mails comme pièces jointes"
 
 #: amiga-mui/configwnd.c:1279
 msgid "Header Configuration"
@@ -957,6 +981,18 @@ msgstr "Répondre à"
 #: amiga-mui/configwnd.c:1313
 msgid "Additional headers"
 msgstr "En-têtes additonnels"
+
+#:amiga-mui/configwnd.c:1328
+msgid "Read window"
+msgstr "Fenêtre de lecture"
+
+#: amiga-mui/configwnd.c:1332 #: amiga-mui/configwnd.c:1333
+msgid "Close read window on list end"
+msgstr "Fermer la fenêtre de lecture à la fin de la liste"
+
+#: amiga-mui/configwnd.c:1335 #: amiga-mui/configwnd.c:1336
+msgid "Show next mail after move"
+msgstr "Montrer le message suivant après un déplacement"
 
 #: amiga-mui/configwnd.c:1349
 msgid "Background"
@@ -1021,7 +1057,7 @@ msgstr "-- Nouvelle signature --"
 #: amiga-mui/configwnd.c:1516
 #, c-format
 msgid "The signature is used in %d account(s)."
-msgstr "La signature est utilisée dans %d compte(s)."
+msgstr "La signature est utilisée dans le(s) compte(s) %d."
 
 #: amiga-mui/configwnd.c:1516 amiga-mui/configwnd.c:1521
 #: amiga-mui/configwnd.c:1524
@@ -1319,6 +1355,26 @@ msgstr "Tous les messages"
 msgid "> %ld KB"
 msgstr "> %ld KO"
 
+#: amiga-mui/errorwnd.c:100
+msgid "SimpleMail - Error"
+msgstr "SimpleMail - Erreur"
+
+#: amiga-mui/errorwnd.c:103
+msgid "_Previous error"
+msgstr "Erreur _précédente"
+
+#: amiga-mui/errorwnd.c:111
+msgid "_Next error"
+msgstr "Erreur _suivante"
+
+#: amiga-mui/errorwnd.c:120
+msgid "_Delete messages"
+msgstr "_Effacer les messages"
+
+#: amiga-mui/errorwnd.c:121
+msgid "_Close window"
+msgstr "_Fermer la fenêtre"
+
 #: amiga-mui/filterruleclass.c:69 amiga-mui/foldertreelistclass.c:167
 msgid "New"
 msgstr "nouveau"
@@ -1342,7 +1398,7 @@ msgstr "Transféré"
 
 #: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:879
 msgid "Pending"
-msgstr "En suspend"
+msgstr "Autoriser l'envoi"
 
 #: amiga-mui/filterruleclass.c:69 amiga-mui/mailtreelistclass.c:896
 msgid "Sent"
@@ -1564,6 +1620,10 @@ msgstr "SimpleMail - Éditer groupe de dossiers"
 msgid "SimpleMail - Edit folder"
 msgstr "SimpleMail - Éditer dossier"
 
+#: amiga-mui/folderwnd.c:599
+msgid "SimpleMail - New folder"
+msgstr "SimpleMail - Nouveau dossier"
+
 #: amiga-mui/folderwnd.c:622
 msgid "_OK"
 msgstr "_OK"
@@ -1716,7 +1776,7 @@ msgstr "Démarquer"
 
 #: amiga-mui/mailtreelistclass.c:878
 msgid "Hold"
-msgstr "Suspendre"
+msgstr "Bloquer l'envoi"
 
 #: amiga-mui/mailtreelistclass.c:884
 msgid "Is Spam"
@@ -1857,6 +1917,10 @@ msgstr "?:À propos..."
 msgid "About MUI..."
 msgstr "À propos de MUI..."
 
+#: amiga-mui/mainwnd.c:630
+msgid "O:Open message..."
+msgstr "O:Ouvrir message..."
+
 #: amiga-mui/mainwnd.c:716
 msgid "Delete all indexfiles"
 msgstr "Effacer tous les index"
@@ -1921,9 +1985,9 @@ msgstr "Options..."
 msgid "P:Run spam mail check"
 msgstr "P:Lancer la vérification de spam"
 
-#: amiga-mui/mainwnd.c:738
-msgid "O:Isolate spam mails"
-msgstr "O:Isoler les spams"
+#: amiga-mui/mainwnd.c:654
+msgid "I:Isolate spam mails"
+msgstr "I:Isoler les spams"
 
 #: amiga-mui/mainwnd.c:739
 msgid "H:Classify all mails as ham"
@@ -2056,6 +2120,10 @@ msgstr "%s (T:%ld N:%ld U:%ld)"
 msgid "No fetchable account specified"
 msgstr "Aucun compte accessible spécifié"
 
+#: amiga-mui/mainwnd.c:1406
+msgid "%s (next autocheck at %s)"
+msgstr "%s (prochaine relève à %s)"
+
 #: amiga-mui/messageviewclass.c:114 amiga-mui/readwnd.c:487
 #, c-format
 msgid ""
@@ -2106,6 +2174,14 @@ msgstr "?attachment:Sauver"
 #, c-format
 msgid "%ld bytes"
 msgstr "%ld octets"
+
+#: amiga-mui/messageviewclass.c:810
+msgid "Write to..."
+msgstr "Écrire à..."
+
+#: amiga-mui/messageviewclass.c:811
+msgid "Add to addressbook..."
+msgstr "Ajouter au carnet d'adresses..."
 
 #: amiga-mui/pgplistclass.c:79
 msgid "PGP Key ID"
@@ -2243,6 +2319,10 @@ msgid "Waiting..."
 msgstr "En attente..."
 
 #: amiga-mui/transwndclass.c:195
+msgid "_Skip"
+msgstr "_Passer"
+
+#: amiga-mui/transwndclass.c:196
 msgid "_Abort"
 msgstr "_Annuler"
 
@@ -2389,7 +2469,7 @@ msgid ""
 msgstr ""
 "Désirez-vous vraiment effacer ce groupe?\n"
 "Seule l'entrée du groupe est effacée,\n"
-"et non les dossiers contenu dans le groupe"
+"et non les dossiers contenus dans le groupe"
 
 #: imap.c:343
 #, c-format
@@ -2574,6 +2654,10 @@ msgid ""
 msgstr ""
 "Aucun sujet n'est spécifié. Il n'est pas recommandé de créer des messages\n"
 "sans aucun sujet. voulez-vous ajouter un sujet?"
+
+#: mail:3179
+msgid "Add|Don't add"
+msgstr "Ajouter|Ne pas ajouter"
 
 #: mail.c:3405 print.c:131
 msgid "Replies To"

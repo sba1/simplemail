@@ -27,8 +27,14 @@
   user-mailinglist please, whose URL you'll find in the <a
   href="index.php?body=links">links</a>. Bug reports should submitted to the
   <a href="http://sourceforge.net/tracker/?atid=115322&group_id=15322&func=browse">
-  Bug Tracking system</A>. But if you have encouragements so send them to one of the main developers. You
-  can find our e-mail addresses in <a href="index.php?body=contact">contact</a>.
+  Bug Tracking system</A>.
+</p>
+<p>
+ But if you have encouragements send them to one of the developers. Their e-mail addressed can be found in
+ <a href="index.php?body=contact">contact</a>. And actually, if you
+ like SimpleMail that much, it is possible to express your encouragements by donating some money to our Paypal
+ account. In order to do so, use the paypal button at the footer of these pages and then process the instructions.
+ However, every feedback is much appreciated!
 </p>
 
 <center>

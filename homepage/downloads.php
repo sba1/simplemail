@@ -25,7 +25,7 @@ $date = "2006/02/05";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'"-os3.lha?download">'."simplemail-'.$version.'-os3.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os3.lha?download">'."simplemail-$version-os3.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">'.$date.'</td>';
 ?>
@@ -33,7 +33,7 @@ $date = "2006/02/05";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os4.lha?download">'."simplemail-'.$version.'-os4.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os4.lha?download">'."simplemail-$version-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">'.$date.'</td>';
 ?>
@@ -41,7 +41,7 @@ $date = "2006/02/05";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-morphos.lha?download">'."simplemail-'.$version.'-morphos.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-morphos.lha?download">'."simplemail-$version-morphos.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">'.$date.'</td>';
 ?>

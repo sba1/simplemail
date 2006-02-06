@@ -2788,6 +2788,11 @@ msgstr "Marque les messages comme effacés..."
 msgid "Can't mark mail as deleted!"
 msgstr "Impossible de marquer le courrier comme effacé!"
 
+#: pop3.c:1097 smtp.c:966
+# c-format
+msgid "Unable to connect to server %s: %s"
+msgstr "Impossible de se connecter au serveur %s: %s" 
+
 #: print.c:93
 msgid "Carbon Copy"
 msgstr "Copie carbone"
@@ -3045,6 +3050,54 @@ msgstr "%d Ko / %d Ko (temps restant: %s)"
 msgid "Processing mail %d (%d KB) of %d"
 msgstr "Envoi en cours %d (%d Ko) sur %d"
 
+#: tcp.c:78
+msgid "Not enough memory"
+msgstr "Mémoire insuffisante"
+
+#: tcp.c:79
+msgid "Connection couldn't be made secure"
+msgstr "La connection n'a pas pu être sécurisée"
+
+#: tcp.c:81
+msgid "Host wasn't found"
+msgstr "L'hôte n'a pas été trouvé"
+
+#: tcp.c:82
+msgid "Cannot locate host. Try again later"
+msgstr "Impossible de localiser l'hôte. Veuillez réessayer plus tard"
+
+#: tcp.c:83
+msgid "Unexpected server failure"
+msgstr "Erreur inattendue du serveur"
+
+#: tcp.c:84
+msgid "No IP associated with name"
+msgstr "Aucune IP n'est associée au nom"
+
+#: tcp.c:85
+msgid "The specified address is not available on this machine"
+msgstr "L'adresse spécifiée n'est pas disponible sur cette machine"
+
+#: tcp.c:86
+msgid "Connecting timed out"
+msgstr "Délai d'attente de connexion dépassé"
+
+#: tcp.c:87
+msgid "Connection refused"
+msgstr "Connexion refusée"
+
+#: tcp.c:88
+msgid "Network unreachable"
+msgstr "Réseau introuvable"
+
+#: tcp.c:89
+msgid "Failed to connect to the server"
+msgstr "Impossible de se connecter au serveur"
+
+#: tcp.c:90
+msgid "Unknown error"
+msgstr "Erreur inconnue"
+                          
 msgid ""
 "If activated SimpleMail aborts transfer if APOP authentification fails."
 msgstr ""

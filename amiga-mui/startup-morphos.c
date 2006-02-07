@@ -58,6 +58,7 @@ static void deinit_io(void);
 
 ULONG __abox__ = 1;
 
+int __startup(void);
 int __startup(void)
 {
 	struct Process *pr;
@@ -126,13 +127,15 @@ static int start(struct WBStartup *wbs)
 
 	if ((DOSBase = (struct DosLibrary*)OpenLibrary("dos.library",37)))
 	{
-		BPTR out;
-		BPTR oldout;
+		BPTR out = out;
+		BPTR oldout = oldout;
 
 		if (wbs)
 		{
 			if ((out = Open("CON:10/10/320/80/SimpleMail/AUTO/CLOSE/WAIT", MODE_OLDFILE)))
+			{
 				oldout = SelectOutput(out);
+			}
 		}
 
 		if (open_libs())
@@ -199,37 +202,40 @@ static int start(struct WBStartup *wbs)
 
 static int open_libs(void)
 {
-	if ((IntuitionBase = OpenLibrary("intuition.library",37)))
+	if ((IntuitionBase = OpenLibrary("intuition.library", 37)))
 	{
-		if ((UtilityBase = OpenLibrary("utility.library",37)))
+		if ((UtilityBase = OpenLibrary("utility.library", 37)))
 		{
-			if ((LocaleBase = OpenLibrary("locale.library",37)))
+			if ((LocaleBase = OpenLibrary("locale.library", 37)))
 			{
-				if ((DataTypesBase = OpenLibrary("datatypes.library",39)))
+				if ((DataTypesBase = OpenLibrary("datatypes.library", 39)))
 				{
-					if ((KeymapBase = OpenLibrary("keymap.library",36)))
+					if ((KeymapBase = OpenLibrary("keymap.library", 36)))
 					{
-						if ((IFFParseBase = OpenLibrary("iffparse.library",37)))
+						if ((IFFParseBase = OpenLibrary("iffparse.library", 37)))
 						{
-							if ((IconBase = OpenLibrary("icon.library",37)))
+							if ((IconBase = OpenLibrary("icon.library", 37)))
 							{
-								if ((DiskfontBase = OpenLibrary("diskfont.library",37)))
+								if ((DiskfontBase = OpenLibrary("diskfont.library", 37)))
 								{
-									if ((WorkbenchBase = OpenLibrary("workbench.library",37)))
+									if ((WorkbenchBase = OpenLibrary("workbench.library", 37)))
 									{
-										if ((AslBase = OpenLibrary("asl.library",38)))
+										if ((AslBase = OpenLibrary("asl.library", 38)))
 										{
-											if ((GfxBase = OpenLibrary("graphics.library",37)))
+											if ((GfxBase = OpenLibrary("graphics.library", 37)))
 											{
-												if ((LayersBase = OpenLibrary("layers.library",37)))
+												if ((LayersBase = OpenLibrary("layers.library", 37)))
 												{
-													if (!(ExpatBase = OpenLibrary("expat.library",0)))
-														ExpatBase = OpenLibrary("PROGDIR:libs/expat.library",0);
+													if (!(ExpatBase = OpenLibrary("expat.library", 0)))
+													{
+														ExpatBase = OpenLibrary("PROGDIR:libs/expat.library", 0);
+													}
 
 													if (ExpatBase)
 													{
 														return 1;
-													} else PutStr("Couldn't open expat.library. Please download it from aminet or somewhere else.\n");
+													}
+													else PutStr("Couldn't open expat.library. Please download it from aminet or somewhere else.\n");
 												}
 											}
 										} else PutStr("Couldn't open asl.library\n");
@@ -288,46 +294,67 @@ static void deinit_mem(void)
 void *malloc(size_t size)
 {
 	ULONG *mem;
-	mem = AllocPooled(pool,4+size);
-	if (!mem) return NULL;
-	mem[0] = size;
-	return mem+1;
+
+	mem = AllocPooled(pool, 4 + size);
+	if (mem)
+	{
+		mem[0] = size;
+		return mem + 1;
+	}
+
+	return NULL;
 }
 
 void free(void *m)
 {
 	ULONG *mem = (ULONG*)m;
-	if (!m) return;
-	mem--;
-	FreePooled(pool,mem,mem[0]+4);
+
+	if (mem)
+	{
+		mem--;
+		FreePooled(pool, mem, mem[0] + 4);
+	}
 }
 
 void *realloc(void *om, size_t size)
 {
-	ULONG *oldmem;
-
-	if (!om) return malloc(size);
-
-	oldmem = (ULONG*)om;
-	oldmem--;
-	if (size > oldmem[0])
+	if (om)
 	{
-		void *mem = malloc(size);
-		if (!mem) return NULL;
-		memcpy(mem,om,oldmem[0]);
-		free(om);
-		return mem;
+		ULONG *oldmem = (ULONG*)om;
+
+		oldmem--;
+		if (size > oldmem[0])
+		{
+			void *mem;
+
+			mem = malloc(size);
+			if (mem)
+			{
+				memcpy(mem, om, oldmem[0]);
+				free(om);
+			}
+
+			return mem;
+		}
+
+		if (size < oldmem[0])
+		{
+			void *mem;
+		
+			mem = malloc(size);
+			if (mem)
+			{
+				memcpy(mem, om, size);
+				free(om);
+			}
+
+			return mem;
+		}
+
+		return om;
 	}
 
-	if (size < oldmem[0])
-	{
-		void *mem = malloc(size);
-		if (!mem) return NULL;
-		memcpy(mem,om,size);
-		free(om);
-		return mem;
-	}
-	return om;
+	return malloc(size);
 }
 
 
@@ -356,28 +383,54 @@ static int init_io(void)
 static void deinit_io(void)
 {
 	int i;
-	for (i=0;i<MAX_FILES;i++)
-		if (files[i]) Close(files[i]);
+
+	for (i = 0; i < MAX_FILES; i++)
+	{
+		if (files[i])
+		{
+			Close(files[i]);
+		}
+	}
 }
 
 FILE *fopen(const char *filename, const char *mode)
 {
 	FILE *file = NULL;
 	short _file;
-
 	LONG amiga_mode;
-	if (*mode == 'w') amiga_mode = MODE_NEWFILE;
-	else if (*mode == 'r') amiga_mode = MODE_OLDFILE;
-	else if (*mode == 'a') amiga_mode = MODE_READWRITE;
-	else return NULL;
+
+	if (*mode == 'w')
+	{
+		amiga_mode = MODE_NEWFILE;
+	}
+	else if (*mode == 'r')
+	{
+		amiga_mode = MODE_OLDFILE;
+	}
+	else if (*mode == 'a')
+	{
+		amiga_mode = MODE_READWRITE;
+	}
+	else
+	{
+		return NULL;
+	}
 
 	ObtainSemaphore(&files_sem);
 	/* Look if we can still open file left */
-	for (_file=0;_file < MAX_FILES && files[_file];_file++);
-	if (_file == MAX_FILES) goto fail;
+	for (_file=0;_file < MAX_FILES && files[_file];_file++)
+	{
+	}
+	if (_file == MAX_FILES)
+	{
+		goto fail;
+	}
 
 	file = malloc(sizeof(*file));
-	if (!file) goto fail;
+	if (!file)
+	{
+		goto fail;
+	}
 	memset(file,0,sizeof(*file));
 
 #ifdef BIG_BUFFER
@@ -422,35 +475,42 @@ fail:
 
 int fclose(FILE *file)
 {
-	int error;
-	if (!file) return NULL;
-	ObtainSemaphore(&files_sem);
-	error = !Close(files[file->_file]);
-	if (!error)
+	if (file)
 	{
-		files[file->_file] = NULL;
+		int error;
+
+		ObtainSemaphore(&files_sem);
+		error = !Close(files[file->_file]);
+		if (!error)
+		{
+			files[file->_file] = NULL;
 #ifdef BIG_BUFFER
-		if(file)
-		{
 			free(file->_bf._base);
-		}
 #endif
-		if(file->_cookie)
-		{
-			DeleteFile(file->_cookie);
-			free(file->_cookie);
+			if(file->_cookie)
+			{
+				DeleteFile(file->_cookie);
+				free(file->_cookie);
+			}
+
+			free(file);
 		}
-		free(file);
+		ReleaseSemaphore(&files_sem);
+
+		return error;
 	}
-	ReleaseSemaphore(&files_sem);
-	return error;
+
+	return NULL;
 }
 
 size_t fwrite(const void *buffer, size_t size, size_t count, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	size_t rc = (size_t)FWrite(fh,(void*)buffer,size,count);
+	size_t rc;
+
+	rc = (size_t)FWrite(fh, (void*)buffer, size, count);
 	file->_offset += rc * size;
+
 	return rc;
 }
 
@@ -458,27 +518,44 @@ size_t fread(void *buffer, size_t size, size_t count, FILE *file)
 {
 	size_t len;
 	BPTR fh = files[file->_file];
+
 	len = (size_t)FRead(fh,buffer,size,count);
-	if (!len && size && count) file->_flags |= __SEOF;
+	if (!len && size && count)
+	{
+		file->_flags |= __SEOF;
+	}
+
 	D(bug("0x%lx reading %ld bytes\n",file,len * size));
 	file->_offset += len * size;
+
 	return len;
 }
 
 int fputs(const char *string, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	int rc = FPuts(fh,(char*)string);
+	int rc;
+
+	rc = FPuts(fh, (char*)string);
 	if (!rc) /* DOSFALSE is true here */
+	{
 		file->_offset += strlen(string);
+	}
+
 	return rc;
 }
 
 int fputc(int character, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	int rc = FPutC(fh,character);
-	if (rc != -1) file->_offset++;
+	int rc;
+
+	rc = FPutC(fh,character);
+	if (rc != -1)
+	{
+		file->_offset++;
+	}
+
 	return rc;
 }
 
@@ -487,32 +564,54 @@ int fseek(FILE *file, long offset, int origin)
 	BPTR fh = files[file->_file];
 	ULONG amiga_seek;
 
-	if (origin == SEEK_SET) amiga_seek = OFFSET_BEGINNING;
+	if (origin == SEEK_SET)
+	{
+		amiga_seek = OFFSET_BEGINNING;
+	}
 	else if (origin == SEEK_CUR)
 	{
-		/* Optimize trivial cases (used heavily when loading indexfiles) */
-		amiga_seek = OFFSET_CURRENT;
 #ifdef FAST_SEEK
-		if (!offset) return 0;
+		/* Optimize trivial cases (used heavily when loading indexfiles) */
+
+		if (!offset)
+		{
+			return 0;
+		}
+
 		if (offset == 1)
 		{
 			fgetc(file);
+
 			return 0;
 		}
 #endif
+		amiga_seek = OFFSET_CURRENT;
 	}
-	else amiga_seek = OFFSET_END;
+	else
+	{
+		amiga_seek = OFFSET_END;
+	}
 
-	if (!Flush(fh)) return -1;
-	if (Seek(fh,offset,amiga_seek)==-1) return -1;
-	file->_offset = Seek(fh,0,OFFSET_CURRENT);
-	return 0;
+	if (Flush(fh))
+	{
+		if (Seek(fh, offset, amiga_seek) != -1)
+		{
+			file->_offset = Seek(fh, 0, OFFSET_CURRENT);
+
+			return 0;
+		}
+	}
+
+	return -1;
 }
 
 long ftell(FILE *file)
 {
+#ifndef FAST_SEEK
 	BPTR fh = files[file->_file];
-	D(bug("0x%lx ftell() = %ld\n",file,Seek(fh,0,OFFSET_CURRENT)));
+#endif
+
+	D(bug("0x%lx ftell() = %ld\n", file, Seek(fh, 0, OFFSET_CURRENT)));
 #ifdef FAST_SEEK
 	return file->_offset;
 #else
@@ -523,7 +622,12 @@ long ftell(FILE *file)
 int fflush(FILE *file)
 {
 	BPTR fh = files[file->_file];
-	if (Flush(fh)) return 0;
+
+	if (Flush(fh))
+	{
+		return 0;
+	}
+
 	return -1;
 
 }
@@ -531,81 +635,117 @@ int fflush(FILE *file)
 char *fgets(char *string, int n, FILE *file)
 {
 	BPTR fh = files[file->_file];
-	char *rc =  (char*)FGets(fh,string,n);
-	if (!rc && !IoErr()) file->_flags |= __SEOF;
-	else if (rc) file->_offset += strlen(rc);
+	char *rc;
+
+	rc = (char*)FGets(fh, string, n);
+	 if (rc)
+	{
+		file->_offset += strlen(rc);
+	}
+	else if (!rc && !IoErr())
+	{
+		file->_flags |= __SEOF;
+	}
+
 	return rc;
 }
 
 int fgetc(FILE *file)
 {
 	BPTR fh = files[file->_file];
-	int rc = FGetC(fh);
-	if (rc != -1) file->_offset++;
+	int rc;
+
+	rc = FGetC(fh);
+	if (rc != -1)
+	{
+		file->_offset++;
+	}
+
 	return rc;
 }
 
 FILE *tmpfile(void)
 {
 	char *buf;
-	FILE *file = NULL;
+
 	buf = malloc(40);
 	if(buf)
 	{
+		FILE *file;
+
 		ObtainSemaphore(&files_sem);
-		sprintf(buf,"T:%p%lx.tmp",FindTask(NULL),tmpno++);
-		file = fopen(buf,"w");
+		sprintf(buf, "T:%p%lx.tmp", FindTask(NULL), tmpno++);
+		file = fopen(buf, "w");
 		ReleaseSemaphore(&files_sem);
 		if(file)
 		{
 			file->_cookie = buf; /* hack to delete tmp files at fclose() */
+
+			return file;
 		}
-		else
-		{
-			free(buf);
-		}
+
+		free(buf);
 	}
-	return file;
+
+	return NULL;
 }
 
 char *tmpnam(char *name)
 {
 	static char default_buf[L_tmpnam];
+
 	ObtainSemaphore(&files_sem);
-	if (!name) name = default_buf;
-	snprintf(name,sizeof(default_buf),"T:sm%05lx",tmpno);
+	if (!name)
+	{
+		name = default_buf;
+	}
+	snprintf(name, sizeof(default_buf), "T:sm%05lx", tmpno);
 	tmpno++;
 	ReleaseSemaphore(&files_sem);
+
 	return name;
 }
 
 int remove(const char *filename)
 {
-	if (DeleteFile((char*)filename)) return 0;
+	if (DeleteFile((char*)filename))
+	{
+		return 0;
+	}
+
 	return -1;
 }
 
 int stat(const char *filename, struct stat *stat)
 {
 	BPTR lock;
-	int rc = -1;
 
 	if ((lock = Lock(filename,ACCESS_READ)))
 	{
-		struct FileInfoBlock *fib = (struct FileInfoBlock*)AllocDosObject(DOS_FIB,NULL);
+		struct FileInfoBlock *fib;
+
+		fib = (struct FileInfoBlock*)AllocDosObject(DOS_FIB, NULL);
 		if (fib)
 		{
-			if (Examine(lock,fib))
+			if (Examine(lock, fib))
 			{
-				memset(stat,0,sizeof(*stat));
-				if (fib->fib_DirEntryType > 0) stat->st_mode |= S_IFDIR;
+				memset(stat, 0, sizeof(*stat));
+
+				if (fib->fib_DirEntryType > 0)
+				{
+					stat->st_mode |= S_IFDIR;
+				}
+
 				rc = 0;
 			}
+
 			FreeDosObject(DOS_FIB,fib);
 		}
+
 		UnLock(lock);
 	}
-	return rc;
+
+	return -1;
 }
 
 int fprintf(FILE *file, const char *fmt,...)
@@ -623,7 +763,11 @@ int fprintf(FILE *file, const char *fmt,...)
 	if (size >= 0)
 	{
 		rc = fwrite(filesbuf,1,size,file);
-	} else rc = -1;
+	}
+	else
+	{	
+		rc = -1;
+	}
 
 	ReleaseSemaphore(&files_sem);
 
@@ -648,7 +792,11 @@ int printf(const char *fmt,...)
 	if (size >= 0)
 	{
 		PutStr(filesbuf);
-	} else rc = -1;
+	}
+	else
+	{
+		rc = -1;
+	}
 
 	ReleaseSemaphore(&files_sem);
 
@@ -668,43 +816,46 @@ int sprintf(char *buf, const char *fmt, ...)
 	va_start(ap, fmt);
 	r = vsnprintf(buf, 0x7fff, fmt, ap);
 	va_end(ap);
+
 	return r;
 }
 
 DIR *opendir(const char *name)
 {
-	BPTR dh;
-	struct FileInfoBlock *fib;
-	DIR *dir = malloc(sizeof(*dir) + sizeof(struct dirent));
-	if (!dir) return NULL;
+	DIR *dir;
 
-	if (!(dh = Lock(name,ACCESS_READ)))
+	dir = malloc(sizeof(*dir) + sizeof(struct dirent));
+	if (dir)
 	{
+		BPTR dh;
+
+		dh = Lock(name,ACCESS_READ);
+		if (dh)
+		{
+			struct FileInfoBlock *fib;
+
+			fib = AllocDosObject(DOS_FIB,NULL);
+			if (fib)
+			{
+				if (Examine(dh,fib))
+				{
+					dir->dd_fd  = ((unsigned long)fib);
+					dir->dd_loc = ((unsigned long)dh);
+					dir->dd_buf = (char*)(dir+1);
+
+					D(bug("Opendir %s\n",name));
+
+					return dir;
+				}
+			}
+
+			UnLock(dh);
+		}
+
 		free(dir);
-		return NULL;
 	}
 
-	if (!(fib = AllocDosObject(DOS_FIB,NULL)))
-	{
-		UnLock(dh);
-		free(dir);
-		return NULL;
-	}
-
-	if (!(Examine(dh,fib)))
-	{
-		UnLock(dh);
-		free(dir);
-		return NULL;
-	}
-
-	dir->dd_fd = ((unsigned long)fib);
-	dir->dd_loc = ((unsigned long)dh);
-	dir->dd_buf = (char*)(dir+1);
-
-	D(bug("Opendir %s\n",name));
-
-	return dir;
+	return NULL;
 }
 
 int closedir(DIR *dir)
@@ -720,7 +871,8 @@ struct dirent *readdir(DIR *dir)
 {
 	struct dirent *dirent = (struct dirent*)dir->dd_buf;
 	struct FileInfoBlock *fib = (struct FileInfoBlock*)dir->dd_fd;
-	if (ExNext((BPTR)dir->dd_loc,fib))
+
+	if (ExNext((BPTR)dir->dd_loc, fib))
 	{
 		strncpy(dirent->d_name,fib->fib_FileName,107);
 		dirent->d_name[107] = 0;
@@ -729,24 +881,39 @@ struct dirent *readdir(DIR *dir)
 
 		return dirent;
 	}
+
 	return NULL;
 }
 
+int chdir(const char *dir);
 int chdir(const char *dir)
 {
-	BPTR lock = Lock(dir,ACCESS_READ);
+	BPTR lock;
 	BPTR odir;
-	if (!lock) return -1;
-	odir = CurrentDir(lock);
-	UnLock(odir);
-	return 0;
+
+	lock = Lock(dir, ACCESS_READ);
+	if (lock)
+	{
+		odir = CurrentDir(lock);
+		UnLock(odir);
+
+		return 0;
+	}
+
+	return -1;
 }
 
+char *getcwd(char *buf, int size);
 char *getcwd(char *buf, int size)
 {
 	struct Process *pr = (struct Process*)FindTask(NULL);
-	if (!(NameFromLock(pr->pr_CurrentDir, buf, size))) return NULL;
-	return buf;
+
+	if (NameFromLock(pr->pr_CurrentDir, buf, size))
+	{
+		return buf;
+	}
+
+	return NULL;
 }
 
 char *getenv(const char *name)
@@ -761,7 +928,10 @@ struct tm *localtime(const time_t *timeptr)
 int rename(const char *oldname, const char *newname)
 {
 	if (!(Rename(oldname,newname)))
+	{
 		return -1;
+	}
+
 	return 0;
 }
 
@@ -803,7 +973,7 @@ struct EmulLibEntry muiDispatcherEntry =
 
 void xml_start_tag(void *, const char *, const char **);
 
-void xml_start_tag_gate(void)
+static void xml_start_tag_gate(void)
 {
 	void *data        = ((void **)       REG_A7)[1];
 	char *el          = ((char **)       REG_A7)[2];
@@ -819,7 +989,7 @@ struct EmulLibEntry xml_start_tag_trap =
 
 void xml_end_tag(void *, const char *);
 
-void xml_end_tag_gate(void)
+static void xml_end_tag_gate(void)
 {
 	void *data = ((void **)REG_A7)[1];
 	char *el   = ((char **)REG_A7)[2];
@@ -834,7 +1004,7 @@ struct EmulLibEntry xml_end_tag_trap =
 
 void xml_char_data(void *, const XML_Char *, int);
 
-void xml_char_data_gate(void)
+static void xml_char_data_gate(void)
 {
 	void *data  = ((void **)    REG_A7)[1];
 	XML_Char *s = ((XML_Char **)REG_A7)[2];

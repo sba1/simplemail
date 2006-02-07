@@ -396,6 +396,7 @@ void app_hide(void)
 void app_show(void)
 {
 	set(App,MUIA_Application_Iconified,FALSE);
+	main_set_folder_active(folder_incoming());
 }
 
 /****************************************************************
@@ -484,11 +485,11 @@ int gui_init(void)
 	if (all_init())
 	{
 		main_refresh_folders();
-		main_set_folder_active(folder_incoming());
 
 		if (main_window_open())
 		{
 			startupwnd_close();
+			main_set_folder_active(folder_incoming());
 
 			if (open_config_window) open_config();
 

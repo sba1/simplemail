@@ -168,7 +168,7 @@ static void settings_show_changed(void);
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
 	set(tree, MUIA_NListtree_FindUserDataHook, MUIV_NListtree_FindUserDataHook_PointerCompare);
-	return (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_FindUserData,  MUIV_NListtree_FindUserData_ListNode_Root, udata, 0);
+	return (struct MUI_NListtree_TreeNode *)DoMethod(tree, MUIM_NListtree_FindUserData, MUIV_NListtree_FindUserData_ListNode_Root, (ULONG)udata, 0);
 /*
 
 	int i;
@@ -268,7 +268,7 @@ static void foldertreelist_orderchanged(void)
 		tn = (struct MUI_NListtree_TreeNode*)DoMethod(folder_tree,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,i,0);
 		if (!tn) return;
 
-		parent = (struct MUI_NListtree_TreeNode*)DoMethod(folder_tree,MUIM_NListtree_GetEntry,tn,MUIV_NListtree_GetEntry_Position_Parent,0);
+		parent = (struct MUI_NListtree_TreeNode*)DoMethod(folder_tree, MUIM_NListtree_GetEntry, (ULONG)tn, MUIV_NListtree_GetEntry_Position_Parent, 0);
 		if (!parent) return;
 
 		f = (struct folder*)tn->tn_User;
@@ -303,7 +303,7 @@ static void addressentrylist_doubleclick(void)
 {
 	struct addressbook_entry_new *entry;
 
-	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
 	if (entry && entry->email_array)
 		callback_write_mail_to_str(entry->email_array[0],NULL);
 }
@@ -510,7 +510,7 @@ static void settings_show_changed(void)
 	{
 		struct mail_info *m = main_get_active_mail();
 		char *f = main_get_folder_drawer();
-		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
+		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 	}
 }
 
@@ -523,7 +523,7 @@ void main_load_environment(void)
 	int i=0;
 	LONG count, weight;
 
-	DoMethod(App, MUIM_Application_Load, MUIV_Application_Load_ENV);
+	DoMethod(App, MUIM_Application_Load, (ULONG)MUIV_Application_Load_ENV);
 	if (!*(ls = (STRPTR)xget(balance_text, MUIA_String_Contents))) ls = "33 100 100 100 100 100";
 	/* I'm not allowed to use sscanf() */
 	count = StrToLong(ls, &weight);
@@ -558,8 +558,8 @@ void main_save_environment(void)
 	sprintf(buf, "%ld %ld %ld %ld %ld %ld", Weights[0], Weights[1], Weights[2], Weights[3], Weights[4], Weights[5]);
 	setstring(balance_text, buf);
 
-	DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENV);
-	DoMethod(App, MUIM_Application_Save, MUIV_Application_Save_ENVARC);
+	DoMethod(App, MUIM_Application_Save, (ULONG)MUIV_Application_Save_ENV);
+	DoMethod(App, MUIM_Application_Save, (ULONG)MUIV_Application_Save_ENVARC);
 }
 
 /******************************************************************
@@ -729,11 +729,11 @@ int main_window_init(void)
 				End,
 
 			Child, folder_group = HGroup,
-				MUIA_Group_Spacing,0,
+				MUIA_Group_Spacing, 0,
 				Child, folder_text = TextObject, TextFrame, MUIA_Text_PreParse, MUIX_C, MUIA_Background, MUII_TextBack, End,
 				Child, folder_popupmenu = PopupmenuObject,
 					ImageButtonFrame,
-					MUIA_CycleChain,1,
+					MUIA_CycleChain, 1,
 					MUIA_Image_Spec, MUII_PopUp,
 					MUIA_Image_FreeVert, TRUE,
 					End,
@@ -854,92 +854,92 @@ int main_window_init(void)
 
 		project_checksingleaccount_menuitem = (Object*)DoMethod(main_menu, MUIM_FindUData, MENU_PROJECT_CHECKSINGLEACCOUNT);
 
-		DoMethod(App, OM_ADDMEMBER, win_main);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)win_main);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_CloseRequest, MUIV_EveryTime, MUIV_Notify_Application, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
 		/* Menu notifies */
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, App, 3, MUIM_CallHook, &hook_standard, open_message);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, App, 4, MUIM_CallHook, &hook_standard, callback_import_dbx, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)display_about);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, (ULONG)App, 2, MUIM_Application_AboutMUI, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)open_message);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_mbox, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_dbx, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_fetch_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_send_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWGROUP, App, 3, MUIM_CallHook, &hook_standard, callback_new_group);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWFOLDER, App, 3, MUIM_CallHook, &hook_standard, callback_new_folder);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_remove_folder);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, App, 3, MUIM_CallHook, &hook_standard, callback_edit_folder);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, App, 3, MUIM_CallHook, &hook_standard, folder_save_order);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, App, 3, MUIM_CallHook, &hook_standard, callback_reload_folder_order);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, App, 3, MUIM_CallHook, &hook_standard, callback_rescan_folder);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_delete_all_indexfiles);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SAVEALLINDEX, App, 3, MUIM_CallHook, &hook_standard, callback_save_all_indexfiles);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_IMPORTMBOX, App, 4, MUIM_CallHook, &hook_standard, callback_import_mbox, 1);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, App, 3, MUIM_CallHook, &hook_standard, callback_export);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_HAM, App, 3, MUIM_CallHook, &hook_standard, callback_classify_selected_folder_as_ham);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWGROUP, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_new_group);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWFOLDER, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_new_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELETE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_remove_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_OPTIONS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_edit_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_SAVE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)folder_save_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_ORDER_RESET, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_reload_folder_order);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_RESCAN, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_rescan_folder);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_DELALLINDEX, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_all_indexfiles);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SAVEALLINDEX, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_save_all_indexfiles);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_IMPORTMBOX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_mbox, 1);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_EXPORT, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_export);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_SPAMCHECK, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_check_selected_folder_for_spam);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_MOVESPAM, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_move_spam_marked_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_HAM, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_classify_selected_folder_as_ham);
 
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_SAVE, App, 3, MUIM_CallHook, &hook_standard, callback_save_active_mail);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FORWARD, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_NEW, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_new_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_REPLY, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_reply_selected_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_SAVE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_save_active_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FORWARD, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_forward_selected_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_read_active_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_change_mail);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_move_selected_mails);
 /*
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 */
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_mails);
 
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, App, 2, MUIM_Application_OpenConfigWindow, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION,App, 3, MUIM_CallHook, &hook_standard, callback_config);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_SELECTED_MESSAGE, App, 3, MUIM_CallHook, &hook_standard, settings_show_changed);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, App, 3, MUIM_CallHook, &hook_standard, main_save_environment);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, (ULONG)App, 2, MUIM_Application_OpenConfigWindow, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_config);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_edit_filter);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_SELECTED_MESSAGE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)main_save_environment);
 
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, App, 4, MUIM_CallHook, &hook_standard, menu_execute_script, -1);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_execute_script, -1);
 
 		/* Toolbar notifies */
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_READ,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_read_active_mail);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDIT,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_change_mail);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_MOVE,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_selected_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_DELETE,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_GETADDRESS,  8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_get_address);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_NEW,         8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_new_mail);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_REPLY,       8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_reply_selected_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FORWARD,     8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_forward_selected_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FETCH,       8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_fetch_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEND,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_send_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEARCH,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_search);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FILTER,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_filter);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SPAM,        8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_check_selected_folder_for_spam);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ISOLATE,     8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_move_spam_marked_mails);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ADDRESSBOOK, 8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_addressbook);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDITFILTER,  8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_edit_filter);
-		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_CONFIG,      8, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, callback_config);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_READ,        8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_read_active_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDIT,        8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_change_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_MOVE,        8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_move_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_DELETE,      8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_GETADDRESS,  8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_get_address);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_NEW,         8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_new_mail);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_REPLY,       8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_reply_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FORWARD,     8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_forward_selected_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FETCH,       8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_fetch_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEND,        8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_send_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SEARCH,      8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_search);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_FILTER,      8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_filter);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_SPAM,        8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_check_selected_folder_for_spam);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ISOLATE,     8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_move_spam_marked_mails);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_ADDRESSBOOK, 8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_addressbook);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_EDITFILTER,  8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_edit_filter);
+		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_CONFIG,      8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_config);
 
 		/* Key notifies */
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, "delete", App, 3, MUIM_CallHook, &hook_standard, callback_delete_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, (ULONG)"delete", (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_mails);
 
-		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
-		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, switch_folder_view);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_mail_within_main_selected);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, mailtreelist_doubleclick);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click);
-		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick2, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, mailtreelist_title_click2);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, callback_folder_active);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, main_refresh_folders_text);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_maildrop);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_OrderChanged, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, foldertreelist_orderchanged);
-		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard,  foldertreelist_doubleclick);
-		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, popup_selected);
+		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)switch_folder_view);
+		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)switch_folder_view);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_mail_within_main_selected);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_MailTreelist_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, (ULONG)&hook_standard, (ULONG)mailtreelist_doubleclick);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)mailtreelist_title_click);
+		DoMethod(mail_tree, MUIM_Notify, MUIA_NList_TitleClick2, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)mailtreelist_title_click2);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_folder_active);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)main_refresh_folders_text);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_MailDrop, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)foldertreelist_maildrop);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_FolderTreelist_OrderChanged, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)foldertreelist_orderchanged);
+		DoMethod(folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)foldertreelist_doubleclick);
+		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
-		DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, &hook_standard, addressentrylist_doubleclick);
+		DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressentrylist_doubleclick);
 
 		main_build_accounts();
 		main_build_scripts();
@@ -1017,14 +1017,14 @@ void main_refresh_folders(void)
 
 		for (f=folder_first();f;f=folder_next(f),i++)
 		{
-			sprintf(buf,_("%s (T:%d N:%d U:%d)"),f->name,f->num_mails,f->new_mails,f->unread_mails);
-			DoMethod(folder_popupmenu,MUIM_Popupmenu_AddEntry, buf,i);
+			sprintf(buf,_("%s (T:%d N:%d U:%d)"), f->name, f->num_mails, f->new_mails, f->unread_mails);
+			DoMethod(folder_popupmenu, MUIM_Popupmenu_AddEntry, (ULONG)buf, i);
 		}
 	}
-	set(folder_tree,MUIA_NListtree_Quiet,TRUE);
-	DoMethod(folder_tree,MUIM_FolderTreelist_Refresh,NULL);
-	nnset(folder_tree,MUIA_NList_Active,act);
-	set(folder_tree,MUIA_NListtree_Quiet,FALSE);
+	set(folder_tree, MUIA_NListtree_Quiet, TRUE);
+	DoMethod(folder_tree, MUIM_FolderTreelist_Refresh, NULL);
+	nnset(folder_tree, MUIA_NList_Active, act);
+	set(folder_tree, MUIA_NListtree_Quiet, FALSE);
 	main_refresh_folders_text();
 }
 
@@ -1036,7 +1036,7 @@ void main_refresh_folder(struct folder *folder)
 	struct MUI_NListtree_TreeNode *tree_node = FindListtreeUserData(folder_tree, folder);
 	if (tree_node)
 	{
-		DoMethod(folder_tree,MUIM_NListtree_Redraw,tree_node,0);
+		DoMethod(folder_tree, MUIM_NListtree_Redraw, (ULONG)tree_node, 0);
 	}
 	main_refresh_folders_text();
 
@@ -1048,7 +1048,7 @@ void main_refresh_folder(struct folder *folder)
 *******************************************************************/
 void main_insert_mail(struct mail_info *mail)
 {
-	DoMethod(mail_tree, MUIM_MailTree_InsertMail, mail, -2);
+	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, -2);
 }
 
 /******************************************************************
@@ -1056,7 +1056,7 @@ void main_insert_mail(struct mail_info *mail)
 *******************************************************************/
 void main_insert_mail_pos(struct mail_info *mail, int after)
 {
-	DoMethod(mail_tree, MUIM_MailTree_InsertMail, mail, after);
+	DoMethod(mail_tree, MUIM_MailTree_InsertMail, (ULONG)mail, after);
 }
 
 /******************************************************************
@@ -1064,7 +1064,7 @@ void main_insert_mail_pos(struct mail_info *mail, int after)
 *******************************************************************/
 void main_remove_mail(struct mail_info *mail)
 {
-	DoMethod(mail_tree, MUIM_MailTree_RemoveMail, mail);
+	DoMethod(mail_tree, MUIM_MailTree_RemoveMail, (ULONG)mail);
 }
 
 /******************************************************************
@@ -1074,7 +1074,7 @@ void main_remove_mail(struct mail_info *mail)
 *******************************************************************/
 void main_replace_mail(struct mail_info *oldmail, struct mail_info *newmail)
 {
-	DoMethod(mail_tree, MUIM_MailTree_ReplaceMail, oldmail, newmail);
+	DoMethod(mail_tree, MUIM_MailTree_ReplaceMail, (ULONG)oldmail, (ULONG)newmail);
 }
 
 /******************************************************************
@@ -1082,7 +1082,7 @@ void main_replace_mail(struct mail_info *oldmail, struct mail_info *newmail)
 *******************************************************************/
 void main_refresh_mail(struct mail_info *m)
 {
-	DoMethod(mail_tree, MUIM_MailTree_RefreshMail, m);
+	DoMethod(mail_tree, MUIM_MailTree_RefreshMail, (ULONG)m);
 	DoMethod(folder_tree, MUIM_NListtree_Redraw, MUIV_NListtree_Redraw_Active, 0);
 	main_refresh_folders_text();
 }
@@ -1100,7 +1100,7 @@ void main_clear_folder_mails(void)
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)
 { 
-	DoMethod(mail_tree, MUIM_MailTree_SetFolderMails, folder);
+	DoMethod(mail_tree, MUIM_MailTree_SetFolderMails, (ULONG)folder);
 	mailtreelist_update_title_markers();
 }
 
@@ -1177,7 +1177,7 @@ char *main_get_mail_filename(void)
 *******************************************************************/
 struct mail_info *main_get_mail_first_selected(void *handle)
 {
-	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetFirstSelected, handle);
+	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetFirstSelected, (ULONG)handle);
 }
 
 /******************************************************************
@@ -1186,7 +1186,7 @@ struct mail_info *main_get_mail_first_selected(void *handle)
 *******************************************************************/
 struct mail_info *main_get_mail_next_selected(void *handle)
 {
-	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetNextSelected, handle);
+	return (struct mail_info*)DoMethod(mail_tree, MUIM_MailTree_GetNextSelected, (ULONG)handle);
 }
 
 /******************************************************************
@@ -1235,8 +1235,8 @@ void main_build_accounts(void)
 				MUIA_Menuitem_Title, mystrdup(buf), /* leakes */
 				End;
 
-			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
-			DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, menu_check_single_account,i);
+			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
+			DoMethod(entry, MUIM_Notify, MUIA_Menuitem_Trigger, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_check_single_account, i);
 		}
 		account = (struct account*)node_next(&account->node);
 		i++;
@@ -1245,7 +1245,7 @@ void main_build_accounts(void)
 	if (!i)
 	{
 		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No fetchable account specified"),	End;
-		DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, entry);
+		DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
 	}
 }
 
@@ -1254,9 +1254,9 @@ void main_build_accounts(void)
 *******************************************************************/
 void main_build_scripts(void)
 {
-	DoMethod(main_scripts_menu, OM_REMMEMBER, main_scripts_execute_menuitem);
+	DoMethod(main_scripts_menu, OM_REMMEMBER, (ULONG)main_scripts_execute_menuitem);
 	DisposeAllFamilyChilds(main_scripts_menu);
-	DoMethod(main_scripts_menu, OM_ADDMEMBER, main_scripts_execute_menuitem);
+	DoMethod(main_scripts_menu, OM_ADDMEMBER, (ULONG)main_scripts_execute_menuitem);
 }
 
 /******************************************************************
@@ -1264,7 +1264,7 @@ void main_build_scripts(void)
 *******************************************************************/
 void main_build_addressbook(void)
 {
-	DoMethod(address_list, MUIM_AddressEntryList_Refresh,NULL);
+	DoMethod(address_list, MUIM_AddressEntryList_Refresh, NULL);
 }
 
 /******************************************************************
@@ -1304,7 +1304,7 @@ int main_is_iconified(void)
 *******************************************************************/
 struct Screen *main_get_screen(void)
 {
-	return (struct Screen*)xget(win_main,MUIA_Window_Screen);
+	return (struct Screen*)xget(win_main, MUIA_Window_Screen);
 }
 
 /******************************************************************
@@ -1324,7 +1324,7 @@ void main_display_active_mail(void)
 	struct mail_info *m = main_get_active_mail();
 	char *f = main_get_folder_drawer();
 
-	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, m, f);
+	DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 }
 
 /******************************************************************

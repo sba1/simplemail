@@ -525,12 +525,12 @@ int fprintf(FILE *file, const char *fmt,...)
 	int rc;
 	int size;
 
-  va_list ap;
+	va_list ap;
 
 	ObtainSemaphore(&files_sem);
-  va_start(ap, fmt);
-  size = vsnprintf(filesbuf, sizeof(filesbuf), fmt, ap);
-  va_end(ap);
+	va_start(ap, fmt);
+	size = vsnprintf(filesbuf, sizeof(filesbuf), fmt, ap);
+	va_end(ap);
 
 	if (size >= 0)
 	{
@@ -550,12 +550,12 @@ int printf(const char *fmt,...)
 	int rc;
 	int size;
 
-  va_list ap;
+	va_list ap;
 
 	ObtainSemaphore(&files_sem);
-  va_start(ap, fmt);
-  size = vsnprintf(filesbuf, sizeof(filesbuf), fmt, ap);
-  va_end(ap);
+	va_start(ap, fmt);
+	size = vsnprintf(filesbuf, sizeof(filesbuf), fmt, ap);
+	va_end(ap);
 
 	if (size >= 0)
 	{
@@ -574,13 +574,13 @@ int puts(const char *string)
 
 int sprintf(char *buf, const char *fmt, ...)
 {
-  int r;
-  va_list ap;
+	int r;
+	va_list ap;
   
-  va_start(ap, fmt);
-  r = vsnprintf(buf, 0x7fff, fmt, ap);
-  va_end(ap);
-  return r;
+	va_start(ap, fmt);
+	r = vsnprintf(buf, 0x7fff, fmt, ap);
+	va_end(ap);
+	return r;
 }
 
 DIR *opendir(const char *name)

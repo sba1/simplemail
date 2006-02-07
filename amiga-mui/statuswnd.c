@@ -80,9 +80,9 @@ int statuswnd_open(int active)
 
 		if (status_wnd)
 		{
-			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, status_wnd, 3, MUIM_CallHook, &hook_standard, statuswnd_abort);
-			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Skipped, TRUE, status_wnd, 3, MUIM_CallHook, &hook_standard, statuswnd_skip);
-			DoMethod(App, OM_ADDMEMBER, status_wnd);
+			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Aborted, TRUE, (ULONG)status_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)statuswnd_abort);
+			DoMethod(status_wnd, MUIM_Notify, MUIA_transwnd_Skipped, TRUE, (ULONG)status_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)statuswnd_skip);
+			DoMethod(App, OM_ADDMEMBER, (ULONG)status_wnd);
 
 			statuswnd_set_head(NULL);
 		}
@@ -119,7 +119,7 @@ void statuswnd_set_title(char *title)
 	status_title = mystrdup(title);
 
 	if (!status_wnd) return;
-	set(status_wnd, MUIA_Window_Title,status_title);
+	set(status_wnd, MUIA_Window_Title, status_title);
 }
 
 /**************************************************************************
@@ -128,10 +128,10 @@ void statuswnd_set_title(char *title)
 void statuswnd_set_title_utf8(char *title)
 {
 	free(status_title);
-	status_title = utf8tostrcreate(title,user.config.default_codeset);
+	status_title = utf8tostrcreate(title, user.config.default_codeset);
 
 	if (!status_wnd) return;
-	set(status_wnd, MUIA_Window_Title,status_title);
+	set(status_wnd, MUIA_Window_Title, status_title);
 }
 
 /**************************************************************************
@@ -201,7 +201,7 @@ void statuswnd_mail_list_set_flags(int mno, int mflags)
 **************************************************************************/
 void statuswnd_mail_list_set_info(int mno, char *from, char *subject, char *date)
 {
-	DoMethod(status_wnd, MUIM_transwnd_InsertMailInfo, mno, from, subject, date);
+	DoMethod(status_wnd, MUIM_transwnd_InsertMailInfo, mno, (ULONG)from, (ULONG)subject, (ULONG)date);
 }
 
 /**************************************************************************

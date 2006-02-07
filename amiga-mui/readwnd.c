@@ -305,7 +305,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 				int size = atoi(end+1);
 				*end = 0;
 
-				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"fixedmail",3,font_buf,size);
+				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 3, (ULONG)font_buf, size);
 			}
 			free(font_buf);
 		}
@@ -318,9 +318,9 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 				int size = atoi(end+1);
 				*end = 0;
 
-				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",2,font_buf,size);
-				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",3,font_buf,size);
-				DoMethod(data->html_simplehtml,MUIM_SimpleHTML_FontSubst,"normal",4,font_buf,size);
+				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 2, (ULONG)font_buf, size);
+				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 3, (ULONG)font_buf, size);
+				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 4, (ULONG)font_buf, size);
 			}
 			free(font_buf);
 		}
@@ -329,7 +329,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 		html_mail = text2html(buf, buf_end - buf,
 													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 
-		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, html_mail, strlen(html_mail));
+		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, (ULONG)html_mail, strlen(html_mail));
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
@@ -458,11 +458,11 @@ static void insert_mail(struct Read_Data *data, struct mail_complete *mail)
 
 		if (icon)
 		{
-			DoMethod(data->attachments_group, OM_ADDMEMBER, group);
-			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, context_menu_trigger, data, mail, MUIV_TriggerValue);
-			DoMethod(icon, MUIM_Notify, MUIA_Icon_DoubleClick, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_open, data, mail);
-			DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, App, 5, MUIM_CallHook, &hook_standard, icon_selected, data, icon);
-			DoMethod(icon, MUIM_Notify, MUIA_Icon_DropPath, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, icon_drop, data, mail, icon);
+			DoMethod(data->attachments_group, OM_ADDMEMBER, (ULONG)group);
+			DoMethod(icon, MUIM_Notify, MUIA_ContextMenuTrigger, MUIV_EveryTime, (ULONG)App, 6, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)context_menu_trigger, (ULONG)data, (ULONG)mail, MUIV_TriggerValue);
+			DoMethod(icon, MUIM_Notify, MUIA_Icon_DoubleClick, TRUE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)icon_open, (ULONG)data, (ULONG)mail);
+			DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)icon_selected, (ULONG)data, (ULONG)icon);
+			DoMethod(icon, MUIM_Notify, MUIA_Icon_DropPath, MUIV_EveryTime, (ULONG)App, 6, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)icon_drop, (ULONG)data, (ULONG)mail, (ULONG)icon);
 		}
 	}
 
@@ -696,7 +696,7 @@ static void show_mail(struct Read_Data *data, struct mail_complete *m)
 		insert_text(data, m);
 	} else
 	{
-		DoMethod(data->attachments_group, MUIM_SetUDataOnce, m, MUIA_Selected, 1);
+		DoMethod(data->attachments_group, MUIM_SetUDataOnce, (ULONG)m, MUIA_Selected, 1);
 	}
 }
 
@@ -758,8 +758,8 @@ static void read_window_dispose(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
 	read_cleanup(data);
-	set(data->wnd,MUIA_Window_Open,FALSE);
-	DoMethod(App,OM_REMMEMBER,data->wnd);
+	set(data->wnd, MUIA_Window_Open, FALSE);
+	DoMethod(App, OM_REMMEMBER, (ULONG)data->wnd);
 	MUI_DisposeObject(data->wnd);
 
 	if (data->attachment_html_menu) MUI_DisposeObject(data->attachment_html_menu);
@@ -851,7 +851,7 @@ static void delete_button_pressed(struct Read_Data **pdata)
 		} else
 		{
 			set(data->wnd, MUIA_Window_Open, FALSE);
-			DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
+			DoMethod(App, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)read_window_dispose, (ULONG)data);
 		}
 	}
 }
@@ -890,7 +890,7 @@ static void move_button_pressed(struct Read_Data **pdata)
 			} else
 			{
 				set(data->wnd, MUIA_Window_Open, FALSE);
-				DoMethod(App, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
+				DoMethod(App, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)read_window_dispose, (ULONG)data);
 			}
 		} else
 		{
@@ -1048,7 +1048,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 			DisposeAllChilds(data->attachments_group);
 			data->attachments_last_selected = NULL;
 			insert_mail(data,data->mail);
-			DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+			DoMethod(data->attachments_group, OM_ADDMEMBER, (ULONG)HSpace(0));
 			DoMethod(data->attachments_group, MUIM_Group_ExitChange);
 
 			if (!dont_show)
@@ -1094,7 +1094,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 	DoMethod(data->attachments_group, MUIM_Group_InitChange);
 	DisposeAllChilds(data->attachments_group);
 	data->attachments_last_selected = NULL;
-	DoMethod(data->attachments_group, OM_ADDMEMBER, HSpace(0));
+	DoMethod(data->attachments_group, OM_ADDMEMBER, (ULONG)HSpace(0));
 	DoMethod(data->attachments_group, MUIM_Group_ExitChange);
 	set(App, MUIA_Application_Sleep, FALSE);
 
@@ -1307,38 +1307,38 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 					MUIA_DataTypes_VertScrollbar, datatype_vert_scrollbar,
 					TAG_DONE);
 
-			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, uri_clicked, data, MUIV_TriggerValue);
+			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)uri_clicked, (ULONG)data, MUIV_TriggerValue);
 
 			/* create notifies for toolbar buttons */
-    	DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PREV,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, prev_button_pressed, data);
-    	DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_NEXT,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, next_button_pressed, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_SAVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, save_button_pressed, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PRINT,   9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_MOVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, move_button_pressed, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_DELETE,  9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, delete_button_pressed, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_REPLY,   9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, reply_button_pressed, data);
-			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_FORWARD, 9, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, forward_button_pressed, data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PREV,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)prev_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_NEXT,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)next_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_SAVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)save_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PRINT,   9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_print, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_MOVE,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)move_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_DELETE,  9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_REPLY,   9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)reply_button_pressed, (ULONG)data);
+			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_FORWARD, 9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)forward_button_pressed, (ULONG)data);
 
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, read_window_dispose, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)read_window_dispose, (ULONG)data);
 
 			/* Menu notifies */
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, display_about);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, App, 2, MUIM_Application_AboutMUI, 0);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, App, 4, MUIM_CallHook, &hook_standard, show_raw, data);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_PRINT, App, 4, MUIM_CallHook, &hook_standard, menu_print, data);
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ALLHEADERS, App, 4, MUIM_CallHook, &hook_standard, show_all_headers, data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)display_about);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, (ULONG)App, 2, MUIM_Application_AboutMUI, 0);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, (ULONG)App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)show_raw, (ULONG)data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_PRINT, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_print, (ULONG)data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ALLHEADERS, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)show_all_headers, (ULONG)data);
 			data->settings_show_all_headers_menu = (Object*)DoMethod(read_menu, MUIM_FindUData, MENU_SETTINGS_SHOW_ALLHEADERS);
 
 			set(App, MUIA_Application_Sleep, TRUE);
 
 			if (read_window_display_mail(data,mail))
 			{
-				DoMethod(App,OM_ADDMEMBER,wnd);
-				set(wnd,MUIA_Window_Open,TRUE);
+				DoMethod(App, OM_ADDMEMBER, (ULONG)wnd);
+				set(wnd, MUIA_Window_Open, TRUE);
 				set(App, MUIA_Application_Sleep, FALSE);
 
-				SM_RETURN(num,"%d");
+				SM_RETURN(num, "%d");
 				return num;
 			}
 

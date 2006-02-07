@@ -44,6 +44,9 @@
 #ifdef MYDEBUG
 #ifdef __AMIGAOS4__
 #define D(x) {(IExec->DebugPrintF)("%s/%ld (%s): ", __FILE__, __LINE__, IExec->FindTask(NULL)->tc_Node.ln_Name);(x);};
+#elif __MORPHOS__
+
+#define D(x) {(kprintf)("%s/%ld (%s): ", __FILE__, __LINE__, FindTask(NULL)->tc_Node.ln_Name);(x);};
 #else
 #ifdef __SASC
 #include <dos.h>

@@ -178,7 +178,7 @@ void loop(void)
 	ULONG arexx_m = arexx_mask();
 	ULONG appicon_m = appicon_mask();
 
-	while((LONG) DoMethod(App, MUIM_Application_NewInput, &sigs) != MUIV_Application_ReturnID_Quit)
+	while((LONG) DoMethod(App, MUIM_Application_NewInput, (ULONG)&sigs) != MUIV_Application_ReturnID_Quit)
 	{
 		if (sigs)
 		{
@@ -224,7 +224,7 @@ int app_init(void)
 	End;
 
 	if (App)
-		DoMethod(App, MUIM_Notify, MUIA_Application_Iconified, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, app_change_iconified_state);
+		DoMethod(App, MUIM_Notify, MUIA_Application_Iconified, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)app_change_iconified_state);
 
 	SM_LEAVE;
 	return !!App;
@@ -248,7 +248,7 @@ void app_del(void)
 void app_quit(void)
 {
 	if (App)
-		DoMethod(App, MUIM_Application_PushMethod, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+		DoMethod(App, MUIM_Application_PushMethod, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 }
 
 /****************************************************************

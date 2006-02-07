@@ -215,9 +215,9 @@ long tcp_herrno(void)
 	long id;
 
 #if defined(_DCC) || defined(__MORPHOS__)
-   struct TagItem tags[2]={{0, 0}, {TAG_DONE, 0}};
-   tags[0].ti_Tag=(ULONG)SBTM_GETREF(SBTC_HERRNO);
-   tags[0].ti_Data=(ULONG)&id;
+	struct TagItem tags[2]={{0, 0}, {TAG_DONE, 0}};
+	tags[0].ti_Tag=(ULONG)SBTM_GETREF(SBTC_HERRNO);
+	tags[0].ti_Data=(ULONG)&id;
 
 	if(SocketBaseTagList(tags) != 0)
 #else

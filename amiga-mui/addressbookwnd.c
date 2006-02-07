@@ -198,7 +198,7 @@ static void person_group_window_close(struct Person_Data **pdata)
 	if (data->group_wnd)
 	{
 		set(data->group_wnd, MUIA_Window_Open, FALSE);
-		DoMethod(App, OM_REMMEMBER, data->group_wnd);
+		DoMethod(App, OM_REMMEMBER, (ULONG)data->group_wnd);
 		MUI_DisposeObject(data->group_wnd);
 		data->group_wnd = NULL;
 		data->group_wnd_list = NULL;
@@ -215,7 +215,7 @@ static void person_group_added(struct Person_Data **pdata)
 
 	char *new_group_name;
 
-	DoMethod(data->group_wnd_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &new_group_name);
+	DoMethod(data->group_wnd_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&new_group_name);
 	if (new_group_name)
 	{
 		int found = 0, i;
@@ -226,7 +226,7 @@ static void person_group_added(struct Person_Data **pdata)
 		{
 			char *group_name;
 
-			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, &group_name);
+			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, (ULONG)&group_name);
 			if (!mystrcmp(group_name,new_group_name))
 			{
 				found = 1;
@@ -234,7 +234,7 @@ static void person_group_added(struct Person_Data **pdata)
 			}
 		}
 
-		if (!found) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, new_group_name, MUIV_NList_Insert_Sorted);
+		if (!found) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, (ULONG)new_group_name, MUIV_NList_Insert_Sorted);
 	}
 
 	person_group_window_close(pdata);
@@ -294,19 +294,19 @@ static void person_add_group(struct Person_Data **pdata)
 			for (i=0;i<xget(group_list, MUIA_NList_Entries);i++)
 			{
 				struct addressbook_group *grp;
-				DoMethod(group_list, MUIM_NList_GetEntry,i,&grp);
+				DoMethod(group_list, MUIM_NList_GetEntry, i, (ULONG)&grp);
 				if (grp)
 				{
-					DoMethod(data->group_wnd_list, MUIM_NList_InsertSingle, grp->name, MUIV_NList_Insert_Sorted);
+					DoMethod(data->group_wnd_list, MUIM_NList_InsertSingle, (ULONG)grp->name, MUIV_NList_Insert_Sorted);
 				}
 			}
 
-			DoMethod(App, OM_ADDMEMBER, data->group_wnd);
+			DoMethod(App, OM_ADDMEMBER, (ULONG)data->group_wnd);
 
-			DoMethod(data->group_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_window_close, data);
-			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_window_close, data);
-			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_added, data);
-			DoMethod(data->group_wnd_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_group_added, data);
+			DoMethod(data->group_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_group_window_close, (ULONG)data);
+			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_group_window_close, (ULONG)data);
+			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_group_added, (ULONG)data);
+			DoMethod(data->group_wnd_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_group_added, (ULONG)data);
 		}
 	}
 
@@ -328,7 +328,7 @@ static void person_window_close(struct Person_Data **pdata)
 	person_group_window_close(pdata);
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
-	DoMethod(App,OM_REMMEMBER,data->wnd);
+	DoMethod(App, OM_REMMEMBER, (ULONG)data->wnd);
 	MUI_DisposeObject(data->wnd);
 	if (data->num < MAX_PERSON_OPEN) person_open[data->num] = 0;
 	free(data);
@@ -428,7 +428,7 @@ static void person_window_ok(struct Person_Data **pdata)
 		for (i=0;i<xget(data->person_group_list, MUIA_NList_Entries);i++)
 		{
 			char *group_name;
-			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, &group_name);
+			DoMethod(data->person_group_list, MUIM_NList_GetEntry, i, (ULONG)&group_name);
 			if (group_name) new_entry->group_array = array_add_string(new_entry->group_array,group_name);
 		}
 
@@ -443,11 +443,11 @@ static void person_window_ok(struct Person_Data **pdata)
 		if (data->person)
 		{
 			pos = MUIV_NList_GetPos_Start;
-			DoMethod(address_list, MUIM_NList_GetPos, data->person, &pos);
+			DoMethod(address_list, MUIM_NList_GetPos, (ULONG)data->person, (ULONG)&pos);
 			if (pos != MUIV_NList_GetPos_End) DoMethod(address_list, MUIM_NList_Remove, pos);
 		}
 
-		DoMethod(address_list, MUIM_NList_InsertSingle, new_entry, MUIV_NList_Insert_Sorted);
+		DoMethod(address_list, MUIM_NList_InsertSingle, (ULONG)new_entry, MUIV_NList_Insert_Sorted);
 
 /*		if (new_entry)
 		{
@@ -536,10 +536,10 @@ STATIC ASM SAVEDS ULONG person_pgp_strobj(REG(a0,struct Hook *h),REG(a2,Object *
 STATIC ASM SAVEDS VOID person_pgp_objstr(REG(a0,struct Hook *h),REG(a2,Object *list),REG(a1,Object *str))
 {
 	struct pgp_key *key;
-	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &key);
+	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&key);
 	if (key)
 	{
-		DoMethod(str, MUIM_SetAsString, MUIA_String_Contents, "0x%08lX", key->keyid);
+		DoMethod(str, MUIM_SetAsString, MUIA_String_Contents, (ULONG)"0x%08lX", key->keyid);
 	}
 }
 
@@ -952,7 +952,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 
 				while ((group_name = entry->group_array[i]))
 				{
-					DoMethod(data->person_group_list, MUIM_NList_InsertSingle, group_name, MUIV_NList_Insert_Sorted);
+					DoMethod(data->person_group_list, MUIM_NList_InsertSingle, (ULONG)group_name, MUIV_NList_Insert_Sorted);
 					i++;
 				}
 			}
@@ -961,22 +961,22 @@ static void person_window_open(struct addressbook_entry_new *entry)
 			if (!entry)
 			{
 				struct addressbook_group *group;
-				DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
-				if (group) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, group->name, MUIV_NList_Insert_Sorted);
+				DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&group);
+				if (group) DoMethod(data->person_group_list, MUIM_NList_InsertSingle, (ULONG)group->name, MUIV_NList_Insert_Sorted);
 			}
 
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
-			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_close, data);
-			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, person_window_ok, data);
-			DoMethod(add_to_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_add_group, data);
-			DoMethod(rem_from_group_button, MUIM_Notify, MUIA_Pressed, FALSE, person_group_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
-			DoMethod(download_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_download_portrait, data);
-			DoMethod(homepage_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 4, MUIM_CallHook, &hook_standard, person_homepage, data);
-			DoMethod(female_button, MUIM_Notify, MUIA_Selected, TRUE, male_button, 3, MUIM_Set, MUIA_Selected, FALSE);
-			DoMethod(male_button, MUIM_Notify, MUIA_Selected, TRUE, female_button, 3, MUIM_Set, MUIA_Selected, FALSE);
-			DoMethod(portrait_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, App, 4, MUIM_CallHook, &hook_standard, person_portrait, data);
-			DoMethod(pgp_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, pgp_popobject, 2, MUIM_Popstring_Close, TRUE);
-			DoMethod(App,OM_ADDMEMBER,wnd);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_window_close, (ULONG)data);
+			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_window_close, (ULONG)data);
+			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_window_ok, (ULONG)data);
+			DoMethod(add_to_group_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_add_group, (ULONG)data);
+			DoMethod(rem_from_group_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)person_group_list, 2, MUIM_NList_Remove, MUIV_NList_Remove_Active);
+			DoMethod(download_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_download_portrait, (ULONG)data);
+			DoMethod(homepage_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_homepage, (ULONG)data);
+			DoMethod(female_button, MUIM_Notify, MUIA_Selected, TRUE, (ULONG)male_button, 3, MUIM_Set, MUIA_Selected, FALSE);
+			DoMethod(male_button, MUIM_Notify, MUIA_Selected, TRUE, (ULONG)female_button, 3, MUIM_Set, MUIA_Selected, FALSE);
+			DoMethod(portrait_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)person_portrait, (ULONG)data);
+			DoMethod(pgp_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, (ULONG)pgp_popobject, 2, MUIM_Popstring_Close, TRUE);
+			DoMethod(App, OM_ADDMEMBER, (ULONG)wnd);
 
 			/* A person must be changed */
 			if (entry)
@@ -1058,7 +1058,7 @@ static void group_window_close(struct Group_Data **pdata)
 {
 	struct Group_Data *data = *pdata;
 	set(data->wnd,MUIA_Window_Open,FALSE);
-	DoMethod(App,OM_REMMEMBER,data->wnd);
+	DoMethod(App, OM_REMMEMBER, (ULONG)data->wnd);
 	MUI_DisposeObject(data->wnd);
 	if (data->num < MAX_GROUP_OPEN) group_open[data->num] = 0;
 	free(data);
@@ -1081,7 +1081,7 @@ static void group_window_ok(struct Group_Data **pdata)
 	group_entries = xget(group_list, MUIA_NList_Entries);
 	for (i=0;i<group_entries;i++)
 	{
-		DoMethod(group_list, MUIM_NList_GetEntry, i, &group);
+		DoMethod(group_list, MUIM_NList_GetEntry, i, (ULONG)&group);
 		if (group == data->group) continue;
 		if (!utf8stricmp(group->name,getutf8string(data->alias_string)))
 		{
@@ -1103,7 +1103,7 @@ static void group_window_ok(struct Group_Data **pdata)
 		if (data->group)
 		{
 			LONG pos = MUIV_NList_GetPos_Start;
-			DoMethod(group_list, MUIM_NList_GetPos, data->group, &pos);
+			DoMethod(group_list, MUIM_NList_GetPos, (ULONG)data->group, (ULONG)&pos);
 
 			if (pos != MUIV_NList_GetPos_End)
 			{
@@ -1111,7 +1111,7 @@ static void group_window_ok(struct Group_Data **pdata)
 				address_entries = xget(address_list, MUIA_NList_Entries);
 				for (i=0;i<address_entries;i++)
 				{
-					DoMethod(address_list, MUIM_NList_GetEntry, i, &address_entry);
+					DoMethod(address_list, MUIM_NList_GetEntry, i, (ULONG)&address_entry);
 					if (address_entry)
 					{
 						int idx = array_index(address_entry->group_array, data->group->name);
@@ -1128,7 +1128,7 @@ static void group_window_ok(struct Group_Data **pdata)
 			}
 		}
 
-		DoMethod(group_list, MUIM_NList_InsertSingle, new_group, MUIV_NList_Insert_Sorted);
+		DoMethod(group_list, MUIM_NList_InsertSingle, (ULONG)new_group, MUIV_NList_Insert_Sorted);
 
 		/* Activate the element inserted above */
 		set(group_list,MUIA_NList_Active,xget(group_list,MUIA_NList_InsertPosition));
@@ -1144,7 +1144,7 @@ static void group_window_ok(struct Group_Data **pdata)
 	main_build_addressbook();
 
 	if (needs_entry_refresh)
-		DoMethod(address_list,MUIM_NList_Redraw,MUIV_NList_Redraw_All);
+		DoMethod(address_list, MUIM_NList_Redraw, MUIV_NList_Redraw_All);
 }
 
 /******************************************************************
@@ -1209,10 +1209,10 @@ static void group_window_open(struct addressbook_group *group)
 			/* mark the window as opened */
 			group_open[num] = 1;
 
-			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, group_window_close, data);
-			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, group_window_close, data);
-			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 7, MUIM_Application_PushMethod, App, 4, MUIM_CallHook, &hook_standard, group_window_ok, data);
-			DoMethod(App,OM_ADDMEMBER,wnd);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)group_window_close, (ULONG)data);
+			DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)group_window_close, (ULONG)data);
+			DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 7, MUIM_Application_PushMethod, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)group_window_ok, (ULONG)data);
+			DoMethod(App, OM_ADDMEMBER, (ULONG)wnd);
 
 			/* A group must be changed */
 			if (group)
@@ -1245,7 +1245,7 @@ void addressbookwnd_store(void)
 	{
 		struct addressbook_group *grp;
 
-		DoMethod(group_list, MUIM_NList_GetEntry, i, &grp);
+		DoMethod(group_list, MUIM_NList_GetEntry, i, (ULONG)&grp);
 		addressbook_add_group_duplicate(grp);
 	}
 
@@ -1285,7 +1285,7 @@ static void addressbookwnd_refresh_persons(void)
 {
 	struct addressbook_group *group;
 
-	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&group);
 
 	if (xget(show_member_check,MUIA_Selected) && group)
 		set(address_list,MUIA_AddressEntryList_GroupName,group->name);
@@ -1299,7 +1299,7 @@ static void addressbookwnd_rem_group(void)
 {
 	struct addressbook_group *group;
 
-	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&group);
 
 	if (group)
 	{
@@ -1310,7 +1310,7 @@ static void addressbookwnd_rem_group(void)
 		for (i=0;i<entries;i++)
 		{
 			struct addressbook_entry_new *entry;
-			DoMethod(address_list,MUIM_NList_GetEntry, i, &entry);
+			DoMethod(address_list,MUIM_NList_GetEntry, i, (ULONG)&entry);
 			if (entry && array_contains(entry->group_array,group->name))
 				num++;
 		}
@@ -1324,7 +1324,7 @@ static void addressbookwnd_rem_group(void)
 			for (i=0;i<entries;i++)
 			{
 				struct addressbook_entry_new *entry;
-				DoMethod(address_list,MUIM_NList_GetEntry, i, &entry);
+				DoMethod(address_list,MUIM_NList_GetEntry, i, (ULONG)&entry);
 				if (entry)
 				{
 					int idx = array_index(entry->group_array,group->name);
@@ -1332,7 +1332,7 @@ static void addressbookwnd_rem_group(void)
 						array_remove_idx(entry->group_array,idx);
 				}
 			}
-			DoMethod(address_list,MUIM_NList_Redraw,MUIV_NList_Redraw_All);
+			DoMethod(address_list, MUIM_NList_Redraw,MUIV_NList_Redraw_All);
 		}
 
 		DoMethod(group_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
@@ -1351,7 +1351,7 @@ static void addressbookwnd_edit_group(void)
 {
 	struct addressbook_group *group;
 
-	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &group);
+	DoMethod(group_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&group);
 
 	if (group)
 		group_window_open(group);
@@ -1364,7 +1364,7 @@ static void addressbookwnd_edit_person(void)
 {
 	struct addressbook_entry_new *entry;
 
-	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	DoMethod(address_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
 	if (entry) person_window_open(entry);
 }
 
@@ -1472,23 +1472,23 @@ static void addressbookwnd_init(void)
 		End;
 
 	if (!address_wnd) return;
-	DoMethod(App,OM_ADDMEMBER,address_wnd);
-	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_save_pressed);
-	DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_MenuAction, 1, App, 6, MUIM_Application_PushMethod, App, 3, MUIM_CallHook, &hook_standard, callback_import_addressbook);
+	DoMethod(App, OM_ADDMEMBER, (ULONG)address_wnd);
+	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+	DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_save_pressed);
+	DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)address_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+	DoMethod(address_wnd, MUIM_Notify, MUIA_Window_MenuAction, 1, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_addressbook);
 
-	DoMethod(add_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_group);
-	DoMethod(edit_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
-	DoMethod(rem_group_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_rem_group);
-	DoMethod(group_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_group);
-	DoMethod(group_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard,  addressbookwnd_refresh_persons);
+	DoMethod(add_group_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_add_group);
+	DoMethod(edit_group_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_edit_group);
+	DoMethod(rem_group_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_rem_group);
+	DoMethod(group_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_edit_group);
+	DoMethod(group_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_refresh_persons);
 
-	DoMethod(show_member_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_refresh_persons);
-	DoMethod(add_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_add_person);
-	DoMethod(edit_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_person);
-	DoMethod(rem_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_CallHook, &hook_standard,  addressbookwnd_remove_person);
-	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, App, 3, MUIM_CallHook, &hook_standard, addressbookwnd_edit_person);
+	DoMethod(show_member_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_refresh_persons);
+	DoMethod(add_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_add_person);
+	DoMethod(edit_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_edit_person);
+	DoMethod(rem_contact_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_remove_person);
+	DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressbookwnd_edit_person);
 }
 
 /******************************************************************
@@ -1532,7 +1532,7 @@ int addressbookwnd_set_active_alias(char *alias)
 		{
 			struct addressbook_entry_new *entry;
 
-			DoMethod(address_list, MUIM_NList_GetEntry, i, &entry);
+			DoMethod(address_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 
 			if (!mystricmp(alias,entry->alias)) 
 			{

@@ -449,9 +449,9 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 		group = (Object*)xget(obj, MUIA_Parent);
 
 		DoMethod(group, MUIM_Group_InitChange);
-		DoMethod(group, OM_REMMEMBER, obj);
+		DoMethod(group, OM_REMMEMBER, (ULONG)obj);
 		data->entries = entries;
-		DoMethod(group, OM_ADDMEMBER, obj);
+		DoMethod(group, OM_ADDMEMBER, (ULONG)obj);
 		DoMethod(group, MUIM_Group_ExitChange);
 	} else
 	{
@@ -825,7 +825,7 @@ STATIC ULONG MailInfoArea_New(struct IClass *cl, Object *obj, struct opSet *msg)
 	data->mv_handler.ehn_Class    = cl;
 	data->mv_handler.ehn_Events   = IDCMP_MOUSEMOVE;
 
-	DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, obj, 1, MUIM_MailInfo_CompactChanged);
+	DoMethod(switch_button, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)obj, 1, MUIM_MailInfo_CompactChanged);
 
 	return (ULONG)obj;
 }
@@ -929,7 +929,7 @@ STATIC ULONG MailInfoArea_Show(struct IClass *cl, Object *obj, Msg msg)
 
 	rc = DoSuperMethodA(cl,obj,(Msg)msg);
 
-	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mb_handler);
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, (ULONG)&data->mb_handler);
 
 	return rc;
 }
@@ -940,7 +940,7 @@ STATIC ULONG MailInfoArea_Show(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailInfoArea_Data *data = (struct MailInfoArea_Data*)INST_DATA(cl,obj);
-	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mb_handler);
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mb_handler);
 	return DoSuperMethodA(cl,obj,(Msg)msg);;
 }
 
@@ -1007,7 +1007,7 @@ STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 				if (f && t && f->clickable)
 				{
-					DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mv_handler);
+					DoMethod(_win(obj), MUIM_Window_AddEventHandler, (ULONG)&data->mv_handler);
 
 					data->selected_field = f;
 					data->selected_text = t;
@@ -1029,7 +1029,7 @@ STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 					/* TODO: Instead calling this directly, this should issue a notify */
 					if (t && t==data->selected_text) callback_write_mail_to_str(t->link,NULL);
 
-					DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mv_handler);
+					DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mv_handler);
 
 					data->redraw_text = data->selected_text; /* for update operation */
 
@@ -1094,9 +1094,9 @@ STATIC ULONG MailInfo_CompactChanged(struct IClass *cl, Object *obj, Msg msg)
 		group = (Object*)xget(obj, MUIA_Parent);
 
 		DoMethod(group, MUIM_Group_InitChange);
-		DoMethod(group, OM_REMMEMBER, obj);
+		DoMethod(group, OM_REMMEMBER, (ULONG)obj);
 		data->compact = compact;
-		DoMethod(group, OM_ADDMEMBER, obj);
+		DoMethod(group, OM_ADDMEMBER, (ULONG)obj);
 		DoMethod(group, MUIM_Group_ExitChange);		
 	}
 	return 0;

@@ -210,7 +210,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->sign_array_default = sign_array_default;
 	data->sign_array_utf8count = sign_array_utf8count;
 
-	DoMethod(data->sign_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, data->obj, 3,
+	DoMethod(data->sign_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)data->obj, 3,
 		MUIM_Set, MUIA_SignatureCycle_Active, MUIV_TriggerValue);
 
 	SignatureCycle_Set(cl,obj,msg,1);
@@ -303,7 +303,7 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 	{
 		/* free the cycle stuff */
 		DoMethod(data->obj, MUIM_Group_InitChange);
-		DoMethod(data->obj, OM_REMMEMBER, data->sign_cycle);
+		DoMethod(data->obj, OM_REMMEMBER, (ULONG)data->sign_cycle);
 		MUI_DisposeObject(data->sign_cycle);
 		data->sign_cycle = NULL;
 		if (data->sign_array)
@@ -373,8 +373,8 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 
 		if (data->sign_cycle)
 		{
-			DoMethod(data->obj, OM_ADDMEMBER, data->sign_cycle);
-			DoMethod(data->sign_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, data->obj, 3,
+			DoMethod(data->obj, OM_ADDMEMBER, (ULONG)data->sign_cycle);
+			DoMethod(data->sign_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)data->obj, 3,
 				MUIM_Set, MUIA_SignatureCycle_Active, MUIV_TriggerValue);
 			set(data->sign_cycle, MUIA_Cycle_Active, val);
 		}

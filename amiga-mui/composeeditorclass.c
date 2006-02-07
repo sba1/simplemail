@@ -157,21 +157,21 @@ STATIC ULONG ComposeEditor_DragDrop(struct IClass *cl, Object *obj, struct MUIP_
 	{
 		struct addressbook_entry_new *entry;
 
-		DoMethod(msg->obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+		DoMethod(msg->obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
 
 		if (entry && entry->email_array && entry->email_array[0])
 		{
-			DoMethod(obj, MUIM_TextEditor_InsertText, entry->email_array[0], MUIV_TextEditor_InsertText_Cursor);
+			DoMethod(obj, MUIM_TextEditor_InsertText, (ULONG)entry->email_array[0], MUIV_TextEditor_InsertText_Cursor);
 		}
 	} else if (OCLASS(msg->obj) == CL_MailTreelist->mcc_Class)
 	{
-		struct mail_info *mail = (struct mail_info*)xget(msg->obj,MUIA_MailTreelist_Active);
+		struct mail_info *mail = (struct mail_info*)xget(msg->obj, MUIA_MailTreelist_Active);
 		if (mail)
 		{
 			char *from = mail_get_from_address(mail);
 			if (from)
 			{
-				DoMethod(obj,MUIM_TextEditor_InsertText,from,MUIV_TextEditor_InsertText_Cursor);
+				DoMethod(obj, MUIM_TextEditor_InsertText, (ULONG)from, MUIV_TextEditor_InsertText_Cursor);
 				free(from);
 			}
 		}

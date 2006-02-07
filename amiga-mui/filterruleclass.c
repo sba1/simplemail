@@ -129,16 +129,16 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 	{
 		data->object1 = MakeCycle(NULL,status_labels);
 		data->object2 = PictureButtonObject, End;
-		DoMethod(data->object1, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, status_cycle_active, data->object1, data->object2);
+		DoMethod(data->object1, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)status_cycle_active, (ULONG)data->object1, (ULONG)data->object2);
 	}
 
-	if (data->object1) DoMethod(data->group,OM_ADDMEMBER,data->object1);
-	if (data->object2) DoMethod(data->group,OM_ADDMEMBER,data->object2);
-	if (data->object3) DoMethod(data->group,OM_ADDMEMBER,data->object3);
-	if (data->object4) DoMethod(data->group,OM_ADDMEMBER,data->object4);
+	if (data->object1) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object1);
+	if (data->object2) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object2);
+	if (data->object3) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object3);
+	if (data->object4) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object4);
 
 	if (!data->object1 && !data->object2 && !data->object3 && !data->object4)
-		DoMethod(data->group,OM_ADDMEMBER,HVSpace);
+		DoMethod(data->group, OM_ADDMEMBER, (ULONG)HVSpace);
 
 	DoMethod(data->group, MUIM_Group_ExitChange);
 	return TRUE;
@@ -206,7 +206,7 @@ STATIC ULONG FilterRule_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		FilterRule_SetRule(data,(struct filter_rule*)ti->ti_Data);
 	} else FilterRule_CreateObjects(data);
 
-	DoMethod(data->type_cycle,MUIM_Notify,MUIA_Cycle_Active,MUIV_EveryTime, obj, 4, MUIM_CallHook, &hook_standard, FilterRule_TypeCycleActive, data);
+	DoMethod(data->type_cycle, MUIM_Notify,MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)obj, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_TypeCycleActive, (ULONG)data);
 
 	return (ULONG)obj;
 }
@@ -261,11 +261,11 @@ STATIC BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
-		case	OM_NEW:				return FilterRule_New(cl,obj,(struct opSet*)msg);
-		case	OM_DISPOSE:		return FilterRule_Dispose(cl,obj,msg);
-		case	OM_SET:				return FilterRule_Set(cl,obj,(struct opSet*)msg);
-		case	OM_GET:				return FilterRule_Get(cl,obj,(struct opGet*)msg);
-		default: return DoSuperMethodA(cl,obj,msg);
+		case OM_NEW:     return FilterRule_New(cl,obj,(struct opSet*)msg);
+		case OM_DISPOSE: return FilterRule_Dispose(cl,obj,msg);
+		case OM_SET:     return FilterRule_Set(cl,obj,(struct opSet*)msg);
+		case OM_GET:     return FilterRule_Get(cl,obj,(struct opGet*)msg);
+		default:         return DoSuperMethodA(cl,obj,msg);
 	}
 }
 

@@ -314,7 +314,7 @@ STATIC ULONG AddressEntryList_Refresh(struct IClass *cl, Object *obj, struct MUI
 				if ((node->entry = addressbook_duplicate_entry_new(entry)))
 					list_insert_tail(&data->unvisible_list,&node->node);
 			}
-		} else DoMethod(obj, MUIM_NList_InsertSingle, entry, MUIV_NList_Insert_Sorted);
+		} else DoMethod(obj, MUIM_NList_InsertSingle, (ULONG)entry, MUIV_NList_Insert_Sorted);
 		entry = addressbook_next_entry(entry);
 	}
 	set(obj, MUIA_NList_Quiet, FALSE);
@@ -342,7 +342,7 @@ STATIC ULONG AddressEntryList_Store(struct IClass *cl, Object *obj, Msg msg)
 	{
 		struct addressbook_entry_new *entry;
 
-		DoMethod(obj, MUIM_NList_GetEntry, i, &entry);
+		DoMethod(obj, MUIM_NList_GetEntry, i, (ULONG)&entry);
 		addressbook_add_entry_duplicate(entry);
 	}
 	return 0;

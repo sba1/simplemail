@@ -140,9 +140,9 @@ STATIC void transwnd_set_mail_flags(void **args)
 	for (;;)
 	{
 		struct mail_entry *entry;
-		DoMethod(data->mail_list, MUIM_NList_NextSelected, &pos);
+		DoMethod(data->mail_list, MUIM_NList_NextSelected, (ULONG)&pos);
 		if (pos == MUIV_NList_NextSelected_End) break;
-		DoMethod(data->mail_list, MUIM_NList_GetEntry, pos, &entry);
+		DoMethod(data->mail_list, MUIM_NList_GetEntry, pos, (ULONG)&entry);
 		entry->flags = flags;
 		DoMethod(data->mail_list,MUIM_NList_Redraw,pos);
 	}
@@ -229,16 +229,16 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		set(skip, MUIA_Weight, 0);
 		set(abort, MUIA_Weight, 0);
 
-		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
-		DoMethod(skip, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Skipped, TRUE);
-		DoMethod(start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, (1<<0), &data->start_pressed);
-		DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
-		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, 0);
-		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD);
-		DoMethod(del, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DELETE);
-		DoMethod(downdel, MUIM_Notify, MUIA_Pressed, FALSE, App, 5, MUIM_CallHook, &hook_standard, transwnd_set_mail_flags, data, MAILF_DOWNLOAD|MAILF_DELETE);
-		DoMethod(all,MUIM_Notify,MUIA_Pressed, FALSE, mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_On, NULL);
-		DoMethod(none,MUIM_Notify,MUIA_Pressed, FALSE, mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_Off, NULL);
+		DoMethod(abort, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+		DoMethod(skip, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)obj, 3, MUIM_Set, MUIA_transwnd_Skipped, TRUE);
+		DoMethod(start, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_WriteLong, (1<<0), (ULONG)&data->start_pressed);
+		DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+		DoMethod(ignore, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)transwnd_set_mail_flags, (ULONG)data, 0);
+		DoMethod(down, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)transwnd_set_mail_flags, (ULONG)data, MAILF_DOWNLOAD);
+		DoMethod(del, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)transwnd_set_mail_flags, (ULONG)data, MAILF_DELETE);
+		DoMethod(downdel, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)transwnd_set_mail_flags, (ULONG)data, MAILF_DOWNLOAD|MAILF_DELETE);
+		DoMethod(all,MUIM_Notify,MUIA_Pressed, FALSE, (ULONG)mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_On, NULL);
+		DoMethod(none,MUIM_Notify,MUIA_Pressed, FALSE, (ULONG)mail_list, 4, MUIM_NList_Select, MUIV_NList_Select_All, MUIV_NList_Select_Off, NULL);
 	}
 
 	return((ULONG) obj);
@@ -390,12 +390,12 @@ STATIC ULONG transwnd_InsertMailSize (struct IClass *cl, Object *obj, struct MUI
 	if (!data->mail_group_shown)
 	{
 		DoMethod(data->mail_list, MUIM_NList_UseImage, NULL, MUIV_NList_UseImage_All, 0);
-		DoMethod(data->mail_list, MUIM_NList_UseImage, data->status_download, 1, 0);
-		DoMethod(data->mail_list, MUIM_NList_UseImage, data->status_trashcan, 2, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, (ULONG)data->status_download, 1, 0);
+		DoMethod(data->mail_list, MUIM_NList_UseImage, (ULONG)data->status_trashcan, 2, 0);
 		set(data->mail_group, MUIA_ShowMe, TRUE);
 		data->mail_group_shown = 1;
 	}
-	DoMethod(data->mail_list, MUIM_NList_InsertSingle, &ent,  MUIV_NList_Insert_Bottom);
+	DoMethod(data->mail_list, MUIM_NList_InsertSingle, (ULONG)&ent,  MUIV_NList_Insert_Bottom);
 
 	return 0;
 }
@@ -407,7 +407,7 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;
-		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
+		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 		if (entry->no == msg->Num)
 		{
 			char *utf8phrase, *utf8subject, *phrase, *addr;
@@ -428,7 +428,7 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 
 			if (msg->Subject)
 			{
-				parse_text_string(msg->Subject, &utf8subject);
+				parse_text_string(msg->Subject, (utf8 **)&utf8subject);
 				entry->subject = utf8tostrcreate(utf8subject,user.config.default_codeset);
 				free(utf8subject);
 			}
@@ -448,7 +448,7 @@ STATIC ULONG transwnd_GetMailFlags (struct IClass *cl, Object *obj, struct MUIP_
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;
-		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
+		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 		if (entry->no == msg->Num) return (ULONG)entry->flags;
 	}
 	return (ULONG)-1;
@@ -461,7 +461,7 @@ STATIC ULONG transwnd_SetMailFlags (struct IClass *cl, Object *obj, struct MUIP_
 	for (i=0;i<xget(data->mail_list, MUIA_NList_Entries);i++)
 	{
 		struct mail_entry *entry;
-		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, &entry);
+		DoMethod(data->mail_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 		if (entry->no == msg->Num)
 		{
 			entry->flags = msg->Flags;
@@ -490,10 +490,10 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	DoMethod(obj, MUIM_KillNotify, MUIA_Window_CloseRequest);
 
 	/* Set the new notifies */
-	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, App, 3, MUIM_WriteLong, (1<<0), &start);
-	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	DoMethod(data->start, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_WriteLong, (1<<0), (ULONG)&start);
+	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
+	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
 	loop();
 
@@ -504,8 +504,8 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	DoMethod(data->start, MUIM_KillNotify, MUIA_Pressed);
 
 	/* Restore the original notifies */
-	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
-	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+	DoMethod(obj, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
+	DoMethod(data->abort, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)obj, 3, MUIM_Set, MUIA_transwnd_Aborted, TRUE);
 
 	if (start && xget(data->ignore_check,MUIA_Selected))
 		start |= (1<<1);

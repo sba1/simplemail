@@ -63,7 +63,7 @@ static void error_select(void)
 
 	if (node)
 	{
-		DoMethod(text_list, MUIM_NList_InsertSingleWrap, node->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
+		DoMethod(text_list, MUIM_NList_InsertSingleWrap, (ULONG)node->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
 	}
 
 	set(text_list, MUIA_NList_Quiet, FALSE);
@@ -125,13 +125,13 @@ static void init_error(void)
 
 	if (error_wnd)
 	{
-		DoMethod(App, OM_ADDMEMBER, error_wnd);
-		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, delete_button, 3, MUIM_CallHook, &hook_standard, delete_messages);
-		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(previous_button, MUIM_Notify, MUIA_Pressed, FALSE, error_numeric, 2, MUIM_Numeric_Decrease, 1);
-		DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, error_numeric, 2, MUIM_Numeric_Increase, 1);
-		DoMethod(error_numeric, MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, error_numeric, 3, MUIM_CallHook, &hook_standard, error_select);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)error_wnd);
+		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)delete_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_messages);
+		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(previous_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_numeric, 2, MUIM_Numeric_Decrease, 1);
+		DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_numeric, 2, MUIM_Numeric_Increase, 1);
+		DoMethod(error_numeric, MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, (ULONG)error_numeric, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
 	}
 }
 
@@ -149,7 +149,7 @@ void error_add_message(char *msg)
 
 				set(text_list, MUIA_NList_Quiet, TRUE);
 				DoMethod(text_list, MUIM_NList_Clear);
-				DoMethod(text_list, MUIM_NList_InsertSingleWrap, enode->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
+				DoMethod(text_list, MUIM_NList_InsertSingleWrap, (ULONG)enode->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
 				set(text_list, MUIA_NList_Quiet, FALSE);
 
 				list_insert_tail(&error_list, &enode->node);

@@ -158,7 +158,7 @@ static void imap_folders_submit_pressed(void)
 		for (i=0;i<xget(imap_folders_list,MUIA_NList_Entries);i++)
 		{
 			struct imap_folder_entry *entry;
-			DoMethod(imap_folders_list, MUIM_NList_GetEntry, i, &entry);
+			DoMethod(imap_folders_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 			if (entry && entry->subscribed)
 				string_list_insert_tail(&list,entry->name);
 		}
@@ -170,7 +170,7 @@ static void imap_folders_submit_pressed(void)
 static void imap_folders_subscribe_pressed(void)
 {
 	struct imap_folder_entry *entry;
-	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
 	if (entry)
 	{
 		entry->subscribed = 1;
@@ -181,7 +181,7 @@ static void imap_folders_subscribe_pressed(void)
 static void imap_folders_unsubscribe_pressed(void)
 {
 	struct imap_folder_entry *entry;
-	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &entry);
+	DoMethod(imap_folders_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
 	if (entry)
 	{
 		entry->subscribed = 0;
@@ -254,7 +254,7 @@ void folder_refresh_signature_cycle(void)
 	if (folder_wnd)
 	{
 		DoMethod(compose_mail_properties_group, MUIM_Group_InitChange);
-		DoMethod(defsign_cycle, MUIM_SignatureCycle_Refresh, &user.config.signature_list);
+		DoMethod(defsign_cycle, MUIM_SignatureCycle_Refresh, (ULONG)&user.config.signature_list);
 		DoMethod(compose_mail_properties_group, MUIM_Group_ExitChange);
 	}
 }
@@ -321,18 +321,18 @@ static void init_folder(void)
 					End,
 
 				Child, type_label = MakeLabel(_("_Type")),
-				Child, type_cycle = MakeCycle(_("_Type"),type_array),
+				Child, type_cycle = MakeCycle(_("_Type"), type_array),
 
 				Child, prim_label = MakeLabel(_("_Primary sort")),
 				Child, prim_group = HGroup,
-					Child, prim_cycle = MakeCycle(_("_Primary sort"),prim_sort_array),
+					Child, prim_cycle = MakeCycle(_("_Primary sort"), prim_sort_array),
 					Child, prim_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, prim_reverse_label = MakeLabel(_("Reverse")),
 					End,
 
 				Child, second_label = MakeLabel(_("_Secondary sort")),
 				Child, second_group = HGroup,
-					Child, second_cycle = MakeCycle(_("_Secondary sort"),second_sort_array),
+					Child, second_cycle = MakeCycle(_("_Secondary sort"), second_sort_array),
 					Child, second_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, second_reverse_label = MakeLabel(_("Reverse")),
 					End,
@@ -391,16 +391,16 @@ static void init_folder(void)
 
 	if (folder_wnd)
 	{
-		DoMethod(App, OM_ADDMEMBER, folder_wnd);
-		DoMethod(folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, folder_ok);
-		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)folder_wnd);
+		DoMethod(folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)folder_ok);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		group_mode = 0;
 
-		DoMethod(imap_folders_check, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_check_pressed);
-		DoMethod(imap_folders_submit, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_submit_pressed);
-		DoMethod(imap_folders_subscribe, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_subscribe_pressed);
-		DoMethod(imap_folders_unsubscribe, MUIM_Notify, MUIA_Pressed, FALSE, folder_wnd, 3, MUIM_CallHook, &hook_standard, imap_folders_unsubscribe_pressed);
+		DoMethod(imap_folders_check, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)imap_folders_check_pressed);
+		DoMethod(imap_folders_submit, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)imap_folders_submit_pressed);
+		DoMethod(imap_folders_subscribe, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)imap_folders_subscribe_pressed);
+		DoMethod(imap_folders_unsubscribe, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)imap_folders_unsubscribe_pressed);
 		imap_mode = 1;
 	}
 }
@@ -435,18 +435,18 @@ void folder_edit(struct folder *f)
 		{
 			DoMethod(folder_properties_group,MUIM_Group_InitChange);
 
-			DoMethod(folder_properties_group, OM_REMMEMBER, path_label);
-			DoMethod(folder_properties_group, OM_REMMEMBER, path_string);
-			DoMethod(folder_properties_group, OM_REMMEMBER, type_label);
-			DoMethod(folder_properties_group, OM_REMMEMBER, type_cycle);
-			DoMethod(folder_properties_group, OM_REMMEMBER, prim_label);
-			DoMethod(folder_properties_group, OM_REMMEMBER, prim_group);
-			DoMethod(folder_properties_group, OM_REMMEMBER, second_label);
-			DoMethod(folder_properties_group, OM_REMMEMBER, second_group);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)path_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)path_string);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)type_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)type_cycle);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)prim_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)prim_group);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)second_label);
+			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)second_group);
 			if (imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
 				imap_mode = 0;
 			}
 			group_mode = 1;
@@ -460,62 +460,62 @@ void folder_edit(struct folder *f)
 		DoMethod(folder_properties_group,MUIM_Group_InitChange);
 		if (group_mode)
 		{
-			DoMethod(folder_properties_group, OM_ADDMEMBER, path_label);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, path_string);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)path_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)path_string);
 
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_ADDMEMBER, server_label);
-				DoMethod(folder_properties_group, OM_ADDMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
 				imap_mode = 0;
 			}
 
-			DoMethod(folder_properties_group, OM_ADDMEMBER, type_label);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, type_cycle);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, prim_label);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, prim_group);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, second_label);
-			DoMethod(folder_properties_group, OM_ADDMEMBER, second_group);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)type_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)type_cycle);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)prim_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)prim_group);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)second_label);
+			DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)second_group);
 			group_mode = 0;
 		} else
 		{
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_ADDMEMBER, server_label);
-				DoMethod(folder_properties_group, OM_ADDMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
 				imap_mode = 0;
 			}
 		}
 		if (imap_mode)
 		{
 			DoMethod(folder_properties_group, MUIM_Group_Sort,
-			         name_label, name_string,
-			         path_label, path_string,
-			         server_label, server_string,
-			         type_label, type_cycle,
-			         prim_label, prim_group,
-			         second_label, second_group,
+			         (ULONG)name_label, (ULONG)name_string,
+			         (ULONG)path_label, (ULONG)path_string,
+			         (ULONG)server_label, (ULONG)server_string,
+			         (ULONG)type_label, (ULONG)type_cycle,
+			         (ULONG)prim_label, (ULONG)prim_group,
+			         (ULONG)second_label, (ULONG)second_group,
 			         NULL);
 		} else
 		{
 			DoMethod(folder_properties_group, MUIM_Group_Sort,
-			         name_label, name_string,
-			         path_label, path_string,
-			         type_label, type_cycle,
-			         prim_label, prim_group, 
-			         second_label, second_group,
+			         (ULONG)name_label, (ULONG)name_string,
+			         (ULONG)path_label, (ULONG)path_string,
+			         (ULONG)type_label, (ULONG)type_cycle,
+			         (ULONG)prim_label, (ULONG)prim_group,
+			         (ULONG)second_label, (ULONG)second_group,
 			         NULL);
 		}
 		DoMethod(folder_properties_group,MUIM_Group_ExitChange);
@@ -547,7 +547,7 @@ void folder_edit(struct folder *f)
 			entry.name = node->string;
 			entry.subscribed = !!string_list_find(&f->imap_sub_folder_list,node->string);
 
-			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, &entry, MUIV_NList_Insert_Bottom);
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
 			node = (struct string_node*)node_next(&node->node);
 		}
 	}
@@ -569,7 +569,7 @@ void folder_fill_lists(struct list *list, struct list *sub_folder_list)
 			entry.name = node->string;
 			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
 
-			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, &entry, MUIV_NList_Insert_Bottom);
+			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
 			node = (struct string_node*)node_next(&node->node);
 		}
 	}
@@ -627,10 +627,10 @@ void init_new_folder(void)
 
 	if (new_folder_wnd)
 	{
-		DoMethod(App, OM_ADDMEMBER, new_folder_wnd);
-		DoMethod(new_folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(create_button, MUIM_Notify, MUIA_Pressed, FALSE, new_folder_wnd, 3, MUIM_CallHook, &hook_standard, new_folder_create);
-		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)new_folder_wnd);
+		DoMethod(new_folder_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(create_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)new_folder_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)new_folder_create);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)new_folder_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 	}
 
 }

@@ -164,7 +164,7 @@ STATIC ULONG AttachmentList_DropType(struct IClass *cl,Object *obj,struct MUIP_N
 	ULONG active = xget(obj, MUIA_NList_Active);
 	struct MUI_NListtree_TreeNode *treenode;
 
-	DoMethod(obj, MUIM_NList_GetEntry, *msg->pos, &treenode);
+	DoMethod(obj, MUIM_NList_GetEntry, *msg->pos, (ULONG)&treenode);
 
 	if (treenode)
 	{

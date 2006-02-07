@@ -106,7 +106,7 @@ STATIC ASM SAVEDS VOID account_objstr(REG(a0,struct Hook *h), REG(a2,Object *lis
 {
 	struct AccountPop_Data *data = (struct AccountPop_Data*)h->h_Data;
 	struct account *ac;
-	DoMethod(list,MUIM_NList_GetEntry,MUIV_NList_GetEntry_Active,&ac);
+	DoMethod(list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&ac);
 	if ((LONG)ac == -1) ac = NULL;
 	set(data->obj,MUIA_AccountPop_Account,ac);
 }
@@ -114,7 +114,7 @@ STATIC ASM SAVEDS VOID account_objstr(REG(a0,struct Hook *h), REG(a2,Object *lis
 STATIC ASM SAVEDS LONG account_strobj(REG(a0,struct Hook *h), REG(a2,Object *list), REG(a1,Object *str))
 {
 	struct AccountPop_Data *data = (struct AccountPop_Data*)h->h_Data;
-	DoMethod(data->obj,MUIM_AccountPop_Refresh);
+	DoMethod(data->obj, MUIM_AccountPop_Refresh);
 	return 1;
 }
 
@@ -221,8 +221,8 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	init_hook_with_data(&data->objstr_hook,(HOOKFUNC)account_objstr,data);
 	init_hook_with_data(&data->strobj_hook,(HOOKFUNC)account_strobj,data);
 
-	DoMethod(string, MUIM_Notify, MUIA_Pressed, FALSE, obj, 1, MUIM_Popstring_Open);
-	DoMethod(list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, obj, 2, MUIM_Popstring_Close, 1);
+	DoMethod(string, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)obj, 1, MUIM_Popstring_Open);
+	DoMethod(list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, (ULONG)obj, 2, MUIM_Popstring_Close, 1);
 
 	SetAttrs(list,
 						MUIA_NList_ConstructHook2, &data->construct_hook,
@@ -260,16 +260,16 @@ STATIC ULONG AccountPop_Refresh(struct IClass *cl, Object *obj, Msg msg)
 	struct AccountPop_Data *data = (struct AccountPop_Data*)INST_DATA(cl,obj);
 	struct account *account = (struct account*)list_first(&user.config.account_list);
 
-	DoMethod(data->list,MUIM_NList_Clear);
+	DoMethod(data->list, MUIM_NList_Clear);
 
 	if (data->has_default_entry)
-		DoMethod(data->list,MUIM_NList_InsertSingle,-1,MUIV_NList_Insert_Bottom); /* special value */
+		DoMethod(data->list, MUIM_NList_InsertSingle, -1, MUIV_NList_Insert_Bottom); /* special value */
 
 	while (account)
 	{
 		if (account->smtp->name && *account->smtp->name && account->email)
 		{
-			DoMethod(data->list,MUIM_NList_InsertSingle,account,MUIV_NList_Insert_Bottom);
+			DoMethod(data->list, MUIM_NList_InsertSingle, (ULONG)account, MUIV_NList_Insert_Bottom);
 		}
 		account = (struct account*)node_next(&account->node);
 	}

@@ -184,16 +184,16 @@ STATIC ULONG AddressGroupList_DragDrop(struct IClass *cl,Object *obj,struct MUIP
 	
 	if (!(address_list = msg->obj)) return 0;
 
-	DoMethod(obj,MUIM_NList_GetEntry, xget(obj,MUIA_NList_DropMark),&group);
+	DoMethod(obj, MUIM_NList_GetEntry, xget(obj, MUIA_NList_DropMark), (ULONG)&group);
 	if (!group) return 0;
 
 	pos = MUIV_NList_NextSelected_Start;
 	while (1)
 	{
-		DoMethod(address_list, MUIM_NList_NextSelected, &pos);
+		DoMethod(address_list, MUIM_NList_NextSelected, (ULONG)&pos);
 		if (pos == MUIV_NList_NextSelected_End) break;
 
-		DoMethod(address_list, MUIM_NList_GetEntry, pos, &entry);
+		DoMethod(address_list, MUIM_NList_GetEntry, pos, (ULONG)&entry);
 		if (entry && !array_contains(entry->group_array,group->name))
 		{
 			char **newarray = array_add_string(entry->group_array,group->name);
@@ -225,12 +225,12 @@ STATIC ULONG AddressGroupList_Refresh(struct IClass *cl, Object *obj, Msg msg)
 /*	struct AddressGroupList_Data *data = (struct AddressGroupList_Data*)INST_DATA(cl,obj); */
 	struct addressbook_group *grp;
 
-	DoMethod(obj,MUIM_NList_Clear);
+	DoMethod(obj, MUIM_NList_Clear);
 
 	grp = addressbook_first_group();
 	while (grp)
 	{
-		DoMethod(obj,MUIM_NList_InsertSingle,grp,MUIV_NList_Insert_Bottom);
+		DoMethod(obj, MUIM_NList_InsertSingle, (ULONG)grp, MUIV_NList_Insert_Bottom);
 		grp = addressbook_next_group(grp);
 	}
 

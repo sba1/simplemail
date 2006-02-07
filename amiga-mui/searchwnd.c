@@ -56,7 +56,7 @@ static Object *search_folder_tree;
 static Object *search_from_string;
 static Object *search_to_string;
 static Object *search_subject_string;
-static Object *search_body_string;
+//static Object *search_body_string;
 static Object *search_start_button;
 static Object *search_stop_button;
 static Object *search_mail_tree;
@@ -221,12 +221,12 @@ static void init_search(void)
 	if (search_wnd)
 	{
 		set(search_stop_button, MUIA_Disabled, TRUE);
-		DoMethod(App, OM_ADDMEMBER, search_wnd);
-		DoMethod(search_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, search_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(search_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, search_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
-		DoMethod(search_start_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, searchwnd_start);
-		DoMethod(search_stop_button, MUIM_Notify, MUIA_Pressed, FALSE, search_wnd, 3, MUIM_CallHook, &hook_standard, callback_stop_search);
-		DoMethod(search_mail_tree, MUIM_Notify, MUIA_MailTree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3,  MUIM_CallHook, &hook_standard, searchwnd_read);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)search_wnd);
+		DoMethod(search_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)search_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
+		DoMethod(search_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, (ULONG)search_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
+		DoMethod(search_start_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)search_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)searchwnd_start);
+		DoMethod(search_stop_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)search_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_stop_search);
+		DoMethod(search_mail_tree, MUIM_Notify, MUIA_MailTree_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)searchwnd_read);
 
 		search_refresh_folders();
 	}
@@ -278,7 +278,7 @@ void search_add_result(struct mail_info **array, int size)
 
 	for (i=0;i<size;i++)
 	{
-		DoMethod(search_mail_tree, MUIM_MailTree_InsertMail, array[i], -2);
+		DoMethod(search_mail_tree, MUIM_MailTree_InsertMail, (ULONG)array[i], -2);
 	}
 
 	if (size > 1)
@@ -318,5 +318,5 @@ int search_has_mails(void)
 **************************************************************************/
 void search_remove_mail(struct mail_info *m)
 {
-	DoMethod(search_mail_tree, MUIM_MailTree_RemoveMail, m);
+	DoMethod(search_mail_tree, MUIM_MailTree_RemoveMail, (ULONG)m);
 }

@@ -154,12 +154,12 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 			case  MUIA_DataTypes_HorizScrollbar:
 					  data->horiz_scrollbar = (Object*)tidata;
-					  DoMethod(data->horiz_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, obj, 1, MUIM_Datatypes_HorizUpdate);
+					  DoMethod(data->horiz_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, (ULONG)obj, 1, MUIM_Datatypes_HorizUpdate);
 					  break;
 
 			case  MUIA_DataTypes_VertScrollbar:
 					  data->vert_scrollbar = (Object*)tidata;
-					  DoMethod(data->vert_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, obj, 1, MUIM_Datatypes_VertUpdate);
+					  DoMethod(data->vert_scrollbar, MUIM_Notify, MUIA_Prop_First, MUIV_EveryTime, (ULONG)obj, 1, MUIM_Datatypes_VertUpdate);
 					  break;
 		}
 	}
@@ -270,14 +270,14 @@ STATIC ULONG DataTypes_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_AskM
 STATIC ULONG DataTypes_Setup(struct IClass *cl, Object *obj, struct MUIP_Setup *msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
-	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->ehnode);
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, (ULONG)&data->ehnode);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ULONG DataTypes_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct DataTypes_Data *data = (struct DataTypes_Data*)INST_DATA(cl,obj);
-	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->ehnode);
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->ehnode);
 	DoSuperMethodA(cl,obj,msg);
 	return 0;
 }

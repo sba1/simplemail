@@ -659,7 +659,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				int size = atoi(end+1);
 				*end = 0;
 
-				DoMethod(data->simplehtml,MUIM_SimpleHTML_FontSubst,"fixedmail",3,font_buf,size);
+				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 3, (ULONG)font_buf, size);
 			}
 			free(font_buf);
 		}
@@ -673,9 +673,9 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				int size = atoi(end+1);
 				*end = 0;
 
-				DoMethod(data->simplehtml,MUIM_SimpleHTML_FontSubst,"normal",2,font_buf,size);
-				DoMethod(data->simplehtml,MUIM_SimpleHTML_FontSubst,"normal",3,font_buf,size);
-				DoMethod(data->simplehtml,MUIM_SimpleHTML_FontSubst,"normal",4,font_buf,size);
+				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 2, (ULONG)font_buf, size);
+				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 3, (ULONG)font_buf, size);
+				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"normal", 4, (ULONG)font_buf, size);
 			}
 			free(font_buf);
 		}
@@ -812,8 +812,8 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			End,
 		End;
 
-	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, writeto_menuitem, App, 4, MUIM_CallHook, &hook_standard, messageview_writeto, data);
-	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, addressbook_menuitem, App, 4, MUIM_CallHook, &hook_standard, messageview_add, data);
+	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, (ULONG)writeto_menuitem, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)messageview_writeto, (ULONG)data);
+	DoMethod(simplehtml, MUIM_Notify, MUIA_ContextMenuTrigger, (ULONG)addressbook_menuitem, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)messageview_add, (ULONG)data);
 
 	data->simplehtml = simplehtml;
 	data->display_group = display_group;
@@ -830,10 +830,10 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			MUIA_SimpleHTML_LoadHook, &data->load_hook,
 			TAG_DONE);
 
-	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, messageview_uri_clicked, data, MUIV_TriggerValue);
-	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIOver, MUIV_EveryTime, App, 6, MUIM_CallHook, &hook_standard, messageview_uri_over, data, MUIV_TriggerValue, data->simplehtml);
-	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalHoriz, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
-	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalVert, MUIV_EveryTime, App, 4, MUIM_Application_PushMethod, obj, 1, MUIM_MessageView_Changed);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)messageview_uri_clicked, (ULONG)data, MUIV_TriggerValue);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIOver, MUIV_EveryTime, (ULONG)App, 6, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)messageview_uri_over, (ULONG)data, MUIV_TriggerValue, (ULONG)data->simplehtml);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalHoriz, MUIV_EveryTime, (ULONG)App, 4, MUIM_Application_PushMethod, (ULONG)obj, 1, MUIM_MessageView_Changed);
+	DoMethod(data->simplehtml, MUIM_Notify, MUIA_SimpleHTML_TotalVert, MUIV_EveryTime, (ULONG)App, 4, MUIM_Application_PushMethod, (ULONG)obj, 1, MUIM_MessageView_Changed);
 
 	return (ULONG)obj;
 }

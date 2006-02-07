@@ -301,13 +301,13 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 
-	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_incoming_obj, 0);
-	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_outgoing_obj, 0);
-	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_sent_obj, 0);
-	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_deleted_obj, 0);
-	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_other_obj, 0);
-	data->image_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_spam_obj, 0);
-	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->image_group_obj, 0);
+	data->image_incoming = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_incoming_obj, 0);
+	data->image_outgoing = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_outgoing_obj, 0);
+	data->image_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_sent_obj, 0);
+	data->image_deleted = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_deleted_obj, 0);
+	data->image_other = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_other_obj, 0);
+	data->image_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_spam_obj, 0);
+	data->image_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->image_group_obj, 0);
 
 	return 1;
 }
@@ -315,13 +315,13 @@ STATIC ULONG FolderTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Se
 STATIC ULONG FolderTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
-	if (data->image_group) DoMethod(obj, MUIM_NList_DeleteImage, data->image_group);
-	if (data->image_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->image_spam);
-	if (data->image_other) DoMethod(obj, MUIM_NList_DeleteImage, data->image_other);
-	if (data->image_deleted) DoMethod(obj, MUIM_NList_DeleteImage, data->image_deleted);
-	if (data->image_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->image_sent);
-	if (data->image_outgoing) DoMethod(obj, MUIM_NList_DeleteImage, data->image_outgoing);
-	if (data->image_incoming) DoMethod(obj, MUIM_NList_DeleteImage, data->image_incoming);
+	if (data->image_group) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_group);
+	if (data->image_spam) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_spam);
+	if (data->image_other) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_other);
+	if (data->image_deleted) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_deleted);
+	if (data->image_sent) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_sent);
+	if (data->image_outgoing) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_outgoing);
+	if (data->image_incoming) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->image_incoming);
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -519,8 +519,8 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 
 	if (data->show_root)
 	{
-		root = (APTR)DoMethod(obj,MUIM_NListtree_Insert,_("All folders") /*name*/, MUIV_FolderTreelist_UserData_Root, /*udata */
-					MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,TNF_OPEN|TNF_LIST/*flags*/);
+		root = (APTR)DoMethod(obj,MUIM_NListtree_Insert, (ULONG)_("All folders") /*name*/, MUIV_FolderTreelist_UserData_Root, /*udata */
+					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, TNF_OPEN|TNF_LIST/*flags*/);
 	} else root = (APTR)MUIV_NListtree_Insert_ListNode_Root;
 
 	for (f = folder_first();f;f = folder_next(f))
@@ -538,12 +538,12 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 			if (f->closed) flags = TNF_LIST;
 			else flags = TNF_OPEN|TNF_LIST;
 
-			DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						treenode,MUIV_NListtree_Insert_PrevNode_Tail,flags);
+			DoMethod(obj, MUIM_NListtree_Insert, (ULONG)"" /*name*/, (ULONG)f, /*udata */
+						(ULONG)treenode, MUIV_NListtree_Insert_PrevNode_Tail, flags);
 		} else
 		{
-			DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, f, /*udata */
-						treenode,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+			DoMethod(obj, MUIM_NListtree_Insert, (ULONG)"" /*name*/, (ULONG)f, /*udata */
+						(ULONG)treenode, MUIV_NListtree_Insert_PrevNode_Tail, 0/*flags*/);
 		}
 	}
 	set(obj,MUIA_NListtree_Quiet,FALSE);

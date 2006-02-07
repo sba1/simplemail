@@ -375,7 +375,7 @@ STATIC VOID MailTreelist_SetNotified(void **msg)
 	if (treenode && treenode->tn_User) m = (struct mail*)treenode->tn_User;
 	else m = NULL;
 #else
-	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &m);
+	DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&m);
 #endif
 
 	tags[0].ti_Tag = MUIA_MailTreelist_Active;
@@ -403,10 +403,10 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 	struct MUI_NList_TestPos_Result tpres;
 
 	tpres.char_number = -2; /* no need for char_number or char_xoffset */
-	DoMethod(obj, MUIM_NList_TestPos, msg->mx, msg->my, &tpres);
+	DoMethod(obj, MUIM_NList_TestPos, msg->mx, msg->my, (ULONG)&tpres);
 	if (tpres.entry >= 0)
 	{
-		DoMethod(obj, MUIM_NList_GetEntry, tpres.entry, &m);
+		DoMethod(obj, MUIM_NList_GetEntry, tpres.entry, (ULONG)&m);
 	}
 #endif
 
@@ -593,11 +593,11 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	MailTreelist_UpdateFormat(cl,obj);
 
 #ifdef MAILLIST_IS_TREE
-	DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
-	DoMethod(obj, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
+	DoMethod(obj, MUIM_Notify, MUIA_NListtree_Active, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)MailTreelist_SetNotified, (ULONG)obj, (ULONG)cl);
+	DoMethod(obj, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, (ULONG)obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
 #else
-	DoMethod(obj, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, App, 5, MUIM_CallHook, &hook_standard, MailTreelist_SetNotified, obj, cl);
-	DoMethod(obj, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
+	DoMethod(obj, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)MailTreelist_SetNotified, (ULONG)obj, (ULONG)cl);
+	DoMethod(obj, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, (ULONG)obj, 3, MUIM_Set, MUIA_MailTreelist_DoubleClick, TRUE);
 #endif
 
 	return (ULONG)obj;
@@ -665,17 +665,17 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							struct mail *m = (struct mail*)tag->ti_Data;
 
 #ifdef MAILLIST_IS_TREE
-							struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(obj,m);
+							struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(obj, m);
 							set(obj,MUIA_NListtree_Active,tn);
 #else
 							int i;
-							for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
+							for (i=0;i<xget(obj, MUIA_NList_Entries);i++)
 							{
 								struct mail *m2;
-								DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
+								DoMethod(obj, MUIM_NList_GetEntry, i, (ULONG)&m2);
 								if (m == m2)
 								{
-									set(obj,MUIA_NList_Active,i);
+									set(obj, MUIA_NList_Active, i);
 									break;
 								}
 							}
@@ -694,7 +694,7 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	{
 #ifdef MAILLIST_IS_TREE
 		struct MUI_NListtree_TreeNode *tree_node;
-		tree_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
+		tree_node = (struct MUI_NListtree_TreeNode *)xget(obj, MUIA_NListtree_Active);
 
 		if (tree_node)
 		{
@@ -706,7 +706,7 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 		}
 		*msg->opg_Storage = 0;
 #else
-		DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, msg->opg_Storage);
+		DoMethod(obj, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)msg->opg_Storage);
 #endif
 		return 1;
 	}
@@ -732,30 +732,30 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 		return 0;
 	}
 
-	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_obj, 0);
-	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_partial_obj, 0);
-	data->status_read_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_read_partial_obj, 0);
-	data->status_reply_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_reply_partial_obj, 0);
-	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_read_obj, 0);
-	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_waitsend_obj, 0);
-	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_sent_obj, 0);
-	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_mark_obj, 0);
-	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_hold_obj, 0);
-	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_reply_obj, 0);
-	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_forward_obj, 0);
-	data->status_norcpt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_norcpt_obj, 0);
-	data->status_new_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_partial_obj, 0);
-	data->status_new_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_spam_obj, 0);
-	data->status_unread_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_unread_spam_obj, 0);
-	data->status_error = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_error_obj, 0);
+	data->status_unread = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_unread_obj, 0);
+	data->status_unread_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_unread_partial_obj, 0);
+	data->status_read_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_read_partial_obj, 0);
+	data->status_reply_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_reply_partial_obj, 0);
+	data->status_read = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_read_obj, 0);
+	data->status_waitsend = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_waitsend_obj, 0);
+	data->status_sent = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_sent_obj, 0);
+	data->status_mark = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_mark_obj, 0);
+	data->status_hold = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_hold_obj, 0);
+	data->status_reply = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_reply_obj, 0);
+	data->status_forward = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_forward_obj, 0);
+	data->status_norcpt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_norcpt_obj, 0);
+	data->status_new_partial = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_new_partial_obj, 0);
+	data->status_new_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_new_spam_obj, 0);
+	data->status_unread_spam = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_unread_spam_obj, 0);
+	data->status_error = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_error_obj, 0);
 
-	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_important_obj, 0);
-	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_attach_obj, 0);
-	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_group_obj, 0);
-	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_new_obj, 0);
-	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_crypt_obj, 0);
-	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_signed_obj, 0);
-	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, data->status_trashcan_obj, 0);
+	data->status_important = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_important_obj, 0);
+	data->status_attach = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_attach_obj, 0);
+	data->status_group = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_group_obj, 0);
+	data->status_new = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_new_obj, 0);
+	data->status_crypt = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_crypt_obj, 0);
+	data->status_signed = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_signed_obj, 0);
+	data->status_trashcan = (APTR)DoMethod(obj, MUIM_NList_CreateImage, (ULONG)data->status_trashcan_obj, 0);
 
 	SM_LEAVE;
 	return 1;
@@ -764,31 +764,31 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread);
-	if (data->status_unread_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_partial);
-	if (data->status_read_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read_partial);
-	if (data->status_reply_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply_partial);
-	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, data->status_read);
-	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, data->status_waitsend);
-	if (data->status_sent) DoMethod(obj, MUIM_NList_DeleteImage, data->status_sent);
-	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, data->status_mark);
-	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, data->status_hold);
-	if (data->status_reply) DoMethod(obj, MUIM_NList_DeleteImage, data->status_reply);
-	if (data->status_forward) DoMethod(obj, MUIM_NList_DeleteImage, data->status_forward);
-	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_norcpt);
-	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_partial);
-	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new_spam);
-	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, data->status_unread_spam);
-	if (data->status_error) DoMethod(obj, MUIM_NList_DeleteImage, data->status_error);
+	if (data->status_unread) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_unread);
+	if (data->status_unread_partial) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_unread_partial);
+	if (data->status_read_partial) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_read_partial);
+	if (data->status_reply_partial) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_reply_partial);
+	if (data->status_read) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_read);
+	if (data->status_waitsend) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_waitsend);
+	if (data->status_sent) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_sent);
+	if (data->status_mark) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_mark);
+	if (data->status_hold) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_hold);
+	if (data->status_reply) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_reply);
+	if (data->status_forward) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_forward);
+	if (data->status_norcpt) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_norcpt);
+	if (data->status_new_partial) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_new_partial);
+	if (data->status_new_spam) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_new_spam);
+	if (data->status_unread_spam) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_unread_spam);
+	if (data->status_error) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_error);
 
-	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, data->status_important);
-	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, data->status_attach);
-	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, data->status_group);
-	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, data->status_new);
-	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, data->status_crypt);
-	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, data->status_signed);
-	if (data->status_trashcan) DoMethod(obj, MUIM_NList_DeleteImage, data->status_trashcan);
-	return DoSuperMethodA(cl,obj,msg);
+	if (data->status_important) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_important);
+	if (data->status_attach) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_attach);
+	if (data->status_group) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_group);
+	if (data->status_new) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_new);
+	if (data->status_crypt) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_crypt);
+	if (data->status_signed) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_signed);
+	if (data->status_trashcan) DoMethod(obj, MUIM_NList_DeleteImage, (ULONG)data->status_trashcan);
+	return DoSuperMethodA(cl, obj, msg);
 }
 
 STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
@@ -891,22 +891,22 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 	if (user.config.set_all_stati)
 	{
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, ~0, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 		last_menu = hidden_menu;
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Sent"), MUIA_UserData, MENU_SETSTATUS_SENT, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 		last_menu = hidden_menu;
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Error"), MUIA_UserData, MENU_SETSTATUS_ERROR, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 		last_menu = hidden_menu;
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Replied"), MUIA_UserData, MENU_SETSTATUS_REPLIED, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 		last_menu = hidden_menu;
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Forward"), MUIA_UserData, MENU_SETSTATUS_FORWARD, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 		last_menu = hidden_menu;
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Repl. & Forw."), MUIA_UserData, MENU_SETSTATUS_REPLFORW, End;
-		DoMethod(stati_menu, MUIM_Family_Insert, hidden_menu, last_menu);
+		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 	}
 	
   data->context_menu = context_menu;
@@ -1095,7 +1095,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		int i;
 		struct mail_info **array = folder_get_mail_info_array(folder);
 
-		DoMethod(obj, MUIM_NList_Insert, array, folder->num_mails, MUIV_NList_Insert_Bottom);
+		DoMethod(obj, MUIM_NList_Insert, (ULONG)array, folder->num_mails, MUIV_NList_Insert_Bottom);
 
 		/* Set the first active mail. That is the mail which was active before
          * or (if it can't be found) the first unread mail */
@@ -1235,14 +1235,14 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 #else
 	LONG pos = MUIV_NList_NextSelected_Start;
 	struct mail *m;
-	DoMethod(obj, MUIM_NList_NextSelected, &pos);
+	DoMethod(obj, MUIM_NList_NextSelected, (ULONG)&pos);
 	if (pos == MUIV_NList_NextSelected_End)
 	{
 		*((LONG*)handle) = 0;
 		return 0L;
 	}
 	*((LONG*)handle) = pos;
-	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);
+	DoMethod(obj, MUIM_NList_GetEntry, pos, (ULONG)&m);
 	return (ULONG)m;
 #endif
 }
@@ -1256,7 +1256,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 	do
 	{
 		treenode = *((struct MUI_NListtree_TreeNode **)handle);
-		DoMethod(obj, MUIM_NListtree_NextSelected, &treenode);
+		DoMethod(obj, MUIM_NListtree_NextSelected, (ULONG)&treenode);
 		if (treenode == (struct MUI_NListtree_TreeNode *)MUIV_NListtree_NextSelected_End) return NULL;
 		*((struct MUI_NListtree_TreeNode **)handle) = treenode;
 	} while((ULONG)treenode->tn_User == MUIV_MailTreelist_UserData_Name);
@@ -1264,14 +1264,14 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 #else
 	LONG pos = *(LONG*)handle;
 	struct mail *m;
-	DoMethod(obj, MUIM_NList_NextSelected, &pos);
+	DoMethod(obj, MUIM_NList_NextSelected, (ULONG)&pos);
 	if (pos == MUIV_NList_NextSelected_End)
 	{
 		*((LONG*)handle) = 0;
 		return 0L;
 	}
 	*((LONG*)handle) = pos;
-	DoMethod(obj, MUIM_NList_GetEntry, pos, &m);
+	DoMethod(obj, MUIM_NList_GetEntry, pos, (ULONG)&m);
 	return (ULONG)m;
 #endif
 }
@@ -1283,7 +1283,7 @@ ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailT
 	if (treenode)
 		DoMethod(obj, MUIM_NListtree_Redraw, treenode, 0);
 #else
-  DoMethod(obj, MUIM_NList_RedrawEntry, msg->m);
+  DoMethod(obj, MUIM_NList_RedrawEntry, (ULONG)msg->m);
 #endif
 	return 0;
 }
@@ -1320,36 +1320,36 @@ ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTr
 #ifdef MAILLIST_IS_TREE
 	if (after == -2)
 	{
-		DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
-					 MUIV_NListtree_Insert_ListNode_Root,MUIV_NListtree_Insert_PrevNode_Tail,0/*flags*/);
+		DoMethod(obj,MUIM_NListtree_Insert, (ULONG)"" /*name*/, (ULONG)mail, /*udata */
+					 MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, 0/*flags*/);
 	} else
 	{
 		struct MUI_NListtree_TreeNode *tn;
 		struct MUI_NListtree_TreeNode *list;
 
-		tn = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,MUIV_NListtree_GetEntry_ListNode_Root,MUIV_NListtree_GetEntry_Position_Head,0);
-		tn = main_find_insert_node(obj,tn,&after);
+		tn = (struct MUI_NListtree_TreeNode*)DoMethod(obj, MUIM_NListtree_GetEntry, MUIV_NListtree_GetEntry_ListNode_Root, MUIV_NListtree_GetEntry_Position_Head, 0);
+		tn = main_find_insert_node(obj, tn, &after);
 		if (tn)
 		{
-			list = (struct MUI_NListtree_TreeNode*)DoMethod(obj,MUIM_NListtree_GetEntry,tn, MUIV_NListtree_GetEntry_Position_Parent,0);
+			list = (struct MUI_NListtree_TreeNode*)DoMethod(obj, MUIM_NListtree_GetEntry, tn, MUIV_NListtree_GetEntry_Position_Parent, 0);
 		} else list = (struct MUI_NListtree_TreeNode*)MUIV_NListtree_Insert_ListNode_Root;
 
 
 		/* Indeed this is a lot of faster with current NListtree */
 		set(obj,MUIA_NListtree_Quiet, TRUE);
 
-		DoMethod(obj,MUIM_NListtree_Insert,"" /*name*/, mail, /*udata */
-					 list,tn?tn:MUIV_NListtree_Insert_PrevNode_Head,0/*flags*/);
+		DoMethod(obj,MUIM_NListtree_Insert, (ULONG)"" /*name*/, (ULONG)mail, /*udata */
+					 list, tn?tn:MUIV_NListtree_Insert_PrevNode_Head, 0/*flags*/);
 
 		set(obj,MUIA_NListtree_Quiet, FALSE);
 	}
 #else
 	if (after == -2)
 	{
-		DoMethod(obj, MUIM_NList_InsertSingle, mail, MUIV_NList_Insert_Bottom);
+		DoMethod(obj, MUIM_NList_InsertSingle, (ULONG)mail, MUIV_NList_Insert_Bottom);
 	} else
 	{
-		DoMethod(obj, MUIM_NList_InsertSingle, mail, after + 1);
+		DoMethod(obj, MUIM_NList_InsertSingle, (ULONG)mail, after + 1);
 	}
 #endif
 	return 0;
@@ -1368,10 +1368,10 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
 		struct mail_info *m2;
-		DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
+		DoMethod(obj, MUIM_NList_GetEntry, i, (ULONG)&m2);
 		if (m2 == msg->m)
 		{
-			DoMethod(obj,MUIM_NList_Remove,i);
+			DoMethod(obj, MUIM_NList_Remove, i);
 			break;
 		}
 	}
@@ -1398,10 +1398,10 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 	for (i=0;i<xget(obj,MUIA_NList_Entries);i++)
 	{
 		struct mail_info *m2;
-		DoMethod(obj,MUIM_NList_GetEntry,i,&m2);
+		DoMethod(obj, MUIM_NList_GetEntry, i, (ULONG)&m2);
 		if (m2 == msg->oldmail)
 		{
-			DoMethod(obj, MUIM_NList_ReplaceSingle, msg->newmail, i, NOWRAP, 0);
+			DoMethod(obj, MUIM_NList_ReplaceSingle, (ULONG)msg->newmail, i, NOWRAP, 0);
 			break;
 		}
 	}
@@ -1417,7 +1417,7 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 	LONG pos = MUIV_NList_NextSelected_Start;
 	while (1)
 	{
-		DoMethod(obj, MUIM_NList_NextSelected, &pos);
+		DoMethod(obj, MUIM_NList_NextSelected, (ULONG)&pos);
 		if (pos == MUIV_NList_NextSelected_End) break;
 		DoMethod(obj, MUIM_NList_Redraw, pos);
 	}

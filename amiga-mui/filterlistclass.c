@@ -68,10 +68,10 @@ STATIC BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
-		case	OM_NEW:				return FilterList_New(cl,obj,(struct opSet*)msg);
-    case  MUIM_DragQuery: return FilterList_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
-    case  MUIM_DragDrop:  return FilterList_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
-		default: return DoSuperMethodA(cl,obj,msg);
+		case OM_NEW:         return FilterList_New(cl,obj,(struct opSet*)msg);
+		case MUIM_DragQuery: return FilterList_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
+		case MUIM_DragDrop:  return FilterList_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
+		default:             return DoSuperMethodA(cl,obj,msg);
 	}
 }
 

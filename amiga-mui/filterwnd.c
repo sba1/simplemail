@@ -96,8 +96,8 @@ STATIC ASM SAVEDS VOID filter_display(REG(a0,struct Hook *h), REG(a2,char **arra
 STATIC ASM SAVEDS VOID move_objstr(REG(a0,struct Hook *h),REG(a2, Object *list), REG(a1,Object *str))
 {
 	char *x;
-	DoMethod(list,MUIM_NList_GetEntry,MUIV_List_GetEntry_Active,&x);
-	set(str,MUIA_Text_Contents,x);
+	DoMethod(list, MUIM_NList_GetEntry, MUIV_List_GetEntry_Active, (ULONG)&x);
+	set(str, MUIA_Text_Contents, x);
 }
 
 STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,Object *str))
@@ -108,15 +108,15 @@ STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,
 
 	while (1)
 	{
-		DoMethod(list,MUIM_NList_GetEntry,i,&x);
+		DoMethod(list, MUIM_NList_GetEntry, i, (ULONG)&x);
 		if (!x)
 		{
-			set(list,MUIA_NList_Active,MUIV_NList_Active_Off);
+			set(list, MUIA_NList_Active, MUIV_NList_Active_Off);
 			break;
 		}
 		else if (!mystricmp(x,s))
 	  {
-			set(list,MUIA_NList_Active,i);
+			set(list, MUIA_NList_Active, i);
 			break;
 		}
 		i++;
@@ -138,7 +138,7 @@ void filter_update_folder_list(void)
 	while (f)
 	{
 		if (f->special != FOLDER_SPECIAL_GROUP)
-			DoMethod(filter_folder_list, MUIM_NList_InsertSingle, f->name, MUIV_NList_Insert_Bottom);
+			DoMethod(filter_folder_list, MUIM_NList_InsertSingle, (ULONG)f->name, MUIV_NList_Insert_Bottom);
 		f = folder_next(f);
 	}
 	set(filter_folder_list,MUIA_NList_Quiet,FALSE);
@@ -255,7 +255,7 @@ static void filter_refresh_rules(void)
 	struct filter *filter;
 
 	/* Get the current selected filter */
-	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &filter);
+	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&filter);
 
 	DoMethod(filter_rule_group, MUIM_Group_InitChange);
 
@@ -285,20 +285,20 @@ static void filter_refresh_rules(void)
 			set(rem,MUIA_Weight,0);
 			if (rule && group)
 			{
-				DoMethod(filter_rule_group, OM_ADDMEMBER, rule);
-				DoMethod(filter_rule_group, OM_ADDMEMBER, group);
+				DoMethod(filter_rule_group, OM_ADDMEMBER, (ULONG)rule);
+				DoMethod(filter_rule_group, OM_ADDMEMBER, (ULONG)group);
 
 				/* According to autodocs MUIM_Application_PushMethod has an limit of 7
 				   args, but 8 seems to work also. */
-				DoMethod(rem, MUIM_Notify, MUIA_Pressed, FALSE, App, 8, MUIM_Application_PushMethod,  App, 5, MUIM_CallHook, &hook_standard, filter_remove_rule_gui, rule, group);
+				DoMethod(rem, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 8, MUIM_Application_PushMethod, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_remove_rule_gui, (ULONG)rule, (ULONG)group);
 			}
 			fr = (struct filter_rule*)node_next(&fr->node);
 		}
 	}
 
 	/* Add two space objects (in case no rule objects have been created */
-	DoMethod(filter_rule_group, OM_ADDMEMBER, HVSpace);
-	DoMethod(filter_rule_group, OM_ADDMEMBER, HVSpace);
+	DoMethod(filter_rule_group, OM_ADDMEMBER, (ULONG)HVSpace);
+	DoMethod(filter_rule_group, OM_ADDMEMBER, (ULONG)HVSpace);
 	DoMethod(filter_rule_group, MUIM_Group_ExitChange);
 }
 
@@ -329,10 +329,10 @@ static void filter_remove_rule_gui(Object **objs)
 
 	/* Get the parent of the objects and remove the objects */
 	parent = (Object*)xget(objs[0],MUIA_Parent);
-	DoMethod(parent,MUIM_Group_InitChange);
-	DoMethod(parent,OM_REMMEMBER,objs[1]);
-	DoMethod(parent,OM_REMMEMBER,objs[0]);
-	DoMethod(parent,MUIM_Group_ExitChange);
+	DoMethod(parent, MUIM_Group_InitChange);
+	DoMethod(parent, OM_REMMEMBER, (ULONG)objs[1]);
+	DoMethod(parent, OM_REMMEMBER, (ULONG)objs[0]);
+	DoMethod(parent, MUIM_Group_ExitChange);
 	MUI_DisposeObject(objs[1]);
 	MUI_DisposeObject(objs[0]);
 }
@@ -357,7 +357,7 @@ static void filter_new(void)
 	struct filter *f = filter_create();
 	if (f)
 	{
-		DoMethod(filter_list, MUIM_NList_InsertSingle, f, MUIV_NList_Insert_Bottom);
+		DoMethod(filter_list, MUIM_NList_InsertSingle, (ULONG)f, MUIV_NList_Insert_Bottom);
 		filter_dispose(f);
 		set(filter_list, MUIA_NList_Active, MUIV_NList_Active_Bottom);
 
@@ -389,7 +389,7 @@ static void filter_ok(void)
 
 	for (i=0;i<xget(filter_list, MUIA_NList_Entries);i++)
 	{
-		DoMethod(filter_list, MUIM_NList_GetEntry, i, &f);
+		DoMethod(filter_list, MUIM_NList_GetEntry, i, (ULONG)&f);
 		if (f)
 		{
 			filter_list_add_duplicate(f);
@@ -422,7 +422,7 @@ static void filter_cancel(void)
 static void filter_active(void)
 {
 	struct filter *f;
-	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &f);
+	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&f);
 	if (f)
 	{
 		filter_accept_rule();
@@ -450,7 +450,7 @@ static void filter_active(void)
 static void filter_name(void)
 {
 	struct filter *f;
-	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, &f);
+	DoMethod(filter_list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&f);
 	if (f)
 	{
 		if (f->name) free(f->name);
@@ -597,28 +597,28 @@ static void init_filter(void)
 		set(filter_remote_label, MUIA_ShortHelp, short_help_txt);
 		set(filter_remote_check, MUIA_ShortHelp, short_help_txt);
 
-		DoMethod(App, OM_ADDMEMBER, filter_wnd);
-		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
-		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
-		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_ok);
-		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, save_filter);
-		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_cancel);
+		DoMethod(App, OM_ADDMEMBER, (ULONG)filter_wnd);
+		DoMethod(filter_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_cancel);
+		DoMethod(ok_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_ok);
+		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_ok);
+		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)save_filter);
+		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_cancel);
 		
-		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_new);
-		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_remove);
-		DoMethod(filter_moveup_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Previous);
-		DoMethod(filter_movedown_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Next);
+		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_new);
+		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_remove);
+		DoMethod(filter_moveup_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Previous);
+		DoMethod(filter_movedown_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Next);
 
-		set(filter_name_string,MUIA_String_AttachedList,filter_list);
-		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_active);
-		DoMethod(filter_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, filter_list, 3, MUIM_CallHook, &hook_standard, filter_name);
+		set(filter_name_string, MUIA_String_AttachedList, (ULONG)filter_list);
+		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)filter_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_active);
+		DoMethod(filter_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, (ULONG)filter_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_name);
 
-		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_add_rule);
-		DoMethod(filter_apply_now_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_wnd, 3, MUIM_CallHook, &hook_standard, filter_apply);
-		DoMethod(filter_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-		DoMethod(filter_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-		DoMethod(filter_arexx_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, filter_arexx_popasl, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
-		DoMethod(filter_folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, filter_move_popobject, 2, MUIM_Popstring_Close, 1);
+		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_add_rule);
+		DoMethod(filter_apply_now_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_apply);
+		DoMethod(filter_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)filter_move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(filter_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)filter_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(filter_arexx_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)filter_arexx_popasl, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
+		DoMethod(filter_folder_list, MUIM_Notify, MUIA_NList_DoubleClick, TRUE, (ULONG)filter_move_popobject, 2, MUIM_Popstring_Close, 1);
 
 		filter_update_folder_list();
 	}
@@ -644,7 +644,7 @@ void filter_open(void)
 	f = filter_list_first();
 	while (f)
 	{
-		DoMethod(filter_list, MUIM_NList_InsertSingle, f, MUIV_NList_Insert_Bottom);
+		DoMethod(filter_list, MUIM_NList_InsertSingle, (ULONG)f, MUIV_NList_Insert_Bottom);
 		f = filter_list_next(f);
 	}
 

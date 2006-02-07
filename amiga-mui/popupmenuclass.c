@@ -234,7 +234,7 @@ STATIC ULONG Popupmenu_Show(struct IClass *cl, Object *obj, struct MUIP_Show *ms
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
 	if (!DoSuperMethodA(cl,obj,(Msg)msg)) return 0;
 	data->show = 1;
-	DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mb_handler);
+	DoMethod(_win(obj), MUIM_Window_AddEventHandler, (ULONG)&data->mb_handler);
 	return 1;
 }
 
@@ -242,14 +242,14 @@ STATIC ULONG Popupmenu_Hide(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
 	data->show = 0;
-	DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mb_handler);
+	DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mb_handler);
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
 	struct IntuiMessage *imsg;
-	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl,obj);
+	struct Popupmenu_Data *data = (struct Popupmenu_Data*)INST_DATA(cl, obj);
 	if ((imsg = msg->imsg))
 	{
 		LONG x = imsg->MouseX;
@@ -265,7 +265,7 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 				set(obj, MUIA_Selected, TRUE);
 				if (data->show)
 				{
-					DoMethod(_win(obj), MUIM_Window_AddEventHandler, &data->mv_handler);
+					DoMethod(_win(obj), MUIM_Window_AddEventHandler, (ULONG)&data->mv_handler);
 					Popupmenu_OpenWindow(cl,obj);
 				}
 				return MUI_EventHandlerRC_Eat;
@@ -276,7 +276,7 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 				set(obj, MUIA_Selected, FALSE);
 				if (data->show)
 				{
-					DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mv_handler);
+					DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mv_handler);
 					Popupmenu_CloseWindow(cl,obj);
 				}
 
@@ -292,7 +292,7 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 			set(obj, MUIA_Selected, FALSE);
 			if (data->show)
 			{
-				DoMethod(_win(obj), MUIM_Window_RemEventHandler, &data->mv_handler);
+				DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mv_handler);
 				Popupmenu_CloseWindow(cl,obj);
 			}		
 			return MUI_EventHandlerRC_Eat;

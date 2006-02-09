@@ -3303,7 +3303,13 @@ static void fputhtmlstr(char *str, FILE *fh)
 	{
 		if (c < 128)
 		{
-			fputc(c,fh);
+			switch(c)
+			{
+				case '<': fputs("&lt;", fh); break;
+				case '>': fputs("&gt;", fh); break;
+				case '&': fputs("&amp;", fh); break;
+				default:  fputc(c,fh);
+			}
 			str++;
 		} else
 		{

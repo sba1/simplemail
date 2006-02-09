@@ -396,7 +396,7 @@ void app_hide(void)
 void app_show(void)
 {
 	set(App,MUIA_Application_Iconified,FALSE);
-	main_set_folder_active(folder_incoming());
+	main_set_folder_active(main_get_folder());
 }
 
 /****************************************************************

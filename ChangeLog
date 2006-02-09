@@ -6,6 +6,7 @@ SimpleMail Open Source - ChangeLog
 	* amiga-mui/configwnd.c: Removed wrong cast.
 	* amiga-mui/gui_main.c: app_show() should not jump back to the incoming folder.
 	* mail.c: Replace special chars with html-code in the header fields.
+	* text2html.c: Ampersand replacement was missing.
 
 2006-02-05  Release Version 0.29
 

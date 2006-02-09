@@ -315,6 +315,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					buffer_len--;
 					if (c== '<') string_append(&str,"&lt;");
 					else if (c== '>') string_append(&str,"&gt;");
+					else if (c== '&') string_append(&str,"&amp;");
 					else if (c == 10)
 					{
 						eval_color = 1;

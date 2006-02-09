@@ -1091,7 +1091,7 @@ static int init_account_group(void)
 						End,
 
 					Child, MakeLabel(_("APOP")),
-					Child, account_recv_apop_cycle = MakeCycle(_("APOP"), (ULONG)apop_labels),
+					Child, account_recv_apop_cycle = MakeCycle(_("APOP"), apop_labels),
 					End,
 				End,
 			Child, HVSpace,

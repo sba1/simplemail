@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2006-03-04  Bernd Gollesch <bgollesch@sime.at>
+	* text2html.c: Small bug fix if '@' is the first char of the buffer.
+
 2006-02-09  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/configwnd.c: Removed wrong cast.
 	* amiga-mui/gui_main.c: app_show() should not jump back to the incoming folder.

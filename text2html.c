@@ -220,7 +220,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 				c = *buffer;
 
-				if (c == '@')
+				if ((c == '@') && (buffer > saved_buffer))
 				{
 					/* A @ has been encountered, check if this belongs to an email adresse by traversing back
            * within the string */

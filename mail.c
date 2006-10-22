@@ -1193,28 +1193,32 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 			struct list *alist;
 			char *replyto = mail_find_header_contents(mail, "reply-to");
 			char *cc = mail_find_header_contents(mail, "cc");
-			struct mailbox from_addr;
-			struct mailbox replyto_addr;
 			int which_address = 1;
 
 			if (replyto)
 			{
-				parse_mailbox(from, &from_addr);
-				parse_mailbox(replyto,&replyto_addr);
+				struct mailbox from_addr;
+				struct mailbox replyto_addr;
 
-				if (mystricmp(from_addr.addr_spec,replyto_addr.addr_spec))
+				if (parse_mailbox(from, &from_addr))
 				{
-					which_address = sm_request(NULL,
+					if (parse_mailbox(replyto,&replyto_addr))
+					{
+						if (mystricmp(from_addr.addr_spec,replyto_addr.addr_spec))
+						{
+							which_address = sm_request(NULL,
 												_("Sender address (From) is <%s>, but\n"
 												"return address (Reply-To) is <%s>.\n"
 												"Which address do you want to use?"),
 												_("_From|*_Reply-To|_Both|_Cancel"),
 												from_addr.addr_spec,replyto_addr.addr_spec);
+						}
+						if (replyto_addr.phrase)  free(replyto_addr.phrase);
+						if (replyto_addr.addr_spec) free(replyto_addr.addr_spec);
+					}
 
 					if (from_addr.phrase)  free(from_addr.phrase);
 					if (from_addr.addr_spec) free(from_addr.addr_spec);
-					if (replyto_addr.phrase)  free(replyto_addr.phrase);
-					if (replyto_addr.addr_spec) free(replyto_addr.addr_spec);
 				}
 
 				if (!which_address) return NULL;

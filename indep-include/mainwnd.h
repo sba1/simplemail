@@ -57,6 +57,7 @@ void main_freeze_mail_list(void);
 void main_thaw_mail_list(void);
 void main_select_mail(int mail);
 int main_is_iconified(void);
+int main_message_view_displayed(void);
 
 void main_set_status_text(char *txt);
 void main_display_active_mail(void);

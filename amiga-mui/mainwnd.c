@@ -1300,6 +1300,14 @@ int main_is_iconified(void)
 }
 
 /******************************************************************
+ Return wheter the message view is displayed.
+*******************************************************************/
+int main_message_view_displayed(void)
+{
+	return !!xget(main_settings_messageview_menuitem,MUIA_Menuitem_Checked);
+}
+
+/******************************************************************
  A amiga private function!!! Returns the screen of the main window
 *******************************************************************/
 struct Screen *main_get_screen(void)

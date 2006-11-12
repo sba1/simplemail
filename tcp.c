@@ -48,6 +48,7 @@
 
 #include "tcpip.h"
 
+#undef _
 #include "smintl.h"
 #include "tcp.h"
 

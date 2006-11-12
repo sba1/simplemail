@@ -28,12 +28,12 @@ STRIP  = $(CROSS_COMPILE)strip
 
 # Change these as required
 OPTIMIZE = -O3
-DEBUG = #-ggdb # -g -DDEBUG
-INC = -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = $(DATE) -DHAVE_OPENURL -D__AMIGAOS4__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
+DEBUG = -g #-ggdb # -g -DDEBUG
+INC = -I "$(SDK_INCLUDE)" -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
+CFLAGS = $(DATE) -DHAVE_OPENURL -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
-LINK = -nostartfiles -L "$(EXPAT_LIB)"
+LINK = -nostartfiles -L "$(EXPAT_LIB)" -mcrt=clib2
 
 # Name of the "thing" to build
 TARGET = SimpleMail
@@ -185,3 +185,10 @@ clean:
 .PHONY: revision
 revision:
 	bumprev $(VERSION) $(TARGET)
+
+# -------------------------------------------------------------
+
+de.pox:
+	xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
+	msgmerge po/de.po po/simplemail.pot -o po/de.pox --verbose
+	$(RM) po/simplemail.pot

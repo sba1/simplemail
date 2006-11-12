@@ -40,6 +40,10 @@
 #include <proto/muimaster.h>
 #include <proto/asl.h>
 
+#ifdef __AMIGAOS4__
+#include <clib/debug_protos.h>
+#endif
+
 #include "codesets.h"
 #include "configuration.h"
 #include "folder.h"
@@ -811,11 +815,11 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 *******************************************************************/
 void sm_put_on_serial_line(char *txt)
 {
-#if defined(__AMIGAOS4__) && defined(RawPutChar)
+#ifdef CLIB_DEBUG_PROTOS_H
 	char c;
 	while ((c = *txt++))
 	{
-		RawPutChar(c);
+		kputc(c);
 	}
 #else
 	char buf[800];

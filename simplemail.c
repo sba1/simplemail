@@ -107,6 +107,32 @@ void callback_save_active_mail(void)
 	}
 }
 
+/* Touches the mail in the given folder */
+static int touch_mail(struct folder *f, struct mail_info *mail)
+{
+	int refresh = 0;
+
+	if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD)
+	{
+		folder_set_mail_status(f, mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
+		refresh = 1;
+	}
+
+	if (mail->flags & MAIL_FLAGS_NEW)
+	{
+		if (f->new_mails) f->new_mails--;
+		mail->flags &= ~MAIL_FLAGS_NEW;
+		refresh = 1;
+	}
+	
+	if (refresh)
+	{
+		main_refresh_mail(mail);
+		main_refresh_folder(f);
+	}
+	return refresh;
+}
+
 int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 {
 	int num;
@@ -123,26 +149,7 @@ int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 	num = read_window_open(f->path, mail, window);
 	if (num >= 0)
 	{
-		int refresh = 0;
-
-		if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD)
-		{
-			folder_set_mail_status(f, mail, MAIL_STATUS_READ | (mail->status & (~MAIL_STATUS_MASK)));
-			refresh = 1;
-		}
-
-		if (mail->flags & MAIL_FLAGS_NEW)
-		{
-			if (f->new_mails) f->new_mails--;
-			mail->flags &= ~MAIL_FLAGS_NEW;
-			refresh = 1;
-		}
-
-		if (refresh)
-		{
-			main_refresh_mail(mail);
-			main_refresh_folder(f);
-		}
+		touch_mail(f,mail);
 	}
 	return num;
 }
@@ -353,7 +360,7 @@ int callback_write_mail_to_str(char *str, char *subject)
 	return callback_write_mail(NULL,str,NULL,subject);
 }
 
-/* open a arbitrary message */
+/* open an arbitrary message */
 int callback_open_message(char *message, int window)
 {
 	char buf[380];
@@ -854,13 +861,29 @@ void callback_move_selected_mails(void)
 	app_unbusy();
 }
 
-static void display_mail(struct mail_info *m)
+static void touch_active_mail(struct folder *f, struct mail_info *m)
+{
+	/* Only touch mail if it is still the active one because
+	   another mail might be selected during the delay */
+	if (main_get_active_mail() == m)
+	{
+		touch_mail(f,m);
+	}
+}
+
+static void display_active_mail(struct folder *f, struct mail_info *m)
 {
 	/* Only display mail if it is still the active one because
 	   another mail might be selected during the delay */
 	if (main_get_active_mail() == m)
 	{
 		main_display_active_mail();
+		
+		if (main_is_message_view_displayed())
+		{
+			/* TODO: Make the delay user configurable */
+			thread_push_function_delayed(2000, touch_active_mail, 2, f, m);
+		}
 	}
 }
 
@@ -869,8 +892,7 @@ void callback_mail_within_main_selected(void)
 {
 	/* delay the displaying, so it is still possible to select multiple mails
      without problems */
-	thread_push_function_delayed(250, display_mail, 1, main_get_active_mail());
-
+	thread_push_function_delayed(250, display_active_mail, 2, main_get_folder(), main_get_active_mail());
 }
 
 /* Process the current selected folder and mark all mails which are identified as spam */

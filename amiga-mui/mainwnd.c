@@ -1302,7 +1302,7 @@ int main_is_iconified(void)
 /******************************************************************
  Return wheter the message view is displayed.
 *******************************************************************/
-int main_message_view_displayed(void)
+int main_is_message_view_displayed(void)
 {
 	return !!xget(main_settings_messageview_menuitem,MUIA_Menuitem_Checked);
 }

@@ -20,6 +20,8 @@
 ** subthreads.c
 */
 
+#define __USE_OLD_TIMEVAL__
+
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>

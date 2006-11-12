@@ -20,6 +20,8 @@
 ** tcpip.c
 */
 
+#define __USE_OLD_TIMEVAL__
+
 #include <proto/exec.h>
 
 #ifdef __MORPHOS__

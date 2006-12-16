@@ -1094,8 +1094,10 @@ int folder_rescan(struct folder *folder)
 		while ((dptr = readdir(dfd)) != NULL)
 		{
 			struct mail_info *m;
+			char *name = dptr->d_name;
 
-			if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
+			if (name[0] == '.')
+				if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
 
 			if ((m = mail_info_create_from_file(dptr->d_name)))
 			{

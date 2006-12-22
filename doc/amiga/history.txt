@@ -1,4 +1,4 @@
-Version 0.30 (17th beta) - released on 2006/12/30
+Version 0.30 (17th beta) - released on 2006/12/24
    - Minor fixes in the html display (bgol).
    - Previewed mails are now marked as read after a certain amount of time.
    - Minor fixes in the directory scanning code.

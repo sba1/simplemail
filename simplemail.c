@@ -865,7 +865,7 @@ static void touch_active_mail(struct folder *f, struct mail_info *m)
 {
 	/* Only touch mail if it is still the active one because
 	   another mail might be selected during the delay */
-	if (main_get_active_mail() == m)
+	if (m && f && main_get_active_mail() == m && main_get_folder() == f)
 	{
 		touch_mail(f,m);
 	}

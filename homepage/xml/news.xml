@@ -2,6 +2,41 @@
 
 <news>
 
+  <entry date="2006/12/24">
+   <text lang="en">
+
+    Here again we present the christmas release of SimpleMail. However, due to many
+    time contraints on the part of the authors only minor issues could be addressed
+    this time.
+
+	  The changes for version 0.30 were:
+
+	  <list>
+	   <item>Minor fixes in the html display (bgol).</item>
+	   <item>Previewed mails are now marked as read after a certain amount of time.</item>
+	   <item>Minor fixes in the index creation code.</item>
+    </list>
+
+    The SimpleMail Team wishes you all a merry christmas and a happy new year! 
+
+   </text>
+   <text lang="de">
+    Die Weihnachtsversion von SimpleMail wurde veröffentlicht. Mangels Zeit seitens der Autoren,
+    kommen diesmal nur Änderungen hinzu.
+
+	  Die Änderungen seit Version 0.30 sind:
+
+	  <list>
+	   <item>Kleine Bugs in der HTML Anzeige entfernt.</item>
+	   <item>Nachrichten im Vorschaufenster werden als gelesen markiert.</item>
+	   <item>Bug beim Indexerstellen entfernt.</item>
+    </list>
+
+    Das SimpleMail Team wünscht allen ein frohes und besinnliches Weihnachtsfest und einen guten Rutsch ins neue Jahr!
+
+   </text>
+  </entry>
+
   <entry date="2006/02/05">
    <text lang="en">
 

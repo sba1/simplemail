@@ -1,7 +1,7 @@
 <?php
 
-$version = "0.29";
-$date = "2006/02/05";
+$version = "0.30";
+$date = "2006/12/24";
 
   require_once("language.inc.php");
   require_once("support.inc.php");

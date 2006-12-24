@@ -3,6 +3,9 @@
 $version = "0.30";
 $date = "2006/12/24";
 
+$morphversion = "0.29";
+$morphdate = "2006/02/05";
+
   require_once("language.inc.php");
   require_once("support.inc.php");
 
@@ -41,9 +44,9 @@ $date = "2006/12/24";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-morphos.lha?download">'."simplemail-$version-morphos.lha".'</A></td>';
-  echo '<td align="center">'.$version.'</td>';
-  echo '<td align="center">'.$date.'</td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$morphversion.'-morphos.lha?download">'."simplemail-$morphversion-morphos.lha".'</A></td>';
+  echo '<td align="center">'.$morphversion.'</td>';
+  echo '<td align="center">'.$morphdate.'</td>';
 ?>
 </tr>
 

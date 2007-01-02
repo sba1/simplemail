@@ -151,16 +151,15 @@ prepare-release:
 	cp amiga-mui/binaries/MorphOS_simplehtml.library /ram/SimpleMail/Libs/simplehtml.library
 	cp amiga-mui/binaries/MorphOS_startup.img /ram/SimpleMail/Images/startup
 	cp amiga-mui/binaries/MorphOS_shutdown.img /ram/SimpleMail/Images/shutdown
-	cp -r sm/Images/* /ram/SimpleMail/Images/
+#	 cp -r sm/Images/* /ram/SimpleMail/Images/
+	(cd amiga-mui/binaries/; for i in *.img; do cp $$i /ram/SimpleMail/Images/`echo $$i | sed "s/\.img$$//"`; done)
 	cp -r amiga-mui/ARexx/*.smrx /ram/SimpleMail/ARexx/
 	cp sm/locale/*.mo /ram/SimpleMail/Locale/
 	cp Charsets/*.txt /ram/SimpleMail/Charsets/
 	cp .taglines /ram/SimpleMail/
 	cp /Utils/Internet/SimpleMail/Libs/expat.library /ram/SimpleMail/Libs/
-	-rm /ram/simplemail-morphos.lzx
 	-rm /ram/simplemail-morphos.lha
 	lha -r -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
-#	 lzx -9 -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
 
 bump:
 	bumprev2 VERSION=0 FILE=$SimpleMail_rev TAG=SimpleMail

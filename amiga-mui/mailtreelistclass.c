@@ -791,7 +791,7 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 	return DoSuperMethodA(cl, obj, msg);
 }
 
-STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragDrop *msg)
+STATIC ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
 {
   if (msg->obj==obj) return MUIV_DragQuery_Refuse; /* mails should not be resorted by the user */
   return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -1437,7 +1437,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	OM_GET:				return MailTreelist_Get(cl,obj,(struct opGet*)msg);
 		case	MUIM_Setup:		return MailTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:	return MailTreelist_Cleanup(cl,obj,msg);
-		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragDrop *)msg);
+		case  MUIM_DragQuery: return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_Export:		return MailTreelist_Export(cl,obj,(struct MUIP_Export *)msg);
 		case	MUIM_Import:		return MailTreelist_Import(cl,obj,(struct MUIP_Import *)msg);
 		case	MUIM_CreateShortHelp: return MailTreelist_CreateShortHelp(cl,obj,(struct MUIP_CreateShortHelp *)msg);

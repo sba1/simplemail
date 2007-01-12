@@ -49,6 +49,7 @@
 #include "debug.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
+#include "support.h"
 
 /**************************************************************************/
 
@@ -237,9 +238,9 @@ struct MailTreelist_Data
 
 	LONG entries_first; /* first visible entry */
 	LONG entries_visible; /* number of visible entries */
-	LONG entries_active;
-	LONG entries_minselected;
-	LONG entries_maxselected;
+	LONG entries_active; /* index of active entry */
+	LONG entries_minselected; /* the lowest index of any selected entry */ 
+	LONG entries_maxselected; /* the highest index of any selected entry */
 
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
@@ -258,6 +259,7 @@ struct MailTreelist_Data
 	int drawupdate_old_first;
 
 	struct RastPort rp; /* Rastport for font calculations */
+	struct RastPort dragRP; /* Rastport for drag image rastport */
 
 	APTR ttengine_font;
 	int ttengine_baseline;
@@ -909,9 +911,12 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	if (!DoSuperMethodA(cl,obj,(Msg)msg))
 		return 0;
 
-	/* Setup rastport */
+	/* Setup rastports */
 	InitRastPort(&data->rp);
   SetFont(&data->rp,_font(obj));
+
+	InitRastPort(&data->dragRP);
+  SetFont(&data->dragRP,_font(obj));
 
 	/* Find out, if the supplied font is a ttf font, and open it as a ttengine
 	 * font */
@@ -1595,7 +1600,7 @@ ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_M
 }
 
 /*************************************************************************
- MUIM_MailTreelist_HandleEvent
+ MUIM_HandleEvent
 *************************************************************************/
 static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
 {
@@ -1728,11 +1733,81 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										IssueTreelistActiveNotify(cl,obj,data);
 									}
 								}
+
+								if ((mx < 0 || mx > _mwidth(obj)) && data->entries_active != -1)
+								{
+									DoMethod(obj, MUIM_DoDrag, 0, 0, 0);
+								}
     					}
 							break;
 		}
   }
 
+	return 0;
+}
+
+/*************************************************************************
+ MUIM_DragQuery
+*************************************************************************/
+static ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_DragQuery *msg)
+{
+	return MUIV_DragQuery_Refuse; /* mails should not be resorted by the user */
+}
+
+/*************************************************************************
+ MUIM_CreateDragImage
+*************************************************************************/
+static APTR MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct MUIP_CreateDragImage *msg)
+{
+	struct MUI_DragImage *img = (struct MUI_DragImage *)AllocVec(sizeof(struct MUIP_CreateDragImage),MEMF_CLEAR);
+	if (img)
+	{
+		struct MailTreelist_Data *data = INST_DATA(cl, obj);
+		int num_selected = 1;
+		LONG depth = GetBitMapAttr(_screen(obj)->RastPort.BitMap,BMA_DEPTH);
+		int txt_len;
+
+		if (num_selected == 1)
+		{
+			strcpy(data->buf, _("Dragging a single message"));
+		}
+		else
+		{
+			sm_snprintf(data->buf,sizeof(data->buf),_("Dragging %d messages"),num_selected);
+		}
+
+		txt_len = strlen(data->buf);
+		img->width = TextLength(&data->dragRP, data->buf, txt_len) + 2;
+		img->height = data->dragRP.Font->tf_YSize + 2;
+
+		if ((img->bm = AllocBitMap(img->width, img->height, depth, BMF_MINPLANES, _screen(obj)->RastPort.BitMap)))
+		{
+			data->dragRP.BitMap = img->bm;
+			SetAPen(&data->dragRP, _dri(obj)->dri_Pens[FILLPEN]);
+			SetDrMd(&data->dragRP, JAM1);
+			RectFill(&data->dragRP, 0,0,img->width-1,img->height-1);
+			SetAPen(&data->dragRP, _dri(obj)->dri_Pens[FILLTEXTPEN]);
+			Move(&data->dragRP,1,data->dragRP.Font->tf_Baseline+1);
+			Text(&data->dragRP,data->buf,txt_len);
+		}
+
+		img->touchx = msg->touchx;
+		img->touchy = msg->touchy + img->height / 2;
+		img->flags = 0;
+	}
+	return img;
+}
+
+/**************************************************************************
+ MUIM_DeleteDragImage
+**************************************************************************/
+static ULONG MailTreelist_DeleteDragImage(struct IClass *cl, Object *obj, struct MUIP_DeleteDragImage *msg)
+{
+	if (msg->di)
+	{
+		if (msg->di->bm) FreeBitMap(msg->di->bm);
+		FreeVec(msg->di);
+	}
 	return 0;
 }
 
@@ -1753,6 +1828,9 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_Hide:				return MailTreelist_Hide(cl,obj,(struct MUIP_Hide*)msg);
 		case	MUIM_Draw:				return MailTreelist_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return MailTreelist_HandleEvent(cl,obj,(struct MUIP_HandleEvent *)msg);
+		case	MUIM_DragQuery:		return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
+		case	MUIM_CreateDragImage: return MailTreelist_CreateDragImage(cl,obj,(struct MUIP_CreateDragImage *)msg);
+		case	MUIM_DeleteDragImage: return MailTreelist_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage *)msg);
 
 		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);

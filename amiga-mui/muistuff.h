@@ -76,7 +76,25 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 #define MUIA_Dtpic_Name 0x80423d72
 #define DtpicObject MUI_NewObject("Dtpic.mui"
 
+#ifndef MUIM_CreateDragImage
+#define MUIM_CreateDragImage 0x8042EB6F /* Returns MUI_DragImage */
+struct  MUIP_CreateDragImage { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; };
+#endif
+
+#ifndef MUIM_DeleteDragImage
+struct MUI_DragImage
+{
+  struct BitMap *bm;
+  WORD width;
+  WORD height;
+  WORD touchx;
+  WORD touchy;
+  ULONG flags;
+};
+
 #define MUIM_DeleteDragImage 0x80423037
+struct  MUIP_DeleteDragImage { ULONG MethodID; struct MUI_DragImage *di; };
+#endif
 
 #if (MUIMASTER_VMIN < 18)
 #define MUIM_DoDrag 0x804216bb /* private */ /* V18 */

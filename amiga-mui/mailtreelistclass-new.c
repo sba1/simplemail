@@ -180,7 +180,10 @@ static const char *image_names[] =
 
 /**************************************************************************/
 
-#define MUIA_MailTreelist_VertScrollbar	MUIA_MailTreelist_Private
+#define MUIA_MailTreelist_VertScrollbar						MUIA_MailTreelist_Private
+#define MUIA_MailTreelist_HorizScrollbar					MUIA_MailTreelist_Private2
+#define MUIA_MailTreelist_GroupOfHorizScrollbar		MUIA_MailTreelist_Private3
+#define MUIA_MailTreelist_HorizontalFirst					MUIA_MailTreelist_Private4
 
 #define MAX_COLUMNS 10
 
@@ -228,6 +231,8 @@ struct MailTreelist_Data
   struct MUI_EventHandlerNode ehn_mousemove;
 
 	Object *vert_scroller; /* attached vertical scroller */
+	Object *horiz_scroller; /* attached vertical scroller */
+	Object *horiz_scroller_group;
 
 	struct dt_node *images[IMAGE_MAX];
 
@@ -602,6 +607,47 @@ static void EnsureActiveEntryVisibility(struct MailTreelist_Data *data)
 }
 
 /**************************************************************************
+ Calculate the total horizontal space required by the elements.
+**************************************************************************/
+static void CalcHorizontalTotal(struct MailTreelist_Data *data)
+{
+	if (data->horiz_scroller)
+	{
+		int col;
+		int total_width = 0;
+
+		for (col = 0;col < MAX_COLUMNS; col++)
+		{
+			if (!data->ci[col].type)
+				continue;
+
+			total_width += data->ci[col].width + data->column_spacing;
+		}
+
+		total_width -= data->column_spacing;
+
+		set(data->horiz_scroller, MUIA_Prop_Entries, total_width);
+	}
+}
+
+/**************************************************************************
+ Calculate the visible horizontal space
+**************************************************************************/
+static void CalcHorizontalVisible(struct MailTreelist_Data *data, Object *obj)
+{
+	if (data->horiz_scroller)
+	{
+		int total = xget(data->horiz_scroller, MUIA_Prop_Entries);
+		if (data->horiz_scroller_group)
+		{
+			DoMethod(_app(obj), MUIM_Application_PushMethod, data->horiz_scroller_group, 3, MUIM_Set, MUIA_ShowMe, !!(total > _mwidth(obj)));
+		}
+
+		set(data->horiz_scroller, MUIA_Prop_Visible, _mwidth(obj));
+	}
+}
+
+/**************************************************************************
  Draw an entry at entry_pos at the given y location.
 **************************************************************************/
 static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, struct RastPort *rp, int x, int y)
@@ -808,6 +854,12 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		DoMethod(data->vert_scroller, MUIM_Notify,  MUIA_Prop_First, MUIV_EveryTime, (ULONG)obj, 3, MUIM_Set, MUIA_MailTreelist_First, MUIV_TriggerValue);
 	}
 
+	if ((data->horiz_scroller = (Object*)GetTagData(MUIA_MailTreelist_HorizScrollbar,0,msg->ops_AttrList)))
+	{
+		DoMethod(data->horiz_scroller, MUIM_Notify,  MUIA_Prop_First, MUIV_EveryTime, (ULONG)obj, 3, MUIM_Set, MUIA_MailTreelist_HorizontalFirst, MUIV_TriggerValue);
+	}
+
+	data->horiz_scroller_group = (Object*)GetTagData(MUIA_MailTreelist_GroupOfHorizScrollbar,0,msg->ops_AttrList);
 	return (ULONG)obj;
 }
 
@@ -864,6 +916,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 								data->drawupdate = 2;
 								data->drawupdate_old_first = data->entries_first;
 								data->entries_first = new_entries_first;
+								if (data->vert_scroller) set(data->vert_scroller, MUIA_Prop_First, data->entries_first);
 								MUI_Redraw(obj,MADF_DRAWUPDATE);
 							}
 						}
@@ -954,6 +1007,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
 	data->inbetween_setup = 1;
 	CalcEntries(data,obj);
+	CalcHorizontalTotal(data);
 	return 1;
 }
 
@@ -1016,6 +1070,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
+	CalcHorizontalVisible(data,obj);
   DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousebuttons);
 
   data->threepoints_width = TextLength(&data->rp,"...",3);
@@ -1369,12 +1424,16 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	SM_DEBUGF(10,("Added %ld mails into list\n",i));
 	data->entries_num = i;
 
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
+
 	data->make_visible = 1;
 
 	/* Recalc column dimensions and redraw if necessary */
 	if (data->inbetween_setup)
 	{
 		CalcEntries(data,obj);
+		CalcHorizontalTotal(data);
+
 		if (data->inbetween_show)
 		{
 			CalcVisible(data,obj);
@@ -1383,8 +1442,6 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
 		}
 	}
-
-	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 
 	IssueTreelistActiveNotify(cl, obj, data);
 	return 1;
@@ -1439,6 +1496,8 @@ ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTr
 	if (data->inbetween_setup)
 	{
 		CalcEntry(data,obj,mail); /* Calculate only the newly added entry */
+		CalcHorizontalTotal(data);
+
 		if (data->inbetween_show)
 		{
 			CalcVisible(data,obj);
@@ -1529,6 +1588,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 			if (data->inbetween_setup)
 			{
 				CalcEntry(data,obj, msg->newmail); /* Calculate only the newly added entry */
+				CalcHorizontalTotal(data);
 				MUI_Redraw(obj,MADF_DRAWOBJECT);
 			}
 
@@ -1757,7 +1817,7 @@ static ULONG MailTreelist_DragQuery(struct IClass *cl, Object *obj, struct MUIP_
 /*************************************************************************
  MUIM_CreateDragImage
 *************************************************************************/
-static APTR MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct MUIP_CreateDragImage *msg)
+static ULONG MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct MUIP_CreateDragImage *msg)
 {
 	struct MUI_DragImage *img = (struct MUI_DragImage *)AllocVec(sizeof(struct MUIP_CreateDragImage),MEMF_CLEAR);
 	if (img)
@@ -1795,7 +1855,7 @@ static APTR MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct 
 		img->touchy = msg->touchy + img->height / 2;
 		img->flags = 0;
 	}
-	return img;
+	return (ULONG)img;
 }
 
 /**************************************************************************
@@ -1846,19 +1906,98 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 /**************************************************************************/
 
+#if 0
+static struct Hook layout_hook; 
+
+ULONG MailTreelist_Layout_Function(struct Hook *hook, Object *obj, struct MUI_LayoutMsg *lm)
+{
+	struct MUI_ListviewData *data = (struct MUI_ListviewData *)hook->h_Data;
+
+	Object *list;
+	Object *vert;
+	Object *horiz;
+
+	Object *cstate = (Object *)lm->lm_Children->mlh_Head;
+
+	list = NextObject(&cstate);
+	vert = NextObject(&cstate);
+	horiz = NextObject(&cstate);
+
+	switch (lm->lm_Type)
+	{
+		case	MUILM_MINMAX:
+		{
+		    /* Calculate the minmax dimension of the group,
+		    ** We only have a fixed number of children, so we need no NextObject()
+		    */
+		    lm->lm_MinMax.MinWidth = _minwidth(list) + _minwidth(vert);
+		    lm->lm_MinMax.DefWidth = _defwidth(list) + _defwidth(vert);
+		    lm->lm_MinMax.MaxWidth = _maxwidth(list) + _maxwidth(vert);
+		    lm->lm_MinMax.MaxWidth = MIN(lm->lm_MinMax.MaxWidth, MUI_MAXMAX);
+
+		    lm->lm_MinMax.MinHeight = MAX(_minheight(list), _minheight(vert));
+		    lm->lm_MinMax.DefHeight = MAX(_defheight(list), lm->lm_MinMax.MinHeight);
+		    lm->lm_MinMax.MaxHeight = MIN(_maxheight(list), _maxheight(vert));
+		    lm->lm_MinMax.MaxHeight = MIN(lm->lm_MinMax.MaxHeight, MUI_MAXMAX);
+		    return 0;
+		}
+
+		case MUILM_LAYOUT:
+		{
+		    /* Now place the objects between
+		     * (0, 0, lm->lm_Layout.Width - 1, lm->lm_Layout.Height - 1)
+		    */
+
+		    LONG vert_width = _minwidth(vert);
+		    LONG horiz_width = _minheight(horiz);
+		    LONG lay_width = lm->lm_Layout.Width;
+		    LONG lay_height = lm->lm_Layout.Height;
+		    LONG cont_width;
+		    LONG cont_height;
+
+		    /* We need all scrollbars and the button */
+		    set(data->vert, MUIA_ShowMe, TRUE); /* We could also overload MUIM_Show... */
+		    cont_width = lay_width - vert_width;
+		    cont_height = lay_height;
+
+		    MUI_Layout(data->vert, cont_width, 0, vert_width, cont_height,0);
+
+		    /* Layout the group a second time, note that setting _mwidth() and
+		       _mheight() should be enough, or we invent a new flag */
+		    MUI_Layout(data->list, 0, 0, cont_width, cont_height, 0);
+		    return 1;
+		}
+    }
+    return 0;
+}
+#endif
+
+/**************************************************************************/
+
 Object *MakeMailTreelist(ULONG userid, Object **list)
 {
-	Object *scrollbar = ScrollbarObject, End;
-
-	return HGroup,
+	Object *vscrollbar = ScrollbarObject, MUIA_Group_Horiz, FALSE, End;
+	Object *hscrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End;
+	Object *hscrollbargroup = HGroup, MUIA_ShowMe, FALSE, Child, hscrollbar, End;
+	
+	Object *group = VGroup,
 			MUIA_Group_Spacing, 0,
-			Child, *list = MailTreelistObject,
-				InputListFrame,
-				MUIA_ObjectID, userid,
-				MUIA_MailTreelist_VertScrollbar, scrollbar,
+			Child, HGroup,
+				MUIA_Group_Spacing, 0,
+//			MUIA_Group_LayoutHook, &layout_hook,
+				Child, *list = MailTreelistObject,
+					InputListFrame,
+					MUIA_ObjectID, userid,
+					MUIA_MailTreelist_VertScrollbar, vscrollbar,
+					MUIA_MailTreelist_HorizScrollbar, hscrollbar,
+					MUIA_MailTreelist_GroupOfHorizScrollbar, hscrollbargroup,
+					End,
+				Child, vscrollbar,
 				End,
-			Child, scrollbar,
+			Child, hscrollbargroup,
 			End;
+
+	return group;
 }
 
 /**************************************************************************/
@@ -1870,6 +2009,8 @@ int create_mailtreelist_class(void)
 	SM_ENTER;
 	if ((CL_MailTreelist = CreateMCC(MUIC_Area, NULL, sizeof(struct MailTreelist_Data), MailTreelist_Dispatcher)))
 	{
+//		init_hook(&layout_hook,(HOOKFUNC)MailTreelist_Layout_Function);
+
 		SM_DEBUGF(15,("Create CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
 		SM_RETURN(1,"%ld");
 	}

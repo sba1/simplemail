@@ -250,6 +250,8 @@ struct MailTreelist_Data
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
 
+	LONG horiz_first; /* first horizontal visible pixel */
+
 	struct ColumnInfo ci[MAX_COLUMNS];
 	int column_spacing;
 	
@@ -921,6 +923,14 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							}
 						}
 						break;
+
+			case	MUIA_MailTreelist_HorizontalFirst:
+						{
+							data->horiz_first = tidata;
+							if (data->horiz_first < 0) data->horiz_first = 0;
+							MUI_Redraw(obj, MADF_DRAWUPDATE);
+						}
+						break;
 		}
 	}
 
@@ -1157,7 +1167,7 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 	if (buffer_rp)
 	{
 		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
-		DrawEntry(data,obj,cur,buffer_rp,0,0);
+		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0);
 		BltBitMapRastPort(data->buffer_bmap, 0, 0,
 											window_rp, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0xc0);
 	} else
@@ -1183,6 +1193,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	int drawupdate;
 	int background;
 
+	/* Don't do anything when being in quite mode (e.g. used for custom background drawing) */
 	if (data->quiet)
 		return 0;
 
@@ -1264,6 +1275,9 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	background = MUII_ListBack;
 	data->quiet++;
+
+	/* Get correct position of horizontal scroller */
+	if (data->horiz_scroller) data->horiz_first = xget(data->horiz_scroller,MUIA_Prop_First);
 
 	/* Draw title */
 	if (!drawupdate)

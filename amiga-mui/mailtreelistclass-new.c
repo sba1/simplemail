@@ -44,6 +44,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "amigasupport.h"
 #include "compiler.h"
 #include "datatypescache.h"
 #include "debug.h"
@@ -258,6 +259,7 @@ struct MailTreelist_Data
 	LONG threepoints_width; /* Width of ... */
 
 	char buf[2048];
+	char bubblehelp_buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
 	int make_visible;
@@ -281,6 +283,18 @@ struct MailTreelist_Data
 	struct Layer_Info *buffer_li;
 	struct BitMap *buffer_bmap;
 	struct RastPort *buffer_rp;
+	
+	/* translated strings (faster to hold the translation) */
+	char *status_text;
+	char *from_text;
+	char *to_text;
+	char *subject_text;
+	char *reply_text;
+	char *date_text;
+	char *size_text;
+	char *filename_text;
+	char *pop3_text;
+	char *received_text;
 };
 
 /**************************************************************************/
@@ -804,7 +818,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		MUIA_ShowSelState, FALSE,
 		MUIA_FillArea, FALSE,
 		MUIA_Background, MUII_ListBack,
-/*		MUIA_ShortHelp, TRUE,*/
+		MUIA_ShortHelp, TRUE,
 		TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -827,6 +841,17 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		CoerceMethod(cl,obj,OM_DISPOSE);
 		return 0;
 	}
+
+	data->status_text = _("Status");
+	data->from_text = _("From");
+	data->to_text = _("To");
+	data->subject_text = _("Subject");
+	data->reply_text = _("Reply");
+	data->date_text = _("Date");
+	data->size_text = _("Size");
+	data->filename_text = _("Filename");
+	data->pop3_text = _("POP3 Server");
+	data->received_text = _("Received");
 
 	data->ci[0].type = COLUMN_TYPE_STATUS;
 	data->ci[0].width = 150;
@@ -1908,6 +1933,93 @@ static ULONG MailTreelist_DeleteDragImage(struct IClass *cl, Object *obj, struct
 	return 0;
 }
 
+/**************************************************************************
+ MUIM_CreateShortHelp
+**************************************************************************/
+STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct MUIP_CreateShortHelp *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	struct mail_info *m = NULL;
+	int mx = msg->mx - _mleft(obj);
+	int my = msg->my - _mtop(obj);
+
+	if (mx >= 0 && my >= data->title_height && mx < _mwidth(obj) && my < _mheight(obj))
+	{
+		int over_entry = (my - data->title_height) / data->entry_maxheight + data->entries_first;
+		if (over_entry >= 0 && over_entry < data->entries_num)
+		{
+			if ((m = data->entries[over_entry]->mail_info))
+			{
+				char *from = mail_get_from_address(m);
+				char *to = mail_get_to_address(m);
+				char *replyto = mail_get_replyto_address(m);
+				char date_buf[64];
+				char recv_buf[64];
+				char *buf = data->bubblehelp_buf;
+
+				SecondsToString(date_buf,m->seconds);
+				SecondsToString(recv_buf,m->received);
+
+#define BUFFER_SPACE_LEFT (sizeof(data->bubblehelp_buf) - (buf - data->bubblehelp_buf))
+
+				/* Help bubble text */
+				sm_snprintf(buf,BUFFER_SPACE_LEFT,"\33b%s\33n",_("Message"));
+				buf += strlen(buf);
+				if (m->subject)
+				{
+					*buf++ = '\n';
+					buf = mystpcpy(buf,data->subject_text);
+					*buf++ = ':';
+					*buf++ = ' ';
+					buf += utf8tostr(m->subject,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
+				}
+
+				if (from)
+				{
+					*buf++ = '\n';
+					buf = mystpcpy(buf,data->from_text);
+					*buf++ = ':';
+					*buf++ = ' ';
+					buf += utf8tostr(from,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
+				}
+
+				if (to)
+				{
+					*buf++ = '\n';
+					buf = mystpcpy(buf,data->to_text);
+					*buf++ = ':';
+					*buf++ = ' ';
+					buf += utf8tostr(to,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
+				}
+
+				if (replyto)
+				{
+					*buf++ = '\n';
+					buf = mystpcpy(buf,data->reply_text);
+					*buf++ = ':';
+					*buf++ = ' ';
+					buf = mystpcpy(buf,replyto);
+				}
+
+				sm_snprintf(buf,BUFFER_SPACE_LEFT,"\n%s: %s\n%s: %s\n%s: %d\n%s: %s\n%s: %s",
+								data->date_text, date_buf,
+								data->received_text, recv_buf,
+								data->size_text, m->size,
+								data->pop3_text, m->pop3_server?m->pop3_server:"",
+								data->filename_text, m->filename);
+
+				free(replyto);
+				free(to);
+				free(from);
+
+				return (ULONG)data->bubblehelp_buf;
+			}
+		}
+	}	
+	return 0L;
+}
+
+
 /**************************************************************************/
 
 STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
@@ -1928,6 +2040,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_DragQuery:		return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_CreateDragImage: return MailTreelist_CreateDragImage(cl,obj,(struct MUIP_CreateDragImage *)msg);
 		case	MUIM_DeleteDragImage: return MailTreelist_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage *)msg);
+		case	MUIM_CreateShortHelp: return MailTreelist_CreateShortHelp(cl,obj,(struct MUIP_CreateShortHelp *)msg);
 
 		case	MUIM_MailTreelist_Clear:					return MailTreelist_Clear(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_SetFolderMails: return MailTreelist_SetFolderMails(cl, obj, (APTR)msg);

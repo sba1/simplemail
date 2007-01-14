@@ -1639,7 +1639,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 }
 
 /*************************************************************************
- MUIM_MailTreelist_ReplaceMail
+ MUIM_MailTreelist_RefreshMail
 *************************************************************************/
 STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RefreshMail *msg)
 {
@@ -1656,6 +1656,35 @@ STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUI
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
 			break;
 		}
+	}
+
+	return 0;
+}
+
+/*************************************************************************
+ MUIM_MailTreelist_RefreshSelected
+*************************************************************************/
+STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+
+	int i;
+	
+	int num_to_be_refreshed = 0;
+
+	for (i=0;i<data->entries_num;i++)
+	{
+		if (data->entries[i]->flags & LE_FLAG_SELECTED)
+		{
+			CalcEntry(data,obj, data->entries[i]->mail_info); /* Calculate only entry to be refreshed */
+			num_to_be_refreshed++;
+		}
+	}
+
+	if (num_to_be_refreshed > 0)
+	{
+			CalcHorizontalTotal(data);
+			MUI_Redraw(obj,MADF_DRAWOBJECT);
 	}
 
 	return 0;
@@ -2050,6 +2079,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (APTR)msg);
 		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include <diskfont/diskfonttag.h>
+#include <libraries/iffparse.h>
 
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
@@ -298,6 +299,16 @@ struct MailTreelist_Data
 	
 	/* other stuff */
 	Object *context_menu;
+	Object *title_menu;
+
+	Object *show_from_item;
+	Object *show_subject_item;
+	Object *show_reply_item;
+	Object *show_date_item;
+	Object *show_size_item;
+	Object *show_filename_item;
+	Object *show_pop3_item;
+	Object *show_recv_item;
 };
 
 /**************************************************************************/
@@ -891,6 +902,25 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	data->horiz_scroller_group = (Object*)GetTagData(MUIA_MailTreelist_GroupOfHorizScrollbar,0,msg->ops_AttrList);
+
+	data->title_menu = MenustripObject,
+		Child, MenuObjectT(_("Mail Settings")),
+			Child, data->show_from_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','T'),MUIA_Menuitem_Title, _("Show From/To?"), MUIA_UserData, 1, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_subject_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','B'),MUIA_Menuitem_Title, _("Show Subject?"), MUIA_UserData, 2, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_reply_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','T'),MUIA_Menuitem_Title, _("Show Reply-To?"), MUIA_UserData, 3, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_date_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','D','T'),MUIA_Menuitem_Title, _("Show Date?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_size_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','Z'),MUIA_Menuitem_Title, _("Show Size?"), MUIA_UserData, 5, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_filename_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"), MUIA_UserData, 6,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_pop3_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'),MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_recv_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"), MUIA_UserData, 8,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: this"), MUIA_UserData, MUIV_NList_Menu_DefOrder_This, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: all"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
+			End,
+		End;
+
 	return (ULONG)obj;
 }
 
@@ -902,6 +932,7 @@ STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (data->pool) DeletePool(data->pool);
 	if (data->context_menu) MUI_DisposeObject(data->context_menu);
+	if (data->title_menu) MUI_DisposeObject(data->title_menu);
 
 	return DoSuperMethodA(cl,obj,msg);
 }
@@ -2081,7 +2112,8 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
   	data->context_menu = NULL;
   }
 
-//	if (msg->ontop) return (ULONG)data->title_menu; /* The default NList Menu should be returned */
+	if (msg->my >= _mtop(obj) && msg->my < _mtop(obj) + data->title_height)
+		return (ULONG)data->title_menu;
 
 	context_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail")),

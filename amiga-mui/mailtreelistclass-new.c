@@ -1669,6 +1669,8 @@ ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTr
 	if (data->last_active >= after + 1)
 		data->last_active++;
 
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
+
 	/* Recalc column dimensions and redraw if necessary */
 	if (data->inbetween_setup)
 	{

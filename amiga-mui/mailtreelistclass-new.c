@@ -43,6 +43,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "smintl.h"
+#include "simplemail.h"
 #include "support_indep.h"
 
 #include "amigasupport.h"
@@ -219,6 +220,8 @@ struct ColumnInfo
 #define COLUMN_TYPE_FROMTO  1
 #define COLUMN_TYPE_SUBJECT 2
 #define COLUMN_TYPE_STATUS  3
+#define COLUMN_TYPE_REPLYTO	4
+#define COLUMN_TYPE_DATE		5
 
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 
@@ -255,11 +258,13 @@ struct MailTreelist_Data
 	LONG horiz_first; /* first horizontal visible pixel */
 
 	struct ColumnInfo ci[MAX_COLUMNS];
+	int columns_active[MAX_COLUMNS]; /* Indices of active columns */
 	int column_spacing;
 	
 	LONG threepoints_width; /* Width of ... */
 
 	char buf[2048];
+	char buf2[2048];
 	char bubblehelp_buf[2048];
 
 	int quiet; /* needed for rendering, if > 0, don't call super method */
@@ -426,6 +431,32 @@ STATIC VOID GetStatusImages(struct mail_info *m, int *images, int *used_images_p
 	*used_images_ptr = used_images;
 }
 
+/**************************************************************************
+ Prepare the displayed types of columns
+**************************************************************************/
+static void PrepareDisplayedColumns(struct MailTreelist_Data *data)
+{
+	int pos;
+
+	data->columns_active[0] = COLUMN_TYPE_STATUS;
+
+	pos = 1;
+
+	if (xget(data->show_from_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_FROMTO; 
+	if (xget(data->show_subject_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_SUBJECT; 
+	if (xget(data->show_reply_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_REPLYTO; 
+	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_DATE; 
+
+	for (;pos < sizeof(data->columns_active)/sizeof(data->columns_active[0]);pos++)
+		data->columns_active[pos++] = 0;
+
+//	if (xget(data->show_size_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=5 P=\33r BAR");
+//	if (xget(data->show_filename_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=6 BAR");
+//	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=7 BAR");
+//	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=8 BAR");
+	
+}
+
 /**************************************************************************/
 
 
@@ -496,20 +527,27 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 
 	for (col=0;col<MAX_COLUMNS;col++)
 	{
-		if (data->ci[col].flags & COLUMN_FLAG_AUTOWIDTH)
+		int active;
+		struct ColumnInfo *ci;
+		
+		active = data->columns_active[col];
+		if (!active) continue;
+		ci = &data->ci[active];
+
+		if (ci->flags & COLUMN_FLAG_AUTOWIDTH)
 		{
 			int is_ascii7 = 1;
 			char *txt = NULL;
 			int used_images = 0;
 			int images[10];
 	
-			switch (data->ci[col].type)
+			switch (ci->type)
 			{
 				case	COLUMN_TYPE_STATUS:
 							if (m)
 							{
 								GetStatusImages(m,images,&used_images);
-							} else txt = _("Status");
+							} else txt = data->status_text;
 							break;
 
 				case	COLUMN_TYPE_FROMTO:
@@ -518,7 +556,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 								if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
 								GetFromText(m,&txt,&is_ascii7);
 							}
-							else txt = _("From");
+							else txt = data->from_text;
 							break;
 	
 				case	COLUMN_TYPE_SUBJECT:
@@ -527,7 +565,24 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 								txt = m->subject;
 								is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
 							}
-							else txt = _("Subject");
+							else txt = data->subject_text;
+							break;
+
+				case	COLUMN_TYPE_REPLYTO:
+							if (m)
+							{
+								txt = m->reply_addr;
+								is_ascii7 == !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
+							} else txt = data->reply_text;
+							break;
+
+				case	COLUMN_TYPE_DATE:
+							if (m)
+							{
+								SecondsToString(data->buf2, m->seconds);
+								txt = data->buf2;
+								is_ascii7 = TRUE;
+							} else txt = data->date_text;
 							break;
 			}
 
@@ -567,9 +622,9 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 					 * Because there is no text available, we subtract the last space */
 					if (new_width) new_width -= IMAGE_HORIZ_SPACE;
 				}
-				if (new_width > data->ci[col].width)
+				if (new_width > ci->width)
 				{
-					data->ci[col].width = new_width;
+					ci->width = new_width;
 					changed = 1;
 				}
 			}
@@ -648,10 +703,14 @@ static void CalcHorizontalTotal(struct MailTreelist_Data *data)
 
 		for (col = 0;col < MAX_COLUMNS; col++)
 		{
-			if (!data->ci[col].type)
-				continue;
+			int active;
+			struct ColumnInfo *ci;
 
-			total_width += data->ci[col].width + data->column_spacing;
+			active = data->columns_active[col];
+			if (!active) continue;
+			ci = &data->ci[active];
+
+			total_width += ci->width + data->column_spacing;
 		}
 
 		total_width -= data->column_spacing;
@@ -703,19 +762,31 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 	for (col = 0;col < MAX_COLUMNS; col++)
 	{
-		int col_width = data->ci[col].width;
-		int is_ascii7 = 1;
-		char *txt = NULL;
-		int used_images = 0;
+		int col_width;
+		int is_ascii7;
+		char *txt;
+		int used_images;
 		int images[10];
 
-		switch (data->ci[col].type)
+		int active;
+		struct ColumnInfo *ci;
+		
+		active = data->columns_active[col];
+		if (!active) continue;
+		ci = &data->ci[active];
+
+		col_width = ci->width;
+		is_ascii7 = 1;
+		txt = NULL;
+		used_images = 0;
+
+		switch (ci->type)
 		{
 			case	COLUMN_TYPE_STATUS:
 						if (m)
 						{
 							GetStatusImages(m,images,&used_images);
-						} else txt = _("Status");
+						} else txt = data->status_text;
 						break;
 
 			case	COLUMN_TYPE_FROMTO:
@@ -724,7 +795,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
 							GetFromText(m,&txt,&is_ascii7);
 						}
-						else txt = _("From");
+						else txt = data->from_text;
 						break;
 
 			case	COLUMN_TYPE_SUBJECT:
@@ -733,7 +804,24 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							txt = m->subject;
 							is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
 						}
-						else txt = _("Subject");
+						else txt = data->subject_text;
+						break;
+
+			case	COLUMN_TYPE_REPLYTO:
+						if (m)
+						{
+							txt = m->reply_addr;
+							is_ascii7 == !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
+						} else txt = data->reply_text;
+						break;
+
+			case	COLUMN_TYPE_DATE:
+						if (m)
+						{
+							SecondsToString(data->buf2, m->seconds);
+							txt = data->buf2;
+							is_ascii7 = TRUE;
+						} else txt = data->date_text;
 						break;
 		}
 
@@ -868,15 +956,27 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->pop3_text = _("POP3 Server");
 	data->received_text = _("Received");
 
-	data->ci[0].type = COLUMN_TYPE_STATUS;
-	data->ci[0].width = 150;
-	data->ci[0].flags = COLUMN_FLAG_AUTOWIDTH;
-	data->ci[1].type = COLUMN_TYPE_FROMTO;
-	data->ci[1].width = 150;
-	data->ci[1].flags = COLUMN_FLAG_AUTOWIDTH;
-	data->ci[2].type = COLUMN_TYPE_SUBJECT;
-	data->ci[2].width = 200;
-	data->ci[2].flags = COLUMN_FLAG_AUTOWIDTH;
+	data->ci[COLUMN_TYPE_STATUS].type = COLUMN_TYPE_STATUS;
+	data->ci[COLUMN_TYPE_STATUS].width = 50;
+	data->ci[COLUMN_TYPE_STATUS].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_FROMTO].type = COLUMN_TYPE_FROMTO;
+	data->ci[COLUMN_TYPE_FROMTO].width = 150;
+	data->ci[COLUMN_TYPE_FROMTO].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_SUBJECT].type = COLUMN_TYPE_SUBJECT;
+	data->ci[COLUMN_TYPE_SUBJECT].width = 200;
+	data->ci[COLUMN_TYPE_SUBJECT].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_REPLYTO].type = COLUMN_TYPE_REPLYTO;
+	data->ci[COLUMN_TYPE_REPLYTO].width = 200;
+	data->ci[COLUMN_TYPE_REPLYTO].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_DATE].type = COLUMN_TYPE_DATE;
+	data->ci[COLUMN_TYPE_DATE].width = 200;
+	data->ci[COLUMN_TYPE_DATE].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	PrepareDisplayedColumns(data);
 	data->column_spacing = 2;
 
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
@@ -1512,6 +1612,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		if (data->inbetween_show)
 		{
 			CalcVisible(data,obj);
+			CalcHorizontalVisible(data,obj);
+
 			EnsureActiveEntryVisibility(data);
 
 			MUI_Redraw(obj,MADF_DRAWOBJECT);
@@ -1604,8 +1706,6 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 
 		if (from != -1)
 		{
-			DebugPrintF("from=%ld to=%ld i=%ld i-to=%ld data->entries_num=%ld\n",from,to,i,i-to,data->entries_num);
-
 			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(i-to));
 
 			data->entries_num -= to - from;
@@ -2163,6 +2263,8 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
 
 STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)
 {
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
 	switch (xget(msg->item,MUIA_UserData))
 	{
 		case	1:
@@ -2173,8 +2275,11 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case  6:
 		case	7:
 		case	8:
-//				  MailTreelist_UpdateFormat(cl,obj);
+					PrepareDisplayedColumns(data);
+					CalcHorizontalTotal(data);
+					MUI_Redraw(obj,MADF_DRAWOBJECT);
 				  break;
+
 		case	MENU_SETSTATUS_MARK: callback_mails_mark(1); break;
 		case	MENU_SETSTATUS_UNMARK: callback_mails_mark(0); break;
 		case	MENU_SETSTATUS_READ: callback_mails_set_status(MAIL_STATUS_READ); break;

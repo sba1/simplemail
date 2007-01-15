@@ -56,10 +56,17 @@
 
 /**************************************************************************/
 
+#ifdef IDCMP_EXTENDEDMOUSE
+#define HAVE_EXTENDEDMOUSE
+#endif
+
+/**************************************************************************/
+
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
 /**************************************************************************/
+
 
 /***********************************************************************
  Open the given text font as a ttengine font. Returns NULL on failure
@@ -1079,7 +1086,11 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	PrepareDisplayedColumns(data);
 	data->column_spacing = 4;
 
+#ifdef HAVE_EXTENDEDMOUSE
+  data->ehn_mousebuttons.ehn_Events   = IDCMP_EXTENDEDMOUSE;
+#else
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
+#endif
   data->ehn_mousebuttons.ehn_Priority = 0;
   data->ehn_mousebuttons.ehn_Flags    = 0;
   data->ehn_mousebuttons.ehn_Object   = obj;
@@ -2002,6 +2013,35 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 		switch (msg->imsg->Class)
 		{
+#ifdef HAVE_EXTENDEDMOUSE
+			case	IDCMP_EXTENDEDMOUSE:
+						if (msg->imsg->Code & IMSGCODE_INTUIWHEELDATA)
+						{
+							struct IntuiWheelData *iwd = (struct IntuiWheelData *)msg->imsg->IAddress;
+
+							if (_isinobject(obj, msg->imsg->MouseX, msg->imsg->MouseY))
+							{
+								LONG visible, first, delta;
+								GetAttr(MUIA_Prop_Visible, data->vert_scroller, (ULONG*)&visible);
+
+								delta = (visible + 3)/6;
+								if (delta < 1) delta = 1;
+
+								GetAttr(MUIA_Prop_First, data->vert_scroller, (ULONG*)&first);
+								if (first < 0) first = 0;
+
+								if (iwd->WheelY < 0)
+									first -= delta;
+								else if(iwd->WheelY > 0)
+									first += delta;
+																	
+								set(data->vert_scroller, MUIA_Prop_First, first);
+								return MUI_EventHandlerRC_Eat;
+							}
+						}
+						break;
+#endif
+
 	    case    IDCMP_MOUSEBUTTONS:
 	    				if (msg->imsg->Code == SELECTDOWN)
 	    				{

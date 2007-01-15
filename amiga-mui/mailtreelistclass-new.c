@@ -217,11 +217,15 @@ struct ColumnInfo
 	WORD flags;
 };
 
-#define COLUMN_TYPE_FROMTO  1
-#define COLUMN_TYPE_SUBJECT 2
-#define COLUMN_TYPE_STATUS  3
-#define COLUMN_TYPE_REPLYTO	4
-#define COLUMN_TYPE_DATE		5
+#define COLUMN_TYPE_FROMTO  	1
+#define COLUMN_TYPE_SUBJECT 	2
+#define COLUMN_TYPE_STATUS  	3
+#define COLUMN_TYPE_REPLYTO		4
+#define COLUMN_TYPE_DATE			5
+#define COLUMN_TYPE_SIZE			6
+#define COLUMN_TYPE_FILENAME	7
+#define COLUMN_TYPE_POP3			8
+#define COLUMN_TYPE_RECEIVED	9
 
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 
@@ -446,15 +450,13 @@ static void PrepareDisplayedColumns(struct MailTreelist_Data *data)
 	if (xget(data->show_subject_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_SUBJECT; 
 	if (xget(data->show_reply_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_REPLYTO; 
 	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_DATE; 
+	if (xget(data->show_size_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_SIZE;
+	if (xget(data->show_filename_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_FILENAME;
+	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_POP3;
+	if (xget(data->show_recv_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_RECEIVED;
 
 	for (;pos < sizeof(data->columns_active)/sizeof(data->columns_active[0]);pos++)
 		data->columns_active[pos++] = 0;
-
-//	if (xget(data->show_size_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=5 P=\33r BAR");
-//	if (xget(data->show_filename_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=6 BAR");
-//	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=7 BAR");
-//	if (xget(data->show_recv_item,MUIA_Menuitem_Checked)) strcat(buf,",COL=8 BAR");
-	
 }
 
 /**************************************************************************/
@@ -584,6 +586,39 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 								is_ascii7 = TRUE;
 							} else txt = data->date_text;
 							break;
+
+			case	COLUMN_TYPE_FILENAME:
+						if (m)
+						{
+							txt = m->filename;
+							is_ascii7 = TRUE;
+						} else txt = data->filename_text;
+						break;
+
+			case	COLUMN_TYPE_SIZE:
+						if (m)
+						{
+							sprintf(data->buf2,"%d",m->size);
+							is_ascii7 = TRUE;
+						} else txt = data->size_text;
+						break;
+
+			case	COLUMN_TYPE_POP3:
+						if (m)
+						{
+							txt = m->pop3_server;
+							is_ascii7 = TRUE;
+						} else txt = data->pop3_text;
+						break;
+
+			case	COLUMN_TYPE_RECEIVED:
+						if (m)
+						{
+							SecondsToString(data->buf2, m->received);
+							txt = data->buf2;
+							is_ascii7 = TRUE;
+						} else txt = data->received_text;
+						break;
 			}
 
 			if (txt || used_images)
@@ -823,6 +858,39 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							is_ascii7 = TRUE;
 						} else txt = data->date_text;
 						break;
+
+			case	COLUMN_TYPE_FILENAME:
+						if (m)
+						{
+							txt = m->filename;
+							is_ascii7 = TRUE;
+						} else txt = data->filename_text;
+						break;
+
+			case	COLUMN_TYPE_SIZE:
+						if (m)
+						{
+							sprintf(data->buf2,"%d",m->size);
+							is_ascii7 = TRUE;
+						} else txt = data->size_text;
+						break;
+
+			case	COLUMN_TYPE_POP3:
+						if (m)
+						{
+							txt = m->pop3_server;
+							is_ascii7 = TRUE;
+						} else txt = data->pop3_text;
+						break;
+
+			case	COLUMN_TYPE_RECEIVED:
+						if (m)
+						{
+							SecondsToString(data->buf2, m->received);
+							txt = data->buf2;
+							is_ascii7 = TRUE;
+						} else txt = data->received_text;
+						break;
 		}
 
 		/* Bring the text or images on screen */
@@ -975,6 +1043,22 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[COLUMN_TYPE_DATE].type = COLUMN_TYPE_DATE;
 	data->ci[COLUMN_TYPE_DATE].width = 200;
 	data->ci[COLUMN_TYPE_DATE].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_SIZE].type = COLUMN_TYPE_SIZE;
+	data->ci[COLUMN_TYPE_SIZE].width = 60;
+	data->ci[COLUMN_TYPE_SIZE].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_FILENAME].type = COLUMN_TYPE_FILENAME;
+	data->ci[COLUMN_TYPE_FILENAME].width = 200;
+	data->ci[COLUMN_TYPE_FILENAME].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_POP3].type = COLUMN_TYPE_POP3;
+	data->ci[COLUMN_TYPE_POP3].width = 200;
+	data->ci[COLUMN_TYPE_POP3].flags = COLUMN_FLAG_AUTOWIDTH;
+
+	data->ci[COLUMN_TYPE_RECEIVED].type = COLUMN_TYPE_RECEIVED;
+	data->ci[COLUMN_TYPE_RECEIVED].width = 200;
+	data->ci[COLUMN_TYPE_RECEIVED].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	PrepareDisplayedColumns(data);
 	data->column_spacing = 2;

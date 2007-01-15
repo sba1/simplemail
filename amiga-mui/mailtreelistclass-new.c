@@ -600,6 +600,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 						{
 							sprintf(data->buf2,"%d",m->size);
 							is_ascii7 = TRUE;
+							txt = data->buf2;
 						} else txt = data->size_text;
 						break;
 
@@ -784,6 +785,8 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	struct ListEntry *entry;
 	struct mail_info *m;
 
+	int first = 1;
+
 	x1 = x;
 
 	if (!(entry = data->entries[entry_pos]))
@@ -793,7 +796,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	fonty = _font(obj)->tf_YSize;
 	entry_height = data->entry_maxheight;
 
-	SetABPenDrMd(rp,_pens(obj)[MPEN_TEXT],0,JAM1);
+	SetDrMd(rp,JAM1);
 
 	for (col = 0;col < MAX_COLUMNS; col++)
 	{
@@ -809,6 +812,18 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		active = data->columns_active[col];
 		if (!active) continue;
 		ci = &data->ci[active];
+
+		if (!first)
+		{
+			SetAPen(rp,_pens(obj)[MPEN_SHADOW]);
+			Move(rp, x1-3, y);
+			Draw(rp, x1-3, y + entry_height - 1);
+			SetAPen(rp,_pens(obj)[MPEN_SHINE]);
+			Move(rp, x1-2, y);
+			Draw(rp, x1-2, y + entry_height - 1);
+		} else first = 0;
+
+		SetAPen(rp,_pens(obj)[MPEN_TEXT]);
 
 		col_width = ci->width;
 		is_ascii7 = 1;
@@ -872,6 +887,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						{
 							sprintf(data->buf2,"%d",m->size);
 							is_ascii7 = TRUE;
+							txt = data->buf2;
 						} else txt = data->size_text;
 						break;
 
@@ -1061,7 +1077,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[COLUMN_TYPE_RECEIVED].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	PrepareDisplayedColumns(data);
-	data->column_spacing = 2;
+	data->column_spacing = 4;
 
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
   data->ehn_mousebuttons.ehn_Priority = 0;

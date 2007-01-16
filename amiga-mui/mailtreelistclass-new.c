@@ -263,6 +263,10 @@ struct MailTreelist_Data
 	LONG entries_minselected; /* the lowest index of any selected entry */ 
 	LONG entries_maxselected; /* the highest index of any selected entry */
 
+	LONG column_drag; /* -1 if no column is dragged */
+	LONG column_drag_org_width;
+	LONG column_drag_mx;
+
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
 
@@ -1087,7 +1091,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->column_spacing = 4;
 
 #ifdef HAVE_EXTENDEDMOUSE
-  data->ehn_mousebuttons.ehn_Events   = IDCMP_EXTENDEDMOUSE;
+  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_EXTENDEDMOUSE;
 #else
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
 #endif
@@ -1101,6 +1105,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
   data->ehn_mousemove.ehn_Flags    = 0;
   data->ehn_mousemove.ehn_Object   = obj;
   data->ehn_mousemove.ehn_Class    = cl;
+
+	data->column_drag = -1;
 
 	if ((data->vert_scroller = (Object*)GetTagData(MUIA_MailTreelist_VertScrollbar,0,msg->ops_AttrList)))
 	{
@@ -2045,72 +2051,130 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    case    IDCMP_MOUSEBUTTONS:
 	    				if (msg->imsg->Code == SELECTDOWN)
 	    				{
-	    					if (mx >= 0 && my >= data->title_height && mx < _mwidth(obj) && my < _mheight(obj))
+	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
 	    					{
 	    						int new_entries_active;
 	    						int selected_changed;
 	    						int double_click = 0;
 
-									new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
-									if (new_entries_active < 0) new_entries_active = 0;
-									else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
+									int col, total_width = 0;
 
-									/* Unselected entries if some have been selected */
-									if (data->entries_maxselected != -1)
+									int xoff = 0;
+									if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_Entries);
+
+									for (col = 0;col < MAX_COLUMNS; col++)
 									{
-										int cur;
+										int active;
+										struct ColumnInfo *ci;
+
+										active = data->columns_active[col];
+										if (!active) continue;
+										ci = &data->ci[active];
+
+										total_width += ci->width + data->column_spacing;
 										
-										for (cur = data->entries_minselected;cur <= data->entries_maxselected; cur++)
-											data->entries[cur]->flags &= ~LE_FLAG_SELECTED;
-
-										selected_changed = 1;			
-										data->entries_minselected = 0x7fffffff;
-										data->entries_maxselected = -1;
-									} else selected_changed = 0;
-
-									if (new_entries_active != data->entries_active || selected_changed)
-									{
-										data->entries_active = new_entries_active;
-
-										/* Refresh */
-										data->drawupdate = 1;
-										MUI_Redraw(obj,MADF_DRAWUPDATE);
-
-										IssueTreelistActiveNotify(cl,obj,data);
-									} else
-									{
-										if (data->entries_active != -1)
-											double_click = DoubleClick(data->last_secs,data->last_mics,msg->imsg->Seconds,msg->imsg->Micros);
+										if (mx == total_width - 1 || mx == total_width - 2 || mx == total_width - 3)
+										{
+											data->column_drag = active;
+											data->column_drag_org_width = ci->width;
+											data->column_drag_mx = mx;
+											break;
+										}
 									}
 
-									data->last_mics = msg->imsg->Micros;
-									data->last_secs = msg->imsg->Seconds;
-									data->last_active = new_entries_active;
-
-									/* Enable mouse move notifies */
-									if (!data->mouse_pressed)
+									if (data->column_drag != -1)
 									{
-										DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
-							  		data->mouse_pressed = 1;
-									}
-
-									/* On successful double click, issue the notify but also disable move move notifies */
-									if (double_click)
+										/* Enable mouse move notifies */
+										if (!data->mouse_pressed)
+										{
+											DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+								  		data->mouse_pressed = 1;
+										}
+									} else if (my >= data->title_height) 
 									{
-										IssueTreelistDoubleClickNotify(cl,obj,data);
-										DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-										data->mouse_pressed = 0;
-									}
+										new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
+										if (new_entries_active < 0) new_entries_active = 0;
+										else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
+	
+										/* Unselected entries if some have been selected */
+										if (data->entries_maxselected != -1)
+										{
+											int cur;
+											
+											for (cur = data->entries_minselected;cur <= data->entries_maxselected; cur++)
+												data->entries[cur]->flags &= ~LE_FLAG_SELECTED;
+	
+											selected_changed = 1;			
+											data->entries_minselected = 0x7fffffff;
+											data->entries_maxselected = -1;
+										} else selected_changed = 0;
+	
+										if (new_entries_active != data->entries_active || selected_changed)
+										{
+											data->entries_active = new_entries_active;
+	
+											/* Refresh */
+											data->drawupdate = 1;
+											MUI_Redraw(obj,MADF_DRAWUPDATE);
+	
+											IssueTreelistActiveNotify(cl,obj,data);
+										} else
+										{
+											if (data->entries_active != -1)
+												double_click = DoubleClick(data->last_secs,data->last_mics,msg->imsg->Seconds,msg->imsg->Micros);
+										}
+	
+										data->last_mics = msg->imsg->Micros;
+										data->last_secs = msg->imsg->Seconds;
+										data->last_active = new_entries_active;
+	
+										/* Enable mouse move notifies */
+										if (!data->mouse_pressed)
+										{
+											DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+								  		data->mouse_pressed = 1;
+										}
+	
+										/* On successful double click, issue the notify but also disable move move notifies */
+										if (double_click)
+										{
+											IssueTreelistDoubleClickNotify(cl,obj,data);
+											DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+											data->mouse_pressed = 0;
+										}
+		    					}
 	    					}
 	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)
 	    				{
 								/* Disable mouse move notifies */
 							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 							  data->mouse_pressed = 0;
+							  data->column_drag = -1;
+	    				} else if (msg->imsg->Code == MENUDOWN && data->mouse_pressed)
+	    				{
+	    					if (data->column_drag != -1)
+	    					{
+	    						data->ci[data->column_drag].width = data->column_drag_org_width;
+									MUI_Redraw(obj,MADF_DRAWOBJECT);
+
+									/* Disable mouse move notifies */
+								  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+								  data->mouse_pressed = 0;
+								  data->column_drag = -1;								
+	    					}
+								return MUI_EventHandlerRC_Eat;
 	    				}
 	    				break;
 
 			case		IDCMP_MOUSEMOVE:
+							if (data->column_drag != -1)
+							{
+								struct ColumnInfo *ci;
+								ci = &data->ci[data->column_drag];
+								ci->width = data->column_drag_org_width + mx - data->column_drag_mx;
+								if (ci->width < 0) ci->width = 0;
+								MUI_Redraw(obj,MADF_DRAWOBJECT);
+							} else
     					{
     						int new_entries_active, old_entries_active;
 

@@ -984,14 +984,14 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		
 					txt_len = strlen(txt);
 					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
-					if (fit < txt_len)
+					if (fit < txt_len && (available_col_width > data->threepoints_width))
 					{
 						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 					}
 		
 					Text(rp,txt,fit);
 		
-					if (fit < txt_len)
+					if (fit < txt_len && (available_col_width > data->threepoints_width))
 						Text(rp,"...",3);
 				}
 			}
@@ -2157,6 +2157,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    					{
 	    						data->ci[data->column_drag].width = data->column_drag_org_width;
 									MUI_Redraw(obj,MADF_DRAWOBJECT);
+									CalcHorizontalTotal(data);
 
 									/* Disable mouse move notifies */
 								  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
@@ -2175,6 +2176,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								ci->width = data->column_drag_org_width + mx - data->column_drag_mx;
 								if (ci->width < 0) ci->width = 0;
 								MUI_Redraw(obj,MADF_DRAWOBJECT);
+								CalcHorizontalTotal(data);
 							} else
     					{
     						int new_entries_active, old_entries_active;

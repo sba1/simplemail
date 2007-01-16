@@ -2057,10 +2057,11 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    						int selected_changed;
 	    						int double_click = 0;
 
-									int col, total_width = 0;
+									/* column dragging */
+									int col;
 
 									int xoff = 0;
-									if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_Entries);
+									if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_First);
 
 									for (col = 0;col < MAX_COLUMNS; col++)
 									{
@@ -2071,9 +2072,9 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										if (!active) continue;
 										ci = &data->ci[active];
 
-										total_width += ci->width + data->column_spacing;
+										xoff += ci->width + data->column_spacing;
 										
-										if (mx == total_width - 1 || mx == total_width - 2 || mx == total_width - 3)
+										if (mx == xoff - 1 || mx == xoff - 2 || mx == xoff - 3)
 										{
 											data->column_drag = active;
 											data->column_drag_org_width = ci->width;

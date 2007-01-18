@@ -195,8 +195,6 @@ static const char *image_names[] =
 #define MUIA_MailTreelist_GroupOfHorizScrollbar		MUIA_MailTreelist_Private3
 #define MUIA_MailTreelist_HorizontalFirst					MUIA_MailTreelist_Private4
 
-#define MAX_COLUMNS 10
-
 #define ENTRY_TITLE (-1)
 
 struct ListEntry
@@ -224,17 +222,9 @@ struct ColumnInfo
 	WORD flags;
 };
 
-#define COLUMN_TYPE_FROMTO  	1
-#define COLUMN_TYPE_SUBJECT 	2
-#define COLUMN_TYPE_STATUS  	3
-#define COLUMN_TYPE_REPLYTO		4
-#define COLUMN_TYPE_DATE			5
-#define COLUMN_TYPE_SIZE			6
-#define COLUMN_TYPE_FILENAME	7
-#define COLUMN_TYPE_POP3			8
-#define COLUMN_TYPE_RECEIVED	9
-
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
+#define COLUMN_FLAG_SORT1UP   (1L << 1)
+#define COLUMN_FLAG_SORT1DOWN (1L << 2)
 
 struct MailTreelist_Data
 {
@@ -266,6 +256,9 @@ struct MailTreelist_Data
 	LONG column_drag; /* -1 if no column is dragged */
 	LONG column_drag_org_width;
 	LONG column_drag_mx;
+
+	LONG title_column_click;
+	LONG title_column_click2;
 
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
@@ -1107,6 +1100,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
   data->ehn_mousemove.ehn_Class    = cl;
 
 	data->column_drag = -1;
+	data->title_column_click = -1;
+	data->title_column_click2 = -1;
 
 	if ((data->vert_scroller = (Object*)GetTagData(MUIA_MailTreelist_VertScrollbar,0,msg->ops_AttrList)))
 	{
@@ -1209,6 +1204,27 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							MUI_Redraw(obj, MADF_DRAWUPDATE);
 						}
 						break;
+
+			case	MUIA_MailTreelist_TitleClick:
+						{
+							int col;
+
+				  		/* Clear all sorting flags before setting the selected one */
+							for (col = 0;col < MAX_COLUMNS; col++)
+								data->ci[col].flags &= ~(COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
+
+							int decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
+							col = tidata & (~MUIV_MailTreelist_TitleMark_Decreasing);
+							if (col > 0 && col < MAX_COLUMNS)
+							{
+								if (decreasing)
+									data->ci[col].flags |= COLUMN_FLAG_SORT1DOWN;
+								else
+									data->ci[col].flags |= COLUMN_FLAG_SORT1UP;
+							}
+							MUI_Redraw(obj, MADF_DRAWOBJECT);
+						}
+						break;
 		}
 	}
 
@@ -1234,6 +1250,12 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	if (msg->opg_AttrID == MUIA_MailTreelist_DoubleClick)
 	{
 		*msg->opg_Storage = 0;
+		return 1;
+	}
+
+	if (msg->opg_AttrID == MUIA_MailTreelist_TitleClick)
+	{
+		*msg->opg_Storage = data->title_column_click;
 		return 1;
 	}
 
@@ -2072,8 +2094,17 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										if (!active) continue;
 										ci = &data->ci[active];
 
+										if (mx > xoff && mx <= xoff + ci->width)
+										{
+											if (my < data->title_height)
+											{
+												data->title_column_click = active;
+											}
+											break;
+										}
+
 										xoff += ci->width + data->column_spacing;
-										
+
 										if (mx == xoff - 1 || mx == xoff - 2 || mx == xoff - 3)
 										{
 											data->column_drag = active;
@@ -2083,7 +2114,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										}
 									}
 
-									if (data->column_drag != -1)
+									if (data->column_drag != -1 || data->title_column_click != -1)
 									{
 										/* Enable mouse move notifies */
 										if (!data->mouse_pressed)
@@ -2091,7 +2122,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 											DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
 								  		data->mouse_pressed = 1;
 										}
-									} else if (my >= data->title_height) 
+									} else if (my >= data->title_height)
 									{
 										new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
 										if (new_entries_active < 0) new_entries_active = 0;
@@ -2150,7 +2181,12 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								/* Disable mouse move notifies */
 							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 							  data->mouse_pressed = 0;
+							  if (data->title_column_click != -1)
+							  	set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
+
 							  data->column_drag = -1;
+							  data->title_column_click = -1;
+							  data->title_column_click2 = -1;
 	    				} else if (msg->imsg->Code == MENUDOWN && data->mouse_pressed)
 	    				{
 	    					if (data->column_drag != -1)

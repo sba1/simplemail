@@ -38,6 +38,25 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIA_MailTreelist_Private2		     (TAG_USER | 0x300F0006)
 #define MUIA_MailTreelist_Private3		     (TAG_USER | 0x300F0007)
 #define MUIA_MailTreelist_Private4		     (TAG_USER | 0x300F0008)
+#define MUIA_MailTreelist_TitleClick       (TAG_USER | 0x300F0009)
+#define MUIA_MailTreelist_TitleClick2      (TAG_USER | 0x300F000A)
+#define MUIA_MailTreelist_TitleMark        (TAG_USER | 0x300F000B) /* One of COLUMN_TYPE_xxx bit 31 indicates decreasing marker */
+#define MUIA_MailTreelist_TitleMark2       (TAG_USER | 0x300F000C) /* One of COLUMN_TYPE_xxx bit 31 indicates decreasing marker */
+
+#define COLUMN_TYPE_FROMTO  	1
+#define COLUMN_TYPE_SUBJECT 	2
+#define COLUMN_TYPE_STATUS  	3
+#define COLUMN_TYPE_REPLYTO		4
+#define COLUMN_TYPE_DATE			5
+#define COLUMN_TYPE_SIZE			6
+#define COLUMN_TYPE_FILENAME	7
+#define COLUMN_TYPE_POP3			8
+#define COLUMN_TYPE_RECEIVED	9
+
+#define MAX_COLUMNS 10
+
+#define MUIV_MailTreelist_TitleMark_Decreasing (1L << 31)
+
 
 #define MUIM_MailTreelist_Clear            (TAG_USER | 0x300F0101)
 #define MUIM_MailTreelist_Freeze           (TAG_USER | 0x300F0102)

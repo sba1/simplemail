@@ -1524,7 +1524,11 @@ int create_mailtreelist_class(void)
 
 void delete_mailtreelist_class(void)
 {
-	if (!use_old_class) return delete_new_mailtreelist_class();
+	if (!use_old_class)
+	{
+		delete_new_mailtreelist_class();
+		return;
+	}
 	
 	SM_ENTER;
 	

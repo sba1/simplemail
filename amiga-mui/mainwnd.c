@@ -382,6 +382,9 @@ static void mailtreelist_2_title_click(void)
 		{
 			new_sort |= FOLDER_SORT_REVERSE;
 		}
+	} else
+	{
+		title_click |= MUIV_MailTreelist_TitleMark_Decreasing;
 	}
 	set(mail_tree, MUIA_MailTreelist_TitleMark, title_click);
 

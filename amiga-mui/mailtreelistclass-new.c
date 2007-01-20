@@ -1205,15 +1205,16 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 						}
 						break;
 
-			case	MUIA_MailTreelist_TitleClick:
+			case	MUIA_MailTreelist_TitleMark:
 						{
 							int col;
+							int decreasing;
 
 				  		/* Clear all sorting flags before setting the selected one */
 							for (col = 0;col < MAX_COLUMNS; col++)
 								data->ci[col].flags &= ~(COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
 
-							int decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
+							decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
 							col = tidata & (~MUIV_MailTreelist_TitleMark_Decreasing);
 							if (col > 0 && col < MAX_COLUMNS)
 							{
@@ -1456,6 +1457,65 @@ STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide 
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
+
+/*************************************************************************
+ Draw sort markers
+*************************************************************************/
+static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastPort *rp, int xoff, int y)
+{
+	int col;
+
+	xoff -= data->horiz_first;
+
+	/* Draw markers */
+	for (col = 0;col < MAX_COLUMNS; col++)
+	{
+		int col_width;
+		int active;
+		struct ColumnInfo *ci;
+	
+		active = data->columns_active[col];
+		if (!active) continue;
+		ci = &data->ci[active];
+
+		col_width = ci->width;
+		
+		if (ci->flags & COLUMN_FLAG_SORT1UP)
+		{
+			int width = ((data->title_height - 8)/2)*2+1;
+
+			if (width < col_width - 2)
+			{
+				SetAPen(rp, _pens(obj)[MPEN_SHADOW]);
+				Move(rp, xoff + col_width - 2 - width/2, y+2+width);
+				Draw(rp, xoff + col_width - 2 - width,   y+2);
+				Draw(rp, xoff + col_width - 2,           y+2);
+				SetAPen(rp, _pens(obj)[MPEN_SHINE]);
+				Draw(rp, xoff + col_width - 2 - width/2, y+2+width);
+			}
+			break;
+		}
+
+		if (ci->flags & COLUMN_FLAG_SORT1DOWN)
+		{
+			int width = ((data->title_height - 8)/2)*2+1;
+
+			if (width < col_width - 2)
+			{
+				SetAPen(rp, _pens(obj)[MPEN_SHINE]);
+				Move(rp, xoff + col_width - 2 - width/2, y+2);
+				Draw(rp, xoff + col_width - 2 - width,   y+2+width);
+				Draw(rp, xoff + col_width - 2,           y+2+width);
+				SetAPen(rp, _pens(obj)[MPEN_SHADOW]);
+				Draw(rp, xoff + col_width - 2 - width/2, y+2);
+			}
+			break;
+		}
+	
+		xoff += ci->width + data->column_spacing;
+	}
+}
+
 /*************************************************************************
  Note, if you draw buffered, you must have _rp(obj) set to the
  buffer_rp before!
@@ -1468,12 +1528,14 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 	{
 		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
 		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0);
+		if (cur == ENTRY_TITLE) DrawMarker(data,obj,buffer_rp,0,0);
 		BltBitMapRastPort(data->buffer_bmap, 0, 0,
 											window_rp, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0xc0);
 	} else
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0,0);
 		DrawEntry(data,obj,cur,window_rp,_mleft(obj),window_y);
+		if (cur == ENTRY_TITLE) DrawMarker(data,obj,window_rp,_mleft(obj),window_y);
 	}
 }
 

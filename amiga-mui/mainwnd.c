@@ -375,11 +375,16 @@ static void mailtreelist_2_title_click(void)
 	if (new_sort == (old_sort & ~(FOLDER_SORT_REVERSE)))
 	{
 		if (old_sort & FOLDER_SORT_REVERSE)
+		{
 			new_sort &= ~FOLDER_SORT_REVERSE;
-		else
+			title_click |= MUIV_MailTreelist_TitleMark_Decreasing;
+		}	else
+		{
 			new_sort |= FOLDER_SORT_REVERSE;
+		}
 	}
-		 
+	set(mail_tree, MUIA_MailTreelist_TitleMark, title_click);
+
 	folder_set_primary_sort(folder, new_sort);
 	folder_config_save(folder);
 	main_set_folder_mails(folder);

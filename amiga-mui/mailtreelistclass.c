@@ -49,13 +49,14 @@
 #include "folder.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
-#include "support_indep.h"
+#include "support.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 
@@ -1220,7 +1221,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	return 0;
 }
 
-ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
+STATIC ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
 {
 	void *handle = msg->handle;
 
@@ -1247,7 +1248,7 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 #endif
 }
 
-ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
+STATIC ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
 {
 	void *handle = msg->handle;
 
@@ -1312,7 +1313,7 @@ static struct MUI_NListtree_TreeNode *main_find_insert_node(Object *obj, struct 
 }
 #endif
 
-ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
+STATIC ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
 {
 	int after = msg->after;
 	struct mail_info *mail = msg->m;
@@ -1468,8 +1469,18 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 
 /*****************************************************************************/
 
+int create_new_mailtreelist_class(void);
+void delete_new_mailtreelist_class(void);
+Object *MakeNewMailTreelist(ULONG userid, Object **list);
+
+static int use_old_class;
+
+/*****************************************************************************/
+
 Object *MakeMailTreelist(ULONG userid, Object **list)
 {
+	if (!use_old_class) return MakeNewMailTreelist(userid, list);
+
 	return NListviewObject,
 						MUIA_CycleChain,1,
 						MUIA_NListview_NList, *list = MailTreelistObject,
@@ -1493,7 +1504,15 @@ struct MUI_CustomClass *CL_MailTreelist;
 
 int create_mailtreelist_class(void)
 {
+	char *val;
+
+	if ((val = sm_getenv("SIMPLEMAIL_OLDMAILLIST")))
+		if (*val != '0') use_old_class = 1;
+
+	if (!use_old_class) return create_new_mailtreelist_class();
+
 	SM_ENTER;
+
 	if ((CL_MailTreelist = CreateMCC(MAILLIST_PARENTCLASS ,NULL,sizeof(struct MailTreelist_Data),MailTreelist_Dispatcher)))
 	{
 		SM_DEBUGF(15,("Create CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
@@ -1505,7 +1524,10 @@ int create_mailtreelist_class(void)
 
 void delete_mailtreelist_class(void)
 {
+	if (!use_old_class) return delete_new_mailtreelist_class();
+	
 	SM_ENTER;
+	
 	if (CL_MailTreelist)
 	{
 		if (MUI_DeleteCustomClass(CL_MailTreelist))

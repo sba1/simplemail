@@ -77,6 +77,7 @@ ARCHSRCS=\
 	iconclass.c \
 	mailinfoclass.c \
 	mailtreelistclass.c \
+	mailtreelistclass-new.c \
 	mainwnd.c \
 	messageviewclass.c \
 	muistuff.c \

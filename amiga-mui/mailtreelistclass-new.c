@@ -1828,7 +1828,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 /*************************************************************************
  MUIM_MailTreelist_InsertMail
 *************************************************************************/
-ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
+static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_InsertMail *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 
@@ -2032,7 +2032,7 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 /*************************************************************************
  MUIM_MailTreelist_GetFirstSelected
 *************************************************************************/
-ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
+static ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetFirstSelected *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 	int *handle_ptr = (int*)msg->handle;
@@ -2060,7 +2060,7 @@ ULONG MailTreelist_GetFirstSelected(struct IClass *cl, Object *obj, struct MUIP_
 /*************************************************************************
  MUIM_MailTreelist_GetNextSelected
 *************************************************************************/
-ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
+static ULONG MailTreelist_GetNextSelected(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_GetNextSelected *msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 	int *handle_ptr = (int*)msg->handle;
@@ -2719,7 +2719,7 @@ ULONG MailTreelist_Layout_Function(struct Hook *hook, Object *obj, struct MUI_La
 
 /**************************************************************************/
 
-Object *MakeMailTreelist(ULONG userid, Object **list)
+Object *MakeNewMailTreelist(ULONG userid, Object **list)
 {
 	Object *vscrollbar = ScrollbarObject, MUIA_Group_Horiz, FALSE, End;
 	Object *hscrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End;
@@ -2747,9 +2747,9 @@ Object *MakeMailTreelist(ULONG userid, Object **list)
 
 /**************************************************************************/
 
-struct MUI_CustomClass *CL_MailTreelist;
+//struct MUI_CustomClass *CL_MailTreelist;
 
-int create_mailtreelist_class(void)
+int create_new_mailtreelist_class(void)
 {
 	SM_ENTER;
 	if ((CL_MailTreelist = CreateMCC(MUIC_Area, NULL, sizeof(struct MailTreelist_Data), MailTreelist_Dispatcher)))
@@ -2763,7 +2763,7 @@ int create_mailtreelist_class(void)
 	SM_RETURN(0,"%ld");
 }
 
-void delete_mailtreelist_class(void)
+void delete_new_mailtreelist_class(void)
 {
 	SM_ENTER;
 	if (CL_MailTreelist)

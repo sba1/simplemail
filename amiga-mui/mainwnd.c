@@ -164,6 +164,7 @@ static LONG Weights[6] = {33, 100, 100, 100, 100, 100};
 
 static void main_refresh_folders_text(void);
 static void settings_show_changed(void);
+static LONG mailtreelist_2_sort2marker(int sort);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 {
@@ -235,6 +236,9 @@ static void mailtreelist_update_title_markers(void)
 
 	nnset(mail_tree, MUIA_NList_TitleMark, sortmode2titlemark(folder_get_primary_sort(folder),folder_get_type(folder)));
 	nnset(mail_tree, MUIA_NList_TitleMark2, sortmode2titlemark(folder_get_secondary_sort(folder),folder_get_type(folder)));
+
+	nnset(mail_tree, MUIA_MailTreelist_TitleMark, mailtreelist_2_sort2marker(folder_get_primary_sort(folder)));
+	nnset(mail_tree, MUIA_MailTreelist_TitleMark2, mailtreelist_2_sort2marker(folder_get_secondary_sort(folder)));
 }
 
 /******************************************************************
@@ -344,6 +348,28 @@ static void mailtreelist_title_click(void)
 		main_set_folder_mails(folder);
 		read_refresh_prevnext_button(folder);
 	}
+}
+
+static LONG mailtreelist_2_sort2marker(int sort)
+{
+	LONG marker = 0;
+	switch (sort & ~(FOLDER_SORT_REVERSE))
+	{
+		case	FOLDER_SORT_FROMTO: marker = COLUMN_TYPE_FROMTO; break;
+		case	FOLDER_SORT_SUBJECT: marker = COLUMN_TYPE_SUBJECT; break;
+		case	FOLDER_SORT_STATUS: marker = COLUMN_TYPE_STATUS; break;
+		case	FOLDER_SORT_REPLY: marker = COLUMN_TYPE_REPLYTO; break;
+		case	FOLDER_SORT_DATE: marker = COLUMN_TYPE_DATE; break;
+		case	FOLDER_SORT_SIZE: marker = COLUMN_TYPE_SIZE; break;
+		case	FOLDER_SORT_FILENAME: marker = COLUMN_TYPE_FILENAME; break;
+		case	FOLDER_SORT_POP3: marker = COLUMN_TYPE_POP3; break;
+		case	FOLDER_SORT_RECV: marker = COLUMN_TYPE_RECEIVED; break;
+	}
+	
+	if (sort & FOLDER_SORT_REVERSE)
+		marker |= MUIV_MailTreelist_TitleMark_Decreasing;
+
+	return marker;
 }
 
 static void mailtreelist_2_title_click(void)

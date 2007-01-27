@@ -40,8 +40,13 @@
 
 #include "amigasupport.h"
 
+/**************************************************************/
+
 static Object *img_object;
+static int img_usage_count;
 static struct list dt_list;
+
+/**************************************************************/
 
 struct dt_node
 {
@@ -159,6 +164,7 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 			{
 				if (!img_object) img_object = LoadPicture("PROGDIR:Images/images",scr);
 				if (!img_object) break;
+				img_usage_count++;
 			}
 			node->count++;
 			return node;
@@ -197,15 +203,15 @@ void dt_dispose_picture(struct dt_node *node)
 	if (node && node->count)
 	{
 		node->count--;
-
-/*
-		if (node->count == 1)
+		if (!node->o)
 		{
-			node_remove(&node->node);
-			DisposeDTObject(node->o);
-			free(node);
+			img_usage_count--;
+			if (!img_usage_count)
+			{
+				DisposeDTObject(img_object);
+				img_object = NULL;
+			}
 		}
-*/
 	}
 }
 

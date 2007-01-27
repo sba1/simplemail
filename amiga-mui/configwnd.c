@@ -30,7 +30,8 @@
 #include <libraries/mui.h>
 #include <mui/texteditor_mcc.h>
 #include <mui/betterstring_mcc.h>
-#include <mui/nlistview_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <mui/popplaceholder_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
@@ -64,14 +65,20 @@
 #include "signaturecycleclass.h"
 #include "configwnd_stuff.h"
 #include "appicon.h"
+#include "foldertreelistclass.h"
 
 void account_recv_port_update(void);
 static void account_refresh_signature_cycle(void);
+
+struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
 
 static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
 static Object *user_charset_string;
+static Object *startup_folder_popobject;
+static Object *startup_folder_string;
+static Object *startup_folder_tree = NULL;
 static Object *appicon_show_cycle;
 static Object *appicon_label_popph;
 static Object *receive_preselection_radio;
@@ -195,6 +202,49 @@ static Object *image_prefs_spam_obj;
 
 static Object *groups[GROUPS_MAX];
 static Object *config_last_visisble_group;
+
+/**************************************************************************
+ Refreshes the folders
+**************************************************************************/
+void config_refresh_folders(void)
+{
+	if (startup_folder_tree) DoMethod(startup_folder_tree, MUIM_FolderTreelist_Refresh, NULL);
+}
+
+/******************************************************************
+ Hookfunctions for the startup_folder_popobject
+*******************************************************************/
+STATIC ASM VOID startup_folder_objstr(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
+{
+	struct MUI_NListtree_TreeNode *tree_node;
+	tree_node = (struct MUI_NListtree_TreeNode *)xget(list, MUIA_NListtree_Active);
+
+	if (tree_node)
+	{
+		struct folder *f = (struct folder *)tree_node->tn_User;
+		if (f)
+		{
+			set(str, MUIA_String_Contents, f->name);
+		}
+	}
+}
+
+STATIC ASM LONG startup_folder_strobj(REG(a0, struct Hook *h), REG(a2, Object *list), REG(a1, Object *str))
+{
+	char *s;
+	struct folder *f;
+
+	get(str, MUIA_String_Contents, &s);
+
+	config_refresh_folders();
+
+  f = folder_find_by_name(s);
+  if (f)
+  {
+		set(list, MUIA_NListtree_Active, FindListtreeUserData(startup_folder_tree, f));
+  }
+	return 1;
+}
 
 /******************************************************************
  Stores the current setting into the last selected account
@@ -539,6 +589,7 @@ static int config_use(void)
 	user.config.readwnd_next_after_move = xget(mails_readmisc_next_after_move,MUIA_Selected);
 
 	if (user.config.appicon_label) free(user.config.appicon_label);
+	if (user.config.startup_folder_name) free(user.config.startup_folder_name);
 	if (user.config.read_propfont) free(user.config.read_propfont);
 	if (user.config.read_fixedfont) free(user.config.read_fixedfont);
 	if (user.config.receive_sound_file) free(user.config.receive_sound_file);
@@ -548,6 +599,7 @@ static int config_use(void)
 	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
 	user.config.appicon_show = xget(appicon_show_cycle, MUIA_Cycle_Active);
 	user.config.appicon_label = mystrdup((char*)xget(appicon_label_popph, MUIA_Popph_Contents));
+	user.config.startup_folder_name = mystrdup((char*)xget(startup_folder_string, MUIA_String_Contents));
 	user.config.receive_preselection = xget(receive_preselection_radio,MUIA_Radio_Active);
 	user.config.receive_size = value2size(xget(receive_sizes_sizes, MUIA_Numeric_Value));
 	user.config.receive_autocheck = xget(receive_autocheck_string,MUIA_String_Integer);
@@ -672,6 +724,7 @@ static void config_selected(void)
 *******************************************************************/
 static int init_user_group(void)
 {
+	static struct Hook startup_folder_objstr_hook, startup_folder_strobj_hook;
   static char *appicon_show_labels[4];
 	static const char *appicon_popph_array[] =
 	{
@@ -688,6 +741,9 @@ static int init_user_group(void)
   appicon_show_labels[1] = _("Iconified");
   appicon_show_labels[2] = _("Never");
   appicon_show_labels[3] = NULL;
+
+	init_hook(&startup_folder_objstr_hook, (HOOKFUNC)startup_folder_objstr);
+	init_hook(&startup_folder_strobj_hook, (HOOKFUNC)startup_folder_strobj);
 
 	groups[GROUPS_USER] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -720,6 +776,21 @@ static int init_user_group(void)
 				End,
 			End,
 		Child, HGroup,
+			Child, MakeLabel(_("Folder to display at startup")),
+			Child, startup_folder_popobject = PopobjectObject,
+				MUIA_Popstring_Button, PopButton(MUII_PopUp),
+				MUIA_Popstring_String, startup_folder_string = BetterStringObject, StringFrame, End,
+				MUIA_Popobject_ObjStrHook, &startup_folder_objstr_hook,
+				MUIA_Popobject_StrObjHook, &startup_folder_strobj_hook,
+				MUIA_Popobject_Object, NListviewObject,
+					MUIA_NListview_NList, startup_folder_tree = FolderTreelistObject,
+						MUIA_NListtree_DoubleClick, MUIV_NListtree_DoubleClick_Tree,
+						MUIA_FolderTreelist_ShowRoot, FALSE,
+						End,
+					End,
+				End,
+			End,
+		Child, HGroup,
 		  Child, MakeLabel(_("AppIcon Show")),
 		  Child, HGroup, Child, appicon_show_cycle = MakeCycle(_("AppIcon Show"), appicon_show_labels), Child, HSpace(0), End,
 			Child, MakeLabel(_("AppIcon Label")),
@@ -729,9 +800,20 @@ static int init_user_group(void)
 				End,
 			End,
 		End;
+
 	if (!groups[GROUPS_USER]) return 0;
 
   set(appicon_show_cycle, MUIA_Cycle_Active, user.config.appicon_show);
+
+	DoMethod(startup_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, (ULONG)startup_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
+	config_refresh_folders();
+	if (user.config.startup_folder_name)
+	{
+		set(startup_folder_string, MUIA_String_Contents, user.config.startup_folder_name);
+	} else
+	{
+		set(startup_folder_string, MUIA_String_Contents, folder_incoming()->name);
+	}
 
 	return 1;
 }
@@ -2299,6 +2381,7 @@ void close_config(void)
 		MUI_DisposeObject(config_wnd);
 		config_wnd = NULL;
 		config_last_visisble_group = NULL;
+		startup_folder_tree = NULL;
 	}
 	delete_sizes_class();
 }

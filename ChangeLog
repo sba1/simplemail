@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-01-28  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/configwnd.c, amiga-mui/gui_main.c, configuration.(c|h), 
+	  doc/amiga/SimpleMail.guide, indep-include/configwnd.h, simplemail.c:
+	  Added a new config option "Folder to display at startup".
+
 2007-01-27  Bernd Gollesch <bgollesch@sime.at>
 	* smakefile: Added "amiga-mui/mailtreelistclass-new.c" to the generated makefile
 	  for SAS/C (yes, I'm still using it).

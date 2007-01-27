@@ -488,8 +488,18 @@ int gui_init(void)
 
 		if (main_window_open())
 		{
+			struct folder *f = NULL;
+
 			startupwnd_close();
-			main_set_folder_active(folder_incoming());
+			if (user.config.startup_folder_name)
+			{
+				f = folder_find_by_name(user.config.startup_folder_name);
+			}
+			if (!f)
+			{
+				f = folder_incoming();
+			}
+			main_set_folder_active(f);
 
 			if (open_config_window) open_config();
 

@@ -22,3 +22,4 @@
 
 void open_config(void);
 void close_config(void);
+void config_refresh_folders(void);

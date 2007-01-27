@@ -30,6 +30,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"
+#include "folder.h"
 #include "phrase.h"
 #include "pop3.h"
 #include "signature.h"
@@ -200,6 +201,8 @@ int load_config(void)
 							user.config.appicon_label = mystrdup(result);
 						if ((result = get_config_item(buf,"AppIconShow")))
 							user.config.appicon_show = atoi(result);
+						if ((result = get_config_item(buf,"StartupFolderName")))
+							user.config.startup_folder_name = mystrdup(result);
 						if ((result = get_config_item(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
 						if ((result = get_config_item(buf, "Receive.Size")))
@@ -553,6 +556,13 @@ void save_config(void)
 			if (user.config.default_codeset) fprintf(fh,"Charset=%s\n",user.config.default_codeset->name);
 			if (user.config.appicon_label) fprintf(fh,"AppIconLabel=%s\n",user.config.appicon_label);
 			fprintf(fh,"AppIconShow=%d\n",user.config.appicon_show);
+			if (user.config.startup_folder_name)
+			{
+				if (!(folder_incoming() == folder_find_by_name(user.config.startup_folder_name)))
+				{
+					fprintf(fh,"StartupFolderName=%s\n",user.config.startup_folder_name);
+				}
+			}
 
 			/* Write out receive stuff */
 			fprintf(fh,"Receive.Preselection=%d\n",user.config.receive_preselection);

@@ -1681,6 +1681,7 @@ void callback_new_group(void)
 	folder_add_group(_("New Group"));
 	main_refresh_folders();
 	search_refresh_folders();
+	config_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -1690,6 +1691,7 @@ void callback_new_folder_path(char *path, char *name)
 	folder_add_with_name(path, name);
 	main_refresh_folders();
 	search_refresh_folders();
+	config_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -1703,6 +1705,7 @@ void callback_remove_folder(void)
 		{
 			main_refresh_folders();
 			search_refresh_folders();
+			config_refresh_folders();
 			filter_update_folder_list();
 
 			f = main_get_folder();
@@ -1788,6 +1791,7 @@ void callback_change_folder_attrs(void)
 	main_refresh_folder(f);
 	read_refresh_prevnext_button(f);
 	search_refresh_folders();
+	config_refresh_folders();
 	filter_update_folder_list();
 }
 
@@ -1802,6 +1806,7 @@ void callback_refresh_folders(void)
 {
 	main_refresh_folders();
 	search_refresh_folders();
+	config_refresh_folders();
 	filter_update_folder_list();
 }
 

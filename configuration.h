@@ -127,6 +127,9 @@ struct config
 	char *appicon_label; /* the label to be shown with the appicon */
 	int appicon_show;    /* when should the appicon be displayed */
 
+	/* startup display folder */
+	char *startup_folder_name; /* if NULL folder_incoming() will be shown */
+
 	/* hidden */
 	int set_all_stati;           /* expand the context menu of the maillisttree to set all stati */
 	int min_classified_mails;    /* number of minimum spam/ham classification to invoke the auto spamcheck */

@@ -1003,6 +1003,12 @@ to display the text. Default is IS0-8859-1 with Euro, which are the fonts
 of the euro update. E.g. Polish Amiga Users should use AmigaPL.
 
 
+Folder to display at startup
+
+Here you can select the folder which should be displayed when Simplemail is
+started. If no folder is selected the "Incoming" will be shown.
+
+
 AppIcon Show
 
 You can select the appearance from the AppIcon.

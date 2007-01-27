@@ -87,6 +87,7 @@
 
 /**************************************************************************/
 
+#if 0
 /***********************************************************************
  Open the given text font as a ttengine font. Returns NULL on failure
  (e.g. if no ttengine has been opened, or if given font is no ttf font)
@@ -144,6 +145,7 @@ STATIC APTR OpenTTEngineFont(struct TextFont *font)
   }
   return ttengine_font;
 }
+#endif
 
 /**************************************************************************/
 

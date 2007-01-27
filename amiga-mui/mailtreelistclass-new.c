@@ -2348,13 +2348,13 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 		    					if (data->column_drag != -1)
 		    					{
 		    						data->ci[data->column_drag].width = data->column_drag_org_width;
+									  data->column_drag = -1;								
 										MUI_Redraw(obj,MADF_DRAWOBJECT);
 										CalcHorizontalTotal(data);
 	
 										/* Disable mouse move notifies */
 									  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 									  data->mouse_pressed = 0;
-									  data->column_drag = -1;								
 		    					}
 									return MUI_EventHandlerRC_Eat;
 	    					} else

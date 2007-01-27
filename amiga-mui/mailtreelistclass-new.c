@@ -2454,6 +2454,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if ((mx < 0 || mx > _mwidth(obj)) && data->entries_active != -1)
 								{
+									/* Disable mouse move notifies */
+								  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+								  data->mouse_pressed = 0;
+
 									DoMethod(obj, MUIM_DoDrag, 0, 0, 0);
 								}
     					}

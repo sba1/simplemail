@@ -709,6 +709,9 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 			data->ci[col].width = 0;
 	}
 
+	/* Title */
+	CalcEntry(data, obj, NULL);
+
 	for (i=0;i<data->entries_num;i++)
 	{
 		CalcEntry(data, obj, data->entries[i]->mail_info);

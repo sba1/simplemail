@@ -805,6 +805,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	int x1;
 	int fonty;
 	int entry_height;
+	int prev_active; /* previously drawed column */
 
 	struct ListEntry *entry;
 	struct mail_info *m;
@@ -819,6 +820,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	m = entry->mail_info;
 	fonty = _font(obj)->tf_YSize;
 	entry_height = data->entry_maxheight;
+	prev_active = -1;
 
 	SetDrMd(rp,JAM1);
 
@@ -832,17 +834,30 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 		int active;
 		struct ColumnInfo *ci;
-		
+
 		active = data->columns_active[col];
 		if (!active) continue;
 		ci = &data->ci[active];
 
 		if (!first)
 		{
-			SetAPen(rp,_pens(obj)[MPEN_SHADOW]);
+			int shine;
+			int shadow;
+
+			if (data->column_drag != -1 && data->column_drag == prev_active)
+			{
+				shadow = _pens(obj)[MPEN_SHINE];
+				shine = _pens(obj)[MPEN_SHADOW];
+			} else
+			{
+				shine = _pens(obj)[MPEN_SHINE];
+				shadow = _pens(obj)[MPEN_SHADOW];
+			}
+
+			SetAPen(rp,shadow);
 			Move(rp, x1-3, y);
 			Draw(rp, x1-3, y + entry_height - 1);
-			SetAPen(rp,_pens(obj)[MPEN_SHINE]);
+			SetAPen(rp,shine);
 			Move(rp, x1-2, y);
 			Draw(rp, x1-2, y + entry_height - 1);
 		} else first = 0;
@@ -1011,6 +1026,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		}
 
 		x1 += col_width + data->column_spacing;
+		prev_active = active;
 	}
 }
 
@@ -2230,6 +2246,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 											data->column_drag = active;
 											data->column_drag_org_width = ci->width;
 											data->column_drag_mx = mx;
+											MUI_Redraw(obj,MADF_DRAWOBJECT);
 											break;
 										}
 									}
@@ -2308,9 +2325,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								{
 									/* Fixate the width */
 									data->ci[data->column_drag].flags &= ~COLUMN_FLAG_AUTOWIDTH;
+								  data->column_drag = -1;
+									MUI_Redraw(obj,MADF_DRAWOBJECT);
 								} 
 
-							  data->column_drag = -1;
 							  data->title_column_click = -1;
 							  data->title_column_click2 = -1;
 	    				} else if (msg->imsg->Code == MENUDOWN)

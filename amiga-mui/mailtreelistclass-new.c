@@ -2471,9 +2471,18 @@ static ULONG MailTreelist_CreateDragImage(struct IClass *cl, Object *obj, struct
 	if (img)
 	{
 		struct MailTreelist_Data *data = INST_DATA(cl, obj);
-		int num_selected = 1;
 		LONG depth = GetBitMapAttr(_screen(obj)->RastPort.BitMap,BMA_DEPTH);
-		int txt_len;
+		int txt_len,num_selected=0;
+		int i;
+
+		for (i=0;i<data->entries_num;i++)
+		{
+			if (data->entries[i]->flags & LE_FLAG_SELECTED)
+				num_selected++;
+		}
+
+		if (num_selected == 0 && data->entries_active != -1)
+			num_selected = 1;
 
 		if (num_selected == 1)
 		{

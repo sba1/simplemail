@@ -67,6 +67,25 @@
 
 /**************************************************************************/
 
+#define MENU_SETSTATUS_MARK   9
+#define MENU_SETSTATUS_UNMARK 10
+#define MENU_SETSTATUS_READ   11
+#define MENU_SETSTATUS_UNREAD 12
+#define MENU_SETSTATUS_HOLD	13
+#define MENU_SETSTATUS_WAITSEND  14
+#define MENU_SETSTATUS_SPAM 15
+#define MENU_SETSTATUS_HAM 16
+#define MENU_SPAMCHECK 17
+#define MENU_DELETE 18
+#define MENU_SETSTATUS_SENT 19
+#define MENU_SETSTATUS_ERROR 20
+#define MENU_SETSTATUS_REPLIED 21
+#define MENU_SETSTATUS_FORWARD 22
+#define MENU_SETSTATUS_REPLFORW 23
+#define MENU_RESET_THIS_COLUMN_WIDTH 24
+#define MENU_RESET_ALL_COLUMN_WIDTHS 25
+
+/**************************************************************************/
 
 /***********************************************************************
  Open the given text font as a ttengine font. Returns NULL on failure
@@ -259,6 +278,7 @@ struct MailTreelist_Data
 
 	LONG title_column_click;
 	LONG title_column_click2;
+	LONG right_title_click;
 
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
@@ -994,6 +1014,43 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	}
 }
 
+/**************************************************************************
+ Reset all column widths
+**************************************************************************/
+static void MailTreelist_ResetAllColumnWidth(struct MailTreelist_Data *data, Object *obj)
+{
+	int i;
+
+	for (i=0;i<MAX_COLUMNS;i++)
+	{
+		data->ci[i].width = 0;
+		data->ci[i].flags |= COLUMN_FLAG_AUTOWIDTH; 
+	}
+	
+	CalcEntries(data,obj);
+	CalcHorizontalTotal(data);
+	MUI_Redraw(obj,MADF_DRAWOBJECT);
+}
+
+/**************************************************************************
+ Reset column width
+**************************************************************************/
+static void MailTreelist_ResetClickedColumnWidth(struct MailTreelist_Data *data, Object *obj)
+{
+	if (data->right_title_click != -1)
+	{
+		data->ci[data->right_title_click].width = 0;
+		data->ci[data->right_title_click].flags |= COLUMN_FLAG_AUTOWIDTH; 
+
+		CalcEntries(data,obj);
+		CalcHorizontalTotal(data);
+		MUI_Redraw(obj,MADF_DRAWOBJECT);
+
+		/* Reset the state */
+		data->right_title_click = -1;
+	}
+}
+
 /**************************************************************************/
 
 /*************************************************************************
@@ -1125,11 +1182,10 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			Child, data->show_filename_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"), MUIA_UserData, 6,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_pop3_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'),MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_recv_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"), MUIA_UserData, 8,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: this"), MUIA_UserData, MUIV_NList_Menu_DefWidth_This, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Width: all"), MUIA_UserData, MUIV_NList_Menu_DefWidth_All, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: this"), MUIA_UserData, MUIV_NList_Menu_DefOrder_This, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order: all"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset this column's width"), MUIA_UserData, MENU_RESET_THIS_COLUMN_WIDTH, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset all columns' widths"), MUIA_UserData, MENU_RESET_ALL_COLUMN_WIDTHS, End,
+//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
 			End,
 		End;
 
@@ -2133,6 +2189,9 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 #endif
 
 	    case    IDCMP_MOUSEBUTTONS:
+	    				/* reset some states */
+	    				data->right_title_click = -1;
+
 	    				if (msg->imsg->Code == SELECTDOWN)
 	    				{
 	    					if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj))
@@ -2156,12 +2215,11 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										if (!active) continue;
 										ci = &data->ci[active];
 
+										/* Clicked inside a title column? */
 										if (mx > xoff && mx <= xoff + ci->width)
 										{
 											if (my < data->title_height)
-											{
 												data->title_column_click = active;
-											}
 											break;
 										}
 
@@ -2246,23 +2304,61 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 							  if (data->title_column_click != -1)
 							  	set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
 
+								if (data->column_drag != -1)
+								{
+									/* Fixate the width */
+									data->ci[data->column_drag].flags &= ~COLUMN_FLAG_AUTOWIDTH;
+								} 
+
 							  data->column_drag = -1;
 							  data->title_column_click = -1;
 							  data->title_column_click2 = -1;
-	    				} else if (msg->imsg->Code == MENUDOWN && data->mouse_pressed)
+	    				} else if (msg->imsg->Code == MENUDOWN)
 	    				{
-	    					if (data->column_drag != -1)
+	    					if (data->mouse_pressed)
 	    					{
-	    						data->ci[data->column_drag].width = data->column_drag_org_width;
-									MUI_Redraw(obj,MADF_DRAWOBJECT);
-									CalcHorizontalTotal(data);
+		    					if (data->column_drag != -1)
+		    					{
+		    						data->ci[data->column_drag].width = data->column_drag_org_width;
+										MUI_Redraw(obj,MADF_DRAWOBJECT);
+										CalcHorizontalTotal(data);
+	
+										/* Disable mouse move notifies */
+									  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+									  data->mouse_pressed = 0;
+									  data->column_drag = -1;								
+		    					}
+									return MUI_EventHandlerRC_Eat;
+	    					} else
+	    					{
+	    						if (mx >= 0 && my >= 0 && mx < _mwidth(obj) && my < _mheight(obj) && my < data->title_height)
+	    						{
+										/* column dragging */
+										int col;
 
-									/* Disable mouse move notifies */
-								  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-								  data->mouse_pressed = 0;
-								  data->column_drag = -1;								
+										int xoff = 0;
+										if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_First);
+
+										for (col = 0;col < MAX_COLUMNS; col++)
+										{
+											int active;
+											struct ColumnInfo *ci;
+
+											active = data->columns_active[col];
+											if (!active) continue;
+											ci = &data->ci[active];
+
+											/* Clicked inside a title column? */
+											if (mx > xoff && mx <= xoff + ci->width)
+											{
+												data->right_title_click = active;
+												break;
+											}
+
+											xoff += ci->width + data->column_spacing;
+										}
+	    						}
 	    					}
-								return MUI_EventHandlerRC_Eat;
 	    				}
 	    				break;
 
@@ -2491,23 +2587,6 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 	return 0L;
 }
 
-
-#define MENU_SETSTATUS_MARK   9
-#define MENU_SETSTATUS_UNMARK 10
-#define MENU_SETSTATUS_READ   11
-#define MENU_SETSTATUS_UNREAD 12
-#define MENU_SETSTATUS_HOLD	13
-#define MENU_SETSTATUS_WAITSEND  14
-#define MENU_SETSTATUS_SPAM 15
-#define MENU_SETSTATUS_HAM 16
-#define MENU_SPAMCHECK 17
-#define MENU_DELETE 18
-#define MENU_SETSTATUS_SENT 19
-#define MENU_SETSTATUS_ERROR 20
-#define MENU_SETSTATUS_REPLIED 21
-#define MENU_SETSTATUS_FORWARD 22
-#define MENU_SETSTATUS_REPLFORW 23
-
 STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_ContextMenuBuild *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
@@ -2602,6 +2681,8 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_REPLFORW: callback_mails_set_status(MAIL_STATUS_REPLFORW); break;
 		case  MENU_SPAMCHECK: callback_check_selected_mails_if_spam();break;
 		case  MENU_DELETE: callback_delete_mails();break;
+		case	MENU_RESET_ALL_COLUMN_WIDTHS: MailTreelist_ResetAllColumnWidth(data, obj);break;
+		case	MENU_RESET_THIS_COLUMN_WIDTH: MailTreelist_ResetClickedColumnWidth(data, obj);break;
 		default: 
 		{
 			return DoSuperMethodA(cl,obj,(Msg)msg);

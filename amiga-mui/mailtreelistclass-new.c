@@ -598,7 +598,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 							if (m)
 							{
 								txt = m->reply_addr;
-								is_ascii7 == !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
+								is_ascii7 = !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
 							} else txt = data->reply_text;
 							break;
 
@@ -900,7 +900,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						if (m)
 						{
 							txt = m->reply_addr;
-							is_ascii7 == !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
+							is_ascii7 = !!(m->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7);
 						} else txt = data->reply_text;
 						break;
 

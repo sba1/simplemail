@@ -1252,6 +1252,8 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 								if (tidata == (ULONG)data->entries[i]->mail_info)
 								{
 									data->entries_active = i;
+									data->drawupdate = 1;
+									MUI_Redraw(obj,MADF_DRAWUPDATE);
 									break;
 								}
 							} 
@@ -1455,6 +1457,9 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 	ULONG rc;
 
 	rc = DoSuperMethodA(cl,obj,(Msg)msg);
+
+	/* Clear draw update in any case */
+	data->drawupdate = 0;
 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);

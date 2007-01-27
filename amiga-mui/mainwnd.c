@@ -366,7 +366,7 @@ static LONG mailtreelist_2_sort2marker(int sort)
 		case	FOLDER_SORT_RECV: marker = COLUMN_TYPE_RECEIVED; break;
 	}
 	
-	if (sort & FOLDER_SORT_REVERSE)
+	if (!(sort & FOLDER_SORT_REVERSE))
 		marker |= MUIV_MailTreelist_TitleMark_Decreasing;
 
 	return marker;

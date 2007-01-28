@@ -58,6 +58,9 @@
 
 #ifdef IDCMP_EXTENDEDMOUSE
 #define HAVE_EXTENDEDMOUSE
+#else
+/* support for the newmouse wheel standard */
+#include <devices/newmouse.h>
 #endif
 
 /**************************************************************************/
@@ -1086,6 +1089,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		MUIA_ShowSelState, FALSE,
 		MUIA_FillArea, FALSE,
 		MUIA_Background, MUII_ListBack,
+		MUIA_Font, MUIV_Font_List,
 		MUIA_ShortHelp, TRUE,
 		MUIA_ContextMenu, 1,
 		TAG_MORE,msg->ops_AttrList)))
@@ -1164,7 +1168,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 #ifdef HAVE_EXTENDEDMOUSE
   data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_EXTENDEDMOUSE;
 #else
-  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS;
+	/* NewMouse standard wheel support */
+  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_RAWKEY;
 #endif
   data->ehn_mousebuttons.ehn_Priority = 0;
   data->ehn_mousebuttons.ehn_Flags    = 0;
@@ -2208,6 +2213,27 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									first += delta;
 																	
 								set(data->vert_scroller, MUIA_Prop_First, first);
+								return MUI_EventHandlerRC_Eat;
+							}
+						}
+						break;
+#else
+			/* NewMouse Standard Wheel support */
+			case	IDCMP_RAWKEY:
+						if (msg->imsg->Code == NM_WHEEL_UP || msg->imsg->Code == NM_WHEEL_DOWN)
+						{
+							if (_isinobject(obj, msg->imsg->MouseX, msg->imsg->MouseY))
+							{
+								LONG visible, delta;
+								GetAttr(MUIA_Prop_Visible, data->vert_scroller, (ULONG*)&visible);
+
+								delta = (visible + 3)/6;
+								if (delta < 1) delta = 1;
+
+								if (msg->imsg->Code == NM_WHEEL_DOWN)
+									delta *= -1;
+
+								DoMethod(data->vert_scroller, MUIM_Prop_Decrease, delta);
 								return MUI_EventHandlerRC_Eat;
 							}
 						}

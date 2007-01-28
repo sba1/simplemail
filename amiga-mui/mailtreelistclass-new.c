@@ -249,6 +249,8 @@ struct ColumnInfo
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 #define COLUMN_FLAG_SORT1UP   (1L << 1)
 #define COLUMN_FLAG_SORT1DOWN (1L << 2)
+#define COLUMN_FLAG_SORT2UP   (1L << 3)
+#define COLUMN_FLAG_SORT2DOWN (1L << 4)
 
 struct MailTreelist_Data
 {
@@ -287,6 +289,8 @@ struct MailTreelist_Data
 
 	LONG entry_maxheight; /* Max height of an list entry */
 	LONG title_height;
+	LONG mark1_width;     /* marker width of MUIA_MailTreelist_TitleMark */
+	LONG mark2_width;     /* marker width of MUIA_MailTreelist_TitleMark2 */
 
 	LONG horiz_first; /* first horizontal visible pixel */
 
@@ -586,8 +590,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 							{
 								if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
 								GetFromText(m,&txt,&is_ascii7);
-							}
-							else txt = data->from_text;
+							} else txt = data->from_text;
 							break;
 	
 				case	COLUMN_TYPE_SUBJECT:
@@ -595,8 +598,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 							{
 								txt = m->subject;
 								is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
-							}
-							else txt = data->subject_text;
+							} else txt = data->subject_text;
 							break;
 
 				case	COLUMN_TYPE_REPLYTO:
@@ -680,6 +682,18 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 
 						TextExtent(&data->rp, txt, strlen(txt), &te);
 						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
+					}
+					/* Add the marker size in the title column */
+					if (m == NULL)
+					{
+						if (ci->flags & (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT1DOWN))
+						{
+							new_width += data->mark1_width + IMAGE_HORIZ_SPACE*2;
+						}
+						if (ci->flags & (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN))
+						{
+							new_width += data->mark2_width + IMAGE_HORIZ_SPACE*2;
+						}
 					}
 				} else
 				{
@@ -891,8 +905,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						{
 							if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
 							GetFromText(m,&txt,&is_ascii7);
-						}
-						else txt = data->from_text;
+						} else txt = data->from_text;
 						break;
 
 			case	COLUMN_TYPE_SUBJECT:
@@ -900,8 +913,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						{
 							txt = m->subject;
 							is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
-						}
-						else txt = data->subject_text;
+						} else txt = data->subject_text;
 						break;
 
 			case	COLUMN_TYPE_REPLYTO:
@@ -967,6 +979,19 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			int xstart = x1;
 
 			available_col_width = col_width;
+
+			/* substract the titlemarker from the available space in the title column */
+			if (entry_pos == ENTRY_TITLE)
+			{
+				if (ci->flags & (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT1DOWN))
+				{
+					available_col_width -= (data->mark1_width + IMAGE_HORIZ_SPACE*2);
+				}
+				if (ci->flags & (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN))
+				{
+					available_col_width -= (data->mark2_width + IMAGE_HORIZ_SPACE*2);
+				}
+			}
 
 			/* put the images at first */
 			for (cur_image = 0; cur_image < used_images; cur_image++)
@@ -1290,23 +1315,45 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 						break;
 
 			case	MUIA_MailTreelist_TitleMark:
+			case	MUIA_MailTreelist_TitleMark2:
 						{
 							int col;
 							int decreasing;
+							WORD flag_mask, new_flag;
+
+							decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
+				    	if (tag->ti_Tag == MUIA_MailTreelist_TitleMark)
+				    	{
+				    		flag_mask = (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
+			  	  		if (decreasing)
+			    				new_flag = COLUMN_FLAG_SORT1DOWN;
+			    			else
+				    			new_flag = COLUMN_FLAG_SORT1UP;
+				    	} else
+				    	{
+				    		flag_mask = (COLUMN_FLAG_SORT2DOWN|COLUMN_FLAG_SORT2UP);
+			  	  		if (decreasing)
+			    				new_flag = COLUMN_FLAG_SORT2DOWN;
+			    			else
+				    			new_flag = COLUMN_FLAG_SORT2UP;
+				    	}
 
 				  		/* Clear all sorting flags before setting the selected one */
 							for (col = 0;col < MAX_COLUMNS; col++)
-								data->ci[col].flags &= ~(COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
+								data->ci[col].flags &= ~(flag_mask);
 
-							decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
 							col = tidata & (~MUIV_MailTreelist_TitleMark_Decreasing);
 							if (col > 0 && col < MAX_COLUMNS)
 							{
-								if (decreasing)
-									data->ci[col].flags |= COLUMN_FLAG_SORT1DOWN;
-								else
-									data->ci[col].flags |= COLUMN_FLAG_SORT1UP;
+								data->ci[col].flags |= new_flag;
+
+								/* clear the secondary sort if the primary is set, otherwise
+								   the DrawMarker() function doesn't work correctly */
+								if (data->ci[col].flags & (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP))
+									data->ci[col].flags &= ~(COLUMN_FLAG_SORT2DOWN|COLUMN_FLAG_SORT2UP);
 							}
+							/* recalc the entries because the minwidth of the title column could change */
+							CalcEntries(data, obj);
 							MUI_Redraw(obj, MADF_DRAWOBJECT);
 						}
 						break;
@@ -1391,6 +1438,8 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	}
 
 	data->title_height = data->entry_maxheight + 2;
+	data->mark1_width  = ((data->title_height - 8)/2)*2+1;
+	data->mark2_width  = ((data->title_height - 8)/3)*2+1;
 
  	for (i=0;i<IMAGE_MAX;i++)
 	{
@@ -1567,9 +1616,13 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
 
 		col_width = ci->width;
 		
-		if (ci->flags & COLUMN_FLAG_SORT1UP)
+		if (ci->flags & (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT2UP))
 		{
-			int width = ((data->title_height - 8)/2)*2+1;
+			int width = data->mark2_width;
+
+			/* if both flags are set, only draw the big one */
+			if (ci->flags & COLUMN_FLAG_SORT1UP)
+				width = data->mark1_width;
 
 			if (width < col_width - 2)
 			{
@@ -1580,12 +1633,14 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
 				SetAPen(rp, _pens(obj)[MPEN_SHINE]);
 				Draw(rp, xoff + col_width - 2 - width/2, y+2+width);
 			}
-			break;
-		}
-
-		if (ci->flags & COLUMN_FLAG_SORT1DOWN)
+			;
+		} else if (ci->flags & (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT2DOWN))
 		{
-			int width = ((data->title_height - 8)/2)*2+1;
+			int width = data->mark2_width;
+
+			/* if both flags are set, only draw the big one */
+			if (ci->flags & COLUMN_FLAG_SORT1DOWN)
+				width = data->mark1_width;
 
 			if (width < col_width - 2)
 			{
@@ -1596,7 +1651,6 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
 				SetAPen(rp, _pens(obj)[MPEN_SHADOW]);
 				Draw(rp, xoff + col_width - 2 - width/2, y+2);
 			}
-			break;
 		}
 	
 		xoff += ci->width + data->column_spacing;

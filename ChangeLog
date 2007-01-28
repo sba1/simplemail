@@ -8,6 +8,9 @@ SimpleMail Open Source - ChangeLog
 	  Added a new config option "Folder to display at startup".
 	* amiga-mui/mailtreelistclass-new.c: Added newmouse wheel standard support.
 	  The list is now using the standard list font setting from mui "Listviews".
+	  The TileMarker is now considered in the calculation of the titlecolumnwidth and
+	  the rendering of the titletext.
+	  Added the display of the secondary sort (MUIA_MailTreelist_TitleMarker2).
 
 2007-01-27  Bernd Gollesch <bgollesch@sime.at>
 	* smakefile: Added "amiga-mui/mailtreelistclass-new.c" to the generated makefile

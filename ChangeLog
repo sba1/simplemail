@@ -11,6 +11,8 @@ SimpleMail Open Source - ChangeLog
 	  The TileMarker is now considered in the calculation of the titlecolumnwidth and
 	  the rendering of the titletext.
 	  Added the display of the secondary sort (MUIA_MailTreelist_TitleMarker2).
+	  Added support for the MUIA_MailTreelist_FolderType to display the correct address
+	  and title in the FROMTO column.
 
 2007-01-27  Bernd Gollesch <bgollesch@sime.at>
 	* smakefile: Added "amiga-mui/mailtreelistclass-new.c" to the generated makefile

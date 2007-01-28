@@ -307,6 +307,8 @@ struct MailTreelist_Data
 	int quiet; /* needed for rendering, if > 0, don't call super method */
 	int make_visible;
 
+	int folder_type; /* we need to know which type of folder is displayed */
+
 	int drawupdate; /* 1 - selection changed, 2 - first changed */
 	int drawupdate_old_first;
 
@@ -405,6 +407,37 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	{
 		txt = "";
 		is_ascii7 = 1;
+	}
+
+	*ascii7_ptr = is_ascii7;
+	*txt_ptr = txt;
+}
+
+STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
+{
+	int is_ascii7 = 1;
+	char *txt;
+
+	if (m->flags & MAIL_FLAGS_NORCPT)
+	{
+		txt = _("<No Recipient>");
+		is_ascii7 = 1;
+	} else
+	{
+		if ((txt = m->to_phrase))
+			is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ASCII7);
+
+		if (!txt)
+		{
+			if ((txt = m->to_addr))
+				is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ADDR_ASCII7);
+		}
+
+		if (!txt)
+		{
+			txt = "";
+			is_ascii7 = 1;
+		}
 	}
 
 	*ascii7_ptr = is_ascii7;
@@ -589,8 +622,23 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 							if (m)
 							{
 								if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
-								GetFromText(m,&txt,&is_ascii7);
-							} else txt = data->from_text;
+								if (data->folder_type == FOLDER_TYPE_SEND)
+								{
+									GetToText(m, &txt, &is_ascii7);
+								} else
+								{
+									GetFromText(m, &txt, &is_ascii7);
+								}
+							} else
+							{
+								if (data->folder_type == FOLDER_TYPE_SEND)
+								{
+									txt = data->to_text;
+								} else
+								{
+									txt = data->from_text;
+								}
+							}
 							break;
 	
 				case	COLUMN_TYPE_SUBJECT:
@@ -904,8 +952,23 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						if (m)
 						{
 							if (m->flags & MAIL_FLAGS_GROUP) images[used_images++] = IMAGE_GROUP;
-							GetFromText(m,&txt,&is_ascii7);
-						} else txt = data->from_text;
+							if (data->folder_type == FOLDER_TYPE_SEND)
+							{
+								GetToText(m, &txt, &is_ascii7);
+							} else
+							{
+								GetFromText(m, &txt, &is_ascii7);
+							}
+						} else
+						{
+							if (data->folder_type == FOLDER_TYPE_SEND)
+							{
+								txt = data->to_text;
+							} else
+							{
+								txt = data->from_text;
+							}
+						}
 						break;
 
 			case	COLUMN_TYPE_SUBJECT:
@@ -1357,6 +1420,13 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							MUI_Redraw(obj, MADF_DRAWOBJECT);
 						}
 						break;
+
+			case	MUIA_MailTreelist_FolderType:
+			    	if (data->folder_type != tag->ti_Data)
+			    	{
+			    		data->folder_type = tag->ti_Data;
+			    	}
+			    	break;
 		}
 	}
 
@@ -1896,6 +1966,9 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 		if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,0);
 		return 1;
 	}
+
+	/* set the foldertype so that the .._FROMTO column does show the correct address */
+	set(obj, MUIA_MailTreelist_FolderType, folder_get_type(f));
 
 	/* Nobody else must access this folder now */
 	folder_lock(f);

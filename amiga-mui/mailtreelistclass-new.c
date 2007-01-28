@@ -309,8 +309,9 @@ struct MailTreelist_Data
 
 	int folder_type; /* we need to know which type of folder is displayed */
 
-	int drawupdate; /* 1 - selection changed, 2 - first changed */
+	int drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed */
 	int drawupdate_old_first;
+	int drawupdate_position;
 
 	struct RastPort rp; /* Rastport for font calculations */
 	struct RastPort dragRP; /* Rastport for drag image rastport */
@@ -1749,7 +1750,7 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
 }
 
 /*************************************************************************
- Note, if you draw buffered, you must have _rp(obj) set to the
+ Note that if you draw buffered, you must have _rp(obj) set to the
  buffer_rp before!
 *************************************************************************/
 static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
@@ -1772,6 +1773,42 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 }
 
 /*************************************************************************
+ Draws an entry optionally only if it background has changed recently
+ (e.g. cause by changed selection state). Remember current background and
+ return the current set background.
+
+ Note that if you draw buffered you must have _rp(obj) set to the
+ buffer_rp before!
+*************************************************************************/
+static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optimized, int background, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
+{
+	int new_background;
+	struct ListEntry *le;
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
+	le = data->entries[cur];
+
+	if (cur == data->entries_active) new_background = (le->flags & LE_FLAG_SELECTED)?MUII_ListSelCur:MUII_ListCursor;
+	else if (le->flags & LE_FLAG_SELECTED) new_background = MUII_ListSelect;
+	else new_background = MUII_ListBack;
+
+	if (optimized && le->drawn_background == new_background)
+		return background;
+
+	if (background != new_background)
+	{
+		set(obj, MUIA_Background, new_background);
+		background = new_background;
+	}
+
+	DrawEntryAndBackgroundBuffered(cl, obj, cur, buffer_rp, window_rp, window_y);
+	
+	le->drawn_background = background;
+
+	return new_background;
+}
+
+/*************************************************************************
  MUIM_Draw
 *************************************************************************/
 STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
@@ -1783,7 +1820,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	APTR cliphandle;
 
 	int start,cur,end;
-	int y;
+	int y,listy;
 	int drawupdate;
 	int background;
 
@@ -1798,16 +1835,35 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	data->drawupdate = 0;
 
+	/* Don't do anything if removed element was invisble */
+	if (data->drawupdate == 3 && data->drawupdate_position >= data->entries_first + data->entries_visible - 1)
+		return 0;
+
 	start = data->entries_first;
 	end = start + data->entries_visible;
-	y = _mtop(obj) + data->title_height;
+	listy = y = _mtop(obj) + data->title_height;
 
 	/* If necessary, perform scrolling operations */
-	if (drawupdate == 2)
+	if (drawupdate == 2 || drawupdate == 3)
 	{
-		int diffy = data->entries_first - data->drawupdate_old_first;
-		int abs_diffy = abs(diffy);
-		
+		int diffy, abs_diffy;
+		int num_scroll_elements = data->entries_visible; /* number of elements to be scrolled */
+
+		if (drawupdate == 2)
+		{
+			diffy = data->entries_first - data->drawupdate_old_first;
+			abs_diffy = abs(diffy);
+		} else
+		{
+			if (data->drawupdate_position - data->entries_first > 0)
+			{
+				y += (data->drawupdate_position - data->entries_first) * data->entry_maxheight;
+				num_scroll_elements -= data->drawupdate_position - data->entries_first;
+			}
+			diffy = 1;
+			abs_diffy = 1;
+		}
+
 		if (abs_diffy < data->entries_visible)
 		{
 			int scroll_caused_damage;
@@ -1821,7 +1877,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	    ScrollRasterBF(_rp(obj), 0, diffy * data->entry_maxheight,
 			 _mleft(obj), y,
-			 _mright(obj), y + data->entry_maxheight * data->entries_visible - 1);
+			 _mright(obj), y + data->entry_maxheight * num_scroll_elements - 1);
 
     	scroll_caused_damage = scroll_caused_damage && (_rp(obj)->Layer->Flags & LAYERREFRESH);
 
@@ -1842,7 +1898,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			if (diffy > 0)
 	    {
 	    	start = end - diffy;
-	    	y += data->entry_maxheight * (data->entries_visible - diffy);
+	    	y = listy + data->entry_maxheight * (data->entries_visible - diffy);
 	    }
 	    else end = start - diffy;
 		}
@@ -1892,27 +1948,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	 * is stored */
 	for (cur = start; cur < end; cur++,y += data->entry_maxheight)
 	{
-		int new_background;
-		struct ListEntry *le;
-
-		le = data->entries[cur];
-
-		if (cur == data->entries_active) new_background = (le->flags & LE_FLAG_SELECTED)?MUII_ListSelCur:MUII_ListCursor;
-		else if (le->flags & LE_FLAG_SELECTED) new_background = MUII_ListSelect;
-		else new_background = MUII_ListBack;
-
-		if (drawupdate == 1 && le->drawn_background == new_background)
-			continue;
-
-		if (background != new_background)
-		{
-			set(obj, MUIA_Background, new_background);
-			background = new_background;
-		}
-
-		DrawEntryAndBackgroundBuffered(cl, obj, cur, data->buffer_rp, old_rp, y);
-	
-		le->drawn_background = background;
+		background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y);
 	}
 
 	/* Revert background if necessary */
@@ -1929,8 +1965,8 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		MUI_RemoveClipping(muiRenderInfo(obj),cliphandle);
 	}
 
-	/* erase stuff below only when rendering completly */
-	if (y <= _mbottom(obj) && drawupdate == 0)
+	/* erase stuff below only when rendering completly or when a single element was removed */
+	if (y <= _mbottom(obj) && (drawupdate == 0 || drawupdate == 3))
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
 	}
@@ -2126,6 +2162,58 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 	return 0;
 }
 
+/*************************************************************************
+ Removes the entry at the given position.
+*************************************************************************/
+STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int pos)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+
+	/* Variable pos needs to be inside valid bounds */
+	if (pos < 0 && pos >= data->entries_num)
+		return 0;
+
+	/* Free memory and move the following mails one position up, update number of entries */
+	FreeListEntry(data,data->entries[pos]);
+	memmove(&data->entries[pos],&data->entries[pos+1],sizeof(data->entries[0])*(data->entries_num - pos - 1));
+	data->entries_num--;
+
+	if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
+
+	/* Issue render update */
+	data->drawupdate = 3;
+	data->drawupdate_position = pos;
+	MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+	if (data->entries_active != -1 && pos < data->entries_active)
+		data->entries_active--;
+
+	/* Ensure proper displayed selection states */
+	data->drawupdate = 1;
+	MUI_Redraw(obj,MADF_DRAWUPDATE);
+	return 0;
+}
+
+
+/*************************************************************************
+ MUIM_MailTreelist_RemoveMail
+*************************************************************************/
+STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP_MailTreelist_RemoveMail *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int i;
+
+	for (i=0;i<data->entries_num;i++)
+	{
+		if (msg->m == data->entries[i]->mail_info)
+		{
+			MailTreelist_RemoveMailByPos(cl, obj, i);
+			break;
+		}
+	}
+
+	return 0;
+}
 
 /*************************************************************************
  MUIM_MailTreelist_RemoveSelected
@@ -2135,7 +2223,11 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 	int i = 0,from = -1, to = -1;
 
-	/* TODO: Implement the easy case (if entries_maxselected == -1) in an easier way */
+	if (data->entries_maxselected == -1 && data->entries_active != -1)
+	{
+		MailTreelist_RemoveMailByPos(cl, obj, data->entries_active);
+		return 0;
+	}
 
 	while (1)
 	{
@@ -2936,6 +3028,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_InsertMail:	return MailTreelist_InsertMail(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetFirstSelected: return MailTreelist_GetFirstSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_GetNextSelected: return MailTreelist_GetNextSelected(cl, obj, (APTR)msg);
+		case	MUIM_MailTreelist_RemoveMail: return MailTreelist_RemoveMail(cl,obj,(APTR)msg);
 		case	MUIM_MailTreelist_RemoveSelected: return MailTreelist_RemoveSelected(cl, obj, (APTR)msg);
 		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (APTR)msg);
 		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);

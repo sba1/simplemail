@@ -771,15 +771,20 @@ void callback_maildrop(struct folder *dest_folder)
 		read_refresh_prevnext_button(dest_folder);
 
 		/* remove all successful removed mails within the main window */
-		main_freeze_mail_list();
-		while (moved_num)
+		if (moved_num == num)
 		{
-			moved_num--;
-			main_remove_mail(mail_array[moved_num]);
+			main_remove_mails_selected();
+		} else
+		{
+			main_freeze_mail_list();
+			while (moved_num)
+			{
+				moved_num--;
+				main_remove_mail(mail_array[moved_num]);
+			}
+			main_thaw_mail_list();
 		}
 		free(mail_array);
-		main_thaw_mail_list();
-
 		app_unbusy();
 
 		main_display_active_mail();

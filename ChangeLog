@@ -13,6 +13,7 @@ SimpleMail Open Source - ChangeLog
 	  Added the display of the secondary sort (MUIA_MailTreelist_TitleMarker2).
 	  Added support for the MUIA_MailTreelist_FolderType to display the correct address
 	  and title in the FROMTO column.
+	  Make sure the Active Entry is visible when setting it with MUIA_MailTreelist_Active.
 
 2007-01-27  Bernd Gollesch <bgollesch@sime.at>
 	* smakefile: Added "amiga-mui/mailtreelistclass-new.c" to the generated makefile

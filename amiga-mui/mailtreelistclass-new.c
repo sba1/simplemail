@@ -1336,20 +1336,41 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 		switch (tag->ti_Tag)
 		{
 			case	MUIA_MailTreelist_Active:
-						data->entries_active = -1;
-						if (tidata)
 						{
-							int i;
-							for (i=0;i<data->entries_num;i++)
+							LONG old_active = data->entries_active;
+							data->entries_active = -1;
+							if (tidata)
 							{
-								if (tidata == (ULONG)data->entries[i]->mail_info)
+								int i;
+								for (i=0;i<data->entries_num;i++)
 								{
-									data->entries_active = i;
-									data->drawupdate = 1;
-									MUI_Redraw(obj,MADF_DRAWUPDATE);
-									break;
+									if (tidata == (ULONG)data->entries[i]->mail_info)
+									{
+										data->entries_active = i;
+										break;
+									}
+								} 
+							}
+							if (data->entries_active != old_active)
+							{
+								/* frist update the active line display */
+								data->drawupdate = 1;
+								MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+								/* and now make sure the active line is visible */
+								if (data->entries_active != -1)
+								{
+									int old_entries_first = data->entries_first;
+									data->make_visible = 1;
+									EnsureActiveEntryVisibility(data);
+									if (data->entries_first != old_entries_first)
+									{
+										data->drawupdate = 2;
+										data->drawupdate_old_first = old_entries_first;
+										MUI_Redraw(obj,MADF_DRAWUPDATE);
+									}
 								}
-							} 
+							}
 						}
 						break;
 

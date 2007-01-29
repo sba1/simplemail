@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-01-29  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: The marker was drawn wrong.
+
 2007-01-28  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/configwnd.c, amiga-mui/gui_main.c, configuration.(c|h), 
 	  doc/amiga/SimpleMail.guide, indep-include/configwnd.h, simplemail.c:

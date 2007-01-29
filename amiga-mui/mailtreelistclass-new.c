@@ -1411,16 +1411,16 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				    	{
 				    		flag_mask = (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
 			  	  		if (decreasing)
-			    				new_flag = COLUMN_FLAG_SORT1DOWN;
-			    			else
 				    			new_flag = COLUMN_FLAG_SORT1UP;
+			    			else
+			    				new_flag = COLUMN_FLAG_SORT1DOWN;
 				    	} else
 				    	{
 				    		flag_mask = (COLUMN_FLAG_SORT2DOWN|COLUMN_FLAG_SORT2UP);
 			  	  		if (decreasing)
-			    				new_flag = COLUMN_FLAG_SORT2DOWN;
-			    			else
 				    			new_flag = COLUMN_FLAG_SORT2UP;
+			    			else
+			    				new_flag = COLUMN_FLAG_SORT2DOWN;
 				    	}
 
 				  		/* Clear all sorting flags before setting the selected one */

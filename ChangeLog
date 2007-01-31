@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-01-31  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/gui_main.c: The TTEngine library wasn't closed.
+
 2007-01-29  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: The marker was drawn wrong.
 

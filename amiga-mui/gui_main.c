@@ -293,6 +293,8 @@ void all_del(void)
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
 
+			CloseLibraryInterface(TTEngineBase, ITTEngine);
+
 #ifdef __AMIGAOS4__
 			DropInterface((struct Interface*)ISimpleHTML);
 #endif

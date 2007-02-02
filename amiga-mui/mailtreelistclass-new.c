@@ -249,8 +249,10 @@ struct ColumnInfo
 #define COLUMN_FLAG_AUTOWIDTH (1L << 0)
 #define COLUMN_FLAG_SORT1UP   (1L << 1)
 #define COLUMN_FLAG_SORT1DOWN (1L << 2)
+#define COLUMN_FLAG_SORT1MASK (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT1DOWN)
 #define COLUMN_FLAG_SORT2UP   (1L << 3)
 #define COLUMN_FLAG_SORT2DOWN (1L << 4)
+#define COLUMN_FLAG_SORT2MASK (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN)
 
 struct MailTreelist_Data
 {
@@ -445,7 +447,7 @@ STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	*txt_ptr = txt;
 }
 
-STATIC VOID GetStatusImages(struct mail_info *m, int *images, int *used_images_ptr)
+STATIC VOID GetStatusImages(struct MailTreelist_Data *data, struct mail_info *m, int *images, int *used_images_ptr)
 {
 	int used_images = *used_images_ptr;
 
@@ -461,7 +463,7 @@ STATIC VOID GetStatusImages(struct mail_info *m, int *images, int *used_images_p
 	} else
 	{
 		if (mail_is_spam(m)) images[used_images++] = IMAGE_UNREAD_SPAM;
-		else if ((m->flags & MAIL_FLAGS_NORCPT) /*&& data->folder_type == FOLDER_TYPE_SEND*/) images[used_images++] = IMAGE_NORCPT;
+		else if ((m->flags & MAIL_FLAGS_NORCPT) && data->folder_type == FOLDER_TYPE_SEND) images[used_images++] = IMAGE_NORCPT;
 		else
 		{
 			if (m->flags & MAIL_FLAGS_PARTIAL)
@@ -615,7 +617,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 				case	COLUMN_TYPE_STATUS:
 							if (m)
 							{
-								GetStatusImages(m,images,&used_images);
+								GetStatusImages(data,m,images,&used_images);
 							} else txt = data->status_text;
 							break;
 
@@ -735,11 +737,11 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 					/* Add the marker size in the title column */
 					if (m == NULL)
 					{
-						if (ci->flags & (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT1DOWN))
+						if (ci->flags & COLUMN_FLAG_SORT1MASK)
 						{
 							new_width += data->mark1_width + IMAGE_HORIZ_SPACE*2;
 						}
-						if (ci->flags & (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN))
+						if (ci->flags & COLUMN_FLAG_SORT2MASK)
 						{
 							new_width += data->mark2_width + IMAGE_HORIZ_SPACE*2;
 						}
@@ -945,7 +947,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			case	COLUMN_TYPE_STATUS:
 						if (m)
 						{
-							GetStatusImages(m,images,&used_images);
+							GetStatusImages(data,m,images,&used_images);
 						} else txt = data->status_text;
 						break;
 
@@ -1047,11 +1049,11 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			/* substract the titlemarker from the available space in the title column */
 			if (entry_pos == ENTRY_TITLE)
 			{
-				if (ci->flags & (COLUMN_FLAG_SORT1UP|COLUMN_FLAG_SORT1DOWN))
+				if (ci->flags & COLUMN_FLAG_SORT1MASK)
 				{
 					available_col_width -= (data->mark1_width + IMAGE_HORIZ_SPACE*2);
 				}
-				if (ci->flags & (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN))
+				if (ci->flags & COLUMN_FLAG_SORT2MASK)
 				{
 					available_col_width -= (data->mark2_width + IMAGE_HORIZ_SPACE*2);
 				}
@@ -1087,14 +1089,14 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					/* use ttengine functions */
 					txt_len = utf8len(txt);
 					fit = TT_TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
-					if (fit < txt_len)
+					if (fit < txt_len && (available_col_width > data->threepoints_width))
 					{
 						fit = TT_TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 					}
 
 					TT_Text(rp,txt,fit);
 		
-					if (fit < txt_len)
+					if (fit < txt_len && (available_col_width > data->threepoints_width))
 						TT_Text(rp,"...",3);
 				} else
 				{
@@ -1113,9 +1115,9 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					{
 						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 					}
-		
+
 					Text(rp,txt,fit);
-		
+
 					if (fit < txt_len && (available_col_width > data->threepoints_width))
 						Text(rp,"...",3);
 				}
@@ -1409,14 +1411,14 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 							decreasing = !!(tidata & MUIV_MailTreelist_TitleMark_Decreasing);
 				    	if (tag->ti_Tag == MUIA_MailTreelist_TitleMark)
 				    	{
-				    		flag_mask = (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP);
+				    		flag_mask = COLUMN_FLAG_SORT1MASK;
 			  	  		if (decreasing)
 				    			new_flag = COLUMN_FLAG_SORT1UP;
 			    			else
 			    				new_flag = COLUMN_FLAG_SORT1DOWN;
 				    	} else
 				    	{
-				    		flag_mask = (COLUMN_FLAG_SORT2DOWN|COLUMN_FLAG_SORT2UP);
+				    		flag_mask = COLUMN_FLAG_SORT2MASK;
 			  	  		if (decreasing)
 				    			new_flag = COLUMN_FLAG_SORT2UP;
 			    			else
@@ -1434,8 +1436,8 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 								/* clear the secondary sort if the primary is set, otherwise
 								   the DrawMarker() function doesn't work correctly */
-								if (data->ci[col].flags & (COLUMN_FLAG_SORT1DOWN|COLUMN_FLAG_SORT1UP))
-									data->ci[col].flags &= ~(COLUMN_FLAG_SORT2DOWN|COLUMN_FLAG_SORT2UP);
+								if (data->ci[col].flags & COLUMN_FLAG_SORT1MASK)
+									data->ci[col].flags &= ~COLUMN_FLAG_SORT2MASK;
 							}
 							/* recalc the entries because the minwidth of the title column could change */
 							CalcEntries(data, obj);
@@ -1480,6 +1482,12 @@ STATIC ULONG MailTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	if (msg->opg_AttrID == MUIA_MailTreelist_TitleClick)
 	{
 		*msg->opg_Storage = data->title_column_click;
+		return 1;
+	}
+
+	if (msg->opg_AttrID == MUIA_MailTreelist_TitleClick2)
+	{
+		*msg->opg_Storage = data->title_column_click2;
 		return 1;
 	}
 
@@ -1759,15 +1767,15 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 
 	if (buffer_rp)
 	{
-		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, 0,0);
+		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
 		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,buffer_rp,0,0);
 		BltBitMapRastPort(data->buffer_bmap, 0, 0,
 											window_rp, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0xc0);
 	} else
 	{
-		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0,0);
-		DrawEntry(data,obj,cur,window_rp,_mleft(obj),window_y);
+		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
+		DrawEntry(data,obj,cur,window_rp,_mleft(obj)-data->horiz_first,window_y);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,window_rp,_mleft(obj),window_y);
 	}
 }
@@ -1968,7 +1976,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	/* erase stuff below only when rendering completly or when a single element was removed */
 	if (y <= _mbottom(obj) && (drawupdate == 0 || drawupdate == 3))
 	{
-		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, 0,0);
+		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), y, _mwidth(obj), _mbottom(obj) - y + 1, _mleft(obj), y, 0);
 	}
 	return 0;
 }
@@ -2185,8 +2193,9 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	data->drawupdate_position = pos;
 	MUI_Redraw(obj,MADF_DRAWUPDATE);
 
-	if (data->entries_active != -1 && pos < data->entries_active)
-		data->entries_active--;
+	/* Update data->entries_active */
+	if (data->entries_active != -1 && pos < data->entries_active) data->entries_active--;
+	if (data->entries_active >= data->entries_num) data->entries_active = data->entries_num - 1;
 
 	/* Ensure proper displayed selection states */
 	data->drawupdate = 1;
@@ -2268,6 +2277,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	if (data->inbetween_show)
 	{
 		/* TODO: Inform also the scroller about the entries_num change */
+		CalcEntries(data,obj);
 		CalcVisible(data,obj);
 		MUI_Redraw(obj,MADF_DRAWOBJECT);
 	}
@@ -2594,8 +2604,15 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								/* Disable mouse move notifies */
 							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 							  data->mouse_pressed = 0;
+							  if (msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT))
+							  {
+							  	data->title_column_click2 = data->title_column_click;
+							  	data->title_column_click = -1;
+							  }
 							  if (data->title_column_click != -1)
-							  	set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
+							  		set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
+							  if (data->title_column_click2 != -1)
+							  		set(obj, MUIA_MailTreelist_TitleClick2, data->title_column_click2);
 
 								if (data->column_drag != -1)
 								{

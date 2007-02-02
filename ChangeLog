@@ -9,8 +9,11 @@ SimpleMail Open Source - ChangeLog
 	  in the title row.
 	  Corrected the parameter for the MUIM_DrawBackground calls.
 	  Corrected the DrawEntry() call when not in bufferd drawing mode.
+	  Added special truncation for the subject column.
 	* amiga-mui/mainwnd.c: Added the MUIA_MailTreelist_TitleClick2 for the secondary
 	  sort when shift-clicked in the title row.
+	* folder.(c|h): Need the mail_get_compare_subject() function for the new subject
+	  truncation in the mailtreelistclass-new.
 
 2007-01-31  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/gui_main.c: The TTEngine library wasn't closed.

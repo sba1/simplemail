@@ -1113,7 +1113,48 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
 					if (fit < txt_len && (available_col_width > data->threepoints_width))
 					{
-						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+						/* special truncation for the subject. First truncate the left part of the
+						   subject, see folder.c/mail_get_compare_subject() what will be skipped */
+						if (ci->type == COLUMN_TYPE_SUBJECT)
+						{
+							char *new_txt = mail_get_compare_subject(txt);
+							int new_len = strlen(new_txt);
+
+							if (new_len != txt_len)
+							{
+								int new_width, left_width, left_len, left_fit;
+
+								new_width  = TextLength(rp, new_txt, new_len);
+								left_width = available_col_width - new_width;
+								if (left_width > data->threepoints_width)
+								{
+									left_len = txt_len - new_len;
+									left_fit = TextFit(rp,&txt[left_len-1],left_len,&te,NULL,-1,left_width-data->threepoints_width,fonty);
+									left_width = te.te_Width;
+								} else left_width = 0;
+
+								new_width = available_col_width-data->threepoints_width-left_width;
+								fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width,fonty);
+								if (fit < new_len && (new_width > data->threepoints_width))
+									fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width-data->threepoints_width,fonty);
+								if (fit > 4)
+								{
+									/* only use the special truncation if there are at least 5 chars */
+									Text(rp,"...",3);
+									if (left_width > 0) Text(rp,&txt[left_len-left_fit],left_fit);
+									available_col_width -= (data->threepoints_width+left_width);
+									txt = new_txt;
+									txt_len = new_len;
+								}
+							}
+							if (fit < txt_len && (available_col_width > data->threepoints_width))
+							{
+								fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+							}
+						} else
+						{
+							fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+						}
 					}
 
 					Text(rp,txt,fit);

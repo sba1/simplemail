@@ -2,6 +2,16 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-02  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: Added a SORT[12]MASK for the column flags.
+	  The NoRecipient image will only be shown in a send-folder (as it was before).
+	  Added the MUIA_MailTreelist_TitleClick2 for the secondary sort when shift-clicked
+	  in the title row.
+	  Corrected the parameter for the MUIM_DrawBackground calls.
+	  Corrected the DrawEntry() call when not in bufferd drawing mode.
+	* amiga-mui/mainwnd.c: Added the MUIA_MailTreelist_TitleClick2 for the secondary
+	  sort when shift-clicked in the title row.
+
 2007-01-31  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/gui_main.c: The TTEngine library wasn't closed.
 

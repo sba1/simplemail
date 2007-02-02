@@ -99,7 +99,7 @@ static int mail_compare_to(const struct mail_info *arg1, const struct mail_info 
 	return rc;
 }
 
-static char *mail_get_compare_subject(char *subj)
+char *mail_get_compare_subject(char *subj)
 {
 	char *p;
 	int brackets = 0;

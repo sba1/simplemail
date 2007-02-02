@@ -221,4 +221,7 @@ int folder_on_same_imap_server(struct folder *f1, struct folder *f2);
 /* misplaced and needs a rework */
 int mail_matches_filter(struct folder *folder, struct mail_info *m, struct filter *filter);
 
+/* needed for the subject truncation in the new mailtreelistclass */
+char *mail_get_compare_subject(char *subj);
+
 #endif

@@ -10,6 +10,10 @@ SimpleMail Open Source - ChangeLog
 	  bug #1425069).
 	  The pattern in the search window will be interpreted with "Substring" and
 	  "Pattern" set (not yet configurable).
+	* amiga-mui/mailtreelistclass-new.c: Reworked the support for the NewMouse standard.
+	  Now the mousewheel will scroll only by one line and faster while one of the SHIFT-keys
+	  will be held down. Horizontal scrolling is now also supported with the second wheel
+	  or with the first wheel and holding down one of the ALT-keys.
 
 2007-02-02  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Added a SORT[12]MASK for the column flags.

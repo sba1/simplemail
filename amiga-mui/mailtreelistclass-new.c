@@ -2516,15 +2516,56 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 							if (_isinobject(obj, msg->imsg->MouseX, msg->imsg->MouseY))
 							{
 								LONG visible, delta;
-								GetAttr(MUIA_Prop_Visible, data->vert_scroller, (ULONG*)&visible);
 
-								delta = (visible + 3)/6;
-								if (delta < 1) delta = 1;
+								if ((msg->imsg->Qualifier & (IEQUALIFIER_LALT|IEQUALIFIER_RALT)))
+								{
+									if (data->horiz_scroller)
+									{
+										GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (ULONG*)&visible);
+										if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
+											delta = (visible + 3*data->entry_maxheight)/6;
+										else
+											delta = data->entry_maxheight;
+										if (delta < 1) delta = 1;
 
-								if (msg->imsg->Code == NM_WHEEL_DOWN)
-									delta *= -1;
+										if (msg->imsg->Code == NM_WHEEL_DOWN) delta *= -1;
+										DoMethod(data->horiz_scroller, MUIM_Prop_Decrease, delta);
+									}
+								} else
+								{
+									GetAttr(MUIA_Prop_Visible, data->vert_scroller, (ULONG*)&visible);
+									if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
+									{
+										delta = (visible + 3)/6;
+										if (delta < 1) delta = 1;
+									} else delta = 1;
 
-								DoMethod(data->vert_scroller, MUIM_Prop_Decrease, delta);
+									if (msg->imsg->Code == NM_WHEEL_DOWN) delta *= -1;
+									DoMethod(data->vert_scroller, MUIM_Prop_Decrease, delta);
+								}
+								return MUI_EventHandlerRC_Eat;
+							}
+						}
+
+						/* support for second wheel, same as first wheel with pressed ALT */
+						if (msg->imsg->Code == NM_WHEEL_LEFT || msg->imsg->Code == NM_WHEEL_RIGHT)
+						{
+							if (_isinobject(obj, msg->imsg->MouseX, msg->imsg->MouseY))
+							{
+								LONG visible, delta;
+
+								if (data->horiz_scroller)
+								{
+									GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (ULONG*)&visible);
+									if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
+										delta = (visible + 3*data->entry_maxheight)/6;
+									else
+										delta = data->entry_maxheight;
+									if (delta < 1) delta = 1;
+
+									if (msg->imsg->Code == NM_WHEEL_RIGHT) delta *= -1;
+									DoMethod(data->horiz_scroller, MUIM_Prop_Decrease, delta);
+								}
 								return MUI_EventHandlerRC_Eat;
 							}
 						}

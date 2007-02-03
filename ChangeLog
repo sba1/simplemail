@@ -5,11 +5,11 @@ SimpleMail Open Source - ChangeLog
 2007-02-03  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/filterruleclass.c, amiga-mui/filterwnd.c, amiga-mui/support.c,
 	  filter.(c|h), folder.c, indep-include/support.h, doc/amiga/SimpleMail.guide:
-	  Added three new options for the filterrules: "Substringsearch", "Case sensitive"
-	  and "Patternmatching". The last option is especially for Chris Handley (fixes
+	  Added three new options for the filterrules: "Substring", "Case sensitive"
+	  and "Pattern". The last option is especially for Chris Handley (fixes
 	  bug #1425069).
 	  The pattern in the search window will be interpreted with "Substring" and
-	  "is Pattern" set (not yet configurable).
+	  "Pattern" set (not yet configurable).
 
 2007-02-02  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Added a SORT[12]MASK for the column flags.

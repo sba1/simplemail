@@ -1692,20 +1692,24 @@ has attachments, or is matching a given status (read, forwarded, etc.).
 You can define how the search pattern is interpreted with three checkmarks:
    Substring       - The string must only be contained in the field
    Case sensitive  - The search is case sensitive
-   is Pattern      - The string is an AmigaDOS Pattern
+   Pattern         - The string is an AmigaDOS Pattern and patternmatching
+                     will be performed.
 
-If the "Substring" and the "is Pattern" checkmarks are set the whole pattern
+If the "Substring" and the "Pattern" checkmarks are set the whole pattern
 will be surrounded with "#?" by SimpleMail itself. Still, the search pattern
 may contain AmigaDOS wildcards such as ?, #?, (a|b) or [abc].
 
 Please note that the search pattern [RED]#? will filter all messages
-beginning with  R, E or D. To filter email coming from a mailing list
-(for example, a mailing list related to SimpleMail), you'd better not
-use the "is Pattern" checkmark or have the filter compare the "Reply-To"
-field with the address of the mailing list, provided the mailing list
-sets this header correctly.
+beginning with  R, E or D if the "Pattern" checkmark is set.
 
-If you don't set the "Substring" and "is Pattern" checkmarks the field must
+To filter email coming from a mailing list (for example, a mailing list
+with [mailinglistname] in the subject), you'd better not use the "Pattern"
+checkmark or have the filter compare the "Reply-To" field with the address
+of the mailing list, provided the mailing list sets this header correctly.
+
+Special AmigaDOS patternmatching chars are: ? # | ~ ( ) [ ] % '
+
+If you don't set the "Substring" and "Pattern" checkmarks the field must
 exactly match the string you typed in (case [in]sensitive depending on the
 "Case sensitive" checkmark).
 
@@ -1713,7 +1717,7 @@ exactly match the string you typed in (case [in]sensitive depending on the
   Examples:
 
    Sender      contains                sebauer
-               Substring [x]  Case sensitive [ ]  is Pattern [ ]
+               Substring [x]  Case sensitive [ ]  Pattern [ ]
 
    Will match: Sebatian Bauer <sebauer@example.com>
                franz.klausebauerling@example.com
@@ -1721,14 +1725,14 @@ exactly match the string you typed in (case [in]sensitive depending on the
 
 
    Subject     contains                simplemail-usr
-               Substring [x]  Case sensitive [ ]  is Pattern [ ]
+               Substring [x]  Case sensitive [ ]  Pattern [ ]
 
    Will match: Re: [simplemail-usr] This is a test
                Do you know the simplemail-usr mailinglist?
 
 
-   Header      Reply-To       matches          plemail-(usr|dev)
-               Substring [x]  Case sensitive [ ]  is Pattern [x]
+   Header      Reply-To       matches       plemail-(usr|dev)
+               Substring [x]  Case sensitive [ ]  Pattern [x]
 
    Will match: plemail-usr@example.com
                plemail-developer@example.com

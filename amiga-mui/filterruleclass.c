@@ -194,11 +194,24 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 		    		Child, MakeLabel(_("Case sensitive")),
 		    		Child, data->case_check = MakeCheck(NULL, FALSE),
 		    		Child, HVSpace,
-		    		Child, MakeLabel(_("is Pattern")),
+		    		Child, MakeLabel(_("Pattern")),
 		    		Child, data->patt_check = MakeCheck(NULL, FALSE),
 		    		End;
 		    	if (group2)
 		    	{
+		    		char *substr_help_txt, *case_help_txt, *patt_help_txt;
+
+		    		substr_help_txt = _("If activated the string must only be a part\n"
+		    		                    "of the searched field.");
+		    		case_help_txt = _("If activated the search is case sensitive.");
+		    		patt_help_txt = _("If activated the string is an AmigaDOS pattern\n"
+		    		                  "and patternmatching will be performed.\n"
+		    		                  "Special chars are: ? # | ~ ( ) [ ] % '");
+
+		    		set(data->substr_check, MUIA_ShortHelp, substr_help_txt);
+		    		set(data->case_check, MUIA_ShortHelp, case_help_txt);
+		    		set(data->patt_check, MUIA_ShortHelp, patt_help_txt);
+
 		    		data->flags = SM_PATTERN_NOCASE|SM_PATTERN_NOPATT;
 		    		DoMethod(data->substr_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_FlagsUpdate, (ULONG)data);
 		    		DoMethod(data->case_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_FlagsUpdate, (ULONG)data);

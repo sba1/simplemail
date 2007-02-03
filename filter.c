@@ -67,29 +67,30 @@ void filter_parse_filter_rules(struct filter *f)
 			{
 				case	RULE_FROM_MATCH:
 							if (rule->u.from.from_pat) array_free(rule->u.from.from_pat);
-							rule->u.from.from_pat = array_duplicate_parsed(rule->u.from.from, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							rule->u.from.from_pat = array_duplicate_parsed(rule->u.from.from, rule->flags);
 							break;
 
 				case	RULE_SUBJECT_MATCH:
 							if (rule->u.subject.subject_pat) array_free(rule->u.subject.subject_pat);
-							rule->u.subject.subject_pat = array_duplicate_parsed(rule->u.subject.subject, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							rule->u.subject.subject_pat = array_duplicate_parsed(rule->u.subject.subject, rule->flags);
 							break;
 
 				case	RULE_HEADER_MATCH:
 							if (rule->u.header.name_pat) free(rule->u.header.name_pat);
-							rule->u.header.name_pat = sm_parse_pattern(rule->u.header.name, SM_PATTERN_NOCASE);
+							/* patternmatching for headerfields disabled for now */
+							rule->u.header.name_pat = sm_parse_pattern(rule->u.header.name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT);
 							if (rule->u.header.contents_pat) array_free(rule->u.header.contents_pat);
-							rule->u.header.contents_pat = array_duplicate_parsed(rule->u.header.contents, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							rule->u.header.contents_pat = array_duplicate_parsed(rule->u.header.contents, rule->flags);
 							break;
 
 				case	RULE_RCPT_MATCH:
 							if (rule->u.rcpt.rcpt_pat) array_free(rule->u.rcpt.rcpt_pat);
-							rule->u.rcpt.rcpt_pat = array_duplicate_parsed(rule->u.rcpt.rcpt, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							rule->u.rcpt.rcpt_pat = array_duplicate_parsed(rule->u.rcpt.rcpt, rule->flags);
 							break;
 
 				case	RULE_BODY_MATCH:
 							if (rule->u.body.body_pat) free(rule->u.body.body_pat);
-							rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
+							rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, rule->flags);
 							break;
 			}
 			rule = (struct filter_rule*)node_next(&rule->node);
@@ -135,6 +136,7 @@ struct filter *filter_duplicate(struct filter *filter)
 				memset(new_rule,0,sizeof(struct filter_rule));
 
 				new_rule->type = rule->type;
+				new_rule->flags = rule->flags;
 
 				switch (new_rule->type)
 				{
@@ -200,6 +202,7 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 	{
 		memset(rule, 0, sizeof(struct filter_rule));
 		rule->type = type;
+		rule->flags = SM_PATTERN_NOCASE|SM_PATTERN_NOPATT;
 		list_insert_tail(&filter->rules_list,&rule->node);
 	}
 	return rule;
@@ -421,11 +424,13 @@ void filter_list_load(FILE *fh)
 							if ((fr = malloc(sizeof(struct filter_rule))))
 							{
 								memset(fr,0,sizeof(struct filter_rule));
+								/* setting old-flags to be downward compatible,
+								   will be overwritten when saved in settingfile */
+								fr->flags = (SM_PATTERN_NOCASE|SM_PATTERN_SUBSTR);
 								list_insert_tail(&f->rules_list, &fr->node);
 								fr = (struct filter_rule*)list_find(&f->rules_list,rule_no);
 							}
 						}
-
 						if (fr)
 						{
 							char *result;
@@ -444,6 +449,8 @@ void filter_list_load(FILE *fh)
 									else if (!mystricmp(result,"BODY")) fr->type = RULE_BODY_MATCH;
 								}
 
+								if ((result = get_config_item(rule_buf,"Flags")))
+									fr->flags = atoi(result);
 								if ((result = get_config_item(rule_buf,"From.Address")))
 									fr->u.from.from = array_add_string(fr->u.from.from,result);
 								if ((result = get_config_item(rule_buf,"Subject.Subject")))
@@ -503,6 +510,7 @@ void filter_list_save(FILE *fh)
 			{
 				case	RULE_FROM_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=From\n",i,j);
+							fprintf(fh,"FILTER%d.RULE%d.Flags=%d\n",i,j,rule->flags);
 							if (rule->u.from.from)
 							{
 								char *str;
@@ -516,6 +524,7 @@ void filter_list_save(FILE *fh)
 							break;
 				case	RULE_RCPT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Rcpt\n",i,j);
+							fprintf(fh,"FILTER%d.RULE%d.Flags=%d\n",i,j,rule->flags);
 							if (rule->u.from.from)
 							{
 								char *str;
@@ -529,6 +538,7 @@ void filter_list_save(FILE *fh)
 							break;
 				case	RULE_SUBJECT_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Subject\n",i,j);
+							fprintf(fh,"FILTER%d.RULE%d.Flags=%d\n",i,j,rule->flags);
 							if (rule->u.subject.subject)
 							{
 								char *str;
@@ -542,6 +552,7 @@ void filter_list_save(FILE *fh)
 							break;
 				case	RULE_HEADER_MATCH:
 							fprintf(fh,"FILTER%d.RULE%d.Type=Header\n",i,j);
+							fprintf(fh,"FILTER%d.RULE%d.Flags=%d\n",i,j,rule->flags);
 							fprintf(fh,"FILTER%d.RULE%d.Header.Name=%s\n",i,j,MAKESTR(rule->u.header.name));
 							if (rule->u.header.contents)
 							{

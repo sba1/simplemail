@@ -35,6 +35,7 @@
 #include "filter.h"
 #include "smintl.h"
 #include "debug.h"
+#include "support.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -45,6 +46,7 @@
 struct FilterRule_Data
 {
 	int type;
+	int flags;
 
 	Object *group;
 
@@ -54,6 +56,10 @@ struct FilterRule_Data
 	Object *object4;
 
 	Object *type_cycle;
+
+	Object *substr_check;
+	Object *case_check;
+	Object *patt_check;
 
 	struct filter_rule get_rule;
 };
@@ -101,29 +107,70 @@ void status_cycle_active(Object **objs)
 	set(objs[1],MUIA_PictureButton_Filename,status_filenames[active]);
 }
 
+STATIC VOID FilterRule_FlagsUpdate(struct FilterRule_Data **pdata)
+{
+	struct FilterRule_Data *data = *pdata;
+
+	data->flags = 0;
+	if (xget(data->substr_check, MUIA_Selected))  data->flags |= SM_PATTERN_SUBSTR;
+	if (!(xget(data->case_check, MUIA_Selected))) data->flags |= SM_PATTERN_NOCASE;
+	if (!(xget(data->patt_check, MUIA_Selected))) data->flags |= SM_PATTERN_NOPATT;
+
+	if (!(data->flags & SM_PATTERN_NOPATT))
+	{
+		if (data->type == RULE_HEADER_MATCH)
+		{
+			set(data->object2, MUIA_Text_Contents, _("matches"));
+		} else
+		{
+			set(data->object1, MUIA_Text_Contents, _("matches"));
+		}
+	} else if ((data->flags & SM_PATTERN_SUBSTR))
+	{
+		if (data->type == RULE_HEADER_MATCH)
+		{
+			set(data->object2, MUIA_Text_Contents, _("contains"));
+		} else
+		{
+			set(data->object1, MUIA_Text_Contents, _("contains"));
+		}
+	} else
+	{
+		if (data->type == RULE_HEADER_MATCH)
+		{
+			set(data->object2, MUIA_Text_Contents, _("equals"));
+		} else
+		{
+			set(data->object1, MUIA_Text_Contents, _("equals"));
+		}
+	}
+}
+
 STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 {
+	Object *group1, *group2;
 	DoMethod(data->group, MUIM_Group_InitChange);
 	DisposeAllChilds(data->group);
 
 	data->object1 = data->object2 = data->object3 = data->object4 = NULL;
+	group1 = group2 = NULL;
 
 	if (data->type == RULE_FROM_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("equals"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_RCPT_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("equals"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_SUBJECT_MATCH)
 	{
-		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
+		data->object1 = TextObject, TextFrame, MUIA_Text_Contents, _("equals"),End;
 		data->object2 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_HEADER_MATCH)
 	{
 		data->object1 = BetterStringObject, StringFrame, MUIA_CycleChain,1,End;
-		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, _("matches"),End;
+		data->object2 = TextObject, TextFrame, MUIA_Text_Contents, _("equals"),End;
 		data->object3 = MultiStringObject, StringFrame, End;
 	} else if (data->type == RULE_STATUS_MATCH)
 	{
@@ -132,13 +179,56 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 		DoMethod(data->object1, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)status_cycle_active, (ULONG)data->object1, (ULONG)data->object2);
 	}
 
-	if (data->object1) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object1);
-	if (data->object2) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object2);
-	if (data->object3) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object3);
-	if (data->object4) DoMethod(data->group, OM_ADDMEMBER, (ULONG)data->object4);
+	data->flags = 0;
+	switch (data->type)
+	{
+		case	RULE_FROM_MATCH:
+		case	RULE_RCPT_MATCH:
+		case	RULE_BODY_MATCH:
+		case	RULE_HEADER_MATCH:
+		case	RULE_SUBJECT_MATCH:
+		    	group2 = HGroup,
+		    		Child, MakeLabel(_("Substring")),
+		    		Child, data->substr_check = MakeCheck(NULL, FALSE),
+		    		Child, HVSpace,
+		    		Child, MakeLabel(_("Case sensitive")),
+		    		Child, data->case_check = MakeCheck(NULL, FALSE),
+		    		Child, HVSpace,
+		    		Child, MakeLabel(_("is Pattern")),
+		    		Child, data->patt_check = MakeCheck(NULL, FALSE),
+		    		End;
+		    	if (group2)
+		    	{
+		    		data->flags = SM_PATTERN_NOCASE|SM_PATTERN_NOPATT;
+		    		DoMethod(data->substr_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_FlagsUpdate, (ULONG)data);
+		    		DoMethod(data->case_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_FlagsUpdate, (ULONG)data);
+		    		DoMethod(data->patt_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)FilterRule_FlagsUpdate, (ULONG)data);
+		    	}
+		    	break;
+	}
 
-	if (!data->object1 && !data->object2 && !data->object3 && !data->object4)
+	if (data->object1 || data->object2 || data->object3 || data->object4)
+	{
+		group1 = HGroup, End;
+		if (group1)
+		{
+			if (data->object1) DoMethod(group1, OM_ADDMEMBER, (ULONG)data->object1);
+			if (data->object2) DoMethod(group1, OM_ADDMEMBER, (ULONG)data->object2);
+			if (data->object3) DoMethod(group1, OM_ADDMEMBER, (ULONG)data->object3);
+			if (data->object4) DoMethod(group1, OM_ADDMEMBER, (ULONG)data->object4);
+		}
+	}
+
+	if (group1)
+		DoMethod(data->group, OM_ADDMEMBER, (ULONG)group1);
+	else
 		DoMethod(data->group, OM_ADDMEMBER, (ULONG)HVSpace);
+
+	if (group2)
+	{
+		DoMethod(data->group, OM_ADDMEMBER, (ULONG)group2);
+		DoMethod(data->group, OM_ADDMEMBER, (ULONG)RectangleObject,MUIA_Rectangle_HBar, TRUE, End);
+	}
 
 	DoMethod(data->group, MUIM_Group_ExitChange);
 	return TRUE;
@@ -147,6 +237,7 @@ STATIC BOOL FilterRule_CreateObjects(struct FilterRule_Data *data)
 STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *fr)
 {
 	data->type = fr->type;
+	data->flags = fr->flags;
 	set(data->type_cycle,MUIA_Cycle_Active,data->type);
 	DoMethod(data->group, MUIM_Group_InitChange);
 	FilterRule_CreateObjects(data);
@@ -171,6 +262,10 @@ STATIC VOID FilterRule_SetRule(struct FilterRule_Data *data,struct filter_rule *
 					set(data->object1,MUIA_Cycle_Active,fr->u.status.status);
 					break;
 	}
+	if ((fr->flags & SM_PATTERN_SUBSTR)) set(data->substr_check, MUIA_Selected, TRUE);
+	if (!(fr->flags & SM_PATTERN_NOCASE)) set(data->case_check, MUIA_Selected, TRUE);
+	if (!(fr->flags & SM_PATTERN_NOPATT)) set(data->patt_check, MUIA_Selected, TRUE);
+
 	DoMethod(data->group, MUIM_Group_ExitChange);
 }
 
@@ -190,7 +285,7 @@ STATIC ULONG FilterRule_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 		MUIA_Group_Horiz, TRUE,
 		Child, type_cycle = MakeCycle(NULL,rule_cycle_array),
-		Child, group = HGroup, End,
+		Child, group = VGroup, End,
 		TAG_MORE,msg->ops_AttrList)))
 		return 0;
 
@@ -229,6 +324,7 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 		case	MUIA_FilterRule_Data:
 					memset(&data->get_rule,0,sizeof(struct filter_rule));
 					data->get_rule.type = data->type;
+					data->get_rule.flags = data->flags;
 					switch (data->get_rule.type)
 					{
 						case	RULE_FROM_MATCH:

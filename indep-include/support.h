@@ -58,8 +58,9 @@ char *sm_get_time_str(unsigned int seconds);
 char *sm_parse_pattern(utf8 *utf8_str, int flags);
 int sm_match_pattern(char *pat, utf8 *utf8_str, int flags);
 #define SM_PATTERN_NOCASE (1L << 0) /* not case sensitive */
-#define SM_PATTERN_SUBSTR (1L << 1) /* make it a substring search, only for sm_parse_pattern() */
-#define SM_PATTERN_ASCII7 (1L << 2) /* match string is ascii7, only for sm_match_pattern() */
+#define SM_PATTERN_SUBSTR (1L << 1) /* make it a substring search */
+#define SM_PATTERN_ASCII7 (1L << 2) /* match string is ascii7, automatic detection */
+#define SM_PATTERN_NOPATT (1L << 3) /* no patternmatching, just string compare */
 
 int sm_snprintf(char *buf, int n, const char *fmt, ...);
 

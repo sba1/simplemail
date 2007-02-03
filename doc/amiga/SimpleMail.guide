@@ -23,6 +23,7 @@
 
      @{" Main Window     " LINK "MA_W" 0} - How to receive and send mail, copy it, etc.
      @{" Configuration   " LINK "CO_W" 0} - Configuring SimpleMail to your tastes
+     @{" Filters         " LINK "CO_F" 0} - Setup your filters
      @{" Address book    " LINK "AB_W" 0} - Saving useful addresses
      @{" Write           " LINK "WR_W" 0} - Writing e-mail messages
      @{" Editor          " LINK "EDIT" 0} - About the internal editor
@@ -1688,26 +1689,54 @@ you want to use.
 Alternatively, you can also enter a rule that will turn true if the email
 has attachments, or is matching a given status (read, forwarded, etc.).
 
-You don't need to type the whole pattern, as SimpleMail will use a pair
-of surrounding "#?" pattern matching characters there to look in the
-header for the string you have typed. Still, the search pattern may
-contain AmigaDOS wildcards such as ?, #?, (a|b) or [abc].
+You can define how the search pattern is interpreted with three checkmarks:
+   Substring       - The string must only be contained in the field
+   Case sensitive  - The search is case sensitive
+   is Pattern      - The string is an AmigaDOS Pattern
+
+If the "Substring" and the "is Pattern" checkmarks are set the whole pattern
+will be surrounded with "#?" by SimpleMail itself. Still, the search pattern
+may contain AmigaDOS wildcards such as ?, #?, (a|b) or [abc].
 
 Please note that the search pattern [RED]#? will filter all messages
 beginning with  R, E or D. To filter email coming from a mailing list
-(for example, a mailing list related to SimpleMail), you'd better use
-the search pattern "SimpleMail" (without the quotes) or have the filter
-compare the "Reply-To" field with the address of the mailing list,
-provided the mailing list sets this header correctly.
+(for example, a mailing list related to SimpleMail), you'd better not
+use the "is Pattern" checkmark or have the filter compare the "Reply-To"
+field with the address of the mailing list, provided the mailing list
+sets this header correctly.
+
+If you don't set the "Substring" and "is Pattern" checkmarks the field must
+exactly match the string you typed in (case [in]sensitive depending on the
+"Case sensitive" checkmark).
+
 
   Examples:
 
-   Sender      matches     sebauer
-   Subject     matches     simplemail-usr
-   Header      Reply-To    matches    plemail-usr
+   Sender      contains                sebauer
+               Substring [x]  Case sensitive [ ]  is Pattern [ ]
+
+   Will match: Sebatian Bauer <sebauer@example.com>
+               franz.klausebauerling@example.com
+               nobody@strassebauer.example.com
+
+
+   Subject     contains                simplemail-usr
+               Substring [x]  Case sensitive [ ]  is Pattern [ ]
+
+   Will match: Re: [simplemail-usr] This is a test
+               Do you know the simplemail-usr mailinglist?
+
+
+   Header      Reply-To       matches          plemail-(usr|dev)
+               Substring [x]  Case sensitive [ ]  is Pattern [x]
+
+   Will match: plemail-usr@example.com
+               plemail-developer@example.com
+
+
    Status is   Replied
 
-Remember, case is not important here!
+   Will match: well, every mail with that status
 
 
 [Apply now]

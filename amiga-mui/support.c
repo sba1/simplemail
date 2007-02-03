@@ -714,18 +714,26 @@ int sm_file_is_in_drawer(char *filename, char *path)
 *******************************************************************/
 char *sm_parse_pattern(utf8 *utf8_str, int flags)
 {
-	char *source = utf8tostrcreate(utf8_str, user.config.default_codeset);
+	char *source = NULL;
 	char *dest = NULL;
 
-	if ((flags & SM_PATTERN_SUBSTR))
+	if ((flags & SM_PATTERN_NOPATT))
 	{
-		int new_len = strlen(source)+5;
-		char *new_source = (char *)malloc(new_len);
-		if (new_source)
+		/* only a copy of the string is needed when we are not using the patternmatching */
+		dest = mystrdup(utf8_str);
+	} else
+	{
+		source = utf8tostrcreate(utf8_str, user.config.default_codeset);
+		if ((flags & SM_PATTERN_SUBSTR))
 		{
-			sm_snprintf(new_source, new_len, "#?%s#?", source);
-			free(source);
-			source = new_source;
+			int new_len = strlen(source)+5;
+			char *new_source = (char *)malloc(new_len);
+			if (new_source)
+			{
+				sm_snprintf(new_source, new_len, "#?%s#?", source);
+				free(source);
+				source = new_source;
+			}
 		}
 	}
 
@@ -742,7 +750,7 @@ char *sm_parse_pattern(utf8 *utf8_str, int flags)
 				if (DOSBase->dl_lib.lib_Version < 39)
 				{
 					char *conv;
-					for (conv=source; *conv != '0'; conv++)
+					for (conv=source; *conv != '\0'; conv++)
 					{
 						*conv = ToUpper(*conv);
 					}
@@ -775,6 +783,43 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 	char *str;
 	int match = 0;
 
+	if ((flags & SM_PATTERN_NOPATT))
+	{
+		if ((flags & SM_PATTERN_NOCASE))
+		{
+			if ((flags & SM_PATTERN_SUBSTR))
+			{
+				if ((flags & SM_PATTERN_ASCII7))
+				{
+					match = !!mystristr(utf8_str, pat);
+				} else
+				{
+					match = !!utf8stristr(utf8_str, pat);
+				}
+			} else
+			{
+				if ((flags & SM_PATTERN_ASCII7))
+				{
+					match = !utf8stricmp(utf8_str, pat);
+				} else
+				{
+					match = !mystricmp(utf8_str, pat);
+				}
+			}
+		} else
+		{
+			/* no special handling needed for UTF8 */
+			if ((flags & SM_PATTERN_SUBSTR))
+			{
+				match = !!strstr(utf8_str, pat);
+			} else
+			{
+				match = !mystrcmp(utf8_str, pat);
+			}
+		}
+		return match;
+	}
+			
 	if (!(flags & SM_PATTERN_ASCII7))
 	{
 		str = utf8tostrcreate(utf8_str, user.config.default_codeset);

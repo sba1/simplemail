@@ -2945,7 +2945,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 			case	RULE_FROM_MATCH:
 						if (rule->u.from.from_pat)
 						{
-							int i = 0, flags = SM_PATTERN_NOCASE;
+							int i = 0, flags = rule->flags;
 
 							if (m->flags & MAIL_FLAGS_FROM_ADDR_ASCII7) flags |= SM_PATTERN_ASCII7;
 							while (!take && rule->u.from.from_pat[i])
@@ -2954,7 +2954,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 							if (!take)
 							{
 								i = 0;
-								flags = SM_PATTERN_NOCASE;
+								flags = rule->flags;
 								if (m->flags & MAIL_FLAGS_FROM_ASCII7) flags |= SM_PATTERN_ASCII7;
 								while (!take && rule->u.from.from_pat[i])
 									take = sm_match_pattern(rule->u.from.from_pat[i++], m->from_phrase, flags);
@@ -2965,7 +2965,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 			case	RULE_RCPT_MATCH:
 						if (rule->u.rcpt.rcpt_pat)
 						{
-							int i = 0, flags = SM_PATTERN_NOCASE;
+							int i = 0, flags = rule->flags;
 
 							while (!take && rule->u.rcpt.rcpt_pat[i])
 							{
@@ -2996,7 +2996,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 			case	RULE_SUBJECT_MATCH:
 						if (rule->u.subject.subject_pat)
 						{
-							int i = 0, flags = SM_PATTERN_NOCASE;
+							int i = 0, flags = rule->flags;
 							if (m->flags & MAIL_FLAGS_SUBJECT_ASCII7) flags |= SM_PATTERN_ASCII7;
 							while (!take && rule->u.subject.subject_pat[i])
 								take = sm_match_pattern(rule->u.subject.subject_pat[i++], m->subject, flags);
@@ -3014,7 +3014,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 								header = (struct header*)list_first(&mc->header_list);
 								while (!take && header)
 								{
-									if (sm_match_pattern(rule->u.header.name_pat, header->name, SM_PATTERN_NOCASE|SM_PATTERN_ASCII7))
+									if (sm_match_pattern(rule->u.header.name_pat, header->name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT|SM_PATTERN_ASCII7))
 									{
 										if (header->contents)
 										{
@@ -3023,7 +3023,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 
 											if (cont)
 											{
-												int i = 0, flags = SM_PATTERN_NOCASE;
+												int i = 0, flags = rule->flags;
 												while (!take && rule->u.header.contents_pat[i])
 													take = sm_match_pattern(rule->u.header.contents_pat[i++], cont, flags);
 												free(cont);
@@ -3252,25 +3252,37 @@ static void folder_start_search_entry(struct search_msg *msg)
 		if (sopt->from)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
+			{
+				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
 				rule->u.from.from = array_add_string(NULL,sopt->from);
+			}
 		}
 	
 		if (sopt->subject)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
+			{
+				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
 				rule->u.subject.subject = array_add_string(NULL,sopt->subject);
+			}
 		}
 	
 		if (sopt->body)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
+			{
+				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
 				rule->u.body.body = mystrdup(sopt->body);
+			}
 		}
 	
 		if (sopt->to)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
+			{
+				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
 				rule->u.rcpt.rcpt = array_add_string(NULL,sopt->to);
+			}
 		}
 
 		filter_parse_filter_rules(filter);

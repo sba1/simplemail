@@ -221,6 +221,7 @@ static void filter_accept_rule(void)
 
 					/* now copy over the new settings */
 					fr->type = new_fr->type;
+					fr->flags = new_fr->flags;
 					switch (new_fr->type)
 					{
 						case	RULE_FROM_MATCH:

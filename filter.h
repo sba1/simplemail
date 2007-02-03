@@ -42,6 +42,7 @@ struct filter_rule
 {
 	struct node node; /* embedded node structure */
 	int type; /* type of the rule */
+	int flags; /* flags for the pattern matching rules (see indep-include/support.h/SM_PATTERN_#?) */
 	union
 	{
 		struct {

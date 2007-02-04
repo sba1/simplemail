@@ -2804,6 +2804,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->drawupdate = 1;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 
+										/* TODO: Replace by a modified EnsureActiveEntryVisibility? */
 										if (new_entries_active < data->entries_first)
 										{
 											set(data->vert_scroller,MUIA_Prop_First,new_entries_active);
@@ -2833,6 +2834,64 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
   }
 
 	return 0;
+}
+
+/*************************************************************************
+ MUIM_HandleInput
+*************************************************************************/
+static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUIP_HandleInput *msg)
+{
+	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int new_entries_active;
+	int change_amount = 1;
+	
+	new_entries_active = data->entries_active;
+
+	switch (msg->muikey)
+	{
+		case	MUIKEY_PAGEUP:
+					change_amount = data->entries_visible - 1;
+		case	MUIKEY_UP:
+					if (new_entries_active <= 0) new_entries_active = data->entries_num - 1;
+					else new_entries_active -= change_amount;
+					break;
+
+		case	MUIKEY_PAGEDOWN:
+					change_amount = data->entries_visible - 1;
+		case	MUIKEY_DOWN:
+					
+					if (new_entries_active >= data->entries_num) new_entries_active = 0;
+					else new_entries_active += change_amount;
+					break;
+	}
+
+	if (new_entries_active < 0) new_entries_active = 0;
+	else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1; 
+
+	if (new_entries_active != data->entries_active && data->entries_num)
+	{
+		data->entries_active = new_entries_active;
+	
+		/* Refresh */
+		data->drawupdate = 1;
+		MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+		/* TODO: Replace by a modified EnsureActiveEntryVisibility? */
+		if (new_entries_active < data->entries_first)
+		{
+			set(data->vert_scroller,MUIA_Prop_First,new_entries_active);
+		} else
+		{
+			if (new_entries_active >= data->entries_first + data->entries_visible)
+			{
+				set(data->vert_scroller, MUIA_Prop_First, new_entries_active - data->entries_visible + 1);
+			}
+		}
+
+		IssueTreelistActiveNotify(cl,obj,data);
+	}
+
+	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
 /*************************************************************************
@@ -3117,6 +3176,7 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_Hide:				return MailTreelist_Hide(cl,obj,(struct MUIP_Hide*)msg);
 		case	MUIM_Draw:				return MailTreelist_Draw(cl,obj,(struct MUIP_Draw*)msg);
 		case	MUIM_HandleEvent: return MailTreelist_HandleEvent(cl,obj,(struct MUIP_HandleEvent *)msg);
+		case	MUIM_HandleInput: return MailTreelist_HandleInput(cl,obj,(struct MUIP_HandleInput *)msg);
 		case	MUIM_DragQuery:		return MailTreelist_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_CreateDragImage: return MailTreelist_CreateDragImage(cl,obj,(struct MUIP_CreateDragImage *)msg);
 		case	MUIM_DeleteDragImage: return MailTreelist_DeleteDragImage(cl,obj,(struct MUIP_DeleteDragImage *)msg);
@@ -3221,6 +3281,7 @@ Object *MakeNewMailTreelist(ULONG userid, Object **list)
 				MUIA_Group_Spacing, 0,
 //			MUIA_Group_LayoutHook, &layout_hook,
 				Child, *list = MailTreelistObject,
+					MUIA_CycleChain, 1,
 					InputListFrame,
 					MUIA_ObjectID, userid,
 					MUIA_MailTreelist_VertScrollbar, vscrollbar,

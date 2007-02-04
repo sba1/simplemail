@@ -59,6 +59,7 @@ static Object *search_subject_string;
 //static Object *search_body_string;
 static Object *search_start_button;
 static Object *search_stop_button;
+static Object *search_mail_listview;
 static Object *search_mail_tree;
 
 static int has_mails;
@@ -153,6 +154,8 @@ static void init_search(void)
 	init_hook(&folder_objstr_hook, (HOOKFUNC)folder_objstr);
 	init_hook(&folder_strobj_hook, (HOOKFUNC)folder_strobj);
 
+	search_mail_listview = MakeMailTreelist(MAKE_ID('S', 'W', 'M', 'T'), &search_mail_tree);
+
 	search_wnd = WindowObject,
 		MUIA_Window_ID, MAKE_ID('S','E','A','R'),
 		MUIA_Window_Title, _("SimpleMail - Search"),
@@ -211,10 +214,12 @@ static void init_search(void)
 				Child, search_stop_button = MakeButton(_("Sto_p search")),
 				End,
 
-			Child, NListviewObject,
-				MUIA_NListview_NList, search_mail_tree = MailTreelistObject,
-					End,
-				End,
+//			Child, NListviewObject,
+//				MUIA_NListview_NList, search_mail_tree = MailTreelistObject,
+//					End,
+//				End,
+			Child, search_mail_listview,
+
 			End,
 		End;
 

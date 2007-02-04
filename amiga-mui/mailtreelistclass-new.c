@@ -2844,6 +2844,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 	int new_entries_active;
 	int change_amount = 1;
+	UWORD qual = 0;
 	
 	new_entries_active = data->entries_active;
 
@@ -2851,6 +2852,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 	{
 		case	MUIKEY_PAGEUP:
 					change_amount = data->entries_visible - 1;
+		case	MUIKEY_TOP:
 		case	MUIKEY_UP:
 					if (new_entries_active <= 0) new_entries_active = data->entries_num - 1;
 					else new_entries_active -= change_amount;
@@ -2858,11 +2860,12 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 		case	MUIKEY_PAGEDOWN:
 					change_amount = data->entries_visible - 1;
+		case	MUIKEY_BOTTOM:
 		case	MUIKEY_DOWN:
-					
-					if (new_entries_active >= data->entries_num) new_entries_active = 0;
+					if (new_entries_active >= data->entries_num - 1) new_entries_active = 0;
 					else new_entries_active += change_amount;
 					break;
+
 	}
 
 	if (new_entries_active < 0) new_entries_active = 0;
@@ -2870,6 +2873,36 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 	if (new_entries_active != data->entries_active && data->entries_num)
 	{
+		int mark = msg->muikey == MUIKEY_BOTTOM || msg->muikey == MUIKEY_TOP;
+
+		if (mark && data->entries_active != -1)
+		{
+			if (data->entries[data->entries_active]->flags & LE_FLAG_SELECTED)
+			{
+				int i;
+
+				data->entries[data->entries_active]->flags ^= LE_FLAG_SELECTED;
+				data->entries_minselected = 0x7fffffff;
+				data->entries_maxselected = -1;
+
+				/* When removing we have no other chance than to scan through the complete entries */  				
+				for (i=0;i<data->entries_num;i++)
+				{
+					if (data->entries[data->entries_active]->flags & LE_FLAG_SELECTED)
+					{
+						if (i < data->entries_minselected) data->entries_minselected = i;
+						if (i > data->entries_minselected) data->entries_maxselected = i;
+					}
+				}
+			} else
+			{
+				data->entries[data->entries_active]->flags |= LE_FLAG_SELECTED;
+
+				if (data->entries_active < data->entries_minselected) data->entries_minselected = data->entries_active;
+				if (data->entries_active > data->entries_maxselected) data->entries_maxselected = data->entries_active;
+			}
+		}
+
 		data->entries_active = new_entries_active;
 	
 		/* Refresh */

@@ -5,6 +5,8 @@ SimpleMail Open Source - ChangeLog
 2007-02-04  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/searchwnd.c: The MailTreelist is now build with the correct function
 	  (it now has scrollbars if necessary).
+	* amiga-mui/mailtreelistclass-new.c: Added two missing recalcs of the horizontal
+	  scrollbar.
 
 2007-02-03  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/filterruleclass.c, amiga-mui/filterwnd.c, amiga-mui/support.c,

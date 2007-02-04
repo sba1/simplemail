@@ -2201,6 +2201,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 		if (data->inbetween_show)
 		{
 			CalcVisible(data,obj);
+			CalcHorizontalVisible(data,obj);
 
 			/* Redraw, if new element has been inserted above the visible bottom
 			 * (could be optimized better) */
@@ -2320,6 +2321,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 		/* TODO: Inform also the scroller about the entries_num change */
 		CalcEntries(data,obj);
 		CalcVisible(data,obj);
+		CalcHorizontalVisible(data,obj);
 		MUI_Redraw(obj,MADF_DRAWOBJECT);
 	}
 

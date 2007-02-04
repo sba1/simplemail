@@ -214,10 +214,6 @@ static void init_search(void)
 				Child, search_stop_button = MakeButton(_("Sto_p search")),
 				End,
 
-//			Child, NListviewObject,
-//				MUIA_NListview_NList, search_mail_tree = MailTreelistObject,
-//					End,
-//				End,
 			Child, search_mail_listview,
 
 			End,

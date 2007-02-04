@@ -7,6 +7,7 @@ SimpleMail Open Source - ChangeLog
 	  (it now has scrollbars if necessary).
 	* amiga-mui/mailtreelistclass-new.c: Added two missing recalcs of the horizontal
 	  scrollbar.
+	* folder.c: Replaced the linear search with a binary search.
 
 2007-02-03  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/filterruleclass.c, amiga-mui/filterwnd.c, amiga-mui/support.c,

@@ -535,11 +535,37 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	{
 		mail_compare_set_sort_mode(folder);
 
+#if 0
 		/* this search routine has O(n) but should be improved to O(log n) with binary serach */
 		for (pos=0;pos<folder->num_mails;pos++)
 		{
 			if (mail_compare(&folder->sorted_mail_info_array[pos],&mail) > 0) break;
 		}
+#else
+		/* here comes the binary search. because this is my (= bgol) first try in such an
+		   algorythmus I left the old code in. */
+		{
+			int low=0, high=folder->num_mails+1;
+
+			/* For the beginning, low must be (start-1) and high must be (end+1).
+			   As we are in C the array goes from start=0 to end=(n-1) but this code
+			   doesn't work with low < 0. So, I'm calculating the pos counter one to
+			   high and use for the mail_compare() [pos-1]. This has the advantage
+			   that the pos counter is allready correct after the calculation.
+			   The search also doesn't stop at a match (mail_compare==0) because the
+			   mail must be placed at the end of the list of same mails. */
+
+			pos = (low + high) / 2;
+			while (pos > low)
+			{
+				if (mail_compare(&folder->sorted_mail_info_array[pos-1],&mail) <= 0)
+					low = pos;
+				else
+					high = pos;
+				pos = (low + high) / 2;
+			}
+		}
+#endif
 
 		memmove(&folder->sorted_mail_info_array[pos+1],&folder->sorted_mail_info_array[pos],(folder->num_mails - pos)*sizeof(struct mail*));
 		folder->sorted_mail_info_array[pos] = mail;

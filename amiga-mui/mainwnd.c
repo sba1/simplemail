@@ -936,6 +936,7 @@ int main_window_init(void)
 		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
 		main_scripts_execute_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS_EXECUTESCRIPT);
 
+		set(win_main, MUIA_Window_DefaultObject, mail_tree);
 		set(main_settings_folder_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','F'));
 		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
 		set(main_settings_messageview_menuitem,MUIA_ObjectID,MAKE_ID('M','N','M','V'));

@@ -17,6 +17,7 @@
      <item>Filter improved (bgol)</item>
      <item>Double buffering of simplehtml engine can be disabled via SIMPLEHTML_NODOUBLEBUFFER environment variable.</item>
      <item> Minor fixes in the simplehtml engine.</item>
+    </list>
    </text>
    <text lang="de">
      Version 0.31 von SimpleMail veröffentlicht!

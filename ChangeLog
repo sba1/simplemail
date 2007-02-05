@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-05  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: Fixed a calculation bug in the memmove() call.
+	  The bug could only happen when the mails are not selected continued (eg, 1-3, 5, 9)
+	  which is now possible with the key-control. Also the active mail must not be part
+	  of the selection anymore.
+
+2007-02-05  Release Version 0.31
+
 2007-02-04  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/searchwnd.c: The MailTreelist is now build with the correct function
 	  (it now has scrollbars if necessary).

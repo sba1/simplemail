@@ -2272,7 +2272,7 @@ STATIC ULONG MailTreelist_RemoveMail(struct IClass *cl, Object *obj, struct MUIP
 STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
-	int i = 0,from = -1, to = -1;
+	int i = 0,j,from = -1, to = -1;
 
 	if (data->entries_maxselected == -1 && data->entries_active != -1)
 	{
@@ -2282,17 +2282,18 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 
 	while (1)
 	{
-		while (i < data->entries_num && ((!(data->entries[i]->flags & LE_FLAG_SELECTED)) && i != data->entries_active))
+		while (i < data->entries_num && !(data->entries[i]->flags & LE_FLAG_SELECTED))
  			i++;
 
 		if (from != -1)
 		{
-			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(i-to));
+			for (j=from;j<to;j++) FreeListEntry(data,data->entries[j]);
+			memmove(&data->entries[from],&data->entries[to],sizeof(data->entries[0])*(data->entries_num-to));
 
 			data->entries_num -= to - from;
 			i -= to - from;
 
-			if (data->entries_active >= to) data->entries_active -= to;
+			if (data->entries_active >= to) data->entries_active -= to - from;
 			else if (data->entries_active >= from) data->entries_active = from;
 		}
 
@@ -2300,7 +2301,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 		if (i >= data->entries_num) break;
 		from = i;
 
-		while (i < data->entries_num && (data->entries[i]->flags & LE_FLAG_SELECTED || i == data->entries_active))
+		while (i < data->entries_num && (data->entries[i]->flags & LE_FLAG_SELECTED))
 			i++;
 
 		to = i;
@@ -2309,7 +2310,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 	}
 
 	/* Fix data->entries_active if not already done */
-	if (data->entries_active >= data->entries_num) data->entries_active = data->entries_num - 1;
+	if (data->entries_active >= data->entries_num-1) data->entries_active = data->entries_num - 1;
 
 	data->entries_minselected = 0x7fffffff;
 	data->entries_maxselected = -1;

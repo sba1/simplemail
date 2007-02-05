@@ -4,6 +4,40 @@
 
   <entry date="2006/12/24">
    <text lang="en">
+	  Version 0.31 of SimpleMail released!
+
+	  The changes are:
+
+    <list>
+     <item> Replaced the usage of the NList class by the mail list with the usage of a custom list. It should act like NList, but
+     switching through folders should be a lot of faster now. Also it allows further improvments to the mail list.
+     The new SIMPLEMAIL_OLDMAILLIST environment variable can be used to stick to the NList class usage. (bgol, sba)
+     </item>
+     <item>New config option "Folder to display at startup" (bgol)</item>
+     <item>Filter improved (bgol)</item>
+     <item>Double buffering of simplehtml engine can be disabled via SIMPLEHTML_NODOUBLEBUFFER environment variable.</item>
+     <item> Minor fixes in the simplehtml engine.</item>
+   </text>
+   <text lang="de">
+     Version 0.31 von SimpleMail veröffentlicht!
+     
+     Die Änderungen seit der letzten Version sind:
+
+    <list>
+     <item> Die Nachrichtenliste benutzt nun eine eigenene Listklasse anstelle von NList. Die neue Klasse sollte sich ähnlich wie
+            NList verhalten, aber einen Geschwindkeitsschub mit sich bringen. Desweiteren werden hierdurch weitere Verbesserung ermöglicht.
+            Mittels der neuen SIMPLEMAIL_OLDMAILLIST Umgebungsvariable kann das alte Verhalten herbeigeführt werden.
+     </item>
+     <item>Möglichkeit, einen beliebigen Ordner nach Programmstart anzuzeigen, hinzugefügt (bgol).</item>
+     <item>Verbesserte Filter (bgol)</item>
+     <item>Double-Buffering der SimpleHTML-Engine kann nun mittels SIMPLEHTML_NODOUBLEBUFFER Umgebungsvariable deaktiviert werden.</item>
+     <item>Kleinere Bugfixes in der SimpleHTML-Engine.</item>
+    </list>
+   </text>
+  </entry>
+
+  <entry date="2006/12/24">
+   <text lang="en">
 
     Here again we present the christmas release of SimpleMail. However, due to many
     time contraints on the part of the authors only minor issues could be addressed
@@ -23,7 +57,7 @@
    <text lang="de">
     Die Weihnachtsversion von SimpleMail wurde veröffentlicht!
 
-	  Die Änderungen seit Version 0.30 sind:
+	  Die Änderungen in Version 0.30 betreffen:
 
 	  <list>
 	   <item>Kleine Bugs in der HTML Anzeige entfernt.</item>

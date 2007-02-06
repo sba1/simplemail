@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-06  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: The bold-style must also be used in the CalcEntry().
+	  Added safety check for mail pointer (mail_info could be NULL).
+
 2007-02-05  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Fixed a calculation bug in the memmove() call.
 	  The bug could only happen when the mails are not selected continued (eg, 1-3, 5, 9)

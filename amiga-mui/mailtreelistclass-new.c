@@ -896,6 +896,8 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	prev_active = -1;
 
 	SetDrMd(rp,JAM1);
+	if (m->flags & MAIL_FLAGS_NEW)
+		SetSoftStyle(rp, FSF_BOLD, AskSoftStyle(rp));
 
 	for (col = 0;col < MAX_COLUMNS; col++)
 	{
@@ -1168,6 +1170,9 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		x1 += col_width + data->column_spacing;
 		prev_active = active;
 	}
+
+	if (m->flags & MAIL_FLAGS_NEW)
+		SetSoftStyle(rp, FS_NORMAL, AskSoftStyle(rp));
 }
 
 /**************************************************************************

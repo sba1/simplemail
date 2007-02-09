@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-09  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: Set the mailtree again to the default object of the
+	  window when clicked inside it.
+	  Added new drawupdate state to only refresh the title.
+	  The titleclick will now draw the tilecolumn in a selected state to get some visual
+	  feedback. It also can be aborted with the right mousebutton or if the mouse is moved
+	  outside of the title.
+
 2007-02-06  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: The bold-style must also be used in the CalcEntry().
 	  Added safety check for mail pointer (mail_info could be NULL).

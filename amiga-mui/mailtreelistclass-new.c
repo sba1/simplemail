@@ -287,6 +287,7 @@ struct MailTreelist_Data
 
 	LONG title_column_click;
 	LONG title_column_click2;
+	LONG title_column_selected; /* -1 if no column is clicked */
 	LONG right_title_click;
 
 	LONG entry_maxheight; /* Max height of an list entry */
@@ -311,7 +312,7 @@ struct MailTreelist_Data
 
 	int folder_type; /* we need to know which type of folder is displayed */
 
-	int drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed */
+	int drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
 	int drawupdate_old_first;
 	int drawupdate_position;
 
@@ -943,6 +944,21 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			Move(rp, x1-2, y);
 			Draw(rp, x1-2, y + entry_height - 1);
 		} else first = 0;
+
+		if (entry_pos == ENTRY_TITLE)
+		{
+			if (data->title_column_selected != -1 && data->title_column_selected == active)
+			{
+				/* draw title in selected state */
+				SetAPen(rp,_pens(obj)[MPEN_SHINE]);
+				Move(rp, x1 + ci->width - 1, y);
+				Draw(rp, x1 + ci->width - 1, y + entry_height - 1);
+				Draw(rp, x1, y + entry_height - 1);
+				SetAPen(rp,_pens(obj)[MPEN_SHADOW]);
+				Draw(rp, x1, y);
+				Draw(rp, x1 + ci->width - 1, y);
+			}
+		}
 
 		SetAPen(rp,_pens(obj)[MPEN_TEXT]);
 
@@ -1991,7 +2007,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	if (data->horiz_scroller) data->horiz_first = xget(data->horiz_scroller,MUIA_Prop_First);
 
 	/* Draw title */
-	if (!drawupdate)
+	if (!drawupdate || drawupdate == 4)
 	{
 		set(obj, MUIA_Background, MUII_HSHADOWBACK);
 		background = MUII_HSHADOWBACK;
@@ -2005,11 +2021,14 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		Draw(old_rp,_mright(obj),_mtop(obj) + data->title_height - 1);
 	}
 
-	/* Draw all entries between start and end, their current background
-	 * is stored */
-	for (cur = start; cur < end; cur++,y += data->entry_maxheight)
+	if (drawupdate != 4)
 	{
-		background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y);
+		/* Draw all entries between start and end, their current background
+		 * is stored */
+		for (cur = start; cur < end; cur++,y += data->entry_maxheight)
+		{
+			background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y);
+		}
 	}
 
 	/* Revert background if necessary */
@@ -2605,6 +2624,9 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									int xoff = 0;
 									if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_First);
 
+									/* set the tree to the default object, so it receives the HandleInput */
+									set(_win(obj), MUIA_Window_DefaultObject, obj);
+
 									for (col = 0;col < MAX_COLUMNS; col++)
 									{
 										int active;
@@ -2636,6 +2658,14 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 									if (data->column_drag != -1 || data->title_column_click != -1)
 									{
+										if (data->title_column_click != -1)
+										{
+											/* draw title column in selected state */
+											data->title_column_selected = data->title_column_click;
+											data->drawupdate = 4;
+											MUI_Redraw(obj,MADF_DRAWUPDATE);
+										}
+
 										/* Enable mouse move notifies */
 										if (!data->mouse_pressed)
 										{
@@ -2699,28 +2729,43 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)
 	    				{
 								/* Disable mouse move notifies */
-							  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-							  data->mouse_pressed = 0;
-							  if (msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT))
-							  {
-							  	data->title_column_click2 = data->title_column_click;
-							  	data->title_column_click = -1;
-							  }
-							  if (data->title_column_click != -1)
-							  		set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
-							  if (data->title_column_click2 != -1)
-							  		set(obj, MUIA_MailTreelist_TitleClick2, data->title_column_click2);
+								DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+								data->mouse_pressed = 0;
+
+								if (data->title_column_click != -1)
+								{
+									if (data->title_column_selected == -1)
+									{
+										/* mousepointer is outside column title -> cancel titleclick */
+										data->title_column_click = -1;
+									} else
+									{
+										/* switch of selected state now because set(titleclick) will
+										   redraw the whole list */
+										data->title_column_selected = -1;
+									}
+									/* shift click = secondary sort */
+									if (msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT))
+									{
+										data->title_column_click2 = data->title_column_click;
+										data->title_column_click = -1;
+									}
+									if (data->title_column_click != -1)
+										set(obj, MUIA_MailTreelist_TitleClick, data->title_column_click);
+									if (data->title_column_click2 != -1)
+										set(obj, MUIA_MailTreelist_TitleClick2, data->title_column_click2);
+
+									data->title_column_click = -1;
+									data->title_column_click2 = -1;
+								}
 
 								if (data->column_drag != -1)
 								{
 									/* Fixate the width */
 									data->ci[data->column_drag].flags &= ~COLUMN_FLAG_AUTOWIDTH;
-								  data->column_drag = -1;
+									data->column_drag = -1;
 									MUI_Redraw(obj,MADF_DRAWOBJECT);
 								} 
-
-							  data->title_column_click = -1;
-							  data->title_column_click2 = -1;
 	    				} else if (msg->imsg->Code == MENUDOWN)
 	    				{
 	    					if (data->mouse_pressed)
@@ -2736,6 +2781,20 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
 									  data->mouse_pressed = 0;
 		    					}
+
+									/* abort title_column_click */
+							 		if (data->title_column_click != -1)
+							 		{
+										data->title_column_click = -1;
+										data->title_column_click2 = -1;
+										data->title_column_selected = -1;
+										data->drawupdate = 4;
+										MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+										/* Disable mouse move notifies */
+										DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+										data->mouse_pressed = 0;
+									}
 									return MUI_EventHandlerRC_Eat;
 	    					} else
 	    					{
@@ -2779,6 +2838,40 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								if (ci->width < 0) ci->width = 0;
 								MUI_Redraw(obj,MADF_DRAWOBJECT);
 								CalcHorizontalTotal(data);
+							} else if (data->title_column_click != -1)
+							{
+								/* check if mousepointer is inside clicked title */
+								int col, xoff = 0;
+								LONG old_selected = data->title_column_selected;
+
+								if (data->horiz_scroller) xoff = - xget(data->horiz_scroller,MUIA_Prop_First);
+								data->title_column_selected = -1;
+								for (col = 0;col < MAX_COLUMNS; col++)
+								{
+									int active;
+									struct ColumnInfo *ci;
+
+									active = data->columns_active[col];
+									if (!active) continue;
+									ci = &data->ci[active];
+
+									if (active == data->title_column_click)
+									{
+										if (mx >= 0 && mx > xoff && mx <= xoff + ci->width)
+										{
+											if (my >= 0 && my < data->title_height)
+												data->title_column_selected = data->title_column_click;
+											break;
+										}
+									}
+									xoff += ci->width + data->column_spacing;
+								}
+								if (data->title_column_selected != old_selected)
+								{
+									/* refresh title column */
+									data->drawupdate = 4;
+									MUI_Redraw(obj,MADF_DRAWUPDATE);
+								}
 							} else
     					{
     						int new_entries_active, old_entries_active;

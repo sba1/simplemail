@@ -1336,7 +1336,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
   data->ehn_mousebuttons.ehn_Object   = obj;
   data->ehn_mousebuttons.ehn_Class    = cl;
 
-  data->ehn_mousemove.ehn_Events   = IDCMP_MOUSEMOVE;
+  data->ehn_mousemove.ehn_Events   = IDCMP_MOUSEMOVE|IDCMP_INTUITICKS;
   data->ehn_mousemove.ehn_Priority = 0;
   data->ehn_mousemove.ehn_Flags    = 0;
   data->ehn_mousemove.ehn_Object   = obj;
@@ -2829,6 +2829,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	    				}
 	    				break;
 
+			case		IDCMP_INTUITICKS:
 			case		IDCMP_MOUSEMOVE:
 							if (data->column_drag != -1)
 							{
@@ -2935,6 +2936,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									DoMethod(obj, MUIM_DoDrag, 0, 0, 0);
 								}
     					}
+    					if (msg->imsg->Class == IDCMP_INTUITICKS) return MUI_EventHandlerRC_Eat;
 							break;
 		}
   }

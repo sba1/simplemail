@@ -2,7 +2,7 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
-2007-02-09  Bernd Gollesch <bgollesch@sime.at>
+2007-02-13  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Added IDCMP_INTUITICKS to the mousemove
 	  EventHandler to keep scrolling in selected mode while the mouse is outside
 	  the list (top or bottom) but not moved.

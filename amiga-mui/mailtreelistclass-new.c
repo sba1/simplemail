@@ -597,7 +597,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 	int col;
 	int changed = 0;
 
-	if (m && (m->flags & MAIL_FLAGS_NEW))
+	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(&data->rp, FSF_BOLD, AskSoftStyle(&data->rp));
 
 	for (col=0;col<MAX_COLUMNS;col++)
@@ -765,7 +765,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 		}
 	}
 
-	if (m && (m->flags & MAIL_FLAGS_NEW))
+	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(&data->rp, FS_NORMAL, AskSoftStyle(&data->rp));
 
 	return changed;
@@ -904,7 +904,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	prev_active = -1;
 
 	SetDrMd(rp,JAM1);
-	if (m && (m->flags & MAIL_FLAGS_NEW))
+	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(rp, FSF_BOLD, AskSoftStyle(rp));
 
 	for (col = 0;col < MAX_COLUMNS; col++)
@@ -1194,7 +1194,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		prev_active = active;
 	}
 
-	if (m && (m->flags & MAIL_FLAGS_NEW))
+	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(rp, FS_NORMAL, AskSoftStyle(rp));
 }
 
@@ -2952,9 +2952,12 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 	int new_entries_active;
 	int change_amount = 1;
+	LONG new_horiz_first = -1;
+	int change_horiz_amount = data->entry_maxheight;
 	UWORD qual = 0;
 	
 	new_entries_active = data->entries_active;
+	if (data->horiz_scroller) new_horiz_first = xget(data->horiz_scroller, MUIA_Prop_First);
 
 	switch (msg->muikey)
 	{
@@ -2969,10 +2972,44 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 		case	MUIKEY_PAGEDOWN:
 					change_amount = data->entries_visible - 1;
 		case	MUIKEY_BOTTOM:
+		case	MUIKEY_TOGGLE:
 		case	MUIKEY_DOWN:
 					if (new_entries_active >= data->entries_num - 1) new_entries_active = 0;
 					else new_entries_active += change_amount;
 					break;
+
+		case	MUIKEY_PRESS:
+		    	if (data->entries_active != 0)
+		    	{
+		    		IssueTreelistDoubleClickNotify(cl,obj,data);
+		    	}
+		    	break;
+
+		case	MUIKEY_WORDLEFT:
+		    	if (data->horiz_scroller)
+		    		change_horiz_amount = xget(data->horiz_scroller, MUIA_Prop_Visible)/2;
+		case	MUIKEY_LEFT:
+		    	if (new_horiz_first != -1)
+		    	{
+		    		if (change_horiz_amount > new_horiz_first ) new_horiz_first = 0;
+		    		else new_horiz_first -= change_horiz_amount;
+		    	}
+		    	break;
+
+		case	MUIKEY_LINEEND:
+		    	if (data->horiz_scroller) new_horiz_first = xget(data->horiz_scroller, MUIA_Prop_Entries);
+		    	break;
+
+		case	MUIKEY_WORDRIGHT:
+		    	if (data->horiz_scroller)
+		    		change_horiz_amount = xget(data->horiz_scroller, MUIA_Prop_Visible)/2;
+		case	MUIKEY_RIGHT:
+		    	if (new_horiz_first != -1) new_horiz_first += change_horiz_amount;
+		    	break;
+
+		case	MUIKEY_LINESTART:
+		    	if (data->horiz_scroller) new_horiz_first = 0;
+		    	break;
 
 	}
 
@@ -2981,7 +3018,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 	if (new_entries_active != data->entries_active && data->entries_num)
 	{
-		int mark = msg->muikey == MUIKEY_BOTTOM || msg->muikey == MUIKEY_TOP;
+		int mark = msg->muikey == MUIKEY_BOTTOM || msg->muikey == MUIKEY_TOP || msg->muikey == MUIKEY_TOGGLE;
 
 		if (mark && data->entries_active != -1)
 		{
@@ -3031,6 +3068,8 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 		IssueTreelistActiveNotify(cl,obj,data);
 	}
+
+	if (new_horiz_first != -1) set(data->horiz_scroller, MUIA_Prop_First, new_horiz_first);
 
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }

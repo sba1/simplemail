@@ -187,12 +187,16 @@ static int mail_compare_size(const struct mail_info *arg1, const struct mail_inf
 
 static int mail_compare_filename(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	return mystricmp(arg1->filename, arg2->filename);
+	int rc = mystricmp(arg1->filename, arg2->filename);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_pop3(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
 {
-	return mystricmp(arg1->pop3_server, arg2->pop3_server);
+	int rc = mystricmp(arg1->pop3_server, arg2->pop3_server);
+	if (reverse) rc *= -1;
+	return rc;
 }
 
 static int mail_compare_recv(const struct mail_info *arg1, const struct mail_info *arg2, int reverse)
@@ -213,7 +217,7 @@ static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 	switch (sort_mode & FOLDER_SORT_MODEMASK)
 	{
 		case	FOLDER_SORT_STATUS: return mail_compare_status;
-		case	FOLDER_SORT_FROMTO: return folder_type?mail_compare_to:mail_compare_from;
+		case	FOLDER_SORT_FROMTO: return (folder_type == FOLDER_TYPE_SEND)?mail_compare_to:mail_compare_from;
 		case	FOLDER_SORT_SUBJECT: return mail_compare_subject;
 		case	FOLDER_SORT_REPLY: return mail_compare_reply;
 		case	FOLDER_SORT_DATE: return mail_compare_date;
@@ -232,6 +236,7 @@ static void mail_compare_set_sort_mode(struct folder *folder)
 {
 	compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
 	compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
+	if (compare_primary == compare_secondary) compare_secondary = NULL;
 }
 
 

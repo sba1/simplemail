@@ -560,19 +560,21 @@ int gui_parseargs(int argc, char *argv[])
 	  char *subject;
 	  LONG *debuglevel;
 	  char *debugout;
+	  char *debugmodules;
 	} shell_args;
 
 	struct RDArgs *rdargs;
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
 		if (shell_args.debugout) debug_set_out(shell_args.debugout);
 		if (shell_args.debuglevel) debug_set_level(*shell_args.debuglevel);
+		if (shell_args.debugmodules) debug_set_modules(shell_args.debugmodules);
 		FreeArgs(rdargs);
 	}
 

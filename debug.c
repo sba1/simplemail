@@ -20,13 +20,16 @@
 ** smdebug.c
 */
 
+#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
+ 
 #include "debug.h"
+#include "hash.h"
 #include "subthreads.h"
 #include "support.h" /* sm_put_on_serial_line() */
+#include "support_indep.h"
 
 #ifndef DEFAULT_DEBUG_LEVEL
 #define DEFAULT_DEBUG_LEVEL 0
@@ -34,9 +37,14 @@
 
 int __debuglevel = DEFAULT_DEBUG_LEVEL;
 
-
 static semaphore_t debug_sem;
 static FILE *debug_file;
+
+/* Contains the names of modules of which debugging information should be considered at last */ 
+static struct hash_table debug_modules_table;
+
+/* Indicates whether table should be really used */
+static int debug_use_modules_table;
 
 /*******************************************************
  Sets the debug level
@@ -54,6 +62,55 @@ void debug_set_out(char *out)
 {
 	if (debug_file) fclose(debug_file);
 	debug_file = fopen(out,"a+");
+}
+
+/*******************************************************
+ Private function. Used to insert a module.
+********************************************************/
+static void debug_insert_module(char *mod)
+{
+	int len;
+	char *newmod;
+
+	len = strlen(mod);
+	if (len > 2)
+	{
+		if (mod[len-1]=='c' && mod[len-2]=='.')
+			hash_table_insert(&debug_modules_table,mod,1);
+	}
+
+	if ((newmod = malloc(len+3)))
+	{
+		strcpy(newmod,mod);
+		strcat(newmod,".c");
+		hash_table_insert(&debug_modules_table,newmod,1);
+	}
+}
+
+/*******************************************************
+ Sets the modules (modules is comma)
+********************************************************/
+void debug_set_modules(char *modules)
+{
+	char *mod;
+	
+	if ((mod = mystrdup(modules)))
+	{
+		char *begin = mod;
+		char *end;
+
+		hash_table_init(&debug_modules_table,9,NULL);
+		
+		while ((end = strchr(begin,',')))
+		{
+			*end = 0;
+			debug_insert_module(begin);
+			begin = end+1;
+		}
+		debug_insert_module(begin);
+
+		debug_use_modules_table = 1;
+	}
 }
 
 /*******************************************************
@@ -75,7 +132,20 @@ void debug_deinit(void)
 }
 
 /*******************************************************
- Use this if debug output should be sequentiel
+ Alows finer debug controll.
+********************************************************/
+int debug_check(const char *file, int line)
+{
+	if (!debug_use_modules_table)
+		return 1;
+
+	if (hash_table_lookup(&debug_modules_table,file))
+		return 1;
+	return 0;
+}
+
+/*******************************************************
+ Use this if debug output should be sequential
 ********************************************************/
 void __debug_begin(void)
 {

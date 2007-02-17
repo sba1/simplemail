@@ -2,6 +2,14 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-17  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/datatypescache.c: Also check if there is a masonname available before
+	  trying to open it.
+	* amiga-mui/mailtreelistclass-new.c: Added the Import/Export method to the mailtree
+	  which can also read in the old NList settings (only column width and order).
+	  Added the possibility to change the column order in the code. Right now it can't
+	  be done but the old NList setting will be honored.
+
 2007-02-14  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Don't show autospam marked messages in bold.
 	  Added more muikeys for keyboard navigation.

@@ -299,6 +299,7 @@ struct MailTreelist_Data
 
 	struct ColumnInfo ci[MAX_COLUMNS];
 	int columns_active[MAX_COLUMNS]; /* Indices of active columns */
+	int columns_order[MAX_COLUMNS]; /* order of columns */
 	int column_spacing;
 	
 	LONG threepoints_width; /* Width of ... */
@@ -332,7 +333,10 @@ struct MailTreelist_Data
 	struct Layer_Info *buffer_li;
 	struct BitMap *buffer_bmap;
 	struct RastPort *buffer_rp;
-	
+
+	/* Export Data */	
+	ULONG *exp_data;
+
 	/* translated strings (faster to hold the translation) */
 	char *status_text;
 	char *from_text;
@@ -349,14 +353,8 @@ struct MailTreelist_Data
 	Object *context_menu;
 	Object *title_menu;
 
-	Object *show_from_item;
-	Object *show_subject_item;
-	Object *show_reply_item;
-	Object *show_date_item;
-	Object *show_size_item;
-	Object *show_filename_item;
-	Object *show_pop3_item;
-	Object *show_recv_item;
+	/* toggle menuitems of the title columns */
+	Object *show_item[MAX_COLUMNS];
 };
 
 /**************************************************************************/
@@ -510,23 +508,19 @@ STATIC VOID GetStatusImages(struct MailTreelist_Data *data, struct mail_info *m,
 **************************************************************************/
 static void PrepareDisplayedColumns(struct MailTreelist_Data *data)
 {
-	int pos;
+	int pos, col;
 
-	data->columns_active[0] = COLUMN_TYPE_STATUS;
+	data->columns_active[0] = data->columns_order[0];
 
-	pos = 1;
-
-	if (xget(data->show_from_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_FROMTO; 
-	if (xget(data->show_subject_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_SUBJECT; 
-	if (xget(data->show_reply_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_REPLYTO; 
-	if (xget(data->show_date_item,MUIA_Menuitem_Checked)) data->columns_active[pos++] = COLUMN_TYPE_DATE; 
-	if (xget(data->show_size_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_SIZE;
-	if (xget(data->show_filename_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_FILENAME;
-	if (xget(data->show_pop3_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_POP3;
-	if (xget(data->show_recv_item,MUIA_Menuitem_Checked))  data->columns_active[pos++] = COLUMN_TYPE_RECEIVED;
-
-	for (;pos < sizeof(data->columns_active)/sizeof(data->columns_active[0]);pos++)
-		data->columns_active[pos++] = 0;
+	for (pos = 1;pos<MAX_COLUMNS;pos++)
+	{
+		col = data->columns_order[pos];
+		data->columns_active[pos] = 0;
+		if (data->show_item[col])
+		{
+			if (xget(data->show_item[col],MUIA_Menuitem_Checked)) data->columns_active[pos] = col;
+		}
+	}
 }
 
 /**************************************************************************/
@@ -1322,6 +1316,17 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[COLUMN_TYPE_RECEIVED].width = 200;
 	data->ci[COLUMN_TYPE_RECEIVED].flags = COLUMN_FLAG_AUTOWIDTH;
 
+	/* define default order of columns */
+	data->columns_order[0] = COLUMN_TYPE_STATUS;
+	data->columns_order[1] = COLUMN_TYPE_FROMTO;
+	data->columns_order[2] = COLUMN_TYPE_SUBJECT;
+	data->columns_order[3] = COLUMN_TYPE_REPLYTO;
+	data->columns_order[4] = COLUMN_TYPE_DATE;
+	data->columns_order[5] = COLUMN_TYPE_SIZE;
+	data->columns_order[6] = COLUMN_TYPE_FILENAME;
+	data->columns_order[7] = COLUMN_TYPE_POP3;
+	data->columns_order[8] = COLUMN_TYPE_RECEIVED;
+
 	PrepareDisplayedColumns(data);
 	data->column_spacing = 4;
 
@@ -1360,14 +1365,14 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data->title_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail Settings")),
-			Child, data->show_from_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','T'),MUIA_Menuitem_Title, _("Show From/To?"), MUIA_UserData, 1, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_subject_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','B'),MUIA_Menuitem_Title, _("Show Subject?"), MUIA_UserData, 2, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_reply_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','T'),MUIA_Menuitem_Title, _("Show Reply-To?"), MUIA_UserData, 3, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_date_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','D','T'),MUIA_Menuitem_Title, _("Show Date?"), MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_size_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','Z'),MUIA_Menuitem_Title, _("Show Size?"), MUIA_UserData, 5, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_filename_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"), MUIA_UserData, 6,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_pop3_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'),MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
-			Child, data->show_recv_item = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"), MUIA_UserData, 8,  MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_FROMTO]   = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','T'), MUIA_Menuitem_Title, _("Show From/To?"),     MUIA_UserData, 1, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_SUBJECT]  = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','B'), MUIA_Menuitem_Title, _("Show Subject?"),     MUIA_UserData, 2, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_REPLYTO]  = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','T'), MUIA_Menuitem_Title, _("Show Reply-To?"),    MUIA_UserData, 3, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_DATE]     = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','D','T'), MUIA_Menuitem_Title, _("Show Date?"),        MUIA_UserData, 4, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_SIZE]     = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','S','Z'), MUIA_Menuitem_Title, _("Show Size?"),        MUIA_UserData, 5, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_FILENAME] = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"),    MUIA_UserData, 6, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_POP3]     = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'), MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_RECEIVED] = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"),    MUIA_UserData, 8, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset this column's width"), MUIA_UserData, MENU_RESET_THIS_COLUMN_WIDTH, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset all columns' widths"), MUIA_UserData, MENU_RESET_ALL_COLUMN_WIDTHS, End,
@@ -1387,6 +1392,7 @@ STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	if (data->pool) DeletePool(data->pool);
 	if (data->context_menu) MUI_DisposeObject(data->context_menu);
 	if (data->title_menu) MUI_DisposeObject(data->title_menu);
+	if (data->exp_data) FreeVec(data->exp_data);
 
 	return DoSuperMethodA(cl,obj,msg);
 }
@@ -1668,6 +1674,219 @@ STATIC ULONG MailTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_A
 	mi->MaxWidth = MUI_MAXMAX;
 
 	return 1;
+}
+
+/*************************************************************************
+ MUIM_Export
+*************************************************************************/
+STATIC ULONG MailTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Export *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	ULONG id;
+	int pos, count;
+
+	for (pos = 0; pos < MAX_COLUMNS; pos++)
+	{
+		if (data->show_item[pos]) DoMethodA(data->show_item[pos], (Msg)msg);
+	}
+
+	if ((id = (muiNotifyData(obj)->mnd_ObjectID)))
+	{
+		/* DATA, CINF, num_cols, MAX_COLUMNS*2, CORD, num_cols, MAX_COLUMN, STOP */
+		count = 6 + MAX_COLUMNS*3;
+
+		if (data->exp_data) FreeVec(data->exp_data);
+		data->exp_data = AllocVec(sizeof(ULONG) * count, MEMF_CLEAR);
+
+		if (data->exp_data)
+		{
+			count = 0;
+			data->exp_data[count++] = MAKE_ID('D', 'A', 'T', 'A');
+			data->exp_data[count++] = MAKE_ID('C', 'I', 'N', 'F');
+			data->exp_data[count++] = MAX_COLUMNS;
+			for (pos = 0; pos < MAX_COLUMNS; pos++)
+			{
+				data->exp_data[count++] = data->ci[pos].width;
+				data->exp_data[count++] = data->ci[pos].flags;
+			}
+			data->exp_data[count++] = MAKE_ID('C', 'O', 'R', 'D');
+			data->exp_data[count++] = MAX_COLUMNS;
+			for (pos = 0; pos < MAX_COLUMNS; pos++)
+			{
+				data->exp_data[count++] = data->columns_order[pos];
+			}
+			data->exp_data[count++] = MAKE_ID('S', 'T', 'O', 'P');
+
+			DoMethod(msg->dataspace, MUIM_Dataspace_Add, data->exp_data, sizeof(ULONG)*count, id);
+		}
+	}
+	return 0;
+}
+
+/*************************************************************************
+ MUIM_Import
+*************************************************************************/
+STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Import *msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	ULONG id;
+	ULONG *imp_data;
+	int pos, redraw = 0;
+
+	for (pos = 0;pos<MAX_COLUMNS;pos++)
+	{
+		if (data->show_item[pos]) DoMethodA(data->show_item[pos], (Msg)msg);
+	}
+
+	if ((id = (muiNotifyData(obj)->mnd_ObjectID)))
+	{
+		if ((imp_data = (ULONG *)DoMethod(msg->dataspace,MUIM_Dataspace_Find,id)))
+		{
+			int count = 0, num_cols, new_pos;
+			LONG new_width;
+			WORD new_flags;
+
+			if (imp_data[count] == MAKE_ID('D', 'A', 'T', 'A'))
+			{
+				/* SimpleMail MailTreelist Settings */
+				count++;
+				while (count > 0)
+				{
+					switch (imp_data[count++])
+					{
+						case	MAKE_ID('C', 'I', 'N', 'F'):
+						    	redraw = 1;
+						    	num_cols = imp_data[count++];
+						    	for (pos=0; pos < num_cols; pos++)
+						    	{
+						    		new_width = imp_data[count++];
+						    		new_flags = imp_data[count++];
+
+						    		if (pos < MAX_COLUMNS)
+						    		{
+						    			/* the autowidth is the only flag right now to be imported */
+						    			if (new_flags & COLUMN_FLAG_AUTOWIDTH)
+						    			{
+						    				data->ci[pos].width = 0;
+						    				data->ci[pos].flags |= COLUMN_FLAG_AUTOWIDTH;
+						    			} else
+						    			{
+						    				data->ci[pos].width = new_width;
+						    				data->ci[pos].flags &= ~COLUMN_FLAG_AUTOWIDTH;
+						    			}
+						    		}
+						    	}
+						    	break;
+						    	
+						case	MAKE_ID('C', 'O', 'R', 'D'):
+						    	redraw = 1;
+						    	num_cols = imp_data[count++];
+						    	for (pos=0; pos < MAX_COLUMNS; pos++) data->columns_order[pos] = 0;
+						    	for (pos=0; pos < num_cols; pos++)
+						    	{
+						    		new_pos = imp_data[count++];
+						    		if (pos < MAX_COLUMNS) data->columns_order[pos] = new_pos;
+						    	}
+						    	break;
+						    	
+						default:
+							count = 0;
+							break;
+
+					}
+				}
+			} else if (imp_data[count] == MAKE_ID('E', 'X', 'P', 'T'))
+			{
+				/* This are old NList settings, only WIDT and ORDR are imported
+				   the rest is ignored */
+				count++;
+				while (count > 0)
+				{
+					switch (imp_data[count++])
+					{
+						case	MAKE_ID('A', 'C', 'T', 'V'):
+						case	MAKE_ID('F', 'R', 'S', 'T'):
+						case	MAKE_ID('T', 'I', 'T', 'L'):
+						case	MAKE_ID('T', 'I', 'T', '2'): count++; break;
+						case	MAKE_ID('S', 'E', 'L', 'S'): count += imp_data[count++]; break;
+						case	MAKE_ID('W', 'I', 'D', 'T'):
+						    	redraw = 1;
+						    	num_cols = imp_data[count++];
+						    	for (pos=0; pos < num_cols; pos++)
+						    	{
+						    		new_width = imp_data[count++];
+						    		/* new column mapping NList -> Simplemail MailTreelist */
+						    		switch (pos)
+						    		{
+						    			case	0: new_pos = COLUMN_TYPE_STATUS;   break;
+						    			case	1: new_pos = COLUMN_TYPE_FROMTO;   break;
+						    			case	2: new_pos = COLUMN_TYPE_SUBJECT;  break;
+						    			case	3: new_pos = COLUMN_TYPE_REPLYTO;  break;
+						    			case	4: new_pos = COLUMN_TYPE_DATE;     break;
+						    			case	5: new_pos = COLUMN_TYPE_SIZE;     break;
+						    			case	6: new_pos = COLUMN_TYPE_FILENAME; break;
+						    			case	7: new_pos = COLUMN_TYPE_POP3;     break;
+						    			case	8: new_pos = COLUMN_TYPE_RECEIVED; break;
+						    			default: new_pos = 0; break;
+						    		}
+						    		if (new_pos < MAX_COLUMNS)
+						    		{
+						    			if (new_width < 4)  /* NList: < 4 is considered as MUIV_NList_ColWidth_Default */
+						    			{
+						    				data->ci[new_pos].width = 0;
+						    				data->ci[new_pos].flags |= COLUMN_FLAG_AUTOWIDTH;
+						    			} else
+						    			{
+						    				data->ci[new_pos].width = new_width;
+						    				data->ci[new_pos].flags &= ~COLUMN_FLAG_AUTOWIDTH;
+						    			}
+						    		}
+						    	}
+						    	break;
+						    	
+						case	MAKE_ID('O', 'R', 'D', 'R'):
+						    	redraw = 1;
+						    	num_cols = imp_data[count++];
+						    	for (pos=0; pos < MAX_COLUMNS; pos++) data->columns_order[pos] = 0;
+						    	for (pos=0; pos < num_cols; pos++)
+						    	{
+						    		new_pos = imp_data[count++];
+						    		/* new column mapping NList -> Simplemail MailTreelist */
+						    		switch (new_pos)
+						    		{
+						    			case	0: new_pos = COLUMN_TYPE_STATUS;   break;
+						    			case	1: new_pos = COLUMN_TYPE_FROMTO;   break;
+						    			case	2: new_pos = COLUMN_TYPE_SUBJECT;  break;
+						    			case	3: new_pos = COLUMN_TYPE_REPLYTO;  break;
+						    			case	4: new_pos = COLUMN_TYPE_DATE;     break;
+						    			case	5: new_pos = COLUMN_TYPE_SIZE;     break;
+						    			case	6: new_pos = COLUMN_TYPE_FILENAME; break;
+						    			case	7: new_pos = COLUMN_TYPE_POP3;     break;
+						    			case	8: new_pos = COLUMN_TYPE_RECEIVED; break;
+						    			default: new_pos = 0; break;
+						    		}
+						    		if (pos < MAX_COLUMNS) data->columns_order[pos] = new_pos;
+						    	}
+						    	break;
+						    	
+						default:
+							count = 0;
+							break;
+
+					}
+				}
+			}
+		}
+	}
+	PrepareDisplayedColumns(data);
+	if (redraw)
+	{
+		CalcEntries(data,obj);
+		CalcVisible(data,obj);
+		CalcHorizontalVisible(data,obj);
+		MUI_Redraw(obj,MADF_DRAWOBJECT);
+	}
+	return 0;
 }
 
 /*************************************************************************
@@ -3352,6 +3571,8 @@ STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_Setup:				return MailTreelist_Setup(cl,obj,(struct MUIP_Setup*)msg);
 		case	MUIM_Cleanup:			return MailTreelist_Cleanup(cl,obj,msg);
 		case	MUIM_AskMinMax:		return MailTreelist_AskMinMax(cl,obj,(struct MUIP_AskMinMax*)msg);
+		case	MUIM_Export:			return MailTreelist_Export(cl,obj,(struct MUIP_Export *)msg);
+		case	MUIM_Import:			return MailTreelist_Import(cl,obj,(struct MUIP_Import *)msg);
 		case	MUIM_Show:				return MailTreelist_Show(cl,obj,(struct MUIP_Show*)msg);
 		case	MUIM_Hide:				return MailTreelist_Hide(cl,obj,(struct MUIP_Hide*)msg);
 		case	MUIM_Draw:				return MailTreelist_Draw(cl,obj,(struct MUIP_Draw*)msg);

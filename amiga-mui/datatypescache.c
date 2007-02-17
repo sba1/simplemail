@@ -288,7 +288,7 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 		if (!mystricmp(filename,icon->filename))
 		{
 			/* We can, now check if we can find the mason icon */
-			if (mason_available)
+			if (mason_available && icon->masonname)
 			{
 				SM_DEBUGF(20,("Trying to load mason icon \"%s\"\n",icon->masonname));
 				if ((node = dt_create_from_filename(icon->masonname,scr)))

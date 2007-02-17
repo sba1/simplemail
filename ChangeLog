@@ -6,7 +6,7 @@ SimpleMail Open Source - ChangeLog
 	* amiga-mui/datatypescache.c: Also check if there is a masonname available before
 	  trying to open it.
 	* amiga-mui/mailtreelistclass-new.c: Added the Import/Export method to the mailtree
-	  which can also read in the old NList settings (only column width and order).
+	  which can also read in the old NList settings (only column width and order, bugfix #1657900).
 	  Added the possibility to change the column order in the code. Right now it can't
 	  be done but the old NList setting will be honored.
 

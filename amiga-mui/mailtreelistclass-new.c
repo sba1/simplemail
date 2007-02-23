@@ -87,6 +87,7 @@
 #define MENU_SETSTATUS_REPLFORW 23
 #define MENU_RESET_THIS_COLUMN_WIDTH 24
 #define MENU_RESET_ALL_COLUMN_WIDTHS 25
+#define MENU_RESET_COLUMN_ORDER 26
 
 /**************************************************************************/
 
@@ -1229,6 +1230,25 @@ static void MailTreelist_ResetClickedColumnWidth(struct MailTreelist_Data *data,
 	}
 }
 
+/**************************************************************************
+ Reset column order
+**************************************************************************/
+static void MailTreelist_ResetColumnOrder(struct MailTreelist_Data *data, Object *obj)
+{
+	data->columns_order[0] = COLUMN_TYPE_STATUS;
+	data->columns_order[1] = COLUMN_TYPE_FROMTO;
+	data->columns_order[2] = COLUMN_TYPE_SUBJECT;
+	data->columns_order[3] = COLUMN_TYPE_REPLYTO;
+	data->columns_order[4] = COLUMN_TYPE_DATE;
+	data->columns_order[5] = COLUMN_TYPE_SIZE;
+	data->columns_order[6] = COLUMN_TYPE_FILENAME;
+	data->columns_order[7] = COLUMN_TYPE_POP3;
+	data->columns_order[8] = COLUMN_TYPE_RECEIVED;
+
+	PrepareDisplayedColumns(data);
+	MUI_Redraw(obj,MADF_DRAWOBJECT);
+}
+
 /**************************************************************************/
 
 /*************************************************************************
@@ -1376,7 +1396,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset this column's width"), MUIA_UserData, MENU_RESET_THIS_COLUMN_WIDTH, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset all columns' widths"), MUIA_UserData, MENU_RESET_ALL_COLUMN_WIDTHS, End,
-//			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order"), MUIA_UserData, MUIV_NList_Menu_DefOrder_All, End,
+			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order"), MUIA_UserData, MENU_RESET_COLUMN_ORDER, End,
 			End,
 		End;
 
@@ -1723,6 +1743,53 @@ STATIC ULONG MailTreelist_Export(struct IClass *cl, Object *obj, struct MUIP_Exp
 	return 0;
 }
 
+/**************************************************************************
+ Check if all columns are in the columns_order array. This is necessary
+ after the Import() because NList doesn't export hidden columns. And maybe
+ we'll also change the columns sometime in the future.
+**************************************************************************/
+static void CheckColumnsOrder(struct MailTreelist_Data *data)
+{
+	int pos, col;
+	int default_order[MAX_COLUMNS];
+	int check_columns[MAX_COLUMNS];
+
+	/* initialize the check array */
+	for (pos = 0;pos<MAX_COLUMNS;pos++) check_columns[pos] = 1;
+
+	/* get all used columns */
+	for (pos = 0;pos<MAX_COLUMNS;pos++)
+	{
+		col = data->columns_order[pos];
+		check_columns[col] = 0;
+	}
+
+	/* define the default order */
+	default_order[COLUMN_TYPE_STATUS]   = 0;
+	default_order[COLUMN_TYPE_FROMTO]   = 1;
+	default_order[COLUMN_TYPE_SUBJECT]  = 2;
+	default_order[COLUMN_TYPE_REPLYTO]  = 3;
+	default_order[COLUMN_TYPE_DATE]     = 4;
+	default_order[COLUMN_TYPE_SIZE]     = 5;
+	default_order[COLUMN_TYPE_FILENAME] = 6;
+	default_order[COLUMN_TYPE_POP3]     = 7;
+	default_order[COLUMN_TYPE_RECEIVED] = 8;
+
+	/* now check if all columns are used, the columns start with 1 */
+	for (col = 1; col < MAX_COLUMNS; col++)
+	{
+		if (check_columns[col] == 1)
+		{
+			/* The column isn't in the order list, insert it */
+			for (pos=MAX_COLUMNS-1; pos > default_order[col]; pos--)
+			{
+				data->columns_order[pos] = data->columns_order[pos-1];
+			}
+			data->columns_order[pos] = col;
+		}
+	}
+}
+
 /*************************************************************************
  MUIM_Import
 *************************************************************************/
@@ -1877,6 +1944,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 				}
 			}
 		}
+		CheckColumnsOrder(data);
 	}
 	PrepareDisplayedColumns(data);
 	if (redraw)
@@ -3528,6 +3596,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	7:
 		case	8:
 					PrepareDisplayedColumns(data);
+					CalcEntries(data,obj);
 					CalcHorizontalTotal(data);
 					MUI_Redraw(obj,MADF_DRAWOBJECT);
 				  break;
@@ -3549,6 +3618,8 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case  MENU_DELETE: callback_delete_mails();break;
 		case	MENU_RESET_ALL_COLUMN_WIDTHS: MailTreelist_ResetAllColumnWidth(data, obj);break;
 		case	MENU_RESET_THIS_COLUMN_WIDTH: MailTreelist_ResetClickedColumnWidth(data, obj);break;
+		case	MENU_RESET_COLUMN_ORDER: MailTreelist_ResetColumnOrder(data, obj);break;
+
 		default: 
 		{
 			return DoSuperMethodA(cl,obj,(Msg)msg);

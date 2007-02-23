@@ -2,6 +2,12 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-23  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: Added the "Default Order" contextmenu function.
+	  Added a CheckColumnsOrder() function because NList doesn't export hidden columns.
+	  Added CalcEntries() call after titlemenu selection because if a columns was hidden
+	  the width wasn't calculated.
+
 2007-02-17  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/datatypescache.c: Also check if there is a masonname available before
 	  trying to open it.

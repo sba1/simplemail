@@ -2685,6 +2685,10 @@ STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUI
 
 	int i;
 
+	/* Noop when not being between setup/cleanup phase */
+	if (!data->inbetween_setup)
+		return 0;
+
 	for (i=0;i<data->entries_num;i++)
 	{
 		if (data->entries[i]->mail_info == msg->m)
@@ -2707,8 +2711,13 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 
 	int i;
+	int num_to_be_refreshed;
 	
-	int num_to_be_refreshed = 0;
+	/* Noop when not being between setup/cleanup phase */
+	if (!data->inbetween_setup)
+		return 0;
+
+	num_to_be_refreshed = 0;
 
 	for (i=0;i<data->entries_num;i++)
 	{

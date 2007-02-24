@@ -1202,8 +1202,15 @@ void main_set_folder_mails(struct folder *folder)
 *******************************************************************/
 void main_set_folder_active(struct folder *folder)
 {
-	struct MUI_NListtree_TreeNode *tn = FindListtreeUserData(folder_tree, folder);
+	struct MUI_NListtree_TreeNode *tn;
+	
+	SM_ENTER;
+	SM_DEBUGF(20,("Set active folder to \"%s\"\n",folder->name));
+
+	tn = FindListtreeUserData(folder_tree, folder);
 	set(folder_tree,MUIA_NListtree_Active,tn);
+
+	SM_LEAVE;
 }
 
 /******************************************************************

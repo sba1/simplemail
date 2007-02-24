@@ -1947,7 +1947,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 		CheckColumnsOrder(data);
 	}
 	PrepareDisplayedColumns(data);
-	if (redraw)
+	if (redraw && data->inbetween_setup)
 	{
 		CalcEntries(data,obj);
 		CalcVisible(data,obj);

@@ -2477,7 +2477,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 	SM_DEBUGF(10,("msg->after = %d\n",after));
 
 	/* Ensure vaild after. Note that if after == -2 we mean the last element */
-	if (after == -2 || after > data->entries_num) after = data->entries_num - 1;
+	if (after == -2 || after >= data->entries_num) after = data->entries_num - 1;
 	else if (after < -2) after = -1;
 
 	/* Ensure that we can hold an additional entry */

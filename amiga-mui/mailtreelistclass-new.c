@@ -1347,7 +1347,6 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->columns_order[7] = COLUMN_TYPE_POP3;
 	data->columns_order[8] = COLUMN_TYPE_RECEIVED;
 
-	PrepareDisplayedColumns(data);
 	data->column_spacing = 4;
 
 #ifdef HAVE_EXTENDEDMOUSE
@@ -1399,6 +1398,8 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Default Order"), MUIA_UserData, MENU_RESET_COLUMN_ORDER, End,
 			End,
 		End;
+
+	PrepareDisplayedColumns(data);
 
 	return (ULONG)obj;
 }

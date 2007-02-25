@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-02-25  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: The PrepareDisplayedColumns() function must be
+	  called after the titlemenu is build.
+
 2007-02-23  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Added the "Default Order" contextmenu function.
 	  Added a CheckColumnsOrder() function because NList doesn't export hidden columns.

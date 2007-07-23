@@ -24,8 +24,8 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
-#include <mui/NListtree_Mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 
 #include <libraries/iffparse.h> /* MAKE_ID */
 

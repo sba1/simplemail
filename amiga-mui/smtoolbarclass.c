@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
-#include <mui/thebar_mcc.h>
+#include <mui/TheBar_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>

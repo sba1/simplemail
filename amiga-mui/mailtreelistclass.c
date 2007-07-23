@@ -30,10 +30,10 @@
 #include <libraries/iffparse.h>
 
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #ifdef MAILLIST_IS_TREE
-#include <mui/NListtree_Mcc.h>
+#include <mui/NListtree_mcc.h>
 #endif
 
 #include <clib/alib_protos.h>

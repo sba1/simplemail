@@ -23,7 +23,7 @@
 
 #include <intuition/intuitionbase.h>
 #include <libraries/mui.h>
-#include <mui/betterstring_mcc.h>
+#include <mui/BetterString_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/exec.h>

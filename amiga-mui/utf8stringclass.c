@@ -25,9 +25,9 @@
 #include <stdlib.h>
 
 #include <libraries/mui.h>
-#include <mui/Betterstring_MCC.h>
-#include <mui/NListview_MCC.h>
-#include <mui/NListtree_MCC.h>
+#include <mui/BetterString_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>

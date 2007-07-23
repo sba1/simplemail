@@ -25,22 +25,25 @@
 #include <proto/exec.h>
 
 #ifdef __MORPHOS__
-#include <sys/socket.h>
-#include <net/socketbasetags.h>
-#include <proto/socket.h>
+	#include <sys/socket.h>
+	#include <net/socketbasetags.h>
+	#include <proto/socket.h>
+#elif __AROS__
+	#include <bsdsocket/socketbasetags.h>
+	#include <proto/socket.h>
 #else
-#ifdef AMITCP_SDK
-#include <amitcp/socketbasetags.h>
-#else
-#ifdef ROADSHOW_SDK
-#include <libraries/bsdsocket.h>
-#include <proto/bsdsocket.h>
-#else
-#include <bsdsocket/socketbasetags.h>
-#include <clib/miami_protos.h>
-#include <pragmas/miami_pragmas.h>
-#endif
-#endif
+	#ifdef AMITCP_SDK
+		#include <amitcp/socketbasetags.h>
+	#else
+		#ifdef ROADSHOW_SDK
+			#include <libraries/bsdsocket.h>
+			#include <proto/bsdsocket.h>
+		#else
+			#include <bsdsocket/socketbasetags.h>
+			#include <clib/miami_protos.h>
+			#include <pragmas/miami_pragmas.h>
+		#endif
+	#endif
 #endif
 
 #ifndef NO_SSL
@@ -121,7 +124,7 @@ void close_socket_lib(void)
    we will return 1 */
 int is_online(char *iface)
 {
-#if defined(AMITCP_SDK) || defined(ROADSHOW_SDK)
+#if defined(AMITCP_SDK) || defined(ROADSHOW_SDK) || defined(__AROS__)
 	return 1;
 #else
 	struct Library *MiamiBase = OpenLibrary("miami.library",10); /* required by MiamiIsOnline() */

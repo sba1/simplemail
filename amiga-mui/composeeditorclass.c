@@ -26,8 +26,8 @@
 
 #include <libraries/mui.h>
 #include <mui/NListview_mcc.h>
-#include <mui/nlisttree_mcc.h>
-#include <mui/texteditor_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/TextEditor_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>

@@ -27,7 +27,7 @@
 
 #include <exec/memory.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
-#include <mui/betterstring_mcc.h>
+#include <mui/BetterString_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
 #include <libraries/locale.h>

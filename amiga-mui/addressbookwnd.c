@@ -28,9 +28,9 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/gadtools.h>
 #include <libraries/mui.h>
-#include <mui/nlistview_mcc.h>
-#include <mui/betterstring_mcc.h>
-#include <mui/texteditor_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/BetterString_mcc.h>
+#include <mui/TextEditor_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
 #include <proto/intuition.h>

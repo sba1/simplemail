@@ -27,7 +27,7 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <libraries/asl.h>
-#include <mui/betterstring_mcc.h>
+#include <mui/BetterString_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/intuition.h>

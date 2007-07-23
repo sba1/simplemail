@@ -1,30 +1,24 @@
 # Makefile for AROS version of SimpleMail
-#
-#
 
 include $(TOP)/config/make.cfg
+
+#MM- contrib-simplemail : contrib-simplemail-bin
+#MM contrib-simplemail-bin : includes linklibs
+
+#contrib-zune-classes-thebar
+
 
 AMIGAMUI := \
 	addressbookwnd \
 	composewnd \
-	folderwnd \
 	multistringclass \
-	subthreads \
 	addressstringclass \
 	configwnd \
-	gettext \
 	pgplistclass \
-	support \
-	addresstreelistclass \
-	datatypescache \
 	gui_main \
 	picturebuttonclass \
-	sysprint \
-	amigasupport \
 	datatypesclass \
 	popupmenuclass \
-	tcpip \
-	arexx \
 	errorwnd \
 	iconclass \
 	readwnd \
@@ -32,13 +26,23 @@ AMIGAMUI := \
 	attachmentlistclass \
 	filterruleclass \
 	mailtreelistclass \
-	searchwnd \
 	utf8stringclass \
 	audioselectgroupclass \
-	filterwnd \
 	mainwnd \
 	composeeditorclass \
 	foldertreelistclass \
+	folderwnd \
+	subthreads \
+	gettext \
+	support \
+	addresstreelistclass \
+	datatypescache \
+	sysprint \
+	amigasupport \
+	tcpip \
+	arexx \
+	searchwnd \
+	filterwnd \
 	muistuff \
 	statuswnd
 
@@ -74,30 +78,16 @@ FILES   := \
 	trans \
 	$(AMIGAMUIFILES)
 
-EXEDIR := $(CONTRIBDIR)/SimpleMail
-EXE := $(EXEDIR)/SimpleMail
+EXEDIR := $(AROS_CONTRIB)/Networking/Apps/SimpleMail
+EXE    := SimpleMail
 
-USE_CLIB_SHARED := yes
-USE_AMIGALIB    := yes
-USE_MUILIB      := yes
-USE_AROSLIB     := yes
-USE_EXPATLIB    := yes
+USER_INCLUDES := -I./indep-include -I./amiga-mui -I. \
+		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/netinclude \
+		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/bsdsocket/ 
 
-USER_INCLUDES := -I./indep-include -I./amiga-mui -I.
 USER_CFLAGS := -DNO_SSL
 
-#MM contrib-mui-simplemail : includes linklibs
-
-%make_prog_setup mmake=contrib-mui-simplemail
-
-contrib-mui-simplemail : setup $(EXE)
-
-%make_prog_multi dir=$(EXEDIR) target=$(EXE)
-
-#MM setup
-setup ::
-        %mkdirs_q $(EXEDIR)
+%build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
+    targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat" 
 
 %common
-%include_deps
-

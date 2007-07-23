@@ -69,11 +69,18 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 #define HorizLineTextObject(text)  RectangleObject,MUIA_VertWeight,0,MUIA_Rectangle_HBar, TRUE,MUIA_Rectangle_BarTitle,text,End
 
 /* start undocumented */
+#ifndef MUIM_GoActive
 #define MUIM_GoActive                0x8042491a
+#endif
+
+#ifndef MUIM_GoInactive
 #define MUIM_GoInactive              0x80422c0c
+#endif
 
 /* #define MUIC_Dtpic "Dtpic.mui", */
+#ifndef MUIA_Dtpic_Name
 #define MUIA_Dtpic_Name 0x80423d72
+#endif
 #define DtpicObject MUI_NewObject("Dtpic.mui"
 
 #ifndef MUIM_CreateDragImage

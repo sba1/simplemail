@@ -28,9 +28,9 @@
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
 #include <libraries/asl.h>
-#include <mui/nlistview_mcc.h>
-#include <mui/nlisttree_mcc.h>
-#include <mui/thebar_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/TheBar_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/asl.h>
 #include <proto/dos.h>

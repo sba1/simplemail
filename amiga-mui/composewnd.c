@@ -27,10 +27,10 @@
 #include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
-#include <mui/nlistview_mcc.h>
-#include <mui/nlisttree_mcc.h>
-#include <mui/betterstring_mcc.h> /* there also exists new newer version of this class */
-#include <mui/texteditor_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NListtree_mcc.h>
+#include <mui/BetterString_mcc.h> /* there also exists new newer version of this class */
+#include <mui/TextEditor_mcc.h>
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
 #include <proto/exec.h>

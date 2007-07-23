@@ -20,13 +20,18 @@
 ** transwndclass.c
 */
 
+#ifdef __AROS__
+#include <dos/dos.h>
+#else
 #include <dos.h>
+#endif
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>

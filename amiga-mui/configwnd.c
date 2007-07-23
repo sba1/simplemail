@@ -28,8 +28,8 @@
 #include <libraries/asl.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 #include <libraries/mui.h>
-#include <mui/texteditor_mcc.h>
-#include <mui/betterstring_mcc.h>
+#include <mui/TextEditor_mcc.h>
+#include <mui/BetterString_mcc.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
 #include <mui/popplaceholder_mcc.h>

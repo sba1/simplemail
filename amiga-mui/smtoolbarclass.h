@@ -27,7 +27,7 @@
 #ifndef SM__SMTOOLBARCLASS_H
 #define SM__SMTOOLBARCLASS_H
 
-#include <mui/thebar_mcc.h>
+#include <mui/TheBar_mcc.h>
 
 IMPORT struct MUI_CustomClass *CL_SMToolbar;
 #define SMToolbarObject (Object*)MyNewObject(CL_SMToolbar->mcc_Class, NULL

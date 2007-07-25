@@ -212,7 +212,7 @@ STATIC ULONG Popupmenu_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	{
 		struct popup_node *node = (struct popup_node*)list_find(&data->popup_list,data->selected);
 		if (node) *msg->opg_Storage = (ULONG)node->udata;
-		else *msg->opg_Storage = NULL;
+		else *msg->opg_Storage = 0;
 		return 1;
 	}
 	return DoSuperMethodA(cl,obj,(Msg)msg);
@@ -359,7 +359,7 @@ STATIC ULONG Popupmenu_AddEntry(struct IClass *cl, Object *obj,struct MUIP_Popup
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, Popupmenu_Dispatcher,cl,obj,msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, Popupmenu_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
 	{

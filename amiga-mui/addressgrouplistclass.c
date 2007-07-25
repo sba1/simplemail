@@ -26,7 +26,7 @@
 
 #include <libraries/iffparse.h>
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -240,7 +240,7 @@ STATIC ULONG AddressGroupList_Refresh(struct IClass *cl, Object *obj, Msg msg)
 /********************************************
  Boopsi Dispatcher
 *********************************************/
-STATIC BOOPSI_DISPATCHER(ULONG,AddressGroupList_Dispatcher,cl,obj,msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressGroupList_Dispatcher,cl,obj,msg)
 {
 
 	switch(msg->MethodID)

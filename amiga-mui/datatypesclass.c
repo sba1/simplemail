@@ -328,7 +328,7 @@ STATIC ULONG DataTypes_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *ms
 
 	if (msg->flags & MADF_DRAWOBJECT && data->dt_obj)
 	{
-		RefreshDTObjects(data->dt_obj, _window(obj), NULL, NULL);
+		RefreshDTObjects(data->dt_obj, _window(obj), NULL, 0);
 	}
 
 	return 1;
@@ -360,7 +360,7 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 				case	DTA_Sync:
 							if (data->show && data->dt_obj)
 							{
-								RefreshDTObjects (data->dt_obj, _window(obj), NULL, NULL);
+								RefreshDTObjects (data->dt_obj, _window(obj), NULL, 0);
 							}
 							break;
 
@@ -477,7 +477,7 @@ STATIC ULONG DataTypes_HorizUpdate(struct IClass *cl, Object *obj)
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG,DataTypes_Dispatcher,cl,obj,msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG,DataTypes_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
 	{

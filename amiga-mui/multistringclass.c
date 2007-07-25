@@ -133,7 +133,7 @@ STATIC ULONG SingleString_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, SingleString_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
@@ -375,7 +375,7 @@ STATIC Object *MultiString_AddStringField(struct IClass *cl,Object *obj, struct 
 	return NULL;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, MultiString_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MultiString_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
 	{

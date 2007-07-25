@@ -124,7 +124,7 @@ STATIC ULONG PGPList_Refresh(struct IClass *cl,Object *obj, Msg msg)
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, PGPList_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, PGPList_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

@@ -25,7 +25,7 @@
 #include <workbench/icon.h>
 #include <libraries/asl.h>
 #include <libraries/mui.h>
-#include <mui/betterstring_mcc.h>
+#include <mui/BetterString_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
@@ -965,7 +965,7 @@ STATIC ULONG MessageView_Changed(struct IClass *cl, Object *obj, Msg msg)
 
 /**************************************************************************/
 
-STATIC BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MessageView_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

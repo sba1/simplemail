@@ -169,7 +169,7 @@ STATIC ULONG TinyButton_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *m
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, TinyButton_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, TinyButton_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
 	{
@@ -1102,7 +1102,7 @@ STATIC ULONG MailInfo_CompactChanged(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MailInfoArea_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
@@ -1155,7 +1155,7 @@ STATIC ULONG MailInfo_New(struct IClass *cl,Object *obj,struct opSet *msg)
 }
 
 
-STATIC BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MailInfo_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

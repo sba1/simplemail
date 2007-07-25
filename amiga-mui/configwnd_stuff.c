@@ -24,8 +24,8 @@
 #include <stdlib.h>
 
 #include <libraries/mui.h>
-#include <mui/texteditor_mcc.h>
-#include <mui/nlistview_mcc.h>
+#include <mui/TextEditor_mcc.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/exec.h>
@@ -98,7 +98,7 @@ char **array_of_addresses_from_texteditor(Object *editor, int page, int *error_p
 /******************************************************************
  The size custom class. Only used in the configwnd.
 *******************************************************************/
-STATIC BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, Sizes_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

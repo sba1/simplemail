@@ -585,7 +585,7 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 
 /**********************************************************************/
 
-STATIC BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, Icon_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

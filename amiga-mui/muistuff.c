@@ -238,12 +238,15 @@ void init_hook_standard(void)
 #elif defined(__MORPHOS__)
 	hook_standard.h_Entry = (HOOKFUNC)HookEntry;
 	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
+#elif defined(__AROS__)
+	hook_standard.h_Entry = (HOOKFUNC)HookEntry;
+	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 #else
 	hook_standard.h_Entry = (HOOKFUNC)hook_func_standard;
 #endif
 }
 
-#if !defined(__AMIGAOS4__) && !defined(__MORPHOS__)
+#if !defined(__AMIGAOS4__) && !defined(__MORPHOS__) && !defined(__AROS__)
 /* the hook function, it loads the a4 register and call the subentry */
 STATIC ASM SAVEDS VOID hook_func(REG(a0,struct Hook *h), REG(a2, ULONG obj), REG(a1, ULONG msg))
 {
@@ -271,6 +274,9 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 #elif defined(__MORPHOS__)
 	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
+#elif defined(__AROS__)
+	h->h_Entry = (HOOKFUNC)HookEntry;
+	h->h_SubEntry = (HOOKFUNC)func;
 #else
 	h->h_Entry = (HOOKFUNC)hook_func;
 	h->h_SubEntry = func;
@@ -291,6 +297,10 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 		h->h_Data = data;
 	}
 #elif defined(__MORPHOS__)
+	h->h_Entry = (HOOKFUNC)HookEntry;
+	h->h_SubEntry = (HOOKFUNC)func;
+	h->h_Data = data;
+#elif defined(__AROS__)
 	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 	h->h_Data = data;

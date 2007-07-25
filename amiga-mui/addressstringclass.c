@@ -192,7 +192,7 @@ STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{
@@ -292,7 +292,8 @@ STATIC ULONG AddressString_HandleEvent(struct IClass *cl, Object *obj, struct MU
 			{
 				/* Address replacement doesn't work, so select the characters that way,
 				 * that it works the next time */
-				set(obj,MUIA_BetterString_SelectSize, end-part);
+				int tmpsize = end-part; /* AROS doesn't like calculation in set() */
+				set(obj,MUIA_BetterString_SelectSize, tmpsize);
 				AddressString_UpdateList(cl,obj);
 			}
 
@@ -513,7 +514,7 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj)
 }
 
 
-STATIC BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

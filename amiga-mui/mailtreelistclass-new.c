@@ -28,6 +28,7 @@
 
 #include <diskfont/diskfonttag.h>
 #include <libraries/iffparse.h>
+#include <libraries/mui.h>
 
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
@@ -3641,7 +3642,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 
 /**************************************************************************/
 
-STATIC BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

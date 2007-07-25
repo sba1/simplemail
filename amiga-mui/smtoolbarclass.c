@@ -68,7 +68,7 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	if ((ti = FindTagItem(MUIA_SMToolbar_Buttons, msg->ops_AttrList)))
 		buttons = (struct MUIS_SMToolbar_Button *)ti->ti_Data;
 	else
-		return NULL;
+		return 0;
 
 	if ((ti = FindTagItem(MUIA_SMToolbar_InVGroup, msg->ops_AttrList)))
 		use_vgroup = !!ti->ti_Data;
@@ -78,11 +78,11 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	/* how much button do we have? */
 	while (buttons[button_count].pos != MUIV_SMToolbar_End) button_count++;
-	if (!(button_count)) return NULL;
+	if (!(button_count)) return 0;
 
 	/* now copy the buttonarray to our own */
 	if (!(toolbar_buttons = (struct MUIS_TheBar_Button*)malloc((button_count + 1)*(sizeof(struct MUIS_TheBar_Button)))))
-		return NULL;
+		return 0;
 	memset(toolbar_buttons,0,(button_count + 1)*(sizeof(struct MUIS_TheBar_Button)));
 
 	for (i=0;i<button_count;i++)
@@ -432,7 +432,7 @@ STATIC ULONG SMToolbar_DoMethod(struct IClass *cl, Object *obj, struct MUIP_SMTo
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, SMToolbar_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, SMToolbar_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -281,7 +281,7 @@ STATIC ULONG AccountPop_Refresh(struct IClass *cl, Object *obj, Msg msg)
 	return 1;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, AccountPop_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, AccountPop_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

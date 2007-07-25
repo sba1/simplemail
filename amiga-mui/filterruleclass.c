@@ -96,7 +96,7 @@ const static struct rule rules[] = {
 	{N_("Header"), RULE_HEADER_MATCH},
 	{N_("Has attachments"), RULE_ATTACHMENT_MATCH},
 	{N_("Status is"), RULE_STATUS_MATCH},
-	{NULL,NULL},
+	{NULL,0},
 };
 static char *rule_cycle_array[sizeof(rules)/sizeof(struct rule)];
 
@@ -366,7 +366,7 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	}
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

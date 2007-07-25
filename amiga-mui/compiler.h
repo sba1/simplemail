@@ -27,6 +27,14 @@
 #include <exec/types.h>
 #endif
 
+#ifdef __AROS__
+
+#define SAVEDS
+#define ASM
+#define REG(reg,arg) arg
+
+#else /* __AROS__ */
+
 #if (INCLUDE_VERSION < 50) || defined(__MORPHOS__)
 
 #ifdef __SASC
@@ -128,5 +136,6 @@
 
 #endif
 
+#endif /* __AROS__ */
 
 #endif

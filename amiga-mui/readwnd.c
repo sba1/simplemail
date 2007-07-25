@@ -1186,8 +1186,10 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	{
 		if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
 		{
-			nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
-			if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
+			/* AROS doesn't like modification of nm_Label */
+			STRPTR tmpstring = mystrdup(_(nm[i].nm_Label));
+			if (tmpstring[1] == ':') tmpstring[1] = 0;
+			nm[i].nm_Label = tmpstring;
 		}
 	}
 

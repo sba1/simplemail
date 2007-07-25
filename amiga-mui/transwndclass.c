@@ -274,7 +274,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
 		
-	for (tags = msg->ops_AttrList; tag = NextTagItem(&tags);)
+	for ((tags = msg->ops_AttrList); (tag = NextTagItem(&tags));)
 	{
 		switch (tag->ti_Tag)
 		{
@@ -439,7 +439,7 @@ STATIC ULONG transwnd_InsertMailInfo (struct IClass *cl, Object *obj, struct MUI
 			}
 
 			DoMethod(data->mail_list,MUIM_NList_Redraw,i);
-			return NULL;
+			return 0;
 		}
 	}
 
@@ -520,7 +520,7 @@ STATIC ULONG transwnd_Wait (struct IClass *cl, Object *obj, Msg msg)
 	return start;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

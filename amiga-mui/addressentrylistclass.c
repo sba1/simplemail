@@ -26,7 +26,7 @@
 
 #include <libraries/iffparse.h>
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -405,7 +405,7 @@ STATIC ULONG AddressEntryList_DragDrop(struct IClass *cl, Object *obj, struct MU
 /********************************************
  Boopsi Dispatcher
 *********************************************/
-STATIC BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG,AddressEntryList_Dispatcher,cl,obj,msg)
 {
 	switch(msg->MethodID)
 	{

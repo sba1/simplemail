@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 #include <libraries/mui.h>
-#include <mui/NListview_MCC.h>
+#include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
 #include <proto/utility.h>
@@ -64,7 +64,7 @@ STATIC ULONG FilterList_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragD
   return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterList_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

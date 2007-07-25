@@ -176,7 +176,7 @@ STATIC ULONG UTF8String_Insert(struct IClass *cl, Object *obj, struct MUIP_Bette
 	return rc;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, UTF8String_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

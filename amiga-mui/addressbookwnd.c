@@ -585,7 +585,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 
 	wnd = WindowObject,
 		(num < MAX_PERSON_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('P','E','R',num),
-    MUIA_Window_Title, _("SimpleMail - Edit Person"),
+		MUIA_Window_Title, _("SimpleMail - Edit Person"),
         
 		WindowContents, VGroup,
 			Child, reg_group = RegisterGroup(register_titles),
@@ -1411,8 +1411,10 @@ static void addressbookwnd_init(void)
 		{
 			if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
 			{
-				nm[i].nm_Label = mystrdup(_(nm[i].nm_Label));
-				if (nm[i].nm_Label[1] == ':') nm[i].nm_Label[1] = 0;
+				/* AROS doesn't allow modification of nm_Label */
+				STRPTR tmpstr = mystrdup(_(nm[i].nm_Label));
+				if (tmpstr[1] == ':') tmpstr[1] = 0;
+				nm[i].nm_Label = tmpstr;
 			}
 		}
 	}
@@ -1422,7 +1424,7 @@ static void addressbookwnd_init(void)
 	address_wnd = WindowObject,
 		MUIA_HelpNode, "AB_W",
 		MUIA_Window_ID, MAKE_ID('A','D','B','K'),
-    MUIA_Window_Title, _("SimpleMail - Addressbook"),
+		MUIA_Window_Title, _("SimpleMail - Addressbook"),
 
 		MUIA_Window_Menustrip, address_menu,
         

@@ -3,48 +3,65 @@
 include $(TOP)/config/make.cfg
 
 #MM- contrib-simplemail : contrib-simplemail-bin
-#MM contrib-simplemail-bin : includes linklibs
+#MM contrib-simplemail-bin : includes linklibs linklibs-expat
 
 #contrib-zune-classes-thebar
 
+# TODO
+#smtoolbarclass
+#mailtreelistclass-new
+#headers
 
 AMIGAMUI := \
-	addressbookwnd \
-	composewnd \
-	multistringclass \
-	addressstringclass \
-	configwnd \
-	pgplistclass \
-	gui_main \
-	picturebuttonclass \
-	datatypesclass \
-	popupmenuclass \
-	errorwnd \
-	iconclass \
-	readwnd \
-	transwndclass \
-	attachmentlistclass \
-	filterruleclass \
-	mailtreelistclass \
+	vsnprintf \
 	utf8stringclass \
-	audioselectgroupclass \
-	mainwnd \
-	composeeditorclass \
-	foldertreelistclass \
-	folderwnd \
-	subthreads \
-	gettext \
-	support \
-	addresstreelistclass \
-	datatypescache \
-	sysprint \
-	amigasupport \
+	transwndclass \
 	tcpip \
-	arexx \
+	sysprint \
+	support \
+	subthreads \
+	statuswnd \
+	startupwnd \
+	startup-aros \
+	signaturecycleclass \
+	shutdownwnd \
 	searchwnd \
-	filterwnd \
+	readwnd \
+	popupmenuclass \
+	picturebuttonclass \
+	pgplistclass \
+	multistringclass \
 	muistuff \
-	statuswnd
+	messageviewclass \
+	mainwnd \
+	mailtreelistclass \
+	mailinfoclass \
+	iconclass \
+	gui_main \
+	gettext \
+	folderwnd \
+	foldertreelistclass \
+	filterwnd \
+	filterruleclass \
+	filterlistclass \
+	errorwnd \
+	datatypesclass \
+	datatypescache \
+	configwnd_stuff \
+	configwnd \
+	composewnd \
+	composeeditorclass \
+	audioselectgroupclass \
+	attachmentlistclass \
+	arexx \
+	appicon \
+	amigasupport \
+	addressstringclass \
+	addressmatchlistclass \
+	addressgrouplistclass \
+	addressentrylistclass \
+	addressbookwnd \
+	accountpopclass
 
 AMIGAMUIFILES := $(foreach f, $(AMIGAMUI), amiga-mui/$(f))
 
@@ -85,7 +102,7 @@ USER_INCLUDES := -I./indep-include -I./amiga-mui -I. \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/netinclude \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/bsdsocket/ 
 
-USER_CFLAGS := -DNO_SSL
+USER_CFLAGS := -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat" 

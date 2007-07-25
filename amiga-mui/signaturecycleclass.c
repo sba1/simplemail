@@ -180,7 +180,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	{
 		if (sign_array) free(sign_array);
 		if (utf8_sign_array) free(utf8_sign_array);
-		return NULL;
+		return 0;
 	}
 
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
@@ -198,7 +198,7 @@ STATIC ULONG SignatureCycle_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			free(sign_array);
 			free(utf8_sign_array);
 		}
-		return NULL;
+		return 0;
 	}
 
 	data = (struct SignatureCycle_Data*)INST_DATA(cl,obj);
@@ -384,7 +384,7 @@ STATIC ULONG SignatureCycle_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, SignatureCycle_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, SignatureCycle_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
 	{

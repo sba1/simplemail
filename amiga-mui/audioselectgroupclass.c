@@ -114,7 +114,7 @@ STATIC ULONG AudioSelectGroup_Cleanup(struct IClass *cl,Object *obj,Msg msg)
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, AudioSelectGroup_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, AudioSelectGroup_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
 	{

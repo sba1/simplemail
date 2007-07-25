@@ -550,7 +550,7 @@ STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_
 	return 0;
 }
 
-STATIC BOOPSI_DISPATCHER(ULONG, FolderTreelist_Dispatcher, cl, obj, msg)
+STATIC MY_BOOPSI_DISPATCHER(ULONG, FolderTreelist_Dispatcher, cl, obj, msg)
 {
 	switch (msg->MethodID)
 	{

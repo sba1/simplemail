@@ -38,12 +38,12 @@
 
 #include <libraries/mui.h>
 #include <proto/muimaster.h>
-#include <mui/nlistview_mcc.h>
-#include <mui/nlist_mcc.h>
-#include <mui/nlisttree_mcc.h>
+#include <mui/NListview_mcc.h>
+#include <mui/NList_mcc.h>
+#include <mui/NListtree_mcc.h>
 #include <mui/BetterString_mcc.h>
 #include <mui/popplaceholder_mcc.h>
-#include <mui/texteditor_mcc.h>
+#include <mui/TextEditor_mcc.h>
 
 #include <libraries/iffparse.h>
 #include <proto/iffparse.h>
@@ -61,5 +61,9 @@
 #include <proto/icon.h>
 #include <proto/openurl.h>
 
+#ifdef __AROS__
+#include <expat.h>
+#else
 #include <expat/expat.h>
 #include <proto/expat.h>
+#endif

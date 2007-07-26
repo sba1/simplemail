@@ -625,8 +625,10 @@ int gui_execute_arexx(char *filename)
 /****************************************************************
  The main entry point.
 *****************************************************************/
+#ifndef __AROS__
+/* main() for AROS is in start-aros.c */
 int main(int argc, char *argv[])
 {
 	return simplemail_main();
 }
-
+#endif

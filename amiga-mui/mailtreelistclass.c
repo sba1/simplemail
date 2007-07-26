@@ -1479,8 +1479,9 @@ static int use_old_class;
 
 Object *MakeMailTreelist(ULONG userid, Object **list)
 {
+#ifndef USE_OLD_MAILLIST
 	if (!use_old_class) return MakeNewMailTreelist(userid, list);
-
+#endif
 	return NListviewObject,
 						MUIA_CycleChain,1,
 						MUIA_NListview_NList, *list = MailTreelistObject,
@@ -1504,12 +1505,15 @@ struct MUI_CustomClass *CL_MailTreelist;
 
 int create_mailtreelist_class(void)
 {
+#ifndef USE_OLD_MAILLIST
 	char *val;
 
 	if ((val = sm_getenv("SIMPLEMAIL_OLDMAILLIST")))
 		if (*val != '0') use_old_class = 1;
 
 	if (!use_old_class) return create_new_mailtreelist_class();
+
+#endif
 
 	SM_ENTER;
 
@@ -1524,12 +1528,13 @@ int create_mailtreelist_class(void)
 
 void delete_mailtreelist_class(void)
 {
+#ifndef USE_OLD_MAILLIST
 	if (!use_old_class)
 	{
 		delete_new_mailtreelist_class();
 		return;
 	}
-	
+#endif
 	SM_ENTER;
 	
 	if (CL_MailTreelist)

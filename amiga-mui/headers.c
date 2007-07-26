@@ -59,7 +59,10 @@
 
 #include <proto/keymap.h>
 #include <proto/icon.h>
+
+#ifndef __AROS__
 #include <proto/openurl.h>
+#endif
 
 #ifdef __AROS__
 #include <expat.h>

@@ -9,7 +9,7 @@
 #include <dirent.h>
 #define __amigaos__
 
-#include <sys/dir.h>
+// #include <sys/dir.h>
 #include <sys/stat.h>
 
 #include <dos/stdio.h>
@@ -22,7 +22,7 @@
 #include "amigadebug.h"
 
 #define FAST_SEEK
-#define BIG_BUFFER
+//#define BIG_BUFFER
 
 #include "simplemail.h"
 
@@ -40,9 +40,7 @@ struct Library *WorkbenchBase;
 struct Library *AslBase;
 struct Library *GfxBase;
 struct Library *LayersBase;
-struct Library *ExpatBase;
-
-int main(int argc, char *argv[]);
+//struct Library *ExpatBase;
 
 static int start(struct WBStartup *wbs);
 
@@ -53,70 +51,20 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-#define MIN68KSTACK 8192 /* MUI requirement legacy */
 #define MINSTACK 60000
 
-int __startup(void);
-int __startup(void)
+int main(int argc, char **argv)
 {
-	struct Process *pr;
-	int rc;
+	struct WBStartup *wbs = NULL;
 
-	SysBase = *((struct ExecBase**)4);
-	pr = (struct Process*)FindTask(NULL);
-
-	if (!pr->pr_CLI)
+	if (argc == 0)
 	{
-		struct WBStartup *wbs;
-
-		WaitPort(&pr->pr_MsgPort);
-		wbs = (struct WBStartup*)GetMsg(&pr->pr_MsgPort);
-
-		rc = start(wbs);
-
-		Forbid();
-		ReplyMsg((struct Message *)wbs);
-	}	else rc = start(NULL);
-	return rc;
+		wbs = (struct WBStartup*)argv;
+	}
+	return start(wbs);
 }
 
 static int rc;
-
-static int __swap_and_start(void)
-{
-	ULONG MySize;
-	struct Task *MyTask = FindTask(NULL);
-
-	if (!NewGetTaskAttrsA(MyTask, &MySize, sizeof(MySize), TASKINFOTYPE_STACKSIZE, NULL))
-	{
-		MySize = (ULONG)MyTask->tc_ETask->PPCSPUpper - (ULONG)MyTask->tc_ETask->PPCSPLower;
-	}
-
-	if (MySize < MINSTACK)
-	{
-		struct StackSwapStruct MySSS;
-		struct PPCStackSwapArgs MyArgs;
-		UBYTE *MyStack;
-
-		MyStack = AllocVec(MINSTACK, MEMF_PUBLIC);
-		if (MyStack)
-		{
-			MySSS.stk_Lower   = (void *)MyStack;
-			MySSS.stk_Upper   = (ULONG) &MyStack[MINSTACK];
-			MySSS.stk_Pointer = (void *)MySSS.stk_Upper;
-			MyArgs.Args[0] = 0;
-			MyArgs.Args[1] = 0;
-			rc = NewPPCStackSwap(&MySSS, &main, &MyArgs);
-			FreeVec(MyStack);
-		}
-	}
-	else
-	{
-		rc = main(0, NULL);
-	}
-
-	return rc;
-}
 
 static int start(struct WBStartup *wbs)
 {
@@ -148,35 +96,7 @@ static int start(struct WBStartup *wbs)
 
 					if (init_io())
 					{
-						ULONG MySize;
-						struct Task *MyTask = &pr->pr_Task;
-
-						if (!NewGetTaskAttrsA(MyTask, &MySize, sizeof(MySize), TASKINFOTYPE_STACKSIZE_M68K, NULL))
-						{
-							MySize = (ULONG)MyTask->tc_SPUpper - (ULONG)MyTask->tc_SPLower;
-						}
-
-						if (MySize < MIN68KSTACK)
-						{
-							struct StackSwapStruct *sss;
-
-							sss = AllocMem(sizeof(*sss) + MIN68KSTACK, MEMF_PUBLIC);
-							if (sss)
-							{
-								sss->stk_Lower   = sss + 1;
-								sss->stk_Upper   = (ULONG) (((UBYTE *) (sss + 1)) + MIN68KSTACK);
-								sss->stk_Pointer = (APTR) sss->stk_Upper;
-								StackSwap(sss);
-								rc = __swap_and_start();
-								StackSwap(sss);
-								FreeMem(sss, sizeof(*sss) + MIN68KSTACK);
-							}
-						}
-						else
-						{
-							rc = __swap_and_start();
-						}
-
+						rc = simplemail_main();
 						deinit_io();
 					}
 					deinit_mem();
@@ -224,7 +144,16 @@ static int open_libs(void)
 											{
 												if ((LayersBase = OpenLibrary("layers.library", 37)))
 												{
-													return 1;
+//													if (!(ExpatBase = OpenLibrary("expat.library", 0)))
+//													{
+//														ExpatBase = OpenLibrary("PROGDIR:libs/expat.library", 0);
+//													}
+
+//													if (ExpatBase)
+//													{
+														return 1;
+//													}
+//													else PutStr("Couldn't open expat.library. Please download it from aminet or somewhere else.\n");
 												}
 											}
 										} else PutStr("Couldn't open asl.library\n");
@@ -243,7 +172,7 @@ static int open_libs(void)
 
 static void close_libs(void)
 {
-	CloseLibrary(ExpatBase);
+//	CloseLibrary(ExpatBase);
 	CloseLibrary(LayersBase);
 	CloseLibrary(GfxBase);
 	CloseLibrary(AslBase);
@@ -382,303 +311,6 @@ static void deinit_io(void)
 	}
 }
 
-FILE *fopen(const char *filename, const char *mode)
-{
-	FILE *file = NULL;
-	short _file;
-	LONG amiga_mode;
-
-	if (*mode == 'w')
-	{
-		amiga_mode = MODE_NEWFILE;
-	}
-	else if (*mode == 'r')
-	{
-		amiga_mode = MODE_OLDFILE;
-	}
-	else if (*mode == 'a')
-	{
-		amiga_mode = MODE_READWRITE;
-	}
-	else
-	{
-		return NULL;
-	}
-
-	ObtainSemaphore(&files_sem);
-	/* Look if we can still open file left */
-	for (_file=0;_file < MAX_FILES && files[_file];_file++)
-	{
-	}
-	if (_file == MAX_FILES)
-	{
-		goto fail;
-	}
-
-	file = malloc(sizeof(*file));
-	if (!file)
-	{
-		goto fail;
-	}
-	memset(file,0,sizeof(*file));
-
-#ifdef BIG_BUFFER
-	file->_bf._size = 16*1024;
-	file->_bf._base = malloc(file->_bf._size);
-	if(!file->_bf._base) goto fail;
-#endif
-
-	if (!(files[_file] = Open(filename,amiga_mode))) goto fail;
-	file->_file = _file;
-
-#ifdef BIG_BUFFER
-	if(SetVBuf(files[_file], file->_bf._base, BUF_FULL, file->_bf._size) != 0)
-	{
-		Close(files[_file]);
-		goto fail;
-	}
-#endif
-
-	if (amiga_mode == MODE_READWRITE)
-	{
-		Seek(files[_file],0,OFFSET_END);
-		file->_offset = Seek(files[_file],0,OFFSET_CURRENT);
-	}
-
-	ReleaseSemaphore(&files_sem);
-	D(bug("0x%lx opened %s\n",file,filename));
-	return file;
-
-fail:
-	if (_file < MAX_FILES) files[_file] = NULL;
-#ifdef BIG_BUFFER
-	if(file)
-	{
-		free(file->_bf._base);
-	}
-#endif
-	free(file);
-	ReleaseSemaphore(&files_sem);
-	return NULL;
-}
-
-int fclose(FILE *file)
-{
-	if (file)
-	{
-		int error;
-
-		ObtainSemaphore(&files_sem);
-		error = !Close(files[file->_file]);
-		if (!error)
-		{
-			files[file->_file] = NULL;
-#ifdef BIG_BUFFER
-			free(file->_bf._base);
-#endif
-			if(file->_cookie)
-			{
-				DeleteFile(file->_cookie);
-				free(file->_cookie);
-			}
-
-			free(file);
-		}
-		ReleaseSemaphore(&files_sem);
-
-		return error;
-	}
-
-	return NULL;
-}
-
-size_t fwrite(const void *buffer, size_t size, size_t count, FILE *file)
-{
-	BPTR fh = files[file->_file];
-	size_t rc;
-
-	rc = (size_t)FWrite(fh, (void*)buffer, size, count);
-	file->_offset += rc * size;
-
-	return rc;
-}
-
-size_t fread(void *buffer, size_t size, size_t count, FILE *file)
-{
-	size_t len;
-	BPTR fh = files[file->_file];
-
-	len = (size_t)FRead(fh,buffer,size,count);
-	if (!len && size && count)
-	{
-		file->_flags |= __SEOF;
-	}
-
-	D(bug("0x%lx reading %ld bytes\n",file,len * size));
-	file->_offset += len * size;
-
-	return len;
-}
-
-int fputs(const char *string, FILE *file)
-{
-	BPTR fh = files[file->_file];
-	int rc;
-
-	rc = FPuts(fh, (char*)string);
-	if (!rc) /* DOSFALSE is true here */
-	{
-		file->_offset += strlen(string);
-	}
-
-	return rc;
-}
-
-int fputc(int character, FILE *file)
-{
-	BPTR fh = files[file->_file];
-	int rc;
-
-	rc = FPutC(fh,character);
-	if (rc != -1)
-	{
-		file->_offset++;
-	}
-
-	return rc;
-}
-
-int fseek(FILE *file, long offset, int origin)
-{
-	BPTR fh = files[file->_file];
-	ULONG amiga_seek;
-
-	if (origin == SEEK_SET)
-	{
-		amiga_seek = OFFSET_BEGINNING;
-	}
-	else if (origin == SEEK_CUR)
-	{
-#ifdef FAST_SEEK
-		/* Optimize trivial cases (used heavily when loading indexfiles) */
-
-		if (!offset)
-		{
-			return 0;
-		}
-
-		if (offset == 1)
-		{
-			fgetc(file);
-
-			return 0;
-		}
-#endif
-		amiga_seek = OFFSET_CURRENT;
-	}
-	else
-	{
-		amiga_seek = OFFSET_END;
-	}
-
-	if (Flush(fh))
-	{
-		if (Seek(fh, offset, amiga_seek) != -1)
-		{
-			file->_offset = Seek(fh, 0, OFFSET_CURRENT);
-
-			return 0;
-		}
-	}
-
-	return -1;
-}
-
-long ftell(FILE *file)
-{
-#ifndef FAST_SEEK
-	BPTR fh = files[file->_file];
-#endif
-
-	D(bug("0x%lx ftell() = %ld\n", file, Seek(fh, 0, OFFSET_CURRENT)));
-#ifdef FAST_SEEK
-	return file->_offset;
-#else
-	return Seek(fh,0,OFFSET_CURRENT);
-#endif
-}
-
-int fflush(FILE *file)
-{
-	BPTR fh = files[file->_file];
-
-	if (Flush(fh))
-	{
-		return 0;
-	}
-
-	return -1;
-
-}
-
-char *fgets(char *string, int n, FILE *file)
-{
-	BPTR fh = files[file->_file];
-	char *rc;
-
-	rc = (char*)FGets(fh, string, n);
-	 if (rc)
-	{
-		file->_offset += strlen(rc);
-	}
-	else if (!rc && !IoErr())
-	{
-		file->_flags |= __SEOF;
-	}
-
-	return rc;
-}
-
-int fgetc(FILE *file)
-{
-	BPTR fh = files[file->_file];
-	int rc;
-
-	rc = FGetC(fh);
-	if (rc != -1)
-	{
-		file->_offset++;
-	}
-
-	return rc;
-}
-
-FILE *tmpfile(void)
-{
-	char *buf;
-
-	buf = malloc(40);
-	if(buf)
-	{
-		FILE *file;
-
-		ObtainSemaphore(&files_sem);
-		sprintf(buf, "T:%p%lx.tmp", FindTask(NULL), tmpno++);
-		file = fopen(buf, "w");
-		ReleaseSemaphore(&files_sem);
-		if(file)
-		{
-			file->_cookie = buf; /* hack to delete tmp files at fclose() */
-
-			return file;
-		}
-
-		free(buf);
-	}
-
-	return NULL;
-}
-
 char *tmpnam(char *name)
 {
 	static char default_buf[L_tmpnam];
@@ -809,71 +441,6 @@ int sprintf(char *buf, const char *fmt, ...)
 	return r;
 }
 
-DIR *opendir(const char *name)
-{
-	DIR *dir;
-
-	dir = malloc(sizeof(*dir) + sizeof(struct dirent));
-	if (dir)
-	{
-		BPTR dh;
-
-		dh = Lock(name,ACCESS_READ);
-		if (dh)
-		{
-			struct FileInfoBlock *fib;
-
-			fib = AllocDosObject(DOS_FIB,NULL);
-			if (fib)
-			{
-				if (Examine(dh,fib))
-				{
-					dir->dd_fd  = ((unsigned long)fib);
-					dir->dd_loc = ((unsigned long)dh);
-					dir->dd_buf = (char*)(dir+1);
-
-					D(bug("Opendir %s\n",name));
-
-					return dir;
-				}
-			}
-
-			UnLock(dh);
-		}
-
-		free(dir);
-	}
-
-	return NULL;
-}
-
-int closedir(DIR *dir)
-{
-	FreeDosObject(DOS_FIB,(APTR)dir->dd_fd);
-	UnLock((BPTR)dir->dd_loc);
-	free(dir);
-
-	return 0;
-}
-
-struct dirent *readdir(DIR *dir)
-{
-	struct dirent *dirent = (struct dirent*)dir->dd_buf;
-	struct FileInfoBlock *fib = (struct FileInfoBlock*)dir->dd_fd;
-
-	if (ExNext((BPTR)dir->dd_loc, fib))
-	{
-		strncpy(dirent->d_name,fib->fib_FileName,107);
-		dirent->d_name[107] = 0;
-
-		D(bug("Readdir %s\n",dirent->d_name));
-
-		return dirent;
-	}
-
-	return NULL;
-}
-
 int chdir(const char *dir);
 int chdir(const char *dir)
 {
@@ -923,87 +490,3 @@ int rename(const char *oldname, const char *newname)
 
 	return 0;
 }
-
-
-/**************
- MUI Dispatcher
-***************/
-
-#include <intuition/classes.h>
-#include <libraries/mui.h>
-
-#include <emul/emulregs.h>
-
-static ULONG muiDispatcherGate(void)
-{
-	ULONG (*dispatcher)(struct IClass *, Object *, Msg);
-
-	struct IClass *cl  = (struct IClass *)REG_A0;
-	Object        *obj = (Object *)       REG_A2;
-	Msg           msg  = (Msg)            REG_A1;
-
-	dispatcher = (ULONG(*)(struct IClass *, Object *, Msg))cl->cl_UserData;
-
-	return dispatcher(cl, obj, msg);
-}
-
-struct EmulLibEntry muiDispatcherEntry =
-{
-	TRAP_LIB, 0, (void (*)(void)) muiDispatcherGate
-};
-
-
-/********************
- expat.library hack
-*********************/
-
-#include <emul/emulregs.h>
-#include "expatinc.h"
-
-void xml_start_tag(void *, const char *, const char **);
-
-static void xml_start_tag_gate(void)
-{
-	void *data        = ((void **)       REG_A7)[1];
-	char *el          = ((char **)       REG_A7)[2];
-	const char **attr = ((const char ***)REG_A7)[3];
-
-	xml_start_tag(data, el, attr);
-}
-
-struct EmulLibEntry xml_start_tag_trap =
-{
-	TRAP_LIB, 0, (void (*)(void)) xml_start_tag_gate
-};
-
-void xml_end_tag(void *, const char *);
-
-static void xml_end_tag_gate(void)
-{
-	void *data = ((void **)REG_A7)[1];
-	char *el   = ((char **)REG_A7)[2];
-
-	xml_end_tag(data, el);
-}
-
-struct EmulLibEntry xml_end_tag_trap =
-{
-	TRAP_LIB, 0, (void (*)(void)) xml_end_tag_gate
-};
-
-void xml_char_data(void *, const XML_Char *, int);
-
-static void xml_char_data_gate(void)
-{
-	void *data  = ((void **)    REG_A7)[1];
-	XML_Char *s = ((XML_Char **)REG_A7)[2];
-	int len     = ((int *)      REG_A7)[3];
-
-	xml_char_data(data, s, len);
-}
-
-struct EmulLibEntry xml_char_data_trap =
-{
-	TRAP_LIB, 0, (void (*)(void)) xml_char_data_gate
-};
-

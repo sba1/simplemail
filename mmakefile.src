@@ -8,9 +8,7 @@ include $(TOP)/config/make.cfg
 #contrib-zune-classes-thebar
 
 # TODO
-#smtoolbarclass
 #mailtreelistclass-new
-#headers
 
 AMIGAMUI := \
 	vsnprintf \
@@ -23,6 +21,7 @@ AMIGAMUI := \
 	statuswnd \
 	startupwnd \
 	startup-aros \
+	smtoolbarclass \
 	signaturecycleclass \
 	shutdownwnd \
 	searchwnd \
@@ -37,6 +36,7 @@ AMIGAMUI := \
 	mailtreelistclass \
 	mailinfoclass \
 	iconclass \
+	headers \
 	gui_main \
 	gettext \
 	folderwnd \
@@ -71,24 +71,32 @@ FILES   := \
 	codecs \
 	codesets \
 	configuration \
+	dbx \
+	debug \
 	estimate \
 	filter \
 	folder \
+	hash \
 	hmac_md5 \
 	http \
 	imap \
 	lists \
 	mail \
+	mbox \
 	md5 \
 	parse \
 	pgp \
 	phrase \
 	pop3 \
 	print \
+	punycode \
 	signature \
 	simplemail \
-	support_indep \
+	smintl \
+	smtp \
+	spam \
 	status \
+	support_indep \
 	taglines \
 	tcp \
 	text2html \
@@ -102,7 +110,7 @@ USER_INCLUDES := -I./indep-include -I./amiga-mui -I. \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/netinclude \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/bsdsocket/ 
 
-USER_CFLAGS := -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+USER_CFLAGS := -DNO_SSL -DUSE_OLD_MAILLIST -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat" 

@@ -3277,7 +3277,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 					break;
 
 		case	MUIKEY_PRESS:
-		    	if (data->entries_active != 0)
+		    	if (data->entries_active != -1)
 		    	{
 		    		IssueTreelistDoubleClickNotify(cl,obj,data);
 		    	}

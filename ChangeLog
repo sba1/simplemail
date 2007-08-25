@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-08-25  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/datatypescache.c: Corrected some bugs. The cache wasn't working at all.
+	* amiga-mui/mailtreelistclass-new.c: Checked for the wrong value in MUIKEY_PRESS.
+
 2007-02-25  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: The PrepareDisplayedColumns() function must be
 	  called after the titlemenu is build.

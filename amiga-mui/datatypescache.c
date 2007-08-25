@@ -85,6 +85,7 @@ APTR SetProcWindow(void *newvalue)
 	struct Process *myproc = (struct Process *)FindTask(NULL);
 	APTR oldwindowptr = myproc->pr_WindowPtr;
 	myproc->pr_WindowPtr = (APTR)newvalue;
+	return oldwindowptr;
 }
 #endif
 
@@ -213,10 +214,11 @@ void dt_cleanup(void)
 	while ((dt = (struct dt_node*)list_remove_tail(&dt_list)))
 	{
 		if (dt->o) DisposeDTObject(dt->o);
+		if (dt->name) free(dt->name);
 		free(dt);
 	}
 	
-	while ((icon = (struct icon_desc*)list_remove_tail(&dt_list)))
+	while ((icon = (struct icon_desc*)list_remove_tail(&desc_list)))
 	{
 		if (icon->filename) free(icon->filename);
 		if (icon->masonname) free(icon->masonname);
@@ -293,6 +295,10 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 				SM_DEBUGF(20,("Trying to load mason icon \"%s\"\n",icon->masonname));
 				if ((node = dt_create_from_filename(icon->masonname,scr)))
 				{
+					node->count = 1;
+					node->desc = icon;
+					node->name = mystrdup(filename);
+					list_insert_tail(&dt_list,&node->node);
 					SM_DEBUGF(20,("Mason found\n"));
 					SM_RETURN(node,"%p");
 				}
@@ -315,24 +321,30 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 			if (!img_object) break;
 			img_usage_count++;
 
-			if (!(node = malloc(sizeof(struct dt_node))))
+			if ((node = (struct dt_node*)malloc(sizeof(struct dt_node))))
 			{
 				memset(node,0,sizeof(struct dt_node));
 				node->count = 1;
 				node->desc = icon;
-				node->name = filename;
+				node->name = mystrdup(filename);
 				node->x1 = node->desc->x1;
 				node->x2 = node->desc->x2;
 				node->y1 = node->desc->y1;
-				node->y2 = node->desc->y2;												
+				node->y2 = node->desc->y2;
+				list_insert_tail(&dt_list,&node->node);
+				SM_RETURN(node,"%p");
 			}
 		}
 		icon = (struct icon_desc*)node_next(&icon->node);
 	}
 
 	/* Try loading the specified image as it is */
-	node = dt_create_from_filename(filename,scr);
-	list_insert_tail(&dt_list,&node->node);
+	if ((node = dt_create_from_filename(filename,scr)))
+	{
+		node->count = 1;
+		node->name = mystrdup(filename);
+		list_insert_tail(&dt_list,&node->node);
+	}
 	SM_RETURN(node,"%p");
 }
 
@@ -350,7 +362,7 @@ void dt_dispose_picture(struct dt_node *node)
 		{
 			if (node->o)
 			{
-				SM_DEBUGF(20,("Disposing dt object at %p\n",img_object));
+				SM_DEBUGF(20,("Disposing dt object at %p\n",node->o));
 				DisposeDTObject(node->o);
 			} else
 			{
@@ -365,7 +377,7 @@ void dt_dispose_picture(struct dt_node *node)
 			}	
 
 			node_remove(&node->node);
-			free(&node->node);
+			free(node);
 		}
 	}
 

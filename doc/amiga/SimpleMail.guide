@@ -1647,11 +1647,13 @@ SimpleMail also provides some so called hidden options. Hidden options have to
 be added manually to the Configuration file via a text editor. Following
 options are available:
 
- Hidden.SetAllStati
- Hidden.MinClassifiedMails
- Hidden.DontShowShutdownText
- Hidden.DontUseTheBarMCC
- Hidden.DontAddDefaultAddresses
+ Hidden.SetAllStati=(Y|N)
+ Hidden.MinClassifiedMails=(#[0-9])
+ Hidden.DontShowShutdownText=(Y|N)
+ Hidden.DontUseTheBarMCC=(Y|N)
+ Hidden.DontAddDefaultAddresses=(Y|N)
+ Hidden.DontJumpToUnreadMail=(Y|N)
+ Hidden.DontUseAISS=(Y|N)
 @ENDNODE
 
 @NODE "CO_F" "Editing filters"

@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-09-01  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/datatypescache.c, configuration.c, configuration.h,
+	  doc/amiga/SimpleMail.guide: Added hidden config option "Don't use AISS".
+
 2007-08-25  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/datatypescache.c: Corrected some bugs. The cache wasn't working at all.
 	* amiga-mui/mailtreelistclass-new.c: Checked for the wrong value in MUIKEY_PRESS.

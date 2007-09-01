@@ -141,6 +141,9 @@ static void init_config(void)
 	user.config.min_classified_mails = 500;
 	user.config.dont_show_shutdown_text = 0;
 	user.config.dont_use_thebar_mcc = 0;
+	user.config.dont_add_default_addresses = 0;
+	user.config.dont_jump_to_unread_mail = 0;
+	user.config.dont_use_aiss = 0;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -295,6 +298,8 @@ int load_config(void)
 							user.config.dont_add_default_addresses = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Hidden.DontJumpToUnreadMail")))
 							user.config.dont_jump_to_unread_mail= CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.DontUseAISS")))
+							user.config.dont_use_aiss= CONFIG_BOOL_VAL(result);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -716,6 +721,10 @@ void save_config(void)
 			if (user.config.dont_jump_to_unread_mail)
 			{
 				fprintf(fh,"Hidden.DontJumpToUnreadMail=Y\n");
+			}
+			if (user.config.dont_use_aiss)
+			{
+				fprintf(fh,"Hidden.DontUseAISS=Y\n");
 			}
 
 			fclose(fh);

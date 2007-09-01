@@ -136,7 +136,8 @@ struct config
 	int dont_show_shutdown_text; /* Do not show the text in the shutdown window */
 	int dont_use_thebar_mcc;     /* Do not use TheBar, also if it's available */
 	int dont_add_default_addresses; /* Do not add the default email addresses if they don't exist */
-	int dont_jump_to_unread_mail;   /* jump to the first unread mail if changing folders */
+	int dont_jump_to_unread_mail;   /* Do not jump to the first unread mail if changing folders */
+	int dont_use_aiss;              /* Do not use AISS icons, also if they're available */
 };
 
 struct user

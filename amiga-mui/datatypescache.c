@@ -38,6 +38,7 @@
 #include "lists.h"
 #include "debug.h"
 #include "support_indep.h"
+#include "configuration.h"
 
 #include "amigasupport.h"
 
@@ -137,14 +138,18 @@ void dt_init(void)
 	list_init(&desc_list);
 	list_init(&dt_list);
 
-	/* Test for general mason availability */
-	oldwindowptr = SetProcWindow((APTR)-1);
-	if ((lock = Lock("TBIMAGES:",ACCESS_READ)))
+	mason_available = 0;
+	if (!user.config.dont_use_aiss)
 	{
-		mason_available = 1;
-		UnLock(lock);
+		/* Test for general mason availability */
+		oldwindowptr = SetProcWindow((APTR)-1);
+		if ((lock = Lock("TBIMAGES:",ACCESS_READ)))
+		{
+			mason_available = 1;
+			UnLock(lock);
+		}
+		SetProcWindow(oldwindowptr);
 	}
-	SetProcWindow(oldwindowptr);
 
 	if ((file = Open("PROGDIR:Images/images.list",MODE_OLDFILE)))
 	{

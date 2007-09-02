@@ -41,6 +41,7 @@
 #include "configuration.h"
 
 #include "amigasupport.h"
+#include "datatypescache.h"
 
 /**************************************************************/
 

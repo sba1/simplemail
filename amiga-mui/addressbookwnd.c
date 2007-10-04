@@ -104,6 +104,7 @@ struct Person_Data /* should be a customclass */
 	Object *email_texteditor;
 	Object *portrait_string;
 	Object *person_group_list;
+	Object *notes_texteditor;
 
 	Object *group_wnd;
 	Object *group_wnd_list;
@@ -400,6 +401,7 @@ static void person_window_ok(struct Person_Data **pdata)
 	{
 		LONG pos;
 		int i;
+		char *text_buf;
 
 		memset(new_entry,0,sizeof(*new_entry));
 
@@ -413,6 +415,10 @@ static void person_window_ok(struct Person_Data **pdata)
 		new_entry->pgpid = mystrdup(getutf8string(data->pgp_string));
 		new_entry->homepage = mystrdup(getutf8string(data->homepage_string));
 		new_entry->portrait = mystrdup(getutf8string(data->portrait_string));
+
+		text_buf = (char*)DoMethod(data->notes_texteditor, MUIM_TextEditor_ExportText);
+		new_entry->notepad = utf8create(text_buf,user.config.default_codeset?user.config.default_codeset->name:NULL);
+		if (text_buf) FreeVec(text_buf);
 
 		if (addresses)
 		{
@@ -552,7 +558,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	Object *alias_string, *realname_string, *ok_button, *cancel_button;
 	Object *female_button, *male_button, *birthday_string, *homepage_string, *pgp_string, *homepage_button;
 	Object *description_string, *download_button, *portrait_string, *portrait_button;
-	Object *pgp_popobject, *pgp_list;
+	Object *pgp_popobject, *pgp_list, *notes_texteditor;
 	Object *person_group_list, *add_to_group_button, *rem_from_group_button;
 	struct Snail_Data priv, work;
 	int num;
@@ -901,7 +907,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 					End,
 
 				Child, VGroup,
-					Child, TextEditorObject,
+					Child, notes_texteditor = TextEditorObject,
 						InputListFrame,
 						MUIA_CycleChain,1,
 						End,
@@ -933,6 +939,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 			data->homepage_string = homepage_string;
 			data->portrait_button = portrait_button;
 			data->portrait_string = portrait_string;
+			data->notes_texteditor = notes_texteditor;
 			data->person_group_list = person_group_list;
 			data->reg_group = reg_group;
 			data->priv = priv;
@@ -1018,6 +1025,14 @@ static void person_window_open(struct addressbook_entry_new *entry)
 
 				setsnail(&priv,&entry->priv);
 				setsnail(&work,&entry->work);
+
+				if (entry->notepad)
+				{
+					char *note = utf8tostrcreate(entry->notepad,user.config.default_codeset);
+					set(notes_texteditor,MUIA_TextEditor_Contents, note);
+					free(note);
+				}
+
 			}
 
 			set(wnd,MUIA_Window_ActiveObject,alias_string);

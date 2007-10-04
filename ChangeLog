@@ -2,6 +2,10 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2007-10-04  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/addressbookwnd.c: Information in the notes section of the addressbook
+	  are now saved (bugfix #1425725).
+
 2007-09-01  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/datatypescache.c, configuration.c, configuration.h,
 	  doc/amiga/SimpleMail.guide: Added hidden config option "Don't use AISS".

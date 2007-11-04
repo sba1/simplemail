@@ -61,6 +61,7 @@ int pgp_update_key_list(void)
 		if (fh)
 		{
 			char buf[512];
+			buf[9] = buf[23] = 0;
 			while (fgets(buf,512,fh))
 			{
 				if (buf[9] == '/' && buf[23] == '/')
@@ -73,6 +74,7 @@ int pgp_update_key_list(void)
 						key->userids = array_add_string(key->userids,&buf[29]);
 						list_insert_tail(&pgp_list,&key->node);
 					}
+					buf[9] = buf[23] = 0;
 				}
 			}
 			fclose(fh);

@@ -1,4 +1,4 @@
-;Filename,x1,y1,x2,y2
+;Filename,x1,y1,x2,y2[,Masonname]
 
 AddAttachment,0,0,23,23
 Addressbook,0,25,23,48
@@ -49,7 +49,7 @@ folder_other,100,75,115,87
 folder_outgoing,100,100,115,112
 folder_sent,100,125,115,137
 
-status_attach,125,0,132,12
+status_attach,125,0,132,12,
 status_crypt,125,25,140,37
 status_download,125,50,140,62
 status_error,125,75,140,87
@@ -57,8 +57,8 @@ status_reply,125,100,140,112
 ;status_group,125,125,140,137
 status_mark,125,150,132,162
 ;status_new,125,175,140,187
-status_old,125,200,140,212
-status_forward,125,225,140,237
+status_old,125,200,140,212,list_mailold
+status_forward,125,225,140,237,list_mailforward
 
 status_hold,150,0,165,12
 status_signed,150,25,165,37
@@ -67,5 +67,5 @@ status_unread,150,75,165,87
 status_urgent,150,100,162,112
 status_waitsend,150,125,165,137
 ;status_noaddress,150,150,165,162
-status_sent,150,175,165,187
+status_sent,150,175,165,187,list_mailsend
 

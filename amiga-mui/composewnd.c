@@ -414,7 +414,16 @@ static void compose_add_files(struct Compose_Data **pdata)
 
 	if (data->file_req)
 	{
-		if (MUI_AslRequestTags(data->file_req,ASLFR_DoMultiSelect, TRUE, TAG_DONE))
+		struct Window *iwnd;
+
+		iwnd = (struct Window*)xget(data->wnd, MUIA_Window);
+		
+		set(App, MUIA_Application_Sleep, TRUE);
+		
+		if (MUI_AslRequestTags(data->file_req,
+				ASLFR_DoMultiSelect, TRUE,
+				iwnd?ASLFR_Window:TAG_IGNORE, iwnd,
+				TAG_DONE))
 		{
 			int i;
 			memset(&attach, 0, sizeof(attach));
@@ -442,6 +451,8 @@ static void compose_add_files(struct Compose_Data **pdata)
 				}
 			}
 		}
+
+		set(App, MUIA_Application_Sleep, FALSE);
 	}
 }
 

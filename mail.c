@@ -3140,12 +3140,15 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 				{
 					if (isascii7(new_mail->content_filename))
 					{
-						fprintf(ofh,"; filename=%s",new_mail->content_filename);
+						if (is_token(new_mail->content_filename))
+							fprintf(ofh,"; filename=%s",new_mail->content_filename);
+						else
+							fprintf(ofh,"; filename=\"%s\"",new_mail->content_filename);
 					} else
 					{
 						unsigned char c;
 						unsigned char *buf = new_mail->content_filename;
-						static const char *pspecials = "'%* ()<>@,;:\\\"[]?=";
+						static const char pspecials[] = "'%* ()<>@,;:\\\"[]?=";
 	
 						fprintf(ofh,"; filename*=utf-8''");
 	
@@ -3178,7 +3181,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 					size = ftell(fh);
 					fseek(fh,0,SEEK_SET);
 
-					if ((buf = (char*)malloc(size)))
+					if ((buf = (unsigned char*)malloc(size)))
 					{
 						fread(buf,1,size,fh);
 						body = encode_body(buf, size, new_mail->content_type, &body_len, &body_encoding);

@@ -150,6 +150,7 @@ int needs_quotation(char *str)
 	return 0;
 }
 
+
 /**************************************************************************
  Needs the string quotation marks?
 **************************************************************************/
@@ -801,6 +802,23 @@ void parse_text_string(char *text, utf8 **pbuf)
 	/* The last byte guaranted to be allocated */
   *buf_ptr = 0;
 	*pbuf = buf;
+}
+
+
+/**************************************************************************
+ Checks whether the given string is a token as defined below.
+**************************************************************************/
+int is_token(char *token)
+{
+	int i;
+	unsigned char *utoken = (unsigned char*)token;
+
+	for (i=0;token[i];i++)
+	{
+		if (isspace(utoken[i]) || ismimespecial(utoken[i]) || iscntrl(utoken[i]))
+			return 0;
+	}
+	return 1;
 }
 
 /**************************************************************************

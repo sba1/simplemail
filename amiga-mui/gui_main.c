@@ -98,13 +98,14 @@ struct Library *MUIMasterBase;
 struct Library *RexxSysBase;
 struct Library *SimpleHTMLBase;
 struct Library *TTEngineBase;
+struct Library *CyberGfxBase;
 
 #ifdef __AMIGAOS4__
 struct MUIMasterIFace *IMUIMaster;
 struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
 struct Interface *ITTEngine;
-
+struct CyberGfxIFace *ICyberGfx;
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 #else
@@ -112,6 +113,7 @@ void *IMUIMaster;
 void *IRexxSys;
 void *ISimpleHTML;
 void *ITTEngine;
+void *ICyberGfx;
 
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr)
 {
@@ -293,6 +295,7 @@ void all_del(void)
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
 
+			CloseLibraryInterface(CyberGfxBase, ICyberGfx);
 			CloseLibraryInterface(TTEngineBase, ITTEngine);
 
 #ifdef __AMIGAOS4__
@@ -344,6 +347,7 @@ int all_init(void)
 #endif
 
 				TTEngineBase = OpenLibraryInterface("ttengine.library",7,&ITTEngine);
+				CyberGfxBase = OpenLibraryInterface("cybergraphics.library",40,&ICyberGfx);
 
 				DefaultLocale = OpenLocale(NULL);
 				init_hook_standard();

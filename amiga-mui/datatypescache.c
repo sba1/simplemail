@@ -29,6 +29,7 @@
 
 #include <clib/alib_protos.h>
 
+#include <proto/cybergraphics.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <proto/datatypes.h>
@@ -42,6 +43,12 @@
 
 #include "amigasupport.h"
 #include "datatypescache.h"
+
+#ifdef __AMIGAOS4__
+#ifndef WritePixelArrayAlpha
+#define WritePixelArrayAlpha(srcRect, SrcX, SrcY, SrcMod, RastPort, DestX, DestY, SizeX, SizeY, globalAlpha) ICyberGfx->WritePixelArrayAlpha(srcRect, SrcX, SrcY, SrcMod, RastPort, DestX, DestY, SizeX, SizeY, globalAlpha)
+#endif
+#endif
 
 /**************************************************************/
 
@@ -75,6 +82,7 @@ struct dt_node
 	int count;
 
 	Object *o;
+	void *argb;
 	int x1,x2,y1,y2;
 	struct Screen *scr;
 };
@@ -103,7 +111,7 @@ Object *LoadPicture(char *filename, struct Screen *scr)
 			DTA_GroupID          , GID_PICTURE,
 			OBP_Precision        , PRECISION_EXACT,
 			PDTA_Screen          , scr,
-			PDTA_FreeSourceBitMap, TRUE,
+//			PDTA_FreeSourceBitMap, TRUE,
 			PDTA_DestMode        , PMODE_V43,
 			PDTA_UseFriendBitMap , TRUE,
 			TAG_DONE);
@@ -250,16 +258,34 @@ static struct dt_node *dt_create_from_filename(char *filename, struct Screen *sc
 		/* create the datatypes object */
 		if ((node->o = LoadPicture(filename,scr)))
 		{
-			struct BitMapHeader *bmhd;
+			struct BitMapHeader *bmhd = NULL;
 			GetDTAttrs(node->o,PDTA_BitMapHeader,&bmhd,TAG_DONE);
 
 			if (bmhd)
 			{
-				node->x2 = bmhd->bmh_Width - 1;
-				node->y2 = bmhd->bmh_Height - 1;
+				int w = bmhd->bmh_Width;
+				int h = bmhd->bmh_Height;
+				int d = bmhd->bmh_Depth; 
+
+				node->x2 = w - 1;
+				node->y2 = h - 1;
+
+				/* TODO: Do this for the big image as well */
+				if (d > 8 && CyberGfxBase)
+				{
+					if ((node->argb = AllocVec(4*w*h,MEMF_PUBLIC|MEMF_CLEAR)))
+					{
+						if (!(DoMethod(node->o,PDTM_READPIXELARRAY,node->argb,PBPAFMT_ARGB,4*w,0,0,w,h)))
+						{
+							FreeVec(node->argb);
+							node->argb = NULL;
+						}
+					}
+				}
 			}
 			node->scr = scr;
 
+			
 			return node;
 		}
 		free(node);
@@ -370,6 +396,7 @@ void dt_dispose_picture(struct dt_node *node)
 			{
 				SM_DEBUGF(20,("Disposing dt object at %p\n",node->o));
 				DisposeDTObject(node->o);
+				if (node->argb) FreeVec(node->argb);
 			} else
 			{
 				SM_DEBUGF(20,("Disposing dt object icon image at %p\n",img_object));
@@ -416,9 +443,19 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 		APTR mask = NULL;
 
 		GetDTAttrs(o,PDTA_MaskPlane,&mask,TAG_DONE);
+
 		if (mask)
 		{
 			MyBltMaskBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xe2,(PLANEPTR)mask);
-		} else BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);
+		} else
+		{
+			if (node->argb)
+			{
+				WritePixelArrayAlpha(node->argb,0,0,dt_width(node)*4,rp,0,0,dt_width(node),dt_height(node),0xffffffff);
+			} else 
+			{
+				BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);
+			}
+		}
 	}
 }

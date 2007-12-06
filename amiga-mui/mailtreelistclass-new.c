@@ -2316,6 +2316,8 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			
 			for (col = 0;col < MAX_COLUMNS; col++)
 			{
+				int pen1,pen2;
+
 				int active;
 				struct ColumnInfo *ci;
 
@@ -2323,8 +2325,6 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 				if (!active) continue;
 
 				ci = &data->ci[active]; 
-
-				int pen1,pen2;
 
 				if (active == data->title_column_selected)
 				{

@@ -101,7 +101,7 @@ struct pgp_key *pgp_next(struct pgp_key *next)
 }
 
 /******************************************************************
- Returns a list with struct key_node entries
+ Duplicate a given pgp key entry.
 *******************************************************************/
 struct pgp_key *pgp_duplicate(struct pgp_key *key)
 {
@@ -118,7 +118,7 @@ struct pgp_key *pgp_duplicate(struct pgp_key *key)
 }
 
 /******************************************************************
- Returns a list with struct key_node entries
+ Frees all memory associated with a pgp entry.
 *******************************************************************/
 void pgp_dispose(struct pgp_key *key)
 {

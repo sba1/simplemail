@@ -43,6 +43,7 @@ void callback_reply_selected_mails(void);
 void callback_forward_mails(char *folder_path, int num, struct mail_info **to_forward_array);
 void callback_forward_selected_mails(void);
 void callback_change_mail(void);
+void callback_show_raw(void);
 int callback_move_mail_request(char *folder_path, struct mail_info *mail);
 void callback_move_selected_mails(void);
 void callback_check_selected_folder_for_spam(void);

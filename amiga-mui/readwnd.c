@@ -617,32 +617,7 @@ static void save_contents_to(struct Read_Data *data, struct mail_complete *mail,
 static void show_raw(int **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
-	BPTR lock;
-	int len;
-	char *buf;
-	char *dirname;
-
-	if (!(lock = Lock(data->folder_path,ACCESS_READ)))
-		return;
-
-	dirname = NameOfLock(lock);
-	UnLock(lock);
-	if (!dirname) return;
-
-	len = strlen(dirname)+strlen(data->ref_mail->filename) + 6;
-	if (!(buf = malloc(len+40)))
-	{
-		FreeVec(dirname);
-		return;
-	}
-
-	strcpy(buf,"SYS:Utilities/Multiview \"");
-	strcat(buf,dirname);
-	AddPart(buf+27,data->ref_mail->filename,len);
-	strcat(buf+27,"\"");
-	sm_system(buf,NULL);
-	free(buf);
-	FreeVec(dirname);
+	sm_show_ascii_file(data->folder_path, data->ref_mail->filename);
 }
 
 /******************************************************************
@@ -1135,7 +1110,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Mail"), NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Show raw format..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
+		{NM_ITEM, N_("Show raw..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Print visible mailpart"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, NULL},

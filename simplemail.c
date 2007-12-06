@@ -1055,6 +1055,17 @@ void callback_change_mail(void)
 	}
 }
 
+/* the raw contents of the selected mail show be showed */
+void callback_show_raw(void)
+{
+	char *filename;
+
+	if ((filename = main_get_mail_filename()))
+	{
+		sm_show_ascii_file(main_get_folder_drawer(), filename);
+	}	
+}
+
 /* mails should be fetched */
 void callback_fetch_mails(void)
 {

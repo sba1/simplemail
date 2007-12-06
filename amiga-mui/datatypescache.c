@@ -451,7 +451,7 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 		{
 			if (node->argb)
 			{
-				WritePixelArrayAlpha(node->argb,0,0,dt_width(node)*4,rp,0,0,dt_width(node),dt_height(node),0xffffffff);
+				WritePixelArrayAlpha(node->argb,0,0,dt_width(node)*4,rp,x,y,dt_width(node),dt_height(node),0xffffffff);
 			} else 
 			{
 				BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);

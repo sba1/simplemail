@@ -624,6 +624,41 @@ struct folder *sm_request_folder(char *text, struct folder *exclude)
 }
 
 /******************************************************************
+ Shows an ASCII file on the screen
+*******************************************************************/
+void sm_show_ascii_file(char *folder, char *filename)
+{
+	BPTR lock;
+	int len;
+	char *buf;
+	char *dirname;
+
+	if (!folder) folder = "";
+
+	if (!(lock = Lock(folder,ACCESS_READ)))
+		return;
+
+	dirname = NameOfLock(lock);
+	UnLock(lock);
+	if (!dirname) return;
+
+	len = strlen(dirname)+strlen(filename) + 6;
+	if (!(buf = malloc(len+40)))
+	{
+		FreeVec(dirname);
+		return;
+	}
+
+	strcpy(buf,"SYS:Utilities/Multiview \"");
+	strcat(buf,dirname);
+	AddPart(buf+27,filename,len);
+	strcat(buf+27,"\"");
+	sm_system(buf,NULL);
+	free(buf);
+	FreeVec(dirname);
+}
+
+/******************************************************************
  Play a sound (implemented in gui_main.c)
 *******************************************************************/
 /*

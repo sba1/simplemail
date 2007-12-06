@@ -42,6 +42,7 @@ char *sm_request_string(char *title, char *text, char *contents, int secret);
 int sm_request_login(char *text, char *login, char *password, int len);
 char *sm_request_pgp_id(char *text);
 struct folder *sm_request_folder(char *text, struct folder *exculde);
+void sm_show_ascii_file(char *folder, char *filename);
 void sm_play_sound(char *filename);
 
 char *sm_getenv(char *name);

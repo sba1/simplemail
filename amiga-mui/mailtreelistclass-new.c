@@ -300,7 +300,7 @@ struct MailTreelist_Data
 	LONG horiz_first; /* first horizontal visible pixel */
 
 	struct ColumnInfo ci[MAX_COLUMNS];
-	int columns_active[MAX_COLUMNS]; /* Indices of active columns */
+	int columns_active[MAX_COLUMNS]; /* Indices to ci of active columns */
 	int columns_order[MAX_COLUMNS]; /* order of columns */
 	int column_spacing;
 	
@@ -943,7 +943,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 		if (entry_pos == ENTRY_TITLE)
 		{
-			if (data->title_column_selected != -1 && data->title_column_selected == active)
+			if (data->title_column_selected == active && data->title_column_click == active)
 			{
 				/* draw title in selected state */
 				SetAPen(rp,_pens(obj)[MPEN_SHINE]);
@@ -2308,6 +2308,50 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		SetAPen(old_rp,_pens(obj)[MPEN_SHINE]);
 		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 1);
 		Draw(old_rp,_mright(obj),_mtop(obj) + data->title_height - 1);
+
+		if (drawupdate == 4)
+		{
+			int col;
+			int x = _mleft(obj) - data->horiz_first;
+			
+			for (col = 0;col < MAX_COLUMNS; col++)
+			{
+				int active;
+				struct ColumnInfo *ci;
+
+				active = data->columns_active[col];
+				if (!active) continue;
+
+				ci = &data->ci[active]; 
+
+				int pen1,pen2;
+
+				if (active == data->title_column_selected)
+				{
+					pen1 = _pens(obj)[MPEN_SHINE];
+					pen2 = _pens(obj)[MPEN_SHADOW];
+				} else
+				{
+					pen1 = _pens(obj)[MPEN_SHADOW];
+					pen2 = _pens(obj)[MPEN_SHINE];
+				}
+
+				if (active != COLUMN_TYPE_STATUS)
+				{
+					x -= data->column_spacing - 1;
+					
+					SetAPen(old_rp,pen1);
+					Move(old_rp, x,_mtop(obj) + data->title_height - 2);
+					Draw(old_rp, x,_mbottom(obj));
+					SetAPen(old_rp,pen2);
+					Move(old_rp, x+1,_mtop(obj) + data->title_height - 2);
+					Draw(old_rp, x+1,_mbottom(obj));
+	
+					x += data->column_spacing - 1;
+				}
+				x += ci->width + data->column_spacing;
+			}
+		}
 	}
 
 	if (drawupdate != 4)
@@ -3032,13 +3076,34 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if (data->title_column_click != -1)
 								{
-									if (data->title_column_selected == -1)
+									if (data->title_column_selected == -1 || data->title_column_selected != data->title_column_click)
 									{
+										if (data->title_column_selected != -1)
+										{
+											/* TODO: Remove the restriction that the status column cannot be dragged 
+											 * (and needs to be visible always). Look for COLUMN_TYPE_STATUS to find the cases
+											 * within the source. */
+											if (data->title_column_click != COLUMN_TYPE_STATUS && data->title_column_selected != COLUMN_TYPE_STATUS)
+											{	
+												int i;
+
+												/* Exchange the columns */
+												for (i=0;i<MAX_COLUMNS;i++)
+												{
+													if (data->columns_order[i] == data->title_column_click) data->columns_order[i] = data->title_column_selected;
+													else if (data->columns_order[i] == data->title_column_selected) data->columns_order[i] = data->title_column_click;
+												}
+	
+												PrepareDisplayedColumns(data);
+												MUI_Redraw(obj,MADF_DRAWOBJECT);
+											}
+										}
+										
 										/* mousepointer is outside column title -> cancel titleclick */
 										data->title_column_click = -1;
 									} else
 									{
-										/* switch of selected state now because set(titleclick) will
+										/* switch of selected state of a title column now because set(titleclick) will
 										   redraw the whole list */
 										data->title_column_selected = -1;
 									}
@@ -3139,7 +3204,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								CalcHorizontalTotal(data);
 							} else if (data->title_column_click != -1)
 							{
-								/* check if mousepointer is inside clicked title */
+								/* check if mousepointer is inside a title column */
 								int col, xoff = 0;
 								LONG old_selected = data->title_column_selected;
 
@@ -3154,17 +3219,20 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									if (!active) continue;
 									ci = &data->ci[active];
 
-									if (active == data->title_column_click)
+									if (mx >= 0 && mx > xoff && mx <= xoff + ci->width)
 									{
-										if (mx >= 0 && mx > xoff && mx <= xoff + ci->width)
-										{
-											if (my >= 0 && my < data->title_height)
-												data->title_column_selected = data->title_column_click;
-											break;
-										}
+										if (my >= 0 && my < data->title_height)
+											data->title_column_selected = active;
+										break;
 									}
 									xoff += ci->width + data->column_spacing;
 								}
+
+								/* Don't allow any exchange of the status column. TODO: Remove this restriction. */
+								if ((data->title_column_click == COLUMN_TYPE_STATUS && data->title_column_selected != COLUMN_TYPE_STATUS) ||
+									(data->title_column_click != COLUMN_TYPE_STATUS && data->title_column_selected == COLUMN_TYPE_STATUS))
+									data->title_column_selected = -1;
+
 								if (data->title_column_selected != old_selected)
 								{
 									/* refresh title column */

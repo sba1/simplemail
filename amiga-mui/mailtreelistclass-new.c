@@ -1877,7 +1877,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 						case	MAKE_ID('F', 'R', 'S', 'T'):
 						case	MAKE_ID('T', 'I', 'T', 'L'):
 						case	MAKE_ID('T', 'I', 'T', '2'): count++; break;
-						case	MAKE_ID('S', 'E', 'L', 'S'): count += imp_data[count++]; break;
+						case	MAKE_ID('S', 'E', 'L', 'S'): count += imp_data[count] + 1; break;
 						case	MAKE_ID('W', 'I', 'D', 'T'):
 						    	redraw = 1;
 						    	num_cols = imp_data[count++];

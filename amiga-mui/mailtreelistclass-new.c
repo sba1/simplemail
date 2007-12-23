@@ -38,7 +38,10 @@
 #include <proto/graphics.h>
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
+
+#ifdef USE_TTENGINE
 #include <proto/ttengine.h>
+#endif
 
 #include "configuration.h"
 #include "folder.h"
@@ -92,7 +95,7 @@
 
 /**************************************************************************/
 
-#if 0
+#if USE_TTENGINE
 /***********************************************************************
  Open the given text font as a ttengine font. Returns NULL on failure
  (e.g. if no ttengine has been opened, or if given font is no ttf font)
@@ -321,10 +324,10 @@ struct MailTreelist_Data
 
 	struct RastPort rp; /* Rastport for font calculations */
 	struct RastPort dragRP; /* Rastport for drag image rastport */
-
+#ifdef USE_TTENGINE
 	APTR ttengine_font;
 	int ttengine_baseline;
-
+#endif
 	/* double click */
 	ULONG last_secs;
 	ULONG last_mics;
@@ -719,11 +722,13 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 
 				if (txt)
 				{
+#ifdef USE_TTENGINE
 					if (data->ttengine_font)
 					{
 						TT_TextExtent(&data->rp, txt, utf8len(txt), &te);
 						new_width += te.te_Extent.MaxX - te.te_Extent.MinX + 1;
 					} else
+#endif
 					{
 						if (!is_ascii7)
 						{
@@ -1103,6 +1108,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			/* now put the text, but only if there is really space left */
 			if (available_col_width > 0 && txt)
 			{
+#ifdef USE_TTENGINE
 				if (data->ttengine_font)
 				{
 					Move(rp,xstart,y + data->ttengine_baseline);
@@ -1120,6 +1126,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					if (fit < txt_len && (available_col_width > data->threepoints_width))
 						TT_Text(rp,"...",3);
 				} else
+#endif
 				{
 					Move(rp,xstart,y + _font(obj)->tf_Baseline);
 
@@ -1612,7 +1619,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
 	/* Find out, if the supplied font is a ttf font, and open it as a ttengine
 	 * font */
-#if 0
+#if USE_TTENGINE
 	if ((data->ttengine_font = OpenTTEngineFont(_font(obj))))
 	{
 		ULONG val;
@@ -1670,14 +1677,14 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 			data->images[i] = NULL;
 		}
 	}
-
+#ifdef USE_TTENGINE
 	if (data->ttengine_font)
 	{
 		TT_DoneRastPort(&data->rp);
 		TT_CloseFont(data->ttengine_font);
 		data->ttengine_font = NULL;
 	}
-
+#endif
 	return DoSuperMethodA(cl,obj,msg);
 }
 
@@ -1989,6 +1996,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 			if ((data->buffer_layer = CreateBehindLayer(data->buffer_li, data->buffer_bmap,0,0,_mwidth(obj)-1,data->entry_maxheight-1,LAYERSIMPLE,NULL)))
 			{
 				data->buffer_rp = data->buffer_layer->rp;
+#ifdef USE_TTENGINE
 				if (data->ttengine_font)
 				{
 					TT_SetFont(data->buffer_rp, data->ttengine_font);
@@ -1998,10 +2006,11 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 							TT_Antialias, TT_Antialias_On,
 							TAG_DONE);
 				}
+#endif
 			}
 		}
 	}
-
+#ifdef USE_TTENGINE
 	if (data->ttengine_font)
 	{
 		TT_SetAttrs(_rp(obj),
@@ -2010,7 +2019,7 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 				TT_Antialias, TT_Antialias_On,
 				TAG_DONE);
 	}
-	
+#endif
 	EnsureActiveEntryVisibility(data);
 
 	return rc;
@@ -2022,12 +2031,14 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-	
+#ifdef USE_TTENGINE
 	if (data->ttengine_font) TT_DoneRastPort(_rp(obj));
-
+#endif
 	if (data->buffer_layer)
 	{
+#ifdef USE_TTENGINE
 		if (data->ttengine_font) TT_DoneRastPort(data->buffer_rp);
+#endif
 		DeleteLayer(0,data->buffer_layer);
 		data->buffer_layer = NULL;
 		data->buffer_rp = NULL;
@@ -2287,8 +2298,9 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	}
 
 	SetFont(rp,_font(obj));
+#ifdef USE_TTENGINE
 	if (data->ttengine_font) TT_SetFont(rp,data->ttengine_font);
-
+#endif
 	background = MUII_ListBack;
 	data->quiet++;
 

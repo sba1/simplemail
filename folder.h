@@ -83,6 +83,10 @@ struct folder
 	struct list imap_all_folder_list; /* string_node * */
 	struct list imap_sub_folder_list; /* string_node * */
 
+	/* Live filter support */
+	utf8 *filter;
+	struct folder *ref_folder;
+
 	/* more will follow */
 };
 
@@ -179,6 +183,7 @@ struct folder *folder_add_with_name(char *path, char *name);
 struct folder *folder_add_group(char *name);
 struct folder *folder_add_imap(struct folder *parent, char *imap_path);
 int folder_remove(struct folder *f);
+struct folder *folder_create_live_filter(struct folder *folder, utf8 *filter);
 
 void folder_unlink_all(void);
 void folder_add_to_tree(struct folder *fold,struct folder *parent);

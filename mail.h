@@ -113,8 +113,6 @@ struct mail_complete
 	/* after mail_decode() */
 	char *decoded_data; /* the decoded data */
 	unsigned int decoded_len;
-
-//	unsigned int part_size; /* size of this mail part (including header) */
 };
 
 /* Mail status (uses a range from 0-15) */

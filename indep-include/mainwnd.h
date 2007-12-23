@@ -23,6 +23,10 @@
 #ifndef SM__MAINWND_H
 #define SM__MAINWND_H
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct folder;
 struct mail_info;
 
@@ -43,6 +47,7 @@ char *main_get_folder_drawer(void);
 void main_set_active_mail(struct mail_info *m);
 struct mail_info *main_get_active_mail(void);
 char *main_get_mail_filename(void);
+utf8 *main_get_quick_filter_contents(void);
 
 struct mail_info *main_get_mail_first_selected(void *handle);
 struct mail_info *main_get_mail_next_selected(void *handle);

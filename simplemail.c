@@ -866,6 +866,13 @@ void callback_move_selected_mails(void)
 	app_unbusy();
 }
 
+/* Called whenever the contents of the quick filter has been acknowledged
+ * TODO: Implement me properly */
+void callback_quick_filter_changed(void)
+{
+	callback_folder_active();
+}
+
 static void touch_active_mail(struct folder *f, struct mail_info *m)
 {
 	/* Only touch mail if it is still the active one because

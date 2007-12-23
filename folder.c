@@ -1153,6 +1153,7 @@ int folder_rescan(struct folder *folder)
  Reads the all mail infos in the given folder.
  TODO: Get rid of readdir and friends
  TODO: The structure of this functions is "somewhat" weird
+ TODO: Integrate live filter support (currently in folder_next_mail_info())
  returns 0 if an error has happended otherwise 0
 *******************************************************************/
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
@@ -1652,6 +1653,44 @@ int folder_remove(struct folder *f)
 	}
 	folder_unlock(f);
 	return 0;
+}
+
+/******************************************************************
+ Create a live filter folder using the given filter string.
+ 
+ TODO: Add support for imap. Add better ref support. Add real live
+ support.
+*******************************************************************/
+struct folder *folder_create_live_filter(struct folder *folder, utf8 *filter)
+{
+	struct folder *f;
+	
+	if (folder->is_imap) return NULL;
+	
+	if (!(f = malloc(sizeof(struct folder))))
+		return NULL;
+
+	memset(f,0,sizeof(struct folder));
+
+	if ((f->sem = thread_create_semaphore()))
+	{
+		f->num_index_mails = -1;
+		f->filter = filter;
+		f->ref_folder = folder;
+		
+		return f;
+	}
+	free(f);
+	return NULL;
+}
+
+/******************************************************************
+ Free all memory associated with a live folder
+*******************************************************************/
+void folder_delete_live_folder(struct folder *live_folder)
+{
+	thread_dispose_semaphore(live_folder->sem);
+	free(live_folder);
 }
 
 /******************************************************************
@@ -2794,8 +2833,41 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
 struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 {
 	struct mail_info **mail_info_array;
+	int *ihandle;
 
-	/* If mails info is not read_yet, read it now */
+	ihandle = (int*)handle;
+
+	if (folder->ref_folder)
+	{
+		struct mail_info *mi;
+		utf8 *filter;
+
+		/* If mail infos have not been loaded, determine number of mails
+		 * before.
+		 * TODO: Remove this as because of this these are no real live folders yet!
+		 */
+		if (!folder->mail_infos_loaded)
+		{
+			void *newhandle = NULL;
+			int num_mails = 0;
+
+			/* avoid endless loop */
+			folder->mail_infos_loaded = 1;
+			while ((mi = folder_next_mail_info(folder,&newhandle)))
+				num_mails++;
+			folder->num_mails = num_mails;
+		}
+
+		filter = folder->filter;
+		
+		do
+		{
+			mi = folder_next_mail_info(folder->ref_folder,handle);
+		} while (mi && (!utf8stristr(mi->subject,filter) && !utf8stristr(mi->from_addr,filter) && !utf8stristr(mi->from_phrase,filter)));
+		return mi;
+	}
+
+	/* If mail info haven't read yet, read it now */
 	if (!folder->mail_infos_loaded)
 		folder_read_mail_infos(folder,0);
 
@@ -2818,7 +2890,7 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 	}
 
 	if (folder->sorted_mail_info_array) mail_info_array = folder->sorted_mail_info_array;
-	return (struct mail_info*)(((*((int*)handle))<folder->num_mails)?(mail_info_array[(*((int*)handle))++]):NULL);
+	return (struct mail_info*)(((*((int*)handle))<folder->num_mails)?(mail_info_array[(*ihandle)++]):NULL);
 }
 /* we define a macro for mail iterating, handle must be initialzed to NULL at start */
 /*#define folder_next_mail(folder,handle) ( ((*((int*)handle))<folder->num_mails)?(folder->mail_array[(*((int*)handle))++]):NULL)*/
@@ -3894,6 +3966,7 @@ void folder_lock(struct folder *f)
 {
 	if (!f) return;
 	thread_lock_semaphore(f->sem);
+	if (f->ref_folder) folder_lock(f->ref_folder);
 }
 
 /******************************************************************
@@ -3901,8 +3974,17 @@ void folder_lock(struct folder *f)
 *******************************************************************/
 int folder_attempt_lock(struct folder *f)
 {
+	int attempt;
+
 	if (!f) return 0;
-	return thread_attempt_lock_semaphore(f->sem);
+
+	attempt = thread_attempt_lock_semaphore(f->sem);
+	if (attempt && f->ref_folder)
+	{
+		attempt = folder_attempt_lock(f->ref_folder);
+		if (!attempt) thread_unlock_semaphore(f->sem);
+	}
+	return attempt;
 }
 
 /******************************************************************
@@ -3911,6 +3993,7 @@ int folder_attempt_lock(struct folder *f)
 void folder_unlock(struct folder *f)
 {
 	if (!f) return;
+	if (f->ref_folder) folder_unlock(f->ref_folder);
 	thread_unlock_semaphore(f->sem);
 }
 

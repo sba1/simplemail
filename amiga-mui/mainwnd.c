@@ -30,7 +30,7 @@
 #include <libraries/asl.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
-#include <mui/TheBar_mcc.h>
+
 #include <clib/alib_protos.h>
 #include <proto/asl.h>
 #include <proto/dos.h>
@@ -64,6 +64,7 @@
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 #include "smtoolbarclass.h"
+#include "utf8stringclass.h"
 
 /*****************************************************/
 /* Minimum requirements of some external MUI classes */
@@ -140,6 +141,7 @@ static Object *mail_tree;
 static Object *mail_tree_group;
 static Object *mail_listview;
 static Object *mail_messageview;
+static Object *filter_string;
 static Object *folder_listview_group;
 static Object *folder_listview;
 static Object *folder_tree;
@@ -817,10 +819,25 @@ int main_window_init(void)
 		MUIA_Window_Menustrip,main_menu,
 
 		WindowContents, main_group = VGroup,
-			Child, main_toolbar = SMToolbarObject,
-				MUIA_Group_Horiz, TRUE,
-				MUIA_SMToolbar_InVGroup, TRUE,
-				MUIA_SMToolbar_Buttons, sm_mainwnd_buttons,
+			Child, HGroup,
+				InnerSpacing(0,0),
+				Child, main_toolbar = SMToolbarObject,
+					MUIA_Group_Horiz, TRUE,
+					MUIA_SMToolbar_InVGroup, TRUE,
+					MUIA_SMToolbar_Buttons, sm_mainwnd_buttons,
+					End,
+				Child, VGroup,
+					MUIA_Weight, 33,
+					InnerSpacing(0,0),
+					GroupSpacing(0),
+					Child, HVSpace,
+					Child, filter_string = UTF8StringObject,
+						MUIA_CycleChain,1,
+						MUIA_ShortHelp, _("Allows you to filter for messages containing the given texts within their From/To or Subject fields."),
+						StringFrame,
+						End,
+					Child, HVSpace,
+					End,
 				End,
 
 			Child, folder_group = HGroup,
@@ -1039,6 +1056,7 @@ int main_window_init(void)
 		DoMethod(folder_popupmenu, MUIM_Notify, MUIA_Popupmenu_Selected, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)popup_selected);
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
 		DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressentrylist_doubleclick);
+		DoMethod(filter_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_quick_filter_changed);
 
 		main_build_accounts();
 		main_build_scripts();
@@ -1199,7 +1217,21 @@ void main_clear_folder_mails(void)
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)
 { 
+	struct folder *created_folder = NULL;
+	utf8 *filter = main_get_quick_filter_contents();
+
+	if (filter && *filter)
+	{
+		if ((created_folder = folder_create_live_filter(folder,filter)))
+			folder = created_folder;
+	}
+
 	DoMethod(mail_tree, MUIM_MailTree_SetFolderMails, (ULONG)folder);
+	
+	if (created_folder)
+	{
+		/* TODO: Free me */
+	}
 	mailtreelist_update_title_markers();
 }
 
@@ -1276,6 +1308,14 @@ char *main_get_mail_filename(void)
 	struct mail_info *m = main_get_active_mail();
 	if (m) return m->filename;
 	return NULL;
+}
+
+/******************************************************************
+ Returns the contents of the quick filter (or NULL).
+*******************************************************************/
+utf8 *main_get_quick_filter_contents(void)
+{
+	return (utf8*)getutf8string(filter_string);
 }
 
 /******************************************************************

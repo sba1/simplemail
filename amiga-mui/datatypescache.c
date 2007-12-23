@@ -106,13 +106,19 @@ struct dt_node
 /**************************************************************/
 
 #ifndef __AMIGAOS4__
-APTR SetProcWindow(void *newvalue)
+APTR MySetProcWindow(void *newvalue)
 {
-	struct Process *myproc = (struct Process *)FindTask(NULL);
-	APTR oldwindowptr = myproc->pr_WindowPtr;
+	struct Process *myproc;
+	APTR oldwindowptr;
+
+	myproc = (struct Process *)FindTask(NULL);
+	oldwindowptr = myproc->pr_WindowPtr;
 	myproc->pr_WindowPtr = (APTR)newvalue;
+
 	return oldwindowptr;
 }
+#else
+#define MySetProcWindow SetProcWindow
 #endif
 
 Object *LoadPicture(char *filename, struct Screen *scr)
@@ -121,7 +127,7 @@ Object *LoadPicture(char *filename, struct Screen *scr)
 	APTR oldwindowptr;
 
 	/* tell DOS not to bother us with requesters */
-	oldwindowptr = SetProcWindow((APTR)-1);
+	oldwindowptr = MySetProcWindow((APTR)-1);
 
 	o = NewDTObject(filename,
 			DTA_GroupID          , GID_PICTURE,
@@ -132,7 +138,7 @@ Object *LoadPicture(char *filename, struct Screen *scr)
 			PDTA_UseFriendBitMap , TRUE,
 			TAG_DONE);
 	
-	SetProcWindow(oldwindowptr);
+	MySetProcWindow(oldwindowptr);
 	
 	/* do all the setup/layout stuff that's necessary to get a bitmap from the dto    */
 	/* note that when using V43 datatypes, this might not be a real "struct BitMap *" */
@@ -167,13 +173,13 @@ void dt_init(void)
 	if (!user.config.dont_use_aiss)
 	{
 		/* Test for general mason availability */
-		oldwindowptr = SetProcWindow((APTR)-1);
+		oldwindowptr = MySetProcWindow((APTR)-1);
 		if ((lock = Lock("TBIMAGES:",ACCESS_READ)))
 		{
 			mason_available = 1;
 			UnLock(lock);
 		}
-		SetProcWindow(oldwindowptr);
+		MySetProcWindow(oldwindowptr);
 	}
 
 	if ((file = Open("PROGDIR:Images/images.list",MODE_OLDFILE)))

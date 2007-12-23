@@ -486,6 +486,15 @@ static void menu_check_single_account(int *val)
 }
 
 /******************************************************************
+ Called if the "delete"-key has been pressed.
+*******************************************************************/
+static void main_window_delete_pressed(void)
+{
+	if ((void*)xget(win_main,MUIA_Window_ActiveObject) != (void*)filter_string)
+		callback_delete_mails();
+}
+
+/******************************************************************
  Switch the view of the folders
 *******************************************************************/
 static void menu_execute_script(int *val_ptr)
@@ -1038,7 +1047,7 @@ int main_window_init(void)
 		DoMethod(main_toolbar, MUIM_SMToolbar_DoMethod, SM_MAINWND_BUTTON_CONFIG,      8, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_config);
 
 		/* Key notifies */
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, (ULONG)"delete", (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_InputEvent, (ULONG)"delete", (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)main_window_delete_pressed);
 
 		DoMethod(switch1_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)switch_folder_view);
 		DoMethod(switch2_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)switch_folder_view);
@@ -1229,9 +1238,8 @@ void main_set_folder_mails(struct folder *folder)
 	DoMethod(mail_tree, MUIM_MailTree_SetFolderMails, (ULONG)folder);
 	
 	if (created_folder)
-	{
-		/* TODO: Free me */
-	}
+		folder_delete_live_folder(created_folder);
+
 	mailtreelist_update_title_markers();
 }
 

@@ -26,19 +26,22 @@
 #include <proto/datatypes.h>
 #include <proto/graphics.h>
 
+#include "debug.h"
+
 #include "datatypescache.h"
 #include "startupwnd.h"
 
 static struct Window *startup_wnd;
+static struct Screen *scr;
+static Object *obj;
 
 void startupwnd_open(void)
 {
-	struct Screen *scr;
+  SM_ENTER;
 
 	if ((scr = LockPubScreen(NULL)))
 	{
-		Object *obj = LoadPicture("PROGDIR:Images/startup",scr);
-		if (obj)
+		if ((obj = LoadPicture("PROGDIR:Images/startup",scr)))
 		{
 			struct BitMapHeader *bmhd = NULL;
 			struct BitMap *bitmap = NULL;
@@ -74,10 +77,9 @@ void startupwnd_open(void)
 					                  0xc0);
 				}
 			}
-			DisposeDTObject(obj);
 		}
-		UnlockPubScreen(NULL,scr);
 	}
+  SM_LEAVE;
 }
 
 void startupwnd_close(void)
@@ -86,5 +88,17 @@ void startupwnd_close(void)
 	{
 		CloseWindow(startup_wnd);
 		startup_wnd = NULL;
+	}
+
+	if (obj)
+	{
+		DisposeObject(obj);
+		obj = NULL;
+	}
+
+	if (scr)
+	{
+		UnlockPubScreen(NULL,scr);
+		scr = NULL;
 	}
 }

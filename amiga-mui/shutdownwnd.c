@@ -35,16 +35,14 @@
 #include "shutdownwnd.h"
 
 static struct Window *shutdown_wnd;
+static struct Screen *scr;
+static Object *obj;
+static LONG pen;
 
 void shutdownwnd_open(void)
 {
-	struct Screen *scr;
-
 	if ((scr = LockPubScreen(NULL)))
 	{
-		Object *obj;
-		LONG pen;
-
 		/* get a white pen for the color of our text */
 		pen = ObtainBestPenA(scr->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);
 
@@ -100,10 +98,7 @@ void shutdownwnd_open(void)
 					}
 				}
 			}
-			DisposeDTObject(obj);
 		}
-		ReleasePen(scr->ViewPort.ColorMap,pen);
-		UnlockPubScreen(NULL,scr);
 	}
 }
 
@@ -113,5 +108,19 @@ void shutdownwnd_close(void)
 	{
 		CloseWindow(shutdown_wnd);
 		shutdown_wnd = NULL;
+	}
+
+	if (obj)
+	{
+		DisposeObject(obj);
+		obj = NULL;
+	}
+
+	if (scr)
+	{
+		ReleasePen(scr->ViewPort.ColorMap,pen);
+
+		UnlockPubScreen(NULL,scr);
+		scr = NULL;
 	}
 }

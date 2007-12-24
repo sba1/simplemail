@@ -131,6 +131,7 @@ static Object *main_menu;
 static Object *main_settings_folder_menuitem;
 static Object *main_settings_addressbook_menuitem;
 static Object *main_settings_messageview_menuitem;
+static Object *main_settings_filter_menuitem;
 static Object *main_scripts_menu;
 static Object *main_scripts_execute_menuitem;
 static Object *main_group;
@@ -141,7 +142,9 @@ static Object *mail_tree;
 static Object *mail_tree_group;
 static Object *mail_listview;
 static Object *mail_messageview;
+static Object *filter_group;
 static Object *filter_string;
+static Object *filter_clear_button;
 static Object *folder_listview_group;
 static Object *folder_listview;
 static Object *folder_tree;
@@ -581,7 +584,7 @@ static void popup_selected(void)
 *******************************************************************/
 static void settings_show_changed(void)
 {
-	int folder, addressbook, messageview;
+	int folder, addressbook, messageview, filter;
 
 	DoMethod(main_group, MUIM_Group_InitChange);
 	DoMethod(mail_tree_group, MUIM_Group_InitChange);
@@ -590,6 +593,7 @@ static void settings_show_changed(void)
 	folder = xget(main_settings_folder_menuitem,MUIA_Menuitem_Checked);
 	addressbook = xget(main_settings_addressbook_menuitem,MUIA_Menuitem_Checked);
 	messageview = xget(main_settings_messageview_menuitem,MUIA_Menuitem_Checked);
+	filter = xget(main_settings_filter_menuitem,MUIA_Menuitem_Checked);
 
 	set(folder_group, MUIA_ShowMe, !folder);
 	set(folder_listview_group, MUIA_ShowMe, folder);
@@ -599,6 +603,7 @@ static void settings_show_changed(void)
 	set(left_listview_balance, MUIA_ShowMe, folder && addressbook);
 	set(right_balance, MUIA_ShowMe, messageview);
 	set(mail_messageview, MUIA_ShowMe, messageview);
+	set(filter_group, MUIA_ShowMe, filter);
 
 	DoMethod(right_group, MUIM_Group_ExitChange);
 	DoMethod(mail_tree_group, MUIM_Group_ExitChange);
@@ -613,6 +618,20 @@ static void settings_show_changed(void)
 		char *f = main_get_folder_drawer();
 		DoMethod(mail_messageview, MUIM_MessageView_DisplayMail, (ULONG)m, (ULONG)f);
 	}
+}
+
+/******************************************************************
+ Quick filter show settings changed.
+*******************************************************************/
+static void settings_quick_filter_changed(void)
+{
+	int filter;
+
+	filter = xget(main_settings_filter_menuitem,MUIA_Menuitem_Checked);
+
+	set(filter_group, MUIA_ShowMe, filter);
+
+	callback_quick_filter_changed();
 }
 
 /******************************************************************
@@ -714,6 +733,7 @@ int main_window_init(void)
 		MENU_SETTINGS_SHOW_FOLDERS,
 		MENU_SETTINGS_SHOW_ADDRESSBOOK,
 		MENU_SETTINGS_SHOW_SELECTED_MESSAGE,
+		MENU_SETTINGS_SHOW_QUICK_FILTER,
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
 		MENU_SETTINGS_MUI,
@@ -784,6 +804,7 @@ int main_window_init(void)
 		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
 		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
 		{NM_ITEM, N_("Show selected message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
+		{NM_ITEM, N_("Show quick filter?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_QUICK_FILTER},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
@@ -835,15 +856,20 @@ int main_window_init(void)
 					MUIA_SMToolbar_InVGroup, TRUE,
 					MUIA_SMToolbar_Buttons, sm_mainwnd_buttons,
 					End,
-				Child, VGroup,
-					MUIA_Weight, 33,
+				Child, filter_group = VGroup,
+					MUIA_Weight, 20,
 					InnerSpacing(0,0),
 					GroupSpacing(0),
 					Child, HVSpace,
-					Child, filter_string = UTF8StringObject,
-						MUIA_CycleChain,1,
-						MUIA_ShortHelp, _("Allows you to filter for messages containing the given texts within their From/To or Subject fields."),
-						StringFrame,
+					Child, HGroup,
+						InnerSpacing(0,0),
+						GroupSpacing(0),
+						Child, filter_string = UTF8StringObject,
+							MUIA_CycleChain,1,
+							MUIA_ShortHelp, _("Allows you to filter for messages containing the given texts within their From or Subject fields."),
+							StringFrame,
+							End,
+						Child, filter_clear_button = MakeButton("X"),
 						End,
 					Child, HVSpace,
 					End,
@@ -961,9 +987,12 @@ int main_window_init(void)
 		}
 		MUI_DisposeObject(testnlist);
 
+		set(filter_clear_button,MUIA_Weight,0);
+
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
 		main_settings_messageview_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_SELECTED_MESSAGE);
+		main_settings_filter_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_QUICK_FILTER);
 		main_scripts_menu = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS);
 		main_scripts_execute_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SCRIPTS_EXECUTESCRIPT);
 
@@ -971,6 +1000,7 @@ int main_window_init(void)
 		set(main_settings_folder_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','F'));
 		set(main_settings_addressbook_menuitem,MUIA_ObjectID,MAKE_ID('M','N','S','A'));
 		set(main_settings_messageview_menuitem,MUIA_ObjectID,MAKE_ID('M','N','M','V'));
+		set(main_settings_filter_menuitem,MUIA_ObjectID,MAKE_ID('M','N','F','I'));
 
 		settings_show_changed();
 
@@ -1023,6 +1053,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_SELECTED_MESSAGE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_QUICK_FILTER, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_quick_filter_changed);
+		
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)main_save_environment);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_execute_script, -1);
@@ -1066,6 +1098,8 @@ int main_window_init(void)
 		set(folder_tree,MUIA_UserData,mail_tree); /* for the drag'n'drop support */
 		DoMethod(address_list, MUIM_Notify, MUIA_NList_DoubleClick, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)addressentrylist_doubleclick);
 		DoMethod(filter_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_quick_filter_changed);
+		DoMethod(filter_clear_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_string, 3, MUIM_Set, MUIA_UTF8String_Contents, "");
+		DoMethod(filter_clear_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_string, 3, MUIM_Set, MUIA_String_Acknowledge, TRUE);
 
 		main_build_accounts();
 		main_build_scripts();
@@ -1323,7 +1357,9 @@ char *main_get_mail_filename(void)
 *******************************************************************/
 utf8 *main_get_quick_filter_contents(void)
 {
-	return (utf8*)getutf8string(filter_string);
+	if (xget(main_settings_filter_menuitem,MUIA_Menuitem_Checked))
+		return (utf8*)getutf8string(filter_string);
+	return NULL;
 }
 
 /******************************************************************

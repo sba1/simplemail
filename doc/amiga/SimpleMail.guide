@@ -1,5 +1,5 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.11 (05.02.2007)
+@$VER: SimpleMail.guide 0.12 (24.12.2007)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <mail@sebastianbauer.info>
 @INDEX "Index"
 
@@ -8,7 +8,7 @@
                          SimpleMail 0.32 (public BETA)
                           (not completly finished yet)
 
-               (C) 2000-2006 by Hynek Schlawack & Sebastian Bauer
+               (C) 2000-2007 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 
@@ -61,13 +61,12 @@ Current features of SimpleMail:
 - Easy operation using buttons, menus, the keyboard and drag&drop within
   a freely customizable interface, thanks to @{" MUI " LINK MUI}.
 
-- Comprehensive main window, offering quick access to your @{" address book " LINK "AB_W" 0}
-  and sporting threaded views.
+- Comprehensive main window, offering quick access to your @{" address book " LINK "AB_W" 0}.
 
 - Any number of @{" user-defined folders " LINK "FO_W" 0}, which can also be arranged
   in groups.
 
-- Hierarchical @{" address book " LINK "AB_W" 0}, including groups and tons of data
+- An @{" address book " LINK "AB_W" 0}, including groups and tons of data
   for each entry.
 
 - Built-in POP3 & SMTP clients, which can check any number of different
@@ -121,7 +120,7 @@ Software
 
 LEGAL STUFF
 
-SimpleMail is Copyright © 2000-2002 by Hynek Schlawack & Sebastian Bauer
+SimpleMail is Copyright © 2000-2007 by Hynek Schlawack & Sebastian Bauer
 and released under the GNU Public License.
 
 See @{" here " LINK INFO} if you are a developer and want to join the effort, get access
@@ -2461,9 +2460,26 @@ Sets the subject for the new message.
 
   Examples:
 
-    SimpleMail MAILTO sebauer@t-online.de SUBJECT "SimpleMail is cool!"
+    SimpleMail MAILTO mail@sebastianbauer.info SUBJECT "SimpleMail is cool!"
     SimpleMail MAILTO "Hynek Schlawack" SUBJECT "A love letter for you :)"
     SimpleMail MAILTO "Sebastian Bauer, Hynek Schlawack" SUBJECT Wonderful!
+
+
+DEBUG=debuglevel
+
+Sets the level of SimpleMail debug logging. If set to 0 (which is the default)
+no logging messages are written.
+
+
+DEBUGOUT=file
+
+Specifies the file in which the logging is written to. If not specified, uses
+serial output. 
+
+DEBUGMODULES=modules
+
+
+Specifies which modules generate logging output.
 
 @ENDNODE
 @NODE "AREX" "ARexx interface"

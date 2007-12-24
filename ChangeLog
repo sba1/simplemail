@@ -3,6 +3,9 @@ SimpleMail Open Source - ChangeLog
 ----------------------------------
 
 2007-10-04  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/mailtreelistclass-new.c: Don't draw outside object area.
+
+2007-10-04  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/addressbookwnd.c: Information in the notes section of the addressbook
 	  are now saved (bugfix #1425725).
 

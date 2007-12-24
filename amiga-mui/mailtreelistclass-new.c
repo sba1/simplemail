@@ -2328,9 +2328,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			
 			for (col = 0;col < MAX_COLUMNS; col++)
 			{
-				int pen1,pen2;
-
-				int active;
+				int active,pen1,pen2;
 				struct ColumnInfo *ci;
 
 				active = data->columns_active[col];
@@ -2351,14 +2349,17 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 				if (active != COLUMN_TYPE_STATUS)
 				{
 					x -= data->column_spacing - 1;
-					
-					SetAPen(old_rp,pen1);
-					Move(old_rp, x,_mtop(obj) + data->title_height - 2);
-					Draw(old_rp, x,_mbottom(obj));
-					SetAPen(old_rp,pen2);
-					Move(old_rp, x+1,_mtop(obj) + data->title_height - 2);
-					Draw(old_rp, x+1,_mbottom(obj));
-	
+
+					if (x >= _mleft(obj) && x < _mright(obj))
+					{
+						SetAPen(old_rp,pen1);
+						Move(old_rp, x,_mtop(obj) + data->title_height - 2);
+						Draw(old_rp, x,_mbottom(obj));
+						SetAPen(old_rp,pen2);
+						Move(old_rp, x+1,_mtop(obj) + data->title_height - 2);
+						Draw(old_rp, x+1,_mbottom(obj));
+					}
+
 					x += data->column_spacing - 1;
 				}
 				x += ci->width + data->column_spacing;

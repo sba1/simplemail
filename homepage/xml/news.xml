@@ -2,6 +2,39 @@
 
 <news>
 
+  <entry date="2007/12/24">
+   <text lang="en">
+
+    And here is the christmas and birthday release of SimpleMail. In brief, the release 0.32 of SimpleMail
+    is characterized by the following changes:
+
+	  <list>
+     <item>Partly supports AISS. Can be disabled by using the Hidden.DontUseAISS hidden configuration option.</item>
+     <item>Completed functionality of custom mail list, e.g., columns can be reordered, their state saved, and so on.</item>
+     <item>Added quick filter.</item>
+     <item>Bug fixes.</item>
+    </list>
+
+    The SimpleMail Team wishes you all a merry christmas and a happy new year! 
+
+   </text>
+   <text lang="de">
+    Die Weihnachts- und Geburtstagsversion von SimpleMail wurde veröffentlicht!
+
+	  Die Änderungen in Version 0.32 betreffen:
+
+	  <list>
+     <item>AISS wird in Teilen unterstützt. Die Benutzung von AISS kann mit Hilfe der Konfigurationoption Hidden.DontUseAISS verhindert werden.</item>
+     <item>Die Funktionalität der eigenen Nachrichtenlistenklasse wurde komplettiert. Beispielsweise können Spalten umgeordnet und der Zustand gespeichert werden.</item>
+     <item>Schnellfilteroption im Hauptfenster hinzugefügt.</item>
+     <item>Einige Bugfixes.</item>
+    </list>
+
+    Das SimpleMail Team wünscht allen fröhliche Weihnachtsfest und einen guten Rutsch ins Jahr 2008!
+
+   </text>
+  </entry>
+
   <entry date="2007/02/05">
    <text lang="en">
 	  Version 0.31 of SimpleMail released!

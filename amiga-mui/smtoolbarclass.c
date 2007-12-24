@@ -109,41 +109,27 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	/* First try TheBar */
 	if (!user.config.dont_use_thebar_mcc)
 	{
+		Object *tb = TheBarVirtObject,
+			MUIA_Group_Horiz,             TRUE,
+			MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
+			MUIA_TheBar_EnableKeys,       TRUE,
+			MUIA_TheBar_IgnoreAppearance, FALSE,
+			MUIA_TheBar_Buttons,          toolbar_buttons,
+			MUIA_TheBar_Strip,            "PROGDIR:Images/images",
+			MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
+			MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
+			MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
+			MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
+			MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
+			MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
+			End;
+
 		if (use_vgroup)
 		{
-			HGroupV,
-				toolbar = TheBarVirtObject,
-					MUIA_Group_Horiz,             TRUE,
-					MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
-					MUIA_TheBar_EnableKeys,       TRUE,
-					MUIA_TheBar_IgnoreAppearance, FALSE,
-					MUIA_TheBar_Buttons,          toolbar_buttons,
-					MUIA_TheBar_Strip,            "PROGDIR:Images/images",
-					MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
-					MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
-					MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
-					MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
-					MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
-					MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
-					End,
-				End;
-		} else
-		{
-			toolbar = TheBarObject,
-				MUIA_Group_Horiz,             TRUE,
-				MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
-				MUIA_TheBar_EnableKeys,       TRUE,
-				MUIA_TheBar_IgnoreAppearance, FALSE,
-				MUIA_TheBar_Buttons,          toolbar_buttons,
-				MUIA_TheBar_Strip,            "PROGDIR:Images/images",
-				MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
-				MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
-				MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
-				MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
-				MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
-				MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
-				End;
-		}
+			toolbar = HGroupV, Child, tb, End;
+			if (!toolbar) MUI_DisposeObject(tb);
+		} else toolbar = tb;
+
 		if (toolbar) used_thebar_mcc = 1;
 	}
 

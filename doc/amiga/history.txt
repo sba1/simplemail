@@ -1,3 +1,11 @@
+Version 0.32 (19th beta) - released on 2007/12/24
+   - Partly supports AISS. Can be disabled using Hidden.DontUseAISS
+     hidden option. (bgol,sba)
+   - Completed functionality of custom mail list, e.g., columns can be
+     reordered, their state saved and so on. (bgol, sba)
+   - Added quick filter. (sba)
+   - Bug fixes. (bgol, sba)
+
 Version 0.31 (18th beta) - released on 2007/02/05
    - Replaced the usage of the NList class by the mail list with
      the usage of a custom list. It should act like NList, but

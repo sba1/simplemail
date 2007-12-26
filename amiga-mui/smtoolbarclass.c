@@ -62,7 +62,7 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct MUIS_TheBar_Button *toolbar_buttons;
 	int i=0, j, button_count=0, used_thebar_mcc=0;
 	int use_vgroup=0, add_hvspace=0;
-	Object *horiz_group, *current_group, *toolbar=NULL;
+	Object *horiz_group, *current_group, *toolbar=NULL, *tb_toolbar=NULL;
 
 	/* we need some buttons */
 	if ((ti = FindTagItem(MUIA_SMToolbar_Buttons, msg->ops_AttrList)))
@@ -109,27 +109,42 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	/* First try TheBar */
 	if (!user.config.dont_use_thebar_mcc)
 	{
-		Object *tb = TheBarVirtObject,
-			MUIA_Group_Horiz,             TRUE,
-			MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
-			MUIA_TheBar_EnableKeys,       TRUE,
-			MUIA_TheBar_IgnoreAppearance, FALSE,
-			MUIA_TheBar_Buttons,          toolbar_buttons,
-			MUIA_TheBar_Strip,            "PROGDIR:Images/images",
-			MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
-			MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
-			MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
-			MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
-			MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
-			MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
-			End;
-
 		if (use_vgroup)
 		{
-			toolbar = HGroupV, Child, tb, End;
-			if (!toolbar) MUI_DisposeObject(tb);
-		} else toolbar = tb;
-
+			toolbar = HGroupV,
+				Child, tb_toolbar = TheBarVirtObject,
+					MUIA_Group_Horiz,             TRUE,
+					MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
+					MUIA_TheBar_EnableKeys,       TRUE,
+					MUIA_TheBar_IgnoreAppearance, FALSE,
+					MUIA_TheBar_Buttons,          toolbar_buttons,
+					MUIA_TheBar_Strip,            "PROGDIR:Images/images",
+					MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
+					MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
+					MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
+					MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
+					MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
+					MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
+					End,
+				End;
+		} else
+		{
+			toolbar = TheBarObject,
+				MUIA_Group_Horiz,             TRUE,
+				MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
+				MUIA_TheBar_EnableKeys,       TRUE,
+				MUIA_TheBar_IgnoreAppearance, FALSE,
+				MUIA_TheBar_Buttons,          toolbar_buttons,
+				MUIA_TheBar_Strip,            "PROGDIR:Images/images",
+				MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
+				MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
+				MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
+				MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
+				MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
+				MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
+				End;
+			tb_toolbar = toolbar;
+		}
 		if (toolbar) used_thebar_mcc = 1;
 	}
 
@@ -234,10 +249,16 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	data = (struct SMToolbar_Data*)INST_DATA(cl,obj);
 	data->obj             = obj;
-	data->toolbar         = toolbar;
 	data->button_count    = button_count;
 	data->used_thebar_mcc = used_thebar_mcc;
 	data->toolbar_buttons = toolbar_buttons;
+	if (used_thebar_mcc)
+	{
+		data->toolbar = tb_toolbar;
+	} else
+	{
+		data->toolbar = toolbar;
+	}
 
 	DoMethod(obj, OM_ADDMEMBER, (ULONG)toolbar);
 

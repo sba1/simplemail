@@ -2,7 +2,13 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
-2007-10-04  Bernd Gollesch <bgollesch@sime.at>
+2007-12-26  Bernd Gollesch <bgollesch@sime.at>
+	* amiga-mui/smtoolbarclass.c: Reverted back to the old version and included the
+	  party fix in the correct way.
+
+2007-12-24  Release Version 0.32
+
+2007-12-24  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/mailtreelistclass-new.c: Don't draw outside object area.
 
 2007-10-04  Bernd Gollesch <bgollesch@sime.at>

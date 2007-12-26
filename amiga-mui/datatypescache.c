@@ -304,6 +304,11 @@ static struct dt_node *dt_create_from_filename(char *filename, struct Screen *sc
 						}
 					}
 				}
+
+				if (node->argb)
+				{
+					SM_DEBUGF(15,("Image \"%s\" has ARGB data\n",filename));
+				}
 			}
 			node->scr = scr;
 
@@ -483,3 +488,24 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 		}
 	}
 }
+
+/***************************************************************
+ Pastes the dt node on an ARGB32 buffer.
+****************************************************************/
+void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int y)
+{
+	if (node->argb)
+	{
+		int i,j,w,h;
+		ULONG *udest = (ULONG*)dest;
+		ULONG *usrc = (ULONG*)node->argb;
+
+		w = dt_width(node);
+		h = dt_height(node);
+
+		for (j=0;j<h;j++)
+			for (i=0;i<w;i++)
+				udest[(y+j)*dest_width+x+i]=usrc[j*w+i];
+	}
+}
+

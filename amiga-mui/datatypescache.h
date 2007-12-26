@@ -30,6 +30,6 @@ void dt_dispose_picture(struct dt_node *node);
 int dt_width(struct dt_node *node);
 int dt_height(struct dt_node *node);
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y);
-
+void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int y);
 
 #endif

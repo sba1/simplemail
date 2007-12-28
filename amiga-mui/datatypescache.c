@@ -68,17 +68,6 @@
 
 /**************************************************************/
 
-static Object *img_object;
-static struct Screen *img_screen;
-static int img_usage_count;
-
-static int mason_available;
-
-static struct list desc_list;
-static struct list dt_list;
-
-/**************************************************************/
-
 /* An icon description */
 struct icon_desc
 {
@@ -97,11 +86,29 @@ struct dt_node
 	struct icon_desc *desc;
 	int count;
 
-	Object *o;
 	void *argb;
+
+	Object *o;
+	int depth;
+	int trans;
+
 	int x1,x2,y1,y2;
+
 	struct Screen *scr;
 };
+
+/**************************************************************/
+
+static void dt_put_rect_on_argb(struct dt_node *node, int srcx, int srcy, int src_width, int src_height, void *dest, int dest_width, int x, int y);
+
+/**************************************************************/
+
+static struct dt_node *img;
+
+static int mason_available;
+
+static struct list desc_list;
+static struct list dt_list;
 
 /**************************************************************/
 
@@ -121,7 +128,13 @@ APTR MySetProcWindow(void *newvalue)
 #define MySetProcWindow SetProcWindow
 #endif
 
-Object *LoadPicture(char *filename, struct Screen *scr)
+/*************************************************************
+ Loads the picture and maps it to the given screen. Returns
+ a datatypes object which needs to be freed with
+ DisposeDTObject(). Note the picture cannot be remapped
+ to another screen.
+**************************************************************/
+Object *LoadAndMapPicture(char *filename, struct Screen *scr)
 {
 	Object *o;
 	APTR oldwindowptr;
@@ -133,7 +146,7 @@ Object *LoadPicture(char *filename, struct Screen *scr)
 			DTA_GroupID          , GID_PICTURE,
 			OBP_Precision        , PRECISION_EXACT,
 			PDTA_Screen          , scr,
-//			PDTA_FreeSourceBitMap, TRUE,
+			PDTA_FreeSourceBitMap, TRUE,
 			PDTA_DestMode        , PMODE_V43,
 			PDTA_UseFriendBitMap , TRUE,
 			TAG_DONE);
@@ -160,6 +173,57 @@ Object *LoadPicture(char *filename, struct Screen *scr)
 	return NULL;
 }
 
+/*************************************************************
+ Loads the picture. Returns a datatypes object which needs to
+ be freed with DisposeDTObject().
+**************************************************************/
+static Object *LoadPicture(char *filename)
+{
+	Object *o;
+	APTR oldwindowptr;
+
+	/* tell DOS not to bother us with requesters */
+	oldwindowptr = MySetProcWindow((APTR)-1);
+
+	o = NewDTObject(filename,
+			DTA_GroupID          , GID_PICTURE,
+			OBP_Precision        , PRECISION_EXACT,
+			PDTA_FreeSourceBitMap, FALSE,
+			PDTA_DestMode        , PMODE_V43,
+			PDTA_UseFriendBitMap , TRUE,
+			TAG_DONE);
+	
+	MySetProcWindow(oldwindowptr);
+
+	return o;
+}
+
+/*************************************************************
+ Maps the given object to the screen.
+**************************************************************/
+static int MapPicture(Object *obj, struct Screen *scr)
+{
+	struct FrameInfo fri = {0};
+	
+	SetAttrs(obj, PDTA_Screen, scr, TAG_DONE);
+	
+	DoMethod(obj,DTM_FRAMEBOX,NULL,(ULONG)&fri,(ULONG)&fri,sizeof(struct FrameInfo),0);
+
+	if (fri.fri_Dimensions.Depth>0)
+	{
+		if (DoMethod(obj,DTM_PROCLAYOUT,NULL,1))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/**************************************************************/
+
+/*************************************************************
+ Initialized the cache.
+**************************************************************/
 void dt_init(void)
 {
 	BPTR file;
@@ -242,6 +306,9 @@ void dt_init(void)
 	}
 }
 
+/*************************************************************
+ Free all ressources associated with the cache.
+**************************************************************/
 void dt_cleanup(void)
 {
 	struct dt_node *dt;
@@ -253,7 +320,7 @@ void dt_cleanup(void)
 		if (dt->name) free(dt->name);
 		free(dt);
 	}
-	
+
 	while ((icon = (struct icon_desc*)list_remove_tail(&desc_list)))
 	{
 		if (icon->filename) free(icon->filename);
@@ -261,14 +328,17 @@ void dt_cleanup(void)
 		free(icon);
 	}
 
-	if (img_object) DisposeDTObject(img_object);
-	img_object = NULL;
+	if (img)
+	{
+		dt_dispose_picture(img);
+		img = NULL;
+	}
 }
 
 /****************************************************************
  Create the dt object directly from filename
 ****************************************************************/
-static struct dt_node *dt_create_from_filename(char *filename, struct Screen *scr)
+static struct dt_node *dt_create_from_filename(char *filename)
 {
 	struct dt_node *node;
 
@@ -278,7 +348,7 @@ static struct dt_node *dt_create_from_filename(char *filename, struct Screen *sc
 		memset(node,0,sizeof(struct dt_node));
 
 		/* create the datatypes object */
-		if ((node->o = LoadPicture(filename,scr)))
+		if ((node->o = LoadPicture(filename)))
 		{
 			struct BitMapHeader *bmhd = NULL;
 			GetDTAttrs(node->o,PDTA_BitMapHeader,&bmhd,TAG_DONE);
@@ -287,32 +357,12 @@ static struct dt_node *dt_create_from_filename(char *filename, struct Screen *sc
 			{
 				int w = bmhd->bmh_Width;
 				int h = bmhd->bmh_Height;
-				int d = bmhd->bmh_Depth; 
 
 				node->x2 = w - 1;
 				node->y2 = h - 1;
-
-				/* TODO: Do this for the big image as well */
-				if (d > 8 && CyberGfxBase)
-				{
-					if ((node->argb = AllocVec(4*w*h,MEMF_PUBLIC|MEMF_CLEAR)))
-					{
-						if (!(DoMethod(node->o,PDTM_READPIXELARRAY,node->argb,PBPAFMT_ARGB,4*w,0,0,w,h)))
-						{
-							FreeVec(node->argb);
-							node->argb = NULL;
-						}
-					}
-				}
-
-				if (node->argb)
-				{
-					SM_DEBUGF(15,("Image \"%s\" has ARGB data\n",filename));
-				}
+				node->depth = bmhd->bmh_Depth;
+				node->trans = bmhd->bmh_Transparent;
 			}
-			node->scr = scr;
-
-			
 			return node;
 		}
 		free(node);
@@ -324,20 +374,21 @@ static struct dt_node *dt_create_from_filename(char *filename, struct Screen *sc
  Load the dt object. A given filename is instanciated only
  once. 
 ****************************************************************/
-struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
+struct dt_node *dt_load_unmapped_picture(char *filename)
 {
 	struct icon_desc *icon; 
 	struct dt_node *node;
 
 	SM_ENTER;
 
+	/* Already loaded? */
 	node = (struct dt_node*)list_first(&dt_list);
 	while (node)
 	{
 		if (!mystricmp(filename,node->name))
 		{
 			node->count++;
-			return node;
+			SM_RETURN(node,"%p");
 		}
 		node = (struct dt_node*)node_next(&node->node);
 	}
@@ -351,34 +402,27 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 			/* We can, now check if we can find the mason icon */
 			if (mason_available && icon->masonname)
 			{
-				SM_DEBUGF(20,("Trying to load mason icon \"%s\"\n",icon->masonname));
-				if ((node = dt_create_from_filename(icon->masonname,scr)))
+				SM_DEBUGF(15,("Trying to load mason icon \"%s\"\n",icon->masonname));
+				if ((node = dt_create_from_filename(icon->masonname)))
 				{
 					node->count = 1;
 					node->desc = icon;
 					node->name = mystrdup(filename);
 					list_insert_tail(&dt_list,&node->node);
-					SM_DEBUGF(20,("Mason found\n"));
+					SM_DEBUGF(15,("Mason found\n"));
 					SM_RETURN(node,"%p");
 				}
-				SM_DEBUGF(20,("Mason not found\n"));
+				SM_DEBUGF(15,("Mason not found\n"));
 			}
 
-			/* No, so we use the big image */
-			if (img_object && img_screen != scr)
-			{
-				/* This has debugging purposes only, it should never happen */
-				SM_DEBUGF(1,("The given screen differs from the screen for which the icon image was loaded for!\n"));
-				img_object = NULL;
-				img_screen = NULL; 
-			}
-			if (!img_object)
-			{
-				img_object = LoadPicture("PROGDIR:Images/images",scr);
-				img_screen = scr;
-			}
-			if (!img_object) break;
-			img_usage_count++;
+			/* No mason, use the big image */
+			if (!img)
+				img = dt_create_from_filename("PROGDIR:Images/images");
+			if (!img)
+				break;
+			img->count++;
+			
+			SM_DEBUGF(15,("Increased usage count of strip image to %ld\n",img->count));
 
 			if ((node = (struct dt_node*)malloc(sizeof(struct dt_node))))
 			{
@@ -391,19 +435,95 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 				node->y1 = node->desc->y1;
 				node->y2 = node->desc->y2;
 				list_insert_tail(&dt_list,&node->node);
+
 				SM_RETURN(node,"%p");
 			}
 		}
 		icon = (struct icon_desc*)node_next(&icon->node);
 	}
 
+
 	/* Try loading the specified image as it is */
-	if ((node = dt_create_from_filename(filename,scr)))
+	if ((node = dt_create_from_filename(filename)))
 	{
 		node->count = 1;
 		node->name = mystrdup(filename);
 		list_insert_tail(&dt_list,&node->node);
 	}
+
+	SM_RETURN(node,"%p");
+}
+
+/****************************************************************
+ Load the dt object. A given filename is instanciated only
+ once. 
+****************************************************************/
+struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
+{
+	struct dt_node *node;
+
+	SM_ENTER;
+
+	node = dt_load_unmapped_picture(filename);
+
+	if (!node->o)
+	{
+		if (img->scr != scr)
+		{
+			if (img->scr)
+			{
+				/* This has debugging purposes only, it should never happen */
+				SM_DEBUGF(1,("The given screen differs from the screen for which the image was initially loaded for!\n"));
+			}
+
+			if (!(MapPicture(img->o, scr)))
+				SM_DEBUGF(5,("Could not map the strip image!\n"));
+			img->scr = scr;
+
+#if 0
+			if (img->argb)
+			{
+//				if (img->trans != mskHasAlpha)
+				{
+					APTR mask = NULL;
+					struct BitMapHeader *bmhd = NULL;
+
+					GetDTAttrs(img->o,PDTA_MaskPlane,&mask,TAG_DONE);
+					GetDTAttrs(img->o,PDTA_BitMapHeader,&bmhd,TAG_DONE);
+
+					SM_DEBUGF(1,("Mask %lx   Trans = %ld\n",mask,bmhd->bmh_Transparent));
+
+					
+					if (mask)
+					{
+						int i,j;
+						ULONG *argb = (ULONG*)img->argb;
+						int w = dt_width(img);
+						int h = dt_height(img);
+
+						for (j=0;j<h;j++)
+						{
+							for (i=0;i<w;i++)
+							{
+								argb[j*w+i] |= 0xff000000;
+							}
+						}
+					}
+				}
+
+			}
+#endif
+		}
+	} else
+	{
+		if (node->scr != scr)
+		{
+			if (!(MapPicture(node->o, scr)))
+				SM_DEBUGF(5,("Could not map the image \"%s\"!\n",node->name));
+			node->scr = scr;
+		}
+	}
+
 	SM_RETURN(node,"%p");
 }
 
@@ -421,18 +541,19 @@ void dt_dispose_picture(struct dt_node *node)
 		{
 			if (node->o)
 			{
-				SM_DEBUGF(20,("Disposing dt object at %p\n",node->o));
+				SM_DEBUGF(15,("Disposing dt object at %p\n",node->o));
 				DisposeDTObject(node->o);
 				if (node->argb) FreeVec(node->argb);
 			} else
 			{
-				SM_DEBUGF(20,("Disposing dt object icon image at %p\n",img_object));
-				img_usage_count--;
-				if (!img_usage_count)
+				img->count--;
+				SM_DEBUGF(15,("Reduced usage count of strip image to %ld\n",img->count));
+				if (!img->count)
 				{
-					DisposeDTObject(img_object);
-					img_object = NULL;
-					img_screen = NULL;
+					DisposeDTObject(img->o);
+					if (img->argb) FreeVec(img->argb);
+					free(img);
+					img = NULL;
 				}
 			}	
 
@@ -454,13 +575,16 @@ int dt_height(struct dt_node *node)
 	return node->y2 - node->y1 + 1;
 }
 
+/***************************************************************
+ Puts the dt node onto the given rastport. 
+****************************************************************/
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 {
 	struct BitMap *bitmap = NULL;
 	Object *o;
 
 	o = node->o;
-	if (!o) o = img_object;
+	if (!o) o = img->o;
 	if (!o) return;
 
 	GetDTAttrs(o,PDTA_DestBitMap,&bitmap,TAG_DONE);
@@ -490,10 +614,56 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 }
 
 /***************************************************************
- Pastes the dt node on an ARGB32 buffer.
+ Returns the ARGB buffer solely of this image. You can use
+ dt_width() and dt_height() to query the dimension.
+****************************************************************/
+void *dt_argb(struct dt_node *node)
+{
+	int w,h;
+
+	SM_ENTER;
+	SM_DEBUGF(15,("ARGB of Image \"%s\"\n",node->name));
+
+	if (node->argb)
+		SM_RETURN(node->argb, "0x%08lx");
+
+	w = dt_width(node);
+	h = dt_height(node);
+
+	if (!(node->argb = AllocVec(4*w*h,MEMF_PUBLIC|MEMF_CLEAR)))
+		SM_RETURN(NULL, "0x%08lx");
+
+	if (!node->o)
+	{
+		dt_put_rect_on_argb(img, node->x1, node->y1, w, h, node->argb, w, 0, 0);
+		SM_RETURN(node->argb, "0x%08lx");
+	}
+
+	/* TODO: Check for proper picture.datatype rather than CyberGfx */
+	if (CyberGfxBase)
+	{
+		if (!(DoMethod(node->o,PDTM_READPIXELARRAY,node->argb,PBPAFMT_ARGB,4*w,0,0,w,h)))
+		{
+			SM_DEBUGF(10,("Could not red ARGB data of \"%s\"\n",node->name)); 
+			FreeVec(node->argb);
+			node->argb = NULL;
+		}
+	} else
+	{
+		/* TODO: Implement me for (via a temp rp and ReadPixelArray8()) */
+	}
+
+	SM_RETURN(node->argb, "0x%08lx");
+}
+
+/***************************************************************
+ Pastes the dt node into an ARGB buffer which is ensured
+ to have enough space.
 ****************************************************************/
 void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int y)
 {
+	dt_argb(node);
+
 	if (node->argb)
 	{
 		int i,j,w,h;
@@ -509,3 +679,33 @@ void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int
 	}
 }
 
+/***************************************************************
+ Pastes the dt node into an ARGB buffer.
+****************************************************************/
+static void dt_put_rect_on_argb(struct dt_node *node, int srcx, int srcy, int src_width, int src_height, void *dest, int dest_width, int x, int y)
+{
+	dt_argb(node);
+
+	if (node->argb)
+	{
+		int i,j,w,h;
+		ULONG *udest = (ULONG*)dest;
+		ULONG *usrc = (ULONG*)node->argb;
+
+		w = dt_width(node);
+		h = dt_height(node);
+
+		for (j=0;j<src_height;j++)
+			for (i=0;i<src_width;i++)
+				udest[(y+j)*dest_width+x+i]=usrc[(srcy+j)*w+srcx+i];
+		
+/*		for (j=0;j<src_height;j++)
+		{
+			for (i=0;i<src_width;i++)
+			{
+				__debug_print("%08lx ",udest[j*dest_width+i]);
+			}
+			__debug_print("\n");
+		}*/
+	}
+}

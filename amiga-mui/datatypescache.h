@@ -19,11 +19,12 @@
 #define SM__DATATYPESCACHE_H
 
 /* This is more a function belonging to amigasupport.c */
-Object *LoadPicture(char *filename, struct Screen *scr);
+Object *LoadAndMapPicture(char *filename, struct Screen *scr);
 /* struct dt_node; */
 
 void dt_init(void);
 void dt_cleanup(void);
+struct dt_node *dt_load_unmapped_picture(char *filename);
 struct dt_node *dt_load_picture(char *filename, struct Screen *scr);
 void dt_dispose_picture(struct dt_node *node);
 
@@ -31,5 +32,6 @@ int dt_width(struct dt_node *node);
 int dt_height(struct dt_node *node);
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y);
 void dt_put_on_argb(struct dt_node *node, void *dest, int dest_width, int x, int y);
+void *dt_argb(struct dt_node *node);
 
 #endif

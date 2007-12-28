@@ -46,7 +46,7 @@ void shutdownwnd_open(void)
 		/* get a white pen for the color of our text */
 		pen = ObtainBestPenA(scr->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);
 
-		if ((obj = LoadPicture("PROGDIR:Images/shutdown",scr)))
+		if ((obj = LoadAndMapPicture("PROGDIR:Images/shutdown",scr)))
 		{
 			struct BitMapHeader *bmhd = NULL;
 			struct BitMap *bitmap = NULL;

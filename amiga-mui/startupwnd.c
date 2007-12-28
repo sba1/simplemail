@@ -41,7 +41,7 @@ void startupwnd_open(void)
 
 	if ((scr = LockPubScreen(NULL)))
 	{
-		if ((obj = LoadPicture("PROGDIR:Images/startup",scr)))
+		if ((obj = LoadAndMapPicture("PROGDIR:Images/startup",scr)))
 		{
 			struct BitMapHeader *bmhd = NULL;
 			struct BitMap *bitmap = NULL;

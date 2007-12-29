@@ -19,6 +19,7 @@ G_OPTFLAGS  = -O3 \
          -Wmissing-prototypes \
          -Wmissing-declarations \
          -Werror-implicit-function-declaration
+G_DEBUG     = -g
 
 ##############################################################################
 
@@ -100,26 +101,32 @@ locale: $(LOCALEOBJS)
 
 $(LOCALEDIR)de.mo: po/de.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 $(LOCALEDIR)ma.mo: po/ma.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 $(LOCALEDIR)pl.mo: po/pl.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 $(LOCALEDIR)fi.mo: po/fi.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 $(LOCALEDIR)es.mo: po/es.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 $(LOCALEDIR)fr.mo: po/fr.po
 	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
 	@msgfmt $? -o $@
 
 amigamui:
@@ -127,7 +134,7 @@ amigamui:
 
 $(OUT): $(OBJS) amiga-mui/libgui.a
 	@echo Linking $@.db...
-	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map
+	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -lttengine -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map,--traditional-format
 	@echo Striping $@...
 	@ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	@chmod a+x $(OUT)

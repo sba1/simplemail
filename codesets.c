@@ -1452,7 +1452,7 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
  Compares two utf8 string case-insensitive (the args might be NULL).
  Note: Changes for little endian
 **************************************************************************/
-int utf8stricmp(char *str1, char *str2)
+int utf8stricmp(const char *str1, const char *str2)
 {
 	unsigned char c1;
 	unsigned char c2;

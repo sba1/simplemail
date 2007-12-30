@@ -3,8 +3,8 @@
 $version = "0.32";
 $date = "2007/12/24";
 
-$morphversion = "0.30";
-$morphdate = "2006/12/24";
+$morphversion = "0.32";
+$morphdate = "2007/12/29";
 
   require_once("language.inc.php");
   require_once("support.inc.php");

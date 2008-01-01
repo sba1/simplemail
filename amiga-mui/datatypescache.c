@@ -644,7 +644,7 @@ void *dt_argb(struct dt_node *node)
 	{
 		if (!(DoMethod(node->o,PDTM_READPIXELARRAY,node->argb,PBPAFMT_ARGB,4*w,0,0,w,h)))
 		{
-			SM_DEBUGF(10,("Could not red ARGB data of \"%s\"\n",node->name)); 
+			SM_DEBUGF(10,("Could not read ARGB data of \"%s\"\n",node->name));
 			FreeVec(node->argb);
 			node->argb = NULL;
 		}

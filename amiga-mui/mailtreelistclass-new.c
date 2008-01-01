@@ -196,7 +196,7 @@ static const char *image_names[] =
 	"status_old_partial",
 	"status_reply_partial",
 	"status_old",
-  "status_waitsend",
+	"status_waitsend",
 	"status_sent",
 	"status_mark",
 	"status_hold",
@@ -266,8 +266,8 @@ struct MailTreelist_Data
 	int inbetween_setup;
 	int inbetween_show;
 	int mouse_pressed;
-  struct MUI_EventHandlerNode ehn_mousebuttons;
-  struct MUI_EventHandlerNode ehn_mousemove;
+	struct MUI_EventHandlerNode ehn_mousebuttons;
+	struct MUI_EventHandlerNode ehn_mousemove;
 
 	Object *vert_scroller; /* attached vertical scroller */
 	Object *horiz_scroller; /* attached vertical scroller */
@@ -573,17 +573,17 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 	SM_DEBUGF(10,("SetListSize allocating %ld bytes\n",
 								new_entries_allocated * sizeof(struct ListEntry *)));
 
-  if (!(new_entries = (struct ListEntry**)AllocVec(new_entries_allocated * sizeof(struct ListEntry *),0)))
-  	return 0;
+	if (!(new_entries = (struct ListEntry**)AllocVec(new_entries_allocated * sizeof(struct ListEntry *),0)))
+		return 0;
 
-  if (data->entries)
-  {
+	if (data->entries)
+	{
 		CopyMem(data->entries - 1, new_entries,(data->entries_num + 1) * sizeof(struct ListEntry*));
 		FreeVec(data->entries - 1);
-  }
-  data->entries = new_entries + 1;
-  data->entries_allocated = new_entries_allocated;
-  return 1;
+	}
+	data->entries = new_entries + 1;
+	data->entries_allocated = new_entries_allocated;
+	return 1;
 }
 
 
@@ -1358,21 +1358,21 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->column_spacing = 4;
 
 #ifdef HAVE_EXTENDEDMOUSE
-  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_EXTENDEDMOUSE;
+	data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_EXTENDEDMOUSE;
 #else
 	/* NewMouse standard wheel support */
-  data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_RAWKEY;
+	data->ehn_mousebuttons.ehn_Events   = IDCMP_MOUSEBUTTONS|IDCMP_RAWKEY;
 #endif
-  data->ehn_mousebuttons.ehn_Priority = 0;
-  data->ehn_mousebuttons.ehn_Flags    = 0;
-  data->ehn_mousebuttons.ehn_Object   = obj;
-  data->ehn_mousebuttons.ehn_Class    = cl;
+	data->ehn_mousebuttons.ehn_Priority = 0;
+	data->ehn_mousebuttons.ehn_Flags    = 0;
+	data->ehn_mousebuttons.ehn_Object   = obj;
+	data->ehn_mousebuttons.ehn_Class    = cl;
 
-  data->ehn_mousemove.ehn_Events   = IDCMP_MOUSEMOVE|IDCMP_INTUITICKS;
-  data->ehn_mousemove.ehn_Priority = 0;
-  data->ehn_mousemove.ehn_Flags    = 0;
-  data->ehn_mousemove.ehn_Object   = obj;
-  data->ehn_mousemove.ehn_Class    = cl;
+	data->ehn_mousemove.ehn_Events   = IDCMP_MOUSEMOVE|IDCMP_INTUITICKS;
+	data->ehn_mousemove.ehn_Priority = 0;
+	data->ehn_mousemove.ehn_Flags    = 0;
+	data->ehn_mousemove.ehn_Object   = obj;
+	data->ehn_mousemove.ehn_Class    = cl;
 
 	data->column_drag = -1;
 	data->title_column_click = -1;
@@ -1612,10 +1612,10 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
 	/* Setup rastports */
 	InitRastPort(&data->rp);
-  SetFont(&data->rp,_font(obj));
+	SetFont(&data->rp,_font(obj));
 
 	InitRastPort(&data->dragRP);
-  SetFont(&data->dragRP,_font(obj));
+	SetFont(&data->dragRP,_font(obj));
 
 	/* Find out, if the supplied font is a ttf font, and open it as a ttengine
 	 * font */
@@ -1695,7 +1695,7 @@ STATIC ULONG MailTreelist_AskMinMax(struct IClass *cl,Object *obj, struct MUIP_A
 {
 	struct MUI_MinMax *mi;
 /*	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);*/
-  DoSuperMethodA(cl, obj, (Msg) msg);
+	DoSuperMethodA(cl, obj, (Msg) msg);
 
 	mi = msg->MinMaxInfo;
 
@@ -1983,9 +1983,9 @@ STATIC ULONG MailTreelist_Show(struct IClass *cl, Object *obj, struct MUIP_Show 
 	data->inbetween_show = 1;
 	CalcVisible(data,obj);
 	CalcHorizontalVisible(data,obj);
-  DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousebuttons);
+	DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousebuttons);
 
-  data->threepoints_width = TextLength(&data->rp,"...",3);
+	data->threepoints_width = TextLength(&data->rp,"...",3);
 
 	/* Setup buffer for a single entry, double buffering is optional */
 	depth = GetBitMapAttr(_screen(obj)->RastPort.BitMap,BMA_DEPTH);
@@ -2057,7 +2057,7 @@ STATIC ULONG MailTreelist_Hide(struct IClass *cl, Object *obj, struct MUIP_Hide 
 		data->buffer_bmap = NULL;
 	}
 	
-  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousebuttons);
+	DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousebuttons);
 	data->inbetween_show = 0;
 	return DoSuperMethodA(cl,obj,(Msg)msg);
 }
@@ -2864,7 +2864,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
 
 	if (msg->imsg)
-  {
+	{
 		LONG mx = msg->imsg->MouseX - _mleft(obj);
 		LONG my = msg->imsg->MouseY - _mtop(obj);
 
@@ -3616,13 +3616,13 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, struct MUIP_ContextMenuBuild *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
-  Object *context_menu, *stati_menu, *last_menu, *hidden_menu;
+	Object *context_menu, *stati_menu, *last_menu, *hidden_menu;
 
-  if (data->context_menu)
-  {
-  	MUI_DisposeObject(data->context_menu);
-  	data->context_menu = NULL;
-  }
+	if (data->context_menu)
+	{
+		MUI_DisposeObject(data->context_menu);
+		data->context_menu = NULL;
+	}
 
 	if (msg->my >= _mtop(obj) && msg->my < _mtop(obj) + data->title_height)
 		return (ULONG)data->title_menu;

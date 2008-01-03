@@ -8,8 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: -2127033172-945881087--1819738112 -2147418028:-2122252256-"
-"11638537882105573664\n"
+"POT-Creation-Date: 2008-01-03 20:07+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -436,6 +435,14 @@ msgstr "_À"
 msgid "C_opies To"
 msgstr "C_opie à"
 
+#: amiga-mui/composewnd.c:1289
+msgid "B"
+msgstr "C"
+
+#: amiga-mui/composewnd.c:1292 amiga-mui/composewnd.c:1298
+msgid "_Blind Copies To"
+msgstr "_Copies cachées à"
+
 #: amiga-mui/composewnd.c:1137 amiga-mui/composewnd.c:1141
 msgid "S_ubject"
 msgstr "S_ujet"
@@ -562,6 +569,10 @@ msgstr "Répertoire des dossiers"
 #: amiga-mui/configwnd.c:704
 msgid "Charset used to display text"
 msgstr "Jeu de caractères utilisé pour afficher le texte"
+
+#: amiga-mui/configwnd.c:779
+msgid "Folder to display at startup"
+msgstr "Répertoire à afficher au démarrage"
 
 #: amiga-mui/configwnd.c:715 amiga-mui/configwnd.c:716
 msgid "AppIcon Show"
@@ -1424,10 +1435,55 @@ msgstr "Pièces jointes attachées"
 msgid "Status is"
 msgstr "Le statut est"
 
+#: amiga-mui/filterruleclass.c:123 amiga-mui/filterruleclass.c:126
+msgid "matches"
+msgstr "correspond à"
+
 #: amiga-mui/filterruleclass.c:113 amiga-mui/filterruleclass.c:117
 #: amiga-mui/filterruleclass.c:121 amiga-mui/filterruleclass.c:126
 msgid "contains"
 msgstr "contient"
+
+#: amiga-mui/filterruleclass.c:141 amiga-mui/filterruleclass.c:144
+#: amiga-mui/filterruleclass.c:160 amiga-mui/filterruleclass.c:164
+#: amiga-mui/filterruleclass.c:168 amiga-mui/filterruleclass.c:173
+msgid "equals"
+msgstr "égal à"
+
+#: amiga-mui/filterruleclass.c:191
+msgid "Substring"
+msgstr "Sous-chaine"
+
+#: amiga-mui/filterruleclass.c:194
+msgid "Case sensitive"
+msgstr "Sensible à la casse"
+
+#: amiga-mui/filterruleclass.c:197
+msgid "Pattern"
+msgstr "Motif"
+
+#: amiga-mui/filterruleclass.c:204
+msgid ""
+"If activated the string must only be a part\n"
+"of the searched field."
+msgstr ""
+"Si activé, la chaine doit seulement être une partie\n"
+"du champ recherché."
+
+#: amiga-mui/filterruleclass.c:206
+msgid "If activated the search is case sensitive."
+msgstr "Si activé, alors la recherche sera sensible aux majuscules/minuscules."
+
+#: amiga-mui/filterruleclass.c:207
+#, c-format
+msgid ""
+"If activated the string is an AmigaDOS pattern\n"
+"and patternmatching will be performed.\n"
+"Special chars are: ? # | ~ ( ) [ ] % '"
+msgstr ""
+"Si activé, la chaine doit être un motif AmigaDOS\n"
+"et une correspondance sera alors recherchée.n"
+"Les caractères spéciaux sont : ? # | ~ ( ) [ ] % '"
 
 #: amiga-mui/filterwnd.c:464
 msgid "SimpleMail - Edit Filter"
@@ -1436,6 +1492,14 @@ msgstr "SimpleMail - Éditeur de filtres"
 #: amiga-mui/filterwnd.c:486 amiga-mui/mainwnd.c:639
 msgid "_New"
 msgstr "_Nouveau"
+
+#: amiga-mui/filterwnd.c:508
+msgid "Move up"
+msgstr "Monter"
+
+#: amiga-mui/filterwnd.c:509
+msgid "Move Down"
+msgstr "Descendre"
 
 #: amiga-mui/filterwnd.c:492
 msgid "Activtiy"
@@ -2013,6 +2077,10 @@ msgstr "R:Répondre..."
 msgid "W:Forward..."
 msgstr "W:Faire suivre"
 
+#: amiga-mui/mainwnd.c:790 amiga-mui/readwnd.c:1113
+msgid "Show raw..."
+msgstr "Montrer format brut..."
+
 #: amiga-mui/mainwnd.c:751
 msgid "M:Move..."
 msgstr "M:Déplacer..."
@@ -2035,15 +2103,19 @@ msgstr "Préférences"
 
 #: amiga-mui/mainwnd.c:763
 msgid "Show folders?"
-msgstr "Montrer les dossiers?"
+msgstr "Montrer les dossiers ?"
 
 #: amiga-mui/mainwnd.c:764
 msgid "Show addressbook?"
-msgstr "Montrer le carnet d'adresses?"
+msgstr "Montrer le carnet d'adresses ?"
 
 #: amiga-mui/mainwnd.c:765
 msgid "Show selected message?"
-msgstr "Montrer le message sélectionné?"
+msgstr "Montrer le message sélectionné ?"
+
+#: amiga-mui/mainwnd.c:807
+msgid "Show quick filter?"
+msgstr "Montrer la recherche rapide ?"
 
 #: amiga-mui/mainwnd.c:767
 msgid "Configuration..."

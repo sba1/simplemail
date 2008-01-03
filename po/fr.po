@@ -1941,9 +1941,9 @@ msgstr "Isole tous les spams dans le dossier courant sélectionné."
 msgid "_Abook"
 msgstr "Cont_acts"
 
-#: amiga-mui/mainwnd.c:115
-msgid "Fi_lters"
-msgstr "Fil_tres"
+#: amiga-mui/mainwnd.c:122
+msgid "Filters"
+msgstr "Filtres"
 
 #: amiga-mui/mainwnd.c:115
 msgid "Opens a window where the filters can be edited."

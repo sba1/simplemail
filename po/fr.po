@@ -1863,6 +1863,14 @@ msgstr "Erreur"
 msgid "Repl. & Forw."
 msgstr "Rép. & Réexp."
 
+#: amiga-mui/mailtreelistclass-new.c:3488
+msgid "Dragging a single message"
+msgstr "Glisser un message"
+
+#: amiga-mui/mailtreelistclass-new.c:3492
+msgid "Dragging %d messages"
+msgstr "Glisser %d messages"
+
 #: amiga-mui/mainwnd.c:96
 msgid "Rea_d"
 msgstr "_Lire"

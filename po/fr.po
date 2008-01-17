@@ -2149,6 +2149,15 @@ msgstr "Scripts"
 msgid ".:Execute ARexx Script..."
 msgstr ".:Exécuter un script ARexx..."
 
+#: amiga-mui/mainwnd.c:869
+msgid ""
+"Allows you to filter for messages containing the given texts within their "
+"From or Subject fields."
+msgstr ""
+"Cette zone permet de filtrer des messages selon des mots clés contenus dans "
+"le corps du message ou bien dans le sujet. Le filtre ne s'applique toutefois "
+"qu'au dossier en cours de visualisation."
+
 #: amiga-mui/mainwnd.c:896
 #, c-format
 msgid ""

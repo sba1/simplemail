@@ -188,6 +188,24 @@ static Object *image_prefs_signature_obj;
 static Object *image_prefs_phrase_obj;
 static Object *image_prefs_spam_obj;
 
+
+#ifdef __AROS__
+#define GROUPS_USER                     0
+#define GROUPS_ACCOUNT          1
+#define GROUPS_RECEIVE  2
+#define GROUPS_WRITE                    3
+#define GROUPS_READMISC 4
+#define GROUPS_READ                     5
+#define GROUPS_PHRASE           7
+#define GROUPS_SIGNATURE        8
+#define GROUPS_SPAM             6
+#define GROUPS_READHTML 9
+#define GROUPS_MAX                              9
+
+#else
+
+
+
 #define GROUPS_USER			0
 #define GROUPS_ACCOUNT		1
 #define GROUPS_RECEIVE 	2
@@ -199,6 +217,8 @@ static Object *image_prefs_spam_obj;
 #define GROUPS_SIGNATURE	8
 #define GROUPS_SPAM			9
 #define GROUPS_MAX				10
+
+#endif
 
 static Object *groups[GROUPS_MAX];
 static Object *config_last_visisble_group;
@@ -664,7 +684,9 @@ static int config_use(void)
 
 	close_config();
 	callback_config_changed();
+#ifndef __AROS__
 	appicon_refresh(1); /* this is amiga specific */
+#endif
 	return 1;
 }
 
@@ -790,6 +812,8 @@ static int init_user_group(void)
 					End,
 				End,
 			End,
+
+#ifndef __AROS__ /*aros doesn't have appicons*/
 		Child, HGroup,
 		  Child, MakeLabel(_("AppIcon Show")),
 		  Child, HGroup, Child, appicon_show_cycle = MakeCycle(_("AppIcon Show"), appicon_show_labels), Child, HSpace(0), End,
@@ -799,12 +823,14 @@ static int init_user_group(void)
 				MUIA_Popph_Contents, user.config.appicon_label,
 				End,
 			End,
+#endif
 		End;
 
 	if (!groups[GROUPS_USER]) return 0;
 
+#ifndef __AROS__ /*not used*/
   set(appicon_show_cycle, MUIA_Cycle_Active, user.config.appicon_show);
-
+#endif
 	DoMethod(startup_folder_tree, MUIM_Notify, MUIA_NListtree_DoubleClick, MUIV_EveryTime, (ULONG)startup_folder_popobject, 2, MUIM_Popstring_Close, TRUE);
 	config_refresh_folders();
 	if (user.config.startup_folder_name)
@@ -1946,9 +1972,17 @@ static int init_phrase_group(void)
 				MUIA_CycleChain,1,
 				End,
 			Child, MakeLabel(_("Welcome with address")),
+#ifdef __AROS__
+	  Child, phrase_write_welcomeaddr_popph = BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
 			Child, phrase_write_welcomeaddr_popph = PopphObject,
 				MUIA_Popph_Array, write_popph_array,
 				End,
+#endif
 			Child, MakeLabel(Q_("?phrases:Close")),
 			Child, phrase_write_close_string = BetterStringObject,
 				StringFrame,
@@ -1959,31 +1993,74 @@ static int init_phrase_group(void)
 		Child, HorizLineTextObject(_("Reply")),
 		Child, ColGroup(2),
 			Child, MakeLabel(_("Welcome")),
+#ifdef __AROS__
+          Child, phrase_reply_welcome_popph =BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
+
 			Child, phrase_reply_welcome_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
+#endif
 
 			Child, MakeLabel(_("Intro")),
+
+#ifdef __AROS__
+          Child, phrase_reply_intro_popph=BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
+
 			Child, phrase_reply_intro_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
+#endif
 
 			Child, MakeLabel(_("Close")),
+#ifdef __AROS__
+          Child, phrase_reply_close_popph =BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
 			Child, phrase_reply_close_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
+#endif
 			End,
 		Child, HorizLineTextObject(_("Forward")),
 		Child, ColGroup(2),
 			Child, MakeLabel(_("Initial")),
+#ifdef __AROS__
+          Child, phrase_forward_initial_popph = BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
 			Child, phrase_forward_initial_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
+#endif
 
 			Child, MakeLabel(_("Finish")),
+#ifdef __AROS__
+          Child, phrase_forward_terminating_popph = BetterStringObject,
+          StringFrame,
+          MUIA_String_AdvanceOnCR, TRUE,
+          MUIA_CycleChain,1,
+          End,
+#else
 			Child, phrase_forward_terminating_popph = PopphObject,
 				MUIA_Popph_Array, reply_popph_array,
 				End,
+#endif
 			End,
 		End;
 
@@ -2153,6 +2230,8 @@ static void init_config_window(void)
 
 	if (!create_sizes_class()) return;
 
+#ifndef __AROS__ /*popph is not available*/
+
 	if (!(test_popph = PopphObject, End))
 	{
 		sm_request(NULL, "Couldn't create config window, because\n"
@@ -2161,6 +2240,7 @@ static void init_config_window(void)
 	}
 	
 	MUI_DisposeObject(test_popph);
+#endif
 
 	init_account_group();
 	init_user_group();
@@ -2197,7 +2277,9 @@ static void init_config_window(void)
 						Child, groups[GROUPS_WRITE],
 						Child, groups[GROUPS_READMISC],
 						Child, groups[GROUPS_READ],
+#ifndef __AROS__ /*no html*/
 						Child, groups[GROUPS_READHTML],
+#endif
 						Child, groups[GROUPS_PHRASE],
 						Child, groups[GROUPS_SIGNATURE],
 						Child, groups[GROUPS_SPAM],
@@ -2238,7 +2320,9 @@ static void init_config_window(void)
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_write_obj,     GROUPS_WRITE, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_read_obj,      GROUPS_READMISC, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_readplain_obj, GROUPS_READ, 0);
+#ifndef __AROS__ /*no html*/
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_readhtml_obj,  GROUPS_READHTML, 0);
+#endif
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_signature_obj, GROUPS_SIGNATURE, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_phrase_obj,    GROUPS_PHRASE, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_spam_obj,      GROUPS_SPAM, 0);
@@ -2249,7 +2333,9 @@ static void init_config_window(void)
 		sprintf(texts[GROUPS_WRITE],    "\033o[%d] %s", GROUPS_WRITE,    _("Write"));
 		sprintf(texts[GROUPS_READMISC], "\033o[%d] %s", GROUPS_READMISC, _("Reading"));
 		sprintf(texts[GROUPS_READ],     "\033o[%d] %s", GROUPS_READ,     _("Reading plain"));
+#ifndef __AROS__ /*don't support html*/
 		sprintf(texts[GROUPS_READHTML], "\033o[%d] %s", GROUPS_READHTML, _("Reading HTML"));
+#endif
 		sprintf(texts[GROUPS_PHRASE],   "\033o[%d] %s", GROUPS_PHRASE,   _("Phrases"));
 		sprintf(texts[GROUPS_SIGNATURE],"\033o[%d] %s", GROUPS_SIGNATURE,_("Signatures"));
 		sprintf(texts[GROUPS_SPAM],     "\033o[%d] %s", GROUPS_SPAM,     _("Spam"));

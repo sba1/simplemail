@@ -334,12 +334,15 @@ int all_init(void)
 	{
 		if ((RexxSysBase = OpenLibraryInterface("rexxsyslib.library",rexxsyslib_version,&IRexxSys)))
 		{
+#ifndef __AROS__ /*no simple html*/
 			SimpleHTMLBase = OpenLibrary("PROGDIR:Libs/simplehtml.library",0);
 			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("PROGDIR:simplehtml.library",0);
 			if (!SimpleHTMLBase) SimpleHTMLBase = OpenLibrary("simplehtml.library",0);
 
 			if (SimpleHTMLBase)
 			{
+#endif /* AROS */
+
 #ifdef __AMIGAOS4__
 				/* The Interface of this library is optional. If not available on OS4,
 				 * the function are called via the emulator */
@@ -380,7 +383,9 @@ int all_init(void)
 						} else puts(_("Could not create mui custom classes\n"));
 					} else puts(_("Couldn't create appicon port\n"));
 				} else puts(_("Couldn't create arexx port\n"));
+#ifndef __AROS__
 			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);
+#endif
 		} else printf(_("Couldn't open %s version %d\n"),"rexxsyslib.library",rexxsyslib_version);
 	} else printf(_("Couldn't open %s version %d\n"),MUIMASTER_NAME,MUIMASTER_VMIN);
 

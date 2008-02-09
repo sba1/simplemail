@@ -104,8 +104,10 @@ struct  MUIP_DeleteDragImage { ULONG MethodID; struct MUI_DragImage *di; };
 #endif
 
 #if (MUIMASTER_VMIN < 18)
+#ifndef __AROS__ /*allready defined*/
 #define MUIM_DoDrag 0x804216bb /* private */ /* V18 */
 struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; /* private */
+#endif
 #endif
 
 #define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */

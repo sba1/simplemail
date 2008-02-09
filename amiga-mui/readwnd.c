@@ -32,7 +32,13 @@
 #include <libraries/gadtools.h>
 #include <mui/NListview_mcc.h>
 #include <mui/NListtree_mcc.h>
+#ifndef __AROS__
 #include "simplehtml_mcc.h"
+#endif
+#ifdef __AROS__
+#include <mui/Mailtext_mcc.h>
+#endif
+
 #include <clib/alib_protos.h>
 #include <proto/dos.h>
 #include <proto/exec.h>
@@ -113,8 +119,12 @@ struct Read_Data /* should be a customclass */
 	Object *contents_page;
 
 	Object *datatype_datatypes;
-	Object *html_simplehtml;
+#ifdef __AROS__
+        Object *text_mailtext;
+#else
 
+	Object *html_simplehtml;
+#endif
 	Object *attachments_group;
 
 	Object *attachments_last_selected;
@@ -257,6 +267,27 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 
 	if (mail->decoded_data)
 	{
+
+#ifdef __AROS__ /*no point in checking for text , we don't support html*/
+	  struct codeset *codeset;
+	  codeset = codesets_find(NULL);
+	  char *tmpbuf;
+	  tmpbuf = utf8tostrcreate(mail->decoded_data,codeset);
+
+
+          SetAttrs(data->datatype_datatypes,
+                   MUIA_DataTypes_Buffer, tmpbuf,
+                   MUIA_DataTypes_BufferLen, mail->decoded_len,
+                   TAG_DONE);
+
+
+          set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
+
+          DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT,\
+                   MUIA_SMToolbar_Attr_Disabled, !xget(data->datatype_datatypes, MUIA_DataTypes_SupportsPrint));
+
+          return;
+#else
 		if (stricmp(mail->content_type,"text"))
 		{
 			SetAttrs(data->datatype_datatypes,
@@ -334,6 +365,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
 		DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT, MUIA_SMToolbar_Attr_Disabled, FALSE);
+#endif
 	}
 }
 
@@ -928,6 +960,7 @@ static void uri_clicked(void **msg)
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
  otherwise 0. -1 means reject this object totaly
 *******************************************************************/
+#ifndef __AROS__ /* no simplehtml*/
 STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Object *obj), REG(a1,struct MUIP_SimpleHTML_LoadHook *msg))
 {
 	struct Read_Data *data = (struct Read_Data*)h->h_Data;
@@ -965,7 +998,7 @@ STATIC ASM SAVEDS LONG simplehtml_load_func(REG(a0,struct Hook *h), REG(a2, Obje
 	msg->buffer_len = mail->decoded_len;
 	return 1;
 }
-
+#endif
 
 /******************************************************************
  Display the mail
@@ -1084,6 +1117,9 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 int read_window_open(char *folder, struct mail_info *mail, int window)
 {
 	Object *wnd, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
+	#ifdef __AROS__
+        Object *text_mailtext,*lv;
+        #endif
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
 	Object *attachments_group;
 	Object *datatype_datatypes;
@@ -1189,12 +1225,26 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 
 				Child, VGroup,
 					MUIA_Group_Spacing, 0,
+#ifdef __AROS__ /*mailtext replacement*/
+          Child, lv  = NListviewObject,
+          MUIA_NListview_NList, text_mailtext = MailtextObject,
+          MUIA_Mailtext_ForbidContextMenu, FALSE,
+          MUIA_Font,                       MUIV_Font_Fixed,
+          MUIA_Frame,                      MUIV_Frame_InputList,
+          MUIA_NList_Input,                FALSE,
+          MUIA_NList_MultiSelect,          FALSE,
+
+          End,
+          End,
+#else
+
 					Child, HGroup,
 						MUIA_Group_Spacing, 0,
 						Child, html_simplehtml = SimpleHTMLObject,TextFrame,End,
 						Child, html_vert_scrollbar = ScrollbarObject,End,
 						End,
 					Child, html_horiz_scrollbar = ScrollbarObject, MUIA_Group_Horiz, TRUE, End,
+#endif
 					End,
 				Child, VGroup,
 					MUIA_Group_Spacing, 0,
@@ -1264,13 +1314,18 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 			data->toolbar = toolbar;
 			data->contents_page = contents_page;
 			data->datatype_datatypes = datatype_datatypes;
+#ifdef __AROS__
+                        data->text_mailtext = text_mailtext;
+#else
+
 			data->html_simplehtml = html_simplehtml;
+#endif
 			data->file_req = MUI_AllocAslRequestTags(ASL_FileRequest, ASLFR_DoSaveMode, TRUE, TAG_DONE);
 			data->attachments_group = attachments_group;
 			data->num = num;
 			data->direction = 1; /* next */
 			read_open[num] = data;
-
+#ifndef __AROS__
 			init_hook_with_data(&data->simplehtml_load_hook, (HOOKFUNC)simplehtml_load_func, data);
 
 			SetAttrs(data->html_simplehtml,
@@ -1278,14 +1333,15 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 					MUIA_SimpleHTML_VertScrollbar, html_vert_scrollbar,
 					MUIA_SimpleHTML_LoadHook, &data->simplehtml_load_hook,
 					TAG_DONE);
+#endif
 
 			SetAttrs(data->datatype_datatypes,
 					MUIA_DataTypes_HorizScrollbar, datatype_horiz_scrollbar,
 					MUIA_DataTypes_VertScrollbar, datatype_vert_scrollbar,
 					TAG_DONE);
-
+#ifndef __AROS__
 			DoMethod(data->html_simplehtml, MUIM_Notify, MUIA_SimpleHTML_URIClicked, MUIV_EveryTime, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)uri_clicked, (ULONG)data, MUIV_TriggerValue);
-
+#endif
 			/* create notifies for toolbar buttons */
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_PREV,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)prev_button_pressed, (ULONG)data);
 			DoMethod(data->toolbar, MUIM_SMToolbar_DoMethod, SM_READWND_BUTTON_NEXT,    9, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)next_button_pressed, (ULONG)data);

@@ -594,6 +594,7 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 		APTR mask = NULL;
 
 		GetDTAttrs(o,PDTA_MaskPlane,&mask,TAG_DONE);
+#ifndef __AROS__ /*don't know how to port this*/
 
 		if (mask)
 		{
@@ -610,6 +611,9 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 				BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);
 			}
 		}
+#else /*AROS BLT*/
+		BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);
+#endif
 	}
 }
 

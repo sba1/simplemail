@@ -59,7 +59,11 @@
 #include "foldertreelistclass.h"
 #include "mainwnd.h"
 #include "mailtreelistclass.h"
+#ifdef __AROS__ /*use mailtext instead of simplemhtml*/
+#include "mailtextview.h"
+#else
 #include "messageviewclass.h"
+#endif
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
@@ -68,13 +72,19 @@
 
 /*****************************************************/
 /* Minimum requirements of some external MUI classes */
-
+/* AROS doesn't have the latest versions yet        */
 #define NLISTTREE_MIN_VERSION   18
+#ifdef __AROS__
+#define NLISTTREE_MIN_REVISION  19
+#else
 #define NLISTTREE_MIN_REVISION  22
-
+#endif
 #define NLIST_MIN_VERSION   20
+#ifdef __AROS__
+#define NLIST_MIN_REVISION  112
+#else
 #define NLIST_MIN_REVISION  115
-
+#endif
 /*****************************************************/
 
 enum
@@ -856,6 +866,7 @@ int main_window_init(void)
 					MUIA_SMToolbar_InVGroup, TRUE,
 					MUIA_SMToolbar_Buttons, sm_mainwnd_buttons,
 					End,
+#ifndef __AROS__  /* will be fixed*/
 				Child, filter_group = VGroup,
 					MUIA_Weight, 20,
 					InnerSpacing(0,0),
@@ -873,6 +884,7 @@ int main_window_init(void)
 						End,
 					Child, HVSpace,
 					End,
+#endif
 				End,
 
 			Child, folder_group = HGroup,

@@ -1964,8 +1964,9 @@ int simplemail_main(void)
 					gui_loop();
 				}
 				folder_delete_deleted();
-
-/*			folder_save_order();*/
+#ifdef __AROS__ /*folders doesn't get saved ?*/
+			folder_save_order();
+#endif
 				spam_cleanup();
 			}
 			del_folders();

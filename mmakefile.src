@@ -2,8 +2,8 @@
 
 include $(TOP)/config/make.cfg
 
-#MM- contrib-simplemail : contrib-simplemail-bin
-#MM contrib-simplemail-bin : includes linklibs linklibs-expat
+#MM- contrib-simplemail_cvs : contrib-simplemail_cvs-bin
+#MM contrib-simplemail_cvs-bin : includes linklibs linklibs-expat
 
 #contrib-zune-classes-thebar
 
@@ -31,7 +31,7 @@ AMIGAMUI := \
 	pgplistclass \
 	multistringclass \
 	muistuff \
-	messageviewclass \
+	mailtextview \
 	mainwnd \
 	mailtreelistclass \
 	mailinfoclass \
@@ -110,9 +110,9 @@ USER_INCLUDES := -I./indep-include -I./amiga-mui -I. \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/netinclude \
 		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/bsdsocket/ 
 
-USER_CFLAGS := -DNO_SSL -DUSE_OLD_MAILLIST -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+USER_CFLAGS := -D__AROS__ -DNO_SSL -DUSE_OLD_MAILLIST -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
-%build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
+%build_prog mmake=contrib-simplemail_cvs-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat" 
 
 %common

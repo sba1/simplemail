@@ -2471,7 +2471,7 @@ void mail_decode(struct mail_complete *mail)
 		{
 			if (mail->decoded_data)
 			{
-				char *new_data = utf8create_len(mail->decoded_data,mail->content_charset,mail->decoded_len);
+			  	char *new_data = utf8create_len(mail->decoded_data,mail->content_charset,mail->decoded_len);
 				free(mail->decoded_data);
 				mail->decoded_data = new_data;
 				mail->decoded_len = mystrlen(new_data);

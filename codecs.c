@@ -1010,6 +1010,27 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
 			unsigned long todecode3 = *(((unsigned long*)buf)+2);
 			buf += 12;
 			len -= 12;
+#ifdef __AROS__ /*byteswaping ,will currently break arosppc , will be fixed*/
+
+                        unsigned long ByteSwap1 (unsigned long nLongNumber)
+                        {
+                          union u {unsigned long vi; unsigned char c[sizeof(unsigned long)];};
+                          union v {unsigned long ni; unsigned char d[sizeof(unsigned long)];};
+                          union u un;
+                          union v vn;
+                          un.vi = nLongNumber;
+                          vn.d[0]=un.c[3];
+                          vn.d[1]=un.c[2];
+                          vn.d[2]=un.c[1];
+                          vn.d[3]=un.c[0];
+                          return (vn.ni);
+                        }
+
+                        todecode1 = ByteSwap1 (todecode1);
+                        todecode2 = ByteSwap1 (todecode2);
+                        todecode3 = ByteSwap1 (todecode3);
+
+#endif
 
 			if (line_len >= 76)
 			{

@@ -105,15 +105,15 @@ Software
  - @{" MUI " LINK MUI} 3.8 or higher
  - 3rd party MUI custom classes:
 
-   BetterString   - http:\//www.p2p-it.dk/duff/MCC_BetterString.LZX
-   NList          - http:\//www.aphaso.de/download/MCC_NList0_90.lha
-   NListtree      - http:\//www.aphaso.de/download/MCC_NListtree18.8.lha
-   PopPlaceHolder - http:\//us.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
-   TextEditor     - http:\//www.p2p-it.dk/duff/MCC_TextEditor.LZX
+ - @{"BetterString" SYSTEM "OpenURL http://aminet.net/dev/mui/MCC_BetterString-11.15.lha"}   - http://aminet.net/dev/mui/MCC_BetterString-11.15.lha
+ - @{"NList" SYSTEM "OpenURL http://sourceforge.net/projects/nlist-classes/"}          - http://sourceforge.net/projects/nlist-classes/
+ - @{"NListtree" SYSTEM "OpenURL http://sourceforge.net/projects/nlist-classes/"}      - http://sourceforge.net/projects/nlist-classes/
+ - @{"PopPlaceHolder" SYSTEM "OpenURL http://aminet.net/dev/mui/MCC_Popph.lha"} - http://aminet.net/dev/mui/MCC_Popph.lha
+ - @{"TextEditor" SYSTEM "OpenURL http://aminet.net/dev/mui/MCC_TextEditor-15.27.lha"}     - http://aminet.net/dev/mui/MCC_TextEditor-15.27.lha
 
- - (optional) OpenURL    - http:\//www.cc.jyu.fi/~sintonen/bin/OpenURL31.lha
- - (optional) PGP 2.6.x  - http:\//us.aminet.net/pub/aminet/util/crypt/PGPAmiga-2.6.3is.lha
- - (optional) AmiSSL     - http:\//tesla.rcub.bg.ac.yu/~antony/AmiSSL/
+ - (optional) OpenURL    - http://aminet.net/search?query=openurl
+ - (optional) PGP 2.6.x  - @{" http://aminet.net/util/crypt/PGPAmi26ui.lha " system "OpenURL http://aminet.net/util/crypt/PGPAmi26ui.lha"}
+ - (optional) AmiSSL     - @{" http://www.heightanxiety.com/AmiSSL/ " system "OpenURL http://www.heightanxiety.com/AmiSSL/"}
 
 @ENDNODE
 @NODE "COPY" "Legal issues"

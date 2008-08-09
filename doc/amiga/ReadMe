@@ -20,10 +20,10 @@ Requirements
 SimpleMail requires OS3.0 and MUI 3.8.
 It also needs some additional MUI Custom Classes:
 
- BetterString - http://www.p2p-it.dk/duff/MCC_BetterString.LZX
- NList, NListtree - http://www.sf.net/projects/nlist-classes
- PopPlaceholder - ftp://de.aminet.net/pub/aminet/dev/mui/MCC_Popph.lha
- TextEditor - http://www.p2p-it.dk/duff/MCC_TextEditor.LZX
+ BetterString - http://aminet.net/dev/mui/MCC_BetterString-11.15.lha
+ NList / NListtree - http://sourceforge.net/projects/nlist-classes/
+ PopPlaceholder - http://aminet.net/dev/mui/MCC_Popph.lha
+ TextEditor -  http://aminet.net/dev/mui/MCC_TextEditor-15.27.lha
 
 Make sure that you always have the latest versions installed! Especially
 having the latest NList classes (at least 0.96 of the package) is very

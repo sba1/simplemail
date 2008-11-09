@@ -205,8 +205,28 @@ prepare-release:
   -delete ram:simplemail.lzx
   -delete ram:simplemail.lha
   -delete ram:simplemail-os3.lha
-  lha -r  a ram:simplemail-os3 ram:SimpleMail ram:SimpleMail.info
+  lha -r a ram:simplemail-os3 ram:SimpleMail ram:SimpleMail.info
 #  lzx -9 -r a ram:simplemail ram:SimpleMail ram:SimpleMail.info
+
+prepare-os4-release:
+  -delete ram:SimpleMail all
+  makedir ram:SimpleMail ram:SimpleMail/Libs
+  copy SimpleMail ram:SimpleMail
+  copy doc/amiga/ReadMe ram:SimpleMail
+  copy doc/amiga/SimpleMail.guide ram:SimpleMail
+  copy doc/amiga/history.txt ram:SimpleMail
+  copy amiga-mui/binaries/ReadMe.info ram:SimpleMail
+  copy amiga-mui/binaries/SimpleMail.guide.info ram:SimpleMail
+  copy amiga-mui/binaries/SimpleMail.info ram:SimpleMail
+  copy amiga-mui/binaries/Drawer.info ram:SimpleMail.info
+  copy amiga-mui/binaries/simplehtml-os4.library ram:SimpleMail/Libs/simplehtml.library
+  copy sm/images TO ram:SimpleMail/Images
+  copy sm/ARexx TO ram:SimpleMail/ARexx
+  copy sm/locale/\#?.mo To ram:SimpleMail/Locale
+  copy sm/Charsets/\#?.txt To ram:SimpleMail/Charsets
+  copy sm/.taglines TO ram:SimpleMail/.taglines
+  -delete ram:simplemail-os4.lha
+  lha -r a ram:simplemail-os4 ram:SimpleMail ram:SimpleMail.info
 
 # bump the revison
 bump:

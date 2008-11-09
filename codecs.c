@@ -273,7 +273,7 @@ unsigned char *strencoded(unsigned char *str)
 	while ((c=*str))
 	{
 		if (c > 127 || c == '=' || c == '?')
-			return 
+			return
 	}
 }
 */
@@ -405,7 +405,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 
 				line_len += l + (quotes?2:0);
 				encoded_len += l + (quotes?2:0);
-				
+
 /*				while (l)
 				{
 					if (line_len >= max_line_len)
@@ -880,9 +880,9 @@ char *encode_address_field_utf8(char *field_name, struct list *address_list)
 
 	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
 	int line_len;
-	
+
 	string str;
-	
+
 	if (!string_initialize(&str,200))
 		return NULL;
 
@@ -1010,7 +1010,7 @@ static void encode_body_base64(FILE *fh, unsigned char *buf, unsigned int len)
 			unsigned long todecode3 = *(((unsigned long*)buf)+2);
 			buf += 12;
 			len -= 12;
-#ifdef __AROS__ /*byteswaping ,will currently break arosppc , will be fixed*/
+#ifdef __AROS__ /* TODO: byteswaping ,will currently break arosppc , will be fixed*/
 
                         unsigned long ByteSwap1 (unsigned long nLongNumber)
                         {

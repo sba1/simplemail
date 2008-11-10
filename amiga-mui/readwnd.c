@@ -102,7 +102,7 @@ struct Read_Data;
 
 void display_about(void);
 static void save_contents(struct Read_Data *data, struct mail_complete *mail);
-static void save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file);
+static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file);
 static int read_window_display_mail(struct Read_Data *data, struct mail_info *mail);
 
 #define MAX_READ_OPEN 10
@@ -524,8 +524,9 @@ static void save_contents(struct Read_Data *data, struct mail_complete *mail)
 /******************************************************************
  Save the contents of a given mail to a given dest
 *******************************************************************/
-static void save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file)
+static int save_contents_to(struct Read_Data *data, struct mail_complete *mail, char *drawer, char *file)
 {
+	int rc = 0;
 	BPTR dlock;
 	mail_decode(mail);
 
@@ -561,7 +562,7 @@ static void save_contents_to(struct Read_Data *data, struct mail_complete *mail,
 
 				/* Get the contents */
 				mail_decoded_data(mail,&cont,&cont_len);
-					
+
 				if (mystricmp(user_charset,charset))
 				{
 					/* The character sets differ so now we create the two strings to see if they differ */
@@ -583,14 +584,14 @@ static void save_contents_to(struct Read_Data *data, struct mail_complete *mail,
 							char gadgets[320];
 							int selection;
 
-							sprintf(gadgets,_("_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
-							selection = sm_request(NULL,_("The orginal charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),gadgets);
+							sm_snprintf(gadgets,sizeof(gadgets),_("_Original (%s)|_Converted (%s)| _UTF8|_Cancel"),charset,user_charset);
+							selection = sm_request(NULL,_("The original charset of the attached file differs from yours.\nIn which charset do you want the file being saved?"),gadgets);
 
 							switch (selection)
 							{
 								case 1: towrite = str; break;
 								case 2: towrite = user_str; break;
-								case 3: towrite = NULL; goon = 1; break; /* will be writeout as utf8 */
+								case 3: towrite = NULL; goon = 1; break; /* will be written out as utf8 */
 								default: towrite = NULL; goon = 0; break; /* cancel */
 							}
 						} else towrite = user_str;
@@ -610,13 +611,14 @@ static void save_contents_to(struct Read_Data *data, struct mail_complete *mail,
 									free(comment);
 								}
 								goon = 0;
+								rc = 1;
 							}
 						}
 					}
 				}
 			}
 		}
-		
+
     if (goon)
     {
 			if ((fh = Open(file, MODE_NEWFILE)))
@@ -635,12 +637,16 @@ static void save_contents_to(struct Read_Data *data, struct mail_complete *mail,
 					SetComment(file,comment);
 					free(comment);
 				}
+
+				rc = 1;
 			}
 		}
 
 		CurrentDir(olock);
 		UnLock(dlock);
 	}
+
+	return rc;
 }
 
 /******************************************************************
@@ -691,6 +697,59 @@ static void menu_print(int **pdata)
 }
 
 /******************************************************************
+ Saves all the attachment into the given directory.
+*******************************************************************/
+static int save_all_attachments_of_mail(struct Read_Data *data, struct mail_complete *mail, char *drawer)
+{
+	if (mail->num_multiparts == 0)
+	{
+		return save_contents_to(data,mail,drawer,mail->content_name);
+	} else
+	{
+		int i;
+
+		for (i=0;i<mail->num_multiparts;i++)
+		{
+			if (!save_all_attachments_of_mail(data,mail->multipart_array[i],drawer))
+				return 0;
+		}
+
+		return 1;
+	}
+}
+
+/******************************************************************
+ Saves all the attachment into a user selectable directory.
+*******************************************************************/
+static void save_all_attachments(int **pdata)
+{
+	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
+
+	if (MUI_AslRequestTags(data->file_req,
+			ASLFR_DrawersOnly, TRUE,
+			TAG_DONE))
+	{
+		BPTR dlock;
+		char *drawer = data->file_req->fr_Drawer;
+		if (!(dlock = Lock(drawer,ACCESS_READ)))
+		{
+			if (sm_request(NULL,_("The selected destination drawer \"%s\" doesn't exists.\nShould it be created?"),_("*_Yes|_No"),drawer))
+			{
+				sm_makedir(drawer);
+				dlock = Lock(drawer, ACCESS_READ);
+			}
+
+		}
+		if (dlock)
+		{
+			UnLock(dlock);
+			save_all_attachments_of_mail(data,data->mail,drawer);
+		}
+	}
+
+}
+
+/******************************************************************
  Shows a given mail (part)
 *******************************************************************/
 static void show_mail(struct Read_Data *data, struct mail_complete *m)
@@ -714,7 +773,7 @@ static void show_all_headers(void **pdata)
 {
 	struct Read_Data *data = (struct Read_Data*)(pdata[0]);
 	struct mail_complete *mail;
-	
+
 	if (!data->attachments_last_selected)
 	{
 		insert_text(data, data->mail);
@@ -1030,7 +1089,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 		BPTR old_dir;
 
 		SM_DEBUGF(15,("Got lock at %p\n",lock));
-		
+
 		old_dir = CurrentDir(lock);
 		SM_DEBUGF(15,("Old dir at %p\n",old_dir));
 
@@ -1135,6 +1194,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		MENU_PROJECT_QUIT,
 		MENU_MAIL_RAW,
 		MENU_MAIL_PRINT,
+		MENU_MAIL_SAVE_ALL_ATTACHMENTS,
 		MENU_SETTINGS_SHOW_ALLHEADERS
 	};
 
@@ -1146,11 +1206,13 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Mail"), NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Show raw..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
+		{NM_ITEM, N_("Show Raw..."), NULL, 0, 0, (APTR)MENU_MAIL_RAW},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Print visible mailpart"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
+		{NM_ITEM, N_("Save All Attachments..."), NULL, 0, 0, (APTR)MENU_MAIL_SAVE_ALL_ATTACHMENTS},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Print Visible Mail Part"), NULL, 0, 0, (APTR)MENU_MAIL_PRINT},
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Show all headers?"), NULL, MENUTOGGLE|CHECKIT, 0, (APTR)MENU_SETTINGS_SHOW_ALLHEADERS},
+		{NM_ITEM, N_("Show All Headers?"), NULL, MENUTOGGLE|CHECKIT, 0, (APTR)MENU_SETTINGS_SHOW_ALLHEADERS},
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
@@ -1288,7 +1350,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 						MUIA_UserData, 1,
 						End,
 					Child, MenuitemObject,
-						MUIA_Menuitem_Title, _("Print as text"),
+						MUIA_Menuitem_Title, _("Print As Text"),
 						MUIA_UserData, 4,
 						End,
 					End,
@@ -1297,11 +1359,11 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 			data->attachment_html_menu = MenustripObject,
 				Child, MenuObjectT(_("Attachment")),
 					Child, save_contents2_item = MenuitemObject,
-						MUIA_Menuitem_Title, _("Save as..."),
+						MUIA_Menuitem_Title, _("Save As..."),
 						MUIA_UserData, 1,
 						End,
 					Child, save_document_item = MenuitemObject,
-						MUIA_Menuitem_Title, _("Save whole document as..."),
+						MUIA_Menuitem_Title, _("Save Whole Document As..."),
 						MUIA_UserData, 2,
 						End,
 					End,
@@ -1360,6 +1422,7 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, (ULONG)App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_RAW, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)show_raw, (ULONG)data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_PRINT, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_print, (ULONG)data);
+			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_MAIL_SAVE_ALL_ATTACHMENTS, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (APTR)save_all_attachments, data);
 			DoMethod(wnd, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ALLHEADERS, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)show_all_headers, (ULONG)data);
 			data->settings_show_all_headers_menu = (Object*)DoMethod(read_menu, MUIM_FindUData, MENU_SETTINGS_SHOW_ALLHEADERS);
 

@@ -12,6 +12,7 @@ G_OPTFLAGS  = -O3 \
          -mmultiple \
          -noixemul \
          -Wall \
+         -W \
          -Wno-parentheses \
          -Wno-switch \
          -Wstrict-prototypes \

@@ -184,7 +184,7 @@ static char *skip_spaces(const char *buf)
 }
 
 /**************************************************************************
- atom        =  1*<any CHAR except specials, SPACE and CTLs> 
+ atom        =  1*<any CHAR except specials, SPACE and CTLs>
 **************************************************************************/
 static char *parse_atom(char *atom, char **pbuf)
 {
@@ -215,7 +215,7 @@ static char *parse_atom(char *atom, char **pbuf)
 }
 
 /**************************************************************************
- quoted-string = <"> *(qtext/quoted-pair) <"> 
+ quoted-string = <"> *(qtext/quoted-pair) <">
 **************************************************************************/
 static char *parse_quoted_string(char *quoted_string, char **pbuf)
 {
@@ -412,7 +412,7 @@ static char *parse_local_part(char *local_part, char **pbuf)
 }
 
 /**************************************************************************
- sub-domain  =  domain-ref / domain-literal 
+ sub-domain  =  domain-ref / domain-literal
  domain-ref = atom
  domain-literal actually not implemented
 **************************************************************************/
@@ -434,7 +434,7 @@ static char *parse_sub_domain(char *sub_domain, char **pbuf)
 }
 
 /**************************************************************************
- domain      =  sub-domain *("." sub-domain) 
+ domain      =  sub-domain *("." sub-domain)
 **************************************************************************/
 static char *parse_domain(char *domain, char **pbuf)
 {
@@ -466,7 +466,7 @@ static char *parse_domain(char *domain, char **pbuf)
 }
 
 /**************************************************************************
- addr-spec   =  local-part "@" domain 
+ addr-spec   =  local-part "@" domain
 **************************************************************************/
 char *parse_addr_spec(char *addr_spec, char **pbuf)
 {
@@ -510,7 +510,7 @@ out:
 }
 
 /**************************************************************************
- phrase      =  1*word 
+ phrase      =  1*word
 **************************************************************************/
 static char *parse_phrase(char *phrase, utf8 **pbuf)
 {
@@ -549,7 +549,7 @@ static char *parse_phrase(char *phrase, utf8 **pbuf)
 
 /**************************************************************************
  mailbox = addr-spec | phrase route-addr
- route_addr = "<" [route] addr-spec ">" 
+ route_addr = "<" [route] addr-spec ">"
 **************************************************************************/
 char *parse_mailbox(char *mailbox, struct mailbox *mbox)
 {
@@ -611,7 +611,7 @@ bailout:
 }
 
 /**************************************************************************
- group = phrase ":" [#mailbox] ";" 
+ group = phrase ":" [#mailbox] ";"
 **************************************************************************/
 static char *parse_group(char *group, struct parse_address *dest)
 {
@@ -706,8 +706,8 @@ void free_address(struct parse_address *addr)
 }
 
 /**************************************************************************
- text        =  <any CHAR, including bare    ; => atoms, specials, 
-                 CR & bare LF, but NOT       ;  comments and 
+ text        =  <any CHAR, including bare    ; => atoms, specials,
+                 CR & bare LF, but NOT       ;  comments and
                  including CRLF>             ;  quoted-strings are NOT recognized
 
  text_string = *(encoded-word/text)
@@ -823,7 +823,7 @@ int is_token(char *token)
 
 /**************************************************************************
  In Mime support
- token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or tspecials> 
+ token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or tspecials>
 **************************************************************************/
 char *parse_token(char *token, char **pbuf)
 {
@@ -859,7 +859,7 @@ char *parse_token(char *token, char **pbuf)
 
 /**************************************************************************
  In Mime support
- value := token / quoted-string 
+ value := token / quoted-string
 **************************************************************************/
 char *parse_value(char *value, char **pbuf)
 {
@@ -870,8 +870,11 @@ char *parse_value(char *value, char **pbuf)
 
 /**************************************************************************
  In Mime support
- parameter := attribute "=" value 
+ parameter := attribute "=" value
  attribute := token
+
+ Modified a little bit such that spaces surrounding the "=" sign are
+ also accepted.
 **************************************************************************/
 char *parse_parameter(char *parameter, struct parse_parameter *dest)
 {
@@ -879,8 +882,10 @@ char *parse_parameter(char *parameter, struct parse_parameter *dest)
 	char *value;
 	char *ret = parse_token(parameter,&attr);
   if (!ret) return NULL;
+  ret = skip_spaces(ret); /* This doesn't conform to the RFC */
   if (*ret++ == '=')
   {
+	ret = skip_spaces(ret);  /* This doesn't conform to the RFC */
   	if ((ret = parse_value(ret,&value)))
   	{
   		dest->attribute = attr;
@@ -894,7 +899,7 @@ char *parse_parameter(char *parameter, struct parse_parameter *dest)
 
 
 /**************************************************************************
- token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or especials> 
+ token  :=  1*<any (ASCII) CHAR except SPACE, CTLs, or especials>
 **************************************************************************/
 char *parse_etoken(char *token, char **pbuf)
 {

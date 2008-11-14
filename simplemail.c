@@ -97,7 +97,7 @@ void callback_save_active_mail(void)
 		{
 			strcpy(src,f->path);
 			sm_add_part(src,mail_filename,src_len);
-			
+
 			if (!myfilecopy(src, dest))
 				sm_request(NULL,_("Unable to save the active mail.\n"),_("Ok"));
 
@@ -124,7 +124,7 @@ static int touch_mail(struct folder *f, struct mail_info *mail)
 		mail->flags &= ~MAIL_FLAGS_NEW;
 		refresh = 1;
 	}
-	
+
 	if (refresh)
 	{
 		main_refresh_mail(mail);
@@ -370,7 +370,7 @@ int callback_open_message(char *message, int window)
 
 	if (!message)
 	{
-		path = sm_request_file("SimpleMail", stored_dir, 0, NULL);
+		path = sm_request_file("SimpleMail", stored_dir, 0, "");
 	} else
 	{
 		path = mystrdup(message);
@@ -890,7 +890,7 @@ static void display_active_mail(struct folder *f, struct mail_info *m)
 	if (main_get_active_mail() == m)
 	{
 		main_display_active_mail();
-		
+
 		if (main_is_message_view_displayed())
 		{
 			/* TODO: Make the delay user configurable */
@@ -927,7 +927,7 @@ void callback_check_selected_folder_for_spam(void)
 			if (hams < user.config.min_classified_mails) which_txt = _("spam and ham");
 			else which_txt = _("spam");
 		} else which_txt = _("ham");
-		
+
 		if (!(sm_request(NULL,_("Currently there are too few mails classified as %s.\nStatistical spam identification works only reliable if you classify\n"
 											"enough mails before.\n"
 											"500 mails for both classes are considered enough, but the more\nyou classify correctly the better it works.\n\n"
@@ -1070,7 +1070,7 @@ void callback_show_raw(void)
 	if ((filename = main_get_mail_filename()))
 	{
 		sm_show_ascii_file(main_get_folder_drawer(), filename);
-	}	
+	}
 }
 
 /* mails should be fetched */
@@ -1286,7 +1286,7 @@ int callback_remote_filter_mail(struct mail_info *mail)
 
 /**
  * Import mails from a mbox file
- * 
+ *
  * in_folder_ptr might be NULL.
  */
 void callback_import_mbox(int *in_folder_ptr)
@@ -1305,7 +1305,7 @@ void callback_import_mbox(int *in_folder_ptr)
 	{
 		if (!mbox_import_to_folder(f,filename))
 		{
-			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
+			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));
 		}
 	}
 	free(filename);
@@ -1330,7 +1330,7 @@ void callback_import_dbx(int *in_folder_ptr)
 	{
 		if (!dbx_import_to_folder(f,filename))
 		{
-			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));			
+			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));
 		}
 	}
 	free(filename);
@@ -1562,7 +1562,7 @@ void callback_mails_set_status(int status)
 		}
 
 		mail = main_get_mail_next_selected(&handle);
-	}	
+	}
 }
 
 /* Selected mails are spam */
@@ -1624,7 +1624,7 @@ void callback_selected_mails_are_ham(void)
 				main_refresh_mail(mail);
 		}
 		mail = main_get_mail_next_selected(&handle);
-	}	
+	}
 }
 
 /* Check if selected mails are spam */
@@ -1667,7 +1667,7 @@ int callback_import_addressbook(void)
 {
 	int rc = 0;
 	char *filename;
-	
+
 	filename = sm_request_file(_("Select an addressbook-file."), "",0,NULL);
 	if (filename && *filename)
 	{
@@ -1676,7 +1676,7 @@ int callback_import_addressbook(void)
 		addressbookwnd_refresh();
 		free(filename);
 	}
-	
+
 	return rc;
 }
 

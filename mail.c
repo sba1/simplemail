@@ -977,7 +977,7 @@ struct mail_info *mail_info_create_from_file(char *filename)
 	if ((mail = mail_complete_create_from_file(filename)))
 	{
 		struct mail_info *info;
-		
+
 		info = mail->info;
 		mail->info = NULL;
 		mail_complete_free(mail);
@@ -1369,9 +1369,9 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 {
 	struct mail_complete *m;
 	int i;
-	
+
 	if (num < 1) return NULL;
-	
+
 	if ((m = mail_complete_create()))
 	{
 		struct mail_complete *forward;
@@ -1432,7 +1432,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 					int size;
 
 					size = myfsize(fh);
-					
+
 					if ((new_part = mail_complete_create()))
 					{
 						if ((new_part->decoded_data = malloc(size)))
@@ -1452,7 +1452,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 								m->multipart_allocated += 5;
 								m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
 							}
-		
+
 							m->multipart_array[m->num_multiparts] = new_part;
 							m->num_multiparts++;
 						}
@@ -1483,13 +1483,13 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 				{
 					void *data;
 					int data_len;
-	
+
 					char *fwd_text;
 					char *from = mail_find_header_contents(forward,"from");
 					struct phrase *phrase;
-	
+
 					phrase = phrase_find_best(from);
-	
+
 					if (phrase)
 					{
 						/* add the welcome phrase */
@@ -1538,10 +1538,10 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 						{
 							int attach_len;
 							void *attach_data;
-	
+
 							mail_decode(mail_iter);
 							mail_decoded_data(mail_iter,&attach_data,&attach_len);
-	
+
 							if ((new_part->decoded_data = malloc(attach_len)))
 							{
 								memcpy(new_part->decoded_data,attach_data,attach_len);
@@ -1550,13 +1550,13 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 								new_part->content_type = mystrdup(mail_iter->content_type);
 								new_part->content_subtype = mystrdup(mail_iter->content_subtype);
 								new_part->parent_mail = m;
-	
+
 								if (m->num_multiparts == m->multipart_allocated)
 								{
 									m->multipart_allocated += 5;
 									m->multipart_array = realloc(m->multipart_array,sizeof(struct mail*)*m->multipart_allocated);
 								}
-	
+
 								/* Skip the first part because it's reserved for the text part */
 								if (!m->num_multiparts) m->num_multiparts++;
 								m->multipart_array[m->num_multiparts] = new_part;
@@ -1589,7 +1589,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 				m->decoded_len = mystrlen(modified_text);
 			}
 		} /* as attachments? */
-		mail_process_headers(m);		
+		mail_process_headers(m);
 	}
 	return m;
 }
@@ -2274,7 +2274,7 @@ static void mail_resolve_smime(struct mail_complete *mail)
 }
 
 /**************************************************************************
- Reads the structrutre of a mail (uses ugly recursion)
+ Reads the structure of a mail (uses ugly recursion)
 **************************************************************************/
 static int mail_read_structure(struct mail_complete *mail)
 {
@@ -2282,6 +2282,7 @@ static int mail_read_structure(struct mail_complete *mail)
 	{
 		/* message is a multipart message */
 		char *boundary = mail_find_content_parameter_value(mail,"boundary");
+
 		if (boundary)
 		{
 			char *search_str = strdupcat("\n--"/*or "--"*/,boundary);
@@ -2758,7 +2759,7 @@ utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 
 	if (!string_initialize(&str,200))
 		return NULL;
-		
+
 	while (address)
 	{
 		struct address *nextaddress = (struct address*)node_next(&address->node);
@@ -2780,7 +2781,7 @@ utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 				string_append(&str,address->realname);
 				string_append(&str,"\"");
 			} else string_append(&str,address->realname);
-			
+
 			string_append(&str," <");
 			string_append(&str,email);
 			string_append(&str,">");
@@ -3149,9 +3150,9 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 						unsigned char c;
 						unsigned char *buf = new_mail->content_filename;
 						static const char pspecials[] = "'%* ()<>@,;:\\\"[]?=";
-	
+
 						fprintf(ofh,"; filename*=utf-8''");
-	
+
 						while((c = *buf++))
 						{
 							if (c > 127 || strchr(pspecials,c)) fprintf(ofh,"%%%02X",c);
@@ -3336,7 +3337,7 @@ static void fputhtmlstr(char *str, FILE *fh)
 int mail_create_html_header(struct mail_complete *mail, int all_headers)
 {
 	int rc = 0;
-	
+
 	FILE *fh;
 
 	if (mail->html_header)
@@ -3344,7 +3345,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 		free(mail->html_header);
 		mail->html_header = NULL;
 	}
-	
+
 	all_headers = all_headers || (user.config.header_flags & SHOW_HEADER_ALL);
 
 	if ((fh = tmpfile()))

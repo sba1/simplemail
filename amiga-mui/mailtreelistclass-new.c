@@ -303,6 +303,7 @@ struct MailTreelist_Data
 	LONG horiz_first; /* first horizontal visible pixel */
 
 	utf8 *highlight; /* which text string to highlight */
+	char *highlight_native;
 
 	struct ColumnInfo ci[MAX_COLUMNS];
 	int columns_active[MAX_COLUMNS]; /* Indices to ci of active columns */
@@ -889,7 +890,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	int x1;
 	int fonty;
 	int entry_height;
-	int prev_active; /* previously drawed column */
+	int prev_active; /* previously drawn column */
 
 	struct ListEntry *entry;
 	struct mail_info *m;
@@ -963,7 +964,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			}
 		}
 
-		SetAPen(rp,_pens(obj)[MPEN_TEXT]);
+//		SetAPen(rp,_pens(obj)[MPEN_TEXT]);
 
 		col_width = ci->width;
 		is_ascii7 = 1;
@@ -1074,7 +1075,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 
 			available_col_width = col_width;
 
-			/* substract the titlemarker from the available space in the title column */
+			/* subtract the titlemarker from the available space in the title column */
 			if (entry_pos == ENTRY_TITLE)
 			{
 				if (ci->flags & COLUMN_FLAG_SORT1MASK)
@@ -1130,67 +1131,130 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 				} else
 #endif
 				{
+					int lengths[3];
+					int pens[3];
+					int todo;
+					int part = 0;
+
 					Move(rp,xstart,y + _font(obj)->tf_Baseline);
 
-					/* use amiga os text functions to bring up the text  */
+					pens[0] = _pens(obj)[MPEN_TEXT];
+					pens[1] = _dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN];//_pens(obj)[MPEN_];
+					pens[2] = _pens(obj)[MPEN_TEXT];
+
+					lengths[0] = -1;
+
+					/* use AmigaOS text functions to bring up the text  */
 					if (!is_ascii7)
 					{
+						if (data->highlight)
+						{
+							char *begin = utf8stristr(txt,data->highlight);
+							if (begin)
+							{
+								lengths[0] = utf8charpos(txt,begin-txt);
+								lengths[1] = utf8len(data->highlight);
+								lengths[2] = utf8len(begin) - lengths[1];
+							}
+						}
+
 						utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
 						txt = data->buf;
-					}
-
-					txt_len = strlen(txt);
-					fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
-					if (fit < txt_len && (available_col_width > data->threepoints_width))
+					} else
 					{
-						/* special truncation for the subject. First truncate the left part of the
-						   subject, see folder.c/mail_get_compare_subject() what will be skipped */
-						if (ci->type == COLUMN_TYPE_SUBJECT)
+						if (data->highlight_native)
 						{
-							char *new_txt = mail_get_compare_subject(txt);
-							int new_len = strlen(new_txt);
-
-							if (new_len != txt_len)
+							char *begin = mystristr(txt,data->highlight_native);
+							if (begin)
 							{
-								int new_width, left_width, left_len, left_fit;
-
-								new_width  = TextLength(rp, new_txt, new_len);
-								left_width = available_col_width - new_width;
-								if (left_width > data->threepoints_width)
-								{
-									left_len = txt_len - new_len;
-									left_fit = TextFit(rp,&txt[left_len-1],left_len,&te,NULL,-1,left_width-data->threepoints_width,fonty);
-									left_width = te.te_Width;
-								} else left_width = 0;
-
-								new_width = available_col_width-data->threepoints_width-left_width;
-								fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width,fonty);
-								if (fit < new_len && (new_width > data->threepoints_width))
-									fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width-data->threepoints_width,fonty);
-								if (fit > 4)
-								{
-									/* only use the special truncation if there are at least 5 chars */
-									Text(rp,"...",3);
-									if (left_width > 0) Text(rp,&txt[left_len-left_fit],left_fit);
-									available_col_width -= (data->threepoints_width+left_width);
-									txt = new_txt;
-									txt_len = new_len;
-								}
+								lengths[0] = begin - txt;
+								lengths[1] = strlen(data->highlight_native);
+								lengths[2] = strlen(begin) - lengths[1];
 							}
-							if (fit < txt_len && (available_col_width > data->threepoints_width))
-							{
-								fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
-							}
-						} else
-						{
-							fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
 						}
 					}
 
-					Text(rp,txt,fit);
+					txt_len = strlen(txt);
+					if (lengths[0] == -1)
+						lengths[0] = txt_len;
 
-					if (fit < txt_len && (available_col_width > data->threepoints_width))
-						Text(rp,"...",3);
+
+//					if (txt_len > 2)
+//					{
+//						lengths[0] = 2;
+//						lengths[1] = txt_len - 2;
+//					} else
+//					{
+//						lengths[0] = txt_len;
+//						pens[0] = _pens(obj)[MPEN_TEXT];
+//					}
+
+					todo = txt_len;
+
+					while (todo > 0)
+					{
+						todo -= lengths[part];
+						txt_len = lengths[part];
+
+						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
+						if (fit < txt_len && (available_col_width > data->threepoints_width))
+						{
+							/* special truncation for the subject. First truncate the left part of the
+							   subject, see folder.c/mail_get_compare_subject() what will be skipped */
+							if (ci->type == COLUMN_TYPE_SUBJECT)
+							{
+								char *new_txt = mail_get_compare_subject(txt);
+								int new_len = strlen(new_txt);
+
+								if (new_len != txt_len)
+								{
+									int new_width, left_width, left_len, left_fit;
+
+									new_width  = TextLength(rp, new_txt, new_len);
+									left_width = available_col_width - new_width;
+									if (left_width > data->threepoints_width)
+									{
+										left_len = txt_len - new_len;
+										left_fit = TextFit(rp,&txt[left_len-1],left_len,&te,NULL,-1,left_width-data->threepoints_width,fonty);
+										left_width = te.te_Width;
+									} else left_width = 0;
+
+									new_width = available_col_width-data->threepoints_width-left_width;
+									fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width,fonty);
+									if (fit < new_len && (new_width > data->threepoints_width))
+										fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width-data->threepoints_width,fonty);
+									if (fit > 4)
+									{
+										/* only use the special truncation if there are at least 5 chars */
+										Text(rp,"...",3);
+										if (left_width > 0) Text(rp,&txt[left_len-left_fit],left_fit);
+										available_col_width -= (data->threepoints_width+left_width);
+										txt = new_txt;
+										txt_len = new_len;
+									}
+								}
+								if (fit < txt_len && (available_col_width > data->threepoints_width))
+								{
+									fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+								}
+							} else
+							{
+								fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width - data->threepoints_width,fonty);
+							}
+						}
+
+
+						SetAPen(rp,pens[part]);
+						Text(rp,txt,fit);
+
+						if (fit < txt_len && (available_col_width > data->threepoints_width))
+						{
+							Text(rp,"...",3);
+							break;
+						}
+						txt += lengths[part];
+						part++;
+					}
 				}
 			}
 		}
@@ -1421,6 +1485,7 @@ STATIC ULONG MailTreelist_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (data->highlight) free(data->highlight);
+	if (data->highlight_native) free(data->highlight_native);
 	if (data->pool) DeletePool(data->pool);
 	if (data->context_menu) MUI_DisposeObject(data->context_menu);
 	if (data->title_menu) MUI_DisposeObject(data->title_menu);
@@ -2495,6 +2560,8 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	if (data->highlight) free(data->highlight);
 	data->highlight = mystrdup(f->filter);
+	if (data->highlight_native) free(data->highlight_native);
+	data->highlight_native = utf8tostrcreate(data->highlight,user.config.default_codeset);
 
 	/* folder can be accessed again */
 	folder_unlock(f);

@@ -869,7 +869,7 @@ int folder_number_of_unread_mails(struct folder *folder)
 		int num_mails = 0;
 		struct folder *iter = folder_next(folder);
 		struct folder *parent = folder->parent_folder;
-		
+
 		while (iter)
 		{
 			if (iter->parent_folder == parent) break;
@@ -896,7 +896,7 @@ int folder_number_of_new_mails(struct folder *folder)
 		int num_mails = 0;
 		struct folder *iter = folder_next(folder);
 		struct folder *parent = folder->parent_folder;
-		
+
 		while (iter)
 		{
 			if (iter->parent_folder == parent) break;
@@ -937,7 +937,7 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 		/* If mail infos are not read_yet, read them now */
 		if (!folder->mail_infos_loaded)
 			folder_read_mail_infos(folder,0);
-		
+
 		for (i=0;i<folder->num_mails;i++)
 		{
 			if (folder->mail_info_array[i]==mail)
@@ -1000,7 +1000,7 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 }
 
 /******************************************************************
- Set the flags of a mail. 
+ Set the flags of a mail.
 *******************************************************************/
 void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int flags_new)
 {
@@ -1016,7 +1016,7 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 }
 
 /******************************************************************
- Count the signatures. 
+ Count the signatures.
 *******************************************************************/
 int folder_count_signatures(char *def_signature)
 {
@@ -1456,7 +1456,7 @@ struct folder *folder_add_group(char *name)
 }
 
 /******************************************************************
- 
+
 *******************************************************************/
 struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 {
@@ -1485,6 +1485,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 		node->folder.imap_server = mystrdup(parent->imap_server);
 		node->folder.imap_user = mystrdup(parent->imap_user);
 		node->folder.imap_path = mystrdup(imap_path);
+		node->folder.num_index_mails = -1;
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);
 
@@ -1657,16 +1658,16 @@ int folder_remove(struct folder *f)
 
 /******************************************************************
  Create a live filter folder using the given filter string.
- 
+
  TODO: Add support for imap. Add better ref support. Add real live
  support.
 *******************************************************************/
 struct folder *folder_create_live_filter(struct folder *folder, utf8 *filter)
 {
 	struct folder *f;
-	
+
 	if (folder->is_imap) return NULL;
-	
+
 	if (!(f = malloc(sizeof(struct folder))))
 		return NULL;
 
@@ -1677,7 +1678,7 @@ struct folder *folder_create_live_filter(struct folder *folder, utf8 *filter)
 		f->num_index_mails = -1;
 		f->filter = filter;
 		f->ref_folder = folder;
-		
+
 		return f;
 	}
 	free(f);
@@ -1899,7 +1900,7 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
 	{
 		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
 			rescan = 1;
-	}	
+	}
 
 	return rescan;
 #endif
@@ -1974,7 +1975,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		changed = 1;
 		refresh = 1;
 	}
-	
+
 	if (mystrcmp(newdefto,f->def_to) != 0)
 	{
 		free(f->def_to);
@@ -2002,7 +2003,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		f->def_signature = mystrdup(newdefsignature);
 		changed = 1;
 	}
-	
+
 	/* Save the settings if the folder settings has been changed */
 	if (changed) folder_config_save(f);
 
@@ -2408,7 +2409,7 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 
 	if (!from_folder || !dest_folder) return 0;
 	if (from_folder == dest_folder) return 1;
-	if (from_folder->special == FOLDER_SPECIAL_GROUP || 
+	if (from_folder->special == FOLDER_SPECIAL_GROUP ||
 			dest_folder->special == FOLDER_SPECIAL_GROUP) return 0;
 
 	if (!(buf = (char*)malloc(1024)))
@@ -2730,7 +2731,7 @@ int folder_save_index(struct folder *f)
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
 			len += len_add;
-			
+
 			while (to_addr)
 			{
 				if (!(len_add = fwrite_str(fh, to_addr->realname))) break;
@@ -2859,7 +2860,7 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 		}
 
 		filter = folder->filter;
-		
+
 		do
 		{
 			mi = folder_next_mail_info(folder->ref_folder,handle);
@@ -3221,7 +3222,7 @@ int folder_apply_filter(struct folder *folder, struct filter *filter)
 		void *old_handle = handle;
 
 		if (!(m = folder_next_mail_info(folder,&handle))) break;
-		
+
 		if (mail_matches_filter(folder,m,filter))
 		{
 			if (filter->use_dest_folder && filter->dest_folder)
@@ -3277,7 +3278,7 @@ int folder_filter(struct folder *folder)
 		struct filter *f;
 
 		if (!(m = folder_next_mail_info(folder,&handle))) break;
-		
+
 		if ((f = folder_mail_can_be_filtered(folder,m,0)))
 		{
 			if (f->use_dest_folder && f->dest_folder)
@@ -3351,7 +3352,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 		filter = filter_create();
 		if (!filter) goto fail;
-	
+
 		if (sopt->from)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
@@ -3360,7 +3361,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 				rule->u.from.from = array_add_string(NULL,sopt->from);
 			}
 		}
-	
+
 		if (sopt->subject)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
@@ -3369,7 +3370,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 				rule->u.subject.subject = array_add_string(NULL,sopt->subject);
 			}
 		}
-	
+
 		if (sopt->body)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
@@ -3378,7 +3379,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 				rule->u.body.body = mystrdup(sopt->body);
 			}
 		}
-	
+
 		if (sopt->to)
 		{
 			if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
@@ -3390,7 +3391,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 		filter_parse_filter_rules(filter);
 		filter->search_filter = 1;
-	
+
 		/* folder_apply_filter(f,filter); */ /* Not safe currently to be called from subthreads */
 		{
 			int folder_num = 0;
@@ -3402,7 +3403,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 			getcwd(path, sizeof(path));
 
 			thread_call_parent_function_sync(NULL,search_enable_search, 0);
-	
+
 			while ((f = f_array[folder_num++]))
 			{
 				int i;
@@ -3654,7 +3655,7 @@ char *new_folder_path(void)
 			break;
 
 		closedir(dfd);
-		
+
 		i++;
 	}
 
@@ -3677,6 +3678,7 @@ void folder_create_imap(void)
 
 			folders_lock();
 
+			/* Folder already been added? */
 			f = folder_first();
 			while (f)
 			{
@@ -3685,7 +3687,7 @@ void folder_create_imap(void)
 				{
 					found = 1;
 					break;
-				}				
+				}
 				f = folder_next(f);
 			}
 
@@ -3701,7 +3703,7 @@ void folder_create_imap(void)
 					sm_snprintf(buf,sizeof(buf),"%s-%d",ac->imap->name,tries);
 					tries++;
 				}
-				
+
 				if (tries < 20)
 				{
 					if ((f = folder_add_group(buf)))
@@ -3943,7 +3945,7 @@ int init_folders(void)
 	folder_sent()->type = FOLDER_TYPE_SEND;
 
 	folder_create_imap();
-	
+
 	if (write_order)
 		folder_save_order();
 

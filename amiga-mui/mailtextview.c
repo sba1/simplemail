@@ -49,7 +49,7 @@
 #include "support.h"
 #include "support_indep.h"
 #include "text2html.h"
-#include "folder.h";
+#include "folder.h"
 #include "imap.h"
 #include "addressbookwnd.h"
 #include "amigasupport.h"
@@ -117,24 +117,24 @@ static void messageview_show_mail(struct MessageView_Data *data)
 
 	if (mail->decoded_data)
 	{
-	  
+
 		buf = mail->decoded_data;
 		buf_end = buf + mail->decoded_len;
 	} else
 	{
-	   
+
 		buf = mail->text + mail->text_begin;
 		buf_end = buf + mail->text_len;
 	}
-	
+
 	char *tmpbuf;
 	tmpbuf = utf8tostrcreate(mail->decoded_data,codeset);
 		SetAttrs(data->mailtext,
 			 MUIA_Mailtext_Text,tmpbuf
 				,
 				TAG_DONE);
-				
-			
+
+
 }
 
 /******************************************************************
@@ -262,7 +262,7 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 				       	MUIA_Group_Spacing, 0,
 			Child, VGroup,
 			MUIA_Group_Spacing, 0,
-				       
+
 				       Child, lv  = NListviewObject,
 				       MUIA_NListview_NList, mailtext = MailtextObject,
 				       MUIA_Mailtext_ForbidContextMenu, FALSE,
@@ -273,18 +273,18 @@ STATIC ULONG MessageView_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 				       End,
 				       MUIA_CycleChain, TRUE,
-				       /* Child,       
+				       /* Child,
 				       TextFrame,
 					MUIA_InnerLeft, 0,
 					MUIA_InnerTop, 0,
 					MUIA_InnerRight, 0,
 					MUIA_InnerBottom, 0,*/
 				       	End,
-				       
+
 				       	Child, horiz = ScrollbarObject, MUIA_ShowMe, FALSE, MUIA_Group_Horiz, TRUE, End,
 				End,
 				       /*Child, vert = ScrollbarObject, End,*/
-			
+
 				       End,
 				       TAG_MORE,msg->ops_AttrList)))
 	{
@@ -338,7 +338,7 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
 	messageview_cleanup_temporary_files(data);
-	mail_complete_free(data->mail); /* NULL safe */	
+	mail_complete_free(data->mail); /* NULL safe */
 	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
 	if (data->mailto_contextmenu)

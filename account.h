@@ -43,19 +43,43 @@
 struct folder;
 struct imap_server;
 
+/**
+ * Represents a full email account.
+ */
 struct account
 {
+	/** Embedded node structure */
 	struct node node;
 
+	/** The name of the account that is presented to the user */
 	char *account_name;
+
+	/** The name of the user */
 	char *name;
+
+	/** The users eMail adress */
 	char *email;
+
+	/** The reply to adresse for this account */
 	char *reply;
+
+	/**
+	 * Name of the default signature to use.
+	 *
+	 * @see signature.c
+	 */
 	char *def_signature;
+
+	/** Which kind of receiving server? 0 POP3, 1 IMAP4 */
 	int recv_type;
 
+	/** POP3 server settings */
 	struct pop3_server *pop;
+
+	/** IMAP server settings */
 	struct imap_server *imap;
+
+	/** SMTP server settings */
 	struct smtp_server *smtp;
 };
 

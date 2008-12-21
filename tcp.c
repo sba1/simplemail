@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** tcp.c
-*/
+/**
+ * @file tcp.c
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +49,7 @@
 #include "tcpip.h"
 
 #undef _
+#include "debug.h"
 #include "smintl.h"
 #include "tcp.h"
 
@@ -57,21 +58,27 @@
 /*#define DEBUG_OUTPUT*/
 #undef printf
 
+/* TODO: Get rid of this global error data */
 static int error_code;
 
-/******************************************************************
- Returns the error code of the last operation. Note that the
- error code is only set on failure so you cannot use this function
- to determine the success of a function
-*******************************************************************/
+/**
+ * Returns the error code of the last operation. Note that the
+ * error code is only set on failure so you cannot use this function
+ * to determine the success of a function
+ *
+ * @return the error code.
+ */
 int tcp_error_code(void)
 {
 	return error_code;
 }
 
-/******************************************************************
- Returns the error string
-*******************************************************************/
+/**
+ * Returns a descriptive string for the given error code.
+ *
+ * @param code defines the code of which the string should be returned.
+ * @return the description, possibly translated.
+ */
 const char *tcp_strerror(int code)
 {
 	switch (code)
@@ -92,11 +99,17 @@ const char *tcp_strerror(int code)
 	}
 }
 
-/******************************************************************
- Establish the connection to the given server.
- Return NULL on error.
- (TODO: Remove the error code handling)
-*******************************************************************/
+/**
+ * Establish the connection to the given server.
+ *
+ * @param server defines the name of the server to which the connection
+ *        should be created.
+ * @param port defines to which server port the connection should be established.
+ * @param use_ssl defines whether connection should be made secure.
+ * @return the connection or NULL on failure. Use tcp_error_code() for more information.
+ *
+ * @note TODO: Rework the error code handling.
+ */
 struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 {
 	int i,sd;
@@ -140,6 +153,8 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 						if (tcp_make_secure(conn)) return conn;
 						else
 						{
+							/* TODO: Reestablish only if unsecure connection can be tolerated.
+							 * Use TCP_NOT_SECURE */
 							security_error = 1;
 							myclosesocket(sd);
 							sd = socket(PF_INET, SOCK_STREAM, 0);
@@ -196,9 +211,13 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 	return NULL;
 }
 
-/******************************************************************
- Makes a connction secure. Returns 1 for a success
-*******************************************************************/
+/**
+ * Makes the given connection secure.
+ *
+ * @param conn defines the connection which should be made
+ *             secure.
+ * @return 1 on success
+ */
 int tcp_make_secure(struct connection *conn)
 {
 #ifndef NO_SSL
@@ -220,6 +239,8 @@ int tcp_make_secure(struct connection *conn)
 		{
 			/* Add some checks here */
 			X509_free(server_cert);
+
+
 #ifdef DEBUG_OUTPUT
 			puts("Connection is secure\n");
 #endif
@@ -241,9 +262,12 @@ int tcp_make_secure(struct connection *conn)
 	return 0;
 }
 
-/******************************************************************
- Returns whether connection is secure
-*******************************************************************/
+/**
+ * Returns whether connection is secure.
+ *
+ * @param conn
+ * @return 1 if connection is secure.
+ */
 int tcp_secure(struct connection *conn)
 {
 #ifndef NO_SSL
@@ -253,9 +277,13 @@ int tcp_secure(struct connection *conn)
 #endif
 }
 
-/******************************************************************
- Disconnect from the server. Accepts NULL pointer
-*******************************************************************/
+/**
+ * Disconnect from the server. Any further accesses
+ * to the connection are forbidden afterwards.
+ *
+ * @param conn defines the connection to be disconnected.
+ *        NULL is valid (it's a nop then).
+ */
 void tcp_disconnect(struct connection *conn)
 {
 	if (!conn) return;
@@ -277,10 +305,15 @@ void tcp_disconnect(struct connection *conn)
 	free(conn);
 }
 
-/******************************************************************
- Read a given amount of bytes from the connection.
- NOTE: This function actually can read less than nbytes
-*******************************************************************/
+/**
+ * Read a given amount of bytes from the connection.
+ *
+ * @param conn the connection from which data should be read.
+ * @param buf the buffer in which the data should end up.
+ * @param nbytes the number of bytes that should be read.
+ * @return the number of bytes which have been read.
+ * @note This method may read less bytes than requested.
+ */
 long tcp_read(struct connection *conn, void *buf, long nbytes)
 {
 	int didget;
@@ -308,10 +341,13 @@ long tcp_read(struct connection *conn, void *buf, long nbytes)
 	return didget;
 }
 
-/******************************************************************
- Read's a single char from the connection. Buffered.
- Returns -1 for an error.
-*******************************************************************/
+/**
+ * Reads a single char from the connection.
+ *
+ * @param conn the connection from which the character should be read.
+ * @return the character or -1 in case something failed.
+ * @note this function is buffered.
+ */
 static int tcp_read_char(struct connection *conn)
 {
 	if (conn->read_pos >= conn->read_size)
@@ -340,9 +376,16 @@ static int tcp_read_char(struct connection *conn)
 	return conn->read_buf[conn->read_pos++];
 }
 
-/******************************************************************
- Writes a given amount of bytes to the connection. Buffered.
-*******************************************************************/
+
+/**
+ * Writes a given amount of bytes to the connection.
+ *
+ * @param conn defines the connection on which the data is written to.
+ * @param buf the buffer which contains the data.
+ * @param nbytes the number of bytes which should be written.
+ * @return the number of bytes that actually have been written or -1 for an failure.
+ * @note this function is buffered.
+ */
 int tcp_write(struct connection *conn, void *buf, long nbytes)
 {
 	int rc = nbytes;
@@ -365,9 +408,12 @@ int tcp_write(struct connection *conn, void *buf, long nbytes)
 	return rc;
 }
 
-/******************************************************************
- Flushes the write buffer. Returns 1 on success, else 0
-*******************************************************************/
+/**
+ * Flushes the write buffer.
+ *
+ * @param conn the connection whose write buffer should be flushed.
+ * @return 1 on success, otherwise 0.
+ */
 int tcp_flush(struct connection *conn)
 {
 	int bytes;
@@ -406,9 +452,17 @@ int tcp_flush(struct connection *conn)
 	return rc;
 }
 
-/******************************************************************
- Writes a given amount of bytes to the connection. Unbuffered.
-*******************************************************************/
+/**
+ * Writes the given amount of bytes to the connection. Unbuffered.
+ *
+ * @param conn the connection on which the data should be written
+ * @param buf the buffer from which the data is fetched
+ * @param nbytes the number of sizes which should be written
+ * @return number of bytes that actually have been written
+ * @note this function is, as the name suggests, unbuffered. If there
+ *       is already some data buffered it gets flushed before the actual
+ *       data is sent.
+ */
 int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 {
 	conn->read_pos = conn->read_size = 0;
@@ -420,13 +474,16 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 	return send(conn->socket, buf, nbytes, 0);
 }
 
-/******************************************************************
- Read a complete line from the given connection. Line will end
- with a '\n'. A '\r' is removed. The returned buffer is allocated
- per connection so it is only valid as long as the connection
- exists and only until the next tcp_readln().
- Returns NULL for an error.
-*******************************************************************/
+/**
+ * Read a complete line from the given connection. Line will end
+ * with a '\n'. A '\r' is removed. The returned buffer is allocated
+ * per connection so it is only valid as long as the connection
+ * exists and only until the next tcp_readln() is called.
+ *
+ * @param conn the connection from which the next line should be fetched.
+ *
+ * @return the line or NULL if something failed.
+ */
 char *tcp_readln(struct connection *conn)
 {
 	int line_pos = 0;
@@ -472,9 +529,13 @@ char *tcp_readln(struct connection *conn)
 	return conn->line;
 }
 
-/******************************************************************
- Wrapper for gethostname
-*******************************************************************/
+/**
+ * Wrapper for gethostname
+ *
+ * @param buf
+ * @param buf_size
+ * @return
+ */
 int tcp_gethostname(char *buf, int buf_size)
 {
 	return gethostname(buf,buf_size);

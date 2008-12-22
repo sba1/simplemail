@@ -244,12 +244,12 @@ static void mail_compare_set_sort_mode(struct folder *folder)
 static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
 
-static struct list folder_list;
+static struct list folder_list; /**< The global folder list */
 
 struct folder_node
 {
-	struct node node;
-	struct folder folder; /* this must follow! */
+	struct node node; /**< Embedded node structure */
+	struct folder folder; /**< The actual folder, most follow */
 };
 
 /******************************************************************
@@ -257,6 +257,7 @@ struct folder_node
 *******************************************************************/
 static struct folder_node *find_folder_node_by_folder(struct folder *f)
 {
+	/* TODO: This could be done by pointer arithmetic much faster */
 	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
 
 	while (node)
@@ -1325,9 +1326,12 @@ int folder_add_mail_incoming(struct mail_info *mail)
 	return -1;
 }
 
-/******************************************************************
- Adds a folder to the internal folder list
-*******************************************************************/
+/**
+ * Adds a folder to the internal folder list.
+ *
+ * @param path defines the path of the folder (can be modified afterwards)
+ * @return the new folder
+ */
 static struct folder *folder_add(char *path)
 {
 	struct folder_node *node;
@@ -1499,9 +1503,32 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 	return NULL;
 }
 
-/******************************************************************
- Remove given folder from the folder list, if possible
-*******************************************************************/
+/**
+ * @brief Reparents all folders with parents @p old_p to have the parent @p new_p.
+ *
+ * @param old_p this one is going to be replaced.
+ * @param new_p this one is the new one.
+ */
+static void folder_reparent_all(struct folder *old_p, struct folder *new_p)
+{
+	struct folder_node *node;
+
+	/* Set a new parent to all the folders */
+	node = (struct folder_node*)list_first(&folder_list);
+	while (node)
+	{
+		if (node->folder.parent_folder == old_p)
+			node->folder.parent_folder = new_p;
+		node = (struct folder_node*)node_next(&node->node);
+	}
+}
+
+/**
+ * Removes the given folder from the folder list, if possible.
+ *
+ * @param f folder to be removed.
+ * @return 0 on failure, otherwise the call has been succeeded.
+ */
 int folder_remove(struct folder *f)
 {
   if (!folder_attempt_lock(f))
@@ -1602,20 +1629,25 @@ int folder_remove(struct folder *f)
 						sm_snprintf(buf,sizeof(buf),"%s.config",f->path);
 						remove(buf);
 
-						/* ..and the memory */
+						/* ...and the memory */
 						folder_unlock(f);
 						free(node);
+
+						/* save the new order */
+						folder_save_order();
 						return 1;
 					}
 				} else
 				{
 					if (sm_request(NULL,
-						_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group"),
+						_("Do you really want to delete this group?\nOnly the group entry is deleted,\nnot the folders inside the group."),
 						_("_Delete it|_Cancel")))
 					{
+						folder_reparent_all(f,parent);
 						node_remove(&node->node);
 						folder_unlock(f);
 						free(node);
+						folder_save_order();
 						rc = 1;
 					}
 				}
@@ -1624,23 +1656,8 @@ int folder_remove(struct folder *f)
 			node = (struct folder_node*)node_next(&node->node);
 		}
 
-		if (rc)
-		{
-			/* Set a new parent to all the folders */
-			node = (struct folder_node*)list_first(&folder_list);
-			while (node)
-			{
-				if (node->folder.parent_folder == f)
-				{
-					node->folder.parent_folder = parent;
-				}
-				node = (struct folder_node*)node_next(&node->node);
-			}
-			folder_save_order();
-		} else
-		{
+		if (!rc)
 			folder_unlock(f);
-		}
 		return rc;
 	}
 	folder_unlock(f);
@@ -3507,9 +3524,12 @@ void folder_start_search(struct search_options *sopt)
 	}
 }
 
-/******************************************************************
- Opens the order file and returns the FILE *
-*******************************************************************/
+/**
+ * @brief Opens the file that stores the order of the folders.
+ *
+ * @param mode fopen() compatible open mode
+ * @return the pointer to the file or NULL on failure.
+ */
 static FILE *folder_open_order_file(char *mode)
 {
 	FILE *fh;
@@ -3522,79 +3542,124 @@ static FILE *folder_open_order_file(char *mode)
 	return fh;
 }
 
-/******************************************************************
- Loades the order of the folders
-*******************************************************************/
-void folder_load_order(void)
+/**
+ * @brief represents a single entry in the order file
+ */
+struct folder_order
+{
+	char *name; /**< the user presented name of the folder */
+	char *path; /**< path on the local filesystem */
+	int special; /**< its type */
+	int parent; /**< index of the parent */
+	int closed; /**< for groups, 1 if closed */
+};
+
+/**
+ * @brief Traverse the contents of the order file using a callback
+ *
+ * @param folder_traverse_order_callback defines the function which is called for every order entry
+ * @param user_data user data that is forwarded to the callback.
+ */
+static void folder_traverse_order_file(int (*folder_traverse_order_callback)(struct folder_order *order, void *user_data), void *user_data)
 {
 	FILE *fh;
+	char *buf;
+	struct folder_order order;
 
-	if ((fh = folder_open_order_file("r")))
+	if (!(fh = folder_open_order_file("r")))
+		return;
+
+	if (!(buf = (char*)malloc(1024)))
+		goto bailout;
+
+	/* name */
+	order.name = buf;
+
+	while ((fgets(buf,1024,fh)))
 	{
-		struct list new_order_list;
-		char *buf = (char*)malloc(1024);
-		if (buf)
-		{
-			list_init(&new_order_list);
+		char *path;
+		char *temp_buf;
 
-			/* Move all nodes to the new order list in the right order */
-			while ((fgets(buf,1024,fh)))
-			{
-				char *path;
-				char *temp_buf;
-				int special, parent;
+		/* path */
+		if (!(path = strchr(buf,'\t')))
+			continue;
+		*path++ = 0;
+		order.path = path;
 
-				if ((path = strchr(buf,'\t')))
-				{
-					*path++ = 0;
+		/* special */
+		if (!(temp_buf = strchr(path,'\t')))
+			continue;
+		*temp_buf++ = 0;
+		order.special = atoi(temp_buf);
 
-					if ((temp_buf = strchr(path,'\t')))
-					{
-						*temp_buf++ = 0;
-						special = atoi(temp_buf);
-						if ((temp_buf = strchr(temp_buf,'\t')))
-						{
-							struct folder *new_folder;
-							struct folder_node *new_folder_node;
-							int closed = 0;
-							temp_buf++;
-							parent = atoi(temp_buf);
+		/* parent */
+		if (!(temp_buf = strchr(temp_buf,'\t')))
+			continue;
+		*temp_buf++ = 0;
+		order.parent = atoi(temp_buf);
 
-							temp_buf = strchr(temp_buf,'\t');
-							if (temp_buf) closed = atoi(temp_buf+1);
+		/* closed */
+		if ((temp_buf = strchr(temp_buf,'\t')))
+			order.closed = atoi(temp_buf+1);
+		else order.closed = 0;
 
-							if (special == FOLDER_SPECIAL_GROUP) new_folder = folder_find_group_by_name(buf);
-							else new_folder = folder_find_by_path(path);
-
-							if (new_folder)
-							{
-								if (parent != -1)
-									new_folder->parent_folder = &((struct folder_node*)list_find(&new_order_list,parent))->folder;
-								new_folder_node = find_folder_node_by_folder(new_folder);
-								node_remove(&new_folder_node->node);
-								list_insert_tail(&new_order_list,&new_folder_node->node);
-								new_folder->closed = closed;
-							}
-						}
-					}
-				}
-			}
-			free(buf);
-
-			/* Move the nodes into the main folder list again */
-			{
-				struct folder_node *folder_node;
-				while ((folder_node = (struct folder_node*)list_remove_tail(&new_order_list)))
-					list_insert(&folder_list, &folder_node->node, NULL);
-			}
-		}
-		fclose(fh);
+		folder_traverse_order_callback(&order,user_data);
 	}
+
+	free(buf);
+bailout:
+	fclose(fh);
 }
 
-/******************************************************************
- Saves the order of the folders
-*******************************************************************/
+/**
+ * @brief Remove the given entry and store it into a new list.
+ *
+ * @param order the actual entry
+ * @param user_data the list where the entries are stored.
+ * @return 1
+ */
+int folder_load_order_traverse_orders_callback(struct folder_order *order, void *user_data)
+{
+	struct list *new_order_list = (struct list*)user_data;
+	struct folder *new_folder;
+	struct folder_node *new_folder_node;
+
+	int parent = order->parent;
+
+	if (order->special == FOLDER_SPECIAL_GROUP) new_folder = folder_find_group_by_name(order->name);
+	else new_folder = folder_find_by_path(order->path);
+
+	if (new_folder)
+	{
+		if (parent != -1)
+			new_folder->parent_folder = &((struct folder_node*)list_find(new_order_list,parent))->folder;
+		new_folder_node = find_folder_node_by_folder(new_folder);
+		node_remove(&new_folder_node->node);
+		list_insert_tail(new_order_list,&new_folder_node->node);
+		new_folder->closed = order->closed;
+	}
+	return 1;
+}
+
+/**
+ * @brief Loads the order of the folders
+ */
+void folder_load_order(void)
+{
+	struct list new_order_list;
+	struct folder_node *folder_node;
+
+	list_init(&new_order_list);
+	folder_traverse_order_file(folder_load_order_traverse_orders_callback,&new_order_list);
+
+	/* Move the nodes into the main folder list again */
+	while ((folder_node = (struct folder_node*)list_remove_tail(&new_order_list)))
+		list_insert(&folder_list, &folder_node->node, NULL);
+}
+
+/**
+ * @brief Saves the order of the folders.
+ */
 void folder_save_order(void)
 {
 	struct folder *f = folder_first();
@@ -3759,7 +3824,7 @@ void folder_create_imap(void)
 }
 
 /**************************************************************************
- Checks wheather two folders are on the same imap server. Returns 1 if
+ Checks whether two folders are on the same imap server. Returns 1 if
  this is the case else 0
 **************************************************************************/
 int folder_on_same_imap_server(struct folder *f1, struct folder *f2)
@@ -3768,13 +3833,97 @@ int folder_on_same_imap_server(struct folder *f1, struct folder *f2)
 	return (!mystrcmp(f1->imap_server,f2->imap_server)) && (!mystrcmp(f1->imap_user,f2->imap_user));
 }
 
-/******************************************************************
- Initializes the default folders
-*******************************************************************/
+/**
+ * @brief callback for the folder_traverse_order_file() call in init_folders().
+ *
+ * It adds the folder to the global folder list as specified by the order file.
+ *
+ * @param order the actual entry
+ * @param user_data is ignored here.
+ * @return 1
+ */
+static int init_folders_traverse_orders_callback(struct folder_order *order, void *user_data)
+{
+	struct folder *new_folder;
+
+	if (order->special == FOLDER_SPECIAL_GROUP)
+	{
+		new_folder = folder_add_group(order->name);
+		new_folder->closed = order->closed;
+		if (*order->path)
+		{
+			new_folder->path = mystrdup(order->path);
+			folder_config_load(new_folder);
+		}
+	} else
+	{
+		new_folder = folder_add(order->path);
+	}
+
+	if (new_folder && order->parent != -1)
+	{
+		new_folder->parent_folder = folder_find(order->parent);
+	}
+	return 1;
+}
+
+/**
+ * @brief Remove non-existent folders from the internal folder list.
+ *
+ * @note Doesn't arbitrate the access to folders.
+ */
+static void folder_fix(void)
+{
+	struct folder *f;
+	struct stat *st;
+
+	if (!(st = malloc(sizeof(struct stat))))
+		return;
+
+	f = folder_first();
+	while (f)
+	{
+		int remove = 0;
+		struct folder *next;
+
+		next = folder_next(f);
+
+		if (f->path && *f->path)
+		{
+			if (stat(f->path,st)==0)
+			{
+				if (!st->st_mode & S_IFDIR)
+					remove = 1;
+			} else remove = 1;
+		}
+
+		if (remove)
+		{
+			/* TODO: Refactor this in an own function */
+			struct folder_node *f_node = find_folder_node_by_folder(f);
+			if (f_node)
+			{
+				node_remove(&f_node->node);
+				folder_reparent_all(f,f->parent_folder);
+				thread_dispose_semaphore(f->sem);
+				free(f_node);
+			}
+		}
+
+		f = next;
+	}
+
+	free(st);
+}
+
+/**
+ * @brief Initializes the folder subsystem.
+ *
+ * @return 0 on failure, otherwise 1.
+ */
 int init_folders(void)
 {
 	DIR *dfd;
-	FILE *fh;
 	struct dirent *dptr; /* dir entry */
 	struct stat *st;
 	int write_order = 0;
@@ -3784,62 +3933,8 @@ int init_folders(void)
 
 	list_init(&folder_list);
 
-	/* Read in the .orders file at first */
-	if ((fh = folder_open_order_file("r")))
-	{
-		char *buf = (char*)malloc(1024);
-		if (buf)
-		{
-			while ((fgets(buf,1024,fh)))
-			{
-				char *path;
-				char *temp_buf;
-				int special, parent;
-
-				if ((path = strchr(buf,'\t')))
-				{
-					*path++ = 0;
-
-					if ((temp_buf = strchr(path,'\t')))
-					{
-						*temp_buf++ = 0;
-						special = atoi(temp_buf);
-						if ((temp_buf = strchr(temp_buf,'\t')))
-						{
-							struct folder *new_folder;
-							int closed = 0;
-							temp_buf++;
-							parent = atoi(temp_buf);
-
-							temp_buf = strchr(temp_buf,'\t');
-							if (temp_buf) closed = atoi(temp_buf+1);
-
-
-							if (special == FOLDER_SPECIAL_GROUP)
-							{
-								new_folder = folder_add_group(buf);
-								new_folder->closed = closed;
-								if (*path)
-								{
-									new_folder->path = mystrdup(path);
-									folder_config_load(new_folder);
-								}
-							} else
-							{
-								new_folder = folder_add(path);
-							}
-							if (new_folder && parent != -1)
-							{
-								new_folder->parent_folder = folder_find(parent);
-							}
-						}
-					}
-				}
-			}
-			free(buf);
-		}
-		fclose(fh);
-	}
+	folder_traverse_order_file(init_folders_traverse_orders_callback,NULL);
+	folder_fix();
 
 	if (!(st = malloc(sizeof(struct stat))))
 		return 0;

@@ -44,7 +44,9 @@ struct folder;
 struct imap_server;
 
 /**
- * Represents a full email account.
+ * Holds all settings of an email account including SMTP, POP3, and IMAP4 settings.
+ *
+ * @brief Holds all settings of an email account.
  */
 struct account
 {
@@ -57,10 +59,10 @@ struct account
 	/** The name of the user */
 	char *name;
 
-	/** The users eMail adress */
+	/** The users eMail address */
 	char *email;
 
-	/** The reply to adresse for this account */
+	/** The reply-to address for this account */
 	char *reply;
 
 	/**

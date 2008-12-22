@@ -1262,7 +1262,7 @@ static void simplemail_new_mail_arrived(struct mail_info *mail, struct folder *f
 			struct folder *dest_folder = folder_find_by_name(f->dest_folder);
 			if (dest_folder)
 			{
-				/* very slow, because the sorted array is rebuilded in the both folders! */
+				/* very slow, because the sorted array is rebuilt in the both folders! */
 				callback_move_mail(mail, folder, dest_folder);
 			}
 		}
@@ -1364,7 +1364,63 @@ void callback_export(void)
 	free(filename); /* accepts NULL pointer */
 }
 
-/* a new mail has been arrived, only the filename is given */
+/**
+ * Used for collecting new mail instances. This is the head of
+ * the list.
+ */
+static struct mail_info *simplemail_mail_collector_first;
+
+/**
+ * Used for collecting new mail instances. This is the tail of
+ * the list.
+ */
+static struct mail_info *simplemail_mail_collector_last;
+
+/**
+ * @brief Gathers the mails from the collector and places them
+ * into the view.
+ */
+static void simplemail_gather_mails(void)
+{
+	struct mail_info *next;
+	struct folder *incoming = folder_incoming();
+
+	if (!simplemail_mail_collector_first && !incoming) return;
+
+	if (simplemail_mail_collector_first != simplemail_mail_collector_last)
+		main_freeze_mail_list();
+
+	next = simplemail_mail_collector_first;
+	do
+	{
+		struct mail_info *next_next;
+		next_next = next->next_thread_mail;
+		next->next_thread_mail = NULL;
+		simplemail_new_mail_arrived(next,incoming,0);
+		next = next_next;
+	} while (next);
+
+	if (simplemail_mail_collector_first != simplemail_mail_collector_last)
+		main_thaw_mail_list();
+	main_refresh_folder(incoming);
+
+	simplemail_mail_collector_first = NULL;
+	simplemail_mail_collector_last = NULL;
+}
+
+/**
+ * @brief A new mail has been arrived for the incoming folder.
+ *
+ * A new mail has been arrived. In the current implementation the mail
+ * is not immediately added to the viewer but collected and then added
+ * to the viewer after a short period of time.
+ *
+ * @param filename defines the filename of the new mail
+ * @param is_spam is the mail spam?
+ *
+ * @note FIXME: This functionality takes (mis)usage of next_thread_mail field
+ *       FIXME: When SM is quit while mails are downloaded those mails get not presented to the user the next time.
+ */
 void callback_new_mail_arrived_filename(char *filename, int is_spam)
 {
 	struct mail_info *mail;
@@ -1376,14 +1432,26 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 	if ((mail = mail_info_create_from_file(filename)))
 	{
 		if (is_spam) mail->flags |= MAIL_FLAGS_AUTOSPAM;
-		simplemail_new_mail_arrived(mail,folder_incoming(),1);
+
+		if (!simplemail_mail_collector_first)
+		{
+			simplemail_mail_collector_first = mail;
+			simplemail_mail_collector_last = mail;
+			mail->next_thread_mail = NULL; /* FIXME: Misused this field! */
+
+			thread_push_function_delayed(333,simplemail_gather_mails,0);
+		} else
+		{
+			simplemail_mail_collector_last->next_thread_mail = mail;
+			simplemail_mail_collector_last = mail;
+		}
 	}
 
 	chdir(buf);
 }
 
 /**
- * A new mail arrived into an imap folder
+ * @brief A new mail arrived into an imap folder
  *
  * @param filename the name of the filename.
  * @param user defines the user name of the login

@@ -240,10 +240,7 @@ int tcp_make_secure(struct connection *conn)
 			/* Add some checks here */
 			X509_free(server_cert);
 
-
-#ifdef DEBUG_OUTPUT
-			puts("Connection is secure\n");
-#endif
+			SM_DEBUGF(5,("Connection is secure\n"));
 			return 1;
 		}
 	}
@@ -253,9 +250,7 @@ int tcp_make_secure(struct connection *conn)
 	close_ssl_lib();
 	conn->ssl = NULL;
 
-#ifdef DEBUG_OUTPUT
-			puts("Connection couldn't be made secure\n");
-#endif
+	SM_DEBUGF(5,("Connection couldn't be made secure!\n"));
 
 #endif
 
@@ -476,7 +471,7 @@ int tcp_write_unbuffered(struct connection *conn, void *buf, long nbytes)
 
 /**
  * Read a complete line from the given connection. Line will end
- * with a '\n'. A '\r' is removed. The returned buffer is allocated
+ * with a '\\n'. A '\\r' is removed. The returned buffer is allocated
  * per connection so it is only valid as long as the connection
  * exists and only until the next tcp_readln() is called.
  *

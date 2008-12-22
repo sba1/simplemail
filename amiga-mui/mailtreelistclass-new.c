@@ -964,8 +964,6 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			}
 		}
 
-//		SetAPen(rp,_pens(obj)[MPEN_TEXT]);
-
 		col_width = ci->width;
 		is_ascii7 = 1;
 		txt = NULL;
@@ -1139,7 +1137,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					Move(rp,xstart,y + _font(obj)->tf_Baseline);
 
 					pens[0] = _pens(obj)[MPEN_TEXT];
-					pens[1] = _dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN];//_pens(obj)[MPEN_];
+					pens[1] = _dri(obj)->dri_Pens[HIGHLIGHTTEXTPEN];
 					pens[2] = _pens(obj)[MPEN_TEXT];
 
 					lengths[0] = -1;
@@ -1147,7 +1145,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					/* use AmigaOS text functions to bring up the text  */
 					if (!is_ascii7)
 					{
-						if (data->highlight)
+						if (data->highlight && *data->highlight)
 						{
 							char *begin = utf8stristr(txt,data->highlight);
 							if (begin)
@@ -1162,7 +1160,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						txt = data->buf;
 					} else
 					{
-						if (data->highlight_native)
+						if (data->highlight_native && *data->highlight_native)
 						{
 							char *begin = mystristr(txt,data->highlight_native);
 							if (begin)
@@ -1178,23 +1176,14 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					if (lengths[0] == -1)
 						lengths[0] = txt_len;
 
-
-//					if (txt_len > 2)
-//					{
-//						lengths[0] = 2;
-//						lengths[1] = txt_len - 2;
-//					} else
-//					{
-//						lengths[0] = txt_len;
-//						pens[0] = _pens(obj)[MPEN_TEXT];
-//					}
-
 					todo = txt_len;
 
 					while (todo > 0)
 					{
 						todo -= lengths[part];
 						txt_len = lengths[part];
+
+						SetAPen(rp,pens[part]);
 
 						fit = TextFit(rp,txt,txt_len,&te,NULL,1,available_col_width,fonty);
 						if (fit < txt_len && (available_col_width > data->threepoints_width))
@@ -1243,8 +1232,6 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							}
 						}
 
-
-						SetAPen(rp,pens[part]);
 						Text(rp,txt,fit);
 
 						if (fit < txt_len && (available_col_width > data->threepoints_width))

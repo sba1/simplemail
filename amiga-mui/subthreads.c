@@ -42,7 +42,7 @@
 #include "amigadebug.h"
 
 /* TODO:
-    add thread_call_function_async_callback() which calls the functions asynchron but 
+    add thread_call_function_async_callback() which calls the functions asynchron but
     if the function returns another function is called on the calling process
 */
 
@@ -130,7 +130,7 @@ struct ThreadMessage
 	int (*function)(void);
 	int async;
 	int argcount;
-	void *arg1,*arg2,*arg3,*arg4;
+	void *arg1,*arg2,*arg3,*arg4,*arg5,*arg6;
 	int result;
 	int called;
 };
@@ -239,7 +239,7 @@ int init_threads(void)
 		main_thread.process = (struct Process*)FindTask(NULL);
 		main_thread.is_main = 1;
 		main_thread.thread_port = main_thread_port;
-		
+
 		thread_init_timer(&main_thread);
 
 		NewList((struct List*)&main_thread.push_list);
@@ -261,7 +261,7 @@ void cleanup_threads(void)
 	struct TimerMessage *timeout;
 
 	struct thread_node *node;
-	
+
 	node = (struct thread_node*)list_first(&thread_list);
 	while (node)
 	{
@@ -288,7 +288,7 @@ void cleanup_threads(void)
 				timeout->time_req.tr_time.tv_secs = 0;
 				timeout->time_req.tr_time.tv_micro = 500000;
 				SendIO(&timeout->time_req.tr_node);
-			
+
 				/* Enqueue the timer_msg in our request list */
 				AddTail((struct List*)&main_thread.timer_request_list,(struct Node*)&timeout->node);
 			}
@@ -321,7 +321,7 @@ void cleanup_threads(void)
 			else
 			{
 				SM_DEBUGF(10,("Got non startup message (async=%ld)\n",tmsg->async));
-				
+
 				if (!tmsg->async)
 				{
 					tmsg->called = 0;
@@ -398,6 +398,8 @@ void thread_handle(ULONG mask)
 						case	2: ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
 						case	3: ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
 						case	4: ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
+						case	5: ((int (*)(void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5);break;
+						case	6: ((int (*)(void*,void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5,tmsg->arg6);break;
 					}
 				}
 				FreeVec(tmsg);
@@ -422,7 +424,7 @@ static SAVEDS void thread_entry(void)
 
 	D(bug("Waiting for startup message\n"));
 
-	proc = (struct Process*)FindTask(NULL);	
+	proc = (struct Process*)FindTask(NULL);
 	WaitPort(&proc->pr_MsgPort);
 	msg = (struct ThreadMessage *)GetMsg(&proc->pr_MsgPort);
 
@@ -501,12 +503,12 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 			msg->thread = thread;
 			msg->function = (int (*)(void))entry;
 			msg->arg1 = eudata;
-	
+
 			in = Open("CONSOLE:",MODE_NEWFILE);
 			if (!in) in = Open("NIL:",MODE_NEWFILE);
 			out = Open("CONSOLE:",MODE_NEWFILE);
 			if (!out) out = Open("NIL:",MODE_NEWFILE);
-	
+
 			if (in && out)
 			{
 #ifdef __MORPHOS__
@@ -642,6 +644,14 @@ static struct ThreadMessage *thread_create_message(void *function, int argcount,
 					if (argcount--)
 					{
 						tmsg->arg4 = va_arg(argptr, void *);
+						if (argcount--)
+						{
+							tmsg->arg5 = va_arg(argptr, void *);
+							if (argcount--)
+							{
+								tmsg->arg6 = va_arg(argptr, void *);
+							}
+						}
 					}
 				}
 			}
@@ -668,6 +678,8 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 			case	2: tmsg->result = ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
 			case	3: tmsg->result = ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
 			case	4: tmsg->result = ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
+			case	5: tmsg->result = ((int (*)(void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5);break;
+			case	6: tmsg->result = ((int (*)(void*,void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5,tmsg->arg6);break;
 		}
 	}
 	if (tmsg->async)
@@ -733,7 +745,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 
 /**************************************************************************
  Call a function in the context of the given thread synchron
- 
+
  NOTE: Should call thread_handle()
 **************************************************************************/
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
@@ -800,7 +812,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 
 			/* now send the message */
 			PutMsg(main_thread_port,&tmsg->msg);
-	
+
 			/* while the parent task should execute the message
 			 * we regualiy call the given callback function */
 			while (!ready)
@@ -811,7 +823,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 
 				if (millis)
 					timer_send_if_not_sent(&timer,millis);
-	
+
 				mask = Wait(timer_m|proc_m);
 				if (mask & timer_m)
 				{
@@ -819,7 +831,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 						timer_callback(timer_data);
 					timer.timer_send = 0;
 				}
-	
+
 				if (mask & proc_m)
 				{
 					struct Message *msg;
@@ -841,7 +853,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 
 /**************************************************************************
  Waits until aborted and calls timer_callback periodically. It's possible
- to execute functions on the threads context while in this function. 
+ to execute functions on the threads context while in this function.
 **************************************************************************/
 void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
@@ -860,7 +872,7 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 			struct ThreadMessage *tmsg;
 
 			if (millis) timer_send_if_not_sent(&timer,millis);
-	
+
 			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C);
 			if (mask & timer_m)
 			{
@@ -890,6 +902,8 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 						case	2: ((int (*)(void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2);break;
 						case	3: ((int (*)(void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3);break;
 						case	4: ((int (*)(void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4);break;
+						case	5: ((int (*)(void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5);break;
+						case	6: ((int (*)(void*,void*,void*,void*,void*,void*))tmsg->function)(tmsg->arg1,tmsg->arg2,tmsg->arg3,tmsg->arg4,tmsg->arg5,tmsg->arg6);break;
 					}
 				}
 				FreeVec(tmsg);
@@ -978,10 +992,12 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
 		tmsg->function = (int (*)(void))function;
 		tmsg->argcount = argcount;
-		tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+		tmsg->arg1 = va_arg(argptr, void *);
+		tmsg->arg2 = va_arg(argptr, void *);
+		tmsg->arg3 = va_arg(argptr, void *);
+		tmsg->arg4 = va_arg(argptr, void *);
+		tmsg->arg5 = va_arg(argptr, void *);
+		tmsg->arg6 = va_arg(argptr, void *);
 		tmsg->async = 1;
 
 		va_end (argptr);
@@ -1011,10 +1027,12 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
 		tmsg->function = (int (*)(void))function;
 		tmsg->argcount = argcount;
-		tmsg->arg1 = va_arg(argptr, void *);/*(*(&argcount + 1));*/
-		tmsg->arg2 = va_arg(argptr, void *);/*(void*)(*(&argcount + 2));*/
-		tmsg->arg3 = va_arg(argptr, void *);/*(void*)(*(&argcount + 3));*/
-		tmsg->arg4 = va_arg(argptr, void *);/*(void*)(*(&argcount + 4));*/
+		tmsg->arg1 = va_arg(argptr, void *);
+		tmsg->arg2 = va_arg(argptr, void *);
+		tmsg->arg3 = va_arg(argptr, void *);
+		tmsg->arg4 = va_arg(argptr, void *);
+		tmsg->arg5 = va_arg(argptr, void *);
+		tmsg->arg6 = va_arg(argptr, void *);
 		tmsg->async = 2;
 
 		va_end (argptr);

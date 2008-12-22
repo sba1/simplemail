@@ -16,9 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** support_indep.c
-*/
+/**
+ * @brief Contains support function which are platform independent.
+ *
+ * @file support_indep.c
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -180,9 +182,14 @@ char *mystrndup(const char *str1, int n)
 	return dest;
 }
 
-/**************************************************************************
- Like strncpy() but ensures that the string is always 0 terminted
-**************************************************************************/
+/**
+ * @brief Like strncpy() but ensures that the string is always 0 terminated
+ *
+ * @param dest where to copy the source
+ * @param src the source
+ * @param n number of bytes to be copied
+ * @return the length of the source string.
+ */
 size_t mystrlcpy(char *dest, const char *src, size_t n)
 {
 	size_t len = strlen(src);
@@ -249,7 +256,7 @@ int myfiledatecmp(char *file1, char *file2)
 {
 	struct stat *s1, *s2;
 	int rc1,rc2;
-			
+
 	if ((s1 = (struct stat*)malloc(sizeof(struct stat))))
 	{
 		if ((s2 = (struct stat*)malloc(sizeof(struct stat))))
@@ -303,9 +310,13 @@ int myfilecopy(const char *sourcename, const char *destname)
 	return rc;
 }
 
-/******************************************************************
- Delete a given directory and all its contents
-*******************************************************************/
+/**
+ * @brief Delete a given directory and all its contents.
+ *
+ * @param path defines the location of the directory that should be deleted.
+ * @return 0 on failure, otherwise something different.
+ * @note this function is recursive
+ */
 int mydeletedir(const char *path)
 {
 	DIR *dfd; /* directory descriptor */
@@ -325,9 +336,7 @@ int mydeletedir(const char *path)
 		while ((dptr = readdir(dfd)) != NULL)
 		{
 			if (!strcmp(".",dptr->d_name) || !strcmp("..",dptr->d_name)) continue;
-
-			strncpy(buf,path,511);
-			buf[511]=0;
+			mystrlcpy(buf,path,512);
 			sm_add_part(buf,dptr->d_name,512);
 
 			if (!stat(buf,st))
@@ -670,4 +679,35 @@ char *mycombinepath(char *drawer, char *file)
 		sm_add_part(dest,file,len);
 	}
 	return dest;
+}
+
+/**
+ * @brief Returns a reference number of ticks.
+ *
+ * A is 1/#TIME_TICKS_PER_SECOND of a second. You can use the reference number of
+ * ticks with time_ticks_passed() in order to test for small time
+ * differences.
+ *
+ * @return the reference which can be supplied to time_ticks_passed().
+ */
+unsigned int time_reference_ticks(void)
+{
+	unsigned int micros = sm_get_current_micros();
+	unsigned int seconds = sm_get_current_seconds();
+
+	return seconds * TIME_TICKS_PER_SECOND + micros / (1000000/TIME_TICKS_PER_SECOND);
+}
+
+/**
+ * @brief returns the number of ticks that have been passed since the reference.
+ *
+ * @param reference defines the reference.
+ * @return number of ticks that have been passed
+ * @see timer_ticks
+ */
+unsigned int time_ticks_passed(int reference)
+{
+	unsigned int now = time_reference_ticks();
+	if (now > reference) return now - reference;
+	return (unsigned int)(reference - now);
 }

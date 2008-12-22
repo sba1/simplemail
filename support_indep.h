@@ -59,10 +59,18 @@ char **array_remove_idx(char **strings, int idx);
 
 char *mycombinepath(char *drawer, char *file);
 
+/**
+ * Gives the length of an array
+ */
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
 
-/* search a sorted array in O(log n) e.g.
-   BIN_SEARCH(strings,0,sizeof(strings)/sizeof(strings[0]),strcmp(key,array[mid]),res); */
+/**
+ * Search a sorted array in O(log n) e.g.
+ *
+ * BIN_SEARCH(strings,0,sizeof(strings)/sizeof(strings[0]),strcmp(key,array[mid]),res);
+ *
+ * @def BIN_SEARCH
+ */
 #define BIN_SEARCH(array,low,high,compare,result) \
 	{\
 		int l = low;\
@@ -79,16 +87,29 @@ char *mycombinepath(char *drawer, char *file);
 		}\
 	}
 
+/**
+ * @brief Represents a growable string.
+ *
+ */
 typedef struct
 {
-	char *str;
-	int len;
-	int allocated;
+	char *str; /**< the string */
+	int len; /**< the current length of the string */
+	int allocated; /**< number of allocated bytes for the string */
 } string;
 
 int string_initialize(string *string, unsigned int size);
 int string_append(string *string, char *appstr);
 int string_append_part(string *string, char *appstr, int bytes);
 void string_crop(string *string, int startpos, int endpos);
+
+
+/**
+ * Ticks per second
+ */
+#define TIME_TICKS_PER_SECOND 25
+
+unsigned int time_reference_ticks(void);
+unsigned int time_ticks_passed(int reference);
 
 #endif

@@ -1553,7 +1553,7 @@ void callback_mail_has_been_sent(char *filename)
 				struct folder *dest_folder = folder_find_by_name(f->dest_folder);
 				if (dest_folder)
 				{
-					/* very slow, because the sorted array is rebuilded in the both folders! */
+					/* very slow, because the sorted array is rebuilt in the both folders! */
 					callback_move_mail(m, folder_sent(), dest_folder);
 				}
 			}
@@ -1970,13 +1970,17 @@ void callback_select_mail(int num)
 /* delete all indexfiles */
 void callback_delete_all_indexfiles(void)
 {
+	app_busy();
 	folder_delete_all_indexfiles();
+	app_unbusy();
 }
 
 /* save all indexfiles */
 void callback_save_all_indexfiles(void)
 {
+	app_busy();
 	folder_save_all_indexfiles();
+	app_unbusy();
 }
 
 /* rescan the current selected folder */
@@ -1985,6 +1989,7 @@ void callback_rescan_folder(void)
 	struct folder *f = main_get_folder();
 	if (f)
 	{
+		app_busy();
 		/* Because this means deleting free all mails we safely remove all found mails as it
      * could reference a old mail */
 		search_clear_results();
@@ -1992,6 +1997,7 @@ void callback_rescan_folder(void)
 		main_set_folder_mails(f);
 		main_refresh_folder(f);
 		read_refresh_prevnext_button(f);
+		app_unbusy();
 	}
 }
 

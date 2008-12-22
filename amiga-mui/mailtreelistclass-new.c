@@ -3745,7 +3745,6 @@ STATIC ULONG MailTreelist_ContextMenuBuild(struct IClass *cl, Object * obj, stru
   return (ULONG) context_menu;
 }
 
-
 STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, struct MUIP_ContextMenuChoice *msg)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
@@ -3793,6 +3792,26 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
   return 0;
 }
 
+/**************************************************************************
+ MUIM_MailTreelist_Freeze
+**************************************************************************/
+STATIC ULONG MailTreelist_Freeze(struct IClass *cl, Object * obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	data->quiet++;
+	return 0;
+}
+
+/**************************************************************************
+ MUIM_MailTreelist_Thaw
+**************************************************************************/
+STATIC ULONG MailTreelist_Thaw(struct IClass *cl, Object * obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (!--data->quiet)
+		MUI_Redraw(obj,MADF_DRAWOBJECT);
+	return 0;
+}
 
 /**************************************************************************/
 
@@ -3831,6 +3850,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_ReplaceMail: return MailTreelist_ReplaceMail(cl,obj, (APTR)msg);
 		case	MUIM_MailTreelist_RefreshMail: return MailTreelist_RefreshMail(cl,obj,(APTR)msg);
 		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl,obj,(APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

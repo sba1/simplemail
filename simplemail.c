@@ -16,10 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** simplemail.c
-*/
-
+/**
+ * @brief Controller of SimpleMail.
+ *
+ * @file simplemail.c
+ */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1233,8 +1234,14 @@ struct mail_info *callback_new_mail_to_folder_by_file(char *filename)
 	return mail;
 }
 
-/* a new mail has arrived */
-static void callback_new_mail_arrived(struct mail_info *mail, struct folder *folder)
+/**
+ * Adds the given mail to the folder (both internally and visually).
+ *
+ * @param mail the new mail which has arrived
+ * @param folder specifies the folder which contains the mail
+ * @param refresh_folder_data specifies whether the folder data should be refreshed
+ */
+static void simplemail_new_mail_arrived(struct mail_info *mail, struct folder *folder, int refresh_folder_data)
 {
 	struct filter *f;
 	int pos;
@@ -1247,7 +1254,7 @@ static void callback_new_mail_arrived(struct mail_info *mail, struct folder *fol
 		main_insert_mail_pos(mail,pos-1);
 	}
 
-	/* This has to be optmized! */
+	/* This has to be optimized! */
 	if ((f = folder_mail_can_be_filtered(folder, mail, 1)))
 	{
 		if (f->use_dest_folder && f->dest_folder)
@@ -1261,7 +1268,9 @@ static void callback_new_mail_arrived(struct mail_info *mail, struct folder *fol
 		}
 	}
 
-	main_refresh_folder(folder);
+	if (refresh_folder_data)
+		main_refresh_folder(folder);
+
 	read_refresh_prevnext_button(folder);
 }
 
@@ -1367,18 +1376,40 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 	if ((mail = mail_info_create_from_file(filename)))
 	{
 		if (is_spam) mail->flags |= MAIL_FLAGS_AUTOSPAM;
-		callback_new_mail_arrived(mail,folder_incoming());
+		simplemail_new_mail_arrived(mail,folder_incoming(),1);
 	}
 
 	chdir(buf);
 }
 
-/* a new mail has been arrived into an imap folder */
+/**
+ * A new mail arrived into an imap folder
+ *
+ * @param filename the name of the filename.
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
 void callback_new_imap_mail_arrived(char *filename, char *user, char *server, char *path)
+{
+	callback_new_imap_mails_arrived(1,&filename,user,server,path);
+}
+
+/**
+ * New mails arrived into an imap folder
+ *
+ * @param num_filenames number of file names that are stored in filenames array
+ * @param filenames an array of filenames.
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
+void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
 {
 	struct mail_info *mail;
 	struct folder *f;
 	char buf[256];
+	int i;
 
 	f = folder_find_by_imap(user, server, path);
 	if (!f) return;
@@ -1386,8 +1417,21 @@ void callback_new_imap_mail_arrived(char *filename, char *user, char *server, ch
 	getcwd(buf, sizeof(buf));
 	chdir(f->path);
 
-	if ((mail = mail_info_create_from_file(filename)))
-		callback_new_mail_arrived(mail,f);
+	if (num_filenames > 1)
+		main_freeze_mail_list();
+
+	for (i=0;i<num_filenames;i++)
+	{
+		if ((mail = mail_info_create_from_file(filenames[i])))
+		{
+			simplemail_new_mail_arrived(mail,f,0);
+		}
+	}
+
+	if (num_filenames > 1)
+		main_thaw_mail_list();
+
+	main_refresh_folder(f);
 
 	chdir(buf);
 }

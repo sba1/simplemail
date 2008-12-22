@@ -98,6 +98,7 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
 struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
 void callback_new_mail_arrived_filename(char *filename, int spam);
 void callback_new_imap_mail_arrived(char *filename, char *user, char *server, char *path);
+void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path);
 void callback_new_mail_written(struct mail_info *mail);
 void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid);
 void callback_number_of_mails_downloaded(int num);

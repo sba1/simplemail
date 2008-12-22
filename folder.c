@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** folder.c
-*/
+/**
+ * @file folder.c
+ */
 
 #include <errno.h>
 #include <string.h>
@@ -358,9 +358,24 @@ static void folder_delete_indexfile(struct folder *f)
 	free(path);
 }
 
-/******************************************************************
- Delete all the index files
-*******************************************************************/
+/**
+ * @brief invalidates (i.e., deletes) the indexfile of the given folder.
+ *
+ * @param folder specifies the folder of which the index should
+ * be made invalid.
+ */
+static void folder_invalidate_indexfile(struct folder *folder)
+{
+	if (folder->index_uptodate)
+	{
+		folder_delete_indexfile(folder);
+		folder->index_uptodate = 0;
+	}
+}
+
+/**
+ * @brief delete all the index files.
+ */
 void folder_delete_all_indexfiles(void)
 {
 	struct folder *f = folder_first();
@@ -413,7 +428,7 @@ static int folder_set_pending_flag_in_indexfile(struct folder *folder)
 
 	if ((fh = folder_open_indexfile(folder,"ab")))
 	{
-		/* Move at the possition of the field */
+		/* Move at the position of the field */
 
 		if (fseek(fh,8,SEEK_SET) == 0)
 		{
@@ -497,11 +512,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	}
 
 	/* delete the indexfile if not already done */
-	if (folder->index_uptodate)
-	{
-		folder_delete_indexfile(folder);
-		folder->index_uptodate = 0;
-	}
+	folder_invalidate_indexfile(folder);
 
 	if (folder->mail_info_array_allocated == folder->num_mails)
 	{
@@ -662,11 +673,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	}
 
 	/* delete the indexfile if not already done */
-	if (folder->index_uptodate)
-	{
-		folder_delete_indexfile(folder);
-		folder->index_uptodate = 0;
-	}
+	folder_invalidate_indexfile(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -744,11 +751,7 @@ void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail)
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		if (folder->index_uptodate)
-		{
-			folder_delete_indexfile(folder);
-			folder->index_uptodate = 0;
-		}
+		folder_invalidate_indexfile(folder);
 	}
 
 	chdir(buf);
@@ -774,11 +777,7 @@ void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail
 		mail->filename = newfilename;
 
 		/* delete the indexfile if not already done */
-		if (folder->index_uptodate)
-		{
-			folder_delete_indexfile(folder);
-			folder->index_uptodate = 0;
-		}
+		folder_invalidate_indexfile(folder);
 	}
 
 	chdir(buf);
@@ -806,11 +805,7 @@ void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, str
 	}
 
 	/* Delete the indexfile if not already done */
-	if (folder->index_uptodate)
-	{
-		folder_delete_indexfile(folder);
-		folder->index_uptodate = 0;
-	}
+	folder_invalidate_indexfile(folder);
 
 	for (i=0; i < folder->num_mails; i++)
 	{
@@ -990,11 +985,7 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 			chdir(buf);
 
 			/* Delete the indexfile if not already done */
-			if (folder->index_uptodate)
-			{
-				folder_delete_indexfile(folder);
-				folder->index_uptodate = 0;
-			}
+			folder_invalidate_indexfile(folder);
 		}
 	}
 }
@@ -1008,11 +999,7 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 	mail->flags = flags_new;
 
 	/* Delete the indexfile if not already done */
-	if (folder->index_uptodate)
-	{
-		folder_delete_indexfile(folder);
-		folder->index_uptodate = 0;
-	}
+	folder_invalidate_indexfile(folder);
 }
 
 /******************************************************************
@@ -1137,11 +1124,7 @@ int folder_rescan(struct folder *folder)
 		}
 		closedir(dfd);
 
-		if (folder->index_uptodate)
-		{
-			folder_delete_indexfile(folder);
-			folder->index_uptodate = 0;
-		}
+		folder_invalidate_indexfile(folder);
 	}
 
 	folder_unlock(folder);
@@ -1296,8 +1279,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							folder->num_pending_mails = 0;
 
 							fclose(fh);
-							/* Two possibilities: Eighter we mark the indexfile as not uptodate (so it get's completly rewritten
-							   if saving is requester or we append the pending stuff with the indexfile here. I currently choosed
+							/* Two possibilities: Either we mark the indexfile as not uptodate (so it get's completely rewritten
+							   if saving is requested or we append the pending stuff with the indexfile here. I chose
 							   the first because it means less to do for me */
 							folder_delete_indexfile(folder);
 							folder->index_uptodate = 0;
@@ -1933,11 +1916,8 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		{
 			refresh = !!mystricmp(newpath,f->path);
 
-			if (f->index_uptodate && refresh)
-			{
-				folder_delete_indexfile(f);
-				f->index_uptodate = 0;
-			}
+			if (refresh)
+				folder_invalidate_indexfile(f);
 
 			if (f->path) free(f->path);
 			f->path = newpath;
@@ -1951,11 +1931,7 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 		refresh = 1;
 		if (newtype == FOLDER_TYPE_MAILINGLIST || f->type == FOLDER_TYPE_MAILINGLIST)
 		{
-			if (f->index_uptodate)
-			{
-				folder_delete_indexfile(f);
-				f->index_uptodate = 0;
-			}
+			folder_invalidate_indexfile(f);
 			rescan = 1;
 		}
 		f->type = newtype;
@@ -2668,7 +2644,7 @@ static int folder_save_index_header(struct folder *f, FILE *fh)
 }
 
 /******************************************************************
- Saved the index of an folder. If no mail infos are loaded or
+ Save the index of an folder. If no mail infos are loaded or
  the index is uptodate nothing happens.
 *******************************************************************/
 int folder_save_index(struct folder *f)

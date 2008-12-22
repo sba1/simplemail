@@ -1506,7 +1506,7 @@ int folder_remove(struct folder *f)
 {
   if (!folder_attempt_lock(f))
   {
-  	sm_request(NULL,_("Can't delete folder because it is actually in use."),_("_Ok"));
+  	sm_request(NULL,_("Can't delete folder because it is currently in use."),_("_Ok"));
   	return 0;
   }
 
@@ -1522,9 +1522,9 @@ int folder_remove(struct folder *f)
 				if (f->is_imap)
 				{
 					ok = sm_request(NULL,
-							_("You are going to delete an imap folder.\n"
+							_("You are going to delete an IMAP folder.\n"
 							  "This will remove the folder locally but not on the server.\n"
-							  "The next time you connect to the server the folder will reapear."),
+							  "The next time you connect to the server the folder will reappear."),
 							_("_Delete it|_Cancel"));
 				} else
 				{
@@ -1535,13 +1535,13 @@ int folder_remove(struct folder *f)
 
 				if (ok)
 				{
-					char buf[512];
+					char buf[380];
 
 					node_remove(&node->node);
 					folder_delete_mails(f);
-					sprintf(buf,"%s.index",f->path);
+					sm_snprintf(buf,sizeof(buf),"%s.index",f->path);
 					remove(buf);
-					sprintf(buf,"%s.config",f->path);
+					sm_snprintf(buf,sizeof(buf),"%s.config",f->path);
 					remove(buf);
 					remove(f->path);
 					folder_unlock(f);
@@ -1566,17 +1566,18 @@ int folder_remove(struct folder *f)
 				if (f->is_imap)
 				{
 					if (sm_request(NULL,
-						_("You are going to delete an imap server.\n"
+						_("You are going to delete an IMAP server.\n"
 						  "Unless you don't remove it from the accounts setting page\n"
-						  "it will reapear after SimpleMail is restarted."),
+						  "it will reappear the next time SimpleMail is started."),
 						_("_Delete it|_Cancel")))
 					{
 						struct folder_node *node2;
+						char buf[380];
 
 						/* delete the contents of the directory */
 						mydeletedir(f->path);
 
-						/* remoce the imap server node from the list so it won't be deleted twice */
+						/* remove the IMAP server node from the list so it won't be deleted twice */
 						node_remove(&node->node);
 
 						/* remove all folders which are on the same imap server like the imap server folder */
@@ -1595,6 +1596,13 @@ int folder_remove(struct folder *f)
 							node2 = next_node;
 						}
 
+						/* Get rid of the rest... */
+						sm_snprintf(buf,sizeof(buf),"%s.index",f->path);
+						remove(buf);
+						sm_snprintf(buf,sizeof(buf),"%s.config",f->path);
+						remove(buf);
+
+						/* ..and the memory */
 						folder_unlock(f);
 						free(node);
 						return 1;

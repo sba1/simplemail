@@ -2497,7 +2497,7 @@ msgstr "Importiere %s nach %s"
 #: dbx.c:366 mbox.c:223
 #, c-format
 msgid "Importing %s"
-msgstr "_Importiere %s"
+msgstr "Importiere %s"
 
 #: dbx.c:372
 msgid "SimpleMail - Importing a dbx file"

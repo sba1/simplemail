@@ -3811,7 +3811,7 @@ STATIC ULONG MailTreelist_Thaw(struct IClass *cl, Object * obj, Msg msg)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (!--data->quiet)
 	{
-		if (data->data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
+		if (data->vert_scroller) set(data->vert_scroller,MUIA_Prop_Entries,data->entries_num);
 		MUI_Redraw(obj,MADF_DRAWOBJECT);
 	}
 	return 0;

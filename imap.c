@@ -66,7 +66,7 @@
 /**
  * Maximum number of mails that can be hold before a refresh is invoked
  */
-#define MAX_MAILS_PER_REFRESH 10
+#define MAX_MAILS_PER_REFRESH 50
 
 /* TODO: Get rid of this one */
 static int val;
@@ -1380,6 +1380,7 @@ static void imap_thread_really_download_mails(void)
 			{
 				char *filename_ptrs[MAX_MAILS_PER_REFRESH];
 				int filename_current = 0;
+				unsigned int ticks;
 
 				folders_unlock();
 
@@ -1400,6 +1401,8 @@ static void imap_thread_really_download_mails(void)
 						thread_call_parent_function_sync(NULL,callback_delete_mail_by_uid,4,imap_server->login,imap_server->name,imap_folder,local_uid);
 					}
 				}
+
+				ticks = time_reference_ticks();
 
 				for (i=0;i<num_remote_mails;i++)
 				{
@@ -1436,11 +1439,14 @@ static void imap_thread_really_download_mails(void)
 							fclose(fh);
 
 							filename_ptrs[filename_current++] = filename;
-							if (filename_current == MAX_MAILS_PER_REFRESH)
+
+							if (filename_current == MAX_MAILS_PER_REFRESH || time_ticks_passed(ticks) > TIME_TICKS_PER_SECOND / 2)
 							{
 								thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
 								while (filename_current)
 									free(filename_ptrs[--filename_current]);
+
+								ticks = time_reference_ticks();
 							}
 						}
 					}

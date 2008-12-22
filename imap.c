@@ -16,9 +16,15 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** imap.c
-*/
+/**
+ *
+ * @brief Provides IMAP4 support.
+ *
+ * Functions in this file are responsible for the communication with IMAP4 servers.
+ * The communications happens in a separate thread of name #IMAP_THREAD_NAME.
+ *
+ * @file imap.c
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,6 +58,17 @@
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 
+/**
+ * The name of the IMAP thread.
+ */
+#define IMAP_THREAD_NAME "SimpleMail - IMAP thread"
+
+/**
+ * Maximum number of mails that can be hold before a refresh is invoked
+ */
+#define MAX_MAILS_PER_REFRESH 10
+
+/* TODO: Get rid of this one */
 static int val;
 
 #define RM_FLAG_SEEN      (1L<<0)
@@ -65,7 +82,7 @@ struct remote_mail
 	unsigned int size;
 
 	/* only if headers are requested  */
-  char *headers;
+	char *headers;
 };
 
 struct local_mail
@@ -74,11 +91,17 @@ struct local_mail
 	unsigned int todel;
 };
 
-/**************************************************************************
- Returns the local mail array of a given folder. 0 for failure (does not
- change the contents of the ptrs in that case). Free the array with free()
- as sonn as no longer needed
-**************************************************************************/
+/**
+ * Returns the local mail array of a given folder. 0 for failure (does not
+ * change the contents of the ptrs in that case). Free the array with free()
+ * as soon as no longer needed.
+ *
+ * @param folder
+ * @param local_mail_array_ptr
+ * @param num_of_mails_ptr
+ * @param num_of_todel_mails_ptr
+ * @return 0 on failure, otherwise something different.
+ */
 static int get_local_mail_array(struct folder *folder, struct local_mail **local_mail_array_ptr, int *num_of_mails_ptr, int *num_of_todel_mails_ptr)
 {
 	struct local_mail *local_mail_array;
@@ -91,7 +114,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 
 	num_of_mails = folder->num_mails;
 	num_of_todel_mails = 0;
-	
+
 	if ((local_mail_array = malloc(sizeof(*local_mail_array) * num_of_mails)))
 	{
 		/* fill in the uids of the mails */
@@ -163,7 +186,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 
 		while ((c = *src))
 		{
-			if (c == incr_delim) 
+			if (c == incr_delim)
 			{
 				b++;
 			} else
@@ -268,7 +291,7 @@ static int imap_send_simple_command(struct connection *conn, char *cmd)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static int imap_wait_login(struct connection *conn, struct imap_server *server)
 {
@@ -287,7 +310,7 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static int imap_login(struct connection *conn, struct imap_server *server)
 {
@@ -317,12 +340,19 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 	return 0;
 }
 
-/**************************************************************************
- Returns wheather succesful.
- The given path stays in selected/examine state
-
- Path must be is UTF8 encoded
-**************************************************************************/
+/**
+ * Read information of all mails in the given path. Put
+ * this back into an array.
+ *
+ * @param conn defines the connection
+ * @param path defines the utf8 encoded path.
+ * @param writemode
+ * @param headers specifies whether headers are requested.
+ * @param remote_mail_array_ptr defines a pointer to which the pointer of the allocated array is written to.
+ * @param num_ptr defines a pointer to a variable in which the number of mails is written to.
+ * @return returns 1 if successful.
+ * @note the given path stays in the selected/examine state.
+ */
 static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
 {
 	/* get number of remote mails */
@@ -393,9 +423,9 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
-			
+
 			success = 0;
-	
+
 			while ((line = tcp_readln(conn)))
 			{
 				line = imap_get_result(line,buf,sizeof(buf));
@@ -566,7 +596,7 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 		tcp_flush(conn);
 
 		SM_DEBUGF(20,("%s",send));
-		
+
 		while ((line = tcp_readln(conn)))
 		{
 			SM_DEBUGF(20,("%s\n",line));
@@ -588,7 +618,7 @@ static struct list *imap_get_folders(struct connection *conn, struct imap_server
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static int imap_synchonize_folder(struct connection *conn, struct imap_server *server, char *imap_path)
 {
@@ -696,6 +726,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 			}
 
+			/* Get information of all mails within the folder */
 			if (imap_get_remote_mails(conn, folder->imap_path, 0, 0, &remote_mail_array, &num_of_remote_mails))
 			{
 				int i,j;
@@ -722,6 +753,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					}
 				}
 
+				/* Determine the number of bytes which we are going to download */
 				for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
 				{
 					/* check if the mail already exists */
@@ -757,7 +789,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 					accu_todl_bytes += remote_mail_array[msgtodl-1].size;
 
-					sprintf(status_buf,_("Fetching mail %d from server"),msgtodl);
+					sm_snprintf(status_buf,sizeof(status_buf),_("Fetching mail %d from server"),msgtodl);
 					thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
 
 					sprintf(tag,"%04x",val++);
@@ -841,7 +873,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 {
@@ -944,7 +976,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 	{
 		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
 	}
-	
+
 }
 
 struct imap_get_folder_list_entry_msg
@@ -954,7 +986,7 @@ struct imap_get_folder_list_entry_msg
 };
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
 {
@@ -1085,7 +1117,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 										sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,path);
 										tcp_write(conn,send,strlen(send));
 										tcp_flush(conn);
-	
+
 										while ((line = tcp_readln(conn)))
 										{
 											char *saved_line = line; /* for debugging reasons */
@@ -1149,7 +1181,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 								}
 								node = (struct string_node*)node_next(&node->node);
 							}
-							
+
 							imap_free_name_list(sub_folder_list);
 						}
 						imap_free_name_list(all_folder_list);
@@ -1178,7 +1210,7 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 	struct imap_server *server = imap_duplicate(msg->server);
 	struct list list;
 	struct string_node *node;
-	
+
 	list_init(&list);
 	node = (struct string_node*)list_first(msg->list);
 	while (node)
@@ -1186,7 +1218,7 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 		string_list_insert_tail(&list,node->string);
 		node = (struct string_node*)node_next(&node->node);
 	}
-	
+
 
 	if (thread_parent_task_can_contiue())
 	{
@@ -1307,14 +1339,16 @@ static void imap_thread_entry(void *test)
 	}
 }
 
-/**************************************************************************
- The function for starting the imap thread. It doesn't start the thread
- if it is already started.
-**************************************************************************/
+/**
+ * The function creates the IMAP thread. It doesn't start the thread
+ * if it is already started.
+ *
+ * @return whether the thread has been started.
+ */
 static int imap_start_thread(void)
 {
 	if (imap_thread) return 1;
-	imap_thread = thread_add("SimpleMail - IMAP thread", THREAD_FUNCTION(&imap_thread_entry),NULL);
+	imap_thread = thread_add(IMAP_THREAD_NAME, THREAD_FUNCTION(&imap_thread_entry),NULL);
 	return !!imap_thread;
 }
 
@@ -1344,9 +1378,12 @@ static void imap_thread_really_download_mails(void)
 		{
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
+				char *filename_ptrs[MAX_MAILS_PER_REFRESH];
+				int filename_current = 0;
+
 				folders_unlock();
 
-				/* delete mails which are not on server but localy */
+				/* delete mails which are not on server but locally */
 				for (i = 0 ; i < num_of_local_mails; i++)
 				{
 					unsigned int local_uid = local_mail_array[i].uid;
@@ -1366,7 +1403,7 @@ static void imap_thread_really_download_mails(void)
 
 				for (i=0;i<num_remote_mails;i++)
 				{
-					char filename_buf[60];
+					char filename_buf[32];
 					char *filename;
 					FILE *fh;
 					int does_exist = 0;
@@ -1398,10 +1435,23 @@ static void imap_thread_really_download_mails(void)
 							if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
 							fclose(fh);
 
-							thread_call_parent_function_sync(NULL, callback_new_imap_mail_arrived, 4, filename, imap_server->login, imap_server->name, imap_folder);
+							filename_ptrs[filename_current++] = filename;
+							if (filename_current == MAX_MAILS_PER_REFRESH)
+							{
+								thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+								while (filename_current)
+									free(filename_ptrs[--filename_current]);
+							}
 						}
-						free(filename);
 					}
+				}
+
+				/* Add the rest */
+				if (filename_current)
+				{
+					thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+					while (filename_current)
+						free(filename_ptrs[--filename_current]);
 				}
 			} else folders_unlock();
 		} else folders_unlock();
@@ -1904,9 +1954,11 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 	return success;
 }
 
-/**************************************************************************
- Let the imap thread connect to the imap server represented by the folder.
-**************************************************************************/
+/**
+ * Let the imap thread connect to the imap server represented by the folder.
+ *
+ * @param folder the folder to which the imap thread should connect.
+ */
 void imap_thread_connect(struct folder *folder)
 {
 	struct imap_server *server;
@@ -1918,7 +1970,7 @@ void imap_thread_connect(struct folder *folder)
 }
 
 /**************************************************************************
- Download the given mail from the imap server using 
+ Download the given mail from the imap server using
 ***************************************************************************/
 int imap_download_mail(struct folder *f, struct mail_info *m)
 {

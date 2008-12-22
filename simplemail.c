@@ -1768,6 +1768,8 @@ void callback_remove_folder(void)
 	struct folder *f = main_get_folder();
 	if (f)
 	{
+		app_busy();
+
 		if (folder_remove(f))
 		{
 			main_refresh_folders();
@@ -1778,6 +1780,8 @@ void callback_remove_folder(void)
 			f = main_get_folder();
 			main_set_folder_mails(f);
 		}
+
+		app_unbusy();
 	}
 }
 

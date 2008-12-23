@@ -226,6 +226,9 @@ static const char *image_names[] =
 
 #define ENTRY_TITLE (-1)
 
+/**
+ * @brief A single list entry.
+ */
 struct ListEntry
 {
 	struct mail_info *mail_info;
@@ -238,11 +241,11 @@ struct ListEntry
 	LONG drawn_background; /* the last drawn backround for this entry, a MUII_xxx value */
 };
 
-#define LE_FLAG_PARENT      (1<<0)  /* Entry is a parent, possibly containing children */
-#define LE_FLAG_CLOSED      (1<<1)  /* The entry (parent) is closed (means that all children are invisible) */
-#define LE_FLAG_VISIBLE     (1<<2)  /* The entry is visible */
-#define LE_FLAG_SELECTED    (1<<3)  /* The entry is selected */
-#define LE_FLAG_HASCHILDREN (1<<4)  /* The entry really has children */
+#define LE_FLAG_PARENT      (1<<0)  /**< @brief Entry is a parent, possibly containing children */
+#define LE_FLAG_CLOSED      (1<<1)  /**< @brief The entry (parent) is closed (means that all children are invisible) */
+#define LE_FLAG_VISIBLE     (1<<2)  /**< @brief The entry is visible */
+#define LE_FLAG_SELECTED    (1<<3)  /**< @brief The entry is selected */
+#define LE_FLAG_HASCHILDREN (1<<4)  /**< @brief The entry really has children */
 
 struct ColumnInfo
 {
@@ -259,6 +262,9 @@ struct ColumnInfo
 #define COLUMN_FLAG_SORT2DOWN (1L << 4)
 #define COLUMN_FLAG_SORT2MASK (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN)
 
+/**
+ * @brief Instance data of Mailtreelist class.
+ */
 struct MailTreelist_Data
 {
 	APTR pool;
@@ -269,22 +275,22 @@ struct MailTreelist_Data
 	struct MUI_EventHandlerNode ehn_mousebuttons;
 	struct MUI_EventHandlerNode ehn_mousemove;
 
-	Object *vert_scroller; /* attached vertical scroller */
-	Object *horiz_scroller; /* attached vertical scroller */
+	Object *vert_scroller; /**<  @brief attached vertical scroller */
+	Object *horiz_scroller; /**< @brief attached vertical scroller */
 	Object *horiz_scroller_group;
 
 	struct dt_node *images[IMAGE_MAX];
 
 	/* List managment, currently we use a simple flat array, which is not good if many entries are inserted/deleted */
-	LONG entries_num; /* Number of Entries in the list (excludes title) */
-	LONG entries_allocated;
-	struct ListEntry **entries;
+	LONG entries_num; /**< @brief Number of entries in the list (excluding the title entry) */
+	LONG entries_allocated; /** @brief Number of entries which fit into entries field */
+	struct ListEntry **entries; /** @brief Array containing the entries */
 
-	LONG entries_first; /* first visible entry */
-	LONG entries_visible; /* number of visible entries */
-	LONG entries_active; /* index of active entry */
-	LONG entries_minselected; /* the lowest index of any selected entry */
-	LONG entries_maxselected; /* the highest index of any selected entry */
+	LONG entries_first; /**< @brief first visible entry */
+	LONG entries_visible; /**< @brief number of visible entries */
+	LONG entries_active; /**< @brief  index of active entry */
+	LONG entries_minselected; /**< @brief the lowest index of any selected entry */
+	LONG entries_maxselected; /**< @brief the highest index of any selected entry */
 
 	LONG column_drag; /* -1 if no column is dragged */
 	LONG column_drag_org_width;
@@ -310,7 +316,7 @@ struct MailTreelist_Data
 	int columns_order[MAX_COLUMNS]; /* order of columns */
 	int column_spacing;
 
-	LONG threepoints_width; /* Width of ... */
+	LONG threepoints_width; /**< @brief Width of string "..." */
 
 	char buf[2048];
 	char buf2[2048];
@@ -325,8 +331,8 @@ struct MailTreelist_Data
 	int drawupdate_old_first;
 	int drawupdate_position;
 
-	struct RastPort rp; /* Rastport for font calculations */
-	struct RastPort dragRP; /* Rastport for drag image rastport */
+	struct RastPort rp; /**< @brief Rastport for font calculations */
+	struct RastPort dragRP; /**< @brief Rastport for drag image rastport */
 #ifdef USE_TTENGINE
 	APTR ttengine_font;
 	int ttengine_baseline;
@@ -3812,6 +3818,48 @@ STATIC ULONG MailTreelist_Thaw(struct IClass *cl, Object * obj, Msg msg)
 	return 0;
 }
 
+
+/**************************************************************************
+ MUIM_MailTreelist_SelectAll
+**************************************************************************/
+STATIC ULONG MailTreelist_SelectAll(struct IClass *cl, Object * obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	int i;
+
+	if (data->entries_num)
+	{
+		for (i=0;i<data->entries_num;i++)
+			data->entries[i]->flags |= LE_FLAG_SELECTED;
+
+		data->entries_minselected = 0;
+		data->entries_maxselected = data->entries_num-1;
+
+		MUI_Redraw(obj,MADF_DRAWOBJECT);
+	}
+
+	return 0;
+}
+
+/**************************************************************************
+ MUIM_MailTreelist_ClearSelection
+**************************************************************************/
+STATIC ULONG MailTreelist_ClearSelection(struct IClass *cl, Object * obj, Msg msg)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	int i;
+
+	for (i=0;i<data->entries_num;i++)
+		data->entries[i]->flags &= ~LE_FLAG_SELECTED;
+
+	data->entries_minselected = 0x7fffffff;
+	data->entries_maxselected = -1;
+
+	MUI_Redraw(obj,MADF_DRAWOBJECT);
+
+	return 0;
+}
+
 /**************************************************************************/
 
 STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
@@ -3851,6 +3899,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MailTreelist_Dispatcher, cl, obj, msg)
 		case	MUIM_MailTreelist_RefreshSelected: return MailTreelist_RefreshSelected(cl,obj,(APTR)msg);
 		case	MUIM_MailTreelist_Freeze: return MailTreelist_Freeze(cl,obj,(APTR)msg);
 		case	MUIM_MailTreelist_Thaw: return MailTreelist_Thaw(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_SelectAll: return MailTreelist_SelectAll(cl,obj,(APTR)msg);
+		case	MUIM_MailTreelist_ClearSelection: return MailTreelist_ClearSelection(cl,obj,(APTR)msg);
 
 		default: return DoSuperMethodA(cl,obj,msg);
 	}

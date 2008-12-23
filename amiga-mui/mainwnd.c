@@ -204,7 +204,7 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 *******************************************************************/
 void display_about(void)
 {
-	MUI_Request(App, NULL, 0, 
+	MUI_Request(App, NULL, 0,
 		_("SimpleMail - About"),
 		_("*Ok"),
 		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2007\nHynek Schlawack %s Sebastian Bauer\n%s.",
@@ -380,7 +380,7 @@ static LONG mailtreelist_2_sort2marker(int sort)
 		case	FOLDER_SORT_POP3: marker = COLUMN_TYPE_POP3; break;
 		case	FOLDER_SORT_RECV: marker = COLUMN_TYPE_RECEIVED; break;
 	}
-	
+
 	if (!(sort & FOLDER_SORT_REVERSE))
 		marker |= MUIV_MailTreelist_TitleMark_Decreasing;
 
@@ -738,6 +738,8 @@ int main_window_init(void)
 		MENU_MESSAGE_COPY,
 		MENU_MESSAGE_DELETE,
 		MENU_MESSAGE_SAVE,
+		MENU_MESSAGE_SELECT_ALL,
+		MENU_MESSAGE_CLEAR_SELECTION,
 
 		MENU_SETTINGS,
 		MENU_SETTINGS_SHOW_FOLDERS,
@@ -759,32 +761,32 @@ int main_window_init(void)
 		{NM_ITEM, N_("?:About..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUT},
 		{NM_ITEM, N_("About MUI..."), NULL, 0, 0, (APTR)MENU_PROJECT_ABOUTMUI},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("O:Open message..."), NULL, 0, 0, (APTR)MENU_PROJECT_OPEN},
+		{NM_ITEM, N_("O:Open Message..."), NULL, 0, 0, (APTR)MENU_PROJECT_OPEN},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Delete all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
-		{NM_ITEM, N_("Save all indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_SAVEALLINDEX},
+		{NM_ITEM, N_("Delete All Indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_DELALLINDEX},
+		{NM_ITEM, N_("Save All Indexfiles"), NULL, 0, 0, (APTR)MENU_FOLDER_SAVEALLINDEX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("Import mbox file..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTMBOX},
-		{NM_ITEM, N_("Import dbx file..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTDBX},
+		{NM_ITEM, N_("Import mbox File..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTMBOX},
+		{NM_ITEM, N_("Import dbx File..."), NULL, 0, 0, (APTR)MENU_PROJECT_IMPORTDBX},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("S:Send queued mails..."), NULL, 0, 0, (APTR)MENU_PROJECT_SEND},
-		{NM_ITEM, N_("F:Check all active accounts..."), NULL, 0, 0, (APTR)MENU_PROJECT_FETCH},
-		{NM_ITEM, N_("Check single account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
+		{NM_ITEM, N_("S:Send Queued Mails..."), NULL, 0, 0, (APTR)MENU_PROJECT_SEND},
+		{NM_ITEM, N_("F:Check All Active Accounts..."), NULL, 0, 0, (APTR)MENU_PROJECT_FETCH},
+		{NM_ITEM, N_("Check Single Account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
 		{NM_ITEM, N_("New..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWFOLDER},
-		{NM_ITEM, N_("New group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
+		{NM_ITEM, N_("New Group..."), NULL, 0, 0, (APTR)MENU_FOLDER_NEWGROUP},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Delete..."), NULL, 0, 0, (APTR)MENU_FOLDER_DELETE},
-		{NM_ITEM, N_("Import mbox file..."), NULL, 0, 0, (APTR)MENU_FOLDER_IMPORTMBOX},
-		{NM_ITEM, N_("Export as mbox..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
+		{NM_ITEM, N_("Import mbox File..."), NULL, 0, 0, (APTR)MENU_FOLDER_IMPORTMBOX},
+		{NM_ITEM, N_("Export As mbox..."), NULL, 0, 0, (APTR)MENU_FOLDER_EXPORT},
 		{NM_ITEM, N_("Rescan"), NULL, 0, 0, (APTR)MENU_FOLDER_RESCAN},
 		{NM_ITEM, N_("Options..."), NULL, 0, 0, (APTR)MENU_FOLDER_OPTIONS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-		{NM_ITEM, N_("P:Run spam mail check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
-		{NM_ITEM, N_("I:Isolate spam mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
-		{NM_ITEM, N_("H:Classify all mails as ham"), NULL, 0, 0, (APTR)MENU_FOLDER_HAM},
+		{NM_ITEM, N_("P:Run Spam Mail Check"), NULL, 0, 0, (APTR)MENU_FOLDER_SPAMCHECK},
+		{NM_ITEM, N_("I:Isolate Spam Mails"), NULL, 0, 0, (APTR)MENU_FOLDER_MOVESPAM},
+		{NM_ITEM, N_("H:Classify All Mails As Ham"), NULL, 0, 0, (APTR)MENU_FOLDER_HAM},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Order"), NULL, 0, 0, NULL},
 		{NM_SUB, N_("Save"), NULL, 0, 0, (APTR)MENU_FOLDER_ORDER_SAVE},
@@ -794,14 +796,19 @@ int main_window_init(void)
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("D:Read..."), NULL, 0, 0, (APTR)MENU_MESSAGE_READ},
 		{NM_ITEM, N_("E:Edit..."), NULL, 0, 0, (APTR)MENU_MESSAGE_EDIT},
-		{NM_ITEM, N_("Save as..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_SAVE},
+		{NM_ITEM, N_("Save As..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_SAVE},
 		{NM_ITEM, N_("R:Reply..."), NULL, 0, 0, (APTR)MENU_MESSAGE_REPLY},
 		{NM_ITEM, N_("W:Forward..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FORWARD},
-		{NM_ITEM, N_("Show raw..."), NULL, 0, 0, (APTR)MENU_MESSAGE_RAW},
+		{NM_ITEM, N_("Show Raw..."), NULL, 0, 0, (APTR)MENU_MESSAGE_RAW},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("M:Move..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_MOVE},
 		{NM_ITEM, N_("Copy..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
 		{NM_ITEM, N_("Delete"), "Del", NM_COMMANDSTRING, 0L, (APTR)MENU_MESSAGE_DELETE},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("A:Select All Messages"), NULL, 0, 0L, (APTR)MENU_MESSAGE_SELECT_ALL},
+		{NM_ITEM, N_("Z:Clear Selection"), NULL, 0, 0L, (APTR)MENU_MESSAGE_CLEAR_SELECTION},
+
+
 /*
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
@@ -811,10 +818,10 @@ int main_window_init(void)
 		{NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 */
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS},
-		{NM_ITEM, N_("Show folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
-		{NM_ITEM, N_("Show addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
-		{NM_ITEM, N_("Show selected message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
-		{NM_ITEM, N_("Show quick filter?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_QUICK_FILTER},
+		{NM_ITEM, N_("Show Folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
+		{NM_ITEM, N_("Show Addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_ITEM, N_("Show Selected message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
+		{NM_ITEM, N_("Show Quick Filter?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_QUICK_FILTER},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
@@ -1057,7 +1064,8 @@ int main_window_init(void)
 /*
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);
 */
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_DELETE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_delete_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_SELECT_ALL, (ULONG)mail_listview, 1, MUIM_MailTreelist_SelectAll);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_CLEAR_SELECTION, (ULONG)mail_listview, 1, MUIM_MailTreelist_ClearSelection);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, (ULONG)App, 2, MUIM_Application_OpenConfigWindow, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_config);
@@ -1066,7 +1074,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_ADDRESSBOOK, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_SELECTED_MESSAGE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_QUICK_FILTER, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_quick_filter_changed);
-		
+
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SAVEPREFS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)main_save_environment);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SCRIPTS_EXECUTESCRIPT, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)menu_execute_script, -1);
@@ -1271,7 +1279,7 @@ void main_clear_folder_mails(void)
  Updates the mail trees with the mails in the given folder
 *******************************************************************/
 void main_set_folder_mails(struct folder *folder)
-{ 
+{
 	struct folder *created_folder = NULL;
 	utf8 *filter = main_get_quick_filter_contents();
 
@@ -1282,7 +1290,7 @@ void main_set_folder_mails(struct folder *folder)
 	}
 
 	DoMethod(mail_tree, MUIM_MailTree_SetFolderMails, (ULONG)folder);
-	
+
 	if (created_folder)
 		folder_delete_live_folder(created_folder);
 
@@ -1295,7 +1303,7 @@ void main_set_folder_mails(struct folder *folder)
 void main_set_folder_active(struct folder *folder)
 {
 	struct MUI_NListtree_TreeNode *tn;
-	
+
 	SM_ENTER;
 	SM_DEBUGF(20,("Set active folder to \"%s\"\n",folder->name));
 
@@ -1323,7 +1331,7 @@ struct folder *main_get_folder(void)
 		}
 	}
 	return NULL;
-	
+
 }
 
 /******************************************************************

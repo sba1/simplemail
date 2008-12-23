@@ -70,6 +70,8 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIM_MailTreelist_ReplaceMail      (TAG_USER | 0x300F010A)
 #define MUIM_MailTreelist_SetFolderMails   (TAG_USER | 0x300F010B)
 #define MUIM_MailTreelist_Thaw             (TAG_USER | 0x300F010C)
+#define MUIM_MailTreelist_SelectAll        (TAG_USER | 0x300F010D)
+#define MUIM_MailTreelist_ClearSelection   (TAG_USER | 0x300F010E)
 struct  MUIP_MailTreelist_GetFirstSelected { ULONG MethodID; void *handle;};
 struct  MUIP_MailTreelist_GetNextSelected  { ULONG MethodID; void *handle;};
 struct  MUIP_MailTreelist_InsertMail       { ULONG MethodID; struct mail_info *m; int after;};

@@ -3401,17 +3401,25 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 	switch (msg->muikey)
 	{
+		case	MUIKEY_TOP:
+				if (data->entries_num)
+					new_entries_active = 0;
+				break;
+
 		case	MUIKEY_PAGEUP:
 					change_amount = data->entries_visible - 1;
-		case	MUIKEY_TOP:
 		case	MUIKEY_UP:
 					if (new_entries_active <= 0) new_entries_active = data->entries_num - 1;
 					else new_entries_active -= change_amount;
 					break;
 
+		case	MUIKEY_BOTTOM:
+				if (data->entries_num)
+					new_entries_active = data->entries_num-1;
+				break;
+
 		case	MUIKEY_PAGEDOWN:
 					change_amount = data->entries_visible - 1;
-		case	MUIKEY_BOTTOM:
 		case	MUIKEY_TOGGLE:
 		case	MUIKEY_DOWN:
 					if (new_entries_active >= data->entries_num - 1) new_entries_active = 0;
@@ -3458,7 +3466,7 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 
 	if (new_entries_active != data->entries_active && data->entries_num)
 	{
-		int mark = msg->muikey == MUIKEY_BOTTOM || msg->muikey == MUIKEY_TOP || msg->muikey == MUIKEY_TOGGLE;
+		int mark = msg->muikey == MUIKEY_TOGGLE;
 
 		if (mark && data->entries_active != -1)
 		{

@@ -653,17 +653,22 @@ void init_addressbook(void)
 		}
 	}
 
-	if (!addressbook_find_entry_by_address("bgollesch@sime.at"))
+	if (!addressbook_find_entry_by_address("bgollesch@speed.at"))
 	{
+		if ((entry = addressbook_find_entry_by_address("bgollesch@sime.at")))
+		{
+			array_free(entry->email_array);
+			entry->email_array = array_add_string(NULL,"bgollesch@speed.at");
+		} else
 		if ((entry = addressbook_find_entry_by_address("bgollesch@sime.com")))
 		{
 			array_free(entry->email_array);
-			entry->email_array = array_add_string(NULL,"bgollesch@sime.at");
+			entry->email_array = array_add_string(NULL,"bgollesch@speed.at");
 		} else
 		{
 			if ((entry = addressbook_add_entry("Bernd Gollesch")))
 			{
-				entry->email_array = array_add_string(entry->email_array,"bgollesch@sime.at");
+				entry->email_array = array_add_string(entry->email_array,"bgollesch@speed.at");
 				entry->description = mystrdup(_("Contributor of SimpleMail"));
 				entry->group_array = array_add_string(entry->group_array, "SimpleMail Team");
 			}

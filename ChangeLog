@@ -2,6 +2,9 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2008-12-23  Bernd Gollesch <bgollesch@speed.at>
+	* addressbook.c: I have a new email-address.
+
 2007-12-26  Bernd Gollesch <bgollesch@sime.at>
 	* amiga-mui/smtoolbarclass.c: Reverted back to the old version and included the
 	  party fix in the correct way.

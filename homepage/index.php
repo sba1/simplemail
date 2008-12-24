@@ -34,6 +34,7 @@
   $LinkMenu["gallery_add_user"]["title"]=get_string($GalleryText);
   $LinkMenu["gallery_add_user"]["datename"]="gallery.php";
 
+  $body = $_REQUEST["body"];
   if (!isset($body)) $body="default";
 ?>
  

@@ -1,3 +1,19 @@
+Version 0.33 (20th beta) - released on 2008/12/24
+   - Quick filter now highlights the first occurrence of the string
+     within all cells in the mail list
+   - Maillist now supports alternating background colors for rows.
+     This feature can be controlled by three new hidden options:
+       Hidden.DontDrawAlternatingRows
+       Hidden.RowBackground
+       Hidden.AltRowBackground
+   - Fixed some critical bugs in the SimpleHTML engine
+   - POP3 feature "Avoid duplicates" should now work better when using
+     multiple accounts on the same server.
+   - Improved IMAP support
+   - Incoming mails are no longer added by one into the mail tree list
+   - Added functions such as "Save All Attachments", "Select All Messages",
+     and "Clear Selection" to improve general usability a little bit
+
 Version 0.32 (19th beta) - released on 2007/12/24
    - Partly supports AISS. Can be disabled by using the Hidden.DontUseAISS
      hidden option. (bgol,sba)
@@ -10,7 +26,7 @@ Version 0.31 (18th beta) - released on 2007/02/05
    - Replaced the usage of the NList class by the mail list with
      the usage of a custom list. It should act like NList, but
      switching through folders should be a lot of faster now. Also
-     it allows further improvments to the mail list.
+     it allows further improvements to the mail list.
      The SIMPLEMAIL_OLDMAILLIST environment variable can be used
      to stick to the NList class usage. (bgol, sba)
    - New config option "Folder to display at startup" (bgol)

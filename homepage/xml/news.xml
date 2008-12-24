@@ -1,11 +1,68 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 
 <news>
+  <entry date="2008/12/24">
+   <text lang="en">
+    Just in time a new version of SimpleMail has been released! The new
+    version 0.33 comes with the following changes
+    <list>
+    <item>Quick filter now highlights the first occurrence of the string
+     within all cells in the mail list
+    </item>
+    <item>Maillist now supports alternating background colors for rows.
+     This feature can be controlled by three new hidden options:
+       Hidden.DontDrawAlternatingRows,
+       Hidden.RowBackground, and
+       Hidden.AltRowBackground.
+    </item>
+    <item>Fixed some critical bugs in the SimpleHTML engine</item>
+    <item> POP3 feature "Avoid duplicates" should now work better when using
+     multiple accounts on the same server.
+    </item>
+    <item>Improved IMAP support</item>
+    <item>Incoming mails are no longer added by one into the mail tree list</item>
+    <item>Added functions such as "Save All Attachments", "Select All Messages",
+     and "Clear Selection" to improve general usability a little bit
+     </item>
+    </list>
+     The SimpleMail Team wishes you all a merry Christmas and a happy new year 2009! 
+   </text>
+   
+   <text lang="de">
 
+    Pünktlich zur Weihnachtszeit wurde eine neue Version von SimpleMail veröffentlicht!
+    Die Änderungen in Version 0.33 lauten:
+
+    <list>
+    <item>Bei aktivierter Schnellfilteroption werden die passenden Textstellen hervorgehoben
+    </item>
+    <item>Die Zeilen der Nachrichtenliste werden nun mit abwechselnden Farben unterlegt.
+     Die Fähigkeit kann mit den folgenden versteckten Optionen in der Konfigurationsdatei beeinflusst werden
+       Hidden.DontDrawAlternatingRows,
+       Hidden.RowBackground, and
+       Hidden.AltRowBackground.
+    </item>
+    <item>Einige kritische Fehler in der SimpleHTML behoben.</item>
+    <item>Die Option "Duplikate vermeiden" sollte nun besser mit mehreren, sich auf den gleichen Server beziehenden 
+          Kontos funktionieren.
+    </item>
+    <item>IMAP-Unterstützung verbessert</item>
+    <item>Eingehende Nachrichten werden nun zusammengefasst in die Nachrichtenliste eingefügt.</item>
+    <item>Neue einfache Funktionen wie "Alle Dateianhänge speichern", "Alle Nachrichten auswählen" und
+    "Auswahl aufheben" hinzugefügt.
+     </item>
+    </list>
+    
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   
+   </text>
+   
+   
+  </entry>
   <entry date="2007/12/24">
    <text lang="en">
 
-    And here is the christmas and birthday release of SimpleMail. In brief, the release 0.32 of SimpleMail
+    And here is the Christmas and birthday release of SimpleMail. In brief, the release 0.32 of SimpleMail
     is characterized by the following changes:
 
 	  <list>

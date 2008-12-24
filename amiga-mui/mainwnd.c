@@ -1006,6 +1006,12 @@ int main_window_init(void)
 		}
 		MUI_DisposeObject(testnlist);
 
+		SetAttrs(mail_tree,
+				MUIA_MailTreelist_UseCustomBackground, !user.config.dont_draw_alternating_rows,
+				MUIA_MailTreelist_RowBackgroundRGB, user.config.row_background,
+				MUIA_MailTreelist_AltRowBackgroundRGB, user.config.alt_row_background,
+				TAG_DONE);
+
 		set(filter_clear_button,MUIA_Weight,0);
 
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);

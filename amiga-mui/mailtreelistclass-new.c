@@ -1677,6 +1677,19 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 			    		data->folder_type = tag->ti_Data;
 			    	}
 			    	break;
+
+			    	/* TODO: Make the following attributes also changeable if we are between MUIM_Setup/MUIM_Cleanup */
+			case	MUIA_MailTreelist_UseCustomBackground:
+					data->use_custom_background = tidata;
+					break;
+
+			case	MUIA_MailTreelist_RowBackgroundRGB:
+					data->background_rgb = tidata;
+					break;
+
+			case	MUIA_MailTreelist_AltRowBackgroundRGB:
+					data->alt_background_rgb = tidata;
+					break;
 		}
 	}
 

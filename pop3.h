@@ -23,22 +23,25 @@
 #ifndef POP3_H
 #define POP3_H
 
+/**
+ * @brief The settings for a POP3 server
+ */
 struct pop3_server
 {
-	struct node node;
+	struct node node; /**< @brief embedded node structure */
 
-	char *name;
-	unsigned int port;
-	int ssl; /* use ssl to connect */
-	int stls; /* with STLS command */
-	int apop; /* use APOP and fail if APOP is not available */
-	char *login;
-	char *passwd;
-	int del; /* 1 if downloaded mails should be deleted */
-	int nodupl; /* 1 if duplicates should be avoided */
-	int active; /* is this pop server actove */
-	int ask; /* ask for login/password */
-	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
+	char *name; /**< @brief the name of the server */
+	unsigned int port; /**< @brief the port */
+	int ssl; /**< @brief use ssl to connect */
+	int stls; /**< @brief with STLS command */
+	int apop; /**< @brief use APOP and fail if APOP is not available */
+	char *login; /**< @brief the user login name */
+	char *passwd; /**< @brief the password */
+	int del; /**< @brief 1 if downloaded mails should be deleted */
+	int nodupl; /**< @brief 1 if duplicates should be avoided */
+	int active; /**< @brief is this pop server actove */
+	int ask; /**< @brief ask for login/password */
+	char *title; /**< @brief normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
 int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black);

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** pop3.c
-*/
+/**
+ * @file pop3.c
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,6 +38,7 @@
 
 #include "debug.h"
 #include "filter.h"
+#include "hash.h"
 #include "mail.h"
 #include "md5.h"
 #include "pop3.h"
@@ -52,9 +53,6 @@
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
-
-#define REC_BUFFER_SIZE 512
-
 
 /**************************************************************************
  Recieves a single line answer. Returns the line if this is positive
@@ -104,7 +102,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 			while ((c = *ptr))
 			{
 				if (c=='<') startptr = ptr;
-				else if (c=='>') 
+				else if (c=='>')
 				{
 					endptr = ptr;
 					break;
@@ -180,7 +178,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 		sm_snprintf(buf,sizeof(buf)-64,"APOP %s ",server->login);
 		ptr = buf + strlen(buf);
-				
+
 		for (i=0;i<16;i++)
 		{
 			sprintf(ptr,"%02x",digest[i]);
@@ -191,7 +189,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		*ptr = 0;
 
 		SM_DEBUGF(15,("Sending %s",buf));
-				
+
 		if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 		if (!pop3_receive_answer(conn,1))
 		{
@@ -216,7 +214,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 	if (!pop3_receive_answer(conn,!!timestamp)) /* be silent if timestamp has given */
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED && !timestamp)
-			tell_from_subtask(N_("Error while identifing the user"));
+			tell_from_subtask(N_("Error while identifying the user"));
 		SM_DEBUGF(15,("Sending the USER command failed\n"));
 		return 0;
 	}
@@ -237,47 +235,60 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 struct dl_mail
 {
-	unsigned int flags; /* the download flags of this mail */
-	int size;					/* the mails size */
-	char *uidl;				/* the uidl string, might be NULL */
+	unsigned int flags; /**< the download flags of this mail */
+	int size;			/**< the mails size */
+	char *uidl;			/**< the uidl string, might be NULL */
 };
 
-#define MAILF_DELETE     (1<<0) /* mail should be deleted */
-#define MAILF_DOWNLOAD   (1<<1) /* mail should be downloaded */
-#define MAILF_DUPLICATE  (1<<2) /* mail is duplicated */
-#define MAILF_ADDED      (1<<7) /* mails has been added to the status window */
+#define MAILF_DELETE     (1<<0) /**< mail should be deleted */
+#define MAILF_DOWNLOAD   (1<<1) /**< mail should be downloaded */
+#define MAILF_DUPLICATE  (1<<2) /**< mail is duplicated */
+#define MAILF_ADDED      (1<<7) /**< mails has been added to the status window */
 
 
 struct uidl_entry /* stored on the harddisk */
 {
-	int size; /* size of the mail, unused yet, so it is -1 for now */
-	char uidl[72]; /* null terminated, 70 are enough according to RFC 1939 */
+	int size; /**< size of the mail, unused yet, so it is -1 for now */
+	char uidl[72]; /**< null terminated, 70 are enough according to RFC 1939 */
 };
 
+/**
+ * @brief the uidl contents.
+ *
+ * @note TODO: Use a better data structure
+ */
 struct uidl
 {
-	char *filename; /* the filename of the uidl file */
-	int num_entries; /* number of entries */
-	struct uidl_entry *entries; /* this are the entries */
+	char *filename; /**< the filename of the uidl file */
+	int num_entries; /**< number of entries */
+	struct uidl_entry *entries; /**< these are the entries */
 };
 
-/**************************************************************************
- Init the uidl,
-**************************************************************************/
+/**
+ * @brief Initialize a given uidl
+ *
+ * @param uidl the uidl instance to be initialized
+ * @param server the server in question
+ * @param folder_directory base directory of the folders
+ */
 static void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory)
 {
 	char c;
 	char *server_name = server->name;
 	char *buf;
-	int len = strlen(folder_directory)+strlen(server_name)+20;
+	int len = strlen(folder_directory)+strlen(server_name)+30;
 
 	memset(uidl,0,sizeof(*uidl));
+
+	/* Construct the file name */
 	if (!(buf = uidl->filename = malloc(len)))
 		return;
 
 	strcpy(uidl->filename,folder_directory);
 	sm_add_part(uidl->filename,".uidl.",len);
 
+	/* Using a hash doesn't make the filename unique but it should work for now */
+	sprintf(uidl->filename+strlen(uidl->filename),"%x",sdbm(server->login));
 	buf += strlen(buf);
 	while ((c=*server_name))
 	{
@@ -747,7 +758,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
 		return mail_array;
 	}
-	
+
 	if (mails_add && cont)
 	{
 		/* let the user select which mails (s)he wants */
@@ -956,7 +967,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 					if (!pop3_login(conn,server,timestamp))
 					{
-						SM_DEBUGF(15,("Loggin in failed\n"));
+						SM_DEBUGF(15,("Logging in failed\n"));
 						goon = 0;
 						if (timestamp)
 						{
@@ -981,7 +992,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 						struct uidl uidl;
 						struct dl_mail *mail_array;
 
-						SM_DEBUGF(15,("Logged in successful\n"));
+						SM_DEBUGF(15,("Logged in successfully\n"));
 
 						uidl_init(&uidl,server,folder_directory);
 
@@ -990,12 +1001,12 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 							int i;
 							int mail_amm = mail_array[0].flags;
 							char path[256];
-						
+
 							getcwd(path, 255);
 
 							if(chdir(dest_dir) == -1)
 							{
-								tell_from_subtask(N_("Can\'t access income-folder!"));
+								tell_from_subtask(N_("Can\'t access income folder!"));
 							} else
 							{
 								int max_mail_size_sum = 0;
@@ -1053,7 +1064,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 										nummails++;
 										mail_size_sum += mail_array[i].size;
 									}
-									
+
 									if (del)
 									{
 										thread_call_parent_function_async(status_set_status,1,_("Marking mail as deleted..."));
@@ -1115,9 +1126,17 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 	return rc;
 }
 
-/**************************************************************************
- Only log in the server (for smtp servers which need this)
-**************************************************************************/
+
+/**
+ * @brief Log in and log out into a POP3 server as given by the @p server parameter.
+ *
+ * This function can be used to test POP3 settings but also some SMTP server
+ * requires prior POP3 server logins.
+ *
+ * @param server defines the connection details of the POP3 server.
+ * @return 1 on sucess, 0 on failure.
+ * @note Assumes to be run in a sub thread (i.e., not SimpleMail's main thread)
+ */
 int pop3_login_only(struct pop3_server *server)
 {
 	int rc = 0;
@@ -1158,7 +1177,7 @@ int pop3_login_only(struct pop3_server *server)
 					pop3_quit(conn,server);
 					rc = 1;
 				}
-			}  
+			}
 			tcp_disconnect(conn); /* accepts NULL */
 		}
 		close_socket_lib();
@@ -1169,10 +1188,15 @@ int pop3_login_only(struct pop3_server *server)
 	return rc;
 }
 
-/**************************************************************************
- malloc() a pop3_server and initializes it with default values.
- TODO: rename all pop3 identifiers to pop
-**************************************************************************/
+/**
+ * @brief Construct a new instance holding POP3 server settings.
+ *
+ * Allocates a new POP3 server setting instance and initializes it
+ * with default values.
+ *
+ * @return the instance which must be freed with pop_free() when no longer in
+ * use or NULL on failure.
+ */
 struct pop3_server *pop_malloc(void)
 {
 	struct pop3_server *pop3;
@@ -1186,9 +1210,13 @@ struct pop3_server *pop_malloc(void)
 	return pop3;
 }
 
-/**************************************************************************
- Duplicates a pop3_server
-**************************************************************************/
+/**
+ * @brief Duplicates the given POP3 server settings.
+ *
+ * @param pop defines the settings which should be duplicated.
+ * @return the duplicated POP3 server settings.
+ */
+
 struct pop3_server *pop_duplicate(struct pop3_server *pop)
 {
 	struct pop3_server *new_pop = pop_malloc();
@@ -1210,9 +1238,14 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 	return new_pop;
 }
 
-/**************************************************************************
- Frees a pop3_server completly
-**************************************************************************/
+/**
+ * @brief Frees the POP3 server settings completely.
+ *
+ * Deallocates all resources associated with the given
+ * POP3 server settings.
+ *
+ * @param pop defines the instance which should be freed.
+ */
 void pop_free(struct pop3_server *pop)
 {
 	if (pop->name) free(pop->name);

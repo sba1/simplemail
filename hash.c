@@ -20,7 +20,7 @@
 ** hash.c
 **
 ** A implementation of hash tables for strings and a single assiociated
-** data field. 
+** data field.
 **
 */
 
@@ -36,7 +36,7 @@
 /**************************************************************************
  The hash function. It's the one used in berkely db (sleepycat)
 **************************************************************************/
-static unsigned long sdbm(const unsigned char *str)
+unsigned long sdbm(const unsigned char *str)
 {
 	unsigned long hash = 0;
 	int c;
@@ -113,7 +113,7 @@ int hash_table_init(struct hash_table *ht, int bits, const char *filename)
 			fclose(fh);
 		}
 	}
-	
+
 	return 1;
 }
 
@@ -186,7 +186,7 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 	struct hash_bucket *hb,*nhb;
 
 	if (!string) return NULL;
-	
+
 	index = sdbm(string) & ht->mask;
 	hb = &ht->table[index];
 	if (!hb->entry.string)

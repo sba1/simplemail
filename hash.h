@@ -41,6 +41,8 @@ struct hash_table
 	struct hash_bucket *table;
 };
 
+unsigned long sdbm(const unsigned char *str);
+
 int hash_table_init(struct hash_table *ht, int bits, const char *filename);
 void hash_table_clean(struct hash_table *ht);
 

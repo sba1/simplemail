@@ -41,7 +41,6 @@
 #include "support_indep.h"
 
 #include "compiler.h"
-#include "datatypescache.h"
 #include "muistuff.h"
 #include "smtoolbarclass.h"
 #include "picturebuttonclass.h"
@@ -51,12 +50,8 @@ struct SMToolbar_Data
 	Object *obj;
 	Object *toolbar;
 	int button_count;
-	int brush_count;
 	int used_thebar_mcc;
-
 	struct MUIS_TheBar_Button *toolbar_buttons; /* array of the toolbar buttons */
-	struct MUIS_TheBar_Brush **toolbar_brushes; /* array of brushes */
-	struct dt_node **dts;						/* array of dts */
 };
 
 STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
@@ -65,11 +60,9 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	struct TagItem *ti;
 	struct MUIS_SMToolbar_Button *buttons;
 	struct MUIS_TheBar_Button *toolbar_buttons;
-	struct MUIS_TheBar_Brush **toolbar_brushes = NULL;
-	int i, j, button_count=0, brush_count=0, used_thebar_mcc=0;
+	int i=0, j, button_count=0, used_thebar_mcc=0;
 	int use_vgroup=0, add_hvspace=0;
 	Object *horiz_group, *current_group, *toolbar=NULL, *tb_toolbar=NULL;
-	struct dt_node **dts = NULL;
 
 	/* we need some buttons */
 	if ((ti = FindTagItem(MUIA_SMToolbar_Buttons, msg->ops_AttrList)))
@@ -82,17 +75,12 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	if ((ti = FindTagItem(MUIA_SMToolbar_AddHVSpace, msg->ops_AttrList)))
 		add_hvspace = !!ti->ti_Data;
-	
-	/* how many buttons and brushes do we have? */
-	while (buttons[button_count].pos != MUIV_SMToolbar_End)
-	{
-		if (buttons[button_count].pos != MUIV_SMToolbar_Space)
-			brush_count++;
-		button_count++;
-	}
+
+	/* how much button do we have? */
+	while (buttons[button_count].pos != MUIV_SMToolbar_End) button_count++;
 	if (!(button_count)) return 0;
 
-	/* now copy the button array to our own */
+	/* now copy the buttonarray to our own */
 	if (!(toolbar_buttons = (struct MUIS_TheBar_Button*)malloc((button_count + 1)*(sizeof(struct MUIS_TheBar_Button)))))
 		return 0;
 	memset(toolbar_buttons,0,(button_count + 1)*(sizeof(struct MUIS_TheBar_Button)));
@@ -101,7 +89,7 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	{
 		if (buttons[i].pos != MUIV_SMToolbar_Space)
 		{
-			/* The img field is intialized below */
+			toolbar_buttons[i].img = buttons[i].pos;
 			toolbar_buttons[i].ID = buttons[i].id;
 			toolbar_buttons[i].text = mystrdup(_(buttons[i].name));
 			if (buttons[i].help)
@@ -118,82 +106,48 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 	toolbar_buttons[i].img = MUIV_TheBar_End;
 
-	/* Now perform TheBar preparations */
+	/* First try TheBar */
 	if (!user.config.dont_use_thebar_mcc)
 	{
-		if (!(toolbar_brushes = (struct MUIS_TheBar_Brush**)malloc((brush_count + 1)*(sizeof(toolbar_brushes[0])))))
-			goto custom_bar; /* Now completly destroy the structure of this file by using a goto, beware there are more! */
-		memset(toolbar_brushes,0,(brush_count + 1)*(sizeof(toolbar_brushes[0])));
-
-		if (!(dts = (struct dt_node**)malloc(brush_count * sizeof(dts[0]))))
-			goto custom_bar;
-		memset(dts,0,brush_count*(sizeof(dts[0])));
-
-		/* Prepare image data for thebar */
-		for (i=0,j=0;i<button_count;i++)
+		if (use_vgroup)
 		{
-			if (buttons[i].pos != MUIV_SMToolbar_Space)
-			{
-				char name_buf[100];
-
-				/* Finally initialize the image index */
-				toolbar_buttons[i].img = j;
-
-				if (!(toolbar_brushes[j] = (struct MUIS_TheBar_Brush*)malloc(sizeof(struct MUIS_TheBar_Brush))))
-					goto custom_bar;
-
-				strcpy(name_buf,"PROGDIR:Images");
-				sm_add_part(name_buf,buttons[i].imagename,sizeof(name_buf));
-
-				if (!(dts[j] = dt_load_unmapped_picture(name_buf)))
-					goto custom_bar;
-
-				memset(toolbar_brushes[j],0,sizeof(*toolbar_brushes[j]));
-				toolbar_brushes[j]->dataWidth = dt_width(dts[j]);
-				toolbar_brushes[j]->dataTotalWidth = dt_width(dts[j]) * 4;
-				toolbar_brushes[j]->dataHeight = dt_height(dts[j]);
-				toolbar_brushes[j]->data = dt_argb(dts[j]);
-				toolbar_brushes[j]->flags = BRFLG_ARGB|BRFLG_AlphaMask;
-				toolbar_brushes[j]->left = 0;
-				toolbar_brushes[j]->top = 0;
-				toolbar_brushes[j]->width = dt_width(dts[j]);
-				toolbar_brushes[j]->height = dt_height(dts[j]);
-
-				/* Increase image index */
-				j++;
-			}
-		}
-	} else goto custom_bar;
-
-	if (use_vgroup)
-	{
-		toolbar = HGroupV,
-			Child, tb_toolbar = TheBarVirtObject,
+			toolbar = HGroupV,
+				Child, tb_toolbar = TheBarVirtObject,
+					MUIA_Group_Horiz,             TRUE,
+					MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
+					MUIA_TheBar_EnableKeys,       TRUE,
+					MUIA_TheBar_IgnoreAppearance, FALSE,
+					MUIA_TheBar_Buttons,          toolbar_buttons,
+					MUIA_TheBar_Strip,            "PROGDIR:Images/images",
+					MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
+					MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
+					MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
+					MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
+					MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
+					MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
+					End,
+				End;
+		} else
+		{
+			toolbar = TheBarObject,
 				MUIA_Group_Horiz,             TRUE,
 				MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
 				MUIA_TheBar_EnableKeys,       TRUE,
 				MUIA_TheBar_IgnoreAppearance, FALSE,
 				MUIA_TheBar_Buttons,          toolbar_buttons,
-				MUIA_TheBar_Images,           toolbar_brushes,
-				/* TODO: Add images for sel and dis */
-				End,
-			End;
-	} else
-	{
-		toolbar = TheBarObject,
-			MUIA_Group_Horiz,             TRUE,
-			MUIA_TheBar_MinVer,           19,        /* because of gfx corruptions in older version */
-			MUIA_TheBar_EnableKeys,       TRUE,
-			MUIA_TheBar_IgnoreAppearance, FALSE,
-			MUIA_TheBar_Buttons,          toolbar_buttons,
-			MUIA_TheBar_Images,           toolbar_brushes,
-			/* TODO: Add images for sel and dis */
-			End;
-		tb_toolbar = toolbar;
+				MUIA_TheBar_Strip,            "PROGDIR:Images/images",
+				MUIA_TheBar_SelStrip,         "PROGDIR:Images/images_S",
+				MUIA_TheBar_DisStrip,         "PROGDIR:Images/images_G",
+				MUIA_TheBar_StripRows,        SMTOOLBAR_STRIP_ROWS,
+				MUIA_TheBar_StripCols,        SMTOOLBAR_STRIP_COLS,
+				MUIA_TheBar_StripHSpace,      SMTOOLBAR_STRIP_HSPACE,
+				MUIA_TheBar_StripVSpace,      SMTOOLBAR_STRIP_VSPACE,
+				End;
+			tb_toolbar = toolbar;
+		}
+		if (toolbar) used_thebar_mcc = 1;
 	}
-	if (toolbar) used_thebar_mcc = 1;
 
-custom_bar:
 	if (!toolbar)
 	{
 		/* TheBar was not available, build own toolbar */
@@ -242,7 +196,7 @@ custom_bar:
 					strcpy(name_buf,"PROGDIR:Images");
 					sm_add_part(name_buf,buttons[i].imagename,sizeof(name_buf));
 
-					if ((toolbar_buttons[i].obj = MakePictureButton((char*)toolbar_buttons[i].text,name_buf)))
+					if ((toolbar_buttons[i].obj = MakePictureButton(toolbar_buttons[i].text,name_buf)))
 					{
 						if (toolbar_buttons[i].help)
 							set(toolbar_buttons[i].obj, MUIA_ShortHelp, toolbar_buttons[i].help);
@@ -278,19 +232,26 @@ custom_bar:
 		}
 	}
 
-	if (!toolbar) goto bailout;
+	if (!toolbar)
+	{
+		/* Something failed */
+		for (i=0;i<button_count;i++)
+		{
+			free(toolbar_buttons[i].text);
+			free(toolbar_buttons[i].help);
+		}
+		free(toolbar_buttons);
+		return 0;
+	}
 
 	if (!(obj=(Object *)DoSuperNew(cl, obj, TAG_MORE, msg->ops_AttrList)))
-		goto bailout;
+		return 0;
 
 	data = (struct SMToolbar_Data*)INST_DATA(cl,obj);
 	data->obj             = obj;
 	data->button_count    = button_count;
-	data->brush_count     = brush_count;
 	data->used_thebar_mcc = used_thebar_mcc;
 	data->toolbar_buttons = toolbar_buttons;
-	data->toolbar_brushes = toolbar_brushes;
-	data->dts             = dts;
 	if (used_thebar_mcc)
 	{
 		data->toolbar = tb_toolbar;
@@ -302,31 +263,6 @@ custom_bar:
 	DoMethod(obj, OM_ADDMEMBER, (ULONG)toolbar);
 
 	return (ULONG)obj;
-
-bailout:
-
-	/* Something failed */
-	if (toolbar_brushes)
-	{
-		for (i=0;i<brush_count;i++)
-			free(toolbar_brushes[i]);
-		free(toolbar_brushes);
-	}
-	
-	if (dts)
-	{
-		for (i=0;i<brush_count;i++)
-			dt_dispose_picture(dts[i]);
-		free(dts);
-	}
-
-	for (i=0;i<button_count;i++)
-	{
-		free((void*)toolbar_buttons[i].text);
-		free((void*)toolbar_buttons[i].help);
-	}
-	free(toolbar_buttons);
-	return 0;
 }
 
 STATIC ULONG SMToolbar_Dispose(struct IClass *cl, Object *obj, Msg msg)
@@ -334,24 +270,10 @@ STATIC ULONG SMToolbar_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct SMToolbar_Data *data = (struct SMToolbar_Data*)INST_DATA(cl,obj);
 	int i;
 
-	if (data->dts)
-	{
-		for (i=0;i<data->brush_count;i++)
-			if (data->dts[i]) dt_dispose_picture(data->dts[i]);
-		free(data->dts);
-	}
-
-	if (data->toolbar_brushes)
-	{
-		for (i=0;i<data->brush_count;i++)
-			free(data->toolbar_brushes[i]);
-		free(data->toolbar_brushes);
-	}
-
 	for (i=0;i<data->button_count;i++)
 	{
-		free((void*)data->toolbar_buttons[i].text);
-		free((void*)data->toolbar_buttons[i].help);
+		free(data->toolbar_buttons[i].text);
+		free(data->toolbar_buttons[i].help);
 	}
 	free(data->toolbar_buttons);
 

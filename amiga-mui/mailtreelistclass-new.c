@@ -16,11 +16,13 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mailtreelistclass-new.c
-**
-** Based upon work done for the listclass of Zune.
-*/
+/**
+ * @file mailtreelistclass-new.c
+ *
+ * @brief SimpleMail's visual list class.
+ *
+ * @note Based upon work done for the listclass of Zune.
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -162,30 +164,30 @@ STATIC APTR OpenTTEngineFont(struct TextFont *font)
 
 enum
 {
-	IMAGE_UNREAD = 0,
-	IMAGE_UNREAD_PARTIAL,
-	IMAGE_READ_PARTIAL,
-	IMAGE_REPLY_PARTIAL,
-	IMAGE_READ,
-	IMAGE_WAITSEND,
-	IMAGE_SENT,
-	IMAGE_MARK,
-	IMAGE_HOLD,
-	IMAGE_REPLY,
-	IMAGE_FORWARD,
-	IMAGE_NORCPT,
-	IMAGE_NEW_PARTIAL,
-	IMAGE_NEW_SPAM,
-	IMAGE_UNREAD_SPAM,
-	IMAGE_ERROR,
-	IMAGE_IMPORTANT,
-	IMAGE_ATTACH,
-	IMAGE_GROUP,
-	IMAGE_NEW,
-	IMAGE_CRYPT,
-	IMAGE_SIGNED,
-	IMAGE_TRASHCAN,
-	IMAGE_MAX
+	IMAGE_UNREAD = 0,    //!< IMAGE_UNREAD
+	IMAGE_UNREAD_PARTIAL,//!< IMAGE_UNREAD_PARTIAL
+	IMAGE_READ_PARTIAL,  //!< IMAGE_READ_PARTIAL
+	IMAGE_REPLY_PARTIAL, //!< IMAGE_REPLY_PARTIAL
+	IMAGE_READ,          //!< IMAGE_READ
+	IMAGE_WAITSEND,      //!< IMAGE_WAITSEND
+	IMAGE_SENT,          //!< IMAGE_SENT
+	IMAGE_MARK,          //!< IMAGE_MARK
+	IMAGE_HOLD,          //!< IMAGE_HOLD
+	IMAGE_REPLY,         //!< IMAGE_REPLY
+	IMAGE_FORWARD,       //!< IMAGE_FORWARD
+	IMAGE_NORCPT,        //!< IMAGE_NORCPT
+	IMAGE_NEW_PARTIAL,   //!< IMAGE_NEW_PARTIAL
+	IMAGE_NEW_SPAM,      //!< IMAGE_NEW_SPAM
+	IMAGE_UNREAD_SPAM,   //!< IMAGE_UNREAD_SPAM
+	IMAGE_ERROR,         //!< IMAGE_ERROR
+	IMAGE_IMPORTANT,     //!< IMAGE_IMPORTANT
+	IMAGE_ATTACH,        //!< IMAGE_ATTACH
+	IMAGE_GROUP,         //!< IMAGE_GROUP
+	IMAGE_NEW,           //!< IMAGE_NEW
+	IMAGE_CRYPT,         //!< IMAGE_CRYPT
+	IMAGE_SIGNED,        //!< IMAGE_SIGNED
+	IMAGE_TRASHCAN,      //!< IMAGE_TRASHCAN
+	IMAGE_MAX            //!< IMAGE_MAX
 };
 
 /* Must match those above (old = read)*/
@@ -238,7 +240,7 @@ struct ListEntry
 	WORD flags;   /* see below */
 	WORD parents; /* number of entries parent's, used for the list tree stuff */
 
-	LONG drawn_background; /* the last drawn backround for this entry, a MUII_xxx value */
+	LONG drawn_background; /* the last drawn background for this entry, a MUII_xxx value */
 };
 
 #define LE_FLAG_PARENT      (1<<0)  /**< @brief Entry is a parent, possibly containing children */
@@ -281,7 +283,7 @@ struct MailTreelist_Data
 
 	struct dt_node *images[IMAGE_MAX];
 
-	/* List managment, currently we use a simple flat array, which is not good if many entries are inserted/deleted */
+	/* List management, currently we use a simple flat array, which is not good if many entries are inserted/deleted */
 	LONG entries_num; /**< @brief Number of entries in the list (excluding the title entry) */
 	LONG entries_allocated; /** @brief Number of entries which fit into entries field */
 	struct ListEntry **entries; /** @brief Array containing the entries */
@@ -317,6 +319,14 @@ struct MailTreelist_Data
 	int column_spacing;
 
 	LONG threepoints_width; /**< @brief Width of string "..." */
+
+	BOOL use_custom_background; /**< @brief Use custom background for lines */
+
+	LONG background_pen; /**< @brief Used for the background of the list. */
+	ULONG background_rgb; /**< @brief The RGB value of the background */
+
+	LONG alt_background_pen; /**< @brief Background pen for alternative lines */
+	ULONG alt_background_rgb; /**< @brief The RGB value of the alternative background */
 
 	char buf[2048];
 	char buf2[2048];
@@ -1260,6 +1270,51 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		SetSoftStyle(rp, FS_NORMAL, AskSoftStyle(rp));
 }
 
+/**
+ * @brief Setup custom colors.
+ *
+ * @param data
+ * @param scr
+ *
+ * @note Does nothing
+ */
+static void SetupColors(struct MailTreelist_Data *data, struct Screen *scr)
+{
+	ULONG col;
+	if (!data->use_custom_background)
+	{
+		data->background_pen = -1;
+		data->alt_background_pen = -1;
+		return;
+	}
+
+	col = data->background_rgb;
+	data->background_pen = ObtainBestPenA(scr->ViewPort.ColorMap,MAKECOLOR32((col&0x00ff0000)>>16),MAKECOLOR32((col&0x0000ff00)>>8),MAKECOLOR32((col&0x000000ff)),NULL);
+
+	col = data->alt_background_rgb;
+	data->alt_background_pen = ObtainBestPenA(scr->ViewPort.ColorMap,MAKECOLOR32((col&0x00ff0000)>>16),MAKECOLOR32((col&0x0000ff00)>>8),MAKECOLOR32((col&0x000000ff)),NULL);
+}
+
+/**
+ * @brief Clean up resources allocated in SetupColors()
+ * @param data
+ * @param scr
+ */
+static void CleanupColors(struct MailTreelist_Data *data, struct Screen *scr)
+{
+	if (data->background_pen != -1)
+	{
+		ReleasePen(scr->ViewPort.ColorMap, data->background_pen);
+		data->background_pen = -1;
+	}
+
+	if (data->alt_background_pen != -1)
+	{
+		ReleasePen(scr->ViewPort.ColorMap, data->alt_background_pen);
+		data->alt_background_pen = -1;
+	}
+}
+
 /**************************************************************************
  Reset all column widths
 **************************************************************************/
@@ -1448,6 +1503,12 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	}
 
 	data->horiz_scroller_group = (Object*)GetTagData(MUIA_MailTreelist_GroupOfHorizScrollbar,0,msg->ops_AttrList);
+
+	data->use_custom_background = GetTagData(MUIA_MailTreelist_UseCustomBackground, 0, msg->ops_AttrList);
+	data->background_pen = -1;
+	data->background_rgb = GetTagData(MUIA_MailTreelist_RowBackgroundRGB, 0xb0b0b0, msg->ops_AttrList);
+	data->alt_background_pen = -1;
+	data->alt_background_rgb = GetTagData(MUIA_MailTreelist_AltRowBackgroundRGB, 0xb8b8b8, msg->ops_AttrList);
 
 	data->title_menu = MenustripObject,
 		Child, MenuObjectT(_("Mail Settings")),
@@ -1715,6 +1776,7 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 	}
 
 	data->inbetween_setup = 1;
+	SetupColors(data,_screen(obj));
 	CalcEntries(data,obj);
 	CalcHorizontalTotal(data);
 	return 1;
@@ -1727,6 +1789,8 @@ STATIC ULONG MailTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 {
 	int i;
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+
+	CleanupColors(data,_screen(obj));
 
 	data->inbetween_setup = 0;
 
@@ -2187,17 +2251,36 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
 	}
 }
 
-/*************************************************************************
- Note that if you draw buffered, you must have _rp(obj) set to the
- buffer_rp before!
-*************************************************************************/
-static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
+/**
+ * @brief Draw the entry and its background buffered.
+ *
+ * @param cl
+ * @param obj
+ * @param cur defines which entry should be drawn. Special value is
+ *        ENTRY_TITLE for drawing the title
+ * @param force_mui_bg if mui background drawing should be enforced.
+ * @param buffer_rp the rastport in which rendering takes place. Can be NULL.
+ * @param window_rp the window's rastpoint. The buffer rastport is blitted into this rastport.
+ * @param window_y on which y position the entry should be blitted.
+ *
+ * @note Note that if you draw buffered, you must have _rp(obj) set to the
+ *       buffer_rp before! TODO: This background stuff must be stream lined.
+ */
+static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, int force_mui_bg, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
 	if (buffer_rp)
 	{
-		DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
+		if (data->background_pen == -1 || cur == ENTRY_TITLE || force_mui_bg)
+		{
+			DoMethod(obj, MUIM_DrawBackground, 0, 0, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
+		} else
+		{
+			if (cur % 2) SetAPen(buffer_rp,data->background_pen);
+			else SetAPen(buffer_rp,data->alt_background_pen);
+			RectFill(buffer_rp,0,0,_mwidth(obj),data->entry_maxheight);
+		}
 		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,buffer_rp,0,0);
 		BltBitMapRastPort(data->buffer_bmap, 0, 0,
@@ -2239,7 +2322,7 @@ static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optim
 		background = new_background;
 	}
 
-	DrawEntryAndBackgroundBuffered(cl, obj, cur, buffer_rp, window_rp, window_y);
+	DrawEntryAndBackgroundBuffered(cl, obj, cur, (le->flags & LE_FLAG_SELECTED) || cur == data->entries_active, buffer_rp, window_rp, window_y);
 
 	le->drawn_background = background;
 
@@ -2373,7 +2456,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	{
 		set(obj, MUIA_Background, MUII_HSHADOWBACK);
 		background = MUII_HSHADOWBACK;
-		DrawEntryAndBackgroundBuffered(cl, obj, ENTRY_TITLE, data->buffer_rp, old_rp, _mtop(obj));
+		DrawEntryAndBackgroundBuffered(cl, obj, ENTRY_TITLE, 0, data->buffer_rp, old_rp, _mtop(obj));
 
 		SetAPen(old_rp,_pens(obj)[MPEN_SHADOW]);
 		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 2);

@@ -42,6 +42,9 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define MUIA_MailTreelist_TitleClick2      (TAG_USER | 0x300F000A)
 #define MUIA_MailTreelist_TitleMark        (TAG_USER | 0x300F000B) /* One of COLUMN_TYPE_xxx bit 31 indicates decreasing marker */
 #define MUIA_MailTreelist_TitleMark2       (TAG_USER | 0x300F000C) /* One of COLUMN_TYPE_xxx bit 31 indicates decreasing marker */
+#define MUIA_MailTreelist_UseCustomBackground (TAG_USER | 0x300F000D)
+#define MUIA_MailTreelist_RowBackgroundRGB (TAG_USER | 0x300F000E)
+#define MUIA_MailTreelist_AltRowBackgroundRGB (TAG_USER | 0x300F000F)
 
 #define COLUMN_TYPE_FROMTO  	1
 #define COLUMN_TYPE_SUBJECT 	2

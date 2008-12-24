@@ -1653,6 +1653,10 @@ options are available:
  Hidden.DontAddDefaultAddresses=(Y|N)
  Hidden.DontJumpToUnreadMail=(Y|N)
  Hidden.DontUseAISS=(Y|N)
+ Hidden.DontDrawAlternatingRows=(Y|N)
+ Hidden.RowBackground=0x(#[0-F])
+ Hidden.AltRowBackground=0x(#[0-F])
+ 
 @ENDNODE
 
 @NODE "CO_F" "Editing filters"

@@ -50,6 +50,9 @@ struct pop3_server;
 #define SHOW_HEADER_REPLYTO	(1<<5)
 #define SHOW_HEADER_ALL			(1<<31)
 
+/**
+ * @brief SimpleMail's main configuration structure
+ */
 struct config
 {
 	int from_disk; /* 1 if config has been loaded from disk */
@@ -108,7 +111,7 @@ struct config
 	int readwnd_next_after_move;
 
 	/* list of the filters */
-	struct list filter_list; 
+	struct list filter_list;
 
 	/* array of "internet connectable" e-mail addresses */
 	char **internet_emails;
@@ -138,6 +141,9 @@ struct config
 	int dont_add_default_addresses; /* Do not add the default email addresses if they don't exist */
 	int dont_jump_to_unread_mail;   /* Do not jump to the first unread mail if changing folders */
 	int dont_use_aiss;              /* Do not use AISS icons, also if they're available */
+	int dont_draw_alternating_rows;  /* Disable the rendering of alternating rows */
+	int row_background;              /* Row color */
+	int alt_row_background;          /* Color of alternative row */
 };
 
 struct user

@@ -144,6 +144,9 @@ static void init_config(void)
 	user.config.dont_add_default_addresses = 0;
 	user.config.dont_jump_to_unread_mail = 0;
 	user.config.dont_use_aiss = 0;
+	user.config.dont_draw_alternating_rows = 0;
+	user.config.row_background = 0xb0b0b0;              /* Row color */
+	user.config.alt_row_background = 0xb8b8b8;          /* Color of alternative row */
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -300,6 +303,12 @@ int load_config(void)
 							user.config.dont_jump_to_unread_mail= CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Hidden.DontUseAISS")))
 							user.config.dont_use_aiss= CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.DontDrawAlternatingRows")))
+							user.config.dont_draw_alternating_rows = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Hidden.RowBackground")))
+							user.config.row_background = strtoul(result,NULL,0);
+						if ((result = get_config_item(buf,"Hidden.AltRowBackground")))
+							user.config.alt_row_background = strtoul(result,NULL,0);
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{
@@ -520,7 +529,7 @@ int load_config(void)
 				fclose(fh);
 			}
 		}
-		
+
 		if (user.directory) strcpy(buf,user.directory);
 		else buf[0] = 0;
 		sm_add_part(buf,".taglines",512);
@@ -726,6 +735,13 @@ void save_config(void)
 			{
 				fprintf(fh,"Hidden.DontUseAISS=Y\n");
 			}
+
+			if (user.config.dont_draw_alternating_rows)
+				fprintf(fh,"Hidden.DontDrawAlternatingRows=Y\n");
+			if (user.config.row_background != 0xb0b0b0)
+				fprintf(fh,"Hidden.RowBackground=0x%x\n",user.config.row_background);
+			if (user.config.alt_row_background != 0xb8b8b8)
+				fprintf(fh,"Hidden.AltRowBackground=0x%x\n",user.config.alt_row_background);
 
 			fclose(fh);
 		}

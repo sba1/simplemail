@@ -1384,8 +1384,12 @@ static void simplemail_gather_mails(void)
 {
 	struct mail_info *next;
 	struct folder *incoming = folder_incoming();
+	char buf[256];
 
 	if (!simplemail_mail_collector_first && !incoming) return;
+
+	getcwd(buf, sizeof(buf));
+	chdir(incoming->path);
 
 	if (simplemail_mail_collector_first != simplemail_mail_collector_last)
 		main_freeze_mail_list();
@@ -1406,6 +1410,8 @@ static void simplemail_gather_mails(void)
 
 	simplemail_mail_collector_first = NULL;
 	simplemail_mail_collector_last = NULL;
+
+	chdir(buf);
 }
 
 /**

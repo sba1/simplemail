@@ -1669,8 +1669,13 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	char buf[380];
 
 	struct mail_complete *mail_complete;
-
 	utf8 *excerpt = NULL;
+
+	if (mail->excerpt)
+	{
+		free(path);
+		return NULL;
+	}
 
 	getcwd(buf, sizeof(buf));
 	chdir(path);
@@ -1701,7 +1706,6 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	}
 
 	mail_complete_free(mail_complete);
-
 	chdir(buf);
 	free(path);
 

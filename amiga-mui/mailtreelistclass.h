@@ -55,8 +55,9 @@ IMPORT struct MUI_CustomClass *CL_MailTreelist;
 #define COLUMN_TYPE_FILENAME	7
 #define COLUMN_TYPE_POP3			8
 #define COLUMN_TYPE_RECEIVED	9
+#define COLUMN_TYPE_EXCERPT		10
 
-#define MAX_COLUMNS 10
+#define MAX_COLUMNS 11
 
 #define MUIV_MailTreelist_TitleMark_Decreasing (1L << 31)
 

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mail.c
-*/
+/**
+ * @file mail.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -130,9 +130,12 @@ static int mailncpy(char *dest, const char *src, int n)
   return len;
 }
 
-/**************************************************************************
- Determines the length from now until a wordend. Input is UTF8
-**************************************************************************/
+/**
+ * @brief Determines the length (in bytes) from now until a wordend.
+ *
+ * @param buf defines the input which must be UTF8
+ * @return
+ */
 static int word_length(const char *buf)
 {
 	unsigned char c;
@@ -1681,6 +1684,23 @@ char *mail_get_replyto_address(struct mail_info *mail)
 	return mystrdup(mail->reply_addr);
 }
 
+/**
+ * @brief Sets the given excerpt for the given mail.
+ *
+ * The given excerpt should be allocated via malloc(). You shouldn't
+ * touch it once you have given it as argument to this function.
+ *
+ * Frees any previously set excerpt.
+ *
+ * @param mail of which the excerpt should be set
+ * @param excerpt an excerpt
+ * @return
+ */
+void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt)
+{
+	if (mail->excerpt) free(mail->excerpt);
+	mail->excerpt = excerpt;
+}
 
 /**************************************************************************
  Does RFC 2184 stuff
@@ -2529,6 +2549,7 @@ void mail_info_free(struct mail_info *info)
 	free(info->message_id);
 	free(info->message_reply_id);
 	free(info->filename);
+	free(info->excerpt);
 }
 
 /**************************************************************************

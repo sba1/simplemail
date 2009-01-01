@@ -234,13 +234,13 @@ static const char *image_names[] =
 struct ListEntry
 {
 	struct mail_info *mail_info;
-	LONG widths[MAX_COLUMNS]; /* Widths of the columns */
-	LONG width;   /* Line width */
-	LONG height;  /* Line height */
-	WORD flags;   /* see below */
-	WORD parents; /* number of entries parent's, used for the list tree stuff */
+	LONG widths[MAX_COLUMNS]; /**< Widths of the columns */
+	LONG width;   /**< Line width */
+	LONG height;  /**< Line height */
+	WORD flags;   /**< see below */
+	WORD parents; /**< number of entries parent's, used for the list tree stuff */
 
-	LONG drawn_background; /* the last drawn background for this entry, a MUII_xxx value */
+	LONG drawn_background; /**< the last drawn background for this entry, a MUII_xxx value */
 };
 
 #define LE_FLAG_PARENT      (1<<0)  /**< @brief Entry is a parent, possibly containing children */
@@ -249,6 +249,9 @@ struct ListEntry
 #define LE_FLAG_SELECTED    (1<<3)  /**< @brief The entry is selected */
 #define LE_FLAG_HASCHILDREN (1<<4)  /**< @brief The entry really has children */
 
+/**
+ * @brief Data of a column.
+ */
 struct ColumnInfo
 {
 	LONG width;
@@ -263,6 +266,7 @@ struct ColumnInfo
 #define COLUMN_FLAG_SORT2UP   (1L << 3)
 #define COLUMN_FLAG_SORT2DOWN (1L << 4)
 #define COLUMN_FLAG_SORT2MASK (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN)
+#define COLUMN_FLAG_LAZY      (1L << 5)
 
 /**
  * @brief Instance data of Mailtreelist class.
@@ -372,6 +376,7 @@ struct MailTreelist_Data
 	char *filename_text;
 	char *pop3_text;
 	char *received_text;
+	char *excerpt_text;
 
 	/* other stuff */
 	Object *context_menu;
@@ -627,7 +632,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 		if (!active) continue;
 		ci = &data->ci[active];
 
-		if (ci->flags & COLUMN_FLAG_AUTOWIDTH)
+		if (ci->flags & COLUMN_FLAG_AUTOWIDTH && !(ci->flags & COLUMN_FLAG_LAZY))
 		{
 			int is_ascii7 = 1;
 			char *txt = NULL;
@@ -723,6 +728,15 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 							txt = data->buf2;
 							is_ascii7 = TRUE;
 						} else txt = data->received_text;
+						break;
+
+			case	COLUMN_TYPE_EXCERPT:
+						if (m)
+						{
+							/* TODO: Implement excerpt */
+							txt = "";
+							is_ascii7 = TRUE;
+						} else txt = data->excerpt_text;
 						break;
 			}
 
@@ -1075,6 +1089,18 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 							is_ascii7 = TRUE;
 						} else txt = data->received_text;
 						break;
+			case	COLUMN_TYPE_EXCERPT:
+						if (m)
+						{
+							txt = m->excerpt;
+							if (!txt)
+							{
+								simplemail_get_mail_info_excerpt_lazy(m);
+								txt = "";
+							}
+							/* TODO: Implement excerpt */
+						} else txt = data->excerpt_text;
+						break;
 		}
 
 		/* Bring the text or images on screen */
@@ -1366,6 +1392,7 @@ static void MailTreelist_ResetColumnOrder(struct MailTreelist_Data *data, Object
 	data->columns_order[6] = COLUMN_TYPE_FILENAME;
 	data->columns_order[7] = COLUMN_TYPE_POP3;
 	data->columns_order[8] = COLUMN_TYPE_RECEIVED;
+	data->columns_order[9] = COLUMN_TYPE_EXCERPT;
 
 	PrepareDisplayedColumns(data);
 	MUI_Redraw(obj,MADF_DRAWOBJECT);
@@ -1421,6 +1448,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->filename_text = _("Filename");
 	data->pop3_text = _("POP3 Server");
 	data->received_text = _("Received");
+	data->excerpt_text = _("Excerpt");
 
 	data->ci[COLUMN_TYPE_STATUS].type = COLUMN_TYPE_STATUS;
 	data->ci[COLUMN_TYPE_STATUS].width = 50;
@@ -1458,6 +1486,10 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->ci[COLUMN_TYPE_RECEIVED].width = 200;
 	data->ci[COLUMN_TYPE_RECEIVED].flags = COLUMN_FLAG_AUTOWIDTH;
 
+	data->ci[COLUMN_TYPE_EXCERPT].type = COLUMN_TYPE_EXCERPT;
+	data->ci[COLUMN_TYPE_EXCERPT].width = 200;
+	data->ci[COLUMN_TYPE_EXCERPT].flags = COLUMN_FLAG_LAZY;
+
 	/* define default order of columns */
 	data->columns_order[0] = COLUMN_TYPE_STATUS;
 	data->columns_order[1] = COLUMN_TYPE_FROMTO;
@@ -1468,6 +1500,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->columns_order[6] = COLUMN_TYPE_FILENAME;
 	data->columns_order[7] = COLUMN_TYPE_POP3;
 	data->columns_order[8] = COLUMN_TYPE_RECEIVED;
+	data->columns_order[9] = COLUMN_TYPE_EXCERPT;
 
 	data->column_spacing = 4;
 
@@ -1520,6 +1553,7 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 			Child, data->show_item[COLUMN_TYPE_FILENAME] = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','F','N'), MUIA_Menuitem_Title, _("Show Filename?"),    MUIA_UserData, 6, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_item[COLUMN_TYPE_POP3]     = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','P','3'), MUIA_Menuitem_Title, _("Show POP3 Server?"), MUIA_UserData, 7, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, data->show_item[COLUMN_TYPE_RECEIVED] = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','R','V'), MUIA_Menuitem_Title, _("Show Received?"),    MUIA_UserData, 8, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
+			Child, data->show_item[COLUMN_TYPE_EXCERPT]  = MenuitemObject, MUIA_ObjectID, MAKE_ID('M','S','E','X'), MUIA_Menuitem_Title, _("Show Excerpt?"),    MUIA_UserData, 9, MUIA_Menuitem_Checked, TRUE, MUIA_Menuitem_Checkit, TRUE, MUIA_Menuitem_Toggle, TRUE, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, -1, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset this column's width"), MUIA_UserData, MENU_RESET_THIS_COLUMN_WIDTH, End,
 			Child, MenuitemObject, MUIA_Menuitem_Title, _("Reset all columns' widths"), MUIA_UserData, MENU_RESET_ALL_COLUMN_WIDTHS, End,
@@ -1921,6 +1955,7 @@ static void CheckColumnsOrder(struct MailTreelist_Data *data)
 	default_order[COLUMN_TYPE_FILENAME] = 6;
 	default_order[COLUMN_TYPE_POP3]     = 7;
 	default_order[COLUMN_TYPE_RECEIVED] = 8;
+	default_order[COLUMN_TYPE_EXCERPT]  = 9;
 
 	/* now check if all columns are used, the columns start with 1 */
 	for (col = 1; col < MAX_COLUMNS; col++)
@@ -2041,6 +2076,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 						    			case	6: new_pos = COLUMN_TYPE_FILENAME; break;
 						    			case	7: new_pos = COLUMN_TYPE_POP3;     break;
 						    			case	8: new_pos = COLUMN_TYPE_RECEIVED; break;
+						    			case	9: new_pos = COLUMN_TYPE_EXCERPT;  break;
 						    			default: new_pos = 0; break;
 						    		}
 						    		if (new_pos < MAX_COLUMNS)
@@ -2077,6 +2113,7 @@ STATIC ULONG MailTreelist_Import(struct IClass *cl, Object *obj, struct MUIP_Imp
 						    			case	6: new_pos = COLUMN_TYPE_FILENAME; break;
 						    			case	7: new_pos = COLUMN_TYPE_POP3;     break;
 						    			case	8: new_pos = COLUMN_TYPE_RECEIVED; break;
+						    			case	9: new_pos = COLUMN_TYPE_EXCERPT;  break;
 						    			default: new_pos = 0; break;
 						    		}
 						    		if (pos < MAX_COLUMNS) data->columns_order[pos] = new_pos;

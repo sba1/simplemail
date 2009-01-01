@@ -304,8 +304,8 @@ void cleanup_threads(void)
 			{
 				if (timer == timeout)
 				{
-					SM_DEBUGF(15,("Timeout occured, aborting thread another time\n"));
-					/* time out occured, abort the current task another time */
+					SM_DEBUGF(15,("Timeout occurred, aborting thread another time\n"));
+					/* time out occurred, abort the current task another time */
 					timeout = NULL;
 					thread_abort(node->thread);
 				}
@@ -744,7 +744,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 }
 
 /**************************************************************************
- Call a function in the context of the given thread synchron
+ Call a function in the context of the given thread in a synchron manner
 
  NOTE: Should call thread_handle()
 **************************************************************************/
@@ -782,6 +782,32 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 		FreeVec(tmsg);
 	}
 
+	va_end (argptr);
+	return rc;
+}
+
+/**
+ * @brief Call a function in the context of the given thread in a asynchron manner.
+ *
+ * @param thread the thread in which context the function is executed.
+ * @param function the function to be executed.
+ * @param argcount number of function parameters
+ * @return whether the call was successfully forwarded.
+ */
+int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
+{
+	va_list argptr;
+	int rc = 0;
+	struct ThreadMessage *tmsg;
+
+	va_start(argptr,argcount);
+
+	if ((tmsg = thread_create_message(function, argcount, argptr)))
+	{
+		tmsg->async = 1;
+		PutMsg(thread->thread_port,&tmsg->msg);
+		rc = 1;
+	}
 	va_end (argptr);
 	return rc;
 }

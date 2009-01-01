@@ -106,6 +106,8 @@ void callback_mail_has_been_sent(char *filename);
 void callback_mail_has_not_been_sent(char *filename);
 void callback_add_imap_folder(char *user, char *server, char *path);
 
+int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail);
+
 void callback_mail_changed(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail);
 
 void callback_config_changed(void);

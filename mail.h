@@ -45,6 +45,9 @@ struct content_parameter
 	char *value;
 };
 
+/**
+ * @brief Describes some user presentable information of a mail
+ */
 struct mail_info
 {
 	int status;						/* see below */
@@ -63,6 +66,8 @@ struct mail_info
 	unsigned int size;			/* the e-mails size in bytes */
 	unsigned int seconds; 	/* seconds since 1.1.1978 */
 	unsigned int received;	/* seconds since 1.1.1978 */
+
+	utf8 *excerpt; /**< An small one liner of the mail's contents */
 
 	char *filename;					/* the email filename on disk, NULL if info belongs from a mail not from disk */
 
@@ -175,6 +180,7 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 char *mail_get_from_address(struct mail_info *mail);
 char *mail_get_to_address(struct mail_info *mail);
 char *mail_get_replyto_address(struct mail_info *mail);
+void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt);
 
 int mail_is_marked_as_deleted(struct mail_info *mail);
 void mail_identify_status(struct mail_info *m);
@@ -185,9 +191,7 @@ struct mail *mail_create_from_file(char *filename);
 struct mail_complete *mail_complete_create_from_file(char *filename);
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array);
 struct mail_complete *mail_create_forward(int num, char **filename_array);
-
 struct mail_info *mail_info_create_from_file(char *filename);
-
 
 void mail_complete_free(struct mail_complete *mail);
 

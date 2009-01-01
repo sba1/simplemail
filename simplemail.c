@@ -61,6 +61,8 @@
 #include "tcpip.h"
 #include "upwnd.h"
 
+#define MIN(a,b) ((a)<(b)?(a):(b))
+
 /** for the Auto-Timer functions **/
 static unsigned int autocheck_seconds_start; /* to compare with this */
 
@@ -1597,6 +1599,152 @@ void callback_add_imap_folder(char *user, char *server, char *path)
 	folders_unlock();
 }
 
+/**
+ * @brief the lazy thread instance
+ *
+ * The main purpose of this thread is to execute...
+ */
+static thread_t lazy_thread;
+
+/**
+ * @brief Allows the storage of mail_info into a list.
+ */
+struct mail_info_node
+{
+	struct node node;
+	struct mail_info *mail_info;
+};
+
+/**
+ * @brief List containing mail infos of which the excerpt should be read.
+ *
+ * Entries in this list are referenced!
+ */
+//static struct list lazy_mail_list;
+
+/**
+ * @brief The semaphore protecting lazy_mail_list.
+ */
+//static semaphore_t lazy_semaphore;
+
+
+/**
+ * @brief Entry for the lazy thread.
+ *
+ * @param user_data
+ * @return
+ */
+static int lazy_entry(void *user_data)
+{
+	thread_parent_task_can_contiue();
+	thread_wait(NULL,NULL,0);
+	return 1;
+}
+
+/**
+ * @brief Finished the stuff done in lazy_thread_work and derefernces the mail.
+ *
+ * @param excerpt
+ * @param mail
+ */
+static void lazy_thread_work_finished(utf8 *excerpt, struct mail_info *mail)
+{
+	mail_info_set_excerpt(mail,excerpt);
+	main_refresh_mail(mail);
+	mail_dereference(mail);
+}
+
+/**
+ * @brief The worker function of the lazy thread.
+ *
+ * This worker opens the mail and reads an excerpt. This is
+ * then forwarded to the main task which in turn notifies
+ * the view.
+ *
+ * @param the path which is going to be freed here.
+ * @param mail referenced mail
+ */
+static void lazy_thread_work(char *path, struct mail_info *mail)
+{
+	char buf[380];
+
+	struct mail_complete *mail_complete;
+
+	utf8 *excerpt = NULL;
+
+	getcwd(buf, sizeof(buf));
+	chdir(path);
+
+	if ((mail_complete = mail_complete_create_from_file(mail->filename)))
+	{
+		struct mail_complete *mail_text;
+		mail_read_contents("",mail_complete);
+		if ((mail_text = mail_find_initial(mail_complete)))
+		{
+			if (!mystricmp(mail_text->content_type,"text"))
+			{
+				void *cont; /* mails content */
+				int cont_len;
+
+				int l = MIN(cont_len,100);
+
+				mail_decoded_data(mail_text,&cont,&cont_len);
+
+				if ((excerpt = malloc(l+1)))
+				{
+					/* TODO: Improve this (e.g. filter quotations and so on) */
+					strncpy((char*)excerpt,cont,l);
+					excerpt[l] = 0;
+				}
+			}
+		}
+	}
+
+	mail_complete_free(mail_complete);
+
+	chdir(buf);
+	free(path);
+
+	thread_call_parent_function_async(lazy_thread_work_finished,2,excerpt,mail);
+}
+
+/**
+ * @brief Loads the excerpt of the given mail of the current folder
+ * in a lazy fashion.
+ *
+ * In order to load the excerpt in a lazy fashion this functions spawns a
+ * sub thread.
+ *
+ * @param mail
+ * @return whether successful
+ */
+int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
+{
+//	struct mail_info_node *node;
+	struct folder *f = main_get_folder();
+	char *folder_path = mystrdup(f->path);
+
+	if (!lazy_thread)
+	{
+		lazy_thread = thread_add("SimpleMail - Lazy",lazy_entry,NULL);
+//		list_init(&lazy_mail_list);
+//		lazy_semaphore = thread_create_semaphore();
+	}
+
+	if (!lazy_thread) return 0;
+//	if (!(node = malloc(sizeof(*node)))) return 0;
+
+	mail_reference(mail);
+//	node->mail_info = mail;
+
+//	thread_lock_semaphore(lazy_semaphore);
+//	list_insert_tail(&lazy_mail_list,&node->node);
+//	thread_unlock_semaphore(lazy_semaphore);
+
+	thread_call_function_async(lazy_thread,lazy_thread_work,2,folder_path,mail);
+	return 1;
+}
+
 /* a mail has been changed/replaced by the user */
 void callback_mail_changed(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail)
 {
@@ -2103,6 +2251,8 @@ int simplemail_main(void)
 	}
 	cleanup_addressbook();
 	cleanup_threads();
+	/* Lazy thread is already aborted by  above call */
+//	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
 	startupwnd_close();
 	shutdownwnd_close();
 	debug_deinit();

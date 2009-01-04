@@ -3618,7 +3618,7 @@ bailout:
  * @param user_data the list where the entries are stored.
  * @return 1
  */
-int folder_load_order_traverse_orders_callback(struct folder_order *order, void *user_data)
+static int folder_load_order_traverse_orders_callback(struct folder_order *order, void *user_data)
 {
 	struct list *new_order_list = (struct list*)user_data;
 	struct folder *new_folder;

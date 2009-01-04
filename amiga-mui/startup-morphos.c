@@ -82,12 +82,11 @@ int __startup(void)
 	return rc;
 }
 
-static int rc;
-
 static int __swap_and_start(void)
 {
 	ULONG MySize;
 	struct Task *MyTask = FindTask(NULL);
+	int rc = 20;
 
 	if (!NewGetTaskAttrsA(MyTask, &MySize, sizeof(MySize), TASKINFOTYPE_STACKSIZE, NULL))
 	{
@@ -638,7 +637,7 @@ char *fgets(char *string, int n, FILE *file)
 	char *rc;
 
 	rc = (char*)FGets(fh, string, n);
-	 if (rc)
+	if (rc)
 	{
 		file->_offset += strlen(rc);
 	}

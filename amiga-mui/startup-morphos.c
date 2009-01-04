@@ -719,6 +719,7 @@ int remove(const char *filename)
 int stat(const char *filename, struct stat *stat)
 {
 	BPTR lock;
+	int rc = -1;
 
 	if ((lock = Lock(filename,ACCESS_READ)))
 	{
@@ -745,7 +746,7 @@ int stat(const char *filename, struct stat *stat)
 		UnLock(lock);
 	}
 
-	return -1;
+	return rc;
 }
 
 int fprintf(FILE *file, const char *fmt,...)

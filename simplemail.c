@@ -66,6 +66,8 @@
 /** for the Auto-Timer functions **/
 static unsigned int autocheck_seconds_start; /* to compare with this */
 
+static void lazy_clean_list(void);
+
 /* the current mail should be viewed, returns the number of the window
 	which the function has opened or -1 for an error */
 int callback_read_active_mail(void)
@@ -1155,9 +1157,8 @@ void callback_folder_active(void)
 	if (folder)
 	{
 		if (folder->is_imap)
-		{
 			imap_thread_connect(folder);
-		}
+		lazy_clean_list();
 		main_set_folder_mails(folder);
 	}
 }
@@ -1613,6 +1614,7 @@ struct mail_info_node
 {
 	struct node node;
 	struct mail_info *mail_info;
+	char *folder_path;
 };
 
 /**
@@ -1620,32 +1622,21 @@ struct mail_info_node
  *
  * Entries in this list are referenced!
  */
-//static struct list lazy_mail_list;
+static struct list lazy_mail_list;
 
 /**
  * @brief The semaphore protecting lazy_mail_list.
  */
-//static semaphore_t lazy_semaphore;
+static semaphore_t lazy_semaphore;
 
-
-/**
- * @brief Entry for the lazy thread.
- *
- * @param user_data
- * @return
- */
-static int lazy_entry(void *user_data)
-{
-	thread_parent_task_can_contiue();
-	thread_wait(NULL,NULL,0);
-	return 1;
-}
 
 /**
  * @brief Finished the stuff done in lazy_thread_work and derefernces the mail.
  *
  * @param excerpt
  * @param mail
+ *
+ * @note Needs to be called at the context of the main task
  */
 static void lazy_thread_work_finished(utf8 *excerpt, struct mail_info *mail)
 {
@@ -1663,6 +1654,8 @@ static void lazy_thread_work_finished(utf8 *excerpt, struct mail_info *mail)
  *
  * @param the path which is going to be freed here.
  * @param mail referenced mail
+ *
+ * @note needs to be called at the context of the lazy thread
  */
 static void lazy_thread_work(char *path, struct mail_info *mail)
 {
@@ -1672,10 +1665,7 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	utf8 *excerpt = NULL;
 
 	if (mail->excerpt)
-	{
-		free(path);
-		return NULL;
-	}
+		return;
 
 	getcwd(buf, sizeof(buf));
 	chdir(path);
@@ -1690,10 +1680,10 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 			{
 				void *cont; /* mails content */
 				int cont_len;
-
-				int l = MIN(cont_len,100);
+				int l;
 
 				mail_decoded_data(mail_text,&cont,&cont_len);
+				l = MIN(cont_len,100);
 
 				if ((excerpt = malloc(l+1)))
 				{
@@ -1707,9 +1697,63 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 
 	mail_complete_free(mail_complete);
 	chdir(buf);
-	free(path);
 
+	/* This also dereferences the given mail */
 	thread_call_parent_function_async(lazy_thread_work_finished,2,excerpt,mail);
+}
+
+/**
+ * @brief Entry for the lazy thread.
+ *
+ * @param user_data
+ * @return
+ */
+static int lazy_entry(void *user_data)
+{
+	thread_parent_task_can_contiue();
+	while (thread_wait(NULL,NULL,0))
+	{
+		/* Scan through the lazy mail list */
+		while (1)
+		{
+			struct mail_info_node *mail_node;
+
+			thread_lock_semaphore(lazy_semaphore);
+			mail_node = (struct mail_info_node*)list_first(&lazy_mail_list);
+			if (mail_node) node_remove(&mail_node->node);
+			thread_unlock_semaphore(lazy_semaphore);
+			if (!mail_node) break;
+			lazy_thread_work(mail_node->folder_path,mail_node->mail_info);
+
+			free(mail_node->folder_path);
+			free(mail_node);
+		}
+
+	}
+	return 1;
+}
+
+/**
+ * @brief Removes and frees all entries from the lazy list.
+ *
+ * @note needs to be called at the context of the main thread.
+ */
+static void lazy_clean_list(void)
+{
+	struct mail_info_node *mail_node;
+
+	if (!lazy_semaphore) return;
+
+	thread_lock_semaphore(lazy_semaphore);
+
+	while ((mail_node = (struct mail_info_node*)list_remove_tail(&lazy_mail_list)))
+	{
+		mail_dereference(mail_node->mail_info);
+		free(mail_node->folder_path);
+		free(mail_node);
+	}
+
+	thread_unlock_semaphore(lazy_semaphore);
 }
 
 /**
@@ -1724,28 +1768,37 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
  */
 int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail)
 {
-//	struct mail_info_node *node;
+	struct mail_info_node *node;
 	struct folder *f = main_get_folder();
-	char *folder_path = mystrdup(f->path);
+	char *folder_path;
 
 	if (!lazy_thread)
 	{
 		lazy_thread = thread_add("SimpleMail - Lazy",lazy_entry,NULL);
-//		list_init(&lazy_mail_list);
-//		lazy_semaphore = thread_create_semaphore();
+		list_init(&lazy_mail_list);
+		lazy_semaphore = thread_create_semaphore();
 	}
 
 	if (!lazy_thread) return 0;
-//	if (!(node = malloc(sizeof(*node)))) return 0;
+
+	if (!(folder_path = mystrdup(f->path)))
+		return 0;
+	if (!(node = malloc(sizeof(*node))))
+	{
+		free(folder_path);
+		return 0;
+	}
 
 	mail_reference(mail);
-//	node->mail_info = mail;
+	node->mail_info = mail;
+	node->folder_path = folder_path;
 
-//	thread_lock_semaphore(lazy_semaphore);
-//	list_insert_tail(&lazy_mail_list,&node->node);
-//	thread_unlock_semaphore(lazy_semaphore);
+	thread_lock_semaphore(lazy_semaphore);
+	list_insert_tail(&lazy_mail_list,&node->node);
+	thread_unlock_semaphore(lazy_semaphore);
 
-	thread_call_function_async(lazy_thread,lazy_thread_work,2,folder_path,mail);
+	thread_signal(lazy_thread);
+
 	return 1;
 }
 
@@ -2254,9 +2307,10 @@ int simplemail_main(void)
 		codesets_cleanup();
 	}
 	cleanup_addressbook();
+	if (lazy_thread) lazy_clean_list();
 	cleanup_threads();
 	/* Lazy thread is already aborted by  above call */
-//	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
+	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
 	startupwnd_close();
 	shutdownwnd_close();
 	debug_deinit();

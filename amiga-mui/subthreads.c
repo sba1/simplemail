@@ -602,9 +602,15 @@ int thread_start(int (*entry)(void*), void *eudata)
 	return 0;
 }
 
-/**************************************************************************
- Abort the given thread or if NULL is given the default subthread.
-**************************************************************************/
+/**
+ * @brief Aborts the given thread.
+ *
+ * @param thread_to_abort the thread to be aborted. Specify NULL for the default
+ * subthread.
+ *
+ * @note This functions doesn't wait until the given thread has been finished.
+ * It just requests the abortiation.
+ */
 void thread_abort(thread_t thread_to_abort)
 {
 	if (!thread_to_abort) thread_to_abort = default_thread;
@@ -615,6 +621,22 @@ void thread_abort(thread_t thread_to_abort)
 	Permit();
 }
 
+
+/**
+ * @brief Signals the given thread.
+ *
+ * @param thread_to_abort the thread to be signaled. Specify NULL for the default
+ * subthread.
+ */
+void thread_signal(thread_t thread_to_signal)
+{
+	if (!thread_to_signal) thread_to_signal = default_thread;
+	Forbid();
+	SM_DEBUGF(15,("Signaling thread at %p %p\n",thread_to_signal,thread_to_signal->process));
+	if (thread_to_signal->process)
+		Signal(&thread_to_signal->process->pr_Task, SIGBREAKF_CTRL_D);
+	Permit();
+}
 
 /**************************************************************************
  Returns ThreadMessage filled with the given parameters. You can manipulate
@@ -877,13 +899,25 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 }
 
 
-/**************************************************************************
- Waits until aborted and calls timer_callback periodically. It's possible
- to execute functions on the threads context while in this function.
-**************************************************************************/
-void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+/**
+ * @brief Waits until a signal has been sent and calls timer_callback
+ * periodically.
+ *
+ * It's possible to execute functions on the threads context while in
+ * this function.
+ *
+ * @param timer_callback function that is called periodically
+ * @param timer_data some data that is passed as the first argument
+ *        to the callback
+ * @param millis the periodic time span
+ * @return 0 if the function finished due to an abort request (or failure),
+ *         1 if due to a call to thread_signal().
+ */
+int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct timer timer;
+	int rc = 0;
+
 	if (timer_init(&timer))
 	{
 		thread_t this_thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
@@ -899,7 +933,7 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 			if (millis) timer_send_if_not_sent(&timer,millis);
 
-			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C);
+			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_D);
 			if (mask & timer_m)
 			{
 				if (timer_callback)
@@ -935,10 +969,21 @@ void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 				FreeVec(tmsg);
 			}
 
-			if (mask & SIGBREAKF_CTRL_C) break;
+			if (mask & SIGBREAKF_CTRL_C)
+			{
+				rc = 0;
+				break;
+			}
+			if (mask & SIGBREAKF_CTRL_D)
+			{
+				rc = 1;
+				break;
+			}
 		}
 		timer_cleanup(&timer);
 	}
+
+	return rc;
 }
 
 /**************************************************************************

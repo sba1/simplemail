@@ -2795,10 +2795,13 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int pos)
 {
 	struct MailTreelist_Data *data = INST_DATA(cl, obj);
+	int removed_active;
 
 	/* Variable pos needs to be inside valid bounds */
 	if (pos < 0 && pos >= data->entries_num)
 		return 0;
+
+	removed_active = pos == data->entries_active;
 
 	/* Free memory and move the following mails one position up, update number of entries */
 	FreeListEntry(data,data->entries[pos]);
@@ -2819,6 +2822,9 @@ STATIC ULONG MailTreelist_RemoveMailByPos(struct IClass *cl, Object *obj, int po
 	/* Ensure proper displayed selection states */
 	data->drawupdate = 1;
 	MUI_Redraw(obj,MADF_DRAWUPDATE);
+
+	if (removed_active)
+		IssueTreelistActiveNotify(cl, obj, data);
 	return 0;
 }
 

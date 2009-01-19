@@ -268,6 +268,25 @@ struct ColumnInfo
 #define COLUMN_FLAG_SORT2MASK (COLUMN_FLAG_SORT2UP|COLUMN_FLAG_SORT2DOWN)
 #define COLUMN_FLAG_LAZY      (1L << 5)
 
+enum DrawUpdate
+{
+	/** Any selection state has been changed */
+	UPDATE_SELECTION_CHANGED = 1,
+
+	/** Vertical scrolling position changed, old pos is saved at drawupdate_old_first */
+	UPDATE_FIRST_CHANGED = 2,
+
+	/** A single element has been removed */
+	UPDATE_SINGLE_ENTRY_REMOVED = 3,
+
+	/** Title needs a refresh */
+	UPDATE_TITLE = 4,
+
+	/** Redraw a single element, which one is stored at drawupate_position */
+	UPDATE_REDRAW_SINGLE = 5
+//	1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
+};
+
 /**
  * @brief Instance data of Mailtreelist class.
  */
@@ -341,7 +360,7 @@ struct MailTreelist_Data
 
 	int folder_type; /* we need to know which type of folder is displayed */
 
-	int drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
+	enum DrawUpdate drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
 	int drawupdate_old_first;
 	int drawupdate_position;
 
@@ -2379,6 +2398,32 @@ static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optim
 	return new_background;
 }
 
+/**
+ * Refreshes a single entry at given position
+ *
+ * @param cl
+ * @param obj
+ * @param position
+ */
+static void RefreshEntry(struct IClass *cl, Object *obj, int position)
+{
+	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
+	if (data->inbetween_setup)
+	{
+		if (CalcEntry(data,obj, data->entries[position]->mail_info))
+		{
+			/* Calculate only the newly added entry */
+			CalcHorizontalTotal(data);
+			MUI_Redraw(obj,MADF_DRAWOBJECT);
+		} else
+		{
+			data->drawupdate = UPDATE_REDRAW_SINGLE;
+			data->drawupdate_position = position;
+			MUI_Redraw(obj,MADF_DRAWUPDATE);
+		}
+	}
+}
+
 /*************************************************************************
  MUIM_Draw
 *************************************************************************/
@@ -2407,7 +2452,8 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	data->drawupdate = 0;
 
 	/* Don't do anything if removed element was invisble */
-	if (data->drawupdate == 3 && data->drawupdate_position >= data->entries_first + data->entries_visible - 1)
+	if (data->drawupdate == UPDATE_SINGLE_ENTRY_REMOVED &&
+	    data->drawupdate_position >= data->entries_first + data->entries_visible - 1)
 		return 0;
 
 	start = data->entries_first;
@@ -2415,12 +2461,12 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	listy = y = _mtop(obj) + data->title_height;
 
 	/* If necessary, perform scrolling operations */
-	if (drawupdate == 2 || drawupdate == 3)
+	if (drawupdate == UPDATE_FIRST_CHANGED || drawupdate == UPDATE_SINGLE_ENTRY_REMOVED)
 	{
 		int diffy, abs_diffy;
 		int num_scroll_elements = data->entries_visible; /* number of elements to be scrolled */
 
-		if (drawupdate == 2)
+		if (drawupdate == UPDATE_FIRST_CHANGED)
 		{
 			diffy = data->entries_first - data->drawupdate_old_first;
 			abs_diffy = abs(diffy);
@@ -2475,6 +2521,11 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		}
 	}
 
+	if (data->drawupdate == UPDATE_REDRAW_SINGLE)
+	{
+		start = end = data->drawupdate_position;
+	}
+
 	/* Ensure validness of start and end */
 	start = MAX(start, 0);
 	end = MIN(end, data->entries_num);
@@ -2502,7 +2553,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	if (data->horiz_scroller) data->horiz_first = xget(data->horiz_scroller,MUIA_Prop_First);
 
 	/* Draw title */
-	if (!drawupdate || drawupdate == 4)
+	if (!drawupdate || drawupdate == UPDATE_TITLE)
 	{
 		set(obj, MUIA_Background, MUII_HSHADOWBACK);
 		background = MUII_HSHADOWBACK;
@@ -2515,7 +2566,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 1);
 		Draw(old_rp,_mright(obj),_mtop(obj) + data->title_height - 1);
 
-		if (drawupdate == 4)
+		if (drawupdate == UPDATE_TITLE)
 		{
 			int col;
 			int x = _mleft(obj) - data->horiz_first;
@@ -2561,7 +2612,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		}
 	}
 
-	if (drawupdate != 4)
+	if (drawupdate != UPDATE_TITLE)
 	{
 		/* Draw all entries between start and end, their current background
 		 * is stored */
@@ -2926,14 +2977,7 @@ STATIC ULONG MailTreelist_ReplaceMail(struct IClass *cl, Object *obj, struct MUI
 		if (data->entries[i]->mail_info == msg->oldmail)
 		{
 			data->entries[i]->mail_info = msg->newmail;
-
-			if (data->inbetween_setup)
-			{
-				CalcEntry(data,obj, msg->newmail); /* Calculate only the newly added entry */
-				CalcHorizontalTotal(data);
-				MUI_Redraw(obj,MADF_DRAWOBJECT);
-			}
-
+			RefreshEntry(cl,obj,i);
 			break;
 		}
 	}
@@ -2958,9 +3002,7 @@ STATIC ULONG MailTreelist_RefreshMail(struct IClass *cl, Object *obj, struct MUI
 	{
 		if (data->entries[i]->mail_info == msg->m)
 		{
-			CalcEntry(data,obj, msg->m); /* Calculate only entry to be refreshed */
-			CalcHorizontalTotal(data);
-			MUI_Redraw(obj,MADF_DRAWOBJECT);
+			RefreshEntry(cl,obj,i);
 			break;
 		}
 	}

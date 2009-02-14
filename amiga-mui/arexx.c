@@ -1330,7 +1330,7 @@ static void arexx_readsave(struct RexxMsg *rxmsg, STRPTR args)
 	if ((arg_handle = ParseTemplate("PART/N,FILENAME/A/K,OVERWRITE/S",args,&readsave_arg)))
 	{
 		struct mail_complete *mail = read_window_get_displayed_mail(read_active_window);
-		if (readsave_arg.part)
+		if (mail && readsave_arg.part)
 		{
 			int i;
 			mail = mail_get_root(mail);

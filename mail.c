@@ -189,19 +189,22 @@ static void quoting_chars(char *buf, int len, char *text)
 	buf[last_bracket]=0;
 }
 
-/**************************************************************************
- Quotes a text
-**************************************************************************/
+/**
+ * Quotes the given text. The preferences entry
+ * user.config.write_reply_citeemptyl is respected.
+ *
+ * @param src
+ * @param len
+ * @return
+ */
 static char *quote_text(char *src, int len)
 {
-	FILE *fh = tmpfile();
 	static char temp_buf[128];
 	int temp_len = 0;
-	char *cited_buf = NULL;
+	string cited;
 
-	if (fh)
+	if (string_initialize(&cited,len))
 	{
-		int cited_len;
 		int newline = 1;
 		int wrapped = 0; /* needed for user.config.write_reply_quote */
 		int line_len = 0;
@@ -229,13 +232,14 @@ static char *quote_text(char *src, int len)
 				src++;
 				len--;
 
+				/* This actually means "wrap before quoting" */
 				if (user.config.write_reply_quote)
 				{
 					quoting_chars(temp_buf,sizeof(temp_buf),src);
 
 					if (temp_len == strlen(temp_buf) && wrapped)
 					{
-						/* the text has been wrapped previouly and the quoting chars
+						/* the text has been wrapped previously and the quoting chars
 						   are the same like the previous line, so the following text
 							 probably belongs to the same paragraph */
 
@@ -246,7 +250,7 @@ static char *quote_text(char *src, int len)
 						/* add a space to if this was the first quoting */
 						if (!temp_len)
 						{
-							fputc(' ',fh);
+							string_append_char(&cited,' ');
 							line_len++;
 						}
 						continue;
@@ -255,11 +259,15 @@ static char *quote_text(char *src, int len)
 					wrapped = 0;
 				}
 
-				fputc(10,fh);
+				/* If newline is already true this is a empty line */
+				if (newline && user.config.write_reply_citeemptyl)
+					string_append_char(&cited,'>');
+				string_append_char(&cited,'\n');
 				newline = 1;
 
 				line_len = 0;
 
+				/* Strip the signature */
 				if (len >= 4 && user.config.write_reply_stripsig && !strncmp(src,"-- \n",4))
 					break;
 
@@ -270,24 +278,25 @@ static char *quote_text(char *src, int len)
 			{
 				if (user.config.write_wrap)
 				{
-					if (!strlen(temp_buf)) { fputs("> ",fh); line_len+=2;}
-					else {fputc('>',fh); line_len++;}
+					if (!strlen(temp_buf)) { string_append(&cited,"> "); line_len+=2;}
+					else {string_append_char(&cited,'>'); line_len++;}
 				} else
 				{
-					if (c=='>') { fputc('>',fh); line_len++;}
-					else { fputs("> ",fh); line_len+=2;}
+					if (c=='>') { string_append_char(&cited,'>'); line_len++;}
+					else { string_append(&cited,"> "); line_len+=2;}
 				}
 				newline = 0;
 			}
 
+			/* This actually means "wrap before quoting" */
 			if (user.config.write_reply_quote)
 			{
 				if (isspace(c) && line_len + word_length(src) >= user.config.write_wrap)
 				{
 					src++;
-					fputs("\n>",fh);
-					fputs(temp_buf,fh);
-					fputc(' ',fh);
+					string_append(&cited,"\n>");
+					string_append(&cited,temp_buf);
+					string_append_char(&cited,' ');
 					line_len=strlen(temp_buf)+2;
 					wrapped = 1;		/* indicates that a word has been wrapped manually */
 					continue;
@@ -301,22 +310,14 @@ static char *quote_text(char *src, int len)
 			do
 			{
 				c = *src++; /* small overhead because for the first time we already have c */
-				fputc(c,fh);
+				string_append_char(&cited,c);
 			} while (char_len--);
 			line_len++;
 		}
 
-		cited_len = ftell(fh);
-		fseek(fh,0,SEEK_SET);
-		if ((cited_buf = (char*)malloc(cited_len+1)))
-		{
-			fread(cited_buf,1,cited_len,fh);
-			cited_buf[cited_len] = 0;
-		}
-		fclose(fh);
+		return cited.str;
 	}
-
-	return cited_buf;
+	return NULL;
 }
 
 /**************************************************************************
@@ -1175,7 +1176,7 @@ static char *mail_create_replied_subject_line(int num, struct mail_complete **ma
 /**************************************************************************
  Creates a Reply to a given mail. That means change the contents of
  "From:" to "To:", change the subject, quote the first text passage
- and remove the attachments. The mail is proccessed. The given mail should
+ and remove the attachments. The mail is processed. The given mail should
  be processed to.
 **************************************************************************/
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array)

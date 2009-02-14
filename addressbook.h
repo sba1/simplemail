@@ -105,6 +105,7 @@ void init_addressbook(void);
 void cleanup_addressbook(void);
 int addressbook_load(void);
 void addressbook_save(void);
+void addressbook_save_as(char *filename);
 int addressbook_import_sm(char *filename);
 int addressbook_import_yam(char *filename);
 int addressbook_import_file(char *filename, int append);

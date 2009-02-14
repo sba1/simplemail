@@ -110,7 +110,7 @@ int arexx_init(void)
 		}
 	}
 	Permit();
-	
+
 	return rc;
 }
 
@@ -802,7 +802,7 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 					}
 					UnLock(dirlock);
 				}
-			} else 
+			} else
 			{
 				if (stem_buf)
 				{
@@ -1018,8 +1018,7 @@ static void arexx_addrnew(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
- ADDRSAVE Arexx Command
- TODO: FILENAME
+ ADDRSAVE ARexx Command
 *****************************************************************/
 static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 {
@@ -1032,7 +1031,8 @@ static void arexx_addrsave(struct RexxMsg *rxmsg, STRPTR args)
 
 	if ((arg_handle = ParseTemplate("FILENAME",args,&addrsave_arg)))
 	{
-		addressbook_save();
+		if (addrsave_arg.filename) addressbook_save_as(addrsave_arg.filename);
+		else addressbook_save();
 		FreeTemplate(arg_handle);
 	}
 }

@@ -623,7 +623,7 @@ void init_addressbook(void)
 		}
 	} else
 	{
-		if (addressbook_find_group_by_name("SimpleMail Team") && 
+		if (addressbook_find_group_by_name("SimpleMail Team") &&
 		    !array_contains(entry->group_array,"SimpleMail Team"))
 		{
 			char **newarray = array_add_string(entry->group_array,"SimpleMail Team");
@@ -1080,12 +1080,14 @@ static void addressbook_save_group(FILE *fh, struct addressbook_group *group)
 	fputs("</newgroup>\n",fh);
 }
 
-/**************************************************************************
- Saves the addressbook to disk
-**************************************************************************/
-void addressbook_save(void)
+/**
+ * Saves the addressbok to a given file.
+ *
+ * @param filename
+ */
+void addressbook_save_as(char *filename)
 {
-	FILE *fh = fopen("PROGDIR:.newaddressbook.xml","w");
+	FILE *fh = fopen(filename,"w");
 	if (fh)
 	{
 		struct addressbook_entry_new *entry;
@@ -1110,6 +1112,14 @@ void addressbook_save(void)
 		fputs("</newaddressbook>\n",fh);
 		fclose(fh);
 	}
+}
+
+/**
+ * Saved the addressbook to the default file
+ */
+void addressbook_save(void)
+{
+	addressbook_save_as("PROGDIR:.newaddressbook.xml");
 }
 
 /**************************************************************************

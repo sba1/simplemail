@@ -143,7 +143,7 @@ static void init_config(void)
 	user.config.dont_use_thebar_mcc = 0;
 	user.config.dont_add_default_addresses = 0;
 	user.config.dont_jump_to_unread_mail = 0;
-	user.config.dont_use_aiss = 0;
+	user.config.dont_use_aiss = 1;
 	user.config.dont_draw_alternating_rows = 0;
 	user.config.row_background = 0xb0b0b0;              /* Row color */
 	user.config.alt_row_background = 0xb8b8b8;          /* Color of alternative row */
@@ -734,6 +734,9 @@ void save_config(void)
 			if (user.config.dont_use_aiss)
 			{
 				fprintf(fh,"Hidden.DontUseAISS=Y\n");
+			} else
+			{
+				fprintf(fh,"Hidden.DontUseAISS=N\n");
 			}
 
 			if (user.config.dont_draw_alternating_rows)

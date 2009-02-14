@@ -646,6 +646,18 @@ int string_append(string *string, char *appstr)
 	return string_append_part(string,appstr,strlen(appstr));
 }
 
+/**
+ * Appends a single character to the string.
+ *
+ * @param string
+ * @param c
+ * @return
+ */
+int string_append_char(string *string, char c)
+{
+	return string_append_part(string,&c,1);
+}
+
 /**************************************************************************
  Crops a given string
 **************************************************************************/

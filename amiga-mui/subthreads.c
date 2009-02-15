@@ -354,9 +354,11 @@ ULONG thread_mask(void)
 	return (1UL << thread->thread_port->mp_SigBit) | (1UL << thread->timer_port->mp_SigBit);
 }
 
-/**************************************************************************
- Handle a new message in the send to the current process
-**************************************************************************/
+/**
+ * Handle a new thread message sent to the current process.
+ *
+ * @param mask
+ */
 void thread_handle(ULONG mask)
 {
 	struct thread_s *thread = (struct thread_s*)(FindTask(NULL)->tc_UserData);
@@ -375,6 +377,10 @@ void thread_handle(ULONG mask)
 			}
 
 			thread_handle_execute_function_message(tmsg);
+
+			/* Set the signal so we are going to be called again */
+			SetSignal((1UL << thread->thread_port->mp_SigBit),(1UL << thread->thread_port->mp_SigBit));
+			break;
 		}
 	}
 

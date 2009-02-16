@@ -283,7 +283,10 @@ enum DrawUpdate
 	UPDATE_TITLE = 4,
 
 	/** Redraw a single element, which one is stored at drawupate_position */
-	UPDATE_REDRAW_SINGLE = 5
+	UPDATE_REDRAW_SINGLE = 5,
+
+	/** Horizontal scrolling position changed, old pos is saved at drawupdate_old_horiz_first */
+	UPDATE_HORIZ_FIRST_CHANGED = 6
 //	1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
 };
 
@@ -360,8 +363,9 @@ struct MailTreelist_Data
 
 	int folder_type; /* we need to know which type of folder is displayed */
 
-	enum DrawUpdate drawupdate; /* 1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
+	enum DrawUpdate drawupdate;
 	int drawupdate_old_first;
+	int drawupdate_old_horiz_first;
 	int drawupdate_position;
 
 	struct RastPort rp; /**< @brief Rastport for font calculations */
@@ -435,6 +439,51 @@ static void IssueTreelistDoubleClickNotify(struct IClass *cl, Object *obj, struc
 
 	/* issue the notify */
 	DoSuperMethod(cl,obj,OM_SET,tags, NULL);
+}
+
+
+/**
+ * As ScrollRaster() but MUI-safe, e.g., calls MUI_BeginRefresh()/MUI_EndRefresh() when
+ * necessary. The "gap"-area is not cleared.
+ *
+ * @param obj
+ * @param dx
+ * @param dy
+ * @param left
+ * @param top
+ * @param right
+ * @param bottom
+ * @return
+ */
+static int MUI_ScrollRaster(Object *obj, int dx, int dy, int left, int top, int right, int bottom)
+{
+	int scroll_caused_damage;
+
+	/* Install nobackfill layer hook, while scrolling */
+	struct Hook *old_hook;
+
+	old_hook = InstallLayerHook(_rp(obj)->Layer, LAYERS_NOBACKFILL);
+
+	scroll_caused_damage = (_rp(obj)->Layer->Flags & LAYERREFRESH) ? FALSE : TRUE;
+
+	ScrollRasterBF(_rp(obj), dx, dy, left, top, right, bottom);
+
+	scroll_caused_damage = scroll_caused_damage && (_rp(obj)->Layer->Flags & LAYERREFRESH);
+
+	InstallLayerHook(_rp(obj)->Layer,old_hook);
+
+	if (scroll_caused_damage)
+	{
+		if (MUI_BeginRefresh(muiRenderInfo(obj), 0))
+		{
+			Object *o;
+			get(_win(obj),MUIA_Window_RootObject, &o);
+			MUI_Redraw(o, MADF_DRAWOBJECT);
+			MUI_EndRefresh(muiRenderInfo(obj), 0);
+		}
+		return 0;
+	}
+	return 1;
 }
 
 /**************************************************************************/
@@ -1647,7 +1696,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 									EnsureActiveEntryVisibility(data);
 									if (data->entries_first != old_entries_first)
 									{
-										data->drawupdate = 2;
+										data->drawupdate = UPDATE_FIRST_CHANGED;
 										data->drawupdate_old_first = old_entries_first;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 									}
@@ -1663,7 +1712,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 							if (data->entries_first != new_entries_first)
 							{
-								data->drawupdate = 2;
+								data->drawupdate = UPDATE_FIRST_CHANGED;
 								data->drawupdate_old_first = data->entries_first;
 								data->entries_first = new_entries_first;
 								if (data->vert_scroller) set(data->vert_scroller, MUIA_Prop_First, data->entries_first);
@@ -1674,9 +1723,15 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 			case	MUIA_MailTreelist_HorizontalFirst:
 						{
-							data->horiz_first = tidata;
-							if (data->horiz_first < 0) data->horiz_first = 0;
-							MUI_Redraw(obj, MADF_DRAWUPDATE);
+							int new_horiz_first = tidata;
+							if (new_horiz_first < 0) new_horiz_first = 0;
+							if (data->horiz_first != new_horiz_first)
+							{
+								data->drawupdate = UPDATE_HORIZ_FIRST_CHANGED;
+								data->drawupdate_old_horiz_first = data->horiz_first;
+								data->horiz_first = new_horiz_first;
+								MUI_Redraw(obj, MADF_DRAWUPDATE);
+							}
 						}
 						break;
 
@@ -2452,12 +2507,18 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	data->drawupdate = 0;
 
 	/* Don't do anything if removed element was invisble */
-	if (data->drawupdate == UPDATE_SINGLE_ENTRY_REMOVED &&
+	if (drawupdate == UPDATE_SINGLE_ENTRY_REMOVED &&
 	    data->drawupdate_position >= data->entries_first + data->entries_visible - 1)
 		return 0;
 
 	start = data->entries_first;
 	end = start + data->entries_visible;
+
+	/* Don't do anything if refreshed element is invisible */
+	if (drawupdate == UPDATE_REDRAW_SINGLE &&
+		(data->drawupdate_position < start || data->drawupdate_position >= end))
+		return 0;
+
 	listy = y = _mtop(obj) + data->title_height;
 
 	/* If necessary, perform scrolling operations */
@@ -2483,34 +2544,10 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 		if (abs_diffy < data->entries_visible)
 		{
-			int scroll_caused_damage;
-
-			/* Instally nobackfill layer hook, while scrolling */
-			struct Hook *old_hook;
-
-			old_hook = InstallLayerHook(_rp(obj)->Layer, LAYERS_NOBACKFILL);
-
-	    scroll_caused_damage = (_rp(obj)->Layer->Flags & LAYERREFRESH) ? FALSE : TRUE;
-
-	    ScrollRasterBF(_rp(obj), 0, diffy * data->entry_maxheight,
-			 _mleft(obj), y,
-			 _mright(obj), y + data->entry_maxheight * num_scroll_elements - 1);
-
-    	scroll_caused_damage = scroll_caused_damage && (_rp(obj)->Layer->Flags & LAYERREFRESH);
-
-			InstallLayerHook(_rp(obj)->Layer,old_hook);
-
-			if (scroll_caused_damage)
-			{
-				if (MUI_BeginRefresh(muiRenderInfo(obj), 0))
-				{
-					Object *o;
-			    get(_win(obj),MUIA_Window_RootObject, &o);
-	    		MUI_Redraw(o, MADF_DRAWOBJECT);
-	    		MUI_EndRefresh(muiRenderInfo(obj), 0);
-	    	}
+			if (!MUI_ScrollRaster(obj, 0, diffy * data->entry_maxheight,
+					_mleft(obj), y,
+					_mright(obj), y + data->entry_maxheight * num_scroll_elements - 1))
 				return 0;
-			}
 
 			if (diffy > 0)
 	    {
@@ -2521,9 +2558,27 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		}
 	}
 
-	if (data->drawupdate == UPDATE_REDRAW_SINGLE)
+	if (drawupdate == UPDATE_HORIZ_FIRST_CHANGED)
 	{
-		start = end = data->drawupdate_position;
+		int diffx, abs_diffx;
+
+		diffx = data->horiz_first - data->drawupdate_old_horiz_first;
+		abs_diffx = abs(diffx);
+
+		if (abs_diffx < _mwidth(obj))
+		{
+			if (!(MUI_ScrollRaster(obj, diffx, 0,
+					_mleft(obj), _mtop(obj),
+					_mright(obj), _mbottom(obj)))) return 0;
+		}
+		drawupdate = 0; /* So that the title gets updated */
+	}
+
+	if (drawupdate == UPDATE_REDRAW_SINGLE)
+	{
+		y += (data->drawupdate_position - start)*data->entry_maxheight;
+		start = data->drawupdate_position;
+		end = start + 1;
 	}
 
 	/* Ensure validness of start and end */

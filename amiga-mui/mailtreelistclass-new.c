@@ -979,10 +979,19 @@ static void CalcHorizontalVisible(struct MailTreelist_Data *data, Object *obj)
 	}
 }
 
-/**************************************************************************
- Draw an entry at entry_pos at the given y location.
-**************************************************************************/
-static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, struct RastPort *rp, int x, int y)
+/**
+ * Draw an entry at entry_pos at the given y location.
+ *
+ * @param data
+ * @param obj
+ * @param entry_pos
+ * @param rp
+ * @param x destination horizontal position
+ * @param y destination vertical position
+ * @param clip_left leftmost pixel to be drawn. This is only a hint!
+ * @param clip_width width of the clipping region. This is only a hint!
+ */
+static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos, struct RastPort *rp, int x, int y, int clip_left, int clip_width)
 {
 	int col;
 	int x1;
@@ -1009,7 +1018,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(rp, FSF_BOLD, AskSoftStyle(rp));
 
-	for (col = 0;col < MAX_COLUMNS; col++)
+	for (col = 0;col < MAX_COLUMNS && x1 < clip_left + clip_width; col++)
 	{
 		int col_width;
 		int is_ascii7;
@@ -1023,6 +1032,13 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		active = data->columns_active[col];
 		if (!active) continue;
 		ci = &data->ci[active];
+
+		/* No need to do anything if this is outside the clipping region */
+		if (x1 + ci->width + data->column_spacing < clip_left)
+		{
+			x1 += ci->width + data->column_spacing;
+			continue;
+		}
 
 		if (!first)
 		{
@@ -2386,11 +2402,12 @@ static void DrawMarker(struct MailTreelist_Data *data, Object *obj, struct RastP
  * @param buffer_rp the rastport in which rendering takes place. Can be NULL.
  * @param window_rp the window's rastpoint. The buffer rastport is blitted into this rastport.
  * @param window_y on which y position the entry should be blitted.
- *
+ * @param window_clip_x
+ * @param window_clip_width
  * @note Note that if you draw buffered, you must have _rp(obj) set to the
  *       buffer_rp before! TODO: This background stuff must be stream lined.
  */
-static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, int force_mui_bg, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
+static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int cur, int force_mui_bg, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y, int window_clip_x, int window_clip_width)
 {
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 
@@ -2405,27 +2422,41 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 			else SetAPen(buffer_rp,data->alt_background_pen);
 			RectFill(buffer_rp,0,0,_mwidth(obj),data->entry_maxheight);
 		}
-		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0);
+
+		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0,window_clip_x - _mleft(obj), window_clip_width);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,buffer_rp,0,0);
-		BltBitMapRastPort(data->buffer_bmap, 0, 0,
-											window_rp, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, 0xc0);
+		BltBitMapRastPort(data->buffer_bmap, window_clip_x - _mleft(obj), 0,
+						  window_rp, /*_mleft(obj)*/window_clip_x, window_y, /*_mwidth(obj)/**/window_clip_width, data->entry_maxheight, 0xc0);
 	} else
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
-		DrawEntry(data,obj,cur,window_rp,_mleft(obj)-data->horiz_first,window_y);
+		DrawEntry(data,obj,cur,window_rp,_mleft(obj)-data->horiz_first,window_y,window_clip_x,window_clip_width);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,window_rp,_mleft(obj),window_y);
 	}
 }
 
-/*************************************************************************
- Draws an entry optionally only if it background has changed recently
- (e.g. cause by changed selection state). Remember current background and
- return the current set background.
-
- Note that if you draw buffered you must have _rp(obj) set to the
- buffer_rp before!
-*************************************************************************/
-static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optimized, int background, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y)
+/**
+ * Draws an entry optionally only if it background has changed recently
+ * (e.g. cause by changed selection state). Remember current background and
+ * return the current set background.
+ *
+ * @param cl
+ * @param obj
+ * @param cur
+ * @param optimized
+ * @param background
+ * @param buffer_rp
+ * @param window_rp
+ * @param window_y
+ * @param window_clip_x
+ * @param window_clip_width
+ *
+ * @note Note that if you draw buffered you must have _rp(obj) set to the
+ *       buffer_rp before!
+ *
+ * @return
+ */
+static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optimized, int background, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y, int window_clip_left, int window_clip_width)
 {
 	int new_background;
 	struct ListEntry *le;
@@ -2446,7 +2477,7 @@ static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optim
 		background = new_background;
 	}
 
-	DrawEntryAndBackgroundBuffered(cl, obj, cur, (le->flags & LE_FLAG_SELECTED) || cur == data->entries_active, buffer_rp, window_rp, window_y);
+	DrawEntryAndBackgroundBuffered(cl, obj, cur, (le->flags & LE_FLAG_SELECTED) || cur == data->entries_active, buffer_rp, window_rp, window_y, window_clip_left, window_clip_width);
 
 	le->drawn_background = background;
 
@@ -2491,6 +2522,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	APTR cliphandle;
 
 	int start,cur,end;
+	int window_clip_left, window_clip_width;
 	int y,listy;
 	int drawupdate;
 	int background;
@@ -2558,6 +2590,9 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		}
 	}
 
+	window_clip_left = _mleft(obj);
+	window_clip_width = _mwidth(obj);
+
 	if (drawupdate == UPDATE_HORIZ_FIRST_CHANGED)
 	{
 		int diffx, abs_diffx;
@@ -2570,8 +2605,17 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 			if (!(MUI_ScrollRaster(obj, diffx, 0,
 					_mleft(obj), _mtop(obj),
 					_mright(obj), _mbottom(obj)))) return 0;
+
+			if (diffx > 0)
+			{
+				window_clip_left += window_clip_width - diffx;
+				window_clip_width = diffx;
+			}
+			else
+				window_clip_width = -diffx;
+
+			drawupdate = 0; /* So that the title gets updated */
 		}
-		drawupdate = 0; /* So that the title gets updated */
 	}
 
 	if (drawupdate == UPDATE_REDRAW_SINGLE)
@@ -2612,7 +2656,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	{
 		set(obj, MUIA_Background, MUII_HSHADOWBACK);
 		background = MUII_HSHADOWBACK;
-		DrawEntryAndBackgroundBuffered(cl, obj, ENTRY_TITLE, 0, data->buffer_rp, old_rp, _mtop(obj));
+		DrawEntryAndBackgroundBuffered(cl, obj, ENTRY_TITLE, 0, data->buffer_rp, old_rp, _mtop(obj), _mleft(obj),_mwidth(obj));
 
 		SetAPen(old_rp,_pens(obj)[MPEN_SHADOW]);
 		Move(old_rp,_mleft(obj),_mtop(obj) + data->title_height - 2);
@@ -2673,7 +2717,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 		 * is stored */
 		for (cur = start; cur < end; cur++,y += data->entry_maxheight)
 		{
-			background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y);
+			background = DrawEntryOptimized(cl, obj, cur, drawupdate == 1, background, data->buffer_rp, old_rp, y, window_clip_left, window_clip_width);
 		}
 	}
 

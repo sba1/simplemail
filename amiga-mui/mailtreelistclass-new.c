@@ -1018,7 +1018,8 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(rp, FSF_BOLD, AskSoftStyle(rp));
 
-	for (col = 0;col < MAX_COLUMNS && x1 < clip_left + clip_width; col++)
+	/* Adding  data->column_spacing ensures that we draw the vertical bar */
+	for (col = 0;col < MAX_COLUMNS && x1 < clip_left + clip_width + data->column_spacing; col++)
 	{
 		int col_width;
 		int is_ascii7;
@@ -1037,6 +1038,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 		if (x1 + ci->width + data->column_spacing < clip_left)
 		{
 			x1 += ci->width + data->column_spacing;
+			first = 0; /* obviously we have also skipped the first column */
 			continue;
 		}
 

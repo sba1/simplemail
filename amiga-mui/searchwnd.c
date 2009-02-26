@@ -56,7 +56,7 @@ static Object *search_folder_tree;
 static Object *search_from_string;
 static Object *search_to_string;
 static Object *search_subject_string;
-//static Object *search_body_string;
+static Object *search_body_string;
 static Object *search_start_button;
 static Object *search_stop_button;
 static Object *search_mail_listview;
@@ -120,14 +120,13 @@ static void searchwnd_start(void)
 	so.from = (char*)xget(search_from_string,MUIA_UTF8String_Contents);
 	so.to = (char*)xget(search_to_string,MUIA_UTF8String_Contents);
 	so.subject = (char*)xget(search_subject_string,MUIA_UTF8String_Contents);
-	so.body = NULL;//(char*)xget(search_body_string,MUIA_UTF8String_Contents);
+	so.body = (char*)xget(search_body_string,MUIA_UTF8String_Contents);
 
 	MAKE_NULL(so.folder);
 	MAKE_NULL(so.from);
 	MAKE_NULL(so.to);
 	MAKE_NULL(so.subject);
 	MAKE_NULL(so.body);
-
 
 	set(App, MUIA_Application_Sleep, TRUE);
 	callback_start_search(&so);
@@ -199,13 +198,13 @@ static void init_search(void)
 					MUIA_UTF8String_Charset, user.config.default_codeset,
 					End,
 
-/*				Child, MakeLabel(_("_Body")),
+				Child, MakeLabel(_("_Body")),
 				Child, search_body_string = UTF8StringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
 					MUIA_String_AdvanceOnCR, TRUE,
 					MUIA_UTF8String_Charset, user.config.default_codeset,
-					End,*/
+					End,
 
 				End,
 
@@ -289,7 +288,7 @@ void search_add_result(struct mail_info **array, int size)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 void search_enable_search(void)
 {
@@ -298,7 +297,7 @@ void search_enable_search(void)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 void search_disable_search(void)
 {

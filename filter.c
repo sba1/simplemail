@@ -58,43 +58,44 @@ struct filter *filter_create(void)
 **************************************************************************/
 void filter_parse_filter_rules(struct filter *f)
 {
-	if (f)
+	struct filter_rule *rule;
+
+	if (!f) return;
+
+	rule = (struct filter_rule*)list_first(&f->rules_list);
+	while (rule)
 	{
-		struct filter_rule *rule = (struct filter_rule*)list_first(&f->rules_list);
-		while (rule)
+		switch (rule->type)
 		{
-			switch (rule->type)
-			{
-				case	RULE_FROM_MATCH:
-							if (rule->u.from.from_pat) array_free(rule->u.from.from_pat);
-							rule->u.from.from_pat = array_duplicate_parsed(rule->u.from.from, rule->flags);
-							break;
+			case	RULE_FROM_MATCH:
+						if (rule->u.from.from_pat) array_free(rule->u.from.from_pat);
+						rule->u.from.from_pat = array_duplicate_parsed(rule->u.from.from, rule->flags);
+						break;
 
-				case	RULE_SUBJECT_MATCH:
-							if (rule->u.subject.subject_pat) array_free(rule->u.subject.subject_pat);
-							rule->u.subject.subject_pat = array_duplicate_parsed(rule->u.subject.subject, rule->flags);
-							break;
+			case	RULE_SUBJECT_MATCH:
+						if (rule->u.subject.subject_pat) array_free(rule->u.subject.subject_pat);
+						rule->u.subject.subject_pat = array_duplicate_parsed(rule->u.subject.subject, rule->flags);
+						break;
 
-				case	RULE_HEADER_MATCH:
-							if (rule->u.header.name_pat) free(rule->u.header.name_pat);
-							/* patternmatching for headerfields disabled for now */
-							rule->u.header.name_pat = sm_parse_pattern(rule->u.header.name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT);
-							if (rule->u.header.contents_pat) array_free(rule->u.header.contents_pat);
-							rule->u.header.contents_pat = array_duplicate_parsed(rule->u.header.contents, rule->flags);
-							break;
+			case	RULE_HEADER_MATCH:
+						if (rule->u.header.name_pat) free(rule->u.header.name_pat);
+						/* patternmatching for headerfields disabled for now */
+						rule->u.header.name_pat = sm_parse_pattern(rule->u.header.name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT);
+						if (rule->u.header.contents_pat) array_free(rule->u.header.contents_pat);
+						rule->u.header.contents_pat = array_duplicate_parsed(rule->u.header.contents, rule->flags);
+						break;
 
-				case	RULE_RCPT_MATCH:
-							if (rule->u.rcpt.rcpt_pat) array_free(rule->u.rcpt.rcpt_pat);
-							rule->u.rcpt.rcpt_pat = array_duplicate_parsed(rule->u.rcpt.rcpt, rule->flags);
-							break;
+			case	RULE_RCPT_MATCH:
+						if (rule->u.rcpt.rcpt_pat) array_free(rule->u.rcpt.rcpt_pat);
+						rule->u.rcpt.rcpt_pat = array_duplicate_parsed(rule->u.rcpt.rcpt, rule->flags);
+						break;
 
-				case	RULE_BODY_MATCH:
-							if (rule->u.body.body_pat) free(rule->u.body.body_pat);
-							rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, rule->flags);
-							break;
-			}
-			rule = (struct filter_rule*)node_next(&rule->node);
+			case	RULE_BODY_MATCH:
+						if (rule->u.body.body_pat) free(rule->u.body.body_pat);
+						rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, rule->flags);
+						break;
 		}
+		rule = (struct filter_rule*)node_next(&rule->node);
 	}
 }
 
@@ -193,7 +194,7 @@ void filter_dispose(struct filter *f)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 {
@@ -209,7 +210,7 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 void filter_remove_rule(struct filter_rule *fr)
 {
@@ -583,11 +584,12 @@ void filter_list_save(FILE *fh)
 	}
 }
 
-
-
-/**************************************************************************
- Duplicates a given search option
-**************************************************************************/
+/**
+ * Duplicates the given search option.
+ *
+ * @param so
+ * @return
+ */
 struct search_options *search_options_duplicate(struct search_options *so)
 {
 	struct search_options *new_so = malloc(sizeof(*so));
@@ -603,9 +605,10 @@ struct search_options *search_options_duplicate(struct search_options *so)
 	return new_so;
 }
 
-/**************************************************************************
- Saves the filter list into the given FILE
-**************************************************************************/
+/**
+ * Frees all memory associated with the given search options.
+ * @param so
+ */
 void search_options_free(struct search_options *so)
 {
 	free(so->folder);

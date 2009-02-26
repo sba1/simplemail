@@ -3141,6 +3141,29 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 						}
 						break;
 
+			case	RULE_BODY_MATCH:
+						if (mc && rule->u.body.body_pat)
+						{
+							if (mail_read_header_list_if_empty(mc))
+							{
+								struct mail_complete *text_part;
+
+								mail_process_headers(mc);
+								mail_read_contents(folder->path,mc);
+
+								if ((text_part = mail_find_content_type(mc,"text","plain")))
+								{
+									void *decoded_data;
+									int decoded_data_len;
+
+									mail_decoded_data(text_part,&decoded_data,&decoded_data_len);
+
+									take = sm_match_pattern(rule->u.body.body_pat,(utf8*)decoded_data,rule->flags);
+								}
+							}
+						}
+						break;
+
 			case	RULE_ATTACHMENT_MATCH:
 						take = !!(m->flags & MAIL_FLAGS_ATTACH);
 						break;
@@ -3331,7 +3354,9 @@ static void folder_start_search_entry(struct search_msg *msg)
 	struct search_options *sopt;
 #define NUM_FOUND 100
 	struct mail_info *found_array[NUM_FOUND];
-	unsigned int secs = sm_get_current_seconds(); /* used to reduce the amount of notifing the parent task */
+
+	/* Used to reduce the amount of notifications sent to the parent task */
+	unsigned int secs = sm_get_current_seconds();
 
 	sopt = search_options_duplicate(msg->sopt);
 	f_array_len = msg->f_array_len;
@@ -3347,7 +3372,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 		f_array[i] = NULL;
 	}
 
-  if (thread_parent_task_can_contiue())
+	if (thread_parent_task_can_contiue())
 	{
 		if (!sopt || !f_array) goto fail;
 
@@ -3456,10 +3481,12 @@ fail:
 	if (sopt) search_options_free(sopt);
 }
 
-/**************************************************************************
- Start the search with the given options. It starts a separate thread for
- doing so.
-**************************************************************************/
+/**
+ * Start the search with the given options. It starts a separate thread for
+ * doing so.
+ *
+ * @param sopt
+ */
 void folder_start_search(struct search_options *sopt)
 {
 	struct search_msg msg;
@@ -3496,8 +3523,7 @@ void folder_start_search(struct search_options *sopt)
 		f = folder_next(f);
 	}
 
-	array = malloc((num+1)*sizeof(struct folder*));
-	if (array)
+	if ((array = malloc((num+1)*sizeof(struct folder*))))
 	{
 		int i = 0;
 

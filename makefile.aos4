@@ -104,6 +104,7 @@ ARCHSRCS=\
 NONARCHSRCS=\
 	account.c \
 	addressbook.c \
+	bayermoore.c \
 	codecs.c \
 	codesets.c \
 	configuration.c \

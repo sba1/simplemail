@@ -44,42 +44,43 @@ GLOBAL  = SimpleMail_rev.h version.h date.h
 
 %.c: %.h $(GLOBAL)
 
-OBJS    = 	account.o \
-            addressbook.o \
-			boyermoore.o \
-            codecs.o \
-            codesets.o \
-            configuration.o \
-            dbx.o \
-            debug.o \
-            estimate.o \
-            filter.o \
-            folder.o \
-            hash.o \
-            hmac_md5.o \
-            http.o \
-            imap.o \
-            lists.o \
-            mail.o \
-            mbox.o \
-            md5.o \
-            parse.o \
-            pgp.o \
-            phrase.o \
-            pop3.o \
-			punycode.o \
-            print.o \
-            signature.o \
-            simplemail.o \
-            smintl.o \
-            smtp.o \
-            spam.o \
-            status.o \
-            support_indep.o \
-            taglines.o \
-            tcp.o \
-            text2html.o \
-            trans.o
+OBJS = \
+	account.o \
+	addressbook.o \
+	boyermoore.o \
+	codecs.o \
+	codesets.o \
+	configuration.o \
+	dbx.o \
+	debug.o \
+	estimate.o \
+	filter.o \
+	folder.o \
+	hash.o \
+	hmac_md5.o \
+	http.o \
+	imap.o \
+	lists.o \
+	mail.o \
+	mbox.o \
+	md5.o \
+	parse.o \
+	pgp.o \
+	phrase.o \
+	pop3.o \
+	punycode.o \
+	print.o \
+	signature.o \
+	simplemail.o \
+	smintl.o \
+	smtp.o \
+	spam.o \
+	status.o \
+	support_indep.o \
+	taglines.o \
+	tcp.o \
+	text2html.o \
+	trans.o
 
 #####################################################################
 

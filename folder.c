@@ -3142,7 +3142,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 						break;
 
 			case	RULE_BODY_MATCH:
-						if (mc && rule->u.body.body_pat)
+						if (mc && rule->u.body.body)
 						{
 							if (mail_read_header_list_if_empty(mc))
 							{
@@ -3157,8 +3157,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 									int decoded_data_len;
 
 									mail_decoded_data(text_part,&decoded_data,&decoded_data_len);
-
-									take = sm_match_pattern(rule->u.body.body_pat,(utf8*)decoded_data,rule->flags);
+									take = filter_match_rule_len(&rule->u.body.body_parsed,decoded_data,decoded_data_len,rule->flags);
 								}
 							}
 						}

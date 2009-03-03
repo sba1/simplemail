@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "boyermoore.h"
 #include "configuration.h"
 #include "lists.h"
 #include "filter.h"
@@ -53,9 +54,62 @@ struct filter *filter_create(void)
 	return f;
 }
 
-/**************************************************************************
- Parse the pattern of all rules of an filter.
-**************************************************************************/
+/**
+ * Deinitializes the parsed filter rule. Does not free the rule!
+ *
+ * @param p
+ */
+void filter_deinit_rule(struct filter_rule_parsed *p)
+{
+	boyermoore_delete_context(p->bm_context);
+	p->bm_context = NULL;
+
+	free(p->parsed);
+	p->parsed = NULL;
+}
+
+/**
+ * Initializes the given filter rule for the given str with flags.
+ *
+ * @param p
+ * @param str
+ * @param flags
+ */
+void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags)
+{
+	int strl;
+
+	filter_deinit_rule(p);
+
+	strl = strlen(str);
+
+	if (strl > 3 &&  (flags & SM_PATTERN_NOPATT) && (flags & SM_PATTERN_SUBSTR))
+		p->bm_context = boyermoore_create_context(str,strl);
+	else
+		p->parsed = sm_parse_pattern(str, flags);
+}
+
+/**
+ * Match the given str againt the parsed filter.
+ *
+ * @param p
+ * @param str should be 0-byte terminated
+ * @param strl
+ * @param flags
+ * @return
+ */
+int filter_match_rule_len(struct filter_rule_parsed *p, char *str, int strl, int flags)
+{
+	if (p->bm_context)
+		return boyermoore(p->bm_context,str,strl,NULL,NULL) != -1;
+	return sm_match_pattern(p->parsed,str,flags);
+}
+
+/**
+ * Preprocesses the pattern of all rules of the given filter
+ *
+ * @param f the filter of which the rules should be processed
+ */
 void filter_parse_filter_rules(struct filter *f)
 {
 	struct filter_rule *rule;
@@ -91,8 +145,8 @@ void filter_parse_filter_rules(struct filter *f)
 						break;
 
 			case	RULE_BODY_MATCH:
-						if (rule->u.body.body_pat) free(rule->u.body.body_pat);
-						rule->u.body.body_pat = sm_parse_pattern(rule->u.body.body, rule->flags);
+						filter_deinit_rule(&rule->u.body.body_parsed);
+						filter_init_rule(&rule->u.body.body_parsed,rule->u.body.body, rule->flags);
 						break;
 		}
 		rule = (struct filter_rule*)node_next(&rule->node);
@@ -242,7 +296,7 @@ void filter_remove_rule(struct filter_rule *fr)
 
 			case	RULE_BODY_MATCH:
 						free(fr->u.body.body);
-						free(fr->u.body.body_pat);
+						filter_deinit_rule(&fr->u.body.body_parsed);
 						break;
 		}
 		node_remove(&fr->node);

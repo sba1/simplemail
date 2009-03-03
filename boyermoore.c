@@ -5,16 +5,18 @@
  * @file bayermoore.c
  */
 
+#include <limits.h>
 #include <stdlib.h>
 
-#include "bayermoore.h"
+#include "boyermoore.h"
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
 static void suffixes(char *x, int m, unsigned short *suff)
 {
-   int f, g, i;
-/* TODO: fix possible problem with f */
+   int g, i;
+   int f = 0; /* This is to silent the compiler */
+
    suff[m - 1] = m;
    g = m - 1;
    for (i = m - 2; i >= 0; --i)
@@ -39,10 +41,9 @@ static void suffixes(char *x, int m, unsigned short *suff)
  * @param m
  * @param bmGs
  */
-static void preBmGs(char *x, int m, unsigned short bmGs[])
+static void preBmGs(char *x, int m, unsigned short suff[], unsigned short bmGs[])
 {
    int i, j;
-   unsigned short suff[m+1];
 
    suffixes(x, m, suff);
 
@@ -60,9 +61,9 @@ static void preBmGs(char *x, int m, unsigned short bmGs[])
 
 
 /**
- * @brief The context data structure of the bayermoore search
+ * @brief The context data structure of the boyermoore search
  */
-struct bayermoore_context
+struct boyermoore_context
 {
 	/** @brief The bad character skip table */
 	unsigned short skip_table[UCHAR_MAX];
@@ -75,27 +76,31 @@ struct bayermoore_context
 };
 
 /**
- * Creates the bayermoore context.
+ * Creates the boyermoore context.
  *
  * @param p
  * @param plen
  * @return
  */
-struct bayermoore_context *bayermoore_create_context(char *p, int plen)
+struct boyermoore_context *boyermoore_create_context(char *p, int plen)
 {
-	struct bayermoore_context *context;
+	struct boyermoore_context *context;
 	unsigned short *next;
-
+	unsigned short *suff;
 	int i;
-#if 0
-	int j,k;
-#endif
 
-	if (!(context = (struct bayermoore_context*)malloc(sizeof(*context))))
+	if (!(context = (struct boyermoore_context*)malloc(sizeof(*context))))
 		return NULL;
 
 	if (!(context->good_suffix_table = next = (unsigned short*)malloc((plen + 1)*sizeof(context->good_suffix_table[0]))))
 	{
+		free(context);
+		return NULL;
+	}
+
+	if (!(suff = (unsigned short*)(unsigned short*)malloc((plen + 1)*sizeof(suff[0]))))
+	{
+		free(next);
 		free(context);
 		return NULL;
 	}
@@ -109,36 +114,17 @@ struct bayermoore_context *bayermoore_create_context(char *p, int plen)
 	for (i = 0; i < plen - 1; i++)
 		context->skip_table[(unsigned char)p[i]] = plen - i - 1;
 
-#if 0 /* The wikipedia code */
-	/* Prepare the good suffix table */
-    for (j = 0; j <= plen; j++) {
-        for (i = plen - 1; i >= 1; i--) {
-            for (k = 1; k <= j; k++) {
-                if (i - k < 0) {
-                    break;
-                }
-                if (p[plen - k] != p[i - k]) {
-                    goto nexttry;
-                }
-            }
-            goto matched;
-nexttry:
-            ;
-        }
-matched:
-        next[j] = plen - i;
-    }
-#endif
-    preBmGs(p, plen, next);
+    preBmGs(p, plen, suff, next);
+    free(suff);
 	return context;
 }
 
 /**
- * Creates the bayermoore context.
+ * Creates the boyermoore context.
  *
  * @param context
  */
-void bayermoore_delete_context(struct bayermoore_context *context)
+void boyermoore_delete_context(struct boyermoore_context *context)
 {
 	if (context)
 	{
@@ -148,7 +134,7 @@ void bayermoore_delete_context(struct bayermoore_context *context)
 }
 
 /**
- * Performs the bayermoore algorithm.
+ * Performs the boyermoore algorithm.
  *
  * @param x the substring which should be found
  * @param m the length of the pattern
@@ -161,7 +147,7 @@ void bayermoore_delete_context(struct bayermoore_context *context)
  * @return the position of the last found pattern or -1 if the pattern could not be found.
  */
 
-int bayermoore(struct bayermoore_context *context, char *str, int n, bm_callback callback, void *user_data)
+int boyermoore(struct boyermoore_context *context, char *str, int n, bm_callback callback, void *user_data)
 {
 	int i, j;
 	int rc = -1;
@@ -209,23 +195,23 @@ int main(int argc, char **argv)
 
 	int rel_pos, pos;
 
-	struct bayermoore_context *context;
+	struct boyermoore_context *context;
 
-	if (!(context = bayermoore_create_context(pat,strlen(pat))))
+	if (!(context = boyermoore_create_context(pat,strlen(pat))))
 		return 0;
 
-	bayermoore(context,txt,strlen(txt),callback,NULL);
+	boyermoore(context,txt,strlen(txt),callback,NULL);
 
 	printf("\n");
 
 	pos = 0;
-	while ((rel_pos = bayermoore(context,txt+pos,strlen(txt+pos),NULL,NULL)) != -1)
+	while ((rel_pos = boyermoore(context,txt+pos,strlen(txt+pos),NULL,NULL)) != -1)
 	{
 		pos += rel_pos;
 		printf("%ld\n",pos);
 		pos++;
 	}
-	bayermoore_delete_context(context);
+	boyermoore_delete_context(context);
 	return 0;
 }
 

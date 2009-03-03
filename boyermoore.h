@@ -17,21 +17,19 @@
 ***************************************************************************/
 
 /*
-** bayermoore.h
+** boyermoore.h
 */
 
-#ifndef SM__BAYERMOORE_H
-#define SM__BAYERMOORE_H
+#ifndef SM__BOYERMOORE_H
+#define SM__BOYERMOORE_H
 
-#include <limits.h>
-
-struct bayermoore_context;
+struct boyermoore_context;
 
 typedef int (*bm_callback)(char *x, unsigned int pos, void *user_data);
 
-struct bayermoore_context *bayermoore_create_context(char *pattern, int pattern_length);
-void bayermoore_delete_context(struct bayermoore_context *context);
+struct boyermoore_context *boyermoore_create_context(char *pattern, int pattern_length);
+void boyermoore_delete_context(struct boyermoore_context *context);
 
-int bayermoore(struct bayermoore_context *context, char *str, int n, bm_callback callback, void *user_data);
+int boyermoore(struct boyermoore_context *context, char *str, int n, bm_callback callback, void *user_data);
 
 #endif

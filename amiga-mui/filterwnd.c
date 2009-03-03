@@ -130,7 +130,7 @@ STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,
 void filter_update_folder_list(void)
 {
 	struct folder *f;
-	if (!filter_folder_list) return;	
+	if (!filter_folder_list) return;
 	set(filter_folder_list,MUIA_NList_Quiet,TRUE);
 	DoMethod(filter_folder_list,MUIM_NList_Clear);
 	/* Insert the folder names into the folder list for the move action */
@@ -145,7 +145,7 @@ void filter_update_folder_list(void)
 }
 
 /**************************************************************************
- Accept the rule 
+ Accept the rule
 **************************************************************************/
 static void filter_accept_rule(void)
 {
@@ -172,7 +172,7 @@ static void filter_accept_rule(void)
 		if (xget(filter_request_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REQUEST;
 		if (xget(filter_new_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_NEW;
 		if (xget(filter_sent_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_SENT;
-		if (xget(filter_remote_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REMOTE;		
+		if (xget(filter_remote_check, MUIA_Selected)) filter_last_selected->flags |= FILTER_FLAG_REMOTE;
 
 		/* Go though all objects of the rule_rule_group and build a new
        rule list from it */
@@ -211,7 +211,7 @@ static void filter_accept_rule(void)
 						    	break;
 						case	RULE_BODY_MATCH:
 						    	if (fr->u.body.body) free(fr->u.body.body);
-						    	if (fr->u.body.body_pat) free(fr->u.body.body_pat);
+						    	filter_deinit_rule(&fr->u.body.body_parsed);
 						    	break;
 					}
 
@@ -243,7 +243,7 @@ static void filter_accept_rule(void)
 					}
 		  	}
 		  }
-		}		
+		}
 		filter_parse_filter_rules(filter_last_selected);
 	}
 }
@@ -604,7 +604,7 @@ static void init_filter(void)
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_ok);
 		DoMethod(save_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)save_filter);
 		DoMethod(cancel_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_cancel);
-		
+
 		DoMethod(filter_new_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_new);
 		DoMethod(filter_remove_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_remove);
 		DoMethod(filter_moveup_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_list, 3, MUIM_NList_Move, MUIV_NList_Move_Active, MUIV_NList_Move_Previous);

@@ -22,6 +22,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__BAYERMOORE_H
+#include "boyermoore.h"
+#endif
+
 #define RULE_FROM_MATCH				0
 #define RULE_RCPT_MATCH				1
 #define RULE_SUBJECT_MATCH			2
@@ -37,6 +41,15 @@
 #define RULE_STATUS_FORWARDED 4
 #define RULE_STATUS_PENDING   5
 #define RULE_STATUS_SENT			6
+
+/**
+ * @brief A processed filter rule.
+ */
+struct filter_rule_parsed
+{
+	struct boyermoore_context *bm_context;
+	char *parsed; /* result from sm_parse_pattern() */
+};
 
 struct filter_rule
 {
@@ -65,7 +78,7 @@ struct filter_rule
 		} header;
 		struct {
 			char *body; /* string */
-			char *body_pat; /* string, result from sm_parse_pattern() */
+			struct filter_rule_parsed body_parsed;
 		} body;
 		struct {
 			int status;
@@ -109,6 +122,10 @@ struct filter
 struct filter *filter_create(void);
 struct filter *filter_duplicate(struct filter *filter);
 void filter_dispose(struct filter *filter);
+
+void filter_deinit_rule(struct filter_rule_parsed *p);
+void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags);
+int filter_match_rule_len(struct filter_rule_parsed *p, char *str, int strl, int flags);
 
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
 struct filter_rule *filter_find_rule(struct filter *filter, int num);

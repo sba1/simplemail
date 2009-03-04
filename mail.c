@@ -2078,8 +2078,6 @@ int mail_process_headers(struct mail_complete *mail)
 		mail->content_name = mystrdup(mail->content_type);
 	}
 
-
-
 /*
 	if (!mystricmp(mail->content_type, "multipart") && !mystricmp(mail->content_subtype,"related"))
 	{
@@ -2539,6 +2537,7 @@ void mail_info_free(struct mail_info *info)
 		return;
 	}
 
+	free(info->subject);
 	free(info->from_phrase);
 	free(info->from_addr);
 	free(info->to_phrase);
@@ -2551,6 +2550,7 @@ void mail_info_free(struct mail_info *info)
 	free(info->message_reply_id);
 	free(info->filename);
 	free(info->excerpt);
+	free(info);
 }
 
 /**************************************************************************
@@ -2559,6 +2559,7 @@ void mail_info_free(struct mail_info *info)
 void mail_complete_free(struct mail_complete *mail)
 {
 	struct header *hdr;
+	struct content_parameter *cp;
 	int i;
 
 	if (!mail) return;
@@ -2567,9 +2568,16 @@ void mail_complete_free(struct mail_complete *mail)
 
 	while ((hdr = (struct header *)list_remove_tail(&mail->header_list)))
 	{
-		if (hdr->name) free(hdr->name);
-		if (hdr->contents) free(hdr->contents);
+		free(hdr->name);
+		free(hdr->contents);
 		free(hdr);
+	}
+
+	while ((cp = (struct content_parameter*)list_remove_tail(&mail->content_parameter_list)))
+	{
+		free(cp->attribute);
+		free(cp->value);
+		free(cp);
 	}
 
 	for (i=0;i<mail->num_multiparts;i++)
@@ -2584,6 +2592,7 @@ void mail_complete_free(struct mail_complete *mail)
 	if (mail->content_subtype) free(mail->content_subtype);
 	if (mail->content_id) free(mail->content_id);
 	if (mail->content_name) free(mail->content_name);
+	if (mail->content_transfer_encoding) free(mail->content_transfer_encoding);
 
 	if (mail->decoded_data) free(mail->decoded_data);
 
@@ -2765,6 +2774,7 @@ void free_address_list(struct list *list)
 	{
 		if (address->realname) free(address->realname);
 		if (address->email) free(address->email);
+		free(address);
 	}
 	free(list);
 }

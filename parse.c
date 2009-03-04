@@ -451,9 +451,14 @@ static char *parse_domain(char *domain, char **pbuf)
 		{
 			char *new_buf = strdupcat(buf,".");
 			free(buf);
-			if (!new_buf) return NULL;
+			if (!new_buf)
+			{
+				free(new_sub_domain);
+				return NULL;
+			}
 
 			buf = strdupcat(new_buf,new_sub_domain);
+			free(new_sub_domain);
 			free(new_buf);
 			if (!buf) return NULL;
 
@@ -470,28 +475,24 @@ static char *parse_domain(char *domain, char **pbuf)
 **************************************************************************/
 char *parse_addr_spec(char *addr_spec, char **pbuf)
 {
-	char *local_part, *domain;
-	char *ret = parse_local_part(addr_spec,&local_part);
+	char *local_part, *domain = NULL;
+	char *ret;
 
 	string addr_str;
 
-	if (!ret) return NULL;
-	if (!string_initialize(&addr_str,100)) return NULL;
+	if (!(ret = parse_local_part(addr_spec,&local_part)))
+		return NULL;
+
+	if (!string_initialize(&addr_str,100))
+		goto out;
 
 	ret = skip_spaces(ret); /* not needed according rfc */
 
 	if (!(*ret++ == '@'))
-	{
-		free(local_part);
-		return NULL;
-	}
+		goto out;
 
-	ret = parse_domain(ret,&domain);
-	if (!ret)
-	{
-		free(local_part);
-		return NULL;
-	}
+	if (!(ret = parse_domain(ret,&domain)))
+		goto out;
 
 	if (!string_append(&addr_str,local_part)) goto out;
 	if (!(string_append(&addr_str,"@"))) goto out;

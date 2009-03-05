@@ -62,10 +62,16 @@ static int get_hexadigit(char c, int *pval)
 
 #endif
 
-/**************************************************************************
- Decoding a given buffer using the base64 algorithm. *ret_len can be used
- to cut the decoding, but the result might differ
-**************************************************************************/
+/**
+ * Decoding a given buffer using the base64 algorithm. *ret_len can be used
+ * to cut the decoding, but the result might differ
+ *
+ * @param src
+ * @param len
+ * @param ret_len where to store the length of the decoded buffer.
+ * @return the malloc'ed buffer or NULL on a failure. The actual buffer is
+ * one byte larger than suggested by ret_len. The last byte is always a 0-byte.
+ */
 char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 {
    static const signed char decoding_table[128] = {

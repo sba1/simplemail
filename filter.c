@@ -93,8 +93,8 @@ void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags)
  * Match the given str againt the parsed filter.
  *
  * @param p
- * @param str should be 0-byte terminated
- * @param strl
+ * @param str should be 0-byte terminated even if strl is given.
+ * @param strl length of the string.
  * @param flags
  * @return
  */

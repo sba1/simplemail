@@ -2462,8 +2462,15 @@ void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int 
 }
 
 /**************************************************************************
- Decodes the given mail. A text mail is always converted to UTF8
+
 **************************************************************************/
+/**
+ * Decodes the given mail. A text mail is always converted to UTF8 and
+ * it is ensured that it ends with a 0-byte, that is, however, not
+ * counted in decoded_len.
+ *
+ * @param mail
+ */
 void mail_decode(struct mail_complete *mail)
 {
 	/* If mail is already decoded do nothing */

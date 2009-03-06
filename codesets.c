@@ -1456,10 +1456,62 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 	return len+1;
 }
 
-/**************************************************************************
- Compares two utf8 string case-insensitive (the args might be NULL).
- Note: Changes for little endian
-**************************************************************************/
+/**
+ * Converts a utf8 character to its lower case equivalent.
+ *
+ * @param str1 character
+ * @param dest note that dest should be at least 6 bytes in size.
+ * @return the number of bytes written to dest. It is <= 0 for an error.
+ *
+ * @note should be fixed for alias and endian issues. Also doesn't respect
+ *       locale settings.
+ */
+int utf8tolower(const char *str, char *dest)
+{
+	unsigned char ch[4] = {0,0,0,0};
+	unsigned char c;
+	struct uniconv *uc;
+	int bytes;
+	int i;
+
+	c = *str;
+	if (c<0x80)
+	{
+		*dest = tolower(c);
+		return 1;
+	}
+	bytes = trailingBytesForUTF8[c];
+	if (bytes > 3)
+	{
+		*dest++ = *str++;
+		memcpy(dest,str,bytes);
+		return bytes + 1;
+	}
+
+	ch[3-bytes] = c;
+	for (i=bytes-1;i>=0;i--)
+	{
+		if (!(ch[3-i] = *str++))
+			return 0;
+	}
+
+	BIN_SEARCH(utf8_tolower_table,0,ARRAY_LEN(utf8_tolower_table),(*((unsigned int *)utf8_tolower_table[m].from) - *((unsigned int *)ch)),uc);
+
+	if (uc)
+		memcpy(dest, uc->to + 3 - bytes, bytes + 1);
+	else
+		memcpy(dest, ch + 3 - bytes, bytes + 1);
+	return bytes + 1;
+}
+
+/**
+ * Compares two utf8 string case-insensitive.
+ *
+ * @param str1
+ * @param str2
+ * @return
+ * @note should be fixed for alias and endian issues
+ */
 int utf8stricmp(const char *str1, const char *str2)
 {
 	unsigned char c1;

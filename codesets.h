@@ -65,6 +65,7 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);
 char *utf8tostrcreate(utf8 *str, struct codeset *codeset);
 int utf8stricmp(const char *str1, const char *str2);
 int utf8stricmp_len(const char *str1, const char *str2, int len);
+int utf8tolower(const char *str, char *dest);
 char *utf8stristr(const char *str1, const char *str2);
 int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset);
 char *uft8toucs(char *chr, unsigned int *code);

@@ -1,0 +1,7 @@
+.DAV
+a.out
+error
+stubs.c
+test-objs
+mail_unittest
+*.o

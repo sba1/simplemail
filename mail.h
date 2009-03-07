@@ -289,4 +289,7 @@ char *mail_create_string(char *format, struct mail_info *mail, char *realname,
 
 int mail_allowed_to_download(struct mail_info *mail);
 
+/* Private functions. Only use for testing */
+int private_mail_compose_write(FILE *fp, struct composed_mail *new_mail);
+
 #endif

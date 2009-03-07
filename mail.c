@@ -3253,6 +3253,18 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	return rc;
 }
 
+/**
+ * Exported function for test. Do not use for any
+ *
+ * @param fp
+ * @param new_mail
+ * @return
+ */
+int private_mail_compose_write(FILE *fp, struct composed_mail *new_mail)
+{
+	return  mail_compose_write(fp, new_mail);
+}
+
 /**************************************************************************
  Composes a new mail and write's it to the outgoing drawer.
  Returns 1 if succesful, else 0

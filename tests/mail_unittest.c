@@ -59,6 +59,20 @@ int sm_get_gmt_offset(void)
 	return tz.tz_minuteswest;
 }
 
+unsigned int sm_get_current_seconds(void)
+{
+	struct timezone tz;
+	struct timeval tv;
+
+	gettimeofday(&tv,&tz);
+	return tv.tv_sec;
+}
+
+void sm_convert_seconds(unsigned int seconds, struct tm *tm)
+{
+	memset(tm,0,sizeof(*tm));
+}
+
 /*************************************************************/
 
 static unsigned char *filename = "test.eml";
@@ -87,6 +101,21 @@ void test_MAIL_INFO_CREATE_FROM_FILE(void)
 
 void test_MAIL_COMPOSE_NEW(void)
 {
+	FILE *fh;
+	struct composed_mail comp;
+
+	memset(&comp,0,sizeof(comp));
+
+	comp.from = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.subject = "Test Subject";
+	comp.to = "Sebastian Bauer <mail@sebastianbauer.info";
+
+	fh = fopen("written.eml","wb");
+	CU_ASSERT(fh != NULL);
+	private_mail_compose_write(fh, &comp);
+	fclose(fh);
+
+//	CU_ASSERT(mail_compose_new(&comp,0) != 0);
 }
 
 int main()

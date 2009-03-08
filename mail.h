@@ -23,6 +23,8 @@
 #ifndef SM__MAIL_H
 #define SM__MAIL_H
 
+#include <stdio.h>
+
 #ifndef SM__LISTS_H
 #include "lists.h"
 #endif

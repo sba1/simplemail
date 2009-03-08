@@ -16,15 +16,15 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** smdebug.c
-*/
+/**
+ * @file debug.c
+ */
 
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
- 
+
 #include "debug.h"
 #include "hash.h"
 #include "subthreads.h"
@@ -40,11 +40,35 @@ int __debuglevel = DEFAULT_DEBUG_LEVEL;
 static semaphore_t debug_sem;
 static FILE *debug_file;
 
-/* Contains the names of modules of which debugging information should be considered at last */ 
+/** Contains the names of modules of which debugging information should be considered */
 static struct hash_table debug_modules_table;
 
-/* Indicates whether table should be really used */
+/** Indicates whether table should be really used */
 static int debug_use_modules_table;
+
+/** List that keeps track of all resources */
+static struct list tracking_list;
+
+static int tracking_initialized;
+static int inside_tracking;
+
+struct tracked_resource
+{
+	struct node node;
+
+	/** @brief the tracked resource. First part of the key. */
+	void *resource;
+
+	/** @brief the class of the tracked resource. Second part of the key */
+	char *class;
+
+	char *args;
+
+	/** @brief the origin of the resource allocation */
+	char *filename;
+	char *function;
+	int line;
+};
 
 /*******************************************************
  Sets the debug level
@@ -87,20 +111,21 @@ static void debug_insert_module(char *mod)
 	}
 }
 
-/*******************************************************
- Sets the modules (modules is comma)
-********************************************************/
+/**
+ * Sets the modules (modules is comma separated)
+ * @param modules
+ */
 void debug_set_modules(char *modules)
 {
 	char *mod;
-	
+
 	if ((mod = mystrdup(modules)))
 	{
 		char *begin = mod;
 		char *end;
 
 		hash_table_init(&debug_modules_table,9,NULL);
-		
+
 		while ((end = strchr(begin,',')))
 		{
 			*end = 0;
@@ -113,27 +138,141 @@ void debug_set_modules(char *modules)
 	}
 }
 
-/*******************************************************
- Initialize debug
-********************************************************/
+/**
+ * Initialize debug sub system.
+ *
+ * @return
+ */
 int debug_init(void)
 {
 	if (!(debug_sem = thread_create_semaphore()))
 		return 0;
+	list_init(&tracking_list);
+	tracking_initialized = 1;
 	return 1;
 }
 
-/*******************************************************
- Deinitialize debug
-********************************************************/
+/**
+ * Deinitializes debug subsystem.
+ */
 void debug_deinit(void)
 {
+	if (tracking_initialized)
+	{
+		struct tracked_resource *tr;
+		tr = (struct tracked_resource*)list_last(&tracking_list);
+		while (tr)
+		{
+			if (tr->class)
+			{
+				__debug_print("Resource at %p of class \"%s\" not freed!\n",tr->resource,tr->class);
+			}
+			else
+				__debug_print("Resource at %p of unknown class not freed!\n",tr->resource,tr->class);
+			tr = (struct tracked_resource*)node_prev(&tr->node);
+		}
+
+	}
+
 	thread_dispose_semaphore(debug_sem);
 }
 
-/*******************************************************
- Alows finer debug controll.
-********************************************************/
+/**
+ * Returns the tracked resource or NULL if the resource couldn't be found.
+ *
+ * @param res
+ * @param class
+ * @return
+ */
+struct tracked_resource *debug_find_tracked_resource(void *res, char *class)
+{
+	struct tracked_resource *tr;
+
+	tr = (struct tracked_resource*)list_last(&tracking_list);
+	while (tr)
+	{
+		if (tr->resource == res)
+		{
+			if ((tr->class == class) ||
+				(tr->class && class && !strcmp(tr->class,class)))
+			{
+				return tr;
+			}
+		}
+		tr = (struct tracked_resource*)node_prev(&tr->node);
+	}
+
+	return NULL;
+}
+
+/**
+ * Track the resource.
+ *
+ * @param res
+ * @param class the name of the tracked function.
+ * @param arguments to the function.
+ * @param filename
+ * @param function
+ * @param line
+ */
+void debug_track(void *res, char *class, char *args, char *filename, char *function, int line)
+{
+	if (tracking_initialized)
+	{
+		thread_lock_semaphore(debug_sem);
+		if (!inside_tracking)
+		{
+			struct tracked_resource *tr;
+
+			inside_tracking = 1;
+
+			if ((tr = (struct tracked_resource*)malloc(sizeof(*tr))))
+			{
+				tr->resource = res;
+				tr->class = class;
+				tr->args = args;
+				tr->filename = filename;
+				tr->function = function;
+				tr->line = line;
+				list_insert_tail(&tracking_list,&tr->node);
+			}
+		}
+		thread_unlock_semaphore(debug_sem);
+	}
+}
+
+/**
+ * Remove the given resource from the tracking list.
+ *
+ * @param res
+ * @param class the name of the tracked function
+ */
+void debug_untrack(void *res, char *class)
+{
+	if (tracking_initialized)
+	{
+		thread_lock_semaphore(debug_sem);
+		if (!inside_tracking)
+		{
+			struct tracked_resource *tr;
+
+			if ((tr = debug_find_tracked_resource(res,class)))
+			{
+				node_remove(&tr->node);
+				free(tr);
+			}
+		}
+		thread_unlock_semaphore(debug_sem);
+	}
+}
+
+/**
+ * Check, whether we want to debug this.
+ *
+ * @param file
+ * @param line
+ * @return
+ */
 int debug_check(const char *file, int line)
 {
 	if (!debug_use_modules_table)
@@ -144,25 +283,27 @@ int debug_check(const char *file, int line)
 	return 0;
 }
 
-/*******************************************************
- Use this if debug output should be sequential
-********************************************************/
+/**
+ * Use this if debug output should be sequential
+ */
 void __debug_begin(void)
 {
 	thread_lock_semaphore(debug_sem);
 }
 
-/*******************************************************
- 
-********************************************************/
+/**
+ * Use this after debugging output had been emitting.
+ */
 void __debug_end(void)
 {
 	thread_unlock_semaphore(debug_sem);
 }
 
-/*******************************************************
- Sets the debug output
-********************************************************/
+/**
+ * Emits debugging
+ *
+ * @param fmt
+ */
 void __debug_print(const char *fmt, ...)
 {
   va_list ap;

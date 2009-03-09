@@ -56,6 +56,7 @@ ARCHSRCS=\
 	addressmatchlistclass.c \
 	addressstringclass.c \
 	appicon.c \
+	archdebug.c \
 	amigasupport.c \
 	arexx.c \
 	attachmentlistclass.c \

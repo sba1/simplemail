@@ -25,6 +25,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "archdebug.h"
 #include "debug.h"
 #include "hash.h"
 #include "subthreads.h"

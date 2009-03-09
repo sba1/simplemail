@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 
 #include "codesets.h"
+#include "debug.h"
 #include "support.h"
 #include "support_indep.h"
 

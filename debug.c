@@ -49,6 +49,8 @@ static int debug_use_modules_table;
 /** List that keeps track of all resources */
 static struct list tracking_list;
 
+static int tracking_elements;
+
 static int tracking_initialized;
 static int inside_tracking;
 
@@ -160,15 +162,18 @@ void debug_deinit(void)
 	if (tracking_initialized)
 	{
 		struct tracked_resource *tr;
+
+		if (tracking_elements > 0)
+			__debug_print("There were %d resources that got not freed!\n",tracking_elements);
+
 		tr = (struct tracked_resource*)list_last(&tracking_list);
 		while (tr)
 		{
-			if (tr->class)
-			{
-				__debug_print("Resource at %p of class \"%s\" not freed!\n",tr->resource,tr->class);
-			}
-			else
-				__debug_print("Resource at %p of unknown class not freed!\n",tr->resource,tr->class);
+			char *call = tr->class;
+			if (!call) call = tr->class;
+
+			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource,tr->class,tr->args,tr->filename,tr->line);
+
 			tr = (struct tracked_resource*)node_prev(&tr->node);
 		}
 
@@ -230,12 +235,15 @@ void debug_track(void *res, char *class, char *args, char *filename, char *funct
 			{
 				tr->resource = res;
 				tr->class = class;
-				tr->args = args;
+				tr->args = strdup(args);
 				tr->filename = filename;
 				tr->function = function;
 				tr->line = line;
 				list_insert_tail(&tracking_list,&tr->node);
+				tracking_elements++;
 			}
+
+			inside_tracking = 0;
 		}
 		thread_unlock_semaphore(debug_sem);
 	}
@@ -246,8 +254,13 @@ void debug_track(void *res, char *class, char *args, char *filename, char *funct
  *
  * @param res
  * @param class the name of the tracked function
+ * @param call
+ * @param args
+ * @param filename
+ * @param function
+ * @param line
  */
-void debug_untrack(void *res, char *class)
+void debug_untrack(void *res, char *class, char *call, char *args, char *filename, char *function, int line)
 {
 	if (tracking_initialized)
 	{
@@ -256,11 +269,23 @@ void debug_untrack(void *res, char *class)
 		{
 			struct tracked_resource *tr;
 
+			inside_tracking = 1;
+
 			if ((tr = debug_find_tracked_resource(res,class)))
 			{
+				free(tr->args);
 				node_remove(&tr->node);
 				free(tr);
+				tracking_elements--;
+			} else
+			{
+				char *cl = class;
+				if (!cl) cl = "UNKNOWN";
+
+				__debug_print("Trying to untrack untracked resource at %p of class %s. The call was %s(%s) at %s/%d\n",res,class,call,args,filename,line);
 			}
+
+			inside_tracking = 0;
 		}
 		thread_unlock_semaphore(debug_sem);
 	}
@@ -307,7 +332,7 @@ void __debug_end(void)
 void __debug_print(const char *fmt, ...)
 {
   va_list ap;
-	char buf[512];
+  char buf[512];
 
   va_start(ap, fmt);
   vsnprintf(buf, sizeof(buf), fmt, ap);

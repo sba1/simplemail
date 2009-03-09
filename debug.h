@@ -36,7 +36,7 @@ void debug_set_modules(char *modules);
 
 /* For resource tracking */
 void debug_track(void *res, char *class, char *args, char *filename, char *function, int line);
-void debug_untrack(void *res, char *class);
+void debug_untrack(void *res, char *class, char *call, char *args, char *filename, char *function, int line);
 
 int debug_check(const char *file, int line);
 
@@ -62,6 +62,39 @@ extern int __debuglevel;
 #define SM_ENTER SM_DEBUGF(20,("Entered function\n"))
 #define SM_LEAVE SM_DEBUGF(20,("Leave function\n"))
 #define SM_RETURN(val,type) do {SM_DEBUGF(20,("Leave (" type ")\n",val)); return (val);} while (0)
+#endif
+
+#ifndef NODEBUG
+#ifdef __SASC
+
+#ifndef _STDLIB_H
+#include <stdlib.h>
+#endif
+
+int sm_snprintf(char *buf, int n, const char *fmt, ...);
+
+static void *__malloc_tracked(size_t size, char *file, char *function, int line)
+{
+	void *m = malloc(size);
+	char argstr[20];
+	sm_snprintf(argstr,sizeof(argstr),"%d",size);
+	if (m) debug_track(m,"malloc", argstr, file,function,line);
+	return m;
+}
+#define malloc(size) __malloc_tracked(size, __FILE__,__FUNC__,__LINE__)
+
+static void __free_tracked(void *mem, char *file, char *function, int line)
+{
+	char argstr[20];
+	if (!mem) return;
+	sm_snprintf(argstr,sizeof(argstr),"%p",mem);
+	debug_untrack(mem,"malloc","free",argstr,file,function,line);
+	free(mem);
+}
+
+#define free(mem) __free_tracked(mem, __FILE__,__FUNC__,__LINE__)
+
+#endif
 #endif
 
 #endif

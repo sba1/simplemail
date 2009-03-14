@@ -41,10 +41,16 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
+ULONG *__code_base;
+ULONG __code_size;
+
 __saveds static int __startup(void)
 {
 	struct Process *pr;
 	int rc;
+
+	__code_base = (ULONG *)__startup;
+	__code_size = (ULONG)__code_base[-2];
 
 	SysBase = *((struct ExecBase**)4);
 	pr = (struct Process*)FindTask(NULL);
@@ -319,7 +325,7 @@ FILE *fopen(const char *filename, const char *mode)
 	/* Look if we can still open file left */
 	for (_file=0;_file < MAX_FILES && files[_file];_file++);
 	if (_file == MAX_FILES) goto fail;
-	
+
 	file = malloc(sizeof(*file));
 	if (!file) goto fail;
 	memset(file,0,sizeof(*file));
@@ -536,7 +542,7 @@ int fprintf(FILE *file, const char *fmt,...)
 	{
 		rc = fwrite(filesbuf,1,size,file);
 	} else rc = -1;
-	
+
 	ReleaseSemaphore(&files_sem);
 
 	return rc;
@@ -561,7 +567,7 @@ int printf(const char *fmt,...)
 	{
 		PutStr(filesbuf);
 	} else rc = -1;
-	
+
 	ReleaseSemaphore(&files_sem);
 
 	return size;
@@ -576,7 +582,7 @@ int sprintf(char *buf, const char *fmt, ...)
 {
 	int r;
 	va_list ap;
-  
+
 	va_start(ap, fmt);
 	r = vsnprintf(buf, 0x7fff, fmt, ap);
 	va_end(ap);

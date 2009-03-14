@@ -71,6 +71,9 @@ struct tracked_resource
 	char *filename;
 	char *function;
 	int line;
+
+	/** @brief architecture dependent debug information */
+	struct bt *bt;
 };
 
 /*******************************************************
@@ -156,7 +159,7 @@ int debug_init(void)
 }
 
 /**
- * Deinitializes debug subsystem.
+ * Deinitializes the debug subsystem.
  */
 void debug_deinit(void)
 {
@@ -164,20 +167,44 @@ void debug_deinit(void)
 	{
 		struct tracked_resource *tr;
 
+		int num = 0;
+
+		inside_tracking = 1;
+
 		if (tracking_elements > 0)
 			__debug_print("There were %d resources that got not freed!\n",tracking_elements);
 
 		tr = (struct tracked_resource*)list_last(&tracking_list);
-		while (tr)
+		while (tr && num < 6)
 		{
 			char *call = tr->class;
+			char *more;
+			char *contents = (char*)tr->resource;
 			if (!call) call = tr->class;
 
-			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource,tr->class,tr->args,tr->filename,tr->line);
+			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource, tr->class,tr->args,tr->filename,tr->line);
+			if ((more = arch_debug_bt2string(tr->bt)))
+			{
+				/* Print out architecture dependent string, but line for line */
+				char *lf;
+				char *str = more;
+
+				while ((lf = strchr(str,'\n')))
+				{
+					*lf = 0;
+					__debug_print(str);
+					__debug_print("\n");
+					str = lf + 1;
+				}
+
+				free(more);
+			}
 
 			tr = (struct tracked_resource*)node_prev(&tr->node);
+			num++;
 		}
 
+		inside_tracking = 0;
 	}
 
 	thread_dispose_semaphore(debug_sem);
@@ -240,6 +267,7 @@ void debug_track(void *res, char *class, char *args, char *filename, char *funct
 				tr->filename = filename;
 				tr->function = function;
 				tr->line = line;
+				tr->bt = arch_debug_get_bt();
 				list_insert_tail(&tracking_list,&tr->node);
 				tracking_elements++;
 			}
@@ -274,8 +302,9 @@ void debug_untrack(void *res, char *class, char *call, char *args, char *filenam
 
 			if ((tr = debug_find_tracked_resource(res,class)))
 			{
-				free(tr->args);
 				node_remove(&tr->node);
+				arch_debug_free_bt(tr->bt);
+				free(tr->args);
 				free(tr);
 				tracking_elements--;
 			} else

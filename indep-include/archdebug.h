@@ -23,4 +23,10 @@
 #ifndef ARCHDEBUG_H
 #define ARCHDEBUG_H
 
+struct bt;
+
+struct bt *arch_debug_get_bt(void);
+void arch_debug_free_bt(struct bt *bt);
+char *arch_debug_bt2string(struct bt *bt);
+
 #endif

@@ -769,7 +769,9 @@ static int codesets_read_table(char *name)
 						char *end = strchr(result+3,'"');
 						if (end)
 						{
-							codeset->characterization = _(mystrndup(result+3,end-(result+3)));
+							char *txt = mystrndup(result+3,end-(result+3));
+							if (txt) codeset->characterization = mystrdup(_(txt));
+							free(txt);
 						}
 					}
 				} else
@@ -1126,11 +1128,20 @@ int codesets_init(void)
 	SM_RETURN(1,"%ld");
 }
 
-/**************************************************************************
- Cleanup the memory for the codeset
-**************************************************************************/
+/**
+ * Cleanup the memory for the codeset
+ */
 void codesets_cleanup(void)
 {
+	struct codeset *codeset;
+
+	while ((codeset = (struct codeset*)list_remove_tail(&codesets_list)))
+	{
+		free(codeset->name);
+		free(codeset->alt_name);
+		free(codeset->characterization);
+		free(codeset);
+	}
 }
 
 /**************************************************************************
@@ -1474,7 +1485,7 @@ int utf8tolower(const char *str, char *dest)
 	int bytes;
 	int i;
 
-	c = *str;
+	c = *str++;
 	if (c<0x80)
 	{
 		*dest = tolower(c);
@@ -1483,13 +1494,13 @@ int utf8tolower(const char *str, char *dest)
 	bytes = trailingBytesForUTF8[c];
 	if (bytes > 3)
 	{
-		*dest++ = *str++;
-		memcpy(dest,str,bytes);
+		*dest++ = c;
+		memcpy(dest + 1,str + 1,bytes);
 		return bytes + 1;
 	}
 
 	ch[3-bytes] = c;
-	for (i=bytes-1;i>=0;i--)
+	for (i=bytes-1;i>=0;i--) /* TODO: Fix this bug!*/
 	{
 		if (!(ch[3-i] = *str++))
 			return 0;

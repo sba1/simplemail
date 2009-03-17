@@ -175,7 +175,7 @@ void debug_deinit(void)
 			__debug_print("There were %d resources that got not freed!\n",tracking_elements);
 
 		tr = (struct tracked_resource*)list_last(&tracking_list);
-		while (tr && num < 6)
+		while (tr && num < 20)
 		{
 			char *call = tr->class;
 			char *more;
@@ -203,11 +203,11 @@ void debug_deinit(void)
 			tr = (struct tracked_resource*)node_prev(&tr->node);
 			num++;
 		}
-
-		inside_tracking = 0;
 	}
 
 	thread_dispose_semaphore(debug_sem);
+
+	inside_tracking = 0;
 }
 
 /**

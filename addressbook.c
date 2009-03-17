@@ -220,6 +220,8 @@ void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 
 	array_free(entry->email_array);
 	array_free(entry->group_array);
+
+	free(entry);
 }
 
 /**************************************************************************

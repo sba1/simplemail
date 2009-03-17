@@ -2304,6 +2304,7 @@ int simplemail_main(void)
 			}
 			del_folders();
 		}
+		free_config();
 		codesets_cleanup();
 	}
 	cleanup_addressbook();

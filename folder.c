@@ -3987,6 +3987,8 @@ int init_folders(void)
 		SM_DEBUGF(10,("Unable to open directory %s\n",user.folder_directory));
 	}
 
+	free(st);
+
 	if (!folder_incoming())
 	{
 		char *new_folder = mycombinepath(user.folder_directory,"incoming");
@@ -4061,8 +4063,30 @@ int init_folders(void)
 *******************************************************************/
 void del_folders(void)
 {
+	struct folder_node *node;
+
 	folder_save_all_indexfiles();
 	thread_dispose_semaphore(folders_semaphore);
+
+#if 1
+	while (node = (struct folder_node*)list_remove_tail(&folder_list))
+	{
+		int i;
+
+		for (i=0;i<node->folder.num_mails;i++)
+			mail_info_free(node->folder.mail_info_array[i]);
+		free(node->folder.mail_info_array);
+		free(node->folder.sorted_mail_info_array);
+		free(node->folder.imap_path);
+		free(node->folder.imap_server);
+		free(node->folder.imap_user);
+		free(node->folder.path);
+		free(node->folder.name);
+
+		thread_dispose_semaphore(node->folder.sem);
+		free(node);
+	}
+#endif
 }
 
 /******************************************************************

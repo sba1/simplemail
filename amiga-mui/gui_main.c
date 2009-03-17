@@ -262,6 +262,7 @@ void all_del(void)
 	{
 		if (RexxSysBase)
 		{
+			main_window_deinit();
 			app_del();
 
 			delete_smtoolbar_class();

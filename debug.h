@@ -76,7 +76,7 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...);
 static void *__malloc_tracked(size_t size, char *file, char *function, int line)
 {
 	void *m = malloc(size);
-	char argstr[20];
+	char argstr[10];
 	sm_snprintf(argstr,sizeof(argstr),"%d",size);
 	if (m) debug_track(m,"malloc", argstr, file,function,line);
 	return m;
@@ -85,7 +85,7 @@ static void *__malloc_tracked(size_t size, char *file, char *function, int line)
 
 static void __free_tracked(void *mem, char *file, char *function, int line)
 {
-	char argstr[20];
+	char argstr[10];
 	if (!mem) return;
 	sm_snprintf(argstr,sizeof(argstr),"%p",mem);
 	debug_untrack(mem,"malloc","free",argstr,file,function,line);
@@ -93,6 +93,23 @@ static void __free_tracked(void *mem, char *file, char *function, int line)
 }
 
 #define free(mem) __free_tracked(mem, __FILE__,__FUNC__,__LINE__)
+
+static void *__realloc_tracked(void *mem, size_t size, char *file, char *function, int line)
+{
+	char argstr[16];
+	void *m;
+	sm_snprintf(argstr,sizeof(argstr),"%p,%d",mem,size);
+	m = realloc(mem,size);
+	if (m)
+	{
+		if (mem)
+			debug_untrack(mem,"malloc","realloc",argstr,file,function,line);
+		debug_track(m,"malloc",argstr,file,function,line);
+	}
+	return m;
+}
+
+#define realloc(mem,size) __realloc_tracked(mem, size, __FILE__, __FUNC__, __LINE__)
 
 #endif
 #endif

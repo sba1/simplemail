@@ -164,6 +164,7 @@ struct user
 char *get_config_item(char *buf, char *item);
 char *dupconfigstr(char *str, int utf8);
 int load_config(void);
+void free_config(void);
 void save_config(void);
 void save_filter(void);
 

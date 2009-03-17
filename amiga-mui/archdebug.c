@@ -37,7 +37,7 @@
 #ifdef __SASC
 #include <dos.h>
 
-#define MAX_ADDR 20
+#define MAX_ADDR 32
 
 struct bt
 {
@@ -312,6 +312,8 @@ char *arch_debug_bt2string(struct bt *bt)
 	string str;
 	char buf[120];
 	int i;
+	int last_line = -1;
+	char *last_file = NULL;
 
 	if (!bt) return NULL;
 
@@ -330,6 +332,7 @@ char *arch_debug_bt2string(struct bt *bt)
 		sm_snprintf(buf,sizeof(buf),"\t\t%p (offset %p",bt->addr[i],offset);
 		string_append(&str,buf);
 
+
 		if (debug_info_count > 0)
 		{
 			struct debug_info *di;
@@ -340,11 +343,13 @@ char *arch_debug_bt2string(struct bt *bt)
 					(offset < debug_info_array[m+1].offset?0:(1)):(-1),
 					di);
 
-			if (di)
+			if (di && (di->filename != last_file || di->line != last_line))
 			{
 				string_append(&str,", ");
 				sm_snprintf(buf,sizeof(buf),"%s/%d",di->filename,di->line);
 				string_append(&str,buf);
+				last_file = di->filename;
+				last_line = di->line;
 			}
 		}
 

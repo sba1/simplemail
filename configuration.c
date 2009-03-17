@@ -149,6 +149,38 @@ static void init_config(void)
 	user.config.alt_row_background = 0xb8b8b8;          /* Color of alternative row */
 }
 
+/**
+ * Frees all resources needed for the configuration.
+ */
+void free_config(void)
+{
+#if 1
+	free(user.config_filename);
+	free(user.taglines_filename);
+	free(user.folder_directory);
+	free(user.signature_filename);
+	free(user.new_folder_directory);
+	free(user.directory);
+	free(user.name);
+	free(user.filter_filename);
+
+	free(user.config.appicon_label);
+	free(user.config.startup_folder_name);
+	free(user.config.receive_sound_file);
+	free(user.config.receive_arexx_file);
+	free(user.config.read_propfont);
+	free(user.config.read_fixedfont);
+	array_free(user.config.header_array);
+	array_free(user.config.internet_emails);
+	array_free(user.config.spam_white_emails);
+	array_free(user.config.spam_black_emails);
+
+	clear_config_phrases();
+	clear_config_accounts();
+	clear_config_signatures();
+#endif
+}
+
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
 
 /* Duplicates a config string and converts it to utf8 if not already done */
@@ -198,13 +230,19 @@ int load_config(void)
 						if ((result = get_config_item(buf,"UTF8")))
 							utf8 = atoi(result);
 						if ((result = get_config_item(buf,"FolderDirectory")))
+						{
+							if (user.folder_directory) free(user.folder_directory);
 							user.folder_directory = mystrdup(result);
+						}
 						if ((result = get_config_item(buf,"DST")))
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
 						if ((result = get_config_item(buf,"Charset")))
 							user.config.default_codeset = codesets_find(result);
 						if ((result = get_config_item(buf,"AppIconLabel")))
+						{
+							if (user.config.appicon_label) free(user.config.appicon_label);
 							user.config.appicon_label = mystrdup(result);
+						}
 						if ((result = get_config_item(buf,"AppIconShow")))
 							user.config.appicon_show = atoi(result);
 						if ((result = get_config_item(buf,"StartupFolderName")))
@@ -786,8 +824,6 @@ void save_config(void)
 			fclose(fh);
 		}
 	}
-
-//	init_platform_config();
 }
 
 void save_filter(void)

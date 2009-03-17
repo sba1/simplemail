@@ -141,7 +141,7 @@ static void save_contents_to(struct MessageView_Data *data, struct mail_complete
 
 				/* Get the contents */
 				mail_decoded_data(mail,&cont,&cont_len);
-					
+
 				if (mystricmp(user_charset,charset))
 				{
 					/* The character sets differ so now we create the two strings to see if they differ */
@@ -196,7 +196,7 @@ static void save_contents_to(struct MessageView_Data *data, struct mail_complete
 				}
 			}
 		}
-		
+
     if (goon)
     {
 			if ((fh = Open(file, MODE_NEWFILE)))
@@ -535,7 +535,7 @@ static void messageview_append_as_mail(struct MessageView_Data *data, struct mai
 		{
 			char *html_txt = text2html((char*)decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 			string_append(str,html_txt);
-			free(html_txt);		
+			free(html_txt);
 		} else
 		{
 			if (is_picture(decoded_data,decoded_data_len))
@@ -588,7 +588,7 @@ static void messageview_append_as_attachment(struct MessageView_Data *data, stru
 		string_append(str,"<tr><td>");
 		string_append(str,content_name);
 		string_append(str,"</td>");
-		
+
 		sm_snprintf(temp_buf,sizeof(temp_buf),"<td><A HREF=\"internalview:%08lx.%08lx\">%s</A></td>",data,m,Q_("?attachment:View"));
 		string_append(str,temp_buf);
 		sm_snprintf(temp_buf,sizeof(temp_buf),"<td><A HREF=\"internalsave:%08lx.%08lx\">%s</A></td>",data,m,Q_("?attachment:Save"));
@@ -846,9 +846,10 @@ STATIC ULONG MessageView_Dispose(struct IClass *cl, Object *obj, Msg msg)
 	struct MessageView_Data *data = (struct MessageView_Data*)INST_DATA(cl,obj);
 
 	messageview_cleanup_temporary_files(data);
-	mail_complete_free(data->mail); /* NULL safe */	
+	mail_complete_free(data->mail); /* NULL safe */
 	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->file_req) MUI_FreeAslRequest(data->file_req);
+	if (data->folder_path) free(data->folder_path);
 	if (data->mailto_contextmenu)
 	{
 		set(obj, MUIA_ContextMenu, NULL);

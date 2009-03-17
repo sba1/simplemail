@@ -150,17 +150,17 @@ Object *LoadAndMapPicture(char *filename, struct Screen *scr)
 			PDTA_DestMode        , PMODE_V43,
 			PDTA_UseFriendBitMap , TRUE,
 			TAG_DONE);
-	
+
 	MySetProcWindow(oldwindowptr);
-	
+
 	/* do all the setup/layout stuff that's necessary to get a bitmap from the dto    */
 	/* note that when using V43 datatypes, this might not be a real "struct BitMap *" */
-	
+
 	if (o)
 	{
 		struct FrameInfo fri = {0};
 		DoMethod(o,DTM_FRAMEBOX,NULL,(ULONG)&fri,(ULONG)&fri,sizeof(struct FrameInfo),0);
-	
+
 		if (fri.fri_Dimensions.Depth>0)
 		{
 			if (DoMethod(o,DTM_PROCLAYOUT,NULL,1))
@@ -192,7 +192,7 @@ static Object *LoadPicture(char *filename)
 			PDTA_DestMode        , PMODE_V43,
 			PDTA_UseFriendBitMap , TRUE,
 			TAG_DONE);
-	
+
 	MySetProcWindow(oldwindowptr);
 
 	return o;
@@ -204,9 +204,9 @@ static Object *LoadPicture(char *filename)
 static int MapPicture(Object *obj, struct Screen *scr)
 {
 	struct FrameInfo fri = {0};
-	
+
 	SetAttrs(obj, PDTA_Screen, scr, TAG_DONE);
-	
+
 	DoMethod(obj,DTM_FRAMEBOX,NULL,(ULONG)&fri,(ULONG)&fri,sizeof(struct FrameInfo),0);
 
 	if (fri.fri_Dimensions.Depth>0)
@@ -259,7 +259,7 @@ void dt_init(void)
 			/* trim ending white spaces */
 			{
 				int buf_len;
-				
+
 				buf_len = strlen(buf);
 				while (buf_len && isspace((unsigned char)buf[buf_len-1]))
 					buf_len--;
@@ -300,7 +300,7 @@ void dt_init(void)
 					}
 				}
 			}
-			
+
 		}
 		Close(file);
 	}
@@ -313,7 +313,7 @@ void dt_cleanup(void)
 {
 	struct dt_node *dt;
 	struct icon_desc *icon;
-	
+
 	while ((dt = (struct dt_node*)list_remove_tail(&dt_list)))
 	{
 		if (dt->o) DisposeDTObject(dt->o);
@@ -372,11 +372,11 @@ static struct dt_node *dt_create_from_filename(char *filename)
 
 /****************************************************************
  Load the dt object. A given filename is instanciated only
- once. 
+ once.
 ****************************************************************/
 struct dt_node *dt_load_unmapped_picture(char *filename)
 {
-	struct icon_desc *icon; 
+	struct icon_desc *icon;
 	struct dt_node *node;
 
 	SM_ENTER;
@@ -421,7 +421,7 @@ struct dt_node *dt_load_unmapped_picture(char *filename)
 			if (!img)
 				break;
 			img->count++;
-			
+
 			SM_DEBUGF(15,("Increased usage count of strip image to %ld\n",img->count));
 
 			if ((node = (struct dt_node*)malloc(sizeof(struct dt_node))))
@@ -456,7 +456,7 @@ struct dt_node *dt_load_unmapped_picture(char *filename)
 
 /****************************************************************
  Load the dt object. A given filename is instanciated only
- once. 
+ once.
 ****************************************************************/
 struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 {
@@ -493,7 +493,7 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 
 					SM_DEBUGF(1,("Mask %lx   Trans = %ld\n",mask,bmhd->bmh_Transparent));
 
-					
+
 					if (mask)
 					{
 						int i,j;
@@ -555,9 +555,10 @@ void dt_dispose_picture(struct dt_node *node)
 					free(img);
 					img = NULL;
 				}
-			}	
+			}
 
 			node_remove(&node->node);
+			free(node->name);
 			free(node);
 		}
 	}
@@ -576,7 +577,7 @@ int dt_height(struct dt_node *node)
 }
 
 /***************************************************************
- Puts the dt node onto the given rastport. 
+ Puts the dt node onto the given rastport.
 ****************************************************************/
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 {
@@ -606,7 +607,7 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 			{
 				WritePixelArrayAlpha(node->argb,0,0,dt_width(node)*4,rp,x,y,dt_width(node),dt_height(node),0xffffffff);
 			} else
-#endif 
+#endif
 			{
 				BltBitMapRastPort(bitmap,node->x1,node->y1,rp,x,y,dt_width(node),dt_height(node),0xc0);
 			}
@@ -702,7 +703,7 @@ static void dt_put_rect_on_argb(struct dt_node *node, int srcx, int srcy, int sr
 		for (j=0;j<src_height;j++)
 			for (i=0;i<src_width;i++)
 				udest[(y+j)*dest_width+x+i]=usrc[(srcy+j)*w+srcx+i];
-		
+
 /*		for (j=0;j<src_height;j++)
 		{
 			for (i=0;i<src_width;i++)

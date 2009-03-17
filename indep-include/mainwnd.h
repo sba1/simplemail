@@ -31,6 +31,7 @@ struct folder;
 struct mail_info;
 
 int main_window_init(void);
+void main_window_deinit(void);
 int main_window_open(void);
 void main_refresh_folders(void);
 void main_refresh_folder(struct folder *folder);

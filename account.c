@@ -25,6 +25,7 @@
 
 #include "account.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "parse.h"
 #include "imap.h"
@@ -151,7 +152,7 @@ struct account *account_find_by_from(char *from)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 {

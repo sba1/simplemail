@@ -133,6 +133,13 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return((ULONG)obj);
 }
 
+STATIC ULONG PictureButton_Dispose(struct IClass *cl,Object *obj,Msg msg)
+{
+	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+	free(data->name);
+	return DoSuperMethodA(cl,obj,msg);
+}
+
 STATIC ULONG PictureButton_Set(struct IClass *cl,Object *obj, struct opSet *msg)
 {
 	struct PictureButton_Data *data = (struct PictureButton_Data*)INST_DATA(cl,obj);
@@ -324,6 +331,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, PictureButton_Dispatcher, cl, obj, msg)
 	switch (msg->MethodID)
 	{
 		case OM_NEW        : return PictureButton_New      (cl,obj,(struct opSet*)msg);
+		case OM_DISPOSE    : return PictureButton_Dispose  (cl,obj,msg);
 		case OM_SET        : return PictureButton_Set      (cl,obj,(struct opSet*)msg);
 		case MUIM_Setup    : return PictureButton_Setup    (cl,obj,msg);
 		case MUIM_Cleanup  : return PictureButton_Cleanup  (cl,obj,msg);

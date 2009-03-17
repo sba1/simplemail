@@ -369,6 +369,7 @@ static void appicon_load_position(void)
 				fclose(fh);
 			}
 		}
+		free(buf);
 	}
 }
 

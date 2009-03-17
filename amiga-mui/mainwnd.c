@@ -177,6 +177,9 @@ static Object *status_text;
 static Object *balance_text;
 static LONG Weights[6] = {33, 100, 100, 100, 100, 100};
 
+/** @brief menu to be displayed in the main window */
+static struct NewMenu *main_newmenu;
+
 static void main_refresh_folders_text(void);
 static void settings_show_changed(void);
 static LONG mailtreelist_2_sort2marker(int sort);
@@ -833,29 +836,27 @@ int main_window_init(void)
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
-	struct NewMenu *nm;
 	int i;
 
 	SM_ENTER;
 
 	/* translate the menu entries */
-	if (!(nm = malloc(sizeof(nm_untranslated)))) return 0;
-	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
+	if (!(main_newmenu = malloc(sizeof(nm_untranslated)))) return 0;
+	memcpy(main_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 	{
-		if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
+		if (main_newmenu[i].nm_Label && main_newmenu[i].nm_Label != NM_BARLABEL)
 		{
-			/* AROS doesn't like modification of nm_Label */
-			STRPTR tmpstring = mystrdup(_(nm[i].nm_Label));
+			STRPTR tmpstring = mystrdup(_(main_newmenu[i].nm_Label));
 			if (tmpstring[1] == ':') tmpstring[1] = 0;
-			nm[i].nm_Label = tmpstring;
+			main_newmenu[i].nm_Label = tmpstring;
 		}
 	}
 
 	rc = FALSE;
 
-	main_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+	main_menu = MUI_MakeObject(MUIO_MenustripNM, main_newmenu, MUIO_MenustripNM_CommandKeyCheck);
 	mail_listview = MakeMailTreelist(MAKE_ID('M','W','M','T'),&mail_tree);
 
 	win_main = WindowObject,
@@ -1159,6 +1160,48 @@ int main_window_open(void)
 	return 0;
 }
 
+
+/**
+ * Frees entries associated with the accounts menu.
+ */
+static void main_free_accounts(void)
+{
+	Object *o = project_checksingleaccount_menuitem;
+	struct List *child_list = (struct List*)xget(o,MUIA_Family_List);
+	Object *cstate = (Object *)child_list->lh_Head;
+	Object *child;
+
+	while ((child = (Object*)NextObject(&cstate)))
+	{
+		char *title;
+
+		DoMethod(o,OM_REMMEMBER, (ULONG)child);
+
+		if ((title = (char*)xget(child,MUIA_Menuitem_Title)))
+			free(title);
+		MUI_DisposeObject(child);
+	}
+}
+
+/**
+ * Deinitializes the main window.
+ */
+void main_window_deinit(void)
+{
+	int i;
+
+	set(win_main, MUIA_Window_Open, FALSE);
+	main_free_accounts();
+
+	/* Free labels and new menu structure */
+	for (i=0;main_newmenu[i].nm_Type != NM_END;i++)
+	{
+		if (main_newmenu[i].nm_Label != NM_BARLABEL)
+			free(main_newmenu[i].nm_Label);
+	}
+	free(main_newmenu);
+}
+
 /******************************************************************
  Refreshs the folder text line
 *******************************************************************/
@@ -1171,7 +1214,7 @@ static void main_refresh_folders_text(void)
 		struct folder *f = main_get_folder();
 		if (f)
 		{
-			sprintf(buf, MUIX_B "%s"  MUIX_N " %s  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  ",
+			sm_snprintf(buf, sizeof(buf), MUIX_B "%s"  MUIX_N " %s  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  " MUIX_B "%s"  MUIX_N " %d  ",
 			        _("Folder:"),f->name,_("Total:"),f->num_mails,_("New:"),f->new_mails,_("Unread:"),f->unread_mails);
 			set(folder_text, MUIA_Text_Contents,buf);
 		}
@@ -1181,7 +1224,7 @@ static void main_refresh_folders_text(void)
 	{
 		int total_msg,total_unread,total_new;
 		folder_get_stats(&total_msg,&total_unread,&total_new);
-		sprintf(buf, _("Total:%d New:%d Unread:%d"),total_msg,total_new,total_unread);
+		sm_snprintf(buf, sizeof(buf), _("Total:%d New:%d Unread:%d"),total_msg,total_new,total_unread);
 		set(folder2_text,MUIA_Text_Contents,buf);
 	}
 }
@@ -1429,7 +1472,7 @@ void main_build_accounts(void)
 	struct account *account = (struct account*)list_first(&user.config.account_list);
 	int i=0;
 
-	DisposeAllFamilyChilds(project_checksingleaccount_menuitem);
+	main_free_accounts();
 
 	while (account)
 	{
@@ -1448,7 +1491,7 @@ void main_build_accounts(void)
 			} else strcpy(buf,account->pop->name);
 
 			entry = MenuitemObject,
-				MUIA_Menuitem_Title, mystrdup(buf), /* leakes */
+				MUIA_Menuitem_Title, mystrdup(buf),
 				End;
 
 			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
@@ -1460,7 +1503,7 @@ void main_build_accounts(void)
 
 	if (!i)
 	{
-		Object *entry = MenuitemObject, MUIA_Menuitem_Title, _("No fetchable account specified"),	End;
+		Object *entry = MenuitemObject, MUIA_Menuitem_Title, mystrdup(_("No fetchable account specified")),	End;
 		DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
 	}
 }

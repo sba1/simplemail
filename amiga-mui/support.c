@@ -46,6 +46,7 @@
 
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 
 #include "amigasupport.h"
@@ -221,7 +222,7 @@ char *sm_get_date_long_str_utf8(unsigned int seconds)
   char *utf8;
 
 	SecondsToStringLong(buf,seconds);
-	
+
 	if ((utf8 = utf8create(buf, user.config.default_codeset?user.config.default_codeset->name:NULL)))
 	{
 		strcpy(buf,utf8);
@@ -305,7 +306,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 	char *aosext;
 
 	if (extension)
-	{	
+	{
 		if (!(aosext = malloc(strlen(extension)+10)))
 			return NULL;
 		strcpy(aosext,"#?");
@@ -334,10 +335,10 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 				}
 			}
 		}
-		
+
 		FreeAslRequest(fr);
 	}
-	
+
 	return rc;
 }
 
@@ -409,7 +410,7 @@ char *sm_request_string(char *title, char *text, char *contents, int secret)
 		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 		DoMethod(wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)App, 3, MUIM_WriteLong, 1, (ULONG)&cancel);
 		DoMethod(string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
-		
+
 		set(wnd,MUIA_Window_Open,TRUE);
 		set(wnd,MUIA_Window_ActiveObject,string);
 		loop();
@@ -705,7 +706,7 @@ int sm_system(char *command, char *output)
 	{
 		if ((fho = Open(output?output:"NIL:", MODE_NEWFILE)))
 		{
-			error = SystemTags(command, 
+			error = SystemTags(command,
 						SYS_Input, fhi,
 						SYS_Output, fho,
 						NP_StackSize, 50000,
@@ -854,7 +855,7 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 		}
 		return match;
 	}
-			
+
 	if (!(flags & SM_PATTERN_ASCII7))
 	{
 		str = utf8tostrcreate(utf8_str, user.config.default_codeset);
@@ -883,7 +884,7 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
   extern int vsnprintf(char *buffer, size_t buffersize, const char *fmt0, va_list ap);
 
   va_list ap;
-  
+
   va_start(ap, fmt);
   r = vsnprintf(buf, n, fmt, ap);
   va_end(ap);
@@ -913,7 +914,7 @@ void sm_put_on_serial_line(char *txt)
 		if (c == '%') buf[i++] = c;
 		buf[i++] = c;
 	}
-	
+
 	buf[i] = 0;
 
 	kprintf(buf);

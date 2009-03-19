@@ -29,6 +29,7 @@
 #include <proto/graphics.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "smintl.h"
 
 #include "datatypescache.h"

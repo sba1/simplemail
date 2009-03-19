@@ -38,6 +38,7 @@
 
 #include "addressbook.h"
 #include "configuration.h"
+#include "debug.h"
 #include "parse.h"
 #include "pgp.h"
 #include "simplemail.h"
@@ -359,7 +360,7 @@ static void person_window_ok(struct Person_Data **pdata)
 		FreeVec(iso_addresses);
 		if (!addresses) return;
 		ptr = addresses;
-		
+
 		while ((ptr = parse_addr_spec(ptr,&single_address)))
 		{
 			/* ensures that ptr != NULL if no error */
@@ -393,7 +394,7 @@ static void person_window_ok(struct Person_Data **pdata)
 			return;
 		}
 	}
-	
+
 
 	set(data->wnd,MUIA_Window_Open,FALSE);
 
@@ -592,7 +593,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 	wnd = WindowObject,
 		(num < MAX_PERSON_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('P','E','R',num),
 		MUIA_Window_Title, _("SimpleMail - Edit Person"),
-        
+
 		WindowContents, VGroup,
 			Child, reg_group = RegisterGroup(register_titles),
 				Child, VGroup,
@@ -993,7 +994,7 @@ static void person_window_open(struct addressbook_entry_new *entry)
 					int size = array_length(entry->email_array);
 					char **conv_array = NULL;
 					int i;
-					
+
 					for (i=0;i<size;i++)
 					{
 						char *iso =  utf8tostrcreate(entry->email_array[i],user.config.default_codeset);
@@ -1122,7 +1123,7 @@ static void group_window_ok(struct Group_Data **pdata)
 
 			if (pos != MUIV_NList_GetPos_End)
 			{
-				/* now rename groups within the address entries */	
+				/* now rename groups within the address entries */
 				address_entries = xget(address_list, MUIA_NList_Entries);
 				for (i=0;i<address_entries;i++)
 				{
@@ -1137,7 +1138,7 @@ static void group_window_ok(struct Group_Data **pdata)
 						}
 					}
 				}
-				
+
 				/* Remove old group */
 				DoMethod(group_list, MUIM_NList_Remove, pos);
 			}
@@ -1178,7 +1179,7 @@ static void group_window_open(struct addressbook_group *group)
 	wnd = WindowObject,
 		(num < MAX_GROUP_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('G','R','P',num),
     MUIA_Window_Title, _("SimpleMail - Edit Group"),
-        
+
 		WindowContents, VGroup,
 			Child, VGroup,
 				Child, ColGroup(2),
@@ -1209,7 +1210,7 @@ static void group_window_open(struct addressbook_group *group)
 				End,
 			End,
 		End;
-	
+
 	if (wnd)
 	{
 		struct Group_Data *data = (struct Group_Data*)malloc(sizeof(struct Group_Data));
@@ -1442,7 +1443,7 @@ static void addressbookwnd_init(void)
 		MUIA_Window_Title, _("SimpleMail - Addressbook"),
 
 		MUIA_Window_Menustrip, address_menu,
-        
+
 		WindowContents, VGroup,
 			Child, HGroup,
 				Child, VGroup,
@@ -1551,7 +1552,7 @@ int addressbookwnd_set_active_alias(char *alias)
 
 			DoMethod(address_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 
-			if (!mystricmp(alias,entry->alias)) 
+			if (!mystricmp(alias,entry->alias))
 			{
 				set(address_list,MUIA_NList_Active, i);
 				return 1;

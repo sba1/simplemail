@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "debug.h"
 #include "lists.h"
 #include "pgp.h"
 #include "support.h"

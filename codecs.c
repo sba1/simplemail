@@ -27,6 +27,7 @@
 
 #include "codecs.h"
 #include "codesets.h"
+#include "debug.h"
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"

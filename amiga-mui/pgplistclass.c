@@ -34,11 +34,11 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "debug.h"
 #include "mail.h"
 #include "pgp.h"
 #include "smintl.h"
 #include "support_indep.h"
-#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"

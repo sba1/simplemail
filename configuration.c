@@ -179,6 +179,8 @@ void free_config(void)
 	clear_config_accounts();
 	clear_config_signatures();
 #endif
+
+	taglines_cleanup();
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)

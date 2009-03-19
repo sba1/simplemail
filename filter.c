@@ -28,6 +28,7 @@
 
 #include "boyermoore.h"
 #include "configuration.h"
+#include "debug.h"
 #include "lists.h"
 #include "filter.h"
 #include "support.h"

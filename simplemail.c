@@ -30,6 +30,7 @@
 #include "codesets.h"
 #include "configuration.h"
 #include "dbx.h"
+#include "debug.h"
 #include "estimate.h"
 #include "filter.h"
 #include "folder.h"

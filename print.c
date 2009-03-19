@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "debug.h"
 #include "print.h"
 #include "mail.h"
 #include "configuration.h"

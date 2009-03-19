@@ -37,13 +37,13 @@
 
 #include "codesets.h"
 #include "configuration.h"
-#include "support_indep.h"
 #include "debug.h"
+#include "support_indep.h"
 
-#include "utf8stringclass.h"
 #include "amigasupport.h"
 #include "compiler.h"
 #include "muistuff.h"
+#include "utf8stringclass.h"
 
 struct UTF8String_Data
 {
@@ -118,7 +118,7 @@ STATIC ULONG UTF8String_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 		if (msg->MethodID != OM_NEW)
 			rc = DoSuperMethod(cl,obj,msg->MethodID,newtags,NULL);
-		else 
+		else
 		{
 			set(obj,MUIA_String_Contents,newcont);
 			rc = 0;

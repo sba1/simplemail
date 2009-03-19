@@ -28,6 +28,7 @@
 #include <unistd.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "hash.h"
 #include "mail.h"
 #include "folder.h"
@@ -54,7 +55,7 @@ int spam_init(void)
 		{
 			if (hash_table_init(&ham_table, 13, "PROGDIR:.ham.stat"))
 			{
-			
+
 /*				if (hash_table_init(&spam_prob_table, 13, NULL))*/
 				{
 					rebuild_spam_prob_hash_table = 1;
@@ -73,6 +74,10 @@ void spam_cleanup(void)
 {
 	hash_table_store(&spam_table);
 	hash_table_store(&ham_table);
+
+	hash_table_clean(&spam_table);
+	hash_table_clean(&ham_table);
+
 	thread_dispose_semaphore(sem);
 }
 
@@ -109,7 +114,7 @@ static int spam_is_known_html_tag(const char *tag)
 }
 
 /**************************************************************************
- Extracts all token from the given text and calls the callback function 
+ Extracts all token from the given text and calls the callback function
  for every token. If callback function returns 0 the token will be freed
  and the function is immediatly aborted. It's save to call this function
  with a NULL text pointer (in which case the call will succeed)
@@ -156,7 +161,7 @@ static int spam_tokenize(const char *text, const char *prefix, int (*callback)(c
 
 			buf_start = buf;
 			html = 0;
-			continue;			
+			continue;
 		}
 
 		if (!html)
@@ -234,7 +239,7 @@ static int spam_feed_hash_table_callback(char *token, void *data)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static void spam_feed_parsed_mail(struct hash_table *ht, struct mail_complete *mail)
 {
@@ -342,7 +347,7 @@ struct spam_token_probability
 #define NUM_OF_PROBABILITIES 20
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static int spam_extract_prob_callback(char *token, void *data)
 {
@@ -354,7 +359,7 @@ static int spam_extract_prob_callback(char *token, void *data)
 
 	int num_of_spam;
 	int num_of_ham;
-	
+
 	if (!(num_of_spam = spam_table.data)) num_of_spam = 1;
 	if (!(num_of_ham = ham_table.data)) num_of_ham = 1;
 
@@ -400,7 +405,7 @@ static int spam_extract_prob_callback(char *token, void *data)
 }
 
 /**************************************************************************
- 
+
 **************************************************************************/
 static void spam_extract_parsed_mail(struct spam_token_probability *prob, struct mail_complete *mail)
 {

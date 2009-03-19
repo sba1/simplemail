@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "debug.h"
 #include "estimate.h"
 #include "smintl.h"
 #include "status.h"
@@ -78,7 +79,7 @@ void status_init(int type)
 }
 
 /******************************************************************
- Opens the status window. 
+ Opens the status window.
 *******************************************************************/
 int status_open(void)
 {

@@ -9,6 +9,8 @@
 #include <stdlib.h>
 
 #include "boyermoore.h"
+#include "codesets.h"
+#include "debug.h"
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
 

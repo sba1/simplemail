@@ -40,11 +40,11 @@
 #include <proto/intuition.h>
 #include <libraries/iffparse.h> /* MAKE_ID */
 
-#include "parse.h"
 #include "configuration.h"
+#include "debug.h"
+#include "parse.h"
 #include "smintl.h"
 #include "support_indep.h"
-#include "debug.h"
 
 #include "compiler.h"
 #include "muistuff.h"
@@ -200,7 +200,7 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 						Child, skip = MakeButton(_("_Skip")),
 						Child, abort = MakeButton(_("_Abort")),
 						End,
-					End,	
+					End,
 				TAG_MORE, msg->ops_AttrList);
 
 	if (obj != NULL)
@@ -273,19 +273,19 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	int gauge1_div = 1;
 
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
-		
+
 	for ((tags = msg->ops_AttrList); (tag = NextTagItem(&tags));)
 	{
 		switch (tag->ti_Tag)
 		{
-			case MUIA_transwnd_Status:	
+			case MUIA_transwnd_Status:
 				set(data->status, MUIA_Text_Contents, tag->ti_Data);
 				break;
-				
-			case MUIA_transwnd_Gauge1_Str:	
+
+			case MUIA_transwnd_Gauge1_Str:
 				gauge1_str = (char*)tag->ti_Data;
 				break;
-				
+
 			case MUIA_transwnd_Gauge1_Max:
 				gauge1_max = tag->ti_Data;
 				/* 16bit only */
@@ -296,24 +296,24 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 				}
 				SM_DEBUGF(20,("Gauge_Max: real=%ld mui=%ld div=%ld\n",tag->ti_Data, gauge1_max, gauge1_div));
 				break;
-				
-			case MUIA_transwnd_Gauge1_Val:	
+
+			case MUIA_transwnd_Gauge1_Val:
 				gauge1_val = tag->ti_Data;
 				break;
 
 			case MUIA_transwnd_Head:
 				set(data->head,MUIA_Text_Contents, tag->ti_Data);
 				break;
-				
-			case MUIA_transwnd_Gauge2_Str:	
+
+			case MUIA_transwnd_Gauge2_Str:
 /*				set(data->gauge2, MUIA_Gauge_InfoText, tag->ti_Data); */
 				break;
-				
+
 			case MUIA_transwnd_Gauge2_Max:
 /*				set(data->gauge2, MUIA_Gauge_Max, tag->ti_Data); */
 				break;
-				
-			case MUIA_transwnd_Gauge2_Val:	
+
+			case MUIA_transwnd_Gauge2_Val:
 /*				set(data->gauge2, MUIA_Gauge_Current, tag->ti_Data); */
 				break;
 
@@ -345,7 +345,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 			set(data->mail_group, MUIA_ShowMe, FALSE);
 			data->mail_group_shown = 0;
 		}
-		
+
 		DoMethod(data->mail_list, MUIM_NList_Clear);
 		SetAttrs(obj,
 /*			MUIA_Window_Title,"SimpleMail", */
@@ -535,7 +535,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, transwnd_Dispatcher, cl, obj, msg)
 		case MUIM_transwnd_Clear: return transwnd_Clear (cl, obj, msg);
 		case MUIM_transwnd_Wait: return transwnd_Wait (cl, obj, msg);
 	}
-	
+
 	return(DoSuperMethodA(cl, obj, msg));
 }
 

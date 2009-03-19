@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "debug.h"
 #include "support_indep.h"
 
 #include "hash.h"

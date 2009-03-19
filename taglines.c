@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "support_indep.h"
 #include "taglines.h"
 
@@ -63,7 +64,7 @@ static char *get_tagline(void)
 	FILE *fh;
 	int nr;
 	char *tagline = NULL;
-	
+
 	if (!taglines_filename || !taglines_indexname ||!taglines_num) return NULL;
 
 	nr = sm_random(taglines_num);
@@ -105,7 +106,7 @@ char *taglines_add_tagline(char *buf)
 				strncpy(new_buf,buf,fmt-buf);
 				new_buf[fmt-buf]=0;
 				strcat(new_buf,tagline);
-				strcat(new_buf,buf + (fmt-buf) + 2);				
+				strcat(new_buf,buf + (fmt-buf) + 2);
 				free(buf);
 				buf = new_buf;
 			}
@@ -132,7 +133,7 @@ char *taglines_add_tagline(char *buf)
 					strncpy(new_buf,buf,fmt-buf);
 					new_buf[fmt-buf]=0;
 					strcat(new_buf,new_text);
-					strcat(new_buf,buf + (fmt-buf) + 2);				
+					strcat(new_buf,buf + (fmt-buf) + 2);
 					free(buf);
 					buf = new_buf;
 				}
@@ -199,7 +200,7 @@ void taglines_cleanup(void)
 
 /******************************************************************
  Loads the tagline information (and creates the index if
- neccessary). taglines_positions contains taglines_num + 1 entry
+ necessary). taglines_positions contains taglines_num + 1 entry
  describing the start positions of the taglines. The last entry
  is the size of the taglines file
 *******************************************************************/
@@ -213,6 +214,12 @@ void taglines_init(char *filename)
 
 	if (!(indexname = malloc(mystrlen(filename)+10)))
 		return;
+
+	if (!(filename = mystrdup(filename)))
+	{
+		free(indexname);
+		return;
+	}
 
 	strcpy(indexname,filename);
 	strcat(indexname,".index");

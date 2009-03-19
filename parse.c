@@ -26,6 +26,7 @@
 
 #include "codecs.h"
 #include "codesets.h"
+#include "debug.h"
 #include "parse.h"
 #include "support_indep.h"
 

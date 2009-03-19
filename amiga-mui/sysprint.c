@@ -20,10 +20,11 @@
 ** sysprint.c
 */
 
-#include "sysprint.h"
+#include "configuration.h"
+#include "debug.h"
 #include "smintl.h"
 #include "support.h"
-#include "configuration.h"
+#include "sysprint.h"
 
 #include <exec/types.h>
 #include <dos/dos.h>

@@ -32,6 +32,7 @@
 
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -87,7 +88,7 @@ int statuswnd_open(int active)
 			statuswnd_set_head(NULL);
 		}
 	}
-	
+
 	if (status_wnd)
 	{
 		SetAttrs(status_wnd,

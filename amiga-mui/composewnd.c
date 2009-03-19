@@ -42,6 +42,7 @@
 #include "codecs.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "taglines.h"
 #include "folder.h"
 #include "mail.h"
@@ -363,7 +364,7 @@ static void compose_add_attachment(struct Compose_Data *data, struct attachment 
 		DoMethod(data->quick_attach_tree, MUIM_NListtree_Insert, (ULONG)"", (ULONG)attach, /* udata */
 					MUIV_NListtree_Insert_ListNode_Root, MUIV_NListtree_Insert_PrevNode_Tail, (act?MUIV_NListtree_Insert_Flag_Active:0));
 	}
-					
+
 
 	if (quiet)
 	{
@@ -417,9 +418,9 @@ static void compose_add_files(struct Compose_Data **pdata)
 		struct Window *iwnd;
 
 		iwnd = (struct Window*)xget(data->wnd, MUIA_Window);
-		
+
 		set(App, MUIA_Application_Sleep, TRUE);
-		
+
 		if (MUI_AslRequestTags(data->file_req,
 				ASLFR_DoMultiSelect, TRUE,
 				iwnd?ASLFR_Window:TAG_IGNORE, iwnd,
@@ -480,7 +481,7 @@ static void compose_remove_file(struct Compose_Data **pdata)
 	{
 		DoMethod(data->attach_tree, MUIM_NListtree_Move, (ULONG)treenode, MUIV_NListtree_Move_OldTreeNode_Head, MUIV_NListtree_Move_NewListNode_Root, MUIV_NListtree_Move_NewTreeNode_Head, 0);
 		DoMethod(data->attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, (ULONG)treenode, 0);
-		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First); 
+		set(data->attach_tree, MUIA_NListtree_Active, MUIV_NListtree_Active_First);
 		set(data->attach_tree, MUIA_NListtree_Quiet,FALSE);
 	}
 
@@ -489,7 +490,7 @@ static void compose_remove_file(struct Compose_Data **pdata)
   {
 		DoMethod(data->quick_attach_tree, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root, (ULONG)treenode, 0);
   }
-  
+
 }
 
 /******************************************************************
@@ -1215,7 +1216,7 @@ int compose_window_open(struct compose_args *args)
 	{
 		/* create SignatureCycle and point to "NoSignatures", so we get notified when the default
 		   signature is set */
-		signatures_cycle = SignatureCycleObject, 
+		signatures_cycle = SignatureCycleObject,
 			MUIA_SignatureCycle_HasDefaultEntry, FALSE,
 			MUIA_SignatureCycle_SignatureName, MUIV_SignatureCycle_NoSignature,
 			End;
@@ -1253,7 +1254,7 @@ int compose_window_open(struct compose_args *args)
 		MUIA_HelpNode, "WR_W",
 		(num < MAX_COMPOSE_OPEN)?MUIA_Window_ID:TAG_IGNORE, MAKE_ID('C','O','M',num),
 		MUIA_Window_Title, _("SimpleMail - Compose Message"),
-		  
+
 		WindowContents, VGroup,
 			Child, RegisterGroup(register_titles),
 				/* First register */
@@ -1412,7 +1413,7 @@ int compose_window_open(struct compose_args *args)
 				End,
 			End,
 		End;
-	
+
 	if (wnd)
 	{
 		struct Compose_Data *data = (struct Compose_Data*)malloc(sizeof(struct Compose_Data));

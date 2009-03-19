@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "debug.h"
 #include "signature.h"
 #include "support_indep.h"
 

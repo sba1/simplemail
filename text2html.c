@@ -28,6 +28,7 @@
 
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "parse.h"
 #include "support_indep.h"
 #include "text2html.h"
@@ -116,7 +117,7 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *st
 	unsigned char *buffer = *buffer_ptr;
 	int buffer_len = *buffer_len_ptr;
 	int i;
-	
+
 	for (i = 0; buffer_len && *buffer && (strchr(legalchars, *buffer) || *buffer > 127) && i < SIZE_URI-1; i++)
 	{
 		uri[i] = *buffer++;
@@ -251,7 +252,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 						/* crop the string to the beginning of the email address */
 						string_crop(&str,0,str.len - (buffer - buffer2));
-						
+
 						buffer_len += buffer - buffer2;
 						buffer -= buffer - buffer2;
 						email_len = buffer3 - buffer;

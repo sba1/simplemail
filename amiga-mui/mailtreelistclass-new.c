@@ -46,6 +46,7 @@
 #endif
 
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "mail.h"
 #include "smintl.h"
@@ -55,7 +56,6 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "datatypescache.h"
-#include "debug.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "support.h"

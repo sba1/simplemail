@@ -36,10 +36,10 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 
+#include "debug.h"
 #include "lists.h"
 #include "mail.h"
 #include "support.h"
-#include "debug.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
@@ -294,7 +294,7 @@ STATIC ULONG Popupmenu_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 			{
 				DoMethod(_win(obj), MUIM_Window_RemEventHandler, (ULONG)&data->mv_handler);
 				Popupmenu_CloseWindow(cl,obj);
-			}		
+			}
 			return MUI_EventHandlerRC_Eat;
 		}
 

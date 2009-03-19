@@ -32,6 +32,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "debug.h"
 #include "lists.h"
 #include "support_indep.h"
 

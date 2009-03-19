@@ -26,6 +26,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "debug.h"
 #include "folder.h"
 #include "mail.h"
 #include "mbox.h"
@@ -135,7 +136,7 @@ static int export_entry(struct export_data *data)
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
 
 								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:"",date_buf);
-			
+
 								in = fopen(m->filename,"r");
 								if (in)
 								{
@@ -152,9 +153,9 @@ static int export_entry(struct export_data *data)
 							}
 							free(file_buf);
 						}
-			
+
 						chdir(buf);
-			
+
 						fclose(fh);
 					}
 					thread_call_parent_function_async(status_close,0);
@@ -210,7 +211,7 @@ static int import_entry(struct import_data *data)
 		{
 			struct folder *dest_folder;
 			int in_folder;
-			
+
 			in_folder = data->in_folder;
 			if (data->in_folder) dest_folder = folder_find_by_path(destdir);
 			else dest_folder = NULL;
@@ -297,7 +298,7 @@ static int import_entry(struct import_data *data)
 									thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, mailfilename, 0);
 								}
 							}
-							
+
 							free(line_buf);
 						}
 						chdir(path);

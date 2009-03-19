@@ -34,6 +34,7 @@
 #include <proto/muimaster.h>
 
 #include "configuration.h"
+#include "debug.h"
 #include "filter.h"
 #include "folder.h"
 #include "simplemail.h"

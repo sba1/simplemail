@@ -42,6 +42,7 @@
 
 #include "amigasupport.h"
 #include "compiler.h"
+#include "debug.h"
 #include "support_indep.h"
 
 #ifdef __AMIGAOS4__
@@ -360,13 +361,13 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		LONG src_depth = GetBitMapAttr(srcBitMap,BMA_DEPTH);
 		struct Rectangle rect;
 		struct BltMaskHook hook;
-		
+
 		/* Define the destination rectangle in the rastport */
 		rect.MinX = xDest;
 		rect.MinY = yDest;
 		rect.MaxX = xDest + xSize - 1;
 		rect.MaxY = yDest + ySize - 1;
-		
+
 		/* Initialize the hook */
 #if defined(__AMIGAOS4__) || defined(__MORPHOS__)
 		hook.hook.h_Entry = (HOOKFUNC)hookEntry;
@@ -433,12 +434,12 @@ APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
 				if (line) strcpy(buf,line);
 				buf[len-2]=10;
 				buf[len-1]=0;
-	
+
 				rdargs->RDA_Buffer = NULL;
 				rdargs->RDA_Source.CS_Buffer = buf;
 				rdargs->RDA_Source.CS_Length = strlen(buf);
 				rdargs->RDA_Source.CS_CurChr = 0;
-		
+
 				rd = ReadArgs(temp,(LONG*)results, rdargs );
 				if((mem[2] = (ULONG)rd))
 				{

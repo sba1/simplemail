@@ -38,6 +38,7 @@
 #include <netinet/tcp.h>
 #endif
 
+#include "debug.h"
 #include "tcp.h"
 #include "tcpip.h"
 #include "support_indep.h"

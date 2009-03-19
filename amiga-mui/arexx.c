@@ -38,6 +38,7 @@
 #include "addressbook.h"
 #include "codesets.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "http.h"
 #include "mail.h"

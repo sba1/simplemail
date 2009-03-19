@@ -38,6 +38,7 @@
 
 #include "account.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
 #include "imap.h"
 #include "simplemail.h"
@@ -420,7 +421,7 @@ void folder_edit(struct folder *f)
 		if (f->is_imap)
 		{
 			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
-			
+
 			set(imap_folders_group,MUIA_ShowMe, TRUE);
 			set(imap_folders_horizline,MUIA_ShowMe, TRUE);
 		} else

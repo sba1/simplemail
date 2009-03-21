@@ -107,6 +107,7 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 
 #define MAX_READ_OPEN 10
 static struct Read_Data *read_open[MAX_READ_OPEN];
+static struct NewMenu *read_newmenu;
 
 #define PAGE_HTML			0
 #define PAGE_DATATYPE	1
@@ -358,9 +359,10 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 
 
 		html_mail = text2html(buf, buf_end - buf,
-													TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+				TEXT2HTML_ENDBODY_TAG|TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 
 		DoMethod(data->html_simplehtml, MUIM_SimpleHTML_AppendBuffer, (ULONG)html_mail, strlen(html_mail));
+		free(html_mail);
 		set(data->wnd, MUIA_Window_DefaultObject, data->html_simplehtml);
 
 		set(data->contents_page, MUIA_Group_ActivePage, PAGE_HTML);
@@ -496,6 +498,8 @@ static void insert_mail(struct Read_Data *data, struct mail_complete *mail)
 			DoMethod(icon, MUIM_Notify, MUIA_Selected, TRUE, (ULONG)App, 5, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)icon_selected, (ULONG)data, (ULONG)icon);
 			DoMethod(icon, MUIM_Notify, MUIA_Icon_DropPath, MUIV_EveryTime, (ULONG)App, 6, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)icon_drop, (ULONG)data, (ULONG)mail, (ULONG)icon);
 		}
+
+		free(buffer);
 	}
 
 	for (i=0;i<mail->num_multiparts;i++)
@@ -837,6 +841,25 @@ static void read_window_dispose(struct Read_Data **pdata)
 	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
+}
+
+/**
+ * Deallocates all resources associated with any read window.
+ */
+void read_window_deinit(void)
+{
+	int i;
+
+	for (i=0;i<MAX_READ_OPEN;i++)
+		read_window_close(i);
+
+	/* Free labels and new menu structure */
+	for (i=0;read_newmenu[i].nm_Type != NM_END;i++)
+	{
+		if (read_newmenu[i].nm_Label != NM_BARLABEL)
+			free(read_newmenu[i].nm_Label);
+	}
+	free(read_newmenu);
 }
 
 /******************************************************************
@@ -1216,8 +1239,6 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
-	struct NewMenu *nm;
-
 	SM_DEBUGF(20, ("Entered function (folder = %s, mail = %p, window = %d)\n",folder,mail,window));
 
 	if (window != -1 && window < MAX_READ_OPEN)
@@ -1236,11 +1257,9 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 				set(App, MUIA_Application_Sleep, FALSE);
 
 				SM_RETURN(window,"%d");
-//				return window;
 			}
 			set(App, MUIA_Application_Sleep, FALSE);
 			SM_RETURN(-1,"%d");
-//			return -1;
 		}
 		num = window;
 	} else
@@ -1251,22 +1270,29 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 
 	if (num == MAX_READ_OPEN) return -1;
 
-	/* translate the menu entries */
-	if (!(nm = malloc(sizeof(nm_untranslated)))) return -1;
-	memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
-
-	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
+	if (!read_newmenu)
 	{
-		if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
+		/* translate the menu entries */
+		if (!(read_newmenu = malloc(sizeof(nm_untranslated)))) return -1;
+		memcpy(read_newmenu, nm_untranslated,sizeof(nm_untranslated));
+
+		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 		{
-			/* AROS doesn't like modification of nm_Label */
-			STRPTR tmpstring = mystrdup(_(nm[i].nm_Label));
-			if (tmpstring[1] == ':') tmpstring[1] = 0;
-			nm[i].nm_Label = tmpstring;
+			if (read_newmenu[i].nm_Label && read_newmenu[i].nm_Label != NM_BARLABEL)
+			{
+				STRPTR tmpstring = mystrdup(_(read_newmenu[i].nm_Label));
+				if (!tmpstring)
+				{
+					read_newmenu = NULL;
+					return -1;
+				}
+				if (tmpstring[1] == ':') tmpstring[1] = 0;
+				read_newmenu[i].nm_Label = tmpstring;
+			}
 		}
 	}
 
-	read_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+	read_menu = MUI_MakeObject(MUIO_MenustripNM, read_newmenu, MUIO_MenustripNM_CommandKeyCheck);
 
 	wnd = WindowObject,
 		MUIA_HelpNode, "RE_W",
@@ -1445,7 +1471,6 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 	}
 
 	SM_RETURN(-1,"%d");
-//	return -1;
 }
 
 /******************************************************************

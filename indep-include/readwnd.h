@@ -26,6 +26,7 @@
 int read_window_open(char *folder, struct mail_info *mail, int window);
 void read_window_activate(int num);
 void read_window_close(int num);
+void read_window_deinit(void);
 struct mail_complete *read_window_get_displayed_mail(int num);
 void read_refresh_prevnext_button(struct folder *f);
 

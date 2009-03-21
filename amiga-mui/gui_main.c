@@ -85,6 +85,7 @@
 #include "pgplistclass.h"
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
+#include "readwnd.h"
 #include "startupwnd.h"
 #include "shutdownwnd.h"
 #include "smtoolbarclass.h"
@@ -262,6 +263,7 @@ void all_del(void)
 	{
 		if (RexxSysBase)
 		{
+			read_window_deinit();
 			main_window_deinit();
 			app_del();
 

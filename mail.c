@@ -2367,6 +2367,7 @@ static int mail_read_structure(struct mail_complete *mail)
 						if (*buf == 10) buf++;
 					}
 				}
+				free(search_str);
 			}
 
 			mail_decrypt(mail);
@@ -2591,17 +2592,19 @@ void mail_complete_free(struct mail_complete *mail)
 	{
 		mail_complete_free(mail->multipart_array[i]); /* recursion */
 	}
+	free(mail->multipart_array);
 
-	if (mail->extra_text) free(mail->extra_text);
+	free(mail->extra_text);
 
-	if (mail->content_charset) free(mail->content_charset);
-	if (mail->content_type) free(mail->content_type);
-	if (mail->content_subtype) free(mail->content_subtype);
-	if (mail->content_id) free(mail->content_id);
-	if (mail->content_name) free(mail->content_name);
-	if (mail->content_transfer_encoding) free(mail->content_transfer_encoding);
+	free(mail->content_description);
+	free(mail->content_charset);
+	free(mail->content_type);
+	free(mail->content_subtype);
+	free(mail->content_id);
+	free(mail->content_name);
+	free(mail->content_transfer_encoding);
 
-	if (mail->decoded_data) free(mail->decoded_data);
+	free(mail->decoded_data);
 
 	/* TODO: Check if mail->text must be freed even if mail->info == NULL */
 	if (mail->info && mail->info->filename && mail->text) free(mail->text);

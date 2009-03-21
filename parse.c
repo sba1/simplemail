@@ -402,6 +402,7 @@ static char *parse_local_part(char *local_part, char **pbuf)
 
 			buf = strdupcat(new_buf,new_word);
 			free(new_buf);
+			free(new_word);
 			if (!buf) return NULL;
 
 			ret_save = ret;

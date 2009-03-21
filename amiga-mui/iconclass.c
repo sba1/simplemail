@@ -94,6 +94,7 @@ STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 STATIC VOID Icon_Dispose(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct Icon_Data *data = (struct Icon_Data*)INST_DATA(cl,obj);
+	if (data->buffer) FreeVec(data->buffer);
 	if (data->type) FreeVec(data->type);
 	if (data->subtype) FreeVec(data->subtype);
 	if (data->drop_path) FreeVec(data->drop_path);
@@ -553,7 +554,7 @@ STATIC ULONG Icon_DeleteDragImage(struct IClass *cl, Object *obj, Msg msg)
 							}
 						}
 						if (sel_msg.drawer) FreeVec(sel_msg.drawer);
-						if (sel_msg.finish) break;					
+						if (sel_msg.finish) break;
 					}
 		    }
 

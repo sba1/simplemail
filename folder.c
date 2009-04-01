@@ -4077,6 +4077,7 @@ void del_folders(void)
 			mail_info_free(node->folder.mail_info_array[i]);
 		free(node->folder.mail_info_array);
 		free(node->folder.sorted_mail_info_array);
+		free(node->folder.pending_mail_info_array);
 		free(node->folder.imap_path);
 		free(node->folder.imap_server);
 		free(node->folder.imap_user);

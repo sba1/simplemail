@@ -274,22 +274,25 @@ struct uidl
 static void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory)
 {
 	char c;
-	char *server_name = server->name;
 	char *buf;
-	int len = strlen(folder_directory)+strlen(server_name)+30;
+	char *server_name = server->name;
+	int len = strlen(folder_directory) + strlen(server_name) + 30;
+	int n;
 
 	memset(uidl,0,sizeof(*uidl));
 
 	/* Construct the file name */
-	if (!(buf = uidl->filename = malloc(len)))
+	if (!(uidl->filename = malloc(len)))
 		return;
 
 	strcpy(uidl->filename,folder_directory);
 	sm_add_part(uidl->filename,".uidl.",len);
+	buf = uidl->filename + strlen(uidl->filename);
 
 	/* Using a hash doesn't make the filename unique but it should work for now */
-	sprintf(uidl->filename+strlen(uidl->filename),"%x",sdbm(server->login));
-	buf += strlen(buf);
+	n = sprintf(buf,"%x",sdbm(server->login));
+
+	buf += n;
 	while ((c=*server_name))
 	{
 		if (c!='.') *buf++=c;
@@ -528,6 +531,21 @@ static void pop3_noop(void *arg)
 	}
 }
 
+/**
+ * Free the resources in pop3_stat().
+ *
+ * @param mail_array
+ */
+static void pop3_free_mail_array(struct dl_mail *mail_array)
+{
+	int i;
+	int amm = mail_array[0].flags;
+
+	for (i=amm;i>=1;i--)
+		free(mail_array[i].uidl);
+	free(mail_array);
+}
+
 /**************************************************************************
  Get statistics about pop3-folder contents. It returns the an array of
  dl_mail instances. The first (0) index gives the total amount of messages
@@ -584,8 +602,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED)
 			{
-				free(mail_array);
-				return mail_array;
+				pop3_free_mail_array(mail_array);
+				return NULL;
 			}
 		}
   }
@@ -608,7 +626,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 			SM_DEBUGF(5,("LIST command failed (%s)\n",answer));
 			return mail_array;
 		}
-		free(mail_array);
+		pop3_free_mail_array(mail_array);
 		return NULL;
 	}
 
@@ -646,7 +664,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 	{
-		free(mail_array);
+		pop3_free_mail_array(mail_array);
 		return NULL;
 	}
 
@@ -677,7 +695,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 					if (tcp_error_code() == TCP_INTERRUPTED)
 					{
 						mail_complete_free(m);
-						free(mail_array);
+						pop3_free_mail_array(mail_array);
 						return NULL;
 					}
 
@@ -701,7 +719,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 				{
 					mail_complete_free(m);
-					free(mail_array);
+					pop3_free_mail_array(mail_array);
 					return NULL;
 				}
 
@@ -767,7 +785,10 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		thread_call_parent_function_async(status_set_status,1,_("Waiting for user interaction"));
 
 		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_noop, conn, 5000, status_wait,0)))
+		{
+			pop3_free_mail_array(mail_array);
 			return NULL;
+		}
 
 		for (i=1;i<=amm;i++)
 		{
@@ -1083,9 +1104,14 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 								rc = success;
 								chdir(path);
 							}
+
+							pop3_free_mail_array(mail_array);
 						}
 						pop3_quit(conn,server);
 						thread_call_parent_function_async(status_set_status,1,"");
+
+						free(uidl.filename);
+						free(uidl.entries);
 					}
 					free(timestamp);
 				}

@@ -37,11 +37,12 @@
 #include <proto/intuition.h>
 #include <proto/graphics.h>
 
+#include "debug.h"
 #include "codesets.h"
+#include "configuration.h"
 #include "mail.h"
 #include "support.h"
-#include "debug.h"
-#include "configuration.h"
+#include "support_indep.h"
 
 #include "addressbook.h"
 #include "addressentrylistclass.h"
@@ -86,27 +87,31 @@ STATIC ULONG ComposeEditor_Set(struct IClass *cl, Object *obj, struct opSet *msg
 			case	MUIA_ComposeEditor_Array:
 						{
 							char **array = (char**)tag->ti_Data;
-							char *buf;
 							int i,cnt = 0, len = 0;
 
 							if (!array) set(obj,MUIA_TextEditor_Contents,"");
 							else
 							{
+								char *buf;
+
 								while (array[cnt])
 								{
 									len += strlen(array[cnt])+1; /* for the \n */
 									cnt++;
 								}
-								if ((buf = AllocVec(len+2,0)))
+								if ((buf = malloc(len+2)))
 								{
-									buf[0] = 0;
+									char *next_buf = buf;
+
 									for (i=0;i<cnt;i++)
 									{
-										strcat(buf,array[i]);
-										strcat(buf,"\n");
+										next_buf = mystpcpy(next_buf,array[i]);
+										*next_buf++ = '\n';
 									}
+
+									*next_buf = 0;
 									set(obj,MUIA_TextEditor_Contents,buf);
-									FreeVec(buf);
+									free(buf);
 								}
 							}
 						}

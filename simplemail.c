@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include "addressbook.h"
+#include "atcleanup.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "dbx.h"
@@ -2315,6 +2316,7 @@ int simplemail_main(void)
 	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
 	startupwnd_close();
 	shutdownwnd_close();
+	atcleanup_finalize();
 	debug_deinit();
 	return 0;
 }

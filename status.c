@@ -16,14 +16,17 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** status.c
-*/
+/**
+ * @file status.c
+ *
+ * @note TODO: This status stuff needs an overhaul.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "atcleanup.h"
 #include "debug.h"
 #include "estimate.h"
 #include "smintl.h"
@@ -41,20 +44,36 @@ static int mail_maximal;
 static int mail_current; /* starts at 1 */
 static int mail_current_size; /* size of current mail */
 static char *status_text;
+static char *status_head;
+static char *status_line;
+
+static int status_cleanup_registered;
+
+/**
+ * Cleanup resources.
+ *
+ * @param user_data
+ */
+static void status_cleanup(void *user_data)
+{
+	free(status_line);
+	free(status_text);
+	free(status_head);
+}
 
 /******************************************************************
  Returns the status text
 *******************************************************************/
-static char *status_get_status(void)
+static char *status_get_status(char *msg)
 {
-	static char buf[512];
-	static char time_buf[256];
+	static char buf[128];
+	static char time_buf[64];
 
 	int time = estimate_calc_remaining(&gauge_est,gauge_value/1024);
-	if (time < 60) sprintf(time_buf,_("%d s"),time);
-	else sprintf(time_buf,_("%d min %d s"),time/60,time%60);
+	if (time < 60) sm_snprintf(time_buf,sizeof(time_buf),_("%d s"),time);
+	else sm_snprintf(time_buf,sizeof(time_buf),_("%d min %d s"),time/60,time%60);
 
-	if (status_text) sprintf(buf,"%s\n%s %s",status_text,_("Time remaining:"),time_buf);
+	if (msg) sm_snprintf(buf,sizeof(buf),"%s\n%s %s",msg,_("Time remaining:"),time_buf);
 	else return time_buf;
 	return buf;
 }
@@ -64,8 +83,8 @@ static char *status_get_time_str(void)
 	static char time_buf[64];
 	int time = estimate_calc_remaining(&gauge_est,gauge_value/1024);
 
-	if (time < 60) sprintf(time_buf,_("%d s"),time);
-	else sprintf(time_buf,_("%d min %d s"),time/60,time%60);
+	if (time < 60) sm_snprintf(time_buf,sizeof(time_buf),_("%d s"),time);
+	else sm_snprintf(time_buf,sizeof(time_buf),_("%d min %d s"),time/60,time%60);
 
 	return time_buf;
 }
@@ -123,8 +142,8 @@ void status_set_title_utf8(char *title)
 *******************************************************************/
 void status_set_connect_to_server(char *server)
 {
-	static char buf[300];
-	sprintf(buf,_("Connecting to server %s..."),server);
+	static char buf[80];
+	sm_snprintf(buf,sizeof(buf),_("Connecting to server %s..."),server);
 	statuswnd_set_status(buf);
 }
 
@@ -154,12 +173,12 @@ void status_set_gauge(int value)
 
 	if (last_seconds == seconds) return;
 
-	sprintf(gauge_buf,_("%d KB / %d KB (time left: %s)"), gauge_value / 1024, gauge_maximal / 1024, status_get_time_str());
+	sm_snprintf(gauge_buf,sizeof(gauge_buf),_("%d KB / %d KB (time left: %s)"), gauge_value / 1024, gauge_maximal / 1024, status_get_time_str());
 
 	statuswnd_set_gauge(value);
 	statuswnd_set_gauge_text(gauge_buf);
 
-	sprintf(status_buf,_("Processing mail %d (%d KB) of %d"),mail_current,mail_current_size / 1024, mail_maximal);
+	sm_snprintf(status_buf,sizeof(status_buf),_("Processing mail %d (%d KB) of %d"),mail_current,mail_current_size / 1024, mail_maximal);
 	statuswnd_set_status(status_buf);
 
 	last_seconds = seconds;
@@ -170,9 +189,15 @@ void status_set_gauge(int value)
 *******************************************************************/
 void status_set_line(char *str)
 {
-	if (status_text) free(status_text);
-	status_text = mystrdup(str);
-	statuswnd_set_status(status_get_status());
+	free(status_line);
+	status_line = mystrdup(str);
+	statuswnd_set_status(status_get_status(status_line));
+
+	if (!status_cleanup_registered)
+	{
+		atcleanup(status_cleanup,NULL);
+		status_cleanup_registered = 1;
+	}
 }
 
 /******************************************************************
@@ -180,11 +205,16 @@ void status_set_line(char *str)
 *******************************************************************/
 void status_set_status(char *str)
 {
-	static char *status_text;
 	free(status_text);
 	status_text = mystrdup(str);
 	statuswnd_set_status(status_text);
 	main_set_status_text(status_text);
+
+	if (!status_cleanup_registered)
+	{
+		atcleanup(status_cleanup,NULL);
+		status_cleanup_registered = 1;
+	}
 }
 
 /******************************************************************
@@ -192,10 +222,15 @@ void status_set_status(char *str)
 *******************************************************************/
 void status_set_head(char *head)
 {
-	static char *status_head;
 	free(status_head);
 	status_head = mystrdup(head);
 	statuswnd_set_head(status_head);
+
+	if (!status_cleanup_registered)
+	{
+		atcleanup(status_cleanup,NULL);
+		status_cleanup_registered = 1;
+	}
 }
 
 /******************************************************************

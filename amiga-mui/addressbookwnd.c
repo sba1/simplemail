@@ -37,6 +37,7 @@
 #include <proto/muimaster.h>
 
 #include "addressbook.h"
+#include "atcleanup.h"
 #include "configuration.h"
 #include "debug.h"
 #include "parse.h"
@@ -68,6 +69,8 @@ static Object *group_list;
 static Object *address_list;
 
 static Object *show_member_check;
+
+static struct NewMenu *addressbook_newmenu;
 
 /**********************************************************************/
 
@@ -1397,9 +1400,31 @@ static void addressbookwnd_remove_person(void)
 	main_build_addressbook();
 }
 
-/******************************************************************
- Initialzes the addressbook window
-*******************************************************************/
+/**
+ * Cleanup function for the addressbook window, which is
+ * called on the programs exit.
+ *
+ * @param user_data
+ */
+static void addressbookwnd_cleanup(void *user_data)
+{
+	if (addressbook_newmenu)
+	{
+		int i;
+
+		/* Free labels and new menu structure */
+		for (i=0;addressbook_newmenu[i].nm_Type != NM_END;i++)
+		{
+			if (addressbook_newmenu[i].nm_Label != NM_BARLABEL)
+				free(addressbook_newmenu[i].nm_Label);
+		}
+		free(addressbook_newmenu);
+	}
+}
+
+/**
+ * Initializes the addressbook window.
+ */
 static void addressbookwnd_init(void)
 {
 	static const struct NewMenu nm_untranslated[] =
@@ -1409,8 +1434,6 @@ static void addressbookwnd_init(void)
 		{NM_END, NULL, NULL, 0, 0, NULL}
 	};
 
-	static struct NewMenu *nm;
-
 	Object *add_group_button, *edit_group_button, *rem_group_button;
 	Object *add_contact_button, *edit_contact_button, *rem_contact_button;
 	Object *save_button, *close_button;
@@ -1418,24 +1441,27 @@ static void addressbookwnd_init(void)
 	int i;
 
 	/* translate the menu entries */
-	if (!nm)
+	if (!addressbook_newmenu)
 	{
-		if (!(nm = malloc(sizeof(nm_untranslated)))) return;
-		memcpy(nm,nm_untranslated,sizeof(nm_untranslated));
+		if (!(addressbook_newmenu = malloc(sizeof(nm_untranslated)))) return;
+		memcpy(addressbook_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 		{
-			if (nm[i].nm_Label && nm[i].nm_Label != NM_BARLABEL)
+			if (addressbook_newmenu[i].nm_Label && addressbook_newmenu[i].nm_Label != NM_BARLABEL)
 			{
 				/* AROS doesn't allow modification of nm_Label */
-				STRPTR tmpstr = mystrdup(_(nm[i].nm_Label));
+				STRPTR tmpstr = mystrdup(_(addressbook_newmenu[i].nm_Label));
+				if (!tmpstr) return;
 				if (tmpstr[1] == ':') tmpstr[1] = 0;
-				nm[i].nm_Label = tmpstr;
+				addressbook_newmenu[i].nm_Label = tmpstr;
 			}
 		}
 	}
 
-	address_menu = MUI_MakeObject(MUIO_MenustripNM, nm, MUIO_MenustripNM_CommandKeyCheck);
+	atcleanup(addressbookwnd_cleanup,NULL);
+
+	address_menu = MUI_MakeObject(MUIO_MenustripNM, addressbook_newmenu, MUIO_MenustripNM_CommandKeyCheck);
 
 	address_wnd = WindowObject,
 		MUIA_HelpNode, "AB_W",

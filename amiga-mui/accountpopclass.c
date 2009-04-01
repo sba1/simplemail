@@ -147,6 +147,7 @@ STATIC ULONG AccountPop_Set(struct IClass *cl, Object *obj, struct opSet *msg, i
 
 							if (!tidata)
 							{
+								if (data->selected_account) account_free(data->selected_account);
 								data->selected_account = NULL;
 								set(data->string, MUIA_Text_Contents,_("<Default>"));
 							} else
@@ -241,6 +242,14 @@ STATIC ULONG AccountPop_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	return (ULONG)obj;
 }
 
+STATIC VOID AccountPop_Dispose(struct IClass *cl,Object *obj, Msg msg)
+{
+	struct AccountPop_Data *data = (struct AccountPop_Data*)INST_DATA(cl,obj);
+
+	if (data->selected_account) account_free(data->selected_account);
+	DoSuperMethodA(cl,obj,msg);
+}
+
 STATIC ULONG AccountPop_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct AccountPop_Data *data = (struct AccountPop_Data*)INST_DATA(cl,obj);
@@ -286,6 +295,7 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, AccountPop_Dispatcher, cl, obj, msg)
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return AccountPop_New(cl,obj,(struct opSet*)msg);
+		case	OM_DISPOSE: AccountPop_Dispose(cl,obj,msg); return 0;
 		case	OM_GET: return AccountPop_Get(cl,obj,(struct opGet*)msg);
 		case	OM_SET: return AccountPop_Set(cl,obj,(struct opSet*)msg,0);
 		case	MUIM_AccountPop_Refresh: return AccountPop_Refresh(cl,obj,msg);

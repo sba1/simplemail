@@ -47,6 +47,7 @@ GLOBAL  = SimpleMail_rev.h version.h date.h
 OBJS = \
 	account.o \
 	addressbook.o \
+	atcleanup.o \
 	boyermoore.o \
 	codecs.o \
 	codesets.o \

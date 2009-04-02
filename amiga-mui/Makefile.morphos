@@ -82,6 +82,7 @@ OBJS = vsnprintf.o \
 	audioselectgroupclass.o \
 	attachmentlistclass.o \
 	arexx.o \
+	archdebug.o \
 	appicon.o \
 	amigasupport.o \
 	addressstringclass.o \

@@ -24,6 +24,8 @@
  * @file atcleanup.c
  */
 
+#include <stdlib.h>
+
 #include "atcleanup.h"
 #include "debug.h"
 #include "lists.h"

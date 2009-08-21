@@ -63,6 +63,8 @@ int atcleanup(void (*cleanup)(void *user_data),void *user_data)
 	node->cleanup = cleanup;
 	node->user_data = user_data;
 	list_insert_tail(&atcleanup_list,&node->node);
+
+	return 1;
 }
 
 /**

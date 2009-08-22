@@ -263,7 +263,6 @@ void all_del(void)
 	{
 		if (RexxSysBase)
 		{
-			read_window_deinit();
 			main_window_deinit();
 			app_del();
 

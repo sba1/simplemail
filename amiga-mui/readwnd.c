@@ -47,6 +47,7 @@
 #include <proto/wb.h>
 #include <proto/icon.h>
 
+#include "atcleanup.h"
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h"
@@ -846,7 +847,7 @@ static void read_window_dispose(struct Read_Data **pdata)
 /**
  * Deallocates all resources associated with any read window.
  */
-void read_window_deinit(void)
+static void read_window_cleanup(void *user_data)
 {
 	int i;
 
@@ -854,12 +855,15 @@ void read_window_deinit(void)
 		read_window_close(i);
 
 	/* Free labels and new menu structure */
-	for (i=0;read_newmenu[i].nm_Type != NM_END;i++)
+	if (read_newmenu)
 	{
-		if (read_newmenu[i].nm_Label != NM_BARLABEL)
-			free(read_newmenu[i].nm_Label);
+		for (i=0;read_newmenu[i].nm_Type != NM_END;i++)
+		{
+			if (read_newmenu[i].nm_Label != NM_BARLABEL)
+				free(read_newmenu[i].nm_Label);
+		}
+		free(read_newmenu);
 	}
-	free(read_newmenu);
 }
 
 /******************************************************************
@@ -1275,6 +1279,8 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		/* translate the menu entries */
 		if (!(read_newmenu = malloc(sizeof(nm_untranslated)))) return -1;
 		memcpy(read_newmenu, nm_untranslated,sizeof(nm_untranslated));
+
+		atcleanup(read_window_cleanup,NULL);
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 		{

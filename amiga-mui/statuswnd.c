@@ -30,6 +30,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "atcleanup.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
@@ -67,6 +68,16 @@ static void statuswnd_skip(void)
 	thread_abort(NULL);
 }
 
+/**
+ * The clean up function of the status window.
+ *
+ * @param user_data
+ */
+void statuswnd_cleanup(void *user_data)
+{
+	free(status_title);
+}
+
 /**************************************************************************
  Open the status window
 **************************************************************************/
@@ -86,6 +97,8 @@ int statuswnd_open(int active)
 			DoMethod(App, OM_ADDMEMBER, (ULONG)status_wnd);
 
 			statuswnd_set_head(NULL);
+
+			atcleanup(statuswnd_cleanup,NULL);
 		}
 	}
 

@@ -91,6 +91,7 @@ struct dt_node
 	Object *o;
 	int depth;
 	int trans;
+	int masking;
 
 	int x1,x2,y1,y2;
 
@@ -362,6 +363,10 @@ static struct dt_node *dt_create_from_filename(char *filename)
 				node->y2 = h - 1;
 				node->depth = bmhd->bmh_Depth;
 				node->trans = bmhd->bmh_Transparent;
+				node->masking = bmhd->bmh_Masking;
+
+				if (node->masking == mskHasAlpha)
+					dt_argb(node);
 			}
 			return node;
 		}
@@ -582,10 +587,21 @@ int dt_height(struct dt_node *node)
 void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 {
 	struct BitMap *bitmap = NULL;
+	void *argb = NULL;
+	int srcmod;
 	Object *o;
 
-	o = node->o;
-	if (!o) o = img->o;
+	if (!(o = node->o))
+	{
+		/* Take the data of the global picture */
+		o = img->o;
+		argb = img->argb;
+		srcmod = dt_width(img)*4;
+	} else
+	{
+		argb = node->argb;
+		srcmod = dt_width(node)*4;
+	}
 	if (!o) return;
 
 	GetDTAttrs(o,PDTA_DestBitMap,&bitmap,TAG_DONE);
@@ -603,9 +619,9 @@ void dt_put_on_rastport(struct dt_node *node, struct RastPort *rp, int x, int y)
 		} else
 		{
 #ifndef __SASC
-			if (node->argb)
+			if (argb)
 			{
-				WritePixelArrayAlpha(node->argb,0,0,dt_width(node)*4,rp,x,y,dt_width(node),dt_height(node),0xffffffff);
+				WritePixelArrayAlpha(argb,node->x1,node->y1,srcmod,rp,x,y,dt_width(node),dt_height(node),0xffffffff);
 			} else
 #endif
 			{

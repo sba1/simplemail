@@ -2214,9 +2214,12 @@ static struct folder *folder_find_group_by_name(char *name)
 	return NULL;
 }
 
-/******************************************************************
- Finds a folder by path. Returns NULL if folder hasn't found
-*******************************************************************/
+/**
+ * Finds a folder by path. Returns NULL if folder hasn't found.
+ *
+ * @param name
+ * @return
+ */
 struct folder *folder_find_by_path(char *name)
 {
 	struct folder_node *node = (struct folder_node*)list_first(&folder_list);
@@ -2228,9 +2231,13 @@ struct folder *folder_find_by_path(char *name)
 	return NULL;
 }
 
-/******************************************************************
- Finds the folder to a given file
-*******************************************************************/
+/**
+ * Returns the folder that contains a file with the given name.
+ *
+ * @param filename the name may be absolute or relative (in this case,
+ *        the folder may be not the only one)
+ * @return
+ */
 struct folder *folder_find_by_file(char *filename)
 {
 	char buf[256];

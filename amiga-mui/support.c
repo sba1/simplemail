@@ -719,10 +719,14 @@ int sm_system(char *command, char *output)
 	return error;
 }
 
-/******************************************************************
- Checks weather a file is in the given drawer. Returns 1 for
- success.
-*******************************************************************/
+/**
+ * Checks whether a file is in the given drawer. Returns 1 for
+ * success. The given arguments may be absolute or relative.
+ *
+ * @param filename
+ * @param path
+ * @return
+ */
 int sm_file_is_in_drawer(char *filename, char *path)
 {
 	BPTR dir = Lock(path,ACCESS_READ);
@@ -743,6 +747,34 @@ int sm_file_is_in_drawer(char *filename, char *path)
 		UnLock(dir);
 	}
 	return rc;
+}
+
+/**
+ * Checks whether the given paths represent the same resource.
+ *
+ * @param path1
+ * @param path2
+ * @return
+ */
+int sm_is_same_path(char *path1, char *path2)
+{
+	int is_same;
+	BPTR l1,l2;
+
+	if (!(l1 = Lock(path1,ACCESS_READ))) return 0;
+	if (!(l2 = Lock(path2,ACCESS_READ)))
+	{
+		UnLock(l1);
+		return 0;
+	}
+
+	if (SameLock(l1,l2)==LOCK_SAME) is_same = 1;
+	else is_same = 0;
+
+	UnLock(l2);
+	UnLock(l1);
+
+	return is_same;
 }
 
 /******************************************************************

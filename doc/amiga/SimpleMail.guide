@@ -2614,7 +2614,7 @@ specified, activates an already opened Read Message window. Use QUIET
 if the window should stay invisible.
 
 
-MAILSETSTATUS    STATUS/A,FILENAME
+MAILSETSTATUS    FILENAME,STATUS/A
 
 Sets the status of the mail represented by the given filename or the
 currently selected mail. Parameter STATUS may be any character given

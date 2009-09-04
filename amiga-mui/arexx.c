@@ -859,6 +859,7 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 				case	MAIL_STATUS_REPLFORW: mail_status = "R";break;
 				case	MAIL_STATUS_HOLD: mail_status = "H";break;
 				case	MAIL_STATUS_ERROR: mail_status = "E";break;
+				case	MAIL_STATUS_SPAM: mail_status = "M";break;
 				default: if (mail->flags & MAIL_FLAGS_NEW) mail_status = "N";
 								 else mail_status = "U"; break;
 			}
@@ -1464,6 +1465,66 @@ static void arexx_mailadd(struct RexxMsg *rxmsg, STRPTR args)
 }
 
 /****************************************************************
+ MAILSETSTATUS Arexx Command
+
+ Sets the status of a given mail (or selected mail).
+*****************************************************************/
+static void arexx_mailsetstatus(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct
+	{
+		STRPTR filepath;
+		STRPTR status;
+	} mailsetstatus_arg;
+	memset(&mailsetstatus_arg,0,sizeof(mailsetstatus_arg));
+
+	if ((arg_handle = ParseTemplate("FILENAME,STATUS/A",args,&mailsetstatus_arg)))
+	{
+		struct mail_info *mail;
+		struct folder *f;
+
+		if (mailsetstatus_arg.filepath)
+		{
+			if ((f = folder_find_by_file(mailsetstatus_arg.filepath)))
+			{
+				mail = folder_find_mail_by_filename(f,sm_file_part(mailsetstatus_arg.filepath));
+			} else mail = NULL;
+		} else
+		{
+			mail = main_get_active_mail();
+			f = main_get_folder();
+		}
+
+		if (f && mail)
+		{
+			int new_status;
+			switch(*mailsetstatus_arg.status)
+			{
+				case	'O': new_status = MAIL_STATUS_READ; break;
+				case	'W': new_status = MAIL_STATUS_WAITSEND; break;
+				case	'R': new_status = MAIL_STATUS_REPLIED; break;
+				case	'F': new_status = MAIL_STATUS_FORWARD; break;
+				case	'H': new_status = MAIL_STATUS_HOLD; break;
+				case	'E': new_status = MAIL_STATUS_ERROR; break;
+				case	'M': new_status = MAIL_STATUS_SPAM; break;
+				case	'U': new_status = MAIL_STATUS_UNREAD; break;
+				default: new_status = -1; break;
+			}
+
+			if (new_status != -1)
+			{
+				folder_set_mail_status(f,mail,new_status);
+				main_refresh_mail(mail);
+			}
+		}
+		FreeTemplate(arg_handle);
+	}
+
+}
+
+/****************************************************************
  MAILFETCH Arexx Command
 *****************************************************************/
 static void arexx_mailfetch(struct RexxMsg *rxmsg, STRPTR args)
@@ -1584,6 +1645,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("SCREENTOFRONT",command.command)) {struct Screen *scr = (struct Screen *)main_get_screen(); if (scr) ScreenToFront(scr);}
 		else if (!Stricmp("REQUESTFOLDER",command.command)) arexx_requestfolder(rxmsg,command.args);
 		else if (!Stricmp("MAILADD",command.command)) arexx_mailadd(rxmsg,command.args);
+		else if (!Stricmp("MAILSETSTATUS",command.command)) arexx_mailsetstatus(rxmsg,command.args);
 		else if (!Stricmp("MAILLISTFREEZE",command.command)) main_freeze_mail_list();
 		else if (!Stricmp("MAILLISTTHAW",command.command)) main_thaw_mail_list();
 		else if (!Stricmp("MAILFETCH",command.command)) arexx_mailfetch(rxmsg,command.args);

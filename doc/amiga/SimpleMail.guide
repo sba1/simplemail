@@ -2586,13 +2586,13 @@ MAILINFO        VAR/K,STEM/K,INDEX/N => INDEX/N,STATUS,FROM,TO,REPLYTO,
 Returns information about the message at position INDEX in the message
 list, or the current message if INDEX is omitted.
 
-STATUS is N, O, U, R, F, S, W, H or E, FROM contains the sender, TO is the
-recipient, REPLYTO is the return address, SUBJECT and DATE are obvious and
-FILENAME contains the  file path of the message. SIZE is the size of the
-message  in  bytes, whereas FLAGS is an 8 byte string in "MARCS-00" format
-(M = multiple recipients, A = attachments, R = report, C = encrypted,
-S = signed; the last two digits aren't used at the moment). MSGID contains
-a compressed 32 bit representation of the Message-ID.
+STATUS is N, O, U, R, F, S, W, H, E, or M (spam). FROM contains the sender,
+TO is the recipient, REPLYTO is the return address, SUBJECT and DATE are
+obvious and FILENAME contains the  file path of the message. SIZE is the
+size of the message  in  bytes, whereas FLAGS is an 8 byte string in
+"MARCS-00" format (M = multiple recipients, A = attachments, R = report,
+C = encrypted, S = signed; the last two digits aren't used at the moment).
+MSGID contains a compressed 32 bit representation of the Message-ID.
 
 
 MAILLISTFREEZE
@@ -2613,6 +2613,13 @@ Loads the active message in the Read Message window or, if WINDOW is
 specified, activates an already opened Read Message window. Use QUIET
 if the window should stay invisible.
 
+
+MAILSETSTATUS    STATUS/A,FILENAME
+
+Sets the status of the mail represented by the given filename or the
+currently selected mail. Parameter STATUS may be any character given
+in the STATUS return value of the MAILINFO command. Note that changing
+the status may change also the filename.
 
 MAILWRITE        MAILTO/K,SUBJECT/K
 

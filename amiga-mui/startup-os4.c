@@ -23,6 +23,10 @@
 #define FAST_SEEK
 
 /*#define MEMWALL*/
+
+/* Define to identify false memory accesses. Slow downs the program */
+/*#define MEMGRIND*/
+
 /*#define MYDEBUG*/
 #include "amigadebug.h"
 
@@ -47,6 +51,9 @@ struct DOSIFace *IDOS;
 struct UtilityIFace *IUtility;
 struct Interface *IIntuition;
 struct LocaleIFace *ILocale;
+#ifdef MEMGRIND
+struct MMUIFace *IMMU;
+#endif
 struct Interface *IDataTypes;
 struct Interface *IKeymap;
 struct Interface *IIFFParse;
@@ -241,22 +248,265 @@ static void close_libs(void)
  Memory stuff (thread safe)
 ******************************************/
 
-APTR pool;
 struct SignalSemaphore pool_sem;
+APTR pool;
+
+#ifdef MEMGRIND
+static ULONG ExecPageSize;
+static ULONG CPUPageSize;
+
+struct page
+{
+	void *mem_base;
+	int page_size;
+	int num_bytes_free;
+
+	struct MinList allocations; /* page_entry */
+	void *mem_current;
+
+	struct page *next;
+};
+
+struct page_entry
+{
+	struct MinNode node;
+	void *address;
+	int size;
+	int freed;
+};
+
+struct page *first_page;
+
+/**
+ * Creates a new page that can hold at least min_bytes
+ * of memory.
+ *
+ * @param min_bytes
+ * @return
+ */
+static struct page *new_page(int min_bytes)
+{
+	void *mem_base;
+	int num_blocks;
+
+
+IExec->DebugPrintF("New page %ld\n",min_bytes);
+
+	struct page *page = (struct page*)IExec->AllocVec(sizeof(*page),MEMF_CLEAR);
+	if (!page) return NULL;
+
+	num_blocks = (min_bytes + ExecPageSize - 1) / ExecPageSize;
+	IExec->NewMinList(&page->allocations);
+
+	mem_base = IExec->AllocVecTags(num_blocks * ExecPageSize,
+				AVT_Type, MEMF_PRIVATE,
+//				AVT_Contiguous, TRUE,
+				AVT_Lock, TRUE,
+				AVT_PhysicalAlignment, ExecPageSize,
+				AVT_Alignment, ExecPageSize,
+				TAG_DONE);
+	if (!mem_base)
+	{
+		IExec->FreeVec(page);
+		return NULL;
+	}
+
+	{
+		APTR old_stack = IExec->SuperState();
+		IMMU->SetMemoryAttrs(mem_base, num_blocks * ExecPageSize,
+				/*IMMU->GetMemoryAttrs(mem_base,0) | */MEMATTRF_SUPER_RW);
+
+		IExec->UserState(old_stack);
+	}
+	page->mem_base = mem_base;
+	page->mem_current = mem_base;
+	page->page_size = num_blocks * ExecPageSize;
+	page->num_bytes_free = page->page_size;
+	return page;
+}
+
+static void delete_page(struct page *page)
+{
+IExec->DebugPrintF("Deleting page of %ld bytes\n",page->page_size);
+	IExec->FreeVec(page->mem_base);
+	IExec->FreeVec(page);
+}
+
+#endif
+
+#ifdef MEMGRIND
+
+ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapData)
+{
+	uint32 instruction = *(uint32*)context->ip;
+	uint32 dar = context->dar;
+
+	uint32 op_code;
+	uint32 sub_code;
+	uint32 a_reg;
+	uint32 d_reg;
+
+	op_code = (instruction & 0xFC000000) >> 26;
+	d_reg   = (instruction & 0x03E00000) >> 21;
+	a_reg   = (instruction & 0x001F0000) >> 16;
+	sub_code =  (instruction & 0x7FE) >> 1;
+
+	switch (op_code)
+	{
+		case	36: /* stw */
+				{
+//					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
+
+					*((uint32*)dar) = context->gpr[d_reg];
+					context->ip += 4;
+					return 1;
+//					IExec->DebugPrintF("reg=%p\n",context->gpr[d_reg]);
+				}
+				return 0;
+
+		case	38: /* stb */
+				{
+//					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
+
+					*((uint8*)dar) = context->gpr[d_reg];
+					context->ip += 4;
+					return 1;
+				}
+				break;
+
+		case	39: /* stbu */
+				{
+//					IExec->DebugPrintF("Store %p at %p with update\n",context->gpr[d_reg],dar);
+
+					*((uint8*)dar) = context->gpr[d_reg];
+					context->gpr[a_reg] = dar;
+					context->ip += 4;
+					return 1;
+				}
+				break;
+
+		case	44:	/* sth */
+				{
+//					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
+
+					*((uint16*)dar) = context->gpr[d_reg];
+					context->ip += 4;
+					return 1;
+				}
+				break;
+
+		case	32: /* lwz */
+				{
+//					IExec->DebugPrintF("Load from %p to reg %ld\n",dar,d_reg);
+
+					context->gpr[d_reg] = *((uint32*)dar);
+					context->ip += 4;
+					return 1;
+				}
+				break;
+
+		case	33: /* lwzu */
+				context->gpr[d_reg] = *((uint32*)dar);
+				context->gpr[a_reg] = dar;
+				context->ip += 4;
+				return 1;
+
+		case	34: /* lbz */
+//				IExec->DebugPrintF("Load byte from %p to reg %ld\n",dar,d_reg);
+				context->gpr[d_reg] = *((uint8*)dar);
+				context->ip += 4;
+				return 1;
+
+		case	35: /* lbzu */
+//				IExec->DebugPrintF("Load byte from %p to reg %ld with update\n",dar,d_reg);
+				context->gpr[d_reg] = *((uint8*)dar);
+				context->gpr[a_reg] = dar;
+				context->ip += 4;
+				return 1;
+
+		case	40:	/* lhz */
+				context->gpr[d_reg] = *((uint16*)dar);
+				context->ip += 4;
+				return 1;
+
+		case	42: /* lha */
+				context->gpr[d_reg] = *((uint16*)dar);
+				if (context->gpr[d_reg] & 0x8000) context->gpr[d_reg] |= 0xffff0000;
+				context->ip += 4;
+				return 1;
+
+		case	31:
+				{
+					switch (sub_code)
+					{
+						case	23: /* lwzx */
+//							IExec->DebugPrintF("Load from %p to reg %ld\n",dar,d_reg);
+
+							context->gpr[d_reg] = *((uint32*)dar);
+							context->ip += 4;
+							return 1;
+
+						case	87: /* lbzx */
+							context->gpr[d_reg] = *((uint8*)dar);
+							context->ip += 4;
+							return 1;
+
+						case	151: /* stwx */
+//							IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
+
+							*((uint32*)dar) = context->gpr[d_reg];
+							context->ip += 4;
+							return 1;
+
+						case	215: /* stbx */
+							*((uint8*)dar) = context->gpr[d_reg];
+							context->ip += 4;
+							return 1;
+					}
+				}
+				break;
+	}
+
+	IExec->DebugPrintF("Trap Instruction=%p DAR=%p  op_code = %ld subcode = %ld d_reg = %p a_reg = %p\n",instruction,dar,op_code,sub_code,d_reg,a_reg);
+
+	return 0;
+}
+
+#endif
 
 static int init_mem(void)
 {
+#ifdef MEMGRIND
+	IExec->GetCPUInfoTags(
+			GCIT_ExecPageSize, &ExecPageSize,
+			GCIT_CPUPageSize, &CPUPageSize,
+			TAG_DONE);
+
+	if (!(IMMU = (struct MMUIFace *)IExec->GetInterface((struct Library *)SysBase, "mmu",1,NULL)))
+		return 0;
+
+
+	IExec->SetTaskTrap(TRAPNUM_DATA_SEGMENT_VIOLATION, trapCode, NULL);
+IExec->DebugPrintF("ExecPageSize = %ld CPUPageSize = %ld\n",ExecPageSize,CPUPageSize);
+#endif
+
 	/* Stuff can be used by multiple tasks */
+	IExec->InitSemaphore(&pool_sem);
 	if ((pool = IExec->CreatePool(MEMF_SHARED,16384,8192)))
-	{
-		IExec->InitSemaphore(&pool_sem);
 		return 1;
-	}
 	return 0;
 }
 
 static void deinit_mem(void)
 {
+#ifdef MEMGRIND
+	while (first_page)
+	{
+		struct page *next_page = first_page->next;
+		delete_page(first_page);
+		first_page = next_page;
+	}
+#endif
 	if (pool) IExec->DeletePool(pool);
 }
 
@@ -274,7 +524,49 @@ void *malloc (size_t size)
 	memsize = size + MEM_INCREASED_SIZE;
 
 	IExec->ObtainSemaphore(&pool_sem);
+#ifndef MEMGRIND
 	mem = IExec->AllocPooled(pool,memsize);
+#else
+	{
+		struct page *p = first_page;
+
+		/* Find free page */
+		while (p)
+		{
+			if (p->num_bytes_free >= memsize) break;
+			p = p->next;
+		}
+
+		if (!p)
+		{
+			/* Allocate page if no free page has been found */
+			if (!(p = new_page(memsize)))
+			{
+				IExec->ReleaseSemaphore(&pool_sem);
+				return NULL;
+			}
+			p->next = first_page;
+			first_page = p;
+		}
+
+		{
+			struct page_entry *e = (struct page_entry*)IExec->AllocPooled(pool,sizeof(*e));
+			if (!e)
+			{
+				/* We do not revert a possible creation of a page */
+				IExec->ReleaseSemaphore(&pool_sem);
+				return NULL;
+			}
+			IExec->AddTail((struct List*)&p->allocations,(struct Node*)&e->node);
+			e->size = memsize;
+			e->address = p->mem_current;
+			p->mem_current = ((char*)e->address) +  memsize;
+			p->num_bytes_free -= memsize;
+			mem = e->address;
+			IExec->DebugPrintF("mem = %p memsize = %p\n",mem,memsize);
+		}
+	}
+#endif
 	IExec->ReleaseSemaphore(&pool_sem);
 	if (!mem) return NULL;
 	mem[0] = memsize;
@@ -327,9 +619,11 @@ void free(void *m)
 
 	memsize = mem[0];
 	memset(mem,0xcc,memsize);
+#ifndef MEMGRIND
 	IExec->ObtainSemaphore(&pool_sem);
 	IExec->FreePooled(pool,mem,memsize);
 	IExec->ReleaseSemaphore(&pool_sem);
+#endif
 }
 
 void *realloc(void *om, size_t size)

@@ -1,5 +1,5 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.13 (24.12.2008)
+@$VER: SimpleMail.guide 0.53 (5.9.2009)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <mail@sebastianbauer.info>
 @INDEX "Index"
 
@@ -8,7 +8,7 @@
                          SimpleMail 0.33 (public BETA)
                           (not completely finished yet)
 
-               (C) 2000-2008 by Hynek Schlawack & Sebastian Bauer
+               (C) 2000-2009 by Hynek Schlawack & Sebastian Bauer
  
                      Released under the GNU Public License
 
@@ -2513,210 +2513,1258 @@ won't work, as there is a space in the variable. Better use this instead:
 
   MAILWRITE MAILTO ralf\@provider.de SUBJECT "'subj'"
 
+
+Please note that because of the internal use of the ReadArgs() function,
+the ARexx Host requires to escape certain special characters like a newline
+(0x0a) or escape character (0x1b) if you want to have it included in your
+final string or otherwise it is stripped by the ReadArgs() function.
+
+This means that you have to use the following escape sequences in your
+provided strings:
+
+*n substitutes to 0x0a
+*E substitutes to 0x1b
+** substitutes to *
+*" substitutes to "
+
+For example the following command would write a string to a texteditor
+containing a newline:
+
+'REQUEST BODY "TEXT Hello Joe,*n I would like to meet you." "_Ok"'
+
+
+Here are some escape sequences that can be used with most MUI text classes:
+
+ *Eu    -> underline
+ *Eb    -> bold
+ *Ei    -> italic
+ *En    -> normal text
+ *E<n>  -> <n> being a number from 2 to 9,
+           change the pen color for the text
+
+These ones must be at the beginning of a string, or just after a *n :
+
+ *Ec    -> center text
+ *Er    -> justify right
+ *El    -> justify left
+
 @ENDNODE
-@NODE "REX2" "Supported ARexx commands"
+@NODE "REX2" "Reference - ARexx interface"
+@PREV "AREX"
 
-SUPPORTED AREXX COMMANDS
-
-
-ADDRGOTO        ALIAS/A
-
-Makes the address book entry referred by ALIAS the current one.
+Alphabetical list of all ARexx commands
+=======================================
 
 
-ADDRNEW         VAR/K,STEM/K,TYPE,ALIAS,NAME,EMAIL => ALIAS
+ @{" ADDRGOTO          " link "RX_ADDRGOTO"}  - Select an address book entry by alias
+ @{" ADDRNEW           " link "RX_ADDRNEW"}  - Create a new entry in the address book
+ @{" ADDRSAVE          " link "RX_ADDRSAVE"}  - Save the address book under a given filename
+ @{" FOLDERINFO        " link "RX_FOLDERINFO"}  - Return information about a given folder
+ @{" GETMAILSTAT       " link "RX_GETMAILSTAT"}  - Return the number of total, new and unread mails
+ @{" GETURL            " link "RX_GETURL"}  - Download a file from the WWW based on a given URL
+ @{" HIDE              " link "RX_HIDE"}  - Iconify SimpleMail
+ @{" MAILADD           " link "RX_MAILADD"}  - Add a message to the folder
+ @{" MAILINFO          " link "RX_MAILINFO"}  - Return information about a given message
+ @{" MAILLISTFREEZE    " link "RX_MAILLISTFREEZE"}  - Freeze the refresh of the message list
+ @{" MAILLISTTHAW      " link "RX_MAILLISTTHAW"}  - Re-enable the refresh of the message list
+ @{" MAILREAD          " link "RX_MAILREAD"}  - Load the active message in the Read Message window
+ @{" MAILSETSTATUS     " link "RX_MAILSETSTATUS"}  - Change the status of a mail
+ @{" MAILWRITE         " link "RX_MAILWRITE"}  - Open a new Write window to compose a new mail
+ @{" MAINTOFRONT       " link "RX_MAINTOFRONT"}  - Brings the main window to the front
+ @{" NEWMAILFILE       " link "RX_NEWMAILFILE"}  - Return a free message slot for a given folder
+ @{" OPENMESSAGE       " link "RX_OPENMESSAGE"}  - Open a specified mail
+ @{" QUIT              " link "RX_QUIT"}  - Terminate SimpleMail
+ @{" READCLOSE         " link "RX_READCLOSE"}  - Close the active Read window
+ @{" READINFO          " link "RX_READINFO"}  - Get info about the attachments in the message being read
+ @{" READSAVE          " link "RX_READSAVE"}  - Save an attachment
+ @{" REQUEST           " link "RX_REQUEST"}  - Request a choice from the user
+ @{" REQUESTFILE       " link "RX_REQUESTFILE"}  - Request the user to select a file
+ @{" REQUESTFOLDER     " link "RX_REQUESTFOLDER"}  - Request the user to select a folder
+ @{" REQUESTSTRING     " link "RX_REQUESTSTRING"}  - Request the user for a string
+ @{" SCREENTOBACK      " link "RX_SCREENTOBACK"}  - Bring the SimpleMail screen to the background
+ @{" SCREENTOFRONT     " link "RX_SCREENTOFRONT"}  - Bring the SimpleMail screen to the foreground
+ @{" SETFOLDER         " link "RX_SETFOLDER"}  - Select the current folder
+ @{" SETMAIL           " link "RX_SETMAIL"}  - Select the current message in the current folder by number
+ @{" SETMAILFILE       " link "RX_SETMAILFILE"}  - Select the current message in the current folder by filename
+ @{" SHOW              " link "RX_SHOW"}  - Uniconify SimpleMail
 
-Creates a new entry in the address book and inserts it below the active
-entry. TYPE can be G for groups and defaults to a person entry. At least
-one of the fields ALIAS, NAME, or EMAIL must be specified. On success,
-the alias of the created entry will be returned.
+@ENDNODE
+@NODE "RX_ADDRGOTO" "ARexx command: ADDRGOTO"
 
+ADDRGOTO
+--------
 
-ADDRSAVE        FILENAME
+@{b}NAME@{ub}
+     AddrGoto -- Makes the address book entry referred by ALIAS the
+                 current one.
 
-Saves the address book using the specified filename, or the current one
-if no filename is specified.
+@{b}TEMPLATE@{ub}
+     ALIAS/A
 
+@{b}FUNCTION@{ub}
+     Makes the address book entry referred by ALIAS the current one.
 
-FOLDERINFO      VAR/K,STEM/K,FOLDER => NUMBER/N,NAME,PATH,TOTAL/N,NEW/N,
-                UNREAD/N,SIZE/N,TYPE/N
-		
-Returns information about the specified FOLDER, or the current folder if no
-folder is specified. NUMBER selects a folder by its position in the folder
-list (0 = top folder), PATH is the directory and SIZE is the total size in
-bytes. TOTAL, NEW and UNREAD are the number of total, new and unread
-messages, respectively. TYPE is the type of folder, possible values are
-0 (normal), 1 (incoming), 2 (outgoing), 3 (sent, this is the default),
-4 (deleted), 5 (sent), 6 (sent and received), 7 (group) and 8 (spam).
+@{b}INPUTS@{ub}
+     ALIAS/A   - alias of the address book entry
 
+@{b}RETURNS@{ub}
 
-GETSELECTED     VAR/K,STEM/K => NUM/N/M
+@{b}NOTES@{ub}
 
-Get positions of selected messages in the current folder. The message on
-top of the list gets position 0.
+@{b}EXAMPLE@{ub}
 
+@{b}BUGS@{ub}
 
-GETMAILSTAT     VAR/K,STEM/K => TOTAL/N,NEW/N,UNREAD/N
+@{b}SEE ALSO@{ub}
 
-Returns the number of total, new and unread mails.
+@ENDNODE
+@NODE "RX_ADDRNEW" "ARexx command: ADDRNEW"
 
+ADDRNEW
+-------
 
-GETURL          URL/A,FILENAME/A
+@{b}NAME@{ub}
+     AddrNew -- Creates a new entry in the address book.
 
-Downloads a file from the web using the HTTP protocol and saves it to
-FILENAME. RC is set to 5 if you're not online, or 10 if the URL couldn't
-be found.
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,TYPE,ALIAS,NAME,EMAIL
 
+@{b}FUNCTION@{ub}
+     Creates a new entry in the address book and inserts it below
+     the active entry.
+
+@{b}INPUTS@{ub}
+     VAR/K   - variable where the alias of the resulting entry will
+               be stored
+     STEM/K  - base name used for the stem where the alias of the
+               resulting entry will be stored
+     TYPE    - TYPE can be G for groups and defaults to a person
+               entry
+     ALIAS   - alias for the new entry
+     NAME    - real name for the new entry
+     EMAIL   - email address for the new entry
+
+@{b}RETURNS@{ub}
+     On success, the alias of the created entry will be returned.
+
+@{b}NOTES@{ub}
+     At least one of the fields ALIAS, NAME, or EMAIL must be specified.
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_ADDRSAVE" "ARexx command: ADDRSAVE"
+
+ADDRSAVE
+--------
+
+@{b}NAME@{ub}
+     AddrSave -- Saves the address book to disk.
+
+@{b}TEMPLATE@{ub}
+     FILENAME
+
+@{b}FUNCTION@{ub}
+     Saves the address book using the specified filename, or the
+     current one if no filename is specified.
+
+@{b}INPUTS@{ub}
+     FILENAME  - Name of the file the address book is saved to
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_FOLDERINFO" "ARexx command: FOLDERINFO"
+
+FOLDERINFO
+----------
+
+@{b}NAME@{ub}
+     FolderInfo -- Returns information about a folder.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,FOLDER
+
+@{b}FUNCTION@{ub}
+     Returns information about the specified FOLDER, or the current
+     folder if no folder is specified.
+
+@{b}INPUTS@{ub}
+     VAR     - variable where the results will be stored
+     STEM    - base name used for the stems where the returned data
+               will be stored
+     FOLDER  - name of the folder
+
+@{b}RETURNS@{ub}
+     VAR          - string with a space separated list of the results
+                    of the query
+     <STEM>NUMBER - position of the folder in the folder list; the folder
+                    at the top is in slot 0
+     <STEM>NAME   - name of the folder as shown in the folder list
+     <STEM>PATH   - path of the folder
+     <STEM>TOTAL  - total number of messages in the folder
+     <STEM>NEW    - number of new messages in the folder
+     <STEM>UNREAD - number of unread messages in the folder
+     <STEM>SIZE   - size of the folder, in bytes
+     <STEM>TYPE   - type of folder, possible values are:
+
+                       0 - normal
+                       1 - incoming
+                       2 - outgoing
+                       3 - sent (for the default "Sent" folder)
+                       4 - deleted
+                       5 - sent
+                       6 - sent and received
+                       7 - group
+                       8 - spam
+
+     RC is set to 10 if the specified folder cannot be found.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+         /* Enable result codes */
+
+         OPTIONS RESULTS
+
+         /* Request info */
+
+         FOLDERINFO 'Incoming' STEM fi.
+
+         /* Display results */
+
+         SAY 'Folder number:   'fi.number
+         SAY 'Folder name:     'fi.name
+         SAY 'Path:            'fi.path
+         SAY 'Total messages:  'fi.total
+         SAY 'New messages:    'fi.new
+         SAY 'Unread messages: 'fi.unread
+         SAY 'Total size:      'fi.size
+         SAY 'Type:            'fi.type
+
+@{b}BUGS@{ub}
+     A missing check for a NULL pointer used to make the command cause
+     Enforcer hits if no alias was supplied.  This was fixed in V2.4.
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_GETSELECTED" "ARexx command: GETSELECTED"
+
+GETSELECTED
+----------
+
+@{b}NAME@{ub}
+     GetSelected -- Get positions of selected messages in the current folder.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K
+
+@{b}FUNCTION@{ub}
+     Get positions of selected messages in the current folder. The message
+     on top of the list gets position 0.
+
+@{b}INPUTS@{ub}
+     VAR/K    - alternative variable to put the results into instead of
+                RESULT
+     STEM/K   - base name used for the stems where the returned data
+                will be stored
+
+@{b}RETURNS@{ub}
+     VAR             - space separated list of results
+     <STEM>NUM.COUNT - number of selected messages
+     <STEM>NUM.NR    - position of the nth selected message, starting
+                       from 0; the message at the top of the list is
+                       also at position 0
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_GETMAILSTAT" "ARexx command: GETMAILSTAT"
+
+GETMAILSTAT
+-----------
+
+@{b}NAME@{ub}
+     GetMailStat -- Returns the number of total, new and unread mails.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K
+
+@{b}FUNCTION@{ub}
+     Returns the number of total, new and unread mails.
+
+@{b}INPUTS@{ub}
+     VAR/K    - alternative variable to put the results into instead of
+                RESULT
+     STEM/K   - base name used for the stems where the returned data
+                will be stored
+
+@{b}RETURNS@{ub}
+     VAR             - space separated list of results
+     <STEM>TOTAL     - total of mails in the folder
+     <STEM>NEW       - number of new mails
+     <STEM>UNREAD    - number of unread mails
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_GETURL" "ARexx command: GETURL"
+
+GETURL
+------
+
+@{b}NAME@{ub}
+     GetURL -- Download a file from the World Wide Web using HTTP.
+
+@{b}TEMPLATE@{ub}
+     URL/A,FILENAME/A
+
+@{b}FUNCTION@{ub}
+     Downloads a file from the World Wide Web by HTTP and saves it
+     to disk.
+
+@{b}INPUTS@{ub}
+     URL/A        - complete URL to the file
+     FILENAME/A   - complete filename to write the file to
+
+@{b}RETURNS@{ub}
+     RC is set to 5 if a TCP/IP stack is not running, or 10 if it is
+     actually running but not online, if the URL cannot be found, or
+     if the output filename cannot be written to.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_HIDE" "ARexx command: HIDE"
 
 HIDE
+----
 
-Switches SimpleMail to iconified state.
+@{b}NAME@{ub}
+     Hide -- Switches SimpleMail to iconified state.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Switches SimpleMail to iconified state.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SHOW " link "RX_SHOW"}
+
+@ENDNODE
+@NODE "RX_MAILADD" "ARexx command: MAILADD"
+
+MAILADD
+-------
+
+@{b}NAME@{ub}
+     MailAdd -- Add a message file to the folder.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,FILENAME/A,FOLDER
+
+@{b}FUNCTION@{ub}
+     Adds the message file FILENAME to the folder.
+
+@{b}INPUTS@{ub}
+     VAR/K      - alternative variable to put the results into instead of
+                  RESULT
+     STEM/K     - base name used for the stems where the returned data
+                  will be stored
+     FILENAME/A - path and name of the mail file to add
+     FOLDER     - the folder to add the mails to, or the current folder
+                  if not specified
+
+@{b}RETURNS@{ub}
+     VAR             - filename of the mail
+     <STEM>FILENAME  - filename of the mail
+
+     The result is the filename of the message as it can be changed by
+     SimpleMail.
+
+@{b}NOTES@{ub}
+     If FILENAME already exists in the folder, nothing will happen.
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_MAILINFO" "ARexx command: MAILINFO"
+
+MAILINFO
+--------
+
+@{b}NAME@{ub}
+     MailInfo -- Return information about a message.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,INDEX/N
+
+@{b}FUNCTION@{ub}
+     Returns information about a message in the list, or the current
+     message if none is specified.
+
+@{b}INPUTS@{ub}
+     VAR/K     - alternative variable to put the results into instead of
+                 RESULT
+     STEM/K    - base name used for the stems where the returned data will
+                 be stored
+     INDEX/N   - position of the message you want info about, the message
+                 at the top of the list occupying position 0; if no index
+                 is specified, the current message will be used
+
+@{b}RETURNS@{ub}
+     VAR            - info returned by the query
+     <STEM>INDEX    - position of the message in the list; the message
+                      at the top occupies position 0
+     <STEM>STATUS   - status of the message; possible values are
+
+                         N - new
+                         O - read
+                         U - unread
+                         R - replied
+                         F - forwarded
+                         S - sent
+                         W - pending
+                         H - hold
+                         E - error sending
+                         M - spam
+
+     <STEM>FROM     - sender of the message; specifically, the first sender
+                      noted in the "From:" header
+     <STEM>TO       - recipient of the message; actually, the first recipient
+                      noted in the "To:" header
+     <STEM>REPLYTO  - return address of the message; this will be either the
+                      first recipient in the "Reply-To:" header, or the first
+                      sender in the "From:" header if no "Reply-To:" header
+                      exists
+     <STEM>SUBJECT  - subject of the message (contents of the "Subject:"
+                      header)
+     <STEM>FILENAME - filename where the message is stored (without path)
+     <STEM>SIZE     - size of the message, in bytes
+     <STEM>DATE     - date of the message, in "MM-DD-YY HH:MM:SS" format
+     <STEM>FLAGS    - a 8 byte string in "MARCS-00" format:
+
+                         MARCS-00
+                         ||||| ||
+                         ||||| ||
+                         ||||| |`---------- (not used)
+                         ||||| `----------- (not used)
+                         ||||`------------- PGP @{b}S@{ub}igned
+                         |||`-------------- PGP en@{b}C@{ub}rypted
+                         ||`--------------- status @{b}R@{ub}eport
+                         |`---------------- contains @{b}A@{ub}ttachments
+                         `----------------- @{b}M@{ub}ultiple recipients
+
+     <STEM>MSGID    - compressed hexadecimal 32 bit representation of the
+                      "Message-ID:" header contents, e.g. BBC62595
 
 
-MAILADD         VAR/K,STEM/K,FILENAME/A,FOLDER => FILENAME
+@{b}NOTES@{ub}
 
-Adds the message file FILENAME to the folder. If FILENAME already exists
-in the folder, nothing will happen. The result is the filename of the
-message as it can be changed by SimpleMail.
+@{b}EXAMPLE@{ub}
 
+@{b}BUGS@{ub}
 
-MAILINFO        VAR/K,STEM/K,INDEX/N => INDEX/N,STATUS,FROM,TO,REPLYTO,
-                SUBJECT,FILENAME,SIZE/N,DATE,FLAGS,MSGID/N
+@{b}SEE ALSO@{ub}
 
-Returns information about the message at position INDEX in the message
-list, or the current message if INDEX is omitted.
-
-STATUS is N, O, U, R, F, S, W, H, E, or M (spam). FROM contains the sender,
-TO is the recipient, REPLYTO is the return address, SUBJECT and DATE are
-obvious and FILENAME contains the  file path of the message. SIZE is the
-size of the message  in  bytes, whereas FLAGS is an 8 byte string in
-"MARCS-00" format (M = multiple recipients, A = attachments, R = report,
-C = encrypted, S = signed; the last two digits aren't used at the moment).
-MSGID contains a compressed 32 bit representation of the Message-ID.
-
+@ENDNODE
+@NODE "RX_MAILLISTFREEZE" "ARexx command: MAILLISTFREEZE"
 
 MAILLISTFREEZE
+--------------
 
-Freezes the refresh of the message list. Useful if many MAILADDs have to
-be done.
+@{b}NAME@{ub}
+     MailListFreeze -- Freezes the refresh of the message list.
 
-      
-MAILLISTTHAW
+@{b}TEMPLATE@{ub}
 
-Re-enables the refresh of the message list. Used in conjunction with
-MAILLISTFREEZE
+@{b}FUNCTION@{ub}
+     Freezes the refresh of the message list. Useful if many
+     MAILADDs have to be done.
 
-	
-MAILREAD        VAR/K,STEM/K,WINDOW/N,QUIET/S => WINDOW/N
+@{b}INPUTS@{ub}
 
-Loads the active message in the Read Message window or, if WINDOW is
-specified, activates an already opened Read Message window. Use QUIET
-if the window should stay invisible.
+@{b}RETURNS@{ub}
 
+@{b}NOTES@{ub}
 
-MAILSETSTATUS    FILENAME,STATUS/A
+@{b}EXAMPLE@{ub}
 
-Sets the status of the mail represented by the given filename or the
-currently selected mail. Parameter STATUS may be any character given
-in the STATUS return value of the MAILINFO command. Note that changing
-the status may change also the filename.
+@{b}BUGS@{ub}
 
-MAILWRITE        MAILTO/K,SUBJECT/K
+@{b}SEE ALSO@{ub}
+     @{" MAILLISTTHAW " link "RX_MAILLISTTHAW"}
 
-Opens a new Compose Message window using the recipient and subject
-provided, if any. MAILTO can be either an email address or an alias
-(or even group name) that may be found in the addressbook - SimpleMail
-will resolve aliases and group names as appropriate.
+@ENDNODE
+@NODE "RX_MAILLISTTHAW" "ARexx command: MAILLISTTHAW"
 
+ADDRDELETE
+----------
+
+@{b}NAME@{ub}
+     MailListThaw -- Re-enables the refresh of the message list.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Re-enables the refresh of the message list. Used in
+     conjunction with MAILLISTFREEZE
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILLISTFREEZE " link "RX_MAILLISTFREEZE"}
+@ENDNODE
+@NODE "RX_MAILREAD" "ARexx command: MAILREAD"
+
+MAILREAD
+--------
+
+@{b}NAME@{ub}
+     MailRead -- Loads the active message in the Read Message window.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,WINDOW/N,QUIET/S
+
+@{b}FUNCTION@{ub}
+     Loads the current message into the Read window, or activates an
+     already opened Read window to let other commands act upon it
+     afterwards.
+
+@{b}INPUTS@{ub}
+     VAR/K      - alternative variable to put the results into instead of
+                  RESULT
+     STEM/K     - base name used for the stem where the returned data will
+                  be stored
+     WINDOW/N   - change the command behavior to just activate an already
+                  opened Read window, possible values go between 0 and 3
+     QUIET/S    - force the window to stay invisible
+
+@{b}RETURNS@{ub}
+     VAR          - info returned by the command
+     <STEM>WINDOW - number of the Read window now active
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" READCLOSE " link "RX_READCLOSE"}
+
+@ENDNODE
+@NODE "RX_MAILSETSTATUS" "ARexx command: MAILSETSTATUS"
+
+MAILSETSTATUS
+-------------
+
+@{b}NAME@{ub}
+     MailSetStatus -- Set the status of a mail.
+
+@{b}TEMPLATE@{ub}
+     FILENAME,STATUS/A
+
+@{b}FUNCTION@{ub}
+     Sets the status of the mail represented by the given filename
+     or the currently selected mail.
+
+@{b}INPUTS@{ub}
+     FILENAME - filename of the mail
+     STATUS/A - status of the message; possible values are
+
+                         N - new
+                         O - read
+                         U - unread
+                         R - replied
+                         F - forwarded
+                         S - sent
+                         W - pending
+                         H - hold
+                         E - error sending
+                         M - spam
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+     Note that changing the status may change also the filename.
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_MAILWRITE" "ARexx command: MAILWRITE"
+
+MAILWRITE
+---------
+
+@{b}NAME@{ub}
+     MailWrite -- Open a new Compose Message window.
+
+@{b}TEMPLATE@{ub}
+     MAILTO/K,SUBJECT/K
+
+@{b}FUNCTION@{ub}
+     Opens a new Compose Message window using the recipient and
+     subject provided, if any.
+
+@{b}INPUTS@{ub}
+     MAILTO/K - either an email address or an alias (or even group
+                name) that may be found in the addressbook
+     SUBJECT  - the subject title for the new mail
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+     SimpleMail will resolve aliases and group names as appropriate.
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_MAINTOFRONT" "ARexx command: MAINTOFRONT"
 
 MAINTOFRONT
+-----------
 
-Brings the main window to the front.
+@{b}NAME@{ub}
+     MainToFront -- Brings the main window to the front.
 
+@{b}TEMPLATE@{ub}
 
-NEWMAILFILE      VAR/K,STEM/K,FOLDER => FILENAME
+@{b}FUNCTION@{ub}
+     Brings the main window to the front.
 
-Returns a valid, but unused message filename for the FOLDER.
+@{b}INPUTS@{ub}
 
+@{b}RETURNS@{ub}
 
-OPENMESSAGE      VAR/K,STEM/K,FILENAME/A,WINDOW/N => WINDOW/N
+@{b}NOTES@{ub}
 
-Opens the mail specfied by the FILENAME argument. If WINDOW is
-specified, the given window should be used to display the message.
+@{b}EXAMPLE@{ub}
 
+@{b}BUGS@{ub}
 
-READCLOSE
+@{b}SEE ALSO@{ub}
 
-Closes the active Read Message window.
+@ENDNODE
+@NODE "RX_NEWMAILFILE" "ARexx command: NEWMAILFILE"
 
+NEWMAILFILE
+-----------
 
-READINFO         VAR/K,STEM/K => FILENAME/M,FILETYPE/M,FILESIZE/N/M
+@{b}NAME@{ub}
+     NewMailFile -- Returns a valid, but unused message filename
 
-Gets details about the attachments of a message in the active Read Message
-window.
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,FOLDER
 
+@{b}FUNCTION@{ub}
+     Returns a valid, but unused message filename for the FOLDER.
 
-READSAVE         PART/N,FILENAME/K,OVERWRITE/S
+@{b}INPUTS@{ub}
+     VAR/K    - alternative variable to put the results into instead of
+                RESULT
+     STEM/K   - base name used for the stem where the filename will be
+                returned
+     FOLDER   - optional, name or number of the folder; if none if
+                supplied, the current folder will be used
 
-Saves an attachment (or the visible message if PART is omitted) to a file.
+@{b}RETURNS@{ub}
+     VAR            - filename returned, with path
+     <STEM>FILENAME - filename returned, with path
 
+@{b}NOTES@{ub}
 
-REQUEST          VAR/K,STEM/K,BODY/A,GADGETS/A => RESULT/N
+@{b}EXAMPLE@{ub}
 
-Opens a requester containing the text BODY and the buttons GADGETS. The
-number of the selected button is returned as RESULT (0 = right, 1 = left,
-2 = second one from the left, etc). You can define as many buttons as you
-want, e.g. "Yes|Maybe|No|Cancel".
+@{b}BUGS@{ub}
 
+@{b}SEE ALSO@{ub}
 
-REQUESTFOLDER    VAR/K,STEM/K,BODY/A,EXCLUDEACTIVE/S => FOLDER
+@ENDNODE
+@NODE "RX_OPENMESSAGE" "ARexx command: OPENMESSAGE"
 
-Opens a requester containing the text BODY and asking the user to select a
-folder. Specify EXCLUDEACTIVE if the current folder shouldn't be listed.
-The return value contains the name of the folder. If the requester is
-cancelled, RC is set to 1.
+OPENMESSAGE
+-----------
 
+@{b}NAME@{ub}
+     OpenMessage -- Open the mail specfied by the FILENAME argument.
 
-REQUESTSTRING    VAR/K,STEM/K,BODY/A,STRING/K,SECRET/S => STRING
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,FILENAME/A,WINDOW/N
 
-Opens a requester containing the text BODY and asking for a text. STRING
-is the default text, SECRET can be used to request secret data like
-passwords. If the requester is cancelled, RC is set to 1.
+@{b}FUNCTION@{ub}
+     Opens the mail specfied by the FILENAME argument. If WINDOW is
+     specified, the given window should be used to display the
+     message.
 
+@{b}INPUTS@{ub}
+     VAR/K      - alternative variable to put the results into instead
+                  of RESULT
+     STEM/K     - base name used for the stem where the filename will
+                  be returned
+     FILENAME/A - filename of the message to open
+     WINDOW/N   - the window number to use to open the message
 
-SCREENTOBACK
+@{b}RETURNS@{ub}
+     VAR          - number of the window the message is opened in
+     <STEM>WINDOW - number of the window the message is opened in
 
-Brings the SimpleMail screen to the background.
+@{b}NOTES@{ub}
 
+@{b}EXAMPLE@{ub}
 
-SCREENTOFRONT
+@{b}BUGS@{ub}
 
-Brings the SimpleMail screen to the foreground.
+@{b}SEE ALSO@{ub}
 
-
-SETFOLDER        FOLDER/A
-
-Changes the current FOLDER.
-
-
-SETMAIL          NUM/N/A
-
-Selects the current message in the current folder, NUM is 0 to n-1.
-
-
-SETMAILFILE      MAILFILE/A
-
-Selects the current message. MAILFILE is the filename of the message.
-
-
-SHOW
-
-Brings SimpleMail back from its iconified state into full view.
-
+@ENDNODE
+@NODE "RX_QUIT" "ARexx command: QUIT"
 
 QUIT
+----
 
-Exit Simplemail.
+@{b}NAME@{ub}
+     Quit -- Exit SimpleMail
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Quits the application.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_READCLOSE" "ARexx command: READCLOSE"
+
+READCLOSE
+---------
+
+@{b}NAME@{ub}
+     ReadClose -- Closes the active Read Message window.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Closes the active Read Message window.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILREAD " link "RX_MAILREAD"}
+
+@ENDNODE
+@NODE "RX_READINFO" "ARexx command: READINFO"
+
+READINFO
+--------
+
+@{b}NAME@{ub}
+     ReadInfo -- Get details about the attachments of a message.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K
+
+@{b}FUNCTION@{ub}
+     Gets details about the attachments of a message in the active
+     Read Message window.
+
+@{b}INPUTS@{ub}
+     VAR/K    - alternative variable to put the results into instead of
+                RESULT
+     STEM/K   - base name used for the stems where the results will be
+                stored
+
+@{b}RETURNS@{ub}
+     VAR                  - info returned by the query
+     <STEM>FILENAME.COUNT - number of parts of the message, excluding
+                            the first header block
+     <STEM>FILENAME.NR    - filename of the nth part of the message, where
+                            nr is a number between 0 and n-1 (0 = first part
+                            after the headers, usually the body of the
+                            message)
+     <STEM>FILETYPE.NR    - content type of the nth part of the message,
+                            where nr is a number between 0 and n-1
+                            (0 = first part after the headers, usually
+                            the body of the message)
+     <STEM>FILESIZE.NR    - size of the nth part of the message, where
+                            nr is a number between 0 and n-1 (0 = first
+                            part after the headers, usually the body of
+                            the message)
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILREAD " link "RX_MAILREAD"}, @{" READSAVE " link "RX_READSAVE"}
+
+@ENDNODE
+@NODE "RX_READSAVE" "ARexx command: READSAVE"
+
+READSAVE
+--------
+
+@{b}NAME@{ub}
+     ReadSave -- Save an attachment.
+
+@{b}TEMPLATE@{ub}
+     PART/N,FILENAME/K,OVERWRITE/S
+
+@{b}FUNCTION@{ub}
+     Saves an attachment (or the visible message if PART is omitted)
+     to a file.
+
+@{b}INPUTS@{ub}
+     PART/N        - part of the message to save, possible values are 1 for
+                     the first part of the message (usually the body), 2 or
+                     higher for further parts, or no value at all to get a
+                     printout of the visible part of the message
+     FILENAME/K    - filename to use
+     OVERWRITE/S   - avoid any security requesters opened due to an
+                     already existing file
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILREAD " link "RX_MAILREAD"}, @{" READINFO " link "RX_READINFO"}
+
+@ENDNODE
+@NODE "RX_REQUEST" "ARexx command: REQUEST"
+
+REQUEST
+-------
+
+@{b}NAME@{ub}
+     Request -- Open a custom requester.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,BODY/A,GADGETS/A
+
+@{b}FUNCTION@{ub}
+     Opens a requester containing the text BODY and the buttons GADGETS.
+
+@{b}INPUTS@{ub}
+     VAR/K       - alternative variable to put the results into instead of
+                   RESULT
+     STEM/K      - base name used for the stem where the result will be
+                   stored
+     BODY/A      - a string containing the body of the requester
+     GADGETS/A   - a string containing a vertical bar ("|") separated list
+                   of gadget labels
+
+@{b}RETURNS@{ub}
+     VAR          - RESULT returned by the query
+     <STEM>RESULT - number of the selected gadget; may be 0 for the
+                    rightmost gadget, 1 for the leftmost gadget, and
+                    2..n for the second, etc. gadget from the left
+
+@{b}NOTES@{ub}
+     Following the MUI specs, every gadget can have a shortcut by
+     inserting a '_' (underscore) character in front of the character
+     that should be used as shortcut.  A default gadget can also be
+     defined with a '*' (asterisk. note: must be escaped) character
+     in front; the default gadget is activated when pressing the
+     <Return> key.
+
+     Styles can also be used.  See the main @{" ARexx " link "AREX"} page
+     for more info.
+
+     Please respect the Amiga User Interface Style Guide when creating
+     requesters.  For instance, the rightmost gadget will be triggered
+     by the <Esc> key, and should always offer a safe way out.
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+     Although the BODY keyword is not mandatory, if you miss to use it
+     and the body text contains one or more spaces, the command will
+     fail without any error code.
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_REQUESTFILE" "ARexx command: REQUESTFILE"
+
+REQUESTFILE
+-----------
+
+@{b}NAME@{ub}
+     RequestFile -- Open a requester asking the user to select a
+                    file.
+
+@{b}TEMPLATE@{ub}
+     STEM/K,DRAWER,FILE/K,PATTERN/K,TITLE/K,POSITIVE/K,NEGATIVE/K,
+     ACCEPTPATTERN/K,REJECTPATTERN/K,SAVEMODE/S,MULTISELECT/S,
+     DRAWERSONLY/S,NOICONS/S
+
+@{b}FUNCTION@{ub}
+     Opens a requester containing the text BODY and asking the user
+     to select a folder. Specify EXCLUDEACTIVE if the current folder
+     shouldn't be listed.
+
+@{b}INPUTS@{ub}
+     STEM/K            - base name used for the stem where the result
+                         will be stored
+     DRAWER            - set the default directory
+     FILE/K            - set the filename by default
+     PATTERN/K         - pattern matching
+     TITLE/K           - title for the window
+     POSITIVE/K        - text to appear in the positive (left) choice
+     NEGATIVE/K        - text to appear in the negative (right) choice
+     ACCEPTPATTERN/K   - only files matching this pattern are shown
+     REJECTPATTERN/K   - files matching this pattern are not shown
+     SAVEMODE/S        - specify to write the file to disk
+     MULTISELECT/S     - allows multiselection
+     DRAWERSONLY/S     - only shows directories
+     NOICONS/S         - do not shows icon (.info) files
+
+@{b}RETURNS@{ub}
+     RESULT returns the selected files, enclosed in double-quotes and
+     separated by a space.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_REQUESTFOLDER" "ARexx command: REQUESTFOLDER"
+
+REQUESTFOLDER
+-------------
+
+@{b}NAME@{ub}
+     RequestFolder -- Open a requester asking the user to select a
+                      folder.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,BODY/A,EXCLUDEACTIVE/S
+
+@{b}FUNCTION@{ub}
+     Opens a requester containing the text BODY and asking the user
+     to select a folder. Specify EXCLUDEACTIVE if the current folder
+     shouldn't be listed.
+
+@{b}INPUTS@{ub}
+     VAR/K             - alternative variable to put the results into
+                         instead of RESULT
+     STEM/K            - base name used for the stem where the result
+                         will be stored
+     BODY/A            - a string containing the body of the requester
+     EXCLUDEACTIVE/S   - exclude the current folder from the list
+
+@{b}RETURNS@{ub}
+     VAR          - info returned by the query
+     <STEM>FOLDER - name of the selected folder
+
+     The return value contains the name of the folder. If the requester
+     is cancelled, RC is set to 1.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SETFOLDER " link "RX_SETFOLDER"}
+
+@ENDNODE
+@NODE "RX_REQUESTSTRING" "ARexx command: REQUESTSTRING"
+
+REQUESTSTRING
+-------------
+
+@{b}NAME@{ub}
+     RequestString -- Open a requester asking for a text string.
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K,BODY/A,STRING/K,SECRET/S
+
+@{b}FUNCTION@{ub}
+     Opens a requester containing the text BODY and asking for a text.
+
+@{b}INPUTS@{ub}
+     VAR/K      - alternative variable to put the results into instead
+                  of RESULT
+     STEM/K     - base name used for the stem where the result will be
+                  stored
+     BODY/A     - a string containing the body of the requester
+     STRING/K   - optional, text string used by default
+     SECRET/S   - force characters to appear as asterisks ('*')
+
+@{b}RETURNS@{ub}
+     VAR          - info returned by the query
+     <STEM>STRING - text entered in the requester
+
+     If the requester is cancelled, RC is set to 1.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_SCREENTOBACK" "ARexx command: SCREENTOBACK"
+
+SCREENTOBACK
+------------
+
+@{b}NAME@{ub}
+     ScreenToBack -- Bring the SimpleMail screen to the background.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Brings the SimpleMail screen to the background.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SCREENTOFRONT " link "RX_SCREENTOFRONT"}
+
+@ENDNODE
+@NODE "RX_SCREENTOFRONT" "ARexx command: SCREENTOFRONT"
+
+SCREENTOFRONT
+-------------
+
+@{b}NAME@{ub}
+     ScreenToFront -- Bring the SimpleMail screen to the foreground.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Brings the SimpleMail screen to the foreground.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SCREENTOBACK " link "RX_SCREENTOBACK"}
+
+@ENDNODE
+@NODE "RX_SETFOLDER" "ARexx command: SETFOLDER"
+
+SETFOLDER
+---------
+
+@{b}NAME@{ub}
+     SetFolder -- Changes the current FOLDER.
+
+@{b}TEMPLATE@{ub}
+     FOLDER/A
+
+@{b}FUNCTION@{ub}
+     Makes the named folder the current folder.
+
+@{b}INPUTS@{ub}
+     FOLDER/A   - name of the folder to turn into the current folder
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" REQUESTFOLDER " link "RX_REQUESTFOLDER"}
+
+@ENDNODE
+@NODE "RX_SETMAIL" "ARexx command: SETMAIL"
+
+SETMAIL
+-------
+
+@{b}NAME@{ub}
+     SetMail -- Select the current message in the current folder.
+
+@{b}TEMPLATE@{ub}
+     NUM/N/A
+
+@{b}FUNCTION@{ub}
+     Selects the current message in the current folder.
+
+@{b}INPUTS@{ub}
+     NUM/N/A   - position occupied by the message in the list, may be
+                 a number between 0 and n-1
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SETMAILFILE " link "RX_SETMAILFILE"}
+
+@ENDNODE
+@NODE "RX_SETMAILFILE" "ARexx command: SETMAILFILE"
+
+SETMAILFILE
+-----------
+
+@{b}NAME@{ub}
+     SetMailFile -- Selects the current message by its filename.
+
+@{b}TEMPLATE@{ub}
+     MAILFILE/A
+
+@{b}FUNCTION@{ub}
+     Make a message selected by its filename the current one.
+
+@{b}INPUTS@{ub}
+     MAILFILE/A   - filename of the mail
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" SETMAIL " link "RX_SETMAIL"}
+
+@ENDNODE
+@NODE "RX_SHOW" "ARexx command: SHOW"
+
+SHOW
+----
+
+@{b}NAME@{ub}
+     Show -- Bring SimpleMail back from its iconified state.
+
+@{b}TEMPLATE@{ub}
+
+@{b}FUNCTION@{ub}
+     Brings SimpleMail back from its iconified state into full view.
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" HIDE " link "RX_HIDE"}
 
 @ENDNODE
 @NODE "TIPS" "FAQ"

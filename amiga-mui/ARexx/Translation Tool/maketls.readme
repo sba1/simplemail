@@ -1,0 +1,186 @@
+maketls.rexx v1.5  README
+
+
+About:
+maketls.rexx is an ARexx script which helps to add
+localisation support for ARexx programs easier by
+building a translation file to be used with them.
+
+Author:
+AmigaPhil  <AmigaPhil scarlet be>
+
+
+Distribution:
+Freeware.  Feel free to add the maketls tool to any software
+package you want, as long as the script (maketls.rexx) and this
+readme file (maketls.readme) are undissocied and unaltered.
+If available, please also include translation files for this
+script and translations of this readme.
+
+If you wish to distribute a modified version of the script,
+please abide by these guidelines:
+- Change the name of the script to avoid any confusion;
+- Change the name of the author to yours;
+- Give me credit for the inspiration  ;-)  and when possible,
+  include a resource where you found the original script.
+- Please, PLEASE, avoid to expose my e-mail address to any
+  web spider and other bots !
+
+
+
+Main usage (for translators):
+To create (or update) a language translation file,
+use maketls.rexx from shell :
+
+  rx maketls.rexx <arguments>
+
+Where <arguments> are:
+
+ - SRCFILE (required) is the absolute path and name of the
+   script to be scanned for strings to translate.
+
+ - LANGUAGE (required) is the name of the language for which
+   you want to translate the source script into.
+   NOTE: Since OS4.0, the language names to use are
+   in English.  That is "french" for French instead
+   of "français".
+
+ - DSTDIR is optional (default is the directory of the source
+   script).  It is the absolute path to where you want the
+   "Locale/Catalogs/<language>/<source script>.catalog"
+   file to be created (or updated).
+
+Then, edit the new (or updated) file to add your
+translations.
+
+
+Alternative usage (for authors):
+To review the strings that are available for translation in
+your script, type from shell :
+
+  rx maketls.rexx CHECK <arguments>
+
+(Note that the CHECK keyword MUST be the first given argument.)
+<arguments> are:
+
+ - SRCFILE (required), as in the main usage.
+
+ - DSTDIR (optional, default is the directory of the source
+   script), is where the file "<source script>.check" will
+   be created.  The output contains all strings available for
+   translation, sorted in reverted alphanumeric order (case
+   insensitive), and prepended by the line number of the
+   <source script> they were found.
+
+
+
+
+To include localisation support in your own script:
+
+- Add the following 2 functions to your script;
+  (See bottom of this page.)
+
+  tlstext. is a reserved stem which will hold
+  the translations array.
+
+  tls() and gettlstext() are reserved function
+  names. (They are the functions you have added
+  to your script.)
+
+- Replace each string intended to be output (and
+  translated) by a call to the tls() function.
+  Like:
+
+  SAY tls('example of output string.')
+
+- Somewhere in the begining of your script, you
+  will have to load a translation file.  This is
+  done by a call to the gettlstext() function.
+  The argument to give is the language to load, like:
+
+  CALL gettlstext(UserLanguage)
+
+  The search path followed for the language file is:
+  - the current directory when gettlstext() is called,
+  - the program directory (source script),
+  - the system (Sys:) directory.
+
+  From now, your script is ready for multi-
+  language support.
+
+- Add the "Translation Tool" directory to your
+  package.
+
+- Look at the included Rexx / DOS (IconX) scripts
+  for inspiration for your program.
+
+
+That's it.
+
+
+AmigaPhil
+
+
+
+
+
+
+The new ARexx functions to paste in your script:
+
+
+
+/* This is the function which translates the output strings */
+/* to the user's prefered language                          */
+
+tls: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG instring
+
+  IF instring = '' THEN RETURN instring
+  IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
+  IF tlstext.instring = '' THEN RETURN instring
+
+  RETURN tlstext.instring
+
+
+/* This function loads the translation file (.catalog) */
+
+gettlstext: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG language
+  IF language = '' THEN RETURN
+
+  currentDir = PRAGMA('D')
+  scriptDir  = ''
+  PARSE SOURCE scriptPath
+  scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
+  parpos = LASTPOS('/', scriptPath)
+  IF parpos = 0 THEN parpos = POS(':', scriptPath)
+  IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
+  scriptName = SUBSTR(scriptPath, parpos + 1)
+  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+
+  IF OPEN('lf',langFile, 'R') THEN DO
+    tlssrc = ''
+    tlsdst = ''
+    DO WHILE ~EOF('lf')
+      instring = STRIP(READLN('lf'))
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF tlssrc ~= '' THEN DO
+        IF tlsdst ~= '' THEN DO
+          tlstext.tlssrc = tlsdst
+          tlssrc = ''
+          tlsdst = ''
+        END
+      END
+    END
+    CALL CLOSE('lf')
+  END
+
+  CALL PRAGMA('D',currentDir)
+
+  RETURN
+
+

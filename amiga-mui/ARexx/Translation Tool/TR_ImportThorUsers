@@ -1,0 +1,44 @@
+; Create/update translation file
+; using the maketls.rexx script.
+
+failat 30
+
+; Set here the name of the source file (without any path):
+set srcfile "ImportThorUsers.smrx"
+
+; As by default the Translation Tool directory is in
+; the PROGDIR:, the default path for the source file
+; is the parent directory.
+set curdir `cd`
+cd >NIL: /
+if val $RC gt 0          ; Already in a root dir ?
+   set srcdir "$curdir"
+else
+   set srcdir `cd`       ; If not, set source directory
+   cd "$curdir"          ; to the parent directory.
+endif
+
+echo "Create/update a translation file for $srcfile"
+if $Language eq "*$Language"
+   set Language "english"
+endif
+echo "Default language is $Language."
+echo "Translation language ? " noline
+set >NIL: trlang ?
+if $trlang eq "*$trlang"
+   set trlang "$Language"
+endif
+if $trlang eq "english"
+   echo "A translation file is not needed as"
+   echo "English is the default language."
+   wait 5
+   endcli
+   quit
+endif
+echo ""
+
+rx maketls.rexx "$srcdir$$/$srcfile" "$trlang"
+
+wait 5
+endcli
+

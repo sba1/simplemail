@@ -1,0 +1,524 @@
+/*
+This is an ARexx-Script for SimpleMail
+
+$VER: ImportThorUsers.smrx 1.0 (11.08.09)
+$Author: AmigaPhil
+$Label: Import Thor's address book
+$Desc: Import contact addresses from Thor's Userbase into SimpleMail
+*/ 
+
+options results
+
+version  = SUBWORD(SOURCELINE(4),3,1)
+wrapat = 60   /* Word-wrap a line of text to the given size in chars */
+addrcount = 0
+
+/* Localize (maketls.rexx) */
+
+if exists('ENV:Language') then
+   do
+   if open('el', 'ENV:Language', 'R') then
+      do
+      langFile = readln('el')
+      call close('el')
+      call gettlstext(langFile)
+      end
+   end
+
+/* check if SimpleMail is running */
+
+smport = address()
+if left(smport,11) ~== "SIMPLEMAIL." then
+   do
+   address command
+   'WHICH >NIL: REQUESTCHOICE'
+   if rc = 5 then say tls("Error: ") || "ImportThorUsers.smrx" || tls(" must be run from SimpleMail.")
+   else 'RUN >NIL: REQUESTCHOICE >NIL: "ImportThorUsers.smrx" "' || tls("This script must be run from SimpleMail.") || '" "' || tls("Ok") || '"'
+   exit
+   end
+address(smport)
+
+help = "*Ec*EuImportThorUsers.smrx*En v" || version || "*n*n*El"
+help = help || tls("This utility import the contact addresses from Thor's Userbase into SimpleMail. ")
+help = help || tls("(NIY: COMMENT is imported as DESCRIPTION (1st line only), and as NOTE.)") || "*n*n"
+help = help || tls("Please select the source to import from:") || "*n*n"
+help = help || "*EbThor*En : " || tls("Import straight from Thor by talking to its ARexx interface. ")
+help = help || tls("Obviously, Thor must be installed. ")
+help = help || tls("Imports all the fields except the ENCODE8BITMSG flag.") || "*n*n"
+help = help || "*Eb" || tls("Text file") || "*En : " || tls("Import from a text file whose structure is the same one ")
+help = help || tls("as exported by 'SaveUserlist.thor' (Arexx script for Thor by Petter Nilsen). ")
+help = help || tls("Imports NAME, ADDRESS, ALIAS, and COMMENT.") || "*n*n"
+help = help || "*Eb" || tls("Database") || "*En : " || tls("Import contact data extracted from the 'User.tags' binary file. ")
+help = help || tls("All valid emails will be added, including users that were marked as deleted. ")
+help = help || tls("Import all the fields it can retrieves except the ENCODE8BITMSG flag.") || "*n"
+'REQUEST BODY "'smwrap(help,wrapat)'" "Thor|' || tls("Text file") || '|' || tls("Database") || '|' || tls("Cancel") || '"'
+select
+   when result = 1 then call fromThor()
+   when result = 2 then call fromText()
+   when result = 3 then call fromData()
+   otherwise exit
+end
+
+exit
+
+
+
+/* Import from Thor */
+
+fromThor:
+
+p = ' ' || address() || ' ' || show('P',,)
+thorport = pos(' THOR.',p)
+if thorport = 0 then
+   do
+   thorrun = 0
+   address command
+   "run >nil: `GetEnv THOR/THORPath`THOR noparsegrab pubscreen Workbench"
+   "WaitForPort THOR.01"
+   if ~show('p', 'THOR.01') then
+      do
+      address(smport)
+      help = tls("Error: ") || tls("Cannot open Thor.") || "*n"
+      help = help || tls("Please check your Thor installation.")
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+      return
+      end
+   else thorport = "THOR.01"
+   end
+else
+   do
+   thorrun = 1
+   thorport = word(substr(p,thorport+1),1)
+   end
+
+if ~show('p', 'BBSREAD') then
+   do
+   address command
+   "run >nil: `GetEnv THOR/THORPath`bin/LoadBBSRead"
+   "WaitForPort BBSREAD"
+   end
+if ~show('p', 'BBSREAD') then
+   do
+   address(smport)
+   help = tls("Error: ") || tls("Cannot load BBSREAD library.") || "*n"
+   help = help || tls("Please check your Thor installation.")
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   return
+   end
+
+address(thorport)
+'ISSTARTUPWINDOW'
+if ~thorrun then
+   do
+   address(smport)
+   'MAINTOFRONT'
+   address(thorport)
+   end
+'CURRENTSYSTEM stem CURRENT'
+if rc = 30 then
+   do
+   help = tls("Error: ") || THOR.LASTERROR
+   'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+   if ~thorrun then 'QUIT'
+   exit
+   end
+else if rc = 1 then
+   do
+   address(BBSREAD)
+   'GETBBSLIST BBSLIST'
+   if rc ~= 0 then
+      do
+      address(thorport)
+      help = tls("Error: ") || BBSREAD.LASTERROR
+      'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+      if ~thorrun then 'QUIT'
+      exit
+      end
+   address(thorport)
+   'REQUESTLIST INSTEM BBSLIST TITLE "' || tls("Select system:") || '" SIZEGADGET'
+   if rc ~= 0 then
+      do
+      if ~thorrun then 'QUIT'
+      return
+      end
+   else CURRENT.BBSNAME = result
+   end
+
+address(BBSREAD)
+'GETBBSDATA "'CURRENT.BBSNAME'" stem BBSDATA'
+if rc ~= 0 then
+   do
+   address(thorport)
+   help = tls("Error: ") || BBSREAD.LASTERROR
+   'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+   if ~thorrun then 'QUIT'
+   exit
+   end
+if (BBSDATA.FIRSTUSER < 1) | (BBSDATA.LASTUSER < 1) then
+   do
+   help = tls("There is no users to import from ") || CURRENT.BBSNAME || "."
+   address(thorport)
+   'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Ok") || '"'
+   if ~thorrun then 'QUIT'
+   exit
+   end
+
+address(thorport)
+'OPENPROGRESS TITLE "' || tls("Importing users from ") || CURRENT.BBSNAME || '" TOTAL 'BBSDATA.LASTUSER-BBSDATA.FIRSTUSER+1' AT "' || tls("_Abort") || '"'
+if rc ~= 0 then
+   do
+   if ~thorrun then 'QUIT'
+   exit
+   end
+window = result
+
+do n = BBSDATA.FIRSTUSER to BBSDATA.LASTUSER
+
+   address(thorport)
+   'UPDATEPROGRESS REQ 'window' CURRENT 'n-BBSDATA.FIRSTUSER+1' PT "' || tls("Importing user #") || n || '"'
+   if rc ~= 0 then
+      do
+      if rc = 5 then
+         do
+         addrcount = 0
+         leave n
+         end
+      else
+         do
+         'CLOSEPROGRESS REQ 'window
+         help = tls("Error: ") || THOR.LASTERROR
+         'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+         if ~thorrun then 'QUIT'
+         exit
+         end
+      end
+   address(BBSREAD)
+   drop USERDATA.
+
+   'READBRUSER BBSNAME "'CURRENT.BBSNAME'" USERNR 'n' DATASTEM USERDATA'
+   if rc ~= 0 then
+      do
+      address(thorport)
+      'CLOSEPROGRESS REQ 'window
+      help = tls("Error: ") || BBSREAD.LASTERROR
+      'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+      if ~thorrun then 'QUIT'
+      exit
+      end
+
+   if ~bittst(USERDATA.FLAGS, 0) then
+      do
+      drop USER.
+      'READBRUSER BBSNAME "'CURRENT.BBSNAME'" USERNR 'n' TAGSSTEM USER'
+      if rc ~= 0 then
+         do
+         address(thorport)
+         'CLOSEPROGRESS REQ 'window
+         help = tls("Error: ") || BBSREAD.LASTERROR
+         'REQUESTNOTIFY TEXT "'help'" BT "' || tls("Cancel") || '"'
+         if ~thorrun then 'QUIT'
+         exit
+         end
+      address(smport)
+
+      call add2SM()
+      addrcount = addrcount + 1
+
+      end
+end
+address(thorport)
+'CLOSEPROGRESS REQ 'window
+if ~thorrun then 'QUIT'
+if addrcount > 0 then
+   do
+   address(smport)
+   'ADDRSAVE'
+   end
+
+return
+
+
+/* Import from a text file */
+
+fromText:
+
+defpath = pragma('D')
+if exists("ENV:THOR/BBSDataPath") then
+   do
+   call open('dp','ENV:THOR/BBSDataPath','R')
+   defpath = readln('dp')
+   call close('dp')
+   end
+'REQUESTFILE DRAWER "'defpath'" TITLE "' || tls("Text file to import ?") || '" NOICONS'
+if result = '' then exit
+else AddrBook = result
+
+if ~open('ab',AddrBook,'R') then
+   do
+   help = tls("Error: ") || tls("No file selected or unable to read the file.")
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   return
+   end
+
+do while(~eof('ab'))
+   line = readln('ab')
+   if left(line, 1) = '#' then
+      do
+      drop USER.
+      line = readln('ab')
+      if upper(left(line, 6)) = "NAME: " then
+         do
+         USER.NAME = substr(line, 7)
+         line = readln('ab')
+         end
+      if upper(left(line, 9)) = "ADDRESS: " then
+         do
+         USER.ADDRESS = substr(line, 10)
+         line = readln('ab')
+         end
+      if upper(left(line, 7)) = "ALIAS: " then
+         do
+         USER.ALIAS = substr(line, 8)
+         line = readln('ab')
+         end
+      if upper(left(line, 9)) = "COMMENT: " then
+         do
+         USER.COMMENT.1 = substr(line, 10)
+         USER.COMMENT.COUNT = 1
+         end
+      call add2SM()
+      addrcount = addrcount + 1
+      say tls("Adding: ") || USER.NAME
+      end
+end
+
+call close('ab')
+
+if addrcount > 0 then
+   do
+   'ADDRSAVE'
+   say ""
+   say tls("Done.")
+   say tls("Total contacts added: ") || addrcount
+   end
+
+return
+
+
+/* Import from a binary file of the database (User.tags) */
+
+fromData:
+
+defpath = pragma('D')
+if exists("ENV:THOR/BBSDataPath") then
+   do
+   call open('dp','ENV:THOR/BBSDataPath','R')
+   defpath = readln('dp')
+   call close('dp')
+   end
+'REQUESTFILE DRAWER "'defpath'" FILE "User.tags" TITLE "' || tls("Database file to scan ?") || '" NOICONS'
+if result = '' then exit
+else AddrBook = result
+
+if ~open('ab',AddrBook,'R') then
+   do
+   help = tls("Error: ") || tls("No file selected or unable to read the file.")
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   return
+   end
+
+do forever
+
+   do while ~eof('ab') & (length(tch) < 65035)
+      tch = tch || readch('ab',500)
+   end
+
+   if left(tch,1) = '@' then do
+      tch = substr(tch,2)
+      iterate
+   end
+   apos = pos('@',tch)
+   if apos = 0 then do
+      if eof('ab') then leave
+      else iterate
+   end
+
+   epos = pos('0000'x,tch,apos) - 1
+   if epos < 1 then epos = length(tch)
+   nch = substr(tch,1,epos)
+   tch = substr(tch,epos)
+
+   bpos = lastpos('0000'x,nch) + 2
+   if bpos > 2 then nch = substr(nch,bpos)
+
+   if right(nch,2) = 'c003'x then nch = left(nch,length(nch)-2)
+   if (right(nch,1) = '@') | (left(nch,1) = '@') then iterate
+
+   parse var nch uname '00'x uid'@'udom '00'x ualias '00'x ukey '00'x ucomment
+
+   if (uid = '') | (udom = '') then iterate
+   drop USER.
+   USER.NAME = uname
+   USER.ADDRESS = uid || "@" || udom
+   if (left(ualias,2) = '0x') & (left(ukey,2) ~= '0x') then do
+      if ucomment = '' then ucomment = ukey
+      ukey = ualias
+      ualias = ''
+   end
+   if (ukey ~= '') & (left(ukey,2) ~= '0x') & (ucomment = '') then do
+      ucomment = ukey
+      ukey = ''
+   end
+   if (ualias ~= '') & (ukey = '') & (ucomment = '') then do
+      ucomment = ualias
+      ualias = ''
+   end
+   if ualias ~= '' then USER.ALIAS = ualias
+   if ukey ~= '' then USER.PGPKEYID = ukey
+   comcnt = 0
+   do while pos('00'x,ucomment) > 0
+      cutto = pos('00'x,ucomment)
+      if cutto > 1 then
+         do
+         comcnt = comcnt + 1
+         USER.COMMENT.comcnt = left(ucomment,cutto - 1)
+         USER.COMMENT.COUNT = comcnt
+         end
+      ucomment = delstr(ucomment,1,cutto)
+   end
+
+   call add2SM()
+   addrcount = addrcount + 1
+   say tls("Adding: ") || USER.NAME
+
+end
+
+call close('ab')
+
+if addrcount > 0 then
+   do
+   'ADDRSAVE'
+   say ""
+   say tls("Done.")
+   say tls("Total contacts added: ") || addrcount
+   end
+
+return
+
+
+/* Add contact to SimpleMail */
+
+add2SM:
+
+if symbol('USER.NAME') ~= 'VAR' then USER.NAME = ""
+if symbol('USER.ADDRESS') ~= 'VAR' then USER.ADDRESS = ""
+if USER.NAME = "" then
+   do
+   atpos = pos('@',USER.ADDRESS)
+   if atpos > 1 then USER.NAME = left(USER.ADDRESS,atpos - 1)
+   end
+if symbol('USER.ALIAS') ~= 'VAR' then USER.ALIAS = ""
+if symbol('USER.PGPKEYID') ~= 'VAR' then USER.PGPKEYID = ""
+if symbol('USER.COMMENT.COUNT') ~= 'VAR' then
+   do
+   USER.COMMENT.1 = ""
+   USER.COMMENT.COUNT = 0
+   end
+
+/* Not imported (yet) is the PGPID, DESCRIPTION and/or NOTE
+   (Not supported by SimpleMail so far.)                    */
+
+'ADDRNEW NAME "'USER.NAME'" EMAIL "'USER.ADDRESS'" ALIAS "'USER.ALIAS'"'
+
+return
+
+
+/* Word-wrap a text string to the given size per line.
+   A size below 20 chars will be ignored (no wrap).    */
+
+smwrap: procedure
+
+parse arg intext,wrap
+if ~datatype(wrap,'W') then wrap = 0
+if (wrap > 19) & (words(intext) > 1) then
+   do
+   tmptext = ""
+   tmpline = word(intext,1)
+     do i = 2 to words(intext)
+     nextword = word(intext,i)
+     if length(tmpline || " " || nextword) > wrap then
+        do
+        tmptext = tmptext || tmpline || "*n"
+        tmpline = nextword
+        end
+     else
+        do
+        tmpline = tmpline || " " || nextword
+        lastLF = lastpos("*N",upper(tmpline))
+        if lastLF > 1 then
+           do
+           tmptext = tmptext || substr(tmpline,1,lastLF+1)
+           tmpline = substr(tmpline,lastLF+2)
+           end
+        end
+     end
+   if length(tmpline) > 0 then tmptext = tmptext || tmpline
+   intext = tmptext
+   end
+return intext
+
+
+/* (maketls.rexx) Function to translate the output strings
+   to the user's prefered language                          */
+
+tls: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG instring
+
+  IF instring = '' THEN RETURN instring
+  IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
+  IF tlstext.instring = '' THEN RETURN instring
+
+  RETURN tlstext.instring
+
+
+/* (maketls.rexx) Function to load the translation file (.catalog) */
+
+gettlstext: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG language
+  IF language = '' THEN RETURN
+
+  currentDir = PRAGMA('D')
+  scriptDir  = ''
+  PARSE SOURCE scriptPath
+  scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
+  parpos = LASTPOS('/', scriptPath)
+  IF parpos = 0 THEN parpos = POS(':', scriptPath)
+  IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
+  scriptName = SUBSTR(scriptPath, parpos + 1)
+  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+
+  IF OPEN('lf',langFile, 'R') THEN DO
+    tlssrc = ''
+    tlsdst = ''
+    DO WHILE ~EOF('lf')
+      instring = STRIP(READLN('lf'))
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF tlssrc ~= '' THEN DO
+        IF tlsdst ~= '' THEN DO
+          tlstext.tlssrc = tlsdst
+          tlssrc = ''
+          tlsdst = ''
+        END
+      END
+    END
+    CALL CLOSE('lf')
+  END
+
+  CALL PRAGMA('D',currentDir)
+
+  RETURN
+

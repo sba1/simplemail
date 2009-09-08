@@ -1,0 +1,84 @@
+/* Translation file for ImportThorMails.smrx */
+/* Language: français  (Last updated on 08 Sep 2009 21:39:29) */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Erreur: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " doit être lancé depuis SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Ce script doit être lancé depuis SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import selected messages in Thor (or the current one) into SimpleMail. "
+tlsdst = "Cet utilitaire importe les messages de Thor sélectionnés (ou le message courant) dans SimpleMail. "
+
+tlssrc = "Continue"
+tlsdst = "Continuer"
+
+tlssrc = "Quit"
+tlsdst = "Quitter"
+
+tlssrc = "Cannot find Thor port."
+tlsdst = "Le port de Thor est introuvable."
+
+tlssrc = "Please start Thor and select the messages you want to import from Thor's message list."
+tlsdst = "Veuillez démarrer Thor et sélectionner les messages que vous souhaitez importer depuis la liste des messages de Thor."
+
+tlssrc = "Cannot load BBSREAD library."
+tlsdst = "Impossible de charger la librairie BBSREAD."
+
+tlssrc = "Please check your Thor installation."
+tlsdst = "Veuillez vérifier votre installation de Thor."
+
+tlssrc = "Cancel"
+tlsdst = "Annuler"
+
+tlssrc = "Sorry, this script needs at least Thor v2.1."
+tlsdst = "Désolé, ce script requiert au moins la version 2.1 de Thor."
+
+tlssrc = "No message selected and no current message."
+tlsdst = "Pas de message sélectionné et pas de message courant."
+
+tlssrc = "Please select the messages you want to import from Thor's message list."
+tlsdst = "Veuillez sélectionner les messages que vous souhaitez importer depuis la liste des messages de Thor."
+
+tlssrc = "Current conference name not found."
+tlsdst = "Le nom de la conférence courante est introuvable."
+
+tlssrc = "The current message is ready to import."
+tlsdst = "Le message courant est prêt à l'importation."
+
+tlssrc = " messages ready to import."
+tlsdst = " messages prêt à l'importation."
+
+tlssrc = "Importing messages from "
+tlsdst = "Importation des messages de "
+
+tlssrc = " to "
+tlsdst = " vers "
+
+tlssrc = "Import"
+tlsdst = "Importer"
+
+tlssrc = "_Abort"
+tlsdst = "_Abandonner"
+
+tlssrc = "Importing message #"
+tlsdst = "Importation du message #"
+
+tlssrc = "Failed to save message #"
+tlsdst = "Echec d'écriture du message #"
+
+tlssrc = "SimpleMail filename was "
+tlsdst = "Le nom de fichier SimpleMail était "

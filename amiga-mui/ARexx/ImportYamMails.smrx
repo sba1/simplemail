@@ -1,0 +1,203 @@
+/*
+This is an ARexx-Script for SimpleMail
+
+$VER: ImportYamMails.smrx 1.1 (13.09.09)
+$Author: AmigaPhil
+$Label: Import messages from YAM
+$Desc: Import YAM's selected messages into SimpleMail
+
+Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
+*/
+
+signal on halt
+signal on break_c
+options results
+options failat 31
+
+version  = SUBWORD(SOURCELINE(4),3,1)
+wrapat = 60   /* Word-wrap a line of text to the given size in chars */
+
+/* Localize (maketls.rexx) */
+
+if exists('ENV:Language') then
+   do
+   if open('el', 'ENV:Language', 'R') then
+      do
+      langFile = readln('el')
+      call close('el')
+      if langFile ~== "english" then call gettlstext(langFile)
+      end
+   end
+
+/* check if YAM is running */
+
+smport = address()
+if left(smport,11) ~== "SIMPLEMAIL." then
+   do
+   address command
+   'WHICH >NIL: REQUESTCHOICE'
+   if rc = 5 then say tls("Error: ") || "ImportYamMails.smrx" || tls(" must be run from SimpleMail.")
+   else 'RUN >NIL: REQUESTCHOICE >NIL: "ImportYamMails.smrx" "' || tls("This script must be run from SimpleMail.") || '" "' || tls("Ok") || '"'
+   exit
+   end
+address(smport)
+
+help = "*Ec*EuImportYamMails.smrx*En v" || version || "*n*n*El"
+help = help || tls("This utility import selected messages in YAM (or the current one) into SimpleMail.")
+'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Continue") || '|' || tls("Quit") || '"'
+if result ~= 1 then exit
+
+if ~show('P','YAM') then
+   do
+   help = tls("Error: ") || tls("Cannot find YAM port.") || "*n"
+   help = help || tls("Please start YAM and select the messages you want to import from YAM's message list.")
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
+   exit
+   end
+yamport = "YAM"
+
+address(yamport)
+'INFO VERSION'
+yamver = word(result,3)
+parse var yamver yver"."yrev"-".
+yamver = (yver * 65536) + yrev
+
+'GETSELECTED STEM 'MSGLIST.
+if result = 0 then
+   do
+   address(smport)
+   help = tls("No message selected.") || "*n"
+   help = help || tls("Please select the messages you want to import from YAM's message list.")
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
+   exit
+   end
+'FOLDERINFO'
+yamfolder = word(result,2,1)
+address(smport)
+help = tls("Please select the folder to import the messages into:")
+'REQUESTFOLDER BODY "'smwrap(help,wrapat)'"'
+if rc ~= 0 then exit
+smfolder = result
+if MSGLIST.NUM.COUNT = 1 then help = tls("The current message is ready to import.")
+else help = MSGLIST.NUM.COUNT || tls(" messages ready to import.")
+help = tls("Importing messages from ") || "*EbYAM:" || yamfolder || "*En" || tls(" to ") || "*EbSimpleMail:" || smfolder || "*En :*n*n" || help
+'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Import") || '|' || tls("Cancel") || '"'
+if result ~= 1 then exit
+say tls("Importing messages from YAM...")
+'MAILLISTFREEZE'
+
+address(yamport)
+'APPBUSY "' || tls("Exporting messages to SimpleMail...") || '"'
+
+do i=0 to (MSGLIST.NUM.COUNT - 1)
+   address(yamport)
+   'SETMAIL 'i
+   if yamver < 131078 then 'MAILEXPORT "T:SM-00-T'pragma("ID")'"'
+   else 'MAILEXPORT "T:SM-00-T'pragma("ID")'" QUIET'
+   address(smport)
+   'MAILADD FOLDER "'smfolder'" FILENAME "T:SM-00-T'pragma("ID")'"'
+end
+say tls("Done.")
+
+halt:
+break_c:
+
+if exists("T:SM-00-T"pragma("ID")) then address command 'DELETE >NIL: "T:SM-00-T'pragma("ID")'"'
+address(yamport)
+'APPNOBUSY'
+address(smport)
+'MAILLISTTHAW'
+
+exit
+
+
+
+/* Word-wrap a text string to the given size per line.
+   A size below 20 chars will be ignored (no wrap).    */
+
+smwrap: procedure
+
+parse arg intext,wrap
+if ~datatype(wrap,'W') then wrap = 0
+if (wrap > 19) & (words(intext) > 1) then
+   do
+   tmptext = ""
+   tmpline = word(intext,1)
+     do i = 2 to words(intext)
+     nextword = word(intext,i)
+     if length(tmpline || " " || nextword) > wrap then
+        do
+        tmptext = tmptext || tmpline || "*n"
+        tmpline = nextword
+        end
+     else
+        do
+        tmpline = tmpline || " " || nextword
+        lastLF = lastpos("*N",upper(tmpline))
+        if lastLF > 1 then
+           do
+           tmptext = tmptext || substr(tmpline,1,lastLF+1)
+           tmpline = substr(tmpline,lastLF+2)
+           end
+        end
+     end
+   if length(tmpline) > 0 then tmptext = tmptext || tmpline
+   intext = tmptext
+   end
+return intext
+
+
+/* (maketls.rexx) Function to translate the output strings
+   to the user's prefered language                          */
+
+tls: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG instring
+
+  IF instring = '' THEN RETURN instring
+  IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
+  IF tlstext.instring = '' THEN RETURN instring
+
+  RETURN tlstext.instring
+
+
+/* (maketls.rexx) Function to load the translation file (.catalog) */
+
+gettlstext: PROCEDURE EXPOSE tlstext.
+
+  PARSE ARG language
+  IF language = '' THEN RETURN
+
+  currentDir = PRAGMA('D')
+  scriptDir  = ''
+  PARSE SOURCE scriptPath
+  scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
+  parpos = LASTPOS('/', scriptPath)
+  IF parpos = 0 THEN parpos = POS(':', scriptPath)
+  IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
+  scriptName = SUBSTR(scriptPath, parpos + 1)
+  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+
+  IF OPEN('lf',langFile, 'R') THEN DO
+    tlssrc = ''
+    tlsdst = ''
+    DO WHILE ~EOF('lf')
+      instring = STRIP(READLN('lf'))
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF tlssrc ~= '' THEN DO
+        IF tlsdst ~= '' THEN DO
+          tlstext.tlssrc = tlsdst
+          tlssrc = ''
+          tlsdst = ''
+        END
+      END
+    END
+    CALL CLOSE('lf')
+  END
+
+  CALL PRAGMA('D',currentDir)
+
+  RETURN
+

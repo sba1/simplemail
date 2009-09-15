@@ -7,7 +7,7 @@ failat 30
 set srcfile "ImportThorMails.smrx"
 
 ; As by default the Translation Tool directory is in
-; the PROGDIR:, the default path for the source file
+; the ARexx/ dir., the default path for the source file
 ; is the parent directory.
 set curdir `cd`
 cd >NIL: /

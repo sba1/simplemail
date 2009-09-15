@@ -1,12 +1,16 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportThorMails.smrx 1.0 (23.08.09)
+$VER: ImportThorMails.smrx 1.2 (13.09.09)
 $Author: AmigaPhil
 $Label: Import messages from Thor
 $Desc: Import Thor's selected messages into SimpleMail
+
+Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
 */
 
+signal on halt
+signal on break_c
 options results
 options failat 31
 
@@ -21,7 +25,7 @@ if exists('ENV:Language') then
       do
       langFile = readln('el')
       call close('el')
-      call gettlstext(langFile)
+      if langFile ~== "english" then call gettlstext(langFile)
       end
    end
 
@@ -32,15 +36,15 @@ if left(smport,11) ~== "SIMPLEMAIL." then
    do
    address command
    'WHICH >NIL: REQUESTCHOICE'
-   if rc = 5 then say tls("Error: ") || "ImportThorUsers.smrx" || tls(" must be run from SimpleMail.")
-   else 'RUN >NIL: REQUESTCHOICE >NIL: "ImportThorUsers.smrx" "' || tls("This script must be run from SimpleMail.") || '" "' || tls("Ok") || '"'
+   if rc = 5 then say tls("Error: ") || "ImportThorMails.smrx" || tls(" must be run from SimpleMail.")
+   else 'RUN >NIL: REQUESTCHOICE >NIL: "ImportThorMails.smrx" "' || tls("This script must be run from SimpleMail.") || '" "' || tls("Ok") || '"'
    exit
    end
 address(smport)
 
 help = "*Ec*EuImportThorMails.smrx*En v" || version || "*n*n*El"
 help = help || tls("This utility import selected messages in Thor (or the current one) into SimpleMail. ")
-'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Continue") || '|' || tls("Quit") || '"'
+'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Continue") || '|' || tls("Quit") || '"'
 if result ~= 1 then exit
 
 p = ' ' || address() || ' ' || show('P',,)
@@ -49,7 +53,7 @@ if thorport = 0 then
    do
    help = tls("Error: ") || tls("Cannot find Thor port.") || "*n"
    help = help || tls("Please start Thor and select the messages you want to import from Thor's message list.")
-   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Ok") || '"'
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
    exit
    end
 thorport = word(substr(p,thorport+1),1)
@@ -65,7 +69,7 @@ if ~show('p', 'BBSREAD') then
    address(smport)
    help = tls("Error: ") || tls("Cannot load BBSREAD library.") || "*n"
    help = help || tls("Please check your Thor installation.")
-   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
    exit
    end
 
@@ -77,7 +81,7 @@ if (tver < 2) | ((tver = 2) & (trev < 1)) then
    do
    address(smport)
    help = tls("Sorry, this script needs at least Thor v2.1.")
-   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Ok") || '"'
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
    exit
    end
 
@@ -90,7 +94,7 @@ if rc = 3 then
       address(smport)
       help = tls("No message selected and no current message.") || "*n"
       help = help || tls("Please select the messages you want to import from Thor's message list.")
-      'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Ok") || '"'
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
       exit
       end
    else
@@ -99,7 +103,7 @@ if rc = 3 then
          do
          address(smport)
          help = tls("Error: ") || THOR.LASTERROR
-         'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+         'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
          exit
          end
       else
@@ -116,14 +120,14 @@ else if rc ~= 0 then
       do
       help = tls("No message selected and no current message.") || "*n"
       help = help || tls("Please select the messages you want to import from Thor's message list.")
-      'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Ok") || '"'
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
       exit
       end
    else
       do
       help = THOR.LASTERROR || "*n"
       help = help || tls("Please select the messages you want to import from Thor's message list.")
-      'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Ok") || '"'
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Ok") || '"'
       exit
       end
    end
@@ -132,22 +136,25 @@ if rc ~= 0 then
    do
    address(smport)
    help = tls("Error: ") || THOR.LASTERROR
-   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
    exit
    end
 else if CURSYS.CONFNAME = "" then
    do
    address(smport)
    help = tls("Error: ") || tls("Current conference name not found.")
-   'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+   'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
    exit
    end
 address(smport)
-'FOLDERINFO STEM 'SMFOLDER.
+help = tls("Please select the folder to import the messages into:")
+'REQUESTFOLDER BODY "'smwrap(help,wrapat)'"'
+if rc ~= 0 then exit
+smfolder = result
 if MSGLIST.COUNT = 1 then help = tls("The current message is ready to import.")
 else help = MSGLIST.COUNT || tls(" messages ready to import.")
-help = tls("Importing messages from ") || "*Eb" || CURSYS.CONFNAME || "*En" || tls(" to ") || "*Eb" || SMFOLDER.NAME || "*En:*n*n" || help
-'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Import") || '|' || tls("Cancel") || '"'
+help = tls("Importing messages from ") || "*EbThor:" || CURSYS.CONFNAME || "*En" || tls(" to ") || "*EbSimpleMail:" || smfolder || "*En :*n*n" || help
+'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Import") || '|' || tls("Cancel") || '"'
 if result ~= 1 then exit
 'MAILLISTFREEZE'
 
@@ -169,7 +176,7 @@ do i=1 to MSGLIST.COUNT
             'CLOSEPROGRESS REQ 'window
             address(smport)
             help = tls("Error: ") || THOR.LASTERROR
-            'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+            'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
             exit
             end
          end
@@ -179,15 +186,17 @@ do i=1 to MSGLIST.COUNT
    'READBRMESSAGE "'CURSYS.BBSNAME'" "'CURSYS.CONFNAME'" 'MSGLIST.i' TEXTSTEM MSGTXT'
    if rc ~= 0 then
       do
+      address(thorport)
+      'CLOSEPROGRESS REQ 'window
       address(smport)
       help = tls("Error: ") || BBSREAD.LASTERROR
-      'REQUEST BODY "'smwrap(help,wrapat)'" "' || tls("Cancel") || '"'
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
       exit
       end
    call fixbin('MSGTXT')
 
    address(smport)
-   'NEWMAILFILE FOLDER "'SMFOLDER.NAME'"'
+   'NEWMAILFILE FOLDER "'smfolder'"'
    mfile = result
    /*** To avoid to mess the folder index (imported mails shown as "deleted" in 0.33),
         the mail file is temporary saved to T: before importing it with MAILADD.       ***/
@@ -207,7 +216,7 @@ do i=1 to MSGLIST.COUNT
    else
       do
       address(smport)
-      'MAILADD FOLDER "'SMFOLDER.NAME'" FILENAME "' || tmpmfile || '"'
+      'MAILADD FOLDER "'smfolder'" FILENAME "' || tmpmfile || '"'
       address command 'DELETE >NIL: "'tmpmfile'"'
       end
    /*** At this point, the imported mail status (read/unread, ...)
@@ -215,6 +224,10 @@ do i=1 to MSGLIST.COUNT
         The upcoming MAILSETSTATUS command should solve this.      ***/
 
 end
+
+
+halt:
+break_c:
 
 if BINLIST.COUNT > 0 then
    do

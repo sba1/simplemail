@@ -1,5 +1,5 @@
 /* Translation file for ImportThorMails.smrx */
-/* Language: français  (Last updated on 08 Sep 2009 21:39:29) */
+/* Language: français  (Last updated on 15 Sep 2009 19:02:56) */
 
 /* Do not touch the tlssrc lines.           */
 /* Add your translation string in tlsdst.   */
@@ -55,6 +55,9 @@ tlsdst = "Veuillez sélectionner les messages que vous souhaitez importer depuis 
 
 tlssrc = "Current conference name not found."
 tlsdst = "Le nom de la conférence courante est introuvable."
+
+tlssrc = "Please select the folder to import the messages into:"
+tlsdst = "Veuillez sélectionner le dossier vers lequel importer les messages:"
 
 tlssrc = "The current message is ready to import."
 tlsdst = "Le message courant est prêt à l'importation."

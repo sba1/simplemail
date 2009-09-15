@@ -1,5 +1,5 @@
 /* Translation file for ImportThorUsers.smrx */
-/* Language: français  (Last updated on 08 Sep 2009 21:39:46) */
+/* Language: français  (Last updated on 15 Sep 2009 19:03:04) */
 
 /* Do not touch the tlssrc lines.           */
 /* Add your translation string in tlsdst.   */
@@ -20,8 +20,8 @@ tlsdst = "Ce script doit être lancé depuis SimpleMail."
 tlssrc = "Ok"
 tlsdst = ""
 
-tlssrc = "This utility import the contact addresses from Thor's Userbase into SimpleMail. "
-tlsdst = "Cet utilitaire importe les addresses de contact de Thor (Userbase) dans SimpleMail."
+tlssrc = "This utility import all the contact addresses from Thor's Userbase into SimpleMail. "
+tlsdst = "Cet utilitaire importe toutes les addresses de contact de Thor (Userbase) dans SimpleMail."
 
 tlssrc = "(NIY: COMMENT is imported as DESCRIPTION (1st line only), and as NOTE.)"
 tlsdst = "(PEI: COMMENT est importé comme DESCRIPTION (1ère ligne seulement), et comme NOTE.)"
@@ -69,7 +69,7 @@ tlssrc = "Cannot open Thor."
 tlsdst = "Impossible d'ouvrir Thor."
 
 tlssrc = "Please check your Thor installation."
-tlsdst = "Veuiller vérifier votre installation."
+tlsdst = "Veuiller vérifier votre installation de Thor."
 
 tlssrc = "Cannot load BBSREAD library."
 tlsdst = "Impossible de charger la librairie BBSREAD"
@@ -78,7 +78,7 @@ tlssrc = "Select system:"
 tlsdst = "Choisissez le Système:"
 
 tlssrc = "There is no users to import from "
-tlsdst = "Il n'y a pas d'utilisateur ) importer depuis "
+tlsdst = "Il n'y a pas d'utilisateur à importer depuis "
 
 tlssrc = "Importing users from "
 tlsdst = "Importation des utilisateurs depuis "

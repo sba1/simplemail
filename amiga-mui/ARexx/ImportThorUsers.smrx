@@ -1,10 +1,12 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportThorUsers.smrx 1.0 (11.08.09)
+$VER: ImportThorUsers.smrx 1.2 (13.09.09)
 $Author: AmigaPhil
 $Label: Import Thor's address book
 $Desc: Import contact addresses from Thor's Userbase into SimpleMail
+
+Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
 */ 
 
 options results
@@ -21,7 +23,7 @@ if exists('ENV:Language') then
       do
       langFile = readln('el')
       call close('el')
-      call gettlstext(langFile)
+      if langFile ~== "english" then call gettlstext(langFile)
       end
    end
 
@@ -39,7 +41,7 @@ if left(smport,11) ~== "SIMPLEMAIL." then
 address(smport)
 
 help = "*Ec*EuImportThorUsers.smrx*En v" || version || "*n*n*El"
-help = help || tls("This utility import the contact addresses from Thor's Userbase into SimpleMail. ")
+help = help || tls("This utility import all the contact addresses from Thor's Userbase into SimpleMail. ")
 help = help || tls("(NIY: COMMENT is imported as DESCRIPTION (1st line only), and as NOTE.)") || "*n*n"
 help = help || tls("Please select the source to import from:") || "*n*n"
 help = help || "*EbThor*En : " || tls("Import straight from Thor by talking to its ARexx interface. ")
@@ -106,14 +108,12 @@ if ~show('p', 'BBSREAD') then
    return
    end
 
-address(thorport)
-'ISSTARTUPWINDOW'
 if ~thorrun then
    do
    address(smport)
    'MAINTOFRONT'
-   address(thorport)
    end
+address(thorport)
 'CURRENTSYSTEM stem CURRENT'
 if rc = 30 then
    do

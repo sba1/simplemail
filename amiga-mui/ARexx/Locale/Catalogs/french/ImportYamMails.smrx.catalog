@@ -1,0 +1,72 @@
+/* Translation file for ImportYamMails.smrx */
+/* Language: français  (Last updated on 15 Sep 2009 19:03:11) */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Erreur: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " doit être lancé depuis SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Ce script doit être lancé depuis SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import selected messages in YAM (or the current one) into SimpleMail."
+tlsdst = "Cet utilitaire importe les messages de YAM sélectionnés (ou le message courant) dans SimpleMail."
+
+tlssrc = "Continue"
+tlsdst = "Continuer"
+
+tlssrc = "Quit"
+tlsdst = "Quitter"
+
+tlssrc = "Cannot find YAM port."
+tlsdst = "Le port de YAM est introuvable."
+
+tlssrc = "Please start YAM and select the messages you want to import from YAM's message list."
+tlsdst = "Veuillez démarrer YAM et sélectionner les messages que vous souhaitez importer depuis la liste des messages de YAM."
+
+tlssrc = "No message selected."
+tlsdst = "Pas de message sélectionné."
+
+tlssrc = "Please select the messages you want to import from YAM's message list."
+tlsdst = "Veuillez sélectionner les messages que vous souhaitez importer depuis la liste des messages de YAM."
+
+tlssrc = "Please select the folder to import the messages into:"
+tlsdst = "Veuillez sélectionner le dossier vers lequel importer les messages:"
+
+tlssrc = "The current message is ready to import."
+tlsdst = "Le message courant est prêt à l'importation."
+
+tlssrc = " messages ready to import."
+tlsdst = " messages prêt à l'importation."
+
+tlssrc = "Importing messages from "
+tlsdst = "Importation des messages de "
+
+tlssrc = " to "
+tlsdst = " vers "
+
+tlssrc = "Import"
+tlsdst = "Importer"
+
+tlssrc = "Cancel"
+tlsdst = "Annuler"
+
+tlssrc = "Importing messages from YAM..."
+tlsdst = "Importation des messages de YAM..."
+
+tlssrc = "Exporting messages to SimpleMail..."
+tlsdst = "Exportation des messages vers SimpleMail..."
+
+tlssrc = "Done."
+tlsdst = "Terminé."

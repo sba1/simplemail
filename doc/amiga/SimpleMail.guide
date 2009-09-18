@@ -1,5 +1,5 @@
 @DATABASE SimpleMail.guide
-@$VER: SimpleMail.guide 0.53 (5.9.2009)
+@$VER: SimpleMail.guide 0.55 (17.9.2009)
 @AUTHOR David Rey <david@saug.org>, Sebastian Bauer <mail@sebastianbauer.info>
 @INDEX "Index"
 
@@ -2557,13 +2557,16 @@ Alphabetical list of all ARexx commands
 
 
  @{" ADDRGOTO          " link "RX_ADDRGOTO"}  - Select an address book entry by alias
+ @{" ADDRLOAD          " link "RX_ADDRLOAD"}  - Load an address book
  @{" ADDRNEW           " link "RX_ADDRNEW"}  - Create a new entry in the address book
  @{" ADDRSAVE          " link "RX_ADDRSAVE"}  - Save the address book under a given filename
  @{" FOLDERINFO        " link "RX_FOLDERINFO"}  - Return information about a given folder
  @{" GETMAILSTAT       " link "RX_GETMAILSTAT"}  - Return the number of total, new and unread mails
+ @{" GETSELECTED       " link "RX_GETSELECTED"}  - Get the index of the selected mails
  @{" GETURL            " link "RX_GETURL"}  - Download a file from the WWW based on a given URL
  @{" HIDE              " link "RX_HIDE"}  - Iconify SimpleMail
  @{" MAILADD           " link "RX_MAILADD"}  - Add a message to the folder
+ @{" MAILFETCH         " link "RX_MAILFETCH"}  - ?
  @{" MAILINFO          " link "RX_MAILINFO"}  - Return information about a given message
  @{" MAILLISTFREEZE    " link "RX_MAILLISTFREEZE"}  - Freeze the refresh of the message list
  @{" MAILLISTTHAW      " link "RX_MAILLISTTHAW"}  - Re-enable the refresh of the message list
@@ -2587,6 +2590,7 @@ Alphabetical list of all ARexx commands
  @{" SETMAIL           " link "RX_SETMAIL"}  - Select the current message in the current folder by number
  @{" SETMAILFILE       " link "RX_SETMAILFILE"}  - Select the current message in the current folder by filename
  @{" SHOW              " link "RX_SHOW"}  - Uniconify SimpleMail
+ @{" WRITECLOSE        " link "RX_WRITECLOSE"}  - ?
 
 @ENDNODE
 @NODE "RX_ADDRGOTO" "ARexx command: ADDRGOTO"
@@ -2606,6 +2610,32 @@ ADDRGOTO
 
 @{b}INPUTS@{ub}
      ALIAS/A   - alias of the address book entry
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_ADDRLOAD" "ARexx command: ADDRLOAD"
+
+ADDRLOAD
+--------
+
+@{b}NAME@{ub}
+     AddrLoad -- Loads an address book
+
+@{b}TEMPLATE@{ub}
+     FILENAME,APPENDS/A
+
+@{b}FUNCTION@{ub}
+
+@{b}INPUTS@{ub}
 
 @{b}RETURNS@{ub}
 
@@ -2833,6 +2863,32 @@ GETMAILSTAT
 @{b}SEE ALSO@{ub}
 
 @ENDNODE
+@NODE "RX_GETSELECTED" "ARexx command: GETSELECTED"
+
+GETSELECTED
+-----------
+
+@{b}NAME@{ub}
+     GetSelected -- Get the index of the selected mails
+
+@{b}TEMPLATE@{ub}
+     VAR/K,STEM/K
+
+@{b}FUNCTION@{ub}
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
 @NODE "RX_GETURL" "ARexx command: GETURL"
 
 GETURL
@@ -2933,6 +2989,32 @@ MAILADD
 @{b}SEE ALSO@{ub}
 
 @ENDNODE
+@NODE "RX_MAILFETCH" "ARexx command: MAILFETCH"
+
+MAILFETCH
+---------
+
+@{b}NAME@{ub}
+     MailFetch -- ?
+
+@{b}TEMPLATE@{ub}
+     ACCOUNTEMAIL/K,ACCOUNTNUM/K/N
+
+@{b}FUNCTION@{ub}
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
 @NODE "RX_MAILINFO" "ARexx command: MAILINFO"
 
 MAILINFO
@@ -2942,15 +3024,13 @@ MAILINFO
      MailInfo -- Return information about a message.
 
 @{b}TEMPLATE@{ub}
-     VAR/K,STEM/K,INDEX/N
+     STEM/K,INDEX/N
 
 @{b}FUNCTION@{ub}
      Returns information about a message in the list, or the current
      message if none is specified.
 
 @{b}INPUTS@{ub}
-     VAR/K     - alternative variable to put the results into instead of
-                 RESULT
      STEM/K    - base name used for the stems where the returned data will
                  be stored
      INDEX/N   - position of the message you want info about, the message
@@ -3765,6 +3845,32 @@ SHOW
 
 @{b}SEE ALSO@{ub}
      @{" HIDE " link "RX_HIDE"}
+
+@ENDNODE
+@NODE "RX_WRITECLOSE" "ARexx command: WRITECLOSE"
+
+SHOW
+----
+
+@{b}NAME@{ub}
+     WriteClose --
+
+@{b}TEMPLATE@{ub}
+     NUM/N/A
+
+@{b}FUNCTION@{ub}
+
+@{b}INPUTS@{ub}
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
 
 @ENDNODE
 @NODE "TIPS" "FAQ"

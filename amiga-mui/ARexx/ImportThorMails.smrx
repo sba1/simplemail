@@ -77,7 +77,12 @@ if ~show('p', 'BBSREAD') then
 address(thorport)
 'VERSION STEM 'VERS
 parse var VERS.THOR tver"."trev
-if (tver < 2) | ((tver = 2) & (trev < 1)) then
+vt = verify(tver,"0123456789")
+if vt > 0 then tver = left(tver,vt-1)
+vt = verify(trev,"0123456789")
+if vt > 0 then trev = left(trev,vt-1)
+thorver = (tver * 65536) + trev
+if thorver < 131073 then
    do
    address(smport)
    help = tls("Sorry, this script needs at least Thor v2.1.")

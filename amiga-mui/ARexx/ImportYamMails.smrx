@@ -29,7 +29,7 @@ if exists('ENV:Language') then
       end
    end
 
-/* check if YAM is running */
+/* check if SimpleMail is running */
 
 smport = address()
 if left(smport,11) ~== "SIMPLEMAIL." then
@@ -59,7 +59,11 @@ yamport = "YAM"
 address(yamport)
 'INFO VERSION'
 yamver = word(result,3)
-parse var yamver yver"."yrev"-".
+parse var yamver yver"."yrev
+vt = verify(yver,"0123456789")
+if vt > 0 then yver = left(yver,vt-1)
+vt = verify(yrev,"0123456789")
+if vt > 0 then yrev = left(yrev,vt-1)
 yamver = (yver * 65536) + yrev
 
 'GETSELECTED STEM 'MSGLIST.
@@ -88,10 +92,12 @@ say tls("Importing messages from YAM...")
 
 address(yamport)
 'APPBUSY "' || tls("Exporting messages to SimpleMail...") || '"'
+'LISTSELECT N'
+if yamver > 131077 then 'LISTFREEZE MAILS'
 
 do i=0 to (MSGLIST.NUM.COUNT - 1)
    address(yamport)
-   'SETMAIL 'i
+   'SETMAIL 'MSGLIST.NUM.i
    if yamver < 131078 then 'MAILEXPORT "T:SM-00-T'pragma("ID")'"'
    else 'MAILEXPORT "T:SM-00-T'pragma("ID")'" QUIET'
    address(smport)
@@ -104,6 +110,7 @@ break_c:
 
 if exists("T:SM-00-T"pragma("ID")) then address command 'DELETE >NIL: "T:SM-00-T'pragma("ID")'"'
 address(yamport)
+if yamver > 131077 then 'LISTUNFREEZE MAILS'
 'APPNOBUSY'
 address(smport)
 'MAILLISTTHAW'

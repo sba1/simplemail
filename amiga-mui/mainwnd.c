@@ -841,7 +841,11 @@ int main_window_init(void)
 	SM_ENTER;
 
 	/* translate the menu entries */
+#ifdef __AMIGAOS4__
 	if (!(main_newmenu = AllocVec(sizeof(nm_untranslated),MEMF_SHARED))) return 0;
+#else
+	if (!(main_newmenu = AllocVec(sizeof(nm_untranslated),MEMF_ANY))) return 0;
+#endif
 	memcpy(main_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)

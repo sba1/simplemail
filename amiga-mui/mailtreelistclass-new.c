@@ -76,24 +76,24 @@
 
 /**************************************************************************/
 
-#define MENU_SETSTATUS_MARK   9
-#define MENU_SETSTATUS_UNMARK 10
-#define MENU_SETSTATUS_READ   11
-#define MENU_SETSTATUS_UNREAD 12
-#define MENU_SETSTATUS_HOLD	13
-#define MENU_SETSTATUS_WAITSEND  14
-#define MENU_SETSTATUS_SPAM 15
-#define MENU_SETSTATUS_HAM 16
-#define MENU_SPAMCHECK 17
-#define MENU_DELETE 18
-#define MENU_SETSTATUS_SENT 19
-#define MENU_SETSTATUS_ERROR 20
-#define MENU_SETSTATUS_REPLIED 21
-#define MENU_SETSTATUS_FORWARD 22
-#define MENU_SETSTATUS_REPLFORW 23
-#define MENU_RESET_THIS_COLUMN_WIDTH 24
-#define MENU_RESET_ALL_COLUMN_WIDTHS 25
-#define MENU_RESET_COLUMN_ORDER 26
+#define MENU_SETSTATUS_MARK   10
+#define MENU_SETSTATUS_UNMARK 11
+#define MENU_SETSTATUS_READ   12
+#define MENU_SETSTATUS_UNREAD 13
+#define MENU_SETSTATUS_HOLD	14
+#define MENU_SETSTATUS_WAITSEND  15
+#define MENU_SETSTATUS_SPAM 16
+#define MENU_SETSTATUS_HAM 17
+#define MENU_SPAMCHECK 18
+#define MENU_DELETE 19
+#define MENU_SETSTATUS_SENT 20
+#define MENU_SETSTATUS_ERROR 21
+#define MENU_SETSTATUS_REPLIED 22
+#define MENU_SETSTATUS_FORWARD 23
+#define MENU_SETSTATUS_REPLFORW 24
+#define MENU_RESET_THIS_COLUMN_WIDTH 25
+#define MENU_RESET_ALL_COLUMN_WIDTHS 26
+#define MENU_RESET_COLUMN_ORDER 27
 
 /**************************************************************************/
 
@@ -4043,6 +4043,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case  6:
 		case	7:
 		case	8:
+		case	9:
 					PrepareDisplayedColumns(data);
 					CalcEntries(data,obj);
 					CalcHorizontalTotal(data);

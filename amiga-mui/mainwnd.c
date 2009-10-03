@@ -749,6 +749,7 @@ int main_window_init(void)
 		MENU_SETTINGS_SHOW_ADDRESSBOOK,
 		MENU_SETTINGS_SHOW_SELECTED_MESSAGE,
 		MENU_SETTINGS_SHOW_QUICK_FILTER,
+		MENU_SETTINGS_ADDRESSBOOK,
 		MENU_SETTINGS_CONFIGURATION,
 		MENU_SETTINGS_FILTER,
 		MENU_SETTINGS_MUI,
@@ -822,10 +823,11 @@ int main_window_init(void)
 */
 		{NM_TITLE, N_("Settings"), NULL, 0, 0, (APTR)MENU_SETTINGS},
 		{NM_ITEM, N_("Show Folders?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_FOLDERS},
-		{NM_ITEM, N_("Show Addressbook?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
-		{NM_ITEM, N_("Show Selected message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
+		{NM_ITEM, N_("Show Address Book?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_ADDRESSBOOK},
+		{NM_ITEM, N_("Show Selected Message?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_SELECTED_MESSAGE},
 		{NM_ITEM, N_("Show Quick Filter?"), NULL, CHECKED|CHECKIT|MENUTOGGLE, 0, (APTR)MENU_SETTINGS_SHOW_QUICK_FILTER},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Address Book..."), NULL, 0, 0, (APTR)MENU_SETTINGS_ADDRESSBOOK},
 		{NM_ITEM, N_("Configuration..."), NULL, 0, 0, (APTR)MENU_SETTINGS_CONFIGURATION},
 		{NM_ITEM, N_("Filters..."), NULL, 0, 0, (APTR)MENU_SETTINGS_FILTER},
 		{NM_ITEM, N_("MUI..."), NULL, 0, 0, (APTR)MENU_SETTINGS_MUI},
@@ -1079,6 +1081,7 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_CLEAR_SELECTION, (ULONG)mail_listview, 1, MUIM_MailTreelist_ClearSelection);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_MUI, (ULONG)App, 2, MUIM_Application_OpenConfigWindow, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_ADDRESSBOOK, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_addressbook);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_CONFIGURATION, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_config);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_FILTER, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_edit_filter);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_SETTINGS_SHOW_FOLDERS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)settings_show_changed);

@@ -470,7 +470,10 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 	SM_ENTER;
 
 	if (!(node = dt_load_unmapped_picture(filename)))
+	{
+		SM_RETURN(NULL,"%p");
 		return NULL;
+	}
 
 	if (!node->o)
 	{

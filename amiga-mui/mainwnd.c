@@ -841,14 +841,14 @@ int main_window_init(void)
 	SM_ENTER;
 
 	/* translate the menu entries */
-	if (!(main_newmenu = malloc(sizeof(nm_untranslated)))) return 0;
+	if (!(main_newmenu = AllocVec(sizeof(nm_untranslated),MEMF_SHARED))) return 0;
 	memcpy(main_newmenu,nm_untranslated,sizeof(nm_untranslated));
 
 	for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 	{
 		if (main_newmenu[i].nm_Label && main_newmenu[i].nm_Label != NM_BARLABEL)
 		{
-			STRPTR tmpstring = mystrdup(_(main_newmenu[i].nm_Label));
+			STRPTR tmpstring = StrCopy(_(main_newmenu[i].nm_Label));
 			if (tmpstring[1] == ':') tmpstring[1] = 0;
 			main_newmenu[i].nm_Label = tmpstring;
 		}
@@ -1178,7 +1178,7 @@ static void main_free_accounts(void)
 		DoMethod(o,OM_REMMEMBER, (ULONG)child);
 
 		if ((title = (char*)xget(child,MUIA_Menuitem_Title)))
-			free(title);
+			FreeVec(title);
 		MUI_DisposeObject(child);
 	}
 }
@@ -1197,9 +1197,9 @@ void main_window_deinit(void)
 	for (i=0;main_newmenu[i].nm_Type != NM_END;i++)
 	{
 		if (main_newmenu[i].nm_Label != NM_BARLABEL)
-			free(main_newmenu[i].nm_Label);
+			FreeVec(main_newmenu[i].nm_Label);
 	}
-	free(main_newmenu);
+	FreeVec(main_newmenu);
 }
 
 /******************************************************************
@@ -1491,7 +1491,7 @@ void main_build_accounts(void)
 			} else strcpy(buf,account->pop->name);
 
 			entry = MenuitemObject,
-				MUIA_Menuitem_Title, mystrdup(buf),
+				MUIA_Menuitem_Title, StrCopy(buf),
 				End;
 
 			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
@@ -1503,7 +1503,7 @@ void main_build_accounts(void)
 
 	if (!i)
 	{
-		Object *entry = MenuitemObject, MUIA_Menuitem_Title, mystrdup(_("No fetchable account specified")),	End;
+		Object *entry = MenuitemObject, MUIA_Menuitem_Title, StrCopy(_("No fetchable account specified")),	End;
 		DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);
 	}
 }

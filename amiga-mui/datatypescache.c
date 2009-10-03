@@ -460,7 +460,7 @@ struct dt_node *dt_load_unmapped_picture(char *filename)
 }
 
 /****************************************************************
- Load the dt object. A given filename is instanciated only
+ Load the dt object. A given filename is instantiated only
  once.
 ****************************************************************/
 struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
@@ -469,7 +469,8 @@ struct dt_node *dt_load_picture(char *filename, struct Screen *scr)
 
 	SM_ENTER;
 
-	node = dt_load_unmapped_picture(filename);
+	if (!(node = dt_load_unmapped_picture(filename)))
+		return NULL;
 
 	if (!node->o)
 	{

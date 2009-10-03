@@ -4076,7 +4076,7 @@ void del_folders(void)
 	thread_dispose_semaphore(folders_semaphore);
 
 #if 1
-	while (node = (struct folder_node*)list_remove_tail(&folder_list))
+	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
 	{
 		int i;
 

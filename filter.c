@@ -84,7 +84,7 @@ void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags)
 
 	strl = strlen(str);
 
-	if (strl > 3 &&  (flags & SM_PATTERN_NOPATT) && (flags & SM_PATTERN_SUBSTR))
+	if (strl > 3 &&  (flags & SM_PATTERN_NOPATT) && (flags & SM_PATTERN_SUBSTR) && (flags & SM_PATTERN_NOCASE))
 		p->bm_context = boyermoore_create_context(str,strl);
 	else
 		p->parsed = sm_parse_pattern(str, flags);

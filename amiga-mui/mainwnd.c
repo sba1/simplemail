@@ -1190,16 +1190,22 @@ void main_window_deinit(void)
 {
 	int i;
 
-	set(win_main, MUIA_Window_Open, FALSE);
-	main_free_accounts();
-
-	/* Free labels and new menu structure */
-	for (i=0;main_newmenu[i].nm_Type != NM_END;i++)
+	if (win_main)
 	{
-		if (main_newmenu[i].nm_Label != NM_BARLABEL)
-			FreeVec(main_newmenu[i].nm_Label);
+		set(win_main, MUIA_Window_Open, FALSE);
+		main_free_accounts();
 	}
-	FreeVec(main_newmenu);
+
+	if (main_newmenu)
+	{
+		/* Free labels and new menu structure */
+		for (i=0;main_newmenu[i].nm_Type != NM_END;i++)
+		{
+			if (main_newmenu[i].nm_Label != NM_BARLABEL)
+				FreeVec(main_newmenu[i].nm_Label);
+		}
+		FreeVec(main_newmenu);
+	}
 }
 
 /******************************************************************

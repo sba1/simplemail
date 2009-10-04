@@ -416,9 +416,9 @@ void thread_handle(ULONG mask)
 	}
 }
 
-/**************************************************************************
- Entrypoint for a new thread
-**************************************************************************/
+/**
+ * Entry point for a new thread.
+ */
 static SAVEDS void thread_entry(void)
 {
 	struct Process *proc;
@@ -434,8 +434,14 @@ static SAVEDS void thread_entry(void)
 	WaitPort(&proc->pr_MsgPort);
 	msg = (struct ThreadMessage *)GetMsg(&proc->pr_MsgPort);
 
-	/* Set the task's UserData field to strore per thread data */
+	/* Set the task's UserData field to store per thread data */
 	thread = msg->thread;
+
+#ifdef __AMIGAOS4__
+	void allow_access_to_private_data(void);
+	allow_access_to_private_data();
+#endif
+
 	if ((thread->thread_port = CreateMsgPort()))
 	{
 		D(bug("Subthreaded created port at 0x%lx\n",thread->thread_port));

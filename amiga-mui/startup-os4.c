@@ -494,7 +494,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 
 					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
 					{
-						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						IExec->DebugPrintF("FATAL: Read access (4) to an uninitialized memory location %p\n",dar);
 						return 0;
 					}
 					context->gpr[d_reg] = *((uint32*)dar);
@@ -507,7 +507,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 				{
 					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
 					{
-						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						IExec->DebugPrintF("FATAL: Read access (4) to an uninitialized memory location %p\n",dar);
 						return 0;
 					}
 					context->gpr[d_reg] = *((uint32*)dar);
@@ -522,7 +522,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 				{
 					if (!(are_bits_set(page->initialized_bmap, page_offset, 1)))
 					{
-						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						IExec->DebugPrintF("FATAL: Read access (1) to an uninitialized memory location %p\n",dar);
 						return 0;
 					}
 					context->gpr[d_reg] = *((uint8*)dar);
@@ -534,9 +534,9 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	35: /* lbzu */
 //				IExec->DebugPrintF("Load byte from %p to reg %ld with update\n",dar,d_reg);
 				{
-					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
+					if (!(are_bits_set(page->initialized_bmap, page_offset, 1)))
 					{
-						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						IExec->DebugPrintF("FATAL: Read access (1) to an uninitialized memory location %p\n",dar);
 						return 0;
 					}
 
@@ -550,7 +550,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	40:	/* lhz */
 				if (!(are_bits_set(page->initialized_bmap, page_offset, 2)))
 				{
-					IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+					IExec->DebugPrintF("FATAL: Read access (2) to an uninitialized memory location %p\n",dar);
 					return 0;
 				}
 				context->gpr[d_reg] = *((uint16*)dar);
@@ -560,7 +560,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	42: /* lha */
 				if (!(are_bits_set(page->initialized_bmap, page_offset, 2)))
 				{
-					IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+					IExec->DebugPrintF("FATAL: Read access (2) to an uninitialized memory location %p\n",dar);
 					return 0;
 				}
 				context->gpr[d_reg] = *((uint16*)dar);
@@ -576,7 +576,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 //							IExec->DebugPrintF("Load from %p to reg %ld\n",dar,d_reg);
 							if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
 							{
-								IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+								IExec->DebugPrintF("FATAL: Read access (4) to an uninitialized memory location %p\n",dar);
 								return 0;
 							}
 							context->gpr[d_reg] = *((uint32*)dar);
@@ -586,7 +586,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 						case	87: /* lbzx */
 							if (!(are_bits_set(page->initialized_bmap, page_offset, 1)))
 							{
-								IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+								IExec->DebugPrintF("FATAL: Read access (1) to an uninitialized memory location %p\n",dar);
 								return 0;
 							}
 							context->gpr[d_reg] = *((uint8*)dar);

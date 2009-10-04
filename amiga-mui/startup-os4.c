@@ -25,7 +25,7 @@
 /*#define MEMWALL*/
 
 /* Define to identify false memory accesses. Slow downs the program */
-/*#define MEMGRIND*/
+#define MEMGRIND
 
 /*#define MYDEBUG*/
 #include "amigadebug.h"
@@ -462,6 +462,12 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 							*((uint8*)dar) = context->gpr[d_reg];
 							context->ip += 4;
 							return 1;
+
+						case	407: /* sthx */
+							*((uint16*)dar) = context->gpr[d_reg];
+							context->ip += 4;
+							return 1;
+
 					}
 				}
 				break;
@@ -473,6 +479,16 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 }
 
 #endif
+
+/**
+ * Allows the current task access to private data.
+ */
+void allow_access_to_private_data(void)
+{
+#ifdef MEMGRIND
+	IExec->SetTaskTrap(TRAPNUM_DATA_SEGMENT_VIOLATION, trapCode, NULL);
+#endif
+}
 
 static int init_mem(void)
 {
@@ -486,7 +502,7 @@ static int init_mem(void)
 		return 0;
 
 
-	IExec->SetTaskTrap(TRAPNUM_DATA_SEGMENT_VIOLATION, trapCode, NULL);
+	allow_access_to_private_data();
 IExec->DebugPrintF("ExecPageSize = %ld CPUPageSize = %ld\n",ExecPageSize,CPUPageSize);
 #endif
 

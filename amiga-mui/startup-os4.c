@@ -25,7 +25,7 @@
 /*#define MEMWALL*/
 
 /* Define to identify false memory accesses. Slow downs the program */
-#define MEMGRIND
+/*#define MEMGRIND*/
 
 /*#define MYDEBUG*/
 #include "amigadebug.h"
@@ -257,9 +257,15 @@ static ULONG CPUPageSize;
 
 struct page
 {
-	void *mem_base;
-	int page_size;
-	int num_bytes_free;
+	uint8 *mem_base;
+	uint32 page_size;
+	uint32 num_bytes_free;
+
+	/** Bitmap describing whether a memory location has been initialized */
+	uint8 *initialized_bmap;
+
+	/** Bitmap describing whether a memory location has been allocated */
+	uint8 *allocated_bmap;
 
 	struct MinList allocations; /* page_entry */
 	void *mem_current;
@@ -290,7 +296,7 @@ static struct page *new_page(int min_bytes)
 	int num_blocks;
 
 
-IExec->DebugPrintF("New page %ld\n",min_bytes);
+IExec->DebugPrintF("new_page(min_bytes=%ld)\n",min_bytes);
 
 	struct page *page = (struct page*)IExec->AllocVec(sizeof(*page),MEMF_CLEAR);
 	if (!page) return NULL;
@@ -298,19 +304,35 @@ IExec->DebugPrintF("New page %ld\n",min_bytes);
 	num_blocks = (min_bytes + ExecPageSize - 1) / ExecPageSize;
 	IExec->NewMinList(&page->allocations);
 
-	mem_base = IExec->AllocVecTags(num_blocks * ExecPageSize,
+	if (!(mem_base = IExec->AllocVecTags(num_blocks * ExecPageSize,
 				AVT_Type, MEMF_PRIVATE,
 //				AVT_Contiguous, TRUE,
 				AVT_Lock, TRUE,
 				AVT_PhysicalAlignment, ExecPageSize,
 				AVT_Alignment, ExecPageSize,
-				TAG_DONE);
-	if (!mem_base)
+				TAG_DONE)))
 	{
 		IExec->FreeVec(page);
 		return NULL;
 	}
 
+
+	if (!(page->initialized_bmap = (uint8*)IExec->AllocVec(num_blocks * ExecPageSize / 8, MEMF_CLEAR)))
+	{
+		IExec->FreeVec(mem_base);
+		IExec->FreeVec(page);
+		return NULL;
+	}
+
+	if (!(page->allocated_bmap = (uint8*)IExec->AllocVec(num_blocks * ExecPageSize / 8, MEMF_CLEAR)))
+	{
+		IExec->FreeVec(page->initialized_bmap);
+		IExec->FreeVec(mem_base);
+		IExec->FreeVec(page);
+		return NULL;
+	}
+
+	/* Enable protection */
 	{
 		APTR old_stack = IExec->SuperState();
 		IMMU->SetMemoryAttrs(mem_base, num_blocks * ExecPageSize,
@@ -322,12 +344,36 @@ IExec->DebugPrintF("New page %ld\n",min_bytes);
 	page->mem_current = mem_base;
 	page->page_size = num_blocks * ExecPageSize;
 	page->num_bytes_free = page->page_size;
+IExec->DebugPrintF("leave(page=%p)\n",page);
 	return page;
+}
+
+/**
+ * Find the page that holds the given address.
+ *
+ * @param addr
+ * @return
+ */
+static struct page *find_page(uint32 addr)
+{
+	struct page *p = first_page;
+
+	while (p)
+	{
+//		IExec->DebugPrintF("addr = %p, lower = %p, upper = %p\n",addr,p->mem_base, ((uint32)p->mem_base) + p->page_size);
+		if (addr >= (uint32)p->mem_base && addr < ((uint32)p->mem_base) + p->page_size)
+			return p;
+		p = p->next;
+	}
+
+	return NULL;
 }
 
 static void delete_page(struct page *page)
 {
 IExec->DebugPrintF("Deleting page of %ld bytes\n",page->page_size);
+	IExec->FreeVec(page->initialized_bmap);
+	IExec->FreeVec(page->allocated_bmap);
 	IExec->FreeVec(page->mem_base);
 	IExec->FreeVec(page);
 }
@@ -335,6 +381,41 @@ IExec->DebugPrintF("Deleting page of %ld bytes\n",page->page_size);
 #endif
 
 #ifdef MEMGRIND
+
+static int countdown;
+
+static void inline set_bits(uint8 *base, uint32 offset, int len)
+{
+	while (len--)
+	{
+		base[offset/8] |= 1L << (7 - (offset % 8));
+		offset++;
+	}
+}
+
+static int inline are_bits_set(uint8 *base, uint32 offset, int len)
+{
+	while (len--)
+	{
+		if (!(base[offset/8] & (1L << (7 - (offset % 8)))))
+			return 0;
+		offset++;
+	}
+	return 1;
+}
+
+static void page_print_initialization_map(struct page *page)
+{
+	int i;
+
+	for (i=0;i<page->page_size / 8;i++)
+	{
+		if (i%16==0)
+			IExec->DebugPrintF("\n%p:",page->mem_base + (i*8));
+		IExec->DebugPrintF(" %02lx",page->initialized_bmap[i]);
+	}
+	IExec->DebugPrintF("\n");
+}
 
 ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapData)
 {
@@ -346,17 +427,29 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 	uint32 a_reg;
 	uint32 d_reg;
 
+	struct page *page;
+	uint32 page_offset;
+
 	op_code = (instruction & 0xFC000000) >> 26;
 	d_reg   = (instruction & 0x03E00000) >> 21;
 	a_reg   = (instruction & 0x001F0000) >> 16;
 	sub_code =  (instruction & 0x7FE) >> 1;
+
+	/* Find allocated page */
+	if (!(page = find_page(dar)))
+	{
+		IExec->DebugPrintF("page for address %p not found\n",dar);
+		return 0;
+	}
+
+	page_offset = (uint8*)dar - page->mem_base;
 
 	switch (op_code)
 	{
 		case	36: /* stw */
 				{
 //					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
-
+					set_bits(page->initialized_bmap, page_offset, 4);
 					*((uint32*)dar) = context->gpr[d_reg];
 					context->ip += 4;
 					return 1;
@@ -367,7 +460,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	38: /* stb */
 				{
 //					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
-
+					set_bits(page->initialized_bmap, page_offset, 1);
 					*((uint8*)dar) = context->gpr[d_reg];
 					context->ip += 4;
 					return 1;
@@ -377,7 +470,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	39: /* stbu */
 				{
 //					IExec->DebugPrintF("Store %p at %p with update\n",context->gpr[d_reg],dar);
-
+					set_bits(page->initialized_bmap, page_offset, 1);
 					*((uint8*)dar) = context->gpr[d_reg];
 					context->gpr[a_reg] = dar;
 					context->ip += 4;
@@ -388,7 +481,7 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 		case	44:	/* sth */
 				{
 //					IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
-
+					set_bits(page->initialized_bmap, page_offset, 2);
 					*((uint16*)dar) = context->gpr[d_reg];
 					context->ip += 4;
 					return 1;
@@ -399,6 +492,11 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 				{
 //					IExec->DebugPrintF("Load from %p to reg %ld\n",dar,d_reg);
 
+					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
+					{
+						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						return 0;
+					}
 					context->gpr[d_reg] = *((uint32*)dar);
 					context->ip += 4;
 					return 1;
@@ -406,30 +504,65 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 				break;
 
 		case	33: /* lwzu */
-				context->gpr[d_reg] = *((uint32*)dar);
-				context->gpr[a_reg] = dar;
-				context->ip += 4;
-				return 1;
+				{
+					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
+					{
+						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						return 0;
+					}
+					context->gpr[d_reg] = *((uint32*)dar);
+					context->gpr[a_reg] = dar;
+					context->ip += 4;
+					return 1;
+				}
+				break;
 
 		case	34: /* lbz */
 //				IExec->DebugPrintF("Load byte from %p to reg %ld\n",dar,d_reg);
-				context->gpr[d_reg] = *((uint8*)dar);
-				context->ip += 4;
-				return 1;
+				{
+					if (!(are_bits_set(page->initialized_bmap, page_offset, 1)))
+					{
+						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						return 0;
+					}
+					context->gpr[d_reg] = *((uint8*)dar);
+					context->ip += 4;
+					return 1;
+				}
+				break;
 
 		case	35: /* lbzu */
 //				IExec->DebugPrintF("Load byte from %p to reg %ld with update\n",dar,d_reg);
-				context->gpr[d_reg] = *((uint8*)dar);
-				context->gpr[a_reg] = dar;
-				context->ip += 4;
-				return 1;
+				{
+					if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
+					{
+						IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+						return 0;
+					}
+
+					context->gpr[d_reg] = *((uint8*)dar);
+					context->gpr[a_reg] = dar;
+					context->ip += 4;
+					return 1;
+				}
+				break;
 
 		case	40:	/* lhz */
+				if (!(are_bits_set(page->initialized_bmap, page_offset, 2)))
+				{
+					IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+					return 0;
+				}
 				context->gpr[d_reg] = *((uint16*)dar);
 				context->ip += 4;
 				return 1;
 
 		case	42: /* lha */
+				if (!(are_bits_set(page->initialized_bmap, page_offset, 2)))
+				{
+					IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+					return 0;
+				}
 				context->gpr[d_reg] = *((uint16*)dar);
 				if (context->gpr[d_reg] & 0x8000) context->gpr[d_reg] |= 0xffff0000;
 				context->ip += 4;
@@ -441,29 +574,40 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 					{
 						case	23: /* lwzx */
 //							IExec->DebugPrintF("Load from %p to reg %ld\n",dar,d_reg);
-
+							if (!(are_bits_set(page->initialized_bmap, page_offset, 4)))
+							{
+								IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+								return 0;
+							}
 							context->gpr[d_reg] = *((uint32*)dar);
 							context->ip += 4;
 							return 1;
 
 						case	87: /* lbzx */
+							if (!(are_bits_set(page->initialized_bmap, page_offset, 1)))
+							{
+								IExec->DebugPrintF("FATAL: Read access to an uninitialized memory location %p\n",dar);
+								return 0;
+							}
 							context->gpr[d_reg] = *((uint8*)dar);
 							context->ip += 4;
 							return 1;
 
 						case	151: /* stwx */
 //							IExec->DebugPrintF("Store %p at %p\n",context->gpr[d_reg],dar);
-
+							set_bits(page->initialized_bmap, page_offset, 4);
 							*((uint32*)dar) = context->gpr[d_reg];
 							context->ip += 4;
 							return 1;
 
 						case	215: /* stbx */
+							set_bits(page->initialized_bmap, page_offset, 1);
 							*((uint8*)dar) = context->gpr[d_reg];
 							context->ip += 4;
 							return 1;
 
 						case	407: /* sthx */
+							set_bits(page->initialized_bmap, page_offset, 2);
 							*((uint16*)dar) = context->gpr[d_reg];
 							context->ip += 4;
 							return 1;

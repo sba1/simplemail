@@ -835,10 +835,12 @@ int codesets_init(void)
 	list_init(&codesets_list);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 0;
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-1 + Euro");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European (with EURO)"));
 	codeset->read_only = 1;
+
 	for (i=0;i<256;i++)
 	{
 		UTF32 *src_ptr = &src;
@@ -857,6 +859,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1;
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-1");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European"));
@@ -878,6 +881,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-2");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Central/East European"));
@@ -900,6 +904,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-3");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("South European"));
@@ -922,6 +927,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-4");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("North European"));
@@ -944,6 +950,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("KOI8-R");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Russian"));
@@ -966,6 +973,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-5");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Slavic languages"));
@@ -988,6 +996,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-9");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("Turkish"));
@@ -1010,6 +1019,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-15");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("West European II"));
@@ -1033,6 +1043,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("ISO-8859-16");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup(_("South-Eastern European"));
@@ -1056,6 +1067,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("AmigaPL");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup("AmigaPL");
@@ -1078,6 +1090,7 @@ int codesets_init(void)
 	list_insert_tail(&codesets_list,&codeset->node);
 
 	if (!(codeset = (struct codeset*)malloc(sizeof(struct codeset)))) return 1; /* One entry is enough */
+	memset(codeset,0,sizeof(*codeset));
 	codeset->name = mystrdup("Amiga-1251");
 	codeset->alt_name = NULL;
 	codeset->characterization = mystrdup("Amiga-1251");

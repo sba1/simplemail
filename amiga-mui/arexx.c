@@ -54,6 +54,8 @@
 #include "simplemail.h"
 #include "support.h"
 
+#include "SimpleMail_rev.h"
+
 static struct MsgPort *arexx_port;
 
 static struct MsgPort *arexx_execute_port;
@@ -1596,6 +1598,19 @@ static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
+/**
+ * Returns the version of SimpleMail.
+ *
+ * @param rxmsg
+ * @param args
+ */
+static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
+{
+	char buf[24];
+
+	sm_snprintf(buf,sizeof(buf), "%d.%d",VERSION,REVISION);
+	arexx_set_result(rxmsg, buf);
+}
 
 /****************************************************************
  Handle this single arexx message
@@ -1650,6 +1665,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("MAILLISTTHAW",command.command)) main_thaw_mail_list();
 		else if (!Stricmp("MAILFETCH",command.command)) arexx_mailfetch(rxmsg,command.args);
 		else if (!Stricmp("OPENMESSAGE",command.command)) arexx_openmessage(rxmsg,command.args);
+		else if (!Stricmp("VERSION",command.command)) arexx_version(rxmsg,command.args);
 
 		FreeTemplate(command_handle);
 	}

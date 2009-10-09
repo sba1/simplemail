@@ -1606,10 +1606,28 @@ static void arexx_openmessage(struct RexxMsg *rxmsg, STRPTR args)
  */
 static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
 {
+	APTR arg_handle;
+
+	struct
+	{
+		ULONG date;
+	} version_arg;
 	char buf[24];
 
-	sm_snprintf(buf,sizeof(buf), "%d.%d",VERSION,REVISION);
-	arexx_set_result(rxmsg, buf);
+	memset(&version_arg,0,sizeof(version_arg));
+
+	if ((arg_handle = ParseTemplate("DATE/S",args,&version_arg)))
+	{
+		if (version_arg.date)
+		{
+			arexx_set_result(rxmsg, DATE);
+		} else
+		{
+			sm_snprintf(buf,sizeof(buf), "%d.%d",VERSION,REVISION);
+			arexx_set_result(rxmsg, buf);
+		}
+		FreeTemplate(arg_handle);
+	}
 }
 
 /****************************************************************

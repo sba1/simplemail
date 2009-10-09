@@ -44,6 +44,7 @@
 #include "mail.h"
 #include "support_indep.h"
 #include "trans.h"
+#include "version.h"
 
 #include "addressbookwnd.h"
 #include "amigasupport.h"
@@ -53,8 +54,6 @@
 #include "readwnd.h"
 #include "simplemail.h"
 #include "support.h"
-
-#include "SimpleMail_rev.h"
 
 static struct MsgPort *arexx_port;
 

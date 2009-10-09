@@ -21,6 +21,8 @@
  *
  * @file simplemail.c
  */
+
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -1682,16 +1684,63 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 			{
 				void *cont; /* mails content */
 				int cont_len;
-				int l;
+
+				string str;
 
 				mail_decoded_data(mail_text,&cont,&cont_len);
-				l = MIN(cont_len,100);
 
-				if ((excerpt = malloc(l+1)))
+				/* Create the excerpt, i.e., the first 100 characters
+				 * with no new lines and no quotation
+				 */
+				if (string_initialize(&str,100))
 				{
-					/* TODO: Improve this (e.g. filter quotations and so on) */
-					strncpy((char*)excerpt,cont,l);
-					excerpt[l] = 0;
+					int i,j;
+					int space = 0;
+					int eol = 1;
+					int ignore_line = 0;
+
+					for (i=0,j=0;i<cont_len && j<100;)
+					{
+						unsigned char c = ((char*)cont)[i];
+						int bytes;
+
+						if (!c) break;
+
+						if (c == 10)
+						{
+							eol = 1;
+							space = 1;
+							ignore_line = 0;
+							i++;
+							continue;
+						}
+
+						if (isspace(c))
+						{
+							i++;
+							space = 1;
+							continue;
+						}
+
+						if (c == '>' && eol)
+							ignore_line = 1;
+
+						eol = 0;
+
+						if (space && !ignore_line)
+						{
+							string_append_char(&str,' ');
+							j++;
+							if (j == 100) break;
+							space = 0;
+						}
+
+						bytes = utf8bytes(&((utf8*)cont)[i]);
+						if (!ignore_line)
+							string_append_part(&str,&((char*)cont)[i],bytes);
+						i+=bytes;
+					}
+					excerpt = (utf8*)str.str;
 				}
 			}
 		}

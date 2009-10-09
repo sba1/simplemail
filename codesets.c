@@ -1275,8 +1275,6 @@ int utf8realpos(const utf8 *str, int pos)
 	return str - str_save;
 }
 
-
-
 /**
  * @brief Transform absolute byte position in the char array into a character position.
  *
@@ -1296,6 +1294,18 @@ int utf8charpos(const utf8 *str, int pos)
 		cp++;
 	}
 	return cp;
+}
+
+/**
+ * Returns the number of bytes occupied by the utf8 character.
+ *
+ * @param str
+ * @return
+ */
+int utf8bytes(const utf8 *str)
+{
+	unsigned char c = *str;
+	return trailingBytesForUTF8[c] + 1;
 }
 
 /**************************************************************************

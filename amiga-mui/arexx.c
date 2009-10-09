@@ -1620,7 +1620,7 @@ static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
 	{
 		if (version_arg.date)
 		{
-			arexx_set_result(rxmsg, DATE);
+			arexx_set_result(rxmsg, SIMPLEMAIL_DATE);
 		} else
 		{
 			sm_snprintf(buf,sizeof(buf), "%d.%d",VERSION,REVISION);

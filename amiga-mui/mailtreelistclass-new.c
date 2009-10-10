@@ -1178,6 +1178,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			case	COLUMN_TYPE_EXCERPT:
 						if (m)
 						{
+							is_ascii7 = FALSE;
 							txt = m->excerpt;
 							if (!txt)
 							{

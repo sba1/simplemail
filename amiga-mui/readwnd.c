@@ -1470,10 +1470,12 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 				return num;
 			}
 
-			free(data);
+			read_window_dispose(&data);
 			set(App, MUIA_Application_Sleep, FALSE);
+		} else
+		{
+			MUI_DisposeObject(wnd);
 		}
-		MUI_DisposeObject(wnd);
 	}
 
 	SM_RETURN(-1,"%d");

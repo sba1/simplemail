@@ -1669,7 +1669,11 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	utf8 *excerpt = NULL;
 
 	if (mail->excerpt)
+	{
+		/* Just dereference the mail */
+		thread_call_parent_function_async(mail_dereference,1,mail);
 		return;
+	}
 
 	getcwd(buf, sizeof(buf));
 	chdir(path);

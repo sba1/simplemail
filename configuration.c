@@ -40,6 +40,16 @@
 #include "arch.h"
 #include "support.h"
 
+/* Some backgrounds, TODO: Make this more platform independent */
+#ifdef __AMIGAOS4__
+#define ROW_BACKGROUND			0xc6c6c6
+#define ALT_ROW_BACKGROUND		0xdbdbdb
+#else
+#define ROW_BACKGROUND			0xb0b0b0
+#define ALT_ROW_BACKGROUND		0xb8b8b8
+#endif
+
+
 int read_line(FILE *fh, char *buf); /* in addressbook.c */
 
 char *get_config_item(char *buf, char *item)
@@ -145,8 +155,8 @@ static void init_config(void)
 	user.config.dont_jump_to_unread_mail = 0;
 	user.config.dont_use_aiss = 1;
 	user.config.dont_draw_alternating_rows = 0;
-	user.config.row_background = 0xb0b0b0;              /* Row color */
-	user.config.alt_row_background = 0xb8b8b8;          /* Color of alternative row */
+	user.config.row_background = ROW_BACKGROUND;        /* Row color */
+	user.config.alt_row_background = ALT_ROW_BACKGROUND;       /* Color of alternative row */
 }
 
 /**
@@ -781,10 +791,13 @@ void save_config(void)
 
 			if (user.config.dont_draw_alternating_rows)
 				fprintf(fh,"Hidden.DontDrawAlternatingRows=Y\n");
-			if (user.config.row_background != 0xb0b0b0)
-				fprintf(fh,"Hidden.RowBackground=0x%x\n",user.config.row_background);
-			if (user.config.alt_row_background != 0xb8b8b8)
-				fprintf(fh,"Hidden.AltRowBackground=0x%x\n",user.config.alt_row_background);
+
+			{
+				if (user.config.row_background != ROW_BACKGROUND)
+					fprintf(fh,"Hidden.RowBackground=0x%x\n",user.config.row_background);
+				if (user.config.alt_row_background != ALT_ROW_BACKGROUND)
+					fprintf(fh,"Hidden.AltRowBackground=0x%x\n",user.config.alt_row_background);
+			}
 
 			fclose(fh);
 		}

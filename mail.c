@@ -1916,12 +1916,23 @@ int mail_process_headers(struct mail_complete *mail)
 					{
 						if (!mystricmp("filename",param->attribute))
 						{
+							/* Free memory that has been previously allocated */
+							free(mail->content_name);
 							mail->content_name = mystrdup(param->value);
 							break;
 						}
 						param = (struct content_parameter *)node_next(&param->node);
 					}
+
+					while ((param = (struct content_parameter*)list_remove_tail(&parameter_list)))
+					{
+						free(param->attribute);
+						free(param->value);
+						free(param);
+					}
+
 				}
+
 
 			}
 		} else if (!mystricmp("content-type",header->name))
@@ -2538,7 +2549,7 @@ void mail_info_free(struct mail_info *info)
 {
 	if (!info) return;
 
-	/* don't free anything, if there still other refrences of this mail */
+	/* don't free anything, if there still other references of this mail */
 	if (info->reference_count)
 	{
 		info->to_be_freed = 1;

@@ -955,7 +955,7 @@ struct mail_complete *mail_complete_create_from_file(char *filename)
 			fclose(fh);
 		} else
 		{
-			free(m);
+			mail_complete_free(m);
 			return NULL;
 		}
 

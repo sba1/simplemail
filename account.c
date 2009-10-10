@@ -122,10 +122,12 @@ void account_free(struct account *a)
 	free(a);
 }
 
-
-/**************************************************************************
- Find an account by e-mail address
-**************************************************************************/
+/**
+ * Find an account by a given e-mail address.
+ *
+ * @param from
+ * @return
+ */
 struct account *account_find_by_from(char *from)
 {
 	struct account *ac = (struct account*)list_first(&user.config.account_list);
@@ -140,7 +142,11 @@ struct account *account_find_by_from(char *from)
 		struct mailbox *mb = (struct mailbox*)list_first(&addr.mailbox_list);
 		while (mb)
 		{
-			if (!mystricmp(mb->addr_spec,ac->email)) return ac;
+			if (!mystricmp(mb->addr_spec,ac->email))
+			{
+				free_address(&addr);
+				return ac;
+			}
 			mb = (struct mailbox*)node_next(&mb->node);
 		}
 		ac = (struct account*)node_next(&ac->node);

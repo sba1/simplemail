@@ -622,6 +622,35 @@ ULONG trapCode(struct ExceptionContext *context, struct ExecBase *sb, APTR trapD
 	return 0;
 }
 
+/**
+ * A memgrind aware memcpy. Doesn't transfer uninitialized memory portions.
+ *
+ * @param dest
+ * @param src
+ * @param size
+ */
+static void memgrind_aware_memcpy(char *dest, char *src, int size)
+{
+	struct page *p;
+IExec->DebugPrintF("memgrind_aware_memcpy(dest=%p,src=%p,size=%ld)\n",dest,src,size);
+	IExec->Forbid();
+	if ((p = find_page(src)))
+	{
+		int i;
+		uint32 offset = (uint8*)src - p->mem_base;
+
+		IExec->DebugPrintF("Page found at %p, base %p, length %ld, offset %ld\n",p,p->mem_base,p->page_size,offset);
+
+		for (i=0;i<size;i++)
+		{
+			if (are_bits_set(p->initialized_bmap,offset+i,1))
+				dest[i] = src[i];
+		}
+
+	} else
+		memcpy(dest,src,size);
+	IExec->Permit();
+}
 #endif
 
 /**
@@ -800,7 +829,11 @@ void *realloc(void *om, size_t size)
 
 	if (size == oldsize) return om;
 	if (!(nm = malloc(size))) return NULL;
+#ifdef MEMGRIND
+	memgrind_aware_memcpy(nm,om,MIN(size,oldsize));
+#else
 	memcpy(nm,om,MIN(size,oldsize));
+#endif
 	free(om);
 	return nm;
 }

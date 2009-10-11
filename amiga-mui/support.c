@@ -219,11 +219,11 @@ char *sm_get_date_long_str(unsigned int seconds)
 char *sm_get_date_long_str_utf8(unsigned int seconds)
 {
 	static char buf[128];
-  char *utf8;
+	char *utf8;
 
 	SecondsToStringLong(buf,seconds);
 
-	if ((utf8 = utf8create(buf, user.config.default_codeset?user.config.default_codeset->name:NULL)))
+	if ((utf8 = (char*)utf8create(buf, user.config.default_codeset?user.config.default_codeset->name:NULL)))
 	{
 		strcpy(buf,utf8);
 		free(utf8);
@@ -788,7 +788,7 @@ char *sm_parse_pattern(utf8 *utf8_str, int flags)
 	if ((flags & SM_PATTERN_NOPATT))
 	{
 		/* only a copy of the string is needed when we are not using the patternmatching */
-		dest = mystrdup(utf8_str);
+		dest = mystrdup((char*)utf8_str);
 	} else
 	{
 		source = utf8tostrcreate(utf8_str, user.config.default_codeset);
@@ -859,19 +859,19 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 			{
 				if ((flags & SM_PATTERN_ASCII7))
 				{
-					match = !!mystristr(utf8_str, pat);
+					match = !!mystristr((char*)utf8_str, pat);
 				} else
 				{
-					match = !!utf8stristr(utf8_str, pat);
+					match = !!utf8stristr((char*)utf8_str, pat);
 				}
 			} else
 			{
 				if ((flags & SM_PATTERN_ASCII7))
 				{
-					match = !utf8stricmp(utf8_str, pat);
+					match = !utf8stricmp((char*)utf8_str, pat);
 				} else
 				{
-					match = !mystricmp(utf8_str, pat);
+					match = !mystricmp((char*)utf8_str, pat);
 				}
 			}
 		} else
@@ -879,10 +879,10 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 			/* no special handling needed for UTF8 */
 			if ((flags & SM_PATTERN_SUBSTR))
 			{
-				match = !!strstr(utf8_str, pat);
+				match = !!strstr((char*)utf8_str, pat);
 			} else
 			{
-				match = !mystrcmp(utf8_str, pat);
+				match = !mystrcmp((char*)utf8_str, pat);
 			}
 		}
 		return match;
@@ -893,7 +893,7 @@ int sm_match_pattern(char *pat, utf8 *utf8_str, int flags)
 		str = utf8tostrcreate(utf8_str, user.config.default_codeset);
 	} else
 	{
-		str = utf8_str;
+		str = (char*)utf8_str;
 	}
 
 	if (pat && str)
@@ -975,6 +975,11 @@ void tell_from_subtask(const char *str)
 #ifndef NO_SSL
 
 #include <proto/amissl.h>
+#ifdef USE_AMISSL3
+#include <libraries/amisslmaster.h>
+#include <proto/amisslmaster.h>
+#endif
+
 #ifndef __AMIGAOS4__
 struct AmiSSLIFace {int dummy; };
 #endif
@@ -999,10 +1004,26 @@ static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase, struct Am
 int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
 #ifndef NO_SSL
-	struct Library *AmiSSLBase;
-	struct AmiSSLIFace *IAmiSSL;
 	int rc = 0;
 
+	struct Library *AmiSSLBase;
+	struct AmiSSLIFace *IAmiSSL;
+
+#ifdef USE_AMISSL3
+	struct Library *AmiSSLMasterBase;
+	struct AmiSSLMasterIFace *IAmiSSLMaster;
+
+	if ((AmiSSLMasterBase = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &IAmiSSLMaster)))
+	{
+		if (InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
+		{
+			if ((AmiSSLBase = OpenAmiSSL()))
+			{
+				if ((IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase,"main",1,NULL)))
+				{
+					if (InitAmiSSL(TAG_DONE) == 0)
+					{
+#else
 	if ((AmiSSLBase = OpenLibraryInterface("amissl.library",1,&IAmiSSL)))
 	{
 		if (!InitAmiSSL(AmiSSL_Version,
@@ -1010,7 +1031,8 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				AmiSSL_Revision, AmiSSL_CurrentRevision,
 				TAG_DONE))
 		{
-			unsigned char *p = buf;
+#endif
+			unsigned char *p = (unsigned char*)buf;
 			PKCS7 *pkcs7;
 
 			if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))
@@ -1030,11 +1052,22 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				}
 				PKCS7_free(pkcs7);
 			}
-
+#ifdef USE_AMISSL3
+						CleanupAmiSSL(TAG_DONE);
+					}
+					DropInterface((struct Interface*)IAmiSSL);
+				}
+				CloseAmiSSL();
+			}
+		}
+		CloseLibraryInterface(AmiSSLMasterBase,AmiSSLMasterBase);
+	}
+#else
 			CleanupAmiSSL(TAG_DONE);
 		}
 		CloseLibraryInterface(AmiSSLBase,IAmiSSL);
 	}
+#endif
 	return rc;
 #else
 	return 0;

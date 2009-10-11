@@ -49,6 +49,10 @@
 #endif
 
 #ifndef NO_SSL
+#ifdef USE_AMISSL3
+#include <libraries/amisslmaster.h>
+#include <proto/amisslmaster.h>
+#endif
 #include <proto/amissl.h>
 #endif
 
@@ -147,6 +151,12 @@ struct AmiSSLIFace *IAmiSSL;
 #else
 void *IAmiSSL;
 #endif
+
+#ifdef USE_AMISSL3
+struct Library *AmiSSLMasterBase;
+struct AmiSSLMasterIFace *IAmiSSLMaster;
+#endif
+
 static int ssl_in_use;
 static SSL_CTX *ctx;
 #endif
@@ -160,6 +170,20 @@ int open_ssl_lib(void)
 
 	if (!AmiSSLBase)
 	{
+#ifdef USE_AMISSL3
+
+		if ((AmiSSLMasterBase = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &IAmiSSLMaster)))
+		{
+			if (InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
+			{
+				if ((AmiSSLBase = OpenAmiSSL()))
+				{
+					if ((IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase,"main",1,NULL)))
+					{
+						if (InitAmiSSL(AmiSSL_SocketBase, (ULONG)SocketBase, TAG_DONE) == 0)
+						{
+
+#else
 		if ((AmiSSLBase = OpenLibraryInterface("amissl.library",1,&IAmiSSL)))
 		{
 			if (!InitAmiSSL(AmiSSL_Version,
@@ -169,6 +193,7 @@ int open_ssl_lib(void)
 					/*	AmiSSL_VersionOverride, TRUE,*/ /* If you insist */
 					TAG_DONE))
 			{
+#endif
 				SSLeay_add_ssl_algorithms();
 				SSL_load_error_strings();
 
@@ -178,11 +203,27 @@ int open_ssl_lib(void)
 					ssl_in_use++;
 					return 1;
 				}
+#ifdef USE_AMISSL3
+							CleanupAmiSSL(TAG_DONE);
+						}
+						DropInterface((struct Interface*)IAmiSSL);
+					}
+					CloseAmiSSL();
+					AmiSSLBase = NULL;
+				}
+			}
+			CloseLibraryInterface(AmiSSLMasterBase,AmiSSLMasterBase);
+			AmiSSLMasterBase = NULL;
+		}
+
+#else
 				CleanupAmiSSL(TAG_DONE);
 			}
 			CloseLibraryInterface(AmiSSLBase,IAmiSSL);
 			AmiSSLBase = NULL;
 		}
+#endif
+
 	} else
 	{
 		ssl_in_use++;

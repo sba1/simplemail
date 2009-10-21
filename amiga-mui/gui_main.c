@@ -432,6 +432,19 @@ char *initial_mailto;
 char *initial_subject;
 char *initial_message;
 
+static char *gui_images_directory;
+
+/**
+ * Returns the directory, in which the images are stored.
+ *
+ * @return
+ */
+char *gui_get_images_directory(void)
+{
+	if (!gui_images_directory) return "PROGDIR:Images";
+	return gui_images_directory;
+}
+
 /****************************************************************
  Called if the appicons needs to be refreshed
 *****************************************************************/
@@ -569,6 +582,8 @@ int gui_parseargs(int argc, char *argv[])
 		char *message;
 	  char *mailto;
 	  char *subject;
+	  char *profile_directory;
+	  char *image_directory;
 	  LONG *debuglevel;
 	  char *debugout;
 	  char *debugmodules;
@@ -578,11 +593,13 @@ int gui_parseargs(int argc, char *argv[])
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
+		config_set_user_profile_directory(shell_args.profile_directory);
+		gui_images_directory = mystrdup(shell_args.image_directory);
 		if (shell_args.debugout) debug_set_out(shell_args.debugout);
 		if (shell_args.debuglevel) debug_set_level(*shell_args.debuglevel);
 		if (shell_args.debugmodules) debug_set_modules(shell_args.debugmodules);

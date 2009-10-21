@@ -165,10 +165,14 @@ char *mystrdup(const char *str)
 	return new_str;
 }
 
-/**************************************************************************
- Like mystrdup() but you can limit the chars. A 0 byte is guaranted.
- The string is allocated via malloc().
-**************************************************************************/
+/**
+ * Like mystrdup() but you can limit the chars. A 0 byte is guaranteed.
+ * The string is allocated via malloc().
+ *
+ * @param str1
+ * @param n
+ * @return
+ */
 char *mystrndup(const char *str1, int n)
 {
 	char *dest;
@@ -255,8 +259,9 @@ char *mystrcat(char *str1, char *str2)
 *******************************************************************/
 int myfiledatecmp(char *file1, char *file2)
 {
-	struct stat *s1, *s2;
+	struct stat *s1 = NULL, *s2 = NULL;
 	int rc1,rc2;
+	int rc = 0;
 
 	if ((s1 = (struct stat*)malloc(sizeof(struct stat))))
 	{
@@ -264,20 +269,18 @@ int myfiledatecmp(char *file1, char *file2)
 		{
 			rc1 = stat(file1,s1);
 			rc2 = stat(file2,s2);
-			if (rc1 == -1 && rc2 == -1) return 0;
-			if (rc1 == -1) return -1;
-			if (rc2 == -1) return 1;
 
-			free(s2);
-			free(s1);
-
-			if (s1->st_mtime == s2->st_mtime) return 0;
-			if (s1->st_mtime > s2->st_mtime) return 1;
-			return -1;
+			if (rc1 == -1 && rc2 == -1) rc = 0;
+			else if (rc1 == -1) rc = -1;
+			else if (rc2 == -1) rc = 1;
+			else if (s1->st_mtime == s2->st_mtime) rc = 0;
+			else if (s1->st_mtime > s2->st_mtime) rc = 1;
+			else rc = -1;
 		}
-		free(s1);
 	}
-	return 0;
+	free(s2);
+	free(s1);
+	return rc;
 }
 
 /******************************************************************

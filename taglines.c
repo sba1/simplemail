@@ -229,6 +229,9 @@ void taglines_init(char *filename)
 		taglines_create_index(filename,indexname);
 	}
 
+	taglines_indexname = NULL;
+	taglines_filename = NULL;
+
 	if ((fh = fopen(indexname,"rb")))
 	{
 		char buf[4];
@@ -254,4 +257,7 @@ void taglines_init(char *filename)
 
 		fclose(fh);
 	}
+
+	if (!taglines_indexname) free(indexname);
+	if (!taglines_filename) free(filename);
 }

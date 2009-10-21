@@ -944,14 +944,33 @@ int addressbook_import_yam(char *filename)
 	return rc;
 }
 
-/**************************************************************************
- Load the addressbook. Returns 0 for an error
-**************************************************************************/
+/**
+ * Load the addressbook. Returns 0 for an error.
+ *
+ * @return
+ */
 int addressbook_load(void)
 {
-	if (!addressbook_import_sm("PROGDIR:.newaddressbook.xml"))
-		return addressbook_import_sm("PROGDIR:.addressbook.xml");
-	return 1;
+	int rc;
+	char *filename;
+
+	rc = 0;
+	if ((filename = mycombinepath(user.directory,".newaddressbook.xml")))
+	{
+		rc = addressbook_import_sm(filename);
+		free(filename);
+	}
+
+	if (!rc)
+	{
+		if ((filename = mycombinepath(user.directory,".addressbook.xml")))
+		{
+			rc = addressbook_import_sm(filename);
+			free(filename);
+		}
+	}
+
+	return rc;
 }
 
 #define BOOK_UNKNOWN 0
@@ -989,9 +1008,15 @@ static int addressbook_get_type(char *filename)
 **************************************************************************/
 int addressbook_import_file(char *filename, int append)
 {
+	char *allocated_filename = NULL;
 	int rc = 0;
 
-	if (!filename) filename = "PROGDIR:.newaddressbook.xml";
+	if (!filename)
+	{
+		if (!(allocated_filename = mycombinepath(user.directory,".newaddressbook.xml")))
+			return 0;
+		filename = allocated_filename;
+	}
 
 	if (!append) cleanup_addressbook();
 
@@ -1010,6 +1035,7 @@ int addressbook_import_file(char *filename, int append)
 			sm_request(NULL, _("Unsupported type of addressbook."), _("Okay"));
 			break;
 	}
+	free(allocated_filename);
 	return rc;
 }
 
@@ -1121,7 +1147,15 @@ void addressbook_save_as(char *filename)
  */
 void addressbook_save(void)
 {
-	addressbook_save_as("PROGDIR:.newaddressbook.xml");
+	char *filename;
+
+	/* TODO: Make the addressbook a member from user */
+	if (!(filename = mycombinepath(user.directory,".newaddressbook.xml")))
+		return;
+
+	addressbook_save_as(filename);
+
+	free(filename);
 }
 
 /**************************************************************************

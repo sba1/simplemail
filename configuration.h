@@ -161,6 +161,8 @@ struct user
 	struct config config;
 };
 
+int config_set_user_profile_directory(char *path);
+
 char *get_config_item(char *buf, char *item);
 char *dupconfigstr(char *str, int utf8);
 int load_config(void);

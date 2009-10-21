@@ -74,15 +74,40 @@ char *get_config_item(char *buf, char *item)
 
 struct user user;
 
-static void init_config(void)
+static char *profile_directory;
+
+/**
+ * Sets the user profile directory. If this function is not called
+ * some defaults are used.
+ *
+ * @param profile_directory
+ * @return
+ */
+int config_set_user_profile_directory(char *new_profile_directory)
+{
+	if (profile_directory) free(profile_directory);
+	if (!(profile_directory = mystrdup(new_profile_directory)))
+		return 0;
+	return 1;
+}
+
+static int init_config(void)
 {
 	struct account *account;
 	struct phrase *phrase;
 
 	memset(&user,0,sizeof(struct user));
 
-	user.directory = mystrdup(SM_DIR);
-	user.folder_directory = mystrdup(SM_FOLDER_DIR);
+	if (profile_directory) user.directory = mystrdup(profile_directory);
+	else user.directory = mystrdup(SM_DIR);
+
+	if (!user.directory)
+		return 0;
+	if (!(user.folder_directory = mycombinepath(user.directory,".folders")))
+		return 0;
+
+	SM_DEBUGF(10,("profile_directory=%s\n",user.directory));
+	SM_DEBUGF(10,("folder_directory=%s\n",user.folder_directory));
 
 	list_init(&user.config.account_list);
 	list_init(&user.config.signature_list);
@@ -157,6 +182,8 @@ static void init_config(void)
 	user.config.dont_draw_alternating_rows = 0;
 	user.config.row_background = ROW_BACKGROUND;        /* Row color */
 	user.config.alt_row_background = ALT_ROW_BACKGROUND;       /* Color of alternative row */
+
+	return 1;
 }
 
 /**
@@ -191,6 +218,8 @@ void free_config(void)
 #endif
 
 	taglines_cleanup();
+
+	free(profile_directory);
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
@@ -207,7 +236,8 @@ int load_config(void)
 {
 	char *buf;
 
-	init_config();
+	if (!(init_config()))
+		return 0;
 
 	if ((buf = malloc(512)))
 	{
@@ -580,8 +610,7 @@ int load_config(void)
 			}
 		}
 
-		if (user.directory) strcpy(buf,user.directory);
-		else buf[0] = 0;
+		strcpy(buf,SM_DIR);
 		sm_add_part(buf,".taglines",512);
 
 		if ((user.taglines_filename = mystrdup(buf)))

@@ -43,6 +43,7 @@
 
 #include "compiler.h"
 #include "foldertreelistclass.h"
+#include "gui_main_arch.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 
@@ -216,13 +217,13 @@ STATIC ULONG FolderTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
 	data->show_root = show_root;
 
-	data->image_incoming_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_incoming", End;
-	data->image_outgoing_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_outgoing", End;
-	data->image_sent_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_sent", End;
-	data->image_deleted_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_deleted", End;
-	data->image_other_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_other", End;
-	data->image_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_spam", End;
-	data->image_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/folder_group", End;
+	data->image_incoming_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_incoming", End;
+	data->image_outgoing_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_outgoing", End;
+	data->image_sent_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_sent", End;
+	data->image_deleted_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_deleted", End;
+	data->image_other_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_other", End;
+	data->image_spam_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_spam", End;
+	data->image_group_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "folder_group", End;
 
 	init_hook(&data->close_hook, (HOOKFUNC)folder_close);
 	init_hook(&data->display_hook,(HOOKFUNC)folder_display);

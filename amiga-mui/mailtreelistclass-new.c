@@ -56,6 +56,7 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "datatypescache.h"
+#include "gui_main_arch.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "support.h"
@@ -164,30 +165,30 @@ STATIC APTR OpenTTEngineFont(struct TextFont *font)
 
 enum
 {
-	IMAGE_UNREAD = 0,    //!< IMAGE_UNREAD
-	IMAGE_UNREAD_PARTIAL,//!< IMAGE_UNREAD_PARTIAL
-	IMAGE_READ_PARTIAL,  //!< IMAGE_READ_PARTIAL
-	IMAGE_REPLY_PARTIAL, //!< IMAGE_REPLY_PARTIAL
-	IMAGE_READ,          //!< IMAGE_READ
-	IMAGE_WAITSEND,      //!< IMAGE_WAITSEND
-	IMAGE_SENT,          //!< IMAGE_SENT
-	IMAGE_MARK,          //!< IMAGE_MARK
-	IMAGE_HOLD,          //!< IMAGE_HOLD
-	IMAGE_REPLY,         //!< IMAGE_REPLY
-	IMAGE_FORWARD,       //!< IMAGE_FORWARD
-	IMAGE_NORCPT,        //!< IMAGE_NORCPT
-	IMAGE_NEW_PARTIAL,   //!< IMAGE_NEW_PARTIAL
-	IMAGE_NEW_SPAM,      //!< IMAGE_NEW_SPAM
-	IMAGE_UNREAD_SPAM,   //!< IMAGE_UNREAD_SPAM
-	IMAGE_ERROR,         //!< IMAGE_ERROR
-	IMAGE_IMPORTANT,     //!< IMAGE_IMPORTANT
-	IMAGE_ATTACH,        //!< IMAGE_ATTACH
-	IMAGE_GROUP,         //!< IMAGE_GROUP
-	IMAGE_NEW,           //!< IMAGE_NEW
-	IMAGE_CRYPT,         //!< IMAGE_CRYPT
-	IMAGE_SIGNED,        //!< IMAGE_SIGNED
-	IMAGE_TRASHCAN,      //!< IMAGE_TRASHCAN
-	IMAGE_MAX            //!< IMAGE_MAX
+	IMAGE_UNREAD = 0,    /*!< IMAGE_UNREAD */
+	IMAGE_UNREAD_PARTIAL,/*!< IMAGE_UNREAD_PARTIAL */
+	IMAGE_READ_PARTIAL,  /*!< IMAGE_READ_PARTIAL */
+	IMAGE_REPLY_PARTIAL, /*!< IMAGE_REPLY_PARTIAL */
+	IMAGE_READ,          /*!< IMAGE_READ */
+	IMAGE_WAITSEND,      /*!< IMAGE_WAITSEND */
+	IMAGE_SENT,          /*!< IMAGE_SENT */
+	IMAGE_MARK,          /*!< IMAGE_MARK */
+	IMAGE_HOLD,          /*!< IMAGE_HOLD */
+	IMAGE_REPLY,         /*!< IMAGE_REPLY */
+	IMAGE_FORWARD,       /*!< IMAGE_FORWARD */
+	IMAGE_NORCPT,        /*!< IMAGE_NORCPT */
+	IMAGE_NEW_PARTIAL,   /*!< IMAGE_NEW_PARTIAL */
+	IMAGE_NEW_SPAM,      /*!< IMAGE_NEW_SPAM */
+	IMAGE_UNREAD_SPAM,   /*!< IMAGE_UNREAD_SPAM */
+	IMAGE_ERROR,         /*!< IMAGE_ERROR */
+	IMAGE_IMPORTANT,     /*!< IMAGE_IMPORTANT */
+	IMAGE_ATTACH,        /*!< IMAGE_ATTACH */
+	IMAGE_GROUP,         /*!< IMAGE_GROUP */
+	IMAGE_NEW,           /*!< IMAGE_NEW */
+	IMAGE_CRYPT,         /*!< IMAGE_CRYPT */
+	IMAGE_SIGNED,        /*!< IMAGE_SIGNED */
+	IMAGE_TRASHCAN,      /*!< IMAGE_TRASHCAN */
+	IMAGE_MAX            /*!< IMAGE_MAX */
 };
 
 /* Must match those above (old = read)*/
@@ -287,7 +288,7 @@ enum DrawUpdate
 
 	/** Horizontal scrolling position changed, old pos is saved at drawupdate_old_horiz_first */
 	UPDATE_HORIZ_FIRST_CHANGED = 6
-//	1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
+/*	1 - selection changed, 2 - first changed, 3 - single entry removed, 4 - update Title */
 };
 
 /**
@@ -493,12 +494,12 @@ STATIC VOID GetFromText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 	int is_ascii7 = 1;
 	char *txt;
 
-	if ((txt = m->from_phrase))
+	if ((txt = (char*)m->from_phrase))
 		is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ASCII7);
 
 	if (!txt)
 	{
-		if ((txt = m->from_addr))
+		if ((txt = (char*)m->from_addr))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_FROM_ADDR_ASCII7);
 	}
 
@@ -523,7 +524,7 @@ STATIC VOID GetToText(struct mail_info *m, char **txt_ptr, int *ascii7_ptr)
 		is_ascii7 = 1;
 	} else
 	{
-		if ((txt = m->to_phrase))
+		if ((txt = (char*)m->to_phrase))
 			is_ascii7 = !!(m->flags & MAIL_FLAGS_TO_ASCII7);
 
 		if (!txt)
@@ -742,7 +743,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 				case	COLUMN_TYPE_SUBJECT:
 							if (m)
 							{
-								txt = m->subject;
+								txt = (char*)m->subject;
 								is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
 							} else txt = data->subject_text;
 							break;
@@ -833,7 +834,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 					{
 						if (!is_ascii7)
 						{
-							utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+							utf8tostr((utf8*)txt,data->buf,sizeof(data->buf),user.config.default_codeset);
 							txt = data->buf;
 						}
 
@@ -1120,7 +1121,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 			case	COLUMN_TYPE_SUBJECT:
 						if (m)
 						{
-							txt = m->subject;
+							txt = (char*)m->subject;
 							is_ascii7 = !!(m->flags & MAIL_FLAGS_SUBJECT_ASCII7);
 						} else txt = data->subject_text;
 						break;
@@ -1179,7 +1180,7 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 						if (m)
 						{
 							is_ascii7 = FALSE;
-							txt = m->excerpt;
+							txt = (char*)m->excerpt;
 							if (!txt)
 							{
 								simplemail_get_mail_info_excerpt_lazy(m);
@@ -1276,16 +1277,16 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 					{
 						if (data->highlight && *data->highlight)
 						{
-							char *begin = utf8stristr(txt,data->highlight);
+							char *begin = utf8stristr(txt,(char*)data->highlight);
 							if (begin)
 							{
-								lengths[0] = utf8charpos(txt,begin-txt);
+								lengths[0] = utf8charpos((utf8*)txt,begin-txt);
 								lengths[1] = utf8len(data->highlight);
-								lengths[2] = utf8len(begin) - lengths[1];
+								lengths[2] = utf8len((utf8*)begin) - lengths[1];
 							}
 						}
 
-						utf8tostr(txt,data->buf,sizeof(data->buf),user.config.default_codeset);
+						utf8tostr((utf8*)txt,data->buf,sizeof(data->buf),user.config.default_codeset);
 						txt = data->buf;
 					} else
 					{
@@ -1333,11 +1334,12 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 									if (left_width > data->threepoints_width)
 									{
 										left_len = txt_len - new_len;
+										/* Determine number of characters of the left part (from right to left) */
 										left_fit = TextFit(rp,&txt[left_len-1],left_len,&te,NULL,-1,left_width-data->threepoints_width,fonty);
 										left_width = te.te_Width;
 									} else left_width = 0;
 
-									new_width = available_col_width-data->threepoints_width-left_width;
+									new_width = available_col_width - data->threepoints_width - left_width;
 									fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width,fonty);
 									if (fit < new_len && (new_width > data->threepoints_width))
 										fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width-data->threepoints_width,fonty);
@@ -1909,8 +1911,8 @@ STATIC ULONG MailTreelist_Setup(struct IClass *cl, Object *obj, struct MUIP_Setu
 
  	for (i=0;i<IMAGE_MAX;i++)
 	{
-		strcpy(filename,"PROGDIR:Images/");
-		strcat(filename,image_names[i]);
+ 		mystrlcpy(filename,gui_get_images_directory(),sizeof(filename));
+ 		sm_add_part(filename,image_names[i],sizeof(filename));
 		data->images[i] = dt_load_picture(filename, _screen(obj));
 		/* It doesn't matter if this fails */
 	}
@@ -2429,7 +2431,7 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
 		DrawEntry(data,obj,cur,buffer_rp,-data->horiz_first,0,window_clip_x - _mleft(obj), window_clip_width);
 		if (cur == ENTRY_TITLE) DrawMarker(data,obj,buffer_rp,0,0);
 		BltBitMapRastPort(data->buffer_bmap, window_clip_x - _mleft(obj), 0,
-						  window_rp, /*_mleft(obj)*/window_clip_x, window_y, /*_mwidth(obj)/**/window_clip_width, data->entry_maxheight, 0xc0);
+						  window_rp, /*_mleft(obj)*/window_clip_x, window_y, /*_mwidth(obj)*/window_clip_width, data->entry_maxheight, 0xc0);
 	} else
 	{
 		DoMethod(obj, MUIM_DrawBackground, _mleft(obj), window_y, _mwidth(obj), data->entry_maxheight, _mleft(obj), window_y, 0);
@@ -2838,7 +2840,7 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 	}
 
 	if (data->highlight) free(data->highlight);
-	data->highlight = mystrdup(f->filter);
+	data->highlight = (utf8*)mystrdup((char*)f->filter);
 	if (data->highlight_native) free(data->highlight_native);
 	data->highlight_native = utf8tostrcreate(data->highlight,user.config.default_codeset);
 
@@ -3932,7 +3934,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 					buf = mystpcpy(buf,data->from_text);
 					*buf++ = ':';
 					*buf++ = ' ';
-					buf += utf8tostr(from,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
+					buf += utf8tostr((utf8*)from,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
 				}
 
 				if (to)
@@ -3941,7 +3943,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 					buf = mystpcpy(buf,data->to_text);
 					*buf++ = ':';
 					*buf++ = ' ';
-					buf += utf8tostr(to,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
+					buf += utf8tostr((utf8*)to,buf,BUFFER_SPACE_LEFT,user.config.default_codeset);
 				}
 
 				if (replyto)
@@ -4270,7 +4272,6 @@ Object *MakeNewMailTreelist(ULONG userid, Object **list)
 			MUIA_Group_Spacing, 0,
 			Child, HGroup,
 				MUIA_Group_Spacing, 0,
-//			MUIA_Group_LayoutHook, &layout_hook,
 				Child, *list = MailTreelistObject,
 					MUIA_CycleChain, 1,
 					InputListFrame,
@@ -4289,15 +4290,11 @@ Object *MakeNewMailTreelist(ULONG userid, Object **list)
 
 /**************************************************************************/
 
-//struct MUI_CustomClass *CL_MailTreelist;
-
 int create_new_mailtreelist_class(void)
 {
 	SM_ENTER;
 	if ((CL_MailTreelist = CreateMCC(MUIC_Area, NULL, sizeof(struct MailTreelist_Data), MailTreelist_Dispatcher)))
 	{
-//		init_hook(&layout_hook,(HOOKFUNC)MailTreelist_Layout_Function);
-
 		SM_DEBUGF(15,("Create CL_MailTreelist: 0x%lx\n",CL_MailTreelist));
 		SM_RETURN(1,"%ld");
 	}

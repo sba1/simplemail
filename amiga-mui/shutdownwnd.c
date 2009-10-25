@@ -20,6 +20,7 @@
 ** shutdownwnd.c
 */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include <datatypes/pictureclass.h>
@@ -31,8 +32,10 @@
 #include "configuration.h"
 #include "debug.h"
 #include "smintl.h"
+#include "support_indep.h"
 
 #include "datatypescache.h"
+#include "gui_main_arch.h"
 #include "shutdownwnd.h"
 
 static struct Window *shutdown_wnd;
@@ -44,61 +47,67 @@ void shutdownwnd_open(void)
 {
 	if ((scr = LockPubScreen(NULL)))
 	{
+		char *filename;
+
 		/* get a white pen for the color of our text */
 		pen = ObtainBestPenA(scr->ViewPort.ColorMap,0xffffffff,0xffffffff,0xffffffff,NULL);
 
-		if ((obj = LoadAndMapPicture("PROGDIR:Images/shutdown",scr)))
+		if ((filename = mycombinepath(gui_get_images_directory(),"shutdown")))
 		{
-			struct BitMapHeader *bmhd = NULL;
-			struct BitMap *bitmap = NULL;
-
-			GetDTAttrs(obj,PDTA_BitMapHeader,&bmhd,TAG_DONE);
-			GetDTAttrs(obj,PDTA_DestBitMap,&bitmap,TAG_DONE);
-			if (!bitmap) GetDTAttrs(obj,PDTA_BitMap,&bitmap,TAG_DONE);
-
-			if (bmhd && bitmap)
+			if ((obj = LoadAndMapPicture("PROGDIR:Images/shutdown",scr)))
 			{
-				int width = bmhd->bmh_Width;
-				int height = bmhd->bmh_Height;
+				struct BitMapHeader *bmhd = NULL;
+				struct BitMap *bitmap = NULL;
 
-				int wndleft,wndtop;
+				GetDTAttrs(obj,PDTA_BitMapHeader,&bmhd,TAG_DONE);
+				GetDTAttrs(obj,PDTA_DestBitMap,&bitmap,TAG_DONE);
+				if (!bitmap) GetDTAttrs(obj,PDTA_BitMap,&bitmap,TAG_DONE);
 
-				wndleft = (scr->Width - width)/2;
-				wndtop = (scr->Height - height)/2;
-
-				if ((shutdown_wnd = OpenWindowTags(NULL,
-					WA_SmartRefresh, TRUE,
-					WA_NoCareRefresh, TRUE,
-					WA_Borderless, TRUE,
-					WA_Width, width,
-					WA_Height, height,
-					WA_PubScreen, scr,
-					WA_Left, wndleft,
-					WA_Top, wndtop,
-					WA_BackFill, LAYERS_NOBACKFILL,
-					TAG_DONE)))
+				if (bmhd && bitmap)
 				{
-					BltBitMapRastPort(bitmap,0,0,
-					                  shutdown_wnd->RPort, 0, 0, width, height,
-					                  0xc0);
+					int width = bmhd->bmh_Width;
+					int height = bmhd->bmh_Height;
 
-					if (!user.config.dont_show_shutdown_text)
+					int wndleft,wndtop;
+
+					wndleft = (scr->Width - width)/2;
+					wndtop = (scr->Height - height)/2;
+
+					if ((shutdown_wnd = OpenWindowTags(NULL,
+						WA_SmartRefresh, TRUE,
+						WA_NoCareRefresh, TRUE,
+						WA_Borderless, TRUE,
+						WA_Width, width,
+						WA_Height, height,
+						WA_PubScreen, scr,
+						WA_Left, wndleft,
+						WA_Top, wndtop,
+						WA_BackFill, LAYERS_NOBACKFILL,
+						TAG_DONE)))
 					{
-						struct TextExtent te;
-						char *txt = _("Shutting down...");
+						BltBitMapRastPort(bitmap,0,0,
+										  shutdown_wnd->RPort, 0, 0, width, height,
+										  0xc0);
 
-						SetDrMd(shutdown_wnd->RPort,JAM1);
-						SetAPen(shutdown_wnd->RPort,pen);
-						TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
-						if ((te.te_Width < width) && (te.te_Height < height))
+						if (!user.config.dont_show_shutdown_text)
 						{
-							/* only draw the text if there is enought space for it */
-							Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
-							Text(shutdown_wnd->RPort,txt,strlen(txt));
+							struct TextExtent te;
+							char *txt = _("Shutting down...");
+
+							SetDrMd(shutdown_wnd->RPort,JAM1);
+							SetAPen(shutdown_wnd->RPort,pen);
+							TextExtent(shutdown_wnd->RPort,txt,strlen(txt),&te);
+							if ((te.te_Width < width) && (te.te_Height < height))
+							{
+								/* only draw the text if there is enought space for it */
+								Move(shutdown_wnd->RPort,(width - te.te_Width)/2, height - te.te_Height - 4 + shutdown_wnd->RPort->TxBaseline);
+								Text(shutdown_wnd->RPort,txt,strlen(txt));
+							}
 						}
 					}
 				}
 			}
+			free(filename);
 		}
 	}
 }

@@ -45,6 +45,7 @@
 
 #include "addressmatchlistclass.h"
 #include "compiler.h"
+#include "gui_main_arch.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
@@ -250,7 +251,7 @@ STATIC ULONG AddressMatchList_New(struct IClass *cl,Object *obj,struct opSet *ms
 						MUIA_NList_Format, ",,,,",
 						TAG_DONE);
 
-	data->status_group_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_group", End;
+	data->status_group_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "status_group", End;
 
 	return (ULONG)obj;
 }

@@ -48,6 +48,7 @@
 #include "version.h"
 
 /* nongui parts */
+#include "atcleanup.h"
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h"
@@ -599,7 +600,8 @@ int gui_parseargs(int argc, char *argv[])
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
 		config_set_user_profile_directory(shell_args.profile_directory);
-		gui_images_directory = mystrdup(shell_args.image_directory);
+		if ((gui_images_directory = mystrdup(shell_args.image_directory)))
+			atcleanup_free(gui_images_directory);
 		if (shell_args.debugout) debug_set_out(shell_args.debugout);
 		if (shell_args.debuglevel) debug_set_level(*shell_args.debuglevel);
 		if (shell_args.debugmodules) debug_set_modules(shell_args.debugmodules);

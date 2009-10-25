@@ -47,6 +47,7 @@
 #include "support_indep.h"
 
 #include "compiler.h"
+#include "gui_main_arch.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "support.h"
@@ -217,8 +218,8 @@ STATIC ULONG transwnd_New(struct IClass *cl, Object *obj, struct opSet *msg)
 		data->mail_group = mail_group;
 		data->start = start;
 		data->ignore_check = ignore_check;
-		data->status_download = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_download", End;
-		data->status_trashcan = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/status_trashcan", End;
+		data->status_download = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "status_download", End;
+		data->status_trashcan = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "status_trashcan", End;
 
 		init_hook_with_data(&data->construct_hook, (HOOKFUNC)mail_construct, data);
 		init_hook_with_data(&data->destruct_hook, (HOOKFUNC)mail_destruct, data);

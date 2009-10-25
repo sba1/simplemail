@@ -27,8 +27,10 @@
 #include <proto/graphics.h>
 
 #include "debug.h"
+#include "support_indep.h"
 
 #include "datatypescache.h"
+#include "gui_main_arch.h"
 #include "startupwnd.h"
 
 static struct Window *startup_wnd;
@@ -41,42 +43,46 @@ void startupwnd_open(void)
 
 	if ((scr = LockPubScreen(NULL)))
 	{
-		if ((obj = LoadAndMapPicture("PROGDIR:Images/startup",scr)))
+		char *filename = mycombinepath(gui_get_images_directory(),"startup");
+		if (filename)
 		{
-			struct BitMapHeader *bmhd = NULL;
-			struct BitMap *bitmap = NULL;
-
-			GetDTAttrs(obj,PDTA_BitMapHeader,&bmhd,TAG_DONE);
-			GetDTAttrs(obj,PDTA_DestBitMap,&bitmap,TAG_DONE);
-			if (!bitmap) GetDTAttrs(obj,PDTA_BitMap,&bitmap,TAG_DONE);
-
-			if (bmhd && bitmap)
+			if ((obj = LoadAndMapPicture(filename,scr)))
 			{
-				int width = bmhd->bmh_Width;
-				int height = bmhd->bmh_Height;
+				struct BitMapHeader *bmhd = NULL;
+				struct BitMap *bitmap = NULL;
 
-				int wndleft,wndtop;
+				GetDTAttrs(obj,PDTA_BitMapHeader,&bmhd,TAG_DONE);
+				GetDTAttrs(obj,PDTA_DestBitMap,&bitmap,TAG_DONE);
+				if (!bitmap) GetDTAttrs(obj,PDTA_BitMap,&bitmap,TAG_DONE);
 
-				wndleft = (scr->Width - width)/2;
-				wndtop = (scr->Height - height)/2;
-
-				if ((startup_wnd = OpenWindowTags(NULL,
-					WA_SmartRefresh, TRUE,
-					WA_NoCareRefresh, TRUE,
-					WA_Borderless, TRUE,
-					WA_Width, width,
-					WA_Height, height,
-					WA_PubScreen, scr,
-					WA_Left, wndleft,
-					WA_Top, wndtop,
-					WA_BackFill, LAYERS_NOBACKFILL,
-					TAG_DONE)))
+				if (bmhd && bitmap)
 				{
-					BltBitMapRastPort(bitmap,0,0,
-					                  startup_wnd->RPort, 0, 0, width, height,
-					                  0xc0);
-				}
-			}
+					int width = bmhd->bmh_Width;
+					int height = bmhd->bmh_Height;
+
+					int wndleft,wndtop;
+
+					wndleft = (scr->Width - width)/2;
+					wndtop = (scr->Height - height)/2;
+
+					if ((startup_wnd = OpenWindowTags(NULL,
+						WA_SmartRefresh, TRUE,
+						WA_NoCareRefresh, TRUE,
+						WA_Borderless, TRUE,
+						WA_Width, width,
+						WA_Height, height,
+						WA_PubScreen, scr,
+						WA_Left, wndleft,
+						WA_Top, wndtop,
+						WA_BackFill, LAYERS_NOBACKFILL,
+						TAG_DONE)))
+					{
+						BltBitMapRastPort(bitmap,0,0,
+										  startup_wnd->RPort, 0, 0, width, height,
+										  0xc0);
+					}
+				}			}
+			free(filename);
 		}
 	}
   SM_LEAVE;

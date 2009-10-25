@@ -58,6 +58,7 @@
 #include "compiler.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
+#include "gui_main_arch.h"
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "picturebuttonclass.h"
@@ -2303,16 +2304,16 @@ static void init_config_window(void)
 		static char texts[GROUPS_MAX][200];
 		int i;
 
-		image_prefs_main_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_main", End;
-		image_prefs_account_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_account", End;
-		image_prefs_receive_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_receive", End;
-		image_prefs_write_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_write", End;
-		image_prefs_read_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_read", End;
-		image_prefs_readplain_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readplain", End;
-		image_prefs_readhtml_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_readhtml", End;
-		image_prefs_signature_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_signature", End;
-		image_prefs_phrase_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_phrase", End;
-		image_prefs_spam_obj = PictureButtonObject, MUIA_PictureButton_Filename, "PROGDIR:Images/prefs_spam", End;
+		image_prefs_main_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_main", End;
+		image_prefs_account_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_account", End;
+		image_prefs_receive_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_receive", End;
+		image_prefs_write_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_write", End;
+		image_prefs_read_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_read", End;
+		image_prefs_readplain_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_readplain", End;
+		image_prefs_readhtml_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_readhtml", End;
+		image_prefs_signature_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_signature", End;
+		image_prefs_phrase_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_phrase", End;
+		image_prefs_spam_obj = PictureButtonObject, MUIA_PictureButton_Directory, gui_get_images_directory(), MUIA_PictureButton_Filename, "prefs_spam", End;
 
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_main_obj,      GROUPS_USER, 0);
 		DoMethod(config_list, MUIM_NList_UseImage, (ULONG)image_prefs_account_obj,   GROUPS_ACCOUNT, 0);

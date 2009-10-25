@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <proto/dos.h>
 #include <proto/exec.h>
 #include <proto/icon.h>
 #include <proto/wb.h>
@@ -36,6 +37,7 @@
 #include "debug.h"
 
 #include "appicon.h"
+#include "gui_main_arch.h"
 #include "mainwnd.h"
 #include "statuswnd.h"
 
@@ -74,10 +76,10 @@ static struct DiskObject *HideIcon;
 
 static STRPTR appicon_names[SM_APPICON_MAX] =
 {
-	"PROGDIR:Images/check",
-	"PROGDIR:Images/empty",
-	"PROGDIR:Images/new",
-	"PROGDIR:Images/old"
+	"check",
+	"empty",
+	"new",
+	"old"
 };
 
 static void appicon_load_position(void);
@@ -88,6 +90,8 @@ static void appicon_load_position(void);
 int appicon_init(void)
 {
 	int i;
+	BPTR dirlock;
+	BPTR odir;
 
 	memset(&appicon_config,0,sizeof(struct AppIcon_Config));
 	memset(&appicon_stat,0,sizeof(struct AppIcon_Stat));
@@ -100,13 +104,20 @@ int appicon_init(void)
 	appicon_config.position_Y = NO_ICON_POSITION;
 	appicon_load_position();
 
-	for(i=0;i<SM_APPICON_MAX;i++)
+	dirlock = Lock(gui_get_images_directory(),ACCESS_READ);
+	if (dirlock)
 	{
-		if ((appicon_diskobject[i]=GetDiskObject(appicon_names[i])))
+		odir = CurrentDir(dirlock);
+
+		for (i=0;i<SM_APPICON_MAX;i++)
 		{
-			appicon_diskobject[i]->do_CurrentX = appicon_config.position_X;
-			appicon_diskobject[i]->do_CurrentY = appicon_config.position_Y;
+			if ((appicon_diskobject[i]=GetDiskObject(appicon_names[i])))
+			{
+				appicon_diskobject[i]->do_CurrentX = appicon_config.position_X;
+				appicon_diskobject[i]->do_CurrentY = appicon_config.position_Y;
+			}
 		}
+		UnLock(dirlock);
 	}
 	if (!(appicon_port = CreateMsgPort())) return 0;
 

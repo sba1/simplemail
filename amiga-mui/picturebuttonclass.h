@@ -30,6 +30,7 @@ IMPORT struct MUI_CustomClass *CL_PictureButton;
 #define MUIA_PictureButton_FreeVert  (TAG_USER | 0x300D0002) /* BOOL */
 #define MUIA_PictureButton_Label     (TAG_USER | 0x300D0003) /* STRPTR */
 #define MUIA_PictureButton_ShowLabel (TAG_USER | 0x300D0004) /* BOOL */
+#define MUIA_PictureButton_Directory (TAG_USER | 0x300D0005) /* STRPTR */
 
 int create_picturebutton_class(void);
 void delete_picturebutton_class(void);

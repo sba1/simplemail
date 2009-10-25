@@ -44,6 +44,7 @@
 #include "datatypescache.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "support.h"
 
 STATIC STRPTR StrNoUnderscoreCopy(STRPTR str)
 {
@@ -111,6 +112,8 @@ STATIC VOID PictureButton_Unload(struct PictureButton_Data *data)
 STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
 	struct PictureButton_Data *data;
+	char *name;
+	char *directory;
 
 /*	if (!(obj=(Object *)DoSuperNew(cl,obj,
 					MUIA_Font, MUIV_Font_Tiny,
@@ -121,9 +124,24 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		return 0;
 
 	data = (struct PictureButton_Data*)INST_DATA(cl,obj);
+	name = (char*)GetTagData(MUIA_PictureButton_Filename,0,msg->ops_AttrList);
+	directory = (char*)GetTagData(MUIA_PictureButton_Directory,0,msg->ops_AttrList);
 
-	data->name = mystrdup((char *)GetTagData(MUIA_PictureButton_Filename,NULL,msg->ops_AttrList));
-	data->label = (char *)GetTagData(MUIA_PictureButton_Label,NULL,msg->ops_AttrList);
+	if (directory && name)
+	{
+		int l = strlen(directory) + strlen(name) + 4;
+		if ((data->name = (char*)malloc(l)))
+		{
+			strcpy(data->name,directory);
+			sm_add_part(data->name,directory,l);
+		}
+	} else
+	{
+		data->name = mystrdup(name);
+	}
+	/* We can live with a NULL data->name */
+
+	data->label = (char *)GetTagData(MUIA_PictureButton_Label,0,msg->ops_AttrList);
 	data->free_vert = (int)GetTagData(MUIA_PictureButton_FreeVert,1,msg->ops_AttrList);
 	data->show_label = (int)GetTagData(MUIA_PictureButton_ShowLabel,1,msg->ops_AttrList);
 

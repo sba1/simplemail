@@ -68,6 +68,26 @@ int atcleanup(void (*cleanup)(void *user_data),void *user_data)
 }
 
 /**
+ * Frees the given memory.
+ *
+ * @param mem
+ */
+static void atcleanup_free_callback(void *mem)
+{
+	free(mem);
+}
+
+/**
+ * Issues a free of the given argument on exit.
+ *
+ * @param mem
+ */
+int atcleanup_free(void *mem)
+{
+	return atcleanup(atcleanup_free_callback,mem);
+}
+
+/**
  * Performs the finalization, i.e., calls all functions registered
  * with atcleanup().
  */

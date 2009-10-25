@@ -24,6 +24,7 @@
 #define SM__ATCLEANUP_H
 
 int atcleanup(void (*cleanup)(void *user_data),void *user_data);
+int atcleanup_free(void *mem);
 void atcleanup_finalize(void);
 
 #endif

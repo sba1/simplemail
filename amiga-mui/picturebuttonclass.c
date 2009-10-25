@@ -133,7 +133,7 @@ STATIC ULONG PictureButton_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		if ((data->name = (char*)malloc(l)))
 		{
 			strcpy(data->name,directory);
-			sm_add_part(data->name,directory,l);
+			sm_add_part(data->name,name,l);
 		}
 	} else
 	{

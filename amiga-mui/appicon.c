@@ -117,6 +117,7 @@ int appicon_init(void)
 				appicon_diskobject[i]->do_CurrentY = appicon_config.position_Y;
 			}
 		}
+		CurrentDir(odir);
 		UnLock(dirlock);
 	}
 	if (!(appicon_port = CreateMsgPort())) return 0;

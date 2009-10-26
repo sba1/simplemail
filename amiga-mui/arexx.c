@@ -1283,23 +1283,27 @@ static void arexx_readinfo(struct RexxMsg *rxmsg, STRPTR args)
 
 					while (mail)
 					{
-						char *type_buf;
+						char *char_buf;
 						int mail_size;
 
 						if (mail->decoded_data) mail_size = mail->decoded_len;
 						else mail_size = mail->text_len;
 
 						sprintf(&stem_buf[stem_len],"FILENAME.%d",i);
-						sprintf(num_buf,"%d",count);
-						MySetRexxVarFromMsg(stem_buf,num_buf,rxmsg);
+						char_buf = mystrdup(mail->content_name);
+						if (char_buf)
+							MySetRexxVarFromMsg(stem_buf,char_buf,rxmsg);
+						free(char_buf);
+						char_buf = NULL;
 
 						sprintf(&stem_buf[stem_len],"FILETYPE.%d",i);
-						type_buf = mystrdup(mail->content_type);
-						type_buf = stradd(type_buf,"/");
-						type_buf = stradd(type_buf,mail->content_subtype);
-						if (type_buf)
-							MySetRexxVarFromMsg(stem_buf,type_buf,rxmsg);
-						free(type_buf);
+						char_buf = mystrdup(mail->content_type);
+						char_buf = stradd(char_buf,"/");
+						char_buf = stradd(char_buf,mail->content_subtype);
+						if (char_buf)
+							MySetRexxVarFromMsg(stem_buf,char_buf,rxmsg);
+						free(char_buf);
+						char_buf = NULL;
 
 						sprintf(&stem_buf[stem_len],"FILESIZE.%d",i);
 						sprintf(num_buf,"%d",mail_size);

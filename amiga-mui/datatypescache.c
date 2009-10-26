@@ -319,6 +319,7 @@ void dt_cleanup(void)
 	{
 		if (dt->o) DisposeDTObject(dt->o);
 		if (dt->name) free(dt->name);
+		if (dt->argb) FreeVec(dt->argb);
 		free(dt);
 	}
 

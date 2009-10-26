@@ -8,7 +8,8 @@ SimpleMail Open Source - ChangeLog
 
 2008-12-27  Bernd Gollesch <bgollesch@speed.at>
 	* simplemail.c: The simplemail_gather_mails() function must also change the
-	  current dir to the incoming folder otherwise some filter (header) will not work.
+	  current dir to the incoming folder otherwise some filter (header) will not work
+	  (bugfix 2809986).
 
 2008-12-23  Bernd Gollesch <bgollesch@speed.at>
 	* addressbook.c: I have a new email-address.

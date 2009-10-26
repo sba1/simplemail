@@ -20,6 +20,8 @@
 ** startupwnd.c
 */
 
+#include <stdlib.h>
+
 #include <datatypes/pictureclass.h>
 
 #include <proto/intuition.h>
@@ -81,7 +83,8 @@ void startupwnd_open(void)
 										  startup_wnd->RPort, 0, 0, width, height,
 										  0xc0);
 					}
-				}			}
+				}
+			}
 			free(filename);
 		}
 	}

@@ -43,6 +43,8 @@
 
 #include "amigasupport.h"
 #include "datatypescache.h"
+#include "gui_main_arch.h"
+#include "support.h"
 
 #ifdef __AMIGAOS4__
 #ifndef WritePixelArrayAlpha
@@ -231,8 +233,13 @@ void dt_init(void)
 	BPTR lock;
 	APTR oldwindowptr;
 
+	char *images_list_filename;
+
 	list_init(&desc_list);
 	list_init(&dt_list);
+
+	if (!(images_list_filename = mycombinepath(gui_get_images_directory(),"images.list")))
+		return;
 
 	mason_available = 0;
 	if (!user.config.dont_use_aiss)
@@ -247,7 +254,7 @@ void dt_init(void)
 		MySetProcWindow(oldwindowptr);
 	}
 
-	if ((file = Open("PROGDIR:Images/images.list",MODE_OLDFILE)))
+	if ((file = Open(images_list_filename,MODE_OLDFILE)))
 	{
 		char buf[256];
 		while((FGets(file,buf,sizeof(buf))))
@@ -270,17 +277,21 @@ void dt_init(void)
 
 			if ((filename_end = strchr(buf,',')))
 			{
-				if ((filename = malloc(filename_end-buf+50)))
+				int filename_len = filename_end - buf + strlen(gui_get_images_directory()) + 20;
+
+				if ((filename = malloc(filename_len)))
 				{
 					struct icon_desc *node = malloc(sizeof(struct icon_desc));
 					if (node)
 					{
 						char *lastchar;
+
 						memset(node,0,sizeof(struct icon_desc));
+						*filename_end = 0;
+						strcpy(filename,gui_get_images_directory());
+						sm_add_part(filename,buf,filename_len);
 						node->filename = filename;
-						strcpy(filename,"PROGDIR:Images/"); /* 15 chars */
-						strncpy(&filename[15],buf,filename_end-buf);
-						filename[15+filename_end-buf]=0;
+
 						node->x1 = strtol(filename_end+1,&lastchar,10);
 						node->y1 = strtol(lastchar+1,&lastchar,10);
 						node->x2 = strtol(lastchar+1,&lastchar,10);
@@ -305,6 +316,7 @@ void dt_init(void)
 		}
 		Close(file);
 	}
+	free(images_list_filename);
 }
 
 /*************************************************************
@@ -423,7 +435,14 @@ struct dt_node *dt_load_unmapped_picture(char *filename)
 
 			/* No mason, use the big image */
 			if (!img)
-				img = dt_create_from_filename("PROGDIR:Images/images");
+			{
+				char *img_filename = mycombinepath(gui_get_images_directory(),"images");
+				if (img_filename)
+				{
+					img = dt_create_from_filename(img_filename);
+					free(img_filename);
+				}
+			}
 			if (!img)
 				break;
 			img->count++;

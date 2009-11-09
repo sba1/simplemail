@@ -1010,7 +1010,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	if (getcwd(path, sizeof(path)))
 	{
-		if (chdir(msg->folder_path))
+		if (chdir(msg->folder_path) == 0)
 		{
 			if (thread_parent_task_can_contiue())
 			{

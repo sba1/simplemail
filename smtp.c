@@ -694,7 +694,7 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 		SM_DEBUGF(10,("Trying AUTH PLAIN\n"));
 
-		if (ll + pl < sizeof(prep)-3);
+		if (ll + pl < sizeof(prep)-3)
 		{
 			prep[0] = 0;
 			strcpy(&prep[1], account->smtp->auth_login);

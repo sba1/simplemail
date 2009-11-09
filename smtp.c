@@ -1008,18 +1008,22 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	outmail = duplicate_outmail_array(msg->outmail);
 
-	getcwd(path, sizeof(path));
-	chdir(msg->folder_path);
-
-	if (thread_parent_task_can_contiue())
+	if (getcwd(path, sizeof(path)))
 	{
-		thread_call_parent_function_async(status_init,1,0);
-		thread_call_parent_function_async(status_open,0);
-		smtp_send_really(&copy_list,outmail);
-		thread_call_parent_function_async(status_close,0);
+		if (chdir(msg->folder_path))
+		{
+			if (thread_parent_task_can_contiue())
+			{
+				thread_call_parent_function_async(status_init,1,0);
+				thread_call_parent_function_async(status_open,0);
+				smtp_send_really(&copy_list,outmail);
+				thread_call_parent_function_async(status_close,0);
+			}
+
+		 	chdir(path);
+		}
 	}
 
- 	chdir(path);
 	return 0;
 }
 

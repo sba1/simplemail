@@ -1020,7 +1020,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 				thread_call_parent_function_async(status_close,0);
 			}
 
-		 	chdir(path);
+			chdir(path);
 		}
 	}
 

@@ -487,6 +487,7 @@ int thread_parent_task_can_contiue(void)
 		struct Process *p = (struct Process*)FindTask(NULL);
 		msg->msg.mn_ReplyPort = &p->pr_MsgPort;
 		msg->msg.mn_Length = sizeof(struct ThreadMessage);
+		msg->async = 1;
 
 		PutMsg(main_thread_port,&msg->msg);
 		/* Message is freed by parent task */

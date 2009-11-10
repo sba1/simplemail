@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2009-11-10  Nicolas Sallin <henes@biclodon.com>
+	* amiga-mui/subthread.c: The continue message must not be replied by the
+	  parent thread so its async flag must be set. This fixes various random
+	  crashes.
+
 2009-10-26  Bernd Gollesch <bgollesch@speed.at>
 	* amiga-mui/appicon.c: Change back to the old directory before unlocking the current one,
 	  otherwise I get a visit from india.

@@ -2590,6 +2590,7 @@ Alphabetical list of all ARexx commands
  @{" SETMAIL           " link "RX_SETMAIL"}  - Select the current message in the current folder by number
  @{" SETMAILFILE       " link "RX_SETMAILFILE"}  - Select the current message in the current folder by filename
  @{" SHOW              " link "RX_SHOW"}  - Uniconify SimpleMail
+ @{" VERSION           " link "RX_VERSION"}  - Return version number or compilation date
  @{" WRITECLOSE        " link "RX_WRITECLOSE"}  - ?
 
 @ENDNODE
@@ -3847,10 +3848,39 @@ SHOW
      @{" HIDE " link "RX_HIDE"}
 
 @ENDNODE
+@NODE "RX_VERSION" "ARexx command: VERSION"
+
+VERSION
+-------
+
+@{b}NAME@{ub}
+     Version -- Return version number or compilation date.
+
+@{b}TEMPLATE@{ub}
+     DATE/S
+
+@{b}FUNCTION@{ub}
+     Returns version information about SimpleMail.
+
+@{b}INPUTS@{ub}
+     DATE/S   - Returns the compilation date of the program.
+
+@{b}RETURNS@{ub}
+     RESULT gives the version number, or the compilation date.
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+
+@ENDNODE
 @NODE "RX_WRITECLOSE" "ARexx command: WRITECLOSE"
 
-SHOW
-----
+WRITECLOSE
+----------
 
 @{b}NAME@{ub}
      WriteClose --

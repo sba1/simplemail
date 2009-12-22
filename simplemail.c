@@ -163,14 +163,20 @@ int callback_read_mail(struct folder *f, struct mail_info *mail, int window)
 	return num;
 }
 
-/* the selected mails should be deleted */
-void callback_delete_mails(void)
+/**
+ * The selected mails should be deleted. The user is not
+ * bothered about the consequences.
+ *
+ * @param permanent 1 if mails should be deleted permanently (rather
+ *     than moved to the dest drawer)
+ *
+ * @return 1 if mails were deleted. Otherwise 0 (e.g., if folder is in use).
+ */
+int callback_delete_mails_silent(int permanent)
 {
 	struct folder *from_folder = main_get_folder();
 	struct mail_info *mail;
 	void *handle;
-	int num;
-	int permanent; /* 1 if mails should be deleted permanently */
 
 	if (from_folder)
 	{
@@ -178,29 +184,7 @@ void callback_delete_mails(void)
 
 		/* Check if folder is not used */
 		if (!folder_attempt_lock(from_folder))
-		{
-			sm_request(NULL,_("Cannot delete mails, because folder is in use.\n"),_("Ok"));
-			return;
-		}
-
-		/* Count the number of selected mails first */
-		mail = main_get_mail_first_selected(&handle);
-		num = 0;
-		while (mail)
-		{
-			num++;
-			mail = main_get_mail_next_selected(&handle);
-		}
-
-		if (!num) return;
-		if (from_folder == folder_deleted())
-		{
-			char buf[256];
-			if (num == 1) mystrlcpy(buf,_("Do you really want to delete the selected mail permanently?"),sizeof(buf));
-			else sm_snprintf(buf,sizeof(buf),_("Do you really want to delete %d mails permanently?"),num);
-			if (!sm_request(NULL,buf,_("_Yes|_No"))) return;
-			permanent = 1;
-		} else permanent = 0;
+			return 0;
 
 		if (from_folder->is_imap)
 		{
@@ -234,7 +218,56 @@ void callback_delete_mails(void)
 		}
 
 		folder_unlock(from_folder);
+
+		return 1;
 	}
+
+	return 0;
+}
+
+/**
+ * Deletes all selected mails.
+ */
+void callback_delete_mails(void)
+{
+	struct folder *from_folder = main_get_folder();
+	struct mail_info *mail;
+	void *handle;
+	int num;
+	int permanent; /* 1 if mails should be deleted permanently */
+
+	if (!from_folder)
+		return;
+
+	/* Check if folder is not used */
+	if (!folder_attempt_lock(from_folder))
+	{
+		sm_request(NULL,_("Cannot delete mails, because folder is in use.\n"),_("Ok"));
+		return;
+	}
+
+	/* Count the number of selected mails first */
+	mail = main_get_mail_first_selected(&handle);
+	num = 0;
+	while (mail)
+	{
+		num++;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!num) return;
+	if (from_folder == folder_deleted())
+	{
+		char buf[256];
+		if (num == 1) mystrlcpy(buf,_("Do you really want to delete the selected mail permanently?"),sizeof(buf));
+		else sm_snprintf(buf,sizeof(buf),_("Do you really want to delete %d mails permanently?"),num);
+		if (!sm_request(NULL,buf,_("_Yes|_No"))) return;
+		permanent = 1;
+	} else permanent = 0;
+
+	callback_delete_mails_silent(permanent);
+
+	folder_unlock(from_folder);
 }
 
 /* a single mail of any folder should be deleted */

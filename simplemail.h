@@ -33,6 +33,7 @@ struct list;
 int callback_read_active_mail(void);
 void callback_save_active_mail(void);
 int callback_read_mail(struct folder *f, struct mail_info *mail, int window);
+int callback_delete_mails_silent(int permanent);
 void callback_delete_mails(void);
 int callback_delete_mail(struct mail_info *mail);
 void callback_get_address(void);

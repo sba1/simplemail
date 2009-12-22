@@ -388,10 +388,16 @@ int create_filterrule_class(void)
 		int i;
 
 		for (i=0;i<sizeof(rules)/sizeof(struct rule);i++)
-			rule_cycle_array[i] = _(rules[i].name);
+		{
+			if (rules[i].name)
+				rule_cycle_array[i] = _(rules[i].name);
+		}
 
 		for (i=0;i<sizeof(status_labels_untranslated)/sizeof(char*);i++)
-			status_labels[i] = _(status_labels_untranslated[i]);
+		{
+			if (status_labels[i])
+				status_labels[i] = _(status_labels_untranslated[i]);
+		}
 
 		SM_DEBUGF(15,("Create CL_FilterRule: 0x%lx\n",CL_FilterRule));
 		SM_RETURN(1,"%ld");

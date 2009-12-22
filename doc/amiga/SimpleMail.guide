@@ -2566,6 +2566,7 @@ Alphabetical list of all ARexx commands
  @{" GETURL            " link "RX_GETURL"}  - Download a file from the WWW based on a given URL
  @{" HIDE              " link "RX_HIDE"}  - Iconify SimpleMail
  @{" MAILADD           " link "RX_MAILADD"}  - Add a message to the folder
+ @{" MAILDELETE        " link "RX_MAILDELETE"}  - Deletes messages
  @{" MAILFETCH         " link "RX_MAILFETCH"}  - ?
  @{" MAILINFO          " link "RX_MAILINFO"}  - Return information about a given message
  @{" MAILLISTFREEZE    " link "RX_MAILLISTFREEZE"}  - Freeze the refresh of the message list
@@ -2989,6 +2990,40 @@ MAILADD
 @{b}BUGS@{ub}
 
 @{b}SEE ALSO@{ub}
+
+@ENDNODE
+@NODE "RX_MAILDELETE" "ARexx command: MAILDELETE"
+
+MAILDELETE
+----------
+
+@{b}NAME@{ub}
+     MailDelete -- Delete messages
+
+@{b}TEMPLATE@{ub}
+     FOLDER,FILENAME,QUIET/S
+
+@{b}FUNCTION@{ub}
+     Deletes the message FILENAME located at folder FOLDER. If FILENAME and FOLDER
+     aren't specified, the currently selected mails are going to be deleted. Any
+     requesters can be suppressed using the QUIET option.
+
+@{b}INPUTS@{ub}
+     FOLDER - the name of the folder, in which the mail resists, as returned by
+                 @{" MAILINFO " link RX_MAILINFO}
+     FILENAME - the name of the mail as returned by @{" MAILINFO " link RX_MAILINFO}
+     QUIET/S - suppresses any requesters.
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILINFO " link "RX_MAILINFO"}
 
 @ENDNODE
 @NODE "RX_MAILFETCH" "ARexx command: MAILFETCH"

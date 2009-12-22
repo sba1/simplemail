@@ -1651,7 +1651,6 @@ static void arexx_mailmove(struct RexxMsg *rxmsg, STRPTR args)
 		STRPTR filename;
 		STRPTR destfolder;
 	} mailmove_arg;
-	char buf[24];
 
 	memset(&mailmove_arg,0,sizeof(mailmove_arg));
 
@@ -1690,6 +1689,52 @@ static void arexx_mailmove(struct RexxMsg *rxmsg, STRPTR args)
 		FreeTemplate(arg_handle);
 	}
 }
+
+
+/**
+ * Moves the active or the specified mail to a given folder.
+ *
+ * @param rxmsg
+ * @param args
+ */
+static void arexx_maildelete(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct
+	{
+		STRPTR folder;
+		STRPTR filename;
+		LONG quiet;
+	} maildelete_arg;
+
+	memset(&maildelete_arg,0,sizeof(maildelete_arg));
+
+	if ((arg_handle = ParseTemplate("FOLDER,FILENAME,QUIET/S",args,&maildelete_arg)))
+	{
+		struct folder *f = maildelete_arg.folder?folder_find_by_name(maildelete_arg.folder):main_get_folder();
+
+		if (f)
+		{
+			if (maildelete_arg.filename)
+			{
+				struct mail_info *mail;
+
+				if ((mail = folder_find_mail_by_filename(f,maildelete_arg.filename)))
+					callback_delete_mail(mail);
+			} else
+			{
+				if (maildelete_arg.quiet)
+					callback_delete_mails_silent(0);
+				else
+					callback_delete_mails();
+			}
+		}
+
+		FreeTemplate(arg_handle);
+	}
+}
+
 
 /****************************************************************
  Handle this single arexx message
@@ -1749,6 +1794,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("OPENMESSAGE",command.command)) arexx_openmessage(rxmsg,command.args);
 		else if (!Stricmp("VERSION",command.command)) arexx_version(rxmsg,command.args);
 		else if (!Stricmp("MAILMOVE",command.command)) arexx_mailmove(rxmsg,command.args);
+		else if (!Stricmp("MAILDELETE",command.command)) arexx_maildelete(rxmsg,command.args);
 		else rxmsg->rm_Result1 = 20;
 
 		FreeTemplate(command_handle);

@@ -2570,6 +2570,7 @@ Alphabetical list of all ARexx commands
  @{" MAILINFO          " link "RX_MAILINFO"}  - Return information about a given message
  @{" MAILLISTFREEZE    " link "RX_MAILLISTFREEZE"}  - Freeze the refresh of the message list
  @{" MAILLISTTHAW      " link "RX_MAILLISTTHAW"}  - Re-enable the refresh of the message list
+ @{" MAILMOVE          " link "RX_MAILMOVE"}  - Moves a mail from a folder to a different one
  @{" MAILREAD          " link "RX_MAILREAD"}  - Load the active message in the Read Message window
  @{" MAILSETSTATUS     " link "RX_MAILSETSTATUS"}  - Change the status of a mail
  @{" MAILWRITE         " link "RX_MAILWRITE"}  - Open a new Write window to compose a new mail
@@ -3066,6 +3067,8 @@ MAILINFO
      <STEM>SUBJECT  - subject of the message (contents of the "Subject:"
                       header)
      <STEM>FILENAME - filename where the message is stored (without path)
+     <STEN>FOLDER   - name of the physical folder in which the message is stored.
+                      May contain path separators in the future. (since 0.35)
      <STEM>SIZE     - size of the message, in bytes
      <STEM>DATE     - date of the message, in "MM-DD-YY HH:MM:SS" format
      <STEM>FLAGS    - a 8 byte string in "MARCS-00" format:
@@ -3148,6 +3151,42 @@ ADDRDELETE
 
 @{b}SEE ALSO@{ub}
      @{" MAILLISTFREEZE " link "RX_MAILLISTFREEZE"}
+@ENDNODE
+@NODE "RX_MAILMOVE" "ARexx command: MAILMOVE"
+
+MAILMOVE
+--------
+
+@{b}NAME@{ub}
+     MailMove -- Move a message from one folder to another.
+
+@{b}TEMPLATE@{ub}
+     SRCFOLDER,FILENAME,DESTFOLDER/A
+
+@{b}FUNCTION@{ub}
+     Move the mail specified by SRCFOLDER and FILENAME to the given
+     DESTFOLDER. If SRCFOLDER and FILENAME are omitted, then the currently
+     selected mails are moved.
+
+@{b}INPUTS@{ub}
+     SRCFOLDER - the name of the folder, in which the mail resists, as returned by
+                 @{" MAILINFO " link RX_MAILINFO}
+     FILENAME - the name of the mail as returned by @{" MAILINFO " link RX_MAILINFO}
+     DESTFOLDER/A - name of the destination folder
+
+@{b}RETURNS@{ub}
+
+@{b}NOTES@{ub}
+
+@{b}EXAMPLE@{ub}
+
+     MAILMOVE Archived
+
+@{b}BUGS@{ub}
+
+@{b}SEE ALSO@{ub}
+     @{" MAILINFO " link "RX_MAILINFO"}
+
 @ENDNODE
 @NODE "RX_MAILREAD" "ARexx command: MAILREAD"
 

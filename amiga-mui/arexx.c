@@ -923,6 +923,8 @@ static void arexx_mailinfo(struct RexxMsg *rxmsg, STRPTR args)
 					MySetRexxVarFromMsg(stem_buf,mail_date,rxmsg);
 					strcpy(&stem_buf[stem_len],"FLAGS");
 					MySetRexxVarFromMsg(stem_buf,mail_flags,rxmsg);
+					strcpy(&stem_buf[stem_len],"FOLDER");
+					MySetRexxVarFromMsg(stem_buf,main_get_folder()->name,rxmsg);
 					strcpy(&stem_buf[stem_len],"MSGID");
 					arexx_set_var_int(rxmsg,stem_buf,0); /* Not supported yet */
 
@@ -1633,6 +1635,62 @@ static void arexx_version(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
+/**
+ * Moves the active or the specified mail to a given folder.
+ *
+ * @param rxmsg
+ * @param args
+ */
+static void arexx_mailmove(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+
+	struct
+	{
+		STRPTR srcfolder;
+		STRPTR filename;
+		STRPTR destfolder;
+	} mailmove_arg;
+	char buf[24];
+
+	memset(&mailmove_arg,0,sizeof(mailmove_arg));
+
+	if ((arg_handle = ParseTemplate("SRCFOLDER,FILENAME,DESTFOLDER/A",args,&mailmove_arg)))
+	{
+		struct folder *src = mailmove_arg.srcfolder?folder_find_by_name(mailmove_arg.srcfolder):main_get_folder();
+		struct folder *dest = folder_find_by_name(mailmove_arg.destfolder);
+
+		if (src && dest && (src != dest))
+		{
+			if (src && mailmove_arg.filename)
+			{
+				struct mail_info *mail;
+
+				if ((mail = folder_find_mail_by_filename(src,mailmove_arg.filename)))
+					callback_move_mail(mail,src,dest);
+			} else
+			{
+				if (!mailmove_arg.filename)
+				{
+					/* Only accept if source is also not given */
+					void *handle = NULL;
+					struct mail_info *mail;
+
+					mail = main_get_mail_first_selected(&handle);
+
+					while (mail)
+					{
+						callback_move_mail(mail,src,dest);
+						mail = main_get_mail_next_selected(&handle);
+					}
+				}
+			}
+		}
+
+		FreeTemplate(arg_handle);
+	}
+}
+
 /****************************************************************
  Handle this single arexx message
 *****************************************************************/
@@ -1647,7 +1705,10 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	} command;
 
 	command.command = command.args = NULL;
+	rxmsg->rm_Result1 = 0;
 	rxmsg->rm_Result2 = 0;
+
+	SM_DEBUGF(5,("Received ARexx command: \"%s\"\n",command_line));
 
 	if ((command_handle = ParseTemplate("COMMAND/A,ARGS/F",command_line,(LONG*)&command)))
 	{
@@ -1687,6 +1748,8 @@ static int arexx_message(struct RexxMsg *rxmsg)
 		else if (!Stricmp("MAILFETCH",command.command)) arexx_mailfetch(rxmsg,command.args);
 		else if (!Stricmp("OPENMESSAGE",command.command)) arexx_openmessage(rxmsg,command.args);
 		else if (!Stricmp("VERSION",command.command)) arexx_version(rxmsg,command.args);
+		else if (!Stricmp("MAILMOVE",command.command)) arexx_mailmove(rxmsg,command.args);
+		else rxmsg->rm_Result1 = 20;
 
 		FreeTemplate(command_handle);
 	}

@@ -2992,6 +2992,7 @@ MAILADD
 @{b}SEE ALSO@{ub}
 
 @ENDNODE
+@REM Workaround for a bug in some AmigaGuide/MultiView version
 @NODE "RX_MAILDELETE" "ARexx command: MAILDELETE"
 
 MAILDELETE
@@ -3102,7 +3103,7 @@ MAILINFO
      <STEM>SUBJECT  - subject of the message (contents of the "Subject:"
                       header)
      <STEM>FILENAME - filename where the message is stored (without path)
-     <STEN>FOLDER   - name of the physical folder in which the message is stored.
+     <STEM>FOLDER   - name of the physical folder in which the message is stored.
                       May contain path separators in the future. (since 0.35)
      <STEM>SIZE     - size of the message, in bytes
      <STEM>DATE     - date of the message, in "MM-DD-YY HH:MM:SS" format
@@ -4390,3 +4391,4 @@ Sebastian's homepage:
               http:\//home.t-online.de/home/sebauer/
 
 @ENDNODE
+

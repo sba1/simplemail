@@ -1,3 +1,14 @@
+Version 0.35 (21th beta) - released on 2009/12/24
+   - New ARexx command: MAILMOVE, MAILDELETE
+
+Version 0.34 (special version for OS4.1 update 1)
+   - Added new column in the mail list: Excerpt
+   - Added a new search option: Body
+   - Fixed a bunch of bugs and memory leaks
+   - Added new ARexx commands: VERSION and MAILSETSTATUS
+   - New command line arguments: PROFILEDIR and IMAGEDIR
+   - Includes a new icon set 
+
 Version 0.33 (20th beta) - released on 2008/12/24
    - Quick filter now highlights the first occurrence of the string
      within all cells in the mail list

@@ -5,7 +5,7 @@
 
 @NODE "MAIN" "Welcome to SimpleMail!"
 
-                         SimpleMail 0.33 (public BETA)
+                         SimpleMail 0.35 (public BETA)
                           (not completely finished yet)
 
                (C) 2000-2009 by Hynek Schlawack & Sebastian Bauer
@@ -2482,8 +2482,18 @@ serial output.
 
 DEBUGMODULES=modules
 
-
 Specifies which modules generate logging output.
+
+
+
+PROFILEDIR=directory
+
+Specifies the root directory, in which all user related data is stored.
+
+
+IMAGEDIR=directory
+
+Specfies the directory, from which the images are loaded.
 
 @ENDNODE
 @NODE "AREX" "ARexx interface"

@@ -1,6 +1,39 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 
 <news>
+
+  <entry date="2009/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released! Version 0.35
+    comes with following changes
+    <list>
+    <item>New ARexx commands: MAILDELETE, MAILMOVE, MAILSETSTATUS, and VERSION 
+    </item>
+    <item>Added new column in the mail list: Excerpt</item>
+    <item>Added a new search option: Body</item>
+    <item>New command line arguments: PROFILEDIR and IMAGEDIR</item>
+    <item>Fixed a bunch of bugs and memory leaks</item>
+    </list>
+     The SimpleMail Team wishes you all a merry Christmas and a happy new year 2009! 
+   </text>
+   
+   <text lang="de">
+
+		Eine neue Version von SimpleMail wurde soeben veröffntlicht. Die Änderungen seit 
+		Version 0.33 sind:
+
+    <list>
+    <item>Neue ARexx-Kommandos: MAILDELETE, MAILMOVE, MAILSETSTATUS und VERSION</item>
+    <item>Eine neue Spalte in der Nachrichtenliste gibt einen Auszug der Nachrichten wieder.</item>
+    <item>Die Suche kann nun auch auf den Inhalt von Nachrichten angewandt werden.</item>
+    <item>Neue Kommandozeilen-Argumente: PROFILEDIR und IMAGEDIR.
+    <item>Einige Fehler wurden entfernt, insbesondere wurden viele Speicherlecks beseitigt.</item>
+    </list>
+    
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   
+   </text>
+
   <entry date="2008/12/24">
    <text lang="en">
     Just in time a new version of SimpleMail has been released! The new

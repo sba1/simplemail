@@ -19,14 +19,14 @@
    
    <text lang="de">
 
-		Eine neue Version von SimpleMail wurde soeben veröffntlicht. Die Änderungen seit 
+		Eine neue Version von SimpleMail wurde soeben veröffentlicht. Die Änderungen seit 
 		Version 0.33 sind:
 
     <list>
     <item>Neue ARexx-Kommandos: MAILDELETE, MAILMOVE, MAILSETSTATUS und VERSION</item>
     <item>Eine neue Spalte in der Nachrichtenliste gibt einen Auszug der Nachrichten wieder.</item>
     <item>Die Suche kann nun auch auf den Inhalt von Nachrichten angewandt werden.</item>
-    <item>Neue Kommandozeilen-Argumente: PROFILEDIR und IMAGEDIR.
+    <item>Neue Kommandozeilen-Argumente: PROFILEDIR und IMAGEDIR.</item>
     <item>Einige Fehler wurden entfernt, insbesondere wurden viele Speicherlecks beseitigt.</item>
     </list>
     

@@ -34,7 +34,7 @@
 #include "debug.h"
 #include "support.h"
 
-#ifdef __SASC
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 #include <dos.h>
 
 #define MAX_ADDR 32
@@ -91,7 +91,7 @@ struct bt *arch_debug_get_bt(void)
 	struct bt *bt = NULL;
 	struct Process *this;
 
-#ifdef __SASC
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 
 	/* Note that we assume that SimpleMail consists only of one hunk */
 
@@ -129,7 +129,7 @@ static int arch_debug_loaded = 0;
 
 static void arch_debug_load(void)
 {
-#ifdef __SASC
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 	BPTR fh;
 	char prog_name[64];
 	char *buf = NULL;
@@ -308,7 +308,7 @@ bailout:
  */
 char *arch_debug_bt2string(struct bt *bt)
 {
-#ifdef __SASC
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 	string str;
 	char buf[120];
 	int i;

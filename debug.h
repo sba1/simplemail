@@ -65,7 +65,7 @@ extern int __debuglevel;
 #endif
 
 #ifndef NODEBUG
-#ifdef __SASC
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 
 #ifndef _STDLIB_H
 #include <stdlib.h>

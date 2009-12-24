@@ -17,6 +17,7 @@ amiga-mui/foldertreelistclass.c
 amiga-mui/gui_main.c
 amiga-mui/mailinfoclass.c
 amiga-mui/mailtreelistclass.c
+amiga-mui/mailtreelistclass-new.c
 amiga-mui/mainwnd.c
 amiga-mui/messageviewclass.c
 amiga-mui/pgplistclass.c

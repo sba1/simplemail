@@ -1,0 +1,55 @@
+/* Translation file for ImportYamUsers.smrx */
+/* Language: dutch  (Last updated on 05 okt 2009 21:37:03) */
+/* Translation by: Johan Banis - ATO Nederland */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Fout: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " moet gestart worden vanuit SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Dit script moet gedraaid worden vanuit SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import all the contact addresses from Yam into SimpleMail."
+tlsdst = "Dit utility importeert alle contactadressen van YAM in SimpleMail."
+
+tlssrc = "(Only a person's name, email and alias is imported.)"
+tlsdst = "(Alleen de naam, het adres en de alias van een persoon worden geïmporteerd.)"
+
+tlssrc = "Continue"
+tlsdst = "Doorgaan"
+
+tlssrc = "Quit"
+tlsdst = "Afsluiten"
+
+tlssrc = "Cannot find YAM port."
+tlsdst = "Kan de poort van YAM niet vinden."
+
+tlssrc = "Please start YAM and try again."
+tlsdst = "Je moet YAM starten en het opnieuw proberen."
+
+tlssrc = "Found no contact addresses to import."
+tlsdst = "Kan geen contactadressen vinden voor importeren."
+
+tlssrc = "Exporting contact addresses to SimpleMail..."
+tlsdst = "Exporteer contactadressen naar SimpleMail..."
+
+tlssrc = "Adding: "
+tlsdst = "Toevoegen: "
+
+tlssrc = "Done."
+tlsdst = "Gedaan."
+
+tlssrc = "Total contacts added: "
+tlsdst = "Totaal toegevoegde contactadressen: "

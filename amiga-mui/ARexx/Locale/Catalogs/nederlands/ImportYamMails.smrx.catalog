@@ -1,0 +1,73 @@
+/* Translation file for ImportYamMails.smrx */
+/* Language: dutch  (Last updated on 04 okt 2009 21:36:55) */
+/* Translation by: Johan Banis - ATO Nederland */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Fout: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " moet gestart worden vanuit SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Dit script moet gedraaid worden vanuit SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import selected messages in YAM (or the current one) into SimpleMail."
+tlsdst = "Dit utility importeert geselecteerde mailtjes (of de huidige) vanuit Yam in SimpleMail."
+
+tlssrc = "Continue"
+tlsdst = "Doorgaan"
+
+tlssrc = "Quit"
+tlsdst = "Afsluiten"
+
+tlssrc = "Cannot find YAM port."
+tlsdst = "Kan de poort van Yam niet vinden."
+
+tlssrc = "Please start YAM and select the messages you want to import from YAM's message list."
+tlsdst = "Start YAM en kies in de berichtenlijst de mailtjes die je wilt importeren."
+
+tlssrc = "No message selected."
+tlsdst = "Geen mailtjes geselecteerd."
+
+tlssrc = "Please select the messages you want to import from YAM's message list."
+tlsdst = "Kies in de berichtenlijst van YAM de mailtjes die je wilt importeren."
+
+tlssrc = "Please select the folder to import the messages into:"
+tlsdst = "Kies de folder waarin je de mailtjes wilt importeren:"
+
+tlssrc = "The current message is ready to import."
+tlsdst = "Het huidige mailtje is klaar voor import."
+
+tlssrc = " messages ready to import."
+tlsdst = " mailtjes klaar voor import."
+
+tlssrc = "Importing messages from "
+tlsdst = "Importeer mailtjes uit "
+
+tlssrc = " to "
+tlsdst = " naar "
+
+tlssrc = "Import"
+tlsdst = "Importeer"
+
+tlssrc = "Cancel"
+tlsdst = "Annuleer"
+
+tlssrc = "Importing messages from YAM..."
+tlsdst = "Importeer mailtjes uit YAM..."
+
+tlssrc = "Exporting messages to SimpleMail..."
+tlsdst = "Exporteer mailtjes naar SimpleMail..."
+
+tlssrc = "Done."
+tlsdst = "Gedaan."

@@ -1,0 +1,91 @@
+/* Translation file for maketls.rexx */
+/* Language: dutch  (Last updated on 05 okt 2009 20:03:33) */
+/* Translation by: Johan Banis - ATO Nederland */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = '(See script or doc for more.)'
+tlsdst = '(Voor meer info zie script of doc.)'
+
+tlssrc = "ERROR: Missing SRCFILE argument."
+tlsdst = "FOUT: Het argument SRCFILE ontbreekt."
+
+tlssrc = "ERROR: Absolute path required for SRCFILE."
+tlsdst = "FOUT: Je hebt het absolute pad voor SRCFILE nodig."
+
+tlssrc = "Type 'rx maketls.rexx HELP' for usage."
+tlsdst = "Type 'rx maketls.rexx HELP' voor een gebruiksaanwijzing."
+
+tlssrc = "ERROR: Can't find source file: '"
+tlsdst = "FOUT: Kan het bronbestand niet vinden: "
+
+tlssrc = "ERROR: Missing LANGUAGE argument."
+tlsdst = "FOUT: Het argument LANGUAGE ontbreekt."
+
+tlssrc = "ERROR: Absolute path required for DSTDIR."
+tlsdst = "FOUT: Je hebt het absolute pad van DSTDIR nodig."
+
+tlssrc = "ERROR: Unrecognised argument: '"
+tlsdst = "FOUT: Onherkenbaar argument: '"
+
+tlssrc = 'Creating '
+tlsdst = 'Maak '
+
+tlssrc = 'Updating '
+tlsdst = 'Updaten '
+
+tlssrc = "Can't open the source file "
+tlsdst = "Kan het bronbestand niet openen "
+
+tlssrc = "Can't open the translation file "
+tlsdst = "Kan het vertaalbestand niet openen "
+
+tlssrc = "Can't create the file "
+tlsdst = "Kan geen bestand maken "
+
+tlssrc = 'No string available for translation !'
+tlsdst = 'Geen string beschikbaar voor vertaling!'
+
+tlssrc = 'One string available for translation.'
+tlsdst = 'Eén string beschikbaar voor vertaling.'
+
+tlssrc = 'Line (first column) is the line number from the source code'
+tlsdst = 'Regel (eerste kolom) is het regelnummer van de broncode'
+
+tlssrc = 'where the string was found.'
+tlsdst = 'waar de string gevonden is.'
+
+tlssrc = 'L: String'
+tlsdst = 'L: String'
+
+tlssrc = ' strings available for translation.'
+tlsdst = ' strings beschikbaar voor vertaling.'
+
+tlssrc = '(Sorted in reverted alphanumeric order, case insensitive)'
+tlsdst = '(Gesorteerd in omgekeerde alfanumerieke volgorde, niet-hoofdlettergevoelig)'
+
+tlssrc = 'Line'
+tlsdst = 'Regel'
+
+tlssrc = ': String'
+tlsdst = ': String'
+
+tlssrc = 'Number of strings found: '
+tlsdst = 'Aantal gevonden strings: '
+
+tlssrc = ' is ready for '
+tlsdst = ' is gereed voor '
+
+tlssrc = ' new translation(s) !'
+tlsdst = ' nieuwe vertaling (-en)!'
+
+tlssrc = 'No new string to translate.'
+tlsdst = 'Geen nieuwe strings voor vertaling.'
+
+tlssrc = ' unused string(s) removed.'
+tlsdst = ' ongebruikte string (-s) verwijderd.'

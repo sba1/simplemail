@@ -1,0 +1,109 @@
+/* Translation file for ImportThorUsers.smrx */
+/* Language: dutch  (Last updated on 04 okt 2009 21:36:49) */
+/* Translation by: Johan Banis - ATO Nederland */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Fout: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " moet gestart worden vanuit SimpleMail"
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Dit script moet gedraaid worden vanuit SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import all the contact addresses from Thor's Userbase into SimpleMail. "
+tlsdst = "Dit utility importeert contactadressen vanuit Thor's Userbase in SimpleMail."
+
+tlssrc = "(NIY: COMMENT is imported as DESCRIPTION (1st line only), and as NOTE.)"
+tlsdst = "(PEI: COMMENT is geïmporteerd als DESCRIPTION (alleen de 1e regel), en als NOTE.)"
+
+tlssrc = "Please select the source to import from:"
+tlsdst = "Kies de bron van waaruit je wilt importeren:"
+
+tlssrc = "Import straight from Thor by talking to its ARexx interface. "
+tlsdst = "Importeer rechtstreeks uit Thor door te praten met zijn ARexx-interface. "
+
+tlssrc = "Obviously, Thor must be installed. "
+tlsdst = "Kennelijk moet Thor nog geïnstalleerd worden. "
+
+tlssrc = "Imports all the fields except the ENCODE8BITMSG flag."
+tlsdst = "Importeer alle velden behalve de ENCODE8BITMSG flag."
+
+tlssrc = "Text file"
+tlsdst = "Tekstbestand"
+
+tlssrc = "Import from a text file whose structure is the same one "
+tlsdst = "Importeer vanuit een tekstbestand waarvan de structuur hetzelfde is "
+
+tlssrc = "as exported by 'SaveUserlist.thor' (Arexx script for Thor by Petter Nilsen). "
+tlsdst = "als geëxporteerd door 'SaveUserlist.thor' (ARexx-script voor Thor, door Petter Nilsen). "
+
+tlssrc = "Imports NAME, ADDRESS, ALIAS, and COMMENT."
+tlsdst = "Importeer NAME, ADDRESS, ALIAS, en COMMENT."
+
+tlssrc = "Database"
+tlsdst = "Database"
+
+tlssrc = "Import contact data extracted from the 'User.tags' binary file. "
+tlsdst = "Importeer contactdata onttrokken aan het binair bestand 'User.tags'. "
+
+tlssrc = "All valid emails will be added, including users that were marked as deleted. "
+tlsdst = "Alle geldige e-mails worden toegevoegd, inclusief de gebruikers die gemarkeerd zijn als 'gewist'. "
+
+tlssrc = "Import all the fields it can retrieves except the ENCODE8BITMSG flag."
+tlsdst = "Importeer alle velden die te vinden zijn behalve de ENCODE8BITMSG flag."
+
+tlssrc = "Cancel"
+tlsdst = "Afbreken"
+
+tlssrc = "Cannot open Thor."
+tlsdst = "Kan Thor niet openen."
+
+tlssrc = "Please check your Thor installation."
+tlsdst = "Controleer de installatie van Thor."
+
+tlssrc = "Cannot load BBSREAD library."
+tlsdst = "Kan BBSREAD.library niet openen"
+
+tlssrc = "Select system:"
+tlsdst = "Kies systeem:"
+
+tlssrc = "There is no users to import from "
+tlsdst = "Er zijn geen gebruikers van waaruit je kunt importeren "
+
+tlssrc = "Importing users from "
+tlsdst = "Importeer gebruikers van "
+
+tlssrc = "_Abort"
+tlsdst = "_Afbreken"
+
+tlssrc = "Importing user #"
+tlsdst = "Importeer gebruiker #"
+
+tlssrc = "Text file to import ?"
+tlsdst = "Tekstbestand inporteren?"
+
+tlssrc = "No file selected or unable to read the file."
+tlsdst = "Er is geen bestand geselecteerd of het bestand is onleesbaar."
+
+tlssrc = "Adding: "
+tlsdst = "Toevoegen: "
+
+tlssrc = "Done."
+tlsdst = "Gedaan."
+
+tlssrc = "Total contacts added: "
+tlsdst = "Totaal toegevoegde contacten: "
+
+tlssrc = "Database file to scan ?"
+tlsdst = "Database-bestand scannen?"

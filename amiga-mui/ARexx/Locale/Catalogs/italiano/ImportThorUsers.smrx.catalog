@@ -1,0 +1,109 @@
+/* Translation file for ImportThorUsers.smrx */
+/* Language: français  (Last updated on 17 Sep 2009 21:36:49) */
+/* Translation by: Simone "Tuxedo" Monsignori */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Errore: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " deve essere lanciato da SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Questo script deve essere lanciato da SimpleMail."
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import all the contact addresses from Thor's Userbase into SimpleMail. "
+tlsdst = "Questa utility importa la lista degli indirizzi da Thor a SimpleMail."
+
+tlssrc = "(NIY: COMMENT is imported as DESCRIPTION (1st line only), and as NOTE.)"
+tlsdst = "NAI: COMMENT è importato come DESCRIPTION (solo la prima riga), e come NOTE)"
+
+tlssrc = "Please select the source to import from:"
+tlsdst = "Selezionare la sorgente da cui importare:"
+
+tlssrc = "Import straight from Thor by talking to its ARexx interface. "
+tlsdst = "Importare direttame da Thor tramite la sua interfaccia ARexx. "
+
+tlssrc = "Obviously, Thor must be installed. "
+tlsdst = "Ovviamente, Thor deve essere installato. "
+
+tlssrc = "Imports all the fields except the ENCODE8BITMSG flag."
+tlsdst = "Importare tutti i campi eccetto il flag ENCODE8BITMSG."
+
+tlssrc = "Text file"
+tlsdst = "File di testo"
+
+tlssrc = "Import from a text file whose structure is the same one "
+tlsdst = "Importare da un file di testo la cui struttura è la stessa "
+
+tlssrc = "as exported by 'SaveUserlist.thor' (Arexx script for Thor by Petter Nilsen). "
+tlsdst = "come esportato da 'SaveUserlist.thor' (script ARexx per Thor di Petter Nilsen). "
+
+tlssrc = "Imports NAME, ADDRESS, ALIAS, and COMMENT."
+tlsdst = "Importare NAME, ADDRESS, ALIAS, e COMMENT."
+
+tlssrc = "Database"
+tlsdst = ""
+
+tlssrc = "Import contact data extracted from the 'User.tags' binary file. "
+tlsdst = "Importare i contatti estratti dal file binario 'User.tags'. "
+
+tlssrc = "All valid emails will be added, including users that were marked as deleted. "
+tlsdst = "Tutte le email valide verranno aggiunte, inclusi gli utenti segnati come cancellati "
+
+tlssrc = "Import all the fields it can retrieves except the ENCODE8BITMSG flag."
+tlsdst = "Importare tutti i campi che possono essere recuperati eccetto il flag ENCODE8BITMSG."
+
+tlssrc = "Cancel"
+tlsdst = "Annulla"
+
+tlssrc = "Cannot open Thor."
+tlsdst = "Non posso aprire Thor."
+
+tlssrc = "Please check your Thor installation."
+tlsdst = "Per favore controllare l'installazione di Thor."
+
+tlssrc = "Cannot load BBSREAD library."
+tlsdst = "Non posso caricare la BBSREAD.library"
+
+tlssrc = "Select system:"
+tlsdst = "Selezionare sistema:"
+
+tlssrc = "There is no users to import from "
+tlsdst = "Non ci sono utenti da cui importare "
+
+tlssrc = "Importing users from "
+tlsdst = "Importare utenti da "
+
+tlssrc = "_Abort"
+tlsdst = "_Interrompere"
+
+tlssrc = "Importing user #"
+tlsdst = "Stò importando l'utente #"
+
+tlssrc = "Text file to import ?"
+tlsdst = "Importare file di testo ?"
+
+tlssrc = "No file selected or unable to read the file."
+tlsdst = "Nessun file selezionato o file non leggibile."
+
+tlssrc = "Adding: "
+tlsdst = "Stò aggiungendo: "
+
+tlssrc = "Done."
+tlsdst = "Fatto."
+
+tlssrc = "Total contacts added: "
+tlsdst = "Contatti totali aggiunti: "
+
+tlssrc = "Database file to scan ?"
+tlsdst = "Quale database esaminare ?"

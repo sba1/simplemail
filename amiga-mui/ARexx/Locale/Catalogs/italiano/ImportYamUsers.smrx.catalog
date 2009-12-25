@@ -1,0 +1,54 @@
+/* Translation file for ImportYamUsers.smrx */
+/* Language: français  (Last updated on 17 Sep 2009 21:37:03) */
+
+/* Do not touch the tlssrc lines.           */
+/* Add your translation string in tlsdst.   */
+/* If a string does not need a translation, */
+/* leave the translated string EMPTY.       */
+
+/* TAKE CARE OF ' AND " WHEN ADDING NEW STRINGS ! */
+
+tlssrc = "Error: "
+tlsdst = "Errore: "
+
+tlssrc = " must be run from SimpleMail."
+tlsdst = " deve essere lanciato da SimpleMail."
+
+tlssrc = "This script must be run from SimpleMail."
+tlsdst = "Questo script deve essere lanciato da SimpleMail.""
+
+tlssrc = "Ok"
+tlsdst = ""
+
+tlssrc = "This utility import all the contact addresses from Yam into SimpleMail."
+tlsdst = "Questa utility importa la lista degli indirizzi da YAM a SimpleMail."
+
+tlssrc = "(Only a person's name, email and alias is imported.)"
+tlsdst = "(E' stato importato solamente il nome della persona, l'email e l'alias.)"
+
+tlssrc = "Continue"
+tlsdst = "Continuare"
+
+tlssrc = "Quit"
+tlsdst = "Esci"
+
+tlssrc = "Cannot find YAM port."
+tlsdst = "Non posso trovare la porta di YAM."
+
+tlssrc = "Please start YAM and try again."
+tlsdst = "Per favore lancia YAM e riprovaV."
+
+tlssrc = "Found no contact addresses to import."
+tlsdst = "Non ho trovato nessun indirizzo da importare."
+
+tlssrc = "Exporting contact addresses to SimpleMail..."
+tlsdst = "Stò esportando gli indirizzi a ESimpleMail..."
+
+tlssrc = "Adding: "
+tlsdst = "Stò aggiungendo: "
+
+tlssrc = "Done."
+tlsdst = "Fatto."
+
+tlssrc = "Total contacts added: "
+tlsdst = "Contatti totali aggiunti: "

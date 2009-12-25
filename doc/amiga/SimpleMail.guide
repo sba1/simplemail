@@ -3171,10 +3171,11 @@ MAILLISTFREEZE
      @{" MAILLISTTHAW " link "RX_MAILLISTTHAW"}
 
 @ENDNODE
+@REM              workaround (for bugs in AmigaGuide)
 @NODE "RX_MAILLISTTHAW" "ARexx command: MAILLISTTHAW"
 
-ADDRDELETE
-----------
+MAILLISTTHAW
+------------
 
 @{b}NAME@{ub}
      MailListThaw -- Re-enables the refresh of the message list.

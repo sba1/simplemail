@@ -1,12 +1,16 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportThorMails.smrx 1.2 (13.09.09)
+$VER: ImportThorMails.smrx 1.4 (30.09.09)
 $Author: AmigaPhil
 $Label: Import messages from Thor
 $Desc: Import Thor's selected messages into SimpleMail
 
 Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
+
+Translation credits:
+- dutch catalog by Johan Banis - ATO Nederland
+- italian catalog by Simone "Tuxedo" Monsignori
 */
 
 signal on halt
@@ -41,6 +45,17 @@ if left(smport,11) ~== "SIMPLEMAIL." then
    exit
    end
 address(smport)
+'VERSION'
+if symbol('result') ~= 'VAR' then smver = 0
+else smver = result
+parse var smver yver"."yrev
+vt = verify(yver,"0123456789")
+if vt > 0 then yver = left(yver,vt-1)
+else yver = 0
+vt = verify(yrev,"0123456789")
+if vt > 0 then yrev = left(yrev,vt-1)
+else yrev = 0
+smver = (yver * 65536) + yrev
 
 help = "*Ec*EuImportThorMails.smrx*En v" || version || "*n*n*El"
 help = help || tls("This utility import selected messages in Thor (or the current one) into SimpleMail. ")
@@ -205,10 +220,10 @@ do i=1 to MSGLIST.COUNT
    mfile = result
    /*** To avoid to mess the folder index (imported mails shown as "deleted" in 0.33),
         the mail file is temporary saved to T: before importing it with MAILADD.       ***/
-   endpath = LASTPOS('/',mfile)
-   IF endpath = 0 THEN endpath = LASTPOS(':',mfile)
-   IF endpath = 0 THEN tmpmfile = mfile
-   ELSE tmpmfile = "T:" || DELSTR(mfile,1,endpath)
+   endpath = lastpos('/',mfile)
+   if endpath = 0 then endpath = LASTPOS(':',mfile)
+   if endpath = 0 then tmpmfile = mfile
+   else tmpmfile = "T:" || delstr(mfile,1,endpath)
 
    address(thorport)
    'SAVEMESSAGE BBS "'CURSYS.BBSNAME'" CONF "'CURSYS.CONFNAME'" MSGNR 'MSGLIST.i' FILE "' || tmpmfile || '" OVERWRITE'

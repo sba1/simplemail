@@ -1,0 +1,25 @@
+/*
+This is an ARexx-Script for SimpleMail
+You can only start this script from SimpleMail and not from shell.
+
+$VER: DeleteMails.smrx 1.0 (30.12.09)
+$Author: Nils Görs
+$Label: Delete selected mails
+$Desc: Deletes all selected mails in current folder
+*/
+
+OPTIONS RESULTS
+
+/* Store the SimpleMail Port */
+smport = ADDRESS()
+
+if smport ~== "SIMPLEMAIL.1" then
+do
+  smport = "SIMPLEMAIL.1"
+  address "SIMPLEMAIL.1"
+end
+
+REQUEST BODY '"'||"Are you sure to delete all selected messages?"||'"' GADGETS '"'||"_Yes|_No"||'"'
+IF result = 0 THEN EXIT
+
+MAILDELETE QUIET

@@ -202,16 +202,26 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 	return NULL;*/
 }
 
-/******************************************************************
- Display the about Requester
-*******************************************************************/
+/**
+ * Display the about requester.
+ */
 void display_about(void)
 {
+	char buf[128];
+
+#ifdef __GNUC__
+	buf[0] = buf[1] = '\n';
+
+	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %d.%d.%d."),__GNUC__,__GNUC_MINOR__,__GNUC_PATCHLEVEL__);
+#else
+	buf[0] = 0;
+#endif
+
 	MUI_Request(App, NULL, 0,
 		_("SimpleMail - About"),
 		_("*Ok"),
-		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2009\nHynek Schlawack %s Sebastian Bauer\n%s.",
-		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"));
+		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2010\nHynek Schlawack %s Sebastian Bauer\n%s.%s",
+		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"),buf);
 }
 
 /******************************************************************

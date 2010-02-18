@@ -212,7 +212,13 @@ void display_about(void)
 #ifdef __GNUC__
 	buf[0] = buf[1] = '\n';
 
-	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %d.%d.%d."),__GNUC__,__GNUC_MINOR__,__GNUC_PATCHLEVEL__);
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#ifdef __GNUC_PATCHLEVEL__
+	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %s."),TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__) "." TOSTRING(__GNUC_PATCHLEVEL__));
+#else
+	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %s."),TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__));
+#endif
 #else
 	buf[0] = 0;
 #endif

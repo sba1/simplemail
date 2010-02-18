@@ -56,7 +56,7 @@ char *strnadd(char *src, const char *str1, int n);
 static int mail_read_structure(struct mail_complete *mail);
 
 /* the mime preample used in mime multipart messages */
-const static char mime_preample[] =
+static const char mime_preample[] =
 {
 	"Warning: This is a message in MIME format. Your mail reader does not\n"
 	"support MIME. Some parts of this message will be readable as plain text.\n"
@@ -73,7 +73,7 @@ const static char mime_preample[] =
 	"http://www.cis.ohio-state.edu/hypertext/faq/usenet/mail/mime-faq/top.html\n"
 };
 
-const static char pgp_text[] =
+static const char pgp_text[] =
 {
  "Content-Type: application/pgp-encrypted\n"
  "\n"

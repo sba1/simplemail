@@ -329,12 +329,33 @@ STATIC ULONG FolderTreelist_Cleanup(struct IClass *cl, Object *obj, Msg msg)
 STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);
-	struct TagItem *ti;
-	if ((ti = FindTagItem(MUIA_FolderTreelist_MailDrop,msg->ops_AttrList)))
+	struct TagItem *tstate, *tag;
+	ULONG rc;
+
+	tstate = (struct TagItem *)msg->ops_AttrList;
+
+	while ((tag = NextTagItem (&tstate)))
 	{
-		data->folder_maildrop = (struct folder*)ti->ti_Data;
+		ULONG tidata = tag->ti_Data;
+
+		switch (tag->ti_Tag)
+		{
+			case	MUIA_FolderTreelist_MailDrop:
+						data->folder_maildrop = (struct folder*)tidata;
+						break;
+
+			case	MUIA_FolderTreelist_Active:
+						{
+							struct MUI_NListtree_TreeNode *tn;
+							tn = FindListtreeUserData(obj, (APTR)tidata);
+							set(obj,MUIA_NListtree_Active,tn);
+						}
+						break;
+		}
 	}
-	return DoSuperMethodA(cl,obj,(Msg)msg);
+
+	rc = DoSuperMethodA(cl,obj,(Msg)msg);
+	return rc;
 }
 
 STATIC ULONG FolderTreelist_Get(struct IClass *cl, Object *obj, struct opGet *msg)
@@ -523,6 +544,7 @@ STATIC ULONG FolderTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * o
 	return (ULONG) data->context_menu;
 }
 
+/* TODO: We need to make sure that we are always notifed if something changes in the folder model */
 STATIC ULONG FolderTreelist_Refresh(struct IClass *cl, Object *obj, struct MUIP_FolderTreelist_Refresh *msg)
 {
 	struct FolderTreelist_Data *data = (struct FolderTreelist_Data*)INST_DATA(cl,obj);

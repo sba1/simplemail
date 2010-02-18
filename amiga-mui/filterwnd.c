@@ -45,6 +45,7 @@
 #include "filterlistclass.h"
 #include "filterruleclass.h"
 #include "filterwnd.h"
+#include "foldertreelistclass.h"
 #include "muistuff.h"
 #include "utf8stringclass.h"
 
@@ -96,31 +97,27 @@ STATIC ASM SAVEDS VOID filter_display(REG(a0,struct Hook *h), REG(a2,char **arra
 
 STATIC ASM SAVEDS VOID move_objstr(REG(a0,struct Hook *h),REG(a2, Object *list), REG(a1,Object *str))
 {
-	char *x;
-	DoMethod(list, MUIM_NList_GetEntry, MUIV_List_GetEntry_Active, (ULONG)&x);
-	set(str, MUIA_Text_Contents, x);
+	struct folder *f;
+
+	if ((f = (struct folder*)xget(filter_folder_list, MUIA_FolderTreelist_Active)))
+		set(str, MUIA_Text_Contents, f->name);
 }
 
 STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,Object *str))
 {
-	char *x,*s;
-	int i = 0;
+	char *s;
+	struct folder *f;
+/* TODO: This shouldn't happen over the plain text
+ * (different folders could have the same name) */
 	get(str,MUIA_Text_Contents,&s);
 
-	while (1)
+	for (f=folder_first();f;f=folder_next(f))
 	{
-		DoMethod(list, MUIM_NList_GetEntry, i, (ULONG)&x);
-		if (!x)
+		if (!strcmp(f->name,s))
 		{
-			set(list, MUIA_NList_Active, MUIV_NList_Active_Off);
+			set(filter_folder_list, MUIA_FolderTreelist_Active, f);
 			break;
 		}
-		else if (!mystricmp(x,s))
-	  {
-			set(list, MUIA_NList_Active, i);
-			break;
-		}
-		i++;
 	}
 	return 1;
 }
@@ -130,19 +127,7 @@ STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,
 **************************************************************************/
 void filter_update_folder_list(void)
 {
-	struct folder *f;
-	if (!filter_folder_list) return;
-	set(filter_folder_list,MUIA_NList_Quiet,TRUE);
-	DoMethod(filter_folder_list,MUIM_NList_Clear);
-	/* Insert the folder names into the folder list for the move action */
-	f = folder_first();
-	while (f)
-	{
-		if (f->special != FOLDER_SPECIAL_GROUP)
-			DoMethod(filter_folder_list, MUIM_NList_InsertSingle, (ULONG)f->name, MUIV_NList_Insert_Bottom);
-		f = folder_next(f);
-	}
-	set(filter_folder_list,MUIA_NList_Quiet,FALSE);
+	DoMethod(filter_folder_list, MUIM_FolderTreelist_Refresh, NULL);
 }
 
 /**************************************************************************
@@ -553,9 +538,7 @@ static void init_filter(void)
 									MUIA_Popobject_ObjStrHook, &move_objstr_hook,
 									MUIA_Popobject_StrObjHook, &move_strobj_hook,
 									MUIA_Popobject_Object, NListviewObject,
-										MUIA_NListview_NList, filter_folder_list = NListObject,
-											MUIA_NList_ConstructHook, MUIV_NList_ConstructHook_String,
-											MUIA_NList_DestructHook, MUIV_NList_DestructHook_String,
+										MUIA_NListview_NList, filter_folder_list = FolderTreelistObject,
 											End,
 										End,
 									End,

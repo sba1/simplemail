@@ -350,6 +350,20 @@ STATIC ULONG FolderTreelist_Get(struct IClass *cl, Object *obj, struct opGet *ms
 					*msg->opg_Storage = (LONG)1;
 					return 1;
 
+		case	MUIA_FolderTreelist_Active:
+					{
+						struct MUI_NListtree_TreeNode *tree_node;
+
+						tree_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
+
+						if (tree_node && tree_node->tn_User)
+							*msg->opg_Storage = tree_node->tn_User;
+						else
+							*msg->opg_Storage = NULL;
+					}
+
+				return 1;
+
 		default:
 					return DoSuperMethodA(cl,obj,(Msg)msg);
 	}

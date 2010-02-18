@@ -30,6 +30,7 @@ IMPORT struct MUI_CustomClass *CL_FolderTreelist;
 #define MUIA_FolderTreelist_OrderChanged (TAG_USER | 0x30110002) /* BOOL */
 #define MUIA_FolderTreelist_ReadOnly     (TAG_USER | 0x30110003) /* i.. BOOL */
 #define MUIA_FolderTreelist_ShowRoot     (TAG_USER | 0x30110004) /* i.. BOOL */
+#define MUIA_FolderTreelist_Active       (TAG_USER | 0x30110005) /* ..g (struct folder *) */
 
 #define MUIM_FolderTreelist_Refresh      (TAG_USER | 0x30110101)
 struct  MUIP_FolderTreelist_Refresh      {ULONG MethodID; struct folder *exclude;};

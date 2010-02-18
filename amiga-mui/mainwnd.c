@@ -1385,32 +1385,25 @@ void main_set_folder_active(struct folder *folder)
 	SM_LEAVE;
 }
 
-/******************************************************************
- Returns the current selected folder, NULL if no real folder
- has been selected. It returns the true folder like it is
- in the folder list
-*******************************************************************/
+/**
+ * Returns the current selected folder, NULL if no real folder
+ * has been selected. It returns the true folder like it is
+ * in the folder list
+ *
+ * @return
+ */
 struct folder *main_get_folder(void)
 {
-	struct MUI_NListtree_TreeNode *tree_node;
-	tree_node = (struct MUI_NListtree_TreeNode *)xget(folder_tree,MUIA_NListtree_Active);
-
-	if (tree_node)
-	{
-		if (tree_node->tn_User)
-		{
-			return (struct folder*)tree_node->tn_User;
-		}
-	}
-	return NULL;
-
+	return (struct folder*)xget(folder_tree,MUIA_FolderTreelist_Active);
 }
 
-/******************************************************************
- Returns the current selected folder drawer, NULL if no folder
- has been selected
-*******************************************************************/
-char *main_get_folder_drawer(void)
+/**
+ *  Returns the path of the current selected folder, or NULL if no
+ *  folder is selected.
+ *
+ * @return
+ */
+ char *main_get_folder_drawer(void)
 {
 	struct folder *folder = main_get_folder();
 	if (folder) return folder->path;

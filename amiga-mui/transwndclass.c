@@ -275,7 +275,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	data = (struct transwnd_Data *) INST_DATA(cl, obj);
 
-	for ((tags = msg->ops_AttrList); (tag = NextTagItem(&tags));)
+	for ((tags = msg->ops_AttrList); (tag = NextTagItem((APTR)&tags));)
 	{
 		switch (tag->ti_Tag)
 		{
@@ -365,7 +365,7 @@ STATIC ULONG transwnd_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 STATIC ULONG transwnd_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 {
 	struct transwnd_Data *data = (struct transwnd_Data *)INST_DATA(cl, obj);
-	ULONG *store = ((struct opGet *)msg)->opg_Storage;
+	IPTR *store = ((struct opGet *)msg)->opg_Storage;
 
 	switch (msg->opg_AttrID)
 	{

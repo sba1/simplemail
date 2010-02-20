@@ -65,8 +65,15 @@
 
 #ifdef IDCMP_EXTENDEDMOUSE
 #define HAVE_EXTENDEDMOUSE
-#else
+#elif __AROS__
 /* support for the newmouse wheel standard */
+#include <devices/rawkeycodes.h>
+#define NM_WHEEL_UP RAWKEY_NM_WHEEL_UP
+#define NM_WHEEL_DOWN RAWKEY_NM_WHEEL_DOWN
+#define NM_WHEEL_LEFT RAWKEY_NM_WHEEL_LEFT
+#define NM_WHEEL_RIGHT RAWKEY_NM_WHEEL_RIGHT
+#define NM_WHEEL_FOURTH RAWKEY_NM_WHEEL_FOURTH
+#else
 #include <devices/newmouse.h>
 #endif
 
@@ -1681,7 +1688,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 
@@ -3262,7 +3269,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 								{
 									if (data->horiz_scroller)
 									{
-										GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (ULONG*)&visible);
+										GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (IPTR*)&visible);
 										if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
 											delta = (visible + 3*data->entry_maxheight)/6;
 										else
@@ -3274,7 +3281,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 									}
 								} else
 								{
-									GetAttr(MUIA_Prop_Visible, data->vert_scroller, (ULONG*)&visible);
+									GetAttr(MUIA_Prop_Visible, data->vert_scroller, (IPTR*)&visible);
 									if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
 									{
 										delta = (visible + 3)/6;
@@ -3297,7 +3304,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if (data->horiz_scroller)
 								{
-									GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (ULONG*)&visible);
+									GetAttr(MUIA_Prop_Visible, data->horiz_scroller, (IPTR*)&visible);
 									if ((msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
 										delta = (visible + 3*data->entry_maxheight)/6;
 									else
@@ -3685,7 +3692,6 @@ static ULONG MailTreelist_HandleInput(struct IClass *cl, Object *obj, struct MUI
 	int change_amount = 1;
 	LONG new_horiz_first = -1;
 	int change_horiz_amount = data->entry_maxheight;
-	UWORD qual = 0;
 
 	new_entries_active = data->entries_active;
 	if (data->horiz_scroller) new_horiz_first = xget(data->horiz_scroller, MUIA_Prop_First);

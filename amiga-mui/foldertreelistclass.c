@@ -334,7 +334,7 @@ STATIC ULONG FolderTreelist_Set(struct IClass *cl, Object *obj, struct opSet *ms
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 
@@ -378,9 +378,9 @@ STATIC ULONG FolderTreelist_Get(struct IClass *cl, Object *obj, struct opGet *ms
 						tree_node = (struct MUI_NListtree_TreeNode *)xget(obj,MUIA_NListtree_Active);
 
 						if (tree_node && tree_node->tn_User)
-							*msg->opg_Storage = tree_node->tn_User;
+							*msg->opg_Storage = (IPTR)tree_node->tn_User;
 						else
-							*msg->opg_Storage = NULL;
+							*msg->opg_Storage = 0;
 					}
 
 				return 1;

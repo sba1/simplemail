@@ -179,7 +179,6 @@ void debug_deinit(void)
 		{
 			char *call = tr->class;
 			char *more;
-			char *contents = (char*)tr->resource;
 			if (!call) call = tr->class;
 
 			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource, tr->class,tr->args,tr->filename,tr->line);

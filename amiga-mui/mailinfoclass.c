@@ -325,7 +325,7 @@ static void field_find(struct list *field_list, int x, int y, int fonty, struct 
 {
 	struct text_node *text;
 	struct field *f;
-	
+
 	*field_ptr = NULL;
 	*text_ptr = NULL;
 
@@ -336,7 +336,7 @@ static void field_find(struct list *field_list, int x, int y, int fonty, struct 
 		text = (struct text_node*)list_first(&f->text_list);
 		while (text)
 		{
-			if (y >= text->y_start && y <= text->y_end && 
+			if (y >= text->y_start && y <= text->y_end &&
 			    x >= text->x_start && x <= text->x_end)
 			{
 				*field_ptr = f;
@@ -394,7 +394,7 @@ VOID MailInfoArea_SetMailInfo(Object *obj, struct MailInfoArea_Data *data, struc
 	int entries;
 
 	SM_DEBUGF(20,("Enter\n"));
-	
+
 	data->selected_field = NULL;
 	data->selected_text = NULL;
 
@@ -865,7 +865,7 @@ STATIC ULONG MailInfoArea_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 	struct TagItem *tstate, *tag;
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 
@@ -948,7 +948,7 @@ STATIC ULONG MailInfoArea_Hide(struct IClass *cl, Object *obj, Msg msg)
  MUIM_Draw
 *********************************************************************/
 STATIC ULONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw *msg)
-{	
+{
 	struct field *f;
 	struct MailInfoArea_Data *data;
 	int y = 2;
@@ -978,7 +978,7 @@ STATIC ULONG MailInfoArea_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
  MUIM_HandleEvent
 *********************************************************************/
 STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_HandleEvent *msg)
-{	
+{
 	struct IntuiMessage *imsg;
 	struct MailInfoArea_Data *data;
 
@@ -1070,7 +1070,7 @@ STATIC ULONG MailInfoArea_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 				{
 					data->selected_mouse_over = 0;
 					data->redraw_text = data->selected_text;
-					MUI_Redraw(obj, MADF_DRAWUPDATE);				
+					MUI_Redraw(obj, MADF_DRAWUPDATE);
 				}
 			}
 		}
@@ -1097,7 +1097,7 @@ STATIC ULONG MailInfo_CompactChanged(struct IClass *cl, Object *obj, Msg msg)
 		DoMethod(group, OM_REMMEMBER, (ULONG)obj);
 		data->compact = compact;
 		DoMethod(group, OM_ADDMEMBER, (ULONG)obj);
-		DoMethod(group, MUIM_Group_ExitChange);		
+		DoMethod(group, MUIM_Group_ExitChange);
 	}
 	return 0;
 }
@@ -1174,7 +1174,7 @@ struct MUI_CustomClass *CL_TinyButton;
 int create_mailinfo_class(void)
 {
 	SM_ENTER;
-	
+
 	if ((CL_TinyButton = CreateMCC(MUIC_Area, NULL, sizeof(struct TinyButton_Data), TinyButton_Dispatcher)))
 	{
 		SM_DEBUGF(15,("Created CL_TinyButton: 0x%lx\n",CL_TinyButton));

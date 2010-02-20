@@ -335,7 +335,7 @@ struct BltMaskHook
   LONG destx,desty;
 };
 
-VOID MyBltMaskBitMap(CONST struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct BitMap *destBitMap, LONG xDest, LONG yDest, LONG xSize, LONG ySize, struct BitMap *maskBitMap)
+VOID MyBltMaskBitMap(struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, struct BitMap *destBitMap, LONG xDest, LONG yDest, LONG xSize, LONG ySize, struct BitMap *maskBitMap)
 {
   BltBitMap(srcBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0x99,~0,NULL);
   BltBitMap(maskBitMap,xSrc,ySrc,destBitMap, xDest, yDest, xSize, ySize, 0xe2,~0,NULL);
@@ -440,7 +440,7 @@ APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
 				rdargs->RDA_Source.CS_Length = strlen(buf);
 				rdargs->RDA_Source.CS_CurChr = 0;
 
-				rd = ReadArgs(temp,(LONG*)results, rdargs );
+				rd = ReadArgs(temp,(IPTR*)results, rdargs );
 				if((mem[2] = (ULONG)rd))
 				{
 					return mem;

@@ -293,6 +293,7 @@ static char *parse_word_simple(char *word, char **pbuf)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
+#ifndef __AROS__
 static char *parse_word(char *word, char **pbuf, char **pcharset)
 {
 	char *ret;
@@ -304,6 +305,7 @@ static char *parse_word(char *word, char **pbuf, char **pcharset)
 	if (!ret) ret = parse_atom(word,pbuf);
 	return ret;
 }
+#endif
 
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)

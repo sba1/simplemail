@@ -207,8 +207,6 @@ static int messageview_setup(struct MessageView_Data *data, struct mail_info *ma
 	/* not specifing a mail is accepted */
 	if (!mail || !folder_path)
 	{
-		char text[256];
-
 		return 1;
 	}
 

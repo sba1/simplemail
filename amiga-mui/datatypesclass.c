@@ -133,7 +133,7 @@ STATIC ULONG DataTypes_Set(struct IClass *cl,Object *obj,struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		ULONG tidata = tag->ti_Data;
 
@@ -346,7 +346,7 @@ STATIC ULONG DataTypes_HandleEvent(struct IClass *cl, Object *obj, struct MUIP_H
 
 		tstate = (struct TagItem *)msg->imsg->IAddress;
 
-		while ((tag = NextTagItem (&tstate)))
+		while ((tag = NextTagItem ((APTR)&tstate)))
 		{
 			ULONG tidata = tag->ti_Data;
 

@@ -138,4 +138,11 @@
 
 #endif /* __AROS__ */
 
+
+#if !defined(__AROS__) && !defined(__MORPHOS__)
+/* IPTR is defined as integer type which is large enough to store a pointer */
+typedef ULONG IPTR;
+#endif
+
+
 #endif

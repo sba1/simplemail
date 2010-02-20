@@ -252,7 +252,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				static char date_buf[64];
 				static char recv_buf[64];
 				static char status_buf[128];
-				
+
 				char *reply;
 
 				if (mail->flags & MAIL_FLAGS_AUTOSPAM)
@@ -328,7 +328,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 				if (mail->flags & MAIL_FLAGS_REPLYTO_ADDR_ASCII7) reply = mail->reply_addr;
 				else
 				{
-					utf8tostr(mail->reply_addr,data->reply_buf,sizeof(data->reply_buf),user.config.default_codeset);				
+					utf8tostr(mail->reply_addr,data->reply_buf,sizeof(data->reply_buf),user.config.default_codeset);
 					reply = data->reply_buf;
 				}
 
@@ -357,7 +357,7 @@ STATIC ASM SAVEDS VOID mails_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 			*array++ = data->filename_text;
 			*array++ = data->pop3_text;
 			*array = data->received_text;
-		}	
+		}
 	}
 }
 
@@ -477,7 +477,7 @@ STATIC ULONG MailTreelist_CreateShortHelp(struct IClass *cl,Object *obj,struct M
 
 			return (ULONG)data->bubblehelp_buf;
 		}
-	}	
+	}
 	return 0L;
 }
 
@@ -645,7 +645,7 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 /*		ULONG tidata = tag->ti_Data;*/
 
@@ -909,7 +909,7 @@ STATIC ULONG MailTreelist_NList_ContextMenuBuild(struct IClass *cl, Object * obj
 		hidden_menu = MenuitemObject, MUIA_Menuitem_Title, _("Repl. & Forw."), MUIA_UserData, MENU_SETSTATUS_REPLFORW, End;
 		DoMethod(stati_menu, MUIM_Family_Insert, (ULONG)hidden_menu, (ULONG)last_menu);
 	}
-	
+
   data->context_menu = context_menu;
   return (ULONG) context_menu;
 }
@@ -943,7 +943,7 @@ STATIC ULONG MailTreelist_ContextMenuChoice(struct IClass *cl, Object *obj, stru
 		case	MENU_SETSTATUS_REPLFORW: callback_mails_set_status(MAIL_STATUS_REPLFORW); break;
 		case  MENU_SPAMCHECK: callback_check_selected_mails_if_spam();break;
 		case  MENU_DELETE: callback_delete_mails();break;
-		default: 
+		default:
 		{
 			return DoSuperMethodA(cl,obj,(Msg)msg);
 		}
@@ -1210,7 +1210,7 @@ STATIC ULONG MailTreelist_RemoveSelected(struct IClass *cl, Object *obj, Msg msg
 			}
 
 			DoMethod(obj, MUIM_NListtree_Remove, MUIV_NListtree_Remove_ListNode_Root,array[i],0);
-		}		
+		}
 
 		FreeVec(array);
 	}
@@ -1536,7 +1536,7 @@ void delete_mailtreelist_class(void)
 	}
 #endif
 	SM_ENTER;
-	
+
 	if (CL_MailTreelist)
 	{
 		if (MUI_DeleteCustomClass(CL_MailTreelist))

@@ -40,7 +40,11 @@
 #ifdef __MORPHOS__
 #define SM_OPERATIONSYSTEM "MorphOS/MUI"
 #else
+#ifdef __AROS__
+#define SM_OPERATIONSYSTEM "AROS/MUI"
+#else
 #define SM_OPERATIONSYSTEM "AmigaOS/MUI"
+#endif
 #endif
 #endif
 

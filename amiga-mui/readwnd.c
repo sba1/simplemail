@@ -262,8 +262,10 @@ static void open_contents(struct Read_Data *data, struct mail_complete *mail)
 *******************************************************************/
 static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 {
+#ifndef __AROS__
 	char *buf;
 	char *buf_end;
+#endif
 
 	if (!mail->text) return;
 
@@ -271,24 +273,22 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 	{
 
 #ifdef __AROS__ /*no point in checking for text , we don't support html*/
-	  struct codeset *codeset;
-	  codeset = codesets_find(NULL);
-	  char *tmpbuf;
-	  tmpbuf = utf8tostrcreate(mail->decoded_data,codeset);
+	struct codeset *codeset;
+	codeset = codesets_find(NULL);
+	char *tmpbuf;
+	tmpbuf = utf8tostrcreate(mail->decoded_data,codeset);
 
+	SetAttrs(data->datatype_datatypes,
+				MUIA_DataTypes_Buffer, tmpbuf,
+				MUIA_DataTypes_BufferLen, mail->decoded_len,
+				TAG_DONE);
 
-          SetAttrs(data->datatype_datatypes,
-                   MUIA_DataTypes_Buffer, tmpbuf,
-                   MUIA_DataTypes_BufferLen, mail->decoded_len,
-                   TAG_DONE);
+	set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
 
+	DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT,\
+			MUIA_SMToolbar_Attr_Disabled, !xget(data->datatype_datatypes, MUIA_DataTypes_SupportsPrint));
 
-          set(data->contents_page, MUIA_Group_ActivePage, PAGE_DATATYPE);
-
-          DoMethod(data->toolbar, MUIM_SMToolbar_SetAttr, SM_READWND_BUTTON_PRINT,\
-                   MUIA_SMToolbar_Attr_Disabled, !xget(data->datatype_datatypes, MUIA_DataTypes_SupportsPrint));
-
-          return;
+	return;
 #else
 		if (stricmp(mail->content_type,"text"))
 		{
@@ -1029,6 +1029,7 @@ static void forward_button_pressed(struct Read_Data **pdata)
 /******************************************************************
  A an uri has been clicked
 *******************************************************************/
+#ifndef __AROS__
 static void uri_clicked(void **msg)
 {
 	char *uri = (char*)msg[1];
@@ -1041,6 +1042,7 @@ static void uri_clicked(void **msg)
 		OpenURL(uri);
 	}
 }
+#endif
 
 /******************************************************************
  SimpleHTML Load Hook. Returns 1 if uri can be loaded by the hook
@@ -1202,10 +1204,12 @@ static int read_window_display_mail(struct Read_Data *data, struct mail_info *ma
 *******************************************************************/
 int read_window_open(char *folder, struct mail_info *mail, int window)
 {
-	Object *wnd, *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar, *contents_page;
+	Object *wnd,  *contents_page;
 	#ifdef __AROS__
-        Object *text_mailtext,*lv;
-        #endif
+		Object *text_mailtext, *lv;
+	#else
+		Object *html_simplehtml, *html_vert_scrollbar, *html_horiz_scrollbar;
+	#endif
 	Object *datatype_vert_scrollbar, *datatype_horiz_scrollbar;
 	Object *attachments_group;
 	Object *datatype_datatypes;
@@ -1320,16 +1324,15 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 				Child, VGroup,
 					MUIA_Group_Spacing, 0,
 #ifdef __AROS__ /*mailtext replacement*/
-          Child, lv  = NListviewObject,
-          MUIA_NListview_NList, text_mailtext = MailtextObject,
-          MUIA_Mailtext_ForbidContextMenu, FALSE,
-          MUIA_Font,                       MUIV_Font_Fixed,
-          MUIA_Frame,                      MUIV_Frame_InputList,
-          MUIA_NList_Input,                FALSE,
-          MUIA_NList_MultiSelect,          FALSE,
-
-          End,
-          End,
+					Child, lv  = NListviewObject,
+						MUIA_NListview_NList, text_mailtext = MailtextObject,
+							MUIA_Mailtext_ForbidContextMenu, FALSE,
+							MUIA_Font,                       MUIV_Font_Fixed,
+							MUIA_Frame,                      MUIV_Frame_InputList,
+							MUIA_NList_Input,                FALSE,
+							MUIA_NList_MultiSelect,          FALSE,
+						End,
+					End,
 #else
 
 					Child, HGroup,

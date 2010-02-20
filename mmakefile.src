@@ -1,14 +1,12 @@
-# Makefile for AROS version of SimpleMail
+# Meta-Makefile for AROS version of SimpleMail
 
 include $(TOP)/config/make.cfg
 
-#MM- contrib-simplemail_cvs : contrib-simplemail_cvs-bin
-#MM contrib-simplemail_cvs-bin : includes linklibs linklibs-expat
+#MM- contrib-simplemail : contrib-simplemail-bin
 
-#contrib-zune-classes-thebar
-
-# TODO
-#mailtreelistclass-new
+#MM contrib-simplemail-bin : includes linklibs linklibs-expat contrib-zune-classes-thebar \
+#MM contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
+#MM contrib-simplemail-files
 
 AMIGAMUI := \
 	vsnprintf \
@@ -34,6 +32,7 @@ AMIGAMUI := \
 	mailtextview \
 	mainwnd \
 	mailtreelistclass \
+	mailtreelistclass-new \
 	mailinfoclass \
 	iconclass \
 	headers \
@@ -53,6 +52,7 @@ AMIGAMUI := \
 	composeeditorclass \
 	audioselectgroupclass \
 	attachmentlistclass \
+	archdebug \
 	arexx \
 	appicon \
 	amigasupport \
@@ -68,6 +68,8 @@ AMIGAMUIFILES := $(foreach f, $(AMIGAMUI), amiga-mui/$(f))
 FILES   := \
 	account \
 	addressbook \
+	atcleanup \
+	boyermoore \
 	codecs \
 	codesets \
 	configuration \
@@ -106,13 +108,39 @@ FILES   := \
 EXEDIR := $(AROS_CONTRIB)/Networking/Apps/SimpleMail
 EXE    := SimpleMail
 
-USER_INCLUDES := -I./indep-include -I./amiga-mui -I. \
-		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/netinclude \
-		-isystem $(TOP)/contrib/Networking/Stacks/AROSTCP/bsdsocket/ 
+USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/indep-include -I$(SRCDIR)/$(CURDIR)/amiga-mui -I$(SRCDIR)/$(CURDIR)
 
-USER_CFLAGS := -D__AROS__ -DNO_SSL -DUSE_OLD_MAILLIST -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+USER_CFLAGS := -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
-%build_prog mmake=contrib-simplemail_cvs-bin progname=$(EXE) files=$(FILES) \
-    targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat" 
+%build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
+    targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat"
+
+# ############################################################################
+
+%copy_dir_recursive mmake=contrib-simplemail-arexx \
+    src=amiga-mui/ARexx dst=$(EXEDIR)/ARexx
+
+%copy_dir_recursive mmake=contrib-simplemail-charsets \
+    src=Charsets dst=$(EXEDIR)/Charsets
+
+%copy_dir_recursive mmake=contrib-simplemail-images \
+    src=amiga-mui/binaries/images/mason-24bit dst=$(EXEDIR)/Images
+
+#MM
+contrib-simplemail-files :
+	$(CP) $(SRCDIR)/$(CURDIR)/.taglines $(EXEDIR)/.taglines
+	$(CP) $(SRCDIR)/$(CURDIR)/doc/amiga/history.txt $(EXEDIR)/history.txt
+	$(CP) $(SRCDIR)/$(CURDIR)/doc/amiga/ReadMe $(EXEDIR)/ReadMe
+	$(CP) $(SRCDIR)/$(CURDIR)/amiga-mui/binaries/ReadMe.info $(EXEDIR)/ReadMe.info
+	$(CP) $(SRCDIR)/$(CURDIR)/doc/amiga/SimpleMail.guide $(EXEDIR)/SimpleMail.guide
+	$(CP) $(SRCDIR)/$(CURDIR)/amiga-mui/binaries/SimpleMail.guide.info $(EXEDIR)/SimpleMail.guide.info
+	$(CP) $(SRCDIR)/$(CURDIR)/amiga-mui/binaries/SimpleMail.info $(EXEDIR)/SimpleMail.info
+
+# ############################################################################
+
+#MM
+contrib-simplemail-clean :
+	$(RM) $(EXEDIR)
+	$(RM) $(GENDIR)/$(CURDIR)
 
 %common

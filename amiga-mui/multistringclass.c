@@ -204,7 +204,7 @@ STATIC VOID MultiString_Event(void **msg)
 		struct object_node *prev_node = (struct object_node*)node_prev(&obj_node->node);
 		char *contents = (char*)xget(obj_node->obj, MUIA_UTF8String_Contents);
 		int new_cursor_pos = strlen((char*)xget(prev_node->obj, MUIA_String_Contents)); /* is Okay */
-		
+
 		DoMethod(prev_node->obj, MUIM_UTF8String_Insert, (ULONG)contents, MUIV_BetterString_Insert_EndOfString);
 		set(prev_node-> obj,MUIA_String_BufferPos, new_cursor_pos);
 		set(window, MUIA_Window_ActiveObject, prev_node->obj);
@@ -250,7 +250,7 @@ STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg,
 	{
 		struct object_node *obj = (struct object_node*)list_first(&data->object_list);
 		static const char *dummy_array[] = {"",NULL};
-		const char **array = ti?((char**)ti->ti_Data):dummy_array;
+		const char **array = ti?((const char**)ti->ti_Data):dummy_array;
 		int i = 0;
 		int group_changed = 0;
 
@@ -301,7 +301,7 @@ STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg,
 			DoMethod(group,MUIM_Group_ExitChange);
 	}
 	if (!new) return DoSuperMethodA(cl,group,(Msg)msg);
-	return NULL;
+	return 0;
 }
 
 STATIC ULONG MultiString_Get(struct IClass *cl,Object *obj, struct opGet *msg)
@@ -362,10 +362,10 @@ STATIC Object *MultiString_AddStringField(struct IClass *cl,Object *obj, struct 
 				}
 				sort_array[i] = NULL;
 				DoMethodA(obj, (Msg)sort_array);
-				
+
 				free(sort_array);
 			}
-			
+
 			DoMethod(obj,MUIM_Group_ExitChange);
 			DoMethod(obj_node->obj, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, (ULONG)obj, 6, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)MultiString_Acknowledge, (ULONG)cl, (ULONG)obj, (ULONG)obj_node);
 			DoMethod(obj_node->obj, MUIM_Notify, MUIA_SingleString_Event, MUIV_EveryTime, (ULONG)App, 10, MUIM_Application_PushMethod, (ULONG)App, 7, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)MultiString_Event, (ULONG)cl, (ULONG)obj, (ULONG)obj_node, MUIV_TriggerValue);

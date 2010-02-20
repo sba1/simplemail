@@ -61,7 +61,7 @@ STATIC ULONG SignatureCycle_Set(struct IClass *cl, Object *obj, struct opSet *ms
 	struct TagItem *tstate, *tag;
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{

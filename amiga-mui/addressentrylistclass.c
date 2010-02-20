@@ -264,7 +264,7 @@ STATIC ULONG AddressEntryList_Set(struct IClass *cl, Object *obj, struct opSet *
 
 	tstate = (struct TagItem *)msg->ops_AttrList;
 
-	while ((tag = NextTagItem (&tstate)))
+	while ((tag = NextTagItem ((APTR)&tstate)))
 	{
 		switch (tag->ti_Tag)
 		{
@@ -362,7 +362,7 @@ STATIC ULONG AddressEntryList_ContextMenuChoice(struct IClass *cl, Object *obj, 
 					AddressEntryList_UpdateFormat(cl,obj);
 					break;
 
-		default: 
+		default:
 					return DoSuperMethodA(cl,obj,(Msg)msg);
 	}
   return 0;

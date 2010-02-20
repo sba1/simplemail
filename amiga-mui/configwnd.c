@@ -495,7 +495,7 @@ static int config_use(void)
 			if (ac1->email && ac2->email)
 			{
 				char *addr1, *addr2;
-				
+
 				if (parse_addr_spec(ac1->email, &addr1))
 				{
 					if (parse_addr_spec(ac2->email, &addr2))
@@ -748,7 +748,9 @@ static void config_selected(void)
 static int init_user_group(void)
 {
 	static struct Hook startup_folder_objstr_hook, startup_folder_strobj_hook;
-  static char *appicon_show_labels[4];
+	static char *appicon_show_labels[4];
+
+#ifndef __AROS__
 	static const char *appicon_popph_array[] =
 	{
 		"%t|Total messages",
@@ -759,11 +761,12 @@ static int init_user_group(void)
 		"%d|Deleted messages",
 		NULL
 	};
+#endif
 
-  appicon_show_labels[0] = _("Always");
-  appicon_show_labels[1] = _("Iconified");
-  appicon_show_labels[2] = _("Never");
-  appicon_show_labels[3] = NULL;
+	appicon_show_labels[0] = _("Always");
+	appicon_show_labels[1] = _("Iconified");
+	appicon_show_labels[2] = _("Never");
+	appicon_show_labels[3] = NULL;
 
 	init_hook(&startup_folder_objstr_hook, (HOOKFUNC)startup_folder_objstr);
 	init_hook(&startup_folder_strobj_hook, (HOOKFUNC)startup_folder_strobj);
@@ -963,7 +966,7 @@ static void account_remove(void)
 }
 
 /******************************************************************
- 
+
 *******************************************************************/
 static void account_selected(void)
 {
@@ -1195,7 +1198,7 @@ static int init_account_group(void)
 				Child, ColGroup(2),
 					Child, MakeLabel(_("Active")),
 					Child, HGroup,
-						Child, account_recv_active_check = MakeCheck(_("Active"), FALSE), 
+						Child, account_recv_active_check = MakeCheck(_("Active"), FALSE),
 						Child, HSpace(0),
 						End,
 
@@ -1695,7 +1698,7 @@ static void signature_remove(void)
 }
 
 /******************************************************************
- 
+
 *******************************************************************/
 static void signature_selected(void)
 {
@@ -1864,7 +1867,7 @@ static void phrase_remove(void)
 }
 
 /******************************************************************
- 
+
 *******************************************************************/
 static void phrase_selected(void)
 {
@@ -1905,6 +1908,7 @@ static int init_phrase_group(void)
 
 	static struct Hook phrase_display_hook;
 
+#ifndef __AROS__
 	static const char *write_popph_array[] =
 	{
 		"\\n|Line break",
@@ -1930,6 +1934,7 @@ static int init_phrase_group(void)
 		"%m|Original message: Message ID",
 		NULL
 	};
+#endif
 
 	SM_ENTER;
 
@@ -1989,7 +1994,7 @@ static int init_phrase_group(void)
 				StringFrame,
 				MUIA_String_AdvanceOnCR, TRUE,
 				MUIA_CycleChain,1,
-				End,		
+				End,
 			End,
 		Child, HorizLineTextObject(_("Reply")),
 		Child, ColGroup(2),
@@ -2225,7 +2230,11 @@ int init_spam_group(void)
 *******************************************************************/
 static void init_config_window(void)
 {
-	Object *save_button, *use_button, *cancel_button, *test_popph;
+	Object *save_button, *use_button, *cancel_button;
+
+#ifndef __AROS__
+	Object *test_popph;
+#endif
 
 	SM_ENTER;
 
@@ -2239,7 +2248,7 @@ static void init_config_window(void)
 										 "the Popplaceholder custom class is missing.","Ok");
 		return;
 	}
-	
+
 	MUI_DisposeObject(test_popph);
 #endif
 

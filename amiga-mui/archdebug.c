@@ -89,9 +89,10 @@ extern ULONG __code_size;
 struct bt *arch_debug_get_bt(void)
 {
 	struct bt *bt = NULL;
-	struct Process *this;
 
 #if defined(__SASC) && defined(DEBUG_RESTRACK)
+
+	struct Process *this;
 
 	/* Note that we assume that SimpleMail consists only of one hunk */
 
@@ -125,8 +126,11 @@ void arch_debug_free_bt(struct bt *bt)
 	free(bt);
 }
 
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 static int arch_debug_loaded = 0;
+#endif
 
+#ifndef __AROS__
 static void arch_debug_load(void)
 {
 #if defined(__SASC) && defined(DEBUG_RESTRACK)
@@ -299,6 +303,7 @@ bailout:
 	if (fh) Close(fh);
 #endif
 }
+#endif
 
 /**
  * Turns the backtrace into a string that can be displayed

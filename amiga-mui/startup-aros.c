@@ -64,7 +64,6 @@ int main(int argc, char **argv)
 	return start(wbs);
 }
 
-static int rc;
 
 static int start(struct WBStartup *wbs)
 {
@@ -258,7 +257,7 @@ void *realloc(void *om, size_t size)
 		if (size < oldmem[0])
 		{
 			void *mem;
-		
+
 			mem = malloc(size);
 			if (mem)
 			{
@@ -387,7 +386,7 @@ int fprintf(FILE *file, const char *fmt,...)
 		rc = fwrite(filesbuf,1,size,file);
 	}
 	else
-	{	
+	{
 		rc = -1;
 	}
 

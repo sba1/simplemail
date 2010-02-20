@@ -48,7 +48,7 @@
 #ifdef __AMIGAOS4__
 extern ULONG hookEntry();
 #else
-#ifdef __MORPHOS__
+#if defined(__MORPHOS__) || defined(__AROS__)
 #define hookEntry HookEntry
 #endif
 #endif
@@ -369,7 +369,7 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 		rect.MaxY = yDest + ySize - 1;
 
 		/* Initialize the hook */
-#if defined(__AMIGAOS4__) || defined(__MORPHOS__)
+#if defined(__AMIGAOS4__) || defined(__MORPHOS__) || defined(__AROS__)
 		hook.hook.h_Entry = (HOOKFUNC)hookEntry;
 		hook.hook.h_SubEntry = (HOOKFUNC)HookFunc_BltMask;
 #else

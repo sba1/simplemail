@@ -110,7 +110,7 @@ EXE    := SimpleMail
 
 USER_INCLUDES := -I$(SRCDIR)/$(CURDIR)/indep-include -I$(SRCDIR)/$(CURDIR)/amiga-mui -I$(SRCDIR)/$(CURDIR)
 
-USER_CFLAGS := -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+USER_CFLAGS := -DHAVE_OPENURL -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat"

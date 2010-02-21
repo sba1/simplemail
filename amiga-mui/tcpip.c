@@ -32,7 +32,7 @@
 	#include <proto/socket.h>
 #elif __AROS__
 	#include <bsdsocket/socketbasetags.h>
-	#include <proto/socket.h>
+	#include <proto/bsdsocket.h>
 #else
 	#ifdef AMITCP_SDK
 		#include <amitcp/socketbasetags.h>

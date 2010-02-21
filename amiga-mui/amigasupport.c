@@ -86,7 +86,7 @@ void SecondsToString( char *buf, unsigned int seconds)
 			date_hook.h_Entry = (HOOKFUNC)hookEntry;
 			date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 		}
-#elif defined(__MORPHOS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -130,7 +130,7 @@ void SecondsToStringLong( char *buf, unsigned int seconds)
 			date_hook.h_Entry = (HOOKFUNC)hookEntry;
 			date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 		}
-#elif defined(__MORPHOS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -172,7 +172,7 @@ void SecondsToDateString( char *buf, unsigned int seconds)
 			date_hook.h_Entry = (HOOKFUNC)hookEntry;
 			date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 		}
-#elif defined(__MORPHOS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else
@@ -208,7 +208,7 @@ void SecondsToTimeString( char *buf, unsigned int seconds)
 			date_hook.h_Entry = (HOOKFUNC)hookEntry;
 			date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 		}
-#elif defined(__MORPHOS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 		date_hook.h_Entry = (HOOKFUNC)hookEntry;
 		date_hook.h_SubEntry = (HOOKFUNC)Hookfunc_Date_Write;
 #else

@@ -41,9 +41,9 @@ extern ULONG muiDispatcherEntry(void);
 #endif
 
 
-LONG xget(Object * obj, ULONG attribute)
+IPTR xget(Object * obj, ULONG attribute)
 {
-  LONG x;
+  IPTR x;
   get(obj, attribute, &x);
   return (x);
 }
@@ -81,9 +81,7 @@ ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 	return rc;
 }
 
-#else
-
-#ifdef __MORPHOS__
+#elif __MORPHOS__
 APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 {
 	ULONG *tags;
@@ -100,9 +98,40 @@ APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 	va_end(args);
 	return o;
 }
-#endif /* __MORPHOS__ */
 
-#endif /* __AMIGAOS4__ */
+#elif __AROS__
+
+IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...)
+{
+    if (cl == NULL || obj == NULL)
+        return NULL;
+
+    AROS_SLOWSTACKMETHODS_PRE(tag1)
+    retval = DoSuperMethod(cl, obj, OM_NEW, (struct TagItem *) AROS_SLOWSTACKMETHODS_ARG(tag1), NULL);
+    AROS_SLOWSTACKMETHODS_POST
+}
+
+APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, Tag tag1, ...)
+{
+    AROS_SLOWSTACKTAGS_PRE(tag1)
+    retval = NewObjectA (cl, id, AROS_SLOWSTACKTAGS_ARG(tag1));
+    AROS_SLOWSTACKTAGS_POST
+}
+
+#else
+
+ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
+{
+	return DoSuperMethod(cl, obj, OM_NEW, (((ULONG*)&obj)+1), NULL);
+}
+
+APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
+{
+	return NewObjectA(cl,id, (struct TagItem*)((&id)+1));
+}
+
+#endif
+
 
 #if defined(__AMIGAOS4__)
 
@@ -139,16 +168,6 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass *supermcc, int instDataSize, APTR dispatcher)
 {
 	return MUI_CreateCustomClass(NULL,supername,supermcc,instDataSize, dispatcher);
-}
-
-ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
-{
-  return DoSuperMethod(cl, obj, OM_NEW, (((ULONG*)&obj)+1), NULL);
-}
-
-APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
-{
-	return NewObjectA(cl,id, (struct TagItem*)((&id)+1));
 }
 
 #endif /* __AMIGAOS4__ || __MORPHOS__ */

@@ -27,7 +27,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifndef _AROS
+#ifndef __AROS__
 
 #ifdef __WIN32__
 #include <windows.h>

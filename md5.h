@@ -7,6 +7,10 @@
 
 #if defined(AMIGA) || defined(_AMIGA) || defined(__AMIGAOS4__) || defined(__MORPHOS__)
  #define HIGHFIRST
+#elif defined(__AROS__)
+ #if (AROS_BIG_ENDIAN)
+  #define HIGHFIRST
+ #endif
 #else
  #ifdef WORDS_BIGENDIAN /* by configure */
   #define HIGHFIRST

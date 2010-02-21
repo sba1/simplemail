@@ -896,7 +896,7 @@ int main_window_init(void)
 					MUIA_SMToolbar_InVGroup, TRUE,
 					MUIA_SMToolbar_Buttons, sm_mainwnd_buttons,
 					End,
-#ifndef __AROS__  /* will be fixed*/
+				// FIXME: this was disabled for AROS with the hint "will be fixed"
 				Child, filter_group = VGroup,
 					MUIA_Weight, 20,
 					InnerSpacing(0,0),
@@ -914,7 +914,6 @@ int main_window_init(void)
 						End,
 					Child, HVSpace,
 					End,
-#endif
 				End,
 
 			Child, folder_group = HGroup,

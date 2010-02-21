@@ -20,14 +20,10 @@
 ** tcpip.h
 */
 
-#ifdef __AMIGAOS4__
-#include <proto/bsdsocket.h>
-#else
-#if defined(_AMIGA) || defined(__MORPHOS)
-#ifndef _AROS
-#include <proto/socket.h>
-#endif
-#endif
+#if defined(__AMIGAOS4__) || defined(__AROS__)
+#  include <proto/bsdsocket.h>
+#elif defined(_AMIGA) || defined(__MORPHOS)
+#  include <proto/socket.h>
 #endif
 
 #ifndef SM__TCP_H

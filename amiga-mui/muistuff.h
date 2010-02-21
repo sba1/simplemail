@@ -28,12 +28,15 @@
 #endif
 
 /* useful MUI supports */
-LONG xget(Object * obj, ULONG attribute);
+IPTR xget(Object * obj, ULONG attribute);
 #ifdef __MORPHOS__
 APTR MyNewObject( struct IClass *cl, CONST_STRPTR id, ...) __attribute__((varargs68k));
+#elif __AROS__
+IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...) __stackparm;
+APTR MyNewObject (struct IClass *cl, CONST_STRPTR id, Tag tag1, ...) __stackparm;
 #else
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...);
-APTR VARARGS68K MyNewObject( struct IClass *cl, CONST_STRPTR id, ...);
+APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ...);
 #endif
 Object *MakeLabel(STRPTR str);
 Object *MakeButton(STRPTR str);
@@ -112,7 +115,7 @@ struct  MUIP_DoDrag { ULONG MethodID; LONG touchx; LONG touchy; ULONG flags; }; 
 
 #define MUIV_NListtree_Remove_Flag_NoActive (1<<13) /* internal */
 
-#ifndef MUIA_Application_UsedClasses 
+#ifndef MUIA_Application_UsedClasses
 #define MUIA_Application_UsedClasses 0x8042e9a7 /* V20 isg STRPTR * */
 #endif
 

@@ -34,18 +34,14 @@
 #define SM_CURRENT_DIR	""
 
 /* Operation system */
-#ifdef __AMIGAOS4__
+#if defined(__AMIGAOS4__)
 #define SM_OPERATIONSYSTEM "AmigaOS4/MUI"
-#else
-#ifdef __MORPHOS__
+#elif defined(__MORPHOS__)
 #define SM_OPERATIONSYSTEM "MorphOS/MUI"
-#else
-#ifdef __AROS__
+#elif defined(__AROS__)
 #define SM_OPERATIONSYSTEM "AROS/MUI"
 #else
 #define SM_OPERATIONSYSTEM "AmigaOS/MUI"
-#endif
-#endif
 #endif
 
 /* Debug - defines ARCH_DEBUG_EXTRA */

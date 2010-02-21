@@ -27,7 +27,7 @@
 
 #include <proto/exec.h>
 
-#ifdef _AROS
+#ifdef __AROS__
 
 #undef DEBUG
 #define DEBUG 1

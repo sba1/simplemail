@@ -6,7 +6,7 @@ include $(TOP)/config/make.cfg
 
 #MM contrib-simplemail-bin : includes linklibs linklibs-expat contrib-zune-classes-thebar \
 #MM contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
-#MM contrib-simplemail-files
+#MM contrib-simplemail-files contrib-simplemail-locale
 
 AMIGAMUI := \
 	vsnprintf \
@@ -114,6 +114,46 @@ USER_CFLAGS := -DHAVE_OPENURL -DNO_SSL -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 
 %build_prog mmake=contrib-simplemail-bin progname=$(EXE) files=$(FILES) \
     targetdir=$(EXEDIR) uselibs="amiga arosc arossupport mui expat"
+
+# ############################################################################
+
+LOCALEDIR := $(EXEDIR)/Locale/
+
+#locale
+LOCALEOBJS = $(LOCALEDIR)de.mo $(LOCALEDIR)fi.mo $(LOCALEDIR)ma.mo $(LOCALEDIR)pl.mo $(LOCALEDIR)es.mo $(LOCALEDIR)fr.mo
+
+#MM
+contrib-simplemail-locale: $(LOCALEOBJS)
+
+$(LOCALEDIR)de.mo: po/de.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)ma.mo: po/ma.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)pl.mo: po/pl.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)fi.mo: po/fi.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)es.mo: po/es.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
+
+$(LOCALEDIR)fr.mo: po/fr.po
+	@echo "Making $@..."
+	@mkdir -p $(LOCALEDIR)
+	@msgfmt $? -o $@
 
 # ############################################################################
 

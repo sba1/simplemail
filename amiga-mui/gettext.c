@@ -210,7 +210,7 @@ static char *find_gmostr(char *lang)
 	if (!lang) return NULL;
 	for (i=0;LocaleConvTab[i].langstr;i++)
 	{
-		if (!strcmp(LocaleConvTab[i].langstr,lang)) return LocaleConvTab[i].gmostr;
+		if (!strcasecmp(LocaleConvTab[i].langstr,lang)) return LocaleConvTab[i].gmostr;
 	}
 	return NULL;
 }

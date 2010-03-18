@@ -1,7 +1,7 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportYamMails.smrx 1.4 (26.12.09)
+$VER: ImportYamMails.smrx 1.5 (19.2.10)
 $Author: AmigaPhil
 $Label: Import messages from YAM
 $Desc: Import YAM's selected messages into SimpleMail
@@ -9,6 +9,7 @@ $Desc: Import YAM's selected messages into SimpleMail
 Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
 
 Translation credits:
+- french catalog by AmigaPhil
 - dutch catalog by Johan Banis - ATO Nederland
 - italian catalog by Simone "Tuxedo" Monsignori
 */
@@ -21,17 +22,18 @@ options failat 31
 version  = SUBWORD(SOURCELINE(4),3,1)
 wrapat = 60   /* Word-wrap a line of text to the given size in chars */
 
-/* Localize (maketls.rexx) */
+/* Localize (RexCat) */
 
+langFile = ""
 if exists('ENV:Language') then
    do
    if open('el', 'ENV:Language', 'R') then
       do
       langFile = readln('el')
       call close('el')
-      if langFile ~== "english" then call gettlstext(langFile)
       end
    end
+call gettlstext(langFile)
 
 /* check if SimpleMail is running */
 
@@ -113,17 +115,72 @@ if yamver > 131077 then 'LISTFREEZE MAILS'
 do i=0 to (MSGLIST.NUM.COUNT - 1)
    address(yamport)
    'SETMAIL 'MSGLIST.NUM.i
-   if yamver < 131078 then 'MAILEXPORT "T:SM-00-T'pragma("ID")'"'
-   else 'MAILEXPORT "T:SM-00-T'pragma("ID")'" QUIET'
+   if yamver < 131078 then 'MAILEXPORT "T:YAMmbox.tmp"'
+   else 'MAILEXPORT "T:YAMmbox.tmp" QUIET'
+
+   if ~open('mb',"T:YAMeml.tmp",'W') then
+      do
+      help = tls("Error: ") || tls("Cannot write to the YAMeml temp. file.")
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
+      signal break_error
+      end
+   if ~open('tmp',"T:YAMmbox.tmp",'R') then
+      do
+      help = tls("Error: ") || tls("Cannot read the YAMmbox temp. file.")
+      'REQUEST BODY "'smwrap(help,wrapat)'" "' || "**" || tls("Cancel") || '"'
+      signal break_error
+      end
+   isHeader = 1
+   setStat = ""
+   do while ~eof('tmp')
+      instring = readln('tmp')
+      if isHeader then
+         do
+         if upper(left(instring,5)) == "FROM " then iterate
+         if (upper(left(instring,8)) == "STATUS: ") & (setStat = "") then
+            do
+            instring = substr(instring,9)
+            if verify(instring,'R','M') > 0 then setStat = "O"
+            else if verify(instring,'O','M') > 0 then setStat = "U"
+            iterate
+            end
+         if upper(left(instring,10)) == "X-STATUS: " then
+            do
+            instring = substr(instring,11)
+            if verify(instring,'A','M') > 0 then setStat = "R"
+            iterate
+            end
+         if strip(instring,'T','0d'x) = "" then isHeader = 0
+         end
+      testfrom = strip(word(instring,1),'L','>')
+      if testfrom == "From" then instring = ">" || instring
+      call writeln('mb',instring)
+   end
+   call close('tmp')
+   call close('mb')
+
    address(smport)
-   'MAILADD FOLDER "'smfolder'" FILENAME "T:SM-00-T'pragma("ID")'"'
+   'MAILADD FOLDER "'smfolder'" FILENAME "T:YAMeml.tmp"'
+   impMsg = result
+   if (smver > 33) & (setStat ~= "") then
+      do
+      if verify(impMsg,":/") = 0 then
+         do
+         'FOLDERINFO "'smfolder'" STEM 'FINFO.
+         if (right(FINFO.PATH,1) ~= ":") & (right(FINFO.PATH,1) ~= "/") then FINFO.PATH = FINFO.PATH || "/"
+         impMsg = FINFO.PATH || impMsg
+         end
+      'MAILSETSTATUS "'impMsg'" 'setStat
+      end
 end
 say tls("Done.")
 
 halt:
 break_c:
+break_error:
 
-if exists("T:SM-00-T"pragma("ID")) then address command 'DELETE >NIL: "T:SM-00-T'pragma("ID")'"'
+if exists("T:YAMmbox.tmp") then address command 'DELETE >NIL: "T:YAMmbox.tmp"'
+if exists("T:YAMeml.tmp") then address command 'DELETE >NIL: "T:YAMeml.tmp"'
 address(yamport)
 if yamver > 131077 then 'LISTUNFREEZE MAILS'
 'APPNOBUSY'
@@ -169,28 +226,29 @@ if (wrap > 19) & (words(intext) > 1) then
 return intext
 
 
-/* (maketls.rexx) Function to translate the output strings
-   to the user's prefered language                          */
+/* (RexCat) Function which translates the strings */
 
 tls: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG instring
 
   IF instring = '' THEN RETURN instring
+  IF LENGTH(instring) > 250 THEN instring = LEFT(instring,250)
   IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
   IF tlstext.instring = '' THEN RETURN instring
 
   RETURN tlstext.instring
 
 
-/* (maketls.rexx) Function to load the translation file (.catalog) */
+/* (RexCat) Function to load the translation file */
 
 gettlstext: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG language
-  IF language = '' THEN RETURN
+  IF language = '' THEN RETURN 0
 
   currentDir = PRAGMA('D')
+  IF (RIGHT(currentDir,1) ~= ':') & (RIGHT(currentDir,1) ~= '/') THEN currentDir = currentDir || "/"
   scriptDir  = ''
   PARSE SOURCE scriptPath
   scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
@@ -198,16 +256,36 @@ gettlstext: PROCEDURE EXPOSE tlstext.
   IF parpos = 0 THEN parpos = POS(':', scriptPath)
   IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
   scriptName = SUBSTR(scriptPath, parpos + 1)
-  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+  langFile = language || "/" || scriptName || ".catalog"
+  CALL PRAGMA('W','N')
+  IF EXISTS("LOCALE:RexxCatalogs") THEN CALL PRAGMA('D',"LOCALE:RexxCatalogs")
+  CALL PRAGMA('W','W')
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "Locale/Catalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "Locale/Catalogs")
 
+  rcode = 0
   IF OPEN('lf',langFile, 'R') THEN DO
+    rcode = 1
     tlssrc = ''
     tlsdst = ''
     DO WHILE ~EOF('lf')
       instring = STRIP(READLN('lf'))
-      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN DO
+        PARSE VAR instring tmpvar "=" qtmpstr
+        IF (TRANSLATE(STRIP(tmpvar)) ~= "TLSSRC") & (TRANSLATE(STRIP(tmpvar)) ~= "TLSDST") THEN ITERATE
+        tmpstr = STRIP(qtmpstr,'L')
+        quot = LEFT(tmpstr,1)
+        IF (quot = "'") | (quot = '"') THEN DO
+           strend = POS(quot,tmpstr,2)
+           IF strend > 1 THEN DO
+              tmpstr = SUBSTR(tmpstr,2,strend - 2)
+              IF LENGTH(tmpstr) > 250 THEN tmpstr = LEFT(tmpstr,250)
+              INTERPRET tmpvar || "=" || quot || tmpstr || quot
+           END
+        END
+      END
       IF tlssrc ~= '' THEN DO
         IF tlsdst ~= '' THEN DO
           tlstext.tlssrc = tlsdst
@@ -221,5 +299,5 @@ gettlstext: PROCEDURE EXPOSE tlstext.
 
   CALL PRAGMA('D',currentDir)
 
-  RETURN
+  RETURN rcode
 

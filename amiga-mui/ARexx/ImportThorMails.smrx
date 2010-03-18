@@ -1,7 +1,7 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportThorMails.smrx 1.5 (26.12.09)
+$VER: ImportThorMails.smrx 1.6 (26.2.10)
 $Author: AmigaPhil
 $Label: Import messages from Thor
 $Desc: Import Thor's selected messages into SimpleMail
@@ -9,6 +9,7 @@ $Desc: Import Thor's selected messages into SimpleMail
 Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
 
 Translation credits:
+- french catalog by AmigaPhil
 - dutch catalog by Johan Banis - ATO Nederland
 - italian catalog by Simone "Tuxedo" Monsignori
 */
@@ -21,17 +22,18 @@ options failat 31
 version  = SUBWORD(SOURCELINE(4),3,1)
 wrapat = 60   /* Word-wrap a line of text to the given size in chars */
 
-/* Localize (maketls.rexx) */
+/* Localize (RexCat) */
 
+langFile = ""
 if exists('ENV:Language') then
    do
    if open('el', 'ENV:Language', 'R') then
       do
       langFile = readln('el')
       call close('el')
-      if langFile ~== "english" then call gettlstext(langFile)
       end
    end
+call gettlstext(langFile)
 
 /* check if SimpleMail is running */
 
@@ -201,9 +203,9 @@ do i=1 to MSGLIST.COUNT
             end
          end
       end
-   drop MSGTXT.
+   drop MSGTXT. MSGDAT.
    address(BBSREAD)
-   'READBRMESSAGE "'CURSYS.BBSNAME'" "'CURSYS.CONFNAME'" 'MSGLIST.i' TEXTSTEM MSGTXT'
+   'READBRMESSAGE "'CURSYS.BBSNAME'" "'CURSYS.CONFNAME'" 'MSGLIST.i' TEXTSTEM MSGTXT DATASTEM MSGDAT'
    if rc ~= 0 then
       do
       address(thorport)
@@ -215,33 +217,36 @@ do i=1 to MSGLIST.COUNT
       end
    call fixbin('MSGTXT')
 
-   address(smport)
-   'NEWMAILFILE FOLDER "'smfolder'"'
-   mfile = result
-   /*** To avoid to mess the folder index (imported mails shown as "deleted" in 0.33),
-        the mail file is temporary saved to T: before importing it with MAILADD.       ***/
-   endpath = lastpos('/',mfile)
-   if endpath = 0 then endpath = LASTPOS(':',mfile)
-   if endpath = 0 then tmpmfile = mfile
-   else tmpmfile = "T:" || delstr(mfile,1,endpath)
-
    address(thorport)
-   'SAVEMESSAGE BBS "'CURSYS.BBSNAME'" CONF "'CURSYS.CONFNAME'" MSGNR 'MSGLIST.i' FILE "' || tmpmfile || '" OVERWRITE'
+   'SAVEMESSAGE BBS "'CURSYS.BBSNAME'" CONF "'CURSYS.CONFNAME'" MSGNR 'MSGLIST.i' FILE "T:ThorSavedMsg.tmp" OVERWRITE'
    if rc ~= 0 then
       do
       say tls("Failed to save message #") || MSGLIST.i || " (rc=" || rc || "): " || THOR.LASTERROR
-      say tls("SimpleMail filename was ") || "'" || mfile || "'"
       say ""
       end
    else
       do
       address(smport)
-      'MAILADD FOLDER "'smfolder'" FILENAME "' || tmpmfile || '"'
-      address command 'DELETE >NIL: "'tmpmfile'"'
+      'MAILADD FOLDER "'smfolder'" FILENAME "T:ThorSavedMsg.tmp"'
+      impMsg = result
+      if smver > 33 then
+         do
+         setStat = ""
+         if bittst(MSGDAT.FLAGS, 1) then setStat = "R"
+         else if ~(bittst(MSGDAT.FLAGS, 10) | bittst(MSGDAT.FLAGS, 0)) then setStat = "O"
+         else setStat = "U"
+         if setStat ~= "" then
+            do
+            if verify(impMsg,":/") = 0 then
+               do
+               'FOLDERINFO "'smfolder'" STEM 'FINFO.
+               if (right(FINFO.PATH,1) ~= ":") & (right(FINFO.PATH,1) ~= "/") then FINFO.PATH = FINFO.PATH || "/"
+               impMsg = FINFO.PATH || impMsg
+               end
+            'MAILSETSTATUS "'impMsg'" 'setStat
+            end
+         end
       end
-   /*** At this point, the imported mail status (read/unread, ...)
-        is not preserved (will appear as NEW in SimpleMail)
-        The upcoming MAILSETSTATUS command should solve this.      ***/
 
 end
 
@@ -256,6 +261,8 @@ if BINLIST.COUNT > 0 then
        'DELETE >nil: "'BINLIST.j'"'
     end
    end
+
+if exists("T:ThorSavedMsg.tmp") then address command 'DELETE "T:ThorSavedMsg.tmp" QUIET'
 
 address(smport)
 'MAILLISTTHAW'
@@ -380,28 +387,29 @@ escwc: procedure
 return outstr
 
 
-/* (maketls.rexx) Function to translate the output strings
-   to the user's prefered language                          */
+/* (RexCat) Function which translates the strings */
 
 tls: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG instring
 
   IF instring = '' THEN RETURN instring
+  IF LENGTH(instring) > 250 THEN instring = LEFT(instring,250)
   IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
   IF tlstext.instring = '' THEN RETURN instring
 
   RETURN tlstext.instring
 
 
-/* (maketls.rexx) Function to load the translation file (.catalog) */
+/* (RexCat) Function to load the translation file */
 
 gettlstext: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG language
-  IF language = '' THEN RETURN
+  IF language = '' THEN RETURN 0
 
   currentDir = PRAGMA('D')
+  IF (RIGHT(currentDir,1) ~= ':') & (RIGHT(currentDir,1) ~= '/') THEN currentDir = currentDir || "/"
   scriptDir  = ''
   PARSE SOURCE scriptPath
   scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
@@ -409,16 +417,36 @@ gettlstext: PROCEDURE EXPOSE tlstext.
   IF parpos = 0 THEN parpos = POS(':', scriptPath)
   IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
   scriptName = SUBSTR(scriptPath, parpos + 1)
-  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+  langFile = language || "/" || scriptName || ".catalog"
+  CALL PRAGMA('W','N')
+  IF EXISTS("LOCALE:RexxCatalogs") THEN CALL PRAGMA('D',"LOCALE:RexxCatalogs")
+  CALL PRAGMA('W','W')
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "Locale/Catalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "Locale/Catalogs")
 
+  rcode = 0
   IF OPEN('lf',langFile, 'R') THEN DO
+    rcode = 1
     tlssrc = ''
     tlsdst = ''
     DO WHILE ~EOF('lf')
       instring = STRIP(READLN('lf'))
-      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN DO
+        PARSE VAR instring tmpvar "=" qtmpstr
+        IF (TRANSLATE(STRIP(tmpvar)) ~= "TLSSRC") & (TRANSLATE(STRIP(tmpvar)) ~= "TLSDST") THEN ITERATE
+        tmpstr = STRIP(qtmpstr,'L')
+        quot = LEFT(tmpstr,1)
+        IF (quot = "'") | (quot = '"') THEN DO
+           strend = POS(quot,tmpstr,2)
+           IF strend > 1 THEN DO
+              tmpstr = SUBSTR(tmpstr,2,strend - 2)
+              IF LENGTH(tmpstr) > 250 THEN tmpstr = LEFT(tmpstr,250)
+              INTERPRET tmpvar || "=" || quot || tmpstr || quot
+           END
+        END
+      END
       IF tlssrc ~= '' THEN DO
         IF tlsdst ~= '' THEN DO
           tlstext.tlssrc = tlsdst
@@ -432,5 +460,5 @@ gettlstext: PROCEDURE EXPOSE tlstext.
 
   CALL PRAGMA('D',currentDir)
 
-  RETURN
+  RETURN rcode
 

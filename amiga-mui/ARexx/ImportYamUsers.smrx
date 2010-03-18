@@ -1,7 +1,7 @@
 /*
 This is an ARexx-Script for SimpleMail
 
-$VER: ImportYamUsers.smrx 1.3 (26.12.09)
+$VER: ImportYamUsers.smrx 1.4 (19.2.10)
 $Author: AmigaPhil
 $Label: Import YAM's address book
 $Desc: Import contact addresses from YAM into SimpleMail
@@ -9,6 +9,7 @@ $Desc: Import contact addresses from YAM into SimpleMail
 Contact: AmigaPhil <AmigaPhil (at) scarlet (dot) be>
 
 Translation credits:
+- french catalog by AmigaPhil
 - dutch catalog by Johan Banis - ATO Nederland
 - italian catalog by Simone "Tuxedo" Monsignori
 */ 
@@ -19,17 +20,18 @@ version  = SUBWORD(SOURCELINE(4),3,1)
 wrapat = 60   /* Word-wrap a line of text to the given size in chars */
 addrcount = 0
 
-/* Localize (maketls.rexx) */
+/* Localize (RexCat) */
 
+langFile = ""
 if exists('ENV:Language') then
    do
    if open('el', 'ENV:Language', 'R') then
       do
       langFile = readln('el')
       call close('el')
-      if langFile ~== "english" then call gettlstext(langFile)
       end
    end
+call gettlstext(langFile)
 
 /* check if YAM is running */
 
@@ -138,28 +140,29 @@ if (wrap > 19) & (words(intext) > 1) then
 return intext
 
 
-/* (maketls.rexx) Function to translate the output strings
-   to the user's prefered language                          */
+/* (RexCat) Function which translates the strings */
 
 tls: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG instring
 
   IF instring = '' THEN RETURN instring
+  IF LENGTH(instring) > 250 THEN instring = LEFT(instring,250)
   IF tlstext.instring == 'TLSTEXT.' || instring THEN RETURN instring
   IF tlstext.instring = '' THEN RETURN instring
 
   RETURN tlstext.instring
 
 
-/* (maketls.rexx) Function to load the translation file (.catalog) */
+/* (RexCat) Function to load the translation file */
 
 gettlstext: PROCEDURE EXPOSE tlstext.
 
   PARSE ARG language
-  IF language = '' THEN RETURN
+  IF language = '' THEN RETURN 0
 
   currentDir = PRAGMA('D')
+  IF (RIGHT(currentDir,1) ~= ':') & (RIGHT(currentDir,1) ~= '/') THEN currentDir = currentDir || "/"
   scriptDir  = ''
   PARSE SOURCE scriptPath
   scriptPath = SUBWORD(scriptPath,4,WORDS(scriptPath)-5)
@@ -167,16 +170,36 @@ gettlstext: PROCEDURE EXPOSE tlstext.
   IF parpos = 0 THEN parpos = POS(':', scriptPath)
   IF parpos > 0 THEN scriptDir = LEFT(scriptPath, parpos)
   scriptName = SUBSTR(scriptPath, parpos + 1)
-  langFile = "Locale/Catalogs/" || language || "/" || scriptName || ".catalog"
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir)
-  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',"SYS:")
+  langFile = language || "/" || scriptName || ".catalog"
+  CALL PRAGMA('W','N')
+  IF EXISTS("LOCALE:RexxCatalogs") THEN CALL PRAGMA('D',"LOCALE:RexxCatalogs")
+  CALL PRAGMA('W','W')
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',currentDir || "Locale/Catalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "RexxCatalogs")
+  IF ~EXISTS(langFile) THEN CALL PRAGMA('D',scriptDir || "Locale/Catalogs")
 
+  rcode = 0
   IF OPEN('lf',langFile, 'R') THEN DO
+    rcode = 1
     tlssrc = ''
     tlsdst = ''
     DO WHILE ~EOF('lf')
       instring = STRIP(READLN('lf'))
-      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN INTERPRET instring
+      IF (LENGTH(instring) > 0) & (LEFT(instring,2) ~= '/*') & (LEFT(instring,2) ~= '//') THEN DO
+        PARSE VAR instring tmpvar "=" qtmpstr
+        IF (TRANSLATE(STRIP(tmpvar)) ~= "TLSSRC") & (TRANSLATE(STRIP(tmpvar)) ~= "TLSDST") THEN ITERATE
+        tmpstr = STRIP(qtmpstr,'L')
+        quot = LEFT(tmpstr,1)
+        IF (quot = "'") | (quot = '"') THEN DO
+           strend = POS(quot,tmpstr,2)
+           IF strend > 1 THEN DO
+              tmpstr = SUBSTR(tmpstr,2,strend - 2)
+              IF LENGTH(tmpstr) > 250 THEN tmpstr = LEFT(tmpstr,250)
+              INTERPRET tmpvar || "=" || quot || tmpstr || quot
+           END
+        END
+      END
       IF tlssrc ~= '' THEN DO
         IF tlsdst ~= '' THEN DO
           tlstext.tlssrc = tlsdst
@@ -190,5 +213,4 @@ gettlstext: PROCEDURE EXPOSE tlstext.
 
   CALL PRAGMA('D',currentDir)
 
-  RETURN
-
+  RETURN rcode

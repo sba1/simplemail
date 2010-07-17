@@ -2,6 +2,11 @@
 SimpleMail Open Source - ChangeLog
 ----------------------------------
 
+2010-07-17  Bernd Gollesch <bgollesch@speed.at>
+	* mail.c: Keep Cc-headers intact for replies.
+	  Look also in the Cc-Header for sender account.
+	  Filter out only the sender account in To and Cc header.
+
 2009-11-10  Nicolas Sallin <henes@biclodon.com>
 	* amiga-mui/subthread.c: The continue message must not be replied by the
 	  parent thread so its async flag must be set. This fixes various random

@@ -1186,17 +1186,29 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 	{
 		struct mail_complete *mail = mail_array[0];
 		struct mail_complete *text_mail;
-		char *from = mail_find_header_contents(mail,"from");
-		char *to = mail_find_header_contents(mail,"to");
+		char *from = mail_find_header_contents(mail, "from");
+		char *to = mail_find_header_contents(mail, "to");
+		char *cc = mail_find_header_contents(mail, "cc");
 		struct phrase *phrase = phrase_find_best(from);
+		struct account *ac = account_find_by_from(to);
 
 		int i;
+
+		/* first set the sender account for later use */
+		if (!ac)
+		{
+			/* if not found in to, check cc header */
+			ac = account_find_by_from(cc);
+		}
+		if (ac)
+		{
+			mail_complete_add_header(m,"From", 4, ac->email,strlen(ac->email),0);
+		}
 
 		if (from)
 		{
 			struct list *alist;
 			char *replyto = mail_find_header_contents(mail, "reply-to");
-			char *cc = mail_find_header_contents(mail, "cc");
 			int which_address = 1;
 
 			if (replyto)
@@ -1233,54 +1245,59 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 			alist = create_address_list(from);
 			if (alist)
 			{
+				int mult_count=0;
 				char *to_header;
+				char *cc_header = NULL;
+				struct list *mult_list_to = create_address_list(to);
+				struct list *mult_list_cc = create_address_list(cc);
 
 				if (which_address == 3)
 					append_to_address_list(alist, replyto);
 
-				if (to || cc)
+				if (mult_list_to)
 				{
-					int i;
-					struct list *mult_list = NULL;
+					/* remove the sender account, if found in to */
+					if (ac) remove_from_address_list(mult_list_to, ac->email);
+					/* remove the replyto (could be by mailinglist where To == ReplyTo */
+					if (replyto) remove_from_address_list(mult_list_to, replyto);
+					mult_count += list_length(mult_list_to);
+				}
 
-					for (i=0;i<2;i++)
+				if (mult_list_cc)
+				{
+					/* remove the sender account, if found in cc */
+					if (ac) remove_from_address_list(mult_list_cc, ac->email);
+					mult_count += list_length(mult_list_cc);
+				}
+
+				if (mult_count > 0)
+				{
+					int take_mult = sm_request(NULL,
+				                          _("This e-mail has multiple recipients. Should it be answered to all recipients?"),
+				                          _("*_Yes|_No"));
+					if (take_mult)
 					{
-						char *str = i==0?to:cc;
-						if (str)
+						if (mult_list_to)
 						{
-							struct account *ac = account_find_by_from(str);
-
-							if (mult_list) append_to_address_list(mult_list, str);
-							else mult_list = create_address_list(str);
-
-							/* remove the account, if found in to or cc */
-							if (ac) remove_from_address_list(mult_list,ac->email);
-						}
-					}
-					if (mult_list)
-					{
-						/* there could be multiple recipients */
-						/* first, remove the replyto (could be by mailinglist where To == ReplyTo */
-						if (replyto) remove_from_address_list(mult_list, replyto);
-
-						/* everything else are multiple recipients */
-						if (list_length(mult_list) > 0)
-						{
-							int take_mult = sm_request(NULL,
-							                          _("This e-mail has multiple recipients. Should it be answered to all recipients?"),
-							                          _("*_Yes|_No"));
-
-							if (take_mult)
+							if (list_length(mult_list_to) > 0)
 							{
-								struct mailbox *mb = (struct mailbox*)list_first(mult_list);
+								struct mailbox *mb = (struct mailbox*)list_first(mult_list_to);
 								while (mb)
 								{
 									append_mailbox_to_address_list(alist,mb);
 									mb = (struct mailbox*)node_next(&mb->node);
 								}
 							}
+							free_address_list(mult_list_to);
 						}
-						free_address_list(mult_list);
+						if (mult_list_cc)
+						{
+							if (list_length(mult_list_cc) > 0)
+							{
+								cc_header = encode_address_field_utf8("Cc", mult_list_cc);
+							}
+							free_address_list(mult_list_cc);
+						}
 					}
 				}
 
@@ -1292,15 +1309,11 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 					mail_complete_add_header(m, "To", 2, to_header+4, strlen(to_header)-4,0);
 					free(to_header);
 				}
-			}
-		}
-
-		if (to)
-		{
-			struct account *ac = account_find_by_from(to);
-			if (ac)
-			{
-				mail_complete_add_header(m,"From", 4, ac->email,strlen(ac->email),0);
+				if (cc_header)
+				{
+					mail_complete_add_header(m, "Cc", 2, cc_header+4, strlen(cc_header)-4,0);
+					free(cc_header);
+				}
 			}
 		}
 
@@ -3775,4 +3788,3 @@ int mail_allowed_to_download(struct mail_info *mail)
 	}
 	return rc;
 }
-

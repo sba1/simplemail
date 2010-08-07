@@ -138,7 +138,7 @@ amigamui:
 
 $(OUT): $(OBJS) amiga-mui/libgui.a
 	@echo Linking $@.db...
-	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -lttengine -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map,--traditional-format
+	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map,--traditional-format
 	@echo Striping $@...
 	@ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	@chmod a+x $(OUT)

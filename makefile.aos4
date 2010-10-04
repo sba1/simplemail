@@ -127,6 +127,9 @@ endif
 ifndef EXPAT_LIB
 	$(error Please create a EXPAT_LIB environment variable)
 endif
+ifndef SDK_INCLUDE
+	$(error Please create a SDK_INCLUDE environment variable)
+endif
 
 .PHONY: dirs
 dirs:

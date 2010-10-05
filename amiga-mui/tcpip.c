@@ -20,7 +20,9 @@
 ** tcpip.c
 */
 
+#ifndef __USE_OLD_TIMEVAL__
 #define __USE_OLD_TIMEVAL__
+#endif
 
 #include "debug.h"
 

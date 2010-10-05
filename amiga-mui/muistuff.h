@@ -27,6 +27,10 @@
 #define VARARGS68K
 #endif
 
+#ifndef SM__COMPILER_H
+#include "compiler.h"
+#endif
+
 /* useful MUI supports */
 IPTR xget(Object * obj, ULONG attribute);
 #ifdef __MORPHOS__

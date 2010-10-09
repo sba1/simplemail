@@ -51,9 +51,9 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 
 /* folder sort stuff to control the compare functions */
 static int compare_primary_reverse;
-static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
+static int (*compare_primary)(const struct mail_info *arg1, const struct mail_info *arg2, int reverse);
 static int compare_secondary_reverse;
-static int (*compare_secondary)(const struct mail *arg1, const struct mail *arg2, int reverse);
+static int (*compare_secondary)(const struct mail_info *arg1, const struct mail_info *arg2, int reverse);
 
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
@@ -206,17 +206,26 @@ static int mail_compare_recv(const struct mail_info *arg1, const struct mail_inf
 static int mail_compare(const void *arg1, const void *arg2)
 {
 	int ret = 0;
+	const struct mail_info *m1, *m2;
 
-	if (compare_primary) ret = compare_primary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse);
-	if (ret == 0 && compare_secondary) ret = compare_secondary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_secondary_reverse);
-	if (ret == 0) ret = mail_compare_date(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse,0);
+	m1 = *(const struct mail_info**)arg1;
+	m2 = *(const struct mail_info**)arg2;
+
+	if (compare_primary) ret = compare_primary(m1,m2,compare_primary_reverse);
+	if (ret == 0 && compare_secondary) ret = compare_secondary(m1,m2,compare_secondary_reverse);
+	if (ret == 0) ret = mail_compare_date(m1,m2,0);
 	return ret;
 }
 
-/******************************************************************
- Returns the correct sorting function and fills the reverse pointer
-*******************************************************************/
-static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
+/**
+ * Returns a pointer to a function that correspond to the given sort mode.
+ *
+ * @param sort_mode
+ * @param reverse
+ * @param folder_type
+ * @return
+ */
+static int (*get_compare_function(int sort_mode, int *reverse, int folder_type))(const struct mail_info *, const struct mail_info *, int)
 {
 	if (sort_mode & FOLDER_SORT_REVERSE) *reverse = 1;
 	else *reverse = 0;
@@ -241,12 +250,10 @@ static void *get_compare_function(int sort_mode, int *reverse, int folder_type)
 *******************************************************************/
 static void mail_compare_set_sort_mode(struct folder *folder)
 {
-	compare_primary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
-	compare_secondary = (int (*)(const struct mail *, const struct mail *, int))get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
+	compare_primary = get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
+	compare_secondary = get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
 	if (compare_primary == compare_secondary) compare_secondary = NULL;
 }
-
-
 
 static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);

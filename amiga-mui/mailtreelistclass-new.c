@@ -687,14 +687,22 @@ static int SetListSize(struct MailTreelist_Data *data, LONG size)
 }
 
 
-/**************************************************************************
- Calc dimensions of given mail info. Return whether a width of a column
- has been changed.
-**************************************************************************/
-static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_info * m)
+/**
+ * Calculate the dimensions of given mail info. Return whether a width of a column
+ * has been changed.
+ *
+ * @param data
+ * @param obj
+ * @param entry defines the entry for which the dimensions should be calculated.
+ * @return
+ */
+static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEntry *entry)
 {
 	int col;
 	int changed = 0;
+	struct mail_info *m;
+
+	m = entry->mail_info;
 
 	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(&data->rp, FSF_BOLD, AskSoftStyle(&data->rp));
@@ -708,7 +716,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 		if (!active) continue;
 		ci = &data->ci[active];
 
-		if (ci->flags & COLUMN_FLAG_AUTOWIDTH && !(ci->flags & COLUMN_FLAG_LAZY))
+		if ((ci->flags & COLUMN_FLAG_AUTOWIDTH) && !(ci->flags & COLUMN_FLAG_LAZY))
 		{
 			int is_ascii7 = 1;
 			char *txt = NULL;
@@ -881,12 +889,20 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct mail_in
 	return changed;
 }
 
-/**************************************************************************
- Calc entire entries dimensions
-**************************************************************************/
+/**
+ * Calculate the dimensions of all entries currently within the
+ * list including the space for the title.
+ *
+ * @param data
+ * @param obj
+ */
 static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 {
 	int i,col;
+
+	unsigned int ref;
+
+	ref = time_reference_ticks();
 
 	for (col=0;col<MAX_COLUMNS;col++)
 	{
@@ -896,12 +912,14 @@ static void CalcEntries(struct MailTreelist_Data *data, Object *obj)
 	}
 
 	/* Title */
-	CalcEntry(data, obj, NULL);
+	CalcEntry(data, obj, data->entries[ENTRY_TITLE]);
 
 	for (i=0;i<data->entries_num;i++)
 	{
-		CalcEntry(data, obj, data->entries[i]->mail_info);
+		CalcEntry(data, obj, data->entries[i]);
 	}
+
+	SM_DEBUGF(10,("Time needed for determining widths of all %d entries: %d ms\n",data->entries_num,time_ms_passed(ref)));
 }
 
 /**************************************************************************
@@ -1449,7 +1467,6 @@ static void MailTreelist_ResetAllColumnWidth(struct MailTreelist_Data *data, Obj
 		data->ci[i].width = 0;
 		data->ci[i].flags |= COLUMN_FLAG_AUTOWIDTH;
 	}
-
 	CalcEntries(data,obj);
 	CalcHorizontalTotal(data);
 	MUI_Redraw(obj,MADF_DRAWOBJECT);
@@ -2508,7 +2525,7 @@ static void RefreshEntry(struct IClass *cl, Object *obj, int position)
 	struct MailTreelist_Data *data = (struct MailTreelist_Data*)INST_DATA(cl,obj);
 	if (data->inbetween_setup)
 	{
-		if (CalcEntry(data,obj, data->entries[position]->mail_info))
+		if (CalcEntry(data,obj, data->entries[position]))
 		{
 			/* Calculate only the newly added entry */
 			CalcHorizontalTotal(data);
@@ -2934,7 +2951,7 @@ static ULONG MailTreelist_InsertMail(struct IClass *cl, Object *obj, struct MUIP
 	/* Recalc column dimensions and redraw if necessary */
 	if (data->inbetween_setup)
 	{
-		CalcEntry(data,obj,mail); /* Calculate only the newly added entry */
+		CalcEntry(data,obj,entry); /* Calculate only the newly added entry */
 		CalcHorizontalTotal(data);
 
 		if (data->inbetween_show)
@@ -3141,7 +3158,7 @@ STATIC ULONG MailTreelist_RefreshSelected(struct IClass *cl, Object *obj, Msg ms
 	{
 		if (data->entries[i]->flags & LE_FLAG_SELECTED)
 		{
-			CalcEntry(data,obj, data->entries[i]->mail_info); /* Calculate only entry to be refreshed */
+			CalcEntry(data,obj, data->entries[i]); /* Calculate only entry to be refreshed */
 			num_to_be_refreshed++;
 		}
 	}

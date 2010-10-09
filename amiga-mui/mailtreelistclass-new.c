@@ -242,7 +242,7 @@ static const char *image_names[] =
 struct ListEntry
 {
 	struct mail_info *mail_info;
-	LONG widths[MAX_COLUMNS]; /**< Widths of the columns */
+	UWORD widths[MAX_COLUMNS]; /**< Widths of the columns */
 	LONG width;   /**< Line width */
 	LONG height;  /**< Line height */
 	WORD flags;   /**< see below */
@@ -263,6 +263,8 @@ struct ListEntry
 struct ColumnInfo
 {
 	LONG width;
+	LONG header_width;
+	LONG contents_width;
 	WORD type;
 	WORD flags;
 };
@@ -702,7 +704,7 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEnt
 	int changed = 0;
 	struct mail_info *m;
 
-	m = entry->mail_info;
+	m = entry->mail_info; /* NULL for header */
 
 	if (m && (m->flags & MAIL_FLAGS_NEW) && !(m->flags & MAIL_FLAGS_AUTOSPAM))
 		SetSoftStyle(&data->rp, FSF_BOLD, AskSoftStyle(&data->rp));
@@ -874,10 +876,37 @@ static int CalcEntry(struct MailTreelist_Data *data, Object *obj, struct ListEnt
 					 * Because there is no text available, we subtract the last space */
 					if (new_width) new_width -= IMAGE_HORIZ_SPACE;
 				}
+
+				/* Remember width */
+				entry->widths[active] = new_width;
+
+				/* Change global column widths if necessary. TODO: Move the following stuff into a separate function.
+				 * Originally, it was intended that this function is called in a loop over all entries */
 				if (new_width > ci->width)
 				{
 					ci->width = new_width;
 					changed = 1;
+				}
+
+				if (!m)
+				{
+					int max_width;
+
+					/* There can be only one header.
+					 *
+					 * If the header determined the width of the column before (i.e., it was bigger
+					 * than any element and the header is now smaller, adapt the column width */
+					ci->header_width = new_width;
+					max_width = MAX(ci->header_width,ci->contents_width);
+					if (ci->width != max_width)
+					{
+						ci->width = max_width;
+						changed = 1;
+					}
+				} else
+				{
+					if (new_width > ci->contents_width)
+						ci->contents_width = new_width;
 				}
 			}
 		}
@@ -1464,7 +1493,7 @@ static void MailTreelist_ResetAllColumnWidth(struct MailTreelist_Data *data, Obj
 
 	for (i=0;i<MAX_COLUMNS;i++)
 	{
-		data->ci[i].width = 0;
+		data->ci[i].width = data->ci[i].header_width = data->ci[i].contents_width = 0;
 		data->ci[i].flags |= COLUMN_FLAG_AUTOWIDTH;
 	}
 	CalcEntries(data,obj);
@@ -1479,8 +1508,9 @@ static void MailTreelist_ResetClickedColumnWidth(struct MailTreelist_Data *data,
 {
 	if (data->right_title_click != -1)
 	{
-		data->ci[data->right_title_click].width = 0;
-		data->ci[data->right_title_click].flags |= COLUMN_FLAG_AUTOWIDTH;
+		int col = data->right_title_click;
+		data->ci[col].width = data->ci[col].header_width = data->ci[col].contents_width = 0;
+		data->ci[col].flags |= COLUMN_FLAG_AUTOWIDTH;
 
 		CalcEntries(data,obj);
 		CalcHorizontalTotal(data);
@@ -1563,40 +1593,33 @@ STATIC ULONG MailTreelist_New(struct IClass *cl,Object *obj,struct opSet *msg)
 	data->received_text = _("Received");
 	data->excerpt_text = _("Excerpt");
 
+	memset(data->ci,0,sizeof(data->ci));
+
 	data->ci[COLUMN_TYPE_STATUS].type = COLUMN_TYPE_STATUS;
-	data->ci[COLUMN_TYPE_STATUS].width = 50;
 	data->ci[COLUMN_TYPE_STATUS].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_FROMTO].type = COLUMN_TYPE_FROMTO;
-	data->ci[COLUMN_TYPE_FROMTO].width = 150;
 	data->ci[COLUMN_TYPE_FROMTO].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_SUBJECT].type = COLUMN_TYPE_SUBJECT;
-	data->ci[COLUMN_TYPE_SUBJECT].width = 200;
 	data->ci[COLUMN_TYPE_SUBJECT].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_REPLYTO].type = COLUMN_TYPE_REPLYTO;
-	data->ci[COLUMN_TYPE_REPLYTO].width = 200;
 	data->ci[COLUMN_TYPE_REPLYTO].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_DATE].type = COLUMN_TYPE_DATE;
-	data->ci[COLUMN_TYPE_DATE].width = 200;
 	data->ci[COLUMN_TYPE_DATE].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_SIZE].type = COLUMN_TYPE_SIZE;
-	data->ci[COLUMN_TYPE_SIZE].width = 60;
 	data->ci[COLUMN_TYPE_SIZE].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_FILENAME].type = COLUMN_TYPE_FILENAME;
-	data->ci[COLUMN_TYPE_FILENAME].width = 200;
 	data->ci[COLUMN_TYPE_FILENAME].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_POP3].type = COLUMN_TYPE_POP3;
-	data->ci[COLUMN_TYPE_POP3].width = 200;
 	data->ci[COLUMN_TYPE_POP3].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_RECEIVED].type = COLUMN_TYPE_RECEIVED;
-	data->ci[COLUMN_TYPE_RECEIVED].width = 200;
 	data->ci[COLUMN_TYPE_RECEIVED].flags = COLUMN_FLAG_AUTOWIDTH;
 
 	data->ci[COLUMN_TYPE_EXCERPT].type = COLUMN_TYPE_EXCERPT;
@@ -1818,8 +1841,8 @@ STATIC ULONG MailTreelist_Set(struct IClass *cl, Object *obj, struct opSet *msg)
 								if (data->ci[col].flags & COLUMN_FLAG_SORT1MASK)
 									data->ci[col].flags &= ~COLUMN_FLAG_SORT2MASK;
 							}
-							/* recalc the entries because the minwidth of the title column could change */
-							CalcEntries(data, obj);
+							/* recalc the header because the new flag have an effect on the title column widths */
+							CalcEntry(data, obj, data->entries[ENTRY_TITLE]);
 							MUI_Redraw(obj, MADF_DRAWOBJECT);
 						}
 						break;

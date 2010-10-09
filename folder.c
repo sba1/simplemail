@@ -49,8 +49,7 @@
 
 static void folder_remove_mail_info(struct folder *folder, struct mail_info *mail);
 
-/* folder sort stuff
-   to control the compare functions */
+/* folder sort stuff to control the compare functions */
 static int compare_primary_reverse;
 static int (*compare_primary)(const struct mail *arg1, const struct mail *arg2, int reverse);
 static int compare_secondary_reverse;
@@ -58,18 +57,6 @@ static int (*compare_secondary)(const struct mail *arg1, const struct mail *arg2
 
 /* the global folder lock semaphore */
 static semaphore_t folders_semaphore;
-
-/******************************************************************
- The general sorting function
-*******************************************************************/
-static int mail_compare(const void *arg1, const void *arg2)
-{
-	int ret = 0;
-
-	if (compare_primary) ret = compare_primary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse);
-	if (ret == 0 && compare_secondary) ret = compare_secondary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_secondary_reverse);
-	return ret;
-}
 
 /******************************************************************
  The special sorting functions
@@ -204,6 +191,26 @@ static int mail_compare_recv(const struct mail_info *arg1, const struct mail_inf
 	if (arg1->received > arg2->received) return reverse?(-1):1;
 	else if (arg1->received == arg2->received) return 0;
 	return reverse?1:(-1);
+}
+
+
+/**
+ * The general sorting function that is usable for qsort().
+ * It invokes compare_primary() and compare_secondary(). If
+ * both return 0, mails are sorted according to the date.
+ *
+ * @param arg1
+ * @param arg2
+ * @return
+ */
+static int mail_compare(const void *arg1, const void *arg2)
+{
+	int ret = 0;
+
+	if (compare_primary) ret = compare_primary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse);
+	if (ret == 0 && compare_secondary) ret = compare_secondary(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_secondary_reverse);
+	if (ret == 0) ret = mail_compare_date(*(const struct mail**)arg1,*(const struct mail**)arg2,compare_primary_reverse,0);
+	return ret;
 }
 
 /******************************************************************
@@ -1150,6 +1157,10 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 	if ((fh = folder_open_indexfile(folder,"rb")))
 	{
 		char buf[4];
+		unsigned int time_ref;
+
+		time_ref = time_reference_ticks();
+
 		fread(buf,1,4,fh);
 		if (!strncmp("SMFI",buf,4))
 		{
@@ -1295,6 +1306,8 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 				}
 			}
 		}
+
+		SM_DEBUGF(10,("Index file of folder \"%s\" read after %d ms\n",folder->name,time_ms_passed(time_ref)));
 		fclose(fh);
 	}
 
@@ -1304,9 +1317,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 	folder->index_uptodate = mail_infos_read;
 
 	if (!mail_infos_read)
-	{
 		folder_rescan(folder);
-	}
 	return 1;
 }
 
@@ -2893,7 +2904,12 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 			/* set the correct search function */
 			mail_compare_set_sort_mode(folder);
 
-			if (compare_primary) qsort(folder->sorted_mail_info_array, folder->num_mails, sizeof(struct mail*),mail_compare);
+			if (compare_primary)
+			{
+				unsigned int time_ref = time_reference_ticks();
+				qsort(folder->sorted_mail_info_array, folder->num_mails, sizeof(struct mail*),mail_compare);
+				SM_DEBUGF(10,("Sorted mails in %d ms\n",time_ms_passed(time_ref)));
+			}
 			mail_info_array = folder->sorted_mail_info_array;
 		}
 	}

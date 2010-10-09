@@ -111,6 +111,7 @@ void string_crop(string *string, int startpos, int endpos);
 #define TIME_TICKS_PER_SECOND 25
 
 unsigned int time_reference_ticks(void);
-unsigned int time_ticks_passed(int reference);
+unsigned int time_ticks_passed(unsigned int reference);
+unsigned int time_ms_passed(unsigned int ref);
 
 #endif

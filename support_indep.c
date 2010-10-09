@@ -721,9 +721,22 @@ unsigned int time_reference_ticks(void)
  * @return number of ticks that have been passed
  * @see timer_ticks
  */
-unsigned int time_ticks_passed(int reference)
+unsigned int time_ticks_passed(unsigned int reference)
 {
 	unsigned int now = time_reference_ticks();
 	if (now > reference) return now - reference;
 	return (unsigned int)(reference - now);
+}
+
+/**
+ * @brief returns the number of ms that have been passed since the reference
+ * obtained via time_reference_ticks().
+ *
+ * @param ref defines the reference.
+ * @return
+ */
+unsigned int time_ms_passed(unsigned int ref)
+{
+	unsigned int passed = time_ticks_passed(ref);
+	return passed * 1000 / TIME_TICKS_PER_SECOND;
 }

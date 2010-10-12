@@ -3416,7 +3416,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										{
 											/* draw title column in selected state */
 											data->title_column_selected = data->title_column_click;
-											data->drawupdate = 4;
+											data->drawupdate = UPDATE_TITLE;
 											MUI_Redraw(obj,MADF_DRAWUPDATE);
 										}
 
@@ -3515,9 +3515,10 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->title_column_click = -1;
 									} else
 									{
-										/* switch of selected state of a title column now because set(titleclick) will
-										   redraw the whole list */
+										/* switch of selected state of a title column and redraw title */
 										data->title_column_selected = -1;
+										data->drawupdate = UPDATE_TITLE;
+										MUI_Redraw(obj,MADF_DRAWUPDATE);
 									}
 									/* shift click = secondary sort */
 									if (msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT))

@@ -456,6 +456,7 @@ static void mailtreelist_2_title_click(int *which_one_ptr)
 		title_click |= MUIV_MailTreelist_TitleMark_Decreasing;
 	}
 
+	main_freeze_mail_list();
 	if (which_one == 1)
 	{
 		set(mail_tree, MUIA_MailTreelist_TitleMark, title_click);
@@ -468,6 +469,8 @@ static void mailtreelist_2_title_click(int *which_one_ptr)
 
 	folder_config_save(folder);
 	main_set_folder_mails(folder);
+	main_thaw_mail_list();
+
 	read_refresh_prevnext_button(folder);
 }
 

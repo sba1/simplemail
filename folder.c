@@ -65,8 +65,8 @@ static int mail_compare_status(const struct mail_info *arg1, const struct mail_i
 {
 	int rc;
 
-	if (arg1->flags & MAIL_FLAGS_NEW && !(arg2->flags & MAIL_FLAGS_NEW)) rc = -1;
-	else if (arg2->flags & MAIL_FLAGS_NEW && !(arg1->flags & MAIL_FLAGS_NEW)) rc = 1;
+	if ((arg1->flags & MAIL_FLAGS_NEW) && !(arg2->flags & MAIL_FLAGS_NEW)) rc = -1;
+	else if ((arg2->flags & MAIL_FLAGS_NEW) && !(arg1->flags & MAIL_FLAGS_NEW)) rc = 1;
 	else rc = (arg1->status & MAIL_STATUS_MASK) - (arg2->status & MAIL_STATUS_MASK);
 	if (reverse) rc *= -1;
 	return rc;
@@ -254,6 +254,8 @@ static void mail_compare_set_sort_mode(struct folder *folder)
 	compare_secondary = get_compare_function(folder->secondary_sort, &compare_secondary_reverse, folder->type);
 	if (compare_primary == compare_secondary) compare_secondary = NULL;
 }
+
+
 
 static void folder_delete_mails(struct folder *folder);
 static int folder_read_mail_infos(struct folder *folder, int only_num_mails);
@@ -2850,13 +2852,37 @@ void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_
 }
 
 
-/******************************************************************
- The mail iterating function. To get the first mail let handle
- point to NULL. If needed this function sorts the mails according
- to the sort mode. Handle will be updated every time.
- While iterating through the mails you aren't allowed to (re)move a
- mail within the folder,
-*******************************************************************/
+/**
+ * Sorts sorted_mail_info_array of the given folder with the folder-set
+ * sorting options. folder->sorted_mail_info_array must be already allocated
+ * and filled with mails to be sorted.
+ *
+ * @param f
+ */
+static void folder_sort_mails(struct folder *f)
+{
+	/* set the correct search function */
+	mail_compare_set_sort_mode(f);
+
+	if (compare_primary)
+	{
+		unsigned int time_ref = time_reference_ticks();
+		qsort(f->sorted_mail_info_array, f->num_mails, sizeof(struct mail*),mail_compare);
+		SM_DEBUGF(10,("Sorted mails in %d ms\n",time_ms_passed(time_ref)));
+	}
+}
+
+/**
+ * The mail iterating function. To get the first mail let handle
+ * point to NULL. If needed this function sorts the mails according
+ * to the sort mode. Handle will be updated every time.
+ * While iterating through the mails you aren't allowed to (re)move a
+ * mail within the folder.
+ *
+ * @param folder
+ * @param handle
+ * @return
+ */
 struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 {
 	struct mail_info **mail_info_array;
@@ -2908,15 +2934,8 @@ struct mail_info *folder_next_mail_info(struct folder *folder, void **handle)
 			/* copy the mail pointers into the buffer */
 			memcpy(folder->sorted_mail_info_array, folder->mail_info_array, sizeof(struct mail*)*folder->num_mails);
 
-			/* set the correct search function */
-			mail_compare_set_sort_mode(folder);
+			folder_sort_mails(folder);
 
-			if (compare_primary)
-			{
-				unsigned int time_ref = time_reference_ticks();
-				qsort(folder->sorted_mail_info_array, folder->num_mails, sizeof(struct mail*),mail_compare);
-				SM_DEBUGF(10,("Sorted mails in %d ms\n",time_ms_passed(time_ref)));
-			}
 			mail_info_array = folder->sorted_mail_info_array;
 		}
 	}

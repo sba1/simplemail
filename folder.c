@@ -40,6 +40,7 @@
 #include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
+#include "qsort.h"
 
 #include "arch.h"
 #include "gui_main.h" /* gui_execute_arexx() */
@@ -255,6 +256,29 @@ static void mail_compare_set_sort_mode(struct folder *folder)
 	if (compare_primary == compare_secondary) compare_secondary = NULL;
 }
 
+/**
+ * Sort the given mail array by date and the secondary sorting_mode currently set.
+ *
+ * @param mails
+ * @param num_mails
+ */
+static void folder_sort_mails_by_date(struct mail_info **mails, int num_mails)
+{
+#define mail_date_lt(a,b) (((*a)->seconds < (*b)->seconds)?1:(((*a)->seconds > (*b)->seconds)?0:(compare_secondary?compare_secondary(*a,*b,compare_secondary_reverse)<0:0)))
+	QSORT(struct mail_info *, mails, num_mails, mail_date_lt);
+}
+
+/**
+ * Sort the given mail array by reverse date and the secondary sorting_mode currently set.
+ *
+ * @param mails
+ * @param num_mails
+ */
+static void folder_sort_mails_by_date_rev(struct mail_info **mails, int num_mails)
+{
+#define mail_date_lt_rev(a,b) (((*a)->seconds > (*b)->seconds)?1:(((*a)->seconds < (*b)->seconds)?0:(compare_secondary?compare_secondary(*a,*b,compare_secondary_reverse)<0:0)))
+	QSORT(struct mail_info *, mails, num_mails, mail_date_lt_rev);
+}
 
 
 static void folder_delete_mails(struct folder *folder);
@@ -2867,7 +2891,19 @@ static void folder_sort_mails(struct folder *f)
 	if (compare_primary)
 	{
 		unsigned int time_ref = time_reference_ticks();
-		qsort(f->sorted_mail_info_array, f->num_mails, sizeof(struct mail*),mail_compare);
+		if (compare_primary == mail_compare_date)
+		{
+			if (compare_primary_reverse) folder_sort_mails_by_date_rev(f->sorted_mail_info_array, f->num_mails);
+			else folder_sort_mails_by_date(f->sorted_mail_info_array, f->num_mails);
+		} else
+		{
+/*			struct mail_info **mails = f->sorted_mail_info_array;
+			int num_mails = f->num_mails;
+#define mail_compare_lt(a,b) (mail_compare(a,b) < 0)
+			QSORT(struct mail_info *, mails, num_mails, mail_compare_lt);
+*/			qsort(f->sorted_mail_info_array, f->num_mails, sizeof(struct mail*),mail_compare);
+		}
+
 		SM_DEBUGF(10,("Sorted mails in %d ms\n",time_ms_passed(time_ref)));
 	}
 }

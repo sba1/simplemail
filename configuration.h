@@ -107,6 +107,7 @@ struct config
 	int read_wordwrap;
 	int read_link_underlined;
 	int read_smilies;
+	int read_graphical_quote_bar;
 	int readwnd_close_after_last;
 	int readwnd_next_after_move;
 

@@ -158,6 +158,7 @@ static int init_config(void)
 	user.config.read_old_quoted = 0xdd2222;
 	user.config.read_link = 0x000098;
 	user.config.read_link_underlined = 0;
+	user.config.read_graphical_quote_bar = 1;
 
 	user.config.write_wrap = 76;
 	user.config.write_wrap_type = 2;
@@ -353,6 +354,8 @@ int load_config(void)
 							user.config.read_wordwrap = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
 							user.config.read_link_underlined = CONFIG_BOOL_VAL(result);
+						if ((result = get_config_item(buf,"Read.GraphicalQuoteBar")))
+							user.config.read_graphical_quote_bar = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.Smilies")))
 							user.config.read_smilies = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
@@ -740,6 +743,7 @@ void save_config(void)
 			fprintf(fh,"Read.HeaderBackgroundColor=0x%x\n",user.config.read_header_background);
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
+			fprintf(fh,"Read.GraphicalQuoteBar=%s\n",user.config.read_graphical_quote_bar?"Y":"N");
 			fprintf(fh,"Read.Smilies=%s\n",user.config.read_smilies?"Y":"N");
 
 			if (user.config.internet_emails)

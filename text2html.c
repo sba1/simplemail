@@ -156,6 +156,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		int last_color = 0; /* the color of the current line */
 		int eval_color = 2; /* recheck the color */
 		int initial_color = 1;
+		int level = 0;
 		int line = 0; /* the type of the line */
 
 		if (flags & TEXT2HTML_BODY_TAG)
@@ -170,44 +171,75 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		{
 			if (eval_color)
 			{
+				int new_level = 0;
 				int buffer2_len = buffer_len;
 				char *buffer2 = buffer;
 				int new_color = 0;
 
+				/* Determine the citation level. Afterwards, buffer2 will point to the end of the citation symbols. */
 				while (buffer2_len)
 				{
-					unsigned char c = *buffer2++;
-					buffer2_len--;
+					unsigned char c = *buffer2;
 					if (c == '>')
 					{
+						new_level++;
 						if (new_color == 1) new_color = 2;
 						else new_color = 1;
 					} else
 					{
-						if (c==10) break;
-						if ((new_color == 1 || new_color == 2) && c != ' ') break;
-						if (c==' ' && new_color == 0) break;
+						if (c != ' ') break;
+						if (c == ' ' && !new_level) break;
 					}
+					buffer2_len--;
+					buffer2++;
 				}
 
-				if (last_color != new_color)
+				if (user.config.read_graphical_quote_bar)
 				{
-					if (!initial_color) string_append(&str,"</FONT>");
-					if (new_color == 1)
-					{
-						sm_snprintf(buf,sizeof(buf),"<FONT COLOR=\"#%x\">",user.config.read_quoted);
-						string_append(&str,buf);
-					}
-					else if (new_color == 2)
-					{
-						sm_snprintf(buf,sizeof(buf),"<FONT COLOR=\"#%x\">",user.config.read_old_quoted);
-						string_append(&str,buf);
-					}
-					last_color = new_color;
-					if (new_color) initial_color = 0;
-					else initial_color = 1;
-				}
+					/* When graphical quote bar is enabled we skip all quotation symbols */
+					buffer = buffer2;
+					buffer_len = buffer2_len;
 
+					if (level != new_level)
+					{
+						char *begin_quote_string = "<TABLE STYLE=\"border-left: 3px solid #%x;\"><TD><FONT COLOR=\"%x\">";
+						char *end_quote_string = "</FONT></TD></TABLE>";
+
+						/* If new level is larger */
+						for (;level < new_level; level++)
+						{
+							unsigned int color = level%2?user.config.read_quoted:user.config.read_old_quoted;
+							sm_snprintf(buf,sizeof(buf),begin_quote_string,color,color);
+							string_append(&str,buf);
+						}
+
+						/* If new level is lower */
+						for (;level > new_level; level--)
+							string_append(&str,end_quote_string);
+					}
+				} else
+				{
+					if (last_color != new_color)
+					{
+						char *begin_quote_string = "<FONT COLOR=\"#%x\">";
+						char *end_quote_string = "</FONT>";
+
+						if (!initial_color) string_append(&str,end_quote_string);
+						if (new_color == 1)
+						{
+							sm_snprintf(buf,sizeof(buf),begin_quote_string,user.config.read_quoted);
+							string_append(&str,buf);
+						}
+						else if (new_color == 2)
+						{
+							sm_snprintf(buf,sizeof(buf),begin_quote_string,user.config.read_old_quoted);
+							string_append(&str,buf);
+						}
+						last_color = new_color;
+						if (new_color) initial_color = 0;
+						else initial_color = 1;
+					}
+				}
 				eval_color = 0;
 			}
 
@@ -329,7 +361,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					} else
 					{
 						if (c == 32) {
-							if (*buffer == 32 || flags & TEXT2HTML_NOWRAP) string_append(&str,"&nbsp;");
+							if (*buffer == 32 || (flags & TEXT2HTML_NOWRAP)) string_append(&str,"&nbsp;");
 							else string_append(&str," ");
 						} else {
 						  if (c)

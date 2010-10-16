@@ -95,8 +95,9 @@ static Object *receive_arexx_string;
 static Object *read_fixedfont_string;
 static Object *read_propfont_string;
 static Object *read_wrap_checkbox;
-static Object *read_linkunderlined_checkbox;
 static Object *read_smilies_checkbox;
+static Object *read_linkunderlined_checkbox;
+static Object *read_graphical_quote_bar_checkbox;
 static Object *read_palette;
 static Object *mails_readmisc_check[6];
 static Object *mails_readmisc_check_group;
@@ -648,6 +649,7 @@ static int config_use(void)
 	user.config.read_header_background = ((read_palette_entries[5].mpe_Red >> 24)<<16) | ((read_palette_entries[5].mpe_Green>>24)<<8) | (read_palette_entries[5].mpe_Blue>>24);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
+	user.config.read_graphical_quote_bar = xget(read_graphical_quote_bar_checkbox,MUIA_Selected);
 	user.config.read_smilies = xget(read_smilies_checkbox, MUIA_Selected);
 	user.config.spam_mark_moved = xget(spam_mark_before_check,MUIA_Selected);
 	user.config.spam_auto_check = xget(spam_auto_check,MUIA_Selected);
@@ -1573,11 +1575,14 @@ static int init_mails_read_group(void)
 
 		Child, HorizLineObject,
 
-		Child, HGroup,
+		Child, ColGroup(4),
+			MUIA_VertWeight, 0,
 			Child, MakeLabel(_("Wordwrap plain text")),
 			Child, read_wrap_checkbox = MakeCheck(_("Wordwrap plain text"),user.config.read_wordwrap),
 			Child, MakeLabel(_("Underline links")),
 			Child, read_linkunderlined_checkbox = MakeCheck(_("Underline links"),user.config.read_link_underlined),
+			Child, MakeLabel(_("Graphical quote bar")),
+			Child, read_graphical_quote_bar_checkbox = MakeCheck(_("Underline links"),user.config.read_graphical_quote_bar),
 			Child, MakeLabel(_("Use graphical smilies")),
 			Child, read_smilies_checkbox = MakeCheck(_("Use graphical smilies"),user.config.read_smilies),
 			Child, HVSpace,

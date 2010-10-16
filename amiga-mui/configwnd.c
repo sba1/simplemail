@@ -1582,7 +1582,7 @@ static int init_mails_read_group(void)
 			Child, MakeLabel(_("Underline links")),
 			Child, read_linkunderlined_checkbox = MakeCheck(_("Underline links"),user.config.read_link_underlined),
 			Child, MakeLabel(_("Graphical quote bar")),
-			Child, read_graphical_quote_bar_checkbox = MakeCheck(_("Underline links"),user.config.read_graphical_quote_bar),
+			Child, read_graphical_quote_bar_checkbox = MakeCheck(_("Graphical quote bar"),user.config.read_graphical_quote_bar),
 			Child, MakeLabel(_("Use graphical smilies")),
 			Child, read_smilies_checkbox = MakeCheck(_("Use graphical smilies"),user.config.read_smilies),
 			Child, HVSpace,

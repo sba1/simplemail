@@ -140,9 +140,10 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	return success;
 }
 
-/**************************************************************************
- Free's the given name list
-**************************************************************************/
+/**
+ * Frees the given name list
+ * @param list
+ */
 static void imap_free_name_list(struct list *list)
 {
 	string_list_clear(list);
@@ -177,6 +178,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 
 		if (c == '(') { incr_delim = c; delim = ')';}
 		else if (c== '"') delim = '"';
+		else if (c== '[') delim = ']';
 
 		if (delim)
 		{
@@ -361,6 +363,8 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	char send[200];
 	char buf[2048];
 	char status_buf[200];
+	unsigned int uid_validity = 0; /* Note that valid uids are non-zero */
+	unsigned int uid_next = 0;
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
@@ -375,6 +379,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 
 	sprintf(tag,"%04x",val++);
 	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
+	SM_DEBUGF(10,("Examining folder %s: %s",path,send));
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
@@ -399,6 +404,21 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 			if (!mystricmp("EXISTS",second))
 			{
 				num_of_remote_mails = atoi(first);
+			} else if (!mystricmp("OK",first))
+			{
+				/* Store first identifier of valid untagged response in first */
+				line = imap_get_result(second,first,sizeof(first));
+				if (!mystricmp("UIDVALIDITY",first))
+				{
+					/* [UIDVALIDITY n] */
+					imap_get_result(line,first,sizeof(first));
+					uid_validity = strtoul(first,NULL,10);
+				} else if (!mystricmp("UIDNEXT",first))
+				{
+					/* [UIDNEXT n] */
+					imap_get_result(line,first,sizeof(first));
+					uid_next = strtoul(first,NULL,10);
+				}
 			}
 		}
 	}
@@ -407,6 +427,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	{
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
 		thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
+		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
 
 		if (!num_of_remote_mails)
 		{
@@ -421,6 +442,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 
 			sprintf(tag,"%04x",val++);
 			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			SM_DEBUGF(10,("Fetching remote mail array: %s",send));
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
 
@@ -516,6 +538,7 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 					}
 				}
 			}
+			SM_DEBUGF(10,("Remote mail array fetched\n"));
 		}
 	} else thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
 	if (!success)
@@ -1352,8 +1375,9 @@ static int imap_start_thread(void)
 	return !!imap_thread;
 }
 
-
-
+/**
+ * Function to download mails.
+ */
 static void imap_thread_really_download_mails(void)
 {
 	char path[380];
@@ -1571,6 +1595,9 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
 	return 1;
 }
 
+/**
+ * Establishes a connection to the server and downloads mails.
+ */
 static void imap_thread_really_connect_to_server(void)
 {
 	if (imap_server)
@@ -1975,9 +2002,13 @@ void imap_thread_connect(struct folder *folder)
 	thread_call_function_sync(imap_thread, imap_thread_connect_to_server, 3, server, folder->imap_path, folder->path);
 }
 
-/**************************************************************************
- Download the given mail from the imap server using
-***************************************************************************/
+/**
+ * Download the given mail from the imap server in a synchrony manner.
+ *
+ * @param f
+ * @param m
+ * @return
+ */
 int imap_download_mail(struct folder *f, struct mail_info *m)
 {
 	struct imap_server *server;

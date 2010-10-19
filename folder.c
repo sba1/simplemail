@@ -1246,9 +1246,9 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 							{
 								int first = 1;
 
-								m->subject = fread_str(fh);
+								m->subject = (utf8*)fread_str(fh);
 								m->filename = fread_str(fh);
-								m->from_phrase = fread_str_no_null(fh);
+								m->from_phrase = (utf8*)fread_str_no_null(fh);
 								m->from_addr = fread_str_no_null(fh);
 
 								/* Read the to list */

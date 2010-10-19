@@ -80,6 +80,19 @@ struct folder
 	char *imap_server;
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
+
+	/**
+	 * The UIDVALIDITY field as determined during the most recent
+	 * access to this folder on its imap server.
+	 */
+	unsigned int imap_uid_validity;
+
+	/**
+	 * The UIDNEXT field as determined during the most recent
+	 * access to this folder on its imap serve
+	 */
+	unsigned int imap_uid_next;
+
 	struct list imap_all_folder_list; /* string_node * */
 	struct list imap_sub_folder_list; /* string_node * */
 

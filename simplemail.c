@@ -1550,6 +1550,24 @@ void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *
 	chdir(buf);
 }
 
+/**
+ * Sets a new uid_valid and uid_next for the given imap folder.
+ *
+ * @param uid_validity
+ * @param uid_next
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
+void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
+{
+	struct folder *f;
+	f = folder_find_by_imap(user, server, path);
+	if (!f) return;
+	f->imap_uid_validity = uid_validity;
+	f->imap_uid_next = uid_next;
+}
+
 /* After downloading this function is called */
 void callback_number_of_mails_downloaded(int num)
 {

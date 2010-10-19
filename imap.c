@@ -342,6 +342,26 @@ static int imap_login(struct connection *conn, struct imap_server *server)
 	return 0;
 }
 
+/** Describes a remote mailbox and its contents */
+struct remote_mailbox
+{
+	struct remote_mail *remote_mail_array; /* may be NULL if remote_mail_num == 0 */
+	int num_of_remote_mail;
+	unsigned int uid_validity;
+	unsigned int uid_next;
+};
+
+/**
+ * Frees memory associated with the remote mailbox including the remote mailbox itself.
+ * @param rm
+ */
+static void imap_free_remote_mailbox(struct remote_mailbox *rm)
+{
+	if (!rm) return;
+	free(rm->remote_mail_array);
+	free(rm);
+}
+
 /**
  * Read information of all mails in the given path. Put
  * this back into an array.
@@ -350,12 +370,13 @@ static int imap_login(struct connection *conn, struct imap_server *server)
  * @param path defines the utf8 encoded path.
  * @param writemode
  * @param headers specifies whether headers are requested.
- * @param remote_mail_array_ptr defines a pointer to which the pointer of the allocated array is written to.
- * @param num_ptr defines a pointer to a variable in which the number of mails is written to.
- * @return returns 1 if successful.
+ *
+ * @return returns information of the mailbox in form of a remote_mailbox object. NULL on failure (for any reasons).
+ *
  * @note the given path stays in the selected/examine state.
+ * @note the returned structure must be free with imap_free_remote_mailbox()
  */
-static int imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers, struct remote_mail **remote_mail_array_ptr, int *num_ptr)
+static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers)
 {
 	/* get number of remote mails */
 	char *line;
@@ -368,11 +389,11 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
+	struct remote_mailbox *rm;
 
-	if (!path) return 0;
-
-	path = utf8toiutf7(path,strlen(path));
-	if (!path) return 0;
+	if (!path) return NULL;
+	if (!(path = utf8toiutf7(path,strlen(path)))) return NULL;
+	if (!(rm = (struct remote_mailbox*)malloc(sizeof(*rm)))) return NULL;
 
 	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
 	thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
@@ -428,14 +449,13 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
 		thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
 		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
+	} else
+	{
+		thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+	}
 
-		if (!num_of_remote_mails)
-		{
-			*num_ptr = 0;
-			*remote_mail_array_ptr = NULL;
-			return 1;
-		}
-
+	if (success && num_of_remote_mails)
+	{
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
@@ -540,17 +560,20 @@ static int imap_get_remote_mails(struct connection *conn, char *path, int writem
 			}
 			SM_DEBUGF(10,("Remote mail array fetched\n"));
 		}
-	} else thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+	}
 	if (!success)
 	{
 		free(remote_mail_array);
+		free(rm);
 	} else
 	{
-		*remote_mail_array_ptr = remote_mail_array;
-		*num_ptr = num_of_remote_mails;
+		rm->remote_mail_array = remote_mail_array;
+		rm->num_of_remote_mail = num_of_remote_mails;
+		rm->uid_next = uid_next;
+		rm->uid_validity = uid_validity;
 	}
 	free(path);
-	return success;
+	return rm;
 }
 
 /**************************************************************************
@@ -679,20 +702,26 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 		if (local_mail_array)
 		{
+			struct remote_mailbox *rm;
+
 			/* get number of remote mails */
 			char *line;
 			char tag[20];
 			char send[200];
 			char buf[100];
 			char status_buf[200];
-			int num_of_remote_mails = 0;
-			struct remote_mail *remote_mail_array = NULL;
 
 			if (num_of_todel_local_mails)
 			{
-				if (imap_get_remote_mails(conn, folder->imap_path, 1, 0, &remote_mail_array, &num_of_remote_mails))
+				if ((rm = imap_get_remote_mails(conn, folder->imap_path, 1, 0)))
 				{
+					struct remote_mail *remote_mail_array;
+					int num_of_remote_mails;
 					int i,j;
+
+					remote_mail_array = rm->remote_mail_array;
+					num_of_remote_mails = rm->num_of_remote_mail;
+
 					for (i = 0 ; i < num_of_local_mails; i++)
 					{
 						if (mail_is_marked_as_deleted(folder->mail_info_array[i]))
@@ -744,19 +773,24 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							}
 						}
 					}
-					free(remote_mail_array);
-					remote_mail_array = NULL;
+					imap_free_remote_mailbox(rm);
 				}
 			}
 
 			/* Get information of all mails within the folder */
-			if (imap_get_remote_mails(conn, folder->imap_path, 0, 0, &remote_mail_array, &num_of_remote_mails))
+			if ((rm = imap_get_remote_mails(conn, folder->imap_path, 0, 0)))
 			{
 				int i,j;
 				int msgtodl;
 				unsigned int max_todl_bytes = 0;
 				unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
 				unsigned int todl_bytes = 0;
+
+				struct remote_mail *remote_mail_array;
+				int num_of_remote_mails;
+
+				remote_mail_array = rm->remote_mail_array;
+				num_of_remote_mails = rm->num_of_remote_mail;
 
 				/* delete mails which are not on server but localy */
 				for (i = 0 ; i < num_of_local_mails; i++)
@@ -885,6 +919,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					/* TODO: should be enforced */
 					thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
 				}
+
+				imap_free_remote_mailbox(rm);
 			}
 		}
 
@@ -1381,21 +1417,28 @@ static int imap_start_thread(void)
 static void imap_thread_really_download_mails(void)
 {
 	char path[380];
-	struct remote_mail *remote_mail_array;
-	int num_remote_mails;
+	struct remote_mailbox *rm;
 
 	if (!imap_connection) return;
 
 	getcwd(path, sizeof(path));
 	if (chdir(imap_local_path) == -1) return;
 
-	if (imap_get_remote_mails(imap_connection, imap_folder, 0, 1, &remote_mail_array, &num_remote_mails))
+	SM_DEBUGF(10,("Downloading mails of folder \"%s\"\n",imap_folder));
+
+	if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1)))
 	{
 		int i,j;
 		int num_of_local_mails;
 		int num_of_todel_local_mails;
 		struct local_mail *local_mail_array;
 		struct folder *local_folder;
+
+		struct remote_mail *remote_mail_array;
+		int num_remote_mails;
+
+		num_remote_mails = rm->num_of_remote_mail;
+		remote_mail_array = rm->remote_mail_array;
 
 		folders_lock();
 		if ((local_folder = folder_find_by_imap(imap_server->login,imap_server->name, imap_folder)))
@@ -1485,7 +1528,8 @@ static void imap_thread_really_download_mails(void)
 				}
 			} else folders_unlock();
 		} else folders_unlock();
-		free(remote_mail_array);
+
+		imap_free_remote_mailbox(rm);
 	}
 	chdir(path);
 }

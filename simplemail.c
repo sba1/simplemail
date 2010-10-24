@@ -1564,6 +1564,9 @@ void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, ch
 	struct folder *f;
 	f = folder_find_by_imap(user, server, path);
 	if (!f) return;
+
+	SM_DEBUGF(15,("Setting new UIDs for folder %s: uid_validity=%d, uid_next = %d\n",f->name,uid_validity, uid_next));
+
 	f->imap_uid_validity = uid_validity;
 	f->imap_uid_next = uid_next;
 }

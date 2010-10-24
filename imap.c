@@ -492,6 +492,10 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	{
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
+			unsigned int fetch_time_ref;
+
+			fetch_time_ref = time_reference_ticks();
+
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
@@ -590,7 +594,7 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 					}
 				}
 			}
-			SM_DEBUGF(10,("Remote mail array fetched\n"));
+			SM_DEBUGF(10,("Remote mail array fetched after %d ms\n",time_ms_passed(fetch_time_ref)));
 		}
 	}
 	if (!success)
@@ -1450,6 +1454,8 @@ static void imap_thread_really_download_mails(void)
 	struct folder *local_folder;
 	struct remote_mailbox *rm;
 
+	int do_download = 1;
+
 	unsigned int local_uid_validiy = 0;
 	unsigned int local_uid_next = 0;
 
@@ -1468,7 +1474,25 @@ static void imap_thread_really_download_mails(void)
 	}
 	folders_unlock();
 
-	if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1)))
+	/* Uids are valid only if they are non-zero */
+	if (local_uid_validiy != 0 && local_uid_next != 0)
+	{
+		if ((rm = imap_select_mailbox(imap_connection, imap_folder, 0)))
+		{
+			if (rm->uid_validity == local_uid_validiy && rm->uid_next == local_uid_next)
+			{
+				/* Now new mails since called last time */
+				do_download = 0;
+
+				SM_DEBUGF(10,("UIDs match. Therefore no mails need to be downloaded.\n"));
+			}
+			imap_free_remote_mailbox(rm);
+			rm = NULL;
+		}
+	}
+
+
+	if (do_download && (rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1)))
 	{
 		int i,j;
 		int num_of_local_mails;

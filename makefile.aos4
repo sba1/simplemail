@@ -142,10 +142,10 @@ dirs:
 $(TARGET): $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
-	cp SimpleMail.debug "/cygdrive/c/Dokumente und Einstellungen/sba/Eigene Dateien/AmigaOne/SimpleMail/SimpleMail"
+	cp SimpleMail.debug $(DESTDIR)/SimpleMail
 
 ppc-amigaos-objs/%.o: %.S
-	$(CC) -Wa,-mregnames $(AFLAGS) -I$/home/sba/amigaos4/include -c $< -o $@
+	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
 ppc-amigaos-objs/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

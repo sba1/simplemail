@@ -28,11 +28,15 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct signature
 {
 	struct node node;
 	char *name;
-	char *signature;
+	utf8 *signature;
 };
 
 struct signature *signature_malloc(void);

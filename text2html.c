@@ -202,14 +202,14 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 
 					if (level != new_level)
 					{
-						char *begin_quote_string = "<TABLE STYLE=\"border-left: 3px solid #%x;\"><TD><FONT COLOR=\"%x\">";
+						char *begin_quote_string = "<TABLE BGCOLOR=\"#%06x\" WIDTH=\"100%%\" STYLE=\"border-left: 3px solid #%06x; border-right: 3px solid #%06x;\"><TD><FONT COLOR=\"#%06x\">";
 						char *end_quote_string = "</FONT></TD></TABLE>";
 
 						/* If new level is larger */
 						for (;level < new_level; level++)
 						{
 							unsigned int color = level%2?user.config.read_quoted:user.config.read_old_quoted;
-							sm_snprintf(buf,sizeof(buf),begin_quote_string,color,color);
+							sm_snprintf(buf,sizeof(buf),begin_quote_string,user.config.read_quoted_background,color,color,color);
 							string_append(&str,buf);
 						}
 
@@ -398,6 +398,8 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		if (fonttag) string_append(&str,"</FONT>");
 
 		if (flags & TEXT2HTML_ENDBODY_TAG) string_append(&str,"</BODY>");
+
+		SM_DEBUGF(20,("%s\n",str.str));
 
 		return str.str;
 	}

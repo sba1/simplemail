@@ -105,7 +105,7 @@ static Object *mails_readmisc_all_check;
 static Object *mails_readmisc_additional_string;
 static Object *mails_readmisc_close_after_last;
 static Object *mails_readmisc_next_after_move;
-static struct MUI_Palette_Entry read_palette_entries[7];
+static struct MUI_Palette_Entry read_palette_entries[8];
 
 static Object *write_wordwrap_string;
 static Object *write_wordwrap_cycle;
@@ -647,6 +647,7 @@ static int config_use(void)
 	user.config.read_old_quoted = ((read_palette_entries[3].mpe_Red >> 24)<<16) | ((read_palette_entries[3].mpe_Green>>24)<<8) | (read_palette_entries[3].mpe_Blue>>24);
 	user.config.read_link = ((read_palette_entries[4].mpe_Red >> 24)<<16)       | ((read_palette_entries[4].mpe_Green>>24)<<8) | (read_palette_entries[4].mpe_Blue>>24);
 	user.config.read_header_background = ((read_palette_entries[5].mpe_Red >> 24)<<16) | ((read_palette_entries[5].mpe_Green>>24)<<8) | (read_palette_entries[5].mpe_Blue>>24);
+	user.config.read_quoted_background = ((read_palette_entries[6].mpe_Red >> 24)<<16) | ((read_palette_entries[6].mpe_Green>>24)<<8) | (read_palette_entries[6].mpe_Blue>>24);
 	user.config.read_wordwrap = xget(read_wrap_checkbox, MUIA_Selected);
 	user.config.read_link_underlined = xget(read_linkunderlined_checkbox,MUIA_Selected);
 	user.config.read_graphical_quote_bar = xget(read_graphical_quote_bar_checkbox,MUIA_Selected);
@@ -1501,6 +1502,7 @@ static int init_mails_read_group(void)
 		read_palette_names[3] = _("Old Quoted Text");
 		read_palette_names[4] = _("Link Text");
 		read_palette_names[5] = _("Header Background");
+		read_palette_names[6] = _("Quoted Background");
 	};
 
 	read_palette_entries[0].mpe_ID = 0;
@@ -1539,11 +1541,17 @@ static int init_mails_read_group(void)
 	read_palette_entries[5].mpe_Blue = MAKECOLOR32((user.config.read_header_background&0x0000ff));
 	read_palette_entries[5].mpe_Group = 5;
 
-	read_palette_entries[6].mpe_ID = MUIV_Palette_Entry_End;
-	read_palette_entries[6].mpe_Red = 0;
-	read_palette_entries[6].mpe_Green = 0;
-	read_palette_entries[6].mpe_Blue = 0;
-	read_palette_entries[6].mpe_Group = 0;
+	read_palette_entries[6].mpe_ID = 6;
+	read_palette_entries[6].mpe_Red = MAKECOLOR32((user.config.read_quoted_background&0x00ff0000)>>16);
+	read_palette_entries[6].mpe_Green = MAKECOLOR32((user.config.read_quoted_background&0x0000ff00)>>8);
+	read_palette_entries[6].mpe_Blue = MAKECOLOR32((user.config.read_quoted_background&0x0000ff));
+	read_palette_entries[6].mpe_Group = 6;
+
+	read_palette_entries[7].mpe_ID = MUIV_Palette_Entry_End;
+	read_palette_entries[7].mpe_Red = 0;
+	read_palette_entries[7].mpe_Green = 0;
+	read_palette_entries[7].mpe_Blue = 0;
+	read_palette_entries[7].mpe_Group = 0;
 
 	groups[GROUPS_READ] = VGroup,
 		MUIA_ShowMe, FALSE,

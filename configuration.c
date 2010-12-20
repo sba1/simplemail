@@ -153,6 +153,7 @@ static int init_config(void)
 
 	user.config.read_background = 0xfffff4;
 	user.config.read_header_background = 0xf0f0e0;
+	user.config.read_quoted_background = 0xf0f0e0;
 	user.config.read_text = 0;
 	user.config.read_quoted = 0xff0000;
 	user.config.read_old_quoted = 0xdd2222;
@@ -350,6 +351,8 @@ int load_config(void)
 							user.config.read_link = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.HeaderBackgroundColor")))
 							user.config.read_header_background = strtoul(result,NULL,0);
+						if ((result = get_config_item(buf,"Read.QuotedBackgroundColor")))
+							user.config.read_quoted_background = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = CONFIG_BOOL_VAL(result);
 						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
@@ -741,6 +744,7 @@ void save_config(void)
 			fprintf(fh,"Read.OldQuotedColor=0x%x\n",user.config.read_old_quoted);
 			fprintf(fh,"Read.LinkColor=0x%x\n",user.config.read_link);
 			fprintf(fh,"Read.HeaderBackgroundColor=0x%x\n",user.config.read_header_background);
+			fprintf(fh,"Read.QuotedBackgroundColor=0x%x\n",user.config.read_quoted_background);
 			fprintf(fh,"Read.Wordwrap=%s\n",user.config.read_wordwrap?"Y":"N");
 			fprintf(fh,"Read.LinkUnderlined=%s\n",user.config.read_link_underlined?"Y":"N");
 			fprintf(fh,"Read.GraphicalQuoteBar=%s\n",user.config.read_graphical_quote_bar?"Y":"N");

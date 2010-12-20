@@ -100,6 +100,7 @@ struct config
 	int read_text;
 	int read_quoted;
 	int read_old_quoted;
+	int read_quoted_background;
 	int read_link;
 	int read_header_background;
 

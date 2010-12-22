@@ -1845,6 +1845,14 @@ static int folder_config_load(struct folder *f)
 				{
 					string_list_insert_tail(&f->imap_sub_folder_list,&buf[14]);
 				}
+				else if (!mystrnicmp("IMapUidNext=",buf,12))
+				{
+					f->imap_uid_next = strtoul(&buf[12],NULL,10);
+				}
+				else if (!mystrnicmp("IMapUidValidity=",buf,16))
+				{
+					f->imap_uid_validity = strtoul(&buf[16],NULL,10);
+				}
 			}
 		}
 		fclose(fh);
@@ -1882,6 +1890,10 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
 		fprintf(fh,"IMapServer=%s\n",f->imap_server?f->imap_server:"");
+		if (f->imap_uid_next != 0)
+			fprintf(fh,"IMapUidNext=%u\n",f->imap_uid_next);
+		if (f->imap_uid_validity != 0)
+			fprintf(fh,"IMapUidValidity=%u\n",f->imap_uid_validity);
 
 		node = (struct string_node*)list_first(&f->imap_all_folder_list);
 		while (node)

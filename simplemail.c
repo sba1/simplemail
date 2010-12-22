@@ -1569,6 +1569,7 @@ void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, ch
 
 	f->imap_uid_validity = uid_validity;
 	f->imap_uid_next = uid_next;
+	folder_config_save(f);
 }
 
 /* After downloading this function is called */

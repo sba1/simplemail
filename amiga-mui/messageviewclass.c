@@ -659,6 +659,7 @@ static void messageview_show_mail(struct MessageView_Data *data)
 				int size = atoi(end+1);
 				*end = 0;
 
+				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 2, (ULONG)font_buf, size);
 				DoMethod(data->simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 3, (ULONG)font_buf, size);
 			}
 			free(font_buf);

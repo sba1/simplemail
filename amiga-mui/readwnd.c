@@ -338,6 +338,7 @@ static void insert_text(struct Read_Data *data, struct mail_complete *mail)
 				int size = atoi(end+1);
 				*end = 0;
 
+				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 2, (ULONG)font_buf, size);
 				DoMethod(data->html_simplehtml, MUIM_SimpleHTML_FontSubst, (ULONG)"fixedmail", 3, (ULONG)font_buf, size);
 			}
 			free(font_buf);

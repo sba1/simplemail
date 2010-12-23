@@ -52,6 +52,7 @@
 #include "compiler.h"
 #include "folderwnd.h"
 #include "muistuff.h"
+#include "support.h"
 #include "utf8stringclass.h"
 
 static Object *folder_wnd;
@@ -62,8 +63,8 @@ static Object *path_label;
 static Object *path_string;
 static Object *type_label;
 static Object *type_cycle;
-static Object *server_label;
-static Object *server_string;
+static Object *imap_label;
+static Object *imap_string;
 static Object *prim_group;
 static Object *prim_label;
 static Object *prim_cycle;
@@ -241,12 +242,12 @@ char *folder_get_changed_defsignature(void)
 
 int folder_get_changed_primary_sort(void)
 {
-	return xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
+	return (int)xget(prim_cycle, MUIA_Cycle_Active) | (xget(prim_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
 int folder_get_changed_secondary_sort(void)
 {
-	return xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
+	return (int)xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
 /* Refresh the Signature Cycle if the config has changed */
@@ -309,13 +310,13 @@ static void init_folder(void)
 					MUIA_String_AdvanceOnCR, TRUE,
 					End,
 
-				Child, server_label = MakeLabel(_("IMAP Server")),
-				Child, server_string = BetterStringObject,
+				Child, imap_label = MakeLabel(_("IMAP path")),
+				Child, imap_string = BetterStringObject,
 					TextFrame,
 					MUIA_BetterString_NoInput, TRUE,
 					End,
 
-				Child, path_label = MakeLabel(_("Path")),
+				Child, path_label = MakeLabel(_("Local path")),
 				Child, path_string = BetterStringObject,
 					TextFrame,
 					MUIA_BetterString_NoInput, TRUE,
@@ -351,11 +352,11 @@ static void init_folder(void)
 					MUIA_ControlChar, GetControlChar(_("T_o")),
 					End,
 
-				Child, MakeLabel(_("_Reply To")),
+				Child, MakeLabel(_("_Reply to")),
 				Child, replyto_string = AddressStringObject,
 					StringFrame,
 					MUIA_CycleChain, 1,
-					MUIA_ControlChar, GetControlChar(_("_Reply To")),
+					MUIA_ControlChar, GetControlChar(_("_Reply to")),
 					End,
 
 				/* This two MUST always be the last objects of this group! */
@@ -446,8 +447,8 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)second_group);
 			if (imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
 				imap_mode = 0;
 			}
 			group_mode = 1;
@@ -466,14 +467,14 @@ void folder_edit(struct folder *f)
 
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_label);
-				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
 				imap_mode = 0;
 			}
 
@@ -488,14 +489,14 @@ void folder_edit(struct folder *f)
 		{
 			if (f->is_imap && !imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_label);
-				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)server_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_string);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_label);
-				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)server_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
 				imap_mode = 0;
 			}
 		}
@@ -504,7 +505,7 @@ void folder_edit(struct folder *f)
 			DoMethod(folder_properties_group, MUIM_Group_Sort,
 			         (ULONG)name_label, (ULONG)name_string,
 			         (ULONG)path_label, (ULONG)path_string,
-			         (ULONG)server_label, (ULONG)server_string,
+			         (ULONG)imap_label, (ULONG)imap_string,
 			         (ULONG)type_label, (ULONG)type_cycle,
 			         (ULONG)prim_label, (ULONG)prim_group,
 			         (ULONG)second_label, (ULONG)second_group,
@@ -534,7 +535,20 @@ void folder_edit(struct folder *f)
 	set(prim_reverse_check, MUIA_Selected, folder_get_primary_sort(f) & FOLDER_SORT_REVERSE);
 	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(second_reverse_check, MUIA_Selected, folder_get_secondary_sort(f) & FOLDER_SORT_REVERSE);
-	set(server_string, MUIA_String_Contents, f->imap_server);
+
+	{
+		int buf_len = strlen(f->imap_server) + strlen(f->imap_path) + strlen(f->imap_user) + 40;
+		char *buf = malloc(buf_len);
+		if (buf)
+		{
+			sm_snprintf(buf,buf_len,"imap://%s@%s:/%s",f->imap_user,f->imap_server,f->imap_path);
+			set(imap_string, MUIA_String_Contents, buf);
+			free(buf);
+		} else
+		{
+			set(imap_string, MUIA_String_Contents, f->imap_server);
+		}
+	}
 	changed_folder = f;
 
 	if (f->is_imap)

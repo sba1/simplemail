@@ -1570,31 +1570,42 @@ static int imap_thread_really_download_mails(void)
 			{
 				char *filename_ptrs[MAX_MAILS_PER_REFRESH];
 				int filename_current = 0;
+				unsigned int total_download_ticks;
 				unsigned int ticks;
 
 				folders_unlock();
 
 				imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_remote_mails, imap_server, imap_folder);
 
-				ticks = time_reference_ticks();
+				total_download_ticks = ticks = time_reference_ticks();
 
-				for (i=0;i<num_remote_mails;i++)
+				/* Check each remote mail whether it is already stored locally. If
+				 * not store the header. Note that we exploit the sorting order
+				 * of both the remote_mail_array and local_mail_array.
+				 */
+				i=j=0;
+				while (i<num_remote_mails)
 				{
 					char filename_buf[32];
 					char *filename;
 					FILE *fh;
-					int does_exist = 0;
 					int status = 0;
 
-					for (j=0; j < num_of_local_mails;j++)
+					if (j < num_of_local_mails)
 					{
-						if (local_mail_array[j].uid == remote_mail_array[i].uid)
+						unsigned int remote_uid = remote_mail_array[i].uid;
+						unsigned int local_uid = local_mail_array[j].uid;
+						if (remote_uid >= local_uid)
 						{
-							does_exist = 1;
-							break;
+							/* Definitely skip local mail */
+							j++;
+
+							/* Skip also remote, if it matches the local uid (thus, the mail was present) */
+							if (remote_uid == local_uid)
+								i++;
+							continue;
 						}
 					}
-					if (does_exist) continue;
 					downloaded_mails++;
 
 					if (remote_mail_array[i].flags & RM_FLAG_ANSWERED) status = MAIL_STATUS_REPLIED;
@@ -1625,6 +1636,7 @@ static int imap_thread_really_download_mails(void)
 							}
 						}
 					}
+					i++;
 				}
 
 				/* Add the rest */
@@ -1634,6 +1646,8 @@ static int imap_thread_really_download_mails(void)
 					while (filename_current)
 						free(filename_ptrs[--filename_current]);
 				}
+
+				SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));
 
 				/* Finally, inform controller about new uids */
 				thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, rm->uid_validity, rm->uid_next, imap_server->login, imap_server->name, imap_folder);
@@ -1647,13 +1661,14 @@ static int imap_thread_really_download_mails(void)
 	/* Display status message. We mis-use path here */
 	{
 		int l;
+		if (!imap_folder) imap_folder = "Root";
 
 		l = sm_snprintf(path,sizeof(path),"%s: ",imap_server->name);
 		switch (downloaded_mails)
 		{
 			case 0: sm_snprintf(&path[l], sizeof(path) - l,_("No new mails in folder \"%s\""),imap_folder); break;
 			case 1: sm_snprintf(&path[l], sizeof(path) - l,_("One new mail in folder \"%s\""),imap_folder); break;
-			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),imap_folder); break;
+			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),downloaded_mails,imap_folder); break;
 		}
 
 		thread_call_parent_function_async_string(status_set_status,1,path);

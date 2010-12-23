@@ -1692,7 +1692,7 @@ static semaphore_t lazy_semaphore;
 
 
 /**
- * @brief Finished the stuff done in lazy_thread_work and derefernces the mail.
+ * @brief Finished the stuff done in lazy_thread_work and dereferences the mail.
  *
  * @param excerpt
  * @param mail
@@ -1701,8 +1701,15 @@ static semaphore_t lazy_semaphore;
  */
 static void lazy_thread_work_finished(utf8 *excerpt, struct mail_info *mail)
 {
+	int refresh = 1;
+
+	/* Don't refresh if excerpt was and is empty */
+	if (excerpt && !*excerpt && (!mail->excerpt || !*mail->excerpt))
+		refresh = 0;
+
 	mail_info_set_excerpt(mail,excerpt);
-	main_refresh_mail(mail);
+	if (refresh)
+		main_refresh_mail(mail);
 	mail_dereference(mail);
 }
 

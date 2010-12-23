@@ -40,6 +40,7 @@
 #include "folder.h"
 #include "lists.h"
 #include "parse.h"
+#include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "subthreads.h"
@@ -94,7 +95,8 @@ struct local_mail
 /**
  * Returns the local mail array of a given folder. 0 for failure (does not
  * change the contents of the ptrs in that case). Free the array with free()
- * as soon as no longer needed.
+ * as soon as no longer needed. The mail array is sorted according to the uid
+ * field.
  *
  * @param folder
  * @param local_mail_array_ptr
@@ -131,6 +133,11 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 				local_mail_array[i].todel = 0;
 			}
 		}
+
+		/* now sort them */
+		#define local_mail_lt(a,b) ((a->uid < b->uid)?1:0)
+		QSORT(struct local_mail, local_mail_array, num_of_mails, local_mail_lt);
+
 		success = 1;
 		*local_mail_array_ptr = local_mail_array;
 		*num_of_mails_ptr = num_of_mails;
@@ -468,7 +475,9 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
  * @param writemode
  * @param headers specifies whether headers are requested.
  *
- * @return returns information of the mailbox in form of a remote_mailbox object. NULL on failure (for any reasons).
+ * @return returns information of the mailbox in form of a remote_mailbox object.
+ *         NULL on failure (for any reasons). If not NULL, the elements in remote_mail_array
+ *         are sorted according to their uids.
  *
  * @note the given path stays in the selected/examine state.
  * @note the returned structure must be free with imap_free_remote_mailbox()
@@ -492,7 +501,9 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	{
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
+			unsigned int max_uid = 0; /* Max UID discovered so far */
 			unsigned int fetch_time_ref;
+			int needs_to_be_sorted = 0;
 
 			fetch_time_ref = time_reference_ticks();
 
@@ -591,9 +602,21 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 						remote_mail_array[msgno-1].flags = flags;
 						remote_mail_array[msgno-1].size = size;
 						remote_mail_array[msgno-1].headers = headers;
+
+						if (uid < max_uid) needs_to_be_sorted = 1;
+						else max_uid = uid;
 					}
 				}
 			}
+
+			if (needs_to_be_sorted)
+			{
+				SM_DEBUGF(10,("Sorting remote array\n"));
+
+				#define remote_mail_lt(a,b) ((a->uid < b->uid)?1:0)
+				QSORT(struct remote_mail, remote_mail_array, num_of_remote_mails, remote_mail_lt);
+			}
+
 			SM_DEBUGF(10,("Remote mail array fetched after %d ms\n",time_ms_passed(fetch_time_ref)));
 		}
 	}
@@ -1410,7 +1433,7 @@ static struct imap_server *imap_server;
 static char *imap_folder;
 static char *imap_local_path;
 
-/**************************************************************************
+/**************************************************************************/
 
 /**
  * The entry point for the imap thread. It just go into the wait state and
@@ -1502,7 +1525,6 @@ static int imap_thread_really_download_mails(void)
 		}
 	}
 
-
 	if (do_download && (rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1)))
 	{
 		int i,j;
@@ -1527,6 +1549,7 @@ static int imap_thread_really_download_mails(void)
 
 				folders_unlock();
 
+				ticks = time_reference_ticks();
 				/* delete mails which are not on server but locally */
 				for (i = 0 ; i < num_of_local_mails; i++)
 				{
@@ -1544,6 +1567,7 @@ static int imap_thread_really_download_mails(void)
 						thread_call_parent_function_sync(NULL,callback_delete_mail_by_uid,4,imap_server->login,imap_server->name,imap_folder,local_uid);
 					}
 				}
+				SM_DEBUGF(10,("Message orphans deleted after %d ms\n",time_ms_passed(ticks)));
 
 				ticks = time_reference_ticks();
 
@@ -1612,6 +1636,22 @@ static int imap_thread_really_download_mails(void)
 		imap_free_remote_mailbox(rm);
 	}
 	chdir(path);
+
+	/* Display status message. We mis-use path here */
+	{
+		int l;
+
+		l = sm_snprintf(path,sizeof(path),"%s: ",imap_server->name);
+		switch (downloaded_mails)
+		{
+			case 0: sm_snprintf(&path[l], sizeof(path) - l,_("No new mails in folder \"%s\""),imap_folder); break;
+			case 1: sm_snprintf(&path[l], sizeof(path) - l,_("One new mail in folder \"%s\""),imap_folder); break;
+			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),imap_folder); break;
+		}
+
+		thread_call_parent_function_async_string(status_set_status,1,path);
+	}
+
 
 	return downloaded_mails;
 }
@@ -1741,7 +1781,6 @@ static void imap_thread_really_connect_to_server(void)
 			folder_list = imap_get_folders(imap_connection, imap_server, 0);
 			if (folder_list)
 			{
-				int downloaded_mails;
 				struct string_node *node;
 
 				/* add the folders */
@@ -1755,18 +1794,7 @@ static void imap_thread_really_connect_to_server(void)
 
 				imap_free_name_list(folder_list);
 
-				downloaded_mails = imap_thread_really_download_mails();
-
-				/* Display "Connected" - status message */
-				if (downloaded_mails == 0)
-				{
-					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("No new mails on server."));
-				} else
-				{
-					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
-				}
-
-				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+				imap_thread_really_download_mails();
 			}
 		}
 	}

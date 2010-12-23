@@ -1661,14 +1661,14 @@ static int imap_thread_really_download_mails(void)
 	/* Display status message. We mis-use path here */
 	{
 		int l;
-		if (!imap_folder) imap_folder = "Root";
+		char *f = imap_folder?imap_folder:"Root";
 
 		l = sm_snprintf(path,sizeof(path),"%s: ",imap_server->name);
 		switch (downloaded_mails)
 		{
-			case 0: sm_snprintf(&path[l], sizeof(path) - l,_("No new mails in folder \"%s\""),imap_folder); break;
-			case 1: sm_snprintf(&path[l], sizeof(path) - l,_("One new mail in folder \"%s\""),imap_folder); break;
-			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),downloaded_mails,imap_folder); break;
+			case 0: sm_snprintf(&path[l], sizeof(path) - l,_("No new mails in folder \"%s\""),f); break;
+			case 1: sm_snprintf(&path[l], sizeof(path) - l,_("One new mail in folder \"%s\""),f); break;
+			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),downloaded_mails,f); break;
 		}
 
 		thread_call_parent_function_async_string(status_set_status,1,path);

@@ -77,6 +77,7 @@ static Object *config_wnd;
 static Object *user_dst_check;
 static Object *user_folder_string;
 static Object *user_charset_string;
+static Object *user_delete_check;
 static Object *startup_folder_popobject;
 static Object *startup_folder_string;
 static Object *startup_folder_tree = NULL;
@@ -618,6 +619,7 @@ static int config_use(void)
 	if (user.config.receive_arexx_file) free(user.config.receive_arexx_file);
 
 	user.config.dst = xget(user_dst_check,MUIA_Selected);
+	user.config.delete_deleted = xget(user_delete_check,MUIA_Selected);
 	user.config.default_codeset = codesets_find((char*)xget(user_charset_string,MUIA_String_Contents));
 	user.config.appicon_show = xget(appicon_show_cycle, MUIA_Cycle_Active);
 	user.config.appicon_label = mystrdup((char*)xget(appicon_label_popph, MUIA_Popph_Contents));
@@ -780,6 +782,11 @@ static int init_user_group(void)
 		Child, HGroup,
 			Child, MakeLabel(_("Add adjustment for daylight saving time")),
 			Child, user_dst_check = MakeCheck(_("Add adjustment for daylight saving time"),user.config.dst),
+			Child, HSpace(0),
+			End,
+		Child, HGroup,
+			Child, MakeLabel(_("Cleanup deleted folder on exit")),
+			Child, user_delete_check = MakeCheck(_("Cleanup deleted folder on exit"),user.config.delete_deleted),
 			Child, HSpace(0),
 			End,
 		Child, HGroup,

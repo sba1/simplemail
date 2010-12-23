@@ -59,6 +59,12 @@ struct config
 
 	int dst;
 
+	/**
+	 * Indicates that the trash folder should be emptied
+	 * on exit.
+	 */
+	int delete_deleted;
+
 	int receive_preselection; /* 0 no selection, 1 size selection, 2 full selection */
 	int receive_size; /* the size in kb */
 	int receive_autocheck; /* 0 no auto check */

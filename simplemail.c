@@ -2406,7 +2406,8 @@ int simplemail_main(void)
 
 					gui_loop();
 				}
-				folder_delete_deleted();
+				if (user.config.delete_deleted)
+					folder_delete_deleted();
 #ifdef __AROS__ /*folders doesn't get saved ?*/
 			folder_save_order();
 #endif

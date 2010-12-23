@@ -396,7 +396,7 @@ static void signature_load(void)
 	struct signature *signature = signature_last_selected;
 	if (signature)
 	{
-		char *sign = utf8tostrcreate(signature->signature?signature->signature:"",user.config.default_codeset);
+		char *sign = utf8tostrcreate(signature->signature?signature->signature:(utf8*)"",user.config.default_codeset);
 		nnsetutf8string(signature_name_string,signature->name);
 		set(signature_texteditor,MUIA_TextEditor_Contents, sign);
 		free(sign);
@@ -767,7 +767,7 @@ static int init_user_group(void)
 #endif
 
 	appicon_show_labels[0] = _("Always");
-	appicon_show_labels[1] = _("Iconified");
+	appicon_show_labels[1] = _("When iconified");
 	appicon_show_labels[2] = _("Never");
 	appicon_show_labels[3] = NULL;
 
@@ -822,9 +822,9 @@ static int init_user_group(void)
 
 #ifndef __AROS__ /*aros doesn't have appicons*/
 		Child, HGroup,
-		  Child, MakeLabel(_("AppIcon Show")),
-		  Child, HGroup, Child, appicon_show_cycle = MakeCycle(_("AppIcon Show"), appicon_show_labels), Child, HSpace(0), End,
-			Child, MakeLabel(_("AppIcon Label")),
+		  Child, MakeLabel(_("Show AppIcon")),
+		  Child, HGroup, Child, appicon_show_cycle = MakeCycle(_("Show AppIcon"), appicon_show_labels), Child, HSpace(0), End,
+			Child, MakeLabel(_("AppIcon label")),
 			Child, appicon_label_popph = PopphObject,
 				MUIA_Popph_Array, appicon_popph_array,
 				MUIA_Popph_Contents, user.config.appicon_label,

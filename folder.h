@@ -82,6 +82,11 @@ struct folder
 	char *imap_path; /* the imap path on the server */
 
 	/**
+	 * Set to 1, if IMAP UIDs should not be used.
+	 */
+	int imap_dont_use_uids;
+
+	/**
 	 * The UIDVALIDITY field as determined during the most recent
 	 * access to this folder on its imap server.
 	 */

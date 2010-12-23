@@ -1845,6 +1845,10 @@ static int folder_config_load(struct folder *f)
 				{
 					string_list_insert_tail(&f->imap_sub_folder_list,&buf[14]);
 				}
+				else if (!mystrnicmp("IMapDontUseUids=",buf,16))
+				{
+					f->imap_dont_use_uids = atoi(&buf[16]);
+				}
 				else if (!mystrnicmp("IMapUidNext=",buf,12))
 				{
 					f->imap_uid_next = strtoul(&buf[12],NULL,10);
@@ -1890,6 +1894,8 @@ void folder_config_save(struct folder *f)
 		fprintf(fh,"IMapUser=%s\n",f->imap_user?f->imap_user:"");
 		fprintf(fh,"IMapPath=%s\n",f->imap_path?f->imap_path:"");
 		fprintf(fh,"IMapServer=%s\n",f->imap_server?f->imap_server:"");
+		if (f->imap_dont_use_uids)
+			fprintf(fh,"IMapDontUseUids=1\n");
 		if (f->imap_uid_next != 0)
 			fprintf(fh,"IMapUidNext=%u\n",f->imap_uid_next);
 		if (f->imap_uid_validity != 0)

@@ -1193,10 +1193,12 @@ void callback_folder_active(void)
 	struct folder *folder = main_get_folder();
 	if (folder)
 	{
+		app_busy();
 		if (folder->is_imap)
 			imap_thread_connect(folder);
 		lazy_clean_list();
 		main_set_folder_mails(folder);
+		app_unbusy();
 	}
 }
 
@@ -2085,7 +2087,7 @@ void callback_check_selected_mails_if_spam(void)
 			if (spam_is_mail_spam(folder->path,mail,white,user.config.spam_black_emails))
 			{
 				folder_set_mail_flags(folder, mail, mail->flags | MAIL_FLAGS_AUTOSPAM);
-				if (mail->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+				if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 				mail->flags &= ~MAIL_FLAGS_NEW;
 				main_refresh_mail(mail);
 			}

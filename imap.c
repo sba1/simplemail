@@ -1023,6 +1023,8 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 **************************************************************************/
 void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 {
+	SM_ENTER;
+
 	if (open_socket_lib())
 	{
 		struct imap_server *server = (struct imap_server*)list_first(imap_list);
@@ -1032,7 +1034,9 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			struct connection *conn;
 			char head_buf[100];
 
-			sprintf(head_buf,_("Synchronizing mails with %s"),server->name);
+			SM_DEBUGF(10,("Synchronizing mails with %s\n",server->name));
+
+			sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 			if (server->title)
 				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
@@ -1064,18 +1068,22 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				free(login);
 			}
 
+			SM_DEBUGF(10,("Connecting\n"));
 			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
 			{
 				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
+				SM_DEBUGF(10,("Waiting for login\n"));
 				if (imap_wait_login(conn,server))
 				{
 					thread_call_parent_function_async(status_set_status,1,_("Login..."));
+					SM_DEBUGF(10,("Login\n"));
 					if (imap_login(conn,server))
 					{
 						struct list *folder_list;
 						thread_call_parent_function_async(status_set_status,1,_("Login successful"));
 						thread_call_parent_function_async(status_set_status,1,_("Checking for folders"));
 
+						SM_DEBUGF(10,("Get folders\n"));
 						if ((folder_list = imap_get_folders(conn,server,0)))
 						{
 							struct string_node *node;
@@ -1107,6 +1115,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				if (thread_aborted()) break;
 			} else
 			{
+				SM_DEBUGF(10,("Unable to connect\n"));
 				if (thread_aborted()) break;
 				else tell_from_subtask((char*)tcp_strerror(tcp_error_code()));
 			}
@@ -1120,7 +1129,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 	{
 		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
 	}
-
+	SM_LEAVE;
 }
 
 struct imap_get_folder_list_entry_msg
@@ -1824,29 +1833,39 @@ static void imap_thread_really_connect_to_server(void)
 
 static int imap_thread_connect_to_server(struct imap_server *server, char *folder, char *local_path)
 {
+	SM_ENTER;
+
 	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
 		if (imap_server) imap_free(imap_server);
 		if ((imap_server = imap_duplicate(server)))
 		{
+			int rc;
+
 			if (imap_folder) free(imap_folder);
 			imap_folder = mystrdup(folder);
 
 			if (imap_local_path) free(imap_local_path);
 			imap_local_path = mystrdup(local_path);
 
-			return thread_push_function(imap_thread_really_connect_to_server, 0);
+			rc = thread_push_function(imap_thread_really_connect_to_server, 0);
+			SM_RETURN(rc,"%d");
+			return rc;
 		}
+		SM_RETURN(0,"%d");
 		return 0;
 	} else
 	{
+		int rc;
 		if (imap_folder) free(imap_folder);
 		imap_folder = mystrdup(folder);
 
 		if (imap_local_path) free(imap_local_path);
 		imap_local_path = mystrdup(local_path);
 
-		return thread_push_function(imap_thread_really_download_mails, 0);
+		rc = thread_push_function(imap_thread_really_download_mails, 0);
+		SM_RETURN(rc,"%d");
+		return rc;
 	}
 }
 

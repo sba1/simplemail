@@ -120,10 +120,10 @@ STATIC ASM VOID mail_display(REG(a0, struct Hook *h), REG(a2, char **array), REG
 	{
 		struct transwnd_Data *data = (struct transwnd_Data*)h->h_Data;
 
-		sprintf(data->nobuf,"%ld%s%s",ent->no,
+		sprintf(data->nobuf,"%d%s%s",ent->no,
 						((ent->flags & MAILF_DOWNLOAD)?"\033o[1]":""),
 						((ent->flags & MAILF_DELETE)?"\033o[2]":""));
-		sprintf(data->sizebuf, "%ld",ent->size);
+		sprintf(data->sizebuf, "%d",ent->size);
 		*array++ = data->nobuf;
 		*array++ = data->sizebuf;
 		*array++ = ent->from;

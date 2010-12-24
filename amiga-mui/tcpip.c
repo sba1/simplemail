@@ -167,8 +167,10 @@ int open_ssl_lib(void)
 			{
 				if ((thread->amissllib = OpenAmiSSL()))
 				{
+#ifdef __AMIGAOS4__
 					if ((thread->iamissl = (struct AmiSSLIFace *)GetInterface(thread->amissllib,"main",1,NULL)))
 					{
+#endif
 						if (InitAmiSSL(AmiSSL_SocketBase, (ULONG)SocketBase, TAG_DONE) == 0)
 						{
 #else
@@ -194,9 +196,11 @@ int open_ssl_lib(void)
 				}
 #ifdef USE_AMISSL3
 							CleanupAmiSSL(TAG_DONE);
+#ifdef __AMIGAOS4__
 						}
 						DropInterface((struct Interface*)thread->iamissl);
 						thread->iamissl = NULL;
+#endif
 					}
 					CloseAmiSSL();
 					thread->amissllib = NULL;
@@ -240,8 +244,10 @@ void close_ssl_lib(void)
 		thread->ssl_ctx = NULL;
 		CleanupAmiSSL(TAG_DONE);
 #ifdef USE_AMISSL3
+#ifdef __AMIGAOS4__
 		DropInterface((struct Interface*)thread->iamissl);
 		thread->iamissl = NULL;
+#endif
 		CloseAmiSSL();
 		thread->amissllib = NULL;
 		CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);

@@ -1009,6 +1009,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 	struct Library *AmiSSLBase;
 	struct AmiSSLIFace *IAmiSSL;
 
+	/* TODO: use open_ssl_lib() */
 #ifdef USE_AMISSL3
 	struct Library *AmiSSLMasterBase;
 	struct AmiSSLMasterIFace *IAmiSSLMaster;
@@ -1019,8 +1020,12 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 		{
 			if ((AmiSSLBase = OpenAmiSSL()))
 			{
+#ifdef __AMIGAOS4__
 				if ((IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase,"main",1,NULL)))
 				{
+#else
+				IAmiSSL = NULL; /* Keep the compiler happy */
+#endif
 					if (InitAmiSSL(TAG_DONE) == 0)
 					{
 #else
@@ -1054,8 +1059,10 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 			}
 #ifdef USE_AMISSL3
 						CleanupAmiSSL(TAG_DONE);
+#ifdef __AMIGAOS4__
 					}
 					DropInterface((struct Interface*)IAmiSSL);
+#endif
 				}
 				CloseAmiSSL();
 			}

@@ -28,7 +28,7 @@
     <item>Schnellere Nachrichtenliste</item>
     <item>Verbesserte IMAP-Unterstützung</item>
     <item>Zitatsbereiche werden nun bei der Nachrichtenanzeige optional mit einer graphischen Leiste hervorgehoben (siehe Konfigurationsseite "Lesen normaler Text").</item>
-    <item>Die automatische Bereinigung des "deleted"-Ornders beim Beenden kann nun unterbunden werden (siehe Konfigurationsseite "Allgemein")</item>
+    <item>Die automatische Bereinigung des "deleted"-Ordners beim Beenden kann nun unterbunden werden (siehe Konfigurationsseite "Allgemein")</item>
     <item>Auch die 68k-Version benötigt nun AmiSSL in der Version 3 für SSL-Verbindungen</item>
     <item>Fehlerbereinigungen</item>
    	 

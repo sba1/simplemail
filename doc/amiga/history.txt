@@ -1,3 +1,15 @@
+Version 0.36 (22th beta) - released on 2010/12/24, the 10th anniversary of SimpleMail
+   - Better handling for CC field when replying (bgol)
+   - Optimized mail list rendering
+   - Improved IMAP support
+   - Possibility to display a graphical quotation bar
+     for citations (see Configurations > Reading plain)
+   - Possibility to disable the automated "deleted" folder cleanup
+   - The 68k version utilizes and requires AmiSSL 3 now
+     for ssl connections (OS4 version already did since a
+     while)
+   - Bug fixes as usual
+
 Version 0.35 (21th beta) - released on 2009/12/24
    - New ARexx command: MAILMOVE, MAILDELETE
 

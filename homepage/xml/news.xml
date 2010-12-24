@@ -2,6 +2,40 @@
 
 <news>
 
+  <entry date="2010/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released! Version 0.36, which also marks
+    the 10th anniversary of SimpleMail's first release, comes with following changes:
+    <list>
+    
+    <item>Better handling for CC field when replying</item>
+    <item>Optimized mail list rendering</item>
+    <item>Improved IMAP support</item>
+    <item>Possibility to display a graphical quotation bar for citations (see Configuration > Reading plain)</item>
+    <item>Possibility to disable the automated "deleted" folder cleanup (see Configuration > General)</item>
+    <item>The 68k version utilizes and requires AmiSSL 3 now for ssl connections (OS4 version already did since a while)</item>
+    <item>Bug fixes as usual</item>
+    </list>
+    
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2011!
+    </text>
+   
+   <text lang="de">
+   	 Eine neue Version von SimpleMail wurde veröffentlicht. Zum zehnten Jubiläum gibt es folgende Änderungen:
+   	 
+   	 <list>
+    <item>Verbesserung am Handling des CC-Felds beim Beantworten von Nachrichten</item>
+    <item>Schnellere Nachrichtenliste</item>
+    <item>Verbesserte IMAP-Unterstützung</item>
+    <item>Zitatsbereiche werden nun bei der Nachrichtenanzeige optional mit einer graphischen Leiste hervorgehoben (siehe Konfigurationsseite "Lesen normaler Text").</item>
+    <item>Die automatische Bereinigung des "deleted"-Ornders beim Beenden kann nun unterbunden werden (siehe Konfigurationsseite "Allgemein")</item>
+    <item>Auch die 68k-Version benötigt nun AmiSSL in der Version 3 für SSL-Verbindungen</item>
+    <item>Fehlerbereinigungen</item>
+   	 
+   	 </list>
+   </text>
+  </entry>
+
   <entry date="2009/12/24">
    <text lang="en">
     A new version of SimpleMail has been released! Version 0.35

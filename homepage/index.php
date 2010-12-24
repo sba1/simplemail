@@ -41,6 +41,7 @@
 <html>
   <head>
 	<title>SimpleMail</title>
+	 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 	<STYLE TYPE="text/css"><!--
 	  A { text-decoration: none }
 	  A:hover{ background: #ffa }

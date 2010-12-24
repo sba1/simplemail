@@ -543,7 +543,7 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 #endif
 				thread->process = CreateNewProcTags(
 							NP_Entry,      thread_entry,
-							NP_StackSize,  16384,
+							NP_StackSize,  20480,
 							NP_Name,       thread_name,
 							NP_Priority,   -1,
 							NP_Input,      in,
@@ -552,7 +552,7 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 
 				if (thread->process)
 				{
-					SM_DEBUGF(20,("Thread started at 0x%lx. Sent message 0x%lx\n",thread,msg));
+					SM_DEBUGF(20,("Thread %s started at 0x%lx. Sent message 0x%lx\n",thread_name,thread,msg));
 					PutMsg(&thread->process->pr_MsgPort,(struct Message*)msg);
 
 					do
@@ -792,7 +792,10 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 		while (!ready)
 		{
 			struct Message *msg;
+
+			SM_DEBUGF(20,("Going to sleep\n"));
 			WaitPort(subthread_port);
+			SM_DEBUGF(20,("Awaken\n"));
 
 			while ((msg = GetMsg(subthread_port)))
 			{
@@ -839,7 +842,10 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 		while (!ready)
 		{
 			struct Message *msg;
+
+			SM_DEBUGF(20,("Going to sleep\n"));
 			WaitPort(subthread_port);
+			SM_DEBUGF(20,("Awaken\n"));
 
 			while ((msg = GetMsg(subthread_port)))
 			{
@@ -923,7 +929,9 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 				if (millis)
 					timer_send_if_not_sent(&timer,millis);
 
+				SM_DEBUGF(20,("Going to sleep\n"));
 				mask = Wait(timer_m|proc_m);
+				SM_DEBUGF(20,("Awaken\n"));
 				if (mask & timer_m)
 				{
 					if (timer_callback)
@@ -937,6 +945,10 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 					while ((msg = GetMsg(subthread_port)))
 					{
 						if (msg == &tmsg->msg) ready = 1;
+						else
+						{
+							thread_handle_execute_function_message((struct ThreadMessage*)msg);
+						}
 					}
 				}
 			}
@@ -984,7 +996,11 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 			if (millis) timer_send_if_not_sent(&timer,millis);
 
+			if (!IsMinListEmpty(&this_thread->push_list))
+				SM_DEBUGF(5,("List is not empty!\n"));
+			SM_DEBUGF(20,("Sleeping\n"));
 			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_D);
+			SM_DEBUGF(20,("Awaking\n"));
 			if (mask & timer_m)
 			{
 				if (timer_callback)

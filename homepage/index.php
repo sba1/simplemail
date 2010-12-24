@@ -1,4 +1,9 @@
 <?php
+header("Content-type: text/html; charset=iso-8859-15");
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<?php
   require("counter.php");
   require_once("language.inc.php");
 
@@ -37,11 +42,10 @@
   $body = $_REQUEST["body"];
   if (!isset($body)) $body="default";
 ?>
- 
 <html>
   <head>
 	<title>SimpleMail</title>
-	 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15" />
 	<STYLE TYPE="text/css"><!--
 	  A { text-decoration: none }
 	  A:hover{ background: #ffa }

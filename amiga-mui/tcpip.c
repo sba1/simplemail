@@ -146,47 +146,34 @@ int is_online(char *iface)
 #endif
 }
 
-#ifndef NO_SSL
-struct Library *AmiSSLBase;
-#ifdef __AMIGAOS4__
-struct AmiSSLIFace *IAmiSSL;
-#else
-void *IAmiSSL;
-#endif
-
-#ifdef USE_AMISSL3
-struct Library *AmiSSLMasterBase;
-struct AmiSSLMasterIFace *IAmiSSLMaster;
-#endif
-
-static int ssl_in_use;
-static SSL_CTX *ctx;
-#endif
-
 int open_ssl_lib(void)
 {
 #ifdef NO_SSL
 	return 0;
 #else
+	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
+	if (!thread) return 0; /* assert */
+
 	if (!open_socket_lib()) return 0;
 
-	if (!AmiSSLBase)
+	if (!thread->amissllib)
 	{
+
 #ifdef USE_AMISSL3
 
-		if ((AmiSSLMasterBase = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &IAmiSSLMaster)))
+		if ((thread->amisslmasterlib = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &thread->iamisslmaster)))
 		{
 			if (InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
 			{
-				if ((AmiSSLBase = OpenAmiSSL()))
+				if ((thread->amissllib = OpenAmiSSL()))
 				{
-					if ((IAmiSSL = (struct AmiSSLIFace *)GetInterface(AmiSSLBase,"main",1,NULL)))
+					if ((thread->iamissl = (struct AmiSSLIFace *)GetInterface(thread->amissllib,"main",1,NULL)))
 					{
 						if (InitAmiSSL(AmiSSL_SocketBase, (ULONG)SocketBase, TAG_DONE) == 0)
 						{
-
 #else
-		if ((AmiSSLBase = OpenLibraryInterface("amissl.library",1,&IAmiSSL)))
+		SM_DEBUGF(10,("Open amissl.library\n"));
+		if ((thread->amissllib = OpenLibraryInterface("amissl.library",1,&thread->iamissl)))
 		{
 			if (!InitAmiSSL(AmiSSL_Version,
 					AmiSSL_CurrentVersion,
@@ -199,36 +186,39 @@ int open_ssl_lib(void)
 				SSLeay_add_ssl_algorithms();
 				SSL_load_error_strings();
 
-				if ((ctx = SSL_CTX_new(SSLv23_client_method())))
+				if ((thread->ssl_ctx = SSL_CTX_new(SSLv23_client_method())))
 				{
 					/* Everything is ok */
-					ssl_in_use++;
+					thread->ssllib_opencnt = 1;
 					return 1;
 				}
 #ifdef USE_AMISSL3
 							CleanupAmiSSL(TAG_DONE);
 						}
-						DropInterface((struct Interface*)IAmiSSL);
+						DropInterface((struct Interface*)thread->iamissl);
+						thread->iamissl = NULL;
 					}
 					CloseAmiSSL();
-					AmiSSLBase = NULL;
+					thread->amissllib = NULL;
 				}
 			}
-			CloseLibraryInterface(AmiSSLMasterBase,AmiSSLMasterBase);
-			AmiSSLMasterBase = NULL;
+			CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
+			thread->iamisslmaster = NULL;
+			thread->amisslmasterlib = NULL;
 		}
 
 #else
 				CleanupAmiSSL(TAG_DONE);
 			}
-			CloseLibraryInterface(AmiSSLBase,IAmiSSL);
-			AmiSSLBase = NULL;
+			CloseLibraryInterface(thread->amissllib,thread->iamissl);
+			thread->iamissl = NULL;
+			thread->amissllib = NULL;
 		}
 #endif
 
 	} else
 	{
-		ssl_in_use++;
+		thread->ssllib_opencnt++;
 		return 1;
 	}
 
@@ -239,15 +229,29 @@ int open_ssl_lib(void)
 
 void close_ssl_lib(void)
 {
+	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
+	if (!thread) return; /* assert */
+
 #ifndef NO_SSL
-	if (!ssl_in_use) return;
-	if (!(--ssl_in_use))
+	if (!thread->ssllib_opencnt) return;
+	if (!(--thread->ssllib_opencnt))
 	{
-		SSL_CTX_free(ctx);
-		ctx = NULL;
+		SSL_CTX_free(thread->ssl_ctx);
+		thread->ssl_ctx = NULL;
 		CleanupAmiSSL(TAG_DONE);
-		CloseLibrary(AmiSSLBase);
-		AmiSSLBase = NULL;
+#ifdef USE_AMISSL3
+		DropInterface((struct Interface*)thread->iamissl);
+		thread->iamissl = NULL;
+		CloseAmiSSL();
+		thread->amissllib = NULL;
+		CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
+		thread->iamisslmaster = NULL;
+		thread->amisslmasterlib = NULL;
+#else
+		CloseLibraryInterface(thread->amissllib,thread->iamissl);
+		thread->amissllib = NULL;
+		thread->iamissl = NULL;
+#endif
 		close_socket_lib();
 	}
 #endif
@@ -256,7 +260,10 @@ void close_ssl_lib(void)
 #ifndef NO_SSL
 SSL_CTX *ssl_context(void)
 {
-	return ctx;
+	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
+	if (!thread) return NULL; /* assert */
+
+	return thread->ssl_ctx;
 }
 #endif
 

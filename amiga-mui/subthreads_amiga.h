@@ -25,6 +25,8 @@
 
 #ifdef __AMIGAOS4__
 struct SocketIFace;
+struct AmiSSLMasterIFace;
+struct AmiSSLIFace;
 #endif
 
 struct timerequest;
@@ -38,10 +40,19 @@ struct thread_s
 	struct MsgPort *thread_port;
 
 	struct Library *socketlib;
-#ifdef __AMIGAOS4__
-	struct SocketIFace *isocket;
+	struct Library *amissllib;
+#ifdef USE_AMISSL3
+	struct Library *amisslmasterlib;
+	struct AmiSSLMasterIFace *iamisslmaster;
 #endif
+
+	struct SocketIFace *isocket;
+	struct AmiSSLIFace *iamissl;
+
+	void *ssl_ctx;
+
 	int socketlib_opencnt;
+	int ssllib_opencnt;
 
 	/* List of pushed functions */
 	struct MinList push_list;

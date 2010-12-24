@@ -799,7 +799,7 @@ msgstr "Zeichensatztabelle des benutzten Zeichensatzes"
 # amiga-mui/configwnd.c:801
 #: amiga-mui/configwnd.c:815
 msgid "Folder to display at startup"
-msgstr "Nach dem Start angezeigter Ornder"
+msgstr "Nach dem Start angezeigter Ordner"
 
 #: amiga-mui/configwnd.c:832 amiga-mui/configwnd.c:833
 msgid "Show AppIcon"
@@ -1673,7 +1673,7 @@ msgstr "Allgemeine Spameinstellungen"
 # amiga-mui/configwnd.c:2146
 #: amiga-mui/configwnd.c:2171 amiga-mui/configwnd.c:2172
 msgid "Mark mails as spam before moved to the spam folder"
-msgstr "Beim Verschieben in den Spam Ornder als Spam markieren"
+msgstr "Beim Verschieben in den Spam Ordner als Spam markieren"
 
 # amiga-mui/configwnd.c:2147
 #: amiga-mui/configwnd.c:2173
@@ -3582,7 +3582,7 @@ msgstr "Abbestellen eines Ordner fehlgeschlagen!"
 #: imap.c:1691
 #, c-format
 msgid "No new mails in folder \"%s\""
-msgstr "Keine Nachrichten im Ornder \"%s\""
+msgstr "Keine Nachrichten im Ordner \"%s\""
 
 # amiga-mui/filterwnd.c:527
 #: imap.c:1692

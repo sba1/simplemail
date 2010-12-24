@@ -773,6 +773,9 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 {
 	struct folder *folder;
 	int success = 0;
+
+	SM_DEBUGF(10,("Synchronizing folder \"%s\"\n",imap_path));
+
 	folders_lock();
 	if ((folder = folder_find_by_imap(server->login,server->name, imap_path)))
 	{
@@ -824,6 +827,9 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 					remote_mail_array = rm->remote_mail_array;
 					num_of_remote_mails = rm->num_of_remote_mail;
+
+					sm_snprintf(status_buf,sizeof(status_buf),_("Removing %d mails from server"),num_of_todel_local_mails);
+					thread_call_parent_function_async_string(status_set_status, 1, status_buf);
 
 					for (i = 0 ; i < num_of_local_mails; i++)
 					{
@@ -883,11 +889,11 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			/* Get information of all mails within the folder */
 			if ((rm = imap_get_remote_mails(conn, folder->imap_path, 0, 0)))
 			{
-				int i;
-				int msgtodl;
+				int i,j;
 				unsigned int max_todl_bytes = 0;
 				unsigned int accu_todl_bytes = 0; /* this represents the exact todl bytes according to the RFC822.SIZE */
 				unsigned int todl_bytes = 0;
+				unsigned int num_msgs_to_dl = 0; /* number of mails that we really want to download */
 
 				struct remote_mail *remote_mail_array;
 				int num_of_remote_mails;
@@ -897,47 +903,54 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 				imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_of_remote_mails, server, imap_path);
 
-				/* Determine the number of bytes which we are going to download */
-				for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
+				/* Determine the number of bytes and mails which we are going to download
+				 * Note that the contents of remote mail is partly destroyed. When we are
+				 * ready, the top of the remote array contains the uids (as uids), the sizes
+				 * (as size), and the indices (in field flags) that we want to download.
+				 * The number of mails is kept in num_msgs_to_dl.
+				 */
+				i=j=0;
+				while (i<num_of_remote_mails)
 				{
-					/* check if the mail already exists */
-					int does_exist = 0;
-					for (i=0; i < num_of_local_mails;i++)
+					if (j < num_of_local_mails)
 					{
-						if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
-							does_exist = 1;
-					}
-					if (does_exist) continue;
+						unsigned int remote_uid = remote_mail_array[i].uid;
+						unsigned int local_uid = local_mail_array[j].uid;
+						if (remote_uid >= local_uid)
+						{
+							/* Definitely skip local mail */
+							j++;
 
-					max_todl_bytes += remote_mail_array[msgtodl-1].size;
+							/* Skip also remote, if it matches the local uid (thus, the mail was present) */
+							if (remote_uid == local_uid)
+								i++;
+							continue;
+						}
+					}
+					max_todl_bytes += remote_mail_array[i].size;
+
+					/* Note that num_msgs_to_dl <= i. Also note that harm will be done
+					 * if num_msgs_to_dl == i. */
+					remote_mail_array[num_msgs_to_dl].uid = remote_mail_array[i].uid;
+					remote_mail_array[num_msgs_to_dl].size = remote_mail_array[i].size;
+					remote_mail_array[num_msgs_to_dl].flags = i;
+					num_msgs_to_dl++;
+					i++;
 				}
 
+				/* Assume everything is fine */
+				success = 1;
 				thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_todl_bytes);
 
-				if (!num_of_remote_mails) success = 1;
-
-				for (msgtodl = 1;msgtodl <= num_of_remote_mails;msgtodl++)
+				for (i=0;i<num_msgs_to_dl;i++)
 				{
-					/* check if the mail already exists */
-					int does_exist = 0;
-					for (i=0; i < num_of_local_mails;i++)
-					{
-						if (local_mail_array[i].uid == remote_mail_array[msgtodl-1].uid)
-							does_exist = 1;
-					}
-					if (does_exist)
-					{
-						success = 1;
-						continue;
-					}
+					accu_todl_bytes += remote_mail_array[i].size;
 
-					accu_todl_bytes += remote_mail_array[msgtodl-1].size;
-
-					sm_snprintf(status_buf,sizeof(status_buf),_("Fetching mail %d from server"),msgtodl);
-					thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
+					sm_snprintf(status_buf,sizeof(status_buf),_("Fetching mail %d from server"),remote_mail_array[i].flags + 1);
+					thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
 					sprintf(tag,"%04x",val++);
-					sprintf(send,"%s FETCH %d RFC822\r\n",tag,msgtodl);
+					sprintf(send,"%s FETCH %d RFC822\r\n",tag,remote_mail_array[i].flags+1); /* We could also use the UID command */
 					tcp_write(conn,send,strlen(send));
 					tcp_flush(conn);
 
@@ -977,7 +990,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 								{
 									FILE *fh;
 									char filename_buf[60];
-									sprintf(filename_buf,"u%d",remote_mail_array[msgtodl-1].uid); /* u means unchanged */
+									sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
 
 									if ((fh = fopen(filename_buf,"w")))
 									{
@@ -1034,7 +1047,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			struct connection *conn;
 			char head_buf[100];
 
-			SM_DEBUGF(10,("Synchronizing mails with %s\n",server->name));
+			SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
 
 			sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);

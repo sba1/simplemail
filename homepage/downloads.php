@@ -1,10 +1,10 @@
 <?php
 
-$version = "0.35";
-$date = "2009/12/24";
+$version = "0.36";
+$date = "2010/12/24";
 
-$morphversion = "0.33";
-$morphdate = "2009/01/10";
+$morphversion = "0.35";
+$morphdate = "2010/01/10";
 
   require_once("language.inc.php");
   require_once("support.inc.php");

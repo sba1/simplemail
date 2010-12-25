@@ -536,9 +536,15 @@ void folder_edit(struct folder *f)
 	set(second_cycle, MUIA_Cycle_Active, folder_get_secondary_sort(f) & FOLDER_SORT_MODEMASK);
 	set(second_reverse_check, MUIA_Selected, folder_get_secondary_sort(f) & FOLDER_SORT_REVERSE);
 
+	changed_folder = f;
+
+	if (f->is_imap)
 	{
-		int buf_len = strlen(f->imap_server) + strlen(f->imap_path) + strlen(f->imap_user) + 40;
+		struct string_node *node;
+
+		int buf_len = mystrlen(f->imap_server) + mystrlen(f->imap_path) + mystrlen(f->imap_user) + 40;
 		char *buf = malloc(buf_len);
+
 		if (buf)
 		{
 			sm_snprintf(buf,buf_len,"imap://%s@%s:/%s",f->imap_user,f->imap_server,f->imap_path);
@@ -548,12 +554,7 @@ void folder_edit(struct folder *f)
 		{
 			set(imap_string, MUIA_String_Contents, f->imap_server);
 		}
-	}
-	changed_folder = f;
 
-	if (f->is_imap)
-	{
-		struct string_node *node;
 		DoMethod(imap_folders_list,MUIM_NList_Clear);
 		node = (struct string_node*)list_first(&f->imap_all_folder_list);
 		while (node)

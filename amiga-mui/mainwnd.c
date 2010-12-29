@@ -1576,7 +1576,7 @@ void main_select_mail(int mail)
 *******************************************************************/
 int main_is_iconified(void)
 {
-	return xget(App, MUIA_Application_Iconified);
+	return !!xget(App, MUIA_Application_Iconified);
 }
 
 /******************************************************************

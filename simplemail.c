@@ -925,31 +925,69 @@ static void touch_active_mail(struct folder *f, struct mail_info *m)
 	}
 }
 
-static void display_active_mail(struct folder *f, struct mail_info *m)
+static void really_display_active_mail(struct folder *f, struct mail_info *m)
 {
-	/* Only display mail if it is still the active one because
-	   another mail might be selected during the delay */
+	SM_ENTER;
+
 	if (main_get_active_mail() == m)
 	{
 		main_display_active_mail();
-
 		if (main_is_message_view_displayed())
 		{
 			/* TODO: Make the delay user configurable */
 			thread_push_function_delayed(2000, touch_active_mail, 2, f, m);
 		}
 	}
+	SM_LEAVE;
 }
 
-/* a new mail within the main window has been selected */
+/**
+ * Function that is called, when a mail was downloaded.
+ *
+ * @param m
+ */
+static void imap_mail_downloaded_callback(struct mail_info *m, void *userdata)
+{
+	struct folder *f = (struct folder*)userdata;
+	if (m && f && main_get_active_mail() == m && main_get_folder() == f)
+	{
+		main_refresh_mail(m);
+		really_display_active_mail(f,m);
+	}
+}
+
+/**
+ * Display the active mail.
+ *
+ * @param f
+ * @param m
+ */
+static void display_active_mail(struct folder *f, struct mail_info *m)
+{
+	/* Only display mail if it is still the active one because
+	 * another mail might be selected during the delay */
+	if (main_get_active_mail() == m)
+	{
+		if (m->flags & MAIL_FLAGS_PARTIAL)
+			imap_download_mail_async(main_get_folder(), m, imap_mail_downloaded_callback, f);
+		else
+			really_display_active_mail(f, m);
+	}
+}
+
+/**
+ * Called whenever a mail has been selected in the main window.
+ */
 void callback_mail_within_main_selected(void)
 {
 	/* delay the displaying, so it is still possible to select multiple mails
-     without problems */
+     * without problems */
 	thread_push_function_delayed(250, display_active_mail, 2, main_get_folder(), main_get_active_mail());
 }
 
-/* Process the current selected folder and mark all mails which are identified as spam */
+/**
+ * Process the current selected folder and mark all mails which are identified as spam
+ */
 void callback_check_selected_folder_for_spam(void)
 {
 	struct folder *folder = main_get_folder();
@@ -993,7 +1031,7 @@ void callback_check_selected_folder_for_spam(void)
 		if (spam_is_mail_spam(folder->path,m,white,user.config.spam_black_emails))
 		{
 			folder_set_mail_flags(folder, m, m->flags | MAIL_FLAGS_AUTOSPAM);
-			if (m->flags & MAIL_FLAGS_NEW && folder->new_mails) folder->new_mails--;
+			if ((m->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
 			m->flags &= ~MAIL_FLAGS_NEW;
 			main_refresh_mail(m);
 		}

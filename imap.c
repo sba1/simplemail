@@ -1882,7 +1882,15 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 	}
 }
 
-static int imap_thread_download_mail(struct imap_server *server, struct folder *f, struct mail_info *m)
+/**
+ *
+ * @param server
+ * @param f
+ * @param m
+ * @param callback called on the context of the parent task.
+ * @return
+ */
+static int imap_thread_download_mail(struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
 {
 	char send[200];
 	char tag[20];
@@ -1891,7 +1899,13 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 	int uid;
 	int success;
 
-	if (!imap_thread_really_login_to_given_server(server)) return 0;
+	SM_ENTER;
+
+	if (!imap_thread_really_login_to_given_server(server))
+	{
+		SM_RETURN(0,"%ld");
+		return 0;
+	}
 
 	uid = atoi(m->filename + 1);
 
@@ -1900,6 +1914,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 	tcp_write(imap_connection,send,strlen(send));
 	tcp_flush(imap_connection);
 
+	SM_DEBUGF(15,("Sending %s",send));
 	success = 0;
 	while ((line = tcp_readln(imap_connection)))
 	{
@@ -1936,7 +1951,7 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 				{
 					FILE *fh;
 
-					mystrlcpy(buf,f->path,sizeof(buf));
+					mystrlcpy(buf,local_path,sizeof(buf));
 					sm_add_part(buf,m->filename,sizeof(buf));
 
 					if ((fh = fopen(buf,"w")))
@@ -1956,6 +1971,10 @@ static int imap_thread_download_mail(struct imap_server *server, struct folder *
 			}
 		}
 	}
+	if (callback)
+		thread_call_parent_function_async(callback, 2, m, userdata);
+
+	SM_RETURN(success,"%ld");
 	return success;
 }
 
@@ -2234,11 +2253,103 @@ int imap_download_mail(struct folder *f, struct mail_info *m)
 	if (!(server = account_find_imap_server_by_folder(f))) return 0;
 	if (!imap_start_thread()) return 0;
 
-	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 3, server, f, m))
+	if (thread_call_function_sync(imap_thread, imap_thread_download_mail, 5, server, f->path, m, NULL, NULL))
 	{
 		folder_set_mail_flags(f, m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
 		return 1;
 	}
+	return 0;
+}
+
+struct imap_download_data
+{
+	struct imap_server *server;
+	char *local_path;
+	char *remote_path;
+	void (*callback)(struct mail_info *m, void *userdata);
+	void *userdata;
+};
+
+/**
+ * Function that is to be called when an email has been downloaded
+ * asynchronly. Always called on the context of the parent task.
+ *
+ * @param m
+ * @param userdata
+ */
+static void imap_download_mail_async_callback(struct mail_info *m, void *userdata)
+{
+	struct imap_download_data *d = (struct imap_download_data*)userdata;
+	struct folder *local_folder;
+
+	SM_ENTER;
+
+	SM_DEBUGF(20,("m=%p, d=%p, local_path=%p\n",m,d,d->local_path));
+
+	folders_lock();
+	if ((local_folder = folder_find_by_path(d->local_path)))
+		folder_lock(local_folder);
+	folders_unlock();
+
+	if (local_folder)
+	{
+		folder_set_mail_flags(local_folder, m, (m->flags & (~MAIL_FLAGS_PARTIAL)));
+		folder_unlock(local_folder);
+	}
+	d->callback(m,d->userdata);
+	mail_dereference(m);
+	free(d->remote_path);
+	free(d->local_path);
+	imap_free(d->server);
+	free(d);
+
+	SM_LEAVE;
+}
+
+/**
+ * Download the given mail in an asynchron manner. The callback is called when
+ * the download process has finished.
+ *
+ * @param f
+ * @param m
+ * @param callback called on the parents task context.
+ * @return
+ */
+int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
+{
+	struct imap_download_data *d = NULL;
+
+	SM_ENTER;
+
+	if (!imap_start_thread()) goto bailout;
+	if (!(d = malloc(sizeof(*d)))) goto bailout;
+	memset(d,0,sizeof(*d));
+	d->userdata = userdata;
+	if (!(d->server = account_find_imap_server_by_folder(f))) goto bailout;
+	if (!(d->server = imap_duplicate(d->server))) goto bailout;
+	if (!(d->local_path = mystrdup(f->path))) goto bailout;
+	if (!(d->remote_path = mystrdup(f->imap_path))) goto bailout;
+
+	mail_reference(m);
+	d->callback = callback;
+
+	if (!thread_call_function_async(imap_thread, imap_thread_download_mail, 5, d->server, d->local_path, m, imap_download_mail_async_callback, d))
+		goto bailout;
+	SM_RETURN(1,"%ld");
+	return 1;
+bailout:
+	if (d)
+	{
+		if (d->remote_path)
+		{
+			free(d->remote_path);
+			mail_dereference(m);
+		}
+		free(d->local_path);
+		imap_free(d->server);
+		free(d);
+	}
+	SM_RETURN(0,"%ld");
 	return 0;
 }
 

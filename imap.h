@@ -60,6 +60,6 @@ int imap_download_mail(struct folder *f, struct mail_info *m);
 int imap_move_mail(struct mail_info *mail, struct folder *src_folder, struct folder *dest_folder);
 int imap_delete_mail_by_filename(char *filename, struct folder *folder);
 int imap_append_mail(struct mail_info *mail, char *source_dir, struct folder *dest_folder);
-
+int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
 
 #endif

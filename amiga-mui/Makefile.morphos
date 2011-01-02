@@ -16,6 +16,7 @@ G_OPTFLAGS  = -O3 \
 	-Wmissing-prototypes \
 	-Wmissing-declarations \
 	-Werror-implicit-function-declaration
+G_DEBUG     = -g
 
 ##############################################################################
 

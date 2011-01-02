@@ -164,6 +164,7 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 {
 	struct account *account;
 
+	if (!f) return NULL;
 	if (!f->is_imap) return NULL;
 
 	account = (struct account*)list_first(&user.config.account_list);

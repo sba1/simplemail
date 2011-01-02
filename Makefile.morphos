@@ -29,11 +29,6 @@ all: date.h amigamui $(OUT) locale
 
 ##############################################################################
 
-.c.o:
-	 ppc-morphos-gcc $(G_CFLAGS) $(G_OPTFLAGS) $(G_DEBUG) $(G_DEFINES) $(G_IPATH) -o $*.o -c $*.c
-
-##############################################################################
-
 LIBS    = -L./amiga-mui
 
 GLOBAL  = SimpleMail_rev.h version.h date.h
@@ -138,7 +133,7 @@ amigamui:
 
 $(OUT): $(OBJS) amiga-mui/libgui.a
 	@echo Linking $@.db...
-	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lamissl -lexpat -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map,--traditional-format
+	@ppc-morphos-gcc amiga-mui/startup-morphos.o $(OBJS) -noixemul -nostdlib -nostartfiles $(LIBS) -lgui -lexpat -labox -laboxstubs -lc -ldebug -o $(OUT).debug -Wl,-Map=$(OUT).map,--traditional-format
 	@echo Striping $@...
 	@ppc-morphos-strip -o $(OUT) --remove-section=.comment $(OUT).debug
 	@chmod a+x $(OUT)
@@ -161,6 +156,7 @@ prepare-release:
 	cp amiga-mui/binaries/MorphOS_SimpleMail_Folder.info /ram/SimpleMail.info
 	cp amiga-mui/binaries/MorphOS_simplehtml.library /ram/SimpleMail/Libs/simplehtml.library
 	(cd amiga-mui/binaries/; for i in *.img; do cp $$i /ram/SimpleMail/Images/`echo $$i | sed "s/\.img$$//"`; done)
+	cp amiga-mui/binaries/images.list /ram/SimpleMail/Images/images.list
 	rm /ram/SimpleMail/Images/MorphOS_startup
 	rm /ram/SimpleMail/Images/MorphOS_shutdown
 	cp amiga-mui/binaries/MorphOS_startup.img /ram/SimpleMail/Images/startup

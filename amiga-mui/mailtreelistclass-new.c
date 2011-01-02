@@ -2592,7 +2592,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 
 	/* Don't do anything if removed element was invisble */
 	if (drawupdate == UPDATE_SINGLE_ENTRY_REMOVED &&
-	    data->drawupdate_position >= data->entries_first + data->entries_visible - 1)
+	    data->drawupdate_position >= data->entries_first + data->entries_visible)
 		return 0;
 
 	start = data->entries_first;

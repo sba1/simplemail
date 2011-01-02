@@ -654,7 +654,7 @@ void save_config(void)
 			else fprintf(fh,"FolderDirectory=%s\n",user.folder_directory);
 
 			fprintf(fh,"DST=%s\n",user.config.dst?"Y":"N");
-			fprintf(fh,"DeleteDeleted=%s",user.config.delete_deleted?"Y":"N");
+			fprintf(fh,"DeleteDeleted=%s\n",user.config.delete_deleted?"Y":"N");
 			if (user.config.default_codeset) fprintf(fh,"Charset=%s\n",user.config.default_codeset->name);
 			if (user.config.appicon_label) fprintf(fh,"AppIconLabel=%s\n",user.config.appicon_label);
 			fprintf(fh,"AppIconShow=%d\n",user.config.appicon_show);

@@ -555,9 +555,9 @@ int gui_init(void)
 	SM_RETURN(rc,"%ld");
 }
 
-/****************************************************************
- The GUI loop. Also cleans the gui.
-*****************************************************************/
+/**
+ * The GUI loop.
+ */
 void gui_loop(void)
 {
 	SM_ENTER;
@@ -565,13 +565,19 @@ void gui_loop(void)
 	/* Now really loop */
 	loop();
 
-	/* Cleanup the stuff */
+	SM_LEAVE;
+}
+
+/**
+ * Frees the GUI.
+ */
+void gui_deinit(void)
+{
+	read_window_cleanup();
 	close_config();
 	shutdownwnd_open();
 	all_del();
 	dt_cleanup();
-
-	SM_LEAVE;
 }
 
 /****************************************************************

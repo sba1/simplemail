@@ -29,6 +29,7 @@ void app_unbusy(void);
 int gui_parseargs(int argc, char *argv[]);
 int gui_init(void);
 void gui_loop(void);
+void gui_deinit(void);
 int gui_execute_arexx(char *filename);
 
 #endif

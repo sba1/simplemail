@@ -829,6 +829,10 @@ void read_refresh_prevnext_button(struct folder *f)
 static void read_window_dispose(struct Read_Data **pdata)
 {
 	struct Read_Data *data = *pdata;
+
+	SM_ENTER;
+	SM_DEBUGF(20,("data=%p\n",data));
+
 	read_cleanup(data);
 	set(data->wnd, MUIA_Window_Open, FALSE);
 	DoMethod(App, OM_REMMEMBER, (ULONG)data->wnd);
@@ -843,12 +847,14 @@ static void read_window_dispose(struct Read_Data **pdata)
 	if (data->ref_mail) mail_dereference(data->ref_mail);
 	if (data->num < MAX_READ_OPEN) read_open[data->num] = NULL;
 	free(data);
+
+	SM_LEAVE;
 }
 
 /**
  * Deallocates all resources associated with any read window.
  */
-static void read_window_cleanup(void *user_data)
+void read_window_cleanup(void)
 {
 	int i;
 
@@ -1284,8 +1290,6 @@ int read_window_open(char *folder, struct mail_info *mail, int window)
 		/* translate the menu entries */
 		if (!(read_newmenu = malloc(sizeof(nm_untranslated)))) return -1;
 		memcpy(read_newmenu, nm_untranslated,sizeof(nm_untranslated));
-
-		atcleanup(read_window_cleanup,NULL);
 
 		for (i=0;i<ARRAY_LEN(nm_untranslated)-1;i++)
 		{

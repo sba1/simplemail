@@ -2452,6 +2452,7 @@ int simplemail_main(void)
 					callback_timer();
 
 					gui_loop();
+					gui_deinit();
 				}
 				if (user.config.delete_deleted)
 					folder_delete_deleted();

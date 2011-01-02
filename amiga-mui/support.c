@@ -974,6 +974,9 @@ void tell_from_subtask(const char *str)
 
 #ifndef NO_SSL
 
+#ifdef __MORPHOS__
+#define USE_INLINE_STDARG
+#endif
 #include <proto/amissl.h>
 #ifdef USE_AMISSL3
 #include <libraries/amisslmaster.h>

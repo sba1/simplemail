@@ -51,6 +51,9 @@
 #endif
 
 #ifndef NO_SSL
+#ifdef __MORPHOS__
+#define USE_INLINE_STDARG
+#endif
 #ifdef USE_AMISSL3
 #include <libraries/amisslmaster.h>
 #include <proto/amisslmaster.h>

@@ -968,7 +968,7 @@ static void display_active_mail(struct folder *f, struct mail_info *m)
 	 * another mail might be selected during the delay */
 	if (main_get_active_mail() == m)
 	{
-		if (m->flags & MAIL_FLAGS_PARTIAL)
+		if (m && (m->flags & MAIL_FLAGS_PARTIAL))
 			imap_download_mail_async(main_get_folder(), m, imap_mail_downloaded_callback, f);
 		else
 			really_display_active_mail(f, m);

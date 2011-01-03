@@ -1589,7 +1589,7 @@ msgstr "Begrüßung (mit Anrede)"
 # amiga-mui/configwnd.c:1986
 #: amiga-mui/configwnd.c:2012
 msgid "?phrases:Close"
-msgstr "Abschluß"
+msgstr "Abschluss"
 
 # amiga-mui/configwnd.c:1993
 # amiga-mui/folderwnd.c:277
@@ -4060,12 +4060,12 @@ msgstr "DATA Kommando fehlgeschlagen"
 # smtp.c:727
 #: smtp.c:727
 msgid "Sending EHLO..."
-msgstr "Übermittle Begrüssung (EHLO)..."
+msgstr "Übermittle Begrüßung (EHLO)..."
 
 # smtp.c:732
 #: smtp.c:732
 msgid "Sending HELO..."
-msgstr "Übermittle Begrüssung (HELO)..."
+msgstr "Übermittle Begrüßung (HELO)..."
 
 # smtp.c:735
 # smtp.c:769
@@ -4100,12 +4100,12 @@ msgstr "Verbinung konnte nicht sicher gemacht werden."
 # smtp.c:761
 #: smtp.c:761
 msgid "Sending secured EHLO..."
-msgstr "Übermittle gesicherte Begrüssung (EHLO)..."
+msgstr "Übermittle gesicherte Begrüßung (EHLO)..."
 
 # smtp.c:766
 #: smtp.c:766
 msgid "Sending secured HELO..."
-msgstr "Übermittle gesicherte Begrüssung (HELO)..."
+msgstr "Übermittle gesicherte Begrüßung (HELO)..."
 
 # smtp.c:777
 #: smtp.c:777

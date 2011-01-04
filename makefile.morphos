@@ -1,0 +1,170 @@
+#
+# Makefile for SimpleMail
+#
+
+CROSS_COMPILE = ppc-morphos-
+RM     = rm -rf
+MKDIR  = mkdir -p
+DATE   = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
+
+# Uncomment the next line if you are cross compiling
+
+CC      = $(CROSS_COMPILE)gcc
+CXX     = $(CROSS_COMPILE)c++
+AS      = $(CROSS_COMPILE)as
+LD      = $(CROSS_COMPILE)ld
+RANLIB  = $(CROSS_COMPILE)ranlib
+STRIP   = $(CROSS_COMPILE)strip
+OBJDUMP = $(CROSS_COMPILE)objdump
+
+# Change these as required
+OPTIMIZE = -O3 -mcpu=750 -mmultiple
+DEBUG = -g -DNDEBUG
+INC = -I. -I./indep-include -I./amiga-mui
+CFLAGS = -noixemul $(DATE) -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -DUSE_AMISSL3 -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
+
+# Flags passed to gcc during linking
+LINK = -noixemul -nostdlib -nostartfiles
+
+# Name of the "thing" to build
+TARGET = SimpleMail
+
+# Additional linker libraries
+LIBS = -ldebug -lexpat -lc -labox -laboxstubs
+
+# Version of the binary to build
+VERSION = 0
+
+# Source code files used in this project
+
+ARCHSRCS=\
+	startup-morphos.c \
+	accountpopclass.c \
+	addressbookwnd.c \
+	addressentrylistclass.c \
+	addressgrouplistclass.c \
+	addressmatchlistclass.c \
+	addressstringclass.c \
+	appicon.c \
+	archdebug.c \
+	amigasupport.c \
+	arexx.c \
+	attachmentlistclass.c \
+	audioselectgroupclass.c \
+	composeeditorclass.c \
+	composewnd.c \
+	configwnd.c \
+	configwnd_stuff.c \
+	datatypescache.c \
+	datatypesclass.c \
+	errorwnd.c \
+	filterlistclass.c \
+	filterruleclass.c \
+	filterwnd.c \
+	foldertreelistclass.c \
+	folderwnd.c \
+	gettext.c \
+	gui_main.c \
+	iconclass.c \
+	mailinfoclass.c \
+	mailtreelistclass.c \
+	mailtreelistclass-new.c \
+	mainwnd.c \
+	messageviewclass.c \
+	muistuff.c \
+	multistringclass.c \
+	pgplistclass.c \
+	picturebuttonclass.c \
+	popupmenuclass.c \
+	readwnd.c \
+	searchwnd.c \
+	shutdownwnd.c \
+	smtoolbarclass.c \
+	signaturecycleclass.c \
+	startupwnd.c \
+	statuswnd.c \
+	subthreads.c \
+	support.c \
+	sysprint.c \
+	tcpip.c \
+	transwndclass.c \
+	utf8stringclass.c \
+	vsnprintf.c
+
+include common-sources.mk
+
+SRCS = $(addprefix amiga-mui/,$(ARCHSRCS)) $(NONARCHSRCS)
+
+# -------------------------------------------------------------
+
+OBJS = $(SRCS:%.c=ppc-morphos-objs/%.o)
+
+all: dirs $(TARGET)
+
+.PHONY: dirs
+dirs:
+	@$(MKDIR) ppc-morphos-objs/amiga-mui
+
+# Rules for building
+$(TARGET): $(OBJS)
+	$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+	$(STRIP) --remove-section=.comment -o $@ $@.debug
+	chmod a+x SimpleMail
+
+ppc-morphos-objs/%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+.PHONY: clean
+clean:
+	-$(RM) $(TARGET) $(TARGET).debug ppc-morphos-objs
+
+.PHONY: revision
+revision:
+	bumprev $(VERSION) $(TARGET)
+
+.PHONY: dump
+dump:
+	$(OBJDUMP) --reloc --disassemble-all $(TARGET).debug >$(TARGET).dump
+
+# -------------------------------------------------------------
+
+de.pox:
+	xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
+	msgmerge po/de.po po/simplemail.pot -o po/de.pox --verbose
+	$(RM) po/simplemail.pot
+
+# -------------------------------------------------------------
+
+prepare-release: all
+	mkdir -p sm/locale
+	smake locale
+	-rm -rf /ram/SimpleMail
+	mkdir /ram/SimpleMail /ram/SimpleMail/ARexx /ram/SimpleMail/Charsets /ram/SimpleMail/Images /ram/SimpleMail/Libs /ram/SimpleMail/Locale
+	cp SimpleMail /ram/SimpleMail/
+	cp doc/amiga/ReadMe /ram/SimpleMail/
+	cp doc/amiga/SimpleMail.guide /ram/SimpleMail/
+	cp doc/amiga/history.txt /ram/SimpleMail/
+	cp amiga-mui/binaries/check.info /ram/SimpleMail/Images/check.info
+	cp amiga-mui/binaries/empty.info /ram/SimpleMail/Images/empty.info
+	cp amiga-mui/binaries/new.info /ram/SimpleMail/Images/new.info
+	cp amiga-mui/binaries/old.info /ram/SimpleMail/Images/old.info
+	cp amiga-mui/binaries/MorphOS_ReadMe.info /ram/SimpleMail/ReadMe.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail.guide.info /ram/SimpleMail/SimpleMail.guide.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail.info /ram/SimpleMail/SimpleMail.info
+	cp amiga-mui/binaries/MorphOS_SimpleMail_Folder.info /ram/SimpleMail.info
+	cp amiga-mui/binaries/MorphOS_simplehtml.library /ram/SimpleMail/Libs/simplehtml.library
+	(cd amiga-mui/binaries/; for i in *.img; do cp $$i /ram/SimpleMail/Images/`echo $$i | sed "s/\.img$$//"`; done)
+	cp amiga-mui/binaries/images.list /ram/SimpleMail/Images/images.list
+	rm /ram/SimpleMail/Images/MorphOS_startup
+	rm /ram/SimpleMail/Images/MorphOS_shutdown
+	cp amiga-mui/binaries/MorphOS_startup.img /ram/SimpleMail/Images/startup
+	cp amiga-mui/binaries/MorphOS_shutdown.img /ram/SimpleMail/Images/shutdown
+	cp -r amiga-mui/ARexx/*.smrx /ram/SimpleMail/ARexx/
+	cp sm/locale/*.mo /ram/SimpleMail/Locale/
+	cp Charsets/*.txt /ram/SimpleMail/Charsets/
+	cp .taglines /ram/SimpleMail/
+	cp /Utils/Internet/SimpleMail/Libs/expat.library /ram/SimpleMail/Libs/
+	-rm /ram/simplemail-morphos.lha
+	lha -r -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
+	rm -rf /ram/SimpleMail /ram/SimpleMail.info
+

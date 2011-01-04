@@ -996,7 +996,7 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 			if (millis) timer_send_if_not_sent(&timer,millis);
 
-			if (!IsListEmpty(&this_thread->push_list))
+			if (!IsListEmpty((struct List *)&this_thread->push_list))
 				SM_DEBUGF(5,("List is not empty!\n"));
 			SM_DEBUGF(20,("Sleeping\n"));
 			mask = Wait(timer_m|proc_m|SIGBREAKF_CTRL_C|SIGBREAKF_CTRL_D);

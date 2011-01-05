@@ -34,7 +34,9 @@
 /* useful MUI supports */
 IPTR xget(Object * obj, ULONG attribute);
 #ifdef __MORPHOS__
-APTR MyNewObject( struct IClass *cl, CONST_STRPTR id, ...) __attribute__((varargs68k));
+/* DoSuperNew is part of libabox.a */
+#include <clib/alib_protos.h>
+#define MyNewObject NewObject
 #elif __AROS__
 IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...) __stackparm;
 APTR MyNewObject (struct IClass *cl, CONST_STRPTR id, Tag tag1, ...) __stackparm;

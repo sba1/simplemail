@@ -81,24 +81,6 @@ ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 	return rc;
 }
 
-#elif __MORPHOS__
-APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
-{
-	ULONG *tags;
-	Object *o;
-	va_list args;
-
-	va_start(args,id);
-
-	tags = (ULONG *)args->overflow_arg_area;
-
-	SM_DEBUGF(25,("tag=%p [0]=%p [1]=%p [2]=%p id=%p\n",tags,tags[0],tags[1],tags[2],id));
-
-	o = NewObjectA(cl,id,(struct TagItem *)tags);
-	va_end(args);
-	return o;
-}
-
 #elif __AROS__
 
 IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...)
@@ -118,7 +100,7 @@ APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, Tag tag1, ...)
 	AROS_SLOWSTACKTAGS_POST
 }
 
-#else
+#elif !defined(__MORPHOS__)
 
 ULONG VARARGS68K DoSuperNew(struct IClass *cl, Object * obj, ...)
 {

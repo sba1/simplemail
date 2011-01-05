@@ -254,10 +254,7 @@ void init_hook_standard(void)
 		hook_standard.h_Entry = (HOOKFUNC)hookEntry;
 		hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 	}
-#elif defined(__MORPHOS__)
-	hook_standard.h_Entry = (HOOKFUNC)HookEntry;
-	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
-#elif defined(__AROS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 	hook_standard.h_Entry = (HOOKFUNC)HookEntry;
 	hook_standard.h_SubEntry = (HOOKFUNC)hook_func_standard;
 #else
@@ -290,10 +287,7 @@ void init_hook(struct Hook *h, unsigned long (*func)(void))
 		h->h_Entry = (HOOKFUNC)hookEntry;
 		h->h_SubEntry = (HOOKFUNC)func;
 	}
-#elif defined(__MORPHOS__)
-	h->h_Entry = (HOOKFUNC)HookEntry;
-	h->h_SubEntry = (HOOKFUNC)func;
-#elif defined(__AROS__)
+#elif defined(__MORPHOS__) || defined(__AROS__)
 	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 #else
@@ -315,11 +309,7 @@ void init_hook_with_data(struct Hook *h, unsigned long (*func)(void), void *data
 		h->h_SubEntry = (HOOKFUNC)func;
 		h->h_Data = data;
 	}
-#elif defined(__MORPHOS__)
-	h->h_Entry = (HOOKFUNC)HookEntry;
-	h->h_SubEntry = (HOOKFUNC)func;
-	h->h_Data = data;
-#elif defined(__AROS__)
+#elif defined(__MORPHOS__) ||  defined(__AROS__)
 	h->h_Entry = (HOOKFUNC)HookEntry;
 	h->h_SubEntry = (HOOKFUNC)func;
 	h->h_Data = data;

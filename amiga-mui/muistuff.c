@@ -43,9 +43,9 @@ extern ULONG muiDispatcherEntry(void);
 
 IPTR xget(Object * obj, ULONG attribute)
 {
-  IPTR x;
-  get(obj, attribute, &x);
-  return (x);
+	IPTR x;
+	get(obj, attribute, &x);
+	return (x);
 }
 
 #ifdef __AMIGAOS4__
@@ -103,19 +103,19 @@ APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 
 IPTR DoSuperNew(struct IClass *cl, Object *obj, Tag tag1, ...)
 {
-    if (cl == NULL || obj == NULL)
-        return NULL;
+	if (cl == NULL || obj == NULL)
+		return NULL;
 
-    AROS_SLOWSTACKMETHODS_PRE(tag1)
-    retval = DoSuperMethod(cl, obj, OM_NEW, (struct TagItem *) AROS_SLOWSTACKMETHODS_ARG(tag1), NULL);
-    AROS_SLOWSTACKMETHODS_POST
+	AROS_SLOWSTACKMETHODS_PRE(tag1)
+	retval = DoSuperMethod(cl, obj, OM_NEW, (struct TagItem *) AROS_SLOWSTACKMETHODS_ARG(tag1), NULL);
+	AROS_SLOWSTACKMETHODS_POST
 }
 
 APTR MyNewObject(struct IClass *cl, CONST_STRPTR id, Tag tag1, ...)
 {
-    AROS_SLOWSTACKTAGS_PRE(tag1)
-    retval = NewObjectA (cl, id, AROS_SLOWSTACKTAGS_ARG(tag1));
-    AROS_SLOWSTACKTAGS_POST
+	AROS_SLOWSTACKTAGS_PRE(tag1)
+	retval = NewObjectA (cl, id, AROS_SLOWSTACKTAGS_ARG(tag1));
+	AROS_SLOWSTACKTAGS_POST
 }
 
 #else
@@ -175,17 +175,17 @@ struct MUI_CustomClass *CreateMCC(CONST_STRPTR supername, struct MUI_CustomClass
 
 Object *MakeLabel(STRPTR str)
 {
-  return (MUI_MakeObject(MUIO_Label, str, 0));
+	return (MUI_MakeObject(MUIO_Label, str, 0));
 }
 
 Object *MakeButton(STRPTR str)
 {
-  Object *obj = MUI_MakeObject(MUIO_Button, str);
-  if (obj)
-  {
-    set(obj,MUIA_CycleChain, 1);
-  }
-  return obj;
+	Object *obj = MUI_MakeObject(MUIO_Button, str);
+	if (obj)
+	{
+		set(obj,MUIA_CycleChain, 1);
+	}
+	return obj;
 }
 
 Object *MakeCheck(STRPTR label, ULONG check)
@@ -200,36 +200,36 @@ Object *MakeCheck(STRPTR label, ULONG check)
 
 Object *MakeCycle(STRPTR label, STRPTR * array)
 {
-  Object *obj = MUI_MakeObject(MUIO_Cycle, label, array);
-  if (obj)
-    set(obj, MUIA_CycleChain, 1);
-  return (obj);
+	Object *obj = MUI_MakeObject(MUIO_Cycle, label, array);
+	if (obj)
+		set(obj, MUIA_CycleChain, 1);
+	return (obj);
 }
 
 VOID DisposeAllChilds(Object *o)
 {
-  struct List *child_list = (struct List*)xget(o,MUIA_Group_ChildList);
-  Object *cstate = (Object *)child_list->lh_Head;
-  Object *child;
+	struct List *child_list = (struct List*)xget(o,MUIA_Group_ChildList);
+	Object *cstate = (Object *)child_list->lh_Head;
+	Object *child;
 
-  while ((child = (Object*)NextObject(&cstate)))
-  {
-    DoMethod(o,OM_REMMEMBER, (ULONG)child);
-    MUI_DisposeObject(child);
-  }
+	while ((child = (Object*)NextObject(&cstate)))
+	{
+		DoMethod(o,OM_REMMEMBER, (ULONG)child);
+		MUI_DisposeObject(child);
+	}
 }
 
 VOID DisposeAllFamilyChilds(Object *o)
 {
-  struct List *child_list = (struct List*)xget(o,MUIA_Family_List);
-  Object *cstate = (Object *)child_list->lh_Head;
-  Object *child;
+	struct List *child_list = (struct List*)xget(o,MUIA_Family_List);
+	Object *cstate = (Object *)child_list->lh_Head;
+	Object *child;
 
-  while ((child = (Object*)NextObject(&cstate)))
-  {
-    DoMethod(o,OM_REMMEMBER, (ULONG)child);
-    MUI_DisposeObject(child);
-  }
+	while ((child = (Object*)NextObject(&cstate)))
+	{
+		DoMethod(o,OM_REMMEMBER, (ULONG)child);
+		MUI_DisposeObject(child);
+	}
 }
 
 struct Hook hook_standard;

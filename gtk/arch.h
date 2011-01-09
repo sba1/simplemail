@@ -33,5 +33,5 @@
 #define SM_OPERATIONSYSTEM "UNIX/GTK+"
 #endif
 
-/* Debug - defines ARCH_DEBUG */
-#define ARCH_DEBUG(x) puts(x)
+/* Debug - defines ARCH_DEBUG_EXTRA */
+#define ARCH_DEBUG_EXTRA ""

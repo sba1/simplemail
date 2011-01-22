@@ -155,7 +155,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
  * @param remote_mail_array
  * @param num_remote_mails
  */
-void imap_delete_orphan_messages(struct local_mail *local_mail_array, int num_of_local_mails, struct remote_mail *remote_mail_array, int num_remote_mails, struct imap_server *imap_server, char *imap_folder)
+static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int num_of_local_mails, struct remote_mail *remote_mail_array, int num_remote_mails, struct imap_server *imap_server, char *imap_folder)
 {
 	int i,j;
 
@@ -450,6 +450,7 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
 	while ((line = tcp_readln(conn)))
 	{
 		line = imap_get_result(line,buf,sizeof(buf));
+		SM_DEBUGF(10,("Server: %s",line));
 		if (!mystricmp(buf,tag))
 		{
 			line = imap_get_result(line,buf,sizeof(buf));
@@ -499,6 +500,7 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
 	} else
 	{
 		thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+		SM_DEBUGF(10,("Failed examining the folder\n"));
 		free(rm);
 		rm = NULL;
 	}
@@ -523,7 +525,7 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
  * @note the given path stays in the selected/examine state.
  * @note the returned structure must be free with imap_free_remote_mailbox()
  */
-static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers)
+static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers, unsigned int uid_start, unsigned int uid_end)
 {
 	/* get number of remote mails */
 	char *line;
@@ -538,6 +540,9 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	if (!(rm = imap_select_mailbox(conn,path,writemode)))
 		return NULL;
 
+	if (!uid_start) uid_end = 0;
+	else if (!uid_end) uid_start = 0;
+
 	if ((num_of_remote_mails = rm->num_of_remote_mail))
 	{
 		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
@@ -551,13 +556,14 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 			memset(remote_mail_array,0,sizeof(struct remote_mail)*num_of_remote_mails);
 
 			sprintf(tag,"%04x",val++);
-			sm_snprintf(send,sizeof(send),"%s FETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,1,num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
+			sm_snprintf(send,sizeof(send),"%s %sFETCH %d:%d (UID FLAGS RFC822.SIZE%s)\r\n",tag,uid_start?"UID ":"",uid_start?uid_start:1,uid_start?uid_end:num_of_remote_mails,headers?" BODY[HEADER.FIELDS (FROM DATE SUBJECT TO CC)]":"");
 			SM_DEBUGF(10,("Fetching remote mail array: %s",send));
 			tcp_write(conn,send,strlen(send));
 			tcp_flush(conn);
 
 			while ((line = tcp_readln(conn)))
 			{
+				SM_DEBUGF(10,("Server: %s",line));
 				line = imap_get_result(line,buf,sizeof(buf));
 				if (!mystricmp(buf,tag))
 				{
@@ -819,7 +825,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 			if (num_of_todel_local_mails)
 			{
-				if ((rm = imap_get_remote_mails(conn, folder->imap_path, 1, 0)))
+				if ((rm = imap_get_remote_mails(conn, folder->imap_path, 1, 0, 0, 0)))
 				{
 					struct remote_mail *remote_mail_array;
 					int num_of_remote_mails;
@@ -887,7 +893,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			}
 
 			/* Get information of all mails within the folder */
-			if ((rm = imap_get_remote_mails(conn, folder->imap_path, 0, 0)))
+			if ((rm = imap_get_remote_mails(conn, folder->imap_path, 0, 0, 0, 0)))
 			{
 				int i,j;
 				unsigned int max_todl_bytes = 0;
@@ -1539,6 +1545,9 @@ static int imap_thread_really_download_mails(void)
 	unsigned int local_uid_validiy = 0;
 	unsigned int local_uid_next = 0;
 
+	unsigned int uid_from = 0;
+	unsigned int uid_to = 0;
+
 	if (!imap_connection) return -1;
 
 	getcwd(path, sizeof(path));
@@ -1560,123 +1569,152 @@ static int imap_thread_really_download_mails(void)
 	{
 		if ((rm = imap_select_mailbox(imap_connection, imap_folder, 0)))
 		{
-			if (rm->uid_validity == local_uid_validiy && rm->uid_next == local_uid_next)
+			if (rm->uid_validity == local_uid_validiy)
 			{
-				/* Now new mails since called last time */
-				do_download = 0;
+				if (rm->uid_next == local_uid_next)
+				{
+					/* Now new mails since called last time */
+					do_download = 0;
 
-				SM_DEBUGF(10,("UIDs match. Therefore no mails need to be downloaded.\n"));
+					SM_DEBUGF(10,("UIDs match. Therefore no mails need to be downloaded.\n"));
+				} else
+				{
+					uid_from = local_uid_next;
+					uid_to = rm->uid_next;
+
+					SM_DEBUGF(10,("Downloading mails from uid %ld to %ld\n",uid_from,uid_to));
+				}
 			}
 			imap_free_remote_mailbox(rm);
 			rm = NULL;
 		}
 	}
 
-	if (do_download && (rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1)))
+	if (do_download)
 	{
-		int i,j;
-		int num_of_local_mails;
-		int num_of_todel_local_mails;
-		struct local_mail *local_mail_array;
-
-		struct remote_mail *remote_mail_array;
-		int num_remote_mails;
-
-		num_remote_mails = rm->num_of_remote_mail;
-		remote_mail_array = rm->remote_mail_array;
-
 		folders_lock();
 		if ((local_folder = folder_find_by_imap(imap_server->login, imap_server->name, imap_folder)))
 		{
+			int num_of_local_mails;
+			int num_of_todel_local_mails;
+			struct local_mail *local_mail_array;
+
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
-				char *filename_ptrs[MAX_MAILS_PER_REFRESH];
-				int filename_current = 0;
-				unsigned int total_download_ticks;
-				unsigned int ticks;
-
 				folders_unlock();
 
-				imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_remote_mails, imap_server, imap_folder);
-
-				total_download_ticks = ticks = time_reference_ticks();
-
-				/* Check each remote mail whether it is already stored locally. If
-				 * not store the header. Note that we exploit the sorting order
-				 * of both the remote_mail_array and local_mail_array.
-				 */
-				i=j=0;
-				while (i<num_remote_mails)
+				if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1, uid_from, uid_to)))
 				{
-					char filename_buf[32];
-					char *filename;
-					FILE *fh;
-					int status = 0;
+					int i,j;
 
-					if (j < num_of_local_mails)
+					struct remote_mail *remote_mail_array;
+					int num_remote_mails;
+
+					char *filename_ptrs[MAX_MAILS_PER_REFRESH];
+					int filename_current = 0;
+					unsigned int total_download_ticks;
+					unsigned int ticks;
+
+					num_remote_mails = rm->num_of_remote_mail;
+					remote_mail_array = rm->remote_mail_array;
+
+					total_download_ticks = ticks = time_reference_ticks();
+
+					/* Check each remote mail whether it is already stored locally. If
+					 * not store the header. Note that we exploit the sorting order
+					 * of both the remote_mail_array and local_mail_array.
+					 */
+					i=j=0;
+					while (i<num_remote_mails)
 					{
-						unsigned int remote_uid = remote_mail_array[i].uid;
-						unsigned int local_uid = local_mail_array[j].uid;
-						if (remote_uid >= local_uid)
-						{
-							/* Definitely skip local mail */
-							j++;
+						char filename_buf[32];
+						char *filename;
+						FILE *fh;
+						int status = 0;
 
-							/* Skip also remote, if it matches the local uid (thus, the mail was present) */
-							if (remote_uid == local_uid)
-								i++;
+						/* Skip 0 uids */
+						if (!remote_mail_array[i].uid)
+						{
+							i++;
 							continue;
 						}
-					}
-					downloaded_mails++;
-
-					if (remote_mail_array[i].flags & RM_FLAG_ANSWERED) status = MAIL_STATUS_REPLIED;
-					else if (remote_mail_array[i].flags & RM_FLAG_SEEN) status = MAIL_STATUS_READ;
-
-					if (remote_mail_array[i].flags & RM_FLAG_FLAGGED) status |= MAIL_STATUS_FLAG_MARKED;
-
-					sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
-					if ((filename = mail_get_status_filename(filename_buf, status)))
-					{
-						/* Store as a partial mail */
-						if ((fh = fopen(filename,"w")))
+						if (j < num_of_local_mails)
 						{
-							fprintf(fh,"X-SimpleMail-Partial: yes\n");
-							fprintf(fh,"X-SimpleMail-Size: %d\n",remote_mail_array[i].size);
-							if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
-							fclose(fh);
-
-							filename_ptrs[filename_current++] = filename;
-
-							if (filename_current == MAX_MAILS_PER_REFRESH || time_ticks_passed(ticks) > TIME_TICKS_PER_SECOND / 2)
+							unsigned int remote_uid = remote_mail_array[i].uid;
+							unsigned int local_uid = local_mail_array[j].uid;
+							if (remote_uid >= local_uid)
 							{
-								thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
-								while (filename_current)
-									free(filename_ptrs[--filename_current]);
+								/* Definitely skip local mail */
+								j++;
 
-								ticks = time_reference_ticks();
+								/* Skip also remote, if it matches the local uid (thus, the mail was present) */
+								if (remote_uid == local_uid)
+									i++;
+								continue;
 							}
 						}
+						downloaded_mails++;
+
+						if (remote_mail_array[i].flags & RM_FLAG_ANSWERED) status = MAIL_STATUS_REPLIED;
+						else if (remote_mail_array[i].flags & RM_FLAG_SEEN) status = MAIL_STATUS_READ;
+
+						if (remote_mail_array[i].flags & RM_FLAG_FLAGGED) status |= MAIL_STATUS_FLAG_MARKED;
+
+						sprintf(filename_buf,"u%d",remote_mail_array[i].uid); /* u means unchanged */
+						if ((filename = mail_get_status_filename(filename_buf, status)))
+						{
+							/* Store as a partial mail */
+							if ((fh = fopen(filename,"w")))
+							{
+								fprintf(fh,"X-SimpleMail-Partial: yes\n");
+								fprintf(fh,"X-SimpleMail-Size: %d\n",remote_mail_array[i].size);
+								if (remote_mail_array[i].headers) fputs(remote_mail_array[i].headers,fh);
+								fclose(fh);
+
+								filename_ptrs[filename_current++] = filename;
+
+								if (filename_current == MAX_MAILS_PER_REFRESH || time_ticks_passed(ticks) > TIME_TICKS_PER_SECOND / 2)
+								{
+									thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+									while (filename_current)
+										free(filename_ptrs[--filename_current]);
+
+									ticks = time_reference_ticks();
+								}
+							}
+						}
+						i++;
 					}
-					i++;
+
+					/* Add the rest */
+					if (filename_current)
+					{
+						thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+						while (filename_current)
+							free(filename_ptrs[--filename_current]);
+					}
+
+					SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));
+
+					/* Finally, inform controller about new uids */
+					thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, rm->uid_validity, rm->uid_next, imap_server->login, imap_server->name, imap_folder);
+
+					if (uid_from && uid_to)
+					{
+						imap_free_remote_mailbox(rm);
+						/* Rescan folder in order to delete orphaned messages */
+						rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 0, 0, 0);
+					}
+
+					if (rm)
+					{
+						/* Now delete orphaned messages */
+						imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_remote_mails, imap_server, imap_folder);
+						imap_free_remote_mailbox(rm);
+					}
 				}
-
-				/* Add the rest */
-				if (filename_current)
-				{
-					thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
-					while (filename_current)
-						free(filename_ptrs[--filename_current]);
-				}
-
-				SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));
-
-				/* Finally, inform controller about new uids */
-				thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, rm->uid_validity, rm->uid_next, imap_server->login, imap_server->name, imap_folder);
 			} else folders_unlock();
 		} else folders_unlock();
-
-		imap_free_remote_mailbox(rm);
 	}
 	chdir(path);
 

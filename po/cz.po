@@ -1,3066 +1,514 @@
-# SimpleMail v0.31
-# Copyright (C) 2007 Amiga - Czech Information Portal
-# Kabara Jaroslav (Prober) <admin@probers.info>, 2007.
-#
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.31\n"
-"POT-Creation-Date: 2006-02-13 17:47+0000\n"
-"PO-Revision-Date: 2007-03-31 22:06+0100\n"
-"Last-Translator: Prober <prober@seznam.cz>\n"
-"Language-Team:  <prober@seznam.cz>\n"
+"Project-Id-Version: 0.36\n"
+"POT-Creation-Date: 2010-03-18 20:00+0000\n"
+"PO-Revision-Date: 2011-02-05 14:29+0100\n"
+"Last-Translator: Kabara Jaroslav <kabara.jaroslav@gmail.com>\n"
+"Language-Team:  <kabara.jaroslav@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Poedit-SourceCharset: iso-8859-2\n"
 
-#: addressbook.c:621
-#: addressbook.c:650
-msgid "Original author of SimpleMail"
-msgstr "Autor SimpleMailu"
+msgid "%d KB / %d KB (time left: %s)"
+msgstr "%d KB / %d KB (zbývající èas: %s)"
 
-#: addressbook.c:667
-msgid "Contributor of SimpleMail"
-msgstr "Spoluautor SimpleMailu"
+msgid "%d min %d s"
+msgstr "%d min %d s"
 
-#: addressbook.c:694
-msgid "MorphOS maintainer of SimpleMail"
-msgstr "Autor MorphOS verze"
+msgid "%d s"
+msgstr "%d s"
 
-#: addressbook.c:753
-#, c-format
-msgid ""
-"Parsing the XML file failed because of\n"
-"%s (code %d)\n"
-"at line %d column %d"
-msgstr ""
-"Pøevádìní XML souboru se nepodaøilo z dùvodu\n"
-"%s (kód %d)\n"
-"na øádku %d, sloupec %d"
+msgid "%ld bytes"
+msgstr "%ld bytù"
 
-#: addressbook.c:754
-#: amiga-mui/addressbookwnd.c:390
-#: amiga-mui/configwnd.c:439
-#: amiga-mui/configwnd.c:452
-#: amiga-mui/configwnd.c:472
-#: amiga-mui/configwnd.c:486
-#: amiga-mui/configwnd.c:522
-#: amiga-mui/configwnd_stuff.c:77
-#: amiga-mui/mainwnd.c:809
-#: amiga-mui/mainwnd.c:833
-#: mail.c:2197
-#: mail.c:3230
-#: simplemail.c:102
-#: simplemail.c:166
-#: simplemail.c:233
-#: simplemail.c:1263
-#: simplemail.c:1288
-#: simplemail.c:1307
-msgid "Ok"
-msgstr "OK"
+msgid "%s (T:%d N:%d U:%d)"
+msgstr "%s (C:%d D:%d U:%d)"
 
-#: addressbook.c:920
-msgid "?addressbook:YAM Imports"
-msgstr "?addressbook:Import z YAMu"
+msgid "%s (next autocheck at %s)"
+msgstr "%s (dal¹í automatická kontrola v %s)"
 
-#: addressbook.c:1003
-msgid "Unsupported type of addressbook."
-msgstr "Nepodporovaný typ adresáøe."
+msgid "*Ok"
+msgstr "*OK"
 
-#: addressbook.c:1003
-#: amiga-mui/sysprint.c:54
-#: amiga-mui/sysprint.c:72
-#: print.c:200
-#: print.c:206
-#: print.c:211
-#: print.c:218
-msgid "Okay"
-msgstr "OK"
+msgid "*_Yes|_Cancel"
+msgstr "*_Ano|_Zru¹it"
 
-#: amiga-mui/accountpopclass.c:88
-#: amiga-mui/accountpopclass.c:151
-#: amiga-mui/signaturecycleclass.c:171
-#: amiga-mui/signaturecycleclass.c:353
-msgid "<Default>"
-msgstr "<Základní>"
+msgid "*_Yes|_No"
+msgstr "*_Ano|_Ne"
 
-#: amiga-mui/accountpopclass.c:176
-#: amiga-mui/accountpopclass.c:185
-msgid "Unconfigured"
-msgstr "Nenastavený"
-
-#: amiga-mui/addressbookwnd.c:138
-#: amiga-mui/addressgrouplistclass.c:97
-#: amiga-mui/configwnd.c:955
-#: amiga-mui/configwnd.c:1616
-#: amiga-mui/configwnd.c:1666
-#: amiga-mui/foldertreelistclass.c:165
-#: amiga-mui/folderwnd.c:602
-msgid "Name"
-msgstr "Jméno"
-
-#: amiga-mui/addressbookwnd.c:265
-#, c-format
-msgid "Add \"%s\" to following groups"
-msgstr "Pøidat \"%s\" do následujících skupin"
-
-#: amiga-mui/addressbookwnd.c:268
-msgid "Add contact to following groups"
-msgstr "Pøidat kontakt do následujících skupin"
-
-#: amiga-mui/addressbookwnd.c:272
-msgid "SimpleMail - Add Groups"
-msgstr "SimpleMail - Pøidávání skupin"
-
-#: amiga-mui/addressbookwnd.c:283
-#: amiga-mui/addressbookwnd.c:913
-#: amiga-mui/addressbookwnd.c:1192
-#: amiga-mui/folderwnd.c:386
-#: amiga-mui/support.c:463
-#: amiga-mui/support.c:518
-#: amiga-mui/support.c:579
-#: folder.c:1491
-msgid "_Ok"
-msgstr "_OK"
-
-#: amiga-mui/addressbookwnd.c:285
-#: amiga-mui/addressbookwnd.c:914
-#: amiga-mui/addressbookwnd.c:1193
-#: amiga-mui/composewnd.c:1400
-#: amiga-mui/configwnd.c:2132
-#: amiga-mui/filterwnd.c:586
-#: amiga-mui/folderwnd.c:387
-#: amiga-mui/folderwnd.c:623
-#: amiga-mui/support.c:464
-#: amiga-mui/support.c:520
-#: amiga-mui/support.c:581
-msgid "_Cancel"
-msgstr "Z_ru¹it"
-
-#: amiga-mui/addressbookwnd.c:389
-msgid ""
-"The date of birth is given in a invalid format.\n"
-"Please use dd mon yyyy or dd mm yyyy."
-msgstr ""
-"Datum narození bylo zadáno ve ¹patném formátu.\n"
-"Prosím, pou¾ijte formát dd mmm yyyy nebo dd mm yyyy."
-
-#: amiga-mui/addressbookwnd.c:568
-msgid "Personal"
-msgstr "Osobní"
-
-#: amiga-mui/addressbookwnd.c:569
-msgid "Private"
-msgstr "Soukromé"
-
-#: amiga-mui/addressbookwnd.c:570
-msgid "Work"
-msgstr "Práce"
-
-#: amiga-mui/addressbookwnd.c:571
-msgid "Notes"
-msgstr "Poznámky"
-
-#: amiga-mui/addressbookwnd.c:588
-msgid "SimpleMail - Edit Person"
-msgstr "SimpleMail - Úprava osoby"
-
-#: amiga-mui/addressbookwnd.c:596
-#: amiga-mui/addressentrylistclass.c:149
-#: amiga-mui/addressmatchlistclass.c:124
-msgid "Alias"
-msgstr "Alias"
-
-#: amiga-mui/addressbookwnd.c:603
-msgid "Real Name"
-msgstr "Skuteèné jméno"
-
-#: amiga-mui/addressbookwnd.c:610
-#: amiga-mui/addressentrylistclass.c:150
-#: amiga-mui/addressgrouplistclass.c:98
-#: amiga-mui/addressmatchlistclass.c:125
-#: amiga-mui/attachmentlistclass.c:118
-#: amiga-mui/composewnd.c:1382
-#: amiga-mui/composewnd.c:1385
-msgid "Description"
-msgstr "Popis"
-
-#: amiga-mui/addressbookwnd.c:617
-msgid "PGP Key-ID"
-msgstr "PGP Key-ID"
-
-#: amiga-mui/addressbookwnd.c:633
-msgid "Homepage"
-msgstr "WWW stránka"
-
-#: amiga-mui/addressbookwnd.c:644
-msgid "Date of birth"
-msgstr "Datum narození"
-
-#: amiga-mui/addressbookwnd.c:650
-msgid ""
-"The date of the birth of the person.\n"
-"The format is dd mon yyyy or dd mm yyyy."
-msgstr ""
-"Datum narození této osoby.\n"
-"Pøípustné formáty jsou dd mmm yyyy nebo dd mm yyyy."
-
-#: amiga-mui/addressbookwnd.c:652
-msgid "Sex"
-msgstr "Pohlaví"
-
-#: amiga-mui/addressbookwnd.c:662
-msgid "Female"
-msgstr "®ena"
-
-#: amiga-mui/addressbookwnd.c:672
-msgid "Male"
-msgstr "Mu¾"
-
-#: amiga-mui/addressbookwnd.c:678
-msgid "Portrait"
-msgstr "Fotografie"
-
-#: amiga-mui/addressbookwnd.c:700
-msgid "E-Mail addresses"
-msgstr "E-mail adresy"
-
-#: amiga-mui/addressbookwnd.c:709
-msgid "Belonging groups"
-msgstr "Pøíslu¹nost do skupin"
-
-#: amiga-mui/addressbookwnd.c:718
-msgid "Add"
-msgstr "Pøidat"
-
-#: amiga-mui/addressbookwnd.c:719
-#: amiga-mui/addressbookwnd.c:1441
-#: amiga-mui/addressbookwnd.c:1459
-#: amiga-mui/composewnd.c:1392
-#: amiga-mui/filterwnd.c:282
-msgid "Remove"
-msgstr "Odstranit"
-
-#: amiga-mui/addressbookwnd.c:729
-#: amiga-mui/addressbookwnd.c:827
-msgid "Street"
-msgstr "Ulice"
-
-#: amiga-mui/addressbookwnd.c:738
-#: amiga-mui/addressbookwnd.c:836
-msgid "City"
-msgstr "Mìsto"
-
-#: amiga-mui/addressbookwnd.c:745
-#: amiga-mui/addressbookwnd.c:843
-msgid "ZIP/Postal Code"
-msgstr "PSÈ"
-
-#: amiga-mui/addressbookwnd.c:752
-#: amiga-mui/addressbookwnd.c:850
-msgid "State/Province"
-msgstr "Okres"
-
-#: amiga-mui/addressbookwnd.c:759
-#: amiga-mui/addressbookwnd.c:857
-msgid "Country"
-msgstr "Zemì"
-
-#: amiga-mui/addressbookwnd.c:773
-#: amiga-mui/addressbookwnd.c:871
-msgid "Phone numbers"
-msgstr "Telefonní èísla"
-
-#: amiga-mui/addressbookwnd.c:780
-#: amiga-mui/addressbookwnd.c:878
-msgid "Mobile"
-msgstr "Mobilní telefon"
-
-#: amiga-mui/addressbookwnd.c:794
-#: amiga-mui/addressbookwnd.c:892
-msgid "Fax"
-msgstr "Fax"
-
-#: amiga-mui/addressbookwnd.c:808
-msgid "Title"
-msgstr "Titul"
-
-#: amiga-mui/addressbookwnd.c:815
-msgid "Organization"
-msgstr "Organizace"
-
-#: amiga-mui/addressbookwnd.c:1088
-#, c-format
-msgid "Group with the given name \"%s\" already exists"
-msgstr "Skupina pod zadaným názvem \"%s\" ji¾ existuje"
-
-#: amiga-mui/addressbookwnd.c:1088
-msgid "OK"
-msgstr "OK"
-
-#: amiga-mui/addressbookwnd.c:1165
-msgid "SimpleMail - Edit Group"
-msgstr "SimpleMail - Úprava skupiny"
-
-#: amiga-mui/addressbookwnd.c:1170
-#: amiga-mui/addressbookwnd.c:1176
-msgid "_Name"
-msgstr "_Název"
-
-#: amiga-mui/addressbookwnd.c:1179
-#: amiga-mui/addressbookwnd.c:1185
-msgid "_Description"
-msgstr "_Popis"
-
-#: amiga-mui/addressbookwnd.c:1320
-#, c-format
-msgid ""
-"There are %d addresses belonging to the group.\n"
-"Do you really want to delete this group?"
-msgstr ""
-"Do skupiny spadá %d adres.\n"
-"Opravdu chcete tuto skupinu odstranit?"
-
-#: amiga-mui/addressbookwnd.c:1321
-msgid "Yes|No"
-msgstr "Ano|Ne"
-
-#: amiga-mui/addressbookwnd.c:1391
-#: amiga-mui/mainwnd.c:626
-#: amiga-mui/readwnd.c:1132
-msgid "Project"
-msgstr "Projekt"
-
-#: amiga-mui/addressbookwnd.c:1392
-msgid "Import addressbook..."
-msgstr "Import adresáøe..."
-
-#: amiga-mui/addressbookwnd.c:1425
-msgid "SimpleMail - Addressbook"
-msgstr "SimpleMail - Adresáø"
-
-#: amiga-mui/addressbookwnd.c:1433
-#: amiga-mui/addressentrylistclass.c:152
-#: amiga-mui/addressmatchlistclass.c:127
-msgid "Groups"
-msgstr "Skupiny"
-
-#: amiga-mui/addressbookwnd.c:1439
-#: amiga-mui/addressbookwnd.c:1457
-msgid "Add..."
-msgstr "Pøidat..."
-
-#: amiga-mui/addressbookwnd.c:1440
-#: amiga-mui/addressbookwnd.c:1458
-msgid "Edit..."
-msgstr "Upravit..."
-
-#: amiga-mui/addressbookwnd.c:1446
-msgid "Contacts"
-msgstr "Kontakty"
-
-#: amiga-mui/addressbookwnd.c:1449
-#: amiga-mui/addressbookwnd.c:1450
-msgid "Show members of selected group"
-msgstr "Zobrazit èleny vybrané skupiny"
-
-#: amiga-mui/addressbookwnd.c:1466
-msgid "?textbutton:_Save"
-msgstr "?textbutton:Ulo_¾it"
-
-#: amiga-mui/addressbookwnd.c:1468
-msgid "?textbutton:_Close"
-msgstr "?textbutton:_Zavøít"
-
-#: amiga-mui/addressentrylistclass.c:148
-#: amiga-mui/addressmatchlistclass.c:123
-#: amiga-mui/configwnd.c:1013
-msgid "?people:Name"
-msgstr "?people:Jméno"
-
-#: amiga-mui/addressentrylistclass.c:151
-#: amiga-mui/addressmatchlistclass.c:126
-#: amiga-mui/messageviewclass.c:809
-msgid "Address"
-msgstr "Adresa"
-
-#: amiga-mui/addressentrylistclass.c:227
-msgid "Addresslist Settings"
-msgstr "Nastavení seznamu adres"
-
-#: amiga-mui/addressentrylistclass.c:228
-msgid "Show Realname?"
-msgstr "Zobrazovat skuteèné jméno"
-
-#: amiga-mui/addressentrylistclass.c:229
-msgid "Show Nickname?"
-msgstr "Zobrazovat pøezdívku"
-
-#: amiga-mui/addressentrylistclass.c:230
-msgid "Show Description?"
-msgstr "Zobrazovat popis"
-
-#: amiga-mui/addressentrylistclass.c:231
-msgid "Show E-Mail Address?"
-msgstr "Zobrazovat e-mail adresy"
-
-#: amiga-mui/addressentrylistclass.c:232
-msgid "Show Groups?"
-msgstr "Zobrazovat skupiny"
-
-#: amiga-mui/addressentrylistclass.c:234
-#: amiga-mui/foldertreelistclass.c:266
-#: amiga-mui/mailtreelistclass.c:586
-msgid "Default Width: this"
-msgstr "Standardní ¹íøka: toto"
-
-#: amiga-mui/addressentrylistclass.c:235
-#: amiga-mui/foldertreelistclass.c:267
-#: amiga-mui/mailtreelistclass.c:587
-msgid "Default Width: all"
-msgstr "Standardní ¹íøka: v¹e"
-
-#: amiga-mui/addressentrylistclass.c:236
-#: amiga-mui/foldertreelistclass.c:268
-#: amiga-mui/mailtreelistclass.c:588
-msgid "Default Order: this"
-msgstr "Standardní poøadí: toto"
-
-#: amiga-mui/addressentrylistclass.c:237
-#: amiga-mui/foldertreelistclass.c:269
-#: amiga-mui/mailtreelistclass.c:589
-msgid "Default Order: all"
-msgstr "Standardní poøadí: v¹e"
-
-#: amiga-mui/attachmentlistclass.c:103
-msgid "Editable Mailtext"
-msgstr "Upravitelná zpráva"
-
-#: amiga-mui/attachmentlistclass.c:115
-msgid "File Name"
-msgstr "Název souboru"
-
-#: amiga-mui/attachmentlistclass.c:116
-#: amiga-mui/folderwnd.c:279
-#: amiga-mui/folderwnd.c:289
-#: amiga-mui/mailtreelistclass.c:530
-#: amiga-mui/transwndclass.c:128
-msgid "Size"
-msgstr "Velikost"
-
-#: amiga-mui/attachmentlistclass.c:117
-msgid "Contents"
-msgstr "Obsah"
-
-#: amiga-mui/composewnd.c:85
-msgid "Copy"
-msgstr "Kopírovat"
-
-#: amiga-mui/composewnd.c:86
-msgid "Cut"
-msgstr "Vyjmout"
-
-#: amiga-mui/composewnd.c:87
-msgid "Paste"
-msgstr "Vlo¾it"
-
-#: amiga-mui/composewnd.c:89
-msgid "Undo"
-msgstr "Zpìt"
-
-#: amiga-mui/composewnd.c:90
-msgid "Redo"
-msgstr "Znovu"
-
-#: amiga-mui/composewnd.c:92
-msgid "_Attach"
-msgstr "_Pøipojit"
-
-#: amiga-mui/composewnd.c:94
-msgid "Encrypt"
-msgstr "Za¹ifrovat"
-
-#: amiga-mui/composewnd.c:1166
-#: amiga-mui/mailtreelistclass.c:872
-#: amiga-mui/readwnd.c:1137
-msgid "Mail"
-msgstr "Zpráva"
-
-#: amiga-mui/composewnd.c:1167
-msgid "Attachments"
-msgstr "Pøílohy"
-
-#: amiga-mui/composewnd.c:1174
-msgid "Low"
-msgstr "Malá"
-
-#: amiga-mui/composewnd.c:1175
-msgid "Normal"
-msgstr "Støední"
-
-#: amiga-mui/composewnd.c:1176
-msgid "High"
-msgstr "Velká"
-
-#: amiga-mui/composewnd.c:1215
-#: amiga-mui/composewnd.c:1216
-#: amiga-mui/composewnd.c:1234
-#: amiga-mui/composewnd.c:1235
-msgid "Importance"
-msgstr "Dùle¾itost"
-
-#. This two MUST always be the last objects of this group!
-#. because the SignatureCycle() gets removed and reinserted for update.
-#: amiga-mui/composewnd.c:1217
-#: amiga-mui/configwnd.c:1033
-#: amiga-mui/folderwnd.c:362
-msgid "Signature"
-msgstr "Podpis"
-
-#: amiga-mui/composewnd.c:1244
-msgid "SimpleMail - Compose Message"
-msgstr "SimpleMail - Nová zpráva"
-
-#: amiga-mui/composewnd.c:1252
-#: amiga-mui/searchwnd.c:175
-msgid "_From"
-msgstr "_Od"
-
-#: amiga-mui/composewnd.c:1256
-msgid "R"
-msgstr "R"
-
-#: amiga-mui/composewnd.c:1259
-#: amiga-mui/composewnd.c:1263
-msgid "_Replies To"
-msgstr "Odpo_vìdi pro"
-
-#: amiga-mui/composewnd.c:1267
-#: amiga-mui/composewnd.c:1273
-#: amiga-mui/searchwnd.c:183
-msgid "_To"
-msgstr "_Pro"
-
-#: amiga-mui/composewnd.c:1279
-#: amiga-mui/composewnd.c:1285
-msgid "C_opies To"
-msgstr "K_opie pro"
-
-#: amiga-mui/composewnd.c:1289
-msgid "B"
-msgstr "B"
-
-#: amiga-mui/composewnd.c:1292
-#: amiga-mui/composewnd.c:1298
-msgid "_Blind Copies To"
-msgstr "S_kryté kopie pro"
-
-#: amiga-mui/composewnd.c:1304
-#: amiga-mui/composewnd.c:1308
-msgid "S_ubject"
-msgstr "Pøed_mìt"
-
-#: amiga-mui/composewnd.c:1389
-msgid "Add text"
-msgstr "Pøidat text"
-
-#: amiga-mui/composewnd.c:1390
-msgid "Add multipart"
-msgstr "Pøidat smí¹ený"
-
-#: amiga-mui/composewnd.c:1391
-msgid "Add file(s)"
-msgstr "Pøidat soubor(y)"
-
-#: amiga-mui/composewnd.c:1397
-msgid "_Send now"
-msgstr "Odeslat hne_d"
-
-#: amiga-mui/composewnd.c:1398
-msgid "Send _later"
-msgstr "Odesla_t pozdìji"
-
-#: amiga-mui/composewnd.c:1399
-msgid "_Hold"
-msgstr "_Pozdr¾et"
-
-#: amiga-mui/configwnd.c:437
-msgid ""
-"SimpleMail currently doesn't support the same email address for\n"
-"multiple accounts. Please ensure that every email address is unique.\n"
-"However, you can set the reply address field to your prefered addresse."
-msgstr ""
-"SimpleMail v této verzi nepodporuje stejnou e-mail adresu\n"
-"pro více úètù. Prosím ujistìte se, ¾e je ka¾dá adresa unikátní.\n"
-"Nicménì, v¾dy si mù¾ete nastavit adresu pro odpovìï na Vámi oblíbenou."
-
-#: amiga-mui/configwnd.c:452
-msgid "No valid email address entered. Please correct it."
-msgstr "Nebyla zadána platná e-mail adresa. Prosím, opravte to."
-
-#: amiga-mui/configwnd.c:472
-msgid "This Signaturename is not allowed."
-msgstr "Tento název podpisu není dovolen."
-
-#: amiga-mui/configwnd.c:486
-msgid "Signaturenames must be unique."
-msgstr "Název podpisu musí být jedineèný."
-
-#: amiga-mui/configwnd.c:522
-msgid "You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."
-msgstr "Zmìnil jste nastavení slo¾ek! Pro projevení zmìn musíte restartovat SimpleMail."
-
-#: amiga-mui/configwnd.c:687
-msgid "Always"
-msgstr "V¾dy"
-
-#: amiga-mui/configwnd.c:688
-msgid "Iconified"
-msgstr "Pøi ikonifikaci"
-
-#: amiga-mui/configwnd.c:689
-msgid "Never"
-msgstr "Nikdy"
-
-#: amiga-mui/configwnd.c:696
-#: amiga-mui/configwnd.c:697
-msgid "Add adjustment for daylight saving time"
-msgstr "Pou¾ívat zmìny èasu"
-
-#: amiga-mui/configwnd.c:701
-msgid "Folder directory"
-msgstr "Katalog slo¾ek"
-
-#: amiga-mui/configwnd.c:712
-msgid "Charset used to display text"
-msgstr "Znaková sada pro zobrazování textu"
-
-#: amiga-mui/configwnd.c:723
-#: amiga-mui/configwnd.c:724
-msgid "AppIcon Show"
-msgstr "Zobrazovat AppIcon"
-
-#: amiga-mui/configwnd.c:725
-msgid "AppIcon Label"
-msgstr "Název AppIcon"
-
-#: amiga-mui/configwnd.c:749
-msgid "Disabled"
-msgstr "Vypnuto"
-
-#: amiga-mui/configwnd.c:750
-msgid "Only Sizes"
-msgstr "Pouze rozmìry"
-
-#: amiga-mui/configwnd.c:751
-msgid "Enabled"
-msgstr "Povoleno"
-
-#: amiga-mui/configwnd.c:758
-msgid "Preselection"
-msgstr "Pøedvolba"
-
-#: amiga-mui/configwnd.c:777
-msgid "Automatic operation"
-msgstr "Automatické operace"
-
-#: amiga-mui/configwnd.c:779
-msgid "Check for new mail every"
-msgstr "Kontorla nové po¹ty ka¾dých"
-
-#: amiga-mui/configwnd.c:786
-msgid "minutes"
-msgstr "minut"
-
-#: amiga-mui/configwnd.c:787
-#: amiga-mui/configwnd.c:788
-msgid "On startup"
-msgstr "Pøi spu¹tìní"
-
-#: amiga-mui/configwnd.c:789
-#: amiga-mui/configwnd.c:790
-msgid "If online"
-msgstr "Kdy¾ je online"
-
-#: amiga-mui/configwnd.c:792
-msgid "New mails"
-msgstr "Nové zprávy"
-
-#: amiga-mui/configwnd.c:794
-#: amiga-mui/configwnd.c:795
-msgid "ARexx"
-msgstr "ARexx"
-
-#: amiga-mui/configwnd.c:807
-#: amiga-mui/configwnd.c:808
-msgid "Sound"
-msgstr "Zvuk"
-
-#: amiga-mui/configwnd.c:831
 msgid "-- New Account --"
 msgstr "-- Nový úèet --"
 
-#: amiga-mui/configwnd.c:956
-msgid "EMail"
-msgstr "E-mail"
+msgid "-- New Phrase --"
+msgstr "-- Nový výraz --"
 
-#: amiga-mui/configwnd.c:957
-#: amiga-mui/configwnd.c:1039
-msgid "Receive"
-msgstr "Server pøíchozí po¹ty"
+msgid "-- New Signature --"
+msgstr "-- Nový podpis --"
 
-#: amiga-mui/configwnd.c:958
-#: amiga-mui/configwnd.c:1119
-msgid "Send"
-msgstr "Server odchozí po¹ty"
+msgid ".:Execute ARexx Script..."
+msgstr ".:Spustit ARexx skript..."
 
-#: amiga-mui/configwnd.c:978
-msgid "Try"
-msgstr "Zkusit"
+msgid "<Default>"
+msgstr "<Výchozí>"
 
-#: amiga-mui/configwnd.c:979
-msgid "Enforce"
-msgstr "Vynutit"
+msgid "<No Recipient>"
+msgstr "<Bez pøíjemce>"
 
-#: amiga-mui/configwnd.c:980
-msgid "Don't try"
-msgstr "Nezkou¹et"
+msgid "> %ld KB"
+msgstr "> %ld KB"
 
-#: amiga-mui/configwnd.c:997
-msgid "_Add Account"
-msgstr "Vytv_oøit úèet"
+msgid "?:About..."
+msgstr "?:O programu..."
 
-#: amiga-mui/configwnd.c:999
-msgid "_Remove Account"
-msgstr "Odstranit _úèet"
+msgid "?addressbook:YAM Imports"
+msgstr "?addressbook:Import z YAM"
 
-#: amiga-mui/configwnd.c:1004
-msgid "Account Name"
-msgstr "Název úètu"
+msgid "?attachment:Save"
+msgstr "?attachment:Ulo¾it"
 
-#: amiga-mui/configwnd.c:1011
-msgid "User"
-msgstr "U¾ivatel"
+msgid "?attachment:View"
+msgstr "?attachment:Zobrazit"
 
-#: amiga-mui/configwnd.c:1019
-msgid "E-Mail Address"
-msgstr "E-mail adresa"
+msgid "?config:_Save"
+msgstr "?config:_Ulo¾it"
 
-#: amiga-mui/configwnd.c:1025
-msgid "Reply Address"
-msgstr "Adresa pro odpovìdi"
+msgid "?filter:_Save"
+msgstr "?filtr:_Ulo¾it"
 
-#: amiga-mui/configwnd.c:1041
-msgid "Type"
-msgstr "Typ"
+msgid "?people:Name"
+msgstr "?people:Jméno"
 
-#: amiga-mui/configwnd.c:1049
-msgid "Server"
-msgstr "Server"
+msgid "?phrases:Close"
+msgstr "?phrases:Zavøít"
 
-#: amiga-mui/configwnd.c:1056
-#: amiga-mui/configwnd.c:1129
-msgid "Port"
-msgstr "Port"
+msgid "?textbutton:_Close"
+msgstr "?textbutton:_Zavøít"
 
-#: amiga-mui/configwnd.c:1065
-#: amiga-mui/configwnd.c:1138
-msgid "Login"
-msgstr "Login"
+msgid "?textbutton:_Save"
+msgstr "?textbutton:_Ulo¾it"
 
-#: amiga-mui/configwnd.c:1072
-#: amiga-mui/configwnd.c:1146
-#: amiga-mui/support.c:454
-msgid "Password"
-msgstr "Heslo"
+msgid ""
+"A black list contains email address which you don't thrust.\n"
+"Mails from these addresses are always marked as spam."
+msgstr ""
+"Èerný seznam obsahu e-mail adresy, kterým nedùvìøujete.\n"
+"Zprávy z tìchto adres budou v¾dy oznaèovány jako SPAM."
 
-#: amiga-mui/configwnd.c:1079
-#: amiga-mui/configwnd.c:1080
-msgid "Ask"
-msgstr "Ptát se"
+msgid ""
+"A white list contains email address of people you usually\n"
+"thrust. This can be used to speed up the spam checking as\n"
+"mails with a listed sender address are skipped."
+msgstr ""
+"Bílý seznam obsahuje e-mail adresy, kterým dùvìøujete.\n"
+"To lze vyu¾ít pro urychlení kontroly spamu, jeliko¾ \n"
+"v nìm uvedené adresy budou pøeskakovány."
 
-#: amiga-mui/configwnd.c:1087
-#: amiga-mui/configwnd.c:1089
-msgid "Active"
-msgstr "Aktivní"
+msgid "A:Select All Messages"
+msgstr "A:Vybrat v¹echny zprávy"
 
-#: amiga-mui/configwnd.c:1093
-#: amiga-mui/configwnd.c:1094
 msgid "APOP"
 msgstr "APOP"
 
-#: amiga-mui/configwnd.c:1100
-#: amiga-mui/configwnd.c:1101
-msgid "Avoid duplicates"
-msgstr "Nestahovat kopie"
+msgid "ARexx"
+msgstr "ARexx"
 
-#: amiga-mui/configwnd.c:1103
-#: amiga-mui/configwnd.c:1104
-msgid "_Delete mails"
-msgstr "_Smazat zprávy"
+msgid "AUTH failed. User couldn't be authenticated. Please recheck your settings."
+msgstr "Pøíkaz AUTH selhal. U¾ivatel nebyl identifikován. Prosím, zkontrolujte své nastavení."
 
-#: amiga-mui/configwnd.c:1110
-#: amiga-mui/configwnd.c:1111
-#: amiga-mui/configwnd.c:1159
-#: amiga-mui/configwnd.c:1160
-msgid "Secure"
-msgstr "Zabezpeèit"
+msgid "Aborted - Disconnecting..."
+msgstr "Pøeru¹eno - Odpojování..."
 
-#: amiga-mui/configwnd.c:1113
-#: amiga-mui/configwnd.c:1114
-msgid "with STLS"
-msgstr "Pomocí STLS"
+msgid "Aborted - Sending QUIT..."
+msgstr "Pøeru¹eno - Odesílání QUIT..."
 
-#: amiga-mui/configwnd.c:1122
-msgid "SMTP Server"
-msgstr "SMTP server"
+msgid "About MUI..."
+msgstr "O MUI..."
 
-#: amiga-mui/configwnd.c:1154
-#: amiga-mui/configwnd.c:1155
-msgid "Use SMTP AUTH"
-msgstr "Pou¾ívat SMTP AUTH"
+msgid "Account Name"
+msgstr "Název úètu"
 
-#: amiga-mui/configwnd.c:1162
-#: amiga-mui/configwnd.c:1163
-msgid "Log into POP3 server first"
-msgstr "Nejdøíve pøipojit na POP3 server"
+msgid "Accounts"
+msgstr "Úèty"
 
-#: amiga-mui/configwnd.c:1165
-#: amiga-mui/configwnd.c:1166
-msgid "Use IP as domain"
-msgstr "Pou¾ívat IP jako doménu"
+msgid "Action"
+msgstr "Akce"
 
-#: amiga-mui/configwnd.c:1199
-msgid "Your full name (required)"
-msgstr "Va¹e jméno a pøíjmení (povinné)"
-
-#: amiga-mui/configwnd.c:1200
-msgid "Your E-Mail address for this account (required)"
-msgstr "Va¹e e-mail adresa pro tento úèet (povinné)"
-
-#: amiga-mui/configwnd.c:1201
-msgid ""
-"Address where the replies of the mails should\n"
-"be sent (required only if different from the e-mail address)."
-msgstr ""
-"Adresa, na kterou mají být zasílány odpovìdi\n"
-"(vyplòte pouze v pøípadì, ¾e je jiná ne¾ e-mail adresa)."
-
-#: amiga-mui/configwnd.c:1202
-msgid "The default signature for this account"
-msgstr "Standardní podpis pro tento úèet"
-
-#: amiga-mui/configwnd.c:1203
-msgid ""
-"The name of the so called POP3 server from\n"
-"which you download your e-Mails (required; ask your\n"
-"provider if unknown)."
-msgstr ""
-"Název POP3 serveru, z kterého chcete stahovat po¹tu\n"
-"(pokud jej neznáte, obra»te se na svého poskytovatele)."
-
-#: amiga-mui/configwnd.c:1204
-msgid "The port number. Usually 110"
-msgstr "Èíslo portu. Obvykle 110"
-
-#: amiga-mui/configwnd.c:1205
-msgid "The login/UserID which you got from your ISP."
-msgstr "Vá¹ u¾ivatelský login/ID"
-
-#: amiga-mui/configwnd.c:1206
-msgid ""
-"Your very own password to access the mails\n"
-"located on the POP3 server."
-msgstr ""
-"Va¹e heslo pro pøístup k po¹tì\n"
-"nacházející se na POP3 serveru."
-
-#: amiga-mui/configwnd.c:1207
-msgid ""
-"Deactivate this if you don't want SimpleMail to\n"
-"download the e-Mails when pressing on 'Fetch'."
-msgstr ""
-"Vypnìte tuto volbu pokud nechtete aby SimpleMail stahoval\n"
-"po¹tu z tohoto úètu pøi stisknutí \"Stáhnout\"."
-
-#: amiga-mui/configwnd.c:1208
-msgid ""
-"After successul downloading the mails should be deleted\n"
-"on the POP3 server."
-msgstr ""
-"Po úspì¹ném sta¾ení bodou zprávy\n"
-"automaticky mazány z POP3 serveru."
-
-#: amiga-mui/configwnd.c:1209
-msgid ""
-"When not deleteding e-Mails on the server SimpleMail\n"
-"tries to avoid downloading a message twice the next time."
-msgstr ""
-"Pøi nemazání e-mailù ze serveru se SimpleMail pokou¹í\n"
-"nestahovat ji¾ jednou sta¾ené zprávy."
-
-#: amiga-mui/configwnd.c:1210
-msgid ""
-"Choose how APOP is handled. If you encounter login probelms\n"
-"you might change this setting to \"Don't try\"."
-msgstr ""
-"Prosím, vyberte si zpùsob jakým bude zacházeno s APOP úèty.\n"
-"Pokud budete mít problémy s pøipojením, mù¾ete zkusit zmìnit\n"
-"toto nastavení na hodnotu \"Nezkou¹et\"."
-
-#: amiga-mui/configwnd.c:1211
-msgid ""
-"If activated SimpleMail tries to make the connection secure.\n"
-"This is not supported on all servers, so decativate if it doesn't work."
-msgstr ""
-"Po zapnutí se SimpleMail pokou¹í o bezpeèné pøipojení.\n"
-"Tato funkce není na nìkterých serverech podporována, tak¾e\n"
-"v pøípadì problémù tuto volbu vypnìte."
-
-#: amiga-mui/configwnd.c:1212
-msgid ""
-"The name of the so called SMTP server which is responlible\n"
-"to send your e-Mails."
-msgstr ""
-"Název SMTP serveru, jen¾ je odpovìdný za\n"
-"odesílání Va¹ich e-mailù."
-
-#: amiga-mui/configwnd.c:1213
-msgid "The port number. Usually 25"
-msgstr "Èíslo portu. Obvykle 25"
-
-#: amiga-mui/configwnd.c:1214
-msgid ""
-"Your login/UserID for the SMTP server.\n"
-"Only required if the SMTP server requires authentication."
-msgstr ""
-"Vá¹ u¾ivatelský login/ID pro SMTP server.\n"
-"Vy¾adován je pouze tehdy, pokud server vy¾aduje autorizaci."
-
-#: amiga-mui/configwnd.c:1215
-msgid ""
-"Your password for the SMTP server.\n"
-"Only required if the SMTP server requires authentication."
-msgstr ""
-"Va¹e heslo pro SMTP server.\n"
-"Vy¾adováno je pouze tehdy, pokud server vy¾aduje autorizaci."
-
-#: amiga-mui/configwnd.c:1216
 msgid "Activate this if the SMTP server requires authentication."
 msgstr "Zapnìte tuto volbu, pokud SMTP server vy¾aduje autorizaci."
 
-#: amiga-mui/configwnd.c:1217
+msgid ""
+"Activate this if you provider needs that\n"
+"you first log into its POP3 sever."
+msgstr ""
+"Zapnìte pokud toto Vá¹ poskytovatel vy¾aduje\n"
+"nejdøíve pøihlá¹ení k POP3 serveru."
+
 msgid ""
 "Activate this if you want a secure connection\n"
 "to the SMTP server. Deactivate this if your SMTP server\n"
 "doesn't support it"
 msgstr ""
-"Zapnìte tuto volbu, pokud chcete pou¾ít zabezpeèené pøipojení.\n"
-"Vypnìte jí, pokud Vá¹ server tuto funkci nepodporuje."
+"Zapnìte, pokud chcete pou¾ívat zabezpeèené pøipojení\n"
+"k SMTP serveru. Vypnìte, pokud Vá¹ server nepodporuje\n"
+"tuto funkci."
 
-#: amiga-mui/configwnd.c:1218
-msgid ""
-"Activate this if you provider needs that\n"
-"you first log into its POP3 sever."
-msgstr ""
-"Aktivujte tuto volbu, pokud Vá¹ poskytovatel vy¾aduje\n"
-"pøihlá¹ení na POP3 server pomocí SMTP."
+msgid "Active"
+msgstr "Aktivní"
 
-#: amiga-mui/configwnd.c:1219
-msgid ""
-"Send your current IP address together with the intial greetings.\n"
-"This avoids some error headers on some providers."
-msgstr ""
-"Odesílání Va¹í aktuální IP adresy bìhem pøipojování na server.\n"
-"Funkce umo¾òuje pøecházení problémùm na nìkterých serverech."
+msgid "Activtiy"
+msgstr "Aktivita"
 
-#: amiga-mui/configwnd.c:1220
+msgid "Add"
+msgstr "Pøidat"
+
+msgid "Add \"%s\" to following groups"
+msgstr "Pøidat \"%s\" do následujících skupin"
+
 msgid "Add a new account."
 msgstr "Pøidat nový úèet."
 
-#: amiga-mui/configwnd.c:1221
-msgid "Remove the current account."
-msgstr "Odstranit aktuální úèet."
+msgid "Add adjustment for daylight saving time"
+msgstr "Zohledòovat zmìny u letního èasu"
 
-#: amiga-mui/configwnd.c:1238
-msgid "off"
-msgstr "vypnuto"
+msgid "Add contact to following groups"
+msgstr "Pøidat kontakt do následujících skupin"
 
-#: amiga-mui/configwnd.c:1239
-msgid "as you type"
-msgstr "bìhem psaní"
+msgid "Add file(s)"
+msgstr "Pøidat soubor(y)"
 
-#: amiga-mui/configwnd.c:1240
-msgid "before storing"
-msgstr "pøed ukládáním"
+msgid "Add multipart"
+msgstr "Pøidat vícedílné"
 
-#: amiga-mui/configwnd.c:1247
-msgid "Editor"
-msgstr "Editor"
+msgid "Add new rule"
+msgstr "Pøidat nové pravidlo"
 
-#: amiga-mui/configwnd.c:1249
-msgid "Word wrap"
-msgstr "Zalamování øádkù"
+msgid "Add text"
+msgstr "Pøidat text"
 
-#: amiga-mui/configwnd.c:1253
-msgid "Replying"
-msgstr "Odpovídání"
+msgid "Add to addressbook..."
+msgstr "Pøidat do adresáøe..."
 
-#: amiga-mui/configwnd.c:1256
-#: amiga-mui/configwnd.c:1257
-msgid "Wrap before quoting"
-msgstr "Zalamování øádku pøed citací"
+msgid "Add..."
+msgstr "Pøidat..."
 
-#: amiga-mui/configwnd.c:1259
-#: amiga-mui/configwnd.c:1260
-msgid "Strip signature before quoting"
-msgstr "Odstranit podpis pøed citací"
-
-#: amiga-mui/configwnd.c:1262
-#: amiga-mui/configwnd.c:1263
-msgid "Quote empty lines"
-msgstr "Citovat prázdné øádky"
-
-#: amiga-mui/configwnd.c:1267
-msgid "Forwarding"
-msgstr "Pøeposílání"
-
-#: amiga-mui/configwnd.c:1270
-#: amiga-mui/configwnd.c:1271
-msgid "Forward mails as attachments"
-msgstr "Pøeposílat e-maily jako pøílohu"
-
-#: amiga-mui/configwnd.c:1295
-msgid "Header Configuration"
-msgstr "Nastavení hlavièky"
-
-#: amiga-mui/configwnd.c:1298
-#: amiga-mui/configwnd.c:1299
-msgid "Show all headers"
-msgstr "Zobrazit v¹echny hlavièky"
-
-#: amiga-mui/configwnd.c:1306
-#: amiga-mui/configwnd.c:1307
-#: amiga-mui/folderwnd.c:343
-#: amiga-mui/mailinfoclass.c:424
-#: amiga-mui/mailtreelistclass.c:525
-#: amiga-mui/transwndclass.c:129
-#: mail.c:3360
-#: print.c:53
-msgid "From"
-msgstr "Od"
-
-#: amiga-mui/configwnd.c:1309
-#: amiga-mui/configwnd.c:1310
-#: amiga-mui/mailinfoclass.c:436
-#: amiga-mui/mailtreelistclass.c:526
-#: mail.c:3390
-#: print.c:71
-msgid "To"
-msgstr "Pro"
-
-#: amiga-mui/configwnd.c:1312
-#: amiga-mui/configwnd.c:1313
-msgid "CC"
-msgstr "CC:"
-
-#: amiga-mui/configwnd.c:1315
-#: amiga-mui/configwnd.c:1316
-#: amiga-mui/filterruleclass.c:89
-#: amiga-mui/folderwnd.c:276
-#: amiga-mui/folderwnd.c:286
-#: amiga-mui/mailinfoclass.c:412
-#: amiga-mui/mailtreelistclass.c:527
-#: amiga-mui/transwndclass.c:130
-#: mail.c:3448
-#: print.c:119
-msgid "Subject"
-msgstr "Pøedmìt"
-
-#: amiga-mui/configwnd.c:1318
-#: amiga-mui/configwnd.c:1319
-#: amiga-mui/folderwnd.c:278
-#: amiga-mui/folderwnd.c:288
-#: amiga-mui/mailinfoclass.c:442
-#: amiga-mui/mailtreelistclass.c:529
-#: mail.c:3460
-#: print.c:124
-msgid "Date"
-msgstr "Datum"
-
-#: amiga-mui/configwnd.c:1321
-#: amiga-mui/configwnd.c:1322
-msgid "Reply-To"
-msgstr "Odepsat"
-
-#: amiga-mui/configwnd.c:1329
 msgid "Additional headers"
-msgstr "Dodateèné hlavièky"
+msgstr "Dal¹í záhlaví"
 
-#: amiga-mui/configwnd.c:1339
-msgid "Read window"
-msgstr "Ètení"
+msgid "Address"
+msgstr "Adresa"
 
-#: amiga-mui/configwnd.c:1343
-#: amiga-mui/configwnd.c:1344
-msgid "Close read window on list end"
-msgstr "Zavøít ètecí okno na konci seznamu"
+msgid "Address Book..."
+msgstr "Adresáø..."
 
-#: amiga-mui/configwnd.c:1346
-#: amiga-mui/configwnd.c:1347
-msgid "Show next mail after move"
-msgstr "Zobrazit dal¹í zprávu po pøesunutí"
-
-#: amiga-mui/configwnd.c:1357
-msgid "If this option is enabled, SimpleMail will close the read window after all mails in the folder have been processed (e.g. deleted) by the user completly in the current direction. Otherwise SimpleMail tries to browse into the other direction and closes the window only if no other mail exists within the folder."
-msgstr "Pokud je tato volba zapnuta, SimpleMail uzavøe okno ètení po zpracování v¹ech e-mailù ve slo¾ce (napø. smazání) v daném smìru. V opaèném pøípadì se program pokusí prohlédnout zprávy v opaèném smìru, a okno se uzavøe pouze v pøípadì, kdy¾ ve slo¾ce nezbydou ¾ádné zprávy."
-
-#: amiga-mui/configwnd.c:1384
-msgid "Background"
-msgstr "Pozadí"
-
-#: amiga-mui/configwnd.c:1385
-msgid "Text"
-msgstr "Text"
-
-#: amiga-mui/configwnd.c:1386
-msgid "Quoted Text"
-msgstr "Citovaný text"
-
-#: amiga-mui/configwnd.c:1387
-msgid "Old Quoted Text"
-msgstr "Citovaný text - starý"
-
-#: amiga-mui/configwnd.c:1388
-msgid "Link Text"
-msgstr "Text odkazu"
-
-#: amiga-mui/configwnd.c:1389
-msgid "Header Background"
-msgstr "Pozadí hlavièky"
-
-#: amiga-mui/configwnd.c:1437
-msgid "Fonts"
-msgstr "Fonty"
-
-#: amiga-mui/configwnd.c:1439
-msgid "Proportional Font"
-msgstr "Proporcionální font"
-
-#: amiga-mui/configwnd.c:1446
-msgid "Fixed Font"
-msgstr "Neproporcionální font"
-
-#: amiga-mui/configwnd.c:1455
-msgid "Colors"
-msgstr "Barvy"
-
-#: amiga-mui/configwnd.c:1465
-#: amiga-mui/configwnd.c:1466
-msgid "Wordwrap plain text"
-msgstr "Zalomovat øádky textu"
-
-#: amiga-mui/configwnd.c:1467
-#: amiga-mui/configwnd.c:1468
-msgid "Underline links"
-msgstr "Podtrhovat odkazy"
-
-#: amiga-mui/configwnd.c:1469
-#: amiga-mui/configwnd.c:1470
-msgid "Use graphical smilies"
-msgstr "Pou¾ívat grafické \"emotikony\""
-
-#: amiga-mui/configwnd.c:1492
-msgid "Allow to download images from the internet from"
-msgstr "Umo¾nit stahování obrázkù z internetu z"
-
-#: amiga-mui/configwnd.c:1515
-msgid "-- New Signature --"
-msgstr "-- Nový podpis --"
-
-#: amiga-mui/configwnd.c:1551
-#, c-format
-msgid "The signature is used in %d account(s)."
+msgid ""
+"Address where the replies of the mails should\n"
+"be sent (required only if different from the e-mail address)."
 msgstr ""
-"Podpis je vyu¾íván v následujícím\n"
-"poètu úètù: %d."
+"Adresa, na kterou mají být zasílány odpovìdi\n"
+"(vy¾adováno pouze v pøípadì, kdy se li¹í od e-mail adresy)."
 
-#: amiga-mui/configwnd.c:1551
-#: amiga-mui/configwnd.c:1556
-#: amiga-mui/configwnd.c:1559
-msgid "Remove|*Cancel"
-msgstr "Odstranit|*Zru¹it"
+msgid "Addresslist Settings"
+msgstr "Nastavení seznamu adres"
 
-#: amiga-mui/configwnd.c:1556
-#, c-format
-msgid "The signature is used in %d folder(s)."
-msgstr ""
-"Podpis je vyu¾íván v následujícím\n"
-"poètu slo¾ek: %d."
+msgid "Add|Don't add"
+msgstr "Pøidat|Nepøidávat"
 
-#: amiga-mui/configwnd.c:1559
-#, c-format
-msgid "The signature is used in %d account(s) and %d folder(s)."
-msgstr ""
-"Podpis je vyu¾íván v následujícím\n"
-"poètu úètù %d a slo¾ek: %d."
-
-#: amiga-mui/configwnd.c:1642
-#: amiga-mui/configwnd.c:1643
-msgid "Us_e signatures"
-msgstr "Pou¾ívat _podpisy"
-
-#: amiga-mui/configwnd.c:1657
-#: amiga-mui/configwnd.c:1842
-msgid "_Add"
-msgstr "Pøi_dat"
-
-#: amiga-mui/configwnd.c:1659
-#: amiga-mui/configwnd.c:1846
-#: amiga-mui/filterwnd.c:506
-msgid "_Remove"
-msgstr "_Odstranit"
-
-#: amiga-mui/configwnd.c:1685
-msgid "Insert random tagline"
-msgstr "Vlo¾it náhodný øádek"
-
-#: amiga-mui/configwnd.c:1686
-msgid "Insert ENV:Signature"
-msgstr "Vlo¾it ENV:Signature"
-
-#: amiga-mui/configwnd.c:1717
-msgid "-- New Phrase --"
-msgstr "-- Nová fráze --"
-
-#: amiga-mui/configwnd.c:1781
-msgid "All"
-msgstr "v¹ech"
-
-#: amiga-mui/configwnd.c:1785
-msgid "On addresses"
-msgstr "pro adresy"
-
-#: amiga-mui/configwnd.c:1844
-msgid "_Duplicate"
-msgstr "_Duplikovat"
-
-#: amiga-mui/configwnd.c:1851
-msgid "Use on addresses which contain"
-msgstr "Pou¾ívat pro adresy obsahující"
-
-#: amiga-mui/configwnd.c:1858
-#: amiga-mui/configwnd.c:2167
-msgid "Write"
-msgstr "Psaní"
-
-#: amiga-mui/configwnd.c:1860
-#: amiga-mui/configwnd.c:1879
-msgid "Welcome"
-msgstr "Uvítání"
-
-#: amiga-mui/configwnd.c:1866
-msgid "Welcome with address"
-msgstr "Uvítání s adresou"
-
-#: amiga-mui/configwnd.c:1870
-msgid "?phrases:Close"
-msgstr "?phrases:Rozlouèení"
-
-#: amiga-mui/configwnd.c:1877
-#: amiga-mui/folderwnd.c:277
-#: amiga-mui/folderwnd.c:287
-#: amiga-mui/mailtreelistclass.c:528
-msgid "Reply"
-msgstr "Odpovìï"
-
-#: amiga-mui/configwnd.c:1884
-msgid "Intro"
-msgstr "Úvod"
-
-#: amiga-mui/configwnd.c:1889
-msgid "Close"
-msgstr "Rozlouèení"
-
-#: amiga-mui/configwnd.c:1894
-#: amiga-mui/mailtreelistclass.c:905
-msgid "Forward"
-msgstr "Pøeposlat"
-
-#: amiga-mui/configwnd.c:1896
-msgid "Initial"
-msgstr "Zaèátek"
-
-#: amiga-mui/configwnd.c:1901
-msgid "Finish"
-msgstr "Konec"
-
-#: amiga-mui/configwnd.c:1929
 msgid ""
 "After reseting the ham statistics the spam filter won't work reliable\n"
 "until you have classified some mails as ham.\n"
 "Are you sure to continue?"
 msgstr ""
-"Po vyresetování ham statistik, antispamový filtr nebude fungovat\n"
-"vìrohodnì, dokud nekvalifikujete nìjaké zprávy jako ham.\n"
-"Opravdu chcete pokraèovat?"
+"Po resetování ham statistik, nebude antispamový filtr fungovat\n"
+"spolehlivì, dokud neklasifikujete nìkteré e-mailové zprávy jako ham.\n"
+"Chcete opravdu pokraèovat?"
 
-#: amiga-mui/configwnd.c:1932
-msgid "Reset the statistics|Cancel"
-msgstr "Resetovat statistiku|Zru¹it"
-
-#: amiga-mui/configwnd.c:1947
 msgid ""
 "After reseting the spam statistics the spam filter won't work reliable\n"
 "until you have classified some mails as spam. However, if requested the\n"
 "statistics can be built from the mails inside the spam folder.\n"
 "How to proceed?"
 msgstr ""
-"Po vyresetování spam statistik, antispamový filtr nebude fungovat\n"
-"vìrohodnì, dokud nakvalifikujete nìjaké zprávy jako ham.\n"
-"Av¹ak, statistiky mohou být vytvoøeny na podstavì\n"
-"obsahu slo¾ky \"spam\".\n"
-"Jak chcete pokraèovat?"
+"Po resetování spam statistik, nebude antispamový filtr fungovat\n"
+"spolehlivì, dokud neklasifikujete nìkteré e-mailové zprávy jako spam.\n"
+"Nicménì, lze statistiku sestavit na základì obsahu adresáøe \"spam\".\n"
+"Jak pokraèovat?"
 
-#: amiga-mui/configwnd.c:1951
-msgid "Reset the statistics|Reset and rebuild|Cancel"
-msgstr "Resetovat statistiku|Resetovat a opìt vytvoøit|Zru¹it"
-
-#: amiga-mui/configwnd.c:1983
-msgid "General spam settings"
-msgstr "Obecné nastavení spamu"
-
-#: amiga-mui/configwnd.c:1986
-#: amiga-mui/configwnd.c:1987
-msgid "Mark mails as spam before moved to the spam folder"
-msgstr "Oznaèit zprávy jako spam pøed pøesunutím do spam slo¾ky"
-
-#: amiga-mui/configwnd.c:1988
 msgid ""
-"If you activate this option any mail you move to the spam folder\n"
-"is marked as spam before the operation. Note that only mails\n"
-"marked as spam can be moved into the spam folder."
+"After successul downloading the mails should be deleted\n"
+"on the POP3 server."
 msgstr ""
-"Pokud tuto funkci zapnete, v¹echny zprávy, které pøesunete\n"
-"do slo¾ky spam, budou nejdøíve oznaèeny jako spam.\n"
-"V¹imnìte si, ¾e do slo¾ky \"spam\" lze pøesouvat pouze\n"
-"zprávy oznaèené jako spam."
+"Po úspì¹ném sta¾ení v¹ech e-mailù dojde\n"
+"k jejich odstranìní na POP3 serveru."
 
-#: amiga-mui/configwnd.c:1994
-#: amiga-mui/configwnd.c:1995
-msgid "Check new mails for spam content"
-msgstr "Kontrola nových zpráv na obsah spamu"
+msgid "Alias"
+msgstr "Pøezdívka"
 
-#: amiga-mui/configwnd.c:1996
-msgid ""
-"If you activate this option any new mail is being checked for its\n"
-"spam content. This only works if you have more than 500 mails for\n"
-"every class within the statistics."
-msgstr ""
-"Zapnutí této funkce zapøíèiní kontrolu ka¾dé nové zprávy\n"
-"pro obsahspamu. Tato volba funguje pouze v pøípadì, kdy¾\n"
-"máte více ne¾ 500 zpráv pro ka¾dou tøídu ve statistikách."
+msgid "All"
+msgstr "V¹e"
 
-#: amiga-mui/configwnd.c:2003
-msgid ""
-"A white list contains email address of people you usually\n"
-"thrust. This can be used to speed up the spam checking as\n"
-"mails with a listed sender address are skipped."
-msgstr ""
-"Bílýseznam obsahuje e-mail adresy osob, kterým vìøíte.\n"
-"Toto lze vyu¾ít k urychlení kontroly spamu, jeliko¾ zprávy\n"
-"od zde umístìných odesílatelù budou vynechávány."
+msgid "All folders"
+msgstr "V¹echny adresáøe"
 
-#: amiga-mui/configwnd.c:2006
-msgid "White list"
-msgstr "Bílý seznam"
-
-#: amiga-mui/configwnd.c:2013
-msgid ""
-"If enabled all addresses within you addressbook are also\n"
-"considered to be safe."
-msgstr ""
-"Pokud tuto funkci zapnete, tak v¹echny adresy z va¹eho\n"
-"adresáøe budou také pova¾ovány za bezpeèné."
-
-#: amiga-mui/configwnd.c:2015
-#: amiga-mui/configwnd.c:2016
-msgid "Also all addresses within the addressbook"
-msgstr "Vèetnì v¹ech adres z adresáøe"
-
-#: amiga-mui/configwnd.c:2021
-msgid ""
-"A black list contains email address which you don't thrust.\n"
-"Mails from these addresses are always marked as spam."
-msgstr ""
-"Èerný seznam obsahuje e-mail adresy, kterým nevìøíte.\n"
-"Zprávy z tìchto adres budou v¾dy oznaèovány jako spam."
-
-#: amiga-mui/configwnd.c:2023
-msgid "Black list"
-msgstr "Èerný seznam"
-
-#: amiga-mui/configwnd.c:2032
-msgid "Statistics"
-msgstr "Statistiky"
-
-#: amiga-mui/configwnd.c:2035
-msgid "Number of mails classified as ham"
-msgstr "Poèet zpráv oznaèených jako ham"
-
-#: amiga-mui/configwnd.c:2037
-#: amiga-mui/configwnd.c:2042
-msgid "Reset statistics..."
-msgstr "Resetování statistiky..."
-
-#: amiga-mui/configwnd.c:2040
-msgid "Number of mails classified as spam"
-msgstr "Poèet zpráv oznaèených jako spam"
-
-#: amiga-mui/configwnd.c:2054
-msgid "Resets all ham statistics."
-msgstr "Resetování v¹ech ham statistik."
-
-#: amiga-mui/configwnd.c:2055
-msgid "Resets all spam statistics."
-msgstr "Resetování v¹ech spam statistik."
-
-#: amiga-mui/configwnd.c:2097
-msgid "SimpleMail - Configuration"
-msgstr "SimpleMail - Nastavení"
-
-#: amiga-mui/configwnd.c:2130
-msgid "?config:_Save"
-msgstr "?config:Ulo¾_it"
-
-#: amiga-mui/configwnd.c:2131
-#: amiga-mui/filterwnd.c:585
-msgid "_Use"
-msgstr "_Pou¾ít"
-
-#: amiga-mui/configwnd.c:2164
-msgid "General"
-msgstr "Obecné"
-
-#: amiga-mui/configwnd.c:2165
-msgid "Accounts"
-msgstr "Úèty"
-
-#: amiga-mui/configwnd.c:2166
-msgid "Receive mail"
-msgstr "Pøíjem zpráv"
-
-#: amiga-mui/configwnd.c:2168
-msgid "Reading"
-msgstr "Ètení"
-
-#: amiga-mui/configwnd.c:2169
-msgid "Reading plain"
-msgstr "Ètení textu"
-
-#: amiga-mui/configwnd.c:2170
-msgid "Reading HTML"
-msgstr "Ètení HTML"
-
-#: amiga-mui/configwnd.c:2171
-msgid "Phrases"
-msgstr "Fráze"
-
-#: amiga-mui/configwnd.c:2172
-msgid "Signatures"
-msgstr "Podpisy"
-
-#: amiga-mui/configwnd.c:2173
-msgid "Spam"
-msgstr "Spam"
-
-#: amiga-mui/configwnd.c:2179
-msgid "Save the configuration permanently."
-msgstr "Zapsat nastavení na disk."
-
-#: amiga-mui/configwnd.c:2180
-msgid "Use the configuration, but don't save it."
-msgstr "Pou¾ít nastavení, ale neukládat jej."
-
-#: amiga-mui/configwnd.c:2181
-msgid "Discards all the changes you have made."
-msgstr "Zru¹it v¹echny provedené zmìny."
-
-#: amiga-mui/configwnd_stuff.c:77
-msgid "You have entered an invalid email address. Please correct it."
-msgstr "Zadal jste neplatnou e-mail adresu. Napravte to."
-
-#: amiga-mui/configwnd_stuff.c:109
 msgid "All messages"
 msgstr "V¹echny zprávy"
 
-#: amiga-mui/configwnd_stuff.c:111
-#, c-format
-msgid "> %ld KB"
-msgstr "> %ld KB"
+msgid "Allow to download images from the internet from"
+msgstr "Povolit stahování grafiky z internetu pro"
 
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/foldertreelistclass.c:167
-msgid "New"
-msgstr "Nová"
+msgid "Allows you to filter for messages containing the given texts within their From or Subject fields."
+msgstr "Umo¾òuje odfiltrování zpráv obsahujících zadaný text v polích \"Od\" nebo \"Pøedmìt\"."
 
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/mailtreelistclass.c:881
-msgid "Read"
-msgstr "Pøeètená"
+msgid "Also all addresses within the addressbook"
+msgstr "Vèetnì v¹ech adres z adresáøe"
 
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/foldertreelistclass.c:168
-#: amiga-mui/mailtreelistclass.c:882
-msgid "Unread"
-msgstr "Nepøeètená"
+msgid "Always"
+msgstr "V¾dy"
 
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/mailtreelistclass.c:902
-msgid "Replied"
-msgstr "Zodpovìzená"
+msgid "AppIcon Label"
+msgstr "Popis appikony"
 
-#: amiga-mui/filterruleclass.c:69
-msgid "Forwarded"
-msgstr "Pøeposlaná"
+msgid "AppIcon Show"
+msgstr "Zobrazit appikonu"
 
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/mailtreelistclass.c:879
-msgid "Pending"
-msgstr "Zbývající"
-
-#: amiga-mui/filterruleclass.c:69
-#: amiga-mui/mailtreelistclass.c:896
-msgid "Sent"
-msgstr "Odeslaná"
-
-#: amiga-mui/filterruleclass.c:87
-msgid "Sender"
-msgstr "Odesílatel"
-
-#: amiga-mui/filterruleclass.c:88
-msgid "Receiver"
-msgstr "Adresát"
-
-#: amiga-mui/filterruleclass.c:90
-msgid "Header"
-msgstr "Hlavièka"
-
-#: amiga-mui/filterruleclass.c:91
-msgid "Has attachments"
-msgstr "Obsahuje pøílohy"
-
-#: amiga-mui/filterruleclass.c:92
-msgid "Status is"
-msgstr "Status"
-
-#: amiga-mui/filterruleclass.c:113
-#: amiga-mui/filterruleclass.c:117
-#: amiga-mui/filterruleclass.c:121
-#: amiga-mui/filterruleclass.c:126
-msgid "matches"
-msgstr "odpovídá"
-
-#: amiga-mui/filterwnd.c:482
-msgid "SimpleMail - Edit Filter"
-msgstr "SimpleMail - Editace filtrù"
-
-#: amiga-mui/filterwnd.c:505
-#: amiga-mui/mainwnd.c:108
-msgid "_New"
-msgstr "_Nová"
-
-#: amiga-mui/filterwnd.c:507
-msgid "Move up"
-msgstr "Pøesunout nahoru"
-
-#: amiga-mui/filterwnd.c:508
-msgid "Move Down"
-msgstr "Pøesunout dolù"
-
-#: amiga-mui/filterwnd.c:513
-msgid "Activtiy"
-msgstr "Aktivita"
-
-#: amiga-mui/filterwnd.c:517
-msgid "On request"
-msgstr "Na po¾ádání"
-
-#: amiga-mui/filterwnd.c:520
-msgid "On sent mails"
-msgstr "Na odeslané zprávy"
-
-#: amiga-mui/filterwnd.c:523
-msgid "Remotly on POP3 server"
-msgstr "Nejdøíve pøipojit na POP3"
-
-#: amiga-mui/filterwnd.c:526
-msgid "On new mails"
-msgstr "Na nové zprávy"
-
-#: amiga-mui/filterwnd.c:531
-msgid "Rules"
-msgstr "Pravidla"
-
-#: amiga-mui/filterwnd.c:539
-msgid "Add new rule"
-msgstr "Pøidat nové pravidlo"
-
-#: amiga-mui/filterwnd.c:540
 msgid "Apply now"
-msgstr "Aplikovat nyní"
+msgstr "Pou¾ít nyní"
 
-#: amiga-mui/filterwnd.c:542
-msgid "Action"
-msgstr "Akce"
+msgid "Are you sure that you want to start this executable?"
+msgstr "Jste si opravdu jist, ¾e chcete opravdu spustit tento soubor?"
 
-#: amiga-mui/filterwnd.c:545
-#: amiga-mui/filterwnd.c:546
-msgid "Move to Folder"
-msgstr "Pøesunout do slo¾ky"
+msgid "Ask"
+msgstr "Zaptat se"
 
-#: amiga-mui/filterwnd.c:561
-#: amiga-mui/filterwnd.c:562
-msgid "Execute ARexx Script"
-msgstr "Spustit ARexx skript"
+msgid "Attachment"
+msgstr "Pøíloha"
 
-#: amiga-mui/filterwnd.c:573
-#: amiga-mui/filterwnd.c:574
-msgid "Play Sound"
-msgstr "Pøehrát zvuk"
+msgid "Attachments"
+msgstr "Pøílohy"
 
-#: amiga-mui/filterwnd.c:584
-msgid "?filter:_Save"
-msgstr "?filtr:Ulo¾_it"
+msgid "Authentificate via APOP..."
+msgstr "Ovìøení pomocí APOP..."
 
-#: amiga-mui/filterwnd.c:593
-msgid ""
-"If activated the filter will be used remotly on POP3 servers\n"
-"which support the TOP command. Mails which matches the filter\n"
-"are presented to the user and automatically marked as to be ignored."
-msgstr ""
-"Pokud je tato funkce zapnuta, bude filtr pou¾íván dálkovì\n"
-"na POP3 serverech obsluhujících pøíkaz TOP. Zprávy vyhovující\n"
-"filtru budou oznámeny u¾ivateli a automaticky\n"
-"oznaèeny jako ignorované."
+msgid "Automatic operation"
+msgstr "Automatická operace"
 
-#: amiga-mui/folderwnd.c:269
-msgid "received"
-msgstr "obdr¾ené"
+msgid "Avoid duplicates"
+msgstr "Nestahovat kopie"
 
-#: amiga-mui/folderwnd.c:270
-msgid "sent"
-msgstr "odeslané"
+msgid "B"
+msgstr "B"
 
-#: amiga-mui/folderwnd.c:271
-msgid "received and sent"
-msgstr "obdr¾ené a odeslané"
+msgid "Background"
+msgstr "Pozadí"
 
-#: amiga-mui/folderwnd.c:272
-msgid "mailinglist"
-msgstr "diskuzní skupina"
+msgid "Belonging groups"
+msgstr "Èlenem skupin"
 
-#: amiga-mui/folderwnd.c:274
-#: amiga-mui/folderwnd.c:284
-#: amiga-mui/mailtreelistclass.c:524
-msgid "Status"
-msgstr "Status"
+msgid "Binary generated using gcc %d.%d.%d."
+msgstr "Vygenerováno pomocí gcc %d.%d.%d."
 
-#: amiga-mui/folderwnd.c:275
-msgid "From/To"
-msgstr "Od/Pro"
+msgid "Black list"
+msgstr "Èerný seznam"
 
-#: amiga-mui/folderwnd.c:280
-#: amiga-mui/folderwnd.c:290
-#: amiga-mui/mailtreelistclass.c:531
-msgid "Filename"
-msgstr "Název souboru"
+msgid "CC"
+msgstr "CC:"
 
-#: amiga-mui/folderwnd.c:281
-#: amiga-mui/folderwnd.c:291
-msgid "POP3"
-msgstr "POP3"
+msgid "C_opies To"
+msgstr "K_opie"
 
-#: amiga-mui/folderwnd.c:282
-#: amiga-mui/folderwnd.c:292
-#: amiga-mui/mailtreelistclass.c:533
-msgid "Received"
-msgstr "Obdr¾ené"
+msgid "Can't access income folder!"
+msgstr "Nelze získat pøístup pøíchozímu adresáøi!"
 
-#: amiga-mui/folderwnd.c:285
-msgid "From/TO"
-msgstr "Od/Pro"
+msgid "Can't access printer!"
+msgstr "Nelze získat pøístup k tiskárnì!"
 
-#: amiga-mui/folderwnd.c:301
-msgid "Folder Properties"
-msgstr "Nastavení slo¾ky"
+msgid "Can't create temporary file."
+msgstr "Nelze vytvoøit doèasný soubor."
 
-#: amiga-mui/folderwnd.c:303
-msgid "N_ame"
-msgstr "N_ázev"
+msgid "Can't delete folder because it is currently in use."
+msgstr "Nelze smazat adresáø, jeliko¾ je momentálnì pou¾íván."
 
-#: amiga-mui/folderwnd.c:311
-msgid "IMAP Server"
-msgstr "IMAP server"
+msgid "Can't get new filename!"
+msgstr "Nelze zadat nový název souboru!"
 
-#: amiga-mui/folderwnd.c:317
-#: amiga-mui/folderwnd.c:609
-msgid "Path"
-msgstr "Cesta"
+msgid "Can't mark mail as deleted!"
+msgstr "E-mailu nelze nastavit status smazaný!"
 
-#: amiga-mui/folderwnd.c:323
-#: amiga-mui/folderwnd.c:324
-msgid "_Type"
-msgstr "_Typ"
+msgid "Can't open mail file!"
+msgstr "Nelze otevøít zprávu!"
 
-#: amiga-mui/folderwnd.c:326
-#: amiga-mui/folderwnd.c:328
-msgid "_Primary sort"
-msgstr "Tøídit _podle"
+msgid "Cannot delete mails, because folder is in use.\n"
+msgstr "Zprávy nelze smazat, jeliko¾ adresáø je momentálnì pou¾íván.\n"
 
-#: amiga-mui/folderwnd.c:329
-#: amiga-mui/folderwnd.c:330
-#: amiga-mui/folderwnd.c:336
-#: amiga-mui/folderwnd.c:337
-msgid "Reverse"
-msgstr "Obrácené poøadí"
+msgid "Cannot locate host. Try again later"
+msgstr "Nelze nalézt hosta. Zkuste to pozdìji."
 
-#: amiga-mui/folderwnd.c:333
-#: amiga-mui/folderwnd.c:335
-msgid "_Secondary sort"
-msgstr "Násled_nì podle"
+msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
+msgstr "Nelze otevøít knihovnu bsdsocket.library. Prosíám, zpus»te nejdøíve TCP/IP stack."
 
-#: amiga-mui/folderwnd.c:341
-msgid "Compose Mail Properties"
-msgstr "Nastavení psaní zprávy"
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Nelze otevøít knihovnu bsdsocket.library!"
 
-#: amiga-mui/folderwnd.c:346
-#: amiga-mui/folderwnd.c:350
-msgid "T_o"
-msgstr "P_ro"
+msgid "Carbon Copy"
+msgstr "Kopie"
 
-#: amiga-mui/folderwnd.c:353
-#: amiga-mui/folderwnd.c:357
-msgid "_Reply To"
-msgstr "O_depsat"
+msgid "Case sensitive"
+msgstr "Rozpoznávat velikosti znakù"
 
-#: amiga-mui/folderwnd.c:367
-msgid "IMAP Properties"
-msgstr "Nastavení IMAP"
+msgid "Central/East (Windows)"
+msgstr "Centrálnì-východní (Windows)"
 
-#: amiga-mui/folderwnd.c:377
-msgid "Subscribe"
-msgstr "Sledovat"
+msgid "Central/East European"
+msgstr "Centrálnì-východoevropský"
 
-#: amiga-mui/folderwnd.c:378
-msgid "Unsubscribe"
-msgstr "Nesledovat"
-
-#: amiga-mui/folderwnd.c:379
-msgid "Reload from server"
-msgstr "Znovu nahrát ze serveru"
-
-#: amiga-mui/folderwnd.c:380
-msgid "Submit to server"
-msgstr "Odeslat na server"
-
-#: amiga-mui/folderwnd.c:422
-msgid "SimpleMail - Edit IMAP Server"
-msgstr "SimpleMail - Nastavení IMAP serveru"
-
-#: amiga-mui/folderwnd.c:428
-msgid "SimpleMail - Edit folder group"
-msgstr "SimpleMail - Nastavení skupiny slo¾ek"
-
-#: amiga-mui/folderwnd.c:457
-msgid "SimpleMail - Edit folder"
-msgstr "SimpleMail - Nastavení slo¾ky"
-
-#: amiga-mui/folderwnd.c:622
-msgid "_OK"
-msgstr "_OK"
-
-#: amiga-mui/foldertreelistclass.c:166
-msgid "Mails"
-msgstr "Zprávy"
-
-#: amiga-mui/foldertreelistclass.c:234
-msgid "Folders"
-msgstr "Slo¾ky"
-
-#: amiga-mui/foldertreelistclass.c:235
-msgid "New Folder..."
-msgstr "Nová slo¾ka..."
-
-#: amiga-mui/foldertreelistclass.c:236
-msgid "New Group..."
-msgstr "Nová skupina..."
-
-#: amiga-mui/foldertreelistclass.c:237
-msgid "Remove..."
-msgstr "Odstranit..."
-
-#: amiga-mui/foldertreelistclass.c:239
-msgid "Settings..."
-msgstr "Nastavení..."
-
-#: amiga-mui/foldertreelistclass.c:241
-#: amiga-mui/mainwnd.c:657
-msgid "Order"
-msgstr "Poøadí"
-
-#: amiga-mui/foldertreelistclass.c:242
-#: amiga-mui/mainwnd.c:658
-msgid "Save"
-msgstr "Ulo¾it"
-
-#: amiga-mui/foldertreelistclass.c:243
-#: amiga-mui/mainwnd.c:659
-msgid "Reset"
-msgstr "Reset"
-
-#: amiga-mui/foldertreelistclass.c:261
-msgid "Folder Settings"
-msgstr "Nastavení slo¾ky"
-
-#: amiga-mui/foldertreelistclass.c:262
-msgid "Show Mail?"
-msgstr "Zobrazit zprávu"
-
-#: amiga-mui/foldertreelistclass.c:263
-msgid "Show New?"
-msgstr "Zobrazit nové"
-
-#: amiga-mui/foldertreelistclass.c:264
-msgid "Show Unread?"
-msgstr "Zobrazit nepøeètené"
-
-#: amiga-mui/foldertreelistclass.c:522
-#: amiga-mui/searchwnd.c:79
-msgid "All folders"
-msgstr "V¹echny slo¾ky"
-
-#: amiga-mui/gui_main.c:373
-msgid "Failed to create the application\n"
-msgstr "Nelze vytvoøit aplikaci\n"
-
-#: amiga-mui/gui_main.c:374
-msgid "Could not create mui custom classes\n"
-msgstr "Nelze vytvoøit vlastní tøídy MUI\n"
-
-#: amiga-mui/gui_main.c:375
-msgid "Couldn't create appicon port\n"
-msgstr "Nelze vytvoøit port appicon\n"
-
-#: amiga-mui/gui_main.c:376
-msgid "Couldn't create arexx port\n"
-msgstr "Nelze vytvoøit ARexx port\n"
-
-#: amiga-mui/gui_main.c:377
-#: amiga-mui/gui_main.c:378
-#: amiga-mui/gui_main.c:379
-#, c-format
-msgid "Couldn't open %s version %d\n"
-msgstr "Nelze otevøít %s verze %d\n"
-
-#: amiga-mui/gui_main.c:459
-#, c-format
-msgid ""
-"The charset configured for SimpleMail (%s) doesn't match\n"
-"the system's default charset (%s)! How to proceed?"
-msgstr ""
-"Znaková sada nastavená v programu (%s) neodpovídá\n"
-"základní znakové sadì systému (%s)! Co dál?"
-
-#: amiga-mui/gui_main.c:461
 msgid "Change|Ignore once|Ignore always"
 msgstr "Zmìnit|Ignorovat jednou|Ignorovat v¾dy"
 
-#: amiga-mui/mailinfoclass.c:439
-#: mail.c:3420
-msgid "Copies to"
-msgstr "Kopie pro"
+msgid "Charset used to display text"
+msgstr "Sada znakù pro zobrazení textu"
 
-#: amiga-mui/mailtreelistclass.c:159
-msgid "<No Recipient>"
-msgstr "<není adresát>"
+msgid "Check Single Account"
+msgstr "Kontrola jednoho úètu"
 
-#. Help bubble text
-#: amiga-mui/mailtreelistclass.c:428
-#: amiga-mui/mainwnd.c:660
-msgid "Message"
-msgstr "Zpráva"
+msgid "Check for new mail every"
+msgstr "Kontrolovat novou po¹tu ka¾dých"
 
-#: amiga-mui/mailtreelistclass.c:532
-msgid "POP3 Server"
-msgstr "POP3 server"
+msgid "Check new mails for spam content"
+msgstr "Kontrola nových zpráv proti SPAMu"
 
-#: amiga-mui/mailtreelistclass.c:576
-msgid "Mail Settings"
-msgstr "Nastavení zprávy"
+msgid "Checking for folders"
+msgstr "Kontrola adresáøù"
 
-#: amiga-mui/mailtreelistclass.c:577
-msgid "Show From/To?"
-msgstr "Zobrazit Od/Pro"
+msgid "Checking for mail duplicates..."
+msgstr "Kontrola duplicitních zpráv..."
 
-#: amiga-mui/mailtreelistclass.c:578
-msgid "Show Subject?"
-msgstr "Zobrazit pøedmìt"
-
-#: amiga-mui/mailtreelistclass.c:579
-msgid "Show Reply-To?"
-msgstr "Zobrazit adresu pro odpovìï"
-
-#: amiga-mui/mailtreelistclass.c:580
-msgid "Show Date?"
-msgstr "Zobrazit datum"
-
-#: amiga-mui/mailtreelistclass.c:581
-msgid "Show Size?"
-msgstr "Zobrazit velikost"
-
-#: amiga-mui/mailtreelistclass.c:582
-msgid "Show Filename?"
-msgstr "Zobrazit název souboru"
-
-#: amiga-mui/mailtreelistclass.c:583
-msgid "Show POP3 Server?"
-msgstr "Zobrazit POP3 server"
-
-#: amiga-mui/mailtreelistclass.c:584
-msgid "Show Received?"
-msgstr "Zobrazit obdr¾ené"
-
-#: amiga-mui/mailtreelistclass.c:873
-msgid "Spam Check"
-msgstr "Kontrola spamu"
-
-#: amiga-mui/mailtreelistclass.c:874
-msgid "Set status"
-msgstr "Nastavit status na"
-
-#: amiga-mui/mailtreelistclass.c:875
-msgid "Mark"
-msgstr "oznaèený"
-
-#: amiga-mui/mailtreelistclass.c:876
-msgid "Unmark"
-msgstr "neoznaèený"
-
-#: amiga-mui/mailtreelistclass.c:878
-msgid "Hold"
-msgstr "zadr¾ená"
-
-#: amiga-mui/mailtreelistclass.c:884
-msgid "Is Spam"
-msgstr "spam"
-
-#: amiga-mui/mailtreelistclass.c:885
-msgid "Is Ham"
-msgstr "ham"
-
-#: amiga-mui/mailtreelistclass.c:887
-#: amiga-mui/mainwnd.c:670
-#: amiga-mui/transwndclass.c:171
-msgid "Delete"
-msgstr "Smazat"
-
-#: amiga-mui/mailtreelistclass.c:899
-msgid "Error"
-msgstr "Chyba"
-
-#: amiga-mui/mailtreelistclass.c:908
-msgid "Repl. & Forw."
-msgstr "odepsána a pøeposlána"
-
-#: amiga-mui/mainwnd.c:102
-msgid "Rea_d"
-msgstr "_Èíst"
-
-#: amiga-mui/mainwnd.c:103
-msgid "_Edit"
-msgstr "_Upravit"
-
-#: amiga-mui/mainwnd.c:104
-#: amiga-mui/readwnd.c:86
-msgid "_Move"
-msgstr "Pøe_sunout"
-
-#: amiga-mui/mainwnd.c:105
-msgid "De_lete"
-msgstr "S_mazat"
-
-#: amiga-mui/mainwnd.c:106
-msgid "Ge_tAdd"
-msgstr "_Ul.Adresu"
-
-#: amiga-mui/mainwnd.c:109
-#: amiga-mui/readwnd.c:88
-msgid "_Reply"
-msgstr "O_depsat"
-
-#: amiga-mui/mainwnd.c:110
-msgid "For_ward"
-msgstr "P_øeposlat"
-
-#: amiga-mui/mainwnd.c:112
-msgid "_Fetch"
-msgstr "St_áhnout"
-
-#: amiga-mui/mainwnd.c:113
-msgid "_Send"
-msgstr "Odes_lat"
-
-#: amiga-mui/mainwnd.c:115
-msgid "Searc_h"
-msgstr "Hleda_t"
-
-#: amiga-mui/mainwnd.c:115
-msgid "Opens a window where you can search through your mail folder."
-msgstr "Otevøe okno v kterém mù¾ete prohledávat své slo¾ky."
-
-#: amiga-mui/mainwnd.c:116
-msgid "F_ilter"
-msgstr "F_iltr"
-
-#: amiga-mui/mainwnd.c:116
-msgid "Process every mail within the current selected folder via the filters."
-msgstr "Zpracovává v¹echny zprávy z aktuální slo¾ky pomocí filtrù."
-
-#: amiga-mui/mainwnd.c:117
-msgid "S_pam"
-msgstr "S_pam"
-
-#: amiga-mui/mainwnd.c:117
 msgid ""
 "Checks the current selected folder for spam.\n"
 "If a potential spam mail has been found it will be marked."
 msgstr ""
-"Kontrola aktuální slo¾ky proti spamu.\n"
-"Pokud bude nalezen potencionální spam, bude oznaèen."
+"Kontrola aktuálnì vybraného adresáøe na spam.\n"
+"Pokud bude nalezen potencionální spam, pak bude oznaèen."
 
-#: amiga-mui/mainwnd.c:118
-msgid "Is_olate"
-msgstr "I_zolovat"
+msgid "Choose export filename"
+msgstr "Zvolte název souboru pro export"
 
-#: amiga-mui/mainwnd.c:118
-msgid "Isolates all spam marked mails within the current selected folder."
-msgstr "Izoluje v¹echny zprávy oznaèené jako spam v aktuálnì vybrané slo¾ce."
+msgid ""
+"Choose how APOP is handled. If you encounter login probelms\n"
+"you might change this setting to \"Don't try\"."
+msgstr ""
+"Vyberte zpùsob, jakým bude zacházeno s APOP úèty.\n"
+"Pokud narazíte na problémy s pøihlá¹ením, zkuste zmìnit\n"
+"toto nastavení na \"Nezkou¹et\"."
 
-#: amiga-mui/mainwnd.c:120
-msgid "_Abook"
-msgstr "_Adresáø"
+msgid "Choose the file which you like to import"
+msgstr "Vyberte soubor, který chcete importovat"
 
-#: amiga-mui/mainwnd.c:121
-msgid "Filters"
-msgstr "Filtry"
+msgid "City"
+msgstr "Mìsto"
 
-#: amiga-mui/mainwnd.c:121
-msgid "Opens a window where the filters can be edited."
-msgstr "Otevøe okno v kterém lze nastavit filtry."
+msgid "Close"
+msgstr "Zavøít"
 
-#: amiga-mui/mainwnd.c:122
-msgid "_Config"
-msgstr "Nastave_ní"
+msgid "Close read window on list end"
+msgstr "Zavøít okno ètení na konci seznamu"
 
-#: amiga-mui/mainwnd.c:192
-msgid "SimpleMail - About"
-msgstr "SimpleMail - O programu"
+msgid "Colors"
+msgstr "Barvy"
 
-#: amiga-mui/mainwnd.c:193
-msgid "*Ok"
-msgstr "*OK"
+msgid "Compose Mail Properties"
+msgstr "Vlastnosti psaní e-mailù"
 
-#: amiga-mui/mainwnd.c:195
-msgid "Copyright (c)"
-msgstr "Autorská práva (c)"
-
-#: amiga-mui/mainwnd.c:195
-msgid "and"
-msgstr "a"
-
-#: amiga-mui/mainwnd.c:195
-msgid "Released under the terms of the GNU Public License"
-msgstr "Program je poskytován pod GNU Public licencí"
-
-#: amiga-mui/mainwnd.c:627
-#: amiga-mui/readwnd.c:1133
-msgid "?:About..."
-msgstr "?:O programu..."
-
-#: amiga-mui/mainwnd.c:628
-#: amiga-mui/readwnd.c:1134
-msgid "About MUI..."
-msgstr "O MUI..."
-
-#: amiga-mui/mainwnd.c:630
-msgid "O:Open message..."
-msgstr "O:Otevøít zprávu..."
-
-#: amiga-mui/mainwnd.c:632
-msgid "Delete all indexfiles"
-msgstr "Smazat v¹echny indexy"
-
-#: amiga-mui/mainwnd.c:633
-msgid "Save all indexfiles"
-msgstr "Ulo¾it v¹echny indexy"
-
-#: amiga-mui/mainwnd.c:635
-#: amiga-mui/mainwnd.c:648
-msgid "Import mbox file..."
-msgstr "Import ze souboru mbox..."
-
-#: amiga-mui/mainwnd.c:636
-msgid "Import dbx file..."
-msgstr "Import ze souboru dbx..."
-
-#: amiga-mui/mainwnd.c:638
-msgid "S:Send queued mails..."
-msgstr "S:Odeslat èekající po¹tu "
-
-#: amiga-mui/mainwnd.c:639
-msgid "F:Check all active accounts..."
-msgstr "F:Kontrola v¹ech aktivních úètù..."
-
-#: amiga-mui/mainwnd.c:640
-msgid "Check single account"
-msgstr "Kontrola jednotlivého úètu"
-
-#: amiga-mui/mainwnd.c:642
-#: amiga-mui/readwnd.c:1136
-msgid "Q:Quit"
-msgstr "Q:Konec"
-
-#: amiga-mui/mainwnd.c:643
-msgid "Folder"
-msgstr "Slo¾ka"
-
-#: amiga-mui/mainwnd.c:644
-msgid "New..."
-msgstr "Nová..."
-
-#: amiga-mui/mainwnd.c:645
-msgid "New group..."
-msgstr "Nová skupina..."
-
-#: amiga-mui/mainwnd.c:647
-msgid "Delete..."
-msgstr "Smazat..."
-
-#: amiga-mui/mainwnd.c:649
-msgid "Export as mbox..."
-msgstr "Export..."
-
-#: amiga-mui/mainwnd.c:650
-msgid "Rescan"
-msgstr "Opìtovná kontrola"
-
-#: amiga-mui/mainwnd.c:651
-msgid "Options..."
-msgstr "Volby..."
-
-#: amiga-mui/mainwnd.c:653
-msgid "P:Run spam mail check"
-msgstr "P:Spustit kontrolu spamu"
-
-#: amiga-mui/mainwnd.c:654
-msgid "I:Isolate spam mails"
-msgstr "I:Izolovat spam"
-
-#: amiga-mui/mainwnd.c:655
-msgid "H:Classify all mails as ham"
-msgstr "H:Klasifikovat v¹echny zprávy jako ham"
-
-#: amiga-mui/mainwnd.c:661
-msgid "N:New..."
-msgstr "N:Nová..."
-
-#: amiga-mui/mainwnd.c:662
-msgid "D:Read..."
-msgstr "D:Èíst..."
-
-#: amiga-mui/mainwnd.c:663
-msgid "E:Edit..."
-msgstr "E:Upravit..."
-
-#: amiga-mui/mainwnd.c:664
-#: amiga-mui/readwnd.c:1260
-msgid "Save As..."
-msgstr "Ulo¾it jako..."
-
-#: amiga-mui/mainwnd.c:665
-msgid "R:Reply..."
-msgstr "R:Odpovìdìt..."
-
-#: amiga-mui/mainwnd.c:666
-msgid "W:Forward..."
-msgstr "W:Pøeposlat..."
-
-#: amiga-mui/mainwnd.c:668
-msgid "M:Move..."
-msgstr "M:Pøesunout..."
-
-#: amiga-mui/mainwnd.c:669
-msgid "Copy..."
-msgstr "Kopírovat..."
-
-#.
-#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-#. {NM_ITEM, "Print...", NULL, NM_ITEMDISABLED, 0L, NULL},
-#. {NM_ITEM, "Save", NULL, NM_ITEMDISABLED, 0L, NULL},
-#. {NM_SUB, "Complete Message...", NULL, 0, 0, NULL},
-#. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
-#. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
-#.
-#: amiga-mui/mainwnd.c:679
-#: amiga-mui/readwnd.c:1141
-msgid "Settings"
-msgstr "Nastavení"
-
-#: amiga-mui/mainwnd.c:680
-msgid "Show folders?"
-msgstr "Zobrazit slo¾ky"
-
-#: amiga-mui/mainwnd.c:681
-msgid "Show addressbook?"
-msgstr "Zobrazit adresáø"
-
-#: amiga-mui/mainwnd.c:682
-msgid "Show selected message?"
-msgstr "Zobrazit vybrané zprávy"
-
-#: amiga-mui/mainwnd.c:684
 msgid "Configuration..."
 msgstr "Konfigurace..."
 
-#: amiga-mui/mainwnd.c:685
-msgid "Filters..."
-msgstr "Filtry..."
-
-#: amiga-mui/mainwnd.c:686
-msgid "MUI..."
-msgstr "MUI..."
-
-#: amiga-mui/mainwnd.c:688
-msgid "Save Settings"
-msgstr "Ulo¾it nastavení"
-
-#: amiga-mui/mainwnd.c:689
-msgid "Scripts"
-msgstr "Skripty"
-
-#: amiga-mui/mainwnd.c:690
-msgid ".:Execute ARexx Script..."
-msgstr ".:Spustit ARexx skript..."
-
-#: amiga-mui/mainwnd.c:808
-#, c-format
-msgid ""
-"SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\n"
-"It's available from %s"
-msgstr ""
-"SimpleMail vy¾aduje MUI tøídu NListtree.mcc ve verzi minimálnì %ld.%ld!\n"
-"Najdete ji na adrese: %s"
-
-#: amiga-mui/mainwnd.c:832
-#, c-format
-msgid ""
-"SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
-"It's available from %s"
-msgstr ""
-"SimpleMail vy¾aduje MUI tøídu NListtree.mcc ve verzi minimálnì %ld.%ld!\n"
-"Najdete jí na adrese: %s"
-
-#: amiga-mui/mainwnd.c:989
-msgid "Folder:"
-msgstr "Slo¾ka:"
-
-#: amiga-mui/mainwnd.c:989
-msgid "Total:"
-msgstr "Celkem:"
-
-#: amiga-mui/mainwnd.c:989
-msgid "New:"
-msgstr "Nových:"
-
-#: amiga-mui/mainwnd.c:989
-msgid "Unread:"
-msgstr "Nepøeètených:"
-
-#: amiga-mui/mainwnd.c:998
-#, c-format
-msgid "Total:%d New:%d Unread:%d"
-msgstr "Celkem:%d Nových:%d Nepøeètených:%d"
-
-#: amiga-mui/mainwnd.c:1020
-#, c-format
-msgid "%s (T:%d N:%d U:%d)"
-msgstr "%s (C:%d N:%d NP:%d)"
-
-#: amiga-mui/mainwnd.c:1247
-msgid "No fetchable account specified"
-msgstr "Nebyl vybrán úèet z kterého se mají stáhnout zprávy"
-
-#: amiga-mui/mainwnd.c:1340
-#, c-format
-msgid "%s (next autocheck at %s)"
-msgstr "%s (dal¹í automatická kontrola v %s)"
-
-#: amiga-mui/messageviewclass.c:126
-#: amiga-mui/readwnd.c:514
-#, c-format
-msgid ""
-"File %s already exists in %s.\n"
-"Do you really want to replace it?"
-msgstr ""
-"Soubor %s ji¾ existuje v %s.\n"
-"Opravdu jej chcete nahradit?"
-
-#: amiga-mui/messageviewclass.c:166
-#: amiga-mui/readwnd.c:554
-#, c-format
-msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
-msgstr "_Pùvodní (%s)|_Pøekonvertovaná (%s)|_UTF8|Zru_¹it"
-
-#: amiga-mui/messageviewclass.c:167
-#: amiga-mui/readwnd.c:555
-msgid ""
-"The orginal charset of the attached file differs from yours.\n"
-"In which charset do you want the file being saved?"
-msgstr ""
-"Pùvodní znaková sada pøipojeného souboru je jiná ne¾\n"
-"jakou pou¾íváte Vy. V jaké znakové sadì chcete tento soubor ulo¾it?"
-
-#: amiga-mui/messageviewclass.c:285
-#: amiga-mui/readwnd.c:230
-msgid "Are you sure that you want to start this executable?"
-msgstr "Opravdu chcete tento program spustit?"
-
-#: amiga-mui/messageviewclass.c:285
-#: amiga-mui/readwnd.c:230
-msgid "*_Yes|_Cancel"
-msgstr "*_Ano|Zru¹_it"
-
-#: amiga-mui/messageviewclass.c:578
-msgid "Main Message"
-msgstr "Zpráva"
-
-#: amiga-mui/messageviewclass.c:582
-msgid "Unnamed"
-msgstr "Bez názvu"
-
-#: amiga-mui/messageviewclass.c:592
-msgid "?attachment:View"
-msgstr "?attachment:Zobrazit"
-
-#: amiga-mui/messageviewclass.c:594
-msgid "?attachment:Save"
-msgstr "?attachment:Ulo¾it"
-
-#: amiga-mui/messageviewclass.c:599
-#, c-format
-msgid "%ld bytes"
-msgstr "%ld bajtù"
-
-#: amiga-mui/messageviewclass.c:810
-msgid "Write to..."
-msgstr "Ulo¾it do..."
-
-#: amiga-mui/messageviewclass.c:811
-msgid "Add to addressbook..."
-msgstr "Pøidat do adresáøe..."
-
-#: amiga-mui/pgplistclass.c:79
-msgid "PGP Key ID"
-msgstr "ID klucza PGP"
-
-#: amiga-mui/pgplistclass.c:80
-msgid "User ID"
-msgstr "ID u¿ytkownika"
-
-#: amiga-mui/searchwnd.c:158
-msgid "SimpleMail - Search"
-msgstr "SimpleMail - Hledání"
-
-#: amiga-mui/searchwnd.c:161
-msgid "Search _into"
-msgstr "Hledat v"
-
-#: amiga-mui/searchwnd.c:191
-msgid "_Subject"
-msgstr "_Pøedmìt"
-
-#: amiga-mui/searchwnd.c:210
-msgid "S_tart search"
-msgstr "Za_hájit hledání"
-
-#: amiga-mui/searchwnd.c:211
-msgid "Sto_p search"
-msgstr "_Zastavit hledání"
-
-#: amiga-mui/shutdownwnd.c:89
-msgid "Shutting down..."
-msgstr "Ukonèování..."
-
-#: amiga-mui/readwnd.c:80
-msgid "_Prev"
-msgstr "_Pøedchozí"
-
-#: amiga-mui/readwnd.c:81
-msgid "_Next"
-msgstr "_Dal¹í"
-
-#: amiga-mui/readwnd.c:83
-msgid "_Save"
-msgstr "Ulo_¾it"
-
-#: amiga-mui/readwnd.c:84
-msgid "Pr_int"
-msgstr "T_isknout"
-
-#: amiga-mui/readwnd.c:87
-msgid "_Delete"
-msgstr "_Smazat"
-
-#: amiga-mui/readwnd.c:89
-msgid "_Forward"
-msgstr "Pøepos_lat"
-
-#: amiga-mui/readwnd.c:1138
-msgid "Show raw format..."
-msgstr "Zobrazit celý soubor..."
-
-#: amiga-mui/readwnd.c:1140
-msgid "Print visible mailpart"
-msgstr "Vytisknout viditelnou èást zprávy"
-
-#: amiga-mui/readwnd.c:1142
-msgid "Show all headers?"
-msgstr "Zobrazit v¹echny hlavièky"
-
-#: amiga-mui/readwnd.c:1199
-msgid "SimpleMail - Read Message"
-msgstr "SimpleMail - Ètení zprávy"
-
-#: amiga-mui/readwnd.c:1254
-#: amiga-mui/readwnd.c:1271
-msgid "Attachment"
-msgstr "Pøíloha"
-
-#: amiga-mui/readwnd.c:1256
-msgid "Open"
-msgstr "Otevøít"
-
-#: amiga-mui/readwnd.c:1264
-msgid "Print as text"
-msgstr "Tisknout jako text"
-
-#: amiga-mui/readwnd.c:1273
-msgid "Save as..."
-msgstr "Ulo¾it jako..."
-
-#: amiga-mui/readwnd.c:1277
-msgid "Save whole document as..."
-msgstr "Ulo¾it celý dokument jako..."
-
-#: amiga-mui/transwndclass.c:127
-msgid "Mail No"
-msgstr "Èíslo zprávy"
-
-#: amiga-mui/transwndclass.c:169
-msgid "Ignore"
-msgstr "Ignorovat"
-
-#: amiga-mui/transwndclass.c:170
-msgid "Download"
-msgstr "Stáhnout"
-
-#: amiga-mui/transwndclass.c:172
-msgid "Download & Delete"
-msgstr "Stáhnout a smazat"
-
-#: amiga-mui/transwndclass.c:173
-msgid "_Start"
-msgstr "_Zahájit"
-
-#: amiga-mui/transwndclass.c:176
-msgid "Select All"
-msgstr "Vybrat v¹e"
-
-#: amiga-mui/transwndclass.c:177
-msgid "Select None"
-msgstr "Zru¹it oznaèení"
-
-#: amiga-mui/transwndclass.c:178
-#: amiga-mui/transwndclass.c:179
-msgid "Ignore not listed mails"
-msgstr "Ignorovat nevypsané zprávy"
-
-#. MUIA_Window_Title,"SimpleMail",
-#: amiga-mui/transwndclass.c:185
-#: amiga-mui/transwndclass.c:347
-#: amiga-mui/transwndclass.c:348
-#: amiga-mui/transwndclass.c:351
-msgid "Waiting..."
-msgstr "Èekejte..."
-
-#: amiga-mui/transwndclass.c:195
-msgid "_Skip"
-msgstr "Pøeskoèit"
-
-#: amiga-mui/transwndclass.c:196
-msgid "_Abort"
-msgstr "_Pøeru¹it"
-
-#: amiga-mui/signaturecycleclass.c:167
-#: amiga-mui/signaturecycleclass.c:345
-msgid "No Signature"
-msgstr "Bez podpisu"
-
-#: amiga-mui/support.c:437
-#, c-format
-msgid "Please enter the login for %s"
-msgstr "Prosím zadejte login pro %s"
-
-#: amiga-mui/support.c:445
-msgid "Login/UserID"
-msgstr "ID u¾ivatele"
-
-#: amiga-mui/support.c:508
-msgid "SimpleMail - Select PGP Key"
-msgstr "SimpleMail - Vyberte PGP klíè"
-
-#: amiga-mui/support.c:568
-msgid "SimpleMail - Select a Folder"
-msgstr "SimpleMail - Vyberte slo¾ku"
-
-#: amiga-mui/sysprint.c:54
-msgid "Failed while sending data to printer!"
-msgstr "Odesílání dat do tiskárny se nepovedlo!"
-
-#: amiga-mui/sysprint.c:72
-msgid "Can't access printer!"
-msgstr "Nelze pøistoupit na tiskárnu!"
-
-#: Charsets/cp1250.txt:3
-msgid "Central/East (Windows)"
-msgstr "Central/East (Windows)"
-
-#: Charsets/cp1251.txt:4
-msgid "Cyrillic (Windows)"
-msgstr "Cyrylika (Windows)"
-
-#: Charsets/cp1252.txt:3
-msgid "West European (Windows)"
-msgstr "West European (Windows)"
-
-#: Charsets/iso8859-10.txt:3
-msgid "Nordic"
-msgstr "Skandinávský"
-
-#: Charsets/iso8859-7.txt:3
-msgid "Greek"
-msgstr "Øecký"
-
-#: codesets.c:836
-msgid "West European (with EURO)"
-msgstr "West European (se znakem EURO)"
-
-#: codesets.c:858
-msgid "West European"
-msgstr "West European"
-
-#: codesets.c:879
-msgid "Central/East European"
-msgstr "Central/East European"
-
-#: codesets.c:901
-msgid "South European"
-msgstr "South European"
-
-#: codesets.c:923
-msgid "North European"
-msgstr "North European"
-
-#: codesets.c:945
-msgid "Russian"
-msgstr "Ruský"
-
-#: codesets.c:967
-msgid "Slavic languages"
-msgstr "Slovanské jazyky"
-
-#: codesets.c:989
-msgid "Turkish"
-msgstr "Turecký"
-
-#: codesets.c:1011
-msgid "West European II"
-msgstr "West European II"
-
-#: codesets.c:1034
-msgid "South-Eastern European"
-msgstr "South-Eastern European"
-
-#: dbx.c:363
-#: mbox.c:220
-#, c-format
-msgid "Importing %s to %s"
-msgstr "Importování %s do %s"
-
-#: dbx.c:366
-#: mbox.c:223
-#, c-format
-msgid "Importing %s"
-msgstr "Importování %s"
-
-#: dbx.c:372
-msgid "SimpleMail - Importing a dbx file"
-msgstr "SimpleMail - Importování z dbx"
-
-#: folder.c:1491
-msgid "Can't delete folder because it is actually in use."
-msgstr "Nelze odstranit slo¾ku, proto¾e se právì pou¾ívá."
-
-#: folder.c:1507
-msgid ""
-"You are going to delete an imap folder.\n"
-"This will remove the folder locally but not on the server.\n"
-"The next time you connect to the server the folder will reapear."
-msgstr ""
-"Sna¾íte se odstranit slo¾ku IMAP.\n"
-"Toto odstraní slo¾ku pouze lokálnì, ale ne na serveru.\n"
-"Pøi dal¹ím spojeníse serverem, bude tato slo¾ka opìt vytvoøena."
-
-#: folder.c:1510
-#: folder.c:1515
-#: folder.c:1554
-#: folder.c:1588
-msgid "_Delete it|_Cancel"
-msgstr "S_mazat|Zru¹_it"
-
-#: folder.c:1514
-msgid ""
-"Do you really want to delete the folder\n"
-"and all its mails?"
-msgstr ""
-"Opravdu chcete odstranit slo¾ku\n"
-"a v¹echny v ní umístìné zprávy?"
-
-#: folder.c:1551
-msgid ""
-"You are going to delete an imap server.\n"
-"Unless you don't remove it from the accounts setting page\n"
-"it will reapear after SimpleMail is restarted."
-msgstr ""
-"Sna¾íte se smazat IMAP server.\n"
-"Pokud jej neodstraníte z nastavení úètù, bude se\n"
-"opìtovnì objevovat po restartu programu."
-
-#: folder.c:1587
-msgid ""
-"Do you really want to delete this group?\n"
-"Only the group entry is deleted,\n"
-"not the folders inside the group"
-msgstr ""
-"Opravdu chcete smazat tuto skupinu?\n"
-"Smazány budou pouze údaje o skupinì,\n"
-"slo¾ky uvnitø této skupiny v¹ak ne."
-
-#: imap.c:343
-#, c-format
-msgid "Examining folder %s"
-msgstr "Prohledávání slo¾ky %s"
-
-#: imap.c:378
-#, c-format
-msgid "Identified %d mails in %s"
-msgstr "Identifikováno %d zpráv v %s"
-
-#: imap.c:490
-msgid "Failed examining the folder"
-msgstr "Prohledáváví slo¾ky se nepovedlo"
-
-#: imap.c:760
-#, c-format
-msgid "Fetching mail %d from server"
-msgstr "Stahování zprávy %d ze serveru"
-
-#: imap.c:857
-#, c-format
-msgid "Synchronizing mails with %s"
-msgstr "Synchronizování zpráv s %s"
-
-#: imap.c:891
-#: imap.c:976
-#: imap.c:1054
-#: pop3.c:951
-msgid "Waiting for login..."
-msgstr "Èekání na pøihlá¹ení..."
-
-#: imap.c:894
-#: imap.c:979
-#: imap.c:1057
-msgid "Login..."
-msgstr "Pøihla¹ování..."
-
-#: imap.c:898
-msgid "Login successful"
-msgstr "Pøihlá¹ení úspì¹né"
-
-#: imap.c:899
-msgid "Checking for folders"
-msgstr "Kontrola slo¾ek"
-
-#: imap.c:925
-msgid "Login failed!"
-msgstr "Pøihlá¹ení se nepovedlo!"
-
-#: imap.c:945
-#: pop3.c:1112
-msgid "Cannot open the bsdsocket.library!"
-msgstr "Nelze otevøít knihovnu bsdsocket.library!"
-
-#: imap.c:966
-#, c-format
-msgid "Reading folders of %s"
-msgstr "Ètení slo¾ek z %s"
-
-#: imap.c:983
-#: imap.c:1061
-msgid "Reading folders..."
-msgstr "Ètení slo¾ek..."
-
-#: imap.c:1044
-#, c-format
-msgid "Submitting subscribed folders to %s"
-msgstr "Odesílání sledovaných slo¾ek do %s"
-
-#: imap.c:1065
-msgid "Reading subscribed folders..."
-msgstr "Ètení sledovaných slo¾ek..."
-
-#: imap.c:1105
-msgid "Subscribing folders failed!"
-msgstr "Sledování slo¾ek se nepodaøilo!"
-
-#: imap.c:1142
-msgid "Unsubscribing folders failed!"
-msgstr "Zru¹ení sledování slo¾ek se nepovedlo!"
-
-#. Display "Connecting" - status message
-#: imap.c:1458
-#: smtp.c:923
-msgid "Connecting..."
-msgstr "Spojování..."
-
-#. Display "Loggin in" - status message
-#: imap.c:1466
-msgid "Logging in..."
-msgstr "Pøihla¹ování..."
-
-#. Display "Connected" - status message
-#: imap.c:1472
-#: imap.c:1550
 msgid "Connected"
 msgstr "Pøipojeno"
 
-#: imap.c:1478
-msgid "Loggin in failed. Check Username and Password for this account"
-msgstr "Pøihlá¹ení se nepovedlo. Zkontrolujte login a heslo pro tento úèet"
+msgid "Connecting timed out"
+msgstr "Èas pøipojení vypr¹el"
 
-#: imap.c:1485
-msgid "Unexpected server answer. Connection failed."
-msgstr "Neoèekávaná odpovìï serveru. Pøipojení se nepovedlo."
+msgid "Connecting to server %s..."
+msgstr "Pøipojování k serveru %s..."
 
-#. Display "Failed to connect" - status message
-#: imap.c:1493
 msgid "Connecting to the server failed"
-msgstr "Pøipojení k serverem se nepodaøilo"
+msgstr "Pøipojení k serveru selhalo"
 
-#. Display "Retrieving mail" - status message
-#: imap.c:1528
-msgid "Retrieving mail folders..."
-msgstr "Získávání slo¾ek zpráv..."
+msgid "Connecting..."
+msgstr "Pøipojování..."
 
-#: mail.c:1208
-#, c-format
-msgid ""
-"Sender address (From) is <%s>, but\n"
-"return address (Reply-To) is <%s>.\n"
-"Which address do you want to use?"
-msgstr ""
-"Odresa odesílatele (Od) je <%s>, ale\n"
-"adresa pro odpovìdi (Odepsat na) je <%s>.\n"
-"Jakou adresu chcete pou¾ít?"
+msgid "Connection could not be made secure because the SMTP server doesn't seem to support it!"
+msgstr "Pøipojení nemù¾e být zabezpeèeno, jeliko¾ SMTP server toto nepodporuje!"
 
-#: mail.c:1211
-msgid "_From|*_Reply-To|_Both|_Cancel"
-msgstr "_Od|*Odep_sat na|O_ba|Zru¹_it"
+msgid "Connection could not be made secure."
+msgstr "Pøipojení nelze zabezpeèit."
 
-#: mail.c:1262
-msgid "This e-mail has multiple recipients. Should it be answered to all recipients?"
-msgstr "Tato zpráva má mnoho pøíjemcù. Odpovìdìt v¹em?"
+msgid "Connection couldn't be made secure"
+msgstr "Pøipojení nelze zabezpeèit"
 
-#: mail.c:1263
-msgid "*_Yes|_No"
-msgstr "*_Ano|_Ne"
+msgid "Connection refused"
+msgstr "Pøipojení odmítnuto"
 
-#: mail.c:2111
-msgid "This mail is encrypted. Please enter your passphrase now"
-msgstr "Tato zpráva je za¹ifrovaná. Zadejte Va¹e heslo"
+msgid "Contacts"
+msgstr "Kontakty"
 
-#: mail.c:2195
-msgid ""
-"Decrypting failed! Eighter because the passphrase was incorrect\n"
-"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!"
-msgstr ""
-"De¹ifrování se nepodaøilo. Je mo¾né, ¾e Va¹e heslo bylo ¹patné\n"
-"nebo tento typ ¹ifrování není podporováno SimpleMailem (pouze PGP 2.6.x)!"
+msgid "Contents"
+msgstr "Obsah"
 
-#: mail.c:2209
-msgid "Unsupported encryption"
-msgstr "Nepodporované ¹ifrování"
+msgid "Contributor of SimpleMail"
+msgstr "Pøispìvatelé do SimpleMailu"
 
-#: mail.c:2932
-#, c-format
-msgid "Please select a key for %s <%s>"
-msgstr "Prosím, vyberte klíè pro %s <%s>"
-
-#: mail.c:3084
 msgid ""
 "Converting this e-mail will cause the loss of some characters.\n"
 "SimpleMail can store the mail as Unicode so this doesn't happen."
 msgstr ""
-"Konvertování této zprávy zapøíèiní ztrátu nìkterých znakù.\n"
-"SimpleMail mù¾e uchovávat zprávy ve formátu Unicode\n"
-"co¾ mù¾e této strátì pøedejít."
+"Konvertování tohoto e-mailu zpùsobí ztrátu nìkterých znakù.\n"
+"SimpleMail mù¾e uchovávat e-maily ve forámtu Unicode\n"
+"co¾ mù¾e pøedejít ztrátì tìchto znakù."
 
-#: mail.c:3086
-msgid "Use Unicode|No Unicode"
-msgstr "Pou¾ít Unicode|Bez Unicode"
+msgid "Copies to"
+msgstr "Kopie pro"
 
-#: mail.c:3229
-msgid ""
-"No valid from field specified. You must configure some Accounts\n"
-"before creating new mails"
-msgstr ""
-"Neplatné data v poli \"Od\". Pøed vytvoøením nové zprávy\n"
-"si musíte nastavit nìjaký úèet"
+msgid "Copy"
+msgstr "Kopírovat"
 
-#: mail.c:3242
-msgid ""
-"No subject was specified. It is not recommended to create mails\n"
-"without any subject. Do you want to add a subject line?"
-msgstr ""
-"Nebyl zadán pøedmìt zprávy. Není doporuèeno odesílat zprávy\n"
-"bez zadání ¾ádného pøedmìtu. Chcete to nyní napravit?"
+msgid "Copy..."
+msgstr "Kopírovat..."
 
-#: mail.c:3244
-msgid "Add|Don't add"
-msgstr "Pøidat|Nepøidávat"
+msgid "Copyright (c)"
+msgstr "Copyright (c)"
 
-#: mail.c:3476
-#: print.c:131
-msgid "Replies To"
-msgstr "Odpovìdi na"
+msgid "Could not create mui custom classes\n"
+msgstr "Nelze vytvoøit vlastní MUI tøídy\n"
 
-#: mbox.c:94
-#, c-format
-msgid "Exporting folder %s to %s"
-msgstr "Export slo¾ky %s do %s"
-
-#: mbox.c:96
-msgid "SimpleMail - Exporting folder"
-msgstr "SimpleMail - Export slo¾ky"
-
-#: mbox.c:229
-msgid "SimpleMail - Importing a mbox file"
-msgstr "SimpleMail - Importování ze souboru mbox"
-
-#: pop3.c:73
-msgid "Error receiving data from host!"
-msgstr "Chyba pøistahování dat!"
-
-#: pop3.c:163
-msgid "Failed to authentificate via APOP. Server hasn't delivered a timestamp."
-msgstr "Autorizace pomocí APOP se nepovedla. Server neposkytl èasové znaèky."
-
-#: pop3.c:174
-msgid "Authentificate via APOP..."
-msgstr "Autorizace pomocí APOP..."
-
-#: pop3.c:200
-msgid "Failed to authentificate via APOP"
-msgstr "Autorizace pomocí APOP se nepovedla"
-
-#: pop3.c:206
-#: pop3.c:234
-msgid "Login successful!"
-msgstr "Pøihlá¹ení úspì¹né!"
-
-#: pop3.c:212
-msgid "Sending username..."
-msgstr "Odesílání u¾ivatelského jména..."
-
-#: pop3.c:219
-#: pop3.c:230
-msgid "Error while identifing the user"
-msgstr "Chyba pøi identifikaci u¾ivatele"
-
-#: pop3.c:224
-msgid "Sending password..."
-msgstr "Odesílání hesla..."
-
-#: pop3.c:454
-msgid "Checking for mail duplicates..."
-msgstr "Hledání duplicitních zpráv..."
-
-#: pop3.c:498
-#, c-format
-msgid "Found %d mail duplicates"
-msgstr "Nalezeno %d duplikátních zpráv"
-
-#: pop3.c:536
-msgid "Getting statistics..."
-msgstr "Získávání statistik..."
-
-#: pop3.c:542
 msgid "Could not get server statistics"
-msgstr "Nelze získat statistiku ze serveru"
+msgstr "Nelze získat statistiku serveru"
 
-#: pop3.c:583
-msgid "Getting mail sizes..."
-msgstr "Zji¹»ování velikosti zprávy..."
+msgid "Couldn't create appicon port\n"
+msgstr "Nelze vytvoøit port appikony\n"
 
-#. no errors and the user wants a more informative preselection or there are any remote filters
-#: pop3.c:648
-msgid "Getting mail infos..."
-msgstr "Zji¹»ování informací o zprávì..."
+msgid "Couldn't create arexx port\n"
+msgstr "Nelze vytvoøit ARexx port\n"
 
-#. -ERR has been returned and nobody breaked the connection, what means that TOP is not supported
-#: pop3.c:674
-msgid "Couldn't receive more statistics"
-msgstr "Nelze získat více statistik"
-
-#: pop3.c:756
-msgid "Waiting for user interaction"
-msgstr "Èekání na zásah u¾ivatele"
-
-#: pop3.c:777
-msgid "Logging out..."
-msgstr "Odhla¹ování..."
-
-#: pop3.c:797
-msgid "Can't get new filename!"
-msgstr "Nelze zadat nový název souboru!"
-
-#: pop3.c:806
-msgid "Can't open mail file!"
-msgstr "Nelze otevøít zprávu!"
-
-#: pop3.c:814
-msgid "Couldn't receive the mail"
-msgstr "Zprávu nelze stáhnout"
-
-#: pop3.c:829
-msgid "Error while receiving the mail"
-msgstr "Chyba pøi stahování zprávy"
-
-#: pop3.c:846
-msgid "Error while writing the mail onto disk"
-msgstr "Chyba pøi ukládání zprávy na disks"
-
-#: pop3.c:916
-#, c-format
-msgid "Fetching mails from %s"
-msgstr "Stahování zpráv z %s"
-
-#: pop3.c:998
-msgid "Can't access income-folder!"
-msgstr "Nelze pøistoupit do slo¾ky pøíchozích zpráv!"
-
-#: pop3.c:1043
 msgid "Couldn't download the mail!\n"
-msgstr "Nelze stáhnout zprávu!\n"
+msgstr "Nelze stáhnout e-mail!\n"
 
-#: pop3.c:1059
-msgid "Marking mail as deleted..."
-msgstr "Nastavování zprávy jako smazané..."
+msgid "Couldn't open %s version %d\n"
+msgstr "Nelze otevøít %s verze %d\n"
 
-#: pop3.c:1062
-msgid "Can't mark mail as deleted!"
-msgstr "Zprávu nelze oznaèit jako smazanou!"
+msgid "Couldn't receive more statistics"
+msgstr "Nelze získat více statistiky"
 
-#: pop3.c:1097
-#: smtp.c:966
-msgid "Unable to connect to server %s: %s"
-msgstr "Nelze se pøipojit na server %s: %s"
+msgid "Couldn't receive the mail"
+msgstr "Nelze pøijmout e-mail"
 
-#: print.c:93
-msgid "Carbon Copy"
-msgstr "Kopie"
+msgid "Couldn't start process for exporting.\n"
+msgstr "Nelze zahájit exportování.\n"
 
-#: print.c:200
-msgid "I/O-Error."
-msgstr "Chyba I/O."
+msgid "Couldn't start process for importing.\n"
+msgstr "Nelze zahájit importování.\n"
 
-#: print.c:206
-msgid "Not enough memory."
-msgstr "Nedostatek pamìti."
+msgid "Country"
+msgstr "Zemì"
 
-#: print.c:211
-msgid "Internal error."
-msgstr "Intérní chyba."
-
-#: print.c:218
-msgid "Can't create temporary file."
-msgstr "Nelze vytvoøit doèasný soubor."
-
-#: simplemail.c:102
-msgid "Unable to save the active mail.\n"
-msgstr "Aktivní zprávu nelze ulo¾it.\n"
-
-#: simplemail.c:166
-#: simplemail.c:233
-msgid "Cannot delete mails, because folder is in use.\n"
-msgstr "Nelze smazat zprávy, jeliko¾ se slo¾ka pou¾ívá.\n"
-
-#: simplemail.c:183
-msgid "Do you really want to delete the selected mail permanently?"
-msgstr "Opravdu chcete trvale smazat vybranou zprávu?"
-
-#: simplemail.c:184
-#, c-format
-msgid "Do you really want to delete %d mails permanently?"
-msgstr "Opravdu chcete trvale odstranit %d oznaèených zpráv?"
-
-#: simplemail.c:185
-msgid "_Yes|_No"
-msgstr "_Ano|_Ne"
-
-#: simplemail.c:790
-msgid "Please select the folder where to move the mail"
-msgstr "Vyberte slo¾ku do které chcete zprávu pøesunout"
-
-#: simplemail.c:835
-msgid "Please select the folder where to move the mails"
-msgstr "Vyberte slo¾ku do které chcete pøesunout zprávy"
-
-#: simplemail.c:893
-msgid "spam and ham"
-msgstr "spam a ham"
-
-#: simplemail.c:894
-msgid "spam"
-msgstr "spam"
-
-#: simplemail.c:895
-msgid "ham"
-msgstr "ham"
-
-#: simplemail.c:897
-#, c-format
 msgid ""
 "Currently there are too few mails classified as %s.\n"
 "Statistical spam identification works only reliable if you classify\n"
@@ -3073,242 +521,1859 @@ msgid ""
 "\n"
 "Continue to try to look for spam mails?"
 msgstr ""
-"Momentálnì je kvalifikováno pøíli¾ málo zpráv jako %s.\n"
-"Statistická identifikace spamu funguje vìrohodnì, pokud\n"
-"nejdøíve kvalifikujete odpovídající poèet zpráv.\n"
+"Momentálnì máte klasifikováno malý poèet zpráv jako %s.\n"
+"Statistická identifikace SPAMu funguje dùvìryhodnì, pouze v tom\n"
+"pøípadì, kdy u¾ máte klasifikován odpovídající poèet zpráv.\n"
 "\n"
-"Poèet zpráv kvalifikovaných jako spam (¹patné zprávy): %ld\n"
-"Poèet zpráv kvalifikovaných jako ham (dobré zprávy): %ld\n"
+"Poèet e-mailù klasifikovaných jako SPAM (¹patné zprávy): %ld\n"
+"Poèet e-mailù klasifikovaných jako HAM (dobré zprávy): %ld\n"
 "\n"
-"Pokraèovat v pokusu vyhledávání spamù?"
+"Pokraèovat ve vyhledávání spamu?"
 
-#: simplemail.c:902
-msgid "_Look for spam mails|_Cancel"
-msgstr "_Hledat spam|Zru¹_it"
+msgid "Cut"
+msgstr "Vyjmout"
 
-#: simplemail.c:1258
-#: simplemail.c:1283
-msgid "Choose the file which you like to import"
-msgstr "Vyberte soubor z kterého chcete importovat"
+msgid "Cyrillic (Windows)"
+msgstr "Cyrilice (Windows)"
 
-#: simplemail.c:1263
-#: simplemail.c:1288
-msgid "Couldn't start process for importing.\n"
-msgstr "Import nelze zahájit.\n"
+msgid "D:Read..."
+msgstr "D:Pøeèíst..."
 
-#: simplemail.c:1302
-msgid "Choose export filename"
-msgstr "Vyberte název souboru pro export"
-
-#: simplemail.c:1307
-msgid "Couldn't start process for exporting.\n"
-msgstr "Export nelze zahájit.\n"
-
-#: simplemail.c:1626
-msgid "Select an addressbook-file."
-msgstr "Vyberte soubor s adresáøem."
-
-#: simplemail.c:1659
-msgid "New Group"
-msgstr "Nová skupina"
-
-#: smtp.c:116
-msgid "Service not ready."
-msgstr "Slu¾ba není pøipravena."
-
-#: smtp.c:466
-msgid "DATA-Cmd failed."
-msgstr "Pøíkaz DATA se nepovedl."
-
-#: smtp.c:727
-msgid "Sending EHLO..."
-msgstr "Odesílání EHLO..."
-
-#: smtp.c:732
-msgid "Sending HELO..."
-msgstr "Odesílání HELO..."
-
-#: smtp.c:735
-#: smtp.c:769
-msgid "HELO failed"
-msgstr "Pøíkaz HELO se nepovedl."
-
-#: smtp.c:744
-msgid "Connection could not be made secure because the SMTP server doesn't seem to support it!"
-msgstr "Nelze navázat zabezpìèené pøipojení, jeliko¾ jej nepodporuje SMTP server!"
-
-#: smtp.c:748
-msgid "Sending STARTTLS..."
-msgstr "Odesílání STARTTLS..."
-
-#: smtp.c:751
-msgid "STARTTLS failed. Connection could not be made secure."
-msgstr "Pøíkaz STARTTLS se nepovedl. Nelze navázat zabezpeèené pøipojení."
-
-#: smtp.c:757
-msgid "Connection could not be made secure."
-msgstr "Nelze navázat zabezpeèené spojení."
-
-#: smtp.c:761
-msgid "Sending secured EHLO..."
-msgstr "Odesílání zabezpeèeného EHLO..."
-
-#: smtp.c:766
-msgid "Sending secured HELO..."
-msgstr "Odesílání zabezpeèeného HELO..."
-
-#: smtp.c:777
-msgid "Sending AUTH..."
-msgstr "Odesílání AUTH..."
-
-#: smtp.c:780
-msgid "AUTH failed. User couldn't be authenticated. Please recheck your settings."
-msgstr "Pøíkaz AUTH se nepovedl. U¾ivatel nebyl rozpoznán. Zkontrolujte svá nastavení."
-
-#. starts from 1
-#: smtp.c:842
-msgid "Sending FROM..."
-msgstr "Odesílání FROM..."
-
-#: smtp.c:845
-msgid "FROM failed."
-msgstr "Pøíkaz FROM se nepovedl."
-
-#: smtp.c:850
-msgid "Sending RCPT..."
-msgstr "Odesílání RCPT..."
-
-#: smtp.c:853
-msgid "RCPT failed."
-msgstr "Pøíkaz RCPT se nepovedl"
-
-#: smtp.c:858
-msgid "Sending DATA..."
-msgstr "Odesílání DATA..."
-
-#: smtp.c:862
 msgid "DATA failed."
-msgstr "Pøíkaz DATA se nepovedl."
+msgstr "Pøíkaz DATA se nezdaøil."
 
-#. Connect to the pop3 server first
-#: smtp.c:912
-#, c-format
-msgid "Sending mails to %s, connecting to %s first"
-msgstr "Odesílání zpráv na %s, nejdøíve pøipojení s %s"
+msgid "DATA-Cmd failed."
+msgstr "Pøíkaz DATA-Cmd se nezdaøil."
 
-#: smtp.c:915
-msgid "Log into POP3 Server...."
-msgstr "Pøipojování na POP3 server..."
+msgid "Date"
+msgstr "Datum"
 
-#: smtp.c:919
-#, c-format
-msgid "Sending mails to %s"
-msgstr "Odesílání zpráv na %s"
+msgid "Date of birth"
+msgstr "Datum narození"
 
-#: smtp.c:933
-msgid "Aborted - Sending QUIT..."
-msgstr "Pøeru¹enoPrzerwano - odesílání QUIT..."
+msgid "De_lete"
+msgstr "S_mazat"
 
-#: smtp.c:935
-#: smtp.c:952
-msgid "Aborted - Disconnecting..."
-msgstr "Zru¹eno - Rozpojování..."
+msgid ""
+"Deactivate this if you don't want SimpleMail to\n"
+"download the e-Mails when pressing on 'Fetch'."
+msgstr ""
+"Vypnìte tuto volbu, pokud nechcete, aby SimpleMail\n"
+"stahoval po¹tu po z tohoto konta po kliknutí na \"Stáhnout\"."
 
-#: smtp.c:944
-msgid "Sending QUIT..."
-msgstr "Odesílání QUIT..."
+msgid ""
+"Decrypting failed! Eighter because the passphrase was incorrect\n"
+"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!"
+msgstr ""
+"De¹ifrování selhalo. Je mo¾né, ¾e Va¹e heslo nebylo správné\n"
+"nebo tento zpùsob ¹ifrování je¹tì není podporován (zatím pouze PGP 2.6.x)!"
 
-#: smtp.c:958
+msgid "Default Order"
+msgstr "Výchozí øazení"
+
+msgid "Default Order: all"
+msgstr "Výchozí øazení: v¹e"
+
+msgid "Default Order: this"
+msgstr "Výchozí øazení: tento"
+
+msgid "Default Width: all"
+msgstr "Výchozí ¹íøka: v¹e"
+
+msgid "Default Width: this"
+msgstr "Výchozí ¹íøka: tento"
+
+msgid "Delete"
+msgstr "Smazat"
+
+msgid "Delete All Indexfiles"
+msgstr "Smazat v¹echny indexy"
+
+msgid "Delete..."
+msgstr "Smazat..."
+
+msgid "Description"
+msgstr "Popis"
+
+msgid "Disabled"
+msgstr "Vypnuto"
+
+msgid "Discards all the changes you have made."
+msgstr "Odstranit v¹echny Vámi provedené zmìny."
+
 msgid "Disconnecting..."
 msgstr "Odpojování..."
 
-#: smtp.c:975
-msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
-msgstr "Nelze otevøít knihovnu bsdsocket.library. Prosím, spus»te TCP/IP stack."
+msgid "Do you really want to delete %d mails permanently?"
+msgstr "Opravdu chcete trvale odstranit %d oznaèených zpráv?"
 
-#: status.c:53
-#: status.c:66
-#, c-format
-msgid "%d s"
-msgstr "%d s"
+msgid ""
+"Do you really want to delete the folder\n"
+"and all its mails?"
+msgstr ""
+"Opravdu chcete odstranit adresáø\n"
+"a v¹echny v nìm obsa¾ené zprávy?"
 
-#: status.c:54
-#: status.c:67
-#, c-format
-msgid "%d min %d s"
-msgstr "%d min %d s"
+msgid "Do you really want to delete the selected mail permanently?"
+msgstr "Opravdu chcete trvale odstranit vybranou zprávu?"
 
-#: status.c:56
-msgid "Time remaining:"
-msgstr "Zbývající èas:"
+msgid ""
+"Do you really want to delete this group?\n"
+"Only the group entry is deleted,\n"
+"not the folders inside the group."
+msgstr ""
+"Opravdu chcete odstranit tut skupinu?\n"
+"Odstranìny budou pouze záznamy skupiny,\n"
+"nikoli adresáøe a zprávy uvnitø skupiny."
 
-#: status.c:126
-#, c-format
-msgid "Connecting to server %s..."
-msgstr "Pøipojování na server %s..."
+msgid "Don't try"
+msgstr "Nezkou¹et"
 
-#: status.c:156
-#, c-format
-msgid "%d KB / %d KB (time left: %s)"
-msgstr "%d KB / %d KB (zbývající èas: %s)"
+msgid "Download"
+msgstr "Stáhnout"
 
-#: status.c:161
-#, c-format
-msgid "Processing mail %d (%d KB) of %d"
-msgstr "Zpracovávání zprávy %d (%d KB) z %d"
+msgid "Download & Delete"
+msgstr "Stáhnout a smazat"
 
-#: tcp.c:78
+msgid "Dragging %d messages"
+msgstr "Pøetahování %d zpráv"
+
+msgid "Dragging a single message"
+msgstr "Pøetahování jedné zprávy"
+
+msgid "E-Mail Address"
+msgstr "E-mailová adresa"
+
+msgid "E-Mail addresses"
+msgstr "E-mailové adresy"
+
+msgid "E:Edit..."
+msgstr "R:Úpravy..."
+
+msgid "EMail"
+msgstr "E-mailová adresa"
+
+msgid "Edit..."
+msgstr "Upravit..."
+
+msgid "Editable Mailtext"
+msgstr "Upravitelná zpráva"
+
+msgid "Editor"
+msgstr "Editor"
+
+msgid "Enabled"
+msgstr "Zapnuto"
+
+msgid "Encrypt"
+msgstr "©ifrovat"
+
+msgid "Enforce"
+msgstr "Vynutit"
+
+msgid "Error"
+msgstr "Chyba"
+
+msgid "Error receiving data from host!"
+msgstr "Chyba v prùbìhu pøijímání dat!"
+
+msgid "Error while identifing the user"
+msgstr "Chyba pøi identifikaci u¾ivatele"
+
+msgid "Error while identifying the user"
+msgstr "Chyba pøi identifikaci u¾ivatele"
+
+msgid "Error while receiving the mail"
+msgstr "Chyba v prùbìhu stahování zprávy"
+
+msgid "Error while writing the mail onto disk"
+msgstr "Chyba v prùbìhu ukládání zprávy na disk"
+
+msgid "Examining folder %s"
+msgstr "Prozkoumávání adresáøe %s"
+
+msgid "Excerpt"
+msgstr "Náhled"
+
+msgid "Execute ARexx Script"
+msgstr "Spustit ARexx skript"
+
+msgid "Export As mbox..."
+msgstr "Exportovat jako mbox..."
+
+msgid "Exporting folder %s to %s"
+msgstr "Exportování adresáøe %s do %s"
+
+msgid "F:Check All Active Accounts..."
+msgstr "V:Zkontrolovat v¹echny aktivní úèty..."
+
+msgid "FROM failed."
+msgstr "Pøíkaz FROM se nepodaøil."
+
+msgid "F_ilter"
+msgstr "F_iltr"
+
+msgid "Failed examining the folder"
+msgstr "Chyba pøi prozkoumávání adresáøe"
+
+msgid "Failed to authentificate via APOP"
+msgstr "Ovìøování pomocí APOP se nepovedlo"
+
+msgid "Failed to authentificate via APOP. Server hasn't delivered a timestamp."
+msgstr "Ovìøování pomocí APOP se nepovedlo. Server nedoruèil èasové razítko."
+
+msgid "Failed to connect to the server"
+msgstr "Pøipojení k serveru se nezdaøilo"
+
+msgid "Failed to create the application\n"
+msgstr "Nelze vytvoøit aplikaci\n"
+
+msgid "Failed while sending data to printer!"
+msgstr "Odeslání dat na tiskárnu se nezdaøilo!"
+
+msgid "Fax"
+msgstr "Fax"
+
+msgid "Female"
+msgstr "®ena"
+
+msgid "Fetching mail %d from server"
+msgstr "Stahování zprávy %d ze serveru"
+
+msgid "Fetching mails from %s"
+msgstr "Stahování zpráv z %s"
+
+msgid ""
+"File %s already exists in %s.\n"
+"Do you really want to replace it?"
+msgstr ""
+"Soubor %s ji¾ existuje v %s.\n"
+"Chcete jej opravdu nahradit?"
+
+msgid "File Name"
+msgstr "Název souboru"
+
+msgid "Filename"
+msgstr "Název souboru"
+
+msgid "Filters"
+msgstr "Filtry"
+
+msgid "Filters..."
+msgstr "Filtry..."
+
+msgid "Finish"
+msgstr "Ukonèení"
+
+msgid "Fixed Font"
+msgstr "Neproporcionální písmo"
+
+msgid "Folder"
+msgstr "Slo¾ka"
+
+msgid "Folder Properties"
+msgstr "Vlastnosti slo¾ky"
+
+msgid "Folder Settings"
+msgstr "Nastavení slo¾ky"
+
+msgid "Folder directory"
+msgstr "Adresáø pro ukládání slo¾ek"
+
+msgid "Folder to display at startup"
+msgstr "Slo¾ka zobrazená pøi spu¹tìní"
+
+msgid "Folder:"
+msgstr "Slo¾ka:"
+
+msgid "Folders"
+msgstr "Slo¾ky"
+
+msgid "Fonts"
+msgstr "Písmo"
+
+msgid "For_ward"
+msgstr "P_øeposlat"
+
+msgid "Forward"
+msgstr "Pøeposlat"
+
+msgid "Forward mails as attachments"
+msgstr "Pøeposlat e-maily jako pøílohy"
+
+msgid "Forwarded"
+msgstr "Pøeposláno"
+
+msgid "Forwarding"
+msgstr "Pøeposílání"
+
+msgid "Found %d mail duplicates"
+msgstr "Nalezneno %d duplicitních zpráv"
+
+msgid "From"
+msgstr "Od"
+
+msgid "From/TO"
+msgstr "Od/Pro"
+
+msgid "From/To"
+msgstr "Od/Pro"
+
+msgid "Ge_tAdd"
+msgstr "_StáhAdr"
+
+msgid "General"
+msgstr "Obecné"
+
+msgid "General spam settings"
+msgstr "Obecné nastavení pro SPAM"
+
+msgid "Getting mail infos..."
+msgstr "Stahování informací o zprávách..."
+
+msgid "Getting mail sizes..."
+msgstr "Stahování velikostí zpráv..."
+
+msgid "Getting statistics..."
+msgstr "Stahování statistik..."
+
+msgid "Greek"
+msgstr "Øecký"
+
+msgid "Group with the given name \"%s\" already exists"
+msgstr "Skupina o zadaném názvu \"%s\" ji¾ existuje"
+
+msgid "Groups"
+msgstr "Skupiny"
+
+msgid "H:Classify All Mails As Ham"
+msgstr "H:Klasifikovat v¹echny zrpávy jako ham"
+
+msgid "HELO failed"
+msgstr "Pøíkaz HELO se nezdaøil."
+
+msgid "Has attachments"
+msgstr "Obsahuje pøílohy"
+
+msgid "Header"
+msgstr "Záhlaví"
+
+msgid "Header Background"
+msgstr "Pozadí záhlaví"
+
+msgid "Header Configuration"
+msgstr "Konfigurace záhlaví"
+
+msgid "High"
+msgstr "Vysoká"
+
+msgid "Hold"
+msgstr "Podr¾et"
+
+msgid "Homepage"
+msgstr "Domovská stránka"
+
+msgid "Host wasn't found"
+msgstr "Host nebyl nalezen"
+
+msgid "I/O-Error."
+msgstr "Vstupnì/výstupní chyba."
+
+msgid "I:Isolate Spam Mails"
+msgstr "I:Izolovat Spam"
+
+msgid "IMAP Properties"
+msgstr "Vlastnosti IMAP"
+
+msgid "IMAP Server"
+msgstr "IMAP server"
+
+msgid "Iconified"
+msgstr "Ikonifikace"
+
+msgid "Identified %d mails in %s"
+msgstr "Identifikováno %d zpráv v %s"
+
+msgid ""
+"If activated SimpleMail tries to make the connection secure.\n"
+"This is not supported on all servers, so decativate if it doesn't work."
+msgstr ""
+"Po aktivaci, se SimpleMail sna¾í navázat zabezpeèené spojení.\n"
+"Tato funkce nefunguje na v¹ech serverech, tak¾e v pøípadì\n"
+"problémù tuto funkci vypnìte."
+
+msgid ""
+"If activated the filter will be used remotly on POP3 servers\n"
+"which support the TOP command. Mails which matches the filter\n"
+"are presented to the user and automatically marked as to be ignored."
+msgstr ""
+"Po aktivaci této funkce bude filtr pou¾íván vzdálenì\n"
+"na stranì POP3 serverù podporujících pøíkaz TOP. Zprávy vyhovující\n"
+"filtrùm budou pøedstaveny u¾ivateli a automaticky\n"
+"oznaèeny jako ignorované."
+
+msgid "If activated the search is case sensitive."
+msgstr "Pokud je aktivní, bude rozli¹ována velikost znakù."
+
+msgid ""
+"If activated the string is an AmigaDOS pattern\n"
+"and patternmatching will be performed.\n"
+"Special chars are: ? # | ~ ( ) [ ] % '"
+msgstr ""
+"Pokud je aktivní, budou øetìzce pova¾ovány za vzorce AmigaDOS\n"
+"a bude pou¾íváno pøizpùsobování vzorcù.\n"
+"Dostupné speciální znaky jsou: ? # | ~ ( ) [ ] % '"
+
+msgid ""
+"If activated the string must only be a part\n"
+"of the searched field."
+msgstr ""
+"Pokud je aktivní, øetìzec musý být\n"
+"èástí pole vyhledávání."
+
+msgid ""
+"If enabled all addresses within you addressbook are also\n"
+"considered to be safe."
+msgstr ""
+"Zapnutí této funkce zpùsobí uznání v¹ech adres\n"
+"z Va¹eho adresáøe za bezpeèné."
+
+msgid "If online"
+msgstr "Pokud je pøipojen"
+
+msgid "If this option is enabled, SimpleMail will close the read window after all mails in the folder have been processed (e.g. deleted) by the user completly in the current direction. Otherwise SimpleMail tries to browse into the other direction and closes the window only if no other mail exists within the folder."
+msgstr "Pokud je tato volba aktivní, pak SimpleMail zavøe okno ètení po zpracování v¹ech zpráv (napø. smazání) v jednom smìru. V opaèném pøípadì se pokusí procházet zprávy v opaèném smìru a okno ètení uzavøe jen tehyd, kdy v adresáøi ji¾ nebudou ¾ádné zprávy."
+
+msgid ""
+"If you activate this option any mail you move to the spam folder\n"
+"is marked as spam before the operation. Note that only mails\n"
+"marked as spam can be moved into the spam folder."
+msgstr ""
+"Po zapnutí této funkce budou v¹echny zprávy, které pøesunete\n"
+"do slo¾ky spam, budou nejdøíve oznaèeny jako spam.\n"
+"Pamatujete, ¾e pouze zprávy oznaèené jako spam lze\n"
+"pøesunout do slo¾ky spam."
+
+msgid ""
+"If you activate this option any new mail is being checked for its\n"
+"spam content. This only works if you have more than 500 mails for\n"
+"every class within the statistics."
+msgstr ""
+"Zapnutí této volby zpùsobí, ¾e ka¾dá nová zpráva bude ovìøována\n"
+"na obsah spamu. Funkce funguje pouze v pøípadì, kdy máte více\n"
+"ne¾ 500 zpráv pro ka¾dou tøídu ve statistice."
+
+msgid "Ignore"
+msgstr "Ignorovat"
+
+msgid "Ignore not listed mails"
+msgstr "Ignorovat neuvedené zprávy"
+
+msgid "Import addressbook..."
+msgstr "Importování adresáøe..."
+
+msgid "Import dbx File..."
+msgstr "Import ze souboru DBX..."
+
+msgid "Import mbox File..."
+msgstr "Import ze souboru MBOX..."
+
+msgid "Importance"
+msgstr "Dùle¾itost"
+
+msgid "Importing %s"
+msgstr "Importování %s"
+
+msgid "Importing %s to %s"
+msgstr "Importování %s do %s"
+
+msgid "Initial"
+msgstr "Zaèátek"
+
+msgid "Insert ENV:Signature"
+msgstr "Vlo¾it ENV:Signature"
+
+msgid "Insert random tagline"
+msgstr "Vlo¾it náhodný slogan"
+
+msgid "Internal error."
+msgstr "Interní chyba."
+
+msgid "Intro"
+msgstr "Úvod"
+
+msgid "Is Ham"
+msgstr "Je HAM"
+
+msgid "Is Spam"
+msgstr "Je SPAM"
+
+msgid "Is_olate"
+msgstr "I_zolovat"
+
+msgid "Isolates all spam marked mails within the current selected folder."
+msgstr "Izoluje v¹echny zprávy oznaèené jako spam v aktuálnì vybrané slo¾ce."
+
+msgid "Link Text"
+msgstr "Text odkazu"
+
+msgid "Log into POP3 Server...."
+msgstr "Pøihla¹ování k POP3 serveru..."
+
+msgid "Log into POP3 server first"
+msgstr "Nejdøíve pøihlásit k POP3 serveru"
+
+msgid "Loggin in failed. Check Username and Password for this account"
+msgstr "Pøipojení se nezdaøilo. Zkontrolujte u¾ivatelské jméno a heslo pro tento úèet"
+
+msgid "Logging in..."
+msgstr "Pøihla¹ování..."
+
+msgid "Logging out..."
+msgstr "Odhla¹ování..."
+
+msgid "Login"
+msgstr "Pøihlá¹ení"
+
+msgid "Login failed!"
+msgstr "Pøihlá¹ení se nezdaøilo!"
+
+msgid "Login successful"
+msgstr "Pøihlá¹ení probìhlo úspì¹nì"
+
+msgid "Login successful!"
+msgstr "Pøihlá¹ení probìhlo úspì¹nì!"
+
+msgid "Login..."
+msgstr "Pøihla¹ování..."
+
+msgid "Login/UserID"
+msgstr "ID u¾ivatele"
+
+msgid "Low"
+msgstr "Nízká"
+
+msgid "M:Move..."
+msgstr "M:Pøesunout..."
+
+msgid "MUI..."
+msgstr "MUI..."
+
+msgid "Mail"
+msgstr "E-mail"
+
+msgid "Mail No"
+msgstr "Èíslo zprávy"
+
+msgid "Mail Settings"
+msgstr "Nastavení zprávy"
+
+msgid "Mails"
+msgstr "Zpráv"
+
+msgid "Main Message"
+msgstr "Hlavní zpráva"
+
+msgid "Male"
+msgstr "Mu¾"
+
+msgid "Mark"
+msgstr "Oznaèeno"
+
+msgid "Mark mails as spam before moved to the spam folder"
+msgstr "Oznaèit zprávu jako SPAM pøed pøesunutím do slo¾ky SPAM"
+
+msgid "Marking mail as deleted..."
+msgstr "Oznaèit zprávu jako smazanou..."
+
+msgid "Message"
+msgstr "Zpráva"
+
+msgid "Mobile"
+msgstr "Mobilní telefon"
+
+msgid "MorphOS maintainer of SimpleMail"
+msgstr "Èlovìk stojící za udr¾ováním verze pro MorphOS"
+
+msgid "Move Down"
+msgstr "Pøesunout dolù"
+
+msgid "Move to Folder"
+msgstr "Pøesunout do slo¾ky"
+
+msgid "Move up"
+msgstr "Pøesunout nahoru"
+
+msgid "N:New..."
+msgstr "N:Nová..."
+
+msgid "N_ame"
+msgstr "Ná_zev"
+
+msgid "Name"
+msgstr "Název"
+
+msgid "Network unreachable"
+msgstr "Nedostupná sí»"
+
+msgid "Never"
+msgstr "Nikdy"
+
+msgid "New"
+msgstr "Nových"
+
+msgid "New Folder..."
+msgstr "Nová slo¾ka..."
+
+msgid "New Group"
+msgstr "Nová skupina"
+
+msgid "New Group..."
+msgstr "Nová skupina..."
+
+msgid "New mails"
+msgstr "Nové zprávy"
+
+msgid "New..."
+msgstr "Nová..."
+
+msgid "New:"
+msgstr "Nových:"
+
+msgid "No IP associated with name"
+msgstr "®ádná IP adresa spojená s názvem"
+
+msgid "No Signature"
+msgstr "Bez podpisu"
+
+msgid "No fetchable account specified"
+msgstr "Nebyl specifikován úèet, z kterého by bylo mo¾né stáhnout zprávy"
+
+msgid ""
+"No subject was specified. It is not recommended to create mails\n"
+"without any subject. Do you want to add a subject line?"
+msgstr ""
+"Nebyl zadán pøedmìt zprávy. Není doporuèeno odesílat zprávu\n"
+"bez zadání ¾ádného pøedmìtu. Chcete jej pøidat nyní?"
+
+msgid "No valid email address entered. Please correct it."
+msgstr "Nebyla zadána platná e-mailová adresa. Prosím, napravte to."
+
+msgid ""
+"No valid from field specified. You must configure some Accounts\n"
+"before creating new mails"
+msgstr ""
+"Neplatné údaje v poli \"Od\". Pøed vytvoøením nové zprávy\n"
+"musíte nastavit nìjaký po¹tovní úèet."
+
+msgid "Nordic"
+msgstr "Nordický"
+
+msgid "Normal"
+msgstr "Normální"
+
+msgid "North European"
+msgstr "Severní Evropa"
+
 msgid "Not enough memory"
 msgstr "Nedostatek pamìti"
 
-#: tcp.c:79
-msgid "Connection couldn't be made secure"
-msgstr "Spojení nelze zabezpeèit"
+msgid "Not enough memory."
+msgstr "Nedostatek pamìti."
 
-#: tcp.c:81
-msgid "Host wasn't found"
-msgstr "Uzel nebyl nalezen"
+msgid "Notes"
+msgstr "Poznámky"
 
-#: tcp.c:82
-msgid "Cannot locate host. Try again later"
-msgstr "Nelze nalézt uzel. Zkuste to pozdìji"
+msgid "Number of mails classified as ham"
+msgstr "Poèet zpráv klasifikovaných jako HAM"
 
-#: tcp.c:83
+msgid "Number of mails classified as spam"
+msgstr "Poèet zpráv klasifikovaných jako SPAM"
+
+msgid "O:Open Message..."
+msgstr "O:Otevøít zprávu..."
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Ok"
+msgstr "OK"
+
+msgid "Okay"
+msgstr "OK"
+
+msgid "Old Quoted Text"
+msgstr "Citovaný text - starý"
+
+msgid "On addresses"
+msgstr "Na adresy"
+
+msgid "On new mails"
+msgstr "Nové zprávy"
+
+msgid "On request"
+msgstr "Filtrování na po¾ádání"
+
+msgid "On sent mails"
+msgstr "Filtrování odchozích zpráv"
+
+msgid "On startup"
+msgstr "Pøi spu¹tìní"
+
+msgid "Only Sizes"
+msgstr "Pouze velikosti"
+
+msgid "Open"
+msgstr "Otevøít"
+
+msgid "Opens a window where the filters can be edited."
+msgstr "Otevøe okno, v kterém lze upravovat filtry."
+
+msgid "Opens a window where you can search through your mail folder."
+msgstr "Otevøe okno, v kterém lze prohledávat své slo¾ky zpráv."
+
+msgid "Options..."
+msgstr "Nastavení..."
+
+msgid "Order"
+msgstr "Poøadí"
+
+msgid "Organization"
+msgstr "Firma"
+
+msgid "Original author of SimpleMail"
+msgstr "Autor SimpleMailu"
+
+msgid "P:Run Spam Mail Check"
+msgstr "P:Spustit kontrolu spamu"
+
+msgid "PGP Key ID"
+msgstr "ID PGP klíèe"
+
+msgid "PGP Key-ID"
+msgstr "PGP Key-ID"
+
+msgid "POP3"
+msgstr "POP3"
+
+msgid "POP3 Server"
+msgstr "POP3 server"
+
+msgid ""
+"Parsing the XML file failed because of\n"
+"%s (code %d)\n"
+"at line %d column %d"
+msgstr ""
+"Pøevod XML souboru se nezdaøilo z dùvodù\n"
+"%s (kód %d)\n"
+"v øádku %d, sloupci %d"
+
+msgid "Password"
+msgstr "Heslo"
+
+msgid "Paste"
+msgstr "Vlo¾it"
+
+msgid "Path"
+msgstr "Cesta"
+
+msgid "Pattern"
+msgstr "Vzorec"
+
+msgid "Pending"
+msgstr "Nevyøízeno"
+
+msgid "Personal"
+msgstr "Osobní informace"
+
+msgid "Phone numbers"
+msgstr "Telefonní èísla"
+
+msgid "Phrases"
+msgstr "Fráze"
+
+msgid "Play Sound"
+msgstr "Pøehrát zvuk"
+
+msgid "Please enter the login for %s"
+msgstr "Prosím, zadejte login pro %s"
+
+msgid "Please select a key for %s <%s>"
+msgstr "Prosím, vyberte klíè pro %s <%s>"
+
+msgid "Please select the folder where to move the mail"
+msgstr "Prosím, vyberte slo¾ku do které chcete zprávu pøesunout"
+
+msgid "Please select the folder where to move the mails"
+msgstr "Prosím, vyberte slo¾ku do které chcete zprávy pøesunout"
+
+msgid "Port"
+msgstr "Port"
+
+msgid "Portrait"
+msgstr "Obrázek"
+
+msgid "Pr_int"
+msgstr "T_isk"
+
+msgid "Preselection"
+msgstr "Pøedvolba"
+
+msgid "Print As Text"
+msgstr "Tisknout jako text"
+
+msgid "Print Visible Mail Part"
+msgstr "Tisknout viditelnou èást zprávy"
+
+msgid "Private"
+msgstr "Kontaktní informace"
+
+msgid "Process every mail within the current selected folder via the filters."
+msgstr "Zpracování v¹ech zpráv z aktuální slo¾ky pomocí filtrù."
+
+msgid "Processing mail %d (%d KB) of %d"
+msgstr "Zpracovávání zprávy %d (%d KB) z %d"
+
+msgid "Project"
+msgstr "Projekt"
+
+msgid "Proportional Font"
+msgstr "Proporcionální písmo"
+
+msgid "Q:Quit"
+msgstr "Q:Ukonèit"
+
+msgid "Quote empty lines"
+msgstr "Citovat prázdné øádky"
+
+msgid "Quoted Text"
+msgstr "Citovaný text"
+
+msgid "R"
+msgstr "R"
+
+msgid "R:Reply..."
+msgstr "R:Odpovìdìt..."
+
+msgid "RCPT failed."
+msgstr "Pøíkaz RCPT se nezdaøil"
+
+msgid "Rea_d"
+msgstr "Èí_st"
+
+msgid "Read"
+msgstr "Pøeèteno"
+
+msgid "Read window"
+msgstr "Ètecí okno"
+
+msgid "Reading"
+msgstr "Ètení"
+
+msgid "Reading HTML"
+msgstr "Ètení HTML"
+
+msgid "Reading folders of %s"
+msgstr "Ètení slo¾ek z %s"
+
+msgid "Reading folders..."
+msgstr "Ètení slo¾ek..."
+
+msgid "Reading plain"
+msgstr "Ètení textu"
+
+msgid "Reading subscribed folders..."
+msgstr "Ètení sledovaných slo¾ek..."
+
+msgid "Real Name"
+msgstr "Skuteèné jméno"
+
+msgid "Receive"
+msgstr "Pøíchozí server"
+
+msgid "Receive mail"
+msgstr "Stahování zpráv"
+
+msgid "Received"
+msgstr "Sta¾eno"
+
+msgid "Receiver"
+msgstr "Pøíjemce"
+
+msgid "Redo"
+msgstr "Znovu"
+
+msgid "Released under the terms of the GNU Public License"
+msgstr "Program uvolnìn pod licencí GNU Public License"
+
+msgid "Reload from server"
+msgstr "Obnovit ze serveru"
+
+msgid "Remotly on POP3 server"
+msgstr "Vzdálenì na POP3 server"
+
+msgid "Remove"
+msgstr "Odstranit"
+
+msgid "Remove the current account."
+msgstr "Odstranit aktuální úèet."
+
+msgid "Remove..."
+msgstr "Odstranit..."
+
+msgid "Remove|*Cancel"
+msgstr "Odstranit|*Ponechat"
+
+msgid "Repl. & Forw."
+msgstr "Odpovìzena a pøeposlána"
+
+msgid "Replied"
+msgstr "Odpovìzena"
+
+msgid "Replies To"
+msgstr "Odpovìdi pro"
+
+msgid "Reply"
+msgstr "Odpovìdìt"
+
+msgid "Reply Address"
+msgstr "Adresa pro odpovìdi"
+
+msgid "Reply-To"
+msgstr "Odpovìdìt-Pro"
+
+msgid "Replying"
+msgstr "Odpovídání"
+
+msgid "Rescan"
+msgstr "Opìtrovnì zkontrolovat"
+
+msgid "Reset"
+msgstr "Resetovat"
+
+msgid "Reset all columns' widths"
+msgstr "Resotovat ¹íøku v¹ech sloupcù"
+
+msgid "Reset statistics..."
+msgstr "Resetovat statistiku..."
+
+msgid "Reset the statistics|Cancel"
+msgstr "Resetovat statistiku|Zru¹it"
+
+msgid "Reset the statistics|Reset and rebuild|Cancel"
+msgstr "Resetovat statistiku|Resetovat a pøestavìt|Zru¹it"
+
+msgid "Reset this column's width"
+msgstr "Resetovat ¹íøku tohoto sloupce"
+
+msgid "Resets all ham statistics."
+msgstr "Resetování ve¹keré HAM statistiky."
+
+msgid "Resets all spam statistics."
+msgstr "Resetování ve¹keré SPAM statistiky."
+
+msgid "Retrieving mail folders..."
+msgstr "Získávání slo¾ek zpráv..."
+
+msgid "Reverse"
+msgstr "Obrácené poøadí"
+
+msgid "Rules"
+msgstr "Pravidla"
+
+msgid "Russian"
+msgstr "Ruský"
+
+msgid "S:Send Queued Mails..."
+msgstr "S:Odeslat èekající po¹tu"
+
+msgid "SMTP Server"
+msgstr "SMTP server"
+
+msgid "STARTTLS failed. Connection could not be made secure."
+msgstr "Pøíkaz STARTTLS se nezdaøil. nelze navázat zabezpeèené pøipojení."
+
+msgid "S_pam"
+msgstr "S_pam"
+
+msgid "S_tart search"
+msgstr "_Zahájit vyhledávání"
+
+msgid "S_ubject"
+msgstr "_Pøedmìt"
+
+msgid "Save"
+msgstr "Ulo¾it"
+
+msgid "Save All Attachments..."
+msgstr "Ulo¾it v¹echny pøílohy..."
+
+msgid "Save All Indexfiles"
+msgstr "Ulo¾it v¹echny indexy"
+
+msgid "Save As..."
+msgstr "Ulo¾it jako..."
+
+msgid "Save Settings"
+msgstr "Ulo¾it nastavení"
+
+msgid "Save Whole Document As..."
+msgstr "Ulo¾it celý dokument jako..."
+
+msgid "Save the configuration permanently."
+msgstr "Ulo¾ení konfigurace na disk."
+
+msgid "Scripts"
+msgstr "Skripty"
+
+msgid "Searc_h"
+msgstr "_Hledat"
+
+msgid "Search _into"
+msgstr "Hledat v"
+
+msgid "Secure"
+msgstr "Zabezpeèeno"
+
+msgid "Select All"
+msgstr "Vybrat v¹e"
+
+msgid "Select None"
+msgstr "Zru¹it výbìr"
+
+msgid "Select an addressbook-file."
+msgstr "Vyberte soubor s adresáøem."
+
+msgid "Send"
+msgstr "Odchozí server"
+
+msgid "Send _later"
+msgstr "Odeslat p_ozdìji"
+
+msgid ""
+"Send your current IP address together with the intial greetings.\n"
+"This avoids some error headers on some providers."
+msgstr ""
+"Ode¹le Va¹í aktuální IP adresu bìhem spojení se serverem.\n"
+"To umo¾ní pøedejít problémùm na nìkterých serverech."
+
+msgid "Sender"
+msgstr "Odesílatel"
+
+msgid ""
+"Sender address (From) is <%s>, but\n"
+"return address (Reply-To) is <%s>.\n"
+"Which address do you want to use?"
+msgstr ""
+"Adresa odeílatele (Od) je <%s>, ale\n"
+"zpìtná adresa (Odpovìdìt-Pro) je <%s>.\n"
+"Kterou adresu chcete pou¾ít?"
+
+msgid "Sending AUTH..."
+msgstr "Odesílání AUTH..."
+
+msgid "Sending DATA..."
+msgstr "Odesílání DATA..."
+
+msgid "Sending EHLO..."
+msgstr "Odesílání EHLO..."
+
+msgid "Sending FROM..."
+msgstr "Odesílání FROM..."
+
+msgid "Sending HELO..."
+msgstr "Odesílání HELO..."
+
+msgid "Sending QUIT..."
+msgstr "Odesílání QUIT..."
+
+msgid "Sending RCPT..."
+msgstr "Odesílání RCPT..."
+
+msgid "Sending STARTTLS..."
+msgstr "Odesílání STARTTLS..."
+
+msgid "Sending mails to %s"
+msgstr "Odesílání zpráv na %s"
+
+msgid "Sending mails to %s, connecting to %s first"
+msgstr "Odesílání zpráv na %s, nejdøíve spojení na %s"
+
+msgid "Sending password..."
+msgstr "Odesílání hesla..."
+
+msgid "Sending secured EHLO..."
+msgstr "Odesílání zabezpeèeného EHLO..."
+
+msgid "Sending secured HELO..."
+msgstr "Odesílání zabezpeèeného HELO..."
+
+msgid "Sending username..."
+msgstr "Odesílání u¾ivatelského jména..."
+
+msgid "Sent"
+msgstr "Odesláno"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Service not ready."
+msgstr "Slu¾ba je nedostupná."
+
+msgid "Set status"
+msgstr "Nastavit status na"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Settings..."
+msgstr "Nastavení..."
+
+msgid "Sex"
+msgstr "Pohlaví"
+
+msgid "Show Address Book?"
+msgstr "Zobrazovat adresáø?"
+
+msgid "Show All Headers?"
+msgstr "Zobrazovat v¹echny hlavièky?"
+
+msgid "Show Date?"
+msgstr "Zobrazovat datum?"
+
+msgid "Show Description?"
+msgstr "Zobrazovat popis?"
+
+msgid "Show E-Mail Address?"
+msgstr "Zobrazovat e-mailové adresy?"
+
+msgid "Show Excerpt?"
+msgstr "Zobrazovat fragmenty?"
+
+msgid "Show Filename?"
+msgstr "Zobrazovat název souboru?"
+
+msgid "Show Folders?"
+msgstr "Zobrazovat slo¾ky?"
+
+msgid "Show From/To?"
+msgstr "Zobrazovat Od/Pro?"
+
+msgid "Show Groups?"
+msgstr "Zobrazovat skupiny?"
+
+msgid "Show Mail?"
+msgstr "Zobrazovat zprávu?"
+
+msgid "Show New?"
+msgstr "Zobrazovat nové?"
+
+msgid "Show Nickname?"
+msgstr "Zobrazovat pøezdívku?"
+
+msgid "Show POP3 Server?"
+msgstr "Zobrazovat POP3 server?"
+
+msgid "Show Quick Filter?"
+msgstr "Zobrazovat rychlý filtr?"
+
+msgid "Show Raw..."
+msgstr "Zobrazit celý soubor..."
+
+msgid "Show Realname?"
+msgstr "Zobrazovat skuteèné jméno?"
+
+msgid "Show Received?"
+msgstr "Zobrazovat obdr¾ené?"
+
+msgid "Show Reply-To?"
+msgstr "Zobrazovat zpáteèní adresu?"
+
+msgid "Show Selected Message?"
+msgstr "Zobrazovat vybrané zprávy?"
+
+msgid "Show Size?"
+msgstr "Zobrazovat velikost?"
+
+msgid "Show Subject?"
+msgstr "Zobrazovat pøedmìt?"
+
+msgid "Show Unread?"
+msgstr "Zobrazovat nepøeètené?"
+
+msgid "Show all headers"
+msgstr "Zobrazit v¹echy hlavièky"
+
+msgid "Show members of selected group"
+msgstr "Zobrazit èleny vybrané skupiny"
+
+msgid "Show next mail after move"
+msgstr "Zobrazit následující zprávu po pøesunutí"
+
+msgid "Shutting down..."
+msgstr "Ukonèování..."
+
+msgid "Signature"
+msgstr "Podpis"
+
+msgid "Signaturenames must be unique."
+msgstr "Název podpisu musí být jedineèný."
+
+msgid "Signatures"
+msgstr "Podpisy"
+
+msgid "SimpleMail - About"
+msgstr "SimpleMail - O programu"
+
+msgid "SimpleMail - Add Groups"
+msgstr "SimpleMail - Pøidávání skupin"
+
+msgid "SimpleMail - Addressbook"
+msgstr "SimpleMail - Adresáø"
+
+msgid "SimpleMail - Compose Message"
+msgstr "SimpleMail - Editor zpráv"
+
+msgid "SimpleMail - Configuration"
+msgstr "SimpleMail - Konfigurace"
+
+msgid "SimpleMail - Edit Filter"
+msgstr "SimpleMail - Úprava filtrù"
+
+msgid "SimpleMail - Edit Group"
+msgstr "SimpleMail - Úprava skupiny"
+
+msgid "SimpleMail - Edit IMAP Server"
+msgstr "SimpleMail - Úprava IMAP serveru"
+
+msgid "SimpleMail - Edit Person"
+msgstr "SimpleMail - Úprava kontaktu"
+
+msgid "SimpleMail - Edit folder"
+msgstr "SimpleMail - Úprava slo¾ky"
+
+msgid "SimpleMail - Edit folder group"
+msgstr "SimpleMail - Úprava skupiny slo¾ek"
+
+msgid "SimpleMail - Exporting folder"
+msgstr "SimpleMail - Export slo¾ky"
+
+msgid "SimpleMail - Importing a dbx file"
+msgstr "SimpleMail - Import ze souboru DBX"
+
+msgid "SimpleMail - Importing a mbox file"
+msgstr "SimpleMail - Import ze souboru MBOX"
+
+msgid "SimpleMail - Read Message"
+msgstr "SimpleMail - Ètení zprávy"
+
+msgid "SimpleMail - Search"
+msgstr "SimpleMail - Hledat"
+
+msgid "SimpleMail - Select PGP Key"
+msgstr "SimpleMail - Vyberte PGP klíè"
+
+msgid "SimpleMail - Select a Folder"
+msgstr "SimpleMail - Vyberte slo¾ku"
+
+msgid ""
+"SimpleMail currently doesn't support the same email address for\n"
+"multiple accounts. Please ensure that every email address is unique.\n"
+"However, you can set the reply address field to your prefered addresse."
+msgstr ""
+"SimpleMail v souèasné verzi nepodporuje stejnou e-mailovou adresu\n"
+"pro více úètù. Prosím, zkontrolujte jestli je ka¾dá adresa unikátní.\n"
+"Nicménì, mù¾ete nastavit adresu pro odpovìï na preferovanou adresu."
+
+msgid ""
+"SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
+"It's available from %s"
+msgstr ""
+"SimpleMail vy¾aduje MUI tøídu NListtree.mcc v minimální verzi %ld.%ld!\n"
+"Naleznete jí na adrese: %s"
+
+msgid ""
+"SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\n"
+"It's available from %s"
+msgstr ""
+"SimpleMail vy¾aduje MUI tøídu NListtree.mcc v minimální verzi %ld.%ld!\n"
+"Naleznete jí na adrese: %s"
+
+msgid "Size"
+msgstr "Velikost"
+
+msgid "Slavic languages"
+msgstr "Slovanské jazyky"
+
+msgid "Sound"
+msgstr "Zvuk"
+
+msgid "South European"
+msgstr "Ji¾ní Evropa"
+
+msgid "South-Eastern European"
+msgstr "Jiho-východní Evropa"
+
+msgid "Spam"
+msgstr "Spam"
+
+msgid "Spam Check"
+msgstr "Kontrola SPAMu"
+
+msgid "State/Province"
+msgstr "Stát"
+
+msgid "Statistics"
+msgstr "Statistika"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Status is"
+msgstr "Status"
+
+msgid "Sto_p search"
+msgstr "Z_astavit vyhledávání"
+
+msgid "Street"
+msgstr "Ulice"
+
+msgid "Strip signature before quoting"
+msgstr "Odstranit podpis pøed citováním"
+
+msgid "Subject"
+msgstr "Pøedmìt"
+
+msgid "Submit to server"
+msgstr "Odeslat na server"
+
+msgid "Submitting subscribed folders to %s"
+msgstr "Odesílání sledovaných slo¾ek na %s"
+
+msgid "Subscribe"
+msgstr "Sledovat"
+
+msgid "Subscribing folders failed!"
+msgstr "Sledování slo¾ky se nezdaøilo!"
+
+msgid "Substring"
+msgstr "Podøetìzec"
+
+msgid "Synchronizing mails with %s"
+msgstr "Synchronizace zpráv s %s"
+
+msgid "T_o"
+msgstr "P_ro"
+
+msgid "Text"
+msgstr "Text"
+
+msgid ""
+"The charset configured for SimpleMail (%s) doesn't match\n"
+"the system's default charset (%s)! How to proceed?"
+msgstr ""
+"Sada znakù nastavená v programu (%s) neodpovídá\n"
+"základnímu nastavení sady znakù systému (%s)! Jak pokraèovat?"
+
+msgid ""
+"The date of birth is given in a invalid format.\n"
+"Please use dd mon yyyy or dd mm yyyy."
+msgstr ""
+"Datum narození bylo zadáno ve ¹patném formátu.\n"
+"Prosím, pou¾ijte formát dd mmm yyyy nebo dd mm yyyy."
+
+msgid ""
+"The date of the birth of the person.\n"
+"The format is dd mon yyyy or dd mm yyyy."
+msgstr ""
+"Datum narození této osoby.\n"
+"Povolené formáty jsou dd mmm yyyy nebo dd mm yyyy."
+
+msgid "The default signature for this account"
+msgstr "Základní podpis pro tento úèet"
+
+msgid "The login/UserID which you got from your ISP."
+msgstr "Vá¹ pøihla¹ovací login k va¹emu po¹tovnímu úètu."
+
+msgid ""
+"The name of the so called POP3 server from\n"
+"which you download your e-Mails (required; ask your\n"
+"provider if unknown)."
+msgstr ""
+"Název POP3 serveru, z kterého stahujete po¹tu\n"
+"(zjistíte u va¹eho poskytovatele)."
+
+msgid ""
+"The name of the so called SMTP server which is responlible\n"
+"to send your e-Mails."
+msgstr ""
+"Název SMTP serveru, odpovídajícího za odesílání\n"
+"Va¹ich zpráv."
+
+msgid ""
+"The orginal charset of the attached file differs from yours.\n"
+"In which charset do you want the file being saved?"
+msgstr ""
+"Pùvodní znaková sada pøilo¾eného souboru je jiná ne¾\n"
+"jakou pou¾íváte Vy. V jaké sadì znakù má být soubor ulo¾en?"
+
+msgid ""
+"The original charset of the attached file differs from yours.\n"
+"In which charset do you want the file being saved?"
+msgstr ""
+"Pùvodní znaková sada pøilo¾eného souboru je jiná ne¾\n"
+"jakou pou¾íváte Vy. V jaké sadì znakù má být soubor ulo¾en?"
+
+msgid "The port number. Usually 110"
+msgstr "Èíslo portu. Nejèastìji 110"
+
+msgid "The port number. Usually 25"
+msgstr "Èíslo portu. Nejèastìji 25"
+
+msgid ""
+"The selected destination drawer \"%s\" doesn't exists.\n"
+"Should it be created?"
+msgstr ""
+"Zvolená cílová slo¾ka \"%s\" neexistuje.\n"
+"Chcete jí vytvoøit?"
+
+msgid "The signature is used in %d account(s) and %d folder(s)."
+msgstr ""
+"Podpis je vyu¾íván v následujícím poètu\n"
+"úètù / slo¾ek: %d / %d."
+
+msgid "The signature is used in %d account(s)."
+msgstr ""
+"Podpis je vyu¾íván v následujícím\n"
+"poètu úètù: %d."
+
+msgid "The signature is used in %d folder(s)."
+msgstr ""
+"Podpis je vyu¾íván v následujícím\n"
+"poètu slo¾ek: %d."
+
+msgid "The specified address is not available on this machine"
+msgstr "Zadaná adresa není na tomto poèítaèi k dispozici"
+
+msgid ""
+"There are %d addresses belonging to the group.\n"
+"Do you really want to delete this group?"
+msgstr ""
+"Do této skupiny patøí %d adres.\n"
+"Opravdu chcete smazat tuto skupinu?"
+
+msgid "This Signaturename is not allowed."
+msgstr "Tento název podpisu není povolen."
+
+msgid "This e-mail has multiple recipients. Should it be answered to all recipients?"
+msgstr "Tato zpráva má nìkolik pøíjemcù. Odpovìdìt v¹em?"
+
+msgid "This mail is encrypted. Please enter your passphrase now"
+msgstr "Tato zpráva je ¹ifrována. Zadejte své heslo"
+
+msgid "Time remaining:"
+msgstr "Zbývající èas:"
+
+msgid "Title"
+msgstr "Název"
+
+msgid "To"
+msgstr "Pro"
+
+msgid "Total:"
+msgstr "Celkem:"
+
+msgid "Total:%d New:%d Unread:%d"
+msgstr "Celkem:%d Nových:%d Nepøeètených:%d"
+
+msgid "Try"
+msgstr "Zkusit"
+
+msgid "Turkish"
+msgstr "Turecko"
+
+msgid "Type"
+msgstr "Typ"
+
+msgid "Unable to connect to server %s: %s"
+msgstr "Nelze se pøipojit k serveru %s: %s"
+
+msgid "Unable to save the active mail.\n"
+msgstr "Nelze ulo¾it aktivní zprávu.\n"
+
+msgid "Unconfigured"
+msgstr "Nenestaveno"
+
+msgid "Underline links"
+msgstr "Podtrhávat odkazy"
+
+msgid "Undo"
+msgstr "Zpìt"
+
+msgid "Unexpected server answer. Connection failed."
+msgstr "Neoèekávaná odpovìï serveru. Spojení se nezdaøilo."
+
 msgid "Unexpected server failure"
 msgstr "Neoèekávaná chyba serveru"
 
-#: tcp.c:84
-msgid "No IP associated with name"
-msgstr "S názvem není asociována ¾ádná IP"
-
-#: tcp.c:85
-msgid "The specified address is not available on this machine"
-msgstr "Zadaná adresa není dostupná na tomto poèítaèi"
-
-#: tcp.c:86
-msgid "Connecting timed out"
-msgstr "Pøekroèen èasový limit pøipojení"
-
-#: tcp.c:87
-msgid "Connection refused"
-msgstr "Spojení odmítnuto"
-
-#: tcp.c:88
-msgid "Network unreachable"
-msgstr "Sí» není k dispozici"
-
-#: tcp.c:89
-msgid "Failed to connect to the server"
-msgstr "Spojení se serverem se nepodaøilo"
-
-#: tcp.c:90
 msgid "Unknown error"
 msgstr "Neznámá chyba"
 
-#~ msgid "contains"
-#~ msgstr "zawiera"
-#~ msgid "Save..."
-#~ msgstr "Zapisz..."
-#~ msgid "Readwindow Configuration"
-#~ msgstr "Konfiguracja okna czytania"
+msgid "Unmark"
+msgstr "Odznaèit"
+
+msgid "Unnamed"
+msgstr "Bez názvu"
+
+msgid "Unread"
+msgstr "Nepøeètených"
+
+msgid "Unread:"
+msgstr "Nepøeètených:"
+
+msgid "Unsubscribe"
+msgstr "Nesledovat"
+
+msgid "Unsubscribing folders failed!"
+msgstr "Zru¹ení sledování slo¾ky se nezdaøilo!"
+
+msgid "Unsupported encryption"
+msgstr "Nepodporované ¹ifrování"
+
+msgid "Unsupported type of addressbook."
+msgstr "nepodporovaný formát adresáøe."
+
+msgid "Us_e signatures"
+msgstr "Pou¾ívat _podpisy"
+
+msgid "Use IP as domain"
+msgstr "Pou¾ívat IP jako doménu"
+
+msgid "Use SMTP AUTH"
+msgstr "Pou¾ívat SMTP AUTH"
+
+msgid "Use Unicode|No Unicode"
+msgstr "Pou¾ít Unicode|Bez Unicode"
+
+msgid "Use graphical smilies"
+msgstr "Pou¾ívat grafické smajlíky"
+
+msgid "Use on addresses which contain"
+msgstr "Pou¾ívat u adres obsahujících"
+
+msgid "Use the configuration, but don't save it."
+msgstr "Pou¾ije nastavení, ale neulo¾í jej."
+
+msgid "User"
+msgstr "U¾ivatel"
+
+msgid "User ID"
+msgstr "ID u¾ivatele"
+
+msgid "W:Forward..."
+msgstr "W:Pøeposlat..."
+
+msgid "Waiting for login..."
+msgstr "Èekání na pøihlá¹ení..."
+
+msgid "Waiting for user interaction"
+msgstr "Èekání na èinnost u¾ivatele"
+
+msgid "Waiting..."
+msgstr "Èekání..."
+
+msgid "Welcome"
+msgstr "Uvítání"
+
+msgid "Welcome with address"
+msgstr "Uvítání s adresou"
+
+msgid "West European"
+msgstr "Západní Evropa"
+
+msgid "West European (Windows)"
+msgstr "Západní Evropa (Windows)"
+
+msgid "West European (with EURO)"
+msgstr "Západní Evropa (se znakem EURO)"
+
+msgid "West European II"
+msgstr "Západní Evropa II"
+
+msgid ""
+"When not deleteding e-Mails on the server SimpleMail\n"
+"tries to avoid downloading a message twice the next time."
+msgstr ""
+"SimpleMail se pokou¹í nestahovat ji¾ sta¾ené zprávy\n"
+"ze serveru, pokud z nìj nebyly smazány."
+
+msgid "White list"
+msgstr "Bílý seznam"
+
+msgid "Word wrap"
+msgstr "Zalamování"
+
+msgid "Wordwrap plain text"
+msgstr "Zalamování øádkù"
+
+msgid "Work"
+msgstr "Zamìstnání"
+
+msgid "Wrap before quoting"
+msgstr "Zalamování øádkù pøed citováním"
+
+msgid "Write"
+msgstr "Psaní zpráv"
+
+msgid "Write to..."
+msgstr "Napsat..."
+
+msgid "Yes|No"
+msgstr "Ano|Ne"
+
+msgid ""
+"You are going to delete an IMAP folder.\n"
+"This will remove the folder locally but not on the server.\n"
+"The next time you connect to the server the folder will reappear."
+msgstr ""
+"Sna¾íte se smazat IMAP slo¾ku.\n"
+"To odstraní místní slo¾ku, ale ne na serveru.\n"
+"Po pøí¹tím spojení se serverem se tato slo¾ka opìt objeví."
+
+msgid ""
+"You are going to delete an IMAP server.\n"
+"Unless you don't remove it from the accounts setting page\n"
+"it will reappear the next time SimpleMail is started."
+msgstr ""
+"Sna¾íte se smazat IMAP server.\n"
+"Dokud jej neodstraníte z nastavení úètù, bude\n"
+"se znovu objevovat po restartu programu."
+
+msgid "You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."
+msgstr "Zmìnil jste adresáø se slo¾kami! Musíte restartovat program."
+
+msgid "You have entered an invalid email address. Please correct it."
+msgstr "Zadal jste neplatnou e-mailovou adresu. Prosím, napravte to."
+
+msgid "Your E-Mail address for this account (required)"
+msgstr "Va¹e e-mailová adresa pro tento úèet (vy¾adováno)"
+
+msgid "Your full name (required)"
+msgstr "Va¹e celé jméno a pøíjmení (vy¾adováno)"
+
+msgid ""
+"Your login/UserID for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"Vá¹ pøihla¹ovací login/ID na SMTP serveru.\n"
+"Vy¾adováno pouze v pøípadì, kdy Vá¹ server vy¾aduje autorizaci."
+
+msgid ""
+"Your password for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"Va¹e heslo na SMTP serveru.\n"
+"Vy¾adováno pouze v pøípadì, kdy Vá¹ server vy¾aduje autorizaci."
+
+msgid ""
+"Your very own password to access the mails\n"
+"located on the POP3 server."
+msgstr ""
+"Va¹e heslo vy¾adované pro získání pøístupu\n"
+"k Va¹í po¹tì nacházející se na POP3 serveru."
+
+msgid "Z:Clear Selection"
+msgstr "Z:Zru¹it oznaèení"
+
+msgid "ZIP/Postal Code"
+msgstr "PSÈ"
+
+msgid "_Abook"
+msgstr "_Adresáø"
+
+msgid "_Abort"
+msgstr "_Pøeru¹it"
+
+msgid "_Add"
+msgstr "Pøida_t"
+
+msgid "_Add Account"
+msgstr "Pøidat _nový úèet"
+
+msgid "_Attach"
+msgstr "Pøilo¾_it"
+
+msgid "_Blind Copies To"
+msgstr "_Skryté kopie pro"
+
+msgid "_Body"
+msgstr "Obsa_h"
+
+msgid "_Cancel"
+msgstr "_Zru¹it"
+
+msgid "_Config"
+msgstr "_Nastavení"
+
+msgid "_Delete"
+msgstr "Sma_zat"
+
+msgid "_Delete it|_Cancel"
+msgstr "_Smazat|_Zru¹it"
+
+msgid "_Delete mails"
+msgstr "Smazat zprá_vy"
+
+msgid "_Description"
+msgstr "_Popis"
+
+msgid "_Duplicate"
+msgstr "_Duplikovat"
+
+msgid "_Edit"
+msgstr "_Upravit"
+
+msgid "_Fetch"
+msgstr "Stáhno_ut"
+
+msgid "_Forward"
+msgstr "Pøep_oslat"
+
+msgid "_From"
+msgstr "_Odesílatel"
+
+msgid "_From|*_Reply-To|_Both|_Cancel"
+msgstr "_Od|*Odepsat-_Pro|O_ba|_Zru¹it"
+
+msgid "_Hold"
+msgstr "Pozd_r¾et"
+
+msgid "_Look for spam mails|_Cancel"
+msgstr "_Hledat spam|_Zru¹it"
+
+msgid "_Move"
+msgstr "_Pøesunout"
+
+msgid "_Name"
+msgstr "_Název"
+
+msgid "_New"
+msgstr "No_vá zpráva"
+
+msgid "_Next"
+msgstr "_Dal¹í"
+
+msgid "_OK"
+msgstr "_OK"
+
+msgid "_Ok"
+msgstr "_OK"
+
+msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
+msgstr "_Pùvodní (%s)|Pøeved_ená (%s)|_UTF8|_Zru¹it"
+
+msgid "_Original (%s)|_Converted (%s)| _UTF8|_Cancel"
+msgstr "_Pùvodní (%s)|Pøeved_ená (%s)|_UTF8|_Zru¹it"
+
+msgid "_Prev"
+msgstr "_Pøedchozí"
+
+msgid "_Primary sort"
+msgstr "Tøídit d_le"
+
+msgid "_Remove"
+msgstr "Odstranit"
+
+msgid "_Remove Account"
+msgstr "O_dstranit úèet"
+
+msgid "_Replies To"
+msgstr "Odpovìï p_ro"
+
+msgid "_Reply"
+msgstr "Odpovì_dìt"
+
+msgid "_Reply To"
+msgstr "Odpo_vìdìt"
+
+msgid "_Save"
+msgstr "_Ulo¾it"
+
+msgid "_Secondary sort"
+msgstr "Násled_nì dle"
+
+msgid "_Send"
+msgstr "_Odeslat"
+
+msgid "_Send now"
+msgstr "Odeslat i_hned"
+
+msgid "_Skip"
+msgstr "Pøeskoè_it"
+
+msgid "_Start"
+msgstr "Za_hájit"
+
+msgid "_Subject"
+msgstr "_Pøedmìt"
+
+msgid "_To"
+msgstr "_Pøíjemce"
+
+msgid "_Type"
+msgstr "_Typ"
+
+msgid "_Use"
+msgstr "_Pou¾ít"
+
+msgid "_Yes|_No"
+msgstr "_Ano|_Ne"
+
+msgid "and"
+msgstr "a"
+
+msgid "as you type"
+msgstr "bìhem psaní"
+
+msgid "before storing"
+msgstr "pøed ulo¾ením"
+
+msgid "contains"
+msgstr "obsahuje"
+
+msgid "equals"
+msgstr "rovná se"
+
+msgid "ham"
+msgstr "ham"
+
+msgid "mailinglist"
+msgstr "diskuzní skupina"
+
+msgid "matches"
+msgstr "odpovídá"
+
+msgid "minutes"
+msgstr "minut"
+
+msgid "off"
+msgstr "vypnuto"
+
+msgid "received"
+msgstr "sta¾eno"
+
+msgid "received and sent"
+msgstr "sta¾eno a odesláno"
+
+msgid "sent"
+msgstr "odeslané"
+
+msgid "spam"
+msgstr "spam"
+
+msgid "spam and ham"
+msgstr "spam a ham"
+
+msgid "with STLS"
+msgstr "vèetnì STLS"
 

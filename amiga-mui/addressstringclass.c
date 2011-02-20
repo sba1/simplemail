@@ -90,6 +90,8 @@ struct MatchWindow_Data
 
 struct MUI_CustomClass *CL_MatchWindow;
 
+static Object *temp_list;
+
 /***********************************************************
  Completes the address if a new entry within the match list
  gets activated
@@ -98,10 +100,12 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data *)msg[0];
 	struct address_match_entry *entry;
+	int active;
 
 	DoMethod(data->list, MUIM_NList_GetEntry, MUIV_NList_GetEntry_Active, (ULONG)&entry);
+	active = xget(data->list,MUIA_NList_Active);
 
-   	   if (entry)
+	if (entry)
 	{
 		char *contents = (char*)xget(data->str,MUIA_UTF8String_Contents);
 		int buf_pos =  utf8realpos(contents,xget(data->str,MUIA_String_BufferPos));
@@ -125,6 +129,9 @@ STATIC VOID MatchWindow_NewActive(void **msg)
 			}
 			free(addr_start);
 		}
+		/* For some reasons, MUIA_NList_Active gets lot within MUIM_AddressString_Complete (at MUIM_BetterString_ClearSelected).
+		 * This is a workaround for this problem. */
+		nnset(data->list,MUIA_NList_Active,active);
 	}
 }
 
@@ -181,14 +188,32 @@ STATIC ULONG MatchWindow_Refresh(struct IClass *cl, Object *obj, struct MUIP_Add
 STATIC ULONG MatchWindow_Up(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
-	set(data->list,MUIA_NList_Active, MUIV_NList_Active_Up);
+	int active, len;
+
+	active = xget(data->list,MUIA_NList_Active);
+	len = xget(data->list,MUIA_NList_Entries);
+
+	if (active - 1 >= 0)
+		set(data->list,MUIA_NList_Active, active - 1);
+	else
+		set(data->list,MUIA_NList_Active, len - 1);
+
 	return 0;
 }
 
 STATIC ULONG MatchWindow_Down(struct IClass *cl, Object *obj, Msg msg)
 {
 	struct MatchWindow_Data *data = (struct MatchWindow_Data*)INST_DATA(cl,obj);
-	set(data->list,MUIA_NList_Active, MUIV_NList_Active_Down);
+	int active, len;
+
+	active = xget(data->list,MUIA_NList_Active);
+	len = xget(data->list,MUIA_NList_Entries);
+
+	if (active + 1 < len)
+		set(data->list,MUIA_NList_Active, active + 1);
+	else
+		set(data->list,MUIA_NList_Active, 0);
+
 	return 0;
 }
 
@@ -198,8 +223,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, MatchWindow_Dispatcher, cl, obj, msg)
 	{
 		case	OM_NEW: return MatchWindow_New(cl,obj,(struct opSet*)msg);
 		case	OM_GET: return MatchWindow_Get(cl,obj,(struct opGet*)msg);
-		case  MUIM_AddressMatchList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressMatchList_Refresh*)msg);
-		case  MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
+		case	MUIM_AddressMatchList_Refresh: return MatchWindow_Refresh(cl,obj,(struct MUIP_AddressMatchList_Refresh*)msg);
+		case 	MUIM_MatchWindow_Up:   return MatchWindow_Up(cl,obj,msg);
 		case	MUIM_MatchWindow_Down: return MatchWindow_Down(cl,obj,msg);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
@@ -519,15 +544,15 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, AddressString_Dispatcher, cl, obj, msg)
 	switch(msg->MethodID)
 	{
 		case	OM_NEW: return AddressString_New(cl,obj,(struct opSet*)msg);
-		case  MUIM_Setup: return AddressString_Setup(cl,obj,(struct MUIP_Setup*)msg);
-		case  MUIM_Cleanup: return AddressString_Cleanup(cl,obj,(struct MUIP_Cleanup*)msg);
+		case 	MUIM_Setup: return AddressString_Setup(cl,obj,(struct MUIP_Setup*)msg);
+		case 	MUIM_Cleanup: return AddressString_Cleanup(cl,obj,(struct MUIP_Cleanup*)msg);
 		case	MUIM_GoActive: return AddressString_GoActive(cl,obj,msg);
 		case	MUIM_GoInactive: return AddressString_GoInactive(cl,obj,msg);
 		case	MUIM_HandleEvent: return AddressString_HandleEvent(cl,obj,(struct MUIP_HandleEvent*)msg);
 		case	MUIM_DragQuery: return AddressString_DragQuery(cl,obj,(struct MUIP_DragQuery *)msg);
 		case	MUIM_DragDrop: return AddressString_DragDrop(cl,obj,(struct MUIP_DragDrop*)msg);
-		case  MUIM_AddressString_Complete: return AddressString_Complete(cl,obj,(struct MUIP_AddressString_Complete*)msg);
-		case  MUIM_AddressString_UpdateList: return AddressString_UpdateList(cl,obj);
+		case	MUIM_AddressString_Complete: return AddressString_Complete(cl,obj,(struct MUIP_AddressString_Complete*)msg);
+		case 	MUIM_AddressString_UpdateList: return AddressString_UpdateList(cl,obj);
 		default: return DoSuperMethodA(cl,obj,msg);
 	}
 }

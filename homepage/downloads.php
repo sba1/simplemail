@@ -1,10 +1,13 @@
 <?php
 
-$version = "0.36";
-$date = "2010/12/24";
+$version = "0.37";
+$date = "2011/02/20";
 
 $morphversion = "0.35";
 $morphdate = "2010/01/10";
+
+$arosversion = "0.36";
+$arosdate = "2010/12/24";
 
   require_once("language.inc.php");
   require_once("support.inc.php");
@@ -47,6 +50,15 @@ $morphdate = "2010/01/10";
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$morphversion.'-morphos.lha?download">'."simplemail-$morphversion-morphos.lha".'</A></td>';
   echo '<td align="center">'.$morphversion.'</td>';
   echo '<td align="center">'.$morphdate.'</td>';
+?>
+</tr>
+
+
+<tr bgcolor="gray">
+<?php
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$arosversion.'-aros-i386.tar.bz2?download">'."simplemail-$arosversion-aros-i386.tar.bz2".'</A></td>';
+  echo '<td align="center">'.$arosversion.'</td>';
+  echo '<td align="center">'.$arosdate.'</td>';
 ?>
 </tr>
 

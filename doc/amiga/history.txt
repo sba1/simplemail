@@ -1,3 +1,13 @@
+Version 0.37 (23th beta) - released on 2011/02/20, bugfix release
+   - Fixed config save bug introduced in 0.36 that didn't allow
+     the charset information to be stored.
+   - Fixed DSIs of the folder window
+   - Now longer should crash, if a read window is open and the application is closed
+   - Retrieving new messages from huge IMAP folders should be faster now
+   - Selecting a IMAP mail, now downloads the mail if the preview area is displayed
+   - Several cleanups addressing the port for MorposOS (henes)
+   - Resolved some issues with the text completion of email address fields
+
 Version 0.36 (22th beta) - released on 2010/12/24, the 10th anniversary of SimpleMail
    - Better handling for CC field when replying (bgol)
    - Optimized mail list rendering

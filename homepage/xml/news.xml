@@ -2,6 +2,37 @@
 
 <news>
 
+
+  <entry date="2011/02/20">
+   <text lang="en">
+    A new version of SimpleMail has been released! Version 0.37 comes with following changes:
+    <list>
+     <item>Fixed config save bug introduced in 0.36 that didn't allow the charset information to be stored</item>
+	 <item>Fixed DSIs/Enforcer Hits of the folder window</item>
+     <item>Now longer should crash, if a read window is open and the application is closed</item>
+     <item>Retrieving new messages from huge IMAP folders should be faster now</item>
+     <item>Selecting a IMAP mail, now downloads the mail if the preview area is displayed</item>
+     <item>Several cleanups addressing the port for MorposOS (henes)</item>
+     <item>Resolved some issues with the text completion of email address fields</item>
+    </list>
+    
+    </text>
+   
+   <text lang="de">
+   	 Eine neue Version von SimpleMail wurde veröffentlicht. Version 0.37 hält folgende Änderungen bereit:
+   	 
+   	 <list>
+     <item>Probleme beim Speichern der Konfiguration, die dazu führten, dass die Charset-Information verloren ging, wurden behoben.</item>
+	 <item>DSIs/Enforcer Hits im Ordnereinstellungensfenster wurden entfernt.</item>
+     <item>Das Beenden von SimpleMail, führte bei geöffneten Lesefenster zum Problemen, die nun behoben sind.</item>
+     <item>Das Empfangen der Nachrichtenliste größerer IMAP-Ornder ist beschleunigt wurden.</item>
+     <item>Eine auf einen IMAP-Server gespeicherte Nachricht, wird nun automatisch heruntergeladen, wenn sie im Hauptfenster selektiert wird und das Vorschaufeld sichtbar ist.</item>
+     <item>Verbesserungen an der Portierung für MorphOS (henes)</item>
+     <item>Einige Probleme bei der automatischen Vervollständigung von E-Mail-Adressen behoben.</item>
+   	 </list>
+   </text>
+  </entry>
+
   <entry date="2010/12/24">
    <text lang="en">
     A new version of SimpleMail has been released! Version 0.36, which also marks

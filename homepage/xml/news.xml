@@ -12,7 +12,7 @@
      <item>Now longer should crash, if a read window is open and the application is closed</item>
      <item>Retrieving new messages from huge IMAP folders should be faster now</item>
      <item>Selecting a IMAP mail, now downloads the mail if the preview area is displayed</item>
-     <item>Several cleanups addressing the port for MorposOS (henes)</item>
+     <item>Several cleanups addressing the port for MorphOS (henes)</item>
      <item>Resolved some issues with the text completion of email address fields</item>
     </list>
     

@@ -6,10 +6,10 @@ msgstr ""
 "POT-Creation-Date: 2010-12-24 13:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Sebastian Bauer <mail@sebastianbauer.info>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language-Team: German <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
-"Content-Transfer-Encoding: ENCODING\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Report-Msgid-Bugs-To: \n"
 
 # addressbook.c:621
@@ -3460,6 +3460,9 @@ msgid ""
 "Unless you don't remove it from the accounts setting page\n"
 "it will reappear the next time SimpleMail is started."
 msgstr ""
+"Es soll ein IMAP-Server gelöscht werden. Der Server wird\n"
+"lediglich lokal gelöscht. Er wird wieder angezeigt, wenn\n"
+"SimleMail neu gestartet wird."
 
 # folder.c:1643
 #: folder.c:1687

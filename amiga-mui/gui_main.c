@@ -661,7 +661,7 @@ int gui_execute_arexx(char *filename)
 /****************************************************************
  The main entry point.
 *****************************************************************/
-#ifndef __AROS__
+#if !defined(__AROS__) && !defined(COMPILE_TEST)
 /* main() for AROS is in start-aros.c */
 int main(int argc, char *argv[])
 {

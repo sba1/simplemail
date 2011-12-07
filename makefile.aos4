@@ -111,6 +111,9 @@ SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
 OBJS = $(SRCS:%.c=ppc-amigaos-objs/%.o)
 AOBJS = $(ASRCS:%.S=ppc-amigaos-objs/%.o)
 
+TESTOBJS = $(SRCS:%.c=ppc-amigaos-test-objs/%.o)
+TESTAOBJS = $(ASRCS:%.S=ppc-amigaos-test-objs/%.o)
+
 all: envs dirs $(TARGET)
 
 .PHONY: envs
@@ -136,7 +139,7 @@ endif
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) ppc-amigaos-objs ppc-amigaos-objs/amiga-mui
+	-$(MKDIR) ppc-amigaos-objs ppc-amigaos-objs/amiga-mui ppc-amigaos-test-objs ppc-amigaos-test-objs/amiga-mui
 
 # Rules for building
 $(TARGET): $(OBJS) $(AOBJS)
@@ -148,15 +151,24 @@ ppc-amigaos-objs/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
 ppc-amigaos-objs/%.o: %.c
+	$(CC) $(CFLAGS) -DCOMPILE_TEST -c $< -o $@
+
+ppc-amigaos-test-objs/%.o: %.S
+	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
+
+ppc-amigaos-test-objs/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS) ppc-amigaos-objs
+	$(RM) $(TARGET) $(OBJS) ppc-amigaos-objs ppc-amigaos-test-objs
 
 .PHONY: revision
 revision:
 	bumprev $(VERSION) $(TARGET)
+
+.PHONY: tests
+tests: dirs $(TESTOBJS) $(TESTAOBJS)
 
 # -------------------------------------------------------------
 

@@ -1742,6 +1742,8 @@ static int imap_thread_really_connect_and_login_to_server(void)
 {
 	int success = 0;
 
+	SM_ENTER;
+
 	if (imap_server)
 	{
 		char status_buf[160];
@@ -1788,6 +1790,8 @@ static int imap_thread_really_connect_and_login_to_server(void)
 
 		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, imap_server->ssl)))
 		{
+			SM_DEBUGF(20,("Connected to %s\n",imap_server->name));
+
 			if (imap_wait_login(imap_connection,imap_server))
 			{
 				/* Display "Logging in" - status message */
@@ -1803,6 +1807,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 					success = 1;
 				} else
 				{
+					SM_DEBUGF(10,("Login failed\n"));
 					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
 					thread_call_parent_function_async_string(status_set_status,1,status_buf);
 					tcp_disconnect(imap_connection);
@@ -1823,6 +1828,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 		}
 	}
 
+	SM_RETURN(success,"%ld");
 	return success;
 }
 
@@ -1848,6 +1854,8 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
  */
 static void imap_thread_really_connect_to_server(void)
 {
+	SM_ENTER;
+
 	if (imap_server)
 	{
 		if (imap_thread_really_connect_and_login_to_server())
@@ -1855,7 +1863,7 @@ static void imap_thread_really_connect_to_server(void)
 			char status_buf[160];
 			struct list *folder_list;
 
-			/* Display "Retrieving mail" - status message */
+			/* Display "Retrieving mail folders" - status message */
 			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
 			thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
@@ -1880,6 +1888,7 @@ static void imap_thread_really_connect_to_server(void)
 			}
 		}
 	}
+	SM_LEAVE;
 }
 
 static int imap_thread_connect_to_server(struct imap_server *server, char *folder, char *local_path)

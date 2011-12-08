@@ -21,6 +21,7 @@ static char *target; /* name of the target */
 static char *objsdir; /* path to the root of the object directory */
 static char *objs; /* name of the macro to store all object names */
 static char *cflags; /* flags used for compiling c files */
+static int nolink; /* should linking the target be suppressed? */
 
 /**************************************************************************
  Display an error text
@@ -421,7 +422,8 @@ void WriteSMakefile(FileList * fl, char *destfile, int append)
   fprintf(fh, "\n\n");
 
   /* Put out the linker command */
-  fprintf(fh, "%s: $(%s)\n  sc $(LFLAGS) link to $@ with <<\n$(%s)\n<\n\n", target, objs, objs);
+  if (!nolink)
+	  fprintf(fh, "%s: $(%s)\n  sc $(LFLAGS) link to $@ with <<\n$(%s)\n<\n\n", target, objs, objs);
 
   /* Put out the individual file dependancy lists */
   for (fd = fl->head; fd; fd = fd->next)
@@ -489,12 +491,13 @@ int main(void)
     char *objs;
     char *objsdir;
     char *cflags;
+    ULONG nolink;
   } opts;
 
   memset(&fl, 0, sizeof(fl));
   memset(&opts, 0, sizeof(opts));
 
-  if (!(rdargs = ReadArgs("PATTERN/K,FILELIST/K,DESTFILE/A/K,IDIR/K/M,APPEND/S,TARGET/K,OBJS/K,OBJSDIR/K,CFLAGS/K", (LONG *) & opts, NULL)))
+  if (!(rdargs = ReadArgs("PATTERN/K,FILELIST/K,DESTFILE/A/K,IDIR/K/M,APPEND/S,TARGET/K,OBJS/K,OBJSDIR/K,CFLAGS/K,NOLINK/S", (LONG *) & opts, NULL)))
   {
     /* rdargs failed for some reason.  Use PrintFault to print the
        reason, then quit. */
@@ -532,6 +535,7 @@ int main(void)
 	  target = "$(PROGRAMMNAME)";
   if (!(cflags = opts.cflags))
 	  cflags = "$(CFLAGS)";
+  nolink = !!opts.nolink;
 
   /* set the include array */
   include_array = opts.idir;

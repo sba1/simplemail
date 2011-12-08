@@ -40,4 +40,4 @@ SimpleMail_rev.s
 .settings
 html
 ppc-morphos-objs
-
+ppc-amigaos-test-objs

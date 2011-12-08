@@ -587,20 +587,20 @@ int gui_parseargs(int argc, char *argv[])
 {
 	struct command_args {
 		char *message;
-	  char *mailto;
-	  char *subject;
-	  char *profile_directory;
-	  char *image_directory;
-	  LONG *debuglevel;
-	  char *debugout;
-	  char *debugmodules;
+		char *mailto;
+		char *subject;
+		char *profile_directory;
+		char *image_directory;
+		LONG *debuglevel;
+		char *debugout;
+		char *debugmodules;
 	} shell_args;
 
 	struct RDArgs *rdargs;
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(IPTR*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);

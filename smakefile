@@ -25,15 +25,19 @@
 # Configure the compilation of SimpleMail
 GSTFILE = all.gst
 OBJSDIR1 = sas_objects
+TESTOBJSDIR1 = sas_test_objects
 DESTDIR = sm
 LOCALEDIR = ${DESTDIR}/locale/
 INCDIRS = IDIR=netinclude: IDIR=amiga-mui IDIR=indep-include
 CFLAGS = strmerge nover gst=$(GSTFILE) idlen=40 noicons ansi ign=63 nostackcheck math=s DEF=HAVE_OPENURL DEF=USE_AMISSL3
 LFLAGS = nover smallcode smalldata noicons startup=sas_objects/amiga-mui/startup.o lib:debug.lib math=s
 
+TESTSRC=tests/imap_unittest.c
+
 # do not change the following lines, expect for improvements!
 MAKEGENERATOR=gen_makefile
 OBJSDIR = $(OBJSDIR1)/
+TESTOBJSDIR = $(TESTOBJSDIR1)/
 
 start: date.h $(GSTFILE) smakefile.compile
   execute <<
@@ -42,6 +46,12 @@ start: date.h $(GSTFILE) smakefile.compile
     endif
     if not exists $(OBJSDIR)amiga-mui
       makedir $(OBJSDIR)amiga-mui
+    endif
+    if not exists $(TESTOBJSDIR1)
+      makedir $(TESTOBJSDIR1)
+    endif
+    if not exists $(TESTOBJSDIR)amiga-mui
+      makedir $(TESTOBJSDIR)amiga-mui
     endif
     if not exists $(DESTDIR)
       makedir $(DESTDIR)
@@ -78,6 +88,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4|startup-morphos|startup-aros|mailtextview).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
   echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
   echo "OBJSDIR=$(OBJSDIR)" >> $@
+  echo "TESTOBJSDIR=$(TESTOBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
   echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
@@ -91,7 +102,6 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "" >>$@
 
   $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include
-  delete t:objectlist
   echo "*n$(DESTDIR)/.taglines: .taglines" >>$@
   echo "  copy .taglines $(DESTDIR)/.taglines*n" >>$@
   echo "*nimages:" >>$@ noline
@@ -113,6 +123,13 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "*n" >>$@
   list Charsets/\#?.txt lformat="sm/Charsets/%n: %p%n*n  copy %p%n sm/Charsets/%n*n" >>$@
 
+  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include TARGET=$(DESTDIR)/imap_unittest OBJS=TESTOBJS OBJSDIR=$$(TESTOBJSDIR) CFLAGS="$$(CFLAGS) DEF=COMPILE_TEST"
+
+#  echo "sm/imap_unittest: tests/imap_unittest.c" >>$@
+#  echo "  sc $$< $$(CFLAGS) OBJNAME $$(OBJSDIR)tests/imap_unittest.o" >>$@
+#  echo "  sc $$(LFLAGS) link to $$@ with \<<" >>$@
+#  echo "$$(OBJSDIR)tests/imap_unittest.o $$(OBJS)" >>$@
+#  echo "<" >>$@
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover ign=79,110 link $(MAKEGENERATOR)

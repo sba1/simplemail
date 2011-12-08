@@ -151,13 +151,13 @@ ppc-amigaos-objs/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
 ppc-amigaos-objs/%.o: %.c
-	$(CC) $(CFLAGS) -DCOMPILE_TEST -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 ppc-amigaos-test-objs/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
 ppc-amigaos-test-objs/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -DCOMPILE_TEST -c $< -o $@
 
 .PHONY: clean
 clean:
@@ -168,7 +168,11 @@ revision:
 	bumprev $(VERSION) $(TARGET)
 
 .PHONY: tests
-tests: dirs $(TESTOBJS) $(TESTAOBJS)
+tests: dirs imap_unittest
+
+imap_unittest: tests/imap_unittest.c $(TESTOBJS) $(TESTAOBJS)
+	$(CC) $(CFLAGS) -c $< -o tests/$@.o
+	$(CC) $(LINK) -o $@.debug tests/$@.o $(TESTOBJS) $(TESTAOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 
 # -------------------------------------------------------------
 

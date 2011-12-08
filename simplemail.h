@@ -124,8 +124,11 @@ void callback_rescan_folder(void);
 
 int callback_import_addressbook(void);
 
+int simplemail_init(void);
+void simplemail_deinit(void);
+
 /* the main entry point */
-int simplemail_main(void);
+int simplemail_main();
 
 
 #endif

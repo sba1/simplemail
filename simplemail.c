@@ -344,7 +344,8 @@ void callback_get_address(void)
 	struct mail_info *mail = main_get_active_mail();
 	if (mail)
 	{
-		char *addr,*phrase;
+		char *addr;
+		utf8 *phrase;
 		struct folder *f;
 
 		f = main_get_folder();
@@ -364,7 +365,7 @@ void callback_get_address(void)
 			struct addressbook_entry_new entry;
 			memset(&entry,0,sizeof(entry));
 
-			entry.realname = phrase;
+			entry.realname = (char*)phrase;
 			entry.email_array = array_add_string(NULL,addr);
 
 			addressbookwnd_create_entry(&entry);
@@ -2411,61 +2412,22 @@ void callback_autocheck_reset(void)
 	main_refresh_window_title(autocheck_seconds_start);
 }
 
-/**************************************************
- The entry point
-***************************************************/
-int simplemail_main(void)
+
+/**
+ * Deinitializes SimpleMail.
+ */
+void simplemail_deinit(void)
 {
-	if (!debug_init()) return 0;
+	gui_deinit();
+	if (user.config.delete_deleted)
+		folder_delete_deleted();
+	spam_cleanup();
 
-#ifdef ENABLE_NLS
-  setlocale(LC_ALL, "");
-  bindtextdomain(PACKAGE, LOCALEDIR);
-  textdomain(PACKAGE);
-#endif
-	if (!gui_parseargs(0,NULL))
-	{
-		debug_deinit();
-		return 0;
-	}
+	del_folders();
 
-	startupwnd_open();
-	if (!init_threads())
-	{
-		debug_deinit();
-		return 0;
-	}
+	free_config();
+	codesets_cleanup();
 
-	if (codesets_init())
-	{
-		load_config();
-		init_addressbook();
-		if (init_folders())
-		{
-			if (spam_init())
-			{
-				if (gui_init())
-				{
-					/* Perform an email check if requested by configuration */
-					if (user.config.receive_autoonstartup) autocheck_seconds_start = 0;
-					else callback_autocheck_reset();
-					callback_timer();
-
-					gui_loop();
-					gui_deinit();
-				}
-				if (user.config.delete_deleted)
-					folder_delete_deleted();
-#ifdef __AROS__ /*folders doesn't get saved ?*/
-			folder_save_order();
-#endif
-				spam_cleanup();
-			}
-			del_folders();
-		}
-		free_config();
-		codesets_cleanup();
-	}
 	cleanup_addressbook();
 	if (lazy_thread) lazy_clean_list();
 	cleanup_threads();
@@ -2475,5 +2437,89 @@ int simplemail_main(void)
 	shutdownwnd_close();
 	atcleanup_finalize();
 	debug_deinit();
+}
+
+/**
+ * Initializes SimpleMail.
+ *
+ * @return 1 on succeess
+ */
+int simplemail_init(void)
+{
+	if (!debug_init())
+		goto out;
+
+#ifdef ENABLE_NLS
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+#endif
+
+	if (!gui_parseargs(0,NULL))
+	{
+		SM_DEBUGF(1,("Unable to parse arguments!"));
+		goto out;
+	}
+
+	startupwnd_open();
+	if (!init_threads())
+	{
+		SM_DEBUGF(1,("Couldn't initialize thread system!"));
+		goto out;
+	}
+
+	if (!codesets_init())
+	{
+		SM_DEBUGF(1,("Couldn't initialize codesets!"));
+		goto out;
+	}
+
+	load_config();
+	init_addressbook();
+
+	if (!init_folders())
+	{
+		SM_DEBUGF(1,("Couldn't initialize folders!"));
+		goto out;
+	}
+
+	if (!(spam_init()))
+	{
+		SM_DEBUGF(1,("Couldn't initialize spam system!"));
+		goto out;
+	}
+
+	if (!gui_init())
+	{
+		SM_DEBUGF(1,("Couldn't initialize GUI!"));
+		goto out;
+	}
+
+	/* Perform an email check if requested by configuration */
+	if (user.config.receive_autoonstartup) autocheck_seconds_start = 0;
+	else callback_autocheck_reset();
+	callback_timer();
+
+	SM_DEBUGF(10,("SimpleMail initialized"));
+	return 1;
+
+out:
+	simplemail_deinit();
 	return 0;
+}
+
+/**
+ * SimpleMail's entry point.
+ *
+ * @return 0 on success
+ */
+int simplemail_main(void)
+{
+	if (simplemail_init())
+	{
+		gui_loop();
+		simplemail_deinit();
+		return 0;
+	} else
+		return 20;
 }

@@ -332,6 +332,7 @@ char *objout(char *s)
 {
   char *p;
   char *t;
+  long l;
 
   p = suffix(s);
   if (*p != '.')
@@ -339,9 +340,10 @@ char *objout(char *s)
   if (!(t = malloc((unsigned long) p - (unsigned long) s + 3 + strlen(objsdir) + 1)))
     panic("No Memory!");
 
+  l = (unsigned long) p - (unsigned long) s;
   strcpy(t, objsdir);
-  strcat(t, s);
-  strcat(t, ".o");
+  memcpy(t + strlen(objsdir), s, l);
+  strcpy(t + l + strlen(objsdir), ".o");
   return t;
 }
 

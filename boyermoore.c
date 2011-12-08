@@ -179,7 +179,7 @@ int boyermoore(struct boyermoore_context *context, char *str, int n, bm_callback
    return rc;
 }
 
-#ifdef COMPILE_TEST
+#ifdef COMPILE_STANDALONE_TEST
 
 #include <string.h>
 #include <stdio.h>

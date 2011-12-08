@@ -53,6 +53,9 @@ start: date.h $(GSTFILE) smakefile.compile
     if not exists $(TESTOBJSDIR)amiga-mui
       makedir $(TESTOBJSDIR)amiga-mui
     endif
+    if not exists $(TESTOBJSDIR)tests
+      makedir $(TESTOBJSDIR)tests
+    endif
     if not exists $(DESTDIR)
       makedir $(DESTDIR)
     endif
@@ -91,7 +94,7 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "TESTOBJSDIR=$(TESTOBJSDIR)" >> $@
   echo "CFLAGS=$(CFLAGS) $(INCDIRS)" >>$@
   echo "LFLAGS=$(LFLAGS)" >>$@
-  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
+  echo "All: \$(OBJSDIR)amiga-mui/startup.o \$(PROGRAMMNAME) $(DESTDIR)/imap_unittest simplehtml.library $(DESTDIR)/.taglines images scripts charsets*n" >>$@
 
   echo "\$(OBJSDIR)amiga-mui/startup.o: amiga-mui/startup.c" >>$@
   echo "  sc amiga-mui/startup.c $(CFLAGS) parm=b OBJNAME=\$@" >>$@
@@ -123,13 +126,12 @@ smakefile.compile: $(MAKEGENERATOR) smakefile
   echo "*n" >>$@
   list Charsets/\#?.txt lformat="sm/Charsets/%n: %p%n*n  copy %p%n sm/Charsets/%n*n" >>$@
 
-  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include TARGET=$(DESTDIR)/imap_unittest OBJS=TESTOBJS OBJSDIR=$$(TESTOBJSDIR) CFLAGS="$$(CFLAGS) DEF=COMPILE_TEST"
-
-#  echo "sm/imap_unittest: tests/imap_unittest.c" >>$@
-#  echo "  sc $$< $$(CFLAGS) OBJNAME $$(OBJSDIR)tests/imap_unittest.o" >>$@
-#  echo "  sc $$(LFLAGS) link to $$@ with \<<" >>$@
-#  echo "$$(OBJSDIR)tests/imap_unittest.o $$(OBJS)" >>$@
-#  echo "<" >>$@
+  $(MAKEGENERATOR) FILELIST t:objectlist DESTFILE smakefile.compile APPEND IDIR=amiga-mui IDIR=indep-include TARGET=$(DESTDIR)/imap_unittest OBJS=TESTOBJS OBJSDIR=$$(TESTOBJSDIR) CFLAGS="$$(CFLAGS) DEF=COMPILE_TEST" NOLINK
+  echo "$(DESTDIR)/imap_unittest: tests/imap_unittest.c $$(TESTOBJS)" >>$@
+  echo "  sc $$< $$(CFLAGS) OBJNAME $$(TESTOBJSDIR)tests/imap_unittest.o" >>$@
+  echo "  sc $$(LFLAGS) link to $$@ with \<<" >>$@
+  echo "$$(TESTOBJSDIR)tests/imap_unittest.o $$(TESTOBJS)" >>$@
+  echo "<" >>$@
 
 $(MAKEGENERATOR): $(MAKEGENERATOR).c
   sc nover ign=79,110 link $(MAKEGENERATOR)
@@ -253,6 +255,7 @@ bump:
 # clean the source tree
 clean:
   -delete $(OBJSDIR)\#? all
+  -delete $(TESTOBJSDIR)\#? all
   -delete smakefile.compile
   -delete \#?.tmp
   -delete all.gst

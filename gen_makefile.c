@@ -15,6 +15,13 @@
 
 #include "gen_makefile.h"
 
+
+/* Global data */
+static char *target; /* name of the target */
+static char *objsdir; /* path to the root of the object directory */
+static char *objs; /* name of the macro to store all object names */
+static char *cflags; /* flags used for compiling c files */
+
 /**************************************************************************
  Display an error text
 **************************************************************************/
@@ -319,24 +326,22 @@ char *prefix(char *s)
  that would correspond to it.  I.E. take "foo.c" as input
  and put "foo.o" out.  Note that this functions DOES
  allocate a new copy of the string.
- it also adds $(OBJSDIR) before the string (sb)
+ it also adds objsdir before the string (sb)
 **************************************************************************/
 char *objout(char *s)
 {
-  static const char objsdir_text[] = "$(OBJSDIR)";
   char *p;
   char *t;
-  long l;
+
   p = suffix(s);
   if (*p != '.')
     return NULL;
-  t = malloc((unsigned long) p - (unsigned long) s + 3 + sizeof(objsdir_text) + 1);
-  if (!t)
+  if (!(t = malloc((unsigned long) p - (unsigned long) s + 3 + strlen(objsdir) + 1)))
     panic("No Memory!");
-  l = (unsigned long) p - (unsigned long) s;
-  strcpy(t, objsdir_text);
-  memcpy(t + sizeof(objsdir_text) - 1, s, l);
-  strcpy(t + l + sizeof(objsdir_text) - 1, ".o");
+
+  strcpy(t, objsdir);
+  strcat(t, s);
+  strcat(t, ".o");
   return t;
 }
 
@@ -375,7 +380,7 @@ void WriteSMakefile(FileList * fl, char *destfile, int append)
   if (!fh)
     return;
 
-  fprintf(fh, "OBJS=");
+  fprintf(fh, "%s=",objs);
   curlen = indent = 5;
 
   /* Put out the list of object files */
@@ -414,7 +419,7 @@ void WriteSMakefile(FileList * fl, char *destfile, int append)
   fprintf(fh, "\n\n");
 
   /* Put out the linker command */
-  fprintf(fh, "$(PROGRAMMNAME): $(OBJS)\n  sc $(LFLAGS) link to $@ with <<\n$(OBJS)\n<\n\n");
+  fprintf(fh, "%s: $(%s)\n  sc $(LFLAGS) link to $@ with <<\n$(%s)\n<\n\n", target, objs, objs);
 
   /* Put out the individual file dependancy lists */
   for (fd = fl->head; fd; fd = fd->next)
@@ -456,7 +461,7 @@ void WriteSMakefile(FileList * fl, char *destfile, int append)
       }
       else
       {
-	fprintf(fh, "\n  sc %s $(CFLAGS) OBJNAME=$@\n\n", fd->name);
+	fprintf(fh, "\n  sc %s %s OBJNAME=$@\n\n", fd->name,cflags);
       }
     }
   }
@@ -478,12 +483,16 @@ int main(void)
     char *destfile;
     char **idir;
     ULONG append;
+    char *target;
+    char *objs;
+    char *objsdir;
+    char *cflags;
   } opts;
 
   memset(&fl, 0, sizeof(fl));
   memset(&opts, 0, sizeof(opts));
 
-  if (!(rdargs = ReadArgs("PATTERN/K,FILELIST/K,DESTFILE/A/K,IDIR/K/M,APPEND/S", (LONG *) & opts, NULL)))
+  if (!(rdargs = ReadArgs("PATTERN/K,FILELIST/K,DESTFILE/A/K,IDIR/K/M,APPEND/S,TARGET/K,OBJS/K,OBJSDIR/K,CFLAGS/K", (LONG *) & opts, NULL)))
   {
     /* rdargs failed for some reason.  Use PrintFault to print the
        reason, then quit. */
@@ -512,6 +521,15 @@ int main(void)
       fclose(fh);
     }
   }
+
+  if (!(objsdir = opts.objsdir))
+	  objsdir = "$(OBJSDIR)";
+  if (!(objs = opts.objs))
+	  objs = "$(OBJS)";
+  if (!(target = opts.target))
+	  target = "$(PROGRAMMNAME)";
+  if (!(cflags = opts.cflags))
+	  cflags = "$(CFLAGS)";
 
   /* set the include array */
   include_array = opts.idir;

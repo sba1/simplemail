@@ -525,7 +525,7 @@ int main(void)
   if (!(objsdir = opts.objsdir))
 	  objsdir = "$(OBJSDIR)";
   if (!(objs = opts.objs))
-	  objs = "$(OBJS)";
+	  objs = "OBJS";
   if (!(target = opts.target))
 	  target = "$(PROGRAMMNAME)";
   if (!(cflags = opts.cflags))

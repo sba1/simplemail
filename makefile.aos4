@@ -173,6 +173,7 @@ tests: dirs imap_unittest
 imap_unittest: tests/imap_unittest.c $(TESTOBJS) $(TESTAOBJS)
 	$(CC) $(CFLAGS) -c $< -o tests/$@.o
 	$(CC) $(LINK) -o $@.debug tests/$@.o $(TESTOBJS) $(TESTAOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+	cp $@.debug $(DESTDIR)/$@
 
 # -------------------------------------------------------------
 

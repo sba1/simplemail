@@ -115,18 +115,22 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 	int i,sd;
 	struct sockaddr_in sockaddr;
 	struct hostent *hostent;
-	struct connection *conn;
+	struct connection *conn = NULL;
 
-	if (!server) return NULL;
+	SM_ENTER;
 
+	if (!server)
+		goto out;
 	if (!(conn = malloc(sizeof(struct connection))))
-		return NULL;
+		goto out;
 
 	memset(conn,0,sizeof(struct connection));
 
 	if ((hostent = gethostbyname(server)))
 	{
 		sd = socket(PF_INET, SOCK_STREAM, 0);
+
+		SM_DEBUGF(20,("Got socket descriptor %ld\n",sd));
 		if (sd != -1)
 		{
 #ifndef NO_SSL
@@ -142,17 +146,23 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 
 			for (i=0; hostent->h_addr_list[i]; i++)
 			{
-		    memcpy(&sockaddr.sin_addr, hostent->h_addr_list[i], hostent->h_length);
+				memcpy(&sockaddr.sin_addr, hostent->h_addr_list[i], hostent->h_length);
 				if (connect(sd, (struct sockaddr *) &sockaddr, sizeof(struct sockaddr)) != -1)
 				{
+					SM_DEBUGF(20,("Connected to socket\n"));
 					conn->socket = sd;
 
 #ifndef NO_SSL
 					if (use_ssl)
 					{
-						if (tcp_make_secure(conn)) return conn;
+						if (tcp_make_secure(conn))
+						{
+							SM_RETURN(conn,"0x%lx");
+							return conn;
+						}
 						else
 						{
+							SM_DEBUGF(10,("Socket couldn't be made secure\n"));
 							/* TODO: Reestablish only if unsecure connection can be tolerated.
 							 * Use TCP_NOT_SECURE */
 							security_error = 1;
@@ -161,20 +171,26 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 							if (sd == -1)
 							{
 								error_code = TCP_ERRNO;
-								free(conn);
-								return NULL;
+								goto out;
 							}
 							conn->socket = sd;
 						}
-					} else return conn;
+					} else
+					{
+						SM_RETURN(conn,"0x%lx");
+						return conn;
+					}
 #else
+					SM_RETURN(conn,"0x%lx");
 					return conn;
 #endif
 				}
 			}
 
-			if (!i) error_code = TCP_HOST_NOT_FOUND;
-			else
+			if (!i)
+			{
+				error_code = TCP_HOST_NOT_FOUND;
+			} else
 			{
 				switch(tcp_errno())
 				{
@@ -187,15 +203,12 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 			}
 
 			myclosesocket(sd);
-		}
-		else
+		} else
 		{
 			error_code = TCP_ERRNO;
-			free(conn);
-			return NULL;
+			goto out;
 		}
-	}
-	else
+	} else
 	{
 		switch(tcp_herrno())
 		{
@@ -207,7 +220,9 @@ struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
 		}
 	}
 
+out:
 	free(conn);
+	SM_RETURN(NULL,"0x%lx");
 	return NULL;
 }
 
@@ -232,6 +247,7 @@ int tcp_make_secure(struct connection *conn)
 	/* Associate a socket with ssl structure */
 	SSL_set_fd(conn->ssl, conn->socket);
 
+	SM_DEBUGF(10,("Establishing SSL connection\n"));
 	if (SSL_connect(conn->ssl) >= 0)
 	{
 		X509 *server_cert;
@@ -281,23 +297,34 @@ int tcp_secure(struct connection *conn)
  */
 void tcp_disconnect(struct connection *conn)
 {
+	SM_ENTER;
+
 	if (!conn) return;
 
 	tcp_flush(conn); /* flush the write buffer */
 
 #ifndef NO_SSL
-	if (conn->ssl) SSL_shutdown(conn->ssl);
+	if (conn->ssl)
+	{
+		int rc;
+		rc = SSL_shutdown(conn->ssl);
+		if (rc == 0)
+			SSL_shutdown(conn->ssl);
+	}
 #endif
-	myclosesocket(conn->socket);
 #ifndef NO_SSL
 	if (conn->ssl)
 	{
 		SSL_free(conn->ssl);
-		close_ssl_lib();
+		close_ssl_lib(); /* FIXME: This may lead to crashes */
 	}
+	myclosesocket(conn->socket);
 #endif
+
 	if (conn->line) free(conn->line);
 	free(conn);
+
+	SM_LEAVE;
 }
 
 /**

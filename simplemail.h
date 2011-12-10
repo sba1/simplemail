@@ -128,7 +128,7 @@ int simplemail_init(void);
 void simplemail_deinit(void);
 
 /* the main entry point */
-int simplemail_main();
+int simplemail_main(void);
 
 
 #endif

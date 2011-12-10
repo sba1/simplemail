@@ -2286,6 +2286,8 @@ void callback_change_folder_attrs(void)
 		refresh = 1;
 	} else refresh = 0;
 
+	f->imap_download = folder_get_imap_download();
+
 	if (folder_set(f, folder_get_changed_name(), folder_get_changed_path(), folder_get_changed_type(), folder_get_changed_defto(),
 	                  folder_get_changed_deffrom(), folder_get_changed_defreplyto(), folder_get_changed_defsignature(),
 	                  folder_get_changed_primary_sort(), folder_get_changed_secondary_sort()))
@@ -2370,11 +2372,65 @@ void callback_rescan_folder(void)
 	}
 }
 
+static int downloading_partial_mail;
+
+static void simplemail_download_next_partial_mail(void);
+
+/**
+ *
+ * @param m
+ * @param userdata
+ */
+static void simplemail_partial_mail_downloaded(struct mail_info *m, void *userdata)
+{
+	downloading_partial_mail = 0;
+
+	main_refresh_mail(m);
+
+	simplemail_download_next_partial_mail();
+}
+
+/**
+ * Proceeds in downloading partial mails.
+ */
+static void simplemail_download_next_partial_mail(void)
+{
+	struct folder *f;
+
+	/* If the active folder is an imap folder and in download mode
+	 * "complete mails" we download the next partial mail.
+	 */
+	f = main_get_folder();
+	if (f && f->is_imap && f->imap_download && !downloading_partial_mail)
+	{
+		void *handle;
+		struct mail_info *m;
+
+		handle = NULL;
+
+		/* Find a partial mail */
+		while ((m = folder_next_mail(f,&handle)))
+		{
+			if (m->flags & MAIL_FLAGS_PARTIAL)
+				break;
+		}
+
+		if (m)
+		{
+			SM_DEBUGF(10,("Issuing download of next partial mail \"%s\"\n",m->filename));
+			if (imap_download_mail_async(f,m,simplemail_partial_mail_downloaded,NULL))
+			{
+				downloading_partial_mail = 1;
+			}
+		}
+	}
+}
+
 /** Auto-Timer functions **/
 
-/***************************************************
- That's the function which is calleded every second
-****************************************************/
+/**
+ * That's the function which is called every second
+ */
 static void callback_timer(void)
 {
 	if (user.config.receive_autocheck || (user.config.receive_autoonstartup && autocheck_seconds_start == 0))
@@ -2399,6 +2455,8 @@ static void callback_timer(void)
 		}
 	}
 
+	simplemail_download_next_partial_mail();
+
 	/* Register us again */
 	thread_push_function_delayed(1000, callback_timer, 0);
 }
@@ -2418,6 +2476,8 @@ void callback_autocheck_reset(void)
  */
 void simplemail_deinit(void)
 {
+	SM_ENTER;
+
 	gui_deinit();
 	if (user.config.delete_deleted)
 		folder_delete_deleted();
@@ -2436,6 +2496,9 @@ void simplemail_deinit(void)
 	startupwnd_close();
 	shutdownwnd_close();
 	atcleanup_finalize();
+
+	SM_LEAVE;
+
 	debug_deinit();
 }
 

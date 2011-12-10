@@ -1263,7 +1263,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 									if (first)
 									{
-										m->to_phrase = mystrdup(realname);
+										m->to_phrase = (utf8*)mystrdup(realname);
 										m->to_addr = mystrdup(email);
 										first = 0;
 									}
@@ -1857,6 +1857,16 @@ static int folder_config_load(struct folder *f)
 				{
 					f->imap_uid_validity = strtoul(&buf[16],NULL,10);
 				}
+				else if (!mystrnicmp("IMapDownloadMode=",buf,17))
+				{
+					f->imap_download = strtoul(&buf[17],NULL,10);
+
+					/* At the moment, only two modes are supported.
+					 * Everything which is not mode 1 is mode 0.
+					 */
+					if (f->imap_download != 1)
+						f->imap_download = 0;
+				}
 			}
 		}
 		fclose(fh);
@@ -1900,6 +1910,7 @@ void folder_config_save(struct folder *f)
 			fprintf(fh,"IMapUidNext=%u\n",f->imap_uid_next);
 		if (f->imap_uid_validity != 0)
 			fprintf(fh,"IMapUidValidity=%u\n",f->imap_uid_validity);
+		fprintf(fh,"IMapDownloadMode=%d\n",f->imap_download);
 
 		node = (struct string_node*)list_first(&f->imap_all_folder_list);
 		while (node)
@@ -1976,10 +1987,22 @@ int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath,
 #endif
 }
 
-/******************************************************************
- Set some folder attributes. Returns 1 if the folder must be
- refreshed in the gui.
-*******************************************************************/
+/**
+ * Set some folder attributes. Returns 1 if the folder must be
+ * refreshed in the gui.
+ *
+ * @param f
+ * @param newname
+ * @param newpath
+ * @param newtype
+ * @param newdefto
+ * @param newdeffrom
+ * @param newdefreplyto
+ * @param newdefsignature
+ * @param prim_sort
+ * @param second_sort
+ * @return
+ */
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, char* newdefsignature, int prim_sort, int second_sort)
 {
 	int refresh = 0;
@@ -4020,7 +4043,7 @@ static void folder_fix(void)
 		{
 			if (stat(f->path,st)==0)
 			{
-				if (!st->st_mode & S_IFDIR)
+				if (!(st->st_mode & S_IFDIR))
 					remove = 1;
 			} else remove = 1;
 		}

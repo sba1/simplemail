@@ -75,6 +75,8 @@ static Object *second_label;
 static Object *second_cycle;
 static Object *second_reverse_check;
 static Object *second_reverse_label;
+static Object *imap_download_label;
+static Object *imap_download_cycle;
 
 static Object *compose_mail_properties_group;
 static Object *from_accountpop;
@@ -99,7 +101,7 @@ static struct Hook imap_folders_display_hook;
 
 struct imap_folder_entry
 {
-	char *name;
+	utf8 *name;
 	int subscribed;
 };
 
@@ -108,7 +110,7 @@ STATIC ASM SAVEDS APTR imap_folders_construct(REG(a0,struct Hook *h),REG(a2,APTR
 	struct imap_folder_entry *new_entry = malloc(sizeof(*entry));
 	if (new_entry)
 	{
-		new_entry->name = mystrdup(entry->name);
+		new_entry->name = (utf8*)mystrdup((char*)entry->name);
 		new_entry->subscribed = entry->subscribed;
 	}
 	return new_entry;
@@ -162,7 +164,7 @@ static void imap_folders_submit_pressed(void)
 			struct imap_folder_entry *entry;
 			DoMethod(imap_folders_list, MUIM_NList_GetEntry, i, (ULONG)&entry);
 			if (entry && entry->subscribed)
-				string_list_insert_tail(&list,entry->name);
+				string_list_insert_tail(&list,(char*)entry->name);
 		}
 		callback_imap_submit_folders(changed_folder,&list);
 		string_list_clear(&list);
@@ -250,6 +252,11 @@ int folder_get_changed_secondary_sort(void)
 	return (int)xget(second_cycle, MUIA_Cycle_Active) | (xget(second_reverse_check, MUIA_Selected) ? FOLDER_SORT_REVERSE : 0);
 }
 
+int folder_get_imap_download(void)
+{
+	return (int)xget(imap_download_cycle,MUIA_Cycle_Active);
+}
+
 /* Refresh the Signature Cycle if the config has changed */
 void folder_refresh_signature_cycle(void)
 {
@@ -267,6 +274,7 @@ static void init_folder(void)
 	static char *type_array[5];
 	static char *prim_sort_array[12];
 	static char *second_sort_array[12];
+	static char *download_array[3];
 
 	type_array[0] = _("received");
 	type_array[1] = _("sent");
@@ -284,7 +292,7 @@ static void init_folder(void)
 	prim_sort_array[FOLDER_SORT_RECV] = _("Received");
 
 	second_sort_array[FOLDER_SORT_STATUS] = _("Status");
-	second_sort_array[FOLDER_SORT_FROMTO] = _("From/TO");
+	second_sort_array[FOLDER_SORT_FROMTO] = _("From/To");
 	second_sort_array[FOLDER_SORT_SUBJECT] = _("Subject");
 	second_sort_array[FOLDER_SORT_REPLY] = _("Reply");
 	second_sort_array[FOLDER_SORT_DATE] = _("Date");
@@ -292,6 +300,9 @@ static void init_folder(void)
 	second_sort_array[FOLDER_SORT_FILENAME] = _("Filename");
 	second_sort_array[FOLDER_SORT_POP3] = _("POP3");
 	second_sort_array[FOLDER_SORT_RECV] = _("Received");
+
+	download_array[0] = _("Only headers");
+	download_array[1] = _("Complete mails");
 
 	init_hook(&imap_folders_construct_hook, (HOOKFUNC)imap_folders_construct);
 	init_hook(&imap_folders_destruct_hook, (HOOKFUNC)imap_folders_destruct);
@@ -338,6 +349,9 @@ static void init_folder(void)
 					Child, second_reverse_check = MakeCheck(_("Reverse"), 0),
 					Child, second_reverse_label = MakeLabel(_("Reverse")),
 					End,
+
+				Child, imap_download_label = MakeLabel(_("_Download")),
+				Child, imap_download_cycle = MakeCycle(_("_Download"), download_array),
 				End,
 
 			Child, HorizLineTextObject(_("Compose Mail Properties")),
@@ -421,7 +435,7 @@ void folder_edit(struct folder *f)
 	{
 		if (f->is_imap)
 		{
-			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP Server"));
+			set(folder_wnd,MUIA_Window_Title,_("SimpleMail - Edit IMAP server"));
 
 			set(imap_folders_group,MUIA_ShowMe, TRUE);
 			set(imap_folders_horizline,MUIA_ShowMe, TRUE);
@@ -449,6 +463,8 @@ void folder_edit(struct folder *f)
 			{
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_cycle);
 				imap_mode = 0;
 			}
 			group_mode = 1;
@@ -469,12 +485,17 @@ void folder_edit(struct folder *f)
 			{
 				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_label);
 				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_download_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_download_cycle);
+
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_cycle);
 				imap_mode = 0;
 			}
 
@@ -491,12 +512,16 @@ void folder_edit(struct folder *f)
 			{
 				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_label);
 				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_string);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_download_label);
+				DoMethod(folder_properties_group, OM_ADDMEMBER, (ULONG)imap_download_cycle);
 				imap_mode = 1;
 			} else
 			if (!f->is_imap && imap_mode)
 			{
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_label);
 				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_string);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_label);
+				DoMethod(folder_properties_group, OM_REMMEMBER, (ULONG)imap_download_cycle);
 				imap_mode = 0;
 			}
 		}
@@ -506,6 +531,7 @@ void folder_edit(struct folder *f)
 			         (ULONG)name_label, (ULONG)name_string,
 			         (ULONG)path_label, (ULONG)path_string,
 			         (ULONG)imap_label, (ULONG)imap_string,
+			         (ULONG)imap_download_label, (ULONG)imap_download_cycle,
 			         (ULONG)type_label, (ULONG)type_cycle,
 			         (ULONG)prim_label, (ULONG)prim_group,
 			         (ULONG)second_label, (ULONG)second_group,
@@ -555,12 +581,14 @@ void folder_edit(struct folder *f)
 			set(imap_string, MUIA_String_Contents, f->imap_server);
 		}
 
+		set(imap_download_cycle,MUIA_Cycle_Active,f->imap_download);
+
 		DoMethod(imap_folders_list,MUIM_NList_Clear);
 		node = (struct string_node*)list_first(&f->imap_all_folder_list);
 		while (node)
 		{
 			struct imap_folder_entry entry;
-			entry.name = node->string;
+			entry.name = (utf8*)node->string;
 			entry.subscribed = !!string_list_find(&f->imap_sub_folder_list,node->string);
 
 			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);
@@ -582,7 +610,7 @@ void folder_fill_lists(struct list *list, struct list *sub_folder_list)
 		while (node)
 		{
 			struct imap_folder_entry entry;
-			entry.name = node->string;
+			entry.name = (utf8*)node->string;
 			entry.subscribed = !!string_list_find(sub_folder_list,node->string);
 
 			DoMethod(imap_folders_list, MUIM_NList_InsertSingle, (ULONG)&entry, MUIV_NList_Insert_Bottom);

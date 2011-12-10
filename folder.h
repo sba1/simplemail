@@ -74,12 +74,14 @@ struct folder
 
 	struct folder *parent_folder; /* pointer to the parent folder */
 
-  semaphore_t sem; /* use folder_lock()/folder_unlock() */
+	semaphore_t sem; /* use folder_lock()/folder_unlock() */
 
 	int is_imap; /* true if folder is imap folder */
 	char *imap_server;
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
+
+	int imap_download; /* 1, if complete emails shall be downloaded */
 
 	/**
 	 * Set to 1, if IMAP UIDs should not be used.

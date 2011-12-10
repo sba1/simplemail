@@ -2279,10 +2279,22 @@ void imap_thread_connect(struct folder *folder)
 {
 	struct imap_server *server;
 
-	if (!(server = account_find_imap_server_by_folder(folder))) return;
-	if (!imap_start_thread()) return;
+	SM_ENTER;
 
-	thread_call_function_sync(imap_thread, imap_thread_connect_to_server, 3, server, folder->imap_path, folder->path);
+	if (!(server = account_find_imap_server_by_folder(folder)))
+	{
+		SM_DEBUGF(5,("Server for folder %p (%s) not found\n",folder,folder->name));
+		return;
+	}
+	if (!imap_start_thread())
+	{
+		SM_DEBUGF(5,("Could not start IMAP thread\n"));
+		return;
+	}
+
+	thread_call_function_sync(imap_thread, imap_thread_connect_to_server, 4, server, folder->imap_path, folder->path, folder->imap_download);
+
+	SM_LEAVE;
 }
 
 /**

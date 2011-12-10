@@ -84,8 +84,12 @@ void CloseLibraryInterface(struct Library *lib, void *interface);
  */
 int open_socket_lib(void)
 {
-	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
-	if (!thread) return 0; /* assert */
+	struct thread_s *thread;
+
+	SM_ENTER;
+
+	if (!(thread = (struct thread_s*)FindTask(NULL)->tc_UserData))
+		goto out;
 
 	if (!thread->socketlib)
 	{
@@ -96,6 +100,8 @@ int open_socket_lib(void)
 			{
 #endif
 				thread->socketlib_opencnt = 1;
+				SM_DEBUGF(10,("Socket library opened %ld times\n",thread->socketlib_opencnt));
+				SM_RETURN(1,"%ld");
 				return 1;
 #ifdef __AMIGAOS4__
 			}
@@ -105,8 +111,12 @@ int open_socket_lib(void)
 	} else
 	{
 		thread->socketlib_opencnt++;
+		SM_DEBUGF(10,("Socket library opened %ld times\n",thread->socketlib_opencnt));
+		SM_RETURN(1,"%ld");
 		return 1;
 	}
+out:
+	SM_RETURN(0,"%ld");
 	return 0;
 }
 
@@ -115,13 +125,23 @@ int open_socket_lib(void)
  */
 void close_socket_lib(void)
 {
-	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
-	if (!thread) return; /* assert */
+	struct thread_s *thread;
+
+	SM_ENTER;
+
+	if (!(thread = (struct thread_s*)FindTask(NULL)->tc_UserData))
+		goto out;
+
+	SM_DEBUGF(10,("Socket library opened %ld times\n",thread->socketlib_opencnt-1));
 
 	if (!(--thread->socketlib_opencnt))
 	{
 #ifdef __AMIGAOS4__
-		if (thread->isocket) DropInterface((struct Interface*)thread->isocket);
+		if (thread->isocket)
+		{
+			DropInterface((struct Interface*)thread->isocket);
+			thread->isocket = NULL;
+		}
 #endif
 		if (thread->socketlib)
 		{
@@ -129,6 +149,9 @@ void close_socket_lib(void)
 			thread->socketlib = NULL;
 		}
 	}
+
+out:
+	SM_LEAVE;
 }
 
 /* Returns true if given interface is online, if the information is not querryable
@@ -154,10 +177,14 @@ int open_ssl_lib(void)
 #ifdef NO_SSL
 	return 0;
 #else
-	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
-	if (!thread) return 0; /* assert */
+	struct thread_s *thread;
 
-	if (!open_socket_lib()) return 0;
+	SM_ENTER;
+
+	if (!(thread = (struct thread_s*)FindTask(NULL)->tc_UserData))
+		goto out;
+	if (!open_socket_lib())
+		goto out;
 
 	if (!thread->amissllib)
 	{
@@ -195,6 +222,8 @@ int open_ssl_lib(void)
 				{
 					/* Everything is ok */
 					thread->ssllib_opencnt = 1;
+					SM_DEBUGF(10,("AmiSSL opened %ld times\n",thread->ssllib_opencnt));
+					SM_RETURN(1,"%ld");
 					return 1;
 				}
 #ifdef USE_AMISSL3
@@ -226,21 +255,36 @@ int open_ssl_lib(void)
 	} else
 	{
 		thread->ssllib_opencnt++;
+		SM_DEBUGF(10,("AmiSSL opened %ld times\n",thread->ssllib_opencnt));
+		SM_RETURN(1,"%ld");
 		return 1;
 	}
 
+out:
 	close_socket_lib();
+	SM_RETURN(0,"%ld");
 	return 0;
 #endif
 }
 
 void close_ssl_lib(void)
 {
-	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
-	if (!thread) return; /* assert */
+	struct thread_s *thread;
+
+	SM_ENTER;
+
+	if (!(thread = (struct thread_s*)FindTask(NULL)->tc_UserData))
+		goto out;
 
 #ifndef NO_SSL
-	if (!thread->ssllib_opencnt) return;
+	if (!thread->ssllib_opencnt)
+	{
+		SM_LEAVE;
+		return;
+	}
+
+	SM_DEBUGF(10,("AmiSSL opened %ld times\n",thread->ssllib_opencnt - 1));
+
 	if (!(--thread->ssllib_opencnt))
 	{
 		SSL_CTX_free(thread->ssl_ctx);
@@ -251,7 +295,12 @@ void close_ssl_lib(void)
 		DropInterface((struct Interface*)thread->iamissl);
 		thread->iamissl = NULL;
 #endif
+		/* FIXME: Closing amissl will lead to crashes on subsequent calls to socket()
+		 * at least on OS4. Therefore, this is disabled when compiling for this
+		 * operating system. */
+#ifndef __AMIGAOS4__
 		CloseAmiSSL();
+#endif
 		thread->amissllib = NULL;
 		CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
 		thread->iamisslmaster = NULL;
@@ -264,6 +313,8 @@ void close_ssl_lib(void)
 		close_socket_lib();
 	}
 #endif
+out:
+	SM_LEAVE;
 }
 
 #ifndef NO_SSL
@@ -272,6 +323,7 @@ SSL_CTX *ssl_context(void)
 	struct thread_s *thread = (struct thread_s*)FindTask(NULL)->tc_UserData;
 	if (!thread) return NULL; /* assert */
 
+	SM_DEBUGF(20,("ssl context = %p\n",thread->ssl_ctx));
 	return thread->ssl_ctx;
 }
 #endif
@@ -305,5 +357,9 @@ long tcp_errno(void)
 
 void myclosesocket(int fd)
 {
-	CloseSocket(fd);
+	long rc = CloseSocket(fd);
+	if (rc != 0)
+		SM_DEBUGF(5,("Closing socket %ld failed\n",fd));
+	else
+		SM_DEBUGF(20,("Closing socket %ld succeeded\n",fd));
 }

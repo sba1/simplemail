@@ -2374,7 +2374,7 @@ void callback_rescan_folder(void)
 
 static int downloading_partial_mail;
 
-static void simplemail_download_next_partial_mail(void);
+static int simplemail_download_next_partial_mail(void);
 
 /**
  *
@@ -2387,21 +2387,28 @@ static void simplemail_partial_mail_downloaded(struct mail_info *m, void *userda
 
 	main_refresh_mail(m);
 
-	simplemail_download_next_partial_mail();
+	if (!simplemail_download_next_partial_mail())
+	{
+		status_set_status(_("All mails downloaded completely"));
+	}
 }
 
 /**
  * Proceeds in downloading partial mails.
+ *
+ * @return 1 if one mail is scheduled for download (or in process to be downloaded)
  */
-static void simplemail_download_next_partial_mail(void)
+static int simplemail_download_next_partial_mail(void)
 {
+	static unsigned int last_ticks;
+
 	struct folder *f;
 
 	/* If the active folder is an imap folder and in download mode
 	 * "complete mails" we download the next partial mail.
 	 */
 	f = main_get_folder();
-	if (f && f->is_imap && f->imap_download && !downloading_partial_mail)
+	if (f && f->is_imap && f->imap_download && !downloading_partial_mail && f->partial_mails)
 	{
 		void *handle;
 		struct mail_info *m;
@@ -2418,12 +2425,26 @@ static void simplemail_download_next_partial_mail(void)
 		if (m)
 		{
 			SM_DEBUGF(10,("Issuing download of next partial mail \"%s\"\n",m->filename));
+
+			if (time_ms_passed(last_ticks) > 500)
+			{
+				char status_txt[80];
+
+				sm_snprintf(status_txt,sizeof(status_txt),_("Downloading all complete mails for folder \"%s\": %ld mails to go"),f->name,f->partial_mails);
+				status_set_status(status_txt);
+				last_ticks = time_reference_ticks();
+			}
+
 			if (imap_download_mail_async(f,m,simplemail_partial_mail_downloaded,NULL))
 			{
 				downloading_partial_mail = 1;
+			} else
+			{
+				status_set_status(_("Could not download complete mail"));
 			}
 		}
 	}
+	return downloading_partial_mail;
 }
 
 /** Auto-Timer functions **/

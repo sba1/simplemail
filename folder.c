@@ -632,6 +632,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	if (folder->num_mails > folder->num_index_mails) folder->num_index_mails = folder->num_mails;
 	if (mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) folder->unread_mails++;
 	if (mail->flags & MAIL_FLAGS_NEW) folder->new_mails++;
+	if (mail->flags & MAIL_FLAGS_PARTIAL) folder->partial_mails++;
 
 	/* sort the mails for threads */
 	if (mail->message_id)
@@ -768,6 +769,7 @@ static void folder_remove_mail_info(struct folder *folder, struct mail_info *mai
 	folder->num_index_mails--;
 	if ((mail_info_get_status_type(mail) == MAIL_STATUS_UNREAD) && folder->unread_mails) folder->unread_mails--;
 	if ((mail->flags & MAIL_FLAGS_NEW) && folder->new_mails) folder->new_mails--;
+	if ((mail->flags & MAIL_FLAGS_PARTIAL) && folder->partial_mails) folder->partial_mails--;
 
 	folder_unlock(folder);
 }
@@ -1037,6 +1039,12 @@ void folder_set_mail_status(struct folder *folder, struct mail_info *mail, int s
 void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int flags_new)
 {
 	if (mail->flags == flags_new) return;
+
+	if ((mail->flags & MAIL_FLAGS_PARTIAL) && !(flags_new & MAIL_FLAGS_PARTIAL))
+		if (folder->partial_mails) folder->partial_mails--;
+	else if (!(mail->flags & MAIL_FLAGS_PARTIAL) && (flags_new & MAIL_FLAGS_PARTIAL))
+		folder->partial_mails++;
+
 	mail->flags = flags_new;
 
 	/* Delete the indexfile if not already done */

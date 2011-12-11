@@ -70,6 +70,7 @@ struct folder
 
 	int new_mails; /* number of new mails */
 	int unread_mails; /* number of unread mails */
+	int partial_mails; /* number of partial mails */
 	int num_index_mails; /* real number of mails, might be -1 for being unknown  */
 
 	struct folder *parent_folder; /* pointer to the parent folder */

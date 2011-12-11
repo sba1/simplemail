@@ -3585,7 +3585,7 @@ msgstr "Abbestellen eines Ordner fehlgeschlagen!"
 #: imap.c:1691
 #, c-format
 msgid "No new mails in folder \"%s\""
-msgstr "Keine Nachrichten im Ordner \"%s\""
+msgstr "Keine neue Nachrichten im Ordner \"%s\""
 
 # amiga-mui/filterwnd.c:527
 #: imap.c:1692
@@ -3597,7 +3597,7 @@ msgstr "Eine neue Nachricht im Ordner \"%s\""
 #: imap.c:1693
 #, c-format
 msgid "%d new mails in folder \"%s\""
-msgstr "%d Nachrichten im Ordner \"%s\""
+msgstr "%d neue Nachrichten im Ordner \"%s\""
 
 # imap.c:1514
 # smtp.c:923

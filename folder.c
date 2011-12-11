@@ -1161,6 +1161,7 @@ int folder_rescan(struct folder *folder)
 
 		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 		folder->num_index_mails = 0;
+		folder->partial_mails = 0;
 
 		while ((dptr = readdir(dfd)) != NULL)
 		{

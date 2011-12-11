@@ -34,6 +34,7 @@ char *folder_get_changed_defreplyto(void);
 char *folder_get_changed_defsignature(void);
 int folder_get_changed_primary_sort(void);
 int folder_get_changed_secondary_sort(void);
+int folder_get_imap_download(void);
 
 void folder_edit_new_path(char *init_path);
 void folder_refresh_signature_cycle(void);

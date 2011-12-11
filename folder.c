@@ -1041,9 +1041,13 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 	if (mail->flags == flags_new) return;
 
 	if ((mail->flags & MAIL_FLAGS_PARTIAL) && !(flags_new & MAIL_FLAGS_PARTIAL))
+	{
 		if (folder->partial_mails) folder->partial_mails--;
-	else if (!(mail->flags & MAIL_FLAGS_PARTIAL) && (flags_new & MAIL_FLAGS_PARTIAL))
-		folder->partial_mails++;
+	} else
+	{
+		if (!(mail->flags & MAIL_FLAGS_PARTIAL) && (flags_new & MAIL_FLAGS_PARTIAL))
+			folder->partial_mails++;
+	}
 
 	mail->flags = flags_new;
 

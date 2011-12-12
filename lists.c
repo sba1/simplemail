@@ -92,16 +92,31 @@ void list_insert_tail(struct list *list, struct node *newnode)
   list->last = newnode;
 }
 
-/******************************************************************
- Removes the last node and returns it
-*******************************************************************/
+/**
+ * Removes the first node and returns it.
+ *
+ * @param list
+ * @return
+ */
+struct node *list_remove_head(struct list *list)
+{
+	struct node *node = list_first(list);
+	if (node)
+	    node_remove(node);
+	return node;
+}
+
+/**
+ * Removes the last node and returns it.
+ *
+ * @param list
+ * @return
+ */
 struct node *list_remove_tail(struct list *list)
 {
   struct node *node = list_last(list);
   if (node)
-  {
     node_remove(node);
-  }
   return node;
 }
 

@@ -2870,11 +2870,11 @@ int folder_save_index(struct folder *f)
 			fwrite(&num_to,1,4,fh);
 			fwrite(&num_cc,1,4,fh);
 
-			if (!(len_add = fwrite_str(fh, m->subject))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->subject))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->filename))) break;
 			len += len_add;
-			if (!(len_add = fwrite_str(fh, m->from_phrase))) break;
+			if (!(len_add = fwrite_str(fh, (char*)m->from_phrase))) break;
 			len += len_add;
 			if (!(len_add = fwrite_str(fh, m->from_addr))) break;
 			len += len_add;
@@ -3299,7 +3299,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 								header = (struct header*)list_first(&mc->header_list);
 								while (!take && header)
 								{
-									if (sm_match_pattern(rule->u.header.name_pat, header->name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT|SM_PATTERN_ASCII7))
+									if (sm_match_pattern(rule->u.header.name_pat, (utf8*)header->name, SM_PATTERN_NOCASE|SM_PATTERN_NOPATT|SM_PATTERN_ASCII7))
 									{
 										if (header->contents)
 										{

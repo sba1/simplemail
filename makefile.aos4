@@ -145,7 +145,6 @@ dirs:
 $(TARGET): $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
-	cp SimpleMail.debug $(DESTDIR)/SimpleMail
 
 ppc-amigaos-objs/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
@@ -162,6 +161,10 @@ ppc-amigaos-test-objs/%.o: %.c
 .PHONY: clean
 clean:
 	$(RM) $(TARGET) $(OBJS) ppc-amigaos-objs ppc-amigaos-test-objs
+
+.PHONY: install
+install: $(TARGET)
+	cp SimpleMail.debug $(DESTDIR)/SimpleMail
 
 .PHONY: revision
 revision:

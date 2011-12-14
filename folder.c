@@ -38,6 +38,7 @@
 #include "parse.h"
 #include "simplemail.h"
 #include "smintl.h"
+#include "status.h"
 #include "support.h"
 #include "support_indep.h"
 #include "qsort.h"
@@ -501,12 +502,11 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 
 	if (!folder->mail_infos_loaded)
 	{
-
 		/* No mail infos has been read. We could now load them now but
-			 instead we add the new mail to the pending mail array. This
+		   instead we add the new mail to the pending mail array. This
 		   makes this operation a lot of faster and the overall operation
-       of SimpleMail as well if this folder is not viewed (which is
-			 often the case for the spam folder) */
+		   of SimpleMail as well if this folder is not viewed (which is
+		   often the case for the spam folder) */
 
 		/* Add the mail to the pending array, this is not necessary if the
 		   there is no usable indexfile for this folder (num_index_mails == -1
@@ -572,8 +572,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 
 	if (mail->message_id)
 	{
-		/* check if there is already an mail with the same message id, this would cause
-  	   problems */
+		/* check if there is already an mail with the same message id, this would cause problems */
 		for (i=0;i<folder->num_mails;i++)
 		{
 			struct mail_info *fm = folder->mail_info_array[i];
@@ -1131,9 +1130,12 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 	return NULL;
 }
 
-/******************************************************************
- Rescan the given folder
-*******************************************************************/
+/**
+ * Rescan the given folder.
+ *
+ * @param folder
+ * @return
+ */
 int folder_rescan(struct folder *folder)
 {
 	DIR *dfd; /* directory descriptor */
@@ -1151,8 +1153,18 @@ int folder_rescan(struct folder *folder)
 
 	if ((dfd = opendir(SM_CURRENT_DIR)))
 	{
+		struct list mail_filename_list;
+		struct string_node *snode;
+		int number_of_mails;
+		char buf[80];
+		unsigned int last_ticks;
+		unsigned int current_mail;
+
+		last_ticks = time_reference_ticks();
+
 		free(folder->mail_info_array);
 		free(folder->sorted_mail_info_array);
+
 		folder->mail_info_array = folder->sorted_mail_info_array = NULL;
 		folder->mail_info_array_allocated = 0;
 		folder->num_mails = 0;
@@ -1162,21 +1174,50 @@ int folder_rescan(struct folder *folder)
 		folder->mail_infos_loaded = 1; /* must happen before folder_add_mail() */
 		folder->num_index_mails = 0;
 		folder->partial_mails = 0;
+		folder->rescanning = 1;
+
+		list_init(&mail_filename_list);
+		number_of_mails = 0;
+
+		sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder->name);
+		status_set_status(buf);
 
 		while ((dptr = readdir(dfd)) != NULL)
 		{
-			struct mail_info *m;
 			char *name = dptr->d_name;
 
 			if (name[0] == '.')
 				if (!strcmp(".",name) || !strcmp("..",name) || !strcmp(".config", name) || !strcmp(".index", name)) continue;
 
-			if ((m = mail_info_create_from_file(dptr->d_name)))
-			{
-				folder_add_mail(folder,m,0);
-			}
+			string_list_insert_tail(&mail_filename_list, name);
+			number_of_mails++;
 		}
 		closedir(dfd);
+
+		current_mail = 0;
+		while ((snode = (struct string_node*)list_remove_head(&mail_filename_list)))
+		{
+			struct mail_info *m;
+
+			if (time_ms_passed(last_ticks) > 500)
+			{
+				sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
+				status_set_status(buf);
+				last_ticks = time_reference_ticks();
+			}
+
+			if ((m = mail_info_create_from_file(snode->string)))
+				folder_add_mail(folder,m,0);
+
+			free(snode->string);
+			free(snode);
+
+			current_mail++;
+		}
+		folder->rescanning = 0;
+
+		sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder->name);
+		status_set_status(buf);
 
 		folder_invalidate_indexfile(folder);
 	}

@@ -2361,8 +2361,9 @@ void callback_rescan_folder(void)
 	if (f)
 	{
 		app_busy();
-		/* Because this means deleting free all mails we safely remove all found mails as it
-     * could reference a old mail */
+
+		/* Because this means deleting all mails we safely remove all found mails as it
+		 * could reference an old mail */
 		search_clear_results();
 		folder_rescan(f);
 		main_set_folder_mails(f);

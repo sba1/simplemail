@@ -63,6 +63,9 @@ struct folder
 
 	int index_uptodate; /* 1 if the indexfile is uptodate */
 	int mail_infos_loaded; /* 1 if the mailinfos has loaded */
+	int to_be_rescanned; /* 1 if the folder shall be rescanned */
+	int rescanning; /* 1, if the folder is currently being rescanned */
+
 
 	int type; /* see below */
 	int special; /* see below */

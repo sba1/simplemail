@@ -369,7 +369,7 @@ int mydeletedir(const char *path)
 **************************************************************************/
 void wrap_text(char *text, int border)
 {
-	unsigned char *buf = text;
+	unsigned char *buf = (unsigned char*)text;
 	unsigned char c;
 	int pos = 0;
 

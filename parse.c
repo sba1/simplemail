@@ -293,7 +293,7 @@ static char *parse_word_simple(char *word, char **pbuf)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
-#ifndef __AROS__
+#ifdef UNUSED
 static char *parse_word(char *word, char **pbuf, char **pcharset)
 {
 	char *ret;
@@ -1022,54 +1022,54 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	int day, month, year, hour, min, sec, gmt;
 	unsigned char *date;
 	if (!buf) return NULL;
-	date = strstr(buf,",");
-	if (!date) date = buf;
+	date = (unsigned char*)strstr(buf,",");
+	if (!date) date = (unsigned char*)buf;
 	else date++;
 
 	while (isspace(*date)) date++;
-	day = atoi(date);
+	day = atoi((char*)date);
 	while (isdigit(*date)) date++;
 	while (isspace(*date)) date++;
 	if (isdigit(*date))
 	{
-		month = atoi(date);
+		month = atoi((char*)date);
 		if (month < 1 || month > 12) return NULL;
 		while (isdigit(*date)) date++;
 	}
 	else
 	{
-		if (!mystrnicmp(date,"jan",3)) month = 1; /* Not ANSI C */
-		else if (!mystrnicmp(date,"feb",3)) month = 2;
-		else if (!mystrnicmp(date,"mar",3)) month = 3;
-		else if (!mystrnicmp(date,"apr",3)) month = 4;
-		else if (!mystrnicmp(date,"may",3)) month = 5;
-		else if (!mystrnicmp(date,"jun",3)) month = 6;
-		else if (!mystrnicmp(date,"jul",3)) month = 7;
-		else if (!mystrnicmp(date,"aug",3)) month = 8;
-		else if (!mystrnicmp(date,"sep",3)) month = 9;
-		else if (!mystrnicmp(date,"oct",3)) month = 10;
-		else if (!mystrnicmp(date,"nov",3)) month = 11;
-		else if (!mystrnicmp(date,"dec",3)) month = 12;
+		if (!mystrnicmp((char*)date,"jan",3)) month = 1; /* Not ANSI C */
+		else if (!mystrnicmp((char*)date,"feb",3)) month = 2;
+		else if (!mystrnicmp((char*)date,"mar",3)) month = 3;
+		else if (!mystrnicmp((char*)date,"apr",3)) month = 4;
+		else if (!mystrnicmp((char*)date,"may",3)) month = 5;
+		else if (!mystrnicmp((char*)date,"jun",3)) month = 6;
+		else if (!mystrnicmp((char*)date,"jul",3)) month = 7;
+		else if (!mystrnicmp((char*)date,"aug",3)) month = 8;
+		else if (!mystrnicmp((char*)date,"sep",3)) month = 9;
+		else if (!mystrnicmp((char*)date,"oct",3)) month = 10;
+		else if (!mystrnicmp((char*)date,"nov",3)) month = 11;
+		else if (!mystrnicmp((char*)date,"dec",3)) month = 12;
 		else return NULL;
 		while (isalpha(*date)) date++;
 	}
 
 	while (isspace(*date)) date++;
-	year = atoi(date);
+	year = atoi((char*)date);
 	if (year < 78) year += 2000;
 	else if (year < 200) year += 1900;
 
 	while (isdigit(*date)) date++;
 	while (isspace(*date)) date++;
-	hour = atoi(date);
+	hour = atoi((char*)date);
 	if (hour < 100)
 	{
 		while (isdigit(*date)) date++;
 		while (!isdigit(*date)) date++;
-		min = atoi(date);
+		min = atoi((char*)date);
 		while (isdigit(*date)) date++;
 		while (!isdigit(*date)) date++;
-		sec = atoi(date);
+		sec = atoi((char*)date);
 	} else /* like examples in rfc 822 */
 	{
 		min = hour % 100;
@@ -1078,7 +1078,7 @@ char *parse_date(char *buf, int *pday,int *pmonth,int *pyear,int *phour,int *pmi
 	}
 	while (isdigit(*date)) date++;
 	while (isspace(*date)) date++;
-	gmt = atoi(date);
+	gmt = atoi((char*)date);
 	gmt = (gmt % 100) + (gmt / 100)*60;
 	while (isdigit(*date)) date++;
 

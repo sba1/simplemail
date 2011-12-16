@@ -40,6 +40,7 @@
 #include "folder.h"
 #include "lists.h"
 #include "parse.h"
+#include "progmon.h"
 #include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"

@@ -27,6 +27,7 @@ NONARCHSRCS=\
 	phrase.c \
 	pop3.c \
 	print.c \
+	progmon.c \
 	punycode.c \
 	signature.c \
 	simplemail.c \

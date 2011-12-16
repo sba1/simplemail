@@ -40,13 +40,13 @@
 #include "imap.h" /* imap_thread_xxx() */
 #include "mail.h"
 #include "mbox.h"
+#include "progmon.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "spam.h"
 #include "support_indep.h"
 #include "status.h"
 #include "trans.h"
-#include "debug.h"
 
 #include "addressbookwnd.h"
 #include "composewnd.h"
@@ -2513,8 +2513,12 @@ void simplemail_deinit(void)
 	cleanup_addressbook();
 	if (lazy_thread) lazy_clean_list();
 	cleanup_threads();
-	/* Lazy thread is already aborted by  above call */
+
+	/* Lazy thread is already aborted by above call */
 	if (lazy_semaphore) thread_dispose_semaphore(lazy_semaphore);
+
+	progmon_deinit();
+
 	startupwnd_close();
 	shutdownwnd_close();
 	atcleanup_finalize();
@@ -2547,6 +2551,12 @@ int simplemail_init(void)
 	}
 
 	startupwnd_open();
+	if (!progmon_init())
+	{
+		SM_DEBUGF(1,("Couldn't initialize progress monitor system!"));
+		goto out;
+	}
+
 	if (!init_threads())
 	{
 		SM_DEBUGF(1,("Couldn't initialize thread system!"));

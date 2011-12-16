@@ -23,14 +23,14 @@ struct progmon
 	 * @param work amount of work
 	 * @param txt some useful text describing the task
 	 */
-	void (*begin)(unsigned int work, char *txt);
+	void (*begin)(struct progmon *pm, unsigned int work, char *txt);
 
 	/**
 	 * Notifies the progess monitor that we are now
 	 * working on the given specific problem.
 	 * @param txt
 	 */
-	void (*working_on)(char *txt);
+	void (*working_on)(struct progmon *pm, char *txt);
 
 	/**
 	 * Notifies the progess monitor that the given amount
@@ -38,21 +38,24 @@ struct progmon
 	 *
 	 * @param done
 	 */
-	void (*work)(unsigned int done);
+	void (*work)(struct progmon *pm, unsigned int done);
 
 	/**
 	 * @return if the operation should be canceled or not.
 	 */
-	int (*canceled)(void);
+	int (*canceled)(struct progmon *pm);
 
 	/**
 	 * Notifies the progress monitor that the task
 	 * has been completed.
 	 */
-	void (*done)(void);
+	void (*done)(struct progmon *pm);
 };
 
 struct progmon *progmon_create(void);
 void progmon_delete(struct progmon *pm);
+
+int progmon_init(void);
+void progmon_deinit(void);
 
 #endif

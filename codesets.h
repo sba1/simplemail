@@ -56,6 +56,7 @@ struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr);
 
 int isascii7(const char *str);
 int utf8len(const utf8 *str);
+utf8 *utf8dup(const utf8 *str);
 int utf8bytes(const utf8 *str);
 int utf8realpos(const utf8 *str, int pos);
 int utf8charpos(const utf8 *str, int pos);

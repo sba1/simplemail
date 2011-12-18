@@ -1257,6 +1257,17 @@ int utf8len(const utf8 *str)
 	return len;
 }
 
+/**
+ * Duplicates an utf8 string.
+ *
+ * @param str
+ * @return
+ */
+utf8 *utf8dup(const utf8 *str)
+{
+	return (utf8*)mystrdup((char*)str);
+}
+
 /**************************************************************************
  Transforms a character position to the position in the char array
 **************************************************************************/

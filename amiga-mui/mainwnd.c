@@ -173,6 +173,7 @@ static Object *right_balance;
 static Object *project_checksingleaccount_menuitem;
 static Object *status_text;
 static Object *status_gauge;
+static Object *status_button;
 
 /* For the Balance Snapshot */
 static Object *balance_text;
@@ -985,6 +986,7 @@ int main_window_init(void)
 					MUIA_ShowMe, FALSE,
 					GaugeFrame,
 					End,
+				Child, status_button = MakeButton(_("P")),
 				End,
 
 			Child, balance_text = StringObject,
@@ -1049,7 +1051,8 @@ int main_window_init(void)
 				MUIA_MailTreelist_AltRowBackgroundRGB, user.config.alt_row_background,
 				TAG_DONE);
 
-		set(filter_clear_button,MUIA_Weight,0);
+		set(filter_clear_button, MUIA_Weight, 0);
+		SetAttrs(status_button, MUIA_Weight, 0, MUIA_ShowMe, FALSE, TAG_DONE);
 
 		main_settings_folder_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData,MENU_SETTINGS_SHOW_FOLDERS);
 		main_settings_addressbook_menuitem = (Object*)DoMethod(main_menu,MUIM_FindUData, MENU_SETTINGS_SHOW_ADDRESSBOOK);
@@ -1164,6 +1167,7 @@ int main_window_init(void)
 		DoMethod(filter_string, MUIM_Notify, MUIA_String_Acknowledge, MUIV_EveryTime, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_quick_filter_changed);
 		DoMethod(filter_clear_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_string, 3, MUIM_Set, MUIA_UTF8String_Contents, "");
 		DoMethod(filter_clear_button, MUIM_Notify, MUIA_Pressed, FALSE, filter_string, 3, MUIM_Set, MUIA_String_Acknowledge, TRUE);
+		DoMethod(status_button, MUIM_Notify, MUIA_Pressed, FALSE, MUIV_Notify_Application, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_progmon_button_pressed);
 
 		main_build_accounts();
 		main_build_scripts();
@@ -1661,6 +1665,7 @@ void main_set_progress(unsigned int max_work, unsigned int work)
 	if (!status_gauge_shown)
 	{
 		set(status_gauge, MUIA_ShowMe, TRUE);
+		set(status_button, MUIA_ShowMe, TRUE);
 		status_gauge_shown = 1;
 	}
 }
@@ -1670,6 +1675,10 @@ void main_set_progress(unsigned int max_work, unsigned int work)
  */
 void main_hide_progress(void)
 {
-	set(status_gauge, MUIA_ShowMe, FALSE);
-	status_gauge_shown = 0;
+	if (status_gauge_shown)
+	{
+		set(status_gauge, MUIA_ShowMe, FALSE);
+		set(status_button, MUIA_ShowMe, FALSE);
+		status_gauge_shown = 0;
+	}
 }

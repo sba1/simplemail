@@ -916,6 +916,15 @@ void callback_quick_filter_changed(void)
 	callback_folder_active();
 }
 
+/**
+ * Called when the status button within the main window is clicked.
+ */
+void callback_progmon_button_pressed(void)
+{
+
+}
+
+
 static void touch_active_mail(struct folder *f, struct mail_info *m)
 {
 	/* Only touch mail if it is still the active one because
@@ -2373,7 +2382,11 @@ void callback_rescan_folder(void)
 	}
 }
 
+/** @brief 1, if downloading partial mails is in process */
 static int downloading_partial_mail;
+
+/** @brief Progress monitor for downloading all mails */
+static struct progmon *downloading_partial_mail_progmon;
 
 static int simplemail_download_next_partial_mail(void);
 
@@ -2386,11 +2399,23 @@ static void simplemail_partial_mail_downloaded(struct mail_info *m, void *userda
 {
 	downloading_partial_mail = 0;
 
+	if (downloading_partial_mail_progmon)
+	{
+		downloading_partial_mail_progmon->work(downloading_partial_mail_progmon,1);
+	}
+
 	main_refresh_mail(m);
 
 	if (!simplemail_download_next_partial_mail())
 	{
 		status_set_status(_("All mails downloaded completely"));
+
+		if (downloading_partial_mail_progmon)
+		{
+			downloading_partial_mail_progmon->done(downloading_partial_mail_progmon);
+			progmon_delete(downloading_partial_mail_progmon);
+			downloading_partial_mail_progmon = NULL;
+		}
 	}
 }
 
@@ -2425,6 +2450,16 @@ static int simplemail_download_next_partial_mail(void)
 
 		if (m)
 		{
+			if (!downloading_partial_mail_progmon)
+			{
+				utf8 *name;
+
+				downloading_partial_mail_progmon = progmon_create();
+				name = utf8create(_("Downloading complete mails"), user.config.default_codeset?user.config.default_codeset->name:NULL);
+				downloading_partial_mail_progmon->begin(downloading_partial_mail_progmon,f->partial_mails,name);
+				free(name);
+			}
+
 			SM_DEBUGF(10,("Issuing download of next partial mail \"%s\"\n",m->filename));
 
 			if (time_ms_passed(last_ticks) > 500)

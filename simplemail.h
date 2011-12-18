@@ -53,6 +53,7 @@ void callback_add_spam_folder_to_statistics(void);
 void callback_classify_selected_folder_as_ham(void);
 void callback_mail_within_main_selected(void);
 void callback_quick_filter_changed(void);
+void callback_progmon_button_pressed(void);
 
 void callback_fetch_mails(void);
 void callback_check_single_account(int account_num);
@@ -124,7 +125,10 @@ void callback_rescan_folder(void);
 
 int callback_import_addressbook(void);
 
+
+
 void simplemail_update_progress_monitors(void);
+
 
 int simplemail_init(void);
 void simplemail_deinit(void);

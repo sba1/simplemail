@@ -54,10 +54,10 @@ struct account
 	struct node node;
 
 	/** The name of the account that is presented to the user */
-	char *account_name;
+	utf8 *account_name;
 
 	/** The name of the user */
-	char *name;
+	utf8 *name;
 
 	/** The users eMail address */
 	char *email;

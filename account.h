@@ -40,6 +40,10 @@
 #include "imap.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct folder;
 struct imap_server;
 

@@ -124,6 +124,8 @@ void callback_rescan_folder(void);
 
 int callback_import_addressbook(void);
 
+void simplemail_update_progress_monitors(void);
+
 int simplemail_init(void);
 void simplemail_deinit(void);
 

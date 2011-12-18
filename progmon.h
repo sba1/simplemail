@@ -9,6 +9,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__CODESETS_H
+#include "codesets.h"
+#endif
+
 struct progmon
 {
 	/**
@@ -23,14 +27,14 @@ struct progmon
 	 * @param work amount of work
 	 * @param txt some useful text describing the task
 	 */
-	void (*begin)(struct progmon *pm, unsigned int work, char *txt);
+	void (*begin)(struct progmon *pm, unsigned int work, const utf8 *txt);
 
 	/**
 	 * Notifies the progess monitor that we are now
 	 * working on the given specific problem.
 	 * @param txt
 	 */
-	void (*working_on)(struct progmon *pm, char *txt);
+	void (*working_on)(struct progmon *pm, const utf8 *txt);
 
 	/**
 	 * Notifies the progess monitor that the given amount
@@ -54,6 +58,10 @@ struct progmon
 
 struct progmon *progmon_create(void);
 void progmon_delete(struct progmon *pm);
+
+unsigned int progmon_get_total_work(void);
+unsigned int progmon_get_total_work_done(void);
+unsigned int progmon_get_number_of_actives(void);
 
 int progmon_init(void);
 void progmon_deinit(void);

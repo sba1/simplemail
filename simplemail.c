@@ -2492,6 +2492,24 @@ void callback_autocheck_reset(void)
 	main_refresh_window_title(autocheck_seconds_start);
 }
 
+/**
+ * Updates the progress monitor views.
+ */
+void simplemail_update_progress_monitors(void)
+{
+	SM_ENTER;
+
+	if (progmon_get_number_of_actives())
+	{
+		main_set_progress(progmon_get_total_work(),progmon_get_total_work_done());
+	} else
+	{
+		main_hide_progress();
+	}
+
+	SM_LEAVE;
+}
+
 
 /**
  * Deinitializes SimpleMail.

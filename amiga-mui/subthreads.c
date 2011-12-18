@@ -259,11 +259,13 @@ int init_threads(void)
 **************************************************************************/
 void cleanup_threads(void)
 {
+	struct TimerMessage *timeout;
+	struct thread_node *node;
+
 	ULONG thread_m;
 	ULONG timer_m;
-	struct TimerMessage *timeout;
 
-	struct thread_node *node;
+	SM_ENTER;
 
 	node = (struct thread_node*)list_first(&thread_list);
 	while (node)
@@ -338,21 +340,25 @@ void cleanup_threads(void)
 	}
 
 	SM_DEBUGF(15,("Zero subthreads left\n"));
-	thread_cleanup_timer((struct thread_s*)(FindTask(NULL)->tc_UserData));
+	thread_cleanup_timer(thread_get());
 
 	if (main_thread_port)
 	{
 		DeleteMsgPort(main_thread_port);
 		main_thread_port = NULL;
 	}
+
+	SM_LEAVE;
 }
 
-/**************************************************************************
- Returns the mask of the thread port of the current process
-**************************************************************************/
+/**
+ * Returns the mask of the thread port of the current process.
+ *
+ * @return
+ */
 ULONG thread_mask(void)
 {
-	struct thread_s *thread = (struct thread_s*)(FindTask(NULL)->tc_UserData);
+	struct thread_s *thread = thread_get();
 
 	return (1UL << thread->thread_port->mp_SigBit) | (1UL << thread->timer_port->mp_SigBit);
 }
@@ -364,14 +370,14 @@ ULONG thread_mask(void)
  */
 void thread_handle(ULONG mask)
 {
-	struct thread_s *thread = (struct thread_s*)(FindTask(NULL)->tc_UserData);
+	struct thread_s *thread = thread_get();
 
 	if (mask & (1UL << thread->thread_port->mp_SigBit))
 	{
 		struct ThreadMessage *tmsg;
 		while ((tmsg = (struct ThreadMessage *)GetMsg(thread->thread_port)))
 		{
-			D(bug("Received Message: 0x%lx\n",tmsg));
+			SM_DEBUGF(20,("Received message: 0x%lx\n",tmsg));
 
 			if (tmsg->startup)
 			{
@@ -698,7 +704,7 @@ static struct ThreadMessage *thread_create_message(void *function, int argcount,
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
 	if (tmsg)
 	{
-		struct MsgPort *subthread_port = ((struct thread_s*)(FindTask(NULL)->tc_UserData))->thread_port;
+		struct MsgPort *subthread_port = thread_get()->thread_port;
 
 		tmsg->msg.mn_ReplyPort = subthread_port;
 		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
@@ -780,6 +786,8 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	int rc = 0;
 	struct ThreadMessage *tmsg;
 
+	SM_ENTER;
+
 	va_start(argptr,argcount);
 
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
@@ -816,6 +824,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	}
 
 	va_end (argptr);
+	SM_RETURN(rc,"%ld");
 	return rc;
 }
 
@@ -884,6 +893,7 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
 		tmsg->async = 1;
+
 		PutMsg(thread->thread_port,&tmsg->msg);
 		rc = 1;
 	}
@@ -983,7 +993,7 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 	if (timer_init(&timer))
 	{
-		thread_t this_thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
+		thread_t this_thread = thread_get();
 		struct MsgPort *this_thread_port = this_thread->thread_port;
 		if (millis < 0) millis = 0;
 
@@ -1067,7 +1077,7 @@ int thread_push_function(void *function, int argcount, ...)
 
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
-		thread_t this_thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
+		thread_t this_thread = thread_get();
 		AddTail((struct List*)&this_thread->push_list,&tmsg->msg.mn_Node);
 		rc = 1;
 	}
@@ -1091,7 +1101,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 
 	if ((tmsg = thread_create_message(function, argcount, argptr)))
 	{
-		thread_t thread = ((struct thread_s*)(FindTask(NULL)->tc_UserData));
+		thread_t thread = thread_get();
 		struct TimerMessage *timer_msg = AllocVec(sizeof(struct TimerMessage),MEMF_PUBLIC);
 		if (timer_msg)
 		{
@@ -1193,6 +1203,27 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 	return 0;
 }
+
+/**
+ * Returns the main thread.
+ *
+ * @return
+ */
+thread_t thread_get_main(void)
+{
+	return &main_thread;
+}
+
+/**
+ * Return this thread.
+ *
+ * @return
+ */
+thread_t thread_get(void)
+{
+	return (struct thread_s*)(FindTask(NULL)->tc_UserData);
+}
+
 
 /* Check if thread is aborted and return 1 if so */
 int thread_aborted(void)

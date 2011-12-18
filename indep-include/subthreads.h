@@ -49,6 +49,9 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 int thread_push_function(void *function, int argcount, ...);
 int thread_push_function_delayed(int millis, void *function, int argcount, ...);
 
+thread_t thread_get_main(void);
+thread_t thread_get(void);
+
 /* semaphore handling */
 struct semaphore_s;
 typedef struct semaphore_s * semaphore_t; /* opaque type */

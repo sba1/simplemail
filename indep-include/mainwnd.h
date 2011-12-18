@@ -66,6 +66,9 @@ int main_is_iconified(void);
 int main_is_message_view_displayed(void);
 
 void main_set_status_text(char *txt);
+void main_set_progress(unsigned int max_work, unsigned int work);
+void main_hide_progress(void);
+
 void main_display_active_mail(void);
 
 void main_refresh_window_title(unsigned int autocheck_seconds_start);

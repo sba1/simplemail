@@ -172,10 +172,14 @@ static Object *right_group;
 static Object *right_balance;
 static Object *project_checksingleaccount_menuitem;
 static Object *status_text;
+static Object *status_gauge;
 
 /* For the Balance Snapshot */
 static Object *balance_text;
 static LONG Weights[6] = {33, 100, 100, 100, 100, 100};
+
+/** @brief indicates whether the status gauge is shown */
+static int status_gauge_shown;
 
 /** @brief menu to be displayed in the main window */
 static struct NewMenu *main_newmenu;
@@ -971,8 +975,16 @@ int main_window_init(void)
 						End,
 					End,
 				End,
-			Child, status_text = TextObject,
-				TextFrame,
+			Child, HGroup,
+				Child, status_text = TextObject,
+					TextFrame,
+					End,
+				Child, status_gauge = GaugeObject,
+					MUIA_Gauge_Horiz, TRUE,
+					MUIA_Weight, 10,
+					MUIA_ShowMe, FALSE,
+					GaugeFrame,
+					End,
 				End,
 
 			Child, balance_text = StringObject,
@@ -1631,4 +1643,33 @@ void main_refresh_window_title(unsigned int autocheck_seconds_start)
 
 		set(win_main, MUIA_Window_Title, win_main_title);
 	}
+}
+
+/**
+ * Sets the visual aspects of the global progress bar.
+ *
+ * @param max_work
+ * @param work
+ */
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
+	SetAttrs(status_gauge,
+			MUIA_Gauge_Current, work,
+			MUIA_Gauge_Max, max_work,
+			TAG_DONE);
+
+	if (!status_gauge_shown)
+	{
+		set(status_gauge, MUIA_ShowMe, TRUE);
+		status_gauge_shown = 1;
+	}
+}
+
+/**
+ * Hides the global progress bar.
+ */
+void main_hide_progress(void)
+{
+	set(status_gauge, MUIA_ShowMe, FALSE);
+	status_gauge_shown = 0;
 }

@@ -8,6 +8,7 @@
 #include "imap.h"
 #include "progmon.h"
 #include "simplemail.h"
+#include "support.h"
 
 #include <proto/dos.h>
 
@@ -28,6 +29,10 @@ static int test_progmon(void *udata)
 	pm->begin(pm,100,name);
 	for (i=0;i<100;i++)
 	{
+		utf8 txt[20];
+		sm_snprintf((char*)txt,sizeof(txt),"%d",i);
+
+		pm->working_on(pm,txt);
 		pm->work(pm,1);
 		Delay(10);
 	}

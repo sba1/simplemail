@@ -2528,6 +2528,17 @@ void callback_autocheck_reset(void)
 	main_refresh_window_title(autocheck_seconds_start);
 }
 
+static int about_to_update_progmonwnd;
+
+/**
+ * Updates the progress monitor window.
+ */
+static void simplemail_update_progmonwnd(void)
+{
+	about_to_update_progmonwnd = 0;
+	progmonwnd_update(0);
+}
+
 /**
  * Updates the progress monitor views.
  */
@@ -2542,7 +2553,13 @@ void simplemail_update_progress_monitors(void)
 	{
 		main_hide_progress();
 	}
-	progmonwnd_update(0);
+
+	/* Avoid calling simplemail_update_progmonwnd() too often */
+	if (!about_to_update_progmonwnd)
+	{
+		thread_push_function_delayed(250, simplemail_update_progmonwnd, 0);
+		about_to_update_progmonwnd = 1;
+	}
 
 	SM_LEAVE;
 }

@@ -56,12 +56,22 @@ struct progmon
 	void (*done)(struct progmon *pm);
 };
 
+struct progmon_info
+{
+	utf8 *name;
+	utf8 *working_on;
+	unsigned int work;
+	unsigned int work_done;
+};
+
 struct progmon *progmon_create(void);
 void progmon_delete(struct progmon *pm);
 
 unsigned int progmon_get_total_work(void);
 unsigned int progmon_get_total_work_done(void);
 unsigned int progmon_get_number_of_actives(void);
+
+int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *udata);
 
 int progmon_init(void);
 void progmon_deinit(void);

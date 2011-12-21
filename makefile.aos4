@@ -86,6 +86,7 @@ ARCHSRCS=\
 	pgplistclass.c \
 	picturebuttonclass.c \
 	popupmenuclass.c \
+	progmonwnd.c \
 	readwnd.c \
 	searchwnd.c \
 	shutdownwnd.c \

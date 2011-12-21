@@ -18,7 +18,7 @@ static struct list progmon_list;
 /** @brief total work of all active progress monitors */
 static int progmon_total_work;
 
-/** @brief total work done of all all active progress monitors */
+/** @brief total work work_done of all all active progress monitors */
 static int progmon_total_work_done;
 
 /** @brief number of active progress monitors */
@@ -31,10 +31,10 @@ struct progmon_default
 {
 	struct progmon pm;
 
-	utf8 *task_txt;
-	utf8 *working_on_txt;
+	utf8 *name;
+	utf8 *working_on;
 	unsigned int work;
-	unsigned int done;
+	unsigned int work_done;
 };
 
 static void progmon_begin(struct progmon *pm, unsigned int work, const utf8 *txt)
@@ -43,7 +43,7 @@ static void progmon_begin(struct progmon *pm, unsigned int work, const utf8 *txt
 
 	SM_ENTER;
 
-	pmd->task_txt = utf8dup(txt);
+	pmd->name = utf8dup(txt);
 	pmd->work = work;
 
 	SM_DEBUGF(10,("%s\n",txt));
@@ -68,8 +68,8 @@ static void progmon_working_on(struct progmon *pm, const utf8 *txt)
 
 	working_on_txt = utf8dup(txt);
 	thread_lock_semaphore(progmon_list_sem);
-	if (pmd->working_on_txt) free(pmd->working_on_txt);
-	pmd->working_on_txt = working_on_txt;
+	if (pmd->working_on) free(pmd->working_on);
+	pmd->working_on = working_on_txt;
 	thread_unlock_semaphore(progmon_list_sem);
 
 	if (thread_get() != thread_get_main())
@@ -85,7 +85,7 @@ static void progmon_work(struct progmon *pm, unsigned int done)
 	SM_ENTER;
 
 	thread_lock_semaphore(progmon_list_sem);
-	pmd->work += done;
+	pmd->work_done += done;
 	progmon_total_work_done += done;
 	thread_unlock_semaphore(progmon_list_sem);
 
@@ -107,7 +107,7 @@ static void progmon_done(struct progmon *pm)
 	thread_lock_semaphore(progmon_list_sem);
 	node_remove(&pm->node);
 	progmon_total_work -= ((struct progmon_default*)pm)->work;
-	progmon_total_work_done -= ((struct progmon_default*)pm)->done;
+	progmon_total_work_done -= ((struct progmon_default*)pm)->work_done;
 	progmon_number_of_actives--;
 	thread_unlock_semaphore(progmon_list_sem);
 
@@ -134,7 +134,7 @@ unsigned int progmon_get_total_work(void)
 }
 
 /**
- * Returns the total work done.
+ * Returns the total work work_done.
  *
  * @return
  */
@@ -196,6 +196,40 @@ void progmon_delete(struct progmon *pm)
 {
 	free(pm);
 }
+
+/**
+ * Scans available progress monitors.
+ *
+ * @param callback
+ * @param udata
+ */
+int progmon_scan(void (*callback)(struct progmon_info *, void *udata), void *udata)
+{
+	int num;
+	struct progmon_info info;
+	struct progmon_default *pm;
+
+	num = 0;
+
+	thread_lock_semaphore(progmon_list_sem);
+	pm = (struct progmon_default*)list_first(&progmon_list);
+	while (pm)
+	{
+		info.name = pm->name;
+		info.work = pm->work;
+		info.work_done = pm->work_done;
+		info.working_on = pm->working_on;
+
+		callback(&info,udata);
+
+		pm = (struct progmon_default*)node_next(&pm->pm.node);
+		num++;
+	}
+	thread_unlock_semaphore(progmon_list_sem);
+
+	return num;
+}
+
 
 /**
  *

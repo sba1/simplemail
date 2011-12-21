@@ -40,6 +40,7 @@
 #include "imap.h" /* imap_thread_xxx() */
 #include "mail.h"
 #include "mbox.h"
+#include "parse.h"
 #include "progmon.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -55,7 +56,7 @@
 #include "folderwnd.h"
 #include "gui_main.h"
 #include "mainwnd.h"
-#include "parse.h"
+#include "progmonwnd.h"
 #include "readwnd.h"
 #include "searchwnd.h"
 #include "startupwnd.h"
@@ -921,7 +922,7 @@ void callback_quick_filter_changed(void)
  */
 void callback_progmon_button_pressed(void)
 {
-
+	progmonwnd_open();
 }
 
 
@@ -2541,6 +2542,7 @@ void simplemail_update_progress_monitors(void)
 	{
 		main_hide_progress();
 	}
+	progmonwnd_update(0);
 
 	SM_LEAVE;
 }

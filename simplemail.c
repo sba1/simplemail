@@ -2469,6 +2469,19 @@ static int simplemail_download_next_partial_mail(void)
 
 				sm_snprintf(status_txt,sizeof(status_txt),_("Downloading all complete mails for folder \"%s\": %ld mails to go"),f->name,f->partial_mails);
 				status_set_status(status_txt);
+
+				if (downloading_partial_mail_progmon)
+				{
+					utf8 *info;
+					utf8 buf[80];
+
+					sm_snprintf((char*)buf,sizeof(buf),_("%ld mails to go"),f->partial_mails);
+
+					info = utf8create(buf, user.config.default_codeset?user.config.default_codeset->name:NULL);
+					downloading_partial_mail_progmon->working_on(downloading_partial_mail_progmon,info);
+					free(info);
+				}
+
 				last_ticks = time_reference_ticks();
 			}
 

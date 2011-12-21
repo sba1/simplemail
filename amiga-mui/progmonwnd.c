@@ -32,6 +32,7 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#include "configuration.h"
 #include "debug.h"
 #include "lists.h"
 #include "progmon.h"
@@ -50,6 +51,9 @@ struct progmon_gui_node
 	struct node node;
 	Object *progmon_group;
 	Object *progmon_gauge;
+
+	utf8 working_on_utf8[80];
+	char working_on[80];
 };
 
 static struct list progmon_gui_list;
@@ -65,7 +69,10 @@ static void progmonwnd_init(void)
 			VirtualFrame,
 			Child, progmon_noop = VGroup,
 				Child, HVSpace,
-				Child, MakeLabel(_("No pending operations")),
+				Child, TextObject,
+					MUIA_Text_PreParse, "\33c" ,
+					MUIA_Text_Contents, ("No pending operations"),
+					End,
 				Child, HVSpace,
 				End,
 			End,
@@ -99,12 +106,16 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 		if (!(next_node = (struct progmon_gui_node*)malloc(sizeof(*next_node))))
 			return;
 
+		mystrlcpy((char*)next_node->working_on_utf8,(char*)info->working_on,sizeof(next_node->working_on));
+		utf8tostr(next_node->working_on_utf8,next_node->working_on,sizeof(next_node->working_on),user.config.default_codeset);
+
 		next_node->progmon_group = HGroup,
 				Child, next_node->progmon_gauge = GaugeObject,
 					GaugeFrame,
 					MUIA_Gauge_Horiz, TRUE,
 					MUIA_Gauge_Current, info->work_done,
 					MUIA_Gauge_Max, info->work,
+					MUIA_Gauge_InfoText, next_node->working_on,
 					End,
 				End;
 
@@ -117,9 +128,13 @@ static void progmonwnd_scan_entry(struct progmon_info *info, void *udata)
 		SM_DEBUGF(20,("Node %p added\n",next_node));
 	} else
 	{
+		mystrlcpy((char*)next_node->working_on_utf8,(char*)info->working_on,sizeof(next_node->working_on));
+		utf8tostr(next_node->working_on_utf8,next_node->working_on,sizeof(next_node->working_on),user.config.default_codeset);
+
 		SetAttrs(next_node->progmon_gauge,
 				MUIA_Gauge_Current, info->work_done,
 				MUIA_Gauge_Max, info->work,
+				MUIA_Gauge_InfoText, next_node->working_on,
 				TAG_DONE);
 
 		*next_node_ptr = (struct progmon_gui_node *)node_next(&next_node->node);

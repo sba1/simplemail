@@ -1549,6 +1549,8 @@ static int imap_thread_really_download_mails(void)
 	unsigned int uid_from = 0;
 	unsigned int uid_to = 0;
 
+	struct progmon *pm;
+
 	if (!imap_connection) return -1;
 
 	getcwd(path, sizeof(path));
@@ -1604,6 +1606,13 @@ static int imap_thread_really_download_mails(void)
 			{
 				folders_unlock();
 
+				pm = progmon_create();
+				if (pm)
+				{
+					pm->begin(pm,1001,"Downloading mails");
+					pm->working_on(pm,"Determining which mails to download");
+				}
+
 				if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1, uid_from, uid_to)))
 				{
 					int i,j;
@@ -1615,6 +1624,13 @@ static int imap_thread_really_download_mails(void)
 					int filename_current = 0;
 					unsigned int total_download_ticks;
 					unsigned int ticks;
+					unsigned int current_work = 1;
+
+					if (pm)
+					{
+						pm->work(pm,1);
+						pm->working_on(pm,"Downloading new mails");
+					}
 
 					num_remote_mails = rm->num_of_remote_mail;
 					remote_mail_array = rm->remote_mail_array;
@@ -1654,6 +1670,7 @@ static int imap_thread_really_download_mails(void)
 								continue;
 							}
 						}
+
 						downloaded_mails++;
 
 						if (remote_mail_array[i].flags & RM_FLAG_ANSWERED) status = MAIL_STATUS_REPLIED;
@@ -1681,6 +1698,16 @@ static int imap_thread_really_download_mails(void)
 										free(filename_ptrs[--filename_current]);
 
 									ticks = time_reference_ticks();
+
+									if (pm)
+									{
+										unsigned int new_work = 1 + (i * 1000 / num_remote_mails);
+										if (new_work != current_work)
+										{
+											pm->work(pm, new_work - current_work);
+											current_work = new_work;
+										}
+									}
 								}
 							}
 						}
@@ -1713,6 +1740,12 @@ static int imap_thread_really_download_mails(void)
 						imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_remote_mails, imap_server, imap_folder);
 						imap_free_remote_mailbox(rm);
 					}
+				}
+
+				if (pm)
+				{
+					pm->done(pm);
+					progmon_delete(pm);
 				}
 			} else folders_unlock();
 		} else folders_unlock();

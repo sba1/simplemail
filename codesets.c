@@ -1349,10 +1349,15 @@ utf8 *utf8create(void *from, char *charset)
 	return utf8create_len(from,charset,0x7fffffff);
 }
 
-/**************************************************************************
- Creates a uf8 string from a different one. from is the iso string and
- charset the charset of from
-**************************************************************************/
+/**
+ * Creates a uf8 string from a different one. from is the iso string and
+ * charset the charset of from
+ *
+ * @param from
+ * @param charset
+ * @param from_len
+ * @return
+ */
 utf8 *utf8create_len(void *from, char *charset, int from_len)
 {
 	int dest_size = 0;
@@ -1400,11 +1405,17 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	return NULL;
 }
 
-/**************************************************************************
- Converts a UTF8 string to a given charset. Return the number of bytes
- written to dest excluding the NULL byte (which is always ensured by this
- function).
-**************************************************************************/
+/**
+ * Converts a utf8 string to a given charset. Return the number of bytes
+ * written to dest excluding the NULL byte (which is always ensured by this
+ * function).
+ *
+ * @param str
+ * @param dest
+ * @param dest_size
+ * @param codeset
+ * @return
+ */
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 {
 	int i;

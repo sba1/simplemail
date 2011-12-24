@@ -2465,7 +2465,7 @@ static int simplemail_download_next_partial_mail(void)
 
 			if (time_ms_passed(last_ticks) > 500)
 			{
-				char status_txt[80];
+				char status_txt[120];
 
 				sm_snprintf(status_txt,sizeof(status_txt),_("Downloading all complete mails for folder \"%s\": %ld mails to go"),f->name,f->partial_mails);
 				status_set_status(status_txt);

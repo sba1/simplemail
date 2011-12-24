@@ -1,3 +1,24 @@
+Version 0.38 (24th beta) - releases on 2011/12/24
+   - Applied a workaround to circumvent possible crashes with SSL
+     IMAP connection on AmigaOS4
+   - Fixed a problem with IMAP login and passwords containing spaces.
+   - Added a new "Complete mails" mode to IMAP folders. If this mode
+     is enabled, complete emails are downloaded in the background
+     rather than on demand. The mode can be changed within the folder
+     settings, which can be brought up via menu entry
+     "Folder/Options..."
+   - New progress monitor system. When a task is active, a progress
+     overview is displayed in the status line. More details about
+     pending tasks can be viewed by pressing the button next to
+     the progress bar. Clients for this subsystem are currently
+     only imap partial mail and complete downloading.
+   - Live OS4 compiles of SimpleMail can be downloaded now from
+     https://sonumina.de/jenkins/job/SimpleMail/
+     Only the binary is distributed in this form at the moment,
+     not the full archive.  Note that version obtained from this
+     location are considered as experimental for now and are
+     no official release versions. 
+
 Version 0.37 (23th beta) - released on 2011/02/20, bugfix release
    - Fixed config save bug introduced in 0.36 that didn't allow
      the charset information to be stored

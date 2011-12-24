@@ -1,13 +1,13 @@
 <?php
 
-$version = "0.37";
-$date = "2011/02/20";
+$version = "0.38";
+$date = "2011/12/24";
 
-$morphversion = "0.35";
-$morphdate = "2010/01/10";
+$morphversion = "0.37";
+$morphdate = "2011/06/05";
 
-$arosversion = "0.36";
-$arosdate = "2010/12/24";
+$arosversion = "0.37";
+$arosdate = "2011/02/26";
 
   require_once("language.inc.php");
   require_once("support.inc.php");

@@ -11,9 +11,10 @@ Version 0.38 (24th beta) - releases on 2011/12/24
      overview is displayed in the status line. More details about
      pending tasks can be viewed by pressing the button next to
      the progress bar. Clients for this subsystem are currently
-     only imap partial mail and complete downloading.
+     only the IMAP subsystems that are responsible for downloading
+     mail headers and complete mails.
    - Live OS4 compiles of SimpleMail can be downloaded now from
-     https://sonumina.de/jenkins/job/SimpleMail/
+     http://www.sebastianbauer.info/jenkins/job/SimpleMail/
      Only the binary is distributed in this form at the moment,
      not the full archive.  Note that version obtained from this
      location are considered as experimental for now and are

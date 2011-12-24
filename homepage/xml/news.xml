@@ -2,6 +2,56 @@
 
 <news>
 
+  <entry date="2011/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released! Version 0.38 comes with following changes:
+    <list>
+     <item>Applied a workaround to circumvent possible crashes with SSL IMAP connection on AmigaOS4</item>
+	 <item>Fixed a problem with IMAP login and passwords containing spaces</item>
+     <item>Added a new "Complete mails" mode to IMAP folders. If this mode
+     is enabled, complete emails are downloaded in the background
+     rather than on demand. The mode can be changed within the folder
+     settings, which can be brought up via menu entry
+     "Folder/Options..."</item>
+     <item>New progress monitor system. When a task is active, a progress
+     overview is displayed in the status line. More details about
+     pending tasks can be viewed by pressing the button next to
+     the progress bar. Clients for this subsystem are currently
+     only the IMAP subsystems that are responsible for downloading mail headers
+     and complete mails.</item>
+     <item>Live OS4 compiles of SimpleMail can be downloaded now from
+     http://www.sebastianbauer.info/jenkins/job/SimpleMail/
+     Only the binary is distributed in this form at the moment,
+     not the full archive.  Note that version obtained from this
+     location are considered as experimental for now and are
+     no official release versions. 
+     </item>
+    </list>
+    
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2012!
+    
+    </text>
+   
+   <text lang="de">
+   	 Eine neue Version von SimpleMail wurde veröffentlicht. Version 0.38 kommt mit folgenden Änderungen:
+   	 
+   	 <list>
+     <item>Ein Workaround für mögliche Abstürze im Zusammenhang mit SSL und IMAP wurde hinzugefügt</item>
+	 <item>Probleme mit IMAP Logins bei Passwörtern mit Leerzeichen behoben.</item>
+     <item>Ein neuer Modus für IMAP Ordner wurde hinzufügt, der dazu führt, dass komplette Nachrichten des Ordners
+           im Hintergund heruntergeladen werden. Der neue Modus kann mittels Menüpunkt Ordner/Optionen... angewählt werden.</item>
+     <item>Fortschritte von Aufgaben, die mehr Zeit in Anspruch nehmen, können nun einheitlich im Progressmonitor-System verwaltet werden.
+           Hierzu wurde die Statusleiste um einen Fortschittsbalken ergänzt. Über den ebenfalls neuen Button können Details abgerufen werden.
+           Momentan wird dieses System allerdings nur für IMAP-bezogene Aufgaben genutzt.</item>
+     <item>Fortlaufend erstellte OS4.x Versionen von SimpleMail werden nun über die URL 
+            http://www.sebastianbauer.info/jenkins/job/SimpleMail/
+           bereitgestellt. Hierbei handelt es sich derzeit um experimentelle Binärversionen,
+           die keinen offiziellen Status haben. 
+   	 </list>
+   </text>
+  </entry>
+
+
 
   <entry date="2011/02/20">
    <text lang="en">

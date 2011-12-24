@@ -352,6 +352,8 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 	/* At the moment the loop is not necessary */
 	while ((line = tcp_readln(conn)))
 	{
+		SM_DEBUGF(20,("recv: %s",line));
+
 		line = imap_get_result(line,buf,sizeof(buf));
 		line = imap_get_result(line,buf,sizeof(buf));
 		if (!mystricmp(buf,"OK")) return 1;
@@ -360,23 +362,40 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 	return 0;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Perform a login for the given connection to the given imap server.
+ *
+ * @param conn
+ * @param server
+ * @return
+ */
 static int imap_login(struct connection *conn, struct imap_server *server)
 {
 	char *line;
-	char tag[20];
+	char tag[16];
 	char send[200];
 	char buf[100];
 
 	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s LOGIN %s %s\r\n", tag, server->login, server->passwd);
+
+	/* Logging */
+	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s", tag, server->login, "XXX");
+	SM_DEBUGF(20,("send: %s\n",send));
+
+	/* Build the IMAP command */
+	if (has_spaces(server->passwd))
+		sm_snprintf(buf,sizeof(buf),"\"%s\"", server->passwd);
+	else
+		mystrlcpy(buf,server->passwd,sizeof(buf));
+
+	sm_snprintf(send,sizeof(send),"%s LOGIN %s %s\r\n", tag, server->login, buf);
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
 	while ((line = tcp_readln(conn)))
 	{
+		SM_DEBUGF(20,("recv: %s",line));
+
 		line = imap_get_result(line,buf,sizeof(buf));
 		if (!mystricmp(buf,tag))
 		{

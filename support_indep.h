@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 
+int has_spaces(const char *str);
 int mystrcmp(const char *str1, const char *str2);
 int mystrncmp(unsigned char *str1, unsigned char *str2,int len);
 int mystricmp(const char *str1, const char *str2);

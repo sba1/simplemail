@@ -41,6 +41,22 @@
 #include "support.h"
 #include "support_indep.h"
 
+/**
+ * Returns whether the given string has spaces.
+ *
+ * @param str
+ * @return
+ */
+int has_spaces(const char *str)
+{
+	char c;
+
+	while ((c = *str++))
+		if (isspace((unsigned char)c))
+			return 1;
+	return 0;
+}
+
 /******************************************************************
  Compares a string case sensitive. Accepts NULL pointers
 *******************************************************************/

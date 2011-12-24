@@ -174,9 +174,9 @@ revision:
 .PHONY: tests
 tests: dirs imap_unittest
 
-.PHONY: html
-html:
-	-$(RM) html
+.PHONY: doxygen
+doxygen:
+	-$(RM) doxygen
 	doxygen simplemail.doxyfile
 
 imap_unittest: tests/imap_unittest.c $(TESTOBJS) $(TESTAOBJS)

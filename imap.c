@@ -1604,13 +1604,18 @@ static int imap_thread_really_download_mails(void)
 
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
+				utf8 msg[80];
+
 				folders_unlock();
 
 				pm = progmon_create();
 				if (pm)
 				{
-					pm->begin(pm,1001,"Downloading mails");
-					pm->working_on(pm,"Determining which mails to download");
+					utf8fromstr(_("Downloading mails"),NULL,msg,sizeof(msg));
+					pm->begin(pm,1001,msg);
+
+					utf8fromstr(_("Determining which mails to download"),NULL,msg,sizeof(msg));
+					pm->working_on(pm,msg);
 				}
 
 				if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1, uid_from, uid_to)))
@@ -1629,7 +1634,8 @@ static int imap_thread_really_download_mails(void)
 					if (pm)
 					{
 						pm->work(pm,1);
-						pm->working_on(pm,"Downloading new mails");
+						utf8fromstr(_("Downloading new mails"),NULL,msg,sizeof(msg));
+						pm->working_on(pm,msg);
 					}
 
 					num_remote_mails = rm->num_of_remote_mail;

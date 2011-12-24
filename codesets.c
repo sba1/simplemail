@@ -733,12 +733,17 @@ char **codesets_supported(void)
 **************************************************************************/
 static int codesets_cmp_unicode(const void *arg1, const void *arg2)
 {
-	return (int)(strcmp(((struct single_convert*)arg1)->utf8 + 1, ((struct single_convert*)arg2)->utf8+1));
+	char *a1 = (char*)((struct single_convert*)arg1)->utf8 + 1;
+	char *a2 = (char*)((struct single_convert*)arg2)->utf8 + 1;
+	return (int)strcmp(a1,a2);
 }
 
-/**************************************************************************
- Reads a coding table and adds it
-**************************************************************************/
+/**
+ * Reads the codeset table from the given filename and adds it.
+ *
+ * @param name
+ * @return
+ */
 static int codesets_read_table(char *name)
 {
 	char buf[512];
@@ -1175,9 +1180,14 @@ struct codeset *codesets_find(char *name)
 	return NULL;
 }
 
-/**************************************************************************
- Determines number of characters which cannot be converted
-**************************************************************************/
+/**
+ * Determines number of characters which cannot be converted.
+ *
+ * @param codeset
+ * @param text
+ * @param text_len
+ * @return
+ */
 int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_len)
 {
 	struct single_convert conv;
@@ -1192,7 +1202,7 @@ int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_l
 		{
 			int len = trailingBytesForUTF8[c];
 			conv.utf8[1] = c;
-			strncpy(&conv.utf8[2],text_ptr,len);
+			strncpy((char*)&conv.utf8[2],text_ptr,len);
 			conv.utf8[2+len] = 0;
 			text_ptr += len;
 
@@ -1350,6 +1360,49 @@ utf8 *utf8create(void *from, char *charset)
 }
 
 /**
+ * Converts a string with a given codeset to a utf8 representation.
+ *
+ * @param from
+ * @param codeset NULL is okay (default codeset is assumed then)
+ * @param dest
+ * @param dest_size
+ * @return number of bytes within the destination buffer
+ */
+int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
+{
+	char *src = from;
+	unsigned char c;
+	int conv = 0;
+
+	if (!codeset)
+		codeset =  (struct codeset*)list_first(&codesets_list);
+
+	for (src = from;(c = (unsigned char)*src);src++)
+	{
+		unsigned char *utf8_seq;
+		unsigned int l;
+
+		utf8_seq = &codeset->table[c].utf8[0];
+
+		/* Recall that the first element represents
+		 * the number of characters */
+		l = utf8_seq[0];
+		if (dest_size <= l)
+			break;
+
+		utf8_seq++;
+		for(;(c = *utf8_seq);utf8_seq++)
+			*dest = c;
+
+		dest_size -= l;
+		conv++;
+	}
+
+	*dest = 0;
+	return conv;
+}
+
+/**
  * Creates a uf8 string from a different one. from is the iso string and
  * charset the charset of from
  *
@@ -1373,11 +1426,11 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	{
 		if (!mystricmp(charset,"utf-7"))
 		{
-			return utf7ntoutf8((char *)from,from_len);
+			return (utf8*)utf7ntoutf8((char *)from,from_len);
 		}
 		if (!mystricmp(charset,"utf-8"))
 		{
-			return mystrdup((char *)from);
+			return (utf8*)mystrdup((char *)from);
 		}
 		codeset = (struct codeset*)list_first(&codesets_list);
 	}
@@ -1400,7 +1453,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 		}
 
 		*dest_ptr = 0;
-		return dest;
+		return (utf8*)dest;
 	}
 	return NULL;
 }
@@ -1454,16 +1507,20 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 	return i;
 }
 
-/**************************************************************************
- Converts a UTF8 string to a given charset. The returned string is
- allocated with malloc();
-**************************************************************************/
+/**
+ *  Converts a UTF8 string to a representation as given by the charset.
+ *  The returned string is allocated with malloc()
+ *
+ * @param str
+ * @param codeset
+ * @return
+ */
 char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
 {
 	char *dest;
 	int len;
 	if (!str) return NULL;
-	len = strlen(str);
+	len = strlen((char*)str);
 	if ((dest = malloc(len+1)))
 		utf8tostr(str,dest,len+1,codeset);
 	return dest;
@@ -1865,21 +1922,21 @@ static void tabinit(void)
 		mustshiftopt[i] = mustshiftsafe[i] = 1;
 		invbase64[i] = -1;
 	}
-	limit = strlen(direct);
+	limit = strlen((char*)direct);
 	for (i = 0; i < limit; ++i)
 		mustshiftopt[direct[i]] = mustshiftsafe[direct[i]] = 0;
-	limit = strlen(spaces);
+	limit = strlen((char*)spaces);
 	for (i = 0; i < limit; ++i)
 		mustshiftopt[spaces[i]] = mustshiftsafe[spaces[i]] = 0;
-	limit = strlen(optional);
+	limit = strlen((char*)optional);
 	for (i = 0; i < limit; ++i)
 		mustshiftopt[optional[i]] = 0;
-	limit = strlen(base64);
+	limit = strlen((char*)base64);
 	for (i = 0; i < limit; ++i)
 		invbase64[base64[i]] = i;
 
 	/* that's for the modified imap utf7 stuff */
-	limit = strlen(ibase64);
+	limit = strlen((char*)ibase64);
 	for (i = 0; i < limit; ++i)
 		iinvbase64[ibase64[i]] = i;
 

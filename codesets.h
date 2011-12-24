@@ -28,7 +28,7 @@ typedef unsigned char	utf8;
 struct single_convert
 {
 	unsigned char code; /* the code in this representation */
-	char utf8[8]; /* the utf8 string, first byte is alway the length of the string */
+	unsigned char utf8[8]; /* the utf8 string, first byte is always the length of the string */
 	unsigned int ucs4; /* the full 32 bit unicode */
 };
 
@@ -63,6 +63,7 @@ int utf8charpos(const utf8 *str, int pos);
 utf8 *utf8ncpy(utf8 *to, const utf8 *from, int n);
 utf8 *utf8create(void *from, char *charset);
 utf8 *utf8create_len(void *from, char *charset, int from_len);
+int utf8fromstr(char *str, struct codeset *codeset, utf8 *dest, int dest_size);
 int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset);
 char *utf8tostrcreate(utf8 *str, struct codeset *codeset);
 int utf8stricmp(const char *str1, const char *str2);

@@ -5,3 +5,5 @@ stubs.c
 test-objs
 mail_unittest
 *.o
+written.eml
+

@@ -267,83 +267,83 @@ void cleanup_threads(void)
 
 	SM_ENTER;
 
-	node = (struct thread_node*)list_first(&thread_list);
-	while (node)
-	{
-		thread_abort(node->thread);
-		node = (struct thread_node*)node_next(&node->node);
-	}
-
-	thread_m = 1UL << main_thread_port->mp_SigBit;
-	timer_m = 1UL << main_thread.timer_port->mp_SigBit;
-	timeout = NULL;
-
-	/* wait until every task has been removed */
-	while ((node = (struct thread_node*)list_first(&thread_list)))
-	{
-		struct ThreadMessage *tmsg;
-		ULONG mask;
-
-		if (!timeout)
-		{
-			if ((timeout = (struct TimerMessage*)AllocVec(sizeof(*timeout),MEMF_PUBLIC|MEMF_CLEAR)))
-			{
-				timeout->time_req = *main_thread.timer_req;
-				timeout->time_req.tr_node.io_Command = TR_ADDREQUEST;
-				timeout->time_req.tr_time.tv_secs = 0;
-				timeout->time_req.tr_time.tv_micro = 500000;
-				SendIO(&timeout->time_req.tr_node);
-
-				/* Enqueue the timer_msg in our request list */
-				AddTail((struct List*)&main_thread.timer_request_list,(struct Node*)&timeout->node);
-			}
-		}
-
-		mask = Wait(thread_m|timer_m);
-
-		if (mask & timer_m)
-		{
-			struct TimerMessage *timer;
-
-			while ((timer = (struct TimerMessage*)GetMsg(main_thread.timer_port)))
-			{
-				if (timer == timeout)
-				{
-					SM_DEBUGF(15,("Timeout occurred, aborting thread another time\n"));
-					/* time out occurred, abort the current task another time */
-					timeout = NULL;
-					thread_abort(node->thread);
-				}
-				Remove((struct Node*)&timer->node);
-				FreeVec(timer);
-			}
-		}
-
-		while ((tmsg = (struct ThreadMessage *)GetMsg(main_thread_port)))
-		{
-			if (tmsg->startup)
-				thread_remove(tmsg);
-			else
-			{
-				SM_DEBUGF(10,("Got non startup message (async=%ld)\n",tmsg->async));
-
-				if (!tmsg->async)
-				{
-					tmsg->called = 0;
-					ReplyMsg(&tmsg->msg);
-				} else
-				{
-					FreeVec(tmsg);
-				}
-			}
-		}
-	}
-
-	SM_DEBUGF(15,("Zero subthreads left\n"));
-	thread_cleanup_timer(thread_get());
-
 	if (main_thread_port)
 	{
+		node = (struct thread_node*)list_first(&thread_list);
+		while (node)
+		{
+			thread_abort(node->thread);
+			node = (struct thread_node*)node_next(&node->node);
+		}
+
+		thread_m = 1UL << main_thread_port->mp_SigBit;
+		timer_m = 1UL << main_thread.timer_port->mp_SigBit;
+		timeout = NULL;
+
+		/* wait until every task has been removed */
+		while ((node = (struct thread_node*)list_first(&thread_list)))
+		{
+			struct ThreadMessage *tmsg;
+			ULONG mask;
+
+			if (!timeout)
+			{
+				if ((timeout = (struct TimerMessage*)AllocVec(sizeof(*timeout),MEMF_PUBLIC|MEMF_CLEAR)))
+				{
+					timeout->time_req = *main_thread.timer_req;
+					timeout->time_req.tr_node.io_Command = TR_ADDREQUEST;
+					timeout->time_req.tr_time.tv_secs = 0;
+					timeout->time_req.tr_time.tv_micro = 500000;
+					SendIO(&timeout->time_req.tr_node);
+
+					/* Enqueue the timer_msg in our request list */
+					AddTail((struct List*)&main_thread.timer_request_list,(struct Node*)&timeout->node);
+				}
+			}
+
+			mask = Wait(thread_m|timer_m);
+
+			if (mask & timer_m)
+			{
+				struct TimerMessage *timer;
+
+				while ((timer = (struct TimerMessage*)GetMsg(main_thread.timer_port)))
+				{
+					if (timer == timeout)
+					{
+						SM_DEBUGF(15,("Timeout occurred, aborting thread another time\n"));
+						/* time out occurred, abort the current task another time */
+						timeout = NULL;
+						thread_abort(node->thread);
+					}
+					Remove((struct Node*)&timer->node);
+					FreeVec(timer);
+				}
+			}
+
+			while ((tmsg = (struct ThreadMessage *)GetMsg(main_thread_port)))
+			{
+				if (tmsg->startup)
+					thread_remove(tmsg);
+				else
+				{
+					SM_DEBUGF(10,("Got non startup message (async=%ld)\n",tmsg->async));
+
+					if (!tmsg->async)
+					{
+						tmsg->called = 0;
+						ReplyMsg(&tmsg->msg);
+					} else
+					{
+						FreeVec(tmsg);
+					}
+				}
+			}
+		}
+
+		SM_DEBUGF(15,("Zero subthreads left\n"));
+		thread_cleanup_timer(thread_get());
+
 		DeleteMsgPort(main_thread_port);
 		main_thread_port = NULL;
 	}

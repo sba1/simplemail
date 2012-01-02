@@ -21,7 +21,7 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 OPTIMIZE = -O3 -mcpu=750 -mmultiple
 DEBUG = -g -DNDEBUG
 INC = -I. -I./indep-include -I./amiga-mui
-CFLAGS = -noixemul $(DATE) -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
+CFLAGS = -noixemul $(DATE) -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -D__MORPHOS_SHAREDLIBS -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
 #CFLAGS += -DUSE_AMISSL3
 
 # Flags passed to gcc during linking
@@ -31,7 +31,7 @@ LINK = -noixemul -nostdlib -nostartfiles
 TARGET = SimpleMail
 
 # Additional linker libraries
-LIBS = -ldebug -lexpat -lc -labox -laboxstubs
+LIBS = -ldebug -lc -labox -laboxstubs
 
 # Version of the binary to build
 VERSION = 0

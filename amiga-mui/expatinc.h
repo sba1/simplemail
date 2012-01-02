@@ -1,7 +1,7 @@
 /* This file includes the amiga specific expat files so
    expat using is transparent */
 
-#if defined(__AROS__) || defined(__AMIGAOS4__) || defined(__amigaos4__)
+#if defined(__AROS__) || defined(__AMIGAOS4__) || defined(__amigaos4__) || defined(__MORPHOS__)
 #include <expat.h>
 #else
 #include <exec/types.h>

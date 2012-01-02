@@ -969,15 +969,17 @@ struct EmulLibEntry muiDispatcherEntry =
 *********************/
 
 #include <emul/emulregs.h>
+#include <clib/debug_protos.h>
+
 #include "expatinc.h"
 
 void xml_start_tag(void *, const char *, const char **);
 
 static void xml_start_tag_gate(void)
 {
-	void *data        = ((void **)       REG_A7)[1];
-	char *el          = ((char **)       REG_A7)[2];
-	const char **attr = ((const char ***)REG_A7)[3];
+	void *data        = (void *)       ((ULONG *)REG_A7)[1];
+	char *el          = (char *)       ((ULONG *)REG_A7)[2];
+	const char **attr = (const char **)((ULONG *)REG_A7)[3];
 
 	xml_start_tag(data, el, attr);
 }
@@ -991,8 +993,8 @@ void xml_end_tag(void *, const char *);
 
 static void xml_end_tag_gate(void)
 {
-	void *data = ((void **)REG_A7)[1];
-	char *el   = ((char **)REG_A7)[2];
+	void *data = (void *)((ULONG *)REG_A7)[1];
+	char *el   = (char *)((ULONG *)REG_A7)[2];
 
 	xml_end_tag(data, el);
 }
@@ -1006,9 +1008,9 @@ void xml_char_data(void *, const XML_Char *, int);
 
 static void xml_char_data_gate(void)
 {
-	void *data  = ((void **)    REG_A7)[1];
-	XML_Char *s = ((XML_Char **)REG_A7)[2];
-	int len     = ((int *)      REG_A7)[3];
+	void *data  = (void *)    ((ULONG *)REG_A7)[1];
+	XML_Char *s = (XML_Char *)((ULONG *)REG_A7)[2];
+	int len     = (int)       ((ULONG *)REG_A7)[3];
 
 	xml_char_data(data, s, len);
 }
@@ -1017,4 +1019,3 @@ struct EmulLibEntry xml_char_data_trap =
 {
 	TRAP_LIB, 0, (void (*)(void)) xml_char_data_gate
 };
-

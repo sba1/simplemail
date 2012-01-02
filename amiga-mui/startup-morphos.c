@@ -969,7 +969,6 @@ struct EmulLibEntry muiDispatcherEntry =
 *********************/
 
 #include <emul/emulregs.h>
-#include <clib/debug_protos.h>
 
 #include "expatinc.h"
 

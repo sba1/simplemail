@@ -30,7 +30,7 @@ STRIP  = $(CROSS_COMPILE)strip
 OPTIMIZE = -O3
 DEBUG = -g #-ggdb # -g -DDEBUG
 INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = $(DATE) -DHAVE_OPENURL -DUSE_AMISSL3 -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
+CFLAGS = $(DATE) -DHAVE_OPENURL -DUSE_AMISSL3 -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing -Wno-deprecated-declarations $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
 LINK = -nostartfiles -L "$(EXPAT_LIB)" -mcrt=clib2

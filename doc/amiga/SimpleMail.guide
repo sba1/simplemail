@@ -1433,7 +1433,7 @@ body. If you try reading some HTML mail, only if the FROM: address of the
 message is mentioned here, the built-in SimpleHTML engine will try to
 download images, and of course only if you are online at the time.
 
-  Example:  sebauer@t-online.de
+  Example:  sebauer\@t-online.de
 
   (SimpleMail will only try to download & show images in HTML mail coming
   from this address).
@@ -1724,9 +1724,9 @@ exactly match the string you typed in (case [in]sensitive depending on the
    Sender      contains                sebauer
                Substring [x]  Case sensitive [ ]  Pattern [ ]
 
-   Will match: Sebatian Bauer <sebauer@example.com>
-               franz.klausebauerling@example.com
-               nobody@strassebauer.example.com
+   Will match: Sebatian Bauer <sebauer\@example.com>
+               franz.klausebauerling\@example.com
+               nobody\@strassebauer.example.com
 
 
    Subject     contains                simplemail-usr
@@ -1739,8 +1739,8 @@ exactly match the string you typed in (case [in]sensitive depending on the
    Header      Reply-To       matches       plemail-(usr|dev)
                Substring [x]  Case sensitive [ ]  Pattern [x]
 
-   Will match: plemail-usr@example.com
-               plemail-developer@example.com
+   Will match: plemail-usr\@example.com
+               plemail-developer\@example.com
 
 
    Status is   Replied
@@ -1796,7 +1796,7 @@ The main window for the address book looks like this:
    .--------------------------------------------------------------------.
    | Name      | Alias        | Description       | Address             |
    |-----------|--------------|-------------------|---------------------|
-   | Sebastian | sba          | SimpleMail author | sebauer@t-online.de |
+   | Sebastian | sba          | SimpleMail author | sebauer\@t-online.de |
    |           |              |                   |                     |
    |           |              |                   |                     |
    |           |              |                   |                     |
@@ -2464,7 +2464,7 @@ Sets the subject for the new message.
 
   Examples:
 
-    SimpleMail MAILTO mail@sebastianbauer.info SUBJECT "SimpleMail is cool!"
+    SimpleMail MAILTO mail\@sebastianbauer.info SUBJECT "SimpleMail is cool!"
     SimpleMail MAILTO "Hynek Schlawack" SUBJECT "A love letter for you :)"
     SimpleMail MAILTO "Sebastian Bauer, Hynek Schlawack" SUBJECT Wonderful!
 
@@ -2866,32 +2866,6 @@ GETMAILSTAT
      <STEM>TOTAL     - total of mails in the folder
      <STEM>NEW       - number of new mails
      <STEM>UNREAD    - number of unread mails
-
-@{b}NOTES@{ub}
-
-@{b}EXAMPLE@{ub}
-
-@{b}BUGS@{ub}
-
-@{b}SEE ALSO@{ub}
-
-@ENDNODE
-@NODE "RX_GETSELECTED" "ARexx command: GETSELECTED"
-
-GETSELECTED
------------
-
-@{b}NAME@{ub}
-     GetSelected -- Get the index of the selected mails
-
-@{b}TEMPLATE@{ub}
-     VAR/K,STEM/K
-
-@{b}FUNCTION@{ub}
-
-@{b}INPUTS@{ub}
-
-@{b}RETURNS@{ub}
 
 @{b}NOTES@{ub}
 
@@ -4129,7 +4103,7 @@ the SourceForge site. See the @{" Authors " LINK "INFO"} chapter for more info.
 
 Well, I (David) used YAM.guide as <ahem> inspiration. Why should I
 reinvent something so well done? :) Feel free to send suggestions to
-david@saug.org
+david\@saug.org
 
 
 - This FAQ does not resolve my problem.

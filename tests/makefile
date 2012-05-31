@@ -19,7 +19,7 @@ test-objs/%.o: %.c
 all: dirs $(TESTEXES) memleaks
 
 dirs:
-	-mkdir test-objs
+	mkdir -p test-objs
 
 mail_unittest: test-objs/mail_unittest.o $(OBJS)
 	-@gcc test-objs/mail_unittest.o $(OBJS) $(CFLAGS) -lcunit 2>test-objs/error

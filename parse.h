@@ -33,7 +33,11 @@
 
 /* some string functions, should be in strings.c or simliar */
 char *strdupcat(const char *string1, const char *string2);
+
+#ifndef __USE_XOPEN2K8
 char *strndup(const char *str1, int n);
+#endif
+
 char *stradd(char *src, const char *str1);
 
 int needs_quotation(char *str);

@@ -51,6 +51,7 @@ char *strdupcat(const char *string1, const char *string2)
  Like strdup() but you can limit the chars. A 0 byte is guaranted.
  The string is allocated via malloc(). Should be placed otherwhere
 **************************************************************************/
+#ifndef __USE_XOPEN2K8
 char *strndup(const char *str1, int n)
 {
 	char *dest = (char*)malloc(n+1);
@@ -61,6 +62,7 @@ char *strndup(const char *str1, int n)
 	}
 	return dest;
 }
+#endif
 
 /**************************************************************************
  Adds a string (str1) to a given string src. The first string is

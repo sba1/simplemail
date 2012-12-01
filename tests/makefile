@@ -8,12 +8,13 @@ CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp
 
 TESTEXES=\
-	mail_unittest
+	mail_unittest \
+	support_indep_unittest
 
 test-objs/%.o: ../%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-test-objs/%.o: %.c
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 all: dirs $(TESTEXES) memleaks
@@ -21,13 +22,19 @@ all: dirs $(TESTEXES) memleaks
 dirs:
 	mkdir -p test-objs
 
-mail_unittest: test-objs/mail_unittest.o $(OBJS)
-	-@gcc test-objs/mail_unittest.o $(OBJS) $(CFLAGS) -lcunit 2>test-objs/error
-	perl gen-stubs.pl <test-objs/error >stubs.c
-	gcc stubs.c test-objs/mail_unittest.o $(OBJS) $(CFLAGS) -lcunit -o $@
+mail_unittest: mail_unittest.o $(OBJS)
+	-gcc $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
+	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
+	gcc $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
+
+support_indep_unittest: support_indep_unittest.o $(OBJS)
+	-gcc $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
+	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
+	gcc $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
 
 memleaks:
 	valgrind ./mail_unittest
+	valgrind ./support_indep_unittest
 
 clean:
-	-rm -Rf test-objs
+	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))

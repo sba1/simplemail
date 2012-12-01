@@ -1,9 +1,10 @@
 .DAV
 a.out
 error
-stubs.c
+*stubs.c
 test-objs
 mail_unittest
+support_indep_unittest
 *.o
 written.eml
 

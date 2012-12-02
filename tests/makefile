@@ -1,3 +1,7 @@
+#
+# Makefile for the tests.
+#
+
 include ../common-sources.mk
 
 SRCS = $(addprefix ../,$(NONARCHSRCS))
@@ -17,24 +21,19 @@ test-objs/%.o: ../%.c
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# General rule to compile the unit tests
+%_unittest: %_unittest.c $(OBJS)
+	@-$(CC) $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
+	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
+	$(CC) $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
+
 all: dirs $(TESTEXES) memleaks
 
 dirs:
 	mkdir -p test-objs
 
-mail_unittest: mail_unittest.o $(OBJS)
-	-gcc $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
-	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	gcc $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
-
-support_indep_unittest: support_indep_unittest.o $(OBJS)
-	-gcc $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
-	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	gcc $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
-
 memleaks:
-	valgrind ./mail_unittest
-	valgrind ./support_indep_unittest
+	$(foreach TESTEXE,$(TESTEXES), valgrind ./$(TESTEXE);)
 
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))

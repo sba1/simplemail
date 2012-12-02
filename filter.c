@@ -232,9 +232,11 @@ struct filter *filter_duplicate(struct filter *filter)
 	return f;
 }
 
-/**************************************************************************
- Dispose the filter
-**************************************************************************/
+/**
+ * Disposes the filter and all associated rules.
+ *
+ * @param f
+ */
 void filter_dispose(struct filter *f)
 {
 	struct filter_rule *rule;
@@ -248,9 +250,13 @@ void filter_dispose(struct filter *f)
 	free(f);
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Creates and adds a rule of the given type to the given filter.
+ *
+ * @param filter
+ * @param type
+ * @return
+ */
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 {
 	struct filter_rule *rule = (struct filter_rule*)malloc(sizeof(struct filter_rule));
@@ -264,9 +270,11 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 	return rule;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Remove the rule from its filter.
+ *
+ * @param fr
+ */
 void filter_remove_rule(struct filter_rule *fr)
 {
 	if (fr)

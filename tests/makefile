@@ -27,13 +27,17 @@ test-objs/%.o: ../%.c
 	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
 	$(CC) $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
 
+.PHONY: all
 all: dirs $(TESTEXES) memleaks
 
+.PHONY: dirs
 dirs:
 	mkdir -p test-objs
 
+.PHONY: memleaks
 memleaks:
 	$(foreach TESTEXE,$(TESTEXES), valgrind ./$(TESTEXE);)
 
+.PHONY: clean
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))

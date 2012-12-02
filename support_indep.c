@@ -478,7 +478,7 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	 * The method that is used here to solve the problem is based on suffix
 	 * array. Basically, at first all strings are concatenated. Then the
 	 * suffixes of this string are sorted. We then traverse over the sorted
-	 * suffixes and determine common prefixes, for each tuple that holds a suffix
+	 * suffixes and determine common prefixes, for each tuple that holds suffixes
 	 * stemming from all the different strings. A longest common prefix of these
 	 * suffixes is than equivalent to a longest common substring.
 	 *

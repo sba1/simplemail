@@ -33,14 +33,69 @@ int clean_suite1(void)
 	return 0;
 }
 
-void test_LONGEST_COMMON_SUBSTRING(void)
+/********************************************************/
+
+void test_LONGEST_COMMON_PREFIX(void)
 {
+	char *str[] =
+	{
+			"abcde",
+			"abcdf",
+			"abcf"
+	};
+
+	char *str2[] =
+	{
+			"abcd",
+			"efgh",
+			"ijkl"
+	};
+
+	CU_ASSERT(longest_common_prefix(str, 3) == 3);
+	CU_ASSERT(longest_common_prefix(NULL, 0) == 0);
+	CU_ASSERT(longest_common_prefix(str, 1) == 5);
+	CU_ASSERT(longest_common_prefix(str2, 3) == 0);
 }
 
-void test_MAIL_COMPOSE_NEW(void)
+/********************************************************/
+
+void test_LONGEST_COMMON_SUBSTRING(void)
 {
-//	CU_ASSERT(mail_compose_new(&comp,0) != 0);
+	char *str[] =
+	{
+			"aaabbbcccdddeeefffaaa",
+			"aaadddeeefffggg",
+			"ddddddeeefffggg"
+	};
+	char *str2[] =
+	{
+			"aaabbbcccdddxeeefffaaa",
+			"aaadddeeefffggg",
+			"ddddddeeefffggg"
+	};
+	char *str3[] =
+	{
+			"abcdef",
+			"gggggg",
+			"hijkl"
+	};
+	int len = 0;
+	int pos_in_a = 0;
+
+	longest_common_substring(str, 3, &pos_in_a, &len);
+	CU_ASSERT(len == 9);
+	CU_ASSERT(pos_in_a == 9);
+
+	longest_common_substring(str2, 3, &pos_in_a, &len);
+	CU_ASSERT(len == 6);
+	CU_ASSERT(pos_in_a == 13);
+
+	longest_common_substring(str3, 3, &pos_in_a, &len);
+	CU_ASSERT(len == 0);
+
 }
+
+/********************************************************/
 
 int main()
 {
@@ -58,8 +113,9 @@ int main()
 	}
 
 	/* add the tests to the suite */
-	if ((NULL == CU_add_test(pSuite, "test of longest_common_substring()", test_LONGEST_COMMON_SUBSTRING)) ||
-	    1)
+	if ((NULL == CU_add_test(pSuite, "test of longest_common_prefix()", test_LONGEST_COMMON_PREFIX)) ||
+		(NULL == CU_add_test(pSuite, "test of longest_common_substring()", test_LONGEST_COMMON_SUBSTRING)) ||
+	    0)
 	{
 		CU_cleanup_registry();
 		return CU_get_error();

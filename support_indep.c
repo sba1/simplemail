@@ -380,9 +380,12 @@ int mydeletedir(const char *path)
 	return 1;
 }
 
-/**************************************************************************
- Wraps a text. Overwrites the argument!!
-**************************************************************************/
+/**
+ * Wraps a text at the given border
+ *
+ * @param text defines the text which should be wrapped. The contents is overwritten.
+ * @param border
+ */
 void wrap_text(char *text, int border)
 {
 	unsigned char *buf = (unsigned char*)text;
@@ -421,6 +424,175 @@ void wrap_text(char *text, int border)
 		pos++;
 		buf++;
 	}
+}
+
+static int qsort_str_callback(const void *a, const void *b)
+{
+    return strcmp((const char *)*(char **)a, (const char *)*(char **)b);
+}
+
+/**
+ * Determine the longest common prefix of the given strings.
+ *
+ * @param strings
+ * @param num
+ * @return
+ */
+int longest_common_prefix(const char **strings, int num)
+{
+	int p = 0;
+
+	if (num < 1)
+		return 0;
+
+	while (1)
+	{
+		int i;
+
+		char c = strings[0][p];
+		if (!c) break;
+
+		for (i=1;i<num;i++)
+		{
+			if (strings[i][p] != c)
+				return p;
+		}
+		p++;
+	}
+
+	return p;
+}
+
+/**
+ * Returns the common longest substring of the given num strings.
+ *
+ * @param strings an array of strings
+ * @param number of strigs within the array
+ * @param pos_in_a where the position of the substring with respect to a is stored
+ * @param len where the length of a longest common substring is stored.
+ * @return 1 when successful
+ */
+int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, int *len_ptr)
+{
+	/*
+	 * The method that is used here to solve the problem is based on suffix
+	 * array. Basically, at first all strings are concatenated. Then the
+	 * suffixes of this string are sorted. We then traverse over the sorted
+	 * suffixes and determine common prefixes, for each tuple that holds a suffix
+	 * stemming from all the different strings. A longest common prefix of these
+	 * suffixes is than equivalent to a longest common substring.
+	 *
+	 * The idea for the implementation has been come from:
+	 *
+	 *  http://www.roman10.net/suffix-array-part-3-longest-common-substring-lcs/
+	 *
+	 * Note that sorting etc. could be improved.
+	 */
+
+	int rc;
+	int i,j,k;
+	int lcs = 0;
+	int pos_in_a = 0;
+	int total_len = 0;
+
+	char **sp;
+	char *s;
+
+	int starts[num];
+
+	for (i=0;i<num;i++)
+		total_len += strlen(strings[i]);
+	total_len++;
+
+	/* Allocate memory */
+	if (!(sp = (char**)malloc(sizeof(char*)*total_len)))
+		return 0;
+	if (!(s = (char*)malloc(sizeof(char)*total_len)))
+	{
+		free(sp);
+		return 0;
+	}
+
+	/* Build the big string s, it will be 0-terminated */
+	s[0] = 0;
+	for (i=0;i<num;i++)
+	{
+		starts[i] = strlen(s);
+		strcat(s,strings[i]);
+	}
+
+	/* Every suffix is represented by a pointer which is set to the first character
+	 * of the pointer */
+	for (i=0;i<total_len;i++)
+		sp[i] = &s[i];
+
+	/* Sort suffixes (=the pointers) */
+	qsort(sp, total_len, sizeof(char *), qsort_str_callback);
+
+	rc = 0;
+
+	for (i=0;i<total_len - num;i++)
+	{
+		int from_different_strings = 1;
+
+		char encountered[num];
+		memset(encountered,0,num*sizeof(char));
+
+		for (j=0;j<num;j++)
+		{
+			int k;
+
+			/* Relative position of the suffix within our big string s */
+			int p = sp[i+j]-s;
+
+			/* To which string belongs the suffix? */
+			for (k=1;k<num;k++)
+				if (p < starts[k])
+					break;
+			k--;
+
+			if (k >= num)
+				goto out;
+
+			/* Mark string as encountered. If already encountered, we
+			 * can leave the loop and conclude that at least two suffixes
+			 * must be from the same string */
+			if (encountered[k])
+			{
+				from_different_strings = 0;
+				break;
+			}
+			encountered[k] = 1;
+		}
+
+		if (from_different_strings)
+		{
+			int lcp;
+
+			/* It's clear now that subsequent sorted suffixes are all from
+			 * different strings, thus we can determine the longest
+			 * common prefix.
+			 */
+
+			lcp = longest_common_prefix(&sp[i],num);
+
+			/* Remember it, if it is larger than a previous common prefix */
+			if (lcp > lcs)
+			{
+				pos_in_a = sp[i]-s;
+				lcs = lcp;
+			}
+		}
+	}
+
+	*pos_in_a_ptr = pos_in_a;
+	*len_ptr = lcs;
+	rc = 1;
+
+out:
+	free(sp);
+	free(s);
+	return rc;
 }
 
 /**************************************************************************

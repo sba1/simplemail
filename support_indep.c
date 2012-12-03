@@ -575,11 +575,15 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 			 */
 
 			lcp = longest_common_prefix(&sp[i],num);
-
 			/* Remember it, if it is larger than a previous common prefix */
 			if (lcp > lcs)
 			{
-				pos_in_a = sp[i]-s;
+				for (j=0;j<num-1;j++)
+				{
+					if (sp[i+j]-s < starts[1])
+						break;
+				}
+				pos_in_a = sp[i+j]-s;
 				lcs = lcp;
 			}
 		}

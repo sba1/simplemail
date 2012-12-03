@@ -79,6 +79,12 @@ void test_LONGEST_COMMON_SUBSTRING(void)
 			"gggggg",
 			"hijkl"
 	};
+	char *str4[]={
+			"[simplemail] test1",
+			"[simplemail] test2",
+			"Re: [simplemail] test2",
+			"[simplemail] Re: test2"};
+
 	int len = 0;
 	int pos_in_a = 0;
 
@@ -93,6 +99,9 @@ void test_LONGEST_COMMON_SUBSTRING(void)
 	longest_common_substring(str3, 3, &pos_in_a, &len);
 	CU_ASSERT(len == 0);
 
+	longest_common_substring(str4, 4, &pos_in_a, &len);
+	CU_ASSERT(len == 13);
+	CU_ASSERT(pos_in_a == 0);
 }
 
 /********************************************************/

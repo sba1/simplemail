@@ -13,6 +13,7 @@ CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk \
 
 TESTEXES=\
 	mail_unittest \
+	filter_unittest \
 	support_indep_unittest
 
 test-objs/%.o: ../%.c

@@ -128,6 +128,8 @@ void filter_init_rule(struct filter_rule_parsed *p, char *str, int flags);
 int filter_match_rule_len(struct filter_rule_parsed *p, char *str, int strl, int flags);
 
 struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
+void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text);
+struct filter_rule *filter_rule_create_from_strings(char **strings, int num_strings, int flags);
 struct filter_rule *filter_find_rule(struct filter *filter, int num);
 char *filter_get_rule_string(struct filter_rule *rule);
 void filter_remove_rule(struct filter_rule *fr);

@@ -271,6 +271,94 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 }
 
 /**
+ * Adds the copy of the given text to the filter rule if rule
+ * is a text rule.
+ *
+ * @param r
+ * @param text
+ */
+void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text)
+{
+	char ***dst;
+
+	switch (fr->type)
+	{
+		case	RULE_FROM_MATCH: dst = &fr->u.from.from; break;
+		case	RULE_RCPT_MATCH: dst = &fr->u.rcpt.rcpt; break;
+		case	RULE_SUBJECT_MATCH: dst = &fr->u.subject.subject; break;
+		case	RULE_HEADER_MATCH: dst = &fr->u.header.contents; break;
+
+		default:
+				dst = NULL;
+				break;
+	}
+
+	if (dst)
+		*dst = array_add_string(*dst,text);
+	else
+	{
+		if (fr->type == RULE_BODY_MATCH)
+		{
+			if (fr->u.body.body) free(fr->u.body.body);
+			fr->u.body.body = mystrdup(text);
+		}
+	}
+}
+
+/**
+ * Create a filter rule that matches the given set of strings.
+ *
+ * @param strings
+ * @param num_strings
+ * @param flags
+ * @return
+ */
+struct filter_rule *filter_rule_create_from_strings(char **strings, int num_strings, int type)
+{
+	int pos_in_a;
+	int len;
+
+	struct filter_rule *rule;
+
+	char *common_text;
+
+	switch (type)
+	{
+		case	RULE_FROM_MATCH:
+		case	RULE_RCPT_MATCH:
+		case	RULE_SUBJECT_MATCH:
+		case	RULE_HEADER_MATCH:
+		case	RULE_ATTACHMENT_MATCH:
+		case	RULE_BODY_MATCH:
+				break;
+
+		default:
+				/* Unsupported rule */
+				SM_DEBUGF(10,("Unsupported type for string rule\n"));
+				return NULL;
+	}
+
+	if (!(longest_common_substring((const char**)strings,num_strings,&pos_in_a,&len)))
+		return NULL;
+
+	if (!(rule = (struct filter_rule*)malloc(sizeof(struct filter_rule))))
+		return NULL;
+
+	memset(rule, 0, sizeof(struct filter_rule));
+	rule->type = type;
+
+	if (!(common_text = mystrndup(&strings[0][pos_in_a],len)))
+		return NULL;
+
+	printf("common=%s\n",common_text);
+	filter_rule_add_copy_of_string(rule,common_text);
+
+	free(common_text);
+
+	return rule;
+}
+
+/**
  * Remove the rule from its filter.
  *
  * @param fr
@@ -320,6 +408,7 @@ struct filter_rule *filter_find_rule(struct filter *filter, int num)
 {
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
 }
+
 
 #if 0
 /**************************************************************************

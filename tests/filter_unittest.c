@@ -37,6 +37,8 @@ int clean_suite1(void)
 
 void test_filter_rule_create_from_strings(void)
 {
+	struct filter *f;
+
 	char *subjects[]={
 			"[simplemail] test1",
 			"[simplemail] test2",
@@ -50,10 +52,18 @@ void test_filter_rule_create_from_strings(void)
 	CU_ASSERT(fr != NULL);
 	CU_ASSERT(fr->type == RULE_SUBJECT_MATCH);
 	CU_ASSERT(fr->u.subject.subject != NULL);
-	CU_ASSERT(strcmp(fr->u.subject.subject,"[simplemail] ")==NULL);
+	CU_ASSERT(strcmp(fr->u.subject.subject[0],"[simplemail] ")==NULL);
+
+	f = filter_create();
+	CU_ASSERT(f != NULL);
+
+	filter_add_rule(f,fr);
+
+	filter_dispose(f);
 }
 
 /********************************************************/
+
 
 int main()
 {

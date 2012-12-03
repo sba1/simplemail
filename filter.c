@@ -39,9 +39,11 @@ char *get_config_item(char *buf, char *item); /* configuration.c */
 /* Duplicates a config string and converts it to utf8 if not already done */
 char *dupconfigstr(char *str, int utf8);
 
-/**************************************************************************
- Creates a new filter instance with default values
-**************************************************************************/
+/**
+ * Creates a new filter instance with default values.
+ *
+ * @return
+ */
 struct filter *filter_create(void)
 {
 	struct filter *f = malloc(sizeof(struct filter));
@@ -154,9 +156,9 @@ void filter_parse_filter_rules(struct filter *f)
 	}
 }
 
-/**************************************************************************
- Parse the pattern of all filters.
-**************************************************************************/
+/**
+ * Preparse the pattern of all filters.
+ */
 void filter_parse_all_filters(void)
 {
 	struct filter *f = filter_list_first();
@@ -167,9 +169,12 @@ void filter_parse_all_filters(void)
 	}
 }
 
-/**************************************************************************
- Duplicates a filter instance
-**************************************************************************/
+/**
+ * Duplicates a filter instance.
+ *
+ * @param filter
+ * @return
+ */
 struct filter *filter_duplicate(struct filter *filter)
 {
 	struct filter *f = malloc(sizeof(struct filter));
@@ -401,9 +406,13 @@ void filter_remove_rule(struct filter_rule *fr)
 	}
 }
 
-/**************************************************************************
- Find a rule of the filter
-**************************************************************************/
+/**
+ * Return the num-th rule of the given filter.
+ *
+ * @param filter
+ * @param num
+ * @return
+ */
 struct filter_rule *filter_find_rule(struct filter *filter, int num)
 {
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
@@ -446,17 +455,21 @@ char *filter_get_rule_string(struct filter_rule *rule)
 }
 #endif
 
-/**************************************************************************
- Find a action of the filter
-**************************************************************************/
+/**
+ * Returns the num-th action of the given filter.
+ *
+ * @param filter
+ * @param num
+ * @return
+ */
 struct filter_action *filter_find_action(struct filter *filter, int num)
 {
 	return (struct filter_action *)list_find(&filter->action_list,num);
 }
 
-/**************************************************************************
- Clears the filter list in the configuration
-**************************************************************************/
+/**
+ * Clear the global configuration filter list.
+ */
 void filter_list_clear(void)
 {
 	struct filter *f;
@@ -466,9 +479,11 @@ void filter_list_clear(void)
 	}
 }
 
-/**************************************************************************
- Adds a duplicate of the filter to the filter list
-**************************************************************************/
+/**
+ * Adds a duplicate of the filter to the global filter list
+ *
+ * @param f
+ */
 void filter_list_add_duplicate(struct filter *f)
 {
 	struct filter *df;
@@ -479,25 +494,32 @@ void filter_list_add_duplicate(struct filter *f)
 	}
 }
 
-/**************************************************************************
- Returs the first filter
-**************************************************************************/
+/**
+ * Get the first filter of the global filter list.
+ *
+ * @return
+ */
 struct filter *filter_list_first(void)
 {
 	return (struct filter*)list_first(&user.config.filter_list);
 }
 
-/**************************************************************************
- Returs the first filter
-**************************************************************************/
+/**
+ * Returns the next filter of the given filter.
+ *
+ * @param f
+ * @return
+ */
 struct filter *filter_list_next(struct filter *f)
 {
 	return (struct filter*)node_next(&f->node);
 }
 
-/**************************************************************************
- Returs wheather filter list contains remote filters
-**************************************************************************/
+/**
+ * Returns whether the global filter list contains any remote filters.
+ *
+ * @return
+ */
 int filter_list_has_remote(void)
 {
 	struct filter *f = filter_list_first();
@@ -509,9 +531,11 @@ int filter_list_has_remote(void)
 	return 0;
 }
 
-/**************************************************************************
- Loads the filter list from the given FILE
-**************************************************************************/
+/**
+ * Loads the filter list from the already fopen()'ed filehandle.
+ *
+ * @param fh
+ */
 void filter_list_load(FILE *fh)
 {
 	char *buf = (char*)malloc(512);
@@ -631,9 +655,12 @@ void filter_list_load(FILE *fh)
 
 #define MAKESTR(x) ((x)?(char*)(x):"")
 
-/**************************************************************************
- Saves the filter list into the given FILE
-**************************************************************************/
+/**
+ * Saves the filter list into the given handle that has been opened with
+ * fopen() before.
+ *
+ * @param fh
+ */
 void filter_list_save(FILE *fh)
 {
 	struct filter *f = filter_list_first();

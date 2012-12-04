@@ -12,6 +12,7 @@ CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 
 TESTEXES=\
+	boyermoore_unittest \
 	mail_unittest \
 	filter_unittest \
 	support_indep_unittest

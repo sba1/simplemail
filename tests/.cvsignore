@@ -3,8 +3,7 @@ a.out
 error
 *stubs.c
 test-objs
-mail_unittest
-support_indep_unittest
+*_unittest
 *.o
 written.eml
 

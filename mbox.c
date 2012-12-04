@@ -135,7 +135,7 @@ static int export_entry(struct export_data *data)
 								sm_convert_seconds(m->received,&tm);
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
 
-								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:"",date_buf);
+								fprintf(fh, "From %s %s\n",m->from_addr?m->from_addr:(utf8*)"",date_buf);
 
 								in = fopen(m->filename,"r");
 								if (in)

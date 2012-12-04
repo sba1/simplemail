@@ -55,9 +55,9 @@ struct mail_info
 	int status;						/* see below */
 	int flags;						/* see below */
 	utf8 *from_phrase;  	/* decoded "From" field, might be NULL if no phrase was defined */
-	char *from_addr;			/* the email address */
+	utf8 *from_addr;			/* the email address */
 	utf8 *to_phrase;			/* decoded "To" field, only the first address, might be NULL if no phrase was defined */
-	char *to_addr;				/* the email address, only a single one */
+	utf8 *to_addr;				/* the email address, only a single one */
 	struct list *to_list; /* a list of all TO'ed receivers (if any) */
 	struct list *cc_list; /* a list of all CC'ed receivers (if any) */
 	char *pop3_server;		/* the name of the pop3 server where the mail has been downloaded */

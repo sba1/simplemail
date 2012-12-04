@@ -1671,7 +1671,7 @@ char *mail_get_from_address(struct mail_info *mail)
 	if (buf)
 	{
 		if (mail->from_phrase) sprintf(buf,"%s <%s>", mail->from_phrase, mail->from_addr);
-		else strcpy(buf, mail->from_addr?mail->from_addr:"");
+		else strcpy(buf, mail->from_addr?mail->from_addr:(utf8*)"");
 	}
 	return buf;
 }
@@ -1685,7 +1685,7 @@ char *mail_get_to_address(struct mail_info *mail)
 	if (buf)
 	{
 		if (mail->to_phrase) sprintf(buf,"%s <%s>",mail->to_phrase,mail->to_addr);
-		else strcpy(buf,mail->to_addr?mail->to_addr:"");
+		else strcpy(buf,mail->to_addr?mail->to_addr:(utf8*)"");
 	}
 	return buf;
 }
@@ -1819,7 +1819,7 @@ int mail_process_headers(struct mail_complete *mail)
 			} else mail->info->seconds = 0;
 		} else if (!mystricmp("from",header->name))
 		{
-			extract_name_from_address(buf,&mail->info->from_phrase,&mail->info->from_addr,NULL);
+			extract_name_from_address(buf,(char**)&mail->info->from_phrase,(char**)&mail->info->from_addr,NULL);
 			/* for display optimization */
 			if (isascii7(mail->info->from_phrase)) mail->info->flags |= MAIL_FLAGS_FROM_ASCII7;
 			if (isascii7(mail->info->from_addr)) mail->info->flags |= MAIL_FLAGS_FROM_ADDR_ASCII7;
@@ -1830,7 +1830,7 @@ int mail_process_headers(struct mail_complete *mail)
 		} else if (!mystricmp("to",header->name))
 		{
 			int more;
-			extract_name_from_address(buf,&mail->info->to_phrase,&mail->info->to_addr,&more);
+			extract_name_from_address(buf,(char**)&mail->info->to_phrase,(char**)&mail->info->to_addr,&more);
 			if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
 
 			mail->info->to_list = create_address_list(buf);
@@ -1950,7 +1950,7 @@ int mail_process_headers(struct mail_complete *mail)
 			}
 		} else if (!mystricmp("content-type",header->name))
 		{
-			/* content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter) */
+			/* contentï¿½ï¿½:=ï¿½ï¿½ï¿½"Content-Type"ï¿½ï¿½":"ï¿½ï¿½typeï¿½ï¿½"/"ï¿½ï¿½subtypeï¿½ï¿½*(";" parameter) */
 
 			char *subtype = strchr(buf,'/');
 			if (subtype)

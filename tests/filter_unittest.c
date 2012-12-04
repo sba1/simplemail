@@ -52,7 +52,7 @@ void test_filter_rule_create_from_strings(void)
 	CU_ASSERT(fr != NULL);
 	CU_ASSERT(fr->type == RULE_SUBJECT_MATCH);
 	CU_ASSERT(fr->u.subject.subject != NULL);
-	CU_ASSERT(strcmp(fr->u.subject.subject[0],"[simplemail] ")==NULL);
+	CU_ASSERT(strcmp(fr->u.subject.subject[0],"[simplemail] ")==0);
 
 	f = filter_create();
 	CU_ASSERT(f != NULL);

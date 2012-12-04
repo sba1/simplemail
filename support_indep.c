@@ -438,7 +438,7 @@ static int qsort_str_callback(const void *a, const void *b)
  * @param num
  * @return
  */
-int longest_common_prefix(const char **strings, int num)
+int longest_common_prefix(char * const *strings, int num)
 {
 	int p = 0;
 

@@ -369,9 +369,9 @@ static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
 
 	if (!ret)
 	{
-		if ((ret = parse_quoted_string(word,pbuf)))
+		if ((ret = parse_quoted_string(word,(char**)pbuf)))
 		{
-			char *newbuf;
+			utf8 *newbuf;
 			if ((parse_encoded_word_utf8(*pbuf,&newbuf)))
 			{
 				*quoted = 1;
@@ -380,7 +380,7 @@ static char *parse_word_new_utf8(char *word, utf8 **pbuf, int *quoted)
 			}
 		}
 	}
-	if (!ret) ret = parse_atom(word,pbuf);
+	if (!ret) ret = parse_atom(word,(char**)pbuf);
 	return ret;
 }
 
@@ -622,7 +622,7 @@ bailout:
 **************************************************************************/
 static char *parse_group(char *group, struct parse_address *dest)
 {
-	char *ret = parse_phrase(group,&dest->group_name);
+	char *ret = parse_phrase(group,(utf8**)&dest->group_name);
 	if (!ret) return NULL;
 	ret = skip_spaces(ret);
 

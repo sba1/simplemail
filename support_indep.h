@@ -45,7 +45,7 @@ int mydeletedir(const char *path);
 
 void wrap_text(char *text, int border);
 
-int longest_common_prefix(const char **strings, int num);
+int longest_common_prefix(char * const *strings, int num);
 int longest_common_substring(const char **strings, int num, int *pos_in_a, int *len);
 
 int array_contains(char **strings, char *str);

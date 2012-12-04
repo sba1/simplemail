@@ -9,7 +9,7 @@ OBJS = $(SRCS:../%.c=test-objs/%.o)
 
 CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk \
-	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp
+	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 
 TESTEXES=\
 	mail_unittest \

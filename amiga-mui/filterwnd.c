@@ -292,7 +292,7 @@ static void filter_refresh_rules(void)
 /**************************************************************************
  Add a new rule into the filter
 **************************************************************************/
-static void filter_add_rule(void)
+static void filter_add_rule_gui(void)
 {
 	if (filter_last_selected)
 	{
@@ -598,7 +598,7 @@ static void init_filter(void)
 		DoMethod(filter_list, MUIM_Notify, MUIA_NList_Active, MUIV_EveryTime, (ULONG)filter_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_active);
 		DoMethod(filter_name_string, MUIM_Notify, MUIA_String_Contents, MUIV_EveryTime, (ULONG)filter_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_name);
 
-		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_add_rule);
+		DoMethod(filter_add_rule_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_add_rule_gui);
 		DoMethod(filter_apply_now_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)filter_wnd, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)filter_apply);
 		DoMethod(filter_move_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)filter_move_popobject, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 		DoMethod(filter_sound_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)filter_sound_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);

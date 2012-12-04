@@ -256,6 +256,17 @@ void filter_dispose(struct filter *f)
 }
 
 /**
+ * Adds the given rule to the filter.
+ *
+ * @param filter
+ * @param fr
+ */
+void filter_add_rule(struct filter *filter, struct filter_rule *fr)
+{
+	list_insert_tail(&filter->rules_list,&fr->node);
+}
+
+/**
  * Creates and adds a rule of the given type to the given filter.
  *
  * @param filter
@@ -270,7 +281,7 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type)
 		memset(rule, 0, sizeof(struct filter_rule));
 		rule->type = type;
 		rule->flags = SM_PATTERN_NOCASE|SM_PATTERN_NOPATT;
-		list_insert_tail(&filter->rules_list,&rule->node);
+		filter_add_rule(filter,rule);
 	}
 	return rule;
 }
@@ -299,8 +310,9 @@ void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text)
 	}
 
 	if (dst)
+	{
 		*dst = array_add_string(*dst,text);
-	else
+	} else
 	{
 		if (fr->type == RULE_BODY_MATCH)
 		{
@@ -355,7 +367,6 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 	if (!(common_text = mystrndup(&strings[0][pos_in_a],len)))
 		return NULL;
 
-	printf("common=%s\n",common_text);
 	filter_rule_add_copy_of_string(rule,common_text);
 
 	free(common_text);

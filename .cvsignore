@@ -45,3 +45,5 @@ sas_test_objects
 imap_unittest.debug
 imap_unittest.map
 doxygen
+build-dependencies
+.build-dependencies-done

@@ -29,7 +29,7 @@ STRIP  = $(CROSS_COMPILE)strip
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = -g #-ggdb # -g -DDEBUG
-INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I. -I./indep-include -I./amiga-mui
+INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I "$(OPENURL_INCLUDE)" -I. -I./indep-include -I./amiga-mui
 CFLAGS = $(DATE) -DHAVE_OPENURL -DUSE_AMISSL3 -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing -Wno-deprecated-declarations $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
@@ -117,8 +117,13 @@ TESTAOBJS = $(ASRCS:%.S=ppc-amigaos-test-objs/%.o)
 
 all: envs dirs $(TARGET)
 
+ifndef Kickstart
+include build-dependencies.mk
+BUILD-DEPENDENCIES = .build-dependencies-done
+endif
+
 .PHONY: envs
-envs:
+envs: $(BUILD-DEPENDENCIES)
 ifndef AMISSL_INCLUDE
 	$(error Please create a AMISSL_INCLUDE environment variable)
 endif
@@ -136,6 +141,9 @@ ifndef SDK_INCLUDE
 endif
 ifndef MUI_INCLUDE
 	$(error Please create a MUI_INCLUDE environment variable)
+endif
+ifndef OPENURL_INCLUDE
+	$(error Please create an OPENURL_INCLUDE environment variable)
 endif
 
 .PHONY: dirs

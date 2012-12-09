@@ -204,7 +204,7 @@ char *sm_get_date_str(unsigned int seconds)
 	t += mktime(&tm);
 
 	date = g_date_new();
-	g_date_set_time(date,t);
+	g_date_set_time_t(date,t);
 	g_date_strftime(buf,sizeof(buf),"%x",date);
 	g_date_free(date);
 
@@ -226,7 +226,7 @@ char *sm_get_time_str(unsigned int seconds)
 *******************************************************************/
 void sm_convert_seconds(unsigned int seconds, struct tm *tm)
 {
-	tm = NULL;
+	memset(tm,0,sizeof(*tm));
 }
 
 /******************************************************************
@@ -296,22 +296,22 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 	int i;
 	int rc;
 
-	GtkWidget *dialog1;
+	GtkDialog *dialog1;
 	GtkWidget *dialog_vbox1;
 	GtkWidget *dialog_action_area1;
 	GtkWidget *label;
 
-	dialog1 = gtk_dialog_new ();
+	dialog1 = GTK_DIALOG(gtk_dialog_new());
 	gtk_window_set_title (GTK_WINDOW (dialog1), title);
 
-	dialog_vbox1 = GTK_DIALOG (dialog1)->vbox;
+	dialog_vbox1 = gtk_dialog_get_content_area(dialog1);
 
 	label = gtk_label_new(text);
 	gtk_box_pack_start (GTK_BOX (dialog_vbox1), label, TRUE, FALSE, 0);
 	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_LEFT);
 	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
 
-	dialog_action_area1 = GTK_DIALOG (dialog1)->action_area;
+	dialog_action_area1 = gtk_dialog_get_action_area(dialog1);
 	gtk_button_box_set_layout (GTK_BUTTON_BOX (dialog_action_area1), GTK_BUTTONBOX_END);
 
 	i = 0;
@@ -338,9 +338,9 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 		buf[i++] = c;
 	}
 
-	gtk_widget_show_all(dialog1);
+	gtk_widget_show_all(GTK_WIDGET(dialog1));
 	rc = gtk_dialog_run(dialog1);
-	gtk_widget_destroy(dialog1);
+	gtk_widget_destroy(GTK_WIDGET(dialog1));
 
 	return rc;
 }
@@ -438,18 +438,20 @@ int sm_snprintf(char *buf, int n, const char *fmt, ...)
 /******************************************************************
  Tells an error message
 *******************************************************************/
-void tell_str(char *str)
+void tell_str(const char *str)
 {
 	printf("%s\n",str);
-	error_add_message(str);
+	error_add_message((char*)str);
 }
 
 /******************************************************************
  Tells an error message from a subtask
 *******************************************************************/
-void tell_from_subtask(char *str)
+void tell_from_subtask(const char *str)
 {
-	thread_call_parent_function_sync(tell_str,1,str);
+	int success;
+
+	thread_call_parent_function_sync(&success,tell_str,1,str);
 }
 
 
@@ -473,7 +475,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 {
 	int rc = 0;
 
-	char *p = buf;
+	const unsigned char *p = buf;
 	PKCS7 *pkcs7;
 
 	if ((pkcs7 = d2i_PKCS7(NULL, &p, len)))

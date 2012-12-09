@@ -22,57 +22,6 @@
 #include "stubs.c"
 #endif
 
-unsigned int sm_get_seconds(int day, int month, int year)
-{
-        struct tm tm;
-        time_t t;
-
-        if (year < 1978) return 0;
-
-        tm.tm_sec = 0;
-        tm.tm_min = 0;
-        tm.tm_hour = 0;
-        tm.tm_mday = day;
-        tm.tm_mon = month - 1;
-        tm.tm_year = year - 1900;
-        tm.tm_isdst = -1;
-
-        t = mktime(&tm);
-
-        tm.tm_sec = 0;
-        tm.tm_min = 0;
-        tm.tm_hour = 0;
-        tm.tm_mday = 1;
-        tm.tm_mon = 0;
-        tm.tm_year = 78;
-        tm.tm_isdst = 0;
-        t -= mktime(&tm);
-        return (unsigned int)t;
-}
-
-int sm_get_gmt_offset(void)
-{
-	struct timezone tz;
-	struct timeval tv;
-
-	gettimeofday(&tv,&tz);
-	return tz.tz_minuteswest;
-}
-
-unsigned int sm_get_current_seconds(void)
-{
-	struct timezone tz;
-	struct timeval tv;
-
-	gettimeofday(&tv,&tz);
-	return tv.tv_sec;
-}
-
-void sm_convert_seconds(unsigned int seconds, struct tm *tm)
-{
-	memset(tm,0,sizeof(*tm));
-}
-
 /*************************************************************/
 
 static unsigned char *filename = "test.eml";

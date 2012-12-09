@@ -4,11 +4,16 @@
 
 include ../common-sources.mk
 
-SRCS = $(addprefix ../,$(NONARCHSRCS))
+SRCS = $(addprefix ../,$(NONARCHSRCS)) ../gtk/support.c
 OBJS = $(SRCS:../%.c=test-objs/%.o)
 
+GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)
+GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
+GTK_CFLAGS  := $(shell pkg-config gtk+-3.0 --cflags) 
+GTK_LDFLAGS := $(shell pkg-config gtk+-3.0 --libs)
+
 CC = gcc
-CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk \
+CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 
 TESTEXES=\
@@ -27,14 +32,14 @@ test-objs/%.o: ../%.c
 %_unittest: %_unittest.c $(OBJS)
 	@-$(CC) $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
 	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	$(CC) $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit -o $@
+	$(CC) $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
 all: dirs $(TESTEXES) memleaks
 
 .PHONY: dirs
 dirs:
-	mkdir -p test-objs
+	mkdir -p test-objs/gtk
 
 .PHONY: memleaks
 memleaks:

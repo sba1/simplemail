@@ -527,10 +527,15 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	int pos_in_a = 0;
 	int total_len = 0;
 
-	char **sp;
-	char *s;
+	int *starts;
+	char **sp = NULL;
+	char *s = NULL;
+	char *encountered = NULL;
 
-	int starts[num];
+	if (!(starts = (int*)malloc(num*sizeof(starts[0]))))
+		return 0;
+	if (!(encountered = (char*)malloc(num*sizeof(encountered[0]))))
+		goto out;
 
 	for (i=0;i<num;i++)
 		total_len += strlen(strings[i]);
@@ -538,17 +543,15 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 
 	/* Allocate memory */
 	if (!(sp = (char**)malloc(sizeof(char*)*total_len)))
-		return 0;
+		goto out;
 	if (!(s = (char*)malloc(sizeof(char)*total_len)))
-	{
-		free(sp);
-		return 0;
-	}
+		goto out;
 
 	/* Build the big string s, it will be 0-terminated */
 	s[0] = 0;
 	for (i=0;i<num;i++)
 	{
+		Printf("%s\n",strings[i]);
 		starts[i] = strlen(s);
 		strcat(s,strings[i]);
 	}
@@ -567,7 +570,6 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	{
 		int from_different_strings = 1;
 
-		char encountered[num];
 		memset(encountered,0,num*sizeof(char));
 
 		for (j=0;j<num;j++)
@@ -627,7 +629,9 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 
 out:
 	free(sp);
+	free(encountered);
 	free(s);
+	free(starts);
 	return rc;
 }
 

@@ -9,11 +9,9 @@ OBJS = $(SRCS:../%.c=test-objs/%.o)
 
 GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)
 GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
-GTK_CFLAGS  := $(shell pkg-config gtk+-3.0 --cflags) 
-GTK_LDFLAGS := $(shell pkg-config gtk+-3.0 --libs)
 
 CC = gcc
-CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
+CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 
 TESTEXES=\
@@ -43,7 +41,7 @@ dirs:
 
 .PHONY: memleaks
 memleaks:
-	$(foreach TESTEXE,$(TESTEXES), valgrind ./$(TESTEXE);)
+	$(foreach TESTEXE,$(TESTEXES), valgrind --leak-check=full ./$(TESTEXE);)
 
 .PHONY: clean
 clean:

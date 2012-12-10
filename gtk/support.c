@@ -29,7 +29,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <glib.h>
+#ifdef HAVE_GTK_GTK_H
 #include <gtk/gtk.h>
+#endif
 #include <openssl/ssl.h>
 
 #include "errorwnd.h"
@@ -289,6 +291,7 @@ char *sm_request_file(char *title, char *path, int save, char *extension)
 *******************************************************************/
 int sm_request(char *title, char *text, char *gadgets, ...)
 {
+#ifdef HAVE_GTK_GTK_H
 	int gadno = 1;
 	char *gadget_end = gadgets;
 	char buf[200];
@@ -343,6 +346,9 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 	gtk_widget_destroy(GTK_WIDGET(dialog1));
 
 	return rc;
+#else
+	return 0;
+#endif
 }
 
 /******************************************************************

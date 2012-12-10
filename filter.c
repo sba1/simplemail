@@ -363,6 +363,7 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 
 	memset(rule, 0, sizeof(struct filter_rule));
 	rule->type = type;
+	rule->flags = SM_PATTERN_NOPATT|SM_PATTERN_SUBSTR;
 
 	if (!(common_text = mystrndup(&strings[0][pos_in_a],len)))
 		return NULL;

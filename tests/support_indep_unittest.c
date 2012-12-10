@@ -17,10 +17,12 @@
 #include <CUnit/Basic.h>
 
 #include "mail.h"
+#include "support_indep.h"
 
 /********************************************************/
 
-void test_LONGEST_COMMON_PREFIX(void)
+/* @Test */
+void test_longest_common_prefix(void)
 {
 	char *str[] =
 	{
@@ -45,27 +47,27 @@ void test_LONGEST_COMMON_PREFIX(void)
 /********************************************************/
 
 /* @Test */
-void test_LONGEST_COMMON_SUBSTRING(void)
+void test_longest_common_substring(void)
 {
-	char *str[] =
+	const char *str[] =
 	{
 			"aaabbbcccdddeeefffaaa",
 			"aaadddeeefffggg",
 			"ddddddeeefffggg"
 	};
-	char *str2[] =
+	const char *str2[] =
 	{
 			"aaabbbcccdddxeeefffaaa",
 			"aaadddeeefffggg",
 			"ddddddeeefffggg"
 	};
-	char *str3[] =
+	const char *str3[] =
 	{
 			"abcdef",
 			"gggggg",
 			"hijkl"
 	};
-	char *str4[]={
+	const char *str4[]={
 			"[simplemail] test1",
 			"[simplemail] test2",
 			"Re: [simplemail] test2",
@@ -88,4 +90,30 @@ void test_LONGEST_COMMON_SUBSTRING(void)
 	longest_common_substring(str4, 4, &pos_in_a, &len);
 	CU_ASSERT(len == 13);
 	CU_ASSERT(pos_in_a == 0);
+}
+
+
+/********************************************************/
+
+/* @Test */
+void test_array_sort(void)
+{
+	char **a = NULL;
+
+	array_sort_uft8(a);
+
+	a = array_add_string(a,"zfc");
+	CU_ASSERT(a != NULL);
+	a = array_add_string(a,"abd");
+	CU_ASSERT(a != NULL);
+	a = array_add_string(a,"afc");
+	CU_ASSERT(a != NULL);
+
+	array_sort_uft8(a);
+
+	CU_ASSERT(!strcmp(a[0],"abd"));
+	CU_ASSERT(!strcmp(a[1],"afc"));
+	CU_ASSERT(!strcmp(a[2],"zfc"));
+
+	array_free(a);
 }

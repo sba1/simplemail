@@ -458,7 +458,14 @@ void wrap_text(char *text, int border)
 	}
 }
 
-static int qsort_str_callback(const void *a, const void *b)
+/**
+ * Callback for qsort() using strcmp().
+ *
+ * @param a
+ * @param b
+ * @return
+ */
+static int qsort_strcmp_callback(const void *a, const void *b)
 {
     return strcmp((const char *)*(char **)a, (const char *)*(char **)b);
 }
@@ -561,7 +568,7 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 		sp[i] = &s[i];
 
 	/* Sort suffixes (=the pointers) */
-	qsort(sp, total_len, sizeof(char *), qsort_str_callback);
+	qsort(sp, total_len, sizeof(char *), qsort_strcmp_callback);
 
 	rc = 0;
 
@@ -851,6 +858,35 @@ char **array_duplicate_parsed(char **str, int flags)
 		newpat[i] = NULL;
 	}
 	return newpat;
+}
+
+/**
+ * Callback for qsort() using utf8stricmp().
+ *
+ * @param a
+ * @param b
+ * @return
+ */
+static int qsort_utf8stricmp_callback(const void *a, const void *b)
+{
+    return utf8stricmp((const char *)*(char **)a, (const char *)*(char **)b);
+}
+
+/**
+ * Sorts the given string array in a case-insenstive manner.
+ *
+ * @param string_array
+ */
+void array_sort_uft8(char **string_array)
+{
+	int len;
+
+	len = array_length(string_array);
+
+	if (len == 0)
+		return;
+
+	qsort(string_array, len, sizeof(char *), qsort_utf8stricmp_callback);
 }
 
 /**

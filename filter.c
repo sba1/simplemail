@@ -721,7 +721,7 @@ void filter_list_save(FILE *fh)
 							{
 								char *str;
 								int k = 0;
-								while ((str = rule->u.from.from[k]))
+								while ((str = rule->u.rcpt.rcpt[k]))
 								{
 									fprintf(fh,"FILTER%d.RULE%d.Rcpt.Address=%s\n",i,j,rule->u.rcpt.rcpt[k]);
 									k++;

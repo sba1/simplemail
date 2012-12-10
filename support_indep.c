@@ -551,7 +551,6 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	s[0] = 0;
 	for (i=0;i<num;i++)
 	{
-		Printf("%s\n",strings[i]);
 		starts[i] = strlen(s);
 		strcat(s,strings[i]);
 	}

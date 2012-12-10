@@ -1164,6 +1164,65 @@ void callback_show_raw(void)
 	}
 }
 
+/**
+ * Create a subject filter from the currently selected mails
+ * and open the filter window.
+ */
+void callback_create_subject_filter(void)
+{
+	struct mail_info *mail;
+	void *handle;
+	char **subjects;
+	struct filter *f;
+	struct filter_rule *fr;
+
+	unsigned int num_of_mails = 0;
+
+	mail = main_get_mail_first_selected(&handle);
+	while (mail)
+	{
+		num_of_mails++;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!num_of_mails)
+		return;
+
+	if (!(subjects = (char**)malloc(sizeof(subjects[0])*num_of_mails)))
+		return;
+
+	num_of_mails = 0;
+	mail = main_get_mail_first_selected(&handle);
+	while (mail)
+	{
+		subjects[num_of_mails++] = mail->subject;
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!(f = filter_create()))
+		goto out;
+
+	if (!(fr = filter_rule_create_from_strings(subjects,num_of_mails,RULE_SUBJECT_MATCH)))
+		goto out;
+
+	filter_add_rule(f,fr);
+	filter_list_add_duplicate(f);
+	filter_dispose(f);
+
+	filter_open();
+out:
+	free(subjects);
+}
+
+/**
+ * Create a recipient filter from the currently selected mails
+ * and open the filter window.
+ */
+void callback_create_recipient_filter(void)
+{
+
+}
+
 /* mails should be fetched */
 void callback_fetch_mails(void)
 {

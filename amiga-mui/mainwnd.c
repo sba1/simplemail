@@ -761,6 +761,9 @@ int main_window_init(void)
 		MENU_MESSAGE_READ,
 		MENU_MESSAGE_EDIT,
 		MENU_MESSAGE_RAW,
+		MENU_MESSAGE_FILTER_SUBJECTS,
+		MENU_MESSAGE_FILTER_RECIPIENTS,
+
 		MENU_MESSAGE_MOVE,
 		MENU_MESSAGE_COPY,
 		MENU_MESSAGE_DELETE,
@@ -828,6 +831,10 @@ int main_window_init(void)
 		{NM_ITEM, N_("R:Reply..."), NULL, 0, 0, (APTR)MENU_MESSAGE_REPLY},
 		{NM_ITEM, N_("W:Forward..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FORWARD},
 		{NM_ITEM, N_("Show Raw..."), NULL, 0, 0, (APTR)MENU_MESSAGE_RAW},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Create Filter"), NULL, 0, 0, 0},
+		{NM_SUB, N_("On Subjects..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FILTER_SUBJECTS},
+		{NM_SUB, N_("On Recipients..."), NULL, 0, 0, (APTR)MENU_MESSAGE_FILTER_RECIPIENTS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("M:Move..."), NULL, 0, 0L, (APTR)MENU_MESSAGE_MOVE},
 		{NM_ITEM, N_("Copy..."), NULL, NM_ITEMDISABLED, 0L, (APTR)MENU_MESSAGE_COPY},
@@ -1106,6 +1113,9 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_READ, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_read_active_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_EDIT, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_change_mail);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_RAW, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_show_raw);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FILTER_SUBJECTS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_create_subject_filter);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_FILTER_RECIPIENTS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_create_recipient_filter);
+
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_MOVE, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_move_selected_mails);
 /*
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_MESSAGE_COPY, App, 2, MUIM_Application_ReturnID,  MUIV_Application_ReturnID_Quit);

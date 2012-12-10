@@ -57,9 +57,13 @@ int has_spaces(const char *str)
 	return 0;
 }
 
-/******************************************************************
- Compares a string case sensitive. Accepts NULL pointers
-*******************************************************************/
+/**
+ * Compares a string in a case-sensitive manner. Accepts NULL pointers
+ *
+ * @param str1
+ * @param str2
+ * @return
+ */
 int mystrcmp(const char *str1, const char *str2)
 {
 	if (!str1)
@@ -73,24 +77,33 @@ int mystrcmp(const char *str1, const char *str2)
 	return strcmp(str1,str2);
 }
 
-/**************************************************************************
- A Replacement for strncmp() as this doesn't return the same values as
- strcmp()
-**************************************************************************/
+/**
+ * A replacement for strncmp() as this doesn't return the same values as
+ * strcmp().
+ *
+ * @param str1
+ * @param str2
+ * @param len
+ * @return
+ */
 int mystrncmp(unsigned char *str1, unsigned char *str2,int len)
 {
 	while (len)
 	{
 		int d;
-		if ((d = *str1++ - *str2++)) return d;
+		if ((d = (int)*str1++ - (int)*str2++)) return d;
 		len--;
 	}
 	return 0;
 }
 
-/******************************************************************
- Compares a string case insensitive. Accepts NULL pointers
-*******************************************************************/
+/**
+ * Compares a string case insensitive. Accepts NULL pointers.
+ *
+ * @param str1
+ * @param str2
+ * @return
+ */
 int mystricmp(const char *str1, const char *str2)
 {
 	if (!str1)
@@ -107,11 +120,15 @@ int mystricmp(const char *str1, const char *str2)
 	return stricmp(str1,str2);
 #endif
 }
-
-/******************************************************************
- Compares a string case insensitive and n characters.
- Accepts NULL pointers
-*******************************************************************/
+/**
+ * Compares a string case insensitive but not more than n characters.
+ * Accepts NULL pointers
+ *
+ * @param str1
+ * @param str2
+ * @param n
+ * @return
+ */
 int mystrnicmp(const char *str1, const char *str2, int n)
 {
 	if (!n) return 0;
@@ -130,9 +147,13 @@ int mystrnicmp(const char *str1, const char *str2, int n)
 #endif
 }
 
-/**************************************************************************
- Checks if a string is inside a string (not case sensitive)
-**************************************************************************/
+/**
+ * Checks if a string is inside a string (not case sensitive).
+ *
+ * @param str1
+ * @param str2
+ * @return
+ */
 char *mystristr(const char *str1, const char *str2)
 {
 	int str2_len;
@@ -150,22 +171,13 @@ char *mystristr(const char *str1, const char *str2)
 	return NULL;
 }
 
-/******************************************************************
- returns the length of a string. Accepts NULL pointer (returns 0
- then)
-*******************************************************************/
-#if 0
-unsigned int mystrlen(const char *str)
-{
-	if (!str) return 0;
-	return strlen(str);
-}
-#endif
-
-/******************************************************************
- Duplicates a string. NULL is accepted (will return NULL).
- A null byte string will also return NULL.
-*******************************************************************/
+/**
+ * Duplicates a string. NULL is accepted (will return NULL).
+ * A null byte string will also return NULL.
+ *
+ * @param str
+ * @return
+ */
 char *mystrdup(const char *str)
 {
 	char *new_str;
@@ -221,12 +233,16 @@ size_t mystrlcpy(char *dest, const char *src, size_t n)
 	return len;
 }
 
-/**************************************************************************
- Like strcpy() but returns the end of the destianation string (mean the
- pointer to the NULL byte), after src has been copied. Useful to for
- building strings from several pieces. src might be NULL which then does
- nothing
-**************************************************************************/
+/**
+ * Like strcpy() but returns the end of the destination string (mean the
+ * pointer to the NULL byte), after src has been copied. Useful to for
+ * building strings from several pieces. src might be NULL which then does
+ * nothing
+ *
+ * @param dest
+ * @param src
+ * @return
+ */
 char *mystpcpy(char *dest, const char *src)
 {
 	if (!src) return dest;
@@ -238,9 +254,12 @@ char *mystpcpy(char *dest, const char *src)
 	return dest;
 }
 
-/**************************************************************************
- Returns the size of a given previously opened file
-**************************************************************************/
+/**
+ * Returns the size of a given previously opened file.
+ *
+ * @param file
+ * @return
+ */
 unsigned int myfsize(FILE *file)
 {
 	unsigned int size;
@@ -250,9 +269,13 @@ unsigned int myfsize(FILE *file)
 	return size;
 }
 
-/**************************************************************************
- Joins the strings with reloc and free of the old one
-**************************************************************************/
+/**
+ * Concatenates str2 to str1, and frees str1.
+ *
+ * @param str1 defines the first part of the new string. This string is freed.
+ * @param str2 defines the second part of the new string. This string is not freed.
+ * @return the newly created concatenated string.
+ */
 char *mystrcat(char *str1, char *str2)
 {
 	int len = strlen(str1) + strlen(str2) + 1;
@@ -269,10 +292,14 @@ char *mystrcat(char *str1, char *str2)
 	return rc;
 }
 
-/******************************************************************
- Compares the dates of the two files. Returns > 0 if the first arg
- is newer, 0 equal, < 0 older. Not existing files means very old.
-*******************************************************************/
+/**
+ * Compares the dates of the two files. Returns > 0 if the first arg
+ * is newer, 0 equal, < 0 older. Not existing files means very old.
+ *
+ * @param file1
+ * @param file2
+ * @return
+ */
 int myfiledatecmp(char *file1, char *file2)
 {
 	struct stat *s1 = NULL, *s2 = NULL;
@@ -299,9 +326,14 @@ int myfiledatecmp(char *file1, char *file2)
 	return rc;
 }
 
-/******************************************************************
- Copies a file to another file. Always overwrites the destname
-*******************************************************************/
+/**
+ * Copies the contents of file to another file. Always overwrites the
+ * contents of the file pointed by destname.
+ *
+ * @param sourcename
+ * @param destname
+ * @return 1 on success, 0 otherwise.
+ */
 int myfilecopy(const char *sourcename, const char *destname)
 {
 	int rc = 0;
@@ -599,25 +631,39 @@ out:
 	return rc;
 }
 
-/**************************************************************************
- Returns 1 if a given array contains a given string (case insensitive)
-**************************************************************************/
+/**
+ * Returns 1 if a given array contains a given string (case insensitive).
+ *
+ * @param strings
+ * @param str
+ * @return
+ */
 int array_contains(char **strings, char *str)
 {
 	return array_index(strings,str)!=-1;
 }
 
-/**************************************************************************
- Returns 1 if a given array contains a given utf8 string (case insensitive)
-**************************************************************************/
+/**
+ * Returns 1 if a given array contains a given utf8 string (case insensitive).
+ *
+ * @param strings
+ * @param str
+ * @return
+ */
 int array_contains_utf8(char **strings, char *str)
 {
 	return array_index_utf8(strings,str)!=-1;
 }
 
-/**************************************************************************
- Returns the index of the string within the array or -1 on failure.
-**************************************************************************/
+/**
+ * Returns the index of the string within the array or -1 on failure.
+ * The string matching function is case insensitive.
+ * Assumes 8 bit encoding.
+ *
+ * @param strings
+ * @param str
+ * @return
+ */
 int array_index(char **strings, char *str)
 {
 	int i;
@@ -629,9 +675,14 @@ int array_index(char **strings, char *str)
 	return -1;
 }
 
-/**************************************************************************
- Returns the index of the string within the array or -1 on failure.
-**************************************************************************/
+/**
+ * Returns the index of the string within the array or -1 on failure. The
+ * string matching function is case insensitive. Assumes utf8 encoding.
+ *
+ * @param strings
+ * @param str
+ * @return
+ */
 int array_index_utf8(char **strings, char *str)
 {
 	int i;
@@ -644,9 +695,15 @@ int array_index_utf8(char **strings, char *str)
 }
 
 
-/**************************************************************************
- Returns the index of the string within the array or -1 on failure.
-**************************************************************************/
+/**
+ * Replace the string in the given array at the given index with
+ * the given string. The memory of the old string is freed.
+ *
+ * @param strings defines the array in which the string should be replaced.
+ * @param idx defines the index of the to-be-replaced string.
+ * @param str the string which is going to replace the other.
+ * @return the new array or NULL.
+ */
 char **array_replace_idx(char **strings, int idx, char *str)
 {
 	char *dup = mystrdup(str);
@@ -657,9 +714,14 @@ char **array_replace_idx(char **strings, int idx, char *str)
 	return strings;
 }
 
-/**************************************************************************
- Remove the given index
-**************************************************************************/
+/**
+ * Remove the string given by the index from the given string array.
+ * Also frees the memory occupied by the removed entry.
+ *
+ * @param strings
+ * @param idx
+ * @return
+ */
 char **array_remove_idx(char **strings, int idx)
 {
 	int len = array_length(strings);
@@ -668,11 +730,15 @@ char **array_remove_idx(char **strings, int idx)
 	return strings;
 }
 
-/**************************************************************************
- Add the string str to an array. Returns the new array which must be used
- then. Use only rarly because its slow! Indented for easier creation of
- small arrays. strings might be NULL.
-**************************************************************************/
+/**
+ * Add the string str to a the given string array. Returns the new array which must
+ * be used then. Use only rarly because its slow! Indented for easier creation of
+ * small arrays. strings might be NULL.
+ *
+ * @param strings
+ * @param str
+ * @return the new array or NULL.
+ */
 char **array_add_string(char **strings, char *str)
 {
 	int length = array_length(strings);
@@ -686,12 +752,17 @@ char **array_add_string(char **strings, char *str)
 	return new_strings;
 }
 
-/**************************************************************************
- Add the string str to an array. Returns the new array which must be used
- then. Use only rarly because its slow! Indented for easier creation of
- small arrays. dest and src might be NULL. (if both are NULL NULL is
- returned). src is not touched at all.
-**************************************************************************/
+/**
+ * Add the strings of the src array to the dest array. Returns the new array
+ * which must be used then. Use only rarely because its slow! Indented for easier
+ * creation of small arrays. dest and src might be NULL. (if both are NULL,
+ * NULL is returned). While src is not touched at all, dest must not be used
+ * after the call.
+ *
+ * @param dest
+ * @param src
+ * @return the new array or NULL in case of an error.
+ */
 char **array_add_array(char **dest, char **src)
 {
 	int dest_len = array_length(dest);
@@ -712,9 +783,12 @@ char **array_add_array(char **dest, char **src)
 	return new_strings;
 }
 
-/**************************************************************************
- Returns the length of a string array (safe to call with NULL pointer)
-**************************************************************************/
+/**
+ * Returns the length of a string array (safe to call with NULL pointer).
+ *
+ * @param strings
+ * @return
+ */
 int array_length(char **strings)
 {
 	int i;
@@ -724,10 +798,12 @@ int array_length(char **strings)
 	return i;
 }
 
-/**************************************************************************
- Duplicates an array of strings. Safe to call it with a NULL pointer
- (returns NULL then)
-**************************************************************************/
+/**
+ * Duplicates an array of strings. Safe to call it with a NULL pointer.
+ *
+ * @param rcp
+ * @return the duplicated string array or NULL.
+ */
 char **array_duplicate(char **rcp)
 {
 	char **newrcp;
@@ -747,10 +823,14 @@ char **array_duplicate(char **rcp)
 	return newrcp;
 }
 
-/**************************************************************************
- Takes an array of strings and return an array of stringes parsed with
- sm_parese_pattern(). Safe to call it with a NULL pointer (returns NULL then)
-**************************************************************************/
+/**
+ * Takes an array of strings and return an array of strings parsed with
+ * sm_parese_pattern(). Safe to call it with a NULL pointer (returns NULL then)
+ *
+ * @param str
+ * @param flags
+ * @return
+ */
 char **array_duplicate_parsed(char **str, int flags)
 {
 	char **newpat;
@@ -770,9 +850,11 @@ char **array_duplicate_parsed(char **str, int flags)
 	return newpat;
 }
 
-/**************************************************************************
- Frees an array of strings. Safe to call this with NULL pointer.
-**************************************************************************/
+/**
+ * Frees an array of strings. Safe to call this with NULL pointer.
+ *
+ * @param string_array
+ */
 void array_free(char **string_array)
 {
 	char *string;
@@ -785,9 +867,14 @@ void array_free(char **string_array)
 	free(string_array);
 }
 
-/**************************************************************************
- Initialize the given string and reserve the wanted amount of memory
-**************************************************************************/
+/**
+ * Initialize the given string and reserve the requested amount of memory
+ * of the string.
+ *
+ * @param string
+ * @param size
+ * @return
+ */
 int string_initialize(string *string, unsigned int size)
 {
 	if (!size) size = 1;
@@ -799,10 +886,15 @@ int string_initialize(string *string, unsigned int size)
 	return 1;
 }
 
-/**************************************************************************
- Append the string given by appstr
- addstr maybe NULL (nothing is done in this case).
-**************************************************************************/
+/**
+ * Append the string given by appstr but not more than bytes bytes.
+ *
+ * @param string
+ * @param appstr the string to be added.
+ *
+ * @param bytes
+ * @return 1 on success, otherwise 0.
+ */
 int string_append_part(string *string, char *appstr, int bytes)
 {
 	int alloclen;
@@ -832,10 +924,13 @@ int string_append_part(string *string, char *appstr, int bytes)
 
 }
 
-/**************************************************************************
- Append the string given by appstr
- addstr maybe NULL (nothing is done in this case).
-**************************************************************************/
+/**
+ * Appends appstring to the string.
+ *
+ * @param string
+ * @param appstr
+ * @return whether successful or not.
+ */
 int string_append(string *string, char *appstr)
 {
 	if (!appstr) return 1;
@@ -854,9 +949,13 @@ int string_append_char(string *string, char c)
 	return string_append_part(string,&c,1);
 }
 
-/**************************************************************************
- Crops a given string
-**************************************************************************/
+/**
+ * Crops a given string by the given (closed interval) coordinates.
+ *
+ * @param string
+ * @param startpos
+ * @param endpos
+ */
 void string_crop(string *string, int startpos, int endpos)
 {
 	if (startpos == 0)
@@ -872,10 +971,13 @@ void string_crop(string *string, int startpos, int endpos)
 	}
 }
 
-
-/**************************************************************************
- Combines two path components. The returned string is malloc()ed
-**************************************************************************/
+/**
+ * Combines two path components and returns the result.
+ *
+ * @param drawer
+ * @param file
+ * @return the combined path allocated via malloc().
+ */
 char *mycombinepath(char *drawer, char *file)
 {
 	int len;

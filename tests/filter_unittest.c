@@ -18,11 +18,6 @@
 
 #include "filter.h"
 
-#ifdef HAVE_STUBS_C
-#include "stubs.c"
-#endif
-
-
 int init_suite1(void)
 {
 	return 0;

@@ -18,10 +18,6 @@
 
 #include "mail.h"
 
-#ifdef HAVE_STUBS_C
-#include "stubs.c"
-#endif
-
 /*************************************************************/
 
 static unsigned char *filename = "test.eml";

@@ -18,21 +18,6 @@
 
 #include "filter.h"
 
-#ifdef HAVE_STUBS_C
-#include "stubs.c"
-#endif
-
-
-int init_suite1(void)
-{
-	return 0;
-}
-
-int clean_suite1(void)
-{
-	return 0;
-}
-
 /********************************************************/
 
 static const int positions[] = {1,7,12,18,24};
@@ -44,6 +29,7 @@ int test_boyermoore_callback(char *x, unsigned int pos, void *user_data)
 	return 1;
 }
 
+/* @Test */
 void test_boyermoore(void)
 {
 	char *txt = "qhello2hellohello2hello2hello";
@@ -72,38 +58,3 @@ void test_boyermoore(void)
 
 	CU_ASSERT(current_position_idx == sizeof(positions)/sizeof(positions[0]));
 }
-
-/********************************************************/
-
-
-int main()
-{
-	CU_pSuite pSuite = NULL;
-
-	/* initialize the CUnit test registry */
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
-
-	/* add a suite to the registry */
-	if (!(pSuite = CU_add_suite("Suite_1", init_suite1, clean_suite1)))
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* add the tests to the suite */
-	if ((NULL == CU_add_test(pSuite, "test of boyermoore()", test_boyermoore)) ||
-	    0)
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_VERBOSE);
-	CU_basic_run_tests();
-	CU_cleanup_registry();
-
-	return CU_get_error();
-}
-

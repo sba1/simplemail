@@ -5,5 +5,6 @@ error
 test-objs
 *_unittest
 *.o
+*_table.c
 written.eml
 

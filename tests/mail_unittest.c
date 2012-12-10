@@ -22,17 +22,7 @@
 
 static unsigned char *filename = "test.eml";
 
-
-int init_suite1(void)
-{
-	return 0;
-}
-
-int clean_suite1(void)
-{
-	return 0;
-}
-
+/* @Test */
 void test_MAIL_INFO_CREATE_FROM_FILE(void)
 {
 	struct mail_info *m;
@@ -44,6 +34,7 @@ void test_MAIL_INFO_CREATE_FROM_FILE(void)
 	mail_info_free(m);
 }
 
+/* @Test */
 void test_MAIL_COMPOSE_NEW(void)
 {
 	FILE *fh;
@@ -62,35 +53,3 @@ void test_MAIL_COMPOSE_NEW(void)
 
 //	CU_ASSERT(mail_compose_new(&comp,0) != 0);
 }
-
-int main()
-{
-	CU_pSuite pSuite = NULL;
-
-	/* initialize the CUnit test registry */
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
-
-	/* add a suite to the registry */
-	if (!(pSuite = CU_add_suite("Suite_1", init_suite1, clean_suite1)))
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* add the tests to the suite */
-	if ((NULL == CU_add_test(pSuite, "test of mail_info_complete_create_from_file()", test_MAIL_INFO_CREATE_FROM_FILE)) ||
-	    (NULL == CU_add_test(pSuite, "test of mail_compose_new()", test_MAIL_COMPOSE_NEW)))
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-	
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_VERBOSE);
-	CU_basic_run_tests();
-	CU_cleanup_registry();
-
-	return CU_get_error();
-}
-

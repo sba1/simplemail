@@ -28,9 +28,10 @@ test-objs/%.o: ../%.c
 
 # General rule to compile the unit tests
 %_unittest: %_unittest.c $(OBJS)
-	@-$(CC) $< $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
+	perl gen-tests.pl <$< >$@_table.c
+	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
 	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	$(CC) $@stubs.c $< $(OBJS) $(CFLAGS) -lcunit $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
+	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(OBJS) $(CFLAGS) -lcunit $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
 all: dirs $(TESTEXES) memleaks

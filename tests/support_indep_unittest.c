@@ -18,16 +18,6 @@
 
 #include "mail.h"
 
-int init_suite1(void)
-{
-	return 0;
-}
-
-int clean_suite1(void)
-{
-	return 0;
-}
-
 /********************************************************/
 
 void test_LONGEST_COMMON_PREFIX(void)
@@ -54,6 +44,7 @@ void test_LONGEST_COMMON_PREFIX(void)
 
 /********************************************************/
 
+/* @Test */
 void test_LONGEST_COMMON_SUBSTRING(void)
 {
 	char *str[] =
@@ -98,38 +89,3 @@ void test_LONGEST_COMMON_SUBSTRING(void)
 	CU_ASSERT(len == 13);
 	CU_ASSERT(pos_in_a == 0);
 }
-
-/********************************************************/
-
-int main()
-{
-	CU_pSuite pSuite = NULL;
-
-	/* initialize the CUnit test registry */
-	if (CUE_SUCCESS != CU_initialize_registry())
-		return CU_get_error();
-
-	/* add a suite to the registry */
-	if (!(pSuite = CU_add_suite("Suite_1", init_suite1, clean_suite1)))
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* add the tests to the suite */
-	if ((NULL == CU_add_test(pSuite, "test of longest_common_prefix()", test_LONGEST_COMMON_PREFIX)) ||
-		(NULL == CU_add_test(pSuite, "test of longest_common_substring()", test_LONGEST_COMMON_SUBSTRING)) ||
-	    0)
-	{
-		CU_cleanup_registry();
-		return CU_get_error();
-	}
-
-	/* Run all tests using the CUnit Basic interface */
-	CU_basic_set_mode(CU_BRM_VERBOSE);
-	CU_basic_run_tests();
-	CU_cleanup_registry();
-
-	return CU_get_error();
-}
-

@@ -7,4 +7,5 @@ test-objs
 *.o
 *_table.c
 written.eml
-
+libsimplemail.a
+written2.eml

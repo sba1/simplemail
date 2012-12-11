@@ -14,6 +14,8 @@ CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 
+SIMPLEMAIL_LIB  = simplemail
+
 TESTEXES=\
 	boyermoore_unittest \
 	mail_unittest \
@@ -27,11 +29,11 @@ test-objs/%.o: ../%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # General rule to compile the unit tests
-%_unittest: %_unittest.c $(OBJS)
+%_unittest: %_unittest.c lib$(SIMPLEMAIL_LIB).a
 	perl gen-tests.pl <$< >$@_table.c
-	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(OBJS) $(CFLAGS) -lcunit 2>test-objs/$@error
+	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) 2>test-objs/$@error
 	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(OBJS) $(CFLAGS) -lcunit $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
+	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
 all: dirs $(TESTEXES) memleaks
@@ -39,6 +41,9 @@ all: dirs $(TESTEXES) memleaks
 .PHONY: dirs
 dirs:
 	mkdir -p test-objs/gtk
+
+lib$(SIMPLEMAIL_LIB).a: $(OBJS)
+	ar rcs $@ $(OBJS)
 
 .PHONY: memleaks
 memleaks:

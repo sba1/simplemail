@@ -1690,6 +1690,39 @@ char *mail_get_to_address(struct mail_info *mail)
 	return buf;
 }
 
+/**
+ * Returns all email addresses of the recipients (to and cc). Duplicates
+ * are filtered.
+ *
+ * @param mail
+ * @return
+ */
+char **mail_info_get_recipient_addresses(struct mail_info *mail)
+{
+	char **a;
+	struct address *addr;
+
+	a = NULL;
+
+	addr = (struct address*)list_first(mail->to_list);
+	while (addr)
+	{
+		if (!array_contains_utf8(a, addr->email))
+			a = array_add_string(a,addr->email);
+		addr = (struct address*)node_next(&addr->node);
+	}
+
+	addr = (struct address*)list_first(mail->cc_list);
+	while (addr)
+	{
+		if (!array_contains_utf8(a, addr->email))
+			a = array_add_string(a,addr->email);
+		addr = (struct address*)node_next(&addr->node);
+	}
+
+	return a;
+}
+
 /**************************************************************************
  Returns the first "to" name and address (name <address>) of the mail
 **************************************************************************/

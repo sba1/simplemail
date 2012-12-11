@@ -181,6 +181,7 @@ struct mail_complete *mail_get_next(struct mail_complete *m);
 int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
 char *mail_get_from_address(struct mail_info *mail);
 char *mail_get_to_address(struct mail_info *mail);
+char **mail_info_get_recipient_addresses(struct mail_info *mail);
 char *mail_get_replyto_address(struct mail_info *mail);
 void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt);
 

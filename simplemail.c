@@ -1208,7 +1208,7 @@ void callback_create_subject_filter(void)
 	mail = main_get_mail_first_selected(&handle);
 	while (mail)
 	{
-		subjects[num_of_mails++] = mail->subject;
+		subjects[num_of_mails++] = (char*)mail->subject;
 		mail = main_get_mail_next_selected(&handle);
 	}
 
@@ -1233,6 +1233,44 @@ out:
  */
 void callback_create_recipient_filter(void)
 {
+	int i;
+	struct mail_info *mail;
+	void *handle;
+	char ***recipients;
+	struct filter *f;
+	struct filter_rule *fr;
+	unsigned int num_of_mails;
+
+	if (!(num_of_mails = simplemail_get_num_of_selected_mails()))
+		return;
+
+	if (!(recipients = (char***)malloc(sizeof(recipients[0])*num_of_mails)))
+		return;
+
+	num_of_mails = 0;
+	mail = main_get_mail_first_selected(&handle);
+	while (mail)
+	{
+		recipients[num_of_mails++] = mail_info_get_recipient_addresses(mail);
+		mail = main_get_mail_next_selected(&handle);
+	}
+
+	if (!(f = filter_create()))
+		goto out;
+
+	if (!(fr = filter_rule_create_from_common_sorted_recipients(recipients,num_of_mails)))
+		goto out;
+
+	filter_add_rule(f,fr);
+	filter_list_add_duplicate(f);
+	filter_dispose(f);
+
+	filter_open();
+
+	for (i=0;i<num_of_mails;i++)
+		free(recipients[i]);
+out:
+	free(recipients);
 
 }
 

@@ -1691,11 +1691,11 @@ char *mail_get_to_address(struct mail_info *mail)
 }
 
 /**
- * Returns all email addresses of the recipients (to and cc). Duplicates
- * are filtered.
+ * Returns an array of all email addresses of the recipients (to and cc).
+ * Duplicates are filtered.
  *
  * @param mail
- * @return
+ * @return the array. Must be freed with array_free().
  */
 char **mail_info_get_recipient_addresses(struct mail_info *mail)
 {

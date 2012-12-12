@@ -746,7 +746,7 @@ char **array_remove_idx(char **strings, int idx)
  * small arrays. strings might be NULL.
  *
  * @param strings
- * @param str
+ * @param str defines the string to be added. It is duplicated.
  * @return the new array or NULL.
  */
 char **array_add_string(char **strings, char *str)

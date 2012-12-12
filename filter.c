@@ -376,7 +376,7 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 }
 
 /**
- * Create a filter rule from common sorted recpipients.
+ * Create a filter rule from common sorted recipients.
  *
  * @param addresses an array to an array of sorted recipients.
  * @param num_addresses length of addresses.

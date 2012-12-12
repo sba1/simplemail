@@ -376,6 +376,64 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 }
 
 /**
+ * Create a filter rule from common sorted recpipients.
+ *
+ * @param addresses an array to an array of sorted recipients.
+ * @param num_addresses length of addresses.
+ * @param type
+ * @return
+ */
+struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***addresses, unsigned int num_addresses)
+{
+	/* This is a very naive implementation, which could be optimized */
+	int i,j;
+	struct filter_rule *r;
+	char **common_recipients;
+
+	if (num_addresses < 1)
+		return NULL;
+
+	common_recipients = NULL;
+
+	for (i=0;addresses[0][i];i++)
+	{
+		char *addr = addresses[0][i];
+
+		int take = 1;
+
+		for (j=1;j<num_addresses;j++)
+		{
+			if (!array_contains_utf8(addresses[j],addr))
+			{
+				take = 0;
+				break;
+			}
+		}
+
+		if (take)
+			common_recipients = array_add_string(common_recipients,addr);
+	}
+
+	if (!common_recipients || array_length(common_recipients) == 0)
+		return NULL;
+
+	if (!(r = (struct filter_rule*)malloc(sizeof(struct filter_rule))))
+	{
+		free(common_recipients);
+		return NULL;
+	}
+
+	memset(r, 0, sizeof(*r));
+	r->type = RULE_RCPT_MATCH;
+	r->flags = SM_PATTERN_NOPATT|SM_PATTERN_SUBSTR;
+
+	filter_rule_add_copy_of_string(r,common_recipients[0]);
+	array_free(common_recipients);
+
+	return r;
+}
+
+/**
  * Remove the rule from its filter.
  *
  * @param fr

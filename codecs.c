@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** codecs.c
-*/
+/**
+ * @file codecs.c
+ */
 
 #include <ctype.h>
 #include <string.h>
@@ -246,7 +246,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
                      } else {
                         /* The '=' was not followed by two hex digits. This is actually */
                         /* a violation of the standard. We put the '=' into the decoded */
-                        /* text and continue decoding after the '»' character.          */
+                        /* text and continue decoding after the 'ï¿½' character.          */
                         *dest++ = '=';
                      }
                   }
@@ -813,9 +813,11 @@ char *encode_address_field(char *field_name, struct list *address_list)
 	return header;
 }
 
-/**************************************************************************
- Encode the given email address puny (RFC 3490)
-**************************************************************************/
+/**
+ * Encode the given email address puny (RFC 3490)
+ * @param email
+ * @return Puny encoding of the email. Needs to be freed with free() when no longer in use.
+ */
 char *encode_address_puny(utf8 *email)
 {
 	string email_str;
@@ -876,11 +878,15 @@ char *encode_address_puny(utf8 *email)
 	return email_str.str;
 }
 
-/**************************************************************************
- Creates a structured address encoded header field (includes all rules of the
- RFC 821, RFC 2047 and RFC3490). List is the list with all addresses.
- The string is allocated with malloc()
-**************************************************************************/
+/**
+ * Creates a structured address encoded header field (includes all rules of the
+ * RFC 821, RFC 2047 and RFC3490). List is the list with all addresses.
+ * The string is allocated with malloc()
+ *
+ * @param field_name
+ * @param address_list
+ * @return the generated string. Must be freed with free().
+ */
 char *encode_address_field_utf8(char *field_name, struct list *address_list)
 {
 	struct address *address;
@@ -950,6 +956,7 @@ char *encode_address_field_utf8(char *field_name, struct list *address_list)
 			line_len += email_len;
 		}
 
+		free(email);
 		address = next_address;
 	}
 	return str.str;

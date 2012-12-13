@@ -13,6 +13,7 @@ GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
 CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
+VALGRIND_OPTS = --leak-check=full --track-origins=yes 
 
 SIMPLEMAIL_LIB  = simplemail
 
@@ -45,9 +46,26 @@ dirs:
 lib$(SIMPLEMAIL_LIB).a: $(OBJS)
 	ar rcs $@ $(OBJS)
 
+# Define memleak targets
+MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
+
+# memleaks template
+define memleak.tmpl
+memleaks-$(1): $(1)
+ifdef USE_VALGRIND_XML
+	valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
+else
+	valgrind $(VALGRIND_OPTS) ./$$<
+endif
+endef
+
+# "instanciate" memleak targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call memleak.tmpl,$(testexe))) \
+)
+
 .PHONY: memleaks
-memleaks:
-	$(foreach TESTEXE,$(TESTEXES), valgrind --leak-check=full ./$(TESTEXE);)
+memleaks: $(MEMLEAKS_TARGETS)
 
 .PHONY: clean
 clean:

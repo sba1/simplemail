@@ -9,3 +9,4 @@ test-objs
 written.eml
 libsimplemail.a
 written2.eml
+memleaks-*.xml

@@ -570,8 +570,8 @@ SAVEDS void xml_char_data(void *data, const XML_Char *s, int len)
 
 		if ((xml_context.data_buf = (char*)realloc(xml_context.data_buf,old_len+len+1)))
 		{
-			unsigned char *src = (char*)s;
-			unsigned char *dest = (char*)xml_context.data_buf + old_len;
+			unsigned char *src = (unsigned char*)s;
+			unsigned char *dest = (unsigned char*)xml_context.data_buf + old_len;
 
 			if (!old_len)
 			{

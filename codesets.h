@@ -23,7 +23,7 @@
 #include "lists.h"
 #endif
 
-typedef unsigned char	utf8;
+typedef char utf8;
 
 struct single_convert
 {

@@ -63,5 +63,7 @@ void test_filter_rule_create_from_common_sorted_recipients(void)
 
 	f = filter_create();
 	CU_ASSERT(f != NULL);
+
+	filter_add_rule(f,fr);
 	filter_dispose(f);
 }

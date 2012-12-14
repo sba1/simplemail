@@ -1392,7 +1392,12 @@ static void DrawEntry(struct MailTreelist_Data *data, Object *obj, int entry_pos
 										/* Determine number of characters of the left part (from right to left) */
 										left_fit = TextFit(rp,&txt[left_len-1],left_len,&te,NULL,-1,left_width-data->threepoints_width,fonty);
 										left_width = te.te_Width;
-									} else left_width = 0;
+									} else
+									{
+										left_width = 0;
+										left_fit = 0; /* Assignment keeps the compiler happy */
+										left_len = 0; /* Assignment keeps the compiler happy */
+									}
 
 									new_width = available_col_width - data->threepoints_width - left_width;
 									fit = TextFit(rp,new_txt,new_len,&te,NULL,1,new_width,fonty);
@@ -2718,6 +2723,7 @@ STATIC ULONG MailTreelist_Draw(struct IClass *cl, Object *obj, struct MUIP_Draw 
 	{
 		rp = data->buffer_rp;
 		_rp(obj) = rp;
+		cliphandle = NULL; /* keeps the compiler happy */
 	} else
 	{
 		rp = _rp(obj);

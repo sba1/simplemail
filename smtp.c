@@ -258,7 +258,7 @@ out:
 static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile, int cur_mail_size)
 {
 	int rc = 0;
-	unsigned char *buf;
+	char *buf;
 
 	buf = buf_init();
 	if(buf != NULL)

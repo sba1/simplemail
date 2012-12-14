@@ -295,7 +295,7 @@ static char *parse_word_simple(char *word, char **pbuf)
 /**************************************************************************
  word        =  atom / quoted-string (encoded_word)
 **************************************************************************/
-#ifdef UNUSED
+#if 0
 static char *parse_word(char *word, char **pbuf, char **pcharset)
 {
 	char *ret;
@@ -987,12 +987,12 @@ static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset
 
 	if (!mystricmp(encoding,"b"))
 	{
-		*pbuf = decode_base64(encoding_start, ret - encoding_start, &len);
+		*pbuf = decode_base64((unsigned char*)encoding_start, ret - encoding_start, &len);
 	} else
 	{
 		if (!mystricmp(encoding,"q"))
 		{
-			*pbuf = decode_quoted_printable(encoding_start, ret - encoding_start, &len,1);
+			*pbuf = decode_quoted_printable((unsigned char*)encoding_start, ret - encoding_start, &len,1);
 		} else
 		{
 			free(charset);

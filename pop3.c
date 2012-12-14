@@ -172,8 +172,8 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		thread_call_parent_function_async(status_set_status,1,_("Authentificate via APOP..."));
 
 		MD5Init(&context);
-		MD5Update(&context, timestamp, strlen(timestamp));
-		MD5Update(&context, server->passwd,mystrlen(server->passwd));
+		MD5Update(&context, (unsigned char*)timestamp, strlen(timestamp));
+		MD5Update(&context, (unsigned char*)server->passwd,mystrlen(server->passwd));
 		MD5Final(digest, &context);
 
 		sm_snprintf(buf,sizeof(buf)-64,"APOP %s ",server->login);
@@ -290,7 +290,7 @@ static void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folde
 	buf = uidl->filename + strlen(uidl->filename);
 
 	/* Using a hash doesn't make the filename unique but it should work for now */
-	n = sprintf(buf,"%x",sdbm(server->login));
+	n = sprintf(buf,"%x",(unsigned int)sdbm((unsigned char*)server->login));
 
 	buf += n;
 	while ((c=*server_name))

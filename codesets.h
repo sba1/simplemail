@@ -51,8 +51,8 @@ int codesets_unconvertable_chars(struct codeset *codeset, char *text, int text_l
 struct codeset *codesets_find_best(char *text, int text_len, int *error_ptr);
 
 #define utf8size(s) ((s)?(strlen(s)):(0))
-#define utf8cpy(dest,src) ((utf8*)strcpy(dest,src))
-#define utf8cat(dest,src) ((utf8*)strcat(dest,src))
+#define utf8cpy(dest,src) strcpy(dest,src)
+#define utf8cat(dest,src) strcat(dest,src)
 
 int isascii7(const char *str);
 int utf8len(const utf8 *str);

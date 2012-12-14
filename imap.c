@@ -152,9 +152,11 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
  * Delete local mails that are not listed in the remote mail array (aka orphaned messages).
  *
  * @param local_mail_array
- * @param num_local_mails
+ * @param num_of_local_mails length of local_mail_array
  * @param remote_mail_array
- * @param num_remote_mails
+ * @param num_remote_mails length of remote_mail_array
+ * @param imap_server
+ * @param imap_folder
  */
 static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int num_of_local_mails, struct remote_mail *remote_mail_array, int num_remote_mails, struct imap_server *imap_server, char *imap_folder)
 {

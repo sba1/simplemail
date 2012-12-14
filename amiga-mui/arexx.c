@@ -729,14 +729,14 @@ static void arexx_requestfile(struct RexxMsg *rxmsg, STRPTR args)
 			{
 				int len = strlen(requestfile_arg.acceptpattern)*2+3;
 				if ((acceptpattern = (UBYTE*)AllocVec(len,0)))
-					ParsePatternNoCase(requestfile_arg.acceptpattern,acceptpattern,len);
+					ParsePatternNoCase(requestfile_arg.acceptpattern,(STRPTR)acceptpattern,len);
 			}
 
 			if (requestfile_arg.rejectpattern)
 			{
 				int len = strlen(requestfile_arg.rejectpattern)*2+3;
 				if ((rejectpattern = (UBYTE*)AllocVec(len,0)))
-					ParsePatternNoCase(requestfile_arg.rejectpattern,rejectpattern,len);
+					ParsePatternNoCase(requestfile_arg.rejectpattern,(STRPTR)rejectpattern,len);
 			}
 
 			if (AslRequestTags(filereq,

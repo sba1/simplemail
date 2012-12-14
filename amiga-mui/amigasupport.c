@@ -283,7 +283,7 @@ ULONG ConvertKey(struct IntuiMessage *imsg)
    event.ie_Code         = imsg->Code;
    event.ie_Qualifier    = imsg->Qualifier;
    event.ie_EventAddress = (APTR *) *((ULONG *)imsg->IAddress);
-   MapRawKey(&event, &code, 1, NULL);
+   MapRawKey(&event, (STRPTR)&code, 1, NULL);
    return code;
 }
 
@@ -440,7 +440,7 @@ APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results)
 				rdargs->RDA_Source.CS_Length = strlen(buf);
 				rdargs->RDA_Source.CS_CurChr = 0;
 
-				rd = ReadArgs(temp,(IPTR*)results, rdargs );
+				rd = ReadArgs(temp,(LONG*)results, rdargs );
 				if((mem[2] = (ULONG)rd))
 				{
 					return mem;
@@ -494,11 +494,11 @@ LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize)
 						if (Answer->rm_Result2)
 						{
 							strncpy(Result, (STRPTR)Answer->rm_Result2, ResultSize);
-							DeleteArgstring((UBYTE *)Answer->rm_Result2);
+							DeleteArgstring((STRPTR)Answer->rm_Result2);
 						}
 					}
 
-					DeleteArgstring((UBYTE *)ARG0(Answer));
+					DeleteArgstring((STRPTR)ARG0(Answer));
 					DeleteRexxMsg(Answer);
 
 					CloseLibraryInterface(RexxSysBase,IRexxSys);

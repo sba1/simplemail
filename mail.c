@@ -2540,12 +2540,12 @@ void mail_decode(struct mail_complete *mail)
 	if (!mystricmp(mail->content_transfer_encoding,"base64"))
 	{
 		unsigned int decoded_len = (unsigned int)-1;
-		if ((mail->decoded_data = decode_base64(mail->text + mail->text_begin, mail->text_len,&decoded_len)))
+		if ((mail->decoded_data = decode_base64((unsigned char*)(mail->text + mail->text_begin), mail->text_len,&decoded_len)))
 			mail->decoded_len = decoded_len;
 	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
 		unsigned int decoded_len = (unsigned int)-1;
-		if ((mail->decoded_data = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,&decoded_len,0)))
+		if ((mail->decoded_data = decode_quoted_printable((unsigned char*)(mail->text + mail->text_begin), mail->text_len,&decoded_len,0)))
 			mail->decoded_len = decoded_len;
 	}
 
@@ -2580,10 +2580,10 @@ void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr)
 	void *decoded = NULL;
 	if (!mystricmp(mail->content_transfer_encoding,"base64"))
 	{
-		decoded = decode_base64(mail->text + mail->text_begin, mail->text_len,len_ptr);
+		decoded = decode_base64((unsigned char*)(mail->text + mail->text_begin), mail->text_len,len_ptr);
 	} else if (!mystricmp(mail->content_transfer_encoding,"quoted-printable"))
 	{
-		decoded = decode_quoted_printable(mail->text + mail->text_begin, mail->text_len,len_ptr,0);
+		decoded = decode_quoted_printable((unsigned char*)(mail->text + mail->text_begin), mail->text_len,len_ptr,0);
 	}
 	return decoded;
 }
@@ -3206,7 +3206,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 			if (convtext)
 			{
-				body = encode_body(convtext, strlen(convtext), new_mail->content_type, &body_len, &body_encoding);
+				body = encode_body((unsigned char*)convtext, strlen(convtext), new_mail->content_type, &body_len, &body_encoding);
 				/* encode as mime only if body encoding is not 7bit or a content description was given */
 				if ((body_encoding && mystricmp(body_encoding,"7bit")) || new_mail->content_description)
 				{
@@ -3248,7 +3248,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 					} else
 					{
 						unsigned char c;
-						unsigned char *buf = new_mail->content_filename;
+						unsigned char *buf = (unsigned char*)new_mail->content_filename;
 						static const char pspecials[] = "'%* ()<>@,;:\\\"[]?=";
 
 						fprintf(ofh,"; filename*=utf-8''");

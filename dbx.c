@@ -90,7 +90,7 @@ static int dbx_read_message(FILE *fh, FILE *out, unsigned int addr)
 static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 {
 	unsigned char *buf;
-	unsigned char *mailfilename = NULL;
+	char *mailfilename = NULL;
 	FILE *mailout = NULL;
 
 	unsigned char *data;
@@ -146,7 +146,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 	/* Check if we have read enough data, if not we must read more */
 	if (size - 12 < length_of_idxs)
 	{
-		char *newbuf;
+		unsigned char *newbuf;
 
 		SM_DEBUGF(5,("read in %d bytes of object at 0x%x, but index length length is %d\n",size,addr,length_of_idxs));
 		

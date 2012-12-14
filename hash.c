@@ -188,7 +188,7 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 
 	if (!string) return NULL;
 
-	index = sdbm(string) & ht->mask;
+	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
 	if (!hb->entry.string)
 	{
@@ -216,7 +216,7 @@ struct hash_entry *hash_table_lookup(struct hash_table *ht, const char *string)
 	struct hash_bucket *hb;
 
 	if (!string) return NULL;
-	index = sdbm(string) & ht->mask;
+	index = sdbm((const unsigned char*)string) & ht->mask;
 	hb = &ht->table[index];
 
 	if (!hb->entry.string) return NULL;

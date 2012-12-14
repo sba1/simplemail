@@ -197,7 +197,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
             unsigned char *ep;
 
             /* Look for end of line */
-            if ((ep = strchr(lp, '\n')))
+            if ((ep = (unsigned char*)strchr((char*)lp, '\n')))
             {
                text = ep + 1;
                ep--;
@@ -209,7 +209,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
                	if('\r' == *ep) ep--;
                }
             } else {
-               ep   = lp + strlen(lp) - 1;
+               ep   = lp + strlen((char*)lp) - 1;
                text = NULL;   /* End of text reached */
             }
 
@@ -379,7 +379,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 		while (toencode_len)
 		{
 			int l;
-			if ((l = get_noencode_str(toencode)))
+			if ((l = get_noencode_str((unsigned char*)toencode)))
 			{
 				int quotes = structured && needs_quotation_len(toencode,l);
 				int space_add;
@@ -429,7 +429,7 @@ static char *encode_header_str(char *toencode, int *line_len_ptr, int structured
 					encoded_len++;
 				}*/
 			}
-			if ((l = get_encode_str(toencode)))
+			if ((l = get_encode_str((unsigned char*)toencode)))
 			{
 				char buf[32];
 				int buf_len;
@@ -527,7 +527,7 @@ static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int struc
 		while (toencode_len>0)
 		{
 			int l;
-			if ((l = get_noencode_str(toencode)))
+			if ((l = get_noencode_str((unsigned char*)toencode)))
 			{
 				int quotes = structured && needs_quotation_len(toencode,l);
 				int space_add;
@@ -561,7 +561,7 @@ static char *encode_header_str_utf8(char *toencode, int *line_len_ptr, int struc
 				line_len += l + (quotes?2:0);
 				encoded_len += l + (quotes?2:0);
 			}
-			if ((l = get_encode_str(toencode)))
+			if ((l = get_encode_str((unsigned char*)toencode)))
 			{
 				char buf[32];
 				struct codeset *best_codeset;
@@ -978,7 +978,7 @@ static void encode_body_quoted(FILE *fh, unsigned char *buf, unsigned int len)
 		if ((c < 33 || c == 61 || c > 126) && c != 10)
 		{
 			sprintf(digit_buf,"=%02X",c);
-			next_str = digit_buf;
+			next_str = (unsigned char*)digit_buf;
 			next_len = 3;
 		}
 
@@ -1278,7 +1278,7 @@ char *encode_base64(unsigned char *buf, unsigned int len)
 	}
 
   *ptr = 0;
-	return dest;
+	return (char*)dest;
 }
 
 /**************************************************************************

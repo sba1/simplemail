@@ -40,6 +40,7 @@
 #include <proto/graphics.h>
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
+#include <proto/input.h>
 
 #ifdef USE_TTENGINE
 #include <proto/ttengine.h>
@@ -3621,6 +3622,24 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 			case		IDCMP_INTUITICKS:
 			case		IDCMP_MOUSEMOVE:
+							if (data->mouse_pressed)
+							{
+								/* For some reasons the imsg->Qualifier does not always
+								 * reflect the correct mouse button state and we don't
+								 * get always a proper mouse up event (mostly if the contents
+								 * of the parent window is refreshed). We work around
+								 * that problem by peeking the qualifier directly using
+								 * input.device and verify if the result agrees with our
+								 * current state. If that is not the case we abort the mouse
+								 * move handling.
+								 */
+								if (!(PeekQualifier() & IEQUALIFIER_LEFTBUTTON))
+								{
+									SM_DEBUGF(10,("Mouse button state was not updated!\n"));
+									MailTreelist_MouseButton_Released(data,obj);
+									break;
+								}
+							}
 							if (data->column_drag != -1)
 							{
 								struct ColumnInfo *ci;

@@ -103,7 +103,7 @@ static int write_unicode(utf8 *src, string *str)
 			src += advance;
 		} else
 		{
-			string_append_part(str,&c,1);
+			string_append_part(str,(char*)&c,1);
 			src++;
 			len--;
 		}
@@ -173,7 +173,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 			{
 				int new_level = 0;
 				int buffer2_len = buffer_len;
-				char *buffer2 = buffer;
+				unsigned char *buffer2 = buffer;
 				int new_color = 0;
 
 				/* Determine the citation level. Afterwards, buffer2 will point to the end of the citation symbols. */
@@ -243,10 +243,10 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 				eval_color = 0;
 			}
 
-			if (!mystrnicmp("http:",buffer,5)) write_uri(&buffer, &buffer_len, &str);
-			else if (!mystrnicmp("mailto:",buffer,7)) write_uri(&buffer, &buffer_len, &str);
-			else if (!mystrnicmp("ftp:",buffer,4)) write_uri(&buffer, &buffer_len, &str);
-			else if (!mystrnicmp("https:",buffer,6)) write_uri(&buffer, &buffer_len, &str);
+			if (!mystrnicmp("http:",(char*)buffer,5)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("mailto:",(char*)buffer,7)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("ftp:",(char*)buffer,4)) write_uri(&buffer, &buffer_len, &str);
+			else if (!mystrnicmp("https:",(char*)buffer,6)) write_uri(&buffer, &buffer_len, &str);
 			else
 			{
 				unsigned char c;
@@ -278,7 +278,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						buffer2--;
 					}
 
-					if ((buffer3 = parse_addr_spec(buffer2, &address)))
+					if ((buffer3 = (unsigned char*)parse_addr_spec((char*)buffer2, &address)))
 					{
 						int email_len;
 
@@ -308,7 +308,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 			  	/* No look into the smily table, this is slow and needs to be improved */
 		  		for (i=0;i<sizeof(smily)/sizeof(struct smily);i++)
 		  		{
-		  			if (!strncmp(smily[i].ascii,buffer,strlen(smily[i].ascii)))
+		  			if (!strncmp(smily[i].ascii,(char*)buffer,strlen(smily[i].ascii)))
 		  			{
 		  				buffer += strlen(smily[i].ascii);
 		  				buffer_len -= strlen(smily[i].ascii);
@@ -320,7 +320,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 		  		if (smily_used) continue;
 		  	}
 
-				if (!strncmp("\n<sb>",buffer,5))
+				if (!strncmp("\n<sb>",(char*)buffer,5))
 				{
 					if (line) string_append(&str,"<BR></TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>");
 					line = 1;
@@ -331,7 +331,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					continue;
 				}
 
-				if (!strncmp("\n<tsb>",buffer,6))
+				if (!strncmp("\n<tsb>",(char*)buffer,6))
 				{
 					if (line) string_append(&str,"<BR></TD><TD WIDTH=\"50%\"><HR></TD></TR></TABLE>");
 					line = 2;
@@ -366,7 +366,7 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 						} else {
 						  if (c)
 						  {
-						  	string_append_part(&str,&c,1);
+						  	string_append_part(&str,(char*)&c,1);
 						  }
 						}
 					}
@@ -375,9 +375,9 @@ char *text2html(unsigned char *buffer, int buffer_len, int flags, char *fonttag)
 					unsigned int unicode;
 					int len = 0;
 					/* check if it really could be a utf8 char */
-					if (isLegalUTF8Sequence(buffer, buffer+buffer_len))
+					if (isLegalUTF8Sequence((utf8*)buffer, (utf8*)(buffer+buffer_len)))
 					{
-						len = utf8tochar(buffer, &unicode, user.config.default_codeset);
+						len = utf8tochar((utf8*)buffer, &unicode, user.config.default_codeset);
 					}
 					if ((len == 0) || (len > buffer_len))
 					{

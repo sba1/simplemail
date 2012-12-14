@@ -529,7 +529,7 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	 */
 
 	int rc;
-	int i,j,k;
+	int i,j;
 	int lcs = 0;
 	int pos_in_a = 0;
 	int total_len = 0;
@@ -538,6 +538,8 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 	char **sp = NULL;
 	char *s = NULL;
 	char *encountered = NULL;
+
+	rc = 0;
 
 	if (!(starts = (int*)malloc(num*sizeof(starts[0]))))
 		return 0;
@@ -569,8 +571,6 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, i
 
 	/* Sort suffixes (=the pointers) */
 	qsort(sp, total_len, sizeof(char *), qsort_strcmp_callback);
-
-	rc = 0;
 
 	for (i=0;i<total_len - num;i++)
 	{

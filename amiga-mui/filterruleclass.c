@@ -366,6 +366,16 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	}
 }
 
+STATIC ULONG FilterRule_DragQuery(struct IClass *cl,Object *obj,struct MUIP_DragQuery *msg)
+{
+  return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
+STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
+{
+  return DoSuperMethodA(cl,obj,(Msg)msg);
+}
+
 STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 {
 	switch(msg->MethodID)
@@ -374,6 +384,8 @@ STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)
 		case OM_DISPOSE: return FilterRule_Dispose(cl,obj,msg);
 		case OM_SET:     return FilterRule_Set(cl,obj,(struct opSet*)msg);
 		case OM_GET:     return FilterRule_Get(cl,obj,(struct opGet*)msg);
+		case MUIM_DragQuery: return FilterRule_DragQuery (cl,obj,(struct MUIP_DragQuery *)msg);
+		case MUIM_DragDrop:  return FilterRule_DragDrop (cl,obj,(struct MUIP_DragDrop *)msg);
 		default:         return DoSuperMethodA(cl,obj,msg);
 	}
 }

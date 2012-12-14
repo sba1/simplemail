@@ -1066,7 +1066,7 @@ int fseek(FILE *f, long offset, int origin)
 long ftell(FILE *f)
 {
 	struct myfile *file = (struct myfile*)f;
-	BPTR fh = files[file->_file];
+	D(BPTR fh = files[file->_file];)
 #ifdef FAST_SEEK
 	D(bug("0x%lx ftell() = %ld, seek=%ld\n",file, file->_rcnt,internal_seek(fh,0,OFFSET_CURRENT)));
 	return file->_rcnt;

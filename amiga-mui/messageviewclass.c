@@ -533,7 +533,7 @@ static void messageview_append_as_mail(struct MessageView_Data *data, struct mai
 	{
 		if (!mystricmp(mail->content_type,"text") && !mystricmp(mail->content_subtype,"plain"))
 		{
-			char *html_txt = text2html((char*)decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
+			char *html_txt = text2html(decoded_data, decoded_data_len, TEXT2HTML_FIXED_FONT|(user.config.read_wordwrap?0:TEXT2HTML_NOWRAP),"<FONT FACE=\"fixedmail\" SIZE=\"+1\">");
 			string_append(str,html_txt);
 			free(html_txt);
 		} else

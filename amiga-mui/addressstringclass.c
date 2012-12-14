@@ -90,8 +90,6 @@ struct MatchWindow_Data
 
 struct MUI_CustomClass *CL_MatchWindow;
 
-static Object *temp_list;
-
 /***********************************************************
  Completes the address if a new entry within the match list
  gets activated

@@ -3432,8 +3432,8 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										if (new_entries_active < 0) new_entries_active = 0;
 										else if (new_entries_active >= data->entries_num) new_entries_active = data->entries_num - 1;
 
-										/* Unselected entries if some have been selected */
-										if (data->entries_maxselected != -1)
+										/* Unselected entries if some have been selected unless shift is pressed */
+										if (data->entries_maxselected != -1 && !(msg->imsg->Qualifier & (IEQUALIFIER_LSHIFT|IEQUALIFIER_RSHIFT)))
 										{
 											int cur;
 

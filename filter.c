@@ -618,7 +618,7 @@ void filter_list_load(FILE *fh)
 
 		if (!mystrnicmp(buf, "FILTER",6))
 		{
-			unsigned char *filter_buf = buf + 6;
+			char *filter_buf = buf + 6;
 			int filter_no = atoi(filter_buf);
 			struct filter *f;
 
@@ -662,7 +662,7 @@ void filter_list_load(FILE *fh)
 
 					if (!mystrnicmp(filter_buf, "RULE",4))
 					{
-						unsigned char *rule_buf = filter_buf + 4;
+						char *rule_buf = filter_buf + 4;
 						int rule_no = atoi(rule_buf);
 						struct filter_rule *fr;
 

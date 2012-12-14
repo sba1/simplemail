@@ -20,6 +20,7 @@
 #define SM__FILTERWND_H
 
 void filter_open(void);
+void filter_open_with_new_filter(struct filter *nf);
 void filter_update_folder_list(void);
 
 #endif

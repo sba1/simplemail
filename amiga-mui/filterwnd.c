@@ -609,10 +609,14 @@ static void init_filter(void)
 	}
 }
 
-/**************************************************************************
- Opens the filter window
-**************************************************************************/
-void filter_open(void)
+/**
+ * Opens the filter window with a new filter.
+ *
+ * @param nf defines the filter that should be added. The
+ * object copied so the argument can be freed after calling
+ * the function.
+ */
+void filter_open_with_new_filter(struct filter *nf)
 {
 	struct filter *f;
 
@@ -633,6 +637,17 @@ void filter_open(void)
 		f = filter_list_next(f);
 	}
 
+	if (nf)
+		DoMethod(filter_list, MUIM_NList_InsertSingle, (ULONG)nf, MUIV_NList_Insert_Bottom);
+
 	set(filter_list, MUIA_NList_Active,0);
 	set(filter_wnd, MUIA_Window_Open, TRUE);
+}
+
+/**
+ * Opens the filter window.
+ */
+void filter_open(void)
+{
+	filter_open_with_new_filter(NULL);
 }

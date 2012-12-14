@@ -131,9 +131,9 @@ static int arch_debug_loaded = 0;
 #endif
 
 #ifndef __AROS__
+#if defined(__SASC) && defined(DEBUG_RESTRACK)
 static void arch_debug_load(void)
 {
-#if defined(__SASC) && defined(DEBUG_RESTRACK)
 	BPTR fh;
 	char prog_name[64];
 	char *buf = NULL;
@@ -301,8 +301,8 @@ static void arch_debug_load(void)
 bailout:
 	free(buf);
 	if (fh) Close(fh);
-#endif
 }
+#endif
 #endif
 
 /**

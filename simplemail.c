@@ -1219,10 +1219,8 @@ void callback_create_subject_filter(void)
 		goto out;
 
 	filter_add_rule(f,fr);
-	filter_list_add_duplicate(f);
+	filter_open_with_new_filter(f);
 	filter_dispose(f);
-
-	filter_open();
 out:
 	free(subjects);
 }
@@ -1262,10 +1260,8 @@ void callback_create_recipient_filter(void)
 		goto out;
 
 	filter_add_rule(f,fr);
-	filter_list_add_duplicate(f);
+	filter_open_with_new_filter(f);
 	filter_dispose(f);
-
-	filter_open();
 
 	for (i=0;i<num_of_mails;i++)
 		free(recipients[i]);

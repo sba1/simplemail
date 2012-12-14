@@ -44,6 +44,10 @@
 #include <proto/diskfont.h>
 #endif
 
+/* The InputBase type is different in OS3 and OS4 includes.
+ * We work around this by not declaring the lib base at all */
+#define __NOLIBBASE__
+#include <proto/input.h>
 
 #include "version.h"
 
@@ -102,12 +106,18 @@ struct Library *SimpleHTMLBase;
 struct Library *TTEngineBase;
 struct Library *CyberGfxBase;
 
+struct Device *InputBase;
+struct MsgPort *InputPort;
+struct IOStdReq *InputIO;
+
 #ifdef __AMIGAOS4__
+struct InputIFace *IInput;
 struct MUIMasterIFace *IMUIMaster;
 struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
 struct Interface *ITTEngine;
 struct CyberGfxIFace *ICyberGfx;
+struct InputIFace *IInput;
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 #else
@@ -171,6 +181,64 @@ void sm_play_sound(char *filename)
 	}
 }
 
+/**
+ * Close the input device.
+ */
+static void gui_close_input_device(void)
+{
+#ifdef __AMIGAOS4__
+	if (IInput)
+	{
+		DropInterface((struct Interface*)IInput);
+		IInput = NULL;
+	}
+#endif
+	if (InputBase)
+	{
+		CloseDevice((struct IORequest*)InputIO);
+		InputIO = NULL;
+	}
+	if (InputIO)
+	{
+		DeleteIORequest((struct IORequest*)InputIO);
+		InputIO = NULL;
+	}
+	if (InputPort)
+	{
+		DeleteMsgPort(InputPort);
+		InputPort = NULL;
+	}
+}
+
+/**
+ * Open the input.device.
+ *
+ * @return successful or not.
+ */
+static int gui_open_input_device(void)
+{
+	if (!(InputPort = CreateMsgPort()))
+		return 0;
+	if (!(InputIO = (struct IOStdReq*)CreateIORequest(InputPort,sizeof(*InputIO))))
+	{
+		gui_close_input_device();
+		return 0;
+	}
+	if (OpenDevice("input.device",0L,(struct IORequest *)InputIO,0))
+	{
+		gui_close_input_device();
+		return 0;
+	}
+	InputBase = InputIO->io_Device;
+#ifdef __AMIGAOS4__
+	if (!(IInput = (struct InputIFace*)GetInterface((struct Library*)InputBase, "main", 1, NULL)))
+	{
+		gui_close_input_device();
+		return 0;
+	}
+#endif
+	return 1;
+}
 
 /****************************************************************
  The main loop
@@ -292,8 +360,9 @@ void all_del(void)
 			delete_mailtreelist_class();
 			delete_utf8string_class();
 
-			arexx_cleanup();
 			appicon_free();
+			arexx_cleanup();
+			gui_close_input_device();
 
 			/* free the sound object */
 			if (sound_obj) DisposeObject(sound_obj);
@@ -358,34 +427,37 @@ int all_init(void)
 				DefaultLocale = OpenLocale(NULL);
 				init_hook_standard();
 
-				if (arexx_init())
+				if (gui_open_input_device())
 				{
-					if (appicon_init())
+					if (arexx_init())
 					{
-						if (create_utf8string_class() && create_foldertreelist_class() &&
-						    create_mailtreelist_class() && create_addressstring_class() &&
-						    create_attachmentlist_class() && create_datatypes_class() &&
-						    create_transwnd_class() && create_composeeditor_class() &&
-						    create_picturebutton_class() && create_popupmenu_class() &&
-						    create_icon_class() && create_filterlist_class() &&
-						    create_filterrule_class() && create_multistring_class() &&
-						    create_audioselectgroup_class() && create_accountpop_class() &&
-						    create_signaturecycle_class() && create_messageview_class() &&
-								create_addressgrouplist_class() && create_addressentrylist_class() &&
-								create_pgplist_class() && create_addressmatchlist_class() &&
-								create_mailinfo_class() && create_smtoolbar_class())
+						if (appicon_init())
 						{
-							if (app_init())
+							if (create_utf8string_class() && create_foldertreelist_class() &&
+								create_mailtreelist_class() && create_addressstring_class() &&
+								create_attachmentlist_class() && create_datatypes_class() &&
+								create_transwnd_class() && create_composeeditor_class() &&
+								create_picturebutton_class() && create_popupmenu_class() &&
+								create_icon_class() && create_filterlist_class() &&
+								create_filterrule_class() && create_multistring_class() &&
+								create_audioselectgroup_class() && create_accountpop_class() &&
+								create_signaturecycle_class() && create_messageview_class() &&
+									create_addressgrouplist_class() && create_addressentrylist_class() &&
+									create_pgplist_class() && create_addressmatchlist_class() &&
+									create_mailinfo_class() && create_smtoolbar_class())
 							{
-								if (main_window_init())
+								if (app_init())
 								{
-									SM_LEAVE;
-									return 1;
-								}
-							} else puts(_("Failed to create the application\n"));
-						} else puts(_("Could not create mui custom classes\n"));
-					} else puts(_("Couldn't create appicon port\n"));
-				} else puts(_("Couldn't create arexx port\n"));
+									if (main_window_init())
+									{
+										SM_LEAVE;
+										return 1;
+									}
+								} else puts(_("Failed to create the application\n"));
+							} else puts(_("Could not create mui custom classes\n"));
+						} else puts(_("Couldn't create appicon port\n"));
+					} else puts(_("Couldn't create arexx port\n"));
+				} else puts(_("Couldn't open the input.device\n"));
 #ifndef __AROS__
 			} else printf(_("Couldn't open %s version %d\n"),"simplehtml.library",0);
 #endif

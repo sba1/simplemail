@@ -1492,7 +1492,7 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 				int len_add = trailingBytesForUTF8[c];
 				int len_str = len_add + 1;
 
-				BIN_SEARCH(codeset->table_sorted,0,255,mystrncmp(str,codeset->table_sorted[m].utf8+1,len_str),f);
+				BIN_SEARCH(codeset->table_sorted,0,255,mystrncmp((unsigned char*)str,codeset->table_sorted[m].utf8+1,len_str),f);
 
 				if (f) *dest_iter++ = f->code;
 				else *dest_iter++ = '_';
@@ -2287,7 +2287,7 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 	while (source < sourceend)
 	{
 		punycode_uint ch = 0;
-		unsigned short extraBytesToRead = trailingBytesForUTF8[*source];
+		unsigned short extraBytesToRead = trailingBytesForUTF8[*(UTF8*)source];
 
 		if (source + extraBytesToRead >= sourceend)
 		{

@@ -1541,6 +1541,36 @@ static void MailTreelist_ResetColumnOrder(struct MailTreelist_Data *data, Object
 	MUI_Redraw(obj,MADF_DRAWOBJECT);
 }
 
+/**
+ * The (left) mouse button is considered as pressed.
+ *
+ * @param data
+ * @param obj
+ */
+static void MailTreelist_MouseButton_Pressed(struct MailTreelist_Data *data, Object *obj)
+{
+	if (!data->mouse_pressed)
+	{
+		DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
+		data->mouse_pressed = 1;
+	}
+}
+
+/**
+ * The (left) mouse button is considered as not pressed.
+ *
+ * @param data
+ * @param obj
+ */
+static void MailTreelist_MouseButton_Released(struct MailTreelist_Data *data, Object *obj)
+{
+	if (data->mouse_pressed)
+	{
+		DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
+		data->mouse_pressed = 0;
+	}
+}
+
 /**************************************************************************/
 
 /*************************************************************************
@@ -3420,12 +3450,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 											MUI_Redraw(obj,MADF_DRAWUPDATE);
 										}
 
-										/* Enable mouse move notifies */
-										if (!data->mouse_pressed)
-										{
-											DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
-								  		data->mouse_pressed = 1;
-										}
+										MailTreelist_MouseButton_Pressed(data,obj);
 									} else if (my >= data->title_height)
 									{
 										new_entries_active = (my - data->title_height) / data->entry_maxheight + data->entries_first;
@@ -3464,27 +3489,20 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->last_secs = msg->imsg->Seconds;
 										data->last_active = new_entries_active;
 
-										/* Enable mouse move notifies */
-										if (!data->mouse_pressed)
-										{
-											DoMethod(_win(obj),MUIM_Window_AddEventHandler, &data->ehn_mousemove);
-								  		data->mouse_pressed = 1;
-										}
-
 										/* On successful double click, issue the notify but also disable move move notifies */
 										if (double_click)
 										{
 											IssueTreelistDoubleClickNotify(cl,obj,data);
-											DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-											data->mouse_pressed = 0;
+											MailTreelist_MouseButton_Released(data,obj);
+										} else
+										{
+											MailTreelist_MouseButton_Pressed(data,obj);
 										}
 		    					}
 	    					}
 	    				} else if (msg->imsg->Code == SELECTUP && data->mouse_pressed)
 	    				{
-								/* Disable mouse move notifies */
-								DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-								data->mouse_pressed = 0;
+	    						MailTreelist_MouseButton_Released(data,obj);
 
 								if (data->title_column_click != -1)
 								{
@@ -3553,9 +3571,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										MUI_Redraw(obj,MADF_DRAWOBJECT);
 										CalcHorizontalTotal(data);
 
-										/* Disable mouse move notifies */
-									  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-									  data->mouse_pressed = 0;
+										MailTreelist_MouseButton_Released(data,obj);
 		    					}
 
 									/* abort title_column_click */
@@ -3567,9 +3583,7 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 										data->drawupdate = 4;
 										MUI_Redraw(obj,MADF_DRAWUPDATE);
 
-										/* Disable mouse move notifies */
-										DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-										data->mouse_pressed = 0;
+										MailTreelist_MouseButton_Released(data,obj);
 									}
 									return MUI_EventHandlerRC_Eat;
 	    					} else
@@ -3708,10 +3722,6 @@ static ULONG MailTreelist_HandleEvent(struct IClass *cl, Object *obj, struct MUI
 
 								if ((mx < 0 || mx > _mwidth(obj)) && data->entries_active != -1)
 								{
-									/* Disable mouse move notifies */
-								  DoMethod(_win(obj),MUIM_Window_RemEventHandler, &data->ehn_mousemove);
-								  data->mouse_pressed = 0;
-
 									DoMethod(obj, MUIM_DoDrag, 0, 0, 0);
 								}
     					}

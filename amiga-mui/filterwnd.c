@@ -260,6 +260,7 @@ static void filter_refresh_rules(void)
 		{
 			Object *group, *rem;
 			Object *rule = FilterRuleObject,
+						 MUIA_Dropable, TRUE,
 						 MUIA_UserData,fr,   /* Is used to identify the object as a FilterRuleObject */
 						 MUIA_FilterRule_Data, fr,
 						 End;

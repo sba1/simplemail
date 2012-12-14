@@ -559,15 +559,15 @@ static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account
 	rc = atoi(line);
 	if (rc != 334) return 0;
 
-	if (!(challenge = decode_base64(line+4,strlen(line+4),&challenge_len)))
+	if (!(challenge = decode_base64((unsigned char*)(line+4),strlen(line+4),&challenge_len)))
 		return 0;
 
-	hmac_md5(challenge,strlen(challenge),password,strlen(password),(char*)digest);
+	hmac_md5((unsigned char*)challenge,strlen(challenge),(unsigned char*)password,strlen(password),(unsigned char*)digest);
 	free(challenge);
 	sm_snprintf(buf,sizeof(buf),"%s %08lx%08lx%08lx%08lx",login,
 					digest[0],digest[1],digest[2],digest[3]);
 
-	encoded_str = encode_base64(buf,strlen(buf));
+	encoded_str = encode_base64((unsigned char*)buf,strlen(buf));
 	if (!encoded_str) return 0;
 	tcp_write(conn->conn,encoded_str,strlen(encoded_str));
 	tcp_write(conn->conn,"\r\n",2);
@@ -665,7 +665,7 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 		{
 			mystrlcpy(prep, account->smtp->auth_login, sizeof(prep));
 
-			if ((buf = encode_base64(prep, strlen(prep))))
+			if ((buf = encode_base64((unsigned char*)prep, strlen(prep))))
 			{
 				if (smtp_send_cmd(conn, buf, NULL) == 334)
 				{
@@ -673,7 +673,7 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 
 					mystrlcpy(prep,account->smtp->auth_password,sizeof(prep));
 
-					if ((buf = encode_base64(prep, strlen(prep))))
+					if ((buf = encode_base64((unsigned char*)prep, strlen(prep))))
 					{
 						success = smtp_send_cmd(conn, buf, NULL) == 235;
 
@@ -700,7 +700,7 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 			strcpy(&prep[1], account->smtp->auth_login);
 			strcpy(&prep[2 + ll], account->smtp->auth_password);
 
-			if ((buf = encode_base64(prep, ll + pl + 2)))
+			if ((buf = encode_base64((unsigned char*)prep, ll + pl + 2)))
 			{
 				if (smtp_send_cmd(conn, "AUTH PLAIN", buf) == 235)
 				{

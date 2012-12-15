@@ -2536,13 +2536,12 @@ static void DrawEntryAndBackgroundBuffered(struct IClass *cl, Object *obj, int c
  * @param buffer_rp
  * @param window_rp
  * @param window_y
- * @param window_clip_x
+ * @param window_clip_left
  * @param window_clip_width
+ * @return
  *
  * @note Note that if you draw buffered you must have _rp(obj) set to the
  *       buffer_rp before!
- *
- * @return
  */
 static int DrawEntryOptimized(struct IClass *cl, Object *obj, int cur, int optimized, int background, struct RastPort *buffer_rp, struct RastPort *window_rp, int window_y, int window_clip_left, int window_clip_width)
 {

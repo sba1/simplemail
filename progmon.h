@@ -1,9 +1,9 @@
 /**
- * @file progress.h
+ * @file progmon.h
  */
 
-#ifndef SM__PROGRESS_H
-#define SM__PROGRESS_H
+#ifndef SM__PROGMON_H
+#define SM__PROGMON_H
 
 #ifndef SM__LISTS_H
 #include "lists.h"

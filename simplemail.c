@@ -956,6 +956,7 @@ static void really_display_active_mail(struct folder *f, struct mail_info *m)
  * Function that is called, when a mail was downloaded.
  *
  * @param m
+ * @param userdata
  */
 static void imap_mail_downloaded_callback(struct mail_info *m, void *userdata)
 {
@@ -1875,7 +1876,7 @@ static void lazy_thread_work_finished(utf8 *excerpt, struct mail_info *mail)
  * then forwarded to the main task which in turn notifies
  * the view.
  *
- * @param the path which is going to be freed here.
+ * @param path specifies the path which is going to be read here.
  * @param mail referenced mail
  *
  * @note needs to be called at the context of the lazy thread

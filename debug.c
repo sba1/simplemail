@@ -242,7 +242,7 @@ struct tracked_resource *debug_find_tracked_resource(void *res, char *class)
  *
  * @param res
  * @param class the name of the tracked function.
- * @param arguments to the function.
+ * @param args to the function.
  * @param filename
  * @param function
  * @param line

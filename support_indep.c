@@ -506,9 +506,9 @@ int longest_common_prefix(char * const *strings, int num)
  * Returns the common longest substring of the given num strings.
  *
  * @param strings an array of strings
- * @param number of strigs within the array
- * @param pos_in_a where the position of the substring with respect to a is stored
- * @param len where the length of a longest common substring is stored.
+ * @param num number of strigs within the array
+ * @param pos_in_a_ptr where the position of the substring with respect to a is stored
+ * @param len_ptr where the length of a longest common substring is stored.
  * @return 1 when successful
  */
 int longest_common_substring(const char **strings, int num, int *pos_in_a_ptr, int *len_ptr)
@@ -1033,7 +1033,7 @@ char *mycombinepath(char *drawer, char *file)
 /**
  * @brief Returns a reference number of ticks.
  *
- * A is 1/#TIME_TICKS_PER_SECOND of a second. You can use the reference number of
+ * A is 1/TIME_TICKS_PER_SECOND of a second. You can use the reference number of
  * ticks with time_ticks_passed() in order to test for small time
  * differences.
  *

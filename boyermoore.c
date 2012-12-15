@@ -1,8 +1,8 @@
 /**
- * This is a implementation of the (turbo) bayer/moore string search algorithm.
+ * This is an implementation of the (turbo) bayer/moore string search algorithm.
  * Based upon the code presented at http://www-igm.univ-mlv.fr/~lecroq/string/.
  *
- * @file bayermoore.c
+ * @file boyermoore.c
  */
 
 #include <limits.h>
@@ -41,6 +41,7 @@ static void suffixes(char *x, int m, unsigned short *suff)
  *
  * @param x
  * @param m
+ * @param suff
  * @param bmGs
  */
 static void preBmGs(char *x, int m, unsigned short suff[], unsigned short bmGs[])
@@ -78,7 +79,8 @@ struct boyermoore_context
 };
 
 /**
- * Creates the boyermoore context.
+ * Creates the boyermoore context for a given pattern and
+ * length.
  *
  * @param p
  * @param plen
@@ -138,9 +140,8 @@ void boyermoore_delete_context(struct boyermoore_context *context)
 /**
  * Performs the boyermoore algorithm.
  *
- * @param x the substring which should be found
- * @param m the length of the pattern
- * @param y string to be searched through
+ * @param context the context
+ * @param str string to be searched through
  * @param n number of bytes to be searches through
  * @param callback function that is called for every hit. If callback returns 0,
  *        the search is aborted.

@@ -237,8 +237,8 @@ STATIC ULONG SMToolbar_New(struct IClass *cl,Object *obj,struct opSet *msg)
 		/* Something failed */
 		for (i=0;i<button_count;i++)
 		{
-			free(toolbar_buttons[i].text);
-			free(toolbar_buttons[i].help);
+			free((void*)toolbar_buttons[i].text);
+			free((void*)toolbar_buttons[i].help);
 		}
 		free(toolbar_buttons);
 		return 0;
@@ -272,8 +272,8 @@ STATIC ULONG SMToolbar_Dispose(struct IClass *cl, Object *obj, Msg msg)
 
 	for (i=0;i<data->button_count;i++)
 	{
-		free(data->toolbar_buttons[i].text);
-		free(data->toolbar_buttons[i].help);
+		free((void*)data->toolbar_buttons[i].text);
+		free((void*)data->toolbar_buttons[i].help);
 	}
 	free(data->toolbar_buttons);
 

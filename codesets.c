@@ -1570,9 +1570,9 @@ int utf8tochar(utf8 *str, unsigned int *chr, struct codeset *codeset)
 }
 
 /**
- * Converts a utf8 character to its lower case equivalent.
+ * Converts a utf8 encoded character to its lower case equivalent.
  *
- * @param str1 character
+ * @param str defines the source character
  * @param dest note that dest should be at least 6 bytes in size.
  * @return the number of bytes written to dest. It is <= 0 for an error.
  *
@@ -1852,7 +1852,7 @@ char *utf8stristr(const char *str1, const char *str2)
 
 
 /**************************************************************************
- Converts a single UFT-8 Chracter to a Unicode character very very
+ Converts a single UFT-8 Chracter to aï¿½Unicode character very very
  incomplete. Should return NULL if invalid (actualy not implemented)
 **************************************************************************/
 char *uft8toucs(char *chr, unsigned int *code)

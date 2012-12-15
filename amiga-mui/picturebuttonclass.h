@@ -35,6 +35,6 @@ IMPORT struct MUI_CustomClass *CL_PictureButton;
 int create_picturebutton_class(void);
 void delete_picturebutton_class(void);
 
-Object *MakePictureButton(char *label, char *filename);
+Object *MakePictureButton(const char *label, const char *filename);
 
 #endif

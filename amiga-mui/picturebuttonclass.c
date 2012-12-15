@@ -391,7 +391,7 @@ void delete_picturebutton_class(void)
 	SM_LEAVE;
 }
 
-Object *MakePictureButton(char *label, char *filename)
+Object *MakePictureButton(const char *label, const char *filename)
 {
 	int control_char = GetControlChar(label);
 

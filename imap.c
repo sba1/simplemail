@@ -539,6 +539,8 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
  * @param path defines the utf8 encoded path.
  * @param writemode
  * @param headers specifies whether headers are requested.
+ * @param uid_start
+ * @param uid_end
  *
  * @return returns information of the mailbox in form of a remote_mailbox object.
  *         NULL on failure (for any reasons). If not NULL, the elements in remote_mail_array
@@ -1991,11 +1993,13 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 }
 
 /**
+ * Download the given mail. Usually called in the context of the imap thread.
  *
  * @param server
- * @param f
+ * @param local_path
  * @param m
  * @param callback called on the context of the parent task.
+ * @param userdata user data supplied for the callback
  * @return
  */
 static int imap_thread_download_mail(struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
@@ -2432,7 +2436,8 @@ static void imap_download_mail_async_callback(struct mail_info *m, void *userdat
  *
  * @param f
  * @param m
- * @param callback called on the parents task context.
+ * @param callback
+ * @param userdata
  * @return
  */
 int imap_download_mail_async(struct folder *f, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)

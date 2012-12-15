@@ -21,7 +21,8 @@ TESTEXES=\
 	boyermoore_unittest \
 	mail_unittest \
 	filter_unittest \
-	support_indep_unittest
+	support_indep_unittest \
+	text2html_unittest
 
 test-objs/%.o: ../%.c
 	$(CC) $(CFLAGS) -c $< -o $@

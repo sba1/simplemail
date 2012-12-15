@@ -71,7 +71,7 @@ STATIC ASM SAVEDS VOID pgp_display(REG(a0,struct Hook *h),REG(a2,Object *obj),RE
 	if (msg->entry)
 	{
 		struct pgp_key *key = (struct pgp_key *)msg->entry;
-		sprintf(data->buf,"0x%08lX",key->keyid);
+		sprintf(data->buf,"0x%08X",key->keyid);
 		msg->strings[0] = data->buf;
 		msg->strings[1] = key->userids?key->userids[0]:NULL;
 	} else

@@ -394,7 +394,7 @@ VOID MyBltMaskBitMapRastPort( struct BitMap *srcBitMap, LONG xSrc, LONG ySrc, st
 	}
 }
 
-LONG GetControlChar(char *label)
+LONG GetControlChar(const char *label)
 {
 	char *buf = strchr(label,'_');
 	if (buf) return ToLower(*(buf+1));

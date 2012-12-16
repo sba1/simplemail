@@ -1209,7 +1209,7 @@ void callback_create_subject_filter(void)
 	mail = main_get_mail_first_selected(&handle);
 	while (mail)
 	{
-		subjects[num_of_mails++] = (char*)mail->subject;
+		subjects[num_of_mails++] = mail->subject;
 		mail = main_get_mail_next_selected(&handle);
 	}
 

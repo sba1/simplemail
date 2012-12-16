@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** account.c
-*/
+/**
+ * @file account.c
+ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -33,9 +33,11 @@
 #include "smtp.h"
 #include "support_indep.h"
 
-/**************************************************************************
- Allocates a new account
-**************************************************************************/
+/**
+ * Allocates a new account.
+ *
+ * @return
+ */
 struct account *account_malloc(void)
 {
 	struct pop3_server *pop;
@@ -66,9 +68,12 @@ struct account *account_malloc(void)
 	return NULL;
 }
 
-/**************************************************************************
- Duplicates an account
-**************************************************************************/
+/**
+ * Duplicates an account.
+ *
+ * @param a
+ * @return
+ */
 struct account *account_duplicate(struct account *a)
 {
 	struct pop3_server *pop;
@@ -104,9 +109,11 @@ struct account *account_duplicate(struct account *a)
 	return NULL;
 }
 
-/**************************************************************************
- Frees an account
-**************************************************************************/
+/**
+ * Frees an account.
+ *
+ * @param a
+ */
 void account_free(struct account *a)
 {
 	if (a->account_name) free(a->account_name);
@@ -157,9 +164,12 @@ struct account *account_find_by_from(char *from)
 	return NULL;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Find an imap server by the given folder using the accounts.
+ *
+ * @param f
+ * @return
+ */
 struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 {
 	struct account *account;

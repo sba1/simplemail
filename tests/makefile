@@ -19,6 +19,7 @@ SIMPLEMAIL_LIB  = simplemail
 
 TESTEXES=\
 	boyermoore_unittest \
+	configuration_unittest \
 	mail_unittest \
 	filter_unittest \
 	support_indep_unittest \

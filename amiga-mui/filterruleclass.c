@@ -33,11 +33,13 @@
 #include <proto/intuition.h>
 
 #include "filter.h"
+#include "mail.h"
 #include "smintl.h"
 #include "debug.h"
 #include "support.h"
 
 #include "compiler.h"
+#include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "filterruleclass.h"
@@ -366,14 +368,95 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 	}
 }
 
+/**
+ * Decides whether a drag and drop operation may be accepted.
+ *
+ * @param data
+ * @param dragged_obj
+ * @return
+ */
+static int FilterRule_AcceptDrag(struct FilterRule_Data *data, Object *dragged_obj)
+{
+  if (OCLASS(dragged_obj) != CL_MailTreelist->mcc_Class)
+	  return 0;
+  if (data->type != RULE_RCPT_MATCH && data->type != RULE_SUBJECT_MATCH)
+	  return 0;
+  return 1;
+}
+
 STATIC ULONG FilterRule_DragQuery(struct IClass *cl,Object *obj,struct MUIP_DragQuery *msg)
 {
-  return DoSuperMethodA(cl,obj,(Msg)msg);
+  struct FilterRule_Data *data = (struct FilterRule_Data*)INST_DATA(cl,obj);
+  if (!FilterRule_AcceptDrag(data,msg->obj)) return DoSuperMethodA(cl,obj,(Msg)msg);
+  return MUIV_DragQuery_Accept;
 }
 
 STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
-  return DoSuperMethodA(cl,obj,(Msg)msg);
+  struct filter_rule *fr;
+  struct filter *f; /* We need this only to dispose the filter rule */
+
+  struct FilterRule_Data *data = (struct FilterRule_Data*)INST_DATA(cl,obj);
+  if (!FilterRule_AcceptDrag(data,msg->obj)) return DoSuperMethodA(cl,obj,(Msg)msg);
+
+  if (!(f = filter_create()))
+	  return 0;
+
+  switch (data->type)
+  {
+	case	RULE_RCPT_MATCH:
+			fr = NULL;
+			break;
+
+	case	RULE_SUBJECT_MATCH:
+			{
+				/* TODO: Refactor (similar code is in simplemail.c), maybe let the controller handle all this */
+				void *handle;
+				struct mail_info *m;
+				unsigned int num_mails = 0;
+
+				m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetFirstSelected, (ULONG)&handle);
+				while (m)
+				{
+					num_mails++;
+					m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetNextSelected, (ULONG)&handle);
+				}
+
+				if (num_mails)
+				{
+					char **subjects;
+
+					if ((subjects = malloc(num_mails * sizeof(*subjects))))
+					{
+						num_mails = 0;
+						m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetFirstSelected, (ULONG)&handle);
+						while (m)
+						{
+							subjects[num_mails++] = m->subject;
+							m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetNextSelected, (ULONG)&handle);
+						}
+
+						fr = filter_rule_create_from_strings(subjects,num_mails,RULE_SUBJECT_MATCH);
+						free(subjects);
+					}
+				}
+			}
+			break;
+
+	default: fr = NULL; break;
+  }
+
+  if (fr)
+  {
+	  FilterRule_SetRule(data,fr);
+
+	  /* So the filter rule will be disposed */
+	  filter_add_rule(f,fr);
+  }
+
+  if (f)
+	  filter_dispose(f);
+  return 0;
 }
 
 STATIC MY_BOOPSI_DISPATCHER(ULONG, FilterRule_Dispatcher, cl, obj, msg)

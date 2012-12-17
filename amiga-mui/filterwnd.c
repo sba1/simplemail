@@ -16,9 +16,11 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** filterwnd.c
-*/
+/**
+ * Handle the filter window.
+ *
+ * @file filterwnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -71,6 +73,8 @@ static Object *filter_arexx_popasl;
 static Object *filter_arexx_string;
 static Object *filter_sound_check;
 static Object *filter_sound_string;
+static Object *filter_add_rule_button;
+static Object *filter_apply_now_button;
 
 static Object *filter_folder_list;
 
@@ -122,17 +126,18 @@ STATIC ASM LONG move_strobj(REG(a0,struct Hook *h),REG(a2,Object *list), REG(a1,
 	return 1;
 }
 
-/**************************************************************************
- This function is called whenever the folder list has changed
-**************************************************************************/
+/**
+ * Refreshes the folder list. It should be called, whenever the folder list
+ * has been changed.
+ */
 void filter_update_folder_list(void)
 {
 	DoMethod(filter_folder_list, MUIM_FolderTreelist_Refresh, NULL);
 }
 
-/**************************************************************************
- Accept the rule
-**************************************************************************/
+/**
+ * Accept the current filter settings.
+ */
 static void filter_accept_rule(void)
 {
 	if (filter_last_selected)
@@ -234,9 +239,9 @@ static void filter_accept_rule(void)
 	}
 }
 
-/**************************************************************************
- Refreshes the rules of the current folder.
-**************************************************************************/
+/**
+ * Refreshes the rules of the current filter.
+ */
 static void filter_refresh_rules(void)
 {
 	struct filter *filter;
@@ -290,9 +295,9 @@ static void filter_refresh_rules(void)
 	DoMethod(filter_rule_group, MUIM_Group_ExitChange);
 }
 
-/**************************************************************************
- Add a new rule into the filter
-**************************************************************************/
+/**
+ * Adds a new rule into the currently selected filter.
+ */
 static void filter_add_rule_gui(void)
 {
 	if (filter_last_selected)
@@ -303,9 +308,11 @@ static void filter_add_rule_gui(void)
 	}
 }
 
-/**************************************************************************
- Remove the rule
-**************************************************************************/
+/**
+ * Remove the rule from the GUI.
+ *
+ * @param objs the object representing the rule.
+ */
 static void filter_remove_rule_gui(Object **objs)
 {
 	struct filter_rule *fr;
@@ -325,9 +332,9 @@ static void filter_remove_rule_gui(Object **objs)
 	MUI_DisposeObject(objs[0]);
 }
 
-/**************************************************************************
- Apply the filter
-**************************************************************************/
+/**
+ * Apply the currently selected filter.
+ */
 static void filter_apply(void)
 {
 	if (filter_last_selected)
@@ -337,9 +344,9 @@ static void filter_apply(void)
 	}
 }
 
-/**************************************************************************
- Create a new filter
-**************************************************************************/
+/**
+ * Creates a new filter.
+ */
 static void filter_new(void)
 {
 	struct filter *f = filter_create();
@@ -354,18 +361,18 @@ static void filter_new(void)
 	}
 }
 
-/**************************************************************************
- Delete the current selected filter
-**************************************************************************/
+/**
+ * Removes the currently selected filter.
+ */
 static void filter_remove(void)
 {
 	filter_last_selected = NULL;
 	DoMethod(filter_list, MUIM_NList_Remove, MUIV_NList_Remove_Active);
 }
 
-/**************************************************************************
- Ok, callback and close the filterwindow
-**************************************************************************/
+/**
+ * Accept the filter settings. Also closes the window.
+ */
 static void filter_ok(void)
 {
 	struct filter *f;
@@ -379,9 +386,7 @@ static void filter_ok(void)
 	{
 		DoMethod(filter_list, MUIM_NList_GetEntry, i, (ULONG)&f);
 		if (f)
-		{
 			filter_list_add_duplicate(f);
-		}
 	}
 
 	/* Clear the list to save memory */
@@ -391,9 +396,9 @@ static void filter_ok(void)
 	filter_refresh_rules();
 }
 
-/**************************************************************************
- Cancel the filter
-**************************************************************************/
+/**
+ * Cancel the filter changes. Also closes the window.
+ */
 static void filter_cancel(void)
 {
 	/* Clear the list to save memory */
@@ -404,9 +409,9 @@ static void filter_cancel(void)
 	filter_refresh_rules();
 }
 
-/**************************************************************************
- New Entry has been activated
-**************************************************************************/
+/**
+ * A new entry has been activated.
+ */
 static void filter_active(void)
 {
 	struct filter *f;
@@ -427,14 +432,21 @@ static void filter_active(void)
 		set(filter_new_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_NEW));
 		set(filter_sent_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_SENT));
 		set(filter_remote_check, MUIA_Selected, !!(f->flags & FILTER_FLAG_REMOTE));
+	} else
+	{
+		filter_refresh_rules();
+	}
 
-	} else filter_refresh_rules();
 	filter_last_selected = f;
+
+	/* Update some disable states */
+	set(filter_apply_now_button,MUIA_Disabled,!filter_last_selected);
+	set(filter_add_rule_button,MUIA_Disabled,!filter_last_selected);
 }
 
-/**************************************************************************
- A new name
-**************************************************************************/
+/**
+ * A new name has been entered.
+ */
 static void filter_name(void)
 {
 	struct filter *f;
@@ -447,9 +459,9 @@ static void filter_name(void)
 	}
 }
 
-/**************************************************************************
- Init the filter window
-**************************************************************************/
+/**
+ * Initialize the filter window.
+ */
 static void init_filter(void)
 {
 	static struct Hook filter_construct_hook;
@@ -457,7 +469,7 @@ static void init_filter(void)
 	static struct Hook filter_display_hook;
 	static struct Hook move_objstr_hook, move_strobj_hook;
 	Object *ok_button, *cancel_button, *save_button;
-	Object *filter_add_rule_button, *filter_apply_now_button, *filter_move_popobject, *filter_remote_label;
+	Object *filter_move_popobject, *filter_remote_label;
 
 	init_hook(&filter_construct_hook,(HOOKFUNC)filter_construct);
 	init_hook(&filter_destruct_hook,(HOOKFUNC)filter_destruct);
@@ -628,6 +640,8 @@ void filter_open_with_new_filter(struct filter *nf)
 		if (!filter_wnd) return;
 	}
 
+	filter_last_selected = NULL;
+
 	/* Clear the filter listview contents */
 	DoMethod(filter_list, MUIM_NList_Clear);
 
@@ -649,6 +663,7 @@ void filter_open_with_new_filter(struct filter *nf)
 	}
 
 	set(filter_list, MUIA_NList_Active, new_active);
+	filter_active();
 	set(filter_wnd, MUIA_Window_Open, TRUE);
 }
 

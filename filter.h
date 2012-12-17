@@ -132,6 +132,18 @@ struct filter_rule *filter_create_and_add_rule(struct filter *filter, int type);
 void filter_rule_add_copy_of_string(struct filter_rule *fr, char *text);
 struct filter_rule *filter_rule_create_from_strings(char **strings, int num_strings, int flags);
 struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***addresses, unsigned int num_addresses);
+
+enum filter_rule_create_type
+{
+	FRCT_RECEPIENTS,
+	FRCT_SUBJECT
+};
+
+struct mail_info;
+struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_create_type type, int num_mails,
+												  struct mail_info * (*get_first_mail_info)(void *handle, void *userdata),
+												  struct mail_info * (*get_next_mail_info)(void *handle, void *userdata),
+												  void *userdata);
 struct filter_rule *filter_find_rule(struct filter *filter, int num);
 char *filter_get_rule_string(struct filter_rule *rule);
 void filter_remove_rule(struct filter_rule *fr);

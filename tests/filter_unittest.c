@@ -23,7 +23,10 @@
 
 #include <CUnit/Basic.h>
 
+#include "mail.h"
 #include "filter.h"
+
+/*******************************************************/
 
 /* @Test */
 void test_filter_rule_create_from_strings(void)
@@ -53,6 +56,8 @@ void test_filter_rule_create_from_strings(void)
 	filter_dispose(f);
 }
 
+/*******************************************************/
+
 /* @Test */
 void test_filter_rule_create_from_common_sorted_recipients(void)
 {
@@ -70,6 +75,109 @@ void test_filter_rule_create_from_common_sorted_recipients(void)
 
 	f = filter_create();
 	CU_ASSERT(f != NULL);
+
+	filter_add_rule(f,fr);
+	filter_dispose(f);
+}
+
+/*******************************************************/
+
+#define NUM_MAILS 3
+
+static struct mail_info *get_first_mail_info(void *handle, void *userdata)
+{
+	unsigned int *h = (unsigned int*)handle;
+	struct mail_info **m;
+
+	if (NUM_MAILS == 0)
+		return NULL;
+
+	m = (struct mail_info**)userdata;
+	*h = 0;
+	return m[*h];
+}
+
+static struct mail_info *get_next_mail_info(void *handle, void *userdata)
+{
+	unsigned int *h = (unsigned int*)handle;
+	struct mail_info **m;
+
+	if (*h == NUM_MAILS-1) return NULL;
+	m = (struct mail_info**)userdata;
+	*h = *h + 1;
+	return m[*h];
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_filter_rule_create_subject_rule_from_mail_iterator(void)
+{
+	struct filter_rule *fr;
+	struct filter *f;
+
+	struct mail_info *m[NUM_MAILS];
+	int i;
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+	{
+		char buf[128];
+		snprintf(buf,sizeof(buf),"%d%dTest%d%d\n",i,i,i,i);
+
+		m[i] = mail_info_create();
+		CU_ASSERT(m[i] != NULL);
+
+		m[i]->subject = (utf8*)mystrdup(buf);
+		CU_ASSERT(m[i]->subject != NULL);
+	}
+
+	f = filter_create();
+	CU_ASSERT(f != NULL);
+
+	fr = filter_rule_create_from_mail_iterator(FRCT_SUBJECT,-1,get_first_mail_info,get_next_mail_info,m);
+	CU_ASSERT(fr != NULL);
+	CU_ASSERT(!strcmp("Test",fr->u.subject.subject[0]));
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+		mail_info_free(m[i]);
+
+	filter_add_rule(f,fr);
+	filter_dispose(f);
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_filter_rule_create_recipient_rule_from_mail_iterator(void)
+{
+	struct filter_rule *fr;
+	struct filter *f;
+
+	struct mail_info *m[NUM_MAILS];
+	int i;
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+	{
+		char buf[128];
+		snprintf(buf,sizeof(buf),"test%d@abcdef.de,sba@zzzqqq.de\n",i);
+
+		m[i] = mail_info_create();
+		CU_ASSERT(m[i] != NULL);
+
+		m[i]->to_list = create_address_list(buf);
+		CU_ASSERT(m[i]->to_list != NULL);
+	}
+
+	f = filter_create();
+	CU_ASSERT(f != NULL);
+
+	fr = filter_rule_create_from_mail_iterator(FRCT_RECEPIENTS,-1,get_first_mail_info,get_next_mail_info,m);
+	CU_ASSERT(fr != NULL);
+
+	CU_ASSERT(strcmp("sba@zzzqqq.de",fr->u.rcpt.rcpt[0])==0);
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+		mail_info_free(m[i]);
 
 	filter_add_rule(f,fr);
 	filter_dispose(f);

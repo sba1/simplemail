@@ -31,6 +31,7 @@
 #include "debug.h"
 #include "lists.h"
 #include "filter.h"
+#include "mail.h"
 #include "support.h"
 #include "support_indep.h"
 
@@ -432,6 +433,90 @@ struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***add
 
 	return r;
 }
+
+/**
+ * Create filter rule of the specific type from a mail iteration.
+ *
+ * @param get_first_mail_info
+ * @param get_next_mail_info
+ * @param num_mails
+ * @param type
+ * @return
+ */
+struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_create_type type, int num_mails,
+												  struct mail_info * (*get_first_mail_info)(void *handle, void *userdata),
+												  struct mail_info * (*get_next_mail_info)(void *handle, void *userdata),
+												  void *userdata)
+{
+	struct mail_info *m;
+	void *handle;
+	void **data;
+	struct filter_rule *fr;
+	int i;
+
+	if (num_mails < 0)
+	{
+		num_mails = 0;
+		m = get_first_mail_info(&handle,userdata);
+		while (m)
+		{
+			num_mails++;
+			m = get_next_mail_info(&handle,userdata);
+		}
+	}
+
+	if (num_mails == 0)
+		return NULL;
+
+	if (!(data = (void**)malloc(sizeof(*data)*num_mails)))
+		return NULL;
+
+	m = get_first_mail_info(&handle,userdata);
+	for (i=0;i<num_mails;i++)
+	{
+		switch (type)
+		{
+			case	FRCT_RECEPIENTS:
+					data[i] = mail_info_get_recipient_addresses(m); /* returns an array() */
+					break;
+			case	FRCT_SUBJECT:
+					data[i] = m->subject;
+					break;
+
+		}
+		m = get_next_mail_info(&handle,userdata);
+	}
+
+	switch (type)
+	{
+			case	FRCT_RECEPIENTS:
+					fr = filter_rule_create_from_common_sorted_recipients((char***)data,num_mails);
+					break;
+			case	FRCT_SUBJECT:
+					fr = filter_rule_create_from_strings((char**)data,num_mails,RULE_SUBJECT_MATCH);
+					break;
+			default:
+					fr = NULL;
+					break;
+
+	}
+
+	m = get_first_mail_info(&handle,userdata);
+	for (i=0;i<num_mails;i++)
+	{
+		switch (type)
+		{
+			case	FRCT_RECEPIENTS:
+					array_free(data[i]);
+					break;
+		}
+		m = get_next_mail_info(&handle,userdata);
+	}
+
+	free(data);
+	return fr;
+}
+
 
 /**
  * Remove the rule from its filter.

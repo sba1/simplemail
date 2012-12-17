@@ -509,6 +509,7 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 			case	FRCT_RECEPIENTS:
 					array_free(data[i]);
 					break;
+			default: break;
 		}
 		m = get_next_mail_info(&handle,userdata);
 	}

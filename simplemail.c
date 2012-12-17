@@ -1166,24 +1166,54 @@ void callback_show_raw(void)
 }
 
 /**
- * Returns the number of selected mails in the main window.
+ * Used for mail iterator callback.
  *
+ * @param handle
+ * @param userdata
  * @return
  */
-static unsigned int simplemail_get_num_of_selected_mails(void)
+static struct mail_info *simplemail_get_first_mail_info_of_main(void *handle, void *userdata)
 {
-	void *handle;
-	struct mail_info *mail;
-	unsigned int num_of_mails = 0;
+	return main_get_mail_first_selected(handle);
+}
 
-	mail = main_get_mail_first_selected(&handle);
-	while (mail)
-	{
-		num_of_mails++;
-		mail = main_get_mail_next_selected(&handle);
-	}
+/**
+ * Uses for mail iterator callback.
+ *
+ * @param handle
+ * @param userdata
+ * @return
+ */
+static struct mail_info *simplemail_get_next_mail_info_of_main(void *handle, void *userdata)
+{
+	return main_get_mail_next_selected(handle);
+}
 
-	return num_of_mails;
+/**
+ * Helper function to create a filter of specified type from the current
+ * mail selection.
+ *
+ * @param type
+ */
+static void simplemail_create_filter_from_current_mail_selection(enum filter_rule_create_type type)
+{
+	struct filter *f;
+	struct filter_rule *fr;
+
+	if (!(f = filter_create()))
+		return;
+
+	if (!(fr = filter_rule_create_from_mail_iterator(type,-1,
+			simplemail_get_first_mail_info_of_main,
+			simplemail_get_next_mail_info_of_main,
+			NULL)))
+		goto out;
+
+	filter_add_rule(f,fr);
+	filter_open_with_new_filter(f);
+out:
+	filter_dispose(f);
+
 }
 
 /**
@@ -1192,38 +1222,7 @@ static unsigned int simplemail_get_num_of_selected_mails(void)
  */
 void callback_create_subject_filter(void)
 {
-	struct mail_info *mail;
-	void *handle;
-	char **subjects;
-	struct filter *f;
-	struct filter_rule *fr;
-	unsigned int num_of_mails;
-
-	if (!(num_of_mails = simplemail_get_num_of_selected_mails()))
-		return;
-
-	if (!(subjects = (char**)malloc(sizeof(subjects[0])*num_of_mails)))
-		return;
-
-	num_of_mails = 0;
-	mail = main_get_mail_first_selected(&handle);
-	while (mail)
-	{
-		subjects[num_of_mails++] = mail->subject;
-		mail = main_get_mail_next_selected(&handle);
-	}
-
-	if (!(f = filter_create()))
-		goto out;
-
-	if (!(fr = filter_rule_create_from_strings(subjects,num_of_mails,RULE_SUBJECT_MATCH)))
-		goto out;
-
-	filter_add_rule(f,fr);
-	filter_open_with_new_filter(f);
-	filter_dispose(f);
-out:
-	free(subjects);
+	simplemail_create_filter_from_current_mail_selection(FRCT_SUBJECT);
 }
 
 /**
@@ -1232,43 +1231,7 @@ out:
  */
 void callback_create_recipient_filter(void)
 {
-	int i;
-	struct mail_info *mail;
-	void *handle;
-	char ***recipients;
-	struct filter *f;
-	struct filter_rule *fr;
-	unsigned int num_of_mails;
-
-	if (!(num_of_mails = simplemail_get_num_of_selected_mails()))
-		return;
-
-	if (!(recipients = (char***)malloc(sizeof(recipients[0])*num_of_mails)))
-		return;
-
-	num_of_mails = 0;
-	mail = main_get_mail_first_selected(&handle);
-	while (mail)
-	{
-		recipients[num_of_mails++] = mail_info_get_recipient_addresses(mail);
-		mail = main_get_mail_next_selected(&handle);
-	}
-
-	if (!(f = filter_create()))
-		goto out;
-
-	if (!(fr = filter_rule_create_from_common_sorted_recipients(recipients,num_of_mails)))
-		goto out;
-
-	filter_add_rule(f,fr);
-	filter_open_with_new_filter(f);
-	filter_dispose(f);
-
-	for (i=0;i<num_of_mails;i++)
-		free(recipients[i]);
-out:
-	free(recipients);
-
+	simplemail_create_filter_from_current_mail_selection(FRCT_RECEPIENTS);
 }
 
 /* mails should be fetched */

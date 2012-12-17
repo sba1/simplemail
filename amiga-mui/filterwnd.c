@@ -498,7 +498,7 @@ static void init_filter(void)
 						End,
 					Child, BalanceObject, End,
 					Child, VGroup,
-						Child, HorizLineTextObject(_("Activtiy")),
+						Child, HorizLineTextObject(_("Activity")),
 						Child, HGroup,
 							Child, RectangleObject,MUIA_Weight,25,End,
 							Child, ColGroup(5),

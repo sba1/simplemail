@@ -391,6 +391,31 @@ STATIC ULONG FilterRule_DragQuery(struct IClass *cl,Object *obj,struct MUIP_Drag
   return MUIV_DragQuery_Accept;
 }
 
+/**
+ * Used for mail iterator callback.
+ *
+ * @param handle
+ * @param userdata
+ * @return
+ */
+static struct mail_info *FilterRule_Get_First_Mail_Info(void *handle, void *userdata)
+{
+	return (struct mail_info*)DoMethod(userdata, MUIM_MailTreelist_GetFirstSelected, (ULONG)handle);
+}
+
+/**
+ * Uses for mail iterator callback.
+ *
+ * @param handle
+ * @param userdata
+ * @return
+ */
+static struct mail_info *FilterRule_Get_Next_Mail_Info(void *handle, void *userdata)
+{
+	return (struct mail_info*)DoMethod(userdata, MUIM_MailTreelist_GetNextSelected, (ULONG)handle);
+}
+
+
 STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragDrop *msg)
 {
   struct filter_rule *fr;
@@ -405,42 +430,11 @@ STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragD
   switch (data->type)
   {
 	case	RULE_RCPT_MATCH:
-			fr = NULL;
+			fr = filter_rule_create_from_mail_iterator(FRCT_RECEPIENTS,-1,FilterRule_Get_First_Mail_Info,FilterRule_Get_Next_Mail_Info,msg->obj);
 			break;
 
 	case	RULE_SUBJECT_MATCH:
-			{
-				/* TODO: Refactor (similar code is in simplemail.c), maybe let the controller handle all this */
-				void *handle;
-				struct mail_info *m;
-				unsigned int num_mails = 0;
-
-				m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetFirstSelected, (ULONG)&handle);
-				while (m)
-				{
-					num_mails++;
-					m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetNextSelected, (ULONG)&handle);
-				}
-
-				if (num_mails)
-				{
-					char **subjects;
-
-					if ((subjects = malloc(num_mails * sizeof(*subjects))))
-					{
-						num_mails = 0;
-						m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetFirstSelected, (ULONG)&handle);
-						while (m)
-						{
-							subjects[num_mails++] = m->subject;
-							m = (struct mail_info*)DoMethod(msg->obj, MUIM_MailTreelist_GetNextSelected, (ULONG)&handle);
-						}
-
-						fr = filter_rule_create_from_strings(subjects,num_mails,RULE_SUBJECT_MATCH);
-						free(subjects);
-					}
-				}
-			}
+			fr = filter_rule_create_from_mail_iterator(FRCT_SUBJECT,-1,FilterRule_Get_First_Mail_Info,FilterRule_Get_Next_Mail_Info,msg->obj);
 			break;
 
 	default: fr = NULL; break;

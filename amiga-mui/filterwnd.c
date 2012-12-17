@@ -620,6 +620,7 @@ static void init_filter(void)
 void filter_open_with_new_filter(struct filter *nf)
 {
 	struct filter *f;
+	int new_active;
 
 	if (!filter_wnd)
 	{
@@ -639,9 +640,15 @@ void filter_open_with_new_filter(struct filter *nf)
 	}
 
 	if (nf)
+	{
 		DoMethod(filter_list, MUIM_NList_InsertSingle, (ULONG)nf, MUIV_NList_Insert_Bottom);
+		new_active = xget(filter_list,MUIA_NList_Entries)-1;
+	} else
+	{
+		new_active = 0;
+	}
 
-	set(filter_list, MUIA_NList_Active,0);
+	set(filter_list, MUIA_NList_Active, new_active);
 	set(filter_wnd, MUIA_Window_Open, TRUE);
 }
 

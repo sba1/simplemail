@@ -22,6 +22,8 @@
 #ifndef SM__INDEX_PRIVATE_H
 #define SM__INDEX_PRIVATE_H
 
+#include <stdarg.h>
+
 struct index_algorithm;
 
 /**
@@ -82,9 +84,10 @@ struct index_algorithm
 	 * @param callback
 	 * @param userdata
 	 * @param num_substrings number of following strings of type const char *.
+	 * @param substrings the substrings that must be contained.
 	 * @return number of documents for which the callback was called.
 	 */
-	int (*find_documents)(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, ...);
+	int (*find_documents)(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, va_list substrings);
 };
 
 

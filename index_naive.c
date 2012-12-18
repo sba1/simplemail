@@ -35,11 +35,18 @@ struct index_naive
 
 struct index *index_naive_create(const char *filename)
 {
-	return NULL;
+	struct index *idx;
+
+	if (!(idx = (struct index*)malloc(sizeof(*idx))))
+		return NULL;
+
+	memset(idx,0,sizeof(*idx));
+	return idx;
 }
 
 void index_naive_dispose(struct index *index)
 {
+	free(index);
 }
 
 int index_naive_put_document(struct index *index, int did, const char *text)
@@ -52,7 +59,7 @@ int index_naive_remove_document(struct index *index, int did)
 	return 0;
 }
 
-int index_naive_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, ...)
+int index_naive_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, va_list substrings)
 {
 	return 0;
 }

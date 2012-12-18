@@ -36,7 +36,12 @@
  */
 struct index *index_create(struct index_algorithm *alg, const char *filename)
 {
-	return NULL;
+	struct index *idx;
+
+	if (!(idx = alg->create(filename)))
+		return NULL;
+	idx->alg = alg;
+	return idx;
 }
 
 /**
@@ -48,6 +53,8 @@ struct index *index_create(struct index_algorithm *alg, const char *filename)
  */
 void index_dispose(struct index *index)
 {
+	if (!index) return;
+	index->alg->dispose(index);
 }
 
 /**
@@ -60,7 +67,7 @@ void index_dispose(struct index *index)
  */
 int index_put_document(struct index *index, int did, const char *text)
 {
-	return 0;
+	return index->alg->put_document(index,did,text);
 }
 
 /**
@@ -73,7 +80,7 @@ int index_put_document(struct index *index, int did, const char *text)
  */
 int index_remove_document(struct index *index, int did)
 {
-	return 0;
+	return index->alg->remove_document(index,did);
 }
 
 /**
@@ -87,5 +94,11 @@ int index_remove_document(struct index *index, int did)
  */
 int index_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, ...)
 {
-	return 0;
+	int rc;
+
+	va_list list;
+
+	va_start(list, num_substrings);
+	rc = index->alg->find_documents(index,callback,userdata,num_substrings,list);
+	va_end(list);
 }

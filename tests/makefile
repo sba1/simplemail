@@ -21,8 +21,9 @@ TESTEXES=\
 	boyermoore_unittest \
 	codesets_unittest \
 	configuration_unittest \
-	mail_unittest \
 	filter_unittest \
+	index_unittest \
+	mail_unittest \
 	support_indep_unittest \
 	text2html_unittest
 

@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
 
 #include <CUnit/Basic.h>
 
@@ -31,5 +30,11 @@
 /* @Test */
 void test_index_naive(void)
 {
+	struct index *index;
+
+	index = index_create(&index_naive,"naive-index.dat");
+	CU_ASSERT(index != NULL);
+
+	index_dispose(index);
 
 }

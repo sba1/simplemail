@@ -1,5 +1,5 @@
 /**
- * index_naive.h - a simple string index interface for SimpleMail.
+ * index_naive.h - a naive string index implementation for SimpleMail.
  * Copyright (C) 2012  Sebastian Bauer
  *
  * This program is free software: you can redistribute it and/or modify

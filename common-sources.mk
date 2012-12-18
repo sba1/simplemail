@@ -19,6 +19,7 @@ NONARCHSRCS=\
 	http.c \
 	imap.c \
 	index.c \
+	index_naive.c \
 	lists.c \
 	mail.c \
 	mbox.c \

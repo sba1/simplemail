@@ -18,6 +18,7 @@ NONARCHSRCS=\
 	hmac_md5.c \
 	http.c \
 	imap.c \
+	index.c \
 	lists.c \
 	mail.c \
 	mbox.c \

@@ -140,35 +140,38 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover ign=79,110 noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo $(LOCALEDIR)fr.mo
+LOCALEOBJS = ${LOCALEDIR}cz.mo ${LOCALEDIR}da.mo ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo $(LOCALEDIR)fr.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:
   msgfmt ./$? -o ./$@ # this is the unix style variant of msgfmt (GeekGadgets)
 # msgfmt $? -o $@     # this is the Amiga style variant of msgfmt
 
+${LOCALEDIR}cz.mo: po/cz.po
+${LOCALEDIR}de.mo: po/da.po
 ${LOCALEDIR}de.mo: po/de.po
+${LOCALEDIR}es.mo: po/es.po
+${LOCALEDIR}fi.mo: po/fi.po
+${LOCALEDIR}fr.mo: po/fr.po
 ${LOCALEDIR}ma.mo: po/ma.po
 ${LOCALEDIR}pl.mo: po/pl.po
-${LOCALEDIR}fi.mo: po/fi.po
-${LOCALEDIR}es.mo: po/es.po
-${LOCALEDIR}fr.mo: po/fr.po
-${LOCALEDIR}cz.mo: po/cz.po
 
+cz.pox:
+  execute CreatePOX cz
+da.pox:
+  execute CreatePOX da
 de.pox:
   execute CreatePOX de
+es.pox:
+  execute CreatePOX es
+fi.pox:
+  execute CreatePOX fi
+fr.pox:
+  execute CreatePOX fr
 ma.pox:
   execute CreatePOX ma
 pl.pox:
   execute CreatePOX pl
-fi.pox:
-  execute CreatePOX fi
-es.pox:
-  execute CreatePOX es
-fr.pox:
-  execute CreatePOX fr
-cz.pox:
-  execute CreatePOX cz
 
 # some fake targets
 generate:

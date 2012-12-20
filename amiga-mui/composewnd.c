@@ -405,13 +405,31 @@ static void compose_add_multipart(struct Compose_Data **pdata)
 	compose_add_attachment(data,&attach,1);
 }
 
+/**
+ * Add the given file as an attachment.
+ *
+ * @param data
+ * @param filename
+ */
+static void compose_add_file_as_an_attachment(struct Compose_Data *data, char *filename)
+{
+	struct attachment attach;
+	memset(&attach, 0, sizeof(attach));
+
+	attach.content_type = identify_file(filename);
+	attach.editable = 0;
+	attach.filename = filename;
+	attach.unique_id = data->attachment_unique_id++;
+
+	compose_add_attachment(data,&attach,0);
+}
+
 /******************************************************************
  Add files to the list
 *******************************************************************/
 static void compose_add_files(struct Compose_Data **pdata)
 {
 	struct Compose_Data *data = *pdata;
-	struct attachment attach;
 
 	if (data->file_req)
 	{
@@ -427,7 +445,6 @@ static void compose_add_files(struct Compose_Data **pdata)
 				TAG_DONE))
 		{
 			int i;
-			memset(&attach, 0, sizeof(attach));
 
 			for (i=0; i<data->file_req->fr_NumArgs;i++)
 			{
@@ -440,12 +457,8 @@ static void compose_add_files(struct Compose_Data **pdata)
 					{
 						strcpy(buf,drawer);
 						AddPart(buf,data->file_req->fr_ArgList[i].wa_Name,len);
-						attach.content_type = identify_file(buf);
-						attach.editable = 0;
-						attach.filename = buf;
-						attach.unique_id = data->attachment_unique_id++;
 
-						compose_add_attachment(data,&attach,0);
+						compose_add_file_as_an_attachment(data,buf);
 						FreeVec(buf);
 					}
 					FreeVec(drawer);

@@ -3299,16 +3299,17 @@ MAILWRITE
      MailWrite -- Open a new Compose Message window.
 
 @{b}TEMPLATE@{ub}
-     MAILTO/K,SUBJECT/K
+     MAILTO/K,SUBJECT/K,ATTACHMENT/K/M
 
 @{b}FUNCTION@{ub}
      Opens a new Compose Message window using the recipient and
      subject provided, if any.
 
 @{b}INPUTS@{ub}
-     MAILTO/K - either an email address or an alias (or even group
-                name) that may be found in the addressbook
-     SUBJECT  - the subject title for the new mail
+     MAILTO     - either an email address or an alias (or even group
+                  name) that may be found in the addressbook
+     SUBJECT    - the subject title for the new mail
+     ATTACHMENT - a file that should be added as an attachment
 
 @{b}RETURNS@{ub}
 

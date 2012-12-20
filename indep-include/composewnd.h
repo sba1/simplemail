@@ -47,4 +47,6 @@ void compose_refresh_signature_cycle(void);
 
 void compose_window_close(int num, int action);
 
+void compose_window_attach(int num, char **filenames);
+
 #endif

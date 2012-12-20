@@ -230,9 +230,12 @@ static void arexx_maintofront(struct RexxMsg *rxmsg, STRPTR args)
 
 static int compose_active_window;
 
-/****************************************************************
- MAILWRITE Arexx Command
-*****************************************************************/
+/**
+ * MAILWRITE ARexx command.
+ *
+ * @param rxmsg
+ * @param args
+ */
 static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 {
 	APTR arg_handle;
@@ -244,10 +247,11 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 		ULONG quiet;
 		STRPTR mailto;
 		STRPTR subject;
+		STRPTR *attachments;
 	} mailwrite_arg;
 	memset(&mailwrite_arg,0,sizeof(mailwrite_arg));
 
-	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S,MAILTO/K,SUBJECT/K",args,&mailwrite_arg)))
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S,MAILTO/K,SUBJECT/K,ATTACHMENT/K/M",args,&mailwrite_arg)))
 	{
 		if (mailwrite_arg.window)
 		{
@@ -258,6 +262,8 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 			int window;
 
 			compose_active_window = window = callback_write_mail_to_str(mailwrite_arg.mailto,mailwrite_arg.subject);
+			if (mailwrite_arg.attachments)
+				compose_window_attach(window,mailwrite_arg.attachments);
 
 			if (mailwrite_arg.stem)
 			{
@@ -280,6 +286,37 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 		}
 		FreeTemplate(arg_handle);
 	}
+}
+
+/**
+ * WRITEATTACH ARexx command.
+ *
+ * @param rxmsg
+ * @param args
+ */
+static void arexx_writeattach(struct RexxMsg *rxmsg, STRPTR args)
+{
+	APTR arg_handle;
+	ULONG window;
+
+	struct
+	{
+		STRPTR file;
+		STRPTR desc;
+		STRPTR encmode;
+		STRPTR ctype;
+		ULONG *window;
+	} writeattach_arg;
+	memset(&writeattach_arg,0,sizeof(writeattach_arg));
+
+	if (!(arg_handle = ParseTemplate("FILE/A,DESC,ENCMODE,CTYPE,WINDOW/N",args,&writeattach_arg)))
+		return;
+
+	if (writeattach_arg.window)
+		window = *writeattach_arg.window;
+	else window = -1;
+
+	FreeTemplate(arg_handle);
 }
 
 /****************************************************************
@@ -1735,10 +1772,12 @@ static void arexx_maildelete(struct RexxMsg *rxmsg, STRPTR args)
 	}
 }
 
-
-/****************************************************************
- Handle this single arexx message
-*****************************************************************/
+/**
+ * Handle this single arexx message.
+ *
+ * @param rxmsg
+ * @return
+ */
 static int arexx_message(struct RexxMsg *rxmsg)
 {
 	STRPTR command_line = (STRPTR)ARG0(rxmsg);
@@ -1759,6 +1798,7 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	{
 		if (!Stricmp("MAINTOFRONT",command.command)) arexx_maintofront(rxmsg,command.args);
 		else if (!Stricmp("MAILWRITE",command.command)) arexx_mailwrite(rxmsg,command.args);
+		else if (!Stricmp("WRITEATTACH",command.command)) arexx_writeattach(rxmsg,command.args);
 		else if (!Stricmp("WRITECLOSE",command.command)) arexx_writeclose(rxmsg,command.args);
 		else if (!Stricmp("SETMAIL",command.command)) arexx_setmail(rxmsg,command.args);
 		else if (!Stricmp("SETMAILFILE",command.command)) arexx_setmailfile(rxmsg,command.args);
@@ -1802,9 +1842,11 @@ static int arexx_message(struct RexxMsg *rxmsg)
 	return 0;
 }
 
-/****************************************************************
- Handle the incoming arexx message.
-*****************************************************************/
+/**
+ * Handle the incoming arexx messages.
+ *
+ * @return
+ */
 int arexx_handle(void)
 {
 	int retval = 0;

@@ -1668,6 +1668,24 @@ void compose_window_activate(int num)
 	if (compose_open[num] && compose_open[num]->wnd) set(compose_open[num]->wnd,MUIA_Window_Open,TRUE);
 }
 
+/**
+ * Attach the given attachments.
+ *
+ * @param num number of the window
+ * @param filenames NULL terminated array of files to attach.
+ */
+void compose_window_attach(int num, char **filenames)
+{
+	int i;
+	char *filename;
+
+	if (num < 0 || num >= MAX_COMPOSE_OPEN) return;
+	if (!compose_open[num]) return;
+
+	for (i=0;(filename = filenames[i]);i++)
+		compose_add_file_as_an_attachment(compose_open[num],filename);
+}
+
 /******************************************************************
  Closes a read window
 *******************************************************************/

@@ -101,4 +101,6 @@ int index_find_documents(struct index *index, int (*callback)(int did, void *use
 	va_start(list, num_substrings);
 	rc = index->alg->find_documents(index,callback,userdata,num_substrings,list);
 	va_end(list);
+
+	return rc;
 }

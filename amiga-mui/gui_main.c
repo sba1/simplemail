@@ -74,6 +74,7 @@
 #include "attachmentlistclass.h"
 #include "audioselectgroupclass.h"
 #include "composeeditorclass.h"
+#include "composewnd.h"
 #include "configwnd.h"
 #include "datatypescache.h"
 #include "datatypesclass.h"
@@ -501,9 +502,10 @@ void app_unbusy(void)
 	set(App,MUIA_Application_Sleep,FALSE);
 }
 
-char *initial_mailto;
-char *initial_subject;
-char *initial_message;
+static char *initial_mailto;
+static char *initial_subject;
+static char *initial_message;
+static char **initial_attachments;
 
 static char *gui_images_directory;
 
@@ -603,8 +605,13 @@ int gui_init(void)
 			if (open_config_window) open_config();
 
 			/* if we should open the compose window soon after start */
-			if (initial_mailto)
-				callback_write_mail_to_str(initial_mailto, initial_subject);
+			if (initial_mailto || initial_subject || initial_attachments)
+			{
+				int win_num;
+
+				win_num = callback_write_mail_to_str(initial_mailto, initial_subject);
+				if (initial_attachments) compose_window_attach(win_num,initial_attachments);
+			}
 
 			if (initial_message)
 				callback_open_message(initial_message,-1);
@@ -612,9 +619,11 @@ int gui_init(void)
 			free(initial_message);
 			free(initial_mailto);
 			free(initial_subject);
+			array_free(initial_attachments);
 			initial_mailto = NULL;
 			initial_subject = NULL;
 			initial_message = NULL;
+			initial_attachments = NULL;
 
 			/* register appicon refresh function which is called every 2 seconds */
 			thread_push_function_delayed(2000,refresh_appicon,0);
@@ -661,6 +670,7 @@ int gui_parseargs(int argc, char *argv[])
 		char *message;
 		char *mailto;
 		char *subject;
+		char **attachments;
 		char *profile_directory;
 		char *image_directory;
 		LONG *debuglevel;
@@ -672,11 +682,12 @@ int gui_parseargs(int argc, char *argv[])
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,ATTACHMENT/K/M,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
+		initial_attachments = array_duplicate(shell_args.attachments);
 		config_set_user_profile_directory(shell_args.profile_directory);
 		if ((gui_images_directory = mystrdup(shell_args.image_directory)))
 			atcleanup_free(gui_images_directory);

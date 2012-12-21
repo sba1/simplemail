@@ -376,6 +376,15 @@ void callback_get_address(void)
 	}
 }
 
+/**
+ * Callback for opening a compose window.
+ *
+ * @param from
+ * @param to
+ * @param replyto
+ * @param subject
+ * @return the newly openend compose window number.
+ */
 int callback_write_mail(char *from, char *to, char *replyto, char *subject)
 {
 	struct compose_args ca;

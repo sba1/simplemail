@@ -1527,7 +1527,7 @@ msgid "Save All Attachments..."
 msgstr "Salva tutti gli allegati..."
 
 msgid "Save All Indexfiles"
-msgstr "Salva tutti gli indici dei file
+msgstr "Salva tutti gli indici dei file"
 
 msgid "Save As..."
 msgstr "Salva come..."
@@ -2145,7 +2145,7 @@ msgid "Word wrap"
 msgstr "Margine automatico"
 
 msgid "Wordwrap plain text"
-msgstr "Ritorno margine automatico sul testo.
+msgstr "Ritorno margine automatico sul testo."
 
 msgid "Work"
 msgstr "Lavoro"
@@ -2316,7 +2316,7 @@ msgid "_Ok"
 msgstr "_Ok"
 
 msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
-msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla
+msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla"
 
 msgid "_Prev"
 msgstr "_Precedente."

@@ -31,10 +31,13 @@
 void test_index_naive(void)
 {
 	struct index *index;
+	int ok;
 
 	index = index_create(&index_naive,"naive-index.dat");
 	CU_ASSERT(index != NULL);
 
-	index_dispose(index);
+	ok = index_put_document(index,1,"This is a very long text.");
+	CU_ASSERT(ok!=0);
 
+	index_dispose(index);
 }

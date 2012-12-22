@@ -23,35 +23,75 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lists.h"
+
 #include "index.h"
 #include "index_private.h"
 #include "index_naive.h"
 
+struct document_node
+{
+	struct node node;
+	int did;
+	char *txt;
+};
+
 struct index_naive
 {
 	struct index index;
+	struct list document_list;
 };
 
 
 struct index *index_naive_create(const char *filename)
 {
-	struct index *idx;
+	struct index_naive *idx;
 
-	if (!(idx = (struct index*)malloc(sizeof(*idx))))
+	if (!(idx = (struct index_naive*)malloc(sizeof(*idx))))
 		return NULL;
 
 	memset(idx,0,sizeof(*idx));
-	return idx;
+	list_init(&idx->document_list);
+
+	return &idx->index;
 }
 
 void index_naive_dispose(struct index *index)
 {
+	struct document_node *d;
+	struct index_naive *idx;
+
+	idx = (struct index_naive*)index;
+
+	while ((d = (struct document_node *)list_remove_tail(&idx->document_list)))
+	{
+		free(d->txt);
+		free(d);
+	}
+
 	free(index);
 }
 
 int index_naive_put_document(struct index *index, int did, const char *text)
 {
-	return 0;
+	struct document_node *d;
+	struct index_naive *idx;
+
+	idx = (struct index_naive*)index;
+
+	if (!(d = (struct document_node*)malloc(sizeof(*d))))
+		return 0;
+	memset(d,0,sizeof(*d));
+
+	d->did = did;
+	if (!(d->txt = strdup(text)))
+	{
+		free(d);
+		return 0;
+	}
+
+	list_insert_tail(&idx->document_list,&d->node);
+	return 1;
 }
 
 int index_naive_remove_document(struct index *index, int did)

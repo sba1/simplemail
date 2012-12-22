@@ -701,12 +701,27 @@ int gui_parseargs(int argc, char *argv[])
 	{
 		char result[40];
 		/* SimpleMail is already running */
-		if (initial_mailto || initial_subject)
+		if (initial_mailto || initial_subject || initial_attachments)
 		{
-			char *buf = malloc(mystrlen(initial_mailto)+mystrlen(initial_subject)+100);
-			if (buf)
+			char *buf;
+
+			int buflen = mystrlen(initial_mailto)+mystrlen(initial_subject)+100;
+
+			if (initial_attachments)
 			{
+				int i;
+				for (i=0;initial_attachments[i];i++)
+					buflen += strlen(initial_attachments[i]) + 20;
+			}
+
+			if ((buf = malloc(buflen)))
+			{
+				int i;
+
 				sprintf(buf,"MAILWRITE MAILTO=\"%s\" SUBJECT=\"%s\"",initial_mailto?initial_mailto:"",initial_subject?initial_subject:"");
+				for (i=0;initial_attachments[i];i++)
+					sprintf(buf+strlen(buf)," ATTACHMENT=\"%s\"",initial_attachments[i]);
+
 				SendRexxCommand("SIMPLEMAIL.1", buf, result, 40);
 				free(buf);
 			}

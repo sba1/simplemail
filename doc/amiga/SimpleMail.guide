@@ -2462,12 +2462,20 @@ SUBJECT=subject
 
 Sets the subject for the new message.
 
+
+ATTACHMENT=filename
+
+Adds an attachment to the new message. This parameter can
+be specified multiple times.
+
+
   Examples:
 
     SimpleMail MAILTO mail\@sebastianbauer.info SUBJECT "SimpleMail is cool!"
     SimpleMail MAILTO "Hynek Schlawack" SUBJECT "A love letter for you :)"
     SimpleMail MAILTO "Sebastian Bauer, Hynek Schlawack" SUBJECT Wonderful!
-
+    SimpleMail MAILTO "Sebastian Bauer, Hynek Schlawack" SUBJECT Wonderful!
+    SimpleMail MAILTO  mail\@sebastianbauer.info SUBJECT Icons ATTACHMENT DH0:Disk.info ATTACHMENT DH1:Disk.info
 
 DEBUG=debuglevel
 

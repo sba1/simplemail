@@ -1,0 +1,2425 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.37\n"
+"POT-Creation-Date: 2011-06-09 \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Jambalah <geepney@hotmail.it>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "%d KB / %d KB (time left: %s)"
+msgstr "%d Ko / %d Kb (tempo rimanente: %s)"
+
+msgid "%d min %d s"
+msgstr "%d min %d s"
+
+msgid "%d s"
+msgstr "%d s"
+
+msgid "%ld bytes"
+msgstr "%ld bytes"
+
+msgid "%s (T:%d N:%d U:%d)"
+msgstr "%s (T: %ld N: %ld NL: %ld)"
+
+msgid "%s (next autocheck at %s)"
+msgstr "%s (prossimo controllo automatico alle %s)"
+
+msgid "*Ok"
+msgstr "*Ok"
+
+msgid "*_Yes|_Cancel"
+msgstr "*_Si|_Annulla"
+
+msgid "*_Yes|_No"
+msgstr "*_Si|_No"
+
+msgid "-- New Account --"
+msgstr "-- Nuovo account --"
+
+msgid "-- New Phrase --"
+msgstr "-- Nuova frase --"
+
+msgid "-- New Signature --"
+msgstr "-- Nuova firma --"
+
+msgid ".:Execute ARexx Script..."
+msgstr ".:Esegui uno script ARexx..."
+
+msgid "<Default>"
+msgstr "<Predefinito>"
+
+msgid "<No Recipient>"
+msgstr "<Nessun destinatario>"
+
+msgid "> %ld KB"
+msgstr "> %ld Kb"
+
+msgid "?:About..."
+msgstr "?:Informazioni..."
+
+msgid "?addressbook:YAM Imports"
+msgstr "?rubrica: Importa da YAM"
+
+msgid "?attachment:Save"
+msgstr "?allegato:Salva"
+
+msgid "?attachment:View"
+msgstr "?allegato:Visualizza"
+
+msgid "?config:_Save"
+msgstr "?config:_Salva"
+
+msgid "?filter:_Save"
+msgstr "?filtro:_Salva"
+
+msgid "?people:Name"
+msgstr "?people:Nome"
+
+msgid "?phrases:Close"
+msgstr "?phrases:Chiusura"
+
+msgid "?textbutton:_Close"
+msgstr "?textbutton:_Chiudi"
+
+msgid "?textbutton:_Save"
+msgstr "?textbutton:_Salva"
+
+msgid ""
+"A black list contains email address which you don't thrust.\n"
+"Mails from these addresses are always marked as spam."
+msgstr ""
+"Una lista nera contiene indirizzi email che si ritiene siano non affidabili.\n"
+"I messaggi provenienti da questi indirizzi vengono sempre classificati come spam."
+
+msgid ""
+"A white list contains email address of people you usually\n"
+"thrust. This can be used to speed up the spam checking as\n"
+"mails with a listed sender address are skipped."
+msgstr ""
+"Una lista bianca contiene gli indirizzi email di persone delle quali vi fidate.\n"
+"Questa può essere usata per velocizzare il controllo dello spam, dato che\n"
+"i mittenti presenti su questa lista verranno ignorati."
+
+msgid "A:Select All Messages"
+msgstr "X:Seleziona tutti i messaggi"
+
+msgid "APOP"
+msgstr "APOP"
+
+msgid "ARexx"
+msgstr "ARexx"
+
+msgid "AUTH failed. User couldn't be authenticated. Please recheck your settings."
+msgstr "AUTH non riuscita. L'utente non può essere identificato. Verificare le impostazioni."
+
+msgid "Aborted - Disconnecting..."
+msgstr "Interrotto - Disconnessione..."
+
+msgid "Aborted - Sending QUIT..."
+msgstr "Interrotto - Invio QUIT..."
+
+msgid "About MUI..."
+msgstr "Info su  MUI..."
+
+msgid "Account Name"
+msgstr "Nome Account"
+
+msgid "Accounts"
+msgstr "Accounts"
+
+msgid "Action"
+msgstr "Azione"
+
+msgid "Activate this if the SMTP server requires authentication."
+msgstr "Attivare questa opzione se il server SMTP richiede l'autenticazione."
+
+msgid ""
+"Activate this if you provider needs that\n"
+"you first log into its POP3 sever."
+msgstr ""
+"Attivare questa opzione se il provider richiede\n"
+"che vi connettiate prima al server POP3."
+
+msgid ""
+"Activate this if you want a secure connection\n"
+"to the SMTP server. Deactivate this if your SMTP server\n"
+"doesn't support it"
+msgstr ""
+"Attivare questa opzione per una connessione sicura\n"
+"sul server SMTP. Disattivarla se il vostro server SMTP\n"
+"non la supporta."
+
+msgid "Active"
+msgstr "Attivo"
+
+msgid "Activtiy"
+msgstr "Attivazione"
+
+msgid "Add"
+msgstr "Aggiungi"
+
+msgid "Add \"%s\" to following groups"
+msgstr "Aggiungi \"%s\" ai gruppi seguenti"
+
+msgid "Add a new account."
+msgstr "Aggiunge un nuovo account."
+
+msgid "Add adjustment for daylight saving time"
+msgstr "Imposta automaticamente l'ora legale"
+
+msgid "Add contact to following groups"
+msgstr "Aggiungi il contatto ai seguenti gruppi"
+
+msgid "Add file(s)"
+msgstr "Aggiungi file"
+
+msgid "Add multipart"
+msgstr "Aggiungi multiparte"
+
+msgid "Add new rule"
+msgstr "Aggiungi nuova regola"
+
+msgid "Add text"
+msgstr "Aggiungi testo"
+
+msgid "Add to addressbook..."
+msgstr "Aggiungi alla rubrica..."
+
+msgid "Add..."
+msgstr "Aggiungi..."
+
+msgid "Additional headers"
+msgstr "Intestazioni addizionali"
+
+msgid "Address"
+msgstr "E-Mail"
+
+msgid "Address Book..."
+msgstr "Rubrica..."
+
+msgid ""
+"Address where the replies of the mails should\n"
+"be sent (required only if different from the e-mail address)."
+msgstr ""
+"L'indirizzo verso il quale le mail di risposta devono essere\n"
+"inviate (richiesto solamente se diverso dall'indirizzo e-mail)."
+
+msgid "Addresslist Settings"
+msgstr "Impostazioni archivio indirizzi"
+
+msgid "Add|Don't add"
+msgstr "Aggiungi|Non aggiungere"
+
+msgid ""
+"After reseting the ham statistics the spam filter won't work reliable\n"
+"until you have classified some mails as ham.\n"
+"Are you sure to continue?"
+msgstr ""
+"Dopo aver resettato le statistiche ham, il filtro spam non funzionerà\n"
+"correttamente finchè qualche mail non verrà classificata come ham.\n"
+"Sei sicuro di voler continuare?"
+
+msgid ""
+"After reseting the spam statistics the spam filter won't work reliable\n"
+"until you have classified some mails as spam. However, if requested the\n"
+"statistics can be built from the mails inside the spam folder.\n"
+"How to proceed?"
+msgstr ""
+"Dopo aver resettato le statistiche, il filtro spam non funzionerà più\n"
+"correttamente finchè non avrete classificato qualche mail come spam.\n"
+"Tuttavia, se si preferisce, le statistiche possono essere generate dalle\n"
+"mail presenti nella cartella spam.\n"
+"Come si desidera procedere?"
+
+msgid ""
+"After successul downloading the mails should be deleted\n"
+"on the POP3 server."
+msgstr ""
+"Attivare questa opzione per cancellare i messaggi\n"
+"sul server POP3 una volta terminata la ricezione."
+
+msgid "Alias"
+msgstr "Nick"
+
+msgid "All"
+msgstr "Tutti"
+
+msgid "All folders"
+msgstr "Tutte le cartelle"
+
+msgid "All messages"
+msgstr "Tutti i messaggi"
+
+msgid "Allow to download images from the internet from"
+msgstr "Autorizza il download delle immagini da internet da:"
+
+msgid "Allows you to filter for messages containing the given texts within their From or Subject fields."
+msgstr ""
+"Permette di filtrare i messaggi che contengono i testi iseriti nei campi \"Da\" e \"Oggetto\".\n"
+"Il filtro tuttavia non si applica che alle cartelle in corso di visualizzazione."
+
+msgid "Also all addresses within the addressbook"
+msgstr "Anche tutti gli indirizzi della rubrica"
+
+msgid "Always"
+msgstr "Sempre"
+
+msgid "AppIcon label"
+msgstr "Intestazione dell'appicon"
+
+msgid "AppIcon Show"
+msgstr "Mostra l'appicon"
+
+msgid "Apply now"
+msgstr "Applica adesso"
+
+msgid "Apply to new mails"
+msgstr "Applica ai nuovi messaggi"
+
+msgid "Are you sure that you want to start this executable?"
+msgstr "Sei sicuro di voler avviare questo eseguibile?"
+
+msgid "Ask"
+msgstr "Chiedi"
+
+msgid "Attachment"
+msgstr "Allegato"
+
+msgid "Attachments"
+msgstr "Allegati"
+
+msgid "Authentificate via APOP..."
+msgstr "Autenticazione via APOP..."
+
+msgid "Automatic operation"
+msgstr "Operazione automatica"
+
+msgid "Avoid duplicates"
+msgstr "Evita duplicati"
+
+msgid "B"
+msgstr "N"
+
+msgid "Background"
+msgstr "Sfondo"
+
+msgid "Belonging groups"
+msgstr "Gruppi di appartenenza"
+
+msgid "Binary generated using gcc %d.%d.%d"
+msgstr "Codice binario generato usando gcc %d.%d.%d"
+
+msgid "Black list"
+msgstr "Lista nera"
+
+msgid "CC"
+msgstr "CC"
+
+msgid "C_opies To"
+msgstr "_Copie a (CC)"
+
+msgid "Can't access income-folder!"
+msgstr "Impossibile accedere alla directory dei file in entrata!"
+
+msgid "Can't access printer!"
+msgstr "Impossibile accedere alla stampante!"
+
+msgid "Can't create temporary file."
+msgstr "Impossibile creare un file temporaneo."
+
+msgid "Can't delete folder because it is actually in use."
+msgstr "Impossibile cancellare la cartella selezionata poichè è attualmente in uso."
+
+msgid "Can't get new filename!"
+msgstr "Impossibile avere un nuovo nome per il file!"
+
+msgid "Can't mark mail as deleted!"
+msgstr "Impossibile contrassegnare la mail come eliminata!!"
+
+msgid "Can't open mail file!"
+msgstr "Impossibile aprire il file di posta!!"
+
+msgid "Cannot delete mails, because folder is in use.\n"
+msgstr "Impossibile cancellare le mail, perchè la cartella è in uso.\n"
+
+msgid "Cannot locate host. Try again later"
+msgstr "Impossibbile localizzare l'host. Rirpova più tardi"
+
+msgid "Cannot open bsdsocket.library. Please start a TCP/IP-Stack."
+msgstr "Impossibile aprire la bsdsocket.library. Avvia uno stack TCP/IP, per favore."
+
+msgid "Cannot open the bsdsocket.library!"
+msgstr "Impossibile aprire la bsdsocket.library!"
+
+msgid "Carbon Copy"
+msgstr "Copia per conoscenza"
+
+msgid "Case sensitive"
+msgstr "Distinzione maiuscole/minuscole"
+
+msgid "Central/East (Windows)"
+msgstr "Centrale/dell'Est (Windows)"
+
+msgid "Central/East European"
+msgstr "Europa centrale/dell'Est"
+
+msgid "Change|Ignore once|Ignore always"
+msgstr "Cambia|Ignora una sola volta|Ignora sempre"
+
+msgid "Charset used to display text"
+msgstr "Set di caratteri usato per mostrare il testo"
+
+msgid "Check for new mail every"
+msgstr "Controlla la posta ogni"
+
+msgid "Check new mails for spam content"
+msgstr "Controlla il contenuto della posta in arrivo"
+
+msgid "Check Single Account"
+msgstr "Controlla un singolo account"
+
+msgid "Checking for folders"
+msgstr "Verifica delle cartelle"
+
+msgid "Checking for mail duplicates..."
+msgstr "Verifica dei duplicati..."
+
+msgid ""
+"Checks the current selected folder for spam.\n"
+"If a potential spam mail has been found it will be marked."
+msgstr ""
+"Controlla la cartella attualmente selezionata per lo spam.\n"
+"Se verrà trovato un potenziale spam, sarà marcato."
+
+msgid "Choose export filename"
+msgstr "Scegliere il nome del file da esportare"
+
+msgid ""
+"Choose how APOP is handled. If you encounter login probelms\n"
+"you might change this setting to \"Don't try\"."
+msgstr ""
+"Scegliere in che modo l'APOP verrà utilizzato. Se si incontrano problemi\n"
+"di login, è possibile cambiare questa impostazione in \"Ignora\"."
+
+msgid "Choose the file which you like to import"
+msgstr "Scegliere il file che si desidera importare"
+
+msgid "City"
+msgstr "Città"
+
+msgid "Cleanup deleted folder on exit"
+msgstr "Elimina le cartelle cancellate in uscita"
+
+msgid "Close"
+msgstr "Chiusura"
+
+msgid "Close read window on list end"
+msgstr "Chiudi la finestra di lettura sul fine lista"
+
+msgid "Colors"
+msgstr "Colori"
+
+msgid "Compose Mail Properties"
+msgstr "Componi proprietà della posta"
+
+msgid "Configuration..."
+msgstr "Configurazione..."
+
+msgid "Connected"
+msgstr "Connesso"
+
+msgid "Connecting timed out"
+msgstr "Connessione scaduta"
+
+msgid "Connecting to server %s..."
+msgstr "Connessione al serverr %s..."
+
+msgid "Connecting to the server failed"
+msgstr "La connessione al server è fallita"
+
+msgid "Connecting..."
+msgstr "Connessione..."
+
+msgid "Connection could not be made secure because the SMTP server doesn't seem to support it!"
+msgstr "La connessione non può essere resa sicura perchè il server SMTP non la supporta!"
+
+msgid "Connection could not be made secure."
+msgstr "La connessione non può essere resa sicura."
+
+msgid "Connection couldn't be made secure"
+msgstr "La connessione non può essere resa sicura"
+
+msgid "Connection refused"
+msgstr "Connessione rifiutata"
+
+msgid "Contacts"
+msgstr "Contatti"
+
+msgid "Contents"
+msgstr "Contenuti"
+
+msgid "Contributor of SimpleMail"
+msgstr "Collaboratore di SimpleMail"
+
+msgid ""
+"Converting this e-mail will cause the loss of some characters.\n"
+"SimpleMail can store the mail as Unicode so this doesn't happen."
+msgstr ""
+"La conversione di questa mail provocherà la perdita di qualche carattere.\n"
+"SimpleMail può archiviarla in formato Unicode in modo che ciò non accada."
+
+msgid "Copies to"
+msgstr "Copie per"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Copy..."
+msgstr "Copia..."
+
+msgid "Copyright (c)"
+msgstr "Copyright (c)"
+
+msgid "Could not create mui custom classes\n"
+msgstr "Impossibile creare la classe custom MUI\n"
+
+msgid "Could not get server statistics"
+msgstr "Impossibile avere le statistiche del server"
+
+msgid "Couldn't create appicon port\n"
+msgstr "Impossibile creare la porta appicon\n"
+
+msgid "Couldn't create arexx port\n"
+msgstr "Impossibile creare la porta arexx\n"
+
+msgid "Couldn't download the mail!\n"
+msgstr "Impossibile scaricare la mail!\n"
+
+msgid "Couldn't open %s version %d\n"
+msgstr "Impossibile aprire la versione %d di %s\n"
+
+msgid "Couldn't receive more statistics"
+msgstr "Impossibile ricevere ulteriori statistiche"
+
+msgid "Couldn't receive the mail"
+msgstr "Impossibile ricevere la mail"
+
+msgid "Couldn't start process for exporting.\n"
+msgstr "Impossible iniziare il processo di esportazione.\n"
+
+msgid "Couldn't start process for importing.\n"
+msgstr "Impossibile iniziare il processo di importazione.\n"
+
+msgid "Country"
+msgstr "Nazione"
+
+msgid ""
+"Currently there are too few mails classified as %s.\n"
+"Statistical spam identification works only reliable if you classify\n"
+"enough mails before.\n"
+"500 mails for both classes are considered enough, but the more\n"
+"you classify correctly the better it works.\n"
+"\n"
+"Number of mails classified as spam (bad mails): %ld\n"
+"Number of mails classified as ham (good mails): %ld\n"
+"\n"
+"Continue to try to look for spam mails?"
+msgstr ""
+"Attualmente non ci sono abbastanza mail classificate come %s.\n"
+"Le statistiche  di identificazione  dello spam  funzionano solo se prima\n"
+"vengono classificati messaggi sufficienti allo scopo.\n"
+"500 messaggi per ciasuna classe sono considerati sufficienti, ma più ne\n"
+"verranno classificati correttamente e meglio funzionerà.\n"
+"\n"
+"Numero di messaggi classificati come spam (indesiderati): %ld\n"
+"Numero di messaggi classificati come ham (buoni): %ld\n"
+"\n"
+"Continuare a cercare messaggi spam?"
+
+msgid "Cut"
+msgstr "Taglia"
+
+msgid "Cyrillic (Windows)"
+msgstr "Cirillico (Windows)"
+
+msgid "D:Read..."
+msgstr "g:Leggi..."
+
+msgid "DATA failed."
+msgstr "DATA falliti."
+
+msgid "DATA-Cmd failed."
+msgstr "DATA-Cmd falliti."
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Date of birth"
+msgstr "Data di nascita"
+
+msgid "De_lete"
+msgstr "_Cancella"
+
+msgid ""
+"Deactivate this if you don't want SimpleMail to\n"
+"download the e-Mails when pressing on 'Fetch'."
+msgstr ""
+"Disattivare questa opzione se non volete che SimpleMail\n"
+"prelevi le e-mail premendo il pulsante 'Ricezione'."
+
+msgid ""
+"Decrypting failed! Eighter because the passphrase was incorrect\n"
+"or because the encryption is not yet supported by SimpleMail (only PGP 2.6.x supported for now)!"
+msgstr ""
+"Decrittazione non riuscita! Potrebbe essere accaduto perchè la passphrase è sbagliata\n"
+"o perchè la crittazione non è ancora supportata da SimpleMail (solo PGP 2.6.x per ora)!"
+
+msgid "Default Order"
+msgstr "Ordinamento predefinito"
+
+msgid "Default Order: all"
+msgstr "Ordinamento predefinito: tutte"
+
+msgid "Default Order: this"
+msgstr "Ordinamento predefinito: questo"
+
+msgid "Default Width: all"
+msgstr "Larghezza predefinita: tutte"
+
+msgid "Default Width: this"
+msgstr "Larghezza predefinita: questa"
+
+msgid "Delete"
+msgstr "Cancella"
+
+msgid "Delete All Indexfiles"
+msgstr "Cancella tutti gli indici dei file"
+
+msgid "Delete..."
+msgstr "Cancella..."
+
+msgid "Description"
+msgstr "Descrizione"
+
+msgid "Disabled"
+msgstr "Disattivata"
+
+msgid "Discards all the changes you have made."
+msgstr "Annullla tutti i cambiamenti effettuati."
+
+msgid "Disconnecting..."
+msgstr "Disconnessione..."
+
+msgid "Do you really want to delete %d mails permanently?"
+msgstr "Vuoi davvero cancellare le %d mail selezionate definitivamente?"
+
+msgid ""
+"Do you really want to delete the folder\n"
+"and all its mails?"
+msgstr ""
+"Vuoi veramente cancellare la cartella\n"
+"e tutti i messaggi che contiene?"
+
+msgid "Do you really want to delete the selected mail permanently?"
+msgstr "Vuoi davvero cancellare la mail selezionata definitivamente?"
+
+msgid ""
+"Do you really want to delete this group?\n"
+"Only the group entry is deleted,\n"
+"not the folders inside the group"
+msgstr ""
+"Vuoi veramente cancellare questo gruppo?\n"
+"Solo il gruppo in se stesso verrà cancellato,\n"
+"non le cartelle contenute al suo interno."
+
+msgid "Don't try"
+msgstr "Ignora"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "Download & Delete"
+msgstr "Download e cancellazione"
+
+msgid "Dragging %d messages"
+msgstr "Spostamento di %d messaggi"
+
+msgid "Dragging a single message"
+msgstr "Spostamento di un singolo messaggio"
+
+msgid "E-Mail Address"
+msgstr "Indirizzo e-mail"
+
+msgid "E-Mail addresses"
+msgstr "Indirizzi e-mail"
+
+msgid "E:Edit..."
+msgstr "M:Modifica..."
+
+msgid "EMail"
+msgstr "EMail"
+
+msgid "Edit..."
+msgstr "Modifica..."
+
+msgid "Editable Mailtext"
+msgstr "Testo editabile del messaggio"
+
+msgid "Editor"
+msgstr "Editor"
+
+msgid "Enabled"
+msgstr "Attiva"
+
+msgid "Encrypt"
+msgstr "Crittazione"
+
+msgid "Enforce"
+msgstr "Imponi"
+
+msgid "Error"
+msgstr "Errore"
+
+msgid "Error receiving data from host!"
+msgstr "Errore durante la ricezione dei dati dall'host!"
+
+msgid "Error while identifing the user"
+msgstr "Errore durante l'identificazione dell'utente"
+
+msgid "Error while identifying the user"
+msgstr "Errore durante l'identificazione dell'utente"
+
+msgid "Error while receiving the mail"
+msgstr "Errore durante la ricezione della mail"
+
+msgid "Error while writing the mail onto disk"
+msgstr "errore durante la scrittura della mail su disco"
+
+msgid "Examining folder %s"
+msgstr "Esamino la cartella %s"
+
+msgid "Excerpt"
+msgstr "Estratto"
+
+msgid "Execute ARexx Script"
+msgstr "Esegui uno script Arexx"
+
+msgid "Export As mbox..."
+msgstr "Esporta come mbox..."
+
+msgid "Exporting folder %s to %s"
+msgstr "Esportazione della cartella %s verso %s"
+
+msgid "F:Check All Active Accounts..."
+msgstr "K:Controlla tutti gli account attivi..."
+
+msgid "FROM failed."
+msgstr "FROM non riuscito."
+
+msgid "F_ilter"
+msgstr "_Filtra"
+
+msgid "Failed examining the folder"
+msgstr "Esame della cartella non riuscito"
+
+msgid "Failed to authentificate via APOP"
+msgstr "Autenticazione via APOP non riuscita..."
+
+msgid "Failed to authentificate via APOP. Server hasn't delivered a timestamp."
+msgstr "Autentificazione via APOP fallita. Il server non ha rilasciato un timestamp."
+
+msgid "Failed to connect to the server"
+msgstr "Impossibile connettersi al server"
+
+msgid "Failed to create the application\n"
+msgstr "Impossibile creare l'applicazione\n"
+
+msgid "Failed while sending data to printer!"
+msgstr "Invio dei dati alla stampante non riuscito!"
+
+msgid "Fax"
+msgstr "Fax"
+
+msgid "Female"
+msgstr "Femmina"
+
+msgid "Fetching mail %d from server"
+msgstr "Prelevo il messaggio %d dal server"
+
+msgid "Fetching mails from %s"
+msgstr "Prelevo i messaggi da %s"
+
+msgid ""
+"File %s already exists in %s.\n"
+"Do you really want to replace it?"
+msgstr ""
+"Il file %s esiste già dentro %s.\n"
+"Vuoi veramente rimpiazzarlo?"
+
+msgid "File Name"
+msgstr "Nome del file"
+
+msgid "Filename"
+msgstr "Nome del file"
+
+msgid "Filters"
+msgstr "Fi_ltri"
+
+msgid "Filters..."
+msgstr "Filtri..."
+
+msgid "Finish"
+msgstr "Fine"
+
+msgid "Fixed Font"
+msgstr "Font fisso"
+
+msgid "Folder"
+msgstr "Cartella"
+
+msgid "Folder Properties"
+msgstr "Proprietà della cartella"
+
+msgid "Folder Settings"
+msgstr "Impostazioni della cartella"
+
+msgid "Folder directory"
+msgstr "Directory delle cartelle"
+
+msgid "Folder to display at startup"
+msgstr "Cartella da mostrare all'avvio"
+
+msgid "Folder:"
+msgstr "Cartella: "
+
+msgid "Folders"
+msgstr "Cartelle"
+
+msgid "Fonts"
+msgstr "Fonts"
+
+msgid "For_ward"
+msgstr "Inol_tra"
+
+msgid "Forward"
+msgstr "Inoltra"
+
+msgid "Forward mails as attachments"
+msgstr "Inoltra le mail come allegati"
+
+msgid "Forwarded"
+msgstr "Inoltrata"
+
+msgid "Forwarding"
+msgstr "Inoltro"
+
+msgid "Found %d mail duplicates"
+msgstr "Trovati %d duplicati"
+
+msgid "From"
+msgstr "Da"
+
+msgid "From/TO"
+msgstr "MIttente/Destinatario"
+
+msgid "From/To"
+msgstr "MIttente/Destinatario"
+
+msgid "Ge_tAdd"
+msgstr "Aggi_ungi"
+
+msgid "General"
+msgstr "Generale"
+
+msgid "General spam settings"
+msgstr "Impostazioni generali dello spam"
+
+msgid "Getting mail infos..."
+msgstr "Acquisizione inormazioni sulle mail..."
+
+msgid "Getting mail sizes..."
+msgstr "Acquisizione dimensioni delle mail..."
+
+msgid "Getting statistics..."
+msgstr "Acquisizione statistiche..."
+
+msgid "Graphical quote bar"
+msgstr "Cornice intorno all'area quotata"
+
+msgid "Greek"
+msgstr "Greco"
+
+msgid "Group with the given name \"%s\" already exists"
+msgstr "Un gruppo col nome \"%s\" esiste già"
+
+msgid "Groups"
+msgstr "Gruppi"
+
+msgid "H:Classify All Mails As Ham"
+msgstr "H:Classifica tutti i messaggi come ham"
+
+msgid "HELO failed"
+msgstr "HELO fallito"
+
+msgid "Has attachments"
+msgstr "Possiede degli allegati"
+
+msgid "Header"
+msgstr "Intestazione"
+
+msgid "Header Background"
+msgstr "Sfondo testata"
+
+msgid "Header Configuration"
+msgstr "Configurazione testata"
+
+msgid "High"
+msgstr "Alta"
+
+msgid "Hold"
+msgstr "In sospeso"
+
+msgid "Homepage"
+msgstr "Pagina iniziale"
+
+msgid "Host wasn't found"
+msgstr "L'host non è stato trovato"
+
+msgid "I/O-Error."
+msgstr "Errore di I/O"
+
+msgid "I:Isolate Spam Mails"
+msgstr "A:Isola le mail spam"
+
+msgid "IMAP Properties"
+msgstr "Propietà IMAP"
+
+msgid "IMAP Server"
+msgstr "Server IMAP"
+
+msgid "Iconified"
+msgstr "Iconificato"
+
+msgid "Identified %d mails in %s"
+msgstr "Identificazione di %d messaggi dentro %s"
+
+msgid "If activated SimpleMail aborts transfer if APOP authentification fails."
+msgstr "Se attivata, SimpèleMail interromperà il trasferimento se l'autenticazione APOP fallisce."
+
+msgid ""
+"If activated SimpleMail tries to make the connection secure.\n"
+"This is not supported on all servers, so decativate if it doesn't work."
+msgstr ""
+"Se attivata, SimpleMail tenterà di effettuare una connessione sicura.\n"
+"Questa non è supportata da tutti i server quindi, se necessario,\n"
+"disattivarla se non funziona."
+
+msgid ""
+"If activated the filter will be used remotly on POP3 servers\n"
+"which support the TOP command. Mails which matches the filter\n"
+"are presented to the user and automatically marked as to be ignored."
+msgstr ""
+"Attivare questa opzione per usare il filtro in modalità remota sui server POP3\n"
+"che supportano il comando TOP. Le mail che combaciano con il filtro verranno\n"
+"mostrate all'utente e automaticamente marcate in modo da essere ignorate."
+
+msgid "If activated the search is case sensitive."
+msgstr "Se attivata, la ricerca distinguerà tra maiuscole e minuscole."
+
+msgid ""
+"If activated the string is an AmigaDOS pattern\n"
+"and patternmatching will be performed.\n"
+"Special chars are: ? # | ~ ( ) [ ] % '"
+msgstr ""
+"Se attiva, la stringa sarà un pattern AmigaDOS\n"
+"e verrà effettuato un confronto fra pattern.\n"
+"I caratteri speciali sono: ? # | ~ ( ) [ ] % '"
+
+msgid ""
+"If activated the string must only be a part\n"
+"of the searched field."
+msgstr ""
+"Se attivata, la stringa dovrà essere solo una\n"
+"parte del campo ricercato."
+
+msgid ""
+"If enabled all addresses within you addressbook are also\n"
+"considered to be safe."
+msgstr ""
+"Attivare questa opzione per fare in modo che tutti gli indirizzi nella rubrica\n"
+"vengano considerati come sicuri."
+
+msgid "If online"
+msgstr "Se connesso"
+
+msgid "If this option is enabled, SimpleMail will close the read window after all mails in the folder have been processed (e.g. deleted) by the user completly in the current direction. Otherwise SimpleMail tries to browse into the other direction and closes the window only if no other mail exists within the folder."
+msgstr "Se questa opzione è attiva, SimpleMail chiuderà la finestra di testo dopo che l'intera cartella con le mail sarà stata elaborata (es. in cancellazione) nella direzione corrente. Altrimenti tenterà di procedere nell'altra direzione e chiuderà la finestra solo se non troverà nessun'altra mail nella cartella."
+
+msgid ""
+"If you activate this option any mail you move to the spam folder\n"
+"is marked as spam before the operation. Note that only mails\n"
+"marked as spam can be moved into the spam folder."
+msgstr ""
+"Attivare questa opzione per far si che ogni mail spostata nella cartella spam\n"
+"sia marcata come tale prima dello spostamento. Da notare che solo le mail\n"
+"contrassegnate come tali possono essere spostate nella cartella apposita."
+
+msgid ""
+"If you activate this option any new mail is being checked for its\n"
+"spam content. This only works if you have more than 500 mails for\n"
+"every class within the statistics."
+msgstr ""
+"Attivare questa opzione per controllare se ogni nuova mail possiede un\n"
+"contenuto spam. Funziona solamente se ci sono più di 500 mail per ogni\n"
+"classe all'interno delle statistiche."
+
+msgid "Ignore"
+msgstr "Ignora"
+
+msgid "Ignore not listed mails"
+msgstr "Ignora i messaggi non in lista"
+
+msgid "Import addressbook..."
+msgstr "Importa la rubrica..."
+
+msgid "Import dbx File..."
+msgstr "importa file dbx..."
+
+msgid "Import mbox File..."
+msgstr "Importa file mbox..."
+
+msgid "Importance"
+msgstr "Priorità"
+
+msgid "Importing %s"
+msgstr "Importazione di %s"
+
+msgid "Importing %s to %s"
+msgstr "Importazione di %s verso %s"
+
+msgid "Initial"
+msgstr "Inizio"
+
+msgid "Insert ENV:Signature"
+msgstr "Inserisci ENV:Firma"
+
+msgid "Insert random tagline"
+msgstr "Inserisci una tagline casuale"
+
+msgid "Internal error."
+msgstr "errore interno."
+
+msgid "Intro"
+msgstr "Introduzione"
+
+msgid "Is Ham"
+msgstr "É un ham"
+
+msgid "Is Spam"
+msgstr "É uno spam"
+
+msgid "Is_olate"
+msgstr "Isol_a"
+
+msgid "Isolates all spam marked mails within the current selected folder."
+msgstr "Trasferisce le mail contrassegnate come spam nella cartella apposita."
+
+msgid "Link Text"
+msgstr "Collega testo"
+
+msgid "Log into POP3 Server...."
+msgstr "Connessione al serverr POP3..."
+
+msgid "Log into POP3 server first"
+msgstr "Accedi prima sul server POP3"
+
+msgid "Loggin in failed. Check Username and Password for this account"
+msgstr "Identificazione falliita. Verificare nome utente e password per questo account"
+
+msgid "Logging in..."
+msgstr "Connessione..."
+
+msgid "Logging out..."
+msgstr "Disconnessione..."
+
+msgid "Login"
+msgstr "Identificativo"
+
+msgid "Login failed!"
+msgstr "Connessione fallita!"
+
+msgid "Login successful"
+msgstr "Accesso eseguito"
+
+msgid "Login successful!"
+msgstr "Connessione riuscita!"
+
+msgid "Login..."
+msgstr "Identificazione..."
+
+msgid "Login/UserID"
+msgstr "Identificativo/ID utente"
+
+msgid "Low"
+msgstr "Bassa"
+
+msgid "M:Move..."
+msgstr "o:Sposta..."
+
+msgid "MUI..."
+msgstr "MUI..."
+
+msgid "Mail"
+msgstr "Messaggio"
+
+msgid "Mail No"
+msgstr "Messaggio Nr"
+
+msgid "Mail Settings"
+msgstr "Impostazioni messaggio"
+
+msgid "Mails"
+msgstr "Messaggi"
+
+msgid "Main Message"
+msgstr "Messaggio principale"
+
+msgid "Male"
+msgstr "Maschio"
+
+msgid "Mark"
+msgstr "Contrassegna"
+
+msgid "Mark mails as spam before moved to the spam folder"
+msgstr "Contrassegna i messaggi come spam prima di spostarli"
+
+msgid "Marking mail as deleted..."
+msgstr "Marcatura dei messaggi come cancellati..."
+
+msgid "Message"
+msgstr "Messaggio"
+
+msgid "Mobile"
+msgstr "Cellulare"
+
+msgid "MorphOS maintainer of SimpleMail"
+msgstr "Curatore di SimpleMail per MorphOS"
+
+msgid "Move Down"
+msgstr "Giù"
+
+msgid "Move to Folder"
+msgstr "Sposta in una cartella"
+
+msgid "Move up"
+msgstr "Su"
+
+msgid "N:New..."
+msgstr "N:Nuovo..."
+
+msgid "N_ame"
+msgstr "_Nome"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "Network unreachable"
+msgstr "Rete irraggiungibile"
+
+msgid "Never"
+msgstr "Mai"
+
+msgid "New"
+msgstr "Nuovi"
+
+msgid "New Folder..."
+msgstr "Nuova cartella..."
+
+msgid "New Group"
+msgstr "Nuovo gruppo"
+
+msgid "New Group..."
+msgstr "Nuovo gruppo..."
+
+msgid "New group..."
+msgstr "Nuovo gruppo..."
+
+msgid "New mails"
+msgstr "Nuovi messaggi"
+
+msgid "New..."
+msgstr "Nuova..."
+
+msgid "New:"
+msgstr "Nuovi: "
+
+msgid "No IP associated with name"
+msgstr "Nessun IP associato al nome"
+
+msgid "No Signature"
+msgstr "Nessuna firma"
+
+msgid "No fetchable account specified"
+msgstr "Nessun account accessibile specificato"
+
+msgid ""
+"No subject was specified. It is not recommended to create mails\n"
+"without any subject. Do you want to add a subject line?"
+msgstr ""
+"Non è stato specificato alcun oggetto. Non è raccomandato creare\n"
+"messaggi senza un oggetto. Vuoi aggiungerne uno?"
+
+msgid "No valid email address entered. Please correct it."
+msgstr "L'indirizzo email inserito non è valido. Prego, correggilo."
+
+msgid ""
+"No valid from field specified. You must configure some Accounts\n"
+"before creating new mails"
+msgstr ""
+"Dati inseriti nel campo \"Da\" non validi. Devi configurare un\n"
+"account prima di creare nuovi messaggi."
+
+msgid "Nordic"
+msgstr "Nordico"
+
+msgid "Normal"
+msgstr "Normale"
+
+msgid "North European"
+msgstr "Nord Europeo"
+
+msgid "Not enough memory"
+msgstr "Memoria insufficiente"
+
+msgid "Not enough memory."
+msgstr "Memoria insufficiente."
+
+msgid "Notes"
+msgstr "Note"
+
+msgid "Number of mails classified as ham"
+msgstr "Numero di messaggi classificati come ham"
+
+msgid "Number of mails classified as spam"
+msgstr "Numero di messaggi classificati come spam"
+
+msgid "O:Open Message..."
+msgstr "J:Carica messaggio..."
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Ok"
+msgstr "Ok"
+
+msgid "Okay"
+msgstr "Ok"
+
+msgid "Old Quoted Text"
+msgstr "Vecchio testo quotato"
+
+msgid "On addresses"
+msgstr "Sugli indirizzi"
+
+msgid "On new mails"
+msgstr "Sui nuovi messaggi"
+
+msgid "On request"
+msgstr "Su richiesta"
+
+msgid "On sent mails"
+msgstr "Sui messaggi inviati"
+
+msgid "On startup"
+msgstr "All'avvio"
+
+msgid "Only Sizes"
+msgstr "Solo dimensioni"
+
+msgid "Open"
+msgstr "Apri"
+
+msgid "Opens a window where the filters can be edited."
+msgstr "Apre una finestra dove è possible configurare i filtri."
+
+msgid "Opens a window where you can search through your mail folder."
+msgstr ""
+"Apre una finestra dove è possibile fare delle ricerche\n"
+"all'interno delle cartelle."
+
+msgid "Options..."
+msgstr "Opzioni..."
+
+msgid "Order"
+msgstr "Ordina"
+
+msgid "Organization"
+msgstr "Organizzazione"
+
+msgid "Original author of SimpleMail"
+msgstr "Autore originale di SimpleMail"
+
+msgid "P:Run Spam Mail Check"
+msgstr "S:Avvia il controllo dello spam"
+
+msgid "PGP Key ID"
+msgstr "ID Chiave PGP"
+
+msgid "PGP Key-ID"
+msgstr "ID Chiave PGP"
+
+msgid "POP3"
+msgstr "POP3"
+
+msgid "POP3 Server"
+msgstr "Server POP3"
+
+msgid ""
+"Parsing the XML file failed because of\n"
+"%s (code %d)\n"
+"at line %d column %d"
+msgstr ""
+"L'interpretazione del file XML è fallita a causa di\n"
+"%s (codice %d)\n"
+"alla linea %d colonna %d"
+
+msgid "Password"
+msgstr "Password"
+
+msgid "Paste"
+msgstr "Incolla"
+
+msgid "Path"
+msgstr "Directory"
+
+msgid "Pattern"
+msgstr "Motivo"
+
+msgid "Pending"
+msgstr "In attesa"
+
+msgid "Personal"
+msgstr "Personale"
+
+msgid "Phone numbers"
+msgstr "Numeri di telefono"
+
+msgid "Phrases"
+msgstr "Frasi"
+
+msgid "Play Sound"
+msgstr "Riproduci suono"
+
+msgid "Please enter the login for %s"
+msgstr "Inserisci l'identificativo per %s"
+
+msgid "Please select a key for %s <%s>"
+msgstr "Seleziona un tasto per %s <%s>"
+
+msgid "Please select the folder where to move the mail"
+msgstr "Selezionare la cartella dove spostare il messaggio"
+
+msgid "Please select the folder where to move the mails"
+msgstr "Selezionare la cartella dove spostare il messaggio"
+
+msgid "Port"
+msgstr "Porta"
+
+msgid "Portrait"
+msgstr "Foto"
+
+msgid "Pr_int"
+msgstr "Sta_mpa"
+
+msgid "Preselection"
+msgstr "Preselezione"
+
+msgid "Print As Text"
+msgstr "Stampa come testo"
+
+msgid "Print Visible Mail Part"
+msgstr "Stampa la parte visibile del messaggio"
+
+msgid "Private"
+msgstr "Privato"
+
+msgid "Process every mail within the current selected folder via the filters."
+msgstr "Elabora ciascuna mail all'interno della cartella selezionata usando il filtro."
+
+msgid "Processing mail %d (%d KB) of %d"
+msgstr "Elaborazione messaggio %d (%d Ko) di %d"
+
+msgid "Project"
+msgstr "Progetto"
+
+msgid "Proportional Font"
+msgstr "Font proporzionale"
+
+msgid "Q:Quit"
+msgstr "Q:Termina"
+
+msgid "Quote empty lines"
+msgstr "Quotare le linee vuote"
+
+msgid "Quoted Text"
+msgstr "Testo quotato"
+
+msgid "R"
+msgstr "R"
+
+msgid "R:Reply..."
+msgstr "R:Rispondi..."
+
+msgid "RCPT failed."
+msgstr "RCPT fallito."
+
+msgid "Rea_d"
+msgstr "Le_ggi"
+
+msgid "Read"
+msgstr "Letti"
+
+msgid "Read window"
+msgstr "Finestra di lettura"
+
+msgid "Reading"
+msgstr "Lettura"
+
+msgid "Reading HTML"
+msgstr "Lettura HTML"
+
+msgid "Reading folders of %s"
+msgstr "Lettura delle cartelle di %s"
+
+msgid "Reading folders..."
+msgstr "Lettura delle cartelle..."
+
+msgid "Reading plain"
+msgstr "Lettura testo"
+
+msgid "Reading subscribed folders..."
+msgstr "Lettura delle cartelle iscritte..."
+
+msgid "Real Name"
+msgstr "Nome reale"
+
+msgid "Receive"
+msgstr "Ricezione"
+
+msgid "Receive mail"
+msgstr "Ricezione posta"
+
+msgid "Received"
+msgstr "Ricevuto"
+
+msgid "Receiver"
+msgstr "Destinatario"
+
+msgid "Redo"
+msgstr "Ripeti"
+
+msgid "Released under the terms of the GNU Public License"
+msgstr "Realizzato sotto i termini della Licenza Pubblica GNU (GPL)"
+
+msgid "Reload from server"
+msgstr "Ricarica dal server"
+
+msgid "Remotly on POP3 server"
+msgstr "In remoto sul server POP3"
+
+msgid "Remove"
+msgstr "Elimina"
+
+msgid "Remove the current account."
+msgstr "Elimina l'account attuale."
+
+msgid "Remove..."
+msgstr "Elimina..."
+
+msgid "Remove|*Cancel"
+msgstr "Elimina|*Annulla"
+
+msgid "Repl. & Forw."
+msgstr "Risposta e inoltro"
+
+msgid "Replied"
+msgstr "Risposto"
+
+msgid "Replies To"
+msgstr "Risponde a"
+
+msgid "Reply"
+msgstr "Indirizzo di risposta"
+
+msgid "Reply Address"
+msgstr "Indirizzo di risposta"
+
+msgid "Reply-To"
+msgstr "Risposta a:"
+
+msgid "Replying"
+msgstr "Risposta"
+
+msgid "Rescan"
+msgstr "Nuova scansione"
+
+msgid "Reset"
+msgstr "Ripristina"
+
+msgid "Reset all columns' widths"
+msgstr "Ripristina la larghezza di tutte le colonne"
+
+msgid "Reset statistics..."
+msgstr "Resetta statistiche..."
+
+msgid "Reset the statistics|Cancel"
+msgstr "_Resetta statistiche|_Annulla"
+
+msgid "Reset the statistics|Reset and rebuild|Cancel"
+msgstr "_Resetta statistiche|Re_setta e ricostruisci|_Annulla"
+
+msgid "Reset this column's width"
+msgstr "Ripristina la larghezza di questa colonna"
+
+msgid "Resets all ham statistics."
+msgstr "Resetta tutte le statistiche ham."
+
+msgid "Resets all spam statistics."
+msgstr "Resetta tutte le statistiche spam."
+
+msgid "Retrieving mail folders..."
+msgstr "Recupero delle cartelle dei messaggi..."
+
+msgid "Reverse"
+msgstr "Inverti"
+
+msgid "Rules"
+msgstr "Regole"
+
+msgid "Russian"
+msgstr "Russo"
+
+msgid "S:Send Queued Mails..."
+msgstr "H:Invia posta in attesa..."
+
+msgid "SMTP Server"
+msgstr "Server SMTP"
+
+msgid "STARTTLS failed. Connection could not be made secure."
+msgstr "STARTTLS fallito. La connessione potrebbe non essere sicura."
+
+msgid "S_pam"
+msgstr "_Spam"
+
+msgid "S_tart search"
+msgstr "I_nizia ricerca"
+
+msgid "S_ubject"
+msgstr "_Oggetto"
+
+msgid "Save"
+msgstr "Salva"
+
+msgid "Save All Attachments..."
+msgstr "Salva tutti gli allegati..."
+
+msgid "Save All Indexfiles"
+msgstr "Salva tutti gli indici dei file
+
+msgid "Save As..."
+msgstr "Salva come..."
+
+msgid "Save Settings"
+msgstr "Salva le impostazioni"
+
+msgid "Save the configuration permanently."
+msgstr "Salva la configurazione permanentemente."
+
+msgid "Save Whole Document As..."
+msgstr "Salva l'intero documento come..."
+
+msgid "Scripts"
+msgstr "Scripts"
+
+msgid "Searc_h"
+msgstr "C_erca"
+
+msgid "Search _into"
+msgstr "Cerca _in"
+
+msgid "Secure"
+msgstr "Sicura"
+
+msgid "Select All"
+msgstr "Seleziona tutto"
+
+msgid "Select None"
+msgstr "Inverti selezione"
+
+msgid "Select an addressbook-file."
+msgstr "Seleziona un file dalla rubrica.."
+
+msgid "Send"
+msgstr "Invio"
+
+msgid "Send _later"
+msgstr "Invia _successivamente"
+
+msgid ""
+"Send your current IP address together with the intial greetings.\n"
+"This avoids some error headers on some providers."
+msgstr ""
+"Invia il proprio indirizzo IP in uso con i saluti iniziali.\n"
+"Ciò evita alcuni errori di intestazione su alcuni providers."
+
+msgid "Sender"
+msgstr "Mittente"
+
+msgid ""
+"Sender address (From) is <%s>, but\n"
+"return address (Reply-To) is <%s>.\n"
+"Which address do you want to use?"
+msgstr ""
+"L'indirizzo del mittente è <%s>, ma\n"
+"l'indirizzo di risposta è <%s>.\n"
+"Quale indirizzo vuoi usare?"
+
+msgid "Sending AUTH..."
+msgstr "Invio AUTH..."
+
+msgid "Sending DATA..."
+msgstr "Invio DATA..."
+
+msgid "Sending EHLO..."
+msgstr "Invio EHLO..."
+
+msgid "Sending FROM..."
+msgstr "Invio FROM..."
+
+msgid "Sending HELO..."
+msgstr "Invio HELO..."
+
+msgid "Sending QUIT..."
+msgstr "Invio QUIT..."
+
+msgid "Sending RCPT..."
+msgstr "Invio RCPT..."
+
+msgid "Sending STARTTLS..."
+msgstr "Invio STARTTLS..."
+
+msgid "Sending mails to %s"
+msgstr "Invio la posta a %s"
+
+msgid "Sending mails to %s, connecting to %s first"
+msgstr "Invio la posta a %s, connettendomi prima a %s"
+
+msgid "Sending password..."
+msgstr "Invio la password..."
+
+msgid "Sending secured EHLO..."
+msgstr "Invio EHLO sicuro..."
+
+msgid "Sending secured HELO..."
+msgstr "Invio HELO sicuro..."
+
+msgid "Sending username..."
+msgstr "Invio il nome utente..."
+
+msgid "Sent"
+msgstr "Spedito"
+
+msgid "Server"
+msgstr "Server"
+
+msgid "Service not ready."
+msgstr "Il servizio non è disponibile."
+
+msgid "Set status"
+msgstr "Imposta stato su"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Settings..."
+msgstr "Impostazioni..."
+
+msgid "Sex"
+msgstr "Sesso"
+
+msgid "Show Address Book?"
+msgstr "Mostrare rubrica?"
+
+msgid "Show AppIcon"
+msgstr "Mostra AppIcon"
+
+msgid "Show Date?"
+msgstr "Data"
+
+msgid "Show Description?"
+msgstr "Descrizione"
+
+msgid "Show E-Mail Address?"
+msgstr "E-Mail"
+
+msgid "Show Excerpt?"
+msgstr "Estratto"
+
+msgid "Show Filename?"
+msgstr "Nome del File"
+
+msgid "Show Folders?"
+msgstr "Mostrare cartelle?"
+
+msgid "Show From/To?"
+msgstr "Mittente/Destinatario"
+
+msgid "Show Groups?"
+msgstr "Gruppi"
+
+msgid "Show Mail?"
+msgstr "Messaggi"
+
+msgid "Show New?"
+msgstr "Nuovi"
+
+msgid "Show Nickname?"
+msgstr "Nick"
+
+msgid "Show POP3 Server?"
+msgstr "Server POP3"
+
+msgid "Show Realname?"
+msgstr "Nome"
+
+msgid "Show Received?"
+msgstr "Ricevuto"
+
+msgid "Show Reply-To?"
+msgstr "Rispondi"
+
+msgid "Show Size?"
+msgstr "Dimensione"
+
+msgid "Show Subject?"
+msgstr "Oggetto"
+
+msgid "Show Unread?"
+msgstr "Non letti"
+
+msgid "Show all headers"
+msgstr "Mostra tutte le intestazioni"
+
+msgid "Show All Headers?"
+msgstr "Mostra tutte le Intestazioni"
+
+msgid "M:Show Folders?"
+msgstr "M:Mostrare Cartelle?"
+
+msgid "Show members of selected group"
+msgstr "Mostra i membri del gruppo selezionato"
+
+msgid "Show next mail after move"
+msgstr "Mostra la mail successiva dopo lo spostamento"
+
+msgid "Show Quick Filter?"
+msgstr "Mostrare filtro rapido?"
+
+msgid "Show Raw Format..."
+msgstr "Mostra formato grezzo..."
+
+msgid "Show Raw..."
+msgstr "Mostra formato grezzo..."
+
+msgid "Show Selected Message?"
+msgstr "Mostrare il messaggio selezionato?"
+
+msgid "Shutting down..."
+msgstr "In uscita..."
+
+msgid "Si_gn"
+msgstr "_Firma"
+
+msgid "Signature"
+msgstr "Firma"
+
+msgid "Signaturenames must be unique."
+msgstr "I nomi per la firma debbono essere unici."
+
+msgid "Signatures"
+msgstr "Firme"
+
+msgid "SimpleMail - About"
+msgstr "SimpleMail -  Informazioni"
+
+msgid "SimpleMail - Add Groups"
+msgstr "SimpleMail - Aggiungi Gruppi"
+
+msgid "SimpleMail - Addressbook"
+msgstr "SimpleMail - Rubrica"
+
+msgid "SimpleMail - Compose Message"
+msgstr "SimpleMail - Crea Messaggio"
+
+msgid "SimpleMail - Configuration"
+msgstr "SimpleMail - Configurazione"
+
+msgid "SimpleMail - Edit Filter"
+msgstr "SimpleMail - Editor Filtri"
+
+msgid "SimpleMail - Edit Group"
+msgstr "SimpleMail - Editor Gruppi"
+
+msgid "SimpleMail - Edit IMAP Server"
+msgstr "SimpleMail - Editor Server IMAP"
+
+msgid "SimpleMail - Edit Person"
+msgstr "SimpleMail - Editor Contatti"
+
+msgid "SimpleMail - Edit folder"
+msgstr "SimpleMail - Editor Cartella"
+
+msgid "SimpleMail - Edit folder group"
+msgstr "SimpleMail - Editor Gruppo di Cartelle"
+
+msgid "SimpleMail - Error"
+msgstr "SimpleMail - Errore"
+
+msgid "SimpleMail - Exporting folder"
+msgstr "SimpleMail - Esportazione cartella"
+
+msgid "SimpleMail - Importing a dbx file"
+msgstr "SimpleMail - Importazione di un file dbx"
+
+msgid "SimpleMail - Importing a mbox file"
+msgstr "SimpleMail - Importazione di un file mbox"
+
+msgid "SimpleMail - New folder"
+msgstr "SimpleMail - Nuova cartella"
+
+msgid "SimpleMail - Read Message"
+msgstr "SimpleMail - Lettura Messaggio"
+
+msgid "SimpleMail - Search"
+msgstr "SimpleMail - Ricerca"
+
+msgid "SimpleMail - Select PGP Key"
+msgstr "SimpeMail - Slezione Chiave PGP"
+
+msgid "SimpleMail - Select a Folder"
+msgstr "SimpleMail - Selezione Cartella"
+
+msgid ""
+"SimpleMail currently doesn't support the same email address for\n"
+"multiple accounts. Please ensure that every email address is unique.\n"
+"However, you can set the reply address field to your prefered addresse."
+msgstr ""
+"SimpleMail attualmete non supporta l'uso dello stesso indirizzo email per\n"
+"account multipli. Assicurarsi che ciascun indirizzo email sia unico.\n"
+"Tuttavia, è possibile impostare il campo 'risposta' con l'indirizzo che si\n"
+"preferisce."
+
+msgid ""
+"SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
+"It's available from %s"
+msgstr ""
+"SimpleMail ncessita almeno della versione %ld.%ld della sotto-classe MUI NList.mcc!\n"
+"Questa classe è disponibile su %s"
+
+msgid ""
+"SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI subclass!\n"
+"It's available from %s"
+msgstr ""
+"SimpleMail ncessita almeno della versione %ld.%ld della sotto-classe MUI NListtree.mcc!\n"
+"Questa classe è disponibile su %s"
+
+msgid "Size"
+msgstr "Dimensione"
+
+msgid "Slavic languages"
+msgstr "Lingue Slave"
+
+msgid "Sound"
+msgstr "Suono"
+
+msgid "South European"
+msgstr "Europa del Sud"
+
+msgid "South-Eastern European"
+msgstr "Sud-Est Europeo"
+
+msgid "Spam"
+msgstr "Spam"
+
+msgid "Spam Check"
+msgstr "Controlla spam"
+
+msgid "State/Province"
+msgstr "Regione"
+
+msgid "Statistics"
+msgstr "Statistche"
+
+msgid "Status"
+msgstr "Stato"
+
+msgid "Status is"
+msgstr "Lo stato è"
+
+msgid "Sto_p search"
+msgstr "Fer_ma ricerca"
+
+msgid "Street"
+msgstr "Via"
+
+msgid "Strip signature before quoting"
+msgstr "Abbrevia la firma prima di quotare"
+
+msgid "Subject"
+msgstr "Oggetto"
+
+msgid "Submit to server"
+msgstr "Invia al server"
+
+msgid "Submitting subscribed folders to %s"
+msgstr "Invio delle cartelle iscritte a %s"
+
+msgid "Subscribe"
+msgstr "Iscrivi"
+
+msgid "Subscribing folders failed!"
+msgstr "Iscrizione delle cartelle non riuscita!"
+
+msgid "Substring"
+msgstr "Iscrizione"
+
+msgid "Synchronizing mails with %s"
+msgstr "Sincronizzazione dei messaggi con %s"
+
+msgid "T_o"
+msgstr "_A"
+
+msgid "Text"
+msgstr "Testo"
+
+msgid ""
+"The charset configured for SimpleMail (%s) doesn't match\n"
+"the system's default charset (%s)! How to proceed?"
+msgstr ""
+"Il font (%s) impostato per SimpleMail non corrisponde a quello\n"
+"predefinito per il sistema, il font (%s)! Che cosa vuoi fare?"
+
+msgid ""
+"The date of birth is given in a invalid format.\n"
+"Please use dd mon yyyy or dd mm yyyy."
+msgstr ""
+"La data di nascita ha un formato non valido.\n"
+"Utilizzare GG MMM AAAA o GG MM AAAA."
+
+msgid ""
+"The date of the birth of the person.\n"
+"The format is dd mon yyyy or dd mm yyyy."
+msgstr ""
+"La data di nascita di una persona.\n"
+"Il formato è GG MMM AAAA o GG MM AAAA."
+
+msgid "The default signature for this account"
+msgstr "La firma predefinita per questo account."
+
+msgid "The login/UserID which you got from your ISP."
+msgstr "L'identificativo che viene assegnato dall'ISP."
+
+msgid ""
+"The name of the so called POP3 server from\n"
+"which you download your e-Mails (required; ask your\n"
+"provider if unknown)."
+msgstr ""
+"Il nome del server POP3 dal quale verranno\n"
+"prelevate le e-mails (necessario; chiedere\n"
+"al proprio provider se non lo si conosce)."
+
+msgid ""
+"The name of the so called SMTP server which is responlible\n"
+"to send your e-Mails."
+msgstr ""
+"Il nome del server SMTP che è responsabile\n"
+"dell'invio dei vostri messaggi e-mail."
+
+msgid ""
+"The orginal charset of the attached file differs from yours.\n"
+"In which charset do you want the file being saved?"
+msgstr ""
+"Il tipo di font del file allegato è differente da quelli presenti nel sistema.\n"
+"Con quale font si desidera salvare il file?"
+
+msgid "The port number. Usually 110"
+msgstr "Il numero della porta. Generalmente 110"
+
+msgid "The port number. Usually 25"
+msgstr "Il numero della porta. Generalmente 25"
+
+msgid ""
+"The selected destination drawer \"%s\" doesn't exists.\n"
+"Should it be created?"
+msgstr ""
+"La cartella destinazione \"%s\" selezionata non esiste.\n"
+"Vuoi che venga creata?"
+
+msgid "The signature is used in %d account(s) and %d folder(s)."
+msgstr "La firma è utilizzata in %d account e in %d cartella(e)."
+
+msgid "The signature is used in %d account(s)."
+msgstr "La firma è utilizzata in %d account."
+
+msgid "The signature is used in %d folder(s)."
+msgstr "La firma è utilizzata in %d cartella(e)."
+
+msgid "The specified address is not available on this machine"
+msgstr "L'indirizzo specificato non è disponibile su questo sistema"
+
+msgid ""
+"There are %d addresses belonging to the group.\n"
+"Do you really want to delete this group?"
+msgstr ""
+"Ci sono %s indirizzi appartenenti a questo gruppo.\n"
+"Vuoi veramente cancellare questo gruppo?"
+
+msgid "This Signaturename is not allowed."
+msgstr "Questo tipo di firma non è autorizzato."
+
+msgid "This e-mail has multiple recipients. Should it be answered to all recipients?"
+msgstr "Questa e-mail ha diversi destinatari. Rispondere a tutti?"
+
+msgid "This mail is encrypted. Please enter your passphrase now"
+msgstr "Questo messaggio è criptato . Per favore, inserisci la tua passphrase."
+
+msgid "Time remaining:"
+msgstr "Tempo restante"
+
+msgid "Title"
+msgstr "Titolo"
+
+msgid "To"
+msgstr "A"
+
+msgid "Total:"
+msgstr "Totale:"
+
+msgid "Total:%d New:%d Unread:%d"
+msgstr "Totale: %d Nuovi: %d Non letti: %d"
+
+msgid "Total messages"
+msgstr "Messaggi totali"
+
+msgid "Try"
+msgstr "Prova"
+
+msgid "Turkish"
+msgstr "Turco"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Unable to connect to server %s: %s"
+msgstr "Impossibile connettersi al server %s: %s"
+
+msgid "Unable to save the active mail.\n"
+msgstr "Impossibile salvare il messaggio attivo.\n"
+
+msgid "Unconfigured"
+msgstr "Non configurato"
+
+msgid "Underline links"
+msgstr "Collegamenti sottolineati"
+
+msgid "Undo"
+msgstr "Annulla"
+
+msgid "Unexpected server answer. Connection failed."
+msgstr "Risposta inattesa dal server. Connessione fallita."
+
+msgid "Unexpected server failure"
+msgstr "Errore inaspettato dal server"
+
+msgid "Unknown error"
+msgstr "Errore sconosciuto"
+
+msgid "Unmark"
+msgstr "Deselezionato"
+
+msgid "Unnamed"
+msgstr "Senza nome"
+
+msgid "Unread"
+msgstr "Non letti"
+
+msgid "Unread:"
+msgstr "Non letti: "
+
+msgid "Unsubscribe"
+msgstr "Cancella iscrizione"
+
+msgid "Unsubscribing folders failed!"
+msgstr "Cancellazione dell'iscrizione delle cartelle fallita!"
+
+msgid "Unsupported encryption"
+msgstr "Crittazione non supportata"
+
+msgid "Unsupported type of addressbook."
+msgstr "Tipo di rubrica non supportata."
+
+msgid "Us_e signatures"
+msgstr "U_sa firme"
+
+msgid "Use IP as domain"
+msgstr "Usa IP come dominio"
+
+msgid "Use SMTP AUTH"
+msgstr "Usa SMTP AUTH"
+
+msgid "Use Unicode|No Unicode"
+msgstr "Usa Unicode|Non usare Unicode"
+
+msgid "Use graphical smilies"
+msgstr "Usa le emoticon"
+
+msgid "Use on addresses which contain"
+msgstr "Usa con gli indirizzi che contengono"
+
+msgid "Use the configuration, but don't save it."
+msgstr "Utilizza le impostazioni, ma senza salvarle."
+
+msgid "User"
+msgstr "Utente"
+
+msgid "User ID"
+msgstr "ID utente"
+
+msgid "W:Forward..."
+msgstr "t:Inoltra..."
+
+msgid "Waiting for login..."
+msgstr "Attendere l'autenticazione..."
+
+msgid "Waiting for user interaction"
+msgstr "In attesa di attività dell'utente"
+
+msgid "Waiting..."
+msgstr "Attendere..."
+
+msgid "Welcome"
+msgstr "Messaggio di benvenuto"
+
+msgid "Welcome with address"
+msgstr "Con indirizzo/intestazione"
+
+msgid "West European"
+msgstr "Europa dell'Ovest"
+
+msgid "West European (Windows)"
+msgstr "Europa dell'Ovest (Windows)"
+
+msgid "West European (with EURO)"
+msgstr "Europa dell'Ovest (con EURO)"
+
+msgid "West European II"
+msgstr "Europa dell'Ovest II"
+
+msgid "When iconified"
+msgstr "A programma iconificato"
+
+msgid ""
+"When not deleteding e-Mails on the server SimpleMail\n"
+"tries to avoid downloading a message twice the next time."
+msgstr ""
+"Quando le e-Mail non vengono cancellate sul server, SimpleMail\n"
+"cercherà di non scaricare di nuovo lo stesso messaggio ."
+
+msgid "White list"
+msgstr "Lista blanca"
+
+msgid "Word wrap"
+msgstr "Margine automatico"
+
+msgid "Wordwrap plain text"
+msgstr "Ritorno margine automatico sul testo.
+
+msgid "Work"
+msgstr "Lavoro"
+
+msgid "Wrap before quoting"
+msgstr "Margine automatico prima di quotare"
+
+msgid "Write"
+msgstr "Scrittura"
+
+msgid "Write to..."
+msgstr "Scrivi a ..."
+
+msgid "Yes|No"
+msgstr "Si|No"
+
+msgid ""
+"You are going to delete an imap folder.\n"
+"This will remove the folder locally but not on the server.\n"
+"The next time you connect to the server the folder will reapear."
+msgstr ""
+"Stai per cancellare una cartella IMAP.\n"
+"Questa avverrà solo localmente ma non sul server.\n"
+"Al successivo collegamento la cartella comparirà di nuovo."
+
+msgid ""
+"You are going to delete an imap server.\n"
+"Unless you don't remove it from the accounts setting page\n"
+"it will reapear after SimpleMail is restarted."
+msgstr ""
+"Stai per cancellare un server IMAP. A meno che non venga\n"
+"cancellato dalla pagina delle impostazioni dell'account,\n"
+"comparirà di nuovo quando SimpleMail verrà riavviato."
+
+msgid "You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."
+msgstr "Hai modificato la directory della cartella! É necessario uscire e riavviare SimpleMail perchè vengano applicati i cambiamenti."
+
+msgid "You have entered an invalid email address. Please correct it."
+msgstr "L'indirizzo email inserito non è corretto. Per favore, correggilo."
+
+msgid "Your E-Mail address for this account (required)"
+msgstr "L'indirizzo E-Mail per questo account (necessario)"
+
+msgid "Your full name (required)"
+msgstr "Il nome completo (necessario)"
+
+msgid ""
+"Your login/UserID for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"Il proprio identificativo per il server SMTP.\n"
+"Necessario solamente se il server richiede l'autenticazione."
+
+msgid ""
+"Your password for the SMTP server.\n"
+"Only required if the SMTP server requires authentication."
+msgstr ""
+"La password per il server SMTP.\n"
+"Necessaria solo se il server richiede l'autenticazione."
+
+msgid ""
+"Your very own password to access the mails\n"
+"located on the POP3 server."
+msgstr ""
+"La vostra personale password per accedere\n"
+"ai messaggi contenuti nel server POP3."
+
+msgid "Z:Clear Selection"
+msgstr "Z:Annulla selezione"
+
+msgid "ZIP/Postal Code"
+msgstr "Codice postale"
+
+msgid "_Abook"
+msgstr "Ru_brica"
+
+msgid "_Abort"
+msgstr "_Annulla"
+
+msgid "_Add"
+msgstr "A_ggiungi"
+
+msgid "_Add Account"
+msgstr "Ag_giungi account"
+
+msgid "_Attach"
+msgstr "All_ega"
+
+msgid "_Blind Copies To"
+msgstr "Copie _nascoste a (BCC)"
+
+msgid "_Body"
+msgstr "Co_rpo"
+
+msgid "_Cancel"
+msgstr "_Annulla"
+
+msgid "_Close window"
+msgstr "_Chiudi finestra"
+
+msgid "_Config"
+msgstr "Config_ura"
+
+msgid "_Delete"
+msgstr "_Cancella"
+
+msgid "_Delete it|_Cancel"
+msgstr "Cancella|_Annulla"
+
+msgid "_Delete mails"
+msgstr "_Cancella messaggi"
+
+msgid "_Delete messages"
+msgstr "_Cancella messaggi"
+
+msgid "_Description"
+msgstr "_Descrizione"
+
+msgid "_Duplicate"
+msgstr "_Duplica"
+
+msgid "_Edit"
+msgstr "_Modifica"
+
+msgid "_Encrypt"
+msgstr "Crittazione"
+
+msgid "_Fetch"
+msgstr "_Preleva"
+
+msgid "_Forward"
+msgstr "Inol_tra"
+
+msgid "_From"
+msgstr "_Da"
+
+msgid "_From|*_Reply-To|_Both|_Cancel"
+msgstr "_Da|*_Rispondi |_Tutti|_Annulla"
+
+msgid "_Hold"
+msgstr "I_n sospeso"
+
+msgid "Local path"
+msgstr "Percorso locale"
+
+msgid "_Look for spam mails|_Cancel"
+msgstr "_Ricerca mail spam|_Annulla"
+
+msgid "_Move"
+msgstr "Sp_osta"
+
+msgid "_Name"
+msgstr "_Nome"
+
+msgid "_New"
+msgstr "_Nuovo"
+
+msgid "_Next"
+msgstr "Se_guente"
+
+msgid "_Next error"
+msgstr "E_rrore seguente"
+
+msgid "_OK"
+msgstr "_OK"
+
+msgid "_Ok"
+msgstr "_Ok"
+
+msgid "_Orginal (%s)|_Converted (%s)| _UTF8|_Cancel"
+msgstr "_Originale(i) (%s)|_Convertito(i) (%s)| _UTF8|_Annulla
+
+msgid "_Prev"
+msgstr "_Precedente."
+
+msgid "_Previous error"
+msgstr "Errore _precedente"
+
+msgid "_Primary sort"
+msgstr "Ordinamento _primario"
+
+msgid "_Remove"
+msgstr "_Rimuovi"
+
+msgid "_Remove Account"
+msgstr "Ri_muovi account"
+
+msgid "_Replies To"
+msgstr "_Risposta a"
+
+msgid "_Reply"
+msgstr "_Rispondi"
+
+msgid "_Reply to"
+msgstr "_Rispondi a"
+
+msgid "_Save"
+msgstr "_Salva"
+
+msgid "_Secondary sort"
+msgstr "_Ordinamento secondario"
+
+msgid "_Send"
+msgstr "_Invia"
+
+msgid "_Send now"
+msgstr "Invia _ora"
+
+msgid "_Skip"
+msgstr "_Salta"
+
+msgid "_Start"
+msgstr "_Inizia"
+
+msgid "_Subject"
+msgstr "_Oggetto"
+
+msgid "_To"
+msgstr "_A"
+
+msgid "_Type"
+msgstr "_Tipo"
+
+msgid "_Use"
+msgstr "_Usa"
+
+msgid "_Yes|_No"
+msgstr "_Si|_No"
+
+msgid "and"
+msgstr "e"
+
+msgid "as you type"
+msgstr "quando scrivi"
+
+msgid "before storing"
+msgstr "prima di salvare"
+
+msgid "contains"
+msgstr "contiene"
+
+msgid "equals"
+msgstr "uguali"
+
+msgid "ham"
+msgstr "ham"
+
+msgid "mailinglist"
+msgstr "indirizzi raggruppati"
+
+msgid "matches"
+msgstr "corrisponde"
+
+msgid "minutes"
+msgstr "minuti"
+
+msgid "off"
+msgstr "disattivato"
+
+msgid "received"
+msgstr "ricevuto"
+
+msgid "received and sent"
+msgstr "ricevuto e spedito"
+
+msgid "sent"
+msgstr "inviato"
+
+msgid "spam"
+msgstr "spam"
+
+msgid "spam and ham"
+msgstr "spam e ham"
+
+msgid "with STLS"
+msgstr "Usa STLS"
+

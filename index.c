@@ -89,8 +89,8 @@ int index_remove_document(struct index *index, int did)
  * @param index
  * @param callback
  * @param userdata
- * @param num_substrings
- * @return
+ * @param num_substrings number of following strings of type const char *.
+ * @return number of documents for which the callback was called.
  */
 int index_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, ...)
 {

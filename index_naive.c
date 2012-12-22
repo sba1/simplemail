@@ -101,7 +101,42 @@ int index_naive_remove_document(struct index *index, int did)
 
 int index_naive_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, va_list substrings)
 {
-	return 0;
+	struct document_node *d;
+	struct index_naive *idx;
+	int nd = 0;
+	int i;
+
+	idx = (struct index_naive*)index;
+	nd = 0;
+
+	d = (struct document_node*)list_first(&idx->document_list);
+	while (d)
+	{
+		int take = 1;
+		va_list substrings_copy;
+
+		va_copy(substrings_copy,substrings);
+
+		for (i=0;i<num_substrings;i++)
+		{
+			if (!strstr(d->txt,va_arg(substrings_copy,char *)))
+			{
+				take = 0;
+				break;
+			}
+		}
+
+		va_end(substrings_copy);
+
+		if (take)
+		{
+			callback(d->did,userdata);
+			nd++;
+		}
+		d = (struct document_node*)node_next(&d->node);
+	}
+
+	return nd;
 }
 
 /*****************************************************/

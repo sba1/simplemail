@@ -140,7 +140,7 @@ $(GSTFILE): amiga-mui/headers.c
   sc nover ign=79,110 noobjname amiga-mui/headers.c makegst=$@ idlen=40 $(INCDIRS)
 
 #locale
-LOCALEOBJS = ${LOCALEDIR}cz.mo ${LOCALEDIR}da.mo ${LOCALEDIR}de.mo ${LOCALEDIR}fi.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo ${LOCALEDIR}es.mo $(LOCALEDIR)fr.mo
+LOCALEOBJS = ${LOCALEDIR}cz.mo ${LOCALEDIR}da.mo ${LOCALEDIR}de.mo ${LOCALEDIR}es.mo ${LOCALEDIR}fi.mo $(LOCALEDIR)it.mo $(LOCALEDIR)fr.mo ${LOCALEDIR}ma.mo ${LOCALEDIR}pl.mo
 locale: ${LOCALEOBJS}
 
 .po.mo:
@@ -148,11 +148,12 @@ locale: ${LOCALEOBJS}
 # msgfmt $? -o $@     # this is the Amiga style variant of msgfmt
 
 ${LOCALEDIR}cz.mo: po/cz.po
-${LOCALEDIR}de.mo: po/da.po
+${LOCALEDIR}da.mo: po/da.po
 ${LOCALEDIR}de.mo: po/de.po
 ${LOCALEDIR}es.mo: po/es.po
 ${LOCALEDIR}fi.mo: po/fi.po
 ${LOCALEDIR}fr.mo: po/fr.po
+${LOCALEDIR}it.mo: po/it.po
 ${LOCALEDIR}ma.mo: po/ma.po
 ${LOCALEDIR}pl.mo: po/pl.po
 
@@ -166,6 +167,8 @@ es.pox:
   execute CreatePOX es
 fi.pox:
   execute CreatePOX fi
+it.pox:
+  execute CreatePOX it
 fr.pox:
   execute CreatePOX fr
 ma.pox:

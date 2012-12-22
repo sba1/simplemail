@@ -26,6 +26,8 @@
 #ifndef SM__MOCK_H
 #define SM__MOCK_H
 
+#include <stdint.h>
+
 enum mock_type
 {
 	MOCK_DUMMY,

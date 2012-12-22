@@ -182,3 +182,72 @@ void test_filter_rule_create_recipient_rule_from_mail_iterator(void)
 	filter_add_rule(f,fr);
 	filter_dispose(f);
 }
+
+/*******************************************************/
+
+/* @Test */
+void test_filter_rule_create_from_rule_from_mail_iterator_all_match(void)
+{
+	struct filter_rule *fr;
+	struct filter *f;
+
+	struct mail_info *m[NUM_MAILS];
+	int i;
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+	{
+		m[i] = mail_info_create();
+		CU_ASSERT(m[i] != NULL);
+
+		m[i]->from_addr = (utf8*)mystrdup("sba@zzzqqq.de");
+		CU_ASSERT(m[i]->from_addr != NULL);
+	}
+
+	f = filter_create();
+	CU_ASSERT(f != NULL);
+
+	fr = filter_rule_create_from_mail_iterator(FRCT_FROM,-1,get_first_mail_info,get_next_mail_info,m);
+	CU_ASSERT(fr != NULL);
+	CU_ASSERT(fr->u.from.from[0] != NULL);
+	CU_ASSERT(strcmp("sba@zzzqqq.de",fr->u.from.from[0])==0);
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+		mail_info_free(m[i]);
+
+	filter_add_rule(f,fr);
+	filter_dispose(f);
+}
+
+/*******************************************************/
+
+/* @Test */
+void test_filter_rule_create_from_rule_from_mail_iterator_one_mismatch(void)
+{
+	struct filter_rule *fr;
+	struct filter *f;
+
+	struct mail_info *m[NUM_MAILS];
+	int i;
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+	{
+		m[i] = mail_info_create();
+		CU_ASSERT(m[i] != NULL);
+
+		m[i]->from_addr = (utf8*)mystrdup(i==0?"sba@zzzqqqq.de":"sba@zzzqqq.de");
+		CU_ASSERT(m[i]->from_addr != NULL);
+	}
+
+	f = filter_create();
+	CU_ASSERT(f != NULL);
+
+	fr = filter_rule_create_from_mail_iterator(FRCT_FROM,-1,get_first_mail_info,get_next_mail_info,m);
+	CU_ASSERT(fr == NULL || fr->u.from.from[0] == NULL);
+
+	for (i=0;i<sizeof(m)/sizeof(*m);i++)
+		mail_info_free(m[i]);
+
+	if (fr)
+		filter_add_rule(f,fr);
+	filter_dispose(f);
+}

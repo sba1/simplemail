@@ -136,7 +136,8 @@ struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***add
 enum filter_rule_create_type
 {
 	FRCT_RECEPIENTS,
-	FRCT_SUBJECT
+	FRCT_SUBJECT,
+	FRCT_FROM
 };
 
 struct mail_info;

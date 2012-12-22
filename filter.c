@@ -476,6 +476,9 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 	{
 		switch (type)
 		{
+			case	FRCT_FROM:
+					data[i] = array_add_string(NULL,m->from_addr);
+					break;
 			case	FRCT_RECEPIENTS:
 					data[i] = mail_info_get_recipient_addresses(m); /* returns an array() */
 					break;
@@ -489,6 +492,7 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 
 	switch (type)
 	{
+			case	FRCT_FROM:
 			case	FRCT_RECEPIENTS:
 					fr = filter_rule_create_from_common_sorted_recipients((char***)data,num_mails);
 					break;
@@ -506,6 +510,7 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 	{
 		switch (type)
 		{
+			case	FRCT_FROM:
 			case	FRCT_RECEPIENTS:
 					array_free(data[i]);
 					break;

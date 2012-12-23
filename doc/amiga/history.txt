@@ -1,4 +1,12 @@
-Version 0.38 (24th beta) - releases on 2011/12/24
+Version 0.39 (25th beta) - released on 2012/12/24
+   - Fixed some bugs related to multi selection. 
+   - Added possibility to infer specific filter criteria from
+     selected mails.
+   - Now supports ATTACHMENT/K/M argument both from the command
+     line and MAILWRITE ARexx command.   
+   - Fixed memory leak.
+
+Version 0.38 (24th beta) - released on 2011/12/24
    - Applied a workaround to circumvent possible crashes with SSL
      IMAP connection on AmigaOS4
    - Fixed a problem with IMAP login and passwords containing spaces.
@@ -239,18 +247,18 @@ Version 0.14 (first beta) - released on 2001/12/24
     containing new mail.
   - Improved the wordwrap while quoting.
   - Option to not quote empty lines.
-  - Your address is filtered out when replying a multiple recipient email.
-  - Modified the STARTTLS code following the suggestions from Jörg Strohmayer.
+  - Your addressï¿½isï¿½filteredï¿½outï¿½whenï¿½replyingï¿½aï¿½multipleï¿½recipientï¿½email.
+  - Modified the STARTTLS code following the suggestions fromï¿½Jï¿½rgï¿½Strohmayer.
   - Every folder can now have a default recipient address.
   - Can now import address books from YAM.
   - Implemented CC support in the Compose Message window.
-  - Added (partial) hungarian translation by Márton Dósa
+  - Added (partial) hungarian translation by Mï¿½rton Dï¿½sa
 
 Version 0.13 (thirteenth alpha) - released on 2001/12/07
   - Included a real manual at last. Thanks to David Rey!
   - SMTP over SSL.
-  - POP3 connections can now be made secure with the STLS command.
-    (RFC 2595)
+  -ï¿½POP3ï¿½connectionsï¿½canï¿½now beï¿½madeï¿½secureï¿½withï¿½theï¿½STLS command.
+   ï¿½(RFCï¿½2595)
   - (A rather primitive) ARexx port.
   - Support for playing sounds.
   - Taglines.
@@ -267,9 +275,9 @@ Version 0.12 (twelfth alpha) - released on 2001/11/11
   - A small menu in the Read window makes it possible to see the
     message in raw format.
   - The mouse wheel support in the Read window is now more tolerant.
-  - Icons for attachments are better identified now if you have OS3.9
-    and DefIcons is running: you can double-click an icon to trigger
-    an action, for instance launching UnArc to extract an archive as
+  - Icons for attachmentsï¿½areï¿½betterï¿½identifiedï¿½now ifï¿½youï¿½haveï¿½OS3.9
+    andï¿½DefIcons is running: youï¿½canï¿½double-clickï¿½anï¿½iconï¿½toï¿½trigger
+   ï¿½an action, for instance launching UnArc to extract an archive as
     used by the default DefIcons config.
   - You can now print messages and plain text attachments.
 

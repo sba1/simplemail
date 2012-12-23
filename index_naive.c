@@ -29,6 +29,10 @@
 #include "index_private.h"
 #include "index_naive.h"
 
+#ifdef __SASC
+#define va_copy(dest,src) ((dest) = (src))
+#endif
+
 struct document_node
 {
 	struct node node;

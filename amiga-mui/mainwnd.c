@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** mainwnd.c
-*/
+/**
+ * @file mainwnd.c
+ */
 
 #include <string.h>
 #include <stdio.h>
@@ -235,17 +235,21 @@ void display_about(void)
 		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"),buf);
 }
 
-/******************************************************************
- Open an arbitrary message
-*******************************************************************/
+/**
+ * Open user-selectable mail for reading.
+ */
 static void open_message(void)
 {
 	callback_open_message(NULL,-1);
 }
 
-/******************************************************************
- Converts a given sort mode to a nlist title mark
-*******************************************************************/
+/**
+ * Converts a given sort mode to a nlist title mark.
+ *
+ * @param sortmode
+ * @param type
+ * @return
+ */
 static ULONG sortmode2titlemark(int sortmode, int type)
 {
 	int col = 0;
@@ -254,9 +258,12 @@ static ULONG sortmode2titlemark(int sortmode, int type)
 	return (col | ((sortmode & FOLDER_SORT_REVERSE)?MUIV_NList_TitleMark_Up:MUIV_NList_TitleMark_Down));
 }
 
-/******************************************************************
- Converts a given nlist title mark to a sort mode
-*******************************************************************/
+/**
+ * Converts a given nlist title mark to a sort mode.
+ *
+ * @param titlemark
+ * @return
+ */
 static int titlemark2sortmode(int titlemark)
 {
 	int col = titlemark & MUIV_NList_TitleMark_ColMask;
@@ -264,10 +271,10 @@ static int titlemark2sortmode(int titlemark)
 	return col|((titlemark & MUIV_NList_TitleMark_Up)?FOLDER_SORT_REVERSE:0);
 }
 
-/******************************************************************
- Update the mailtree's titlemarkers depending upon the folder's
- sort mode
-*******************************************************************/
+/**
+ * Update the mailtree's titlemarkers depending upon the folder's
+ * sort mode
+ */
 static void mailtreelist_update_title_markers(void)
 {
 	struct folder *folder = main_get_folder();
@@ -320,9 +327,9 @@ static void foldertreelist_orderchanged(void)
 	}
 }
 
-/******************************************************************
- An entry has been doubleclicked
-*******************************************************************/
+/**
+ * An entry of the folder tree list has been double clicked.
+ */
 static void foldertreelist_doubleclick(void)
 {
 	callback_edit_folder();

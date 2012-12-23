@@ -413,20 +413,28 @@ int callback_write_mail_to_str(char *str, char *subject)
 	return callback_write_mail(NULL,str,NULL,subject);
 }
 
-/* open an arbitrary message */
-int callback_open_message(char *message, int window)
+/**
+ * Open the mail associated with the give filename.
+ *
+ * @param mail_filename defines the mail, which should be opened. May be
+ *  NULL to indicate that the user is queried about the file name.
+ * @param window, defines the window id, in which the mail should be
+ *  openen. May be -1.
+ * @return
+ */
+int callback_open_message(char *mail_filename, int window)
 {
 	char buf[380];
 	static char stored_dir[512];
 	char *path;
 	int num = -1;
 
-	if (!message)
+	if (!mail_filename)
 	{
 		path = sm_request_file("SimpleMail", stored_dir, 0, "");
 	} else
 	{
-		path = mystrdup(message);
+		path = mystrdup(mail_filename);
 	}
 
 	if (path && *path)
@@ -444,7 +452,7 @@ int callback_open_message(char *message, int window)
 		}
 		else dir = "";
 
-		if (!message)
+		if (!mail_filename)
 			mystrlcpy(stored_dir,dir,sizeof(stored_dir));
 
 		if (getcwd(buf, sizeof(buf)) == NULL) return -1;

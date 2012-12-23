@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: SimpleMail 0.36\n"
-"POT-Creation-Date: 2012-12-22 19:31+0000\n"
+"POT-Creation-Date: 2012-12-23 10:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Sebastian Bauer <mail@sebastianbauer.info>\n"
 "Language-Team: German <LL@li.org>\n"
@@ -58,10 +58,10 @@ msgstr ""
 #: addressbook.c:761 amiga-mui/addressbookwnd.c:395 amiga-mui/configwnd.c:512
 #: amiga-mui/configwnd.c:525 amiga-mui/configwnd.c:545
 #: amiga-mui/configwnd.c:559 amiga-mui/configwnd.c:595
-#: amiga-mui/configwnd_stuff.c:77 amiga-mui/mainwnd.c:1021
-#: amiga-mui/mainwnd.c:1045 mail.c:2277 mail.c:3350 simplemail.c:112
-#: simplemail.c:246 simplemail.c:283 simplemail.c:1487 simplemail.c:1512
-#: simplemail.c:1531
+#: amiga-mui/configwnd_stuff.c:77 amiga-mui/mainwnd.c:1030
+#: amiga-mui/mainwnd.c:1054 mail.c:2277 mail.c:3350 simplemail.c:112
+#: simplemail.c:246 simplemail.c:283 simplemail.c:1504 simplemail.c:1529
+#: simplemail.c:1548
 msgid "Ok"
 msgstr "Ok"
 
@@ -401,7 +401,7 @@ msgstr "Ja|Nein"
 # amiga-mui/addressbookwnd.c:1406
 # amiga-mui/mainwnd.c:760
 # amiga-mui/readwnd.c:1203
-#: amiga-mui/addressbookwnd.c:1432 amiga-mui/mainwnd.c:791
+#: amiga-mui/addressbookwnd.c:1432 amiga-mui/mainwnd.c:799
 #: amiga-mui/readwnd.c:1241
 msgid "Project"
 msgstr "Projekt"
@@ -2311,7 +2311,7 @@ msgstr "Neuer Ordner..."
 
 # amiga-mui/foldertreelistclass.c:236
 # amiga-mui/mainwnd.c:779
-#: amiga-mui/foldertreelistclass.c:237 amiga-mui/mainwnd.c:810
+#: amiga-mui/foldertreelistclass.c:237 amiga-mui/mainwnd.c:818
 msgid "New Group..."
 msgstr "Neue Gruppe..."
 
@@ -2327,19 +2327,19 @@ msgstr "Einstellungen..."
 
 # amiga-mui/foldertreelistclass.c:241
 # amiga-mui/mainwnd.c:791
-#: amiga-mui/foldertreelistclass.c:242 amiga-mui/mainwnd.c:822
+#: amiga-mui/foldertreelistclass.c:242 amiga-mui/mainwnd.c:830
 msgid "Order"
 msgstr "Reihenfolge"
 
 # amiga-mui/foldertreelistclass.c:242
 # amiga-mui/mainwnd.c:792
-#: amiga-mui/foldertreelistclass.c:243 amiga-mui/mainwnd.c:823
+#: amiga-mui/foldertreelistclass.c:243 amiga-mui/mainwnd.c:831
 msgid "Save"
 msgstr "Speichern"
 
 # amiga-mui/foldertreelistclass.c:243
 # amiga-mui/mainwnd.c:793
-#: amiga-mui/foldertreelistclass.c:244 amiga-mui/mainwnd.c:824
+#: amiga-mui/foldertreelistclass.c:244 amiga-mui/mainwnd.c:832
 msgid "Reset"
 msgstr "Zurücksetzen"
 
@@ -2440,7 +2440,7 @@ msgstr "<Kein Empfänger>"
 # amiga-mui/mainwnd.c:794
 #. Help bubble text
 #: amiga-mui/mailtreelistclass-new.c:4001 amiga-mui/mailtreelistclass.c:429
-#: amiga-mui/mainwnd.c:825
+#: amiga-mui/mainwnd.c:833
 msgid "Message"
 msgstr "Nachricht"
 
@@ -2533,7 +2533,7 @@ msgstr "Ist Ham"
 # amiga-mui/mainwnd.c:806
 # amiga-mui/transwndclass.c:176
 #: amiga-mui/mailtreelistclass-new.c:4087 amiga-mui/mailtreelistclass.c:888
-#: amiga-mui/mainwnd.c:841 amiga-mui/transwndclass.c:177
+#: amiga-mui/mainwnd.c:850 amiga-mui/transwndclass.c:177
 msgid "Delete"
 msgstr "Löschen"
 
@@ -2726,147 +2726,147 @@ msgstr "Veröffentlicht unter den Bedingungen der GNU Public Lizenz"
 
 # amiga-mui/mainwnd.c:761
 # amiga-mui/readwnd.c:1204
-#: amiga-mui/mainwnd.c:792 amiga-mui/readwnd.c:1242
+#: amiga-mui/mainwnd.c:800 amiga-mui/readwnd.c:1242
 msgid "?:About..."
 msgstr "?:Über..."
 
 # amiga-mui/mainwnd.c:762
 # amiga-mui/readwnd.c:1205
-#: amiga-mui/mainwnd.c:793 amiga-mui/readwnd.c:1243
+#: amiga-mui/mainwnd.c:801 amiga-mui/readwnd.c:1243
 msgid "About MUI..."
 msgstr "Über MUI..."
 
 # amiga-mui/mainwnd.c:764
-#: amiga-mui/mainwnd.c:795
+#: amiga-mui/mainwnd.c:803
 msgid "O:Open Message..."
 msgstr "O:Nachricht öffnen..."
 
 # amiga-mui/mainwnd.c:766
-#: amiga-mui/mainwnd.c:797
+#: amiga-mui/mainwnd.c:805
 msgid "Delete All Indexfiles"
 msgstr "Alle Indexdateien löschen"
 
 # amiga-mui/mainwnd.c:767
-#: amiga-mui/mainwnd.c:798
+#: amiga-mui/mainwnd.c:806
 msgid "Save All Indexfiles"
 msgstr "Alle Indexdateien speichern"
 
 # amiga-mui/mainwnd.c:769
 # amiga-mui/mainwnd.c:782
-#: amiga-mui/mainwnd.c:800 amiga-mui/mainwnd.c:813
+#: amiga-mui/mainwnd.c:808 amiga-mui/mainwnd.c:821
 msgid "Import mbox File..."
 msgstr "Importiere mbox Datei..."
 
 # amiga-mui/mainwnd.c:770
-#: amiga-mui/mainwnd.c:801
+#: amiga-mui/mainwnd.c:809
 msgid "Import dbx File..."
 msgstr "Importiere dbx Datei..."
 
 # amiga-mui/mainwnd.c:772
-#: amiga-mui/mainwnd.c:803
+#: amiga-mui/mainwnd.c:811
 msgid "S:Send Queued Mails..."
 msgstr "S:Post in Warteschlange verschicken..."
 
 # amiga-mui/mainwnd.c:773
-#: amiga-mui/mainwnd.c:804
+#: amiga-mui/mainwnd.c:812
 msgid "F:Check All Active Accounts..."
 msgstr "H:Alle aktiven Kontons überprüfen..."
 
 # amiga-mui/mainwnd.c:774
-#: amiga-mui/mainwnd.c:805
+#: amiga-mui/mainwnd.c:813
 msgid "Check Single Account"
 msgstr "Einzelnes Konto überprüfen"
 
 # amiga-mui/mainwnd.c:776
 # amiga-mui/readwnd.c:1207
-#: amiga-mui/mainwnd.c:807 amiga-mui/readwnd.c:1245
+#: amiga-mui/mainwnd.c:815 amiga-mui/readwnd.c:1245
 msgid "Q:Quit"
 msgstr "Q:Beenden"
 
 # amiga-mui/mainwnd.c:777
-#: amiga-mui/mainwnd.c:808
+#: amiga-mui/mainwnd.c:816
 msgid "Folder"
 msgstr "Ordner"
 
 # amiga-mui/mainwnd.c:778
-#: amiga-mui/mainwnd.c:809
+#: amiga-mui/mainwnd.c:817
 msgid "New..."
 msgstr "Neu..."
 
 # amiga-mui/mainwnd.c:781
-#: amiga-mui/mainwnd.c:812
+#: amiga-mui/mainwnd.c:820
 msgid "Delete..."
 msgstr "Löschen..."
 
 # amiga-mui/mainwnd.c:783
-#: amiga-mui/mainwnd.c:814
+#: amiga-mui/mainwnd.c:822
 msgid "Export As mbox..."
 msgstr "Exportieren als mbox..."
 
 # amiga-mui/mainwnd.c:784
-#: amiga-mui/mainwnd.c:815
+#: amiga-mui/mainwnd.c:823
 msgid "Rescan"
 msgstr "Neu einlesen"
 
 # amiga-mui/mainwnd.c:785
-#: amiga-mui/mainwnd.c:816
+#: amiga-mui/mainwnd.c:824
 msgid "Options..."
 msgstr "Optionen..."
 
 # amiga-mui/mainwnd.c:787
-#: amiga-mui/mainwnd.c:818
+#: amiga-mui/mainwnd.c:826
 msgid "P:Run Spam Mail Check"
 msgstr "P:Nachrichten auf Spam überprüfen"
 
 # amiga-mui/mainwnd.c:788
-#: amiga-mui/mainwnd.c:819
+#: amiga-mui/mainwnd.c:827
 msgid "I:Isolate Spam Mails"
 msgstr "I:Spamnachrichten isolieren"
 
 # amiga-mui/mainwnd.c:789
-#: amiga-mui/mainwnd.c:820
+#: amiga-mui/mainwnd.c:828
 msgid "H:Classify All Mails As Ham"
 msgstr "K:Nachrichten als Ham klassifizieren"
 
 # amiga-mui/mainwnd.c:795
-#: amiga-mui/mainwnd.c:826
+#: amiga-mui/mainwnd.c:834
 msgid "N:New..."
 msgstr "N:Neu..."
 
 # amiga-mui/mainwnd.c:797
-#: amiga-mui/mainwnd.c:828
+#: amiga-mui/mainwnd.c:836
 msgid "D:Read..."
 msgstr "L:Lesen"
 
 # amiga-mui/mainwnd.c:798
-#: amiga-mui/mainwnd.c:829
+#: amiga-mui/mainwnd.c:837
 msgid "E:Edit..."
 msgstr "E:Bearbeiten..."
 
 # amiga-mui/mainwnd.c:799
 # amiga-mui/readwnd.c:1349
 # amiga-mui/readwnd.c:1362
-#: amiga-mui/mainwnd.c:830 amiga-mui/readwnd.c:1389 amiga-mui/readwnd.c:1402
+#: amiga-mui/mainwnd.c:838 amiga-mui/readwnd.c:1389 amiga-mui/readwnd.c:1402
 msgid "Save As..."
 msgstr "Speichern als..."
 
 # amiga-mui/mainwnd.c:800
-#: amiga-mui/mainwnd.c:831
+#: amiga-mui/mainwnd.c:839
 msgid "R:Reply..."
 msgstr "R:Antwort..."
 
 # amiga-mui/mainwnd.c:801
-#: amiga-mui/mainwnd.c:832
+#: amiga-mui/mainwnd.c:840
 msgid "W:Forward..."
 msgstr "W:Weiterleiten..."
 
 # amiga-mui/mainwnd.c:802
 # amiga-mui/readwnd.c:1209
-#: amiga-mui/mainwnd.c:833 amiga-mui/readwnd.c:1247
+#: amiga-mui/mainwnd.c:841 amiga-mui/readwnd.c:1247
 msgid "Show Raw..."
 msgstr "Rohformat anzeigen..."
 
-#: amiga-mui/mainwnd.c:835
+#: amiga-mui/mainwnd.c:843
 msgid "Create Filter"
 msgstr "Filter erstellen"
 
@@ -2880,32 +2880,46 @@ msgstr "Filter erstellen"
 # amiga-mui/transwndclass.c:135
 # mail.c:3456
 # print.c:119
-#: amiga-mui/mainwnd.c:836
-msgid "On Subjects..."
-msgstr "Für Betreffzeile..."
+#: amiga-mui/mainwnd.c:844
+msgid "On Senders..."
+msgstr "Für Absender..."
 
 # amiga-mui/mailtreelistclass.c:160
-#: amiga-mui/mainwnd.c:837
+#: amiga-mui/mainwnd.c:845
 msgid "On Recipients..."
 msgstr "Für Empfänger..."
 
+# amiga-mui/configwnd.c:1423
+# amiga-mui/configwnd.c:1424
+# amiga-mui/filterruleclass.c:95
+# amiga-mui/folderwnd.c:276
+# amiga-mui/folderwnd.c:286
+# amiga-mui/mailinfoclass.c:412
+# amiga-mui/mailtreelistclass.c:528
+# amiga-mui/transwndclass.c:135
+# mail.c:3456
+# print.c:119
+#: amiga-mui/mainwnd.c:846
+msgid "On Subjects..."
+msgstr "Für Betreffzeile..."
+
 # amiga-mui/mainwnd.c:804
-#: amiga-mui/mainwnd.c:839
+#: amiga-mui/mainwnd.c:848
 msgid "M:Move..."
 msgstr "V:Verschieben..."
 
 # amiga-mui/mainwnd.c:805
-#: amiga-mui/mainwnd.c:840
+#: amiga-mui/mainwnd.c:849
 msgid "Copy..."
 msgstr "Kopieren..."
 
 # amiga-mui/mainwnd.c:808
-#: amiga-mui/mainwnd.c:843
+#: amiga-mui/mainwnd.c:852
 msgid "A:Select All Messages"
 msgstr "A:Alle Nachrichten auswählen"
 
 # amiga-mui/mainwnd.c:809
-#: amiga-mui/mainwnd.c:844
+#: amiga-mui/mainwnd.c:853
 msgid "Z:Clear Selection"
 msgstr "Z:Auswahl aufheben"
 
@@ -2919,67 +2933,67 @@ msgstr "Z:Auswahl aufheben"
 #. {NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 #. {NM_SUB, "Remove Attachments", NULL, 0, 0, NULL},
 #.
-#: amiga-mui/mainwnd.c:855 amiga-mui/readwnd.c:1252
+#: amiga-mui/mainwnd.c:864 amiga-mui/readwnd.c:1252
 msgid "Settings"
 msgstr "Einstellungen"
 
 # amiga-mui/mainwnd.c:821
-#: amiga-mui/mainwnd.c:856
+#: amiga-mui/mainwnd.c:865
 msgid "Show Folders?"
 msgstr "Ordner zeigen?"
 
 # amiga-mui/mainwnd.c:822
-#: amiga-mui/mainwnd.c:857
+#: amiga-mui/mainwnd.c:866
 msgid "Show Address Book?"
 msgstr "Adressbuch zeigen?"
 
 # amiga-mui/mainwnd.c:823
-#: amiga-mui/mainwnd.c:858
+#: amiga-mui/mainwnd.c:867
 msgid "Show Selected Message?"
 msgstr "Gewählte Nachricht zeigen?"
 
 # amiga-mui/mainwnd.c:824
-#: amiga-mui/mainwnd.c:859
+#: amiga-mui/mainwnd.c:868
 msgid "Show Quick Filter?"
 msgstr "Schnellfilter zeigen?"
 
 # amiga-mui/messageviewclass.c:811
-#: amiga-mui/mainwnd.c:861
+#: amiga-mui/mainwnd.c:870
 msgid "Address Book..."
 msgstr "Adressbuch..."
 
 # amiga-mui/mainwnd.c:826
-#: amiga-mui/mainwnd.c:862
+#: amiga-mui/mainwnd.c:871
 msgid "Configuration..."
 msgstr "Konfiguration..."
 
 # amiga-mui/mainwnd.c:827
-#: amiga-mui/mainwnd.c:863
+#: amiga-mui/mainwnd.c:872
 msgid "Filters..."
 msgstr "Filter..."
 
 # amiga-mui/mainwnd.c:828
-#: amiga-mui/mainwnd.c:864
+#: amiga-mui/mainwnd.c:873
 msgid "MUI..."
 msgstr "MUI..."
 
 # amiga-mui/mainwnd.c:830
-#: amiga-mui/mainwnd.c:866
+#: amiga-mui/mainwnd.c:875
 msgid "Save Settings"
 msgstr "Einstellungen speichern"
 
 # amiga-mui/mainwnd.c:831
-#: amiga-mui/mainwnd.c:867
+#: amiga-mui/mainwnd.c:876
 msgid "Scripts"
 msgstr "Skripte"
 
 # amiga-mui/mainwnd.c:832
-#: amiga-mui/mainwnd.c:868
+#: amiga-mui/mainwnd.c:877
 msgid ".:Execute ARexx Script..."
 msgstr ".:ARexx Skript ausführen..."
 
 # amiga-mui/mainwnd.c:887
-#: amiga-mui/mainwnd.c:925
+#: amiga-mui/mainwnd.c:934
 msgid ""
 "Allows you to filter for messages containing the given texts within their "
 "From or Subject fields."
@@ -2987,12 +3001,12 @@ msgstr ""
 "Ermöglicht das Filtern von Nachrichten direkt im Hauptfenster anhand des "
 "Absenders oder der Betreffzeile."
 
-#: amiga-mui/mainwnd.c:996
+#: amiga-mui/mainwnd.c:1005
 msgid "P"
 msgstr ""
 
 # amiga-mui/mainwnd.c:974
-#: amiga-mui/mainwnd.c:1020
+#: amiga-mui/mainwnd.c:1029
 #, c-format
 msgid ""
 "SimpleMail needs at least version %ld.%ld of the NListtree.mcc MUI "
@@ -3004,7 +3018,7 @@ msgstr ""
 "Sie ist auf %s auffindbar."
 
 # amiga-mui/mainwnd.c:998
-#: amiga-mui/mainwnd.c:1044
+#: amiga-mui/mainwnd.c:1053
 #, c-format
 msgid ""
 "SimpleMail needs at least version %ld.%ld of the NList.mcc MUI subclass!\n"
@@ -3015,44 +3029,44 @@ msgstr ""
 "Sie ist unter %s verfügbar."
 
 # amiga-mui/mainwnd.c:1169
-#: amiga-mui/mainwnd.c:1275
+#: amiga-mui/mainwnd.c:1285
 msgid "Folder:"
 msgstr "Ordner:"
 
 # amiga-mui/mainwnd.c:1169
-#: amiga-mui/mainwnd.c:1275
+#: amiga-mui/mainwnd.c:1285
 msgid "Total:"
 msgstr "Insgesamt:"
 
 # amiga-mui/mainwnd.c:1169
-#: amiga-mui/mainwnd.c:1275
+#: amiga-mui/mainwnd.c:1285
 msgid "New:"
 msgstr "Neu:"
 
 # amiga-mui/mainwnd.c:1169
-#: amiga-mui/mainwnd.c:1275
+#: amiga-mui/mainwnd.c:1285
 msgid "Unread:"
 msgstr "Ungelesen:"
 
 # amiga-mui/mainwnd.c:1178
-#: amiga-mui/mainwnd.c:1284
+#: amiga-mui/mainwnd.c:1294
 #, c-format
 msgid "Total:%d New:%d Unread:%d"
 msgstr "Insgesamt:%d Neu:%d Ungelesen:%d"
 
 # amiga-mui/mainwnd.c:1200
-#: amiga-mui/mainwnd.c:1306
+#: amiga-mui/mainwnd.c:1316
 #, c-format
 msgid "%s (T:%d N:%d U:%d)"
 msgstr "%s (T:%d N:%d U:%d)"
 
 # amiga-mui/mainwnd.c:1457
-#: amiga-mui/mainwnd.c:1553
+#: amiga-mui/mainwnd.c:1563
 msgid "No fetchable account specified"
 msgstr "Kein Konto vorhanden"
 
 # amiga-mui/mainwnd.c:1558
-#: amiga-mui/mainwnd.c:1654
+#: amiga-mui/mainwnd.c:1664
 #, c-format
 msgid "%s (next autocheck at %s)"
 msgstr "%s (nächster Abruf bei %s)"
@@ -4045,32 +4059,32 @@ msgid "_Yes|_No"
 msgstr "*_Ja|_Nein"
 
 # simplemail.c:803
-#: simplemail.c:855
+#: simplemail.c:863
 msgid "Please select the folder where to move the mail"
 msgstr "Bitte den Zielordner auswählen"
 
 # simplemail.c:848
-#: simplemail.c:900
+#: simplemail.c:908
 msgid "Please select the folder where to move the mails"
 msgstr "Zielverzeichnis auswählen"
 
 # simplemail.c:928
-#: simplemail.c:1028
+#: simplemail.c:1036
 msgid "spam and ham"
 msgstr "Spam und Ham"
 
 # simplemail.c:929
-#: simplemail.c:1029
+#: simplemail.c:1037
 msgid "spam"
 msgstr "Spam"
 
 # simplemail.c:930
-#: simplemail.c:1030
+#: simplemail.c:1038
 msgid "ham"
 msgstr "Ham"
 
 # simplemail.c:932
-#: simplemail.c:1032
+#: simplemail.c:1040
 #, c-format
 msgid ""
 "Currently there are too few mails classified as %s.\n"
@@ -4095,65 +4109,65 @@ msgstr ""
 "Trotzem nach Spam Nachrichten schauen?"
 
 # simplemail.c:937
-#: simplemail.c:1037
+#: simplemail.c:1045
 msgid "_Look for spam mails|_Cancel"
 msgstr "_Nach Spam Nachrichten schauen|_Abbruch"
 
 # simplemail.c:1312
 # simplemail.c:1337
-#: simplemail.c:1482 simplemail.c:1507
+#: simplemail.c:1499 simplemail.c:1524
 msgid "Choose the file which you like to import"
 msgstr "Dateiname der zu importierenden Datei auswählen"
 
 # simplemail.c:1317
 # simplemail.c:1342
-#: simplemail.c:1487 simplemail.c:1512
+#: simplemail.c:1504 simplemail.c:1529
 msgid "Couldn't start process for importing.\n"
 msgstr "Konnte Import-Prozess nicht erstellen.\n"
 
 # simplemail.c:1356
-#: simplemail.c:1526
+#: simplemail.c:1543
 msgid "Choose export filename"
 msgstr "Dateiname zum Exportieren auswählen"
 
 # simplemail.c:1361
-#: simplemail.c:1531
+#: simplemail.c:1548
 msgid "Couldn't start process for exporting.\n"
 msgstr "Exportiernen fehlgechlagen!\n"
 
 # simplemail.c:1783
-#: simplemail.c:2241
+#: simplemail.c:2258
 msgid "Select an addressbook-file."
 msgstr "Adressbuchdatei auswählen"
 
 # simplemail.c:1816
-#: simplemail.c:2274
+#: simplemail.c:2291
 msgid "New Group"
 msgstr "Neue Gruppe"
 
-#: simplemail.c:2491
+#: simplemail.c:2508
 msgid "All mails downloaded completely"
 msgstr ""
 
 # amiga-mui/transwndclass.c:177
-#: simplemail.c:2538
+#: simplemail.c:2555
 msgid "Downloading complete mails"
 msgstr "Lade Nachrichten vollständig herunter"
 
-#: simplemail.c:2549
+#: simplemail.c:2566
 #, c-format
 msgid "Downloading all complete mails for folder \"%s\": %ld mails to go"
 msgstr ""
 "Lade vollständige Nachrichten des Ordners \"%s\" herunter (%ld verbleibend)"
 
 # smtp.c:919
-#: simplemail.c:2557
+#: simplemail.c:2574
 #, c-format
 msgid "%ld mails to go"
 msgstr "%ld Nachrichten verbleiben"
 
 # pop3.c:1040
-#: simplemail.c:2572
+#: simplemail.c:2589
 msgid "Could not download complete mail"
 msgstr "Konnte vollständige Nachricht nicht herunterladen"
 

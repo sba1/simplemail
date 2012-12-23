@@ -1237,6 +1237,15 @@ out:
  * Create a subject filter from the currently selected mails
  * and open the filter window.
  */
+void callback_create_sender_filter(void)
+{
+	simplemail_create_filter_from_current_mail_selection(FRCT_FROM);
+}
+
+/**
+ * Create a subject filter from the currently selected mails
+ * and open the filter window.
+ */
 void callback_create_subject_filter(void)
 {
 	simplemail_create_filter_from_current_mail_selection(FRCT_SUBJECT);

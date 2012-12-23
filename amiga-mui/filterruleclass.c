@@ -370,6 +370,9 @@ STATIC ULONG FilterRule_Get(struct IClass *cl, Object *obj, struct opGet *msg)
 
 /**
  * Decides whether a drag and drop operation may be accepted.
+ * A drag and drop operation may be accepted, if the object
+ * dragged over the filte rule is of a supported class (of type
+ * mailtreelist) and if the filter type is supported.
  *
  * @param data
  * @param dragged_obj
@@ -379,8 +382,14 @@ static int FilterRule_AcceptDrag(struct FilterRule_Data *data, Object *dragged_o
 {
   if (OCLASS(dragged_obj) != CL_MailTreelist->mcc_Class)
 	  return 0;
-  if (data->type != RULE_RCPT_MATCH && data->type != RULE_SUBJECT_MATCH)
-	  return 0;
+  switch (data->type)
+  {
+  	  case	RULE_RCPT_MATCH:
+  	  case	RULE_SUBJECT_MATCH:
+  	  case	RULE_FROM_MATCH:
+  		  	break;
+  	  default: return 0;
+  }
   return 1;
 }
 
@@ -429,6 +438,10 @@ STATIC ULONG FilterRule_DragDrop(struct IClass *cl,Object *obj,struct MUIP_DragD
 
   switch (data->type)
   {
+  	case	RULE_FROM_MATCH:
+  			fr = filter_rule_create_from_mail_iterator(FRCT_FROM,-1,FilterRule_Get_First_Mail_Info,FilterRule_Get_Next_Mail_Info,msg->obj);
+  			break;
+
 	case	RULE_RCPT_MATCH:
 			fr = filter_rule_create_from_mail_iterator(FRCT_RECEPIENTS,-1,FilterRule_Get_First_Mail_Info,FilterRule_Get_Next_Mail_Info,msg->obj);
 			break;

@@ -1,10 +1,10 @@
 <?php
 
-$version = "0.38";
-$date = "2011/12/24";
+$version = "0.39";
+$date = "2012/12/24";
 
-$morphversion = "0.37";
-$morphdate = "2011/06/05";
+$morphversion = "0.38";
+$morphdate = "2012/01/11";
 
 $arosversion = "0.37";
 $arosdate = "2011/02/26";

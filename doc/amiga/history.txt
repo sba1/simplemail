@@ -1,10 +1,10 @@
 Version 0.39 (25th beta) - released on 2012/12/24
-   - Fixed some bugs related to multi selection. 
-   - Added possibility to infer specific filter criteria from
-     selected mails.
-   - Now supports ATTACHMENT/K/M argument both from the command
-     line and MAILWRITE ARexx command.   
-   - Fixed memory leak.
+   - Filter rules may be created now from attributes common in multiple mails
+   - Supports ATTACHMENT/K/M argument for both the command line and
+     the MAILWRITE ARexx command
+   - Included more translations
+   - Fixed memory leak
+   - Fixed various multi selection problems
 
 Version 0.38 (24th beta) - released on 2011/12/24
    - Applied a workaround to circumvent possible crashes with SSL

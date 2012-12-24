@@ -2,6 +2,36 @@
 
 <news>
 
+  <entry date="2012/12/24">
+   <text lang="en">
+    A new version of SimpleMail has been released! Version 0.39 comes with following changes:
+    <list>
+     <item>Enhancement: Filter rules may be created now from attributes common in multiple mails</item>
+     <item>Enhancement: Supports ATTACHMENT/K/M argument for both the command line and the MAILWRITE ARexx command</item>
+     <item>Enhancement: Included more translations</item>
+     <item>Bug fix: Fixed memory leak.</item>
+     <item>Bug fix: Various multi selection problems</item>
+    </list>
+    
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2013!
+    
+    </text>
+   
+   <text lang="de">
+   	 Eine neue Version von SimpleMail wurde veröffentlicht. Version 0.39 kommt mit folgenden Änderungen:
+   	 
+    <list>
+     <item>Passende Filterregeln können von den Gemeisamkeiten ausgewählter Nachrichten erstellt werden</item>
+     <item>ATTACHMENT/K/M Argument wird von der Kommandozeile und vom ARexx-Kommando MAILWRITE unterstützt</item>
+     <item>Verschiedene Übersetzungen wurden hinzufügt</item>
+     <item>Weitere Speicherlecks wurden behoben</item>
+     <item>Diverse Probleme mit der Mehrfachauswahl in der Nachrichtenliste wurden behoben</item>
+    </list>
+   	 
+   	 Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   </text>
+  </entry>
+
   <entry date="2011/12/24">
    <text lang="en">
     A new version of SimpleMail has been released! Version 0.38 comes with following changes:

@@ -100,7 +100,29 @@ int index_naive_put_document(struct index *index, int did, const char *text)
 
 int index_naive_remove_document(struct index *index, int did)
 {
-	return 0;
+	struct document_node *d;
+	struct index_naive *idx;
+	int i;
+	int removed = 0;
+
+	idx = (struct index_naive*)index;
+
+	d = (struct document_node*)list_first(&idx->document_list);
+	while (d)
+	{
+		struct document_node *n = (struct document_node*)node_next(&d->node);
+
+		if (d->did == did)
+		{
+			removed = 1;
+			node_remove(&d->node);
+			free(d->txt);
+			free(d);
+		}
+
+		d = n;
+	}
+	return removed;
 }
 
 int index_naive_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, va_list substrings)

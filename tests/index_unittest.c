@@ -34,6 +34,11 @@ static int test_index_naive_callback(int did, void *userdata)
 	CU_ASSERT(did==4);
 }
 
+static int test_index_naive_callback2(int did, void *userdata)
+{
+	CU_ASSERT(0);
+}
+
 /*******************************************************/
 
 /* @Test */
@@ -47,13 +52,19 @@ void test_index_naive(void)
 	CU_ASSERT(index != NULL);
 
 	ok = index_put_document(index,4,"This is a very long text.");
-	CU_ASSERT(ok!=0);
+	CU_ASSERT(ok != 0);
 
 	ok = index_put_document(index,12,"This is a short text.");
-	CU_ASSERT(ok!=0);
+	CU_ASSERT(ok != 0);
 
 	nd = index_find_documents(index,test_index_naive_callback,NULL,1,"very");
 	CU_ASSERT(nd == 1);
+
+	ok = index_remove_document(index,4);
+	CU_ASSERT(ok != 0);
+
+	nd = index_find_documents(index,test_index_naive_callback2,NULL,1,"very");
+	CU_ASSERT(nd == 0);
 
 	index_dispose(index);
 }

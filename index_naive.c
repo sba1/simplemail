@@ -29,8 +29,11 @@
 #include "index_private.h"
 #include "index_naive.h"
 
+/* Get va_vopy() with pre-C99 compilers */
 #ifdef __SASC
 #define va_copy(dest,src) ((dest) = (src))
+#elif defined(__GNUC__) && (__GNUC__ < 3)
+#include <varargs.h>
 #endif
 
 struct document_node

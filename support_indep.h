@@ -103,8 +103,8 @@ typedef struct
 } string;
 
 int string_initialize(string *string, unsigned int size);
-int string_append(string *string, char *appstr);
-int string_append_part(string *string, char *appstr, int bytes);
+int string_append(string *string, const char *appstr);
+int string_append_part(string *string, const char *appstr, int bytes);
 int string_append_char(string *string, char c);
 void string_crop(string *string, int startpos, int endpos);
 

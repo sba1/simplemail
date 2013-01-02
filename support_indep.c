@@ -934,7 +934,7 @@ int string_initialize(string *string, unsigned int size)
  * @param bytes
  * @return 1 on success, otherwise 0.
  */
-int string_append_part(string *string, char *appstr, int bytes)
+int string_append_part(string *string, const char *appstr, int bytes)
 {
 	int alloclen;
 
@@ -970,7 +970,7 @@ int string_append_part(string *string, char *appstr, int bytes)
  * @param appstr
  * @return whether successful or not.
  */
-int string_append(string *string, char *appstr)
+int string_append(string *string, const char *appstr)
 {
 	if (!appstr) return 1;
 	return string_append_part(string,appstr,strlen(appstr));

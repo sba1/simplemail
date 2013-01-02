@@ -3307,7 +3307,7 @@ MAILWRITE
      MailWrite -- Open a new Compose Message window.
 
 @{b}TEMPLATE@{ub}
-     MAILTO/K,SUBJECT/K,ATTACHMENT/K/M
+     MAILTO/K,SUBJECT/K,BODY/K,ATTACHMENT/K/M
 
 @{b}FUNCTION@{ub}
      Opens a new Compose Message window using the recipient and
@@ -3317,6 +3317,8 @@ MAILWRITE
      MAILTO     - either an email address or an alias (or even group
                   name) that may be found in the addressbook
      SUBJECT    - the subject title for the new mail
+     BODY       - the body of the new mail. Use *n for newline and **
+                  for asterisks
      ATTACHMENT - a file that should be added as an attachment
 
 @{b}RETURNS@{ub}

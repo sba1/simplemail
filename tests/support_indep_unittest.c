@@ -124,3 +124,22 @@ void test_array_sort(void)
 
 	array_free(a);
 }
+
+
+/********************************************************/
+
+/* @Test */
+void testmystrreplace(void)
+{
+	char *r;
+
+	r = mystrreplace("abcdefgabcdefg","hij", "klm");
+	CU_ASSERT(r != NULL);
+	CU_ASSERT(!strcmp("abcdefgabcdefg",r));
+	free(r);
+
+	r = mystrreplace("abcdefgabcdefg","bcd", "q");
+	CU_ASSERT(r != NULL);
+	CU_ASSERT(!strcmp("aqefgaqefg",r));
+	free(r);
+}

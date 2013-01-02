@@ -105,7 +105,6 @@ int index_naive_remove_document(struct index *index, int did)
 {
 	struct document_node *d;
 	struct index_naive *idx;
-	int i;
 	int removed = 0;
 
 	idx = (struct index_naive*)index;

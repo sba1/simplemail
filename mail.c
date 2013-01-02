@@ -1119,6 +1119,8 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 		mail_process_headers(mail);
 	}
 	free(to_str);
+	free(mb.addr_spec);
+	free(mb.phrase);
 	return mail;
 }
 

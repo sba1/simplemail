@@ -255,6 +255,34 @@ char *mystpcpy(char *dest, const char *src)
 }
 
 /**
+ * Returns a new string derived from str in which all occurrences of
+ * from are replaced by to.
+ *
+ * @param src
+ * @param from
+ * @param to
+ * @return the new string or NULL. If not NULL, the string must be freed with free().
+ */
+char *mystrreplace(const char *src, const char *from, const char *to)
+{
+	const char *start;
+
+	string d;
+	if (!(string_initialize(&d,1024)))
+		return NULL;
+
+	start = src;
+	while ((src = strstr(start,from)))
+	{
+		string_append_part(&d,start,src-start);
+		string_append(&d,to);
+		start = src + strlen(from);
+	}
+	string_append(&d,start);
+	return d.str;
+}
+
+/**
  * Returns the size of a given previously opened file.
  *
  * @param file

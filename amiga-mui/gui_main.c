@@ -504,6 +504,7 @@ void app_unbusy(void)
 
 static char *initial_mailto;
 static char *initial_subject;
+static char *initial_body;
 static char *initial_message;
 static char **initial_attachments;
 
@@ -605,11 +606,11 @@ int gui_init(void)
 			if (open_config_window) open_config();
 
 			/* if we should open the compose window soon after start */
-			if (initial_mailto || initial_subject || initial_attachments)
+			if (initial_mailto || initial_subject || initial_attachments || initial_body)
 			{
 				int win_num;
 
-				win_num = callback_write_mail_to_str(initial_mailto, initial_subject);
+				win_num = callback_write_mail_to_str_with_body(initial_mailto, initial_subject,initial_body);
 				if (initial_attachments) compose_window_attach(win_num,initial_attachments);
 			}
 
@@ -617,12 +618,14 @@ int gui_init(void)
 				callback_open_message(initial_message,-1);
 
 			free(initial_message);
+			free(initial_body);
 			free(initial_mailto);
 			free(initial_subject);
 			array_free(initial_attachments);
+			initial_message = NULL;
+			initial_body = NULL;
 			initial_mailto = NULL;
 			initial_subject = NULL;
-			initial_message = NULL;
 			initial_attachments = NULL;
 
 			/* register appicon refresh function which is called every 2 seconds */
@@ -670,6 +673,7 @@ int gui_parseargs(int argc, char *argv[])
 		char *message;
 		char *mailto;
 		char *subject;
+		char *body;
 		char **attachments;
 		char *profile_directory;
 		char *image_directory;
@@ -682,11 +686,12 @@ int gui_parseargs(int argc, char *argv[])
 
 	memset(&shell_args,0,sizeof(shell_args));
 
-	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,ATTACHMENT/K/M,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
+	if ((rdargs = ReadArgs("MESSAGE,MAILTO/K,SUBJECT/K,BODY/K,ATTACHMENT/K/M,PROFILEDIR/K,IMAGEDIR/K,DEBUG=DEBUGLEVEL/N/K,DEBUGOUT/K,DEBUGMODULES/K",(LONG*)&shell_args, NULL)))
 	{
 		initial_message = mystrdup(shell_args.message);
 		initial_mailto = mystrdup(shell_args.mailto);
 		initial_subject = mystrdup(shell_args.subject);
+		initial_body = mystrdup(shell_args.body);
 		initial_attachments = array_duplicate(shell_args.attachments);
 		config_set_user_profile_directory(shell_args.profile_directory);
 		if ((gui_images_directory = mystrdup(shell_args.image_directory)))
@@ -701,11 +706,11 @@ int gui_parseargs(int argc, char *argv[])
 	{
 		char result[40];
 		/* SimpleMail is already running */
-		if (initial_mailto || initial_subject || initial_attachments)
+		if (initial_mailto || initial_subject || initial_body || initial_attachments)
 		{
 			char *buf;
 
-			int buflen = mystrlen(initial_mailto)+mystrlen(initial_subject)+100;
+			int buflen = mystrlen(initial_mailto)+mystrlen(initial_subject)+mystrlen(initial_body) + 120;
 
 			if (initial_attachments)
 			{
@@ -718,7 +723,7 @@ int gui_parseargs(int argc, char *argv[])
 			{
 				int i;
 
-				sprintf(buf,"MAILWRITE MAILTO=\"%s\" SUBJECT=\"%s\"",initial_mailto?initial_mailto:"",initial_subject?initial_subject:"");
+				sprintf(buf,"MAILWRITE MAILTO=\"%s\" SUBJECT=\"%s\" BODY=\"%s\"",initial_mailto?initial_mailto:"",initial_subject?initial_subject:"",initial_body?initial_body:"");
 				for (i=0;initial_attachments[i];i++)
 					sprintf(buf+strlen(buf)," ATTACHMENT=\"%s\"",initial_attachments[i]);
 

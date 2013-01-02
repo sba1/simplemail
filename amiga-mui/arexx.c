@@ -247,11 +247,12 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 		ULONG quiet;
 		STRPTR mailto;
 		STRPTR subject;
+		STRPTR body;
 		STRPTR *attachments;
 	} mailwrite_arg;
 	memset(&mailwrite_arg,0,sizeof(mailwrite_arg));
 
-	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S,MAILTO/K,SUBJECT/K,ATTACHMENT/K/M",args,&mailwrite_arg)))
+	if ((arg_handle = ParseTemplate("VAR/K,STEM/K,WINDOW/N,QUIET/S,MAILTO/K,SUBJECT/K,BODY/K,ATTACHMENT/K/M",args,&mailwrite_arg)))
 	{
 		if (mailwrite_arg.window)
 		{
@@ -260,8 +261,26 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
 		} else
 		{
 			int window;
+			char *unescaped_body = NULL;
 
-			compose_active_window = window = callback_write_mail_to_str(mailwrite_arg.mailto,mailwrite_arg.subject);
+			if (mailwrite_arg.body)
+			{
+				char *body;
+				char *body2;
+
+				if ((body = mystrreplace(mailwrite_arg.body, "**", "*")))
+				{
+					if ((body2 = mystrreplace(body, "*n", "\n")))
+						unescaped_body = body2;
+					free(body);
+				}
+			}
+
+			compose_active_window = window = callback_write_mail_to_str_with_body(mailwrite_arg.mailto,mailwrite_arg.subject,unescaped_body);
+
+			if (unescaped_body)
+				free(unescaped_body);
+
 			if (mailwrite_arg.attachments)
 				compose_window_attach(window,mailwrite_arg.attachments);
 

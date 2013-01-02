@@ -990,11 +990,18 @@ struct mail_info *mail_info_create_from_file(char *filename)
 	return NULL;
 }
 
-/**************************************************************************
- Creates a mail to be send to a given address (fills out the to field
- and the contents)
-**************************************************************************/
-struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject)
+/**
+ * Creates a mail to be send to a given address (fills out the to field
+ * and the body).
+ *
+ * @param from
+ * @param to_str_unexpanded
+ * @param replyto
+ * @param subject
+ * @param body maybe NULL in which case the best phrase is used
+ * @return
+ */
+struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject, char *body)
 {
 	struct mail_complete *mail;
 	char *to_str;
@@ -1008,7 +1015,6 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 	if ((mail = mail_complete_create()))
 	{
 		string contents_str;
-		struct phrase *phrase;
 
 		if (!(string_initialize(&contents_str,100)))
 		{
@@ -1016,8 +1022,6 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 			free(to_str);
 			return NULL;
 		}
-
-		phrase = phrase_find_best(to_str);
 
 		if (from)
 		{
@@ -1066,39 +1070,47 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 			}
 		}
 
-		if (mb.phrase)
+		if (body)
 		{
-			if (phrase && phrase->write_welcome_repicient)
-			{
-				char *str = mail_create_string(phrase->write_welcome_repicient, NULL, mb.phrase, mb.addr_spec);
-				if (str)
-				{
-					string_append(&contents_str,str);
-					string_append(&contents_str,"\n");
-					free(str);
-				}
-			}
+			string_append(&contents_str,body);
 		} else
 		{
-			if (phrase && phrase->write_welcome)
+			struct phrase *phrase;
+			phrase = phrase_find_best(to_str);
+			if (mb.phrase)
 			{
-				char *str = mail_create_string(phrase->write_welcome, NULL, NULL, NULL);
+				if (phrase && phrase->write_welcome_repicient)
+				{
+					char *str = mail_create_string(phrase->write_welcome_repicient, NULL, mb.phrase, mb.addr_spec);
+					if (str)
+					{
+						string_append(&contents_str,str);
+						string_append(&contents_str,"\n");
+						free(str);
+					}
+				}
+			} else
+			{
+				if (phrase && phrase->write_welcome)
+				{
+					char *str = mail_create_string(phrase->write_welcome, NULL, NULL, NULL);
+					if (str)
+					{
+						string_append(&contents_str,str);
+						string_append(&contents_str,"\n");
+						free(str);
+					}
+				}
+			}
+
+			if (phrase && phrase->write_closing)
+			{
+				char *str = mail_create_string(phrase->write_closing, NULL, NULL, NULL);
 				if (str)
 				{
 					string_append(&contents_str,str);
-					string_append(&contents_str,"\n");
 					free(str);
 				}
-			}
-		}
-
-		if (phrase && phrase->write_closing)
-		{
-			char *str = mail_create_string(phrase->write_closing, NULL, NULL, NULL);
-			if (str)
-			{
-				string_append(&contents_str,str);
-				free(str);
 			}
 		}
 

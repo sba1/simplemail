@@ -189,7 +189,7 @@ int mail_is_marked_as_deleted(struct mail_info *mail);
 void mail_identify_status(struct mail_info *m);
 
 struct mail_complete *mail_complete_create(void);
-struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject);
+struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject, char *body);
 struct mail *mail_create_from_file(char *filename);
 struct mail_complete *mail_complete_create_from_file(char *filename);
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array);

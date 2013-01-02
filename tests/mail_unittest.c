@@ -100,3 +100,21 @@ void test_mail_info_get_recipient_addresses(void)
 	array_free(recipients);
 	mail_info_free(mi);
 }
+
+
+/*************************************************************/
+
+/* @Test */
+void test_mail_create_for(void)
+{
+	struct mail_complete *m;
+
+	m = mail_create_for("abcd@zzzzuuuu.qq.qq","test@abcd.deg.def",NULL,NULL,NULL);
+	CU_ASSERT(m != NULL);
+	CU_ASSERT(m->info != NULL);
+
+	CU_ASSERT(strcmp(m->info->from_addr,"abcd@zzzzuuuu.qq.qq") == 0);
+	CU_ASSERT(strcmp(m->info->to_addr,"test@abcd.deg.def") == 0);
+
+	mail_complete_free(m);
+}

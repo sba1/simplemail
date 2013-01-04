@@ -47,3 +47,7 @@ imap_unittest.map
 doxygen
 build-dependencies
 .build-dependencies-done
+.expat-done
+.mui-done
+.amissl-done
+.openurl-done

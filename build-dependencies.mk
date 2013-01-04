@@ -3,18 +3,35 @@
 # using a cross compiler on an Unix system
 #
 
-.build-dependencies-done:
-	mkdir -p build-dependencies
+.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done
+	touch $@
+
+#
+# Download and extract AmiSSL includes
+#
+.amissl-done:
 ifndef AMISSL_INCLUDE
 	mkdir -p build-dependencies/amissl
 	cd build-dependencies/amissl && wget -N http://www.heightanxiety.com/AmiSSL/AmiSSL-3.5-SDK.lha
 	cd build-dependencies/amissl && lha xf AmiSSL-3.5-SDK.lha
 endif
+	touch $@
+
+#
+# Download and extract expat includes
+#
+.expat-done:
 ifndef EXPAT_INCLUDE
 	mkdir -p build-dependencies/expat
 	cd build-dependencies/expat && wget -N http://www.os4depot.net/share/development/library/misc/expat.lha
 	cd build-dependencies/expat && lha xf expat.lha && ln -sf libraries/expat.h expat/SDK/Include/include_h/expat.h
 endif
+	touch $@
+
+#
+# Download and extract MUI includes
+#
+.mui-done:
 ifndef MUI_INCLUDE
 	# MUI
 	mkdir -p build-dependencies/SDK
@@ -43,6 +60,12 @@ ifndef MUI_INCLUDE
 	cd build-dependencies/SDK && lha xf MCC_Popph.lha
 	cp -R build-dependencies/SDK/MCC_Popph/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include
 endif
+	touch $@
+
+#
+# Download and extract OpenURL includes
+#
+.openurl-done:
 	# OpenURL
 ifndef OPENURL_INCLUDE
 	cd build-dependencies && wget -c http://os4depot.net/share/network/misc/openurl.lha

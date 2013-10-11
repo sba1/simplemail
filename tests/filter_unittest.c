@@ -25,6 +25,7 @@
 
 #include "mail.h"
 #include "filter.h"
+#include "support_indep.h"
 
 /*******************************************************/
 

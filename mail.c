@@ -3008,7 +3008,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 static char *get_boundary_id(FILE *fp)
 {
 	char boundary[64];
-	sm_snprintf(boundary, sizeof(boundary), "--==bound%x%lx----",(int)boundary,ftell(fp));
+	sm_snprintf(boundary, sizeof(boundary), "--==bound%x%lx----", rand(), ftell(fp));
 	return mystrdup(boundary);
 }
 

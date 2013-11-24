@@ -31,6 +31,7 @@ header("Content-type: text/html; charset=iso-8859-15");
   $LinkMenu["contact"]["title"]=get_string($ContactText);
   $LinkMenu["contact"]["datename"]="contact.php";
 
+/*
   $LinkMenu["gallery"]["filename"]="gallery.php";
   $LinkMenu["gallery"]["title"]=get_string($GalleryText);
   $LinkMenu["gallery"]["datename"]="gallery.php";
@@ -38,7 +39,7 @@ header("Content-type: text/html; charset=iso-8859-15");
   $LinkMenu["gallery_add_user"]["filename"]="gallery_add_user.php";
   $LinkMenu["gallery_add_user"]["title"]=get_string($GalleryText);
   $LinkMenu["gallery_add_user"]["datename"]="gallery.php";
-
+*/
   $body = $_REQUEST["body"];
   if (!isset($body)) $body="default";
 ?>

@@ -46,6 +46,7 @@
 #include "gui_main_arch.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
+#include "support.h"
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata);
 
@@ -149,11 +150,17 @@ STATIC ASM SAVEDS VOID folder_display(REG(a0,struct Hook*h), REG(a2, Object *obj
 			sprintf(data->name_buf,"\33O[%08lx]%s",(ULONG)image,newm?"\33b":"");
 			if (folder->name)
 			{
+				int cur_len = strlen(data->name_buf);
+				char *cur_name_buf = data->name_buf + cur_len;
+
 				/* IMAP folders are UTF8 */
 				if (folder->is_imap)
 				{
-					utf8tostr(folder->name, data->name_buf + strlen(data->name_buf), sizeof(data->name_buf) - strlen(data->name_buf), user.config.default_codeset);
-				} else strcat(data->name_buf,folder->name);
+					utf8tostr(folder->name, cur_name_buf, sizeof(data->name_buf) - cur_len, user.config.default_codeset);
+				} else
+				{
+					sm_snprintf(cur_name_buf, sizeof(data->name_buf) - cur_len, "%s", folder->name);
+				}
 			}
 
 			*msg->Array++ = data->name_buf;

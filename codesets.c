@@ -1374,6 +1374,9 @@ int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
 	unsigned char c;
 	int conv = 0;
 
+	if (dest_size < 1)
+		return 0;
+
 	if (!codeset)
 		codeset =  (struct codeset*)list_first(&codesets_list);
 
@@ -1392,7 +1395,7 @@ int utf8fromstr(char *from, struct codeset *codeset, utf8 *dest, int dest_size)
 
 		utf8_seq++;
 		for(;(c = *utf8_seq);utf8_seq++)
-			*dest = c;
+			*dest++ = c;
 
 		dest_size -= l;
 		conv++;

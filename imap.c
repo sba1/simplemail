@@ -1921,6 +1921,20 @@ static void imap_thread_really_connect_to_server(void)
 
 	if (imap_server)
 	{
+		struct progmon *pm;
+
+		pm = progmon_create();
+		if (pm)
+		{
+			utf8 msg[80];
+
+			utf8fromstr(_("Connect with IMAP server"),NULL,msg,sizeof(msg));
+			pm->begin(pm,2,msg);
+
+			utf8fromstr("Logging in",NULL,msg,sizeof(msg));
+			pm->working_on(pm,msg);
+		}
+
 		if (imap_thread_really_connect_and_login_to_server())
 		{
 			char status_buf[160];
@@ -1949,6 +1963,12 @@ static void imap_thread_really_connect_to_server(void)
 
 				imap_thread_really_download_mails();
 			}
+		}
+
+		if (pm)
+		{
+			pm->done(pm);
+			progmon_delete(pm);
 		}
 	}
 	SM_LEAVE;

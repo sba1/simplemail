@@ -4,14 +4,16 @@
 
 include ../common-sources.mk
 
-SRCS = $(addprefix ../,$(NONARCHSRCS)) ../gtk/support.c
+SRCS = $(addprefix ../,$(NONARCHSRCS)) ../gtk/support.c ../gtk/subthreads.c
 OBJS = $(SRCS:../%.c=test-objs/%.o)
 
 GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)
 GLIB_LDFLAGS := $(shell pkg-config glib-2.0 --libs)
 
+GTK_CFLAGS := $(shell pkg-config gtk+-x11-2.0 --cflags)
+
 CC = gcc
-CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) \
+CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
 	-DNODEBUG -Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
 VALGRIND_OPTS = --leak-check=full --track-origins=yes 
 
@@ -22,6 +24,7 @@ TESTEXES=\
 	codesets_unittest \
 	configuration_unittest \
 	filter_unittest \
+	folder_unittest \
 	index_unittest \
 	mail_unittest \
 	support_indep_unittest \

@@ -129,7 +129,7 @@ int thread_start(int (*entry)(void*), void *udata)
 		input_added = 1;
 	}
 
-	if ((g_thread_create(entry,udata,TRUE,NULL)))
+	if ((g_thread_create((GThreadFunc)entry,udata,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);
@@ -183,8 +183,9 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
  Waits until aborted and calls timer_callback periodically. It's possible
  to execute functions on the threads context while in this function.
 **************************************************************************/
-void thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
+	return 0;
 }
 
 /**************************************************************************
@@ -198,7 +199,7 @@ int thread_push_function(void *function, int argcount, ...)
 }
 
 
-int thread_call_parent_function_sync(void *function, int argcount, ...)
+int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
 	struct ipc_message msg;
 	va_list argptr;
@@ -276,7 +277,10 @@ semaphore_t thread_create_semaphore(void)
 	if (sem)
 	{
 		if (!(sem->mutex = g_mutex_new()))
+		{
+			free(sem);
 			return NULL;
+		}
 	}
 	return sem;
 }

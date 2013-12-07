@@ -63,7 +63,18 @@ struct thread_s
 	struct MinList timer_request_list;
 };
 
+/**
+ * Handle a new thread message sent to the current process.
+ *
+ * @param mask
+ */
 void thread_handle(ULONG);
+
+/**
+ * Returns the mask of the thread port of the current process.
+ *
+ * @return
+ */
 ULONG thread_mask(void);
 
 #endif

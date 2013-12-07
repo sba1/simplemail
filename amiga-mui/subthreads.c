@@ -48,8 +48,9 @@
     if the function returns another function is called on the calling process
 */
 
-/*** Timer ***/
-
+/**
+ * The context for the timer.
+ */
 struct timer
 {
 	struct MsgPort *timer_port;
@@ -59,9 +60,12 @@ struct timer
 	int open;
 };
 
-/**************************************************************************
- Cleanup timer
-**************************************************************************/
+/**
+ * Cleanup timer.
+ * Reverse the effects of timer_init.
+ *
+ * @param timer
+ */
 static void timer_cleanup(struct timer *timer)
 {
 	if (timer->timer_send)
@@ -75,9 +79,14 @@ static void timer_cleanup(struct timer *timer)
 	if (timer->timer_port) DeleteMsgPort(timer->timer_port);
 }
 
-/**************************************************************************
- Initialize timer
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Initialize timer the given timer.
+ *
+ * @param timer
+ * @return
+ */
 static int timer_init(struct timer *timer)
 {
 	memset(timer,0,sizeof(*timer));
@@ -97,18 +106,27 @@ static int timer_init(struct timer *timer)
 	return 0;
 }
 
-/**************************************************************************
- Return mask of timer signal
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Return mask of timer signal of the associated timer.
+ *
+ * @param timer
+ * @return
+ */
 static ULONG timer_mask(struct timer *timer)
 {
 	return 1UL << timer->timer_port->mp_SigBit;
 }
 
+/***************************************************************************************/
 
-/**************************************************************************
- Send the given timer if not already being sent
-**************************************************************************/
+/**
+ * Send the given timer if not already being sent.
+ *
+ * @param timer
+ * @param millis
+ */
 static void timer_send_if_not_sent(struct timer *timer, int millis)
 {
 	if (!timer->timer_send)
@@ -122,8 +140,12 @@ static void timer_send_if_not_sent(struct timer *timer, int millis)
 	}
 }
 
-/*** ThreadMessage ***/
+/***************************************************************************************/
 
+
+/**
+ * The message that is passed around here.
+ */
 struct ThreadMessage
 {
 	struct Message msg;
@@ -165,9 +187,13 @@ struct thread_node
 
 static void thread_handle_execute_function_message(struct ThreadMessage *tmsg);
 
-/**************************************************************************
- Remove the thread which has replied tis given tmsg
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Remove the thread which has replied its given tmsg
+ *
+ * @param tmsg
+ */
 static void thread_remove(struct ThreadMessage *tmsg)
 {
 	struct thread_node *node = (struct thread_node*)list_first(&thread_list);
@@ -186,9 +212,14 @@ static void thread_remove(struct ThreadMessage *tmsg)
 	}
 }
 
-/**************************************************************************
- Initialize the timer
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Initialize the timer for the given thread.
+ *
+ * @param thread
+ * @return
+ */
 static int thread_init_timer(struct thread_s *thread)
 {
 	if ((thread->timer_port = CreateMsgPort()))
@@ -209,9 +240,13 @@ static int thread_init_timer(struct thread_s *thread)
 	return 0;
 }
 
-/**************************************************************************
- Cleanup the timer
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Cleanup pending timer of the given thread.
+ *
+ * @param thread
+ */
 static void thread_cleanup_timer(struct thread_s *thread)
 {
 	struct MinNode *node;
@@ -232,9 +267,8 @@ static void thread_cleanup_timer(struct thread_s *thread)
 	DeleteMsgPort(thread->timer_port);
 }
 
-/**************************************************************************
- Initialize the thread system
-**************************************************************************/
+/***************************************************************************************/
+
 int init_threads(void)
 {
 	if ((main_thread_port = CreateMsgPort()))
@@ -254,9 +288,8 @@ int init_threads(void)
 	return 0;
 }
 
-/**************************************************************************
- Cleanup the thread system. Will abort every thread
-**************************************************************************/
+/***************************************************************************************/
+
 void cleanup_threads(void)
 {
 	struct TimerMessage *timeout;
@@ -351,11 +384,8 @@ void cleanup_threads(void)
 	SM_LEAVE;
 }
 
-/**
- * Returns the mask of the thread port of the current process.
- *
- * @return
- */
+/***************************************************************************************/
+
 ULONG thread_mask(void)
 {
 	struct thread_s *thread = thread_get();
@@ -363,11 +393,8 @@ ULONG thread_mask(void)
 	return (1UL << thread->thread_port->mp_SigBit) | (1UL << thread->timer_port->mp_SigBit);
 }
 
-/**
- * Handle a new thread message sent to the current process.
- *
- * @param mask
- */
+/***************************************************************************************/
+
 void thread_handle(ULONG mask)
 {
 	struct thread_s *thread = thread_get();
@@ -424,6 +451,8 @@ void thread_handle(ULONG mask)
 		}
 	}
 }
+
+/***************************************************************************************/
 
 /**
  * Entry point for a new thread.
@@ -484,9 +513,8 @@ static SAVEDS void thread_entry(void)
 	ReplyMsg((struct Message*)msg);
 }
 
-/**************************************************************************
- Informs the parent task that it can continue
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_parent_task_can_contiue(void)
 {
 	struct ThreadMessage *msg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
@@ -507,10 +535,16 @@ int thread_parent_task_can_contiue(void)
 	return 0;
 }
 
-/**************************************************************************
- Runs the given function in a newly created thread under the given name
-**************************************************************************/
-static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
+/***************************************************************************************/
+
+/**
+ * Runs the given function in a newly created thread under the given name.
+ *
+ * @param thread_name
+ * @param entry
+ * @param eudata
+ * @return
+ */static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *eudata)
 {
 	struct thread_s *thread = (struct thread_s*)AllocVec(sizeof(*thread),MEMF_PUBLIC|MEMF_CLEAR);
 	if (thread)
@@ -621,10 +655,8 @@ static thread_t thread_start_new(char *thread_name, int (*entry)(void*), void *e
 	return NULL;
 }
 
-/**************************************************************************
- Runs a given function in a newly created thread under the given name which
- in linked into a internal list.
-**************************************************************************/
+/***************************************************************************************/
+
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_node *thread_node = (struct thread_node*)AllocVec(sizeof(struct thread_node),MEMF_PUBLIC|MEMF_CLEAR);
@@ -642,11 +674,8 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	return NULL;
 }
 
+/***************************************************************************************/
 
-/**************************************************************************
- Start a thread as a default sub thread. This function will be removed
- in the future.
-**************************************************************************/
 int thread_start(int (*entry)(void*), void *eudata)
 {
 	/* We allow only one subtask for the moment */
@@ -659,15 +688,8 @@ int thread_start(int (*entry)(void*), void *eudata)
 	return 0;
 }
 
-/**
- * @brief Aborts the given thread.
- *
- * @param thread_to_abort the thread to be aborted. Specify NULL for the default
- * subthread.
- *
- * @note This functions doesn't wait until the given thread has been finished.
- * It just requests the abortiation.
- */
+/***************************************************************************************/
+
 void thread_abort(thread_t thread_to_abort)
 {
 	if (!thread_to_abort) thread_to_abort = default_thread;
@@ -678,13 +700,8 @@ void thread_abort(thread_t thread_to_abort)
 	Permit();
 }
 
+/***************************************************************************************/
 
-/**
- * @brief Signals the given thread.
- *
- * @param thread_to_abort the thread to be signaled. Specify NULL for the default
- * subthread.
- */
 void thread_signal(thread_t thread_to_signal)
 {
 	if (!thread_to_signal) thread_to_signal = default_thread;
@@ -695,10 +712,17 @@ void thread_signal(thread_t thread_to_signal)
 	Permit();
 }
 
-/**************************************************************************
- Returns ThreadMessage filled with the given parameters. You can manipulate
- the returned message to be async or something else
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * Returns ThreadMessage filled with the given parameters. You can manipulate
+ * the returned message to be async or something else
+ *
+ * @param function
+ * @param argcount
+ * @param argptr
+ * @return
+ */
 static struct ThreadMessage *thread_create_message(void *function, int argcount, va_list argptr)
 {
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
@@ -741,9 +765,13 @@ static struct ThreadMessage *thread_create_message(void *function, int argcount,
 	return tmsg;
 }
 
-/**************************************************************************
- This will handle the execute function message
-**************************************************************************/
+/***************************************************************************************/
+
+/**
+ * This will handle the execute function message.
+ *
+ * @param tmsg
+ */
 static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 {
 	if (tmsg->startup) return;
@@ -775,11 +803,8 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 	}
 }
 
-/**************************************************************************
- Call a function in context of the parent task synchronly. The contents of
- success is set to 1, if the call was successful otherwise to 0.
- success may be NULL. If success would be 0, the call returns 0 as well.
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
 	va_list argptr;
@@ -828,11 +853,9 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	return rc;
 }
 
-/**************************************************************************
- Call a function in the context of the given thread in a synchron manner
+/***************************************************************************************/
 
- NOTE: Should call thread_handle()
-**************************************************************************/
+/* TODO: Should call thread_handle() */
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;
@@ -874,14 +897,8 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	return rc;
 }
 
-/**
- * @brief Call a function in the context of the given thread in a asynchron manner.
- *
- * @param thread the thread in which context the function is executed.
- * @param function the function to be executed.
- * @param argcount number of function parameters
- * @return whether the call was successfully forwarded.
- */
+/***************************************************************************************/
+
 int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;
@@ -901,10 +918,8 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 	return rc;
 }
 
-/**************************************************************************
- Call the function synchron, calls timer_callback on the calling process
- context
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	va_list argptr;
@@ -971,21 +986,8 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 	return rc;
 }
 
+/***************************************************************************************/
 
-/**
- * @brief Waits until a signal has been sent and calls timer_callback
- * periodically.
- *
- * It's possible to execute functions on the threads context while in
- * this function.
- *
- * @param timer_callback function that is called periodically
- * @param timer_data some data that is passed as the first argument
- *        to the callback
- * @param millis the periodic time span
- * @return 0 if the function finished due to an abort request (or failure),
- *         1 if due to a call to thread_signal().
- */
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct timer timer;
@@ -1063,10 +1065,8 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 	return rc;
 }
 
-/**************************************************************************
- Pushes a function call in the function queue of the callers task context.
- Return 1 for success else 0.
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_push_function(void *function, int argcount, ...)
 {
 	int rc = 0;
@@ -1086,11 +1086,8 @@ int thread_push_function(void *function, int argcount, ...)
 	return rc;
 }
 
-/**************************************************************************
- Pushes a function call in the function queue of the callers task context
- but only after a given amount of time.
- Return 1 for success else 0.
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 {
 	int rc = 0;
@@ -1123,9 +1120,8 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 	return rc;
 }
 
-/**************************************************************************
- Call the function asynchron
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
@@ -1156,10 +1152,8 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 	return 0;
 }
 
-/**************************************************************************
- Call the function asynchron and duplicate the first argument which us
- threaded at a string
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
@@ -1204,34 +1198,31 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	return 0;
 }
 
-/**
- * Returns the main thread.
- *
- * @return
- */
+/***************************************************************************************/
+
 thread_t thread_get_main(void)
 {
 	return &main_thread;
 }
 
-/**
- * Return this thread.
- *
- * @return
- */
+/***************************************************************************************/
+
 thread_t thread_get(void)
 {
 	return (struct thread_s*)(FindTask(NULL)->tc_UserData);
 }
 
 
-/* Check if thread is aborted and return 1 if so */
+/***************************************************************************************/
+
 int thread_aborted(void)
 {
 	int aborted = !!CheckSignal(SIGBREAKF_CTRL_C);
 	SM_DEBUGF(15,("Aborted=%ld\n",aborted));
 	return aborted;
 }
+
+/***************************************************************************************/
 
 struct semaphore_s
 {

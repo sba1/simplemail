@@ -1452,12 +1452,8 @@ static struct folder *folder_add(char *path)
 			{
 				if ((node->folder.path = mystrdup(path)))
 				{
-					char buf[256];
-
 					node->folder.primary_sort = FOLDER_SORT_DATE;
 					node->folder.secondary_sort = FOLDER_SORT_FROMTO;
-
-					sprintf(buf,"%s.config",path);
 
 					if (!folder_config_load(&node->folder))
 					{

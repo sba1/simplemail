@@ -1819,6 +1819,40 @@ void folder_add_to_tree(struct folder *f,struct folder *parent)
 
 int read_line(FILE *fh, char *buf);
 
+
+/**
+ * Return the imap path of the folder specified by the path
+ * by opening the config.
+ *
+ * @param folder_path
+ * @return the imap path or NULL.
+ */
+static char *folder_config_get_imap_path(char *folder_path)
+{
+	char buf[256];
+	int rc = 0;
+	FILE *fh;
+
+	sm_snprintf(buf, sizeof(buf), "%s.config", folder_path);
+
+	if ((fh = fopen(buf,"r")))
+	{
+		read_line(fh,buf);
+
+		if (!mystrnicmp("FICO",buf,4))
+		{
+			rc = 1;
+			while (read_line(fh,buf))
+			{
+				if (!mystrnicmp("IMapPath=",buf,9))
+				{
+					return mystrdup(&buf[9]);
+				}
+			}
+		}
+	}
+}
+
 /******************************************************************
  Load the configuration for the folder
 *******************************************************************/
@@ -4008,7 +4042,17 @@ void folder_create_imap(void)
 							{
 								if (st->st_mode & S_IFDIR)
 								{
-									folder_add_imap(f,sm_file_part(buf));
+									char *imap_path;
+
+									/* If possible determine the true imap path that is stored in the config */
+									if ((imap_path = folder_config_get_imap_path(buf)))
+									{
+										folder_add_imap(f, imap_path);
+										free(imap_path);
+									} else
+									{
+										folder_add_imap(f, sm_file_part(buf));
+									}
 								}
 							}
 						}

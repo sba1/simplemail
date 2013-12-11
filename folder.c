@@ -1408,11 +1408,16 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 	return 1;
 }
 
-/******************************************************************
- Adds a mail to the incoming folder (the mail not actually not
- copied). The mail will get a New Flag. The mail is correctly
- sorted in and the position is returned (-1 for an error)
-*******************************************************************/
+/**
+ * Adds a reference to a given mail to the global incoming folder.
+ * That is, the mail is actually not copies. The mail will get the
+ * "new" flag and it is placed at the correct rank depending on
+ * the sort mode.
+ *
+ * @param mail
+ * @return -1 for an error, otherwise the rank/position of the mail
+ *  in which it was sorted.
+ */
 int folder_add_mail_incoming(struct mail_info *mail)
 {
 	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
@@ -1481,9 +1486,14 @@ static struct folder *folder_add(char *path)
 	return NULL;
 }
 
-/******************************************************************
- Adds a folder to the internal folder list with a given name
-*******************************************************************/
+/**
+ * Adds a new folder that stores messages in the given path
+ * and has the given name.
+ *
+ * @param path
+ * @param name
+ * @return
+ */
 struct folder *folder_add_with_name(char *path, char *name)
 {
 	struct folder *f = folder_add(path);
@@ -1497,9 +1507,13 @@ struct folder *folder_add_with_name(char *path, char *name)
 	return f;
 }
 
-/******************************************************************
- Creates a new group but does not add it
-*******************************************************************/
+/**
+ * Creates a new folder group but does not add it to the internal
+ * list.
+ *
+ * @param name the name of the group.
+ * @return
+ */
 static struct folder_node *folder_create_group(char *name)
 {
 	struct folder_node *node;
@@ -1522,9 +1536,12 @@ static struct folder_node *folder_create_group(char *name)
 	return NULL;
 }
 
-/******************************************************************
- Adds a folder to the internal folder list with a given name
-*******************************************************************/
+/**
+ * Adds a folder group to the internal folder list with a given name.
+ *
+ * @param name
+ * @return
+ */
 struct folder *folder_add_group(char *name)
 {
 	struct folder_node *node = folder_create_group(name);
@@ -1536,9 +1553,13 @@ struct folder *folder_add_group(char *name)
 	return NULL;
 }
 
-/******************************************************************
-
-*******************************************************************/
+/**
+ * Adds an folder specified by the given path to an imap folder.
+ *
+ * @param parent specifies the parent imap folder.
+ * @param imap_path the imap path of the new folder.
+ * @return
+ */
 struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 {
 	struct folder_node *node;

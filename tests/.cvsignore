@@ -11,3 +11,4 @@ libsimplemail.a
 written2.eml
 memleaks-*.xml
 test-profile
+imap-profile

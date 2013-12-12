@@ -26,6 +26,7 @@ TESTEXES=\
 	filter_unittest \
 	folder_unittest \
 	index_unittest \
+	imap2_unittest \
 	mail_unittest \
 	support_indep_unittest \
 	text2html_unittest

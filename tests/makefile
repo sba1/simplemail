@@ -60,6 +60,17 @@ lib$(SIMPLEMAIL_LIB).a: $(OBJS)
 # Define memleak targets
 MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
 
+# run template
+define run.tmpl
+run-$(1): $(1)
+	./$$<
+endef
+
+# "instanciate" run targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call run.tmpl,$(testexe))) \
+)
+
 # memleaks template
 define memleak.tmpl
 memleaks-$(1): $(1)

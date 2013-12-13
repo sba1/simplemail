@@ -34,6 +34,7 @@
 void test_imap(void)
 {
 	struct account *ac;
+	struct folder *f;
 
 	config_set_user_profile_directory("imap-profile");
 
@@ -65,6 +66,13 @@ void test_imap(void)
 	account_free(ac);
 
 	folder_create_imap();
+
+	f = folder_find_by_name("localhost");
+	CU_ASSERT(f != NULL);
+
+	imap_thread_connect(f);
+
+	sleep(2);
 
 	del_folders();
 	free_config();

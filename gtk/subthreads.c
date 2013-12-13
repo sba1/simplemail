@@ -29,6 +29,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "lists.h"
 #include "support_indep.h"
 #include "subthreads.h"
 
@@ -39,6 +40,12 @@ static int input_added;
 
 /* Sockets for IPC */
 static int sockets[2];
+
+/** List of all threads */
+static struct list thread_list;
+
+/** Mutex for accessing thread list */
+static GMutex *thread_list_mutex;
 
 struct ipc_message
 {
@@ -55,6 +62,7 @@ struct ipc_message
 
 struct thread_s
 {
+	struct node node;
 	GThread *thread;
 };
 
@@ -63,6 +71,8 @@ int init_threads(void)
 	if (!g_thread_supported ()) g_thread_init (NULL);
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
+	list_init(&thread_list);
+	if (!(thread_list_mutex = g_mutex_new())) return 0;
 
 	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
 
@@ -71,6 +81,7 @@ int init_threads(void)
 
 void cleanup_threads(void)
 {
+	g_mutex_free(thread_list_mutex);
 }
 
 int thread_parent_task_can_contiue(void)
@@ -121,13 +132,19 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_s *t;
+
 	if (!(t = malloc(sizeof(*t)))) return NULL;
+	memset(t,0,sizeof(*t));
 
 	if ((t->thread = g_thread_create((GThreadFunc)entry,eudata,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);
 		g_mutex_unlock(thread_mutex);
+
+		g_mutex_lock(thread_list_mutex);
+		list_insert_tail(&thread_list, &t->node);
+		g_mutex_unlock(thread_list_mutex);
 		return t;
 	}
 	return NULL;

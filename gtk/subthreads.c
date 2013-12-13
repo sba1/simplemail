@@ -111,17 +111,22 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 	}
 }
 
+/***************************************************************************************/
 
-/**************************************************************************
- Runs a given function in a newly created thread under the given name which
- in linked into a internal list.
-**************************************************************************/
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
-	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
+	GThread *t;
+	if ((t = g_thread_create((GThreadFunc)entry,eudata,TRUE,NULL)))
+	{
+		g_mutex_lock(thread_mutex);
+		g_cond_wait(thread_cond,thread_mutex);
+		g_mutex_unlock(thread_mutex);
+		return (thread_t)t;
+	}
 	return NULL;
 }
+
+/***************************************************************************************/
 
 int thread_start(int (*entry)(void*), void *udata)
 {
@@ -141,11 +146,15 @@ int thread_start(int (*entry)(void*), void *udata)
 	return 0;
 }
 
+/***************************************************************************************/
+
 void thread_abort(thread_t thread)
 {
 	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
 }
+
+/***************************************************************************************/
 
 /* Call the function synchron, calls timer_callback on the calling process context */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)

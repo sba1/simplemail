@@ -53,6 +53,11 @@ struct ipc_message
 	void *arg4;
 };
 
+struct thread_s
+{
+	GThread *thread;
+};
+
 int init_threads(void)
 {
 	if (!g_thread_supported ()) g_thread_init (NULL);
@@ -115,13 +120,15 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
-	GThread *t;
-	if ((t = g_thread_create((GThreadFunc)entry,eudata,TRUE,NULL)))
+	struct thread_s *t;
+	if (!(t = malloc(sizeof(*t)))) return NULL;
+
+	if ((t->thread = g_thread_create((GThreadFunc)entry,eudata,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);
 		g_mutex_unlock(thread_mutex);
-		return (thread_t)t;
+		return t;
 	}
 	return NULL;
 }

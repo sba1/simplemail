@@ -150,7 +150,7 @@ int thread_start(int (*entry)(void*), void *udata)
 
 void thread_abort(thread_t thread)
 {
-	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
 }
 
@@ -159,7 +159,7 @@ void thread_abort(thread_t thread)
 /* Call the function synchron, calls timer_callback on the calling process context */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
-	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
 }
 
@@ -170,6 +170,9 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 **************************************************************************/
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
+
 /*	int rc;
 	void *arg1,*arg2,*arg3,*arg4;
 	va_list argptr;
@@ -199,6 +202,8 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 **************************************************************************/
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 	return 0;
 }
 
@@ -209,6 +214,8 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 int thread_push_function(void *function, int argcount, ...)
 {
 	int rc = 0;
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 	return rc;
 }
 

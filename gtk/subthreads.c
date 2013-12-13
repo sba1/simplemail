@@ -118,6 +118,8 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 **************************************************************************/
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
+	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 	return NULL;
 }
 
@@ -141,12 +143,15 @@ int thread_start(int (*entry)(void*), void *udata)
 
 void thread_abort(thread_t thread)
 {
+	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 }
 
 /* Call the function synchron, calls timer_callback on the calling process context */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
-	return 0;
+	fprintf(stderr, "%s not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 }
 
 /**************************************************************************

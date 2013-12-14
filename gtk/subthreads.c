@@ -20,6 +20,7 @@
 ** subthreads.c
 */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -64,6 +65,9 @@ struct thread_s
 {
 	struct node node;
 	GThread *thread;
+
+	GMainContext *context;
+	GMainLoop *main_loop;
 };
 
 int init_threads(void)
@@ -129,24 +133,56 @@ static void thread_input(gpointer data, gint source, GdkInputCondition condition
 
 /***************************************************************************************/
 
+/** Structure that is passed to newly created threads via thread_add() */
+struct thread_add_data
+{
+	int (*entry)(void *);
+	void *eudata;
+	struct thread_s *thread;
+};
+
+/**
+ * The entry function of thread_add().
+ *
+ * @param udata
+ * @return
+ */
+static gpointer thread_add_entry(gpointer udata)
+{
+	struct thread_add_data *tad = (struct thread_add_data*)udata;
+
+	/* TODO: Catch errors and inform parent task */
+	tad->thread->context = g_main_context_new();
+	tad->thread->main_loop = g_main_loop_new(tad->thread->context, FALSE);
+
+	tad->entry(tad->eudata);
+	return NULL;
+}
+
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
 	struct thread_s *t;
+	struct thread_add_data tad;
 
 	if (!(t = malloc(sizeof(*t)))) return NULL;
 	memset(t,0,sizeof(*t));
 
-	if ((t->thread = g_thread_create((GThreadFunc)entry,eudata,TRUE,NULL)))
+	tad.entry = entry;
+	tad.eudata = eudata;
+	tad.thread = t;
+
+	g_mutex_lock(thread_list_mutex);
+	list_insert_tail(&thread_list, &t->node);
+	g_mutex_unlock(thread_list_mutex);
+
+	if ((t->thread = g_thread_create(thread_add_entry,&tad,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);
 		g_mutex_unlock(thread_mutex);
-
-		g_mutex_lock(thread_list_mutex);
-		list_insert_tail(&thread_list, &t->node);
-		g_mutex_unlock(thread_list_mutex);
 		return t;
 	}
+	/* TODO: Remove thread */
 	return NULL;
 }
 
@@ -195,7 +231,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
+//	exit(1);
 
 /*	int rc;
 	void *arg1,*arg2,*arg3,*arg4;
@@ -226,8 +262,22 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 **************************************************************************/
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
+	struct thread_s *t;
+	GThread *gt = g_thread_self();
+
+	g_mutex_lock(thread_list_mutex);
+	t = (struct thread_s*)list_first(&thread_list);
+	while (t)
+	{
+		if (t->thread == gt) break;
+		t = (struct thread_s*)node_next(&t->node);
+	}
+	g_mutex_unlock(thread_list_mutex);
+
+	assert(t);
+
+	g_main_loop_run(t->main_loop);
+
 	return 0;
 }
 

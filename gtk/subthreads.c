@@ -114,6 +114,7 @@ void cleanup_threads(void)
 			gt = t->thread;
 			thread_abort(t);
 			g_mutex_unlock(thread_list_mutex);
+			/* FIXME: This could lead to a dead-lock situation if the thread was about to perform a synchronous call */
 			g_thread_join(gt);
 		} else
 		{

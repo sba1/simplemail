@@ -125,3 +125,4 @@ $(DOVECOT_TGZ):
 dovecot: $(DOVECOT_TGZ)
 	rm -Rf $(DOVECOT_DIR)
 	tar -xzf $(DOVECOT_TGZ)
+	cd $(DOVECOT_DIR); ./configure --prefix=$(shell pwd)/$(DOVECOT_DIR)-root; $(MAKE) ; $(MAKE) install

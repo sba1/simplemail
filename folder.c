@@ -1872,6 +1872,7 @@ static char *folder_config_get_imap_path(char *folder_path)
 			}
 		}
 	}
+	return NULL;
 }
 
 /******************************************************************

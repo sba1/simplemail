@@ -35,6 +35,9 @@
 #include "support_indep.h"
 #include "subthreads.h"
 
+/* Define to allow nested loops */
+/*#define ALLOW_NESTED_LOOPS*/
+
 static GCond *thread_cond;
 static GMutex *thread_mutex;
 
@@ -285,10 +288,14 @@ struct thread_call_function_sync_data
 	int argcount;
 	void *arg[THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS];
 
+	uintptr_t rc;
+
+#ifdef ALLOW_NESTED_LOOPS
+	thread_t caller;
+#else
 	GCond *sync_cond;
 	GMutex *sync_mutex;
-
-	uintptr_t rc;
+#endif
 };
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
@@ -310,9 +317,13 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 		case	6: rc = ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
 	}
 	data->rc = rc;
+#ifdef ALLOW_NESTED_LOOPS
+	g_main_loop_quit(data->caller->main_loop);
+#else
 	g_mutex_lock(data->sync_mutex);
 	g_cond_signal(data->sync_cond);
 	g_mutex_unlock(data->sync_mutex);
+#endif
 
 	return 0;
 }
@@ -326,24 +337,31 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 
 	data.function = (int (*)(void))function;
 	data.argcount = argcount;
+#ifdef ALLOW_NESTED_LOOPS
+	data.caller = thread_get();
+#else
 	data.sync_cond = g_cond_new();
 	data.sync_mutex = g_mutex_new();
-
 	assert(data.sync_cond);
 	assert(data.sync_mutex);
+#endif
 
 	for (i=0; i < argcount; i++)
 		data.arg[i] = va_arg(argptr, void *);
 
+#ifndef ALLOW_NESTED_LOOPS
 	g_mutex_lock(data.sync_mutex);
-
+#endif
 	g_main_context_invoke(thread->context, thread_call_function_sync_entry, &data);
-
+#ifdef ALLOW_NESTED_LOOPS
+	g_main_loop_run(data.caller->main_loop);
+#else
 	g_cond_wait(data.sync_cond, data.sync_mutex);
 	g_mutex_unlock(data.sync_mutex);
 
 	g_cond_free(data.sync_cond);
 	g_mutex_free(data.sync_mutex);
+#endif
 	if (rc) *rc = data.rc;
 
 	return 0;

@@ -38,6 +38,7 @@
 
 static GCond *thread_cond;
 static GMutex *thread_mutex;
+static int thread_parent_can_continue;
 
 static int input_added;
 
@@ -134,6 +135,7 @@ void cleanup_threads(void)
 int thread_parent_task_can_contiue(void)
 {
 	g_mutex_lock(thread_mutex);
+	thread_parent_can_continue = 1;
 	g_cond_signal(thread_cond);
 	g_mutex_unlock(thread_mutex);
 	return 1;
@@ -230,7 +232,9 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	if ((g_thread_create(thread_add_entry,&tad,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
-		g_cond_wait(thread_cond,thread_mutex);
+		while (!thread_parent_can_continue)
+			g_cond_wait(thread_cond,thread_mutex);
+		thread_parent_can_continue = 0;
 		g_mutex_unlock(thread_mutex);
 		return t;
 	}

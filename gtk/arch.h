@@ -27,7 +27,7 @@
 #define SM_DIR		""
 #define SM_CHARSET_DIR	"Charsets"
 #define SM_FOLDER_DIR	".folders"
-#define SM_CURRENT_DIR	""
+#define SM_CURRENT_DIR	"."
 
 /* Operation system */
 #define SM_OPERATIONSYSTEM "UNIX/GTK+"

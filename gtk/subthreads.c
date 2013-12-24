@@ -571,22 +571,18 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
-	struct ipc_message msg;
+	uintptr_t rc;
+	int s;
+
 	va_list argptr;
 
 	va_start(argptr,argcount);
-	memset(&msg,0,sizeof(msg));
-	msg.async = 0;
-	msg.function = function;
-	msg.argcount = argcount;
-	if (argcount--) msg.arg1 = va_arg(argptr, void *);
-	if (argcount--) msg.arg2 = va_arg(argptr, void *);
-	if (argcount--) msg.arg3 = va_arg(argptr, void *);
-	if (argcount--) msg.arg4 = va_arg(argptr, void *);
-	write(sockets[1],&msg,sizeof(msg));
+	s = thread_call_function_sync_v(&main_thread, &rc, function, argcount, argptr);
 	va_end(argptr);
-	read(sockets[1],&msg,sizeof(msg));
-	return msg.rc;
+	if (success)
+		*success = s;
+
+	return rc;
 }
 
 /***************************************************************************************/

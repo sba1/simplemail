@@ -162,9 +162,9 @@ void test_imap(void)
 
 	thread_wait(test_imap_timer_callback, NULL, 2000);
 
+	cleanup_threads();
 	del_folders();
 	free_config();
-	cleanup_threads();
 	progmon_deinit();
 	codesets_cleanup();
 }

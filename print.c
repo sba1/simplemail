@@ -58,7 +58,7 @@ static int create_ansi_header(FILE *fp, struct mail_complete *mail)
 			fprintf(fp,"%s <%s>",mb.phrase,mb.addr_spec);
 		} else
 		{
-			fprintf(fp, mb.addr_spec);
+			fprintf(fp, "%s", mb.addr_spec);
 		}
 		fprintf(fp, "\n");
 

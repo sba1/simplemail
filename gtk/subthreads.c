@@ -341,11 +341,35 @@ thread_t thread_get(void)
 
 /***************************************************************************************/
 
+struct thread_wait_timer_entry_data
+{
+	void (*timer_callback)(void*);
+	void *timer_data;
+};
+
+static gboolean thread_wait_timer_entry(gpointer udata)
+{
+	struct thread_wait_timer_entry_data *data = (struct thread_wait_timer_entry_data*)udata;
+	data->timer_callback(data->timer_data);
+	return 1;
+}
+
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
+	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;
 
+	memset(&data, 0, sizeof(data));
+
 	t = thread_get();
+
+	data.timer_callback = (void (*)(void*))timer_callback;
+	data.timer_data = timer_data;
+
+	GSource *s = g_timeout_source_new(1);
+	g_source_set_callback(s, thread_wait_timer_entry, &data, NULL);
+	g_source_attach(s, t->context);
+	g_source_unref(s);
 
 	g_main_loop_run(t->main_loop);
 

@@ -117,6 +117,7 @@ clean:
 DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
 DOVECOT_TGZ=$(notdir $(DOVECOT_URL))
 DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
+DOVECOT_ABSDIR=$(shell pwd)/$(DOVECOT_DIR)
 
 $(DOVECOT_TGZ):
 	wget -N $(DOVECOT_URL)
@@ -131,6 +132,7 @@ dovecot-bin: $(DOVECOT_DIR)-root
 
 .PHONY: dovecot
 dovecot: dovecot-bin
+	mkdir -p $(DOVECOT_DIR)-root/home/test
 	rm -Rf $(DOVECOT_DIR)-root/etc/dovecot
 	cp -R dovecot-conf -Rf $(DOVECOT_DIR)-root/etc/dovecot
 	echo 'default_internal_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
@@ -139,6 +141,11 @@ dovecot: dovecot-bin
 	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '    args = $(shell readlink -f $(DOVECOT_DIR)-root/etc/dovecot/passwd)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo 'userdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(shell readlink -f $(DOVECOT_DIR)-root/etc/dovecot/passwd)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo 'test:{plain}test::::$(DOVECOT_ABSDIR)-root/home/test::userdb_mail=maildir:~/Maildir' >$(DOVECOT_DIR)-root/etc/dovecot/passwd
 
 dovecot-conf: dovecot-bin
 	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot

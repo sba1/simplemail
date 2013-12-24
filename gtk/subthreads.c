@@ -487,6 +487,45 @@ int thread_push_function(void *function, int argcount, ...)
 
 /***************************************************************************************/
 
+int thread_push_function_delayed(int millis, void *function, int argcount, ...)
+{
+	struct thread_call_function_sync_data *data;
+	int i;
+
+	va_list argptr;
+
+	if (!(data = malloc(sizeof(*data))))
+		return 0;
+	memset(data, 0, sizeof(*data));
+
+	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
+
+	va_start(argptr,argcount);
+
+	data->function = (int (*)(void))function;
+	data->argcount = argcount;
+	data->sync_cond = g_cond_new();
+	data->sync_mutex = g_mutex_new();
+
+	assert(data->sync_cond);
+	assert(data->sync_mutex);
+
+	for (i=0; i < argcount; i++)
+		data->arg[i] = va_arg(argptr, void *);
+
+	va_end (argptr);
+
+
+	GSource *s = g_timeout_source_new(millis);
+	g_source_set_callback(s, thread_push_function_entry, data, NULL);
+	g_source_attach(s, thread_get()->context);
+	g_source_unref(s);
+
+	return 1;
+}
+
+/***************************************************************************************/
+
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
 	struct ipc_message msg;

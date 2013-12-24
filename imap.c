@@ -2233,9 +2233,15 @@ static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *ser
 	return success;
 }
 
-/**************************************************************************
- Delete a mail permanently. Thread version.
-**************************************************************************/
+/**
+ * Delete a mail permanently from the server
+ *
+ * @param filename
+ * @param server
+ * @param folder
+ * @return success or not.
+ * @note This function can only be called in the context of the imap thread.
+ */
 static int imap_thread_delete_mail_by_filename(char *filename, struct imap_server *server, struct folder *folder)
 {
 	char send[200];
@@ -2295,9 +2301,17 @@ static int imap_thread_delete_mail_by_filename(char *filename, struct imap_serve
 	return success;
 }
 
-/**************************************************************************
- Store a mail. Thread version.
-**************************************************************************/
+/**
+ * Store the mail represented by the mail located in the given source_dir
+ * on the given server in the given dest_folder.
+ *
+ * @param mail
+ * @param source_dir
+ * @param server
+ * @param dest_folder
+ * @return success or not.
+ * @note This function can only be called in the context of the imap thread.
+ */
 static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
 {
 	char send[200];

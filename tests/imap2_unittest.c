@@ -25,7 +25,10 @@
 
 #include "account.h"
 #include "configuration.h"
+#include "debug.h"
 #include "folder.h"
+#include "mail.h"
+#include "simplemail.h"
 #include "support_indep.h"
 
 /*************************************************************/
@@ -104,7 +107,31 @@ void read_refresh_prevnext_button(struct folder *f)
 
 void *test_imap_timer_callback(void *data)
 {
-	thread_abort(thread_get_main());
+	static enum
+	{
+		SWITCH_TO_INBOX,
+		QUIT
+	} state;
+
+	SM_DEBUGF(20,("state = %d\n", state));
+	switch (state)
+	{
+		case	SWITCH_TO_INBOX:
+				{
+					struct folder *f;
+
+					f = folder_find_by_imap("test","localhost","INBOX");
+					CU_ASSERT(f != NULL);
+
+					imap_thread_connect(f);
+				}
+				state = QUIT;
+				break;
+
+		case	QUIT:
+				thread_abort(thread_get_main());
+				break;
+	}
 	return NULL;
 }
 

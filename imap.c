@@ -1507,8 +1507,9 @@ static thread_t imap_thread;
 static struct connection *imap_connection;
 static int imap_socket_lib_open;
 static struct imap_server *imap_server;
-static char *imap_folder;
-static char *imap_local_path;
+static char *imap_folder; /** The path of the folder on the imap server */
+static char *imap_local_path; /** The local path of the folder */
+static int imap_connecting;
 
 /**************************************************************************/
 
@@ -1975,42 +1976,66 @@ static void imap_thread_really_connect_to_server(void)
 	SM_LEAVE;
 }
 
+/**
+ * Connect to the given imap server. Shall be invoked only in the context of the IMAP thread.
+ *
+ * @param server
+ * @param folder
+ * @param local_path
+ * @return
+ */
 static int imap_thread_connect_to_server(struct imap_server *server, char *folder, char *local_path)
 {
+	static int connecting;
+
+	int rc = 0;
+
 	SM_ENTER;
+
+	/* Ignore this request if we are already connecting. This can happen for instance, if a synchronous call
+	 * to the parent task is issued.  */
+	if (connecting)
+	{
+		SM_DEBUGF(5, ("Ignoring connect to server request for %s\n", local_path));
+
+		if (server) imap_free(server);
+		free(folder);
+		free(local_path);
+		goto bailout;
+	}
+
+	connecting = 1;
 
 	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
 		if (imap_server) imap_free(imap_server);
-		if ((imap_server = imap_duplicate(server)))
-		{
-			int rc;
+		imap_server = server;
 
-			if (imap_folder) free(imap_folder);
-			imap_folder = mystrdup(folder);
+		free(imap_folder);
+		imap_folder = folder;
 
-			if (imap_local_path) free(imap_local_path);
-			imap_local_path = mystrdup(local_path);
+		free(imap_local_path);
+		imap_local_path = local_path;
 
-			rc = thread_push_function(imap_thread_really_connect_to_server, 0);
-			SM_RETURN(rc,"%d");
-			return rc;
-		}
-		SM_RETURN(0,"%d");
-		return 0;
+		imap_thread_really_connect_to_server();
+		rc = 1;
 	} else
 	{
-		int rc;
-		if (imap_folder) free(imap_folder);
-		imap_folder = mystrdup(folder);
+		free(imap_folder);
+		imap_folder = folder;
 
-		if (imap_local_path) free(imap_local_path);
-		imap_local_path = mystrdup(local_path);
+		free(imap_local_path);
+		imap_local_path = local_path;
 
-		rc = thread_push_function(imap_thread_really_download_mails, 0);
-		SM_RETURN(rc,"%d");
-		return rc;
+		imap_thread_really_download_mails();
+		rc = 1;
 	}
+
+	connecting = 0;
+
+bailout:
+	SM_RETURN(rc,"%d");
+	return rc;
 }
 
 /**
@@ -2364,22 +2389,43 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 void imap_thread_connect(struct folder *folder)
 {
 	struct imap_server *server;
+	char *imap_folder;
+	char *imap_local_path;
 
 	SM_ENTER;
 
 	if (!(server = account_find_imap_server_by_folder(folder)))
 	{
 		SM_DEBUGF(5,("Server for folder %p (%s) not found\n",folder,folder->name));
-		return;
+		goto bailout;
 	}
+
 	if (!imap_start_thread())
 	{
 		SM_DEBUGF(5,("Could not start IMAP thread\n"));
-		return;
+		goto bailout;
 	}
 
-	thread_call_function_sync(imap_thread, imap_thread_connect_to_server, 4, server, folder->imap_path, folder->path, folder->imap_download);
+	if (!(server = imap_duplicate(server)))
+	{
+		SM_DEBUGF(5,("Could not duplicate imap server\n"));
+		goto bailout;
+	}
 
+	if ((!(imap_folder = mystrdup(folder->imap_path))) && folder->imap_path != NULL && strlen(folder->imap_path))
+	{
+		SM_DEBUGF(5,("Could not duplicate imap path\n"));
+		goto bailout;
+	}
+
+	if (!(imap_local_path = mystrdup(folder->path)))
+	{
+		SM_DEBUGF(5,("Could not duplicate folder path\n"));
+		goto bailout;
+	}
+
+	thread_call_function_async(imap_thread, imap_thread_connect_to_server, 4, server, imap_folder, imap_local_path, folder->imap_download);
+bailout:
 	SM_LEAVE;
 }
 

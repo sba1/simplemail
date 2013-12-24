@@ -41,6 +41,8 @@ void test_imap(void)
 
 	config_set_user_profile_directory("imap-profile");
 
+	CU_ASSERT(codesets_init() != 0);
+
 	CU_ASSERT(init_threads() != 0);
 
 	CU_ASSERT(load_config() != 0);
@@ -82,6 +84,7 @@ void test_imap(void)
 	del_folders();
 	free_config();
 	cleanup_threads();
+	codesets_cleanup();
 }
 
 /*************************************************************/

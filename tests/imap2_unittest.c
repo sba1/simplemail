@@ -71,6 +71,22 @@ void statuswnd_set_status(char *text)
 	printf("%s\n", text);
 }
 
+void main_refresh_folders(void)
+{
+}
+
+void search_refresh_folders(void)
+{
+}
+
+void config_refresh_folders(void)
+{
+}
+
+void filter_update_folder_list(void)
+{
+}
+
 /*************************************************************/
 
 void *test_imap_timer_callback(void *data)

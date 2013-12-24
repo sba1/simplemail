@@ -194,6 +194,12 @@ struct progmon *progmon_create(void)
  */
 void progmon_delete(struct progmon *pm)
 {
+	struct progmon_default *pmd = (struct progmon_default*)pm;
+	if (pmd)
+	{
+		free(pmd->working_on);
+		free(pmd->name);
+	}
 	free(pm);
 }
 

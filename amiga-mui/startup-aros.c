@@ -26,7 +26,6 @@
 
 #include "simplemail.h"
 
-struct ExecBase *SysBase;
 struct DosLibrary *DOSBase;
 struct Library *UtilityBase;
 struct Library *IntuitionBase;

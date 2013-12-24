@@ -577,10 +577,10 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	int num_of_remote_mails = 0;
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
+	struct remote_mailbox *rm;
 
 	SM_ENTER;
 
-	struct remote_mailbox *rm;
 	if (!(rm = imap_select_mailbox(conn,path,writemode)))
 	{
 		SM_RETURN(NULL,"%p");

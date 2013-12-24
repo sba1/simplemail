@@ -89,28 +89,57 @@ int init_threads(void)
 
 /***************************************************************************************/
 
+/**
+ * Checks if there are still any threads in the thread list and quits the
+ * main loop if this is not the case.
+ *
+ * @param udata
+ * @return
+ */
+static gboolean cleanup_threads_timer_callback(gpointer udata)
+{
+	struct thread_s *t;
+
+	g_mutex_lock(thread_list_mutex);
+	t = (struct thread_s*)list_first(&thread_list);
+	g_mutex_unlock(thread_list_mutex);
+
+	if (!t)
+		g_main_loop_quit(main_thread.main_loop);
+	return !!t;
+}
+
 void cleanup_threads(void)
 {
 	struct thread_s *t;
 
 	SM_ENTER;
 
+	/* Abort all threads */
+	g_mutex_lock(thread_list_mutex);
+	t = (struct thread_s*)list_first(&thread_list);
+	while (t)
+	{
+		thread_abort(t);
+		t = (struct thread_s*)node_next(&t->node);
+	}
+	g_mutex_unlock(thread_list_mutex);
+
 	while (1)
 	{
 		g_mutex_lock(thread_list_mutex);
-		if ((t = (struct thread_s*)list_first(&thread_list)))
-		{
-			GThread *gt;
-			gt = t->thread;
-			thread_abort(t);
-			g_mutex_unlock(thread_list_mutex);
-			/* FIXME: This could lead to a dead-lock situation if the thread was about to perform a synchronous call */
-			g_thread_join(gt);
-		} else
-		{
-			g_mutex_unlock(thread_list_mutex);
-			break;
-		}
+		t = (struct thread_s*)list_first(&thread_list);
+		g_mutex_unlock(thread_list_mutex);
+
+		if (!t) break;
+
+		GSource *s = g_timeout_source_new(100);
+		g_source_set_callback(s, cleanup_threads_timer_callback, NULL, NULL);
+		g_source_attach(s, main_thread.context);
+		g_source_unref(s);
+
+		/* Dispatch any current events */
+		g_main_loop_run(main_thread.main_loop);
 	}
 
 	g_mutex_free(main_thread.mutex);

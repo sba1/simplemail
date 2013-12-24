@@ -110,6 +110,7 @@ void *test_imap_timer_callback(void *data)
 	static enum
 	{
 		SWITCH_TO_INBOX,
+		ADD_NEW_MAIL,
 		QUIT
 	} state;
 
@@ -124,6 +125,18 @@ void *test_imap_timer_callback(void *data)
 					CU_ASSERT(f != NULL);
 
 					imap_thread_connect(f);
+				}
+				state = ADD_NEW_MAIL;
+				break;
+
+		case	ADD_NEW_MAIL:
+				{
+					char *name = realpath("test.eml", NULL);
+					struct folder *f;
+					f = folder_find_by_imap("test","localhost","INBOX");
+					CU_ASSERT(f != NULL);
+					callback_new_mail_to_folder(name, f);
+					free(name);
 				}
 				state = QUIT;
 				break;

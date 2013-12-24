@@ -101,14 +101,22 @@ void cleanup_threads(void)
 {
 	struct thread_s *t;
 
-	g_mutex_lock(thread_list_mutex);
-	t = (struct thread_s*)list_first(&thread_list);
-	while (t)
+	while (1)
 	{
-		thread_abort(t);
-		t = (struct thread_s*)node_next(&t->node);
+		g_mutex_lock(thread_list_mutex);
+		if ((t = (struct thread_s*)list_first(&thread_list)))
+		{
+			GThread *gt;
+			gt = t->thread;
+			thread_abort(t);
+			g_mutex_unlock(thread_list_mutex);
+			g_thread_join(gt);
+		} else
+		{
+			g_mutex_unlock(thread_list_mutex);
+			break;
+		}
 	}
-	g_mutex_unlock(thread_list_mutex);
 
 	g_main_loop_unref(main_thread.main_loop);
 	g_main_context_unref(main_thread.context);

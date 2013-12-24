@@ -32,6 +32,7 @@ TESTEXES=\
 	text2html_unittest
 
 test-objs/%.o: ../%.c
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.c

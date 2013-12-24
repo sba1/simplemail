@@ -31,6 +31,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
+#include "debug.h"
 #include "lists.h"
 #include "support_indep.h"
 #include "subthreads.h"
@@ -101,6 +102,8 @@ void cleanup_threads(void)
 {
 	struct thread_s *t;
 
+	SM_ENTER;
+
 	while (1)
 	{
 		g_mutex_lock(thread_list_mutex);
@@ -123,6 +126,7 @@ void cleanup_threads(void)
 
 	g_mutex_free(thread_list_mutex);
 
+	SM_LEAVE;
 }
 
 /***************************************************************************************/

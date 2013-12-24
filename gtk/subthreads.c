@@ -332,10 +332,22 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 	return 0;
 }
 
+/**
+ * Call a function in the context of the thread.
+ *
+ * @param thread
+ * @param rc pointer where the return value of the function is stored.
+ * @param function
+ * @param argcount
+ * @param argptr
+ * @return whether the function was invoked or not.
+ */
 static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *function, int argcount, va_list argptr)
 {
 	struct thread_call_function_sync_data data;
 	int i;
+
+	SM_ENTER;
 
 	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
@@ -351,7 +363,8 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 
 	if (rc) *rc = data.rc;
 
-	return 0;
+	SM_RETURN(1,"%d");
+	return 1;
 }
 
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)

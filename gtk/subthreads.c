@@ -181,19 +181,20 @@ struct thread_add_data
 static gpointer thread_add_entry(gpointer udata)
 {
 	struct thread_add_data *tad = (struct thread_add_data*)udata;
+	struct thread_s *t = tad->thread;
 
 	/* TODO: Catch errors and inform parent task */
-	tad->thread->context = g_main_context_new();
-	tad->thread->main_loop = g_main_loop_new(tad->thread->context, FALSE);
+	t->context = g_main_context_new();
+	t->main_loop = g_main_loop_new(t->context, FALSE);
 
 	tad->entry(tad->eudata);
 
 	g_mutex_lock(thread_list_mutex);
-	node_remove(&tad->thread->node);
+	node_remove(&t->node);
 	g_mutex_unlock(thread_list_mutex);
 
-	g_main_loop_unref(tad->thread->main_loop);
-	g_main_context_unref(tad->thread->context);
+	g_main_loop_unref(t->main_loop);
+	g_main_context_unref(t->context);
 	return NULL;
 }
 

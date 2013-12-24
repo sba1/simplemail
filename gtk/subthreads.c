@@ -335,7 +335,7 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 /***************************************************************************************/
 
-gboolean thread_push_function_entry(gpointer user_data)
+static gboolean thread_push_function_entry(gpointer user_data)
 {
 	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
 

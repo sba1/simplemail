@@ -55,55 +55,6 @@ files: test-profile.tar.bz2
 lib$(SIMPLEMAIL_LIB).a: $(OBJS)
 	ar rcs $@ $(OBJS)
 
-# Define memleak targets
-MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
-
-# run template
-define run.tmpl
-run-$(1): $(1)
-	./$$<
-endef
-
-# "instanciate" run targets
-$(foreach testexe,$(TESTEXES), \
- $(eval $(call run.tmpl,$(testexe))) \
-)
-
-# memleaks template
-define memleak.tmpl
-memleaks-$(1): $(1)
-ifdef USE_VALGRIND_XML
-	valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
-else
-	valgrind $(VALGRIND_OPTS) ./$$<
-endif
-endef
-
-# "instanciate" memleak targets
-$(foreach testexe,$(TESTEXES), \
- $(eval $(call memleak.tmpl,$(testexe))) \
-)
-
-.PHONY: memleaks
-memleaks: $(MEMLEAKS_TARGETS)
-
-
-# helgrind template
-define helgrind.tmpl
-helgrind-$(1): $(1)
-ifdef USE_VALGRIND_XML
-	valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ./$$<
-else
-	valgrind --tool=helgrind ./$$<
-endif
-endef
-
-# "instanciate" memleak targets
-$(foreach testexe,$(TESTEXES), \
- $(eval $(call helgrind.tmpl,$(testexe))) \
-)
-
-
 .PHONY: clean
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))
@@ -154,3 +105,51 @@ imap-testsuite: dovecot imap2_unittest
 	sleep 2
 	./imap2_unittest
 	$(DOVECOT) stop
+
+# Define memleak targets
+MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
+
+# run template
+define run.tmpl
+run-$(1): $(1)
+	./$$<
+endef
+
+# "instanciate" run targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call run.tmpl,$(testexe))) \
+)
+
+# memleaks template
+define memleak.tmpl
+memleaks-$(1): $(1)
+ifdef USE_VALGRIND_XML
+	valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
+else
+	valgrind $(VALGRIND_OPTS) ./$$<
+endif
+endef
+
+# "instanciate" memleak targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call memleak.tmpl,$(testexe))) \
+)
+
+.PHONY: memleaks
+memleaks: $(MEMLEAKS_TARGETS)
+
+
+# helgrind template
+define helgrind.tmpl
+helgrind-$(1): $(1)
+ifdef USE_VALGRIND_XML
+	valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ./$$<
+else
+	valgrind --tool=helgrind ./$$<
+endif
+endef
+
+# "instanciate" memleak targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call helgrind.tmpl,$(testexe))) \
+)

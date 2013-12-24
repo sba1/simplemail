@@ -8,6 +8,9 @@ include $(TOP)/config/make.cfg
 #MM contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
 #MM contrib-simplemail-files contrib-simplemail-locale
 
+#MM
+contrib-simplemail-bin-quick : contrib-simplemail-bin
+
 AMIGAMUI := \
 	vsnprintf \
 	utf8stringclass \

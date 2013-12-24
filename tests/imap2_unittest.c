@@ -113,11 +113,11 @@ void test_imap(void)
 	CU_ASSERT(ac->imap->login != NULL);
 
 	if (ac->imap->passwd) free(ac->imap->passwd);
-	ac->imap->passwd = mystrdup("zzz");
+	ac->imap->passwd = mystrdup("test");
 	CU_ASSERT(ac->imap->passwd != NULL);
 
-	ac->imap->ssl = 1;
-	ac->imap->port = 993;
+	ac->imap->ssl = 0;
+	ac->imap->port = 10143;
 
 	insert_config_account(ac);
 	account_free(ac);

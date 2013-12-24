@@ -84,6 +84,7 @@ int init_threads(void)
 
 	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
 
+	main_thread.thread = g_thread_self();
 	return 1;
 }
 
@@ -315,6 +316,9 @@ thread_t thread_get(void)
 {
 	struct thread_s *t;
 	GThread *gt = g_thread_self();
+
+	if (gt == main_thread.thread)
+		return &main_thread;
 
 	g_mutex_lock(thread_list_mutex);
 	t = (struct thread_s*)list_first(&thread_list);

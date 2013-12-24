@@ -260,7 +260,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 /***************************************************************************************/
 
-int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+thread_t thread_get(void)
 {
 	struct thread_s *t;
 	GThread *gt = g_thread_self();
@@ -275,6 +275,16 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 	g_mutex_unlock(thread_list_mutex);
 
 	assert(t);
+	return t;
+}
+
+/***************************************************************************************/
+
+int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
+{
+	struct thread_s *t;
+
+	t = thread_get();
 
 	g_main_loop_run(t->main_loop);
 

@@ -4,7 +4,7 @@ include $(TOP)/config/make.cfg
 
 #MM- contrib-simplemail : contrib-simplemail-bin
 
-#MM contrib-simplemail-bin : includes linklibs linklibs-expat contrib-zune-classes-thebar \
+#MM contrib-simplemail-bin : includes linklibs linklibs-expat contrib-zune-classes-mailtext contrib-zune-classes-thebar \
 #MM contrib-simplemail-arexx contrib-simplemail-charsets contrib-simplemail-images \
 #MM contrib-simplemail-files contrib-simplemail-locale
 

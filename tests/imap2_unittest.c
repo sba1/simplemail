@@ -30,6 +30,12 @@
 
 /*************************************************************/
 
+void *test_imap_timer_callback(void *data)
+{
+	thread_abort(thread_get_main());
+	return NULL;
+}
+
 /* @Test */
 void test_imap(void)
 {
@@ -80,7 +86,7 @@ void test_imap(void)
 
 	imap_thread_connect(f);
 
-	sleep(2);
+	thread_wait(test_imap_timer_callback, NULL, 2000);
 
 	del_folders();
 	free_config();

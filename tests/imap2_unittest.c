@@ -87,6 +87,19 @@ void filter_update_folder_list(void)
 {
 }
 
+struct folder *main_get_folder(void)
+{
+	return NULL;
+}
+
+void main_refresh_folder(struct folder *f)
+{
+}
+
+void read_refresh_prevnext_button(struct folder *f)
+{
+}
+
 /*************************************************************/
 
 void *test_imap_timer_callback(void *data)

@@ -109,6 +109,9 @@ void cleanup_threads(void)
 	}
 	g_mutex_unlock(thread_list_mutex);
 
+	g_main_loop_unref(main_thread.main_loop);
+	g_main_context_unref(main_thread.context);
+
 	g_mutex_free(thread_list_mutex);
 
 }
@@ -188,6 +191,8 @@ static gpointer thread_add_entry(gpointer udata)
 	node_remove(&tad->thread->node);
 	g_mutex_unlock(thread_list_mutex);
 
+	g_main_loop_unref(tad->thread->main_loop);
+	g_main_context_unref(tad->thread->context);
 	return NULL;
 }
 

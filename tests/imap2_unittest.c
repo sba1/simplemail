@@ -99,6 +99,14 @@ void main_refresh_folder(struct folder *f)
 {
 }
 
+void main_freeze_mail_list(void)
+{
+}
+
+void main_thaw_mail_list(void)
+{
+}
+
 void read_refresh_prevnext_button(struct folder *f)
 {
 }
@@ -142,7 +150,13 @@ void *test_imap_timer_callback(void *data)
 				break;
 
 		case	QUIT:
-				thread_abort(thread_get_main());
+				{
+					struct folder *f;
+					f = folder_find_by_imap("test","localhost","INBOX");
+					CU_ASSERT(f != NULL);
+					folder_save_index(f);
+					thread_abort(thread_get_main());
+				}
 				break;
 	}
 	return NULL;

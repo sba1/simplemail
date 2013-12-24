@@ -1,0 +1,14 @@
+.DAV
+a.out
+error
+*stubs.c
+test-objs
+*_unittest
+*.o
+*_table.c
+written.eml
+libsimplemail.a
+written2.eml
+memleaks-*.xml
+test-profile
+imap-profile

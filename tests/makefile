@@ -114,6 +114,7 @@ DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
 DOVECOT_TGZ=$(notdir $(DOVECOT_URL))
 DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
 DOVECOT_ABSDIR=$(shell pwd)/$(DOVECOT_DIR)
+DOVECOT=$(DOVECOT_DIR)-root/sbin/dovecot
 
 $(DOVECOT_TGZ):
 	wget -N $(DOVECOT_URL)
@@ -145,3 +146,11 @@ dovecot: dovecot-bin
 
 dovecot-conf: dovecot-bin
 	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot
+
+.PHONY: imap-testsuite
+imap-testsuite: dovecot imap2_unittest
+	-$(DOVECOT) stop
+	$(DOVECOT)
+	sleep 2
+	./imap2_unittest
+	$(DOVECOT) stop

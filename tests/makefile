@@ -111,3 +111,17 @@ $(foreach testexe,$(TESTEXES), \
 .PHONY: clean
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))
+
+
+# Dovecot support
+DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
+DOVECOT_TGZ=$(notdir $(DOVECOT_URL))
+DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
+
+$(DOVECOT_TGZ):
+	wget -N $(DOVECOT_URL)
+
+.PHONY: dovecot
+dovecot: $(DOVECOT_TGZ)
+	rm -Rf $(DOVECOT_DIR)
+	tar -xzf $(DOVECOT_TGZ)

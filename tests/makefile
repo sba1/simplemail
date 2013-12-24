@@ -129,9 +129,9 @@ memleaks-$(1): $(1) $(if $(findstring imap,$(1)), dovecot)
 	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
 	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
-	valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
+	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
 else
-	valgrind $(VALGRIND_OPTS) ./$$<
+	G_SLICE=always-malloc valgrind $(VALGRIND_OPTS) ./$$<
 endif
 	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
 endef

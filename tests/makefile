@@ -126,5 +126,15 @@ $(DOVECOT_DIR)-root: $(DOVECOT_TGZ)
 	tar -xzf $(DOVECOT_TGZ)
 	cd $(DOVECOT_DIR); ./configure --prefix=$(shell pwd)/$(DOVECOT_DIR)-root; $(MAKE) ; $(MAKE) install
 
+.PHONY: dovecot-bin
+dovecot-bin: $(DOVECOT_DIR)-root
+
 .PHONY: dovecot
-dovecot: $(DOVECOT_DIR)-root
+dovecot: dovecot-bin
+	rm -Rf $(DOVECOT_DIR)-root/etc/dovecot
+	cp -R dovecot-conf -Rf $(DOVECOT_DIR)-root/etc/dovecot
+	echo 'default_internal_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
+	echo 'default_login_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
+
+dovecot-conf: dovecot-bin
+	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot

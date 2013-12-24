@@ -245,9 +245,16 @@ int thread_start(int (*entry)(void*), void *udata)
 
 /***************************************************************************************/
 
+static gboolean thread_abort_entry(gpointer udata)
+{
+	struct thread_s *t = (struct thread_s*)udata;
+	g_main_loop_quit(t->main_loop);
+	return 0;
+}
+
 void thread_abort(thread_t thread)
 {
-	g_main_loop_quit(thread->main_loop);
+	g_main_context_invoke(thread->context, thread_abort_entry, thread);
 }
 
 /***************************************************************************************/

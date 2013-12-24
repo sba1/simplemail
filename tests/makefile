@@ -112,7 +112,10 @@ MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
 # run template
 define run.tmpl
 run-$(1): $(1)
+	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
+	$(if $(findstring imap,$(1)), $(DOVECOT))
 	./$$<
+	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" run targets
@@ -123,11 +126,14 @@ $(foreach testexe,$(TESTEXES), \
 # memleaks template
 define memleak.tmpl
 memleaks-$(1): $(1)
+	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
+	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
 	valgrind $(VALGRIND_OPTS) --xml=yes --xml-file=$$@.xml ./$$<
 else
 	valgrind $(VALGRIND_OPTS) ./$$<
 endif
+	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" memleak targets
@@ -142,11 +148,14 @@ memleaks: $(MEMLEAKS_TARGETS)
 # helgrind template
 define helgrind.tmpl
 helgrind-$(1): $(1)
+	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
+	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
 	valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ./$$<
 else
 	valgrind --tool=helgrind ./$$<
 endif
+	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" memleak targets

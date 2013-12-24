@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -277,6 +278,8 @@ struct thread_call_function_sync_data
 
 	GCond *sync_cond;
 	GMutex *sync_mutex;
+
+	uintptr_t rc;
 };
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
@@ -285,17 +288,19 @@ struct thread_call_function_sync_data
 static gboolean thread_call_function_sync_entry(gpointer user_data)
 {
 	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
+	uintptr_t rc;
 
 	switch (data->argcount)
 	{
-		case	0: data->function(); break;
-		case	1: ((int (*)(void*))data->function)(data->arg[0]);break;
-		case	2: ((int (*)(void*,void*))data->function)(data->arg[0],data->arg[1]);break;
-		case	3: ((int (*)(void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2]);break;
-		case	4: ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
-		case	5: ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
-		case	6: ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
+		case	0: rc = data->function(); break;
+		case	1: rc = ((int (*)(void*))data->function)(data->arg[0]);break;
+		case	2: rc = ((int (*)(void*,void*))data->function)(data->arg[0],data->arg[1]);break;
+		case	3: rc = ((int (*)(void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2]);break;
+		case	4: rc = ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
+		case	5: rc = ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
+		case	6: rc = ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
 	}
+	data->rc = rc;
 	g_mutex_lock(data->sync_mutex);
 	g_cond_signal(data->sync_cond);
 	g_mutex_unlock(data->sync_mutex);
@@ -303,7 +308,7 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 	return 0;
 }
 
-static int thread_call_function_sync_v(thread_t thread, void *function, int argcount, va_list argptr)
+static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *function, int argcount, va_list argptr)
 {
 	struct thread_call_function_sync_data data;
 	int i;
@@ -328,6 +333,8 @@ static int thread_call_function_sync_v(thread_t thread, void *function, int argc
 	g_cond_wait(data.sync_cond, data.sync_mutex);
 	g_mutex_unlock(data.sync_mutex);
 
+	if (rc) *rc = data.rc;
+
 	return 0;
 }
 
@@ -338,7 +345,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	va_list argptr;
 
 	va_start(argptr,argcount);
-	rc = thread_call_function_sync_v(thread, function, argcount, argptr);
+	rc = thread_call_function_sync_v(thread, NULL, function, argcount, argptr);
 	va_end(argptr);
 	return rc;
 }

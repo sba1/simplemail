@@ -327,6 +327,7 @@ static gboolean thread_call_function_async_entry(gpointer user_data)
 		case	5: ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
 		case	6: ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
 	}
+	free(data);
 	return 0;
 }
 
@@ -590,6 +591,7 @@ static gboolean thread_call_function_async_string_entry(gpointer user_data)
 
 	if (data->argcount)
 		free(data->arg[0]);
+	free(data);
 
 	return 0;
 }

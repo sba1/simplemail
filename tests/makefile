@@ -139,11 +139,11 @@ dovecot: dovecot-bin
 	echo 'default_login_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
 	echo 'passdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    args = $(shell readlink -f $(DOVECOT_DIR)-root/etc/dovecot/passwd)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo 'userdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    args = $(shell readlink -f $(DOVECOT_DIR)-root/etc/dovecot/passwd)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo 'test:{plain}test::::$(DOVECOT_ABSDIR)-root/home/test::userdb_mail=maildir:~/Maildir' >$(DOVECOT_DIR)-root/etc/dovecot/passwd
 

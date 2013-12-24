@@ -519,11 +519,6 @@ int thread_push_function(void *function, int argcount, ...)
 
 	data->function = (int (*)(void))function;
 	data->argcount = argcount;
-	data->sync_cond = g_cond_new();
-	data->sync_mutex = g_mutex_new();
-
-	assert(data->sync_cond);
-	assert(data->sync_mutex);
 
 	for (i=0; i < argcount; i++)
 		data->arg[i] = va_arg(argptr, void *);
@@ -558,11 +553,6 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 
 	data->function = (int (*)(void))function;
 	data->argcount = argcount;
-	data->sync_cond = g_cond_new();
-	data->sync_mutex = g_mutex_new();
-
-	assert(data->sync_cond);
-	assert(data->sync_mutex);
 
 	for (i=0; i < argcount; i++)
 		data->arg[i] = va_arg(argptr, void *);

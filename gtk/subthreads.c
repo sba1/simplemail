@@ -70,6 +70,8 @@ struct thread_s
 	GMainLoop *main_loop;
 };
 
+static struct thread_s main_thread;
+
 /***************************************************************************************/
 
 int init_threads(void)
@@ -298,6 +300,13 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	g_mutex_unlock(data.sync_mutex);
 
 	return 0;
+}
+
+/***************************************************************************************/
+
+thread_t thread_get_main(void)
+{
+	return (thread_t)&main_thread;
 }
 
 /***************************************************************************************/

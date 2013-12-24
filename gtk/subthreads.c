@@ -55,9 +55,11 @@ struct thread_s
 {
 	struct node node;
 	GThread *thread;
-
 	GMainContext *context;
 	GMainLoop *main_loop;
+
+	GMutex *mutex;
+	int aborted;
 };
 
 static struct thread_s main_thread;
@@ -79,6 +81,8 @@ int init_threads(void)
 	if (!(main_thread.context = g_main_context_new()))
 		return 0;
 	if (!(main_thread.main_loop = g_main_loop_new(main_thread.context, FALSE)))
+		return 0;
+	if (!(main_thread.mutex = g_mutex_new()))
 		return 0;
 
 	return 1;
@@ -110,6 +114,7 @@ void cleanup_threads(void)
 		}
 	}
 
+	g_mutex_free(main_thread.mutex);
 	g_main_loop_unref(main_thread.main_loop);
 	g_main_context_unref(main_thread.context);
 
@@ -154,6 +159,7 @@ static gpointer thread_add_entry(gpointer udata)
 	t->thread = g_thread_self();
 	t->context = g_main_context_new();
 	t->main_loop = g_main_loop_new(t->context, FALSE);
+	t->mutex = g_mutex_new();
 
 	tad->entry(tad->eudata);
 
@@ -161,6 +167,7 @@ static gpointer thread_add_entry(gpointer udata)
 	node_remove(&t->node);
 	g_mutex_unlock(thread_list_mutex);
 
+	g_mutex_free(t->mutex);
 	g_main_loop_unref(t->main_loop);
 	g_main_context_unref(t->context);
 	return NULL;
@@ -222,6 +229,9 @@ static gboolean thread_abort_entry(gpointer udata)
 
 void thread_abort(thread_t thread)
 {
+	g_mutex_lock(thread->mutex);
+	thread->aborted = 1;
+	g_mutex_unlock(thread->mutex);
 	g_main_context_invoke(thread->context, thread_abort_entry, thread);
 }
 
@@ -616,7 +626,12 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 
 int thread_aborted(void)
 {
-	return 0;
+	struct thread_s *t = thread_get();
+	int aborted;
+	g_mutex_lock(t->mutex);
+	aborted = !!t->aborted;
+	g_mutex_unlock(t->mutex);
+	return aborted;
 }
 
 /***************************************************************************************/

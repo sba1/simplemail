@@ -109,8 +109,8 @@ SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
 
 # -------------------------------------------------------------
 
-OBJSDIR=ppc-amigaos-objs
-TESTOBJSDIR=ppc-amigaos-test-objs
+OBJSDIR=$(CROSS_COMPILE)objs
+TESTOBJSDIR=$(CROSS_COMPILE)test-objs
 
 OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
 AOBJS = $(ASRCS:%.S=$(OBJSDIR)/%.o)

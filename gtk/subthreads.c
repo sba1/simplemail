@@ -225,8 +225,7 @@ int thread_start(int (*entry)(void*), void *udata)
 
 void thread_abort(thread_t thread)
 {
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
+	g_main_loop_quit(thread->main_loop);
 }
 
 /***************************************************************************************/

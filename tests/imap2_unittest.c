@@ -44,6 +44,7 @@ void test_imap(void)
 	CU_ASSERT(codesets_init() != 0);
 
 	CU_ASSERT(init_threads() != 0);
+	CU_ASSERT(progmon_init() != 0);
 
 	CU_ASSERT(load_config() != 0);
 	CU_ASSERT(init_folders() != 0);
@@ -83,6 +84,7 @@ void test_imap(void)
 
 	del_folders();
 	free_config();
+	progmon_deinit();
 	cleanup_threads();
 	codesets_cleanup();
 }

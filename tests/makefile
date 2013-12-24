@@ -135,6 +135,10 @@ dovecot: dovecot-bin
 	cp -R dovecot-conf -Rf $(DOVECOT_DIR)-root/etc/dovecot
 	echo 'default_internal_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
 	echo 'default_login_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
+	echo 'passdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(shell readlink -f $(DOVECOT_DIR)-root/etc/dovecot/passwd)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 
 dovecot-conf: dovecot-bin
 	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot

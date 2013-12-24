@@ -286,13 +286,25 @@ struct thread_call_function_sync_data
 	uintptr_t rc;
 
 	thread_t caller;
+
+	/** Indicates that the call has been done */
+	int done;
 };
+
+static gboolean thread_call_function_sync_done_entry(gpointer user_data)
+{
+	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
+	data->done = 1;
+	return 0;
+}
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
  * work depending on the ABI
  */
 static gboolean thread_call_function_sync_entry(gpointer user_data)
 {
+	SM_ENTER;
+
 	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
 	uintptr_t rc;
 
@@ -307,8 +319,10 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 		case	6: rc = ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
 	}
 	data->rc = rc;
-	g_main_loop_quit(data->caller->main_loop);
 
+	g_main_context_invoke(data->caller->context, thread_call_function_sync_done_entry, data);
+
+	SM_LEAVE;
 	return 0;
 }
 
@@ -328,18 +342,22 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 	int i;
 
 	SM_ENTER;
+	SM_DEBUGF(20,("Thread %p calls on context for %p\n", thread_get(), thread));
 
 	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
 	data.function = (int (*)(void))function;
 	data.argcount = argcount;
 	data.caller = thread_get();
+	data.done = 0;
 
 	for (i=0; i < argcount; i++)
 		data.arg[i] = va_arg(argptr, void *);
 
 	g_main_context_invoke(thread->context, thread_call_function_sync_entry, &data);
-	g_main_loop_run(data.caller->main_loop);
+
+	while (!data.done)
+		g_main_context_iteration(data.caller->context, 1);
 
 	if (rc) *rc = data.rc;
 

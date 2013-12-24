@@ -143,6 +143,8 @@ void test_imap(void)
 	f = folder_find_by_name("localhost");
 	CU_ASSERT(f != NULL);
 
+	/* Doing this twice is intended */
+	imap_thread_connect(f);
 	imap_thread_connect(f);
 
 	thread_wait(test_imap_timer_callback, NULL, 2000);

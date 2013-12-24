@@ -320,10 +320,13 @@ void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned 
 	mail = folder_imap_find_mail_by_uid(f, uid);
 	if (!mail)
 	{
+		SM_DEBUGF(20, ("Couldn't find mail with uid %u\n", uid));
 		folder_unlock(f);
 		folders_unlock();
 		return;
 	}
+
+	SM_DEBUGF(20, ("Deleting local mail for %s@server://%s with uid %u\n", user, server, path, uid));
 
 	folder_move_mail(f,folder_deleted(),mail);
   main_refresh_folder(f);

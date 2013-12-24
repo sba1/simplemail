@@ -147,6 +147,8 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		*num_of_todel_mails_ptr = num_of_todel_mails;
 	}
 	folder_unlock(folder);
+
+	SM_DEBUGF(20, ("num_of_mails=%d, num_of_todel_mails=%d\n", num_of_mails, num_of_todel_mails));
 	SM_RETURN(success,"%d");
 	return success;
 }
@@ -166,6 +168,7 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
 	int i,j;
 
 	SM_ENTER;
+	SM_DEBUGF(20,("num_of_local_mails=%d, num_remote_mails=%d\n", num_of_local_mails, num_remote_mails));
 
 	i = j = 0;
 	while (i<num_of_local_mails && j<num_remote_mails)

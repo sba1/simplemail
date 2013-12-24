@@ -24,6 +24,7 @@ AMIGAMUI := \
 	shutdownwnd \
 	searchwnd \
 	readwnd \
+	progmonwnd \
 	popupmenuclass \
 	picturebuttonclass \
 	pgplistclass \
@@ -91,6 +92,7 @@ FILES   := \
 	phrase \
 	pop3 \
 	print \
+	progmon \
 	punycode \
 	signature \
 	simplemail \

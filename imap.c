@@ -1541,6 +1541,10 @@ static void imap_thread_entry(void *test)
 	{
 		thread_wait(NULL,NULL,0);
 
+		imap_free(imap_server);
+		free(imap_folder);
+		free(imap_local_path);
+
 		if (imap_connection)
 		{
 			tcp_disconnect(imap_connection);
@@ -2047,6 +2051,8 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		rc = 1;
 	} else
 	{
+		imap_free(server);
+
 		free(imap_folder);
 		imap_folder = folder;
 

@@ -48,6 +48,7 @@ void __debug_end(void);
 #define SM_DEBUGF(level,x)
 #define SM_ENTER
 #define SM_LEAVE
+#define SM_RETURN(val,type)
 #else
 extern int __debuglevel;
 #ifdef __GNUC__

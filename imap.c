@@ -437,7 +437,15 @@ struct remote_mailbox
  */
 static void imap_free_remote_mailbox(struct remote_mailbox *rm)
 {
+	int i;
+
 	if (!rm) return;
+
+	if (rm->remote_mail_array)
+	{
+		for (i=0; i < rm->num_of_remote_mail; i++)
+			free(rm->remote_mail_array[i].headers);
+	}
 	free(rm->remote_mail_array);
 	free(rm);
 }
@@ -693,6 +701,9 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 
 						if (uid < max_uid) needs_to_be_sorted = 1;
 						else max_uid = uid;
+					} else
+					{
+						free(headers);
 					}
 				}
 			}

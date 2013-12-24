@@ -39,6 +39,16 @@ void close_socket_lib(void)
 {
 }
 
+void myclosesocket(int fd)
+{
+	close(fd);
+}
+
+long tcp_errno(void)
+{
+	return errno;
+}
+
 void main_set_progress(unsigned int max_work, unsigned int work)
 {
 }
@@ -47,6 +57,9 @@ void main_hide_progress(void)
 {
 }
 
+void progmonwnd_update(void)
+{
+}
 
 /*************************************************************/
 

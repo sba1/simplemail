@@ -154,10 +154,15 @@ void test_imap(void)
 	struct account *ac;
 	struct folder *f;
 
+	char *imap_profile;
+
 	debug_init();
 	debug_set_level(25);
 
-	config_set_user_profile_directory("imap-profile");
+	imap_profile = realpath("imap-profile", NULL);
+	CU_ASSERT(imap_profile != NULL);
+
+	config_set_user_profile_directory(imap_profile);
 
 	CU_ASSERT(codesets_init() != 0);
 
@@ -207,6 +212,8 @@ void test_imap(void)
 	free_config();
 	progmon_deinit();
 	codesets_cleanup();
+
+	free(imap_profile);
 }
 
 /*************************************************************/

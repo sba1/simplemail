@@ -112,6 +112,8 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	void *handle = NULL;
 	int i,success = 0;
 
+	SM_ENTER;
+
 	folder_lock(folder);
 	folder_next_mail(folder,&handle);
 
@@ -145,6 +147,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		*num_of_todel_mails_ptr = num_of_todel_mails;
 	}
 	folder_unlock(folder);
+	SM_RETURN(success,"%d");
 	return success;
 }
 
@@ -560,9 +563,14 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
 
+	SM_ENTER;
+
 	struct remote_mailbox *rm;
 	if (!(rm = imap_select_mailbox(conn,path,writemode)))
+	{
+		SM_RETURN(NULL,"%p");
 		return NULL;
+	}
 
 	if (!uid_start) uid_end = 0;
 	else if (!uid_end) uid_start = 0;
@@ -701,6 +709,7 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 		rm->remote_mail_array = remote_mail_array;
 		rm->num_of_remote_mail = num_of_remote_mails;
 	}
+	SM_RETURN(rm, "%p");
 	return rm;
 }
 
@@ -1575,10 +1584,20 @@ static int imap_thread_really_download_mails(void)
 
 	struct progmon *pm;
 
-	if (!imap_connection) return -1;
+	SM_ENTER;
+
+	if (!imap_connection)
+	{
+		SM_RETURN(-1,"%d");
+		return -1;
+	}
 
 	getcwd(path, sizeof(path));
-	if (chdir(imap_local_path) == -1) return -1;
+	if (chdir(imap_local_path) == -1)
+	{
+		SM_RETURN(-1,"%d");
+		return -1;
+	}
 
 	SM_DEBUGF(10,("Downloading mails of folder \"%s\"\n",imap_folder));
 
@@ -1799,7 +1818,7 @@ static int imap_thread_really_download_mails(void)
 		thread_call_parent_function_async_string(status_set_status,1,path);
 	}
 
-
+	SM_RETURN(downloaded_mails,"%d");
 	return downloaded_mails;
 }
 

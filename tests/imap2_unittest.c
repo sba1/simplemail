@@ -30,6 +30,26 @@
 
 /*************************************************************/
 
+int open_socket_lib(void)
+{
+	return 1;
+}
+
+void close_socket_lib(void)
+{
+}
+
+void main_set_progress(unsigned int max_work, unsigned int work)
+{
+}
+
+void main_hide_progress(void)
+{
+}
+
+
+/*************************************************************/
+
 void *test_imap_timer_callback(void *data)
 {
 	thread_abort(thread_get_main());

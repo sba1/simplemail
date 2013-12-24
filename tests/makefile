@@ -98,6 +98,14 @@ dovecot: dovecot-bin
 dovecot-conf: dovecot-bin
 	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot
 
+.PHONY: dovecot-start
+dovecot-start: dovecot-conf
+	$(DOVECOT)
+
+.PHONY: dovecot-stop
+dovecot-stop: dovecot-conf
+	$(DOVECOT) stop
+
 .PHONY: imap-testsuite
 imap-testsuite: dovecot imap2_unittest
 	-$(DOVECOT) stop

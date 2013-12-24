@@ -51,19 +51,6 @@ static struct list thread_list;
 /** Mutex for accessing thread list */
 static GMutex *thread_list_mutex;
 
-struct ipc_message
-{
-	int async;
-	int string;
-	int rc;
-	void *function;
-	int argcount;
-	void *arg1;
-	void *arg2;
-	void *arg3;
-	void *arg4;
-};
-
 struct thread_s
 {
 	struct node node;
@@ -140,41 +127,6 @@ int thread_parent_task_can_contiue(void)
 	g_cond_signal(thread_cond);
 	g_mutex_unlock(thread_mutex);
 	return 1;
-}
-
-static void thread_input(gpointer data, gint source, GdkInputCondition condition)
-{
-	int len;
-	struct ipc_message msg;
-
-	len = read(source,&msg,sizeof(msg));
-
-	if (len == sizeof(msg))
-	{
-		int rc = 0;
-
-		switch (msg.argcount)
-		{
-			case	0: rc = ((int (*)(void))msg.function)();break;
-			case	1: rc = ((int (*)(void*))msg.function)(msg.arg1);break;
-			case	2: rc = ((int (*)(void*,void*))msg.function)(msg.arg1,msg.arg2);break;
-			case	3: rc = ((int (*)(void*,void*,void*))msg.function)(msg.arg1,msg.arg2,msg.arg3);break;
-			case	4: rc = ((int (*)(void*,void*,void*,void*))msg.function)(msg.arg1,msg.arg2,msg.arg3,msg.arg4);break;
-		}
-
-		if (msg.async)
-		{
-			if (msg.string)
-			{
-				free(msg.arg1);
-			}
-		}	else
-		{
-			/* synchron call, deliver return code */
-			msg.rc = rc;
-			write(sockets[0],&msg,sizeof(msg));
-		}
-	}
 }
 
 /***************************************************************************************/
@@ -255,20 +207,8 @@ bailout:
 
 int thread_start(int (*entry)(void*), void *udata)
 {
-	if (!input_added)
-	{
-		gtk_input_add_full(sockets[0],GDK_INPUT_READ,thread_input, NULL, NULL, NULL);
-		input_added = 1;
-	}
-
-	if ((g_thread_create((GThreadFunc)entry,udata,TRUE,NULL)))
-	{
-		g_mutex_lock(thread_mutex);
-		g_cond_wait(thread_cond,thread_mutex);
-		g_mutex_unlock(thread_mutex);
-		return 1;
-	}
-	return 0;
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
+	exit(1);
 }
 
 /***************************************************************************************/

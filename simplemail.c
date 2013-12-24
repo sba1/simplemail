@@ -1395,6 +1395,12 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
 
 		main_refresh_folder(folder);
 		read_refresh_prevnext_button(folder);
+
+		/* TODO: Perhaps it would be better to do omit the previous copy operation if this condition holds */
+		if (folder->is_imap)
+		{
+			imap_append_mail(mail, folder->path, folder);
+		}
 	}
 
 	chdir(buf);

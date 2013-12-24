@@ -98,7 +98,19 @@ int init_threads(void)
 
 void cleanup_threads(void)
 {
+	struct thread_s *t;
+
+	g_mutex_lock(thread_list_mutex);
+	t = (struct thread_s*)list_first(&thread_list);
+	while (t)
+	{
+		thread_abort(t);
+		t = (struct thread_s*)node_next(&t->node);
+	}
+	g_mutex_unlock(thread_list_mutex);
+
 	g_mutex_free(thread_list_mutex);
+
 }
 
 /***************************************************************************************/

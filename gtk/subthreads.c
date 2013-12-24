@@ -310,6 +310,56 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 
 /***************************************************************************************/
 
+/* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
+ * work depending on the ABI
+ */
+static gboolean thread_call_function_async_entry(gpointer user_data)
+{
+	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
+
+	switch (data->argcount)
+	{
+		case	0: data->function(); break;
+		case	1: ((int (*)(void*))data->function)(data->arg[0]);break;
+		case	2: ((int (*)(void*,void*))data->function)(data->arg[0],data->arg[1]);break;
+		case	3: ((int (*)(void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2]);break;
+		case	4: ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
+		case	5: ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
+		case	6: ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
+	}
+	return 0;
+}
+
+int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
+{
+	struct thread_call_function_sync_data *data;
+	int i;
+
+	va_list argptr;
+
+	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
+
+	if (!(data = malloc(sizeof(*data))))
+		return 0;
+	memset(data, 0, sizeof(*data));
+
+	va_start(argptr,argcount);
+
+	data->function = (int (*)(void))function;
+	data->argcount = argcount;
+
+	for (i=0; i < argcount; i++)
+		data->arg[i] = va_arg(argptr, void *);
+
+	va_end (argptr);
+
+	g_main_context_invoke(thread->context, thread_call_function_async_entry, data);
+
+	return 1;
+}
+
+/***************************************************************************************/
+
 thread_t thread_get_main(void)
 {
 	return (thread_t)&main_thread;

@@ -1793,7 +1793,7 @@ static int imap_thread_really_download_mails(void)
 					if (rm)
 					{
 						/* Now delete orphaned messages */
-						imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_remote_mails, imap_server, imap_folder);
+						imap_delete_orphan_messages(local_mail_array,num_of_local_mails,rm->remote_mail_array,rm->num_of_remote_mail, imap_server, imap_folder);
 						imap_free_remote_mailbox(rm);
 					}
 				}

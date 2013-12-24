@@ -228,7 +228,8 @@ char *sm_get_time_str(unsigned int seconds)
 *******************************************************************/
 void sm_convert_seconds(unsigned int seconds, struct tm *tm)
 {
-	memset(tm,0,sizeof(*tm));
+	time_t t = seconds;
+	localtime_r(&t, tm);
 }
 
 /******************************************************************

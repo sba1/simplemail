@@ -335,12 +335,59 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 /***************************************************************************************/
 
+gboolean thread_push_function_entry(gpointer user_data)
+{
+	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
+
+	switch (data->argcount)
+	{
+		case	0: data->function(); break;
+		case	1: ((int (*)(void*))data->function)(data->arg[0]);break;
+		case	2: ((int (*)(void*,void*))data->function)(data->arg[0],data->arg[1]);break;
+		case	3: ((int (*)(void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2]);break;
+		case	4: ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
+		case	5: ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
+		case	6: ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
+	}
+	free(data);
+	return FALSE;
+}
+
 int thread_push_function(void *function, int argcount, ...)
 {
-	int rc = 0;
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
-	return rc;
+	struct thread_call_function_sync_data *data;
+	int i;
+
+	va_list argptr;
+
+	if (!(data = malloc(sizeof(*data))))
+		return 0;
+	memset(data, 0, sizeof(*data));
+
+	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
+
+	va_start(argptr,argcount);
+
+	data->function = (int (*)(void))function;
+	data->argcount = argcount;
+	data->sync_cond = g_cond_new();
+	data->sync_mutex = g_mutex_new();
+
+	assert(data->sync_cond);
+	assert(data->sync_mutex);
+
+	for (i=0; i < argcount; i++)
+		data->arg[i] = va_arg(argptr, void *);
+
+	va_end (argptr);
+
+
+	GSource *s = g_timeout_source_new(1);
+	g_source_set_callback(s, thread_push_function_entry, data, NULL);
+	g_source_attach(s, thread_get()->context);
+	g_source_unref(s);
+
+	return 1;
 }
 
 /***************************************************************************************/

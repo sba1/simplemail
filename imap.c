@@ -2341,6 +2341,7 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 
 	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
 	if (!(tfh = tmpfile())) return 0;
+	getcwd(path, sizeof(path));
 	if (chdir(source_dir) == -1)
 	{
 		fclose(tfh);

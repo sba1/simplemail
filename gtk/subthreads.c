@@ -29,7 +29,6 @@
 #include <sys/socket.h>
 
 #include <glib.h>
-#include <gtk/gtk.h>
 
 #include "debug.h"
 #include "lists.h"

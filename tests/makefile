@@ -78,8 +78,8 @@ $(DOVECOT_DIR)-root: $(DOVECOT_TGZ)
 .PHONY: dovecot-bin
 dovecot-bin: $(DOVECOT_DIR)-root
 
-.PHONY: dovecot
-dovecot: dovecot-bin
+.PHONY: dovecot-conf
+dovecot-conf: dovecot-bin
 	mkdir -p $(DOVECOT_DIR)-root/home/test
 	rm -Rf $(DOVECOT_DIR)-root/etc/dovecot
 	cp -R dovecot-conf -Rf $(DOVECOT_DIR)-root/etc/dovecot
@@ -95,7 +95,8 @@ dovecot: dovecot-bin
 	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
 	echo 'test:{plain}test::::$(DOVECOT_ABSDIR)-root/home/test::userdb_mail=maildir:~/Maildir' >$(DOVECOT_DIR)-root/etc/dovecot/passwd
 
-dovecot-conf: dovecot-bin
+.PHONY: dovecot-default-conf
+dovecot-default-conf: dovecot-bin
 	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot
 
 .PHONY: dovecot-start
@@ -107,7 +108,7 @@ dovecot-stop: dovecot-conf
 	$(DOVECOT) stop
 
 .PHONY: imap-testsuite
-imap-testsuite: dovecot imap2_unittest
+imap-testsuite: dovecot-conf imap2_unittest
 	-$(DOVECOT) stop
 	$(DOVECOT)
 	sleep 2
@@ -119,7 +120,7 @@ MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
 
 # run template
 define run.tmpl
-run-$(1): $(1) $(if $(findstring imap,$(1)), dovecot)
+run-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
 	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
 	$(if $(findstring imap,$(1)), $(DOVECOT))
 	./$$<
@@ -133,7 +134,7 @@ $(foreach testexe,$(TESTEXES), \
 
 # memleaks template
 define memleak.tmpl
-memleaks-$(1): $(1) $(if $(findstring imap,$(1)), dovecot)
+memleaks-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
 	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
 	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML
@@ -155,7 +156,7 @@ memleaks: $(MEMLEAKS_TARGETS)
 
 # helgrind template
 define helgrind.tmpl
-helgrind-$(1): $(1) $(if $(findstring imap,$(1)), dovecot)
+helgrind-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
 	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
 	$(if $(findstring imap,$(1)), $(DOVECOT))
 ifdef USE_VALGRIND_XML

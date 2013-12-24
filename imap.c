@@ -1776,6 +1776,7 @@ static int imap_thread_really_download_mails(void)
 					pm->done(pm);
 					progmon_delete(pm);
 				}
+				free(local_mail_array);
 			} else folders_unlock();
 		} else folders_unlock();
 	}

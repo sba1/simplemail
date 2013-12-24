@@ -165,6 +165,8 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
 {
 	int i,j;
 
+	SM_ENTER;
+
 	i = j = 0;
 	while (i<num_of_local_mails && j<num_remote_mails)
 	{
@@ -190,6 +192,8 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
 		unsigned int local_uid = local_mail_array[i].uid;
 		if (local_uid) thread_call_parent_function_sync(NULL,callback_delete_mail_by_uid,4,imap_server->login,imap_server->name,imap_folder,local_uid);
 	}
+
+	SM_LEAVE;
 }
 
 

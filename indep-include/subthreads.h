@@ -34,6 +34,9 @@ int init_threads(void);
 
 /**
  * Cleanup the thread system. Will abort every thread.
+ *
+ * @todo there should be a separate abort_threads() function which
+ *   aborts all threads (and disallows the creation of new ones)
  */
 void cleanup_threads(void);
 

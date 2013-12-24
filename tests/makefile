@@ -46,11 +46,7 @@ test-objs/%.o: ../%.c
 	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
-all: dirs files $(TESTEXES) memleaks
-
-.PHONY: dirs
-dirs:
-	mkdir -p test-objs/gtk
+all: files $(TESTEXES) memleaks
 
 .PHONY: files
 files: test-profile.tar.bz2

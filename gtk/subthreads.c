@@ -608,22 +608,8 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
-	struct ipc_message msg;
-	va_list argptr;
-
-	va_start(argptr,argcount);
-	memset(&msg,0,sizeof(msg));
-	msg.async = 1;
-	msg.function = function;
-	msg.argcount = argcount;
-	if (argcount--) msg.arg1 = va_arg(argptr, void *);
-	if (argcount--) msg.arg2 = va_arg(argptr, void *);
-	if (argcount--) msg.arg3 = va_arg(argptr, void *);
-	if (argcount--) msg.arg4 = va_arg(argptr, void *);
-	write(sockets[1],&msg,sizeof(msg));
-	va_end(argptr);
-
-	return 0;
+	fprintf(stderr,"not implemented!");
+	exit(1);
 }
 
 /***************************************************************************************/

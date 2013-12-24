@@ -57,8 +57,18 @@ void main_hide_progress(void)
 {
 }
 
+void main_set_status_text(char *txt)
+{
+	printf("%s\n", txt);
+}
+
 void progmonwnd_update(void)
 {
+}
+
+void statuswnd_set_status(char *text)
+{
+	printf("%s\n", text);
 }
 
 /*************************************************************/

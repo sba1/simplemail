@@ -109,11 +109,14 @@ SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
 
 # -------------------------------------------------------------
 
-OBJS = $(SRCS:%.c=ppc-amigaos-objs/%.o)
-AOBJS = $(ASRCS:%.S=ppc-amigaos-objs/%.o)
+OBJSDIR=ppc-amigaos-objs
+TESTOBJSDIR=ppc-amigaos-test-objs
 
-TESTOBJS = $(SRCS:%.c=ppc-amigaos-test-objs/%.o)
-TESTAOBJS = $(ASRCS:%.S=ppc-amigaos-test-objs/%.o)
+OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
+AOBJS = $(ASRCS:%.S=$(OBJSDIR)/%.o)
+
+TESTOBJS = $(SRCS:%.c=$(TESTOBJSDIR)/%.o)
+TESTAOBJS = $(ASRCS:%.S=$(TESTOBJSDIR)/%.o)
 
 all: envs dirs $(TARGET)
 
@@ -148,28 +151,28 @@ endif
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) ppc-amigaos-objs ppc-amigaos-objs/amiga-mui ppc-amigaos-test-objs ppc-amigaos-test-objs/amiga-mui
+	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
 
 # Rules for building
 $(TARGET): $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
 
-ppc-amigaos-objs/%.o: %.S
+$(OBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
-ppc-amigaos-objs/%.o: %.c
+$(OBJSDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-ppc-amigaos-test-objs/%.o: %.S
+$(TESTOBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
-ppc-amigaos-test-objs/%.o: %.c
+$(TESTOBJSDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -DCOMPILE_TEST -c $< -o $@
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET) $(OBJS) ppc-amigaos-objs ppc-amigaos-test-objs
+	$(RM) $(TARGET) $(OBJS) $(OBJSDIR) $(TESTOBJSDIR)
 
 .PHONY: install
 install: $(TARGET)

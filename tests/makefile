@@ -91,6 +91,23 @@ $(foreach testexe,$(TESTEXES), \
 .PHONY: memleaks
 memleaks: $(MEMLEAKS_TARGETS)
 
+
+# helgrind template
+define helgrind.tmpl
+helgrind-$(1): $(1)
+ifdef USE_VALGRIND_XML
+	valgrind --tool=helgrind --xml=yes --xml-file=$$@.xml ./$$<
+else
+	valgrind --tool=helgrind ./$$<
+endif
+endef
+
+# "instanciate" memleak targets
+$(foreach testexe,$(TESTEXES), \
+ $(eval $(call helgrind.tmpl,$(testexe))) \
+)
+
+
 .PHONY: clean
 clean:
 	-rm -Rf test-objs $(TESTEXES) $(addsuffix .o,$(TESTEXES))

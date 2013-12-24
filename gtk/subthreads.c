@@ -342,6 +342,8 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 	g_cond_wait(data.sync_cond, data.sync_mutex);
 	g_mutex_unlock(data.sync_mutex);
 
+	g_cond_free(data.sync_cond);
+	g_mutex_free(data.sync_mutex);
 	if (rc) *rc = data.rc;
 
 	return 0;

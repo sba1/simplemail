@@ -303,16 +303,12 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 	return 0;
 }
 
-int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+static int thread_call_function_sync_v(thread_t thread, void *function, int argcount, va_list argptr)
 {
 	struct thread_call_function_sync_data data;
 	int i;
 
-	va_list argptr;
-
 	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
-
-	va_start(argptr,argcount);
 
 	data.function = (int (*)(void))function;
 	data.argcount = argcount;
@@ -325,8 +321,6 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	for (i=0; i < argcount; i++)
 		data.arg[i] = va_arg(argptr, void *);
 
-	va_end (argptr);
-
 	g_mutex_lock(data.sync_mutex);
 
 	g_main_context_invoke(thread->context, thread_call_function_sync_entry, &data);
@@ -335,6 +329,18 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	g_mutex_unlock(data.sync_mutex);
 
 	return 0;
+}
+
+int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
+{
+	int rc;
+
+	va_list argptr;
+
+	va_start(argptr,argcount);
+	rc = thread_call_function_sync_v(thread, function, argcount, argptr);
+	va_end(argptr);
+	return rc;
 }
 
 /***************************************************************************************/

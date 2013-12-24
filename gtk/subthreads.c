@@ -70,6 +70,8 @@ struct thread_s
 	GMainLoop *main_loop;
 };
 
+/***************************************************************************************/
+
 int init_threads(void)
 {
 	if (!g_thread_supported ()) g_thread_init (NULL);
@@ -83,10 +85,14 @@ int init_threads(void)
 	return 1;
 }
 
+/***************************************************************************************/
+
 void cleanup_threads(void)
 {
 	g_mutex_free(thread_list_mutex);
 }
+
+/***************************************************************************************/
 
 int thread_parent_task_can_contiue(void)
 {
@@ -216,18 +222,14 @@ void thread_abort(thread_t thread)
 
 /***************************************************************************************/
 
-/* Call the function synchron, calls timer_callback on the calling process context */
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
 	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
 }
 
-/**************************************************************************
- Call a function in the context of the given thread synchron
+/***************************************************************************************/
 
- NOTE: Should call thread_handle()
-**************************************************************************/
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
@@ -256,10 +258,8 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	return 0;
 }
 
-/**************************************************************************
- Waits until aborted and calls timer_callback periodically. It's possible
- to execute functions on the threads context while in this function.
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct thread_s *t;
@@ -281,10 +281,8 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 	return 0;
 }
 
-/**************************************************************************
- Pusges an function call in the function queue of the callers task context.
- Return 1 for success else 0.
-**************************************************************************/
+/***************************************************************************************/
+
 int thread_push_function(void *function, int argcount, ...)
 {
 	int rc = 0;
@@ -293,6 +291,7 @@ int thread_push_function(void *function, int argcount, ...)
 	return rc;
 }
 
+/***************************************************************************************/
 
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
@@ -314,6 +313,8 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	return msg.rc;
 }
 
+/***************************************************************************************/
+
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
 	struct ipc_message msg;
@@ -334,7 +335,8 @@ int thread_call_parent_function_async(void *function, int argcount, ...)
 	return 0;
 }
 
-/* Call the function asynchron and duplicate the first argument which us threaded at a string */
+/***************************************************************************************/
+
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
 	struct ipc_message msg;
@@ -355,11 +357,14 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	return 0;
 }
 
+/***************************************************************************************/
+
 int thread_aborted(void)
 {
 	return 0;
 }
 
+/***************************************************************************************/
 
 struct semaphore_s
 {

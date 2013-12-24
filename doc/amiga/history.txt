@@ -1,3 +1,8 @@
+Version 0.40 (26th beta) - released on 2013/12/24
+   - Improved unit test framework
+   - Stability improvements of the IMAP client
+   - Fixed several memory leaks
+
 Version 0.39 (25th beta) - released on 2012/12/24
    - Filter rules may be created now from attributes common in multiple mails
    - Supports ATTACHMENT/K/M argument for both the command line and

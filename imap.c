@@ -667,16 +667,18 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 							{
 								int pos = 0;
 
-								headers = malloc(todownload+1);
-								headers[todownload]=0;
-
-								while (todownload)
+								if ((headers = malloc(todownload+1)))
 								{
-									int dl;
-									dl = tcp_read(conn,headers + pos,todownload);
-									if (dl == -1 || !dl) break;
-									todownload -= dl;
-									pos += dl;
+									headers[todownload]=0;
+
+									while (todownload)
+									{
+										int dl;
+										dl = tcp_read(conn,headers + pos,todownload);
+										if (dl == -1 || !dl) break;
+										todownload -= dl;
+										pos += dl;
+									}
 								}
 							}
 						}

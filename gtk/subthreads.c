@@ -230,31 +230,73 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 
 /***************************************************************************************/
 
+#define THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS 6
+
+struct thread_call_function_sync_data
+{
+	int (*function)(void);
+	int argcount;
+	void *arg[THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS];
+
+	GCond *sync_cond;
+	GMutex *sync_mutex;
+};
+
+/* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
+ * work depending on the ABI
+ */
+static gboolean thread_call_function_sync_entry(gpointer user_data)
+{
+	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
+
+	switch (data->argcount)
+	{
+		case	0: data->function(); break;
+		case	1: ((int (*)(void*))data->function)(data->arg[0]);break;
+		case	2: ((int (*)(void*,void*))data->function)(data->arg[0],data->arg[1]);break;
+		case	3: ((int (*)(void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2]);break;
+		case	4: ((int (*)(void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3]);break;
+		case	5: ((int (*)(void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4]);break;
+		case	6: ((int (*)(void*,void*,void*,void*,void*,void*))data->function)(data->arg[0],data->arg[1],data->arg[2],data->arg[3],data->arg[4],data->arg[5]);break;
+	}
+	g_mutex_lock(data->sync_mutex);
+	g_cond_signal(data->sync_cond);
+	g_mutex_unlock(data->sync_mutex);
+
+	return 0;
+}
+
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-//	exit(1);
+	struct thread_call_function_sync_data data;
+	int i;
 
-/*	int rc;
-	void *arg1,*arg2,*arg3,*arg4;
 	va_list argptr;
+
+	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
 	va_start(argptr,argcount);
 
-	arg1 = va_arg(argptr, void *);
-	arg2 = va_arg(argptr, void *);
-	arg3 = va_arg(argptr, void *);
-	arg4 = va_arg(argptr, void *);
+	data.function = (int (*)(void))function;
+	data.argcount = argcount;
+	data.sync_cond = g_cond_new();
+	data.sync_mutex = g_mutex_new();
 
-	switch (argcount)
-	{
-		case	0: return ((int (*)(void))function)();break;
-		case	1: return ((int (*)(void*))function)(arg1);break;
-		case	2: return ((int (*)(void*,void*))function)(arg1,arg2);break;
-		case	3: return ((int (*)(void*,void*,void*))function)(arg1,arg2,arg3);break;
-		case	4: return ((int (*)(void*,void*,void*,void*))function)(arg1,arg2,arg3,arg4);break;
-	}
-*/
+	assert(data.sync_cond);
+	assert(data.sync_mutex);
+
+	for (i=0; i < argcount; i++)
+		data.arg[i] = va_arg(argptr, void *);
+
+	va_end (argptr);
+
+	g_mutex_lock(data.sync_mutex);
+
+	g_main_context_invoke(thread->context, thread_call_function_sync_entry, &data);
+
+	g_cond_wait(data.sync_cond, data.sync_mutex);
+	g_mutex_unlock(data.sync_mutex);
+
 	return 0;
 }
 

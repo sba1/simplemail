@@ -695,7 +695,7 @@ int thread_aborted(void)
 
 struct semaphore_s
 {
-	GMutex *mutex;
+	GStaticRecMutex mutex;
 };
 
 semaphore_t thread_create_semaphore(void)
@@ -703,32 +703,27 @@ semaphore_t thread_create_semaphore(void)
 	semaphore_t sem = malloc(sizeof(struct semaphore_s));
 	if (sem)
 	{
-		if (!(sem->mutex = g_mutex_new()))
-		{
-			free(sem);
-			return NULL;
-		}
+		g_static_rec_mutex_init(&sem->mutex);
 	}
 	return sem;
 }
 
 void thread_dispose_semaphore(semaphore_t sem)
 {
-	g_mutex_free(sem->mutex);
 	free(sem);
 }
 
 void thread_lock_semaphore(semaphore_t sem)
 {
-	g_mutex_lock(sem->mutex);
+	g_static_rec_mutex_lock(&sem->mutex);
 }
 
 int thread_attempt_lock_semaphore(semaphore_t sem)
 {
-	return g_mutex_trylock(sem->mutex);
+	return g_static_rec_mutex_trylock(&sem->mutex);
 }
 
 void thread_unlock_semaphore(semaphore_t sem)
 {
-	g_mutex_unlock(sem->mutex);
+	g_static_rec_mutex_unlock(&sem->mutex);
 }

@@ -196,6 +196,7 @@ static gpointer thread_add_entry(gpointer udata)
 	struct thread_s *t = tad->thread;
 
 	/* TODO: Catch errors and inform parent task */
+	t->thread = g_thread_self();
 	t->context = g_main_context_new();
 	t->main_loop = g_main_loop_new(t->context, FALSE);
 
@@ -226,7 +227,7 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	list_insert_tail(&thread_list, &t->node);
 	g_mutex_unlock(thread_list_mutex);
 
-	if ((t->thread = g_thread_create(thread_add_entry,&tad,TRUE,NULL)))
+	if ((g_thread_create(thread_add_entry,&tad,TRUE,NULL)))
 	{
 		g_mutex_lock(thread_mutex);
 		g_cond_wait(thread_cond,thread_mutex);

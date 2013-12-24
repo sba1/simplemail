@@ -229,17 +229,25 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	list_insert_tail(&thread_list, &t->node);
 	g_mutex_unlock(thread_list_mutex);
 
-	if ((g_thread_create(thread_add_entry,&tad,TRUE,NULL)))
+	g_mutex_lock(thread_mutex);
+	if (!g_thread_create(thread_add_entry,&tad,TRUE,NULL))
 	{
-		g_mutex_lock(thread_mutex);
-		while (!thread_parent_can_continue)
-			g_cond_wait(thread_cond,thread_mutex);
-		thread_parent_can_continue = 0;
-		g_mutex_unlock(thread_mutex);
-		return t;
+		g_mutex_lock(thread_list_mutex);
+		node_remove(&t->node);
+		g_mutex_unlock(thread_list_mutex);
+		free(t);
+		t = NULL;
+		goto bailout;
 	}
-	/* TODO: Remove thread */
-	return NULL;
+
+	/* Wait until we are signaled to continue */
+	while (!thread_parent_can_continue)
+		g_cond_wait(thread_cond,thread_mutex);
+	thread_parent_can_continue = 0;
+bailout:
+	g_mutex_unlock(thread_mutex);
+
+	return t;
 }
 
 /***************************************************************************************/

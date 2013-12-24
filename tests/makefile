@@ -121,8 +121,10 @@ DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
 $(DOVECOT_TGZ):
 	wget -N $(DOVECOT_URL)
 
-.PHONY: dovecot
-dovecot: $(DOVECOT_TGZ)
+$(DOVECOT_DIR)-root: $(DOVECOT_TGZ)
 	rm -Rf $(DOVECOT_DIR)
 	tar -xzf $(DOVECOT_TGZ)
 	cd $(DOVECOT_DIR); ./configure --prefix=$(shell pwd)/$(DOVECOT_DIR)-root; $(MAKE) ; $(MAKE) install
+
+.PHONY: dovecot
+dovecot: $(DOVECOT_DIR)-root

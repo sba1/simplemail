@@ -457,6 +457,9 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
 	struct thread_wait_timer_entry_data data;
 	struct thread_s *t;
+	GSource *s = NULL;
+
+	SM_ENTER;
 
 	memset(&data, 0, sizeof(data));
 
@@ -467,13 +470,19 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 
 	if (timer_callback)
 	{
-		GSource *s = g_timeout_source_new(millis);
+		s = g_timeout_source_new(millis);
 		g_source_set_callback(s, thread_wait_timer_entry, &data, NULL);
 		g_source_attach(s, t->context);
 		g_source_unref(s);
 	}
 
 	g_main_loop_run(t->main_loop);
+
+	/* Destroy the timer if there was any */
+	if (timer_callback && s)
+		g_source_destroy(s);
+
+	SM_LEAVE;
 
 	return 0;
 }

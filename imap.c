@@ -125,7 +125,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 		/* fill in the uids of the mails */
 		for (i=0;i < num_of_mails;i++)
 		{
-			if (folder->mail_info_array[i])
+			if (folder->mail_info_array[i] && folder->mail_info_array[i]->filename[0] == 'u')
 			{
 				local_mail_array[i].uid = atoi(folder->mail_info_array[i]->filename + 1);
 				local_mail_array[i].todel = mail_is_marked_as_deleted(folder->mail_info_array[i]);

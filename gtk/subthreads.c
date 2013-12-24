@@ -183,6 +183,8 @@ static gpointer thread_add_entry(gpointer udata)
 	struct thread_add_data *tad = (struct thread_add_data*)udata;
 	struct thread_s *t = tad->thread;
 
+	SM_DEBUGF(20,("New thread %p\n", t));
+
 	/* TODO: Catch errors and inform parent task */
 	t->thread = g_thread_self();
 	t->context = g_main_context_new();

@@ -76,6 +76,7 @@ static struct thread_s main_thread;
 
 int init_threads(void)
 {
+	/* TODO: Proper bailout on failure */
 	if (!g_thread_supported ()) g_thread_init (NULL);
 	if (!(thread_cond = g_cond_new())) return 0;
 	if (!(thread_mutex = g_mutex_new())) return 0;
@@ -85,6 +86,11 @@ int init_threads(void)
 	socketpair(PF_LOCAL,SOCK_DGRAM,0,sockets);
 
 	main_thread.thread = g_thread_self();
+	if (!(main_thread.context = g_main_context_new()))
+		return 0;
+	if (!(main_thread.main_loop = g_main_loop_new(main_thread.context, FALSE)))
+		return 0;
+
 	return 1;
 }
 

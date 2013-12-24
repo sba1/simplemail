@@ -504,3 +504,9 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 	return rc;
 }
 
+/***************************************************************************************/
+
+void sm_put_on_serial_line(char *txt)
+{
+	fprintf(stderr,"%s", txt);
+}

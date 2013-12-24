@@ -171,6 +171,11 @@ static gpointer thread_add_entry(gpointer udata)
 	tad->thread->main_loop = g_main_loop_new(tad->thread->context, FALSE);
 
 	tad->entry(tad->eudata);
+
+	g_mutex_lock(thread_list_mutex);
+	node_remove(&tad->thread->node);
+	g_mutex_unlock(thread_list_mutex);
+
 	return NULL;
 }
 

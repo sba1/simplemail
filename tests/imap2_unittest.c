@@ -36,6 +36,9 @@ void test_imap(void)
 	struct account *ac;
 	struct folder *f;
 
+	debug_init();
+	debug_set_level(25);
+
 	config_set_user_profile_directory("imap-profile");
 
 	CU_ASSERT(init_threads() != 0);

@@ -101,12 +101,13 @@ static int init_config(void)
 	if (profile_directory) user.directory = mystrdup(profile_directory);
 	else user.directory = mystrdup(SM_DIR);
 
+	SM_DEBUGF(10,("profile_directory=%s\n",user.directory?user.directory:"Not set"));
+
 	if (!user.directory)
 		return 0;
 	if (!(user.folder_directory = mycombinepath(user.directory,".folders")))
 		return 0;
 
-	SM_DEBUGF(10,("profile_directory=%s\n",user.directory));
 	SM_DEBUGF(10,("folder_directory=%s\n",user.folder_directory));
 
 	list_init(&user.config.account_list);

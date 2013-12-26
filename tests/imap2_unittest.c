@@ -168,15 +168,19 @@ void test_imap(void)
 	struct account *ac;
 	struct folder *f;
 
-	char *imap_profile;
+	char *imap_profile_path;
+	char *pwd;
 
 	debug_init();
 	debug_set_level(25);
 
-	imap_profile = realpath("imap-profile", NULL);
-	CU_ASSERT(imap_profile != NULL);
+	pwd = realpath(".", NULL);
+	CU_ASSERT(pwd != NULL);
 
-	config_set_user_profile_directory(imap_profile);
+	imap_profile_path = mycombinepath(pwd, "imap-profile");
+	CU_ASSERT(imap_profile_path != NULL);
+
+	config_set_user_profile_directory(imap_profile_path);
 
 	CU_ASSERT(codesets_init() != 0);
 
@@ -227,7 +231,8 @@ void test_imap(void)
 	progmon_deinit();
 	codesets_cleanup();
 
-	free(imap_profile);
+	free(imap_profile_path);
+	free(pwd);
 }
 
 /*************************************************************/

@@ -237,6 +237,7 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 	ok = index_put_document(index,20,zauberlehrling);
 	CU_ASSERT(ok != 0);
 
+	test_index_contains_all_suffixes(index, "This is a very long text.", 4);
 	test_index_contains_all_suffixes(index, zauberlehrling, 20);
 
 	ok = index_remove_document(index,4);
@@ -250,6 +251,9 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 
 	ok = index_put_document(index,32,text);
 	CU_ASSERT(ok != 0);
+
+	test_index_contains_all_suffixes(index, zauberlehrling, 20);
+	test_index_contains_all_suffixes(index, text, 32);
 
 	index_dispose(index);
 	free(text);

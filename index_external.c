@@ -404,6 +404,7 @@ static void verify_index(struct index_external *idx, int block, int level)
 static int bnode_insert_string(struct index_external *idx, int did, int offset, const char *text)
 {
 	int i;
+	int current_level;
 	int block;
 	bnode *tmp = idx->tmp;
 	struct bnode_path path;
@@ -411,8 +412,9 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 	if (!bnode_lookup(idx, text, &path))
 		return 0;
 
-	block = path.node[path.max_level].block;
-	i = path.node[path.max_level].key_index;
+	current_level = path.max_level;
+	block = path.node[current_level].block;
+	i = path.node[current_level].key_index;
 
 	bnode_read_block(idx, tmp, block);
 

@@ -231,6 +231,45 @@ struct bnode_path
 	} node[BNODE_PATH_MAX_NODES];
 };
 
+
+
+/**
+ * Find the slot with the separation key for the given text. The slot with
+ * the separation key for a given text is the slot whose value is not
+ * lexicographically smaller than the text but whose left neighbor slot value
+ * is lexicographically smaller than the text.
+ *
+ * @param idx
+ * @param tmp
+ * @param text
+ * @param out_slot
+ * @param out_directmatch
+ * @return
+ */
+static int bnode_find_separation_slot(struct index_external *idx, bnode *tmp, const char *text, int *out_slot, int *out_directmatch)
+{
+	int i;
+
+	*out_directmatch = 0;
+
+	/* Find the appropriate slot. TODO: Use binary search */
+	for (i=0; i < tmp->num_elements; i++)
+	{
+		int cmp;
+		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+		if (!bnode_compare_string(idx, e, text, &cmp))
+			return 0;
+
+		if (cmp >= 0)
+		{
+			*out_directmatch = cmp == 0;
+			break;
+		}
+	}
+	*out_slot = i;
+	return 1;
+}
+
 /**
  * Lookup the given text.
  *
@@ -254,27 +293,8 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 
 		bnode_read_block(idx, tmp, block);
 
-		/* Find the slot with the separation key for the given text. The slot with
-		 * the separation key for a given text is the slot whose value is not
-		 * lexicographically smaller than the text but whose left neighbor slot value
-		 * is lexicographically smaller than the text.
-		 *
-		 * TODO: Use binary search
-		 */
-		for (i=0; i < tmp->num_elements; i++)
-		{
-			int cmp;
-			struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
-			if (!bnode_compare_string(idx, e, text, &cmp))
-				return 0;
-
-			/* if str > text then we ascend to lchild (except if we are at a leaf, of course) */
-			if (cmp >= 0)
-			{
-				direct_match = cmp == 0;
-				break;
-			}
-		}
+		if (!bnode_find_separation_slot(idx, tmp, text, &i, &direct_match))
+			return 0;
 
 		if (i == 0) lchild = tmp->lchild;
 		else lchild = bnode_get_ith_element_of_node(idx, tmp, i - 1)->gchild;

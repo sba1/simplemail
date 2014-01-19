@@ -51,8 +51,19 @@ struct bnode_element
 {
 	int str_offset;
 	int str_len;
-	int did;
-	int gchild; /* Child containing values that are greater */
+	union
+	{
+		struct
+		{
+			int did;
+		} leaf;
+
+		/** Child containing values that are all greater or equal */
+		struct
+		{
+			int gchild;
+		} internal;
+	};
 };
 
 struct bnode_header
@@ -317,12 +328,15 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 		if (!bnode_find_separation_slot(idx, tmp, text, &i, &direct_match))
 			return 0;
 
-		if (i == 0) lchild = tmp->lchild;
-		else lchild = bnode_get_ith_element_of_node(idx, tmp, i - 1)->gchild;
-
 		path->max_level = level;
 		path->node[level].block = block;
 		path->node[level].key_index = i;
+
+		if (tmp->leaf)
+			break;
+
+		if (i == 0) lchild = tmp->lchild;
+		else lchild = bnode_get_ith_element_of_node(idx, tmp, i - 1)->internal.gchild;
 
 		if (block == lchild && !tmp->leaf)
 		{
@@ -366,7 +380,10 @@ static void dump_node_children(struct index_external *idx, bnode *node, const ch
 	printf("%s: ", prefix, node->lchild);
 	for (i=0;i<node->num_elements;i++)
 	{
-		printf("%d ",bnode_get_ith_element_of_node(idx, node, i)->gchild);
+		struct bnode_element *be;
+		be = bnode_get_ith_element_of_node(idx, node, i);
+
+		printf("%d ", node->leaf?be->leaf.did:be->internal.gchild);
 	}
 	printf("\n");
 }
@@ -421,7 +438,7 @@ static void dump_index(struct index_external *idx, int block, int level)
 			printf("\n");
 		}
 		if (!tmp->leaf)
-			dump_index(idx, e->gchild, level + 1);
+			dump_index(idx, e->internal.gchild, level + 1);
 
 		free(str);
 	}
@@ -468,7 +485,7 @@ static void verify_index(struct index_external *idx, int block, int level)
 
 
 		if (!tmp->leaf)
-			verify_index(idx, e->gchild, level + 1);
+			verify_index(idx, e->internal.gchild, level + 1);
 
 		free(str1);
 		str1 = str2;
@@ -506,7 +523,7 @@ static int count_index(struct index_external *idx, int block, int level)
 
 		e = bnode_get_ith_element_of_node(idx, tmp, i);
 		if (!tmp->leaf)
-			count += count_index(idx, e->gchild, level + 1);
+			count += count_index(idx, e->internal.gchild, level + 1);
 		count++;
 	}
 
@@ -539,7 +556,7 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 
 		e = bnode_get_ith_element_of_node(idx, tmp, i);
 		if (!tmp->leaf)
-			count += count_index_leaves(idx, e->gchild, level + 1);
+			count += count_index_leaves(idx, e->internal.gchild, level + 1);
 		else
 			count++;
 	}
@@ -571,8 +588,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 	current_level = path.max_level;
 	new_element.str_offset = offset;
 	new_element.str_len = strlen(text);
-	new_element.did = did;
-	new_element.gchild = 0;
+	new_element.leaf.did = did;
 
 	while (current_level >= 0)
 	{
@@ -615,7 +631,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 			/* Second node */
 			idx->tmp3->num_elements = idx->max_elements_per_node - start_of_2nd_node;
-			idx->tmp3->lchild = me->gchild;
+			idx->tmp3->lchild = me->internal.gchild;
 			idx->tmp3->leaf = tmp->leaf;
 			idx->tmp3->sibling = tmp->sibling;
 			memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, start_of_2nd_node), idx->tmp3->num_elements * sizeof(struct bnode_element));
@@ -636,7 +652,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 				tmp->lchild = idx->root_node;
 				tmp->leaf = 0;
 				tmp->sibling = -1;
-				me_copy.gchild = tmp3block;
+				me_copy.internal.gchild = tmp3block;
 				*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
 				bnode_clear_elements(idx, tmp, 1);
 				idx->root_node = bnode_add_block(idx, tmp);
@@ -644,7 +660,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			}
 
 			new_element = me_copy;
-			new_element.gchild = tmp3block;
+			new_element.internal.gchild = tmp3block;
 		} else
 		{
 			/* There was enough space in the block */
@@ -742,7 +758,7 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 		goto done;
 	if (cmp) goto done;
 	iter->index = index;
-	iter->did = be->did;
+	iter->did = be->leaf.did;
 	return iter;
 done:
 	bnode_free(idx, iter->node);

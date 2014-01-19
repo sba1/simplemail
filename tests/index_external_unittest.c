@@ -93,12 +93,14 @@ void test_number_of_leaves_match_inserted_strings(void)
 		rc = bnode_lookup(idx, buf, &bp);
 		CU_ASSERT(rc != 0);
 		CU_ASSERT(bp.max_level == 1);
+
+		printf("buf: %s %d\n", buf, bp.node[1].key_index);
 	}
 
 	printf("%d %d %d %d\n", count_index_leaves(idx, idx->root_node, 0), count_index(idx, idx->root_node, 0), idx->max_elements_per_node, idx->number_of_blocks);
 
 
-//	dump_index(idx, idx->root_node, 0);
+	dump_index(idx, idx->root_node, 0);
 
 	index_external_dispose(&idx->index);
 }

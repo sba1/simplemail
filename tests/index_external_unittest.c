@@ -50,6 +50,20 @@ void test_number_of_leaves_match_inserted_strings(void)
 	}
 
 	CU_ASSERT(count_index_leaves(idx, idx->root_node, 0) == idx->max_elements_per_node+1);
+
+	for (i=0;i<idx->max_elements_per_node+1;i++)
+	{
+		char buf[16];
+		struct bnode_path bp;
+
+		snprintf(buf, sizeof(buf), "%03dtest", i);
+
+		memset(&bp, 0, sizeof(bp));
+		rc = bnode_lookup(idx, buf, &bp);
+		CU_ASSERT(rc != 0);
+		CU_ASSERT(bp.max_level == 1);
+	}
+
 	printf("%d %d %d %d\n", count_index_leaves(idx, idx->root_node, 0), count_index(idx, idx->root_node, 0), idx->max_elements_per_node, idx->number_of_blocks);
 
 

@@ -254,9 +254,6 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 
 		bnode_read_block(idx, tmp, block);
 
-		path->max_level = level;
-		path->node[level].block = block;
-
 		/* Find the slot with the separation key for the given text. The slot with
 		 * the separation key for a given text is the slot whose value is not
 		 * lexicographically smaller than the text but whose left neighbor slot value
@@ -282,6 +279,8 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 		if (i == 0) lchild = tmp->lchild;
 		else lchild = bnode_get_ith_element_of_node(idx, tmp, i - 1)->gchild;
 
+		path->max_level = level;
+		path->node[level].block = block;
 		path->node[level].key_index = i;
 
 		/* Leave early if this was a direct match with a separation key.

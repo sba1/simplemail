@@ -263,6 +263,20 @@ static void bnode_clear_elements(struct index_external *idx, bnode *n, int start
 }
 
 /**
+ * Dump the children of the given nodes.
+ */
+static void dump_node_children(struct index_external *idx, bnode *node, const char *prefix)
+{
+	int i;
+	printf("%s: ", prefix, node->lchild);
+	for (i=0;i<node->num_elements;i++)
+	{
+		printf("%d ",bnode_get_ith_element_of_node(idx, node, i)->gchild);
+	}
+	printf("\n");
+}
+
+/**
  * Inserts the given string into the bnode tree.
  *
  * @param idx

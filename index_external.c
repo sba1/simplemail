@@ -248,25 +248,35 @@ struct bnode_path
  */
 static int bnode_find_separation_slot(struct index_external *idx, bnode *tmp, const char *text, int *out_slot, int *out_directmatch)
 {
-	int i;
+	int l, h, hcmp;
 
-	*out_directmatch = 0;
+	/* Variable l is inclusive, h is exclusive */
+	l = 0;
+	h = tmp->num_elements;
+	hcmp = 1;
 
-	/* Find the appropriate slot. TODO: Use binary search */
-	for (i=0; i < tmp->num_elements; i++)
+	while (l < h)
 	{
 		int cmp;
-		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+		int m = (l + h)/2;
+
+		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, m);
 		if (!bnode_compare_string(idx, e, text, &cmp))
 			return 0;
 
-		if (cmp >= 0)
+		/* < results in getting the first element. We could also use <= to get the last element */
+		if (cmp < 0)
 		{
-			*out_directmatch = cmp == 0;
-			break;
+			l = m + 1;
+		} else
+		{
+			h = m;
+			hcmp = cmp;
 		}
 	}
-	*out_slot = i;
+
+	*out_slot = h;
+	*out_directmatch = hcmp == 0;
 	return 1;
 }
 

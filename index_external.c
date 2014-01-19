@@ -448,9 +448,6 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		/* First node */
 		tmp->num_elements = median - 1;
 		tmp->leaf = 1;
-		bnode_clear_elements(idx, tmp, median);
-		/* This should be done as late as possible */
-		bnode_write_block(idx, tmp, block);
 
 		/* Second node */
 		idx->tmp3->num_elements = idx->max_elements_per_node - median;
@@ -458,6 +455,10 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median), idx->tmp3->num_elements * sizeof(struct bnode_element));
 		bnode_clear_elements(idx, tmp, idx->tmp3->num_elements);
 		int tmp3block = bnode_add_block(idx, idx->tmp3);
+
+		/* This should be done as late as possible */
+		bnode_clear_elements(idx, tmp, median);
+		bnode_write_block(idx, tmp, block);
 
 		if (block == idx->root_node)
 		{

@@ -287,7 +287,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		 * insert the entry now */
 		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
 
-		memmove(e + 1, e, (idx->max_elements_per_node - tmp->num_elements - 1) * sizeof(struct bnode_element));
+		memmove(e + 1, e, (tmp->num_elements - i) * sizeof(struct bnode_element));
 
 		/* New element */
 		e->str_offset = offset;

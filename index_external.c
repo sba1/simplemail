@@ -704,7 +704,7 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 	return nd;
 }
 
-void index_external_dispose(struct index *index)
+static void index_external_dispose(struct index *index)
 {
 	struct document_node *d;
 	struct index_external *idx;
@@ -719,7 +719,7 @@ void index_external_dispose(struct index *index)
 	free(idx);
 }
 
-struct index *index_external_create(const char *filename)
+static struct index *index_external_create(const char *filename)
 {
 	struct index_external *idx;
 	char buf[380];

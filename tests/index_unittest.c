@@ -183,6 +183,31 @@ static int test_index_naive_callback2(int did, void *userdata)
 	CU_ASSERT(0);
 }
 
+/*******************************************************/
+
+static int test_index_contains_all_suffixes_callback(int did, void *userdata)
+{
+	(*(int*)userdata) = 1;
+}
+
+static void test_index_contains_all_suffixes(struct index *index, const char *text, int did)
+{
+	int i;
+	int textl = strlen(text);
+	for (i=0; i<textl; i++)
+	{
+		int called = 0;
+		index_find_documents(index, test_index_contains_all_suffixes_callback, &called, 1, text + i);
+		CU_ASSERT(called == 1);
+		if (called != 1)
+		{
+			fprintf(stderr, "Offset %d couldn't be found\n", i);
+		}
+	}
+}
+
+/*******************************************************/
+
 static void test_index_for_algorithm(struct index_algorithm *alg, const char *name)
 {
 	struct index *index;
@@ -203,6 +228,8 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 
 	ok = index_put_document(index,20,zauberlehrling);
 	CU_ASSERT(ok != 0);
+
+	test_index_contains_all_suffixes(index, zauberlehrling, 20);
 
 	text = read_file_contents("of-human-bondage.txt");
 	CU_ASSERT(text != NULL);

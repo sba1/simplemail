@@ -350,22 +350,27 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			int lchild;
 
 			/* Read root node, we want to add the new element */
-			bnode_read_block(idx, tmp, 0);
+			bnode_read_block(idx, tmp, idx->root_node);
 
 			lchild = tmp->lchild;
 			i = 0;
 
-			/* Find the separation key whose left child points to the block */
-			for (i=0; i<tmp->num_elements && lchild != block; i++);
+			/* Find the separation key whose left child points to the splitted block */
+			for (i=0; i<tmp->num_elements && lchild != block; i++)
+				lchild = bnode_get_ith_element_of_node(idx, tmp, i)->gchild;
 
-			if (i==tmp->num_elements)
+			if (tmp->num_elements == idx->max_elements_per_node)
 			{
 				fprintf(stderr, "Splitting a non-direct-child of the root node %d is not supported for now!\n", block);
 				exit(1);
 			}
 
-			fprintf(stderr, "Splitting the non-root node %d is not supported for now!\n", block);
-			exit(1);
+			struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+			memmove(e + 1, e, (tmp->num_elements - i) * sizeof(struct bnode_element));
+			*e = me_copy;
+			e->gchild = tmp3block;
+			tmp->num_elements++;
+			bnode_write_block(idx, tmp, idx->root_node);
 		}
 	} else
 	{

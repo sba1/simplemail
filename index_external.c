@@ -475,6 +475,8 @@ int index_external_put_document(struct index *index, int did, const char *text)
 	idx = (struct index_external*)index;
 
 	/* Determine position and write text */
+	if (fseek(idx->string_file, 0, SEEK_END) != 0)
+		return 0;
 	long offset = ftell(idx->string_file);
 	fputs(text, idx->string_file);
 

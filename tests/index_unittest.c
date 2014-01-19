@@ -226,26 +226,26 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 	ok = index_put_document(index,12,"This is a short text.");
 	CU_ASSERT(ok != 0);
 
+	nd = index_find_documents(index,test_index_naive_callback,NULL,1,"very");
+	CU_ASSERT(test_index_naive_callback_called == 1);
+	CU_ASSERT(nd == 1);
+
 	ok = index_put_document(index,20,zauberlehrling);
 	CU_ASSERT(ok != 0);
 
 	test_index_contains_all_suffixes(index, zauberlehrling, 20);
-
-	text = read_file_contents("of-human-bondage.txt");
-	CU_ASSERT(text != NULL);
-
-	ok = index_put_document(index,32,text);
-	CU_ASSERT(ok != 0);
-
-	nd = index_find_documents(index,test_index_naive_callback,NULL,1,"very");
-	CU_ASSERT(test_index_naive_callback_called == 1);
-	CU_ASSERT(nd == 1);
 
 	ok = index_remove_document(index,4);
 	CU_ASSERT(ok != 0);
 
 	nd = index_find_documents(index,test_index_naive_callback2,NULL,1,"very");
 	CU_ASSERT(nd == 0);
+
+	text = read_file_contents("of-human-bondage.txt");
+	CU_ASSERT(text != NULL);
+
+	ok = index_put_document(index,32,text);
+	CU_ASSERT(ok != 0);
 
 	index_dispose(index);
 	free(text);

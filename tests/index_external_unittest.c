@@ -32,14 +32,16 @@ void test_number_of_leaves_match_inserted_strings(void)
 	struct index_external *idx;
 	int rc;
 	int i;
-	long offset;
+	int number_of_distinct_strings;
 
 	idx = (struct index_external *)index_external_create_with_opts("/tmp/index_external_unittest_index.dat", 512);
 	CU_ASSERT(idx != NULL);
 
-	for (i=0;i<idx->max_elements_per_node+1;i++)
+	number_of_distinct_strings = idx->max_elements_per_node + 1;
+	for (i=0;i<number_of_distinct_strings;i++)
 	{
 		char buf[16];
+		long offset;
 		snprintf(buf, sizeof(buf), "%03dtest", i);
 
 		rc = index_external_append_string(idx, buf, &offset);
@@ -49,9 +51,9 @@ void test_number_of_leaves_match_inserted_strings(void)
 		CU_ASSERT(rc != 0);
 	}
 
-	CU_ASSERT(count_index_leaves(idx, idx->root_node, 0) == idx->max_elements_per_node+1);
+	CU_ASSERT(count_index_leaves(idx, idx->root_node, 0) == number_of_distinct_strings);
 
-	for (i=0;i<idx->max_elements_per_node+1;i++)
+	for (i=0;i<number_of_distinct_strings;i++)
 	{
 		char buf[16];
 		struct bnode_path bp;

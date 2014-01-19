@@ -192,13 +192,16 @@ static int bnode_read_block(struct index_external *idx, bnode *node, int address
 static char *bnode_read_string(struct index_external *idx, struct bnode_element *element)
 {
 	char *str;
+	int str_len = element->str_len;
+	if (str_len > idx->max_substring_len)
+		str_len = idx->max_substring_len;
 
 	fseek(idx->string_file, element->str_offset, SEEK_SET);
-	if (!(str = malloc(element->str_len + 1)))
+	if (!(str = malloc(str_len + 1)))
 		return 0;
-	if (fread(str, 1, element->str_len, idx->string_file) != element->str_len)
+	if (fread(str, 1, str_len, idx->string_file) != str_len)
 		return 0;
-	str[element->str_len] = 0;
+	str[str_len] = 0;
 	return str;
 }
 
@@ -216,8 +219,8 @@ static int bnode_compare_string(struct index_external *idx, struct bnode_element
 {
 	char *str = bnode_read_string(idx, e);
 	if (!str) return 0;
+	*out_cmp = strncmp(str, text, idx->max_substring_len);
 
-	*out_cmp = strcmp(str, text);
 	free(str);
 	return 1;
 }
@@ -644,13 +647,16 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 	if (!bnode_read_block(idx, tmp, block))
 		return 0;
 
+	if (text_len > idx->max_substring_len)
+		text_len = idx->max_substring_len;
+
 	for (;i<tmp->num_elements;i++)
 	{
 		int cmp;
 		be = bnode_get_ith_element_of_node(idx, tmp, i);
 		str = bnode_read_string(idx, be);
 		if (!str) return 0;
-		cmp = strncmp(text, str, strlen(text));
+		cmp = strncmp(text, str, text_len);
 		free(str);
 		if (!cmp)
 		{

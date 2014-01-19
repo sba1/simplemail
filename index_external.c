@@ -314,7 +314,24 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			bnode_write_block(idx, tmp, 0);
 		} else
 		{
-			fprintf(stderr, "Splitting the non-root node is not supported for now!\n");
+			int lchild;
+
+			/* Read root node, we want to add the new element */
+			bnode_read_block(idx, tmp, 0);
+
+			lchild = tmp->lchild;
+			i = 0;
+
+			/* Find the separation key whose left child points to the block */
+			for (i=0; i<tmp->num_elements && lchild != block; i++);
+
+			if (i==tmp->num_elements)
+			{
+				fprintf(stderr, "Splitting a non-direct-child of the root node %d is not supported for now!\n", block);
+				exit(1);
+			}
+
+			fprintf(stderr, "Splitting the non-root node %d is not supported for now!\n", block);
 			exit(1);
 		}
 	} else

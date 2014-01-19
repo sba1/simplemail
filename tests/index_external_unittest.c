@@ -82,6 +82,7 @@ void test_number_of_leaves_match_inserted_strings(void)
 
 	CU_ASSERT(count_index_leaves(idx, idx->root_node, 0) == 2 * number_of_distinct_strings);
 
+	/* Simple Lookups */
 	for (i=0;i<number_of_distinct_strings;i++)
 	{
 		char buf[16];

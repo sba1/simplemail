@@ -322,11 +322,6 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 		path->node[level].block = block;
 		path->node[level].key_index = i;
 
-		/* Leave early if this was a direct match with a separation key.
-		 * In this case, we do not need to descend to the child */
-		if (direct_match)
-			goto out;
-
 		if (block == lchild && !tmp->leaf)
 		{
 			fprintf(stderr, "Endless loop detected!\n");
@@ -604,12 +599,12 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 		if (tmp->num_elements == idx->max_elements_per_node)
 		{
-			/* Now we split the node into two nodes. We keep the median out as we
+			/* Now we split the node into two nodes. We keep the median in but also
 			 * insert it as a separation value for the two nodes on the parent.
 			 */
 
 			int median = tmp->num_elements / 2;
-			int start_of_2nd_node = median + 1;
+			int start_of_2nd_node = median;
 			struct bnode_element *me = bnode_get_ith_element_of_node(idx, tmp, median);
 			struct bnode_element me_copy = *me;
 

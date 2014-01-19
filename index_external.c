@@ -43,14 +43,15 @@ struct bnode_element
 {
 	int str_offset;
 	int str_len;
-	int child;
 	int did;
+	int gchild; /* Child containing values that are greater */
 };
 
 struct bnode_header
 {
 	int leaf;
 	int num_elements; /* Number of following bnode_elements */
+	int lchild; /* Child containing keys/strings that are all (lexicographical) smaller */
 };
 
 typedef struct bnode_header bnode;
@@ -68,6 +69,8 @@ struct index_external
 	FILE *index_file;
 
 	bnode *tmp;
+	bnode *tmp2;
+	bnode *tmp3;
 };
 
 /**
@@ -80,10 +83,10 @@ static bnode *bnode_create(struct index_external *idx)
 {
 	struct bnode_header *bnode;
 
-	if (!(bnode = malloc(idx->block_size)))
+	if (!(bnode = malloc(idx->block_size + sizeof(struct bnode_element))))
 		return NULL;
 
-	memset(bnode, 0, idx->block_size);
+	memset(bnode, 0, idx->block_size + sizeof(struct bnode_element));
 	return bnode;
 }
 
@@ -210,8 +213,10 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		free(str);
 	}
 
-	if (tmp->num_elements < idx->max_elements_per_node)
+	if (1)
 	{
+		/* Recall that we allocate one more entry than it would fit in the block, so we surly can
+		 * insert the entry now */
 		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
 
 		memmove(e + 1, e, (idx->max_elements_per_node - tmp->num_elements - 1) * sizeof(struct bnode_element));
@@ -219,11 +224,41 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		/* New element */
 		e->str_offset = offset;
 		e->str_len = strlen(text);
-		e->child = 0;
+		e->gchild = 0;
 		e->did = did;
 		tmp->num_elements++;
-	} else
+	}
+
+	if (tmp->num_elements == idx->max_elements_per_node)
 	{
+		/* Now we split the node into two nodes. We keep the median out as we
+		 * insert it as a separation value for the two nodes on the parent.
+		 */
+
+		int median = tmp->num_elements / 2;
+		struct bnode_element *me = bnode_get_ith_element_of_node(idx, tmp, median);
+		struct bnode_element me_copy = *me;
+
+		/* First node */
+		idx->tmp2->num_elements = median - 1;
+		idx->tmp2->leaf = 1;
+		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp2, 0), bnode_get_ith_element_of_node(idx, tmp, 0), idx->tmp2->num_elements * sizeof(struct bnode_element));
+		int tmp2block = bnode_add_block(idx, idx->tmp2);
+
+		/* Second node */
+		idx->tmp3->num_elements = tmp->num_elements - median;
+		idx->tmp3->leaf = 1;
+		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median), idx->tmp3->num_elements * sizeof(struct bnode_element));
+		int tmp3block = bnode_add_block(idx, idx->tmp3);
+
+		/* Insert separation value into the parent (which is the root for now) */
+		tmp->num_elements = 1;
+		tmp->lchild = tmp2block;
+		tmp->leaf = 0;
+		me_copy.gchild = tmp3block;
+		*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
+		bnode_write_block(idx, tmp, 0);
+
 		fprintf(stderr,"Splitting is not implemented yet!\n");
 		exit(1);
 		/* Split node and allocate a new bnode */
@@ -263,6 +298,21 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 	}
 }
 
+void index_external_dispose(struct index *index)
+{
+	struct document_node *d;
+	struct index_external *idx;
+
+	idx = (struct index_external*)index;
+
+	if (idx->string_file) fclose(idx->string_file);
+	if (idx->index_file) fclose(idx->index_file);
+	if (idx->tmp3) bnode_free(idx, idx->tmp3);
+	if (idx->tmp2) bnode_free(idx, idx->tmp2);
+	if (idx->tmp) bnode_free(idx, idx->tmp);
+	free(idx);
+}
+
 struct index *index_external_create(const char *filename)
 {
 	struct index_external *idx;
@@ -277,51 +327,29 @@ struct index *index_external_create(const char *filename)
 	idx->max_elements_per_node = (idx->block_size - sizeof(struct bnode_header)) / sizeof(struct bnode_element);
 
 	if (!(idx->tmp = bnode_create(idx)))
-	{
-		free(idx);
-		return NULL;
-	}
+		goto bailout;
+
+	if (!(idx->tmp2 = bnode_create(idx)))
+		goto bailout;
+
+	if (!(idx->tmp3 = bnode_create(idx)))
+		goto bailout;
 
 	sm_snprintf(buf, sizeof(buf), "%s.index", filename);
 	if (!(idx->index_file = fopen(buf, "w+b")))
-	{
-		bnode_free(idx, idx->tmp);
-		free(idx);
-		return NULL;
-	}
+		goto bailout;
 
 	sm_snprintf(buf, sizeof(buf), "%s.strings", filename);
 	if (!(idx->string_file = fopen(buf, "w+b")))
-	{
-		fclose(idx->index_file);
-		bnode_free(idx, idx->tmp);
-		free(idx);
-		return NULL;
-	}
+		goto bailout;
 
-	if (!(bnode_write_block(idx, idx->tmp, 0)))
-	{
-		fclose(idx->string_file);
-		fclose(idx->index_file);
-		bnode_free(idx, idx->tmp);
-		free(idx);
-		return NULL;
-
-	}
+	idx->tmp->leaf = 1;
+	bnode_add_block(idx, idx->tmp);
 
 	return &idx->index;
-}
-
-void index_external_dispose(struct index *index)
-{
-	struct document_node *d;
-	struct index_external *idx;
-
-	idx = (struct index_external*)index;
-
-	fclose(idx->index_file);
-	fclose(idx->string_file);
-	free(index);
+bailout:
+	index_external_dispose(&idx->index);
+	return NULL;
 }
 
 int index_external_put_document(struct index *index, int did, const char *text)

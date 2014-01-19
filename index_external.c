@@ -488,24 +488,35 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 static int bnode_find_string(struct index_external *idx, const char *text, int (*callback)(int did, void *userdata), void *userdata)
 {
 	int i;
+	int block;
+	char *str;
 	bnode *tmp = idx->tmp;
+	struct bnode_element *be;
 	int text_len = strlen(text);
+	int nd = 0;
 
-	bnode_read_block(idx, tmp, 0);
+	if (!bnode_lookup(idx, text, &block, &i))
+		return 0;
 
-	/* Find the appropriate slot. TODO: Use binary search */
-	for (i=0; i < tmp->num_elements; i++)
+	if (!bnode_read_block(idx, tmp, block))
+		return 0;
+
+	for (;i<tmp->num_elements;i++)
 	{
-		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
-		if (text_len > tmp->num_elements)
-			continue;
-		char *str = bnode_read_string(idx, e);
+		int cmp;
+		be = bnode_get_ith_element_of_node(idx, tmp, i);
+		str = bnode_read_string(idx, be);
 		if (!str) return 0;
-		if (!strncmp(str, text, text_len))
+		cmp = strncmp(text, str, strlen(text));
+		if (!cmp)
 		{
-			callback(e->did, userdata);
+			callback(be->did, userdata);
+			nd++;
 		}
+		else
+			break;
 	}
+	return nd;
 }
 
 void index_external_dispose(struct index *index)
@@ -599,17 +610,17 @@ int index_external_find_documents(struct index *index, int (*callback)(int did, 
 
 	idx = (struct index_external*)index;
 
+	if (num_substrings != 1)
+	{
+		fprintf(stderr, "Searching with only one sub string is supported for now.\n");
+		exit(-1);
+	}
+
 	va_copy(substrings_copy,substrings);
 
 	for (i=0;i<num_substrings;i++)
 	{
-		bnode_find_string(idx, va_arg(substrings_copy, char *), callback, userdata);
-//		bnode_insert_string(
-//		if (!strstr(d->txt,va_arg(substrings_copy,char *)))
-//		{
-//			take = 0;
-//			break;
-//		}
+		nd = bnode_find_string(idx, va_arg(substrings_copy, char *), callback, userdata);
 	}
 
 	va_end(substrings_copy);

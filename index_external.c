@@ -443,105 +443,92 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 	int block;
 	bnode *tmp = idx->tmp;
 	struct bnode_path path;
+	struct bnode_element new_element;
 
 	if (!bnode_lookup(idx, text, &path))
 		return 0;
 
 	current_level = path.max_level;
-	block = path.node[current_level].block;
-	i = path.node[current_level].key_index;
+	new_element.str_offset = offset;
+	new_element.str_len = strlen(text);
+	new_element.did = did;
+	new_element.gchild = 0;
 
-	bnode_read_block(idx, tmp, block);
-
-	if (1)
+	while (current_level >= 0)
 	{
+		struct bnode_element *e;
+
+		block = path.node[current_level].block;
+		i = path.node[current_level].key_index;
+
+		bnode_read_block(idx, tmp, block);
+
+		if (!tmp->leaf && current_level == path.max_level)
+		{
+			fprintf(stderr, "Cannot insert into a non-leaf\n");
+			exit(1);
+		}
+
 		/* Recall that we allocate in our temps one more entry than it would fit in the block, so we surly can
 		 * insert the entry now */
-		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+		e = bnode_get_ith_element_of_node(idx, tmp, i);
 
 		memmove(e + 1, e, (tmp->num_elements - i) * sizeof(struct bnode_element));
 
 		/* New element */
-		e->str_offset = offset;
-		e->str_len = strlen(text);
-		e->gchild = 0;
-		e->did = did;
+		*e = new_element;
 		tmp->num_elements++;
-	}
 
-	if (tmp->num_elements == idx->max_elements_per_node)
-	{
-		/* Now we split the node into two nodes. We keep the median out as we
-		 * insert it as a separation value for the two nodes on the parent.
-		 */
-
-		int median = tmp->num_elements / 2;
-		struct bnode_element *me = bnode_get_ith_element_of_node(idx, tmp, median);
-		struct bnode_element me_copy = *me;
-
-		/* First node */
-		tmp->num_elements = median - 1;
-		tmp->leaf = 1;
-
-		/* Second node */
-		idx->tmp3->num_elements = idx->max_elements_per_node - median;
-		idx->tmp3->leaf = 1;
-		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median), idx->tmp3->num_elements * sizeof(struct bnode_element));
-		bnode_clear_elements(idx, idx->tmp3, idx->tmp3->num_elements);
-		int tmp3block = bnode_add_block(idx, idx->tmp3);
-
-		/* This should be done as late as possible */
-		bnode_clear_elements(idx, tmp, median);
-		bnode_write_block(idx, tmp, block);
-
-		if (block == idx->root_node)
+		if (tmp->num_elements == idx->max_elements_per_node)
 		{
-			/* Create a new root block if the root was getting full */
-			tmp->num_elements = 1;
-			tmp->lchild = idx->root_node;
-			tmp->leaf = 0;
-			me_copy.gchild = tmp3block;
-			*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
-			bnode_clear_elements(idx, tmp, 1);
-			idx->root_node = bnode_add_block(idx, tmp);
-		} else
-		{
-			int lchild;
+			/* Now we split the node into two nodes. We keep the median out as we
+			 * insert it as a separation value for the two nodes on the parent.
+			 */
 
-			/* Read root node, we want to add the new element */
-			bnode_read_block(idx, tmp, idx->root_node);
+			int median = tmp->num_elements / 2;
+			struct bnode_element *me = bnode_get_ith_element_of_node(idx, tmp, median);
+			struct bnode_element me_copy = *me;
 
-			lchild = tmp->lchild;
-			i = 0;
-			/* Find the separation key whose left child points to the splitted block */
-			for (i=0; i<tmp->num_elements && lchild != block; i++)
-				lchild = bnode_get_ith_element_of_node(idx, tmp, i)->gchild;
+			/* First node */
+			tmp->num_elements = median - 1;
 
-			assert(lchild == path.node[current_level].block);
-			assert(i == path.node[current_level - 1].key_index);
+			/* Second node */
+			idx->tmp3->num_elements = idx->max_elements_per_node - (median + 1);
 
-			lchild = path.node[current_level].block;
-			i = path.node[current_level - 1].key_index;
+			idx->tmp3->leaf = tmp->leaf;
+			memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median + 1), idx->tmp3->num_elements * sizeof(struct bnode_element));
+			bnode_clear_elements(idx, idx->tmp3, idx->tmp3->num_elements);
+			int tmp3block = bnode_add_block(idx, idx->tmp3);
 
-			if (tmp->num_elements == idx->max_elements_per_node)
+			/* This should be done as late as possible */
+			bnode_clear_elements(idx, tmp, median);
+			bnode_write_block(idx, tmp, block);
+
+			if (block == idx->root_node)
 			{
-				fprintf(stderr, "Splitting a non-direct-child of the root node %d is not supported for now!\n", block);
-				exit(1);
+				assert(current_level == 0);
+
+				/* Create a new root block if the root was getting full */
+				tmp->num_elements = 1;
+				tmp->lchild = idx->root_node;
+				tmp->leaf = 0;
+				me_copy.gchild = tmp3block;
+				*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
+				bnode_clear_elements(idx, tmp, 1);
+				idx->root_node = bnode_add_block(idx, tmp);
+				break;
 			}
 
-			struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
-			memmove(e + 1, e, (tmp->num_elements - i) * sizeof(struct bnode_element));
-			*e = me_copy;
-			e->gchild = tmp3block;
-			tmp->num_elements++;
-			bnode_write_block(idx, tmp, idx->root_node);
+			new_element = me_copy;
+			new_element.gchild = tmp3block;
+		} else
+		{
+			/* There was enough space in the block */
+			bnode_write_block(idx, tmp, block);
+			break;
 		}
-	} else
-	{
-		/* There was enough space in the block, so we simply write it out */
-		bnode_write_block(idx, tmp, block);
+		current_level--;
 	}
-
 	return 1;
 }
 

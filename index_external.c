@@ -20,9 +20,12 @@
  * @file index_external.c
  */
 
+#include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
+#include "debug.h"
 #include "lists.h"
 
 #include "index.h"
@@ -36,29 +39,274 @@
 #include <varargs.h>
 #endif
 
-struct document_node
+struct bnode_element
 {
-	struct node node;
+	int str_offset;
+	int str_len;
+	int child;
 	int did;
-	char *txt;
 };
+
+struct bnode_header
+{
+	int leaf;
+	int num_elements; /* Number of following bnode_elements */
+};
+
+typedef struct bnode_header bnode;
 
 struct index_external
 {
 	struct index index;
 	struct list document_list;
+
+	int block_size;
+	int max_elements_per_node;
+	int number_of_blocks;
+
+	FILE *string_file;
+	FILE *index_file;
+
+	bnode *tmp;
 };
 
+/**
+ * Create a new node for the given index/btree.
+ *
+ * @param idx
+ * @return
+ */
+static bnode *bnode_create(struct index_external *idx)
+{
+	struct bnode_header *bnode;
+
+	if (!(bnode = malloc(idx->block_size)))
+		return NULL;
+
+	memset(bnode, 0, idx->block_size);
+	return bnode;
+}
+
+/**
+ * Free the memory associated to the given bnode.
+ *
+ * @param idx
+ * @param bnode
+ */
+static void bnode_free(struct index_external *idx, bnode *bnode)
+{
+	free(bnode);
+}
+
+/**
+ * Return the i'th element of the given bnode.
+ *
+ * @param idx
+ * @param bnode_header
+ * @param elem
+ * @return
+ */
+static struct bnode_element *bnode_get_ith_element_of_node(struct index_external *idx, bnode *bnode, int i)
+{
+	return &(((struct bnode_element*)(bnode+1))[i]);
+}
+
+/**
+ * Writes the given block to the given address.
+ *
+ * @param idx
+ * @param node
+ * @param address
+ * @return
+ */
+static int bnode_write_block(struct index_external *idx, const bnode *node, int address)
+{
+	unsigned int offset = address * idx->block_size;
+	if (fseek(idx->index_file, offset, SEEK_SET))
+		return 0;
+	if (fwrite(node, 1, idx->block_size, idx->index_file) != idx->block_size)
+		return 0;
+	return 1;
+}
+
+/**
+ * Adds the given block to the index and return the block number.
+ *
+ * @param idx
+ * @param node
+ * @return
+ */
+static int bnode_add_block(struct index_external *idx, const bnode *node)
+{
+	int new_address = idx->number_of_blocks++;
+	bnode_write_block(idx, node, new_address);
+	return new_address;
+}
+
+/**
+ * Reads the given block for the given address to the given node.
+ *
+ * @param idx
+ * @param node
+ * @param address
+ * @return
+ */
+static int bnode_read_block(struct index_external *idx, bnode *node, int address)
+{
+	size_t rc;
+	unsigned int offset = address * idx->block_size;
+	if (fseek(idx->index_file, offset, SEEK_SET))
+		return 0;
+	rc = fread(node, 1, idx->block_size, idx->index_file);
+	return 1;
+}
+
+/**
+ * Reads the entire string for the given element,
+ *
+ * @param idx
+ * @param element
+ * @return the string which must be freed with free() when no longer in use.
+ */
+static char *bnode_read_string(struct index_external *idx, struct bnode_element *element)
+{
+	char *str;
+
+	fseek(idx->string_file, element->str_offset, SEEK_SET);
+	if (!(str = malloc(element->str_len + 1)))
+		return 0;
+	if (fread(str, 1, element->str_len, idx->string_file) != element->str_len)
+		return 0;
+	return str;
+}
+
+/**
+ * Inserts the given string into the bnode tree.
+ *
+ * @param idx
+ * @param did
+ * @param txt
+ * @return
+ */
+static int bnode_insert_string(struct index_external *idx, int did, int offset, const char *text)
+{
+	int i;
+	bnode *tmp = idx->tmp;
+
+	bnode_read_block(idx, tmp, 0);
+
+	/* Find the appropriate slot. TODO: Use binary search */
+	for (i=0; i < tmp->num_elements; i++)
+	{
+		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+		char *str = bnode_read_string(idx, e);
+		if (!str) return 0;
+		if (strcmp(str, text) > 0)
+		{
+			free(str);
+			break;
+		}
+		free(str);
+	}
+
+	if (tmp->num_elements < idx->max_elements_per_node)
+	{
+		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+
+		memmove(e + 1, e, (idx->max_elements_per_node - tmp->num_elements - 1) * sizeof(struct bnode_element));
+
+		/* New element */
+		e->str_offset = offset;
+		e->str_len = strlen(text);
+		e->child = 0;
+		e->did = did;
+		tmp->num_elements++;
+	} else
+	{
+		fprintf(stderr,"Splitting is not implemented yet!\n");
+		exit(1);
+		/* Split node and allocate a new bnode */
+	}
+	bnode_write_block(idx, tmp, 0);
+
+	return 1;
+}
+
+/**
+ * Tries to find the given string.
+ *
+ * @param idx
+ * @param text
+ * @return
+ */
+static int bnode_find_string(struct index_external *idx, const char *text, int (*callback)(int did, void *userdata), void *userdata)
+{
+	int i;
+	bnode *tmp = idx->tmp;
+	int text_len = strlen(text);
+
+	bnode_read_block(idx, tmp, 0);
+
+	/* Find the appropriate slot. TODO: Use binary search */
+	for (i=0; i < tmp->num_elements; i++)
+	{
+		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+		if (text_len > tmp->num_elements)
+			continue;
+		char *str = bnode_read_string(idx, e);
+		if (!str) return 0;
+		if (!strncmp(str, text, text_len))
+		{
+			callback(e->did, userdata);
+		}
+	}
+}
 
 struct index *index_external_create(const char *filename)
 {
 	struct index_external *idx;
+	char buf[380];
 
 	if (!(idx = (struct index_external*)malloc(sizeof(*idx))))
 		return NULL;
 
 	memset(idx,0,sizeof(*idx));
 	list_init(&idx->document_list);
+	idx->block_size = 16384;
+	idx->max_elements_per_node = (idx->block_size - sizeof(struct bnode_header)) / sizeof(struct bnode_element);
+
+	if (!(idx->tmp = bnode_create(idx)))
+	{
+		free(idx);
+		return NULL;
+	}
+
+	sm_snprintf(buf, sizeof(buf), "%s.index", filename);
+	if (!(idx->index_file = fopen(buf, "w+b")))
+	{
+		bnode_free(idx, idx->tmp);
+		free(idx);
+		return NULL;
+	}
+
+	sm_snprintf(buf, sizeof(buf), "%s.strings", filename);
+	if (!(idx->string_file = fopen(buf, "w+b")))
+	{
+		fclose(idx->index_file);
+		bnode_free(idx, idx->tmp);
+		free(idx);
+		return NULL;
+	}
+
+	if (!(bnode_write_block(idx, idx->tmp, 0)))
+	{
+		fclose(idx->string_file);
+		fclose(idx->index_file);
+		bnode_free(idx, idx->tmp);
+		free(idx);
+		return NULL;
+
+	}
 
 	return &idx->index;
 }
@@ -70,99 +318,60 @@ void index_external_dispose(struct index *index)
 
 	idx = (struct index_external*)index;
 
-	while ((d = (struct document_node *)list_remove_tail(&idx->document_list)))
-	{
-		free(d->txt);
-		free(d);
-	}
-
+	fclose(idx->index_file);
+	fclose(idx->string_file);
 	free(index);
 }
 
 int index_external_put_document(struct index *index, int did, const char *text)
 {
-	struct document_node *d;
 	struct index_external *idx;
+	int i;
+	int l = strlen(text);
 
 	idx = (struct index_external*)index;
 
-	if (!(d = (struct document_node*)malloc(sizeof(*d))))
-		return 0;
-	memset(d,0,sizeof(*d));
+	/* Determine position and write text */
+	long offset = ftell(idx->string_file);
+	fputs(text, idx->string_file);
 
-	d->did = did;
-	if (!(d->txt = strdup(text)))
+	for (i=0; i < l; i++)
 	{
-		free(d);
-		return 0;
+		if (!(bnode_insert_string((struct index_external*)index, did, offset + i, text + i)))
+			return 0;
 	}
 
-	list_insert_tail(&idx->document_list,&d->node);
 	return 1;
 }
 
 int index_external_remove_document(struct index *index, int did)
 {
-	struct document_node *d;
-	struct index_external *idx;
-	int removed = 0;
-
-	idx = (struct index_external*)index;
-
-	d = (struct document_node*)list_first(&idx->document_list);
-	while (d)
-	{
-		struct document_node *n = (struct document_node*)node_next(&d->node);
-
-		if (d->did == did)
-		{
-			removed = 1;
-			node_remove(&d->node);
-			free(d->txt);
-			free(d);
-		}
-
-		d = n;
-	}
-	return removed;
+	return 0;
 }
 
 int index_external_find_documents(struct index *index, int (*callback)(int did, void *userdata), void *userdata, int num_substrings, va_list substrings)
 {
-	struct document_node *d;
-	struct index_external *idx;
-	int nd = 0;
 	int i;
+	int nd = 0;
+	struct index_external *idx;
+	va_list substrings_copy;
 
 	idx = (struct index_external*)index;
-	nd = 0;
 
-	d = (struct document_node*)list_first(&idx->document_list);
-	while (d)
+	va_copy(substrings_copy,substrings);
+
+	for (i=0;i<num_substrings;i++)
 	{
-		int take = 1;
-		va_list substrings_copy;
-
-		va_copy(substrings_copy,substrings);
-
-		for (i=0;i<num_substrings;i++)
-		{
-			if (!strstr(d->txt,va_arg(substrings_copy,char *)))
-			{
-				take = 0;
-				break;
-			}
-		}
-
-		va_end(substrings_copy);
-
-		if (take)
-		{
-			callback(d->did,userdata);
-			nd++;
-		}
-		d = (struct document_node*)node_next(&d->node);
+		bnode_find_string(idx, va_arg(substrings_copy, char *), callback, userdata);
+//		bnode_insert_string(
+//		if (!strstr(d->txt,va_arg(substrings_copy,char *)))
+//		{
+//			take = 0;
+//			break;
+//		}
 	}
+
+	va_end(substrings_copy);
 
 	return nd;
 }

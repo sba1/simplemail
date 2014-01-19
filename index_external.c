@@ -250,10 +250,9 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 	do
 	{
 		int lchild;
+		int direct_match = 0;
 
 		bnode_read_block(idx, tmp, block);
-
-		int direct_match = 0;
 
 		path->max_level = level;
 		path->node[level].block = block;

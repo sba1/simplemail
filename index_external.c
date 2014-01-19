@@ -185,6 +185,68 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 }
 
 /**
+ * Lookup the given text.
+ *
+ * @param idx
+ * @param text
+ * @param out_block
+ * @param out_index
+ * @return
+ */
+static int bnode_lookup(struct index_external *idx, const char *text, int *out_block, int *out_index)
+{
+	int i;
+	bnode *tmp = idx->tmp;
+	int prev_block;
+	int block = 0;
+
+	do
+	{
+		bnode_read_block(idx, tmp, block);
+		prev_block = block;
+
+		int lchild = tmp->lchild;
+
+		/* Find the appropriate slot. TODO: Use binary search */
+		for (i=0; i < tmp->num_elements; i++)
+		{
+			int cmp;
+			struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
+			char *str = bnode_read_string(idx, e);
+			if (!str) return 0;
+
+			cmp = strcmp(str, text);
+			free(str);
+
+			if (!cmp)
+			{
+				/* Direct match with a separation key */
+				goto out;
+			}
+
+			/* if str > text then we ascend to lchild (except if we are at a leaf, of course) */
+			if (cmp > 0)
+				break;
+
+			lchild = e->gchild;
+		}
+
+		if (block == lchild && !tmp->leaf)
+		{
+			fprintf(stderr, "Endless loop detected!\n");
+			return 0;
+		}
+		block = lchild;
+	} while (!tmp->leaf);
+
+out:
+	*out_block = prev_block;
+	*out_index = i;
+
+	return 1;
+}
+
+/**
  * Inserts the given string into the bnode tree.
  *
  * @param idx
@@ -195,27 +257,17 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 static int bnode_insert_string(struct index_external *idx, int did, int offset, const char *text)
 {
 	int i;
+	int block;
 	bnode *tmp = idx->tmp;
 
-	bnode_read_block(idx, tmp, 0);
+	if (!bnode_lookup(idx, text, &block, &i))
+		return 0;
 
-	/* Find the appropriate slot. TODO: Use binary search */
-	for (i=0; i < tmp->num_elements; i++)
-	{
-		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
-		char *str = bnode_read_string(idx, e);
-		if (!str) return 0;
-		if (strcmp(str, text) > 0)
-		{
-			free(str);
-			break;
-		}
-		free(str);
-	}
+	bnode_read_block(idx, tmp, block);
 
 	if (1)
 	{
-		/* Recall that we allocate one more entry than it would fit in the block, so we surly can
+		/* Recall that we allocate in our temps one more entry than it would fit in the block, so we surly can
 		 * insert the entry now */
 		struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
 
@@ -251,19 +303,25 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median), idx->tmp3->num_elements * sizeof(struct bnode_element));
 		int tmp3block = bnode_add_block(idx, idx->tmp3);
 
-		/* Insert separation value into the parent (which is the root for now) */
-		tmp->num_elements = 1;
-		tmp->lchild = tmp2block;
-		tmp->leaf = 0;
-		me_copy.gchild = tmp3block;
-		*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
-		bnode_write_block(idx, tmp, 0);
-
-		fprintf(stderr,"Splitting is not implemented yet!\n");
-		exit(1);
-		/* Split node and allocate a new bnode */
+		if (block == 0)
+		{
+			/* Create a new root block if the root was getting full */
+			tmp->num_elements = 1;
+			tmp->lchild = tmp2block;
+			tmp->leaf = 0;
+			me_copy.gchild = tmp3block;
+			*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
+			bnode_write_block(idx, tmp, 0);
+		} else
+		{
+			fprintf(stderr, "Splitting the non-root node is not supported for now!\n");
+			exit(1);
+		}
+	} else
+	{
+		/* There was enough space in the block, so we simply write it out */
+		bnode_write_block(idx, tmp, block);
 	}
-	bnode_write_block(idx, tmp, 0);
 
 	return 1;
 }

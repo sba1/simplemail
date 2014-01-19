@@ -97,6 +97,36 @@ void test_number_of_leaves_match_inserted_strings(void)
 		printf("buf: %s %d\n", buf, bp.node[1].key_index);
 	}
 
+	/* Test for the iteration like API */
+	for (i=0;i<number_of_distinct_strings;i++)
+	{
+		char buf[16];
+		struct bnode_string_iter_data *iter;
+
+		snprintf(buf, sizeof(buf), "%03dtest", i);
+
+		iter = bnode_find_string_iter(idx, buf, NULL);
+		CU_ASSERT(iter != NULL);
+
+		if (iter == NULL)
+		{
+			printf("For \"%s\" iter is NULL!\n", buf);
+		} else
+		{
+			CU_ASSERT(iter->did == i);
+
+			iter = bnode_find_string_iter(idx, buf, iter);
+			CU_ASSERT(iter != NULL);
+
+			if (iter == NULL)
+			{
+				printf("For \"%s\" 2nd iter is NULL!\n", buf);
+			} else
+			{
+				CU_ASSERT(iter->did == i);
+			}
+		}
+	}
 	printf("%d %d %d %d\n", count_index_leaves(idx, idx->root_node, 0), count_index(idx, idx->root_node, 0), idx->max_elements_per_node, idx->number_of_blocks);
 
 

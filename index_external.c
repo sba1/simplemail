@@ -700,6 +700,94 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 	return nd;
 }
 
+/**
+ * The iterator data.
+ */
+struct bnode_string_iter_data
+{
+	/** Allocated bnode */
+	bnode *node;
+
+	/** The current index */
+	int index;
+
+	/** The document id */
+	int did;
+};
+
+/**
+ * The document did to which the iter points.
+ *
+ * @param iter
+ * @return
+ */
+int bnode_string_iter_data_get_did(struct bnode_string_iter_data *iter)
+{
+	return iter->did;
+}
+
+/**
+ * Sets up an iterator to find the given text.
+ *
+ * @param idx the index.
+ * @param text the text to look for.
+ * @param iter the previous iterator or NULL if this is the first iterator.
+ * @return the new iterator or NULL, if no more matches could have been found.
+ */
+static struct bnode_string_iter_data *bnode_find_string_iter(struct index_external *idx, const char *text, struct bnode_string_iter_data *iter)
+{
+	int cmp;
+	int index;
+	int text_len;
+	struct bnode_element *be;
+	char *str;
+
+	if (!iter)
+	{
+		struct bnode_path path;
+		int block;
+
+		if (!(iter = malloc(sizeof(*iter))))
+			return NULL;
+
+		if (!(iter->node = bnode_create(idx)))
+		{
+			free(iter);
+			return NULL;
+		}
+
+		if (!bnode_lookup(idx, text, &path))
+			return 0;
+
+		block = path.node[path.max_level].block;
+		index = path.node[path.max_level].key_index;
+
+		if (!bnode_read_block(idx, iter->node, block))
+			return 0;
+	} else
+	{
+		index = iter->index + 1;
+	}
+
+	text_len = strlen(text);
+
+	if (index == iter->node->num_elements)
+		goto done;
+	be = bnode_get_ith_element_of_node(idx, iter->node, index);
+	if (!(str = bnode_read_string(idx, be)))
+		goto done;
+
+	cmp = strncmp(text, str, text_len);
+	if (cmp) goto done;
+	iter->index = index;
+	iter->did = be->did;
+	return iter;
+done:
+	bnode_free(idx, iter->node);
+	free(iter);
+	return NULL;
+}
+
 static void index_external_dispose(struct index *index)
 {
 	struct document_node *d;

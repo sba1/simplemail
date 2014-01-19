@@ -330,11 +330,30 @@ static void dump_index(struct index_external *idx, int block, int level)
 		char buf[16];
 
 		e = bnode_get_ith_element_of_node(idx, tmp, i);
-		str = bnode_read_string(idx, e);
+		if (!(str = bnode_read_string(idx, e)))
+		{
+			fprintf(stderr, "Couldn't read string!\n");
+			exit(-1);
+		}
 		snprintf(buf,sizeof(buf),"%s", str);
 
-		printf("%d: %d: %d: %s\n", level, block, i, buf);
+		{
+			int k;
+			for (k=0;k<level;k++)
+				printf(" ");
+		}
+		printf("l%d: b%d: i%d: o%04d ", level, block, i, e->str_offset);
 
+		{
+			int k;
+			for (k=0;k<strlen(buf);k++)
+			{
+				if (!buf[k]) break;
+				if (buf[k] == 10) buf[k] = ' ';
+				printf("%c", buf[k]);
+			}
+			printf("\n");
+		}
 		if (!tmp->leaf)
 			dump_index(idx, e->gchild, level + 1);
 

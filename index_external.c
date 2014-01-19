@@ -201,7 +201,7 @@ static int bnode_lookup(struct index_external *idx, const char *text, int *out_b
 	int i;
 	bnode *tmp = idx->tmp;
 	int prev_block;
-	int block = 0;
+	int block = idx->root_node;
 
 	do
 	{
@@ -250,6 +250,19 @@ out:
 }
 
 /**
+ * Clear all elements of the given node begining at start.
+ *
+ * @param idx
+ * @param n
+ * @param start
+ */
+static void bnode_clear_elements(struct index_external *idx, bnode *n, int start)
+{
+	struct bnode_element *e = bnode_get_ith_element_of_node(idx, n, start);
+	memset(e, (idx->max_elements_per_node - start)*sizeof(struct bnode_element), 0);
+}
+
+/**
  * Inserts the given string into the bnode tree.
  *
  * @param idx
@@ -295,26 +308,27 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		struct bnode_element me_copy = *me;
 
 		/* First node */
-		idx->tmp2->num_elements = median - 1;
-		idx->tmp2->leaf = 1;
-		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp2, 0), bnode_get_ith_element_of_node(idx, tmp, 0), idx->tmp2->num_elements * sizeof(struct bnode_element));
-		int tmp2block = bnode_add_block(idx, idx->tmp2);
+		tmp->num_elements = median - 1;
+		tmp->leaf = 1;
+		bnode_clear_elements(idx, tmp, median);
 
 		/* Second node */
-		idx->tmp3->num_elements = tmp->num_elements - median;
+		idx->tmp3->num_elements = idx->max_elements_per_node - median;
 		idx->tmp3->leaf = 1;
 		memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median), idx->tmp3->num_elements * sizeof(struct bnode_element));
+		bnode_clear_elements(idx, tmp, idx->tmp3->num_elements);
 		int tmp3block = bnode_add_block(idx, idx->tmp3);
 
-		if (block == 0)
+		if (block == idx->root_node)
 		{
 			/* Create a new root block if the root was getting full */
 			tmp->num_elements = 1;
-			tmp->lchild = tmp2block;
+			tmp->lchild = idx->root_node;
 			tmp->leaf = 0;
 			me_copy.gchild = tmp3block;
 			*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
-			bnode_write_block(idx, tmp, 0);
+			bnode_clear_elements(idx, tmp, 1);
+			idx->root_node = bnode_add_block(idx, tmp);
 		} else
 		{
 			int lchild;

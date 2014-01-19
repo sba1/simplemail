@@ -325,6 +325,8 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 		tmp->num_elements = median - 1;
 		tmp->leaf = 1;
 		bnode_clear_elements(idx, tmp, median);
+		/* This should be done as late as possible */
+		bnode_write_block(idx, tmp, block);
 
 		/* Second node */
 		idx->tmp3->num_elements = idx->max_elements_per_node - median;

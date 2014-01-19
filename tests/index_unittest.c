@@ -128,6 +128,48 @@ static const char zauberlehrling[] =
 
 /*******************************************************/
 
+
+/**
+ * Read the content of the file given by the filename.
+ *
+ * @param filename the name of the file which should be read.
+ *
+ * @return the contents or NULL on an error. The returned
+ *  value must be freed with free() when no longer in use.
+ */
+static char *read_file_contents(const char *filename)
+{
+	long size;
+	char *ret = NULL;
+	char *contents = NULL;
+	FILE *fh;
+
+	if (!(fh = fopen(filename,"r")))
+		return NULL;
+
+	fseek(fh,0,SEEK_END);
+	size = ftell(fh);
+	if (size < 1)
+		goto out;
+	fseek(fh,0,SEEK_SET);
+
+	if (!(contents = malloc(size+1)))
+		goto out;
+	if ((fread(contents, 1, size, fh) != size))
+		goto out;
+	contents[size] = 0;
+
+	ret = contents;
+	contents = NULL;
+out:
+	fclose(fh);
+	free(contents);
+	return ret;
+}
+
+
+/*******************************************************/
+
 static int test_index_naive_callback_called;
 
 static int test_index_naive_callback(int did, void *userdata)
@@ -144,6 +186,7 @@ static int test_index_naive_callback2(int did, void *userdata)
 static void test_index_for_algorithm(struct index_algorithm *alg, const char *name)
 {
 	struct index *index;
+	char *text;
 	int ok;
 	int nd;
 
@@ -161,6 +204,12 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 	ok = index_put_document(index,20,zauberlehrling);
 	CU_ASSERT(ok != 0);
 
+	text = read_file_contents("of-human-bondage.txt");
+	CU_ASSERT(text != NULL);
+
+	ok = index_put_document(index,32,text);
+	CU_ASSERT(ok != 0);
+
 	nd = index_find_documents(index,test_index_naive_callback,NULL,1,"very");
 	CU_ASSERT(test_index_naive_callback_called == 1);
 	CU_ASSERT(nd == 1);
@@ -172,6 +221,7 @@ static void test_index_for_algorithm(struct index_algorithm *alg, const char *na
 	CU_ASSERT(nd == 0);
 
 	index_dispose(index);
+	free(text);
 }
 
 /*******************************************************/

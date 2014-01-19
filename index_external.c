@@ -484,9 +484,10 @@ static void verify_index(struct index_external *idx, int block, int level)
 
 
 /**
- * Verify whether the index is consitent, i.e., whether all strings are in increasing order.
+ * Count the total number of strings to which the index refers.
+ * This includes the strings of the internal nodes as well as the leaves.
  *
- * @param
+ * @param idx
  * @param block
  * @param level
  */

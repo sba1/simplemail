@@ -134,12 +134,13 @@ static int bnode_write_block(struct index_external *idx, const bnode *node, int 
  *
  * @param idx
  * @param node
- * @return
+ * @return -1 for an error.
  */
 static int bnode_add_block(struct index_external *idx, const bnode *node)
 {
 	int new_address = idx->number_of_blocks++;
-	bnode_write_block(idx, node, new_address);
+	if (!bnode_write_block(idx, node, new_address))
+		return -1;
 	return new_address;
 }
 

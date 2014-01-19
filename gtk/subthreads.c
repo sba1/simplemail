@@ -35,6 +35,8 @@
 #include "support_indep.h"
 #include "subthreads.h"
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 static GCond *thread_cond;
 static GMutex *thread_mutex;
 static int thread_parent_can_continue;

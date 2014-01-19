@@ -719,7 +719,7 @@ static void index_external_dispose(struct index *index)
 	free(idx);
 }
 
-static struct index *index_external_create(const char *filename)
+static struct index *index_external_create_with_opts(const char *filename, int block_size)
 {
 	struct index_external *idx;
 	char buf[380];
@@ -729,7 +729,7 @@ static struct index *index_external_create(const char *filename)
 
 	memset(idx,0,sizeof(*idx));
 	list_init(&idx->document_list);
-	idx->block_size = 16384;
+	idx->block_size = block_size;
 	idx->max_elements_per_node = (idx->block_size - sizeof(struct bnode_header)) / sizeof(struct bnode_element);
 
 	if (!(idx->tmp = bnode_create(idx)))
@@ -757,6 +757,11 @@ static struct index *index_external_create(const char *filename)
 bailout:
 	index_external_dispose(&idx->index);
 	return NULL;
+}
+
+static struct index *index_external_create(const char *filename)
+{
+	return index_external_create_with_opts(filename, 16384);
 }
 
 /**

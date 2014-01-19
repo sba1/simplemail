@@ -114,7 +114,7 @@ void test_number_of_leaves_match_inserted_strings(void)
 			printf("For \"%s\" iter is NULL!\n", buf);
 		} else
 		{
-			CU_ASSERT(iter->did == i);
+			CU_ASSERT(bnode_string_iter_data_get_did(iter) == i);
 
 			iter = bnode_find_string_iter(idx, buf, iter);
 			CU_ASSERT(iter != NULL);
@@ -124,7 +124,7 @@ void test_number_of_leaves_match_inserted_strings(void)
 				printf("For \"%s\" 2nd iter is NULL!\n", buf);
 			} else
 			{
-				CU_ASSERT(iter->did == i);
+				CU_ASSERT(bnode_string_iter_data_get_did(iter) == i);
 			}
 		}
 	}

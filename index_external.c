@@ -79,6 +79,12 @@ struct index_external
 	/** Identifies the block for the root node. TODO: Make this persistent */
 	int root_node;
 
+	/**
+	 * Defines the maximum length for which a substring search is accurate.
+	 * Searches with longer substring will shorten the substring to this length.
+	 */
+	int max_substring_len;
+
 	bnode *tmp;
 	bnode *tmp2;
 	bnode *tmp3;
@@ -704,6 +710,7 @@ struct index *index_external_create(const char *filename)
 
 	idx->tmp->leaf = 1;
 	idx->root_node = bnode_add_block(idx, idx->tmp);
+	idx->max_substring_len = 32;
 
 	return &idx->index;
 bailout:

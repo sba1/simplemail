@@ -737,6 +737,7 @@ int index_external_put_document(struct index *index, int did, const char *text)
 		return 0;
 	long offset = ftell(idx->string_file);
 	fputs(text, idx->string_file);
+	fputc(0, idx->string_file);
 
 	for (i=0; i < l; i++)
 	{

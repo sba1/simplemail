@@ -68,6 +68,9 @@ struct index_external
 	FILE *string_file;
 	FILE *index_file;
 
+	/** Identifies the block for the root node. TODO: Make this persistent */
+	int root_node;
+
 	bnode *tmp;
 	bnode *tmp2;
 	bnode *tmp3;
@@ -419,7 +422,7 @@ struct index *index_external_create(const char *filename)
 		goto bailout;
 
 	idx->tmp->leaf = 1;
-	bnode_add_block(idx, idx->tmp);
+	idx->root_node = bnode_add_block(idx, idx->tmp);
 
 	return &idx->index;
 bailout:

@@ -509,7 +509,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			struct bnode_element me_copy = *me;
 
 			/* First node */
-			tmp->num_elements = median - 1;
+			tmp->num_elements = median;
 
 			/* Second node */
 			idx->tmp3->num_elements = idx->max_elements_per_node - (median + 1);

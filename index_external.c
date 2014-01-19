@@ -513,7 +513,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 			/* Second node */
 			idx->tmp3->num_elements = idx->max_elements_per_node - (median + 1);
-
+			idx->tmp3->lchild = me->gchild;
 			idx->tmp3->leaf = tmp->leaf;
 			memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, median + 1), idx->tmp3->num_elements * sizeof(struct bnode_element));
 			bnode_clear_elements(idx, idx->tmp3, idx->tmp3->num_elements);

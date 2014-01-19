@@ -196,6 +196,26 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 	return str;
 }
 
+/**
+ * Compares contents represented by the given element with the given text. If str is the contents,
+ * then the function places the return value of strcmp(str, text) into *out_cmp.
+ *
+ * @param idx
+ * @param e
+ * @param text
+ * @param out_cmp
+ * @return 0 on failure, 1 on success.
+ */
+static int bnode_compare_string(struct index_external *idx, struct bnode_element *e, const char *text, int *out_cmp)
+{
+	char *str = bnode_read_string(idx, e);
+	if (!str) return 0;
+
+	*out_cmp = strcmp(str, text);
+	free(str);
+	return 1;
+}
+
 #define BNODE_PATH_MAX_NODES 24
 
 /**
@@ -241,11 +261,8 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 		{
 			int cmp;
 			struct bnode_element *e = bnode_get_ith_element_of_node(idx, tmp, i);
-			char *str = bnode_read_string(idx, e);
-			if (!str) return 0;
-
-			cmp = strcmp(str, text);
-			free(str);
+			if (!bnode_compare_string(idx, e, text, &cmp))
+				return 0;
 
 			if (!cmp)
 			{

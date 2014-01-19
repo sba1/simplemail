@@ -745,7 +745,6 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 	int index;
 	int text_len;
 	struct bnode_element *be;
-	char *str;
 
 	if (!iter)
 	{
@@ -786,11 +785,10 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 
 		index = 0;
 	}
-	be = bnode_get_ith_element_of_node(idx, iter->node, index);
-	if (!(str = bnode_read_string(idx, be)))
-		goto done;
 
-	cmp = strncmp(text, str, text_len);
+	be = bnode_get_ith_element_of_node(idx, iter->node, index);
+	if (!bnode_compare_string(idx, be, text, &cmp))
+		goto done;
 	if (cmp) goto done;
 	iter->index = index;
 	iter->did = be->did;

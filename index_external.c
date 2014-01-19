@@ -252,11 +252,18 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 		bnode_read_block(idx, tmp, block);
 
 		int lchild = tmp->lchild;
+		int direct_match = 0;
 
 		path->max_level = level;
 		path->node[level].block = block;
 
-		/* Find the appropriate slot. TODO: Use binary search */
+		/* Find the slot with the separation key for the given text. The slot with
+		 * the separation key for a given text is the slot whose value is not
+		 * lexicographically smaller than the text but whose left neighbor slot value
+		 * is lexicographically smaller than the text.
+		 *
+		 * TODO: Use binary search
+		 */
 		for (i=0; i < tmp->num_elements; i++)
 		{
 			int cmp;
@@ -264,27 +271,33 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 			if (!bnode_compare_string(idx, e, text, &cmp))
 				return 0;
 
-			if (!cmp)
-			{
-				path->node[level].key_index = i;
-				/* Direct match with a separation key */
-				goto out;
-			}
-
 			/* if str > text then we ascend to lchild (except if we are at a leaf, of course) */
-			if (cmp > 0)
+			if (cmp >= 0)
+			{
+				direct_match = cmp == 0;
 				break;
+			}
 
 			lchild = e->gchild;
 		}
 
 		path->node[level].key_index = i;
 
+		/* Leave early if this was a direct match with a separation key.
+		 * In this case, we do not need to descend to the child */
+		if (direct_match)
+			goto out;
+
 		if (block == lchild && !tmp->leaf)
 		{
 			fprintf(stderr, "Endless loop detected!\n");
 			return 0;
 		}
+
+		/* Otherwise, it was no direct match, and the separation key is lexicographically strictly
+		 * greater hence the sub tree defined by the left child, which is lexicographically strictly
+		 * smaller. will contain the key (or a better suited value if the key is not contained).
+		 */
 		block = lchild;
 		level++;
 		if (level == BNODE_PATH_MAX_NODES)

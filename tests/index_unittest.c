@@ -130,7 +130,8 @@ static const char zauberlehrling[] =
 
 
 /**
- * Read the content of the file given by the filename.
+ * Read the content of the file given by the filename but not
+ * more than 200000 bytes.
  *
  * @param filename the name of the file which should be read.
  *
@@ -152,6 +153,9 @@ static char *read_file_contents(const char *filename)
 	if (size < 1)
 		goto out;
 	fseek(fh,0,SEEK_SET);
+
+	if (size > 200000)
+		size = 200000;
 
 	if (!(contents = malloc(size+1)))
 		goto out;

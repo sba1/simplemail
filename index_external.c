@@ -232,6 +232,9 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 
 		int lchild = tmp->lchild;
 
+		path->max_level = level;
+		path->node[level].block = block;
+
 		/* Find the appropriate slot. TODO: Use binary search */
 		for (i=0; i < tmp->num_elements; i++)
 		{
@@ -245,8 +248,6 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 
 			if (!cmp)
 			{
-				path->max_level = level;
-				path->node[level].block = block;
 				path->node[level].key_index = i;
 				/* Direct match with a separation key */
 				goto out;
@@ -259,8 +260,6 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 			lchild = e->gchild;
 		}
 
-		path->max_level = level;
-		path->node[level].block = block;
 		path->node[level].key_index = i;
 
 		if (block == lchild && !tmp->leaf)

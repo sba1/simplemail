@@ -724,20 +724,37 @@ bailout:
 	return NULL;
 }
 
+/**
+ * Appends the given string to the string file. The string will be zero-byte terminated.
+ *
+ * @param idx the index.
+ * @param text the text to be inserted.
+ * @param offset returns the starting offset of the string that has been inserted.
+ * @return 0 on failure, else something different.
+ */
+static int index_external_append_string(struct index_external *idx, const char *text, long *offset)
+{
+	/* Determine position and write text */
+	if (fseek(idx->string_file, 0, SEEK_END) != 0)
+		return 0;
+	*offset = ftell(idx->string_file);
+	fputs(text, idx->string_file);
+	fputc(0, idx->string_file);
+
+	return 1;
+}
+
 int index_external_put_document(struct index *index, int did, const char *text)
 {
 	struct index_external *idx;
 	int i;
 	int l = strlen(text);
+	long offset;
 
 	idx = (struct index_external*)index;
 
-	/* Determine position and write text */
-	if (fseek(idx->string_file, 0, SEEK_END) != 0)
+	if (!index_external_append_string(idx, text, &offset))
 		return 0;
-	long offset = ftell(idx->string_file);
-	fputs(text, idx->string_file);
-	fputc(0, idx->string_file);
 
 	for (i=0; i < l; i++)
 	{

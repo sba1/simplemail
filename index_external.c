@@ -657,55 +657,6 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 }
 
 /**
- * Tries to find the given string.
- *
- * @param idx
- * @param text
- * @return
- */
-static int bnode_find_string(struct index_external *idx, const char *text, int (*callback)(int did, void *userdata), void *userdata)
-{
-	int i;
-	int block;
-	char *str;
-	bnode *tmp = idx->tmp;
-	struct bnode_element *be;
-	int text_len = strlen(text);
-	int nd = 0;
-	struct bnode_path path;
-
-	if (!bnode_lookup(idx, text, &path))
-		return 0;
-
-	block = path.node[path.max_level].block;
-	i = path.node[path.max_level].key_index;
-
-	if (!bnode_read_block(idx, tmp, block))
-		return 0;
-
-	if (text_len > idx->max_substring_len)
-		text_len = idx->max_substring_len;
-
-	for (;i<tmp->num_elements;i++)
-	{
-		int cmp;
-		be = bnode_get_ith_element_of_node(idx, tmp, i);
-		str = bnode_read_string(idx, be);
-		if (!str) return 0;
-		cmp = strncmp(text, str, text_len);
-		free(str);
-		if (!cmp)
-		{
-			callback(be->did, userdata);
-			nd++;
-		}
-		else
-			break;
-	}
-	return nd;
-}
-
-/**
  * The iterator data.
  */
 struct bnode_string_iter_data
@@ -798,6 +749,28 @@ done:
 	free(iter);
 	return NULL;
 }
+
+/**
+ * Tries to find the given string.
+ *
+ * @param idx
+ * @param text
+ * @return
+ */
+static int bnode_find_string(struct index_external *idx, const char *text, int (*callback)(int did, void *userdata), void *userdata)
+{
+	struct bnode_string_iter_data *iter = NULL;
+	int nd = 0;
+
+	while ((iter = bnode_find_string_iter(idx, text, iter)))
+	{
+		callback(bnode_string_iter_data_get_did(iter), userdata);
+		nd++;
+	}
+	return nd;
+}
+
+
 
 static void index_external_dispose(struct index *index)
 {

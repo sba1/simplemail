@@ -60,6 +60,7 @@ struct bnode_header
 	int leaf;
 	int num_elements; /* Number of following bnode_elements */
 	int lchild; /* Child containing keys/strings that are all (lexicographical) smaller */
+	int sibling;
 };
 
 typedef struct bnode_header bnode;
@@ -104,6 +105,7 @@ static bnode *bnode_create(struct index_external *idx)
 		return NULL;
 
 	memset(bnode, 0, idx->block_size + sizeof(struct bnode_element));
+	bnode->sibling = -1;
 	return bnode;
 }
 
@@ -383,7 +385,7 @@ static void dump_index(struct index_external *idx, int block, int level)
 	if (!bnode_read_block(idx, tmp, block))
 		return;
 
-	printf("dump_index(block=%d, level=%d, leaf=%d) elements=%d\n", block, level, tmp->leaf, tmp->num_elements);
+	printf("dump_index(block=%d, level=%d, leaf=%d, sibling=%d) elements=%d\n", block, level, tmp->leaf, tmp->sibling, tmp->num_elements);
 	if (!tmp->leaf)
 		dump_index(idx, tmp->lchild, level + 1);
 
@@ -615,11 +617,13 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			idx->tmp3->num_elements = idx->max_elements_per_node - start_of_2nd_node;
 			idx->tmp3->lchild = me->gchild;
 			idx->tmp3->leaf = tmp->leaf;
+			idx->tmp3->sibling = tmp->sibling;
 			memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, start_of_2nd_node), idx->tmp3->num_elements * sizeof(struct bnode_element));
 			bnode_clear_elements(idx, idx->tmp3, idx->tmp3->num_elements);
 			int tmp3block = bnode_add_block(idx, idx->tmp3);
 
 			/* This should be done as late as possible */
+			tmp->sibling = tmp3block;
 			bnode_clear_elements(idx, tmp, median);
 			bnode_write_block(idx, tmp, block);
 
@@ -631,6 +635,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 				tmp->num_elements = 1;
 				tmp->lchild = idx->root_node;
 				tmp->leaf = 0;
+				tmp->sibling = -1;
 				me_copy.gchild = tmp3block;
 				*bnode_get_ith_element_of_node(idx, tmp, 0) = me_copy;
 				bnode_clear_elements(idx, tmp, 1);

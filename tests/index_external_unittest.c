@@ -27,14 +27,35 @@
 /*******************************************************/
 
 /* @Test */
-void test_me(void)
+void test_number_of_leaves_match_inserted_strings(void)
 {
-	struct index *idx;
+	struct index_external *idx;
+	int rc;
+	int i;
+	long offset;
 
-	idx = index_external_create("/tmp/index_external_unittest_index.dat");
+	idx = (struct index_external *)index_external_create_with_opts("/tmp/index_external_unittest_index.dat", 512);
 	CU_ASSERT(idx != NULL);
 
-	index_external_dispose(idx);
+	for (i=0;i<idx->max_elements_per_node+1;i++)
+	{
+		char buf[16];
+		snprintf(buf, sizeof(buf), "%03dtest", i);
+
+		rc = index_external_append_string(idx, buf, &offset);
+		CU_ASSERT(rc != 0);
+
+		rc = bnode_insert_string(idx, i, offset, buf);
+		CU_ASSERT(rc != 0);
+	}
+
+	CU_ASSERT(count_index_leaves(idx, idx->root_node, 0) == idx->max_elements_per_node+1);
+	printf("%d %d %d %d\n", count_index_leaves(idx, idx->root_node, 0), count_index(idx, idx->root_node, 0), idx->max_elements_per_node, idx->number_of_blocks);
+
+
+//	dump_index(idx, idx->root_node, 0);
+
+	index_external_dispose(&idx->index);
 }
 
 /*******************************************************/

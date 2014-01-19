@@ -278,6 +278,95 @@ static void dump_node_children(struct index_external *idx, bnode *node, const ch
 }
 
 /**
+ * Dump the entire index.
+ *
+ * @param idx
+ * @param block
+ * @param level
+ */
+static void dump_index(struct index_external *idx, int block, int level)
+{
+	int i;
+	bnode *tmp = bnode_create(idx);
+	if (!bnode_read_block(idx, tmp, block))
+		return;
+
+	printf("dump_index(block=%d, level=%d, leaf=%d) elements=%d\n", block, level, tmp->leaf, tmp->num_elements);
+	if (!tmp->leaf)
+		dump_index(idx, tmp->lchild, level + 1);
+
+	for (i=0; i<tmp->num_elements; i++)
+	{
+		char *str;
+		struct bnode_element *e;
+		char buf[16];
+
+		e = bnode_get_ith_element_of_node(idx, tmp, i);
+		str = bnode_read_string(idx, e);
+		snprintf(buf,sizeof(buf),"%s", str);
+
+		printf("%d: %d: %d: %s\n", level, block, i, buf);
+
+		if (!tmp->leaf)
+			dump_index(idx, e->gchild, level + 1);
+
+		free(str);
+	}
+
+	bnode_free(idx, tmp);
+}
+
+/**
+ * Verify whether the index is consitent, i.e., whether all strings are in increasing order.
+ *
+ * @param
+ * @param block
+ * @param level
+ */
+static void verify_index(struct index_external *idx, int block, int level)
+{
+	int i;
+	bnode *tmp = bnode_create(idx);
+	char *str1 = strdup("");
+	char *str2;
+	int offset1 = -1;
+
+	if (!bnode_read_block(idx, tmp, block))
+		return;
+
+	if (!tmp->leaf)
+		verify_index(idx, tmp->lchild, level + 1);
+
+	for (i=0; i<tmp->num_elements; i++)
+	{
+		struct bnode_element *e;
+		int rc;
+
+		e = bnode_get_ith_element_of_node(idx, tmp, i);
+		str2 = bnode_read_string(idx, e);
+		if ((rc = strcmp(str1,str2)) > 0)
+		{
+			int *a = 0;
+			printf("violation\n");
+			printf("%d: %d: %d: %d-%d=%d |%s |%s (%d %d)\n", level, block, i, str1[0], str2[0], rc, str1, str2, offset1, e->str_offset);
+			*a = 0;
+			exit(1);
+		}
+
+
+		if (!tmp->leaf)
+			verify_index(idx, e->gchild, level + 1);
+
+		free(str1);
+		str1 = str2;
+		offset1= e->str_offset;
+	}
+
+	free(str1);
+	bnode_free(idx, tmp);
+}
+
+/**
  * Inserts the given string into the bnode tree.
  *
  * @param idx

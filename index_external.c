@@ -1,6 +1,6 @@
 /**
- * index_external.c - a external string index implementation for SimpleMail.
- * Copyright (C) 2012  Sebastian Bauer
+ * index_external.c - an external string index implementation for SimpleMail.
+ * Copyright (C) 2013  Sebastian Bauer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -18,6 +18,13 @@
 
 /**
  * @file index_external.c
+ *
+ * This is a naive implementation of an external memory data structure that
+ * can be used for full text search. It is basically a b tree that stores all
+ * suffixes of each document that is inserted.
+ *
+ * It is very slow at the moment, in particular as the strings are read multiple
+ * times from the external media.
  */
 
 #include <errno.h>

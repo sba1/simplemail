@@ -184,6 +184,7 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 		return 0;
 	if (fread(str, 1, element->str_len, idx->string_file) != element->str_len)
 		return 0;
+	str[element->str_len] = 0;
 	return str;
 }
 

@@ -777,7 +777,15 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 	text_len = strlen(text);
 
 	if (index == iter->node->num_elements)
-		goto done;
+	{
+		if (iter->node->sibling == -1)
+			goto done;
+
+		if (!bnode_read_block(idx, iter->node, iter->node->sibling))
+			goto done;
+
+		index = 0;
+	}
 	be = bnode_get_ith_element_of_node(idx, iter->node, index);
 	if (!(str = bnode_read_string(idx, be)))
 		goto done;

@@ -27,6 +27,7 @@
  * times from the external media.
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -477,10 +478,15 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 			lchild = tmp->lchild;
 			i = 0;
-
 			/* Find the separation key whose left child points to the splitted block */
 			for (i=0; i<tmp->num_elements && lchild != block; i++)
 				lchild = bnode_get_ith_element_of_node(idx, tmp, i)->gchild;
+
+			assert(lchild == path.node[current_level].block);
+			assert(i == path.node[current_level - 1].key_index);
+
+			lchild = path.node[current_level].block;
+			i = path.node[current_level - 1].key_index;
 
 			if (tmp->num_elements == idx->max_elements_per_node)
 			{

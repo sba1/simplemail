@@ -585,6 +585,7 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 		str = bnode_read_string(idx, be);
 		if (!str) return 0;
 		cmp = strncmp(text, str, strlen(text));
+		free(str);
 		if (!cmp)
 		{
 			callback(be->did, userdata);

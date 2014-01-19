@@ -195,26 +195,40 @@ static char *bnode_read_string(struct index_external *idx, struct bnode_element 
 	return str;
 }
 
+#define BNODE_PATH_MAX_NODES 24
+
+/**
+ * Represents a path in the bnode tree.
+ */
+struct bnode_path
+{
+	int max_level;
+	struct
+	{
+		int block;
+		int key_index;
+	} node[BNODE_PATH_MAX_NODES];
+};
+
 /**
  * Lookup the given text.
  *
  * @param idx
  * @param text
- * @param out_block
+ * @param out_block_array
  * @param out_index
  * @return
  */
-static int bnode_lookup(struct index_external *idx, const char *text, int *out_block, int *out_index)
+static int bnode_lookup(struct index_external *idx, const char *text, struct bnode_path *path)
 {
 	int i;
 	bnode *tmp = idx->tmp;
-	int prev_block;
 	int block = idx->root_node;
+	int level = 0;
 
 	do
 	{
 		bnode_read_block(idx, tmp, block);
-		prev_block = block;
 
 		int lchild = tmp->lchild;
 
@@ -231,6 +245,9 @@ static int bnode_lookup(struct index_external *idx, const char *text, int *out_b
 
 			if (!cmp)
 			{
+				path->max_level = level;
+				path->node[level].block = block;
+				path->node[level].key_index = i;
 				/* Direct match with a separation key */
 				goto out;
 			}
@@ -242,18 +259,22 @@ static int bnode_lookup(struct index_external *idx, const char *text, int *out_b
 			lchild = e->gchild;
 		}
 
+		path->max_level = level;
+		path->node[level].block = block;
+		path->node[level].key_index = i;
+
 		if (block == lchild && !tmp->leaf)
 		{
 			fprintf(stderr, "Endless loop detected!\n");
 			return 0;
 		}
 		block = lchild;
+		level++;
+		if (level == BNODE_PATH_MAX_NODES)
+			return 0;
 	} while (!tmp->leaf);
 
 out:
-	*out_block = prev_block;
-	*out_index = i;
-
 	return 1;
 }
 
@@ -386,9 +407,13 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 	int i;
 	int block;
 	bnode *tmp = idx->tmp;
+	struct bnode_path path;
 
-	if (!bnode_lookup(idx, text, &block, &i))
+	if (!bnode_lookup(idx, text, &path))
 		return 0;
+
+	block = path.node[path.max_level].block;
+	i = path.node[path.max_level].key_index;
 
 	bnode_read_block(idx, tmp, block);
 
@@ -494,9 +519,13 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 	struct bnode_element *be;
 	int text_len = strlen(text);
 	int nd = 0;
+	struct bnode_path path;
 
-	if (!bnode_lookup(idx, text, &block, &i))
+	if (!bnode_lookup(idx, text, &path))
 		return 0;
+
+	block = path.node[path.max_level].block;
+	i = path.node[path.max_level].key_index;
 
 	if (!bnode_read_block(idx, tmp, block))
 		return 0;

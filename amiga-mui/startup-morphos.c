@@ -53,7 +53,7 @@ static void deinit_mem(void);
 static int init_io(void);
 static void deinit_io(void);
 
-#define MIN68KSTACK 8192 /* MUI requirement legacy */
+#define MIN68KSTACK 40000
 #define MINSTACK 60000
 
 ULONG __abox__ = 1;

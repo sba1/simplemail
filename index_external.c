@@ -86,6 +86,7 @@ struct index_external
 	int number_of_blocks;
 
 	FILE *string_file;
+	FILE *offset_file;
 	FILE *index_file;
 
 	/** Identifies the block for the root node. TODO: Make this persistent */
@@ -795,6 +796,7 @@ static void index_external_dispose(struct index *index)
 
 	idx = (struct index_external*)index;
 
+	if (idx->offset_file) fclose(idx->offset_file);
 	if (idx->string_file) fclose(idx->string_file);
 	if (idx->index_file) fclose(idx->index_file);
 	if (idx->tmp3) bnode_free(idx, idx->tmp3);
@@ -833,6 +835,10 @@ static struct index *index_external_create_with_opts(const char *filename, int b
 	if (!(idx->string_file = fopen(buf, "w+b")))
 		goto bailout;
 
+	sm_snprintf(buf, sizeof(buf), "%s.offsets", filename);
+	if (!(idx->offset_file = fopen(buf, "w+b")))
+		goto bailout;
+
 	idx->tmp->leaf = 1;
 	idx->root_node = bnode_add_block(idx, idx->tmp);
 	idx->max_substring_len = 32;
@@ -868,6 +874,33 @@ static int index_external_append_string(struct index_external *idx, const char *
 	return 1;
 }
 
+/**
+ * Structure representing an offset/did pair.
+ */
+struct offset_entry
+{
+	int offset;
+	int did;
+};
+
+/**
+ * Appends the given offset did pair to the offsets file.
+ */
+static int index_external_append_offset_did_pair(struct index_external *idx, int offset, int did)
+{
+	struct offset_entry entry;
+
+	if (fseek(idx->offset_file, 0, SEEK_END) != 0)
+		return 0;
+
+	entry.offset = offset;
+	entry.did = did;
+
+	if (fwrite(&entry, 1, sizeof(entry), idx->offset_file) != sizeof(entry))
+		return 0;
+	return 1;
+}
+
 int index_external_put_document(struct index *index, int did, const char *text)
 {
 	struct index_external *idx;
@@ -878,6 +911,9 @@ int index_external_put_document(struct index *index, int did, const char *text)
 	idx = (struct index_external*)index;
 
 	if (!index_external_append_string(idx, text, &offset))
+		return 0;
+
+	if (!index_external_append_offset_did_pair(idx, offset, did))
 		return 0;
 
 	for (i=0; i < l; i++)

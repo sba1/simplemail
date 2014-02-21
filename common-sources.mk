@@ -37,6 +37,7 @@ NONARCHSRCS=\
 	smintl.c \
 	smtp.c \
 	spam.c \
+	ssl.c \
 	status.c \
 	support_indep.c \
 	taglines.c \

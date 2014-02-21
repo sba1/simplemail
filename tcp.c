@@ -267,11 +267,29 @@ int tcp_make_secure(struct connection *conn)
 	} else
 	{
 		int err = SSL_get_error(conn->ssl, rc);
-		char buf[64];
+		char buf[128];
 		sm_snprintf(buf, sizeof(buf), "SSL_connect() failed with error %d", err);
 		SM_DEBUGF(5,("%s\n", buf));
 		/* TODO: Implement and use proper error API */
 		tell_from_subtask(buf);
+
+		switch (err)
+		{
+			case	SSL_ERROR_SSL:
+					{
+						long err_code;
+						while ((err_code = ERR_get_error()))
+						{
+							char err_buf[120];
+
+							ERR_error_string_n(err_code, err_buf, sizeof(err_buf));
+
+							sm_snprintf(buf, sizeof(buf), "More specific error %d: %s", err_code, err_buf);
+							tell_from_subtask(buf);
+						}
+					}
+					break;
+		}
 	}
 
 	SSL_shutdown(conn->ssl);

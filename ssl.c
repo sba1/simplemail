@@ -20,5 +20,37 @@
  * @file ssl.c
  */
 
+#ifndef NO_SSL
+
+#if defined(_AMIGA ) || defined(__AMIGAOS4__) || defined(__MORPHOS__)/* ugly */
+#include <proto/amissl.h> /* not portable */
+#else
+#include <openssl/ssl.h>
+#endif
+
 #include "ssl.h"
 
+
+/**
+ * Initialize ssl and return the orimary context.
+ *
+ * @return
+ */
+SSL_CTX *ssl_init(void)
+{
+	SSL_CTX *ctx;
+
+	SSLeay_add_ssl_algorithms();
+	SSL_load_error_strings();
+
+	if ((ctx = SSL_CTX_new(SSLv23_client_method())))
+	{
+		if (SSL_CTX_set_default_verify_paths(ctx))
+		{
+			return ctx;
+		}
+	}
+	return NULL;
+}
+
+#endif

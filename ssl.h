@@ -22,6 +22,15 @@
 #ifndef SM__SSL_H
 #define SM__SSL_H
 
+#ifndef NO_SSL
+
+#include <openssl/ssl.h>
+
+#include "tcpip.h"
+
+SSL_CTX *ssl_init(void);
+
+#endif
 
 
 #endif /* SM__SSL_H */

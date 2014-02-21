@@ -24,6 +24,7 @@
 #include <unistd.h>
 #include <openssl/ssl.h>
 
+#include "ssl.h"
 #include "tcpip.h"
 
 int open_socket_lib(void)
@@ -48,17 +49,10 @@ int open_ssl_lib(void)
 		return 1;
 	}
 
-	SSLeay_add_ssl_algorithms();
-	SSL_load_error_strings();
-
-	if (ctx = SSL_CTX_new(SSLv23_client_method()))
+	if ((ctx = ssl_init()))
 	{
-		if (SSL_CTX_set_default_verify_paths(ctx))
-		{
-			/* Everything is ok */
-			ssl_in_use = 1;
-			return 1;
-		}
+		ssl_in_use = 1;
+		return 1;
 	}
 
 /*	close_socket_lib();*/

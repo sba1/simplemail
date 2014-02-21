@@ -61,6 +61,7 @@
 #include <proto/amissl.h>
 #endif
 
+#include "ssl.h"
 #include "tcpip.h"
 #include "subthreads_amiga.h"
 
@@ -215,19 +216,13 @@ int open_ssl_lib(void)
 					TAG_DONE))
 			{
 #endif
-				SSLeay_add_ssl_algorithms();
-				SSL_load_error_strings();
-
-				if ((thread->ssl_ctx = SSL_CTX_new(SSLv23_client_method())))
+				if ((thread->ssl_ctx = ssl_init()))
 				{
-					if (SSL_CTX_set_default_verify_paths(ssl_context()))
-					{
-						/* Everything is ok */
-						thread->ssllib_opencnt = 1;
-						SM_DEBUGF(10,("AmiSSL opened %ld times\n",thread->ssllib_opencnt));
-						SM_RETURN(1,"%ld");
-						return 1;
-					}
+					/* Everything is ok */
+					thread->ssllib_opencnt = 1;
+					SM_DEBUGF(10,("AmiSSL opened %ld times\n",thread->ssllib_opencnt));
+					SM_RETURN(1,"%ld");
+					return 1;
 				}
 #ifdef USE_AMISSL3
 							CleanupAmiSSL(TAG_DONE);

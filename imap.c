@@ -1104,6 +1104,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 		for( ;server; server = (struct imap_server*)node_next(&server->node))
 		{
 			struct connection *conn;
+			struct connect_options conn_opts = {};
 			char head_buf[100];
 
 			SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
@@ -1140,8 +1141,10 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				free(login);
 			}
 
+			conn_opts.use_ssl = server->ssl;
+
 			SM_DEBUGF(10,("Connecting\n"));
-			if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+			if ((conn = tcp_connect(server->name, server->port, &conn_opts)))
 			{
 				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
 				SM_DEBUGF(10,("Waiting for login\n"));
@@ -1218,6 +1221,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	if (open_socket_lib())
 	{
 		struct connection *conn;
+		struct connect_options conn_opts = {};
 		char head_buf[100];
 
 		sprintf(head_buf,_("Reading folders of %s"),server->name);
@@ -1228,7 +1232,9 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 			thread_call_parent_function_async_string(status_set_title, 1, server->name);
 		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
-		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+		conn_opts.use_ssl = server->ssl;
+
+		if ((conn = tcp_connect(server->name, server->port, &conn_opts)))
 		{
 			thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
 			if (imap_wait_login(conn,server))
@@ -1296,9 +1302,10 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 	if (open_socket_lib())
 	{
 		struct connection *conn;
+		struct connect_options conn_opts = {};
 		char head_buf[100];
 
-		sprintf(head_buf,_("Submitting subscribed folders to %s"),server->name);
+		sm_snprintf(head_buf,sizeof(head_buf),_("Submitting subscribed folders to %s"),server->name);
 		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 		if (server->title)
 			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
@@ -1306,7 +1313,9 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 			thread_call_parent_function_async_string(status_set_title, 1, server->name);
 		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
-		if ((conn = tcp_connect(server->name, server->port, server->ssl)))
+		conn_opts.use_ssl = server->ssl;
+
+		if ((conn = tcp_connect(server->name, server->port, &conn_opts)))
 		{
 			thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
 			if (imap_wait_login(conn,server))
@@ -1855,6 +1864,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 	if (imap_server)
 	{
 		char status_buf[160];
+		struct connect_options conn_opts = {};
 
 		if (!imap_socket_lib_open)
 		 imap_socket_lib_open = open_socket_lib();
@@ -1896,7 +1906,9 @@ static int imap_thread_really_connect_and_login_to_server(void)
 		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
 		thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
-		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, imap_server->ssl)))
+		conn_opts.use_ssl = imap_server->ssl;
+
+		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, &conn_opts)))
 		{
 			SM_DEBUGF(20,("Connected to %s\n",imap_server->name));
 

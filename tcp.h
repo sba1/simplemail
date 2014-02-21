@@ -40,6 +40,11 @@ typedef struct x509_st X509;
 
 #endif
 
+struct connect_options
+{
+	int use_ssl;
+};
+
 struct connection
 {
 	long socket;
@@ -60,7 +65,7 @@ struct connection
 
 int tcp_error_code(void);
 const char *tcp_strerror(int code);
-struct connection *tcp_connect(char *server, unsigned int port, int use_ssl);
+struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn);
 int tcp_secure(struct connection *conn);

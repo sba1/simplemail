@@ -107,17 +107,18 @@ const char *tcp_strerror(int code)
  * @param server defines the name of the server to which the connection
  *        should be created.
  * @param port defines to which server port the connection should be established.
- * @param use_ssl defines whether connection should be made secure.
+ * @param options defines additional  connection should be made secure.
  * @return the connection or NULL on failure. Use tcp_error_code() for more information.
  *
  * @note TODO: Rework the error code handling.
  */
-struct connection *tcp_connect(char *server, unsigned int port, int use_ssl)
+struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options)
 {
 	int i,sd;
 	struct sockaddr_in sockaddr;
 	struct hostent *hostent;
 	struct connection *conn = NULL;
+	int use_ssl = options?options->use_ssl:0;
 
 	SM_ENTER;
 

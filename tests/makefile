@@ -48,13 +48,13 @@ test-objs/%.o: ../%.c
 	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
 	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
+.PHONY: all
+all: files $(TESTEXES) memleaks
+
 of-human-bondage.txt: of-human-bondage.txt.gz
 	gzip -c -d $< >$@
 
 index_unittest: of-human-bondage.txt
-
-.PHONY: all
-all: files $(TESTEXES) memleaks
 
 .PHONY: files
 files: test-profile.tar.bz2

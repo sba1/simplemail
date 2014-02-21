@@ -244,6 +244,8 @@ int tcp_make_secure(struct connection *conn)
 		return 0;
 	}
 
+	SSL_set_verify(conn->ssl, SSL_VERIFY_PEER, NULL);
+
 	/* Associate a socket with ssl structure */
 	SSL_set_fd(conn->ssl, conn->socket);
 

@@ -30,7 +30,8 @@ TESTEXES=\
 	imap2_unittest \
 	mail_unittest \
 	support_indep_unittest \
-	text2html_unittest
+	text2html_unittest \
+	tcp_unittest
 
 test-objs/%.o: ../%.c
 	@mkdir -p $(@D)

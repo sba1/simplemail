@@ -53,6 +53,8 @@
 #include "smintl.h"
 #include "tcp.h"
 
+#include "support.h"
+
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 /*#define DEBUG_OUTPUT*/
@@ -236,6 +238,7 @@ out:
 int tcp_make_secure(struct connection *conn)
 {
 #ifndef NO_SSL
+	int rc;
 
 	if (!open_ssl_lib()) return 0;
 	if (!(conn->ssl = SSL_new(ssl_context())))
@@ -250,7 +253,7 @@ int tcp_make_secure(struct connection *conn)
 	SSL_set_fd(conn->ssl, conn->socket);
 
 	SM_DEBUGF(10,("Establishing SSL connection\n"));
-	if (SSL_connect(conn->ssl) >= 0)
+	if ((rc = SSL_connect(conn->ssl)) >= 0)
 	{
 		X509 *server_cert;
 		if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
@@ -261,6 +264,14 @@ int tcp_make_secure(struct connection *conn)
 			SM_DEBUGF(5,("Connection is secure\n"));
 			return 1;
 		}
+	} else
+	{
+		int err = SSL_get_error(conn->ssl, rc);
+		char buf[64];
+		sm_snprintf(buf, sizeof(buf), "SSL_connect() failed with error %d", err);
+		SM_DEBUGF(5,("%s\n", buf));
+		/* TODO: Implement and use proper error API */
+		tell_from_subtask(buf);
 	}
 
 	SSL_shutdown(conn->ssl);

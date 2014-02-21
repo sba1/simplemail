@@ -53,9 +53,12 @@ int open_ssl_lib(void)
 
 	if (ctx = SSL_CTX_new(SSLv23_client_method()))
 	{
-		/* Everything is ok */
-		ssl_in_use = 1;
-		return 1;
+		if (SSL_CTX_set_default_verify_paths(ctx))
+		{
+			/* Everything is ok */
+			ssl_in_use = 1;
+			return 1;
+		}
 	}
 
 /*	close_socket_lib();*/

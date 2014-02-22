@@ -941,7 +941,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 		for (;server; server = (struct pop3_server*)node_next(&server->node))
 		{
 			struct connection *conn;
-			struct connect_options connect_options = {};
+			struct connect_options connect_options = {0};
 			char head_buf[100];
 
 			rc = 0;
@@ -1173,7 +1173,7 @@ int pop3_login_only(struct pop3_server *server)
 	if (open_socket_lib())
 	{
 		struct connection *conn;
-		struct connect_options conn_opts = {};
+		struct connect_options conn_opts = {0};
 
 		conn_opts.use_ssl = server->ssl && (!server->stls);
 

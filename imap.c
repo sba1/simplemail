@@ -1104,7 +1104,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 		for( ;server; server = (struct imap_server*)node_next(&server->node))
 		{
 			struct connection *conn;
-			struct connect_options conn_opts = {};
+			struct connect_options conn_opts = {0};
 			char head_buf[100];
 
 			SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
@@ -1221,7 +1221,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	if (open_socket_lib())
 	{
 		struct connection *conn;
-		struct connect_options conn_opts = {};
+		struct connect_options conn_opts = {0};
 		char head_buf[100];
 
 		sprintf(head_buf,_("Reading folders of %s"),server->name);
@@ -1302,7 +1302,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 	if (open_socket_lib())
 	{
 		struct connection *conn;
-		struct connect_options conn_opts = {};
+		struct connect_options conn_opts = {0};
 		char head_buf[100];
 
 		sm_snprintf(head_buf,sizeof(head_buf),_("Submitting subscribed folders to %s"),server->name);
@@ -1864,7 +1864,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 	if (imap_server)
 	{
 		char status_buf[160];
-		struct connect_options conn_opts = {};
+		struct connect_options conn_opts = {0};
 
 		if (!imap_socket_lib_open)
 		 imap_socket_lib_open = open_socket_lib();

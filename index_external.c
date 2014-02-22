@@ -512,7 +512,7 @@ static int count_index(struct index_external *idx, int block, int level)
 	bnode *tmp = bnode_create(idx);
 
 	if (!bnode_read_block(idx, tmp, block))
-		return;
+		return 0;
 
 	if (!tmp->leaf)
 		count += count_index(idx, tmp->lchild, level + 1);
@@ -618,6 +618,8 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 		if (tmp->num_elements == idx->max_elements_per_node)
 		{
+			int tmp3block;
+
 			/* Now we split the node into two nodes. We keep the median in but also
 			 * insert it as a separation value for the two nodes on the parent.
 			 */
@@ -637,7 +639,7 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 			idx->tmp3->sibling = tmp->sibling;
 			memcpy(bnode_get_ith_element_of_node(idx, idx->tmp3, 0), bnode_get_ith_element_of_node(idx, tmp, start_of_2nd_node), idx->tmp3->num_elements * sizeof(struct bnode_element));
 			bnode_clear_elements(idx, idx->tmp3, idx->tmp3->num_elements);
-			int tmp3block = bnode_add_block(idx, idx->tmp3);
+			tmp3block = bnode_add_block(idx, idx->tmp3);
 
 			/* This should be done as late as possible */
 			tmp->sibling = tmp3block;

@@ -74,12 +74,14 @@ clean:
 # Dovecot support
 DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
 DOVECOT_TGZ=$(notdir $(DOVECOT_URL))
+DOVECOT_SHA1SUM=efba4dee63c7dab2b9950e51874a86ba17e09d0c
 DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
 DOVECOT_ABSDIR=$(shell pwd)/$(DOVECOT_DIR)
 DOVECOT=$(DOVECOT_DIR)-root/sbin/dovecot
 
 $(DOVECOT_TGZ):
 	wget -N $(DOVECOT_URL)
+	echo "$(DOVECOT_SHA1SUM)  $(DOVECOT_TGZ)" | sha1sum -c
 
 $(DOVECOT_DIR)-root: $(DOVECOT_TGZ)
 	rm -Rf $(DOVECOT_DIR)

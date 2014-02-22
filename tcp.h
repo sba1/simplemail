@@ -65,7 +65,7 @@ struct connection
 
 int tcp_error_code(void);
 const char *tcp_strerror(int code);
-struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options);
+struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code);
 void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn);
 int tcp_secure(struct connection *conn);
@@ -76,7 +76,7 @@ int tcp_flush(struct connection *conn);
 char *tcp_readln(struct connection *conn);
 int tcp_gethostname(char *buf, int buf_size);
 
-/*#define TCP_OK									  0*/
+#define TCP_OK									  0
 #define TCP_UNKNOWN						 -1 /* Unspecified error */
 #define TCP_NOT_ENOUGH_MEMORY	 -2 /* Not enough memory */
 #define TCP_NOT_SECURE					 -3 /* Connection couldn't made secure */

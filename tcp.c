@@ -231,6 +231,18 @@ out:
 }
 
 /**
+ * The certificate verify callback used in tcp_make_secure().
+ *
+ * @param preverify_ok
+ * @param x509_ctx
+ * @return
+ */
+static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
+{
+	return preverify_ok;
+}
+
+/**
  * Makes the given connection secure.
  *
  * @param conn defines the connection which should be made
@@ -248,8 +260,7 @@ int tcp_make_secure(struct connection *conn)
 		close_ssl_lib();
 		return 0;
 	}
-
-	SSL_set_verify(conn->ssl, SSL_VERIFY_PEER, NULL);
+	SSL_set_verify(conn->ssl, SSL_VERIFY_PEER, tcp_make_secure_verify_callback);
 
 	/* Associate a socket with ssl structure */
 	SSL_set_fd(conn->ssl, conn->socket);

@@ -44,3 +44,16 @@ void test_utf8len(void)
 	CU_ASSERT(utf8len("ö")==1);
 }
 
+/*******************************************************/
+
+/* @Test */
+void test_codeset(void)
+{
+	struct codeset *cs;
+
+	CU_ASSERT(codesets_init() != 0);
+
+	CU_ASSERT((cs = codesets_find(NULL)) != NULL);
+
+	codesets_cleanup();
+}

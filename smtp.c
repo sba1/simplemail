@@ -891,6 +891,8 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 	if (open_socket_lib())
 	{
 		struct account *account;
+		struct connect_options connect_opts = {0};
+		int error_code;
 
 		for (account = (struct account*)list_first(account_list);account;account = (struct account*)node_next(&account->node))
 		{
@@ -922,7 +924,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 //			thread_call_parent_function_async(status_set_status,1,N_("Connecting..."));
 
-			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,0)))
+			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,&connect_opts,&error_code)))
 			{
 				if (smtp_login(&conn,account))
 				{

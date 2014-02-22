@@ -108,11 +108,12 @@ const char *tcp_strerror(int code)
  *        should be created.
  * @param port defines to which server port the connection should be established.
  * @param options defines additional options, such as if the connection should be made secure.
+ * @param error_code_ptr specifies a location in which an additional error code is stored if the call returns NULL.
  * @return the connection or NULL on failure. Use tcp_error_code() for more information.
  *
  * @note TODO: Rework the error code handling.
  */
-struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options)
+struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr)
 {
 	int i,sd;
 	struct sockaddr_in sockaddr;

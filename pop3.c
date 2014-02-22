@@ -943,6 +943,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 			struct connection *conn;
 			struct connect_options connect_options = {0};
 			char head_buf[100];
+			int error_code;
 
 			rc = 0;
 
@@ -980,7 +981,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 			connect_options.use_ssl = server->ssl && !server->stls;
 
-			if ((conn = tcp_connect(server->name, server->port, &connect_options)))
+			if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
 			{
 				char *timestamp;
 				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
@@ -1000,7 +1001,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 							pop3_quit(conn,server);
 							tcp_disconnect(conn);
 							SM_DEBUGF(15,("Trying to connect again to the server\n"));
-							if ((conn = tcp_connect(server->name, server->port, &connect_options)))
+							if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
 							{
 								if (pop3_wait_login(conn,server,NULL))
 								{
@@ -1174,10 +1175,11 @@ int pop3_login_only(struct pop3_server *server)
 	{
 		struct connection *conn;
 		struct connect_options conn_opts = {0};
+		int error_code;
 
 		conn_opts.use_ssl = server->ssl && (!server->stls);
 
-		if ((conn = tcp_connect(server->name, server->port, &conn_opts)))
+		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		{
 			char *timestamp;
 
@@ -1194,7 +1196,7 @@ int pop3_login_only(struct pop3_server *server)
 						   In such cases a reconnect should help. */
 						pop3_quit(conn,server);
 						tcp_disconnect(conn);
-						if ((conn = tcp_connect(server->name, server->port, &conn_opts)))
+						if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 						{
 							if (pop3_wait_login(conn,server,NULL))
 							{

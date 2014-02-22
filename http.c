@@ -48,13 +48,15 @@
 int http_download_photo(char *path, char *email)
 {
 	struct connection *conn;
+	struct connect_options conn_opts = {0};
+	int error_code;
 	int rc;
 
 	if (!open_socket_lib()) return 0;
 
 	rc = 0;
 
-	if ((conn = tcp_connect("simplemail.sourceforge.net",80,0)))
+	if ((conn = tcp_connect("simplemail.sourceforge.net", 80, &conn_opts, &error_code)))
 	{
 		char *line;
 		int download = 0;
@@ -101,6 +103,8 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 		char *path_buf;
 		char *port_buf;
 		struct connection *conn;
+		struct connect_options connect_opts = {0};
+		int error_code;
 		char *server;
 
 		uri += 7;
@@ -126,7 +130,7 @@ int http_download(char *uri, void **buf_ptr, int *buf_len_ptr)
 
 		if (open_socket_lib())
 		{
-			if ((conn = tcp_connect(server,port,0)))
+			if ((conn = tcp_connect(server,port,&connect_opts,&error_code)))
 			{
 				FILE *fh;
 

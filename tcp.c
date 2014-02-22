@@ -107,7 +107,7 @@ const char *tcp_strerror(int code)
  * @param server defines the name of the server to which the connection
  *        should be created.
  * @param port defines to which server port the connection should be established.
- * @param options defines additional  connection should be made secure.
+ * @param options defines additional options, such as if the connection should be made secure.
  * @return the connection or NULL on failure. Use tcp_error_code() for more information.
  *
  * @note TODO: Rework the error code handling.

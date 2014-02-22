@@ -34,6 +34,9 @@ TESTEXES=\
 	text2html_unittest \
 	tcp_unittest
 
+NOMEMLEAKSPERDEFAULT=\
+	index_unittest
+
 test-objs/%.o: ../%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -123,9 +126,6 @@ imap-testsuite: dovecot-conf imap2_unittest
 	./imap2_unittest
 	$(DOVECOT) stop
 
-# Define memleak targets
-MEMLEAKS_TARGETS = $(foreach testexe,$(TESTEXES),memleaks-$(testexe))
-
 # run template
 define run.tmpl
 run-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
@@ -157,6 +157,10 @@ endef
 $(foreach testexe,$(TESTEXES), \
  $(eval $(call memleak.tmpl,$(testexe))) \
 )
+
+# Define our default memleak targets, i.e., targets that need
+# to be done for the memleaks target.
+MEMLEAKS_TARGETS = $(foreach testexe,$(filter-out $(NOMEMLEAKSPERDEFAULT),$(TESTEXES)),memleaks-$(testexe))
 
 .PHONY: memleaks
 memleaks: $(MEMLEAKS_TARGETS)

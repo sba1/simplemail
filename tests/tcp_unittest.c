@@ -32,8 +32,9 @@
 void test_make_secure(void)
 {
 	struct connection *connect;
-
+#if 0
 	connect = tcp_connect("localhost", 6252, 1);
 	CU_ASSERT(connect != NULL);
 	tcp_disconnect(connect);
+#endif
 }

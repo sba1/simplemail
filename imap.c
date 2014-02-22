@@ -1193,7 +1193,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			{
 				SM_DEBUGF(10,("Unable to connect\n"));
 				if (thread_aborted()) break;
-				else tell_from_subtask((char*)tcp_strerror(tcp_error_code()));
+				else tell_from_subtask((char*)tcp_strerror(error_code));
 			}
 
 			/* Clear the preselection entries */

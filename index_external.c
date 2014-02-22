@@ -35,6 +35,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "support.h"
 
 #include "index.h"
 #include "index_private.h"

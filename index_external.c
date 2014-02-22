@@ -47,6 +47,9 @@
 #include <varargs.h>
 #endif
 
+/* Define this if some debug options should be compiled in */
+/*#define DEBUG_FUNCTIONS*/
+
 struct bnode_element
 {
 	int str_offset;
@@ -341,7 +344,9 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 
 		if (block == lchild && !tmp->leaf)
 		{
+#ifdef DEBUG_FUNCTIONS
 			fprintf(stderr, "Endless loop detected!\n");
+#endif
 			return 0;
 		}
 
@@ -371,6 +376,8 @@ static void bnode_clear_elements(struct index_external *idx, bnode *n, int start
 	struct bnode_element *e = bnode_get_ith_element_of_node(idx, n, start);
 	memset(e, (idx->max_elements_per_node - start)*sizeof(struct bnode_element), 0);
 }
+
+#ifdef DEBUG_FUNCTIONS
 
 /**
  * Dump the children of the given nodes.
@@ -566,6 +573,8 @@ static int count_index_leaves(struct index_external *idx, int block, int level)
 	return count;
 }
 
+#endif
+
 /**
  * Inserts the given string into the bnode tree.
  *
@@ -602,8 +611,10 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 		if (!tmp->leaf && current_level == path.max_level)
 		{
+#ifdef DEBUG_FUNCTIONS
 			fprintf(stderr, "Cannot insert into a non-leaf\n");
 			exit(1);
+#endif
 		}
 
 		/* Recall that we allocate in our temps one more entry than it would fit in the block, so we surly can
@@ -648,7 +659,9 @@ static int bnode_insert_string(struct index_external *idx, int did, int offset, 
 
 			if (block == idx->root_node)
 			{
+#ifdef DEBUG_FUNCTIONS
 				assert(current_level == 0);
+#endif
 
 				/* Create a new root block if the root was getting full */
 				tmp->num_elements = 1;
@@ -943,10 +956,13 @@ int index_external_find_documents(struct index *index, int (*callback)(int did, 
 
 	if (num_substrings != 1)
 	{
+#ifdef DEBUG_FUNCTIONS
 		fprintf(stderr, "Searching with only one sub string is supported for now.\n");
 		exit(-1);
+#else
+		return 0;
+#endif
 	}
-
 	va_copy(substrings_copy,substrings);
 
 	for (i=0;i<num_substrings;i++)

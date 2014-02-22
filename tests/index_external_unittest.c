@@ -22,6 +22,7 @@
 
 #include <CUnit/Basic.h>
 
+#define DEBUG_FUNCTIONS
 #include "index_external.c"
 
 /*******************************************************/

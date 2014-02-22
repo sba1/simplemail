@@ -1224,7 +1224,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 		struct connect_options conn_opts = {0};
 		char head_buf[100];
 
-		sprintf(head_buf,_("Reading folders of %s"),server->name);
+		sm_snprintf(head_buf, sizeof(head_buf), ("Reading folders of %s"),server->name);
 		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 		if (server->title)
 			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);

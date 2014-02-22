@@ -45,6 +45,8 @@ SSL_CTX *ssl_init(void)
 
 	if ((ctx = SSL_CTX_new(SSLv23_client_method())))
 	{
+		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
+
 		if (SSL_CTX_set_default_verify_paths(ctx))
 		{
 			return ctx;

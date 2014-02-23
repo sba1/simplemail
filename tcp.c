@@ -297,6 +297,9 @@ int tcp_make_secure(struct connection *conn)
 			unsigned int sha1_size;
 			unsigned char sha1[EVP_MAX_MD_SIZE];
 			char sha1_ascii[EVP_MAX_MD_SIZE*3+1];
+			char issuer_common_name[40];
+			char subject_common_name[40];
+			char cert_summary[120];
 			long verify_results;
 
 			X509_digest(server_cert, EVP_sha1(), sha1, &sha1_size);
@@ -305,12 +308,22 @@ int tcp_make_secure(struct connection *conn)
 				sm_snprintf(&sha1_ascii[i*3], 4, "%02X  ", sha1[i]);
 			sha1_ascii[sha1_size*3] = 0;
 
+			/* Issued to */
+			if (X509_NAME_get_text_by_NID(X509_get_subject_name(server_cert), NID_commonName, subject_common_name, sizeof(subject_common_name)) < 0)
+				strcpy(subject_common_name, _("Not found"));
+
+			/* Issued by */
+			if (X509_NAME_get_text_by_NID(X509_get_issuer_name(server_cert), NID_commonName, issuer_common_name, sizeof(issuer_common_name)) < 0)
+				strcpy(issuer_common_name, _("Not found"));
+
+			sm_snprintf(cert_summary, sizeof(cert_summary), "Issued to: %s (CN)\nIssues by: %s (CN)", subject_common_name, issuer_common_name);
+
 			verify_results = SSL_get_verify_result(conn->ssl);
 
 			/* TODO: Use callbacks for proper decoupling */
-			rc = thread_call_function_sync(thread_get_main(), sm_request, 5,
-					NULL, _("Failed to verify server certificate:\n%s\n\nSHA1: %s"), _("Connect anyway|Abort"),
-					X509_verify_cert_error_string(verify_results), sha1_ascii);
+			rc = thread_call_function_sync(thread_get_main(), sm_request, 6,
+					NULL, _("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"), _("Connect anyway|Abort"),
+					X509_verify_cert_error_string(verify_results), cert_summary, sha1_ascii);
 
 			/* Add some checks here */
 			X509_free(server_cert);

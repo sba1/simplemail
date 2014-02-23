@@ -185,6 +185,7 @@ static int init_config(void)
 	user.config.dont_draw_alternating_rows = 0;
 	user.config.row_background = ROW_BACKGROUND;        /* Row color */
 	user.config.alt_row_background = ALT_ROW_BACKGROUND;       /* Color of alternative row */
+	user.config.cypher_list = NULL;
 
 	return 1;
 }
@@ -210,6 +211,7 @@ void free_config(void)
 	free(user.config.receive_arexx_file);
 	free(user.config.read_propfont);
 	free(user.config.read_fixedfont);
+	free(user.config.cypher_list);
 	array_free(user.config.header_array);
 	array_free(user.config.internet_emails);
 	array_free(user.config.spam_white_emails);
@@ -398,6 +400,11 @@ int load_config(void)
 							user.config.row_background = strtoul(result,NULL,0);
 						if ((result = get_config_item(buf,"Hidden.AltRowBackground")))
 							user.config.alt_row_background = strtoul(result,NULL,0);
+						if ((result = get_config_item(buf,"Hidden.CypherList")))
+						{
+							free(user.config.cypher_list);
+							user.config.cypher_list = mystrdup(result);
+						}
 
 						if (!mystrnicmp(buf, "ACCOUNT",7))
 						{

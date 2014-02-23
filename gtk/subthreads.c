@@ -370,13 +370,14 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	int rc;
+	uintptr_t function_rc;
 
 	va_list argptr;
 
 	va_start(argptr,argcount);
-	rc = thread_call_function_sync_v(thread, NULL, function, argcount, argptr);
+	rc = thread_call_function_sync_v(thread, &function_rc, function, argcount, argptr);
 	va_end(argptr);
-	return rc;
+	return function_rc;
 }
 
 /***************************************************************************************/

@@ -346,7 +346,7 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 	SM_ENTER;
 	SM_DEBUGF(20,("Thread %p calls on context for %p\n", thread_get(), thread));
 
-	assert(argcount < THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
+	assert(argcount <= THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS);
 
 	data.function = (int (*)(void))function;
 	data.argcount = argcount;

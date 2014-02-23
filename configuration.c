@@ -846,6 +846,8 @@ void save_config(void)
 				if (user.config.alt_row_background != ALT_ROW_BACKGROUND)
 					fprintf(fh,"Hidden.AltRowBackground=0x%x\n",user.config.alt_row_background);
 			}
+			if (user.config.ssl_cypher_list)
+				fprintf(fh,"Hidden.SSLCypherList=%s\n",user.config.ssl_cypher_list);
 
 			fclose(fh);
 		}

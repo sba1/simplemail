@@ -348,6 +348,19 @@ int sm_request(char *title, char *text, char *gadgets, ...)
 
 	return rc;
 #else
+	va_list ap;
+	char *text_buf;
+
+	if (!(text_buf = malloc(2048)))
+		return 0;
+
+	va_start(ap, gadgets);
+	vsnprintf(text_buf, 2048, text, ap);
+	va_end(ap);
+
+	printf("%s\n", text_buf);
+
+	free(text_buf);
 	return 0;
 #endif
 }

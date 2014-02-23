@@ -237,7 +237,11 @@ out:
  * @param x509_ctx
  * @return
  */
+#ifdef __SASC
+static int __saveds tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
+#else
 static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
+#endif
 {
 	return preverify_ok;
 }

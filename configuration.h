@@ -152,7 +152,7 @@ struct config
 	int dont_draw_alternating_rows;  /* Disable the rendering of alternating rows */
 	int row_background;              /* Row color */
 	int alt_row_background;          /* Color of alternative row */
-	char *cypher_list;           /* The cypher list used for ssl connections */
+	char *ssl_cypher_list;           /* The cypher list used for ssl connections */
 };
 
 struct user

@@ -47,7 +47,7 @@ SSL_CTX *ssl_init(void)
 
 	if ((ctx = SSL_CTX_new(SSLv23_client_method())))
 	{
-		const char *cypher_list = user.config.cypher_list;
+		const char *cypher_list = user.config.ssl_cypher_list;
 
 		if (!cypher_list)
 			cypher_list = "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK@STRENGTH";

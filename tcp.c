@@ -243,6 +243,13 @@ static int __saveds tcp_make_secure_verify_callback(int preverify_ok, X509_STORE
 static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x509_ctx)
 #endif
 {
+	if (!preverify_ok)
+	{
+		/* Get ssl object associated to the x509 context */
+		SSL *ssl = X509_STORE_CTX_get_ex_data(x509_ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+		int *failed = SSL_get_app_data(ssl);
+		*failed = 1;
+	}
 	return preverify_ok;
 }
 
@@ -257,6 +264,7 @@ int tcp_make_secure(struct connection *conn)
 {
 #ifndef NO_SSL
 	int rc;
+	int failed = 0;
 
 	if (!open_ssl_lib()) return 0;
 	if (!(conn->ssl = SSL_new(ssl_context())))
@@ -264,6 +272,7 @@ int tcp_make_secure(struct connection *conn)
 		close_ssl_lib();
 		return 0;
 	}
+	SSL_set_app_data(conn->ssl, &failed);
 	SSL_set_verify(conn->ssl, SSL_VERIFY_PEER, tcp_make_secure_verify_callback);
 
 	/* Associate a socket with ssl structure */

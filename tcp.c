@@ -297,6 +297,7 @@ int tcp_make_secure(struct connection *conn)
 			unsigned int sha1_size;
 			unsigned char sha1[EVP_MAX_MD_SIZE];
 			char sha1_ascii[EVP_MAX_MD_SIZE*3+1];
+			long verify_results;
 
 			X509_digest(server_cert, EVP_sha1(), sha1, &sha1_size);
 
@@ -304,8 +305,12 @@ int tcp_make_secure(struct connection *conn)
 				sm_snprintf(&sha1_ascii[i*3], 4, "%02X  ", sha1[i]);
 			sha1_ascii[sha1_size*3] = 0;
 
+			verify_results = SSL_get_verify_result(conn->ssl);
+
 			/* TODO: Use callbacks for proper decoupling */
-			rc = thread_call_function_sync(thread_get_main(), sm_request, 4, NULL, _("Certificate verification error\n\nSHA1: %s"), _("Connect anyway|Abort"), sha1_ascii);
+			rc = thread_call_function_sync(thread_get_main(), sm_request, 5,
+					NULL, _("Failed to verify server certificate:\n%s\n\nSHA1: %s"), _("Connect anyway|Abort"),
+					X509_verify_cert_error_string(verify_results), sha1_ascii);
 
 			/* Add some checks here */
 			X509_free(server_cert);

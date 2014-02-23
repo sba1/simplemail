@@ -29,6 +29,7 @@
 #endif
 
 #include "configuration.h"
+#include "debug.h"
 #include "ssl.h"
 
 
@@ -52,11 +53,15 @@ SSL_CTX *ssl_init(void)
 			cypher_list = "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK@STRENGTH";
 
 		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
-		SSL_CTX_set_cipher_list(ctx, cypher_list);
-
-		if (SSL_CTX_set_default_verify_paths(ctx))
+		if (SSL_CTX_set_cipher_list(ctx, cypher_list))
 		{
-			return ctx;
+			if (SSL_CTX_set_default_verify_paths(ctx))
+			{
+				return ctx;
+			}
+		} else
+		{
+			SM_DEBUGF(5,("SSL_CTX_set_cipher_list() failed."));
 		}
 	}
 	return NULL;

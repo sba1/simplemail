@@ -28,6 +28,7 @@
 #include <openssl/ssl.h>
 #endif
 
+#include "configuration.h"
 #include "ssl.h"
 
 
@@ -45,7 +46,13 @@ SSL_CTX *ssl_init(void)
 
 	if ((ctx = SSL_CTX_new(SSLv23_client_method())))
 	{
+		const char *cypher_list = user.config.cypher_list;
+
+		if (!cypher_list)
+			cypher_list = "HIGH:!aNULL:!eNULL:!EXPORT:!DES:!3DES:!MD5:!PSK@STRENGTH";
+
 		SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2);
+		SSL_CTX_set_cipher_list(ctx, cypher_list);
 
 		if (SSL_CTX_set_default_verify_paths(ctx))
 		{

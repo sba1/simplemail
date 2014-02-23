@@ -34,7 +34,7 @@
 
 
 /**
- * Initialize ssl and return the orimary context.
+ * Initialize ssl and return the primary context.
  *
  * @return
  */

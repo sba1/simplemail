@@ -53,6 +53,7 @@
 #include "smintl.h"
 #include "tcp.h"
 
+#include "subthreads.h"
 #include "support.h"
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -249,6 +250,7 @@ static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x50
 		SSL *ssl = X509_STORE_CTX_get_ex_data(x509_ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
 		int *failed = SSL_get_app_data(ssl);
 		*failed = 1;
+		preverify_ok = 1;
 	}
 	return preverify_ok;
 }
@@ -282,13 +284,37 @@ int tcp_make_secure(struct connection *conn)
 	if ((rc = SSL_connect(conn->ssl)) >= 0)
 	{
 		X509 *server_cert;
+
+		if (!failed)
+		{
+			SM_DEBUGF(5,("Connection is secure\n"));
+			return 1;
+		}
+
 		if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
 		{
+			int i, rc;
+			unsigned int sha1_size;
+			unsigned char sha1[EVP_MAX_MD_SIZE];
+			char sha1_ascii[EVP_MAX_MD_SIZE*3+1];
+
+			X509_digest(server_cert, EVP_sha1(), sha1, &sha1_size);
+
+			for (i=0; i<sha1_size; i++)
+				sm_snprintf(&sha1_ascii[i*3], 4, "%02X  ", sha1[i]);
+			sha1_ascii[sha1_size*3] = 0;
+
+			/* TODO: Use callbacks for proper decoupling */
+			rc = thread_call_function_sync(thread_get_main(), sm_request, 4, NULL, _("Certificate verification error\n\nSHA1: %s"), _("Connect anyway|Abort"), sha1_ascii);
+
 			/* Add some checks here */
 			X509_free(server_cert);
 
-			SM_DEBUGF(5,("Connection is secure\n"));
-			return 1;
+			if (rc == 1)
+			{
+				SM_DEBUGF(5,("Connection is assumed to be secure\n"));
+				return 1;
+			}
 		}
 	} else
 	{

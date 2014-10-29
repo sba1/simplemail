@@ -28,15 +28,19 @@ ifndef EXPAT_INCLUDE
 endif
 	touch $@
 
+build-dependencies/SDK/SDK_53.20.lha:
+	mkdir -p build-dependencies/SDK
+	cd build-dependencies/SDK && wget -c "http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=38&amp;Itemid=63" -O SDK_53.20.lha
+
 #
 # Download and extract MUI includes
 #
+ifdef MUI_INCLUDE
 .mui-done:
-ifndef MUI_INCLUDE
+else
+.mui-done: build-dependencies/SDK/SDK_53.20.lha
 	# MUI
 	mkdir -p build-dependencies/SDK
-	cd build-dependencies/SDK && wget -c "http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=38&amp;Itemid=63"
-	cd build-dependencies/SDK && ln -sf "index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=38&amp;Itemid=63" SDK_53.20.lha 
 	cd build-dependencies/SDK && lha xf SDK_53.20.lha && lha xf SDK_Install/MUI-3.9.lha
 	cd build-dependencies/SDK && echo "struct MUI_ImageSpec; struct MUI_FrameSpec;" >/tmp/muimaster.h && grep -v muiprog.h MUI/C/Include/interfaces/muimaster.h >>/tmp/muimaster.h && cp /tmp/muimaster.h MUI/C/Include/interfaces/muimaster.h
 	# NList

@@ -244,6 +244,17 @@ static void close_libs(void)
 	CloseLibraryInterface(IntuitionBase,IIntuition);
 }
 
+/*******************************************************/
+
+/* Compatibility wrapper as DeleteFile() was renamed to Delete()
+ * in SDK 53.24
+ */
+
+BOOL DeleteFile(STRPTR name)
+{
+	return IDOS->Delete(name);
+}
+
 /*****************************************
  Memory stuff (thread safe)
 ******************************************/
@@ -969,7 +980,7 @@ int fclose(FILE *f)
 	{
 		files[file->_file] = ZERO;
 		free(file);
-		if (tempname[0]) IDOS->DeleteFile(tempname);
+		if (tempname[0]) IDOS->Delete(tempname);
 	} else D(bug("Failed closeing 0x%lx",file));
 	IExec->ReleaseSemaphore(&files_sem);
 	return error;
@@ -1151,7 +1162,7 @@ char *tmpnam(char *name)
 
 int remove(const char *filename)
 {
-	if (IDOS->DeleteFile((char*)filename)) return 0;
+	if (IDOS->Delete((char*)filename)) return 0;
 	return -1;
 }
 

@@ -243,12 +243,9 @@ STATIC ULONG AddressString_UpdateList(struct IClass *cl, Object *obj);
 
 STATIC ULONG AddressString_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
-	struct AddressString_Data *data;
-
 	if (!(obj=(Object *)DoSuperMethodA(cl,obj,(Msg)msg)))
 		return 0;
 
-	data = (struct AddressString_Data*)INST_DATA(cl,obj);
 	return (ULONG)obj;
 }
 

@@ -276,7 +276,7 @@ static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
 		return 0;
 	}
 
-	object_marker = GetLong(buf,0);
+	/* object_marker = GetLong(buf,0); */
 	child = GetLong(buf,8);
 	entries = buf[17];
 
@@ -339,13 +339,13 @@ struct import_data
 **************************************************************************/
 static int dbx_import_entry(struct import_data *data)
 {
-	char *filename,*mailfilename;
+	char *filename;
 	char *destdir;
 	unsigned char *fileheader_buf;
 	char head_buf[300];
 	char path[380];
 	int gauge,fsize;
-	FILE *fh,*mailfh;
+	FILE *fh;
 
 	if ((filename = mystrdup(data->filename)))
 	{
@@ -383,8 +383,6 @@ static int dbx_import_entry(struct import_data *data)
 
 						if ((fileheader_buf = (unsigned char*)malloc(0x24bc)))
 						{
-							mailfilename = NULL;
-							mailfh = NULL;
 							gauge = 0;
 
 							if (fread(fileheader_buf,1,0x24bc,fh) == 0x24bc)

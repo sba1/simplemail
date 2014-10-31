@@ -317,7 +317,6 @@ static int get_encode_str(unsigned char *buf)
 {
 	int space = 0;
 	unsigned char *buf_start = buf;
-	unsigned char *word_start = buf;
 	unsigned char *word_end = NULL;
 	unsigned char c;
 	int toencode = 0;
@@ -338,7 +337,6 @@ static int get_encode_str(unsigned char *buf)
 		{
 			if (space)
 			{
-				word_start = buf;
 				space = 0;
 			}
 			if (c<32 || c >= 127 || (c == '=' && *(buf+1)=='?'))

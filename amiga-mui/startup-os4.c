@@ -1216,7 +1216,6 @@ int fprintf(FILE *file, const char *fmt,...)
 
 int printf(const char *fmt,...)
 {
-	int rc;
 	int size;
 
 	va_list ap;
@@ -1229,7 +1228,7 @@ int printf(const char *fmt,...)
 	if (size >= 0)
 	{
 		IDOS->PutStr(filesbuf);
-	} else rc = -1;
+	}
 
 	IExec->ReleaseSemaphore(&files_sem);
 

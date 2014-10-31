@@ -1851,7 +1851,6 @@ int read_line(FILE *fh, char *buf);
 static char *folder_config_get_imap_path(char *folder_path)
 {
 	char buf[256];
-	int rc = 0;
 	FILE *fh;
 
 	sm_snprintf(buf, sizeof(buf), "%s.config", folder_path);
@@ -1862,7 +1861,6 @@ static char *folder_config_get_imap_path(char *folder_path)
 
 		if (!mystrnicmp("FICO",buf,4))
 		{
-			rc = 1;
 			while (read_line(fh,buf))
 			{
 				if (!mystrnicmp("IMapPath=",buf,9))

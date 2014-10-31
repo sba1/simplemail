@@ -75,14 +75,10 @@ struct Icon_Data
 ************************************************************/
 STATIC ULONG Icon_New(struct IClass *cl,Object *obj,struct opSet *msg)
 {
-	struct Icon_Data *data;
-
 	if (!(obj=(Object *)DoSuperNew(cl,obj,
 /*					MUIA_Draggable, WorkbenchBase->lib_Version >= 45,*/
 					TAG_MORE,msg->ops_AttrList)))
 		return 0;
-
-	data = (struct Icon_Data*)INST_DATA(cl,obj);
 
 	Icon_Set(cl,obj,msg);
 	return (ULONG)obj;

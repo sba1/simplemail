@@ -197,6 +197,8 @@ static int bnode_read_block(struct index_external *idx, bnode *node, int address
 	if (fseek(idx->index_file, offset, SEEK_SET))
 		return 0;
 	rc = fread(node, 1, idx->block_size, idx->index_file);
+	if (rc != idx->block_size)
+		return 0;
 	return 1;
 }
 
@@ -361,7 +363,6 @@ static int bnode_lookup(struct index_external *idx, const char *text, struct bno
 			return 0;
 	} while (!tmp->leaf);
 
-out:
 	return 1;
 }
 

@@ -729,12 +729,11 @@ static void dt_put_rect_on_argb(struct dt_node *node, int srcx, int srcy, int sr
 
 	if (node->argb)
 	{
-		int i,j,w,h;
+		int i,j,w;
 		ULONG *udest = (ULONG*)dest;
 		ULONG *usrc = (ULONG*)node->argb;
 
 		w = dt_width(node);
-		h = dt_height(node);
 
 		for (j=0;j<src_height;j++)
 			for (i=0;i<src_width;i++)

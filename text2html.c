@@ -125,7 +125,7 @@ static int write_uri(unsigned char **buffer_ptr, int *buffer_len_ptr, string *st
 	}
 
 	/* The is probably the end of a sentence */
-	if (strchr(".?!", uri[i-1])) --i;
+	if (i > 0 && strchr(".?!", uri[i-1])) --i;
 	uri[i] = 0;
 
 	if (i)

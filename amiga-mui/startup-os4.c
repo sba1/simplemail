@@ -246,15 +246,6 @@ static void close_libs(void)
 
 /*******************************************************/
 
-/* Compatibility wrapper as DeleteFile() was renamed to Delete()
- * in SDK 53.24
- */
-
-BOOL DeleteFile(STRPTR name)
-{
-	return IDOS->Delete(name);
-}
-
 /*****************************************
  Memory stuff (thread safe)
 ******************************************/

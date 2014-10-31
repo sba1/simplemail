@@ -37,4 +37,16 @@ VOID FreeTemplate(APTR m);
 APTR ParseTemplate(STRPTR temp, STRPTR line, APTR results);
 LONG SendRexxCommand(STRPTR port, STRPTR Cmd, STRPTR Result, LONG ResultSize);
 
+
+/* Compatibility wrapper as DeleteFile() was renamed to Delete()
+ * in SDK 53.24
+ */
+
+#ifdef INLINE4_DOS_H
+static inline BOOL DeleteFile(STRPTR name)
+{
+	return Delete(name);
+}
+#endif
+
 #endif

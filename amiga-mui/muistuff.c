@@ -53,13 +53,10 @@ IPTR xget(Object * obj, ULONG attribute)
 
 APTR VARARGS68K MyNewObject(struct IClass *cl, CONST_STRPTR id, ... )
 {
-	ULONG *tags;
 	Object *o;
 	va_list args;
 
 	va_startlinear(args,id);
-
-	tags = va_getlinearva(args,void*);
 
 	o = NewObjectA(cl,id,(struct TagItem*)va_getlinearva(args,ULONG));
 	if (o == NULL)

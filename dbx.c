@@ -258,7 +258,6 @@ static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
 {
 	unsigned char *buf;
 	unsigned char *body;
-	int object_marker;
 	unsigned int child;
 	int entries;
 

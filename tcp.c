@@ -51,6 +51,7 @@
 #undef _
 #include "debug.h"
 #include "smintl.h"
+#include "support_indep.h"
 #include "tcp.h"
 
 #include "subthreads.h"
@@ -310,11 +311,11 @@ int tcp_make_secure(struct connection *conn)
 
 			/* Issued to */
 			if (X509_NAME_get_text_by_NID(X509_get_subject_name(server_cert), NID_commonName, subject_common_name, sizeof(subject_common_name)) < 0)
-				strcpy(subject_common_name, _("Not found"));
+				mystrlcpy(subject_common_name, _("Not found"), sizeof(subject_common_name));
 
 			/* Issued by */
 			if (X509_NAME_get_text_by_NID(X509_get_issuer_name(server_cert), NID_commonName, issuer_common_name, sizeof(issuer_common_name)) < 0)
-				strcpy(issuer_common_name, _("Not found"));
+				mystrlcpy(issuer_common_name, _("Not found"), sizeof(issuer_common_name));
 
 			sm_snprintf(cert_summary, sizeof(cert_summary), "Issued to: %s (CN)\nIssues by: %s (CN)", subject_common_name, issuer_common_name);
 

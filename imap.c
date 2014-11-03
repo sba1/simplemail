@@ -1550,7 +1550,6 @@ static int imap_socket_lib_open;
 static struct imap_server *imap_server;
 static char *imap_folder; /** The path of the folder on the imap server */
 static char *imap_local_path; /** The local path of the folder */
-static int imap_connecting;
 
 /**************************************************************************/
 

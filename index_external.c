@@ -728,7 +728,6 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 {
 	int cmp;
 	int index;
-	int text_len;
 	struct bnode_element *be;
 
 	if (!iter)
@@ -757,8 +756,6 @@ static struct bnode_string_iter_data *bnode_find_string_iter(struct index_extern
 	{
 		index = iter->index + 1;
 	}
-
-	text_len = strlen(text);
 
 	if (index == iter->node->num_elements)
 	{
@@ -808,7 +805,6 @@ static int bnode_find_string(struct index_external *idx, const char *text, int (
 
 static void index_external_dispose(struct index *index)
 {
-	struct document_node *d;
 	struct index_external *idx;
 
 	idx = (struct index_external*)index;

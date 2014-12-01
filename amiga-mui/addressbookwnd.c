@@ -1416,7 +1416,7 @@ static void addressbookwnd_cleanup(void *user_data)
 		for (i=0;addressbook_newmenu[i].nm_Type != NM_END;i++)
 		{
 			if (addressbook_newmenu[i].nm_Label != NM_BARLABEL)
-				free(addressbook_newmenu[i].nm_Label);
+				free((STRPTR)addressbook_newmenu[i].nm_Label);
 		}
 		free(addressbook_newmenu);
 	}

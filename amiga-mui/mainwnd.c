@@ -1263,7 +1263,7 @@ void main_window_deinit(void)
 		for (i=0;main_newmenu[i].nm_Type != NM_END;i++)
 		{
 			if (main_newmenu[i].nm_Label != NM_BARLABEL)
-				FreeVec(main_newmenu[i].nm_Label);
+				FreeVec((STRPTR)main_newmenu[i].nm_Label);
 		}
 		FreeVec(main_newmenu);
 	}

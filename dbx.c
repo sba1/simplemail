@@ -343,7 +343,7 @@ static int dbx_import_entry(struct import_data *data)
 	unsigned char *fileheader_buf;
 	char head_buf[300];
 	char path[380];
-	int gauge,fsize;
+	int fsize;
 	FILE *fh;
 
 	if ((filename = mystrdup(data->filename)))
@@ -351,9 +351,7 @@ static int dbx_import_entry(struct import_data *data)
 		if ((destdir = mystrdup(data->destdir)))
 		{
 			struct folder *dest_folder;
-			int in_folder;
-			
-			in_folder = data->in_folder;
+
 			if (data->in_folder) dest_folder = folder_find_by_path(destdir);
 			else dest_folder = NULL;
 
@@ -382,8 +380,6 @@ static int dbx_import_entry(struct import_data *data)
 
 						if ((fileheader_buf = (unsigned char*)malloc(0x24bc)))
 						{
-							gauge = 0;
-
 							if (fread(fileheader_buf,1,0x24bc,fh) == 0x24bc)
 							{
 								if ((fileheader_buf[0] == 0xcf && fileheader_buf[1] == 0xad &&

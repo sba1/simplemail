@@ -1030,12 +1030,11 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 							{
 								char msgno_buf[200];
 								char *temp_ptr;
-								int msgno;
 								int todownload;
 								line++;
 
 								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-								msgno = atoi(msgno_buf); /* ignored */
+								/*atoi(msgno_buf);*/ /* ignored */
 
 								/* skip the fetch command */
 								line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
@@ -1345,7 +1344,6 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 							{
 								if (!string_list_find(sub_folder_list,node->string))
 								{
-									int success = 0;
 									char *path = utf8toiutf7(node->string,strlen(node->string));
 									if (path)
 									{
@@ -1363,11 +1361,9 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 											if (!mystricmp(buf,tag))
 											{
 												line = imap_get_result(line,buf,sizeof(buf));
-												if (!mystricmp(buf,"OK"))
+												if (mystricmp(buf,"OK"))
 												{
-													success = 1;
-												} else
-												{
+													/* If it is not OK it is a failure */
 													SM_DEBUGF(20,("%s",send));
 													SM_DEBUGF(20,("%s",saved_line));
 
@@ -1387,7 +1383,6 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 							{
 								if (!string_list_find(list,node->string))
 								{
-									int success = 0;
 									char *path = utf8toiutf7(node->string,strlen(node->string));
 									if (path)
 									{
@@ -1403,11 +1398,9 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 											if (!mystricmp(buf,tag))
 											{
 												line = imap_get_result(line,buf,sizeof(buf));
-												if (!mystricmp(buf,"OK"))
+												if (mystricmp(buf,"OK"))
 												{
-													success = 1;
-												} else
-												{
+													/* If it is not OK , it's a failure */
 													tell_from_subtask(_("Unsubscribing folders failed!"));
 												}
 												break;
@@ -2150,12 +2143,11 @@ static int imap_thread_download_mail(struct imap_server *server, char *local_pat
 			{
 				char msgno_buf[200];
 				char *temp_ptr;
-				int msgno;
 				int todownload;
 				line++;
 
 				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-				msgno = atoi(msgno_buf); /* ignored */
+				/*msgno = atoi(msgno_buf);*/ /* ignored */
 
 				/* skip the fetch command */
 				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));

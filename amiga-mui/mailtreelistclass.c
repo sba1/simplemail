@@ -991,10 +991,10 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 #ifdef MAILLIST_IS_TREE
 	struct mail *m;
 	void *handle = NULL;
+	int primary_sort, threaded;
 #endif
 	struct folder *folder = msg->f;
 	struct mail_info *last_active_mail, *active_mail = NULL;
-	int primary_sort, threaded;
 
 	if (!folder)
 	{
@@ -1004,14 +1004,14 @@ STATIC ULONG MailTreelist_SetFolderMails(struct IClass *cl, Object *obj, struct 
 
 	last_active_mail = (struct mail_info*)xget(obj,MUIA_MailTreelist_Active);
 
-	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
-  threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
-
 	DoMethod(obj, MUIM_MailTreelist_Freeze);
 	DoMethod(obj, MUIM_MailTreelist_Clear);
 	set(obj, MUIA_MailTreelist_FolderType, folder_get_type(folder));
 
 #ifdef MAILLIST_IS_TREE
+	primary_sort = folder_get_primary_sort(folder)&FOLDER_SORT_MODEMASK;
+	threaded = folder->type == FOLDER_TYPE_MAILINGLIST;
+
 	if ((primary_sort == FOLDER_SORT_FROMTO || primary_sort == FOLDER_SORT_SUBJECT) && !threaded)
 	{
 		struct mail *lm = NULL; /* last mail */

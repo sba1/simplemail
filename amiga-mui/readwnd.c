@@ -867,7 +867,7 @@ void read_window_cleanup(void)
 		for (i=0;read_newmenu[i].nm_Type != NM_END;i++)
 		{
 			if (read_newmenu[i].nm_Label != NM_BARLABEL)
-				free(read_newmenu[i].nm_Label);
+				free((STRPTR)read_newmenu[i].nm_Label);
 		}
 		free(read_newmenu);
 	}

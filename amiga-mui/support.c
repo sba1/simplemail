@@ -974,6 +974,9 @@ void tell_from_subtask(const char *str)
 
 #ifndef NO_SSL
 
+#ifdef USE_OPENSSL
+#else
+
 #ifdef __MORPHOS__
 #define USE_INLINE_STDARG
 #endif
@@ -986,7 +989,7 @@ void tell_from_subtask(const char *str)
 #ifndef __AMIGAOS4__
 struct AmiSSLIFace {int dummy; };
 #endif
-
+#endif
 
 static PKCS7 *pkcs7_get_data(PKCS7 *pkcs7, struct Library *AmiSSLBase, struct AmiSSLIFace *IAmiSSL)
 {
@@ -1013,6 +1016,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 	struct AmiSSLIFace *IAmiSSL;
 
 	/* TODO: use open_ssl_lib() */
+#ifndef USE_OPENSSL
 #ifdef USE_AMISSL3
 	struct Library *AmiSSLMasterBase;
 	struct AmiSSLMasterIFace *IAmiSSLMaster;
@@ -1040,6 +1044,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				TAG_DONE))
 		{
 #endif
+#endif
 			unsigned char *p = (unsigned char*)buf;
 			PKCS7 *pkcs7;
 
@@ -1060,6 +1065,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 				}
 				PKCS7_free(pkcs7);
 			}
+#ifndef USE_OPENSSL
 #ifdef USE_AMISSL3
 						CleanupAmiSSL(TAG_DONE);
 #ifdef __AMIGAOS4__
@@ -1077,6 +1083,7 @@ int pkcs7_decode(char *buf, int len, char **dest_ptr, int *len_ptr)
 		}
 		CloseLibraryInterface(AmiSSLBase,IAmiSSL);
 	}
+#endif
 #endif
 	return rc;
 #else

@@ -18,6 +18,13 @@ endif
 	touch $@
 
 #
+# Compile OpenSSL
+#
+.openssl-done:
+	(cd interim-openssl && git pull) || git clone https://github.com/sba1/interim-openssl.git
+	cd interim-openssl && make build-clib2
+
+#
 # Download and extract expat includes
 #
 .expat-done:

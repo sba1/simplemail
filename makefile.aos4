@@ -6,7 +6,7 @@
 ifndef Kickstart
 
 CROSS_COMPILE = ppc-amigaos-
-RM     = rm -R
+RM     = rm -Rf
 MKDIR  = mkdir -p
 DATE   = -DSIMPLEMAIL_DATE=\"`date +%d.%m.%Y`\"
 

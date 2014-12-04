@@ -54,11 +54,14 @@
 #ifdef __MORPHOS__
 #define USE_INLINE_STDARG
 #endif
-#ifdef USE_AMISSL3
+#if defined(USE_OPENSSL)
+#include <openssl/ssl.h>
+#elif defined(USE_AMISSL3)
 #include <libraries/amisslmaster.h>
 #include <proto/amisslmaster.h>
-#endif
+#else
 #include <proto/amissl.h>
+#endif
 #endif
 
 #include "ssl.h"
@@ -186,7 +189,7 @@ int open_ssl_lib(void)
 		goto out;
 	if (!open_socket_lib())
 		goto out;
-
+#ifndef USE_OPENSSL
 	if (!thread->amissllib)
 	{
 
@@ -216,6 +219,7 @@ int open_ssl_lib(void)
 					TAG_DONE))
 			{
 #endif
+#endif
 				if ((thread->ssl_ctx = ssl_init()))
 				{
 					/* Everything is ok */
@@ -224,6 +228,7 @@ int open_ssl_lib(void)
 					SM_RETURN(1,"%ld");
 					return 1;
 				}
+#ifndef USE_OPENSSL
 #ifdef USE_AMISSL3
 							CleanupAmiSSL(TAG_DONE);
 #ifdef __AMIGAOS4__
@@ -257,7 +262,9 @@ int open_ssl_lib(void)
 		SM_RETURN(1,"%ld");
 		return 1;
 	}
-
+#else /* USE_OPENSSL */
+	return 1;
+#endif
 out:
 	close_socket_lib();
 	SM_RETURN(0,"%ld");
@@ -287,6 +294,7 @@ void close_ssl_lib(void)
 	{
 		SSL_CTX_free(thread->ssl_ctx);
 		thread->ssl_ctx = NULL;
+#ifndef USE_OPENSSL
 		CleanupAmiSSL(TAG_DONE);
 #ifdef USE_AMISSL3
 #ifdef __AMIGAOS4__
@@ -307,6 +315,7 @@ void close_ssl_lib(void)
 		CloseLibraryInterface(thread->amissllib,thread->iamissl);
 		thread->amissllib = NULL;
 		thread->iamissl = NULL;
+#endif
 #endif
 		close_socket_lib();
 	}

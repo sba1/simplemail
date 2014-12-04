@@ -975,7 +975,7 @@ void tell_from_subtask(const char *str)
 #ifndef NO_SSL
 
 #ifdef USE_OPENSSL
-#include <openssl/pkcs7.h>
+#include <openssl/ssl.h>
 #else
 
 #ifdef __MORPHOS__

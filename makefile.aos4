@@ -26,20 +26,25 @@ LD     = $(CROSS_COMPILE)ld
 RANLIB = $(CROSS_COMPILE)ranlib
 STRIP  = $(CROSS_COMPILE)strip
 
+SSL_FLAGS = -DUSE_AMISSL3
+SSL_INC = -I "$(AMISSL_INCLUDE)"
+SSL_LINK =
+SSL_LIB =
+
 # Change these as required
 OPTIMIZE = -O3
 DEBUG = -g #-ggdb # -g -DDEBUG
-INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" -I "$(AMISSL_INCLUDE)" -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I "$(OPENURL_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = $(DATE) -DHAVE_OPENURL -DUSE_AMISSL3 -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing -Wno-deprecated-declarations $(OPTIMIZE) $(DEBUG) $(INC)
+INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" $(SSL_INC) -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I "$(OPENURL_INCLUDE)" -I. -I./indep-include -I./amiga-mui
+CFLAGS = $(DATE) -DHAVE_OPENURL $(SSL_FLAGS) -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing -Wno-deprecated-declarations $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
-LINK = -nostartfiles -L "$(EXPAT_LIB)" -mcrt=clib2
+LINK = -nostartfiles -L "$(EXPAT_LIB)" $(SSL_LINK) -mcrt=clib2
 
 # Name of the "thing" to build
 TARGET = SimpleMail
 
 # Additional linker libraries
-LIBS = -ldebug -lexpat
+LIBS = -ldebug -lexpat $(SSL_LIB)
 
 # Version of the binary to build
 VERSION = 0

@@ -26,10 +26,17 @@ LD     = $(CROSS_COMPILE)ld
 RANLIB = $(CROSS_COMPILE)ranlib
 STRIP  = $(CROSS_COMPILE)strip
 
+ifdef USE_OPENSSL
+SSL_FLAGS = -DUSE_OPENSSL
+SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
+SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
+SSL_LIB = -lssl -lcrypto
+else
 SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL_INCLUDE)"
 SSL_LINK =
 SSL_LIB =
+endif
 
 # Change these as required
 OPTIMIZE = -O3

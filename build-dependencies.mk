@@ -21,8 +21,9 @@ endif
 # Compile OpenSSL
 #
 .openssl-done:
-	(cd interim-openssl && git pull) || git clone https://github.com/sba1/interim-openssl.git
-	cd interim-openssl && make build-clib2
+	(cd build-dependencies/interim-openssl && git pull) || \
+	    (mkdir -p build-dependencies && cd build-dependencies && git clone https://github.com/sba1/interim-openssl.git)
+	cd build-dependencies/interim-openssl && make build-clib2
 
 #
 # Download and extract expat includes

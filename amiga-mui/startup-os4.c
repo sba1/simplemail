@@ -1285,6 +1285,23 @@ DIR *opendir(const char *name)
 	return (DIR*)dir;
 }
 
+#ifdef USE_OPENSSL
+int setvbuf(FILE *stream, char *buf, int mode, size_t size)
+{
+	return 0;
+}
+
+int ferror(FILE *stream)
+{
+	return 0;
+}
+
+int sscanf(const char *s, const char *template, ...)
+{
+	return 0;
+}
+#endif
+
 int closedir(DIR *d)
 {
 	struct mydir *dir = (struct mydir*)d;

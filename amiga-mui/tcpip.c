@@ -370,3 +370,13 @@ void myclosesocket(int fd)
 	else
 		SM_DEBUGF(20,("Closing socket %ld succeeded\n",fd));
 }
+
+#if defined(__amigaos4__) && defined(USE_OPENSSL)
+/* Temporarily needed for the static openssl link lib */
+#undef shutdown
+int shutdown(int sockfd, int how)
+{
+	return ISocket->shutdown(sockfd, how);
+}
+
+#endif

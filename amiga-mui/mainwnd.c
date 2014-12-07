@@ -1535,17 +1535,17 @@ void main_build_accounts(void)
 	{
 		if (account->pop && account->pop->name)
 		{
-			char buf[200];
+			char buf[100];
 			Object *entry;
 
 			if (account->account_name)
 			{
-				utf8tostr(account->account_name, buf, sizeof(buf), user.config.default_codeset);
+				utf8tostr(account->account_name, buf, sizeof(buf) - 4, user.config.default_codeset);
 				strcat(buf,"...");
 			} else if (account->pop->login)
 			{
 				sm_snprintf(buf,sizeof(buf),"%s@%s...",account->pop->login,account->pop->name);
-			} else strcpy(buf,account->pop->name);
+			} else mystrlcpy(buf, account->pop->name, sizeof(buf));
 
 			entry = MenuitemObject,
 				MUIA_Menuitem_Title, StrCopy(buf),

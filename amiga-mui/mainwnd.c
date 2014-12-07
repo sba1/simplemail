@@ -1535,6 +1535,8 @@ void main_build_accounts(void)
 	{
 		if (account->pop && account->pop->name)
 		{
+			static char *digits[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+			const int num_digits = sizeof(digits) / sizeof(digits[0]);
 			char buf[100];
 			Object *entry;
 
@@ -1549,6 +1551,8 @@ void main_build_accounts(void)
 
 			entry = MenuitemObject,
 				MUIA_Menuitem_Title, StrCopy(buf),
+				/* Add digit short cut for the first few entries */
+				i < num_digits?MUIA_Menuitem_Shortcut:TAG_IGNORE, digits[i < num_digits?i:0],
 				End;
 
 			DoMethod(project_checksingleaccount_menuitem, OM_ADDMEMBER, (ULONG)entry);

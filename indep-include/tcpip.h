@@ -51,13 +51,17 @@ void myclosesocket(int fd);
 #include <proto/exec.h>
 #include "subthreads_amiga.h"
 
+#ifdef __AMIGAOS4__
+#define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
+#define AmiSSLBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->amissllib
+#define AmiSSLMasterBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->amisslmasterlib
+#define ISocket ((struct thread_s*)FindTask(NULL)->tc_UserData)->isocket
+#define IAmiSSL ((struct thread_s*)FindTask(NULL)->tc_UserData)->iamissl
+#define IAmiSSLMaster ((struct thread_s*)FindTask(NULL)->tc_UserData)->iamisslmaster
+#else
 #define SocketBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->socketlib
 #define AmiSSLBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->amissllib
 #define AmiSSLMasterBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->amisslmasterlib
-#ifdef __AMIGAOS4__
-#define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
-#define IAmiSSL ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->iamissl
-#define IAmiSSLMaster ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->iamisslmaster
 #endif
 #endif
 

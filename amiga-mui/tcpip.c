@@ -73,10 +73,6 @@
 #undef SocketBase
 #endif
 #define SocketBase ((struct thread_s*)FindTask(NULL)->tc_UserData)->socketlib
-#else
-/* calling FindTask(NULL) below makes problems when compiling */
-#define SocketBase ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->socketlib
-#define ISocket ((struct thread_s*)(((struct ExecBase*)SysBase)->ThisTask)->tc_UserData)->isocket
 #endif
 
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);

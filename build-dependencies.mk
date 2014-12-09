@@ -30,7 +30,7 @@ endif
 .openssl-done:
 	(cd build-dependencies/interim-openssl && git pull) || \
 	    (mkdir -p build-dependencies && cd build-dependencies && git clone https://github.com/sba1/interim-openssl.git)
-	cd build-dependencies/interim-openssl && make build-clib2
+	$(MAKE) -C build-dependencies/interim-openssl build-clib2
 	touch $@
 
 #

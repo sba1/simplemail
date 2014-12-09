@@ -1286,6 +1286,23 @@ DIR *opendir(const char *name)
 }
 
 #ifdef USE_OPENSSL
+
+#include <proto/bsdsocket.h>
+#include "subthreads_amiga.h"
+
+time_t time(time_t *result)
+{
+	time_t t = sm_get_current_seconds();
+	if (*result) *result = t;
+	return t;
+}
+
+struct tm *gmtime_r(const time_t *t, struct tm *tm_ptr)
+{
+	sm_convert_seconds(*t, tm_ptr);
+	return tm_ptr;
+}
+
 int setvbuf(FILE *stream, char *buf, int mode, size_t size)
 {
 	return 0;
@@ -1299,6 +1316,16 @@ int ferror(FILE *stream)
 int sscanf(const char *s, const char *template, ...)
 {
 	return 0;
+}
+
+int read(int filedes, void *buffer, size_t size)
+{
+	return ((struct thread_s*)IExec->FindTask(NULL)->tc_UserData)->isocket->recv(filedes, buffer, size, 0);
+}
+
+int write(int filedes, void *buffer, size_t size)
+{
+	return ((struct thread_s*)IExec->FindTask(NULL)->tc_UserData)->isocket->send(filedes, buffer, size, 0);
 }
 #endif
 

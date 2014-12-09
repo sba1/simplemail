@@ -32,7 +32,7 @@ config.h.in
 simplemail
 SimpleMail
 SimpleMail.debug
-ppc-amigaos-objs
+ppc-amigaos-objs*
 SimpleMail.map
 project.index
 SimpleMail_rev.i
@@ -40,7 +40,7 @@ SimpleMail_rev.s
 .settings
 html
 ppc-morphos-objs
-ppc-amigaos-test-objs
+ppc-amigaos-test-objs*
 sas_test_objects
 imap_unittest.debug
 imap_unittest.map

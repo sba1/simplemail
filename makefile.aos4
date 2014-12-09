@@ -27,11 +27,13 @@ RANLIB = $(CROSS_COMPILE)ranlib
 STRIP  = $(CROSS_COMPILE)strip
 
 ifdef USE_OPENSSL
+OBJSDIRSUFFIX = openssl
 SSL_FLAGS = -DUSE_OPENSSL
 SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
 SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
 SSL_LIB = -lssl -lcrypto
 else
+OBJSDIRSUFFIX = amissl
 SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL_INCLUDE)"
 SSL_LINK =
@@ -121,8 +123,8 @@ SRCS = $(NONARCHSRCS) $(addprefix amiga-mui/,$(ARCHSRCS))
 
 # -------------------------------------------------------------
 
-OBJSDIR=$(CROSS_COMPILE)objs
-TESTOBJSDIR=$(CROSS_COMPILE)test-objs
+OBJSDIR=$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
+TESTOBJSDIR=$(CROSS_COMPILE)test-objs-$(OBJSDIRSUFFIX)
 
 OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
 AOBJS = $(ASRCS:%.S=$(OBJSDIR)/%.o)

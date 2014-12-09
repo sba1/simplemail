@@ -3,7 +3,14 @@
 # using a cross compiler on an Unix system
 #
 
-.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done
+
+ifdef USE_OPENSSL
+OPENSSL_DEPENDENCY=.openssl-done
+else
+OPENSSL_DEPENDENCY=
+endif
+
+.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done $(OPENSSL_DEPENDENCY)
 	touch $@
 
 #

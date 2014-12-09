@@ -166,7 +166,7 @@ dirs:
 	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
 
 # Rules for building
-$(TARGET): $(OBJS) $(AOBJS)
+$(TARGET): dirs $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
 

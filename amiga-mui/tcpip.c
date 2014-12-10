@@ -172,6 +172,77 @@ int is_online(char *iface)
 #endif
 }
 
+#ifdef USE_AMISSL3
+
+/**
+ * Close the AmiSSL3 library for the given thread.
+ *
+ * @param thread
+ * @return
+ */
+static void close_amissl3(struct thread_s *thread)
+{
+	CleanupAmiSSL(TAG_DONE);
+#ifdef __AMIGAOS4__
+	DropInterface((struct Interface*)thread->iamissl);
+	thread->iamissl = NULL;
+#endif
+	/* FIXME: Closing amissl will lead to crashes on subsequent calls to socket()
+	 * at least on OS4. Therefore, this is disabled when compiling for this
+	 * operating system. */
+#ifndef __AMIGAOS4__
+	CloseAmiSSL();
+#endif
+	thread->amissllib = NULL;
+	CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
+	thread->iamisslmaster = NULL;
+	thread->amisslmasterlib = NULL;
+
+	CloseLibraryInterface(thread->amissllib,thread->iamissl);
+	thread->amissllib = NULL;
+	thread->iamissl = NULL;
+}
+
+/**
+ * Open the AmiSSL3 library for the given thread.
+ *
+ * @param thread
+ * @return 1 on success, 0 on failure.
+ */
+static int open_amissl3(struct thread_s *thread)
+{
+	thread->amisslmasterlib = NULL;
+	thread->amissllib = NULL;
+
+#ifdef __AMIGAOS4__
+	thread->iamisslmaster = NULL;
+	thread->iamissl =  NULL;
+#endif
+
+	if (!(thread->amisslmasterlib = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &thread->iamisslmaster)))
+		goto bailout;
+
+	if (!InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
+		goto bailout;
+
+	if (!(thread->amissllib = OpenAmiSSL()))
+		goto bailout;
+
+#ifdef __AMIGAOS4__
+	if (!(thread->iamissl = (struct AmiSSLIFace *)GetInterface(thread->amissllib,"main",1,NULL)))
+		goto bailout;
+#endif
+	if (InitAmiSSL(AmiSSL_SocketBase, (ULONG)SocketBase, TAG_DONE) != 0)
+		goto bailout;
+
+	return 1;
+bailout:
+	close_amissl3(thread);
+	return 0;
+}
+
+#endif
+
 int open_ssl_lib(void)
 {
 #ifdef NO_SSL
@@ -190,19 +261,8 @@ int open_ssl_lib(void)
 	{
 
 #ifdef USE_AMISSL3
-
-		if ((thread->amisslmasterlib = OpenLibraryInterface("amisslmaster.library",AMISSLMASTER_MIN_VERSION, &thread->iamisslmaster)))
+		if (open_amissl3(thread))
 		{
-			if (InitAmiSSLMaster(AMISSL_CURRENT_VERSION, TRUE))
-			{
-				if ((thread->amissllib = OpenAmiSSL()))
-				{
-#ifdef __AMIGAOS4__
-					if ((thread->iamissl = (struct AmiSSLIFace *)GetInterface(thread->amissllib,"main",1,NULL)))
-					{
-#endif
-						if (InitAmiSSL(AmiSSL_SocketBase, (ULONG)SocketBase, TAG_DONE) == 0)
-						{
 #else
 		SM_DEBUGF(10,("Open amissl.library\n"));
 		if ((thread->amissllib = OpenLibraryInterface("amissl.library",1,&thread->iamissl)))
@@ -226,22 +286,8 @@ int open_ssl_lib(void)
 				}
 #ifndef USE_OPENSSL
 #ifdef USE_AMISSL3
-							CleanupAmiSSL(TAG_DONE);
-#ifdef __AMIGAOS4__
-						}
-						DropInterface((struct Interface*)thread->iamissl);
-						thread->iamissl = NULL;
-#endif
-					}
-					CloseAmiSSL();
-					thread->amissllib = NULL;
-				}
-			}
-			CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
-			thread->iamisslmaster = NULL;
-			thread->amisslmasterlib = NULL;
+			close_amissl3(thread);
 		}
-
 #else
 				CleanupAmiSSL(TAG_DONE);
 			}
@@ -290,24 +336,12 @@ void close_ssl_lib(void)
 	{
 		SSL_CTX_free(thread->ssl_ctx);
 		thread->ssl_ctx = NULL;
+
 #ifndef USE_OPENSSL
-		CleanupAmiSSL(TAG_DONE);
 #ifdef USE_AMISSL3
-#ifdef __AMIGAOS4__
-		DropInterface((struct Interface*)thread->iamissl);
-		thread->iamissl = NULL;
-#endif
-		/* FIXME: Closing amissl will lead to crashes on subsequent calls to socket()
-		 * at least on OS4. Therefore, this is disabled when compiling for this
-		 * operating system. */
-#ifndef __AMIGAOS4__
-		CloseAmiSSL();
-#endif
-		thread->amissllib = NULL;
-		CloseLibraryInterface(thread->amisslmasterlib,thread->iamisslmaster);
-		thread->iamisslmaster = NULL;
-		thread->amisslmasterlib = NULL;
+		close_amissl3(thread);
 #else
+		CleanupAmiSSL(TAG_DONE);
 		CloseLibraryInterface(thread->amissllib,thread->iamissl);
 		thread->amissllib = NULL;
 		thread->iamissl = NULL;

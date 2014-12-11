@@ -51,6 +51,7 @@ build-dependencies
 .mui-done
 .amissl-done
 .openurl-done
+.openssl-done
 .cproject
 .project
 .csettings

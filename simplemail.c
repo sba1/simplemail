@@ -2427,13 +2427,18 @@ void callback_change_folder_attrs(void)
 	filter_update_folder_list();
 }
 
-/* reload the folders order */
+/**
+ * Reload the folders' order and refresh the view.
+ */
 void callback_reload_folder_order(void)
 {
 	folder_load_order();
 	callback_refresh_folders();
 }
 
+/**
+ * Refresh the view of the folders.
+ */
 void callback_refresh_folders(void)
 {
 	main_refresh_folders();
@@ -2442,7 +2447,9 @@ void callback_refresh_folders(void)
 	filter_update_folder_list();
 }
 
-/* the configuration has been changed */
+/**
+ * The configuration has been changed.
+ */
 void callback_config_changed(void)
 {
 	/* Build the check single account menu */
@@ -2454,13 +2461,19 @@ void callback_config_changed(void)
 	folder_refresh_signature_cycle();
 }
 
-/* select an mail */
+/**
+ * Select the mail specified by the num.
+ *
+ * @param num the index of the mail to be selected.
+ */
 void callback_select_mail(int num)
 {
 	main_select_mail(num);
 }
 
-/* delete all indexfiles */
+/**
+ * Delete all indexfiles.
+ */
 void callback_delete_all_indexfiles(void)
 {
 	app_busy();
@@ -2468,7 +2481,9 @@ void callback_delete_all_indexfiles(void)
 	app_unbusy();
 }
 
-/* save all indexfiles */
+/**
+ * Save all indexfiles.
+ */
 void callback_save_all_indexfiles(void)
 {
 	app_busy();
@@ -2476,7 +2491,9 @@ void callback_save_all_indexfiles(void)
 	app_unbusy();
 }
 
-/* rescan the current selected folder */
+/**
+ * Rescan the currently selected folder.
+ */
 void callback_rescan_folder(void)
 {
 	struct folder *f = main_get_folder();
@@ -2644,9 +2661,9 @@ static void callback_timer(void)
 	thread_push_function_delayed(1000, callback_timer, 0);
 }
 
-/**************************************************
- Resets the auto timer
-***************************************************/
+/**
+ * Resets the auto timer
+ */
 void callback_autocheck_reset(void)
 {
 	autocheck_seconds_start = sm_get_current_seconds();

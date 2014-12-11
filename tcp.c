@@ -51,6 +51,7 @@
 
 #undef _
 #include "debug.h"
+#include "simplemail.h" /* callback_failed_ssl_verification() */
 #include "smintl.h"
 #include "support_indep.h"
 #include "tcp.h"
@@ -323,8 +324,7 @@ int tcp_make_secure(struct connection *conn)
 			verify_results = SSL_get_verify_result(conn->ssl);
 
 			/* TODO: Use callbacks for proper decoupling */
-			rc = thread_call_function_sync(thread_get_main(), sm_request, 6,
-					NULL, _("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"), _("Connect anyway|Abort"),
+			rc = thread_call_function_sync(thread_get_main(), callback_failed_ssl_verification, 3,
 					X509_verify_cert_error_string(verify_results), cert_summary, sha1_ascii);
 
 			/* Add some checks here */

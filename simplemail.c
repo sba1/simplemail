@@ -2344,6 +2344,21 @@ void callback_remove_folder(void)
 	}
 }
 
+/**
+ * Called on an SSL verification failure.
+ *
+ * @param reason the reason for the failure.
+ * @param cert_summary the summary for the certificate.
+ * @param sha1_ascii the sha1 of the failed certificate.
+ * @return 0 whether the any connection attempt should be aborted, any other value when
+ *  the user accepts the risk.
+ */
+int callback_failed_ssl_verification(char *reason, char *cert_summary, char *sha1_ascii)
+{
+	return sm_request(_("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"),
+			_("Connect anyway|Abort"), reason, cert_summary, sha1_ascii);
+}
+
 /* called when imap folders has been received */
 static void callback_received_imap_folders(struct imap_server *server, struct list *all_folder_list, struct list *sub_folder_list)
 {

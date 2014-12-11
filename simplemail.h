@@ -82,6 +82,8 @@ void callback_write_mail_to(struct addressbook_entry_new *address);
 int callback_write_mail_to_str(char *str, char *subject);
 int callback_write_mail_to_str_with_body(char *str, char *subject, char *body);
 
+int callback_failed_ssl_verification(char *reason, char *cert_summary, char *sha1_ascii);
+
 void callback_imap_submit_folders(struct folder *f, struct list *list);
 void callback_imap_get_folders(struct folder *f);
 void callback_edit_folder(void);

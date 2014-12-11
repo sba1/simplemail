@@ -318,7 +318,7 @@ int tcp_make_secure(struct connection *conn)
 			if (X509_NAME_get_text_by_NID(X509_get_issuer_name(server_cert), NID_commonName, issuer_common_name, sizeof(issuer_common_name)) < 0)
 				mystrlcpy(issuer_common_name, _("Not found"), sizeof(issuer_common_name));
 
-			sm_snprintf(cert_summary, sizeof(cert_summary), "Issued to: %s (CN)\nIssues by: %s (CN)", subject_common_name, issuer_common_name);
+			sm_snprintf(cert_summary, sizeof(cert_summary), _("Issued to: %s (CN)\nIssues by: %s (CN)"), subject_common_name, issuer_common_name);
 
 			verify_results = SSL_get_verify_result(conn->ssl);
 

@@ -2353,11 +2353,11 @@ void callback_remove_folder(void)
  * @return 0 whether the any connection attempt should be aborted, any other value when
  *  the user accepts the risk.
  */
-int callback_failed_ssl_verification(char *reason, char *cert_summary, char *sha1_ascii)
+int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii)
 {
-	return sm_request(_("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"),
-	return sm_request(NULL, _("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"),
-			_("Connect anyway|Abort"), reason, cert_summary, sha1_ascii);
+	/* TODO: Add general rule, interact with prefs */
+	return sm_request(NULL, _("Failed to verify certificate for server\n%s\n\n%s\n\n%s\nSHA1: %s"),
+			_("Connect anyway|Abort"), server_name, reason, cert_summary, sha1_ascii);
 }
 
 /* called when imap folders has been received */

@@ -2347,17 +2347,19 @@ void callback_remove_folder(void)
 /**
  * Called on an SSL verification failure.
  *
+ * @param server_name the name of the server as supplied by the user to which the ssl connection failed
  * @param reason the reason for the failure.
  * @param cert_summary the summary for the certificate.
  * @param sha1_ascii the sha1 of the failed certificate.
+ * @param sha256_ascci the sha256 of the failed certificate. If first byte is a 0 byte then it is ignored.
  * @return 0 whether the any connection attempt should be aborted, any other value when
  *  the user accepts the risk.
  */
-int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii)
+int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii, char *sha256_ascii)
 {
 	/* TODO: Add general rule, interact with prefs */
-	return sm_request(NULL, _("Failed to verify certificate for server\n%s\n\n%s\n\n%s\nSHA1: %s"),
-			_("Connect anyway|Abort"), server_name, reason, cert_summary, sha1_ascii);
+	return sm_request(NULL, _("Failed to verify certificate for server\n%s\n\n%s\n\n%s\nSHA1: %s\nSHA256: %s"),
+			_("Connect anyway|Abort"), server_name, reason, cert_summary, sha1_ascii, sha256_ascii[0]?sha256_ascii:_("Not supported"));
 }
 
 /* called when imap folders has been received */

@@ -50,6 +50,7 @@
 struct smtp_connection
 {
 	struct connection *conn;
+	char *server_name;
 	int flags;			/* ESMTP flags */
 	int auth_flags; /* Supported AUTH methods */
 };
@@ -937,6 +938,8 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,&connect_opts,&error_code)))
 			{
+				conn.server_name = account->smtp->name;
+
 				if (smtp_login(&conn,account))
 				{
 					rc = smtp_send_mails(&conn,account,outmail);

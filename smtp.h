@@ -50,13 +50,6 @@ void free_outmail_array(struct outmail **om_array);
 #define AUTH_DIGEST_MD5				 4
 #define AUTH_CRAM_MD5					 8
 
-struct smtp_connection
-{
-	struct connection *conn;
-	int flags;			/* ESMTP flags */
-	int auth_flags; /* Supported AUTH methods */
-};
-
 struct smtp_server
 {
 	char *name;

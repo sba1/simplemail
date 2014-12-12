@@ -45,6 +45,17 @@
 #include "md5.h"
 #include "hmac_md5.h"
 
+/************************************************************************/
+
+struct smtp_connection
+{
+	struct connection *conn;
+	int flags;			/* ESMTP flags */
+	int auth_flags; /* Supported AUTH methods */
+};
+
+/************************************************************************/
+
 static char *buf_init(void)
 {
 	char *rc;

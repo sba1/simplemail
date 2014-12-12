@@ -128,7 +128,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 			/* TODO: check if this call delivers a new timestamp */
 			if (pop3_receive_answer(conn,0))
 			{
-				if (tcp_make_secure(conn))
+				if (tcp_make_secure(conn, server->name))
 				{
 					if (timestamp_ptr) *timestamp_ptr = timestamp;
 					return 1;

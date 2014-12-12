@@ -163,7 +163,7 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 #ifndef NO_SSL
 					if (use_ssl)
 					{
-						if (tcp_make_secure(conn))
+						if (tcp_make_secure(conn, server))
 						{
 							SM_RETURN(conn,"0x%lx");
 							return conn;
@@ -263,9 +263,10 @@ static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x50
  *
  * @param conn defines the connection which should be made
  *             secure.
+ * @param server_name the name of the server used to establish the connection
  * @return 1 on success
  */
-int tcp_make_secure(struct connection *conn)
+int tcp_make_secure(struct connection *conn, char *server_name)
 {
 #ifndef NO_SSL
 	int rc;

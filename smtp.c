@@ -764,7 +764,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		if (!(tcp_make_secure(conn->conn)))
+		if (!(tcp_make_secure(conn->conn, conn->server_name)))
 		{
 			tell_from_subtask(N_("Connection could not be made secure."));
 			return 0;

@@ -2356,6 +2356,7 @@ void callback_remove_folder(void)
 int callback_failed_ssl_verification(char *reason, char *cert_summary, char *sha1_ascii)
 {
 	return sm_request(_("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"),
+	return sm_request(NULL, _("Failed to verify server certificate:\n%s\n\n%s\nSHA1: %s"),
 			_("Connect anyway|Abort"), reason, cert_summary, sha1_ascii);
 }
 

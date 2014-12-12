@@ -992,12 +992,12 @@ struct smtp_entry_msg
 **************************************************************************/
 static int smtp_entry(struct smtp_entry_msg *msg)
 {
-	struct list copy_list;
+	struct list copy_of_account_list;
 	struct account *account;
 	struct outmail **outmail;
 	char path[256];
 
-	list_init(&copy_list);
+	list_init(&copy_of_account_list);
 
 	for (account = (struct account*)list_first(msg->account_list);account;account = (struct account*)node_next(&account->node))
 	{
@@ -1005,7 +1005,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 		if (!account->smtp || !account->smtp->name) continue;
 
 		new_account = account_duplicate(account);
-		if (new_account) list_insert_tail(&copy_list,&new_account->node);
+		if (new_account) list_insert_tail(&copy_of_account_list,&new_account->node);
 	}
 
 	outmail = duplicate_outmail_array(msg->outmail);
@@ -1018,7 +1018,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 			{
 				thread_call_parent_function_async(status_init,1,0);
 				thread_call_parent_function_async(status_open,0);
-				smtp_send_really(&copy_list,outmail);
+				smtp_send_really(&copy_of_account_list,outmail);
 				thread_call_parent_function_async(status_close,0);
 			}
 

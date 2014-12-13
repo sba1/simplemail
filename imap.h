@@ -36,6 +36,7 @@ struct imap_server
 
 	char *name;
 	unsigned int port;
+	char *fingerprint; /**< @brief fingerprint of server certificate */
 	char *login;
 	char *passwd;
 

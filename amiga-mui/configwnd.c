@@ -271,9 +271,10 @@ STATIC ASM LONG startup_folder_strobj(REG(a0, struct Hook *h), REG(a2, Object *l
 	return 1;
 }
 
-/******************************************************************
- Stores the current setting into the last selected account
-*******************************************************************/
+/**
+ * Stores the current account settings content of the view into the last
+ * selected account.
+ */
 static void account_store(void)
 {
 	if (account_last_selected)
@@ -285,6 +286,7 @@ static void account_store(void)
 		free(account_last_selected->reply);
 		free(account_last_selected->def_signature);
 		free(account_last_selected->pop->name);
+		free(account_last_selected->pop->fingerprint);
 		free(account_last_selected->pop->login);
 		free(account_last_selected->pop->passwd);
 		free(account_last_selected->imap->name);
@@ -302,6 +304,7 @@ static void account_store(void)
 		account_last_selected->recv_type = xget(account_recv_type_radio, MUIA_Radio_Active);
 		account_last_selected->pop->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->pop->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
+		account_last_selected->pop->fingerprint = mystrdup((char*)xget(account_recv_fingerprint_string, MUIA_String_Contents));
 		account_last_selected->pop->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
 		account_last_selected->pop->passwd = account_last_selected->pop->ask?NULL:mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->pop->active = xget(account_recv_active_check, MUIA_Selected);
@@ -329,9 +332,9 @@ static void account_store(void)
 	}
 }
 
-/******************************************************************
- Loads the current selected account
-*******************************************************************/
+/**
+ * Loads the data from the currently selected account into the view
+ */
 static void account_load(void)
 {
 	struct account *account = account_last_selected;
@@ -344,6 +347,7 @@ static void account_load(void)
 		nnset(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName, account->def_signature);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
+		nnset(account_recv_fingerprint_string, MUIA_String_Contents, account->pop->fingerprint);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
 		setstring(account_recv_login_string,account->pop->login);
 		SetAttrs(account_recv_password_string,
@@ -359,6 +363,7 @@ static void account_load(void)
 		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
 		setcheckmark(account_recv_avoid_check,account->pop->nodupl);
 		nnset(account_send_server_string, MUIA_String_Contents, account->smtp->name);
+		nnset(account_send_fingerprint_string, MUIA_String_Contents, account->smtp->fingerprint);
 		set(account_send_port_string,MUIA_String_Integer,account->smtp->port);
 		setstring(account_send_login_string,account->smtp->auth_login);
 		setstring(account_send_password_string,account->smtp->auth_password);

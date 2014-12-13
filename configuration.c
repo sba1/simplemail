@@ -441,6 +441,8 @@ int load_config(void)
 										account->smtp->name = mystrdup(result);
 									if ((result = get_config_item(account_buf,"SMTP.Port")))
 										account->smtp->port = atoi(result);
+									if ((result = get_config_item(account_buf,"SMTP.Fingerprint")))
+										account->smtp->fingerprint = mystrdup(result);
 									if ((result = get_config_item(account_buf,"SMTP.Login")))
 										account->smtp->auth_login = mystrdup(result);
 									if ((result = get_config_item(account_buf,"SMTP.Password")))
@@ -461,6 +463,8 @@ int load_config(void)
 										account->pop->name = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Port")))
 										account->pop->port = atoi(result);
+									if ((result = get_config_item(account_buf,"POP3.Fingerprint")))
+										account->pop->fingerprint = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Login")))
 										account->pop->login = mystrdup(result);
 									if ((result = get_config_item(account_buf,"POP3.Password")))
@@ -484,6 +488,8 @@ int load_config(void)
 										account->imap->name = mystrdup(result);
 									if ((result = get_config_item(account_buf,"IMAP.Port")))
 										account->imap->port = atoi(result);
+									if ((result = get_config_item(account_buf,"IMAP.Fingerprint")))
+										account->imap->fingerprint = mystrdup(result);
 									if ((result = get_config_item(account_buf,"IMAP.Login")))
 										account->imap->login = mystrdup(result);
 									if ((result = get_config_item(account_buf,"IMAP.Password")))
@@ -698,6 +704,7 @@ void save_config(void)
 
 				fprintf(fh,"ACCOUNT%d.SMTP.Server=%s\n",i,MAKESTR(account->smtp->name));
 				fprintf(fh,"ACCOUNT%d.SMTP.Port=%d\n",i,account->smtp->port);
+				fprintf(fh,"ACCOUNT%d.SMTP.Fingerprint=%s\n",i,MAKESTR(account->smtp->fingerprint));
 				fprintf(fh,"ACCOUNT%d.SMTP.Login=%s\n",i,MAKESTR(account->smtp->auth_login));
 				fprintf(fh,"ACCOUNT%d.SMTP.Password=%s\n",i,MAKESTR(account->smtp->auth_password));
 				fprintf(fh,"ACCOUNT%d.SMTP.Auth=%s\n",i,account->smtp->auth?"Y":"N");
@@ -708,6 +715,7 @@ void save_config(void)
 				fprintf(fh,"ACCOUNT%d.RECV.Type=%d\n",i,account->recv_type);
 				fprintf(fh,"ACCOUNT%d.POP3.Server=%s\n",i,MAKESTR(account->pop->name));
 				fprintf(fh,"ACCOUNT%d.POP3.Port=%d\n",i,account->pop->port);
+				fprintf(fh,"ACCOUNT%d.POP3.Fingerprint=%s\n",i,MAKESTR(account->pop->fingerprint));
 				fprintf(fh,"ACCOUNT%d.POP3.Login=%s\n",i,MAKESTR(account->pop->login));
 				if (!account->pop->ask) fprintf(fh,"ACCOUNT%d.POP3.Password=%s\n",i,MAKESTR(account->pop->passwd));
 				fprintf(fh,"ACCOUNT%d.POP3.Delete=%s\n",i,account->pop->del?"Y":"N");
@@ -720,6 +728,7 @@ void save_config(void)
 
 				fprintf(fh,"ACCOUNT%d.IMAP.Server=%s\n",i,MAKESTR(account->imap->name));
 				fprintf(fh,"ACCOUNT%d.IMAP.Port=%d\n",i,account->imap->port);
+				fprintf(fh,"ACCOUNT%d.IMAP.Fingerprint=%s\n",i,MAKESTR(account->imap->fingerprint));
 				fprintf(fh,"ACCOUNT%d.IMAP.Login=%s\n",i,MAKESTR(account->imap->login));
 				fprintf(fh,"ACCOUNT%d.IMAP.Password=%s\n",i,MAKESTR(account->imap->passwd));
 				fprintf(fh,"ACCOUNT%d.IMAP.Active=%d\n",i,account->imap->active);

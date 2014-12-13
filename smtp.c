@@ -1153,6 +1153,7 @@ struct smtp_server *smtp_duplicate(struct smtp_server *smtp)
 	struct smtp_server *new_smtp = smtp_malloc();
 	*new_smtp = *smtp;
 	new_smtp->name = mystrdup(new_smtp->name);
+	new_smtp->fingerprint = mystrdup(new_smtp->fingerprint);
 	new_smtp->auth_login = mystrdup(new_smtp->auth_login);
 	new_smtp->auth_password = mystrdup(new_smtp->auth_password);
 
@@ -1166,6 +1167,7 @@ void smtp_free(struct smtp_server *smtp)
 {
 	if (smtp->auth_password) free(smtp->auth_password);
 	if (smtp->auth_login) free(smtp->auth_login);
+	if (smtp->fingerprint) free(smtp->fingerprint);
 	if (smtp->name) free(smtp->name);
 	free(smtp);
 }

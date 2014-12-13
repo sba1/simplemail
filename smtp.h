@@ -54,6 +54,7 @@ struct smtp_server
 {
 	char *name;
 	unsigned int 	port;
+	char *fingerprint; /**< @brief fingerprint of server certificate */
 	char *domain;
 
 	int ip_as_domain;

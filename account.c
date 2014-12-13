@@ -192,3 +192,32 @@ struct imap_server *account_find_imap_server_by_folder(struct folder *f)
 	return NULL;
 }
 
+/**
+ * Returns whether the server is trustworthy.
+ * For the given server, the user specified fingerprint is compared
+ * to the given fingerprint.
+ *
+ * @param server_name
+ * @param fingerprint
+ * @return
+ */
+int account_is_server_trustworthy(char *server_name, char *fingerprint)
+{
+	struct account *account;
+
+	account = (struct account*)list_first(&user.config.account_list);
+	while (account)
+	{
+		if (mystrlen(account->smtp->fingerprint) && !mystricmp(account->smtp->name, server_name) && !mystricmp(account->smtp->fingerprint, fingerprint))
+			return 1;
+
+		if (mystrlen(account->pop->fingerprint) && !mystricmp(account->pop->name, server_name) && !mystricmp(account->pop->fingerprint, fingerprint))
+			return 1;
+
+		if (mystrlen(account->imap->fingerprint) && !mystricmp(account->imap->name, server_name) && !mystricmp(account->imap->fingerprint, fingerprint))
+			return 1;
+
+		account = (struct account*)node_next(&account->node);
+	}
+	return 0;
+}

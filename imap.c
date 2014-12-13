@@ -1498,6 +1498,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 	if (new_imap)
 	{
 		new_imap->name = mystrdup(imap->name);
+		new_imap->fingerprint = mystrdup(imap->fingerprint);
 		new_imap->login = mystrdup(imap->login);
 		new_imap->passwd = mystrdup(imap->passwd);
 		new_imap->title = mystrdup(imap->title);
@@ -1515,6 +1516,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 void imap_free(struct imap_server *imap)
 {
 	if (imap->name) free(imap->name);
+	if (imap->fingerprint) free(imap->fingerprint);
 	if (imap->login) free(imap->login);
 	if (imap->passwd) free(imap->passwd);
 	if (imap->title) free(imap->title);

@@ -1257,6 +1257,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 	if (new_pop)
 	{
 		new_pop->name = mystrdup(pop->name);
+		new_pop->fingerprint = mystrdup(pop->fingerprint);
 		new_pop->login = mystrdup(pop->login);
 		new_pop->passwd = mystrdup(pop->passwd);
 		new_pop->title = mystrdup(pop->title);
@@ -1283,6 +1284,7 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 void pop_free(struct pop3_server *pop)
 {
 	if (pop->name) free(pop->name);
+	if (pop->fingerprint) free(pop->fingerprint);
 	if (pop->login) free(pop->login);
 	if (pop->passwd) free(pop->passwd);
 	if (pop->title) free(pop->title);

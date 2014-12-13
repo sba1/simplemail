@@ -32,6 +32,7 @@ struct pop3_server
 
 	char *name; /**< @brief the name of the server */
 	unsigned int port; /**< @brief the port */
+	char *fingerprint; /**< @brief fingerprint of server certificate */
 	int ssl; /**< @brief use ssl to connect */
 	int stls; /**< @brief with STLS command */
 	int apop; /**< @brief use APOP and fail if APOP is not available */

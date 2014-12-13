@@ -1253,23 +1253,24 @@ struct pop3_server *pop_malloc(void)
 
 struct pop3_server *pop_duplicate(struct pop3_server *pop)
 {
-	struct pop3_server *new_pop = pop_malloc();
-	if (new_pop)
-	{
-		new_pop->name = mystrdup(pop->name);
-		new_pop->fingerprint = mystrdup(pop->fingerprint);
-		new_pop->login = mystrdup(pop->login);
-		new_pop->passwd = mystrdup(pop->passwd);
-		new_pop->title = mystrdup(pop->title);
-		new_pop->del = pop->del;
-		new_pop->port = pop->port;
-		new_pop->apop = pop->apop;
-		new_pop->ssl = pop->ssl;
-		new_pop->stls = pop->stls;
-		new_pop->active = pop->active;
-		new_pop->nodupl = pop->nodupl;
-		new_pop->ask = pop->ask;
-	}
+	struct pop3_server *new_pop;
+
+	if (!(new_pop = pop_malloc()))
+		return NULL;
+
+	new_pop->name = mystrdup(pop->name);
+	new_pop->fingerprint = mystrdup(pop->fingerprint);
+	new_pop->login = mystrdup(pop->login);
+	new_pop->passwd = mystrdup(pop->passwd);
+	new_pop->title = mystrdup(pop->title);
+	new_pop->del = pop->del;
+	new_pop->port = pop->port;
+	new_pop->apop = pop->apop;
+	new_pop->ssl = pop->ssl;
+	new_pop->stls = pop->stls;
+	new_pop->active = pop->active;
+	new_pop->nodupl = pop->nodupl;
+	new_pop->ask = pop->ask;
 	return new_pop;
 }
 
@@ -1279,14 +1280,17 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
  * Deallocates all resources associated with the given
  * POP3 server settings.
  *
- * @param pop defines the instance which should be freed.
+ * @param pop defines the instance which should be freed. If this is NULL,
+ *  this is a noop.
  */
 void pop_free(struct pop3_server *pop)
 {
-	if (pop->name) free(pop->name);
-	if (pop->fingerprint) free(pop->fingerprint);
-	if (pop->login) free(pop->login);
-	if (pop->passwd) free(pop->passwd);
-	if (pop->title) free(pop->title);
+	if (!pop) return;
+
+	free(pop->name);
+	free(pop->fingerprint);
+	free(pop->login);
+	free(pop->passwd);
+	free(pop->title);
 	free(pop);
 }

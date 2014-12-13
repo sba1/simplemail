@@ -213,6 +213,7 @@ struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata)
 void display_about(void)
 {
 	char buf[128];
+	char ssl[128];
 
 #ifdef __GNUC__
 	buf[0] = buf[1] = '\n';
@@ -228,11 +229,27 @@ void display_about(void)
 	buf[0] = 0;
 #endif
 
+#ifdef NO_SSL
+	sm_snprintf(ssl, sizeof(ssl), _("No ssl support."));
+#else
+	{
+		char *ssl_support;
+#if defined(USE_OPENSSL)
+		ssl_support = "OpenSSL";
+#elif defined(USE_AMISSL3)
+		ssl_support = "AmiSSL3";
+#else
+		ssl_support = "AmiSSL";
+#endif
+		sm_snprintf(ssl, sizeof(ssl), _("SSL support via %s."), ssl_support);
+	}
+#endif
+
 	MUI_Request(App, NULL, 0,
 		_("SimpleMail - About"),
 		_("*Ok"),
-		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2013\nHynek Schlawack %s Sebastian Bauer\n%s.%s",
-		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"),buf);
+		"SimpleMail version %ld.%ld (%s)\n\n%s 2000-2013\nHynek Schlawack %s Sebastian Bauer\n%s.%s\n%s",
+		VERSION,REVISION,SIMPLEMAIL_DATE,_("Copyright (c)"),_("and"),_("Released under the terms of the GNU Public License"),buf,ssl);
 }
 
 /**

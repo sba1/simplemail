@@ -1289,11 +1289,12 @@ DIR *opendir(const char *name)
 
 #include <proto/bsdsocket.h>
 #include "subthreads_amiga.h"
+#include "support.h"
 
 time_t time(time_t *result)
 {
 	time_t t = sm_get_current_seconds();
-	if (*result) *result = t;
+	if (result) *result = t;
 	return t;
 }
 

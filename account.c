@@ -116,11 +116,11 @@ struct account *account_duplicate(struct account *a)
  */
 void account_free(struct account *a)
 {
-	if (a->account_name) free(a->account_name);
-	if (a->name) free(a->name);
-	if (a->email) free(a->email);
-	if (a->reply) free(a->reply);
-	if (a->def_signature) free(a->def_signature);
+	free(a->account_name);
+	free(a->name);
+	free(a->email);
+	free(a->reply);
+	free(a->def_signature);
 
 	if (a->pop) pop_free(a->pop);
 	if (a->smtp) smtp_free(a->smtp);

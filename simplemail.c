@@ -2275,13 +2275,17 @@ void callback_check_selected_mails_if_spam(void)
 	array_free(white);
 }
 
-/* import a addressbook into SimpleMail, return 1 for success */
+/**
+ * Import an address book into SimpleMail.
+ *
+ * @return 1 for success, 0 otherwise.
+ */
 int callback_import_addressbook(void)
 {
 	int rc = 0;
 	char *filename;
 
-	filename = sm_request_file(_("Select an addressbook-file."), "",0,NULL);
+	filename = sm_request_file(_("Select an address book file"), "",0,NULL);
 	if (filename && *filename)
 	{
 		addressbook_import_file(filename,1);

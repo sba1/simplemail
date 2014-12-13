@@ -1477,8 +1477,14 @@ static void simplemail_new_mail_arrived(struct mail_info *mail, struct folder *f
 	read_refresh_prevnext_button(folder);
 }
 
-/* checks given mail with a remote filter. Returns 1 if mail should be ignored otherwise 0
- * (yes, this has to be extented in the future) */
+/**
+ * Tries to match the given mail with criterias of any remote filter.
+ * Returns 1 if mail should be ignored otherwise 0.
+ * (yes, this has to be extended in the future)
+ *
+ * @param mail the mail that is subjected to the comparision.
+ * @return whether the mail the criterias of any filter.
+ */
 int callback_remote_filter_mail(struct mail_info *mail)
 {
 	struct filter *f = filter_list_first();
@@ -1735,7 +1741,11 @@ void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, ch
 	folder_config_save(f);
 }
 
-/* After downloading this function is called */
+/**
+ * The given amount of new mails have been just downloaded.
+ *
+ * @param num the number of new mails.
+ */
 void callback_number_of_mails_downloaded(int num)
 {
 	if (num && user.config.receive_sound)

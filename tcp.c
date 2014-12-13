@@ -312,7 +312,8 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 			X509_digest(server_cert, EVP_sha1(), sha1, &sha1_size);
 			for (i=0; i<sha1_size; i++)
 				sm_snprintf(&sha1_ascii[i*3], 4, "%02X  ", sha1[i]);
-			sha1_ascii[sha1_size*3] = 0;
+			if (sha1_size>0) sha1_ascii[sha1_size*3-1] = 0;
+			else sha1_ascii[0] = 0;
 
 #ifdef USE_OPENSSL
 			X509_digest(server_cert, EVP_sha256(), sha256, &sha256_size);
@@ -321,7 +322,8 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 #endif
 			for (i=0; i<sha256_size; i++)
 				sm_snprintf(&sha256_ascii[i*3], 4, "%02X  ", sha256[i]);
-			sha256_ascii[sha256_size*3] = 0;
+			if (sha256_size>0) sha256_ascii[sha256_size*3-1]=0;
+			else sha256_ascii[0] = 0;
 
 			/* Issued to */
 			if (X509_NAME_get_text_by_NID(X509_get_subject_name(server_cert), NID_commonName, subject_common_name, sizeof(subject_common_name)) < 0)

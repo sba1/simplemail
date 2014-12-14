@@ -215,15 +215,20 @@ void display_about(void)
 	char buf[128];
 	char ssl[128];
 
+/* TODO: Improve I10n */
+#ifndef SM_COMMITID
+#define SM_COMMITID "unknown commit"
+#endif
+
 #ifdef __GNUC__
 	buf[0] = buf[1] = '\n';
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #ifdef __GNUC_PATCHLEVEL__
-	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %s."),TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__) "." TOSTRING(__GNUC_PATCHLEVEL__));
+	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated from %s using gcc %s."),SM_COMMITID,TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__) "." TOSTRING(__GNUC_PATCHLEVEL__));
 #else
-	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated using gcc %s."),TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__));
+	sm_snprintf(buf+2,sizeof(buf)-2,_("Binary generated from %s using gcc %s."),SM_COMMITID,TOSTRING(__GNUC__) "." TOSTRING(__GNUC_MINOR__));
 #endif
 #else
 	buf[0] = 0;

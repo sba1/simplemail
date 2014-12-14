@@ -221,3 +221,39 @@ int account_is_server_trustworthy(char *server_name, char *fingerprint)
 	}
 	return 0;
 }
+
+/**
+ * Trust the given server.
+ *
+ * @param server_name
+ * @param fingerprint
+ */
+void account_trust_server(char *server_name, char *fingerprint)
+{
+	struct account *account;
+
+	account = (struct account*)list_first(&user.config.account_list);
+	while (account)
+	{
+		if (!mystricmp(account->smtp->name, server_name))
+		{
+			free(account->smtp->fingerprint);
+			account->smtp->fingerprint = mystrdup(fingerprint);
+		}
+
+		if (!mystricmp(account->pop->name, server_name))
+		{
+			free(account->pop->fingerprint);
+			account->pop->fingerprint = mystrdup(fingerprint);
+		}
+
+		if (!mystricmp(account->imap->name, server_name))
+		{
+			free(account->imap->fingerprint);
+			account->imap->fingerprint = mystrdup(fingerprint);
+		}
+
+		account = (struct account*)node_next(&account->node);
+	}
+	return 0;
+}

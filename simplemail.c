@@ -2371,6 +2371,7 @@ void callback_remove_folder(void)
  */
 int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii, char *sha256_ascii)
 {
+	int choice;
 	int sha256_supported = sha256_ascii[0];
 
 	if (sha256_supported)
@@ -2381,8 +2382,15 @@ int callback_failed_ssl_verification(char *server_name, char *reason, char *cert
 	if (account_is_server_trustworthy(server_name, sha1_ascii))
 		return 1;
 
-	return sm_request(NULL, _("Failed to verify certificate for server\n%s\n\n%s\n\n%s\nSHA1: %s\nSHA256: %s"),
-			_("Connect anyway|Abort"), server_name, reason, cert_summary, sha1_ascii, sha256_supported?sha256_ascii:_("Not supported"));
+	choice = sm_request(NULL, _("Failed to verify certificate for server\n%s\n\n%s\n\n%s\nSHA1: %s\nSHA256: %s"),
+			_("Connect anyway|Trust always|Abort"), server_name, reason, cert_summary, sha1_ascii, sha256_supported?sha256_ascii:_("Not supported"));
+	if (choice == 2)
+	{
+		/* Trust always */
+		account_trust_server(server_name, sha256_supported?sha256_ascii:sha1_ascii);
+		sm_request(NULL,_("In order to trust the server permanently,\nyou must save the configuration."), _("OK"));
+	}
+	return !!choice;
 }
 
 /* called when imap folders has been received */

@@ -30,7 +30,7 @@
 #define SM_CURRENT_DIR	"."
 
 /* Operation system */
-#define SM_OPERATIONSYSTEM "UNIX/GTK+"
+#define SM_OPERATINGSYSTEM "UNIX/GTK+"
 #endif
 
 /* Debug - defines ARCH_DEBUG_EXTRA */

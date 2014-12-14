@@ -33,15 +33,15 @@
 #define SM_FOLDER_DIR	"PROGDIR:.folders"
 #define SM_CURRENT_DIR	""
 
-/* Operation system */
+/* Operating system */
 #if defined(__AMIGAOS4__)
-#define SM_OPERATIONSYSTEM "AmigaOS4/MUI"
+#define SM_OPERATINGSYSTEM "AmigaOS4/MUI"
 #elif defined(__MORPHOS__)
-#define SM_OPERATIONSYSTEM "MorphOS/MUI"
+#define SM_OPERATINGSYSTEM "MorphOS/MUI"
 #elif defined(__AROS__)
-#define SM_OPERATIONSYSTEM "AROS/MUI"
+#define SM_OPERATINGSYSTEM "AROS/MUI"
 #else
-#define SM_OPERATIONSYSTEM "AmigaOS/MUI"
+#define SM_OPERATINGSYSTEM "AmigaOS/MUI"
 #endif
 
 /* Debug - defines ARCH_DEBUG_EXTRA */

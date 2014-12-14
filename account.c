@@ -255,5 +255,4 @@ void account_trust_server(char *server_name, char *fingerprint)
 
 		account = (struct account*)node_next(&account->node);
 	}
-	return 0;
 }

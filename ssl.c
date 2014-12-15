@@ -31,7 +31,62 @@
 #include "configuration.h"
 #include "debug.h"
 #include "ssl.h"
+#include "subthreads.h"
 
+#ifdef USE_OPENSSL
+static semaphore_t lock_semaphores[CRYPTO_NUM_LOCKS];
+
+static void ssl_get_thread_id(CRYPTO_THREADID *id)
+{
+	CRYPTO_THREADID_set_pointer(id, thread_get());
+}
+
+static void ssl_locking_callback(int mode,int type,const char *file,int line)
+{
+	if (mode & CRYPTO_LOCK)
+	{
+		thread_lock_semaphore(lock_semaphores[type]);
+	} else
+	{
+		thread_unlock_semaphore(lock_semaphores[type]);
+	}
+}
+#endif
+
+/**
+ * Cleans up the ssl subsystem.
+ */
+void ssl_cleanup(void)
+{
+#ifdef USE_OPENSSL
+	int i;
+	for (i = 0; i < CRYPTO_NUM_LOCKS; i++)
+		thread_dispose_semaphore(lock_semaphores[i]);
+#endif
+}
+
+/**
+ * Initialize the ssl subsystem.
+ */
+int ssl_init(void)
+{
+#ifdef USE_OPENSSL
+	/* see https://www.openssl.org/docs/crypto/threads.html */
+	int i;
+	for (i = 0; i < CRYPTO_NUM_LOCKS; i++)
+	{
+		if (!(lock_semaphores[i] = thread_create_semaphore()))
+		{
+			ssl_cleanup();
+			return 0;
+		}
+	}
+
+	CRYPTO_THREADID_set_callback(ssl_get_thread_id);
+	CRYPTO_set_locking_callback(ssl_locking_callback);
+#endif
+	return 1;
+}
 
 /**
  * Initialize ssl and return the primary context.

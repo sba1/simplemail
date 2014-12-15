@@ -45,6 +45,7 @@
 #include "simplemail.h"
 #include "smintl.h"
 #include "spam.h"
+#include "ssl.h"
 #include "status.h"
 #include "support_indep.h"
 #include "trans.h"
@@ -2766,6 +2767,7 @@ void simplemail_deinit(void)
 	gui_deinit();
 	if (user.config.delete_deleted)
 		folder_delete_deleted();
+	ssl_cleanup();
 	spam_cleanup();
 
 	del_folders();
@@ -2844,6 +2846,12 @@ int simplemail_init(void)
 	if (!(spam_init()))
 	{
 		SM_DEBUGF(1,("Couldn't initialize spam system!"));
+		goto out;
+	}
+
+	if (!ssl_init())
+	{
+		SM_DEBUGF(1,("Couldn't initializte ssl subsystem!"));
 		goto out;
 	}
 

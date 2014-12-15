@@ -28,6 +28,8 @@
 
 #include "tcpip.h"
 
+int ssl_init(void);
+void ssl_cleanup(void);
 SSL_CTX *ssl_create_context(void);
 
 #endif

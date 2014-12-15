@@ -439,7 +439,7 @@ int sm_request_login(char *text, char *login, char *password, int len)
 	Object *ok_button, *cancel_button;
 
 	char buf[256];
-	sprintf(buf,_("Please enter the login for %s"),text);
+	sm_snprintf(buf,sizeof(buf),_("Please enter the login for %s"),text);
 
 	wnd = WindowObject,
 		MUIA_Window_Title, "SimpleMail - Login",

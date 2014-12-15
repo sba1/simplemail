@@ -49,7 +49,7 @@ int open_ssl_lib(void)
 		return 1;
 	}
 
-	if ((ctx = ssl_init()))
+	if ((ctx = ssl_create_context()))
 	{
 		ssl_in_use = 1;
 		return 1;

@@ -276,7 +276,7 @@ int open_ssl_lib(void)
 			{
 #endif
 #endif
-				if ((thread->ssl_ctx = ssl_init()))
+				if ((thread->ssl_ctx = ssl_create_context()))
 				{
 					/* Everything is ok */
 					thread->ssllib_opencnt = 1;

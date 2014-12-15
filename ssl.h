@@ -28,7 +28,7 @@
 
 #include "tcpip.h"
 
-SSL_CTX *ssl_init(void);
+SSL_CTX *ssl_create_context(void);
 
 #endif
 

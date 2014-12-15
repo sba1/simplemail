@@ -38,7 +38,7 @@
  *
  * @return
  */
-SSL_CTX *ssl_init(void)
+SSL_CTX *ssl_create_context(void)
 {
 	SSL_CTX *ctx;
 

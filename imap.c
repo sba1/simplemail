@@ -1231,12 +1231,6 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 /**************************************************************************/
 
-struct imap_get_folder_list_entry_msg
-{
-	struct imap_server *server;
-	void (*callback)(struct imap_server *, struct list *, struct list *);
-};
-
 /**
  * Retrieved the folder list and call the given callback on the context of the
  * main thread.
@@ -1291,6 +1285,15 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 		close_socket_lib();
 	}
 }
+
+/**
+ * Contains the arguments submitted to the get folder list thread.
+ */
+struct imap_get_folder_list_entry_msg
+{
+	struct imap_server *server;
+	void (*callback)(struct imap_server *, struct list *, struct list *);
+};
 
 /**
  * Entry point for the thread to get the folder list.
@@ -1472,6 +1475,9 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 	}
 }
 
+/**
+ * Contains the arguments send to the submit folder list thread.
+ */
 struct imap_submit_folder_list_entry_msg
 {
 	struct imap_server *server;

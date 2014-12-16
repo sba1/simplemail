@@ -211,9 +211,14 @@ static void imap_free_name_list(struct list *list)
 	free(list);
 }
 
-/**************************************************************************
- Writes the next word into the dest buffer but not more than dest_size
-**************************************************************************/
+/**
+ * Writes the next word into the dest buffer but not more than dest_size.
+ *
+ * @param src
+ * @param dest
+ * @param dest_size
+ * @return
+ */
 static char *imap_get_result(char *src, char *dest, int dest_size)
 {
 	char c;
@@ -321,9 +326,13 @@ static char *imap_build_address_header(char *str)
 }
 #endif
 
-/**************************************************************************
- Send a simple imap command only for checking for success/failure
-**************************************************************************/
+/**
+ * Send a simple imap command only to check for success/failure.
+ *
+ * @param conn
+ * @param cmd
+ * @return
+ */
 static int imap_send_simple_command(struct connection *conn, char *cmd)
 {
 	char send[200];
@@ -353,9 +362,13 @@ static int imap_send_simple_command(struct connection *conn, char *cmd)
 	return success;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Waits for an OK after an connect, i.e., until login credentials are requested.
+ *
+ * @param conn
+ * @param server
+ * @return
+ */
 static int imap_wait_login(struct connection *conn, struct imap_server *server)
 {
 	char *line;
@@ -734,13 +747,13 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 }
 
 /**
- * Returns a list with string_node nodes which describes the folder names
- * If you only want the subscribed folders set all to 1. Note that the
+ * Returns a list with string_node nodes which describes the folder names.
+ * If you only want the subscribed folders set all to 0. Note that the
  * INBOX folder is always included if it does exist.
  *
- * @param conn
- * @param all
- * @return
+ * @param conn the connection to write against
+ * @param all whether all folders shall be returned or only the subscribed ones.
+ * @return the list with string_nodes
  */
 static struct list *imap_get_folders(struct connection *conn, int all)
 {
@@ -824,9 +837,14 @@ static struct list *imap_get_folders(struct connection *conn, int all)
 	return NULL;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Synchronize the folder.
+ *
+ * @param conn
+ * @param server
+ * @param imap_path
+ * @return
+ */
 static int imap_synchonize_folder(struct connection *conn, struct imap_server *server, char *imap_path)
 {
 	struct folder *folder;
@@ -1088,9 +1106,14 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	return success;
 }
 
-/**************************************************************************
-
-**************************************************************************/
+/**
+ * Synchronize with all imap severs in the given list.
+ *
+ * This is a synchronous function, it should not be called directly within the main thread.
+ *
+ * @param imap_list
+ * @param called_by_auto
+ */
 void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 {
 	SM_ENTER;
@@ -1206,16 +1229,22 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 	SM_LEAVE;
 }
 
+/**************************************************************************/
+
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
 	void (*callback)(struct imap_server *, struct list *, struct list *);
 };
 
-/**************************************************************************
-
-**************************************************************************/
-static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
+/**
+ * Retrieved the folder list and call the given callback on the context of the
+ * main thread.
+ *
+ * @param server
+ * @param callback
+ */
+static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *, struct list *))
 {
 	if (open_socket_lib())
 	{
@@ -1263,9 +1292,12 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	}
 }
 
-/**************************************************************************
- Entrypoint for the get folder list mail process
-**************************************************************************/
+/**
+ * Entry point for the thread to get the folder list.
+ *
+ * @param msg
+ * @return
+ */
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
@@ -1283,10 +1315,21 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 	return 0;
 }
 
-/**************************************************************************
- Returns the list of all folders of the imap server
-**************************************************************************/
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct list *, struct list *))
+/**
+ * Request the list of all folders of the imap server.
+ *
+ * This is an asynchronous call that is answered with calling the given callback on the
+ * context of the main thread.
+ *
+ * @param server describes the server to which should be connected.
+ * @param callback the callback that is invoked if the request completes. The server
+ *  argument is an actual duplicate of the original server, both lists contain string
+ *  nodes with all_list containing all_list and sub_list containing only subscribed
+ *  folders.
+ *
+ * @return whether the request has been in principle submitted or not.
+ */
+int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *all_list, struct list *sub_list))
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;
@@ -1294,9 +1337,14 @@ int imap_get_folder_list(struct imap_server *server, void (*callback)(struct ima
 	return thread_start(THREAD_FUNCTION(&imap_get_folder_list_entry),&msg);
 }
 
-/**************************************************************************
- NOTE: list elements are removed!
-**************************************************************************/
+/**************************************************************************/
+
+/**
+ * Submit the given list of string_nodes to the imap server in order to subscribe them.
+ *
+ * @param server
+ * @param list
+ */
 static void imap_submit_folder_list_really(struct imap_server *server, struct list *list)
 {
 	if (open_socket_lib())
@@ -1431,9 +1479,12 @@ struct imap_submit_folder_list_entry_msg
 };
 
 
-/**************************************************************************
- Entrypoint for the get folder list mail process
-**************************************************************************/
+/**
+ * The entry point for the submit folder list thread.
+ *
+ * @param msg
+ * @return
+ */
 static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
@@ -1462,9 +1513,16 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 	return 0;
 }
 
-/**************************************************************************
- Submit the given list as subscribed to the server
-**************************************************************************/
+/**
+ * Submit the given list of string_nodes as subscribed to the given server.
+ *
+ * This is an asynchronous call.
+ *
+ * @param server contains all the connection details that describe the login
+ *  that is the concern of this call.
+ * @param list the list of string_nodes to identify the
+ * @return whether the call has in principle be invoked.
+ */
 int imap_submit_folder_list(struct imap_server *server, struct list *list)
 {
 	struct imap_submit_folder_list_entry_msg msg;
@@ -1473,10 +1531,13 @@ int imap_submit_folder_list(struct imap_server *server, struct list *list)
 	return thread_start(THREAD_FUNCTION(&imap_submit_folder_list_entry),&msg);
 }
 
-/**************************************************************************
- malloc() a imap_server and initializes it with default values.
- TODO: rename all imap identifiers to imap
-**************************************************************************/
+/**************************************************************************/
+
+/**
+ * Allocate an imap server structure and initialize it with some default values.
+ *
+ * @return
+ */
 struct imap_server *imap_malloc(void)
 {
 	struct imap_server *imap;
@@ -1488,9 +1549,12 @@ struct imap_server *imap_malloc(void)
 	return imap;
 }
 
-/**************************************************************************
- Duplicates a imap_server
-**************************************************************************/
+/**
+ * Duplicates a given imap server.
+ *
+ * @param imap
+ * @return
+ */
 struct imap_server *imap_duplicate(struct imap_server *imap)
 {
 	struct imap_server *new_imap = imap_malloc();
@@ -1509,9 +1573,11 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 	return new_imap;
 }
 
-/**************************************************************************
- Frees a imap_server completly
-**************************************************************************/
+/**
+ * Frees the given imap server instance completely.
+ *
+ * @param imap
+ */
 void imap_free(struct imap_server *imap)
 {
 	if (imap->name) free(imap->name);
@@ -1522,9 +1588,13 @@ void imap_free(struct imap_server *imap)
 	free(imap);
 }
 
-/**************************************************************************
- Checks if a new connection is needed
-**************************************************************************/
+/**
+ * Checks whether in principle a new connection would be needed when swiching from srv1 to srv2.
+ *
+ * @param srv1
+ * @param srv2
+ * @return
+ */
 static int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2)
 {
 	if (!srv1 && !srv2) return 0;
@@ -2189,9 +2259,17 @@ static int imap_thread_download_mail(struct imap_server *server, char *local_pat
 	return success;
 }
 
-/**************************************************************************
-	Move a mail from one folder into another one
-**************************************************************************/
+/**
+ * Move a given mail from one folder into another one of the given imap account.
+ *
+ * Usually called in the context of the imap thread.
+ *
+ * @param mail
+ * @param server
+ * @param src_folder
+ * @param dest_folder
+ * @return success or failure.
+ */
 static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *server, struct folder *src_folder, struct folder *dest_folder)
 {
 	char send[200];

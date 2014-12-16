@@ -739,11 +739,10 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
  * INBOX folder is always included if it does exist.
  *
  * @param conn
- * @param server
  * @param all
  * @return
  */
-static struct list *imap_get_folders(struct connection *conn, struct imap_server *server, int all)
+static struct list *imap_get_folders(struct connection *conn, int all)
 {
 	int ok;
 	char *line;
@@ -1159,7 +1158,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 						thread_call_parent_function_async(status_set_status,1,_("Checking for folders"));
 
 						SM_DEBUGF(10,("Get folders\n"));
-						if ((folder_list = imap_get_folders(conn,server,0)))
+						if ((folder_list = imap_get_folders(conn,0)))
 						{
 							struct string_node *node;
 
@@ -1245,10 +1244,10 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 				{
 					struct list *all_folder_list;
 					thread_call_parent_function_async(status_set_status,1,N_("Reading folders..."));
-					if ((all_folder_list = imap_get_folders(conn,server,1)))
+					if ((all_folder_list = imap_get_folders(conn,1)))
 					{
 						struct list *sub_folder_list;
-						if ((sub_folder_list = imap_get_folders(conn,server,0)))
+						if ((sub_folder_list = imap_get_folders(conn,0)))
 						{
 							thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
 							imap_free_name_list(sub_folder_list);
@@ -1327,11 +1326,11 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 				{
 					struct list *all_folder_list;
 					thread_call_parent_function_async(status_set_status,1,_("Reading folders..."));
-					if ((all_folder_list = imap_get_folders(conn,server,1)))
+					if ((all_folder_list = imap_get_folders(conn,1)))
 					{
 						struct list *sub_folder_list;
 						thread_call_parent_function_async(status_set_status,1,_("Reading subscribed folders..."));
-						if ((sub_folder_list = imap_get_folders(conn,server,0)))
+						if ((sub_folder_list = imap_get_folders(conn,0)))
 						{
 							char *line;
 							char tag[20];
@@ -2000,7 +1999,7 @@ static void imap_thread_really_connect_to_server(void)
 			thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
 			/* We have now connected to the server, check for the folders at first */
-			folder_list = imap_get_folders(imap_connection, imap_server, 0);
+			folder_list = imap_get_folders(imap_connection, 0);
 			if (folder_list)
 			{
 				struct string_node *node;

@@ -617,7 +617,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 
 int thread_call_parent_function_async(void *function, int argcount, ...)
 {
-	fprintf(stderr,"not implemented!");
+	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
 	exit(1);
 }
 

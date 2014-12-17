@@ -246,8 +246,7 @@ bailout:
 
 int thread_start(int (*entry)(void*), void *udata)
 {
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
+	return !!thread_add("Default Thread", entry, udata);
 }
 
 /***************************************************************************************/

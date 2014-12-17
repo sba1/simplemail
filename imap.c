@@ -774,8 +774,12 @@ static struct list *imap_get_folders(struct connection *conn, int all)
 	tcp_write(conn,send,strlen(send));
 	tcp_flush(conn);
 
+	SM_DEBUGF(20,("%s",send));
+
 	while ((line = tcp_readln(conn)))
 	{
+		SM_DEBUGF(20,("%s\n",line));
+
 		line = imap_get_result(line,buf,sizeof(buf));
 		if (!mystricmp(buf,tag))
 		{

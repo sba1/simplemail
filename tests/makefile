@@ -15,7 +15,7 @@ GTK_CFLAGS := $(shell pkg-config gtk+-x11-2.0 --cflags)
 
 CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
-	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror
+	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror -DUSE_OPENSSL
 VALGRIND_OPTS = --leak-check=full --track-origins=yes 
 
 SIMPLEMAIL_LIB  = simplemail

@@ -1930,97 +1930,97 @@ static int imap_thread_really_download_mails(void)
 static int imap_thread_really_connect_and_login_to_server(void)
 {
 	int success = 0;
+	char status_buf[160];
+	struct connect_options conn_opts = {0};
+	int error_code;
 
 	SM_ENTER;
 
-	if (imap_server)
+	if (!imap_server)
+		goto bailout;
+
+	if (!imap_socket_lib_open)
+	 imap_socket_lib_open = open_socket_lib();
+	if (!imap_socket_lib_open) return 0;
+
+	if (imap_connection)
 	{
-		char status_buf[160];
-		struct connect_options conn_opts = {0};
-		int error_code;
+		tcp_disconnect(imap_connection);
+		imap_connection = NULL;
+	}
 
-		if (!imap_socket_lib_open)
-		 imap_socket_lib_open = open_socket_lib();
-		if (!imap_socket_lib_open) return 0;
+	if (imap_server->ask)
+	{
+		char *password = malloc(512);
+		char *login = malloc(512);
 
-		if (imap_connection)
+		if (password && login)
 		{
-			tcp_disconnect(imap_connection);
-			imap_connection = NULL;
-		}
+			if (imap_server->login) mystrlcpy(login,imap_server->login,512);
+			password[0] = 0;
 
-		if (imap_server->ask)
-		{
-			char *password = malloc(512);
-			char *login = malloc(512);
-
-			if (password && login)
+			if (thread_call_parent_function_sync(NULL,sm_request_login,4,imap_server->name,login,password,512))
 			{
-				if (imap_server->login) mystrlcpy(login,imap_server->login,512);
-				password[0] = 0;
-
-				if (thread_call_parent_function_sync(NULL,sm_request_login,4,imap_server->name,login,password,512))
-				{
-					imap_server->login = mystrdup(login);
-					imap_server->passwd = mystrdup(password);
-				} else
-				{
-					free(password);
-					free(login);
-					return 0;
-				}
-			}
-
-			free(password);
-			free(login);
-		}
-
-		/* Display "Connecting" - status message */
-		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
-		thread_call_parent_function_async_string(status_set_status,1,status_buf);
-
-		conn_opts.use_ssl = imap_server->ssl;
-
-		if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, &conn_opts, &error_code)))
-		{
-			SM_DEBUGF(20,("Connected to %s\n",imap_server->name));
-
-			if (imap_wait_login(imap_connection,imap_server))
-			{
-				/* Display "Logging in" - status message */
-				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Logging in..."));
-				thread_call_parent_function_async_string(status_set_status,1,status_buf);
-
-				if (imap_login(imap_connection,imap_server))
-				{
-					/* Display "Connected" - status message */
-					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
-					thread_call_parent_function_async_string(status_set_status,1,status_buf);
-
-					success = 1;
-				} else
-				{
-					SM_DEBUGF(10,("Login failed\n"));
-					sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
-					thread_call_parent_function_async_string(status_set_status,1,status_buf);
-					tcp_disconnect(imap_connection);
-					imap_connection = NULL;
-				}
+				imap_server->login = mystrdup(login);
+				imap_server->passwd = mystrdup(password);
 			} else
 			{
-				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Unexpected server answer. Connection failed."));
+				free(password);
+				free(login);
+				return 0;
+			}
+		}
+
+		free(password);
+		free(login);
+	}
+
+	/* Display "Connecting" - status message */
+	sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
+	thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
+	conn_opts.use_ssl = imap_server->ssl;
+
+	if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, &conn_opts, &error_code)))
+	{
+		SM_DEBUGF(20,("Connected to %s\n",imap_server->name));
+
+		if (imap_wait_login(imap_connection,imap_server))
+		{
+			/* Display "Logging in" - status message */
+			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Logging in..."));
+			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
+			if (imap_login(imap_connection,imap_server))
+			{
+				/* Display "Connected" - status message */
+				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
+				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
+				success = 1;
+			} else
+			{
+				SM_DEBUGF(10,("Login failed\n"));
+				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
 				thread_call_parent_function_async_string(status_set_status,1,status_buf);
 				tcp_disconnect(imap_connection);
 				imap_connection = NULL;
 			}
 		} else
 		{
-			/* Display "Failed to connect" - status message */
-			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting to the server failed"));
+			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Unexpected server answer. Connection failed."));
 			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+			tcp_disconnect(imap_connection);
+			imap_connection = NULL;
 		}
+	} else
+	{
+		/* Display "Failed to connect" - status message */
+		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting to the server failed"));
+		thread_call_parent_function_async_string(status_set_status,1,status_buf);
 	}
 
+bailout:
 	SM_RETURN(success,"%ld");
 	return success;
 }

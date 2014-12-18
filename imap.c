@@ -1244,50 +1244,50 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
  */
 static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *, struct list *))
 {
-	if (open_socket_lib())
-	{
-		struct connection *conn;
-		struct connect_options conn_opts = {0};
-		char head_buf[100];
-		int error_code;
+	struct connection *conn = NULL;
+	struct connect_options conn_opts = {0};
+	struct list *all_folder_list = NULL;
+	struct list *sub_folder_list = NULL;
+	char head_buf[100];
+	int error_code;
 
-		sm_snprintf(head_buf, sizeof(head_buf), ("Reading folders of %s"),server->name);
-		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-		if (server->title)
-			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
-		else
-			thread_call_parent_function_async_string(status_set_title, 1, server->name);
-		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+	if (!open_socket_lib())
+		return;
 
-		conn_opts.use_ssl = server->ssl;
+	sm_snprintf(head_buf, sizeof(head_buf), ("Reading folders of %s"),server->name);
+	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+	if (server->title)
+		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+	else
+		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
-		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
-		{
-			thread_call_function_async(thread_get_main(),status_set_status,1,N_("Waiting for login..."));
-			if (imap_wait_login(conn,server))
-			{
-				thread_call_function_async(thread_get_main(),status_set_status,1,N_("Login..."));
-				if (imap_login(conn,server))
-				{
-					struct list *all_folder_list;
-					thread_call_function_async(thread_get_main(),status_set_status,1,N_("Reading folders..."));
-					if ((all_folder_list = imap_get_folders(conn,1)))
-					{
-						struct list *sub_folder_list;
-						if ((sub_folder_list = imap_get_folders(conn,0)))
-						{
-							thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
-							imap_free_name_list(sub_folder_list);
-						}
-						imap_free_name_list(all_folder_list);
-					}
-				}
-			}
-			tcp_disconnect(conn);
-		}
+	conn_opts.use_ssl = server->ssl;
 
-		close_socket_lib();
-	}
+	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+		goto bailout;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Waiting for login..."));
+	if (!imap_wait_login(conn,server))
+		goto bailout;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Login..."));
+	if (!imap_login(conn,server))
+		goto bailout;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Reading folders..."));
+	if (!(all_folder_list = imap_get_folders(conn,1)))
+		goto bailout;
+
+	if (!(sub_folder_list = imap_get_folders(conn,0)))
+		goto bailout;
+
+	thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
+bailout:
+	if (sub_folder_list) imap_free_name_list(sub_folder_list);
+	if (all_folder_list) imap_free_name_list(all_folder_list);
+	if (conn)  tcp_disconnect(conn);
+	close_socket_lib();
 }
 
 /**

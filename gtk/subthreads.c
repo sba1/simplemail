@@ -615,14 +615,6 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 
 /***************************************************************************************/
 
-int thread_call_parent_function_async(void *function, int argcount, ...)
-{
-	fprintf(stderr, "%s() not implemented yet!\n", __PRETTY_FUNCTION__);
-	exit(1);
-}
-
-/***************************************************************************************/
-
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
  * work depending on the ABI
  */

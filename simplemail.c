@@ -1907,7 +1907,7 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	if (mail->excerpt)
 	{
 		/* Just dereference the mail */
-		thread_call_parent_function_async(mail_dereference,1,mail);
+		thread_call_function_async(thread_get_main(),mail_dereference,1,mail);
 		return;
 	}
 
@@ -1990,7 +1990,7 @@ static void lazy_thread_work(char *path, struct mail_info *mail)
 	chdir(buf);
 
 	/* This also dereferences the given mail */
-	thread_call_parent_function_async(lazy_thread_work_finished,2,excerpt,mail);
+	thread_call_function_async(thread_get_main(),lazy_thread_work_finished,2,excerpt,mail);
 }
 
 /**

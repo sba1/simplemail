@@ -1122,38 +1122,6 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 
 /***************************************************************************************/
 
-int thread_call_parent_function_async(void *function, int argcount, ...)
-{
-	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);
-	if (tmsg)
-	{
-		va_list argptr;
-
-		va_start(argptr,argcount);
-
-		/* Note that async messages are never replied, therefore no reply port is necessary */
-		tmsg->msg.mn_Length = sizeof(struct ThreadMessage);
-		tmsg->function = (int (*)(void))function;
-		tmsg->argcount = argcount;
-		tmsg->arg1 = va_arg(argptr, void *);
-		tmsg->arg2 = va_arg(argptr, void *);
-		tmsg->arg3 = va_arg(argptr, void *);
-		tmsg->arg4 = va_arg(argptr, void *);
-		tmsg->arg5 = va_arg(argptr, void *);
-		tmsg->arg6 = va_arg(argptr, void *);
-		tmsg->async = 1;
-
-		va_end (argptr);
-
-		PutMsg(main_thread_port,&tmsg->msg);
-		return 1;
-	}
-
-	return 0;
-}
-
-/***************************************************************************************/
-
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
 	struct ThreadMessage *tmsg = (struct ThreadMessage *)AllocVec(sizeof(struct ThreadMessage),MEMF_PUBLIC|MEMF_CLEAR);

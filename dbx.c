@@ -290,8 +290,8 @@ static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
 		/* value points to a pointer to a message */
 		if (value)
 		{
-			thread_call_parent_function_async(status_set_mail, 2, *mail_accu, 1);
-			thread_call_parent_function_async(status_set_gauge,1, *mail_accu);
+			thread_call_function_async(thread_get_main(), status_set_mail, 2, *mail_accu, 1);
+			thread_call_function_async(thread_get_main(), status_set_gauge,1, *mail_accu);
 
 			*mail_accu = (*mail_accu) + 1;
 
@@ -365,10 +365,10 @@ static int dbx_import_entry(struct import_data *data)
 
 			if (thread_parent_task_can_contiue())
 			{
-				thread_call_parent_function_async(status_init,1,0);
+				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Importing a dbx file"));
 				thread_call_parent_function_async_string(status_set_head,1,head_buf);
-				thread_call_parent_function_async(status_open,0);
+				thread_call_function_async(thread_get_main(),status_open,0);
 
 				if ((fh = fopen(filename,"rb")))
 				{
@@ -376,7 +376,7 @@ static int dbx_import_entry(struct import_data *data)
 					if (chdir(destdir)!=-1)
 					{
 						fsize = myfsize(fh);
-						thread_call_parent_function_async(status_init_gauge_as_bytes,1,fsize);
+						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,fsize);
 
 						if ((fileheader_buf = (unsigned char*)malloc(0x24bc)))
 						{
@@ -391,8 +391,8 @@ static int dbx_import_entry(struct import_data *data)
 									int read_mails = 0;
 									unsigned int root_node = GetLong(fileheader_buf,0x00e4);
 
-									thread_call_parent_function_async(status_init_mail, 1, number_of_mails);
-									thread_call_parent_function_async(status_init_gauge_as_bytes,1,number_of_mails); /* not really true */
+									thread_call_function_async(thread_get_main(),status_init_mail, 1, number_of_mails);
+									thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,number_of_mails); /* not really true */
 
 									/* Start the the roor of the tree */
 									dbx_read_node(fh, root_node, &read_mails);
@@ -405,7 +405,7 @@ static int dbx_import_entry(struct import_data *data)
 					}
 					fclose(fh);
 				}
-				thread_call_parent_function_async(status_close,0);
+				thread_call_function_async(thread_get_main(),status_close,0);
 			}
 			free(destdir);
 		}

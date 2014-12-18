@@ -93,10 +93,10 @@ static int export_entry(struct export_data *data)
 					folders_unlock();
 
 					sm_snprintf(head_buf, sizeof(head_buf), _("Exporting folder %s to %s"),f->name,filename);
-					thread_call_parent_function_async(status_init,1,0);
+					thread_call_function_async(thread_get_main(),status_init,1,0);
 					thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Exporting folder"));
 					thread_call_parent_function_async_string(status_set_head,1,head_buf);
-					thread_call_parent_function_async(status_open,0);
+					thread_call_function_async(thread_get_main(),status_open,0);
 
 					if ((fh = fopen(filename,"w")))
 					{
@@ -111,8 +111,8 @@ static int export_entry(struct export_data *data)
 						while ((m = folder_next_mail(f, &handle)))
 							max_size += m->size;
 
-						thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_size);
-						thread_call_parent_function_async(status_init_mail, 1, f->num_mails);
+						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_size);
+						thread_call_function_async(thread_get_main(),status_init_mail, 1, f->num_mails);
 
 						if ((file_buf = malloc(8192)))
 						{
@@ -130,7 +130,7 @@ static int export_entry(struct export_data *data)
 								static const char *week_str[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 								struct tm tm;
 
-								thread_call_parent_function_async(status_set_mail, 2, mail_no, m->size);
+								thread_call_function_async(thread_get_main(),status_set_mail, 2, mail_no, m->size);
 
 								sm_convert_seconds(m->received,&tm);
 								sm_snprintf(date_buf,sizeof(date_buf),"%s %s %02d %02d:%02d:%02d %4d",week_str[tm.tm_wday],mon_str[tm.tm_mon-1],tm.tm_mday,tm.tm_hour,tm.tm_min,tm.tm_sec,tm.tm_year+1900);
@@ -144,7 +144,7 @@ static int export_entry(struct export_data *data)
 									{
 										if (line_is_any_from(file_buf)) fwrite(">",1,1,fh);
 										size += fwrite(file_buf,1,strlen(file_buf),fh);
-										thread_call_parent_function_async(status_set_gauge,1,size);
+										thread_call_function_async(thread_get_main(),status_set_gauge,1,size);
 									}
 									fclose(in);
 								}
@@ -158,7 +158,7 @@ static int export_entry(struct export_data *data)
 
 						fclose(fh);
 					}
-					thread_call_parent_function_async(status_close,0);
+					thread_call_function_async(thread_get_main(),status_close,0);
 
 					folder_unlock(f);
 				} else folders_unlock();
@@ -226,10 +226,10 @@ static int import_entry(struct import_data *data)
 
 			if (thread_parent_task_can_contiue())
 			{
-				thread_call_parent_function_async(status_init,1,0);
+				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_parent_function_async_string(status_set_title,1,_("SimpleMail - Importing a mbox file"));
 				thread_call_parent_function_async_string(status_set_head,1,head_buf);
-				thread_call_parent_function_async(status_open,0);
+				thread_call_function_async(thread_get_main(),status_open,0);
 
 				if ((fh = fopen(filename,"r")))
 				{
@@ -237,7 +237,7 @@ static int import_entry(struct import_data *data)
 					if (chdir(destdir)!=-1)
 					{
 						fsize = myfsize(fh);
-						thread_call_parent_function_async(status_init_gauge_as_bytes,1,fsize);
+						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,fsize);
 
 						if ((line_buf = malloc(8192)))
 						{
@@ -283,7 +283,7 @@ static int import_entry(struct import_data *data)
 									fputs("\n",mailfh);
 								}
 								fputs(line_buf + line_is_any_from(line_buf),mailfh);
-								thread_call_parent_function_async(status_set_gauge,1,gauge);
+								thread_call_function_async(thread_get_main(),status_set_gauge,1,gauge);
 							}
 
 							if (mailfh)
@@ -305,7 +305,7 @@ static int import_entry(struct import_data *data)
 					}
 					fclose(fh);
 				}
-				thread_call_parent_function_async(status_close,0);
+				thread_call_function_async(thread_get_main(),status_close,0);
 			}
 			free(destdir);
 		}

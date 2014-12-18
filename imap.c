@@ -552,7 +552,7 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
 		rm->num_of_remote_mail = num_of_remote_mails;
 	} else
 	{
-		thread_call_parent_function_async(status_set_status,1,N_("Failed examining the folder"));
+		thread_call_function_async(thread_get_main(),status_set_status,1,N_("Failed examining the folder"));
 		SM_DEBUGF(10,("Failed examining the folder\n"));
 		free(rm);
 		rm = NULL;
@@ -1020,7 +1020,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 				/* Assume everything is fine */
 				success = 1;
-				thread_call_parent_function_async(status_init_gauge_as_bytes,1,max_todl_bytes);
+				thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_todl_bytes);
 
 				for (i=0;i<num_msgs_to_dl;i++)
 				{
@@ -1081,7 +1081,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 											if (dl == -1 || !dl) break;
 											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
-											thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
+											thread_call_function_async(thread_get_main(),status_set_gauge, 1, todl_bytes);
 											fwrite(buf,1,dl,fh);
 											todownload -= dl;
 										}
@@ -1096,7 +1096,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					if (!success) break;
 					todl_bytes = accu_todl_bytes;
 					/* TODO: should be enforced */
-					thread_call_parent_function_async(status_set_gauge, 1, todl_bytes);
+					thread_call_function_async(thread_get_main(),status_set_gauge, 1, todl_bytes);
 				}
 
 				imap_free_remote_mailbox(rm);
@@ -1172,17 +1172,17 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			SM_DEBUGF(10,("Connecting\n"));
 			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 			{
-				thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
+				thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
 				SM_DEBUGF(10,("Waiting for login\n"));
 				if (imap_wait_login(conn,server))
 				{
-					thread_call_parent_function_async(status_set_status,1,_("Login..."));
+					thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
 					SM_DEBUGF(10,("Login\n"));
 					if (imap_login(conn,server))
 					{
 						struct list *folder_list;
-						thread_call_parent_function_async(status_set_status,1,_("Login successful"));
-						thread_call_parent_function_async(status_set_status,1,_("Checking for folders"));
+						thread_call_function_async(thread_get_main(),status_set_status,1,_("Login successful"));
+						thread_call_function_async(thread_get_main(),status_set_status,1,_("Checking for folders"));
 
 						SM_DEBUGF(10,("Get folders\n"));
 						if ((folder_list = imap_get_folders(conn,0)))
@@ -1209,7 +1209,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 							imap_free_name_list(folder_list);
 						}
-					} else thread_call_parent_function_async(status_set_status,1,_("Login failed!"));
+					} else thread_call_function_async(thread_get_main(),status_set_status,1,_("Login failed!"));
 				}
 				tcp_disconnect(conn);
 
@@ -1263,14 +1263,14 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 
 		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		{
-			thread_call_parent_function_async(status_set_status,1,N_("Waiting for login..."));
+			thread_call_function_async(thread_get_main(),status_set_status,1,N_("Waiting for login..."));
 			if (imap_wait_login(conn,server))
 			{
-				thread_call_parent_function_async(status_set_status,1,N_("Login..."));
+				thread_call_function_async(thread_get_main(),status_set_status,1,N_("Login..."));
 				if (imap_login(conn,server))
 				{
 					struct list *all_folder_list;
-					thread_call_parent_function_async(status_set_status,1,N_("Reading folders..."));
+					thread_call_function_async(thread_get_main(),status_set_status,1,N_("Reading folders..."));
 					if ((all_folder_list = imap_get_folders(conn,1)))
 					{
 						struct list *sub_folder_list;
@@ -1312,12 +1312,12 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_async(status_init,1,0);
-		thread_call_parent_function_async(status_open,0);
+		thread_call_function_async(thread_get_main(),status_init,1,0);
+		thread_call_function_async(thread_get_main(),status_open,0);
 
 		imap_get_folder_list_really(server,callback);
 
-		thread_call_parent_function_async(status_close,0);
+		thread_call_function_async(thread_get_main(),status_close,0);
 	}
 	return 0;
 }
@@ -1373,18 +1373,18 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 
 		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		{
-			thread_call_parent_function_async(status_set_status,1,_("Waiting for login..."));
+			thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
 			if (imap_wait_login(conn,server))
 			{
-				thread_call_parent_function_async(status_set_status,1,_("Login..."));
+				thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
 				if (imap_login(conn,server))
 				{
 					struct list *all_folder_list;
-					thread_call_parent_function_async(status_set_status,1,_("Reading folders..."));
+					thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
 					if ((all_folder_list = imap_get_folders(conn,1)))
 					{
 						struct list *sub_folder_list;
-						thread_call_parent_function_async(status_set_status,1,_("Reading subscribed folders..."));
+						thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading subscribed folders..."));
 						if ((sub_folder_list = imap_get_folders(conn,0)))
 						{
 							char *line;
@@ -1512,12 +1512,12 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_async(status_init,1,0);
-		thread_call_parent_function_async(status_open,0);
+		thread_call_function_async(thread_get_main(),status_init,1,0);
+		thread_call_function_async(thread_get_main(),status_open,0);
 
 		imap_submit_folder_list_really(server,&list);
 
-		thread_call_parent_function_async(status_close,0);
+		thread_call_function_async(thread_get_main(),status_close,0);
 	}
 	string_list_clear(&list);
 	return 0;
@@ -2263,7 +2263,7 @@ static int imap_thread_download_mail(struct imap_server *server, char *local_pat
 		}
 	}
 	if (callback)
-		thread_call_parent_function_async(callback, 2, m, userdata);
+		thread_call_function_async(thread_get_main(), callback, 2, m, userdata);
 
 	SM_RETURN(success,"%ld");
 	return success;

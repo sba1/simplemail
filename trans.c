@@ -166,9 +166,9 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
-		thread_call_parent_function_async(status_init,1,0);
-		if (called_by_auto) thread_call_parent_function_async(status_open_notactivated,0);
-		else thread_call_parent_function_async(status_open,0);
+		thread_call_function_async(thread_get_main(),status_init,1,0);
+		if (called_by_auto) thread_call_function_async(thread_get_main(),status_open_notactivated,0);
+		else thread_call_function_async(thread_get_main(),status_open,0);
 
 		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, has_remote_filter, folder_directory, auto_spam, white, black))
 		{
@@ -178,7 +178,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 			imap_synchronize_really(&imap_list, called_by_auto);
 		}
 
-		thread_call_parent_function_async(status_close,0);
+		thread_call_function_async(thread_get_main(),status_close,0);
 	}
 
 	array_free(black);

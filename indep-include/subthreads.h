@@ -153,15 +153,6 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...);
 
 /**
- * Call the function in the context of the parent task in an asynchronous manner.
- *
- * @param function
- * @param argcount
- * @return
- */
-int thread_call_parent_function_async(void *function, int argcount, ...);
-
-/**
  * Call the given function asynchronous in the context of the parent thread
  * and duplicate the first argument which is threaded at a string.
  *

@@ -92,6 +92,31 @@ void read_refresh_prevnext_button(struct folder *f)
 {
 }
 
+void statuswnd_open(void)
+{
+}
+
+void statuswnd_close(void)
+{
+}
+
+void statuswnd_set_head(void)
+{
+}
+
+void statuswnd_set_title(void)
+{
+}
+
+void statuswnd_mail_list_clear(void)
+{
+}
+
+int search_has_mails(void)
+{
+	return 0;
+}
+
 /*************************************************************/
 
 void *test_imap_timer_callback(void *data)
@@ -141,6 +166,15 @@ void *test_imap_timer_callback(void *data)
 				break;
 	}
 	return NULL;
+}
+
+void *test_imap_quit_callback(void *data)
+{
+	thread_abort(thread_get_main());
+}
+
+void test_imap_get_folder_list_callback(struct imap_server *server, struct list *all_list, struct list *sub_list)
+{
 }
 
 /* @Test */
@@ -193,12 +227,17 @@ void test_imap(void)
 	ac->imap->port = 10143;
 
 	insert_config_account(ac);
-	account_free(ac);
 
 	folder_create_imap();
 
 	f = folder_find_by_name("localhost");
 	CU_ASSERT(f != NULL);
+
+	imap_get_folder_list(ac->imap, test_imap_get_folder_list_callback);
+
+	thread_wait(test_imap_quit_callback, NULL, 2000);
+
+	account_free(ac);
 
 	/* Doing this twice is intended */
 	imap_thread_connect(f);

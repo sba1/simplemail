@@ -1254,7 +1254,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	if (!open_socket_lib())
 		return;
 
-	sm_snprintf(head_buf, sizeof(head_buf), ("Reading folders of %s"),server->name);
+	sm_snprintf(head_buf, sizeof(head_buf), _("Reading folders of %s"),server->name);
 	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 	if (server->title)
 		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
@@ -1267,15 +1267,15 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		goto bailout;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Waiting for login..."));
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
 	if (!imap_wait_login(conn,server))
 		goto bailout;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Login..."));
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
 	if (!imap_login(conn,server))
 		goto bailout;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,N_("Reading folders..."));
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
 	if (!(all_folder_list = imap_get_folders(conn,1)))
 		goto bailout;
 

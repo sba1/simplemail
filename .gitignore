@@ -52,6 +52,7 @@ build-dependencies
 .amissl-done
 .openurl-done
 .openssl-done
+.lha-done
 .cproject
 .project
 .csettings

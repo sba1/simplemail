@@ -13,14 +13,31 @@ endif
 .build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done $(OPENSSL_DEPENDENCY)
 	touch $@
 
+LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha
+
+#
+# Download and compile lha
+#
+
+$(LHA):
+	mkdir -p build-dependencies/lha
+	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i.orig.tar.gz
+	cd build-dependencies/lha && wget -N http://ftp.de.debian.org/debian/pool/non-free/l/lha/lha_1.14i-10.3.diff.gz
+	cd build-dependencies/lha && tar -xzf lha_1.14i.orig.tar.gz
+	cd build-dependencies/lha && zcat lha_1.14i-10.3.diff.gz | patch -p0
+	cd build-dependencies/lha/lha-1.14i.orig/ && make
+
+.lha-done: $(LHA)
+	touch $@
+
 #
 # Download and extract AmiSSL includes
 #
-.amissl-done:
+.amissl-done: $(LHA)
 ifndef AMISSL_INCLUDE
 	mkdir -p build-dependencies/amissl
 	cd build-dependencies/amissl && wget -N http://www.heightanxiety.com/AmiSSL/AmiSSL-3.5-SDK.lha
-	cd build-dependencies/amissl && lha xf AmiSSL-3.5-SDK.lha
+	cd build-dependencies/amissl && $(LHA) xf AmiSSL-3.5-SDK.lha
 endif
 	touch $@
 
@@ -36,11 +53,11 @@ endif
 #
 # Download and extract expat includes
 #
-.expat-done:
+.expat-done: $(LHA)
 ifndef EXPAT_INCLUDE
 	mkdir -p build-dependencies/expat
 	cd build-dependencies/expat && wget -N http://www.os4depot.net/share/development/library/misc/expat.lha
-	cd build-dependencies/expat && lha xf expat.lha && ln -sf libraries/expat.h expat/SDK/Include/include_h/expat.h
+	cd build-dependencies/expat && $(LHA) xf expat.lha && ln -sf libraries/expat.h expat/SDK/Include/include_h/expat.h
 endif
 	touch $@
 
@@ -54,30 +71,30 @@ build-dependencies/SDK/SDK_53.20.lha:
 ifdef MUI_INCLUDE
 .mui-done:
 else
-.mui-done: build-dependencies/SDK/SDK_53.20.lha
+.mui-done: build-dependencies/SDK/SDK_53.20.lha $(LHA)
 	# MUI
 	mkdir -p build-dependencies/SDK
-	cd build-dependencies/SDK && lha xf SDK_53.20.lha && lha xf SDK_Install/MUI-3.9.lha
+	cd build-dependencies/SDK && $(LHA) xf SDK_53.20.lha && lha xf SDK_Install/MUI-3.9.lha
 	cd build-dependencies/SDK && echo "struct MUI_ImageSpec; struct MUI_FrameSpec;" >/tmp/muimaster.h && grep -v muiprog.h MUI/C/Include/interfaces/muimaster.h >>/tmp/muimaster.h && cp /tmp/muimaster.h MUI/C/Include/interfaces/muimaster.h
 	# NList
 	cd build-dependencies/SDK && wget -c http://os4depot.net/share/library/mui/mcc_nlist.lha
-	cd build-dependencies/SDK && lha xf mcc_nlist.lha
+	cd build-dependencies/SDK && $(LHA) xf mcc_nlist.lha
 	cp -R build-dependencies/SDK/MCC_NList/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include/mui
 	# BetterString
 	cd build-dependencies/SDK && wget -c http://os4depot.net/share/library/mui/mcc_betterstring.lha
-	cd build-dependencies/SDK && lha xf mcc_betterstring.lha
+	cd build-dependencies/SDK && $(LHA) xf mcc_betterstring.lha
 	cp -R build-dependencies/SDK/MCC_BetterString/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include
 	# Texteditor
 	cd build-dependencies/SDK && wget -c http://os4depot.net/share/library/mui/mcc_texteditor.lha
-	cd build-dependencies/SDK && lha xf mcc_texteditor.lha
+	cd build-dependencies/SDK && $(LHA) xf mcc_texteditor.lha
 	cp -R build-dependencies/SDK/MCC_TextEditor/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include
 	# The bar
 	cd build-dependencies/SDK && wget -c http://os4depot.net/share/library/mui/mcc_thebar.lha
-	cd build-dependencies/SDK && lha xf mcc_thebar.lha
+	cd build-dependencies/SDK && $(LHA) xf mcc_thebar.lha
 	cp -R build-dependencies/SDK/MCC_TheBar/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include
 	# Popplaceholder
 	cd build-dependencies/SDK && wget -c http://aminet.net/dev/mui/MCC_Popph.lha
-	cd build-dependencies/SDK && lha xf MCC_Popph.lha
+	cd build-dependencies/SDK && $(LHA) xf MCC_Popph.lha
 	cp -R build-dependencies/SDK/MCC_Popph/Developer/C/include/mui build-dependencies/SDK/MUI/C/Include
 endif
 	touch $@
@@ -85,11 +102,11 @@ endif
 #
 # Download and extract OpenURL includes
 #
-.openurl-done:
+.openurl-done: $(LHA)
 	# OpenURL
 ifndef OPENURL_INCLUDE
 	cd build-dependencies && wget -c http://os4depot.net/share/network/misc/openurl.lha
-	cd build-dependencies && lha xf openurl.lha
+	cd build-dependencies && $(LHA) xf openurl.lha
 endif
 	touch $@
 

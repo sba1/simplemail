@@ -1430,6 +1430,29 @@ int folder_add_mail_incoming(struct mail_info *mail)
 }
 
 /**
+ * Disposes the given folder node (deeply).
+ *
+ * @param node defines the entity to be freed. It is safe to pass NULL.
+ */
+static void folder_node_dispose(struct folder_node *node)
+{
+	int i;
+	if (!node) return;
+	for (i = 0; i < node->folder.num_mails; i++)
+		mail_info_free(node->folder.mail_info_array[i]);
+	free(node->folder.mail_info_array);
+	free(node->folder.sorted_mail_info_array);
+	free(node->folder.pending_mail_info_array);
+	free(node->folder.imap_path);
+	free(node->folder.imap_server);
+	free(node->folder.imap_user);
+	free(node->folder.path);
+	free(node->folder.name);
+	thread_dispose_semaphore(node->folder.sem);
+	free(node);
+}
+
+/**
  * Adds a folder to the internal folder list.
  *
  * @param path defines the path of the folder (can be modified afterwards)
@@ -1484,12 +1507,7 @@ static struct folder *folder_add(char *path)
 	return &node->folder;
 
 bailout:
-	if (node)
-	{
-		free(node->folder.path);
-		if (node->folder.sem) thread_dispose_semaphore(node->folder.sem);
-		free(node);
-	}
+	folder_node_dispose(node);
 	return NULL;
 }
 
@@ -4313,9 +4331,9 @@ int init_folders(void)
 	return 1;
 }
 
-/******************************************************************
- Removes all folders (before quit).
-*******************************************************************/
+/**
+ * Cleanups the folder.
+ */
 void del_folders(void)
 {
 	struct folder_node *node;
@@ -4323,26 +4341,8 @@ void del_folders(void)
 	folder_save_all_indexfiles();
 	thread_dispose_semaphore(folders_semaphore);
 
-#if 1
 	while ((node = (struct folder_node*)list_remove_tail(&folder_list)))
-	{
-		int i;
-
-		for (i=0;i<node->folder.num_mails;i++)
-			mail_info_free(node->folder.mail_info_array[i]);
-		free(node->folder.mail_info_array);
-		free(node->folder.sorted_mail_info_array);
-		free(node->folder.pending_mail_info_array);
-		free(node->folder.imap_path);
-		free(node->folder.imap_server);
-		free(node->folder.imap_user);
-		free(node->folder.path);
-		free(node->folder.name);
-
-		thread_dispose_semaphore(node->folder.sem);
-		free(node);
-	}
-#endif
+		folder_node_dispose(node);
 }
 
 /******************************************************************

@@ -125,6 +125,7 @@ imap-testsuite: dovecot-conf imap2_unittest
 	-$(DOVECOT) stop
 	$(DOVECOT)
 	sleep 2
+	./prepare-imap.py
 	./imap2_unittest
 	$(DOVECOT) stop
 

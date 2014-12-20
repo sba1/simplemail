@@ -3936,9 +3936,13 @@ void folder_save_order(void)
 	fclose(fh);
 }
 
-/******************************************************************
- Returns a possible path for new folders (in a static buffer)
-*******************************************************************/
+/**
+ * @brief Returns a possible path for new folders.
+ *
+ * @note a static buffer is used which means that you must not free the result.
+ *  Additionally, this function is not thread-safe.
+ * @return
+ */
 char *new_folder_path(void)
 {
 	static char buf[512];
@@ -3966,10 +3970,11 @@ char *new_folder_path(void)
 	return buf;
 }
 
-/******************************************************************
- This functions scans the current configuration and creates
- necessary imap folders if they don't exists already
-*******************************************************************/
+/**
+ * @brief Create necessary IMAP folders according to the current account configuration.
+ *
+ * Folders that exist are not created again.
+ */
 void folder_create_imap(void)
 {
 	struct account *ac = (struct account*)list_first(&user.config.account_list);
@@ -4088,10 +4093,14 @@ void folder_create_imap(void)
 	}
 }
 
-/**************************************************************************
- Checks whether two folders are on the same imap server. Returns 1 if
- this is the case else 0
-**************************************************************************/
+/**
+ * @brief Checks whether two folders are on the same imap server.
+ * Returns 1 if this is the case else 0.
+ *
+ * @param f1
+ * @param f2
+ * @return
+ */
 int folder_on_same_imap_server(struct folder *f1, struct folder *f2)
 {
 	if (!f1->is_imap || !f2->is_imap) return 0;

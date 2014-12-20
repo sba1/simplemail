@@ -214,7 +214,18 @@ thread_t thread_get(void);
 struct semaphore_s;
 typedef struct semaphore_s * semaphore_t; /* opaque type */
 
+/**
+ * Create a new semaphore.
+ *
+ * @return the semaphore or NULL for an error.
+ */
 semaphore_t thread_create_semaphore(void);
+
+/**
+ * Dispose the given semaphore.
+ *
+ * @param sem defines the semaphore to be disposed. NULL is accepted.
+ */
 void thread_dispose_semaphore(semaphore_t sem);
 int thread_attempt_lock_semaphore(semaphore_t sem);
 void thread_lock_semaphore(semaphore_t sem);

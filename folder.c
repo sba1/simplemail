@@ -4059,8 +4059,7 @@ void folder_create_imap(void)
 							char buf[320];
 
 							if (!strcmp(dptr->d_name,".") || !strcmp(dptr->d_name,"..")) continue;
-							strncpy(buf,f->path,sizeof(buf));
-							buf[sizeof(buf)-1] = 0;
+							mystrlcpy(buf,f->path,sizeof(buf));
 							sm_add_part(buf,dptr->d_name,sizeof(buf));
 
 							if (!stat(buf,st))

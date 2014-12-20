@@ -4033,7 +4033,7 @@ void folder_create_imap(void)
 				if (f)
 				{
 					/* The folder has been added because a directory has been found. But it
-			     * might be not considered as a group so we change it manually */
+					 * might be not considered as a group so we change it manually */
 					f->special = FOLDER_SPECIAL_GROUP;
 					f->is_imap = 1;
 				}

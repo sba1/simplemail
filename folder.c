@@ -1439,48 +1439,55 @@ static struct folder *folder_add(char *path)
 {
 	struct folder_node *node;
 
-	if (folder_find_by_path(path)) return NULL;
+	if (folder_find_by_path(path))
+		return NULL;
 
-	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+	if (!(node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+		return NULL;
+
+	/* Initialize everything with 0 */
+	memset(node,0,sizeof(struct folder_node));
+	node->folder.num_index_mails = -1;
+
+	list_init(&node->folder.imap_all_folder_list);
+	list_init(&node->folder.imap_sub_folder_list);
+
+	/* create the directory if it doesn't exists */
+	if (!sm_makedir(path))
+		goto bailout;
+
+	if (!(node->folder.sem = thread_create_semaphore()))
+		goto bailout;
+
+	if (!(node->folder.path = mystrdup(path)))
+		goto bailout;
+
+	node->folder.primary_sort = FOLDER_SORT_DATE;
+	node->folder.secondary_sort = FOLDER_SORT_FROMTO;
+
+	if (!folder_config_load(&node->folder))
 	{
-		/* Initialize everything with 0 */
-		memset(node,0,sizeof(struct folder_node));
-		node->folder.num_index_mails = -1;
-
-		list_init(&node->folder.imap_all_folder_list);
-		list_init(&node->folder.imap_sub_folder_list);
-
-		/* create the directory if it doesn't exists */
-		if (sm_makedir(path))
+		char *folder_name = sm_file_part(path);
+		if ((node->folder.name = mystrdup(folder_name)))
 		{
-			if ((node->folder.sem = thread_create_semaphore()))
-			{
-				if ((node->folder.path = mystrdup(path)))
-				{
-					node->folder.primary_sort = FOLDER_SORT_DATE;
-					node->folder.secondary_sort = FOLDER_SORT_FROMTO;
-
-					if (!folder_config_load(&node->folder))
-					{
-						char *folder_name = sm_file_part(path);
-						if ((node->folder.name = mystrdup(folder_name)))
-						{
-							node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
-						}
-						if (!mystricmp(folder_name,"Income") || !mystricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
-						if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
-						if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
-						if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
-						if (!mystricmp(folder_name,"Spam")) node->folder.special = FOLDER_SPECIAL_SPAM;
-						folder_config_save(&node->folder);
-					}
-					folder_read_mail_infos(&node->folder,1);
-					list_insert_tail(&folder_list,&node->node);
-					return &node->folder;
-				}
-				thread_dispose_semaphore(node->folder.sem);
-			}
+			node->folder.name[0] = toupper((unsigned char)(node->folder.name[0]));
 		}
+		if (!mystricmp(folder_name,"Income") || !mystricmp(folder_name,"Incoming")) node->folder.special = FOLDER_SPECIAL_INCOMING;
+		if (!mystricmp(folder_name,"Outgoing")) node->folder.special = FOLDER_SPECIAL_OUTGOING;
+		if (!mystricmp(folder_name,"Sent")) node->folder.special = FOLDER_SPECIAL_SENT;
+		if (!mystricmp(folder_name,"Deleted")) node->folder.special = FOLDER_SPECIAL_DELETED;
+		if (!mystricmp(folder_name,"Spam")) node->folder.special = FOLDER_SPECIAL_SPAM;
+		folder_config_save(&node->folder);
+	}
+	folder_read_mail_infos(&node->folder,1);
+	list_insert_tail(&folder_list,&node->node);
+	return &node->folder;
+
+bailout:
+	if (node)
+	{
+		free(node->folder.path);
+		if (node->folder.sem) thread_dispose_semaphore(node->folder.sem);
 		free(node);
 	}
 	return NULL;

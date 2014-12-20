@@ -1587,6 +1587,8 @@ struct folder *folder_add_group(char *name)
  */
 struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 {
+	char *name;
+
 	struct folder_node *node;
 	struct folder_node *parent_node = (struct folder_node*)(((char*)parent)-sizeof(struct node));
 	struct folder *f;
@@ -1596,51 +1598,46 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 
 	if ((f = folder_find_by_imap(parent->imap_user, parent->imap_server,imap_path))) return f;
 
-	if ((node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+	if (!(node = (struct folder_node*)malloc(sizeof(struct folder_node))))
+		return NULL;
+
+	/* Initialize everything with 0 */
+	memset(node,0,sizeof(struct folder_node));
+
+	name = sm_file_part(imap_path);
+	node->folder.name = mystrdup(name);
+	node->folder.parent_folder = parent;
+	node->folder.path =  mycombinepath(parent->path,name);
+	node->folder.special = FOLDER_SPECIAL_NO;
+	node->folder.is_imap = 1;
+	if (!(node->folder.imap_server = mystrdup(parent->imap_server)))
+		goto bailout;
+	if (!(node->folder.imap_user = mystrdup(parent->imap_user)))
+		goto bailout;
+	if (!(node->folder.imap_path = mystrdup(imap_path)))
+		goto bailout;
+	node->folder.imap_hierarchy_delimiter = ".";
+	node->folder.num_index_mails = -1;
+	list_init(&node->folder.imap_all_folder_list);
+	list_init(&node->folder.imap_sub_folder_list);
+
+	if (!(node->folder.sem = thread_create_semaphore()))
+		goto bailout;
+
+	if (!sm_makedir(node->folder.path))
+		goto bailout;
+
+	if (!folder_config_load(&node->folder))
 	{
-		char *name;
-
-		/* Initialize everything with 0 */
-		memset(node,0,sizeof(struct folder_node));
-
-		name = sm_file_part(imap_path);
-		node->folder.name = mystrdup(name);
-		node->folder.parent_folder = parent;
-		node->folder.path =  mycombinepath(parent->path,name);
-		node->folder.special = FOLDER_SPECIAL_NO;
-		node->folder.is_imap = 1;
-		node->folder.imap_server = mystrdup(parent->imap_server);
-		node->folder.imap_user = mystrdup(parent->imap_user);
-		node->folder.imap_path = mystrdup(imap_path);
-		node->folder.imap_hierarchy_delimiter = ".";
-		node->folder.num_index_mails = -1;
-		list_init(&node->folder.imap_all_folder_list);
-		list_init(&node->folder.imap_sub_folder_list);
-
-		/* TODO: check for success */
-
-		if ((node->folder.sem = thread_create_semaphore()))
-		{
-			if (sm_makedir(node->folder.path))
-			{
-				if (!folder_config_load(&node->folder))
-				{
-					folder_config_save(&node->folder);
-				}
-
-				folder_read_mail_infos(&node->folder,1);
-				list_insert(&folder_list, &node->node, &parent_node->node);
-				return &node->folder;
-			}
-			thread_dispose_semaphore(node->folder.sem);
-		}
-		free(node->folder.name);
-		free(node->folder.path);
-		free(node->folder.imap_server);
-		free(node->folder.imap_user);
-		free(node->folder.imap_path);
-		free(node);
+		folder_config_save(&node->folder);
 	}
+
+	folder_read_mail_infos(&node->folder,1);
+	list_insert(&folder_list, &node->node, &parent_node->node);
+	return &node->folder;
+
+bailout:
+	folder_node_dispose(node);
 	return NULL;
 }
 

@@ -84,6 +84,7 @@ struct folder
 	char *imap_server;
 	char *imap_user;
 	char *imap_path; /* the imap path on the server */
+	char *imap_hierarchy_delimiter; /* the delimiter for separating folders */
 
 	int imap_download; /* 1, if complete emails shall be downloaded */
 

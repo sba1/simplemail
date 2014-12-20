@@ -1612,6 +1612,7 @@ struct folder *folder_add_imap(struct folder *parent, char *imap_path)
 		node->folder.imap_server = mystrdup(parent->imap_server);
 		node->folder.imap_user = mystrdup(parent->imap_user);
 		node->folder.imap_path = mystrdup(imap_path);
+		node->folder.imap_hierarchy_delimiter = ".";
 		node->folder.num_index_mails = -1;
 		list_init(&node->folder.imap_all_folder_list);
 		list_init(&node->folder.imap_sub_folder_list);

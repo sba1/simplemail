@@ -70,9 +70,9 @@ ARCHSRCS=\
 	addressgrouplistclass.c \
 	addressmatchlistclass.c \
 	addressstringclass.c \
+	amigasupport.c \
 	appicon.c \
 	archdebug.c \
-	amigasupport.c \
 	arexx.c \
 	attachmentlistclass.c \
 	audioselectgroupclass.c \
@@ -92,8 +92,8 @@ ARCHSRCS=\
 	gui_main.c \
 	iconclass.c \
 	mailinfoclass.c \
-	mailtreelistclass.c \
 	mailtreelistclass-new.c \
+	mailtreelistclass.c \
 	mainwnd.c \
 	messageviewclass.c \
 	muistuff.c \
@@ -105,9 +105,9 @@ ARCHSRCS=\
 	readwnd.c \
 	searchwnd.c \
 	shutdownwnd.c \
+	signaturecycleclass.c \
 	smtoolbarclass.c \
 	startup-os4.c \
-	signaturecycleclass.c \
 	startupwnd.c \
 	statuswnd.c \
 	subthreads.c \

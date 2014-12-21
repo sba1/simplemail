@@ -40,15 +40,49 @@ SSL_LINK =
 SSL_LIB =
 endif
 
-# Change these as required
+# The commit identifier that is compiled into SimpleMail
 COMMITID := '"$(shell (git rev-list HEAD -n 1 | cut -c1-12) || echo unknown commit)"'
+
+# Change these as required
 OPTIMIZE = -O3
 DEBUG = -g #-ggdb # -g -DDEBUG
-INC = -I "$(SDK_INCLUDE)" -I"$(MUI_INCLUDE)" $(SSL_INC) -I "$(NET_INCLUDE)" -I "$(EXPAT_INCLUDE)" -I "$(OPENURL_INCLUDE)" -I. -I./indep-include -I./amiga-mui
-CFLAGS = $(DATE) -DHAVE_OPENURL $(SSL_FLAGS) -DSM_COMMITID=$(COMMITID) -D__AMIGAOS4__ -D__USE_OLD_TIMEVAL__ -DNDEBUG -D__USE_NETINET_IN_H -DROADSHOW_SDK -D__USE_INLINE__ -Wall -mcrt=clib2 -fno-strict-aliasing -Wno-deprecated-declarations $(OPTIMIZE) $(DEBUG) $(INC)
+INC = \
+	-I "$(SDK_INCLUDE)"\
+	-I "$(MUI_INCLUDE)"\
+	$(SSL_INC)\
+	-I "$(NET_INCLUDE)"\
+	-I "$(EXPAT_INCLUDE)"\
+	-I "$(OPENURL_INCLUDE)"\
+	-I.\
+	-I./indep-include\
+	-I./amiga-mui
+
+CFLAGS = \
+	$(DATE)\
+	-DHAVE_OPENURL\
+	$(SSL_FLAGS)\
+	-DSM_COMMITID=$(COMMITID)\
+	-D__AMIGAOS4__\
+	-D__USE_OLD_TIMEVAL__\
+	-DNDEBUG\
+	-D__USE_NETINET_IN_H\
+	-DROADSHOW_SDK\
+	-D__USE_INLINE__\
+	-Wall\
+	-mcrt=clib2\
+	-fno-strict-aliasing\
+	-Wno-deprecated-declarations\
+	$(OPTIMIZE)\
+	$(DEBUG)\
+	$(INC)
 
 # Flags passed to gcc during linking
-LINK = -nostartfiles -L "$(EXPAT_LIB)" $(SSL_LINK) -mcrt=clib2 -Wl,--gc-sections
+LINK = \
+	-nostartfiles\
+	-L "$(EXPAT_LIB)"\
+	$(SSL_LINK)\
+	-mcrt=clib2\
+	-Wl,--gc-sections
 
 # Name of the "thing" to build
 TARGET = SimpleMail

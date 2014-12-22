@@ -250,3 +250,32 @@ de.pox:
 	xgettext --default-domain=simplemail --files-from=po/POTFILES.in --keyword=_ --keyword=N_ --keyword=Q_ --add-comments -o po/simplemail.pot
 	msgmerge po/de.po po/simplemail.pot -o po/de.pox --verbose
 	$(RM) po/simplemail.pot
+
+# -------------------------------------------------------------
+
+DESTDIR=/tmp/SimpleMail
+
+IMAGES_SRCDIR=amiga-mui/binaries
+IMAGES=$(filter-out MorphOS%, $(notdir $(wildcard $(IMAGES_SRCDIR)/*.img)))
+
+prepare-os4-release: $(LHA) $(TARGET)
+	rm -Rf $(DESTDIR)
+	mkdir -p \
+		$(DESTDIR)/SimpleMail/ARexx \
+		$(DESTDIR)/SimpleMail/Charsets \
+		$(DESTDIR)/SimpleMail/Libs \
+		$(DESTDIR)/SimpleMail/Images
+	cp $(TARGET) $(DESTDIR)/SimpleMail
+	cp doc/amiga/ReadMe $(DESTDIR)/SimpleMail
+	cp doc/amiga/SimpleMail.guide $(DESTDIR)/SimpleMail
+	cp doc/amiga/history.txt $(DESTDIR)/SimpleMail
+	cp amiga-mui/binaries/ReadMe.info $(DESTDIR)/SimpleMail
+	cp amiga-mui/binaries/SimpleMail.guide.info $(DESTDIR)/SimpleMail
+	cp amiga-mui/binaries/SimpleMail.info $(DESTDIR)/SimpleMail
+	cp amiga-mui/binaries/Drawer.info $(DESTDIR)/SimpleMail.info
+	cp amiga-mui/binaries/simplehtml-os4.library $(DESTDIR)/SimpleMail/Libs/simplehtml.library
+	$(foreach name, $(IMAGES), cp $(IMAGES_SRCDIR)/$(name) $(DESTDIR)/SimpleMail/Images/$(basename $(name)) && ) true
+	cp amiga-mui/ARexx/*.smrx $(DESTDIR)/SimpleMail/ARexx
+#	cp sm/locale/*.mo $(DESTDIR)/SimpleMail/Locale
+	cp Charsets/*.txt $(DESTDIR)/SimpleMail/Charsets
+	cp taglines_all.txt $(DESTDIR)/SimpleMail/.taglines

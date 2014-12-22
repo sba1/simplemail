@@ -2811,26 +2811,26 @@ int simplemail_init(void)
 
 	if (!gui_parseargs(0,NULL))
 	{
-		SM_DEBUGF(1,("Unable to parse arguments!"));
+		SM_DEBUGF(1,("Unable to parse arguments!\n"));
 		goto out;
 	}
 
 	startupwnd_open();
 	if (!progmon_init())
 	{
-		SM_DEBUGF(1,("Couldn't initialize progress monitor system!"));
+		SM_DEBUGF(1,("Couldn't initialize progress monitor system!\n"));
 		goto out;
 	}
 
 	if (!init_threads())
 	{
-		SM_DEBUGF(1,("Couldn't initialize thread system!"));
+		SM_DEBUGF(1,("Couldn't initialize thread system!\n"));
 		goto out;
 	}
 
 	if (!codesets_init())
 	{
-		SM_DEBUGF(1,("Couldn't initialize codesets!"));
+		SM_DEBUGF(1,("Couldn't initialize codesets!\n"));
 		goto out;
 	}
 
@@ -2839,25 +2839,25 @@ int simplemail_init(void)
 
 	if (!init_folders())
 	{
-		SM_DEBUGF(1,("Couldn't initialize folders!"));
+		SM_DEBUGF(1,("Couldn't initialize folders!\n"));
 		goto out;
 	}
 
 	if (!(spam_init()))
 	{
-		SM_DEBUGF(1,("Couldn't initialize spam system!"));
+		SM_DEBUGF(1,("Couldn't initialize spam system!\n"));
 		goto out;
 	}
 
 	if (!ssl_init())
 	{
-		SM_DEBUGF(1,("Couldn't initializte ssl subsystem!"));
+		SM_DEBUGF(1,("Couldn't initializte ssl subsystem!\n"));
 		goto out;
 	}
 
 	if (!gui_init())
 	{
-		SM_DEBUGF(1,("Couldn't initialize GUI!"));
+		SM_DEBUGF(1,("Couldn't initialize GUI!\n"));
 		goto out;
 	}
 
@@ -2866,7 +2866,7 @@ int simplemail_init(void)
 	else callback_autocheck_reset();
 	callback_timer();
 
-	SM_DEBUGF(10,("SimpleMail initialized"));
+	SM_DEBUGF(10,("SimpleMail initialized\n"));
 	return 1;
 
 out:

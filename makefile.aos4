@@ -267,12 +267,13 @@ DESTDIR=/tmp/SimpleMail
 IMAGES_SRCDIR=amiga-mui/binaries
 IMAGES=$(filter-out MorphOS%, $(notdir $(wildcard $(IMAGES_SRCDIR)/*.img)))
 
-prepare-os4-release: $(LHA) $(TARGET)
+prepare-os4-release: $(LHA) $(TARGET) locale
 	rm -Rf $(DESTDIR)
 	mkdir -p \
 		$(DESTDIR)/SimpleMail/ARexx \
 		$(DESTDIR)/SimpleMail/Charsets \
 		$(DESTDIR)/SimpleMail/Libs \
+		$(DESTDIR)/SimpleMail/Locale \
 		$(DESTDIR)/SimpleMail/Images
 	cp $(TARGET) $(DESTDIR)/SimpleMail
 	cp doc/amiga/ReadMe $(DESTDIR)/SimpleMail
@@ -285,7 +286,7 @@ prepare-os4-release: $(LHA) $(TARGET)
 	cp amiga-mui/binaries/simplehtml-os4.library $(DESTDIR)/SimpleMail/Libs/simplehtml.library
 	$(foreach name, $(IMAGES), cp $(IMAGES_SRCDIR)/$(name) $(DESTDIR)/SimpleMail/Images/$(basename $(name)) && ) true
 	cp amiga-mui/ARexx/*.smrx $(DESTDIR)/SimpleMail/ARexx
-#	cp sm/locale/*.mo $(DESTDIR)/SimpleMail/Locale
+	cp Locale/*.mo $(DESTDIR)/SimpleMail/Locale
 	cp Charsets/*.txt $(DESTDIR)/SimpleMail/Charsets
 	cp taglines_all.txt $(DESTDIR)/SimpleMail/.taglines
 	cd $(DESTDIR) && $(LHA) a simplemail.lha SimpleMail.info SimpleMail

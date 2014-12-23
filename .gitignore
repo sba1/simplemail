@@ -57,3 +57,4 @@ build-dependencies
 .project
 .csettings
 interim-openssl
+Locale

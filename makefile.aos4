@@ -200,7 +200,7 @@ endif
 
 .PHONY: dirs
 dirs:
-	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
+	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui Locale $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
 
 # Rules for building
 $(TARGET): dirs $(OBJS) $(AOBJS)
@@ -243,6 +243,15 @@ imap_unittest: tests/imap_unittest.c $(TESTOBJS) $(TESTAOBJS)
 	$(CC) $(CFLAGS) -c $< -o tests/$@.o
 	$(CC) $(LINK) -o $@.debug tests/$@.o $(TESTOBJS) $(TESTAOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	cp $@.debug $(DESTDIR)/$@
+
+# -------------------------------------------------------------
+
+Locale/%.mo: po/%.po
+	msgfmt ./$? -o ./$@
+
+MOS := $(patsubst po/%, Locale/%, $(patsubst %.po, %.mo, $(wildcard po/*.po)))
+
+locale: dirs $(MOS)
 
 # -------------------------------------------------------------
 

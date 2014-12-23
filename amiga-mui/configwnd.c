@@ -290,6 +290,7 @@ static void account_store(void)
 		free(account_last_selected->pop->login);
 		free(account_last_selected->pop->passwd);
 		free(account_last_selected->imap->name);
+		free(account_last_selected->imap->fingerprint);
 		free(account_last_selected->imap->login);
 		free(account_last_selected->imap->passwd);
 		free(account_last_selected->smtp->name);
@@ -317,6 +318,7 @@ static void account_store(void)
 		account_last_selected->imap->port = xget(account_recv_port_string, MUIA_String_Integer);
 		account_last_selected->imap->name = mystrdup((char*)xget(account_recv_server_string, MUIA_String_Contents));
 		account_last_selected->imap->login = mystrdup((char*)xget(account_recv_login_string, MUIA_String_Contents));
+		account_last_selected->imap->fingerprint = mystrdup((char*)xget(account_recv_fingerprint_string, MUIA_String_Contents));
 		account_last_selected->imap->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
 		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
@@ -340,6 +342,10 @@ static void account_load(void)
 	struct account *account = account_last_selected;
 	if (account)
 	{
+		char *recv_fingerprint;
+
+		recv_fingerprint = account->recv_type?account->imap->fingerprint:account->pop->fingerprint;
+
 		nnsetutf8string(account_account_name_string,account->account_name);
 		setutf8string(account_name_string,account->name);
 		nnset(account_email_string, MUIA_UTF8String_Contents, account->email);
@@ -347,7 +353,7 @@ static void account_load(void)
 		nnset(account_def_signature_cycle, MUIA_SignatureCycle_SignatureName, account->def_signature);
 		nnset(account_recv_type_radio, MUIA_Radio_Active, account->recv_type);
 		nnset(account_recv_server_string, MUIA_String_Contents, account->pop->name);
-		nnset(account_recv_fingerprint_string, MUIA_String_Contents, account->pop->fingerprint);
+		nnset(account_recv_fingerprint_string, MUIA_String_Contents, recv_fingerprint);
 		set(account_recv_port_string,MUIA_String_Integer,account->pop->port);
 		setstring(account_recv_login_string,account->pop->login);
 		SetAttrs(account_recv_password_string,

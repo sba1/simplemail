@@ -1168,6 +1168,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			}
 
 			conn_opts.use_ssl = server->ssl;
+			conn_opts.fingerprint = server->fingerprint;
 
 			SM_DEBUGF(10,("Connecting\n"));
 			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
@@ -1263,6 +1264,7 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 	conn_opts.use_ssl = server->ssl;
+	conn_opts.fingerprint = server->fingerprint;
 
 	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		goto bailout;
@@ -1370,6 +1372,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
 
 		conn_opts.use_ssl = server->ssl;
+		conn_opts.fingerprint = server->fingerprint;
 
 		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		{
@@ -1984,6 +1987,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 	thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
 	conn_opts.use_ssl = imap_server->ssl;
+	conn_opts.fingerprint = imap_server->fingerprint;
 
 	if ((imap_connection = tcp_connect(imap_server->name, imap_server->port, &conn_opts, &error_code)))
 	{

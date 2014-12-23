@@ -163,7 +163,7 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 #ifndef NO_SSL
 					if (use_ssl)
 					{
-						if (tcp_make_secure(conn, server))
+						if (tcp_make_secure(conn, server, options->fingerprint))
 						{
 							SM_RETURN(conn,"0x%lx");
 							return conn;
@@ -264,9 +264,13 @@ static int tcp_make_secure_verify_callback(int preverify_ok, X509_STORE_CTX *x50
  * @param conn defines the connection which should be made
  *             secure.
  * @param server_name the name of the server used to establish the connection
+ * @param fingerprint specifies the servers fingerprint. If non-NULL and
+ *  non-empty the fingerprint of the remote server must match the given
+ *  fingerprint. Both SHA1 or SHA256 are tried. Otherwise, the trust is
+ *  established according to the certificate chain.
  * @return 1 on success
  */
-int tcp_make_secure(struct connection *conn, char *server_name)
+int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint)
 {
 #ifndef NO_SSL
 	int rc;
@@ -289,12 +293,6 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 	{
 		X509 *server_cert;
 
-		if (!failed)
-		{
-			SM_DEBUGF(5,("Connection is secure\n"));
-			return 1;
-		}
-
 		if ((server_cert = SSL_get_peer_certificate(conn->ssl)))
 		{
 			int i, rc;
@@ -306,7 +304,7 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 			char sha256_ascii[EVP_MAX_MD_SIZE*3+1];
 			char issuer_common_name[40];
 			char subject_common_name[40];
-			char cert_summary[120];
+			char cert_summary[200];
 			long verify_results;
 
 			X509_digest(server_cert, EVP_sha1(), sha1, &sha1_size);
@@ -325,6 +323,33 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 			if (sha256_size>0) sha256_ascii[sha256_size*3-1]=0;
 			else sha256_ascii[0] = 0;
 
+			/* The server chain is secondary if a fingerprint was specified */
+			if (mystrlen(fingerprint))
+			{
+				if (sha256_size)
+				{
+					if (!mystricmp(sha256_ascii, fingerprint))
+					{
+						SM_DEBUGF(5,("Connection is secure according to SHA256 fingerprint\n"));
+						X509_free(server_cert);
+						return 1;
+					}
+				}
+
+				if (!mystricmp(sha1_ascii, fingerprint))
+				{
+					SM_DEBUGF(5,("Connection is secure according to SHA1 fingerprint (%s vs %s)\n", sha1_ascii, fingerprint));
+					X509_free(server_cert);
+					return 1;
+				}
+				SM_DEBUGF(5,("Connection could not be trusted as fingerprint didn't match (%s vs %s)!\n", sha1_ascii, fingerprint));
+			} else if (!failed)
+			{
+				SM_DEBUGF(5,("Connection is secure according to cert chain\n"));
+				X509_free(server_cert);
+				return 1;
+			}
+
 			/* Issued to */
 			if (X509_NAME_get_text_by_NID(X509_get_subject_name(server_cert), NID_commonName, subject_common_name, sizeof(subject_common_name)) < 0)
 				mystrlcpy(subject_common_name, _("Not found"), sizeof(subject_common_name));
@@ -333,7 +358,9 @@ int tcp_make_secure(struct connection *conn, char *server_name)
 			if (X509_NAME_get_text_by_NID(X509_get_issuer_name(server_cert), NID_commonName, issuer_common_name, sizeof(issuer_common_name)) < 0)
 				mystrlcpy(issuer_common_name, _("Not found"), sizeof(issuer_common_name));
 
-			sm_snprintf(cert_summary, sizeof(cert_summary), _("Issued to: %s (CN)\nIssues by: %s (CN)"), subject_common_name, issuer_common_name);
+			sm_snprintf(cert_summary, sizeof(cert_summary),
+					_("Issued to: %s (CN)\nIssues by: %s (CN)\nExpected fingerprint: %s"),
+					subject_common_name, issuer_common_name, mystrlen(fingerprint)?fingerprint:_("None specified"));
 
 			verify_results = SSL_get_verify_result(conn->ssl);
 

@@ -128,7 +128,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 			/* TODO: check if this call delivers a new timestamp */
 			if (pop3_receive_answer(conn,0))
 			{
-				if (tcp_make_secure(conn, server->name))
+				if (tcp_make_secure(conn, server->name, server->fingerprint))
 				{
 					if (timestamp_ptr) *timestamp_ptr = timestamp;
 					return 1;
@@ -980,6 +980,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 			}
 
 			connect_options.use_ssl = server->ssl && !server->stls;
+			connect_options.fingerprint = server->fingerprint;
 
 			if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
 			{
@@ -1178,6 +1179,7 @@ int pop3_login_only(struct pop3_server *server)
 		int error_code;
 
 		conn_opts.use_ssl = server->ssl && (!server->stls);
+		conn_opts.fingerprint = server->fingerprint;
 
 		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		{

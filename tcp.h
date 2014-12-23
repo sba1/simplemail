@@ -43,6 +43,7 @@ typedef struct x509_st X509;
 struct connect_options
 {
 	int use_ssl;
+	char *fingerprint;
 };
 
 struct connection
@@ -67,7 +68,7 @@ int tcp_error_code(void);
 const char *tcp_strerror(int code);
 struct connection *tcp_connect(char *server, unsigned int port, struct connect_options *options, int *error_code_ptr);
 void tcp_disconnect(struct connection *conn);
-int tcp_make_secure(struct connection *conn, char *server_name);
+int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint);
 int tcp_secure(struct connection *conn);
 long tcp_read(struct connection *conn, void *, long);
 int tcp_write(struct connection *conn, void *, long);

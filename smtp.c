@@ -51,6 +51,7 @@ struct smtp_connection
 {
 	struct connection *conn;
 	char *server_name;
+	char *fingerprint;
 	int flags;			/* ESMTP flags */
 	int auth_flags; /* Supported AUTH methods */
 };
@@ -764,7 +765,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		if (!(tcp_make_secure(conn->conn, conn->server_name)))
+		if (!(tcp_make_secure(conn->conn, conn->server_name, conn->fingerprint)))
 		{
 			tell_from_subtask(N_("Connection could not be made secure."));
 			return 0;
@@ -935,6 +936,10 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 			thread_call_parent_function_async_string(status_set_connect_to_server,1,account->smtp->name);
 
 //			thread_call_function_async(thread_get_main(),status_set_status,1,N_("Connecting..."));
+
+			/* Make a possible fingerprint available */
+			connect_opts.fingerprint = account->smtp->fingerprint;
+			conn.fingerprint = account->smtp->fingerprint;
 
 			if ((conn.conn = tcp_connect(account->smtp->name, account->smtp->port,&connect_opts,&error_code)))
 			{

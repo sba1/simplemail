@@ -58,3 +58,4 @@ build-dependencies
 .csettings
 interim-openssl
 Locale
+*.uaem

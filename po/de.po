@@ -789,6 +789,9 @@ msgid ""
 "This is used to verify the servers identity,\n"
 "if the certificate could not be trusted."
 msgstr ""
+"Der Fingerprint des Servers (SHA1 oder SHA256).\n"
+"Er wird zur Überprüfung der Authentizität des\n"
+"zu verbindenden Servers genutzt."
 
 #: amiga-mui/configwnd.c:1349
 msgid "The login/UserID which you got from your ISP."

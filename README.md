@@ -3,6 +3,17 @@
 SimpleMail
 ==========
 
-SimpleMail is a simple email client targeting Amigaoid platforms such as AmigaOS
-3.1, Amiga OS 4.x, AROS and MorphOS.
+SimpleMail is a simple email client targeting AmigaOS (both the classic OS 3.1 and OS 4.x)
+and compatible platforms such as AROS and MorphOS.
 
+Download
+--------
+
+You can download binaries from http://simplemail.sourceforge.net/index.php?body=downloads.
+MorphOS users may also check SimpleMail-MOS at https://code.google.com/p/simplemail-mos/.
+This is a fork of SimpleMail focusing on MorphOS.
+
+Continuous Integration
+----------------------
+
+For latest builds for AmigaOS 4.x please check https://sonumina.de/jenkins/job/simplemail/.

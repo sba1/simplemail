@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/sba1/simplemail.svg?branch=master)](https://travis-ci.org/sba1/simplemail)
+[![PayPal Donate](https://img.shields.io/badge/paypal-donate-yellow.svg?style=flat)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SBN2L9L3NYLMU)
 
 SimpleMail
 ==========

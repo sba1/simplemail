@@ -28,12 +28,14 @@ STRIP  = $(CROSS_COMPILE)strip
 
 ifdef USE_OPENSSL
 OBJSDIRSUFFIX = openssl
+TARGETSUFFIX = -openssl
 SSL_FLAGS = -DUSE_OPENSSL
 SSL_INC = -I build-dependencies/interim-openssl/openssl/repo/include/
 SSL_LINK = -L build-dependencies/interim-openssl/openssl/repo/
 SSL_LIB = -lssl -lcrypto
 else
 OBJSDIRSUFFIX = amissl
+TARGETSUFFIX =
 SSL_FLAGS = -DUSE_AMISSL3
 SSL_INC = -I "$(AMISSL_INCLUDE)"
 SSL_LINK =
@@ -85,7 +87,7 @@ LINK = \
 	-nostartfiles
 
 # Name of the "thing" to build
-TARGET = SimpleMail
+TARGET = SimpleMail$(TARGETSUFFIX)
 
 # Additional linker libraries
 LIBS = -ldebug -lexpat $(SSL_LIB)
@@ -282,7 +284,7 @@ prepare-os4-release: $(LHA) $(TARGET) locale
 		$(DESTDIR)/SimpleMail/Libs \
 		$(DESTDIR)/SimpleMail/Locale \
 		$(DESTDIR)/SimpleMail/Images
-	cp $(TARGET) $(DESTDIR)/SimpleMail
+	cp $(TARGET) $(DESTDIR)/SimpleMail/SimpleMail
 	cp doc/amiga/ReadMe $(DESTDIR)/SimpleMail
 	cp doc/amiga/SimpleMail.guide $(DESTDIR)/SimpleMail
 	cp doc/amiga/history.txt $(DESTDIR)/SimpleMail

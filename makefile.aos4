@@ -169,7 +169,7 @@ AOBJS = $(ASRCS:%.S=$(OBJSDIR)/%.o)
 TESTOBJS = $(SRCS:%.c=$(TESTOBJSDIR)/%.o)
 TESTAOBJS = $(ASRCS:%.S=$(TESTOBJSDIR)/%.o)
 
-all: envs dirs $(TARGET)
+all: $(TARGET)
 
 ifndef Kickstart
 include build-dependencies.mk
@@ -205,7 +205,7 @@ dirs:
 	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/amiga-mui Locale $(TESTOBJSDIR) $(TESTOBJSDIR)/amiga-mui
 
 # Rules for building
-$(TARGET): dirs $(OBJS) $(AOBJS)
+$(TARGET): envs dirs $(OBJS) $(AOBJS)
 	$(CC) $(LINK) -o $@.debug $(OBJS) $(AOBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
 	$(STRIP) --strip-all -o $@ $@.debug
 

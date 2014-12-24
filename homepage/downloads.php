@@ -3,8 +3,8 @@
 $version = "0.41";
 $date = "2014/12/24";
 
-$morphversion = "0.38";
-$morphdate = "2012/01/11";
+$morphversion = "0.40";
+$morphdate = "2013/12/29";
 
 $arosversion = "0.37";
 $arosdate = "2011/02/26";

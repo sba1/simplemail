@@ -47,7 +47,7 @@ $arosdate = "2011/02/26";
 
 <tr bgcolor="gray">
 <?php
-  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-openssl-os4.lha?download">'."simplemail-$version-os4.lha".'</A></td>';
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-openssl-os4.lha?download">'."simplemail-$version-openssl-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">'.$date.'</td>';
 ?>

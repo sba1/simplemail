@@ -29,7 +29,7 @@ $arosdate = "2011/02/26";
 ?>
 </tr>
 
-<tr bgcolor="gray">
+<tr bgcolor="lightgray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os3.lha?download">'."simplemail-$version-os3.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
@@ -37,7 +37,7 @@ $arosdate = "2011/02/26";
 ?>
 </tr>
 
-<tr bgcolor="gray">
+<tr bgcolor="lightgray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os4.lha?download">'."simplemail-$version-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
@@ -45,7 +45,7 @@ $arosdate = "2011/02/26";
 ?>
 </tr>
 
-<tr bgcolor="gray">
+<tr bgcolor="lightgray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-openssl-os4.lha?download">'."simplemail-$version-openssl-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
@@ -53,7 +53,7 @@ $arosdate = "2011/02/26";
 ?>
 </tr>
 
-<tr bgcolor="gray">
+<tr bgcolor="lightgray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$morphversion.'-morphos.lha?download">'."simplemail-$morphversion-morphos.lha".'</A></td>';
   echo '<td align="center">'.$morphversion.'</td>';
@@ -62,7 +62,7 @@ $arosdate = "2011/02/26";
 </tr>
 
 
-<tr bgcolor="gray">
+<tr bgcolor="lightgray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$arosversion.'-aros-i386.tar.bz2?download">'."simplemail-$arosversion-aros-i386.tar.bz2".'</A></td>';
   echo '<td align="center">'.$arosversion.'</td>';

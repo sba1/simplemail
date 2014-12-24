@@ -264,8 +264,6 @@ de.pox:
 
 # -------------------------------------------------------------
 
-DESTDIR=/tmp/SimpleMail
-
 IMAGES_SRCDIR=amiga-mui/binaries
 IMAGES=$(filter-out MorphOS%, $(notdir $(wildcard $(IMAGES_SRCDIR)/*.img)))
 
@@ -275,6 +273,8 @@ endif
 
 REVISION     := $(shell cat SimpleMail_rev.rev)
 ARCHIVE_NAME := simplemail-0.$(REVISION)$(ARCHIVE_SUFFIX)-os4.lha
+
+DESTDIR=/tmp/SimpleMail-$(REVISION)$(ARCHIVE_SUFFIX)
 
 prepare-os4-release: $(LHA) $(TARGET) locale
 	rm -Rf $(DESTDIR)

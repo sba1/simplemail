@@ -47,42 +47,42 @@ COMMITID := '"$(shell (git rev-list HEAD -n 1 | cut -c1-12) || echo unknown comm
 OPTIMIZE = -O3
 DEBUG = -g #-ggdb # -g -DDEBUG
 INC = \
-	-I "$(SDK_INCLUDE)"\
-	-I "$(MUI_INCLUDE)"\
 	$(SSL_INC)\
-	-I "$(NET_INCLUDE)"\
 	-I "$(EXPAT_INCLUDE)"\
+	-I "$(MUI_INCLUDE)"\
+	-I "$(NET_INCLUDE)"\
 	-I "$(OPENURL_INCLUDE)"\
-	-I.\
+	-I "$(SDK_INCLUDE)"\
+	-I./amiga-mui\
 	-I./indep-include\
-	-I./amiga-mui
+	-I.
 
 CFLAGS = \
 	$(DATE)\
-	-DHAVE_OPENURL\
+	$(DEBUG)\
+	$(INC)\
+	$(OPTIMIZE)\
 	$(SSL_FLAGS)\
+	-DHAVE_OPENURL\
+	-DNDEBUG\
+	-DROADSHOW_SDK\
 	-DSM_COMMITID=$(COMMITID)\
 	-D__AMIGAOS4__\
-	-D__USE_OLD_TIMEVAL__\
-	-DNDEBUG\
-	-D__USE_NETINET_IN_H\
-	-DROADSHOW_SDK\
 	-D__USE_INLINE__\
+	-D__USE_NETINET_IN_H\
+	-D__USE_OLD_TIMEVAL__\
 	-Wall\
-	-mcrt=clib2\
-	-fno-strict-aliasing\
 	-Wno-deprecated-declarations\
-	$(OPTIMIZE)\
-	$(DEBUG)\
-	$(INC)
+	-fno-strict-aliasing\
+	-mcrt=clib2
 
 # Flags passed to gcc during linking
 LINK = \
-	-nostartfiles\
-	-L "$(EXPAT_LIB)"\
 	$(SSL_LINK)\
+	-L "$(EXPAT_LIB)"\
+	-Wl,--gc-sections\
 	-mcrt=clib2\
-	-Wl,--gc-sections
+	-nostartfiles
 
 # Name of the "thing" to build
 TARGET = SimpleMail

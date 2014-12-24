@@ -1,6 +1,47 @@
 <?xml version='1.0' encoding="iso-8859-1"?>
 
 <news>
+  <entry date="2014/12/24">
+   <text lang="en">
+    The Final Edition of SimpleMail on SourceForge has been released! Version
+    0.41 comes with following changes:
+    <list>
+     <item>
+      Added some server certificate checks including the possibility to
+      manually specify the fingerprints of the remote servers
+     </item>
+     <item>
+      For AmigaOS 4.x, a version statically linked against OpenSSL will be
+      temporarily provided, at least until AmiSSL has been updated.
+      For this version, OpenSSL 1.0.1j is used.
+     </item>
+     <item>
+      Some development infrastructure changes have been undertaken
+      including the move of the source code repository from SourceForge
+      to GitHub (https://github.com/sba1/simplemail)
+     </item>
+    </list>
+    The SimpleMail Team wishes you all a merry Christmas and a happy new year 2014!
+   </text>
+
+   <text lang="de">
+    Die Final Edition von SimpleMail auf SourceForge wurde veröffentlicht.
+    Version 0.41 kommt mit folgenden Änderungen:
+
+    <list>
+     <item>SSL-Zertifikate werden überprüft.</item>
+     <item>Für AmigaOS 4.x wird zusätzlich eine Version mit einer statisch eingebundenden
+      OpenSSL Version bereitgestellt. Dies ist temporär bis AmiSSL ein Update erfährt.
+     </item>
+     <item>
+      Das Repository des Quelltextes befindet sich nun auf GitHub
+      (https://github.com/sba1/simplemail)
+     </item>
+    </list>
+
+    Das SimpleMail Team wünscht allen fröhliche Weihnachten und einen guten Rutsch ins neue Jahr!
+   </text>
+  </entry>
 
   <entry date="2013/12/24">
    <text lang="en">

@@ -1,7 +1,7 @@
 <?php
 
-$version = "0.40";
-$date = "2013/12/24";
+$version = "0.41";
+$date = "2014/12/24";
 
 $morphversion = "0.38";
 $morphdate = "2012/01/11";
@@ -40,6 +40,14 @@ $arosdate = "2011/02/26";
 <tr bgcolor="gray">
 <?php
   echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-os4.lha?download">'."simplemail-$version-os4.lha".'</A></td>';
+  echo '<td align="center">'.$version.'</td>';
+  echo '<td align="center">'.$date.'</td>';
+?>
+</tr>
+
+<tr bgcolor="gray">
+<?php
+  echo '<td align="center"><A HREF="http://prdownloads.sourceforge.net/simplemail/simplemail-'.$version.'-openssl-os4.lha?download">'."simplemail-$version-os4.lha".'</A></td>';
   echo '<td align="center">'.$version.'</td>';
   echo '<td align="center">'.$date.'</td>';
 ?>

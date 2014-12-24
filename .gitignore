@@ -58,6 +58,7 @@ project.index
 sas_objects
 sas_test_objects
 simplemail
+simplemail*.lha
 sm
 smakefile.compile
 stamp-h1

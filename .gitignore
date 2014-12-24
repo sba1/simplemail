@@ -59,3 +59,4 @@ build-dependencies
 interim-openssl
 Locale
 *.uaem
+gen_makefile.o

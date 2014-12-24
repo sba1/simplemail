@@ -1,3 +1,13 @@
+Version 0.41 (27th beta; Final Edition) - released on 2014/12/24
+   - Added some server certificate checks including the possibility
+     to manually specify the fingerprints of the remote servers
+   - For AmigaOS 4.x, a version statically linked against OpenSSL will be
+     temporarily provided, at least until AmiSSL has been updated.
+     For this version, OpenSSL 1.0.1j is used.
+   - Some development infrastructure changes have been undertaken
+     including the move of the source code repository from SourceForge
+     to GitHub (https://github.com/sba1/simplemail)
+
 Version 0.40 (26th beta) - released on 2013/12/24
    - Improved unit test framework
    - Stability improvements of the IMAP client

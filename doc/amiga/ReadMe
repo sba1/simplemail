@@ -4,7 +4,7 @@ Author:    hynek@hys.in-berlin.de (Hynek Schlawack), mail@sebastianbauer.info (S
 Type:      comm/mail
 Kurz:      Ein neuer Mailer (beta Version)
 Requires:  OS 3.0, MUI 3.8, NList, NListtree, BetterString, TextEditor
-Version:   0.40
+Version:   0.41
 
 Introduction
 ~~~~~~~~~~~~
@@ -39,10 +39,10 @@ or
 
 Developers are encouraged to take a look at
 
-    http://sf.net/projects/simplemail/
+    https://github.com/sba1/simplemail
 
-if they want to join the project. Also, from here they can submit
-patches, subscribe to the mailing lists or get CVS access.
+if they want to fork the project. They can also submit pull requests
+in order to contribute to the project.
 
 There is also a support mailing list:
 

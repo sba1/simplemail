@@ -20,6 +20,9 @@ Makefile
 Makefile.in
 SCOPTIONS
 SimpleMail
+SimpleMail-openssl
+SimpleMail-openssl.debug
+SimpleMail-openssl.map
 SimpleMail.debug
 SimpleMail.map
 SimpleMail_rev.i

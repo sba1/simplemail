@@ -299,3 +299,5 @@ prepare-os4-release: $(LHA) $(TARGET) locale
 	cp Charsets/*.txt $(DESTDIR)/SimpleMail/Charsets
 	cp taglines_all.txt $(DESTDIR)/SimpleMail/.taglines
 	cd $(DESTDIR) && $(LHA) ao5 $(ARCHIVE_NAME) SimpleMail.info SimpleMail
+	cp $(DESTDIR)/$(ARCHIVE_NAME) .
+	rm -Rf $(DESTDIR)

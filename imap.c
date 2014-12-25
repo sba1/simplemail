@@ -1238,7 +1238,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 /**************************************************************************/
 
 /**
- * Retrieved the folder list and call the given callback on the context of the
+ * Retrieve the folder list and call the given callback on the context of the
  * main thread.
  *
  * @param server
@@ -1357,130 +1357,129 @@ int imap_get_folder_list(struct imap_server *server, void (*callback)(struct ima
  */
 static void imap_submit_folder_list_really(struct imap_server *server, struct list *list)
 {
-	if (open_socket_lib())
+	struct connection *conn;
+	struct connect_options conn_opts = {0};
+	char head_buf[100];
+	int error_code;
+	struct list *all_folder_list = NULL;
+	struct list *sub_folder_list = NULL;
+
+	char *line;
+	char tag[20];
+	char send[200];
+	char buf[100];
+	struct string_node *node;
+
+	if (!open_socket_lib())
+		return;
+
+	sm_snprintf(head_buf,sizeof(head_buf),_("Submitting subscribed folders to %s"),server->name);
+	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+	if (server->title)
+		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+	else
+		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+
+	conn_opts.use_ssl = server->ssl;
+	conn_opts.fingerprint = server->fingerprint;
+
+	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+		goto out;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
+	if (!imap_wait_login(conn,server))
+		goto out;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
+	if (!imap_login(conn,server))
+		goto out;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
+	if (!(all_folder_list = imap_get_folders(conn,1)))
+		goto out;
+
+	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading subscribed folders..."));
+	if (!(sub_folder_list = imap_get_folders(conn,0)))
+		goto out;
+
+	node = (struct string_node*)list_first(list);
+	while (node)
 	{
-		struct connection *conn;
-		struct connect_options conn_opts = {0};
-		char head_buf[100];
-		int error_code;
-
-		sm_snprintf(head_buf,sizeof(head_buf),_("Submitting subscribed folders to %s"),server->name);
-		thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-		if (server->title)
-			thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
-		else
-			thread_call_parent_function_async_string(status_set_title, 1, server->name);
-		thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
-
-		conn_opts.use_ssl = server->ssl;
-		conn_opts.fingerprint = server->fingerprint;
-
-		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+		if (!string_list_find(sub_folder_list,node->string))
 		{
-			thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
-			if (imap_wait_login(conn,server))
+			char *path = utf8toiutf7(node->string,strlen(node->string));
+			if (path)
 			{
-				thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
-				if (imap_login(conn,server))
+				/* subscribe this folder */
+				sprintf(tag,"%04x",val++);
+				sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,path);
+				tcp_write(conn,send,strlen(send));
+				tcp_flush(conn);
+
+				while ((line = tcp_readln(conn)))
 				{
-					struct list *all_folder_list;
-					thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
-					if ((all_folder_list = imap_get_folders(conn,1)))
+					char *saved_line = line; /* for debugging reasons */
+
+					line = imap_get_result(line,buf,sizeof(buf));
+					if (!mystricmp(buf,tag))
 					{
-						struct list *sub_folder_list;
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading subscribed folders..."));
-						if ((sub_folder_list = imap_get_folders(conn,0)))
+						line = imap_get_result(line,buf,sizeof(buf));
+						if (mystricmp(buf,"OK"))
 						{
-							char *line;
-							char tag[20];
-							char send[200];
-							char buf[100];
-							struct string_node *node;
+							/* If it is not OK it is a failure */
+							SM_DEBUGF(20,("%s",send));
+							SM_DEBUGF(20,("%s",saved_line));
 
-							node = (struct string_node*)list_first(list);
-							while (node)
-							{
-								if (!string_list_find(sub_folder_list,node->string))
-								{
-									char *path = utf8toiutf7(node->string,strlen(node->string));
-									if (path)
-									{
-										/* subscribe this folder */
-										sprintf(tag,"%04x",val++);
-										sprintf(send,"%s SUBSCRIBE \"%s\"\r\n",tag,path);
-										tcp_write(conn,send,strlen(send));
-										tcp_flush(conn);
-
-										while ((line = tcp_readln(conn)))
-										{
-											char *saved_line = line; /* for debugging reasons */
-
-											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,tag))
-											{
-												line = imap_get_result(line,buf,sizeof(buf));
-												if (mystricmp(buf,"OK"))
-												{
-													/* If it is not OK it is a failure */
-													SM_DEBUGF(20,("%s",send));
-													SM_DEBUGF(20,("%s",saved_line));
-
-													tell_from_subtask(_("Subscribing folders failed!"));
-												}
-												break;
-											}
-										}
-									}
-									free(path);
-								}
-								node = (struct string_node*)node_next(&node->node);
-							}
-
-							node = (struct string_node*)list_first(sub_folder_list);
-							while (node)
-							{
-								if (!string_list_find(list,node->string))
-								{
-									char *path = utf8toiutf7(node->string,strlen(node->string));
-									if (path)
-									{
-										/* subscribe this folder */
-										sprintf(tag,"%04x",val++);
-										sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,path);
-										tcp_write(conn,send,strlen(send));
-										tcp_flush(conn);
-
-										while ((line = tcp_readln(conn)))
-										{
-											line = imap_get_result(line,buf,sizeof(buf));
-											if (!mystricmp(buf,tag))
-											{
-												line = imap_get_result(line,buf,sizeof(buf));
-												if (mystricmp(buf,"OK"))
-												{
-													/* If it is not OK , it's a failure */
-													tell_from_subtask(_("Unsubscribing folders failed!"));
-												}
-												break;
-											}
-										}
-										free(path);
-									}
-								}
-								node = (struct string_node*)node_next(&node->node);
-							}
-
-							imap_free_name_list(sub_folder_list);
+							tell_from_subtask(_("Subscribing folders failed!"));
 						}
-						imap_free_name_list(all_folder_list);
+						break;
 					}
 				}
 			}
-			tcp_disconnect(conn);
+			free(path);
 		}
-
-		close_socket_lib();
+		node = (struct string_node*)node_next(&node->node);
 	}
+
+	node = (struct string_node*)list_first(sub_folder_list);
+	while (node)
+	{
+		if (!string_list_find(list,node->string))
+		{
+			char *path = utf8toiutf7(node->string,strlen(node->string));
+			if (path)
+			{
+				/* subscribe this folder */
+				sprintf(tag,"%04x",val++);
+				sprintf(send,"%s UNSUBSCRIBE \"%s\"\r\n",tag,path);
+				tcp_write(conn,send,strlen(send));
+				tcp_flush(conn);
+
+				while ((line = tcp_readln(conn)))
+				{
+					line = imap_get_result(line,buf,sizeof(buf));
+					if (!mystricmp(buf,tag))
+					{
+						line = imap_get_result(line,buf,sizeof(buf));
+						if (mystricmp(buf,"OK"))
+						{
+							/* If it is not OK , it's a failure */
+							tell_from_subtask(_("Unsubscribing folders failed!"));
+						}
+						break;
+					}
+				}
+				free(path);
+			}
+		}
+		node = (struct string_node*)node_next(&node->node);
+	}
+out:
+	imap_free_name_list(sub_folder_list);
+	imap_free_name_list(all_folder_list);
+	tcp_disconnect(conn);
+	close_socket_lib();
 }
 
 /**

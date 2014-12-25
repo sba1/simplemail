@@ -207,6 +207,7 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
  */
 static void imap_free_name_list(struct list *list)
 {
+	if (!list) return;
 	string_list_clear(list);
 	free(list);
 }

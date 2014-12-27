@@ -4343,9 +4343,11 @@ void del_folders(void)
 		folder_node_dispose(node);
 }
 
-/******************************************************************
- Lock the folder, to prevent any change to it
-*******************************************************************/
+/**
+ * Lock the folder, to prevent any change to it.
+ *
+ * @param f
+ */
 void folder_lock(struct folder *f)
 {
 	if (!f) return;
@@ -4353,9 +4355,12 @@ void folder_lock(struct folder *f)
 	if (f->ref_folder) folder_lock(f->ref_folder);
 }
 
-/******************************************************************
- Tries to lock the folder. Returns FALSE if folder is used.
-*******************************************************************/
+/**
+ * Tries to lock the folder. Returns FALSE if folder is used.
+ *
+ * @param f
+ * @return
+ */
 int folder_attempt_lock(struct folder *f)
 {
 	int attempt;
@@ -4371,9 +4376,11 @@ int folder_attempt_lock(struct folder *f)
 	return attempt;
 }
 
-/******************************************************************
- Unlock the folder
-*******************************************************************/
+/**
+ * Unlock the folder.
+ *
+ * @param f
+ */
 void folder_unlock(struct folder *f)
 {
 	if (!f) return;
@@ -4381,17 +4388,17 @@ void folder_unlock(struct folder *f)
 	thread_unlock_semaphore(f->sem);
 }
 
-/******************************************************************
- Lock the global folder semaphore
-*******************************************************************/
+/**
+ * Lock the global folder semaphore
+ */
 void folders_lock(void)
 {
 	thread_lock_semaphore(folders_semaphore);
 }
 
-/******************************************************************
- Unlock the global folder semaphore
-*******************************************************************/
+/**
+ * Unlock the global folder semaphore.
+ */
 void folders_unlock(void)
 {
 	thread_unlock_semaphore(folders_semaphore);

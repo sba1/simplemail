@@ -18,20 +18,19 @@ STRIP   = $(CROSS_COMPILE)strip
 OBJDUMP = $(CROSS_COMPILE)objdump
 
 # Change these as required
-OPTIMIZE = -O3 -mcpu=750 -mmultiple
+OPTIMIZE = -O3
 DEBUG = -g -DNDEBUG
-INC = -I. -I./indep-include -I./amiga-mui
-CFLAGS = -noixemul $(DATE) -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -D__MORPHOS_SHAREDLIBS -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
-#CFLAGS += -DUSE_AMISSL3
+INC = -I. -I./indep-include -I./amiga-mui -I/src/simplemail.git/openssl/objects/host-libnix/include
+CFLAGS = -noixemul $(DATE) -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -DHAVE_OPENURL -DAMITCP_SDK -D__MORPHOS_SHAREDLIBS -DUSE_OPENSSL -Wall -fno-strict-aliasing $(OPTIMIZE) $(DEBUG) $(INC)
 
 # Flags passed to gcc during linking
-LINK = -noixemul -nostdlib -nostartfiles
+LINK = -noixemul
 
 # Name of the "thing" to build
 TARGET = SimpleMail
 
 # Additional linker libraries
-LIBS = -ldebug -lc -labox -laboxstubs
+LIBS = -ldebug -laboxstubs -L/src/simplemail.git/openssl/objects/host-libnix -lssl -lcrypto
 
 # Version of the binary to build
 VERSION = 0
@@ -82,6 +81,7 @@ ARCHSRCS=\
 	searchwnd.c \
 	shutdownwnd.c \
 	smtoolbarclass.c \
+	socket-stubs.c \
 	signaturecycleclass.c \
 	startupwnd.c \
 	statuswnd.c \
@@ -118,7 +118,7 @@ ppc-morphos-objs/%.o: %.c
 
 .PHONY: clean
 clean:
-	-$(RM) $(TARGET) $(TARGET).debug ppc-morphos-objs
+	-$(RM) $(TARGET) $(TARGET).debug $(TARGET).map ppc-morphos-objs
 
 .PHONY: revision
 revision:
@@ -169,4 +169,3 @@ prepare-release: all
 	-rm /ram/simplemail-morphos.lha
 	lha -r -r a ram:simplemail-morphos ram:SimpleMail ram:SimpleMail.info
 	rm -rf /ram/SimpleMail /ram/SimpleMail.info
-

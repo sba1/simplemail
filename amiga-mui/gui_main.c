@@ -764,8 +764,9 @@ int gui_execute_arexx(char *filename)
 /****************************************************************
  The main entry point.
 *****************************************************************/
-#if !defined(__AROS__) && !defined(COMPILE_TEST)
-/* main() for AROS is in start-aros.c */
+#if !defined(__AROS__) && !defined(__MORPHOS__) && !defined(COMPILE_TEST)
+/* main() for AROS is in startup-aros.c */
+/* main() for MorphOS is in startup-morphos.c */
 int main(int argc, char *argv[])
 {
 	return simplemail_main();

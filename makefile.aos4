@@ -1,6 +1,9 @@
 #
 # Makefile for SimpleMail
 #
+# Define USE_OPENSSL if you want to compile using OpenSSL.
+# Otherwise, AmiSSL is used.
+#
 
 # If Kickstart isn't defined, we don't run on AmigaOS
 ifndef Kickstart

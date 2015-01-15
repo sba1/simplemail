@@ -2979,7 +2979,7 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 
 		fputs(subject,fp);
 		free(subject);
-		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2014 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATINGSYSTEM);
+		fprintf(fp,"X-Mailer: SimpleMail %d.%d (%s) E-Mail Client (c) 2000-2015 by Hynek Schlawack and Sebastian Bauer\n",VERSION,REVISION,SM_OPERATINGSYSTEM);
 
 		secs = sm_get_current_seconds();
 		sm_convert_seconds(secs,&d);

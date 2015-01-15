@@ -38,6 +38,10 @@
 #include <proto/intuition.h>
 #include <proto/muimaster.h>
 
+#ifdef USE_OPENSSL
+#include <openssl/crypto.h>
+#endif
+
 #include "version.h"
 
 #include "account.h"
@@ -240,7 +244,7 @@ void display_about(void)
 	{
 		char *ssl_support;
 #if defined(USE_OPENSSL)
-		ssl_support = "OpenSSL";
+		ssl_support = SSLeay_version(SSLEAY_VERSION);
 #elif defined(USE_AMISSL3)
 		ssl_support = "AmiSSL3";
 #else

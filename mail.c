@@ -370,8 +370,8 @@ static int mail_complete_add_header(struct mail_complete *mail, char *name, int 
 
 			return 1;
 		}
-		if (name) free(name);
-		if (contents) free(contents);
+		free(new_name);
+		free(new_contents);
 		free(header);
 	}
 	return 0;

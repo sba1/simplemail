@@ -320,11 +320,18 @@ static char *quote_text(char *src, int len)
 	return NULL;
 }
 
-/**************************************************************************
- Allocate an header and insert it into the header list. If
- Avoid_duplicates is set to one only one header with the same
- name will exists
-**************************************************************************/
+/**
+ * Add a new header with the given name/contents pair to the header list.
+ *
+ * @param mail the mail to which the header shall be added.
+ * @param name the name of the header field
+ * @param name_len the length of the name of the header field
+ * @param contents the contents of the header field
+ * @param contents_len the length
+ * @param avoid_duplicates if a header with the same name exists, only the
+ *  contents is replaced.
+ * @return 0 on failure, 1 on success
+ */
 static int mail_complete_add_header(struct mail_complete *mail, char *name, int name_len,
 									  char *contents, int contents_len, int avoid_duplicates)
 {
@@ -377,9 +384,14 @@ static int mail_complete_add_header(struct mail_complete *mail, char *name, int 
 	return 0;
 }
 
-/**************************************************************************
- Prepares the mail scanning
-**************************************************************************/
+
+/**
+ * Prepares the mail scan context.
+ *
+ * @param ms the structure to initialize
+ * @param mail the mail that shall be scanned.
+ * @param avoid_duplicates whether duplicate headers are allowed or not.
+ */
 void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, int avoid_duplicates)
 {
 	memset(ms,0,sizeof(struct mail_scan));
@@ -387,9 +399,13 @@ void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, in
 	ms->avoid_duplicates = avoid_duplicates;
 }
 
-/**************************************************************************
- Finish the mail scanning and free's all memory which has been allocated
-**************************************************************************/
+/**
+ * Finish the mail scanning and free's all memory which has been allocated.
+ * If the given structure shall be reused, it is necessary to call
+ * mail_scan_buffer_start() again.
+ *
+ * @param ms the structure to clean. The actual structure is not freed.
+ */
 void mail_scan_buffer_end(struct mail_scan *ms)
 {
 	free(ms->line);
@@ -2918,9 +2934,14 @@ void composed_mail_init(struct composed_mail *mail)
 	list_init(&mail->list);
 }
 
-/**************************************************************************
- Writes out the a selected address header field correctly encoded
-**************************************************************************/
+/**
+ * Writes out the a selected address header field correctly encoded.
+ *
+ * @param fp the destination file.
+ * @param header_name the name of the field
+ * @param header_contents the contents of the field.
+ * @return failure (0), or success.
+ */
 static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *header_contents)
 {
 	int rc = 0;
@@ -2939,9 +2960,12 @@ static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *hea
 	return rc;
 }
 
-/**************************************************************************
- Writes out all headers
-**************************************************************************/
+/**
+ * Write to the given file all headers.
+ *
+ * @param fp the file to the headers are added.
+ * @param new_mail the mail from which the headers are taken.
+ */
 static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 {
 	char *subject;
@@ -3002,9 +3026,12 @@ static int mail_compose_write_headers(FILE *fp, struct composed_mail *new_mail)
 	return 1;
 }
 
-/**************************************************************************
- Retiurns an unique boundary id string
-**************************************************************************/
+/**
+ * Returns a unique boundary id string.
+ *
+ * @param fp a file that maybe used to ensure the uniqueness.
+ * @return the boundary string that shall be freed when no longer in use.
+ */
 static char *get_boundary_id(FILE *fp)
 {
 	char boundary[64];
@@ -3012,9 +3039,15 @@ static char *get_boundary_id(FILE *fp)
 	return mystrdup(boundary);
 }
 
-/**************************************************************************
- Writes a contents of a file encrypted to fp
-**************************************************************************/
+/**
+ * Write the contents of a file encrypted to the fp.
+ *
+ * @param fp the file to which the encrypted data is writtten to.
+ * @param new_mail the to-be-composed mail, which, among other things contain
+ *  the recipients of the mail
+ * @param ofh_name the file that contents should be encryped.
+ * @return
+ */
 static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *ofh_name)
 {
 	char *boundary;
@@ -3111,9 +3144,15 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 	return rc;
 }
 
-/**************************************************************************
- Writes out the attachments into the body (uses recursion)
-**************************************************************************/
+/**
+ * Writes all the attachments into the given mail following several RFC.
+ *
+ * @param fp the already opened mail file that is appended by the attachments.
+ * @param new_mail the structure describing the to-be-composed mail.
+ * @return 0 on failure, all other values indicate success.
+ *
+ * @note recursion is used.
+ */
 static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 {
 	struct composed_mail *cmail;
@@ -3340,10 +3379,13 @@ int private_mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 	return  mail_compose_write(fp, new_mail);
 }
 
-/**************************************************************************
- Composes a new mail and write's it to the outgoing drawer.
- Returns 1 if succesful, else 0
-**************************************************************************/
+/**
+ * Create a new mail of disk for the given already composed mails.
+ *
+ * @param new_mail
+ * @param hold
+ * @return 0 on failure, otherwise the operation was successful.
+ */
 int mail_compose_new(struct composed_mail *new_mail, int hold)
 {
 	struct folder *outgoing;
@@ -3427,9 +3469,12 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 	return rc;
 }
 
-/**************************************************************************
- Put a utf8string correctly for HTML
-**************************************************************************/
+/**
+ * Write the given UTF8 string as proper HTML text.
+ *
+ * @param str defines the UTF8 string that should be processed.
+ * @param fh defines the file that should be written to
+ */
 static void fputhtmlstr(char *str, FILE *fh)
 {
 	unsigned char c;
@@ -3456,10 +3501,14 @@ static void fputhtmlstr(char *str, FILE *fh)
 	}
 }
 
-/**************************************************************************
- Creates an HTML File from a header. Currently only the most important
- headers were created.
-**************************************************************************/
+/**
+ * Create a HTML text with headers from the given mail
+ * The actuakl text is stored in the html_header field of given mail.
+ *
+ * @param mail the mail for which the html text shall be created.
+ * @param all_headers whether all headers shall be included.
+ * @return 0 on failure, all other values indicate success.
+ */
 int mail_create_html_header(struct mail_complete *mail, int all_headers)
 {
 	int rc = 0;
@@ -3669,12 +3718,17 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 	return rc;
 }
 
-/**************************************************************************
- Returns the first name of a given person.
- Also (will somewhen) performs addressbook look up to determine the
- first name.
- Returns a static buffer.
-**************************************************************************/
+/**
+ * Determine the first name of a given person.
+ *
+ * @param realname the realname of the person
+ * @param addr_spec the email address of the person.
+ * @return the first name.
+ *
+ * @note The function assumes that the first name is really at the beginning.
+ * @note The function may utilize the addressbook, but this isn't implemented
+ *  yet.
+ */
 static char *get_first_name(char *realname, char *addr_spec)
 {
 	static char buf[256];
@@ -3710,10 +3764,18 @@ static char *get_last_name(char *realname, char *addr_spec)
 }
 #endif
 
-/**************************************************************************
- Creates a string for a greeting/closing phrase. orig_mail, realname, addr_spec
- might be NULL
-**************************************************************************/
+/**
+ * Create a string for a greeting/closing phrase.
+ *
+ * @param format the format template
+ * @param orig_mail a mail to which is referred, e.g., the mail that should
+ *  be replied.
+ * @param realname the name of the recipient of the to-be-written mail.
+ *  NULL is a valid value.
+ * @param addr_spec the address of the recipient of the to-be-written mail
+ *  NULL is a valid value.
+ * @return
+ */
 char *mail_create_string(char *format, struct mail_info *orig_mail,
 												char *realname, char *addr_spec)
 {
@@ -3814,9 +3876,12 @@ char *mail_create_string(char *format, struct mail_info *orig_mail,
 	return str;
 }
 
-/**************************************************************************
- Tests if the mail is allowed to download from internet
-**************************************************************************/
+/**
+ * Test whether external resources can be downloaded from the given mail.
+ *
+ * @param mail the mail to test
+ * @return 0 if no external resouces shall be downloaded, otherwise 1.
+ */
 int mail_allowed_to_download(struct mail_info *mail)
 {
 	int rc = 0;

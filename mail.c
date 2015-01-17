@@ -392,7 +392,7 @@ void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, in
 **************************************************************************/
 void mail_scan_buffer_end(struct mail_scan *ms)
 {
-	if (ms->line) free(ms->line);
+	free(ms->line);
 }
 
 /**************************************************************************

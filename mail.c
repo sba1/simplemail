@@ -50,9 +50,7 @@
 char *stradd(char *src, const char *str1);
 char *strnadd(char *src, const char *str1, int n);
 
-/* porototypes */
-//static char *mail_find_content_parameter_value(struct mail_complete *mail, char *attribute);
-/*static struct header *mail_find_header(struct mail *mail, char *name);*/
+/* prototypes */
 static int mail_read_structure(struct mail_complete *mail);
 
 /* the mime preample used in mime multipart messages */
@@ -3740,29 +3738,6 @@ static char *get_first_name(char *realname, char *addr_spec)
 	} else buf[0]=0;
 	return buf;
 }
-
-/**************************************************************************
- Returns the last name of a given person.
- Also (will somewhen) performs addressbook look up to determine the
- first name.
- Returns a static buffer.
-**************************************************************************/
-#if 0
-static char *get_last_name(char *realname, char *addr_spec)
-{
-	static char buf[256];
-	if (realname)
-	{
-		char *sp = strchr(realname,' ');
-		if (sp)
-		{
-			sp++;
-			mystrlcpy(buf,sp,256);
-		}
-	} else buf[0]=0;
-	return buf;
-}
-#endif
 
 /**
  * Create a string for a greeting/closing phrase.

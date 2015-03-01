@@ -98,10 +98,14 @@ static const char trailingBytesForUTF8[256] = {
 	2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5
 };
 
-
-/**************************************************************************
- like strncpy() but for mail headers, returns the length of the string
-**************************************************************************/
+/**
+ * Like strncpy() but for mail headers, returns the length of the string.
+ *
+ * @param dest
+ * @param src
+ * @param n
+ * @return
+ */
 static int mailncpy(char *dest, const char *src, int n)
 {
   int i;
@@ -159,10 +163,14 @@ static int word_length(const char *buf)
 	return len;
 }
 
-/**************************************************************************
- Copies to quoting chars in to the buffer. len is the length of the
- buffer to avoid overflow
-**************************************************************************/
+/**
+ * Copies to quoting chars in to the buffer. len is the length of the
+ * buffer to avoid overflow.
+ *
+ * @param buf
+ * @param len
+ * @param text
+ */
 static void quoting_chars(char *buf, int len, char *text)
 {
 	unsigned char c;
@@ -409,10 +417,17 @@ void mail_scan_buffer_end(struct mail_scan *ms)
 	free(ms->line);
 }
 
-/**************************************************************************
- save the current header line in line, sets name_size and contents_size
- return 0 if an error happened
-**************************************************************************/
+/**
+ * Save the current header line in line, sets name_size and contents_size
+ * return 0 if an error happened
+ *
+ * @param ms
+ * @param name_start
+ * @param name_size
+ * @param contents_start
+ * @param contents_size
+ * @return
+ */
 static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, int name_size, char *contents_start, int contents_size)
 {
 	if (name_size + contents_size) /* else nothing has changed */
@@ -445,13 +460,18 @@ static int mail_scan_buffer_save_line(struct mail_scan *ms, char *name_start, in
 	return 1;
 }
 
-/**************************************************************************
- scans a buffer and fill the given mail instance. If more info is needed
- 1 is returned, else 0 (error handling not supported yet, but it's safe).
-
- This function could now be replaced by a line version, since we now have
- tcp_readln()
-**************************************************************************/
+/**
+ * Scans a buffer and fill the given mail instance. If more info is needed
+ * 1 is returned, else 0 (error handling not supported yet, but it's safe).
+ *
+ * @todo This function could now be replaced by a line version, since we now have
+ * tcp_readln()
+ *
+ * @param ms
+ * @param mail_buf
+ * @param size
+ * @return
+ */
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 {
 	unsigned char c;
@@ -575,11 +595,15 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 	return 1;
 }
 
-/**************************************************************************
- Find an compound object of a multipart/related mail (RFC2387)
- (eighter by Content-ID or Content-Location). NULL if object. m is a mail
- in the multipart/related mail.
-**************************************************************************/
+/**
+ * Find an compound object of a multipart/related mail (RFC2387)
+ * (either by Content-ID or Content-Location). NULL if object. m is a mail
+ * in the multipart/related mail.
+ *
+ * @param m
+ * @param id
+ * @return
+ */
 struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *id)
 {
 	int content_id = !mystrnicmp("cid:",id,4);
@@ -613,10 +637,15 @@ struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *i
 	return NULL;
 }
 
-/**************************************************************************
- returns the first mail with the given mime type/subtype
- (recursive). Return NULL if it doesn't exists.
-**************************************************************************/
+/**
+ * Returns the first mail with the given mime type/subtype
+ * (recursive). Return NULL if it doesn't exists.
+ *
+ * @param m
+ * @param type
+ * @param subtype
+ * @return
+ */
 struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype)
 {
 	int i;
@@ -632,12 +661,15 @@ struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type
 	return NULL;
 }
 
-/**************************************************************************
- Finds the initial mail which should be displayed. This is always the
- first non multipart mail. For multipart/alternative mails it returns the
- prefered one (depending on what the GUI prefers and how SimpleMail is
- configured).
-**************************************************************************/
+/**
+ * Finds the initial mail which should be displayed. This is always the
+ * first non-multipart mail. For multipart/alternative mails it returns the
+ * preferred one (depending on what the GUI prefers and how SimpleMail is
+ * configured).
+ *
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_find_initial(struct mail_complete *m)
 {
 	struct mail_complete *pref = NULL;
@@ -670,18 +702,23 @@ struct mail_complete *mail_find_initial(struct mail_complete *m)
 	return NULL;
 }
 
-/**************************************************************************
- Returns the root of the mail
-**************************************************************************/
+/**
+ * Returns the root of the mail.
+ *
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_get_root(struct mail_complete *m)
 {
 	while (m->parent_mail) m = m->parent_mail;
 	return m;
 }
 
-/**************************************************************************
- Returns the next part of the mail (excluding multiparts)
-**************************************************************************/
+/**
+ * Returns the next part of the mail (excluding multiparts)
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_get_next(struct mail_complete *m)
 {
 	if (!m->multipart_array)
@@ -719,9 +756,12 @@ struct mail_complete *mail_get_next(struct mail_complete *m)
 	return m;
 }
 
-/**************************************************************************
- Converts a number to base 18 character sign
-**************************************************************************/
+/**
+ * Converts a number to base 18 character sign.
+ *
+ * @param val
+ * @return
+ */
 static char get_char_18(int val)
 {
 	if (val >= 0 && val <= 9) return (char)('0' + val);
@@ -736,9 +776,12 @@ static char status_extensions[] =
 	'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','!','$','-'
 };
 
-/**************************************************************************
- Returns a unique filename for a new mail
-**************************************************************************/
+/**
+ * Returns a unique filename for a new mail.
+ *
+ * @param status
+ * @return
+ */
 char *mail_get_new_name(int status)
 {
 	struct tm tm;
@@ -779,19 +822,25 @@ char *mail_get_new_name(int status)
 	return mystrdup(buf);
 }
 
-/**************************************************************************
- Returns wheather a mail is marked as deleted (on IMAP folders)
-**************************************************************************/
+/**
+ * Returns whether a mail is marked as deleted (on IMAP folders).
+ *
+ * @param mail
+ * @return
+ */
 int mail_is_marked_as_deleted(struct mail_info *mail)
 {
 	return (*mail->filename == 'd') || (*mail->filename == 'D');
 }
 
-/**************************************************************************
- Returns a new filename for the mail which matches the given status.
- String is allocated with malloc
-**************************************************************************/
-char *mail_get_status_filename(char *oldfilename, int status_new)
+/**
+ * Returns a new filename for the mail which matches the given status.
+ * String is allocated with malloc.
+ *
+ * @param oldfilename
+ * @param status_new
+ * @return
+ */char *mail_get_status_filename(char *oldfilename, int status_new)
 {
 	int len = strlen(oldfilename);
 	char *filename = (char*)malloc(len+6);
@@ -830,9 +879,11 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 	return filename;
 }
 
-/**************************************************************************
- Identifies the status of the mail (using the filename)
-**************************************************************************/
+/**
+ * Identifies the status of the mail (using the filename).
+ *
+ * @param m
+ */
 void mail_identify_status(struct mail_info *m)
 {
 	char *suffix;
@@ -853,9 +904,11 @@ void mail_identify_status(struct mail_info *m)
 	}
 }
 
-/**************************************************************************
- creates a mail, initialize it to deault values
-**************************************************************************/
+/**
+ * Creates a mail, initialize it to default values.
+ *
+ * @return
+ */
 struct mail_info *mail_info_create(void)
 {
 	struct mail_info *m;
@@ -865,9 +918,11 @@ struct mail_info *mail_info_create(void)
 	return m;
 }
 
-/**************************************************************************
- creates a mail, initialize it to deault values
-**************************************************************************/
+/**
+ * Creates a mail, initialize it to default values.
+ *
+ * @return
+ */
 struct mail_complete *mail_complete_create(void)
 {
 	struct mail_complete *m;
@@ -886,11 +941,13 @@ struct mail_complete *mail_complete_create(void)
 	return NULL;
 }
 
-
-/**************************************************************************
- This function fills in the header list if it is empty.
- Return 1 on success
-**************************************************************************/
+/**
+ * This function fills in the header list if it is empty.
+ * Return 1 on success.
+ *
+ * @param m
+ * @return
+ */
 int mail_read_header_list_if_empty(struct mail_complete *m)
 {
 	char *buf;
@@ -920,11 +977,13 @@ int mail_read_header_list_if_empty(struct mail_complete *m)
 	return 1;
 }
 
-
-/**************************************************************************
- scans a mail file and returns a filled (malloced) mail instance, NULL
- if an error happened.
-**************************************************************************/
+/**
+ * Scans a mail file and returns a filled (malloced) mail instance, NULL
+ * if an error happened.
+ *
+ * @param filename
+ * @return
+ */
 struct mail_complete *mail_complete_create_from_file(char *filename)
 {
 	struct mail_complete *m;
@@ -984,10 +1043,13 @@ struct mail_complete *mail_complete_create_from_file(char *filename)
 	return m;
 }
 
-/**************************************************************************
- scans a mail file and returns a filled (malloced) mail_info instance, NULL
- if an error happened.
-**************************************************************************/
+/**
+ * Scans a mail file and returns a filled (malloced) mail_info instance, NULL
+ * if an error happened.
+ *
+ * @param filename
+ * @return
+ */
 struct mail_info *mail_info_create_from_file(char *filename)
 {
 	struct mail_complete *mail;
@@ -1138,9 +1200,13 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 	return mail;
 }
 
-/**************************************************************************
- Creates the replied subject line
-**************************************************************************/
+/**
+ * Creates the replied subject line.
+ *
+ * @param num
+ * @param mail_array
+ * @return
+ */
 static char *mail_create_replied_subject_line(int num, struct mail_complete **mail_array)
 {
 	struct mail_info *mail = mail_array[0]->info;
@@ -1201,12 +1267,16 @@ static char *mail_create_replied_subject_line(int num, struct mail_complete **ma
 	return new_subject;
 }
 
-/**************************************************************************
- Creates a Reply to a given mail. That means change the contents of
- "From:" to "To:", change the subject, quote the first text passage
- and remove the attachments. The mail is processed. The given mail should
- be processed to.
-**************************************************************************/
+/**
+ * Creates a Reply to a given mail. That means change the contents of
+ * "From:" to "To:", change the subject, quote the first text passage
+ * and remove the attachments. The mail is processed. The given mail should
+ * be processed to.
+ *
+ * @param num
+ * @param mail_array
+ * @return
+ */
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array)
 {
 	struct mail_complete *m = mail_complete_create();
@@ -1406,10 +1476,14 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 	return m;
 }
 
-/**************************************************************************
- Creates a Forwarded mail to the given mails. Note that the input mails
- can be changed! And should be be freeed with mail_free() afterwards.
-**************************************************************************/
+/**
+ * Creates a Forwarded mail to the given mails. Note that the input mails
+ * can be changed! And should be be freeed with mail_free() afterwards.
+ *
+ * @param num
+ * @param filename_array
+ * @return
+ */
 struct mail_complete *mail_create_forward(int num, char **filename_array)
 {
 	struct mail_complete *m;
@@ -1639,11 +1713,17 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 	return m;
 }
 
-/**************************************************************************
- Extract the name of a given address (and looks for matches in the
- addressbook). If more than one e-mail address is specified, *more_prt
- will be set to 1. addr maybe NULL.
-**************************************************************************/
+/**
+ * Extract the name of a given address (and looks for matches in the
+ * address book). If more than one e-mail address is specified, *more_prt
+ * will be set to 1. addr maybe NULL.
+ *
+ * @param addr
+ * @param dest_phrase
+ * @param dest_addr
+ * @param more_ptr
+ * @return
+ */
 int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr)
 {
 	struct parse_address paddr;
@@ -1689,10 +1769,11 @@ int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, 
 	return 1;
 }
 
-
-/**************************************************************************
- Returns the "from" name and address (name <address>) of the mail.
-**************************************************************************/
+/**
+ * Returns the "from" name and address (name <address>) of the mail.
+ * @param mail
+ * @return
+ */
 char *mail_get_from_address(struct mail_info *mail)
 {
 	char *buf = malloc(mystrlen(mail->from_phrase) + mystrlen(mail->from_addr)+10);
@@ -1704,9 +1785,12 @@ char *mail_get_from_address(struct mail_info *mail)
 	return buf;
 }
 
-/**************************************************************************
- Returns the first "to" name and address (name <address>) of the mail
-**************************************************************************/
+/**
+ * Returns the first "to" name and address (name <address>) of the mail.
+ *
+ * @param mail
+ * @return
+ */
 char *mail_get_to_address(struct mail_info *mail)
 {
 	char *buf = malloc(mystrlen(mail->to_phrase) + mystrlen(mail->to_addr)+10);
@@ -1751,9 +1835,12 @@ char **mail_info_get_recipient_addresses(struct mail_info *mail)
 	return a;
 }
 
-/**************************************************************************
- Returns the first "to" name and address (name <address>) of the mail
-**************************************************************************/
+/**
+ * Returns the first "to" name and address (name <address>) of the mail.
+ *
+ * @param mail
+ * @return
+ */
 char *mail_get_replyto_address(struct mail_info *mail)
 {
 	return mystrdup(mail->reply_addr);
@@ -1777,9 +1864,11 @@ void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt)
 	mail->excerpt = excerpt;
 }
 
-/**************************************************************************
- Does RFC 2184 stuff
-**************************************************************************/
+/**
+ * Does RFC 2184 stuff.
+ *
+ * @param list
+ */
 static void rebuild_parameter_list(struct list *list)
 {
 	struct content_parameter *param;
@@ -1857,11 +1946,14 @@ static void rebuild_parameter_list(struct list *list)
 	/* a second pass should follow which merges the lines */
 }
 
-/**************************************************************************
- Interprets the the already read headers. A return value of 0 means error.
- This function can be called from sub threads.
- TODO: Must use functions better since this function is really too big
-**************************************************************************/
+/**
+ * Interprets the the already read headers. A return value of 0 means error.
+ * This function can be called from sub threads.
+ *
+ * @param mail
+ * @return 0 for an error.
+ * @todo Must use functions better since this function is really too big
+ */
 int mail_process_headers(struct mail_complete *mail)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
@@ -2174,9 +2266,14 @@ int mail_process_headers(struct mail_complete *mail)
 	return 1;
 }
 
-/**************************************************************************
- Looks for an parameter and returns the value, otherwise NULL
-**************************************************************************/
+/**
+ * Looks for an content parameter and returns the value. If the parameter
+ * is not contained, NULL is returned.
+ *
+ * @param mail
+ * @param attribute
+ * @return
+ */
 static char *mail_find_content_parameter_value(struct mail_complete *mail, char *attribute)
 {
 	struct content_parameter *param = (struct content_parameter*)list_first(&mail->content_parameter_list);
@@ -2190,9 +2287,11 @@ static char *mail_find_content_parameter_value(struct mail_complete *mail, char 
 	return NULL;
 }
 
-/**************************************************************************
- Decrypts a mail if it is encrypted
-**************************************************************************/
+/**
+ * Decrypts a mail if it is encrypted
+ *
+ * @param mail
+ */
 static void mail_decrypt(struct mail_complete *mail)
 {
 	if (!mystricmp(mail->content_subtype,"encrypted"))
@@ -2328,9 +2427,11 @@ static void mail_decrypt(struct mail_complete *mail)
 	}
 }
 
-/**************************************************************************
- Resolves smime stuff
-**************************************************************************/
+/**
+ * Resolve the smime stuff.
+ *
+ * @param mail
+ */
 static void mail_resolve_smime(struct mail_complete *mail)
 {
 	if (!mystricmp(mail->content_type,"application") &&
@@ -2377,9 +2478,12 @@ static void mail_resolve_smime(struct mail_complete *mail)
 	}
 }
 
-/**************************************************************************
- Reads the structure of a mail (uses ugly recursion)
-**************************************************************************/
+/**
+ * Recursively, read the structure of the given mail.
+ *
+ * @param mail the mail of which the structure should be read.
+ * @return 0 on failure, otherwise some other value.
+ */
 static int mail_read_structure(struct mail_complete *mail)
 {
 	if (!mystricmp(mail->content_type,"multipart"))
@@ -2491,10 +2595,13 @@ static int mail_read_structure(struct mail_complete *mail)
 	return 1;
 }
 
-
-/**************************************************************************
- Reads the contents of a mail
-**************************************************************************/
+/**
+ * Locally, read the contents of the given mail that is situated in the given
+ * folder.
+ *
+ * @param folder
+ * @param mail
+ */
 void mail_read_contents(char *folder, struct mail_complete *mail)
 {
 	char path[256];
@@ -2522,9 +2629,13 @@ void mail_read_contents(char *folder, struct mail_complete *mail)
 	if (folder) chdir(path);
 }
 
-/**************************************************************************
- Decodes the given mail
-**************************************************************************/
+/**
+ * Decodes the given mail to the given buffers.
+ *
+ * @param mail
+ * @param decoded_data_ptr
+ * @param decoded_data_len_ptr
+ */
 void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int *decoded_data_len_ptr)
 {
 	mail_decode(mail);
@@ -2547,9 +2658,6 @@ void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int 
 	}
 }
 
-/**************************************************************************
-
-**************************************************************************/
 /**
  * Decodes the given mail. A text mail is always converted to UTF8 and
  * it is ensured that it ends with a 0-byte, that is, however, not
@@ -2597,12 +2705,16 @@ void mail_decode(struct mail_complete *mail)
 	}
 }
 
-/**************************************************************************
- Decodes a limitted number of bytes (useful for filetype identification)
- len_ptr points to an int variable which limits the decode buffer, a big number
- for everything. the variable will be changed as needed. Returns the buffer
- or NULL. Must be free()'d
-**************************************************************************/
+/**
+ * Decodes a limited number of bytes of the given mail.
+ *
+ * @param mail the mail whose contents should be decoded.
+ * @param len_ptr points to an int variable which limits the decode buffer. Use
+ *  a big number to decode everything. After return, the value will contained
+ *  the number truly decoded bytes
+ *
+ * @todo decouple in/out parameter.
+ */
 void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr)
 {
 	void *decoded = NULL;
@@ -2616,9 +2728,11 @@ void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr)
 	return decoded;
 }
 
-/**************************************************************************
- frees all memory associated with a mail info. Accepts NULL
-**************************************************************************/
+/**
+ * Frees all memory associated with a mail info. Accepts NULL.
+ *
+ * @param info
+ */
 void mail_info_free(struct mail_info *info)
 {
 	if (!info) return;
@@ -2646,9 +2760,11 @@ void mail_info_free(struct mail_info *info)
 	free(info);
 }
 
-/**************************************************************************
- frees all memory associated with a mail
-**************************************************************************/
+/**
+ * Frees all memory associated with a mail.
+ *
+ * @param mail
+ */
 void mail_complete_free(struct mail_complete *mail)
 {
 	struct header *hdr;
@@ -2698,18 +2814,23 @@ void mail_complete_free(struct mail_complete *mail)
 	free(mail);
 }
 
-/**************************************************************************
- Increase reference counter
-**************************************************************************/
+/**
+ * Increase reference counter of the given mail.
+ *
+ * @param mail
+ */
 void mail_reference(struct mail_info *mail)
 {
 	mail->reference_count++;
 	SM_DEBUGF(20,("Increased refrence count of mail %p to %ld\n",mail,mail->reference_count));
 }
 
-/**************************************************************************
- Decrease reference counter
-**************************************************************************/
+/**
+ * Decreases the reference counter for the given mail and possibly frees the
+ * mail if the counter reaches zero.
+ *
+ * @param mail
+ */
 void mail_dereference(struct mail_info *mail)
 {
 	if (mail->reference_count <= 0)
@@ -2722,9 +2843,14 @@ void mail_dereference(struct mail_info *mail)
 	if (mail->to_be_freed) mail_info_free(mail);
 }
 
-/**************************************************************************
- Looks for an header and returns it, otherwise NULL
-**************************************************************************/
+/**
+ * Looks for a header field as specified by the given name and return it.
+ * If the header field is not contained, NULL is returned.
+ *
+ * @param mail
+ * @param name
+ * @return
+ */
 struct header *mail_find_header(struct mail_complete *mail, char *name)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
@@ -2737,9 +2863,14 @@ struct header *mail_find_header(struct mail_complete *mail, char *name)
 	return NULL;
 }
 
-/**************************************************************************
- Looks for an header and returns the contents, otherwise NULL
-**************************************************************************/
+/**
+ * Looks for a given header with the given name in the given mail and returns
+ * the value of the file. If the header is not contained, NULL is returned.
+ *
+ * @param mail
+ * @param name
+ * @return
+ */
 char *mail_find_header_contents(struct mail_complete *mail, char *name)
 {
 	struct header *header = mail_find_header(mail,name);
@@ -2747,10 +2878,13 @@ char *mail_find_header_contents(struct mail_complete *mail, char *name)
 	return NULL;
 }
 
-/**************************************************************************
- Creates an address list from a given string (Note, that this is probably
- misplaced in mail.c)
-**************************************************************************/
+/**
+ * Creates an address list from a given string (Note, that this is probably
+ * misplaced in mail.c)
+ *
+ * @param str
+ * @return
+ */
 struct list *create_address_list(char *str)
 {
 	struct list *list;
@@ -2784,10 +2918,14 @@ struct list *create_address_list(char *str)
 	return list;
 }
 
-/**************************************************************************
- Checks if the address list already constits of a entry with the given
- addr_spec
-**************************************************************************/
+/**
+ * Checks if the address list already contains an entry with the given
+ * addr_spec.
+ *
+ * @param list
+ * @param addr_spec
+ * @return
+ */
 struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec)
 {
 	struct mailbox *mb;
@@ -2802,10 +2940,12 @@ struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spe
 	return NULL;
 }
 
-/**************************************************************************
- Appends a address from a given address string to the list. Avoids
- duplicates.
-**************************************************************************/
+/**
+ * Appends mail addresses in the given address string to the given address list.
+ *
+ * @param list
+ * @param str
+ */
 void append_to_address_list(struct list *list, char *str)
 {
 	struct list *append_list = create_address_list(str);
@@ -2828,9 +2968,12 @@ void append_to_address_list(struct list *list, char *str)
 	}
 }
 
-/**************************************************************************
- Appends a mailbox (which is duplicated) into the list. Avoids duplicates
-**************************************************************************/
+/**
+ * Appends the given mailbox as an address book entry into the given list.
+ *
+ * @param list the list to which the address should be appeneded.
+ * @param mb the mailbox
+ */
 void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
 {
 	struct mailbox *new_mb;
@@ -2844,9 +2987,12 @@ void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
 	}
 }
 
-/**************************************************************************
- Removes a address from an address list
-**************************************************************************/
+/**
+ * Removes an entry corresponding to the given email address from an address list.
+ *
+ * @param list the list from which the entry should be removed.
+ * @param email the email address defining the entry to be removed.
+ */
 void remove_from_address_list(struct list *list, char *email)
 {
 	struct mailbox *mb = find_addr_spec_in_address_list(list, email);
@@ -2859,9 +3005,12 @@ void remove_from_address_list(struct list *list, char *email)
 	}
 }
 
-/**************************************************************************
- Frees all memory allocated in create_address_list()
-**************************************************************************/
+/**
+ * Frees all memory allocated in create_address_list() for the given list.
+ * The given list must not be used after that call.
+ *
+ * @param list the list to free.
+ */
 void free_address_list(struct list *list)
 {
 	struct address *address;
@@ -2874,11 +3023,15 @@ void free_address_list(struct list *list)
 	free(list);
 }
 
-/**************************************************************************
- Returns a string of all addresses but codeset safe (means that punycode
- is used for addresses which contains different char then the given
- codeset provides)
-**************************************************************************/
+/**
+ * Returns a string of all addresses but codeset-safe (means that punycode
+ * is used for addresses which contains different char then the given
+ * codeset provides)
+ *
+ * @param list
+ * @param codeset
+ * @return
+ */
 utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 {
 	struct address *address = (struct address*)list_first(list);
@@ -2922,9 +3075,11 @@ utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
 	return str.str;
 }
 
-/**************************************************************************
- Initialized a composed mail instance
-**************************************************************************/
+/**
+ * Initialize a composed mail instance.
+ *
+ * @param mail
+ */
 void composed_mail_init(struct composed_mail *mail)
 {
 	memset(mail, 0, sizeof(struct composed_mail));

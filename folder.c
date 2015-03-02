@@ -29,6 +29,7 @@
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 
+#include "addresslist.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"

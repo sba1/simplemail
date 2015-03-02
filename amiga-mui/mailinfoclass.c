@@ -34,6 +34,7 @@
 #include <proto/muimaster.h>
 #include <proto/intuition.h>
 
+#include "addresslist.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"

@@ -27,6 +27,7 @@
 
 #include "account.h"
 #include "addressbook.h"
+#include "addresslist.h"
 #include "configuration.h"
 #include "debug.h"
 #include "filter.h"

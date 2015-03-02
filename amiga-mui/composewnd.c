@@ -39,6 +39,7 @@
 
 #include "account.h"
 #include "addressbook.h"
+#include "addresslist.h"
 #include "codecs.h"
 #include "codesets.h"
 #include "configuration.h"

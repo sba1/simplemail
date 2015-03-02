@@ -25,11 +25,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "addresslist.h"
 #include "codecs.h"
 #include "codesets.h"
 #include "debug.h"
 #include "lists.h"
-#include "mail.h"
 #include "parse.h"
 #include "support_indep.h"
 

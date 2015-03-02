@@ -4,6 +4,7 @@
 NONARCHSRCS=\
 	account.c \
 	addressbook.c \
+	addresslist.c \
 	atcleanup.c \
 	boyermoore.c \
 	codecs.c \

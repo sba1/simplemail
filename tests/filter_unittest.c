@@ -23,6 +23,7 @@
 
 #include <CUnit/Basic.h>
 
+#include "addresslist.h"
 #include "mail.h"
 #include "filter.h"
 #include "support_indep.h"

@@ -31,6 +31,9 @@
 #include "codesets.h"
 #endif
 
+/* Needed for __USE_XOPEN2K8 */
+#include <string.h>
+
 /* some string functions, should be in strings.c or simliar */
 char *strdupcat(const char *string1, const char *string2);
 

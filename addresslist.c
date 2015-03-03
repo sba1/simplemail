@@ -60,7 +60,7 @@ struct list *create_address_list(char *str)
  * @param addr_spec
  * @return
  */
-struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec)
+static struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec)
 {
 	struct mailbox *mb;
 

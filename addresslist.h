@@ -12,8 +12,9 @@ struct address
 	char *email;
 };
 
+struct mailbox;
+
 struct list *create_address_list(char *str);
-struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec);
 void append_to_address_list(struct list *list, char *str);
 void append_mailbox_to_address_list(struct list *list, struct mailbox *mb);
 void remove_from_address_list(struct list *list, char *email);

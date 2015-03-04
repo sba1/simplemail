@@ -203,7 +203,7 @@ static int compose_expand_to(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct list *list = create_address_list(str);
+			struct address_list *list = create_address_list(str);
 			if (list)
 			{
 				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
@@ -241,7 +241,7 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct list *list = create_address_list(str);
+			struct address_list *list = create_address_list(str);
 			if (list)
 			{
 				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
@@ -279,7 +279,7 @@ static int compose_expand_bcc(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct list *list = create_address_list(str);
+			struct address_list *list = create_address_list(str);
 			if (list)
 			{
 				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
@@ -1542,7 +1542,7 @@ int compose_window_open(struct compose_args *args)
 				/* Find and set the correct BCC */
 				if ((bcc = mail_find_header_contents(args->to_change, "bcc")))
 				{
-					struct list *bcc_list = create_address_list(bcc);
+					struct address_list *bcc_list = create_address_list(bcc);
 					if (bcc_list)
 					{
 						utf8 *bcc_str = get_addresses_from_list_safe(bcc_list,user.config.default_codeset);

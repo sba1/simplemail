@@ -27,14 +27,14 @@
 #include "codesets.h"
 #endif
 
-struct list;
+struct address_list;
 
 char *decode_base64(unsigned char *buf, unsigned int len, unsigned int *ret_len);
 char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int *ret_len, int header);
 char *encode_header_field(char *field_name, char *field_contents);
 char *encode_header_field_utf8(char *field_name, char *field_contents);
-char *encode_address_field(char *field_name, struct list *address_list);
-char *encode_address_field_utf8(char *field_name, struct list *address_list);
+char *encode_address_field(char *field_name, struct address_list *address_list);
+char *encode_address_field_utf8(char *field_name, struct address_list *address_list);
 char *encode_address_puny(utf8 *email);
 char *encode_base64(unsigned char *buf, unsigned int len);
 char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsigned int *ret_len, char **encoding);

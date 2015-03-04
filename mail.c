@@ -1107,10 +1107,10 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 
 		if (replyto)
 		{
-			struct list *list = create_address_list(replyto);
+			struct address_list *list = create_address_list(replyto);
 			if (list)
 			{
-				struct address *addr = (struct address*)list_first(list);
+				struct address *addr = (struct address*)list_first(&list->list);
 				if (addr)
 					mail_complete_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email),0);
 				free_address_list(list);
@@ -1120,7 +1120,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 		/* TODO: write a function for this! */
 		if (to_str)
 		{
-			struct list *list = create_address_list(to_str);
+			struct address_list *list = create_address_list(to_str);
 			if (list)
 			{
 				char *to_header;
@@ -1306,7 +1306,7 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 
 		if (from)
 		{
-			struct list *alist;
+			struct address_list *alist;
 			char *replyto = mail_find_header_contents(mail, "reply-to");
 			int which_address = 1;
 
@@ -1347,8 +1347,8 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 				int mult_count=0;
 				char *to_header;
 				char *cc_header = NULL;
-				struct list *mult_list_to = create_address_list(to);
-				struct list *mult_list_cc = create_address_list(cc);
+				struct address_list *mult_list_to = create_address_list(to);
+				struct address_list *mult_list_cc = create_address_list(cc);
 
 				if (which_address == 3)
 					append_to_address_list(alist, replyto);
@@ -1359,14 +1359,14 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 					if (ac) remove_from_address_list(mult_list_to, ac->email);
 					/* remove the replyto (could be by mailinglist where To == ReplyTo */
 					if (replyto) remove_from_address_list(mult_list_to, replyto);
-					mult_count += list_length(mult_list_to);
+					mult_count += list_length(&mult_list_to->list);
 				}
 
 				if (mult_list_cc)
 				{
 					/* remove the sender account, if found in cc */
 					if (ac) remove_from_address_list(mult_list_cc, ac->email);
-					mult_count += list_length(mult_list_cc);
+					mult_count += list_length(&mult_list_cc->list);
 				}
 
 				if (mult_count > 0)
@@ -1378,9 +1378,9 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 					{
 						if (mult_list_to)
 						{
-							if (list_length(mult_list_to) > 0)
+							if (list_length(&mult_list_to->list) > 0)
 							{
-								struct mailbox *mb = (struct mailbox*)list_first(mult_list_to);
+								struct mailbox *mb = (struct mailbox*)list_first(&mult_list_to->list);
 								while (mb)
 								{
 									append_mailbox_to_address_list(alist,mb);
@@ -1391,7 +1391,7 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 						}
 						if (mult_list_cc)
 						{
-							if (list_length(mult_list_cc) > 0)
+							if (list_length(&mult_list_cc->list) > 0)
 							{
 								cc_header = encode_address_field_utf8("Cc", mult_list_cc);
 							}
@@ -1817,7 +1817,7 @@ char **mail_info_get_recipient_addresses(struct mail_info *mail)
 
 	a = NULL;
 
-	addr = (struct address*)list_first(mail->to_list);
+	addr = (struct address*)list_first(&mail->to_list->list);
 	while (addr)
 	{
 		if (!array_contains_utf8(a, addr->email))
@@ -1825,7 +1825,7 @@ char **mail_info_get_recipient_addresses(struct mail_info *mail)
 		addr = (struct address*)node_next(&addr->node);
 	}
 
-	addr = (struct address*)list_first(mail->cc_list);
+	addr = (struct address*)list_first(&mail->cc_list->list);
 	while (addr)
 	{
 		if (!array_contains_utf8(a, addr->email))
@@ -2902,7 +2902,7 @@ void composed_mail_init(struct composed_mail *mail)
 static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *header_contents)
 {
 	int rc = 0;
-	struct list *list = create_address_list(header_contents);
+	struct address_list *list = create_address_list(header_contents);
 
 	if (list)
 	{
@@ -3012,7 +3012,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 
 	if ((boundary = get_boundary_id(fp)))
 	{
-		struct list *tolist = create_address_list(new_mail->to);
+		struct address_list *tolist = create_address_list(new_mail->to);
 		char *encrypted_name = malloc(L_tmpnam+1);
 		char *id_name = malloc(L_tmpnam+1);
 		char *cmd = malloc(2*L_tmpnam+300);
@@ -3028,7 +3028,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 
 			if ((id_fh = fopen(id_name,"wb")))
 			{
-				addr = (struct address*)list_first(tolist);
+				addr = (struct address*)list_first(&tolist->list);
 				while (addr)
 				{
 					struct addressbook_entry_new *entry = addressbook_find_entry_by_address(addr->email);
@@ -3531,7 +3531,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			addr = (struct address*)list_first(mail->info->to_list);
+			addr = (struct address*)list_first(&mail->info->to_list->list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);
@@ -3561,7 +3561,7 @@ int mail_create_html_header(struct mail_complete *mail, int all_headers)
 			fputs("</TD>",fh);
 
 			fputs("<TD>",fh);
-			addr = (struct address*)list_first(mail->info->cc_list);
+			addr = (struct address*)list_first(&mail->info->cc_list->list);
 			while (addr)
 			{
 				fprintf(fh,"<A HREF=\"mailto:%s\"%s>",addr->email,style_text);

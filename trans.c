@@ -247,7 +247,7 @@ int mails_upload(void)
 		struct mail_complete *m;
 		char *from, *to, *cc, *bcc;
 		struct mailbox mb;
-		struct list *list; /* "To" address list */
+		struct address_list *list; /* "To" address list */
 		struct outmail *out;
 
 		if (mail_get_status_type(m_iter) != MAIL_STATUS_WAITSEND) continue;
@@ -290,17 +290,17 @@ int mails_upload(void)
 		/* fill in the recipients */
 		if ((list = create_address_list(to)))
 		{
-			int length = list_length(list);
+			int length = list_length(&list->list);
 			if (length)
 			{
-				struct list *cc_list = create_address_list(cc);
-				struct list *bcc_list = create_address_list(bcc);
-				if (cc_list) length += list_length(cc_list);
-				if (bcc_list) length += list_length(bcc_list);
+				struct address_list *cc_list = create_address_list(cc);
+				struct address_list *bcc_list = create_address_list(bcc);
+				if (cc_list) length += list_length(&cc_list->list);
+				if (bcc_list) length += list_length(&bcc_list->list);
 
 				if ((out->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 				{
-					struct address *addr = (struct address*)list_first(list);
+					struct address *addr = (struct address*)list_first(&list->list);
 					int i=0;
 					while (addr)
 					{
@@ -311,7 +311,7 @@ int mails_upload(void)
 
 					if (cc_list)
 					{
-						addr = (struct address*)list_first(cc_list);
+						addr = (struct address*)list_first(&cc_list->list);
 						while (addr)
 						{
 							if (!(out->rcp[i++] = mystrdup(addr->email))) /* not freed */
@@ -322,7 +322,7 @@ int mails_upload(void)
 
 					if (bcc_list)
 					{
-						addr = (struct address*)list_first(bcc_list);
+						addr = (struct address*)list_first(&bcc_list->list);
 						while (addr)
 						{
 							if (!(out->rcp[i++] = mystrdup(addr->email))) /* not freed */
@@ -359,7 +359,7 @@ int mails_upload_signle(struct mail_info *mi)
 	struct outmail **out_array;
 	struct mail_complete *m;
 	struct mailbox mb;
-	struct list *list; /* "To" address list */
+	struct address_list *list; /* "To" address list */
 	struct folder *out_folder = folder_outgoing();
 
 	if (!mi) return 0;
@@ -396,17 +396,17 @@ int mails_upload_signle(struct mail_info *mi)
 	/* fill in the recipients */
 	if ((list = create_address_list(to)))
 	{
-		int length = list_length(list);
+		int length = list_length(&list->list);
 		if (length)
 		{
-			struct list *cc_list = create_address_list(cc);
-			struct list *bcc_list = create_address_list(bcc);
-			if (cc_list) length += list_length(cc_list);
-			if (bcc_list) length += list_length(bcc_list);
+			struct address_list *cc_list = create_address_list(cc);
+			struct address_list *bcc_list = create_address_list(bcc);
+			if (cc_list) length += list_length(&cc_list->list);
+			if (bcc_list) length += list_length(&bcc_list->list);
 
 			if ((out_array[0]->rcp = (char**)malloc(sizeof(char*)*(length+1)))) /* not freed */
 			{
-				struct address *addr = (struct address*)list_first(list);
+				struct address *addr = (struct address*)list_first(&list->list);
 				int i=0;
 				while (addr)
 				{
@@ -417,7 +417,7 @@ int mails_upload_signle(struct mail_info *mi)
 
 				if (cc_list)
 				{
-					addr = (struct address*)list_first(cc_list);
+					addr = (struct address*)list_first(&cc_list->list);
 					while (addr)
 					{
 						if (!(out_array[0]->rcp[i++] = mystrdup(addr->email))) /* not freed */
@@ -428,7 +428,7 @@ int mails_upload_signle(struct mail_info *mi)
 
 				if (bcc_list)
 				{
-					addr = (struct address*)list_first(bcc_list);
+					addr = (struct address*)list_first(&bcc_list->list);
 					while (addr)
 					{
 						if (!(out_array[0]->rcp[i++] = mystrdup(addr->email))) /* not freed */

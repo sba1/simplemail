@@ -736,7 +736,7 @@ char *encode_header_field_utf8(char *field_name, char *field_contents)
  The string is allocated with malloc().
  This function is going to be replaced with the below one soon.
 **************************************************************************/
-char *encode_address_field(char *field_name, struct list *address_list)
+char *encode_address_field(char *field_name, struct address_list *address_list)
 {
 	int field_len = strlen(field_name) + 2; /* including the ':' and the space */
 	int header_len;
@@ -752,7 +752,7 @@ char *encode_address_field(char *field_name, struct list *address_list)
 		fprintf(fh, "%s: ",field_name);
 		line_len = field_len;
 
-		address = (struct address*)list_first(address_list);
+		address = (struct address*)list_first(&address_list->list);
 		while (address)
 		{
 			struct address *next_address = (struct address*)node_next(&address->node);
@@ -885,7 +885,7 @@ char *encode_address_puny(utf8 *email)
  * @param address_list
  * @return the generated string. Must be freed with free().
  */
-char *encode_address_field_utf8(char *field_name, struct list *address_list)
+char *encode_address_field_utf8(char *field_name, struct address_list *address_list)
 {
 	struct address *address;
 
@@ -902,7 +902,7 @@ char *encode_address_field_utf8(char *field_name, struct list *address_list)
 
 	line_len = field_len;
 
-	address = (struct address*)list_first(address_list);
+	address = (struct address*)list_first(&address_list->list);
 	while (address)
 	{
 		struct address *next_address;

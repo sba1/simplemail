@@ -19,17 +19,17 @@
  * @param str
  * @return
  */
-struct list *create_address_list(char *str)
+struct address_list *create_address_list(char *str)
 {
-	struct list *list;
+	struct address_list *list;
 	if (!str) return NULL;
 
-	if ((list = (struct list*)malloc(sizeof(struct list))))
+	if ((list = (struct address_list*)malloc(sizeof(*list))))
 	{
 		struct parse_address addr;
 		char *ret;
 
-		list_init(list);
+		list_init(&list->list);
 
 		if ((ret = parse_address(str,&addr)))
 		{
@@ -42,7 +42,7 @@ struct list *create_address_list(char *str)
 				{
 					new_addr->realname = mystrdup(mb->phrase);
 					new_addr->email = mystrdup(mb->addr_spec);
-					list_insert_tail(list,&new_addr->node);
+					list_insert_tail(&list->list,&new_addr->node);
 				}
 				mb = (struct mailbox*)node_next(&mb->node);
 			}
@@ -60,16 +60,16 @@ struct list *create_address_list(char *str)
  * @param addr_spec
  * @return
  */
-static struct mailbox *find_addr_spec_in_address_list(struct list *list, char *addr_spec)
+static struct address *find_addr_spec_in_address_list(struct address_list *list, char *addr_spec)
 {
-	struct mailbox *mb;
+	struct address *addr;
 
-	mb = (struct mailbox *)list_first(list);
-	while (mb)
+	addr = (struct address *)list_first(&list->list);
+	while (addr)
 	{
-		if (!mystricmp(mb->addr_spec,addr_spec))
-			return mb;
-		mb = (struct mailbox*)node_next(&mb->node);
+		if (!mystricmp(addr->email,addr_spec))
+			return addr;
+		addr = (struct address*)node_next(&addr->node);
 	}
 	return NULL;
 }
@@ -80,22 +80,22 @@ static struct mailbox *find_addr_spec_in_address_list(struct list *list, char *a
  * @param list
  * @param str
  */
-void append_to_address_list(struct list *list, char *str)
+void append_to_address_list(struct address_list *list, char *str)
 {
-	struct list *append_list = create_address_list(str);
+	struct address_list *append_list = create_address_list(str);
 	if (append_list)
 	{
-		struct mailbox *new_mb;
+		struct address *new_addr;
 
-		while ((new_mb = (struct mailbox*)list_remove_tail(append_list)))
+		while ((new_addr = (struct address*)list_remove_tail(&append_list->list)))
 		{
-			int add_it = !find_addr_spec_in_address_list(list,new_mb->addr_spec);
-			if (add_it) list_insert_tail(list,&new_mb->node);
+			int add_it = !find_addr_spec_in_address_list(list,new_addr->email);
+			if (add_it) list_insert_tail(&list->list,&new_addr->node);
 			else
 			{
-				free(new_mb->phrase);
-				free(new_mb->addr_spec);
-				free(new_mb);
+				free(new_addr->realname);
+				free(new_addr->email);
+				free(new_addr);
 			}
 		}
 		free(append_list);
@@ -108,16 +108,16 @@ void append_to_address_list(struct list *list, char *str)
  * @param list the list to which the address should be appeneded.
  * @param mb the mailbox
  */
-void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
+void append_mailbox_to_address_list(struct address_list *list, struct mailbox *mb)
 {
 	struct mailbox *new_mb;
 	if (find_addr_spec_in_address_list(list,mb->addr_spec)) return;
-	new_mb = (struct mailbox*)malloc(sizeof(struct mailbox));
+	new_mb = (struct mailbox*)malloc(sizeof(*new_mb));
 	if (new_mb)
 	{
 		new_mb->phrase = mystrdup(mb->phrase);
 		new_mb->addr_spec = mystrdup(mb->addr_spec);
-		list_insert_tail(list,&new_mb->node);
+		list_insert_tail(&list->list,&new_mb->node);
 	}
 }
 
@@ -127,14 +127,14 @@ void append_mailbox_to_address_list(struct list *list, struct mailbox *mb)
  * @param list the list from which the entry should be removed.
  * @param email the email address defining the entry to be removed.
  */
-void remove_from_address_list(struct list *list, char *email)
+void remove_from_address_list(struct address_list *list, char *email)
 {
-	struct mailbox *mb = find_addr_spec_in_address_list(list, email);
+	struct address *mb = find_addr_spec_in_address_list(list, email);
 	if (mb)
 	{
 		node_remove(&mb->node);
-		free(mb->phrase);
-		free(mb->addr_spec);
+		free(mb->realname);
+		free(mb->email);
 		free(mb);
 	}
 }
@@ -145,10 +145,10 @@ void remove_from_address_list(struct list *list, char *email)
  *
  * @param list the list to free.
  */
-void free_address_list(struct list *list)
+void free_address_list(struct address_list *list)
 {
 	struct address *address;
-	while ((address = (struct address*)list_remove_tail(list)))
+	while ((address = (struct address*)list_remove_tail(&list->list)))
 	{
 		if (address->realname) free(address->realname);
 		if (address->email) free(address->email);
@@ -166,9 +166,9 @@ void free_address_list(struct list *list)
  * @param codeset
  * @return
  */
-utf8 *get_addresses_from_list_safe(struct list *list, struct codeset *codeset)
+utf8 *get_addresses_from_list_safe(struct address_list *list, struct codeset *codeset)
 {
-	struct address *address = (struct address*)list_first(list);
+	struct address *address = (struct address*)list_first(&list->list);
 	string str;
 
 	if (!string_initialize(&str,200))

@@ -1308,7 +1308,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 								/* Read the to list */
 								if ((m->to_list = malloc(sizeof(struct list))))
-									list_init(m->to_list);
+									list_init(&m->to_list->list);
 
 								while (num_to--)
 								{
@@ -1329,14 +1329,14 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->to_list, &addr->node);
+											list_insert_tail(&m->to_list->list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
 
 								/* Read the cc list */
 								if ((m->cc_list = malloc(sizeof(struct list))))
-									list_init(m->cc_list);
+									list_init(&m->cc_list->list);
 
 								while (num_cc--)
 								{
@@ -1350,7 +1350,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 										{
 											addr->realname = realname;
 											addr->email = email;
-											list_insert_tail(m->cc_list, &addr->node);
+											list_insert_tail(&m->cc_list->list, &addr->node);
 										} /* should free realname and email on failure */
 									}
 								}
@@ -2931,14 +2931,14 @@ int folder_save_index(struct folder *f)
 
 			if (m->to_list)
 			{
-				num_to = list_length(m->to_list);
-				to_addr = (struct address*)list_first(m->to_list);
+				num_to = list_length(&m->to_list->list);
+				to_addr = (struct address*)list_first(&m->to_list->list);
 			}
 
 			if (m->cc_list)
 			{
-				num_cc = list_length(m->cc_list);
-				cc_addr = (struct address*)list_first(m->cc_list);
+				num_cc = list_length(&m->cc_list->list);
+				cc_addr = (struct address*)list_first(&m->cc_list->list);
 			}
 
 			fwrite(&num_to,1,4,fh);
@@ -3329,7 +3329,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 							while (!take && rule->u.rcpt.rcpt_pat[i])
 							{
 								struct address *addr;
-								addr = (struct address*)list_first(m->to_list);
+								addr = (struct address*)list_first(&m->to_list->list);
 								while (!take && addr)
 								{
 									take = sm_match_pattern(rule->u.rcpt.rcpt_pat[i], addr->realname, flags);
@@ -3339,7 +3339,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 
 								if (!take)
 								{
-									addr = (struct address*)list_first(m->cc_list);
+									addr = (struct address*)list_first(&m->cc_list->list);
 									while (!take && addr)
 									{
 										take = sm_match_pattern(rule->u.rcpt.rcpt_pat[i], addr->realname, flags);

@@ -267,7 +267,7 @@ static struct field *field_add_text(struct list *list, char *name, char *text)
 /********************************************************************
  Add a new address field into the given field list
 *********************************************************************/
-static struct field *field_add_addresses(struct list *list, char *name, struct list *addr_list)
+static struct field *field_add_addresses(struct list *list, char *name, struct address_list *addr_list)
 {
 	struct field *f;
 	struct address *addr;
@@ -285,7 +285,7 @@ static struct field *field_add_addresses(struct list *list, char *name, struct l
 
 	list_init(&f->text_list);
 
-	addr = (struct address*)list_first(addr_list);
+	addr = (struct address*)list_first(&addr_list->list);
 	while (addr)
 	{
 		char buf[256];

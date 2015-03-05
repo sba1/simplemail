@@ -288,13 +288,13 @@ int mails_upload(void)
 		out->from = mb.addr_spec; /* must be not freed here */
 
 		/* fill in the recipients */
-		if ((list = create_address_list(to)))
+		if ((list = address_list_create(to)))
 		{
 			int length = list_length(&list->list);
 			if (length)
 			{
-				struct address_list *cc_list = create_address_list(cc);
-				struct address_list *bcc_list = create_address_list(bcc);
+				struct address_list *cc_list = address_list_create(cc);
+				struct address_list *bcc_list = address_list_create(bcc);
 				if (cc_list) length += list_length(&cc_list->list);
 				if (bcc_list) length += list_length(&bcc_list->list);
 
@@ -332,10 +332,10 @@ int mails_upload(void)
 					}
 					out->rcp[i] = NULL;
 				}
-				if (cc_list) free_address_list(cc_list);
-				if (bcc_list) free_address_list(bcc_list);
+				if (cc_list) address_list_free(cc_list);
+				if (bcc_list) address_list_free(bcc_list);
 			}
-			free_address_list(list);
+			address_list_free(list);
 		}
 
 		if (mb.phrase) free(mb.phrase); /* phrase is not necessary */
@@ -394,13 +394,13 @@ int mails_upload_signle(struct mail_info *mi)
 	out_array[0]->from = mb.addr_spec;
 
 	/* fill in the recipients */
-	if ((list = create_address_list(to)))
+	if ((list = address_list_create(to)))
 	{
 		int length = list_length(&list->list);
 		if (length)
 		{
-			struct address_list *cc_list = create_address_list(cc);
-			struct address_list *bcc_list = create_address_list(bcc);
+			struct address_list *cc_list = address_list_create(cc);
+			struct address_list *bcc_list = address_list_create(bcc);
 			if (cc_list) length += list_length(&cc_list->list);
 			if (bcc_list) length += list_length(&bcc_list->list);
 
@@ -439,10 +439,10 @@ int mails_upload_signle(struct mail_info *mi)
 
 				out_array[0]->rcp[i] = NULL;
 			}
-			if (cc_list) free_address_list(cc_list);
-			if (bcc_list) free_address_list(bcc_list);
+			if (cc_list) address_list_free(cc_list);
+			if (bcc_list) address_list_free(bcc_list);
 		}
-		free_address_list(list);
+		address_list_free(list);
 	}
 
 	if (mb.phrase) free(mb.phrase); /* phrase is not necessary */

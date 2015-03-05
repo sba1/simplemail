@@ -19,7 +19,7 @@
  * @param str
  * @return
  */
-struct address_list *create_address_list(char *str)
+struct address_list *address_list_create(char *str)
 {
 	struct address_list *list;
 	if (!str) return NULL;
@@ -60,7 +60,7 @@ struct address_list *create_address_list(char *str)
  * @param addr_spec
  * @return
  */
-static struct address *find_addr_spec_in_address_list(struct address_list *list, char *addr_spec)
+static struct address *address_list_find_by_addr(struct address_list *list, char *addr_spec)
 {
 	struct address *addr;
 
@@ -80,16 +80,16 @@ static struct address *find_addr_spec_in_address_list(struct address_list *list,
  * @param list
  * @param str
  */
-void append_to_address_list(struct address_list *list, char *str)
+void address_list_append(struct address_list *list, char *str)
 {
-	struct address_list *append_list = create_address_list(str);
+	struct address_list *append_list = address_list_create(str);
 	if (append_list)
 	{
 		struct address *new_addr;
 
 		while ((new_addr = (struct address*)list_remove_tail(&append_list->list)))
 		{
-			int add_it = !find_addr_spec_in_address_list(list,new_addr->email);
+			int add_it = !address_list_find_by_addr(list,new_addr->email);
 			if (add_it) list_insert_tail(&list->list,&new_addr->node);
 			else
 			{
@@ -108,10 +108,10 @@ void append_to_address_list(struct address_list *list, char *str)
  * @param list the list to which the address should be appeneded.
  * @param mb the mailbox
  */
-void append_mailbox_to_address_list(struct address_list *list, struct mailbox *mb)
+void address_list_append_mailbox(struct address_list *list, struct mailbox *mb)
 {
 	struct mailbox *new_mb;
-	if (find_addr_spec_in_address_list(list,mb->addr_spec)) return;
+	if (address_list_find_by_addr(list,mb->addr_spec)) return;
 	new_mb = (struct mailbox*)malloc(sizeof(*new_mb));
 	if (new_mb)
 	{
@@ -127,9 +127,9 @@ void append_mailbox_to_address_list(struct address_list *list, struct mailbox *m
  * @param list the list from which the entry should be removed.
  * @param email the email address defining the entry to be removed.
  */
-void remove_from_address_list(struct address_list *list, char *email)
+void address_list_remove_by_mail(struct address_list *list, char *email)
 {
-	struct address *mb = find_addr_spec_in_address_list(list, email);
+	struct address *mb = address_list_find_by_addr(list, email);
 	if (mb)
 	{
 		node_remove(&mb->node);
@@ -145,7 +145,7 @@ void remove_from_address_list(struct address_list *list, char *email)
  *
  * @param list the list to free.
  */
-void free_address_list(struct address_list *list)
+void address_list_free(struct address_list *list)
 {
 	struct address *address;
 	while ((address = (struct address*)list_remove_tail(&list->list)))
@@ -166,7 +166,7 @@ void free_address_list(struct address_list *list)
  * @param codeset
  * @return
  */
-utf8 *get_addresses_from_list_safe(struct address_list *list, struct codeset *codeset)
+utf8 *address_list_to_utf8_codeset_safe(struct address_list *list, struct codeset *codeset)
 {
 	struct address *address = (struct address*)list_first(&list->list);
 	string str;

@@ -203,19 +203,19 @@ static int compose_expand_to(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct address_list *list = create_address_list(str);
+			struct address_list *list = address_list_create(str);
 			if (list)
 			{
-				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				utf8 *puny = address_list_to_utf8_codeset_safe(list, user.config.default_codeset);
 				if (puny)
 				{
 					set(data->to_string, MUIA_UTF8String_Contents, puny);
 					free(puny);
-					free_address_list(list);
+					address_list_free(list);
 					free(str);
 					return 1;
 				}
-				free_address_list(list);
+				address_list_free(list);
 			}
 			free(str);
 		}
@@ -241,19 +241,19 @@ static int compose_expand_cc(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct address_list *list = create_address_list(str);
+			struct address_list *list = address_list_create(str);
 			if (list)
 			{
-				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				utf8 *puny = address_list_to_utf8_codeset_safe(list, user.config.default_codeset);
 				if (puny)
 				{
 					set(data->cc_string, MUIA_UTF8String_Contents, puny);
 					free(puny);
-					free_address_list(list);
+					address_list_free(list);
 					free(str);
 					return 1;
 				}
-				free_address_list(list);
+				address_list_free(list);
 			}
 			free(str);
 		}
@@ -279,19 +279,19 @@ static int compose_expand_bcc(struct Compose_Data **pdata)
 		{
 			/* We create now a list of addresses and recreate a string afterwards,
 			 * which may include puny code or not (depending on the charset) */
-			struct address_list *list = create_address_list(str);
+			struct address_list *list = address_list_create(str);
 			if (list)
 			{
-				utf8 *puny = get_addresses_from_list_safe(list, user.config.default_codeset);
+				utf8 *puny = address_list_to_utf8_codeset_safe(list, user.config.default_codeset);
 				if (puny)
 				{
 					set(data->bcc_string, MUIA_UTF8String_Contents, puny);
 					free(puny);
-					free_address_list(list);
+					address_list_free(list);
 					free(str);
 					return 1;
 				}
-				free_address_list(list);
+				address_list_free(list);
 			}
 			free(str);
 		}
@@ -1542,17 +1542,17 @@ int compose_window_open(struct compose_args *args)
 				/* Find and set the correct BCC */
 				if ((bcc = mail_find_header_contents(args->to_change, "bcc")))
 				{
-					struct address_list *bcc_list = create_address_list(bcc);
+					struct address_list *bcc_list = address_list_create(bcc);
 					if (bcc_list)
 					{
-						utf8 *bcc_str = get_addresses_from_list_safe(bcc_list,user.config.default_codeset);
+						utf8 *bcc_str = address_list_to_utf8_codeset_safe(bcc_list,user.config.default_codeset);
 						if (bcc_str)
 						{
 							set(bcc_string,MUIA_UTF8String_Contents,bcc_str);
 							free(bcc_str);
 							set(data->bcc_button,MUIA_Selected,TRUE);
 						}
-						free_address_list(bcc_list);
+						address_list_free(bcc_list);
 					}
 				}
 
@@ -1571,7 +1571,7 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->to_list)
 				{
-					utf8 *to_str = get_addresses_from_list_safe(args->to_change->info->to_list,user.config.default_codeset);
+					utf8 *to_str = address_list_to_utf8_codeset_safe(args->to_change->info->to_list,user.config.default_codeset);
 					if (to_str)
 					{
 						set(to_string,MUIA_UTF8String_Contents,to_str);
@@ -1581,7 +1581,7 @@ int compose_window_open(struct compose_args *args)
 
 				if (args->to_change->info->cc_list)
 				{
-					utf8 *cc_str = get_addresses_from_list_safe(args->to_change->info->cc_list,user.config.default_codeset);
+					utf8 *cc_str = address_list_to_utf8_codeset_safe(args->to_change->info->cc_list,user.config.default_codeset);
 					if (cc_str)
 					{
 						set(cc_string,MUIA_UTF8String_Contents,cc_str);

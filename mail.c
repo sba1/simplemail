@@ -1107,26 +1107,26 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 
 		if (replyto)
 		{
-			struct address_list *list = create_address_list(replyto);
+			struct address_list *list = address_list_create(replyto);
 			if (list)
 			{
 				struct address *addr = (struct address*)list_first(&list->list);
 				if (addr)
 					mail_complete_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email),0);
-				free_address_list(list);
+				address_list_free(list);
 			}
 		}
 
 		/* TODO: write a function for this! */
 		if (to_str)
 		{
-			struct address_list *list = create_address_list(to_str);
+			struct address_list *list = address_list_create(to_str);
 			if (list)
 			{
 				char *to_header;
 
 				to_header = encode_address_field_utf8("To",list);
-				free_address_list(list);
+				address_list_free(list);
 
 				if (to_header)
 				{
@@ -1341,31 +1341,31 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 
 			if (which_address == 2) from = replyto;
 
-			alist = create_address_list(from);
+			alist = address_list_create(from);
 			if (alist)
 			{
 				int mult_count=0;
 				char *to_header;
 				char *cc_header = NULL;
-				struct address_list *mult_list_to = create_address_list(to);
-				struct address_list *mult_list_cc = create_address_list(cc);
+				struct address_list *mult_list_to = address_list_create(to);
+				struct address_list *mult_list_cc = address_list_create(cc);
 
 				if (which_address == 3)
-					append_to_address_list(alist, replyto);
+					address_list_append(alist, replyto);
 
 				if (mult_list_to)
 				{
 					/* remove the sender account, if found in to */
-					if (ac) remove_from_address_list(mult_list_to, ac->email);
+					if (ac) address_list_remove_by_mail(mult_list_to, ac->email);
 					/* remove the replyto (could be by mailinglist where To == ReplyTo */
-					if (replyto) remove_from_address_list(mult_list_to, replyto);
+					if (replyto) address_list_remove_by_mail(mult_list_to, replyto);
 					mult_count += list_length(&mult_list_to->list);
 				}
 
 				if (mult_list_cc)
 				{
 					/* remove the sender account, if found in cc */
-					if (ac) remove_from_address_list(mult_list_cc, ac->email);
+					if (ac) address_list_remove_by_mail(mult_list_cc, ac->email);
 					mult_count += list_length(&mult_list_cc->list);
 				}
 
@@ -1383,11 +1383,11 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 								struct mailbox *mb = (struct mailbox*)list_first(&mult_list_to->list);
 								while (mb)
 								{
-									append_mailbox_to_address_list(alist,mb);
+									address_list_append_mailbox(alist,mb);
 									mb = (struct mailbox*)node_next(&mb->node);
 								}
 							}
-							free_address_list(mult_list_to);
+							address_list_free(mult_list_to);
 						}
 						if (mult_list_cc)
 						{
@@ -1395,13 +1395,13 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 							{
 								cc_header = encode_address_field_utf8("Cc", mult_list_cc);
 							}
-							free_address_list(mult_list_cc);
+							address_list_free(mult_list_cc);
 						}
 					}
 				}
 
 				to_header = encode_address_field_utf8("To",alist);
-				free_address_list(alist);
+				address_list_free(alist);
 
 				if (to_header)
 				{
@@ -1987,14 +1987,14 @@ int mail_process_headers(struct mail_complete *mail)
 			extract_name_from_address(buf,(char**)&mail->info->to_phrase,(char**)&mail->info->to_addr,&more);
 			if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
 
-			mail->info->to_list = create_address_list(buf);
+			mail->info->to_list = address_list_create(buf);
 
 			/* for display optimization */
 			if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
 			if (isascii7(mail->info->to_addr)) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
 		} else if (!mystricmp("cc",header->name))
 		{
-			mail->info->cc_list = create_address_list(buf);
+			mail->info->cc_list = address_list_create(buf);
 			mail->info->flags |= MAIL_FLAGS_GROUP;
 		} else if (!mystricmp("subject",header->name))
 		{
@@ -2750,8 +2750,8 @@ void mail_info_free(struct mail_info *info)
 	free(info->from_addr);
 	free(info->to_phrase);
 	free(info->to_addr);
-	if (info->to_list) free_address_list(info->to_list);
-	if (info->cc_list) free_address_list(info->cc_list);
+	if (info->to_list) address_list_free(info->to_list);
+	if (info->cc_list) address_list_free(info->cc_list);
 	free(info->reply_addr);
 	free(info->pop3_server);
 	free(info->message_id);
@@ -2902,7 +2902,7 @@ void composed_mail_init(struct composed_mail *mail)
 static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *header_contents)
 {
 	int rc = 0;
-	struct address_list *list = create_address_list(header_contents);
+	struct address_list *list = address_list_create(header_contents);
 
 	if (list)
 	{
@@ -2912,7 +2912,7 @@ static int mail_compose_write_addr_header(FILE *fp, char *header_name, char *hea
 			if (fprintf(fp,"%s\n",hc)>=0) rc = 1;
 			free(hc);
 		}
-		free_address_list(list);
+		address_list_free(list);
 	}
 	return rc;
 }
@@ -3012,7 +3012,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 
 	if ((boundary = get_boundary_id(fp)))
 	{
-		struct address_list *tolist = create_address_list(new_mail->to);
+		struct address_list *tolist = address_list_create(new_mail->to);
 		char *encrypted_name = malloc(L_tmpnam+1);
 		char *id_name = malloc(L_tmpnam+1);
 		char *cmd = malloc(2*L_tmpnam+300);
@@ -3095,7 +3095,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 		free(cmd);
 		free(encrypted_name);
 		free(id_name);
-		if (tolist) free_address_list(tolist);
+		if (tolist) address_list_free(tolist);
 		free(boundary);
 	} else rc = 0;
 	return rc;

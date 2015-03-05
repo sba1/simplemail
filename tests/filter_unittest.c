@@ -166,7 +166,7 @@ void test_filter_rule_create_recipient_rule_from_mail_iterator(void)
 		m[i] = mail_info_create();
 		CU_ASSERT(m[i] != NULL);
 
-		m[i]->to_list = create_address_list(buf);
+		m[i]->to_list = address_list_create(buf);
 		CU_ASSERT(m[i]->to_list != NULL);
 	}
 

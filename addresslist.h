@@ -19,12 +19,12 @@ struct address_list
 
 struct mailbox;
 
-struct address_list *create_address_list(char *str);
-void append_to_address_list(struct address_list *list, char *str);
-void append_mailbox_to_address_list(struct address_list *list, struct mailbox *mb);
-void remove_from_address_list(struct address_list *list, char *email);
-void free_address_list(struct address_list *list);
-utf8 *get_addresses_from_list_safe(struct address_list *list, struct codeset *codeset);
+struct address_list *address_list_create(char *str);
+void address_list_append(struct address_list *list, char *str);
+void address_list_append_mailbox(struct address_list *list, struct mailbox *mb);
+void address_list_remove_by_mail(struct address_list *list, char *email);
+void address_list_free(struct address_list *list);
+utf8 *address_list_to_utf8_codeset_safe(struct address_list *list, struct codeset *codeset);
 
 
 #endif /* SM__ADDRESSLIST_H */

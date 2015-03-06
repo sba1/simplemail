@@ -1110,7 +1110,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 			struct address_list *list = address_list_create(replyto);
 			if (list)
 			{
-				struct address *addr = (struct address*)list_first(&list->list);
+				struct address *addr = address_list_first(list);
 				if (addr)
 					mail_complete_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email),0);
 				address_list_free(list);
@@ -1817,20 +1817,20 @@ char **mail_info_get_recipient_addresses(struct mail_info *mail)
 
 	a = NULL;
 
-	addr = (struct address*)list_first(&mail->to_list->list);
+	addr = address_list_first(mail->to_list);
 	while (addr)
 	{
 		if (!array_contains_utf8(a, addr->email))
 			a = array_add_string(a,addr->email);
-		addr = (struct address*)node_next(&addr->node);
+		addr = address_next(addr);
 	}
 
-	addr = (struct address*)list_first(&mail->cc_list->list);
+	addr = address_list_first(mail->cc_list);
 	while (addr)
 	{
 		if (!array_contains_utf8(a, addr->email))
 			a = array_add_string(a,addr->email);
-		addr = (struct address*)node_next(&addr->node);
+		addr = address_next(addr);
 	}
 
 	return a;
@@ -3028,7 +3028,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 
 			if ((id_fh = fopen(id_name,"wb")))
 			{
-				addr = (struct address*)list_first(&tolist->list);
+				addr = address_list_first(tolist);
 				while (addr)
 				{
 					struct addressbook_entry_new *entry = addressbook_find_entry_by_address(addr->email);
@@ -3052,7 +3052,7 @@ static int mail_write_encrypted(FILE *fp, struct composed_mail *new_mail, char *
 							break;
 						}
 					}  else fprintf(id_fh,"%s\n",entry->pgpid);
-					addr = (struct address*)node_next(&addr->node);
+					addr = address_next(addr);
 				}
 				fclose(id_fh);
 			}

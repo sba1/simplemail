@@ -25,6 +25,8 @@ void address_list_append_mailbox(struct address_list *list, struct mailbox *mb);
 void address_list_remove_by_mail(struct address_list *list, char *email);
 void address_list_free(struct address_list *list);
 utf8 *address_list_to_utf8_codeset_safe(struct address_list *list, struct codeset *codeset);
+struct address *address_list_first(struct address_list *list);
 
+struct address *address_next(struct address *address);
 
 #endif /* SM__ADDRESSLIST_H */

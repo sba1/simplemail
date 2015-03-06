@@ -209,3 +209,24 @@ utf8 *address_list_to_utf8_codeset_safe(struct address_list *list, struct codese
 	return str.str;
 }
 
+/**
+ * Returns the first address in the given address list.
+ *
+ * @param list
+ * @return
+ */
+struct address *address_list_first(struct address_list *list)
+{
+	return (struct address*)list_first(&list->list);
+}
+
+/**
+ * Returns the next address.
+ *
+ * @param address
+ * @return
+ */
+struct address *address_next(struct address *address)
+{
+	return (struct address*)address->node.next;
+}

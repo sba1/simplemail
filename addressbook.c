@@ -51,25 +51,31 @@ static void freesnailphone(struct address_snail_phone *dest);
 
 /******************* Group *****************/
 
-/**************************************************************************
- Returns the first group
-**************************************************************************/
+/**
+ * Returns the first address book group.
+ */
 struct addressbook_group *addressbook_first_group(void)
 {
 	return (struct addressbook_group*)list_first(&group_list);
 }
 
-/**************************************************************************
- Returns the next group
-**************************************************************************/
+/**
+ * Returns the next address book group.
+ *
+ * @param grp
+ * @return
+ */
 struct addressbook_group *addressbook_next_group(struct addressbook_group *grp)
 {
 	return (struct addressbook_group*)node_next(&grp->node);
 }
 
-/**************************************************************************
- Duplicates a given group
-**************************************************************************/
+/**
+ * Duplicates a given address book group.
+ *
+ * @param srcgrp
+ * @return
+ */
 struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *srcgrp)
 {
 	struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
@@ -85,9 +91,11 @@ struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *
 	return NULL;
 }
 
-/**************************************************************************
- Free's the given group
-**************************************************************************/
+/**
+ * Free all memory associated to the given address book group.
+ *
+ * @param grp
+ */
 void addressbook_free_group(struct addressbook_group *grp)
 {
 	if (!grp) return;
@@ -96,9 +104,12 @@ void addressbook_free_group(struct addressbook_group *grp)
 	free(grp);
 }
 
-/**************************************************************************
- Find an group by name
-**************************************************************************/
+/**
+ * Find an address book group by the given name.
+ *
+ * @param name
+ * @return
+ */
 struct addressbook_group *addressbook_find_group_by_name(utf8 *name)
 {
 	struct addressbook_group *grp;
@@ -113,9 +124,12 @@ struct addressbook_group *addressbook_find_group_by_name(utf8 *name)
 	return NULL;
 }
 
-/**************************************************************************
- Adds a group into the adressbook
-**************************************************************************/
+/**
+ * Add a new address book group with the given name. Duplicates are allowed.
+ *
+ * @param name specifies the name of the address book group to be created.
+ * @return the reference to the newly created address book group.
+ */
 struct addressbook_group *addressbook_add_group(utf8 *name)
 {
 	struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
@@ -132,9 +146,12 @@ struct addressbook_group *addressbook_add_group(utf8 *name)
 	return NULL;
 }
 
-/**************************************************************************
- Adds a duplicate of the given group into the list
-**************************************************************************/
+/**
+ * Adds a duplicate of the given address book group.
+ *
+ * @param group the group to be added.
+ * @return the reference to the newly created group.
+ */
 struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_group *group)
 {
 	if ((group = addressbook_duplicate_group(group)))
@@ -145,25 +162,26 @@ struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_gro
 
 /***************** Entry ********************/
 
-/**************************************************************************
- Returns the first entry
-**************************************************************************/
+/**
+ * Returns the first address book entry.
+ */
 struct addressbook_entry_new *addressbook_first_entry(void)
 {
 	return (struct addressbook_entry_new*)list_first(&address_list);
 }
 
-/**************************************************************************
- Returns the next entry
-**************************************************************************/
+/**
+ * Returns the next address book entry.
+ */
 struct addressbook_entry_new *addressbook_next_entry(struct addressbook_entry_new *entry)
 {
 	return (struct addressbook_entry_new*)node_next(&entry->node);
 }
 
-/**************************************************************************
- Duplicate address entry
-**************************************************************************/
+/**
+ * Create a duplicate of the given address book entry. The duplicate is not
+ * added to the list.
+ */
 struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook_entry_new *entry)
 {
 	struct addressbook_entry_new *new_entry = (struct addressbook_entry_new*)malloc(sizeof(*entry));
@@ -192,9 +210,9 @@ struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook
 	return new_entry;
 }
 
-/**************************************************************************
- Add a duplicate of given addressbook entry
-**************************************************************************/
+/**
+ * Add a duplicate of the given address book entry.
+ */
 struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook_entry_new *entry)
 {
 	if ((entry = addressbook_duplicate_entry_new(entry)))
@@ -202,9 +220,9 @@ struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook
 	return entry;
 }
 
-/**************************************************************************
- Free address entry
-**************************************************************************/
+/**
+ * Free the memory associated with the given address book entry.
+ */
 void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 {
 	free(entry->alias);
@@ -224,11 +242,18 @@ void addressbook_free_entry_new(struct addressbook_entry_new *entry)
 	free(entry);
 }
 
-/**************************************************************************
- Returns the rest of the completed string. NULL if this cannot be done.
- type_ptr will be filled with 0 if the alias has been completed, 1 for the
- realname and all greater than 1 the email. Do not change the result!
-**************************************************************************/
+/**
+ * Returns the rest of the a partial string with respect to the given entry.
+ *
+ * @param entry the entry
+ * @param part a prefix string that should be completed by some field of the
+ *  entry.
+ * @param type_ptr will be filled with 0 if the alias has been completed, 1 for the
+ *  real name and all greater than 1 the email.
+ *
+ * @return pointer to the remaining characters or NULL if no match was found.
+ *  You must not change the contents of the result!
+ */
 char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry, char *part, int *type_ptr)
 {
 	int pl;
@@ -259,9 +284,12 @@ char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry,
 	return NULL;
 }
 
-/**************************************************************************
- Adds an entry into the adressbook
-**************************************************************************/
+/**
+ * Adds an entry into the address book.
+ *
+ * @param real name
+ * @return the reference to the entry that have just been added.
+ */
 struct addressbook_entry_new *addressbook_add_entry(char *realname)
 {
 	struct addressbook_entry_new *entry = (struct addressbook_entry_new*)malloc(sizeof(*entry));

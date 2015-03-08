@@ -303,24 +303,6 @@ struct addressbook_entry_new *addressbook_add_entry(char *realname)
 /*************** FileIO ******************/
 
 /**************************************************************************
- Reads a line. The buffer doesn't contain an LF's
-**************************************************************************/
-int read_line(FILE *fh, char *buf)
-{
-	int len;
-
-	if (!fgets(buf,512,fh)) return 0;
-
-	len = strlen(buf);
-	if (len)
-	{
-		if (buf[len-1] == '\n') buf[len-1] = 0;
-		else if (buf[len-2] == '\r') buf[len-2] = 0;
-	}
-	return 1;
-}
-
-/**************************************************************************
  Put a xml elelemt into a file (if string exists)
 **************************************************************************/
 static void put_xml_element_string(FILE *fh, char *element, char *contents)

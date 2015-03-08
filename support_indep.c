@@ -297,6 +297,32 @@ unsigned int myfsize(FILE *file)
 	return size;
 }
 
+
+/**
+ * Reads a line but not more than 512 bytes. CRs and LFs are omitted.
+ *
+ * @param fh the file from which the line should be read.
+ * @param buf the bufer to which the line is written. It must cover at least
+ *  512 bytes.
+ * @return 0 on success, else 1.
+ */
+int read_line(FILE *fh, char *buf)
+{
+	int len;
+
+	if (!fgets(buf,512,fh)) return 0;
+
+	len = strlen(buf);
+	if (len)
+	{
+		if (buf[len-1] == '\n') buf[len-1] = 0;
+		else if (buf[len-2] == '\r') buf[len-2] = 0;
+	}
+	return 1;
+}
+
+
+
 /**
  * Concatenates str2 to str1, and frees str1.
  *

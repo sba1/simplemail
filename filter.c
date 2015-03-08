@@ -35,7 +35,6 @@
 #include "support.h"
 #include "support_indep.h"
 
-int read_line(FILE *fh, char *buf); /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* configuration.c */
 /* Duplicates a config string and converts it to utf8 if not already done */
 char *dupconfigstr(char *str, int utf8);
@@ -703,7 +702,7 @@ void filter_list_load(FILE *fh)
 	int utf8 = 0;
 	if (!buf) return;
 
-	while (read_line(fh,buf))
+	while (myreadline(fh,buf))
 	{
 		if (!mystrnicmp(buf, "UTF8=1",6)) utf8 = 1;
 

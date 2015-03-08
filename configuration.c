@@ -49,9 +49,6 @@
 #define ALT_ROW_BACKGROUND		0xb8b8b8
 #endif
 
-
-int read_line(FILE *fh, char *buf); /* in addressbook.c */
-
 char *get_config_item(char *buf, char *item)
 {
 	int len = strlen(item);
@@ -257,7 +254,7 @@ int load_config(void)
 		{
 			if ((fh = fopen(user.config_filename,"r")))
 			{
-				read_line(fh,buf);
+				myreadline(fh,buf);
 				if (!strncmp("SMCO",buf,4))
 				{
 					int utf8 = 0;
@@ -265,7 +262,7 @@ int load_config(void)
 					clear_config_phrases();
 					user.config.from_disk = 1;
 
-					while (read_line(fh,buf))
+					while (myreadline(fh,buf))
 					{
 						char *result;
 
@@ -561,7 +558,7 @@ int load_config(void)
 		{
 			if ((fh = fopen(user.filter_filename,"r")))
 			{
-				read_line(fh,buf);
+				myreadline(fh,buf);
 				if (!strncmp("SMFI",buf,4))
 				{
 					filter_list_load(fh);
@@ -581,7 +578,7 @@ int load_config(void)
 			if ((fh = fopen(user.signature_filename,"r")))
 			{
 				int utf8 = 0;
-				while ((read_line(fh,buf)))
+				while ((myreadline(fh,buf)))
 				{
 					if (buf[0] == (char)0xef && buf[1] == (char)0xbb && buf[2] == (char)0xbf)
 					{
@@ -591,13 +588,13 @@ int load_config(void)
 
 					if (!mystricmp(buf,"begin signature"))
 					{
-						if (read_line(fh,buf))
+						if (myreadline(fh,buf))
 						{
 							char *name = dupconfigstr(buf,utf8);
 							char *sign = NULL;
 							struct signature *s;
 
-							while (read_line(fh,buf))
+							while (myreadline(fh,buf))
 							{
 								int sign_len = sign?strlen(sign):0;
 								if (!mystricmp(buf,"end signature"))

@@ -1861,10 +1861,6 @@ void folder_add_to_tree(struct folder *f,struct folder *parent)
 	list_insert_tail(&folder_list,&fnode->node);
 }
 
-
-int read_line(FILE *fh, char *buf);
-
-
 /**
  * Return the imap path of the folder specified by the path
  * by opening the config.
@@ -1881,11 +1877,11 @@ static char *folder_config_get_imap_path(char *folder_path)
 
 	if ((fh = fopen(buf,"r")))
 	{
-		read_line(fh,buf);
+		myreadline(fh,buf);
 
 		if (!mystrnicmp("FICO",buf,4))
 		{
-			while (read_line(fh,buf))
+			while (myreadline(fh,buf))
 			{
 				if (!mystrnicmp("IMapPath=",buf,9))
 				{
@@ -1913,12 +1909,12 @@ static int folder_config_load(struct folder *f)
 
 	if ((fh = fopen(buf,"r")))
 	{
-		read_line(fh,buf);
+		myreadline(fh,buf);
 
 		if (!mystrnicmp("FICO",buf,4))
 		{
 			rc = 1;
-			while (read_line(fh,buf))
+			while (myreadline(fh,buf))
 			{
 				if (!mystrnicmp("Name=",buf,5))
 				{

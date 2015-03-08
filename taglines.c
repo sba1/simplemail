@@ -33,8 +33,6 @@
 
 #define TAGLINES_INDEX_VERSION 0
 
-int read_line(FILE *fh, char *buf); /* in addressbook.c */
-
 static int taglines_num;
 static int *taglines_positions;
 static char *taglines_filename;
@@ -167,7 +165,7 @@ static void taglines_create_index(char *filename, char *indexname)
 			fwrite("SMTI",1,4,indexfh);
 			fwrite(&ver,1,4,indexfh);
 
-			while (read_line(tagfh,buf))
+			while (myreadline(tagfh,buf))
 			{
 				if (strcmp(buf, "%%") == 0)
 				{

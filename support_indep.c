@@ -306,7 +306,7 @@ unsigned int myfsize(FILE *file)
  *  512 bytes.
  * @return 0 on success, else 1.
  */
-int read_line(FILE *fh, char *buf)
+int myreadline(FILE *fh, char *buf)
 {
 	int len;
 

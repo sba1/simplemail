@@ -41,7 +41,6 @@
 #include "mainwnd.h"
 #include "statuswnd.h"
 
-int read_line(FILE *fh, char *buf);           /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* in configuration.c */
 void app_show(void);                          /* in gui_main.c */
 void app_quit(void);
@@ -362,10 +361,10 @@ static void appicon_load_position(void)
 			if ((fh = fopen(appicon_config.filename,"r")))
 			{
 				SM_DEBUGF(15,("Parsing config file: \"%s\"\n",buf));
-				read_line(fh,buf);
+				myreadline(fh,buf);
 				if (!strncmp("SMAI",buf,4))
 				{
-					while (read_line(fh,buf))
+					while (myreadline(fh,buf))
 					{
 						char *result;
 

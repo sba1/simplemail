@@ -692,7 +692,6 @@ Patents.
 
 /* ------------------------------------- */
 
-int read_line(FILE *fh, char *buf); /* in addressbook.c */
 char *get_config_item(char *buf, char *item); /* configuration.c */
 
 
@@ -761,7 +760,7 @@ static int codesets_read_table(char *name)
 			for (i=0;i<256;i++)
 				codeset->table[i].code = codeset->table[i].ucs4 = i;
 
-			while (read_line(fh,buf))
+			while (myreadline(fh,buf))
 			{
 				char *result;
 				if ((result = get_config_item(buf,"Standard"))) codeset->name = mystrdup(result);

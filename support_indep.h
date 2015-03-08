@@ -40,7 +40,7 @@ char *mystrcat(char *str1, char *str2);
 char *mystrreplace(const char *src, const char *from, const char *to);
 
 unsigned int myfsize(FILE *file);
-int read_line(FILE *fh, char *buf);
+int myreadline(FILE *fh, char *buf);
 int myfiledatecmp(char *file1, char *file2);
 int myfilecopy(const char *sourcename, const char *destname);
 int mydeletedir(const char *path);

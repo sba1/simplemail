@@ -41,7 +41,6 @@
 #include "mainwnd.h"
 #include "statuswnd.h"
 
-char *get_config_item(char *buf, char *item); /* in configuration.c */
 void app_show(void);                          /* in gui_main.c */
 void app_quit(void);
 

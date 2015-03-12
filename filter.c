@@ -35,7 +35,6 @@
 #include "support.h"
 #include "support_indep.h"
 
-char *get_config_item(char *buf, char *item); /* configuration.c */
 /* Duplicates a config string and converts it to utf8 if not already done */
 char *dupconfigstr(char *str, int utf8);
 

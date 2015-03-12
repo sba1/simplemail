@@ -49,6 +49,14 @@
 #define ALT_ROW_BACKGROUND		0xb8b8b8
 #endif
 
+/**
+ * For 'item = value' with given item, return the pointer to value.
+ *
+ * @param buf defines the string to parse
+ * @param item the item to check
+ *
+ * @return pointer to value or NULL if the pattern didn't match.
+ */
 char *get_config_item(char *buf, char *item)
 {
 	int len = strlen(item);

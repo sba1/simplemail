@@ -31,9 +31,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <dirent.h> /* dir stuff */
-#if 0   /* FIXME */
-#include <stat.h>
-#endif
 #include <sys/stat.h>
 
 #include "codesets.h"

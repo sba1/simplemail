@@ -60,10 +60,9 @@
  * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#include <string.h>
-
-#include "debug.h"
 #include "punycode.h"
+
+#include <string.h>
 
 /*** Bootstring parameters for Punycode ***/
 

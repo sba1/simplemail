@@ -23,6 +23,10 @@
 #ifndef SM__SMTP_H
 #define SM__SMTP_H
 
+#ifndef SM__LISTS_H
+#include "lists.h"
+#endif
+
 struct outmail
 {
 	char *from; /* the from address */

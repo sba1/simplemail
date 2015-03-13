@@ -20,7 +20,6 @@
 ** estimate.c
 */
 
-#include "debug.h"
 #include "estimate.h"
 
 #include "support.h"

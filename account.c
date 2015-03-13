@@ -20,17 +20,14 @@
  * @file account.c
  */
 
+#include "account.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-#include "account.h"
 #include "configuration.h"
-#include "debug.h"
 #include "folder.h"
 #include "parse.h"
-#include "imap.h"
-#include "pop3.h"
-#include "smtp.h"
 #include "support_indep.h"
 
 /**

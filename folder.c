@@ -20,33 +20,34 @@
  * @file folder.c
  */
 
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "folder.h"
+
 #include <ctype.h> /* toupper() */
 #include <dirent.h> /* unix dir stuff */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h> /* state() */
 #include <unistd.h>
 
+#include "account.h"
 #include "addresslist.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
-#include "lists.h"
 #include "filter.h"
-#include "folder.h"
+#include "imap.h"
+#include "lists.h"
 #include "parse.h"
+#include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"
 #include "status.h"
-#include "support.h"
 #include "support_indep.h"
-#include "qsort.h"
 
-#include "arch.h"
 #include "gui_main.h" /* gui_execute_arexx() */
 #include "searchwnd.h"
+#include "support.h"
 
 #define FOLDER_INDEX_VERSION 7
 

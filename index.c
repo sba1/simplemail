@@ -21,9 +21,11 @@
  * @file index.c
  */
 
+#include "index.h"
+
+#include <stdarg.h>
 #include <string.h>
 
-#include "index.h"
 #include "index_private.h"
 
 /**

@@ -27,11 +27,12 @@
  (completly portable)
 ***********************************************************************/
 
+#include "lists.h"
+
 #include <stdlib.h>
 
-#include "lists.h"
-#include "support_indep.h"
 #include "debug.h"
+#include "support_indep.h"
 
 /******************************************************************
  Initalizes a list

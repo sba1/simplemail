@@ -22,27 +22,27 @@
  * @file simplemail.c
  */
 
+#include "simplemail.h"
+
 #include <ctype.h>
-#include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
+#include "account.h"
 #include "addressbook.h"
 #include "atcleanup.h"
 #include "codesets.h"
 #include "configuration.h"
 #include "dbx.h"
 #include "debug.h"
-#include "estimate.h"
 #include "filter.h"
 #include "folder.h"
 #include "imap.h" /* imap_thread_xxx() */
+#include "lists.h"
 #include "mail.h"
 #include "mbox.h"
-#include "parse.h"
 #include "progmon.h"
-#include "simplemail.h"
 #include "smintl.h"
 #include "spam.h"
 #include "ssl.h"
@@ -65,7 +65,6 @@
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
-#include "upwnd.h"
 
 #define MIN(a,b) ((a)<(b)?(a):(b))
 

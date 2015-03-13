@@ -20,12 +20,12 @@
 ** phrase.c
 */
 
+#include "phrase.h"
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "configuration.h"
-#include "debug.h"
-#include "phrase.h"
 #include "support_indep.h"
 
 /**************************************************************************

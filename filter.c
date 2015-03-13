@@ -20,20 +20,18 @@
 ** filter.c
 */
 
-#include <ctype.h>
-#include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "filter.h"
 
-#include "boyermoore.h"
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "configuration.h"
 #include "debug.h"
-#include "lists.h"
-#include "filter.h"
 #include "mail.h"
-#include "support.h"
 #include "support_indep.h"
+
+#include "support.h"
 
 /* Duplicates a config string and converts it to utf8 if not already done */
 char *dupconfigstr(char *str, int utf8);

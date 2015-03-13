@@ -20,15 +20,15 @@
  * @file codecs.c
  */
 
+#include "codecs.h"
+
 #include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "addresslist.h"
-#include "codecs.h"
 #include "codesets.h"
-#include "debug.h"
 #include "lists.h"
 #include "parse.h"
 #include "support_indep.h"

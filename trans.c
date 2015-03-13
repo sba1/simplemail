@@ -20,9 +20,10 @@
 ** trans.c
 */
 
-#include <string.h>
+#include "trans.h"
+
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "account.h"
@@ -33,20 +34,17 @@
 #include "filter.h"
 #include "folder.h"
 #include "imap.h"
+#include "lists.h"
+#include "mail.h"
 #include "parse.h"
 #include "pop3.h"
-#include "simplemail.h"
 #include "smtp.h"
 #include "spam.h"
-#include "support_indep.h"
 #include "status.h"
-#include "trans.h"
-#include "tcp.h"
+#include "support_indep.h"
 
-#include "dlwnd.h"
 #include "subthreads.h"
 #include "support.h"
-#include "upwnd.h"
 
 struct mails_dl_msg
 {

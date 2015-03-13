@@ -22,16 +22,16 @@
 ** TODO: Rewrite this
 */
 
-#include <string.h>
+#include "text2html.h"
+
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 
 #include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
 #include "parse.h"
 #include "support_indep.h"
-#include "text2html.h"
 
 #include "support.h"
 

@@ -20,26 +20,23 @@
 ** addressbook.c
 */
 
+#include "addressbook.h"
+
 #include <ctype.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "expatinc.h"
+#include "expatinc.h" /* IWYU pragma: keep */
 
-#include "addressbook.h"
-#include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
 #include "http.h"
-#include "lists.h"
-#include "mail.h"
 #include "parse.h"
 #include "smintl.h"
-#include "support.h"
 #include "support_indep.h"
 
-#include "addressbookwnd.h"
+#include "support.h"
 
 static struct list group_list;
 static struct list address_list;

@@ -4,13 +4,12 @@
 
 #include "addresslist.h"
 
-#include "codecs.h"
-#include "codesets.h"
-#include "parse.h"
-#include "support_indep.h"
-
 #include <stdlib.h>
 #include <string.h>
+
+#include "codecs.h"
+#include "parse.h"
+#include "support_indep.h"
 
 /**
  * Creates an address list from a given string (Note, that this is probably

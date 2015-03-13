@@ -20,14 +20,14 @@
  * @file index_naive.c
  */
 
+#include "index_naive.h"
+
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "lists.h"
-
-#include "index.h"
 #include "index_private.h"
-#include "index_naive.h"
+#include "lists.h"
 
 /* Get va_vopy() with pre-C99 compilers */
 #ifdef __SASC

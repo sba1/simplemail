@@ -24,15 +24,14 @@
 **
 */
 
+#include "hash.h"
+
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "debug.h"
 #include "support_indep.h"
-
-#include "hash.h"
 
 /**************************************************************************
  The hash function. It's the one used in berkely db (sleepycat)

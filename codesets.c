@@ -22,23 +22,19 @@
  * @file codesets.c
  */
 
-#include <ctype.h>
-#include <sys/types.h>
-#include <dirent.h> /* dir stuff */
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "codesets.h"
+
+#include <ctype.h>
+#include <dirent.h> /* dir stuff */
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include "codesets_table.h"
 #include "debug.h"
-#include "lists.h"
 #include "punycode.h"
 #include "smintl.h"
 #include "support_indep.h"
-
-#include "arch.h"
 
 /* from ConvertUTF.h */
 

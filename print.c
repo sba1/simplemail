@@ -20,18 +20,18 @@
 ** print.c
 */
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "debug.h"
 #include "print.h"
-#include "mail.h"
-#include "configuration.h"
-#include "support.h"
-#include "smintl.h"
-#include "parse.h"
 
-#include "sysprint.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "amiga-mui/sysprint.h"
+#include "configuration.h"
+#include "indep-include/support.h"
+#include "lists.h"
+#include "mail.h"
+#include "parse.h"
+#include "smintl.h"
 
 #define ANSI_NORMAL     "[0m"
 #define ANSI_BOLD       "[1m"

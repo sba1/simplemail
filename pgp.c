@@ -20,14 +20,13 @@
 ** pgp.c
 */
 
-#include <string.h>
+#include "pgp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "debug.h"
-#include "lists.h"
-#include "pgp.h"
-#include "support.h"
+#include "indep-include/support.h"
 #include "support_indep.h"
 
 static struct list pgp_list;

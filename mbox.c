@@ -20,20 +20,21 @@
 ** mbox.c - import and export functions for the mbox fileformat
 */
 
-#include <string.h>
+#include "mbox.h"
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "debug.h"
+#include "codesets.h"
 #include "folder.h"
 #include "mail.h"
-#include "mbox.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "support_indep.h"
 #include "status.h"
+#include "support_indep.h"
 
 #include "subthreads.h"
 #include "support.h"

@@ -18,6 +18,9 @@
 #ifndef SM__SPAM_H
 #define SM__SPAM_H
 
+struct folder;
+struct mail_info;
+
 int spam_init(void);
 void spam_cleanup(void);
 int spam_feed_mail_as_spam(struct folder *folder, struct mail_info *mail);

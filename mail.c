@@ -20,10 +20,11 @@
  * @file mail.c
  */
 
+#include "mail.h"
+
 #include <ctype.h>
-#include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -34,19 +35,17 @@
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h" /* for mail_compose_new() */
-#include "mail.h"
 #include "parse.h"
 #include "pgp.h"
 #include "phrase.h"
-#include "signature.h"
 #include "simplemail.h" /* for the callbacks() */
-#include "SimpleMail_rev.h"
 #include "smintl.h"
-#include "support.h"
 #include "support_indep.h"
 #include "trans.h" /* for mail_upload_single() */
 
-#include "arch.h"
+#include "indep-include/support.h"
+
+#include "SimpleMail_rev.h"
 
 char *stradd(char *src, const char *str1);
 char *strnadd(char *src, const char *str1, int n);

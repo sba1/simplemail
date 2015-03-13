@@ -20,30 +20,29 @@
 ** smtp.c
 */
 
+#include "smtp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <errno.h>
-
 #include "account.h"
 #include "codecs.h"
-#include "configuration.h"
+#include "codesets.h"
 #include "debug.h"
-#include "mail.h"
+#include "hmac_md5.h"
+#include "lists.h"
+#include "pop3.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "smtp.h"
 #include "status.h"
 #include "support_indep.h"
 #include "tcp.h"
 
-#include "support.h"
 #include "subthreads.h"
+#include "support.h"
 #include "tcpip.h"
-#include "md5.h"
-#include "hmac_md5.h"
 
 /************************************************************************/
 

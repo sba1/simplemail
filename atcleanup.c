@@ -24,10 +24,10 @@
  * @file atcleanup.c
  */
 
+#include "atcleanup.h"
+
 #include <stdlib.h>
 
-#include "atcleanup.h"
-#include "debug.h"
 #include "lists.h"
 
 static struct list atcleanup_list;

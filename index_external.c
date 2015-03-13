@@ -27,19 +27,19 @@
  * times from the external media.
  */
 
+#include "index_external.h"
+
 #include <assert.h>
-#include <errno.h>
-#include <stdlib.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "debug.h"
-#include "lists.h"
-#include "support.h"
-
-#include "index.h"
 #include "index_private.h"
-#include "index_external.h"
+#include "lists.h"
+
+#include "support.h"
 
 /* Get va_vopy() with pre-C99 compilers */
 #ifdef __SASC

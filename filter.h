@@ -18,6 +18,8 @@
 #ifndef SM__FILTER_H
 #define SM__FILTER_H
 
+#include <stdio.h>
+
 #ifndef SM__LISTS_H
 #include "lists.h"
 #endif

@@ -23,6 +23,7 @@
 #ifndef SM__TRANS_H
 #define SM__TRANS_H
 
+struct account;
 struct mail_info;
 
 int mails_dl(int called_by_auto);

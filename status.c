@@ -22,20 +22,19 @@
  * @note TODO: This status stuff needs an overhaul.
  */
 
+#include "status.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "atcleanup.h"
-#include "debug.h"
 #include "estimate.h"
 #include "smintl.h"
-#include "status.h"
-#include "support.h"
 #include "support_indep.h"
 
 #include "mainwnd.h"
 #include "statuswnd.h"
+#include "support.h"
 
 static struct estimate gauge_est;
 static int gauge_maximal;

@@ -20,22 +20,20 @@
 ** spam.c
 */
 
+#include "spam.h"
+
 #include <ctype.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <stdio.h>
 #include <unistd.h>
 
-#include "configuration.h"
-#include "debug.h"
+#include "folder.h"
 #include "hash.h"
 #include "mail.h"
-#include "folder.h"
-#include "spam.h"
-#include "subthreads.h"
-
 #include "support_indep.h"
+
+#include "subthreads.h"
 
 static struct hash_table spam_table;
 static struct hash_table ham_table;

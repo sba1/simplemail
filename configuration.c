@@ -20,24 +20,23 @@
 ** configuration.c
 */
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-
-#include "account.h"
-#include "codesets.h"
 #include "configuration.h"
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "debug.h"
 #include "filter.h"
 #include "folder.h"
-#include "phrase.h"
+#include "imap.h"
 #include "pop3.h"
 #include "signature.h"
-#include "taglines.h"
+#include "smtp.h"
 #include "support_indep.h"
+#include "taglines.h"
 
-#include "arch.h"
 #include "support.h"
 
 /* Some backgrounds, TODO: Make this more platform independent */

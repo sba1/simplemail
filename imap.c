@@ -26,33 +26,30 @@
  * @file imap.c
  */
 
+#include "imap.h"
+
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <unistd.h>
-#include <errno.h>
 
 #include "account.h"
 #include "codesets.h"
 #include "debug.h"
-#include "mail.h"
 #include "folder.h"
-#include "lists.h"
-#include "parse.h"
+#include "mail.h"
 #include "progmon.h"
 #include "qsort.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "subthreads.h"
-#include "support_indep.h"
 #include "status.h"
+#include "support_indep.h"
 #include "tcp.h"
 
+#include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"
-
-#include "imap.h"
 
 #ifdef _AMIGA
 #undef printf

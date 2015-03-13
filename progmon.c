@@ -2,15 +2,15 @@
  * @file progmon.c
  */
 
-#include "codesets.h"
-#include "debug.h"
-#include "lists.h"
 #include "progmon.h"
-#include "simplemail.h"
-#include "subthreads.h"
 
 #include <stdlib.h>
 #include <string.h>
+
+#include "debug.h"
+#include "simplemail.h"
+
+#include "subthreads.h"
 
 /** @brief contains all active progress monitors */
 static struct list progmon_list;

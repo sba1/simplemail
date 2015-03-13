@@ -22,20 +22,20 @@
 *  Fileformat description is available from http://oedbx.aroh.de/
 */
 
-#include <string.h>
+#include "dbx.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
-#include "dbx.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "support_indep.h"
 #include "status.h"
+#include "support_indep.h"
 
 #include "subthreads.h"
 #include "support.h"

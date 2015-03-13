@@ -20,17 +20,20 @@
  * @file debug.c
  */
 
-#include <stdlib.h>
+#include "debug.h"
+
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "archdebug.h"
-#include "debug.h"
 #include "hash.h"
+#include "lists.h"
+#include "support_indep.h"
+
+#include "archdebug.h"
 #include "subthreads.h"
 #include "support.h" /* sm_put_on_serial_line() */
-#include "support_indep.h"
 
 #ifndef DEFAULT_DEBUG_LEVEL
 #define DEFAULT_DEBUG_LEVEL 0

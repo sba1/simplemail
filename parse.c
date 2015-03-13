@@ -20,14 +20,12 @@
 ** parse.c
 */
 
-#include <string.h>
-#include <stdlib.h>
+#include "parse.h"
+
 #include <ctype.h>
+#include <stdlib.h>
 
 #include "codecs.h"
-#include "codesets.h"
-#include "debug.h"
-#include "parse.h"
 #include "support_indep.h"
 
 static char *parse_encoded_word(char *encoded_word, char **pbuf, char **pcharset);

@@ -25,13 +25,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "amiga-mui/sysprint.h"
 #include "configuration.h"
-#include "indep-include/support.h"
 #include "lists.h"
 #include "mail.h"
 #include "parse.h"
 #include "smintl.h"
+
+#include "sysprint.h"
+#include "support.h"
 
 #define ANSI_NORMAL     "[0m"
 #define ANSI_BOLD       "[1m"

@@ -251,133 +251,133 @@ int load_config(void)
 							SM_DEBUGF(15,("Parsing config string: \"%s\"\n",buf));
 						}
 
-						if ((result = get_config_item(buf,"UTF8")))
+						if ((result = get_key_value(buf,"UTF8")))
 							utf8 = atoi(result);
-						if ((result = get_config_item(buf,"FolderDirectory")))
+						if ((result = get_key_value(buf,"FolderDirectory")))
 						{
 							if (user.folder_directory) free(user.folder_directory);
 							user.folder_directory = mystrdup(result);
 						}
-						if ((result = get_config_item(buf,"DST")))
+						if ((result = get_key_value(buf,"DST")))
 							user.config.dst = ((*result == 'Y') || (*result == 'y'))?1:0;
-						if ((result = get_config_item(buf,"DeleteDeleted")))
+						if ((result = get_key_value(buf,"DeleteDeleted")))
 							user.config.delete_deleted = ((*result == 'Y') || (*result == 'y'))?1:0;
-						if ((result = get_config_item(buf,"Charset")))
+						if ((result = get_key_value(buf,"Charset")))
 							user.config.default_codeset = codesets_find(result);
-						if ((result = get_config_item(buf,"AppIconLabel")))
+						if ((result = get_key_value(buf,"AppIconLabel")))
 						{
 							if (user.config.appicon_label) free(user.config.appicon_label);
 							user.config.appicon_label = mystrdup(result);
 						}
-						if ((result = get_config_item(buf,"AppIconShow")))
+						if ((result = get_key_value(buf,"AppIconShow")))
 							user.config.appicon_show = atoi(result);
-						if ((result = get_config_item(buf,"StartupFolderName")))
+						if ((result = get_key_value(buf,"StartupFolderName")))
 							user.config.startup_folder_name = mystrdup(result);
-						if ((result = get_config_item(buf, "Receive.Preselection")))
+						if ((result = get_key_value(buf, "Receive.Preselection")))
 							user.config.receive_preselection = atoi(result);
-						if ((result = get_config_item(buf, "Receive.Size")))
+						if ((result = get_key_value(buf, "Receive.Size")))
 							user.config.receive_size = atoi(result);
-						if ((result = get_config_item(buf, "Receive.Autocheck")))
+						if ((result = get_key_value(buf, "Receive.Autocheck")))
 							user.config.receive_autocheck = atoi(result);
-						if ((result = get_config_item(buf, "Receive.AutocheckIfOnline")))
+						if ((result = get_key_value(buf, "Receive.AutocheckIfOnline")))
 							user.config.receive_autoifonline = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf, "Receive.AutocheckOnStartup")))
+						if ((result = get_key_value(buf, "Receive.AutocheckOnStartup")))
 							user.config.receive_autoonstartup = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Receive.SoundPlay")))
+						if ((result = get_key_value(buf,"Receive.SoundPlay")))
 							user.config.receive_sound = atoi(result);
-						if ((result = get_config_item(buf,"Receive.SoundFile")))
+						if ((result = get_key_value(buf,"Receive.SoundFile")))
 							user.config.receive_sound_file = mystrdup(result);
-						if ((result = get_config_item(buf,"Receive.ARexxExecute")))
+						if ((result = get_key_value(buf,"Receive.ARexxExecute")))
 							user.config.receive_arexx = atoi(result);
-						if ((result = get_config_item(buf,"Receive.ARexxFile")))
+						if ((result = get_key_value(buf,"Receive.ARexxFile")))
 							user.config.receive_arexx_file = mystrdup(result);
-						if ((result = get_config_item(buf,"Read.PropFont")))
+						if ((result = get_key_value(buf,"Read.PropFont")))
 							user.config.read_propfont = mystrdup(result);
-						if ((result = get_config_item(buf,"Read.FixedFont")))
+						if ((result = get_key_value(buf,"Read.FixedFont")))
 							user.config.read_fixedfont = mystrdup(result);
-						if ((result = get_config_item(buf,"Signatures.Use")))
+						if ((result = get_key_value(buf,"Signatures.Use")))
 							user.config.signatures_use = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Write.Wrap")))
+						if ((result = get_key_value(buf,"Write.Wrap")))
 							user.config.write_wrap = atoi(result);
-						if ((result = get_config_item(buf,"Write.WrapType")))
+						if ((result = get_key_value(buf,"Write.WrapType")))
 							user.config.write_wrap_type = atoi(result);
-						if ((result = get_config_item(buf,"Write.ReplyQuote")))
+						if ((result = get_key_value(buf,"Write.ReplyQuote")))
 							user.config.write_reply_quote = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Write.ReplyStripSig")))
+						if ((result = get_key_value(buf,"Write.ReplyStripSig")))
 							user.config.write_reply_stripsig = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Write.ReplyCiteEmptyL")))
+						if ((result = get_key_value(buf,"Write.ReplyCiteEmptyL")))
 							user.config.write_reply_citeemptyl = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Write.ForwardAsAttachments")))
+						if ((result = get_key_value(buf,"Write.ForwardAsAttachments")))
 							user.config.write_forward_as_attachment = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"ReadHeader.Flags")))
+						if ((result = get_key_value(buf,"ReadHeader.Flags")))
 						{
 							/* until 0.17 SimpleMail forgot the 0x for this field to write out */
 							if (result[0] != '0') user.config.header_flags = strtoul(result,NULL,16);
 							else user.config.header_flags = strtoul(result,NULL,0);
 						}
-						if ((result = get_config_item(buf,"ReadHeader.HeaderName")))
+						if ((result = get_key_value(buf,"ReadHeader.HeaderName")))
 							user.config.header_array = array_add_string(user.config.header_array,result);
-						if ((result = get_config_item(buf,"ReadWindow.CloseAfterLast")))
+						if ((result = get_key_value(buf,"ReadWindow.CloseAfterLast")))
 							user.config.readwnd_close_after_last = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"ReadWindow.NextAfterMove")))
+						if ((result = get_key_value(buf,"ReadWindow.NextAfterMove")))
 							user.config.readwnd_next_after_move = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Read.BackgroundColor")))
+						if ((result = get_key_value(buf,"Read.BackgroundColor")))
 							user.config.read_background = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.TextColor")))
+						if ((result = get_key_value(buf,"Read.TextColor")))
 							user.config.read_text = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.QuotedColor")))
+						if ((result = get_key_value(buf,"Read.QuotedColor")))
 							user.config.read_quoted = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.OldQuotedColor")))
+						if ((result = get_key_value(buf,"Read.OldQuotedColor")))
 							user.config.read_old_quoted = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.LinkColor")))
+						if ((result = get_key_value(buf,"Read.LinkColor")))
 							user.config.read_link = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.HeaderBackgroundColor")))
+						if ((result = get_key_value(buf,"Read.HeaderBackgroundColor")))
 							user.config.read_header_background = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.QuotedBackgroundColor")))
+						if ((result = get_key_value(buf,"Read.QuotedBackgroundColor")))
 							user.config.read_quoted_background = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Read.Wordwrap")))
+						if ((result = get_key_value(buf,"Read.Wordwrap")))
 							user.config.read_wordwrap = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Read.LinkUnderlined")))
+						if ((result = get_key_value(buf,"Read.LinkUnderlined")))
 							user.config.read_link_underlined = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Read.GraphicalQuoteBar")))
+						if ((result = get_key_value(buf,"Read.GraphicalQuoteBar")))
 							user.config.read_graphical_quote_bar = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Read.Smilies")))
+						if ((result = get_key_value(buf,"Read.Smilies")))
 							user.config.read_smilies = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"ReadHTML.AllowAddress")))
+						if ((result = get_key_value(buf,"ReadHTML.AllowAddress")))
 							user.config.internet_emails = array_add_string(user.config.internet_emails,result);
 
-						if ((result = get_config_item(buf,"Spam.MarkMails")))
+						if ((result = get_key_value(buf,"Spam.MarkMails")))
 							user.config.spam_mark_moved = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Spam.AutoCheck")))
+						if ((result = get_key_value(buf,"Spam.AutoCheck")))
 							user.config.spam_auto_check = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Spam.AddrBookIsWhite")))
+						if ((result = get_key_value(buf,"Spam.AddrBookIsWhite")))
 							user.config.spam_addrbook_is_white = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Spam.WhiteAddress")))
+						if ((result = get_key_value(buf,"Spam.WhiteAddress")))
 							user.config.spam_white_emails = array_add_string(user.config.spam_white_emails,result);
-						if ((result = get_config_item(buf,"Spam.BlackAddress")))
+						if ((result = get_key_value(buf,"Spam.BlackAddress")))
 							user.config.spam_black_emails = array_add_string(user.config.spam_black_emails,result);
 
-						if ((result = get_config_item(buf,"Hidden.SetAllStati")))
+						if ((result = get_key_value(buf,"Hidden.SetAllStati")))
 							user.config.set_all_stati = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.MinClassifiedMails")))
+						if ((result = get_key_value(buf,"Hidden.MinClassifiedMails")))
 							user.config.min_classified_mails = atoi(result);
-						if ((result = get_config_item(buf,"Hidden.DontShowShutdownText")))
+						if ((result = get_key_value(buf,"Hidden.DontShowShutdownText")))
 							user.config.dont_show_shutdown_text = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.DontUseTheBarMCC")))
+						if ((result = get_key_value(buf,"Hidden.DontUseTheBarMCC")))
 							user.config.dont_use_thebar_mcc = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.DontAddDefaultAddresses")))
+						if ((result = get_key_value(buf,"Hidden.DontAddDefaultAddresses")))
 							user.config.dont_add_default_addresses = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.DontJumpToUnreadMail")))
+						if ((result = get_key_value(buf,"Hidden.DontJumpToUnreadMail")))
 							user.config.dont_jump_to_unread_mail= CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.DontUseAISS")))
+						if ((result = get_key_value(buf,"Hidden.DontUseAISS")))
 							user.config.dont_use_aiss= CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.DontDrawAlternatingRows")))
+						if ((result = get_key_value(buf,"Hidden.DontDrawAlternatingRows")))
 							user.config.dont_draw_alternating_rows = CONFIG_BOOL_VAL(result);
-						if ((result = get_config_item(buf,"Hidden.RowBackground")))
+						if ((result = get_key_value(buf,"Hidden.RowBackground")))
 							user.config.row_background = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Hidden.AltRowBackground")))
+						if ((result = get_key_value(buf,"Hidden.AltRowBackground")))
 							user.config.alt_row_background = strtoul(result,NULL,0);
-						if ((result = get_config_item(buf,"Hidden.SSLCypherList")))
+						if ((result = get_key_value(buf,"Hidden.SSLCypherList")))
 						{
 							free(user.config.ssl_cypher_list);
 							user.config.ssl_cypher_list = mystrdup(result);
@@ -403,79 +403,79 @@ int load_config(void)
 								while (isdigit(*account_buf)) account_buf++;
 								if (*account_buf++ == '.')
 								{
-									if ((result = get_config_item(account_buf,"User.AccountName")))
+									if ((result = get_key_value(account_buf,"User.AccountName")))
 										account->account_name = dupconfigstr(result,utf8);
-									if ((result = get_config_item(account_buf,"User.Name")))
+									if ((result = get_key_value(account_buf,"User.Name")))
 										account->name = dupconfigstr(result,utf8);
-									if ((result = get_config_item(account_buf,"User.EMail")))
+									if ((result = get_key_value(account_buf,"User.EMail")))
 										account->email = mystrdup(result);
-									if ((result = get_config_item(account_buf,"User.Reply")))
+									if ((result = get_key_value(account_buf,"User.Reply")))
 										account->reply = mystrdup(result);
-									if ((result = get_config_item(account_buf,"User.Signature")))
+									if ((result = get_key_value(account_buf,"User.Signature")))
 										account->def_signature = dupconfigstr(result,utf8);
 
-									if ((result = get_config_item(account_buf,"SMTP.Server")))
+									if ((result = get_key_value(account_buf,"SMTP.Server")))
 										account->smtp->name = mystrdup(result);
-									if ((result = get_config_item(account_buf,"SMTP.Port")))
+									if ((result = get_key_value(account_buf,"SMTP.Port")))
 										account->smtp->port = atoi(result);
-									if ((result = get_config_item(account_buf,"SMTP.Fingerprint")))
+									if ((result = get_key_value(account_buf,"SMTP.Fingerprint")))
 										account->smtp->fingerprint = mystrdup(result);
-									if ((result = get_config_item(account_buf,"SMTP.Login")))
+									if ((result = get_key_value(account_buf,"SMTP.Login")))
 										account->smtp->auth_login = mystrdup(result);
-									if ((result = get_config_item(account_buf,"SMTP.Password")))
+									if ((result = get_key_value(account_buf,"SMTP.Password")))
 										account->smtp->auth_password = mystrdup(result);
-									if ((result = get_config_item(account_buf,"SMTP.Auth")))
+									if ((result = get_key_value(account_buf,"SMTP.Auth")))
 										account->smtp->auth = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"SMTP.IPasDomain")))
+									if ((result = get_key_value(account_buf,"SMTP.IPasDomain")))
 										account->smtp->ip_as_domain = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"SMTP.POP3first")))
+									if ((result = get_key_value(account_buf,"SMTP.POP3first")))
 										account->smtp->pop3_first = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"SMTP.Secure")))
+									if ((result = get_key_value(account_buf,"SMTP.Secure")))
 										account->smtp->secure = CONFIG_BOOL_VAL(result);
 
-									if ((result = get_config_item(account_buf,"RECV.Type")))
+									if ((result = get_key_value(account_buf,"RECV.Type")))
 										account->recv_type = atoi(result);
 
-									if ((result = get_config_item(account_buf,"POP3.Server")))
+									if ((result = get_key_value(account_buf,"POP3.Server")))
 										account->pop->name = mystrdup(result);
-									if ((result = get_config_item(account_buf,"POP3.Port")))
+									if ((result = get_key_value(account_buf,"POP3.Port")))
 										account->pop->port = atoi(result);
-									if ((result = get_config_item(account_buf,"POP3.Fingerprint")))
+									if ((result = get_key_value(account_buf,"POP3.Fingerprint")))
 										account->pop->fingerprint = mystrdup(result);
-									if ((result = get_config_item(account_buf,"POP3.Login")))
+									if ((result = get_key_value(account_buf,"POP3.Login")))
 										account->pop->login = mystrdup(result);
-									if ((result = get_config_item(account_buf,"POP3.Password")))
+									if ((result = get_key_value(account_buf,"POP3.Password")))
 										account->pop->passwd = mystrdup(result);
-									if ((result = get_config_item(account_buf,"POP3.Delete")))
+									if ((result = get_key_value(account_buf,"POP3.Delete")))
 										account->pop->del = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"POP3.APOP")))
+									if ((result = get_key_value(account_buf,"POP3.APOP")))
 										account->pop->apop = atoi(result);
-									if ((result = get_config_item(account_buf,"POP3.SSL")))
+									if ((result = get_key_value(account_buf,"POP3.SSL")))
 										account->pop->ssl = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"POP3.STLS")))
+									if ((result = get_key_value(account_buf,"POP3.STLS")))
 										account->pop->stls = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"POP3.Active")))
+									if ((result = get_key_value(account_buf,"POP3.Active")))
 										account->pop->active = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"POP3.AvoidDupl")))
+									if ((result = get_key_value(account_buf,"POP3.AvoidDupl")))
 										account->pop->nodupl = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"POP3.Ask")))
+									if ((result = get_key_value(account_buf,"POP3.Ask")))
 										account->pop->ask = CONFIG_BOOL_VAL(result);
 
-									if ((result = get_config_item(account_buf,"IMAP.Server")))
+									if ((result = get_key_value(account_buf,"IMAP.Server")))
 										account->imap->name = mystrdup(result);
-									if ((result = get_config_item(account_buf,"IMAP.Port")))
+									if ((result = get_key_value(account_buf,"IMAP.Port")))
 										account->imap->port = atoi(result);
-									if ((result = get_config_item(account_buf,"IMAP.Fingerprint")))
+									if ((result = get_key_value(account_buf,"IMAP.Fingerprint")))
 										account->imap->fingerprint = mystrdup(result);
-									if ((result = get_config_item(account_buf,"IMAP.Login")))
+									if ((result = get_key_value(account_buf,"IMAP.Login")))
 										account->imap->login = mystrdup(result);
-									if ((result = get_config_item(account_buf,"IMAP.Password")))
+									if ((result = get_key_value(account_buf,"IMAP.Password")))
 										account->imap->passwd = mystrdup(result);
-									if ((result = get_config_item(account_buf,"IMAP.Active")))
+									if ((result = get_key_value(account_buf,"IMAP.Active")))
 										account->imap->active = atoi(result);
-									if ((result = get_config_item(account_buf,"IMAP.SSL")))
+									if ((result = get_key_value(account_buf,"IMAP.SSL")))
 										account->imap->ssl = CONFIG_BOOL_VAL(result);
-									if ((result = get_config_item(account_buf,"IMAP.Ask")))
+									if ((result = get_key_value(account_buf,"IMAP.Ask")))
 										account->imap->ask = CONFIG_BOOL_VAL(result);
 								}
 							}
@@ -501,23 +501,23 @@ int load_config(void)
 								while (isdigit(*phrase_buf)) phrase_buf++;
 								if (*phrase_buf++ == '.')
 								{
-									if ((result = get_config_item(phrase_buf,"Addresses")))
+									if ((result = get_key_value(phrase_buf,"Addresses")))
 										phrase->addresses = mystrdup(result);
-									if ((result = get_config_item(phrase_buf,"Write.Welcome")))
+									if ((result = get_key_value(phrase_buf,"Write.Welcome")))
 										phrase->write_welcome = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Write.WelcomeRcp")))
+									if ((result = get_key_value(phrase_buf,"Write.WelcomeRcp")))
 										phrase->write_welcome_repicient = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Write.Close")))
+									if ((result = get_key_value(phrase_buf,"Write.Close")))
 										phrase->write_closing = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Reply.Welcome")))
+									if ((result = get_key_value(phrase_buf,"Reply.Welcome")))
 										phrase->reply_welcome = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Reply.Intro")))
+									if ((result = get_key_value(phrase_buf,"Reply.Intro")))
 										phrase->reply_intro = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Reply.Close")))
+									if ((result = get_key_value(phrase_buf,"Reply.Close")))
 										phrase->reply_close = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Forward.Initial")))
+									if ((result = get_key_value(phrase_buf,"Forward.Initial")))
 										phrase->forward_initial = dupconfigstr(result,utf8);
-									if ((result = get_config_item(phrase_buf,"Forward.Finish")))
+									if ((result = get_key_value(phrase_buf,"Forward.Finish")))
 										phrase->forward_finish = dupconfigstr(result,utf8);
 								}
 							}

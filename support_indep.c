@@ -55,29 +55,29 @@ int has_spaces(const char *str)
 }
 
 /**
- * For 'item = value' with given item, return the pointer to value.
+ * For 'key = value' with given key, return the pointer to value.
  *
- * @param buf defines the string to parse
- * @param item the item to check
+ * @param str defines the string to parse
+ * @param key the key to check
  *
  * @return pointer to value or NULL if the pattern didn't match.
  */
-char *get_config_item(char *buf, char *item)
+char *get_key_value(char *str, char *key)
 {
-	int len = strlen(item);
-	if (!mystrnicmp(buf,item,len))
+	int len = strlen(key);
+	if (!mystrnicmp(str,key,len))
 	{
 		unsigned char c;
-		buf += len;
+		str += len;
 
 		/* skip spaces */
-		while ((c = *buf) && isspace(c)) buf++;
-		if (*buf != '=') return NULL;
-		buf++;
+		while ((c = *str) && isspace(c)) str++;
+		if (*str != '=') return NULL;
+		str++;
 		/* skip spaces */
-		while ((c = *buf) && isspace(c)) buf++;
+		while ((c = *str) && isspace(c)) str++;
 
-		return buf;
+		return str;
 	}
 	return NULL;
 }

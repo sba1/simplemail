@@ -369,9 +369,9 @@ static void appicon_load_position(void)
 
 						SM_DEBUGF(15,("Parsing config string: \"%s\"\n",buf));
 
-						if ((result = get_config_item(buf,"AppIcon.PositionX")))
+						if ((result = get_key_value(buf,"AppIcon.PositionX")))
 							appicon_config.position_X = atoi(result);
-						if ((result = get_config_item(buf,"AppIcon.PositionY")))
+						if ((result = get_key_value(buf,"AppIcon.PositionY")))
 							appicon_config.position_Y = atoi(result);
 
 					}

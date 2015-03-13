@@ -730,23 +730,23 @@ void filter_list_load(FILE *fh)
 				while (isdigit(*filter_buf)) filter_buf++;
 				if (*filter_buf++ == '.')
 				{
-					if ((result = get_config_item(filter_buf,"Name")))
+					if ((result = get_key_value(filter_buf,"Name")))
 						f->name = dupconfigstr(result,utf8);
-					if ((result = get_config_item(filter_buf,"Flags")))
+					if ((result = get_key_value(filter_buf,"Flags")))
 						f->flags = atoi(result);
-					if ((result = get_config_item(filter_buf,"Mode")))
+					if ((result = get_key_value(filter_buf,"Mode")))
 						f->mode = atoi(result);
-					if ((result = get_config_item(filter_buf,"DestFolder")))
+					if ((result = get_key_value(filter_buf,"DestFolder")))
 						f->dest_folder = dupconfigstr(result,utf8);
-					if ((result = get_config_item(filter_buf,"UseDestFolder")))
+					if ((result = get_key_value(filter_buf,"UseDestFolder")))
 						f->use_dest_folder = ((*result == 'Y') || (*result == 'y'))?1:0;
-					if ((result = get_config_item(filter_buf,"SoundFile")))
+					if ((result = get_key_value(filter_buf,"SoundFile")))
 						f->sound_file = dupconfigstr(result,utf8);
-					if ((result = get_config_item(filter_buf,"UseSoundFile")))
+					if ((result = get_key_value(filter_buf,"UseSoundFile")))
 						f->use_sound_file = ((*result == 'Y') || (*result == 'y'))?1:0;
-					if ((result = get_config_item(filter_buf,"ARexxFile")))
+					if ((result = get_key_value(filter_buf,"ARexxFile")))
 						f->arexx_file = dupconfigstr(result,utf8);
-					if ((result = get_config_item(filter_buf,"UseARexxFile")))
+					if ((result = get_key_value(filter_buf,"UseARexxFile")))
 						f->use_arexx_file = ((*result == 'Y') || (*result == 'y'))?1:0;
 
 					if (!mystrnicmp(filter_buf, "RULE",4))
@@ -774,7 +774,7 @@ void filter_list_load(FILE *fh)
 							while (isdigit(*rule_buf)) rule_buf++;
 							if (*rule_buf++ == '.')
 							{
-								if ((result = get_config_item(rule_buf,"Type")))
+								if ((result = get_key_value(rule_buf,"Type")))
 								{
 									if (!mystricmp(result,"FROM")) fr->type = RULE_FROM_MATCH;
 									else if (!mystricmp(result,"SUBJECT")) fr->type = RULE_SUBJECT_MATCH;
@@ -785,21 +785,21 @@ void filter_list_load(FILE *fh)
 									else if (!mystricmp(result,"BODY")) fr->type = RULE_BODY_MATCH;
 								}
 
-								if ((result = get_config_item(rule_buf,"Flags")))
+								if ((result = get_key_value(rule_buf,"Flags")))
 									fr->flags = atoi(result);
-								if ((result = get_config_item(rule_buf,"From.Address")))
+								if ((result = get_key_value(rule_buf,"From.Address")))
 									fr->u.from.from = array_add_string(fr->u.from.from,result);
-								if ((result = get_config_item(rule_buf,"Subject.Subject")))
+								if ((result = get_key_value(rule_buf,"Subject.Subject")))
 									fr->u.subject.subject = array_add_string(fr->u.subject.subject,result);
-								if ((result = get_config_item(rule_buf,"Header.Name")))
+								if ((result = get_key_value(rule_buf,"Header.Name")))
 									fr->u.header.name = mystrdup(result);
-								if ((result = get_config_item(rule_buf,"Header.Contents")))
+								if ((result = get_key_value(rule_buf,"Header.Contents")))
 									fr->u.header.contents = array_add_string(fr->u.header.contents,result);
-								if ((result = get_config_item(rule_buf,"Status.Status")))
+								if ((result = get_key_value(rule_buf,"Status.Status")))
 									fr->u.status.status = atoi(result);
-								if ((result = get_config_item(rule_buf,"Rcpt.Address")))
+								if ((result = get_key_value(rule_buf,"Rcpt.Address")))
 									fr->u.rcpt.rcpt = array_add_string(fr->u.rcpt.rcpt,result);
-								if ((result = get_config_item(rule_buf,"Body.Contents")))
+								if ((result = get_key_value(rule_buf,"Body.Contents")))
 									fr->u.body.body = mystrdup(result);
 							}
 						}

@@ -692,9 +692,6 @@ Patents.
 
 /* ------------------------------------- */
 
-char *get_config_item(char *buf, char *item); /* configuration.c */
-
-
 struct list codesets_list;
 
 /**************************************************************************
@@ -763,10 +760,10 @@ static int codesets_read_table(char *name)
 			while (myreadline(fh,buf))
 			{
 				char *result;
-				if ((result = get_config_item(buf,"Standard"))) codeset->name = mystrdup(result);
-				else if ((result = get_config_item(buf,"AltStandard"))) codeset->alt_name = mystrdup(result);
-				else if ((result = get_config_item(buf,"ReadOnly"))) codeset->read_only = !!atoi(result);
-				else if ((result = get_config_item(buf,"Characterization")))
+				if ((result = get_key_value(buf,"Standard"))) codeset->name = mystrdup(result);
+				else if ((result = get_key_value(buf,"AltStandard"))) codeset->alt_name = mystrdup(result);
+				else if ((result = get_key_value(buf,"ReadOnly"))) codeset->read_only = !!atoi(result);
+				else if ((result = get_key_value(buf,"Characterization")))
 				{
 					if ((result[0] == '_') && (result[1] == '(') && (result[2] == '"'))
 					{

@@ -20,7 +20,7 @@
 ** sysprint.h
 */
 
-typedef void *PrintHandle; /* Opaque */
+typedef struct PrintHandle PrintHandle; /* Opaque */
 
 /* Open and Close */
 PrintHandle *sysprint_prepare(void);

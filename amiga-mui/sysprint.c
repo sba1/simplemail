@@ -32,6 +32,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct PrintHandle
+{
+	BPTR printer;
+};
+
 int sysprint_print(PrintHandle *ph, char *txt, unsigned long len)
 {
 	int rc = 0;

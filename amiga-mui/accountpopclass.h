@@ -23,6 +23,9 @@
 #ifndef SM__ACCOUNTPOPCLASS_H
 #define SM__ACCOUNTPOPCLASS_H
 
+#include <exec/types.h>
+#include <libraries/mui.h>
+
 /* the objects of the listview */
 IMPORT struct MUI_CustomClass *CL_AccountPop;
 #define AccountPopObject (Object*)MyNewObject(CL_AccountPop->mcc_Class, NULL

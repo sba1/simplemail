@@ -20,11 +20,12 @@
 ** accountpopclass.c
 */
 
+#include "accountpopclass.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <libraries/mui.h>
 #include <mui/NListview_mcc.h>
 
 #include <clib/alib_protos.h>
@@ -35,17 +36,17 @@
 #include <proto/intuition.h>
 
 #include "account.h"
+#include "codesets.h"
 #include "configuration.h"
 #include "debug.h"
+#include "lists.h"
 #include "parse.h"
 #include "smintl.h"
+#include "smtp.h"
 #include "support.h"
 #include "support_indep.h"
 
-#include "amigasupport.h"
-#include "compiler.h"
 #include "muistuff.h"
-#include "accountpopclass.h"
 
 struct AccountPop_Data
 {

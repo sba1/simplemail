@@ -26,17 +26,17 @@
 #define CONN_BUF_READ_SIZE 1024
 #define CONN_BUF_WRITE_SIZE 1024
 
+#ifndef NO_SSL
+
 #if defined(_AMIGA) || defined(__AMIGAOS4__)
-#ifndef AMISSL_AMISSL_H
+#if !defined(USE_OPENSSL) && !defined(AMISSL_AMISSL_H)
 typedef struct ssl_st SSL;
 typedef struct ssl_ctx_st SSL_CTX;
 typedef struct x509_st X509;
 #endif
-#else
-
-#ifndef NO_SSL
-#include <openssl/ssl.h>
 #endif
+
+#include <openssl/ssl.h>
 
 #endif
 

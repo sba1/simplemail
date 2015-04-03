@@ -54,11 +54,15 @@
 #include "support.h"
 #include "tcpip.h"
 
-/**************************************************************************
- Recieves a single line answer. Returns the line if this is positive
- (without the +OK) else 0. If silent is 1 simplemail doesn't notify the
- user about an error.
-**************************************************************************/
+/**
+ * Receives a single line answer. Returns the line if this is positive
+ * (without the +OK) else 0. If silent is 1 tell_from_subtask() is not called
+ * in case of an error.
+ *
+ * @param conn the connection from which the pop3 answer should be read.
+ * @param silent whether errors are propagated via tell_from_subtask().
+ * @return the answer or NULL or an error.
+ */
 static char *pop3_receive_answer(struct connection *conn, int silent)
 {
 	char *answer;
@@ -77,11 +81,18 @@ static char *pop3_receive_answer(struct connection *conn, int silent)
 	return NULL;
 }
 
-/**************************************************************************
- Wait for the welcome message. If server delivers a timestamp it is placed
- into the timestamp_ptr argument (string must be freed when no longer used).
- timestamp is not touched if this call fails.
-**************************************************************************/
+/**
+ * Wait for the welcome message. If server delivers a timestamp it is placed
+ * into the timestamp_ptr argument (string must be freed when no longer used).
+ * The contents of timestamp is not touched if this call fails.
+ *
+ * @param conn the connection on which welcome message should be waited
+ * @param server the server that was used to open the connection
+ * @param timestamp_ptr if non-NULL, as pointer to a timestamp string is written
+ *  to the contents. The timestamp must be freed via free() when no longer in
+ *  use.
+ * @return 0 on failure, otherwise something different.
+ */
 static int pop3_wait_login(struct connection *conn, struct pop3_server *server, char **timestamp_ptr)
 {
 	char *answer;
@@ -147,11 +158,16 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 	return 0;
 }
 
-/**************************************************************************
- Log into the pop3 server. timestamp is the thing the server sends
- within its welcome message. timestamp maybe NULL which means that
- no APOP is tried.
-**************************************************************************/
+/**
+ * Log into the pop3 server.
+ *
+ * @param conn the previously established connection
+ * @param server describes the server that was used to establish the connection
+ *  and contains POP3-related options
+ * @param timestamp as delivered by the server during the welcome phase. Used
+ *  for APOP.
+ * @return 0 on failure, otherwise something different than 0
+ */
 static int pop3_login(struct connection *conn, struct pop3_server *server, char *timestamp)
 {
 	char buf[256];

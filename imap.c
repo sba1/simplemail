@@ -277,53 +277,6 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
 	return NULL;
 }
 
-/**************************************************************************
- Create back a RFC822 Adress Field from an Address part of an envelope
-**************************************************************************/
-#if 0
-static char *imap_build_address_header(char *str)
-{
-	char buf[360];
-	char name[100];
-	char nil[100];
-	char user[100];
-	char domain[100];
-
-	if (imap_get_result(str,buf,sizeof(buf)))
-	{
-		char *addr;
-		int addr_len;
-		int use_name = 0;
-		char *temp = buf;
-
-		if (strncmp(temp,"NIL",3)) use_name = 1;
-
-		temp = imap_get_result(temp,name,sizeof(name));
-		temp = imap_get_result(temp,nil,sizeof(nil));
-		temp = imap_get_result(temp,user,sizeof(user));
-		temp = imap_get_result(temp,domain,sizeof(domain));
-
-		addr_len = (use_name?(strlen(name)+6):0) + strlen(user) + strlen(domain) + 10;
-
-		if ((addr = malloc(addr_len)))
-		{
-			char *fmt;
-			if (use_name)
-			{
-				if (needs_quotation(name)) fmt = "\"%s\" <%s@%s>";
-				else fmt = "%s <%s@%s>";
-				sm_snprintf(addr,addr_len,fmt,name,user,domain);
-			} else
-			{
-				sm_snprintf(addr,addr_len,"%s@%s",user,domain);
-			}
-			return addr;
-		}
-	}
-	return NULL;
-}
-#endif
-
 /**
  * Send a simple imap command only to check for success/failure.
  *

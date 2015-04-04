@@ -45,40 +45,40 @@ struct phrase *phrase_malloc(void)
 /**************************************************************************
  Duplicates an account
 **************************************************************************/
-struct phrase *phrase_duplicate(struct phrase *s)
+struct phrase *phrase_duplicate(struct phrase *p)
 {
-	struct phrase *ns = phrase_malloc();
-	if (ns && s)
+	struct phrase *np = phrase_malloc();
+	if (np && p)
 	{
-		ns->addresses = mystrdup(s->addresses);
-		ns->write_welcome = mystrdup(s->write_welcome);
-		ns->write_welcome_repicient = mystrdup(s->write_welcome_repicient);
-		ns->write_closing = mystrdup(s->write_closing);
-		ns->reply_welcome = mystrdup(s->reply_welcome);
-		ns->reply_intro = mystrdup(s->reply_intro);
-		ns->reply_close = mystrdup(s->reply_close);
-		ns->forward_initial = mystrdup(s->forward_initial);
-		ns->forward_finish = mystrdup(s->forward_finish);
+		np->addresses = mystrdup(p->addresses);
+		np->write_welcome = mystrdup(p->write_welcome);
+		np->write_welcome_repicient = mystrdup(p->write_welcome_repicient);
+		np->write_closing = mystrdup(p->write_closing);
+		np->reply_welcome = mystrdup(p->reply_welcome);
+		np->reply_intro = mystrdup(p->reply_intro);
+		np->reply_close = mystrdup(p->reply_close);
+		np->forward_initial = mystrdup(p->forward_initial);
+		np->forward_finish = mystrdup(p->forward_finish);
 	}
-	return ns;
+	return np;
 }
 
 /**************************************************************************
  Frees a phrase
 **************************************************************************/
-void phrase_free(struct phrase *s)
+void phrase_free(struct phrase *p)
 {
-	if (!s) return;
-	free(s->addresses);
-	free(s->write_welcome);
-	free(s->write_welcome_repicient);
-	free(s->write_closing);
-	free(s->reply_welcome);
-	free(s->reply_intro);
-	free(s->reply_close);
-	free(s->forward_initial);
-	free(s->forward_finish);
-	free(s);
+	if (!p) return;
+	free(p->addresses);
+	free(p->write_welcome);
+	free(p->write_welcome_repicient);
+	free(p->write_closing);
+	free(p->reply_welcome);
+	free(p->reply_intro);
+	free(p->reply_close);
+	free(p->forward_initial);
+	free(p->forward_finish);
+	free(p);
 }
 
 /**************************************************************************

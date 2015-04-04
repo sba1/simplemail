@@ -28,9 +28,11 @@
 #include "configuration.h"
 #include "support_indep.h"
 
-/**************************************************************************
- Allocates a new phrase
-**************************************************************************/
+/**
+ * Allocates a new phrase.
+ *
+ * @return the new phrase.
+ */
 struct phrase *phrase_malloc(void)
 {
 	struct phrase *sig;
@@ -42,9 +44,12 @@ struct phrase *phrase_malloc(void)
 	return sig;
 }
 
-/**************************************************************************
- Duplicates an account
-**************************************************************************/
+/**
+ * Duplicates the given phrase.
+ *
+ * @param s the phrase to be duplicated
+ * @return the duplicated phrase
+ */
 struct phrase *phrase_duplicate(struct phrase *p)
 {
 	struct phrase *np = phrase_malloc();
@@ -63,9 +68,11 @@ struct phrase *phrase_duplicate(struct phrase *p)
 	return np;
 }
 
-/**************************************************************************
- Frees a phrase
-**************************************************************************/
+/**
+ * Frees the given phrase.
+ *
+ * @param p the phrase to be freed.
+ */
 void phrase_free(struct phrase *p)
 {
 	if (!p) return;

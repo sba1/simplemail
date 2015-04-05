@@ -173,7 +173,6 @@ struct user
 
 int config_set_user_profile_directory(char *path);
 
-char *dupconfigstr(char *str, int utf8);
 int load_config(void);
 void free_config(void);
 void save_config(void);

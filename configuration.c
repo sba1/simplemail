@@ -205,14 +205,6 @@ void free_config(void)
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)
 
-/* Duplicates a config string and converts it to utf8 if not already done */
-char *dupconfigstr(char *str, int utf8)
-{
-	if (!str) return NULL;
-	if (utf8) return mystrdup(str);
-	return (char*)utf8create(str,NULL);
-}
-
 int load_config(void)
 {
 	char *buf;

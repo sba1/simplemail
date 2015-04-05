@@ -1152,3 +1152,17 @@ unsigned int time_ms_passed(unsigned int ref)
 	unsigned int passed = time_ticks_passed(ref);
 	return passed * 1000 / TIME_TICKS_PER_SECOND;
 }
+
+/**
+ * Duplicates a config string and converts it to utf8 if not already done
+ *
+ * @param str
+ * @param utf8
+ * @return
+ */
+char *dupconfigstr(char *str, int utf8)
+{
+	if (!str) return NULL;
+	if (utf8) return mystrdup(str);
+	return (char*)utf8create(str,NULL);
+}

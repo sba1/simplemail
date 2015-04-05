@@ -33,9 +33,6 @@
 
 #include "support.h"
 
-/* Duplicates a config string and converts it to utf8 if not already done */
-char *dupconfigstr(char *str, int utf8);
-
 /**
  * Creates a new filter instance with default values.
  *

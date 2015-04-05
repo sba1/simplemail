@@ -122,6 +122,6 @@ unsigned int time_reference_ticks(void);
 unsigned int time_ticks_passed(unsigned int reference);
 unsigned int time_ms_passed(unsigned int ref);
 
-char *dupconfigstr(char *str, int utf8);
+char *utf8strdup(char *str, int utf8);
 
 #endif

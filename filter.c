@@ -726,21 +726,21 @@ void filter_list_load(FILE *fh)
 				if (*filter_buf++ == '.')
 				{
 					if ((result = get_key_value(filter_buf,"Name")))
-						f->name = dupconfigstr(result,utf8);
+						f->name = utf8strdup(result,utf8);
 					if ((result = get_key_value(filter_buf,"Flags")))
 						f->flags = atoi(result);
 					if ((result = get_key_value(filter_buf,"Mode")))
 						f->mode = atoi(result);
 					if ((result = get_key_value(filter_buf,"DestFolder")))
-						f->dest_folder = dupconfigstr(result,utf8);
+						f->dest_folder = utf8strdup(result,utf8);
 					if ((result = get_key_value(filter_buf,"UseDestFolder")))
 						f->use_dest_folder = ((*result == 'Y') || (*result == 'y'))?1:0;
 					if ((result = get_key_value(filter_buf,"SoundFile")))
-						f->sound_file = dupconfigstr(result,utf8);
+						f->sound_file = utf8strdup(result,utf8);
 					if ((result = get_key_value(filter_buf,"UseSoundFile")))
 						f->use_sound_file = ((*result == 'Y') || (*result == 'y'))?1:0;
 					if ((result = get_key_value(filter_buf,"ARexxFile")))
-						f->arexx_file = dupconfigstr(result,utf8);
+						f->arexx_file = utf8strdup(result,utf8);
 					if ((result = get_key_value(filter_buf,"UseARexxFile")))
 						f->use_arexx_file = ((*result == 'Y') || (*result == 'y'))?1:0;
 

@@ -395,15 +395,15 @@ int load_config(void)
 								if (*account_buf++ == '.')
 								{
 									if ((result = get_key_value(account_buf,"User.AccountName")))
-										account->account_name = dupconfigstr(result,utf8);
+										account->account_name = utf8strdup(result,utf8);
 									if ((result = get_key_value(account_buf,"User.Name")))
-										account->name = dupconfigstr(result,utf8);
+										account->name = utf8strdup(result,utf8);
 									if ((result = get_key_value(account_buf,"User.EMail")))
 										account->email = mystrdup(result);
 									if ((result = get_key_value(account_buf,"User.Reply")))
 										account->reply = mystrdup(result);
 									if ((result = get_key_value(account_buf,"User.Signature")))
-										account->def_signature = dupconfigstr(result,utf8);
+										account->def_signature = utf8strdup(result,utf8);
 
 									if ((result = get_key_value(account_buf,"SMTP.Server")))
 										account->smtp->name = mystrdup(result);
@@ -495,21 +495,21 @@ int load_config(void)
 									if ((result = get_key_value(phrase_buf,"Addresses")))
 										phrase->addresses = mystrdup(result);
 									if ((result = get_key_value(phrase_buf,"Write.Welcome")))
-										phrase->write_welcome = dupconfigstr(result,utf8);
+										phrase->write_welcome = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Write.WelcomeRcp")))
-										phrase->write_welcome_repicient = dupconfigstr(result,utf8);
+										phrase->write_welcome_repicient = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Write.Close")))
-										phrase->write_closing = dupconfigstr(result,utf8);
+										phrase->write_closing = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Reply.Welcome")))
-										phrase->reply_welcome = dupconfigstr(result,utf8);
+										phrase->reply_welcome = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Reply.Intro")))
-										phrase->reply_intro = dupconfigstr(result,utf8);
+										phrase->reply_intro = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Reply.Close")))
-										phrase->reply_close = dupconfigstr(result,utf8);
+										phrase->reply_close = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Forward.Initial")))
-										phrase->forward_initial = dupconfigstr(result,utf8);
+										phrase->forward_initial = utf8strdup(result,utf8);
 									if ((result = get_key_value(phrase_buf,"Forward.Finish")))
-										phrase->forward_finish = dupconfigstr(result,utf8);
+										phrase->forward_finish = utf8strdup(result,utf8);
 								}
 							}
 						}
@@ -561,7 +561,7 @@ int load_config(void)
 					{
 						if (myreadline(fh,buf))
 						{
-							char *name = dupconfigstr(buf,utf8);
+							char *name = utf8strdup(buf,utf8);
 							char *sign = NULL;
 							struct signature *s;
 

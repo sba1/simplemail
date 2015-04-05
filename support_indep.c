@@ -1154,13 +1154,15 @@ unsigned int time_ms_passed(unsigned int ref)
 }
 
 /**
- * Duplicates a config string and converts it to utf8 if not already done
+ * Duplicates a string and converts it to utf8 if not already in utf8. The
+ * given string is assumed to be encoded in iso latin.
  *
- * @param str
- * @param utf8
- * @return
+ * @param str the string to be converted.
+ * @param utf8 specified if the string is already utf8 in which case no
+ *  encoding will be performed.
+ * @return the duplicated/encoded string or NULL on failure.
  */
-char *dupconfigstr(char *str, int utf8)
+char *utf8strdup(char *str, int utf8)
 {
 	if (!str) return NULL;
 	if (utf8) return mystrdup(str);

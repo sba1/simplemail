@@ -88,7 +88,7 @@ date.h:
 
 smakefile.compile: $(MAKEGENERATOR) smakefile
   list ~($(MAKEGENERATOR)|headers).(c|asm) LFORMAT="%s" sort=name >t:objectlist
-  list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4|startup-morphos|startup-aros|mailtextview).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
+  list amiga-mui/~($(MAKEGENERATOR)|headers|startup|startup-os4|startup-morphos|startup-aros|mailtextview|socket-stubs).(c|asm) LFORMAT="amiga-mui/%s" sort=name >>t:objectlist
   echo "PROGRAMMNAME=$(DESTDIR)/SimpleMail" >$@
   echo "OBJSDIR=$(OBJSDIR)" >> $@
   echo "TESTOBJSDIR=$(TESTOBJSDIR)" >> $@

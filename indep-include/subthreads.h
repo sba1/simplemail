@@ -123,7 +123,8 @@ int thread_aborted(void);
  * i.e., this call will return if the called function will return or if an
  * error occurred.
  *
- * @param thread
+ * @param thread the thread in which the given function shall be called. It is
+ *  okay if this is the current thread.
  * @param function
  * @param argcount
  * @return

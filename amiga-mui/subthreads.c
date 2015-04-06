@@ -855,7 +855,9 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 
 /***************************************************************************************/
 
-/* TODO: Should call thread_handle() */
+/* TODO: Should call thread_handle()m needs better return values, and should
+ * be optimized in case thread == thread_get()
+ */
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	va_list argptr;

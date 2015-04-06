@@ -34,6 +34,7 @@
 
 #include "mainwnd.h"
 #include "statuswnd.h"
+#include "subthreads.h"
 #include "support.h"
 
 static struct estimate gauge_est;
@@ -199,10 +200,12 @@ void status_set_line(char *str)
 	}
 }
 
-/******************************************************************
- Set the status text
-*******************************************************************/
-void status_set_status(char *str)
+/**
+ * Sets the status. Must only be called in context of the main thread.
+ *
+ * @param str the status text
+ */
+static void status_set_status_really(char *str)
 {
 	free(status_text);
 	status_text = mystrdup(str);
@@ -214,6 +217,17 @@ void status_set_status(char *str)
 		atcleanup(status_cleanup,NULL);
 		status_cleanup_registered = 1;
 	}
+}
+
+/**
+ * Set the status text. It is safe to call this function from
+ * arbitrary threads.
+ *
+ * @param str the status text.
+ */
+void status_set_status(char *str)
+{
+	thread_call_function_sync(thread_get_main(), status_set_status_really, 1, str);
 }
 
 /******************************************************************

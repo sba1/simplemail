@@ -2573,7 +2573,7 @@ struct imap_download_data
 
 /**
  * Function that is to be called when an email has been downloaded
- * asynchronly. Always called on the context of the parent task.
+ * asynchronously. Always called on the context of the parent task.
  *
  * @param m
  * @param userdata
@@ -2608,8 +2608,8 @@ static void imap_download_mail_async_callback(struct mail_info *m, void *userdat
 }
 
 /**
- * Download the given mail in an asynchron manner. The callback is called when
- * the download process has finished.
+ * Download the given mail in an asynchronous manner. The callback is called
+ * when the download process has finished.
  *
  * @param f
  * @param m

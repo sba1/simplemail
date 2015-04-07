@@ -35,8 +35,8 @@ void debug_set_out(char *);
 void debug_set_modules(char *modules);
 
 /* For resource tracking */
-void debug_track(void *res, char *class, char *args, char *filename, char *function, int line);
-void debug_untrack(void *res, char *class, char *call, char *args, char *filename, char *function, int line);
+void debug_track(void *res, char *cl, char *args, char *filename, char *function, int line);
+void debug_untrack(void *res, char *cl, char *call, char *args, char *filename, char *function, int line);
 
 int debug_check(const char *file, int line);
 

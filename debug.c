@@ -66,7 +66,7 @@ struct tracked_resource
 	void *resource;
 
 	/** @brief the class of the tracked resource. Second part of the key */
-	char *class;
+	char *cl;
 
 	char *args;
 
@@ -180,11 +180,11 @@ void debug_deinit(void)
 		tr = (struct tracked_resource*)list_last(&tracking_list);
 		while (tr && num < 20)
 		{
-			char *call = tr->class;
+			char *call = tr->cl;
 			char *more;
-			if (!call) call = tr->class;
+			if (!call) call = tr->cl;
 
-			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource, tr->class,tr->args,tr->filename,tr->line);
+			__debug_print("Resource %p of call %s(%s) not freed! Origin: %s/%d\n",tr->resource, tr->cl,tr->args,tr->filename,tr->line);
 			if ((more = arch_debug_bt2string(tr->bt)))
 			{
 				/* Print out architecture dependent string, but line for line */
@@ -213,13 +213,13 @@ void debug_deinit(void)
 }
 
 /**
- * Returns the tracked resource or NULL if the resource couldn't be found.
+ * Lookup the given resource for the given class.
  *
  * @param res
- * @param class
- * @return
+ * @param cl
+ * @return the tracked resource or NULL if the resource couldn't be found.
  */
-struct tracked_resource *debug_find_tracked_resource(void *res, char *class)
+struct tracked_resource *debug_find_tracked_resource(void *res, char *cl)
 {
 	struct tracked_resource *tr;
 
@@ -228,8 +228,8 @@ struct tracked_resource *debug_find_tracked_resource(void *res, char *class)
 	{
 		if (tr->resource == res)
 		{
-			if ((tr->class == class) ||
-				(tr->class && class && !strcmp(tr->class,class)))
+			if ((tr->cl == cl) ||
+				(tr->cl && cl && !strcmp(tr->cl,cl)))
 			{
 				return tr;
 			}
@@ -244,13 +244,13 @@ struct tracked_resource *debug_find_tracked_resource(void *res, char *class)
  * Track the resource.
  *
  * @param res
- * @param class the name of the tracked function.
+ * @param cl the name of the tracked function.
  * @param args to the function.
  * @param filename
  * @param function
  * @param line
  */
-void debug_track(void *res, char *class, char *args, char *filename, char *function, int line)
+void debug_track(void *res, char *cl, char *args, char *filename, char *function, int line)
 {
 	if (tracking_initialized)
 	{
@@ -264,7 +264,7 @@ void debug_track(void *res, char *class, char *args, char *filename, char *funct
 			if ((tr = (struct tracked_resource*)malloc(sizeof(*tr))))
 			{
 				tr->resource = res;
-				tr->class = class;
+				tr->cl = cl;
 				tr->args = strdup(args);
 				tr->filename = filename;
 				tr->function = function;
@@ -284,14 +284,14 @@ void debug_track(void *res, char *class, char *args, char *filename, char *funct
  * Remove the given resource from the tracking list.
  *
  * @param res
- * @param class the name of the tracked function
+ * @param cl the name of the tracked function
  * @param call
  * @param args
  * @param filename
  * @param function
  * @param line
  */
-void debug_untrack(void *res, char *class, char *call, char *args, char *filename, char *function, int line)
+void debug_untrack(void *res, char *cl, char *call, char *args, char *filename, char *function, int line)
 {
 	if (tracking_initialized)
 	{
@@ -302,7 +302,7 @@ void debug_untrack(void *res, char *class, char *call, char *args, char *filenam
 
 			inside_tracking = 1;
 
-			if ((tr = debug_find_tracked_resource(res,class)))
+			if ((tr = debug_find_tracked_resource(res,cl)))
 			{
 				node_remove(&tr->node);
 				arch_debug_free_bt(tr->bt);
@@ -311,10 +311,7 @@ void debug_untrack(void *res, char *class, char *call, char *args, char *filenam
 				tracking_elements--;
 			} else
 			{
-				char *cl = class;
-				if (!cl) cl = "UNKNOWN";
-
-				__debug_print("Trying to untrack untracked resource at %p of class %s. The call was %s(%s) at %s/%d\n",res,class,call,args,filename,line);
+				__debug_print("Trying to untrack untracked resource at %p of class %s. The call was %s(%s) at %s/%d\n",res,cl?cl:"UNKNOWN",call,args,filename,line);
 			}
 
 			inside_tracking = 0;

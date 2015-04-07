@@ -75,7 +75,7 @@ struct addressbook_group *addressbook_next_group(struct addressbook_group *grp)
  */
 struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *srcgrp)
 {
-	struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
+	struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
 	if (!grp) return 0;
 
 	memset(grp,0,sizeof(struct addressbook_group));
@@ -129,7 +129,7 @@ struct addressbook_group *addressbook_find_group_by_name(utf8 *name)
  */
 struct addressbook_group *addressbook_add_group(utf8 *name)
 {
-	struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
+	struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
 	if (!grp) return 0;
 
 	memset(grp,0,sizeof(struct addressbook_group));
@@ -302,9 +302,9 @@ struct addressbook_entry_new *addressbook_add_entry(char *realname)
 /**************************************************************************
  Put a xml elelemt into a file (if string exists)
 **************************************************************************/
-static void put_xml_element_string(FILE *fh, char *element, char *contents)
+static void put_xml_element_string(FILE *fh, char *element, const char *contents)
 {
-	char *src;
+	const char *src;
 	char c;
 	if (!contents) return;
 
@@ -737,7 +737,7 @@ static void addressbook_load_entries(FILE *fh)
 
 	memset(&xml_context,0,sizeof(xml_context));
 
-	if (!(buf = malloc(512))) return;
+	if (!(buf = (char*)malloc(512))) return;
 	if (!(p = XML_ParserCreate(NULL)))
 	{
 		free(buf);
@@ -885,7 +885,7 @@ static int yam_import_entries(FILE *fp)
 			}
 		} else if(strncmp(line, "@GROUP", 6) == 0)
 		{
-			struct addressbook_group *newgroup = malloc(sizeof(struct addressbook_group));
+			struct addressbook_group *newgroup = (struct addressbook_group *)malloc(sizeof(*newgroup));
 
 			/* Add the group to the YAM import group list */
 			memset(newgroup,0,sizeof(struct addressbook_group));
@@ -924,7 +924,7 @@ int addressbook_import_yam(char *filename)
 	fp = fopen(filename, "r");
 	if (fp != NULL)
 	{
-		struct addressbook_group *grp = malloc(sizeof(struct addressbook_group));
+		struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
 
 		/* build a temporary YAM Import group list */
 		list_init(&yamimport_group_list);

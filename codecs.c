@@ -92,7 +92,7 @@ char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
 
    *ret_len=0;
 
-   if(!(dest=malloc(len*3/4+1))) return NULL;
+   if(!(dest=(unsigned char*)malloc(len*3/4+1))) return NULL;
    deststart=dest;
 
    while (src + 3 < srcmax)
@@ -127,7 +127,7 @@ char *decode_base64(unsigned char *src, unsigned int len, unsigned int *ret_len)
    *dest=0;
 
    *ret_len=dest-deststart;
-   return realloc(deststart,*ret_len+1);
+   return (char*)realloc(deststart,*ret_len+1);
 }
 
 /**************************************************************************
@@ -146,7 +146,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
 
    *ret_len=0;
    if(!len) return NULL;
-   if(!(dest=malloc(len+1))) return NULL;
+   if(!(dest=(unsigned char*)malloc(len+1))) return NULL;
    deststart=dest;
 
    if(header)
@@ -178,11 +178,11 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
       *dest = 0;
 
       *ret_len=dest-deststart;
-      return realloc(deststart,*ret_len+1);
+      return (char*)realloc(deststart,*ret_len+1);
    } else { /* body */
       unsigned char *text,*textstart;
 
-      if(!(text=malloc(len+1))) {free(dest); return NULL;}
+      if(!(text=(unsigned char*)malloc(len+1))) {free(dest); return NULL;}
       memcpy(text,buf,len);
       text[len]=0;
       textstart=text;
@@ -269,7 +269,7 @@ char *decode_quoted_printable(unsigned char *buf, unsigned int len, unsigned int
       free(textstart);
 
       *ret_len=dest-deststart;
-      return realloc(deststart,*ret_len+1);
+      return (char*)realloc(deststart,*ret_len+1);
    }
 }
 
@@ -1204,7 +1204,7 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 			if (!(mystricmp(*encoding,"8bit")) || !(mystricmp(*encoding,"7bit")))
 			{
 				/* TODO: This is a overhead, it's better to decide this outside of encode_body() */
-				if ((body = malloc(len+1)))
+				if ((body = (char*)malloc(len+1)))
 				{
 					memcpy(body,buf,len); /* faster then strncpy() */
 					body[len]=0;
@@ -1241,7 +1241,7 @@ char *encode_body(unsigned char *buf, unsigned int len, char *content_type, unsi
 **************************************************************************/
 char *encode_base64(unsigned char *buf, unsigned int len)
 {
-	unsigned char *dest = malloc((len * 4)/3 + 8);
+	unsigned char *dest = (unsigned char*)malloc((len * 4)/3 + 8);
 	unsigned char *ptr;
 
 	if (!dest) return NULL;

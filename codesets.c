@@ -1850,7 +1850,7 @@ char *utf8stristr(const char *str1, const char *str2)
  Converts a single UFT-8 Chracter to a�Unicode character very very
  incomplete. Should return NULL if invalid (actualy not implemented)
 **************************************************************************/
-char *uft8toucs(char *chr, unsigned int *code)
+const char *uft8toucs(const char *chr, unsigned int *code)
 {
 	unsigned char c = *chr++;
 	unsigned int ucs = 0;

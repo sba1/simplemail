@@ -69,6 +69,7 @@ INC = \
 # The muistuff.c doesn't work with gcc 4.9.2 lto as of now
 # The following will ensure that -flto is not used when compiling it
 CFLAGS_LTO = $(if $(findstring muistuff, $@),,-flto)
+CFLAGS_PERMISSIVE =
 
 CFLAGS = \
 	$(DATE)\
@@ -87,7 +88,8 @@ CFLAGS = \
 	-Wall\
 	-Wno-deprecated-declarations\
 	-fno-strict-aliasing\
-	-mcrt=clib2
+	-mcrt=clib2\
+	$(CFLAGS_PERMISSIVE)
 
 # Flags passed to gcc during linking
 LINK = \

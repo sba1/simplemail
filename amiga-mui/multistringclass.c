@@ -159,7 +159,7 @@ struct MultiString_Data
 	char **contents_array;
 };
 
-STATIC ULONG MultiString_Set(struct IClass *cl,Object *obj, struct opSet *msg, int new);
+STATIC ULONG MultiString_Set(struct IClass *cl,Object *obj, struct opSet *msg, int construct);
 STATIC Object *MultiString_AddStringField(struct IClass *cl,Object *obj, struct MUIP_MultiString_AddStringField *msg,struct object_node *prev);
 
 STATIC VOID MultiString_Acknowledge(void **msg)
@@ -242,11 +242,11 @@ STATIC ULONG MultiString_Dispose(struct IClass *cl, Object *obj, Msg msg)
 }
 
 
-STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg, int new)
+STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg, int construct)
 {
 	struct MultiString_Data *data = (struct MultiString_Data*)INST_DATA(cl, group);
 	struct TagItem *ti = FindTagItem(MUIA_MultiString_ContentsArray, msg->ops_AttrList);
-	if (ti || new)
+	if (ti || construct)
 	{
 		struct object_node *obj = (struct object_node*)list_first(&data->object_list);
 		static const char *dummy_array[] = {"",NULL};
@@ -300,7 +300,7 @@ STATIC ULONG MultiString_Set(struct IClass *cl,Object *group, struct opSet *msg,
 		if (group_changed)
 			DoMethod(group,MUIM_Group_ExitChange);
 	}
-	if (!new) return DoSuperMethodA(cl,group,(Msg)msg);
+	if (!construct) return DoSuperMethodA(cl,group,(Msg)msg);
 	return 0;
 }
 

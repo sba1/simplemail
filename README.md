@@ -12,7 +12,7 @@ Download
 
 You can download binaries from http://simplemail.sourceforge.net/index.php?body=downloads.
 MorphOS users may also check SimpleMail-MOS at https://code.google.com/p/simplemail-mos/.
-This is a fork of SimpleMail focusing on MorphOS.
+This was a fork of SimpleMail focusing on MorphOS, which, however, is discontinued.
 
 Continuous Integration
 ----------------------

@@ -1435,7 +1435,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
 	while (((c = *src++) && (len--)))
 		dest_size += codeset->table[c].utf8[0];
 
-	if ((dest = malloc(dest_size+1)))
+	if ((dest = (char*)malloc(dest_size+1)))
 	{
 		char *dest_ptr = dest;
 
@@ -1516,7 +1516,7 @@ char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
 	int len;
 	if (!str) return NULL;
 	len = strlen((char*)str);
-	if ((dest = malloc(len+1)))
+	if ((dest = (char*)malloc(len+1)))
 		utf8tostr(str,dest,len+1,codeset);
 	return dest;
 }
@@ -2273,7 +2273,7 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 	punycode_uint *dest, *target;
 	punycode_uint dest_len;
 
-	if (!(dest = malloc(sourcelen * sizeof(punycode_uint))))
+	if (!(dest = (punycode_uint *)malloc(sourcelen * sizeof(punycode_uint))))
 		return NULL;
 
 	target = dest;
@@ -2323,7 +2323,7 @@ char *utf8topunycode(const utf8 *source, int sourcelen)
 	{
 		int strored_puny_len = puny_len;
 
-		if (!(puny = malloc(puny_len+5)))
+		if (!(puny = (char*)malloc(puny_len+5)))
 		{
 			free(dest);
 			return NULL;
@@ -2367,7 +2367,7 @@ utf8 *punycodetoutf8(const char *source, int sourcelen)
 			UTF8 *dest_start = (UTF8*)dest;
 			UTF32 *source_start = (UTF32*)utf32;
 
-			ConvertUTF32toUTF8((UTF32**)&source_start, (UTF32*)(utf32) + length, &dest_start, dest_start + sourcelen * 4 - 2, 0);
+			ConvertUTF32toUTF8((UTF32**)&source_start, (UTF32*)(utf32) + length, &dest_start, dest_start + sourcelen * 4 - 2, strictConversion);
 			*dest_start = 0;
 			free(utf32);
 			return dest;

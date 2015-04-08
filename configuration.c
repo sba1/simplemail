@@ -212,7 +212,7 @@ int load_config(void)
 	if (!(init_config()))
 		return 0;
 
-	if ((buf = malloc(512)))
+	if ((buf = (char*)malloc(512)))
 	{
 		FILE *fh;
 
@@ -571,7 +571,7 @@ int load_config(void)
 								if (!mystricmp(buf,"end signature"))
 									break;
 
-								if ((sign = realloc(sign,sign_len + strlen(buf) + 2)))
+								if ((sign = (char*)realloc(sign,sign_len + strlen(buf) + 2)))
 								{
 									strcpy(&sign[sign_len],buf + 1 /* skip space */);
 									strcat(&sign[sign_len],"\n");

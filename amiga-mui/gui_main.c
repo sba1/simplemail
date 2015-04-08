@@ -118,7 +118,6 @@ struct Interface *IRexxSys;
 struct SimpleHTMLIFace *ISimpleHTML;
 struct Interface *ITTEngine;
 struct CyberGfxIFace *ICyberGfx;
-struct InputIFace *IInput;
 struct Library *OpenLibraryInterface(STRPTR name, int version, void *interface_ptr);
 void CloseLibraryInterface(struct Library *lib, void *interface);
 #else

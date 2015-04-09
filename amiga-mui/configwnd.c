@@ -145,7 +145,7 @@ static Object *account_send_password_string;
 static Object *account_send_auth_check;
 static Object *account_send_pop3_check;
 static Object *account_send_ip_check;
-static Object *account_send_secure_check;
+static Object *account_send_secure_cycle;
 static Object *account_add_button;
 static Object *account_remove_button;
 
@@ -326,7 +326,7 @@ static void account_store(void)
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
-		account_last_selected->smtp->secure = xget(account_send_secure_check, MUIA_Selected);
+		account_last_selected->smtp->secure = xget(account_send_secure_cycle, MUIA_Cycle_Active) == 1;
 		account_last_selected->smtp->name = mystrdup((char*)xget(account_send_server_string, MUIA_String_Contents));
 		account_last_selected->smtp->auth = xget(account_send_auth_check, MUIA_Selected);
 		account_last_selected->smtp->auth_login = mystrdup((char*)xget(account_send_login_string, MUIA_String_Contents));
@@ -379,7 +379,7 @@ static void account_load(void)
 		set(account_send_password_string, MUIA_Disabled, !account->smtp->auth);
 		setcheckmark(account_send_pop3_check,account->smtp->pop3_first);
 		setcheckmark(account_send_ip_check,account->smtp->ip_as_domain);
-		setcheckmark(account_send_secure_check, account->smtp->secure);
+		setcycle(account_send_secure_cycle, account->smtp->secure?1:0);
 	}
 }
 
@@ -1101,6 +1101,7 @@ static int init_account_group(void)
 {
 	static char *recv_entries[3];
 	static char *apop_labels[4];
+	static char *send_secure_labels[3];
 	static struct Hook account_display_hook;
 
 	SM_ENTER;
@@ -1113,6 +1114,9 @@ static int init_account_group(void)
 	apop_labels[0] = _("Try");
 	apop_labels[1] = _("Enforce");
 	apop_labels[2] = _("Don't try");
+
+	send_secure_labels[0] = _("Not secure");
+	send_secure_labels[1] = _("Secure with STARTTLS");
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1306,7 +1310,7 @@ static int init_account_group(void)
 				End,
 			Child, HGroup,
 				Child, MakeLabel(_("Secure")),
-				Child, account_send_secure_check = MakeCheck(_("Secure"),FALSE),
+				Child, account_send_secure_cycle = MakeCycle(_("Secure"),send_secure_labels),
 				Child, HVSpace,
 				Child, MakeLabel(_("Log into POP3 server first")),
 				Child, account_send_pop3_check = MakeCheck(_("Log into POP3 server first"),FALSE),
@@ -1365,7 +1369,7 @@ static int init_account_group(void)
 	set(account_send_login_string,MUIA_ShortHelp,_("Your login/UserID for the SMTP server.\nOnly required if the SMTP server requires authentication."));
 	set(account_send_password_string,MUIA_ShortHelp,_("Your password for the SMTP server.\nOnly required if the SMTP server requires authentication."));
 	set(account_send_auth_check,MUIA_ShortHelp,_("Activate this if the SMTP server requires authentication."));
-	set(account_send_secure_check,MUIA_ShortHelp,_("Activate this if you want a secure connection\nto the SMTP server. Deactivate this if your SMTP server\ndoesn't support it"));
+	set(account_send_secure_cycle,MUIA_ShortHelp,_("Activate this if you want a secure connection\nto the SMTP server. Deactivate this if your SMTP server\ndoesn't support it"));
 	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
 	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the intial greetings.\nThis avoids some error headers on some providers."));
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));

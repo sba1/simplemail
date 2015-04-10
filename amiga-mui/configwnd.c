@@ -1115,8 +1115,8 @@ static int init_account_group(void)
 	apop_labels[1] = _("Enforce");
 	apop_labels[2] = _("Don't try");
 
-	send_secure_labels[0] = _("Not secure");
-	send_secure_labels[1] = _("Secure with STARTTLS");
+	send_secure_labels[0] = _("None");
+	send_secure_labels[1] = _("STARTTLS");
 
 	groups[GROUPS_ACCOUNT] = VGroup,
 		MUIA_ShowMe, FALSE,
@@ -1280,6 +1280,8 @@ static int init_account_group(void)
 						MUIA_String_AdvanceOnCR,TRUE,
 						MUIA_String_Accept,"0123456789",
 						End,
+					Child, MakeLabel(_("Secure")),
+					Child, account_send_secure_cycle = MakeCycle(_("Security"),send_secure_labels),
 					End,
 				Child, MakeLabel(_("Fingerprint")),
 				Child, account_send_fingerprint_string = BetterStringObject,
@@ -1309,9 +1311,6 @@ static int init_account_group(void)
 					End,
 				End,
 			Child, HGroup,
-				Child, MakeLabel(_("Secure")),
-				Child, account_send_secure_cycle = MakeCycle(_("Secure"),send_secure_labels),
-				Child, HVSpace,
 				Child, MakeLabel(_("Log into POP3 server first")),
 				Child, account_send_pop3_check = MakeCheck(_("Log into POP3 server first"),FALSE),
 				Child, HVSpace,
@@ -1349,6 +1348,8 @@ static int init_account_group(void)
 
 	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)account_recv_avoid_check, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
+	set(account_send_secure_cycle, MUIA_Weight, 0);
+
 	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
 	set(account_email_string,MUIA_ShortHelp,_("Your E-Mail address for this account (required)"));
 	set(account_reply_string,MUIA_ShortHelp,_("Address where the replies of the mails should\nbe sent (required only if different from the e-mail address)."));
@@ -1369,7 +1370,7 @@ static int init_account_group(void)
 	set(account_send_login_string,MUIA_ShortHelp,_("Your login/UserID for the SMTP server.\nOnly required if the SMTP server requires authentication."));
 	set(account_send_password_string,MUIA_ShortHelp,_("Your password for the SMTP server.\nOnly required if the SMTP server requires authentication."));
 	set(account_send_auth_check,MUIA_ShortHelp,_("Activate this if the SMTP server requires authentication."));
-	set(account_send_secure_cycle,MUIA_ShortHelp,_("Activate this if you want a secure connection\nto the SMTP server. Deactivate this if your SMTP server\ndoesn't support it"));
+	set(account_send_secure_cycle,MUIA_ShortHelp,_("Choose how the security of the connection to the\nSMTP server is established."));
 	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
 	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the intial greetings.\nThis avoids some error headers on some providers."));
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));

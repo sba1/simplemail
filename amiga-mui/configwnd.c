@@ -555,7 +555,7 @@ static int config_use(void)
 			set(config_list, MUIA_NList_Active, GROUPS_SIGNATURE);
 			set(signature_signature_list, MUIA_NList_Active, i);
 			set(config_wnd,MUIA_Window_ActiveObject,signature_name_string);
-			sm_request(NULL,_("This Signaturename is not allowed."), _("Ok"),NULL);
+			sm_request(NULL,_("This signature name is not allowed."), _("Ok"),NULL);
 			return 0;
 		}
 
@@ -569,7 +569,7 @@ static int config_use(void)
 				set(config_list, MUIA_NList_Active, GROUPS_SIGNATURE);
 				set(signature_signature_list, MUIA_NList_Active, j);
 				set(config_wnd,MUIA_Window_ActiveObject,signature_name_string);
-				sm_request(NULL,_("Signaturenames must be unique."), _("Ok"),NULL);
+				sm_request(NULL,_("Signature names must be unique."), _("Ok"),NULL);
 				return 0;
 			}
 		}
@@ -605,7 +605,7 @@ static int config_use(void)
 
 	if (user.new_folder_directory && mystricmp(user.new_folder_directory,user.folder_directory))
 	{
-		sm_request(NULL,_("You have changed the folder direcory! You must quit and restart SimpleMail to see an effect."),_("Ok"));
+		sm_request(NULL,_("You have changed the folder directory! You must quit and restart SimpleMail to see an effect."),_("Ok"));
 	}
 
 	user.config.header_flags = 0;

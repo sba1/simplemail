@@ -134,8 +134,7 @@ static Object *account_recv_ask_checkbox;
 static Object *account_recv_active_check;
 static Object *account_recv_delete_check;
 static Object *account_recv_apop_cycle;
-static Object *account_recv_ssl_check;
-static Object *account_recv_stls_check;
+static Object *account_recv_secure_cycle;
 static Object *account_recv_avoid_check;
 static Object *account_send_server_string;
 static Object *account_send_port_string;
@@ -228,6 +227,10 @@ static Object *image_prefs_spam_obj;
 static Object *groups[GROUPS_MAX];
 static Object *config_last_visisble_group;
 
+#define RECV_SECURITY_NONE	0
+#define RECV_SECURITY_STLS	1
+#define RECV_SECURITY_TLS	2
+
 /**************************************************************************
  Refreshes the folders
 **************************************************************************/
@@ -279,6 +282,8 @@ static void account_store(void)
 {
 	if (account_last_selected)
 	{
+		int recv_security;
+
 		/* Save the account if a server was selected */
 		free(account_last_selected->account_name);
 		free(account_last_selected->name);
@@ -297,6 +302,8 @@ static void account_store(void)
 		free(account_last_selected->smtp->auth_login);
 		free(account_last_selected->smtp->auth_password);
 
+		recv_security = xget(account_recv_secure_cycle, MUIA_Cycle_Active);
+
 		account_last_selected->account_name = mystrdup(getutf8string(account_account_name_string));
 		account_last_selected->name = mystrdup(getutf8string(account_name_string));
 		account_last_selected->email = mystrdup(getutf8string(account_email_string));
@@ -311,8 +318,8 @@ static void account_store(void)
 		account_last_selected->pop->active = xget(account_recv_active_check, MUIA_Selected);
 		account_last_selected->pop->del = xget(account_recv_delete_check, MUIA_Selected);
 		account_last_selected->pop->apop = xget(account_recv_apop_cycle, MUIA_Cycle_Active);
-		account_last_selected->pop->ssl = xget(account_recv_ssl_check, MUIA_Selected);
-		account_last_selected->pop->stls = xget(account_recv_stls_check, MUIA_Selected);
+		account_last_selected->pop->ssl = recv_security == RECV_SECURITY_TLS;
+		account_last_selected->pop->stls = recv_security == RECV_SECURITY_STLS;
 		account_last_selected->pop->nodupl = xget(account_recv_avoid_check, MUIA_Selected);
 		account_last_selected->pop->port = xget(account_recv_port_string, MUIA_String_Integer);
 		account_last_selected->imap->port = xget(account_recv_port_string, MUIA_String_Integer);
@@ -322,7 +329,7 @@ static void account_store(void)
 		account_last_selected->imap->ask = xget(account_recv_ask_checkbox,MUIA_Selected);
 		account_last_selected->imap->passwd = mystrdup((char*)xget(account_recv_password_string, MUIA_String_Contents));
 		account_last_selected->imap->active = xget(account_recv_active_check, MUIA_Selected);
-		account_last_selected->imap->ssl = xget(account_recv_ssl_check, MUIA_Selected);
+		account_last_selected->imap->ssl = recv_security == RECV_SECURITY_TLS;
 		account_last_selected->smtp->port = xget(account_send_port_string, MUIA_String_Integer);
 		account_last_selected->smtp->ip_as_domain = xget(account_send_ip_check, MUIA_Selected);
 		account_last_selected->smtp->pop3_first = xget(account_send_pop3_check, MUIA_Selected);
@@ -343,8 +350,20 @@ static void account_load(void)
 	if (account)
 	{
 		char *recv_fingerprint;
+		int recv_security;
 
 		recv_fingerprint = account->recv_type?account->imap->fingerprint:account->pop->fingerprint;
+
+		if (account_is_imap(account))
+		{
+			if (account->imap->ssl) recv_security = RECV_SECURITY_TLS;
+			else recv_security = RECV_SECURITY_NONE;
+		} else
+		{
+			if (account->pop->stls) recv_security = RECV_SECURITY_TLS;
+			else if (account->pop->ssl) recv_security = RECV_SECURITY_STLS;
+			else recv_security = RECV_SECURITY_NONE;
+		}
 
 		nnsetutf8string(account_account_name_string,account->account_name);
 		setutf8string(account_name_string,account->name);
@@ -364,9 +383,7 @@ static void account_load(void)
 		setcheckmark(account_recv_active_check,account->pop->active);
 		SetAttrs(account_recv_delete_check,MUIA_Selected, account->pop->del, MUIA_Disabled, account->recv_type, TAG_DONE);
 		set(account_recv_apop_cycle,MUIA_Cycle_Active,account->pop->apop);
-		nnset(account_recv_ssl_check,MUIA_Selected,account->pop->ssl);
-		nnset(account_recv_stls_check,MUIA_Selected,account->pop->stls);
-		set(account_recv_stls_check,MUIA_Disabled,!account->pop->ssl);
+		nnset(account_recv_secure_cycle,MUIA_Cycle_Active,recv_security);
 		setcheckmark(account_recv_avoid_check,account->pop->nodupl);
 		nnset(account_send_server_string, MUIA_String_Contents, account->smtp->name);
 		nnset(account_send_fingerprint_string, MUIA_String_Contents, account->smtp->fingerprint);
@@ -1042,29 +1059,27 @@ static void account_refresh_signature_cycle(void)
 	}
 }
 
-/******************************************************************
- Set the correct port
-*******************************************************************/
+/**
+ * Set the default ports according to the current security setting.
+ */
 static void account_recv_port_update(void)
 {
-	int ssl = xget(account_recv_ssl_check,MUIA_Selected);
-	int stls = xget(account_recv_stls_check,MUIA_Selected);
+	int recv_security = xget(account_recv_secure_cycle, MUIA_Cycle_Active);
 	int imap = xget(account_recv_type_radio,MUIA_Radio_Active);
 	int port;
 
 	if (imap)
 	{
-		if (ssl) port = 993;
+		if (recv_security == RECV_SECURITY_TLS) port = 993;
 		else port = 143;
 	}
 	else
 	{
-		if (ssl & !stls) port = 995;
+		if (recv_security == RECV_SECURITY_TLS) port = 995;
 		else port = 110;
 	}
 
 	set(account_recv_port_string, MUIA_String_Integer, port);
-	set(account_recv_stls_check, MUIA_Disabled, !ssl);
 }
 
 STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **array), REG(a1,struct account *ent))
@@ -1094,12 +1109,15 @@ STATIC ASM SAVEDS VOID account_display(REG(a0,struct Hook *h), REG(a2,char **arr
 	}
 }
 
-/******************************************************************
- Initalize the account group
-*******************************************************************/
+/**
+ * Initialize the config windows account settings group.
+ *
+ * @return success or not
+ */
 static int init_account_group(void)
 {
 	static char *recv_entries[3];
+	static char *recv_secure_labels[4];
 	static char *apop_labels[4];
 	static char *send_secure_labels[3];
 	static struct Hook account_display_hook;
@@ -1110,6 +1128,10 @@ static int init_account_group(void)
 
 	recv_entries[0] = "POP3";
 	recv_entries[1] = "IMAP4";
+
+	recv_secure_labels[0] = _("None");
+	recv_secure_labels[1] = _("STLS");
+	recv_secure_labels[2] = _("TLS");
 
 	apop_labels[0] = _("Try");
 	apop_labels[1] = _("Enforce");
@@ -1200,6 +1222,8 @@ static int init_account_group(void)
 					MUIA_String_AdvanceOnCR, TRUE,
 					MUIA_String_Accept, "0123456789",
 					End,
+				Child, MakeLabel(_("Security")),
+				Child, account_recv_secure_cycle = MakeCycle(_("Security"), recv_secure_labels),
 				End,
 			Child, MakeLabel(_("Fingerprint")),
 			Child, account_recv_fingerprint_string = BetterStringObject,
@@ -1248,16 +1272,6 @@ static int init_account_group(void)
 
 					Child, MakeLabel(_("_Delete mails")),
 					Child, account_recv_delete_check = MakeCheck(_("_Delete mails"), FALSE),
-					End,
-				End,
-			Child, HVSpace,
-			Child, VGroup,
-				Child, ColGroup(2),
-					Child, MakeLabel(_("Secure")),
-					Child, account_recv_ssl_check = MakeCheck(_("Secure"), FALSE),
-
-					Child, MakeLabel(_("with STLS")),
-					Child, account_recv_stls_check = MakeCheck(_("with STLS"), FALSE),
 					End,
 				End,
 			End,
@@ -1338,8 +1352,7 @@ static int init_account_group(void)
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)account_send_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_NotTriggerValue);
 	DoMethod(account_send_auth_check, MUIM_Notify, MUIA_Selected, TRUE, MUIV_Notify_Window, 3, MUIM_Set, MUIA_Window_ActiveObject, (ULONG)account_send_login_string);
 
-	DoMethod(account_recv_stls_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_recv_port_update);
-	DoMethod(account_recv_ssl_check, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_recv_port_update);
+	DoMethod(account_recv_secure_cycle, MUIM_Notify, MUIA_Cycle_Active, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_recv_port_update);
 	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)account_recv_port_update);
 	DoMethod(account_recv_ask_checkbox, MUIM_Notify, MUIA_Selected, MUIV_EveryTime, (ULONG)account_recv_password_string, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
@@ -1348,6 +1361,7 @@ static int init_account_group(void)
 
 	DoMethod(account_recv_type_radio, MUIM_Notify, MUIA_Radio_Active, MUIV_EveryTime, (ULONG)account_recv_avoid_check, 3, MUIM_Set, MUIA_Disabled, MUIV_TriggerValue);
 
+	set(account_recv_secure_cycle, MUIA_Weight, 0);
 	set(account_send_secure_cycle, MUIA_Weight, 0);
 
 	set(account_name_string,MUIA_ShortHelp,_("Your full name (required)"));
@@ -1363,7 +1377,7 @@ static int init_account_group(void)
 	set(account_recv_delete_check,MUIA_ShortHelp,_("After successful downloading the mails should be deleted\non the POP3 server."));
 	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleting e-mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
 	set(account_recv_apop_cycle,MUIA_ShortHelp,_("Choose how APOP is handled. If you encounter login problems\nyou might change this setting to \"Don't try\"."));
-	set(account_recv_ssl_check,MUIA_ShortHelp,_("If activated SimpleMail tries to make the connection secure.\nThis is not supported on all servers, so deactivate if it doesn't work."));
+	set(account_recv_secure_cycle,MUIA_ShortHelp,_("Choose how the security of the connection to the\nPOP3 or IMAP server is established."));
 	set(account_send_server_string,MUIA_ShortHelp,_("The name of the so called SMTP server which is responsible\nto send your e-Mails."));
 	set(account_send_fingerprint_string,MUIA_ShortHelp,_("The server's fingerprint (SHA1 or SHA256).\nThis is used to verify the servers identity,\nif the certificate could not be trusted."));
 	set(account_send_port_string,MUIA_ShortHelp,_("The port number. Usually 25"));

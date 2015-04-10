@@ -68,7 +68,7 @@
 #include "appicon.h"
 #include "foldertreelistclass.h"
 
-void account_recv_port_update(void);
+static void account_recv_port_update(void);
 static void account_refresh_signature_cycle(void);
 
 struct MUI_NListtree_TreeNode *FindListtreeUserData(Object *tree, APTR udata); /* in mainwnd.c */
@@ -1045,7 +1045,7 @@ static void account_refresh_signature_cycle(void)
 /******************************************************************
  Set the correct port
 *******************************************************************/
-void account_recv_port_update(void)
+static void account_recv_port_update(void)
 {
 	int ssl = xget(account_recv_ssl_check,MUIA_Selected);
 	int stls = xget(account_recv_stls_check,MUIA_Selected);

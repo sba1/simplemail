@@ -1360,11 +1360,11 @@ static int init_account_group(void)
 	set(account_recv_login_string,MUIA_ShortHelp,_("The login/UserID which you got from your ISP."));
 	set(account_recv_password_string,MUIA_ShortHelp,_("Your very own password to access the mails\nlocated on the POP3 server."));
 	set(account_recv_active_check,MUIA_ShortHelp,_("Deactivate this if you don't want SimpleMail to\ndownload the e-Mails when pressing on 'Fetch'."));
-	set(account_recv_delete_check,MUIA_ShortHelp,_("After successul downloading the mails should be deleted\non the POP3 server."));
-	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleteding e-Mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
-	set(account_recv_apop_cycle,MUIA_ShortHelp,_("Choose how APOP is handled. If you encounter login probelms\nyou might change this setting to \"Don't try\"."));
-	set(account_recv_ssl_check,MUIA_ShortHelp,_("If activated SimpleMail tries to make the connection secure.\nThis is not supported on all servers, so decativate if it doesn't work."));
-	set(account_send_server_string,MUIA_ShortHelp,_("The name of the so called SMTP server which is responlible\nto send your e-Mails."));
+	set(account_recv_delete_check,MUIA_ShortHelp,_("After successful downloading the mails should be deleted\non the POP3 server."));
+	set(account_recv_avoid_check,MUIA_ShortHelp,_("When not deleting e-mails on the server SimpleMail\ntries to avoid downloading a message twice the next time."));
+	set(account_recv_apop_cycle,MUIA_ShortHelp,_("Choose how APOP is handled. If you encounter login problems\nyou might change this setting to \"Don't try\"."));
+	set(account_recv_ssl_check,MUIA_ShortHelp,_("If activated SimpleMail tries to make the connection secure.\nThis is not supported on all servers, so deactivate if it doesn't work."));
+	set(account_send_server_string,MUIA_ShortHelp,_("The name of the so called SMTP server which is responsible\nto send your e-Mails."));
 	set(account_send_fingerprint_string,MUIA_ShortHelp,_("The server's fingerprint (SHA1 or SHA256).\nThis is used to verify the servers identity,\nif the certificate could not be trusted."));
 	set(account_send_port_string,MUIA_ShortHelp,_("The port number. Usually 25"));
 	set(account_send_login_string,MUIA_ShortHelp,_("Your login/UserID for the SMTP server.\nOnly required if the SMTP server requires authentication."));
@@ -1372,7 +1372,7 @@ static int init_account_group(void)
 	set(account_send_auth_check,MUIA_ShortHelp,_("Activate this if the SMTP server requires authentication."));
 	set(account_send_secure_cycle,MUIA_ShortHelp,_("Choose how the security of the connection to the\nSMTP server is established."));
 	set(account_send_pop3_check,MUIA_ShortHelp,_("Activate this if you provider needs that\nyou first log into its POP3 sever."));
-	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the intial greetings.\nThis avoids some error headers on some providers."));
+	set(account_send_ip_check,MUIA_ShortHelp,_("Send your current IP address together with the initial greetings.\nThis avoids some error headers on some providers."));
 	set(account_add_button,MUIA_ShortHelp,_("Add a new account."));
 	set(account_remove_button,MUIA_ShortHelp,_("Remove the current account."));
 

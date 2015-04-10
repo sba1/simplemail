@@ -1280,7 +1280,7 @@ static int init_account_group(void)
 						MUIA_String_AdvanceOnCR,TRUE,
 						MUIA_String_Accept,"0123456789",
 						End,
-					Child, MakeLabel(_("Secure")),
+					Child, MakeLabel(_("Security")),
 					Child, account_send_secure_cycle = MakeCycle(_("Security"),send_secure_labels),
 					End,
 				Child, MakeLabel(_("Fingerprint")),

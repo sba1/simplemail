@@ -253,3 +253,14 @@ void account_trust_server(char *server_name, char *fingerprint)
 		account = (struct account*)node_next(&account->node);
 	}
 }
+
+/**
+ * Returns whether the given account is an imap one.
+ *
+ * @param a the account to check
+ * @return 1 if it is imap, otherwise 0.
+ */
+int account_is_imap(struct account *a)
+{
+	return a->recv_type == 1;
+}

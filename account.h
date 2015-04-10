@@ -96,6 +96,7 @@ struct account *account_find_by_from(char *email);
 struct imap_server *account_find_imap_server_by_folder(struct folder *f);
 int account_is_server_trustworthy(char *server_name, char *fingerprint);
 void account_trust_server(char *server_name, char *fingerprint);
+int account_is_imap(struct account *a);
 
 #define account_find_by_number(number) \
 	((struct account*)list_find(&user.config.account_list,number))

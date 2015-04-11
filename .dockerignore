@@ -1,0 +1,6 @@
+tests/dovecot-2.2.9
+tests/dovecot-2.2.9-root
+tests/dovecot-2.2.9.tar.gz
+build-dependencies
+ppc-amigaos-*
+sm

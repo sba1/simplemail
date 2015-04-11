@@ -352,7 +352,7 @@ static void account_load(void)
 		char *recv_fingerprint;
 		int recv_security;
 
-		recv_fingerprint = account->recv_type?account->imap->fingerprint:account->pop->fingerprint;
+		recv_fingerprint = account_is_imap(account)?account->imap->fingerprint:account->pop->fingerprint;
 
 		if (account_is_imap(account))
 		{

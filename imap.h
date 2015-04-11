@@ -42,6 +42,7 @@ struct imap_server
 
 	int active;
 	int ssl;
+	int starttls;
 	int ask;
 
 	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */

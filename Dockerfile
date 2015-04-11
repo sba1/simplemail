@@ -31,5 +31,14 @@ RUN apt-get install -y --no-install-recommends \
 	gcc
 
 RUN mkdir /simplemail
+RUN mkdir /simplemail/tests
+
+# Build and configure dovecot
+ENV USER root
+COPY tests /simplemail/tests
+COPY common-sources.mk /simplemail/common-sources.mk
+RUN make -C /simplemail/tests dovecot-bin
+
+# Execute tests
 COPY . /simplemail/
 RUN make -C /simplemail/tests

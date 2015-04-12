@@ -132,7 +132,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 		}
 
 		/* Make the connection secure if requested */
-		if (server->ssl && server->stls)
+		if (server->stls)
 		{
 			if (tcp_write(conn,"STLS\r\n",6) <= 0) return 0;
 

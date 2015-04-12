@@ -9,6 +9,7 @@ ppc-amigaos-*
 sas_objects
 sas_test_objects
 sm
+tests/*_unittest
 tests/dovecot-2.2.9
 tests/dovecot-2.2.9-root
 tests/dovecot-2.2.9.tar.gz

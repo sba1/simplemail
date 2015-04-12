@@ -6,8 +6,8 @@ SimpleMail
 SimpleMail-openssl
 build-dependencies
 ppc-amigaos-*
-sas-objects
-sas-test-objects
+sas_objects
+sas_test_objects
 sm
 tests/dovecot-2.2.9
 tests/dovecot-2.2.9-root

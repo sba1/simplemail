@@ -48,4 +48,5 @@ COPY . /home/simplemail/simplemail/
 USER root
 RUN chown -R simplemail /home/simplemail/simplemail
 USER simplemail
-#RUN make -C /home/simplemail/simplemail/tests
+WORKDIR /home/simplemail/simplemail
+RUN make -C /home/simplemail/simplemail/tests

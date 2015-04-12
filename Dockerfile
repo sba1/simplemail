@@ -30,15 +30,22 @@ RUN apt-get install -y --no-install-recommends \
 	libgtk2.0-dev \
 	gcc
 
-RUN mkdir /simplemail
-RUN mkdir /simplemail/tests
+RUN useradd simplemail -m
+
+WORKDIR /home/simplemail
+RUN mkdir -p /home/simplemail/simplemail/tests
 
 # Build and configure dovecot
-ENV USER root
-COPY tests /simplemail/tests
-COPY common-sources.mk /simplemail/common-sources.mk
-RUN make -C /simplemail/tests dovecot-bin
+COPY tests /home/simplemail/simplemail/tests
+COPY common-sources.mk /home/simplemail/simplemail/common-sources.mk
+RUN chown -R simplemail /home/simplemail/simplemail
+USER simplemail
+ENV USER simplemail
+RUN make -C /home/simplemail/simplemail/tests dovecot-bin
 
 # Execute tests
-COPY . /simplemail/
-RUN make -C /simplemail/tests
+COPY . /home/simplemail/simplemail/
+USER root
+RUN chown -R simplemail /home/simplemail/simplemail
+USER simplemail
+#RUN make -C /home/simplemail/simplemail/tests

@@ -36,7 +36,7 @@ WORKDIR /home/simplemail
 RUN mkdir -p /home/simplemail/simplemail/tests
 
 # Build and configure dovecot
-COPY tests /home/simplemail/simplemail/tests
+COPY tests/makefile /home/simplemail/simplemail/tests/makefile
 COPY common-sources.mk /home/simplemail/simplemail/common-sources.mk
 RUN chown -R simplemail /home/simplemail/simplemail
 USER simplemail

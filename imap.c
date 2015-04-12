@@ -1118,7 +1118,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 				free(login);
 			}
 
-			conn_opts.use_ssl = server->ssl;
+			conn_opts.use_ssl = server->ssl && !server->starttls;
 			conn_opts.fingerprint = server->fingerprint;
 
 			SM_DEBUGF(10,("Connecting\n"));

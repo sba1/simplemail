@@ -1531,6 +1531,7 @@ struct imap_server *imap_duplicate(struct imap_server *imap)
 		new_imap->port = imap->port;
 		new_imap->active = imap->active;
 		new_imap->ssl = imap->ssl;
+		new_imap->starttls = imap->starttls;
 		new_imap->ask = imap->ask;
 	}
 	return new_imap;

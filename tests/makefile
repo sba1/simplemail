@@ -1,6 +1,8 @@
 #
 # Makefile for the tests.
 #
+# Use the DOVECOT_PREFIX option to set the dovecot prefix
+#
 
 include ../common-sources.mk
 
@@ -17,6 +19,8 @@ CC = gcc
 CFLAGS=-g -I .. -I ../indep-include/ -I ../gtk $(GLIB_CFLAGS) $(GTK_CFLAGS) \
 	-Dstricmp=strcasecmp -Dstrnicmp=strncasecmp -Werror -DUSE_OPENSSL
 VALGRIND_OPTS = --leak-check=full --track-origins=yes 
+
+DOVECOT_PREFIX = ./
 
 SIMPLEMAIL_LIB  = simplemail
 
@@ -76,41 +80,41 @@ DOVECOT_URL=http://www.dovecot.org/releases/2.2/dovecot-2.2.9.tar.gz
 DOVECOT_TGZ=$(notdir $(DOVECOT_URL))
 DOVECOT_SHA1SUM=efba4dee63c7dab2b9950e51874a86ba17e09d0c
 DOVECOT_DIR=$(DOVECOT_TGZ:%.tar.gz=%)
-DOVECOT_ABSDIR=$(shell pwd)/$(DOVECOT_DIR)
-DOVECOT=$(DOVECOT_DIR)-root/sbin/dovecot
+DOVECOT_ABSDIR=$(realpath $(DOVECOT_PREFIX))/$(DOVECOT_DIR)
+DOVECOT=$(DOVECOT_ABSDIR)-root/sbin/dovecot
 
 $(DOVECOT_TGZ):
 	wget -N $(DOVECOT_URL)
 	echo "$(DOVECOT_SHA1SUM)  $(DOVECOT_TGZ)" | sha1sum -c
 
-$(DOVECOT_DIR)-root: $(DOVECOT_TGZ)
+$(DOVECOT_ABSDIR)-root: $(DOVECOT_TGZ)
 	rm -Rf $(DOVECOT_DIR)
 	tar -xzf $(DOVECOT_TGZ)
-	cd $(DOVECOT_DIR); ./configure --prefix=$(shell pwd)/$(DOVECOT_DIR)-root; $(MAKE) ; $(MAKE) install
+	cd $(DOVECOT_DIR); ./configure --prefix=$(DOVECOT_ABSDIR)-root; $(MAKE) ; $(MAKE) install
 
 .PHONY: dovecot-bin
-dovecot-bin: $(DOVECOT_DIR)-root
+dovecot-bin: $(DOVECOT_ABSDIR)-root
 
 .PHONY: dovecot-conf
 dovecot-conf: dovecot-bin
-	mkdir -p $(DOVECOT_DIR)-root/home/test
-	rm -Rf $(DOVECOT_DIR)-root/etc/dovecot
-	cp -R dovecot-conf -Rf $(DOVECOT_DIR)-root/etc/dovecot
-	echo 'default_internal_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
-	echo 'default_login_user = $(USER)' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-default-user.conf
-	echo 'passdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo 'userdb {' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    driver = passwd-file' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo '}' >>$(DOVECOT_DIR)-root/etc/dovecot/conf.d/00-passwd.conf
-	echo 'test:{plain}test::::$(DOVECOT_ABSDIR)-root/home/test::userdb_mail=maildir:~/Maildir' >$(DOVECOT_DIR)-root/etc/dovecot/passwd
+	mkdir -p $(DOVECOT_ABSDIR)-root/home/test
+	rm -Rf $(DOVECOT_ABSDIR)-root/etc/dovecot
+	cp -R dovecot-conf -Rf $(DOVECOT_ABSDIR)-root/etc/dovecot
+	echo 'default_internal_user = $(USER)' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-default-user.conf
+	echo 'default_login_user = $(USER)' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-default-user.conf
+	echo 'passdb {' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    driver = passwd-file' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '}' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo 'userdb {' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    driver = passwd-file' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '    args = $(DOVECOT_ABSDIR)-root/etc/dovecot/passwd' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo '}' >>$(DOVECOT_ABSDIR)-root/etc/dovecot/conf.d/00-passwd.conf
+	echo 'test:{plain}test::::$(DOVECOT_ABSDIR)-root/home/test::userdb_mail=maildir:~/Maildir' >$(DOVECOT_ABSDIR)-root/etc/dovecot/passwd
 
 .PHONY: dovecot-default-conf
 dovecot-default-conf: dovecot-bin
-	cp -R $(DOVECOT_DIR)-root/share/doc/dovecot/example-config $(DOVECOT_DIR)-root/etc/dovecot
+	cp -R $(DOVECOT_ABSDIR)-root/share/doc/dovecot/example-config $(DOVECOT_ABSDIR)-root/etc/dovecot
 
 .PHONY: dovecot-start
 dovecot-start: dovecot-conf

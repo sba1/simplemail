@@ -1564,8 +1564,9 @@ static int imap_new_connection_needed(struct imap_server *srv1, struct imap_serv
 	if (!srv1) return 1;
 	if (!srv2) return 1;
 
-  return mystrcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || mystrcmp(srv1->login,srv2->login) ||
-         (mystrcmp(srv1->passwd,srv2->passwd) && !srv1->ask && !srv2->ask)  || (srv1->ask != srv2->ask) || (srv1->ssl != srv2->ssl);
+	return mystrcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || mystrcmp(srv1->login,srv2->login) ||
+		(mystrcmp(srv1->passwd,srv2->passwd) && !srv1->ask && !srv2->ask)  || (srv1->ask != srv2->ask) ||
+		(srv1->ssl != srv2->ssl) || (srv1->starttls != srv2->starttls);
 }
 
 

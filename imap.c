@@ -332,7 +332,39 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 
 		line = imap_get_result(line,buf,sizeof(buf));
 		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,"OK")) return 1;
+		if (!mystricmp(buf,"OK"))
+		{
+			if (server->starttls)
+			{
+				char tag[16];
+				sprintf(tag,"%04x",val++);
+
+				sm_snprintf(buf,sizeof(buf),"%s STARTTLS\r\n", tag);
+				SM_DEBUGF(20,("send: %s\n",buf));
+
+				tcp_write(conn,buf,strlen(buf));
+				tcp_flush(conn);
+
+				while ((line = tcp_readln(conn)))
+				{
+					SM_DEBUGF(10,("recv: %s",line));
+
+					line = imap_get_result(line,buf,sizeof(buf));
+					if (!mystricmp(buf,tag))
+					{
+						if (!tcp_make_secure(conn, server->name, server->fingerprint))
+						{
+							tell_from_subtask(N_("Connection couldn't be made secure!"));
+							return 0;
+						}
+						return 1;
+					}
+				}
+				SM_DEBUGF(10,("STARTTLS failure\n",buf));
+				return 0;
+			}
+			return 1;
+		}
 		else return 0;
 	}
 	return 0;

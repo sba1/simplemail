@@ -354,6 +354,9 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 
 		ok = 1;
 		SM_DEBUGF(20,("STARTTLS success\n"));
+	} else
+	{
+		ok = 1;
 	}
 bailout:
 	return ok;

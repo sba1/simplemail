@@ -2529,7 +2529,7 @@ void imap_thread_connect(struct folder *folder)
 
 	if (!(server = account_find_imap_server_by_folder(folder)))
 	{
-		SM_DEBUGF(5,("Server for folder %p (%s) not found\n",folder,folder->name));
+		SM_DEBUGF(5,("Server for folder %p (%s) not found\n",folder,folder?folder->name:"NONE"));
 		goto bailout;
 	}
 

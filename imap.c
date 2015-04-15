@@ -339,36 +339,9 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 	/* If starttls option is active, perform the starttls kick off */
 	if (server->starttls)
 	{
-		char tag[16];
-		sprintf(tag,"%04x",val++);
-
-		sm_snprintf(buf,sizeof(buf),"%s STARTTLS\r\n", tag);
-		SM_DEBUGF(20,("send: %s\n",buf));
-
-		tcp_write(conn,buf,strlen(buf));
-		tcp_flush(conn);
-
-		/* Read answer */
-		while ((line = tcp_readln(conn)))
+		if (!imap_send_simple_command(conn, "STARTTLS"))
 		{
-			SM_DEBUGF(10,("recv: %s",line));
-
-			/* Skip any line not beginning with the tag */
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,tag))
-				break;
-		}
-
-		if (!line)
-		{
-			SM_DEBUGF(10,("Failed to read STARTTLS response\n",line));
-			goto bailout;
-		}
-
-		imap_get_result(line,buf,sizeof(buf));
-		if (mystricmp(buf,"OK"))
-		{
-			SM_DEBUGF(10,("STARTTLS response was not positive (%s)\n", buf));
+			SM_DEBUGF(10,("STARTTLS command failure\n"));
 			goto bailout;
 		}
 

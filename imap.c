@@ -324,50 +324,66 @@ static int imap_wait_login(struct connection *conn, struct imap_server *server)
 {
 	char *line;
 	char buf[100];
+	int ok = 0;
 
-	/* At the moment the loop is not necessary */
-	while ((line = tcp_readln(conn)))
+	if ((line = tcp_readln(conn)))
 	{
 		SM_DEBUGF(20,("recv: %s",line));
 
 		line = imap_get_result(line,buf,sizeof(buf));
 		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,"OK"))
-		{
-			if (server->starttls)
-			{
-				char tag[16];
-				sprintf(tag,"%04x",val++);
-
-				sm_snprintf(buf,sizeof(buf),"%s STARTTLS\r\n", tag);
-				SM_DEBUGF(20,("send: %s\n",buf));
-
-				tcp_write(conn,buf,strlen(buf));
-				tcp_flush(conn);
-
-				while ((line = tcp_readln(conn)))
-				{
-					SM_DEBUGF(10,("recv: %s",line));
-
-					line = imap_get_result(line,buf,sizeof(buf));
-					if (!mystricmp(buf,tag))
-					{
-						if (!tcp_make_secure(conn, server->name, server->fingerprint))
-						{
-							tell_from_subtask(N_("Connection couldn't be made secure!"));
-							return 0;
-						}
-						return 1;
-					}
-				}
-				SM_DEBUGF(10,("STARTTLS failure\n",buf));
-				return 0;
-			}
-			return 1;
-		}
-		else return 0;
+		if (mystricmp(buf,"OK"))
+			goto bailout;
 	}
-	return 0;
+
+	/* If starttls option is active, perform the starttls kick off */
+	if (server->starttls)
+	{
+		char tag[16];
+		sprintf(tag,"%04x",val++);
+
+		sm_snprintf(buf,sizeof(buf),"%s STARTTLS\r\n", tag);
+		SM_DEBUGF(20,("send: %s\n",buf));
+
+		tcp_write(conn,buf,strlen(buf));
+		tcp_flush(conn);
+
+		/* Read answer */
+		while ((line = tcp_readln(conn)))
+		{
+			SM_DEBUGF(10,("recv: %s",line));
+
+			/* Skip any line not beginning with the tag */
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,tag))
+				break;
+		}
+
+		if (!line)
+		{
+			SM_DEBUGF(10,("Failed to read STARTTLS response\n",line));
+			goto bailout;
+		}
+
+		imap_get_result(line,buf,sizeof(buf));
+		if (mystricmp(buf,"OK"))
+		{
+			SM_DEBUGF(10,("STARTTLS response was not positive (%s)\n", buf));
+			goto bailout;
+		}
+
+		if (!tcp_make_secure(conn, server->name, server->fingerprint))
+		{
+			SM_DEBUGF(10,("Connection couldn't be made secure\n",buf));
+			tell_from_subtask("Connection couldn't be made secure");
+			goto bailout;
+		}
+
+		ok = 1;
+		SM_DEBUGF(20,("STARTTLS success\n"));
+	}
+bailout:
+	return ok;
 }
 
 /**

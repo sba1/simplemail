@@ -165,7 +165,13 @@ void error_add_message(char *msg)
 						TAG_DONE);
 			} else free(enode);
 		}
-
-		set(error_wnd, MUIA_Window_Open, TRUE);
 	}
+}
+
+void error_window_open(void)
+{
+	if (!error_wnd) init_error();
+	if (!error_wnd) return;
+
+	set(error_wnd, MUIA_Window_Open, TRUE);
 }

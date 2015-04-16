@@ -16,8 +16,10 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** $Id$
-*/
+
+/**
+ * @file
+ */
 
 void error_add_message(char *msg);
+void error_window_open(void);

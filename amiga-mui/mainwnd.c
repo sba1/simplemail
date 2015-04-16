@@ -49,8 +49,10 @@
 #include "arexx.h"
 #include "configuration.h"
 #include "debug.h"
+#include "errorwnd.h"
 #include "folder.h"
 #include "mail.h"
+#include "progmonwnd.h"
 #include "readwnd.h"
 #include "simplemail.h"
 #include "smintl.h"
@@ -769,6 +771,8 @@ int main_window_init(void)
 		MENU_PROJECT_FETCH,
 		MENU_PROJECT_CHECKSINGLEACCOUNT,
 		MENU_PROJECT_SEND,
+		MENU_PROJECT_SHOW_WINDOW_ERROR,
+		MENU_PROJECT_SHOW_WINDOW_PROGESS,
 		MENU_PROJECT_QUIT,
 
 		MENU_FOLDER,
@@ -837,6 +841,10 @@ int main_window_init(void)
 		{NM_ITEM, N_("S:Send Queued Mails..."), NULL, 0, 0, (APTR)MENU_PROJECT_SEND},
 		{NM_ITEM, N_("F:Check All Active Accounts..."), NULL, 0, 0, (APTR)MENU_PROJECT_FETCH},
 		{NM_ITEM, N_("Check Single Account"), NULL, 0, 0, (APTR)MENU_PROJECT_CHECKSINGLEACCOUNT},
+		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
+		{NM_ITEM, N_("Show Window"), NULL, 0, 0, NULL},
+		{NM_SUB, N_("Error..."), NULL, 0, 0, (APTR)MENU_PROJECT_SHOW_WINDOW_ERROR},
+		{NM_SUB, N_("Progress..."), NULL, 0, 0, (APTR)MENU_PROJECT_SHOW_WINDOW_PROGESS},
 		{NM_ITEM, NM_BARLABEL, NULL, 0, 0, NULL},
 		{NM_ITEM, N_("Q:Quit"), NULL, 0, 0, (APTR)MENU_PROJECT_QUIT},
 		{NM_TITLE, N_("Folder"), NULL, 0, 0, NULL},
@@ -1124,6 +1132,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_dbx, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_fetch_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_send_mails);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SHOW_WINDOW_ERROR, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_window_open);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SHOW_WINDOW_PROGESS, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)progmonwnd_open);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_QUIT, (ULONG)App, 2, MUIM_Application_ReturnID, MUIV_Application_ReturnID_Quit);
 
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_FOLDER_NEWGROUP, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_new_group);

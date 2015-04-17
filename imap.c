@@ -1185,7 +1185,11 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 
 							imap_free_name_list(folder_list);
 						}
-					} else thread_call_function_async(thread_get_main(),status_set_status,1,_("Login failed!"));
+					} else
+					{
+						thread_call_function_async(thread_get_main(),status_set_status,1,_("Login failed!"));
+						tell_from_subtask(N_("Authentication failed!"));
+					}
 				}
 				tcp_disconnect(conn);
 
@@ -1250,7 +1254,11 @@ static void imap_get_folder_list_really(struct imap_server *server, void (*callb
 
 	thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
 	if (!imap_login(conn,server))
+	{
+		thread_call_function_async(thread_get_main(),status_set_status,1,_("Login failed!"));
+		tell_from_subtask(N_("Authentication failed!"));
 		goto bailout;
+	}
 
 	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
 	if (!(all_folder_list = imap_get_folders(conn,1)))
@@ -1989,6 +1997,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 				thread_call_parent_function_async_string(status_set_status,1,status_buf);
 				tcp_disconnect(imap_connection);
 				imap_connection = NULL;
+				tell_from_subtask(N_("Authentication failed!"));
 			}
 		} else
 		{

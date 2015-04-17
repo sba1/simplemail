@@ -1985,7 +1985,7 @@ static int imap_thread_really_connect_and_login_to_server(void)
 			} else
 			{
 				SM_DEBUGF(10,("Login failed\n"));
-				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Loggin in failed. Check Username and Password for this account"));
+				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Log in failed. Check user name and password for this account."));
 				thread_call_parent_function_async_string(status_set_status,1,status_buf);
 				tcp_disconnect(imap_connection);
 				imap_connection = NULL;

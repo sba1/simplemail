@@ -44,19 +44,17 @@ struct error_node
 	char *text;
 };
 
-struct list error_list;
+static struct list error_list;
 
 static Object *error_wnd;
-static Object *previous_button;
-static Object *next_button;
-static Object *error_numeric;
+static Object *all_errors_list;
 static Object *text_list;
 static Object *delete_button;
 static Object *close_button;
 
 static void error_select(void)
 {
-	int num = xget(error_numeric, MUIA_Numeric_Value);
+	int num = xget(all_errors_list, MUIA_NList_Active);
 	struct error_node *node = (struct error_node *)list_find(&error_list,num-1);
 
 	set(text_list, MUIA_NList_Quiet, TRUE);
@@ -76,18 +74,13 @@ static void delete_messages(void)
 
 	set(error_wnd, MUIA_Window_Open, FALSE);
 
+	DoMethod(all_errors_list, MUIM_NList_Clear);
 	while ((node = (struct error_node *)list_remove_tail(&error_list)))
 	{
 		if (node->text) free(node->text);
 		free(node);
 	}
 
-	SetAttrs(error_numeric,
-			MUIA_Numeric_Min, 0,
-			MUIA_Numeric_Max, 0,
-			MUIA_Numeric_Value, 0,
-			MUIA_Numeric_Format, "Error 0/0",
-			TAG_DONE);
 }
 
 static void init_error(void)
@@ -100,18 +93,13 @@ static void init_error(void)
 		MUIA_Window_ID, MAKE_ID('E','R','R','O'),
     MUIA_Window_Title, "SimpleMail - Error",
     WindowContents, VGroup,
-    	Child, HGroup,
-    		Child, previous_button = MakeButton("_Previous error"),
-				Child, error_numeric = NumericbuttonObject,
-					MUIA_CycleChain, 1,
-					MUIA_Numeric_Min, 0,
-					MUIA_Numeric_Max, 0,
-					MUIA_Numeric_Value, 1,
-					MUIA_Numeric_Format, "Error 0/0",
+			Child, NListviewObject,
+				MUIA_CycleChain, 1,
+				MUIA_NListview_NList, all_errors_list = NListObject,
 					End,
-				Child, next_button = MakeButton("_Next error"),
 				End,
 			Child, NListviewObject,
+				MUIA_Weight, 33,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, text_list = NListObject,
 					MUIA_NList_TypeSelect, MUIV_NList_TypeSelect_Char,
@@ -130,9 +118,7 @@ static void init_error(void)
 		DoMethod(error_wnd, MUIM_Notify, MUIA_Window_CloseRequest, TRUE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
 		DoMethod(delete_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)delete_button, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)delete_messages);
 		DoMethod(close_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_wnd, 3, MUIM_Set, MUIA_Window_Open, FALSE);
-		DoMethod(previous_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_numeric, 2, MUIM_Numeric_Decrease, 1);
-		DoMethod(next_button, MUIM_Notify, MUIA_Pressed, FALSE, (ULONG)error_numeric, 2, MUIM_Numeric_Increase, 1);
-		DoMethod(error_numeric, MUIM_Notify, MUIA_Numeric_Value, MUIV_EveryTime, (ULONG)error_numeric, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
+		DoMethod(all_errors_list, MUIM_Notify, MUIA_NList_Active, (ULONG)all_errors_list, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_select);
 	}
 }
 
@@ -146,8 +132,6 @@ void error_add_message(char *msg)
 		{
 			if ((enode->text = mystrdup(msg)))
 			{
-				static char error_label[32];
-
 				set(text_list, MUIA_NList_Quiet, TRUE);
 				DoMethod(text_list, MUIM_NList_Clear);
 				DoMethod(text_list, MUIM_NList_InsertSingleWrap, (ULONG)enode->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);
@@ -155,14 +139,7 @@ void error_add_message(char *msg)
 
 				list_insert_tail(&error_list, &enode->node);
 
-				sprintf(error_label, "Error %%ld/%d",list_length(&error_list));
-
-				SetAttrs(error_numeric,
-						MUIA_Numeric_Min, 1,
-						MUIA_Numeric_Max, list_length(&error_list),
-						MUIA_Numeric_Value, list_length(&error_list),
-						MUIA_Numeric_Format, error_label,
-						TAG_DONE);
+				DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode->text, MUIV_NList_Insert_Bottom);
 			} else free(enode);
 		}
 	}

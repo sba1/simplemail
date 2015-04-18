@@ -98,6 +98,7 @@ static void init_error(void)
 				MUIA_NListview_NList, all_errors_list = NListObject,
 					End,
 				End,
+			Child, BalanceObject, End,
 			Child, NListviewObject,
 				MUIA_Weight, 33,
 				MUIA_CycleChain, 1,

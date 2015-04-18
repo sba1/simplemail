@@ -83,9 +83,20 @@ static void delete_messages(void)
 
 }
 
+STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
+{
+	struct error_node *error = (struct error_node*)msg->entry;
+	if (!error) return;
+	msg->strings[0] = error->text;
+}
+
 static void init_error(void)
 {
+	static struct Hook error_display_hook;
+
 	if (!MUIMasterBase) return;
+
+	init_hook(&error_display_hook, (HOOKFUNC)error_display);
 
 	list_init(&error_list);
 
@@ -96,6 +107,7 @@ static void init_error(void)
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, all_errors_list = NListObject,
+					MUIA_NList_DisplayHook2, &error_display_hook,
 					End,
 				End,
 			Child, BalanceObject, End,
@@ -140,7 +152,7 @@ void error_add_message(char *msg)
 
 				list_insert_tail(&error_list, &enode->node);
 
-				DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode->text, MUIV_NList_Insert_Bottom);
+				DoMethod(all_errors_list, MUIM_NList_InsertSingle, enode, MUIV_NList_Insert_Bottom);
 			} else free(enode);
 		}
 	}

@@ -34,6 +34,7 @@
 
 #include "debug.h"
 #include "lists.h"
+#include "smintl.h"
 #include "support_indep.h"
 
 #include "muistuff.h"
@@ -86,8 +87,14 @@ static void delete_messages(void)
 STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),REG(a1,struct NList_DisplayMessage *msg))
 {
 	struct error_node *error = (struct error_node*)msg->entry;
-	if (!error) return;
-	msg->strings[0] = error->text;
+	if (!error)
+	{
+		msg->strings[0] = _("Date");
+		msg->strings[1] = _("Message");
+		return;
+	}
+	msg->strings[0] = "Unknown";
+	msg->strings[1] = error->text;
 }
 
 static void init_error(void)
@@ -107,7 +114,9 @@ static void init_error(void)
 			Child, NListviewObject,
 				MUIA_CycleChain, 1,
 				MUIA_NListview_NList, all_errors_list = NListObject,
+					MUIA_NList_Format, ",",
 					MUIA_NList_DisplayHook2, &error_display_hook,
+					MUIA_NList_Title, TRUE,
 					End,
 				End,
 			Child, BalanceObject, End,

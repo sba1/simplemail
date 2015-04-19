@@ -91,11 +91,11 @@ STATIC ASM SAVEDS VOID error_display(REG(a0,struct Hook *h),REG(a2,Object *obj),
 	struct error_node *error = (struct error_node*)msg->entry;
 	if (!error)
 	{
-		msg->strings[0] = _("Date");
+		msg->strings[0] = _("Time");
 		msg->strings[1] = _("Message");
 		return;
 	}
-	msg->strings[0] = "Unknown";
+	msg->strings[0] = sm_get_time_str(error->date);
 	msg->strings[1] = error->text;
 }
 

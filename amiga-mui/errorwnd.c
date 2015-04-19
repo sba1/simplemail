@@ -38,11 +38,13 @@
 #include "support_indep.h"
 
 #include "muistuff.h"
+#include "support.h"
 
 struct error_node
 {
 	struct node node;
 	char *text;
+	unsigned int date;
 };
 
 static struct list error_list;
@@ -154,6 +156,8 @@ void error_add_message(char *msg)
 		{
 			if ((enode->text = mystrdup(msg)))
 			{
+				enode->date = sm_get_current_seconds();
+
 				set(text_list, MUIA_NList_Quiet, TRUE);
 				DoMethod(text_list, MUIM_NList_Clear);
 				DoMethod(text_list, MUIM_NList_InsertSingleWrap, (ULONG)enode->text, MUIV_NList_Insert_Bottom, WRAPCOL0, ALIGN_LEFT);

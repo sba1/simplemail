@@ -2319,7 +2319,7 @@ static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *ser
 		success = 0;
 
 		/* Copy the message */
-		sprintf(send,"COPY %d %s\r\n",msgno,dest_folder->imap_path);
+		sm_snprintf(send,sizeof(send),"COPY %d %s\r\n",msgno,dest_folder->imap_path);
 		success = imap_send_simple_command(imap_connection,send);
 
 		if (success)

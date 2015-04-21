@@ -73,36 +73,37 @@ struct account *account_malloc(void)
  */
 struct account *account_duplicate(struct account *a)
 {
-	struct pop3_server *pop;
+	struct pop3_server *pop = NULL;
+	struct smtp_server *smtp = NULL;
+	struct imap_server *imap = NULL;
+	struct account *account;
 
-	if ((pop = pop_duplicate(a->pop)))
-	{
-		struct smtp_server *smtp;
-		if ((smtp = smtp_duplicate(a->smtp)))
-		{
-			struct imap_server *imap;
-			if ((imap = imap_duplicate(a->imap)))
-			{
-				struct account *account = (struct account*)malloc(sizeof(struct account));
-				if (account)
-				{
-					account->account_name = mystrdup(a->account_name);
-					account->name = mystrdup(a->name);
-					account->email = mystrdup(a->email);
-					account->reply = mystrdup(a->reply);
-					account->def_signature = mystrdup(a->def_signature);
-					account->recv_type = a->recv_type;
-					account->pop = pop;
-					account->smtp = smtp;
-					account->imap = imap;
-					return account;
-				}
-				imap_free(imap);
-			}
-			smtp_free(smtp);
-		}
-		pop_free(pop);
-	}
+	if (!(pop = pop_duplicate(a->pop)))
+		goto bailout;
+
+	if (!(smtp = smtp_duplicate(a->smtp)))
+		goto bailout;
+
+	if (!(imap = imap_duplicate(a->imap)))
+		goto bailout;
+
+	if (!(account = (struct account*)malloc(sizeof(struct account))))
+		goto bailout;
+
+	account->account_name = mystrdup(a->account_name);
+	account->name = mystrdup(a->name);
+	account->email = mystrdup(a->email);
+	account->reply = mystrdup(a->reply);
+	account->def_signature = mystrdup(a->def_signature);
+	account->recv_type = a->recv_type;
+	account->pop = pop;
+	account->smtp = smtp;
+	account->imap = imap;
+	return account;
+bailout:
+	if (imap) imap_free(imap);
+	if (smtp) smtp_free(smtp);
+	if (pop) pop_free(pop);
 	return NULL;
 }
 

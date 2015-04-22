@@ -277,7 +277,7 @@ void hash_table_store(struct hash_table *ht)
 	{
 		fputs("SMHASH1\n",fh);
 		fprintf(fh,"%d\n",ht->data);
-		hash_table_call_for_every_entry(ht,hash_table_store_callback, fh);
+		hash_table_call_for_each_entry(ht,hash_table_store_callback, fh);
 		fclose(fh);
 	}
 }
@@ -289,7 +289,7 @@ void hash_table_store(struct hash_table *ht)
  * @param func the function that shall be called.
  * @param data the additional user data that is passed to the function.
  */
-void hash_table_call_for_every_entry(struct hash_table *ht, void (*func)(struct hash_entry *entry, void *data), void *data)
+void hash_table_call_for_each_entry(struct hash_table *ht, void (*func)(struct hash_entry *entry, void *data), void *data)
 {
 	unsigned int i;
 	if (!func) return;

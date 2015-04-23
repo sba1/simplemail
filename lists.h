@@ -41,7 +41,11 @@ struct string_node
 	struct node node; /* embedded node struct */
 	char *string;
 };
-	
+
+struct string_list
+{
+	struct list l;
+};
 
 /* Prototypes */
 void list_init(struct list *list);
@@ -55,9 +59,14 @@ int node_index(struct node *node);
 void node_remove(struct node *node);
 
 /* String lists */
-struct string_node *string_list_insert_tail(struct list *list, char *string);
-void string_list_clear(struct list *list);
-struct string_node *string_list_find(struct list *list, const char *str);
+void string_list_init(struct string_list *list);
+struct string_node *string_list_first(struct string_list *list);
+void string_list_insert_tail_node(struct string_list *list, struct string_node *node);
+struct string_node *string_list_insert_tail(struct string_list *list, char *string);
+struct string_node *string_list_remove_head(struct string_list *list);
+struct string_node *string_list_remove_tail(struct string_list *list);
+void string_list_clear(struct string_list *list);
+struct string_node *string_list_find(struct string_list *list, const char *str);
 
 #ifdef INLINEING
 #define list_first(x) ((x)->first)

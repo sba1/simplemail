@@ -105,8 +105,8 @@ struct folder
 	 */
 	unsigned int imap_uid_next;
 
-	struct list imap_all_folder_list; /* string_node * */
-	struct list imap_sub_folder_list; /* string_node * */
+	struct string_list imap_all_folder_list;
+	struct string_list imap_sub_folder_list;
 
 	/* Live filter support */
 	utf8 *filter;
@@ -166,7 +166,7 @@ void folder_set_mail_flags(struct folder *folder, struct mail_info *mail, int fl
 int folder_count_signatures(char *def_signature);
 struct mail_info *folder_find_mail_by_filename(struct folder *folder, char *filename);
 struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned int uid);
-void folder_imap_set_folders(struct folder *folder, struct list *all_folders_list, struct list *sub_folders_list);
+void folder_imap_set_folders(struct folder *folder, struct string_list *all_folders_list, struct string_list *sub_folders_list);
 
 int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto, char *newdeffrom, char *newdefreplyto, char *newdefsignature, int prim_sort, int second_sort);
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);

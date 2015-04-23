@@ -202,7 +202,7 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
  * Frees the given name list
  * @param list
  */
-static void imap_free_name_list(struct list *list)
+static void imap_free_name_list(struct string_list *list)
 {
 	if (!list) return;
 	string_list_clear(list);
@@ -730,7 +730,7 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
  * @param all whether all folders shall be returned or only the subscribed ones.
  * @return the list with string_nodes
  */
-static struct list *imap_get_folders(struct connection *conn, int all)
+static struct string_list *imap_get_folders(struct connection *conn, int all)
 {
 	int ok;
 	char *line;
@@ -738,9 +738,9 @@ static struct list *imap_get_folders(struct connection *conn, int all)
 	char send[200];
 	char buf[100];
 
-	struct list *list = malloc(sizeof(struct list));
+	struct string_list *list = malloc(sizeof(struct string_list));
 	if (!list) return NULL;
-	list_init(list);
+	string_list_init(list);
 
 	ok = 0;
 
@@ -1156,7 +1156,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 					SM_DEBUGF(10,("Login\n"));
 					if (imap_login(conn,server))
 					{
-						struct list *folder_list;
+						struct string_list *folder_list;
 						thread_call_function_async(thread_get_main(),status_set_status,1,_("Login successful"));
 						thread_call_function_async(thread_get_main(),status_set_status,1,_("Checking for folders"));
 
@@ -1166,7 +1166,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 							struct string_node *node;
 
 							/* add the folders */
-							node = (struct string_node*)list_first(folder_list);
+							node = string_list_first(folder_list);
 							while (node)
 							{
 								thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,server->login,server->name,node->string);
@@ -1175,7 +1175,7 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 							thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 
 							/* sync the folders */
-							node = (struct string_node*)list_first(folder_list);
+							node = string_list_first(folder_list);
 							while (node)
 							{
 								if (!(imap_synchonize_folder(conn, server, node->string)))
@@ -1222,12 +1222,12 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
  * @param server
  * @param callback
  */
-static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *, struct list *))
+static void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *))
 {
 	struct connection *conn = NULL;
 	struct connect_options conn_opts = {0};
-	struct list *all_folder_list = NULL;
-	struct list *sub_folder_list = NULL;
+	struct string_list *all_folder_list = NULL;
+	struct string_list *sub_folder_list = NULL;
 	char head_buf[100];
 	int error_code;
 
@@ -1281,7 +1281,7 @@ bailout:
 struct imap_get_folder_list_entry_msg
 {
 	struct imap_server *server;
-	void (*callback)(struct imap_server *, struct list *, struct list *);
+	void (*callback)(struct imap_server *, struct string_list *, struct string_list *);
 };
 
 /**
@@ -1293,7 +1293,7 @@ struct imap_get_folder_list_entry_msg
 static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	void (*callback)(struct imap_server *, struct list *, struct list *) = msg->callback;
+	void (*callback)(struct imap_server *, struct string_list *, struct string_list *) = msg->callback;
 
 	if (thread_parent_task_can_contiue())
 	{
@@ -1321,7 +1321,7 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
  *
  * @return whether the request has been in principle submitted or not.
  */
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct list *all_list, struct list *sub_list))
+int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *all_list, struct string_list *sub_list))
 {
 	struct imap_get_folder_list_entry_msg msg;
 	msg.server = server;
@@ -1337,14 +1337,14 @@ int imap_get_folder_list(struct imap_server *server, void (*callback)(struct ima
  * @param server
  * @param list
  */
-static void imap_submit_folder_list_really(struct imap_server *server, struct list *list)
+static void imap_submit_folder_list_really(struct imap_server *server, struct string_list *list)
 {
 	struct connection *conn;
 	struct connect_options conn_opts = {0};
 	char head_buf[100];
 	int error_code;
-	struct list *all_folder_list = NULL;
-	struct list *sub_folder_list = NULL;
+	struct string_list *all_folder_list = NULL;
+	struct string_list *sub_folder_list = NULL;
 
 	char *line;
 	char tag[20];
@@ -1385,7 +1385,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 	if (!(sub_folder_list = imap_get_folders(conn,0)))
 		goto out;
 
-	node = (struct string_node*)list_first(list);
+	node = string_list_first(list);
 	while (node)
 	{
 		if (!string_list_find(sub_folder_list,node->string))
@@ -1424,7 +1424,7 @@ static void imap_submit_folder_list_really(struct imap_server *server, struct li
 		node = (struct string_node*)node_next(&node->node);
 	}
 
-	node = (struct string_node*)list_first(sub_folder_list);
+	node = string_list_first(sub_folder_list);
 	while (node)
 	{
 		if (!string_list_find(list,node->string))
@@ -1470,7 +1470,7 @@ out:
 struct imap_submit_folder_list_entry_msg
 {
 	struct imap_server *server;
-	struct list *list;
+	struct string_list *list;
 };
 
 
@@ -1483,11 +1483,11 @@ struct imap_submit_folder_list_entry_msg
 static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_msg *msg)
 {
 	struct imap_server *server = imap_duplicate(msg->server);
-	struct list list;
+	struct string_list list;
 	struct string_node *node;
 
-	list_init(&list);
-	node = (struct string_node*)list_first(msg->list);
+	string_list_init(&list);
+	node = string_list_first(msg->list);
 	while (node)
 	{
 		string_list_insert_tail(&list,node->string);
@@ -1518,7 +1518,7 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
  * @param list the list of string_nodes to identify the
  * @return whether the call has in principle be invoked.
  */
-int imap_submit_folder_list(struct imap_server *server, struct list *list)
+int imap_submit_folder_list(struct imap_server *server, struct string_list *list)
 {
 	struct imap_submit_folder_list_entry_msg msg;
 	msg.server = server;
@@ -2061,7 +2061,7 @@ static void imap_thread_really_connect_to_server(void)
 		if (imap_thread_really_connect_and_login_to_server())
 		{
 			char status_buf[160];
-			struct list *folder_list;
+			struct string_list *folder_list;
 
 			/* Display "Retrieving mail folders" - status message */
 			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
@@ -2074,7 +2074,7 @@ static void imap_thread_really_connect_to_server(void)
 				struct string_node *node;
 
 				/* add the folders */
-				node = (struct string_node*)list_first(folder_list);
+				node = string_list_first(folder_list);
 				while (node)
 				{
 					thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,imap_server->login,imap_server->name,node->string);

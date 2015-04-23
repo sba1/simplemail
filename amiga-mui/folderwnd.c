@@ -155,10 +155,10 @@ static void imap_folders_submit_pressed(void)
 {
 	if (changed_folder)
 	{
-		struct list list;
+		struct string_list list;
 		int i;
 
-		list_init(&list);
+		string_list_init(&list);
 		for (i=0;i<xget(imap_folders_list,MUIA_NList_Entries);i++)
 		{
 			struct imap_folder_entry *entry;
@@ -584,7 +584,7 @@ void folder_edit(struct folder *f)
 		set(imap_download_cycle,MUIA_Cycle_Active,f->imap_download);
 
 		DoMethod(imap_folders_list,MUIM_NList_Clear);
-		node = (struct string_node*)list_first(&f->imap_all_folder_list);
+		node = string_list_first(&f->imap_all_folder_list);
 		while (node)
 		{
 			struct imap_folder_entry entry;
@@ -600,13 +600,13 @@ void folder_edit(struct folder *f)
 	set(folder_wnd, MUIA_Window_Open, TRUE);
 }
 
-void folder_fill_lists(struct list *list, struct list *sub_folder_list)
+void folder_fill_lists(struct string_list *list, struct string_list *sub_folder_list)
 {
 	if (imap_folders_list)
 	{
 		struct string_node *node;
 		DoMethod(imap_folders_list,MUIM_NList_Clear);
-		node = (struct string_node*)list_first(list);
+		node = string_list_first(list);
 		while (node)
 		{
 			struct imap_folder_entry entry;

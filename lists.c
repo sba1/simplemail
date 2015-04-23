@@ -246,19 +246,72 @@ void node_remove(struct node *node)
   node->prev->next = node->next;
 }
 
+/**
+ * Initialize the string list.
+ *
+ * @param list to be initialized
+ */
+void string_list_init(struct string_list *list)
+{
+	list_init(&list->l);
+}
+
+/**
+ * Return the first string node of the given string list.
+ *
+ * @param list of which the first element should be returned
+ * @return the first element or NULL if the list is empty
+ */
+struct string_node *string_list_first(struct string_list *list)
+{
+	return (struct string_node*)list_first(&list->l);
+}
+
+/**
+ * Insert the given string node at the tail of the given list.
+ *
+ * @param list the list at which the node should be inserted
+ * @param node the node to be inserted
+ */
+void string_list_insert_tail_node(struct string_list *list, struct string_node *node)
+{
+	list_insert_tail(&list->l, &node->node);
+}
+
+/**
+ * Remove the head from the given string list.
+ *
+ * @param list the list from which the node should be removed.
+ * @return the head that has just been removed or NULL if the list was empty.
+ */
+struct string_node *string_list_remove_head(struct string_list *list)
+{
+	return (struct string_node *)list_remove_head(&list->l);
+}
+
+/**
+ * Remove the tail of the given string list.
+ *
+ * @param list the list from which the node should be removed.
+ * @return the tail that has just been removed or NULL if the list was empty.
+ */
+struct string_node *string_list_remove_tail(struct string_list *list)
+{
+	return (struct string_node *)list_remove_tail(&list->l);
+}
 
 /******************************************************************
  Inserts a string into the end of a string list. The string will
  be duplicated. Returns 
 *******************************************************************/
-struct string_node *string_list_insert_tail(struct list *list, char *string)
+struct string_node *string_list_insert_tail(struct string_list *list, char *string)
 {
 	struct string_node *node = (struct string_node*)malloc(sizeof(struct string_node));
 	if (node)
 	{
 		if ((node->string = mystrdup(string)))
 		{
-			list_insert_tail(list,&node->node);
+			list_insert_tail(&list->l,&node->node);
 		}
 	}
 	return node;
@@ -267,10 +320,10 @@ struct string_node *string_list_insert_tail(struct list *list, char *string)
 /******************************************************************
  Clears the complete list by freeing all memory (including strings).
 *******************************************************************/
-void string_list_clear(struct list *list)
+void string_list_clear(struct string_list *list)
 {
 	struct string_node *node;
-	while ((node = (struct string_node*)list_remove_tail(list)))
+	while ((node = string_list_remove_tail(list)))
 	{
 		if (node->string) free(node->string);
 		free(node);
@@ -281,9 +334,9 @@ void string_list_clear(struct list *list)
  Looks for a given string node in the list and returns it.
  Search is caseinsensitive
 *******************************************************************/
-struct string_node *string_list_find(struct list *list, const char *str)
+struct string_node *string_list_find(struct string_list *list, const char *str)
 {
-	struct string_node *node = (struct string_node*)list_first(list);
+	struct string_node *node = (struct string_node*)list_first(&list->l);
 	while (node)
 	{
 		if (!mystricmp(str,node->string)) return node;

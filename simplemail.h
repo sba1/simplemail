@@ -29,6 +29,7 @@ struct mail_info;
 struct addressbook_entry_new;
 struct search_options;
 struct list;
+struct string_list;
 
 int callback_read_active_mail(void);
 void callback_save_active_mail(void);
@@ -84,7 +85,7 @@ int callback_write_mail_to_str_with_body(char *str, char *subject, char *body);
 
 int callback_failed_ssl_verification(char *server_name, char *reason, char *cert_summary, char *sha1_ascii, char *sha256_ascii);
 
-void callback_imap_submit_folders(struct folder *f, struct list *list);
+void callback_imap_submit_folders(struct folder *f, struct string_list *list);
 void callback_imap_get_folders(struct folder *f);
 void callback_edit_folder(void);
 void callback_change_folder_attrs(void);

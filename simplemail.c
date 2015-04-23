@@ -2394,7 +2394,7 @@ int callback_failed_ssl_verification(char *server_name, char *reason, char *cert
 }
 
 /* called when imap folders has been received */
-static void callback_received_imap_folders(struct imap_server *server, struct list *all_folder_list, struct list *sub_folder_list)
+static void callback_received_imap_folders(struct imap_server *server, struct string_list *all_folder_list, struct string_list *sub_folder_list)
 {
 	struct folder *f = folder_find_by_imap(server->login, server->name, "");
 	if (!f) return;
@@ -2418,7 +2418,7 @@ void callback_imap_get_folders(struct folder *f)
 }
 
 /* */
-void callback_imap_submit_folders(struct folder *f, struct list *list)
+void callback_imap_submit_folders(struct folder *f, struct string_list *list)
 {
 	if (f->is_imap && f->special == FOLDER_SPECIAL_GROUP)
 	{

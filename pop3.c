@@ -926,10 +926,14 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 	return !delete_mail;
 }
 
-/**************************************************************************
- Mark the mail as deleted
-**************************************************************************/
-int pop3_del_mail(struct connection *conn, struct pop3_server *server, int nr)
+/**
+ * Mark the mail as deleted on the POP3 server.
+ *
+ * @param conn the already opened connection.
+ * @param nr the number of mail to be marked
+ * @return 1 on success, 0 otherwise.
+ */
+static int pop3_del_mail(struct connection *conn, int nr)
 {
 	char buf[256];
 	char *answer;
@@ -1110,7 +1114,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 									if (del)
 									{
 										thread_call_function_async(thread_get_main(),status_set_status,1,_("Marking mail as deleted..."));
-										if (!pop3_del_mail(conn,server, i))
+										if (!pop3_del_mail(conn, i))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
 											else

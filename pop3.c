@@ -935,7 +935,7 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
  */
 static int pop3_del_mail(struct connection *conn, int nr)
 {
-	char buf[256];
+	char buf[80];
 	char *answer;
 	sprintf(buf, "DELE %d\r\n",nr);
 	if (tcp_write(conn,buf,strlen(buf))<=0) return 0;

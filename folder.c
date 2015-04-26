@@ -319,9 +319,13 @@ static char *fread_str(FILE *fh);
 static char *fread_str_no_null(FILE *fh);
 static int folder_config_load(struct folder *f);
 
-/******************************************************************
- Opens the indexfile of the given folder
-*******************************************************************/
+/**
+ * Opens the indexfile of the given folder and return the filehandle.
+ *
+ * @param f the folder for which the index file should be opened.
+ * @param mode the open mode, like fopen().
+ * @return the filehandle or NULL on error.
+ */
 static FILE *folder_open_indexfile(struct folder *f, char *mode)
 {
 	FILE *fh;
@@ -362,9 +366,11 @@ static FILE *folder_open_indexfile(struct folder *f, char *mode)
 	return fh;
 }
 
-/******************************************************************
- Delete the indexfile of the given folder
-*******************************************************************/
+/**
+ * Delete the indexfile of the given folder.
+ *
+ * @param f the folder for which the index file should be deleted.
+ */
 static void folder_delete_indexfile(struct folder *f)
 {
 	char *path;

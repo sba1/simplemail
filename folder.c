@@ -1909,7 +1909,7 @@ static int folder_config_load(struct folder *f)
 	int rc = 0;
 	FILE *fh;
 
-	sprintf(buf,"%s.config",f->path);
+	sm_snprintf(buf, sizeof(buf), "%s.config",f->path);
 
 	string_list_clear(&f->imap_all_folder_list);
 	string_list_clear(&f->imap_sub_folder_list);
@@ -2016,7 +2016,7 @@ void folder_config_save(struct folder *f)
 	if (!f->path) return;
 	if (f->special == FOLDER_SPECIAL_GROUP && !f->is_imap) return;
 
-	sprintf(buf,"%s.config",f->path);
+	sm_snprintf(buf, sizeof(buf), "%s.config",f->path);
 
 	if ((fh = fopen(buf,"w")))
 	{

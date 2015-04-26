@@ -572,43 +572,6 @@ struct filter_rule *filter_find_rule(struct filter *filter, int num)
 	return (struct filter_rule *)list_find(&filter->rules_list,num);
 }
 
-
-#if 0
-/**************************************************************************
- Returns a string from a rule
-**************************************************************************/
-char *filter_get_rule_string(struct filter_rule *rule)
-{
-	static char buf[1024];
-	switch(rule->type)
-	{
-		case	RULE_FROM_MATCH:
-					if (rule->u.from.from && *rule->u.from.from) sprintf(buf,"From contains \"%s\"",*rule->u.from.from);
-					else strcpy(buf,"From match");
-					break;
-
-		case	RULE_SUBJECT_MATCH:
-					if (rule->u.subject.subject && *rule->u.subject.subject) sprintf(buf,"Subject contains \"%s\"",*rule->u.subject.subject);
-					else strcpy(buf,"Subject match");
-					break;
-
-		case	RULE_HEADER_MATCH:
-					if (rule->u.header.name && rule->u.header.contents && *rule->u.header.contents) sprintf(buf,"\"%s\"-field contains \"%s\"",rule->u.header.name,*rule->u.header.contents);
-					else strcpy(buf,"Header match");
-					break;
-
-		case	RULE_ATTACHMENT_MATCH:
-					strcpy(buf,"Has attachments");
-					break;
-
-		default:
-					strcpy(buf,"Unknown");
-					break;
-	}
-	return buf;
-}
-#endif
-
 /**
  * Returns the num-th action of the given filter.
  *

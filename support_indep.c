@@ -371,6 +371,92 @@ char *mystrcat(char *str1, char *str2)
 	return rc;
 }
 
+
+/**************************************************************************
+ Support function: Appends a string to another, the result string is
+ malloced. Should be placed otherwhere
+**************************************************************************/
+char *strdupcat(const char *string1, const char *string2)
+{
+	char *buf = (char*)malloc(strlen(string1) + strlen(string2) + 1);
+	if (buf)
+	{
+		strcpy(buf,string1);
+		strcat(buf,string2);
+	}
+	return buf;
+}
+
+/**
+ * Like strdup() but you can limit the chars. A 0 byte is guaranteed.
+ * The string is allocated via malloc().
+ *
+ * @param str1 the string of which some characters should be duplicated.
+ * @param n the number of characters that shall be duplicated.
+ * @return the newly allocated string.
+ */
+#ifndef __USE_XOPEN2K8
+char *strndup(const char *str1, int n)
+{
+	char *dest = (char*)malloc(n+1);
+	if (dest)
+	{
+		strncpy(dest,str1,n);
+		dest[n]=0;
+	}
+	return dest;
+}
+#endif
+
+/**
+ * Adds a string (str1) to a given string src. The first string is
+ * deallocated (maybe NULL). (A real string library would be better)
+ * The string is allocated via malloc().
+ *
+ * @param src
+ * @param str1
+ * @return
+ */
+char *stradd(char *src, const char *str1)
+{
+	int len = mystrlen(src);
+	char *dest;
+
+	if ((dest = (char*)realloc(src,len+mystrlen(str1)+1)))
+	{
+		if (str1) strcpy(&dest[len],str1);
+		else dest[len]=0;
+	}
+	return dest;
+}
+
+/**
+ * Adds a string (str1) to a given string src but only n bytes of str1. The first
+ * string is deallocated (maybe NULL). (A real string library would be better)
+ * The string is allocated via malloc().
+ *
+ * @param src
+ * @param str1
+ * @param n
+ * @return
+ */
+char *strnadd(char *src, const char *str1, int n)
+{
+	int len = mystrlen(src);
+	char *dest;
+
+	if ((dest = (char*)realloc(src,len+n+1)))
+	{
+		if (str1)
+		{
+			strncpy(&dest[len],str1,n);
+			dest[len+n]=0;
+		}
+		else dest[len]=0;
+	}
+	return dest;
+}
+
 /**
  * Compares the dates of the two files. Returns > 0 if the first arg
  * is newer, 0 equal, < 0 older. Not existing files means very old.

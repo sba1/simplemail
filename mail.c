@@ -47,9 +47,6 @@
 
 #include "SimpleMail_rev.h"
 
-char *stradd(char *src, const char *str1);
-char *strnadd(char *src, const char *str1, int n);
-
 /* prototypes */
 static int mail_read_structure(struct mail_complete *mail);
 

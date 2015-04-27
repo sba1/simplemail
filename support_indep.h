@@ -25,6 +25,9 @@
 
 #include <stdio.h>
 
+/* Needed for __USE_XOPEN2K8 */
+#include <string.h>
+
 int has_spaces(const char *str);
 char *get_key_value(char *buf, char *item);
 
@@ -40,6 +43,16 @@ size_t mystrlcpy(char *dest, const char *src, size_t n);
 char *mystpcpy(char *dest, const char *src);
 char *mystrcat(char *str1, char *str2);
 char *mystrreplace(const char *src, const char *from, const char *to);
+
+/* some string functions, should be in strings.c or simliar */
+char *strdupcat(const char *string1, const char *string2);
+
+#ifndef __USE_XOPEN2K8
+char *strndup(const char *str1, int n);
+#endif
+
+char *stradd(char *src, const char *str1);
+char *strnadd(char *src, const char *str1, int n);
 
 unsigned int myfsize(FILE *file);
 int myreadline(FILE *fh, char *buf);

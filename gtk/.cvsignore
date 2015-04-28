@@ -1,8 +1,0 @@
-Makefile
-.deps
-*.info
-*.bak
-*.orig
-*.rej
-Makefile.in
-

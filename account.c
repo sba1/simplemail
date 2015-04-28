@@ -37,31 +37,33 @@
  */
 struct account *account_malloc(void)
 {
-	struct pop3_server *pop;
+	struct pop3_server *pop = NULL;
+	struct smtp_server *smtp = NULL;
+	struct imap_server *imap = NULL;
+	struct account *account = NULL;
 
-	if ((pop = pop_malloc()))
-	{
-		struct smtp_server *smtp;
-		if ((smtp = smtp_malloc()))
-		{
-			struct imap_server *imap;
-			if ((imap = imap_malloc()))
-			{
-				struct account *account;
-				if ((account = (struct account*)malloc(sizeof(struct account))))
-				{
-					memset(account,0,sizeof(struct account));
-					account->pop = pop;
-					account->smtp = smtp;
-					account->imap = imap;
-					return account;
-				}
-				imap_free(imap);
-			}
-			smtp_free(smtp);
-		}
-		pop_free(pop);
-	}
+	if (!(pop = pop_malloc()))
+		goto bailout;
+
+	if (!(smtp = smtp_malloc()))
+		goto bailout;
+
+	if (!(imap = imap_malloc()))
+		goto bailout;
+
+	if (!(account = (struct account*)malloc(sizeof(struct account))))
+		goto bailout;
+
+	memset(account,0,sizeof(struct account));
+	account->pop = pop;
+	account->smtp = smtp;
+	account->imap = imap;
+	return account;
+
+bailout:
+	if (imap) imap_free(imap);
+	if (smtp) smtp_free(smtp);
+	if (pop) pop_free(pop);
 	return NULL;
 }
 

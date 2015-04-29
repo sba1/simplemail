@@ -16,10 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** support.h
-*/
-
+/**
+ * @file
+ */
 #ifndef SM__SUPPORT_H
 #define SM__SUPPORT_H
 
@@ -27,15 +26,83 @@
 
 struct tm;
 
+/**
+ * Creates a directory including all necessaries parent directories.
+ * The call will be successful even if the directory exists.
+ *
+ * @param path defines the path of the directory to be created
+ * @return 1 if the directory exists or have been created, otherwise 0.
+ */
 int sm_makedir(char *path);
+
+/**
+ * Returns the seconds since 1978
+ *
+ * @param day the day
+ * @param month the month
+ * @param year the year
+ * @return the seconds since 1978.
+ */
 unsigned int sm_get_seconds(int day, int month, int year);
+
+/**
+ * Returns the GMT offset in minutes.
+ *
+ * @return the offset from GMT in minutes.
+ */
 int sm_get_gmt_offset(void);
+
+/**
+ * Returns the current seconds since 1978
+ *
+ * @return the second since 1978.
+ */
 unsigned int sm_get_current_seconds(void);
+
+/**
+ * Returns the current micro seconds.
+ *
+ * @return the current micro seconds.
+ */
 unsigned int sm_get_current_micros(void);
+
+/**
+ * Convert seconds since 1978 to a tm
+ *
+ * @param seconds the seconds since 1978 to be converted
+ * @param tm the tm to which the result is written
+ */
 void sm_convert_seconds(unsigned int seconds, struct tm *tm);
+
+
+/**
+ * Add a filename component to the given drawer string in place.
+ *
+ * @param drawer the drawer to which the filename is appended
+ * @param filename the filename that is added to the drawer string
+ * @param buf_size the size of the string
+ * @return 1 on success, 0 on failure.
+ */
 int sm_add_part(char *drawer, const char *filename, int buf_size);
+
+/**
+ * Return the file component of a path.
+ *
+ * @param filename from which to determine the file component.
+ * @return the pointer to the file
+ * @note this will remove any const qualifier
+ */
 char *sm_file_part(char *filename);
+
+/**
+ * Return the pointer to the character after the last path component.
+ *c
+ * @param filename
+ * @return the pointer to the last character after the last path component.
+ * @note this will remove any const qualifier
+ */
 char *sm_path_part(char *filename);
+
 char *sm_request_file(char *title, char *path, int save, char *extension);
 int sm_request(char *title, char *text, char *gadgets, ...);
 char *sm_request_string(char *title, char *text, char *contents, int secret);
@@ -53,9 +120,39 @@ int sm_system(char *command, char *output);
 int sm_file_is_in_drawer(char *filename, char *path);
 int sm_is_same_path(char *path1, char *path2);
 
+/**
+ * Convert seconds since 1978 to a long form string. The returned string is
+ * static, i.e., no two threads should call this function simultaneously.
+ *
+ * @param seconds since 1978
+ * @param tm
+ */
 char *sm_get_date_long_str(unsigned int seconds);
+
+/**
+ * Convert seconds since 1978 to a long form UTF8 string. The returned string is
+ * static, i.e., no two threads should call this function simultaneously.
+ *
+ * @param seconds the seconds since 1978
+ * @return the string containing the data in long format
+ */
 char *sm_get_date_long_str_utf8(unsigned int seconds);
+
+
+/**
+ * Convert seconds since 1978 to a date string. The returned string is static.
+ *
+ * @param seconds the seconds since 1978
+ * @return the string containing the date
+ */
 char *sm_get_date_str(unsigned int seconds);
+
+/**
+ * Convert seconds since 1978 to a time string. The returned string is static.
+ *
+ * @param seconds the seconds since 1978
+ * @return the string containing the time
+ */
 char *sm_get_time_str(unsigned int seconds);
 
 char *sm_parse_pattern(utf8 *utf8_str, int flags);

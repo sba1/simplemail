@@ -466,6 +466,10 @@ static SAVEDS void thread_entry(void)
 
 	BPTR dirlock;
 
+#ifdef __AMIGAOS4__
+	void allow_access_to_private_data(void); /* from startup-os4.c */
+#endif
+
 	D(bug("Waiting for startup message\n"));
 
 	proc = (struct Process*)FindTask(NULL);
@@ -476,7 +480,6 @@ static SAVEDS void thread_entry(void)
 	thread = msg->thread;
 
 #ifdef __AMIGAOS4__
-	void allow_access_to_private_data(void);
 	allow_access_to_private_data();
 #endif
 

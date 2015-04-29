@@ -89,6 +89,8 @@ CFLAGS = \
 	-Wno-deprecated-declarations\
 	-fno-strict-aliasing\
 	-mcrt=clib2\
+	-std=c11\
+	-Wdeclaration-after-statement\
 	$(CFLAGS_PERMISSIVE)
 
 # Flags passed to gcc during linking

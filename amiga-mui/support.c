@@ -265,7 +265,7 @@ int sm_add_part(char *drawer, const char *filename, int buf_size)
 
 /*****************************************************************************/
 
-char *sm_file_part(char *filename)
+char *sm_file_part_nonconst(char *filename)
 {
 	return (char*)FilePart(filename);
 }

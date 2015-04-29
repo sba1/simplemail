@@ -86,13 +86,28 @@ void sm_convert_seconds(unsigned int seconds, struct tm *tm);
 int sm_add_part(char *drawer, const char *filename, int buf_size);
 
 /**
- * Return the file component of a path.
+ * Return the file component of a given path.
  *
  * @param filename from which to determine the file component.
  * @return the pointer to the file
- * @note this will remove any const qualifier
+ *
+ * @note you should not use this function but instead call sm_file_part().
  */
-char *sm_file_part(char *filename);
+char *sm_file_part_nonconst(char *filename);
+
+#if __STDC_VERSION__ >= 201112L
+static inline const char *sm_file_part_const(const char *filename)
+{
+	return (const char*)sm_file_part_nonconst((char*)filename);
+}
+
+#define sm_file_part(filename) _Generic((filename),\
+		char *: sm_file_part_nonconst,\
+		default:sm_file_part_const\
+	)(filename)
+#else
+#define sm_file_part(filename) sm_file_part_nonconst(filename)
+#endif
 
 /**
  * Return the pointer to the character after the last path component.

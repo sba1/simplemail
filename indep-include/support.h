@@ -111,7 +111,7 @@ static inline const char *sm_file_part_const(const char *filename)
 
 /**
  * Return the pointer to the character after the last path component.
- *c
+ *
  * @param filename
  * @return the pointer to the last character after the last path component.
  * @note this will remove any const qualifier

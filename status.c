@@ -36,6 +36,7 @@
 #include "statuswnd.h"
 #include "subthreads.h"
 #include "support.h"
+#include "timesupport.h"
 
 static struct estimate gauge_est;
 static int gauge_maximal;

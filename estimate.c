@@ -22,7 +22,7 @@
 
 #include "estimate.h"
 
-#include "support.h"
+#include "timesupport.h"
 
 void estimate_init(struct estimate *est, unsigned int new_max_value)
 {

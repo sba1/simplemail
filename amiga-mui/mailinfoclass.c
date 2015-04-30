@@ -43,13 +43,14 @@
 #include "parse.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "support.h"
 #include "support_indep.h"
 
 #include "amigasupport.h"
 #include "compiler.h"
 #include "mailinfoclass.h"
 #include "muistuff.h"
+#include "support.h"
+#include "timesupport.h"
 
 /**************************************************************************/
 

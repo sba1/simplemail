@@ -38,7 +38,7 @@
 #include "support_indep.h"
 
 #include "muistuff.h"
-#include "support.h"
+#include "timesupport.h"
 
 struct error_node
 {

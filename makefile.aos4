@@ -165,6 +165,7 @@ ARCHSRCS=\
 	support.c \
 	sysprint.c \
 	tcpip.c \
+	timesupport.c \
 	transwndclass.c \
 	utf8stringclass.c \
 	vsnprintf.c

@@ -48,6 +48,7 @@
 #include "gui_main.h" /* gui_execute_arexx() */
 #include "searchwnd.h"
 #include "support.h"
+#include "timesupport.h"
 
 #define FOLDER_INDEX_VERSION 7
 

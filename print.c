@@ -33,6 +33,7 @@
 
 #include "sysprint.h"
 #include "support.h"
+#include "timesupport.h"
 
 #define ANSI_NORMAL     "[0m"
 #define ANSI_BOLD       "[1m"

@@ -35,8 +35,10 @@
 
 #include "codesets.h"
 #include "debug.h"
-#include "support.h"
 #include "support_indep.h"
+
+#include "support.h"
+#include "timesupport.h"
 
 /**
  * Returns whether the given string has spaces.

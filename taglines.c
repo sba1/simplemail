@@ -28,7 +28,7 @@
 
 #include "support_indep.h"
 
-#include "support.h"
+#include "timesupport.h"
 
 #define TAGLINES_INDEX_VERSION 0
 

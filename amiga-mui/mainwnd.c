@@ -58,6 +58,7 @@
 #include "smintl.h"
 #include "support.h"
 #include "support_indep.h"
+#include "timesupport.h"
 
 #include "addressentrylistclass.h"
 #include "amigasupport.h"

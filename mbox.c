@@ -38,6 +38,7 @@
 
 #include "subthreads.h"
 #include "support.h"
+#include "timesupport.h"
 
 /**************************************************************************
  Checks wheather given string can be considered as any from line.

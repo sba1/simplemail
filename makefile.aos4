@@ -228,8 +228,14 @@ $(TARGET): envs dirs $(OBJS) $(AOBJS)
 $(OBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
 
+# Generate dependencies on the fly
+# Inspired by http://scottmcpeak.com/autodepend/autodepend.html
 $(OBJSDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -MMD $(CFLAGS) -c $< -o $@
+	# Now add, for each prerequiste, a corresponding (empty) target
+	@cat $(@:.o=.d) | tr -d '\\' | tr '\n' ' ' | sed -e 's/.\+:\s*//' | sed -e 's/\s\+/:\n/g' >$(@:.o=.d.tmp)
+	@cat $(@:.o=.d.tmp) >>$(@:.o=.d)
+	@rm $(@:.o=.d.tmp)
 
 $(TESTOBJSDIR)/%.o: %.S
 	$(CC) -Wa,-mregnames $(AFLAGS) -I$(SDK_INCLUDE) -c $< -o $@
@@ -317,3 +323,6 @@ prepare-os4-release: $(LHA) $(TARGET) locale
 	cd $(DESTDIR) && $(LHA) ao5 $(ARCHIVE_NAME) SimpleMail.info SimpleMail
 	cp $(DESTDIR)/$(ARCHIVE_NAME) .
 	rm -Rf $(DESTDIR)
+
+# Now include dependencies, but don't fail if they are not available
+-include $(OBJS:.o=.d)

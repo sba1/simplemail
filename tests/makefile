@@ -6,7 +6,7 @@
 
 include ../common-sources.mk
 
-SRCS = $(addprefix ../,$(NONARCHSRCS)) ../gtk/support.c ../gtk/subthreads.c ../gtk/tcpip.c
+SRCS = $(addprefix ../,$(NONARCHSRCS)) ../gtk/support.c ../gtk/timesupport.c ../gtk/subthreads.c ../gtk/tcpip.c
 OBJS = $(SRCS:../%.c=test-objs/%.o)
 
 GLIB_CFLAGS  := $(shell pkg-config glib-2.0 --cflags)

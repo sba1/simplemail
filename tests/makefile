@@ -9,7 +9,7 @@ include ../common-sources.mk
 SRCS = $(addprefix ../,$(NONARCHSRCS)) \
 	../gtk/support.c \
 	../platform/timesupport_glib.c \
-	../gtk/subthreads.c \
+	../platform/subthreads_glib.c \
 	../gtk/tcpip.c
 
 OBJS = $(SRCS:../%.c=test-objs/%.o)

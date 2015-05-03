@@ -65,7 +65,7 @@ struct thread_s
 
 static struct thread_s main_thread;
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int init_threads(void)
 {
@@ -89,7 +89,7 @@ int init_threads(void)
 	return 1;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Checks if there are still any threads in the thread list and quits the
@@ -110,6 +110,8 @@ static gboolean cleanup_threads_timer_callback(gpointer udata)
 		g_main_loop_quit(main_thread.main_loop);
 	return !!t;
 }
+
+/*****************************************************************************/
 
 void cleanup_threads(void)
 {
@@ -153,7 +155,7 @@ void cleanup_threads(void)
 	SM_LEAVE;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_parent_task_can_contiue(void)
 {
@@ -164,7 +166,7 @@ int thread_parent_task_can_contiue(void)
 	return 1;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /** Structure that is passed to newly created threads via thread_add() */
 struct thread_add_data
@@ -173,6 +175,8 @@ struct thread_add_data
 	void *eudata;
 	struct thread_s *thread;
 };
+
+/*****************************************************************************/
 
 /**
  * The entry function of thread_add().
@@ -204,6 +208,8 @@ static gpointer thread_add_entry(gpointer udata)
 	g_main_context_unref(t->context);
 	return NULL;
 }
+
+/*****************************************************************************/
 
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
@@ -242,14 +248,14 @@ bailout:
 	return t;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_start(int (*entry)(void*), void *udata)
 {
 	return !!thread_add("Default Thread", entry, udata);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 static gboolean thread_abort_entry(gpointer udata)
 {
@@ -257,6 +263,8 @@ static gboolean thread_abort_entry(gpointer udata)
 	g_main_loop_quit(t->main_loop);
 	return 0;
 }
+
+/*****************************************************************************/
 
 void thread_abort(thread_t thread)
 {
@@ -266,7 +274,7 @@ void thread_abort(thread_t thread)
 	g_main_context_invoke(thread->context, thread_abort_entry, thread);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
@@ -274,7 +282,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 	exit(1);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 #define THREAD_CALL_FUNCTION_SYNC_DATA_NUM_ARGS 6
 
@@ -292,12 +300,16 @@ struct thread_call_function_sync_data
 	int done;
 };
 
+/*****************************************************************************/
+
 static gboolean thread_call_function_sync_done_entry(gpointer user_data)
 {
 	struct thread_call_function_sync_data *data = (struct thread_call_function_sync_data*)user_data;
 	data->done = 1;
 	return 0;
 }
+
+/*****************************************************************************/
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
  * work depending on the ABI
@@ -326,6 +338,8 @@ static gboolean thread_call_function_sync_entry(gpointer user_data)
 	SM_LEAVE;
 	return 0;
 }
+
+/*****************************************************************************/
 
 /**
  * Call a function in the context of the thread.
@@ -366,6 +380,8 @@ static int thread_call_function_sync_v(thread_t thread, uintptr_t *rc, void *fun
 	return 1;
 }
 
+/*****************************************************************************/
+
 int thread_call_function_sync(thread_t thread, void *function, int argcount, ...)
 {
 	int rc;
@@ -379,7 +395,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	return function_rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
  * work depending on the ABI
@@ -401,6 +417,8 @@ static gboolean thread_call_function_async_entry(gpointer user_data)
 	free(data);
 	return 0;
 }
+
+/*****************************************************************************/
 
 int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
 {
@@ -430,14 +448,14 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 	return 1;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 thread_t thread_get_main(void)
 {
 	return (thread_t)&main_thread;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 thread_t thread_get(void)
 {
@@ -460,7 +478,7 @@ thread_t thread_get(void)
 	return t;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 struct thread_wait_timer_entry_data
 {
@@ -468,12 +486,16 @@ struct thread_wait_timer_entry_data
 	void *timer_data;
 };
 
+/*****************************************************************************/
+
 static gboolean thread_wait_timer_entry(gpointer udata)
 {
 	struct thread_wait_timer_entry_data *data = (struct thread_wait_timer_entry_data*)udata;
 	data->timer_callback(data->timer_data);
 	return 1;
 }
+
+/*****************************************************************************/
 
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
@@ -509,7 +531,7 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 static gboolean thread_push_function_entry(gpointer user_data)
 {
@@ -528,6 +550,8 @@ static gboolean thread_push_function_entry(gpointer user_data)
 	free(data);
 	return FALSE;
 }
+
+/*****************************************************************************/
 
 int thread_push_function(void *function, int argcount, ...)
 {
@@ -561,7 +585,7 @@ int thread_push_function(void *function, int argcount, ...)
 	return 1;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 {
@@ -595,7 +619,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 	return 1;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
@@ -613,7 +637,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /* FIXME: Note that if the args are not passed in a register, but e.g., on the stack this doesn't need to
  * work depending on the ABI
@@ -639,6 +663,8 @@ static gboolean thread_call_function_async_string_entry(gpointer user_data)
 
 	return 0;
 }
+
+/*****************************************************************************/
 
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
@@ -673,7 +699,7 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	g_main_context_invoke(thread->context, thread_call_function_async_string_entry, data);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_aborted(void)
 {
@@ -685,12 +711,14 @@ int thread_aborted(void)
 	return aborted;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 struct semaphore_s
 {
 	GRecMutex mutex;
 };
+
+/*****************************************************************************/
 
 semaphore_t thread_create_semaphore(void)
 {
@@ -702,21 +730,29 @@ semaphore_t thread_create_semaphore(void)
 	return sem;
 }
 
+/*****************************************************************************/
+
 void thread_dispose_semaphore(semaphore_t sem)
 {
 	g_rec_mutex_clear(&sem->mutex);
 	free(sem);
 }
 
+/*****************************************************************************/
+
 void thread_lock_semaphore(semaphore_t sem)
 {
 	g_rec_mutex_lock(&sem->mutex);
 }
 
+/*****************************************************************************/
+
 int thread_attempt_lock_semaphore(semaphore_t sem)
 {
 	return g_rec_mutex_trylock(&sem->mutex);
 }
+
+/*****************************************************************************/
 
 void thread_unlock_semaphore(semaphore_t sem)
 {

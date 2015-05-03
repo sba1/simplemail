@@ -43,6 +43,8 @@
 /* #define MYDEBUG */
 #include "amigadebug.h"
 
+/*****************************************************************************/
+
 /* TODO:
     add thread_call_function_async_callback() which calls the functions asynchron but
     if the function returns another function is called on the calling process
@@ -79,7 +81,7 @@ static void timer_cleanup(struct timer *timer)
 	if (timer->timer_port) DeleteMsgPort(timer->timer_port);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Initialize timer the given timer.
@@ -106,7 +108,7 @@ static int timer_init(struct timer *timer)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Return mask of timer signal of the associated timer.
@@ -119,7 +121,7 @@ static ULONG timer_mask(struct timer *timer)
 	return 1UL << timer->timer_port->mp_SigBit;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Send the given timer if not already being sent.
@@ -140,8 +142,7 @@ static void timer_send_if_not_sent(struct timer *timer, int millis)
 	}
 }
 
-/***************************************************************************************/
-
+/*****************************************************************************/
 
 /**
  * The message that is passed around here.
@@ -187,7 +188,7 @@ struct thread_node
 
 static void thread_handle_execute_function_message(struct ThreadMessage *tmsg);
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Remove the thread which has replied its given tmsg
@@ -212,7 +213,7 @@ static void thread_remove(struct ThreadMessage *tmsg)
 	}
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Initialize the timer for the given thread.
@@ -240,7 +241,7 @@ static int thread_init_timer(struct thread_s *thread)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Cleanup pending timer of the given thread.
@@ -267,7 +268,7 @@ static void thread_cleanup_timer(struct thread_s *thread)
 	DeleteMsgPort(thread->timer_port);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int init_threads(void)
 {
@@ -288,7 +289,7 @@ int init_threads(void)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 void cleanup_threads(void)
 {
@@ -384,7 +385,7 @@ void cleanup_threads(void)
 	SM_LEAVE;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 ULONG thread_mask(void)
 {
@@ -393,7 +394,7 @@ ULONG thread_mask(void)
 	return (1UL << thread->thread_port->mp_SigBit) | (1UL << thread->timer_port->mp_SigBit);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 void thread_handle(ULONG mask)
 {
@@ -452,7 +453,7 @@ void thread_handle(ULONG mask)
 	}
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Entry point for a new thread.
@@ -516,7 +517,7 @@ static SAVEDS void thread_entry(void)
 	ReplyMsg((struct Message*)msg);
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_parent_task_can_contiue(void)
 {
@@ -538,7 +539,7 @@ int thread_parent_task_can_contiue(void)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Runs the given function in a newly created thread under the given name.
@@ -658,7 +659,7 @@ int thread_parent_task_can_contiue(void)
 	return NULL;
 }
 
-/***************************************************************************************/
+ /*****************************************************************************/
 
 thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 {
@@ -677,7 +678,7 @@ thread_t thread_add(char *thread_name, int (*entry)(void *), void *eudata)
 	return NULL;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_start(int (*entry)(void*), void *eudata)
 {
@@ -691,7 +692,7 @@ int thread_start(int (*entry)(void*), void *eudata)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 void thread_abort(thread_t thread_to_abort)
 {
@@ -703,7 +704,7 @@ void thread_abort(thread_t thread_to_abort)
 	Permit();
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 void thread_signal(thread_t thread_to_signal)
 {
@@ -715,7 +716,7 @@ void thread_signal(thread_t thread_to_signal)
 	Permit();
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * Returns ThreadMessage filled with the given parameters. You can manipulate
@@ -768,7 +769,7 @@ static struct ThreadMessage *thread_create_message(void *function, int argcount,
 	return tmsg;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /**
  * This will handle the execute function message.
@@ -806,7 +807,7 @@ static void thread_handle_execute_function_message(struct ThreadMessage *tmsg)
 	}
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...)
 {
@@ -856,7 +857,7 @@ int thread_call_parent_function_sync(int *success, void *function, int argcount,
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 /* TODO: Should call thread_handle()m needs better return values, and should
  * be optimized in case thread == thread_get()
@@ -902,7 +903,7 @@ int thread_call_function_sync(thread_t thread, void *function, int argcount, ...
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_function_async(thread_t thread, void *function, int argcount, ...)
 {
@@ -923,7 +924,7 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*), void *timer_data, int millis, void *function, int argcount, ...)
 {
@@ -991,7 +992,7 @@ int thread_call_parent_function_sync_timer_callback(void (*timer_callback)(void*
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 {
@@ -1070,7 +1071,7 @@ int thread_wait(void (*timer_callback(void*)), void *timer_data, int millis)
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_push_function(void *function, int argcount, ...)
 {
@@ -1091,7 +1092,7 @@ int thread_push_function(void *function, int argcount, ...)
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 {
@@ -1125,7 +1126,7 @@ int thread_push_function_delayed(int millis, void *function, int argcount, ...)
 	return rc;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_call_parent_function_async_string(void *function, int argcount, ...)
 {
@@ -1171,14 +1172,14 @@ int thread_call_parent_function_async_string(void *function, int argcount, ...)
 	return 0;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 thread_t thread_get_main(void)
 {
 	return &main_thread;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 thread_t thread_get(void)
 {
@@ -1186,7 +1187,7 @@ thread_t thread_get(void)
 }
 
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 int thread_aborted(void)
 {
@@ -1195,12 +1196,14 @@ int thread_aborted(void)
 	return aborted;
 }
 
-/***************************************************************************************/
+/*****************************************************************************/
 
 struct semaphore_s
 {
 	struct SignalSemaphore sem;
 };
+
+/*****************************************************************************/
 
 semaphore_t thread_create_semaphore(void)
 {
@@ -1212,20 +1215,28 @@ semaphore_t thread_create_semaphore(void)
 	return sem;
 }
 
+/*****************************************************************************/
+
 void thread_dispose_semaphore(semaphore_t sem)
 {
 	free(sem);
 }
+
+/*****************************************************************************/
 
 void thread_lock_semaphore(semaphore_t sem)
 {
 	ObtainSemaphore(&sem->sem);
 }
 
+/*****************************************************************************/
+
 int thread_attempt_lock_semaphore(semaphore_t sem)
 {
 	return (int)AttemptSemaphore(&sem->sem);
 }
+
+/*****************************************************************************/
 
 void thread_unlock_semaphore(semaphore_t sem)
 {

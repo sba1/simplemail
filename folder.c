@@ -4011,7 +4011,6 @@ void folder_create_imap(void)
 		if (ac->recv_type && ac->imap && ac->imap->name)
 		{
 			struct folder *f;
-			int found = 0;
 
 			folders_lock();
 
@@ -4023,13 +4022,12 @@ void folder_create_imap(void)
 					!mystricmp(f->imap_user,ac->imap->login) &&
 					f->special == FOLDER_SPECIAL_GROUP)
 				{
-					found = 1;
 					break;
 				}
 				f = folder_next(f);
 			}
 
-			if (!found)
+			if (!f)
 			{
 				char buf[128];
 				int tries = 0;
@@ -4059,13 +4057,10 @@ void folder_create_imap(void)
 				}
 			} else
 			{
-				if (f)
-				{
-					/* The folder has been added because a directory has been found. But it
-					 * might be not considered as a group so we change it manually */
-					f->special = FOLDER_SPECIAL_GROUP;
-					f->is_imap = 1;
-				}
+				/* The folder has been added because a directory has been found. But it
+				 * might be not considered as a group so we change it manually */
+				f->special = FOLDER_SPECIAL_GROUP;
+				f->is_imap = 1;
 			}
 
 			/* Now look into the directory for more folders */

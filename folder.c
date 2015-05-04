@@ -2337,6 +2337,32 @@ struct folder *folder_find_by_imap(char *user, char *server, char *path)
 	return NULL;
 }
 
+/**
+ * Find the folder by the given imap account.
+ *
+ * @param ac the account that is associated to the folder.
+ * @return the root folder for the imap account or NULL if there is no such
+ *  folder.
+ */
+static struct folder *folder_find_by_imap_account(struct account *ac)
+{
+	struct folder *f;
+
+	/* Folder already been added? */
+	f = folder_first();
+	while (f)
+	{
+		if (!mystricmp(f->imap_server, ac->imap->name) &&
+			!mystricmp(f->imap_user,ac->imap->login) &&
+			f->special == FOLDER_SPECIAL_GROUP)
+		{
+			break;
+		}
+		f = folder_next(f);
+	}
+	return f;
+}
+
 /******************************************************************
  Returns the incoming folder
 *******************************************************************/
@@ -4015,19 +4041,7 @@ void folder_create_imap(void)
 			folders_lock();
 
 			/* Folder already been added? */
-			f = folder_first();
-			while (f)
-			{
-				if (!mystricmp(f->imap_server,ac->imap->name) &&
-					!mystricmp(f->imap_user,ac->imap->login) &&
-					f->special == FOLDER_SPECIAL_GROUP)
-				{
-					break;
-				}
-				f = folder_next(f);
-			}
-
-			if (!f)
+			if (!(f = folder_find_by_imap_account(ac)))
 			{
 				char buf[128];
 				int tries = 0;

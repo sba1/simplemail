@@ -4020,7 +4020,8 @@ void folder_create_imap(void)
 			while (f)
 			{
 				if (!mystricmp(f->imap_server,ac->imap->name) &&
-						!mystricmp(f->imap_user,ac->imap->login) && f->special == FOLDER_SPECIAL_GROUP)
+					!mystricmp(f->imap_user,ac->imap->login) &&
+					f->special == FOLDER_SPECIAL_GROUP)
 				{
 					found = 1;
 					break;

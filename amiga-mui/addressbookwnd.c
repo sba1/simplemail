@@ -57,6 +57,7 @@
 #include "muistuff.h"
 #include "pgplistclass.h"
 #include "picturebuttonclass.h"
+#include "request.h"
 #include "utf8stringclass.h"
 
 void addressbookwnd_store(void);

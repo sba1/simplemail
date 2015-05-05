@@ -36,6 +36,7 @@
 #include "smintl.h"
 #include "support_indep.h"
 
+#include "request.h"
 #include "support.h"
 #include "timesupport.h"
 

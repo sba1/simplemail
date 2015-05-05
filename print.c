@@ -31,8 +31,8 @@
 #include "parse.h"
 #include "smintl.h"
 
+#include "request.h"
 #include "sysprint.h"
-#include "support.h"
 #include "timesupport.h"
 
 #define ANSI_NORMAL     "[0m"

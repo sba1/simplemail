@@ -92,6 +92,7 @@
 #include "picturebuttonclass.h"
 #include "popupmenuclass.h"
 #include "readwnd.h"
+#include "request.h"
 #include "startupwnd.h"
 #include "shutdownwnd.h"
 #include "smtoolbarclass.h"

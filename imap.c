@@ -47,6 +47,7 @@
 #include "support_indep.h"
 #include "tcp.h"
 
+#include "request.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"

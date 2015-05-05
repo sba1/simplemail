@@ -50,6 +50,7 @@
 #include "support_indep.h"
 
 #include "mainwnd.h"
+#include "request.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"

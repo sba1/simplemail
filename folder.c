@@ -46,6 +46,7 @@
 #include "support_indep.h"
 
 #include "gui_main.h" /* gui_execute_arexx() */
+#include "request.h"
 #include "searchwnd.h"
 #include "support.h"
 #include "timesupport.h"

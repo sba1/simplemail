@@ -52,6 +52,7 @@
 #include "composewnd.h"
 #include "mainwnd.h"
 #include "readwnd.h"
+#include "request.h"
 #include "simplemail.h"
 #include "support.h"
 

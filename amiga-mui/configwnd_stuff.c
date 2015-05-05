@@ -35,12 +35,13 @@
 #include "parse.h"
 #include "debug.h"
 #include "smintl.h"
-#include "support.h"
 #include "support_indep.h"
 
 #include "compiler.h"
 #include "muistuff.h"
 #include "configwnd_stuff.h"
+#include "request.h"
+#include "support.h"
 
 /******************************************************************
  Convert addresses from a texteditor object to an array.

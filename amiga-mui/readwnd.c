@@ -68,6 +68,7 @@
 #include "smtoolbarclass.h"
 #include "picturebuttonclass.h"
 #include "readwnd.h"
+#include "request.h"
 #include "support.h"
 #include "print.h"
 

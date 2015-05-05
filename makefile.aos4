@@ -154,6 +154,7 @@ ARCHSRCS=\
 	popupmenuclass.c \
 	progmonwnd.c \
 	readwnd.c \
+	request.c \
 	searchwnd.c \
 	shutdownwnd.c \
 	signaturecycleclass.c \

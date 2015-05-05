@@ -55,6 +55,7 @@
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "messageviewclass.h"
+#include "request.h"
 #include "simplehtml_mcc.h"
 
 /**************************************************************************/

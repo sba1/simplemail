@@ -59,6 +59,7 @@
 #include "mainwnd.h"
 #include "progmonwnd.h"
 #include "readwnd.h"
+#include "request.h"
 #include "searchwnd.h"
 #include "shutdownwnd.h"
 #include "startupwnd.h"

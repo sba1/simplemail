@@ -22,8 +22,8 @@
 
 #include "configuration.h"
 #include "debug.h"
+#include "request.h"
 #include "smintl.h"
-#include "support.h"
 #include "sysprint.h"
 
 #include <exec/types.h>

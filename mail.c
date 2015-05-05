@@ -43,6 +43,7 @@
 #include "support_indep.h"
 #include "trans.h" /* for mail_upload_single() */
 
+#include "request.h"
 #include "support.h"
 #include "timesupport.h"
 

@@ -67,6 +67,8 @@
 #include "configwnd_stuff.h"
 #include "appicon.h"
 #include "foldertreelistclass.h"
+#include "request.h"
+
 
 static void account_recv_port_update(void);
 static void account_refresh_signature_cycle(void);

@@ -161,7 +161,7 @@ ARCHSRCS=\
 	startup-os4.c \
 	startupwnd.c \
 	statuswnd.c \
-	subthreads.c \
+	subthreads_amiga.c \
 	support.c \
 	sysprint.c \
 	tcpip.c \

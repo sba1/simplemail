@@ -40,13 +40,10 @@
 #include "support_indep.h"
 
 #include "foldertreelistclass.h"
+#include "gui_main_amiga.h"
 #include "muistuff.h"
 #include "pgplistclass.h"
 #include "support.h"
-
-/*****************************************************************************/
-
-void loop(void); /* gui_main.c */
 
 /*****************************************************************************/
 

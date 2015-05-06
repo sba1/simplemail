@@ -24,5 +24,6 @@
 #define GUI_MAIN_AMIGA_H
 
 char *gui_get_images_directory(void);
+void loop(void);
 
 #endif

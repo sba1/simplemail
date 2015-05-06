@@ -16,12 +16,12 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** gui_main_arch.h
-*/
+/**
+ * @file
+ */
 
-#ifndef GUI_MAIN_ARCH_H
-#define GUI_MAIN_ARCH_H
+#ifndef GUI_MAIN_AMIGA_H
+#define GUI_MAIN_AMIGA_H
 
 char *gui_get_images_directory(void);
 

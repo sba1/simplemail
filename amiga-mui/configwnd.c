@@ -58,7 +58,7 @@
 #include "compiler.h"
 #include "composeeditorclass.h"
 #include "configwnd.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "muistuff.h"
 #include "multistringclass.h"
 #include "picturebuttonclass.h"

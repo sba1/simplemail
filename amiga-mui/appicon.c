@@ -37,7 +37,8 @@
 #include "debug.h"
 
 #include "appicon.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
+
 #include "mainwnd.h"
 #include "statuswnd.h"
 

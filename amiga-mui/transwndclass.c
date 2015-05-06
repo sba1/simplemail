@@ -47,7 +47,7 @@
 #include "support_indep.h"
 
 #include "compiler.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"
 #include "support.h"

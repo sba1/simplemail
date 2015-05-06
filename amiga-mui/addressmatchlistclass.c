@@ -45,7 +45,7 @@
 
 #include "addressmatchlistclass.h"
 #include "compiler.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "picturebuttonclass.h"

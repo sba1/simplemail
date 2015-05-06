@@ -43,7 +43,8 @@
 
 #include "amigasupport.h"
 #include "datatypescache.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
+
 #include "support.h"
 
 #ifdef __AMIGAOS4__

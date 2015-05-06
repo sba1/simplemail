@@ -57,7 +57,7 @@
 #include "amigasupport.h"
 #include "compiler.h"
 #include "datatypescache.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "mailtreelistclass.h"
 #include "muistuff.h"
 #include "support.h"

@@ -32,7 +32,7 @@
 #include "support_indep.h"
 
 #include "datatypescache.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "startupwnd.h"
 
 static struct Window *startup_wnd;

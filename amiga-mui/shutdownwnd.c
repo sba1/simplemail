@@ -35,7 +35,7 @@
 #include "support_indep.h"
 
 #include "datatypescache.h"
-#include "gui_main_arch.h"
+#include "gui_main_amiga.h"
 #include "shutdownwnd.h"
 
 static struct Window *shutdown_wnd;

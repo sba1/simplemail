@@ -10,7 +10,7 @@ SRCS = $(addprefix ../,$(NONARCHSRCS)) \
 	../gtk/support.c \
 	../platform/timesupport_glib.c \
 	../platform/subthreads_glib.c \
-	../gtk/tcpip.c
+	../platform/tcpip_posix.c
 
 OBJS = $(SRCS:../%.c=test-objs/%.o)
 

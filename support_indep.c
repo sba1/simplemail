@@ -860,7 +860,7 @@ int array_index(char **strings, const char *str)
  * @param str
  * @return
  */
-int array_index_utf8(char **strings, char *str)
+int array_index_utf8(char **strings, const char *str)
 {
 	int i;
 	if (!strings) return -1;

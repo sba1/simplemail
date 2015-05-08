@@ -68,7 +68,7 @@ int longest_common_substring(const char **strings, int num, int *pos_in_a, int *
 int array_contains(char **strings, const char *str);
 int array_contains_utf8(char **strings, const char *str);
 int array_index(char **strings, const char *str);
-int array_index_utf8(char **strings, char *str);
+int array_index_utf8(char **strings, const char *str);
 char **array_add_string(char **strings, const char *str);
 char **array_add_array(char **dest, char **src);
 int array_length(char **strings);

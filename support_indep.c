@@ -64,7 +64,7 @@ int has_spaces(const char *str)
  *
  * @return pointer to value or NULL if the pattern didn't match.
  */
-char *get_key_value(char *str, char *key)
+char *get_key_value(char *str, const char *key)
 {
 	int len = strlen(key);
 	if (!mystrnicmp(str,key,len))

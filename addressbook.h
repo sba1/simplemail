@@ -87,7 +87,7 @@ struct addressbook_entry_new *addressbook_next_entry(struct addressbook_entry_ne
 struct addressbook_entry_new *addressbook_duplicate_entry_new(struct addressbook_entry_new *entry);
 void addressbook_free_entry_new(struct addressbook_entry_new *entry);
 char *addressbook_get_entry_completing_part(struct addressbook_entry_new *entry, char *part, int *type_ptr);
-struct addressbook_entry_new *addressbook_add_entry(char *realname);
+struct addressbook_entry_new *addressbook_add_entry(const char *realname);
 struct addressbook_entry_new *addressbook_add_entry_duplicate(struct addressbook_entry_new *entry);
 
 /* Group functions */

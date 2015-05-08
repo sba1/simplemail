@@ -29,7 +29,7 @@
 #include <string.h>
 
 int has_spaces(const char *str);
-char *get_key_value(char *buf, char *item);
+char *get_key_value(char *buf, const char *item);
 
 int mystrcmp(const char *str1, const char *str2);
 int mystrncmp(unsigned char *str1, unsigned char *str2,int len);

@@ -815,7 +815,7 @@ out:
  * @param str
  * @return
  */
-int array_contains(char **strings, char *str)
+int array_contains(char **strings, const char *str)
 {
 	return array_index(strings,str)!=-1;
 }
@@ -827,7 +827,7 @@ int array_contains(char **strings, char *str)
  * @param str
  * @return
  */
-int array_contains_utf8(char **strings, char *str)
+int array_contains_utf8(char **strings, const char *str)
 {
 	return array_index_utf8(strings,str)!=-1;
 }
@@ -841,7 +841,7 @@ int array_contains_utf8(char **strings, char *str)
  * @param str
  * @return
  */
-int array_index(char **strings, char *str)
+int array_index(char **strings, const char *str)
 {
 	int i;
 	if (!strings) return -1;
@@ -916,7 +916,7 @@ char **array_remove_idx(char **strings, int idx)
  * @param str defines the string to be added. It is duplicated.
  * @return the new array or NULL.
  */
-char **array_add_string(char **strings, char *str)
+char **array_add_string(char **strings, const char *str)
 {
 	int length = array_length(strings);
 	char **new_strings;
@@ -1184,7 +1184,7 @@ void string_crop(string *string, int startpos, int endpos)
  * @param file
  * @return the combined path allocated via malloc().
  */
-char *mycombinepath(char *drawer, char *file)
+char *mycombinepath(const char *drawer, const char *file)
 {
 	int len;
 	char *dest;

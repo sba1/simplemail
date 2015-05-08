@@ -65,11 +65,11 @@ void wrap_text(char *text, int border);
 int longest_common_prefix(char * const *strings, int num);
 int longest_common_substring(const char **strings, int num, int *pos_in_a, int *len);
 
-int array_contains(char **strings, char *str);
-int array_contains_utf8(char **strings, char *str);
-int array_index(char **strings, char *str);
+int array_contains(char **strings, const char *str);
+int array_contains_utf8(char **strings, const char *str);
+int array_index(char **strings, const char *str);
 int array_index_utf8(char **strings, char *str);
-char **array_add_string(char **strings, char *str);
+char **array_add_string(char **strings, const char *str);
 char **array_add_array(char **dest, char **src);
 int array_length(char **strings);
 char **array_duplicate(char **rcp);
@@ -78,7 +78,7 @@ void array_free(char **string_array);
 char **array_replace_idx(char **strings, int idx, char *str);
 char **array_remove_idx(char **strings, int idx);
 
-char *mycombinepath(char *drawer, char *file);
+char *mycombinepath(const char *drawer, const char *file);
 
 /**
  * Gives the length of an array

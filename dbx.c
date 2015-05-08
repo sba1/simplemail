@@ -109,7 +109,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 
 	if (size < 12) size = 12;
 
-	if (!(buf = malloc(size)))
+	if (!(buf = (unsigned char*)malloc(size)))
 	{
 		SM_DEBUGF(5,("Couldn't allocate %d bytes\n",size));
 		return 0;
@@ -150,7 +150,7 @@ static int dbx_read_indexed_info(FILE *fh, unsigned int addr, unsigned int size)
 
 		SM_DEBUGF(5,("read in %d bytes of object at 0x%x, but index length length is %d\n",size,addr,length_of_idxs));
 		
-		if (!(newbuf = malloc(length_of_idxs + 12)))
+		if (!(newbuf = (unsigned char*)malloc(length_of_idxs + 12)))
 			goto out;
 
 		memcpy(newbuf,buf,size);
@@ -261,7 +261,7 @@ static int dbx_read_node(FILE *fh, unsigned int addr, int *mail_accu)
 	unsigned int child;
 	int entries;
 
-	if (!(buf = malloc(TREESIZE))) return 0;
+	if (!(buf = (unsigned char*)malloc(TREESIZE))) return 0;
 
 	if (fseek(fh,addr,SEEK_SET))
 	{

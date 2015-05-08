@@ -20,8 +20,6 @@ MKDIR = makedir
 DATE =
 endif
 
-# Uncomment the next line if you are cross compiling
-
 CC     = $(CROSS_COMPILE)gcc
 CXX    = $(CROSS_COMPILE)c++
 AS     = $(CROSS_COMPILE)as

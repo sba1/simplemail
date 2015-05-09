@@ -158,6 +158,11 @@ int thread_call_function_async(thread_t, R (*Func)(A...), int argcount, A... arg
  */
 int thread_call_parent_function_sync(int *success, void *function, int argcount, ...);
 
+#if __cplusplus >= 201103L
+template<typename R, typename... A>
+int thread_call_parent_function_sync(int *success, R (*Func)(A...), int argcount, A... args);
+#endif
+
 /**
  * Call the given function asynchronous in the context of the parent thread
  * and duplicate the first argument which is threaded at a string.

@@ -328,7 +328,7 @@ static int folder_config_load(struct folder *f);
  * @param mode the open mode, like fopen().
  * @return the filehandle or NULL on error.
  */
-static FILE *folder_open_indexfile(struct folder *f, char *mode)
+static FILE *folder_open_indexfile(struct folder *f, const char *mode)
 {
 	FILE *fh;
 	char *path;
@@ -448,7 +448,7 @@ static int folder_prepare_for_additional_mails(struct folder *folder, int num_ma
 	struct mail_info **new_mail_array;
 	int new_mail_array_allocated = folder->mail_info_array_allocated + num_mails + 5;
 
-	new_mail_array = realloc(folder->mail_info_array, new_mail_array_allocated*sizeof(struct mail_info*));
+	new_mail_array = (struct mail_info**)realloc(folder->mail_info_array, new_mail_array_allocated*sizeof(struct mail_info*));
 	if (!new_mail_array) return 0;
 
 	folder->mail_info_array_allocated = new_mail_array_allocated;
@@ -529,7 +529,7 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 
 		if (folder->num_pending_mails == folder->pending_mail_info_array_allocated)
 		{
-			struct mail_info **array = realloc(folder->pending_mail_info_array,(folder->pending_mail_info_array_allocated + 16)*sizeof(struct mail_info*));
+			struct mail_info **array = (struct mail_info**)realloc(folder->pending_mail_info_array,(folder->pending_mail_info_array_allocated + 16)*sizeof(struct mail_info*));
 			if (!array) return 0;
 
 			folder->pending_mail_info_array_allocated += 16;
@@ -568,10 +568,10 @@ int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort)
 	if (folder->mail_info_array_allocated == folder->num_mails)
 	{
 		folder->mail_info_array_allocated += 50;
-		folder->mail_info_array = realloc(folder->mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail*));
+		folder->mail_info_array = (struct mail_info **)realloc(folder->mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail_info *));
 
 		if (folder->sorted_mail_info_array)
-			folder->sorted_mail_info_array = realloc(folder->sorted_mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail*));
+			folder->sorted_mail_info_array = (struct mail_info **)realloc(folder->sorted_mail_info_array,folder->mail_info_array_allocated*sizeof(struct mail_info *));
 	}
 
 	if (!folder->mail_info_array)
@@ -1316,7 +1316,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 								m->from_addr = fread_str_no_null(fh);
 
 								/* Read the to list */
-								if ((m->to_list = malloc(sizeof(struct list))))
+								if ((m->to_list = (struct address_list*)malloc(sizeof(struct address_list))))
 									list_init(&m->to_list->list);
 
 								while (num_to--)
@@ -1334,7 +1334,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 									if (m->to_list)
 									{
-										if ((addr = malloc(sizeof(struct address))))
+										if ((addr = (struct address*)malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
@@ -1344,7 +1344,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 								}
 
 								/* Read the cc list */
-								if ((m->cc_list = malloc(sizeof(struct list))))
+								if ((m->cc_list = (struct address_list*)malloc(sizeof(struct address_list))))
 									list_init(&m->cc_list->list);
 
 								while (num_cc--)
@@ -1355,7 +1355,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 
 									if (m->cc_list)
 									{
-										if ((addr = malloc(sizeof(struct address))))
+										if ((addr = (struct address*)malloc(sizeof(struct address))))
 										{
 											addr->realname = realname;
 											addr->email = email;
@@ -1824,7 +1824,7 @@ struct folder *folder_create_live_filter(struct folder *folder, utf8 *filter)
 
 	if (folder->is_imap) return NULL;
 
-	if (!(f = malloc(sizeof(struct folder))))
+	if (!(f = (struct folder *)malloc(sizeof(struct folder))))
 		return NULL;
 
 	memset(f,0,sizeof(struct folder));
@@ -2870,7 +2870,7 @@ static char *fread_str(FILE *fh)
 	a = fgetc(fh);
 	len += a;
 
-	if ((txt = malloc(len+1)))
+	if ((txt = (char*)malloc(len+1)))
 	{
 		fread(txt,1,len,fh);
 		txt[len]=0;
@@ -2895,7 +2895,7 @@ static char *fread_str_no_null(FILE *fh)
 
 	if (!len) return NULL;
 
-	if ((txt = malloc(len+1)))
+	if ((txt = (char*)malloc(len+1)))
 	{
 		fread(txt,1,len,fh);
 		txt[len]=0;
@@ -3442,7 +3442,7 @@ int mail_matches_filter(struct folder *folder, struct mail_info *m,
 									int decoded_data_len;
 
 									mail_decoded_data(text_part,&decoded_data,&decoded_data_len);
-									take = filter_match_rule_len(&rule->u.body.body_parsed,decoded_data,decoded_data_len,rule->flags);
+									take = filter_match_rule_len(&rule->u.body.body_parsed,(char*)decoded_data,decoded_data_len,rule->flags);
 								}
 							}
 						}
@@ -3644,7 +3644,7 @@ static void folder_start_search_entry(struct search_msg *msg)
 
 	sopt = search_options_duplicate(msg->sopt);
 	f_array_len = msg->f_array_len;
-	if ((f_array = malloc((f_array_len+1)*sizeof(struct folder*))))
+	if ((f_array = (struct folder**)malloc((f_array_len+1)*sizeof(struct folder*))))
 	{
 		int i;
 		for (i=0;i<f_array_len;i++)
@@ -3807,7 +3807,7 @@ void folder_start_search(struct search_options *sopt)
 		f = folder_next(f);
 	}
 
-	if ((array = malloc((num+1)*sizeof(struct folder*))))
+	if ((array = (struct folder**)malloc((num+1)*sizeof(struct folder*))))
 	{
 		int i = 0;
 
@@ -4087,7 +4087,7 @@ void folder_create_imap(void)
 
 				getcwd(path, sizeof(path));
 
-				if ((st = malloc(sizeof(struct stat))))
+				if ((st = (struct stat*)malloc(sizeof(struct stat))))
 				{
 					if ((dfd = opendir(f->path)))
 					{
@@ -4189,7 +4189,7 @@ static void folder_fix(void)
 	struct folder *f;
 	struct stat *st;
 
-	if (!(st = malloc(sizeof(struct stat))))
+	if (!(st = (struct stat*)malloc(sizeof(struct stat))))
 		return;
 
 	f = folder_first();
@@ -4248,7 +4248,7 @@ int init_folders(void)
 	folder_traverse_order_file(init_folders_traverse_orders_callback,NULL);
 	folder_fix();
 
-	if (!(st = malloc(sizeof(struct stat))))
+	if (!(st = (struct stat*)malloc(sizeof(struct stat))))
 		return 0;
 
 	if ((dfd = opendir(user.folder_directory)))

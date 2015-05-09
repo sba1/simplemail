@@ -112,7 +112,7 @@ static void debug_insert_module(char *mod)
 			hash_table_insert(&debug_modules_table,mod,1);
 	}
 
-	if ((newmod = malloc(len+3)))
+	if ((newmod = (char*)malloc(len+3)))
 	{
 		strcpy(newmod,mod);
 		strcat(newmod,".c");

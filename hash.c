@@ -213,7 +213,7 @@ struct hash_entry *hash_table_insert(struct hash_table *ht, const char *string, 
 		return &hb->entry;
 	}
 
-	nhb = malloc(sizeof(struct hash_bucket));
+	nhb = (struct hash_bucket*)malloc(sizeof(struct hash_bucket));
 	if (!nhb) return NULL;
 
 	*nhb = *hb;

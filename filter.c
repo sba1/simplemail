@@ -40,7 +40,7 @@
  */
 struct filter *filter_create(void)
 {
-	struct filter *f = malloc(sizeof(struct filter));
+	struct filter *f = (struct filter*)malloc(sizeof(struct filter));
 	if (f)
 	{
 		memset(f,0,sizeof(struct filter));
@@ -171,7 +171,7 @@ void filter_parse_all_filters(void)
  */
 struct filter *filter_duplicate(struct filter *filter)
 {
-	struct filter *f = malloc(sizeof(struct filter));
+	struct filter *f = (struct filter*)malloc(sizeof(struct filter));
 	if (f)
 	{
 		struct filter_rule *rule;
@@ -380,7 +380,7 @@ struct filter_rule *filter_rule_create_from_strings(char **strings, int num_stri
 struct filter_rule *filter_rule_create_from_common_sorted_recipients(char ***addresses, unsigned int num_addresses)
 {
 	/* This is a very naive implementation, which could be optimized */
-	int i,j;
+	unsigned int i,j;
 	struct filter_rule *r;
 	char **common_recipients;
 
@@ -505,7 +505,7 @@ struct filter_rule *filter_rule_create_from_mail_iterator(enum filter_rule_creat
 		{
 			case	FRCT_FROM:
 			case	FRCT_RECEPIENTS:
-					array_free(data[i]);
+					array_free((char**)data[i]);
 					break;
 			default: break;
 		}
@@ -671,7 +671,7 @@ void filter_list_load(FILE *fh)
 
 			if (!(f = (struct filter*)list_find(&user.config.filter_list,filter_no)))
 			{
-				if ((f = malloc(sizeof(struct filter))))
+				if ((f = (struct filter*)malloc(sizeof(struct filter))))
 				{
 					memset(f,0,sizeof(struct filter));
 					list_init(&f->rules_list);
@@ -715,7 +715,7 @@ void filter_list_load(FILE *fh)
 
 						if (!(fr = (struct filter_rule*)list_find(&f->rules_list, rule_no)))
 						{
-							if ((fr = malloc(sizeof(struct filter_rule))))
+							if ((fr = (struct filter_rule*)malloc(sizeof(struct filter_rule))))
 							{
 								memset(fr,0,sizeof(struct filter_rule));
 								/* setting old-flags to be downward compatible,
@@ -888,7 +888,7 @@ void filter_list_save(FILE *fh)
  */
 struct search_options *search_options_duplicate(struct search_options *so)
 {
-	struct search_options *new_so = malloc(sizeof(*so));
+	struct search_options *new_so = (struct search_options*)malloc(sizeof(*so));
 	if (new_so)
 	{
 		*new_so = *so;

@@ -118,7 +118,7 @@ static int get_local_mail_array(struct folder *folder, struct local_mail **local
 	num_of_mails = folder->num_mails;
 	num_of_todel_mails = 0;
 
-	if ((local_mail_array = malloc(sizeof(*local_mail_array) * num_of_mails)))
+	if ((local_mail_array = (struct local_mail *)malloc(sizeof(*local_mail_array) * num_of_mails)))
 	{
 		/* fill in the uids of the mails */
 		for (i=0;i < num_of_mails;i++)
@@ -581,7 +581,7 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 
 	if ((num_of_remote_mails = rm->num_of_remote_mail))
 	{
-		if ((remote_mail_array = malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
+		if ((remote_mail_array = (struct remote_mail*)malloc(sizeof(struct remote_mail)*num_of_remote_mails)))
 		{
 			unsigned int max_uid = 0; /* Max UID discovered so far */
 			unsigned int fetch_time_ref;
@@ -664,7 +664,7 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 							{
 								int pos = 0;
 
-								if ((headers = malloc(todownload+1)))
+								if ((headers = (char*)malloc(todownload+1)))
 								{
 									headers[todownload]=0;
 
@@ -739,7 +739,7 @@ static struct string_list *imap_get_folders(struct connection *conn, int all)
 	char send[200];
 	char buf[100];
 
-	struct string_list *list = malloc(sizeof(struct string_list));
+	struct string_list *list = (struct string_list*)malloc(sizeof(struct string_list));
 	if (!list) return NULL;
 	string_list_init(list);
 
@@ -1122,8 +1122,8 @@ void imap_synchronize_really(struct list *imap_list, int called_by_auto)
 			/* Ask for the login/password */
 			if (server->ask)
 			{
-				char *password = malloc(512);
-				char *login = malloc(512);
+				char *password = (char*)malloc(512);
+				char *login = (char*)malloc(512);
 
 				if (password && login)
 				{
@@ -1902,7 +1902,7 @@ static int imap_thread_really_download_mails(void)
 	/* Display status message. We mis-use path here */
 	{
 		int l;
-		char *f = imap_folder?imap_folder:"Root";
+		const char *f = imap_folder?imap_folder:"Root";
 
 		l = sm_snprintf(path,sizeof(path),"%s: ",imap_server->name);
 		switch (downloaded_mails)
@@ -1943,8 +1943,8 @@ static int imap_thread_really_connect_and_login_to_server(void)
 
 	if (imap_server->ask)
 	{
-		char *password = malloc(512);
-		char *login = malloc(512);
+		char *password = (char*)malloc(512);
+		char *login = (char*)malloc(512);
 
 		if (password && login)
 		{

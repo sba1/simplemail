@@ -26,7 +26,7 @@ void status_close(void);
 void status_set_title(char *title);
 void status_set_title_utf8(char *title);
 void status_set_line(char *str);
-void status_set_status(char *str);
+void status_set_status(const char *str);
 void status_set_head(char *head);
 void status_set_connect_to_server(char *server);
 void status_init_gauge_as_bytes(int maximal);

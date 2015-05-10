@@ -206,7 +206,7 @@ void status_set_line(char *str)
  *
  * @param str the status text
  */
-static void status_set_status_really(char *str)
+static void status_set_status_really(const char *str)
 {
 	free(status_text);
 	status_text = mystrdup(str);
@@ -226,7 +226,7 @@ static void status_set_status_really(char *str)
  *
  * @param str the status text.
  */
-void status_set_status(char *str)
+void status_set_status(const char *str)
 {
 	thread_call_function_sync(thread_get_main(), status_set_status_really, 1, str);
 }

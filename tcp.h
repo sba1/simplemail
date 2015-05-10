@@ -71,7 +71,7 @@ void tcp_disconnect(struct connection *conn);
 int tcp_make_secure(struct connection *conn, char *server_name, char *fingerprint);
 int tcp_secure(struct connection *conn);
 long tcp_read(struct connection *conn, void *, long);
-int tcp_write(struct connection *conn, void *, long);
+int tcp_write(struct connection *conn, const void *, long);
 int tcp_write_unbuffered(struct connection *conn, void *,long);
 int tcp_flush(struct connection *conn);
 char *tcp_readln(struct connection *conn);

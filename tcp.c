@@ -552,7 +552,7 @@ static int tcp_read_char(struct connection *conn)
  * @return the number of bytes that actually have been written or -1 for an failure.
  * @note this function is buffered.
  */
-int tcp_write(struct connection *conn, void *buf, long nbytes)
+int tcp_write(struct connection *conn, const void *buf, long nbytes)
 {
 	int rc = nbytes;
 

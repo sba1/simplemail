@@ -141,9 +141,6 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 		SM_DEBUGF(20,("Got socket descriptor %ld\n",sd));
 		if (sd != -1)
 		{
-#ifndef NO_SSL
-			int security_error = 0;
-#endif
 			memset(&sockaddr,0,sizeof(struct sockaddr_in));
 
 #if defined(_AMIGA) || defined(__MORPHOS__) /* ugly */
@@ -173,7 +170,6 @@ struct connection *tcp_connect(char *server, unsigned int port, struct connect_o
 							SM_DEBUGF(10,("Socket couldn't be made secure\n"));
 							/* TODO: Reestablish only if unsecure connection can be tolerated.
 							 * Use TCP_NOT_SECURE */
-							security_error = 1;
 							myclosesocket(sd);
 							sd = socket(PF_INET, SOCK_STREAM, 0);
 							if (sd == -1)

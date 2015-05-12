@@ -316,6 +316,7 @@ static void arexx_mailwrite(struct RexxMsg *rxmsg, STRPTR args)
  */
 static void arexx_writeattach(struct RexxMsg *rxmsg, STRPTR args)
 {
+#if 0
 	APTR arg_handle;
 	ULONG window;
 
@@ -337,6 +338,7 @@ static void arexx_writeattach(struct RexxMsg *rxmsg, STRPTR args)
 	else window = -1;
 
 	FreeTemplate(arg_handle);
+#endif
 }
 
 /****************************************************************

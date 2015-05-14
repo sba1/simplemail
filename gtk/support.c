@@ -44,7 +44,7 @@
  Creates a directory including all necessaries parent directories.
  Nothing will happen if the directory already exists
 *******************************************************************/
-int sm_makedir(char *path)
+int sm_makedir(const char *path)
 {
 	int rc;
 

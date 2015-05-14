@@ -109,7 +109,7 @@ void addressbook_free_group(struct addressbook_group *grp)
  * @param name
  * @return
  */
-struct addressbook_group *addressbook_find_group_by_name(utf8 *name)
+struct addressbook_group *addressbook_find_group_by_name(const utf8 *name)
 {
 	struct addressbook_group *grp;
 
@@ -129,7 +129,7 @@ struct addressbook_group *addressbook_find_group_by_name(utf8 *name)
  * @param name specifies the name of the address book group to be created.
  * @return the reference to the newly created address book group.
  */
-struct addressbook_group *addressbook_add_group(utf8 *name)
+struct addressbook_group *addressbook_add_group(const utf8 *name)
 {
 	struct addressbook_group *grp = (struct addressbook_group *)malloc(sizeof(*grp));
 	if (!grp) return 0;
@@ -304,7 +304,7 @@ struct addressbook_entry_new *addressbook_add_entry(const char *realname)
 /**************************************************************************
  Put a xml elelemt into a file (if string exists)
 **************************************************************************/
-static void put_xml_element_string(FILE *fh, char *element, const char *contents)
+static void put_xml_element_string(FILE *fh, const char *element, const char *contents)
 {
 	const char *src;
 	char c;
@@ -1051,7 +1051,7 @@ int addressbook_import_file(char *filename, int append)
 /**************************************************************************
  Saves the address_snail_phone structure as xml
 **************************************************************************/
-static void addressbook_save_snail_phone(char *container, struct address_snail_phone *asp, FILE *fh)
+static void addressbook_save_snail_phone(const char *container, struct address_snail_phone *asp, FILE *fh)
 {
 	fprintf(fh,"<%s>\n",container);
 
@@ -1246,7 +1246,7 @@ static void freesnailphone(struct address_snail_phone *dest)
 /**************************************************************************
  ...
 **************************************************************************/
-struct addressbook_entry_new *addressbook_find_entry_by_address(char *email)
+struct addressbook_entry_new *addressbook_find_entry_by_address(const char *email)
 {
 	struct addressbook_entry_new *entry;
 
@@ -1267,7 +1267,7 @@ struct addressbook_entry_new *addressbook_find_entry_by_address(char *email)
 /**************************************************************************
  ...
 **************************************************************************/
-struct addressbook_entry_new *addressbook_find_entry_by_alias(char *alias)
+struct addressbook_entry_new *addressbook_find_entry_by_alias(const char *alias)
 {
 	struct addressbook_entry_new *entry;
 
@@ -1283,7 +1283,7 @@ struct addressbook_entry_new *addressbook_find_entry_by_alias(char *alias)
 /**************************************************************************
  ...
 **************************************************************************/
-struct addressbook_entry_new *addressbook_find_entry_by_realname(char *realname)
+struct addressbook_entry_new *addressbook_find_entry_by_realname(const char *realname)
 {
 	struct addressbook_entry_new *entry;
 

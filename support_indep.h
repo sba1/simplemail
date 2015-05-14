@@ -75,7 +75,7 @@ int array_length(char **strings);
 char **array_duplicate(char **rcp);
 char **array_duplicate_parsed(char **str, int flags);
 void array_free(char **string_array);
-char **array_replace_idx(char **strings, int idx, char *str);
+char **array_replace_idx(char **strings, int idx, const char *str);
 char **array_remove_idx(char **strings, int idx);
 
 char *mycombinepath(const char *drawer, const char *file);

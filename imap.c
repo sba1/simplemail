@@ -285,7 +285,7 @@ static char *imap_get_result(char *src, char *dest, int dest_size)
  * @param cmd
  * @return
  */
-static int imap_send_simple_command(struct connection *conn, char *cmd)
+static int imap_send_simple_command(struct connection *conn, const char *cmd)
 {
 	char send[200];
 	char tag[20];

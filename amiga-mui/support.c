@@ -59,7 +59,7 @@ void kprintf(char *, ...);
 
 /*****************************************************************************/
 
-int sm_makedir(char *path)
+int sm_makedir(const char *path)
 {
 	int rc;
 	BPTR lock = Lock(path,ACCESS_READ);

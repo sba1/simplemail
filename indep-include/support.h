@@ -31,7 +31,7 @@
  * @param path defines the path of the directory to be created
  * @return 1 if the directory exists or have been created, otherwise 0.
  */
-int sm_makedir(char *path);
+int sm_makedir(const char *path);
 
 /**
  * Add a filename component to the given drawer string in place.

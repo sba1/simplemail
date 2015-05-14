@@ -95,8 +95,8 @@ struct addressbook_group *addressbook_first_group(void);
 struct addressbook_group *addressbook_next_group(struct addressbook_group *grp);
 struct addressbook_group *addressbook_duplicate_group(struct addressbook_group *srcgrp);
 void addressbook_free_group(struct addressbook_group *grp);
-struct addressbook_group *addressbook_find_group_by_name(utf8 *name);
-struct addressbook_group *addressbook_add_group(utf8 *name);
+struct addressbook_group *addressbook_find_group_by_name(const utf8 *name);
+struct addressbook_group *addressbook_add_group(const utf8 *name);
 struct addressbook_group *addressbook_add_group_duplicate(struct addressbook_group *group);
 
 /* init and io */
@@ -111,9 +111,9 @@ int addressbook_import_file(char *filename, int append);
 
 /* general */
 char *addressbook_get_expanded(char *unexpand);
-struct addressbook_entry_new *addressbook_find_entry_by_address(char *email);
-struct addressbook_entry_new *addressbook_find_entry_by_alias(char *alias);
-struct addressbook_entry_new *addressbook_find_entry_by_realname(char *realname);
+struct addressbook_entry_new *addressbook_find_entry_by_address(const char *email);
+struct addressbook_entry_new *addressbook_find_entry_by_alias(const char *alias);
+struct addressbook_entry_new *addressbook_find_entry_by_realname(const char *realname);
 char **addressbook_get_array_of_email_addresses(void);
 char *addressbook_download_portrait(char *email);
 char *addressbook_complete_address(char *address);

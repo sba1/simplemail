@@ -881,7 +881,7 @@ int array_index_utf8(char **strings, const char *str)
  * @param str the string which is going to replace the other.
  * @return the new array or NULL.
  */
-char **array_replace_idx(char **strings, int idx, char *str)
+char **array_replace_idx(char **strings, int idx, const char *str)
 {
 	char *dup = mystrdup(str);
 	if (!dup) return NULL;

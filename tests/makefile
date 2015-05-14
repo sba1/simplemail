@@ -8,6 +8,7 @@ include ../common-sources.mk
 
 SRCS = $(addprefix ../,$(NONARCHSRCS)) \
 	../gtk/support.c \
+	../platform/request_gtk.c \
 	../platform/timesupport_glib.c \
 	../platform/subthreads_glib.c \
 	../platform/tcpip_posix.c

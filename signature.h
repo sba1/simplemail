@@ -16,10 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** signature.h
-*/
-
+/**
+ * @file
+ */
 
 #ifndef SM__SIGNATURE_H
 #define SM__SIGNATURE_H
@@ -39,8 +38,26 @@ struct signature
 	utf8 *signature;
 };
 
+/**
+ * Allocates a new signature.
+ *
+ * @return the signature
+ */
 struct signature *signature_malloc(void);
+
+/**
+ * Duplicates a signature.
+ *
+ * @param s the signature to be duplicated
+ * @return the signature
+ */
 struct signature *signature_duplicate(struct signature *s);
+
+/**
+ * Frees the given signature.
+ *
+ * @param s the signature to be freed.
+ */
 void signature_free(struct signature *s);
 
 #endif

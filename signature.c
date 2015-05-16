@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** signature.c
-*/
+/**
+ * @file
+ */
 
 #include "signature.h"
 
@@ -27,9 +27,8 @@
 
 #include "support_indep.h"
 
-/**************************************************************************
- Allocates a new signature
-**************************************************************************/
+/*****************************************************************************/
+
 struct signature *signature_malloc(void)
 {
 	struct signature *sig;
@@ -41,9 +40,8 @@ struct signature *signature_malloc(void)
 	return sig;
 }
 
-/**************************************************************************
- Duplicates an account
-**************************************************************************/
+/*****************************************************************************/
+
 struct signature *signature_duplicate(struct signature *s)
 {
 	struct signature *ns = signature_malloc();
@@ -55,9 +53,8 @@ struct signature *signature_duplicate(struct signature *s)
 	return ns;
 }
 
-/**************************************************************************
- Frees a signature
-**************************************************************************/
+/*****************************************************************************/
+
 void signature_free(struct signature *s)
 {
 	if (s->name) free(s->name);
@@ -65,3 +62,4 @@ void signature_free(struct signature *s)
 	free(s);
 }
 
+/*****************************************************************************/

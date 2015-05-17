@@ -318,9 +318,13 @@ static void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folde
 	*buf = 0;
 }
 
-/**************************************************************************
- Opens the uidl if if it exists
-**************************************************************************/
+/**
+ * Opens the uidl file if if it exists.
+ *
+ * @param uidl the uidl as initialized by uidl_init().
+ * @param server the server for the uidl.
+ * @return whether successful or not.
+ */
 static int uidl_open(struct uidl *uidl, struct pop3_server *server)
 {
 	FILE *fh;
@@ -352,9 +356,13 @@ static int uidl_open(struct uidl *uidl, struct pop3_server *server)
 	SM_RETURN(rc,"%ld");
 }
 
-/**************************************************************************
- Tests if a uidl is inside the uidl file
-**************************************************************************/
+/**
+ * Tests if a uidl is inside the uidl file.
+ *
+ * @param uidl the uidl.
+ * @param to_check the uidl to check
+ * @return whether the uidl to_check is contained in the uidl.
+ */
 static int uidl_test(struct uidl *uidl, char *to_check)
 {
 	int i;
@@ -366,11 +374,14 @@ static int uidl_test(struct uidl *uidl, char *to_check)
 	return 0;
 }
 
-/**************************************************************************
- Remove no longer used uidls in the uidl file (that means uidls which are
- not on the server)
-**************************************************************************/
-void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
+/**
+ * Remove no longer used uidls in the uidl file. That means uidls which are
+ * not on the server, are removed from the uidl file.
+ *
+ * @param uidl the uidl to synchronize
+ * @param mail_array the mail_array containing all uidls on the server.
+ */
+static void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
 {
 	SM_ENTER;
 
@@ -401,11 +412,14 @@ void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
 	SM_LEAVE;
 }
 
-/**************************************************************************
- Add the uidl to the uidl file. Writes this into the file. Its directly
- written to the correct place. uidl->entries is not expanded.
-**************************************************************************/
-void uidl_add(struct uidl *uidl, struct dl_mail *m)
+/**
+ * Add the uidl to the uidl file. Writes this into the file. Its directly
+ * written to the correct place. The uidl->entries array is not expanded.
+ *
+ * @param uidl the uidl file
+ * @param m the mail whose uidl should be added.
+ */
+static void uidl_add(struct uidl *uidl, struct dl_mail *m)
 {
 	int i=0;
 	FILE *fh;
@@ -452,9 +466,12 @@ void uidl_add(struct uidl *uidl, struct dl_mail *m)
 	SM_LEAVE;
 }
 
-/**************************************************************************
- Returns the len of the uidl
-**************************************************************************/
+/**
+ * Returns the len of the uidl.
+ *
+ * @param buf
+ * @return the length.
+ */
 static int uidllen(char *buf)
 {
 	int len = 0;
@@ -471,10 +488,17 @@ static int uidllen(char *buf)
 	return 0;
 }
 
-/**************************************************************************
- The uidl command. Sets the MAILF_DUPLICATE flag for mails which
- should not be downloaded because they have been downloaded already.
-**************************************************************************/
+/**
+ * Invokes the UIDL command. Sets the MAILF_DUPLICATE flag for mails which
+ * should not be downloaded because they have been downloaded already.
+ *
+ * @param conn the connection to use.
+ * @param server the server used to open the connection.
+ * @param mail_array the array of (brief) mail infos. The flags of items will
+ *  possibly be changed by this call.
+ * @param uidl the uild file.
+ * @return success or not.
+ */
 static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 											struct dl_mail *mail_array, struct uidl *uidl)
 {
@@ -535,10 +559,12 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 	SM_RETURN(0,"%ld");
 }
 
-/**************************************************************************
- Sends a noop to the given server
-**************************************************************************/
-static void pop3_noop(void *arg)
+/**
+ * Sends a noop/keep alive (via the STAT command) to the given server.
+ *
+ * @param arg
+ */
+static void pop3_timer_callback_noop(void *arg)
 {
 	struct connection *conn = (struct connection*)arg;
 
@@ -563,13 +589,25 @@ static void pop3_free_mail_array(struct dl_mail *mail_array)
 	free(mail_array);
 }
 
-/**************************************************************************
- Get statistics about pop3-folder contents. It returns the an array of
- dl_mail instances. The first (0) index gives the total amount of messages
- stored in the flags field.
- It is followed by the instances of the mail with the same index. See
- above for the dl_mail structure.
-**************************************************************************/
+/**
+ * Get statistics about pop3 folder contents. It returns the an array of
+ * dl_mail instances. The first (0) index gives the total amount of messages
+ * stored in the flags field. It is followed by the instances of the mail with
+ * the same index. See above for the dl_mail structure.
+ *
+ * This function may invoke several methods of the controller and interact with
+ * the user.
+ *
+ * @param conn the connection to use
+ * @param server the server description used for opening the connection.
+ * @param uidl an initialized uidl
+ * @param receive_preselection a preselection value for the receive option.
+ * @param receive_size a preselection value for the size of the mails.
+ * @param has_remote_filter whether a remote filter is associated to the folder.
+ *  In this case callback_remote_filter_mail() will be invoked on the context
+ *  of the main thead for every mail to be downloaded.
+ * @return an array of brief information about mails on the server.
+ */
 static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *server,
 								 struct uidl *uidl,
                                  int receive_preselection, int receive_size, int has_remote_filter)
@@ -801,7 +839,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 		thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for user interaction"));
 
-		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_noop, conn, 5000, status_wait,0)))
+		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_timer_callback_noop, conn, 5000, status_wait,0)))
 		{
 			pop3_free_mail_array(mail_array);
 			return NULL;
@@ -818,9 +856,13 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	return mail_array;
 }
 
-/**************************************************************************
- Regulary quit server.
-**************************************************************************/
+/**
+ * Finish the connection.
+ *
+ * @param conn the connection to finish
+ * @param server the server description used for opening the connection.
+ * @return success or not.
+ */
 static int pop3_quit(struct connection *conn, struct pop3_server *server)
 {
 	thread_call_parent_function_sync(NULL,status_set_status,1,_("Logging out..."));
@@ -828,9 +870,19 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
 	return pop3_receive_answer(conn,1)?1:0;
 }
 
-/**************************************************************************
- Retrieve mail.
-**************************************************************************/
+/**
+ * Retrieve the complete mail.
+ *
+ * @param conn the connection to use
+ * @param server the server description used for opening the connection.
+ * @param nr
+ * @param size
+ * @param already_dl
+ * @param auto_spam
+ * @param white
+ * @param black
+ * @return
+ */
 static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 												 int nr, int size, int already_dl, int auto_spam, char **white, char **black)
 {
@@ -944,9 +996,8 @@ static int pop3_del_mail(struct connection *conn, int nr)
 	return 1;
 }
 
-/**************************************************************************
- Download the mails
-**************************************************************************/
+/*****************************************************************************/
+
 int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black)
 {
 	int rc = 0;
@@ -1178,17 +1229,8 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 	return rc;
 }
 
+/*****************************************************************************/
 
-/**
- * @brief Log in and log out into a POP3 server as given by the @p server parameter.
- *
- * This function can be used to test POP3 settings but also some SMTP server
- * requires prior POP3 server logins.
- *
- * @param server defines the connection details of the POP3 server.
- * @return 1 on sucess, 0 on failure.
- * @note Assumes to be run in a sub thread (i.e., not SimpleMail's main thread)
- */
 int pop3_login_only(struct pop3_server *server)
 {
 	int rc = 0;
@@ -1245,15 +1287,8 @@ int pop3_login_only(struct pop3_server *server)
 	return rc;
 }
 
-/**
- * @brief Construct a new instance holding POP3 server settings.
- *
- * Allocates a new POP3 server setting instance and initializes it
- * with default values.
- *
- * @return the instance which must be freed with pop_free() when no longer in
- * use or NULL on failure.
- */
+/*****************************************************************************/
+
 struct pop3_server *pop_malloc(void)
 {
 	struct pop3_server *pop3;
@@ -1267,12 +1302,7 @@ struct pop3_server *pop_malloc(void)
 	return pop3;
 }
 
-/**
- * @brief Duplicates the given POP3 server settings.
- *
- * @param pop defines the settings which should be duplicated.
- * @return the duplicated POP3 server settings.
- */
+/*****************************************************************************/
 
 struct pop3_server *pop_duplicate(struct pop3_server *pop)
 {
@@ -1297,15 +1327,8 @@ struct pop3_server *pop_duplicate(struct pop3_server *pop)
 	return new_pop;
 }
 
-/**
- * @brief Frees the POP3 server settings completely.
- *
- * Deallocates all resources associated with the given
- * POP3 server settings.
- *
- * @param pop defines the instance which should be freed. If this is NULL,
- *  this is a noop.
- */
+/*****************************************************************************/
+
 void pop_free(struct pop3_server *pop)
 {
 	if (!pop) return;

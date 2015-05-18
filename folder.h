@@ -154,7 +154,6 @@ int init_folders(void);
 void del_folders(void);
 
 int folder_add_mail(struct folder *folder, struct mail_info *mail, int sort);
-int folder_add_mail_incoming(struct mail_info *mail);
 void folder_mark_mail_as_deleted(struct folder *folder, struct mail_info *mail);
 void folder_mark_mail_as_undeleted(struct folder *folder, struct mail_info *mail);
 void folder_replace_mail(struct folder *folder, struct mail_info *toreplace, struct mail_info *newmail);

@@ -1419,27 +1419,6 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 }
 
 /**
- * Adds a reference to a given mail to the global incoming folder.
- * That is, the mail is actually not copies. The mail will get the
- * "new" flag and it is placed at the correct rank depending on
- * the sort mode.
- *
- * @param mail
- * @return -1 for an error, otherwise the rank/position of the mail
- *  in which it was sorted.
- */
-int folder_add_mail_incoming(struct mail_info *mail)
-{
-	struct folder *folder = folder_incoming(); /* currently this is the incoming folder */
-	if (folder)
-	{
-		mail->flags |= MAIL_FLAGS_NEW;
-		return folder_add_mail(folder,mail,1);
-	}
-	return -1;
-}
-
-/**
  * Disposes the given folder node (deeply).
  *
  * @param node defines the entity to be freed. It is safe to pass NULL.

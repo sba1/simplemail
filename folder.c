@@ -1140,13 +1140,9 @@ struct mail_info *folder_imap_find_mail_by_uid(struct folder *folder, unsigned i
 	return NULL;
 }
 
-/**
- * Rescan the given folder.
- *
- * @param folder
- * @return
- */
-int folder_rescan(struct folder *folder)
+/*****************************************************************************/
+
+int folder_rescan(struct folder *folder, void (*status_callback)(const char *txt))
 {
 	DIR *dfd; /* directory descriptor */
 	struct dirent *dptr; /* dir entry */
@@ -1189,8 +1185,11 @@ int folder_rescan(struct folder *folder)
 		string_list_init(&mail_filename_list);
 		number_of_mails = 0;
 
-		sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder->name);
-		status_set_status(buf);
+		if (status_callback)
+		{
+			sm_snprintf(buf,sizeof(buf),_("Scanning folder \"%s\""),folder->name);
+			status_callback(buf);
+		}
 
 		while ((dptr = readdir(dfd)) != NULL)
 		{
@@ -1209,11 +1208,14 @@ int folder_rescan(struct folder *folder)
 		{
 			struct mail_info *m;
 
-			if (time_ms_passed(last_ticks) > 500)
+			if (status_callback)
 			{
-				sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
-				status_set_status(buf);
-				last_ticks = time_reference_ticks();
+				if (time_ms_passed(last_ticks) > 500)
+				{
+					sm_snprintf(buf,sizeof(buf),_("Reading mail %ld of %ld"),current_mail,number_of_mails);
+					status_callback(buf);
+					last_ticks = time_reference_ticks();
+				}
 			}
 
 			if ((m = mail_info_create_from_file(snode->string)))
@@ -1226,8 +1228,11 @@ int folder_rescan(struct folder *folder)
 		}
 		folder->rescanning = 0;
 
-		sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder->name);
-		status_set_status(buf);
+		if (status_callback)
+		{
+			sm_snprintf(buf,sizeof(buf),_("Folder \"%s\" scanned"),folder->name);
+			status_callback(buf);
+		}
 
 		folder_invalidate_indexfile(folder);
 	}
@@ -1236,6 +1241,8 @@ int folder_rescan(struct folder *folder)
 	chdir(path);
 	return 1;
 }
+
+/*****************************************************************************/
 
 /******************************************************************
  Reads the all mail infos in the given folder.
@@ -1414,7 +1421,7 @@ static int folder_read_mail_infos(struct folder *folder, int only_num_mails)
 	folder->index_uptodate = mail_infos_read;
 
 	if (!mail_infos_read)
-		folder_rescan(folder);
+		folder_rescan(folder, status_set_status);
 	return 1;
 }
 

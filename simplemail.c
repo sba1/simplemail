@@ -2555,7 +2555,7 @@ void callback_rescan_folder(void)
 		/* Because this means deleting all mails we safely remove all found mails as it
 		 * could reference an old mail */
 		search_clear_results();
-		folder_rescan(f);
+		folder_rescan(f, status_set_status);
 		main_set_folder_mails(f);
 		main_refresh_folder(f);
 		read_refresh_prevnext_button(f);

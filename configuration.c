@@ -171,7 +171,6 @@ static int init_config(void)
  */
 void free_config(void)
 {
-#if 1
 	free(user.config_filename);
 	free(user.taglines_filename);
 	free(user.folder_directory);
@@ -196,7 +195,6 @@ void free_config(void)
 	clear_config_phrases();
 	clear_config_accounts();
 	clear_config_signatures();
-#endif
 
 	taglines_cleanup();
 

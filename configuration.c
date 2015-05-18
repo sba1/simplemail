@@ -199,6 +199,7 @@ void free_config(void)
 	taglines_cleanup();
 
 	free(profile_directory);
+	profile_directory = NULL;
 }
 
 #define CONFIG_BOOL_VAL(x) (((*x == 'Y') || (*x == 'y'))?1:0)

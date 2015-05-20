@@ -379,24 +379,25 @@ static int uidl_test(struct uidl *uidl, char *to_check)
  * not on the server, are removed from the uidl file.
  *
  * @param uidl the uidl to synchronize
- * @param mail_array the mail_array containing all uidls on the server.
+ * @param num_dl_mails number of entries within the dl_mails array.
+ * @param dl_mails the dl_mails containing all uidls on the server.
  */
-static void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
+static void uidl_remove_unused(struct uidl *uidl, int num_dl_mails, struct dl_mail *dl_mails)
 {
 	SM_ENTER;
 
 	if (uidl->entries)
 	{
-		int i,amm=mail_array[0].flags;
+		int i;
 		for (i=0; i<uidl->num_entries; i++)
 		{
 			int j,found=0;
 			char *uidl_entry = uidl->entries[i].uidl;
-			for (j=1;j<=amm;j++)
+			for (j=0; j<num_dl_mails; j++)
 			{
-				if (mail_array[j].uidl)
+				if (dl_mails[j].uidl)
 				{
-					if (!strcmp(uidl_entry,mail_array[j].uidl))
+					if (!strcmp(uidl_entry,dl_mails[j].uidl))
 					{
 						found = 1;
 						break;
@@ -652,7 +653,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if (pop3_uidl(conn,server,mail_array,uidl))
 		{
 			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
-			uidl_remove_unused(uidl,mail_array);
+			uidl_remove_unused(uidl, amm, &mail_array[1]);
 		} else
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED)

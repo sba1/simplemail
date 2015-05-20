@@ -77,6 +77,7 @@ struct transwnd_Data
 	int start_pressed;
 };
 
+/* FIXME: This must be always match the similarly named defines in pop3.c! */
 #define MAILF_DELETE   (1<<0) /* mail should be deleted */
 #define MAILF_DOWNLOAD (1<<1) /* mail should be downloaded */
 

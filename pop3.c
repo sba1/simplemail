@@ -417,21 +417,21 @@ static void uidl_remove_unused(struct uidl *uidl, struct dl_mail *mail_array)
  * written to the correct place. The uidl->entries array is not expanded.
  *
  * @param uidl the uidl file
- * @param m the mail whose uidl should be added.
+ * @param new_uidl the uidl that should be added
  */
-static void uidl_add(struct uidl *uidl, struct dl_mail *m)
+static void uidl_add(struct uidl *uidl, const char *new_uidl)
 {
 	int i=0;
 	FILE *fh;
 
 	SM_ENTER;
 
-	if (!m->uidl || m->uidl[0] == 0) return;
+	if (!new_uidl || new_uidl[0] == 0) return;
 	for (i=0;i<uidl->num_entries;i++)
 	{
 		if (!uidl->entries[i].uidl[0])
 		{
-			strcpy(uidl->entries[i].uidl,m->uidl);
+			strcpy(uidl->entries[i].uidl, new_uidl);
 			if ((fh = fopen(uidl->filename,"rb+")))
 			{
 				fseek(fh,4+i*sizeof(struct uidl_entry),SEEK_SET);
@@ -455,7 +455,7 @@ static void uidl_add(struct uidl *uidl, struct dl_mail *m)
 			fwrite("SMU",1,4,fh);
 		}
 		entry.size = -1;
-		strncpy(entry.uidl,m->uidl,sizeof(entry.uidl));
+		strncpy(entry.uidl,new_uidl,sizeof(entry.uidl));
 		fwrite(&entry,1,sizeof(entry),fh);
 		fclose(fh);
 	} else
@@ -1157,7 +1157,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 										/* add the mail to the uidl file if enabled */
 										if (server->nodupl && mail_array[i].uidl)
 										{
-											uidl_add(&uidl,&mail_array[i]);
+											uidl_add(&uidl,mail_array[i].uidl);
 										}
 										nummails++;
 										mail_size_sum += mail_array[i].size;

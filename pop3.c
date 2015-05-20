@@ -175,7 +175,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 
 	if (!timestamp && server->apop == 1)
 	{
-		tell_from_subtask(_("Failed to authentificate via APOP. Server hasn't delivered a timestamp."));
+		tell_from_subtask(_("Failed to authenticate via APOP. Server hasn't delivered a timestamp."));
 		return 0;
 	}
 

@@ -40,6 +40,7 @@ TESTEXES=\
 	index_external_unittest \
 	imap2_unittest \
 	mail_unittest \
+	pop3_unittest \
 	support_indep_unittest \
 	text2html_unittest \
 	tcp_unittest
@@ -141,11 +142,11 @@ imap-testsuite: dovecot-conf imap2_unittest
 
 # run template
 define run.tmpl
-run-$(1): $(1) $(if $(findstring imap,$(1)), dovecot-conf)
-	$(if $(findstring imap,$(1)), -$(DOVECOT) stop)
-	$(if $(findstring imap,$(1)), $(DOVECOT))
+run-$(1): $(1) $(if $(findstring imap,$(1))$(findstring pop,$(1)), dovecot-conf)
+	$(if $(findstring imap,$(1))$(findstring pop,$(1)), -$(DOVECOT) stop)
+	$(if $(findstring imap,$(1))$(findstring pop,$(1)), $(DOVECOT))
 	./$$<
-	$(if $(findstring imap,$(1)), $(DOVECOT) stop)
+	$(if $(findstring imap,$(1))$(findstring pop,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" run targets

@@ -140,13 +140,22 @@ imap-testsuite: dovecot-conf imap2_unittest
 	./imap2_unittest
 	$(DOVECOT) stop
 
+# Non-empty, if a unit tests requires started dove cot
+#
+# $(1): The name of the unit test
+define dovecot-needed
+$(findstring imap,$(1))$(findstring pop,$(1))
+endef
+
 # run template
+#
+# $(1): The name of the unit test
 define run.tmpl
-run-$(1): $(1) $(if $(findstring imap,$(1))$(findstring pop,$(1)), dovecot-conf)
-	$(if $(findstring imap,$(1))$(findstring pop,$(1)), -$(DOVECOT) stop)
-	$(if $(findstring imap,$(1))$(findstring pop,$(1)), $(DOVECOT))
+run-$(1): $(1) $(if $(call dovecot-needed,$(1)), dovecot-conf)
+	$(if $(call dovecot-needed,$(1)), -$(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT))
 	./$$<
-	$(if $(findstring imap,$(1))$(findstring pop,$(1)), $(DOVECOT) stop)
+	$(if $(call dovecot-needed,$(1)), $(DOVECOT) stop)
 endef
 
 # "instanciate" run targets

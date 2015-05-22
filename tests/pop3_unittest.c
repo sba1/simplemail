@@ -33,6 +33,11 @@
 
 /*************************************************************/
 
+void error_add_message(char *msg)
+{
+	printf("error: %s\n", msg?msg:"(nil)");
+}
+
 void main_refresh_window_title(unsigned int autocheck_seconds_start)
 {
 }

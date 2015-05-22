@@ -47,7 +47,7 @@ void main_hide_progress(void)
 
 void main_set_status_text(char *txt)
 {
-	printf("%s\n", txt);
+	printf("%s\n", txt?txt:"(nil)");
 }
 
 void progmonwnd_update(void)
@@ -56,7 +56,7 @@ void progmonwnd_update(void)
 
 void statuswnd_set_status(char *text)
 {
-	printf("%s\n", text);
+	printf("%s\n", text?text:"(nil)");
 }
 
 void main_refresh_folders(void)
@@ -116,6 +116,27 @@ void statuswnd_mail_list_clear(void)
 {
 }
 
+
+void statuswnd_mail_list_freeze(void)
+{
+}
+
+void statuswnd_mail_list_thaw(void)
+{
+}
+
+void statuswnd_init_gauge(int maximal)
+{
+}
+
+void statuswnd_set_gauge(int value)
+{
+}
+
+void statuswnd_set_gauge_text(char *text)
+{
+}
+
 int search_has_mails(void)
 {
 	return 0;
@@ -126,7 +147,9 @@ int search_has_mails(void)
 /* @Test */
 void test_pop3(void)
 {
+	struct list pop3_list;
 	struct account *ac;
+	struct pop3_server *pop3_server;
 
 	char *profile_path;
 	char *pwd;
@@ -174,6 +197,13 @@ void test_pop3(void)
 
 	pop3_login_only(ac->pop);
 
+	list_init(&pop3_list);
+	pop3_server = pop_duplicate(ac->pop);
+	CU_ASSERT(pop3_server != NULL);
+	list_insert_tail(&pop3_list, &pop3_server->node);
+	pop3_really_dl(&pop3_list, folder_incoming()->path, 0, 0, 0, user.folder_directory, 0, NULL, NULL);
+
+	pop_free(pop3_server);
 	account_free(ac);
 
 	cleanup_threads();

@@ -262,6 +262,12 @@ struct dl_mail
 #define MAILF_DUPLICATE  (1<<2) /**< mail is duplicated */
 #define MAILF_ADDED      (1<<7) /**< mails has been added to the status window */
 
+struct pop3_mail_stats
+{
+	int num_dl_mails;
+	struct dl_mail *dl_mails;
+	int total_size;
+};
 
 struct uidl_entry /* stored on the harddisk */
 {
@@ -501,7 +507,7 @@ static int uidllen(char *buf)
  * @return success or not.
  */
 static int pop3_uidl(struct connection *conn, struct pop3_server *server,
-											struct dl_mail *mail_array, struct uidl *uidl)
+					 struct pop3_mail_stats *stats, struct uidl *uidl)
 {
 	SM_ENTER;
 
@@ -524,22 +530,24 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 				if (answer[0] == '.' && answer[1] == '\n')
 					break;
 
-				mno = strtol(answer,&answer,10);
-				if (mno >= 1 && mno <= mail_array[0].flags)
+				mno = strtol(answer,&answer,10) - 1;
+				if (mno >= 0 && mno < stats->num_dl_mails)
 				{
 					int len;
+					struct dl_mail *dl_mail = &stats->dl_mails[mno];
+
 					answer++;
 					len = uidllen(answer);
-					if ((mail_array[mno].uidl = malloc(len+1)))
+					if ((dl_mail->uidl = malloc(len+1)))
 					{
-						strncpy(mail_array[mno].uidl,answer,len);
-						mail_array[mno].uidl[len] = 0;
+						strncpy(dl_mail->uidl,answer,len);
+						dl_mail->uidl[len] = 0;
 
-						if (uidl_test(uidl,mail_array[mno].uidl))
+						if (uidl_test(uidl,dl_mail->uidl))
 						{
-							mail_array[mno].flags |= MAILF_DUPLICATE;
+							dl_mail->flags |= MAILF_DUPLICATE;
 							num_duplicates++;
-							mail_array[mno].flags &= ~MAILF_DOWNLOAD;
+							dl_mail->flags &= ~MAILF_DOWNLOAD;
 						}
 					}
 				}
@@ -580,14 +588,14 @@ static void pop3_timer_callback_noop(void *arg)
  *
  * @param mail_array
  */
-static void pop3_free_mail_array(struct dl_mail *mail_array)
+static void pop3_free_mail_array(struct pop3_mail_stats *stats)
 {
 	int i;
-	int amm = mail_array[0].flags;
 
-	for (i=amm;i>=1;i--)
-		free(mail_array[i].uidl);
-	free(mail_array);
+	for (i=stats->num_dl_mails - 1; i>=0; i--)
+		free(stats->dl_mails[i].uidl);
+	free(stats->dl_mails);
+	stats->dl_mails = NULL;
 }
 
 /**
@@ -599,6 +607,7 @@ static void pop3_free_mail_array(struct dl_mail *mail_array)
  * This function may invoke several methods of the controller and interact with
  * the user.
  *
+ * @param stats output parameter where to store the stats
  * @param conn the connection to use
  * @param server the server description used for opening the connection.
  * @param uidl an initialized uidl
@@ -607,11 +616,14 @@ static void pop3_free_mail_array(struct dl_mail *mail_array)
  * @param has_remote_filter whether a remote filter is associated to the folder.
  *  In this case callback_remote_filter_mail() will be invoked on the context
  *  of the main thead for every mail to be downloaded.
- * @return an array of brief information about mails on the server.
+ * @return 0 on failure, else something other
  */
-static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *server,
-								 struct uidl *uidl,
-                                 int receive_preselection, int receive_size, int has_remote_filter)
+static int pop3_stat(struct pop3_mail_stats *stats,
+					 struct connection *conn,
+					 struct pop3_server *server,
+					 struct uidl *uidl,
+					 int receive_preselection,
+					 int receive_size, int has_remote_filter)
 {
 	char *answer;
 	struct dl_mail *mail_array;
@@ -628,16 +640,17 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		return 0;
 	}
 
-	if ((*answer++) != ' ') return NULL;
-	if ((amm = strtol(answer,&answer,10))<=0) return NULL;
-	if ((size = strtol(answer,NULL,10))<=0) return NULL;
+	if ((*answer++) != ' ') return 0;
+	if ((amm = strtol(answer,&answer,10))<=0) return 0;
+	if ((size = strtol(answer,NULL,10))<=0) return 0;
 
-	if (!(mail_array = malloc((amm+2)*sizeof(struct dl_mail)))) return NULL;
-	mail_array[0].flags = amm;
-	mail_array[0].size = size;
+	if (!(mail_array = malloc((amm+1)*sizeof(struct dl_mail)))) return 0;
+	stats->num_dl_mails = amm;
+	stats->total_size = size;
+	stats->dl_mails = mail_array;
 
 	/* Initial all mails should be downloaded */
-	for (i=1;i<=amm;i++)
+	for (i=0;i<amm;i++)
 	{
 		mail_array[i].flags = initial_mflags;
 		mail_array[i].size = -1;
@@ -650,16 +663,16 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		uidl_open(uidl,server);
 
 		/* call the POP3 UIDL command */
-		if (pop3_uidl(conn,server,mail_array,uidl))
+		if (pop3_uidl(conn,server,stats,uidl))
 		{
 			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
-			uidl_remove_unused(uidl, amm, &mail_array[1]);
+			uidl_remove_unused(uidl, amm, mail_array);
 		} else
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED)
 			{
-				pop3_free_mail_array(mail_array);
-				return NULL;
+				pop3_free_mail_array(stats);
+				return 0;
 			}
 		}
   }
@@ -671,7 +684,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 	if (tcp_write(conn,"LIST\r\n",6) != 6)
 	{
 		SM_DEBUGF(5,("LIST command failed\n"));
-		return mail_array;
+		return 1;
 	}
 
 	/* Was the command succesful? */
@@ -680,10 +693,10 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		if (tcp_error_code() != TCP_INTERRUPTED)
 		{
 			SM_DEBUGF(5,("LIST command failed (%s)\n",answer));
-			return mail_array;
+			return 1;
 		}
-		pop3_free_mail_array(mail_array);
-		return NULL;
+		pop3_free_mail_array(stats);
+		return 0;
 	}
 
 	/* Freeze the list which displays the e-Mails */
@@ -699,10 +712,10 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 			cont = 1; /* no errors occured */
 			break;
 		}
-		mno = strtol(answer,&answer,10);
+		mno = strtol(answer,&answer,10) - 1; /* We start counting at 0 */
 		msize = strtol(answer, NULL, 10);
 
-		if (mno >= 1 && mno <= amm)
+		if (mno >= 0 && mno < amm)
 			mail_array[mno].size = msize;
 
 		/* We only add the mails in mode 1 or 2 if they exceed the given limit */
@@ -720,18 +733,18 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 	{
-		pop3_free_mail_array(mail_array);
-		return NULL;
+		pop3_free_mail_array(stats);
+		return 0;
 	}
 
 	/* No user interaction wanted */
-	if (receive_preselection == 0 && !has_remote_filter) return mail_array;
+	if (receive_preselection == 0 && !has_remote_filter) return 1;
 
 	if (cont && ((mails_add && receive_preselection == 2) || has_remote_filter))
 	{
 		/* no errors and the user wants a more informative preselection or there are any remote filters */
 		thread_call_function_async(thread_get_main(),status_set_status,1,_("Getting mail infos..."));
-		for (i=1;i<=amm;i++)
+		for (i=0;i<amm;i++)
 		{
 			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i)!=-1);
 			if (issue_top)
@@ -744,15 +757,15 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 				if (!(m = mail_complete_create())) break;
 
-				sprintf(buf, "TOP %d 1\r\n",i);
+				sprintf(buf, "TOP %d 1\r\n",i+1);
 				if (tcp_write(conn,buf,strlen(buf)) != strlen(buf)) break;
 				if (!(answer = pop3_receive_answer(conn,0)))
 				{
 					if (tcp_error_code() == TCP_INTERRUPTED)
 					{
 						mail_complete_free(m);
-						pop3_free_mail_array(mail_array);
-						return NULL;
+						pop3_free_mail_array(stats);
+						return 0;
 					}
 
 					/* -ERR has been returned and nobody breaked the connection, what means that TOP is not supported */
@@ -775,8 +788,8 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 				{
 					mail_complete_free(m);
-					pop3_free_mail_array(mail_array);
-					return NULL;
+					pop3_free_mail_array(stats);
+					return 0;
 				}
 
 				/* Now check if mail should be filtered */
@@ -830,7 +843,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 				mail_array[i].flags &= ~(MAILF_DOWNLOAD | MAILF_DELETE);
 			}
 		}
-		return mail_array;
+		return 1;
 	}
 
 	if (mails_add && cont)
@@ -842,11 +855,11 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 
 		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_timer_callback_noop, conn, 5000, status_wait,0)))
 		{
-			pop3_free_mail_array(mail_array);
-			return NULL;
+			pop3_free_mail_array(stats);
+			return 0;
 		}
 
-		for (i=1;i<=amm;i++)
+		for (i=0;i<amm;i++)
 		{
 			int fl = (int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i);
 			if (fl != -1) mail_array[i].flags = fl;
@@ -854,7 +867,7 @@ static struct dl_mail *pop3_stat(struct connection *conn, struct pop3_server *se
 		}
 	}
 
-	return mail_array;
+	return 1;
 }
 
 /**
@@ -999,7 +1012,10 @@ static int pop3_del_mail(struct connection *conn, int nr)
 
 /*****************************************************************************/
 
-int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black)
+int pop3_really_dl(struct list *pop_list, char *dest_dir,
+				   int receive_preselection, int receive_size,
+				   int has_remote_filter, char *folder_directory, int auto_spam,
+				   char **white, char **black)
 {
 	int rc = 0;
 
@@ -1089,16 +1105,17 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 					if (goon)
 					{
 						struct uidl uidl;
-						struct dl_mail *mail_array;
+						struct pop3_mail_stats stats;
 
 						SM_DEBUGF(15,("Logged in successfully\n"));
 
 						uidl_init(&uidl,server,folder_directory);
 
-						if ((mail_array = pop3_stat(conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
+						if ((pop3_stat(&stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
 						{
+							struct dl_mail *mail_array = stats.dl_mails;
 							int i;
-							int mail_amm = mail_array[0].flags;
+							int mail_amm = stats.num_dl_mails;
 							char path[256];
 
 							getcwd(path, 255);
@@ -1117,7 +1134,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 								int success = 1;
 
 								/* determine the size of the mails which should be downloaded */
-								for (i=1; i<=mail_amm; i++)
+								for (i=0; i<mail_amm; i++)
 								{
 									if (mail_array[i].flags & MAILF_DOWNLOAD)
 									{
@@ -1135,7 +1152,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 								thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_mail_size_sum);
 								thread_call_function_async(thread_get_main(),status_init_mail,1,max_dl_mails);
 
-								for (i=1; i<=mail_amm; i++)
+								for (i=0; i<mail_amm; i++)
 								{
 									int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
 									int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
@@ -1148,7 +1165,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 
 									if (dl)
 									{
-										if (!pop3_get_mail(conn, server, i, mail_array[i].size, mail_size_sum, auto_spam, white, black))
+										if (!pop3_get_mail(conn, server, i + 1, mail_array[i].size, mail_size_sum, auto_spam, white, black))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
 											success = 0;
@@ -1167,7 +1184,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 									if (del)
 									{
 										thread_call_function_async(thread_get_main(),status_set_status,1,_("Marking mail as deleted..."));
-										if (!pop3_del_mail(conn, i))
+										if (!pop3_del_mail(conn, i + 1))
 										{
 											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
 											else
@@ -1183,7 +1200,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselecti
 								chdir(path);
 							}
 
-							pop3_free_mail_array(mail_array);
+							pop3_free_mail_array(&stats);
 						}
 						pop3_quit(conn,server);
 						thread_call_function_async(thread_get_main(),status_set_status,1,"");

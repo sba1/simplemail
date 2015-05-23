@@ -501,7 +501,7 @@ static int uidllen(char *buf)
  *
  * @param conn the connection to use.
  * @param server the server used to open the connection.
- * @param mail_array the array of (brief) mail infos. The flags of items will
+ * @param stats the filled stat information. The flags of items will
  *  possibly be changed by this call.
  * @param uidl the uild file.
  * @return success or not.

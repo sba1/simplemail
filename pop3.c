@@ -545,23 +545,24 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 				if (!stats->uidls)
 					continue;
 
+				/* Extract the uidl from the answer */
 				answer++;
 				len = uidllen(answer);
+				if (!(stats->uidls[mno] = malloc(len+1)))
+					continue;
+				strncpy(stats->uidls[mno],answer,len);
+				stats->uidls[mno][len] = 0;
 
-				if ((stats->uidls[mno] = malloc(len+1)))
-				{
-					strncpy(stats->uidls[mno],answer,len);
-					stats->uidls[mno][len] = 0;
+				/* Is this a know uidl? */
+				if (!uidl_test(uidl,stats->uidls[mno]))
+					continue;
 
-					if (uidl_test(uidl,stats->uidls[mno]))
-					{
-						struct dl_mail *dl_mail = &stats->dl_mails[mno];
-
-						dl_mail->flags |= MAILF_DUPLICATE;
-						num_duplicates++;
-						dl_mail->flags &= ~MAILF_DOWNLOAD;
-					}
-				}
+				/* We have seem this uidl before, so the corresponding mail is
+				 * a duplicate and we do not need to download it.
+				 */
+				stats->dl_mails[mno].flags |= MAILF_DUPLICATE;
+				num_duplicates++;
+				stats->dl_mails[mno].flags &= ~MAILF_DOWNLOAD;
 			}
 
 			if (!answer)

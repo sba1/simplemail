@@ -254,7 +254,6 @@ struct dl_mail
 {
 	unsigned int flags; /**< the download flags of this mail */
 	int size;			/**< the mails size */
-	char *uidl;			/**< the uidl string, might be NULL */
 };
 
 #define MAILF_DELETE     (1<<0) /**< mail should be deleted */
@@ -266,6 +265,8 @@ struct pop3_mail_stats
 {
 	int num_dl_mails;
 	struct dl_mail *dl_mails;
+	char **uidls;					/**< vector of uidl strings */
+
 	int total_size;
 };
 
@@ -388,7 +389,7 @@ static int uidl_test(struct uidl *uidl, char *to_check)
  * @param num_dl_mails number of entries within the dl_mails array.
  * @param dl_mails the dl_mails containing all uidls on the server.
  */
-static void uidl_remove_unused(struct uidl *uidl, int num_dl_mails, struct dl_mail *dl_mails)
+static void uidl_remove_unused(struct uidl *uidl, int num_remote_uidls, char **remote_uidls)
 {
 	SM_ENTER;
 
@@ -399,15 +400,15 @@ static void uidl_remove_unused(struct uidl *uidl, int num_dl_mails, struct dl_ma
 		{
 			int j,found=0;
 			char *uidl_entry = uidl->entries[i].uidl;
-			for (j=0; j<num_dl_mails; j++)
+			for (j=0; j<num_remote_uidls; j++)
 			{
-				if (dl_mails[j].uidl)
+				if (!remote_uidls[j])
+					continue;
+
+				if (!strcmp(uidl_entry,remote_uidls[j]))
 				{
-					if (!strcmp(uidl_entry,dl_mails[j].uidl))
-					{
-						found = 1;
-						break;
-					}
+					found = 1;
+					break;
 				}
 			}
 
@@ -535,19 +536,27 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 				{
 					int len;
 					struct dl_mail *dl_mail = &stats->dl_mails[mno];
-
-					answer++;
-					len = uidllen(answer);
-					if ((dl_mail->uidl = malloc(len+1)))
+					if (!stats->uidls)
 					{
-						strncpy(dl_mail->uidl,answer,len);
-						dl_mail->uidl[len] = 0;
+						if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
+							memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
+					}
 
-						if (uidl_test(uidl,dl_mail->uidl))
+					if (stats->uidls)
+					{
+						answer++;
+						len = uidllen(answer);
+						if ((stats->uidls[mno] = malloc(len+1)))
 						{
-							dl_mail->flags |= MAILF_DUPLICATE;
-							num_duplicates++;
-							dl_mail->flags &= ~MAILF_DOWNLOAD;
+							strncpy(stats->uidls[mno],answer,len);
+							stats->uidls[mno][len] = 0;
+
+							if (uidl_test(uidl,stats->uidls[mno]))
+							{
+								dl_mail->flags |= MAILF_DUPLICATE;
+								num_duplicates++;
+								dl_mail->flags &= ~MAILF_DOWNLOAD;
+							}
 						}
 					}
 				}
@@ -592,8 +601,12 @@ static void pop3_free_mail_array(struct pop3_mail_stats *stats)
 {
 	int i;
 
-	for (i=stats->num_dl_mails - 1; i>=0; i--)
-		free(stats->dl_mails[i].uidl);
+	if (stats->uidls)
+	{
+		for (i=stats->num_dl_mails - 1; i>=0; i--)
+			free(stats->uidls[i]);
+		stats->uidls = NULL;
+	}
 	free(stats->dl_mails);
 	stats->dl_mails = NULL;
 }
@@ -648,13 +661,13 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 	stats->num_dl_mails = amm;
 	stats->total_size = size;
 	stats->dl_mails = mail_array;
+	stats->uidls = NULL;
 
 	/* Initial all mails should be downloaded */
 	for (i=0;i<amm;i++)
 	{
 		mail_array[i].flags = initial_mflags;
 		mail_array[i].size = -1;
-		mail_array[i].uidl = NULL;
 	}
 
 	if (server->nodupl)
@@ -666,7 +679,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 		if (pop3_uidl(conn,server,stats,uidl))
 		{
 			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
-			uidl_remove_unused(uidl, amm, mail_array);
+			uidl_remove_unused(uidl, amm, stats->uidls);
 		} else
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED)
@@ -1172,10 +1185,10 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir,
 											break;
 										}
 
-										/* add the mail to the uidl file if enabled */
-										if (server->nodupl && mail_array[i].uidl)
+										/* add the mail to the uidl if available */
+										if (stats.uidls && stats.uidls[i])
 										{
-											uidl_add(&uidl,mail_array[i].uidl);
+											uidl_add(&uidl,stats.uidls[i]);
 										}
 										nummails++;
 										mail_size_sum += mail_array[i].size;

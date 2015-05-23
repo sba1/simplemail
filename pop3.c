@@ -526,38 +526,40 @@ static int pop3_uidl(struct connection *conn, struct pop3_server *server,
 
 			while ((answer = tcp_readln(conn)))
 			{
-				int mno;
+				int mno, len;
 
 				if (answer[0] == '.' && answer[1] == '\n')
 					break;
 
 				mno = strtol(answer,&answer,10) - 1;
-				if (mno >= 0 && mno < stats->num_dl_mails)
+				if (mno < 0 || mno >= stats->num_dl_mails)
+					continue;
+
+				/* Allocate memory for uidl vector, if not already done */
+				if (!stats->uidls)
 				{
-					int len;
-					struct dl_mail *dl_mail = &stats->dl_mails[mno];
-					if (!stats->uidls)
-					{
-						if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
-							memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
-					}
+					if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
+						memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
+				}
 
-					if (stats->uidls)
-					{
-						answer++;
-						len = uidllen(answer);
-						if ((stats->uidls[mno] = malloc(len+1)))
-						{
-							strncpy(stats->uidls[mno],answer,len);
-							stats->uidls[mno][len] = 0;
+				if (!stats->uidls)
+					continue;
 
-							if (uidl_test(uidl,stats->uidls[mno]))
-							{
-								dl_mail->flags |= MAILF_DUPLICATE;
-								num_duplicates++;
-								dl_mail->flags &= ~MAILF_DOWNLOAD;
-							}
-						}
+				answer++;
+				len = uidllen(answer);
+
+				if ((stats->uidls[mno] = malloc(len+1)))
+				{
+					strncpy(stats->uidls[mno],answer,len);
+					stats->uidls[mno][len] = 0;
+
+					if (uidl_test(uidl,stats->uidls[mno]))
+					{
+						struct dl_mail *dl_mail = &stats->dl_mails[mno];
+
+						dl_mail->flags |= MAILF_DUPLICATE;
+						num_duplicates++;
+						dl_mail->flags &= ~MAILF_DOWNLOAD;
 					}
 				}
 			}

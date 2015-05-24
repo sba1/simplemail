@@ -30,6 +30,7 @@ NONARCHSRCS=\
 	pgp.c \
 	phrase.c \
 	pop3.c \
+	pop3_uidl.c \
 	print.c \
 	progmon.c \
 	punycode.c \

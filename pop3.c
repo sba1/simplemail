@@ -25,20 +25,15 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "lists.h"
-
-#ifdef __WIN32__
-#include <windows.h>
-#else
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
-#endif
 
 #include "debug.h"
 #include "filter.h"
 #include "hash.h"
+#include "lists.h"
 #include "mail.h"
 #include "md5.h"
 #include "pop3.h"

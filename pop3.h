@@ -23,6 +23,8 @@
 #ifndef POP3_H
 #define POP3_H
 
+#include "lists.h"
+
 /**
  * @brief The settings for a POP3 server
  */

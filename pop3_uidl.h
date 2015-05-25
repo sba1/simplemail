@@ -38,15 +38,6 @@ struct uidl
 };
 
 /**
- * @brief Initialize a given uidl
- *
- * @param uidl the uidl instance to be initialized
- * @param server the server in question
- * @param folder_directory base directory of the folders
- */
-void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory);
-
-/**
  * Opens the uidl file if if it exists.
  *
  * @param uidl the uidl as initialized by uidl_init().

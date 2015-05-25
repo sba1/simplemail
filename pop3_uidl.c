@@ -24,7 +24,6 @@
 
 #include "debug.h"
 #include "hash.h"
-#include "pop3.h" /* TODO: We don't want this dependency */
 #include "support.h"
 #include "support_indep.h"
 
@@ -38,37 +37,6 @@ struct uidl_entry /* stored on the harddisk */
 	char uidl[72]; /**< null terminated, 70 are enough according to RFC 1939 */
 };
 
-/*****************************************************************************/
-
-void uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory)
-{
-	char c;
-	char *buf;
-	char *server_name = server->name;
-	int len = strlen(folder_directory) + strlen(server_name) + 30;
-	int n;
-
-	memset(uidl,0,sizeof(*uidl));
-
-	/* Construct the file name */
-	if (!(uidl->filename = malloc(len)))
-		return;
-
-	strcpy(uidl->filename,folder_directory);
-	sm_add_part(uidl->filename,".uidl.",len);
-	buf = uidl->filename + strlen(uidl->filename);
-
-	/* Using a hash doesn't make the filename unique but it should work for now */
-	n = sprintf(buf,"%x",(unsigned int)sdbm((unsigned char*)server->login));
-
-	buf += n;
-	while ((c=*server_name))
-	{
-		if (c!='.') *buf++=c;
-		server_name++;
-	}
-	*buf = 0;
-}
 
 /*****************************************************************************/
 

@@ -820,6 +820,45 @@ static int pop3_del_mail(struct connection *conn, int nr)
 
 /*****************************************************************************/
 
+/**
+ * @brief Initialize the given uidl for the given server.
+ *
+ * @param uidl the uidl instance to be initialized
+ * @param server the server in question
+ * @param folder_directory base directory of the folders
+ */
+static void pop3_uidl_init(struct uidl *uidl, struct pop3_server *server, char *folder_directory)
+{
+	char c;
+	char *buf;
+	char *server_name = server->name;
+	int len = strlen(folder_directory) + strlen(server_name) + 30;
+	int n;
+
+	memset(uidl,0,sizeof(*uidl));
+
+	/* Construct the file name */
+	if (!(uidl->filename = malloc(len)))
+		return;
+
+	strcpy(uidl->filename,folder_directory);
+	sm_add_part(uidl->filename,".uidl.",len);
+	buf = uidl->filename + strlen(uidl->filename);
+
+	/* Using a hash doesn't make the filename unique but it should work for now */
+	n = sprintf(buf,"%x",(unsigned int)sdbm((unsigned char*)server->login));
+
+	buf += n;
+	while ((c=*server_name))
+	{
+		if (c!='.') *buf++=c;
+		server_name++;
+	}
+	*buf = 0;
+}
+
+/*****************************************************************************/
+
 int pop3_really_dl(struct list *pop_list, char *dest_dir,
 				   int receive_preselection, int receive_size,
 				   int has_remote_filter, char *folder_directory, int auto_spam,
@@ -917,7 +956,7 @@ int pop3_really_dl(struct list *pop_list, char *dest_dir,
 
 						SM_DEBUGF(15,("Logged in successfully\n"));
 
-						uidl_init(&uidl,server,folder_directory);
+						pop3_uidl_init(&uidl,server,folder_directory);
 
 						if ((pop3_stat(&stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
 						{

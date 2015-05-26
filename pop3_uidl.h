@@ -23,8 +23,6 @@
 #ifndef SM__POP3_UIDL_H
 #define SM__POP3_UIDL_H
 
-struct pop3_server;
-
 /**
  * @brief the uidl contents.
  *
@@ -44,7 +42,7 @@ struct uidl
  * @param server the server for the uidl.
  * @return whether successful or not.
  */
-int uidl_open(struct uidl *uidl, struct pop3_server *server);
+int uidl_open(struct uidl *uidl);
 
 /**
  * Tests if a uidl is inside the uidl file.

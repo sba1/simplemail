@@ -40,7 +40,7 @@ struct uidl_entry /* stored on the harddisk */
 
 /*****************************************************************************/
 
-int uidl_open(struct uidl *uidl, struct pop3_server *server)
+int uidl_open(struct uidl *uidl)
 {
 	FILE *fh;
 	int rc = 0;

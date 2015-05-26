@@ -468,7 +468,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 	if (server->nodupl)
 	{
 		/* open the uidl file and read in the string */
-		uidl_open(uidl,server);
+		uidl_open(uidl);
 
 		/* call the POP3 UIDL command */
 		if (pop3_uidl(conn,server,stats,uidl))

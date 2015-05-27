@@ -165,11 +165,23 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 
 	if (thread_parent_task_can_contiue())
 	{
+		struct pop3_dl_options dl_options = {0};
+
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		if (called_by_auto) thread_call_function_async(thread_get_main(),status_open_notactivated,0);
 		else thread_call_function_async(thread_get_main(),status_open,0);
 
-		if (pop3_really_dl(&pop_list, incoming_path, receive_preselection, receive_size, has_remote_filter, folder_directory, auto_spam, white, black))
+		dl_options.pop_list = &pop_list;
+		dl_options.dest_dir = incoming_path;
+		dl_options.receive_preselection = receive_preselection;
+		dl_options.receive_size = receive_size;
+		dl_options.has_remote_filter = has_remote_filter;
+		dl_options.folder_directory = folder_directory;
+		dl_options.auto_spam = auto_spam;
+		dl_options.white = white;
+		dl_options.black = black;
+
+		if (pop3_really_dl(&dl_options))
 		{
 			imap_synchronize_really(&imap_list, called_by_auto);
 		} else if (single_account)

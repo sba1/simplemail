@@ -155,6 +155,7 @@ void test_pop3(void)
 	struct list pop3_list;
 	struct account *ac;
 	struct pop3_server *pop3_server;
+	struct pop3_dl_options dl_options = {0};
 
 	char *profile_path;
 	char *pwd;
@@ -206,7 +207,10 @@ void test_pop3(void)
 	pop3_server = pop_duplicate(ac->pop);
 	CU_ASSERT(pop3_server != NULL);
 	list_insert_tail(&pop3_list, &pop3_server->node);
-	pop3_really_dl(&pop3_list, folder_incoming()->path, 0, 0, 0, user.folder_directory, 0, NULL, NULL);
+	dl_options.pop_list = &pop3_list;
+	dl_options.dest_dir = folder_incoming()->path;
+	dl_options.folder_directory = user.folder_directory;
+	pop3_really_dl(&dl_options);
 
 	pop_free(pop3_server);
 	account_free(ac);

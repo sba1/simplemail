@@ -47,21 +47,43 @@ struct pop3_server
 	char *title; /**< @brief normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
+struct pop3_dl_options
+{
+	/** the list of pop3_server connections to check. */
+	struct list *pop_list;
+
+	/** the drawer where to put the downloaded files (incoming folder). */
+	char *dest_dir;
+
+	/** the receive preselection */
+	int receive_preselection;
+
+	/** the receive size */
+	int receive_size;
+
+	/** whether remote filters should be applied */
+	int has_remote_filter;
+
+	/** the root directories of the folders */
+	char *folder_directory;
+
+	/** whether spam identification should be applied. */
+	int auto_spam;
+
+	/** list of email addresses that shall be not considered as spam */
+	char **white;
+
+	/** list of email addresses that shall be considered as spam */
+	char **black;
+};
+
 /**
  * Download the mails in the context of the current thread.
  *
- * @param pop_list the list of pop3_server connections to check.
- * @param dest_dir the drawer where to put the downloaded files (incoming folder).
- * @param receive_preselection the receive preselection
- * @param receive_size the receive size
- * @param has_remote_filter whether remote filters should be applied
- * @param folder_directory the root directories of the folders
- * @param auto_spam whether spam identification should be applied.
- * @param white list of email addresses that shall be not considered as spam
- * @param black list of email addresses that shall be considered as spam
+ * @param dl_options options for downloading
  * @return success or not.
  */
-int pop3_really_dl(struct list *pop_list, char *dest_dir, int receive_preselection, int receive_size, int has_remote_filter, char *folder_directory, int auto_spam, char **white, char **black);
+int pop3_really_dl(struct pop3_dl_options *dl_options);
 
 /**
  * @brief Log in and log out into a POP3 server as given by the @p server parameter.

@@ -859,12 +859,19 @@ static void pop3_uidl_init(struct uidl *uidl, struct pop3_server *server, char *
 
 /*****************************************************************************/
 
-int pop3_really_dl(struct list *pop_list, char *dest_dir,
-				   int receive_preselection, int receive_size,
-				   int has_remote_filter, char *folder_directory, int auto_spam,
-				   char **white, char **black)
+int pop3_really_dl(struct pop3_dl_options *dl_options)
 {
 	int rc = 0;
+
+	struct list *pop_list = dl_options->pop_list;
+	char *dest_dir = dl_options->dest_dir;
+	int receive_preselection = dl_options->receive_preselection;
+	int receive_size = dl_options->receive_size;
+	int has_remote_filter = dl_options->has_remote_filter;
+	char *folder_directory = dl_options->folder_directory;
+	int auto_spam = dl_options->auto_spam;
+	char **white = dl_options->white;
+	char **black = dl_options->black;
 
 	/* If pop list is empty we of course succeed */
 	if (!list_first(pop_list)) return 1;

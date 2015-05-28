@@ -890,7 +890,7 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 
 			rc = 0;
 
-			sprintf(head_buf,_("Fetching mails from %s"),server->name);
+			sm_snprintf(head_buf,sizeof(head_buf),_("Fetching mails from %s"),server->name);
 			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 			if (server->title)
 				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);

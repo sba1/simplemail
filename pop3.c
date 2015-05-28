@@ -859,11 +859,16 @@ static void pop3_uidl_init(struct uidl *uidl, struct pop3_server *server, char *
 
 /*****************************************************************************/
 
-int pop3_really_dl(struct pop3_dl_options *dl_options)
+/**
+ * Download mails from the given pop3 server.
+ *
+ * @param dl_options options for downloading. The pop list is ignored.
+ * @param server the description defining the server from which to download
+ * @param nummails_ptr
+ * @return 0 for failure, 1 for success
+ */
+static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3_server *server, int *nummails_ptr)
 {
-	int rc = 0;
-
-	struct list *pop_list = dl_options->pop_list;
 	char *dest_dir = dl_options->dest_dir;
 	int receive_preselection = dl_options->receive_preselection;
 	int receive_size = dl_options->receive_size;
@@ -872,6 +877,227 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 	int auto_spam = dl_options->auto_spam;
 	char **white = dl_options->white;
 	char **black = dl_options->black;
+
+	struct connection *conn;
+	struct connect_options connect_options = {0};
+	char head_buf[100];
+	int error_code;
+	int nummails;
+	int rc;
+
+	rc = 0;
+	nummails = 0;
+
+	sm_snprintf(head_buf,sizeof(head_buf),_("Fetching mails from %s"),server->name);
+	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+	if (server->title)
+		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+	else
+		thread_call_parent_function_async_string(status_set_title, 1, server->name);
+	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+
+	/* Ask for the login/password */
+	if (server->ask)
+	{
+		char *password = malloc(512);
+		char *login = malloc(512);
+
+		if (password && login)
+		{
+			int rc;
+
+			if (server->login) mystrlcpy(login,server->login,512);
+			password[0] = 0;
+
+			if ((rc = thread_call_parent_function_sync(NULL,sm_request_login,4,server->name,login,password,512)))
+			{
+				server->login = mystrdup(login);
+				server->passwd = mystrdup(password);
+			}
+		}
+
+		free(password);
+		free(login);
+	}
+
+	connect_options.use_ssl = server->ssl && !server->stls;
+	connect_options.fingerprint = server->fingerprint;
+
+	if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
+	{
+		char *timestamp;
+		thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
+
+		if (pop3_wait_login(conn,server,&timestamp))
+		{
+			int goon = 1;
+
+			if (!pop3_login(conn,server,timestamp))
+			{
+				SM_DEBUGF(15,("Logging in failed\n"));
+				goon = 0;
+				if (timestamp)
+				{
+					/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
+					   In such cases a reconnect should help. */
+					pop3_quit(conn,server);
+					tcp_disconnect(conn);
+					SM_DEBUGF(15,("Trying to connect again to the server\n"));
+					if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
+					{
+						if (pop3_wait_login(conn,server,NULL))
+						{
+							goon = pop3_login(conn,server,NULL);
+							if (!goon) SM_DEBUGF(15,("Login failed\n"));
+						} else SM_DEBUGF(15,("Couldn't recevie a welcome message from the server\n"));
+					} else SM_DEBUGF(15,("Couldn't connect again to the server\n"));
+				}
+			}
+
+			if (goon)
+			{
+				struct uidl uidl;
+				struct pop3_mail_stats stats;
+
+				SM_DEBUGF(15,("Logged in successfully\n"));
+
+				pop3_uidl_init(&uidl,server,folder_directory);
+
+				if ((pop3_stat(&stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
+				{
+					struct dl_mail *mail_array = stats.dl_mails;
+					int i;
+					int mail_amm = stats.num_dl_mails;
+					char path[256];
+
+					getcwd(path, 255);
+
+					if(chdir(dest_dir) == -1)
+					{
+						tell_from_subtask(N_("Can\'t access income folder!"));
+					} else
+					{
+						int max_mail_size_sum = 0;
+						int mail_size_sum = 0;
+
+						int max_dl_mails = 0;
+						int cur_dl_mail = 0;
+
+						int success = 1;
+
+						/* determine the size of the mails which should be downloaded */
+						for (i=0; i<mail_amm; i++)
+						{
+							if (mail_array[i].flags & MAILF_DOWNLOAD)
+							{
+								max_mail_size_sum += mail_array[i].size;
+								max_dl_mails++;
+							} else
+							{
+								if (mail_array[i].flags & MAILF_DELETE)
+								{
+									max_dl_mails++;
+								}
+							}
+						}
+
+						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_mail_size_sum);
+						thread_call_function_async(thread_get_main(),status_init_mail,1,max_dl_mails);
+
+						for (i=0; i<mail_amm; i++)
+						{
+							int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
+							int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
+
+							if (dl || del)
+							{
+								cur_dl_mail++;
+								thread_call_function_async(thread_get_main(),status_set_mail,2,cur_dl_mail,mail_array[i].size);
+							}
+
+							if (dl)
+							{
+								if (!pop3_get_mail(conn, server, i + 1, mail_array[i].size, mail_size_sum, auto_spam, white, black))
+								{
+									if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
+									success = 0;
+									break;
+								}
+
+								/* add the mail to the uidl if available */
+								if (stats.uidls && stats.uidls[i])
+								{
+									uidl_add(&uidl,stats.uidls[i]);
+								}
+								nummails++;
+								mail_size_sum += mail_array[i].size;
+							}
+
+							if (del)
+							{
+								thread_call_function_async(thread_get_main(),status_set_status,1,_("Marking mail as deleted..."));
+								if (!pop3_del_mail(conn, i + 1))
+								{
+									if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
+									else
+									{
+										success = 0;
+										break;
+									}
+								}
+							}
+						}
+
+						rc = success;
+						chdir(path);
+					}
+
+					pop3_free_mail_array(&stats);
+				}
+				pop3_quit(conn,server);
+				thread_call_function_async(thread_get_main(),status_set_status,1,"");
+
+				free(uidl.filename);
+				free(uidl.entries);
+			}
+			free(timestamp);
+		}
+		tcp_disconnect(conn); /* NULL safe */
+		if (thread_aborted())
+		{
+			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+				goto out;;;
+		}
+	} else
+	{
+		if (thread_aborted())
+		{
+			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+				goto out;;;
+		} else
+		{
+			char message[380];
+
+			sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),server->name,tcp_strerror(tcp_error_code()));
+			tell_from_subtask(message);
+			rc = 0;
+			goto out;;
+		}
+	}
+	/* Clear the preselection entries */
+	thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
+out:
+	*nummails_ptr = nummails;
+	return rc;
+}
+
+/*****************************************************************************/
+
+int pop3_really_dl(struct pop3_dl_options *dl_options)
+{
+	int rc = 0;
+
+	struct list *pop_list = dl_options->pop_list;
 
 	/* If pop list is empty we of course succeed */
 	if (!list_first(pop_list)) return 1;
@@ -883,211 +1109,12 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 
 		for (;server; server = (struct pop3_server*)node_next(&server->node))
 		{
-			struct connection *conn;
-			struct connect_options connect_options = {0};
-			char head_buf[100];
-			int error_code;
+			int mails;
 
-			rc = 0;
+			if (!pop3_really_dl_single(dl_options, server, &mails))
+				break;
 
-			sm_snprintf(head_buf,sizeof(head_buf),_("Fetching mails from %s"),server->name);
-			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-			if (server->title)
-				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
-			else
-				thread_call_parent_function_async_string(status_set_title, 1, server->name);
-			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
-
-			/* Ask for the login/password */
-			if (server->ask)
-			{
-				char *password = malloc(512);
-				char *login = malloc(512);
-
-				if (password && login)
-				{
-					int rc;
-
-					if (server->login) mystrlcpy(login,server->login,512);
-					password[0] = 0;
-
-					if ((rc = thread_call_parent_function_sync(NULL,sm_request_login,4,server->name,login,password,512)))
-					{
-						server->login = mystrdup(login);
-						server->passwd = mystrdup(password);
-					}
-				}
-
-				free(password);
-				free(login);
-			}
-
-			connect_options.use_ssl = server->ssl && !server->stls;
-			connect_options.fingerprint = server->fingerprint;
-
-			if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
-			{
-				char *timestamp;
-				thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
-
-				if (pop3_wait_login(conn,server,&timestamp))
-				{
-					int goon = 1;
-
-					if (!pop3_login(conn,server,timestamp))
-					{
-						SM_DEBUGF(15,("Logging in failed\n"));
-						goon = 0;
-						if (timestamp)
-						{
-							/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
-							   In such cases a reconnect should help. */
-							pop3_quit(conn,server);
-							tcp_disconnect(conn);
-							SM_DEBUGF(15,("Trying to connect again to the server\n"));
-							if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
-							{
-								if (pop3_wait_login(conn,server,NULL))
-								{
-									goon = pop3_login(conn,server,NULL);
-									if (!goon) SM_DEBUGF(15,("Login failed\n"));
-								} else SM_DEBUGF(15,("Couldn't recevie a welcome message from the server\n"));
-							} else SM_DEBUGF(15,("Couldn't connect again to the server\n"));
-						}
-					}
-
-					if (goon)
-					{
-						struct uidl uidl;
-						struct pop3_mail_stats stats;
-
-						SM_DEBUGF(15,("Logged in successfully\n"));
-
-						pop3_uidl_init(&uidl,server,folder_directory);
-
-						if ((pop3_stat(&stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
-						{
-							struct dl_mail *mail_array = stats.dl_mails;
-							int i;
-							int mail_amm = stats.num_dl_mails;
-							char path[256];
-
-							getcwd(path, 255);
-
-							if(chdir(dest_dir) == -1)
-							{
-								tell_from_subtask(N_("Can\'t access income folder!"));
-							} else
-							{
-								int max_mail_size_sum = 0;
-								int mail_size_sum = 0;
-
-								int max_dl_mails = 0;
-								int cur_dl_mail = 0;
-
-								int success = 1;
-
-								/* determine the size of the mails which should be downloaded */
-								for (i=0; i<mail_amm; i++)
-								{
-									if (mail_array[i].flags & MAILF_DOWNLOAD)
-									{
-										max_mail_size_sum += mail_array[i].size;
-										max_dl_mails++;
-									} else
-									{
-										if (mail_array[i].flags & MAILF_DELETE)
-										{
-											max_dl_mails++;
-										}
-									}
-								}
-
-								thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_mail_size_sum);
-								thread_call_function_async(thread_get_main(),status_init_mail,1,max_dl_mails);
-
-								for (i=0; i<mail_amm; i++)
-								{
-									int dl = (mail_array[i].flags & MAILF_DOWNLOAD)?1:0;
-									int del = (mail_array[i].flags & MAILF_DELETE)?1:0;
-
-									if (dl || del)
-									{
-										cur_dl_mail++;
-										thread_call_function_async(thread_get_main(),status_set_mail,2,cur_dl_mail,mail_array[i].size);
-									}
-
-									if (dl)
-									{
-										if (!pop3_get_mail(conn, server, i + 1, mail_array[i].size, mail_size_sum, auto_spam, white, black))
-										{
-											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
-											success = 0;
-											break;
-										}
-
-										/* add the mail to the uidl if available */
-										if (stats.uidls && stats.uidls[i])
-										{
-											uidl_add(&uidl,stats.uidls[i]);
-										}
-										nummails++;
-										mail_size_sum += mail_array[i].size;
-									}
-
-									if (del)
-									{
-										thread_call_function_async(thread_get_main(),status_set_status,1,_("Marking mail as deleted..."));
-										if (!pop3_del_mail(conn, i + 1))
-										{
-											if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
-											else
-											{
-												success = 0;
-												break;
-											}
-										}
-									}
-								}
-
-								rc = success;
-								chdir(path);
-							}
-
-							pop3_free_mail_array(&stats);
-						}
-						pop3_quit(conn,server);
-						thread_call_function_async(thread_get_main(),status_set_status,1,"");
-
-						free(uidl.filename);
-						free(uidl.entries);
-					}
-					free(timestamp);
-				}
-				tcp_disconnect(conn); /* NULL safe */
-				if (thread_aborted())
-				{
-					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
-						break;
-				}
-			} else
-			{
-				if (thread_aborted())
-				{
-					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
-						break;
-				} else
-				{
-					char message[380];
-
-					sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),server->name,tcp_strerror(tcp_error_code()));
-					tell_from_subtask(message);
-					rc = 0;
-					break;
-				}
-			}
-			/* Clear the preselection entries */
-			thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
+			nummails += mails;
 		}
 		close_socket_lib();
 

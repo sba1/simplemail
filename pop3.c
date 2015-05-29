@@ -878,6 +878,8 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 	char **white = dl_options->white;
 	char **black = dl_options->black;
 
+	struct pop3_dl_callbacks *callbacks = &dl_options->callbacks;
+
 	struct connection *conn;
 	struct connect_options connect_options = {0};
 	char head_buf[100];
@@ -889,12 +891,12 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 	nummails = 0;
 
 	sm_snprintf(head_buf,sizeof(head_buf),_("Fetching mails from %s"),server->name);
-	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+	callbacks->set_head(head_buf);
 	if (server->title)
-		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+		callbacks->set_title_utf8(server->title);
 	else
-		thread_call_parent_function_async_string(status_set_title, 1, server->name);
-	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+		callbacks->set_title(server->name);
+	callbacks->set_connect_to_server(server->name);
 
 	/* Ask for the login/password */
 	if (server->ask)
@@ -926,7 +928,8 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 	if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
 	{
 		char *timestamp;
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
+
+		callbacks->set_status_static(_("Waiting for login..."));
 
 		if (pop3_wait_login(conn,server,&timestamp))
 		{
@@ -1001,8 +1004,8 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 							}
 						}
 
-						thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_mail_size_sum);
-						thread_call_function_async(thread_get_main(),status_init_mail,1,max_dl_mails);
+						callbacks->init_gauge_as_bytes(max_mail_size_sum);
+						callbacks->init_mail(max_dl_mails);
 
 						for (i=0; i<mail_amm; i++)
 						{
@@ -1012,7 +1015,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 							if (dl || del)
 							{
 								cur_dl_mail++;
-								thread_call_function_async(thread_get_main(),status_set_mail,2,cur_dl_mail,mail_array[i].size);
+								callbacks->set_mail(cur_dl_mail,mail_array[i].size);
 							}
 
 							if (dl)
@@ -1035,7 +1038,8 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 
 							if (del)
 							{
-								thread_call_function_async(thread_get_main(),status_set_status,1,_("Marking mail as deleted..."));
+								callbacks->set_status_static(_("Marking mail as deleted..."));
+
 								if (!pop3_del_mail(conn, i + 1))
 								{
 									if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Can\'t mark mail as deleted!"));
@@ -1055,7 +1059,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 					pop3_free_mail_array(&stats);
 				}
 				pop3_quit(conn,server);
-				thread_call_function_async(thread_get_main(),status_set_status,1,"");
+				callbacks->set_status_static("");
 
 				free(uidl.filename);
 				free(uidl.entries);

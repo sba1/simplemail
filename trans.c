@@ -46,6 +46,57 @@
 #include "subthreads.h"
 #include "support.h"
 
+/*****************************************************************************/
+
+/* Callbacks, mostly for pop3 for now */
+
+static void trans_set_status_static(const char *str)
+{
+	thread_call_function_async(thread_get_main(), status_set_status, 1, str);
+}
+
+static void trans_set_connect_to_server(const char *server)
+{
+	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server);
+}
+
+static void trans_set_head(const char *head)
+{
+	thread_call_parent_function_async_string(status_set_head, 1, head);
+}
+
+static void trans_set_title_utf8(const char *title)
+{
+	thread_call_parent_function_async_string(status_set_title_utf8, 1, title);
+}
+
+static void trans_set_title(const char *title)
+{
+	thread_call_parent_function_async_string(status_set_title, 1, title);
+}
+
+static void trans_init_gauge_as_bytes(int maximal)
+{
+	thread_call_function_async(thread_get_main(), status_init_gauge_as_bytes, 1, maximal);
+}
+
+static void trans_set_gauge(int value)
+{
+	thread_call_function_async(thread_get_main(), status_set_gauge, 1, value);
+}
+
+static void trans_init_mail(int maximal)
+{
+	thread_call_function_async(thread_get_main(), status_init_mail, 1, maximal);
+}
+
+static void trans_set_mail(int current, int current_size)
+{
+	thread_call_function_async(thread_get_main(), status_set_mail, current, current_size);
+}
+
+/*****************************************************************************/
+
 struct mails_dl_msg
 {
 	int called_by_auto;
@@ -180,6 +231,16 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.auto_spam = auto_spam;
 		dl_options.white = white;
 		dl_options.black = black;
+
+		dl_options.callbacks.init_mail = trans_init_mail;
+		dl_options.callbacks.init_gauge_as_bytes = trans_init_gauge_as_bytes;
+		dl_options.callbacks.set_connect_to_server = trans_set_connect_to_server;
+		dl_options.callbacks.set_gauge = trans_set_gauge;
+		dl_options.callbacks.set_head = trans_set_head;
+		dl_options.callbacks.set_mail = trans_set_mail;
+		dl_options.callbacks.set_status_static = trans_set_status_static;
+		dl_options.callbacks.set_title = trans_set_title;
+		dl_options.callbacks.set_title_utf8 = trans_set_title_utf8;
 
 		if (pop3_really_dl(&dl_options))
 		{

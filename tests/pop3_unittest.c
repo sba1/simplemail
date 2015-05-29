@@ -29,6 +29,7 @@
 #include "folder.h"
 #include "mail.h"
 #include "simplemail.h"
+#include "status.h"
 #include "support_indep.h"
 
 /*************************************************************/
@@ -210,6 +211,15 @@ void test_pop3(void)
 	dl_options.pop_list = &pop3_list;
 	dl_options.dest_dir = folder_incoming()->path;
 	dl_options.folder_directory = user.folder_directory;
+	dl_options.callbacks.init_mail = status_init_mail;
+	dl_options.callbacks.init_gauge_as_bytes = status_init_gauge_as_bytes;
+	dl_options.callbacks.set_connect_to_server = status_set_connect_to_server;
+	dl_options.callbacks.set_gauge = status_set_gauge;
+	dl_options.callbacks.set_head = status_set_head;
+	dl_options.callbacks.set_mail = status_set_mail;
+	dl_options.callbacks.set_status_static = status_set_status;
+	dl_options.callbacks.set_title = status_set_title;
+	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;
 	pop3_really_dl(&dl_options);
 
 	pop_free(pop3_server);

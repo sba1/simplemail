@@ -47,6 +47,19 @@ struct pop3_server
 	char *title; /**< @brief normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
+struct pop3_dl_callbacks
+{
+	void (*set_status_static)(const char *str);
+	void (*set_connect_to_server)(const char *server);
+	void (*set_head)(const char *head);
+	void (*set_title_utf8)(const char *title);
+	void (*set_title)(const char *title);
+	void (*init_gauge_as_bytes)(int maximal);
+	void (*set_gauge)(int value);
+	void (*init_mail)(int maximal);
+	void (*set_mail)(int current, int current_size);
+};
+
 struct pop3_dl_options
 {
 	/** the list of pop3_server connections to check. */
@@ -75,6 +88,9 @@ struct pop3_dl_options
 
 	/** list of email addresses that shall be considered as spam */
 	char **black;
+
+	/** callbacks called during some operations */
+	struct pop3_dl_callbacks callbacks;
 };
 
 /**

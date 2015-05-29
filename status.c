@@ -125,7 +125,7 @@ void status_close(void)
 /******************************************************************
  Set the title of the status window
 *******************************************************************/
-void status_set_title(char *title)
+void status_set_title(const char *title)
 {
 	statuswnd_set_title(title);
 }
@@ -133,7 +133,7 @@ void status_set_title(char *title)
 /******************************************************************
  Set the title of the status window
 *******************************************************************/
-void status_set_title_utf8(char *title)
+void status_set_title_utf8(const char *title)
 {
 	statuswnd_set_title_utf8(title);
 }
@@ -141,7 +141,7 @@ void status_set_title_utf8(char *title)
 /******************************************************************
  Set the status line for connecting to a server
 *******************************************************************/
-void status_set_connect_to_server(char *server)
+void status_set_connect_to_server(const char *server)
 {
 	static char buf[80];
 	sm_snprintf(buf,sizeof(buf),_("Connecting to server %s..."),server);
@@ -234,7 +234,7 @@ void status_set_status(const char *str)
 /******************************************************************
  Set the head of the status window
 *******************************************************************/
-void status_set_head(char *head)
+void status_set_head(const char *head)
 {
 	free(status_head);
 	status_head = mystrdup(head);

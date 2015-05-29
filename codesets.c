@@ -1464,7 +1464,7 @@ utf8 *utf8create_len(void *from, char *charset, int from_len)
  * @param codeset
  * @return
  */
-int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
+int utf8tostr(const utf8 *str, char *dest, int dest_size, struct codeset *codeset)
 {
 	int i;
 	struct single_convert *f;
@@ -1510,7 +1510,7 @@ int utf8tostr(utf8 *str, char *dest, int dest_size, struct codeset *codeset)
  * @param codeset
  * @return
  */
-char *utf8tostrcreate(utf8 *str, struct codeset *codeset)
+char *utf8tostrcreate(const utf8 *str, struct codeset *codeset)
 {
 	char *dest;
 	int len;

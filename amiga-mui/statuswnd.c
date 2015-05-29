@@ -127,7 +127,7 @@ void statuswnd_close(void)
 /**************************************************************************
  Display the status title
 **************************************************************************/
-void statuswnd_set_title(char *title)
+void statuswnd_set_title(const char *title)
 {
 	free(status_title);
 	status_title = mystrdup(title);
@@ -139,7 +139,7 @@ void statuswnd_set_title(char *title)
 /**************************************************************************
  Display the status title (utf8)
 **************************************************************************/
-void statuswnd_set_title_utf8(char *title)
+void statuswnd_set_title_utf8(const char *title)
 {
 	free(status_title);
 	status_title = utf8tostrcreate(title, user.config.default_codeset);

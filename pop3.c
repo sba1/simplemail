@@ -158,6 +158,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
 /**
  * Log into the pop3 server.
  *
+ * @param callbacks provides functions for user information
  * @param conn the previously established connection
  * @param server describes the server that was used to establish the connection
  *  and contains POP3-related options
@@ -165,7 +166,7 @@ static int pop3_wait_login(struct connection *conn, struct pop3_server *server, 
  *  for APOP.
  * @return 0 on failure, otherwise something different than 0
  */
-static int pop3_login(struct connection *conn, struct pop3_server *server, char *timestamp)
+static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *conn, struct pop3_server *server, char *timestamp)
 {
 	char buf[256];
 
@@ -182,7 +183,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		char *ptr;
 		int i;
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Authentificate via APOP..."));
+		callbacks->set_status_static(_("Authentificate via APOP..."));
 
 		MD5Init(&context);
 		MD5Update(&context, (unsigned char*)timestamp, strlen(timestamp));
@@ -214,13 +215,13 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 			SM_DEBUGF(15,("APOP authentification failed\n"));
 		} else
 		{
-			thread_call_function_async(thread_get_main(),status_set_status,1,_("Login successful!"));
+			callbacks->set_status_static(_("Login successful!"));
 			return 1;
 		}
 	}
 
 	SM_DEBUGF(15,("Trying plain text method\n"));
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending username..."));
+	callbacks->set_status_static(_("Sending username..."));
 
 	sm_snprintf(buf, sizeof(buf), "USER %s\r\n",server->login);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
@@ -232,7 +233,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		return 0;
 	}
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending password..."));
+	callbacks->set_status_static(_("Sending password..."));
 	sm_snprintf(buf,sizeof(buf),"PASS %s\r\n",server->passwd);
 	if (tcp_write(conn,buf,strlen(buf)) <= 0) return 0;
 	if (!pop3_receive_answer(conn,0))
@@ -242,7 +243,7 @@ static int pop3_login(struct connection *conn, struct pop3_server *server, char 
 		return 0;
 	}
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Login successful!"));
+	callbacks->set_status_static(_("Login successful!"));
 	return 1;
 }
 
@@ -292,6 +293,7 @@ static int uidllen(char *buf)
  * Invokes the UIDL command. Sets the MAILF_DUPLICATE flag for mails which
  * should not be downloaded because they have been downloaded already.
  *
+ * @param callbacks provides functions for user information
  * @param conn the connection to use.
  * @param server the server used to open the connection.
  * @param stats the filled stat information. The flags of items will
@@ -299,14 +301,15 @@ static int uidllen(char *buf)
  * @param uidl the uild file.
  * @return success or not.
  */
-static int pop3_uidl(struct connection *conn, struct pop3_server *server,
+static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
+					 struct connection *conn, struct pop3_server *server,
 					 struct pop3_mail_stats *stats, struct uidl *uidl)
 {
 	SM_ENTER;
 
 	if (!server->nodupl) SM_RETURN(0,"%ld");
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Checking for mail duplicates..."));
+	callbacks->set_status_static(_("Checking for mail duplicates..."));
 
 	if (tcp_write(conn,"UIDL\r\n",6) == 6)
 	{
@@ -415,6 +418,7 @@ static void pop3_free_mail_array(struct pop3_mail_stats *stats)
  * This function may invoke several methods of the controller and interact with
  * the user.
  *
+ * @param callbacks provides functions for user information
  * @param stats output parameter where to store the stats
  * @param conn the connection to use
  * @param server the server description used for opening the connection.
@@ -426,7 +430,8 @@ static void pop3_free_mail_array(struct pop3_mail_stats *stats)
  *  of the main thead for every mail to be downloaded.
  * @return 0 on failure, else something other
  */
-static int pop3_stat(struct pop3_mail_stats *stats,
+static int pop3_stat(struct pop3_dl_callbacks *callbacks,
+					 struct pop3_mail_stats *stats,
 					 struct connection *conn,
 					 struct pop3_server *server,
 					 struct uidl *uidl,
@@ -438,7 +443,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 	int i,amm,size,mails_add = 0,cont = 0;
 	int initial_mflags = MAILF_DOWNLOAD | (server->del?MAILF_DELETE:0);
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Getting statistics..."));
+	callbacks->set_status_static(_("Getting statistics..."));
 
 	if (tcp_write(conn,"STAT\r\n",6) <= 0) return 0;
 	if (!(answer = pop3_receive_answer(conn,0)))
@@ -471,7 +476,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 		uidl_open(uidl);
 
 		/* call the POP3 UIDL command */
-		if (pop3_uidl(conn,server,stats,uidl))
+		if (pop3_uidl(callbacks,conn,server,stats,uidl))
 		{
 			/* now check if there are uidls in the uidl file which are no longer on the server, remove them */
 			uidl_remove_unused(uidl, amm, stats->uidls);
@@ -486,7 +491,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
   }
 
 	SM_DEBUGF(10,("Getting mail sizes...\n"));
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Getting mail sizes..."));
+	callbacks->set_status_static(_("Getting mail sizes..."));
 
 	/* List all mails with sizes */
 	if (tcp_write(conn,"LIST\r\n",6) != 6)
@@ -551,7 +556,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 	if (cont && ((mails_add && receive_preselection == 2) || has_remote_filter))
 	{
 		/* no errors and the user wants a more informative preselection or there are any remote filters */
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Getting mail infos..."));
+		callbacks->set_status_static(_("Getting mail infos..."));
 		for (i=0;i<amm;i++)
 		{
 			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i)!=-1);
@@ -577,7 +582,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 					}
 
 					/* -ERR has been returned and nobody breaked the connection, what means that TOP is not supported */
-					thread_call_function_async(thread_get_main(),status_set_status,1,_("Couldn't receive more statistics"));
+					callbacks->set_status_static(_("Couldn't receive more statistics"));
 					break;
 				}
 
@@ -659,7 +664,7 @@ static int pop3_stat(struct pop3_mail_stats *stats,
 		/* let the user select which mails (s)he wants */
 		int start;
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for user interaction"));
+		callbacks->set_status_static(_("Waiting for user interaction"));
 
 		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_timer_callback_noop, conn, 5000, status_wait,0)))
 		{
@@ -933,7 +938,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 		{
 			int goon = 1;
 
-			if (!pop3_login(conn,server,timestamp))
+			if (!pop3_login(callbacks, conn,server,timestamp))
 			{
 				SM_DEBUGF(15,("Logging in failed\n"));
 				goon = 0;
@@ -948,7 +953,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 					{
 						if (pop3_wait_login(conn,server,NULL))
 						{
-							goon = pop3_login(conn,server,NULL);
+							goon = pop3_login(callbacks, conn,server,NULL);
 							if (!goon) SM_DEBUGF(15,("Login failed\n"));
 						} else SM_DEBUGF(15,("Couldn't recevie a welcome message from the server\n"));
 					} else SM_DEBUGF(15,("Couldn't connect again to the server\n"));
@@ -964,7 +969,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 
 				pop3_uidl_init(&uidl,server,folder_directory);
 
-				if ((pop3_stat(&stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
+				if ((pop3_stat(callbacks, &stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
 				{
 					struct dl_mail *mail_array = stats.dl_mails;
 					int i;
@@ -1153,7 +1158,11 @@ int pop3_login_only(struct pop3_server *server)
 			{
 				int goon = 1;
 
-				if (!pop3_login(conn,server,timestamp))
+				struct pop3_dl_callbacks callbacks = {0};
+
+				callbacks.set_status_static = status_set_status;
+
+				if (!pop3_login(&callbacks,conn,server,timestamp))
 				{
 					goon = 0;
 					if (timestamp)
@@ -1166,7 +1175,7 @@ int pop3_login_only(struct pop3_server *server)
 						{
 							if (pop3_wait_login(conn,server,NULL))
 							{
-								goon = pop3_login(conn,server,NULL);
+								goon = pop3_login(&callbacks,conn,server,NULL);
 							}
 						}
 					}

@@ -58,6 +58,7 @@ struct pop3_dl_callbacks
 	void (*set_gauge)(int value);
 	void (*init_mail)(int maximal);
 	void (*set_mail)(int current, int current_size);
+	int (*request_login)(char *text, char *login, char *password, int len);
 };
 
 struct pop3_dl_options

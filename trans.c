@@ -43,6 +43,7 @@
 #include "status.h"
 #include "support_indep.h"
 
+#include "request.h"
 #include "subthreads.h"
 #include "support.h"
 
@@ -93,6 +94,11 @@ static void trans_init_mail(int maximal)
 static void trans_set_mail(int current, int current_size)
 {
 	thread_call_function_async(thread_get_main(), status_set_mail, current, current_size);
+}
+
+static int trans_request_login(char *text, char *login, char *password, int len)
+{
+	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }
 
 /*****************************************************************************/
@@ -241,6 +247,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.set_status_static = trans_set_status_static;
 		dl_options.callbacks.set_title = trans_set_title;
 		dl_options.callbacks.set_title_utf8 = trans_set_title_utf8;
+		dl_options.callbacks.request_login = trans_request_login;
 
 		if (pop3_really_dl(&dl_options))
 		{

@@ -28,6 +28,7 @@
 #include "debug.h"
 #include "folder.h"
 #include "mail.h"
+#include "request.h"
 #include "simplemail.h"
 #include "status.h"
 #include "support_indep.h"
@@ -220,6 +221,7 @@ void test_pop3(void)
 	dl_options.callbacks.set_status_static = status_set_status;
 	dl_options.callbacks.set_title = status_set_title;
 	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;
+	dl_options.callbacks.request_login = sm_request_login;
 	pop3_really_dl(&dl_options);
 
 	pop_free(pop3_server);

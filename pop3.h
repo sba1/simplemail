@@ -50,6 +50,7 @@ struct pop3_server
 struct pop3_dl_callbacks
 {
 	void (*set_status_static)(const char *str);
+	void (*set_status)(const char *);
 	void (*set_connect_to_server)(const char *server);
 	void (*set_head)(const char *head);
 	void (*set_title_utf8)(const char *title);

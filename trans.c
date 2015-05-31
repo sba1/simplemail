@@ -51,6 +51,11 @@
 
 /* Callbacks, mostly for pop3 for now */
 
+static void trans_set_status(const char *str)
+{
+	thread_call_parent_function_async_string(status_set_status, 1, str);
+}
+
 static void trans_set_status_static(const char *str)
 {
 	thread_call_function_async(thread_get_main(), status_set_status, 1, str);
@@ -244,6 +249,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.set_gauge = trans_set_gauge;
 		dl_options.callbacks.set_head = trans_set_head;
 		dl_options.callbacks.set_mail = trans_set_mail;
+		dl_options.callbacks.set_status = trans_set_status;
 		dl_options.callbacks.set_status_static = trans_set_status_static;
 		dl_options.callbacks.set_title = trans_set_title;
 		dl_options.callbacks.set_title_utf8 = trans_set_title_utf8;

@@ -218,6 +218,7 @@ void test_pop3(void)
 	dl_options.callbacks.set_gauge = status_set_gauge;
 	dl_options.callbacks.set_head = status_set_head;
 	dl_options.callbacks.set_mail = status_set_mail;
+	dl_options.callbacks.set_status = status_set_status;
 	dl_options.callbacks.set_status_static = status_set_status;
 	dl_options.callbacks.set_title = status_set_title;
 	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;

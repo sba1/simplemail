@@ -367,7 +367,7 @@ static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
 			}
 
 			sm_snprintf(status_buf,sizeof(status_buf),_("Found %d mail duplicates"),num_duplicates);
-			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+			callbacks->set_status(status_buf);
 
 			SM_RETURN(1,"%ld");
 		}

@@ -305,74 +305,73 @@ static int pop3_uidl(struct pop3_dl_callbacks *callbacks,
 					 struct connection *conn, struct pop3_server *server,
 					 struct pop3_mail_stats *stats, struct uidl *uidl)
 {
+	char *answer;
+	char status_buf[200];
+	int num_duplicates = 0;
+
 	SM_ENTER;
 
 	if (!server->nodupl) SM_RETURN(0,"%ld");
 
 	callbacks->set_status_static(_("Checking for mail duplicates..."));
 
-	if (tcp_write(conn,"UIDL\r\n",6) == 6)
+	if (!tcp_write(conn,"UIDL\r\n",6) == 6)
+		SM_RETURN(0,"%ld");
+
+	if (!(answer = pop3_receive_answer(conn,0)))
+		SM_RETURN(0,"%ld");
+
+	while ((answer = tcp_readln(conn)))
 	{
-		char *answer;
-		if ((answer = pop3_receive_answer(conn,0)))
+		int mno, len;
+
+		if (answer[0] == '.' && answer[1] == '\n')
+			break;
+
+		mno = strtol(answer,&answer,10) - 1;
+		if (mno < 0 || mno >= stats->num_dl_mails)
+			continue;
+
+		/* Allocate memory for uidl vector, if not already done */
+		if (!stats->uidls)
 		{
-			char status_buf[200];
-			int num_duplicates = 0;
-
-			while ((answer = tcp_readln(conn)))
-			{
-				int mno, len;
-
-				if (answer[0] == '.' && answer[1] == '\n')
-					break;
-
-				mno = strtol(answer,&answer,10) - 1;
-				if (mno < 0 || mno >= stats->num_dl_mails)
-					continue;
-
-				/* Allocate memory for uidl vector, if not already done */
-				if (!stats->uidls)
-				{
-					if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
-						memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
-				}
-
-				if (!stats->uidls)
-					continue;
-
-				/* Extract the uidl from the answer */
-				answer++;
-				len = uidllen(answer);
-				if (!(stats->uidls[mno] = malloc(len+1)))
-					continue;
-				strncpy(stats->uidls[mno],answer,len);
-				stats->uidls[mno][len] = 0;
-
-				/* Is this a know uidl? */
-				if (!uidl_test(uidl,stats->uidls[mno]))
-					continue;
-
-				/* We have seem this uidl before, so the corresponding mail is
-				 * a duplicate and we do not need to download it.
-				 */
-				stats->dl_mails[mno].flags |= MAILF_DUPLICATE;
-				num_duplicates++;
-				stats->dl_mails[mno].flags &= ~MAILF_DOWNLOAD;
-			}
-
-			if (!answer)
-			{
-				if (tcp_error_code() == TCP_INTERRUPTED)
-					SM_RETURN(0,"%ld");
-			}
-
-			sm_snprintf(status_buf,sizeof(status_buf),_("Found %d mail duplicates"),num_duplicates);
-			callbacks->set_status(status_buf);
-
-			SM_RETURN(1,"%ld");
+			if ((stats->uidls = malloc(sizeof(stats->uidls[0])*stats->num_dl_mails)))
+				memset(stats->uidls, 0, sizeof(stats->uidls[0])*stats->num_dl_mails);
 		}
+
+		if (!stats->uidls)
+			continue;
+
+		/* Extract the uidl from the answer */
+		answer++;
+		len = uidllen(answer);
+		if (!(stats->uidls[mno] = malloc(len+1)))
+			continue;
+		strncpy(stats->uidls[mno],answer,len);
+		stats->uidls[mno][len] = 0;
+
+		/* Is this a know uidl? */
+		if (!uidl_test(uidl,stats->uidls[mno]))
+			continue;
+
+		/* We have seem this uidl before, so the corresponding mail is
+		 * a duplicate and we do not need to download it.
+		 */
+		stats->dl_mails[mno].flags |= MAILF_DUPLICATE;
+		num_duplicates++;
+		stats->dl_mails[mno].flags &= ~MAILF_DOWNLOAD;
 	}
-	SM_RETURN(0,"%ld");
+
+	if (!answer)
+	{
+		if (tcp_error_code() == TCP_INTERRUPTED)
+			SM_RETURN(0,"%ld");
+	}
+
+	sm_snprintf(status_buf,sizeof(status_buf),_("Found %d mail duplicates"),num_duplicates);
+	callbacks->set_status(status_buf);
+
+	SM_RETURN(1,"%ld");
 }
 
 /**

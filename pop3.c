@@ -700,6 +700,7 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
 /**
  * Retrieve the complete mail.
  *
+ * @param callbacks provides functions for user information
  * @param conn the connection to use
  * @param server the server description used for opening the connection.
  * @param nr
@@ -710,8 +711,11 @@ static int pop3_quit(struct connection *conn, struct pop3_server *server)
  * @param black
  * @return
  */
-static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
-												 int nr, int size, int already_dl, int auto_spam, char **white, char **black)
+static int pop3_get_mail(struct pop3_dl_callbacks *callbacks,
+						 struct connection *conn,
+						 struct pop3_server *server,
+						 int nr, int size, int already_dl, int auto_spam,
+						 char **white, char **black)
 {
 	char *fn,*answer;
 	char buf[256];
@@ -776,10 +780,10 @@ static int pop3_get_mail(struct connection *conn, struct pop3_server *server,
 			break;
 		}
 		bytes_written += strlen(answer) + 1; /* tcp_readln() removes the \r */
-		thread_call_function_async(thread_get_main(),status_set_gauge, 1, already_dl + bytes_written);
+		callbacks->set_gauge(already_dl + bytes_written);
 	}
 
-	thread_call_function_async(thread_get_main(),status_set_gauge, 1, already_dl + bytes_written);
+	callbacks->set_gauge(already_dl + bytes_written);
 
 	fclose(fp);
 	if (delete_mail) remove(fn);
@@ -1023,7 +1027,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 
 							if (dl)
 							{
-								if (!pop3_get_mail(conn, server, i + 1, mail_array[i].size, mail_size_sum, auto_spam, white, black))
+								if (!pop3_get_mail(callbacks, conn, server, i + 1, mail_array[i].size, mail_size_sum, auto_spam, white, black))
 								{
 									if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("Couldn't download the mail!\n"));
 									success = 0;

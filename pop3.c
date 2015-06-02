@@ -512,7 +512,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 	}
 
 	/* Freeze the list which displays the e-Mails */
-	thread_call_function_async(thread_get_main(),status_mail_list_freeze,0);
+	callbacks->mail_list_freeze();
 
 	/* Encounter the sizes of the mails, if we find a mail *
 	 * with a bigger size notify the transfer window       */
@@ -535,13 +535,13 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 		{
 			/* add this mail to the transfer window */
 			mail_array[mno].flags |= MAILF_ADDED;
-			thread_call_function_async(thread_get_main(),status_mail_list_insert,3,mno,mail_array[mno].flags,msize);
+			callbacks->mail_list_insert(mno,mail_array[mno].flags,msize);
 			mails_add = 1;
 		}
 	}
 
 	/* Thaw the list which displays the e-Mails */
-	thread_call_function_async(thread_get_main(),status_mail_list_thaw,0);
+	callbacks->mail_list_thaw();
 
 	if (!answer && tcp_error_code() == TCP_INTERRUPTED)
 	{
@@ -619,11 +619,11 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 
 							if (!(mail_array[i].flags & MAILF_ADDED))
 							{
-								thread_call_function_async(thread_get_main(),status_mail_list_insert,3,i,mail_array[i].flags,mail_array[i].size);
+								callbacks->mail_list_insert(i,mail_array[i].flags,mail_array[i].size);
 								mails_add = 1;
 							} else
 							{
-								thread_call_function_async(thread_get_main(),status_mail_list_set_flags,2,i,mail_array[i].flags);
+								callbacks->mail_list_set_flags(i,mail_array[i].flags);
 							}
 						}
 					}
@@ -632,8 +632,10 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				/* Tell the gui about the mail info (not asynchron!) */
 				if (receive_preselection == 2 || showme)
 				{
-					thread_call_parent_function_sync(NULL,status_mail_list_set_info, 4,
-						i, mail_find_header_contents(m,"from"), mail_find_header_contents(m,"subject"),mail_find_header_contents(m,"date"));
+					char *from = mail_find_header_contents(m,"from");
+					char *subject = mail_find_header_contents(m,"subject");
+					char *date = mail_find_header_contents(m,"date");
+					callbacks->mail_list_set_info(i, from, subject, date);
 				}
 
 				/* Check if we should receive more statitics (also not asynchron) */

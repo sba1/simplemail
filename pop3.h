@@ -63,6 +63,7 @@ struct pop3_dl_callbacks
 	void (*mail_list_freeze)(void);
 	void (*mail_list_thaw)(void);
 	void (*mail_list_insert)(int mno, int mflags, int msize);
+	int (*mail_list_get_flags)(int mno);
 	void (*mail_list_set_flags)(int mno, int mflags);
 	void (*mail_list_set_info)(int mno, char *from, char *subject, char *date);
 };

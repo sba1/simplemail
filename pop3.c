@@ -558,7 +558,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 		callbacks->set_status_static(_("Getting mail infos..."));
 		for (i=0;i<amm;i++)
 		{
-			int issue_top = has_remote_filter || ((int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i)!=-1);
+			int issue_top = has_remote_filter || (callbacks->mail_list_get_flags(i) != -1);
 			if (issue_top)
 			{
 				char buf[256];
@@ -675,7 +675,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 
 		for (i=0;i<amm;i++)
 		{
-			int fl = (int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,i);
+			int fl = callbacks->mail_list_get_flags(i);
 			if (fl != -1) mail_array[i].flags = fl;
 			else if (start & (1<<1)) mail_array[i].flags = 0; /* not listed mails should be ignored */
 		}

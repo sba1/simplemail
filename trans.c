@@ -121,6 +121,11 @@ static void trans_mail_list_insert(int mno, int mflags, int msize)
 	thread_call_function_async(thread_get_main(),status_mail_list_insert,3,mno,mflags,msize);
 }
 
+static int trans_mail_list_get_flags(int mno)
+{
+	return (int)thread_call_parent_function_sync(NULL,status_mail_list_get_flags,1,mno);
+}
+
 static void trans_mail_list_set_flags(int mno, int mflags)
 {
 	thread_call_function_async(thread_get_main(),status_mail_list_set_flags,2,mno,mflags);
@@ -282,6 +287,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.mail_list_freeze = trans_mail_list_freeze;
 		dl_options.callbacks.mail_list_thaw = trans_mail_list_thaw;
 		dl_options.callbacks.mail_list_insert = trans_mail_list_insert;
+		dl_options.callbacks.mail_list_get_flags = trans_mail_list_get_flags;
 		dl_options.callbacks.mail_list_set_flags = trans_mail_list_set_flags;
 		dl_options.callbacks.mail_list_set_info = trans_mail_list_set_info;
 

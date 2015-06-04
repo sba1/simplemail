@@ -25,6 +25,8 @@
 
 #include "lists.h"
 
+struct mail_info;
+
 /**
  * @brief The settings for a POP3 server
  */
@@ -66,6 +68,7 @@ struct pop3_dl_callbacks
 	int (*mail_list_get_flags)(int mno);
 	void (*mail_list_set_flags)(int mno, int mflags);
 	void (*mail_list_set_info)(int mno, char *from, char *subject, char *date);
+	int (*mail_ignore)(struct mail_info *info);
 };
 
 struct pop3_dl_options

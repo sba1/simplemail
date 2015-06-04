@@ -44,6 +44,7 @@
 #include "support_indep.h"
 
 #include "request.h"
+#include "simplemail.h"
 #include "subthreads.h"
 #include "support.h"
 
@@ -134,6 +135,11 @@ static void trans_mail_list_set_flags(int mno, int mflags)
 static void trans_mail_list_set_info(int mno, char *from, char *subject, char *date)
 {
 	thread_call_parent_function_sync(NULL,status_mail_list_set_info, 4, mno, from, subject, date);
+}
+
+static int trans_mail_ignore(struct mail_info *info)
+{
+	return (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,info);
 }
 
 /*****************************************************************************/
@@ -290,6 +296,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.mail_list_get_flags = trans_mail_list_get_flags;
 		dl_options.callbacks.mail_list_set_flags = trans_mail_list_set_flags;
 		dl_options.callbacks.mail_list_set_info = trans_mail_list_set_info;
+		dl_options.callbacks.mail_ignore = trans_mail_ignore;
 
 		if (pop3_really_dl(&dl_options))
 		{

@@ -610,8 +610,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					/* process the headers as we require this now */
 					if (mail_process_headers(m))
 					{
-						int ignore = (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,m->info);
-						if (ignore)
+						if (callbacks->mail_ignore(m->info))
 						{
 							showme = 1;
 

@@ -638,7 +638,8 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 				}
 
 				/* Check if we should receive more statitics (also not asynchron) */
-				if (!(int)thread_call_parent_function_sync(NULL, status_more_statistics,0)) break;
+				if (callbacks->more_statitics())
+					break;
 
 				mail_complete_free(m);
 			}

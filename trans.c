@@ -142,6 +142,11 @@ static int trans_mail_ignore(struct mail_info *info)
 	return (int)thread_call_parent_function_sync(NULL,callback_remote_filter_mail,1,info);
 }
 
+static int trans_more_statistics(void)
+{
+	return (int)thread_call_parent_function_sync(NULL, status_more_statistics,0);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -297,6 +302,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.mail_list_set_flags = trans_mail_list_set_flags;
 		dl_options.callbacks.mail_list_set_info = trans_mail_list_set_info;
 		dl_options.callbacks.mail_ignore = trans_mail_ignore;
+		dl_options.callbacks.more_statitics = trans_more_statistics;
 
 		if (pop3_really_dl(&dl_options))
 		{

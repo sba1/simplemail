@@ -691,9 +691,9 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
  * @param server the server description used for opening the connection.
  * @return success or not.
  */
-static int pop3_quit(struct connection *conn, struct pop3_server *server)
+static int pop3_quit(struct pop3_dl_callbacks *callbacks, struct connection *conn, struct pop3_server *server)
 {
-	thread_call_parent_function_sync(NULL,status_set_status,1,_("Logging out..."));
+	callbacks->set_status_static(_("Logging out..."));
 	if (tcp_write(conn,"QUIT\r\n",6) <= 0) return 0;
 	return pop3_receive_answer(conn,1)?1:0;
 }
@@ -951,7 +951,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 				{
 					/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
 					   In such cases a reconnect should help. */
-					pop3_quit(conn,server);
+					pop3_quit(callbacks,conn,server);
 					tcp_disconnect(conn);
 					SM_DEBUGF(15,("Trying to connect again to the server\n"));
 					if ((conn = tcp_connect(server->name, server->port, &connect_options, &error_code)))
@@ -1066,7 +1066,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 
 					pop3_free_mail_array(&stats);
 				}
-				pop3_quit(conn,server);
+				pop3_quit(callbacks,conn,server);
 				callbacks->set_status_static("");
 
 				free(uidl.filename);
@@ -1174,7 +1174,7 @@ int pop3_login_only(struct pop3_server *server)
 					{
 						/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
 						   In such cases a reconnect should help. */
-						pop3_quit(conn,server);
+						pop3_quit(&callbacks,conn,server);
 						tcp_disconnect(conn);
 						if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 						{
@@ -1188,7 +1188,7 @@ int pop3_login_only(struct pop3_server *server)
 
 				if (goon)
 				{
-					pop3_quit(conn,server);
+					pop3_quit(&callbacks,conn,server);
 					rc = 1;
 				}
 			}

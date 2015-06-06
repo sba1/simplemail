@@ -628,7 +628,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					}
 				}
 
-				/* Tell the gui about the mail info (not asynchron!) */
+				/* Tell the gui about the mail info */
 				if (receive_preselection == 2 || showme)
 				{
 					char *from = mail_find_header_contents(m,"from");
@@ -637,7 +637,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					callbacks->mail_list_set_info(i, from, subject, date);
 				}
 
-				/* Check if we should receive more statitics (also not asynchron) */
+				/* Check if we should receive more statistics */
 				if (callbacks->more_statitics())
 					break;
 

@@ -1097,7 +1097,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 		}
 	}
 	/* Clear the preselection entries */
-	thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
+	callbacks->mail_list_clear();
 out:
 	*nummails_ptr = nummails;
 	return rc;

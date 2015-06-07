@@ -107,6 +107,11 @@ static int trans_request_login(char *text, char *login, char *password, int len)
 	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }
 
+static void trans_mail_list_clear(void)
+{
+	thread_call_function_async(thread_get_main(),status_mail_list_clear,0);
+}
+
 static void trans_mail_list_freeze(void)
 {
 	thread_call_function_async(thread_get_main(),status_mail_list_freeze,0);
@@ -295,6 +300,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.set_title = trans_set_title;
 		dl_options.callbacks.set_title_utf8 = trans_set_title_utf8;
 		dl_options.callbacks.request_login = trans_request_login;
+		dl_options.callbacks.mail_list_clear = trans_mail_list_clear;
 		dl_options.callbacks.mail_list_freeze = trans_mail_list_freeze;
 		dl_options.callbacks.mail_list_thaw = trans_mail_list_thaw;
 		dl_options.callbacks.mail_list_insert = trans_mail_list_insert;

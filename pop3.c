@@ -804,7 +804,7 @@ static int pop3_get_mail(struct pop3_dl_callbacks *callbacks,
 			}
 		}
 
-		thread_call_parent_function_async_string(callback_new_mail_arrived_filename, 2, fn, is_spam);
+		callbacks->new_mail_arrived_filename(fn, is_spam);
 	}
 	free(fn);
 

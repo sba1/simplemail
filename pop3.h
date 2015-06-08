@@ -88,6 +88,9 @@ struct pop3_dl_options
 	/** the receive size */
 	int receive_size;
 
+	/** Don't bother the user with which mails to be downloaded */
+	int quiet;
+
 	/** whether remote filters should be applied */
 	int has_remote_filter;
 

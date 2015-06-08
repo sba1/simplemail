@@ -45,7 +45,6 @@
 #include "status.h"
 #include "support_indep.h"
 
-#include "mainwnd.h"
 #include "request.h"
 #include "subthreads.h"
 #include "support.h"
@@ -427,6 +426,7 @@ static void pop3_free_mail_array(struct pop3_mail_stats *stats)
  * @param has_remote_filter whether a remote filter is associated to the folder.
  *  In this case callback_remote_filter_mail() will be invoked on the context
  *  of the main thead for every mail to be downloaded.
+ * @param quiet don't bother user about mail selections.
  * @return 0 on failure, else something other
  */
 static int pop3_stat(struct pop3_dl_callbacks *callbacks,
@@ -435,7 +435,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					 struct pop3_server *server,
 					 struct uidl *uidl,
 					 int receive_preselection,
-					 int receive_size, int has_remote_filter)
+					 int receive_size, int has_remote_filter, int quiet)
 {
 	char *answer;
 	struct dl_mail *mail_array;
@@ -648,7 +648,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 
 	/* if the application is iconified than only download mails < the selected size
 	   and don't wait for user interaction  */
-	if (thread_call_parent_function_sync(NULL,main_is_iconified,0))
+	if (quiet)
 	{
 		for (i=1;i<=amm;i++)
 		{
@@ -974,7 +974,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 
 				pop3_uidl_init(&uidl,server,folder_directory);
 
-				if ((pop3_stat(callbacks, &stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter)))
+				if ((pop3_stat(callbacks, &stats, conn,server,&uidl,receive_preselection,receive_size,has_remote_filter,dl_options->quiet)))
 				{
 					struct dl_mail *mail_array = stats.dl_mails;
 					int i;

@@ -36,6 +36,7 @@
 #include "imap.h"
 #include "lists.h"
 #include "mail.h"
+#include "mainwnd.h"
 #include "parse.h"
 #include "pop3.h"
 #include "smtp.h"
@@ -162,6 +163,7 @@ static void trans_new_mail_arrived_filename(char *filename, int is_spam)
 struct mails_dl_msg
 {
 	int called_by_auto;
+	int iconified;
 	struct account *single_account;
 };
 
@@ -346,6 +348,7 @@ int mails_dl(int called_by_auto)
 	struct mails_dl_msg msg;
 	msg.called_by_auto = called_by_auto;
 	msg.single_account = NULL;
+	msg.iconified = main_is_iconified();
 	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
 

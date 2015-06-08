@@ -212,6 +212,7 @@ void test_pop3(void)
 	dl_options.pop_list = &pop3_list;
 	dl_options.dest_dir = folder_incoming()->path;
 	dl_options.folder_directory = user.folder_directory;
+	dl_options.quiet = 1;
 	dl_options.callbacks.init_mail = status_init_mail;
 	dl_options.callbacks.init_gauge_as_bytes = status_init_gauge_as_bytes;
 	dl_options.callbacks.set_connect_to_server = status_set_connect_to_server;

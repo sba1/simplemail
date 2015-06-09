@@ -44,9 +44,9 @@ struct pop3_server
 	char *passwd; /**< @brief the password */
 	int del; /**< @brief 1 if downloaded mails should be deleted */
 	int nodupl; /**< @brief 1 if duplicates should be avoided */
-	int active; /**< @brief is this pop server actove */
+	int active; /**< @brief is this pop server active */
 	int ask; /**< @brief ask for login/password */
-	char *title; /**< @brief normaly NULL, will hold a copy of account->account_name while fetching mails */
+	char *title; /**< @brief normally NULL, will hold a copy of account->account_name while fetching mails */
 };
 
 struct pop3_dl_callbacks

@@ -1078,14 +1078,14 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 		if (thread_aborted())
 		{
 			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
-				goto out;;;
+				goto out;
 		}
 	} else
 	{
 		if (thread_aborted())
 		{
 			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
-				goto out;;;
+				goto out;
 		} else
 		{
 			char message[380];
@@ -1093,7 +1093,7 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 			sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),server->name,tcp_strerror(tcp_error_code()));
 			tell_from_subtask(message);
 			rc = 0;
-			goto out;;
+			goto out;
 		}
 	}
 	/* Clear the preselection entries */

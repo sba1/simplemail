@@ -72,6 +72,7 @@ struct pop3_dl_callbacks
 	int (*mail_ignore)(struct mail_info *info);
 	int (*more_statitics)(void);
 	void (*new_mail_arrived_filename)(char *filename, int is_spam);
+	int (*skip_server)(void);
 };
 
 struct pop3_dl_options

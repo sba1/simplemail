@@ -1077,14 +1077,14 @@ static int pop3_really_dl_single(struct pop3_dl_options *dl_options, struct pop3
 		tcp_disconnect(conn); /* NULL safe */
 		if (thread_aborted())
 		{
-			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+			if (callbacks->skip_server())
 				goto out;
 		}
 	} else
 	{
 		if (thread_aborted())
 		{
-			if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+			if (callbacks->skip_server())
 				goto out;
 		} else
 		{

@@ -224,6 +224,7 @@ void test_pop3(void)
 	dl_options.callbacks.set_title = status_set_title;
 	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;
 	dl_options.callbacks.request_login = sm_request_login;
+	dl_options.callbacks.number_of_mails_downloaded = callback_number_of_mails_downloaded;
 	pop3_really_dl(&dl_options);
 
 	pop_free(pop3_server);

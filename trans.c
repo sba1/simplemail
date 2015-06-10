@@ -163,6 +163,11 @@ static int trans_skip_server(void)
 	return (int)thread_call_parent_function_sync(NULL,status_skipped,0);
 }
 
+static void trans_number_of_mails_downloaded(int nummails)
+{
+	thread_call_function_async(thread_get_main(),callback_number_of_mails_downloaded,1,nummails);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -323,6 +328,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.more_statitics = trans_more_statistics;
 		dl_options.callbacks.new_mail_arrived_filename = trans_new_mail_arrived_filename;
 		dl_options.callbacks.skip_server = trans_skip_server;
+		dl_options.callbacks.number_of_mails_downloaded = trans_number_of_mails_downloaded;
 
 		if (pop3_really_dl(&dl_options))
 		{

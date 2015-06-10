@@ -1130,7 +1130,7 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 		}
 		close_socket_lib();
 
-		thread_call_function_async(thread_get_main(),callback_number_of_mails_downloaded,1,nummails);
+		dl_options->callbacks.number_of_mails_downloaded(nummails);
 	}
 	else
 	{

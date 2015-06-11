@@ -39,7 +39,6 @@
 #include "pop3.h"
 #include "pop3_uidl.h"
 #include "tcp.h"
-#include "simplemail.h"
 #include "smintl.h"
 #include "spam.h"
 #include "status.h"

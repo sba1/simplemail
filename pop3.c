@@ -1145,57 +1145,55 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 int pop3_login_only(struct pop3_server *server)
 {
 	int rc = 0;
+	int error_code;
+	int goon = 1;
+	struct connection *conn;
+	struct connect_options conn_opts = {0};
+	struct pop3_dl_callbacks callbacks = {0};
+	char *timestamp;
 
-	if (open_socket_lib())
+	if (!open_socket_lib())
+		return rc;
+
+	conn_opts.use_ssl = server->ssl && (!server->stls);
+	conn_opts.fingerprint = server->fingerprint;
+
+	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+		goto bailout;
+
+	if (!pop3_wait_login(conn,server,&timestamp))
+		goto bailout;
+
+	callbacks.set_status_static = status_set_status;
+
+	if (!pop3_login(&callbacks,conn,server,timestamp))
 	{
-		struct connection *conn;
-		struct connect_options conn_opts = {0};
-		int error_code;
-
-		conn_opts.use_ssl = server->ssl && (!server->stls);
-		conn_opts.fingerprint = server->fingerprint;
-
-		if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+		goon = 0;
+		if (timestamp)
 		{
-			char *timestamp;
-
-			if (pop3_wait_login(conn,server,&timestamp))
+			/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
+			   In such cases a reconnect should help. */
+			pop3_quit(&callbacks,conn,server);
+			tcp_disconnect(conn);
+			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 			{
-				int goon = 1;
-
-				struct pop3_dl_callbacks callbacks = {0};
-
-				callbacks.set_status_static = status_set_status;
-
-				if (!pop3_login(&callbacks,conn,server,timestamp))
+				if (pop3_wait_login(conn,server,NULL))
 				{
-					goon = 0;
-					if (timestamp)
-					{
-						/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
-						   In such cases a reconnect should help. */
-						pop3_quit(&callbacks,conn,server);
-						tcp_disconnect(conn);
-						if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
-						{
-							if (pop3_wait_login(conn,server,NULL))
-							{
-								goon = pop3_login(&callbacks,conn,server,NULL);
-							}
-						}
-					}
-				}
-
-				if (goon)
-				{
-					pop3_quit(&callbacks,conn,server);
-					rc = 1;
+					goon = pop3_login(&callbacks,conn,server,NULL);
 				}
 			}
-			tcp_disconnect(conn); /* accepts NULL */
 		}
-		close_socket_lib();
 	}
+
+	if (goon)
+	{
+		pop3_quit(&callbacks,conn,server);
+		rc = 1;
+	}
+
+bailout:
+	if (conn) tcp_disconnect(conn); /* accepts NULL */
+	close_socket_lib();
 
 	return rc;
 }

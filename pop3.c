@@ -182,7 +182,7 @@ static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *co
 		char *ptr;
 		int i;
 
-		callbacks->set_status_static(_("Authentificate via APOP..."));
+		callbacks->set_status_static(_("Authenticate via APOP..."));
 
 		MD5Init(&context);
 		MD5Update(&context, (unsigned char*)timestamp, strlen(timestamp));
@@ -208,10 +208,10 @@ static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *co
 		{
 			if (server->apop == 1)
 			{
-				tell_from_subtask(_("Failed to authentificate via APOP"));
+				tell_from_subtask(_("Failed to authenticate via APOP"));
 				return 0;
 			}
-			SM_DEBUGF(15,("APOP authentification failed\n"));
+			SM_DEBUGF(15,("APOP authentication failed\n"));
 		} else
 		{
 			callbacks->set_status_static(_("Login successful!"));
@@ -238,7 +238,7 @@ static int pop3_login(struct pop3_dl_callbacks *callbacks, struct connection *co
 	if (!pop3_receive_answer(conn,0))
 	{
 		if (tcp_error_code() != TCP_INTERRUPTED)
-			tell_from_subtask(N_("Error while identifing the user"));
+			tell_from_subtask(N_("Error while identifying the user"));
 		return 0;
 	}
 

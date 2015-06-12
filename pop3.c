@@ -20,31 +20,24 @@
  * @file pop3.c
  */
 
+#include "pop3.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <netinet/tcp.h>
-
 #include "debug.h"
-#include "filter.h"
 #include "hash.h"
-#include "lists.h"
 #include "mail.h"
 #include "md5.h"
-#include "pop3.h"
 #include "pop3_uidl.h"
-#include "tcp.h"
 #include "smintl.h"
 #include "spam.h"
 #include "status.h"
 #include "support_indep.h"
+#include "tcp.h"
 
-#include "request.h"
 #include "subthreads.h"
 #include "support.h"
 #include "tcpip.h"

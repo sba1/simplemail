@@ -658,8 +658,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 		int start;
 
 		callbacks->set_status_static(_("Waiting for user interaction"));
-
-		if (!(start = thread_call_parent_function_sync_timer_callback(pop3_timer_callback_noop, conn, 5000, status_wait,0)))
+		if (!(start = callbacks->wait(pop3_timer_callback_noop, conn, 5000)))
 		{
 			pop3_free_mail_array(stats);
 			return 0;

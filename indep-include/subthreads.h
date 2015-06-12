@@ -44,6 +44,9 @@ void cleanup_threads(void);
 struct thread_s;
 typedef struct thread_s * thread_t; /* opaque type */
 
+struct future_s;
+typedef struct future_s * future_t;
+
 /**
  * Informs the parent task that it can continue, i.e., that thread_add() or thread_start()
  * can return.
@@ -145,6 +148,19 @@ int thread_call_function_async(thread_t thread, void *function, int argcount, ..
 template<typename R, typename... A>
 int thread_call_function_async(thread_t, R (*Func)(A...), int argcount, A... args);
 #endif
+
+/**
+ * @brief Call a function in the context of the given thread in an asynchronous manner
+ *  with the possibility to retrieve the result.
+ *
+ * @param future_t out parameter that is filled when the call was successful and
+ *  with which you can get access to the result.
+ * @param thread the thread in which context the function is executed.
+ * @param function the function to be executed.
+ * @param argcount number of function parameters
+ * @return whether the call was successfully submitted
+ */
+int thread_call_function_async_future(future_t *future_t, thread_t thread, void *function, int arcount, ...);
 
 /**
  * Call a function in context of the parent task in a sychron manner. The contents of

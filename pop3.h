@@ -128,10 +128,12 @@ int pop3_really_dl(struct pop3_dl_options *dl_options);
  * requires prior POP3 server logins.
  *
  * @param server defines the connection details of the POP3 server.
+ * @param callbacks defines callbacks. The set_status_static is the only
+ *  necessary one.
  * @return 1 on sucess, 0 on failure.
  * @note Assumes to be run in a sub thread (i.e., not SimpleMail's main thread)
  */
-int pop3_login_only(struct pop3_server *);
+int pop3_login_only(struct pop3_server *server, struct pop3_dl_callbacks *callbacks);
 
 /**
  * @brief Construct a new instance holding POP3 server settings.

@@ -923,11 +923,16 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 			if (account->smtp->pop3_first)
 			{
 				/* Connect to the pop3 server first */
+
+				struct pop3_dl_callbacks callbacks = {0};
+
+				callbacks.set_status_static = status_set_status;
+
 				sprintf(head_buf,_("Sending mails to %s, connecting to %s first"),account->smtp->name,account->pop->name);
 				thread_call_parent_function_async_string(status_set_head, 1, head_buf);
 
 				thread_call_function_async(thread_get_main(),status_set_status,1,_("Log into POP3 Server...."));
-				pop3_login_only(account->pop);
+				pop3_login_only(account->pop, &callbacks);
 			}
 
 			sprintf(head_buf,_("Sending mails to %s"),account->smtp->name);

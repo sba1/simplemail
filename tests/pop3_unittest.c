@@ -203,8 +203,6 @@ void test_pop3(void)
 
 	insert_config_account(ac);
 
-	pop3_login_only(ac->pop);
-
 	list_init(&pop3_list);
 	pop3_server = pop_duplicate(ac->pop);
 	CU_ASSERT(pop3_server != NULL);
@@ -225,6 +223,9 @@ void test_pop3(void)
 	dl_options.callbacks.set_title_utf8 = status_set_title_utf8;
 	dl_options.callbacks.request_login = sm_request_login;
 	dl_options.callbacks.number_of_mails_downloaded = callback_number_of_mails_downloaded;
+
+	pop3_login_only(pop3_server, &dl_options.callbacks);
+
 	pop3_really_dl(&dl_options);
 
 	pop_free(pop3_server);

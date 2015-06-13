@@ -34,7 +34,6 @@
 #include "pop3_uidl.h"
 #include "smintl.h"
 #include "spam.h"
-#include "status.h"
 #include "support_indep.h"
 #include "tcp.h"
 
@@ -1133,14 +1132,13 @@ int pop3_really_dl(struct pop3_dl_options *dl_options)
 
 /*****************************************************************************/
 
-int pop3_login_only(struct pop3_server *server)
+int pop3_login_only(struct pop3_server *server, struct pop3_dl_callbacks *callbacks)
 {
 	int rc = 0;
 	int error_code;
 	int goon = 1;
 	struct connection *conn;
 	struct connect_options conn_opts = {0};
-	struct pop3_dl_callbacks callbacks = {0};
 	char *timestamp;
 
 	if (!open_socket_lib())
@@ -1155,22 +1153,20 @@ int pop3_login_only(struct pop3_server *server)
 	if (!pop3_wait_login(conn,server,&timestamp))
 		goto bailout;
 
-	callbacks.set_status_static = status_set_status;
-
-	if (!pop3_login(&callbacks,conn,server,timestamp))
+	if (!pop3_login(callbacks,conn,server,timestamp))
 	{
 		goon = 0;
 		if (timestamp)
 		{
 			/* There seems to be POP3 Servers which don't like that APOP is tried first and the normal login procedure afterwards.
 			   In such cases a reconnect should help. */
-			pop3_quit(&callbacks,conn,server);
+			pop3_quit(callbacks,conn,server);
 			tcp_disconnect(conn);
 			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 			{
 				if (pop3_wait_login(conn,server,NULL))
 				{
-					goon = pop3_login(&callbacks,conn,server,NULL);
+					goon = pop3_login(callbacks,conn,server,NULL);
 				}
 			}
 		}
@@ -1178,7 +1174,7 @@ int pop3_login_only(struct pop3_server *server)
 
 	if (goon)
 	{
-		pop3_quit(&callbacks,conn,server);
+		pop3_quit(callbacks,conn,server);
 		rc = 1;
 	}
 

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** smtp.h
-*/
+/**
+ * @file
+ */
 
 #ifndef SM__SMTP_H
 #define SM__SMTP_H
@@ -27,6 +27,9 @@
 #include "lists.h"
 #endif
 
+/**
+ * Minimal description for outgoing mails.
+ */
 struct outmail
 {
 	char *from; /* the from address */
@@ -35,9 +38,29 @@ struct outmail
 	int size; /* the size of the mail */
 };
 
-/* functions for outmail */
+/**
+ * Creates an array of outmails with amm entries.
+ * The array entries point already to the struct outmail *.
+ *
+ * @param amm the number of outmails that should be allocated
+ * @return the array of outmail pointers that can be used. Free with
+ *  free_outmail_array().
+ */
 struct outmail **create_outmail_array(int amm);
+
+/**
+ * Duplicates an array of outmails.
+ *
+ * @param om
+ * @return the duplicate or NULL for an error.
+ */
 struct outmail **duplicate_outmail_array(struct outmail **om);
+
+/**
+ * Frees an array of outmails completely
+ *
+ * @param om_array
+ */
 void free_outmail_array(struct outmail **om_array);
 
 #define ESMTP_ENHACEDSTATUSCODES  (1<<0)
@@ -54,6 +77,9 @@ void free_outmail_array(struct outmail **om_array);
 #define AUTH_DIGEST_MD5				 4
 #define AUTH_CRAM_MD5					 8
 
+/**
+ * Description of an SMTP server.
+ */
 struct smtp_server
 {
 	char *name;
@@ -70,10 +96,37 @@ struct smtp_server
 	char *auth_password;
 };
 
+/**
+ * Send the mails. Starts a subthread.
+ *
+ * @param account_list
+ * @param outmail
+ * @param folder_path
+ * @return
+ */
 int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path);
 
+/**
+ * Creates a new smtp server description.
+ *
+ * @return the allocated smtp server description. Free it via smtp_free().
+ */
 struct smtp_server *smtp_malloc(void);
+
+/**
+ * Duplicates an existing smtp server
+ *
+ * @param smtp the server to be duplicated.
+ *
+ * @return the duplicate or NULL for an error.
+ */
 struct smtp_server *smtp_duplicate(struct smtp_server *smtp);
+
+/**
+ * Frees an smtp server
+ *
+ * @param the smtp server to be freed.
+ */
 void smtp_free(struct smtp_server *);
 
 #endif

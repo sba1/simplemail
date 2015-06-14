@@ -591,59 +591,6 @@ static int esmtp_auth_cram(struct smtp_connection *conn, struct account *account
 	return rc == 235;
 }
 
-#if 0
-
-static int esmtp_auth_digest_md5(struct connection *conn, struct smtp_server *server)
-{
-	static char digest_str[] = "AUTH DIGEST-MD5\r\n";
-	char *line;
-	int rc;
-	char *challenge;
-	unsigned int challenge_len = (unsigned int)-1;
-	unsigned long digest[4]; /* 16 chars */
-	char buf[512];
-	char *encoded_str;
-	MD5_CTX context;
-
-	tcp_write(conn, digest_str,sizeof(digest_str)-1);
-
-	if (!(line = tcp_readln(conn))) return 0;
-	rc = atoi(line);
-	if (rc != 334) return 0;
-
-	if (!(challenge = decode_base64(line+4,strlen(line+4),&challenge_len)))
-		return 0;
-
-	strcpy(buf,challenge);
-	strcpy(buf+challenge_len,server->esmtp.auth_password);
-
-	free(challenge);
-  
-	MD5Init(&context);
-	MD5Update(&context, buf, strlen(buf));
-	MD5Final((char*)digest, &context);
-
-	sprintf(buf,"%s %08lx%08lx%08lx%08lx%c%c",server->esmtp.auth_login,
-					digest[0],digest[1],digest[2],digest[3],0,0); /* the same as above */
-
-	encoded_str = encode_base64(buf,strlen(buf));
-	if (!encoded_str) return 0;
-
-	tcp_write(conn,encoded_str,strlen(encoded_str));
-	tcp_write(conn,"\r\n",2);
-	free(encoded_str);
-
-	if (!(line = tcp_readln(conn))) return 0;
-	rc = atoi(line);
-	if (rc != 235)
-	{
-		tell_from_subtask("SMTP AUTH DIGEST-MD5 failed");
-	} else return 1;
-	return 0;
-}
-
-#endif
-
 
 /************************************************************
  Authentificate via AUTH commands. It tries all supported
@@ -663,12 +610,6 @@ int esmtp_auth(struct smtp_connection *conn, struct account *account)
 			return 1;
 	}
 	
-/*
-	if (flags & AUTH_DIGEST_MD5)
-	{
-		rc = esmtp_auth_digest_md5(conn, server);
-	}*/
-
 	if (flags & AUTH_LOGIN)
 	{
 		SM_DEBUGF(10,("Trying AUTH LOGIN\n"));
@@ -1058,19 +999,13 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path)
 {
 	int rc;
-//	char path[256];
 	struct smtp_entry_msg msg; /* should be not onto stack */
 
 	msg.account_list = account_list;
 	msg.outmail = outmail;
 	msg.folder_path = folder_path;
 
-//	getcwd(path, sizeof(path));
-//	if (chdir(folder_path) == -1)
-//		return 0;
-
 	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
-// 	chdir(path);
 	return rc;
 }
 

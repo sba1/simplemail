@@ -96,15 +96,26 @@ struct smtp_server
 	char *auth_password;
 };
 
+
+struct smtp_send_options
+{
+	/** List of all accounts from which to sent */
+	struct list *account_list;
+
+	/** Array of all mails to be send */
+	struct outmail **outmail;
+
+	/** The common of the folders */
+	char *folder_path;
+};
+
 /**
  * Send the mails. Starts a subthread.
  *
- * @param account_list
- * @param outmail
- * @param folder_path
- * @return
+ * @param send_options options for sending.
+ * @return 0 for failure, 1 for success.
  */
-int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path);
+int smtp_send(struct smtp_send_options *send_options);
 
 /**
  * Creates a new smtp server description.

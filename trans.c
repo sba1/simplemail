@@ -387,6 +387,8 @@ int mails_upload(void)
 	int i,num_mails;
 	char path[512];
 
+	struct smtp_send_options options = {0};
+
 	/* count the number of mails which could be be sent */
 	num_mails = 0;
 	while ((m_iter = folder_next_mail(out_folder, &handle)))
@@ -512,7 +514,10 @@ int mails_upload(void)
 	chdir(path);
 	
 	/* now send all mails */
-	smtp_send(&user.config.account_list,out_array,out_folder->path);
+	options.account_list = &user.config.account_list;
+	options.outmail = out_array;
+	options.folder_path = out_folder->path;
+	smtp_send(&options);
 
 	free_outmail_array(out_array);
 	return 1;
@@ -527,6 +532,8 @@ int mails_upload_signle(struct mail_info *mi)
 	struct mailbox mb;
 	struct address_list *list; /* "To" address list */
 	struct folder *out_folder = folder_outgoing();
+
+	struct smtp_send_options options = {0};
 
 	if (!mi) return 0;
 	if (!(out_array = create_outmail_array(1))) return 0;
@@ -615,7 +622,10 @@ int mails_upload_signle(struct mail_info *mi)
 /*		if (mb.addr_spec) free(mb.addr_spec); */
 
 	/* Send the mail now */
-	smtp_send(&user.config.account_list,out_array,out_folder->path);
+	options.account_list = &user.config.account_list;
+	options.outmail = out_array;
+	options.folder_path = out_folder->path;
+	smtp_send(&options);
 
 	free_outmail_array(out_array);
 	mail_complete_free(m);

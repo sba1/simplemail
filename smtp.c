@@ -1061,14 +1061,14 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 /*****************************************************************************/
 
-int smtp_send(struct list *account_list, struct outmail **outmail, char *folder_path)
+int smtp_send(struct smtp_send_options *options)
 {
 	int rc;
 	struct smtp_entry_msg msg; /* should be not onto stack */
 
-	msg.account_list = account_list;
-	msg.outmail = outmail;
-	msg.folder_path = folder_path;
+	msg.account_list = options->account_list;
+	msg.outmail = options->outmail;
+	msg.folder_path = options->folder_path;
 
 	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
 	return rc;

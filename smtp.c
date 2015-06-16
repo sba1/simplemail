@@ -1010,9 +1010,7 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 
 struct smtp_entry_msg
 {
-	struct list *account_list;
-	struct outmail **outmail;
-	char *folder_path;
+	struct smtp_send_options *options;
 };
 
 /**
@@ -1029,7 +1027,7 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 
 	list_init(&copy_of_account_list);
 
-	for (account = (struct account*)list_first(msg->account_list);account;account = (struct account*)node_next(&account->node))
+	for (account = (struct account*)list_first(msg->options->account_list);account;account = (struct account*)node_next(&account->node))
 	{
 		struct account *new_account;
 		if (!account->smtp || !account->smtp->name) continue;
@@ -1038,11 +1036,11 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 		if (new_account) list_insert_tail(&copy_of_account_list,&new_account->node);
 	}
 
-	outmail = duplicate_outmail_array(msg->outmail);
+	outmail = duplicate_outmail_array(msg->options->outmail);
 
 	if (getcwd(path, sizeof(path)))
 	{
-		if (chdir(msg->folder_path) == 0)
+		if (chdir(msg->options->folder_path) == 0)
 		{
 			if (thread_parent_task_can_contiue())
 			{
@@ -1064,11 +1062,9 @@ static int smtp_entry(struct smtp_entry_msg *msg)
 int smtp_send(struct smtp_send_options *options)
 {
 	int rc;
-	struct smtp_entry_msg msg; /* should be not onto stack */
+	struct smtp_entry_msg msg;
 
-	msg.account_list = options->account_list;
-	msg.outmail = options->outmail;
-	msg.folder_path = options->folder_path;
+	msg.options = options;
 
 	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
 	return rc;

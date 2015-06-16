@@ -363,17 +363,15 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 
 int mails_dl(int called_by_auto)
 {
-	struct mails_dl_msg msg;
+	struct mails_dl_msg msg = {0};
 	msg.called_by_auto = called_by_auto;
-	msg.single_account = NULL;
 	msg.iconified = main_is_iconified();
 	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
 
 int mails_dl_single_account(struct account *ac)
 {
-	struct mails_dl_msg msg;
-	msg.called_by_auto = 0;
+	struct mails_dl_msg msg = {0};
 	msg.single_account = ac;
 	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }

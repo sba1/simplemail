@@ -1098,35 +1098,35 @@ out:
 int pop3_really_dl(struct pop3_dl_options *dl_options)
 {
 	int rc = 0;
+	int socked_lib_opened = 0;
+	int downloaded_mails = 0;
 
 	struct list *pop_list = dl_options->pop_list;
+	struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
 
 	/* If pop list is empty we of course succeed */
-	if (!list_first(pop_list)) return 1;
+	if (!server) return 1;
 
-	if (open_socket_lib())
-	{
-		struct pop3_server *server = (struct pop3_server*)list_first(pop_list);
-		int nummails = 0; /* number of downloaded e-mails */
-
-		for (;server; server = (struct pop3_server*)node_next(&server->node))
-		{
-			int mails;
-
-			if (!pop3_really_dl_single(dl_options, server, &mails))
-				break;
-
-			nummails += mails;
-		}
-		close_socket_lib();
-
-		dl_options->callbacks.number_of_mails_downloaded(nummails);
-	}
-	else
+	if (!open_socket_lib())
 	{
 		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
+		goto out;
 	}
 
+	for (;server; server = (struct pop3_server*)node_next(&server->node))
+	{
+		int mails;
+
+		if (!pop3_really_dl_single(dl_options, server, &mails))
+			break;
+
+		downloaded_mails += mails;
+	}
+
+	dl_options->callbacks.number_of_mails_downloaded(downloaded_mails);
+
+out:
+	if (socked_lib_opened) close_socket_lib();
 	return rc;
 }
 

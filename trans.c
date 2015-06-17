@@ -376,6 +376,73 @@ int mails_dl_single_account(struct account *ac)
 	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
 
+/*****************************************************************************/
+
+struct mails_upload_entry_msg
+{
+	struct smtp_send_options *options;
+};
+
+/**
+ * Entry point for the send mail process
+ * @param msg
+ * @return
+ */
+static int mails_upload_entry(struct mails_upload_entry_msg *msg)
+{
+	struct list copy_of_account_list;
+	struct account *account;
+	struct outmail **outmail;
+	char path[256];
+
+	list_init(&copy_of_account_list);
+
+	for (account = (struct account*)list_first(msg->options->account_list);account;account = (struct account*)node_next(&account->node))
+	{
+		struct account *new_account;
+		if (!account->smtp || !account->smtp->name) continue;
+
+		new_account = account_duplicate(account);
+		if (new_account) list_insert_tail(&copy_of_account_list,&new_account->node);
+	}
+
+	outmail = duplicate_outmail_array(msg->options->outmail);
+
+	if (getcwd(path, sizeof(path)))
+	{
+		if (chdir(msg->options->folder_path) == 0)
+		{
+			if (thread_parent_task_can_contiue())
+			{
+				thread_call_function_async(thread_get_main(),status_init,1,0);
+				thread_call_function_async(thread_get_main(),status_open,0);
+				smtp_send_really(&copy_of_account_list,outmail);
+				thread_call_function_async(thread_get_main(),status_close,0);
+			}
+
+			chdir(path);
+		}
+	}
+
+	return 0;
+}
+/**
+ * Send the mails. Starts a subthread.
+ *
+ * @param send_options options for sending.
+ * @return 0 for failure, 1 for success.
+ */
+static int mails_upload_async(struct smtp_send_options *options)
+{
+	int rc;
+	struct mails_upload_entry_msg msg;
+
+	msg.options = options;
+
+	rc = thread_start(THREAD_FUNCTION(mails_upload_entry),&msg);
+	return rc;
+}
+
 int mails_upload(void)
 {
 	void *handle = NULL; /* folder_next_mail() */
@@ -515,7 +582,7 @@ int mails_upload(void)
 	options.account_list = &user.config.account_list;
 	options.outmail = out_array;
 	options.folder_path = out_folder->path;
-	smtp_send(&options);
+	mails_upload_async(&options);
 
 	free_outmail_array(out_array);
 	return 1;
@@ -623,7 +690,7 @@ int mails_upload_signle(struct mail_info *mi)
 	options.account_list = &user.config.account_list;
 	options.outmail = out_array;
 	options.folder_path = out_folder->path;
-	smtp_send(&options);
+	mails_upload_async(&options);
 
 	free_outmail_array(out_array);
 	mail_complete_free(m);

@@ -899,7 +899,7 @@ static int smtp_quit(struct smtp_connection *conn)
  * @param outmail
  * @return
  */
-static int smtp_send_really(struct list *account_list, struct outmail **outmail)
+int smtp_send_really(struct list *account_list, struct outmail **outmail)
 {
 	int rc = 0;
 
@@ -1003,70 +1003,6 @@ static int smtp_send_really(struct list *account_list, struct outmail **outmail)
 		tell_from_subtask(N_("Cannot open bsdsocket.library. Please start a TCP/IP-Stack."));
 	}
 
-	return rc;
-}
-
-/*****************************************************************************/
-
-struct smtp_entry_msg
-{
-	struct smtp_send_options *options;
-};
-
-/**
- * Entry point for the send mail process
- * @param msg
- * @return
- */
-static int smtp_entry(struct smtp_entry_msg *msg)
-{
-	struct list copy_of_account_list;
-	struct account *account;
-	struct outmail **outmail;
-	char path[256];
-
-	list_init(&copy_of_account_list);
-
-	for (account = (struct account*)list_first(msg->options->account_list);account;account = (struct account*)node_next(&account->node))
-	{
-		struct account *new_account;
-		if (!account->smtp || !account->smtp->name) continue;
-
-		new_account = account_duplicate(account);
-		if (new_account) list_insert_tail(&copy_of_account_list,&new_account->node);
-	}
-
-	outmail = duplicate_outmail_array(msg->options->outmail);
-
-	if (getcwd(path, sizeof(path)))
-	{
-		if (chdir(msg->options->folder_path) == 0)
-		{
-			if (thread_parent_task_can_contiue())
-			{
-				thread_call_function_async(thread_get_main(),status_init,1,0);
-				thread_call_function_async(thread_get_main(),status_open,0);
-				smtp_send_really(&copy_of_account_list,outmail);
-				thread_call_function_async(thread_get_main(),status_close,0);
-			}
-
-			chdir(path);
-		}
-	}
-
-	return 0;
-}
-
-/*****************************************************************************/
-
-int smtp_send(struct smtp_send_options *options)
-{
-	int rc;
-	struct smtp_entry_msg msg;
-
-	msg.options = options;
-
-	rc = thread_start(THREAD_FUNCTION(smtp_entry),&msg);
 	return rc;
 }
 

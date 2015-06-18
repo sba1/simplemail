@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** trans.h
-*/
+/**
+ * @file
+ */
 
 #ifndef SM__TRANS_H
 #define SM__TRANS_H
@@ -26,9 +26,36 @@
 struct account;
 struct mail_info;
 
+/**
+ * Download mails from all accounts.
+ *
+ * @param called_by_auto whether this was triggered by some automatic mechanism.
+ * @return 1 on success, 0 on failure.
+ */
 int mails_dl(int called_by_auto);
+
+/**
+ * Download all mails from a single account.
+ *
+ * @param ac the account from which to download.
+ * @return 1 on success, 0 on failure.
+ */
 int mails_dl_single_account(struct account *ac);
+
+/**
+ * Uploads all mails tof the incoming folder hat can be uploaded.
+ *
+ * @return 1 on success, 0 on failure.
+ */
 int mails_upload(void);
-int mails_upload_single(struct mail_info *);
+
+/**
+ * Uploads a single mail.
+ *
+ * @param mi the mail info describing the mail to send.
+ * @return 1 on success, 0 on failure.
+ * @note Assumes that the chdir is the dir where m->filename is located
+ */
+int mails_upload_single(struct mail_info *mi);
 
 #endif

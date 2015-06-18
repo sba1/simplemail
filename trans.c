@@ -361,6 +361,8 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 	return 1;
 }
 
+/*****************************************************************************/
+
 int mails_dl(int called_by_auto)
 {
 	struct mails_dl_msg msg = {0};
@@ -368,6 +370,8 @@ int mails_dl(int called_by_auto)
 	msg.iconified = main_is_iconified();
 	return thread_start(THREAD_FUNCTION(&mails_dl_entry),&msg);
 }
+
+/*****************************************************************************/
 
 int mails_dl_single_account(struct account *ac)
 {
@@ -442,6 +446,8 @@ static int mails_upload_async(struct smtp_send_options *options)
 	rc = thread_start(THREAD_FUNCTION(mails_upload_entry),&msg);
 	return rc;
 }
+
+/*****************************************************************************/
 
 int mails_upload(void)
 {
@@ -588,7 +594,8 @@ int mails_upload(void)
 	return 1;
 }
 
-/* Note: Assumes that the chdir is the dir where m->filename is located */
+/*****************************************************************************/
+
 int mails_upload_single(struct mail_info *mi)
 {
 	char *from, *to, *cc, *bcc;

@@ -110,12 +110,13 @@ struct smtp_send_options
 };
 
 /**
- * Send the mails. Starts a subthread.
+ * Send the mails in the context of the calling thread.
  *
- * @param send_options options for sending.
- * @return 0 for failure, 1 for success.
+ * @param account_list all relevant accounts
+ * @param outmail descriptions of the mails to be sent
+ * @return 1 on success, 0 otherwise.
  */
-int smtp_send(struct smtp_send_options *send_options);
+int smtp_send_really(struct list *account_list, struct outmail **outmail);
 
 /**
  * Creates a new smtp server description.

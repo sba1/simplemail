@@ -589,7 +589,7 @@ int mails_upload(void)
 }
 
 /* Note: Assumes that the chdir is the dir where m->filename is located */
-int mails_upload_signle(struct mail_info *mi)
+int mails_upload_single(struct mail_info *mi)
 {
 	char *from, *to, *cc, *bcc;
 	struct outmail **out_array;

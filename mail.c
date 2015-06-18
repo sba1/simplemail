@@ -3414,7 +3414,7 @@ int mail_compose_new(struct composed_mail *new_mail, int hold)
 		if (hold == 2 && mail)
 		{
 			/* Mail should be send now! */
-			mails_upload_signle(mail);
+			mails_upload_single(mail);
 		}
 		free(new_name);
 	}

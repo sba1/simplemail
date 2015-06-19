@@ -384,7 +384,9 @@ int mails_dl_single_account(struct account *ac)
 
 struct mails_upload_entry_msg
 {
-	struct smtp_send_options *options;
+	struct outmail **out_array;
+	struct list *account_list;
+	char *folder_path;
 };
 
 /**
@@ -398,10 +400,11 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
 	struct account *account;
 	struct outmail **outmail;
 	char path[256];
+	char *outgoing_folder_path;
 
 	list_init(&copy_of_account_list);
 
-	for (account = (struct account*)list_first(msg->options->account_list);account;account = (struct account*)node_next(&account->node))
+	for (account = (struct account*)list_first(msg->account_list);account;account = (struct account*)node_next(&account->node))
 	{
 		struct account *new_account;
 		if (!account->smtp || !account->smtp->name) continue;
@@ -410,24 +413,32 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
 		if (new_account) list_insert_tail(&copy_of_account_list,&new_account->node);
 	}
 
-	outmail = duplicate_outmail_array(msg->options->outmail);
+	if (!(outmail = duplicate_outmail_array(msg->out_array)))
+		goto out;
+	if (!((outgoing_folder_path = mystrdup(msg->folder_path))))
+		goto out;
 
 	if (getcwd(path, sizeof(path)))
 	{
-		if (chdir(msg->options->folder_path) == 0)
+		if (chdir(outgoing_folder_path) == 0)
 		{
 			if (thread_parent_task_can_contiue())
 			{
+				struct smtp_send_options smtp_send_options = {0};
+
+				smtp_send_options.account_list = &copy_of_account_list;
+				smtp_send_options.outmail = outmail;
+
 				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_function_async(thread_get_main(),status_open,0);
-				smtp_send_really(&copy_of_account_list,outmail);
+				smtp_send_really(&smtp_send_options);
 				thread_call_function_async(thread_get_main(),status_close,0);
 			}
 
 			chdir(path);
 		}
 	}
-
+out:
 	return 0;
 }
 /**
@@ -436,15 +447,9 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
  * @param send_options options for sending.
  * @return 0 for failure, 1 for success.
  */
-static int mails_upload_async(struct smtp_send_options *options)
+static int mails_upload_async(struct mails_upload_entry_msg *msg)
 {
-	int rc;
-	struct mails_upload_entry_msg msg;
-
-	msg.options = options;
-
-	rc = thread_start(THREAD_FUNCTION(mails_upload_entry),&msg);
-	return rc;
+	return thread_start(THREAD_FUNCTION(mails_upload_entry),msg);
 }
 
 /*****************************************************************************/
@@ -458,7 +463,7 @@ int mails_upload(void)
 	int i,num_mails;
 	char path[512];
 
-	struct smtp_send_options options = {0};
+	struct mails_upload_entry_msg msg = {0};
 
 	/* count the number of mails which could be be sent */
 	num_mails = 0;
@@ -585,10 +590,9 @@ int mails_upload(void)
 	chdir(path);
 	
 	/* now send all mails */
-	options.account_list = &user.config.account_list;
-	options.outmail = out_array;
-	options.folder_path = out_folder->path;
-	mails_upload_async(&options);
+	msg.folder_path = out_folder->path;
+	msg.out_array = out_array;
+	mails_upload_async(&msg);
 
 	free_outmail_array(out_array);
 	return 1;
@@ -605,7 +609,7 @@ int mails_upload_single(struct mail_info *mi)
 	struct address_list *list; /* "To" address list */
 	struct folder *out_folder = folder_outgoing();
 
-	struct smtp_send_options options = {0};
+	struct mails_upload_entry_msg msg = {0};
 
 	if (!mi) return 0;
 	if (!(out_array = create_outmail_array(1))) return 0;
@@ -694,10 +698,10 @@ int mails_upload_single(struct mail_info *mi)
 /*		if (mb.addr_spec) free(mb.addr_spec); */
 
 	/* Send the mail now */
-	options.account_list = &user.config.account_list;
-	options.outmail = out_array;
-	options.folder_path = out_folder->path;
-	mails_upload_async(&options);
+	msg.folder_path = out_folder->path;
+	msg.account_list = &user.config.account_list;
+	msg.out_array = out_array;
+	mails_upload_async(&msg);
 
 	free_outmail_array(out_array);
 	mail_complete_free(m);

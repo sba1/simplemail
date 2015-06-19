@@ -899,9 +899,12 @@ static int smtp_quit(struct smtp_connection *conn)
  * @param outmail
  * @return
  */
-int smtp_send_really(struct list *account_list, struct outmail **outmail)
+int smtp_send_really(struct smtp_send_options *options)
 {
 	int rc = 0;
+
+	struct list *account_list = options->account_list;
+	struct outmail **outmail = options->outmail;
 
 	if (open_socket_lib())
 	{

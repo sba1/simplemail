@@ -902,6 +902,7 @@ static int smtp_quit(struct smtp_connection *conn)
 int smtp_send_really(struct smtp_send_options *options)
 {
 	int rc = 0;
+	struct smtp_send_callbacks *callbacks = &options->callbacks;
 
 	struct list *account_list = options->account_list;
 	struct outmail **outmail = options->outmail;
@@ -922,28 +923,28 @@ int smtp_send_really(struct smtp_send_options *options)
 			if (count_mails(account,outmail)==0) continue;
 
 			if (account->account_name)
-				thread_call_parent_function_async_string(status_set_title_utf8, 1, account->account_name);
+				callbacks->set_title_utf8(account->account_name);
 			else
-				thread_call_parent_function_async_string(status_set_title, 1, account->smtp->name);
+				callbacks->set_title(account->smtp->name);
 
 			if (account->smtp->pop3_first)
 			{
 				/* Connect to the pop3 server first */
 
-				struct pop3_dl_callbacks callbacks = {0};
+				struct pop3_dl_callbacks pop3_callbacks = {0};
 
-				callbacks.set_status_static = status_set_status;
+				pop3_callbacks.set_status_static = callbacks->set_status_static;
 
 				sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s, connecting to %s first"),account->smtp->name,account->pop->name);
-				thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+				callbacks->set_head(head_buf);
 
-				thread_call_function_async(thread_get_main(),status_set_status,1,_("Log into POP3 Server...."));
-				pop3_login_only(account->pop, &callbacks);
+				callbacks->set_status_static(_("Log into POP3 Server...."));
+				pop3_login_only(account->pop, &pop3_callbacks);
 			}
 
 			sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s"),account->smtp->name);
-			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
-			thread_call_parent_function_async_string(status_set_connect_to_server,1,account->smtp->name);
+			callbacks->set_head(head_buf);
+			callbacks->set_connect_to_server(account->smtp->name);
 
 //			thread_call_function_async(thread_get_main(),status_set_status,1,N_("Connecting..."));
 
@@ -961,38 +962,38 @@ int smtp_send_really(struct smtp_send_options *options)
 
 					if (thread_aborted())
 					{
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Aborted - Sending QUIT..."));
+						callbacks->set_status_static("Aborted - Sending QUIT...");
 						smtp_quit(&conn);
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Aborted - Disconnecting..."));
+						callbacks->set_status_static("Aborted - Disconnecting...");
 						tcp_disconnect(conn.conn);
 
-						if (thread_call_parent_function_sync(NULL,status_skipped,0))
+						if (callbacks->skip_server())
 							continue;
 
 						break;
 					}
 
-					thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending QUIT..."));
+					callbacks->set_status_static(_("Sending QUIT..."));
 					smtp_quit(&conn);
 				}
 
 				if (thread_aborted())
 				{
-					if (!thread_call_parent_function_sync(NULL,status_skipped,0))
+					if (!callbacks->skip_server())
 					{
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Aborted - Disconnecting..."));
+						callbacks->set_status_static(_("Aborted - Disconnecting..."));
 						tcp_disconnect(conn.conn);
 						break;
 					}
 				}
 
-				thread_call_function_async(thread_get_main(),status_set_status,1,_("Disconnecting..."));
+				callbacks->set_status_static(_("Disconnecting..."));
 				tcp_disconnect(conn.conn);
 			} else
 			{
 				char message[380];
 
-				if (thread_aborted() && !thread_call_parent_function_sync(NULL,status_skipped,0)) break;
+				if (thread_aborted() && !callbacks->skip_server()) break;
 
 				sm_snprintf(message,sizeof(message),_("Unable to connect to server %s: %s"),account->smtp->name,tcp_strerror(error_code));
 				tell_from_subtask(message);

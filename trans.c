@@ -428,6 +428,12 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
 
 				smtp_send_options.account_list = &copy_of_account_list;
 				smtp_send_options.outmail = outmail;
+				smtp_send_options.callbacks.set_status_static = trans_set_status_static;
+				smtp_send_options.callbacks.set_connect_to_server = trans_set_connect_to_server;
+				smtp_send_options.callbacks.set_head = trans_set_head;
+				smtp_send_options.callbacks.set_title = trans_set_title;
+				smtp_send_options.callbacks.set_title_utf8 = trans_set_title_utf8;
+				smtp_send_options.callbacks.skip_server = trans_skip_server;
 
 				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_function_async(thread_get_main(),status_open,0);

@@ -97,6 +97,16 @@ struct smtp_server
 };
 
 
+struct smtp_send_callbacks
+{
+	void (*set_status_static)(const char *str);
+	void (*set_connect_to_server)(const char *server);
+	void (*set_head)(const char *head);
+	void (*set_title_utf8)(const char *title);
+	void (*set_title)(const char *title);
+	int (*skip_server)(void);
+};
+
 struct smtp_send_options
 {
 	/** List of all accounts from which to sent */
@@ -104,6 +114,9 @@ struct smtp_send_options
 
 	/** Array of all mails to be send */
 	struct outmail **outmail;
+
+	/** callbacks called during some operations */
+	struct smtp_send_callbacks callbacks;
 };
 
 /**

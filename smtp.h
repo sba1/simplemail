@@ -104,6 +104,10 @@ struct smtp_send_callbacks
 	void (*set_head)(const char *head);
 	void (*set_title_utf8)(const char *title);
 	void (*set_title)(const char *title);
+	void (*init_gauge_as_bytes)(int maximal);
+	void (*set_gauge)(int value);
+	void (*init_mail)(int maximal);
+	void (*set_mail)(int current, int current_size);
 	int (*skip_server)(void);
 };
 

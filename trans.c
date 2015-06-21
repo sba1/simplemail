@@ -434,6 +434,10 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
 				smtp_send_options.callbacks.set_title = trans_set_title;
 				smtp_send_options.callbacks.set_title_utf8 = trans_set_title_utf8;
 				smtp_send_options.callbacks.skip_server = trans_skip_server;
+				smtp_send_options.callbacks.init_mail = trans_init_mail;
+				smtp_send_options.callbacks.set_mail = trans_set_mail;
+				smtp_send_options.callbacks.init_gauge_as_bytes = trans_init_gauge_as_bytes;
+				smtp_send_options.callbacks.set_gauge = trans_set_gauge;
 
 				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_function_async(thread_get_main(),status_open,0);

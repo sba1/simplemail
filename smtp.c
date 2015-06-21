@@ -828,24 +828,25 @@ static int count_mails_size(struct account *account, struct outmail **om)
  * @param om
  * @return
  */
-static int smtp_send_mails(struct smtp_connection *conn, struct account *account, struct outmail **om)
+static int smtp_send_mails(struct smtp_connection *conn, struct account *account, struct outmail **om, struct smtp_send_callbacks *callbacks)
 {
 	int i,j,amm,max_mail_size_sum,mail_size_sum = 0;
 
 	amm = count_mails(account,om);
 	max_mail_size_sum = count_mails_size(account,om);
 
-	thread_call_function_async(thread_get_main(),status_init_mail,1,amm);
-	thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_mail_size_sum);
+	callbacks->init_mail(amm);
+	callbacks->init_gauge_as_bytes(max_mail_size_sum);
 
 	for (i=0,j=0;om[i] && j < amm;i++)
 	{
 		if (mystricmp(account->email,om[i]->from)) continue;
 
 		j++;
-		thread_call_function_async(thread_get_main(),status_set_mail,2,j,om[i]->size); /* starts from 1 */
+		callbacks->set_mail(j,om[i]->size); /* starts from 1 */
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending FROM..."));
+		callbacks->set_status_static(_("Sending FROM..."));
+
 		if (!smtp_from(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("FROM failed."));
@@ -853,7 +854,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 			return 0;
 		}
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending RCPT..."));
+		callbacks->set_status_static(_("Sending RCPT..."));
 		if (!smtp_rcpt(conn,account, om[i]))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("RCPT failed."));
@@ -861,7 +862,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 			return 0;
 		}
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending DATA..."));
+		callbacks->set_status_static(_("Sending DATA..."));
 
 		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum))
 		{
@@ -871,7 +872,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 		}
 
 		mail_size_sum += om[i]->size;
-		thread_call_function_async(thread_get_main(),status_set_gauge,1,mail_size_sum);
+		callbacks->set_gauge(mail_size_sum);
 
 		/* no error while mail sending, so it can be moved to the "Sent" folder now */
 		thread_call_parent_function_async_string(callback_mail_has_been_sent,1,om[i]->mailfile);
@@ -954,7 +955,7 @@ int smtp_send_really(struct smtp_send_options *options)
 
 				if (smtp_login(&conn,account))
 				{
-					rc = smtp_send_mails(&conn,account,outmail);
+					rc = smtp_send_mails(&conn,account,outmail,callbacks);
 
 					if (thread_aborted())
 					{

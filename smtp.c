@@ -313,8 +313,6 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 			unsigned int size;
 
 			size = myfsize(fp);
-//			thread_call_function_async(thread_get_main(),up_init_gauge_byte,1,size);
-
 
 			if(SMTP_SEND_MAIL == smtp_send_cmd(conn, "DATA", NULL))
 			{
@@ -945,8 +943,6 @@ int smtp_send_really(struct smtp_send_options *options)
 			sm_snprintf(head_buf,sizeof(head_buf),_("Sending mails to %s"),account->smtp->name);
 			callbacks->set_head(head_buf);
 			callbacks->set_connect_to_server(account->smtp->name);
-
-//			thread_call_function_async(thread_get_main(),status_set_status,1,N_("Connecting..."));
 
 			/* Make a possible fingerprint available */
 			connect_opts.fingerprint = account->smtp->fingerprint;

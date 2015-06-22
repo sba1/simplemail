@@ -173,6 +173,16 @@ static int trans_wait(void (*period_callback)(void *arg), void *arg, int millis)
 	return thread_call_parent_function_sync_timer_callback(period_callback, arg, millis, status_wait,0);
 }
 
+static void trans_mail_has_not_been_sent(char *filename)
+{
+	thread_call_parent_function_async_string(callback_mail_has_not_been_sent,1,filename);
+}
+
+static void trans_mail_has_been_sent(char *filename)
+{
+	thread_call_parent_function_async_string(callback_mail_has_been_sent,1,filename);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -438,6 +448,8 @@ static int mails_upload_entry(struct mails_upload_entry_msg *msg)
 				smtp_send_options.callbacks.set_mail = trans_set_mail;
 				smtp_send_options.callbacks.init_gauge_as_bytes = trans_init_gauge_as_bytes;
 				smtp_send_options.callbacks.set_gauge = trans_set_gauge;
+				smtp_send_options.callbacks.mail_has_not_been_sent = trans_mail_has_not_been_sent;
+				smtp_send_options.callbacks.mail_has_been_sent = trans_mail_has_been_sent;
 
 				thread_call_function_async(thread_get_main(),status_init,1,0);
 				thread_call_function_async(thread_get_main(),status_open,0);

@@ -109,6 +109,8 @@ struct smtp_send_callbacks
 	void (*init_mail)(int maximal);
 	void (*set_mail)(int current, int current_size);
 	int (*skip_server)(void);
+	void (*mail_has_not_been_sent)(char *filename);
+	void (*mail_has_been_sent)(char *filename);
 };
 
 struct smtp_send_options

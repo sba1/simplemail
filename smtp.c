@@ -713,16 +713,16 @@ static int esmtp_auth(struct smtp_connection *conn, struct account *account)
  * @param account
  * @return
  */
-static int smtp_login(struct smtp_connection *conn, struct account *account)
+static int smtp_login(struct smtp_connection *conn, struct account *account, struct smtp_send_callbacks *callbacks)
 {
 	if (!smtp_service_ready(conn)) return 0;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending EHLO..."));
+	callbacks->set_status_static(_("Sending EHLO..."));
 	if (!esmtp_ehlo(conn,account))
 	{
 		if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending HELO..."));
+		callbacks->set_status_static(_("Sending HELO..."));
 		if (!smtp_helo(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -738,7 +738,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending STARTTLS..."));
+		callbacks->set_status_static(_("Sending STARTTLS..."));
 		if ((smtp_send_cmd(conn,"STARTTLS",NULL)!=SMTP_SERVICE_READY))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("STARTTLS failed. Connection could not be made secure."));
@@ -751,12 +751,12 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 			return 0;
 		}
 
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending secured EHLO..."));
+		callbacks->set_status_static(_("Sending secured EHLO..."));
 		if (!esmtp_ehlo(conn,account))
 		{
 			if (tcp_error_code() == TCP_INTERRUPTED) return 0;
 
-			thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending secured HELO..."));
+			callbacks->set_status_static(_("Sending secured HELO..."));
 			if (!smtp_helo(conn,account))
 			{
 				if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("HELO failed"));
@@ -767,7 +767,7 @@ static int smtp_login(struct smtp_connection *conn, struct account *account)
 
 	if (account->smtp->auth)
 	{
-		thread_call_function_async(thread_get_main(),status_set_status,1,_("Sending AUTH..."));
+		callbacks->set_status_static(_("Sending AUTH..."));
 		if (!esmtp_auth(conn,account))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("AUTH failed. User couldn't be authenticated. Please recheck your settings."));
@@ -953,7 +953,7 @@ int smtp_send_really(struct smtp_send_options *options)
 			{
 				conn.server_name = account->smtp->name;
 
-				if (smtp_login(&conn,account))
+				if (smtp_login(&conn,account,callbacks))
 				{
 					rc = smtp_send_mails(&conn,account,outmail,callbacks);
 

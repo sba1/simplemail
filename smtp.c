@@ -36,7 +36,6 @@
 #include "pop3.h"
 #include "simplemail.h"
 #include "smintl.h"
-#include "status.h"
 #include "support_indep.h"
 #include "tcp.h"
 
@@ -298,7 +297,7 @@ out:
  *  data of previously sent mails)
  * @return 1 on success, 0 on failure.
  */
-static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile, int cur_mail_size)
+static int smtp_data(struct smtp_connection *conn, struct account *account, char *mailfile, int cur_mail_size, struct smtp_send_callbacks *callbacks)
 {
 	int rc = 0;
 	char *buf;
@@ -366,7 +365,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_function_async(thread_get_main(),status_set_gauge,1,cur_mail_size + bytes_send);
+						callbacks->set_gauge(cur_mail_size + bytes_send);
 					}
 					last_bytes_send = bytes_send;
 
@@ -491,7 +490,7 @@ static int smtp_data(struct smtp_connection *conn, struct account *account, char
 
 					if((last_bytes_send%z) != (bytes_send%z))
 					{
-						thread_call_function_async(thread_get_main(),status_set_gauge,1,cur_mail_size + bytes_send);
+						callbacks->set_gauge(cur_mail_size + bytes_send);
 					}
 					last_bytes_send = bytes_send;
 				}
@@ -864,7 +863,7 @@ static int smtp_send_mails(struct smtp_connection *conn, struct account *account
 
 		callbacks->set_status_static(_("Sending DATA..."));
 
-		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum))
+		if (!smtp_data(conn,account, om[i]->mailfile, mail_size_sum, callbacks))
 		{
 			if (tcp_error_code() != TCP_INTERRUPTED) tell_from_subtask(N_("DATA failed."));
 			callbacks->mail_has_not_been_sent(om[i]->mailfile);

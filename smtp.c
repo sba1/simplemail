@@ -705,12 +705,12 @@ static int esmtp_auth(struct smtp_connection *conn, struct account *account)
 }
 
 /**
- * Login into the (e)smtp server. After a succesfull call you
+ * Login into the (e)smtp server. After a successful call you
  * can send the mails.
  *
- * @param conn
- * @param account
- * @return
+ * @param conn the already established smtp connection
+ * @param account the account for which the login should be processed.
+ * @return 0 on error, 1 on success
  */
 static int smtp_login(struct smtp_connection *conn, struct account *account, struct smtp_send_callbacks *callbacks)
 {
@@ -799,7 +799,8 @@ static int count_mails(struct account *account, struct outmail **om)
 }
 
 /**
- * Count the number of mails which belongs to the given account
+ * Count the number of mails within the given om which belongs to the given
+ * account.
  *
  * @param account
  * @param om

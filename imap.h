@@ -49,17 +49,24 @@ struct imap_server
 	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
+struct imap_synchronize_options
+{
+	/** list of imap servers to which connections should be  established. */
+	struct list *imap_list;
+
+	/** No user interaction */
+	int quiet;
+};
+
 /**
  * Synchronize with all imap severs in the given list.
  *
  * This is a synchronous function, it should not be called directly within the
  * main thread.
  *
- * @param imap_list the list of imap servers to which connections should be
- *  established.
- * @param called_by_auto whether this
+ * @param options the options for synching
  */
-void imap_synchronize_really(struct list *imap_list, int called_by_auto);
+void imap_synchronize_really(struct imap_synchronize_options *options);
 
 /**
  * Request the list of all folders of the imap server.

@@ -1088,8 +1088,10 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 /*****************************************************************************/
 
-void imap_synchronize_really(struct list *imap_list, int called_by_auto)
+void imap_synchronize_really(struct imap_synchronize_options *options)
 {
+	struct list *imap_list = options->imap_list;
+
 	SM_ENTER;
 
 	if (open_socket_lib())

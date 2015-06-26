@@ -306,6 +306,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 	if (thread_parent_task_can_contiue())
 	{
 		struct pop3_dl_options dl_options = {0};
+		struct imap_synchronize_options imap_sync_options = {0};
 
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		if (called_by_auto) thread_call_function_async(thread_get_main(),status_open_notactivated,0);
@@ -346,12 +347,14 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		dl_options.callbacks.number_of_mails_downloaded = trans_number_of_mails_downloaded;
 		dl_options.callbacks.wait = trans_wait;
 
+		imap_sync_options.imap_list = &imap_list;
+		imap_sync_options.quiet = called_by_auto;
 		if (pop3_really_dl(&dl_options))
 		{
-			imap_synchronize_really(&imap_list, called_by_auto);
+			imap_synchronize_really(&imap_sync_options);
 		} else if (single_account)
 		{
-			imap_synchronize_really(&imap_list, called_by_auto);
+			imap_synchronize_really(&imap_sync_options);
 		}
 
 		thread_call_function_async(thread_get_main(),status_close,0);

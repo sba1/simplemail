@@ -49,6 +49,15 @@ struct imap_server
 	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
 
+struct imap_synchronize_callbacks
+{
+	void (*set_status_static)(const char *str);
+	void (*set_connect_to_server)(const char *server);
+	void (*set_head)(const char *head);
+	void (*set_title_utf8)(const char *title);
+	void (*set_title)(const char *title);
+};
+
 struct imap_synchronize_options
 {
 	/** list of imap servers to which connections should be  established. */
@@ -56,6 +65,8 @@ struct imap_synchronize_options
 
 	/** No user interaction */
 	int quiet;
+
+	struct imap_synchronize_callbacks callbacks;
 };
 
 /**

@@ -1091,6 +1091,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 void imap_synchronize_really(struct imap_synchronize_options *options)
 {
 	struct list *imap_list = options->imap_list;
+	struct imap_synchronize_callbacks *callbacks = &options->callbacks;
 
 	SM_ENTER;
 
@@ -1108,12 +1109,12 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 			SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
 
 			sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
-			thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+			callbacks->set_head(head_buf);
 			if (server->title)
-				thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+				callbacks->set_title_utf8(server->title);
 			else
-				thread_call_parent_function_async_string(status_set_title, 1, server->name);
-			thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+				callbacks->set_title(server->name);
+			callbacks->set_connect_to_server(server->name);
 
 			/* Ask for the login/password */
 			if (server->ask)
@@ -1145,17 +1146,17 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 			SM_DEBUGF(10,("Connecting\n"));
 			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 			{
-				thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
+				callbacks->set_status_static(_("Waiting for login..."));
 				SM_DEBUGF(10,("Waiting for login\n"));
 				if (imap_wait_login(conn,server))
 				{
-					thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
+					callbacks->set_status_static(_("Login..."));
 					SM_DEBUGF(10,("Login\n"));
 					if (imap_login(conn,server))
 					{
 						struct string_list *folder_list;
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Login successful"));
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Checking for folders"));
+						callbacks->set_status_static(_("Login successful"));
+						callbacks->set_status_static(_("Checking for folders"));
 
 						SM_DEBUGF(10,("Get folders\n"));
 						if ((folder_list = imap_get_folders(conn,0)))
@@ -1184,7 +1185,7 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 						}
 					} else
 					{
-						thread_call_function_async(thread_get_main(),status_set_status,1,_("Login failed!"));
+						callbacks->set_status_static(_("Login failed!"));
 						tell_from_subtask(N_("Authentication failed!"));
 					}
 				}

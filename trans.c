@@ -349,6 +349,12 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 
 		imap_sync_options.imap_list = &imap_list;
 		imap_sync_options.quiet = called_by_auto;
+		imap_sync_options.callbacks.set_connect_to_server = trans_set_connect_to_server;
+		imap_sync_options.callbacks.set_title = trans_set_title;
+		imap_sync_options.callbacks.set_title_utf8 = trans_set_title_utf8;
+		imap_sync_options.callbacks.set_status_static = trans_set_status_static;
+		imap_sync_options.callbacks.set_head = trans_set_head;
+
 		if (pop3_really_dl(&dl_options))
 		{
 			imap_synchronize_really(&imap_sync_options);

@@ -1198,9 +1198,6 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 				if (thread_aborted()) break;
 				else tell_from_subtask((char*)tcp_strerror(error_code));
 			}
-
-			/* Clear the preselection entries */
-			thread_call_parent_function_sync(NULL,status_mail_list_clear,0);
 		}
 		close_socket_lib();
 	}

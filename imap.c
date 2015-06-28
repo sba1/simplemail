@@ -1129,7 +1129,7 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 					if (server->login) mystrlcpy(login,server->login,512);
 					password[0] = 0;
 
-					if ((rc = thread_call_parent_function_sync(NULL,sm_request_login,4,server->name,login,password,512)))
+					if ((rc = callbacks->request_login(server->name,login,password,512)))
 					{
 						server->login = mystrdup(login);
 						server->passwd = mystrdup(password);

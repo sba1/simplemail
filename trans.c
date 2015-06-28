@@ -354,6 +354,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.set_title_utf8 = trans_set_title_utf8;
 		imap_sync_options.callbacks.set_status_static = trans_set_status_static;
 		imap_sync_options.callbacks.set_head = trans_set_head;
+		imap_sync_options.callbacks.request_login = trans_request_login;
 
 		if (pop3_really_dl(&dl_options))
 		{

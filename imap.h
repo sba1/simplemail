@@ -56,6 +56,7 @@ struct imap_synchronize_callbacks
 	void (*set_head)(const char *head);
 	void (*set_title_utf8)(const char *title);
 	void (*set_title)(const char *title);
+	int (*request_login)(char *text, char *login, char *password, int len);
 };
 
 struct imap_synchronize_options

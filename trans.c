@@ -183,6 +183,16 @@ static void trans_mail_has_been_sent(char *filename)
 	thread_call_parent_function_async_string(callback_mail_has_been_sent,1,filename);
 }
 
+static void trans_add_imap_folder(char *user, char *server, char *path)
+{
+	thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,server->login,server->name,node->string);
+}
+
+static void trans_refresh_folders(void)
+{
+	thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -355,6 +365,8 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.set_status_static = trans_set_status_static;
 		imap_sync_options.callbacks.set_head = trans_set_head;
 		imap_sync_options.callbacks.request_login = trans_request_login;
+		imap_sync_options.callbacks.add_imap_folder = trans_add_imap_folder;
+		imap_sync_options.callbacks.refresh_folders = trans_refresh_folders;
 
 		if (pop3_really_dl(&dl_options))
 		{

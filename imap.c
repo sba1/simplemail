@@ -1086,6 +1086,118 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 	return success;
 }
 
+/**
+ * Synchronize a single imap account.
+ *
+ * @param imap_server
+ * @param options
+ * @return 0 for failure, 1 for success.
+ * @note 0 currently means abort.
+ */
+static int imap_synchronize_really_single(struct imap_server *server, struct imap_synchronize_callbacks *callbacks)
+{
+	struct connection *conn;
+	struct connect_options conn_opts = {0};
+	char head_buf[100];
+	int error_code;
+
+	SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
+
+	sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
+	callbacks->set_head(head_buf);
+	if (server->title)
+		callbacks->set_title_utf8(server->title);
+	else
+		callbacks->set_title(server->name);
+	callbacks->set_connect_to_server(server->name);
+
+	/* Ask for the login/password */
+	if (server->ask)
+	{
+		char *password = (char*)malloc(512);
+		char *login = (char*)malloc(512);
+
+		if (password && login)
+		{
+			int rc;
+
+			if (server->login) mystrlcpy(login,server->login,512);
+			password[0] = 0;
+
+			if ((rc = callbacks->request_login(server->name,login,password,512)))
+			{
+				server->login = mystrdup(login);
+				server->passwd = mystrdup(password);
+			}
+		}
+
+		free(password);
+		free(login);
+	}
+
+	conn_opts.use_ssl = server->ssl && !server->starttls;
+	conn_opts.fingerprint = server->fingerprint;
+
+	SM_DEBUGF(10,("Connecting\n"));
+	if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
+	{
+		callbacks->set_status_static(_("Waiting for login..."));
+		SM_DEBUGF(10,("Waiting for login\n"));
+		if (imap_wait_login(conn,server))
+		{
+			callbacks->set_status_static(_("Login..."));
+			SM_DEBUGF(10,("Login\n"));
+			if (imap_login(conn,server))
+			{
+				struct string_list *folder_list;
+				callbacks->set_status_static(_("Login successful"));
+				callbacks->set_status_static(_("Checking for folders"));
+
+				SM_DEBUGF(10,("Get folders\n"));
+				if ((folder_list = imap_get_folders(conn,0)))
+				{
+					struct string_node *node;
+
+					/* add the folders */
+					node = string_list_first(folder_list);
+					while (node)
+					{
+						callbacks->add_imap_folder(server->login,server->name,node->string);
+						node = (struct string_node*)node_next(&node->node);
+					}
+					callbacks->refresh_folders();
+
+					/* sync the folders */
+					node = string_list_first(folder_list);
+					while (node)
+					{
+						if (!(imap_synchonize_folder(conn, server, node->string)))
+							break;
+						node = (struct string_node*)node_next(&node->node);
+					}
+
+					imap_free_name_list(folder_list);
+				}
+			} else
+			{
+				callbacks->set_status_static(_("Login failed!"));
+				tell_from_subtask(N_("Authentication failed!"));
+			}
+		}
+		tcp_disconnect(conn);
+
+		if (thread_aborted()) return 0;
+	} else
+	{
+		SM_DEBUGF(10,("Unable to connect\n"));
+		if (thread_aborted()) return 0;
+		else tell_from_subtask((char*)tcp_strerror(error_code));
+	}
+
+	/* We handle only the abort case as failure for now */
+	return 1;
+}
+
 /*****************************************************************************/
 
 void imap_synchronize_really(struct imap_synchronize_options *options)
@@ -1101,103 +1213,8 @@ void imap_synchronize_really(struct imap_synchronize_options *options)
 
 		for( ;server; server = (struct imap_server*)node_next(&server->node))
 		{
-			struct connection *conn;
-			struct connect_options conn_opts = {0};
-			char head_buf[100];
-			int error_code;
-
-			SM_DEBUGF(10,("Synchronizing with server \"%s\"\n",server->name));
-
-			sm_snprintf(head_buf,sizeof(head_buf),_("Synchronizing mails with %s"),server->name);
-			callbacks->set_head(head_buf);
-			if (server->title)
-				callbacks->set_title_utf8(server->title);
-			else
-				callbacks->set_title(server->name);
-			callbacks->set_connect_to_server(server->name);
-
-			/* Ask for the login/password */
-			if (server->ask)
-			{
-				char *password = (char*)malloc(512);
-				char *login = (char*)malloc(512);
-
-				if (password && login)
-				{
-					int rc;
-
-					if (server->login) mystrlcpy(login,server->login,512);
-					password[0] = 0;
-
-					if ((rc = callbacks->request_login(server->name,login,password,512)))
-					{
-						server->login = mystrdup(login);
-						server->passwd = mystrdup(password);
-					}
-				}
-
-				free(password);
-				free(login);
-			}
-
-			conn_opts.use_ssl = server->ssl && !server->starttls;
-			conn_opts.fingerprint = server->fingerprint;
-
-			SM_DEBUGF(10,("Connecting\n"));
-			if ((conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
-			{
-				callbacks->set_status_static(_("Waiting for login..."));
-				SM_DEBUGF(10,("Waiting for login\n"));
-				if (imap_wait_login(conn,server))
-				{
-					callbacks->set_status_static(_("Login..."));
-					SM_DEBUGF(10,("Login\n"));
-					if (imap_login(conn,server))
-					{
-						struct string_list *folder_list;
-						callbacks->set_status_static(_("Login successful"));
-						callbacks->set_status_static(_("Checking for folders"));
-
-						SM_DEBUGF(10,("Get folders\n"));
-						if ((folder_list = imap_get_folders(conn,0)))
-						{
-							struct string_node *node;
-
-							/* add the folders */
-							node = string_list_first(folder_list);
-							while (node)
-							{
-								callbacks->add_imap_folder(server->login,server->name,node->string);
-								node = (struct string_node*)node_next(&node->node);
-							}
-							callbacks->refresh_folders();
-
-							/* sync the folders */
-							node = string_list_first(folder_list);
-							while (node)
-							{
-								if (!(imap_synchonize_folder(conn, server, node->string)))
-									break;
-								node = (struct string_node*)node_next(&node->node);
-							}
-
-							imap_free_name_list(folder_list);
-						}
-					} else
-					{
-						callbacks->set_status_static(_("Login failed!"));
-						tell_from_subtask(N_("Authentication failed!"));
-					}
-				}
-				tcp_disconnect(conn);
-
-				if (thread_aborted()) break;
-			} else
-			{
-				SM_DEBUGF(10,("Unable to connect\n"));
-				if (thread_aborted()) break;
-				else tell_from_subtask((char*)tcp_strerror(error_code));
-			}
+			if (!imap_synchronize_really_single(server, callbacks))
+				break;
 		}
 		close_socket_lib();
 	}

@@ -1202,26 +1202,27 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 
 void imap_synchronize_really(struct imap_synchronize_options *options)
 {
-	struct list *imap_list = options->imap_list;
 	struct imap_synchronize_callbacks *callbacks = &options->callbacks;
+	struct imap_server *server;
 
 	SM_ENTER;
 
-	if (open_socket_lib())
-	{
-		struct imap_server *server = (struct imap_server*)list_first(imap_list);
-
-		for( ;server; server = (struct imap_server*)node_next(&server->node))
-		{
-			if (!imap_synchronize_really_single(server, callbacks))
-				break;
-		}
-		close_socket_lib();
-	}
-	else
+	if (!open_socket_lib())
 	{
 		tell_from_subtask(N_("Cannot open the bsdsocket.library!"));
+		goto out;
 	}
+
+	server = (struct imap_server*)list_first(options->imap_list);
+	while (server)
+	{
+		if (!imap_synchronize_really_single(server, callbacks))
+			break;
+		server = (struct imap_server*)node_next(&server->node);
+	}
+	close_socket_lib();
+
+out:
 	SM_LEAVE;
 }
 

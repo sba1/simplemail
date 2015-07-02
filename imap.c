@@ -1620,133 +1620,12 @@ bailout:
 	return success;
 }
 
-/*****************************************************************************/
-
-struct imap_server *imap_malloc(void)
-{
-	struct imap_server *imap;
-	if ((imap = (struct imap_server*)malloc(sizeof(*imap))))
-	{
-		memset(imap,0,sizeof(struct imap_server));
-		imap->port = 143;
-	}
-	return imap;
-}
-
-/*****************************************************************************/
-
-struct imap_server *imap_duplicate(struct imap_server *imap)
-{
-	struct imap_server *new_imap = imap_malloc();
-	if (new_imap)
-	{
-		new_imap->name = mystrdup(imap->name);
-		new_imap->fingerprint = mystrdup(imap->fingerprint);
-		new_imap->login = mystrdup(imap->login);
-		new_imap->passwd = mystrdup(imap->passwd);
-		new_imap->title = mystrdup(imap->title);
-		new_imap->port = imap->port;
-		new_imap->active = imap->active;
-		new_imap->ssl = imap->ssl;
-		new_imap->starttls = imap->starttls;
-		new_imap->ask = imap->ask;
-	}
-	return new_imap;
-}
-
-/*****************************************************************************/
-
-void imap_free(struct imap_server *imap)
-{
-	if (imap->name) free(imap->name);
-	if (imap->fingerprint) free(imap->fingerprint);
-	if (imap->login) free(imap->login);
-	if (imap->passwd) free(imap->passwd);
-	if (imap->title) free(imap->title);
-	free(imap);
-}
-
-/*****************************************************************************/
-
-/**
- * Checks whether in principle a new connection would be needed when swiching from srv1 to srv2.
- *
- * @param srv1
- * @param srv2
- * @return
- */
-static int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2)
-{
-	if (!srv1 && !srv2) return 0;
-	if (!srv1) return 1;
-	if (!srv2) return 1;
-
-	return mystrcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || mystrcmp(srv1->login,srv2->login) ||
-		(mystrcmp(srv1->passwd,srv2->passwd) && !srv1->ask && !srv2->ask)  || (srv1->ask != srv2->ask) ||
-		(srv1->ssl != srv2->ssl) || (srv1->starttls != srv2->starttls);
-}
-
-
-/***** IMAP Thread *****/
-
-static thread_t imap_thread;
-static struct connection *imap_connection;
-static int imap_socket_lib_open;
-static struct imap_server *imap_server;
-static char *imap_folder; /** The path of the folder on the imap server */
-static char *imap_local_path; /** The local path of the folder */
-
-/**************************************************************************/
-
-/**
- * The entry point for the imap thread. It just go into the wait state and
- * then frees all resources when finished
- *
- * @param test
- */
-static void imap_thread_entry(void *test)
-{
-	if (thread_parent_task_can_contiue())
-	{
-		thread_wait(NULL,NULL,0);
-
-		imap_free(imap_server);
-		free(imap_folder);
-		free(imap_local_path);
-
-		if (imap_connection)
-		{
-			tcp_disconnect(imap_connection);
-			imap_connection = NULL;
-		}
-
-		if (imap_socket_lib_open)
-		{
-			close_socket_lib();
-			imap_socket_lib_open = 0;
-		}
-	}
-}
-
-/**
- * The function creates the IMAP thread. It doesn't start the thread
- * if it is already started.
- *
- * @return whether the thread has been started.
- */
-static int imap_start_thread(void)
-{
-	if (imap_thread) return 1;
-	imap_thread = thread_add(IMAP_THREAD_NAME, THREAD_FUNCTION(&imap_thread_entry),NULL);
-	return !!imap_thread;
-}
-
 /**
  * Function to download mails.
  *
  * @return number of downloaded mails. A value < 0 indicates an error.
  */
-static int imap_thread_really_download_mails(void)
+static int imap_thread_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
 {
 	char path[380];
 	struct folder *local_folder;
@@ -2002,6 +1881,127 @@ static int imap_thread_really_download_mails(void)
 	return downloaded_mails;
 }
 
+/*****************************************************************************/
+
+struct imap_server *imap_malloc(void)
+{
+	struct imap_server *imap;
+	if ((imap = (struct imap_server*)malloc(sizeof(*imap))))
+	{
+		memset(imap,0,sizeof(struct imap_server));
+		imap->port = 143;
+	}
+	return imap;
+}
+
+/*****************************************************************************/
+
+struct imap_server *imap_duplicate(struct imap_server *imap)
+{
+	struct imap_server *new_imap = imap_malloc();
+	if (new_imap)
+	{
+		new_imap->name = mystrdup(imap->name);
+		new_imap->fingerprint = mystrdup(imap->fingerprint);
+		new_imap->login = mystrdup(imap->login);
+		new_imap->passwd = mystrdup(imap->passwd);
+		new_imap->title = mystrdup(imap->title);
+		new_imap->port = imap->port;
+		new_imap->active = imap->active;
+		new_imap->ssl = imap->ssl;
+		new_imap->starttls = imap->starttls;
+		new_imap->ask = imap->ask;
+	}
+	return new_imap;
+}
+
+/*****************************************************************************/
+
+void imap_free(struct imap_server *imap)
+{
+	if (imap->name) free(imap->name);
+	if (imap->fingerprint) free(imap->fingerprint);
+	if (imap->login) free(imap->login);
+	if (imap->passwd) free(imap->passwd);
+	if (imap->title) free(imap->title);
+	free(imap);
+}
+
+/*****************************************************************************/
+
+/**
+ * Checks whether in principle a new connection would be needed when swiching from srv1 to srv2.
+ *
+ * @param srv1
+ * @param srv2
+ * @return
+ */
+static int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2)
+{
+	if (!srv1 && !srv2) return 0;
+	if (!srv1) return 1;
+	if (!srv2) return 1;
+
+	return mystrcmp(srv1->name,srv2->name) || (srv1->port != srv2->port) || mystrcmp(srv1->login,srv2->login) ||
+		(mystrcmp(srv1->passwd,srv2->passwd) && !srv1->ask && !srv2->ask)  || (srv1->ask != srv2->ask) ||
+		(srv1->ssl != srv2->ssl) || (srv1->starttls != srv2->starttls);
+}
+
+
+/***** IMAP Thread *****/
+
+static thread_t imap_thread;
+static struct connection *imap_connection;
+static int imap_socket_lib_open;
+static struct imap_server *imap_server;
+static char *imap_folder; /** The path of the folder on the imap server */
+static char *imap_local_path; /** The local path of the folder */
+
+/**************************************************************************/
+
+/**
+ * The entry point for the imap thread. It just go into the wait state and
+ * then frees all resources when finished
+ *
+ * @param test
+ */
+static void imap_thread_entry(void *test)
+{
+	if (thread_parent_task_can_contiue())
+	{
+		thread_wait(NULL,NULL,0);
+
+		imap_free(imap_server);
+		free(imap_folder);
+		free(imap_local_path);
+
+		if (imap_connection)
+		{
+			tcp_disconnect(imap_connection);
+			imap_connection = NULL;
+		}
+
+		if (imap_socket_lib_open)
+		{
+			close_socket_lib();
+			imap_socket_lib_open = 0;
+		}
+	}
+}
+
+/**
+ * The function creates the IMAP thread. It doesn't start the thread
+ * if it is already started.
+ *
+ * @return whether the thread has been started.
+ */
+static int imap_start_thread(void)
+{
+	if (imap_thread) return 1;
+	imap_thread = thread_add(IMAP_THREAD_NAME, THREAD_FUNCTION(&imap_thread_entry),NULL);
+	return !!imap_thread;
+}
+
 /**
  * Open the socket library, but make sure that this happns only once.
  *
@@ -2100,7 +2100,7 @@ static void imap_thread_really_connect_to_server(void)
 
 				imap_free_name_list(folder_list);
 
-				imap_thread_really_download_mails();
+				imap_thread_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
 			}
 		}
 
@@ -2166,7 +2166,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_thread_really_download_mails();
+		imap_thread_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
 		rc = 1;
 	}
 

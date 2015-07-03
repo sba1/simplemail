@@ -1883,6 +1883,70 @@ static int imap_thread_really_download_mails(struct connection *imap_connection,
 
 /*****************************************************************************/
 
+/**
+ * Establishes a connection to the server and downloads mails.
+ */
+static void imap_thread_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
+{
+	SM_ENTER;
+
+	if (imap_server)
+	{
+		struct progmon *pm;
+
+		pm = progmon_create();
+		if (pm)
+		{
+			utf8 msg[80];
+
+			utf8fromstr(_("Connect with IMAP server"),NULL,msg,sizeof(msg));
+			pm->begin(pm,2,msg);
+
+			utf8fromstr("Logging in",NULL,msg,sizeof(msg));
+			pm->working_on(pm,msg);
+		}
+
+		if (imap_thread_really_connect_and_login_to_server(imap_connection, imap_server))
+		{
+			char status_buf[160];
+			struct string_list *folder_list;
+
+			/* Display "Retrieving mail folders" - status message */
+			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
+			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+
+			/* We have now connected to the server, check for the folders at first */
+			folder_list = imap_get_folders(*imap_connection, 0);
+			if (folder_list)
+			{
+				struct string_node *node;
+
+				/* add the folders */
+				node = string_list_first(folder_list);
+				while (node)
+				{
+					thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,imap_server->login,imap_server->name,node->string);
+					node = (struct string_node*)node_next(&node->node);
+				}
+				thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
+
+				imap_free_name_list(folder_list);
+
+				imap_thread_really_download_mails(*imap_connection, imap_local_path, imap_server, imap_folder);
+			}
+		}
+
+		if (pm)
+		{
+			pm->done(pm);
+			progmon_delete(pm);
+		}
+	}
+	SM_LEAVE;
+}
+
+/*****************************************************************************/
+
 struct imap_server *imap_malloc(void)
 {
 	struct imap_server *imap;
@@ -2048,72 +2112,6 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
 }
 
 /**
- * Establishes a connection to the server and downloads mails.
- */
-static void imap_thread_really_connect_to_server(void)
-{
-	SM_ENTER;
-
-	if (!imap_open_socket_lib())
-		return;
-
-	if (imap_server)
-	{
-		struct progmon *pm;
-
-		pm = progmon_create();
-		if (pm)
-		{
-			utf8 msg[80];
-
-			utf8fromstr(_("Connect with IMAP server"),NULL,msg,sizeof(msg));
-			pm->begin(pm,2,msg);
-
-			utf8fromstr("Logging in",NULL,msg,sizeof(msg));
-			pm->working_on(pm,msg);
-		}
-
-		imap_disconnect();
-		if (imap_thread_really_connect_and_login_to_server(&imap_connection, imap_server))
-		{
-			char status_buf[160];
-			struct string_list *folder_list;
-
-			/* Display "Retrieving mail folders" - status message */
-			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
-			thread_call_parent_function_async_string(status_set_status,1,status_buf);
-
-			/* We have now connected to the server, check for the folders at first */
-			folder_list = imap_get_folders(imap_connection, 0);
-			if (folder_list)
-			{
-				struct string_node *node;
-
-				/* add the folders */
-				node = string_list_first(folder_list);
-				while (node)
-				{
-					thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,imap_server->login,imap_server->name,node->string);
-					node = (struct string_node*)node_next(&node->node);
-				}
-				thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
-
-				imap_free_name_list(folder_list);
-
-				imap_thread_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
-			}
-		}
-
-		if (pm)
-		{
-			pm->done(pm);
-			progmon_delete(pm);
-		}
-	}
-	SM_LEAVE;
-}
-
-/**
  * Connect to the given imap server. Shall be invoked only in the context of the IMAP thread.
  *
  * @param server
@@ -2141,10 +2139,15 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		goto bailout;
 	}
 
+	if (!imap_open_socket_lib())
+		goto bailout;
+
 	connecting = 1;
 
 	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
+		imap_disconnect();
+
 		if (imap_server) imap_free(imap_server);
 		imap_server = server;
 
@@ -2154,7 +2157,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_thread_really_connect_to_server();
+		imap_thread_really_connect_to_server(&imap_connection, imap_local_path, imap_server, imap_folder);
 		rc = 1;
 	} else
 	{

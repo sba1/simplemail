@@ -1528,7 +1528,7 @@ int imap_submit_folder_list(struct imap_server *server, struct string_list *list
  * @param imap_server
  * @return
  */
-static int imap_thread_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server)
+static int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server)
 {
 	int success = 0;
 	char status_buf[160];
@@ -1625,7 +1625,7 @@ bailout:
  *
  * @return number of downloaded mails. A value < 0 indicates an error.
  */
-static int imap_thread_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
+static int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
 {
 	char path[380];
 	struct folder *local_folder;
@@ -1886,7 +1886,7 @@ static int imap_thread_really_download_mails(struct connection *imap_connection,
 /**
  * Establishes a connection to the server and downloads mails.
  */
-static void imap_thread_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
+static void imap_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
 {
 	SM_ENTER;
 
@@ -1906,7 +1906,7 @@ static void imap_thread_really_connect_to_server(struct connection **imap_connec
 			pm->working_on(pm,msg);
 		}
 
-		if (imap_thread_really_connect_and_login_to_server(imap_connection, imap_server))
+		if (imap_really_connect_and_login_to_server(imap_connection, imap_server))
 		{
 			char status_buf[160];
 			struct string_list *folder_list;
@@ -1932,7 +1932,7 @@ static void imap_thread_really_connect_to_server(struct connection **imap_connec
 
 				imap_free_name_list(folder_list);
 
-				imap_thread_really_download_mails(*imap_connection, imap_local_path, imap_server, imap_folder);
+				imap_really_download_mails(*imap_connection, imap_local_path, imap_server, imap_folder);
 			}
 		}
 
@@ -2104,7 +2104,7 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
 		if ((imap_server = imap_duplicate(server)))
 		{
 			imap_disconnect();
-			return imap_thread_really_connect_and_login_to_server(&imap_connection, imap_server);
+			return imap_really_connect_and_login_to_server(&imap_connection, imap_server);
 		}
 		return 0;
 	}
@@ -2157,7 +2157,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_thread_really_connect_to_server(&imap_connection, imap_local_path, imap_server, imap_folder);
+		imap_really_connect_to_server(&imap_connection, imap_local_path, imap_server, imap_folder);
 		rc = 1;
 	} else
 	{
@@ -2169,7 +2169,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_thread_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
+		imap_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
 		rc = 1;
 	}
 
@@ -2459,7 +2459,7 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 		if ((imap_server = imap_duplicate(server)))
 		{
 			imap_disconnect();
-			imap_thread_really_connect_and_login_to_server(&imap_connection, imap_server);
+			imap_really_connect_and_login_to_server(&imap_connection, imap_server);
 		}
 	}
 

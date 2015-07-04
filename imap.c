@@ -1945,6 +1945,73 @@ static void imap_really_connect_to_server(struct connection **imap_connection, c
 	SM_LEAVE;
 }
 
+/**
+ * Delete a mail permanently from the server
+ *
+ * @param imap_connection already established imap connection, already logged in.
+ * @param filename the (local) filename of the mail to be deleted.
+ * @param folder the folder where the mail is located.
+ * @return success or not.
+ * @note This function can only be called in the context of the imap thread.
+ */
+static int imap_really_delete_mail_by_filename(struct connection *imap_connection, char *filename, struct folder *folder)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int uid;
+	int msgno = -1;
+	int success;
+
+	sm_snprintf(send,sizeof(send),"SELECT \"%s\"\r\n",folder->imap_path);
+	if (!imap_send_simple_command(imap_connection,send)) return 0;
+
+	success = 0;
+	uid = atoi(filename + 1);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	while ((line = tcp_readln(imap_connection)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			char first[200];
+			char second[200];
+
+			line = imap_get_result(line,first,sizeof(first));
+			line = imap_get_result(line,second,sizeof(second));
+
+			msgno = atoi(second);
+		}
+	}
+
+	if (success && msgno != -1)
+	{
+		sprintf(send,"STORE %d +FLAGS.SILENT (\\Deleted)\r\n",msgno);
+		success = imap_send_simple_command(imap_connection,send);
+
+		if (success)
+		{
+			success = imap_send_simple_command(imap_connection,"EXPUNGE");
+		}
+	}
+
+	return success;
+}
+
+
 /*****************************************************************************/
 
 struct imap_server *imap_malloc(void)
@@ -2367,61 +2434,9 @@ static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *ser
  */
 static int imap_thread_delete_mail_by_filename(char *filename, struct imap_server *server, struct folder *folder)
 {
-	char send[200];
-	char tag[20];
-	char buf[380];
-	char *line;
-	int uid;
-	int msgno = -1;
-	int success;
-
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	sm_snprintf(send,sizeof(send),"SELECT \"%s\"\r\n",folder->imap_path);
-	if (!imap_send_simple_command(imap_connection,send)) return 0;
-
-	success = 0;
-	uid = atoi(filename + 1);
-
-	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s SEARCH UID %d\r\n",tag,uid);
-	tcp_write(imap_connection,send,strlen(send));
-	tcp_flush(imap_connection);
-
-	while ((line = tcp_readln(imap_connection)))
-	{
-		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,tag))
-		{
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,"OK"))
-				success = 1;
-			break;
-		} else
-		{
-			/* untagged */
-			char first[200];
-			char second[200];
-
-			line = imap_get_result(line,first,sizeof(first));
-			line = imap_get_result(line,second,sizeof(second));
-
-			msgno = atoi(second);
-		}
-	}
-
-	if (success && msgno != -1)
-	{
-		sprintf(send,"STORE %d +FLAGS.SILENT (\\Deleted)\r\n",msgno);
-		success = imap_send_simple_command(imap_connection,send);
-
-		if (success)
-		{
-			success = imap_send_simple_command(imap_connection,"EXPUNGE");
-		}
-	}
-
-	return success;
+	return imap_really_delete_mail_by_filename(imap_connection, filename, folder);
 }
 
 /**

@@ -2088,6 +2088,111 @@ static int imap_really_move_mail(struct connection *imap_connection, struct mail
 	return success;
 }
 
+/**
+ * Store the mail represented by the mail located in the given source_dir
+ * on the given server in the given dest_folder.
+ *
+ * @param connection already established connection for the imap server.
+ * @param mail info about the mail that should be transfered
+ * @param source_dir the folder in which the mail is stored.
+ * @param server the target server
+ * @param dest_folder folder for the target.
+ * @return success or not.
+ */
+static int imap_really_append_mail(struct connection *imap_connection, struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
+{
+	char send[200];
+	char buf[380];
+	char *line;
+	int success;
+	FILE *fh,*tfh;
+	char tag[20],path[380];
+	char line_buf[1200];
+	int filesize;
+
+	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
+	if (!(tfh = tmpfile())) return 0;
+	getcwd(path, sizeof(path));
+	if (chdir(source_dir) == -1)
+	{
+		fclose(tfh);
+		return 0;
+	}
+
+	if (!(fh = fopen(mail->filename,"r")))
+	{
+		chdir(path);
+		fclose(tfh);
+		return 0;
+	}
+
+	while (fgets(line_buf,sizeof(line_buf)-2,fh))
+	{
+		int len = strlen(line_buf);
+		if (len > 1 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
+		{
+			line_buf[len-1] = '\r';
+			line_buf[len] = '\n';
+			line_buf[len+1]=0;
+		} else if (len == 1 && line_buf[0] == '\n')
+		{
+			line_buf[0] = '\r';
+			line_buf[1] = '\n';
+			line_buf[2] = 0;
+		}
+		fputs(line_buf,tfh);
+	}
+	fclose(fh);
+	chdir(path);
+
+	/* Now upload the mail */
+	filesize = ftell(tfh);
+	fseek(tfh,0,SEEK_SET);
+	sprintf(tag,"%04x",val++);
+	sm_snprintf(send,sizeof(send),"%s APPEND %s {%d}\r\n",tag,dest_folder->imap_path,filesize);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	line = tcp_readln(imap_connection);
+	if (line[0] != '+')
+	{
+		fclose(tfh);
+		return 0;
+	}
+
+	success = 1;
+	while (filesize>0)
+	{
+		int read = fread(line_buf,1,sizeof(line_buf),tfh);
+		if (!read || read == -1)
+		{
+			success = 0;
+			break;
+		}
+		tcp_write(imap_connection,line_buf,read);
+		filesize -= read;
+	}
+	fclose(tfh);
+
+	if (success)
+	{
+		tcp_write(imap_connection,"\r\n",2);
+		success = 0;
+		while ((line = tcp_readln(imap_connection)))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,tag))
+			{
+				line = imap_get_result(line,buf,sizeof(buf));
+				if (!mystricmp(buf,"OK"))
+					success = 1;
+				break;
+			}
+		}
+	}
+	return success;
+}
+
 
 /*****************************************************************************/
 
@@ -2468,98 +2573,9 @@ static int imap_thread_delete_mail_by_filename(char *filename, struct imap_serve
  */
 static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder)
 {
-	char send[200];
-	char buf[380];
-	char *line;
-	int success;
-	FILE *fh,*tfh;
-	char tag[20],path[380];
-	char line_buf[1200];
-	int filesize;
-
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
-	if (!(tfh = tmpfile())) return 0;
-	getcwd(path, sizeof(path));
-	if (chdir(source_dir) == -1)
-	{
-		fclose(tfh);
-		return 0;
-	}
-
-	if (!(fh = fopen(mail->filename,"r")))
-	{
-		chdir(path);
-		fclose(tfh);
-		return 0;
-	}
-
-	while (fgets(line_buf,sizeof(line_buf)-2,fh))
-	{
-		int len = strlen(line_buf);
-		if (len > 1 && line_buf[len-2] != '\r' && line_buf[len-1] == '\n')
-		{
-			line_buf[len-1] = '\r';
-			line_buf[len] = '\n';
-			line_buf[len+1]=0;
-		} else if (len == 1 && line_buf[0] == '\n')
-		{
-			line_buf[0] = '\r';
-			line_buf[1] = '\n';
-			line_buf[2] = 0;
-		}
-		fputs(line_buf,tfh);
-	}
-	fclose(fh);
-	chdir(path);
-
-	/* Now upload the mail */
-	filesize = ftell(tfh);
-	fseek(tfh,0,SEEK_SET);
-	sprintf(tag,"%04x",val++);
-	sm_snprintf(send,sizeof(send),"%s APPEND %s {%d}\r\n",tag,dest_folder->imap_path,filesize);
-	tcp_write(imap_connection,send,strlen(send));
-	tcp_flush(imap_connection);
-
-	line = tcp_readln(imap_connection);
-	if (line[0] != '+')
-	{
-		fclose(tfh);
-		return 0;
-	}
-
-	success = 1;
-	while (filesize>0)
-	{
-		int read = fread(line_buf,1,sizeof(line_buf),tfh);
-		if (!read || read == -1)
-		{
-			success = 0;
-			break;
-		}
-		tcp_write(imap_connection,line_buf,read);
-		filesize -= read;
-	}
-	fclose(tfh);
-
-	if (success)
-	{
-		tcp_write(imap_connection,"\r\n",2);
-		success = 0;
-		while ((line = tcp_readln(imap_connection)))
-		{
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,tag))
-			{
-				line = imap_get_result(line,buf,sizeof(buf));
-				if (!mystricmp(buf,"OK"))
-					success = 1;
-				break;
-			}
-		}
-	}
-	return success;
+	return imap_really_append_mail(imap_connection, mail, source_dir, server, dest_folder);
 }
 
 /*****************************************************************************/

@@ -2016,6 +2016,7 @@ static int imap_really_delete_mail_by_filename(struct connection *imap_connectio
  *
  * Usually called in the context of the imap thread.
  *
+ * @param connection already established connection for the imap server.
  * @param mail
  * @param server
  * @param src_folder

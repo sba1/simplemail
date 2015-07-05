@@ -2477,25 +2477,7 @@ static int imap_thread_append_mail(struct mail_info *mail, char *source_dir, str
 	char line_buf[1200];
 	int filesize;
 
-	if (!imap_open_socket_lib())
-		return 0;
-
-	/* Should be in a separate function */
-	if (!imap_connection || imap_new_connection_needed(imap_server,server))
-	{
-		free(imap_folder); imap_folder = NULL;
-		free(imap_local_path);imap_local_path = NULL;
-
-		if (imap_server) imap_free(imap_server);
-		if ((imap_server = imap_duplicate(server)))
-		{
-			imap_disconnect();
-			imap_really_connect_and_login_to_server(&imap_connection, imap_server);
-		}
-	}
-
-	if (!imap_server) return 0;
-	if (!imap_connection) return 0;
+	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
 	/* At first copy the mail to a temporary location because we may store the emails which only has a \n ending */
 	if (!(tfh = tmpfile())) return 0;

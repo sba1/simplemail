@@ -2194,6 +2194,97 @@ static int imap_really_append_mail(struct connection *imap_connection, struct ma
 	return success;
 }
 
+/**
+ * Download the given mail. Usually called in the context of the imap thread.
+ *
+ * @param connection already established connection for the imap server.
+ * @param server
+ * @param local_path
+ * @param m
+ * @param callback called on the context of the parent task.
+ * @param userdata user data supplied for the callback
+ * @return
+ */
+static int imap_really_download_mail(struct connection *imap_connection, struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
+{
+	char send[200];
+	char tag[20];
+	char buf[380];
+	char *line;
+	int uid;
+	int success;
+
+	SM_ENTER;
+
+	uid = atoi(m->filename + 1);
+
+	sprintf(tag,"%04x",val++);
+	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
+	tcp_write(imap_connection,send,strlen(send));
+	tcp_flush(imap_connection);
+
+	SM_DEBUGF(15,("Sending %s",send));
+	success = 0;
+	while ((line = tcp_readln(imap_connection)))
+	{
+		line = imap_get_result(line,buf,sizeof(buf));
+		if (!mystricmp(buf,tag))
+		{
+			line = imap_get_result(line,buf,sizeof(buf));
+			if (!mystricmp(buf,"OK"))
+				success = 1;
+			break;
+		} else
+		{
+			/* untagged */
+			if (buf[0] == '*')
+			{
+				char msgno_buf[200];
+				char *temp_ptr;
+				int todownload;
+				line++;
+
+				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+				/*msgno = atoi(msgno_buf);*/ /* ignored */
+
+				/* skip the fetch command */
+				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
+				if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
+				{
+					temp_ptr++;
+					todownload = atoi(temp_ptr);
+				} else todownload = 0;
+
+				if (todownload)
+				{
+					FILE *fh;
+
+					mystrlcpy(buf,local_path,sizeof(buf));
+					sm_add_part(buf,m->filename,sizeof(buf));
+
+					if ((fh = fopen(buf,"w")))
+					{
+						while (todownload)
+						{
+							int dl;
+							dl = tcp_read(imap_connection,buf,MIN((sizeof(buf)-4),todownload));
+
+							if (dl == -1 || !dl) break;
+							fwrite(buf,1,dl,fh);
+							todownload -= dl;
+						}
+						fclose(fh);
+					}
+				}
+			}
+		}
+	}
+	if (callback)
+		thread_call_function_async(thread_get_main(), callback, 2, m, userdata);
+
+	SM_RETURN(success,"%ld");
+	return success;
+}
 
 /*****************************************************************************/
 
@@ -2442,89 +2533,9 @@ bailout:
  */
 static int imap_thread_download_mail(struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata)
 {
-	char send[200];
-	char tag[20];
-	char buf[380];
-	char *line;
-	int uid;
-	int success;
+	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	SM_ENTER;
-
-	if (!imap_thread_really_login_to_given_server(server))
-	{
-		SM_RETURN(0,"%ld");
-		return 0;
-	}
-
-	uid = atoi(m->filename + 1);
-
-	sprintf(tag,"%04x",val++);
-	sprintf(send,"%s UID FETCH %d RFC822\r\n",tag,uid);
-	tcp_write(imap_connection,send,strlen(send));
-	tcp_flush(imap_connection);
-
-	SM_DEBUGF(15,("Sending %s",send));
-	success = 0;
-	while ((line = tcp_readln(imap_connection)))
-	{
-		line = imap_get_result(line,buf,sizeof(buf));
-		if (!mystricmp(buf,tag))
-		{
-			line = imap_get_result(line,buf,sizeof(buf));
-			if (!mystricmp(buf,"OK"))
-				success = 1;
-			break;
-		} else
-		{
-			/* untagged */
-			if (buf[0] == '*')
-			{
-				char msgno_buf[200];
-				char *temp_ptr;
-				int todownload;
-				line++;
-
-				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-				/*msgno = atoi(msgno_buf);*/ /* ignored */
-
-				/* skip the fetch command */
-				line = imap_get_result(line,msgno_buf,sizeof(msgno_buf));
-				if ((temp_ptr = strchr(line,'{'))) /* } - avoid bracket checking problems */
-				{
-					temp_ptr++;
-					todownload = atoi(temp_ptr);
-				} else todownload = 0;
-
-				if (todownload)
-				{
-					FILE *fh;
-
-					mystrlcpy(buf,local_path,sizeof(buf));
-					sm_add_part(buf,m->filename,sizeof(buf));
-
-					if ((fh = fopen(buf,"w")))
-					{
-						while (todownload)
-						{
-							int dl;
-							dl = tcp_read(imap_connection,buf,MIN((sizeof(buf)-4),todownload));
-
-							if (dl == -1 || !dl) break;
-							fwrite(buf,1,dl,fh);
-							todownload -= dl;
-						}
-						fclose(fh);
-					}
-				}
-			}
-		}
-	}
-	if (callback)
-		thread_call_function_async(thread_get_main(), callback, 2, m, userdata);
-
-	SM_RETURN(success,"%ld");
-	return success;
+	return imap_really_download_mail(imap_connection, server, local_path, m, callback, userdata);
 }
 
 /**

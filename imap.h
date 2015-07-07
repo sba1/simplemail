@@ -28,6 +28,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__TCP_H
+#include "tcp.h"
+#endif
+
 struct folder;
 struct mail_info;
 
@@ -48,6 +52,88 @@ struct imap_server
 
 	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
 };
+
+
+/**
+ * Checks whether in principle a new connection would be needed when switching
+ * from srv1 to srv2.
+ *
+ * @param srv1
+ * @param srv2
+ * @return
+ */
+int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2);
+
+/**
+ * Establishes a connection to the server and downloads mails.
+ */
+void imap_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder);
+
+/**
+ * Connect and login to the given imap server.
+ *
+ * @param connection
+ * @param imap_server
+ * @return
+ */
+int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server);
+
+/**
+ * Function to download mails.
+ *
+ * @return number of downloaded mails. A value < 0 indicates an error.
+ */
+int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder);
+
+/**
+ * Delete a mail permanently from the server
+ *
+ * @param imap_connection already established imap connection, already logged in.
+ * @param filename the (local) filename of the mail to be deleted.
+ * @param folder the folder where the mail is located.
+ * @return success or not.
+ */
+int imap_really_delete_mail_by_filename(struct connection *imap_connection, char *filename, struct folder *folder);
+
+/**
+ * Store the mail represented by the mail located in the given source_dir
+ * on the given server in the given dest_folder.
+ *
+ * @param connection already established connection for the imap server.
+ * @param mail info about the mail that should be transfered
+ * @param source_dir the folder in which the mail is stored.
+ * @param server the target server
+ * @param dest_folder folder for the target.
+ * @return success or not.
+ */
+int imap_really_append_mail(struct connection *imap_connection, struct mail_info *mail, char *source_dir, struct imap_server *server, struct folder *dest_folder);
+
+/**
+ * Download the given mail. Usually called in the context of the imap thread.
+ *
+ * @param connection already established connection for the imap server.
+ * @param server
+ * @param local_path
+ * @param m
+ * @param callback called on the context of the parent task.
+ * @param userdata user data supplied for the callback
+ * @return
+ */
+int imap_really_download_mail(struct connection *imap_connection, struct imap_server *server, char *local_path, struct mail_info *m, void (*callback)(struct mail_info *m, void *userdata), void *userdata);
+
+/**
+ * Move a given mail from one folder into another one of the given imap account.
+ *
+ * Usually called in the context of the imap thread.
+ *
+ * @param connection already established connection for the imap server.
+ * @param mail
+ * @param server
+ * @param src_folder
+ * @param dest_folder
+ * @return success or failure.
+ */
+int imap_really_move_mail(struct connection *imap_connection, struct mail_info *mail, struct imap_server *server, struct folder *src_folder, struct folder *dest_folder);
 
 struct imap_synchronize_callbacks
 {
@@ -83,32 +169,21 @@ struct imap_synchronize_options
 void imap_synchronize_really(struct imap_synchronize_options *options);
 
 /**
- * Request the list of all folders of the imap server.
+ * Retrieve the folder list and call the given callback on the context of the
+ * main thread.
  *
- * This is an asynchronous call that is answered with calling the given callback on the
- * context of the main thread.
- *
- * @param server describes the server to which should be connected.
- * @param callback the callback that is invoked if the request completes. The server
- *  argument is an actual duplicate of the original server, both lists contain string
- *  nodes with all_list containing all_list and sub_list containing only subscribed
- *  folders.
- *
- * @return whether the request has been in principle submitted or not.
+ * @param server
+ * @param callback
  */
-int imap_get_folder_list(struct imap_server *server, void (*callback)(struct imap_server *, struct string_list *, struct string_list *));
+void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *));
 
 /**
- * Submit the given list of string_nodes as subscribed to the given server.
+ * Submit the given list of string_nodes to the imap server in order to subscribe them.
  *
- * This is an asynchronous call.
- *
- * @param server contains all the connection details that describe the login
- *  that is the concern of this call.
- * @param list the list of string_nodes to identify the
- * @return whether the call has in principle be invoked.
+ * @param server
+ * @param list
  */
-int imap_submit_folder_list(struct imap_server *server, struct string_list *list);
+void imap_submit_folder_list_really(struct imap_server *server, struct string_list *list);
 
 /**
  * Allocate an imap server structure and initialize it with some default values.

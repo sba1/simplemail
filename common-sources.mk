@@ -19,6 +19,7 @@ NONARCHSRCS=\
 	hmac_md5.c \
 	http.c \
 	imap.c \
+	imap_thread.c \
 	index.c \
 	index_naive.c \
 	index_external.c \

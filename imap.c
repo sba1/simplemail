@@ -1498,6 +1498,8 @@ bailout:
 	return success;
 }
 
+/*****************************************************************************/
+
 int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
 {
 	char path[380];

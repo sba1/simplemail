@@ -174,8 +174,9 @@ void imap_synchronize_really(struct imap_synchronize_options *options);
  *
  * @param server
  * @param callback
+ * @return 1 on success, 0 on an error
  */
-void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *));
+int imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *));
 
 /**
  * Submit the given list of string_nodes to the imap server in order to subscribe them.

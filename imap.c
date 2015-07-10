@@ -1222,7 +1222,7 @@ out:
 
 /*****************************************************************************/
 
-void imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *))
+int imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *))
 {
 	struct connection *conn = NULL;
 	struct connect_options conn_opts = {0};
@@ -1230,9 +1230,10 @@ void imap_get_folder_list_really(struct imap_server *server, void (*callback)(st
 	struct string_list *sub_folder_list = NULL;
 	char head_buf[100];
 	int error_code;
+	int rc = 0;
 
 	if (!open_socket_lib())
-		return;
+		return 0;
 
 	sm_snprintf(head_buf, sizeof(head_buf), _("Reading folders of %s"),server->name);
 	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
@@ -1268,11 +1269,14 @@ void imap_get_folder_list_really(struct imap_server *server, void (*callback)(st
 		goto bailout;
 
 	thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
+
+	rc = 1;
 bailout:
 	if (sub_folder_list) imap_free_name_list(sub_folder_list);
 	if (all_folder_list) imap_free_name_list(all_folder_list);
 	if (conn)  tcp_disconnect(conn);
 	close_socket_lib();
+	return rc;
 }
 
 /*****************************************************************************/

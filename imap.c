@@ -191,19 +191,6 @@ static void imap_delete_orphan_messages(struct local_mail *local_mail_array, int
 	SM_LEAVE;
 }
 
-
-
-/**
- * Frees the given name list
- * @param list
- */
-static void imap_free_name_list(struct string_list *list)
-{
-	if (!list) return;
-	string_list_clear(list);
-	free(list);
-}
-
 /**
  * Writes the next word into the dest buffer but not more than dest_size.
  *
@@ -807,7 +794,7 @@ static struct string_list *imap_get_folders(struct connection *conn, int all)
 
 	if (ok) return list;
 
-	imap_free_name_list(list);
+	string_list_free(list);
 	return NULL;
 }
 
@@ -1170,7 +1157,7 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 						node = (struct string_node*)node_next(&node->node);
 					}
 
-					imap_free_name_list(folder_list);
+					string_list_free(folder_list);
 				}
 			} else
 			{
@@ -1272,8 +1259,8 @@ int imap_get_folder_list_really(struct imap_server *server, void (*callback)(str
 
 	rc = 1;
 bailout:
-	if (sub_folder_list) imap_free_name_list(sub_folder_list);
-	if (all_folder_list) imap_free_name_list(all_folder_list);
+	string_list_free(sub_folder_list);
+	string_list_free(all_folder_list);
 	if (conn)  tcp_disconnect(conn);
 	close_socket_lib();
 	return rc;
@@ -1402,8 +1389,8 @@ void imap_submit_folder_list_really(struct imap_server *server, struct string_li
 		node = (struct string_node*)node_next(&node->node);
 	}
 out:
-	imap_free_name_list(sub_folder_list);
-	imap_free_name_list(all_folder_list);
+	string_list_free(sub_folder_list);
+	string_list_free(all_folder_list);
 	tcp_disconnect(conn);
 	close_socket_lib();
 }
@@ -1806,7 +1793,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, char *im
 				}
 				thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 
-				imap_free_name_list(folder_list);
+				string_list_free(folder_list);
 
 				imap_really_download_mails(*imap_connection, imap_local_path, imap_server, imap_folder);
 			}

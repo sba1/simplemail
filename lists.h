@@ -183,6 +183,13 @@ struct string_node *string_list_remove_tail(struct string_list *list);
 void string_list_clear(struct string_list *list);
 
 /**
+ * Shortcut for calling string_list_clear() and free().
+ *
+ * @param list the list that should be cleared and freed.
+ */
+void string_list_free(struct string_list *list);
+
+/**
  * Looks for a given string node in the list and returns it.
  * Search is case insensitive
  *

@@ -286,6 +286,16 @@ void string_list_clear(struct string_list *list)
 	}
 }
 
+
+/*****************************************************************************/
+
+void string_list_free(struct string_list *list)
+{
+	if (!list) return;
+	string_list_clear(list);
+	free(list);
+}
+
 /*****************************************************************************/
 
 struct string_node *string_list_find(struct string_list *list, const char *str)

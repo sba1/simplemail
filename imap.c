@@ -1765,7 +1765,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, char *im
 			utf8fromstr(_("Connect with IMAP server"),NULL,msg,sizeof(msg));
 			pm->begin(pm,2,msg);
 
-			utf8fromstr("Logging in",NULL,msg,sizeof(msg));
+			utf8fromstr(_("Logging in"),NULL,msg,sizeof(msg));
 			pm->working_on(pm,msg);
 		}
 

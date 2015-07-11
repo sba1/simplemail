@@ -1749,11 +1749,11 @@ int imap_really_download_mails(struct connection *imap_connection, char *imap_lo
 
 /*****************************************************************************/
 
-void imap_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
+void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_sever_options *options)
 {
 	SM_ENTER;
 
-	if (imap_server)
+	if (options->imap_server)
 	{
 		struct progmon *pm;
 
@@ -1769,13 +1769,13 @@ void imap_really_connect_to_server(struct connection **imap_connection, char *im
 			pm->working_on(pm,msg);
 		}
 
-		if (imap_really_connect_and_login_to_server(imap_connection, imap_server))
+		if (imap_really_connect_and_login_to_server(imap_connection, options->imap_server))
 		{
 			char status_buf[160];
 			struct string_list *folder_list;
 
 			/* Display "Retrieving mail folders" - status message */
-			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Retrieving mail folders..."));
+			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",options->imap_server->name, _("Retrieving mail folders..."));
 			thread_call_parent_function_async_string(status_set_status,1,status_buf);
 
 			/* We have now connected to the server, check for the folders at first */
@@ -1788,14 +1788,14 @@ void imap_really_connect_to_server(struct connection **imap_connection, char *im
 				node = string_list_first(folder_list);
 				while (node)
 				{
-					thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,imap_server->login,imap_server->name,node->string);
+					thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,options->imap_server->login,options->imap_server->name,node->string);
 					node = (struct string_node*)node_next(&node->node);
 				}
 				thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 
 				string_list_free(folder_list);
 
-				imap_really_download_mails(*imap_connection, imap_local_path, imap_server, imap_folder);
+				imap_really_download_mails(*imap_connection, options->imap_local_path, options->imap_server, options->imap_folder);
 			}
 		}
 

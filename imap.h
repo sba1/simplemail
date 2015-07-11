@@ -64,10 +64,17 @@ struct imap_server
  */
 int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2);
 
+struct imap_connect_to_sever_options
+{
+	char *imap_local_path;
+	struct imap_server *imap_server;
+	char *imap_folder;
+};
+
 /**
  * Establishes a connection to the server and downloads mails.
  */
-void imap_really_connect_to_server(struct connection **imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder);
+void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_sever_options *options);
 
 /**
  * Connect and login to the given imap server.

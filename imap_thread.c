@@ -264,6 +264,8 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 
 	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
+		struct imap_connect_to_sever_options options = {0};
+
 		imap_disconnect();
 
 		if (imap_server) imap_free(imap_server);
@@ -275,7 +277,10 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_really_connect_to_server(&imap_connection, imap_local_path, imap_server, imap_folder);
+		options.imap_local_path = imap_local_path;
+		options.imap_server = imap_server;
+		options.imap_folder = imap_folder;
+		imap_really_connect_to_server(&imap_connection, &options);
 		rc = 1;
 	} else
 	{

@@ -64,11 +64,17 @@ struct imap_server
  */
 int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2);
 
+struct imap_connect_to_server_callbacks
+{
+	void (*set_status)(const char *str);
+};
+
 struct imap_connect_to_server_options
 {
 	char *imap_local_path;
 	struct imap_server *imap_server;
 	char *imap_folder;
+	struct imap_connect_to_server_callbacks callbacks;
 };
 
 /**

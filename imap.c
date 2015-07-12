@@ -1755,6 +1755,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	struct progmon *pm = NULL;
 	struct string_list *folder_list = NULL;
 	struct string_node *node;
+	struct imap_connect_to_server_callbacks *callbacks = &options->callbacks;
 
 	SM_ENTER;
 
@@ -1777,7 +1778,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 
 	/* Display "Retrieving mail folders" - status message */
 	sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",options->imap_server->name, _("Retrieving mail folders..."));
-	thread_call_parent_function_async_string(status_set_status,1,status_buf);
+	callbacks->set_status(status_buf);
 
 	/* We have now connected to the server, check for the folders at first */
 	folder_list = imap_get_folders(*imap_connection, 0);

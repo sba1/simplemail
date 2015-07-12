@@ -31,6 +31,14 @@
 
 /*****************************************************************************/
 
+/* Very similar to trans_set_status(). TODO: consolidate */
+static void imap_set_status(const char *str)
+{
+	thread_call_parent_function_async_string(status_set_status, 1, str);
+}
+
+/*****************************************************************************/
+
 /**
  * Contains the arguments submitted to the get folder list thread.
  */
@@ -280,6 +288,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		options.imap_local_path = imap_local_path;
 		options.imap_server = imap_server;
 		options.imap_folder = imap_folder;
+		options.callbacks.set_status = imap_set_status;
 		imap_really_connect_to_server(&imap_connection, &options);
 		rc = 1;
 	} else

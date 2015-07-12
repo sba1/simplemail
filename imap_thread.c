@@ -264,7 +264,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 
 	if (!imap_connection || imap_new_connection_needed(imap_server,server))
 	{
-		struct imap_connect_to_sever_options options = {0};
+		struct imap_connect_to_server_options options = {0};
 
 		imap_disconnect();
 

@@ -1749,7 +1749,7 @@ int imap_really_download_mails(struct connection *imap_connection, char *imap_lo
 
 /*****************************************************************************/
 
-void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_sever_options *options)
+void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_server_options *options)
 {
 	SM_ENTER;
 

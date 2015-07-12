@@ -51,8 +51,6 @@
 
 /*****************************************************************************/
 
-/* Callbacks, mostly for pop3 for now */
-
 static void trans_set_status(const char *str)
 {
 	thread_call_parent_function_async_string(status_set_status, 1, str);

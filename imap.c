@@ -1813,7 +1813,7 @@ bailout:
 
 /*****************************************************************************/
 
-int imap_really_delete_mail_by_filename(struct connection *imap_connection, char *filename, struct folder *folder)
+int imap_really_delete_mail_by_filename(struct connection *imap_connection, struct imap_delete_mail_by_filename_options *options)
 {
 	char send[200];
 	char tag[20];
@@ -1823,6 +1823,8 @@ int imap_really_delete_mail_by_filename(struct connection *imap_connection, char
 	int msgno = -1;
 	int success;
 
+	char *filename = options->filename;
+	struct folder *folder = options->folder;
 	sm_snprintf(send,sizeof(send),"SELECT \"%s\"\r\n",folder->imap_path);
 	if (!imap_send_simple_command(imap_connection,send)) return 0;
 

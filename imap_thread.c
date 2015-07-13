@@ -358,9 +358,14 @@ static int imap_thread_move_mail(struct mail_info *mail, struct imap_server *ser
  */
 static int imap_thread_delete_mail_by_filename(char *filename, struct imap_server *server, struct folder *folder)
 {
+	struct imap_delete_mail_by_filename_options options = {0};
+
 	if (!imap_thread_really_login_to_given_server(server)) return 0;
 
-	return imap_really_delete_mail_by_filename(imap_connection, filename, folder);
+	options.filename = filename;
+	options.folder = folder;
+
+	return imap_really_delete_mail_by_filename(imap_connection, &options);
 }
 
 /**

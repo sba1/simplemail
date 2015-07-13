@@ -98,6 +98,12 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
  */
 int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder);
 
+struct imap_delete_mail_by_filename_options
+{
+	char *filename;
+	struct folder *folder;
+};
+
 /**
  * Delete a mail permanently from the server
  *
@@ -106,7 +112,7 @@ int imap_really_download_mails(struct connection *imap_connection, char *imap_lo
  * @param folder the folder where the mail is located.
  * @return success or not.
  */
-int imap_really_delete_mail_by_filename(struct connection *imap_connection, char *filename, struct folder *folder);
+int imap_really_delete_mail_by_filename(struct connection *imap_connection, struct imap_delete_mail_by_filename_options *options);
 
 /**
  * Store the mail represented by the mail located in the given source_dir

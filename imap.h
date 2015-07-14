@@ -91,12 +91,19 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
  */
 int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server);
 
+struct imap_download_mails_options
+{
+	char *imap_local_path;
+	struct imap_server *imap_server;
+	char *imap_folder;
+};
+
 /**
  * Function to download mails.
  *
  * @return number of downloaded mails. A value < 0 indicates an error.
  */
-int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder);
+int imap_really_download_mails(struct connection *imap_connection, struct imap_download_mails_options *options);
 
 struct imap_delete_mail_by_filename_options
 {

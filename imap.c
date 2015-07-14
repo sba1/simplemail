@@ -1491,7 +1491,7 @@ bailout:
 
 /*****************************************************************************/
 
-int imap_really_download_mails(struct connection *imap_connection, char *imap_local_path, struct imap_server *imap_server, char *imap_folder)
+int imap_really_download_mails(struct connection *imap_connection, struct imap_download_mails_options *options)
 {
 	char path[380];
 	struct folder *local_folder;
@@ -1506,6 +1506,10 @@ int imap_really_download_mails(struct connection *imap_connection, char *imap_lo
 
 	unsigned int uid_from = 0;
 	unsigned int uid_to = 0;
+
+	char *imap_local_path = options->imap_local_path;
+	struct imap_server *imap_server = options->imap_server;
+	char *imap_folder = options->imap_folder;
 
 	struct progmon *pm;
 
@@ -1756,6 +1760,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	struct string_list *folder_list = NULL;
 	struct string_node *node;
 	struct imap_connect_to_server_callbacks *callbacks = &options->callbacks;
+	struct imap_download_mails_options download_options = {0};
 
 	SM_ENTER;
 
@@ -1797,7 +1802,10 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	string_list_free(folder_list);
 	folder_list = NULL;
 
-	imap_really_download_mails(*imap_connection, options->imap_local_path, options->imap_server, options->imap_folder);
+	download_options.imap_folder = options->imap_folder;
+	download_options.imap_local_path = options->imap_local_path;
+	download_options.imap_server = options->imap_server;
+	imap_really_download_mails(*imap_connection, &download_options);
 bailout:
 	if (folder_list)
 		string_list_free(folder_list);

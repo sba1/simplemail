@@ -293,6 +293,8 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		rc = 1;
 	} else
 	{
+		struct imap_download_mails_options download_options = {0};
+
 		imap_free(server);
 
 		free(imap_folder);
@@ -301,7 +303,10 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		free(imap_local_path);
 		imap_local_path = local_path;
 
-		imap_really_download_mails(imap_connection, imap_local_path, imap_server, imap_folder);
+		download_options.imap_folder = imap_folder;
+		download_options.imap_server = imap_server;
+		download_options.imap_local_path = imap_local_path;
+		imap_really_download_mails(imap_connection, &download_options);
 		rc = 1;
 	}
 

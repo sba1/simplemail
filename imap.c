@@ -1510,6 +1510,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 	char *imap_local_path = options->imap_local_path;
 	struct imap_server *imap_server = options->imap_server;
 	char *imap_folder = options->imap_folder;
+	struct imap_download_mails_callbacks *callbacks = &options->callbacks;
 
 	struct progmon *pm;
 
@@ -1671,7 +1672,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 								if (filename_current == MAX_MAILS_PER_REFRESH || time_ticks_passed(ticks) > TIME_TICKS_PER_SECOND / 2)
 								{
-									thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+									callbacks->new_mails_arrived(filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
 									while (filename_current)
 										free(filename_ptrs[--filename_current]);
 
@@ -1695,7 +1696,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 					/* Add the rest */
 					if (filename_current)
 					{
-						thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
+						callbacks->new_mails_arrived(filename_current, filename_ptrs, imap_server->login, imap_server->name, imap_folder);
 						while (filename_current)
 							free(filename_ptrs[--filename_current]);
 					}
@@ -1703,7 +1704,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 					SM_DEBUGF(10,("%d mails downloaded after %d ms\n",downloaded_mails,time_ms_passed(total_download_ticks)));
 
 					/* Finally, inform controller about new uids */
-					thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, rm->uid_validity, rm->uid_next, imap_server->login, imap_server->name, imap_folder);
+					callbacks->new_uids(rm->uid_validity, rm->uid_next, imap_server->login, imap_server->name, imap_folder);
 
 					if (uid_from && uid_to)
 					{
@@ -1744,7 +1745,7 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 			default: sm_snprintf(&path[l], sizeof(path) - l,_("%d new mails in folder \"%s\""),downloaded_mails,f); break;
 		}
 
-		thread_call_parent_function_async_string(status_set_status,1,path);
+		callbacks->set_status(path);
 	}
 
 	SM_RETURN(downloaded_mails,"%d");
@@ -1805,6 +1806,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	download_options.imap_folder = options->imap_folder;
 	download_options.imap_local_path = options->imap_local_path;
 	download_options.imap_server = options->imap_server;
+	download_options.callbacks = options->download_callbacks;
 	imap_really_download_mails(*imap_connection, &download_options);
 bailout:
 	if (folder_list)

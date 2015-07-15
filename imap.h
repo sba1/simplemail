@@ -64,24 +64,6 @@ struct imap_server
  */
 int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2);
 
-struct imap_connect_to_server_callbacks
-{
-	void (*set_status)(const char *str);
-};
-
-struct imap_connect_to_server_options
-{
-	char *imap_local_path;
-	struct imap_server *imap_server;
-	char *imap_folder;
-	struct imap_connect_to_server_callbacks callbacks;
-};
-
-/**
- * Establishes a connection to the server and downloads mails.
- */
-void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_server_options *options);
-
 /**
  * Connect and login to the given imap server.
  *
@@ -91,11 +73,20 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
  */
 int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server);
 
+struct imap_download_mails_callbacks
+{
+	void (*new_mails_arrived)(int num_filenames, char **filenames, char *user, char *server, char *path);
+	void (*new_uids)(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path);
+	void (*set_status)(const char *str);
+};
+
 struct imap_download_mails_options
 {
 	char *imap_local_path;
 	struct imap_server *imap_server;
 	char *imap_folder;
+
+	struct imap_download_mails_callbacks callbacks;
 };
 
 /**
@@ -110,6 +101,25 @@ struct imap_delete_mail_by_filename_options
 	char *filename;
 	struct folder *folder;
 };
+
+struct imap_connect_to_server_callbacks
+{
+	void (*set_status)(const char *str);
+};
+
+struct imap_connect_to_server_options
+{
+	char *imap_local_path;
+	struct imap_server *imap_server;
+	char *imap_folder;
+	struct imap_connect_to_server_callbacks callbacks;
+	struct imap_download_mails_callbacks download_callbacks;
+};
+
+/**
+ * Establishes a connection to the server and downloads mails.
+ */
+void imap_really_connect_to_server(struct connection **imap_connection, struct imap_connect_to_server_options *options);
 
 /**
  * Delete a mail permanently from the server

@@ -15,6 +15,7 @@
 #include "imap.h"
 #include "lists.h"
 #include "mail.h"
+#include "simplemail.h"
 #include "status.h"
 #include "subthreads.h"
 #include "support_indep.h"
@@ -35,6 +36,16 @@
 static void imap_set_status(const char *str)
 {
 	thread_call_parent_function_async_string(status_set_status, 1, str);
+}
+
+static void imap_new_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
+{
+	thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, num_filenames, filenames, user, server, path);
+}
+
+static void imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
+{
+	thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, uid_validity, uid_next, user, server, path);
 }
 
 /*****************************************************************************/
@@ -289,6 +300,9 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		options.imap_server = imap_server;
 		options.imap_folder = imap_folder;
 		options.callbacks.set_status = imap_set_status;
+		options.download_callbacks.set_status = imap_set_status;
+		options.download_callbacks.new_uids = imap_new_uids;
+		options.download_callbacks.new_mails_arrived = imap_new_mails_arrived;
 		imap_really_connect_to_server(&imap_connection, &options);
 		rc = 1;
 	} else
@@ -306,6 +320,11 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		download_options.imap_folder = imap_folder;
 		download_options.imap_server = imap_server;
 		download_options.imap_local_path = imap_local_path;
+
+		download_options.callbacks.new_mails_arrived = imap_new_mails_arrived;
+		download_options.callbacks.new_uids = imap_new_uids;
+		download_options.callbacks.set_status = imap_set_status;
+
 		imap_really_download_mails(imap_connection, &download_options);
 		rc = 1;
 	}

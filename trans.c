@@ -191,6 +191,11 @@ static void trans_refresh_folders(void)
 	thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
 }
 
+static void trans_new_imap_mail_arrived(char *filename, char *user, char *server, char *path)
+{
+	thread_call_parent_function_sync(NULL,callback_new_imap_mail_arrived, 4, filename, user, server, path);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -360,11 +365,15 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.set_connect_to_server = trans_set_connect_to_server;
 		imap_sync_options.callbacks.set_title = trans_set_title;
 		imap_sync_options.callbacks.set_title_utf8 = trans_set_title_utf8;
+		imap_sync_options.callbacks.set_status = trans_set_status;
 		imap_sync_options.callbacks.set_status_static = trans_set_status_static;
 		imap_sync_options.callbacks.set_head = trans_set_head;
 		imap_sync_options.callbacks.request_login = trans_request_login;
 		imap_sync_options.callbacks.add_imap_folder = trans_add_imap_folder;
 		imap_sync_options.callbacks.refresh_folders = trans_refresh_folders;
+		imap_sync_options.callbacks.init_gauge_as_bytes = trans_init_gauge_as_bytes;
+		imap_sync_options.callbacks.set_gauge = trans_set_gauge;
+		imap_sync_options.callbacks.new_mail_arrived = trans_new_imap_mail_arrived;
 
 		if (pop3_really_dl(&dl_options))
 		{

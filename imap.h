@@ -173,6 +173,7 @@ int imap_really_move_mail(struct connection *imap_connection, struct mail_info *
 
 struct imap_synchronize_callbacks
 {
+	void (*set_status)(const char *str);
 	void (*set_status_static)(const char *str);
 	void (*set_connect_to_server)(const char *server);
 	void (*set_head)(const char *head);
@@ -181,6 +182,9 @@ struct imap_synchronize_callbacks
 	int (*request_login)(char *text, char *login, char *password, int len);
 	void (*add_imap_folder)(char *user, char *server, char *path);
 	void (*refresh_folders)(void);
+	void (*init_gauge_as_bytes)(int maximal);
+	void (*set_gauge)(int value);
+	void (*new_mail_arrived)(char *filename, char *user, char *server, char *path);
 };
 
 struct imap_synchronize_options

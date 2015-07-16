@@ -804,9 +804,10 @@ static struct string_list *imap_get_folders(struct connection *conn, int all)
  * @param conn
  * @param server
  * @param imap_path
- * @return
+ * @param callbacks
+ * @return 1 on success, 0 for failure.
  */
-static int imap_synchonize_folder(struct connection *conn, struct imap_server *server, char *imap_path)
+static int imap_synchonize_folder(struct connection *conn, struct imap_server *server, char *imap_path, struct imap_synchronize_callbacks *callbacks)
 {
 	struct folder *folder;
 	int success = 0;
@@ -866,7 +867,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 					num_of_remote_mails = rm->num_of_remote_mail;
 
 					sm_snprintf(status_buf,sizeof(status_buf),_("Removing %d mails from server"),num_of_todel_local_mails);
-					thread_call_parent_function_async_string(status_set_status, 1, status_buf);
+					callbacks->set_status(status_buf);
 
 					for (i = 0 ; i < num_of_local_mails; i++)
 					{
@@ -977,14 +978,14 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 				/* Assume everything is fine */
 				success = 1;
-				thread_call_function_async(thread_get_main(),status_init_gauge_as_bytes,1,max_todl_bytes);
+				callbacks->init_gauge_as_bytes(max_todl_bytes);
 
 				for (i=0;i<num_msgs_to_dl;i++)
 				{
 					accu_todl_bytes += remote_mail_array[i].size;
 
 					sm_snprintf(status_buf,sizeof(status_buf),_("Fetching mail %d from server"),remote_mail_array[i].flags + 1);
-					thread_call_parent_function_async_string(status_set_status,1,status_buf);
+					callbacks->set_status(status_buf);
 
 					sprintf(tag,"%04x",val++);
 					sprintf(send,"%s FETCH %d RFC822\r\n",tag,remote_mail_array[i].flags+1); /* We could also use the UID command */
@@ -1038,12 +1039,12 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 											if (dl == -1 || !dl) break;
 											todl_bytes = MIN(accu_todl_bytes,todl_bytes + dl);
-											thread_call_function_async(thread_get_main(),status_set_gauge, 1, todl_bytes);
+											callbacks->set_gauge(todl_bytes);
 											fwrite(buf,1,dl,fh);
 											todownload -= dl;
 										}
 										fclose(fh);
-										thread_call_parent_function_sync(NULL,callback_new_imap_mail_arrived, 4, filename_buf, server->login, server->name, imap_path);
+										callbacks->new_mail_arrived(filename_buf, server->login, server->name, imap_path);
 									}
 								}
 							}
@@ -1052,8 +1053,7 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 
 					if (!success) break;
 					todl_bytes = accu_todl_bytes;
-					/* TODO: should be enforced */
-					thread_call_function_async(thread_get_main(),status_set_gauge, 1, todl_bytes);
+					callbacks->set_gauge(todl_bytes);
 				}
 
 				imap_free_remote_mailbox(rm);
@@ -1152,7 +1152,7 @@ static int imap_synchronize_really_single(struct imap_server *server, struct ima
 					node = string_list_first(folder_list);
 					while (node)
 					{
-						if (!(imap_synchonize_folder(conn, server, node->string)))
+						if (!(imap_synchonize_folder(conn, server, node->string, callbacks)))
 							break;
 						node = (struct string_node*)node_next(&node->node);
 					}

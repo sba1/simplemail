@@ -519,6 +519,36 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
 	return rm;
 }
 
+struct imap_get_remote_mails_args
+{
+	/** The already opened imap connection after successful login */
+	struct connection *conn;
+
+	/**
+	 * Defines the remote path or mailbox from which the mail infos should be
+	 * gathered
+	 */
+	char *path;
+
+	/** Whether the mailbox should be opened in write mode */
+	int writemode;
+
+	/** Whether als the mail headers should be downloaded */
+	int headers;
+
+	/**
+	 * Defines the uid of first mail to be downloaded. Zero means that all mails
+	 * should be downloaded (uid_end is ignored).
+	 */
+	unsigned int uid_start;
+
+	/**
+	 * Defines the uid of the final mail to be downloaded. Zero means that all mails
+	 * should be downloaded (uid_end is ignored).
+	 */
+	unsigned int uid_end;
+};
+
 /**
  * Read information of all mails in the given path. Put
  * this back into an array.
@@ -537,7 +567,7 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
  * @note the given path stays in the selected/examine state.
  * @note the returned structure must be free with imap_free_remote_mailbox()
  */
-static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, char *path, int writemode, int headers, unsigned int uid_start, unsigned int uid_end)
+static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails_args *args)
 {
 	/* get number of remote mails */
 	char *line;
@@ -548,6 +578,13 @@ static struct remote_mailbox *imap_get_remote_mails(struct connection *conn, cha
 	int success = 0;
 	struct remote_mail *remote_mail_array = NULL;
 	struct remote_mailbox *rm;
+
+	struct connection *conn = args->conn;
+	char *path = args->path;
+	int writemode = args->writemode;
+	int headers = args->headers;
+	unsigned int uid_start = args->uid_start;
+	unsigned int uid_end = args->uid_end;
 
 	SM_ENTER;
 
@@ -855,9 +892,16 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 			char buf[100];
 			char status_buf[200];
 
+			struct imap_get_remote_mails_args args = {0};
+
+			args.conn = conn;
+			args.path = folder->imap_path;
+
 			if (num_of_todel_local_mails)
 			{
-				if ((rm = imap_get_remote_mails(conn, folder->imap_path, 1, 0, 0, 0)))
+				args.writemode = 1;
+
+				if ((rm = imap_get_remote_mails(&args)))
 				{
 					struct remote_mail *remote_mail_array;
 					int num_of_remote_mails;
@@ -924,8 +968,10 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				}
 			}
 
+			args.writemode = 0;
+
 			/* Get information of all mails within the folder */
-			if ((rm = imap_get_remote_mails(conn, folder->imap_path, 0, 0, 0, 0)))
+			if ((rm = imap_get_remote_mails(&args)))
 			{
 				int i,j;
 				unsigned int max_todl_bytes = 0;
@@ -1577,6 +1623,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 			if (get_local_mail_array(local_folder, &local_mail_array, &num_of_local_mails, &num_of_todel_local_mails))
 			{
+				struct imap_get_remote_mails_args args = {0};
+
 				utf8 msg[80];
 
 				folders_unlock();
@@ -1591,7 +1639,14 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 					pm->working_on(pm,msg);
 				}
 
-				if ((rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 1, uid_from, uid_to)))
+				args.conn = imap_connection;
+				args.path = imap_folder;
+				args.writemode = 0;
+				args.headers = 1;
+				args.uid_start = uid_from;
+				args.uid_end = uid_to;
+
+				if ((rm = imap_get_remote_mails(&args)))
 				{
 					int i,j;
 
@@ -1708,9 +1763,15 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 					if (uid_from && uid_to)
 					{
+						/* connection and folder stays */
+						args.uid_start = 0;
+						args.uid_end = 0;
+						args.writemode = 0;
+						args.headers = 0;
+
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
-						rm = imap_get_remote_mails(imap_connection, imap_folder, 0, 0, 0, 0);
+						rm = imap_get_remote_mails(&args);
 					}
 
 					if (rm)

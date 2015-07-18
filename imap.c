@@ -420,15 +420,25 @@ static void imap_free_remote_mailbox(struct remote_mailbox *rm)
 	free(rm);
 }
 
+struct imap_select_mailbox_args
+{
+	/** The already established connection */
+	struct connection *conn;
+
+	/** The utf8 encoded path of the mailbox to be selected */
+	char *path;
+
+	/** Whether mailbox should be selected in write mode */
+	int writemode;
+};
+
 /**
  * Selects the given mailbox (as identified by path).
  *
- * @param conn defines the connection
- * @param path defines the utf8 encoded path
- * @param writemode whether mailbox should be selected in mailbox.
- * @return a rmemote_mailbox. Field remote_mail_array will be NULL.
+ * @param args defines arguments and options.
+ * @return a remote_mailbox for further processing. Field remote_mail_array will be NULL.
  */
-static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char *path, int writemode)
+static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_args *args)
 {
 	struct remote_mailbox *rm;
 
@@ -438,6 +448,10 @@ static struct remote_mailbox *imap_select_mailbox(struct connection *conn, char 
 	char tag[20];
 	char *line;
 	int success = 0;
+
+	struct connection *conn = args->conn;
+	char *path = args->path;
+	int writemode = args->writemode;
 
 	unsigned int uid_validity = 0; /* Note that valid uids are non-zero */
 	unsigned int uid_next = 0;
@@ -586,9 +600,15 @@ static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails
 	unsigned int uid_start = args->uid_start;
 	unsigned int uid_end = args->uid_end;
 
+	struct imap_select_mailbox_args select_mailbox_args = {0};
+
 	SM_ENTER;
 
-	if (!(rm = imap_select_mailbox(conn,path,writemode)))
+	select_mailbox_args.conn = conn;
+	select_mailbox_args.path = path;
+	select_mailbox_args.writemode = writemode;
+
+	if (!(rm = imap_select_mailbox(&select_mailbox_args)))
 	{
 		SM_RETURN(NULL,"%p");
 		return NULL;
@@ -1589,7 +1609,11 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 	/* Uids are valid only if they are non-zero */
 	if (local_uid_validiy != 0 && local_uid_next != 0 && !dont_use_uids)
 	{
-		if ((rm = imap_select_mailbox(imap_connection, imap_folder, 0)))
+		struct imap_select_mailbox_args select_mailbox_args = {0};
+		select_mailbox_args.conn = imap_connection;
+		select_mailbox_args.path = imap_folder;
+
+		if ((rm = imap_select_mailbox(&select_mailbox_args)))
 		{
 			if (rm->uid_validity == local_uid_validiy)
 			{

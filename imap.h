@@ -78,6 +78,7 @@ struct imap_download_mails_callbacks
 	void (*new_mails_arrived)(int num_filenames, char **filenames, char *user, char *server, char *path);
 	void (*new_uids)(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path);
 	void (*set_status)(const char *str);
+	void (*set_status_static)(const char *str);
 };
 
 struct imap_download_mails_options

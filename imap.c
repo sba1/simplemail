@@ -430,6 +430,9 @@ struct imap_select_mailbox_args
 
 	/** Whether mailbox should be selected in write mode */
 	int writemode;
+
+	void (*set_status_static)(const char *str);
+	void (*set_status)(const char *str);
 };
 
 /**
@@ -463,7 +466,7 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 	memset(rm,0,sizeof(*rm));
 
 	sm_snprintf(status_buf,sizeof(status_buf),_("Examining folder %s"),path);
-	thread_call_parent_function_sync(NULL,status_set_status,1,status_buf);
+	args->set_status(status_buf);
 
 	sprintf(tag,"%04x",val++);
 	sm_snprintf(send,sizeof(send),"%s %s \"%s\"\r\n",tag,writemode?"SELECT":"EXAMINE",path);
@@ -515,7 +518,7 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 	if (success)
 	{
 		sm_snprintf(status_buf,sizeof(status_buf),_("Identified %d mails in %s"),num_of_remote_mails,path);
-		thread_call_parent_function_async_string(status_set_status,1,status_buf);
+		args->set_status(status_buf);
 		SM_DEBUGF(10,("Identified %d mails in %s (uid_validity=%u, uid_next=%u)\n",num_of_remote_mails,path,uid_validity,uid_next));
 
 		rm->uid_next = uid_next;
@@ -523,7 +526,7 @@ static struct remote_mailbox *imap_select_mailbox(struct imap_select_mailbox_arg
 		rm->num_of_remote_mail = num_of_remote_mails;
 	} else
 	{
-		thread_call_function_async(thread_get_main(),status_set_status,1,N_("Failed examining the folder"));
+		args->set_status_static(N_("Failed examining the folder"));
 		SM_DEBUGF(10,("Failed examining the folder\n"));
 		free(rm);
 		rm = NULL;
@@ -561,6 +564,9 @@ struct imap_get_remote_mails_args
 	 * should be downloaded (uid_end is ignored).
 	 */
 	unsigned int uid_end;
+
+	void (*set_status_static)(const char *str);
+	void (*set_status)(const char *str);
 };
 
 /**
@@ -607,6 +613,8 @@ static struct remote_mailbox *imap_get_remote_mails(struct imap_get_remote_mails
 	select_mailbox_args.conn = conn;
 	select_mailbox_args.path = path;
 	select_mailbox_args.writemode = writemode;
+	select_mailbox_args.set_status = args->set_status;
+	select_mailbox_args.set_status_static = args->set_status_static;
 
 	if (!(rm = imap_select_mailbox(&select_mailbox_args)))
 	{
@@ -1612,6 +1620,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 		struct imap_select_mailbox_args select_mailbox_args = {0};
 		select_mailbox_args.conn = imap_connection;
 		select_mailbox_args.path = imap_folder;
+		select_mailbox_args.set_status = callbacks->set_status;
+		select_mailbox_args.set_status_static = callbacks->set_status_static;
 
 		if ((rm = imap_select_mailbox(&select_mailbox_args)))
 		{

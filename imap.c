@@ -1679,6 +1679,8 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 				args.headers = 1;
 				args.uid_start = uid_from;
 				args.uid_end = uid_to;
+				args.set_status = options->callbacks.set_status;
+				args.set_status_static = options->callbacks.set_status_static;
 
 				if ((rm = imap_get_remote_mails(&args)))
 				{

@@ -77,10 +77,15 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 
 	if (thread_parent_task_can_contiue())
 	{
+		struct imap_get_folder_list_options options = {0};
+
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		thread_call_function_async(thread_get_main(),status_open,0);
 
-		imap_get_folder_list_really(server,callback);
+		options.server = server;
+		options.callbacks.lists_received = callback;
+
+		imap_get_folder_list_really(&options);
 
 		thread_call_function_async(thread_get_main(),status_close,0);
 	}

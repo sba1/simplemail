@@ -1283,7 +1283,7 @@ out:
 
 /*****************************************************************************/
 
-int imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *))
+int imap_get_folder_list_really(struct imap_get_folder_list_options *options)
 {
 	struct connection *conn = NULL;
 	struct connect_options conn_opts = {0};
@@ -1292,6 +1292,9 @@ int imap_get_folder_list_really(struct imap_server *server, void (*callback)(str
 	char head_buf[100];
 	int error_code;
 	int rc = 0;
+
+	struct imap_server *server = options->server;
+	void (*callback)(struct imap_server *server, struct string_list *, struct string_list *) = options->callbacks.lists_received;
 
 	if (!open_socket_lib())
 		return 0;

@@ -209,6 +209,18 @@ struct imap_synchronize_options
  */
 void imap_synchronize_really(struct imap_synchronize_options *options);
 
+struct imap_get_folder_list_callbacks
+{
+	void (*lists_received)(struct imap_server *server, struct string_list *, struct string_list *);
+};
+
+struct imap_get_folder_list_options
+{
+	struct imap_server *server;
+
+	struct imap_get_folder_list_callbacks callbacks;
+};
+
 /**
  * Retrieve the folder list and call the given callback on the context of the
  * main thread.
@@ -217,7 +229,7 @@ void imap_synchronize_really(struct imap_synchronize_options *options);
  * @param callback
  * @return 1 on success, 0 on an error
  */
-int imap_get_folder_list_really(struct imap_server *server, void (*callback)(struct imap_server *server, struct string_list *, struct string_list *));
+int imap_get_folder_list_really(struct imap_get_folder_list_options *options);
 
 /**
  * Submit the given list of string_nodes to the imap server in order to subscribe them.

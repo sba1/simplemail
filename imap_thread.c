@@ -43,6 +43,26 @@ static void imap_set_status_static(const char *str)
 	thread_call_function_async(thread_get_main(), status_set_status, 1, str);
 }
 
+static void imap_set_connect_to_server(const char *server)
+{
+	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server);
+}
+
+static void imap_set_head(const char *head)
+{
+	thread_call_parent_function_async_string(status_set_head, 1, head);
+}
+
+static void imap_set_title_utf8(const char *title)
+{
+	thread_call_parent_function_async_string(status_set_title_utf8, 1, title);
+}
+
+static void imap_set_title(const char *title)
+{
+	thread_call_parent_function_async_string(status_set_title, 1, title);
+}
+
 static void imap_new_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
 {
 	thread_call_parent_function_sync(NULL, callback_new_imap_mails_arrived, 5, num_filenames, filenames, user, server, path);
@@ -84,6 +104,12 @@ static int imap_get_folder_list_entry(struct imap_get_folder_list_entry_msg *msg
 
 		options.server = server;
 		options.callbacks.lists_received = callback;
+		options.callbacks.set_status = imap_set_status;
+		options.callbacks.set_status_static = imap_set_status_static;
+		options.callbacks.set_connect_to_server = imap_set_connect_to_server;
+		options.callbacks.set_head = imap_set_head;
+		options.callbacks.set_title = imap_set_title;
+		options.callbacks.set_title_utf8 = imap_set_title_utf8;
 
 		imap_get_folder_list_really(&options);
 

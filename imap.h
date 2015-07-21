@@ -211,6 +211,12 @@ void imap_synchronize_really(struct imap_synchronize_options *options);
 
 struct imap_get_folder_list_callbacks
 {
+	void (*set_status)(const char *str);
+	void (*set_status_static)(const char *str);
+	void (*set_connect_to_server)(const char *server);
+	void (*set_head)(const char *head);
+	void (*set_title_utf8)(const char *title);
+	void (*set_title)(const char *title);
 	void (*lists_received)(struct imap_server *server, struct string_list *, struct string_list *);
 };
 

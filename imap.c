@@ -1295,7 +1295,6 @@ int imap_get_folder_list_really(struct imap_get_folder_list_options *options)
 	int rc = 0;
 
 	struct imap_server *server = options->server;
-	void (*callback)(struct imap_server *server, struct string_list *, struct string_list *) = options->callbacks.lists_received;
 
 	if (!open_socket_lib())
 		return 0;
@@ -1333,7 +1332,7 @@ int imap_get_folder_list_really(struct imap_get_folder_list_options *options)
 	if (!(sub_folder_list = imap_get_folders(conn,0)))
 		goto bailout;
 
-	thread_call_parent_function_sync(NULL,callback,3,server,all_folder_list,sub_folder_list);
+	thread_call_parent_function_sync(NULL,options->callbacks.lists_received,3,server,all_folder_list,sub_folder_list);
 
 	rc = 1;
 bailout:

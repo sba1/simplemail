@@ -162,10 +162,15 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 
 	if (thread_parent_task_can_contiue())
 	{
+		struct imap_submit_folder_options options = {0};
+
 		thread_call_function_async(thread_get_main(),status_init,1,0);
 		thread_call_function_async(thread_get_main(),status_open,0);
 
-		imap_submit_folder_list_really(server,&list);
+		options.server = server;
+		options.list = &list;
+
+		imap_submit_folder_list_really(&options);
 
 		thread_call_function_async(thread_get_main(),status_close,0);
 	}

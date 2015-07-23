@@ -1345,8 +1345,11 @@ bailout:
 
 /*****************************************************************************/
 
-void imap_submit_folder_list_really(struct imap_server *server, struct string_list *list)
+void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 {
+	struct imap_server *server = options->server;
+	struct string_list *list = options->list;
+
 	struct connection *conn;
 	struct connect_options conn_opts = {0};
 	char head_buf[100];

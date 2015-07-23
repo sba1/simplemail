@@ -237,13 +237,18 @@ struct imap_get_folder_list_options
  */
 int imap_get_folder_list_really(struct imap_get_folder_list_options *options);
 
+struct imap_submit_folder_options
+{
+	struct imap_server *server;
+	struct string_list *list;
+};
+
 /**
  * Submit the given list of string_nodes to the imap server in order to subscribe them.
  *
- * @param server
- * @param list
+ * @param options
  */
-void imap_submit_folder_list_really(struct imap_server *server, struct string_list *list);
+void imap_submit_folder_list_really(struct imap_submit_folder_options *options);
 
 /**
  * Allocate an imap server structure and initialize it with some default values.

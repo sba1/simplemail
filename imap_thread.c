@@ -169,6 +169,12 @@ static int imap_submit_folder_list_entry(struct imap_submit_folder_list_entry_ms
 
 		options.server = server;
 		options.list = &list;
+		options.callbacks.set_status = imap_set_status;
+		options.callbacks.set_status_static = imap_set_status_static;
+		options.callbacks.set_connect_to_server = imap_set_connect_to_server;
+		options.callbacks.set_head = imap_set_head;
+		options.callbacks.set_title = imap_set_title;
+		options.callbacks.set_title_utf8 = imap_set_title_utf8;
 
 		imap_submit_folder_list_really(&options);
 

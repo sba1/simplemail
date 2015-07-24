@@ -1349,6 +1349,7 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 {
 	struct imap_server *server = options->server;
 	struct string_list *list = options->list;
+	struct imap_submit_folder_list_callbacks *callbacks = &options->callbacks;
 
 	struct connection *conn;
 	struct connect_options conn_opts = {0};
@@ -1367,12 +1368,12 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 		return;
 
 	sm_snprintf(head_buf,sizeof(head_buf),_("Submitting subscribed folders to %s"),server->name);
-	thread_call_parent_function_async_string(status_set_head, 1, head_buf);
+	callbacks->set_head(head_buf);
 	if (server->title)
-		thread_call_parent_function_async_string(status_set_title_utf8, 1, server->title);
+		callbacks->set_title_utf8(server->title);
 	else
-		thread_call_parent_function_async_string(status_set_title, 1, server->name);
-	thread_call_parent_function_async_string(status_set_connect_to_server, 1, server->name);
+		callbacks->set_title(server->name);
+	callbacks->set_connect_to_server(server->name);
 
 	conn_opts.use_ssl = server->ssl;
 	conn_opts.fingerprint = server->fingerprint;
@@ -1380,19 +1381,19 @@ void imap_submit_folder_list_really(struct imap_submit_folder_options *options)
 	if (!(conn = tcp_connect(server->name, server->port, &conn_opts, &error_code)))
 		goto out;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Waiting for login..."));
+	callbacks->set_status_static(_("Waiting for login..."));
 	if (!imap_wait_login(conn,server))
 		goto out;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Login..."));
+	callbacks->set_status_static(_("Login..."));
 	if (!imap_login(conn,server))
 		goto out;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading folders..."));
+	callbacks->set_status_static(_("Reading folders..."));
 	if (!(all_folder_list = imap_get_folders(conn,1)))
 		goto out;
 
-	thread_call_function_async(thread_get_main(),status_set_status,1,_("Reading subscribed folders..."));
+	callbacks->set_status_static(_("Reading subscribed folders..."));
 	if (!(sub_folder_list = imap_get_folders(conn,0)))
 		goto out;
 

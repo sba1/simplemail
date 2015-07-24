@@ -237,10 +237,21 @@ struct imap_get_folder_list_options
  */
 int imap_get_folder_list_really(struct imap_get_folder_list_options *options);
 
+struct imap_submit_folder_list_callbacks
+{
+	void (*set_status)(const char *str);
+	void (*set_status_static)(const char *str);
+	void (*set_connect_to_server)(const char *server);
+	void (*set_head)(const char *head);
+	void (*set_title_utf8)(const char *title);
+	void (*set_title)(const char *title);
+};
+
 struct imap_submit_folder_options
 {
 	struct imap_server *server;
 	struct string_list *list;
+	struct imap_submit_folder_list_callbacks callbacks;
 };
 
 /**

@@ -1478,7 +1478,7 @@ out:
 
 /*****************************************************************************/
 
-int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server)
+int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server, struct imap_connect_and_login_to_server_callbacks *callbacks)
 {
 	int success = 0;
 	char status_buf[160];
@@ -1519,7 +1519,7 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 
 	/* Display "Connecting" - status message */
 	sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting..."));
-	thread_call_parent_function_async_string(status_set_status,1,status_buf);
+	callbacks->set_status(status_buf);
 
 	conn_opts.use_ssl = imap_server->ssl;
 	conn_opts.fingerprint = imap_server->fingerprint;
@@ -1532,20 +1532,20 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 		{
 			/* Display "Logging in" - status message */
 			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Logging in..."));
-			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+			callbacks->set_status(status_buf);
 
 			if (imap_login(imap_connection,imap_server))
 			{
 				/* Display "Connected" - status message */
 				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connected"));
-				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+				callbacks->set_status(status_buf);
 
 				success = 1;
 			} else
 			{
 				SM_DEBUGF(10,("Login failed\n"));
 				sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Log in failed. Check user name and password for this account."));
-				thread_call_parent_function_async_string(status_set_status,1,status_buf);
+				callbacks->set_status(status_buf);
 				tcp_disconnect(imap_connection);
 				imap_connection = NULL;
 				tell_from_subtask(N_("Authentication failed!"));
@@ -1553,7 +1553,7 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 		} else
 		{
 			sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Unexpected server answer. Connection failed."));
-			thread_call_parent_function_async_string(status_set_status,1,status_buf);
+			callbacks->set_status(status_buf);
 			tcp_disconnect(imap_connection);
 			imap_connection = NULL;
 		}
@@ -1561,7 +1561,7 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 	{
 		/* Display "Failed to connect" - status message */
 		sm_snprintf(status_buf,sizeof(status_buf),"%s: %s",imap_server->name, _("Connecting to the server failed"));
-		thread_call_parent_function_async_string(status_set_status,1,status_buf);
+		callbacks->set_status(status_buf);
 	}
 
 bailout:
@@ -1866,6 +1866,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	struct string_node *node;
 	struct imap_connect_to_server_callbacks *callbacks = &options->callbacks;
 	struct imap_download_mails_options download_options = {0};
+	struct imap_connect_and_login_to_server_callbacks connect_and_login_callbacks = {0};
 
 	SM_ENTER;
 
@@ -1883,7 +1884,9 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 		pm->working_on(pm,msg);
 	}
 
-	if (!imap_really_connect_and_login_to_server(imap_connection, options->imap_server))
+	connect_and_login_callbacks.set_status = options->callbacks.set_status;
+
+	if (!imap_really_connect_and_login_to_server(imap_connection, options->imap_server, &connect_and_login_callbacks))
 		goto bailout;
 
 	/* Display "Retrieving mail folders" - status message */

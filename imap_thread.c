@@ -287,8 +287,13 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
 		if (imap_server) imap_free(imap_server);
 		if ((imap_server = imap_duplicate(server)))
 		{
+			struct imap_connect_and_login_to_server_callbacks callbacks = {0};
+
+			callbacks.set_status = imap_set_status;
+
 			imap_disconnect();
-			return imap_really_connect_and_login_to_server(&imap_connection, imap_server);
+
+			return imap_really_connect_and_login_to_server(&imap_connection, imap_server, &callbacks);
 		}
 		return 0;
 	}

@@ -64,6 +64,11 @@ struct imap_server
  */
 int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv2);
 
+struct imap_connect_and_login_to_server_callbacks
+{
+	void (*set_status)(const char *str);
+};
+
 /**
  * Connect and login to the given imap server.
  *
@@ -71,7 +76,7 @@ int imap_new_connection_needed(struct imap_server *srv1, struct imap_server *srv
  * @param imap_server
  * @return
  */
-int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server);
+int imap_really_connect_and_login_to_server(struct connection **connection, struct imap_server *imap_server, struct imap_connect_and_login_to_server_callbacks *callbacks);
 
 struct imap_download_mails_callbacks
 {

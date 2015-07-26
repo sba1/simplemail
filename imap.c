@@ -1501,7 +1501,7 @@ int imap_really_connect_and_login_to_server(struct connection **connection, stru
 			if (imap_server->login) mystrlcpy(login,imap_server->login,512);
 			password[0] = 0;
 
-			if (thread_call_parent_function_sync(NULL,sm_request_login,4,imap_server->name,login,password,512))
+			if (callbacks->request_login(imap_server->name,login,password,512))
 			{
 				imap_server->login = mystrdup(login);
 				imap_server->passwd = mystrdup(password);
@@ -1885,6 +1885,7 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	}
 
 	connect_and_login_callbacks.set_status = options->callbacks.set_status;
+	connect_and_login_callbacks.request_login = options->callbacks.request_login;
 
 	if (!imap_really_connect_and_login_to_server(imap_connection, options->imap_server, &connect_and_login_callbacks))
 		goto bailout;

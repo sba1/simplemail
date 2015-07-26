@@ -15,6 +15,7 @@
 #include "imap.h"
 #include "lists.h"
 #include "mail.h"
+#include "request.h"
 #include "simplemail.h"
 #include "status.h"
 #include "subthreads.h"
@@ -71,6 +72,11 @@ static void imap_new_mails_arrived(int num_filenames, char **filenames, char *us
 static void imap_new_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
 {
 	thread_call_parent_function_sync(NULL, callback_new_imap_uids, 5, uid_validity, uid_next, user, server, path);
+}
+
+static int imap_request_login(char *text, char *login, char *password, int len)
+{
+	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }
 
 /*****************************************************************************/
@@ -290,6 +296,7 @@ static int imap_thread_really_login_to_given_server(struct imap_server *server)
 			struct imap_connect_and_login_to_server_callbacks callbacks = {0};
 
 			callbacks.set_status = imap_set_status;
+			callbacks.request_login = imap_request_login;
 
 			imap_disconnect();
 
@@ -352,6 +359,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		options.imap_server = imap_server;
 		options.imap_folder = imap_folder;
 		options.callbacks.set_status = imap_set_status;
+		options.callbacks.request_login = imap_request_login;
 		options.download_callbacks.new_uids = imap_new_uids;
 		options.download_callbacks.new_mails_arrived = imap_new_mails_arrived;
 		options.download_callbacks.set_status = imap_set_status;

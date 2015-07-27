@@ -1,0 +1,100 @@
+#
+# Makefile for SimpleMail for ncurses UI
+#
+
+CC     = $(CROSS_COMPILE)gcc
+CXX    = $(CROSS_COMPILE)c++
+AS     = $(CROSS_COMPILE)as
+LD     = $(CROSS_COMPILE)ld
+RANLIB = $(CROSS_COMPILE)ranlib
+STRIP  = $(CROSS_COMPILE)strip
+
+RM     = rm -Rf
+MKDIR  = mkdir -p
+
+DATE   := -DSIMPLEMAIL_DATE='"$(shell date +%d.%m.%Y)"'
+
+
+SSL_FLAGS = -DUSE_OPENSSL
+SSL_INC =
+SSL_LINK =
+SSL_LIB = -lssl -lcrypto
+
+OBJSDIRSUFFIX=ncurses
+
+# COMMITID, COMMITS, and VERSION_TAG macros
+include common-version-tag.mk
+
+# Change these as required
+OPTIMIZE = -O3
+DEBUG = -g
+INC = \
+	$(SSL_INC)\
+	-I./ncurses\
+	-I./indep-include\
+	-I.
+
+CFLAGS = \
+	$(DATE)\
+	$(DEBUG)\
+	$(INC)\
+	$(OPTIMIZE)\
+	$(SSL_FLAGS)\
+	-DNDEBUG\
+	-DSM_COMMITID=$(COMMITID)\
+	-Wall\
+	-Wno-deprecated-declarations\
+	-fno-strict-aliasing\
+	-std=gnu11\
+	-Wdeclaration-after-statement
+
+# Flags passed to gcc during linking
+LINK = \
+	$(SSL_LINK)\
+	-Wl,--gc-sections
+
+
+# Name of the "thing" to build
+TARGET = SimpleMail$(TARGETSUFFIX)
+
+# Additional linker libraries
+LIBS = -lexpat $(SSL_LIB)
+
+# Version of the binary to build
+VERSION = 0
+
+include common-sources.mk
+
+ARCHSRCS = $(wildcard ncurses/*.c)
+
+SRCS = $(NONARCHSRCS) $(ARCHSRCS)
+
+# -------------------------------------------------------------
+
+OBJSDIR=$(CROSS_COMPILE)objs-$(OBJSDIRSUFFIX)
+
+OBJS = $(SRCS:%.c=$(OBJSDIR)/%.o)
+
+all: $(TARGET)
+
+.PHONY: dirs
+dirs:
+	-$(MKDIR) $(OBJSDIR) $(OBJSDIR)/ncurses
+
+# Rules for building
+$(TARGET): dirs $(OBJS)
+	$(CC) $(LINK) -o $@.debug $(OBJS) $(LIBS) -Wl,--cref,-M,-Map=$@.map
+	$(STRIP) --strip-all -o $@ $@.debug
+
+# Generate dependencies on the fly
+# Inspired by http://scottmcpeak.com/autodepend/autodepend.html
+$(OBJSDIR)/%.o: %.c
+	$(CC) -MMD $(CFLAGS) -c $< -o $@
+# Now add, for each prerequiste, a corresponding (empty) target
+	@cat $(@:.o=.d) | tr -d '\\' | tr '\n' ' ' | sed -e 's/.\+:\s*//' | sed -e 's/\s\+/:\n/g' >$(@:.o=.d.tmp)
+	@cat $(@:.o=.d.tmp) >>$(@:.o=.d)
+	@rm $(@:.o=.d.tmp)
+
+.PHONY: clean
+clean:
+	$(RM) $(TARGET) $(OBJS) $(OBJSDIR)

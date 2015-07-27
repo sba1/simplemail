@@ -54,6 +54,7 @@ mmakefile
 ppc-amigaos-objs*
 ppc-amigaos-test-objs*
 ppc-morphos-objs
+objs-ncurses
 project.index
 sas_objects
 sas_test_objects

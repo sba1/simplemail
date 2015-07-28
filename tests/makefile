@@ -57,10 +57,14 @@ test-objs/%.o: ../%.c
 
 # General rule to compile the unit tests
 %_unittest: %_unittest.c lib$(SIMPLEMAIL_LIB).a
-	perl gen-tests.pl <$< >$@_table.c
-	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) 2>test-objs/$@error
-	perl gen-stubs.pl <test-objs/$@error >$@stubs.c
-	$(CC) $@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
+	mkdir -p gen
+	perl gen-tests.pl <$< >gen/$@_table.c
+	# Attempt to compile the unit test, but don't fail if it fails
+	@-$(CC) unittest_tmpl.c -DUNITTEST_TABLE=\"gen/$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) 2>test-objs/$@error
+	# Generate simple stubs from error log
+	perl gen-stubs.pl <test-objs/$@error >gen/$@stubs.c
+	# Finally, compile again
+	$(CC) gen/$@stubs.c unittest_tmpl.c -DUNITTEST_TABLE=\"gen/$@_table.c\" -DUNITTEST_FILE=\"$<\" $(CFLAGS) -lcunit -L. -l$(SIMPLEMAIL_LIB) $(SSL_LDFLAGS) $(GLIB_LDFLAGS) $(GTK_LDFLAGS) -o $@
 
 .PHONY: all
 all: files $(TESTEXES) memleaks

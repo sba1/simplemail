@@ -1013,7 +1013,10 @@ static int imap_synchonize_folder(struct connection *conn, struct imap_server *s
 				remote_mail_array = rm->remote_mail_array;
 				num_of_remote_mails = rm->num_of_remote_mail;
 
-				imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_of_remote_mails, server, imap_path);
+				if (!server->keep_orphans)
+				{
+					imap_delete_orphan_messages(local_mail_array,num_of_local_mails,remote_mail_array,num_of_remote_mails, server, imap_path);
+				}
 
 				/* Determine the number of bytes and mails which we are going to download
 				 * Note that the contents of remote mail is partly destroyed. When we are
@@ -1814,13 +1817,19 @@ int imap_really_download_mails(struct connection *imap_connection, struct imap_d
 
 						imap_free_remote_mailbox(rm);
 						/* Rescan folder in order to delete orphaned messages */
-						rm = imap_get_remote_mails(&args);
+						if (!imap_server->keep_orphans)
+							rm = imap_get_remote_mails(&args);
+						else
+							rm = NULL;
 					}
 
 					if (rm)
 					{
-						/* Now delete orphaned messages */
-						imap_delete_orphan_messages(local_mail_array,num_of_local_mails,rm->remote_mail_array,rm->num_of_remote_mail, imap_server, imap_folder);
+						if (!imap_server->keep_orphans)
+						{
+							/* Now delete orphaned messages */
+							imap_delete_orphan_messages(local_mail_array,num_of_local_mails,rm->remote_mail_array,rm->num_of_remote_mail, imap_server, imap_folder);
+						}
 						imap_free_remote_mailbox(rm);
 					}
 				}

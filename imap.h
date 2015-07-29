@@ -50,6 +50,9 @@ struct imap_server
 	int starttls;
 	int ask;
 
+	/** Keep mails that are in a local folder but not on a remote one */
+	int keep_orphans;
+
 	char *title; /* normally NULL, will hold a copy of account->account_name while fetching mails */
 };
 

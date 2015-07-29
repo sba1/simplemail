@@ -50,7 +50,7 @@ struct imap_server
 	int starttls;
 	int ask;
 
-	char *title; /* normaly NULL, will hold a copy of account->account_name while fetching mails */
+	char *title; /* normally NULL, will hold a copy of account->account_name while fetching mails */
 };
 
 

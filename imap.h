@@ -88,6 +88,7 @@ struct imap_download_mails_callbacks
 	void (*new_uids)(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path);
 	void (*set_status)(const char *str);
 	void (*set_status_static)(const char *str);
+	void (*delete_mail_by_uid)(char *user, char *server, char *path, unsigned int uid);
 };
 
 struct imap_download_mails_options
@@ -196,6 +197,7 @@ struct imap_synchronize_callbacks
 	void (*init_gauge_as_bytes)(int maximal);
 	void (*set_gauge)(int value);
 	void (*new_mail_arrived)(char *filename, char *user, char *server, char *path);
+	void (*delete_mail_by_uid)(char *user, char *server, char *path, unsigned int uid);
 };
 
 struct imap_synchronize_options

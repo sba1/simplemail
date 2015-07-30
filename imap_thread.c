@@ -79,6 +79,11 @@ static int imap_request_login(char *text, char *login, char *password, int len)
 	return thread_call_parent_function_sync(NULL,sm_request_login,4,text,login,password,len);
 }
 
+static void imap_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid)
+{
+	thread_call_parent_function_sync(NULL, callback_delete_mail_by_uid, 4, user, server, path, uid);
+}
+
 /*****************************************************************************/
 
 /**
@@ -386,6 +391,7 @@ static int imap_thread_connect_to_server(struct imap_server *server, char *folde
 		download_options.callbacks.new_uids = imap_new_uids;
 		download_options.callbacks.set_status = imap_set_status;
 		download_options.callbacks.set_status_static = imap_set_status_static;
+		download_options.callbacks.delete_mail_by_uid = imap_delete_mail_by_uid;
 
 		imap_really_download_mails(imap_connection, &download_options);
 		rc = 1;

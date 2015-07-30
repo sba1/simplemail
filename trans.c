@@ -196,6 +196,11 @@ static void trans_new_imap_mail_arrived(char *filename, char *user, char *server
 	thread_call_parent_function_sync(NULL,callback_new_imap_mail_arrived, 4, filename, user, server, path);
 }
 
+static void trans_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid)
+{
+	thread_call_parent_function_sync(NULL, callback_delete_mail_by_uid, 4, user, server, path, uid);
+}
+
 /*****************************************************************************/
 
 struct mails_dl_msg
@@ -374,6 +379,7 @@ static int mails_dl_entry(struct mails_dl_msg *msg)
 		imap_sync_options.callbacks.init_gauge_as_bytes = trans_init_gauge_as_bytes;
 		imap_sync_options.callbacks.set_gauge = trans_set_gauge;
 		imap_sync_options.callbacks.new_mail_arrived = trans_new_imap_mail_arrived;
+		imap_sync_options.callbacks.delete_mail_by_uid = trans_delete_mail_by_uid;
 
 		if (pop3_really_dl(&dl_options))
 		{

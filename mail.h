@@ -125,10 +125,10 @@ struct mail_complete
 /* Mail status (uses a range from 0-15) */
 #define MAIL_STATUS_UNREAD   0 /* unread message */
 #define MAIL_STATUS_READ     1 /* read message */
-#define MAIL_STATUS_WAITSEND 2 /* wait to be sendet, new composed mail */
+#define MAIL_STATUS_WAITSEND 2 /* wait to be sent, new composed mail */
 #define MAIL_STATUS_SENT     3 /* sent the mail */
 #define MAIL_STATUS_REPLIED  4 /* mail has been replied */
-#define MAIL_STATUS_FORWARD  5 /* mail has been forwared */
+#define MAIL_STATUS_FORWARD  5 /* mail has been forwarded */
 #define MAIL_STATUS_REPLFORW 6 /* mail has been replied and forwarded */
 #define MAIL_STATUS_HOLD		 7 /* mail should not be send */
 #define MAIL_STATUS_ERROR    8 /* mail has an error */

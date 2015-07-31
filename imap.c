@@ -1951,10 +1951,10 @@ void imap_really_connect_to_server(struct connection **imap_connection, struct i
 	node = string_list_first(folder_list);
 	while (node)
 	{
-		thread_call_parent_function_sync(NULL,callback_add_imap_folder,3,options->imap_server->login,options->imap_server->name,node->string);
+		callbacks->add_imap_folder(options->imap_server->login,options->imap_server->name,node->string);
 		node = (struct string_node*)node_next(&node->node);
 	}
-	thread_call_parent_function_sync(NULL,callback_refresh_folders,0);
+	callbacks->refresh_folders();
 
 	string_list_free(folder_list);
 	folder_list = NULL;

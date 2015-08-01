@@ -2180,7 +2180,9 @@ void callback_mails_set_status(int status)
 	}
 }
 
-/* Selected mails are spam */
+/**
+ * Declare that the currently selected mails are spam.
+ */
 void callback_selected_mails_are_spam(void)
 {
 	struct folder *folder = main_get_folder();
@@ -2205,7 +2207,9 @@ void callback_selected_mails_are_spam(void)
 	}
 }
 
-/* Selected mails are ham */
+/**
+ * Declare that the currently selected mails are ham.
+ */
 void callback_selected_mails_are_ham(void)
 {
 	struct folder *folder = main_get_folder();
@@ -2242,7 +2246,9 @@ void callback_selected_mails_are_ham(void)
 	}
 }
 
-/* Check if selected mails are spam */
+/**
+ * Checks if the currently selcted mails are spam.
+ */
 void callback_check_selected_mails_if_spam(void)
 {
 	struct folder *folder = main_get_folder();
@@ -2299,7 +2305,11 @@ int callback_import_addressbook(void)
 	return rc;
 }
 
-/* apply a single filter in the active folder */
+/**
+ * Apply the given folder to the currently selected folder.
+ *
+ * @param filter defines the filter to be applied.
+ */
 void callback_apply_folder(struct filter *filter)
 {
 	struct folder *folder = main_get_folder();
@@ -2311,13 +2321,17 @@ void callback_apply_folder(struct filter *filter)
 	}
 }
 
-/* create a new folder */
+/**
+ * Create a new folder
+ */
 void callback_new_folder(void)
 {
 	folder_edit_new_path(new_folder_path());
 }
 
-/* create a new group */
+/**
+ * Create a new group and update all views.
+ */
 void callback_new_group(void)
 {
 	folder_add_group(_("New Group"));
@@ -2327,7 +2341,12 @@ void callback_new_group(void)
 	filter_update_folder_list();
 }
 
-/* create a new folder */
+/**
+ * Create a new folder and update all views.
+ *
+ * @param path path of the newly to be created folder
+ * @param name name if the newly to be created folder
+ */
 void callback_new_folder_path(char *path, char *name)
 {
 	folder_add_with_name(path, name);
@@ -2337,7 +2356,10 @@ void callback_new_folder_path(char *path, char *name)
 	filter_update_folder_list();
 }
 
-/* Remove the selected folder */
+/**
+ * Removed the currently selected folder and update all
+ * views.
+ */
 void callback_remove_folder(void)
 {
 	struct folder *f = main_get_folder();

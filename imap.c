@@ -40,9 +40,7 @@
 #include "mail.h"
 #include "progmon.h"
 #include "qsort.h"
-#include "simplemail.h"
 #include "smintl.h"
-#include "status.h"
 #include "support_indep.h"
 #include "tcp.h"
 

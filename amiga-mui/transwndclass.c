@@ -42,6 +42,7 @@
 
 #include "configuration.h"
 #include "debug.h"
+#include "mail.h"
 #include "parse.h"
 #include "smintl.h"
 #include "support_indep.h"
@@ -53,8 +54,6 @@
 #include "support.h"
 #include "timesupport.h"
 #include "transwndclass.h"
-
-int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
 
 struct transwnd_Data
 {

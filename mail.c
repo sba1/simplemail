@@ -897,7 +897,7 @@ void mail_identify_status(struct mail_info *m)
 		return;
 	}
 
-  /* decode the status information */
+	/* decode the status information. TODO: Use at least binary search! */
 	for (i=0;i<sizeof(status_extensions);i++)
 	{
 	  if (suffix[1] == status_extensions[i])

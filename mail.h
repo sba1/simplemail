@@ -170,50 +170,335 @@ struct mail_complete
 #define mail_info_get_from(x) ((x)->from_phrase?((x)->from_phrase):((x)->from_addr))
 #define mail_info_get_to(x) ((x)->to_phrase?((x)->to_phrase):((x)->to_addr))
 
+/**
+ * Creates a mail info, initialize it to default values.
+ *
+ * @return the mail info.
+ */
 struct mail_info *mail_info_create(void);
+
+/**
+ * Frees all memory associated with a mail info. Accepts NULL.
+ *
+ * @param info
+ */
 void mail_info_free(struct mail_info *);
 
+/**
+ * Find an compound object of a multipart/related mail (RFC2387)
+ * (either by Content-ID or Content-Location). NULL if object. m is a mail
+ * in the multipart/related mail.
+ *
+ * @param m
+ * @param id
+ * @return
+ */
 struct mail_complete *mail_find_compound_object(struct mail_complete *m, char *id);
+
+/**
+ * Returns the first mail with the given mime type/subtype
+ * (recursive). Return NULL if it doesn't exists.
+ *
+ * @param m
+ * @param type
+ * @param subtype
+ * @return
+ */
 struct mail_complete *mail_find_content_type(struct mail_complete *m, char *type, char *subtype);
+
+/**
+ * Finds the initial mail which should be displayed. This is always the
+ * first non-multipart mail. For multipart/alternative mails it returns the
+ * preferred one (depending on what the GUI prefers and how SimpleMail is
+ * configured).
+ *
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_find_initial(struct mail_complete *m);
+
+/**
+ * Returns the root of the mail.
+ *
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_get_root(struct mail_complete *m);
+
+/**
+ * Returns the next part of the mail (excluding multiparts)
+ * @param m
+ * @return
+ */
 struct mail_complete *mail_get_next(struct mail_complete *m);
+
+/**
+ * Extract the name of a given address (and looks for matches in the
+ * address book). If more than one e-mail address is specified, *more_prt
+ * will be set to 1. addr maybe NULL.
+ *
+ * @param addr
+ * @param dest_phrase
+ * @param dest_addr
+ * @param more_ptr
+ * @return
+ */
 int extract_name_from_address(char *addr, char **dest_phrase, char **dest_addr, int *more_ptr);
+
+/**
+ * Returns the "from" name and address (name <address>) of the mail.
+ * @param mail
+ * @return
+ */
 char *mail_get_from_address(struct mail_info *mail);
+
+/**
+ * Returns the first "to" name and address (name <address>) of the mail.
+ *
+ * @param mail
+ * @return
+ */
 char *mail_get_to_address(struct mail_info *mail);
+
+/**
+ * Returns an array of all email addresses of the recipients (to and cc).
+ * Duplicates are filtered.
+ *
+ * @param mail
+ * @return the array. Must be freed with array_free().
+ */
 char **mail_info_get_recipient_addresses(struct mail_info *mail);
+
+/**
+ * Returns the first "to" name and address (name <address>) of the mail.
+ *
+ * @param mail
+ * @return the name and address that must be freed with free() when no longer
+ *  needed.
+ */
 char *mail_get_replyto_address(struct mail_info *mail);
+
+/**
+ * @brief Sets the given excerpt for the given mail.
+ *
+ * The given excerpt should be allocated via malloc(). You shouldn't
+ * touch it once you have given it as argument to this function.
+ *
+ * Frees any previously set excerpt.
+ *
+ * @param mail of which the excerpt should be set
+ * @param excerpt an excerpt
+ * @return
+ */
 void mail_info_set_excerpt(struct mail_info *mail, utf8 *excerpt);
 
+/**
+ * Returns whether a mail is marked as deleted (on IMAP folders).
+ *
+ * @param mail
+ * @return whether deleted or not.
+ */
 int mail_is_marked_as_deleted(struct mail_info *mail);
+
+/**
+ * Recovers the status of the mail that is represented by the given mail info
+ * on basis of the filename.
+ *
+ * @param m represents the mail whose status should be recovered.
+ */
 void mail_identify_status(struct mail_info *m);
 
+/**
+ * Creates a mail, initialize it to default values.
+ *
+ * @return the newly created mail.
+ */
 struct mail_complete *mail_complete_create(void);
+
+/**
+ * Creates a mail to be sent to a given address.
+ * It fills out the given fields field and a body template.
+ *
+ * @param from specifies the sender of the mail.
+ * @param to_str_unexpanded specifies possible unexpanded addresses of receients.
+ * @param replyto specifies the reply to address.
+ * @param subject specifies the initial subject of the mail.
+ * @param body maybe NULL in which case the best phrase is used.
+ * @return the mail or NULL on an error.
+ */
 struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject, char *body);
 struct mail *mail_create_from_file(char *filename);
+
+/**
+ * Scans a mail file and returns a filled (malloc'ed) mail instance, NULL
+ * if an error happened.
+ *
+ * @param filename that points to the file that represents the mail.
+ * @return the mail or NULL.
+ */
 struct mail_complete *mail_complete_create_from_file(char *filename);
+
+/**
+ * Creates a mail that is a reply to the given mails. That means change the
+ * contents of "From:" to "To:", change the subject, quote the first text
+ * passage and remove the attachments. The mail is processed. The given mail
+ * should be processed to.
+ *
+ * @param num number of entries of the given mail_array.
+ * @param mail_array the mail array that contains the mails that should be
+ *  replied to.
+ * @return the created reply mail
+ */
 struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_array);
+
+/**
+ * Creates a Forwarded mail to the given mails. Note that the input mails
+ * can be changed! And should be be freed with mail_free() afterwards.
+ *
+ * @param num
+ * @param filename_array
+ * @return the created forward mail
+ */
 struct mail_complete *mail_create_forward(int num, char **filename_array);
+
+/**
+ * Scans a mail file and returns a filled (malloc'ed) mail_info instance, NULL
+ * if an error happened.
+ *
+ * @param filename
+ * @return the mail or NULL.
+ */
 struct mail_info *mail_info_create_from_file(char *filename);
 
+/**
+ * Frees all memory associated with a mail.
+ *
+ * @param mail
+ */
 void mail_complete_free(struct mail_complete *mail);
 
+/**
+ * This function fills in the header list if it is empty.
+ * Return 1 on success.
+ *
+ * @param m the mail whose headers should be read.
+ * @return 1 on success, 0 otherwise.
+ */
 int mail_read_header_list_if_empty(struct mail_complete *m);
+
+/**
+ * Interprets the the already read headers. A return value of 0 means error.
+ * This function can be called from sub threads.
+ *
+ * @param mail
+ * @return 0 for an error.
+ * @todo Must use functions better since this function is really too big
+ */
 int mail_process_headers(struct mail_complete *mail);
+
+/**
+ * Locally, read the contents of the given mail that is situated in the given
+ * folder.
+ *
+ * @param folder
+ * @param mail
+ */
 void mail_read_contents(char *folder, struct mail_complete *mail);
+
+/**
+ * Decodes the given mail. A text mail is always converted to UTF8 and
+ * it is ensured that it ends with a 0-byte, that is, however, not
+ * counted in decoded_len.
+ *
+ * @param mail
+ */
 void mail_decode(struct mail_complete *mail);
+
+/**
+ * Decodes a limited number of bytes of the given mail.
+ *
+ * @param mail the mail whose contents should be decoded.
+ * @param len_ptr points to an int variable which limits the decode buffer. Use
+ *  a big number to decode everything. After return, the value will contained
+ *  the number truly decoded bytes
+ *
+ * @todo decouple in/out parameter.
+ */
 void *mail_decode_bytes(struct mail_complete *mail, unsigned int *len_ptr);
+
+/**
+ * Decodes the given mail to the given buffers.
+ *
+ * @param mail
+ * @param decoded_data_ptr
+ * @param decoded_data_len_ptr
+ */
 void mail_decoded_data(struct mail_complete *mail, void **decoded_data_ptr, int *decoded_data_len_ptr);
+
+/**
+ * Create a HTML text with headers from the given mail
+ * The actuakl text is stored in the html_header field of given mail.
+ *
+ * @param mail the mail for which the html text shall be created.
+ * @param all_headers whether all headers shall be included.
+ * @return 0 on failure, all other values indicate success.
+ */
 int mail_create_html_header(struct mail_complete *mail, int all_headers);
 
+/**
+ * Looks for a given header with the given name in the given mail and returns
+ * the value of the file. If the header is not contained, NULL is returned.
+ *
+ * @param mail
+ * @param name
+ * @return
+ */
 char *mail_find_header_contents(struct mail_complete *mail, char *name);
+
+/**
+ * Returns a unique filename for a new mail that should have the
+ * given status.
+ *
+ * @param status the new status.
+ * @return the unique filename that is allocated with malloc().
+ */
 char *mail_get_new_name(int status);
+
+/**
+ * Returns a new filename for the mail which matches the given status.
+ * String is allocated with malloc.
+ *
+ * @param oldfilename
+ * @param status_new
+ * @return the
+ */
 char *mail_get_status_filename(char *oldfilename, int status_new);
 
+/**
+ * Increase reference counter of the given mail.
+ *
+ * @param mail the mail whose ref counter should be incremented.
+ * @note this, like most other functions, is not thread-safe.
+ */
 void mail_reference(struct mail_info *mail);
+
+/**
+ * Decreases the reference counter for the given mail and possibly frees the
+ * mail if the counter reaches zero.
+ *
+ * @param mail the mail whose ref counter should be decremented.
+ * @note this, like most other functions, is not thread-safe.
+ */
 void mail_dereference(struct mail_info *mail);
 
-/* was static */
+/**
+ * Looks for a header field as specified by the given name and return it.
+ * If the header field is not contained, NULL is returned.
+ *
+ * @param mail
+ * @param name
+ * @return
+ */
 struct header *mail_find_header(struct mail_complete *mail, char *name);
 
 /* mail scan functions */
@@ -267,16 +552,53 @@ struct composed_mail
 	/* more will follow */
 };
 
+/**
+ * Initialize a composed mail instance.
+ *
+ * @param mail
+ */
 void composed_mail_init(struct composed_mail *mail);
 
+/**
+ * Create a new mail of disk for the given already composed mails.
+ *
+ * @param new_mail
+ * @param hold
+ * @return 0 on failure, otherwise the operation was successful.
+ */
 int mail_compose_new(struct composed_mail *new_mail, int hold);
 
+/**
+ * Create a string for a greeting/closing phrase.
+ *
+ * @param format the format template
+ * @param orig_mail a mail to which is referred, e.g., the mail that should
+ *  be replied.
+ * @param realname the name of the recipient of the to-be-written mail.
+ *  NULL is a valid value.
+ * @param addr_spec the address of the recipient of the to-be-written mail
+ *  NULL is a valid value.
+ * @return
+ */
 char *mail_create_string(char *format, struct mail_info *mail, char *realname,
 												 char *addr_spec);
 
+/**
+ * Test whether external resources can be downloaded from the given mail.
+ *
+ * @param mail the mail to test
+ * @return 0 if no external resouces shall be downloaded, otherwise 1.
+ */
 int mail_allowed_to_download(struct mail_info *mail);
 
-/* Private functions. Only use for testing */
+/**
+ * Exported function for test. Do not use for anything else.
+ *
+ * @param fp
+ * @param new_mail
+ * @return 1 for success, 0 otherwise.
+ * @note this is for testing only.
+ */
 int private_mail_compose_write(FILE *fp, struct composed_mail *new_mail);
 
 #endif

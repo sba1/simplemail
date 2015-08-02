@@ -76,6 +76,13 @@ static inline const char *sm_file_part_const(const char *filename)
  */
 char *sm_path_part(char *filename);
 
+/**
+ * Shows an ASCII file on the screen.
+ *
+ * @param folder defines the folder where the document is located.
+ * @param filename defines the filename of the document to be displayed,
+ *  relative to the given folder to be displayed.
+ */
 void sm_show_ascii_file(char *folder, char *filename);
 void sm_play_sound(char *filename);
 

@@ -162,9 +162,8 @@ char *sm_path_part(char *filename)
 	return (char*)PathPart(filename);
 }
 
-/******************************************************************
- Shows an ASCII file on the screen
-*******************************************************************/
+/*****************************************************************************/
+
 void sm_show_ascii_file(char *folder, char *filename)
 {
 	BPTR lock;

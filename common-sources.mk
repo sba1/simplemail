@@ -21,8 +21,8 @@ NONARCHSRCS=\
 	imap.c \
 	imap_thread.c \
 	index.c \
-	index_naive.c \
 	index_external.c \
+	index_naive.c \
 	lists.c \
 	mail.c \
 	mbox.c \

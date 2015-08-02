@@ -144,7 +144,8 @@ struct mail_complete
 #define mail_info_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
 #define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
 
-/* Additional mail flags, they don't need to be stored within the filename */
+/* Additional mail flags, they don't need to be stored within the filename
+ * as they can be somehow easily derived from the mails contents */
 #define MAIL_FLAGS_NEW	     (1L << 0) /* it's a new mail */
 #define MAIL_FLAGS_GROUP     (1L << 1) /* it has been sent to more persons */
 #define MAIL_FLAGS_ATTACH    (1L << 2) /* it has attachments */
@@ -459,8 +460,13 @@ char *mail_find_header_contents(struct mail_complete *mail, char *name);
  * Returns a unique filename for a new mail that should have the
  * given status.
  *
+ * The filename is unique with respect to the current working directory. No
+ * actual file will be created by this call.
+ *
  * @param status the new status.
  * @return the unique filename that is allocated with malloc().
+ *
+ * @note this function is not thread-safe for the same working directory.
  */
 char *mail_get_new_name(int status);
 

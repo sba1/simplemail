@@ -134,8 +134,10 @@ struct mail_complete
 #define MAIL_STATUS_ERROR    8 /* mail has an error */
 #define MAIL_STATUS_SPAM     9 /* mail is spam */
 #define MAIL_STATUS_MAX     15
+#define MAIL_STATUS_BITS     4 /* number of bits needed to encode the plain status */
 #define MAIL_STATUS_MASK		 (0xf) /* the mask for the status types */
 #define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
+#define MAIL_STATUS_FLAG_BITS    1       /* number of or'able status flags */
 
 /* A macro to easly get the mails status type */
 #define mail_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))

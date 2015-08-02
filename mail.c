@@ -821,7 +821,7 @@ char *mail_get_status_filename(char *oldfilename, int status_new)
 			}
 		}
 
-		if (status_new < 0 || status_new >= 32)
+		if (status_new < 0 || status_new >= 1<<(MAIL_STATUS_BITS + MAIL_STATUS_FLAG_BITS))
 		{
 			*suffix = 0;
 			return filename;

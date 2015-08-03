@@ -25,6 +25,7 @@ NONARCHSRCS=\
 	index_naive.c \
 	lists.c \
 	mail.c \
+	mail_support.c \
 	mbox.c \
 	md5.c \
 	parse.c \

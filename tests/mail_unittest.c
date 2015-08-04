@@ -27,6 +27,52 @@
 
 /*************************************************************/
 
+/* @Test */
+void test_mail_filenames_of_new_mails_are_unique(void)
+{
+	char dir[L_tmpnam];
+	char oldpath[380];
+	char *filenames[3];
+	const int number_of_filenames = sizeof(filenames)/sizeof(filenames[0]);
+	int i,j;
+
+	CU_ASSERT(getcwd(oldpath,sizeof(oldpath)) != 0);
+
+	tmpnam(dir);
+
+	CU_ASSERT(sm_makedir(dir) == 1);
+	CU_ASSERT(chdir(oldpath) == 0);
+
+	for (i=0; i < number_of_filenames; i++)
+	{
+		FILE *f;
+		filenames[i] = mail_get_new_name(MAIL_STATUS_UNREAD);
+		CU_ASSERT(filenames[i] != NULL);
+		f = fopen(filenames[i], "wb");
+		fclose(f);
+	}
+
+	for (i=0; i < number_of_filenames; i++)
+	{
+		for (j=i+1; j < number_of_filenames; j++)
+		{
+			/* Strings should never match */
+			CU_ASSERT_EQUAL(strcmp(filenames[i],filenames[j]) == 0, 0);
+		}
+	}
+
+	for (i=0; i < number_of_filenames; i++)
+	{
+		remove(filenames[i]);
+		free(filenames[i]);
+	}
+
+	chdir(oldpath);
+	remove(dir);
+}
+
+/*************************************************************/
+
 static unsigned char *filename = "test.eml";
 
 /* @Test */

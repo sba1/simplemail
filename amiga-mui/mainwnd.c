@@ -1129,8 +1129,8 @@ int main_window_init(void)
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUT, (ULONG)App, 6, MUIM_Application_PushMethod, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)display_about);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_ABOUTMUI, (ULONG)App, 2, MUIM_Application_AboutMUI, 0);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_OPEN, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)open_message);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_mbox, 0);
-		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, (ULONG)App, 4, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_dbx, 0);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTMBOX, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_mbox);
+		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_IMPORTDBX, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_import_dbx);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_FETCH, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_fetch_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SEND, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)callback_send_mails);
 		DoMethod(win_main, MUIM_Notify, MUIA_Window_MenuAction, MENU_PROJECT_SHOW_WINDOW_ERROR, (ULONG)App, 3, MUIM_CallHook, (ULONG)&hook_standard, (ULONG)error_window_open);

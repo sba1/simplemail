@@ -1509,7 +1509,7 @@ int callback_remote_filter_mail(struct mail_info *mail)
  *
  * in_folder_ptr might be NULL.
  */
-void callback_import_mbox(int *in_folder_ptr)
+void callback_import_mbox(void)
 {
 	int in_folder = in_folder_ptr?*in_folder_ptr:0;
 	struct folder *f=NULL;
@@ -1534,7 +1534,7 @@ void callback_import_mbox(int *in_folder_ptr)
 /**
  * Import dbx mailes (outlook express)
  */
-void callback_import_dbx(int *in_folder_ptr)
+void callback_import_dbx(void)
 {
 	int in_folder = in_folder_ptr?*in_folder_ptr:0;
 	struct folder *f=NULL;

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** simplemail.h
-*/
+/**
+ * @file simpemail.h
+ */
 
 #ifndef SM__SIMPLEMAIL_H
 #define SM__SIMPLEMAIL_H
@@ -75,8 +75,22 @@ void callback_addressbook(void);
 void callback_config(void);
 void callback_folder_active(void);
 int callback_folder_count_signatures(char *def_signature);
+
+/**
+ * Import mails from a user-selectable mbox file into the standard incoming
+ * folder.
+ */
 void callback_import_mbox(void);
+
+/**
+ * Import mails from a user-selectable dbx file (outlook express) into the
+ * standard incoming folder.
+ */
 void callback_import_dbx(void);
+
+/**
+ * Export the mails of currently selected folder to a user-selectable mbox file.
+ */
 void callback_export(void);
 
 void callback_write_mail_to(struct addressbook_entry_new *address);
@@ -101,19 +115,123 @@ void callback_selected_mails_are_ham(void);
 void callback_check_selected_mails_if_spam(void);
 
 void callback_apply_folder(struct filter *filter);
+
+/**
+ * Tries to match the given mail with criterias of any remote filter.
+ * Returns 1 if mail should be ignored otherwise 0.
+ * (yes, this has to be extended in the future)
+ *
+ * @param mail the mail that is subjected to the comparision.
+ * @return whether the mail the criterias of any filter.
+ */
 int callback_remote_filter_mail(struct mail_info *mail);
 
+/**
+ * A new mail should be added to a given folder. If the filename points outside
+ * the directory of the folder, the contents of the mail will be copied to the
+ * folder under a newly generated name. Otherwise, the mail is just added to
+ * the index.
+ *
+ * @param filename specifies the file to be added.
+ * @param folder specifies the destination folder.
+ * @return the mail_info of the newly mail.
+ */
 struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *folder);
+
+/**
+ * A new mail should be added to the index. The actual folder is inferred from
+ * the path component of the specified filename.
+ *
+ * @param filename the filename of the mail to be added.
+ * @return the newly created mail_info.
+ */
 struct mail_info *callback_new_mail_to_folder_by_file(char *filename);
+
+/**
+ * @brief A new mail has been arrived within the incoming folder.
+ *
+ * A new mail has been arrived. In the current implementation the mail
+ * is not immediately added to the viewer but collected and then added
+ * to the viewer after a short period of time.
+ *
+ * @param filename defines the filename of the new mail
+ * @param is_spam is the mail spam?
+ *
+ * @note FIXME: This functionality takes (mis)usage of next_thread_mail field
+ *       FIXME: When SM is quit while mails are downloaded those mails get not presented to the user the next time.
+ */
 void callback_new_mail_arrived_filename(char *filename, int spam);
+
+/**
+ * @brief A new mail arrived into an imap folder
+ *
+ * @param filename the name of the filename.
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
 void callback_new_imap_mail_arrived(char *filename, char *user, char *server, char *path);
+
+/**
+ * New mails arrived into an imap folder
+ *
+ * @param num_filenames number of file names that are stored in filenames array
+ * @param filenames an array of filenames.
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
 void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path);
+
+/**
+ * Sets a new uid_valid and uid_next for the given imap folder.
+ *
+ * @param uid_validity
+ * @param uid_next
+ * @param user defines the user name of the login
+ * @param server defines the name of the imap server
+ * @param path defines the path on the imap server
+ */
 void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path);
+
+/**
+ * The given amount of new mails have been just downloaded.
+ *
+ * @param num the number of new mails.
+ */
+void callback_number_of_mails_downloaded(int num);
+
+/**
+ * The given mail has just been writted/composed in the standard outgoing folder.
+ * The mail is added to the index and the view is updated if needed.
+ *
+ * @param mail the mail that has just been written.
+ */
 void callback_new_mail_written(struct mail_info *mail);
 void callback_delete_mail_by_uid(char *user, char *server, char *path, unsigned int uid);
-void callback_number_of_mails_downloaded(int num);
+
+/**
+ * Move a mail that has just been sent to the "Sent" drawer.
+ *
+ * @param filename specifies the name of the mail. This has to be present in the
+ *  index with the folder being the standard outgoing folder.
+ */
 void callback_mail_has_been_sent(char *filename);
+
+/**
+ * A mail has NOT been sent, something went wrong, set ERROR status.
+ *
+ * @param filename specifies the name of the mail that has not been sent.
+ */
 void callback_mail_has_not_been_sent(char *filename);
+
+/**
+ * Add a new imap folder.
+ *
+ * @param user the login used to differentiate the folder from others.
+ * @param server the server.
+ * @param path the path on the server.
+ */
 void callback_add_imap_folder(char *user, char *server, char *path);
 
 int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail);

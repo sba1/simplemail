@@ -1365,7 +1365,8 @@ int callback_folder_count_signatures(char *def_signature)
 	return folder_count_signatures(def_signature);
 }
 
-/* a new mail should be added to a given folder */
+/*****************************************************************************/
+
 struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *folder)
 {
 	int pos;
@@ -1412,7 +1413,8 @@ struct mail_info *callback_new_mail_to_folder(char *filename, struct folder *fol
 	return mail;
 }
 
-/* a new mail should be added to a folder, only filename known */
+/*****************************************************************************/
+
 struct mail_info *callback_new_mail_to_folder_by_file(char *filename)
 {
 	int pos;
@@ -1479,14 +1481,8 @@ static void simplemail_new_mail_arrived(struct mail_info *mail, struct folder *f
 	read_refresh_prevnext_button(folder);
 }
 
-/**
- * Tries to match the given mail with criterias of any remote filter.
- * Returns 1 if mail should be ignored otherwise 0.
- * (yes, this has to be extended in the future)
- *
- * @param mail the mail that is subjected to the comparision.
- * @return whether the mail the criterias of any filter.
- */
+/*****************************************************************************/
+
 int callback_remote_filter_mail(struct mail_info *mail)
 {
 	struct filter *f = filter_list_first();
@@ -1504,26 +1500,16 @@ int callback_remote_filter_mail(struct mail_info *mail)
 	return 0;
 }
 
-/**
- * Import mails from a mbox file
- *
- * in_folder_ptr might be NULL.
- */
+/*****************************************************************************/
+
 void callback_import_mbox(void)
 {
-	int in_folder = in_folder_ptr?*in_folder_ptr:0;
-	struct folder *f=NULL;
 	char *filename;
-
-	if (in_folder)
-	{
-		if (!(f = main_get_folder())) return;
-	}
 
 	filename = sm_request_file(_("Choose the file which you like to import"),"",0,NULL);
 	if (filename && *filename)
 	{
-		if (!mbox_import_to_folder(f,filename))
+		if (!mbox_import_to_folder(NULL,filename))
 		{
 			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));
 		}
@@ -1531,24 +1517,16 @@ void callback_import_mbox(void)
 	free(filename);
 }
 
-/**
- * Import dbx mailes (outlook express)
- */
+/*****************************************************************************/
+
 void callback_import_dbx(void)
 {
-	int in_folder = in_folder_ptr?*in_folder_ptr:0;
-	struct folder *f=NULL;
 	char *filename;
-
-	if (in_folder)
-	{
-		if (!(f = main_get_folder())) return;
-	}
 
 	filename = sm_request_file(_("Choose the file which you like to import"),"",0,".dbx");
 	if (filename && *filename)
 	{
-		if (!dbx_import_to_folder(f,filename))
+		if (!dbx_import_to_folder(NULL,filename))
 		{
 			sm_request(NULL,_("Couldn't start process for importing.\n"),_("Ok"));
 		}
@@ -1556,7 +1534,8 @@ void callback_import_dbx(void)
 	free(filename);
 }
 
-/* Export mails */
+/*****************************************************************************/
+
 void callback_export(void)
 {
 	struct folder *f;
@@ -1625,19 +1604,8 @@ static void simplemail_gather_mails(void)
 	chdir(buf);
 }
 
-/**
- * @brief A new mail has been arrived for the incoming folder.
- *
- * A new mail has been arrived. In the current implementation the mail
- * is not immediately added to the viewer but collected and then added
- * to the viewer after a short period of time.
- *
- * @param filename defines the filename of the new mail
- * @param is_spam is the mail spam?
- *
- * @note FIXME: This functionality takes (mis)usage of next_thread_mail field
- *       FIXME: When SM is quit while mails are downloaded those mails get not presented to the user the next time.
- */
+/*****************************************************************************/
+
 void callback_new_mail_arrived_filename(char *filename, int is_spam)
 {
 	struct mail_info *mail;
@@ -1667,28 +1635,15 @@ void callback_new_mail_arrived_filename(char *filename, int is_spam)
 	chdir(buf);
 }
 
-/**
- * @brief A new mail arrived into an imap folder
- *
- * @param filename the name of the filename.
- * @param user defines the user name of the login
- * @param server defines the name of the imap server
- * @param path defines the path on the imap server
- */
+/*****************************************************************************/
+
 void callback_new_imap_mail_arrived(char *filename, char *user, char *server, char *path)
 {
 	callback_new_imap_mails_arrived(1,&filename,user,server,path);
 }
 
-/**
- * New mails arrived into an imap folder
- *
- * @param num_filenames number of file names that are stored in filenames array
- * @param filenames an array of filenames.
- * @param user defines the user name of the login
- * @param server defines the name of the imap server
- * @param path defines the path on the imap server
- */
+/*****************************************************************************/
+
 void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *user, char *server, char *path)
 {
 	struct mail_info *mail;
@@ -1721,15 +1676,8 @@ void callback_new_imap_mails_arrived(int num_filenames, char **filenames, char *
 	chdir(buf);
 }
 
-/**
- * Sets a new uid_valid and uid_next for the given imap folder.
- *
- * @param uid_validity
- * @param uid_next
- * @param user defines the user name of the login
- * @param server defines the name of the imap server
- * @param path defines the path on the imap server
- */
+/*****************************************************************************/
+
 void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, char *user, char *server, char *path)
 {
 	struct folder *f;
@@ -1743,11 +1691,8 @@ void callback_new_imap_uids(unsigned int uid_validity, unsigned int uid_next, ch
 	folder_config_save(f);
 }
 
-/**
- * The given amount of new mails have been just downloaded.
- *
- * @param num the number of new mails.
- */
+/*****************************************************************************/
+
 void callback_number_of_mails_downloaded(int num)
 {
 	if (num && user.config.receive_sound)
@@ -1761,7 +1706,8 @@ void callback_number_of_mails_downloaded(int num)
   }
 }
 
-/* a new mail has been written */
+/*****************************************************************************/
+
 void callback_new_mail_written(struct mail_info *mail)
 {
 	folder_add_mail(folder_outgoing(),mail,1);
@@ -1773,7 +1719,8 @@ void callback_new_mail_written(struct mail_info *mail)
 	read_refresh_prevnext_button(folder_outgoing());
 }
 
-/* a mail has been send so it can be moved to the "Sent" drawer now */
+/*****************************************************************************/
+
 void callback_mail_has_been_sent(char *filename)
 {
 	struct filter *f;
@@ -1804,7 +1751,8 @@ void callback_mail_has_been_sent(char *filename)
 	}
 }
 
-/* a mail has NOT been send, something went wrong, set ERROR status */
+/*****************************************************************************/
+
 void callback_mail_has_not_been_sent(char *filename)
 {
 	struct folder *out = folder_outgoing();
@@ -1821,7 +1769,8 @@ void callback_mail_has_not_been_sent(char *filename)
 	}
 }
 
-/* adds a new imap folder */
+/*****************************************************************************/
+
 void callback_add_imap_folder(char *user, char *server, char *path)
 {
 	struct folder *folder;

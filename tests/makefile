@@ -52,9 +52,6 @@ test-objs/%.o: ../%.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
 # General rule to compile the unit tests
 %_unittest: %_unittest.c lib$(SIMPLEMAIL_LIB).a
 	mkdir -p gen

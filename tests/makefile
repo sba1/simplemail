@@ -50,7 +50,11 @@ NOMEMLEAKSPERDEFAULT=\
 
 test-objs/%.o: ../%.c
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -c $< -o $@
+# Now add, for each prerequiste, a corresponding (empty) target
+	@cat $(@:.o=.d) | tr -d '\\' | tr '\n' ' ' | sed -e 's/.\+:\s*//' | sed -e 's/\s\+/:\n/g' >$(@:.o=.d.tmp)
+	@cat $(@:.o=.d.tmp) >>$(@:.o=.d)
+	@rm $(@:.o=.d.tmp)
 
 # General rule to compile the unit tests
 %_unittest: %_unittest.c lib$(SIMPLEMAIL_LIB).a
@@ -207,3 +211,6 @@ endef
 $(foreach testexe,$(TESTEXES), \
  $(eval $(call helgrind.tmpl,$(testexe))) \
 )
+
+# Now include dependencies, but don't fail if they are not available
+-include $(OBJS:.o=.d)

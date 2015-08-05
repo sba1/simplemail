@@ -144,7 +144,7 @@ imap-testsuite: dovecot-conf imap2_unittest
 	./imap2_unittest
 	$(DOVECOT) stop
 
-# Non-empty, if a unit tests requires started dove cot
+# Non-empty, if a unit tests requires started dovecot
 #
 # $(1): The name of the unit test
 define dovecot-needed

@@ -583,7 +583,7 @@ int simplemail_get_mail_info_excerpt_lazy(struct mail_info *mail);
  * @param oldmail the original mail that is going to be deleted.
  * @param newmail the mail that replaced the original mail
  */
-void callback_replace_mail(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail);
+void callback_mail_changed(struct folder *folder, struct mail_info *oldmail, struct mail_info *newmail);
 
 /**
  * The global configuration has been changed. Update all views.

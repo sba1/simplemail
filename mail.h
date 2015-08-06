@@ -48,6 +48,67 @@ struct content_parameter
 };
 
 /**
+ * Encodes the primary status of a mail. The primary status of the mail
+ * is stored within the filename of the mail.
+ */
+typedef enum
+{
+	/** The mail has been received but is not read yet */
+	MAIL_STATUS_UNREAD		= 0,
+
+	/** The mail has been read */
+	MAIL_STATUS_READ		= 1,
+
+	/** The mail is waiting for being sent */
+	MAIL_STATUS_WAITSEND	= 2,
+
+	/** The mail has been successfully sent */
+	MAIL_STATUS_SENT        = 3,
+
+	/** The mail has been replied */
+	MAIL_STATUS_REPLIED     = 4,
+
+	/** The mail mail has been forwarded */
+	MAIL_STATUS_FORWARD		= 5,
+
+	/** The mail has been both replied and forwarded */
+	MAIL_STATUS_REPLFORW	= 6,
+
+	/** The mail is composed but should be skipped mails are being sent */
+	MAIL_STATUS_HOLD		 = 7,
+
+	/** There was an error when proceeding the mail (e.g., during sending) */
+	MAIL_STATUS_ERROR		= 8,
+
+	/** The mail has been inferred to be spam */
+	MAIL_STATUS_SPAM		= 9,
+
+	/** Maximum value of real enum-like status component */
+	MAIL_STATUS_MAX			= 15,
+
+	/** The mail is marked */
+	MAIL_STATUS_FLAG_MARKED  = (1 << 4)
+} mail_status_t;
+
+/** NUmber of bits that are needed to encode the enum-like status component */
+#define MAIL_STATUS_BITS			4
+
+/** the mask for the status types */
+#define MAIL_STATUS_MASK			(0xf)
+
+/** number of or'able status flags */
+#define MAIL_STATUS_FLAG_BITS 		1
+
+/* Mail status (uses a range from 0-15) */
+
+/* A macro to easly get the mails status type */
+#define mail_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
+#define mail_is_spam(x) (mail_get_status_type(x) == MAIL_STATUS_SPAM)
+
+#define mail_info_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
+#define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
+
+/**
  * @brief Describes some user presentable information of a mail
  */
 struct mail_info
@@ -121,30 +182,6 @@ struct mail_complete
 	char *decoded_data; /* the decoded data */
 	unsigned int decoded_len;
 };
-
-/* Mail status (uses a range from 0-15) */
-#define MAIL_STATUS_UNREAD   0 /* unread message */
-#define MAIL_STATUS_READ     1 /* read message */
-#define MAIL_STATUS_WAITSEND 2 /* wait to be sent, new composed mail */
-#define MAIL_STATUS_SENT     3 /* sent the mail */
-#define MAIL_STATUS_REPLIED  4 /* mail has been replied */
-#define MAIL_STATUS_FORWARD  5 /* mail has been forwarded */
-#define MAIL_STATUS_REPLFORW 6 /* mail has been replied and forwarded */
-#define MAIL_STATUS_HOLD		 7 /* mail should not be send */
-#define MAIL_STATUS_ERROR    8 /* mail has an error */
-#define MAIL_STATUS_SPAM     9 /* mail is spam */
-#define MAIL_STATUS_MAX     15
-#define MAIL_STATUS_BITS     4 /* number of bits needed to encode the plain status */
-#define MAIL_STATUS_MASK		 (0xf) /* the mask for the status types */
-#define MAIL_STATUS_FLAG_MARKED (1 << 4) /* the mail is marked */
-#define MAIL_STATUS_FLAG_BITS    1       /* number of or'able status flags */
-
-/* A macro to easly get the mails status type */
-#define mail_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
-#define mail_is_spam(x) (mail_get_status_type(x) == MAIL_STATUS_SPAM)
-
-#define mail_info_get_status_type(x) (((x)->status) & (MAIL_STATUS_MASK))
-#define mail_info_is_spam(x) (mail_info_get_status_type(x) == MAIL_STATUS_SPAM)
 
 /* Additional mail flags, they don't need to be stored within the filename
  * as they can be somehow easily derived from the mails contents */

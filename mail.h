@@ -155,7 +155,7 @@ struct mail_complete
 #define MAIL_FLAGS_CRYPT     (1L << 4) /* mail is crypted */
 #define MAIL_FLAGS_SIGNED    (1L << 5) /* mail has been signed */
 #define MAIL_FLAGS_NORCPT    (1L << 6) /* mail has no recipient */
-#define MAIL_FLAGS_PARTIAL   (1L << 7) /* mail is only partial available localy */
+#define MAIL_FLAGS_PARTIAL   (1L << 7) /* mail is only partial available locally */
 #define MAIL_FLAGS_AUTOSPAM  (1L << 8) /* mail has been marked as spam automatically */
 
 /* The following stuff is for optimizing displaying on AmigaOS, as strings

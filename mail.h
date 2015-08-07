@@ -113,7 +113,9 @@ typedef enum
  */
 struct mail_info
 {
-	int status;						/* see below */
+	/** The mail's primary status */
+	mail_status_t status;
+
 	int flags;						/* see below */
 	utf8 *from_phrase;  	/* decoded "From" field, might be NULL if no phrase was defined */
 	utf8 *from_addr;			/* the email address */

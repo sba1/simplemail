@@ -371,7 +371,6 @@ struct mail_complete *mail_complete_create(void);
  * @return the mail or NULL on an error.
  */
 struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char *replyto, char *subject, char *body);
-struct mail *mail_create_from_file(char *filename);
 
 /**
  * Scans a mail file and returns a filled (malloc'ed) mail instance, NULL

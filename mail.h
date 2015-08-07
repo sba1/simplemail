@@ -220,11 +220,11 @@ struct mail_complete
 struct mail_info *mail_info_create(void);
 
 /**
- * Frees all memory associated with a mail info. Accepts NULL.
+ * Frees all memory associated with a mail info.
  *
- * @param info
+ * @param info the mail info to free or NULL in which case this is a no-op.
  */
-void mail_info_free(struct mail_info *);
+void mail_info_free(struct mail_info *info);
 
 /**
  * Find an compound object of a multipart/related mail (RFC2387)
@@ -262,15 +262,17 @@ struct mail_complete *mail_find_initial(struct mail_complete *m);
 /**
  * Returns the root of the mail.
  *
- * @param m
- * @return
+ * @param m the complete mail of which to return the root
+ * @return the root complete mail
  */
 struct mail_complete *mail_get_root(struct mail_complete *m);
 
 /**
- * Returns the next part of the mail (excluding multiparts)
- * @param m
- * @return
+ * Returns the next part of the mail (excluding multiparts). Calling this
+ * iteratively results in a depth-first order.
+ *
+ * @param m the mail from which the next mail should be determined.
+ * @return the next mail
  */
 struct mail_complete *mail_get_next(struct mail_complete *m);
 

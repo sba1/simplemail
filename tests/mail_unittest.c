@@ -89,6 +89,51 @@ void test_mail_info_create_from_file(void)
 
 /*************************************************************/
 
+static unsigned char *simple_mail_with_attachment_filename = "attachment.eml";
+
+/* @Test */
+void test_simple_mail_info_with_attachemnt(void)
+{
+	struct mail_info *m;
+
+	m = mail_info_create_from_file(simple_mail_with_attachment_filename);
+	CU_ASSERT(m != NULL);
+
+	CU_ASSERT(m->flags & MAIL_FLAGS_ATTACH);
+
+	mail_info_free(m);
+}
+
+/*************************************************************/
+
+/* @Test */
+void test_simple_mail_complete_with_attachemnt(void)
+{
+	int rc;
+	struct mail_complete *m, *m1, *m2, *m3;
+
+	m = mail_complete_create_from_file(simple_mail_with_attachment_filename);
+	CU_ASSERT(m != NULL);
+	CU_ASSERT_STRING_EQUAL(m->content_type, "multipart");
+	CU_ASSERT_STRING_EQUAL(m->content_subtype, "mixed");
+
+	mail_read_contents(".", m);
+
+	m1 = mail_get_next(m);
+	m2 = mail_get_next(m1);
+	m3 = mail_get_next(m2);
+
+	CU_ASSERT_PTR_EQUAL(mail_get_root(m), m);
+	CU_ASSERT_PTR_NOT_EQUAL(m1, m);
+	CU_ASSERT_PTR_NOT_EQUAL(m2, m);
+	CU_ASSERT_PTR_NOT_EQUAL(m1, m2);
+	CU_ASSERT_PTR_NULL(m3);
+
+	mail_complete_free(m);
+}
+
+/*************************************************************/
+
 /* @Test */
 void test_mail_compose_new(void)
 {

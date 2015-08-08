@@ -1,0 +1,26 @@
+Message-ID: <55C4FFAC.201@sebastianbauer.info>
+Date: Fri, 07 Aug 2015 20:57:48 +0200
+From: Sebastian Bauer <mail@sebastianbauer.info>
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko/20100101 Icedove/31.7.0
+MIME-Version: 1.0
+To: mail@sebastianbauer.info
+Subject: Attachment
+Content-Type: multipart/mixed;
+ boundary="------------070607030808070606000805"
+
+This is a multi-part message in MIME format.
+--------------070607030808070606000805
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Here is an attachment
+
+--------------070607030808070606000805
+Content-Type: text/plain; charset=UTF-8;
+ name="attachment"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="attachment"
+
+YXR0YWNobWVudAo=
+--------------070607030808070606000805--

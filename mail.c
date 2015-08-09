@@ -2102,34 +2102,47 @@ static int mail_read_structure(struct mail_complete *mail)
 
 		if (boundary)
 		{
-			char *search_str = strdupcat("\n--"/*or "--"*/,boundary);
+			char *search_str = strdupcat("--",boundary);
 			if (search_str)
 			{
+				char *text = mail->text + mail->text_begin;
 				char *buf = mail->text + mail->text_begin;
 
-				/* This is for e-Mailers which boundary start soon after the header
-			  so there couldn't be any LF before */
-				if (!strncmp(buf,search_str+1,strlen(search_str+1)))
+				if ((buf = strstr(buf,search_str)))
 				{
-					buf += strlen(search_str+1);
-				} else
-				{
-					if ((buf = strstr(buf,search_str)))
-					{
-						buf += strlen(search_str);
-					}
+					buf += strlen(search_str);
 				}
 
 				if (buf)
 				{
-					if (*buf == 13) buf++;
-					if (*buf == 10) buf++;
+					/* Skip line endings */
+					if (*buf == '\r') buf++;
+					if (*buf == '\n') buf++;
 
 					while (1)
 					{
 						struct mail_complete *new_mail;
 						char *end_part = strstr(buf,search_str);
+						int skip = 0;
 						if (!end_part) break;
+
+						if (end_part - 2 >= text)
+						{
+							/* The CRLF normally belongs to the boundary tag
+							 * but we also accept LFs only. But these are mandatory.
+							 */
+							if (end_part[-1] == '\n')
+							{
+								end_part--;
+								skip++;
+							}
+							else break;
+							if (end_part[-1] == '\r')
+							{
+								end_part--;
+								skip++;
+							}
+						}
 
 						if ((new_mail = mail_complete_create()))
 						{
@@ -2160,9 +2173,11 @@ static int mail_read_structure(struct mail_complete *mail)
 							new_mail->parent_mail = mail;
 						}
 
-						buf = end_part + strlen(search_str);
-						if (*buf == 13) buf++;
-						if (*buf == 10) buf++;
+						buf = end_part + strlen(search_str) + skip;
+
+						/* Skip line endings */
+						if (*buf == '\r') buf++;
+						if (*buf == '\n') buf++;
 					}
 				}
 				free(search_str);

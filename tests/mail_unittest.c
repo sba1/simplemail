@@ -152,6 +152,7 @@ void test_simple_mail_complete_with_attachemnt(void)
 	CU_ASSERT_PTR_NOT_EQUAL(m1, m2);
 
 	mail_complete_free(m);
+	free(s.str);
 }
 
 /*************************************************************/

@@ -24,6 +24,7 @@
 #include <CUnit/Basic.h>
 
 #include "mail.h"
+#include "support_indep.h"
 
 /*************************************************************/
 
@@ -111,6 +112,9 @@ void test_simple_mail_complete_with_attachemnt(void)
 {
 	int rc;
 	struct mail_complete *m, *m1, *m2, *m3;
+	void *m1_data, *m2_data;
+	int m1_data_len, m2_data_len;
+	string s;
 
 	m = mail_complete_create_from_file(simple_mail_with_attachment_filename);
 	CU_ASSERT(m != NULL);
@@ -120,14 +124,32 @@ void test_simple_mail_complete_with_attachemnt(void)
 	mail_read_contents(".", m);
 
 	m1 = mail_get_next(m);
+	CU_ASSERT_PTR_NOT_NULL(m1);
+	CU_ASSERT_STRING_EQUAL(m1->content_type, "text");
+	CU_ASSERT_STRING_EQUAL(m1->content_subtype, "plain");
+	mail_decoded_data(m1, &m1_data, &m1_data_len);
+	if (!string_initialize(&s, 100))
+		CU_ASSERT(0);
+	string_append_part(&s, (char*)m1_data, m1_data_len);
+	CU_ASSERT_STRING_EQUAL(s.str, "Here is an attachment\r\n");
+
 	m2 = mail_get_next(m1);
+	CU_ASSERT_PTR_NOT_NULL(m2);
+	CU_ASSERT_STRING_EQUAL(m2->content_type, "text");
+	CU_ASSERT_STRING_EQUAL(m2->content_subtype, "plain");
+	mail_decoded_data(m2, &m2_data, &m2_data_len);
+	string_crop(&s, 0, 0);
+	string_append_part(&s, (char*)m2_data, m2_data_len);
+	CU_ASSERT_STRING_EQUAL(s.str, "attachment\n");
+
+	/* The m2 should have no next mail as it is the last */
 	m3 = mail_get_next(m2);
+	CU_ASSERT_PTR_NULL(m3);
 
 	CU_ASSERT_PTR_EQUAL(mail_get_root(m), m);
 	CU_ASSERT_PTR_NOT_EQUAL(m1, m);
 	CU_ASSERT_PTR_NOT_EQUAL(m2, m);
 	CU_ASSERT_PTR_NOT_EQUAL(m1, m2);
-	CU_ASSERT_PTR_NULL(m3);
 
 	mail_complete_free(m);
 }

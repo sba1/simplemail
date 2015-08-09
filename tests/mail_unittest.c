@@ -23,6 +23,7 @@
 
 #include <CUnit/Basic.h>
 
+#include "codesets.h"
 #include "mail.h"
 #include "support_indep.h"
 
@@ -173,8 +174,41 @@ void test_mail_compose_new(void)
 	CU_ASSERT(fh != NULL);
 	private_mail_compose_write(fh, &comp);
 	fclose(fh);
+}
 
-//	CU_ASSERT(mail_compose_new(&comp,0) != 0);
+/*************************************************************/
+
+/* @Test */
+void test_mail_compose_new_with_attachment(void)
+{
+	int success;
+
+	FILE *fh;
+	struct composed_mail comp = {0};
+	struct composed_mail comp_attachment1 = {0};
+	struct composed_mail comp_attachment2 = {0};
+
+	success = codesets_init();
+	CU_ASSERT(success != 0);
+
+	comp.from = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.subject = "Mail with simple attachment";
+	comp.to = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.content_type = "multipart/mixed";
+
+	comp_attachment1.content_type = "text/plain";
+	comp_attachment1.text = "Test";
+	composed_mail_add(&comp, &comp_attachment1);
+
+	comp_attachment2.content_type = "application/octet-stream";
+	composed_mail_add(&comp, &comp_attachment2);
+
+	fh = fopen("written-with-attachment.eml","wb");
+	CU_ASSERT(fh != NULL);
+	private_mail_compose_write(fh, &comp);
+	fclose(fh);
+
+	codesets_cleanup();
 }
 
 /*************************************************************/

@@ -564,8 +564,36 @@ struct mail_scan /* don't not access this */
 	int mode;
 };
 
+/**
+ * Prepares the mail scan context.
+ *
+ * @param ms the structure to initialize
+ * @param mail the mail that shall be scanned.
+ * @param avoid_duplicates whether duplicate headers are allowed or not.
+ */
 void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, int avoid_duplicates);
+
+/**
+ * Finish the mail scanning and free's all memory which has been allocated.
+ * If the given structure shall be reused, it is necessary to call
+ * mail_scan_buffer_start() again.
+ *
+ * @param ms the structure to clean. The actual structure is not freed.
+ */
 void mail_scan_buffer_end(struct mail_scan *ms);
+
+/**
+ * Scans a buffer and fill the given mail instance. If more info is needed
+ * 1 is returned, else 0 (error handling not supported yet, but it's safe).
+ *
+ * @todo This function could now be replaced by a line version, since we now have
+ * tcp_readln()
+ *
+ * @param ms
+ * @param mail_buf
+ * @param size
+ * @return
+ */
 int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size);
 
 /* for mail composing */

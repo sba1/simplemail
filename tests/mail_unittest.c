@@ -179,6 +179,26 @@ void test_mail_compose_new(void)
 /*************************************************************/
 
 /* @Test */
+void test_mail_compose_new_wrong_address(void)
+{
+	FILE *fh;
+	struct composed_mail comp;
+
+	memset(&comp,0,sizeof(comp));
+
+	comp.from = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.subject = "Test Subject";
+	comp.to = "Sebastian Bauer <mail@sebastianbauer.info";
+
+	fh = fopen("written-wrong-address.eml","wb");
+	CU_ASSERT(fh != NULL);
+	private_mail_compose_write(fh, &comp);
+	fclose(fh);
+}
+
+/*************************************************************/
+
+/* @Test */
 void test_mail_compose_new_with_attachment(void)
 {
 	int success;

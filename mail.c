@@ -2448,6 +2448,13 @@ void composed_mail_init(struct composed_mail *mail)
 	list_init(&mail->list);
 }
 
+/*****************************************************************************/
+
+void composed_mail_add(struct composed_mail *parent, struct composed_mail *mail)
+{
+	list_insert_tail(&parent->list, &mail->node);
+}
+
 /**
  * Writes out the a selected address header field correctly encoded.
  *

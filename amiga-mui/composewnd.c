@@ -657,7 +657,7 @@ static void compose_window_attach_mail(struct Compose_Data *data, struct MUI_NLi
 			{
 				composed_mail_init(newcmail);
 				compose_window_attach_mail(data,tn,newcmail);
-				list_insert_tail(&cmail->list,&newcmail->node);
+				composed_mail_add(cmail,newcmail);
 			}
 			tn = (struct MUI_NListtree_TreeNode*)DoMethod(data->attach_tree, MUIM_NListtree_GetEntry, (ULONG)tn, MUIV_NListtree_GetEntry_Position_Next,0);
 		}

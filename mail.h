@@ -636,6 +636,15 @@ struct composed_mail
 void composed_mail_init(struct composed_mail *mail);
 
 /**
+ * Adds the composed mail to the parent. It the added mail is basically an
+ * attachment.
+ *
+ * @param parent the parent mail to which the mail shall be added.
+ * @param mail the mail to add
+ */
+void composed_mail_add(struct composed_mail *parent, struct composed_mail *mail);
+
+/**
  * Create a new mail of disk for the given already composed mails.
  *
  * @param new_mail

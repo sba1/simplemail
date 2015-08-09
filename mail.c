@@ -2892,7 +2892,7 @@ static int mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 
 int private_mail_compose_write(FILE *fp, struct composed_mail *new_mail)
 {
-	return  mail_compose_write(fp, new_mail);
+	return mail_compose_write(fp, new_mail);
 }
 
 /*****************************************************************************/

@@ -198,18 +198,15 @@ void test_mail_compose_new_wrong_address(void)
 
 /*************************************************************/
 
-/* @Test */
-void test_mail_compose_new_with_attachment(void)
-{
-	int success;
+static char *test_attchment1_text = "This mail contains an attachment";
+static char *test_attchment2_text = "This is the attachment text";
 
+static void test_write_mail_with_attachment(const char *filename)
+{
 	FILE *fh;
 	struct composed_mail comp = {0};
 	struct composed_mail comp_attachment1 = {0};
 	struct composed_mail comp_attachment2 = {0};
-
-	success = codesets_init();
-	CU_ASSERT(success != 0);
 
 	comp.from = "Sebastian Bauer <mail@sebastianbauer.info>";
 	comp.subject = "Mail with simple attachment";
@@ -217,17 +214,74 @@ void test_mail_compose_new_with_attachment(void)
 	comp.content_type = "multipart/mixed";
 
 	comp_attachment1.content_type = "text/plain";
-	comp_attachment1.text = "This mail contains an attachment";
+	comp_attachment1.text = test_attchment1_text;
 	composed_mail_add(&comp, &comp_attachment1);
 
 	comp_attachment2.content_type = "text/plain";
-	comp_attachment2.text = "This is the attachment text";
+	comp_attachment2.text = test_attchment2_text;
 	composed_mail_add(&comp, &comp_attachment2);
 
-	fh = fopen("written-with-attachment.eml","wb");
+	fh = fopen(filename,"wb");
 	CU_ASSERT(fh != NULL);
 	private_mail_compose_write(fh, &comp);
 	fclose(fh);
+}
+
+/* @Test */
+void test_mail_compose_new_with_attachment(void)
+{
+	int success;
+
+	success = codesets_init();
+	CU_ASSERT(success != 0);
+
+	test_write_mail_with_attachment("written-with-attachment.eml");
+
+	codesets_cleanup();
+}
+
+/*************************************************************/
+
+/* @Test */
+void test_mail_compose_new_with_attachment_can_be_read_again(void)
+{
+	int success;
+
+	struct mail_complete *m, *m1, *m2;
+	void *m1_data = NULL, *m2_data = NULL;
+	int m1_data_len, m2_data_len;
+
+	success = codesets_init();
+	CU_ASSERT(success != 0);
+
+	test_write_mail_with_attachment("written-with-attachment2.eml");
+
+	m = mail_complete_create_from_file("written-with-attachment2.eml");
+	CU_ASSERT(m!=NULL);
+
+	CU_ASSERT(m->info->from_phrase != NULL);
+	CU_ASSERT(m->info->from_addr != NULL);
+	CU_ASSERT(m->info->to_phrase != NULL);
+	CU_ASSERT(m->info->to_addr != NULL);
+
+	CU_ASSERT_STRING_EQUAL(m->info->from_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(m->info->from_addr, "mail@sebastianbauer.info");
+	CU_ASSERT_STRING_EQUAL(m->info->to_phrase, "Sebastian Bauer");
+	CU_ASSERT_STRING_EQUAL(m->info->to_addr, "mail@sebastianbauer.info");
+
+	mail_read_contents(".", m);
+
+	CU_ASSERT_EQUAL(m->num_multiparts, 2);
+
+	mail_decoded_data(m->multipart_array[0], &m1_data, &m1_data_len);
+	mail_decoded_data(m->multipart_array[1], &m2_data, &m2_data_len);
+
+	CU_ASSERT(m1_data != NULL);
+	CU_ASSERT(m2_data != NULL);
+	CU_ASSERT_STRING_EQUAL((char*)m1_data, test_attchment1_text);
+	CU_ASSERT_STRING_EQUAL((char*)m2_data, test_attchment2_text);
+
+	mail_complete_free(m);
 
 	codesets_cleanup();
 }

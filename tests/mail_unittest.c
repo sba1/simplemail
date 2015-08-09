@@ -197,10 +197,11 @@ void test_mail_compose_new_with_attachment(void)
 	comp.content_type = "multipart/mixed";
 
 	comp_attachment1.content_type = "text/plain";
-	comp_attachment1.text = "Test";
+	comp_attachment1.text = "This mail contains an attachment";
 	composed_mail_add(&comp, &comp_attachment1);
 
-	comp_attachment2.content_type = "application/octet-stream";
+	comp_attachment2.content_type = "text/plain";
+	comp_attachment2.text = "This is the attachment text";
 	composed_mail_add(&comp, &comp_attachment2);
 
 	fh = fopen("written-with-attachment.eml","wb");

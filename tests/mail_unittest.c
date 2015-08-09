@@ -166,9 +166,9 @@ void test_mail_compose_new(void)
 
 	memset(&comp,0,sizeof(comp));
 
-	comp.from = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.from = "Sebastian Bauer <mail@sebastianbauer.info>";
 	comp.subject = "Test Subject";
-	comp.to = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.to = "Sebastian Bauer <mail@sebastianbauer.info>";
 
 	fh = fopen("written.eml","wb");
 	CU_ASSERT(fh != NULL);
@@ -191,9 +191,9 @@ void test_mail_compose_new_with_attachment(void)
 	success = codesets_init();
 	CU_ASSERT(success != 0);
 
-	comp.from = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.from = "Sebastian Bauer <mail@sebastianbauer.info>";
 	comp.subject = "Mail with simple attachment";
-	comp.to = "Sebastian Bauer <mail@sebastianbauer.info";
+	comp.to = "Sebastian Bauer <mail@sebastianbauer.info>";
 	comp.content_type = "multipart/mixed";
 
 	comp_attachment1.content_type = "text/plain";

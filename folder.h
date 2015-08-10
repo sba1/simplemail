@@ -23,6 +23,10 @@
 #ifndef SM__FOLDER_H
 #define SM__FOLDER_H
 
+#ifndef SM__STRING_LISTS_H
+#include "string_lists.h"
+#endif
+
 #ifndef SM__MAIL_H
 #include "mail.h"
 #endif

@@ -28,6 +28,10 @@
 #include "lists.h"
 #endif
 
+#ifndef SM__STRING_LISTS_H
+#include "string_lists.h"
+#endif
+
 #ifndef SM__TCP_H
 #include "tcp.h"
 #endif

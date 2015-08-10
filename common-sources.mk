@@ -43,6 +43,7 @@ NONARCHSRCS=\
 	spam.c \
 	ssl.c \
 	status.c \
+	string_lists.c \
 	support_indep.c \
 	taglines.c \
 	tcp.c \

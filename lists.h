@@ -36,19 +36,6 @@ struct list
 	struct node *last;
 };
 
-struct string_node
-{
-	struct node node; /* embedded node struct */
-	char *string;
-};
-
-struct string_list
-{
-	struct list l;
-};
-
-/* Prototypes */
-
 /**
  * Initializes a list.
  *
@@ -121,83 +108,6 @@ int node_index(struct node *node);
  * @param node the node that should be removed.
  */
 void node_remove(struct node *node);
-
-/* String lists */
-
-/**
- * Initialize the string list.
- *
- * @param list to be initialized
- */
-void string_list_init(struct string_list *list);
-
-/**
- * Return the first string node of the given string list.
- *
- * @param list of which the first element should be returned
- * @return the first element or NULL if the list is empty
- */
-struct string_node *string_list_first(struct string_list *list);
-
-/**
- * Insert the given string node at the tail of the given list.
- *
- * @param list the list at which the node should be inserted
- * @param node the node to be inserted
- */
-void string_list_insert_tail_node(struct string_list *list, struct string_node *node);
-
-/**
- * Inserts a string into the end of a string list. The string will
- * be duplicated.
- *
- * @param list the list to which to add the string.
- * @param string the string to be added. The string will be duplicated.
- * @return the newly created node that has just been inserted or NULL on memory
- *  failure.
- */
-struct string_node *string_list_insert_tail(struct string_list *list, char *string);
-
-/**
- * Remove the head from the given string list.
- *
- * @param list the list from which the node should be removed.
- * @return the head that has just been removed or NULL if the list was empty.
- */
-struct string_node *string_list_remove_head(struct string_list *list);
-
-/**
- * Remove the tail of the given string list.
- *
- * @param list the list from which the node should be removed.
- * @return the tail that has just been removed or NULL if the list was empty.
- */
-struct string_node *string_list_remove_tail(struct string_list *list);
-
-/**
- * Clears the complete list by freeing all memory (including strings) but does
- * not free the memory of the list itself.
- *
- * @param list the list whose element should be freed.
- */
-void string_list_clear(struct string_list *list);
-
-/**
- * Shortcut for calling string_list_clear() and free().
- *
- * @param list the list that should be cleared and freed.
- */
-void string_list_free(struct string_list *list);
-
-/**
- * Looks for a given string node in the list and returns it.
- * Search is case insensitive
- *
- * @param list
- * @param str
- * @return
- */
-struct string_node *string_list_find(struct string_list *list, const char *str);
 
 #ifdef INLINEING
 #define list_first(x) ((x)->first)

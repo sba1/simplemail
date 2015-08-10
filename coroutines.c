@@ -210,7 +210,6 @@ static void coroutine_schedule(struct coroutine_scheduler *scheduler)
 			cor_ret = cor->entry(cor->context);
 			switch (cor_ret)
 			{
-						/* FIXME: Doesn't work when a new coroutine has been added as part of the last sequence */
 				case	COROUTINE_DONE:
 						node_remove(&cor->node);
 						break;

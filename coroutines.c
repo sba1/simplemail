@@ -192,10 +192,12 @@ static void coroutine_schedule(struct coroutine_scheduler *scheduler)
 
 		coroutine_return_t cor_ret;
 		coroutine_t cor = (coroutine_t)list_first(&scheduler->coroutines_list);
+		coroutine_t cor_next;
 
 		/* Execute all non-waiting coroutines */
-		for (;cor;cor = (coroutine_t)node_next(&cor->node))
+		for (;cor;cor = cor_next)
 		{
+			cor_next =  (coroutine_t)node_next(&cor->node);
 			/* If this is a waiting coroutine, skip it if no corresponding
 			 * event has been occurred
 			 */

@@ -30,8 +30,6 @@
 
 #include <stdlib.h>
 
-#include "debug.h"
-
 /*****************************************************************************/
 
 void list_init(struct list *list)
@@ -112,7 +110,6 @@ struct node *list_remove_tail(struct list *list)
 
 struct node *list_first(struct list *list)
 {
-	if (!list) SM_DEBUGF(5,("list_first() called with NULL pointer!\n"));
   return (list ? list->first : NULL);
 }
 
@@ -120,7 +117,6 @@ struct node *list_first(struct list *list)
 
 struct node *list_last(struct list *list)
 {
-	if (!list) SM_DEBUGF(5,("list_last() called with NULL pointer!\n"));
   return (list ? list->last : NULL);
 }
 
@@ -156,7 +152,6 @@ int list_length(struct list *list)
 
 struct node *node_next(struct node *node)
 {
-	if (!node) SM_DEBUGF(5,("node_next() called with NULL pointer!\n"));
   return (node ? node->next : NULL);
 }
 
@@ -164,7 +159,6 @@ struct node *node_next(struct node *node)
 
 struct node *node_prev(struct node *node)
 {
-	if (!node) SM_DEBUGF(5,("node_prev() called with NULL pointer!\n"));
   return (node ? node->prev : NULL);
 }
 
@@ -172,7 +166,6 @@ struct node *node_prev(struct node *node)
 
 struct list *node_list(struct node *node)
 {
-	if (!node) SM_DEBUGF(5,("node_list() called with NULL pointer!\n"));
   return (node ? node->list : NULL);
 }
 

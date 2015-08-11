@@ -576,7 +576,7 @@ static int pop3_stat(struct pop3_dl_callbacks *callbacks,
 					break;
 				}
 
-				mail_scan_buffer_start(&ms, m,0);
+				mail_scan_buffer_start(&ms, m);
 
 				/* Read out the important infos */
 				while ((answer = tcp_readln(conn)))

@@ -90,69 +90,44 @@ static const char pgp_text[] =
  * @param name_len the length of the name of the header field
  * @param contents the contents of the header field
  * @param contents_len the length
- * @param avoid_duplicates if a header with the same name exists, only the
- *  contents is replaced.
  * @return 0 on failure, 1 on success
  */
 static int mail_complete_add_header(struct mail_complete *mail, char *name, int name_len,
-									  char *contents, int contents_len, int avoid_duplicates)
+									  char *contents, int contents_len)
 {
 	struct header *header;
+	char *new_name;
+	char *new_contents;
 
-	if (avoid_duplicates)
-	{
-		/* Look for an existing header with this name */
-		header = (struct header*)list_first(&mail->header_list);
-		while (header)
-		{
-			if (!mystrnicmp(header->name, name, name_len))
-			{
-				if (!header->name[name_len])
-					break;
-			}
-			header = (struct header*)node_next(&header->node);
-		}
-	} else header = NULL;
+	if (!(header = (struct header*)malloc(sizeof(struct header))))
+		return 0;
 
-	if (!header)
+	new_name = (char*)malloc(name_len+1);
+	new_contents = (char*)malloc(contents_len+1);
+
+	if (new_name && new_contents)
 	{
-		header = (struct header*)malloc(sizeof(struct header));
-	} else
-	{
-		free(header->contents);
-		free(header->name);
+		new_name[mailncpy(new_name,name,name_len)] = 0;
+		new_contents[mailncpy(new_contents,contents,contents_len)] = 0;
+
+		header->name = new_name;
+		header->contents = new_contents;
+		list_insert_tail(&mail->header_list,&header->node);
+
+		return 1;
 	}
-
-	if (header)
-	{
-		char *new_name = (char*)malloc(name_len+1);
-		char *new_contents = (char*)malloc(contents_len+1);
-
-		if (new_name && new_contents)
-		{
-			new_name[mailncpy(new_name,name,name_len)] = 0;
-			new_contents[mailncpy(new_contents,contents,contents_len)] = 0;
-
-			header->name = new_name;
-			header->contents = new_contents;
-			list_insert_tail(&mail->header_list,&header->node);
-
-			return 1;
-		}
-		free(new_name);
-		free(new_contents);
-		free(header);
-	}
+	free(new_name);
+	free(new_contents);
+	free(header);
 	return 0;
 }
 
 /*****************************************************************************/
 
-void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, int avoid_duplicates)
+void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail)
 {
 	memset(ms,0,sizeof(struct mail_scan));
 	ms->mail = mail;
-	ms->avoid_duplicates = avoid_duplicates;
 }
 
 /*****************************************************************************/
@@ -250,7 +225,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 						if (!mail_scan_buffer_save_line(ms,name_start,name_size,contents_start,contents_size))
 							return 0;
 
-						mail_complete_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size,ms->avoid_duplicates);
+						mail_complete_add_header(mail, ms->line, ms->name_size, ms->line + ms->name_size, ms->contents_size);
 
 						/* a previous call to this function saved a line */
 						free(ms->line);
@@ -259,7 +234,7 @@ int mail_scan_buffer(struct mail_scan *ms, char *mail_buf, int size)
 					} else
 					{
 						/* no line has saved */
-						mail_complete_add_header(mail,name_start,name_size,contents_start,contents_size,ms->avoid_duplicates);
+						mail_complete_add_header(mail,name_start,name_size,contents_start,contents_size);
 					}
 
 					name_start = contents_start = NULL;
@@ -644,7 +619,7 @@ int mail_read_header_list_if_empty(struct mail_complete *m)
 		struct mail_scan ms;
 		unsigned int bytes_read = 0;
 
-		mail_scan_buffer_start(&ms,m,0);
+		mail_scan_buffer_start(&ms,m);
 
 		while ((bytes_read = fread(buf, 1, 2048, fh)))
 		{
@@ -686,7 +661,7 @@ struct mail_complete *mail_complete_create_from_file(char *filename)
 						unsigned int bytes_read = 0;
 
 						m->info->size = size;
-						mail_scan_buffer_start(&ms,m,0);
+						mail_scan_buffer_start(&ms,m);
 
 						while ((bytes_read = fread(buf, 1, 2048/*buf_size*/, fh)))
 						{
@@ -764,7 +739,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 
 		if (from)
 		{
-			mail_complete_add_header(mail,"From",4,from,strlen(from),0);
+			mail_complete_add_header(mail,"From",4,from,strlen(from));
 		}
 
 		if (replyto)
@@ -774,7 +749,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 			{
 				struct address *addr = address_list_first(list);
 				if (addr)
-					mail_complete_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email),0);
+					mail_complete_add_header(mail,"ReplyTo",7,addr->email,strlen(addr->email));
 				address_list_free(list);
 			}
 		}
@@ -792,7 +767,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 
 				if (to_header)
 				{
-					mail_complete_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4,0);
+					mail_complete_add_header(mail, "To", 2, to_header+4, strlen(to_header)-4);
 					free(to_header);
 				}
 			}
@@ -804,7 +779,7 @@ struct mail_complete *mail_create_for(char *from, char *to_str_unexpanded, char 
 			char *subject_header;
 			if ((subject_header = encode_header_field("Subject",subject)))
 			{
-				mail_complete_add_header(mail, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
+				mail_complete_add_header(mail, "Subject", 7, subject_header+9, strlen(subject_header)-9);
 				free(subject_header);
 			}
 		}
@@ -956,7 +931,7 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 		}
 		if (ac)
 		{
-			mail_complete_add_header(m,"From", 4, ac->email,strlen(ac->email),0);
+			mail_complete_add_header(m,"From", 4, ac->email,strlen(ac->email));
 		}
 
 		if (from)
@@ -1060,12 +1035,12 @@ struct mail_complete *mail_create_reply(int num, struct mail_complete **mail_arr
 
 				if (to_header)
 				{
-					mail_complete_add_header(m, "To", 2, to_header+4, strlen(to_header)-4,0);
+					mail_complete_add_header(m, "To", 2, to_header+4, strlen(to_header)-4);
 					free(to_header);
 				}
 				if (cc_header)
 				{
-					mail_complete_add_header(m, "Cc", 2, cc_header+4, strlen(cc_header)-4,0);
+					mail_complete_add_header(m, "Cc", 2, cc_header+4, strlen(cc_header)-4);
 					free(cc_header);
 				}
 			}
@@ -1178,7 +1153,7 @@ struct mail_complete *mail_create_forward(int num, char **filename_array)
 
 				if ((subject_header = encode_header_field("Subject",new_subject)))
 				{
-					mail_complete_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9,0);
+					mail_complete_add_header(m, "Subject", 7, subject_header+9, strlen(subject_header)-9);
 					free(subject_header);
 				}
 
@@ -1980,7 +1955,7 @@ static void mail_decrypt(struct mail_complete *mail)
 
 									new_mail->info->size = size;
 
-									mail_scan_buffer_start(&ms,new_mail,0);
+									mail_scan_buffer_start(&ms,new_mail);
 									mail_scan_buffer(&ms, newtext, size);
 									mail_scan_buffer_end(&ms);
 									mail_process_headers(new_mail);
@@ -2068,7 +2043,7 @@ static void mail_resolve_smime(struct mail_complete *mail)
 			new_mail->text = decoded_data;
 			new_mail->extra_text = decoded_data;
 
-			mail_scan_buffer_start(&ms,new_mail,0);
+			mail_scan_buffer_start(&ms,new_mail);
 			mail_scan_buffer(&ms, (char*)decoded_data,decoded_data_len);
 			mail_scan_buffer_end(&ms);
 			mail_process_headers(new_mail);
@@ -2150,7 +2125,7 @@ static int mail_read_structure(struct mail_complete *mail)
 
 							new_mail->info->size = end_part - buf;
 
-							mail_scan_buffer_start(&ms,new_mail,0);
+							mail_scan_buffer_start(&ms,new_mail);
 							mail_scan_buffer(&ms, buf, end_part - buf);
 							mail_scan_buffer_end(&ms);
 							mail_process_headers(new_mail);
@@ -2206,7 +2181,7 @@ static int mail_read_structure(struct mail_complete *mail)
 		new_mail->text = (char*)data;
 		/* text_begin and text_len will be set by buffer functions */
 
-		mail_scan_buffer_start(&ms,new_mail,0);
+		mail_scan_buffer_start(&ms,new_mail);
 		mail_scan_buffer(&ms, (char*)data,data_len);
 		mail_scan_buffer_end(&ms);
 		mail_process_headers(new_mail);

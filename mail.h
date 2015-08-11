@@ -554,7 +554,6 @@ struct header *mail_find_header(struct mail_complete *mail, char *name);
 struct mail_scan /* don't not access this */
 {
 	struct mail_complete *mail; /* the mail */
-	int avoid_duplicates;
 
 	int position; /* the current position inside the mail */
 
@@ -569,9 +568,8 @@ struct mail_scan /* don't not access this */
  *
  * @param ms the structure to initialize
  * @param mail the mail that shall be scanned.
- * @param avoid_duplicates whether duplicate headers are allowed or not.
  */
-void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail, int avoid_duplicates);
+void mail_scan_buffer_start(struct mail_scan *ms, struct mail_complete *mail);
 
 /**
  * Finish the mail scanning and free's all memory which has been allocated.

@@ -88,9 +88,6 @@ struct coroutine_scheduler
  */
 struct coroutine_basic_context
 {
-	/** A next coroutine as in a single-linked list */
-	struct coroutine_basic_context *next;
-
 	/** The scheduler that is responsible for this context */
 	struct coroutine_scheduler *scheduler;
 

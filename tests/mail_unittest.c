@@ -94,7 +94,7 @@ void test_mail_info_create_from_file(void)
 static unsigned char *simple_mail_with_attachment_filename = "attachment.eml";
 
 /* @Test */
-void test_simple_mail_info_with_attachemnt(void)
+void test_simple_mail_info_with_attachment(void)
 {
 	struct mail_info *m;
 
@@ -109,7 +109,7 @@ void test_simple_mail_info_with_attachemnt(void)
 /*************************************************************/
 
 /* @Test */
-void test_simple_mail_complete_with_attachemnt(void)
+void test_simple_mail_complete_with_attachment(void)
 {
 	int rc;
 	struct mail_complete *m, *m1, *m2, *m3;

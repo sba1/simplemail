@@ -182,6 +182,8 @@ TESTAOBJS = $(ASRCS:%.S=$(TESTOBJSDIR)/%.o)
 
 all: $(TARGET)
 
+include common-rules.mk
+
 ifndef Kickstart
 include build-dependencies.mk
 BUILD-DEPENDENCIES = .build-dependencies-done

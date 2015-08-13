@@ -35,6 +35,7 @@
 #include "configuration.h"
 #include "debug.h"
 #include "folder.h" /* for mail_compose_new() */
+#include "mail_headers.h"
 #include "mail_support.h"
 #include "parse.h"
 #include "pgp.h"
@@ -1541,270 +1542,351 @@ static void rebuild_parameter_list(struct list *list)
 int mail_process_headers(struct mail_complete *mail)
 {
 	struct header *header = (struct header*)list_first(&mail->header_list);
+	struct header *header_next;
 
-	while (header)
+	for (; header; header = header_next)
 	{
 		char *buf = header->contents;
+		const struct header_entry *header_entry;
+		unsigned char lowercase_header[MAX_WORD_LENGTH+1];
+		int i;
 
-		if (!mystricmp("date",header->name))
+		header_next = (struct header*)node_next(&header->node);
+
+		/* Convert to lower case for now. TODO: Better do this when the hash
+		 * is calculated (usually takes fewer lookups) and use a modified
+		 * strcmp() function (we don't need to convert the string in the table
+		 * as it is always lowercase)
+		 */
+		for (i=0; i < sizeof(lowercase_header); i++)
 		{
-			/* syntax should be checked before! */
-			int day,month,year,hour,min,sec,gmt;
-			if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
+			unsigned char c = header->name[i];
+			if (c >= 65 && c <= 90) c = c | 0x20;
+			lowercase_header[i] = c;
+			if (!c) break;
+		}
+		if (i == sizeof(lowercase_header))
+			continue;
+
+		header_entry = mail_lookup_header(lowercase_header, i);
+		if (!header_entry)
+		{
+			/* Skip headers we don't understand */
+			continue;
+		}
+
+		switch (header_entry->id)
+		{
+			case HEADER_DATE:
 			{
-				mail->info->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
-			} else mail->info->seconds = 0;
-		} else if (!mystricmp("from",header->name))
-		{
-			extract_name_from_address(buf,(char**)&mail->info->from_phrase,(char**)&mail->info->from_addr,NULL);
-			/* for display optimization */
-			if (isascii7(mail->info->from_phrase)) mail->info->flags |= MAIL_FLAGS_FROM_ASCII7;
-			if (isascii7(mail->info->from_addr)) mail->info->flags |= MAIL_FLAGS_FROM_ADDR_ASCII7;
-		} else if (!mystricmp("reply-to",header->name))
-		{
-			extract_name_from_address(buf,NULL,&mail->info->reply_addr,NULL);
-			if (isascii7(mail->info->reply_addr)) mail->info->flags |= MAIL_FLAGS_REPLYTO_ADDR_ASCII7;
-		} else if (!mystricmp("to",header->name))
-		{
-			int more;
-			extract_name_from_address(buf,(char**)&mail->info->to_phrase,(char**)&mail->info->to_addr,&more);
-			if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
-
-			mail->info->to_list = address_list_create(buf);
-
-			/* for display optimization */
-			if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
-			if (isascii7(mail->info->to_addr)) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
-		} else if (!mystricmp("cc",header->name))
-		{
-			mail->info->cc_list = address_list_create(buf);
-			mail->info->flags |= MAIL_FLAGS_GROUP;
-		} else if (!mystricmp("subject",header->name))
-		{
-			if (buf) parse_text_string(buf,&mail->info->subject);
-			else mail->info->subject = mystrdup("");
-
-			/* for display optimization */
-			if (mail->info->subject && isascii7(mail->info->subject)) mail->info->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
-		} else if (!mystricmp("received",header->name))
-		{
-			if ((buf = strchr(buf,';')))
-			{
+				/* syntax should be checked before! */
 				int day,month,year,hour,min,sec,gmt;
-				unsigned int new_recv;
-				buf++;
 				if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
 				{
-					new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
-					if (new_recv > mail->info->received) mail->info->received = new_recv;
+					mail->info->seconds = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+				} else mail->info->seconds = 0;
+			}
+			break;
+
+			case HEADER_FROM:
+			{
+				extract_name_from_address(buf,(char**)&mail->info->from_phrase,(char**)&mail->info->from_addr,NULL);
+				/* for display optimization */
+				if (isascii7(mail->info->from_phrase)) mail->info->flags |= MAIL_FLAGS_FROM_ASCII7;
+				if (isascii7(mail->info->from_addr)) mail->info->flags |= MAIL_FLAGS_FROM_ADDR_ASCII7;
+			}
+			break;
+
+			case HEADER_REPLY_TO:
+			{
+				extract_name_from_address(buf,NULL,&mail->info->reply_addr,NULL);
+				if (isascii7(mail->info->reply_addr)) mail->info->flags |= MAIL_FLAGS_REPLYTO_ADDR_ASCII7;
+			}
+			break;
+
+			case HEADER_TO:
+			{
+				int more;
+				extract_name_from_address(buf,(char**)&mail->info->to_phrase,(char**)&mail->info->to_addr,&more);
+				if (more) mail->info->flags |= MAIL_FLAGS_GROUP;
+
+				mail->info->to_list = address_list_create(buf);
+
+				/* for display optimization */
+				if (isascii7(mail->info->to_phrase)) mail->info->flags |= MAIL_FLAGS_TO_ASCII7;
+				if (isascii7(mail->info->to_addr)) mail->info->flags |= MAIL_FLAGS_TO_ADDR_ASCII7;
+			}
+			break;
+
+			case HEADER_CC:
+			{
+				mail->info->cc_list = address_list_create(buf);
+				mail->info->flags |= MAIL_FLAGS_GROUP;
+			}
+			break;
+
+			case HEADER_SUBJECT:
+			{
+				if (buf) parse_text_string(buf,&mail->info->subject);
+				else mail->info->subject = mystrdup("");
+
+				/* for display optimization */
+				if (mail->info->subject && isascii7(mail->info->subject)) mail->info->flags |= MAIL_FLAGS_SUBJECT_ASCII7;
+			}
+			break;
+
+			case HEADER_RECEIVED:
+			{
+				if ((buf = strchr(buf,';')))
+				{
+					int day,month,year,hour,min,sec,gmt;
+					unsigned int new_recv;
+					buf++;
+					if ((parse_date(buf,&day,&month,&year,&hour,&min,&sec,&gmt)))
+					{
+						new_recv = sm_get_seconds(day,month,year) + (hour*60+min)*60 + sec - (gmt - sm_get_gmt_offset())*60;
+						if (new_recv > mail->info->received) mail->info->received = new_recv;
+					}
 				}
 			}
-		} else if (!mystricmp("mime-version",header->name))
-		{
-			int version;
-			int revision;
+			break;
 
-			version = atoi(buf);
-			while (isdigit(*buf)) buf++;
-			revision = atoi(buf);
-
-			mail->mime = (version << 16) | revision;
-		} else if (!mystricmp("content-disposition",header->name))
-		{
-			/* Check the Content-Disposition of the whole mail */
-
-			if (!mystrnicmp(header->contents,"inline",6))
-				mail->content_inline = 1;
-
-			if (!mail->content_name)
+			case HEADER_MIME_VERSION:
 			{
-				struct list parameter_list;
-				char *param;
+				int version;
+				int revision;
 
-				char *fn = mystristr(buf,"filename=");
-				if (fn)
-				{
-					fn += sizeof("filename=")-1;
-					parse_value(fn,&mail->content_name);
-				}
+				version = atoi(buf);
+				while (isdigit((unsigned char)*buf)) buf++;
+				revision = atoi(buf);
 
-				list_init(&parameter_list);
-				if ((param = mystristr(buf,";")))
-				{
-					while (1)
-					{
-						if (*param++ == ';')
-						{
-							struct content_parameter *new_param;
-							struct parse_parameter dest;
-							unsigned char c;
-
-							/* Skip spaces */
-							while ((c = *param))
-							{
-								if (!isspace(c)) break;
-								param++;
-							}
-
-							if (!(param = parse_parameter(param, &dest)))
-								break;
-
-							if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
-							{
-								new_param->attribute = dest.attribute;
-								new_param->value = dest.value;
-								list_insert_tail(&parameter_list,&new_param->node);
-							} else break;
-						} else break;
-					}
-				}
-				rebuild_parameter_list(&parameter_list);
-
-				{
-					struct content_parameter *param = (struct content_parameter*)list_first(&parameter_list);
-					while (param)
-					{
-						if (!mystricmp("filename",param->attribute))
-						{
-							/* Free memory that has been previously allocated */
-							free(mail->content_name);
-							mail->content_name = mystrdup(param->value);
-							break;
-						}
-						param = (struct content_parameter *)node_next(&param->node);
-					}
-
-					while ((param = (struct content_parameter*)list_remove_tail(&parameter_list)))
-					{
-						free(param->attribute);
-						free(param->value);
-						free(param);
-					}
-
-				}
-
-
+				mail->mime = (version << 16) | revision;
 			}
-		} else if (!mystricmp("content-type",header->name))
-		{
-			/* content��:=���"Content-Type"��":"��type��"/"��subtype��*(";" parameter) */
+			break;
 
-			char *subtype = strchr(buf,'/');
-			if (subtype)
+			case HEADER_CONTENT_DISPOSITION:
 			{
-				int len = subtype - buf;
-				if (len)
+				/* Check the Content-Disposition of the whole mail */
+
+				if (!mystrnicmp(header->contents,"inline",6))
+					mail->content_inline = 1;
+
+				if (!mail->content_name)
 				{
-					if ((mail->content_type = malloc(len+1)))
+					struct list parameter_list;
+					char *param;
+
+					char *fn = mystristr(buf,"filename=");
+					if (fn)
 					{
-						subtype++;
+						fn += sizeof("filename=")-1;
+						parse_value(fn,&mail->content_name);
+					}
 
-						strncpy(mail->content_type,buf,len);
-						mail->content_type[len]=0;
-
-						if ((subtype = parse_token(subtype,&mail->content_subtype)))
+					list_init(&parameter_list);
+					if ((param = mystristr(buf,";")))
+					{
+						while (1)
 						{
-							while (1)
+							if (*param++ == ';')
 							{
-								if (*subtype++ == ';')
+								struct content_parameter *new_param;
+								struct parse_parameter dest;
+								unsigned char c;
+
+								/* Skip spaces */
+								while ((c = *param))
 								{
-									struct content_parameter *new_param;
-									struct parse_parameter dest;
-									unsigned char c;
+									if (!isspace(c)) break;
+									param++;
+								}
 
-									/* Skip spaces */
-									while ((c = *subtype))
-									{
-										if (!isspace(c)) break;
-										subtype++;
-									}
+								if (!(param = parse_parameter(param, &dest)))
+									break;
 
-									if (!(subtype = parse_parameter(subtype, &dest)))
-										break;
+								if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+								{
+									new_param->attribute = dest.attribute;
+									new_param->value = dest.value;
+									list_insert_tail(&parameter_list,&new_param->node);
+								} else break;
+							} else break;
+						}
+					}
+					rebuild_parameter_list(&parameter_list);
 
-									if (!mystricmp(dest.attribute,"charset"))
+					{
+						struct content_parameter *param = (struct content_parameter*)list_first(&parameter_list);
+						while (param)
+						{
+							if (!mystricmp("filename",param->attribute))
+							{
+								/* Free memory that has been previously allocated */
+								free(mail->content_name);
+								mail->content_name = mystrdup(param->value);
+								break;
+							}
+							param = (struct content_parameter *)node_next(&param->node);
+						}
+
+						while ((param = (struct content_parameter*)list_remove_tail(&parameter_list)))
+						{
+							free(param->attribute);
+							free(param->value);
+							free(param);
+						}
+					}
+				}
+			}
+			break;
+
+			case HEADER_CONTENT_TYPE:
+			{
+				/* content  := "Content-Type"  ":" type "/" subtype  *(";" parameter) */
+				char *subtype = strchr(buf,'/');
+				if (subtype)
+				{
+					int len = subtype - buf;
+					if (len)
+					{
+						if ((mail->content_type = malloc(len+1)))
+						{
+							subtype++;
+
+							strncpy(mail->content_type,buf,len);
+							mail->content_type[len]=0;
+
+							if ((subtype = parse_token(subtype,&mail->content_subtype)))
+							{
+								while (1)
+								{
+									if (*subtype++ == ';')
 									{
-										if (dest.attribute) free(dest.attribute);
-										mail->content_charset = dest.value;
-									} else
-									{
-										if (!mystricmp(dest.attribute,"name"))
+										struct content_parameter *new_param;
+										struct parse_parameter dest;
+										unsigned char c;
+
+										/* Skip spaces */
+										while ((c = *subtype))
+										{
+											if (!isspace(c)) break;
+											subtype++;
+										}
+
+										if (!(subtype = parse_parameter(subtype, &dest)))
+											break;
+
+										if (!mystricmp(dest.attribute,"charset"))
 										{
 											if (dest.attribute) free(dest.attribute);
-											if (!mail->content_name) mail->content_name = dest.value;
-											else
-											{
-												if (dest.value) free(dest.value);
-											}
+											mail->content_charset = dest.value;
 										} else
 										{
-											if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+											if (!mystricmp(dest.attribute,"name"))
 											{
-												new_param->attribute = dest.attribute;
-												new_param->value = dest.value;
-												list_insert_tail(&mail->content_parameter_list,&new_param->node);
-											} else break;
+												if (dest.attribute) free(dest.attribute);
+												if (!mail->content_name) mail->content_name = dest.value;
+												else
+												{
+													if (dest.value) free(dest.value);
+												}
+											} else
+											{
+												if ((new_param = (struct content_parameter *)malloc(sizeof(struct content_parameter))))
+												{
+													new_param->attribute = dest.attribute;
+													new_param->value = dest.value;
+													list_insert_tail(&mail->content_parameter_list,&new_param->node);
+												} else break;
+											}
 										}
-									}
-								} else break;
+									} else break;
+								}
 							}
 						}
 					}
 				}
 			}
-		} else if (!mystricmp("content-id",header->name))
-		{
-			if (*buf == '<')
+			break;
+
+			case HEADER_CONTENT_ID:
 			{
-				buf++;
-				if (!(parse_addr_spec(buf,&mail->content_id)))
+				if (*buf == '<')
 				{
-					/* for the non rfc conform content-id's */
-					char *buf2 = strrchr(buf,'>');
-					if (buf2)
+					buf++;
+					if (!(parse_addr_spec(buf,&mail->content_id)))
 					{
-						if ((mail->content_id = malloc(buf2-buf+1)))
+						/* for the non rfc conform content-id's */
+						char *buf2 = strrchr(buf,'>');
+						if (buf2)
 						{
-							strncpy(mail->content_id,buf,buf2-buf);
-							mail->content_id[buf2-buf]=0;
+							if ((mail->content_id = malloc(buf2-buf+1)))
+							{
+								strncpy(mail->content_id,buf,buf2-buf);
+								mail->content_id[buf2-buf]=0;
+							}
 						}
 					}
+				} else
+				{
+					/* for the non rfc conform content-id's */
+					if ((mail->content_id = malloc(strlen(buf)+1)))
+						strcpy(mail->content_id,buf);
 				}
-			} else
-			{
-				/* for the non rfc conform content-id's */
-				if ((mail->content_id = malloc(strlen(buf)+1)))
-					strcpy(mail->content_id,buf);
 			}
-		} else if (!mystricmp("message-id",header->name))
-		{
-			if (*buf++ == '<')
-				parse_addr_spec(buf,&mail->info->message_id);
-		} else if (!mystricmp("in-reply-to",header->name))
-		{
-			if (*buf++ == '<')
-				parse_addr_spec(buf,&mail->info->message_reply_id);
-		} else if (!mystricmp("content-transfer-encoding",header->name))
-		{
-			mail->content_transfer_encoding = mystrdup(buf);
-		} else if (!mystricmp("content-description",header->name))
-		{
-			parse_text_string(buf,&mail->content_description);
-		} else if (!mystricmp("Importance",header->name))
-		{
-			if (!mystricmp(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
-		} else if (!mystricmp("X-Priority",header->name))
-		{
-			/* check for High or Highest (Thunderbird compatibility) */
-			if (mystristr(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
-		} else if (!mystricmp("X-SimpleMail-POP3",header->name))
-		{
-			mail->info->pop3_server = mystrdup(buf);
-		} else if (!mystricmp("X-SimpleMail-Partial", header->name))
-		{
-			if (!mystricmp(buf,"yes")) mail->info->flags |= MAIL_FLAGS_PARTIAL;
+			break;
+
+			case HEADER_MESSAGE_ID:
+			{
+				if (*buf++ == '<')
+					parse_addr_spec(buf,&mail->info->message_id);
+			}
+			break;
+
+			case HEADER_IN_REPLY_TO:
+			{
+				if (*buf++ == '<')
+					parse_addr_spec(buf,&mail->info->message_reply_id);
+			}
+			break;
+
+			case HEADER_CONTENT_TRANSFER_ENCODING:
+			{
+				mail->content_transfer_encoding = mystrdup(buf);
+			}
+			break;
+
+			case HEADER_CONTENT_DESCRIPTION:
+			{
+				parse_text_string(buf,&mail->content_description);
+			}
+			break;
+
+			case HEADER_IMPORTANCE:
+			{
+				if (!mystricmp(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
+			}
+			break;
+
+			case HEADER_X_PRIORITY:
+			{
+				/* check for High or Highest (Thunderbird compatibility) */
+				if (mystristr(buf,"high")) mail->info->flags |= MAIL_FLAGS_IMPORTANT;
+			}
+			break;
+
+			case HEADER_X_SIMPLEMAIL_POP3:
+			{
+				mail->info->pop3_server = mystrdup(buf);
+			}
+			break;
+
+			case HEADER_X_SIMPLEMAIL_PARTIAL:
+			{
+				if (!mystricmp(buf,"yes")) mail->info->flags |= MAIL_FLAGS_PARTIAL;
+			}
+			break;
 		}
-		header = (struct header*)node_next(&header->node);
 	}
 
 	if (!mail->info->to_phrase && !mail->info->to_addr && !mail->info->cc_list)

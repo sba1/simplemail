@@ -1,6 +1,11 @@
+%language=ANSI-C
+%define lookup-function-name mail_lookup_header
+%struct-type
+%pic
+%readonly-tables
 struct header_entry
 {
-  char *name;
+  int name;
   int id;
 };
 
@@ -8,6 +13,7 @@ enum
 {
 	HEADER_FROM,
 	HEADER_TO,
+	HEADER_CC,
 	HEADER_SUBJECT,
 	HEADER_DATE,
 	HEADER_REPLY_TO,
@@ -21,13 +27,14 @@ enum
 	HEADER_CONTENT_TRANSFER_ENCODING,
 	HEADER_CONTENT_DESCRIPTION,
 	HEADER_IMPORTANCE,
+	HEADER_X_PRIORITY,
 	HEADER_X_SIMPLEMAIL_POP3,
 	HEADER_X_SIMPLEMAIL_PARTIAL
 };
-
 %%
 from,						HEADER_FROM
 to,							HEADER_TO
+cc,							HEADER_CC
 subject,					HEADER_SUBJECT
 date,						HEADER_DATE
 reply-to,					HEADER_REPLY_TO
@@ -41,6 +48,7 @@ in-reply-to,				HEADER_IN_REPLY_TO
 content-transfer-encoding,	HEADER_CONTENT_TRANSFER_ENCODING
 content-description,		HEADER_CONTENT_DESCRIPTION
 importance,					HEADER_IMPORTANCE
+x-priority,				HEADER_X_PRIORITY
 x-simplemail-pop3,			HEADER_X_SIMPLEMAIL_POP3
 x-simplemail-partial,		HEADER_X_SIMPLEMAIL_PARTIAL
 %%

@@ -16,9 +16,9 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 ***************************************************************************/
 
-/*
-** folder.h
-*/
+/**
+ * @file folder.h
+ */
 
 #ifndef SM__FOLDER_H
 #define SM__FOLDER_H
@@ -175,6 +175,14 @@ int folder_set(struct folder *f, char *newname, char *newpath, int newtype, char
 int folder_set_would_need_reload(struct folder *f, char *newname, char *newpath, int newtype, char *newdefto);
 
 struct folder *folder_first(void);
+
+/**
+ * Get status information for all folders.
+ *
+ * @param total_msg_ptr
+ * @param total_unread_ptr
+ * @param total_new_ptr
+ */
 void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr);
 
 /* Like a linear list */
@@ -189,22 +197,115 @@ struct folder *folder_find_by_file(char *filename);
 struct folder *folder_find_by_mail(struct mail_info *mail);
 struct folder *folder_find_by_imap(char *user, char *server, char *path);
 struct mail_info *folder_find_mail_by_position(struct folder *f,int position);
+
+/**
+ * Finds from a folder (which is given by its path) the mail's (which is given
+ * by the filename) successor.
+ *
+ * @param folder_path the folder that contains the mail.
+ * @param mail_filename the name of the mail whose successor should be
+ *  determined.
+ * @return
+ */
 struct mail_info *folder_find_next_mail_info_by_filename(char *folder_path, char *mail_filename);
+
+/**
+ * Finds from a folder (which is given by its path) the mail's (which is given
+ * by the filename) predecessor.
+ *
+ * @param folder_path the folder that contains the mail.
+ * @param mail_filename the name of the mail whose predecessor should be
+ *  determined.
+ * @return the predecessor or NULL of no such mail exists.
+ */
 struct mail_info *folder_find_prev_mail_info_by_filename(char *folder_path, char *mail_filename);
+
+/**
+ * Finds a mail that is the best candidate to be selected. Depending on the
+ * folder type this could be a unread or a held mail.
+ *
+ * @param folder the folder
+ * @return the best mail info that could be selected.
+ */
 struct mail_info *folder_find_best_mail_info_to_select(struct folder *folder);
+
+/**
+ * Returns the index (starting with 0) of the mail in this folder.
+ * -1 if mail is not found.
+ *
+ * @param f the folder that contains the mail.
+ * @param mail the mail whose index shall be determined.
+ * @return the index or -1 if the mail is not contained.
+ */
 int folder_get_index_of_mail(struct folder *f, struct mail_info *mail);
+
+/**
+ * Returns the size of the mails in this folder
+ *
+ * @param f the folder from which to determine the size of the mails.
+ * @return the size of all mails in f.
+ */
 int folder_size_of_mails(struct folder *f);
 struct folder *folder_incoming(void);
 struct folder *folder_outgoing(void);
 struct folder *folder_sent(void);
 struct folder *folder_deleted(void);
 struct folder *folder_spam(void);
+
+/**
+ * Move a mail from source folder to a destination folder.  If mail has sent
+ * status and moved to a outgoing drawer it gets the wait-send status.
+ *
+ * @param from_folder the source folder
+ * @param dest_folder the dest folder
+ * @param mail the mail
+ * @return 0 if the moving has failed.
+ */
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail_info *mail);
+
+
+/**
+ * Move num_mail mails from source folder to a destination folder.
+ *
+ * If mail has sent status and moved to a outgoing drawer it get's
+ * the waitsend status.
+ *
+ * @param from_folder the source folder
+ * @param dest_folder the dest folder
+ * @param mail_array the array with mails to be moved
+ * @param num_mails the number of mails within mail_array
+ * @return the number of successfully moved mails.
+ */
 int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail_info **mail_array, int num_mails);
+
+/**
+ * Deletes the given mail permanently
+ *
+ * @param from_folder
+ * @param mail
+ * @return
+ */
 int folder_delete_mail(struct folder *from_folder, struct mail_info *mail);
+
+/**
+ * Really delete all mails in the delete folder.
+ */
 void folder_delete_deleted(void);
+
+/**
+ * Save the index of an folder. If no mail infos are loaded or
+ * the index is uptodate nothing happens.
+ */
 int folder_save_index(struct folder *f);
+
+/**
+ * Save the index files of all folders.
+ */
 void folder_save_all_indexfiles(void);
+
+/**
+ * @brief delete all the index files.
+ */
 void folder_delete_all_indexfiles(void);
 
 /**

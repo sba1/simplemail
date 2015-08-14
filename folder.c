@@ -251,9 +251,12 @@ static int (*get_compare_function(int sort_mode, int *reverse, int folder_type))
 	return NULL; /* thread */
 }
 
-/******************************************************************
- Set the sort functions for mail_compare
-*******************************************************************/
+/**
+ * Set the sort functions for mail_compare in accordance of the current
+ * settings.
+ *
+ * @param folder
+ */
 static void mail_compare_set_sort_mode(struct folder *folder)
 {
 	compare_primary = get_compare_function(folder->primary_sort, &compare_primary_reverse, folder->type);
@@ -297,9 +300,12 @@ struct folder_node
 	struct folder folder; /**< The actual folder, most follow */
 };
 
-/******************************************************************
- Returns the node of the folder, for list handling
-*******************************************************************/
+/**
+ * Returns the folder node of a given plain folder.
+ *
+ * @param f the folder data
+ * @return the entire folder_node
+ */
 static struct folder_node *find_folder_node_by_folder(struct folder *f)
 {
 	/* TODO: This could be done by pointer arithmetic much faster */
@@ -425,9 +431,8 @@ static void folder_invalidate_indexfile(struct folder *folder)
 	}
 }
 
-/**
- * @brief delete all the index files.
- */
+/*****************************************************************************/
+
 void folder_delete_all_indexfiles(void)
 {
 	struct folder *f = folder_first();
@@ -2525,10 +2530,8 @@ struct mail_info *folder_find_mail_by_position(struct folder *f, int position)
 	return f->mail_info_array[position];
 }
 
-/******************************************************************
- Finds from a folder (which is given by its path) the mail's
- successor (which is given by the filename)
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *folder_find_next_mail_info_by_filename(char *folder_path, char *mail_filename)
 {
 	void *handle = NULL;
@@ -2547,10 +2550,8 @@ struct mail_info *folder_find_next_mail_info_by_filename(char *folder_path, char
 	return NULL;
 }
 
-/******************************************************************
- Finds from a folder (which is given by its path) the mail's
- pred (which is given by the filename)
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *folder_find_prev_mail_info_by_filename(char *folder_path, char *mail_filename)
 {
 	void *handle = NULL;
@@ -2572,10 +2573,8 @@ struct mail_info *folder_find_prev_mail_info_by_filename(char *folder_path, char
 	return NULL;
 }
 
-/******************************************************************
- Finds a mail which should be selected (depending on the folder
- type this could be a unread or a held mail)
-*******************************************************************/
+/*****************************************************************************/
+
 struct mail_info *folder_find_best_mail_info_to_select(struct folder *folder)
 {
 	void *handle = NULL;
@@ -2597,10 +2596,8 @@ struct mail_info *folder_find_best_mail_info_to_select(struct folder *folder)
 	return m;
 }
 
-/******************************************************************
- Returns the index (starting with 0) of the mail in this folder.
- -1 if mail is not found.
-*******************************************************************/
+/*****************************************************************************/
+
 int folder_get_index_of_mail(struct folder *f, struct mail_info *mail)
 {
 	int index = 0;
@@ -2615,9 +2612,8 @@ int folder_get_index_of_mail(struct folder *f, struct mail_info *mail)
 	return -1;
 }
 
-/******************************************************************
- Returns the size of the mails in this folder
-*******************************************************************/
+/*****************************************************************************/
+
 int folder_size_of_mails(struct folder *f)
 {
 	int size = 0;
@@ -2631,13 +2627,8 @@ int folder_size_of_mails(struct folder *f)
 	return size;
 }
 
-/******************************************************************
- Move num_mail mails from source folder to a destination folder.
- Returns the number of successfully moved mails.
+/*****************************************************************************/
 
- If mail has sent status and moved to a outgoing drawer it get's
- the waitsend status.
-*******************************************************************/
 int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folder, struct mail_info **mail_info_array, int num_mails)
 {
 	char *buf, *src_buf, *src_path_end_buf, *dest_buf, *dest_path_end_buf;
@@ -2727,20 +2718,15 @@ int folder_move_mail_array(struct folder *from_folder, struct folder *dest_folde
 	return i;
 }
 
-/******************************************************************
- Move a mail from source folder to a destination folder. 0 if the
- moving has failed.
- If mail has sent status and moved to a outgoing drawer it get's
- the waitsend status.
-*******************************************************************/
+/*****************************************************************************/
+
 int folder_move_mail(struct folder *from_folder, struct folder *dest_folder, struct mail_info *mail)
 {
 	return folder_move_mail_array(from_folder,dest_folder,&mail,1);
 }
 
-/******************************************************************
- Deletes a mail permanently
-*******************************************************************/
+/*****************************************************************************/
+
 int folder_delete_mail(struct folder *from_folder, struct mail_info *mail)
 {
 	char path[512];
@@ -2753,9 +2739,11 @@ int folder_delete_mail(struct folder *from_folder, struct mail_info *mail)
 	return 1;
 }
 
-/******************************************************************
- Really delete all mails in the given folder
-*******************************************************************/
+/**
+ * Really delete all mails in the given folder.
+ *
+ * @param folder defines the folder from which to delete all mails.
+ */
 static void folder_delete_mails(struct folder *folder)
 {
 	int i;
@@ -2808,9 +2796,8 @@ static void folder_delete_mails(struct folder *folder)
 	chdir(path);
 }
 
-/******************************************************************
- Really delete all mails in the delete folder
-*******************************************************************/
+/*****************************************************************************/
+
 void folder_delete_deleted(void)
 {
 	struct folder *f = folder_deleted();
@@ -2905,10 +2892,8 @@ static int folder_save_index_header(struct folder *f, FILE *fh)
 	return 1;
 }
 
-/******************************************************************
- Save the index of an folder. If no mail infos are loaded or
- the index is uptodate nothing happens.
-*******************************************************************/
+/*****************************************************************************/
+
 int folder_save_index(struct folder *f)
 {
 	FILE *fh;
@@ -3026,9 +3011,8 @@ int folder_save_index(struct folder *f)
 	return 1;
 }
 
-/******************************************************************
- Save all the index files
-*******************************************************************/
+/*****************************************************************************/
+
 void folder_save_all_indexfiles(void)
 {
 	struct folder *f = folder_first();
@@ -3039,9 +3023,8 @@ void folder_save_all_indexfiles(void)
 	}
 }
 
-/******************************************************************
- Get informations about the folder stats
-*******************************************************************/
+/*****************************************************************************/
+
 void folder_get_stats(int *total_msg_ptr, int *total_unread_ptr, int *total_new_ptr)
 {
 	struct folder *f = folder_first();

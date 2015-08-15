@@ -3967,7 +3967,7 @@ void folder_save_order(void)
  *  Additionally, this function is not thread-safe.
  * @return
  */
-char *new_folder_path(void)
+char *folder_get_possible_path(void)
 {
 	static char buf[512];
 	char *buf2;

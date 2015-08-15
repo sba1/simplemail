@@ -149,7 +149,7 @@ struct folder
 #define FOLDER_SIGNATURE_DEFAULT NULL           /* the default signature for init */
 #define FOLDER_SIGNATURE_NO      "NoSignature"  /* the no signature */
 
-char *new_folder_path(void);
+char *folder_get_possible_path(void);
 
 void folder_create_imap(void);
 

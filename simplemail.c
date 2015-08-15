@@ -2286,7 +2286,7 @@ void callback_apply_folder(struct filter *filter)
 
 void callback_new_folder(void)
 {
-	folder_edit_new_path(new_folder_path());
+	folder_edit_new_path(folder_get_possible_path());
 }
 
 /*****************************************************************************/

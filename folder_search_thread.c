@@ -50,7 +50,6 @@ static void folder_start_search_entry(struct search_msg *msg)
 	struct folder **f_array = NULL;
 	int f_array_len;
 	struct filter *filter = NULL;
-	struct filter_rule *rule;
 	struct search_options *sopt;
 #define NUM_FOUND 100
 	struct mail_info *found_array[NUM_FOUND];
@@ -76,47 +75,8 @@ static void folder_start_search_entry(struct search_msg *msg)
 	{
 		if (!sopt || !f_array) goto fail;
 
-		filter = filter_create();
-		if (!filter) goto fail;
-
-		if (sopt->from)
-		{
-			if ((rule = filter_create_and_add_rule(filter,RULE_FROM_MATCH)))
-			{
-				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
-				rule->u.from.from = array_add_string(NULL,sopt->from);
-			}
-		}
-
-		if (sopt->subject)
-		{
-			if ((rule = filter_create_and_add_rule(filter,RULE_SUBJECT_MATCH)))
-			{
-				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
-				rule->u.subject.subject = array_add_string(NULL,sopt->subject);
-			}
-		}
-
-		if (sopt->body)
-		{
-			if ((rule = filter_create_and_add_rule(filter,RULE_BODY_MATCH)))
-			{
-				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
-				rule->u.body.body = mystrdup(sopt->body);
-			}
-		}
-
-		if (sopt->to)
-		{
-			if ((rule = filter_create_and_add_rule(filter,RULE_RCPT_MATCH)))
-			{
-				rule->flags = SM_PATTERN_SUBSTR|SM_PATTERN_NOCASE;
-				rule->u.rcpt.rcpt = array_add_string(NULL,sopt->to);
-			}
-		}
-
-		filter_parse_filter_rules(filter);
-		filter->search_filter = 1;
+		if (!(filter = filter_create_from_search_options(sopt)))
+			goto fail;
 
 		/* folder_apply_filter(f,filter); */ /* Not safe currently to be called from subthreads */
 		{

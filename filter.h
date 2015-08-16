@@ -175,4 +175,14 @@ struct search_options
 struct search_options *search_options_duplicate(struct search_options *so);
 void search_options_free(struct search_options *so);
 
+/**
+ * Create a filter from search options.
+ *
+ * @param sopt the search options from which to create the filter.
+ *
+ * @return the created filter
+ */
+struct filter *filter_create_from_search_options(struct search_options *sopt);
+
+
 #endif

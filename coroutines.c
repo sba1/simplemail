@@ -76,6 +76,7 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 	FD_ZERO(&scheduler->rfds);
 	list_init(&scheduler->coroutines_list);
 	list_init(&scheduler->waiting_coroutines_list);
+	return scheduler;
 }
 
 /*****************************************************************************/

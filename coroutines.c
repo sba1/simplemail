@@ -33,20 +33,7 @@
 
 #include "lists.h"
 
-/*---------------------------------------------------------------------------*/
-
-struct coroutine;
-struct coroutine_basic_context;
-
-typedef enum {
-	COROUTINE_YIELD,
-	COROUTINE_WAIT,
-	COROUTINE_DONE
-} coroutine_return_t;
-
-
-typedef struct coroutine *coroutine_t;
-typedef coroutine_return_t (*coroutine_entry_t)(struct coroutine_basic_context *arg);
+/*****************************************************************************/
 
 /**
  * A simple coroutine.
@@ -62,7 +49,6 @@ struct coroutine
 	/** The actual entry of the coroutine */
 	coroutine_entry_t entry;
 };
-
 
 /**
  * A simple scheduler for coroutines.
@@ -81,84 +67,18 @@ struct coroutine_scheduler
 	struct coroutine_basic_context *first;
 };
 
+/*****************************************************************************/
 
-/**
- * The basic context of a coroutine. This should be embedded in a higher
- * context.
- */
-struct coroutine_basic_context
-{
-	/** The scheduler that is responsible for this context */
-	struct coroutine_scheduler *scheduler;
-
-	/** The state that will be executed next for this coroutine */
-	int next_state;
-
-	/** The socket fd for a waiting coroutine */
-	int socket_fd;
-
-	/** Whether we wait for a reading or writing fd */
-	int write;
-
-	/** Another coroutine we are waiting for */
-	coroutine_t other;
-};
-
-#define COROUTINE_BEGIN(context) \
-	switch(context->basic_context.next_state)\
-	{ \
-		case 0:
-
-/**
- * Insert a simple preemption point. Continue on the next possible event.
- */
-#define COROUTINE_YIELD(context)\
-			context->basic_context.next_state = __LINE__;\
-			return COROUTINE_YIELD;\
-		case __LINE__:\
-
-/**
- * Insert a preemption point but don't continue until the given socket is ready
- * to be read or written.
- */
-#define COROUTINE_AWAIT_SOCKET(context, sfd, write)\
-			context->basic_context.next_state = __LINE__;\
-			coroutine_await_socket(&context->basic_context, sfd, write);\
-			return COROUTINE_WAIT;\
-		case __LINE__:\
-			context->basic_context.socket_fd = -1;
-
-/**
- * Insert a preemption point but don't continue until the given coroutine
- * is done.
- */
-#define COROUTINE_AWAIT_OTHER(context, other)\
-			context->basic_context.next_state = __LINE__;\
-			context->basic_context.other = other;\
-			return COROUTINE_WAIT;\
-		case __LINE__:\
-			context->basic_context.other = NULL;
-
-#define COROUTINE_END(context) \
-	}\
-	return COROUTINE_DONE;
-
-static void coroutine_await_socket(struct coroutine_basic_context *context, int socket_fd, int write)
+void coroutine_await_socket(struct coroutine_basic_context *context, int socket_fd, int write)
 {
 	context->socket_fd = socket_fd;
 	context->write = write;
 	FD_SET(socket_fd, &context->scheduler->rfds);
 }
 
-/**
- * Add a new coroutine to the scheduler.
- *
- * @param scheduler the schedule that should take care of the coroutine.
- * @param entry the coroutine's entry
- * @param context the coroutine's context
- * @return the coroutine just added or NULL for an error.
- */
-static coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context)
+/*****************************************************************************/
+
+coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutine_entry_t entry, struct coroutine_basic_context *context)
 {
 	coroutine_t coroutine;
 
@@ -170,12 +90,9 @@ static coroutine_t coroutine_add(struct coroutine_scheduler *scheduler, coroutin
 	return coroutine;
 }
 
-/**
- * Schedule all coroutines.
- *
- * @param scheduler the scheduler
- */
-static void coroutine_schedule(struct coroutine_scheduler *scheduler)
+/*****************************************************************************/
+
+void coroutine_schedule(struct coroutine_scheduler *scheduler)
 {
 	struct timeval zero_timeout = {0};
 	struct list finished_coroutines_list;

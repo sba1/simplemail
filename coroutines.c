@@ -166,6 +166,7 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		coroutine_return_t cor_ret;
 		coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
 		coroutine_t cor_next;
+		int nfds;
 
 		/* Execute all non-waiting coroutines */
 		for (;cor;cor = cor_next)
@@ -190,13 +191,15 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			}
 		}
 
-		int nfds = -1;
+		nfds = -1;
 
 		readfds = scheduler->rfds;
 
 		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 		for (;cor;cor = cor_next)
 		{
+			coroutine_t f;
+
 			cor_next =  coroutines_next(cor);
 			if (cor->context->socket_fd > nfds)
 				nfds = cor->context->socket_fd;
@@ -204,10 +207,10 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			/* Check if we are waiting for another coroutine to be finished
 			 * FIXME: This needs only be done once when the coroutine that we
 			 * are waiting for is done */
-			coroutine_t f = coroutines_list_first(&finished_coroutines_list);
+			f = coroutines_list_first(&finished_coroutines_list);
 			while (f)
 			{
-				if (f = cor->context->other)
+				if ((f = cor->context->other))
 				{
 					/* Move from waiting to active queue */
 					node_remove(&cor->node);

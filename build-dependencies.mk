@@ -10,7 +10,7 @@ else
 OPENSSL_DEPENDENCY=
 endif
 
-.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done $(OPENSSL_DEPENDENCY)
+.build-dependencies-done: .amissl-done .expat-done .mui-done .openurl-done .netinclude-done $(OPENSSL_DEPENDENCY)
 	touch $@
 
 LHA=$(shell pwd)/build-dependencies/lha/lha-1.14i.orig/src/lha
@@ -65,6 +65,15 @@ build-dependencies/SDK/SDK_53.20.lha:
 	mkdir -p build-dependencies/SDK
 	cd build-dependencies/SDK && wget -c "http://www.hyperion-entertainment.biz/index.php?option=com_registration&amp;view=download&amp;format=raw&amp;file=38&amp;Itemid=63" -O SDK_53.20.lha
 
+# Extract netinclude
+ifdef NET_INCLUDE
+.netinclude-done:
+else
+.netinclude-done: build-dependencies/SDK/SDK_53.20.lha $(LHA)
+	cd build-dependencies/SDK && $(LHA) xf SDK_53.20.lha && lha xf SDK_Install/base.lha
+endif
+	touch $@
+
 #
 # Download and extract MUI includes
 #
@@ -117,7 +126,7 @@ AMISSL_INCLUDE=build-dependencies/amissl/include/include_h
 endif
 
 ifndef NET_INCLUDE
-NET_INCLUDE=.
+NET_INCLUDE=build-dependencies/SDK/Include/netinclude
 endif
 
 ifndef EXPAT_INCLUDE

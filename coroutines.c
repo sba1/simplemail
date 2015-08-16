@@ -61,8 +61,6 @@ struct coroutines_list
  */
 struct coroutine_scheduler
 {
-	fd_set rfds;
-
 	/** Contains all active coroutines. Elements are of type coroutine_t */
 	struct coroutines_list coroutines_list;
 
@@ -113,7 +111,6 @@ coroutine_scheduler_t coroutine_scheduler_new(void)
 	if (!(scheduler = (coroutine_scheduler_t)malloc(sizeof(*scheduler))))
 		return NULL;
 
-	FD_ZERO(&scheduler->rfds);
 	coroutines_list_init(&scheduler->coroutines_list);
 	coroutines_list_init(&scheduler->waiting_coroutines_list);
 	return scheduler;
@@ -132,7 +129,6 @@ void coroutine_await_socket(struct coroutine_basic_context *context, int socket_
 {
 	context->socket_fd = socket_fd;
 	context->write = write;
-	FD_SET(socket_fd, &context->scheduler->rfds);
 }
 
 /*****************************************************************************/
@@ -156,9 +152,6 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 	struct timeval zero_timeout = {0};
 	struct coroutines_list finished_coroutines_list;
 
-	fd_set readfds;
-	FD_ZERO(&readfds);
-
 	coroutines_list_init(&finished_coroutines_list);
 
 	while (coroutines_list_first(&scheduler->coroutines_list) || coroutines_list_first(&scheduler->waiting_coroutines_list))
@@ -166,6 +159,8 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 		coroutine_return_t cor_ret;
 		coroutine_t cor = coroutines_list_first(&scheduler->coroutines_list);
 		coroutine_t cor_next;
+
+		fd_set readfds, writefds;
 		int nfds;
 
 		/* Execute all non-waiting coroutines */
@@ -191,9 +186,9 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			}
 		}
 
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
 		nfds = -1;
-
-		readfds = scheduler->rfds;
 
 		cor = coroutines_list_first(&scheduler->waiting_coroutines_list);
 		for (;cor;cor = cor_next)
@@ -201,8 +196,22 @@ void coroutine_schedule(coroutine_scheduler_t scheduler)
 			coroutine_t f;
 
 			cor_next =  coroutines_next(cor);
-			if (cor->context->socket_fd > nfds)
-				nfds = cor->context->socket_fd;
+
+			if (cor->context->socket_fd >= 0)
+			{
+				if (cor->context->socket_fd > nfds)
+				{
+					nfds = cor->context->socket_fd;
+				}
+
+				if (cor->context->write)
+				{
+					FD_SET(cor->context->socket_fd, &writefds);
+				} else
+				{
+					FD_SET(cor->context->socket_fd, &readfds);
+				}
+			}
 
 			/* Check if we are waiting for another coroutine to be finished
 			 * FIXME: This needs only be done once when the coroutine that we

@@ -1,5 +1,3 @@
-#define TEST
-
 /**
  * coroutines.c - simple coroutines for SimpleMail.
  * Copyright (C) 2015  Sebastian Bauer

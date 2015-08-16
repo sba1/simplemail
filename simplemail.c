@@ -38,6 +38,7 @@
 #include "debug.h"
 #include "filter.h"
 #include "folder.h"
+#include "folder_search_thread.h"
 #include "imap_thread.h" /* imap_thread_xxx() */
 #include "lists.h"
 #include "mail.h"

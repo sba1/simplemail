@@ -15,6 +15,7 @@ NONARCHSRCS=\
 	estimate.c \
 	filter.c \
 	folder.c \
+	folder_search_thread.c \
 	hash.c \
 	hmac_md5.c \
 	http.c \

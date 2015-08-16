@@ -744,14 +744,6 @@ int folder_filter(struct folder *folder);
 int folder_apply_filter(struct folder *folder, struct filter *filter);
 
 /**
- * Start the search with the given options. It starts a separate thread for
- * doing so.
- *
- * @param sopt the options for the search
- */
-void folder_start_search(struct search_options *sopt);
-
-/**
  * Lock the folder, to prevent any change to it.
  *
  * @param f

@@ -124,7 +124,7 @@ coroutine_scheduler_t coroutine_scheduler_new(void);
 void coroutine_scheduler_dispose(coroutine_scheduler_t scheduler);
 
 /**
- * Preapre the waiting state.
+ * Prepare the waiting state.
  *
  * @param context
  * @param socket_fd

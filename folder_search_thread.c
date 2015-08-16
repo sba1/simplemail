@@ -29,6 +29,23 @@
 #include "support.h"
 #include "timesupport.h"
 
+/*****************************************************************************/
+
+/**
+ * The thread that is used for searching.
+ */
+static thread_t search_thread;
+
+/*****************************************************************************/
+
+/**
+ * Clean the search thread pointer. Called from the search thread.
+ */
+static void folder_search_clean_thread(void)
+{
+	search_thread = NULL;
+}
+
 /**
  * @file
  */
@@ -125,6 +142,7 @@ cancel:
 			if (found_num)
 				thread_call_parent_function_sync(NULL,search_add_result, 2, found_array, found_num);
 
+			thread_call_parent_function_sync(NULL,folder_search_clean_thread, 0);
 			thread_call_parent_function_sync(NULL,search_disable_search, 0);
 		}
 	}
@@ -151,6 +169,10 @@ void folder_start_search(struct search_options *sopt)
 	struct folder *end;
 	struct folder **array;
 	int num;
+
+	/* Only one thread allowed */
+	if (search_thread)
+		return;
 
 	if (sopt->folder)
 	{
@@ -201,7 +223,9 @@ void folder_start_search(struct search_options *sopt)
 		msg.f_array = array;
 		msg.f_array_len = num;
 
-		thread_start(THREAD_FUNCTION(&folder_start_search_entry),&msg);
+		search_thread = thread_add("SimpleMail - Search Thread",
+				THREAD_FUNCTION(&folder_start_search_entry),&msg);
+
 		free(array);
 	}
 }
